@@ -239,29 +239,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         self.fetch_loaded_plugins()
 
-        # return
-        # self.potts = self.simulator.getPotts()
-        #
-        # self.cell_field = self.potts.getCellFieldG()
-        # self.dim = self.cell_field.getDim()
-        # self.inventory = self.simulator.getPotts().getCellInventory()
-        # self.clusterInventory = self.inventory.getClusterInventory()
-        # self.cell_list = CellList(self.inventory)
-        # self.cell_list_by_type = CellListByType(self.inventory)
-        # self.cluster_list = ClusterList(self.inventory)
-        # self.clusters = Clusters(self.inventory)
-        # self.mcs = -1
-        #
-        # self.plot_dict = {}  # {plot_name:plotWindow  - pW object}
-        #
-        # persistent_globals = CompuCellSetup.persistent_globals
-        # persistent_globals.attach_dictionary_to_cells()
-        #
-        # type_id_type_name_dict = extract_type_names_and_ids()
-        #
-        # for type_id, type_name in type_id_type_name_dict.items():
-        #     self.typename_to_attribute(cell_type_name=type_name, type_id=type_id)
-        #     # setattr(self, type_name.upper(), type_id)
 
     def fetch_loaded_plugins(self) -> None:
         """
@@ -1161,6 +1138,24 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                         pixelTrackerData in self.get_cell_pixel_list(cell)]
         except:
             raise AttributeError('Could not find PixelTracker Plugin')
+
+    @deprecated(version='4.0.0', reason="You should use : get_copy_of_cell_boundary_pixels")
+    def getCopyOfCellBoundaryPixels(self, _cell, _format=CC3D_FORMAT):
+
+        return self.get_copy_of_cell_boundary_pixels(cell=_cell, format=_format)
+
+    def get_copy_of_cell_boundary_pixels(self, cell, format=CC3D_FORMAT):
+
+        try:
+            if format == SteppableBasePy.CC3D_FORMAT:
+                return [CompuCell.Point3D(boundaryPixelTrackerData.pixel) for boundaryPixelTrackerData in
+                        self.getCellBoundaryPixelList(cell)]
+            else:
+                return [(boundaryPixelTrackerData.pixel.x, boundaryPixelTrackerData.pixel.y,
+                         boundaryPixelTrackerData.pixel.z) for boundaryPixelTrackerData in
+                        self.getCellBoundaryPixelList(cell)]
+        except:
+            raise AttributeError('Could not find BoundaryPixelTracker Plugin')
 
     @deprecated(version='4.0.0', reason="You should use : delete_cell")
     def deleteCell(self, cell):
