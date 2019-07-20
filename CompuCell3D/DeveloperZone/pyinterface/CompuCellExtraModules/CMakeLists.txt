@@ -97,6 +97,26 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 SWIG_LINK_LIBRARIES(CompuCellExtraModules ${LIBS} ${LIBS_AUX})
 set_target_properties(CompuCellExtraModules PROPERTIES LINK_FLAGS ${undefined_link_flags})
 
+if (APPLE)
+
+   # interesting reading: https://blog.kitware.com/upcoming-in-cmake-2-8-12-osx-rpath-support/
+
+   # INSTALL_NAME_DIR overrides MACOSX_RPATH.  Try not to do that.
+
+   # Use rpath for CompuCell.so
+   SET_TARGET_PROPERTIES(CompuCellExtraModules PROPERTIES MACOSX_RPATH TRUE)
+
+   # append directories in the linker search path and outside the project to the INSTALL_RPATH
+   SET_TARGET_PROPERTIES(CompuCellExtraModules PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+   # this is where libraries on which CompuCell.so depends on are
+   # installed relative to where CompuCell.py is installed
+   SET_TARGET_PROPERTIES(CompuCellExtraModules PROPERTIES INSTALL_RPATH "@loader_path/CompuCell3DPlugins;@loader_path/CompuCell3DSteppables;@loader_path/lib")
+
+
+endif()
+
+
 # install_targets(/lib/python _CompuCellExtraModules)
 install(TARGETS CompuCellExtraModules DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} )
 
