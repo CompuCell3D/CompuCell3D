@@ -22,12 +22,6 @@ endif()
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 SET(LIBS
   CC3DCompuCellLib
-  #AutomatonStatic
-  #BoundaryStatic
-  #Field3DStatic
-  #Potts3DStatic
-
-
    CC3DBasicUtils
    CC3DXMLUtils
    ${PYTHON_LIBRARIES}
@@ -75,8 +69,6 @@ ${PYINTERFACE_SRC_DIR}/..
 
 )
 
-
-
 SET_SOURCE_FILES_PROPERTIES(CompuCellExtraModules.i  PROPERTIES CPLUSPLUS ON)
 SWIG_ADD_LIBRARY(CompuCellExtraModules LANGUAGE python SOURCES CompuCellExtraModules.i)
 # SWIG_ADD_MODULE(CompuCellExtraModules python CompuCellExtraModules.i)
@@ -108,7 +100,6 @@ if (APPLE)
 
 endif()
 
-
 # install_targets(/lib/python _CompuCellExtraModules)
 install(TARGETS CompuCellExtraModules DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} )
 
@@ -116,8 +107,3 @@ set(python_files_path ${CMAKE_BINARY_DIR}/pyinterface/CompuCellExtraModules)
 
 INSTALL(FILES ${python_files_path}/CompuCellExtraModules.py
 	      DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR})
-
-
-
-
-
