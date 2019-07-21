@@ -101,7 +101,6 @@ using namespace CompuCell3D;
 %}
 
 %include <VolumeMean/VolumeMean.h>
-// %include <VolumeMean/VolumeMeanParseData.h>
 
 %inline %{
    VolumeMean * reinterpretVolumeMean(Steppable * _steppable){

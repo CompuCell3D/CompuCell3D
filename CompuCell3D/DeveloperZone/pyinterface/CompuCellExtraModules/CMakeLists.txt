@@ -35,16 +35,9 @@ SET(LIBS
 )
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 SET(LIBS
-  CC3DCompuCellLib
-  #AutomatonStatic
-  #BoundaryStatic
-  #Field3DStatic
-  #Potts3DStatic
-
-   
+  CC3DCompuCellLib   
    CC3DBasicUtils
-   CC3DXMLUtils
-   
+   CC3DXMLUtils   
    ${PYTHON_LIBRARIES}
 
 )
@@ -76,10 +69,9 @@ ${COMPUCELL3D_SOURCE_DIR}/CompuCell3D
 ${COMPUCELL3D_SOURCE_DIR}/CompuCell3D/plugins
 ${COMPUCELL3D_INCLUDE_PATH}/CompuCell3D
 ${COMPUCELL3D_INCLUDE_PATH}/CompuCell3D/plugins
-# ${COMPUCELL3D_SOURCE_DIR}/BasicUtils
-# ${COMPUCELL3D_SOURCE_DIR}/XercescUtils
-# ${COMPUCELL3D_SOURCE_DIR}/XMLCereal
 ${PYINTERFACE_SRC_DIR}/PyPlugin
+${PYINTERFACE_SRC_DIR}/..
+
 
 )
 
