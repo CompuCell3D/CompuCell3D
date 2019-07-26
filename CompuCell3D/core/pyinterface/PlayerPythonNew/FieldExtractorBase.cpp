@@ -1,6 +1,7 @@
 
 
 #include <iostream>
+#include <sstream>
 #include <CompuCell3D/Field3D/Dim3D.h>
 
 #include <Utils/Coordinates3D.h>
@@ -41,26 +42,6 @@ FieldExtractorBase::~FieldExtractorBase(){
 }
 
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void* FieldExtractorBase::unmangleSWIGVktPtr(std::string _swigStyleVtkPtr){
-	
-	void *ptr;
-	char typeCheck[128];
-	int i;
-	if (_swigStyleVtkPtr.size()<128){
-		i = sscanf(_swigStyleVtkPtr.c_str(),"_%lx_%s",(long *)&ptr,typeCheck);
-		return ptr;
-	}
-	else{
-		return 0;
-	}
-	
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-long FieldExtractorBase::unmangleSWIGVktPtrAsLong(std::string _swigStyleVtkPtr){
-	return (long)unmangleSWIGVktPtr( _swigStyleVtkPtr);
-}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -160,4 +141,4 @@ Coordinates3D<double> FieldExtractorBase::HexCoordXY(unsigned int x,unsigned int
 
 }
 
-void FieldExtractorBase::fillCellFieldData2D(long _cellTypeArrayAddr , std::string _plane ,  int _pos){}
+void FieldExtractorBase::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr , std::string _plane ,  int _pos){}

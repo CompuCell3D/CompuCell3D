@@ -1,9 +1,0 @@
-<Simulation version="3.5.1">
-   <XMLScript Type="XMLScript">Simulation/MultiscaleSimulation.xml</XMLScript>
-   <PythonScript Type="PythonScript">Simulation/MultiscaleSimulation.py</PythonScript>
-   <Resource Type="Python">Simulation/MultiscaleSimulationSteppables.py</Resource>
-   <Resource Type="SBML">Simulation/MinimalDeltaNotch.sbml</Resource>   
-   <Resource Type="SBML">Simulation/CadherinCatenin_RamisConde2008.sbml</Resource>   
-   <Resource Type="SBML">Simulation/PK_BloodLiver.sbml</Resource>   
-   <Resource Type="SBML">Simulation/SimpleExample.sbml</Resource>   
-</Simulation>

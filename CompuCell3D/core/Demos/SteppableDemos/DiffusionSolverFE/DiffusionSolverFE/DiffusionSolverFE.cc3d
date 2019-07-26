@@ -1,4 +1,0 @@
-<Simulation version="3.6.2">
-   <XMLScript Type="XMLScript">Simulation/DiffusionSolverFE.xml</XMLScript>
-   <PIFFile>Simulation/bacterium_macrophage.piff</PIFFile>
-</Simulation>

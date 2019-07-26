@@ -1,7 +1,7 @@
 <Simulation version="3.6.1">
 
     <XMLScript Type="XMLScript">Simulation/diffusion_steady_state_2D.xml</XMLScript>
-
+    <PythonScript >Simulation/diffusion_steady_state_2D.py</PythonScript>
     <PIFFile>Simulation/elasticityTest.piff</PIFFile>
 
 </Simulation>

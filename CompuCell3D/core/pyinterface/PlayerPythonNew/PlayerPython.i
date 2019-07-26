@@ -2,6 +2,9 @@
 // Module Name
 %module("threads"=1) PlayerPython
 
+%include "windows.i"
+
+//%include "typemaps.i"
 
 // *************************************************************
 // Module Includes 
@@ -13,14 +16,35 @@ namespace CompuCell3D{
  typedef CellG * cellGPtr_t;
 }
 
+// in SWIG tydefs have to be explicitely redeclared in the interface (.i) file. Also note that SWIG struggles with proper handling of 
+// preprocessor _WIN32 macros so it is best to add -DSWIGWIN option to the actual swig command and look for this Macro together with _WIN32
+
+%inline %{
+#if defined(SWIGWIN) || defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
+
+	typedef long long vtk_obj_addr_int_t;
+
+#else
+	typedef long vtk_obj_addr_int_t;
+
+#endif
+
+
+%}
+
+
 %{
+
+
+
 
 // #include <Potts3D/Cell.h>
 #include <Utils/Coordinates3D.h>
-#include <GraphicsData.h>
 #include <FieldStorage.h>
 
 #include <ndarray_adapter.h>
+
+#include <FieldExtractorTypes.h>
 
 #include <FieldExtractorBase.h>
 #include <FieldExtractor.h>
@@ -42,6 +66,7 @@ using namespace std;
 using namespace CompuCell3D;
 class CellG;
 
+
 %}
 
 #define FIELDEXTRACTOR_EXPORT
@@ -52,6 +77,7 @@ class CellG;
 %init %{
     import_array();
 %}
+
 
 // C++ std::string handling
 %include "std_string.i"
@@ -89,8 +115,6 @@ class CellG;
 
 %template(Coodrinates3DFloat) Coordinates3D<float>;
 %template(mapCellGPtrToCoordinates3DFloat) std::map<CompuCell3D::CellG*,Coordinates3D<float> >;
-
-
 
 
 %template(vectorint) std::vector<int>;
@@ -175,13 +199,12 @@ class CellG;
       
 };
 
-
+%include <FieldExtractorTypes.h>
 %include <FieldStorage.h>
 %include <FieldExtractorBase.h>
 %include <FieldExtractor.h>
 %include <FieldExtractorCML.h>
 %include <FieldWriter.h>
-
 
 
 %extend CompuCell3D::ScalarFieldCellLevel{    
@@ -375,7 +398,9 @@ class CellG;
         for (int i = 0; i < dim_x*dim_y*dim_z*dim_vec;++i){
             data[i]=0.0;
         }
-        
+
+
+
     }
    
    Coordinates3D<float> * findVectorInVectorCellLEvelField(CompuCell3D::FieldStorage::vectorFieldCellLevel_t * _field,CompuCell3D::CellG* _cell){
@@ -389,7 +414,6 @@ class CellG;
       }
 
    }
-
 
 %}
 

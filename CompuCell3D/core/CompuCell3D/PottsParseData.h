@@ -123,9 +123,9 @@ namespace CompuCell3D {
 				kBoltzman=1.0;
 				energyFcnParseDataPtr=0;
 				neighborOrder=1;
-				massUnit=Unit("10^-15*kg");
-				lengthUnit=Unit("10^-6*m");
-				timeUnit=Unit("s");
+//				massUnit=Unit("10^-15*kg");
+//				lengthUnit=Unit("10^-6*m");
+//				timeUnit=Unit("s");
 			}
 			virtual ~PottsParseData(){
 				if(energyFcnParseDataPtr){
@@ -178,9 +178,9 @@ namespace CompuCell3D {
 
 
 			//units
-			Unit massUnit;
-			Unit lengthUnit;
-			Unit timeUnit;
+//			Unit massUnit;
+//			Unit lengthUnit;
+//			Unit timeUnit;
 
 			void Dimensions(Dim3D _dim){dim=_dim;}
 			void Steps(unsigned int _numSteps){numSteps=_numSteps;}

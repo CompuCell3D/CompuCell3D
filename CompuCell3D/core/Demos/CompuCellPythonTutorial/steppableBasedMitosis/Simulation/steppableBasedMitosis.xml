@@ -30,8 +30,4 @@
  </Plugin>
 
 
- <Steppable Type="PIFInitializer">
-    <PIFName>Simulation/steppableBasedMitosis.piff</PIFName>
- </Steppable>
-
 </CompuCell3D>

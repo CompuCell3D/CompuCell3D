@@ -35,13 +35,13 @@
 class BasicClassGroup {
 protected:
   void **classes;
-  unsigned int size;
+  size_t size;
 
   /** 
    * @param classes The class array.
    * @param size The number of classes in the array.
    */
-  BasicClassGroup(void **classes, const unsigned int size) :
+  BasicClassGroup(void **classes, const size_t size) :
     classes(classes), size(size) {}
 
   ~BasicClassGroup() {}
@@ -53,7 +53,7 @@ protected:
    * 
    * @return A pointer to the allocate memory for this class id.
    */
-  void *getClass(const unsigned int id) {
+  void *getClass(const size_t id) {
     ASSERT_OR_THROW("BasicClassGroup id out of range!", 
 		    0 <= id && id < size);
     return classes[id];

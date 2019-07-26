@@ -1,13 +1,11 @@
 
-
-
-CMAKE_MINIMUM_REQUIRED(VERSION 2.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.13)
 PROJECT(PYINTERFACE)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/FindSWIG.cmake) # this is slightly modified FindSWIG.cmake file -  had to tune it to work with OSX
+# this is slightly modified FindSWIG.cmake file -  had to tune it to work with OSX
+include(${CMAKE_CURRENT_SOURCE_DIR}/FindSWIG.cmake)
 
 FIND_PACKAGE(SWIG REQUIRED)
-
 
 # INCLUDE(${SWIG_USE_FILE})
 INCLUDE(UseSWIG)
@@ -28,9 +26,4 @@ IF(SWIG_FOUND)
 ELSE(SWIG_FOUND)
     message("could not find SWIG in your system")
 ENDIF(SWIG_FOUND)
-
-
-
-
-
 

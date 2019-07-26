@@ -1,6 +1,0 @@
-<Simulation version="3.5.1">
-   <XMLScript Type="XMLScript">Simulation/DeltaNotchWithMitosis.xml</XMLScript>
-   <PythonScript Type="PythonScript">Simulation/DeltaNotchWithMitosis.py</PythonScript>
-   <Resource Type="Python">Simulation/DeltaNotchWithMitosisSteppables.py</Resource>
-   <Resource Type="SBML">Simulation/MinimalDeltaNotch.sbml</Resource>   
-</Simulation>

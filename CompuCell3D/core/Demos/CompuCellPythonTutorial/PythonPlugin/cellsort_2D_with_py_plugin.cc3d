@@ -1,7 +1,0 @@
-<Simulation version="3.5.1">
-    <XMLScript>Simulation/cellsort_2D_py_plugin.xml</XMLScript>    
-    <PythonScript>Simulation/cellsort_2D_with_py_plugin.py</PythonScript> 
-    <Resource Type="Python">Simulation/cellsort_2D_plugins_with_py_plugin.py</Resource>    
-</Simulation>
-
- 

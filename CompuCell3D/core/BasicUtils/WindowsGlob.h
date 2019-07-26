@@ -4,6 +4,8 @@
 #include <io.h>
 #include "wrapdll.h"
 #include <windows.h>
+#include <vector>
+#include <string>
 typedef struct
 {
 	size_t gl_pathc;
@@ -34,6 +36,7 @@ typedef struct
 #define GLOB_NOSYS      4       /* Not implemented.  */
 DLLEXPORT int	DLLCALL	glob(const char *pattern, int flags, void* unused, glob_t*);
 DLLEXPORT void	DLLCALL globfree(glob_t*);
+DLLEXPORT std::vector<std::string> DLLCALL get_all_files_names_within_folder(std::string folder, std::string pattern);
 char* DLLCALL getfname(const char*);
 static int glob_compare(const void*, const void*);
 

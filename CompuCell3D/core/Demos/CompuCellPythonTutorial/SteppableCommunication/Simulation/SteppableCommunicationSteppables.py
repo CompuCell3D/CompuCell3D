@@ -1,24 +1,21 @@
+from cc3d.core.PySteppables import *
+import shared_variables
 
-from PySteppables import *
-import CompuCell
-import sys
 
-class SteppableCommunicationSteppable(SteppableBasePy):    
+class CommunicationSteppable(SteppableBasePy):
 
-    def __init__(self,_simulator,_frequency=1):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
-        
-    def step(self,mcs):        
-        extraSteppable=self.getSteppableByClassName('ExtraSteppable')
-        print 'extraSteppable.sharedParameter=',extraSteppable.sharedParameter
-        
+    def __init__(self, frequency=1):
+        SteppableBasePy.__init__(self, frequency)
+
+    def step(self, mcs):
+        print('shared_variables.shared_parameter=', shared_variables.shared_parameter)
+
 
 class ExtraSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=1):
-        SteppableBasePy.__init__(self,_simulator,_frequency)        
-        self.sharedParameter=25
-        
-    def step(self,mcs):
-        print "ExtraSteppable: This function is called every 1 MCS"
-            
-    
+    def __init__(self, frequency=1):
+        SteppableBasePy.__init__(self, frequency)
+        shared_variables.shared_parameter = 25
+
+    def step(self, mcs):
+        shared_variables.shared_parameter += 1
+        print("ExtraSteppable: This function is called every 1 MCS")

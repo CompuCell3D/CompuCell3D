@@ -1,21 +1,9 @@
-import sys
-from os import environ
-from os import getcwd
-import string
+import cc3d.CompuCellSetup as CompuCellSetup
+from .SBMLSolverSteppables import SBMLSolverSteppable
 
-sys.path.append(environ["PYTHON_MODULE_PATH"])
 
-import CompuCellSetup
+CompuCellSetup.register_steppable(steppable=SBMLSolverSteppable(frequency=1))
 
-sim,simthread = CompuCellSetup.getCoreSimulationObjects()
-                        
-CompuCellSetup.initializeSimulationObjects(sim,simthread)
-        
-#Add Python steppables here
-steppableRegistry=CompuCellSetup.getSteppableRegistry()
-        
-from SBMLSolverSteppables import SBMLSolverSteppable
-steppableInstance=SBMLSolverSteppable(sim,_frequency=1)
-steppableRegistry.registerSteppable(steppableInstance)
-        
-CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
+
+CompuCellSetup.run()
+

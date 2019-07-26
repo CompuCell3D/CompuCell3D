@@ -64,24 +64,24 @@ void ConnectivityGlobalPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlDa
 
 void ConnectivityGlobalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
-	if (potts->getDisplayUnitsFlag()) {
-		Unit energyUnit = potts->getEnergyUnit();
+	//if (potts->getDisplayUnitsFlag()) {
+	//	Unit energyUnit = potts->getEnergyUnit();
 
 
 
 
-		CC3DXMLElement * unitsElem = _xmlData->getFirstElement("Units");
-		if (!unitsElem) { //add Units element
-			unitsElem = _xmlData->attachElement("Units");
-		}
+	//	CC3DXMLElement * unitsElem = _xmlData->getFirstElement("Units");
+	//	if (!unitsElem) { //add Units element
+	//		unitsElem = _xmlData->attachElement("Units");
+	//	}
 
-		if (unitsElem->getFirstElement("PenaltyUnit")) {
-			unitsElem->getFirstElement("PenaltyUnit")->updateElementValue(energyUnit.toString());
-		}
-		else {
-			CC3DXMLElement * energyElem = unitsElem->attachElement("PenaltyUnit", energyUnit.toString());
-		}
-	}
+	//	if (unitsElem->getFirstElement("PenaltyUnit")) {
+	//		unitsElem->getFirstElement("PenaltyUnit")->updateElementValue(energyUnit.toString());
+	//	}
+	//	else {
+	//		CC3DXMLElement * energyElem = unitsElem->attachElement("PenaltyUnit", energyUnit.toString());
+	//	}
+	//}
 
 	penaltyVec.clear();
 

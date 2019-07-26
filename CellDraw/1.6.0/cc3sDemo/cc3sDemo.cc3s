@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="us-ascii"?>
-<!DOCTYPE cc3s>
-<cc3s version="1.0">
-    <ResDir DirName="Resources">
-        <PIFScene Type="PIFSceneType">cc3sDemo.pifScene</PIFScene>
-        <PIFF Type="PIFFType">cc3sDemo.piff</PIFF>
-    </ResDir>
-</cc3s>

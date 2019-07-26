@@ -1,23 +1,22 @@
-from PySteppables import *
-import CompuCell
-import sys
+from cc3d.core.PySteppables import *
+from pathlib import Path
 
 
 class ConcentrationFieldDumperSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=1):
-        SteppableBasePy.__init__(self,_simulator,_frequency)        
-    
-    def step(self,mcs):
-        fileName="diffusion_output/FGF_"+str(mcs)+".dat"
-        field=CompuCell.getConcentrationField(self.simulator,"FGF")        
-        if field:
-            try:                
-                import CompuCellSetup
-                fileHandle,fullFileName=CompuCellSetup.openFileInSimulationOutputDirectory(fileName,"w")
-            except IOError:
-                print "Could not open file ", fileName," for writing. Check if you have necessary permissions"                
-                
-            for i,j,k in self.everyPixel():
-                fileHandle.write("%d\t%d\t%d\t%f\n"%(i,j,k,field[i,j,k]))
-        
-            fileHandle.close()
+    def __init__(self, frequency=1):
+        SteppableBasePy.__init__(self, frequency)
+
+    def step(self, mcs):
+        file_name = "diffusion_output/FGF_" + str(mcs) + ".dat"
+        fgf_field = self.field.FGF
+
+        output_dir = self.output_dir
+
+        if output_dir is not None:
+            output_path = Path(output_dir).joinpath(file_name)
+            # create folder to store data
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+
+            with open(output_path, 'w') as file_handle:
+                for i, j, k in self.every_pixel():
+                    file_handle.write("%d\t%d\t%d\t%f\n" % (i, j, k, fgf_field[i, j, k]))

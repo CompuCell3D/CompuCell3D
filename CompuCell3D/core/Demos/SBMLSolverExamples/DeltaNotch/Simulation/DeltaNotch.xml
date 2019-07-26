@@ -1,0 +1,42 @@
+ <CompuCell3D>
+
+ <Potts>
+   <Dimensions x="42" y="42" z="1"/>   
+   <Steps>10000</Steps>
+   <Temperature id="temp">10</Temperature>   
+   <NeighborOrder>2</NeighborOrder>
+   <Boundary_x>Periodic</Boundary_x>   
+   <Boundary_y>Periodic</Boundary_y>
+ </Potts>
+
+<Plugin Name="CellType">
+    <CellType TypeName="Medium" TypeId="0"/>
+    <CellType TypeName="TypeA" TypeId="1"/>    
+ </Plugin>
+
+
+ <Plugin Name="Contact">
+   <Energy Type1="Medium" Type2="Medium">0</Energy>
+   <Energy Type1="Medium" Type2="TypeA">5</Energy>
+   <Energy Type1="TypeA" Type2="TypeA">5</Energy>
+   <NeighborOrder>4</NeighborOrder>
+ </Plugin>
+
+
+   <Plugin Name="Volume">      
+      <VolumeEnergyParameters CellType="TypeA" LambdaVolume="5.0" TargetVolume="49"/>
+   </Plugin>
+
+   <Plugin Name="NeighborTracker"/>
+ 
+   <Steppable Type="UniformInitializer">
+      <Region>
+         <BoxMin x="0" y="0" z="0"/>
+         <BoxMax x="42" y="42" z="1"/>
+         <Gap>0</Gap>
+         <Width>7</Width>
+         <Types>TypeA</Types>
+      </Region>
+   </Steppable>
+
+</CompuCell3D>

@@ -1,29 +1,13 @@
-
-from PySteppables import *
-import CompuCell
-import sys
-
-from PlayerPython import *
-import CompuCellSetup
-from math import *
+from cc3d.core.PySteppables import *
 
 
 class ConnectivitySteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=1):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
+    def __init__(self, frequency=1):
+        SteppableBasePy.__init__(self, frequency)
         
     def start(self):
-        # will tunr connectivity for first 100 cells
-        for cell in self.cellList:
+        # will turn connectivity for first 100 cells
+        for cell in self.cell_list:
             if cell.id < 100:
                 cell.connectivityOn = True                    
-        
-    def step(self,mcs):
-         pass
-#         for cell in self.cellList:            
-#             print 'cell.connectivityOn =', cell.connectivityOn 
-        
-        
 
-        
-    

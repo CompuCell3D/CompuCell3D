@@ -1,27 +1,7 @@
+from cc3d import CompuCellSetup
+from .CellDistanceSteppables import CellDistanceSteppable
 
-import sys
-from os import environ
-from os import getcwd
-import string
+CompuCellSetup.register_steppable(steppable=CellDistanceSteppable(frequency=1))
 
-sys.path.append(environ["PYTHON_MODULE_PATH"])
+CompuCellSetup.run()
 
-
-import CompuCellSetup
-
-
-sim,simthread = CompuCellSetup.getCoreSimulationObjects()
-                        
-CompuCellSetup.initializeSimulationObjects(sim,simthread)
-# Definitions of additional Python-managed fields go here
-        
-#Add Python steppables here
-steppableRegistry=CompuCellSetup.getSteppableRegistry()
-        
-from CellDistanceSteppables import CellDistanceSteppable
-steppableInstance=CellDistanceSteppable(sim,_frequency=1)
-steppableRegistry.registerSteppable(steppableInstance)
-        
-CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
-        
-        

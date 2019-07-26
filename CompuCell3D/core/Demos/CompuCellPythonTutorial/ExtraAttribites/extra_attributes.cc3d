@@ -1,0 +1,7 @@
+<Simulation version="3.5.1">
+    <XMLScript>Simulation/cellsort_2D.xml</XMLScript>    
+    <PythonScript>Simulation/extra_attributes.py</PythonScript>
+    <Resource Type="Python">Simulation/extra_attributes_steppables.py</Resource>
+</Simulation>
+
+ 

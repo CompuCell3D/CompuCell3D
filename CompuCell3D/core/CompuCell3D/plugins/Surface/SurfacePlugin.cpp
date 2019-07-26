@@ -22,13 +22,6 @@
 
 #include <CompuCell3D/CC3D.h>
 
-
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <CompuCell3D/Boundary/BoundaryTypeDefinitions.h>
-// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 using namespace CompuCell3D;
 #include <CompuCell3D/plugins/SurfaceTracker/SurfaceTrackerPlugin.h>
 
@@ -71,29 +64,29 @@ void SurfacePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
 
 void SurfacePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
-	if(potts->getDisplayUnitsFlag()){
-		Unit targetSurfaceUnit=powerUnit(potts->getLengthUnit(),2);
-		Unit lambdaSurfaceUnit=potts->getEnergyUnit()/(targetSurfaceUnit*targetSurfaceUnit);
+	//if(potts->getDisplayUnitsFlag()){
+	//	Unit targetSurfaceUnit=powerUnit(potts->getLengthUnit(),2);
+	//	Unit lambdaSurfaceUnit=potts->getEnergyUnit()/(targetSurfaceUnit*targetSurfaceUnit);
 
-		CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-		if (!unitsElem){ //add Units element
-			unitsElem=_xmlData->attachElement("Units");
-		}
+	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
+	//	if (!unitsElem){ //add Units element
+	//		unitsElem=_xmlData->attachElement("Units");
+	//	}
 
-		if(unitsElem->getFirstElement("TargetSurfaceUnit")){
-			unitsElem->getFirstElement("TargetSurfaceUnit")->updateElementValue(targetSurfaceUnit.toString());
-		}else{
-			CC3DXMLElement * surfaceUnitElem = unitsElem->attachElement("TargetSurfaceUnit",targetSurfaceUnit.toString());
-		}
+	//	if(unitsElem->getFirstElement("TargetSurfaceUnit")){
+	//		unitsElem->getFirstElement("TargetSurfaceUnit")->updateElementValue(targetSurfaceUnit.toString());
+	//	}else{
+	//		CC3DXMLElement * surfaceUnitElem = unitsElem->attachElement("TargetSurfaceUnit",targetSurfaceUnit.toString());
+	//	}
 
-		if(unitsElem->getFirstElement("LambdaSurfaceUnit")){
-			unitsElem->getFirstElement("LambdaSurfaceUnit")->updateElementValue(lambdaSurfaceUnit.toString());
-		}else{
-			CC3DXMLElement * lambdaSurfaceUnitElem = unitsElem->attachElement("LambdaSurfaceUnit",lambdaSurfaceUnit.toString());
-		}
+	//	if(unitsElem->getFirstElement("LambdaSurfaceUnit")){
+	//		unitsElem->getFirstElement("LambdaSurfaceUnit")->updateElementValue(lambdaSurfaceUnit.toString());
+	//	}else{
+	//		CC3DXMLElement * lambdaSurfaceUnitElem = unitsElem->attachElement("LambdaSurfaceUnit",lambdaSurfaceUnit.toString());
+	//	}
 
 
-	}
+	//}
 
 
 	if (_xmlData->findElement("SurfaceEnergyExpression")){

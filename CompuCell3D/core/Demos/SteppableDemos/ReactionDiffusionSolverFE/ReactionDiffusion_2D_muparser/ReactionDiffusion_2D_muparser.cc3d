@@ -1,0 +1,5 @@
+<Simulation version="3.6.1">
+    <XMLScript Type="XMLScript">Simulation/ReactionDiffusion_2D_muparser.xml</XMLScript>
+    <PythonScript>Simulation/ReactionDiffusion_2D_muparser.py</PythonScript>
+    <Resource Type="Field" Copy="No">Simulation/FN.pulse.txt</Resource>    
+</Simulation>

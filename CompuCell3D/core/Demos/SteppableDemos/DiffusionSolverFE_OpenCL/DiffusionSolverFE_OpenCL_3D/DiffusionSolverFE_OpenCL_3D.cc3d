@@ -1,3 +1,4 @@
 <Simulation version="3.6.2">
    <XMLScript Type="XMLScript">Simulation/DiffusionSolverFE_OpenCL_3D.xml</XMLScript>
+   <PythonScript >Simulation/DiffusionSolverFE_OpenCL_3D.py</PythonScript>
 </Simulation>

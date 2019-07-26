@@ -1,7 +1,7 @@
 <Simulation version="3.6.1">
 
     <XMLScript Type="XMLScript">Simulation/diffusion_2D_scale_wall.xml</XMLScript>
-
+    <PythonScript >Simulation/diffusion_2D_scale_wall.py</PythonScript>
     <Resource Type="Field" Copy="No">Simulation/diffusion_2D_scale_wall.pulse.txt</Resource>    
 
     <PIFFile>Simulation/diffusion_2D_scale_wall.piff</PIFFile>

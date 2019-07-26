@@ -1,0 +1,19 @@
+when starting cc3d from custo script e.g. player5/compucell3d.py
+
+we need to place directory lib\site-packages\cc3d\cpp\CompuCell3DSteppables\OpenCL\
+in the same directory where the script that start cc3d is located i.e. in e.g.
+
+d:\CC3D_PY3_GIT\cc3d\player5\lib\site-packages\cc3d\cpp\CompuCell3DSteppables\OpenCL\
+We also need to include
+d:\CC3D_PY3_GIT\cc3d\player5\lib\site-packages\cc3d\cpp\bin
+d:\CC3D_PY3_GIT\cc3d\player5\lib\site-packages\cc3d\cpp\lib
+
+directories. This is because the lib\site-packages\cc3d\cpp\CompuCell3DSteppables\OpenCL\ contains GPU code that
+is JIT-compiled by OpenCL compiler and therefore it needs to be available in the specific location of the installation
+folder
+
+Depending how you start compucell3d the openCL modules may not compile it the relative paths in the opencl
+code e.g. in d:\CC3D_GIT\CompuCell3D\core\CompuCell3D\steppables\PDESolvers\OpenCL\DiffusionSolverFE_OpenCL.cpp
+are not set correctly
+
+This is something to fix in the future releases

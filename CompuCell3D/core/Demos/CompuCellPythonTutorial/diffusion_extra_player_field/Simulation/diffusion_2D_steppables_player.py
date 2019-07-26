@@ -1,20 +1,19 @@
-from PySteppables import *
-import CompuCell
-import CompuCellSetup
-import sys
-from PlayerPython import *
+from cc3d.core.PySteppables import *
 from math import *
 
-class ExtraFieldVisualizationSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=10):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
-        self.scalarField=CompuCellSetup.createScalarFieldPy(self.dim,"ExtraField")
-        
-    def step(self,mcs):
-        self.scalarField[:,:,:]=0.0 #clearing entire field
-        for x,y,z in self.everyPixel():            
-            if (not mcs%20):                
-                self.scalarField[x,y,z]=x*y                
-            else:
-                self.scalarField[x,y,z]=sin(x*y)
 
+class ExtraFieldVisualizationSteppable(SteppableBasePy):
+    def __init__(self, frequency=10):
+        SteppableBasePy.__init__(self, frequency)
+        self.create_scalar_field_py("ExtraField")
+
+    def step(self, mcs):
+        extra_field = self.field.ExtraField
+
+        # clearing entire field
+        extra_field[:, :, :] = 0.0
+        for x, y, z in self.everyPixel():
+            if not mcs % 20:
+                extra_field[x, y, z] = x * y
+            else:
+                extra_field[x, y, z] = sin(x * y)

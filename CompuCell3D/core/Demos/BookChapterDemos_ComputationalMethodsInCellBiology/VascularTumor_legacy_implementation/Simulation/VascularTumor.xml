@@ -1,0 +1,234 @@
+<CompuCell3D>
+    <!--
+    1 voxel (side)= 4 um
+    1 voxel (volume)= 64 um^3
+    density of lattice ~ density of water
+    Total simulated mass = 50*50*80 *(4um)^3 gram/cm^3= 1.28*10^-5 gram
+    1 MCS ~ `min (typical)
+    tumor cell volume = 32 voxels * 64 um^3/voxel = 2048 um^3
+    fastest (simulated) tumor cell cycle is 24hours or 1440 mcs when glucose is high so 32voxels/1440mcs= 0.022 voxel/mcs
+    tumor cell growth equation;
+          cell.targetVolume+=0.022*GlucoseConcentration/(0.05 + GlucoseConcentration)
+
+    Glucose diffusion Coeff = 600 um^2/sec = 600 um^2/sec *(voxel/4um)^2 * (60sec/MCS)=2250 voxel^2/MCS
+    Glucose Uptake (Stromal Tissue)= 0.1 umol/gram/min (estimated)
+    Glucose Uptake (Tumor)~ 0.3 umol/g/min (exprimentally measured [http://cancerres.aacrjournals.org/content/48/24_Part_1/7264.short])
+
+    Total Glucose Uptake (simulated stroma without tumor) ~ 1.28*10^-5 gram * 0.1 umol/gram/min
+                            = 1.28 pmol/min
+                            = 1.28 pmol/MCS
+
+    Total # of Vacular cells = 24 cells
+    Glucose Secereted per Vascular Cell = 1.28/24 pmol/MCS/cell = 0.053 pmol/MCS/cell
+    Glucose Secereted per Voxel of Vascular Cell =  Glucose Secereted per Vascular Cell/(cell volume)
+                             = 0.053/64 pmol/MCS/voxel = 0.0008 pmol/MCS/voxel
+                             =0,8 fmol/MCS/voxel
+   Typical Glucose Uptake by Medium (stroma) voxel = 1.28 pmol/MCS/(~20000 Medium voxels) =6.4*10^-6 pmol/MCS/voxel
+                        = 6.4*10^-3 fmol/MCS/voxel
+    (assumed) Max Glucose Uptake by Medium (stroma) voxel = 1.28 * 10^-2 fmol/MCS/voxel
+    typical tumor cell density in tumor ~ 10^8 cells/cm^3
+    Glucose Uptake by a tumor cell ~  (0.3 umol/g/mcs)/(10^8 cells per gram)
+                  = 0.003 pmol/mcs/cell
+                  = 0.003 pmol/mcs/(32 voxel)
+                  ~ 10^-4 pmol/MCS/voxel
+                  = 0.1 fmol/MCS/voxel
+
+    (assumed) Max Glucose Uptake by a tumor cell = 0.2 fmol/MCS/voxel
+
+    Max stable FlexibleDiffusionSolverFE diffusion constant in 3D ~ 0.15 voxel^2/MCS
+    Number of Field updates per MCS needed (ExtraTimesPerMC) = 2250 voxel^2/MCS/0.15= 15000 field updates per MCS
+    we set ExtraTimesPerMC=9 (10 updates), so glucose diffusion is 1500 slower, resulting in steep glucose gradients and smaller tumors
+    -->
+    <!--   <Metadata>
+        <NumberOfProcessors>2</NumberOfProcessors>
+        <DebugOutputFrequency>100</DebugOutputFrequency>
+       </Metadata>-->
+    <Potts>
+        <Dimensions x="50" y="50" z="80"/>
+        <Steps>100000</Steps>
+        <Temperature>20</Temperature>
+        <Flip2DimRatio>1</Flip2DimRatio>
+        <Boundary_x>Periodic</Boundary_x>
+        <Boundary_y>Periodic</Boundary_y>
+        <Boundary_z>Periodic</Boundary_z>
+        <RandomSeed>313</RandomSeed>
+        <NeighborOrder>3</NeighborOrder>
+    </Potts>
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Proliferating" TypeId="1"/>
+        <CellType TypeName="Necrotic" TypeId="2"/>
+        <CellType TypeName="Vascular" TypeId="3"/>
+        <CellType TypeName="NeoVascular" TypeId="4"/>
+    </Plugin>
+
+    <Plugin Name="Chemotaxis">
+        <ChemicalField Name="VEGF1">
+            <ChemotaxisByType Type="NeoVascular" Lambda="8000" ChemotactTowards="Medium,Proliferating,Necrotic"/>
+        </ChemicalField>
+        <ChemicalField Name="VEGF2">
+            <ChemotaxisByType Type="NeoVascular" Lambda="1000" ChemotactTowards="Medium,Proliferating,Necrotic"
+                              SaturationCoef="0.05"/>
+        </ChemicalField>
+        <ChemicalField Name="VEGF1">
+            <ChemotaxisByType Type="Vascular" Lambda="8000" ChemotactTowards="Medium,Proliferating,Necrotic"/>
+        </ChemicalField>
+    </Plugin>
+
+    <Plugin Name="CenterOfMass"/>
+    <Plugin Name="NeighborTracker"/>
+
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="Proliferating" Type2="Medium">10</Energy>
+        <Energy Type1="Proliferating" Type2="Proliferating">8</Energy>
+
+        <Energy Type1="Necrotic" Type2="Medium">15</Energy>
+        <Energy Type1="Necrotic" Type2="Proliferating">8</Energy>
+        <Energy Type1="Necrotic" Type2="Necrotic">3</Energy>
+
+        <Energy Type1="Vascular" Type2="Medium">12</Energy>
+        <Energy Type1="Vascular" Type2="Proliferating">30</Energy>
+        <Energy Type1="Vascular" Type2="Necrotic">30</Energy>
+        <Energy Type1="Vascular" Type2="Vascular">5</Energy>
+
+        <Energy Type1="NeoVascular" Type2="Medium">12</Energy>
+        <Energy Type1="NeoVascular" Type2="Proliferating">30</Energy>
+        <Energy Type1="NeoVascular" Type2="Necrotic">30</Energy>
+        <Energy Type1="NeoVascular" Type2="Vascular">5</Energy>
+        <Energy Type1="NeoVascular" Type2="NeoVascular">5</Energy>
+        <NeighborOrder>4</NeighborOrder>
+    </Plugin>
+
+    <Plugin Name="VolumeLocalFlex"/>
+
+    <Plugin Name="FocalPointPlasticity">
+        <Parameters Type1="Vascular" Type2="NeoVascular">
+            <Lambda>50.0</Lambda>
+            <ActivationEnergy>-100.0</ActivationEnergy>
+            <TargetDistance>5.0</TargetDistance>
+            <MaxDistance>15.0</MaxDistance>
+            <MaxNumberOfJunctions>2</MaxNumberOfJunctions>
+        </Parameters>
+        <Parameters Type1="Vascular" Type2="Vascular">
+            <Lambda>400.0</Lambda>
+            <ActivationEnergy>-100.0</ActivationEnergy>
+            <TargetDistance>5.0</TargetDistance>
+            <MaxDistance>15.0</MaxDistance>
+            <MaxNumberOfJunctions>3</MaxNumberOfJunctions>
+        </Parameters>
+        <Parameters Type1="NeoVascular" Type2="NeoVascular">
+            <Lambda>20.0</Lambda>
+            <ActivationEnergy>-100.0</ActivationEnergy>
+            <TargetDistance>5.0</TargetDistance>
+            <MaxDistance>10.0</MaxDistance>
+            <MaxNumberOfJunctions>2</MaxNumberOfJunctions>
+        </Parameters>
+        <NeighborOrder>1</NeighborOrder>
+    </Plugin>
+
+    <Plugin Name="ConnectivityGlobal">
+        <Penalty Type="NeoVascular">10000</Penalty>
+        <Penalty Type="Vascular">10000</Penalty>
+    </Plugin>
+
+
+    <Plugin Name="PDESolverCaller">
+        <CallPDE PDESolverName="FlexibleDiffusionSolverFE" ExtraTimesPerMC="9"/>
+    </Plugin>
+
+    <Steppable Type="UniformInitializer">
+
+        <Region>
+            <BoxMin x="0" y="24" z="16"/>
+            <BoxMax x="50" y="28" z="20"/>
+            <Width>4</Width>
+            <Gap>0</Gap>
+            <Types>Vascular</Types>
+        </Region>
+        <Region>
+            <BoxMin y="0" x="24" z="16"/>
+            <BoxMax y="50" x="28" z="20"/>
+            <Width>4</Width>
+            <Gap>0</Gap>
+            <Types>Vascular</Types>
+        </Region>
+        <Region>
+            <BoxMin x="10" y="24" z="16"/>
+            <BoxMax x="50" y="28" z="20"/>
+            <Width>4</Width>
+            <Gap>25</Gap>
+            <Types>NeoVascular</Types>
+        </Region>
+        <Region>
+            <BoxMin y="8" x="24" z="16"/>
+            <BoxMax y="50" x="28" z="20"/>
+            <Width>4</Width>
+            <Gap>25</Gap>
+            <Types>NeoVascular</Types>
+        </Region>
+        <Region>
+            <BoxMin x="26" y="26" z="40"/>
+            <BoxMax x="34" y="34" z="48"/>
+            <Width>2</Width>
+            <Gap>0</Gap>
+            <Types>Proliferating</Types>
+        </Region>
+
+    </Steppable>
+
+
+    <Steppable Type="FlexibleDiffusionSolverFE">
+        <!--Serialize Frequency="10"/-->
+        <!--         endothelial-derived short diffusing VEGF isoform-->
+        <DiffusionField>
+            <DiffusionData>
+                <FieldName>VEGF1</FieldName>
+                <ConcentrationFileName></ConcentrationFileName>
+                <DiffusionConstant>0.010</DiffusionConstant>
+                <DecayConstant>0.0016</DecayConstant>
+                <DoNotDecayIn>Vascular</DoNotDecayIn>
+                <DoNotDecayIn>NeoVascular</DoNotDecayIn>
+            </DiffusionData>
+
+            <SecretionData>
+                <Secretion Type="NeoVascular">0.001</Secretion>
+                <Secretion Type="Vascular">0.001</Secretion>
+            </SecretionData>
+        </DiffusionField>
+        <!--         tumor-derived long diffusing VEGF isoform-->
+        <DiffusionField>
+            <DiffusionData>
+                <FieldName>VEGF2</FieldName>
+                <ConcentrationFileName></ConcentrationFileName>
+                <DiffusionConstant>0.15</DiffusionConstant>
+                <DecayConstant>0.0016</DecayConstant>
+            </DiffusionData>
+
+            <SecretionData>
+                <Secretion Type="Proliferating">0.001</Secretion>
+                <Uptake Type="NeoVascular" MaxUptake="0.05" RelativeUptakeRate="0.5"/>
+                <Uptake Type="Vascular" MaxUptake="0.05" RelativeUptakeRate="0.5"/>
+            </SecretionData>
+        </DiffusionField>
+
+
+        <DiffusionField>
+            <DiffusionData>
+                <FieldName>Glucose</FieldName>
+                <ConcentrationFileName>Simulation/Glucose_300.dat</ConcentrationFileName>
+                <DiffusionConstant>0.15</DiffusionConstant>
+            </DiffusionData>
+
+            <SecretionData>
+                <Secretion Type="NeoVascular">0.4</Secretion>
+                <Secretion Type="Vascular">0.8</Secretion>
+                <Uptake Type="Medium" MaxUptake="0.0064" RelativeUptakeRate="0.1"/>
+                <Uptake Type="Proliferating" MaxUptake="0.1" RelativeUptakeRate="0.1"/>
+            </SecretionData>
+        </DiffusionField>
+
+    </Steppable>
+
+</CompuCell3D>

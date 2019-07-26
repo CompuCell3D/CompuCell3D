@@ -84,46 +84,6 @@ void ClassRegistry::finish() {
 }
 
 
-//void ClassRegistry::readXML(XMLPullParser &in) {
-//  in.skip(TEXT);
-//  
-//  while (in.check(START_ELEMENT)) {
-//	if (in.getName() == "Steppable") {
-//      string type = in.getAttribute("Type").value;
-////       cerr<<"\n\n\nGot STEPPABLE NO will try to load it\n\n\n"<<endl;
-//      Steppable *steppable=0;
-//      steppable = simulator->steppableManager.get(type);
-////       BasicSmartPointer<Steppable> steppable = steppableRegistry.create(type);
-////       cerr<<"\t\t\t\t\t\t\t\tSteppable "<<type<<" loaded"<<endl;
-//
-//
-//      if (in.findAttribute("Frequency") != -1)
-//	steppable->frequency =
-//	  BasicString::parseUInteger(in.getAttribute("Frequency").value);
-//
-////       cerr<<"GOT HERE"<<endl;
-////       cerr<<"steppable="<<steppable<<endl;
-//
-//       //steppable->init(simulator);
-//       in.match(START_ELEMENT);
-//       steppable->readXML(in);
-//       in.match(END_ELEMENT);
-//       steppableParseDataVector.push_back(steppable->getParseData());
-//
-//      activeSteppers.push_back(steppable);
-//      activeSteppersMap[type] = steppable;
-//
-//    } else {
-//      THROW(string("Unexpected element '") + in.getName() + "'!");
-//    }
-//
-//    in.skip(TEXT);
-//  }
-//
-//   
-//
-//
-//}
 
 void ClassRegistry::addStepper(std::string _type, Steppable *_steppable){
       activeSteppers.push_back(_steppable);
@@ -155,12 +115,12 @@ void ClassRegistry::initModules(Simulator *_sim){
 //       }else{//plugin parse data has been initialized externally
 //          plugin->init(this, ps.pluginParseDataVector[i]);
 //       }
-      
+
       //steppable->init(_sim, steppableParseDataVectorRef[i]);
 		steppable->init(_sim, steppableCC3DXMLElementVectorRef[i]);
       addStepper(type,steppable);
 //       _sim->registerSteerableObject(steppable);
-   
+
    }
 
    for (ActiveSteppers_t::iterator litr = activeSteppers.begin() ; litr != activeSteppers.end() ; ++litr){
@@ -173,5 +133,3 @@ void ClassRegistry::initModules(Simulator *_sim){
 
 }
 
-//void ClassRegistry::writeXML(XMLSerializer &out) {
-//}

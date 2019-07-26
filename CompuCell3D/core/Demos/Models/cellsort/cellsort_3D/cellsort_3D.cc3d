@@ -1,5 +1,6 @@
 <Simulation version="3.6.1">
 
     <XMLScript Type="XMLScript">Simulation/cellsort_3D.xml</XMLScript>
+    <PythonScript>Simulation/cellsort_3D.py</PythonScript>
 
 </Simulation>

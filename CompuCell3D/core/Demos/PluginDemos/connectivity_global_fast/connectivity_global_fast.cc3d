@@ -1,5 +1,6 @@
 <Simulation version="3.6.1">
 
     <XMLScript Type="XMLScript">Simulation/connectivity_global_fast.xml</XMLScript>
+    <PythonScript>Simulation/connectivity_global_fast.py</PythonScript>
 
 </Simulation>

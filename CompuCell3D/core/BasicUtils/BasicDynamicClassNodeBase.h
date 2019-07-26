@@ -25,6 +25,9 @@
 #ifndef BASICDYNAMICCLASSNODEBASE_H
 #define BASICDYNAMICCLASSNODEBASE_H
 
+#include <cstdlib>
+#include <cwchar>
+
 class BasicDynamicClassFactory;
 
 
@@ -37,7 +40,7 @@ class BasicDynamicClassFactory;
 class BasicDynamicClassNodeBase {
 protected:
   BasicDynamicClassFactory *factory;
-  unsigned int offset;
+  std::size_t offset;
 
 public:
   BasicDynamicClassNodeBase() : factory(0), offset(0) {}
@@ -45,7 +48,7 @@ public:
   /** 
    * See BasicDynamicClassNode::getSize()
    */
-  virtual unsigned int getSize() const = 0;
+  virtual size_t getSize() const = 0;
 
   /** 
    * See BasicDynamicClassNode::_init()
@@ -77,7 +80,7 @@ protected:
    * 
    * @param offset The byte offset.
    */  
-  void setOffset(const unsigned int offset) {this->offset = offset;}
+  void setOffset(const size_t offset) {this->offset = offset;}
 
   virtual ~BasicDynamicClassNodeBase() {}
 

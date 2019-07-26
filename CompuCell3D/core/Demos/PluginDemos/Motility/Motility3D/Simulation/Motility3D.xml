@@ -1,0 +1,55 @@
+<CompuCell3D Revision="20190604" Version="4.0.0">
+   
+   <Potts>
+      
+      <!-- Basic properties of CPM (GGH) algorithm -->
+      <Dimensions x="256" y="256" z="256"/>
+      <Steps>100000</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>2</NeighborOrder>
+      <Boundary_x>Periodic</Boundary_x>
+      <Boundary_y>Periodic</Boundary_y>
+      <Boundary_z>Periodic</Boundary_z>
+   </Potts>
+   
+   <Plugin Name="CellType">
+      
+      <!-- Listing all cell types in the simulation -->
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="MotCell"/>
+      <CellType TypeId="2" TypeName="MotCell2"/>
+   </Plugin>
+   
+   <Plugin Name="Volume">
+      <VolumeEnergyParameters CellType="MotCell" LambdaVolume="2.0" TargetVolume="50"/>
+      <VolumeEnergyParameters CellType="MotCell2" LambdaVolume="2.0" TargetVolume="50"/>
+   </Plugin>
+   
+   <Plugin Name="Contact">
+      <!-- Specification of adhesion energies -->
+      <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+      <Energy Type1="Medium" Type2="MotCell">10.0</Energy>
+      <Energy Type1="Medium" Type2="MotCell2">10.0</Energy>
+      <Energy Type1="MotCell" Type2="MotCell">10.0</Energy>
+      <Energy Type1="MotCell" Type2="MotCell2">10.0</Energy>
+      <Energy Type1="MotCell2" Type2="MotCell2">10.0</Energy>
+      <NeighborOrder>4</NeighborOrder>
+   </Plugin>
+   
+   <Plugin Name="ImplicitMotility">
+        <MotilityEnergyParameters CellType="MotCell" LambdaMotility="20"/>
+        <MotilityEnergyParameters CellType="MotCell2" LambdaMotility="15"/>
+   </Plugin>
+   
+   <Steppable Type="BlobInitializer">
+      
+      <!-- Initial layout of cells in the form of spherical (circular in 2D) blob -->
+      <Region>
+         <Center x="128" y="128" z="128"/>
+         <Radius>51</Radius>
+         <Gap>0</Gap>
+         <Width>7</Width>
+         <Types>MotCell,MotCell2</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>

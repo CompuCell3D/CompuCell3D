@@ -1,0 +1,17 @@
+{
+    "version":"4.0.0",
+    "parameter_list":{
+        "y_dim":{                        
+            "code":"np.arange(165,220,3, dtype=int)"
+        },
+        "steps":{            
+            "code":"list(range(5,11,1))"
+        },
+        "MYVAR":{
+            "code":"np.linspace(0,2.3, 10)"
+        },
+        "MYVAR1":{
+            "values":["'abc1,abc2'","'abc'"]
+        }
+    }
+}

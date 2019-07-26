@@ -1,36 +1,28 @@
-#Steppables 
-
-import CompuCell
-from PySteppables import *
-
-import sys
+from cc3d.core.PySteppables import *
 from random import random
-import types
 
 
 class ContactMultiCadSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=10):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
+    def __init__(self, frequency=10):
+        SteppableBasePy.__init__(self, frequency)
+        self.table = None
 
-        self.contactMultiCadPlugin=CompuCell.getContactMultiCadPlugin()
+    def set_type_contact_energy_table(self, _table):
+        self.table = _table
 
-    def setTypeContactEnergyTable(self,_table):
-        self.table=_table
-        
     def start(self):
-        
-        cMultiCadDataAccessor=self.contactMultiCadPlugin.getContactMultiCadDataAccessorPtr()
 
-        for cell in self.cellList:
-            
-            cMultiCadData=cMultiCadDataAccessor.get(cell.extraAttribPtr)
-            #jVec.set(0,self.table[cell.type])
-            specificityObj=self.table[cell.type]
-            print "cell.type=",cell.type," specificityObj=",specificityObj
-            if isinstance(specificityObj,types.ListType):
-                cMultiCadData.assignValue(0,(specificityObj[1]-specificityObj[0])*random())
-                cMultiCadData.assignValue(1,(specificityObj[1]-specificityObj[0])*random())
+        c_multi_cad_data_accessor = self.contactMultiCadPlugin.getContactMultiCadDataAccessorPtr()
+
+        for cell in self.cell_list:
+
+            c_multi_cad_data = c_multi_cad_data_accessor.get(cell.extraAttribPtr)
+            # jVec.set(0,self.table[cell.type])
+            specificity_obj = self.table[cell.type]
+            print("cell.type=", cell.type, " specificity_obj=", specificity_obj)
+            if isinstance(specificity_obj, list):
+                c_multi_cad_data.assignValue(0, (specificity_obj[1] - specificity_obj[0]) * random())
+                c_multi_cad_data.assignValue(1, (specificity_obj[1] - specificity_obj[0]) * random())
             else:
-                cMultiCadData.assignValue(0,specificityObj)
-                cMultiCadData.assignValue(1,specificityObj/2)
-
+                c_multi_cad_data.assignValue(0, specificity_obj)
+                c_multi_cad_data.assignValue(1, specificity_obj / 2)

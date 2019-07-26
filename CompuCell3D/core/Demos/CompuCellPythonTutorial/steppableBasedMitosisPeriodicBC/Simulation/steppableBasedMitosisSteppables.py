@@ -1,44 +1,51 @@
-from PySteppables import *
-from PySteppablesExamples import MitosisSteppableBase
-import CompuCell
-import sys
-from random import uniform
-import math
+from cc3d.core.PySteppables import *
+
 
 class VolumeParamSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=1):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
+    def __init__(self, frequency=1):
+        SteppableBasePy.__init__(self, frequency)
+
     def start(self):
-        for cell in self.cellList:
-            cell.targetVolume=25
-            cell.lambdaVolume=2.0
-    def step(self,mcs):
-        for cell in self.cellList:
-            cell.targetVolume+=1
+
+        cell_0 = self.new_cell(self.CONDENSING)
+
+        self.cell_field[0:6, 5:26, 0] = cell_0
+        self.cell_field[90:100, 5:26, 0] = cell_0
+
+        for cell in self.cell_list:
+            cell.targetVolume = 25
+            cell.lambdaVolume = 2.0
+
+    def step(self, mcs):
+        for cell in self.cell_list:
+            cell.targetVolume += 1
+
 
 class MitosisSteppable(MitosisSteppableBase):
-    def __init__(self,_simulator,_frequency=1):
-        MitosisSteppableBase.__init__(self,_simulator, _frequency)
-    
-    def step(self,mcs):
-        # print "INSIDE MITOSIS STEPPABLE"
-        cells_to_divide=[]
-        for cell in self.cellList:
-            if cell.volume>50:
-                cells_to_divide.append(cell)   
-                
+    def __init__(self, frequency=1):
+        MitosisSteppableBase.__init__(self, frequency)
+
+    def step(self, mcs):
+
+        cells_to_divide = []
+        for cell in self.cell_list:
+            if cell.volume > 50:
+                cells_to_divide.append(cell)
+
         for cell in cells_to_divide:
             # to change mitosis mode leave one of the below lines uncommented
-            self.divideCellRandomOrientation(cell)                  
-            # self.divideCellOrientationVectorBased(cell,1,1,0)                 # this is a valid option
-            # self.divideCellAlongMajorAxis(cell)          
+            self.divide_cell_random_orientation(cell)
 
-    def updateAttributes(self):
-        self.parentCell.targetVolume /= 2.0 # reducing parent target volume                 
-        self.cloneParent2Child()            
+            # Other valid options
+            # self.divide_cell_orientation_vector_based(cell,1,1,0)
+            # self.divide_cell_along_major_axis(cell)
 
-        if self.parentCell.type==self.CONDENSING:
-            self.childCell.type=self.NONCONDENSING
+    def update_attributes(self):
+        # reducing parent target volume BEFORE clonning attributes
+        self.parent_cell.targetVolume /= 2.0
+        self.clone_parent_2_child()
+
+        if self.parent_cell.type == self.CONDENSING:
+            self.child_cell.type = self.NONCONDENSING
         else:
-            self.childCell.type=self.CONDENSING
-        
+            self.child_cell.type = self.CONDENSING

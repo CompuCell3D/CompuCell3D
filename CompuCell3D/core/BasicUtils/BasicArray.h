@@ -85,7 +85,7 @@ class BasicArray :public std::vector<T>{
   /** 
    * @return The current size of the array.
    */
-  unsigned int getSize() const {return std::vector<T>::size();}
+  size_t getSize() const {return std::vector<T>::size();}
 
   /** 
    * setSize() will increase the array capacity if
@@ -231,7 +231,7 @@ class BasicArray :public std::vector<T>{
    * 
    * @return The index of the new array element.
    */
-  unsigned int put(const T &x) {
+  size_t put(const T &x) {
 	 using namespace std;
 	 std::vector<T>::push_back(x);	
     return std::vector<T>::size()-1;

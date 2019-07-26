@@ -140,10 +140,13 @@ bool SerializerDE::loadCellField(SerializeData &_sd){
 	//    fieldDataReader->SetFileTypeToASCII();
 	fieldDataReader->Update();
 	vtkStructuredPoints *fieldData=fieldDataReader->GetOutput();
+    
+    
 
 	vtkCharArray *typeArray =(vtkCharArray *) fieldData->GetPointData()->GetArray("CellType");
 	vtkLongArray *idArray = (vtkLongArray *) fieldData->GetPointData()->GetArray("CellId");
 	vtkLongArray *clusterIdArray = (vtkLongArray *) fieldData->GetPointData()->GetArray("ClusterId");
+
 	
 	Point3D pt;
 	
@@ -160,7 +163,7 @@ bool SerializerDE::loadCellField(SerializeData &_sd){
 	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
-				type=typeArray->GetValue(offset);
+				type=typeArray->GetValue(offset);                
 				if (!type){
 					++offset;
 					continue;
@@ -168,6 +171,7 @@ bool SerializerDE::loadCellField(SerializeData &_sd){
 
 				cellId=idArray->GetValue(offset);				
 				clusterId=clusterIdArray->GetValue(offset);
+
 
 				if ( existingCellsMap.find(cellId) != existingCellsMap.end() ){
 					//reuse new cell
@@ -655,7 +659,7 @@ bool SerializerDE::loadVectorField(SerializeData &_sd){
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
 
-				fieldArray->GetTupleValue(offset,tuple);
+				fieldArray->GetTypedTuple(offset,tuple);
 
 // 				(*fieldPtr)[pt.x][pt.y][pt.z]=Coordinates3D<float>(tuple[0],tuple[1],tuple[2]) ;
                                 
@@ -789,7 +793,7 @@ bool SerializerDE::loadVectorFieldCellLevel(SerializeData &_sd){
 					if(mitr!=fieldPtr->end()){
 						;
 					}else{
-						fieldArray->GetTupleValue(offset,tuple);
+						fieldArray->GetTypedTuple(offset,tuple);
 						cerr<<"inserting "<<Coordinates3D<float>(tuple[0],tuple[1],tuple[2])<<endl;
 						fieldPtr->insert(make_pair(cell,Coordinates3D<float>(tuple[0],tuple[1],tuple[2])));
 						

@@ -1,7 +1,0 @@
-<Simulation version="3.5.1">
-    <XMLScript>Simulation/helpfile_cellDraw.xml</XMLScript>   
-    <PythonScript>Simulation/helpfile_CellDraw.py</PythonScript>
-    <Resource Type="Python">Simulation/helpfile_steppables_CellDraw.py</Resource>   
-</Simulation>
-
- 
