@@ -2,7 +2,6 @@
 
  <Potts>
    <Dimensions x="100" y="100" z="1"/>
-   <Anneal>0</Anneal>
    <Steps>1000</Steps>
    <Temperature>15</Temperature>   
    <Boundary_x>Periodic</Boundary_x>

@@ -1,10 +1,8 @@
  <CompuCell3D>
  <Potts>
    <Dimensions x="100" y="100" z="1"/>
-   <Anneal>10</Anneal>
    <Steps>10000</Steps>
    <Temperature>5</Temperature>
-   <Flip2DimRatio>1</Flip2DimRatio>
    <NeighborOrder>2</NeighborOrder>
    <MetropolisAlgorithm>BoundaryWalker</MetropolisAlgorithm>
    <Boundary_x>Periodic</Boundary_x>

@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
-from fancy_slider import FancySlider
-from fancy_combo import FancyCombo
+from .fancy_slider import FancySlider
+from .fancy_combo import FancyCombo
 
 
 class SteeringEditorDelegate(QStyledItemDelegate):

@@ -247,7 +247,7 @@ class ScreenshotManagerCore(object):
         scr_data_container = root_elem['ScreenshotData']
 
         # will replace it with a dict, for now leaving it as an if statement
-        if version=='3.7.9':
+        if version in ['3.7.9','3.7.10']:
             self.readScreenshotDescriptionFile_JSON_379(scr_data_container)
         else:
             raise RuntimeError('Unknown version of screenshot description: {}'.format(version))

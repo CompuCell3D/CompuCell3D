@@ -622,7 +622,8 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         tvw = self.parentWidget()
         print 'UPDATE getGraphicsWindowData'
 
-        from GraphicsWindowData import GraphicsWindowData
+        from .GraphicsWindowData import GraphicsWindowData
+        # import Graphics
         gwd = GraphicsWindowData()
         activeCamera = self.getActiveCamera()
         # gwd.camera = self.getActiveCamera()

@@ -539,7 +539,11 @@ def main_debug_win():
     # cml_parser.arg('--help')
     cml_parser.arg('--input', r'D:\CC3DProjects\optimization_demo\optimization_demo.cc3d')
     cml_parser.arg('--params-file', r'D:\CC3DProjects\optimization_demo\Simulation\params.json')
-    cml_parser.arg('--cc3d-run-script', r'd:\Program Files\376\runScript.bat')
+    # cml_parser.arg('--cc3d-run-script', r'd:\Program Files\376\runScript.bat')
+    # cml_parser.arg('--cc3d-run-script', r'd:\Program Files\376\compucell3d.bat')
+    # cml_parser.arg('--cc3d-run-script', r'd:\Program Files\3710\runScript.bat')
+    cml_parser.arg('--cc3d-run-script', r'c:\CompuCell3D-64bit\runScript.bat')
+    # cml_parser.arg('--cc3d-run-script', r'c:\CompuCell3D-64bit\compucell3d.bat')
     cml_parser.arg('--clean-workdirs')
     cml_parser.arg('--num-workers', '1')  # here it needs to be specified as str but parser converts it to int
     cml_parser.arg('--population-size', '6')  # here it needs to be specified as str but parser converts it to int
