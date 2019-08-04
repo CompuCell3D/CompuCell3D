@@ -1,0 +1,5 @@
+<Simulation version="4.0.0">
+   <XMLScript Type="XMLScript">Simulation/HeterotypicBoundarySurface.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/HeterotypicBoundarySurface.py</PythonScript>
+   <Resource Type="Python">Simulation/HeterotypicBoundarySurfaceSteppables.py</Resource>
+</Simulation>
