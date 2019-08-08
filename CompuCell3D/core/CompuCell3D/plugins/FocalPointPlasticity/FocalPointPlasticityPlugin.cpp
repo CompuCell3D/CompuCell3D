@@ -1247,7 +1247,9 @@ void FocalPointPlasticityPlugin::deleteInternalFocalPointPlasticityLink(CellG * 
 
 }
 void FocalPointPlasticityPlugin::createFocalPointPlasticityLink(CellG * _cell1,CellG * _cell2,double _lambda, double _targetDistance,double _maxDistance){
-	FocalPointPlasticityTrackerData fpptd1=plastParamsArray[_cell1->type][_cell2->type];
+//	FocalPointPlasticityTrackerData fpptd1=plastParamsArray[_cell1->type][_cell2->type];
+
+	FocalPointPlasticityTrackerData fpptd1;
 	fpptd1.targetDistance=_targetDistance;
 	fpptd1.lambdaDistance=_lambda;
 	fpptd1.maxDistance=_maxDistance;			
@@ -1256,7 +1258,8 @@ void FocalPointPlasticityPlugin::createFocalPointPlasticityLink(CellG * _cell1,C
 	focalPointPlasticityTrackerAccessor.get(_cell1->extraAttribPtr)->focalPointPlasticityNeighbors.insert(fpptd1);
 
 
-	FocalPointPlasticityTrackerData fpptd2=plastParamsArray[_cell2->type][_cell1->type];
+//	FocalPointPlasticityTrackerData fpptd2=plastParamsArray[_cell2->type][_cell1->type];
+    FocalPointPlasticityTrackerData fpptd2;
 	fpptd2.targetDistance=_targetDistance;
 	fpptd2.lambdaDistance=_lambda;
 	fpptd2.maxDistance=_maxDistance;			
@@ -1269,7 +1272,8 @@ void FocalPointPlasticityPlugin::createFocalPointPlasticityLink(CellG * _cell1,C
 }
 
 void FocalPointPlasticityPlugin::createInternalFocalPointPlasticityLink(CellG * _cell1,CellG * _cell2,double _lambda, double _targetDistance,double _maxDistance){
-	FocalPointPlasticityTrackerData fpptd1=internalPlastParamsArray[_cell1->type][_cell2->type];
+//	FocalPointPlasticityTrackerData fpptd1=internalPlastParamsArray[_cell1->type][_cell2->type];
+    FocalPointPlasticityTrackerData fpptd1;
 	fpptd1.targetDistance=_targetDistance;
 	fpptd1.lambdaDistance=_lambda;
 	fpptd1.maxDistance=_maxDistance;			
@@ -1278,7 +1282,8 @@ void FocalPointPlasticityPlugin::createInternalFocalPointPlasticityLink(CellG * 
 	focalPointPlasticityTrackerAccessor.get(_cell1->extraAttribPtr)->internalFocalPointPlasticityNeighbors.insert(fpptd1);
 
 
-	FocalPointPlasticityTrackerData fpptd2=internalPlastParamsArray[_cell2->type][_cell1->type];
+//	FocalPointPlasticityTrackerData fpptd2=internalPlastParamsArray[_cell2->type][_cell1->type];
+    FocalPointPlasticityTrackerData fpptd2;
 	fpptd2.targetDistance=_targetDistance;
 	fpptd2.lambdaDistance=_lambda;
 	fpptd2.maxDistance=_maxDistance;			
