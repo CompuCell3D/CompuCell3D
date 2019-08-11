@@ -13,7 +13,7 @@ def decode(filename,max_lines=-1):
         use_max_line = True
 
     detector = UniversalDetector()
-
+    i = 0
     for i, line in enumerate(open(filename, 'rb')):
         detector.feed(line)
         if detector.done: break
@@ -22,4 +22,5 @@ def decode(filename,max_lines=-1):
     detector.close()
     print('detector.result')
     print('scanned lines i= ', i)
+
     return detector.result['encoding']
