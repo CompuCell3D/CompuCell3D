@@ -1202,7 +1202,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
             if key in no_clone_key_dict_list:
                 continue
-
+            elif key == '__sbml_fetcher':
+                # we are skipping copying of SWIG-added attribute
+                # SBMLFetcher - this is added by default during cell creation
+                # co no need to copy
+                continue
             elif key == 'SBMLSolver':
                 self.copy_sbml_simulators(from_cell=source_cell, to_cell=target_cell)
             else:
