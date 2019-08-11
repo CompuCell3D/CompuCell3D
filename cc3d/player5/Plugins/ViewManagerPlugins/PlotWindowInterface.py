@@ -107,7 +107,7 @@ class PlotWindowInterface(QtCore.QObject):
 
     def set_title_handler(self, title):
         self.title = str(title)
-        self.pW.set_title(title)
+        self.pW.setTitle(title)
 
     @deprecated(version='4.0.0', reason="You should use : set_title")
     def setTitle(self, _title):
