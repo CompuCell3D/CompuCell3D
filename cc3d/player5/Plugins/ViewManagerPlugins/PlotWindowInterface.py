@@ -107,7 +107,7 @@ class PlotWindowInterface(QtCore.QObject):
 
     def set_title_handler(self, title):
         self.title = str(title)
-        self.pW.set_title(title)
+        self.pW.setTitle(title)
 
     @deprecated(version='4.0.0', reason="You should use : set_title")
     def setTitle(self, _title):
@@ -320,7 +320,7 @@ class PlotWindowInterface(QtCore.QObject):
 
     def add_data_point(self, plot_name, x, y):
 
-        print('add_data_point: self.plotData=', self.plotData)
+        # print('add_data_point: self.plotData=', self.plotData)
 
         if plot_name not in list(self.plotData.keys()):
             return
@@ -358,7 +358,7 @@ class PlotWindowInterface(QtCore.QObject):
 
         self.plotData[plot_name][self.dirtyFlagIndex] = True
 
-        print('exit add_data_point: self.plotData=', self.plotData)
+        # print('exit add_data_point: self.plotData=', self.plotData)
 
     def get_drawing_objects_settings(self, plot_name:str):
         """

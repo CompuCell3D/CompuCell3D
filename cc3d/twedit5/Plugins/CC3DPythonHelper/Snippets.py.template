@@ -298,6 +298,12 @@ for neighbor, common_surface_area in self.get_cell_neighbor_data_list(cell):
     else:
         print("Medium commonSurfaceArea=", common_surface_area)
 
+----------  # @Submenu@ Cells In Cluster (compartments)
+fo cell in self.cell_list:
+    cluster_cell_list = self.get_cluster_cells(cell.clusterId)
+    for cell_cmpt in cluster_cell_list:
+        print('compartmental cell id=', cell_cmpt)
+
 ----------  # @Submenu@ Cell Boundary Pixels
 # Make sure BoundaryPixelTracker plugin is loaded
 pixel_list = self.get_cell_boundary_pixel_list(cell)

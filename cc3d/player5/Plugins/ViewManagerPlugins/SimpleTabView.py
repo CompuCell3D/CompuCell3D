@@ -856,6 +856,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
         print("processIncommingSimulation = ", _fileName, ' _stopCurrentSim=', _stopCurrentSim)
+        persistent_globals = CompuCellSetup.persistent_globals
         if _stopCurrentSim:
             startNewSimulation = False
             if not self.simulationIsRunning and not self.simulationIsStepping:
@@ -863,17 +864,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             self.__stopSim()
 
-            import os
-
             self.__sim_file_name = os.path.abspath(str(_fileName))  # normalizing path
-            import CompuCellSetup
 
-            CompuCellSetup.simulationFileName = self.__sim_file_name
+            self.__sim_file_name = os.path.abspath(self.__sim_file_name)
+            persistent_globals.simulation_file_name = os.path.abspath(self.__sim_file_name)
+
+            # CompuCellSetup.simulationFileName = self.__sim_file_name
 
             if startNewSimulation:
                 self.__runSim()
         else:
             self.__sim_file_name = _fileName
+            persistent_globals.simulation_file_name = os.path.abspath(self.__sim_file_name)
             self.nextSimulation = _fileName
 
         self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=str(_fileName))

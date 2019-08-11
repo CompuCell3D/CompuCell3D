@@ -1,17 +1,12 @@
-import argparse
 import traceback
 import cc3d
 import sys
 from os.path import *
-
-# import cc3d.CompuCellSetup as CompuCellSetup
 from cc3d import CompuCellSetup
-
 from cc3d.CompuCellSetup.readers import readCC3DFile
 from cc3d.CompuCellSetup.simulation_utils import CC3DCPlusPlusError
 
 
-#
 def handle_error(exception_obj):
     """
 
@@ -20,19 +15,20 @@ def handle_error(exception_obj):
     simthread = CompuCellSetup.persistent_globals.simthread
     sim = CompuCellSetup.persistent_globals.simulator
     steppable_registry = CompuCellSetup.persistent_globals.steppable_registry
+
+    if sim is not None:
+        sim.cleanAfterSimulation()
+
     # printing c++ error
     if isinstance(exception_obj, CC3DCPlusPlusError):
-        simthread.emitErrorFormatted('Error: '+ str(exception_obj))
-        if sim is not None:
-            sim.cleanAfterSimulation()
+        simthread.emitErrorFormatted('Error: ' + str(exception_obj))
 
-            # # sim.unloadModules()
-            print("CALLING UNLOAD MODULES NEW PLAYER")
-            if simthread is not None:
-                simthread.sendStopSimulationRequest()
-                simthread.simulationFinishedPostEvent(True)
-            if steppable_registry is not None:
-                steppable_registry.clean_after_simulation()
+        print("CALLING UNLOAD MODULES NEW PLAYER")
+        if simthread is not None:
+            simthread.sendStopSimulationRequest()
+            simthread.simulationFinishedPostEvent(True)
+        if steppable_registry is not None:
+            steppable_registry.clean_after_simulation()
 
         return
 
@@ -46,7 +42,6 @@ def handle_error(exception_obj):
     traceback_text += tb
 
     if simthread is not None:
-        # simthread.emitErrorOccured('Python Error', tb)
         simthread.emitErrorFormatted(traceback_text)
 
 
@@ -89,8 +84,3 @@ def run_cc3d_project(cc3d_sim_fname):
             except Exception as e:
                 traceback.print_exc(file=sys.stdout)
                 handle_error(e)
-
-            # traceback.format_stack()
-            # # traceback.format_exc()
-            # # print(traceback.format_stack())
-            # traceback.print_tb()
