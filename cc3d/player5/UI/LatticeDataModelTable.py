@@ -63,7 +63,7 @@ class LatticeDataModelTable(QTableView):
         # print '__pickAndAdvanceMCSDirect idx=',idx
         # print 'self.vm.simulation=',self.vm.simulation
         self.vm.simulation.set_current_step_direct_access(idx.row())
-        self.vm.stepAct.trigger()
+        self.vm.step_act.trigger()
     
     def __pickMCSDirect(self, idx):
         # First, get the row number based on the idx (instance of QModelIndex)

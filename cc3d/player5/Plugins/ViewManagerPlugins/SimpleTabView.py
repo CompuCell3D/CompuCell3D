@@ -2412,14 +2412,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # Add cell field
         self.fieldTypes["Cell_Field"] = FIELD_TYPES[0]  # "CellField"
 
-        self.fieldComboBox.clear()
-        # self.fieldComboBox.addItem("-- Field Type --")
-        self.fieldComboBox.addItem("Cell_Field")
+        # self.fieldComboBox.clear()
+        # # self.fieldComboBox.addItem("-- Field Type --")
+        # self.fieldComboBox.addItem("Cell_Field")
 
         for fieldName in list(self.simulation.fieldsUsed.keys()):
             if fieldName != "Cell_Field":
                 self.fieldTypes[fieldName] = self.simulation.fieldsUsed[fieldName]
-                self.fieldComboBox.addItem(fieldName)
+                # self.fieldComboBox.addItem(fieldName)
 
     def setFieldTypes(self):
         '''
