@@ -2412,22 +2412,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # Add cell field
         self.fieldTypes["Cell_Field"] = FIELD_TYPES[0]  # "CellField"
 
-        self.fieldComboBox.clear()
-        # self.fieldComboBox.addItem("-- Field Type --")
-        self.fieldComboBox.addItem("Cell_Field")
 
         for fieldName in list(self.simulation.fieldsUsed.keys()):
             if fieldName != "Cell_Field":
                 self.fieldTypes[fieldName] = self.simulation.fieldsUsed[fieldName]
-                self.fieldComboBox.addItem(fieldName)
 
     def setFieldTypes(self):
         '''
         initializes field types for VTK vidgets during regular simulation
         :return:None
         '''
-        # Add cell field
-        #        self.fieldTypes = {}
         simObj = self.mysim()
         if not simObj: return
 
@@ -2449,29 +2443,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         for field_name, field_adapter in field_dict.items():
             self.fieldTypes[field_name] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[field_adapter.field_type]
 
-        # # inserting extra scalar fields managed from Python script
-        # scalarFieldNameVec = self.fieldStorage.getScalarFieldNameVector()
-        # for fieldName in scalarFieldNameVec:
-        #     #            print MODULENAME,"setFieldTypes():  Got this scalar field: ",fieldName
-        #     self.fieldTypes[fieldName] = FIELD_TYPES[2]
-        #
-        # # inserting extra scalar fields cell levee managed from Python script
-        # scalarFieldCellLevelNameVec = self.fieldStorage.getScalarFieldCellLevelNameVector()
-        # for fieldName in scalarFieldCellLevelNameVec:
-        #     #            print MODULENAME,"setFieldTypes():  Got this scalar field (cell leve): ",fieldName
-        #     self.fieldTypes[fieldName] = FIELD_TYPES[3]
-        #
-        # # inserting extra vector fields  managed from Python script
-        # vectorFieldNameVec = self.fieldStorage.getVectorFieldNameVector()
-        # for fieldName in vectorFieldNameVec:
-        #     #            print MODULENAME,"setFieldTypes():  Got this vector field: ",fieldName
-        #     self.fieldTypes[fieldName] = FIELD_TYPES[4]
-        #
-        # # inserting extra vector fields  cell level managed from Python script
-        # vectorFieldCellLevelNameVec = self.fieldStorage.getVectorFieldCellLevelNameVector()
-        # for fieldName in vectorFieldCellLevelNameVec:
-        #     #            print MODULENAME,"setFieldTypes():  Got this vector field (cell level): ",fieldName
-        #     self.fieldTypes[fieldName] = FIELD_TYPES[5]
         #
         # # todo 5 - handle custom visualizations
         # # # inserting custom visualization
