@@ -1,0 +1,5 @@
+<Simulation version="4.0.0">
+   <XMLScript Type="XMLScript">Simulation/XML_Template_TumorVasc3D_Movie_08052009_01_45_36.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/angio_growth_08052009_01_45_36.py</PythonScript>
+   <Resource Type="Python">Simulation/angio_growth_steppables_08052009_01_45_36.py</Resource>
+</Simulation>
