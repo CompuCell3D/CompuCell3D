@@ -7,8 +7,6 @@ class VolumeParamSteppable(SteppableBasePy):
         self.area_thresh = None
         self.nutrient_thresh = None
         self.necrotic_thresh = None
-        self.fieldNameNeoVascular = 'VEGF2'
-        self.fieldNameNormal = 'Oxygen'
 
     def set_params(self, area_thresh=0, nutrient_thresh=0, necrotic_thresh=0):
 
