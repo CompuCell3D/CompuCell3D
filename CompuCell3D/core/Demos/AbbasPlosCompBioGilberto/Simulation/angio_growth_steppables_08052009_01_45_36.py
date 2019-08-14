@@ -4,20 +4,20 @@ from cc3d.core.PySteppables import *
 class VolumeParamSteppable(SteppableBasePy):
     def __init__(self, frequency=1):
         SteppableBasePy.__init__(self, frequency)
-        self.areaThresh = None
-        self.nutrientThresh = None
-        self.necroticThresh = None
+        self.area_thresh = None
+        self.nutrient_thresh = None
+        self.necrotic_thresh = None
         self.fieldNameNeoVascular = 'VEGF2'
         self.fieldNameNormal = 'Oxygen'
-        # self.output_file = open("CellDiffusionData_08052009_01_45_36.txt",'w')
 
-    def set_params(self, areaThresh=0, nutrientThresh=0, necroticThresh=0):
+    def set_params(self, area_thresh=0, nutrient_thresh=0, necrotic_thresh=0):
 
-        self.areaThresh = areaThresh
-        self.nutrientThresh = nutrientThresh
-        self.necroticThresh = necroticThresh
+        self.area_thresh = area_thresh
+        self.nutrient_thresh = nutrient_thresh
+        self.necrotic_thresh = necrotic_thresh
 
     def start(self):
+
         for cell in self.cellList:
             if cell.type == 4 or cell.type == 5 or cell.type == 6:
                 cell.targetVolume = 60
@@ -32,94 +32,70 @@ class VolumeParamSteppable(SteppableBasePy):
 
     def step(self, mcs):
 
-        fieldNeoVasc = CompuCell.getConcentrationField(self.simulator, self.fieldNameNeoVascular)
-        fieldMalig = CompuCell.getConcentrationField(self.simulator, self.fieldNameNormal)
+        field_neo_vasc = self.field.VEGF2
+        field_malig = self.field.Oxygen
 
         for cell in self.cellList:
 
             # Inactive neovascular differentiation
             if cell.type == 6:
-                totalArea = 0
-                pt = CompuCell.Point3D()
-                pt.x = int(round(cell.xCM / max(float(cell.volume), 0.001)))
-                pt.y = int(round(cell.yCM / max(float(cell.volume), 0.001)))
-                pt.z = int(round(cell.zCM / max(float(cell.volume), 0.001)))
-                concentration = fieldNeoVasc.get(pt)
+                total_area = 0
+                x = int(round(cell.xCM / max(float(cell.volume), 0.001)))
+                y = int(round(cell.yCM / max(float(cell.volume), 0.001)))
+                z = int(round(cell.zCM / max(float(cell.volume), 0.001)))
+
+                concentration = field_neo_vasc[x, y, z]
                 if concentration > 0.5:
 
-                    # cellNeighborList = CellNeighborListAuto(self.nTrackerPlugin, cell)
                     neighbor_list = self.get_cell_neighbor_data_list(cell)
                     for neighbor, common_surface_area in neighbor_list:
                         if neighbor:
                             if neighbor.type in [5, 6, 7]:
-                                totalArea += common_surface_area
-
-                    # for neighborSurfaceData in cellNeighborList:
-                    #     # Check to ensure cell neighbor is not medium
-                    #     if neighborSurfaceData.neighborAddress:
-                    #         if (neighborSurfaceData.neighborAddress.type == 5
-                    #                 or neighborSurfaceData.neighborAddress.type == 6
-                    #                 or neighborSurfaceData.neighborAddress.type == 7):
-                    #             # sum up common surface area of cell with its neighbors
-                    #             totalArea += neighborSurfaceData.commonSurfaceArea
-
-                    print(cell.type, totalArea)
-                    if totalArea < 70:
+                                total_area += common_surface_area
+                    print(cell.type, total_area)
+                    if total_area < 70:
                         # Growth rate equation
                         cell.targetVolume += 0.06 * concentration / (0.5 + concentration)
                         cell.targetSurface += 0.15 * concentration / (0.5 + concentration)
-                        # print 0.02*concentration/(0.5 + concentration)+0.04
 
             ## Active neovascular growth
             if cell.type == 4:
-                totalArea = 0
-                pt = CompuCell.Point3D()
-                pt.x = int(round(cell.xCM / max(float(cell.volume), 0.00000001)))
-                pt.y = int(round(cell.yCM / max(float(cell.volume), 0.00000001)))
-                pt.z = int(round(cell.zCM / max(float(cell.volume), 0.00000001)))
-                concentration = fieldNeoVasc.get(pt)
+                total_area = 0
+
+                x = int(round(cell.xCM / max(float(cell.volume), 0.00000001)))
+                y = int(round(cell.yCM / max(float(cell.volume), 0.00000001)))
+                z = int(round(cell.zCM / max(float(cell.volume), 0.00000001)))
+
+                concentration = field_neo_vasc[x, y, z]
+
                 if concentration > 0.5:
                     neighbor_list = self.get_cell_neighbor_data_list(cell)
                     for neighbor, common_surface_area in neighbor_list:
                         if neighbor:
                             if neighbor.type in [5, 6, 7]:
-                                totalArea += common_surface_area
+                                total_area += common_surface_area
 
-                    # cellNeighborList = CellNeighborListAuto(self.nTrackerPlugin, cell)
-                    # for neighborSurfaceData in cellNeighborList:
-                    #     # Check to ensure cell neighbor is not medium
-                    #     if neighborSurfaceData.neighborAddress:
-                    #         if (neighborSurfaceData.neighborAddress.type == 5
-                    #                 or neighborSurfaceData.neighborAddress.type == 7
-                    #                 or neighborSurfaceData.neighborAddress.type == 6):
-                    #             # sum up common surface area of cell with its neighbors
-                    #             totalArea += neighborSurfaceData.commonSurfaceArea
-                    #             # print "concentration: ", concentration,"  commonSurfaceArea:",neighborSurfaceData.commonSurfaceArea
-                    # print cell.type,totalArea
-                    if totalArea < 50:
+                    if total_area < 50:
                         # Growth rate equation
-                        # print cell.type,"##surface area",cell.surface,"##cell volume:",cell.volume,"##cell target volume:",cell.targetVolume,"##common surface area:",totalArea
+
                         cell.targetVolume += 0.06 * concentration / (0.5 + concentration)
                         cell.targetSurface += 0.15 * concentration / (0.5 + concentration)
-                        ##print 0.02*concentration/(0.5 + concentration)+0.04
 
             # Malignat and Hypoxic Cells growth
             if cell.type == 1 or cell.type == 2:
-                # print cell.volume
 
-                pt = CompuCell.Point3D()
-                pt.x = int(round(cell.xCM / max(float(cell.volume), 0.001)))
-                pt.y = int(round(cell.yCM / max(float(cell.volume), 0.001)))
-                pt.z = int(round(cell.zCM / max(float(cell.volume), 0.001)))
-                # self.output_file.write("%f %f %f " %(cell.xCM/cell.volume, cell.yCM/cell.volume,cell.zCM/cell.volume))
+                x = int(round(cell.xCM / max(float(cell.volume), 0.001)))
+                y = int(round(cell.yCM / max(float(cell.volume), 0.001)))
+                z = int(round(cell.zCM / max(float(cell.volume), 0.001)))
 
-                concentration2 = fieldMalig.get(pt)
+                concentration2 = field_malig[x, y, z]
+
                 # switch to Hypoxic cell type
-                if (concentration2 < self.nutrientThresh and mcs > 100):
+                if concentration2 < self.nutrient_thresh and mcs > 100:
                     cell.type = 2
 
                 # switch to Necrotic cell type
-                if concentration2 < self.necroticThresh and mcs > 100:
+                if concentration2 < self.necrotic_thresh and mcs > 100:
                     cell.type = 3
 
                 # set growth rate equation
@@ -129,17 +105,17 @@ class VolumeParamSteppable(SteppableBasePy):
 
             # Hypoxic Cells
             if cell.type == 2:
-                # print " #Hypoxic Volume: ", cell.volume
-                pt = CompuCell.Point3D()
-                pt.x = int(round(cell.xCM / max(float(cell.volume), 0.001)))
-                pt.y = int(round(cell.yCM / max(float(cell.volume), 0.001)))
-                pt.z = int(round(cell.zCM / max(float(cell.volume), 0.001)))
-                concentration3 = fieldMalig.get(pt)
+                x = int(round(cell.xCM / max(float(cell.volume), 0.001)))
+                y = int(round(cell.yCM / max(float(cell.volume), 0.001)))
+                z = int(round(cell.zCM / max(float(cell.volume), 0.001)))
+
+                concentration3 = field_malig[x, y, z]
+
                 # switch to Necrotic cell type
-                if (concentration3 < self.necroticThresh and mcs > 100):
+                if concentration3 < self.necrotic_thresh and mcs > 100:
                     cell.type = 3
                 # switch to Normal cell type
-                if (concentration3 > self.nutrientThresh):
+                if concentration3 > self.nutrient_thresh:
                     cell.type = 1
 
             # Necrotic Cells
@@ -148,19 +124,11 @@ class VolumeParamSteppable(SteppableBasePy):
                 cell.targetVolume -= 0.5
                 cell.lambdaSurface = 0
 
-    # self.output_file.write("\n")
-    # #
-    # #
-
 
 class MitosisSteppable(MitosisSteppableBase):
     def __init__(self, frequency=1):
         MitosisSteppableBase.__init__(self, frequency)
         self.doublingVolumeDict = None
-        # # 0 - parent child position will be randomized between mitosis event
-        # # negative integer - parent appears on the 'left' of the child
-        # # positive integer - parent appears on the 'right' of the child
-        # self.set_parent_child_position_flag(-1)
 
     def set_params(self, doublingVolumeDict):
         self.doublingVolumeDict = doublingVolumeDict
@@ -181,12 +149,7 @@ class MitosisSteppable(MitosisSteppableBase):
                 cells_to_divide.append(cell)
 
         for cell in cells_to_divide:
-            # to change mitosis mode leave one of the below lines uncommented
             self.divide_cell_random_orientation(cell)
-            # Other valid options
-            # self.divide_cell_orientation_vector_based(cell,1,1,0)
-            # self.divide_cell_along_major_axis(cell)
-            # self.divide_cell_along_minor_axis(cell)
 
     def update_attributes(self):
 
