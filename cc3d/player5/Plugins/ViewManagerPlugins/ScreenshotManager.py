@@ -24,7 +24,8 @@ class ScreenshotManager(ScreenshotManagerCore):
         self.basicSimulationData = tvw.basicSimulationData
         self.screenshot_number_of_digits = len(str(self.basicSimulationData.numberOfSteps))
 
-        self.maxNumberOfScreenshots = 20  # we limit max number of screenshots to discourage users from using screenshots as their main analysis tool
+        # we limit max number of screenshots to discourage users from using screenshots as their main analysis tool
+        self.maxNumberOfScreenshots = 20
 
         self.screenshotGraphicsWidget = None
 
@@ -254,4 +255,4 @@ class ScreenshotManager(ScreenshotManagerCore):
 
             self.gd.clear_display()
             self.gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)
-            self.gd.output_screenshot(screenshot_fname=screenshot_fname)
+            self.gd.output_screenshot(screenshot_fname=screenshot_fname, file_format="png")

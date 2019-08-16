@@ -25,6 +25,7 @@
 
 import cc3d.player5.Configuration as Configuration
 import vtk
+from os.path import splitext
 from cc3d.core.enums import *
 from copy import deepcopy
 from .MVCDrawView2D import MVCDrawView2D
@@ -35,8 +36,8 @@ from .Specs import ActorSpecs
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
 from .DrawingParameters import DrawingParameters
 
-
 MODULENAME = '---- GraphicsFrameWidget.py: '
+
 
 class GenericDrawer():
     def __init__(self, parent=None, originatingWidget=None):
@@ -83,7 +84,7 @@ class GenericDrawer():
         # # recent screenshot description data
         # self.recent_screenshot_data = None
 
-    def set_pixelized_cartesian_scene(self, flag: bool)->None:
+    def set_pixelized_cartesian_scene(self, flag: bool) -> None:
         """
         Enables pixelized cartesian scene
         :param flag:
@@ -103,9 +104,7 @@ class GenericDrawer():
         # if self.recent_screenshot_data is not None and self.recent_bsd is not None:
         #     self.draw(screenshot_data=self.recent_screenshot_data,bsd=self.recent_bsd)
 
-
-
-    def set_interactive_camera_flag(self,flag):
+    def set_interactive_camera_flag(self, flag):
         """
         sets flag that allows resetting of camera parameters during each draw function. for
         Interactive model when GenericDrwer is called form the GUI this should be set to False
@@ -151,9 +150,9 @@ class GenericDrawer():
         usedCellTypesList = self.field_extractor.fillCellFieldData3D(cellTypeIntAddr, cellIdIntAddr)
 
         ret_val = {
-            'cell_type_array':cellType,
-            'cell_id_array':cellId,
-            'used_cell_types':usedCellTypesList
+            'cell_type_array': cellType,
+            'cell_id_array': cellId,
+            'used_cell_types': usedCellTypesList
         }
         return ret_val
 
@@ -174,14 +173,13 @@ class GenericDrawer():
 
         actor_specs = ActorSpecs()
 
-        actor_specs_final = view.prepare_vector_field_actors(actor_specs=actor_specs,drawing_params=drawing_params)
+        actor_specs_final = view.prepare_vector_field_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
         model.init_vector_field_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
 
-        view.show_vector_field_actors(actor_specs=actor_specs_final,drawing_params=drawing_params)
+        view.show_vector_field_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
 
-
-    def draw_concentration_field(self,drawing_params):
+    def draw_concentration_field(self, drawing_params):
         """
         Draws concentration field
         :param drawing_params: {DrawingParameters}
@@ -192,12 +190,12 @@ class GenericDrawer():
 
         actor_specs = ActorSpecs()
 
-        actor_specs_final = view.prepare_concentration_field_actors(actor_specs=actor_specs,drawing_params=drawing_params)
+        actor_specs_final = view.prepare_concentration_field_actors(actor_specs=actor_specs,
+                                                                    drawing_params=drawing_params)
 
         model.init_concentration_field_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
 
-        view.show_concentration_field_actors(actor_specs=actor_specs_final,drawing_params=drawing_params)
-
+        view.show_concentration_field_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
 
     def draw_cell_field(self, drawing_params):
         """
@@ -219,8 +217,8 @@ class GenericDrawer():
 
         # todo 5 - get max cell type here
         actor_specs.metadata = {
-            'invisible_types':drawing_params.screenshot_data.invisible_types,
-            'all_types':list(range(max_cell_type_used+1))
+            'invisible_types': drawing_params.screenshot_data.invisible_types,
+            'all_types': list(range(max_cell_type_used + 1))
         }
 
         # actors_dict = view.getActors(actor_label_list=['cellsActor'])
@@ -274,14 +272,13 @@ class GenericDrawer():
         model.init_fpp_links_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
         view.show_fpp_links_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
 
-
     def draw_bounding_box(self, drawing_params):
         model, view = self.get_model_view(drawing_params=drawing_params)
 
         actor_specs = ActorSpecs()
         actor_specs_final = view.prepare_outline_actors(actor_specs=actor_specs)
 
-        model.init_outline_actors(actor_specs=actor_specs_final,drawing_params=drawing_params)
+        model.init_outline_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
         show_flag = drawing_params.screenshot_data.bounding_box_on
         view.show_outline_actors(actor_specs=actor_specs_final, drawing_params=drawing_params, show_flag=show_flag)
 
@@ -296,11 +293,9 @@ class GenericDrawer():
         else:
             actor_specs_final.metadata['camera'] = camera
 
-
-        model.init_axes_actors(actor_specs=actor_specs_final,drawing_params=drawing_params)
+        model.init_axes_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
         show_flag = drawing_params.screenshot_data.lattice_axes_on
         view.show_axes_actors(actor_specs=actor_specs_final, drawing_params=drawing_params, show_flag=show_flag)
-
 
     def get_model_view(self, drawing_params):
         # type: (DrawingParameters) -> (MVCDrawModelBase,MVCDrawViewBase)
@@ -347,14 +342,13 @@ class GenericDrawer():
             key = drawing_params.fieldType
             draw_fcn = self.drawing_fcn_dict[key]
         except KeyError:
-            if str(key).strip() !='':
+            if str(key).strip() != '':
                 print('Could not find function for {}'.format(key))
             draw_fcn = None
 
         if draw_fcn is not None:
             # removing all current actors
             view.clear_scene()
-
 
             draw_fcn(drawing_params=drawing_params)
 
@@ -382,7 +376,6 @@ class GenericDrawer():
                 except NotImplementedError:
                     pass
 
-
             if drawing_params.screenshot_data.bounding_box_on:
                 try:
                     self.draw_bounding_box(drawing_params=drawing_params)
@@ -394,8 +387,6 @@ class GenericDrawer():
                     self.draw_axes(drawing_params=drawing_params)
                 except NotImplementedError:
                     pass
-
-
 
             # setting camera
             # if screenshot_data.spaceDimension == '3D':
@@ -428,7 +419,7 @@ class GenericDrawer():
             # writer.SetInputConnection(windowToImageFilter.GetOutputPort())
             # writer.Write()
 
-    def output_screenshot(self, screenshot_fname):
+    def output_screenshot(self, screenshot_fname, file_format='png'):
         """
         Saves scene rendered in the renderer to the image
         :param ren: {vtkRenderer} renderer
@@ -446,14 +437,20 @@ class GenericDrawer():
         windowToImageFilter.SetInput(renWin)
         windowToImageFilter.Update()
 
-        writer = vtk.vtkPNGWriter()
+        if file_format.lower() == 'png':
+            writer = vtk.vtkPNGWriter()
+        elif file_format.lower() == 'tiff':
+            writer = vtk.vtkTIFFWriter()
+            screenshot_fname = splitext(screenshot_fname)[0] + '.tif'
+        else:
+            writer = vtk.vtkPNGWriter()
+
         # writer.SetFileName('D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
         #     screenshot_name=screenshot_fname))
         writer.SetFileName(screenshot_fname)
 
         writer.SetInputConnection(windowToImageFilter.GetOutputPort())
         writer.Write()
-
 
     # def output_screenshot(self,ren, screenshot_fname):
     #     """
