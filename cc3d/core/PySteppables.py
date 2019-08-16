@@ -739,7 +739,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                 self.cell_field[0:self.dim.x, 0, 0] = cell
                 self.cell_field[0:self.dim.x, self.dim.y - 1:self.dim.y, 0] = cell
                 self.cell_field[0, 0:self.dim.y, 0] = cell
-                self.cell_field[self.dim.x - 1:self.dim.x, 0:self.dim.y, 0:0] = cell
+                self.cell_field[self.dim.x - 1:self.dim.x, 0:self.dim.y, 0] = cell
 
             elif index_of1 == 0:
                 # yz simulation
