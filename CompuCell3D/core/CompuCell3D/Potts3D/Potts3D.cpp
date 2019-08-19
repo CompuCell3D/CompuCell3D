@@ -281,6 +281,745 @@ void Potts3D::registerConnectivityConstraint(EnergyFunction * _connectivityConst
 
 EnergyFunction * Potts3D::getConnectivityConstraint() { return connectivityConstraint; }
 
+bool Potts3D::localConectivityAlgorithm(Point3D changePixel, Point3D flipNeighbor)
+{
+	
+	return (this->*localConPtr)(changePixel, flipNeighbor);
+	
+	//change goes from flip to change
+	
+	/*
+	bool localConected = true;
+	
+	
+	CellG *changeCell = cellFieldG->get(changePixel);
+
+	CellG *flipCell = cellFieldG->get(flipNeighbor);
+
+	CellG *nCell = 0;
+
+	Neighbor neighbor;
+
+	
+
+	// check conectivity
+
+	for (unsigned int nIdx = 0; nIdx <= 2; ++nIdx)
+	{
+		neighbor = boundaryStrategy->getNeighborDirect(
+			const_cast<Point3D&>(changePixel), nIdx);
+		if (!neighbor.distance) {
+			//if distance is 0 then the neighbor returned is invalid
+			continue;
+		}
+		nCell = cellFieldG->get(neighbor.pt);
+
+		if (!nCell)//if it's  medium we don't care
+		{
+			continue;
+		}
+
+
+		if (nCell == changeCell || nCell == flipCell) //since we've already know the source-target cells we don't need to check for others
+		{
+
+			//north => changePixel.y+1 == pt.y; x=x
+			//south => changePixel.y-1 == pt.y; x=x
+
+			//east => changePixel.x+1 == pt.x; y=y
+			//west => changePixel.x-1 == pt.x; y=y
+			if (changePixel.x == neighbor.pt.x)//north-south case
+			{
+
+
+				//might have issues with borders
+				Point3D right_pt = neighbor.pt;
+				right_pt.x += 1;
+				Point3D left_pt = neighbor.pt;
+				left_pt.x -= 1;
+
+
+				if (!(nCell == cellFieldG->get(right_pt) || nCell == cellFieldG->get(left_pt)))
+				{
+					return localConected = false;
+				}
+
+
+			}
+			else if (changePixel.y == neighbor.pt.y)//east-west case
+			{
+				//might have issues with borders
+				Point3D up_pt = neighbor.pt;
+				up_pt.y += 1;
+				Point3D down_pt = neighbor.pt;
+				down_pt.y -= 1;
+
+				if (!(nCell == cellFieldG->get(up_pt) || nCell == cellFieldG->get(down_pt)))
+				{
+					return localConected = false;
+				}
+
+
+			}
+			
+
+			//corner cases
+			else if (changePixel.y+1 == neighbor.pt.y)
+			{
+				if (changePixel.x + 1 == neighbor.pt.x)//upper right corner
+				{
+					Point3D left_pt = neighbor.pt;
+					left_pt.x -= 1;
+					Point3D down_pt = neighbor.pt;
+					down_pt.y -= 1;
+					if (!(nCell == cellFieldG->get(left_pt) || nCell == cellFieldG->get(down_pt)))
+					{
+						return localConected = false;
+					}
+				}
+				else if (changePixel.x - 1 == neighbor.pt.x)//upper left corner
+				{
+					Point3D right_pt = neighbor.pt;
+					right_pt.x -= 1;
+					Point3D down_pt = neighbor.pt;
+					down_pt.y -= 1;
+					if (!(nCell == cellFieldG->get(right_pt) || nCell == cellFieldG->get(down_pt)))
+					{
+						return localConected = false;
+					}
+				}
+
+			}
+
+			else if (changePixel.y - 1 == neighbor.pt.y)
+			{
+				if (changePixel.x + 1 == neighbor.pt.x)//lower right corner
+				{
+					Point3D left_pt = neighbor.pt;
+					left_pt.x -= 1;
+					Point3D up_pt = neighbor.pt;
+					up_pt.y += 1;
+					if (!(nCell == cellFieldG->get(left_pt) || nCell == cellFieldG->get(up_pt)))
+					{
+						return localConected = false;
+					}
+				}
+				else if (changePixel.x - 1 == neighbor.pt.x)//lower left corner
+				{
+					Point3D right_pt = neighbor.pt;
+					right_pt.x -= 1;
+					Point3D up_pt = neighbor.pt;
+					up_pt.y += 1;
+					if (!(nCell == cellFieldG->get(right_pt) || nCell == cellFieldG->get(up_pt)))
+					{
+						return localConected = false;
+					}
+				}
+
+			}
+
+
+
+		}
+	}
+
+	return localConected;*/
+}
+
+
+
+bool Potts3D::localConect2D(Point3D changePixel, Point3D flipNeighbor)
+{
+
+	bool localConected = true;
+
+
+	CellG *changeCell = cellFieldG->get(changePixel);
+
+	CellG *flipCell = cellFieldG->get(flipNeighbor);
+
+	CellG *nCell = 0;
+
+	Neighbor neighbor;
+
+
+
+	// check conectivity
+
+	for (unsigned int nIdx = 0; nIdx <= 2; ++nIdx)
+	{
+		neighbor = boundaryStrategy->getNeighborDirect(
+			const_cast<Point3D&>(changePixel), nIdx);
+		if (!neighbor.distance) {
+			//if distance is 0 then the neighbor returned is invalid
+			continue;
+		}
+		nCell = cellFieldG->get(neighbor.pt);
+
+		if (!nCell)//if it's  medium we don't care
+		{
+			continue;
+		}
+
+
+		if (nCell == changeCell || nCell == flipCell) //since we've already know the source-target cells we don't need to check for others
+		{
+
+			//north => changePixel.y+1 == pt.y; x=x
+			//south => changePixel.y-1 == pt.y; x=x
+
+			//east => changePixel.x+1 == pt.x; y=y
+			//west => changePixel.x-1 == pt.x; y=y
+			if (changePixel.x == neighbor.pt.x)//north-south case
+			{
+
+
+				//might have issues with borders
+				Point3D right_pt = neighbor.pt;
+				right_pt.x += 1;
+				Point3D left_pt = neighbor.pt;
+				left_pt.x -= 1;
+
+
+				if (!(nCell == cellFieldG->get(right_pt) || nCell == cellFieldG->get(left_pt)))
+				{
+					localConected = false;
+					return localConected;
+				}
+
+
+			}
+			else if (changePixel.y == neighbor.pt.y)//east-west case
+			{
+				//might have issues with borders
+				Point3D up_pt = neighbor.pt;
+				up_pt.y += 1;
+				Point3D down_pt = neighbor.pt;
+				down_pt.y -= 1;
+
+				if (!(nCell == cellFieldG->get(up_pt) || nCell == cellFieldG->get(down_pt)))
+				{
+					localConected = false;
+					return localConected;
+				}
+
+
+			}
+			
+			//corner cases
+			else if (changePixel.y + 1 == neighbor.pt.y)
+			{
+				if (changePixel.x + 1 == neighbor.pt.x)//upper right corner
+				{
+					Point3D left_pt = neighbor.pt;
+					left_pt.x -= 1;
+					Point3D down_pt = neighbor.pt;
+					down_pt.y -= 1;
+					if (!(nCell == cellFieldG->get(left_pt) || nCell == cellFieldG->get(down_pt)))
+					{
+						return localConected = false;
+					}
+				}
+				else if (changePixel.x - 1 == neighbor.pt.x)//upper left corner
+				{
+					Point3D right_pt = neighbor.pt;
+					right_pt.x += 1;
+					Point3D down_pt = neighbor.pt;
+					down_pt.y -= 1;
+					if (!(nCell == cellFieldG->get(right_pt) || nCell == cellFieldG->get(down_pt)))
+					{
+						return localConected = false;
+					}
+				}
+
+			}
+
+			else if (changePixel.y - 1 == neighbor.pt.y)
+			{
+				if (changePixel.x + 1 == neighbor.pt.x)//lower right corner
+				{
+					Point3D left_pt = neighbor.pt;
+					left_pt.x -= 1;
+					Point3D up_pt = neighbor.pt;
+					up_pt.y += 1;
+					if (!(nCell == cellFieldG->get(left_pt) || nCell == cellFieldG->get(up_pt)))
+					{
+						return localConected = false;
+					}
+				}
+				else if (changePixel.x - 1 == neighbor.pt.x)//lower left corner
+				{
+					Point3D right_pt = neighbor.pt;
+					right_pt.x += 1;
+					Point3D up_pt = neighbor.pt;
+					up_pt.y += 1;
+					if (!(nCell == cellFieldG->get(right_pt) || nCell == cellFieldG->get(up_pt)))
+					{
+						return localConected = false;
+					}
+				}
+
+			}
+
+
+
+		}
+	}
+
+	return localConected;
+}
+
+
+
+bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
+{
+	//change goes from flip to change
+
+
+	bool localConected = true;
+
+
+	CellG *changeCell = cellFieldG->get(changePixel);
+
+	CellG *flipCell = cellFieldG->get(flipNeighbor);
+
+	CellG *nCell = 0;
+
+	Neighbor neighbor;
+
+
+
+	// check conectivity
+
+	for (unsigned int nIdx = 0; nIdx <= 2; ++nIdx)
+	{
+		neighbor = boundaryStrategy->getNeighborDirect(
+			const_cast<Point3D&>(changePixel), nIdx);
+		if (!neighbor.distance) {
+			//if distance is 0 then the neighbor returned is invalid
+			continue;
+		}
+		nCell = cellFieldG->get(neighbor.pt);
+
+		if (!nCell)//if it's  medium we don't care
+		{
+			continue;
+		}
+
+
+		if (nCell == changeCell || nCell == flipCell)
+		{
+			//changePixel.x == neighbor.pt.x
+
+			if (changePixel.z == neighbor.pt.z)
+			{
+				if (changePixel.x == neighbor.pt.x)//north-south case
+				{
+
+
+					//might have issues with borders
+					Point3D right_pt = neighbor.pt;
+					right_pt.x += 1;
+					Point3D left_pt = neighbor.pt;
+					left_pt.x -= 1;
+
+					Point3D up_pt = neighbor.pt;
+					up_pt.z += 1;
+					Point3D down_pt = neighbor.pt;
+					down_pt.z -= 1;
+
+
+
+					if (!(nCell == cellFieldG->get(right_pt) || 
+						  nCell == cellFieldG->get(left_pt) || 
+						  nCell == cellFieldG->get(up_pt) ||
+						  nCell == cellFieldG->get(down_pt)
+						))
+					{
+						return localConected = false;
+					}
+				}
+
+				else if (changePixel.y == neighbor.pt.y)//east-west case
+				{
+					//might have issues with borders
+					Point3D right_pt = neighbor.pt;
+					right_pt.y += 1;
+					Point3D left_pt = neighbor.pt;
+					left_pt.y -= 1;
+
+					Point3D up_pt = neighbor.pt;
+					up_pt.z += 1;
+					Point3D down_pt = neighbor.pt;
+					down_pt.z -= 1;
+
+					if (!(nCell == cellFieldG->get(right_pt) ||
+						nCell == cellFieldG->get(left_pt) ||
+						nCell == cellFieldG->get(up_pt) ||
+						nCell == cellFieldG->get(down_pt)
+						))
+					{
+						return localConected = false;
+					}
+				}
+
+				else if (changePixel.y + 1 == neighbor.pt.y) 
+				{
+					if (changePixel.x + 1 == neighbor.pt.x)//upper right corner
+					{
+						Point3D left_pt = neighbor.pt;
+						left_pt.x -= 1;
+						Point3D backward_pt = neighbor.pt;
+						backward_pt.y -= 1;
+
+						Point3D up_pt = neighbor.pt;
+						up_pt.z += 1;
+						Point3D down_pt = neighbor.pt;
+						down_pt.z -= 1;
+
+						if (!(nCell == cellFieldG->get(backward_pt) ||
+							nCell == cellFieldG->get(left_pt) ||
+							nCell == cellFieldG->get(up_pt) ||
+							nCell == cellFieldG->get(down_pt)
+							))
+						{
+							return localConected = false;
+						}
+					}
+					else if (changePixel.x - 1 == neighbor.pt.x)//upper right corner
+					{
+						Point3D right_pt = neighbor.pt;
+						right_pt.x += 1;
+						Point3D backward_pt = neighbor.pt;
+						backward_pt.y -= 1;
+
+						Point3D up_pt = neighbor.pt;
+						up_pt.z += 1;
+						Point3D down_pt = neighbor.pt;
+						down_pt.z -= 1;
+
+						if (!(nCell == cellFieldG->get(backward_pt) ||
+							nCell == cellFieldG->get(right_pt) ||
+							nCell == cellFieldG->get(up_pt) ||
+							nCell == cellFieldG->get(down_pt)
+							))
+						{
+							return localConected = false;
+						}
+					}
+				}
+				else if (changePixel.y - 1 == neighbor.pt.y)
+				{
+					if (changePixel.x + 1 == neighbor.pt.x)//upper right corner
+					{
+						Point3D left_pt = neighbor.pt;
+						left_pt.x -= 1;
+						Point3D forward_pt = neighbor.pt;
+						forward_pt.y += 1;
+
+						Point3D up_pt = neighbor.pt;
+						up_pt.z += 1;
+						Point3D down_pt = neighbor.pt;
+						down_pt.z -= 1;
+
+						if (!(nCell == cellFieldG->get(forward_pt) ||
+							nCell == cellFieldG->get(left_pt) ||
+							nCell == cellFieldG->get(up_pt) ||
+							nCell == cellFieldG->get(down_pt)
+							))
+						{
+							return localConected = false;
+						}
+					}
+					else if (changePixel.x - 1 == neighbor.pt.x)//upper right corner
+					{
+						Point3D right_pt = neighbor.pt;
+						right_pt.x += 1;
+						Point3D forward_pt = neighbor.pt;
+						forward_pt.y += 1;
+
+						Point3D up_pt = neighbor.pt;
+						up_pt.z += 1;
+						Point3D down_pt = neighbor.pt;
+						down_pt.z -= 1;
+
+						if (!(nCell == cellFieldG->get(forward_pt) ||
+							nCell == cellFieldG->get(right_pt) ||
+							nCell == cellFieldG->get(up_pt) ||
+							nCell == cellFieldG->get(down_pt)
+							))
+						{
+							return localConected = false;
+						}
+					}
+				}
+			}
+			else if (changePixel.z+1 == neighbor.pt.z)
+			{
+				if (changePixel.x == neighbor.pt.x)//north-south case
+				{
+
+
+					//might have issues with borders
+					Point3D right_pt = neighbor.pt;
+					right_pt.x += 1;
+					Point3D left_pt = neighbor.pt;
+					left_pt.x -= 1;
+
+					
+					Point3D down_pt = neighbor.pt;
+					down_pt.z -= 1;
+
+
+
+					if (!(nCell == cellFieldG->get(right_pt) ||
+						nCell == cellFieldG->get(left_pt) ||
+						nCell == cellFieldG->get(down_pt)
+						))
+					{
+						return localConected = false;
+					}
+				}
+
+				else if (changePixel.y == neighbor.pt.y)//east-west case
+				{
+					//might have issues with borders
+					Point3D right_pt = neighbor.pt;
+					right_pt.y += 1;
+					Point3D left_pt = neighbor.pt;
+					left_pt.y -= 1;
+
+					
+					Point3D down_pt = neighbor.pt;
+					down_pt.z -= 1;
+
+					if (!(nCell == cellFieldG->get(right_pt) ||
+						nCell == cellFieldG->get(left_pt) ||
+						nCell == cellFieldG->get(down_pt)
+						))
+					{
+						return localConected = false;
+					}
+				}
+
+				else if (changePixel.y + 1 == neighbor.pt.y)
+				{
+					if (changePixel.x + 1 == neighbor.pt.x)//upper right corner
+					{
+						Point3D left_pt = neighbor.pt;
+						left_pt.x -= 1;
+						Point3D backward_pt = neighbor.pt;
+						backward_pt.y -= 1;
+
+						
+						Point3D down_pt = neighbor.pt;
+						down_pt.z -= 1;
+
+						if (!(nCell == cellFieldG->get(backward_pt) ||
+							nCell == cellFieldG->get(left_pt) ||
+							nCell == cellFieldG->get(down_pt)
+							))
+						{
+							return localConected = false;
+						}
+					}
+					else if (changePixel.x - 1 == neighbor.pt.x)//upper right corner
+					{
+						Point3D right_pt = neighbor.pt;
+						right_pt.x += 1;
+						Point3D backward_pt = neighbor.pt;
+						backward_pt.y -= 1;
+
+						Point3D down_pt = neighbor.pt;
+						down_pt.z -= 1;
+
+						if (!(nCell == cellFieldG->get(backward_pt) ||
+							nCell == cellFieldG->get(right_pt) ||
+							nCell == cellFieldG->get(down_pt)
+							))
+						{
+							return localConected = false;
+						}
+					}
+				}
+				else if (changePixel.y - 1 == neighbor.pt.y)
+				{
+					if (changePixel.x + 1 == neighbor.pt.x)//upper right corner
+					{
+						Point3D left_pt = neighbor.pt;
+						left_pt.x -= 1;
+						Point3D forward_pt = neighbor.pt;
+						forward_pt.y += 1;
+
+						Point3D down_pt = neighbor.pt;
+						down_pt.z -= 1;
+
+						if (!(nCell == cellFieldG->get(forward_pt) ||
+							nCell == cellFieldG->get(left_pt) ||
+							nCell == cellFieldG->get(down_pt)
+							))
+						{
+							return localConected = false;
+						}
+					}
+					else if (changePixel.x - 1 == neighbor.pt.x)//upper right corner
+					{
+						Point3D right_pt = neighbor.pt;
+						right_pt.x += 1;
+						Point3D forward_pt = neighbor.pt;
+						forward_pt.y += 1;
+
+						Point3D down_pt = neighbor.pt;
+						down_pt.z -= 1;
+
+						if (!(nCell == cellFieldG->get(forward_pt) ||
+							nCell == cellFieldG->get(right_pt) ||
+							nCell == cellFieldG->get(down_pt)
+							))
+						{
+							return localConected = false;
+						}
+					}
+				}
+			}
+			else if (changePixel.z - 1 == neighbor.pt.z)
+			{
+				if (changePixel.x == neighbor.pt.x)//north-south case
+				{
+
+
+					//might have issues with borders
+					Point3D right_pt = neighbor.pt;
+					right_pt.x += 1;
+					Point3D left_pt = neighbor.pt;
+					left_pt.x -= 1;
+
+					Point3D up_pt = neighbor.pt;
+					up_pt.z += 1;
+
+
+
+					if (!(nCell == cellFieldG->get(right_pt) ||
+						nCell == cellFieldG->get(left_pt) ||
+						nCell == cellFieldG->get(up_pt) 
+						))
+					{
+						return localConected = false;
+					}
+				}
+
+				else if (changePixel.y == neighbor.pt.y)//east-west case
+				{
+					//might have issues with borders
+					Point3D right_pt = neighbor.pt;
+					right_pt.y += 1;
+					Point3D left_pt = neighbor.pt;
+					left_pt.y -= 1;
+
+					Point3D up_pt = neighbor.pt;
+					up_pt.z += 1;
+
+					if (!(nCell == cellFieldG->get(right_pt) ||
+						nCell == cellFieldG->get(left_pt) ||
+						nCell == cellFieldG->get(up_pt) 
+						))
+					{
+						return localConected = false;
+					}
+				}
+
+				else if (changePixel.y + 1 == neighbor.pt.y)
+				{
+					if (changePixel.x + 1 == neighbor.pt.x)//upper right corner
+					{
+						Point3D left_pt = neighbor.pt;
+						left_pt.x -= 1;
+						Point3D backward_pt = neighbor.pt;
+						backward_pt.y -= 1;
+
+						Point3D up_pt = neighbor.pt;
+						up_pt.z += 1;
+
+						if (!(nCell == cellFieldG->get(backward_pt) ||
+							nCell == cellFieldG->get(left_pt) ||
+							nCell == cellFieldG->get(up_pt)
+							))
+						{
+							return localConected = false;
+						}
+					}
+					else if (changePixel.x - 1 == neighbor.pt.x)//upper right corner
+					{
+						Point3D right_pt = neighbor.pt;
+						right_pt.x += 1;
+						Point3D backward_pt = neighbor.pt;
+						backward_pt.y -= 1;
+
+						Point3D up_pt = neighbor.pt;
+						up_pt.z += 1;
+
+						if (!(nCell == cellFieldG->get(backward_pt) ||
+							nCell == cellFieldG->get(right_pt) ||
+							nCell == cellFieldG->get(up_pt) 
+							))
+						{
+							return localConected = false;
+						}
+					}
+				}
+				else if (changePixel.y - 1 == neighbor.pt.y)
+				{
+					if (changePixel.x + 1 == neighbor.pt.x)//upper right corner
+					{
+						Point3D left_pt = neighbor.pt;
+						left_pt.x -= 1;
+						Point3D forward_pt = neighbor.pt;
+						forward_pt.y += 1;
+
+						Point3D up_pt = neighbor.pt;
+						up_pt.z += 1;
+
+						if (!(nCell == cellFieldG->get(forward_pt) ||
+							nCell == cellFieldG->get(left_pt) ||
+							nCell == cellFieldG->get(up_pt) 
+							))
+						{
+							return localConected = false;
+						}
+					}
+					else if (changePixel.x - 1 == neighbor.pt.x)//upper right corner
+					{
+						Point3D right_pt = neighbor.pt;
+						right_pt.x += 1;
+						Point3D forward_pt = neighbor.pt;
+						forward_pt.y += 1;
+
+						Point3D up_pt = neighbor.pt;
+						up_pt.z += 1;
+
+						if (!(nCell == cellFieldG->get(forward_pt) ||
+							nCell == cellFieldG->get(right_pt) ||
+							nCell == cellFieldG->get(up_pt) 
+							))
+						{
+							return localConected = false;
+						}
+					}
+				}
+			}
+
+		}
+	}
+
+	return localConected;
+}
+
+
+bool Potts3D::localConectHex(Point3D changePixel, Point3D flipNeighbor)
+{
+	return true; //PLACEHODLER
+}
+
 void Potts3D::setAcceptanceFunctionByName(std::string _acceptanceFunctionName) {
 	if (_acceptanceFunctionName == "FirstOrderExpansion") {
 		acceptanceFunction = &firstOrderExpansionAcceptanceFunction;
@@ -633,9 +1372,16 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 				if (checkIfFrozen(cellFieldG->get(changePixel)->type))
 					continue;
 			}
+			
+
 			++attemptedEC;
 
 			flipNeighbor = pt;/// change takes place at change pixel  and pt is a neighbor of changePixel
+
+			//I could also do the conectivity check here, still has the possible conflict with multithread?
+
+
+
 
 
 			// Calculate change in energy
@@ -670,6 +1416,14 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 				energy += change;
 
 				if (connectivityConstraint && connectivityConstraint->changeEnergy(changePixel, cell, cellFieldG->get(changePixel))) {
+					//put call to durand fragmentation in this if
+					// new if:
+
+					//if (connectivityConstraint || durandContraint)
+					//{ if(connectivityConstraint && connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell))
+					//  {...}
+					//  if(durandContraint)
+					//  {...}
 					energyCalculator->setLastFlipAccepted(false);
 				}
 				else {
@@ -893,6 +1647,14 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 					energyVec[currentWorkNodeNumber] += change;
 
 					if (connectivityConstraint && connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell)) {
+						//put call to durand fragmentation in this if
+						// new if:
+
+						//if (connectivityConstraint || durandContraint)
+						//{ if(connectivityConstraint && connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell))
+						//  {...}
+						//  if(durandContraint)
+						//  {...}
 						if (numberOfThreads == 1) {
 							energyCalculator->setLastFlipAccepted(false);
 						}
@@ -1193,6 +1955,14 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 					energyVec[currentWorkNodeNumber] += change;
 
 					if (connectivityConstraint && connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell)) {
+						//put call to durand fragmentation in this if
+						// new if:
+
+						//if (connectivityConstraint || durandContraint)
+						//{ if(connectivityConstraint && connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell))
+						//  {...}
+						//  if(durandContraint)
+						//  {...}
 						if (numberOfThreads == 1) {
 							energyCalculator->setLastFlipAccepted(false);
 						}

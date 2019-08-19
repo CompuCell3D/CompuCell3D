@@ -79,7 +79,9 @@ namespace CompuCell3D {
 	class Simulator;
 	class CellTypeMotilityData;
 	class ParallelUtilsOpenMP;
-
+	//jfg
+	class BoundaryStrategy;
+	//jfg end
 	template<typename T>
 	class WatchableField3D;
 
@@ -111,7 +113,9 @@ namespace CompuCell3D {
 		}
 	};
 
-
+	//jfg
+	BoundaryStrategy * boundaryStrategy;
+	//jfg end
 	/**
 	 * A generic implementation of the potts model in 3D.
 	 *
@@ -134,6 +138,24 @@ namespace CompuCell3D {
 		EnergyFunction * connectivityConstraint;
 
 		std::map<std::string, EnergyFunction *> nameToEnergyFuctionMap;
+
+
+		//jfg
+		// local conectivity check
+
+		typedef bool(Potts3D::localConect_t)(Point3D changePixel, Point3D flipNeighbor);
+
+		Potts3D::localConect_t localConPtr;
+
+		virtual bool localConectivityAlgorithm(Point3D changePixel, Point3D flipNeighbor);
+
+		bool localConect2D(Point3D changePixel, Point3D flipNeighbor);
+
+		bool localConect3D(Point3D changePixel, Point3D flipNeighbor);
+
+		bool localConectHex(Point3D changePixel, Point3D flipNeighbor);
+
+		//end jfg
 
 		//containers associated with BoundaryWalker/GlobalPixelTracker
 		//std::set<Point3D> boundaryPixelSet;
@@ -240,6 +262,8 @@ namespace CompuCell3D {
 		unsigned int getNumberOfAcceptedSpinFlips() { return flips; }
 		void registerConnectivityConstraint(EnergyFunction * _connectivityConstraint);
 		EnergyFunction * getConnectivityConstraint();
+
+		
 
 		bool checkIfFrozen(unsigned char _type);
 
