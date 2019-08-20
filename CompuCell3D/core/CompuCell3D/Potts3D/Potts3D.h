@@ -143,6 +143,8 @@ namespace CompuCell3D {
 		//jfg
 		// local conectivity check
 
+		
+
 		typedef bool(Potts3D::localConect_t)(Point3D changePixel, Point3D flipNeighbor);
 
 		Potts3D::localConect_t localConPtr;

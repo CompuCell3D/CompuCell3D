@@ -431,6 +431,29 @@ bool Potts3D::localConectivityAlgorithm(Point3D changePixel, Point3D flipNeighbo
 bool Potts3D::localConect2D(Point3D changePixel, Point3D flipNeighbor)
 {
 
+	/*
+	* Function to check the local conectivity of a cell in the flip pixel.
+	* Based on https://doi.org/10.1016/j.cpc.2016.07.030
+	* Durand, Marc, and Etienne Guesnet. "An efficient Cellular Potts Model 
+	* algorithm that forbids cell fragmentation." Computer Physics 
+	* Communications 208 (2016): 54-63.
+	* 
+	* Change pixel is the pixel being changed. The value being copied to change
+	* pixel in the one of flip neighbor.
+	* 
+	* The algorithm only cares about the imediate vicinity (Moore neighb, order II,
+	* all 8 - 2d -  touching pixels) of changePixel.
+	* 
+	* The idea is to get all of the pixels in the neighborhood first. I do this 
+	* because I have to check some neighbors of the neighbor pixel. I won't cicle
+	* through all of the neighbors' neighbors, just check a few. But when near the 
+	* border I could be picking an invalid pixel, get neighbor direct takes care
+	* of checking valied pixels.
+	* 
+	* However, I still will need to figure out the periodic boundary case. How to go to the 
+	* other side of the lattice eficiently? Better yet, with some method that has been written?
+	*/
+
 	bool localConected = true;
 
 
@@ -442,11 +465,36 @@ bool Potts3D::localConect2D(Point3D changePixel, Point3D flipNeighbor)
 
 	Neighbor neighbor;
 
+	
+	//finalMooreNeighborIndex
+	unsigned int fMooreNeighIdx = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(2);
 
 
-	// check conectivity
 
-	for (unsigned int nIdx = 0; nIdx <= 2; ++nIdx)
+	//what if I make a list of pixels that are in the order 2, then when creating
+	// the left/right/up/down pixels I can check that it is in the list.
+	//this way I am already using method to check boundaries, hex, etc.
+
+	// neighbors
+
+	std::vector<Point3D> search_domain;
+
+	search_domain.clear();
+
+	for (unsigned int nIdx = 0; nIdx <= fMooreNeighIdx; ++nIdx) // need to check the actual index
+	{
+		neighbor = boundaryStrategy->getNeighborDirect(
+			const_cast<Point3D&>(changePixel), nIdx);
+		if (!neighbor.distance) {
+			//if distance is 0 then the neighbor returned is invalid
+			continue;
+		}
+		search_domain.push_back(neighbor.pt);
+	}
+
+
+
+	for (unsigned int nIdx = 0; nIdx <= fMooreNeighIdx; ++nIdx)
 	{
 		neighbor = boundaryStrategy->getNeighborDirect(
 			const_cast<Point3D&>(changePixel), nIdx);
@@ -461,6 +509,8 @@ bool Potts3D::localConect2D(Point3D changePixel, Point3D flipNeighbor)
 			continue;
 		}
 
+		
+
 
 		if (nCell == changeCell || nCell == flipCell) //since we've already know the source-target cells we don't need to check for others
 		{
@@ -473,20 +523,62 @@ bool Potts3D::localConect2D(Point3D changePixel, Point3D flipNeighbor)
 			if (changePixel.x == neighbor.pt.x)//north-south case
 			{
 
-
 				//might have issues with borders
+
 				Point3D right_pt = neighbor.pt;
 				right_pt.x += 1;
+
+				bool valid_right = boundaryStrategy->isValid(right_pt);//still need the check for across boundary
+				
+				bool valid_right = (boundaryStrategy->isValid(right_pt) ? true : strategy_x->applyCondition(x, dim.x)
+					);
+				
+				if (std::any_of(search_domain.begin(), search_domain.end(),right_pt) &&
+					valid_right)
+				{
+					if(nCell == cellFieldG->get(right_pt))
+					{
+						bool right_conceted = true;
+					}
+					else
+					{
+						bool right_conceted = false;
+					}
+					
+				}
+
+				
+
 				Point3D left_pt = neighbor.pt;
 				left_pt.x -= 1;
 
+				bool valid_left = boundaryStrategy->isValid(left_pt);//still need the check for across boundary
+				if (std::any_of(search_domain.begin(), search_domain.end(), left_pt) &&
+					valid_left)
+				{
+					if (nCell == cellFieldG->get(left_pt))
+					{
+						bool left_conceted = true;
+					}
+					else
+					{
+						bool left_conceted = false;
+					}
 
-				if (!(nCell == cellFieldG->get(right_pt) || nCell == cellFieldG->get(left_pt)))
+				}
+
+				if (!(right_conceted || left_conceted))
+				{
+
+				}
+
+
+				/*if (!(nCell == cellFieldG->get(right_pt) || nCell == cellFieldG->get(left_pt)))
 				{
 					localConected = false;
 					return localConected;
 				}
-
+*/
 
 			}
 			else if (changePixel.y == neighbor.pt.y)//east-west case
@@ -573,6 +665,30 @@ bool Potts3D::localConect2D(Point3D changePixel, Point3D flipNeighbor)
 
 bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 {
+	
+	/*
+	* Function to check the local conectivity of a cell in the flip pixel.
+	* Based on https://doi.org/10.1016/j.cpc.2016.07.030
+	* Durand, Marc, and Etienne Guesnet. "An efficient Cellular Potts Model
+	* algorithm that forbids cell fragmentation." Computer Physics
+	* Communications 208 (2016): 54-63.
+	*
+	* Change pixel is the pixel being changed. The value being copied to change
+	* pixel in the one of flip neighbor.
+	*
+	* The algorithm only cares about the imediate vicinity (Moore neighb, order II,
+	* all 8 - 2d -  touching pixels) of changePixel.
+	*
+	* The idea is to get all of the pixels in the neighborhood first. I do this
+	* because I have to check some neighbors of the neighbor pixel. I won't cicle
+	* through all of the neighbors' neighbors, just check a few. But when near the
+	* border I could be picking an invalid pixel, get neighbor direct takes care
+	* of checking valied pixels.
+	*
+	* However, I still will need to figure out the periodic boundary case. How to go to the
+	* other side of the lattice eficiently? Better yet, with some method that has been written?
+	*/
+	
 	//change goes from flip to change
 
 
@@ -1017,6 +1133,30 @@ bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 
 bool Potts3D::localConectHex(Point3D changePixel, Point3D flipNeighbor)
 {
+	
+	/*
+	* Function to check the local conectivity of a cell in the flip pixel.
+	* Based on https://doi.org/10.1016/j.cpc.2016.07.030
+	* Durand, Marc, and Etienne Guesnet. "An efficient Cellular Potts Model
+	* algorithm that forbids cell fragmentation." Computer Physics
+	* Communications 208 (2016): 54-63.
+	*
+	* Change pixel is the pixel being changed. The value being copied to change
+	* pixel in the one of flip neighbor.
+	*
+	* The algorithm only cares about the imediate vicinity (Moore neighb, order II,
+	* all 8 - 2d -  touching pixels) of changePixel.
+	*
+	* The idea is to get all of the pixels in the neighborhood first. I do this
+	* because I have to check some neighbors of the neighbor pixel. I won't cicle
+	* through all of the neighbors' neighbors, just check a few. But when near the
+	* border I could be picking an invalid pixel, get neighbor direct takes care
+	* of checking valied pixels.
+	*
+	* However, I still will need to figure out the periodic boundary case. How to go to the
+	* other side of the lattice eficiently? Better yet, with some method that has been written?
+	*/
+	
 	return true; //PLACEHODLER
 }
 
