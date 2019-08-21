@@ -18,15 +18,10 @@
     <Plugin Name="VolumeTracker"/>
 
     <Steppable Type="ReactionDiffusionSolverFE">
-
-        <!-- DeltaX Delta T and Extratimes per MCS apply to all RD equations. Notice, secretion is called only once per MCS regardless of how many times you call diffuse step  -->
-        <!--     <DeltaT>0.1</DeltaT>
-            <DeltaX>1.0</DeltaX>
-            <ExtraTimesPerMCS>9</ExtraTimesPerMCS> -->
         <DiffusionField>
             <DiffusionData>
                 <FieldName>F</FieldName>
-                <DiffusionConstant>0.0000001</DiffusionConstant>
+                <DiffusionConstant>0.0</DiffusionConstant>
 <!--                <ConcentrationFileName>Simulation/diffusion_2D.pulse.txt</ConcentrationFileName>-->
 <!--                <AdditionalTerm>-0.01*H</AdditionalTerm>-->
             </DiffusionData>
