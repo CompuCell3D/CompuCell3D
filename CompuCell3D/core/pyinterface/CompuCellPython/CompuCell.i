@@ -796,25 +796,18 @@ FIELD3DEXTENDERBASE(type,returnType)
     Py_ssize_t  start_z, stop_z, step_z;
     
     Dim3D dim=self->getDim();
-    
-    
-    // cerr<<"THIS IS FIELD DIM="<<dim<<endl;
-    
+            
     if (PySlice_Check(xCoord)){
-
-        //int ok=PySlice_GetIndicesEx((PySliceObject*)xCoord,dim.x-1,&start_x,&stop_x,&step_x,&sliceLength);
 		int ok = PySlice_GetIndices(xCoord, dim.x, &start_x, &stop_x, &step_x);
-        //stop_x -= 1;
-		
-     // cerr<<"extracting slices for x axis"<<endl;   
+
+     // cout<<"extracting slices for x axis"<<endl;   
      //cerr<<"start x="<< start_x<<endl;
      //cerr<<"stop x="<< stop_x<<endl;
      //cerr<<"step x="<< step_x<<endl;
      //cerr<<"sliceLength="<<sliceLength<<endl;        
      //cerr<<"ok="<<ok<<endl;
-
         
-    }else{
+    }else{        
         if (PyInt_Check(xCoord)){
             start_x=PyInt_AsLong(PyTuple_GetItem(_indexTuple,0));
             stop_x=start_x;
@@ -830,20 +823,24 @@ FIELD3DEXTENDERBASE(type,returnType)
         }
         else{
             throw std::runtime_error("Wrong Type (X): only integer or float values are allowed here - floats are rounded");
-        }            
+        } 
+
+        start_x %= dim.x;
+        stop_x %= dim.x;
+        stop_x += 1;
+
+        if (start_x < 0)
+            start_x = dim.x + start_x;
+
+        if (stop_x < 0)
+            stop_x = dim.x + stop_x;
+
     }
 
     if (PySlice_Check(yCoord)){
-        
-        //int ok=PySlice_GetIndicesEx((PySliceObject*)yCoord,dim.y-1,&start_y,&stop_y,&step_y,&sliceLength);
+                
 		int ok = PySlice_GetIndices(yCoord, dim.y, &start_y, &stop_y, &step_y);
-        //stop_y -= 1;
-     // cerr<<"extracting slices for x axis"<<endl;   
-    // cerr<<"start y="<< start_y<<endl;
-    // cerr<<"stop y="<< stop_y<<endl;
-    // cerr<<"step y="<< step_y<<endl;
-    // cerr<<"sliceLength="<<sliceLength<<endl;               
-        
+
         
     }else{
         if (PyInt_Check(yCoord)){
@@ -862,14 +859,22 @@ FIELD3DEXTENDERBASE(type,returnType)
         else{
             throw std::runtime_error("Wrong Type (Y): only integer or float values are allowed here - floats are rounded");
         }
+
+        start_y %= dim.y;
+        stop_y %= dim.y;
+        stop_y += 1;
+
+        if (start_y < 0)
+            start_y = dim.y + start_y;
+
+        if (stop_y < 0)
+            stop_y = dim.y + stop_y;
+
     }
     
     if (PySlice_Check(zCoord)){
-        
-       //int ok= PySlice_GetIndicesEx((PySliceObject*)zCoord,dim.z-1,&start_z,&stop_z,&step_z,&sliceLength);
+
 	   int ok = PySlice_GetIndices(zCoord, dim.z, &start_z, &stop_z, &step_z);
-       //stop_z -= 1;
-        
         
     }else{
         if (PyInt_Check(zCoord)){
@@ -888,19 +893,25 @@ FIELD3DEXTENDERBASE(type,returnType)
         else{
             throw std::runtime_error("Wrong Type (Z): only integer or float values are allowed here - floats are rounded");
         }
+        start_z %= dim.z;
+        stop_z %= dim.z;
+        stop_z += 1;
+
+        if (start_z < 0)
+            start_z = dim.z + start_z;
+
+        if (stop_z < 0)
+            stop_z = dim.z + stop_z;
+
 
     }
 
-    
-    // cerr<<"start x="<< start_x<<endl;
-    // cerr<<"stop x="<< stop_x<<endl;
-    // cerr<<"step x="<< step_x<<endl;
-    // cerr<<"sliceLength="<<sliceLength<<endl;
-    
-    
-//     int x,y,z;
+   
     PyObject *sliceX=0,*sliceY=0,* sliceZ=0;
     
+    //cout << "start_x, stop_x = " << start_x << "," << stop_x << endl;
+    //cout << "start_y, stop_y = " << start_y << "," << stop_y << endl;
+    //cout << "start_z, stop_z = " << start_z << "," << stop_z << endl;
     for (Py_ssize_t x=start_x ; x<stop_x ; x+=step_x)
         for (Py_ssize_t y=start_y ; y<stop_y ; y+=step_y)
             for (Py_ssize_t z=start_z ; z<stop_z ; z+=step_z){
@@ -970,10 +981,8 @@ FIELD3DEXTENDERBASE(type,returnType)
     Dim3D dim=self->getDim();
     
     if (PySlice_Check(xCoord)){    
-        //PySlice_GetIndicesEx((PySliceObject*)xCoord,dim.x-1,&start_x,&stop_x,&step_x,&sliceLength);
-		int ok = PySlice_GetIndices(xCoord, dim.x - 1, &start_x, &stop_x, &step_x);
-        stop_x -= 1;
-        //cerr << "start_x=" << start_x << " stop_x=" << stop_x << endl;
+        
+		int ok = PySlice_GetIndices(xCoord, dim.x, &start_x, &stop_x, &step_x);
         
     }else{
         if (PyInt_Check(xCoord)){
@@ -992,15 +1001,19 @@ FIELD3DEXTENDERBASE(type,returnType)
         else{
             throw std::runtime_error("Wrong Type (X): only integer or float values are allowed here - floats are rounded");
         }   
-        
+        start_x %= dim.x;
+        stop_x %= dim.x;
+        stop_x += 1;
+
+        if (start_x < 0)
+            start_x = dim.x + start_x;
+
+        if (stop_x < 0)
+            stop_x = dim.x + stop_x;
     }
 
-    if (PySlice_Check(yCoord)){
-        
-        //PySlice_GetIndicesEx((PySliceObject*)yCoord,dim.y-1,&start_y,&stop_y,&step_y,&sliceLength);
-		int ok = PySlice_GetIndices(yCoord, dim.y - 1, &start_y, &stop_y, &step_y);
-        stop_y -= 1;
-        
+    if (PySlice_Check(yCoord)){       
+		int ok = PySlice_GetIndices(yCoord, dim.y, &start_y, &stop_y, &step_y);
 
     }else{
         if (PyInt_Check(yCoord)){
@@ -1019,13 +1032,20 @@ FIELD3DEXTENDERBASE(type,returnType)
         else{
             throw std::runtime_error("Wrong Type (Y): only integer or float values are allowed here - floats are rounded");
         }
+        start_y %= dim.y;
+        stop_y %= dim.y;
+        stop_y += 1;
+
+        if (start_y < 0)
+            start_y = dim.y + start_y;
+
+        if (stop_y < 0)
+            stop_y = dim.y + stop_y;
+
     }
     
-    if (PySlice_Check(zCoord)){
-        
-        //PySlice_GetIndicesEx((PySliceObject*)zCoord,dim.z-1,&start_z,&stop_z,&step_z,&sliceLength);
-		int ok = PySlice_GetIndices(zCoord, dim.z - 1, &start_z, &stop_z, &step_z);
-        stop_z -= 1;
+    if (PySlice_Check(zCoord)){                
+		int ok = PySlice_GetIndices(zCoord, dim.z, &start_z, &stop_z, &step_z);        
         
     }else{
         if (PyInt_Check(zCoord)){
@@ -1044,6 +1064,16 @@ FIELD3DEXTENDERBASE(type,returnType)
         else{
             throw std::runtime_error("Wrong Type (Z): only integer or float values are allowed here - floats are rounded");
         }
+        start_z %= dim.z;
+        stop_z %= dim.z;
+        stop_z += 1;
+
+        if (start_z < 0)
+            start_z = dim.z + start_z;
+
+        if (stop_z < 0)
+            stop_z = dim.z + stop_z;
+
     }
    
     
@@ -1051,21 +1081,19 @@ FIELD3DEXTENDERBASE(type,returnType)
 //     cerr<<"stop x="<< stop_x<<endl;
 //     cerr<<"step x="<< step_x<<endl;
 //     cerr<<"sliceLength="<<sliceLength<<endl;
-    
-    
-//     int x,y,z;
+        
+    //cout << "start_x, stop_x = " << start_x << "," << stop_x << endl;
+    //cout << "start_y, stop_y = " << start_y << "," << stop_y << endl;
+    //cout << "start_z, stop_z = " << start_z << "," << stop_z << endl;
+
     PyObject *sliceX=0,*sliceY=0,* sliceZ=0;
     
-    for (Py_ssize_t x=start_x ; x<=stop_x ; x+=step_x)
-        for (Py_ssize_t y=start_y ; y<=stop_y ; y+=step_y)
-            for (Py_ssize_t z=start_z ; z<=stop_z ; z+=step_z){
-                //cerr << "Point3D(x,y,z)=" << Point3D(x, y, z) << endl;
-                //cerr << "_val=" << _val << endl;
+    for (Py_ssize_t x=start_x ; x<stop_x ; x+=step_x)
+        for (Py_ssize_t y=start_y ; y<stop_y ; y+=step_y)
+            for (Py_ssize_t z=start_z ; z<stop_z ; z+=step_z){
                 $self->set(Point3D(x,y,z),_val);
                 volumeTrackerPlugin->step();
-            }
-    
-
+            }    
   }
 
   
