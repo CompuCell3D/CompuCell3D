@@ -49,6 +49,7 @@
 
 %include <windows.i>
 
+
 %{
 #define SWIG_FILE_WITH_INIT	
 
@@ -802,15 +803,15 @@ FIELD3DEXTENDERBASE(type,returnType)
     if (PySlice_Check(xCoord)){
 
         //int ok=PySlice_GetIndicesEx((PySliceObject*)xCoord,dim.x-1,&start_x,&stop_x,&step_x,&sliceLength);
-		int ok = PySlice_GetIndices(xCoord, dim.x - 1, &start_x, &stop_x, &step_x);
-        stop_x -= 1;
+		int ok = PySlice_GetIndices(xCoord, dim.x, &start_x, &stop_x, &step_x);
+        //stop_x -= 1;
 		
      // cerr<<"extracting slices for x axis"<<endl;   
-    // cerr<<"start x="<< start_x<<endl;
-    // cerr<<"stop x="<< stop_x<<endl;
-    // cerr<<"step x="<< step_x<<endl;
-    // cerr<<"sliceLength="<<sliceLength<<endl;        
-    // cerr<<"ok="<<ok<<endl;
+     //cerr<<"start x="<< start_x<<endl;
+     //cerr<<"stop x="<< stop_x<<endl;
+     //cerr<<"step x="<< step_x<<endl;
+     //cerr<<"sliceLength="<<sliceLength<<endl;        
+     //cerr<<"ok="<<ok<<endl;
 
         
     }else{
@@ -835,8 +836,8 @@ FIELD3DEXTENDERBASE(type,returnType)
     if (PySlice_Check(yCoord)){
         
         //int ok=PySlice_GetIndicesEx((PySliceObject*)yCoord,dim.y-1,&start_y,&stop_y,&step_y,&sliceLength);
-		int ok = PySlice_GetIndices(yCoord, dim.y - 1, &start_y, &stop_y, &step_y);
-        stop_y -= 1;
+		int ok = PySlice_GetIndices(yCoord, dim.y, &start_y, &stop_y, &step_y);
+        //stop_y -= 1;
      // cerr<<"extracting slices for x axis"<<endl;   
     // cerr<<"start y="<< start_y<<endl;
     // cerr<<"stop y="<< stop_y<<endl;
@@ -866,8 +867,8 @@ FIELD3DEXTENDERBASE(type,returnType)
     if (PySlice_Check(zCoord)){
         
        //int ok= PySlice_GetIndicesEx((PySliceObject*)zCoord,dim.z-1,&start_z,&stop_z,&step_z,&sliceLength);
-	   int ok = PySlice_GetIndices(zCoord, dim.z - 1, &start_z, &stop_z, &step_z);
-       stop_z -= 1;
+	   int ok = PySlice_GetIndices(zCoord, dim.z, &start_z, &stop_z, &step_z);
+       //stop_z -= 1;
         
         
     }else{
@@ -900,9 +901,9 @@ FIELD3DEXTENDERBASE(type,returnType)
 //     int x,y,z;
     PyObject *sliceX=0,*sliceY=0,* sliceZ=0;
     
-    for (Py_ssize_t x=start_x ; x<=stop_x ; x+=step_x)
-        for (Py_ssize_t y=start_y ; y<=stop_y ; y+=step_y)
-            for (Py_ssize_t z=start_z ; z<=stop_z ; z+=step_z){
+    for (Py_ssize_t x=start_x ; x<stop_x ; x+=step_x)
+        for (Py_ssize_t y=start_y ; y<stop_y ; y+=step_y)
+            for (Py_ssize_t z=start_z ; z<stop_z ; z+=step_z){
                 $self->set(Point3D(x,y,z),_val); 
             }
     
