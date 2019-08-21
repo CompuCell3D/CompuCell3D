@@ -1884,7 +1884,7 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
 
                             updatedConcentration += dt*ev.eval(); //reaction terms are scaled here all other constants e.g. diffusion or secretion constants are scaled in the Scale function
                             concentrationField.setDirectSwap(x, y, z, updatedConcentration);//updating scratch
-                            cerr << "1updatedConcentration=" << updatedConcentration << "x, y, z=" << x << "," << y << "," << z << endl;
+                            
 
                         }
             }
@@ -1895,11 +1895,8 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                         for (int x = minDim.x; x < maxDim.x; x++) {
 
                             currentConcentration = concentrationField.getDirect(x, y, z);
-                            cerr << "currentConcentration=" << currentConcentration << endl;
-                            currentCellType = cellTypeArray.getDirect(x, y, z);
-                            cerr << "currentCellType=" << currentCellType << endl;
-                            currentDiffCoef = diffCoef[currentCellType];
-                            cerr << "currentDiffCoef=" << currentDiffCoef << endl;
+                            currentCellType = cellTypeArray.getDirect(x, y, z);                            
+                            currentDiffCoef = diffCoef[currentCellType];                            
                             pt = Point3D(x - 1, y - 1, z - 1);
 
 
@@ -1955,8 +1952,7 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                             updatedConcentration = (concentrationSum + varDiffSumTerm) + (1 - decayCoef[currentCellType])*currentConcentration;
 
                             updatedConcentration += dt*ev.eval(); //reaction terms are scaled here all other constants e.g. diffusion or secretion constants are scaled in the Scale function
-                            concentrationField.setDirectSwap(x, y, z, updatedConcentration);//updating scratch
-                            cerr << "2updatedConcentration=" << updatedConcentration << "x, y, z=" << x << "," << y << "," << z << endl;
+                            concentrationField.setDirectSwap(x, y, z, updatedConcentration);//updating scratch                            
 
                         }
 
