@@ -338,12 +338,15 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
                     except KeyError:
                         continue
-                    field_vis_data.field[cell] = field_vis_data.function(attrib)
+                    field_vis_data.field[cell] = field_vis_data.function_obj(attrib)
             except:
                 raise RuntimeError(
                     'Automatic Attribute Tracking :'
                     'wrong type of cell attribute, '
                     'Missing attribute or wrong tracking function is used by track_cell_level functions')
+
+    def initialize_automatic_tasks(self):
+        self.initialize_tracking_fields()
 
     def initialize_tracking_fields(self):
         """
@@ -355,9 +358,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
             if field_vis_data.field_type == field_vis_data.CELL_LEVEL_SCALAR_FIELD:
                 self.create_scalar_field_cell_level_py(field_name)
+                field_vis_data.field = getattr(self.field, field_name)
 
             elif field_vis_data.field_type == field_vis_data.CELL_LEVEL_VECTOR_FIELD:
                 self.create_vector_field_cell_level_py(field_name)
+                field_vis_data.field = getattr(self.field, field_name)
 
     def perform_automatic_tasks(self):
         """
