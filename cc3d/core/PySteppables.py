@@ -18,6 +18,7 @@ from deprecated import deprecated
 from cc3d.core.SteeringParam import SteeringParam
 from copy import deepcopy
 from math import sqrt
+from cc3d.core.numerics import *
 
 
 class SteppablePy:
