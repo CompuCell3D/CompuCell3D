@@ -80,6 +80,7 @@ namespace CompuCell3D {
 
 		std::string basePath;
 		bool restartEnabled;
+        std::string step_output;
         
 
 	public:
@@ -107,6 +108,9 @@ namespace CompuCell3D {
 		Simulator();
 		virtual ~Simulator();
 		//     PluginManager::plugins_t & getPluginMap(){return pluginManager.getPluginMap();}
+
+        void add_step_output(std::string &s);
+        std::string get_step_output();
 
 		//Error handling functions
 		std::string getRecentErrorMessage(){return recentErrorMessage;}

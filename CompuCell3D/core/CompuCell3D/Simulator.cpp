@@ -364,6 +364,8 @@ void Simulator::extraInit(){
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Simulator::step(const unsigned int currentStep) {
+    // clearing up step_output
+    this->step_output = "";
 
 	try{
 		//potts is initialized in readXML - so is most of other Steppables etc.
@@ -383,11 +385,15 @@ void Simulator::step(const unsigned int currentStep) {
 
 		// Output statisitcs
 		if(ppdCC3DPtr->debugOutputFrequency && ! (currentStep % ppdCC3DPtr->debugOutputFrequency) ){
-			cerr << "Step " << currentStep << " "
+            stringstream oss;
+
+			oss << "Step " << currentStep << " "
 				<< "Flips " << flips << "/" << flipAttempts << " "
 				<< "Energy " << potts.getEnergy() << " "
 				<< "Cells " << potts.getNumCells()<<" Inventory="<<potts.getCellInventory().getCellInventorySize()
 				<< endl;
+            cerr << oss.str();
+            this->add_step_output(oss.str());
 		}
 
 	}catch (const BasicException &e) {
@@ -403,7 +409,17 @@ void Simulator::step(const unsigned int currentStep) {
 
 }
 
+void Simulator::add_step_output(std::string &s) {
+    this->step_output += s;
+}
 
+std::string Simulator::get_step_output() {
+    stringstream oss;
+    oss << potts.get_step_output() << endl;
+
+    oss << "-----Simulator Stats-----" << endl << this->step_output << "-----Simulator Stats-----" << endl;
+    return oss.str();
+}
 
 void Simulator::finish() {
 

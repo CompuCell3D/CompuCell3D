@@ -162,7 +162,6 @@ using namespace CompuCell3D;
     import_array();
 %}
 
-
 // numpy array output from EnergyCalculator
 %apply(bool* INPLACE_ARRAY1, int DIM1) { (bool * mask_array, size_t len) }
 %apply(double* INPLACE_ARRAY1, int DIM1) { (double * double_array, size_t len) }

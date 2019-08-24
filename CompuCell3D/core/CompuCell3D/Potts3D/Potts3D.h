@@ -170,7 +170,7 @@ namespace CompuCell3D {
 		CustomAcceptanceFunction customAcceptanceFunction;
 		bool customAcceptanceExpressionDefined;
 
-
+        std::string step_output;
 
 		FluctuationAmplitudeFunction * fluctAmplFcn;
 
@@ -267,6 +267,10 @@ namespace CompuCell3D {
 		std::vector<Point3D> * getBoundaryPixelVectorPtr() {
 			return &boundaryPixelVector;
 		}
+
+        void add_step_output(std::string &s);
+
+        std::string get_step_output();
 
 		LatticeType getLatticeType();
 

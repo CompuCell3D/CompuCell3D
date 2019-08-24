@@ -1493,10 +1493,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :param mcs: {int} current Monte Carlo step
         :return:
         """
-
+        persistent_globals = CompuCellSetup.persistent_globals
         # creating cml field handler in case lattice output is ON
         if self.__latticeOutputFlag and not self.cmlHandlerCreated:
-            persistent_globals = CompuCellSetup.persistent_globals
             persistent_globals.cml_field_handler = CMLFieldHandler()
             persistent_globals.cml_field_handler.initialize(field_storage=self.fieldStorage)
             self.cmlHandlerCreated = True
@@ -1532,6 +1531,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.simulation.sem.tryAcquire()
         self.simulation.sem.release()
+
+        outputConsole = self.UI.console.getStdErrConsole()
+        outputConsole.setText(persistent_globals.simulator.get_step_output())
+
 
     def handleCompletedStep(self, mcs:int)->None:
         """
