@@ -310,17 +310,24 @@ void Simulator::start() {
 	}catch (const BasicException &e) {
 		cerr << "ERROR: " << e << endl;
 		unloadModules();
-		stringstream errorMessageStream;
-
-		errorMessageStream<<"Exception in C++ code :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
-		recentErrorMessage=errorMessageStream.str();
-		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
+		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
 		if (!newPlayerFlag){
 			throw e;
 		}
 	}
 
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::string Simulator::formatErrorMessage(const BasicException &e){
+    stringstream errorMessageStream;
+    errorMessageStream<<"Exception in C++ code :"<<endl<<e.getMessage()<<endl<<"Location"<<endl<<"FILE :"<<e.getLocation().getFilename()<<endl<<"LINE :"<<e.getLocation().getLine();
+    recentErrorMessage=errorMessageStream.str();
+    cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
+    return recentErrorMessage;
+
+
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Simulator::extraInit(){
 
@@ -345,11 +352,8 @@ void Simulator::extraInit(){
 	}catch (const BasicException &e) {
 		cerr << "ERROR: " << e << endl;
 		unloadModules();
-		stringstream errorMessageStream;
+		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
 
-		errorMessageStream<<"Exception in C++ code :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
-		recentErrorMessage=errorMessageStream.str();
-		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
 		if (!newPlayerFlag){
 			throw e;
 		}
@@ -389,11 +393,8 @@ void Simulator::step(const unsigned int currentStep) {
 	}catch (const BasicException &e) {
 		cerr << "ERROR: " << e << endl;
 		unloadModules();
-		stringstream errorMessageStream;
+		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
 
-		errorMessageStream<<"Exception in C++ code :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
-		recentErrorMessage=errorMessageStream.str();
-		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
 		if (!newPlayerFlag){
 			throw e;
 		}
@@ -420,11 +421,7 @@ void Simulator::finish() {
 
 	}catch (const BasicException &e) {
 		cerr << "ERROR: " << e << endl;
-		stringstream errorMessageStream;
-
-		errorMessageStream<<"Exception in C++ code :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
-		recentErrorMessage=errorMessageStream.str();
-		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
+		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
 		if (!newPlayerFlag){
 			throw e;
 		}

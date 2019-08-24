@@ -813,19 +813,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
                                   QMessageBox.Ok,
                                   QMessageBox.Ok)
 
-        import ParameterScanEnums
-
-        if _errorType == 'Assertion Error' and _traceback_message.startswith(
-                'Parameter Scan ERRORCODE=' + str(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)):
-            self.__cleanAfterSimulation(_exitCode=ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)
-        else:
-            self.__cleanAfterSimulation()
-            print('errorType=', _errorType)
-            syntaxErrorConsole = self.UI.console.getSyntaxErrorConsole()
-            text = "Search \"file.xml\"\n"
-            text += "    file.xml\n"
-            text += _traceback_message
-            syntaxErrorConsole.setText(text)
+        # import ParameterScanEnums
+        #
+        # if _errorType == 'Assertion Error' and _traceback_message.startswith(
+        #         'Parameter Scan ERRORCODE=' + str(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)):
+        #     self.__cleanAfterSimulation(_exitCode=ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)
+        # else:
+        self.__cleanAfterSimulation()
+        print('errorType=', _errorType)
+        syntaxErrorConsole = self.UI.console.getSyntaxErrorConsole()
+        text = "Search \"file.xml\"\n"
+        text += "    file.xml\n"
+        text += _traceback_message
+        syntaxErrorConsole.setText(text)
 
     def handleErrorFormatted(self, _errorMessage):
         '''

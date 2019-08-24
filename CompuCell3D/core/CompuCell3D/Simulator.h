@@ -135,6 +135,7 @@ namespace CompuCell3D {
 		Simulator *getSimulatorPtr(){return this;}
 		ClassRegistry *getClassRegistry() {return classRegistry;}
 
+        std::string formatErrorMessage(const BasicException &e);
 
 		void registerConcentrationField(std::string _name,Field3D<float>* _fieldPtr);
 		std::map<std::string,Field3D<float>*> & getConcentrationFieldNameMap(){
