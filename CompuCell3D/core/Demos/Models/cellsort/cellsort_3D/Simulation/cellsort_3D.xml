@@ -4,7 +4,7 @@
         <Anneal>10</Anneal>
         <Steps>10000</Steps>
         <Temperature>10</Temperature>
-        <Flip2DimRatio>1</Flip2DimRatio>
+        <Flip2DimRatio>1.0</Flip2DimRatio>
         <NeighborOrder>2</NeighborOrder>
     </Potts>
 
@@ -31,6 +31,8 @@
     </Plugin>
 
     <Plugin Name="CenterOfMass"/>
+
+    <Plugin Name="NeighborTracker"/>
 
     <Steppable Type="BlobInitializer">
 
