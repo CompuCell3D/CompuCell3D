@@ -205,16 +205,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
                 ct_all = vtk_to_numpy(self.cell_type_array)
                 cid_all = vtk_to_numpy(self.cell_id_array)
 
-                # cid_unique = []
-                # for idx in range(len(ct_all)):
-                #     if ct_all[idx] == self.used_cell_types_list[actor_counter]:
-                #         cid = cid_all[idx]
-                #         if cid not in cid_unique:
-                #             cid_unique.append(cid_all[idx])
-                #
-                # for idx in range(len(cid_unique)):
-                #     filter_list[actor_counter].SetValue(idx, cid_unique[idx])
-
                 cid_unique = np.unique(cid_all[ct_all == actor_number])
 
                 for idx in range(len(cid_unique)):
