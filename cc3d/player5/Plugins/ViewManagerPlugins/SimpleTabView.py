@@ -510,7 +510,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.update_window_menu()
 
-    def set_cml_args(self, cml_args:argparse.Namespace):
+    def set_cml_args(self, cml_args: argparse.Namespace):
         """
         storing parsed cml arguments
         :param cml_args: {}
@@ -518,7 +518,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         """
         self.cml_args = cml_args
 
-    def override_settings_using_cml_args(self, cml_args:argparse.Namespace)->None:
+    def override_settings_using_cml_args(self, cml_args: argparse.Namespace) -> dict:
         """
         overrides settings using cml arguments
         :param cml_args:
@@ -531,7 +531,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.__sim_file_name = cml_args.input
             start_simulation = True
 
-        self.__imageOutput = not cml_args.noOutput
+        if cml_args.noOutput:
+            # means user did use --noOutput in the CML and we us it to override settings, otherwise we do nothing
+            self.__imageOutput = not cml_args.noOutput
 
         if cml_args.screenshotOutputDir:
             persistent_globals.set_output_dir(output_dir=cml_args.screenshotOutputDir)
@@ -539,7 +541,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if cml_args.screenshot_output_frequency >= 0:
             self.__imageOutput = True
-            if cml_args.screenshot_output_frequency ==0 :
+            if cml_args.screenshot_output_frequency == 0:
                 self.__imageOutput = False
             self.__shotFrequency = cml_args.screenshot_output_frequency
 
@@ -550,9 +552,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if cml_args.playerSettings:
             self.playerSettingsFileName = cml_args.playerSettings
 
-        return {'start_simulation':start_simulation}
+        return {'start_simulation': start_simulation}
 
-    def process_command_line_options(self, cml_args:argparse.Namespace)->None:
+    def process_command_line_options(self, cml_args: argparse.Namespace) -> None:
         """
         initializes player internal variables based on command line input.
         Also if user passes appropriate option this function may get simulation going directly from command line
@@ -627,7 +629,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # from which run script was called
         sim_file_full_name = os.path.join(current_dir, self.__sim_file_name)
 
-
         self.__sim_file_name = sim_file_full_name
         CompuCellSetup.persistent_globals.simulation_file_name = self.__sim_file_name
 
@@ -651,7 +652,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if start_simulation:
             self.__runSim()
 
-    def set_recent_simulation_file(self, file_name:str)->None:
+    def set_recent_simulation_file(self, file_name: str) -> None:
         """
         sets recent simulation file name
         :param file_name: {str}
@@ -663,7 +664,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         CompuCellSetup.persistent_globals.simulation_file_name = self.__sim_file_name
 
-    def reset_control_buttons_and_actions(self)->None:
+    def reset_control_buttons_and_actions(self) -> None:
         """
 
         Resets control buttons and actions - called either after simulation is done
@@ -682,7 +683,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.pif_from_vtk_act.setEnabled(False)
         self.restart_snapshot_from_simulation_act.setEnabled(False)
 
-    def reset_control_variables(self)->None:
+    def reset_control_variables(self) -> None:
         """
         Resets control variables - called either after simulation is done (__cleanAfterSimulation) or in prepareForNewSimulation
         :return: None
@@ -777,7 +778,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.reset_control_variables()
 
-    def prepare_area_for_new_simulation(self)->None:
+    def prepare_area_for_new_simulation(self) -> None:
         """
         Closes all open windows (from previous simulation) and creates new VTK window for the new simulation
         :return:
@@ -787,7 +788,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.add_vtk_window_to_workspace()
 
-    def popup_message(self, title:str, msg:str)->None:
+    def popup_message(self, title: str, msg: str) -> None:
         """
         displays popup message window
         :param title: {str} title
@@ -1102,7 +1103,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.pif_from_vtk_act.triggered.connect(self.__generatePIFFromVTK)
         self.restart_snapshot_from_simulation_act.triggered.connect(self.generate_restart_snapshot)
 
-
         # window menu actions
         self.python_steering_panel_act.triggered.connect(self.addPythonSteeringPanel)
         self.new_graphics_window_act.triggered.connect(self.add_new_graphics_window)
@@ -1212,7 +1212,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.read_screenshot_description_file()
 
-
         self.cmlReplayManager.keep_going()
         self.cmlReplayManager.set_stay_in_current_step(True)
 
@@ -1269,7 +1268,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
     #     CompuCellSetup.initCMLFieldHandler(self.mysim(), self.resultStorageDirectory,
     #                                        self.fieldStorage)  # also creates the /LatticeData dir
 
-    def initializeSimulationViewWidgetRegular(self)->None:
+    def initializeSimulationViewWidgetRegular(self) -> None:
         """
         Initializes Player during simualtion run mode
         :return:
@@ -1535,8 +1534,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         outputConsole = self.UI.console.getStdErrConsole()
         outputConsole.setText(persistent_globals.simulator.get_step_output())
 
-
-    def handleCompletedStep(self, mcs:int)->None:
+    def handleCompletedStep(self, mcs: int) -> None:
         """
         Dispatch function for handleCompletedStep functions
 
@@ -1598,7 +1596,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if pg.restart_manager is not None:
             pg.restart_manager.output_frequency = pg.restart_snapshot_frequency
             pg.restart_manager.allow_multiple_restart_directories = pg.restart_multiple_snapshots
-
 
     def prepareSimulation(self):
         '''
@@ -2405,7 +2402,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             gfw.apply_graphics_window_data(gwd)
 
-
     def setFieldTypesCML(self):
         '''
         initializes field types for VTK vidgets during vtk replay mode
@@ -2414,7 +2410,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # Add cell field
         self.fieldTypes["Cell_Field"] = FIELD_TYPES[0]  # "CellField"
-
 
         for fieldName in list(self.simulation.fieldsUsed.keys()):
             if fieldName != "Cell_Field":
@@ -2720,10 +2715,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         current_sim_file_name = self.__sim_file_name
 
         self.__sim_file_name = QFileDialog.getOpenFileName(self.ui,
-            QApplication.translate('ViewManager', "Open Simulation File"),
-            default_dir,
-            path_filter
-        )
+                                                           QApplication.translate('ViewManager',
+                                                                                  "Open Simulation File"),
+                                                           default_dir,
+                                                           path_filter
+                                                           )
 
         # getOpenFilename may return tuple
         if isinstance(self.__sim_file_name, tuple):
@@ -2978,7 +2974,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if not activeSubWindow:
             return
 
-
         if isinstance(activeSubWindow.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
             activeSubWindow.widget().resetCamera()
 
@@ -3098,7 +3093,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         pif_file_name = str(pif_file_name_selection[0])
         self.simulation.generate_pif_from_vtk(self.simulation.currentFileName, pif_file_name)
 
-    def generate_restart_snapshot(self)->None:
+    def generate_restart_snapshot(self) -> None:
         """
         Generated on-demand restart snapshot
         :return:None
@@ -3130,7 +3125,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             return
 
         restart_manager.output_restart_files(step=pg.simulator.getStep(), on_demand=True)
-
 
     def __configsChanged(self):
         """
