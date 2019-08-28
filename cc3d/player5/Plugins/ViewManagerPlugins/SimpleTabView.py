@@ -10,6 +10,7 @@ import argparse
 import sys
 import re
 import xml
+from pathlib import Path
 import inspect
 from collections import OrderedDict
 from PyQt5.QtCore import *
@@ -40,6 +41,7 @@ import vtk
 from cc3d import CompuCellSetup
 from cc3d.core.RollbackImporter import RollbackImporter
 from cc3d.CompuCellSetup.readers import readCC3DFile
+from typing import Union, Optional
 
 # import cc3d.Version as Version
 FIELD_TYPES = (
@@ -1654,6 +1656,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             return True
 
+    def start_parameter_scan(self, sim_file_name):
+        """
+
+        :param sim_file_name:
+        :return:
+        """
+
+        print ('Starting parameter scan')
+
     def __runSim(self):
         '''
         Slot that actuallt runs the simulation
@@ -1668,6 +1679,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.screenUpdateFrequency = self.__updateScreen
 
         if not self.drawingAreaPrepared:
+            param_scan_flag = self.check_for_param_scan(sim_file_name=self.__sim_file_name)
+            if param_scan_flag:
+                self.start_parameter_scan(sim_file_name=self.__sim_file_name)
+                return
+
             prepare_flag = self.prepareSimulation()
             if prepare_flag:
                 # todo 5 - self.drawingAreaPrepared is initialized elsewhere this is tmp placeholder and a hack
@@ -2700,6 +2716,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
         #  each loaded simulation has to be passed to a function which updates list of recent files
         Configuration.setSetting("RecentSimulations", self.__sim_file_name)
 
+    def check_for_param_scan(self, sim_file_name: Union[str, Path]) -> bool:
+        """
+        Checks for parameter scan simulation
+        :param sim_file_name:
+        :return:
+        """
+
+        param_scan_specs_fname = Path().joinpath(
+            *(Path(sim_file_name).parts[:-1] + ('Simulation', 'ParameterScanSpecs.json')))
+
+        param_scan_flag = param_scan_specs_fname.exists()
+
+        return param_scan_flag
+
     def __openSim(self, fileName=None):
         '''
         This function is called when open file is triggered.
@@ -2728,6 +2758,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                                                            default_dir,
                                                            path_filter
                                                            )
+
 
         # getOpenFilename may return tuple
         if isinstance(self.__sim_file_name, tuple):
