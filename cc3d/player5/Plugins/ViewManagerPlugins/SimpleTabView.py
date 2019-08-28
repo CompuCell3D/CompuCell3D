@@ -132,6 +132,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.__fieldType = ("Cell_Field", FIELD_TYPES[0])
 
+        self.output_step_counter = 0
+        self.output_step_cleanup_interval = 3
+
         # parsed command line args
         self.cml_args = None
 
@@ -1531,8 +1534,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.sem.tryAcquire()
         self.simulation.sem.release()
 
-        outputConsole = self.UI.console.getStdErrConsole()
-        outputConsole.setText(persistent_globals.simulator.get_step_output())
+        output_console = self.UI.console.getStdErrConsole()
+        if self.output_step_counter and not self.output_step_counter % self.output_step_cleanup_interval:
+            output_console.setText(persistent_globals.simulator.get_step_output())
+        else:
+            output_console.setText(output_console.toPlainText() + persistent_globals.simulator.get_step_output())
+
+        self.output_step_counter += 1
 
     def handleCompletedStep(self, mcs: int) -> None:
         """

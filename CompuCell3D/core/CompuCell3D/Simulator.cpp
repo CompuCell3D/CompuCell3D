@@ -383,17 +383,19 @@ void Simulator::step(const unsigned int currentStep) {
 		// Run steppables -after metropilis function is finished you sweep over classRegistry - mainly for outputing purposes
 		classRegistry->step(currentStep);
 
+        stringstream oss;
+
+        oss << "Step " << currentStep << " "
+            << "Flips " << flips << "/" << flipAttempts << " "
+            << "Energy " << potts.getEnergy() << " "
+            << "Cells " << potts.getNumCells() << " Inventory=" << potts.getCellInventory().getCellInventorySize() << endl;
+        oss << potts.get_step_output() << endl;
+        this->add_step_output(oss.str());
 		// Output statisitcs
 		if(ppdCC3DPtr->debugOutputFrequency && ! (currentStep % ppdCC3DPtr->debugOutputFrequency) ){
-            stringstream oss;
-
-			oss << "Step " << currentStep << " "
-				<< "Flips " << flips << "/" << flipAttempts << " "
-				<< "Energy " << potts.getEnergy() << " "
-				<< "Cells " << potts.getNumCells()<<" Inventory="<<potts.getCellInventory().getCellInventorySize()
-				<< endl;
+				
             cerr << oss.str();
-            this->add_step_output(oss.str());
+            
 		}
 
 	}catch (const BasicException &e) {
@@ -415,10 +417,12 @@ void Simulator::add_step_output(std::string &s) {
 
 std::string Simulator::get_step_output() {
     stringstream oss;
-    oss << potts.get_step_output() << endl;
+    //oss << potts.get_step_output() << endl;
 
-    oss << "-----Simulator Stats-----" << endl << this->step_output << "-----Simulator Stats-----" << endl;
-    return oss.str();
+    //oss << "-----Simulator Stats-----" << endl << this->step_output << "-----Simulator Stats-----" << endl;
+
+    /*return oss.str();*/
+    return this->step_output;
 }
 
 void Simulator::finish() {

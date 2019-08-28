@@ -534,7 +534,8 @@ unsigned int Potts3D::metropolis(const unsigned int steps, const double temp) {
 }
 
 unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp) {
-	cerr << "metropolisList" << endl;
+    this->step_output = "";
+	
 	ASSERT_OR_THROW("Potts3D: cell field G not initialized", cellFieldG);
 
 	// ParallelUtilsOpenMP * pUtils=sim->getParallelUtils();
@@ -690,7 +691,14 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 	}//#pragma omp parallel 
 	unsigned int currentStep = sim->getStep();
 	if (debugOutputFrequency && !(currentStep % debugOutputFrequency)) {
-		cerr << "Number of Attempted Energy Calculations=" << attemptedEC << endl;
+        stringstream oss;
+        oss << "Metropolis List" << endl;
+        oss << "Number of Attempted Energy Calculations=" << attemptedEC << endl;
+        cerr << oss.str() << endl;
+        add_step_output(oss.str());
+
+
+		
 	}
 	return flips;
 }
@@ -705,7 +713,7 @@ void Potts3D::add_step_output(std::string &s) {
 
 std::string Potts3D::get_step_output() {
     stringstream oss;
-    oss << "-----Potts Stats-----" << endl << this->step_output << endl;
+    oss <<this->step_output << endl;
     return oss.str();
 }
 
@@ -1004,7 +1012,7 @@ Point3D Potts3D::randomPickBoundaryPixel(BasicRandomNumberGeneratorNonStatic * r
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const double temp) {
 
-
+    this->step_output = "";
 
 	ASSERT_OR_THROW("BoundaryWalker Algorithm works only in single processor mode. Please change number of processors to 1", pUtils->getNumberOfWorkNodesPotts() == 1);
 
