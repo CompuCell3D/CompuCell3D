@@ -1184,7 +1184,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, self.dim)
         return np.array([dist_vec.x, dist_vec.y, dist_vec.z])
 
-    @deprecated(version='4.0.0', reason="You should use : vectorNorm")
+    @deprecated(version='4.0.0', reason="You should use : vector_norm")
     def vectorNorm(self, _vec):
         return self.vector_norm(vec=_vec)
 
