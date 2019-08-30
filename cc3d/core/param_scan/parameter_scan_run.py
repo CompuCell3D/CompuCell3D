@@ -23,10 +23,10 @@ def process_cml():
     cml_parser.add_argument('-o', '--output-dir', required=True, action='store',
                             help='path to the output folder to store parameter scan results')
     cml_parser.add_argument('-f', '--output-frequency', required=False, action='store', default=0, type=int,
-                            help='simulation snapshot output frequency')
+                            help='simulation snapshot output frequency', dest='output_frequency')
     cml_parser.add_argument('--screenshot-output-frequency', required=False, action='store', default=0, type=int,
                             help='screenshot output frequency')
-    cml_parser.add_argument('--gui', required=False, action='store_true',default=False,
+    cml_parser.add_argument('--gui', required=False, action='store_true', default=False,
                             help='flag indicating whether to use Player or not')
     cml_parser.add_argument('--install-dir', required=True, type=str, help='CC3D install directory')
 
@@ -52,11 +52,14 @@ if __name__ == '__main__':
     args = process_cml()
 
     cc3d_proj_fname = args.input
+    cc3d_proj_fname = cc3d_proj_fname.replace('"', '')
     output_dir = args.output_dir
+    output_dir = output_dir.replace('"', '')
     gui_flag = args.gui
     output_frequency = args.output_frequency
     screenshot_output_frequency = args.screenshot_output_frequency
     install_dir = args.install_dir
+    install_dir = install_dir.replace('"', '')
 
     run_script = find_run_script(install_dir=install_dir, gui_flag=gui_flag)
 
@@ -78,7 +81,7 @@ if __name__ == '__main__':
 
             print('There exists a {lock_file} that prevents param scan from running. '
                   'Please remove this file and start again'.format(
-                    lock_file=Path(output_dir).joinpath('param_scan_status.lock')))
+                lock_file=Path(output_dir).joinpath('param_scan_status.lock')))
 
             break
 
@@ -92,7 +95,7 @@ if __name__ == '__main__':
             '--screenshot-output-frequency={}'.format(screenshot_output_frequency)
         ]
 
-        run_single_param_scan_simulation(cc3d_proj_fname=cc3d_proj_fname,run_script=run_script, gui_flag=gui_flag,
+        run_single_param_scan_simulation(cc3d_proj_fname=cc3d_proj_fname, run_script=run_script, gui_flag=gui_flag,
                                          current_scan_parameters=current_scan_parameters, output_dir=output_dir,
                                          arg_list=arg_list)
 

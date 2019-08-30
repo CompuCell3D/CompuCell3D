@@ -29,6 +29,7 @@ from cc3d.core.BasicSimulationData import BasicSimulationData
 from cc3d.player5.Graphics.GraphicsWindowData import GraphicsWindowData
 from cc3d.player5.Simulation.CMLResultReader import CMLResultReader
 from cc3d.player5.Simulation.SimulationThread import SimulationThread
+from cc3d.player5.Launchers.param_scan_dialog import ParamScanDialog
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
 from cc3d.player5 import Graphics
 from cc3d.core import XMLUtils
@@ -1663,11 +1664,45 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:
         """
 
-        print ('Starting parameter scan')
+        pg = CompuCellSetup.persistent_globals
+
+        param_scan_dialog = ParamScanDialog()
+        try:
+            prefix_cc3d = os.environ['PREFIX_CC3D']
+        except KeyError:
+            prefix_cc3d = ''
+
+        param_scan_dialog.install_dir_LE.setText(prefix_cc3d)
+        param_scan_dialog.param_scan_simulation_LE.setText(self.__sim_file_name)
+
+        default_output_dir = pg.output_directory
+        sim_core = Path(self.__sim_file_name).stem
+
+        proposed_output_dir = Path('').joinpath(Path(default_output_dir).parent,
+                                                Path(self.__sim_file_name).stem + 'ParameterScan')
+
+        Path(default_output_dir)
+
+        param_scan_dialog.output_dir_LE.setText(str(proposed_output_dir))
+
+        if param_scan_dialog.exec_():
+            # starting param scan
+            from subprocess import Popen
+            try:
+                cml_list = param_scan_dialog.get_cml_list()
+            except RuntimeError as e:
+                self.handleErrorFormatted(f"Could not run parameter scan: Here is the reason: {str(e)}")
+                return
+            print('executing')
+            print(cml_list)
+            Popen(cml_list)
+
+
+        print('Starting parameter scan')
 
     def __runSim(self):
         '''
-        Slot that actuallt runs the simulation
+        Slot that actually runs the simulation
         :return:None
         '''
 
@@ -2758,7 +2793,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
                                                            default_dir,
                                                            path_filter
                                                            )
-
 
         # getOpenFilename may return tuple
         if isinstance(self.__sim_file_name, tuple):
