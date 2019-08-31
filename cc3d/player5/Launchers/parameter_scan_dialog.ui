@@ -135,7 +135,7 @@
      <item>
       <widget class="QPushButton" name="update_cml_PB">
        <property name="text">
-        <string>Update Command Line</string>
+        <string>Display Command Line</string>
        </property>
       </widget>
      </item>
