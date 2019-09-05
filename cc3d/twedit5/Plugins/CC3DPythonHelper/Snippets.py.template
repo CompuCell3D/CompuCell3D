@@ -1,6 +1,11 @@
 ===============  # @Menu@ Python Utilities
 
 ----------  # @Submenu@ Open File In Simulation Output Directory
+file_obj, file_path = self.open_file_in_simulation_output_folder("<FILE_NAME>", mode='w')
+if file_obj is None:
+    return
+
+----------  # @Submenu@ Open File In Simulation Output Directory (low-level)
 from pathlib import Path
 
 if self.output_dir is not None:

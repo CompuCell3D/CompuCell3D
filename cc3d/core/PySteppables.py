@@ -1,4 +1,5 @@
 import itertools
+from pathlib import Path
 import numpy as np
 from collections import OrderedDict
 from cc3d.core.iterators import *
@@ -245,6 +246,24 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.clonable_attribute_names = ['lambdaVolume', 'targetVolume', 'targetSurface', 'lambdaSurface',
                                          'targetClusterSurface', 'lambdaClusterSurface', 'type', 'lambdaVecX',
                                          'lambdaVecY', 'lambdaVecZ', 'fluctAmpl']
+
+    def open_file_in_simulation_output_folder(self, file_name:str, mode:str='w') -> tuple:
+        """
+        attempts to open file in the simulation output folder
+
+        :param file_name:
+        :param mode:
+        :return: tuple of (file_obj, full filepath)
+        """
+        if self.output_dir is not None:
+            output_path = Path(self.output_dir).joinpath(file_name)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                file_handle = open(output_path, 'w')
+            except IOError:
+                print("Could not open file for writing.")
+                return None, None
+            return file_handle, output_path
 
     def core_init(self, reinitialize_cell_types=True):
         """
