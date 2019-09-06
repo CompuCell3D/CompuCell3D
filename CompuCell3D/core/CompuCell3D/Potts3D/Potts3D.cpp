@@ -707,7 +707,7 @@ Point3D Potts3D::getFlipNeighbor() {
 	return flipNeighborVec[sim->getParallelUtils()->getCurrentWorkNodeNumber()];
 }
 
-void Potts3D::add_step_output(std::string &s) {
+void Potts3D::add_step_output(const std::string &s) {
     this->step_output += s;
 }
 

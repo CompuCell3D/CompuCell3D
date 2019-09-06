@@ -268,7 +268,7 @@ namespace CompuCell3D {
 			return &boundaryPixelVector;
 		}
 
-        void add_step_output(std::string &s);
+        void add_step_output(const std::string &s);
 
         std::string get_step_output();
 

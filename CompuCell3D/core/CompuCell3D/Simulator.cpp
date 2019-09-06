@@ -411,7 +411,7 @@ void Simulator::step(const unsigned int currentStep) {
 
 }
 
-void Simulator::add_step_output(std::string &s) {
+void Simulator::add_step_output(const std::string &s) {
     this->step_output += s;
 }
 

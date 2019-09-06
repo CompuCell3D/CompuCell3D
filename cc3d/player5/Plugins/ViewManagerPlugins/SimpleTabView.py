@@ -1545,24 +1545,24 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.sem.release()
 
         output_console = self.UI.console.getStdErrConsole()
+        if persistent_globals.simulator is not None:
+            single_step_output = persistent_globals.simulator.get_step_output()
 
-        single_step_output = persistent_globals.simulator.get_step_output()
+            repeat_flag = False
+            if len(self.step_output_list) and self.step_output_list[-1] == single_step_output:
+                repeat_flag = True
 
-        repeat_flag = False
-        if len(self.step_output_list) and self.step_output_list[-1] == single_step_output:
-            repeat_flag = True
+            # self.output_step_counter > self.output_step_max_items:
+            if not repeat_flag:
+                self.step_output_list.append(single_step_output)
 
-        # self.output_step_counter > self.output_step_max_items:
-        if not repeat_flag:
-            self.step_output_list.append(single_step_output)
+            if len(self.step_output_list) > self.output_step_max_items:
+                self.step_output_list.pop(0)
 
-        if len(self.step_output_list) > self.output_step_max_items:
-            self.step_output_list.pop(0)
-
-        out_str = ''
-        for s in self.step_output_list:
-            out_str += s
-        output_console.setText(out_str)
+            out_str = ''
+            for s in self.step_output_list:
+                out_str += s
+            output_console.setText(out_str)
 
     def handleCompletedStep(self, mcs: int) -> None:
         """

@@ -109,7 +109,7 @@ namespace CompuCell3D {
 		virtual ~Simulator();
 		//     PluginManager::plugins_t & getPluginMap(){return pluginManager.getPluginMap();}
 
-        void add_step_output(std::string &s);
+        void add_step_output(const std::string &s);
         std::string get_step_output();
 
 		//Error handling functions
