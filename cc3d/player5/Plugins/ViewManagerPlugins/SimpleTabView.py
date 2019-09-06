@@ -85,6 +85,9 @@ else:
 class SimpleTabView(MainArea, SimpleViewManager):
     configsChanged = pyqtSignal()
 
+    # used to trigger redraw after config changed
+    redoCompletedStepSignal = pyqtSignal()
+
     def __init__(self, parent):
 
         # QMainWindow -> UI.UserInterface
@@ -135,8 +138,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.__fieldType = ("Cell_Field", FIELD_TYPES[0])
 
-        self.output_step_counter = 0
-        self.output_step_cleanup_interval = 3
+        self.output_step_max_items = 3
+        self.step_output_list = []
 
         # parsed command line args
         self.cml_args = None
@@ -400,6 +403,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         new_window.hide()
 
+        # this way we update draw models
         self.configsChanged.connect(new_window.configsChanged)
 
         mdi_window = self.addSubWindow(new_window)
@@ -451,6 +455,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # self.mainGraphicsWidget.hide()
         # return
 
+        # this way we update draw models if configs change
         self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
 
         self.simulation.setGraphicsWidget(self.mainGraphicsWidget)
@@ -772,6 +777,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.simulation.simulationFinished.connect(self.handleSimulationFinished)
             self.simulation.completedStep.connect(self.handleCompletedStep)
             self.simulation.finishRequest.connect(self.handleFinishRequest)
+            self.redoCompletedStepSignal.connect(self.simulation.redoCompletedStep)
+            # self.configsChanged.connect(self.simulation.redoCompletedStep)
 
             self.plotManager.initSignalAndSlots()
             self.widgetManager.initSignalAndSlots()
@@ -1538,12 +1545,24 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.sem.release()
 
         output_console = self.UI.console.getStdErrConsole()
-        if self.output_step_counter and not self.output_step_counter % self.output_step_cleanup_interval:
-            output_console.setText(persistent_globals.simulator.get_step_output())
-        else:
-            output_console.setText(output_console.toPlainText() + persistent_globals.simulator.get_step_output())
 
-        self.output_step_counter += 1
+        single_step_output = persistent_globals.simulator.get_step_output()
+
+        repeat_flag = False
+        if len(self.step_output_list) and self.step_output_list[-1] == single_step_output:
+            repeat_flag = True
+
+        # self.output_step_counter > self.output_step_max_items:
+        if not repeat_flag:
+            self.step_output_list.append(single_step_output)
+
+        if len(self.step_output_list) > self.output_step_max_items:
+            self.step_output_list.pop(0)
+
+        out_str = ''
+        for s in self.step_output_list:
+            out_str += s
+        output_console.setText(out_str)
 
     def handleCompletedStep(self, mcs: int) -> None:
         """
@@ -2070,9 +2089,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if self.__viewManagerType == "CMLResultReplay":
             self.cmlReplayManager.set_run_state(state=PAUSE_STATE)
 
-        self.simulation.semPause.acquire()
-        self.run_act.setEnabled(True)
-        self.pause_act.setEnabled(False)
+        semaphore_unlocked = self.simulation.semPause.available()
+
+        if semaphore_unlocked:
+            self.simulation.semPause.acquire()
+            self.run_act.setEnabled(True)
+            self.pause_act.setEnabled(False)
 
     def __saveWindowsLayout(self):
         """
@@ -3111,6 +3133,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             #            dlg.setPreferences()
             Configuration.syncPreferences()
             self.__configsChanged()  # Explicitly calling signal 'configsChanged'
+            self.__redoCompletedStep()
 
     def __generatePIFFromCurrentSnapshot(self):
         '''
@@ -3205,6 +3228,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         """
         self.configsChanged.emit()
+
+    def __redoCompletedStep(self):
+        """
+        requests redo of the completed step
+        :return: None
+        """
+
+        self.redoCompletedStepSignal.emit()
 
     def setModelEditor(self, modelEditor):
         '''
