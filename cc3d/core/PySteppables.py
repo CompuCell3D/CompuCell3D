@@ -56,6 +56,22 @@ class SteppablePy:
         """
 
 
+class FieldVisData:
+    (CELL_LEVEL_SCALAR_FIELD, CELL_LEVEL_VECTOR_FIELD, HISTOGRAM) = list(range(0, 3))
+
+    def __init__(self, field_name, field_type, attribute_name, function_obj=None):
+        self.field = None
+        self.field_name = field_name
+        self.function_obj = function_obj
+        self.attribute_name = attribute_name
+        self.number_of_bins = 0
+        self.cell_type_list = []
+        if function_obj is None:
+            self.function_obj = lambda x: x
+
+        self.field_type = field_type
+
+
 class FieldFetcher:
     def __init__(self):
         """
@@ -168,6 +184,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         # {plot_name:plotWindow  - pW object}
         self.plot_dict = {}
 
+        # {field_name:FieldVisData } -  used to keep track of simple cell tracking visualizations
+        self.tracking_field_vis_dict = {}
+
         self.plugin_init_dict = {
             "NeighborTracker": ['neighbor_tracker_plugin', 'neighborTrackerPlugin'],
             "FocalPointPlasticity": ['focal_point_plasticity_plugin', 'focalPointPlasticityPlugin'],
@@ -182,7 +201,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             "ContactLocalProduct": ['contact_local_product_plugin', 'contactLocalProductPlugin'],
             "ContactMultiCad": ['contact_multi_cad_plugin', 'contactMultiCadPlugin'],
             "LengthConstraint": ['length_constraint_plugin', 'lengthConstraintPlugin',
-                                 'length_constraint_local_flex_plugin' , 'lengthConstraintLocalFlexPlugin'],
+                                 'length_constraint_local_flex_plugin', 'lengthConstraintLocalFlexPlugin'],
             "ConnectivityGlobal": ['connectivity_global_plugin', 'connectivityGlobalPlugin'],
             "ConnectivityLocalFlex": ['connectivity_local_flex_plugin', 'connectivityLocalFlexPlugin'],
             "Chemotaxis": ['chemotaxis_plugin', 'chemotaxisPlugin'],
@@ -192,12 +211,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             "PlasticityTracker": ['plasticity_tracker_plugin', 'plasticityTrackerPlugin'],
             "MomentOfInertia": ['moment_of_inertia_plugin', 'momentOfInertiaPlugin'],
             "OrientedGrowth": ['oriented_growth_plugin', 'orientedGrowthPlugin'],
-            "Secretion":["secretion_plugin", 'secretionPlugin']
+            "Secretion": ["secretion_plugin", 'secretionPlugin']
 
         }
-
-
-
 
         # used by clone attributes functions
         self.clonable_attribute_names = ['lambdaVolume', 'targetVolume', 'targetSurface', 'lambdaSurface',
@@ -239,7 +255,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         self.fetch_loaded_plugins()
 
-
     def fetch_loaded_plugins(self) -> None:
         """
         Processes self.plugin_init_dict and initializes member variables according to specification in
@@ -277,14 +292,81 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                 for plugin_member_name in member_var_list:
                     setattr(self, plugin_member_name, None)
 
+    def fetch_attribute(self, cell:object, attrib_name: str):
+        """
+        Fetches element of a dictionary attached to a cell or an attribute of cell (e.g.
+        volume or lambdaSurface)
+        :param cell:
+        :param attrib_name:
+        :return:
+        """
+        try:
+            return cell.dict[attrib_name]
+        except KeyError:
+            try:
+                return getattr(cell, attrib_name)
+            except AttributeError:
+                raise KeyError('Could not locate attribute: ' + attrib_name + ' in a cell object')
+
+    def update_tracking_plot(self):
+        return
+        for plot_name, tracking_plot_data in self.tracking_plot_dict.iteritems():
+            if tracking_plot_data.plot_type == PlotData.HISTOGRAM:
+                self.update_tracking_histogram(tracking_plot_data)
+
+    def update_tracking_fields(self):
+        """
+        Method that updates tracking fields that were initialized using track_cell_level... function
+        :return: None
+        """
+        # tracking visualization part
+        for field_name, field_vis_data in self.tracking_field_vis_dict.items():
+
+            field_vis_data.field.clear()
+
+            if field_vis_data.cell_type_list == []:
+                selective_cell_list = self.cellList
+            else:
+                # unpacking lsit to positional arguments - using * operator
+                selective_cell_list = self.cellListByType(*tpd.cell_type_list)
+
+            try:
+                for cell in selective_cell_list:
+                    try:
+                        # attrib = cell.dict[field_vis_data.attribute_name]
+                        attrib = self.fetch_attribute(cell, field_vis_data.attribute_name)
+
+                    except KeyError:
+                        continue
+                    field_vis_data.field[cell] = field_vis_data.function(attrib)
+            except:
+                raise RuntimeError(
+                    'Automatic Attribute Tracking :'
+                    'wrong type of cell attribute, '
+                    'Missing attribute or wrong tracking function is used by track_cell_level functions')
+
+    def initialize_tracking_fields(self):
+        """
+
+        :return:
+        """
+        for field_name, field_vis_data in self.tracking_field_vis_dict.items():
+            # (CELL_LEVEL_SCALAR_FIELD, CELL_LEVEL_VECTOR_FIELD, HISTOGRAM)
+
+            if field_vis_data.field_type == field_vis_data.CELL_LEVEL_SCALAR_FIELD:
+                self.create_scalar_field_cell_level_py(field_name)
+
+            elif field_vis_data.field_type == field_vis_data.CELL_LEVEL_VECTOR_FIELD:
+                self.create_vector_field_cell_level_py(field_name)
+
     def perform_automatic_tasks(self):
         """
         Performs automatic tasks that normally woudl need to be called explicitely in tyhe steppale code
         updating plots at the end of steppable is one such task
         :return:
         """
-        # self.update_tracking_fields()
-        # self.update_tracking_plot()
+        self.update_tracking_fields()
+        self.update_tracking_plot()
         self.update_all_plots_windows()
 
     def update_all_plots_windows(self):
@@ -785,7 +867,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def changeNumberOfWorkNodes(self, _numberOfWorkNodes):
         return self.change_number_of_work_nodes(number_of_work_nodes=_numberOfWorkNodes)
 
-    def change_number_of_work_nodes(self, number_of_work_nodes:int):
+    def change_number_of_work_nodes(self, number_of_work_nodes: int):
         """
         changes number of CPU's while simulation runs
         :param number_of_work_nodes:
@@ -796,7 +878,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         number_of_work_nodes_ev.oldNumberOfNodes = 1
         number_of_work_nodes_ev.newNumberOfNodes = number_of_work_nodes
         self.simulator.postEvent(number_of_work_nodes_ev)
-
 
     @deprecated(version='4.0.0', reason="You should use : resize_and_shift_lattice")
     def resizeAndShiftLattice(self, _newSize, _shiftVec=(0, 0, 0)):
@@ -1063,7 +1144,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         return None
 
-
     @deprecated(version='4.0.0', reason="You should use : move_cell")
     def moveCell(self, cell, shiftVector):
         return self.move_cell(cell=cell, shift_vector=shiftVector)
@@ -1316,7 +1396,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             'Secreion Plugin can be defined by including <Plugin Name="Secretion"/> in the XML')
 
     @deprecated(version='4.0.0', reason="You should use : hex_2_cartesian")
-    def hex2Cartesian(self,_in):
+    def hex2Cartesian(self, _in):
         return self.hex_2_cartesian(coords=_in)
 
     def hex_2_cartesian(self, coords):
@@ -1435,7 +1515,27 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def set_max_mcs(self, max_mcs):
         self.simulator.setNumSteps(max_mcs)
 
+    def track_cell_level_scalar_attribute(self, field_name, attribute_name, function_obj=None,
+                                          cell_type_list=[]):
 
+        field_vis_data = FieldVisData(field_name=field_name,
+                                      field_type=FieldVisData.CELL_LEVEL_SCALAR_FIELD,
+                                      attribute_name=attribute_name,
+                                      function_obj=function_obj)
+        field_vis_data.cell_type_list = cell_type_list
+
+        self.tracking_field_vis_dict[field_name] = field_vis_data
+
+    def track_cell_level_vector_attribute(self, field_name, attribute_name, function_obj=None,
+                                          cell_type_list=[]):
+
+        field_vis_data = FieldVisData(field_name=field_name,
+                                      field_type=FieldVisData.CELL_LEVEL_VECTOR_FIELD,
+                                      attribute_name=attribute_name,
+                                      function_obj=function_obj)
+        field_vis_data.cell_type_list = cell_type_list
+
+        self.tracking_field_vis_dict[field_name] = field_vis_data
 
 
 class MitosisSteppableBase(SteppableBasePy):
