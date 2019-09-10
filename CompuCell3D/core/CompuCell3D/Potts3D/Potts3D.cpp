@@ -283,15 +283,15 @@ EnergyFunction * Potts3D::getConnectivityConstraint() { return connectivityConst
 
 bool Potts3D::localConectivityAlgorithm(Point3D changePixel, Point3D flipNeighbor)
 {
-	
+
 	return (this->*localConPtr)(changePixel, flipNeighbor);
-	
+
 	//change goes from flip to change
-	
+
 	/*
 	bool localConected = true;
-	
-	
+
+
 	CellG *changeCell = cellFieldG->get(changePixel);
 
 	CellG *flipCell = cellFieldG->get(flipNeighbor);
@@ -300,7 +300,7 @@ bool Potts3D::localConectivityAlgorithm(Point3D changePixel, Point3D flipNeighbo
 
 	Neighbor neighbor;
 
-	
+
 
 	// check conectivity
 
@@ -361,7 +361,7 @@ bool Potts3D::localConectivityAlgorithm(Point3D changePixel, Point3D flipNeighbo
 
 
 			}
-			
+
 
 			//corner cases
 			else if (changePixel.y+1 == neighbor.pt.y)
@@ -434,24 +434,27 @@ bool Potts3D::localConect2D(Point3D changePixel, Point3D flipNeighbor)
 	/*
 	* Function to check the local conectivity of a cell in the flip pixel.
 	* Based on https://doi.org/10.1016/j.cpc.2016.07.030
-	* Durand, Marc, and Etienne Guesnet. "An efficient Cellular Potts Model 
-	* algorithm that forbids cell fragmentation." Computer Physics 
+	* Durand, Marc, and Etienne Guesnet. "An efficient Cellular Potts Model
+	* algorithm that forbids cell fragmentation." Computer Physics
 	* Communications 208 (2016): 54-63.
-	* 
+	*
 	* Change pixel is the pixel being changed. The value being copied to change
 	* pixel in the one of flip neighbor.
-	* 
+	*
 	* The algorithm only cares about the imediate vicinity (Moore neighb, order II,
 	* all 8 - 2d -  touching pixels) of changePixel.
-	* 
-	* The idea is to get all of the pixels in the neighborhood first. I do this 
+	*
+	* The idea is to get all of the pixels in the neighborhood first. I do this
 	* because I have to check some neighbors of the neighbor pixel. I won't cicle
-	* through all of the neighbors' neighbors, just check a few. But when near the 
+	* through all of the neighbors' neighbors, just check a few. But when near the
 	* border I could be picking an invalid pixel, get neighbor direct takes care
 	* of checking valied pixels.
-	* 
-	* However, I still will need to figure out the periodic boundary case. How to go to the 
+	*
+	* However, I still will need to figure out the periodic boundary case. How to go to the
 	* other side of the lattice eficiently? Better yet, with some method that has been written?
+	*
+	* Is this method valid for flip distances >1?
+	*
 	*/
 
 	bool localConected = true;
@@ -459,29 +462,48 @@ bool Potts3D::localConect2D(Point3D changePixel, Point3D flipNeighbor)
 
 	CellG *changeCell = cellFieldG->get(changePixel);
 
+	if (!changeCell)return localConected;//if it is medium we don't care
+
 	CellG *flipCell = cellFieldG->get(flipNeighbor);
 
 	CellG *nCell = 0;
 
 	Neighbor neighbor;
 
-	
+
 	//finalMooreNeighborIndex
 	unsigned int fMooreNeighIdx = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(2);
+	unsigned int fNeumanNeighIdx = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(1);
 
 
 
 	//what if I make a list of pixels that are in the order 2, then when creating
 	// the left/right/up/down pixels I can check that it is in the list.
 	//this way I am already using method to check boundaries, hex, etc.
+	//But the algorithm will be different for hex! So I need to add a function for that later
 
 	// neighbors
 
 	std::vector<Point3D> search_domain;
 
+	int neig_px_same_cell = 0; //neighboring px to changePixel that are of same cell
+
 	search_domain.clear();
 
-	for (unsigned int nIdx = 0; nIdx <= fMooreNeighIdx; ++nIdx) // need to check the actual index
+	for (unsigned int nIdx = 0; nIdx <= fNeumanNeighIdx; ++nIdx)
+	{
+		neighbor = boundaryStrategy->getNeighborDirect(
+			const_cast<Point3D&>(changePixel), nIdx);
+		if (!neighbor.distance) {
+			//if distance is 0 then the neighbor returned is invalid
+			continue;
+		}
+
+		if (changeCell == cellFieldG->get(neighbor.pt)) ++neig_px_same_cell;
+	}
+
+
+	for (unsigned int nIdx = 0; nIdx <= fMooreNeighIdx; ++nIdx) //this loop might be useless
 	{
 		neighbor = boundaryStrategy->getNeighborDirect(
 			const_cast<Point3D&>(changePixel), nIdx);
@@ -492,180 +514,222 @@ bool Potts3D::localConect2D(Point3D changePixel, Point3D flipNeighbor)
 		search_domain.push_back(neighbor.pt);
 	}
 
-
-
-	for (unsigned int nIdx = 0; nIdx <= fMooreNeighIdx; ++nIdx)
+	if (neig_px_same_cell > 1)
 	{
-		neighbor = boundaryStrategy->getNeighborDirect(
-			const_cast<Point3D&>(changePixel), nIdx);
-		if (!neighbor.distance) {
-			//if distance is 0 then the neighbor returned is invalid
-			continue;
-		}
-		nCell = cellFieldG->get(neighbor.pt);
+		bool N, E, S, W, NE, NW, SW, SE; // a flag for each cardinal position, true if that pixel bellongs to changeCell too.
+		Point3D N_pt, E_pt, S_pt, W_pt, NE_pt, NW_pt, SW_pt, SE_pt;
 
-		if (!nCell)//if it's  medium we don't care
+		N_pt.y += 1; E_pt.x += 1; S_pt.y -= 1; W_pt.x -= 1; //still need to see the proper method for going trough border
+		NE_pt.y += 1; NE_pt.x += 1;
+		NW_pt.y += 1; NW_pt.x -= 1;
+		SW_pt.y -= 1; SW_pt.x -= 1;
+		SE_pt.y -= 1; SE_pt.x += 1;
+
+		N = (cellFieldG->get(N_pt) == changeCell);
+		E = (cellFieldG->get(E_pt) == changeCell);
+		S = (cellFieldG->get(S_pt) == changeCell);
+		W = (cellFieldG->get(W_pt) == changeCell);
+
+		NE = (cellFieldG->get(NE_pt) == changeCell);
+		NW = (cellFieldG->get(NW_pt) == changeCell);
+		SW = (cellFieldG->get(SW_pt) == changeCell);
+		SE = (cellFieldG->get(SE_pt) == changeCell);
+		/*
+		*neig_px_same_cell = 1 -> alway true
+		* If neig_px_same_cell=2: If they are opposed, not locally connected.
+		* 					 If they are corner-adjacent (e.g., West and North),
+		*                  the north-West site must also have same value to have local connectivity.
+		* If neig_px_same_cell=3: We look for the one which is not identical; if the
+		*                 two opposed sites in the corners have the same value
+		*                 as the central one, local connectivity is satisfied. Otherwise, it is not.
+		* need to think about 4.
+		*/
+		if ((neig_px_same_cell == 2 && !((N && E && NE) || (N && W && NW) || (S && E && SE) || (S && W && SW))) ||
+			(neig_px_same_cell == 3 && !((S || (NE&&NW)) && (E || (NW&&SW)) && (N || (SE&&SW)) && (W || (SE&&NE)))))
 		{
-			continue;
+			localConected = false;
 		}
 
-		
-
-
-		if (nCell == changeCell || nCell == flipCell) //since we've already know the source-target cells we don't need to check for others
-		{
-
-			//north => changePixel.y+1 == pt.y; x=x
-			//south => changePixel.y-1 == pt.y; x=x
-
-			//east => changePixel.x+1 == pt.x; y=y
-			//west => changePixel.x-1 == pt.x; y=y
-			if (changePixel.x == neighbor.pt.x)//north-south case
-			{
-
-				//might have issues with borders
-
-				Point3D right_pt = neighbor.pt;
-				right_pt.x += 1;
-
-				bool valid_right = boundaryStrategy->isValid(right_pt);//still need the check for across boundary
-				
-				bool valid_right = (boundaryStrategy->isValid(right_pt) ? true : strategy_x->applyCondition(x, dim.x)
-					);
-				
-				if (std::any_of(search_domain.begin(), search_domain.end(),right_pt) &&
-					valid_right)
-				{
-					if(nCell == cellFieldG->get(right_pt))
-					{
-						bool right_conceted = true;
-					}
-					else
-					{
-						bool right_conceted = false;
-					}
-					
-				}
-
-				
-
-				Point3D left_pt = neighbor.pt;
-				left_pt.x -= 1;
-
-				bool valid_left = boundaryStrategy->isValid(left_pt);//still need the check for across boundary
-				if (std::any_of(search_domain.begin(), search_domain.end(), left_pt) &&
-					valid_left)
-				{
-					if (nCell == cellFieldG->get(left_pt))
-					{
-						bool left_conceted = true;
-					}
-					else
-					{
-						bool left_conceted = false;
-					}
-
-				}
-
-				if (!(right_conceted || left_conceted))
-				{
-
-				}
-
-
-				/*if (!(nCell == cellFieldG->get(right_pt) || nCell == cellFieldG->get(left_pt)))
-				{
-					localConected = false;
-					return localConected;
-				}
-*/
-
-			}
-			else if (changePixel.y == neighbor.pt.y)//east-west case
-			{
-				//might have issues with borders
-				Point3D up_pt = neighbor.pt;
-				up_pt.y += 1;
-				Point3D down_pt = neighbor.pt;
-				down_pt.y -= 1;
-
-				if (!(nCell == cellFieldG->get(up_pt) || nCell == cellFieldG->get(down_pt)))
-				{
-					localConected = false;
-					return localConected;
-				}
-
-
-			}
-			
-			//corner cases
-			else if (changePixel.y + 1 == neighbor.pt.y)
-			{
-				if (changePixel.x + 1 == neighbor.pt.x)//upper right corner
-				{
-					Point3D left_pt = neighbor.pt;
-					left_pt.x -= 1;
-					Point3D down_pt = neighbor.pt;
-					down_pt.y -= 1;
-					if (!(nCell == cellFieldG->get(left_pt) || nCell == cellFieldG->get(down_pt)))
-					{
-						return localConected = false;
-					}
-				}
-				else if (changePixel.x - 1 == neighbor.pt.x)//upper left corner
-				{
-					Point3D right_pt = neighbor.pt;
-					right_pt.x += 1;
-					Point3D down_pt = neighbor.pt;
-					down_pt.y -= 1;
-					if (!(nCell == cellFieldG->get(right_pt) || nCell == cellFieldG->get(down_pt)))
-					{
-						return localConected = false;
-					}
-				}
-
-			}
-
-			else if (changePixel.y - 1 == neighbor.pt.y)
-			{
-				if (changePixel.x + 1 == neighbor.pt.x)//lower right corner
-				{
-					Point3D left_pt = neighbor.pt;
-					left_pt.x -= 1;
-					Point3D up_pt = neighbor.pt;
-					up_pt.y += 1;
-					if (!(nCell == cellFieldG->get(left_pt) || nCell == cellFieldG->get(up_pt)))
-					{
-						return localConected = false;
-					}
-				}
-				else if (changePixel.x - 1 == neighbor.pt.x)//lower left corner
-				{
-					Point3D right_pt = neighbor.pt;
-					right_pt.x += 1;
-					Point3D up_pt = neighbor.pt;
-					up_pt.y += 1;
-					if (!(nCell == cellFieldG->get(right_pt) || nCell == cellFieldG->get(up_pt)))
-					{
-						return localConected = false;
-					}
-				}
-
-			}
-
-
-
-		}
 	}
 
 	return localConected;
+
+
+
+//
+//
+//
+//	for (unsigned int nIdx = 0; nIdx <= fMooreNeighIdx; ++nIdx)//this loop might be useless
+//	{
+//		neighbor = boundaryStrategy->getNeighborDirect(
+//			const_cast<Point3D&>(changePixel), nIdx);
+//		if (!neighbor.distance) {
+//			//if distance is 0 then the neighbor returned is invalid
+//			continue;
+//		}
+//		nCell = cellFieldG->get(neighbor.pt);
+//
+//		if (!nCell)//if it's  medium we don't care
+//		{
+//			continue;
+//		}
+//
+//
+//
+//
+//		if (nCell == changeCell || nCell == flipCell) //since we've already know the source-target cells we don't need to check for others
+//		{
+//
+//			//north => changePixel.y+1 == pt.y; x=x
+//			//south => changePixel.y-1 == pt.y; x=x
+//
+//			//east => changePixel.x+1 == pt.x; y=y
+//			//west => changePixel.x-1 == pt.x; y=y
+//			if (changePixel.x == neighbor.pt.x)//north-south case
+//			{
+//
+//				//might have issues with borders
+//
+//				Point3D right_pt = neighbor.pt;
+//				right_pt.x += 1;
+//
+//				bool valid_right = boundaryStrategy->isValid(right_pt);//still need the check for across boundary
+//
+//				bool valid_right = (boundaryStrategy->isValid(right_pt) ? true : strategy_x->applyCondition(x, dim.x));
+//
+//				if (std::any_of(search_domain.begin(), search_domain.end(), right_pt) &&
+//					valid_right)
+//				{
+//					if (nCell == cellFieldG->get(right_pt))
+//					{
+//						bool right_conceted = true;
+//					}
+//					else
+//					{
+//						bool right_conceted = false;
+//					}
+//
+//				}
+//
+//
+//
+//				Point3D left_pt = neighbor.pt;
+//				left_pt.x -= 1;
+//
+//				bool valid_left = boundaryStrategy->isValid(left_pt);//still need the check for across boundary
+//				if (std::any_of(search_domain.begin(), search_domain.end(), left_pt) &&
+//					valid_left)
+//				{
+//					if (nCell == cellFieldG->get(left_pt))
+//					{
+//						bool left_conceted = true;
+//					}
+//					else
+//					{
+//						bool left_conceted = false;
+//					}
+//
+//				}
+//
+//				if (!(right_conceted || left_conceted))
+//				{
+//
+//				}
+//
+//
+//				/*if (!(nCell == cellFieldG->get(right_pt) || nCell == cellFieldG->get(left_pt)))
+//				{
+//					localConected = false;
+//					return localConected;
+//				}
+//*/
+//
+//			}
+//			else if (changePixel.y == neighbor.pt.y)//east-west case
+//			{
+//				//might have issues with borders
+//				Point3D up_pt = neighbor.pt;
+//				up_pt.y += 1;
+//				Point3D down_pt = neighbor.pt;
+//				down_pt.y -= 1;
+//
+//				if (!(nCell == cellFieldG->get(up_pt) || nCell == cellFieldG->get(down_pt)))
+//				{
+//					localConected = false;
+//					return localConected;
+//				}
+//
+//
+//			}
+//
+//			//corner cases
+//			else if (changePixel.y + 1 == neighbor.pt.y)
+//			{
+//				if (changePixel.x + 1 == neighbor.pt.x)//upper right corner
+//				{
+//					Point3D left_pt = neighbor.pt;
+//					left_pt.x -= 1;
+//					Point3D down_pt = neighbor.pt;
+//					down_pt.y -= 1;
+//					if (!(nCell == cellFieldG->get(left_pt) || nCell == cellFieldG->get(down_pt)))
+//					{
+//						return localConected = false;
+//					}
+//				}
+//				else if (changePixel.x - 1 == neighbor.pt.x)//upper left corner
+//				{
+//					Point3D right_pt = neighbor.pt;
+//					right_pt.x += 1;
+//					Point3D down_pt = neighbor.pt;
+//					down_pt.y -= 1;
+//					if (!(nCell == cellFieldG->get(right_pt) || nCell == cellFieldG->get(down_pt)))
+//					{
+//						return localConected = false;
+//					}
+//				}
+//
+//			}
+//
+//			else if (changePixel.y - 1 == neighbor.pt.y)
+//			{
+//				if (changePixel.x + 1 == neighbor.pt.x)//lower right corner
+//				{
+//					Point3D left_pt = neighbor.pt;
+//					left_pt.x -= 1;
+//					Point3D up_pt = neighbor.pt;
+//					up_pt.y += 1;
+//					if (!(nCell == cellFieldG->get(left_pt) || nCell == cellFieldG->get(up_pt)))
+//					{
+//						return localConected = false;
+//					}
+//				}
+//				else if (changePixel.x - 1 == neighbor.pt.x)//lower left corner
+//				{
+//					Point3D right_pt = neighbor.pt;
+//					right_pt.x += 1;
+//					Point3D up_pt = neighbor.pt;
+//					up_pt.y += 1;
+//					if (!(nCell == cellFieldG->get(right_pt) || nCell == cellFieldG->get(up_pt)))
+//					{
+//						return localConected = false;
+//					}
+//				}
+//
+//			}
+//
+//
+//
+//		}
+//	}
+//
+//	return localConected;
 }
 
 
 
 bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 {
-	
+
 	/*
 	* Function to check the local conectivity of a cell in the flip pixel.
 	* Based on https://doi.org/10.1016/j.cpc.2016.07.030
@@ -688,7 +752,7 @@ bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 	* However, I still will need to figure out the periodic boundary case. How to go to the
 	* other side of the lattice eficiently? Better yet, with some method that has been written?
 	*/
-	
+
 	//change goes from flip to change
 
 
@@ -746,10 +810,10 @@ bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 
 
 
-					if (!(nCell == cellFieldG->get(right_pt) || 
-						  nCell == cellFieldG->get(left_pt) || 
-						  nCell == cellFieldG->get(up_pt) ||
-						  nCell == cellFieldG->get(down_pt)
+					if (!(nCell == cellFieldG->get(right_pt) ||
+						nCell == cellFieldG->get(left_pt) ||
+						nCell == cellFieldG->get(up_pt) ||
+						nCell == cellFieldG->get(down_pt)
 						))
 					{
 						return localConected = false;
@@ -779,7 +843,7 @@ bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 					}
 				}
 
-				else if (changePixel.y + 1 == neighbor.pt.y) 
+				else if (changePixel.y + 1 == neighbor.pt.y)
 				{
 					if (changePixel.x + 1 == neighbor.pt.x)//upper right corner
 					{
@@ -870,7 +934,7 @@ bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 					}
 				}
 			}
-			else if (changePixel.z+1 == neighbor.pt.z)
+			else if (changePixel.z + 1 == neighbor.pt.z)
 			{
 				if (changePixel.x == neighbor.pt.x)//north-south case
 				{
@@ -882,7 +946,7 @@ bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 					Point3D left_pt = neighbor.pt;
 					left_pt.x -= 1;
 
-					
+
 					Point3D down_pt = neighbor.pt;
 					down_pt.z -= 1;
 
@@ -905,7 +969,7 @@ bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 					Point3D left_pt = neighbor.pt;
 					left_pt.y -= 1;
 
-					
+
 					Point3D down_pt = neighbor.pt;
 					down_pt.z -= 1;
 
@@ -927,7 +991,7 @@ bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 						Point3D backward_pt = neighbor.pt;
 						backward_pt.y -= 1;
 
-						
+
 						Point3D down_pt = neighbor.pt;
 						down_pt.z -= 1;
 
@@ -1017,7 +1081,7 @@ bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 
 					if (!(nCell == cellFieldG->get(right_pt) ||
 						nCell == cellFieldG->get(left_pt) ||
-						nCell == cellFieldG->get(up_pt) 
+						nCell == cellFieldG->get(up_pt)
 						))
 					{
 						return localConected = false;
@@ -1037,7 +1101,7 @@ bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 
 					if (!(nCell == cellFieldG->get(right_pt) ||
 						nCell == cellFieldG->get(left_pt) ||
-						nCell == cellFieldG->get(up_pt) 
+						nCell == cellFieldG->get(up_pt)
 						))
 					{
 						return localConected = false;
@@ -1076,7 +1140,7 @@ bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 
 						if (!(nCell == cellFieldG->get(backward_pt) ||
 							nCell == cellFieldG->get(right_pt) ||
-							nCell == cellFieldG->get(up_pt) 
+							nCell == cellFieldG->get(up_pt)
 							))
 						{
 							return localConected = false;
@@ -1097,7 +1161,7 @@ bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 
 						if (!(nCell == cellFieldG->get(forward_pt) ||
 							nCell == cellFieldG->get(left_pt) ||
-							nCell == cellFieldG->get(up_pt) 
+							nCell == cellFieldG->get(up_pt)
 							))
 						{
 							return localConected = false;
@@ -1115,7 +1179,7 @@ bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 
 						if (!(nCell == cellFieldG->get(forward_pt) ||
 							nCell == cellFieldG->get(right_pt) ||
-							nCell == cellFieldG->get(up_pt) 
+							nCell == cellFieldG->get(up_pt)
 							))
 						{
 							return localConected = false;
@@ -1133,7 +1197,7 @@ bool Potts3D::localConect3D(Point3D changePixel, Point3D flipNeighbor)
 
 bool Potts3D::localConectHex(Point3D changePixel, Point3D flipNeighbor)
 {
-	
+
 	/*
 	* Function to check the local conectivity of a cell in the flip pixel.
 	* Based on https://doi.org/10.1016/j.cpc.2016.07.030
@@ -1156,7 +1220,7 @@ bool Potts3D::localConectHex(Point3D changePixel, Point3D flipNeighbor)
 	* However, I still will need to figure out the periodic boundary case. How to go to the
 	* other side of the lattice eficiently? Better yet, with some method that has been written?
 	*/
-	
+
 	return true; //PLACEHODLER
 }
 
@@ -1429,7 +1493,7 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 	if (!randNSVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > randNSVec.size()) { //each thread will have different random number ghenerator
 		randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), BasicRandomNumberGeneratorNonStatic());
 
-		for (unsigned int i = 0; i <randNSVec.size(); ++i) {
+		for (unsigned int i = 0; i < randNSVec.size(); ++i) {
 			if (!sim->ppdCC3DPtr->seed) {
 				srand(time(0));
 				unsigned int randomSeed = (unsigned int)rand()*((std::numeric_limits<unsigned int>::max)() - 1);
@@ -1512,7 +1576,7 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 				if (checkIfFrozen(cellFieldG->get(changePixel)->type))
 					continue;
 			}
-			
+
 
 			++attemptedEC;
 
@@ -1607,7 +1671,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 	if (!randNSVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > randNSVec.size()) { //each thread will have different random number ghenerator
 		randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), BasicRandomNumberGeneratorNonStatic());
 
-		for (unsigned int i = 0; i <randNSVec.size(); ++i) {
+		for (unsigned int i = 0; i < randNSVec.size(); ++i) {
 			if (!sim->ppdCC3DPtr->seed) {
 				srand(time(0));
 				unsigned int randomSeed = (unsigned int)rand()*((std::numeric_limits<unsigned int>::max)() - 1);
@@ -1693,19 +1757,19 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
 				if (fixedSteppers.size()) {
 #pragma omp critical
-				{
-					//IMPORTANT: fixed steppers cause really bad performance with multiple processor runs. Currently only two of them are supported 
-					// PDESolverCaller plugin and Secretion plugin. PDESolverCaller is deprecated and Secretion plugin section that mimics functionality of PDE sovler Secretion data section is depreecated as well
-					// However Secretion plugin can be used to do "per cell" secretion (using python scripting). This will not slow down multicore simulation
+					{
+						//IMPORTANT: fixed steppers cause really bad performance with multiple processor runs. Currently only two of them are supported 
+						// PDESolverCaller plugin and Secretion plugin. PDESolverCaller is deprecated and Secretion plugin section that mimics functionality of PDE sovler Secretion data section is depreecated as well
+						// However Secretion plugin can be used to do "per cell" secretion (using python scripting). This will not slow down multicore simulation
 
-					//cerr<<"pUtils->getCurrentWorkNodeNumber()="<<pUtils->getCurrentWorkNodeNumber()<<" currentAttempt="<<currentAttempt<<endl;
-					for (unsigned int j = 0; j < fixedSteppers.size(); j++)
-						fixedSteppers[j]->step();
+						//cerr<<"pUtils->getCurrentWorkNodeNumber()="<<pUtils->getCurrentWorkNodeNumber()<<" currentAttempt="<<currentAttempt<<endl;
+						for (unsigned int j = 0; j < fixedSteppers.size(); j++)
+							fixedSteppers[j]->step();
 
-					++currentAttempt; //to be consistent with serial code currentAttampt has to be increamented after fixedSteppers run 
+						++currentAttempt; //to be consistent with serial code currentAttampt has to be increamented after fixedSteppers run 
 
 
-				}
+					}
 				}
 
 				Point3D pt;
@@ -1903,7 +1967,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 	if (!randNSVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > randNSVec.size()) { //each thread will have different random number ghenerator
 		randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), BasicRandomNumberGeneratorNonStatic());
 
-		for (unsigned int i = 0; i <randNSVec.size(); ++i) {
+		for (unsigned int i = 0; i < randNSVec.size(); ++i) {
 			if (!sim->ppdCC3DPtr->seed) {
 				srand(time(0));
 				unsigned int randomSeed = (unsigned int)rand()*((std::numeric_limits<unsigned int>::max)() - 1);
@@ -2005,18 +2069,18 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 
 				if (fixedSteppers.size()) {
 #pragma omp critical
-				{
-					//IMPORTANT: fixed steppers cause really bad performance with multiple processor runs. Currently only two of them are supported 
-					// PDESolverCaller plugin and Secretion plugin. PDESolverCaller is deprecated and Secretion plugin section that mimics functionality of PDE sovler Secretion data section is depreecated as well
-					// However Secretion plugin can be used to do "per cell" secretion (using python scripting). This will not slow down multicore simulation
+					{
+						//IMPORTANT: fixed steppers cause really bad performance with multiple processor runs. Currently only two of them are supported 
+						// PDESolverCaller plugin and Secretion plugin. PDESolverCaller is deprecated and Secretion plugin section that mimics functionality of PDE sovler Secretion data section is depreecated as well
+						// However Secretion plugin can be used to do "per cell" secretion (using python scripting). This will not slow down multicore simulation
 
-					//cerr<<"pUtils->getCurrentWorkNodeNumber()="<<pUtils->getCurrentWorkNodeNumber()<<" currentAttempt="<<currentAttempt<<endl;
-					for (unsigned int j = 0; j < fixedSteppers.size(); j++)
-						fixedSteppers[j]->step();
+						//cerr<<"pUtils->getCurrentWorkNodeNumber()="<<pUtils->getCurrentWorkNodeNumber()<<" currentAttempt="<<currentAttempt<<endl;
+						for (unsigned int j = 0; j < fixedSteppers.size(); j++)
+							fixedSteppers[j]->step();
 
-					++currentAttempt; //to be consistent with serial code currentAttampt has to be increamented after fixedSteppers run 
+						++currentAttempt; //to be consistent with serial code currentAttampt has to be increamented after fixedSteppers run 
 
-				}
+					}
 				}
 
 				Point3D pt;
