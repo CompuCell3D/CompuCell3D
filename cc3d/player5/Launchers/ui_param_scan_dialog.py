@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_ParamScanDialog(object):
     def setupUi(self, ParamScanDialog):
         ParamScanDialog.setObjectName("ParamScanDialog")
-        ParamScanDialog.resize(499, 371)
+        ParamScanDialog.resize(869, 371)
         self.verticalLayout = QtWidgets.QVBoxLayout(ParamScanDialog)
         self.verticalLayout.setObjectName("verticalLayout")
         self.gridLayout = QtWidgets.QGridLayout()
@@ -106,7 +106,7 @@ class Ui_ParamScanDialog(object):
         _translate = QtCore.QCoreApplication.translate
         ParamScanDialog.setWindowTitle(_translate("ParamScanDialog", "Parameter Scan Launcher"))
         self.label_3.setText(_translate("ParamScanDialog", "Snapshot Output Frequency"))
-        self.label_4.setText(_translate("ParamScanDialog", "Screenshot OUtput Frequency"))
+        self.label_4.setText(_translate("ParamScanDialog", "Screenshot Output Frequency"))
         self.install_dir_browse_PB.setText(_translate("ParamScanDialog", "Browse ..."))
         self.output_screenshot_CB.setText(_translate("ParamScanDialog", "Output Screenshots"))
         self.label_5.setText(_translate("ParamScanDialog", "CC3D Installation dir"))

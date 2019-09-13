@@ -1719,8 +1719,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
             print(cml_list)
             Popen(cml_list)
 
-
         print('Starting parameter scan')
+
+    def maybe_launch_param_scan(self) -> bool:
+        """
+        Launches parameter scan if indeed the simulation is a parameter scan otherwise takes no action
+        :return: returns Tru if indeed parameter scan launcher was open
+        """
+
+        param_scan_flag = self.check_for_param_scan(sim_file_name=self.__sim_file_name)
+        if param_scan_flag:
+            self.start_parameter_scan(sim_file_name=self.__sim_file_name)
+            return True
+
+        return False
 
     def __runSim(self):
         '''
@@ -1728,17 +1740,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
 
-        print('INSIDE RUN SIM')
-        # self.simulation.start()
-
         # when we run simulation we ensure that self.simulation.screenUpdateFrequency
         # is whatever is written in the settings
         self.simulation.screenUpdateFrequency = self.__updateScreen
 
         if not self.drawingAreaPrepared:
-            param_scan_flag = self.check_for_param_scan(sim_file_name=self.__sim_file_name)
-            if param_scan_flag:
-                self.start_parameter_scan(sim_file_name=self.__sim_file_name)
+            if self.maybe_launch_param_scan():
                 return
 
             prepare_flag = self.prepareSimulation()
@@ -1809,6 +1816,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.screenUpdateFrequency = 1  # when we step we need to ensure screenUpdateFrequency is 1
 
         if not self.drawingAreaPrepared:
+
+            if self.maybe_launch_param_scan():
+                return
 
             prepare_flag = self.prepareSimulation()
             if prepare_flag:
@@ -2787,7 +2797,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         param_scan_specs_fname = Path().joinpath(
             *(Path(sim_file_name).parts[:-1] + ('Simulation', 'ParameterScanSpecs.json')))
 
-        param_scan_flag = param_scan_specs_fname.exists()
+        current_scan_parameters_fname = Path().joinpath(
+            *(Path(sim_file_name).parts[:-2] + ('current_scan_parameters.json',)))
+
+        # if we find Simulation/ParameterScanSpecs.json but NOT current_scan_parameters.json then
+        # we are dealing with launching parameter scan. If current_scan_parameters.json then we run it
+        # as usual simulation and skip param scan launching step
+        param_scan_flag = param_scan_specs_fname.exists() and not current_scan_parameters_fname.exists()
 
         return param_scan_flag
 
