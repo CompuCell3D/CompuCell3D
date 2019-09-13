@@ -449,45 +449,58 @@
       <attribute name="title">
        <string>General Settings</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_9">
+      <layout class="QVBoxLayout" name="verticalLayout_20">
        <item>
         <widget class="QGroupBox" name="groupBox_5">
          <property name="title">
           <string>Miscellaneous</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_21">
+         <layout class="QVBoxLayout" name="verticalLayout_9">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_26">
+           <layout class="QHBoxLayout" name="horizontalLayout_25">
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_20">
-              <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_25">
-                <item>
-                 <widget class="QLabel" name="label_23">
-                  <property name="text">
-                   <string>Number of recent simulations</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QSpinBox" name="numberOfRecentSimulationsSB">
-                  <property name="maximum">
-                   <number>20</number>
-                  </property>
-                  <property name="value">
-                   <number>8</number>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+             <layout class="QGridLayout" name="gridLayout_6">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_23">
+                <property name="text">
+                 <string>Number of recent simulations</string>
+                </property>
+               </widget>
               </item>
-              <item>
+              <item row="1" column="0">
                <widget class="QCheckBox" name="floatingWindowsCB">
                 <property name="toolTip">
                  <string>Checking it switches from Multi Document interface to flowting windows one. The change will take place after Player restart</string>
                 </property>
                 <property name="text">
                  <string>Use Floating Windows</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0" colspan="2">
+               <widget class="QLabel" name="label_22">
+                <property name="text">
+                 <string>Number of step outputs to display in player</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="2">
+               <widget class="QSpinBox" name="numberOfStepOutputsSB">
+                <property name="maximum">
+                 <number>1000</number>
+                </property>
+                <property name="value">
+                 <number>10</number>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="QSpinBox" name="numberOfRecentSimulationsSB">
+                <property name="maximum">
+                 <number>20</number>
+                </property>
+                <property name="value">
+                 <number>8</number>
                 </property>
                </widget>
               </item>
@@ -571,6 +584,10 @@
         </spacer>
        </item>
       </layout>
+      <zorder>groupBox_5</zorder>
+      <zorder>numberOfStepOutputsSB</zorder>
+      <zorder>label_22</zorder>
+      <zorder>label_22</zorder>
      </widget>
      <widget class="QWidget" name="tab_cell_type">
       <attribute name="title">
