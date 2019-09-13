@@ -88,6 +88,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
     # used to trigger redraw after config changed
     redoCompletedStepSignal = pyqtSignal()
 
+    # stop request
+    stopRequestSignal = pyqtSignal()
+
     def __init__(self, parent):
 
         # QMainWindow -> UI.UserInterface
@@ -778,7 +781,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.simulation.completedStep.connect(self.handleCompletedStep)
             self.simulation.finishRequest.connect(self.handleFinishRequest)
             self.redoCompletedStepSignal.connect(self.simulation.redoCompletedStep)
-            # self.configsChanged.connect(self.simulation.redoCompletedStep)
+            self.stopRequestSignal.connect(self.simulation.stop)
 
             self.plotManager.initSignalAndSlots()
             self.widgetManager.initSignalAndSlots()
@@ -2277,7 +2280,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         stops simulation thread
         :return:None
         '''
-        self.simulation.stop()
+        # self.simulation.stop()
+        self.stopRequestSignal.emit()
         self.simulation.wait()
 
     def makeCustomSimDir(self, _dirName, _simulationFileName):
