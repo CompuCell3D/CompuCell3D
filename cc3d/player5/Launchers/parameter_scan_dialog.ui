@@ -16,27 +16,44 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Param Scan Simulation</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="param_scan_simulation_LE"/>
+     </item>
+     <item row="0" column="2">
+      <widget class="QPushButton" name="browse_simulation_PB">
+       <property name="text">
+        <string>Browse...</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Output Dir</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="output_dir_LE"/>
+     </item>
+     <item row="1" column="2">
+      <widget class="QPushButton" name="browse_output_dir_PB">
+       <property name="text">
+        <string>Browse...</string>
+       </property>
+      </widget>
+     </item>
      <item row="2" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Snapshot Output Frequency</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Screenshot Output Frequency</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QLineEdit" name="install_dir_LE"/>
-     </item>
-     <item row="5" column="3">
-      <widget class="QPushButton" name="install_dir_browse_PB">
-       <property name="text">
-        <string>Browse ...</string>
        </property>
       </widget>
      </item>
@@ -50,28 +67,22 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="param_scan_simulation_LE"/>
-     </item>
-     <item row="3" column="2" colspan="2">
-      <widget class="QCheckBox" name="output_screenshot_CB">
+     <item row="2" column="2" colspan="2">
+      <widget class="QCheckBox" name="output_snapshot_CB">
        <property name="text">
-        <string>Output Screenshots</string>
+        <string>Output Snapshots</string>
        </property>
        <property name="checked">
         <bool>true</bool>
        </property>
       </widget>
      </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="label_5">
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>CC3D Installation dir</string>
+        <string>Screenshot Output Frequency</string>
        </property>
       </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="output_dir_LE"/>
      </item>
      <item row="3" column="1">
       <widget class="QSpinBox" name="screenshot_freq_CB">
@@ -83,27 +94,13 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label">
+     <item row="3" column="2" colspan="2">
+      <widget class="QCheckBox" name="output_screenshot_CB">
        <property name="text">
-        <string>Param Scan Simulation</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2" colspan="2">
-      <widget class="QCheckBox" name="output_snapshot_CB">
-       <property name="text">
-        <string>Output Snapshots</string>
+        <string>Output Screenshots</string>
        </property>
        <property name="checked">
         <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Output Dir</string>
        </property>
       </widget>
      </item>
@@ -114,10 +111,20 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="2" colspan="2">
-      <widget class="QPushButton" name="browse_output_dir_PB">
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>Browse...</string>
+        <string>CC3D Installation dir</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="install_dir_LE"/>
+     </item>
+     <item row="5" column="2">
+      <widget class="QPushButton" name="install_dir_browse_PB">
+       <property name="text">
+        <string>Browse ...</string>
        </property>
       </widget>
      </item>

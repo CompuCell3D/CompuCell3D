@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import *
 from os.path import expanduser, join
 from os import environ
 import sys
+from pathlib import Path
 
 import cc3d.player5.Configuration as Configuration
 
@@ -31,6 +32,7 @@ class ParamScanDialog(QDialog, ui_param_scan_dialog.Ui_ParamScanDialog):
 
         self.browse_output_dir_PB.clicked.connect(self.select_output_dir)
         self.install_dir_browse_PB.clicked.connect(self.select_cc3d_install_dir)
+        self.browse_simulation_PB.clicked.connect(self.select_simulation)
         self.update_cml_PB.clicked.connect(self.update_cml)
         # self.updateUI()
 
@@ -87,6 +89,27 @@ class ParamScanDialog(QDialog, ui_param_scan_dialog.Ui_ParamScanDialog):
         )
 
         self.install_dir_LE.setText(cc3d_install_dir)
+
+    def select_simulation(self):
+
+        current_dir = self.install_dir_LE.text()
+        if current_dir.strip() != '':
+            default_dir = str(Path(current_dir).joinpath('Demos'))
+        else:
+            default_dir = join(expanduser('~'), 'Downloads')
+
+        filter_ext = "CC3D Parameter Scan Simulation  (*.cc3d )"
+
+        cc3d_simulation_tuple = QFileDialog.getOpenFileName(
+            self,
+            QApplication.translate('Parameter Scan', "CC3D Parameter Scan Simulation"),
+            default_dir,
+            filter_ext
+        )
+        cc3d_simulation = os.path.abspath(str(cc3d_simulation_tuple[0]))
+
+        if os.path.splitext(cc3d_simulation)[1] == '.cc3d':
+            self.param_scan_simulation_LE.setText(cc3d_simulation)
 
     def get_cml_list(self):
         """
