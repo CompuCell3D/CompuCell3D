@@ -103,7 +103,7 @@ class ParamScanDialog(QDialog, ui_param_scan_dialog.Ui_ParamScanDialog):
         # --gui
         # --install-dir=/Users/m/Demo2/CC3D_4.0.0
 
-        cml_list = [ps_run_script]
+        cml_list = [f'"{ps_run_script}"']
 
         cml_list.append(f'--input="{self.param_scan_simulation_LE.text()}"')
 
