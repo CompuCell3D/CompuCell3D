@@ -14,6 +14,7 @@ namespace CompuCell3D {
          ~CustomCellAttributeSteppableData(){};
 
          std::vector<float> array;
+         std::map<long int, std::vector<int> > simple_map;
 
          int x;
 

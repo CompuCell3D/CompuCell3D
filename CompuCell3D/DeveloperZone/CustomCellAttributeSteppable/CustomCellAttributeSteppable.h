@@ -20,7 +20,7 @@ namespace CompuCell3D {
 
     class CellG;
 
-  
+
 
   class CUSTOMCELLATTRIBUTESTEPPABLE_EXPORT CustomCellAttributeSteppable : public Steppable {
 
