@@ -56,6 +56,8 @@ namespace CompuCell3D {
 
     BasicClassAccessor<CustomCellAttributeSteppableData> * getCustomCellAttributeSteppableDataAccessorPtr(){return & customCellAttributeSteppableDataAccessor;}
 
+    CustomCellAttributeSteppableData * getCustomCellAttribute(CellG * cell);
+
     //steppable interface
 
     virtual void start();

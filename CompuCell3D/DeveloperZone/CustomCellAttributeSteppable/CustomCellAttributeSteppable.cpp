@@ -69,6 +69,11 @@ void CustomCellAttributeSteppable::start() {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+CustomCellAttributeSteppableData * CustomCellAttributeSteppable::getCustomCellAttribute(CellG * cell) {
+
+    CustomCellAttributeSteppableData * customCellAttrData = customCellAttributeSteppableDataAccessor.get(cell->extraAttribPtr);
+    return customCellAttrData;
+}
 
 
 void CustomCellAttributeSteppable::step(const unsigned int currentStep) {
