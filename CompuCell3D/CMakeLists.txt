@@ -24,21 +24,86 @@ set(CMAKE_CXX_STANDARD 11)
 
 FIND_PACKAGE (OpenMP)
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    # FIND_PACKAGE(PythonInterpreter)
+    FIND_PACKAGE(PythonLibs)
+    FIND_PACKAGE(PythonInterp)
+    # INCLUDE(FindPythonLibs)
+    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable" FORCE)
+    set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library" FORCE)
+    set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory" FORCE )
+    set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory" FORCE )
+
+else()
+    # find_package (Python 3 COMPONENTS Interpreter Development)
+    FIND_PACKAGE(PythonLibs)
+    FIND_PACKAGE(PythonInterp)
+    # INCLUDE(FindPythonLibs)
+    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable" FORCE)
+    set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library" FORCE)
+    set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory" FORCE )
+    set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory" FORCE )
+
+
+endif()
+
+# find_package (Python 3 COMPONENTS Interpreter Development)
+
+
+message("Python_FOUND: ${Python_FOUND}")
+message("Python_Interpreter_FOUND: ${Python_Interpreter_FOUND}")
+message("Python_VERSION: ${Python_VERSION}")
+message("Python_Development_FOUND: ${Python_Development_FOUND}")
+message("Python_EXECUTABLE: ${Python_EXECUTABLE}")
+
+message("Python_Development_FOUND: ${Python_Development_FOUND}")
+message("Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
+message("Python_LIBRARIES: ${Python_LIBRARIES}")
+message("Python_LIBRARY_DIRS: ${Python_LIBRARY_DIRS}")
+message("Python_RUNTIME_LIBRARY_DIRS: ${Python_RUNTIME_LIBRARY_DIRS}")
+
 # Should we build shared libraries
 OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
+SET(CC3D_PYTHON_MODULE_DIR ${CMAKE_SOURCE_DIR}/../)
 
-# Specify a version for all libs to use
+EXEC_PROGRAM(${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR} ARGS ${CC3D_PYTHON_MODULE_DIR}/cc3d/version_fetcher.py ${CC3D_PYTHON_MODULE_DIR}
+      OUTPUT_VARIABLE COMPUCELL3D_VERSION)
+
+
+message("GOT VERSION AS ${COMPUCELL3D_VERSION}")
+# setting up version
+
+
+string(REPLACE "." ";" VERSION_LIST ${COMPUCELL3D_VERSION})
+list(GET VERSION_LIST 0 COMPUCELL3D_MAJOR_VERSION)
+list(GET VERSION_LIST 1 COMPUCELL3D_MINOR_VERSION)
+list(GET VERSION_LIST 2 COMPUCELL3D_BUILD_VERSION)
+
+## Specify a version for all libs to use
 # letters A, B, C are added to ensure nice display of version in cmake gui
-SET (COMPUCELL3D_A_MAJOR_VERSION "4" CACHE STRING "Major Version")
-SET (COMPUCELL3D_B_MINOR_VERSION "0" CACHE STRING "Minor Version")
-SET (COMPUCELL3D_C_BUILD_VERSION "0" CACHE STRING "Build Version")
+SET (COMPUCELL3D_A_MAJOR_VERSION ${COMPUCELL3D_MAJOR_VERSION} CACHE STRING "Major Version")
+SET (COMPUCELL3D_B_MINOR_VERSION ${COMPUCELL3D_MINOR_VERSION} CACHE STRING "Minor Version")
+SET (COMPUCELL3D_C_BUILD_VERSION ${COMPUCELL3D_BUILD_VERSION} CACHE STRING "Build Version")
 
 
 # and here we assign them back to what they should be
 SET (COMPUCELL3D_MAJOR_VERSION ${COMPUCELL3D_A_MAJOR_VERSION})
 SET (COMPUCELL3D_MINOR_VERSION ${COMPUCELL3D_B_MINOR_VERSION})
 SET (COMPUCELL3D_BUILD_VERSION ${COMPUCELL3D_C_BUILD_VERSION})
+
+
+# # Specify a version for all libs to use
+# # letters A, B, C are added to ensure nice display of version in cmake gui
+# SET (COMPUCELL3D_A_MAJOR_VERSION "4" CACHE STRING "Major Version")
+# SET (COMPUCELL3D_B_MINOR_VERSION "0" CACHE STRING "Minor Version")
+# SET (COMPUCELL3D_C_BUILD_VERSION "0" CACHE STRING "Build Version")
+#
+#
+# # and here we assign them back to what they should be
+# SET (COMPUCELL3D_MAJOR_VERSION ${COMPUCELL3D_A_MAJOR_VERSION})
+# SET (COMPUCELL3D_MINOR_VERSION ${COMPUCELL3D_B_MINOR_VERSION})
+# SET (COMPUCELL3D_BUILD_VERSION ${COMPUCELL3D_C_BUILD_VERSION})
 
 
 message(" THIS IS COMPUCELL3D_BUILD_VERSION " ${COMPUCELL3D_BUILD_VERSION})

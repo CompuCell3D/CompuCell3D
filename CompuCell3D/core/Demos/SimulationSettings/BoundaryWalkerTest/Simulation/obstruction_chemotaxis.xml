@@ -1,0 +1,61 @@
+<CompuCell3D Revision="20180816" Version="3.7.7">
+
+   <Potts>
+      <Dimensions x="600" y="400" z="1"/>
+      <Steps>10000</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+      <DebugOutputFrequency>1000</DebugOutputFrequency>
+      <MetropolisAlgorithm>BoundaryWalker</MetropolisAlgorithm>
+   </Potts>
+
+
+   <Plugin Name="CellType">
+
+   <CellType TypeId="0" TypeName="Medium"/>
+   <CellType TypeId="1" TypeName="cell"/>
+   <CellType Freeze="" TypeId="2" TypeName="obstruction"/>
+    </Plugin>
+
+
+   <Plugin Name="Contact">
+
+      <Energy Type1="Medium" Type2="cell">16.0</Energy>
+      <Energy Type1="Medium" Type2="obstruction">16.0</Energy>
+      <Energy Type1="cell" Type2="cell">16.0</Energy>
+      <Energy Type1="cell" Type2="obstruction">32.0</Energy>
+      <Energy Type1="obstruction" Type2="obstruction">16.0</Energy>
+      <NeighborOrder>2</NeighborOrder>
+  </Plugin>
+
+  <Plugin Name="GlobalBoundaryPixelTracker">
+    <NeighborOrder>1</NeighborOrder>
+  </Plugin>
+
+   <Plugin Name="Volume">
+    <VolumeEnergyParameters CellType="cell" LambdaVolume="1.0" TargetVolume="8000"/>
+   </Plugin>
+
+   <Plugin Name="Chemotaxis">
+      <ChemicalField Name="c" Source="DiffusionSolverFE">
+          <ChemotaxisByType  Type="cell" Lambda="20"/>
+      </ChemicalField>
+   </Plugin>
+
+
+  <Steppable Type="DiffusionSolverFE">
+      <DiffusionField Name="c">
+          <DiffusionData>
+              <FieldName>c</FieldName>
+              <DiffusionConstant>0</DiffusionConstant>
+              <DecayConstant>0</DecayConstant>
+              <InitialConcentrationExpression>x</InitialConcentrationExpression>
+          </DiffusionData>
+      </DiffusionField>
+  </Steppable>
+
+   <Steppable Type="PIFInitializer">
+    <PIFName>Simulation/init.txt</PIFName>
+   </Steppable>
+
+</CompuCell3D>

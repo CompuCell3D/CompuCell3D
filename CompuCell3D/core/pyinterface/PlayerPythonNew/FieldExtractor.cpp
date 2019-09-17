@@ -5,6 +5,7 @@
 #include <CompuCell3D/Potts3D/Potts3D.h>
 #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Field3D/Field3D.h>
+#include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 #include <Utils/Coordinates3D.h>
 #include <vtkIntArray.h>
 #include <vtkLongArray.h>
@@ -2515,6 +2516,41 @@ vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArra
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim = cellFieldG->getDim();
 
+    // if neighbor tracker is loaded we can figure out cell ids that touch medium (we call them outer cells) and render only those
+    // this way we do not waste time rendering inner cells that are not seen because they are covered by outer cells. 
+    // this algorithm is not perfect but does significantly speed up 3D rendering
+
+    bool neighbor_tracker_loaded = Simulator::pluginManager.isLoaded("NeighborTracker");
+    //cout << "neighbor_tracker_loaded=" << neighbor_tracker_loaded << endl;
+    BasicClassAccessor<NeighborTracker> *neighborTrackerAccessorPtr;
+    if (neighbor_tracker_loaded) {
+        bool pluginAlreadyRegisteredFlag;
+        NeighborTrackerPlugin *nTrackerPlugin = (NeighborTrackerPlugin*)Simulator::pluginManager.get("NeighborTracker", &pluginAlreadyRegisteredFlag);
+        neighborTrackerAccessorPtr = nTrackerPlugin->getNeighborTrackerAccessorPtr();
+    }
+
+    std::unordered_set<long> outer_cell_ids_set;
+    if (neighbor_tracker_loaded) {
+        
+        CellInventory::cellInventoryIterator cInvItr;
+        CellG * cell;
+        std::set<NeighborSurfaceData > * neighborData;
+        CellInventory & cellInventory = potts->getCellInventory();
+
+        for (cInvItr = cellInventory.cellInventoryBegin(); cInvItr != cellInventory.cellInventoryEnd(); ++cInvItr)
+        {
+            cell = cellInventory.getCell(cInvItr);            
+            std::set<NeighborSurfaceData > * neighborsPtr = &(neighborTrackerAccessorPtr->get(cell->extraAttribPtr)->cellNeighbors);
+            set<NeighborSurfaceData>::iterator sitr;            
+            for (sitr = neighborsPtr->begin(); sitr != neighborsPtr->end(); ++sitr) {
+                if (!sitr->neighborAddress) {
+                    outer_cell_ids_set.insert(cell->id);
+                    break;
+                }
+            }
+        }
+    }
+    
 	cellTypeArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));	
 	cellIdArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
 
@@ -2544,9 +2580,25 @@ vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArra
 						id = cell->id;
 						usedCellTypes.insert(type);
 					}
-					cellTypeArray->InsertValue(offset, type);
-					cellIdArray->InsertValue(offset, id);
-					++offset;
+                    if (neighbor_tracker_loaded) {
+                        if (outer_cell_ids_set.find(id) != outer_cell_ids_set.end()) {
+                            cellTypeArray->InsertValue(offset, type);
+                            cellIdArray->InsertValue(offset, id);
+                            ++offset;
+                        }
+                        else {
+                            cellTypeArray->InsertValue(offset, 0);
+                            cellIdArray->InsertValue(offset, 0);
+                            ++offset;
+
+                        }
+
+                    }
+                    else {
+                        cellTypeArray->InsertValue(offset, type);
+                        cellIdArray->InsertValue(offset, id);
+                        ++offset;
+                    }
 				}
 			}
 			return vector<int>(usedCellTypes.begin(),usedCellTypes.end());

@@ -1,0 +1,5 @@
+<Simulation version="4.1.0">
+   <XMLScript Type="XMLScript">Simulation/CustomCellAttributesPython.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/CustomCellAttributesPython.py</PythonScript>
+   <Resource Type="Python">Simulation/CustomCellAttributesPythonModules.py</Resource>
+</Simulation>

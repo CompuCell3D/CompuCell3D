@@ -572,6 +572,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("OutputToProjectOn", self.outputToProjectCheckBox.isChecked())
         # # # Configuration.setSetting("PreferencesFile", self.prefsFileLineEdit.text())
         Configuration.setSetting("NumberOfRecentSimulations", self.numberOfRecentSimulationsSB.value())
+        Configuration.setSetting("NumberOfStepOutputs", self.numberOfStepOutputsSB.value())
         Configuration.setSetting("FloatingWindows", self.floatingWindowsCB.isChecked())
 
         Configuration.setSetting("WindowColorSameAsMedium", self.windowColorSameAsMediumCB.isChecked())
@@ -671,6 +672,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
         # # # self.prefsFileLineEdit.setText( str(Configuration.getSetting("PreferencesFile")))
         self.numberOfRecentSimulationsSB.setValue(Configuration.getSetting("NumberOfRecentSimulations"))
+        self.numberOfStepOutputsSB.setValue(Configuration.getSetting("NumberOfStepOutputs"))
         self.floatingWindowsCB.setChecked(Configuration.getSetting("FloatingWindows"))
 
         self.min_max_display_CB.setChecked(Configuration.getSetting("DisplayMinMaxInfo"))
