@@ -140,8 +140,6 @@ double ImplicitMotilityPlugin::changeEnergy(const Point3D &pt,const CellG *newCe
 
 
 
-
-
 double ImplicitMotilityPlugin::changeEnergyByCellType(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
 
 
@@ -166,8 +164,14 @@ double ImplicitMotilityPlugin::changeEnergyByCellType(const Point3D &pt, const C
 		Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM / oldCell->volume, oldCell->yCM / oldCell->volume, oldCell->zCM / oldCell->volume);
 		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip, oldCOMBeforeFlip, fieldDim);
 
-
-
+		double norm = std::sqrt(distVector.X()*distVector.X() + distVector.Y()*distVector.Y() + distVector.Z()*distVector.Z());
+		if (norm != 0)
+		{
+			distVector.X = distVector.X / norm;
+			distVector.Y = distVector.Y / norm;
+			distVector.Z = distVector.Z / norm;
+		}
+		
 
 		//Coordinates3D<double> biasVecTmp = oldCell->biasVector;
 		biasVecTmp = Coordinates3D<double>(oldCell->biasVecX, oldCell->biasVecY, oldCell->biasVecZ);
@@ -189,7 +193,14 @@ double ImplicitMotilityPlugin::changeEnergyByCellType(const Point3D &pt, const C
 
 		Coordinates3D<double> newCOMBeforeFlip(newCell->xCM / newCell->volume, newCell->yCM / newCell->volume, newCell->zCM / newCell->volume);
 		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(newCOMAfterFlip, newCOMBeforeFlip, fieldDim);
-		//externalPotentialParamVector[newCell->type]
+		
+		double norm = std::sqrt(distVector.X()*distVector.X() + distVector.Y()*distVector.Y() + distVector.Z()*distVector.Z());
+		if (norm != 0)
+		{
+			distVector.X = distVector.X / norm;
+			distVector.Y = distVector.Y / norm;
+			distVector.Z = distVector.Z / norm;
+		}
 
 		//Coordinates3D<double> biasVecTmp = newCell->biasVector;
 		biasVecTmp = Coordinates3D<double>(newCell->biasVecX, newCell->biasVecY, newCell->biasVecZ);
@@ -229,6 +240,14 @@ double ImplicitMotilityPlugin::changeEnergyByCellId(const Point3D &pt, const Cel
 		Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM / oldCell->volume, oldCell->yCM / oldCell->volume, oldCell->zCM / oldCell->volume);
 		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip, oldCOMBeforeFlip, fieldDim);
 
+		double norm = std::sqrt(distVector.X()*distVector.X() + distVector.Y()*distVector.Y() + distVector.Z()*distVector.Z());
+		if (norm != 0)
+		{
+			distVector.X = distVector.X / norm;
+			distVector.Y = distVector.Y / norm;
+			distVector.Z = distVector.Z / norm;
+		}
+
 		//Coordinates3D<double> biasVecTmp = oldCell->biasVector;
 		biasVecTmp = Coordinates3D<double>(oldCell->biasVecX, oldCell->biasVecY, oldCell->biasVecZ);
 
@@ -251,6 +270,13 @@ double ImplicitMotilityPlugin::changeEnergyByCellId(const Point3D &pt, const Cel
 		Coordinates3D<double> newCOMBeforeFlip(newCell->xCM / newCell->volume, newCell->yCM / newCell->volume, newCell->zCM / newCell->volume);
 		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(newCOMAfterFlip, newCOMBeforeFlip, fieldDim);
 
+		double norm = std::sqrt(distVector.X()*distVector.X() + distVector.Y()*distVector.Y() + distVector.Z()*distVector.Z());
+		if (norm != 0)
+		{
+			distVector.X = distVector.X / norm;
+			distVector.Y = distVector.Y / norm;
+			distVector.Z = distVector.Z / norm;
+		}
 
 		//Coordinates3D<double> biasVecTmp = newCell->biasVector;
 		biasVecTmp = Coordinates3D<double>(newCell->biasVecX, newCell->biasVecY, newCell->biasVecZ);
