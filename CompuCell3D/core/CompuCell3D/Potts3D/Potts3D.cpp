@@ -281,7 +281,7 @@ void Potts3D::registerConnectivityConstraint(EnergyFunction * _connectivityConst
 
 EnergyFunction * Potts3D::getConnectivityConstraint() { return connectivityConstraint; }
 
-bool Potts3D::localConectivityAlgorithm(Point3D changePixel, Point3D flipNeighbor)
+bool Potts3D::localConectivityAlgorithm(Point3D *changePixel, Point3D *flipNeighbor)
 {
 
 	return (this->*localConPtr)(changePixel, flipNeighbor);

@@ -145,11 +145,11 @@ namespace CompuCell3D {
 
 		
 
-		typedef bool(Potts3D::localConect_t)(Point3D changePixel, Point3D flipNeighbor);
+		typedef bool(Potts3D::*localConect_t)(Point3D *changePixel, Point3D *flipNeighbor);
 
 		Potts3D::localConect_t localConPtr;
 
-		virtual bool localConectivityAlgorithm(Point3D changePixel, Point3D flipNeighbor);
+		virtual bool localConectivityAlgorithm(Point3D *changePixel, Point3D *flipNeighbor);
 
 		bool localConect2D(Point3D changePixel, Point3D flipNeighbor);
 
