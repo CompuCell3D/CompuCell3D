@@ -1,0 +1,5 @@
+<Simulation version="4.1.0">
+   <XMLScript Type="XMLScript">Simulation/Circle.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/Circle.py</PythonScript>
+   <Resource Type="Python">Simulation/CircleSteppables.py</Resource>
+</Simulation>
