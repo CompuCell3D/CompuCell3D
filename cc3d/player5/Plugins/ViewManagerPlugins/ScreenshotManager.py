@@ -13,6 +13,7 @@ from weakref import ref
 from cc3d.core.utils import mkdir_p
 from cc3d import CompuCellSetup
 
+
 class ScreenshotManager(ScreenshotManagerCore):
     def __init__(self, _tabViewWidget):
         ScreenshotManagerCore.__init__(self)
@@ -249,10 +250,9 @@ class ScreenshotManager(ScreenshotManagerCore):
             # will create screenshot directory if directory does not exist
             if not os.path.isdir(screenshot_dir):
                 mkdir_p(screenshot_dir)
-                # os.mkdir(screenshot_dir)
 
             screenshot_fname = os.path.join(screenshot_dir, screenshot_name + "_" + mcs_formatted_number + ".png")
 
             self.gd.clear_display()
             self.gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)
-            self.gd.output_screenshot(screenshot_fname=screenshot_fname, file_format="png")
+            self.gd.output_screenshot(screenshot_fname=screenshot_fname, file_format="png", screenshot_data=screenshot_data)

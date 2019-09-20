@@ -26,6 +26,7 @@ class ScreenshotManagerCore(object):
             '3.7.10': self.readScreenshotDescriptionFile_JSON_379,
             '3.8.0': self.readScreenshotDescriptionFile_JSON_379,
             '4.0.0': self.readScreenshotDescriptionFile_JSON_379,
+            '4.1.0': self.readScreenshotDescriptionFile_JSON_379,
 
         }
 
