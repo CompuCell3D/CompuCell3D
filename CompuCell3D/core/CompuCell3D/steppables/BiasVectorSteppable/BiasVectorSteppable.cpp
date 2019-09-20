@@ -112,9 +112,7 @@ void CompuCell3D::BiasVectorSteppable::step_3d(const unsigned int currentStep)
 {
 	CellInventory::cellInventoryIterator cInvItr;
 	CellG * cell = 0;
-
-	//BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
-
+	
 	//cout << "in bias vector 3d step" << endl;
 
 	//cerr << "currentStep=" << currentStep << endl;
@@ -131,48 +129,6 @@ void CompuCell3D::BiasVectorSteppable::step_3d(const unsigned int currentStep)
 		cell->biasVecY = noise[1];
 		cell->biasVecZ = noise[2];
 
-
-
-
-		//cell = cellInventoryPtr->getCell(cInvItr);
-
-		////method for getting random unitary vector in sphere from Marsaglia 1972
-		////example and reason for not using a uniform distribution
-		////can be found @ mathworld.wolfram.com/SpherePointPicking.html
-		//double tx = 2 * rand->getRatio() - 1;
-		//double ty = 2 * rand->getRatio() - 1;
-
-		//double dist_sqrd = (tx*tx + ty*ty);
-		///*cerr << "in the 3d step method" << endl;*/
-
-		//while (dist_sqrd >= 1)
-		//{
-		//	tx = 2 * rand->getRatio() - 1;
-		//	ty = 2 * rand->getRatio() - 1;
-
-
-		//	dist_sqrd = tx*tx + ty*ty;
-
-		//}
-
-		//if (dist_sqrd < 1)
-		//{
-		//	double x = 2 * tx * std::sqrt(1 - tx*tx - ty*ty);
-		//	double y = 2 * ty * std::sqrt(1 - tx*tx - ty*ty);
-		//	double z = 1 - 2 * (tx*tx + ty*ty);
-
-		//	/*cout << "tx=" << tx << endl;
-		//	cout << "ty=" << ty << endl;
-		//	cout << "dist=" << dist_sqrd << endl;
-
-		//	cout << x << endl;
-		//	cout << y << endl;
-		//	cout << z << endl;*/
-
-		//	cell->biasVecX = x;
-		//	cell->biasVecY = y;
-		//	cell->biasVecZ = z;
-		//}
 	}
 }
 
@@ -182,8 +138,7 @@ void CompuCell3D::BiasVectorSteppable::step_2d_x(const unsigned int currentStep)
 	CellInventory::cellInventoryIterator cInvItr;
 	CellG * cell = 0;
 
-	//BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
-
+	
 	//cout << "in bias vector step" << endl;
 
 	//cerr << "currentStep=" << currentStep << endl;
@@ -195,13 +150,6 @@ void CompuCell3D::BiasVectorSteppable::step_2d_x(const unsigned int currentStep)
 
 		vector<double> noise = BiasVectorSteppable::noise_vec_generator();
 
-		//double angle = rand->getRatio() * 2 * M_PI;
-
-		//double z = std::cos(angle);
-		//double y = std::sin(angle);
-		///*cout << "in the 2d step method" << endl;
-		//cout << x << endl;
-		//cout << y << endl;*/
 
 		cell->biasVecX = 0;
 		cell->biasVecY = noise[0];
@@ -216,7 +164,6 @@ void CompuCell3D::BiasVectorSteppable::step_2d_y(const unsigned int currentStep)
 	CellInventory::cellInventoryIterator cInvItr;
 	CellG * cell = 0;
 
-	//BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
 
 	//cout << "in bias vector step" << endl;
 
@@ -229,13 +176,6 @@ void CompuCell3D::BiasVectorSteppable::step_2d_y(const unsigned int currentStep)
 
 		vector<double> noise = BiasVectorSteppable::noise_vec_generator();
 
-		//double angle = rand->getRatio() * 2 * M_PI;
-
-		//double x = std::cos(angle);
-		//double z = std::sin(angle);
-		///*cout << "in the 2d step method" << endl;
-		//cout << x << endl;
-		//cout << y << endl;*/
 
 		cell->biasVecX = noise[0];
 		cell->biasVecY = 0;
@@ -248,7 +188,6 @@ void CompuCell3D::BiasVectorSteppable::step_2d_z(const unsigned int currentStep)
 	CellInventory::cellInventoryIterator cInvItr;
 	CellG * cell = 0;
 
-	//BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
 
 	//cout << "in bias vector step" << endl;
 
@@ -286,6 +225,8 @@ vector<double> BiasVectorSteppable::noise_vec_generator()
 //creates unitary 2d white noise vector
 vector<double> BiasVectorSteppable::white_noise_2d()
 {
+	// cout << "in the 2d white noise method" << endl;
+
 	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
 
 	double angle = rand->getRatio() * 2 * M_PI;
@@ -300,7 +241,7 @@ vector<double> BiasVectorSteppable::white_noise_2d()
 
 vector<double> BiasVectorSteppable::white_noise_3d()
 {
-
+	//cout << "in the 3d white noise method" << endl;
 	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
 
 	//method for getting random unitary vector in sphere from Marsaglia 1972
