@@ -105,10 +105,10 @@ namespace CompuCell3D {
 
     virtual void step(const unsigned int currentStep);
 
-	virtual void step_3d(const unsigned int currentStep);  // remove virtual, same for the next steps
-	virtual void step_2d_x(const unsigned int currentStep); // for x == 1
-	virtual void step_2d_y(const unsigned int currentStep); // for y == 1
-	virtual void step_2d_z(const unsigned int currentStep); // for z == 1
+	void step_3d(const unsigned int currentStep);  // remove virtual, same for the next steps
+	void step_2d_x(const unsigned int currentStep); // for x == 1
+	void step_2d_y(const unsigned int currentStep); // for y == 1
+	void step_2d_z(const unsigned int currentStep); // for z == 1
 
 	virtual vector<double> noise_vec_generator();
 
