@@ -69,8 +69,15 @@ namespace CompuCell3D {
 	enum StepType { STEP3D = 0, STEP2DX = 1, STEP2DY = 2, STEP2DZ = 3 };
 	StepType stepType;
 
+	enum NoiseType {WHITE3D = 0, WHITE2D = 1};
+	NoiseType noiseType;
+
+
 	typedef void (BiasVectorSteppable::*step_t)(const unsigned int currentStep);
 	BiasVectorSteppable::step_t stepFcnPtr;
+
+	typedef vector<double>(BiasVectorSteppable::*noise_t)();
+	BiasVectorSteppable::noise_t noiseFcnPtr;
 
     
 
@@ -98,10 +105,16 @@ namespace CompuCell3D {
 
     virtual void step(const unsigned int currentStep);
 
-	virtual void step_3d(const unsigned int currentStep);
+	virtual void step_3d(const unsigned int currentStep);  // remove virtual, same for the next steps
 	virtual void step_2d_x(const unsigned int currentStep); // for x == 1
 	virtual void step_2d_y(const unsigned int currentStep); // for y == 1
 	virtual void step_2d_z(const unsigned int currentStep); // for z == 1
+
+	virtual vector<double> noise_vec_generator();
+
+	vector<double> white_noise_2d();
+
+	vector<double> white_noise_3d();
 
     virtual void finish() {}
 

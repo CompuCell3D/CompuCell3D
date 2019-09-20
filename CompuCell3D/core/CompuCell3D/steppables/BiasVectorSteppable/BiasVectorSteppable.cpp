@@ -258,6 +258,66 @@ void CompuCell3D::BiasVectorSteppable::step_2d_z(const unsigned int currentStep)
 }
 
 
+vector<double> BiasVectorSteppable::noise_vec_generator()
+{
+	return (this->*noiseFcnPtr)();
+}
+
+
+//creates unitary 2d white noise vector
+vector<double> BiasVectorSteppable::white_noise_2d()
+{
+	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+
+	double angle = rand->getRatio() * 2 * M_PI;
+	double x0 = std::cos(angle);
+	double x1 = std::sin(angle);
+
+	vector<double> noise{ x0,x1 };
+	
+	return noise;
+}
+
+
+vector<double> BiasVectorSteppable::white_noise_3d()
+{
+
+	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+
+	//method for getting random unitary vector in sphere from Marsaglia 1972
+	//example and reason for not using a uniform distribution
+	//can be found @ mathworld.wolfram.com/SpherePointPicking.html
+
+	double tx = 2 * rand->getRatio() - 1;
+	double ty = 2 * rand->getRatio() - 1;
+
+	double dist_sqrd = (tx*tx + ty*ty);
+	/*cerr << "in the 3d step method" << endl;*/
+
+	while (dist_sqrd >= 1)
+	{
+		tx = 2 * rand->getRatio() - 1;
+		ty = 2 * rand->getRatio() - 1;
+
+
+		dist_sqrd = tx*tx + ty*ty;
+
+	}
+
+	if (dist_sqrd < 1)
+	{
+		double x = 2 * tx * std::sqrt(1 - tx*tx - ty*ty);
+		double y = 2 * ty * std::sqrt(1 - tx*tx - ty*ty);
+		double z = 1 - 2 * (tx*tx + ty*ty);
+		vector<double> noise{ x, y, z };
+
+		return noise;
+	}
+	//TODO: some sort of catching for infinite loops
+}
+
+
+
 
 void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
@@ -278,6 +338,32 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
     //boundaryStrategy has information aobut pixel neighbors 
 
     boundaryStrategy=BoundaryStrategy::getInstance();
+
+	if (fieldDim.x == 1 || fieldDim.y == 1 || fieldDim.z == 1)
+	{
+		noiseType = WHITE2D;
+	}
+	else
+	{
+		noiseType = WHITE3D;
+	}
+
+
+	switch (noiseType)
+	{
+	case WHITE2D:
+		noiseFcnPtr = &BiasVectorSteppable::white_noise_2d;
+		break;
+	case WHITE3D:
+		noiseFcnPtr = &BiasVectorSteppable::white_noise_3d;
+		break;
+	default:
+		noiseFcnPtr = &BiasVectorSteppable::white_noise_3d;
+		break;
+	}
+
+
+
 
 	if (fieldDim.x == 1)
 	{
