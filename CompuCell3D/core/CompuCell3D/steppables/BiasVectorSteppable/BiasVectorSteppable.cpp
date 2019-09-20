@@ -201,14 +201,6 @@ void CompuCell3D::BiasVectorSteppable::step_2d_z(const unsigned int currentStep)
 
 		vector<double> noise = BiasVectorSteppable::noise_vec_generator();
 
-		//double angle = rand->getRatio() * 2 * M_PI;
-
-		//double x = std::cos(angle);
-		//double y = std::sin(angle);
-		///*cout << "in the 2d step method" << endl;
-		//cout << x << endl;
-		//cout << y << endl;*/
-
 		cell->biasVecX = noise[0];
 		cell->biasVecY = noise[1];
 		cell->biasVecZ = 0;
