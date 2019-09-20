@@ -1,0 +1,40 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="55" y="55" z="1"/>
+        <Anneal>0</Anneal>
+        <Steps>1000</Steps>
+        <Temperature>15</Temperature>
+        <Flip2DimRatio>0.0</Flip2DimRatio>
+        <Boundary_y>NoFlux</Boundary_y>
+    </Potts>
+
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Amoeba" TypeId="1" Freeze=""/>
+        <CellType TypeName="Bacteria" TypeId="2"/>
+    </Plugin>
+
+    <Plugin Name="VolumeTracker"/>
+
+    <Steppable Type="ReactionDiffusionSolverFE">
+        <DiffusionField>
+            <DiffusionData>
+                <FieldName>F</FieldName>
+                <DiffusionConstant>0.0</DiffusionConstant>
+<!--                <ConcentrationFileName>Simulation/diffusion_2D.pulse.txt</ConcentrationFileName>-->
+<!--                <AdditionalTerm>-0.01*H</AdditionalTerm>-->
+            </DiffusionData>
+        </DiffusionField>
+        <DiffusionField>
+            <DiffusionData>
+                <FieldName>H</FieldName>
+                <DiffusionConstant>0.0</DiffusionConstant>
+                <AdditionalTerm>0.01*F</AdditionalTerm>
+            </DiffusionData>
+        </DiffusionField>
+
+    </Steppable>
+
+
+</CompuCell3D>

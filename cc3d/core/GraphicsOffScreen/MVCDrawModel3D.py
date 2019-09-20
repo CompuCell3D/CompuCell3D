@@ -1,6 +1,7 @@
 from vtk.util.numpy_support import vtk_to_numpy
 from .MVCDrawModelBase import MVCDrawModelBase
 import vtk
+import numpy as np
 import math
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
 from cc3d.core.GraphicsOffScreen.MetadataHandler import MetadataHandler
@@ -204,12 +205,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
                 ct_all = vtk_to_numpy(self.cell_type_array)
                 cid_all = vtk_to_numpy(self.cell_id_array)
 
-                cid_unique = []
-                for idx in range(len(ct_all)):
-                    if ct_all[idx] == self.used_cell_types_list[actor_counter]:
-                        cid = cid_all[idx]
-                        if cid not in cid_unique:
-                            cid_unique.append(cid_all[idx])
+                cid_unique = np.unique(cid_all[ct_all == actor_number])
 
                 for idx in range(len(cid_unique)):
                     filter_list[actor_counter].SetValue(idx, cid_unique[idx])
@@ -230,13 +226,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
                 cell_type_lut = self.get_type_lookup_table()
 
-                actor.GetProperty().SetDiffuseColor(
-                    cell_type_lut.GetTableValue(actor_number)[0:3])
+                actor.GetProperty().SetDiffuseColor(cell_type_lut.GetTableValue(actor_number)[0:3])
 
                 if hex_flag:
                     actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
 
-    # original rendering technique (and still used if Vis->Cell Borders not checked) - vkDiscreteMarchingCubes on celltype
+    # original rendering technique (and still used if Vis->Cell Borders not checked) - vkDiscreteMarchingCubes
+    # on celltype
     def init_cell_field_actors(self, actor_specs, drawing_params=None):
 
         if drawing_params.screenshot_data.cell_borders_on:

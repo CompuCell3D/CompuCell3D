@@ -105,81 +105,63 @@
         <CallPDE PDESolverName="FlexibleDiffusionSolverFE" ExtraTimesPerMC="1"/>
     </Plugin>
 
-<Plugin Name="FocalPointPlasticity">
-      
-   <Parameters Type1="ActiveNeovascular" Type2="ActiveNeovascular">
-      <Lambda>10</Lambda>
-      <ActivationEnergy>-100</ActivationEnergy>
-      <TargetDistance>3</TargetDistance>
-      <MaxDistance>20</MaxDistance>
-      <MaxNumberOfJunctions NeighborOrder="1">2</MaxNumberOfJunctions>
-   </Parameters>
-   
-   <Parameters Type1="Vascular" Type2="Vascular">
-      <Lambda>10</Lambda>
-      <ActivationEnergy>-100</ActivationEnergy>
-      <TargetDistance>3</TargetDistance>
-      <MaxDistance>20</MaxDistance>
-      <MaxNumberOfJunctions NeighborOrder="1">2</MaxNumberOfJunctions>
-   </Parameters>
+    <Plugin Name="FocalPointPlasticity">
+
+        <Parameters Type1="ActiveNeovascular" Type2="ActiveNeovascular">
+            <Lambda>10</Lambda>
+            <ActivationEnergy>-100</ActivationEnergy>
+            <TargetDistance>3</TargetDistance>
+            <MaxDistance>20</MaxDistance>
+            <MaxNumberOfJunctions NeighborOrder="1">2</MaxNumberOfJunctions>
+        </Parameters>
+
+        <Parameters Type1="Vascular" Type2="Vascular">
+            <Lambda>10</Lambda>
+            <ActivationEnergy>-100</ActivationEnergy>
+            <TargetDistance>3</TargetDistance>
+            <MaxDistance>20</MaxDistance>
+            <MaxNumberOfJunctions NeighborOrder="1">2</MaxNumberOfJunctions>
+        </Parameters>
 
 
-   <Parameters Type1="InactiveNeovascular" Type2="InactiveNeovascular">
-      <Lambda>10</Lambda>
-      <ActivationEnergy>-100</ActivationEnergy>
-      <TargetDistance>3</TargetDistance>
-      <MaxDistance>20</MaxDistance>
-      <MaxNumberOfJunctions NeighborOrder="1">2</MaxNumberOfJunctions>
-   </Parameters>
-   
-   <Parameters Type1="Vascular" Type2="InactiveNeovascular">
-      <Lambda>10</Lambda>
-      <ActivationEnergy>-100</ActivationEnergy>
-      <TargetDistance>3</TargetDistance>
-      <MaxDistance>20</MaxDistance>
-      <MaxNumberOfJunctions NeighborOrder="1">2</MaxNumberOfJunctions>
-   </Parameters>
-   
-   <Parameters Type1="Vascular" Type2="ActiveNeovascular">
-      <Lambda>10</Lambda>
-      <ActivationEnergy>-100</ActivationEnergy>
-      <TargetDistance>3</TargetDistance>
-      <MaxDistance>20</MaxDistance>
-      <MaxNumberOfJunctions NeighborOrder="1">2</MaxNumberOfJunctions>
-   </Parameters>
+        <Parameters Type1="InactiveNeovascular" Type2="InactiveNeovascular">
+            <Lambda>10</Lambda>
+            <ActivationEnergy>-100</ActivationEnergy>
+            <TargetDistance>3</TargetDistance>
+            <MaxDistance>20</MaxDistance>
+            <MaxNumberOfJunctions NeighborOrder="1">2</MaxNumberOfJunctions>
+        </Parameters>
 
-   <Parameters Type1="ActiveNeovascular" Type2="InactiveNeovascular">
-      <Lambda>10</Lambda>
-      <ActivationEnergy>-100</ActivationEnergy>
-      <TargetDistance>3</TargetDistance>
-      <MaxDistance>20</MaxDistance>
-      <MaxNumberOfJunctions NeighborOrder="1">2</MaxNumberOfJunctions>
-   </Parameters>
+        <Parameters Type1="Vascular" Type2="InactiveNeovascular">
+            <Lambda>10</Lambda>
+            <ActivationEnergy>-100</ActivationEnergy>
+            <TargetDistance>3</TargetDistance>
+            <MaxDistance>20</MaxDistance>
+            <MaxNumberOfJunctions NeighborOrder="1">2</MaxNumberOfJunctions>
+        </Parameters>
 
-   
-   
-   <NeighborOrder>1</NeighborOrder>
-</Plugin>
+        <Parameters Type1="Vascular" Type2="ActiveNeovascular">
+            <Lambda>10</Lambda>
+            <ActivationEnergy>-100</ActivationEnergy>
+            <TargetDistance>3</TargetDistance>
+            <MaxDistance>20</MaxDistance>
+            <MaxNumberOfJunctions NeighborOrder="1">2</MaxNumberOfJunctions>
+        </Parameters>
 
-<!--     <Plugin Name="PlasticityTracker"> -->
-<!--         <IncludeType>InactiveNeovascular</IncludeType> -->
-<!--         <IncludeType>Vascular</IncludeType> -->
-
-<!--     </Plugin> -->
-
-<!--     <Plugin Name="PlasticityEnergy"> -->
-<!--         <TargetLengthPlasticity>3</TargetLengthPlasticity> -->
-<!--         <LambdaPlasticity>400</LambdaPlasticity> -->
-<!--         <MaxPlasticityLength>20</MaxPlasticityLength> -->
-<!--     </Plugin> -->
+        <Parameters Type1="ActiveNeovascular" Type2="InactiveNeovascular">
+            <Lambda>10</Lambda>
+            <ActivationEnergy>-100</ActivationEnergy>
+            <TargetDistance>3</TargetDistance>
+            <MaxDistance>20</MaxDistance>
+            <MaxNumberOfJunctions NeighborOrder="1">2</MaxNumberOfJunctions>
+        </Parameters>
 
 
-    <!--<Steppable Type="PIFDumper" Frequency="100">-->
-        <!--<PIFName>TumorVasc3D_180x180x180</PIFName>-->
-    <!--</Steppable>-->
+        <NeighborOrder>1</NeighborOrder>
+    </Plugin>
 
     <Steppable Type="PIFInitializer">
-        <PIFName>Simulation/TumorVasc3D_180x180x180_08052009_01_45_36.txt</PIFName>
+        <PIFName>Simulation/TumorVasc3D.txt</PIFName>
     </Steppable>
 
 
@@ -235,7 +217,6 @@
 
                 <ConstantConcentration Type="Vascular">90</ConstantConcentration>
                 <ConstantConcentration Type="ActiveNeovascular">50</ConstantConcentration>
-
 
 
             </SecretionData>

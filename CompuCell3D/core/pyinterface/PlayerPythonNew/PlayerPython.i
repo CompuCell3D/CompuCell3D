@@ -35,9 +35,6 @@ namespace CompuCell3D{
 
 %{
 
-
-
-
 // #include <Potts3D/Cell.h>
 #include <Utils/Coordinates3D.h>
 #include <FieldStorage.h>

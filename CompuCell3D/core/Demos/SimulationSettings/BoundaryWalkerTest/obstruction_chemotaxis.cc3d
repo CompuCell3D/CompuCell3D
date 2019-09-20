@@ -1,0 +1,4 @@
+<Simulation version="4.0.0">
+   <XMLScript Type="XMLScript">Simulation/obstruction_chemotaxis.xml</XMLScript>
+   <PythonScript>Simulation/obstruction_chemotaxis.py</PythonScript>
+</Simulation>

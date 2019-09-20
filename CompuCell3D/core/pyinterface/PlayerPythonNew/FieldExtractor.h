@@ -23,6 +23,7 @@ class vtkObject;
 
 
 
+
 //Notice one can speed up filling up of the Hex lattice data by allocating e.g. hexPOints ot cellType arrays
 //instead of inserting values. Inserting causes reallocations and this slows down the task completion
 
@@ -32,8 +33,12 @@ namespace CompuCell3D{
 	class Potts3D;
 	class Simulator;
 	class Dim3D;
+    class NeighborTracker;
 
 	class FIELDEXTRACTOR_EXPORT FieldExtractor:public FieldExtractorBase{
+    private:
+
+        
 	public:
 		Potts3D * potts;
 		Simulator *sim;

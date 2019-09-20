@@ -1,0 +1,5 @@
+<Simulation version="4.0.0">
+   <XMLScript Type="XMLScript">Simulation/TumorVasc3D.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/TumorVasc3D.py</PythonScript>
+   <Resource Type="Python">Simulation/TumorVasc3DSteppables.py</Resource>
+</Simulation>

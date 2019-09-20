@@ -310,17 +310,24 @@ void Simulator::start() {
 	}catch (const BasicException &e) {
 		cerr << "ERROR: " << e << endl;
 		unloadModules();
-		stringstream errorMessageStream;
-
-		errorMessageStream<<"Exception in C++ code :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
-		recentErrorMessage=errorMessageStream.str();
-		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
+		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
 		if (!newPlayerFlag){
 			throw e;
 		}
 	}
 
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::string Simulator::formatErrorMessage(const BasicException &e){
+    stringstream errorMessageStream;
+    errorMessageStream<<"Exception in C++ code :"<<endl<<e.getMessage()<<endl<<"Location"<<endl<<"FILE :"<<e.getLocation().getFilename()<<endl<<"LINE :"<<e.getLocation().getLine();
+    recentErrorMessage=errorMessageStream.str();
+    cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
+    return recentErrorMessage;
+
+
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Simulator::extraInit(){
 
@@ -345,11 +352,8 @@ void Simulator::extraInit(){
 	}catch (const BasicException &e) {
 		cerr << "ERROR: " << e << endl;
 		unloadModules();
-		stringstream errorMessageStream;
+		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
 
-		errorMessageStream<<"Exception in C++ code :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
-		recentErrorMessage=errorMessageStream.str();
-		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
 		if (!newPlayerFlag){
 			throw e;
 		}
@@ -360,6 +364,8 @@ void Simulator::extraInit(){
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Simulator::step(const unsigned int currentStep) {
+    // clearing up step_output
+    this->step_output = "";
 
 	try{
 		//potts is initialized in readXML - so is most of other Steppables etc.
@@ -377,23 +383,26 @@ void Simulator::step(const unsigned int currentStep) {
 		// Run steppables -after metropilis function is finished you sweep over classRegistry - mainly for outputing purposes
 		classRegistry->step(currentStep);
 
+        stringstream oss;
+
+        oss << "Step " << currentStep << " "
+            << "Flips " << flips << "/" << flipAttempts << " "
+            << "Energy " << potts.getEnergy() << " "
+            << "Cells " << potts.getNumCells() << " Inventory=" << potts.getCellInventory().getCellInventorySize() << endl;
+        oss << potts.get_step_output() << endl;
+        this->add_step_output(oss.str());
 		// Output statisitcs
 		if(ppdCC3DPtr->debugOutputFrequency && ! (currentStep % ppdCC3DPtr->debugOutputFrequency) ){
-			cerr << "Step " << currentStep << " "
-				<< "Flips " << flips << "/" << flipAttempts << " "
-				<< "Energy " << potts.getEnergy() << " "
-				<< "Cells " << potts.getNumCells()<<" Inventory="<<potts.getCellInventory().getCellInventorySize()
-				<< endl;
+				
+            cerr << oss.str();
+            
 		}
 
 	}catch (const BasicException &e) {
 		cerr << "ERROR: " << e << endl;
 		unloadModules();
-		stringstream errorMessageStream;
+		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
 
-		errorMessageStream<<"Exception in C++ code :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
-		recentErrorMessage=errorMessageStream.str();
-		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
 		if (!newPlayerFlag){
 			throw e;
 		}
@@ -402,7 +411,19 @@ void Simulator::step(const unsigned int currentStep) {
 
 }
 
+void Simulator::add_step_output(const std::string &s) {
+    this->step_output += s;
+}
 
+std::string Simulator::get_step_output() {
+    stringstream oss;
+    //oss << potts.get_step_output() << endl;
+
+    //oss << "-----Simulator Stats-----" << endl << this->step_output << "-----Simulator Stats-----" << endl;
+
+    /*return oss.str();*/
+    return this->step_output;
+}
 
 void Simulator::finish() {
 
@@ -420,11 +441,7 @@ void Simulator::finish() {
 
 	}catch (const BasicException &e) {
 		cerr << "ERROR: " << e << endl;
-		stringstream errorMessageStream;
-
-		errorMessageStream<<"Exception in C++ code :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
-		recentErrorMessage=errorMessageStream.str();
-		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
+		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
 		if (!newPlayerFlag){
 			throw e;
 		}

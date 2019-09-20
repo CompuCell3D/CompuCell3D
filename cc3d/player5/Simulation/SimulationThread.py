@@ -63,6 +63,7 @@ class SimulationThread(QtCore.QThread):
         self.__mcs = 0
         self.__fileWriter = None
         self.sim = None  # reference to CompuCell.Simulator()
+        self.last_mcs_handled = 0
 
     # Python 2.6 requires importing of Example, CompuCell and Player Python modules from an instance
     # of QThread class (here Simulation Thread inherits from QThread)
@@ -85,7 +86,15 @@ class SimulationThread(QtCore.QThread):
     def emitErrorFormatted(self,_errorMessage):
         self.errorFormatted.emit(_errorMessage)
 
+    def redoCompletedStep(self):
+        self.sem.tryAcquire()
+        self.sem.release()
+        self.loopWorkPostEvent(self.last_mcs_handled)
+        # print('inside redoCompletedStep')
+        # self.completedStep.emit(self.last_mcs_handled)
+
     def emitCompletedStep(self,_mcs=None):
+        self.last_mcs_handled = _mcs
         self.completedStep.emit(_mcs)
 
     def emitSimulationInitialized(self,_flag=True):

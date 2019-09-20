@@ -594,9 +594,10 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
 
         screen_update_frequency = simthread.getScreenUpdateFrequency()
         screenshot_frequency = simthread.getScreenshotFrequency()
+        screenshot_output_flag = simthread.getImageOutputFlag()
 
         if (screen_update_frequency > 0 and cur_step % screen_update_frequency == 0) or (
-                screenshot_frequency > 0 and cur_step % screenshot_frequency == 0):
+                screenshot_output_flag and screenshot_frequency > 0 and cur_step % screenshot_frequency == 0):
 
             simthread.loopWork(cur_step)
             simthread.loopWorkPostEvent(cur_step)
