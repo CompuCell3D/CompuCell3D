@@ -728,12 +728,12 @@ class GenericDrawer():
 
             #            if self.threeDRB.isChecked():
             if self.draw3DFlag:
-                self.parentWidget.screenshotManager.add3DScreenshot(fieldType[0], fieldType[1], camera)
+                self.parentWidget.screenshotManager.add_3d_screenshot(fieldType[0], fieldType[1], camera)
             else:
                 planePositionTupple = self.draw_view_2D.getPlane()
                 # print "planePositionTupple=",planePositionTupple
-                self.parentWidget.screenshotManager.add2DScreenshot(fieldType[0], fieldType[1], planePositionTupple[0],
-                                                                    planePositionTupple[1], camera)
+                self.parentWidget.screenshotManager.add_2d_screenshot(fieldType[0], fieldType[1], planePositionTupple[0],
+                                                                      planePositionTupple[1], camera)
 
     def setInitialCrossSection(self, _basicSimulationData):
         #        print MODULENAME, '  setInitialCrossSection'

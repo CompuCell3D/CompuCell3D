@@ -43,14 +43,14 @@ class ScreenshotManager(ScreenshotManagerCore):
         self.tabViewWidget = None
         self.basicSimulationData = None
 
-    def safe_writeScreenshotDescriptionFile(self, out_fname):
+    def safe_write_screenshot_description_file(self, out_fname):
         """
         writes screenshot descr file in a safe mode. any problems are reported via warning
         :param out_fname: {str}
         :return: None
         """
         mkdir_p(dirname(out_fname))
-        self.writeScreenshotDescriptionFile(out_fname)
+        self.write_screenshot_description_file(out_fname)
 
     def serialize_screenshot_data(self):
         """
@@ -67,10 +67,10 @@ class ScreenshotManager(ScreenshotManagerCore):
         out_fname_in_sim_dir = join(dirname(sim_fname), 'screenshot_data', 'screenshots.json')
 
         # writing in the simulation output dir
-        self.safe_writeScreenshotDescriptionFile(out_fname)
+        self.safe_write_screenshot_description_file(out_fname)
 
         # writing in the original simulation location
-        self.safe_writeScreenshotDescriptionFile(out_fname_in_sim_dir)
+        self.safe_write_screenshot_description_file(out_fname_in_sim_dir)
 
     def store_gui_vis_config(self, scrData):
         """
@@ -103,8 +103,8 @@ class ScreenshotManager(ScreenshotManagerCore):
             scrData.invisible_types = []
 
     # called from GraphicsFrameWidget
-    def add2DScreenshot(self, _plotName, _plotType, _projection, _projectionPosition,
-                        _camera, metadata=None):
+    def add_2d_screenshot(self, _plotName, _plotType, _projection, _projectionPosition,
+                          _camera, metadata=None):
         if len(self.screenshotDataDict) > self.maxNumberOfScreenshots:
             print("MAX NUMBER OF SCREENSHOTS HAS BEEN REACHED")
 
@@ -120,7 +120,7 @@ class ScreenshotManager(ScreenshotManagerCore):
 
         #        import pdb; pdb.set_trace()
 
-        (scrName, scrCoreName) = self.produceScreenshotName(scrData)
+        (scrName, scrCoreName) = self.produce_screenshot_name(scrData)
 
         print("  add2DScreenshot():  THIS IS NEW SCRSHOT NAME", scrName)  # e.g. Cell_Field_CellField_2D_XY_150
 
@@ -157,7 +157,7 @@ class ScreenshotManager(ScreenshotManagerCore):
         # serializing all screenshots
         self.serialize_screenshot_data()
 
-    def add3DScreenshot(self, _plotName, _plotType, _camera, metadata=None):  # called from GraphicsFrameWidget
+    def add_3d_screenshot(self, _plotName, _plotType, _camera, metadata=None):  # called from GraphicsFrameWidget
         if len(self.screenshotDataDict) > self.maxNumberOfScreenshots:
             print("MAX NUMBER OF SCREENSHOTS HAS BEEN REACHED")
         scrData = ScreenshotData()
@@ -167,7 +167,7 @@ class ScreenshotManager(ScreenshotManagerCore):
         x_size = Configuration.getSetting("Screenshot_X")
         y_size = Configuration.getSetting("Screenshot_Y")
 
-        (scrName, scrCoreName) = self.produceScreenshotName(scrData)
+        (scrName, scrCoreName) = self.produce_screenshot_name(scrData)
 
         okToAddScreenshot = True
         for name in self.screenshotDataDict:
