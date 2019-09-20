@@ -25,10 +25,31 @@ class ScreenshotManagerCore(object):
             '3.7.9': self.readScreenshotDescriptionFile_JSON_379,
             '3.7.10': self.readScreenshotDescriptionFile_JSON_379,
             '3.8.0': self.readScreenshotDescriptionFile_JSON_379,
-            '4.0.0': self.readScreenshotDescriptionFile_JSON_379,
-            '4.1.0': self.readScreenshotDescriptionFile_JSON_379,
+            '4.x': self.readScreenshotDescriptionFile_JSON_379,
 
         }
+
+    def fetch_screenshot_description_file_parser_fcn(self, screenshot_file_version: str):
+        """
+        Fetches "best" parsing function give the version in the screenshot description file
+        :return:
+        """
+
+        try:
+            screenshot_file_parser_fcn = self.screenshot_file_parsers[screenshot_file_version]
+            return screenshot_file_parser_fcn
+        except KeyError:
+            version_list = screenshot_file_version.split('.')
+            for version_max_idx in [2, 1]:
+                version_tmp = '.'.join(version_list[:version_max_idx]) + '.x'
+                try:
+                    screenshot_file_parser_fcn = self.screenshot_file_parsers[version_tmp]
+                    return screenshot_file_parser_fcn
+                except KeyError:
+                    pass
+
+        raise KeyError(f'Could not find parser for the following version of screenshot description file: '
+                       f'{screenshot_file_version}')
 
     def get_screenshot_dir_name(self):
         return CompuCellSetup.persistent_globals.output_directory
@@ -161,8 +182,8 @@ class ScreenshotManagerCore(object):
         # will replace it with a dict, for now leaving it as an if statement
 
         try:
-
-            screenshot_file_parser_fcn = self.screenshot_file_parsers[version]
+            screenshot_file_parser_fcn = self.fetch_screenshot_description_file_parser_fcn(version)
+            # screenshot_file_parser_fcn = self.screenshot_file_parsers[version]
         except KeyError:
             raise RuntimeError('Unknown version of screenshot description: {}. Make sure '
                                'that <b>ScreenshotManagerCore.py</b> defines <b>screenshot_file_parser</b> '
@@ -271,7 +292,7 @@ class ScreenshotManagerCore(object):
     #
     #     self.readScreenshotDescriptionFile_JSON(filename=filename)
 
-    def get_screenshot_filename(self)->Union[str, None]:
+    def get_screenshot_filename(self) -> Union[str, None]:
         """
 
         :return:
@@ -281,11 +302,9 @@ class ScreenshotManagerCore(object):
             print('Unknown simulation file name . Cannot locate screenshot_data folder')
             return None
 
-
-        guessed_screenshot_name  = join(dirname(sim_file_name),'screenshot_data','screenshots.json')
+        guessed_screenshot_name = join(dirname(sim_file_name), 'screenshot_data', 'screenshots.json')
 
         return guessed_screenshot_name
-
 
     def read_screenshot_description_file(self, screenshot_fname=None):
         """
@@ -303,9 +322,7 @@ class ScreenshotManagerCore(object):
             return
             # raise RuntimeError('Could not locate screenshot description file: {}'.format(screenshot_filename))
 
-
         self.readScreenshotDescriptionFile_JSON(filename=screenshot_filename)
-
 
     def safe_writeScreenshotDescriptionFile(self, out_fname):
         """
