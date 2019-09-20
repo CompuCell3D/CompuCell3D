@@ -2689,11 +2689,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
             if self.threeDRB.isChecked():
                 camera = self.mainGraphicsWidget.ren.GetActiveCamera()
                 # print "CAMERA SETTINGS =",camera
-                self.screenshotManager.add3DScreenshot(self.__fieldType[0], self.__fieldType[1], camera)
+                self.screenshotManager.add_3d_screenshot(self.__fieldType[0], self.__fieldType[1], camera)
             else:
                 plane_position_tupple = self.mainGraphicsWidget.getPlane()
-                self.screenshotManager.add2DScreenshot(self.__fieldType[0], self.__fieldType[1],
-                                                       plane_position_tupple[0], plane_position_tupple[1])
+                self.screenshotManager.add_2d_screenshot(self.__fieldType[0], self.__fieldType[1],
+                                                         plane_position_tupple[0], plane_position_tupple[1])
 
     def prepareSimulationView(self):
         '''
