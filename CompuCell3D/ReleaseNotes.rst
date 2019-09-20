@@ -1,6 +1,33 @@
 Release Notes
 =============
 
+Version 4.1.0
+-------------
+**2019-09-21**
+
+This is mainly bug-fix release that fixes many of the issues we observed in 4.0.0.
+In addition to this we also added the following features:
+
+- New , intuitive way to launch parameter scans
+- Added 3D vascularized tumor demo from Shirinifard PLoS One 2009
+- Added basic, in-player simulation stats output
+- Added "weightEnergyByDistance" in all contact energy plugins
+- Expanded Developer's manual and added new , documented DeveloperZone steppables examples
+- Added convenience Michaelis-Menten and Hill functions to SteppableBasePy
+- Multiple bug fixes (including ability to resize screenshots)
+
+Version 4.0.0
+-------------
+**2019-08-11**
+
+Major version change migrated to Python 3.6+
+
+- Python 3 - based code
+- Much simpler specification of simulation - new , more intuitive API
+- More intuitive specification of parameter scans
+- Better support and integration with 3rd party Python packages (numpy, pandas, scipy)
+- Multiple bug fixes
+
 Version 3.7.7
 -------------
 
