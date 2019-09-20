@@ -167,9 +167,9 @@ double ImplicitMotilityPlugin::changeEnergyByCellType(const Point3D &pt, const C
 		double norm = std::sqrt(distVector.X()*distVector.X() + distVector.Y()*distVector.Y() + distVector.Z()*distVector.Z());
 		if (norm != 0)
 		{
-			distVector.X = distVector.X / norm;
-			distVector.Y = distVector.Y / norm;
-			distVector.Z = distVector.Z / norm;
+			distVector.XRef() = distVector.X() / norm;
+			distVector.YRef() = distVector.Y() / norm;
+			distVector.ZRef() = distVector.Z() / norm;
 		}
 		
 
@@ -197,9 +197,9 @@ double ImplicitMotilityPlugin::changeEnergyByCellType(const Point3D &pt, const C
 		double norm = std::sqrt(distVector.X()*distVector.X() + distVector.Y()*distVector.Y() + distVector.Z()*distVector.Z());
 		if (norm != 0)
 		{
-			distVector.X = distVector.X / norm;
-			distVector.Y = distVector.Y / norm;
-			distVector.Z = distVector.Z / norm;
+			distVector.XRef() = distVector.X() / norm;
+			distVector.YRef() = distVector.Y() / norm;
+			distVector.ZRef() = distVector.Z() / norm;
 		}
 
 		//Coordinates3D<double> biasVecTmp = newCell->biasVector;
@@ -243,9 +243,9 @@ double ImplicitMotilityPlugin::changeEnergyByCellId(const Point3D &pt, const Cel
 		double norm = std::sqrt(distVector.X()*distVector.X() + distVector.Y()*distVector.Y() + distVector.Z()*distVector.Z());
 		if (norm != 0)
 		{
-			distVector.X = distVector.X / norm;
-			distVector.Y = distVector.Y / norm;
-			distVector.Z = distVector.Z / norm;
+			distVector.XRef() = distVector.X() / norm;
+			distVector.YRef() = distVector.Y() / norm;
+			distVector.ZRef() = distVector.Z() / norm;
 		}
 
 		//Coordinates3D<double> biasVecTmp = oldCell->biasVector;
@@ -273,9 +273,9 @@ double ImplicitMotilityPlugin::changeEnergyByCellId(const Point3D &pt, const Cel
 		double norm = std::sqrt(distVector.X()*distVector.X() + distVector.Y()*distVector.Y() + distVector.Z()*distVector.Z());
 		if (norm != 0)
 		{
-			distVector.X = distVector.X / norm;
-			distVector.Y = distVector.Y / norm;
-			distVector.Z = distVector.Z / norm;
+			distVector.XRef() = distVector.X() / norm;
+			distVector.YRef() = distVector.Y() / norm;
+			distVector.ZRef() = distVector.Z() / norm;
 		}
 
 		//Coordinates3D<double> biasVecTmp = newCell->biasVector;

@@ -106,7 +106,8 @@ void BiasVectorSteppable::step(const unsigned int currentStep){
 	return (this->*stepFcnPtr)(currentStep);
 
 }
-
+// TODO: refactor the step_3d,2d... to rnd_step_... ; I need to update the wrapper to do it
+//pure white random change bias:
 void CompuCell3D::BiasVectorSteppable::step_3d(const unsigned int currentStep)
 {
 	CellInventory::cellInventoryIterator cInvItr;
@@ -162,7 +163,7 @@ void CompuCell3D::BiasVectorSteppable::step_3d(const unsigned int currentStep)
 	}
 }
 
-
+//pure white random change bias:
 void CompuCell3D::BiasVectorSteppable::step_2d_x(const unsigned int currentStep)
 {
 	CellInventory::cellInventoryIterator cInvItr;
@@ -194,7 +195,7 @@ void CompuCell3D::BiasVectorSteppable::step_2d_x(const unsigned int currentStep)
 
 }
 
-
+//pure white random change bias:
 void CompuCell3D::BiasVectorSteppable::step_2d_y(const unsigned int currentStep)
 {
 	CellInventory::cellInventoryIterator cInvItr;
@@ -224,7 +225,7 @@ void CompuCell3D::BiasVectorSteppable::step_2d_y(const unsigned int currentStep)
 		cell->biasVecZ = z;
 	}
 }
-
+//pure white random change bias:
 void CompuCell3D::BiasVectorSteppable::step_2d_z(const unsigned int currentStep)
 {
 	CellInventory::cellInventoryIterator cInvItr;
