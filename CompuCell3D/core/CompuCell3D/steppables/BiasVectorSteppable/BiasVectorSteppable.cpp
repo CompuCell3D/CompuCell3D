@@ -106,8 +106,10 @@ void BiasVectorSteppable::step(const unsigned int currentStep){
 	return (this->*stepFcnPtr)(currentStep);
 
 }
-// TODO: refactor the step_3d,2d... to rnd_w_step_... ; I need to update the wrapper to do it
-//pure white random change bias:
+
+
+
+//rename this fncs to white noise 2d/3d
 void CompuCell3D::BiasVectorSteppable::step_3d(const unsigned int currentStep)
 {
 	CellInventory::cellInventoryIterator cInvItr;
@@ -206,6 +208,45 @@ void CompuCell3D::BiasVectorSteppable::step_2d_z(const unsigned int currentStep)
 		cell->biasVecZ = 0;
 	}
 }
+
+
+
+void BiasVectorSteppable::step_momentum_noise_3d(const double alpha, CellG *cell)
+{
+	vector<double> noise = BiasVectorSteppable::noise_vec_generator();
+
+	cell->biasVecX = alpha*cell->biasVecX + (1 - alpha)*noise[0];
+	cell->biasVecY = alpha*cell->biasVecY + (1 - alpha)*noise[1];
+	cell->biasVecZ = alpha*cell->biasVecZ + (1 - alpha)*noise[2];
+
+}
+
+
+void BiasVectorSteppable::step_momentum_noise_2d_x(const double alpha, CellG *cell)
+{
+	vector<double> noise = BiasVectorSteppable::noise_vec_generator();
+
+	cell->biasVecY = alpha*cell->biasVecY + (1 - alpha)*noise[0];
+	cell->biasVecZ = alpha*cell->biasVecZ + (1 - alpha)*noise[1];
+}
+
+void BiasVectorSteppable::step_momentum_noise_2d_y(const double alpha, CellG *cell)
+{
+	vector<double> noise = BiasVectorSteppable::noise_vec_generator();
+
+	cell->biasVecX = alpha*cell->biasVecX + (1 - alpha)*noise[0];
+	cell->biasVecZ = alpha*cell->biasVecZ + (1 - alpha)*noise[1];
+}
+
+void BiasVectorSteppable::step_momentum_noise_2d_z(const double alpha, CellG *cell)
+{
+	vector<double> noise = BiasVectorSteppable::noise_vec_generator();
+
+	cell->biasVecX = alpha*cell->biasVecX + (1 - alpha)*noise[0];
+	cell->biasVecY = alpha*cell->biasVecY + (1 - alpha)*noise[1];
+}
+
+
 
 
 vector<double> BiasVectorSteppable::noise_vec_generator()

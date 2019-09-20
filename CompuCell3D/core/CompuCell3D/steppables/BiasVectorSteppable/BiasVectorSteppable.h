@@ -109,12 +109,21 @@ namespace CompuCell3D {
 	void step_2d_x(const unsigned int currentStep); // for x == 1
 	void step_2d_y(const unsigned int currentStep); // for y == 1
 	void step_2d_z(const unsigned int currentStep); // for z == 1
+	void step_momentum_noise_3d(const double alpha, CellG * cell);
+
+	void step_momentum_noise_2d_x(const double alpha, CellG * cell);
+
+	void step_momentum_noise_2d_y(const double alpha, CellG * cell);
+
+	void step_momentum_noise_2d_z(const double alpha, CellG * cell);
+
 
 	virtual vector<double> noise_vec_generator();
 
 	vector<double> white_noise_2d();
 
 	vector<double> white_noise_3d();
+
 
     virtual void finish() {}
 
