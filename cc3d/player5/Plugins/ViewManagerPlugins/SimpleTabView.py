@@ -1715,7 +1715,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             except RuntimeError as e:
                 self.handleErrorFormatted(f"Could not run parameter scan: Here is the reason: {str(e)}")
                 return
-            print('executing')
+
+            print('executing ', ' '.join(cml_list))
             print(cml_list)
             Popen(cml_list)
 

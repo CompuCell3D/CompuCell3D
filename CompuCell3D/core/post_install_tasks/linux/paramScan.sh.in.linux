@@ -30,7 +30,7 @@ export PYTHONPATH=${PREFIX_CC3D}/lib/site-packages
 
 echo "CompuCell3D - version $COMPUCELL3D_MAJOR_VERSION.$COMPUCELL3D_MINOR_VERSION.$COMPUCELL3D_BUILD_VERSION"
 export exit_code=0
-${PYTHON_EXEC} ${PREFIX_CC3D}/lib/site-packages/cc3d/core/param_scan/parameter_scan_run.py $* --currentDir=${current_directory}
+${PYTHON_EXEC} ${PREFIX_CC3D}/lib/site-packages/cc3d/core/param_scan/parameter_scan_run.py $* --install-dir=${current_directory}
 exit_code=$?
 
 
