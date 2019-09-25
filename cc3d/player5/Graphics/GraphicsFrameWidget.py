@@ -667,12 +667,12 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
             if self.draw3DFlag:
                 metadata = self.get_metadata(field_name=field_name, field_type=field_type)
-                tvw.screenshotManager.add3DScreenshot(field_name, field_type, camera, metadata)
+                tvw.screenshotManager.add_3d_screenshot(field_name, field_type, camera, metadata)
             else:
                 plane, position = self.getPlane()
                 metadata = self.get_metadata(field_name=field_name, field_type=field_type)
-                tvw.screenshotManager.add2DScreenshot(field_name, field_type, plane,
-                                                      position, camera, metadata)
+                tvw.screenshotManager.add_2d_screenshot(field_name, field_type, plane,
+                                                        position, camera, metadata)
 
     def setConnects(self, _workspace):  # rf. Plugins/ViewManagerPlugins/SimpleTabView.py
 

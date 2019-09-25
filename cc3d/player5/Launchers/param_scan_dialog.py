@@ -126,7 +126,12 @@ class ParamScanDialog(QDialog, ui_param_scan_dialog.Ui_ParamScanDialog):
         # --gui
         # --install-dir=/Users/m/Demo2/CC3D_4.0.0
 
-        cml_list = [f'"{ps_run_script}"']
+        cml_list = [f'{ps_run_script}']
+        if ps_run_script.find(' ') >= 0:
+
+            raise RuntimeError ('Parameter Run script is installed in the folder that contains spaces. In current'
+                                'version we require that installation of CC3D should be into a folder without spaces if'
+                                'you want to run parameter scan')
 
         cml_list.append(f'--input="{self.param_scan_simulation_LE.text()}"')
 

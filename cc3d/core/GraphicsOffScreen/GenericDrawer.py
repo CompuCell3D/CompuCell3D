@@ -419,7 +419,7 @@ class GenericDrawer():
             # writer.SetInputConnection(windowToImageFilter.GetOutputPort())
             # writer.Write()
 
-    def output_screenshot(self, screenshot_fname, file_format='png'):
+    def output_screenshot(self, screenshot_fname, file_format='png', screenshot_data=None):
         """
         Saves scene rendered in the renderer to the image
         :param ren: {vtkRenderer} renderer
@@ -428,13 +428,17 @@ class GenericDrawer():
         """
 
         ren = self.get_renderer()
-        renWin = vtk.vtkRenderWindow()
-        renWin.SetOffScreenRendering(1)
-        renWin.AddRenderer(ren)
-        renWin.Render()
+        ren_win = vtk.vtkRenderWindow()
+        ren_win.SetOffScreenRendering(1)
+
+        if screenshot_data is not None:
+            ren_win.SetSize(screenshot_data.win_width, screenshot_data.win_height)
+
+        ren_win.AddRenderer(ren)
+        ren_win.Render()
 
         windowToImageFilter = vtk.vtkWindowToImageFilter()
-        windowToImageFilter.SetInput(renWin)
+        windowToImageFilter.SetInput(ren_win)
         windowToImageFilter.Update()
 
         if file_format.lower() == 'png':
@@ -445,37 +449,10 @@ class GenericDrawer():
         else:
             writer = vtk.vtkPNGWriter()
 
-        # writer.SetFileName('D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
-        #     screenshot_name=screenshot_fname))
         writer.SetFileName(screenshot_fname)
 
         writer.SetInputConnection(windowToImageFilter.GetOutputPort())
         writer.Write()
-
-    # def output_screenshot(self,ren, screenshot_fname):
-    #     """
-    #     Saves scene rendered in the renderer to the image
-    #     :param ren: {vtkRenderer} renderer
-    #     :param screenshot_fname: {str} screenshot filename
-    #     :return: None
-    #     """
-    #
-    #     renWin = vtk.vtkRenderWindow()
-    #     renWin.SetOffScreenRendering(1)
-    #     renWin.AddRenderer(ren)
-    #     renWin.Render()
-    #
-    #     windowToImageFilter = vtk.vtkWindowToImageFilter()
-    #     windowToImageFilter.SetInput(renWin)
-    #     windowToImageFilter.Update()
-    #
-    #     writer = vtk.vtkPNGWriter()
-    #     # writer.SetFileName('D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
-    #     #     screenshot_name=screenshot_fname))
-    #     writer.SetFileName(screenshot_fname)
-    #
-    #     writer.SetInputConnection(windowToImageFilter.GetOutputPort())
-    #     writer.Write()
 
     def draw_old(self, screenshot_data, bsd, screenshot_name):
         # drawing_params = DrawingParameters()
@@ -751,12 +728,12 @@ class GenericDrawer():
 
             #            if self.threeDRB.isChecked():
             if self.draw3DFlag:
-                self.parentWidget.screenshotManager.add3DScreenshot(fieldType[0], fieldType[1], camera)
+                self.parentWidget.screenshotManager.add_3d_screenshot(fieldType[0], fieldType[1], camera)
             else:
                 planePositionTupple = self.draw_view_2D.getPlane()
                 # print "planePositionTupple=",planePositionTupple
-                self.parentWidget.screenshotManager.add2DScreenshot(fieldType[0], fieldType[1], planePositionTupple[0],
-                                                                    planePositionTupple[1], camera)
+                self.parentWidget.screenshotManager.add_2d_screenshot(fieldType[0], fieldType[1], planePositionTupple[0],
+                                                                      planePositionTupple[1], camera)
 
     def setInitialCrossSection(self, _basicSimulationData):
         #        print MODULENAME, '  setInitialCrossSection'
