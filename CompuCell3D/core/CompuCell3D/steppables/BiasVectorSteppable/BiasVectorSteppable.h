@@ -69,8 +69,15 @@ namespace CompuCell3D {
 	enum StepType { STEP3D = 0, STEP2DX = 1, STEP2DY = 2, STEP2DZ = 3 };
 	StepType stepType;
 
-	enum NoiseType {WHITE3D = 0, WHITE2D = 1};
+	enum NoiseType {VEC_GEN_WHITE3D = 0, VEC_GEN_WHITE2D = 1};
 	NoiseType noiseType;
+
+	enum BiasType {WHITE = 0, // b = white noise
+				   MOMENTUM = 1, // b(t+1) = a*b(t) + (1-a)*noise
+				   MANUAL = 101, // for changing b in python
+				   CUSTOM = 102};// for muExpressions
+	BiasType biasType;
+
 
 
 	typedef void (BiasVectorSteppable::*step_t)(const unsigned int currentStep);
