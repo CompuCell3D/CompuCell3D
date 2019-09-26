@@ -327,6 +327,44 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
    set<unsigned char> cellTypesSet;
 
     
+	bool completeRandom = false;
+	// xml style will be <BiasChange="type of change", might have trouble with the muExpressions?
+	if (_xmlData->findElement("BiasChange"))
+	{
+		string biasChangeStr = _xmlData->getAttribute("BiasChange");
+		transform(biasChangeStr.begin(), biasChangeStr.end(), biasChangeStr.begin(), ::tolower);
+		if (biasChangeStr == "white")// b = white noise
+		{
+			biasType = WHITE;
+		}
+		else if (biasChangeStr == "momentum")// b(t+1) = a*b(t) + (1-a)*noise
+		{
+			biasType = MOMENTUM;
+		}
+		else if (biasChangeStr == "manual")// for changing b in python
+		{
+			biasType = MANUAL;
+		}
+		else if (biasChangeStr == "custom")// for muExpressions
+		{
+			biasType = CUSTOM;
+		}
+		else
+		{
+			throw std::invalid_argument("Invalid bias change type in BiasChange");
+		}
+	}
+	else
+	{
+		biasType = WHITE;
+	}
+
+
+
+
+
+
+
 
     //boundaryStrategy has information aobut pixel neighbors 
 
@@ -334,20 +372,20 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	if (fieldDim.x == 1 || fieldDim.y == 1 || fieldDim.z == 1)
 	{
-		noiseType = WHITE2D;
+		noiseType = VEC_GEN_WHITE2D;
 	}
 	else
 	{
-		noiseType = WHITE3D;
+		noiseType = VEC_GEN_WHITE3D;
 	}
 
 
 	switch (noiseType)
 	{
-	case WHITE2D:
+	case VEC_GEN_WHITE2D:
 		noiseFcnPtr = &BiasVectorSteppable::white_noise_2d;
 		break;
-	case WHITE3D:
+	case VEC_GEN_WHITE3D:
 		noiseFcnPtr = &BiasVectorSteppable::white_noise_3d;
 		break;
 	default:
