@@ -66,8 +66,8 @@ namespace CompuCell3D {
 
     Dim3D fieldDim;
 
-	enum StepType { STEP3D = 0, STEP2DX = 1, STEP2DY = 2, STEP2DZ = 3 };
-	StepType stepType;
+	enum FieldType { FTYPE3D = 0, FTYPE2DX = 1, FTYPE2DY = 2, FTYPE2DZ = 3 };
+	FieldType fieldType;
 
 	enum NoiseType {VEC_GEN_WHITE3D = 0, VEC_GEN_WHITE2D = 1};
 	NoiseType noiseType;
@@ -85,6 +85,9 @@ namespace CompuCell3D {
 
 	typedef vector<double>(BiasVectorSteppable::*noise_t)();
 	BiasVectorSteppable::noise_t noiseFcnPtr;
+
+	typedef void (BiasVectorSteppable::*mom_gen_t)(const double alpha, CellG * cell);
+	BiasVectorSteppable::mom_gen_t momGenFcnPtr;
 
     
 
@@ -116,13 +119,15 @@ namespace CompuCell3D {
 	void step_2d_x(const unsigned int currentStep); // for x == 1
 	void step_2d_y(const unsigned int currentStep); // for y == 1
 	void step_2d_z(const unsigned int currentStep); // for z == 1
-	void step_momentum_noise_3d(const double alpha, CellG * cell);
 
-	void step_momentum_noise_2d_x(const double alpha, CellG * cell);
+	virtual void gen_momentum_bias(const double alpha, CellG * cell);
+	void gen_momentum_bias_3d(const double alpha, CellG * cell);
 
-	void step_momentum_noise_2d_y(const double alpha, CellG * cell);
+	void gen_momentum_bias_2d_x(const double alpha, CellG * cell);
 
-	void step_momentum_noise_2d_z(const double alpha, CellG * cell);
+	void gen_momentum_bias_2d_y(const double alpha, CellG * cell);
+
+	void gen_momentum_bias_2d_z(const double alpha, CellG * cell);
 
 
 	virtual vector<double> noise_vec_generator();

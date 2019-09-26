@@ -211,7 +211,17 @@ void CompuCell3D::BiasVectorSteppable::step_2d_z(const unsigned int currentStep)
 
 
 
-void BiasVectorSteppable::step_momentum_noise_3d(const double alpha, CellG *cell)
+void BiasVectorSteppable::gen_momentum_bias(const double alpha, CellG * cell) {
+
+	return (this->*momGenFcnPtr)(alpha,cell);
+
+}
+
+
+
+
+
+void BiasVectorSteppable::gen_momentum_bias_3d(const double alpha, CellG *cell)
 {
 	vector<double> noise = BiasVectorSteppable::noise_vec_generator();
 
@@ -222,7 +232,7 @@ void BiasVectorSteppable::step_momentum_noise_3d(const double alpha, CellG *cell
 }
 
 
-void BiasVectorSteppable::step_momentum_noise_2d_x(const double alpha, CellG *cell)
+void BiasVectorSteppable::gen_momentum_bias_2d_x(const double alpha, CellG *cell)
 {
 	vector<double> noise = BiasVectorSteppable::noise_vec_generator();
 
@@ -230,7 +240,7 @@ void BiasVectorSteppable::step_momentum_noise_2d_x(const double alpha, CellG *ce
 	cell->biasVecZ = alpha*cell->biasVecZ + (1 - alpha)*noise[1];
 }
 
-void BiasVectorSteppable::step_momentum_noise_2d_y(const double alpha, CellG *cell)
+void BiasVectorSteppable::gen_momentum_bias_2d_y(const double alpha, CellG *cell)
 {
 	vector<double> noise = BiasVectorSteppable::noise_vec_generator();
 
@@ -238,7 +248,7 @@ void BiasVectorSteppable::step_momentum_noise_2d_y(const double alpha, CellG *ce
 	cell->biasVecZ = alpha*cell->biasVecZ + (1 - alpha)*noise[1];
 }
 
-void BiasVectorSteppable::step_momentum_noise_2d_z(const double alpha, CellG *cell)
+void BiasVectorSteppable::gen_momentum_bias_2d_z(const double alpha, CellG *cell)
 {
 	vector<double> noise = BiasVectorSteppable::noise_vec_generator();
 
@@ -398,39 +408,77 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	if (fieldDim.x == 1)
 	{
-		stepType = STEP2DX;
+		fieldType = FTYPE2DX;
 	}
 	else if (fieldDim.y == 1)
 	{
-		stepType = STEP2DY;
+		fieldType = FTYPE2DY;
 	}
 	else if (fieldDim.z == 1)
 	{
-		stepType = STEP2DZ;
+		fieldType = FTYPE2DZ;
 	}
 	else
 	{
-		stepType = STEP3D;
+		fieldType = FTYPE3D;
+	}
+
+	switch (biasType)
+	{
+	case WHITE:
+		switch (fieldType)
+		{
+		case FTYPE3D:
+			stepFcnPtr = &BiasVectorSteppable::step_3d;
+			break;
+		case FTYPE2DX:
+			stepFcnPtr = &BiasVectorSteppable::step_2d_x;
+			break;
+		case FTYPE2DY:
+			stepFcnPtr = &BiasVectorSteppable::step_2d_y;
+			break;
+		case FTYPE2DZ:
+			stepFcnPtr = &BiasVectorSteppable::step_2d_z;
+			break;
+		default:
+			stepFcnPtr = &BiasVectorSteppable::step_3d;
+		}
+	case MOMENTUM:
+		switch (fieldType)
+		{
+		case CompuCell3D::BiasVectorSteppable::FTYPE3D:
+			stepFcnPtr = &BiasVectorSteppable::gen_momentum_bias_3d;
+			break;
+		case CompuCell3D::BiasVectorSteppable::FTYPE2DX:
+			break;
+		case CompuCell3D::BiasVectorSteppable::FTYPE2DY:
+			break;
+		case CompuCell3D::BiasVectorSteppable::FTYPE2DZ:
+			break;
+		default:
+			break;
+		}
 	}
 
 
-	switch (stepType)
+/*
+	switch (fieldType)
 	{
-	case STEP3D:
+	case FTYPE3D:
 		stepFcnPtr = &BiasVectorSteppable::step_3d;
 		break;
-	case STEP2DX:
+	case FTYPE2DX:
 		stepFcnPtr = &BiasVectorSteppable::step_2d_x;
 		break;
-	case STEP2DY:
+	case FTYPE2DY:
 		stepFcnPtr = &BiasVectorSteppable::step_2d_y;
 		break;
-	case STEP2DZ:
+	case FTYPE2DZ:
 		stepFcnPtr = &BiasVectorSteppable::step_2d_z;
 		break;
 	default:
 		stepFcnPtr = &BiasVectorSteppable::step_3d;
-	}
+	}*/
 
 }
 
