@@ -338,10 +338,10 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
     
 	bool completeRandom = false;
-	// xml style will be <BiasChange="type of change", might have trouble with the muExpressions?
+	
 	if (_xmlData->findElement("BiasChange"))
 	{
-		string biasChangeStr = _xmlData->getAttribute("BiasChange");
+		string biasChangeStr = _xmlData->getAttribute("BiasChange");// xml style will be <BiasChange="type of change">, might have trouble with the muExpressions?
 		transform(biasChangeStr.begin(), biasChangeStr.end(), biasChangeStr.begin(), ::tolower);
 		if (biasChangeStr == "white")// b = white noise
 		{
@@ -447,15 +447,26 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		switch (fieldType)
 		{
 		case CompuCell3D::BiasVectorSteppable::FTYPE3D:
-			stepFcnPtr = &BiasVectorSteppable::gen_momentum_bias_3d;
+			momGenFcnPtr = &BiasVectorSteppable::gen_momentum_bias_3d;
+			// if alpha is set in the xml it's going to be a by cell type. However I feel that I already have too many
+			// cases in this plugin, so I'm just going to see if there are elements in the xml and assing those.
+			// actually I don't know, this might not work if cells appear during the simulation... 
+			// I don't want more cases, maybe I should split this steppable in one "sub"-steppable for each bias type?
+
+
+
 			break;
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DX:
+			momGenFcnPtr = &BiasVectorSteppable::gen_momentum_bias_2d_x;
 			break;
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DY:
+			momGenFcnPtr = &BiasVectorSteppable::gen_momentum_bias_2d_y;
 			break;
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DZ:
+			momGenFcnPtr = &BiasVectorSteppable::gen_momentum_bias_2d_z;
 			break;
 		default:
+			momGenFcnPtr = &BiasVectorSteppable::gen_momentum_bias_3d;
 			break;
 		}
 	}
