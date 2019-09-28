@@ -82,7 +82,7 @@ class SBMLSolverHelper(object):
 
         if not antimony_available:
             antimony_translator_api = ['add_antimony_to_cell', 'add_antimony_to_cell_ids',
-                                       'add_antimony_to_cell_types', 'add_free_floating_Antimony',
+                                       'add_antimony_to_cell_types', 'add_free_floating_antimony',
                                        'add_cellml_to_cell', 'add_cellml_to_cell_ids', 'add_cellml_to_cell_types',
                                        'add_free_floating_cellml', 'translate_to_sbml_string']
 
