@@ -7,7 +7,7 @@ from roadrunner import RoadRunner
 
 
 class RoadRunnerPy(RoadRunner):
-    def __init__(self, _path='', sbml=None):
+    def __init__(self, _path='', _modelString='', sbml=None):
         if sbml is None:
             RoadRunner.__init__(self)
         else:
@@ -16,6 +16,7 @@ class RoadRunnerPy(RoadRunner):
         # self.sbmlFullPath=_sbmlFullPath
         self.path = _path  # relative path to the SBML model - CC3D uses only relative paths . In some rare cases when users do some hacking they may set self.path to be absolute path.
         self.absPath = ''  # absolute path of the SBML file. Internal use only e.g.  for debugging purposes - and is not serialized
+        self.modelString = ''  # SBML model string - used when translating model specifications
         self.stepSize = 1.0
         self.timeStart = 0.0
         self.timeEnd = 1.0
@@ -90,7 +91,7 @@ class RoadRunnerPy(RoadRunner):
     def __setstate__(self, _state):
         self.__state = _state
 
-    def loadSBML(self, _externalPath=''):
+    def loadSBML(self, _externalPath='', _modelString=''):
         """
         loads SBML model into RoadRunner instance
         external path can be either absolute path to SBML or a directory relative to which self.path is specified or empty string (in
@@ -102,26 +103,31 @@ class RoadRunnerPy(RoadRunner):
         :return: None
         """
 
-        if _externalPath == '':  # if external
+        if _modelString == '':
+            if _externalPath == '':  # if external
 
-            if not os.path.exists(self.path):
-                raise IOError(
-                    'loadSBMLError (self.path): RoadRunnerPy could not find ' + self.path + ' in the filesystem')
-            self.absPath = os.path.abspath(self.path)
-
-        else:
-            if os.path.isdir(_externalPath):  # if path is a directory then we attempt to join it with
-                self.absPath = os.path.join(_externalPath, self.path)
-                if not os.path.exists(self.absPath) or os.path.isdir(self.absPath):
+                if not os.path.exists(self.path):
                     raise IOError(
-                        'loadSBMLError Wrong constructed path: RoadRunnerPy could not find ' + self.absPath + ' in the filesystem')
-            else:
-                if os.path.exists(_externalPath):
-                    self.absPath = _externalPath
-                else:
-                    raise IOError('loadSBMLError : RoadRunnerPy could not find ' + _externalPath + ' in the filesystem')
+                        'loadSBMLError (self.path): RoadRunnerPy could not find ' + self.path + ' in the filesystem')
+                self.absPath = os.path.abspath(self.path)
 
-        self.load(self.absPath)
+            else:
+                if os.path.isdir(_externalPath):  # if path is a directory then we attempt to join it with
+                    self.absPath = os.path.join(_externalPath, self.path)
+                    if not os.path.exists(self.absPath) or os.path.isdir(self.absPath):
+                        raise IOError(
+                            'loadSBMLError Wrong constructed path: RoadRunnerPy could not find ' + self.absPath + ' in the filesystem')
+                else:
+                    if os.path.exists(_externalPath):
+                        self.absPath = _externalPath
+                    else:
+                        raise IOError('loadSBMLError : RoadRunnerPy could not find ' + _externalPath + ' in the filesystem')
+
+            self.load(self.absPath)
+        else:
+            self.modelString = _modelString
+            self.load(self.modelString)
+
         try:
             modelState = self.__state['ModelState']
             for name, value in modelState.items():
