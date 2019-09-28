@@ -5,6 +5,17 @@ FIND_PACKAGE (OpenMP)
 # Should we build shared libraries
 OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
+IF (APPLE)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 " CACHE STRING "flags used during compilation by C++ compiler" FORCE)
+    SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 " CACHE STRING "flags used during compilation by C compiler" FORCE)
+    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "OSX deplyment target" FORCE)
+
+    MESSAGE ("GOT APPLE")
+ENDIF (APPLE)
+
+
+set(CMAKE_CXX_STANDARD 11)
+
 # Specify a version for all libs to use
 # Specify a version for all libs to use
 # letters A, B, C are added to ensure nice display of sersion in cmake gui
