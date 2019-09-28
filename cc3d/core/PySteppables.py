@@ -1,4 +1,5 @@
 import itertools
+from pathlib import Path
 import numpy as np
 from collections import OrderedDict
 from cc3d.core.iterators import *
@@ -18,6 +19,7 @@ from deprecated import deprecated
 from cc3d.core.SteeringParam import SteeringParam
 from copy import deepcopy
 from math import sqrt
+from cc3d.core.numerics import *
 
 
 class SteppablePy:
@@ -70,6 +72,28 @@ class FieldVisData:
             self.function_obj = lambda x: x
 
         self.field_type = field_type
+
+
+class PlotData:
+    (HISTOGRAM) = list(range(0, 1))
+
+    def __init__(self, plot_name, plot_type, attribute_name, function_obj=None):
+        self.plot_name = plot_name
+        self.plot_window = None
+        self.function_obj = function_obj
+        self.attribute_name = attribute_name
+        self.x_axis_title = ''
+        self.y_axis_title = ''
+        self.x_scale_type = 'linear'
+        self.y_scale_type = 'linear'
+        self.number_of_bins = 0
+        self.color = 'green'
+        self.cell_type_list = []
+
+        if function_obj is None:
+            self.function_obj = lambda x: x
+
+        self.plot_type = plot_type
 
 
 class FieldFetcher:
@@ -187,6 +211,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         # {field_name:FieldVisData } -  used to keep track of simple cell tracking visualizations
         self.tracking_field_vis_dict = {}
 
+        # {field_name:PlotData } -  used to keep track of simple cell tracking plots
+        self.tracking_plot_dict = {}
+
         self.plugin_init_dict = {
             "NeighborTracker": ['neighbor_tracker_plugin', 'neighborTrackerPlugin'],
             "FocalPointPlasticity": ['focal_point_plasticity_plugin', 'focalPointPlasticityPlugin'],
@@ -219,6 +246,24 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.clonable_attribute_names = ['lambdaVolume', 'targetVolume', 'targetSurface', 'lambdaSurface',
                                          'targetClusterSurface', 'lambdaClusterSurface', 'type', 'lambdaVecX',
                                          'lambdaVecY', 'lambdaVecZ', 'fluctAmpl']
+
+    def open_file_in_simulation_output_folder(self, file_name:str, mode:str='w') -> tuple:
+        """
+        attempts to open file in the simulation output folder
+
+        :param file_name:
+        :param mode:
+        :return: tuple of (file_obj, full filepath)
+        """
+        if self.output_dir is not None:
+            output_path = Path(self.output_dir).joinpath(file_name)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                file_handle = open(output_path, 'w')
+            except IOError:
+                print("Could not open file for writing.")
+                return None, None
+            return file_handle, output_path
 
     def core_init(self, reinitialize_cell_types=True):
         """
@@ -292,7 +337,95 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                 for plugin_member_name in member_var_list:
                     setattr(self, plugin_member_name, None)
 
-    def fetch_attribute(self, cell:object, attrib_name: str):
+    def track_cell_level_scalar_attribute(self, field_name: str, attribute_name: str, function_obj: object = None,
+                                          cell_type_list: Union[list, None] = None):
+        """
+        Adds custom field that visualizes cell scalar attribute
+        :param field_name:
+        :param attribute_name:
+        :param function_obj: function object that takes scalar and returns a scalar
+        :param cell_type_list: list of cell types that should be tracked
+        :return:
+        """
+        if cell_type_list is None:
+            cell_type_list = []
+
+        field_vis_data = FieldVisData(field_name=field_name,
+                                      field_type=FieldVisData.CELL_LEVEL_SCALAR_FIELD,
+                                      attribute_name=attribute_name,
+                                      function_obj=function_obj)
+        field_vis_data.cell_type_list = cell_type_list
+
+        self.tracking_field_vis_dict[field_name] = field_vis_data
+
+    def track_cell_level_vector_attribute(self, field_name: str, attribute_name: str, function_obj: object = None,
+                                          cell_type_list: Union[list, None] = None):
+        """
+
+        Adds custom field that visualizes cell vector attribute
+        :param field_name:
+        :param attribute_name:
+        :param function_obj: function object that takes vector and returns a vector
+        :param cell_type_list: list of cell types that should be tracked
+        :return:
+        """
+
+        if cell_type_list is None:
+            cell_type_list = []
+
+        field_vis_data = FieldVisData(field_name=field_name,
+                                      field_type=FieldVisData.CELL_LEVEL_VECTOR_FIELD,
+                                      attribute_name=attribute_name,
+                                      function_obj=function_obj)
+        field_vis_data.cell_type_list = cell_type_list
+
+        self.tracking_field_vis_dict[field_name] = field_vis_data
+
+    def histogram_scalar_attribute(self, histogram_name: str, attribute_name: str, number_of_bins: int,
+                                   function: Union[object, None] = None,
+                                   cell_type_list: Union[list, None] = None, x_axis_title: str = '',
+                                   y_axis_title: str = '', color: str = 'green',
+                                   x_scale_type: str = 'linear', y_scale_type: str = 'linear'):
+
+        """
+        Adds histogram that displays distribution of selected cell attribute
+        :param histogram_name:
+        :param attribute_name:
+        :param number_of_bins:
+        :param function:
+        :param cell_type_list:
+        :param x_axis_title:
+        :param y_axis_title:
+        :param color:
+        :param x_scale_type:
+        :param y_scale_type:
+        :return:
+        """
+
+        if cell_type_list is None:
+            cell_type_list = []
+
+        tpd = PlotData(plot_name=histogram_name, plot_type=PlotData.HISTOGRAM, attribute_name=attribute_name,
+                       function_obj=function)
+        tpd.number_of_bins = number_of_bins
+
+        tpd.x_scale_type = x_scale_type
+        tpd.y_scale_type = y_scale_type
+
+        tpd.x_axis_title = x_axis_title
+        tpd.y_axis_title = y_axis_title
+        if x_axis_title == '':
+            tpd.x_axis_title = histogram_name
+        if y_axis_title == '':
+            tpd.y_axis_title = 'Value'
+
+        tpd.color = color
+
+        tpd.cell_type_list = cell_type_list
+
+        self.tracking_plot_dict[histogram_name] = tpd
+
+    def fetch_attribute(self, cell: object, attrib_name: str):
         """
         Fetches element of a dictionary attached to a cell or an attribute of cell (e.g.
         volume or lambdaSurface)
@@ -308,11 +441,39 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             except AttributeError:
                 raise KeyError('Could not locate attribute: ' + attrib_name + ' in a cell object')
 
-    def update_tracking_plot(self):
-        return
-        for plot_name, tracking_plot_data in self.tracking_plot_dict.iteritems():
+    def update_tracking_plots(self):
+
+        for plot_name, tracking_plot_data in self.tracking_plot_dict.items():
             if tracking_plot_data.plot_type == PlotData.HISTOGRAM:
                 self.update_tracking_histogram(tracking_plot_data)
+
+    def update_tracking_histogram(self, tracking_plot_data):
+
+        tpd = tracking_plot_data
+
+        val_list = []
+        plot_window = tpd.plot_window
+
+        if not tpd.cell_type_list == []:
+            selective_cell_list = self.cellList
+        else:
+            # unpacking list to positional arguments - using * operator
+            selective_cell_list = self.cellListByType(*tpd.cell_type_list)
+        try:
+            for cell in selective_cell_list:
+
+                try:
+                    attrib = self.fetch_attribute(cell, tpd.attribute_name)
+                except KeyError:
+                    continue
+                val_list.append(tpd.function_obj(attrib))
+
+        except:
+            raise RuntimeError('Automatic Attribute Tracking :wrong type of cell attribute, '
+                               'missing attribute or wrong tracking function is used by track_cell_level functions')
+
+        if len(val_list):
+            plot_window.add_histogram(plot_name=tpd.plot_name, value_array=val_list, number_of_bins=tpd.number_of_bins)
 
     def update_tracking_fields(self):
         """
@@ -321,14 +482,13 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         # tracking visualization part
         for field_name, field_vis_data in self.tracking_field_vis_dict.items():
-
             field_vis_data.field.clear()
 
             if field_vis_data.cell_type_list == []:
                 selective_cell_list = self.cellList
             else:
                 # unpacking lsit to positional arguments - using * operator
-                selective_cell_list = self.cellListByType(*tpd.cell_type_list)
+                selective_cell_list = self.cellListByType(*field_vis_data.cell_type_list)
 
             try:
                 for cell in selective_cell_list:
@@ -338,12 +498,30 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
                     except KeyError:
                         continue
-                    field_vis_data.field[cell] = field_vis_data.function(attrib)
+                    field_vis_data.field[cell] = field_vis_data.function_obj(attrib)
             except:
                 raise RuntimeError(
                     'Automatic Attribute Tracking :'
                     'wrong type of cell attribute, '
                     'Missing attribute or wrong tracking function is used by track_cell_level functions')
+
+    def initialize_automatic_tasks(self):
+        self.initialize_tracking_fields()
+        self.initialize_tracking_plots()
+
+    def initialize_tracking_plots(self):
+
+        for plot_name, tracking_plot_data in self.tracking_plot_dict.items():
+            tpd = tracking_plot_data
+
+            plot_win = self.add_new_plot_window(title='Histogram of Cell Volumes',
+                                                x_axis_title='Number of Cells',
+                                                y_axis_title='Volume Size in Pixels',
+                                                x_scale_type=tpd.x_scale_type,
+                                                y_scale_type=tpd.y_scale_type)
+
+            plot_win.add_histogram_plot(plot_name=tpd.plot_name, color=tpd.color)
+            tpd.plot_window = plot_win
 
     def initialize_tracking_fields(self):
         """
@@ -355,9 +533,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
             if field_vis_data.field_type == field_vis_data.CELL_LEVEL_SCALAR_FIELD:
                 self.create_scalar_field_cell_level_py(field_name)
+                field_vis_data.field = getattr(self.field, field_name)
 
             elif field_vis_data.field_type == field_vis_data.CELL_LEVEL_VECTOR_FIELD:
                 self.create_vector_field_cell_level_py(field_name)
+                field_vis_data.field = getattr(self.field, field_name)
 
     def perform_automatic_tasks(self):
         """
@@ -366,7 +546,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :return:
         """
         self.update_tracking_fields()
-        self.update_tracking_plot()
+        self.update_tracking_plots()
         self.update_all_plots_windows()
 
     def update_all_plots_windows(self):
@@ -1023,7 +1203,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, self.dim)
         return np.array([dist_vec.x, dist_vec.y, dist_vec.z])
 
-    @deprecated(version='4.0.0', reason="You should use : vectorNorm")
+    @deprecated(version='4.0.0', reason="You should use : vector_norm")
     def vectorNorm(self, _vec):
         return self.vector_norm(vec=_vec)
 
@@ -1514,28 +1694,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     def set_max_mcs(self, max_mcs):
         self.simulator.setNumSteps(max_mcs)
-
-    def track_cell_level_scalar_attribute(self, field_name, attribute_name, function_obj=None,
-                                          cell_type_list=[]):
-
-        field_vis_data = FieldVisData(field_name=field_name,
-                                      field_type=FieldVisData.CELL_LEVEL_SCALAR_FIELD,
-                                      attribute_name=attribute_name,
-                                      function_obj=function_obj)
-        field_vis_data.cell_type_list = cell_type_list
-
-        self.tracking_field_vis_dict[field_name] = field_vis_data
-
-    def track_cell_level_vector_attribute(self, field_name, attribute_name, function_obj=None,
-                                          cell_type_list=[]):
-
-        field_vis_data = FieldVisData(field_name=field_name,
-                                      field_type=FieldVisData.CELL_LEVEL_VECTOR_FIELD,
-                                      attribute_name=attribute_name,
-                                      function_obj=function_obj)
-        field_vis_data.cell_type_list = cell_type_list
-
-        self.tracking_field_vis_dict[field_name] = field_vis_data
 
 
 class MitosisSteppableBase(SteppableBasePy):

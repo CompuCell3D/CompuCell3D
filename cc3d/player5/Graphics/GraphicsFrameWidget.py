@@ -59,7 +59,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.gd.set_interactive_camera_flag(True)
         self.gd.set_pixelized_cartesian_scene(Configuration.getSetting("PixelizedCartesianFields"))
 
-
         # placeholder for current screenshot data
         self.current_screenshot_data = None
 
@@ -147,7 +146,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
             type_color_map_dict[type_id] = qcolor_to_rgba(qt_color)
 
         metadata_dict['TypeColorMap'] = type_color_map_dict
-
 
         return metadata_dict
 
@@ -329,17 +327,19 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         # here we are updating models based on the new set of configs
         self.gd.configsChanged()
         if self.current_bsd is not None:
-            # hacky version to trigger redraw. Calling fdirectly draw function caused issues on OSX
-            # still leaving commented out code below . In case we need to resort to more restrictive
-            # handling of updated parameters
-            if pg.simthread is not None:
-                pg.simthread.completedStep.emit(0)
-            # todo - decide whether to keep this code or not
-            # for some reason redrawing scene after configuration change crashes on OSX. Really weird
-            # but I am turning off immediate redraw after configs change on osx
-            # if sys.platform.startswith('darwin'):
-            #     return
-            # self.draw(basic_simulation_data=self.current_bsd)
+            # todo - fix rendering of the scene immediately after configs chang. Right now
+            # you need to wait till next mcs to see the change - there is deadlock somewhere when
+
+            return
+            if sys.platform.startswith('darwin'):
+                # hacky version to trigger redraw. Calling fdirectly draw function caused issues on OSX
+                # still leaving commented out code below . In case we need to resort to more restrictive
+                # handling of updated parameters
+                # we call pg.simthread.completedStep.emit(0)
+                if pg.simthread is not None:
+                    pg.simthread.completedStep.emit(0)
+            else:
+                self.draw(basic_simulation_data=self.current_bsd)
 
     def Render(self):
         color = Configuration.getSetting("WindowColor")
@@ -375,10 +375,8 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         :return:
         """
 
-
     def setPlane(self, plane, pos):
         (self.plane, self.planePos) = (str(plane).upper(), pos)
-
 
     def getPlane(self):
         """
@@ -552,8 +550,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
             self.gd.get_renderer().SetActiveCamera(self.camera3D)
             self.qvtkWidget.setMouseInteractionSchemeTo3D()
 
-
-    def set_camera_from_graphics_window_data(self,camera, gwd):
+    def set_camera_from_graphics_window_data(self, camera, gwd):
         """
         Sets camera from graphics window data
         :param camera: {vtkCamera} camera obj
@@ -618,7 +615,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
                 break
 
-
     def getGraphicsWindowData(self):
         """
 
@@ -626,7 +622,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         """
         tvw = self.parentWidget()
         print('UPDATE getGraphicsWindowData')
-
 
         gwd = GraphicsWindowData()
         activeCamera = self.getActiveCamera()
@@ -672,12 +667,12 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
             if self.draw3DFlag:
                 metadata = self.get_metadata(field_name=field_name, field_type=field_type)
-                tvw.screenshotManager.add3DScreenshot(field_name, field_type, camera, metadata)
+                tvw.screenshotManager.add_3d_screenshot(field_name, field_type, camera, metadata)
             else:
                 plane, position = self.getPlane()
                 metadata = self.get_metadata(field_name=field_name, field_type=field_type)
-                tvw.screenshotManager.add2DScreenshot(field_name, field_type, plane,
-                                                      position, camera, metadata)
+                tvw.screenshotManager.add_2d_screenshot(field_name, field_type, plane,
+                                                        position, camera, metadata)
 
     def setConnects(self, _workspace):  # rf. Plugins/ViewManagerPlugins/SimpleTabView.py
 
@@ -723,7 +718,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def takeSimShot(self, *args, **kwds):
         print('CHANGE - TAKE SIM SHOT')
 
-    def update_field_types_combo_box(self, field_types:dict)->None:
+    def update_field_types_combo_box(self, field_types: dict) -> None:
         """
         Updates combo boxes
         :param field_types:{str}
@@ -784,7 +779,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         # self.resetCamera()
         self.copy_camera(src=self.camera2D, dst=self.camera3D)
 
-
     def zoomIn(self):
         '''
         Zooms in view
@@ -826,4 +820,3 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.qvtkWidget = None
 
         tvw = None
-

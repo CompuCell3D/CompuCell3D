@@ -3,9 +3,9 @@ import sys
 from os.path import dirname, join, abspath
 
 versionMajor = 4
-versionMinor = 0
+versionMinor = 1
 versionBuild = 0
-revisionNumber = "20190811"
+revisionNumber = "20190906"
 
 
 def getVersionAsString():
@@ -31,6 +31,7 @@ def getSVNRevision():
 def getSVNRevisionAsString():
     return str(getSVNRevision())
 
+
 __version__ = getVersionAsString()
 __revision__ = revisionNumber
 
@@ -45,8 +46,8 @@ cc3d_py_dir = dirname(__file__)
 
 os.environ['COMPUCELL3D_STEPPABLE_PATH'] = join(cc3d_py_dir, 'cpp', 'CompuCell3DSteppables') + path_postfix
 os.environ['COMPUCELL3D_PLUGIN_PATH'] = join(cc3d_py_dir, 'cpp', 'CompuCell3DPlugins') + path_postfix
-print(os.environ['COMPUCELL3D_STEPPABLE_PATH'] )
-print(os.environ['COMPUCELL3D_PLUGIN_PATH'] )
+print(os.environ['COMPUCELL3D_STEPPABLE_PATH'])
+print(os.environ['COMPUCELL3D_PLUGIN_PATH'])
 
 if sys.platform.startswith('win'):
     path_env = os.environ['PATH']
@@ -60,9 +61,8 @@ if sys.platform.startswith('win'):
         path_env_list.insert(0, cc3d_bin_path)
 
     # todo - this needs to have platform specific behavior
-    path_env_list.insert(0,os.environ['COMPUCELL3D_PLUGIN_PATH'])
+    path_env_list.insert(0, os.environ['COMPUCELL3D_PLUGIN_PATH'])
     path_env_list.insert(0, os.environ['COMPUCELL3D_STEPPABLE_PATH'])
-
 
     os.environ['PATH'] = ';'.join(path_env_list)
 
@@ -84,7 +84,6 @@ elif sys.platform.startswith('darwin'):
     if cc3d_cpp_lib_path not in dyld_env_list:
         dyld_env_list.insert(0, cc3d_cpp_lib_path)
 
-
     # dyld_env_list.insert(0,os.environ['COMPUCELL3D_PLUGIN_PATH'])
 
     os.environ['DYLD_LIBRARY_PATH'] = ':'.join(dyld_env_list)
@@ -102,7 +101,4 @@ elif sys.platform.startswith('linux'):
         ld_env_list.insert(0, cc3d_cpp_lib_path)
 
     os.environ['LD_LIBRARY_PATH'] = ':'.join(ld_env_list)
-
-
-# print('ENVIRONMENT VARS=', os.environ)
 
