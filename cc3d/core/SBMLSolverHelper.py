@@ -34,6 +34,7 @@ def SBMLSolverError(self, *args, **kwrds):
         call) + ' Trying to access one of the SBML solver methods'
                 ' but SBMLSolver engine (e.g. RoadRunner) has not been installed with your CompuCell3D package')
 
+
 def AntimonyTranslatorError(self, getAntimonyMessage=False, *args, **kwrds):
     import inspect
     line = inspect.stack()[1][2]
@@ -45,6 +46,7 @@ def AntimonyTranslatorError(self, getAntimonyMessage=False, *args, **kwrds):
     else:
         error_string = error_string + ' Trying to access one of the Antimony translator methods but Antimony libraries (e.g. libAntimony) has not been installed with your CompuCell3D package'
     raise AttributeError(error_string)
+
 
 class SBMLSolverHelper(object):
     @classmethod
@@ -79,11 +81,11 @@ class SBMLSolverHelper(object):
                 setattr(SBMLSolverHelper, api_name, types.MethodType(SBMLSolverError, SBMLSolverHelper))
 
         if not antimony_available:
-            antimony_translator_api = ['add_Antimony_to_cell', 'add_Antimony_to_cell_ids', 
-                               'add_Antimony_to_cell_types', 'add_free_floating_Antimony', 
-                               'add_CellML_to_cell', 'add_CellML_to_cell_ids', 'add_CellML_to_cell_types', 
-                               'add_free_floating_CellML', 'translate_to_SBML_string']
-            
+            antimony_translator_api = ['add_Antimony_to_cell', 'add_Antimony_to_cell_ids',
+                                       'add_Antimony_to_cell_types', 'add_free_floating_Antimony',
+                                       'add_CellML_to_cell', 'add_CellML_to_cell_ids', 'add_CellML_to_cell_types',
+                                       'add_free_floating_CellML', 'translate_to_SBML_string']
+
             for api_name in antimony_translator_api:
                 SBMLSolverHelper.remove_attribute(api_name)
                 setattr(SBMLSolverHelper, api_name, types.MethodType(AntimonyTranslatorError, SBMLSolverHelper))
@@ -109,7 +111,8 @@ class SBMLSolverHelper(object):
                                      initial_conditions=_initialConditions, options=_options,
                                      current_state_sbml=_currentStateSBML)
 
-    def add_sbml_to_cell(self, model_file: str = '', model_string: str = '', model_name: str = '', cell: object = None, step_size: float = 1.0,
+    def add_sbml_to_cell(self, model_file: str = '', model_string: str = '', model_name: str = '', cell: object = None,
+                         step_size: float = 1.0,
                          initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None,
                          current_state_sbml: object = None) -> None:
         """
@@ -181,7 +184,7 @@ class SBMLSolverHelper(object):
 
             # setting up paths - IMPORTANT FOR RESTARTING
             rr.path = model_file
-            rr.modelString =  model_string
+            rr.modelString = model_string
             if os.path.exists(model_path_normalized):
                 rr.absPath = model_path_normalized
 
@@ -199,7 +202,7 @@ class SBMLSolverHelper(object):
                 # we are turning off dynamic python properties because rr is not used in the interactive mode.
                 # rr.options.disablePythonDynamicProperties = True
 
-        # setting output results array size 
+        # setting output results array size
         rr.selections = []  # by default we do not request any output array at each intergration step
 
         if options:
@@ -222,33 +225,34 @@ class SBMLSolverHelper(object):
                         setattr(rr.getIntegrator(), self.option_name_dict[name], value)
                         # setattr(rr.simulateOptions,name,value)
 
-    def add_Antimony_to_cell(self, model_file: str = '', model_string: str = '', model_name: str = '', 
-                         cell: object = None, step_size: float = 1.0,
-                         initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None,
-                         current_state_sbml: object = None) -> None:
+    def add_Antimony_to_cell(self, model_file: str = '', model_string: str = '', model_name: str = '',
+                             cell: object = None, step_size: float = 1.0,
+                             initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None,
+                             current_state_sbml: object = None) -> None:
         """
         Same as add_sbml_to_cell, but with Antimony model specification
         Note that initial conditions can be specified either in the Antimony model specification, or with initial_conditions. If both are specified, initial_conditions takes precedence
         """
-        translated_model_string, main_module_name = self.translate_to_SBML_string(model_file=model_file, model_string=model_string)
+        translated_model_string, main_module_name = self.translate_to_SBML_string(model_file=model_file,
+                                                                                  model_string=model_string)
         if model_name == '':
             model_name = main_module_name
-        self.add_sbml_to_cell(model_string=translated_model_string, model_name=model_name, 
-                         cell=cell, step_size=step_size, initial_conditions=initial_conditions, 
-                         options=options,current_state_sbml=current_state_sbml)
+        self.add_sbml_to_cell(model_string=translated_model_string, model_name=model_name,
+                              cell=cell, step_size=step_size, initial_conditions=initial_conditions,
+                              options=options, current_state_sbml=current_state_sbml)
 
-    def add_CellML_to_cell(self, model_file: str = '', model_string: str = '', model_name: str = '', 
-                         cell: object = None, step_size: float = 1.0,
-                         initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None,
-                         current_state_sbml: object = None) -> None:
+    def add_CellML_to_cell(self, model_file: str = '', model_string: str = '', model_name: str = '',
+                           cell: object = None, step_size: float = 1.0,
+                           initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None,
+                           current_state_sbml: object = None) -> None:
         """
         Same as add_sbml_to_cell, but with CellML model specification
         Note that initial conditions can be specified either in the Antimony model specification, or with initial_conditions. If both are specified, initial_conditions takes precedence
         """
-        self.add_Antimony_to_cell(model_file=model_file, model_string=model_string, model_name=model_name, 
-                         cell=cell, step_size=step_size,
-                         initial_conditions=initial_conditions, options=options,
-                         current_state_sbml=current_state_sbml)
+        self.add_Antimony_to_cell(model_file=model_file, model_string=model_string, model_name=model_name,
+                                  cell=cell, step_size=step_size,
+                                  initial_conditions=initial_conditions, options=options,
+                                  current_state_sbml=current_state_sbml)
 
     @deprecated(version='4.0.0', reason="You should use : get_sbml_global_options")
     def getSBMLGlobalOptions(self):
@@ -282,7 +286,8 @@ class SBMLSolverHelper(object):
         return self.add_sbml_to_cell_types(model_file=_modelFile, model_name=_modelName, cell_types=_types,
                                            step_size=_stepSize, initial_conditions=_initialConditions, options=_options)
 
-    def add_sbml_to_cell_types(self, model_file: str = '', model_string: str = '', model_name: str = '', cell_types: Union[None, list] = None,
+    def add_sbml_to_cell_types(self, model_file: str = '', model_string: str = '', model_name: str = '',
+                               cell_types: Union[None, list] = None,
                                step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
                                options: Union[None, dict] = None) -> None:
         """
@@ -317,42 +322,45 @@ class SBMLSolverHelper(object):
                           RuntimeWarning)
 
         for cell in self.cellListByType(*cell_types):
-            self.add_sbml_to_cell(model_file=model_file, model_string=model_string, model_name=model_name, cell=cell, step_size=step_size,
+            self.add_sbml_to_cell(model_file=model_file, model_string=model_string, model_name=model_name, cell=cell,
+                                  step_size=step_size,
                                   initial_conditions=initial_conditions, options=options)
 
-    def add_Antimony_to_cell_types(self, model_file: str = '', model_string: str = '', 
-                               model_name: str = '', cell_types: Union[None, list] = None,
-                               step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
-                               options: Union[None, dict] = None) -> None:
+    def add_Antimony_to_cell_types(self, model_file: str = '', model_string: str = '',
+                                   model_name: str = '', cell_types: Union[None, list] = None,
+                                   step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
+                                   options: Union[None, dict] = None) -> None:
         """
         Same as add_sbml_to_cell_types, but with Antimony model specification
         Note that initial conditions can be specified either in the Antimony model specification, or with initial_conditions. If both are specified, initial_conditions takes precedence
         """
-        translated_model_string, main_module_name = self.translate_to_SBML_string(model_file=model_file, model_string=model_string)
+        translated_model_string, main_module_name = self.translate_to_SBML_string(model_file=model_file,
+                                                                                  model_string=model_string)
         if model_name == '':
             model_name = main_module_name
-        self.add_sbml_to_cell_types(model_string=translated_model_string, model_name=model_name, 
-                                cell_types=cell_types, step_size=step_size, 
-                                initial_conditions=initial_conditions, options=options)
+        self.add_sbml_to_cell_types(model_string=translated_model_string, model_name=model_name,
+                                    cell_types=cell_types, step_size=step_size,
+                                    initial_conditions=initial_conditions, options=options)
 
-    def add_CellML_to_cell_types(self, model_file: str = '', model_string: str = '', 
-                               model_name: str = '', cell_types: Union[None, list] = None,
-                               step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
-                               options: Union[None, dict] = None) -> None:
+    def add_CellML_to_cell_types(self, model_file: str = '', model_string: str = '',
+                                 model_name: str = '', cell_types: Union[None, list] = None,
+                                 step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
+                                 options: Union[None, dict] = None) -> None:
         """
         Same as add_sbml_to_cell_types, but with CellML model specification
         Note that initial conditions can be specified either in the Antimony model specification, or with initial_conditions. If both are specified, initial_conditions takes precedence
         """
-        self.add_Antimony_to_cell_types(model_file=model_file, model_string=model_string, 
-                               model_name=model_name, cell_types=cell_types, step_size=step_size, 
-                               initial_conditions=initial_conditions, options=options)
+        self.add_Antimony_to_cell_types(model_file=model_file, model_string=model_string,
+                                        model_name=model_name, cell_types=cell_types, step_size=step_size,
+                                        initial_conditions=initial_conditions, options=options)
 
     @deprecated(version='4.0.0', reason="You should use : add_sbml_to_cell_ids")
     def addSBMLToCellIds(self, _modelFile, _modelName='', _ids=[], _stepSize=1.0, _initialConditions={}, _options={}):
         return self.add_sbml_to_cell_ids(model_file=_modelFile, model_name=_modelName, cell_ids=_ids,
                                          step_size=_stepSize, initial_conditions=_initialConditions, options=_options)
 
-    def add_sbml_to_cell_ids(self, model_file: str, model_string: str = '', model_name: str = '', cell_ids: Union[None, list] = None,
+    def add_sbml_to_cell_ids(self, model_file: str = '', model_string: str = '', model_name: str = '',
+                             cell_ids: Union[None, list] = None,
                              step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
                              options: Union[None, dict] = None) -> None:
         """
@@ -394,42 +402,46 @@ class SBMLSolverHelper(object):
             if not cell:
                 continue
 
-            self.add_sbml_to_cell(model_file=model_file, model_string=model_string, model_name=model_name, cell=cell, step_size=step_size,
+            self.add_sbml_to_cell(model_file=model_file, model_string=model_string, model_name=model_name, cell=cell,
+                                  step_size=step_size,
                                   initial_conditions=initial_conditions, options=options)
 
-    def add_Antimony_to_cell_ids(self, model_file: str = '', model_string: str = '', model_name: str = '', 
-                             cell_ids: Union[None, list] = None, step_size: float = 1.0, 
-                             initial_conditions: Union[None, dict] = None,
-                             options: Union[None, dict] = None) -> None:
+    def add_Antimony_to_cell_ids(self, model_file: str = '', model_string: str = '', model_name: str = '',
+                                 cell_ids: Union[None, list] = None, step_size: float = 1.0,
+                                 initial_conditions: Union[None, dict] = None,
+                                 options: Union[None, dict] = None) -> None:
         """
         Same as add_sbml_to_cell_ids, but with Antimony model specification
         Note that initial conditions can be specified either in the Antimony model specification, or with initial_conditions. If both are specified, initial_conditions takes precedence
         """
-        translated_model_string, main_module_name = self.translate_to_SBML_string(model_file=model_file, model_string=model_string)
+        translated_model_string, main_module_name = self.translate_to_SBML_string(model_file=model_file,
+                                                                                  model_string=model_string)
         if model_name == '':
             model_name = main_module_name
-        self.add_sbml_to_cell_ids(model_string=translated_model_string, model_name=model_name, 
-            cell_ids=cell_ids, step_size=step_size, initial_conditions=initial_conditions, options=options)
+        self.add_sbml_to_cell_ids(model_string=translated_model_string, model_name=model_name,
+                                  cell_ids=cell_ids, step_size=step_size, initial_conditions=initial_conditions,
+                                  options=options)
 
-    def add_CellML_to_cell_ids(self, model_file: str = '', model_string: str = '', model_name: str = '', 
-                             cell_ids: Union[None, list] = None, step_size: float = 1.0, 
-                             initial_conditions: Union[None, dict] = None,
-                             options: Union[None, dict] = None) -> None:
+    def add_CellML_to_cell_ids(self, model_file: str = '', model_string: str = '', model_name: str = '',
+                               cell_ids: Union[None, list] = None, step_size: float = 1.0,
+                               initial_conditions: Union[None, dict] = None,
+                               options: Union[None, dict] = None) -> None:
         """
         Same as add_sbml_to_cell_ids, but with CellML model specification
         Note that initial conditions can be specified either in the Antimony model specification, or with initial_conditions. If both are specified, initial_conditions takes precedence
         """
-        self.add_Antimony_to_cell_ids(model_file=model_file, model_string=model_string, 
-                             model_name=model_name, cell_ids=cell_ids, step_size=step_size, 
-                             initial_conditions=initial_conditions,
-                             options=options)
+        self.add_Antimony_to_cell_ids(model_file=model_file, model_string=model_string,
+                                      model_name=model_name, cell_ids=cell_ids, step_size=step_size,
+                                      initial_conditions=initial_conditions,
+                                      options=options)
 
     @deprecated(version='4.0.0', reason="You should use : add_free_floating_sbml")
     def addFreeFloatingSBML(self, _modelFile, _modelName, _stepSize=1.0, _initialConditions={}, _options={}):
         return self.add_free_floating_sbml(model_file=_modelFile, model_name=_modelName, step_size=_stepSize,
                                            initial_conditions=_initialConditions, options=_options)
 
-    def add_free_floating_sbml(self, model_file: str = '', model_string: str = '', model_name: str = '', step_size: float = 1.0,
+    def add_free_floating_sbml(self, model_file: str = '', model_string: str = '', model_name: str = '',
+                               step_size: float = 1.0,
                                initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None):
         """
         Adds free floating SBML model - not attached to any cell. The model will be identified/referenced by the _modelName
@@ -478,7 +490,7 @@ class SBMLSolverHelper(object):
             # setting output results array size
         rr.selections = []  # by default we do not request any output array at each integration step
 
-        # in case user passes simulate options we set the here        
+        # in case user passes simulate options we set the here
         if options:
             for name, value in options.items():
 
@@ -496,32 +508,33 @@ class SBMLSolverHelper(object):
                     except (AttributeError, ValueError) as e:
                         setattr(rr.getIntegrator(), self.option_name_dict[name], value)
 
-    def add_free_floating_Antimony(self, model_file: str = '', model_string: str = '', 
-                               model_name: str = '', step_size: float = 1.0,
-                               initial_conditions: Union[None, dict] = None, 
-                               options: Union[None, dict] = None):
+    def add_free_floating_Antimony(self, model_file: str = '', model_string: str = '',
+                                   model_name: str = '', step_size: float = 1.0,
+                                   initial_conditions: Union[None, dict] = None,
+                                   options: Union[None, dict] = None):
         """
         Same as add_free_floating_sbml, but with Antimony model specification
         Note that initial conditions can be specified either in the Antimony model specification, or with initial_conditions. If both are specified, initial_conditions takes precedence
         """
-        translated_model_string, main_module_name = self.translate_to_SBML_string(model_file=model_file, model_string=model_string)
+        translated_model_string, main_module_name = self.translate_to_SBML_string(model_file=model_file,
+                                                                                  model_string=model_string)
         if model_name == '':
             model_name = main_module_name
-        self.add_free_floating_sbml(model_file=model_file, model_string=translated_model_string, 
-                               model_name=model_name, step_size=step_size, 
-                               initial_conditions=initial_conditions, options=options)
+        self.add_free_floating_sbml(model_file=model_file, model_string=translated_model_string,
+                                    model_name=model_name, step_size=step_size,
+                                    initial_conditions=initial_conditions, options=options)
 
-    def add_free_floating_CellML(self, model_file: str = '', model_string: str = '', 
-                               model_name: str = '', step_size: float = 1.0,
-                               initial_conditions: Union[None, dict] = None, 
-                               options: Union[None, dict] = None):
+    def add_free_floating_CellML(self, model_file: str = '', model_string: str = '',
+                                 model_name: str = '', step_size: float = 1.0,
+                                 initial_conditions: Union[None, dict] = None,
+                                 options: Union[None, dict] = None):
         """
         Same as add_free_floating_sbml, but with CellML model specification
         Note that initial conditions can be specified either in the Antimony model specification, or with initial_conditions. If both are specified, initial_conditions takes precedence
         """
-        self.add_free_floating_Antimony(model_file=model_file, model_string=model_string, 
-                               model_name=model_name, step_size=step_size, 
-                               initial_conditions=initial_conditions, options=options)
+        self.add_free_floating_Antimony(model_file=model_file, model_string=model_string,
+                                        model_name=model_name, step_size=step_size,
+                                        initial_conditions=initial_conditions, options=options)
 
     @deprecated(version='4.0.0', reason="You should use : delete_sbml_from_cell_ids")
     def deleteSBMLFromCellIds(self, _modelName, _ids=[]):
@@ -535,7 +548,7 @@ class SBMLSolverHelper(object):
         :return:
         """
         """
-        
+
         :param _modelName {str}: 
         :param _ids {list}: 
         :return: None
@@ -566,7 +579,7 @@ class SBMLSolverHelper(object):
         :return:
         """
         """
-        
+
         :param _modelName {str}: 
         :param types: 
         :return: None
@@ -687,7 +700,7 @@ class SBMLSolverHelper(object):
 
     @deprecated(version='4.0.0', reason="You should use : set_step_size_for_cell_types")
     def setStepSizeForCellTypes(self, _modelName='', _types=[], _stepSize=1.0):
-        return self.set_step_size_for_cell_types(model_name=_modelName,cell_types=_types,step_size=_stepSize)
+        return self.set_step_size_for_cell_types(model_name=_modelName, cell_types=_types, step_size=_stepSize)
 
     def set_step_size_for_cell_types(self, model_name: str = '', cell_types: Union[None, list] = None,
                                      step_size=1.0) -> None:
@@ -706,7 +719,7 @@ class SBMLSolverHelper(object):
 
     @deprecated(version='4.0.0', reason="You should use : set_step_size_for_free_floating_sbml")
     def setStepSizeForFreeFloatingSBML(self, _modelName='', _stepSize=1.0):
-        return SBMLSolverHelper.set_step_size_for_free_floating_sbml(model_name=_modelName,step_size=_stepSize)
+        return SBMLSolverHelper.set_step_size_for_free_floating_sbml(model_name=_modelName, step_size=_stepSize)
 
     def set_step_size_for_free_floating_sbml(self, model_name: str = '', step_size: float = 1.0) -> None:
 
@@ -753,7 +766,7 @@ class SBMLSolverHelper(object):
 
     @deprecated(version='4.0.0', reason="You should use : get_sbml_simulator")
     def getSBMLSimulator(self, _modelName, _cell=None):
-        return self.get_sbml_simulator(model_name=_modelName,cell=_cell)
+        return self.get_sbml_simulator(model_name=_modelName, cell=_cell)
 
     def get_sbml_simulator(self, model_name: str, cell: object = None) -> Union[object, None]:
         """
@@ -806,7 +819,7 @@ class SBMLSolverHelper(object):
 
     @deprecated(version='4.0.0', reason="You should use : get_sbml_state_as_python_dict")
     def getSBMLStateAsPythonDict(self, _modelName, _cell=None):
-        return self.get_sbml_state_as_python_dict(model_name=_modelName,cell=_cell)
+        return self.get_sbml_state_as_python_dict(model_name=_modelName, cell=_cell)
 
     def get_sbml_state_as_python_dict(self, model_name: str, cell: object = None) -> dict:
         """
@@ -974,29 +987,29 @@ class SBMLSolverHelper(object):
         :param model_string: model specification string
         :return {str,str}: string of SBML model specification, string of main module name
         """
-        
+
         # Just to be sure, call clear previous loads
         antimony.clearPreviousLoads()
-        
+
         # Loading from model string or file?
         if model_file == '':
             res_load = antimony.loadString(model_string)
         else:
             model_path_normalized = self.normalize_path(model_file)
             res_load = antimony.loadFile(model_path_normalized)
-        
+
         if res_load == -1:
-            AntimonyTranslatorError(self, getAntimonyMessage = True)
+            AntimonyTranslatorError(self, getAntimonyMessage=True)
 
         # Get main loaded module
         main_module_name = antimony.getMainModuleName()
         if not main_module_name:
-            AntimonyTranslatorError(self, getAntimonyMessage = True)
-        
+            AntimonyTranslatorError(self, getAntimonyMessage=True)
+
         # Return string of SBML model specification
         translated_model_string = antimony.getSBMLString(main_module_name)
         if not translated_model_string:
-            AntimonyTranslatorError(self, getAntimonyMessage = True)
+            AntimonyTranslatorError(self, getAntimonyMessage=True)
         else:
             return translated_model_string, main_module_name
-        
+
