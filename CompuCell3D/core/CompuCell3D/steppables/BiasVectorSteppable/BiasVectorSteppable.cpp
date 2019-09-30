@@ -336,8 +336,25 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
    set<unsigned char> cellTypesSet;
 
+
+	/*
+	Example xml:
+
+	A)
+	______________________
+	<BiasChange="momentum">
+	<BiasChangeParameters Alpha="10" CellType="cell1"/>
+	...
+	</BiasChange>
+
+	B)
+	____________________
+	<BiasChange>
+	</BiasChange>
+
+	*/
+
     
-	bool completeRandom = false;
 	
 	if (_xmlData->findElement("BiasChange"))
 	{
@@ -444,17 +461,45 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			stepFcnPtr = &BiasVectorSteppable::step_3d;
 		}
 	case MOMENTUM:
+		//For now I'll only do by cell type.
+		
+		biasMomenParamVec.clear();
+
+		vector<int> typeIdVec;
+
+		vector<BiasMomenParam> momentumParamVecTmp;
+
+		CC3DXMLElementList paramVec = _xmlData->getElements("BiasChangeParameters");
+
+		for (int i = 0; i < paramVec.size(); ++i)
+		{
+			BiasMomenParam biasParam;
+
+			biasParam.momentumAlpha = paramVec[i]->getAttributeAsDouble("Alpha");
+			biasParam.typeName = paramVec[i]->getAttribute("CellType");
+
+			cerr << "automaton=" << automaton << endl;
+
+			typeIdVec.push_back(automaton->getTypeId(biasParam.typeName));
+
+			//momentumParamVecTmp.push_back(biasParam.typeName);
+			momentumParamVecTmp.push_back(biasParam);
+		}
+
+		vector<int>::iterator pos = max_element(typeIdVec.begin(), typeIdVec.end());
+		int maxTypeID = *pos;
+
+		biasMomenParamVec.assign(maxTypeID + 1, BiasMomenParam());
+
+		for (int i = 0; i < momentumParamVecTmp.size(); ++i)
+		{
+			biasMomenParamVec[typeIdVec[i]] = momentumParamVecTmp[i];
+		}
+
 		switch (fieldType)
 		{
 		case CompuCell3D::BiasVectorSteppable::FTYPE3D:
 			momGenFcnPtr = &BiasVectorSteppable::gen_momentum_bias_3d;
-			// if alpha is set in the xml it's going to be a by cell type. However I feel that I already have too many
-			// cases in this plugin, so I'm just going to see if there are elements in the xml and assing those.
-			// actually I don't know, this might not work if cells appear during the simulation... 
-			// I don't want more cases, maybe I should split this steppable in one "sub"-steppable for each bias type?
-
-
-
 			break;
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DX:
 			momGenFcnPtr = &BiasVectorSteppable::gen_momentum_bias_2d_x;
