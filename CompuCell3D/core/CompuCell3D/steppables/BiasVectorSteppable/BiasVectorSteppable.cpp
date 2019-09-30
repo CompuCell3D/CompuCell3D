@@ -385,8 +385,11 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	*/
 
     
-	
-	if (_xmlData->findElement("BiasChange"))
+	if (!_xmlData)
+	{
+		biasType = WHITE;
+	}
+	else if (_xmlData->findElement("BiasChange"))
 	{
 		string biasChangeStr = _xmlData->getAttribute("BiasChange");// xml style will be <BiasChange="type of change">, might have trouble with the muExpressions?
 		transform(biasChangeStr.begin(), biasChangeStr.end(), biasChangeStr.begin(), ::tolower);
@@ -470,6 +473,20 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		fieldType = FTYPE3D;
 	}
 
+
+
+
+
+	vector<int> typeIdVec;
+
+	vector<BiasMomenParam> momentumParamVecTmp;
+
+	CC3DXMLElementList paramVec;
+
+	int maxTypeID;
+
+	vector<int>::iterator pos;
+
 	switch (biasType)
 	{
 	case WHITE:
@@ -489,7 +506,9 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			break;
 		default:
 			stepFcnPtr = &BiasVectorSteppable::step_3d;
+			break;
 		}
+		break;
 	case MOMENTUM:
 		//For now I'll only do by cell type.
 		
@@ -497,11 +516,11 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 		biasMomenParamVec.clear();
 
-		vector<int> typeIdVec;
+		/*vector<int> typeIdVec;*/
 
-		vector<BiasMomenParam> momentumParamVecTmp;
+		/*vector<BiasMomenParam> momentumParamVecTmp;*/
 
-		CC3DXMLElementList paramVec = _xmlData->getElements("BiasChangeParameters");
+		/*CC3DXMLElementList*/ paramVec = _xmlData->getElements("BiasChangeParameters");
 
 		for (int i = 0; i < paramVec.size(); ++i)
 		{
@@ -518,8 +537,8 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			momentumParamVecTmp.push_back(biasParam);
 		}
 
-		vector<int>::iterator pos = max_element(typeIdVec.begin(), typeIdVec.end());
-		int maxTypeID = *pos;
+		/*vector<int>::iterator*/ pos = max_element(typeIdVec.begin(), typeIdVec.end());
+		/*int*/ maxTypeID = *pos;
 
 		biasMomenParamVec.assign(maxTypeID + 1, BiasMomenParam());
 
@@ -546,6 +565,31 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			momGenFcnPtr = &BiasVectorSteppable::gen_momentum_bias_3d;
 			break;
 		}
+		break;
+	
+	
+	
+	default:
+		switch (fieldType)
+		{
+		case FTYPE3D:
+			stepFcnPtr = &BiasVectorSteppable::step_3d;
+			break;
+		case FTYPE2DX:
+			stepFcnPtr = &BiasVectorSteppable::step_2d_x;
+			break;
+		case FTYPE2DY:
+			stepFcnPtr = &BiasVectorSteppable::step_2d_y;
+			break;
+		case FTYPE2DZ:
+			stepFcnPtr = &BiasVectorSteppable::step_2d_z;
+			break;
+		default:
+			stepFcnPtr = &BiasVectorSteppable::step_3d;
+			break;
+		}
+		break;
+
 	}
 
 
