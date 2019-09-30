@@ -211,6 +211,10 @@ void CompuCell3D::BiasVectorSteppable::step_2d_z(const unsigned int currentStep)
 
 
 
+/*
+MOMENTUM BIAS GENERATORS
+*/
+
 void BiasVectorSteppable::gen_momentum_bias(const double alpha, CellG * cell) {
 
 	return (this->*momGenFcnPtr)(alpha,cell);
@@ -236,6 +240,7 @@ void BiasVectorSteppable::gen_momentum_bias_2d_x(const double alpha, CellG *cell
 {
 	vector<double> noise = BiasVectorSteppable::noise_vec_generator();
 
+	cell->biasVecX = 0;
 	cell->biasVecY = alpha*cell->biasVecY + (1 - alpha)*noise[0];
 	cell->biasVecZ = alpha*cell->biasVecZ + (1 - alpha)*noise[1];
 }
@@ -245,6 +250,7 @@ void BiasVectorSteppable::gen_momentum_bias_2d_y(const double alpha, CellG *cell
 	vector<double> noise = BiasVectorSteppable::noise_vec_generator();
 
 	cell->biasVecX = alpha*cell->biasVecX + (1 - alpha)*noise[0];
+	cell->biasVecY = 0;
 	cell->biasVecZ = alpha*cell->biasVecZ + (1 - alpha)*noise[1];
 }
 
@@ -254,10 +260,14 @@ void BiasVectorSteppable::gen_momentum_bias_2d_z(const double alpha, CellG *cell
 
 	cell->biasVecX = alpha*cell->biasVecX + (1 - alpha)*noise[0];
 	cell->biasVecY = alpha*cell->biasVecY + (1 - alpha)*noise[1];
+	cell->biasVecZ = 0;
 }
 
 
 
+/*
+NOISE VECTORS GENERATORS
+*/
 
 vector<double> BiasVectorSteppable::noise_vec_generator()
 {
