@@ -40,7 +40,14 @@ namespace CompuCell3D {
 
     class CellG;
 
-  
+  class BIASVECTORSTEPPABLE_EXPORT BiasMomenParam
+  {
+  public:
+	  BiasMomenParam() : momentumAlpha(0.0) {}
+	  double momentumAlpha;
+	  std::string typeName;
+  };
+	  
 
   class BIASVECTORSTEPPABLE_EXPORT BiasVectorSteppable : public Steppable {
 
@@ -79,6 +86,9 @@ namespace CompuCell3D {
 	BiasType biasType;
 
 
+	std::vector<BiasMomenParam> biasMomenParamVec;
+
+
 
 	typedef void (BiasVectorSteppable::*step_t)(const unsigned int currentStep);
 	BiasVectorSteppable::step_t stepFcnPtr;
@@ -98,6 +108,10 @@ namespace CompuCell3D {
     virtual ~BiasVectorSteppable ();
 
     // SimObject interface
+
+	
+
+
 
     virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
 
@@ -119,6 +133,8 @@ namespace CompuCell3D {
 	void step_2d_x(const unsigned int currentStep); // for x == 1
 	void step_2d_y(const unsigned int currentStep); // for y == 1
 	void step_2d_z(const unsigned int currentStep); // for z == 1
+
+	void step_momentum_bias(const unsigned int currentStep); // for the momentum bias
 
 	virtual void gen_momentum_bias(const double alpha, CellG * cell);
 	void gen_momentum_bias_3d(const double alpha, CellG * cell);

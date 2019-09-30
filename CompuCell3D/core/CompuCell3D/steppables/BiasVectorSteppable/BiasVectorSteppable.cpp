@@ -100,6 +100,9 @@ void BiasVectorSteppable::start(){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+/*
+STEPPERS
+*/
 
 void BiasVectorSteppable::step(const unsigned int currentStep){
 
@@ -210,7 +213,24 @@ void CompuCell3D::BiasVectorSteppable::step_2d_z(const unsigned int currentStep)
 }
 
 
+void BiasVectorSteppable::step_momentum_bias(const unsigned int currentStep)
+{
+	CellInventory::cellInventoryIterator cInvItr;
+	CellG * cell = 0;
 
+	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr)
+	{
+		cell = cellInventoryPtr->getCell(cInvItr);
+		double alpha = biasMomenParamVec[cell->type].momentumAlpha;
+
+		gen_momentum_bias(alpha, cell);
+
+	}
+}
+
+
+
+//==========================================================
 /*
 MOMENTUM BIAS GENERATORS
 */
@@ -473,6 +493,8 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	case MOMENTUM:
 		//For now I'll only do by cell type.
 		
+		stepFcnPtr = &BiasVectorSteppable::step_momentum_bias;
+
 		biasMomenParamVec.clear();
 
 		vector<int> typeIdVec;
