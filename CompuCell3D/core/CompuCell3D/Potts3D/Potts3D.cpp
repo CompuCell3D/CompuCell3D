@@ -302,6 +302,12 @@ bool Potts3D::localConectivity_2D(Point3D *changePixel, Point3D *flipNeighbor)
 
 	Neighbor neighbor;
 
+
+	// maximum pixel neighbor index for 1st and second neighbors
+	unsigned int fMooreNeighIdx = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(2);
+	unsigned int fNeumanNeighIdx = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(1);
+
+
 	//compute neigbor pixels ownership
 
 	int same_owner = 0;
