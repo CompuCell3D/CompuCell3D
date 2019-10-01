@@ -304,6 +304,10 @@ bool Potts3D::localConectivity_2D(Point3D *changePixel, Point3D *flipNeighbor)
 
 	BoundaryStrategy * boundaryStrategy = BoundaryStrategy::getInstance();
 
+	//NumericalUtils * numericalUtils = NumericalUtils;
+
+	NumericalUtils * numericalUtils;
+
 
 	// maximum pixel neighbor index for 1st and second neighbors
 	unsigned int fNeumanNeighIdx = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(1);
@@ -320,19 +324,39 @@ bool Potts3D::localConectivity_2D(Point3D *changePixel, Point3D *flipNeighbor)
 
 		if (!neighbor.distance) continue; //if distance == 0 returned neighbor is invalid
 
-		if (changeCell == cellFieldG->get(neighbor.pt)) ++same_owner;
+		else if (changeCell == cellFieldG->get(neighbor.pt)) ++same_owner;
 
 	}
-	
-	
-	
-	
-	
-	
 	
 	//compute local conectedness
 	bool localConnected = true;
 	
+	if (same_owner >= 4) return true; //if all neigbors are the same as the one being changed it's going to be always connected (shouldn't be >4 ever but, you know, bugs)
+
+
+	if (same_owner > 1)
+	{
+		bool N, S, E, W;
+		bool NE, NW, SE, SW;
+
+		Point3D ptN = *changePixel;
+
+		ptN.y += 1;
+
+		
+		Dim3D fieldDim = getCellFieldG()->getDim();
+		
+		Point3D dN = CompuCell3D::distanceVectorInvariant(ptN, * changePixel, fieldDim);
+
+		
+
+		//E = (changeCell == cellFieldG->get());
+
+
+	}
+
+
+
 
 	
 

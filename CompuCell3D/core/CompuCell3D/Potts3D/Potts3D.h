@@ -57,6 +57,10 @@
 #include <PublicUtilities/Units/Unit.h>
 #include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
 
+#include <PublicUtilities/NumericalUtils.h>
+
+
+
 // #include <CompuCell3D/dllDeclarationSpecifier.h>
 
 class BasicRandomNumberGeneratorNonStatic;
@@ -79,6 +83,8 @@ namespace CompuCell3D {
 	class Simulator;
 	class CellTypeMotilityData;
 	class ParallelUtilsOpenMP;
+
+	class NumericalUtils;
 
 	template<typename T>
 	class WatchableField3D;
