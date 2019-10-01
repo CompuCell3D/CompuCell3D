@@ -241,6 +241,8 @@ namespace CompuCell3D {
 		void registerConnectivityConstraint(EnergyFunction * _connectivityConstraint);
 		EnergyFunction * getConnectivityConstraint();
 
+		bool localConectivity_2D(Point3D * changePixel, Point3D * flipNeighbor);
+
 		bool checkIfFrozen(unsigned char _type);
 
 		//std::set<Point3D> * getBoundaryPixelSetPtr() { return &boundaryPixelSet; }

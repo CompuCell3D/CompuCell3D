@@ -281,6 +281,37 @@ void Potts3D::registerConnectivityConstraint(EnergyFunction * _connectivityConst
 
 EnergyFunction * Potts3D::getConnectivityConstraint() { return connectivityConstraint; }
 
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+	Marc Durand anti fragmentation algorithm
+*/
+
+bool Potts3D::localConectivity_2D(Point3D *changePixel, Point3D *flipNeighbor)
+{
+	return true;//placeholder
+}
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
 void Potts3D::setAcceptanceFunctionByName(std::string _acceptanceFunctionName) {
 	if (_acceptanceFunctionName == "FirstOrderExpansion") {
 		acceptanceFunction = &firstOrderExpansionAcceptanceFunction;
