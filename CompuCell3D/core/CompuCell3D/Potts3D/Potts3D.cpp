@@ -302,18 +302,27 @@ bool Potts3D::localConectivity_2D(Point3D *changePixel, Point3D *flipNeighbor)
 
 	Neighbor neighbor;
 
+	BoundaryStrategy * boundaryStrategy = BoundaryStrategy::getInstance();
+
 
 	// maximum pixel neighbor index for 1st and second neighbors
-	unsigned int fMooreNeighIdx = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(2);
 	unsigned int fNeumanNeighIdx = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(1);
-
+	unsigned int fMooreNeighIdx = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(2);
 
 	//compute neigbor pixels ownership
 
 	int same_owner = 0;
 
 
-	
+	for (unsigned int nIdx = 0; nIdx <= fNeumanNeighIdx; nIdx++)
+	{
+		neighbor = boundaryStrategy->getNeighborDirect(*changePixel, nIdx);
+
+		if (!neighbor.distance) continue; //if distance == 0 returned neighbor is invalid
+
+		if (changeCell == cellFieldG->get(neighbor.pt)) ++same_owner;
+
+	}
 	
 	
 	
