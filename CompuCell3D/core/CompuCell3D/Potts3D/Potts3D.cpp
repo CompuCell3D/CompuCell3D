@@ -291,7 +291,38 @@ EnergyFunction * Potts3D::getConnectivityConstraint() { return connectivityConst
 
 bool Potts3D::localConectivity_2D(Point3D *changePixel, Point3D *flipNeighbor)
 {
-	return true;//placeholder
+	
+	CellG *changeCell = cellFieldG->get(*changePixel);
+
+	if (!changeCell)return true;//if it is medium we don't care
+
+	CellG *flipCell = cellFieldG->get(*flipNeighbor);
+	
+	CellG *nCell = 0;
+
+	Neighbor neighbor;
+
+	//compute neigbor pixels ownership
+
+	int same_owner = 0;
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	//compute local conectedness
+	bool localConnected = true;
+	
+
+	
+
+
+	return localConnected;
 }
 
 
