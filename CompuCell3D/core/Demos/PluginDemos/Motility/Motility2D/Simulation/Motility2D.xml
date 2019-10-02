@@ -39,6 +39,7 @@
         <MotilityEnergyParameters CellType="MotCell" LambdaMotility="20"/>
         <MotilityEnergyParameters CellType="MotCell2" LambdaMotility="15"/>
    </Plugin>
+
    <Steppable Type="BlobInitializer">
    
    <!-- Initial layout of cells in the form of spherical (circular in 2D) blob -->
