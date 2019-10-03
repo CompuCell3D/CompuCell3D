@@ -1,4 +1,5 @@
 
+set(PYTHON_LIBRARY_TO_LINK ${PYTHON_LIBRARIES})
 set(undefined_link_flags " ")
 if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
     # on osx wih conda python 3 we do not link python
@@ -32,7 +33,7 @@ SET(LIBS
   CC3DCompuCellLib   
    CC3DBasicUtils
    CC3DXMLUtils   
-   ${PYTHON_LIBRARIES}
+   ${PYTHON_LIBRARY_TO_LINK}
 
 )
 

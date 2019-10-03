@@ -15,17 +15,17 @@ using namespace CompuCell3D;
 
 
 
-ImplicitMotilityPlugin::ImplicitMotilityPlugin():
+ImplicitMotilityPlugin::ImplicitMotilityPlugin() :
 
-pUtils(0),
+    pUtils(0),
 
-lockPtr(0),
+    lockPtr(0),
 
-xmlData(0) ,
+    xmlData(0),
 
-cellFieldG(0),
+    cellFieldG(0),
 
-boundaryStrategy(0)
+    boundaryStrategy(0)
 
 {}
 
@@ -37,7 +37,7 @@ ImplicitMotilityPlugin::~ImplicitMotilityPlugin() {
 
     delete lockPtr;
 
-    lockPtr=0;
+    lockPtr = 0;
 
 }
 
@@ -45,73 +45,73 @@ ImplicitMotilityPlugin::~ImplicitMotilityPlugin() {
 
 void ImplicitMotilityPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
-    xmlData=_xmlData;
+    xmlData = _xmlData;
 
-    sim=simulator;
+    sim = simulator;
 
-    potts=simulator->getPotts();
+    potts = simulator->getPotts();
 
     cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
 
-    
-	bool pluginAlreadyRegisteredFlag;
-	Plugin *plugin = Simulator::pluginManager.get("CenterOfMass", &pluginAlreadyRegisteredFlag); //this will load CenterOfMass plugin if it is not already loaded
-	if (!pluginAlreadyRegisteredFlag)
-		plugin->init(simulator);
 
-	bool steppableAlreadyRegisteredFlag;
-	cerr << "initializing the steppable" << std::endl;
-	Steppable *step = Simulator::steppableManager.get("BiasVectorSteppable",
-		&steppableAlreadyRegisteredFlag);//this will load the bias vec steppable if it is not already
-	if (!steppableAlreadyRegisteredFlag)
-	{
-		step->init(simulator);
-		ClassRegistry * class_registry = simulator->getClassRegistry();
-		class_registry->addStepper("BiasVectorSteppable", step);
+    bool pluginAlreadyRegisteredFlag;
+    Plugin *plugin = Simulator::pluginManager.get("CenterOfMass", &pluginAlreadyRegisteredFlag); //this will load CenterOfMass plugin if it is not already loaded
+    if (!pluginAlreadyRegisteredFlag)
+        plugin->init(simulator);
 
-	}
+    bool steppableAlreadyRegisteredFlag;
+    cerr << "initializing the steppable" << std::endl;
+    Steppable *step = Simulator::steppableManager.get("BiasVectorSteppable",
+        &steppableAlreadyRegisteredFlag);//this will load the bias vec steppable if it is not already
+    if (!steppableAlreadyRegisteredFlag)
+    {
+        step->init(simulator);
+        ClassRegistry * class_registry = simulator->getClassRegistry();
+        class_registry->addStepper("BiasVectorSteppable", step);
 
-	cerr << "steppable initialized" << std::endl;
+    }
 
-    pUtils=sim->getParallelUtils();
+    cerr << "steppable initialized" << std::endl;
 
-    lockPtr=new ParallelUtilsOpenMP::OpenMPLock_t;
+    pUtils = sim->getParallelUtils();
 
-    pUtils->initLock(lockPtr); 
+    lockPtr = new ParallelUtilsOpenMP::OpenMPLock_t;
 
-   
+    pUtils->initLock(lockPtr);
 
-   update(xmlData,true);
 
-   
 
-    
+    update(xmlData, true);
 
-    potts->registerEnergyFunctionWithName(this,"ImplicitMotility");
 
-        
-	fieldDim = potts->getCellFieldG()->getDim();
 
-	boundaryStrategy = BoundaryStrategy::getInstance();
-	adjNeighbor.initialize(fieldDim);
-	adjNeighbor_ptr = &adjNeighbor;
 
-	if (potts->getBoundaryXName() == "Periodic") {
-		adjNeighbor.setPeriodicX();
-		boundaryConditionIndicator.x = 1;
-	}
-	if (potts->getBoundaryYName() == "Periodic") {
-		adjNeighbor.setPeriodicY();
-		boundaryConditionIndicator.y = 1;
-	}
-	if (potts->getBoundaryZName() == "Periodic") {
-		adjNeighbor.setPeriodicZ();
-		boundaryConditionIndicator.z = 1;
-	}
 
-    
+    potts->registerEnergyFunctionWithName(this, "ImplicitMotility");
 
-    
+
+    fieldDim = potts->getCellFieldG()->getDim();
+
+    boundaryStrategy = BoundaryStrategy::getInstance();
+    adjNeighbor.initialize(fieldDim);
+    adjNeighbor_ptr = &adjNeighbor;
+
+    if (potts->getBoundaryXName() == "Periodic") {
+        adjNeighbor.setPeriodicX();
+        boundaryConditionIndicator.x = 1;
+    }
+    if (potts->getBoundaryYName() == "Periodic") {
+        adjNeighbor.setPeriodicY();
+        boundaryConditionIndicator.y = 1;
+    }
+    if (potts->getBoundaryZName() == "Periodic") {
+        adjNeighbor.setPeriodicZ();
+        boundaryConditionIndicator.z = 1;
+    }
+
+
+
+
 
     simulator->registerSteerableObject(this);
 
@@ -119,9 +119,9 @@ void ImplicitMotilityPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData
 
 
 
-void ImplicitMotilityPlugin::extraInit(Simulator *simulator){
-	update(xmlData, true);
-    
+void ImplicitMotilityPlugin::extraInit(Simulator *simulator) {
+    update(xmlData, true);
+
 
 }
 
@@ -133,10 +133,10 @@ void ImplicitMotilityPlugin::extraInit(Simulator *simulator){
 
 
 
-double ImplicitMotilityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {	
+double ImplicitMotilityPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
 
-	return (this->*changeEnergyFcnPtr)(pt, newCell, oldCell);
-}            
+    return (this->*changeEnergyFcnPtr)(pt, newCell, oldCell);
+}
 
 
 
@@ -145,24 +145,24 @@ double ImplicitMotilityPlugin::changeEnergyByCellType(const Point3D &pt, const C
 
 
 
-	double energy = 0.0;
-	if (oldCell)
-	{
-		Coordinates3D<double> oldCOMAfterFlip = precalculateCentroid(pt, oldCell, -1, fieldDim, boundaryStrategy);
+    double energy = 0.0;
+    if (oldCell)
+    {
+        Coordinates3D<double> oldCOMAfterFlip = precalculateCentroid(pt, oldCell, -1, fieldDim, boundaryStrategy);
 
-		if (oldCell->volume > 1)
-		{
-			oldCOMAfterFlip.XRef() = oldCOMAfterFlip.X() / (float)(oldCell->volume - 1);
-			oldCOMAfterFlip.YRef() = oldCOMAfterFlip.Y() / (float)(oldCell->volume - 1);
-			oldCOMAfterFlip.ZRef() = oldCOMAfterFlip.Z() / (float)(oldCell->volume - 1);
-		}
-		else
-		{
-			oldCOMAfterFlip = Coordinates3D<double>(oldCell->xCM / oldCell->volume, oldCell->zCM / oldCell->volume, oldCell->zCM / oldCell->volume);
-		}
+        if (oldCell->volume > 1)
+        {
+            oldCOMAfterFlip.XRef() = oldCOMAfterFlip.X() / (float)(oldCell->volume - 1);
+            oldCOMAfterFlip.YRef() = oldCOMAfterFlip.Y() / (float)(oldCell->volume - 1);
+            oldCOMAfterFlip.ZRef() = oldCOMAfterFlip.Z() / (float)(oldCell->volume - 1);
+        }
+        else
+        {
+            oldCOMAfterFlip = Coordinates3D<double>(oldCell->xCM / oldCell->volume, oldCell->zCM / oldCell->volume, oldCell->zCM / oldCell->volume);
+        }
 
-		Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM / oldCell->volume, oldCell->yCM / oldCell->volume, oldCell->zCM / oldCell->volume);
-		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip, oldCOMBeforeFlip, fieldDim);
+        Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM / oldCell->volume, oldCell->yCM / oldCell->volume, oldCell->zCM / oldCell->volume);
+        Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip, oldCOMBeforeFlip, fieldDim);
 
 		double norm = std::sqrt(distVector.X()*distVector.X() + distVector.Y()*distVector.Y() + distVector.Z()*distVector.Z());
 		if (norm != 0)
@@ -173,22 +173,22 @@ double ImplicitMotilityPlugin::changeEnergyByCellType(const Point3D &pt, const C
 		}
 		
 
-		//Coordinates3D<double> biasVecTmp = oldCell->biasVector;
-		biasVecTmp = Coordinates3D<double>(oldCell->biasVecX, oldCell->biasVecY, oldCell->biasVecZ);
+        //Coordinates3D<double> biasVecTmp = oldCell->biasVector;
+        biasVecTmp = Coordinates3D<double>(oldCell->biasVecX, oldCell->biasVecY, oldCell->biasVecZ);
 
-		energy -= motilityParamVector[oldCell->type].lambdaMotility*
-			(distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.X() + distVector.Z()*biasVecTmp.Z());
+        energy -= motilityParamVector[oldCell->type].lambdaMotility*
+            (distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.X() + distVector.Z()*biasVecTmp.Z());
 
-	}
+    }
 
-	if (newCell)
-	{
-		Coordinates3D<double> newCOMAfterFlip = precalculateCentroid(pt, newCell, 1, fieldDim, boundaryStrategy);
+    if (newCell)
+    {
+        Coordinates3D<double> newCOMAfterFlip = precalculateCentroid(pt, newCell, 1, fieldDim, boundaryStrategy);
 
 
-		newCOMAfterFlip.XRef() = newCOMAfterFlip.X() / (float)(newCell->volume + 1);
-		newCOMAfterFlip.YRef() = newCOMAfterFlip.Y() / (float)(newCell->volume + 1);
-		newCOMAfterFlip.ZRef() = newCOMAfterFlip.Z() / (float)(newCell->volume + 1);
+        newCOMAfterFlip.XRef() = newCOMAfterFlip.X() / (float)(newCell->volume + 1);
+        newCOMAfterFlip.YRef() = newCOMAfterFlip.Y() / (float)(newCell->volume + 1);
+        newCOMAfterFlip.ZRef() = newCOMAfterFlip.Z() / (float)(newCell->volume + 1);
 
 
 		Coordinates3D<double> newCOMBeforeFlip(newCell->xCM / newCell->volume, newCell->yCM / newCell->volume, newCell->zCM / newCell->volume);
@@ -202,43 +202,44 @@ double ImplicitMotilityPlugin::changeEnergyByCellType(const Point3D &pt, const C
 			distVector.ZRef() = distVector.Z() / norm;
 		}
 
-		//Coordinates3D<double> biasVecTmp = newCell->biasVector;
-		biasVecTmp = Coordinates3D<double>(newCell->biasVecX, newCell->biasVecY, newCell->biasVecZ);
 
-		energy -= motilityParamVector[newCell->type].lambdaMotility*
-			(distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.X() + distVector.Z()*biasVecTmp.Z());
-	}
+        //Coordinates3D<double> biasVecTmp = newCell->biasVector;
+        biasVecTmp = Coordinates3D<double>(newCell->biasVecX, newCell->biasVecY, newCell->biasVecZ);
 
-	//cout << "in the by cell type energy" << endl;
+        energy -= motilityParamVector[newCell->type].lambdaMotility*
+            (distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.X() + distVector.Z()*biasVecTmp.Z());
+    }
 
-	return energy;
+    //cout << "in the by cell type energy" << endl;
+
+    return energy;
 }
 
 
 double ImplicitMotilityPlugin::changeEnergyByCellId(const Point3D &pt, const CellG *newCell,
-	const CellG *oldCell)
+    const CellG *oldCell)
 {
 
 
 
 
-	double energy = 0.0;
-	if (oldCell) {
-		Coordinates3D<double> oldCOMAfterFlip = precalculateCentroid(pt, oldCell, -1, fieldDim, boundaryStrategy);
+    double energy = 0.0;
+    if (oldCell) {
+        Coordinates3D<double> oldCOMAfterFlip = precalculateCentroid(pt, oldCell, -1, fieldDim, boundaryStrategy);
 
-		if (oldCell->volume>1) {
-			oldCOMAfterFlip.XRef() = oldCOMAfterFlip.X() / (float)(oldCell->volume - 1);
-			oldCOMAfterFlip.YRef() = oldCOMAfterFlip.Y() / (float)(oldCell->volume - 1);
-			oldCOMAfterFlip.ZRef() = oldCOMAfterFlip.Z() / (float)(oldCell->volume - 1);
-		}
-		else {
+        if (oldCell->volume > 1) {
+            oldCOMAfterFlip.XRef() = oldCOMAfterFlip.X() / (float)(oldCell->volume - 1);
+            oldCOMAfterFlip.YRef() = oldCOMAfterFlip.Y() / (float)(oldCell->volume - 1);
+            oldCOMAfterFlip.ZRef() = oldCOMAfterFlip.Z() / (float)(oldCell->volume - 1);
+        }
+        else {
 
-			oldCOMAfterFlip = Coordinates3D<double>(oldCell->xCM / oldCell->volume, oldCell->zCM / oldCell->volume, oldCell->zCM / oldCell->volume);
+            oldCOMAfterFlip = Coordinates3D<double>(oldCell->xCM / oldCell->volume, oldCell->zCM / oldCell->volume, oldCell->zCM / oldCell->volume);
 
-		}
+        }
 
-		Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM / oldCell->volume, oldCell->yCM / oldCell->volume, oldCell->zCM / oldCell->volume);
-		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip, oldCOMBeforeFlip, fieldDim);
+        Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM / oldCell->volume, oldCell->yCM / oldCell->volume, oldCell->zCM / oldCell->volume);
+        Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip, oldCOMBeforeFlip, fieldDim);
 
 		double norm = std::sqrt(distVector.X()*distVector.X() + distVector.Y()*distVector.Y() + distVector.Z()*distVector.Z());
 		if (norm != 0)
@@ -251,24 +252,24 @@ double ImplicitMotilityPlugin::changeEnergyByCellId(const Point3D &pt, const Cel
 		//Coordinates3D<double> biasVecTmp = oldCell->biasVector;
 		biasVecTmp = Coordinates3D<double>(oldCell->biasVecX, oldCell->biasVecY, oldCell->biasVecZ);
 
-		energy -= oldCell->lambdaMotility*
-			(distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.X() + distVector.Z()*biasVecTmp.Z());
-		//negative because it'd be confusing for users to have to define a negative lambda to go to a positive direction
-	}
+        energy -= oldCell->lambdaMotility*
+            (distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.X() + distVector.Z()*biasVecTmp.Z());
+        //negative because it'd be confusing for users to have to define a negative lambda to go to a positive direction
+    }
 
 
-	if (newCell) {
+    if (newCell) {
 
-		Coordinates3D<double> newCOMAfterFlip = precalculateCentroid(pt, newCell, 1, fieldDim, boundaryStrategy);
-
-
-		newCOMAfterFlip.XRef() = newCOMAfterFlip.X() / (float)(newCell->volume + 1);
-		newCOMAfterFlip.YRef() = newCOMAfterFlip.Y() / (float)(newCell->volume + 1);
-		newCOMAfterFlip.ZRef() = newCOMAfterFlip.Z() / (float)(newCell->volume + 1);
+        Coordinates3D<double> newCOMAfterFlip = precalculateCentroid(pt, newCell, 1, fieldDim, boundaryStrategy);
 
 
-		Coordinates3D<double> newCOMBeforeFlip(newCell->xCM / newCell->volume, newCell->yCM / newCell->volume, newCell->zCM / newCell->volume);
-		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(newCOMAfterFlip, newCOMBeforeFlip, fieldDim);
+        newCOMAfterFlip.XRef() = newCOMAfterFlip.X() / (float)(newCell->volume + 1);
+        newCOMAfterFlip.YRef() = newCOMAfterFlip.Y() / (float)(newCell->volume + 1);
+        newCOMAfterFlip.ZRef() = newCOMAfterFlip.Z() / (float)(newCell->volume + 1);
+
+
+        Coordinates3D<double> newCOMBeforeFlip(newCell->xCM / newCell->volume, newCell->yCM / newCell->volume, newCell->zCM / newCell->volume);
+        Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(newCOMAfterFlip, newCOMBeforeFlip, fieldDim);
 
 		double norm = std::sqrt(distVector.X()*distVector.X() + distVector.Y()*distVector.Y() + distVector.Z()*distVector.Z());
 		if (norm != 0)
@@ -278,20 +279,20 @@ double ImplicitMotilityPlugin::changeEnergyByCellId(const Point3D &pt, const Cel
 			distVector.ZRef() = distVector.Z() / norm;
 		}
 
-		//Coordinates3D<double> biasVecTmp = newCell->biasVector;
-		biasVecTmp = Coordinates3D<double>(newCell->biasVecX, newCell->biasVecY, newCell->biasVecZ);
+        //Coordinates3D<double> biasVecTmp = newCell->biasVector;
+        biasVecTmp = Coordinates3D<double>(newCell->biasVecX, newCell->biasVecY, newCell->biasVecZ);
 
 
-		energy -= newCell->lambdaMotility*
-			(distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.X() + distVector.Z()*biasVecTmp.Z());
-		//negative because it'd be confusing for users to have to define a negative lambda to go to a positive direction
-	}
-	//cout << "in the by cell id energy" << endl;
-	return energy;
+        energy -= newCell->lambdaMotility*
+            (distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.X() + distVector.Z()*biasVecTmp.Z());
+        //negative because it'd be confusing for users to have to define a negative lambda to go to a positive direction
+    }
+    //cout << "in the by cell id energy" << endl;
+    return energy;
 }
 
 
-void ImplicitMotilityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
+void ImplicitMotilityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     //PARSE XML IN THIS FUNCTION
 
@@ -301,71 +302,77 @@ void ImplicitMotilityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
 
     ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
 
-   set<unsigned char> cellTypesSet;
+        set<unsigned char> cellTypesSet;
 
 
 
-    
-    
+
+
 
     //boundaryStrategy has information aobut pixel neighbors 
 
-    boundaryStrategy=BoundaryStrategy::getInstance();
+    boundaryStrategy = BoundaryStrategy::getInstance();
 
 
-	if (_xmlData->findElement("MotilityEnergyParameters"))
-	{
-		functionType = BYCELLTYPE;
-	}
-	else
-	{
-		functionType = BYCELLID;
-	}
+    if (_xmlData->findElement("MotilityEnergyParameters"))
+    {
+        functionType = BYCELLTYPE;
+    }
+    else
+    {
+        functionType = BYCELLID;
+    }
 
-	switch (functionType)
-	{
-	case BYCELLID:
-		changeEnergyFcnPtr = &ImplicitMotilityPlugin::changeEnergyByCellId;
-		break;
-	case BYCELLTYPE:
-	{
-		motilityParamVector.clear();
-		vector<int> typeIdVec;
-		vector<ImplicitMotilityParam> motilityParamVectorTmp;
+    switch (functionType)
+    {
+    case BYCELLID:
+        changeEnergyFcnPtr = &ImplicitMotilityPlugin::changeEnergyByCellId;
+        break;
+    case BYCELLTYPE:
+    {
+        motilityParamVector.clear();
+        vector<int> typeIdVec;
+        vector<ImplicitMotilityParam> motilityParamVectorTmp;
 
-		CC3DXMLElementList energyVec = _xmlData->getElements("MotilityParameters");
-
-		for (int i = 0; i < energyVec.size(); ++i)
-		{
-			ImplicitMotilityParam motParam;
-
-			motParam.lambdaMotility = energyVec[i]->getAttributeAsDouble("LambdaMotility");
-			motParam.typeName = energyVec[i]->getAttribute("CellType");
-			cerr << "automaton=" << automaton << endl;
-			typeIdVec.push_back(automaton->getTypeId(motParam.typeName));
-
-			motilityParamVectorTmp.push_back(motParam);
-		}
-
-		vector<int>::iterator pos = max_element(typeIdVec.begin(), typeIdVec.end());
-		int maxTypeId = *pos;
-		motilityParamVector.assign(maxTypeId + 1, ImplicitMotilityParam());
-		for (int i = 0; i < motilityParamVectorTmp.size(); i++)
-		{
-			motilityParamVector[typeIdVec[i]] = motilityParamVectorTmp[i];
-		}
+        CC3DXMLElementList energyVec = _xmlData->getElements("MotilityEnergyParameters");
 
 
+        for (int i = 0; i < energyVec.size(); ++i)
+        {
+            ImplicitMotilityParam motParam;
+
+            motParam.lambdaMotility = energyVec[i]->getAttributeAsDouble("LambdaMotility");
+            motParam.typeName = energyVec[i]->getAttribute("CellType");
+            typeIdVec.push_back(automaton->getTypeId(motParam.typeName));
+
+            motilityParamVectorTmp.push_back(motParam);
+        }
+
+        vector<int>::iterator pos = max_element(typeIdVec.begin(), typeIdVec.end());
 
 
-		changeEnergyFcnPtr = &ImplicitMotilityPlugin::changeEnergyByCellType;
-	}
-	break;
+        int maxTypeId = 0;
+        if (typeIdVec.size()) {
+            maxTypeId = *pos;
+        }
+        
+        motilityParamVector.assign(maxTypeId + 1, ImplicitMotilityParam());
+        for (int i = 0; i < motilityParamVectorTmp.size(); i++)
+        {
+            motilityParamVector[typeIdVec[i]] = motilityParamVectorTmp[i];
+        }
 
-	default:
-		changeEnergyFcnPtr = &ImplicitMotilityPlugin::changeEnergyByCellId;
 
-	}
+
+
+        changeEnergyFcnPtr = &ImplicitMotilityPlugin::changeEnergyByCellType;
+    }
+    break;
+
+    default:
+        changeEnergyFcnPtr = &ImplicitMotilityPlugin::changeEnergyByCellId;
+
+    }
 
 
 }
@@ -374,7 +381,7 @@ void ImplicitMotilityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
 
 
 
-std::string ImplicitMotilityPlugin::toString(){
+std::string ImplicitMotilityPlugin::toString() {
 
     return "ImplicitMotility";
 
@@ -384,7 +391,7 @@ std::string ImplicitMotilityPlugin::toString(){
 
 
 
-std::string ImplicitMotilityPlugin::steerableName(){
+std::string ImplicitMotilityPlugin::steerableName() {
 
     return toString();
 
