@@ -230,6 +230,9 @@ namespace CompuCell3D {
 		Potts3D(const Dim3D dim);
 		virtual ~Potts3D();
 
+
+		Dim3D fieldDim = getCellFieldG()->getDim();
+
 		/**
 		 * Create the cell field.
 		 *
