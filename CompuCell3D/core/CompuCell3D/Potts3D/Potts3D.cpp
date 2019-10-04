@@ -347,13 +347,13 @@ bool Potts3D::localConectivity_2D(Point3D *changePixel, Point3D *flipNeighbor)
 		ptN.y += 1;
 
 		
-		
+		//Dim3D fieldDim = getCellFieldG()->getDim();
 		
 		//Point3D dN = CompuCell3D::distanceVectorInvariant(ptN, * changePixel, fieldDim);
 
 		//ptN = *changePixel + dN;
 
-		ptN = *changePixel + CompuCell3D::distanceVectorInvariant(ptN, *changePixel, fieldDim);
+		//ptN = *changePixel + CompuCell3D::distanceVectorInvariant(ptN, *changePixel, fieldDim);
 
 		//E = (changeCell == cellFieldG->get());
 
