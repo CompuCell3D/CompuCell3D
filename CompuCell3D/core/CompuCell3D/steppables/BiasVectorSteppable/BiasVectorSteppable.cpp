@@ -372,7 +372,7 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	A)
 	______________________
-	<BiasChange="momentum">
+	<BiasChange Type ="momentum">
 	<BiasChangeParameters Alpha="10" CellType="cell1"/>
 	...
 	</BiasChange>
@@ -391,7 +391,8 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	}
 	else if (_xmlData->findElement("BiasChange"))
 	{
-		string biasChangeStr = _xmlData->getAttribute("BiasChange");// xml style will be <BiasChange="type of change">, might have trouble with the muExpressions?
+		string biasChangeStr = _xmlData->getAttribute("BiasChange");// xml style will be <BiasChange="type of change">, 
+																	//might have trouble with the muExpressions?
 		transform(biasChangeStr.begin(), biasChangeStr.end(), biasChangeStr.begin(), ::tolower);
 		if (biasChangeStr == "white")// b = white noise
 		{
