@@ -162,11 +162,11 @@ cell.sbml.MODEL_NAME['VALUE_NAME']
 # value name can be e.g. species name
 self.sbml.MODEL_NAME['VALUE_NAME']
 
-----------  # @Submenu@  Get SBML Simulator for individual cell(advanced)
+----------  # @Submenu@  Get SBML Simulator for individual cell (advanced)
 # example cell.sbml._rr_DN
 cell.sbml._rr_MODEL_NAME
 
-----------  # @Submenu@  Get SBML Simulator for Free Floating Model(advanced)
+----------  # @Submenu@  Get SBML Simulator for Free Floating Model (advanced)
 # example self.sbml._rr_DN
 self.sbml._rr_MODEL_NAME
 
