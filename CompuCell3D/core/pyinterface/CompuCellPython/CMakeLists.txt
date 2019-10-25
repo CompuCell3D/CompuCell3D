@@ -42,6 +42,7 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 
 SET(LIBS_AUX
+	LocalAntiFragmentationPluginShared
     BiasVectorSteppableShared
     ImplicitMotilityShared
     PyPlugin

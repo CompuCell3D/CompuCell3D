@@ -14,7 +14,7 @@
 
 #include "LocalAntiFragmentationDLLSpecifier.h"
 
-
+#include <PublicUtilities/NumericalUtils.h>
 
 class CC3DXMLElement;
 
@@ -36,7 +36,7 @@ namespace CompuCell3D {
 
     class ParallelUtilsOpenMP;
 
-    
+	class NumericalUtils;
 
     template <class T> class Field3D;
 
@@ -124,7 +124,7 @@ namespace CompuCell3D {
 
         virtual std::string toString();
 
-
+		bool LocalAntiFragmentationPlugin::localConectivity_2D(Point3D * changePixel, Point3D * flipNeighbor);
 
     };
 
@@ -132,5 +132,4 @@ namespace CompuCell3D {
 
 #endif
 
-        
 
