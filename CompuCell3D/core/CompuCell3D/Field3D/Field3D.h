@@ -66,7 +66,7 @@ namespace CompuCell3D {
   class Field3D {
   public:
     /// Used by Field3DIO functions to match data types.
-    static const char typeStr[3];    
+    static const char typeStr[4];    
 
     /** 
      * Create an instance of the default Field3D implementation.  In this
@@ -204,7 +204,7 @@ namespace CompuCell3D {
 //     friend std::ifstream &operator>> <>(std::ifstream &, Field3D<T> &);
   };
     
-  template<class T> const char Field3D<T>::typeStr[3] ="c3d";
+  template<class T> const char Field3D<T>::typeStr[4] ="c3d";
   
 };
 #endif
