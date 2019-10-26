@@ -223,15 +223,15 @@ std::string LocalAntiFragmentationPlugin::steerableName(){
 
 
 
-double LocalAntiFragmentationPlugin::localConectivity(Point3D * changePixel, Point3D * flipNeighbor)
+double LocalAntiFragmentationPlugin::localConectivity(Point3D * changePixel)
 {
 	
-	return (this->*localConnectFcnPtr)( changePixel,  flipNeighbor);
+	return (this->*localConnectFcnPtr)( changePixel);
 	
 	//return 0.0;//place holder
 }
 
-double LocalAntiFragmentationPlugin::localConectivity_2D(Point3D *changePixel, Point3D *flipNeighbor)
+double LocalAntiFragmentationPlugin::localConectivity_2D(Point3D *changePixel)
 {
 
 
@@ -241,7 +241,7 @@ double LocalAntiFragmentationPlugin::localConectivity_2D(Point3D *changePixel, P
 	if (!changeCell)return true;//if it is medium we don't care
 
 
-	CellG *flipCell = cellFieldG->get(*flipNeighbor);
+	//CellG *flipCell = cellFieldG->get(*flipNeighbor);
 
 	CellG *nCell = 0;
 

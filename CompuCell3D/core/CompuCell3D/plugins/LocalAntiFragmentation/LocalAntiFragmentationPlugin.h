@@ -84,7 +84,7 @@ namespace CompuCell3D {
 
 		VolumePlugin::changeEnergy_t changeEnergyFcnPtr;*/
 
-		typedef double(LocalAntiFragmentationPlugin::*localConnect_t)(Point3D * changePixel, Point3D * flipNeighbor);
+		typedef double(LocalAntiFragmentationPlugin::*localConnect_t)(Point3D *changePixel);
 
 		LocalAntiFragmentationPlugin::localConnect_t localConnectFcnPtr;
 
@@ -131,9 +131,9 @@ namespace CompuCell3D {
 
         virtual std::string toString();
 
-		virtual double LocalAntiFragmentationPlugin::localConectivity(Point3D * changePixel, Point3D * flipNeighbor);
+		virtual double LocalAntiFragmentationPlugin::localConectivity(Point3D *changePixel);
 
-		double LocalAntiFragmentationPlugin::localConectivity_2D(Point3D * changePixel, Point3D * flipNeighbor);
+		double LocalAntiFragmentationPlugin::localConectivity_2D(Point3D *changePixel);
 
     };
 
