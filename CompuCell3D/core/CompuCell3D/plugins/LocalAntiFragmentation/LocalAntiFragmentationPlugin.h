@@ -114,7 +114,7 @@ namespace CompuCell3D {
 
         virtual void extraInit(Simulator *simulator);
 
-
+		virtual Field3D<CellG *> *getCellFieldG() { return (Field3D<CellG *> *)cellFieldG; }
 
         //Steerrable interface
 
@@ -124,7 +124,9 @@ namespace CompuCell3D {
 
         virtual std::string toString();
 
-		bool LocalAntiFragmentationPlugin::localConectivity_2D(Point3D * changePixel, Point3D * flipNeighbor);
+		virtual double LocalAntiFragmentationPlugin::localConectivity(Point3D * changePixel, Point3D * flipNeighbor);
+
+		double LocalAntiFragmentationPlugin::localConectivity_2D(Point3D * changePixel, Point3D * flipNeighbor);
 
     };
 
