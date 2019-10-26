@@ -63,7 +63,7 @@ void LocalAntiFragmentationPlugin::init(Simulator *simulator, CC3DXMLElement *_x
    update(xmlData,true);
 
    
-
+   fieldDim = cellFieldG->getDim();
     
 
     //potts->registerEnergyFunctionWithName(this,"LocalAntiFragmentation");
@@ -154,39 +154,50 @@ void LocalAntiFragmentationPlugin::update(CC3DXMLElement *_xmlData, bool _fullIn
 
     automaton = potts->getAutomaton();
 
-    ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
+   // ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
 
-   set<unsigned char> cellTypesSet;
+   //set<unsigned char> cellTypesSet;
 
 
 
-    CC3DXMLElement * exampleXMLElem=_xmlData->getFirstElement("Example");
+   // CC3DXMLElement * exampleXMLElem=_xmlData->getFirstElement("Example");
 
-    if (exampleXMLElem){
+   // if (exampleXMLElem){
 
-        double param=exampleXMLElem->getDouble();
+   //     double param=exampleXMLElem->getDouble();
 
-        cerr<<"param="<<param<<endl;
+   //     cerr<<"param="<<param<<endl;
 
-        if(exampleXMLElem->findAttribute("Type")){
+   //     if(exampleXMLElem->findAttribute("Type")){
 
-            std::string attrib=exampleXMLElem->getAttribute("Type");
+   //         std::string attrib=exampleXMLElem->getAttribute("Type");
 
-            // double attrib=exampleXMLElem->getAttributeAsDouble("Type"); //in case attribute is of type double
+   //         // double attrib=exampleXMLElem->getAttributeAsDouble("Type"); //in case attribute is of type double
 
-            cerr<<"attrib="<<attrib<<endl;
+   //         cerr<<"attrib="<<attrib<<endl;
 
-        }
+   //     }
 
-    }
+   // }
 
-    
+   // 
+
+
 
     //boundaryStrategy has information aobut pixel neighbors 
 
     boundaryStrategy=BoundaryStrategy::getInstance();
 
-
+	if (fieldDim.x == 1 || fieldDim.y == 1 || fieldDim.z == 1)
+	{
+		//changeEnergyFcnPtr=&VolumePlugin::changeEnergyByCellId;
+		localConnectFcnPtr = &LocalAntiFragmentationPlugin::localConectivity_2D;
+	}
+	else
+	{
+		localConnectFcnPtr = &LocalAntiFragmentationPlugin::localConectivity_2D; //placehoder
+		
+	}
 
 }
 

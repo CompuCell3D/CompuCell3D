@@ -74,7 +74,7 @@ namespace CompuCell3D {
 
         Automaton *automaton;
 
-
+		Dim3D fieldDim;
 
         BoundaryStrategy *boundaryStrategy;
 
