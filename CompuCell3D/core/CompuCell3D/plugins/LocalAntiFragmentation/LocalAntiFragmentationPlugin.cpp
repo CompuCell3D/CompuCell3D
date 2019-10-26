@@ -223,15 +223,15 @@ std::string LocalAntiFragmentationPlugin::steerableName(){
 
 
 
-double LocalAntiFragmentationPlugin::localConectivity(Point3D * changePixel)
+double LocalAntiFragmentationPlugin::localConectivity(const Point3D * changePixel, const CellG *newCell, const CellG *oldCell)
 {
 	
-	return (this->*localConnectFcnPtr)( changePixel);
+	return (this->*localConnectFcnPtr)( changePixel, newCell, oldCell);
 	
 	//return 0.0;//place holder
 }
 
-double LocalAntiFragmentationPlugin::localConectivity_2D(Point3D *changePixel)
+double LocalAntiFragmentationPlugin::localConectivity_2D(const Point3D *changePixel, const CellG *newCell, const CellG *oldCell)
 {
 
 
@@ -266,7 +266,8 @@ double LocalAntiFragmentationPlugin::localConectivity_2D(Point3D *changePixel)
 
 	for (unsigned int nIdx = 0; nIdx <= fNeumanNeighIdx; nIdx++)
 	{
-		neighbor = boundaryStrategy->getNeighborDirect(*changePixel, nIdx);
+		Point3D pix = *changePixel;
+		neighbor = boundaryStrategy->getNeighborDirect(pix, nIdx);
 
 		if (!neighbor.distance) continue; //if distance == 0 returned neighbor is invalid
 
