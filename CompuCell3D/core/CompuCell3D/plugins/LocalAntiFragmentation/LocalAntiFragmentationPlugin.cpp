@@ -122,6 +122,9 @@ void LocalAntiFragmentationPlugin::field3DChange(const Point3D &pt, CellG *newCe
 
 double LocalAntiFragmentationPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {	
 
+	//return (this->*changeEnergyFcnPtr)(pt, newCell, oldCell);
+
+	
 
     double energy = 0;
     if (oldCell){
@@ -211,7 +214,10 @@ std::string LocalAntiFragmentationPlugin::steerableName(){
 
 double LocalAntiFragmentationPlugin::localConectivity(Point3D * changePixel, Point3D * flipNeighbor)
 {
-	return 0.0;//place holder
+	
+	return (this->*localConnectFcnPtr)( changePixel,  flipNeighbor);
+	
+	//return 0.0;//place holder
 }
 
 double LocalAntiFragmentationPlugin::localConectivity_2D(Point3D *changePixel, Point3D *flipNeighbor)
@@ -367,7 +373,8 @@ double LocalAntiFragmentationPlugin::localConectivity_2D(Point3D *changePixel, P
 		SE = (changeCell == cellFieldG->get(ptSW));
 
 
-		if ((same_owner == 2 
+		if (
+			(same_owner == 2 
 					&& !((N&&E&&NE) || (N&&W&&NW) || (S&&E&&SE) || (S&&W&&SW)))
 
 		||  (same_owner == 3 
@@ -378,17 +385,7 @@ double LocalAntiFragmentationPlugin::localConectivity_2D(Point3D *changePixel, P
 	}
 
 
-
-
-
-
-
 	return localConnected;
-
-
-
-
-
 
 
 

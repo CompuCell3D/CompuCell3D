@@ -79,8 +79,15 @@ namespace CompuCell3D {
         BoundaryStrategy *boundaryStrategy;
 
         WatchableField3D<CellG *> *cellFieldG;
+/*
+		typedef double (VolumePlugin::*changeEnergy_t)(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
 
-        
+		VolumePlugin::changeEnergy_t changeEnergyFcnPtr;*/
+
+		typedef double(LocalAntiFragmentationPlugin::*localConnect_t)(Point3D * changePixel, Point3D * flipNeighbor);
+
+		LocalAntiFragmentationPlugin::localConnect_t localConnectFcnPtr;
+
 
     public:
 
