@@ -66,7 +66,9 @@ void LocalAntiFragmentationPlugin::init(Simulator *simulator, CC3DXMLElement *_x
 
     
 
-    potts->registerEnergyFunctionWithName(this,"LocalAntiFragmentation");
+    //potts->registerEnergyFunctionWithName(this,"LocalAntiFragmentation");
+
+   potts->registerConnectivityConstraint(this); // we give it a special status to run it only when really needed 
 
     potts->registerCellGChangeWatcher(this);    
 
@@ -207,9 +209,12 @@ std::string LocalAntiFragmentationPlugin::steerableName(){
 
 
 
+double LocalAntiFragmentationPlugin::localConectivity(Point3D * changePixel, Point3D * flipNeighbor)
+{
+	return 0.0;//place holder
+}
 
-
-bool LocalAntiFragmentationPlugin::localConectivity_2D(Point3D *changePixel, Point3D *flipNeighbor)
+double LocalAntiFragmentationPlugin::localConectivity_2D(Point3D *changePixel, Point3D *flipNeighbor)
 {
 
 
@@ -231,6 +236,7 @@ bool LocalAntiFragmentationPlugin::localConectivity_2D(Point3D *changePixel, Poi
 
 	NumericalUtils * numericalUtils;
 
+	Dim3D fieldDim = getCellFieldG()->getDim();
 
 	// maximum pixel neighbor index for 1st and second neighbors
 	unsigned int fNeumanNeighIdx = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(1);
@@ -252,9 +258,9 @@ bool LocalAntiFragmentationPlugin::localConectivity_2D(Point3D *changePixel, Poi
 	}
 
 	//compute local conectedness
-	bool localConnected = true;
+	double localConnected = 1.0; // 0.0 means false, all else true
 
-	if (same_owner >= 4) return true; //if all neigbors are the same as the one being changed it's going to be always connected (shouldn't be >4 ever but, you know, bugs)
+	if (same_owner >= 4) return 1.0; //(true). if all neigbors are the same as the one being changed it's going to be always connected (shouldn't be >4 ever but, you know, bugs)
 
 
 	if (same_owner > 1)
@@ -265,22 +271,110 @@ bool LocalAntiFragmentationPlugin::localConectivity_2D(Point3D *changePixel, Poi
 		bool N, S, E, W;
 		bool NE, NW, SE, SW;
 
+
+		//N, S, E, W:
+
 		Point3D ptN = *changePixel;
 
 		ptN.y += 1;
 
 
+		ptN = *changePixel + CompuCell3D::distanceVectorInvariant(ptN, *changePixel, fieldDim);
+
+		N = (changeCell == cellFieldG->get(ptN));
+
+		//______________
+
+		Point3D ptS = *changePixel;
+
+		ptS.y -= 1;
+
+
 		//Dim3D fieldDim = getCellFieldG()->getDim();
 
-		//Point3D dN = CompuCell3D::distanceVectorInvariant(ptN, * changePixel, fieldDim);
+		/*Point3D dN = CompuCell3D::distanceVectorInvariant(ptN, * changePixel, fieldDim);
 
-		//ptN = *changePixel + dN;
+		ptN = *changePixel + dN;*/
 
-		//ptN = *changePixel + CompuCell3D::distanceVectorInvariant(ptN, *changePixel, fieldDim);
+		ptS = *changePixel + CompuCell3D::distanceVectorInvariant(ptS, *changePixel, fieldDim);
 
-		//E = (changeCell == cellFieldG->get());
+		S = (changeCell == cellFieldG->get(ptS));
+
+		//______________
+
+		Point3D ptE = *changePixel;
+
+		ptE.x += 1;
+
+		ptE = *changePixel + CompuCell3D::distanceVectorInvariant(ptE, *changePixel, fieldDim);
+
+		E = (changeCell == cellFieldG->get(ptE));
+
+		//______________
+
+		Point3D ptW = *changePixel;
+
+		ptW.x -= 1;
+
+		ptW = *changePixel + CompuCell3D::distanceVectorInvariant(ptW, *changePixel, fieldDim);
+
+		W = (changeCell == cellFieldG->get(ptW));
+		
+		
+		//______________
+		//NE, NW, SE, SW:
+
+		Point3D ptNE = *changePixel;
+
+		ptNE.y += 1;
+		ptNE.x += 1;
+
+		ptNE = *changePixel + CompuCell3D::distanceVectorInvariant(ptNE, *changePixel, fieldDim);
+
+		NE = (changeCell == cellFieldG->get(ptNE));
+
+		//______________
+
+		Point3D ptNW = *changePixel;
+
+		ptNW.y += 1;
+		ptNW.x -= 1;
+
+		ptNW = *changePixel + CompuCell3D::distanceVectorInvariant(ptNW, *changePixel, fieldDim);
+
+		NW = (changeCell == cellFieldG->get(ptNW));
+
+		//______________
+
+		Point3D ptSE = *changePixel;
+
+		ptSE.y -= 1;
+		ptSE.x += 1;
+
+		ptSE = *changePixel + CompuCell3D::distanceVectorInvariant(ptSE, *changePixel, fieldDim);
+
+		SE = (changeCell == cellFieldG->get(ptSE));
+
+		//______________
+
+		Point3D ptSW = *changePixel;
+
+		ptSW.y -= 1;
+		ptSW.x -= 1;
+
+		ptSW = *changePixel + CompuCell3D::distanceVectorInvariant(ptSW, *changePixel, fieldDim);
+
+		SE = (changeCell == cellFieldG->get(ptSW));
 
 
+		if ((same_owner == 2 
+					&& !((N&&E&&NE) || (N&&W&&NW) || (S&&E&&SE) || (S&&W&&SW)))
+
+		||  (same_owner == 3 
+					&& !((S || (NE&&NW)) && (E || (NW&&SW)) && (N || (SE&&SW)) && (W || (SE&&NE)))))
+		{
+			localConnected = 0.0;
+		}
 	}
 
 
