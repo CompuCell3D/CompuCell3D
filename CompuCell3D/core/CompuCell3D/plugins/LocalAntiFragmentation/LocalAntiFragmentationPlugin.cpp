@@ -207,7 +207,7 @@ void LocalAntiFragmentationPlugin::update(CC3DXMLElement *_xmlData, bool _fullIn
 
 std::string LocalAntiFragmentationPlugin::toString(){
 
-    return "ConnectivityDurand";
+    return "LocalAntiFragmentation";
 
 }
 
