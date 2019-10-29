@@ -154,9 +154,9 @@ void LocalAntiFragmentationPlugin::update(CC3DXMLElement *_xmlData, bool _fullIn
 
     automaton = potts->getAutomaton();
 
-   // ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
+   ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
 
-   //set<unsigned char> cellTypesSet;
+   set<unsigned char> cellTypesSet;
 
 
 
@@ -207,7 +207,7 @@ void LocalAntiFragmentationPlugin::update(CC3DXMLElement *_xmlData, bool _fullIn
 
 std::string LocalAntiFragmentationPlugin::toString(){
 
-    return "LocalAntiFragmentation";
+    return "ConnectivityDurand";
 
 }
 
@@ -228,7 +228,6 @@ double LocalAntiFragmentationPlugin::localConectivity(const Point3D * changePixe
 	
 	return (this->*localConnectFcnPtr)( changePixel, newCell, oldCell);
 	
-	//return 0.0;//place holder
 }
 
 double LocalAntiFragmentationPlugin::localConectivity_2D(const Point3D *changePixel, const CellG *newCell, const CellG *oldCell)
