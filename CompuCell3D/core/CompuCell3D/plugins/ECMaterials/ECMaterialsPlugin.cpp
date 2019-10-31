@@ -48,6 +48,7 @@ void ECMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     xmlData = _xmlData;
     sim = simulator;
     potts = simulator->getPotts();
+	automaton = potts->getAutomaton();
 
     pUtils = sim->getParallelUtils();
     lockPtr = new ParallelUtilsOpenMP::OpenMPLock_t;
@@ -145,16 +146,17 @@ void ECMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     // initialize EC material quantity vector field values by user specification
     // default is all first ECM component
     // somehow apply user specification of initial values
+
+	cerr << "Initializing ECMaterials quantity field values..." << endl;
+
     Point3D pt(0,0,0);
     ECMaterialsData *ECMaterialsDataLocal;
     for (int z = 0; z < fieldDim.z; ++z){
         for (int y = 0; y < fieldDim.y; ++y){
             for (int x = 0; x < fieldDim.x; ++x){
-                pt.x = x;
-                pt.y = y;
-                pt.z = z;
+				pt = Point3D(x, y, z);
 
-                ECMaterialsDataLocal = ECMaterialsField->get(pt);
+				ECMaterialsDataLocal = new ECMaterialsData();
                 ECMaterialsDataLocal->setNewECMaterialsQuantityVec(numberOfMaterials);
                 ECMaterialsField->set(pt, ECMaterialsDataLocal);
             }
@@ -166,33 +168,32 @@ void ECMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
 	cerr << "Initializing remodeling quantities..." << endl;
 
-    set<std::string> cellTypeNameSet;
-    int maxTypeId = automaton->getMaxTypeId();
-    std::vector<std::string> cellTypeNamesByTypeId;
-    std::vector<std::vector<float>> RemodelingQuantityByTypeId(maxTypeId, vector<float>(numberOfMaterials));
-    typeToRemodelingQuantityMap.clear();
+	int maxTypeId = (int) automaton->getMaxTypeId();
+	std::vector<std::string> cellTypeNamesByTypeId;
+	std::vector<std::vector<float> > RemodelingQuantityByTypeId(maxTypeId+1, vector<float>(numberOfMaterials));
+	typeToRemodelingQuantityMap.clear();
 
-    std::string cellTypeName;
-    int thisTypeId;
-	float thisRemodelingQuantity;
-
+	std::string cellTypeName;
+	int thisTypeId;
+	double thisRemodelingQuantity;
+	
     for (int i = 0; i < ECMaterialRemodelingQuantityXMLVec.size(); ++i) {
         cellTypeName = ECMaterialRemodelingQuantityXMLVec[i]->getAttribute("CellType");
-        ECMaterialName = ECMaterialRemodelingQuantityXMLVec[i]->getAttribute("Material");
-		thisRemodelingQuantity = (float)ECMaterialRemodelingQuantityXMLVec[i]->getDouble();
-
+		ECMaterialName = ECMaterialRemodelingQuantityXMLVec[i]->getAttribute("Material");
+		thisRemodelingQuantity = ECMaterialRemodelingQuantityXMLVec[i]->getDouble();
+		
 		cerr << "   Initializing (" << cellTypeName << ", " << ECMaterialName << " ): " << thisRemodelingQuantity << endl;
 
-        thisTypeId = automaton->getTypeId(cellTypeName);
+        thisTypeId = (int) automaton->getTypeId(cellTypeName);
         ECMaterialIdx = getECMaterialIndexByName(ECMaterialName);
         cellTypeNamesByTypeId.push_back(cellTypeName);
-        RemodelingQuantityByTypeId[thisTypeId][ECMaterialIdx] = thisRemodelingQuantity;
+        RemodelingQuantityByTypeId[thisTypeId][ECMaterialIdx] = (float) thisRemodelingQuantity;
     }
     //      now make the map
     std::vector<float> thisRemodelingQuantityVec;
     for (int i = 0; i < cellTypeNamesByTypeId.size(); ++i) {
         cellTypeName = cellTypeNamesByTypeId[i];
-        thisTypeId = automaton->getTypeId(cellTypeName);
+        thisTypeId = (int) automaton->getTypeId(cellTypeName);
 
 		cerr << "   Setting remodeling quantity for cell type " << thisTypeId << ": " << cellTypeName << endl;
 
@@ -205,18 +206,18 @@ void ECMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	cerr << "Initializing cell-ECMaterial interface adhesion coefficients by cell type and material component..." << endl;
 
     AdhesionCoefficientsByTypeId.clear();
-    std::vector<std::vector<float>> AdhesionCoefficientsByTypeId(maxTypeId+1, std::vector<float>(numberOfMaterials));
-	float thisAdhesionCoefficient;
+    std::vector<std::vector<float> > AdhesionCoefficientsByTypeId(maxTypeId+1, std::vector<float>(numberOfMaterials));
+	double thisAdhesionCoefficient;
     for (int i = 0; i < ECMaterialAdhesionXMLVec.size(); ++i) {
         cellTypeName = ECMaterialAdhesionXMLVec[i]->getAttribute("CellType");
         ECMaterialName = ECMaterialAdhesionXMLVec[i]->getAttribute("Material");
-		thisAdhesionCoefficient = (float)ECMaterialAdhesionXMLVec[i]->getDouble();
+		thisAdhesionCoefficient = ECMaterialAdhesionXMLVec[i]->getDouble();
 
 		cerr << "   Initializing (" << cellTypeName << ", " << ECMaterialName << " ): " << thisAdhesionCoefficient << endl;
 
-        thisTypeId = automaton->getTypeId(cellTypeName);
+        thisTypeId = (int) automaton->getTypeId(cellTypeName);
         ECMaterialIdx = getECMaterialIndexByName(ECMaterialName);
-        AdhesionCoefficientsByTypeId[thisTypeId][ECMaterialIdx] = thisAdhesionCoefficient;
+        AdhesionCoefficientsByTypeId[thisTypeId][ECMaterialIdx] = (float) thisAdhesionCoefficient;
     }
 
     // assign remodeling quantities and adhesion coefficients to cells by type and material name from user specification
