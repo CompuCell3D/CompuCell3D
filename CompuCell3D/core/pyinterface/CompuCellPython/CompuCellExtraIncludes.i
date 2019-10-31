@@ -130,6 +130,9 @@
 #include <CompuCell3D/plugins/Secretion/FieldSecretor.h>
 #include <CompuCell3D/plugins/Secretion/SecretionPlugin.h>
 
+#include <CompuCell3D/plugins/ECMaterials/ECMaterialsData.h>
+#include <CompuCell3D/plugins/ECMaterials/ECMaterialsPlugin.h>
+
 //Steppables
 #include <CompuCell3D/steppables/Mitosis/MitosisSteppable.h>
 

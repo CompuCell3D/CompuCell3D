@@ -238,7 +238,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             "PlasticityTracker": ['plasticity_tracker_plugin', 'plasticityTrackerPlugin'],
             "MomentOfInertia": ['moment_of_inertia_plugin', 'momentOfInertiaPlugin'],
             "OrientedGrowth": ['oriented_growth_plugin', 'orientedGrowthPlugin'],
-            "Secretion": ["secretion_plugin", 'secretionPlugin']
+            "Secretion": ["secretion_plugin", 'secretionPlugin'],
+            "ECMaterials": ['ec_materials_plugin', 'ECMaterialsPlugin']
 
         }
 
@@ -1543,6 +1544,13 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
                 # FocalPointPLasticityPlugin - this plugin has to be handled manually -
                 # there is no good way to figure out which links shuold be copied from parent to daughter cell
+
+        # ECMaterials
+        if self.ECMaterialsPlugin:
+            c_vec = self.ECMaterialsPlugin.getRemodelingQuantityVector(source_cell)
+            numMtls = self.ECMaterialsPlugin.getNumberOfMaterials()
+            self.ECMaterialsPlugin.assignNewRemodelingQuantityVector(target_cell, numMtls)
+            self.ECMaterialsPlugin.setRemodelingQuantityVector(target_cell, c_vec)
 
     @deprecated(version='4.0.0', reason="You should use : reassign_cluster_id")
     def reassignClusterId(self, _cell, _clusterId):
