@@ -435,52 +435,52 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         return mdi_window
 
-    def add_vtk_window_to_workspace(self) -> None:
-        """
-        called one time, for initial graphics window  (vs. addNewGraphicsWindow())
-        :return:
-        """
-
-        self.mainGraphicsWidget = GraphicsFrameWidget(parent=None, originatingWidget=self)
-
-        # we make sure that first graphics window is positioned in the left upper corner
-        # NOTE: we have to perform move prior to calling addSubWindow. or else we will get distorted window
-        if self.lastPositionMainGraphicsWindow is not None:
-            self.mainGraphicsWidget.move(self.lastPositionMainGraphicsWindow)
-        else:
-            self.lastPositionMainGraphicsWindow = self.mainGraphicsWidget.pos()
-
-        self.mainGraphicsWidget.show()
-
-        # todo ok
-        # self.mainGraphicsWidget.setShown(False)
-
-        # self.mainGraphicsWidget.hide()
-        # return
-
-        # this way we update draw models if configs change
-        self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
-
-        self.simulation.setGraphicsWidget(self.mainGraphicsWidget)
-
-        mdi_sub_window = self.addSubWindow(self.mainGraphicsWidget)
-
-        self.mainMdiSubWindow = mdi_sub_window
-        self.mainGraphicsWidget.show()
-        self.mainGraphicsWidget.setConnects(self)
-
-        self.lastActiveRealWindow = mdi_sub_window
-
-        # MDIFIX
-        self.set_active_sub_window_custom_slot(self.lastActiveRealWindow)
-
-        self.update_window_menu()
-        self.update_active_window_vis_flags()
-
-        suggested_win_pos = self.suggested_window_position()
-
-        if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
-            mdi_sub_window.move(suggested_win_pos)
+    # def add_vtk_window_to_workspace(self) -> None:
+    #     """
+    #     called one time, for initial graphics window  (vs. addNewGraphicsWindow())
+    #     :return:
+    #     """
+    #
+    #     self.mainGraphicsWidget = GraphicsFrameWidget(parent=None, originatingWidget=self)
+    #
+    #     # we make sure that first graphics window is positioned in the left upper corner
+    #     # NOTE: we have to perform move prior to calling addSubWindow. or else we will get distorted window
+    #     if self.lastPositionMainGraphicsWindow is not None:
+    #         self.mainGraphicsWidget.move(self.lastPositionMainGraphicsWindow)
+    #     else:
+    #         self.lastPositionMainGraphicsWindow = self.mainGraphicsWidget.pos()
+    #
+    #     self.mainGraphicsWidget.show()
+    #
+    #     # todo ok
+    #     # self.mainGraphicsWidget.setShown(False)
+    #
+    #     # self.mainGraphicsWidget.hide()
+    #     # return
+    #
+    #     # this way we update draw models if configs change
+    #     self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
+    #
+    #     self.simulation.setGraphicsWidget(self.mainGraphicsWidget)
+    #
+    #     mdi_sub_window = self.addSubWindow(self.mainGraphicsWidget)
+    #
+    #     self.mainMdiSubWindow = mdi_sub_window
+    #     self.mainGraphicsWidget.show()
+    #     self.mainGraphicsWidget.setConnects(self)
+    #
+    #     self.lastActiveRealWindow = mdi_sub_window
+    #
+    #     # MDIFIX
+    #     self.set_active_sub_window_custom_slot(self.lastActiveRealWindow)
+    #
+    #     self.update_window_menu()
+    #     self.update_active_window_vis_flags()
+    #
+    #     suggested_win_pos = self.suggested_window_position()
+    #
+    #     if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
+    #         mdi_sub_window.move(suggested_win_pos)
 
     def minimize_all_graphics_windows(self) -> None:
         """
