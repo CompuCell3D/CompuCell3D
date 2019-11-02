@@ -91,7 +91,7 @@ elif sys.platform.startswith('darwin'):
 elif sys.platform.startswith('linux'):
 
     try:
-        ld_library_env = os.environ['DYLD_LIBRARY_PATH']
+        ld_library_env = os.environ['LD_LIBRARY_PATH']
     except KeyError:
         ld_library_env = ''
 
