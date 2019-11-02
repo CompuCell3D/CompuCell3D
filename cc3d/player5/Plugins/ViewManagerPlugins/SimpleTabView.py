@@ -802,9 +802,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.close_all_windows()
         self.add_new_graphics_window()
-
-
-
         # self.add_vtk_window_to_workspace()
 
     def popup_message(self, title: str, msg: str) -> None:
