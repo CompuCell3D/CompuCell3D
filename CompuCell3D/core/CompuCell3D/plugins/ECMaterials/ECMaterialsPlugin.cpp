@@ -54,16 +54,42 @@ void ECMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     lockPtr = new ParallelUtilsOpenMP::OpenMPLock_t;
     pUtils->initLock(lockPtr);
 
+    cerr << "Registering ECMaterials cell attributes..." << endl;
+
+    potts->getCellFactoryGroupPtr()->registerClass(&ECMaterialCellDataAccessor);
+
+	cerr << "Registering ECMaterials plugin..." << endl;
+
+    potts->registerEnergyFunctionWithName(this, "ECMaterials");
+    potts->registerCellGChangeWatcher(this);
+    simulator->registerSteerableObject(this);
+
     if (_xmlData->getFirstElement("WeightEnergyByDistance")) {
         weightDistance = true;
     }
 
+	// Boundary strategy for adhesion; based on implementation in AdhesionFlex
+	boundaryStrategyAdh = BoundaryStrategy::getInstance();
+	maxNeighborIndexAdh = 0;
+
+	if (_xmlData->getFirstElement("Depth")) {
+		maxNeighborIndexAdh = boundaryStrategyAdh->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
+	}
+	else {
+		if (_xmlData->getFirstElement("NeighborOrder")) {
+			maxNeighborIndexAdh = boundaryStrategyAdh->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());
+		}
+		else {
+			maxNeighborIndexAdh = boundaryStrategyAdh->getMaxNeighborIndexFromNeighborOrder(1);
+		}
+	}
+
     // Gather XML user specifications
     CC3DXMLElementList ECMaterialNameXMLVec = _xmlData->getElements("ECMaterial");
-    CC3DXMLElementList ECMaterialAdhesionXMLVec = _xmlData->getElements("ECAdhesion");
+    ECMaterialAdhesionXMLVec = _xmlData->getElements("ECAdhesion");
     CC3DXMLElementList ECMaterialAdvectionBoolXMLVec = _xmlData->getElements("ECMaterialAdvects");
     CC3DXMLElementList ECMaterialDurabilityXMLVec = _xmlData->getElements("ECMaterialDurability");
-    CC3DXMLElementList ECMaterialRemodelingQuantityXMLVec = _xmlData->getElements("RemodelingQuantity");
+    ECMaterialRemodelingQuantityXMLVec = _xmlData->getElements("RemodelingQuantity");
 
     // generate name->integer index map for EC materials
     // generate array of pointers to EC materials according to user specification
@@ -157,101 +183,14 @@ void ECMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 				pt = Point3D(x, y, z);
 
 				ECMaterialsDataLocal = new ECMaterialsData();
-                ECMaterialsDataLocal->setNewECMaterialsQuantityVec(numberOfMaterials);
+				std::vector<float> & ECMaterialsQuantityVec = ECMaterialsDataLocal->ECMaterialsQuantityVec;
+				std::vector<float> ECMaterialsQuantityVecNew(numberOfMaterials);
+				ECMaterialsQuantityVecNew[0] = 1.0;
+				ECMaterialsQuantityVec = ECMaterialsQuantityVecNew;
                 ECMaterialsField->set(pt, ECMaterialsDataLocal);
             }
         }
     }
-
-    // initialize cell type->remodeling quantity map
-    //      first collect inputs as a 2D array by type and material ids, then assemble map
-
-	cerr << "Initializing remodeling quantities..." << endl;
-
-	int maxTypeId = (int) automaton->getMaxTypeId();
-	std::vector<std::string> cellTypeNamesByTypeId;
-	std::vector<std::vector<float> > RemodelingQuantityByTypeId(maxTypeId+1, vector<float>(numberOfMaterials));
-	typeToRemodelingQuantityMap.clear();
-
-	std::string cellTypeName;
-	int thisTypeId;
-	double thisRemodelingQuantity;
-	
-    for (int i = 0; i < ECMaterialRemodelingQuantityXMLVec.size(); ++i) {
-        cellTypeName = ECMaterialRemodelingQuantityXMLVec[i]->getAttribute("CellType");
-		ECMaterialName = ECMaterialRemodelingQuantityXMLVec[i]->getAttribute("Material");
-		thisRemodelingQuantity = ECMaterialRemodelingQuantityXMLVec[i]->getDouble();
-		
-		cerr << "   Initializing (" << cellTypeName << ", " << ECMaterialName << " ): " << thisRemodelingQuantity << endl;
-
-        thisTypeId = (int) automaton->getTypeId(cellTypeName);
-        ECMaterialIdx = getECMaterialIndexByName(ECMaterialName);
-        cellTypeNamesByTypeId.push_back(cellTypeName);
-        RemodelingQuantityByTypeId[thisTypeId][ECMaterialIdx] = (float) thisRemodelingQuantity;
-    }
-    //      now make the map
-    std::vector<float> thisRemodelingQuantityVec;
-    for (int i = 0; i < cellTypeNamesByTypeId.size(); ++i) {
-        cellTypeName = cellTypeNamesByTypeId[i];
-        thisTypeId = (int) automaton->getTypeId(cellTypeName);
-
-		cerr << "   Setting remodeling quantity for cell type " << thisTypeId << ": " << cellTypeName << endl;
-
-        thisRemodelingQuantityVec = RemodelingQuantityByTypeId[thisTypeId];
-        typeToRemodelingQuantityMap.insert(make_pair(cellTypeName, thisRemodelingQuantityVec));
-    }
-
-    // initialize cell adhesion coefficients by cell type from user specification
-
-	cerr << "Initializing cell-ECMaterial interface adhesion coefficients by cell type and material component..." << endl;
-
-    AdhesionCoefficientsByTypeId.clear();
-    std::vector<std::vector<float> > AdhesionCoefficientsByTypeId(maxTypeId+1, std::vector<float>(numberOfMaterials));
-	double thisAdhesionCoefficient;
-    for (int i = 0; i < ECMaterialAdhesionXMLVec.size(); ++i) {
-        cellTypeName = ECMaterialAdhesionXMLVec[i]->getAttribute("CellType");
-        ECMaterialName = ECMaterialAdhesionXMLVec[i]->getAttribute("Material");
-		thisAdhesionCoefficient = ECMaterialAdhesionXMLVec[i]->getDouble();
-
-		cerr << "   Initializing (" << cellTypeName << ", " << ECMaterialName << " ): " << thisAdhesionCoefficient << endl;
-
-        thisTypeId = (int) automaton->getTypeId(cellTypeName);
-        ECMaterialIdx = getECMaterialIndexByName(ECMaterialName);
-        AdhesionCoefficientsByTypeId[thisTypeId][ECMaterialIdx] = (float) thisAdhesionCoefficient;
-    }
-
-    // assign remodeling quantities and adhesion coefficients to cells by type and material name from user specification
-
-	cerr << "Assigning remodeling quantities and adhesion coefficients to cells..." << endl;
-
-    std::map<std::string, std::vector<float> >::iterator mitr;
-    CellInventory::cellInventoryIterator cInvItr;
-    CellG * cell;
-    CellInventory * cellInventoryPtr = &potts->getCellInventory();
-    for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr) {
-        cell = cellInventoryPtr->getCell(cInvItr);
-        assignNewRemodelingQuantityVector(cell, numberOfMaterials);
-
-        cellTypeName = automaton->getTypeName(automaton->getCellType(cell));
-        mitr = typeToRemodelingQuantityMap.find(cellTypeName);
-        if (mitr != typeToRemodelingQuantityMap.end()) {
-            setRemodelingQuantityVector(cell, mitr->second);
-        }
-
-        setECAdhesionByCell(cell, AdhesionCoefficientsByTypeId[(int) cell->type]);
-    }
-
-	cerr << "Registering ECMaterials classes..." << endl;
-
-    potts->getCellFactoryGroupPtr()->registerClass(&ECMaterialsDataAccessor);
-    potts->getCellFactoryGroupPtr()->registerClass(&ECMaterialComponentDataAccessor);
-    potts->getCellFactoryGroupPtr()->registerClass(&ECMaterialCellDataAccessor);
-
-	cerr << "Registering ECMaterials plugin..." << endl;
-
-    potts->registerEnergyFunctionWithName(this, "ECMaterials");
-    potts->registerCellGChangeWatcher(this);
-    simulator->registerSteerableObject(this);
 
 }
 
@@ -286,7 +225,7 @@ double ECMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
     // Target medium and durability
     if (oldCell == 0) {
         targetQuantityVec = getMediumECMaterialQuantityVector(pt);
-        energy += ECMaterialContactEnergy(oldCell, targetQuantityVec);
+        energy += ECMaterialDurabilityEnergy(targetQuantityVec);
     }
     vector<float> remodelingQuantityVector(numberOfMaterials);
     vector<float> copyQuantityVector(numberOfMaterials);
@@ -299,8 +238,8 @@ double ECMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
     WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
 
     if (weightDistance) {
-        for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
-            neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
+        for (unsigned int nIdx = 0; nIdx <= maxNeighborIndexAdh; ++nIdx) {
+            neighbor = boundaryStrategyAdh->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
 
             if (!neighbor.distance) {
                 //if distance is 0 then the neighbor returned is invalid
@@ -332,8 +271,8 @@ double ECMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
     else {
         //default behaviour  no energy weighting
 
-        for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
-            neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
+        for (unsigned int nIdx = 0; nIdx <= maxNeighborIndexAdh; ++nIdx) {
+            neighbor = boundaryStrategyAdh->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
             if (!neighbor.distance) {
                 //if distance is 0 then the neighbor returned is invalid
                 continue;
@@ -367,10 +306,8 @@ double ECMaterialsPlugin::ECMaterialContactEnergy(const CellG *cell, std::vector
 
     double energy = 0.0;
 
-    std::vector<float> adhesionVec(numberOfMaterials);
-
     if (cell != 0) {
-        adhesionVec = getECAdhesionByCell(cell);
+		std::vector<float> adhesionVec = getECAdhesionByCell(cell);
         for (int i = 0; i < adhesionVec.size() ; ++i){
             energy += adhesionVec[i]*_qtyVec[i];
         }
@@ -457,6 +394,86 @@ void ECMaterialsPlugin::initializeECMaterials() {
     if (ECMaterialsInitialized)//we double-check this flag to makes sure this function does not get called multiple times by different threads
         return;
 
+
+	// initialize cell type->remodeling quantity map
+	//      first collect inputs as a 2D array by type and material ids, then assemble map
+
+	cerr << "Initializing remodeling quantities..." << endl;
+
+	int thisTypeId;
+	int maxTypeId = (int)automaton->getMaxTypeId();
+	unsigned int ECMaterialIdx;
+	double thisRemodelingQuantity;
+	std::string ECMaterialName;
+	std::string cellTypeName;
+	std::vector<std::string> cellTypeNamesByTypeId;
+	std::vector<std::vector<float> > RemodelingQuantityByTypeId(maxTypeId + 1, vector<float>(numberOfMaterials));
+	typeToRemodelingQuantityMap.clear();
+
+	for (int i = 0; i < ECMaterialRemodelingQuantityXMLVec.size(); ++i) {
+		cellTypeName = ECMaterialRemodelingQuantityXMLVec[i]->getAttribute("CellType");
+		ECMaterialName = ECMaterialRemodelingQuantityXMLVec[i]->getAttribute("Material");
+		thisRemodelingQuantity = ECMaterialRemodelingQuantityXMLVec[i]->getDouble();
+
+		cerr << "   Initializing (" << cellTypeName << ", " << ECMaterialName << " ): " << thisRemodelingQuantity << endl;
+
+		thisTypeId = (int)automaton->getTypeId(cellTypeName);
+		ECMaterialIdx = getECMaterialIndexByName(ECMaterialName);
+		cellTypeNamesByTypeId.push_back(cellTypeName);
+		RemodelingQuantityByTypeId[thisTypeId][ECMaterialIdx] = (float)thisRemodelingQuantity;
+	}
+	//      Make the cell type->remodeling quantity map
+	std::vector<float> thisRemodelingQuantityVec;
+	for (int i = 0; i < cellTypeNamesByTypeId.size(); ++i) {
+		cellTypeName = cellTypeNamesByTypeId[i];
+		thisTypeId = (int)automaton->getTypeId(cellTypeName);
+
+		cerr << "   Setting remodeling quantity for cell type " << thisTypeId << ": " << cellTypeName << endl;
+
+		thisRemodelingQuantityVec = RemodelingQuantityByTypeId[thisTypeId];
+		typeToRemodelingQuantityMap.insert(make_pair(cellTypeName, thisRemodelingQuantityVec));
+	}
+
+	// initialize cell adhesion coefficients by cell type from user specification
+
+	cerr << "Initializing cell-ECMaterial interface adhesion coefficients by cell type and material component..." << endl;
+
+	AdhesionCoefficientsByTypeId.clear();
+	std::vector<std::vector<float> > AdhesionCoefficientsByTypeId(maxTypeId + 1, std::vector<float>(numberOfMaterials));
+	double thisAdhesionCoefficient;
+	for (int i = 0; i < ECMaterialAdhesionXMLVec.size(); ++i) {
+		cellTypeName = ECMaterialAdhesionXMLVec[i]->getAttribute("CellType");
+		ECMaterialName = ECMaterialAdhesionXMLVec[i]->getAttribute("Material");
+		thisAdhesionCoefficient = ECMaterialAdhesionXMLVec[i]->getDouble();
+
+		cerr << "   Initializing (" << cellTypeName << ", " << ECMaterialName << " ): " << thisAdhesionCoefficient << endl;
+
+		thisTypeId = (int)automaton->getTypeId(cellTypeName);
+		ECMaterialIdx = getECMaterialIndexByName(ECMaterialName);
+		AdhesionCoefficientsByTypeId[thisTypeId][ECMaterialIdx] = (float)thisAdhesionCoefficient;
+	}
+
+	// assign remodeling quantities and adhesion coefficients to cells by type and material name from user specification
+
+	cerr << "Assigning remodeling quantities and adhesion coefficients to cells..." << endl;
+
+	std::map<std::string, std::vector<float> >::iterator mitr;
+	CellInventory::cellInventoryIterator cInvItr;
+	CellG * cell;
+	CellInventory * cellInventoryPtr = &potts->getCellInventory();
+	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr) {
+		cell = cellInventoryPtr->getCell(cInvItr);
+		assignNewRemodelingQuantityVector(cell, numberOfMaterials);
+
+		cellTypeName = automaton->getTypeName(automaton->getCellType(cell));
+		mitr = typeToRemodelingQuantityMap.find(cellTypeName);
+		if (mitr != typeToRemodelingQuantityMap.end()) {
+			setRemodelingQuantityVector(cell, mitr->second);
+		}
+
+		setECAdhesionByCell(cell, AdhesionCoefficientsByTypeId[(int)cell->type]);
+	}
+
     ECMaterialsInitialized = true;
 }
 
@@ -466,43 +483,45 @@ void ECMaterialsPlugin::setRemodelingQuantityByName(const CellG * _cell, std::st
 }
 
 void ECMaterialsPlugin::setRemodelingQuantityByIndex(const CellG * _cell, unsigned int _idx, float _quantity) {
-    ECMaterialCellData * ecmCellAttrData = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr);
-    ecmCellAttrData->setRemodelingQuantity(_idx, _quantity);
+	std::vector<float> & RemodelingQuantity = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->RemodelingQuantity;
+	if (_idx < RemodelingQuantity.size()-1) { RemodelingQuantity[_idx] = _quantity; }
 }
 
 void ECMaterialsPlugin::setRemodelingQuantityVector(const CellG * _cell, std::vector<float> _quantityVec) {
-    ECMaterialCellData * ecmCellAttrData = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr);
-    ecmCellAttrData->setRemodelingQuantityVec(_quantityVec);
+	std::vector<float> & RemodelingQuantity = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->RemodelingQuantity;
+	RemodelingQuantity = _quantityVec;
 }
 
 void ECMaterialsPlugin::assignNewRemodelingQuantityVector(const CellG * _cell, unsigned int _numMtls) {
-    ECMaterialCellData * ecmCellAttrData = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr);
-    ecmCellAttrData->setNewRemodelingQuantityVec(_numMtls);
+	std::vector<float> RemodelingQuantityNew(_numMtls);
+	std::vector<float> & RemodelingQuantity = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->RemodelingQuantity;
+	RemodelingQuantity = RemodelingQuantityNew;
 }
 
 void ECMaterialsPlugin::setMediumECMaterialQuantityByName(const Point3D &pt, std::string _ECMaterialName, float _quantity) {
-    ECMaterialsData *ECMaterialsDataLocal = ECMaterialsField->get(pt);
-    unsigned int _idx = getECMaterialIndexByName(_ECMaterialName);
-    ECMaterialsDataLocal->setECMaterialsQuantity(_idx, _quantity);
-    ECMaterialsField->set(pt, ECMaterialsDataLocal);
+    setMediumECMaterialQuantityByIndex(pt, getECMaterialIndexByName(_ECMaterialName), _quantity);
 }
 
 void ECMaterialsPlugin::setMediumECMaterialQuantityByIndex(const Point3D &pt, unsigned int _idx, float _quantity) {
     ECMaterialsData *ECMaterialsDataLocal = ECMaterialsField->get(pt);
-    ECMaterialsDataLocal->setECMaterialsQuantity(_idx, _quantity);
+	std::vector<float> & ECMaterialsQuantityVec = ECMaterialsDataLocal->ECMaterialsQuantityVec;
+	ECMaterialsQuantityVec[_idx] = _quantity;
     ECMaterialsField->set(pt, ECMaterialsDataLocal);
 }
 
 void ECMaterialsPlugin::setMediumECMaterialQuantityVector(const Point3D &pt, std::vector<float> _quantityVec) {
     ECMaterialsData *ECMaterialsDataLocal = ECMaterialsField->get(pt);
-    ECMaterialsDataLocal->setECMaterialsQuantityVec(_quantityVec);
+	std::vector<float> & ECMaterialsQuantityVec = ECMaterialsDataLocal->ECMaterialsQuantityVec;
+	ECMaterialsQuantityVec = _quantityVec;
     ECMaterialsField->set(pt, ECMaterialsDataLocal);
 }
 
 void ECMaterialsPlugin::assignNewMediumECMaterialQuantityVector(const Point3D &pt, unsigned int _numMtls) {
     ECMaterialsData *ECMaterialsDataLocal = ECMaterialsField->get(pt);
-    ECMaterialsDataLocal->setNewECMaterialsQuantityVec(_numMtls);
-    ECMaterialsField->set(pt, ECMaterialsDataLocal);
+	std::vector<float> ECMaterialsQuantityVecNew(_numMtls);
+	std::vector<float> & ECMaterialsQuantityVec = ECMaterialsDataLocal->ECMaterialsQuantityVec;
+	ECMaterialsQuantityVec = ECMaterialsQuantityVecNew;
+	ECMaterialsField->set(pt, ECMaterialsDataLocal);
 }
 
 void ECMaterialsPlugin::setECMaterialDurabilityByName(std::string _ECMaterialName, float _durabilityLM) {
@@ -528,8 +547,8 @@ void ECMaterialsPlugin::setECMaterialAdvectingByIndex(unsigned int _idx, bool _i
 }
 
 void ECMaterialsPlugin::setECAdhesionByCell(const CellG *_cell, std::vector<float> _adhVec) {
-    ECMaterialCellData * ecmCellAttrData = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr);
-    ecmCellAttrData->setAdhesionCoefficientsVec(_adhVec);
+    vector<float> & AdhesionCoefficients = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->AdhesionCoefficients;
+	AdhesionCoefficients = _adhVec;
 }
 
 float ECMaterialsPlugin::getRemodelingQuantityByName(const CellG * _cell, std::string _ECMaterialName) {
@@ -537,19 +556,18 @@ float ECMaterialsPlugin::getRemodelingQuantityByName(const CellG * _cell, std::s
 }
 
 float ECMaterialsPlugin::getRemodelingQuantityByIndex(const CellG * _cell, unsigned int _idx) {
-    if ( _idx > ECMaterialsVec.size()-1 ) {
+	std::vector<float> remodelingQuantityVector = getRemodelingQuantityVector(_cell);
+	if ( _idx > remodelingQuantityVector.size()-1 ) {
         ASSERT_OR_THROW(std::string("Material index ") + std::to_string(_idx) + " out of range!" , false);
         return -1.0;
     }
-    ECMaterialCellData * ecmCellAttrData = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr);
-    return ecmCellAttrData->getRemodelingQuantity(_idx);
+	return remodelingQuantityVector[_idx];
 }
 
 std::vector<float> ECMaterialsPlugin::getRemodelingQuantityVector(const CellG * _cell) {
-    vector<float> remodelingQuantityVector(numberOfMaterials);
+    std::vector<float> remodelingQuantityVector(numberOfMaterials);
     if (_cell) {
-        ECMaterialCellData * ecmCellAttrData = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr);
-        remodelingQuantityVector = ecmCellAttrData->getRemodelingQuantityVec();
+		std::vector<float> & remodelingQuantityVector = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->RemodelingQuantity;
     }
     return remodelingQuantityVector;
 }
@@ -559,17 +577,17 @@ float ECMaterialsPlugin::getMediumECMaterialQuantityByName(const Point3D &pt, st
 }
 
 float ECMaterialsPlugin::getMediumECMaterialQuantityByIndex(const Point3D &pt, unsigned int _idx) {
-    ECMaterialsData *ECMaterialsDataLocal = ECMaterialsField->get(pt);
-    if (_idx > numberOfMaterials-1) {
+	std::vector<float> ECMaterialsQuantityVec = getMediumECMaterialQuantityVector(pt);
+	if (_idx > ECMaterialsQuantityVec.size()-1) {
 		ASSERT_OR_THROW(std::string("Material index ") + std::to_string(_idx) + " out of range!", false);
-        return -1.0;
-    }
-    return ECMaterialsDataLocal->getECMaterialQuantity(_idx);
+		return -1.0;
+	}
+	return ECMaterialsQuantityVec[_idx];
 }
 
 std::vector<float> ECMaterialsPlugin::getMediumECMaterialQuantityVector(const Point3D &pt) {
-    ECMaterialsData *ECMaterialsDataLocal = ECMaterialsField->get(pt);
-    return ECMaterialsDataLocal->getECMaterialsQuantityVec();
+	vector<float> & ECMaterialsQuantityVec = ECMaterialsField->get(pt)->ECMaterialsQuantityVec;
+    return ECMaterialsQuantityVec;
 }
 
 std::vector<float> ECMaterialsPlugin::getMediumAdvectingECMaterialQuantityVector(const Point3D &pt) {
@@ -602,7 +620,7 @@ bool ECMaterialsPlugin::getECMaterialAdvectingByName(std::string _ECMaterialName
 
 bool ECMaterialsPlugin::getECMaterialAdvectingByIndex(unsigned int _idx) {
     // if index exceeds number of materials, then ignore it
-    if ( _idx < ECMaterialsVec.size()){
+    if ( _idx > ECMaterialsVec.size()-1 ){
         return ECMaterialsVec[_idx].getTransferable();
     }
 	ASSERT_OR_THROW(std::string("Material index ") + std::to_string(_idx) + " out of range!", false);
@@ -620,8 +638,8 @@ unsigned int ECMaterialsPlugin::getECMaterialIndexByName(std::string _ECMaterial
 }
 
 std::vector<float> ECMaterialsPlugin::getECAdhesionByCell(const CellG *_cell) {
-    ECMaterialCellData * ecmCellAttrData = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr);
-    return ecmCellAttrData->getAdhesionCoefficientVec();
+    std::vector<float> & adhVec = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->AdhesionCoefficients;
+    return adhVec;
 }
 
 std::vector<float> ECMaterialsPlugin::getECAdhesionByCellTypeId(unsigned int _idx) {
@@ -637,7 +655,12 @@ std::vector<Neighbor> ECMaterialsPlugin::getFirstOrderNeighbors(const Point3D &p
     maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
     std::vector<Neighbor> neighbors;
     for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
-        neighbors.push_back(boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx));
+		Neighbor neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
+		if (!neighbor.distance) {
+			//if distance is 0 then the neighbor returned is invalid
+			continue;
+		}
+        neighbors.push_back(neighbor);
     }
     return neighbors;
 }

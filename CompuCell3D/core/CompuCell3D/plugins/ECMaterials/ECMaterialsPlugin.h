@@ -71,8 +71,10 @@ namespace CompuCell3D {
 		Automaton *automaton;
 		bool weightDistance;
 
-		unsigned int maxNeighborIndex;
+		unsigned int maxNeighborIndex; // for first order neighborhood, used in advection
+		unsigned int maxNeighborIndexAdh; // for adhesion neighborhoods
 		BoundaryStrategy *boundaryStrategy;
+		BoundaryStrategy *boundaryStrategyAdh;
 		// float energyOffset;
 
 		bool ECMaterialsInitialized;
@@ -80,6 +82,11 @@ namespace CompuCell3D {
 		std::map<std::string, unsigned int> ECMaterialNameIndexMap;
 		std::map<std::string, std::vector<float> > typeToRemodelingQuantityMap;
 		std::vector<std::vector<float> > AdhesionCoefficientsByTypeId;
+
+		CC3DXMLElementList ECMaterialAdhesionXMLVec;
+		CC3DXMLElementList ECMaterialRemodelingQuantityXMLVec;
+		std::vector<std::string> cellTypeNamesByTypeId;
+		std::vector<std::vector<float> > RemodelingQuantityByTypeId;
 
 		Dim3D fieldDim;
 		WatchableField3D<ECMaterialsData *> *ECMaterialsField;

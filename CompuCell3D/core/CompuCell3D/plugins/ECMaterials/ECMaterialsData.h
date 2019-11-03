@@ -33,16 +33,15 @@
 namespace CompuCell3D {
 
     class ECMATERIALS_EXPORT ECMaterialComponentData{
-	    private:
-	        std::string ECMaterialName;
+		public:
+			ECMaterialComponentData() :durabilityLM(0), isTransferable(true) {}
+			~ECMaterialComponentData() {}
+
+			std::string ECMaterialName;
 		    float durabilityLM;
 		    bool isTransferable;
 
-	    public:
-            ECMaterialComponentData():durabilityLM(0), isTransferable(true){}
-            ~ECMaterialComponentData(){}
-
-		    void setName(std::string _name){ECMaterialName=_name;}
+            void setName(std::string _name){ECMaterialName=_name;}
 		    std::string getName(){return ECMaterialName;}
 		    void setDurabilityLM(float _LM){durabilityLM=_LM;}
 		    float getDurabilityLM(){return durabilityLM;}
@@ -52,13 +51,12 @@ namespace CompuCell3D {
 	};
 
     class ECMATERIALS_EXPORT ECMaterialsData{
-        private:
-            unsigned int numMtls;
-            std::vector<float> ECMaterialsQuantityVec;
-
-        public:
+		public:
             ECMaterialsData():numMtls((unsigned int) 1), ECMaterialsQuantityVec(std::vector<float>(0.0)){};
             ~ECMaterialsData(){}
+
+			unsigned int numMtls;
+			std::vector<float> ECMaterialsQuantityVec;
 
             void setECMaterialsQuantity(unsigned int _pos, float _qty){
                 if(_pos>ECMaterialsQuantityVec.size()-1){return;}
@@ -72,27 +70,25 @@ namespace CompuCell3D {
             std::vector<float> getECMaterialsQuantityVec(){return ECMaterialsQuantityVec;}
             void setNewECMaterialsQuantityVec(unsigned int _numMtls){
 				numMtls = _numMtls;
-                ECMaterialsQuantityVec.clear();
-                ECMaterialsQuantityVec.resize(numMtls);
+				std::vector<float> ECMaterialsQuantityVec(numMtls);
                 ECMaterialsQuantityVec[0] = 1.0;
             }
 
 	};
 
 	class ECMATERIALS_EXPORT ECMaterialCellData{
-	    private:
-	        std::vector<float> RemodelingQuantity;
-	        std::vector<float> AdhesionCoefficients;
 	    public:
 	        ECMaterialCellData(){};
 	        ~ECMaterialCellData(){};
 
+			std::vector<float> RemodelingQuantity;
+			std::vector<float> AdhesionCoefficients;
+
 	        void setNewRemodelingQuantityVec(unsigned int _numMtls){
-	            RemodelingQuantity.clear();
-	            RemodelingQuantity.resize(_numMtls);
+	            std::vector<float> RemodelingQuantity(_numMtls, 0.0);
 	            RemodelingQuantity[0] = 1.0;
 	        }
-	        void setRemodelingQuantityVec(std::vector<float> _qtyVec){RemodelingQuantity=_qtyVec;}
+	        void setRemodelingQuantityVec(std::vector<float> _qtyVec){std::vector<float> RemodelingQuantity(_qtyVec);}
 	        void setRemodelingQuantity(unsigned int _pos, float _qty){
 	            if(_pos>RemodelingQuantity.size()-1){return;}
                 RemodelingQuantity[_pos]=_qty;
@@ -103,11 +99,8 @@ namespace CompuCell3D {
 	        }
 	        std::vector<float> getRemodelingQuantityVec(){return RemodelingQuantity;}
 
-	        void setNewAdhesionCoefficientsVec(unsigned int _numMtls){
-	            AdhesionCoefficients.clear();
-	            AdhesionCoefficients.resize(_numMtls);
-	        }
-	        void setAdhesionCoefficientsVec(std::vector<float> _adhVec){AdhesionCoefficients=_adhVec;}
+	        void setNewAdhesionCoefficientsVec(unsigned int _numMtls){std::vector<float> AdhesionCoefficients(_numMtls, 0.0);}
+	        void setAdhesionCoefficientsVec(std::vector<float> _adhVec){std::vector<float> AdhesionCoefficients(_adhVec);}
 	        void setAdhesionCoefficient(unsigned int _pos, float _adh){
 	            if(_pos>AdhesionCoefficients.size()-1){return;}
                 AdhesionCoefficients[_pos]=_adh;
