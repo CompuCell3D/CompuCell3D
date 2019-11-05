@@ -224,13 +224,11 @@ double ECMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
 
     // Target medium and durability
     if (oldCell == 0) {
-        targetQuantityVec = getMediumECMaterialQuantityVector(pt);
+        targetQuantityVec = ECMaterialsField->get(pt)->ECMaterialsQuantityVec;
         energy += ECMaterialDurabilityEnergy(targetQuantityVec);
     }
-    vector<float> remodelingQuantityVector(numberOfMaterials);
     vector<float> copyQuantityVector(numberOfMaterials);
     if ((newCell == 0) && (oldCell != 0)) {
-        remodelingQuantityVector = getRemodelingQuantityVector(oldCell);
         copyQuantityVector = calculateCopyQuantityVec(oldCell, pt);
     }
 
@@ -249,10 +247,11 @@ double ECMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
             distance = neighbor.distance;
 
             nCell = fieldG->get(neighbor.pt);
+			vector<float> nQuantityVec = ECMaterialsField->get(neighbor.pt)->ECMaterialsQuantityVec;
 
             if (nCell != oldCell) {
                 if (nCell == 0) {
-                    energy -= ECMaterialContactEnergy(oldCell, getMediumECMaterialQuantityVector(neighbor.pt)) / neighbor.distance;
+                    energy -= ECMaterialContactEnergy(oldCell, nQuantityVec) / neighbor.distance;
                 }
                 else if (oldCell == 0) {
                     energy -= ECMaterialContactEnergy(nCell, targetQuantityVec) / neighbor.distance;
@@ -260,7 +259,7 @@ double ECMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
             }
             if (nCell != newCell) {
                 if (nCell == 0) {
-                    energy += ECMaterialContactEnergy(newCell, getMediumECMaterialQuantityVector(neighbor.pt)) / neighbor.distance;
+                    energy += ECMaterialContactEnergy(newCell, nQuantityVec) / neighbor.distance;
                 }
                 else if (newCell == 0) {
                     energy += ECMaterialContactEnergy(nCell, copyQuantityVector) / neighbor.distance;
@@ -278,10 +277,11 @@ double ECMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
                 continue;
             }
             nCell = fieldG->get(neighbor.pt);
+			vector<float> nQuantityVec = ECMaterialsField->get(neighbor.pt)->ECMaterialsQuantityVec;
 
             if (nCell != oldCell) {
                 if (nCell == 0) {
-                    energy -= ECMaterialContactEnergy(oldCell, getMediumECMaterialQuantityVector(neighbor.pt));
+                    energy -= ECMaterialContactEnergy(oldCell, nQuantityVec);
                 }
                 else if (oldCell == 0) {
                     energy -= ECMaterialContactEnergy(nCell, targetQuantityVec);
@@ -289,7 +289,7 @@ double ECMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
             }
             if (nCell != newCell) {
                 if (nCell == 0) {
-                    energy += ECMaterialContactEnergy(newCell, getMediumECMaterialQuantityVector(neighbor.pt));
+                    energy += ECMaterialContactEnergy(newCell, nQuantityVec);
                 }
                 else if (newCell == 0) {
                     energy += ECMaterialContactEnergy(nCell, copyQuantityVector);
@@ -307,9 +307,9 @@ double ECMaterialsPlugin::ECMaterialContactEnergy(const CellG *cell, std::vector
     double energy = 0.0;
 
     if (cell != 0) {
-		std::vector<float> adhesionVec = getECAdhesionByCell(cell);
-        for (int i = 0; i < adhesionVec.size() ; ++i){
-            energy += adhesionVec[i]*_qtyVec[i];
+		std::vector<float> AdhesionCoefficients = ECMaterialCellDataAccessor.get(cell->extraAttribPtr)->AdhesionCoefficients;
+        for (int i = 0; i < AdhesionCoefficients.size() ; ++i){
+            energy += AdhesionCoefficients[i]*_qtyVec[i];
         }
     }
 
@@ -321,11 +321,9 @@ double ECMaterialsPlugin::ECMaterialDurabilityEnergy(std::vector<float> _qtyVec)
 
     double energy = 0.0;
     float thisEnergy;
-    float thisDurabilityLM;
 
     for (unsigned int i = 0; i < _qtyVec.size(); ++i) {
-        thisDurabilityLM = getECMaterialDurabilityByIndex(i);
-        thisEnergy = _qtyVec[i]*thisDurabilityLM;
+        thisEnergy = _qtyVec[i]* ECMaterialsVec[i].getDurabilityLM();
         if (thisEnergy > 0.0) {energy += (double) thisEnergy;}
     }
 
@@ -338,14 +336,20 @@ void ECMaterialsPlugin::field3DChange(const Point3D &pt, CellG *newCell, CellG *
     // If source agent is a cell and target agent is the medium, then target EC materials are removed
     // If source agent is the medium, materials advect
 
+	ECMaterialsData *ECMaterialsDataLocal = ECMaterialsField->get(pt);
+	std::vector<float> & ECMaterialsQuantityVec = ECMaterialsDataLocal->ECMaterialsQuantityVec;
+	std::vector<float> ECMaterialsQuantityVecNew(numberOfMaterials);
+
     if (newCell) { // Source agent is a cell
         if (!oldCell){
-            assignNewMediumECMaterialQuantityVector(pt, numberOfMaterials);
+			ECMaterialsQuantityVec = ECMaterialsQuantityVecNew;
+			ECMaterialsField->set(pt, ECMaterialsDataLocal);
         }
     }
     else { // Source agent is a medium
         if (oldCell){
-            setMediumECMaterialQuantityVector(pt, calculateCopyQuantityVec(oldCell, pt));
+			ECMaterialsQuantityVec = calculateCopyQuantityVec(oldCell, pt);
+			ECMaterialsField->set(pt, ECMaterialsDataLocal);
         }
     }
 
@@ -358,7 +362,7 @@ std::vector<float> ECMaterialsPlugin::calculateCopyQuantityVec(const CellG * _ce
     // Calculate copy quantity vector
     // quantity vector is mean of all transferable neighborhood components + target cell remodeling quantity
     CellG *neighborCell;
-    copyQuantityVec = getRemodelingQuantityVector(_cell);
+	if (_cell) { copyQuantityVec = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->RemodelingQuantity; }
 
     float numberOfMediumNeighbors = 1.0;
     std::vector<float> neighborQuantityVector(numberOfMaterials);
@@ -367,14 +371,18 @@ std::vector<float> ECMaterialsPlugin::calculateCopyQuantityVec(const CellG * _ce
     for (int nIdx = 0; nIdx < neighbors.size(); ++nIdx){
         neighborCell = fieldG->get(neighbors[nIdx].pt);
         if (neighborCell) {continue;}
-        neighborQuantityVector = getMediumAdvectingECMaterialQuantityVector(neighbors[nIdx].pt);
+		neighborQuantityVector = ECMaterialsField->get(neighbors[nIdx].pt)->ECMaterialsQuantityVec;
+		for (int i = 0; i < ECMaterialsVec.size(); ++i) {
+			if ( !(ECMaterialsVec[i].getTransferable()) ) { neighborQuantityVector[i] = 0.0; }
+		}
+
         for (int i = 0; i < copyQuantityVec.size(); ++i) {copyQuantityVec[i] += neighborQuantityVector[i];}
         numberOfMediumNeighbors += 1.0;
     }
 
     for (int i = 0; i < copyQuantityVec.size(); ++i){copyQuantityVec[i] /= numberOfMediumNeighbors;}
 
-    return copyQuantityVec;
+	return copyQuantityVec;
 
 }
 
@@ -463,18 +471,24 @@ void ECMaterialsPlugin::initializeECMaterials() {
 	CellInventory * cellInventoryPtr = &potts->getCellInventory();
 	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr) {
 		cell = cellInventoryPtr->getCell(cInvItr);
-		assignNewRemodelingQuantityVector(cell, numberOfMaterials);
+		std::vector<float> & RemodelingQuantity = ECMaterialCellDataAccessor.get(cell->extraAttribPtr)->RemodelingQuantity;
+		std::vector<float> & AdhesionCoefficients = ECMaterialCellDataAccessor.get(cell->extraAttribPtr)->AdhesionCoefficients;
+
+		std::vector<float> RemodelingQuantityNew(numberOfMaterials);
+		RemodelingQuantity = RemodelingQuantityNew;
+		RemodelingQuantity[0] = 1.0;
 
 		cellTypeName = automaton->getTypeName(automaton->getCellType(cell));
 		mitr = typeToRemodelingQuantityMap.find(cellTypeName);
 		if (mitr != typeToRemodelingQuantityMap.end()) {
-			setRemodelingQuantityVector(cell, mitr->second);
+			RemodelingQuantity = mitr->second;
 		}
 
-		setECAdhesionByCell(cell, AdhesionCoefficientsByTypeId[(int)cell->type]);
+		AdhesionCoefficients = AdhesionCoefficientsByTypeId[(int)cell->type];
 	}
 
     ECMaterialsInitialized = true;
+
 }
 
 void ECMaterialsPlugin::setRemodelingQuantityByName(const CellG * _cell, std::string _ECMaterialName, float _quantity) {
@@ -484,7 +498,7 @@ void ECMaterialsPlugin::setRemodelingQuantityByName(const CellG * _cell, std::st
 
 void ECMaterialsPlugin::setRemodelingQuantityByIndex(const CellG * _cell, unsigned int _idx, float _quantity) {
 	std::vector<float> & RemodelingQuantity = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->RemodelingQuantity;
-	if (_idx < RemodelingQuantity.size()-1) { RemodelingQuantity[_idx] = _quantity; }
+	if (_idx < RemodelingQuantity.size()) { RemodelingQuantity[_idx] = _quantity; }
 }
 
 void ECMaterialsPlugin::setRemodelingQuantityVector(const CellG * _cell, std::vector<float> _quantityVec) {
@@ -594,7 +608,7 @@ std::vector<float> ECMaterialsPlugin::getMediumAdvectingECMaterialQuantityVector
     std::vector<float> _qtyVec = getMediumECMaterialQuantityVector(pt);
     std::vector<ECMaterialComponentData> _ecmVec = getECMaterialsVec();
     for (int i = 0; i < _qtyVec.size(); ++i) {
-        if (!_ecmVec[i].getTransferable()) {
+		if (!_ecmVec[i].getTransferable()) {
             _qtyVec[i] = 0.0;
         }
     }
