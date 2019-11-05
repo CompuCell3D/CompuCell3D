@@ -382,7 +382,9 @@ std::vector<float> ECMaterialsPlugin::calculateCopyQuantityVec(const CellG * _ce
 
     for (int i = 0; i < copyQuantityVec.size(); ++i){copyQuantityVec[i] /= numberOfMediumNeighbors;}
 
-	return copyQuantityVec;
+    std::vector<float> copyQuantityVecChecked = ECMaterialsPlugin::checkQuantities(copyQuantityVec);
+
+	return copyQuantityVecChecked;
 
 }
 
@@ -489,6 +491,14 @@ void ECMaterialsPlugin::initializeECMaterials() {
 
     ECMaterialsInitialized = true;
 
+}
+
+std::vector<float> ECMaterialsPlugin::checkQuantities(std::vector<float> _qtyVec) {
+    for (int i = 0; i < _qtyVec.size(); ++i) {
+		if (_qtyVec[i] < 0.0 || isnan(_qtyVec[i])) { _qtyVec[i] = 0.0; }
+		else if (_qtyVec[i] > 1.0) { _qtyVec[i] = 1.0; }
+    }
+    return _qtyVec;
 }
 
 void ECMaterialsPlugin::setRemodelingQuantityByName(const CellG * _cell, std::string _ECMaterialName, float _quantity) {

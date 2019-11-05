@@ -127,6 +127,7 @@ namespace CompuCell3D {
 		std::vector<ECMaterialComponentData> getECMaterialsVec(){return ECMaterialsVec;}
 		unsigned int getNumberOfMaterials(){return numberOfMaterials;}
 		std::map<std::string, unsigned int> getECMaterialNameIndexMap(){return ECMaterialNameIndexMap;}
+		std::vector<float> checkQuantities(std::vector<float> _qtyVec);
 
 		//functions used to manipulate extracellular material cell definitions
 		void setRemodelingQuantityByName(const CellG * _cell, std::string _ECMaterialName, float _quantity);

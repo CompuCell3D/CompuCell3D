@@ -12,6 +12,7 @@ class Settings():
         self.FPPLinksOn     = False
         self.contoursOn     = False
         self.concentrationLimitsOn    = True
+        self.ECMaterialsOn  = False
         self.zoomFactor     = None
         self.defaultColor   = None
         self.borderColor    = None
@@ -72,6 +73,7 @@ class Settings():
         self.FPPLinksOn   = settings.value("/FPPLinksOn",              QVariant(False)).toBool()
 
         self.concentrationLimitsOn    = settings.value("/concentrationLimitsOn",  QVariant(False)).toBool()
+        self.ECMaterialsOn  = settings.value("/ECMaterialsOn", QVariant(False)).toBool()
         self.contoursOn     = settings.value("/contoursOn",             QVariant(False)).toBool()
         self.numberOfContourLines,ok     = settings.value("/numberOfContourLines",             QVariant(0)).toInt()
         self.curFile        = settings.value("/recentFile",             QVariant("cellsort_2D.xml")).toString()
@@ -187,6 +189,7 @@ class Settings():
         settings.setValue("/cellGlyphsOn",          QVariant(self.cellGlyphsOn))
         settings.setValue("/FPPLinksOn",            QVariant(self.FPPLinksOn))
         settings.setValue("/concentrationLimitsOn", QVariant(self.concentrationLimitsOn))
+        settings.setValue("/ECMaterialsOn",         QVariant(self.ECMaterialsOn))
         
         settings.setValue("/contour",               QVariant(self.contourPen.color().name()))
         settings.setValue("/contoursOn",            QVariant(self.contoursOn ))
