@@ -455,7 +455,7 @@ class Ui_CC3DPrefs(object):
         self.componentColorTable.setRowCount(20)
         self.componentColorTable.setColumnCount(3)
         self.componentColorTable.setObjectName("componentColorTable")
-        self.componentColorTable.horizontalHeader().setVisible(False)
+        self.componentColorTable.horizontalHeader().setVisible(True)
         self.componentColorTable.horizontalHeader().setCascadingSectionResizes(True)
         self.componentColorTable.horizontalHeader().setDefaultSectionSize(50)
         self.componentColorTable.horizontalHeader().setHighlightSections(False)

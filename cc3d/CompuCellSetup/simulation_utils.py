@@ -86,6 +86,57 @@ def extract_type_names_and_ids() -> dict:
     return type_id_type_name_dict
 
 
+def extract_material_names_and_ids() -> dict:
+    """
+    Extracts material name to material id mapping from CC3DXML
+    :return {dict}:
+    """
+
+    cc3d_xml2_obj_converter = CompuCellSetup.persistent_globals.cc3d_xml_2_obj_converter
+    if cc3d_xml2_obj_converter is None:
+        return {}
+
+    if check_ecmaterials_active() is None:
+        return {}
+
+    plugin_elements = cc3d_xml2_obj_converter.root.getElements("Plugin")
+
+    list_plugin = CC3DXMLListPy(plugin_elements)
+    material_id_material_name_dict = {}
+    for element in list_plugin:
+
+        if element.getAttribute("Name") == "ECMaterials":
+            material_elements = element.getElements("ECMaterial")
+
+            list_material_elements = CC3DXMLListPy(material_elements)
+            material_id = 0
+            for material_element in list_material_elements:
+                material_name = material_element.getAttribute("Material")
+                material_id_material_name_dict[material_id] = material_name
+                material_id += 1
+
+    return material_id_material_name_dict
+
+
+def check_ecmaterials_active():
+    """
+    Checks status of ECMaterials plugin; returns true if active, false if inactive
+    :return {bool}:
+    """
+
+    cc3d_xml2_obj_converter = CompuCellSetup.persistent_globals.cc3d_xml_2_obj_converter
+    if cc3d_xml2_obj_converter is None:
+        return False
+
+    plugin_elements = cc3d_xml2_obj_converter.root.getElements("Plugin")
+
+    list_plugin = CC3DXMLListPy(plugin_elements)
+    for element in list_plugin:
+        if element.getAttribute("Name") == "ECMaterials":
+            return True
+    return False
+
+
 def check_for_cpp_errors(sim):
     if sim.getRecentErrorMessage() != "":
         raise CC3DCPlusPlusError(sim.getRecentErrorMessage())

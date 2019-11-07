@@ -58,6 +58,19 @@
          <e Name="8" Type="color">#00ffff</e>
          <e Name="9" Type="color">#008000</e>
       </e>
+      <e Name="MaterialColorMap" Type="dict">
+         <e Name="0" Type="color">#000000</e>
+         <e Name="1" Type="color">#00ff00</e>
+         <e Name="10" Type="color">#ffffff</e>
+         <e Name="2" Type="color">#0000ff</e>
+         <e Name="3" Type="color">#ff0000</e>
+         <e Name="4" Type="color">#808000</e>
+         <e Name="5" Type="color">#c0c0c0</e>
+         <e Name="6" Type="color">#ff00ff</e>
+         <e Name="7" Type="color">#000080</e>
+         <e Name="8" Type="color">#00ffff</e>
+         <e Name="9" Type="color">#008000</e>
+      </e>
       <e Name="FieldParams" Type="dict"/>
       <e Name="WindowsLayout" Type="dict"/>
    </Settings>

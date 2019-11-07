@@ -23,6 +23,10 @@ class Settings():
         self.typePenMap     = {}
         self.typeBrushMap   = {}
         self.typeColorMap   = {}
+        self.materialColorMap = {}
+        self.materialPenMap = {}
+        self.materialBrushMap = {}
+        self.materialColorMap = {}
         self.recentSimulations = []
         self.defaultBrush   = QBrush()
         self.defaultPen     = QPen()
@@ -137,8 +141,22 @@ class Settings():
                 self.typePenMap  [key]  = QPen(QColor(value))
                 self.typeBrushMap[key]  = QBrush(QColor(value))
                 self.typeColorMap[key]  = QColor(value)
-            
-    
+
+        ecmPenColorList = settings.value("/materialColorMap").toStringList()
+        if ecmPenColorList.count() == 0:
+            ecmPenColorList = colorList
+
+        k = 0
+        for i in range(ecmPenColorList.count() / 2):
+            key, ok = ecmPenColorList[k].toInt()
+            k += 1
+            value = ecmPenColorList[k]
+            k += 1
+            if ok:
+                self.materialPenMap[key] = QPen(QColor(value))
+                self.materialBrushMap[key] = QBrush(QColor(value))
+                self.materialColorMap[key] = QColor(value)
+
         self.zoomFactor, ok         = settings.value("/zoomFactor",             QVariant(1)).toInt()
         self.screenshotFrequency, ok    = settings.value("/screenshotFrequency",    QVariant(100)).toInt()
         self.screenUpdateFrequency, ok  = settings.value("/screenUpdateFrequency",  QVariant(10)).toInt()
@@ -217,8 +235,16 @@ class Settings():
             keys = list(self.typePenMap.keys())
             penColorList.append(str(keys[i]))
             penColorList.append(str(self.typePenMap[keys[i]].color().name()))
-            
+
+        ecmPenColorList = QStringList()
+
+        for i in range(len(self.materialPenMap)):
+            keys = list(self.materialPenMap.keys())
+            ecmPenColorList.append(str(keys[i]))
+            ecmPenColorList.append(str(self.materialPenMap[keys[i]].color().name()))
+
         settings.setValue("/typeColorMap",          QVariant(penColorList))
+        settings.setValue("/materialColorMap",      QVariant(ecmPenColorList))
         settings.setValue("/zoomFactor",            QVariant(self.zoomFactor))
         settings.setValue("/screenshotFrequency",   QVariant(int(self.screenshotFrequency)))
         settings.setValue("/screenUpdateFrequency", QVariant(int(self.screenUpdateFrequency)))

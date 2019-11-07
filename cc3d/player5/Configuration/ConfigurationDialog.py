@@ -55,6 +55,9 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         cellGlyphScaleValid = QDoubleValidator(self.cellGlyphScale)
         self.cellGlyphScale.setValidator(cellGlyphScaleValid)
 
+        # ECMaterials/Colors tab
+        self.componentColorTable.clicked.connect(self.ecmColorTableClicked)
+
         # The following will constrain the input to be valid (double) numeric values
         self.fieldComboBox.currentIndexChanged.connect(self.fieldComboBoxClicked)
         self.lastSelectedField = -1
@@ -188,6 +191,24 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
     def fppColorButtonClicked(self):
         self.updateColorButton(self.fppColorButton, "FPPLinksColor")
+
+    # -------- Extracellular material (colors) widgets callbacks
+    def ecmColorTableClicked(self):
+        '''handles ECMaterial component color table modifications'''
+
+        row = self.componentColorTable.currentRow()
+        col = self.componentColorTable.currentColumn()
+
+        self.componentColorTable.setCurrentCell(row, 0)
+        item = self.componentColorTable.item(row, 2)
+
+        keys = list(self.paramCC3D["MaterialColorMap"].keys())
+
+        compColor = self.paramCC3D["MaterialColorMap"][keys[row]]
+        color = QColorDialog.getColor(compColor)
+        if color.isValid():
+            self.paramCC3D["MaterialColorMap"][keys[row]] = color
+            item.setBackground(QBrush(color))
 
     def boundingBoxColorClicked(self):
         self.updateColorButton(self.boundingBoxColorButton, "BoundingBoxColor")
@@ -461,6 +482,62 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
             item = QTableWidgetItem(str(vals[i]))
             self.typeColorTable.setItem(i, 1, item)
 
+    # signature of the signal emitted by the button
+    @pyqtSlot()
+    def on_addMaterialButton_clicked(self):
+        lastRowIdx = self.componentColorTable.rowCount() - 1
+
+        typeItem = self.componentColorTable.item(lastRowIdx, 0)
+        lastTypeNumber, flag = typeItem.text().toInt()
+
+        if not flag:
+            # conversion to integer unsuccessful
+            return
+
+        if lastTypeNumber >= 256:
+            # cc3d supports only up to 256 cell types
+            return
+
+        colorItem = self.componentColorTable.item(lastRowIdx, 2)  # col 2 contains color
+
+        self.componentColorTable.insertRow(lastRowIdx + 1)
+
+        # fill new row
+        self.componentColorTable.setItem(lastRowIdx + 1, 0, QTableWidgetItem(str(lastTypeNumber + 1)))
+        self.componentColorTable.setItem(lastRowIdx + 1, 1, QTableWidgetItem())
+        self.componentColorTable.setItem(lastRowIdx + 1, 2, QTableWidgetItem())
+        # init setting dictionary
+
+        self.paramCC3D["MaterialColorMap"][lastRowIdx + 1] = QColor(Qt.white)
+
+    def populateMaterialColors(self):
+
+        cw = self.componentColorTable.columnWidth(1)
+
+        self.componentColorTable.setColumnWidth(1, cw * 2)
+
+        rowCount = len(self.paramCC3D["MaterialColorMap"])
+
+        self.componentColorTable.setRowCount(rowCount)
+        keys = list(self.paramCC3D["MaterialColorMap"].keys())
+
+        for i in range(rowCount):
+            item = QTableWidgetItem(str(keys[i]))
+            self.componentColorTable.setItem(i, 0, item)
+
+            item = QTableWidgetItem()
+            item.setBackground(QBrush(self.paramCC3D["MaterialColorMap"][keys[i]]))
+            self.componentColorTable.setItem(i, 2, item)
+
+        names_ids = CompuCellSetup.simulation_utils.extract_material_names_and_ids()
+        if names_ids is None:
+            return
+
+        vals = list(names_ids.values())
+        for i in range(len(vals)):
+            item = QTableWidgetItem(str(vals[i]))
+            self.componentColorTable.setItem(i, 1, item)
+
     def updateFieldParams(self, fieldName):
         # we do not allow fields with empty name
         if str(fieldName) == '':
@@ -584,6 +661,9 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("CellGlyphScale", float(self.cellGlyphScale.text()))
         Configuration.setSetting("CellGlyphThetaRes", self.cellGlyphThetaRes.value())  # spinbox
         Configuration.setSetting("CellGlyphPhiRes", self.cellGlyphPhiRes.value())  # spinbox
+
+        # ECMaterials/Colors tab
+        Configuration.setSetting("MaterialColorMap", self.paramCC3D["MaterialColorMap"])
 
         fp = Configuration.getSetting("FieldParams")
 
@@ -720,6 +800,11 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.cellGlyphScale.setText(str(Configuration.getSetting("CellGlyphScale")))
         self.cellGlyphThetaRes.setValue(self.paramCC3D["CellGlyphThetaRes"])
         self.cellGlyphPhiRes.setValue(self.paramCC3D["CellGlyphPhiRes"])
+
+        # ECMaterials/Colors tab
+        self.populateMaterialColors()
+        self.tab_ECM_type.setEnabled(CompuCellSetup.simulation_utils.check_ecmaterials_active())
+        self.componentColorTable.setHorizontalHeaderLabels(['Material', 'Name', 'Color'])
 
         fp = Configuration.getSetting("FieldParams")
 
