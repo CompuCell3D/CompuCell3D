@@ -1341,7 +1341,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.fieldExtractor.init(simObj)
 
-        if Configuration.getSetting("ECMaterialsOn"):
+        if CompuCellSetup.check_ecmaterials_active():
             material_names_and_ids = CompuCellSetup.simulation_utils.extract_material_names_and_ids()
             self.fieldStorage.allocateECMaterialField(self.fieldDim, len(material_names_and_ids))
             ecmaterials_accessor_function = getattr(cc3d.cpp.CompuCell, 'getECMaterialsPlugin')
