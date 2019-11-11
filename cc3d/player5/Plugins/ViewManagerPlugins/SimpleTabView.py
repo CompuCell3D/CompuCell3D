@@ -3128,6 +3128,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 self.update_active_window_vis_flags(graphicsWidget)
 
+        self.simulation.drawMutex.unlock()
+
     def __resetCamera(self):
         '''
         Resets Camera for the current window
