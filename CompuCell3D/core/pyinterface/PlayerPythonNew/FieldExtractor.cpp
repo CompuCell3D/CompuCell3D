@@ -18,6 +18,7 @@
 #include <cmath>
 
 #include <vtkPythonUtil.h>
+#include <vtkLookupTable.h>
 
 using namespace std;
 using namespace CompuCell3D;
@@ -2845,6 +2846,237 @@ bool FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArray
 			return true;
 }
 
+void FieldExtractor::initECMaterials(ECMaterialsPlugin *_ecmPlugin) {
+	ecmPlugin = _ecmPlugin;
+}
+
+void FieldExtractor::extractECMaterialField() {
+	Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
+	Dim3D fieldDim = cellFieldG->getDim();
+	Point3D pt;
+
+	unsigned int numberOfMaterials = ecmPlugin->getNumberOfMaterials();
+	Field3D<ECMaterialsData *> *ECMaterialsField = ecmPlugin->getECMaterialField();
+	CellG *cell;
+
+	for (pt.x = 0; pt.x < fieldDim.x; ++pt.x)
+		for (pt.y = 0; pt.y < fieldDim.y; ++pt.y)
+			for (pt.z = 0; pt.z < fieldDim.z; ++pt.z) {
+				cell = cellFieldG->get(pt);
+				if (!cell) { fsPtr->field3DECGraphicsData[pt.x][pt.y][pt.z] = ECMaterialsField->get(pt)->ECMaterialsQuantityVec; }
+			}
+}
+
+void FieldExtractor::fillECMaterialFieldData2D(vtk_obj_addr_int_t _ecmQuantityArrayAddr, std::string _plane, int _pos) {
+
+	Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
+	Dim3D fieldDim = cellFieldG->getDim();
+
+	unsigned int numberOfMaterials = ecmPlugin->getNumberOfMaterials();
+	Field3D<ECMaterialsData *> *ECMaterialsField = ecmPlugin->getECMaterialField();
+
+	vector<int> fieldDimVec(3, 0);
+	fieldDimVec[0] = fieldDim.x;
+	fieldDimVec[1] = fieldDim.y;
+	fieldDimVec[2] = fieldDim.z;
+
+	vector<int> pointOrderVec = pointOrder(_plane);
+	vector<int> dimOrderVec = dimOrder(_plane);
+
+	vector<int> dim(3, 0);
+	dim[0] = fieldDimVec[dimOrderVec[0]];
+	dim[1] = fieldDimVec[dimOrderVec[1]];
+	dim[2] = fieldDimVec[dimOrderVec[2]];
+
+	vtkFloatArray *_quantityArray = (vtkFloatArray *)_ecmQuantityArrayAddr;
+	_quantityArray->SetNumberOfComponents(numberOfMaterials);
+	_quantityArray->SetNumberOfTuples(dim[1] * dim[0]);
+
+	int offset = 0;
+	
+	Point3D pt;
+	vector<int> ptVec(3, 0);
+	CellG* cell;
+	std::vector<float> ECMaterialsQuantityVec;
+
+	for (int j = 0; j<dim[1]; ++j)
+		for (int i = 0; i<dim[0]; ++i) {
+			ptVec[0] = i;
+			ptVec[1] = j;
+			ptVec[2] = _pos;
+
+			pt.x = ptVec[pointOrderVec[0]];
+			pt.y = ptVec[pointOrderVec[1]];
+			pt.z = ptVec[pointOrderVec[2]];
+
+			cell = cellFieldG->get(pt);
+
+			if (!cell) {
+				ECMaterialsQuantityVec = ECMaterialsField->get(pt)->ECMaterialsQuantityVec;
+				for (int k = 0; k < numberOfMaterials; ++k) {
+					_quantityArray->SetComponent(offset, k, ECMaterialsQuantityVec[k]);
+				}
+			}
+			else {
+				for (int k = 0; k < numberOfMaterials; ++k) {
+					_quantityArray->SetComponent(offset, k, 0.0);
+				}
+			}
+			++offset;
+		}
+}
+
+void FieldExtractor::fillECMaterialFieldData2DHex(vtk_obj_addr_int_t _ecmQuantityArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos) {
+	vtkFloatArray *_quantityArray = (vtkFloatArray *)_ecmQuantityArrayAddr;
+	vtkPoints *_pointsArray = (vtkPoints *)_pointsArrayAddr;
+	vtkCellArray * _hexCellsArray = (vtkCellArray*)_hexCellsArrayAddr;
+
+	Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
+	Dim3D fieldDim = cellFieldG->getDim();
+
+	int numberOfMaterials = (int)ecmPlugin->getNumberOfMaterials();
+	Field3D<ECMaterialsData *> *ECMaterialsField = ecmPlugin->getECMaterialField();
+
+	vector<int> fieldDimVec(3, 0);
+	fieldDimVec[0] = fieldDim.x;
+	fieldDimVec[1] = fieldDim.y;
+	fieldDimVec[2] = fieldDim.z;
+
+	vector<int> pointOrderVec = pointOrder(_plane);
+	vector<int> dimOrderVec = dimOrder(_plane);
+
+	vector<int> dim(3, 0);
+	dim[0] = fieldDimVec[dimOrderVec[0]];
+	dim[1] = fieldDimVec[dimOrderVec[1]];
+	dim[2] = fieldDimVec[dimOrderVec[2]];
+
+	_quantityArray->SetNumberOfComponents(numberOfMaterials);
+	_quantityArray->SetNumberOfTuples(dim[1] * dim[0]);
+
+	int offset = 0;
+
+	Point3D pt;
+	vector<int> ptVec(3, 0);
+	long pc = 0;
+	CellG* cell;
+	std::vector<float> ECMaterialsQuantityVec;
+
+	for (int j = 0; j<dim[1]; ++j)
+		for (int i = 0; i<dim[0]; ++i) {
+			ptVec[0] = i;
+			ptVec[1] = j;
+			ptVec[2] = _pos;
+
+			pt.x = ptVec[pointOrderVec[0]];
+			pt.y = ptVec[pointOrderVec[1]];
+			pt.z = ptVec[pointOrderVec[2]];
+
+			cell = cellFieldG->get(pt);
+			
+			Coordinates3D<double> hexCoords = HexCoordXY(pt.x, pt.y, pt.z);
+			for (int idx = 0; idx<6; ++idx) {
+				Coordinates3D<double> hexagonVertex = hexagonVertices[idx] + hexCoords;
+				_pointsArray->InsertNextPoint(hexagonVertex.x, hexagonVertex.y, 0.0);
+			}
+			pc += 6;
+			vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
+			_hexCellsArray->InsertCellPoint(pc - 6);
+			_hexCellsArray->InsertCellPoint(pc - 5);
+			_hexCellsArray->InsertCellPoint(pc - 4);
+			_hexCellsArray->InsertCellPoint(pc - 3);
+			_hexCellsArray->InsertCellPoint(pc - 2);
+			_hexCellsArray->InsertCellPoint(pc - 1);
+
+			if (!cell) {
+				ECMaterialsQuantityVec = ECMaterialsField->get(pt)->ECMaterialsQuantityVec;
+				for (int k = 0; k < numberOfMaterials; ++k) {
+					_quantityArray->SetComponent(offset, k, ECMaterialsQuantityVec[k]);
+				}
+			}
+			else {
+				for (int k = 0; k < numberOfMaterials; ++k) {
+					_quantityArray->SetComponent(offset, k, 0.0);
+				}
+			}
+			++offset;
+		}
+}
+
+void FieldExtractor::fillECMaterialFieldData3D(vtk_obj_addr_int_t _ecmQuantityArrayAddr) {
+
+	Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
+	Dim3D fieldDim = cellFieldG->getDim();
+
+	int numberOfMaterials = (int)ecmPlugin->getNumberOfMaterials();
+	Field3D<ECMaterialsData *> *ECMaterialsField = ecmPlugin->getECMaterialField();
+
+	vtkFloatArray *_quantityArray = (vtkFloatArray *)_ecmQuantityArrayAddr;
+	_quantityArray->SetNumberOfComponents(numberOfMaterials);
+	_quantityArray->SetNumberOfTuples(fieldDim.x*fieldDim.y*fieldDim.z);
+
+	int offset = 0;
+
+	Point3D pt;
+	vector<int> ptVec(3, 0);
+	CellG* cell;
+	std::vector<float> ECMaterialsQuantityVec(numberOfMaterials);
+
+	for (int k = 0; k<fieldDim.z; ++k)
+		for (int j = 0; j<fieldDim.y; ++j)
+			for (int i = 0; i<fieldDim.x; ++i) {
+				pt.x = i;
+				pt.y = j;
+				pt.z = k;
+
+				cell = cellFieldG->get(pt);
+
+				if (!cell) {
+					ECMaterialsQuantityVec = ECMaterialsField->get(pt)->ECMaterialsQuantityVec;
+					for (int l = 0; l < numberOfMaterials; ++l) {
+						_quantityArray->SetComponent(offset, l, ECMaterialsQuantityVec[l]);
+					}
+				}
+				else {
+					for (int l = 0; l < numberOfMaterials; ++l) {
+						_quantityArray->SetComponent(offset, l, 0.0);
+					}
+				}
+				++offset;
+			}
+}
+
+void FieldExtractor::fillECMaterialDisplayField(vtk_obj_addr_int_t _colorsArrayAddr, vtk_obj_addr_int_t _quantityArrayAddr, vtk_obj_addr_int_t _colors_lutAddr) {
+
+	vtkFloatArray *_colorArray = (vtkFloatArray *)_colorsArrayAddr;
+	vtkFloatArray *_quantityArray = (vtkFloatArray *)_quantityArrayAddr;
+	vtkLookupTable *_colors_lut = (vtkLookupTable *)_colors_lutAddr;
+	
+	int numberOfTuples = _quantityArray->GetNumberOfTuples();
+	_colorArray->SetNumberOfComponents(4);
+	_colorArray->SetNumberOfTuples(numberOfTuples);
+
+	int numberOfMaterials = _quantityArray->GetNumberOfComponents();
+	double thisColor[4];
+	std::vector<std::vector<double> > _colors_lut_arr(numberOfMaterials, std::vector<double>(4));
+
+	for (int colorIndex = 0; colorIndex < numberOfMaterials; ++colorIndex) {
+		_colors_lut->GetTableValue(colorIndex, thisColor);
+		for (int i = 0; i < 4; ++i) { _colors_lut_arr[colorIndex][i] = thisColor[i]; }
+	}
+
+	double * thisQuantityTuple;
+	for (int tupleIndex = 0; tupleIndex < numberOfTuples; ++tupleIndex ) {
+		thisQuantityTuple = _quantityArray->GetTuple(tupleIndex);
+		double thisColorTuple[4] = { 0.0, 0.0, 0.0, 0.0 };
+		for (int materialIndex = 0; materialIndex < numberOfMaterials; ++materialIndex) {
+			for (int colorIndex = 0; colorIndex < 4; ++colorIndex) {
+				thisColorTuple[colorIndex] += thisQuantityTuple[materialIndex]*_colors_lut_arr[materialIndex][colorIndex];
+			}
+		}
+		_colorArray->SetTuple(tupleIndex, thisColorTuple);
+	}
+
+}
 
 void FieldExtractor::setVtkObj(void * _vtkObj){
 	cerr<<"INSIDE setVtkObj"<<endl;

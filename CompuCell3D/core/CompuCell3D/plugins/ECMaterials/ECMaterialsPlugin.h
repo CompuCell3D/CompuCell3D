@@ -171,6 +171,8 @@ namespace CompuCell3D {
 
 		std::vector<Neighbor> getFirstOrderNeighbors(const Point3D &pt);
 
+		virtual Field3D<ECMaterialsData *> *getECMaterialField() { return (Field3D<ECMaterialsData *> *)ECMaterialsField; }
+
 		void overrideInitialization();
 
 	};

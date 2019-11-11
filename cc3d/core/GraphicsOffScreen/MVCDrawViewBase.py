@@ -251,6 +251,25 @@ class MVCDrawViewBase:
         """
         raise NotImplementedError(self.__class__.show_fpp_links_actors.__name__)
 
+    def prepare_ecm_actors(self, actor_specs, drawing_params=None):
+        """
+        Prepares ECMaterials actors based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {dict}
+        """
+        raise NotImplementedError(self.__class__.prepare_ecm_actors.__name__)
+
+    def show_ecm_actors(self, actor_specs, drawing_params=None,  show_flag=True):
+        """
+        Shows ECMaterials actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :param show_flag: {bool}
+        :return: None
+        """
+        raise NotImplementedError(self.__class__.show_ecm_actors.__name__)
+
     def remove_all_actors_from_renderer(self):
         """
         Removes all actors from renderer

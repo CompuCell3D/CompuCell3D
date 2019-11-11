@@ -61,6 +61,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
         self.cellGlyphsMapper = vtk.vtkPolyDataMapper()
         self.FPPLinksMapper = vtk.vtkPolyDataMapper()
 
+        self.ecmMapper = vtk.vtkPolyDataMapper()
+
         # Weird attributes
         # self.typeActors             = {} # vtkActor
         self.smootherFilters = {}  # vtkSmoothPolyDataFilter
@@ -843,3 +845,46 @@ class MVCDrawModel3D(MVCDrawModelBase):
         fpp_links_color = to_vtk_rgb(mdata.get('FPPLinksColor',data_type='color'))
         # coloring borders
         fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
+
+    def init_ecm_actors(self, actor_specs, drawing_params=None):
+        """
+        Initializes ECMaterials actors for cartesian lattice
+        :param actor_specs:
+        :param drawing_params:
+        :return:
+        """
+
+        # DERIVE FROM BELOW
+        actors_dict = actor_specs.actors_dict
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+
+        quantities = vtk.vtkFloatArray()
+        quantities.SetName("ECMaterialQuantities")
+        quantities_int_addr = extract_address_int_from_vtk_object(vtkObj=quantities)
+
+        self.field_extractor.fillECMaterialFieldData3D(quantities_int_addr)
+
+        ecm_data = vtk.vtkImageData()
+        ecm_data.SetDimensions(field_dim.x + 1, field_dim.y + 1, field_dim.z + 1)
+
+        if VTK_MAJOR_VERSION >= 6:
+            ecm_data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 3)
+        else:
+            ecm_data.SetScalarTypeToUnsignedChar()
+
+        ecm_data.GetPointData().SetVectors(quantities)
+
+        ecm_lut = self.get_material_lookup_table()
+
+        if VTK_MAJOR_VERSION >= 6:
+            self.ecmMapper.SetInputData(ecm_data)
+        else:
+            self.ecmMapper.SetInput(ecm_data)
+
+        self.ecmMapper.ScalarVisibilityOn()
+        self.ecmMapper.SetLookupTable(ecm_lut)
+        self.ecmMapper.SetScalarRange(0, 1)
+
+        ecm_actor = actors_dict['ecm_actor']
+        ecm_actor.SetMapper(self.ecmMapper)
+        ecm_actor.GetProperty().SetOpacity(0.5)  # Probably make this an option

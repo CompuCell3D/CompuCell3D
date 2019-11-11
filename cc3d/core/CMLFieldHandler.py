@@ -30,7 +30,8 @@ class CMLFieldHandler:
         self.out_file_number_of_digits = 0
         self.do_not_output_field_list = []
         self.FIELD_TYPES = (
-            "CellField", "ConField", "ScalarField", "ScalarFieldCellLevel", "VectorField", "VectorFieldCellLevel")
+            "CellField", "ConField", "ScalarField", "ScalarFieldCellLevel", "VectorField", "VectorFieldCellLevel",
+            "ECMaterialField")
         self.__initialization_complete = False
 
     def initialize(self, field_storage=None):
@@ -76,6 +77,8 @@ class CMLFieldHandler:
                 self.field_writer.addVectorFieldForOutput(field_name)
             elif self.field_types[field_name] == self.FIELD_TYPES[5]:
                 self.field_writer.addVectorFieldCellLevelForOutput(field_name)
+            elif self.field_types[field_name] == self.FIELD_TYPES[6]:
+                self.field_writer.addMaterialFieldForOutput()
 
         mcs_formatted_number = str(mcs).zfill(self.out_file_number_of_digits)
 
@@ -187,3 +190,6 @@ class CMLFieldHandler:
 
             if field_name not in self.do_not_output_field_list:
                 self.field_types[field_name] = self.FIELD_TYPES[5]
+
+        # if there is an ECMaterial field, there is only one
+        self.field_types["ECMaterial_Field"] = self.FIELD_TYPES[6]

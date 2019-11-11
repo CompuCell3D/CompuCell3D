@@ -26,6 +26,7 @@ class ScreenshotData(object):
         self.cells_on = None
         self.cluster_borders_on = None
         self.cell_glyphs_on = None
+        self.ecm_on = None
         self.fpp_links_on = None
         self.bounding_box_on = None
         self.lattice_axes_on = None

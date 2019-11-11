@@ -261,7 +261,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.graphicsWindowVisDict[dict_key] = (self.cells_act.isChecked(), self.border_act.isChecked(),
                                                 self.cluster_border_act.isChecked(), self.cell_glyphs_act.isChecked(),
-                                                self.fpp_links_act.isChecked())
+                                                self.fpp_links_act.isChecked(), self.ECMaterials_act.isChecked())
 
     def update_window_menu(self) -> None:
         """
@@ -1107,6 +1107,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.cluster_border_act.triggered.connect(self.__checkClusterBorder)
         self.cell_glyphs_act.triggered.connect(self.__checkCellGlyphs)
         self.fpp_links_act.triggered.connect(self.__checkFPPLinks)
+        self.ECMaterials_act.triggered.connect(self.__checkECM)
 
         self.limits_act.triggered.connect(self.__checkLimits)
         self.config_act.triggered.connect(self.__showConfigDialog)
@@ -1339,6 +1340,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.fieldStorage.allocateCellField(self.fieldDim)
 
         self.fieldExtractor.init(simObj)
+
+        if Configuration.getSetting("ECMaterialsOn"):
+            material_names_and_ids = CompuCellSetup.simulation_utils.extract_material_names_and_ids()
+            self.fieldStorage.allocateECMaterialField(self.fieldDim, len(material_names_and_ids))
+            ecmaterials_accessor_function = getattr(cc3d.cpp.CompuCell, 'getECMaterialsPlugin')
+            ecmaterials_plugin = ecmaterials_accessor_function()
+            self.fieldExtractor.initECMaterials(ecmaterials_plugin)
 
         lattice_type_str = CompuCellSetup.simulation_utils.extract_lattice_type()
 
@@ -2559,6 +2567,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if cc3d_xml_2_obj_converter is not None:
             self.pluginCOMDefined = False
             self.pluginFPPDefined = False
+            self.pluginECMDefined = False
 
             self.root_element = cc3d_xml_2_obj_converter.root
             elms = self.root_element.getElements("Plugin")
@@ -2571,6 +2580,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 if plugin_name == "CenterOfMass":
                     self.pluginCOMDefined = True
+
+                if plugin_name == "ECMaterials":
+                    self.pluginECMDefined = True
 
             # If appropriate, disable/enable Vis menu options
             if not self.pluginFPPDefined:
@@ -2586,6 +2598,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 Configuration.setSetting("CellGlyphsOn", False)
             else:
                 self.cell_glyphs_act.setEnabled(True)
+
+            if not self.pluginECMDefined:
+                self.ECMaterials_act.setEnabled(False)
+                self.ECMaterials_act.setChecked(False)
+                Configuration.setSetting("ECMaterialsOn", False)
+            else:
+                self.ECMaterials_act.setEnabled(True)
 
         # ------------------
         if not self.mainGraphicsWidget: return
@@ -3078,6 +3097,36 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
         pass
+
+    def __checkECM(self, checked):
+        '''
+        Slot that triggers display of ECMaterials
+        :param checked:
+        :return:
+        '''
+
+        Configuration.setSetting("ECMaterialsOn", checked)
+
+        # Should be disabled when the simulation is not loaded!
+        self.simulation.drawMutex.lock()
+        self.update_active_window_vis_flags()
+
+        if self.ECMaterials_act.isEnabled():
+
+            for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+                graphicsWidget = win.widget()
+                try:
+                    if checked:
+                        self.ECMaterials_act.setChecked(True)
+                        win.activateWindow()
+                    else:
+                        self.ECMaterials_act.setChecked(False)
+                        win.activateWindow()
+
+                except AttributeError as e:
+                    pass
+
+                self.update_active_window_vis_flags(graphicsWidget)
 
     def __resetCamera(self):
         '''

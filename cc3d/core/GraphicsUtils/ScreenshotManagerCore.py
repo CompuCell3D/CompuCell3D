@@ -140,6 +140,7 @@ class ScreenshotManagerCore(object):
             scr_elem['ClusterBorders'] = bool(scr_data.cluster_borders_on)
             scr_elem['CellGlyphs'] = bool(scr_data.cell_glyphs_on)
             scr_elem['FPPLinks'] = bool(scr_data.fpp_links_on)
+            scr_elem['ECMaterials'] = bool(scr_data.ecm_on)
             scr_elem['BoundingBox'] = bool(scr_data.bounding_box_on)
             scr_elem['LatticeAxes'] = bool(scr_data.lattice_axes_on)
             scr_elem['LatticeAxesLabels'] = bool(scr_data.lattice_axes_labels_on)
@@ -224,6 +225,7 @@ class ScreenshotManagerCore(object):
             scr_data.cluster_borders_on = scr_data_elem['ClusterBorders']
             scr_data.cell_glyphs_on = scr_data_elem['CellGlyphs']
             scr_data.fpp_links_on = scr_data_elem['FPPLinks']
+            scr_data.ecm_on = scr_data_elem['ECMaterials']
             scr_data.bounding_box_on = scr_data_elem['BoundingBox']
             scr_data.lattice_axes_on = scr_data_elem['LatticeAxes']
             scr_data.lattice_axes_labels_on = scr_data_elem['LatticeAxesLabels']

@@ -8,6 +8,7 @@
 #include "FieldStorage.h"
 
 #include <CompuCell3D/Potts3D/Cell.h>
+#include <CompuCell3D/plugins/ECMaterials/ECMaterialsPlugin.h>
 
 #include "FieldExtractorBase.h"
 
@@ -34,6 +35,7 @@ namespace CompuCell3D{
 	class Simulator;
 	class Dim3D;
     class NeighborTracker;
+	class ECMaterialsPlugin;
 
 	class FIELDEXTRACTOR_EXPORT FieldExtractor:public FieldExtractorBase{
     private:
@@ -42,6 +44,7 @@ namespace CompuCell3D{
 	public:
 		Potts3D * potts;
 		Simulator *sim;
+		ECMaterialsPlugin *ecmPlugin;
 		FieldExtractor();
 		~FieldExtractor();
 
@@ -90,6 +93,13 @@ namespace CompuCell3D{
 
 		virtual std::vector<int> fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr);
 		virtual bool fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec);
+
+		void initECMaterials(ECMaterialsPlugin *_ecmPlugin);
+		void extractECMaterialField();
+		virtual void fillECMaterialFieldData2D(vtk_obj_addr_int_t _ecmQuantityArrayAddr, std::string _plane, int _pos);
+		virtual void fillECMaterialFieldData2DHex(vtk_obj_addr_int_t _ecmQuantityArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos);
+		virtual void fillECMaterialFieldData3D(vtk_obj_addr_int_t _ecmQuantityArrayAddr);
+		void fillECMaterialDisplayField(vtk_obj_addr_int_t _colorsArrayAddr, vtk_obj_addr_int_t _quantityArrayAddr, vtk_obj_addr_int_t _colors_lutAddr);
 
 		void setVtkObj(void * _vtkObj);
 		void setVtkObjInt(long _vtkObjAddr);

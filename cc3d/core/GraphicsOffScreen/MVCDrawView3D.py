@@ -57,6 +57,7 @@ class MVCDrawView3D(MVCDrawViewBase):
 
         self.cellGlyphsActor = vtk.vtkActor()
         self.FPPLinksActor = vtk.vtkActor()
+        self.ecmActor = vtk.vtkActor()
 
         # Weird attributes
         self.typeActors = {}  # vtkActor
@@ -217,6 +218,33 @@ class MVCDrawView3D(MVCDrawViewBase):
             self.add_actor_to_renderer(actor_label='fpp_links_actor', actor_obj=self.FPPLinksActor)
         else:
             self.remove_actor_from_renderer(actor_label='fpp_links_actor', actor_obj=self.FPPLinksActor)
+
+    def prepare_ecm_links_actors(self, actor_specs, drawing_params=None):
+        """
+        Prepares ECMaterials actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {dict}
+        """
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        actor_specs_copy.actors_dict['ecm_actor'] = self.ecmActor
+        return actor_specs_copy
+
+    def show_ecm_actors(self, actor_specs, drawing_params=None, show_flag=True):
+        """
+        Shows ECMaterials actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :param show_flag: {bool}
+        :return: None
+        """
+        scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
+        if show_flag:
+            self.add_actor_to_renderer(actor_label='ecm_actor', actor_obj=self.ecmActor)
+        else:
+            self.remove_actor_from_renderer(actor_label='ecm_actor', actor_obj=self.ecmActor)
 
     def getPlane(self):
         return ("3D", 0)

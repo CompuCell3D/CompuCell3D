@@ -10,7 +10,7 @@
 #include <Utils/Coordinates3D.h>
 #include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
-//#include <vtkFloatArray.h>
+#include <vtkFloatArray.h>
 #include <vtkCharArray.h>
 #include <vtkLongArray.h>
 #include <vtkPoints.h>
@@ -24,6 +24,7 @@
 #include <cmath>
 
 #include <vtkPythonUtil.h>
+#include <CompuCell3D/plugins/ECMaterials/ECMaterialsPlugin.h>
 
 using namespace std;
 using namespace CompuCell3D;
@@ -418,4 +419,47 @@ bool FieldWriter::addVectorFieldCellLevelForOutput(std::string _vectorFieldCellL
 	latticeData->GetPointData()->AddArray(vecArray);
 	vecArray->Delete();
 	return true;
+}
+////////////////////////////////////////////////////////////////////////////////
+void FieldWriter::addECMaterialFieldForOutput() {
+	Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
+	Dim3D fieldDim = cellFieldG->getDim();
+
+	const std::string pluginName = "ECMaterialsPlugin";
+	ECMaterialsPlugin *ecmPlugin = (ECMaterialsPlugin *)sim->pluginManager.get(pluginName);
+	long numberOfMaterials = (long) ecmPlugin->getNumberOfMaterials();
+	Field3D<ECMaterialsData *> *ECMaterialsField = ecmPlugin->getECMaterialField();
+
+	vtkFloatArray *quantityArray = vtkFloatArray::New();
+	quantityArray->SetName("ECMaterialQuantities");
+	quantityArray->SetNumberOfComponents((int)numberOfMaterials);
+
+	long numberOfValues = fieldDim.x*fieldDim.y*fieldDim.z;
+
+	quantityArray->SetNumberOfTuples(numberOfValues);
+	
+	Point3D pt;
+
+	long offset = 0;
+	CellG* cell;
+	std::vector<float> ECMaterialsQuantityVec;
+	for (pt.z = 0; pt.z<fieldDim.z; ++pt.z)
+		for (pt.y = 0; pt.y<fieldDim.y; ++pt.y)
+			for (pt.x = 0; pt.x<fieldDim.x; ++pt.x) {
+				cell = cellFieldG->get(pt);
+				if (cell) {
+					for (int i = 0; i < numberOfMaterials; ++i){ 
+						quantityArray->SetComponent(offset, i, 0.0);
+					}
+				}
+				else {
+					ECMaterialsQuantityVec = ECMaterialsField->get(pt)->ECMaterialsQuantityVec;
+					for (int i = 0; i < numberOfMaterials; ++i){
+						quantityArray->SetComponent(offset, i, ECMaterialsQuantityVec[i]);
+					}
+				}
+				++offset;
+			}
+	latticeData->GetPointData()->AddArray(quantityArray);
+
 }

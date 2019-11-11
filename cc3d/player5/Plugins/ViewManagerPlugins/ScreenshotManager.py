@@ -89,6 +89,7 @@ class ScreenshotManager(ScreenshotManagerCore):
         scrData.cluster_borders_on = tvw.cluster_border_act.isChecked()
         scrData.cell_glyphs_on = tvw.cell_glyphs_act.isChecked()
         scrData.fpp_links_on = tvw.fpp_links_act.isChecked()
+        scrData.ecm_on = tvw.ECMaterials_act.isChecked()
         scrData.lattice_axes_on = Configuration.getSetting('ShowHorizontalAxesLabels') or Configuration.getSetting(
             'ShowVerticalAxesLabels')
         scrData.lattice_axes_labels_on = Configuration.getSetting("ShowAxes")

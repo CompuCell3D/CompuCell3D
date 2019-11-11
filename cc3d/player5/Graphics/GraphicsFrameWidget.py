@@ -258,6 +258,8 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         scr_data.cluster_borders_on = tvw.cluster_border_act.isChecked()
         scr_data.cell_glyphs_on = tvw.cell_glyphs_act.isChecked()
         scr_data.fpp_links_on = tvw.fpp_links_act.isChecked()
+        scr_data.ecm_on = tvw.ECMaterials_act.isChecked()
+
         scr_data.lattice_axes_on = Configuration.getSetting('ShowHorizontalAxesLabels') or Configuration.getSetting(
             'ShowVerticalAxesLabels')
         scr_data.lattice_axes_labels_on = Configuration.getSetting("ShowAxes")

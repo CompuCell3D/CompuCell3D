@@ -27,6 +27,7 @@ class MVCDrawModelBase:
         self.lattice_type_str = None
 
         self.celltypeLUT = None
+        self.ecmLUT = None
 
     #        self.scaleGlyphsByVolume = False
 
@@ -89,6 +90,43 @@ class MVCDrawModelBase:
             rgba = to_vtk_rgb(qcolor_to_rgba(qt_color))
             rgba.append(1.0)
             self.celltypeLUT.SetTableValue(type_id, *rgba)
+
+    def get_material_lookup_table(self, scene_metadata=None):
+        """
+        Returns lookup table for ECMaterials
+        :param scene_metadata:
+        :return: {vtkLookupTable}
+        """
+        if self.ecmLUT is not None:
+            return self.ecmLUT
+
+        self.populate_material_type_lookup_table(scene_metadata=scene_metadata)
+
+        return self.ecmLUT
+
+    def populate_material_type_lookup_table(self, scene_metadata=None):
+        """
+        Populates lookup table for ECMaterials
+        First table element corresponds to appended first quantity value from ECMaterials field, which
+        marks cell (==1) or medium (==0) sites.
+        :param scene_metadata:
+        :return: None
+        """
+        if scene_metadata is None:
+            color_map = Configuration.getSetting("MaterialColorMap")
+        else:
+            color_map = scene_metadata["MaterialColorMap"]
+
+        self.ecmLUT = vtk.vtkLookupTable()
+        self.ecmLUT.Build()
+        self.ecmLUT.SetNumberOfTableValues(len(color_map))
+        self.ecmLUT.SetNumberOfColors(len(color_map))
+
+        material_keys = list(color_map.keys())
+        for material_index in range(0, len(material_keys)):
+            rgba = to_vtk_rgb(qcolor_to_rgba(color_map[material_keys[material_index]]))
+            rgba.append(1.0)
+            self.ecmLUT.SetTableValue(material_index, *rgba)
 
     def populateLookupTable(self):
         #        print MODULENAME,' populateLookupTable()'
@@ -295,6 +333,15 @@ class MVCDrawModelBase:
         initializes fpp links actors
         :param actor_specs:
         :param drawing_params:
+        :return: None
+        """
+        raise NotImplementedError()
+
+    def init_ecm_actors(self, actor_specs, drawing_params=None):
+        """
+        Initializes ECMaterials actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
         :return: None
         """
         raise NotImplementedError()
