@@ -1516,8 +1516,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # coloring borders
         fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
 
-    # -------------------------------------------------DEV
-
     def init_ecm_actors(self, actor_specs, drawing_params=None):
         """
         Initializes ECMaterials actors
@@ -1556,15 +1554,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         dim_0 = dim[0]
         dim_1 = dim[1]
-        number_of_materials = quantities.GetNumberOfComponents()
-        number_of_tuples = quantities.GetNumberOfTuples()
 
         ecm_data = vtk.vtkImageData()
         ecm_data.SetDimensions(dim_0, dim_1, 1)
 
         if VTK_MAJOR_VERSION >= 6:
             ecm_data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 3)
-            # ecm_data.AllocateScalars(vtk.VTK_FLOAT, 3)
         else:
             ecm_data.SetScalarTypeToFloat()
 
@@ -1579,18 +1574,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
             quantities_int_addr,
             colors_lut_addr)
 
-        """
-        colors.SetNumberOfComponents(4)
-        colors.SetNumberOfTuples(number_of_tuples)
-        for tuple_index in range(0, number_of_tuples):
-            this_quantity_tuple = quantities.GetTuple(tuple_index)
-            this_color_tuple = [0.0, 0.0, 0.0, 0.0]
-            for material_index in range(0, number_of_materials):
-                this_rgba = colors_lut[material_index]
-                for color_index in range(0, 4):
-                    this_color_tuple[color_index] += this_quantity_tuple[material_index]*this_rgba[color_index]
-            colors.SetTuple(tuple_index, this_color_tuple)
-        """
         ecm_data.GetPointData().SetScalars(colors)
 
         ecm_filter = vtk.vtkImageDataGeometryFilter()
@@ -1609,7 +1592,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         ecm_actor.SetMapper(self.ecmMapper)
         ecm_actor.GetProperty().SetInterpolationToFlat()
 
-
     def init_ecm_actors_hex(self, actor_specs, drawing_params=None):
         """
         Initializes ECMaterials actors for cartesian lattice
@@ -1619,8 +1601,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         """
 
         actors_dict = actor_specs.actors_dict
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
 
         quantities = vtk.vtkFloatArray()
         quantities.SetName("ECMaterialQuantities")
@@ -1639,25 +1619,30 @@ class MVCDrawModel2D(MVCDrawModelBase):
             self.currentDrawingParameters.plane,
             self.currentDrawingParameters.planePos)
 
+        colors_lut = self.get_material_lookup_table()
+
+        colors = vtk.vtkFloatArray()
+        colors.SetName("Colors")
+        colors_int_addr = extract_address_int_from_vtk_object(vtkObj=colors)
+        colors_lut_addr = extract_address_int_from_vtk_object(vtkObj=colors_lut)
+        self.field_extractor.fillECMaterialDisplayField(
+            colors_int_addr,
+            quantities_int_addr,
+            colors_lut_addr)
+
         ecm_data = vtk.vtkPolyData()
-        ecm_data.GetPointData().SetVectors(quantities)
         ecm_data.SetPoints(hex_points)
         ecm_data.SetPolys(hex_cells)
+        ecm_data.GetCellData().SetScalars(colors)
 
-        ecm_lut = self.get_material_lookup_table()
-
-        if VTK_MAJOR_VERSION >= 6:
-            self.hex_ecmMapper.SetInputData(ecm_data)
-        else:
-            self.hex_ecmMapper.SetInput(ecm_data)
-
+        self.hex_ecmMapper.SetInputData(ecm_data)
         self.hex_ecmMapper.ScalarVisibilityOn()
-        self.hex_ecmMapper.SetLookupTable(ecm_lut)
         self.hex_ecmMapper.SetScalarRange(0, 1)
+        self.hex_ecmMapper.SetColorModeToDirectScalars()
 
         ecm_actor = actors_dict['ecm_actor']
         ecm_actor.SetMapper(self.hex_ecmMapper)
-
+        ecm_actor.GetProperty().SetInterpolationToFlat()
 
     # Optimize code?
     def dimOrder(self, plane):
