@@ -96,7 +96,7 @@ def extract_material_names_and_ids() -> dict:
     if cc3d_xml2_obj_converter is None:
         return {}
 
-    if check_ecmaterials_active() is None:
+    if not check_ecmaterials_active():
         return {}
 
     plugin_elements = cc3d_xml2_obj_converter.root.getElements("Plugin")
@@ -124,17 +124,7 @@ def check_ecmaterials_active():
     :return {bool}:
     """
 
-    cc3d_xml2_obj_converter = CompuCellSetup.persistent_globals.cc3d_xml_2_obj_converter
-    if cc3d_xml2_obj_converter is None:
-        return False
-
-    plugin_elements = cc3d_xml2_obj_converter.root.getElements("Plugin")
-
-    list_plugin = CC3DXMLListPy(plugin_elements)
-    for element in list_plugin:
-        if element.getAttribute("Name") == "ECMaterials":
-            return True
-    return False
+    return CompuCellSetup.persistent_globals.simulator.pluginManager.isLoaded('ECMaterials')
 
 
 def check_for_cpp_errors(sim):

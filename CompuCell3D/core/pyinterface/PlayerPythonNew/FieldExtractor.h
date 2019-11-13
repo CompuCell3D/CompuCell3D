@@ -96,9 +96,10 @@ namespace CompuCell3D{
 
 		void initECMaterials(ECMaterialsPlugin *_ecmPlugin);
 		void extractECMaterialField();
-		virtual void fillECMaterialFieldData2D(vtk_obj_addr_int_t _ecmQuantityArrayAddr, std::string _plane, int _pos);
-		virtual void fillECMaterialFieldData2DHex(vtk_obj_addr_int_t _ecmQuantityArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos);
-		virtual void fillECMaterialFieldData3D(vtk_obj_addr_int_t _ecmQuantityArrayAddr);
+		virtual void fillECMaterialFieldData2D(vtk_obj_addr_int_t _ecmQuantityArrayAddr, std::string _plane, int _pos, int _compSel);
+		virtual void fillECMaterialFieldData2DHex(vtk_obj_addr_int_t _ecmQuantityArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos, int _compSel);
+		virtual void fillECMaterialData2DCartesian(vtk_obj_addr_int_t _ecmQuantityArrayAddr, vtk_obj_addr_int_t _cartesianCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos, int _compSel);
+		virtual void fillECMaterialFieldData3D(vtk_obj_addr_int_t _ecmQuantityArrayAddr, int _compSel);
 		void fillECMaterialDisplayField(vtk_obj_addr_int_t _colorsArrayAddr, vtk_obj_addr_int_t _quantityArrayAddr, vtk_obj_addr_int_t _colors_lutAddr);
 
 		void setVtkObj(void * _vtkObj);

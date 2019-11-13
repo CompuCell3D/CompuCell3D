@@ -858,11 +858,11 @@ class MVCDrawModel3D(MVCDrawModelBase):
         actors_dict = actor_specs.actors_dict
         field_dim = self.currentDrawingParameters.bsd.fieldDim
 
-        quantities = vtk.vtkFloatArray()
+        quantities = vtk.vtkDoubleArray()
         quantities.SetName("ECMaterialQuantities")
         quantities_int_addr = extract_address_int_from_vtk_object(vtkObj=quantities)
 
-        self.field_extractor.fillECMaterialFieldData3D(quantities_int_addr)
+        self.field_extractor.fillECMaterialFieldData3D(quantities_int_addr, -1)
 
         ecm_data = vtk.vtkImageData()
         ecm_data.SetDimensions(field_dim.x + 1, field_dim.y + 1, field_dim.z + 1)

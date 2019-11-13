@@ -122,7 +122,7 @@ void ECMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
 	cerr << "Number of ECMaterials defined: " << numberOfMaterials << endl;
 
-    unsigned int ECMaterialIdx;
+    int ECMaterialIdx;
 	bool ECMaterialIsAdvecting;
 
     // Assign optional advection specifications
@@ -203,7 +203,7 @@ void ECMaterialsPlugin::handleEvent(CC3DEvent & _event) {
     if (_event.id == CHANGE_NUMBER_OF_WORK_NODES) {
 
         //vectorized variables for convenient parallel access
-        unsigned int maxNumberOfWorkNodes = pUtils->getMaxNumberOfWorkNodesPotts();
+        // unsigned int maxNumberOfWorkNodes = pUtils->getMaxNumberOfWorkNodesPotts();
 
     }
 }
@@ -398,8 +398,10 @@ void ECMaterialsPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
 
 void ECMaterialsPlugin::initializeECMaterials() {
-    //cerr<<"initializeECMaterials ECMaterialsInitialized="<<ECMaterialsInitialized<<endl;
-    //exit(1);
+    
+	cerr << "ECMaterials plugin initialization begin: " << ECMaterialsInitialized << endl;
+
+	cerr << __FUNCTION__ << endl;
 
     if (ECMaterialsInitialized)//we double-check this flag to makes sure this function does not get called multiple times by different threads
         return;
@@ -412,7 +414,7 @@ void ECMaterialsPlugin::initializeECMaterials() {
 
 	int thisTypeId;
 	int maxTypeId = (int)automaton->getMaxTypeId();
-	unsigned int ECMaterialIdx;
+	int ECMaterialIdx;
 	double thisRemodelingQuantity;
 	std::string ECMaterialName;
 	std::string cellTypeName;
@@ -491,6 +493,16 @@ void ECMaterialsPlugin::initializeECMaterials() {
 
     ECMaterialsInitialized = true;
 
+	cerr << "ECMaterials plugin initialization complete: " << ECMaterialsInitialized << endl;
+
+}
+
+void ECMaterialsPlugin::setMaterialNameVector() {
+	fieldNameVec.clear();
+	std::map<std::string, int>::iterator mitr;
+	for (mitr = ECMaterialNameIndexMap.begin(); mitr != ECMaterialNameIndexMap.end(); ++mitr) {
+		fieldNameVec.push_back(mitr->first);
+	}
 }
 
 std::vector<float> ECMaterialsPlugin::checkQuantities(std::vector<float> _qtyVec) {
@@ -502,13 +514,13 @@ std::vector<float> ECMaterialsPlugin::checkQuantities(std::vector<float> _qtyVec
 }
 
 void ECMaterialsPlugin::setRemodelingQuantityByName(const CellG * _cell, std::string _ECMaterialName, float _quantity) {
-    unsigned int _idx = getECMaterialIndexByName(_ECMaterialName);
+    int _idx = getECMaterialIndexByName(_ECMaterialName);
     setRemodelingQuantityByIndex(_cell, _idx, _quantity);
 }
 
-void ECMaterialsPlugin::setRemodelingQuantityByIndex(const CellG * _cell, unsigned int _idx, float _quantity) {
+void ECMaterialsPlugin::setRemodelingQuantityByIndex(const CellG * _cell, int _idx, float _quantity) {
 	std::vector<float> & RemodelingQuantity = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->RemodelingQuantity;
-	if (_idx < RemodelingQuantity.size()) { RemodelingQuantity[_idx] = _quantity; }
+	if (_idx >= 0 && _idx < RemodelingQuantity.size()) { RemodelingQuantity[_idx] = _quantity; }
 }
 
 void ECMaterialsPlugin::setRemodelingQuantityVector(const CellG * _cell, std::vector<float> _quantityVec) {
@@ -526,7 +538,7 @@ void ECMaterialsPlugin::setMediumECMaterialQuantityByName(const Point3D &pt, std
     setMediumECMaterialQuantityByIndex(pt, getECMaterialIndexByName(_ECMaterialName), _quantity);
 }
 
-void ECMaterialsPlugin::setMediumECMaterialQuantityByIndex(const Point3D &pt, unsigned int _idx, float _quantity) {
+void ECMaterialsPlugin::setMediumECMaterialQuantityByIndex(const Point3D &pt, int _idx, float _quantity) {
     ECMaterialsData *ECMaterialsDataLocal = ECMaterialsField->get(pt);
 	std::vector<float> & ECMaterialsQuantityVec = ECMaterialsDataLocal->ECMaterialsQuantityVec;
 	ECMaterialsQuantityVec[_idx] = _quantity;
@@ -552,9 +564,9 @@ void ECMaterialsPlugin::setECMaterialDurabilityByName(std::string _ECMaterialNam
     setECMaterialDurabilityByIndex(getECMaterialIndexByName(_ECMaterialName), _durabilityLM);
 }
 
-void ECMaterialsPlugin::setECMaterialDurabilityByIndex(unsigned int _idx, float _durabilityLM) {
+void ECMaterialsPlugin::setECMaterialDurabilityByIndex(int _idx, float _durabilityLM) {
     // if index exceeds number of materials, then ignore it
-    if ( _idx < ECMaterialsVec.size() ) {
+    if (_idx >= 0 && _idx < ECMaterialsVec.size() ) {
         ECMaterialsVec[_idx].setDurabilityLM(_durabilityLM);
     }
 }
@@ -563,9 +575,9 @@ void ECMaterialsPlugin::setECMaterialAdvectingByName(std::string _ECMaterialName
     setECMaterialAdvectingByIndex(getECMaterialIndexByName(_ECMaterialName), _isAdvecting);
 }
 
-void ECMaterialsPlugin::setECMaterialAdvectingByIndex(unsigned int _idx, bool _isAdvecting) {
+void ECMaterialsPlugin::setECMaterialAdvectingByIndex(int _idx, bool _isAdvecting) {
     // if index exceeds number of materials, then ignore it
-    if ( _idx < ECMaterialsVec.size() ){
+    if (_idx >= 0 && _idx < ECMaterialsVec.size() ){
         ECMaterialsVec[_idx].setTransferable(_isAdvecting);
     }
 }
@@ -579,9 +591,9 @@ float ECMaterialsPlugin::getRemodelingQuantityByName(const CellG * _cell, std::s
     return getRemodelingQuantityByIndex(_cell, getECMaterialIndexByName(_ECMaterialName));
 }
 
-float ECMaterialsPlugin::getRemodelingQuantityByIndex(const CellG * _cell, unsigned int _idx) {
+float ECMaterialsPlugin::getRemodelingQuantityByIndex(const CellG * _cell, int _idx) {
 	std::vector<float> remodelingQuantityVector = getRemodelingQuantityVector(_cell);
-	if ( _idx > remodelingQuantityVector.size()-1 ) {
+	if (_idx < 0 || _idx > remodelingQuantityVector.size()-1 ) {
         ASSERT_OR_THROW(std::string("Material index ") + std::to_string(_idx) + " out of range!" , false);
         return -1.0;
     }
@@ -600,9 +612,9 @@ float ECMaterialsPlugin::getMediumECMaterialQuantityByName(const Point3D &pt, st
     return getMediumECMaterialQuantityByIndex(pt, getECMaterialIndexByName(_ECMaterialName));
 }
 
-float ECMaterialsPlugin::getMediumECMaterialQuantityByIndex(const Point3D &pt, unsigned int _idx) {
+float ECMaterialsPlugin::getMediumECMaterialQuantityByIndex(const Point3D &pt, int _idx) {
 	std::vector<float> ECMaterialsQuantityVec = getMediumECMaterialQuantityVector(pt);
-	if (_idx > ECMaterialsQuantityVec.size()-1) {
+	if (_idx < 0 || _idx > ECMaterialsQuantityVec.size()-1) {
 		ASSERT_OR_THROW(std::string("Material index ") + std::to_string(_idx) + " out of range!", false);
 		return -1.0;
 	}
@@ -629,9 +641,9 @@ float ECMaterialsPlugin::getECMaterialDurabilityByName(std::string _ECMaterialNa
     return getECMaterialDurabilityByIndex(getECMaterialIndexByName(_ECMaterialName));
 }
 
-float ECMaterialsPlugin::getECMaterialDurabilityByIndex(unsigned int _idx) {
+float ECMaterialsPlugin::getECMaterialDurabilityByIndex(int _idx) {
     // if index exceeds number of materials, then ignore it
-    if ( _idx < ECMaterialsVec.size()){
+    if (_idx >= 0 && _idx < ECMaterialsVec.size()){
         return ECMaterialsVec[_idx].getDurabilityLM();
     }
 	ASSERT_OR_THROW(std::string("Material index ") + std::to_string(_idx) + " out of range!", false);
@@ -642,23 +654,22 @@ bool ECMaterialsPlugin::getECMaterialAdvectingByName(std::string _ECMaterialName
     return getECMaterialAdvectingByIndex(getECMaterialIndexByName(_ECMaterialName));
 }
 
-bool ECMaterialsPlugin::getECMaterialAdvectingByIndex(unsigned int _idx) {
+bool ECMaterialsPlugin::getECMaterialAdvectingByIndex(int _idx) {
     // if index exceeds number of materials, then ignore it
-    if ( _idx > ECMaterialsVec.size()-1 ){
+    if (_idx >= 0 && _idx > ECMaterialsVec.size()-1 ){
         return ECMaterialsVec[_idx].getTransferable();
     }
 	ASSERT_OR_THROW(std::string("Material index ") + std::to_string(_idx) + " out of range!", false);
     return 0;
 }
 
-unsigned int ECMaterialsPlugin::getECMaterialIndexByName(std::string _ECMaterialName){
-    std::map<std::string, unsigned int> ecmaterialNameIndexMap = getECMaterialNameIndexMap();
-    map<std::string, unsigned int>::iterator mitr = ecmaterialNameIndexMap.find(_ECMaterialName);
+int ECMaterialsPlugin::getECMaterialIndexByName(std::string _ECMaterialName){
+	std::map<std::string, int> ecmaterialNameIndexMap = getECMaterialNameIndexMap();
+    std::map<std::string, int>::iterator mitr = ecmaterialNameIndexMap.find(_ECMaterialName);
     if ( mitr != ecmaterialNameIndexMap.end() ){
         return mitr->second;
     }
-    ASSERT_OR_THROW(string("EC Material Name=") + _ECMaterialName + " is not defined", false);
-    return 0;
+    return -1;
 }
 
 std::vector<float> ECMaterialsPlugin::getECAdhesionByCell(const CellG *_cell) {
@@ -666,9 +677,9 @@ std::vector<float> ECMaterialsPlugin::getECAdhesionByCell(const CellG *_cell) {
     return adhVec;
 }
 
-std::vector<float> ECMaterialsPlugin::getECAdhesionByCellTypeId(unsigned int _idx) {
+std::vector<float> ECMaterialsPlugin::getECAdhesionByCellTypeId(int _idx) {
     std::vector<float> _adhVec(numberOfMaterials);
-    if (_idx > AdhesionCoefficientsByTypeId.size()-1) {ASSERT_OR_THROW("Material index out of range!" , false);}
+    if (_idx < 0 || _idx > AdhesionCoefficientsByTypeId.size()-1) {ASSERT_OR_THROW("Material index out of range!" , false);}
     else {_adhVec = AdhesionCoefficientsByTypeId[_idx];}
     return _adhVec;
 }

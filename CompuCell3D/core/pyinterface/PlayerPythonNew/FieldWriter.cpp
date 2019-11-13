@@ -430,7 +430,7 @@ void FieldWriter::addECMaterialFieldForOutput() {
 	long numberOfMaterials = (long) ecmPlugin->getNumberOfMaterials();
 	Field3D<ECMaterialsData *> *ECMaterialsField = ecmPlugin->getECMaterialField();
 
-	vtkFloatArray *quantityArray = vtkFloatArray::New();
+	vtkDoubleArray *quantityArray = vtkDoubleArray::New();
 	quantityArray->SetName("ECMaterialQuantities");
 	quantityArray->SetNumberOfComponents((int)numberOfMaterials);
 
@@ -455,7 +455,7 @@ void FieldWriter::addECMaterialFieldForOutput() {
 				else {
 					ECMaterialsQuantityVec = ECMaterialsField->get(pt)->ECMaterialsQuantityVec;
 					for (int i = 0; i < numberOfMaterials; ++i){
-						quantityArray->SetComponent(offset, i, ECMaterialsQuantityVec[i]);
+						quantityArray->SetComponent(offset, i, (double) ECMaterialsQuantityVec[i]);
 					}
 				}
 				++offset;

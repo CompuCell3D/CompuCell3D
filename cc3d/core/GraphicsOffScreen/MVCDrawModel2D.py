@@ -1543,14 +1543,17 @@ class MVCDrawModel2D(MVCDrawModelBase):
         dim = self.planeMapper(dim_order,
                                (field_dim.x, field_dim.y, field_dim.z))
 
-        quantities = vtk.vtkFloatArray()
+        quantities = vtk.vtkDoubleArray()
         quantities.SetName("ECMaterialQuantities")
         quantities_int_addr = extract_address_int_from_vtk_object(vtkObj=quantities)
+
+        comp_sel = -1
 
         self.field_extractor.fillECMaterialFieldData2D(
             quantities_int_addr,
             self.currentDrawingParameters.plane,
-            self.currentDrawingParameters.planePos)
+            self.currentDrawingParameters.planePos,
+            comp_sel)
 
         dim_0 = dim[0]
         dim_1 = dim[1]
@@ -1565,7 +1568,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         colors_lut = self.get_material_lookup_table()
 
-        colors = vtk.vtkFloatArray()
+        colors = vtk.vtkDoubleArray()
         colors.SetName("Colors")
         colors_int_addr = extract_address_int_from_vtk_object(vtkObj=colors)
         colors_lut_addr = extract_address_int_from_vtk_object(vtkObj=colors_lut)
@@ -1602,7 +1605,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         actors_dict = actor_specs.actors_dict
 
-        quantities = vtk.vtkFloatArray()
+        quantities = vtk.vtkDoubleArray()
         quantities.SetName("ECMaterialQuantities")
         quantities_int_addr = extract_address_int_from_vtk_object(vtkObj=quantities)
 
@@ -1617,11 +1620,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
             hex_cells_int_addr,
             hex_points_int_addr,
             self.currentDrawingParameters.plane,
-            self.currentDrawingParameters.planePos)
+            self.currentDrawingParameters.planePos,
+            -1)
 
         colors_lut = self.get_material_lookup_table()
 
-        colors = vtk.vtkFloatArray()
+        colors = vtk.vtkDoubleArray()
         colors.SetName("Colors")
         colors_int_addr = extract_address_int_from_vtk_object(vtkObj=colors)
         colors_lut_addr = extract_address_int_from_vtk_object(vtkObj=colors_lut)

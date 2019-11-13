@@ -61,6 +61,7 @@ namespace CompuCell3D {
 		//Energy function data
 
 		unsigned int numberOfMaterials;
+		std::vector<std::string> fieldNameVec;
 
 		double depth;
 
@@ -79,7 +80,7 @@ namespace CompuCell3D {
 
 		bool ECMaterialsInitialized;
 		std::vector<ECMaterialComponentData> ECMaterialsVec;
-		std::map<std::string, unsigned int> ECMaterialNameIndexMap;
+		std::map<std::string, int> ECMaterialNameIndexMap;
 		std::map<std::string, std::vector<float> > typeToRemodelingQuantityMap;
 		std::vector<std::vector<float> > AdhesionCoefficientsByTypeId;
 
@@ -126,45 +127,50 @@ namespace CompuCell3D {
         void initializeECMaterials();
 		std::vector<ECMaterialComponentData> getECMaterialsVec(){return ECMaterialsVec;}
 		unsigned int getNumberOfMaterials(){return numberOfMaterials;}
-		std::map<std::string, unsigned int> getECMaterialNameIndexMap(){return ECMaterialNameIndexMap;}
+		std::map<std::string, int> getECMaterialNameIndexMap(){return ECMaterialNameIndexMap;}
+		void setMaterialNameVector();
+		std::vector<std::string> getMaterialNameVector() { 
+			setMaterialNameVector();
+			return fieldNameVec;
+		}
 		std::vector<float> checkQuantities(std::vector<float> _qtyVec);
 
 		//functions used to manipulate extracellular material cell definitions
 		void setRemodelingQuantityByName(const CellG * _cell, std::string _ECMaterialName, float _quantity);
-		void setRemodelingQuantityByIndex(const CellG * _cell, unsigned int _idx, float _quantity);
+		void setRemodelingQuantityByIndex(const CellG * _cell, int _idx, float _quantity);
 		void setRemodelingQuantityVector(const CellG * _cell, std::vector<float> _quantityVec);
 		void assignNewRemodelingQuantityVector(const CellG * _cell, unsigned int _numMtls);
 		//Medium functions
 		void setMediumECMaterialQuantityByName(const Point3D &pt, std::string _ECMaterialName, float _quantity);
-		void setMediumECMaterialQuantityByIndex(const Point3D &pt, unsigned int _idx, float _quantity);
+		void setMediumECMaterialQuantityByIndex(const Point3D &pt, int _idx, float _quantity);
 		void setMediumECMaterialQuantityVector(const Point3D &pt, std::vector<float> _quantityVec);
 		void assignNewMediumECMaterialQuantityVector(const Point3D &pt, unsigned int _numMtls);
 		//material functions
 		void setECMaterialDurabilityByName(std::string _ECMaterialName, float _durabilityLM);
-		void setECMaterialDurabilityByIndex(unsigned int _idx, float _durabilityLM);
+		void setECMaterialDurabilityByIndex(int _idx, float _durabilityLM);
 		void setECMaterialAdvectingByName(std::string _ECMaterialName, bool _isAdvecting);
-		void setECMaterialAdvectingByIndex(unsigned int _idx, bool _isAdvecting);
+		void setECMaterialAdvectingByIndex(int _idx, bool _isAdvecting);
 		// adhesion functions
 		void setECAdhesionByCell(const CellG *_cell, std::vector<float> _adhVec);
 
         //functions used to retrieve extracellular material cell definitions
 		float getRemodelingQuantityByName(const CellG * _cell, std::string _ECMaterialName);
-		float getRemodelingQuantityByIndex(const CellG * _cell, unsigned int _idx);
+		float getRemodelingQuantityByIndex(const CellG * _cell, int _idx);
 		std::vector<float> getRemodelingQuantityVector(const CellG * _cell);
 		//Medium functions
 		float getMediumECMaterialQuantityByName(const Point3D &pt, std::string _ECMaterialName);
-		float getMediumECMaterialQuantityByIndex(const Point3D &pt, unsigned int _idx);
+		float getMediumECMaterialQuantityByIndex(const Point3D &pt, int _idx);
 		std::vector<float> getMediumECMaterialQuantityVector(const Point3D &pt);
 		std::vector<float> getMediumAdvectingECMaterialQuantityVector(const Point3D &pt);
 		//material functions
 		float getECMaterialDurabilityByName(std::string _ECMaterialName);
-		float getECMaterialDurabilityByIndex(unsigned int _idx);
+		float getECMaterialDurabilityByIndex(int _idx);
 		bool getECMaterialAdvectingByName(std::string _ECMaterialName);
-		bool getECMaterialAdvectingByIndex(unsigned int _idx);
-		unsigned int getECMaterialIndexByName(std::string _ECMaterialName);
+		bool getECMaterialAdvectingByIndex(int _idx);
+		virtual int getECMaterialIndexByName(std::string _ECMaterialName);
 		// adhesion functions
 		std::vector<float> getECAdhesionByCell(const CellG *_cell);
-		std::vector<float> getECAdhesionByCellTypeId(unsigned int _idx);
+		std::vector<float> getECAdhesionByCellTypeId(int _idx);
 
 		//function to calculate material quantity vector when source is a medium site
 		std::vector<float> calculateCopyQuantityVec(const CellG * _cell, const Point3D &pt);

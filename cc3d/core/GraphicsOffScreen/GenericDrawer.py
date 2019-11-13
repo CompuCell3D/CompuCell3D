@@ -298,18 +298,16 @@ class GenericDrawer():
         view.show_axes_actors(actor_specs=actor_specs_final, drawing_params=drawing_params, show_flag=show_flag)
 
     def draw_ecm(self, drawing_params):
-        print('   Getting ECM model...')
+
         model, view = self.get_model_view(drawing_params=drawing_params)
 
-        print('   Preparing ECM actors...')
         actor_specs = ActorSpecs()
         actor_specs_final = view.prepare_ecm_actors(actor_specs=actor_specs)
         camera = view.getCamera()
 
-        print('   Initializing ECM actors...')
         model.init_ecm_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
         show_flag = drawing_params.screenshot_data.ecm_on
-        print('   Showing ECM actors...')
+
         view.show_ecm_actors(actor_specs=actor_specs_final, drawing_params=drawing_params, show_flag=show_flag)
 
     def get_model_view(self, drawing_params):
@@ -403,7 +401,7 @@ class GenericDrawer():
                 except NotImplementedError:
                     pass
 
-            if drawing_params.screenshot_data.ecm_on:
+            if drawing_params.screenshot_data.ecm_on and key == "CellField":
                 try:
                     self.draw_ecm(drawing_params=drawing_params)
                 except NotImplementedError:

@@ -194,6 +194,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # determine if some relevant plugins are defined in the model
         self.pluginFPPDefined = False  # FocalPointPlasticity
         self.pluginCOMDefined = False  # CenterOfMass
+        self.pluginECMDefined = False  # ECMaterials
 
         # Note: we cannot check the plugins here as CompuCellSetup.cc3dXML2ObjConverter.root is not defined
 
@@ -1341,12 +1342,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.fieldExtractor.init(simObj)
 
-        if CompuCellSetup.check_ecmaterials_active():
+        if CompuCellSetup.simulation_utils.check_ecmaterials_active():
             material_names_and_ids = CompuCellSetup.simulation_utils.extract_material_names_and_ids()
             self.fieldStorage.allocateECMaterialField(self.fieldDim, len(material_names_and_ids))
-            ecmaterials_accessor_function = getattr(cc3d.cpp.CompuCell, 'getECMaterialsPlugin')
-            ecmaterials_plugin = ecmaterials_accessor_function()
-            self.fieldExtractor.initECMaterials(ecmaterials_plugin)
+            self.fieldExtractor.initECMaterials(cc3d.cpp.CompuCell.getECMaterialsPlugin())
 
         lattice_type_str = CompuCellSetup.simulation_utils.extract_lattice_type()
 
@@ -2536,6 +2535,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         for fieldName in concFieldNameVec:
             #            print MODULENAME,"setFieldTypes():  Got this conc field: ",fieldName
             self.fieldTypes[fieldName] = FIELD_TYPES[1]
+
+        # Add ECMaterials Fields
+        if CompuCellSetup.simulation_utils.check_ecmaterials_active():
+            ecmaterials_plugin = cc3d.cpp.CompuCell.getECMaterialsPlugin()
+            materials_name_vec = ecmaterials_plugin.getMaterialNameVector()
+            for material_name in materials_name_vec:
+                self.fieldTypes[material_name] = FIELD_TYPES[2]
 
         extra_field_registry = CompuCellSetup.persistent_globals.field_registry
 
