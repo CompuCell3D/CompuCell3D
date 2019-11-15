@@ -92,6 +92,8 @@ namespace CompuCell3D {
 		Dim3D fieldDim;
 		WatchableField3D<ECMaterialsData *> *ECMaterialsField;
 
+		int dotProduct(Point3D _pt1, Point3D _pt2);
+
 	public:
 
 		ECMaterialsPlugin();
@@ -174,6 +176,20 @@ namespace CompuCell3D {
 
 		//function to calculate material quantity vector when source is a medium site
 		std::vector<float> calculateCopyQuantityVec(const CellG * _cell, const Point3D &pt);
+
+		// drawing functions
+
+		// Draw a parallelepiped of _qtyVec from _startPos defined by vectors _lenVec1, _lenVec2, and _lenVec3
+		// _lenVec components equal to -1 go to the end of the domain
+		void ParaDraw(std::vector<float> _qtyVec, Point3D _startPos = { 0,0,0 }, Point3D _lenVec1 = { -1,-1,-1 }, Point3D _lenVec2 = { -1,-1,-1 }, Point3D _lenVec3 = { -1,-1,-1 });
+		// Draw a cylinder of _qtyVec from _startPos defined by radius _radius and vector _lenVec
+		// _lenVec components equal to -1 go to the end of the domain
+		void CylinderDraw(std::vector<float> _qtyVec, short _radius, Point3D _startPos = { 0,0,0 }, Point3D _lenVec = { -1,-1,-1 });
+		// Draw an ellipsoid of _qtyVec about _center with axis lengths _lenVec rotated by angles _angleVec
+		// Rotations occur with the order _angleVec[2], _angleVec[1], _angleVec[0]
+		void EllipsoidDraw(std::vector<float> _qtyVec, Point3D _center = { 0,0,0 }, std::vector<short> _lenVec = std::vector<short>(3, 1.0), std::vector<double> _angleVec = std::vector<double>(3, 0.0));
+		// Draw an ellipse of _qtyVec about _center rotated by angle _angle (in degrees) with semimajor axis length _length and eccentricity _eccentricity
+		void EllipseDraw(std::vector<float> _qtyVec, int _length, Point3D _center = { 0,0,0 }, double _angle = 0.0, double _eccentricity = 0.0);
 
 		std::vector<Neighbor> getFirstOrderNeighbors(const Point3D &pt);
 
