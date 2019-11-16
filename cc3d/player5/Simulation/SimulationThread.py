@@ -238,6 +238,13 @@ class SimulationThread(QtCore.QThread):
     def getScreenUpdateFrequency(self):
         return self.screenUpdateFrequency
 
+    def setScreenUpdateFrequency(self):
+        import cc3d.player5.Configuration as Configuration
+        try:
+            self.screenUpdateFrequency = Configuration.getSetting("ScreenUpdateFrequency")
+        except:
+            print('SIMTHREAD: Could not access configuration.')
+
     def getImageOutputFlag(self):
         return self.imageOutputFlag
 
