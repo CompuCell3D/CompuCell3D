@@ -41,6 +41,7 @@ class PersistentGlobals:
         self.user_stop_simulation_flag = False
 
         self.__output_dir = None
+        self.output_file_core_name = "Step"
 
         self.output_frequency = 0
         self.screenshot_output_frequency = 0

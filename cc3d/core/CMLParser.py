@@ -36,6 +36,10 @@ class CMLParser(object):
         cml_parser = argparse.ArgumentParser(description='CompuCell3D Player 5')
         cml_parser.add_argument('-i', '--input', required=False, action='store',
                                 help='path to the CC3D project file (*.cc3d)')
+
+        cml_parser.add_argument('-c', '--output-file-core-name', required=False, action='store',
+                                help='core name for vtk files.')
+
         cml_parser.add_argument('--noOutput', required=False, action='store_true', default=False,
                                 help='flag suppressing output of simulation snapshots')
         cml_parser.add_argument('-f', '--outputFrequency', required=False, action='store',
@@ -115,7 +119,10 @@ class CMLParser(object):
 
         self.__fileName = self.__cml_args.input
         if self.__fileName:
-            self.outputFileCoreName = os.path.basename(self.__fileName.replace('.', '_'))
+            if self.__cml_args.output_file_core_name is not None:
+                self.outputFileCoreName = self.__cml_args.output_file_core_name
+            else:
+                self.outputFileCoreName = os.path.basename(self.__fileName.replace('.', '_'))
 
         self.__screenshotDescriptionFileName = self.__cml_args.screenshotDescription
         self.customScreenshotDirectoryName = self.__cml_args.screenshotOutputDir

@@ -22,6 +22,9 @@ def process_cml():
     cml_parser.add_argument('-i', '--input', required=True, action='store',
                             help='path to the CC3D project file (*.cc3d)')
 
+    cml_parser.add_argument('-c', '--output-file-core-name', required=False, action='store',
+                            help='core name for vtk files.')
+
     cml_parser.add_argument('--current-dir', required=False, action='store',
                             help='path to current directory')
 
@@ -73,6 +76,7 @@ if __name__ == '__main__':
     restart_multiple_snapshots = args.restart_multiple_snapshots
 
     output_dir = args.output_dir
+    output_file_core_name = args.output_file_core_name
 
     persistent_globals = cc3d.CompuCellSetup.persistent_globals
 
@@ -82,6 +86,7 @@ if __name__ == '__main__':
     persistent_globals.output_frequency = output_frequency
     persistent_globals.screenshot_output_frequency = screenshot_output_frequency
     persistent_globals.set_output_dir(output_dir)
+    persistent_globals.output_file_core_name = output_file_core_name
     persistent_globals.restart_snapshot_frequency = restart_snapshot_frequency
     persistent_globals.restart_multiple_snapshots = restart_multiple_snapshots
 
