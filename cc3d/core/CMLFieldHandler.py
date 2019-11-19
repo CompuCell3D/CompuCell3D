@@ -52,6 +52,8 @@ class CMLFieldHandler:
         self.out_file_number_of_digits = len(str(persistent_globals.simulator.getNumSteps()))
         self.get_info_about_fields()
 
+        self.output_file_core_name = persistent_globals.output_file_core_name
+
         self.create_storage_dir()
 
         self.write_xml_description_file()
