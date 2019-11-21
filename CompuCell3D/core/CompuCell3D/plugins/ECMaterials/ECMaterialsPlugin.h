@@ -32,6 +32,11 @@
 class CC3DXMLElement;
 
 namespace CompuCell3D {
+
+	/**
+	@author T.J. Sego, Ph.D.
+	*/
+
     class Simulator;
 
 	class Potts3D;
@@ -128,6 +133,7 @@ namespace CompuCell3D {
 
         void initializeECMaterials();
 		std::vector<ECMaterialComponentData> getECMaterialsVec(){return ECMaterialsVec;}
+		std::vector<ECMaterialComponentData> *getECMaterialsVecPtr() { return &ECMaterialsVec; }
 		unsigned int getNumberOfMaterials(){return numberOfMaterials;}
 		std::map<std::string, int> getECMaterialNameIndexMap(){return ECMaterialNameIndexMap;}
 		void setMaterialNameVector();

@@ -24,6 +24,10 @@
 
 using namespace CompuCell3D;
 
+/**
+@author T.J. Sego, Ph.D.
+*/
+
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 #include "ECMaterialsPlugin.h"
 #include "PublicUtilities/Vector3.h"
@@ -64,7 +68,7 @@ void ECMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     potts->registerCellGChangeWatcher(this);
     simulator->registerSteerableObject(this);
 
-    if (_xmlData->getFirstElement("WeightEnergyByDistance")) {
+    if (xmlData->getFirstElement("WeightEnergyByDistance")) {
         weightDistance = true;
     }
 
@@ -72,12 +76,12 @@ void ECMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	boundaryStrategyAdh = BoundaryStrategy::getInstance();
 	maxNeighborIndexAdh = 0;
 
-	if (_xmlData->getFirstElement("Depth")) {
-		maxNeighborIndexAdh = boundaryStrategyAdh->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
+	if (xmlData->getFirstElement("Depth")) {
+		maxNeighborIndexAdh = boundaryStrategyAdh->getMaxNeighborIndexFromDepth(xmlData->getFirstElement("Depth")->getDouble());
 	}
 	else {
-		if (_xmlData->getFirstElement("NeighborOrder")) {
-			maxNeighborIndexAdh = boundaryStrategyAdh->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());
+		if (xmlData->getFirstElement("NeighborOrder")) {
+			maxNeighborIndexAdh = boundaryStrategyAdh->getMaxNeighborIndexFromNeighborOrder(xmlData->getFirstElement("NeighborOrder")->getUInt());
 		}
 		else {
 			maxNeighborIndexAdh = boundaryStrategyAdh->getMaxNeighborIndexFromNeighborOrder(1);
@@ -164,9 +168,6 @@ void ECMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	cerr << "Initializing ECMaterials quantity field..." << endl;
 
     fieldDim=potts->getCellFieldG()->getDim();
-    //      Unsure if constructor can be used as initial value
-    // ECMaterialsField = new WatchableField3D<ECMaterialsData *>(fieldDim, ECMaterialsData());
-    //      Trying 0, as in Potts3D::createCellField
     ECMaterialsField = new WatchableField3D<ECMaterialsData *>(fieldDim, 0);
 
     // initialize EC material quantity vector field values
@@ -551,6 +552,8 @@ void ECMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 		}
 
 	}
+
+	pUtils->unsetLock(lockPtr);
 	
 }
 
@@ -560,18 +563,13 @@ void ECMaterialsPlugin::extraInit(Simulator *simulator) {
 }
 
 void ECMaterialsPlugin::handleEvent(CC3DEvent & _event) {
-    if (_event.id == CHANGE_NUMBER_OF_WORK_NODES) {
-
-        //vectorized variables for convenient parallel access
-        // unsigned int maxNumberOfWorkNodes = pUtils->getMaxNumberOfWorkNodesPotts();
-
-    }
+    
 }
 
 
 double ECMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
-    //cerr<<"ChangeEnergy"<<endl;
-    if (!ECMaterialsInitialized) {
+    
+	if (!ECMaterialsInitialized) {
         pUtils->setLock(lockPtr);
         initializeECMaterials();
         pUtils->unsetLock(lockPtr);
@@ -636,6 +634,7 @@ double ECMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
                 //if distance is 0 then the neighbor returned is invalid
                 continue;
             }
+
             nCell = fieldG->get(neighbor.pt);
 			vector<float> nQuantityVec = ECMaterialsField->get(neighbor.pt)->ECMaterialsQuantityVec;
 
