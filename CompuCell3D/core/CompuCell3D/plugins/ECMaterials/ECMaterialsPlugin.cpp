@@ -184,6 +184,7 @@ void ECMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
 				ECMaterialsDataLocal = new ECMaterialsData();
 				std::vector<float> & ECMaterialsQuantityVec = ECMaterialsDataLocal->ECMaterialsQuantityVec;
+				ECMaterialsDataLocal->numMtls = numberOfMaterials;
 				std::vector<float> ECMaterialsQuantityVecNew(numberOfMaterials);
 				ECMaterialsQuantityVecNew[0] = 1.0;
 				ECMaterialsQuantityVec = ECMaterialsQuantityVecNew;
@@ -681,7 +682,7 @@ double ECMaterialsPlugin::ECMaterialDurabilityEnergy(std::vector<float> _qtyVec)
     double energy = 0.0;
     float thisEnergy;
 
-    for (unsigned int i = 0; i < _qtyVec.size(); ++i) {
+    for (int i = 0; i < _qtyVec.size(); ++i) {
         thisEnergy = _qtyVec[i]* ECMaterialsVec[i].getDurabilityLM();
         if (thisEnergy > 0.0) {energy += (double) thisEnergy;}
     }
@@ -739,7 +740,7 @@ std::vector<float> ECMaterialsPlugin::calculateCopyQuantityVec(const CellG * _ce
         numberOfMediumNeighbors += 1.0;
     }
 
-    for (int i = 0; i < copyQuantityVec.size(); ++i){copyQuantityVec[i] /= numberOfMediumNeighbors;}
+    for (std::vector<float>::iterator i = copyQuantityVec.begin(); i != copyQuantityVec.end(); ++i){*i /= numberOfMediumNeighbors;}
 
     std::vector<float> copyQuantityVecChecked = ECMaterialsPlugin::checkQuantities(copyQuantityVec);
 
@@ -888,8 +889,11 @@ void ECMaterialsPlugin::setRemodelingQuantityVector(const CellG * _cell, std::ve
 	RemodelingQuantity = _quantityVec;
 }
 
-void ECMaterialsPlugin::assignNewRemodelingQuantityVector(const CellG * _cell, unsigned int _numMtls) {
-	std::vector<float> RemodelingQuantityNew(_numMtls);
+void ECMaterialsPlugin::assignNewRemodelingQuantityVector(const CellG * _cell, int _numMtls) {
+	int numMtls;
+	if (_numMtls < 0) numMtls = numberOfMaterials;
+	else numMtls = _numMtls;
+	std::vector<float> RemodelingQuantityNew(numMtls);
 	std::vector<float> & RemodelingQuantity = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->RemodelingQuantity;
 	RemodelingQuantity = RemodelingQuantityNew;
 }
@@ -912,10 +916,14 @@ void ECMaterialsPlugin::setMediumECMaterialQuantityVector(const Point3D &pt, std
     ECMaterialsField->set(pt, ECMaterialsDataLocal);
 }
 
-void ECMaterialsPlugin::assignNewMediumECMaterialQuantityVector(const Point3D &pt, unsigned int _numMtls) {
+void ECMaterialsPlugin::assignNewMediumECMaterialQuantityVector(const Point3D &pt, int _numMtls) {
+	int numMtls;
+	if (_numMtls < 0) numMtls = numberOfMaterials;
+	else numMtls = _numMtls;
     ECMaterialsData *ECMaterialsDataLocal = ECMaterialsField->get(pt);
-	std::vector<float> ECMaterialsQuantityVecNew(_numMtls);
+	std::vector<float> ECMaterialsQuantityVecNew(numMtls);
 	std::vector<float> & ECMaterialsQuantityVec = ECMaterialsDataLocal->ECMaterialsQuantityVec;
+	ECMaterialsDataLocal->numMtls = numMtls;
 	ECMaterialsQuantityVec = ECMaterialsQuantityVecNew;
 	ECMaterialsField->set(pt, ECMaterialsDataLocal);
 }
@@ -961,11 +969,12 @@ float ECMaterialsPlugin::getRemodelingQuantityByIndex(const CellG * _cell, int _
 }
 
 std::vector<float> ECMaterialsPlugin::getRemodelingQuantityVector(const CellG * _cell) {
-    std::vector<float> remodelingQuantityVector(numberOfMaterials);
     if (_cell) {
-		std::vector<float> & remodelingQuantityVector = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->RemodelingQuantity;
+		return ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->RemodelingQuantity;
     }
-    return remodelingQuantityVector;
+	else {
+		return std::vector<float>(numberOfMaterials, 0.0);
+	}
 }
 
 float ECMaterialsPlugin::getMediumECMaterialQuantityByName(const Point3D &pt, std::string _ECMaterialName) {
@@ -974,16 +983,11 @@ float ECMaterialsPlugin::getMediumECMaterialQuantityByName(const Point3D &pt, st
 
 float ECMaterialsPlugin::getMediumECMaterialQuantityByIndex(const Point3D &pt, int _idx) {
 	std::vector<float> ECMaterialsQuantityVec = getMediumECMaterialQuantityVector(pt);
-	if (_idx < 0 || _idx > ECMaterialsQuantityVec.size()-1) {
-		ASSERT_OR_THROW(std::string("Material index ") + std::to_string(_idx) + " out of range!", false);
-		return -1.0;
-	}
 	return ECMaterialsQuantityVec[_idx];
 }
 
 std::vector<float> ECMaterialsPlugin::getMediumECMaterialQuantityVector(const Point3D &pt) {
-	vector<float> & ECMaterialsQuantityVec = ECMaterialsField->get(pt)->ECMaterialsQuantityVec;
-    return ECMaterialsQuantityVec;
+	return ECMaterialsField->get(pt)->ECMaterialsQuantityVec;
 }
 
 std::vector<float> ECMaterialsPlugin::getMediumAdvectingECMaterialQuantityVector(const Point3D &pt) {
@@ -1024,24 +1028,21 @@ bool ECMaterialsPlugin::getECMaterialAdvectingByIndex(int _idx) {
 }
 
 int ECMaterialsPlugin::getECMaterialIndexByName(std::string _ECMaterialName){
-	std::map<std::string, int> ecmaterialNameIndexMap = getECMaterialNameIndexMap();
-    std::map<std::string, int>::iterator mitr = ecmaterialNameIndexMap.find(_ECMaterialName);
-    if ( mitr != ecmaterialNameIndexMap.end() ){
+	std::map<std::string, int>::iterator mitr = ECMaterialNameIndexMap.find(_ECMaterialName);
+    if ( mitr != ECMaterialNameIndexMap.end() ){
         return mitr->second;
     }
     return -1;
 }
 
 std::vector<float> ECMaterialsPlugin::getECAdhesionByCell(const CellG *_cell) {
-    std::vector<float> & adhVec = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->AdhesionCoefficients;
-    return adhVec;
+    return ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->AdhesionCoefficients;
 }
 
 std::vector<float> ECMaterialsPlugin::getECAdhesionByCellTypeId(int _idx) {
     std::vector<float> _adhVec(numberOfMaterials);
     if (_idx < 0 || _idx > AdhesionCoefficientsByTypeId.size()-1) {ASSERT_OR_THROW("Material index out of range!" , false);}
-    else {_adhVec = AdhesionCoefficientsByTypeId[_idx];}
-    return _adhVec;
+    else return AdhesionCoefficientsByTypeId[_idx];
 }
 
 std::vector<Neighbor> ECMaterialsPlugin::getFirstOrderNeighbors(const Point3D &pt) {
@@ -1049,8 +1050,9 @@ std::vector<Neighbor> ECMaterialsPlugin::getFirstOrderNeighbors(const Point3D &p
     boundaryStrategy = BoundaryStrategy::getInstance();
     maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
     std::vector<Neighbor> neighbors;
+	Neighbor neighbor;
     for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
-		Neighbor neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
+		neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
 		if (!neighbor.distance) {
 			//if distance is 0 then the neighbor returned is invalid
 			continue;

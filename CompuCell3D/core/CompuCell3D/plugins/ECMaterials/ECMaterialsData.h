@@ -227,18 +227,20 @@ namespace CompuCell3D {
 			std::vector<float> ECMaterialsQuantityVec;
 
             void setECMaterialsQuantity(unsigned int _pos, float _qty){
-                if(_pos>ECMaterialsQuantityVec.size()-1){return;}
+                if(_pos>ECMaterialsQuantityVec.size()-1) return;
                 ECMaterialsQuantityVec[_pos]=_qty;
             }
-            void setECMaterialsQuantityVec(std::vector<float> _qtyVec){ECMaterialsQuantityVec=_qtyVec;}
+            void setECMaterialsQuantityVec(std::vector<float> _qtyVec){
+				if (_qtyVec.size() == numMtls) ECMaterialsQuantityVec = _qtyVec;
+			}
             float getECMaterialQuantity(unsigned int _pos){
-                if(_pos>ECMaterialsQuantityVec.size()-1){return 0.0;}
+                if(_pos>ECMaterialsQuantityVec.size()-1) return 0.0;
                 return ECMaterialsQuantityVec[_pos];
             }
             std::vector<float> getECMaterialsQuantityVec(){return ECMaterialsQuantityVec;}
             void setNewECMaterialsQuantityVec(unsigned int _numMtls){
 				numMtls = _numMtls;
-				std::vector<float> ECMaterialsQuantityVec(numMtls);
+				ECMaterialsQuantityVec.assign(numMtls, 0.0);
                 ECMaterialsQuantityVec[0] = 1.0;
             }
 
@@ -258,11 +260,11 @@ namespace CompuCell3D {
 	        }
 	        void setRemodelingQuantityVec(std::vector<float> _qtyVec){std::vector<float> RemodelingQuantity(_qtyVec);}
 	        void setRemodelingQuantity(unsigned int _pos, float _qty){
-	            if(_pos>RemodelingQuantity.size()-1){return;}
+	            if(_pos>RemodelingQuantity.size()-1) return;
                 RemodelingQuantity[_pos]=_qty;
 	        }
 	        float getRemodelingQuantity(unsigned int _pos){
-	            if(_pos>RemodelingQuantity.size()-1){return 0.0;}
+	            if(_pos>RemodelingQuantity.size()-1) return 0.0;
                 return RemodelingQuantity[_pos];
 	        }
 	        std::vector<float> getRemodelingQuantityVec(){return RemodelingQuantity;}
@@ -270,11 +272,11 @@ namespace CompuCell3D {
 	        void setNewAdhesionCoefficientsVec(unsigned int _numMtls){std::vector<float> AdhesionCoefficients(_numMtls, 0.0);}
 	        void setAdhesionCoefficientsVec(std::vector<float> _adhVec){std::vector<float> AdhesionCoefficients(_adhVec);}
 	        void setAdhesionCoefficient(unsigned int _pos, float _adh){
-	            if(_pos>AdhesionCoefficients.size()-1){return;}
+	            if(_pos>AdhesionCoefficients.size()-1) return;
                 AdhesionCoefficients[_pos]=_adh;
 	        }
 	        float getAdhesionCoefficient(unsigned int _pos){
-	            if(_pos>AdhesionCoefficients.size()-1){return 0.0;}
+	            if(_pos>AdhesionCoefficients.size()-1) return 0.0;
                 return AdhesionCoefficients[_pos];
 	        }
 	        std::vector<float> getAdhesionCoefficientVec(){return AdhesionCoefficients;}

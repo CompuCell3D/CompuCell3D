@@ -147,12 +147,12 @@ namespace CompuCell3D {
 		void setRemodelingQuantityByName(const CellG * _cell, std::string _ECMaterialName, float _quantity);
 		void setRemodelingQuantityByIndex(const CellG * _cell, int _idx, float _quantity);
 		void setRemodelingQuantityVector(const CellG * _cell, std::vector<float> _quantityVec);
-		void assignNewRemodelingQuantityVector(const CellG * _cell, unsigned int _numMtls);
+		void assignNewRemodelingQuantityVector(const CellG * _cell, int _numMtls=-1);
 		//Medium functions
 		void setMediumECMaterialQuantityByName(const Point3D &pt, std::string _ECMaterialName, float _quantity);
 		void setMediumECMaterialQuantityByIndex(const Point3D &pt, int _idx, float _quantity);
 		void setMediumECMaterialQuantityVector(const Point3D &pt, std::vector<float> _quantityVec);
-		void assignNewMediumECMaterialQuantityVector(const Point3D &pt, unsigned int _numMtls);
+		void assignNewMediumECMaterialQuantityVector(const Point3D &pt, int _numMtls);
 		//material functions
 		void setECMaterialDurabilityByName(std::string _ECMaterialName, float _durabilityLM);
 		void setECMaterialDurabilityByIndex(int _idx, float _durabilityLM);
