@@ -102,8 +102,12 @@ namespace CompuCell3D {
 		bool AnyInteractionsDefined;
 
 		std::vector<int> idxMaterialReactionsDefined;
+		std::vector<std::vector<int> > idxidxMaterialReactionsDefined;
 		std::vector<int> idxMaterialDiffusionDefined;
-		std::vector<int> idxFieldInteractionsDefined;
+		std::vector<int> idxToFieldInteractionsDefined;
+		std::vector<std::vector<int> > idxidxToFieldInteractionsDefined;
+		std::vector<int> idxFromFieldInteractionsDefined;
+		std::vector<std::vector<int> > idxidxFromFieldInteractionsDefined;
 		std::vector<int> idxCellInteractionsDefined;
 
 		std::vector<ECMaterialsCellResponse> cellResponses; // return vector of cellular responses
@@ -114,6 +118,8 @@ namespace CompuCell3D {
 		std::vector<std::vector<float> > CellTypeCoefficientsProliferationByIndex;
 		std::vector<std::vector<std::vector<float> > > CellTypeCoefficientsDifferentiationByIndex;
 		std::vector<std::vector<float> > CellTypeCoefficientsDeathByIndex;
+
+		std::vector<std::vector<float> > neighborQuantityPtrStorage;
 
 		float randFloatGen01() { return float(rand()) / (float(RAND_MAX) + 1); };
 
