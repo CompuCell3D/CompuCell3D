@@ -438,7 +438,13 @@ CellG *Potts3D::createCellSpecifiedIds(long _cellId, long _clusterId) {
 	if (_cellId > recentlyCreatedCellId) {
 		recentlyCreatedCellId = _cellId;
 		cell->id = recentlyCreatedCellId;
-	}
+    }
+    else if (!cellInventory.attemptFetchingCellById(_cellId)) {
+        // checking if cell id is available even if ids were used out of order
+        cerr << "out of order cell id  is available" << endl;
+        cell->id = _cellId;
+
+    }
 	else {
 		// override _cellId and use recentlyCreatedCellId as _cellId. 
 		// otherwise we may create a bug where cells initialized from e.g. PIF initializers will have same id as cells created earlier by e.g. uniform initializer
@@ -447,7 +453,7 @@ CellG *Potts3D::createCellSpecifiedIds(long _cellId, long _clusterId) {
 		cell->id = recentlyCreatedCellId;
 	}
 
-	//this means that cells with clusterId<=0 should be placed at the end of PIF file if automatic numbering of clusters is to work for a mix of clustered and non clustered cells	
+	//this means that cells with clusterId<=0 should be placed at the end of PIF file if automatic numbering of clusters is to work for a mix of clustered and non clustered cells
 
 	if (_clusterId <= 0) { //default behavior if user does not specify cluster id or cluster id is 0
 

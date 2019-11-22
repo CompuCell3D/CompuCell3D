@@ -899,7 +899,7 @@ class RestartManager:
                         fpptd = CompuCell.FocalPointPlasticityTrackerData()
                         # get neighbor data
                         # cell_id, cluster id
-                        neighbor_ids = fpp_dict['neighbor_ids']
+                        neighbor_ids = fpp_dict['neighborIds']
 
                         neighbor_cell = inventory.getCellByIds(neighbor_ids[0], neighbor_ids[1])
                         fpptd.neighborAddress = neighbor_cell
@@ -922,7 +922,7 @@ class RestartManager:
                         # cell_id, cluster id
                         neighbor_ids = fpp_dict['neighbor_ids']
                         neighbor_cell = inventory.getCellByIds(neighbor_ids[0], neighbor_ids[1])
-                        fpptd.neighborAddfess = neighbor_cell
+                        fpptd.neighborAddress = neighbor_cell
                         fpptd.lambdaDistance = fpp_dict['lambdaDistance']
                         fpptd.targetDistance = fpp_dict['targetDistance']
                         fpptd.maxDistance = fpp_dict['maxDistance']
