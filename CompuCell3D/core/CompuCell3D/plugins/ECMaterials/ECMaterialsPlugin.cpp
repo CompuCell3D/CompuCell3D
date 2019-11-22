@@ -594,8 +594,11 @@ double ECMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
     CellG *nCell = 0;
     WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
 
+	unsigned int nIdx;
+	std::vector<float> nQuantityVec;
+
     if (weightDistance) {
-        for (unsigned int nIdx = 0; nIdx <= maxNeighborIndexAdh; ++nIdx) {
+        for (nIdx = 0; nIdx <= maxNeighborIndexAdh; ++nIdx) {
             neighbor = boundaryStrategyAdh->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
 
             if (!neighbor.distance) {
@@ -606,7 +609,7 @@ double ECMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
             distance = neighbor.distance;
 
             nCell = fieldG->get(neighbor.pt);
-			vector<float> nQuantityVec = ECMaterialsField->get(neighbor.pt)->ECMaterialsQuantityVec;
+			nQuantityVec = ECMaterialsField->get(neighbor.pt)->ECMaterialsQuantityVec;
 
             if (nCell != oldCell) {
                 if (nCell == 0) {
@@ -629,7 +632,7 @@ double ECMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
     else {
         //default behaviour  no energy weighting
 
-        for (unsigned int nIdx = 0; nIdx <= maxNeighborIndexAdh; ++nIdx) {
+        for (nIdx = 0; nIdx <= maxNeighborIndexAdh; ++nIdx) {
             neighbor = boundaryStrategyAdh->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
             if (!neighbor.distance) {
                 //if distance is 0 then the neighbor returned is invalid
@@ -637,7 +640,7 @@ double ECMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
             }
 
             nCell = fieldG->get(neighbor.pt);
-			vector<float> nQuantityVec = ECMaterialsField->get(neighbor.pt)->ECMaterialsQuantityVec;
+			nQuantityVec = ECMaterialsField->get(neighbor.pt)->ECMaterialsQuantityVec;
 
             if (nCell != oldCell) {
                 if (nCell == 0) {
@@ -665,9 +668,9 @@ double ECMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
 double ECMaterialsPlugin::ECMaterialContactEnergy(const CellG *cell, std::vector<float> _qtyVec) {
 
     double energy = 0.0;
-
+	std::vector<float> AdhesionCoefficients;
     if (cell != 0) {
-		std::vector<float> AdhesionCoefficients = ECMaterialCellDataAccessor.get(cell->extraAttribPtr)->AdhesionCoefficients;
+		AdhesionCoefficients = ECMaterialCellDataAccessor.get(cell->extraAttribPtr)->AdhesionCoefficients;
         for (int i = 0; i < AdhesionCoefficients.size() ; ++i){
             energy += AdhesionCoefficients[i]*_qtyVec[i];
         }

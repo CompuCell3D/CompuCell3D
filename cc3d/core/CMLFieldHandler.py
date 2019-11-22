@@ -78,7 +78,7 @@ class CMLFieldHandler:
             elif self.field_types[field_name] == self.FIELD_TYPES[5]:
                 self.field_writer.addVectorFieldCellLevelForOutput(field_name)
             elif self.field_types[field_name] == self.FIELD_TYPES[6]:
-                self.field_writer.addMaterialFieldForOutput()
+                self.field_writer.addECMaterialFieldForOutput()
 
         mcs_formatted_number = str(mcs).zfill(self.out_file_number_of_digits)
 

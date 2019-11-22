@@ -425,8 +425,7 @@ void FieldWriter::addECMaterialFieldForOutput() {
 	Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
 	Dim3D fieldDim = cellFieldG->getDim();
 
-	const std::string pluginName = "ECMaterialsPlugin";
-	ECMaterialsPlugin *ecmPlugin = (ECMaterialsPlugin *)sim->pluginManager.get(pluginName);
+	ECMaterialsPlugin *ecmPlugin = (ECMaterialsPlugin *)sim->pluginManager.get("ECMaterials");
 	long numberOfMaterials = (long) ecmPlugin->getNumberOfMaterials();
 	Field3D<ECMaterialsData *> *ECMaterialsField = ecmPlugin->getECMaterialField();
 

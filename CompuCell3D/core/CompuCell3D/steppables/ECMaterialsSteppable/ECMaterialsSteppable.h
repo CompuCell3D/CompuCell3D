@@ -144,8 +144,9 @@ namespace CompuCell3D {
         virtual std::string toString();
 
 		// Plugin wrappers
-		int getECMaterialIndexByName(std::string _ECMaterialName) {return ecMaterialsPlugin->getECMaterialIndexByName(_ECMaterialName);};
-		std::vector<float> checkQuantities(std::vector<float> _qtyVec) {return ecMaterialsPlugin->checkQuantities(_qtyVec);};
+		int getECMaterialIndexByName(std::string _ECMaterialName) { return ecMaterialsPlugin->getECMaterialIndexByName(_ECMaterialName); };
+		std::string getECMaterialNameByIndex(int _idx) { return ecMaterialsPlugin->getECMaterialNameByIndex(_idx); };
+		std::vector<float> checkQuantities(std::vector<float> _qtyVec) { return ecMaterialsPlugin->checkQuantities(_qtyVec); };
 		void setMediumECMaterialQuantityVector(const Point3D &pt, std::vector<float> _quantityVec) { ecMaterialsPlugin->setMediumECMaterialQuantityVector(pt, checkQuantities(_quantityVec)); };
 
 		// Steppable methods
@@ -170,6 +171,10 @@ namespace CompuCell3D {
 			std::map<std::string, int>::iterator mitr = fieldNames.find(_fieldName);
 			if (mitr == fieldNames.end()) return -1;
 			else return mitr->second;
+		}
+		std::string getFieldNameByIndex(int _idx) {
+			for (std::map<std::string, int>::iterator mitr = fieldNames.begin(); mitr != fieldNames.end(); ++mitr) if (mitr->second == _idx) return mitr->first;
+			return "";
 		}
 
     };

@@ -123,8 +123,10 @@ def check_ecmaterials_active():
     Checks status of ECMaterials plugin; returns true if active, false if inactive
     :return {bool}:
     """
-
-    return CompuCellSetup.persistent_globals.simulator.pluginManager.isLoaded('ECMaterials')
+    if CompuCellSetup.persistent_globals.simulator is not None:
+        return CompuCellSetup.persistent_globals.simulator.pluginManager.isLoaded('ECMaterials')
+    else:
+        return False
 
 
 def check_for_cpp_errors(sim):

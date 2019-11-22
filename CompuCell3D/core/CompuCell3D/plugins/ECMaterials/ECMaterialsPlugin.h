@@ -176,6 +176,10 @@ namespace CompuCell3D {
 		bool getECMaterialAdvectingByName(std::string _ECMaterialName);
 		bool getECMaterialAdvectingByIndex(int _idx);
 		virtual int getECMaterialIndexByName(std::string _ECMaterialName);
+		virtual std::string getECMaterialNameByIndex(int _idx) {
+			for (std::map<std::string, int>::iterator mitr = ECMaterialNameIndexMap.begin(); mitr != ECMaterialNameIndexMap.end(); ++mitr) if (mitr->second == _idx) return mitr->first;
+			return "";
+		}
 		// adhesion functions
 		std::vector<float> getECAdhesionByCell(const CellG *_cell);
 		std::vector<float> getECAdhesionByCellTypeId(int _idx);
