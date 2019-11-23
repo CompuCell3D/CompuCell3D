@@ -17,10 +17,10 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="toolTip">
-      <string>When checked uses floating window layout instead of Multi Document Interface</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>5</number>
      </property>
      <widget class="QWidget" name="tab_output">
       <attribute name="title">
@@ -64,6 +64,9 @@
                 </item>
                 <item>
                  <widget class="QSpinBox" name="updateScreenSpinBox">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frequency with which player will display scenes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="minimum">
                    <number>1</number>
                   </property>
@@ -98,6 +101,9 @@
                <layout class="QHBoxLayout" name="horizontalLayout_15">
                 <item>
                  <widget class="QCheckBox" name="outputImagesCheckBox">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables screenshot output&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="text">
                    <string>Save image every Nth MCS</string>
                   </property>
@@ -118,6 +124,9 @@
                 </item>
                 <item>
                  <widget class="QSpinBox" name="saveImageSpinBox">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Screenshot output frequency&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="minimum">
                    <number>1</number>
                   </property>
@@ -168,6 +177,9 @@
                   </item>
                   <item>
                    <widget class="QSpinBox" name="screenshot_X_SB">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Screenshot resolution (x-size)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="maximum">
                      <number>5000</number>
                     </property>
@@ -189,6 +201,9 @@
                   </item>
                   <item>
                    <widget class="QSpinBox" name="screenshot_Y_SB">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Screenshot resolution (y-size)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="maximum">
                      <number>5000</number>
                     </property>
@@ -222,6 +237,9 @@
                <layout class="QHBoxLayout" name="horizontalLayout_21">
                 <item>
                  <widget class="QCheckBox" name="outputLatticeDataCheckBox">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables taking complete visualization snapshots (those can pbe replayed in player after simulation is doena dn you can take any screenshots you want at that point)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="text">
                    <string>Save visualization snapshots every Nth MCS</string>
                   </property>
@@ -242,6 +260,9 @@
                 </item>
                 <item>
                  <widget class="QSpinBox" name="saveLatticeSpinBox">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Visualization snapshot write frequency&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="minimum">
                    <number>1</number>
                   </property>
@@ -296,6 +317,9 @@
                 <height>16777215</height>
                </size>
               </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Directory where simulation outputs will be written to&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
              </widget>
             </item>
             <item>
@@ -334,6 +358,9 @@
            <layout class="QVBoxLayout" name="verticalLayout_14">
             <item>
              <widget class="QCheckBox" name="debugOutputPlayerCB">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;enables player debug output (deprecated)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Turn On Player Debug Output</string>
               </property>
@@ -341,6 +368,9 @@
             </item>
             <item>
              <widget class="QCheckBox" name="useInternalConsoleCheckBox">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;enables using internal player console for output (half-deprrecated)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Use internal console for text output</string>
               </property>
@@ -348,6 +378,9 @@
             </item>
             <item>
              <widget class="QCheckBox" name="closePlayerCheckBox">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked this will cause player close after simulation is done&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Close Player after simulation ends</string>
               </property>
@@ -366,6 +399,9 @@
          <layout class="QGridLayout" name="gridLayout_4">
           <item row="0" column="0" colspan="2">
            <widget class="QCheckBox" name="restart_CB">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables output of restart snapshots. Those can be used to restart your simulation from the point at which simulation snapshot was taken. This is not a visualization snapshot&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="text">
              <string>Enable output of restart snapshots</string>
             </property>
@@ -396,6 +432,9 @@
             <property name="enabled">
              <bool>false</bool>
             </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Restart snaphot frequency&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="maximum">
              <number>1000000000</number>
             </property>
@@ -408,6 +447,9 @@
            <widget class="QCheckBox" name="multiple_restart_snapshots_CB">
             <property name="enabled">
              <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked multiple restart snapshots will be taken. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Allow multiple restart snapshots</string>
@@ -486,6 +528,9 @@
               </item>
               <item row="2" column="2">
                <widget class="QSpinBox" name="numberOfStepOutputsSB">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of recent MCS steps for which the operating system console output will be also displayed in the Player console&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="maximum">
                  <number>1000</number>
                 </property>
@@ -496,6 +541,9 @@
               </item>
               <item row="0" column="2">
                <widget class="QSpinBox" name="numberOfRecentSimulationsSB">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of recent simulations to display in the &amp;quot;Recent Simulation&amp;quot; menu&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="maximum">
                  <number>20</number>
                 </property>
@@ -533,6 +581,9 @@
              <width>16777215</width>
              <height>16777215</height>
             </size>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;directory where most of your projects are stored&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string/>
@@ -584,10 +635,6 @@
         </spacer>
        </item>
       </layout>
-      <zorder>groupBox_5</zorder>
-      <zorder>numberOfStepOutputsSB</zorder>
-      <zorder>label_22</zorder>
-      <zorder>label_22</zorder>
      </widget>
      <widget class="QWidget" name="tab_cell_type">
       <attribute name="title">
@@ -687,14 +734,14 @@
                <attribute name="verticalHeaderVisible">
                 <bool>false</bool>
                </attribute>
+               <attribute name="verticalHeaderMinimumSectionSize">
+                <number>11</number>
+               </attribute>
                <attribute name="verticalHeaderDefaultSectionSize">
                 <number>18</number>
                </attribute>
                <attribute name="verticalHeaderHighlightSections">
                 <bool>false</bool>
-               </attribute>
-               <attribute name="verticalHeaderMinimumSectionSize">
-                <number>11</number>
                </attribute>
                <attribute name="verticalHeaderShowSortIndicator" stdset="0">
                 <bool>true</bool>
@@ -813,6 +860,9 @@
                    <height>26</height>
                   </size>
                  </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sets cell boundary color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
                   <string/>
                  </property>
@@ -842,6 +892,9 @@
                    <height>26</height>
                   </size>
                  </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sets cell cluster boundary color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
                   <string/>
                  </property>
@@ -870,6 +923,9 @@
                    <width>26</width>
                    <height>26</height>
                   </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sets chemical field contour color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
                   <string/>
@@ -903,6 +959,9 @@
                    <height>26</height>
                   </size>
                  </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sets background color for the graphics window&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
                   <string/>
                  </property>
@@ -935,6 +994,9 @@
                    <height>26</height>
                   </size>
                  </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sets FPP link color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
                   <string/>
                  </property>
@@ -963,6 +1025,9 @@
                 <layout class="QVBoxLayout" name="verticalLayout_11">
                  <item>
                   <widget class="QCheckBox" name="cellGlyphScaleByVolumeCheckBox">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When drawing cells as spheres (glyphs) this setting allows scaling of the size of the sphere based on actual cell volume&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
                    <property name="text">
                     <string>scale by volume</string>
                    </property>
@@ -978,7 +1043,11 @@
                     </widget>
                    </item>
                    <item row="0" column="1">
-                    <widget class="QLineEdit" name="cellGlyphScale"/>
+                    <widget class="QLineEdit" name="cellGlyphScale">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Scale of sphere representing a cell &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                    </widget>
                    </item>
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_10">
@@ -988,7 +1057,11 @@
                     </widget>
                    </item>
                    <item row="1" column="1">
-                    <widget class="QSpinBox" name="cellGlyphThetaRes"/>
+                    <widget class="QSpinBox" name="cellGlyphThetaRes">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;part of accuracy metric that is used to determing how a sphere representing sphere will be rendered. The higher the nices sphere will look , but rendering will also be slower&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                    </widget>
                    </item>
                    <item row="2" column="0">
                     <widget class="QLabel" name="label_11">
@@ -998,7 +1071,11 @@
                     </widget>
                    </item>
                    <item row="2" column="1">
-                    <widget class="QSpinBox" name="cellGlyphPhiRes"/>
+                    <widget class="QSpinBox" name="cellGlyphPhiRes">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;part of accuracy metric that is used to determing how a sphere representing sphere will be rendered. The higher the nices sphere will look , but rendering will also be slower&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
                  </item>
@@ -1042,7 +1119,7 @@
               <item>
                <widget class="QCheckBox" name="min_max_display_CB">
                 <property name="toolTip">
-                 <string>Checking this box will cause cartesian concentration field in 2D be drawn using explicit pixels providing &quot;exact&quot; representation of the field. Unchecked box will mean that field will be smoothed. </string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables display of min and max concentration directly in the chemical field window&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="text">
                  <string>Display Min Max Field Values</string>
@@ -1075,6 +1152,9 @@
            </item>
            <item>
             <widget class="QCheckBox" name="showPlotAxesCB">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables display of axes in a give field&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
              <property name="text">
               <string>Show Axes</string>
              </property>
@@ -1135,10 +1215,17 @@
                    </widget>
                   </item>
                   <item row="0" column="1">
-                   <widget class="QLineEdit" name="fieldMinRange"/>
+                   <widget class="QLineEdit" name="fieldMinRange">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Min concentration (or vector length) threshold that will be used to determine heatmap colors for concentration or vector fields&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                   </widget>
                   </item>
                   <item row="0" column="2">
                    <widget class="QCheckBox" name="fieldMinRangeFixedCheckBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables concentration (or vector length) threshold that will be used to determine heatmap colors for concentration or vector fields&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="text">
                      <string>Fixed</string>
                     </property>
@@ -1152,10 +1239,17 @@
                    </widget>
                   </item>
                   <item row="1" column="1">
-                   <widget class="QLineEdit" name="fieldMaxRange"/>
+                   <widget class="QLineEdit" name="fieldMaxRange">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Min concentration (or vector length) threshold that will be used to determine heatmap colors for concentration or vector fields&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                   </widget>
                   </item>
                   <item row="1" column="2">
                    <widget class="QCheckBox" name="fieldMaxRangeFixedCheckBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables concentration (or vector length) threshold that will be used to determine heatmap colors for concentration or vector fields&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="text">
                      <string>Fixed</string>
                     </property>
@@ -1211,6 +1305,9 @@
                       <height>30</height>
                      </size>
                     </property>
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Arrow length for displaying vector fields&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                     </property>
@@ -1230,6 +1327,9 @@
                       <width>0</width>
                       <height>30</height>
                      </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Determines if arrow length will be scaled by the vector length that arrow is prepresenting&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>Scale arrow length</string>
@@ -1261,6 +1361,9 @@
                       <height>30</height>
                      </size>
                     </property>
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Determines if arrow color will be deterined by the heatmap colors or if it will be fixed&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="text">
                      <string>Fixed arrow color</string>
                     </property>
@@ -1280,6 +1383,9 @@
                       <height>26</height>
                      </size>
                     </property>
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sets arrow color if it i set to be fixed&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="text">
                      <string/>
                     </property>
@@ -1292,6 +1398,9 @@
              </item>
              <item>
               <widget class="QCheckBox" name="vectorsOverlayCheckBox">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;decides if cell and vector fields should be ploted in the same scene&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
                <property name="text">
                 <string>Overlay Vector and Cell Field</string>
                </property>
@@ -1337,6 +1446,9 @@
                       <height>30</height>
                      </size>
                     </property>
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;number of &amp;quot;boxes&amp;quot; in heatmap legend&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                     </property>
@@ -1378,6 +1490,9 @@
                  <layout class="QHBoxLayout" name="horizontalLayout_9">
                   <item>
                    <widget class="QCheckBox" name="fieldShowLegendCheckBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables display of heatmap legend&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="text">
                      <string>Show </string>
                     </property>
@@ -1416,6 +1531,9 @@
                 </item>
                 <item row="2" column="1">
                  <widget class="QSpinBox" name="numberOfContoursLinesSpinBox">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;number of contour lines (isovalues will be chosen automatically)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
@@ -1425,7 +1543,11 @@
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="QLineEdit" name="isovalList"/>
+                 <widget class="QLineEdit" name="isovalList">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Comma-separated list of isovalues for plotting contours&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                 </widget>
                 </item>
                 <item row="1" column="0">
                  <widget class="QLabel" name="isovalLabel">
@@ -1436,6 +1558,9 @@
                 </item>
                 <item row="0" column="0">
                  <widget class="QCheckBox" name="contoursShowCB">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;enables display of contours for scalar fields&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="text">
                    <string>Show</string>
                   </property>
@@ -1717,7 +1842,11 @@
            <number>1</number>
           </property>
           <item>
-           <widget class="QLineEdit" name="cellTypesInvisibleList"/>
+           <widget class="QLineEdit" name="cellTypesInvisibleList">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;comma-sepoarated list of cell type numbers that shuold not be rendered in 3D. Usually you do not want to display medium so at the very least this list should have '0' element in it&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -1781,6 +1910,9 @@
              <layout class="QHBoxLayout" name="horizontalLayout_29">
               <item>
                <widget class="QCheckBox" name="boundingBoxCheckBox">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;enables display ob scene bounding box - a line around lattice&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Bounding Box Outline</string>
                 </property>
@@ -1811,6 +1943,9 @@
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sets bounding box color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string/>
                 </property>
@@ -1831,6 +1966,9 @@
              <layout class="QHBoxLayout" name="horizontalLayout_30">
               <item>
                <widget class="QCheckBox" name="showAxesCB">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables display of axed&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Show Axes</string>
                 </property>
@@ -1861,6 +1999,9 @@
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sets axes color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string/>
                 </property>
@@ -1870,6 +2011,9 @@
             </item>
             <item>
              <widget class="QCheckBox" name="showHorizontalAxesLabelsCB">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;enables x-axes labels (in 2D)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Show Horizontal Axes Labels (2D)</string>
               </property>
@@ -1877,6 +2021,9 @@
             </item>
             <item>
              <widget class="QCheckBox" name="showVerticalAxesLabelsCB">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;enables y-axes labels (in 2D)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Show Vertical Axes Labels (2D)</string>
               </property>
