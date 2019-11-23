@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'parameter_scan_dialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_ParamScanDialog(object):
     def setupUi(self, ParamScanDialog):
@@ -109,18 +111,27 @@ class Ui_ParamScanDialog(object):
         _translate = QtCore.QCoreApplication.translate
         ParamScanDialog.setWindowTitle(_translate("ParamScanDialog", "Parameter Scan Launcher"))
         self.label.setText(_translate("ParamScanDialog", "Param Scan Simulation"))
+        self.param_scan_simulation_LE.setToolTip(_translate("ParamScanDialog", "<html><head/><body><p>abs path to .cc3d project that has parameter scan definitions in it</p></body></html>"))
         self.browse_simulation_PB.setText(_translate("ParamScanDialog", "Browse..."))
         self.label_2.setText(_translate("ParamScanDialog", "Output Dir"))
+        self.output_dir_LE.setToolTip(_translate("ParamScanDialog", "<html><head/><body><p>output folder for parameter scans</p></body></html>"))
         self.browse_output_dir_PB.setText(_translate("ParamScanDialog", "Browse..."))
         self.label_3.setText(_translate("ParamScanDialog", "Snapshot Output Frequency"))
+        self.output_freq_SB.setToolTip(_translate("ParamScanDialog", "<html><head/><body><p>visualization snapshots output frequency</p></body></html>"))
+        self.output_snapshot_CB.setToolTip(_translate("ParamScanDialog", "<html><head/><body><p>enables storing of visualization snapshots</p></body></html>"))
         self.output_snapshot_CB.setText(_translate("ParamScanDialog", "Output Snapshots"))
         self.label_4.setText(_translate("ParamScanDialog", "Screenshot Output Frequency"))
+        self.screenshot_freq_CB.setToolTip(_translate("ParamScanDialog", "<html><head/><body><p>screenshot output frequency</p></body></html>"))
+        self.output_screenshot_CB.setToolTip(_translate("ParamScanDialog", "<html><head/><body><p>enables outputting of screenshots</p></body></html>"))
         self.output_screenshot_CB.setText(_translate("ParamScanDialog", "Output Screenshots"))
+        self.gui_CB.setToolTip(_translate("ParamScanDialog", "<html><head/><body><p>Enables use of GUI for parameter Scan. GUI-less parameter scans often run faster so unless you really want to see livbe output of the parameter scan we suggest you leave this box unchecked</p></body></html>"))
         self.gui_CB.setText(_translate("ParamScanDialog", "Use GUI"))
         self.label_5.setText(_translate("ParamScanDialog", "CC3D Installation dir"))
+        self.install_dir_LE.setToolTip(_translate("ParamScanDialog", "<html><head/><body><p>Absolute path to the folder where cc3d run scripts are installed (i.e. cc3d installation folder)</p></body></html>"))
         self.install_dir_browse_PB.setText(_translate("ParamScanDialog", "Browse ..."))
         self.label_6.setText(_translate("ParamScanDialog", "Command Line"))
+        self.update_cml_PB.setToolTip(_translate("ParamScanDialog", "<html><head/><body><p>Displays command line that will be executed to run parameter scans. This is useful when you want to run parameter scan from a separate console. Simply copy the command line text and past int he console windowd and run</p></body></html>"))
         self.update_cml_PB.setText(_translate("ParamScanDialog", "Display Command Line"))
         self.cancel_PB.setText(_translate("ParamScanDialog", "Cancel"))
+        self.run_PB.setToolTip(_translate("ParamScanDialog", "<html><head/><body><p>Runs parameter Scan. KEep in mind that it is often more useful to copy command line of the parameter scan and run it in the separate console</p></body></html>"))
         self.run_PB.setText(_translate("ParamScanDialog", "Run"))
-

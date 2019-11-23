@@ -24,7 +24,11 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="param_scan_simulation_LE"/>
+      <widget class="QLineEdit" name="param_scan_simulation_LE">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;abs path to .cc3d project that has parameter scan definitions in it&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
      <item row="0" column="2">
       <widget class="QPushButton" name="browse_simulation_PB">
@@ -41,7 +45,11 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="output_dir_LE"/>
+      <widget class="QLineEdit" name="output_dir_LE">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;output folder for parameter scans&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
      <item row="1" column="2">
       <widget class="QPushButton" name="browse_output_dir_PB">
@@ -59,6 +67,9 @@
      </item>
      <item row="2" column="1">
       <widget class="QSpinBox" name="output_freq_SB">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;visualization snapshots output frequency&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="maximum">
         <number>100000000</number>
        </property>
@@ -69,6 +80,9 @@
      </item>
      <item row="2" column="2" colspan="2">
       <widget class="QCheckBox" name="output_snapshot_CB">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;enables storing of visualization snapshots&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
         <string>Output Snapshots</string>
        </property>
@@ -86,6 +100,9 @@
      </item>
      <item row="3" column="1">
       <widget class="QSpinBox" name="screenshot_freq_CB">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;screenshot output frequency&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="maximum">
         <number>1000000000</number>
        </property>
@@ -96,6 +113,9 @@
      </item>
      <item row="3" column="2" colspan="2">
       <widget class="QCheckBox" name="output_screenshot_CB">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;enables outputting of screenshots&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
         <string>Output Screenshots</string>
        </property>
@@ -106,6 +126,9 @@
      </item>
      <item row="4" column="2">
       <widget class="QCheckBox" name="gui_CB">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables use of GUI for parameter Scan. GUI-less parameter scans often run faster so unless you really want to see livbe output of the parameter scan we suggest you leave this box unchecked&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
         <string>Use GUI</string>
        </property>
@@ -119,7 +142,11 @@
       </widget>
      </item>
      <item row="5" column="1">
-      <widget class="QLineEdit" name="install_dir_LE"/>
+      <widget class="QLineEdit" name="install_dir_LE">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Absolute path to the folder where cc3d run scripts are installed (i.e. cc3d installation folder)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
      <item row="5" column="2">
       <widget class="QPushButton" name="install_dir_browse_PB">
@@ -141,6 +168,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="update_cml_PB">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Displays command line that will be executed to run parameter scans. This is useful when you want to run parameter scan from a separate console. Simply copy the command line text and past int he console windowd and run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
         <string>Display Command Line</string>
        </property>
@@ -192,6 +222,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="run_PB">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Runs parameter Scan. KEep in mind that it is often more useful to copy command line of the parameter scan and run it in the separate console&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
         <string>Run</string>
        </property>
