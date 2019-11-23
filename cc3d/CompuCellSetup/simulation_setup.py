@@ -384,7 +384,8 @@ def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_en
 
     # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
     sim.extraInit()
-
+    # passing output directory to simulator object
+    sim.setOutputDirectory(CompuCellSetup.persistent_globals.output_directory)
     # simthread.preStartInit()
     # we skip calling start functions of steppables if restart is enabled and we are using restart
     # directory to restart simulation from a given MCS

@@ -21,37 +21,18 @@
  *************************************************************************/
 
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Field3D/Point3D.h>
-// // // #include <CompuCell3D/Field3D/Dim3D.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
 #include <CompuCell3D/plugins/CellType/CellTypePlugin.h>
-
 using namespace CompuCell3D;
-
-
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-
-
-// // // #include <string>
-// // // #include <sstream>
-// // // #include <iostream>
-// // // #include <map>
 using namespace std;
 
 
 #include "PIFDumper.h"
 
 PIFDumper::PIFDumper() :
-  potts(0),pifFileExtension("pif") {}
+  potts(0),pifFileExtension("piff") {}
 
 PIFDumper::PIFDumper(string filename) :
-  potts(0),pifFileExtension("pif") {}
+  potts(0),pifFileExtension("piff") {}
 
 void PIFDumper::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	
@@ -83,9 +64,19 @@ void PIFDumper::step( const unsigned int currentStep){
    fullNameStr.width(numDigits);
    fullNameStr.fill('0');
    fullNameStr<<currentStep<<"."<<pifFileExtension;
+   std::string output_directory = simulator->getOutputDirectory();
+   std::string  abs_path(fullNameStr.str());
+
+   if (output_directory.size()) {
+       abs_path = output_directory + "/" + fullNameStr.str();
+   }
+    
    
 
-   ofstream pif(fullNameStr.str().c_str());
+   //ofstream pif(fullNameStr.str().c_str());
+   ofstream pif(abs_path.c_str());
+   ASSERT_OR_THROW("Could not open file: " + abs_path + " for writing", pif.is_open());
+
 
    WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
    Dim3D dim = cellFieldG->getDim();
@@ -123,6 +114,8 @@ void PIFDumper::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
    //Check how this is handled 
 	//frequency=frequency;
 	pifname=_xmlData->getFirstElement("PIFName")->getText();
+    
+
 	if(_xmlData->findElement("PIFFileExtension"))
 		pifFileExtension=_xmlData->getFirstElement("PIFFileExtension")->getText();
 

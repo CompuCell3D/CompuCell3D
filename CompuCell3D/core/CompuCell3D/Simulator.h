@@ -81,6 +81,7 @@ namespace CompuCell3D {
 		std::string basePath;
 		bool restartEnabled;
         std::string step_output;
+        std::string output_directory;
         
 
 	public:
@@ -94,6 +95,10 @@ namespace CompuCell3D {
         
 		double simValue;
 		
+        void setOutputDirectory(std::string output_directory);
+        std::string getOutputDirectory();
+
+
 		void setOutputRedirectionTarget(ptrdiff_t  _ptr);
 		ptrdiff_t getCerrStreamBufOrig();
 		void restoreCerrStreamBufOrig(ptrdiff_t _ptr);
