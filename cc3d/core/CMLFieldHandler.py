@@ -39,10 +39,15 @@ class CMLFieldHandler:
         :param field_storage:
         :return:
         """
+
         if self.__initialization_complete:
             return
 
         persistent_globals = cc3d.CompuCellSetup.persistent_globals
+
+        if persistent_globals.output_file_core_name:
+            self.output_file_core_name = persistent_globals.output_file_core_name
+
         self.field_writer.init(persistent_globals.simulator)
 
         if field_storage is not None:

@@ -576,8 +576,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:
         """
 
-        # persistent_globals = CompuCellSetup.persistent_globals
+        persistent_globals = CompuCellSetup.persistent_globals
         self.cml_args = cml_args
+
+        persistent_globals.output_file_core_name = cml_args.output_file_core_name
 
         settings_dict = self.override_settings_using_cml_args(cml_args=self.cml_args)
         start_simulation = settings_dict['start_simulation']
