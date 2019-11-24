@@ -31,6 +31,10 @@ using namespace std;
 #include "ECMaterialsSteppable.h"
 #include "CompuCell3D/plugins/ECMaterials/ECMaterialsPlugin.h"
 
+#include <ppl.h>
+#include <chrono>
+using namespace std::chrono;
+
 ECMaterialsSteppable::ECMaterialsSteppable() : 
 	cellFieldG(0),
 	sim(0),
@@ -91,12 +95,6 @@ void ECMaterialsSteppable::extraInit(Simulator *simulator){
 void ECMaterialsSteppable::handleEvent(CC3DEvent & _event) {
 	if (_event.id == LATTICE_RESIZE) {
 
-		if (ECMaterialsInitialized) {
-			pUtils->setLock(lockPtr);
-			constructNeighborPtStorage();
-			pUtils->unsetLock(lockPtr);
-		}
-
 	}
 }
 
@@ -121,114 +119,110 @@ void ECMaterialsSteppable::step(const unsigned int currentStep){
 	Field3D<ECMaterialsData *> *ECMaterialsFieldOld = (Field3D<ECMaterialsData *>*) new WatchableField3D<ECMaterialsData *>(fieldDim, 0);
 	ECMaterialsFieldOld = ECMaterialsField;
 
-	boundaryStrategy = BoundaryStrategy::getInstance();
+	bool MaterialInteractionsDefined = this->MaterialInteractionsDefined;
+	bool FieldInteractionsDefined = this->FieldInteractionsDefined;
+
+	boundaryStrategy = sim->getBoundaryStrategy()->getInstance();
 	int nNeighbors = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 
-	std::vector<Point3D>::iterator ptItr;
-	std::vector<int>::iterator intItr1;
-	std::vector<int>::iterator intItr2;
-
-	Neighbor neighbor;
-	Point3D pt(0, 0, 0);
-	Point3D nPt(0, 0, 0);
-	std::vector<float> qtyOld;
-	std::vector<float> qtyNew;
-	std::vector<float> qtyNeighbor;
-	float materialDiffusionCoefficient;
-	float thisFieldVal;
-	int numberOfReactionsDefined = idxMaterialReactionsDefined.size();
-	int numberOfDiffusionDefined = idxMaterialDiffusionDefined.size();
-	int neighborPtIdx = 0;
+	auto bmTimerStart = high_resolution_clock::now();
 
 	if (MaterialInteractionsDefined || FieldInteractionsDefined) {
+		concurrency::parallel_for(int(0), (int) fieldDim.z, [=](int z) {
+			concurrency::parallel_for(int(0), (int) fieldDim.y, [=](int y) {
+				concurrency::parallel_for(int(0), (int) fieldDim.x, [=](int x) {
+					Point3D pt(x, y, z);
+					const Point3D ptC = const_cast<Point3D&>(pt);
+					int i, j;
 
-		for (int z = 0; z < fieldDim.z; ++z) {
-			for (int y = 0; y < fieldDim.y; ++y) {
-				for (int x = 0; x < fieldDim.x; ++x) {
-					pt = Point3D(x, y, z);
+					if (!cellFieldG->get(ptC)) {
 
-					if (cellFieldG->get(pt)) continue;
+						std::vector<float> qtyOld = ECMaterialsFieldOld->get(ptC)->getECMaterialsQuantityVec();
+						std::vector<float> qtyNew = qtyOld;
 
-					neighborPtIdx = x + fieldDim.x*(y + z*fieldDim.y);
+						// Material interactions
 
-					qtyOld = ECMaterialsFieldOld->get(pt)->getECMaterialsQuantityVec();
-					qtyNew = qtyOld;
+						if (MaterialInteractionsDefined) {
 
-					// Material interactions
-
-					if (MaterialInteractionsDefined) {
-
-						// Material reactions with at site
-						if (MaterialReactionsDefined) {
-							for (intItr1 = idxMaterialReactionsDefined.begin(); intItr1 != idxMaterialReactionsDefined.end(); ++intItr1) {
-								for (intItr2 = idxidxMaterialReactionsDefined[*intItr1].begin(); intItr2 != idxidxMaterialReactionsDefined[*intItr1].end(); ++intItr2) {
-
-									qtyNew[*intItr1] += materialReactionCoefficientsByIndex[*intItr1][*intItr2][0] * qtyOld[*intItr2];
-
-								}
-							}
-						}
-
-						for (ptItr = neighborPtStorage[neighborPtIdx].begin(); ptItr != neighborPtStorage[neighborPtIdx].end(); ++ptItr) {
-
-							if (cellFieldG->get(*ptItr)) continue; // Detect extracellular sites
-
-							qtyNeighbor = ECMaterialsFieldOld->get(*ptItr)->getECMaterialsQuantityVec();
-
-							// Material reactions with neighbors
+							// Material reactions with at site
 							if (MaterialReactionsDefined) {
-								for (intItr1 = idxMaterialReactionsDefined.begin(); intItr1 != idxMaterialReactionsDefined.end(); ++intItr1) {
-									for (intItr2 = idxidxMaterialReactionsDefined[*intItr1].begin(); intItr2 != idxidxMaterialReactionsDefined[*intItr1].end(); ++intItr2) {
-										qtyNew[*intItr1] += materialReactionCoefficientsByIndex[*intItr1][*intItr2][1] * qtyNeighbor[*intItr2];
+								for each (i in idxMaterialReactionsDefined) {
+									for each (j in idxidxMaterialReactionsDefined[i]) {
+
+										qtyNew[i] += materialReactionCoefficientsByIndex[i][j][0] * qtyOld[j];
+
 									}
 								}
 							}
 
-							// Material diffusion
-							if (MaterialDiffusionDefined) {
-								for (intItr1 = idxMaterialDiffusionDefined.begin(); intItr1 != idxMaterialDiffusionDefined.end(); ++intItr1) {
-									materialDiffusionCoefficient = ECMaterialsVec->at(*intItr1).getMaterialDiffusionCoefficient();
-									qtyNew[*intItr1] -= materialDiffusionCoefficient*qtyOld[*intItr1];
-									qtyNew[*intItr1] += materialDiffusionCoefficient*qtyNeighbor[*intItr1];
+							std::vector<float> qtyNeighbor;
+							Point3D nPt;
+							Neighbor neighbor;
+							unsigned int nIdx;
+							for (nIdx = 0; nIdx <= nNeighbors; ++nIdx) {
+								neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
+								if (!neighbor.distance) continue;
+								nPt = neighbor.pt;
+
+								const Point3D nPtC = const_cast<Point3D&>(nPt);
+								if (cellFieldG->get(nPtC)) continue; // Detect extracellular sites
+
+								qtyNeighbor = ECMaterialsFieldOld->get(nPtC)->getECMaterialsQuantityVec();
+
+								// Material reactions with neighbors
+								if (MaterialReactionsDefined) {
+									for each (i in idxMaterialReactionsDefined) 
+										for each (j in idxidxMaterialReactionsDefined[i]) {
+											qtyNew[i] += materialReactionCoefficientsByIndex[i][j][1] * qtyNeighbor[j];
+										}
 								}
+
+								// Material diffusion
+								if (MaterialDiffusionDefined) {
+									float materialDiffusionCoefficient;
+									for each (i in idxMaterialDiffusionDefined) {
+										materialDiffusionCoefficient = ECMaterialsVec->at(i).getMaterialDiffusionCoefficient();
+										qtyNew[i] -= materialDiffusionCoefficient*qtyOld[i];
+										qtyNew[i] += materialDiffusionCoefficient*qtyNeighbor[i];
+									}
+								}
+
 							}
 
 						}
+
+						// Field interactions
+						if (FieldInteractionsDefined) {
+							// Update quantities
+							for each (i in idxFromFieldInteractionsDefined) 
+								for each (j in idxidxFromFieldInteractionsDefined[i]) {
+									qtyNew[i] += fromFieldReactionCoefficientsByIndex[i][j] * fieldVec[j]->get(ptC);
+								}
+
+							// Generate field source terms
+							// calculateMaterialToFieldInteractions(pt, qtyOld);
+							float thisFieldVal;
+							for each (i in idxToFieldInteractionsDefined) {
+								thisFieldVal = fieldVec[i]->get(ptC);
+
+								for each (j in idxidxToFieldInteractionsDefined[i]) {
+									thisFieldVal += toFieldReactionCoefficientsByIndex[i][j] * qtyOld[j];
+								}
+								if (thisFieldVal < 0.0) thisFieldVal = 0.0;
+
+								fieldVec[i]->set(ptC, thisFieldVal);
+
+							}
+
+						}
+
+						ECMaterialsField->get(ptC)->setECMaterialsQuantityVec(checkQuantities(qtyNew));
 
 					}
 
-					// Field interactions
-
-					if (FieldInteractionsDefined) {
-
-						// Update quantities
-						for (intItr1 = idxFromFieldInteractionsDefined.begin(); intItr1 != idxFromFieldInteractionsDefined.end(); ++intItr1) {
-							for (intItr2 = idxidxFromFieldInteractionsDefined[*intItr1].begin(); intItr2 != idxidxFromFieldInteractionsDefined[*intItr1].end(); ++intItr2) {
-								qtyNew[*intItr1] += fromFieldReactionCoefficientsByIndex[*intItr1][*intItr2] * fieldVec[*intItr2]->get(pt);
-							}
-						}
-
-						// Generate field source terms
-						// calculateMaterialToFieldInteractions(pt, qtyOld);
-						for (intItr1 = idxToFieldInteractionsDefined.begin(); intItr1 != idxToFieldInteractionsDefined.end(); ++intItr1) {
-							thisFieldVal = fieldVec[*intItr1]->get(pt);
-
-							for (intItr2 = idxidxToFieldInteractionsDefined[*intItr1].begin(); intItr2 != idxidxToFieldInteractionsDefined[*intItr1].end(); ++intItr2) {
-								thisFieldVal += toFieldReactionCoefficientsByIndex[*intItr1][*intItr2] * qtyOld[*intItr2];
-							}
-							if (thisFieldVal < 0.0) thisFieldVal = 0.0;
-
-							fieldVec[*intItr1]->set(pt, thisFieldVal);
-
-						}
-
-					}
-
-					ECMaterialsField->get(pt)->setECMaterialsQuantityVec(checkQuantities(qtyNew));
-
-				}
-			}
-		}
+				});
+			});
+		});
 
 	}
 
@@ -238,6 +232,10 @@ void ECMaterialsSteppable::step(const unsigned int currentStep){
 		calculateCellInteractions(ECMaterialsFieldOld);
 
 	}
+
+	auto bmTimerStop = high_resolution_clock::now();
+	auto bmDuration = duration_cast<microseconds>(bmTimerStop - bmTimerStart);
+	cerr << "ECMaterialsSteppable time: " << bmDuration.count() << " ms" << endl;
 
 }
 
@@ -279,7 +277,6 @@ void ECMaterialsSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	idxidxFromFieldInteractionsDefined.clear();
 	idxidxFromFieldInteractionsDefined.resize(numberOfMaterials);
 	idxCellInteractionsDefined.clear();
-	constructNeighborPtStorage();
 
     // Gather XML user specifications
 	CC3DXMLElementList MaterialInteractionXMLVec = xmlData->getElements("MaterialInteraction");
@@ -635,40 +632,6 @@ void ECMaterialsSteppable::calculateCellInteractions(Field3D<ECMaterialsData *> 
 			}
 		}
 
-	}
-
-}
-
-void ECMaterialsSteppable::constructNeighborPtStorage() {
-
-	neighborPtStorage.clear();
-	neighborPtStorage.resize(fieldDim.x*fieldDim.y*fieldDim.z);
-
-	boundaryStrategy = BoundaryStrategy::getInstance();
-	int nNeighbors = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
-
-	Neighbor neighbor;
-	Point3D pt(0, 0, 0);
-	int ptIdx = 0;
-	for (int z = 0; z < fieldDim.z; ++z) {
-		for (int y = 0; y < fieldDim.y; ++y) {
-			for (int x = 0; x < fieldDim.x; ++x) {
-				pt = Point3D(x, y, z);
-				neighborPtStorage[ptIdx].clear();
-				neighborPtStorage[ptIdx].reserve(nNeighbors + 1);
-
-				for (unsigned int nIdx = 0; nIdx <= nNeighbors; ++nIdx) {
-					neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
-
-					if (!neighbor.distance) continue;
-
-					neighborPtStorage[ptIdx].push_back(neighbor.pt);
-				}
-
-				++ptIdx;
-
-			}
-		}
 	}
 
 }

@@ -119,8 +119,6 @@ namespace CompuCell3D {
 		std::vector<std::vector<std::vector<float> > > CellTypeCoefficientsDifferentiationByIndex;
 		std::vector<std::vector<float> > CellTypeCoefficientsDeathByIndex;
 
-		std::vector<std::vector<Point3D> > neighborPtStorage;
-
 		float randFloatGen01() { return float(rand()) / (float(RAND_MAX) + 1); };
 
 	public:
@@ -150,7 +148,6 @@ namespace CompuCell3D {
 		void setMediumECMaterialQuantityVector(const Point3D &pt, std::vector<float> _quantityVec) { ecMaterialsPlugin->setMediumECMaterialQuantityVector(pt, checkQuantities(_quantityVec)); };
 
 		// Steppable methods
-		void constructNeighborPtStorage();
 		void constructFieldReactionCoefficients();
 		void constructMaterialReactionCoefficients();
 		void constructCellTypeCoefficients();

@@ -237,7 +237,7 @@ namespace CompuCell3D {
                 if(_pos>ECMaterialsQuantityVec.size()-1) return 0.0;
                 return ECMaterialsQuantityVec[_pos];
             }
-            std::vector<float> getECMaterialsQuantityVec(){return ECMaterialsQuantityVec;}
+			virtual std::vector<float> getECMaterialsQuantityVec(){return ECMaterialsQuantityVec;}
             void setNewECMaterialsQuantityVec(unsigned int _numMtls){
 				numMtls = _numMtls;
 				ECMaterialsQuantityVec.assign(numMtls, 0.0);
