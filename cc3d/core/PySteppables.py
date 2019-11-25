@@ -967,6 +967,20 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         if self.plasticity_tracker_plugin:
             return PlasticityDataList(self.plasticity_tracker_plugin, cell)
 
+    def get_ecmaterial_cell_response_list(self):
+        if self.ec_materials_plugin:
+            number_of_responses = self.ec_materials_plugin.numberOfResponsesOccurred()
+            if number_of_responses == 0:
+                return None
+            else:
+                for resp_idx in range(number_of_responses):
+                    this_cell = self.ec_materials_plugin.getCellResponseCell(resp_idx)
+                    this_action = self.ec_materials_plugin.getCellResponseAction(resp_idx)
+                    this_cell_type_diff = self.ec_materials_plugin.getCellResponseCellTypeDiff(resp_idx)
+                    yield this_cell, this_action, this_cell_type_diff
+        else:
+            return None
+
     @deprecated(version='4.0.0', reason="You should use : build_wall")
     def buildWall(self, type):
         return self.build_wall(cell_type=type)

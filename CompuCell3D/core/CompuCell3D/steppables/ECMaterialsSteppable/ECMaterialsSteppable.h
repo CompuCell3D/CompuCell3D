@@ -28,6 +28,7 @@
 
 #include "ECMaterialsSteppableDLLSpecifier.h"
 #include "CompuCell3D/plugins/ECMaterials/ECMaterialsPlugin.h"
+#include "CompuCell3D/plugins/ECMaterials/ECMaterialsData.h"
 #include "CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTracker.h"
 #include "CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTrackerPlugin.h"
 
@@ -51,21 +52,7 @@ namespace CompuCell3D {
 	class ECMaterialsPlugin;
 	class ECMaterialsData;
 
-	class ECMATERIALSSTEPPABLE_EXPORT ECMaterialsCellResponse {
-	public:
-
-		ECMaterialsCellResponse(CellG *_cell, std::string _action, std::string _cellTypeDiff = "") :
-			cell(_cell),
-			Action(_action),
-			CellTypeDiff(_cellTypeDiff)
-		{}
-
-		CellG *cell;
-		std::string Action;
-		std::string CellTypeDiff;
-	};
-
-    class ECMATERIALSSTEPPABLE_EXPORT ECMaterialsSteppable : public Steppable {
+	class ECMATERIALSSTEPPABLE_EXPORT ECMaterialsSteppable : public Steppable {
         WatchableField3D<CellG *> *cellFieldG;
         Simulator *sim;
         Potts3D *potts;
@@ -79,7 +66,7 @@ namespace CompuCell3D {
 		BoundaryPixelTrackerPlugin *boundaryTrackerPlugin;
 		ECMaterialsPlugin *ecMaterialsPlugin;
 
-		int neighborOrder = 0;
+		int neighborOrder = 1;
 		int nNeighbors;
 		Dim3D fieldDim;
 
@@ -92,6 +79,7 @@ namespace CompuCell3D {
 		std::vector<Field3D<float> *> fieldVec;
 		std::map<std::string, int> fieldNames;
 
+		int numberOfCellTypes;
 		std::map<std::string, int> cellTypeNames;
 
 		bool MaterialInteractionsDefined;
@@ -157,7 +145,7 @@ namespace CompuCell3D {
 
 		void calculateMaterialToFieldInteractions(const Point3D &pt, std::vector<float> _qtyOld);
 		void calculateCellInteractions(Field3D<ECMaterialsData *> *ECMaterialsFieldOld);
-		std::vector<ECMaterialsCellResponse> getCellResponses() { return cellResponses; } // Returns vector of cell responses
+		virtual std::vector<ECMaterialsCellResponse> getCellResponses() { return cellResponses; } // Returns vector of cell responses
 
 		int getCellTypeIndexByName(std::string _cellTypeName) {
 			std::map<std::string, int>::iterator mitr = cellTypeNames.find(_cellTypeName);

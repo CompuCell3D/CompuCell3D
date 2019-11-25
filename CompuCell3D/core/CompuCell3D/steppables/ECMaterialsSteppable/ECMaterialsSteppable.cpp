@@ -125,7 +125,7 @@ void ECMaterialsSteppable::step(const unsigned int currentStep){
 	boundaryStrategy = sim->getBoundaryStrategy()->getInstance();
 	int nNeighbors = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 
-	auto bmTimerStart = high_resolution_clock::now();
+	// auto bmTimerStart = high_resolution_clock::now();
 
 	if (MaterialInteractionsDefined || FieldInteractionsDefined) {
 		concurrency::parallel_for(int(0), (int) fieldDim.z, [=](int z) {
@@ -233,9 +233,9 @@ void ECMaterialsSteppable::step(const unsigned int currentStep){
 
 	}
 
-	auto bmTimerStop = high_resolution_clock::now();
-	auto bmDuration = duration_cast<microseconds>(bmTimerStop - bmTimerStart);
-	cerr << "ECMaterialsSteppable time: " << bmDuration.count() << " ms" << endl;
+	// auto bmTimerStop = high_resolution_clock::now();
+	// auto bmDuration = duration_cast<microseconds>(bmTimerStop - bmTimerStart);
+	// cerr << "ECMaterialsSteppable time: " << bmDuration.count() << " ms" << endl;
 
 }
 
@@ -254,6 +254,18 @@ void ECMaterialsSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	if (!pluginAlreadyRegisteredFlag) {
 		return;
 	}
+
+	cellTypeNames.clear();
+	std::string cellTypeName;
+	for (int j = 0; j <= (int)automaton->getMaxTypeId(); ++j) {
+		
+		cellTypeName = automaton->getTypeName(j);
+
+		cerr << "   Got type " << cellTypeName << ": " << j << endl;
+
+		cellTypeNames.insert(make_pair(automaton->getTypeName(j), j));
+	}
+	numberOfCellTypes = cellTypeNames.size();
 
 	// Initialize preliminaries from ECMaterials plugin
 	numberOfMaterials = ecMaterialsPlugin->getNumberOfMaterials();
@@ -490,7 +502,7 @@ void ECMaterialsSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 			ASSERT_OR_THROW("A probability must be defined for each cell interaction (using Probability).", CellInteractionXMLVec[XMLidx]->findElement("Probability"));
 			coeff = (float) CellInteractionXMLVec[XMLidx]->getFirstElement("Probability")->getDouble();
-			cerr << "      Probability" << coeff << endl;
+			cerr << "      Probability " << coeff << endl;
 
 			ASSERT_OR_THROW("A cell type must be defined for each cell interaction (using CellType).", CellInteractionXMLVec[XMLidx]->findElement("CellType"));
 			thisCellType = CellInteractionXMLVec[XMLidx]->getFirstElement("CellType")->getText();
@@ -504,12 +516,14 @@ void ECMaterialsSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 			// perform checks
 			materialIndex = getECMaterialIndexByName(thisMaterialName);
-			ASSERT_OR_THROW("ECMaterial not registered.", materialIndex >= 0);
+			ASSERT_OR_THROW("ECMaterial " + thisMaterialName + " not registered.", materialIndex >= 0);
 			ASSERT_OR_THROW("Probability must be non-negative", coeff >= 0);
 			cellTypeIndex = getCellTypeIndexByName(thisCellType);
-			ASSERT_OR_THROW("Cell type not registered.", cellTypeIndex >= 0);
-			cellTypeNewIndex = getCellTypeIndexByName(thisCellTypeNew);
-			ASSERT_OR_THROW("Cell type not registered.", cellTypeNewIndex >= 0);
+			ASSERT_OR_THROW("Cell type " + thisCellType + " not registered.", cellTypeIndex >= 0);
+			if (methodName == "Differentiation") {
+				cellTypeNewIndex = getCellTypeIndexByName(thisCellTypeNew);
+				ASSERT_OR_THROW("New cell type " + thisCellTypeNew + " not registered.", cellTypeNewIndex >= 0);
+			}
 
 			if (methodName == "Proliferation") {
 				ECMaterialsVec->at(materialIndex).setCellTypeCoefficientsProliferation(thisCellType, coeff);
@@ -539,13 +553,15 @@ void ECMaterialsSteppable::calculateCellInteractions(Field3D<ECMaterialsData *> 
 
 	ASSERT_OR_THROW("ECMaterials steppable not yet initialized.", ECMaterialsInitialized);
 
+	ecMaterialsPlugin->resetCellResponse();
+
 	Neighbor neighbor;
 	CellG * cell = 0;
 	CellG *nCell = 0;
 
-	int maxTypeId = (int)automaton->getMaxTypeId();
 	CellInventory::cellInventoryIterator cInvItr;
 	CellInventory * cellInventoryPtr = &potts->getCellInventory();
+	int nNeighbors = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 
 	int cellId;
 	int cellType;
@@ -555,7 +571,7 @@ void ECMaterialsSteppable::calculateCellInteractions(Field3D<ECMaterialsData *> 
 	int numberOfCells = cellInventoryPtr->getSize();
 	cellResponses.clear();
 	float probAccumProlif;
-	std::vector<float> probAccumDiff(maxTypeId, 0.0);
+	std::vector<float> probAccumDiff(numberOfCellTypes, 0.0);
 	float probAccumDeath;
 
 	//		randomly order evaluation of responses
@@ -575,13 +591,13 @@ void ECMaterialsSteppable::calculateCellInteractions(Field3D<ECMaterialsData *> 
 		cellId = (int)cell->id;
 		cellType = (int)cell->type;
 
+		probAccumProlif = 0.0;
+		probAccumDeath = 0.0;
+		probAccumDiff.assign(numberOfCellTypes, 0.0);
+
 		// Loop over cell boundaries to find interfaces with ECMaterials
 		std::set<BoundaryPixelTrackerData > *boundarySet = boundaryTrackerPlugin->getPixelSetForNeighborOrderPtr(cell, neighborOrder);
 		for (std::set<BoundaryPixelTrackerData >::iterator bInvItr = boundarySet->begin(); bInvItr != boundarySet->end(); ++bInvItr) {
-
-			probAccumProlif = 0.0;
-			probAccumDeath = 0.0;
-			probAccumDiff.assign(maxTypeId, 0.0);
 
 			// Loop over cell boundary neighbors and accumulate probabilities from medium sites
 			pt = bInvItr->pixel;
@@ -597,10 +613,10 @@ void ECMaterialsSteppable::calculateCellInteractions(Field3D<ECMaterialsData *> 
 
 				qtyOld = ECMaterialsFieldOld->get(neighbor.pt)->getECMaterialsQuantityVec();
 
-				for (std::vector<int>::iterator i = idxCellInteractionsDefined.begin(); i != idxCellInteractionsDefined.end(); ++i) {
-					probAccumProlif += CellTypeCoefficientsProliferationByIndex[*i][cellType] * qtyOld[*i];
-					probAccumDeath += CellTypeCoefficientsDeathByIndex[*i][cellType] * qtyOld[*i];
-					for (int typeIdx = 0; typeIdx < maxTypeId; ++typeIdx) probAccumDiff[typeIdx] += CellTypeCoefficientsDifferentiationByIndex[*i][cellType][typeIdx];
+				for each (int i in idxCellInteractionsDefined) {
+					probAccumProlif += CellTypeCoefficientsProliferationByIndex[i][cellType] * qtyOld[i];
+					probAccumDeath += CellTypeCoefficientsDeathByIndex[i][cellType] * qtyOld[i];
+					for (int typeIdx = 0; typeIdx < probAccumDiff.size(); ++typeIdx) probAccumDiff[typeIdx] += CellTypeCoefficientsDifferentiationByIndex[i][cellType][typeIdx] * qtyOld[i];
 				}
 
 			}
@@ -608,26 +624,31 @@ void ECMaterialsSteppable::calculateCellInteractions(Field3D<ECMaterialsData *> 
 		}
 
 		// Consider each response in random order of response
-		bool resp;
+		// Maybe move this out and parallilize before this block
+		bool resp = false;
 		std::string Action;
 		std::string CellTypeDiff = "";
-		for (int respIdx = 0; respIdx < 3; ++respIdx) {
-			switch (responseOrder[respIdx]) {
+		for each (int respIdx in responseOrder) {
+			switch (respIdx) {
 			case 0 : // proliferation
 				resp = probAccumProlif > randFloatGen01();
-				Action = "Proliferate";
+				Action = "Proliferation";
+				break;
 			case 1 : // death
 				resp = probAccumDeath > randFloatGen01();
 				Action = "Death";
+				break;
 			case 2 : // differentiation
-				Action = "Differentiate";
+				Action = "Differentiation";
 				for (std::map<std::string, int>::iterator mitr = cellTypeNames.begin(); mitr != cellTypeNames.end(); ++mitr) {
 					resp = probAccumDiff[mitr->second] > randFloatGen01();
 					CellTypeDiff = mitr->first;
+					if (resp) break;
 				}
+				break;
 			}
 			if (resp) {
-				cellResponses.push_back(ECMaterialsCellResponse(cell, Action, CellTypeDiff));
+				ecMaterialsPlugin->addCellResponse(cell, Action, CellTypeDiff);
 				break;
 			}
 		}
@@ -672,26 +693,21 @@ void ECMaterialsSteppable::constructMaterialReactionCoefficients() {
 
 void ECMaterialsSteppable::constructCellTypeCoefficients() {
 
-	int maxTypeId = (int)automaton->getMaxTypeId();
 	numberOfMaterials = ecMaterialsPlugin->getNumberOfMaterials();
 
-	cellTypeNames.clear();
+	CellTypeCoefficientsProliferationByIndex = std::vector<std::vector<float> >(numberOfMaterials, std::vector<float>(numberOfCellTypes, 0.0));
+	CellTypeCoefficientsDifferentiationByIndex = std::vector<std::vector<std::vector<float> > >(numberOfMaterials, std::vector<std::vector<float> >(numberOfCellTypes, std::vector<float>(numberOfCellTypes, 0.0)));
+	CellTypeCoefficientsDeathByIndex = std::vector<std::vector<float> >(numberOfMaterials, std::vector<float>(numberOfCellTypes, 0.0));
 
-	CellTypeCoefficientsProliferationByIndex = std::vector<std::vector<float> >(numberOfMaterials, std::vector<float>(maxTypeId, 0.0));
-	CellTypeCoefficientsDifferentiationByIndex = std::vector<std::vector<std::vector<float> > >(numberOfMaterials, std::vector<std::vector<float> >(maxTypeId, std::vector<float>(maxTypeId, 0.0)));
-	CellTypeCoefficientsDeathByIndex = std::vector<std::vector<float> >(numberOfMaterials, std::vector<float>(maxTypeId, 0.0));
-
-	for (std::vector<int>::iterator i = idxCellInteractionsDefined.begin(); i != idxCellInteractionsDefined.end(); ++i) {
-		for (int j = 0; j < maxTypeId; ++j) {
+	for each (int i in idxCellInteractionsDefined) {
+		for (int j = 0; j < CellTypeCoefficientsProliferationByIndex[i].size(); ++j) {
 
 			std::string cellTypeName = automaton->getTypeName(j);
 
-			cellTypeNames.insert(make_pair(cellTypeName, j));
-
-			CellTypeCoefficientsProliferationByIndex[*i][j] = ECMaterialsVec->at(*i).getCellTypeCoefficientsProliferation(cellTypeName);
-			CellTypeCoefficientsDeathByIndex[*i][j] = ECMaterialsVec->at(*i).getCellTypeCoefficientsDeath(cellTypeName);
-			for (int k = 0; k < maxTypeId; ++k) {
-				CellTypeCoefficientsDifferentiationByIndex[*i][j][k] = ECMaterialsVec->at(*i).getCellTypeCoefficientsDifferentiation(cellTypeName, automaton->getTypeName(k));
+			CellTypeCoefficientsProliferationByIndex[i][j] = ECMaterialsVec->at(i).getCellTypeCoefficientsProliferation(cellTypeName);
+			CellTypeCoefficientsDeathByIndex[i][j] = ECMaterialsVec->at(i).getCellTypeCoefficientsDeath(cellTypeName);
+			for (int k = 0; k < CellTypeCoefficientsDifferentiationByIndex[i][j].size(); ++k) {
+				CellTypeCoefficientsDifferentiationByIndex[i][j][k] = ECMaterialsVec->at(i).getCellTypeCoefficientsDifferentiation(cellTypeName, automaton->getTypeName(k));
 			}
 		}
 	}
@@ -700,13 +716,12 @@ void ECMaterialsSteppable::constructCellTypeCoefficients() {
 
 void ECMaterialsSteppable::constructCellTypeCoefficientsProliferation() {
 
-	int maxTypeId = (int)automaton->getMaxTypeId();
 	numberOfMaterials = ecMaterialsPlugin->getNumberOfMaterials();
 
-	CellTypeCoefficientsProliferationByIndex = std::vector<std::vector<float> >(numberOfMaterials, std::vector<float>(maxTypeId, 0.0));
+	CellTypeCoefficientsProliferationByIndex = std::vector<std::vector<float> >(numberOfMaterials, std::vector<float>(numberOfCellTypes, 0.0));
 
 	for (std::vector<int>::iterator i = idxCellInteractionsDefined.begin(); i != idxCellInteractionsDefined.end(); ++i) {
-		for (int j = 0; j < maxTypeId; ++j) {
+		for (int j = 0; j < numberOfCellTypes; ++j) {
 			CellTypeCoefficientsProliferationByIndex[*i][j] = ECMaterialsVec->at(*i).getCellTypeCoefficientsProliferation(automaton->getTypeName(j));
 		}
 	}
@@ -715,14 +730,13 @@ void ECMaterialsSteppable::constructCellTypeCoefficientsProliferation() {
 
 void ECMaterialsSteppable::constructCellTypeCoefficientsDifferentiation() {
 
-	int maxTypeId = (int)automaton->getMaxTypeId();
 	numberOfMaterials = ecMaterialsPlugin->getNumberOfMaterials();
 
-	CellTypeCoefficientsDifferentiationByIndex = std::vector<std::vector<std::vector<float> > >(numberOfMaterials, std::vector<std::vector<float> >(maxTypeId, std::vector<float>(maxTypeId, 0.0)));
+	CellTypeCoefficientsDifferentiationByIndex = std::vector<std::vector<std::vector<float> > >(numberOfMaterials, std::vector<std::vector<float> >(numberOfCellTypes, std::vector<float>(numberOfCellTypes, 0.0)));
 
 	for (std::vector<int>::iterator i = idxCellInteractionsDefined.begin(); i != idxCellInteractionsDefined.end(); ++i) {
-		for (int j = 0; j < maxTypeId; ++j) {
-			for (int k = 0; k < maxTypeId; ++k) {
+		for (int j = 0; j < numberOfCellTypes; ++j) {
+			for (int k = 0; k < numberOfCellTypes; ++k) {
 				CellTypeCoefficientsDifferentiationByIndex[*i][j][k] = ECMaterialsVec->at(*i).getCellTypeCoefficientsDifferentiation(automaton->getTypeName(j), automaton->getTypeName(k));
 			}
 		}
@@ -732,13 +746,12 @@ void ECMaterialsSteppable::constructCellTypeCoefficientsDifferentiation() {
 
 void ECMaterialsSteppable::constructCellTypeCoefficientsDeath() {
 
-	int maxTypeId = (int)automaton->getMaxTypeId();
 	numberOfMaterials = ecMaterialsPlugin->getNumberOfMaterials();
 
-	CellTypeCoefficientsDeathByIndex = std::vector<std::vector<float> >(numberOfMaterials, std::vector<float>(maxTypeId, 0.0));
+	CellTypeCoefficientsDeathByIndex = std::vector<std::vector<float> >(numberOfMaterials, std::vector<float>(numberOfCellTypes, 0.0));
 
 	for (std::vector<int>::iterator i = idxCellInteractionsDefined.begin(); i != idxCellInteractionsDefined.end(); ++i) {
-		for (int j = 0; j < maxTypeId; ++j) {
+		for (int j = 0; j < numberOfCellTypes; ++j) {
 			CellTypeCoefficientsDeathByIndex[*i][j] = ECMaterialsVec->at(*i).getCellTypeCoefficientsDeath(automaton->getTypeName(j));
 		}
 	}

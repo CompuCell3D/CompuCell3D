@@ -47,17 +47,28 @@ namespace CompuCell3D {
 	class CellG;
 
 	template <class T> class WatchableField3D;
-	// template <typename T> class WatchableField3D;
 
-	// class ECMaterialsData;
-	// class ECMaterialComponentData;
-	// class ECMaterialCellData;
+	class ECMATERIALS_EXPORT ECMaterialsCellResponse {
+	public:
+
+		ECMaterialsCellResponse(CellG *_cell, std::string _action, std::string _cellTypeDiff = "") :
+			cell(_cell),
+			Action(_action),
+			CellTypeDiff(_cellTypeDiff)
+		{}
+		~ECMaterialsCellResponse() {};
+
+		CellG *cell;
+		std::string Action;
+		std::string CellTypeDiff;
+	};
 
 	class ECMATERIALS_EXPORT ECMaterialsPlugin : public Plugin, public EnergyFunction, public CellGChangeWatcher {
 	private:
 		BasicClassAccessor<ECMaterialsData> ECMaterialsDataAccessor;
 		BasicClassAccessor<ECMaterialComponentData> ECMaterialComponentDataAccessor;
 		BasicClassAccessor<ECMaterialCellData> ECMaterialCellDataAccessor;
+
 		CC3DXMLElement *xmlData;
 		Potts3D *potts;
 		Simulator *sim;
@@ -96,6 +107,8 @@ namespace CompuCell3D {
 
 		Dim3D fieldDim;
 		WatchableField3D<ECMaterialsData *> *ECMaterialsField;
+
+		std::vector<ECMaterialsCellResponse> cellResponses;
 
 		int dotProduct(Point3D _pt1, Point3D _pt2);
 
@@ -204,6 +217,13 @@ namespace CompuCell3D {
 		std::vector<Neighbor> getFirstOrderNeighbors(const Point3D &pt);
 
 		virtual Field3D<ECMaterialsData *> *getECMaterialField() { return (Field3D<ECMaterialsData *> *)ECMaterialsField; }
+
+		int numberOfResponsesOccurred() { return (int)cellResponses.size(); };
+		CellG *getCellResponseCell(int _idx) { return cellResponses[_idx].cell; };
+		std::string getCellResponseAction(int _idx) { return cellResponses[_idx].Action; };
+		std::string getCellResponseCellTypeDiff(int _idx) { return cellResponses[_idx].CellTypeDiff; };
+		virtual void resetCellResponse() { cellResponses.clear(); }
+		virtual void addCellResponse(CellG *_cell, std::string _action, std::string _cellTypeDiff = "") { cellResponses.push_back(ECMaterialsCellResponse(_cell, _action, _cellTypeDiff)); };
 
 		void overrideInitialization();
 
