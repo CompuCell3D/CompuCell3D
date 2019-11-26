@@ -46,6 +46,7 @@ namespace CompuCell3D {
 			std::map<std::string, std::vector<float> > materialReactionCoefficients;
 			float materialDiffusionCoefficient;
 			std::map<std::string, float> CellTypeCoefficientsProliferation;
+			std::map<std::string, std::map<std::string, float> > CellTypeCoefficientsProliferationAsym;
 			std::map<std::string, std::map<std::string, float> > CellTypeCoefficientsDifferentiation;
 			std::map<std::string, float> CellTypeCoefficientsDeath;
 			
@@ -102,20 +103,47 @@ namespace CompuCell3D {
 			void setMaterialDiffusionCoefficient(float _val) { materialDiffusionCoefficient = _val; }
 			// Sets a cell proliferation response for cell type _cellType with coefficient _val
 			// Registers response if not previously registered
+			// If _newCellType is specified, then the response is asymmetric division with daughter cell type _newCellType
 			// _val must be greater than zero
-			void setCellTypeCoefficientsProliferation(std::string _cellType, float _val) {
+			void setCellTypeCoefficientsProliferation(std::string _cellType, float _val, std::string _newCellType=string()) {
 				if (_val < 0) return;
-				std::map<std::string, float>::iterator mitr = CellTypeCoefficientsProliferation.find(_cellType);
-				if (mitr == CellTypeCoefficientsProliferation.end()) {
-					cerr << "Registering proliferation response coefficient for pair (" << ECMaterialName << ", " << _cellType << "): " << _val << endl;
-					CellTypeCoefficientsProliferation.insert(make_pair(_cellType, _val));
+				if (_newCellType.empty()) {
+					std::map<std::string, float>::iterator mitr = CellTypeCoefficientsProliferation.find(_cellType);
+					if (mitr == CellTypeCoefficientsProliferation.end()) {
+						cerr << "Registering proliferation response coefficient for pair (" << ECMaterialName << ", " << _cellType << "): " << _val << endl;
+						CellTypeCoefficientsProliferation.insert(make_pair(_cellType, _val));
+					}
+					else CellTypeCoefficientsProliferation[_cellType] = _val;
 				}
-				else CellTypeCoefficientsProliferation[_cellType] = _val;
+				else setCellTypeCoefficientsProliferationAsymmetric(_cellType, _val, _newCellType);
+			}
+			// Sets a cell asymmetric division response for cell type _cellType with coefficient _val and daughter cell type _newCellType
+			// Registers response if not previously registered
+			// _val must be greater than zero
+			void setCellTypeCoefficientsProliferationAsymmetric(std::string _cellType, float _val, std::string _newCellType) {
+				if (_val < 0) return;
+				std::map<std::string, std::map<std::string, float> >::iterator mitr = CellTypeCoefficientsProliferationAsym.find(_cellType);
+				std::map<std::string, float> newCoeffs;
+				if (mitr == CellTypeCoefficientsProliferationAsym.end()) {
+					cerr << "Registering asymmetric differentiation response coefficient for pair (" << ECMaterialName << ", " << _cellType << ", " << _newCellType << "): " << _val << endl;
+					newCoeffs.insert(make_pair(_newCellType, _val));
+					CellTypeCoefficientsProliferationAsym.insert(make_pair(_cellType, newCoeffs));
+				}
+				else {
+					std::map<std::string, float>thisCellTypeCoefficientsProliferationAsym = CellTypeCoefficientsProliferationAsym[_cellType];
+					std::map<std::string, float>::iterator mmitr = thisCellTypeCoefficientsProliferationAsym.find(_newCellType);
+					if (mmitr == thisCellTypeCoefficientsProliferationAsym.end()) {
+						cerr << "Registering differentiation response coefficient for pair (" << ECMaterialName << ", " << _cellType << ", " << _newCellType << "): " << _val << endl;
+						thisCellTypeCoefficientsProliferationAsym.insert(make_pair(_newCellType, _val));
+						CellTypeCoefficientsProliferationAsym[_cellType] = thisCellTypeCoefficientsProliferationAsym;
+					}
+					else CellTypeCoefficientsProliferationAsym[_cellType][_newCellType] = _val;
+				}
 			}
 			// Sets a cell differentiation response for cell type _cellType to cell type _newCellType with coefficient _val
 			// Registers response if not previously registered
 			// _val must be greater than zero
-			void setCellTypeCoefficientsDifferentiation(std::string _cellType, std::string _newCellType, float _val) {
+			void setCellTypeCoefficientsDifferentiation(std::string _cellType, float _val, std::string _newCellType) {
 				if (_val < 0) return;
 				std::map<std::string, std::map<std::string, float> >::iterator mitr = CellTypeCoefficientsDifferentiation.find(_cellType);
 				std::map<std::string, float> newCoeffs;
@@ -190,6 +218,22 @@ namespace CompuCell3D {
 					return 0.0;
 				}
 				else return CellTypeCoefficientsProliferation[_cellType];
+			}
+			// Returns cell differentiation response for cell type _cellType into cell type _newCellType
+			float getCellTypeCoefficientsProliferationAsymmetric(std::string _cellType, std::string _newCellType) {
+				std::map<std::string, std::map<std::string, float> >::iterator mitr = CellTypeCoefficientsProliferationAsym.find(_cellType);
+				if (mitr == CellTypeCoefficientsProliferationAsym.end()) {
+					cerr << "Warning: requested unregistered asymmetric division response coefficient for pair (" << ECMaterialName << ", " << _cellType << ", " << _newCellType << ")" << endl;
+					return 0.0;
+				}
+				else {
+					std::map<std::string, float>::iterator mmitr = CellTypeCoefficientsProliferationAsym[_cellType].find(_newCellType);
+					if (mmitr == CellTypeCoefficientsProliferationAsym[_cellType].end()) {
+						cerr << "Warning: requested unregistered asymmetric division response coefficient for pair (" << ECMaterialName << ", " << _cellType << ", " << _newCellType << ")" << endl;
+						return 0.0;
+					}
+					else return CellTypeCoefficientsProliferationAsym[_cellType][_newCellType];
+				}
 			}
 			// Returns cell differentiation response for cell type _cellType into cell type _newCellType
 			float getCellTypeCoefficientsDifferentiation(std::string _cellType, std::string _newCellType) {

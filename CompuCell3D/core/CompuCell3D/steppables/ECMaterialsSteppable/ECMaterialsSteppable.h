@@ -104,10 +104,14 @@ namespace CompuCell3D {
 		std::vector<std::vector<float> > fromFieldReactionCoefficientsByIndex;
 		std::vector<std::vector<std::vector<float> > > materialReactionCoefficientsByIndex;
 		std::vector<std::vector<float> > CellTypeCoefficientsProliferationByIndex;
+		std::vector<std::vector<std::vector<float> > > CellTypeCoefficientsProliferationAsymByIndex;
 		std::vector<std::vector<std::vector<float> > > CellTypeCoefficientsDifferentiationByIndex;
 		std::vector<std::vector<float> > CellTypeCoefficientsDeathByIndex;
 
+		// Utility functions
 		float randFloatGen01() { return float(rand()) / (float(RAND_MAX) + 1); };
+		std::vector<std::vector<int> > permutations(int _numberOfVals);
+		bool testProb(float prob) { return prob > FLT_MIN && prob > randFloatGen01(); };
 
 	public:
 
@@ -145,7 +149,7 @@ namespace CompuCell3D {
 
 		void calculateMaterialToFieldInteractions(const Point3D &pt, std::vector<float> _qtyOld);
 		void calculateCellInteractions(Field3D<ECMaterialsData *> *ECMaterialsFieldOld);
-		virtual std::vector<ECMaterialsCellResponse> getCellResponses() { return cellResponses; } // Returns vector of cell responses
+		std::tuple<float, float, std::vector<float>, std::vector<float> > calculateCellProbabilities(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0, std::vector<bool> _resultsSelect = { true,true,true,true });
 
 		int getCellTypeIndexByName(std::string _cellTypeName) {
 			std::map<std::string, int>::iterator mitr = cellTypeNames.find(_cellTypeName);
@@ -161,6 +165,17 @@ namespace CompuCell3D {
 			for (std::map<std::string, int>::iterator mitr = fieldNames.begin(); mitr != fieldNames.end(); ++mitr) if (mitr->second == _idx) return mitr->first;
 			return "";
 		}
+
+		// Interface with plugin
+		virtual std::vector<ECMaterialsCellResponse> getCellResponses() { return cellResponses; } // Returns vector of cell responses
+		virtual float calculateCellProbabilityProliferation(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		virtual float calculateCellProbabilityDeath(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		virtual float calculateCellProbabilityDifferentiation(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		virtual float calculateCellProbabilityAsymmetricDivision(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		virtual bool getCellResponseProliferation(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		virtual bool getCellResponseDeath(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		virtual bool getCellResponseDifferentiation(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		virtual bool getCellResponseAsymmetricDivision(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
 
     };
 

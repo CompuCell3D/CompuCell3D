@@ -43,6 +43,7 @@ namespace CompuCell3D {
 	class Automaton;
 	class BoundaryStrategy;
     class ParallelUtilsOpenMP;
+	class ECMaterialsSteppable;
 
 	class CellG;
 
@@ -107,6 +108,8 @@ namespace CompuCell3D {
 
 		Dim3D fieldDim;
 		WatchableField3D<ECMaterialsData *> *ECMaterialsField;
+
+		ECMaterialsSteppable *ecMaterialsSteppable;
 
 		std::vector<ECMaterialsCellResponse> cellResponses;
 
@@ -217,13 +220,27 @@ namespace CompuCell3D {
 		std::vector<Neighbor> getFirstOrderNeighbors(const Point3D &pt);
 
 		virtual Field3D<ECMaterialsData *> *getECMaterialField() { return (Field3D<ECMaterialsData *> *)ECMaterialsField; }
+		void setECMaterialsSteppable(ECMaterialsSteppable *_ecMaterialsSteppable) { ecMaterialsSteppable = _ecMaterialsSteppable; }
 
+		// Interface with python
 		int numberOfResponsesOccurred() { return (int)cellResponses.size(); };
 		CellG *getCellResponseCell(int _idx) { return cellResponses[_idx].cell; };
 		std::string getCellResponseAction(int _idx) { return cellResponses[_idx].Action; };
 		std::string getCellResponseCellTypeDiff(int _idx) { return cellResponses[_idx].CellTypeDiff; };
+
+		// Interface with steppable
 		virtual void resetCellResponse() { cellResponses.clear(); }
 		virtual void addCellResponse(CellG *_cell, std::string _action, std::string _cellTypeDiff = "") { cellResponses.push_back(ECMaterialsCellResponse(_cell, _action, _cellTypeDiff)); };
+
+		// Interface between steppable and python
+		float calculateCellProbabilityProliferation(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		float calculateCellProbabilityDeath(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		float calculateCellProbabilityDifferentiation(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		float calculateCellProbabilityAsymmetricDivision(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		bool getCellResponseProliferation(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		bool getCellResponseDeath(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		bool getCellResponseDifferentiation(CellG *cell, std::string newCellType = std::string(), Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		bool getCellResponseAsymmetricDivision(CellG *cell, std::string newCellType = std::string(), Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
 
 		void overrideInitialization();
 

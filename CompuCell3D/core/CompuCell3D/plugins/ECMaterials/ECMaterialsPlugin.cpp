@@ -31,6 +31,7 @@ using namespace CompuCell3D;
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 #include "ECMaterialsPlugin.h"
 #include "PublicUtilities/Vector3.h"
+#include <CompuCell3D/steppables/ECMaterialsSteppable/ECMaterialsSteppable.h>
 
 
 ECMaterialsPlugin::ECMaterialsPlugin() :
@@ -1063,6 +1064,35 @@ std::vector<Neighbor> ECMaterialsPlugin::getFirstOrderNeighbors(const Point3D &p
         neighbors.push_back(neighbor);
     }
     return neighbors;
+}
+
+float ECMaterialsPlugin::calculateCellProbabilityProliferation(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField) { 
+	return ecMaterialsSteppable->calculateCellProbabilityProliferation(cell, _ecmaterialsField); 
+}
+
+float ECMaterialsPlugin::calculateCellProbabilityDeath(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField) { 
+	return ecMaterialsSteppable->calculateCellProbabilityDeath(cell, _ecmaterialsField); 
+}
+
+float ECMaterialsPlugin::calculateCellProbabilityDifferentiation(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField) {
+	return ecMaterialsSteppable->calculateCellProbabilityDifferentiation(cell, newCellType, _ecmaterialsField); 
+}
+
+float ECMaterialsPlugin::calculateCellProbabilityAsymmetricDivision(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField) {
+	return ecMaterialsSteppable->calculateCellProbabilityAsymmetricDivision(cell, newCellType, _ecmaterialsField); 
+}
+
+bool ECMaterialsPlugin::getCellResponseProliferation(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField) {
+	return ecMaterialsSteppable->getCellResponseProliferation(cell, _ecmaterialsField);
+}
+bool ECMaterialsPlugin::getCellResponseDeath(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField) {
+	return ecMaterialsSteppable->getCellResponseDeath(cell, _ecmaterialsField);
+}
+bool ECMaterialsPlugin::getCellResponseDifferentiation(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField) {
+	return ecMaterialsSteppable->getCellResponseDifferentiation(cell, newCellType, _ecmaterialsField);
+}
+bool ECMaterialsPlugin::getCellResponseAsymmetricDivision(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField) {
+	return ecMaterialsSteppable->getCellResponseAsymmetricDivision(cell, newCellType, _ecmaterialsField);
 }
 
 void ECMaterialsPlugin::ParaDraw(std::vector<float> _qtyVec, Point3D _startPos, Point3D _lenVec1, Point3D _lenVec2, Point3D _lenVec3) {
