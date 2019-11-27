@@ -207,6 +207,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.mcs = -1
         # {plot_name:plotWindow  - pW object}
         self.plot_dict = {}
+        self.shared_steppable_vars = {}
 
         # {field_name:FieldVisData } -  used to keep track of simple cell tracking visualizations
         self.tracking_field_vis_dict = {}
@@ -299,6 +300,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                 # setattr(self, type_name.upper(), type_id)
 
         self.fetch_loaded_plugins()
+        self.shared_steppable_vars = persistent_globals.shared_steppable_vars
 
     def fetch_loaded_plugins(self) -> None:
         """
