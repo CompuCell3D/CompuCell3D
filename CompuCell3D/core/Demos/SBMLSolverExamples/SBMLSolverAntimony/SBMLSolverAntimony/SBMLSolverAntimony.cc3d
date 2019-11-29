@@ -1,0 +1,5 @@
+<Simulation version="4.0.0">
+   <XMLScript Type="XMLScript">Simulation/SBMLSolverAntimony.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/SBMLSolverAntimony.py</PythonScript>
+   <Resource Type="Python">Simulation/SBMLSolverAntimonySteppables.py</Resource>
+</Simulation>
