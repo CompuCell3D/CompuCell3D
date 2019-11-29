@@ -1,9 +1,3 @@
-"""
-Example args
-
-
-"""
-
 import argparse
 import sys
 from pathlib import Path
@@ -20,7 +14,6 @@ from cc3d.core.param_scan.parameter_scan_utils import read_parameters_from_param
 from cc3d.core.param_scan.parameter_scan_utils import ParamScanStop
 from cc3d.core.filelock import FileLock
 from cc3d.core.filelock import FileLockException
-
 
 
 def process_cml():
@@ -54,7 +47,8 @@ def find_run_script(install_dir, gui_flag=False):
 
     raise FileNotFoundError('Could not find run script')
 
-def prepare_param_scan_folder(cc3d_proj_fname:Union[str, Path], output_dir:Union[str, Path]) -> None:
+
+def prepare_param_scan_folder(cc3d_proj_fname: Union[str, Path], output_dir: Union[str, Path]) -> None:
     """
     Prepares parameter scan folder - copies necessary files . Only one instance can run this function it is
     lock-protected.
@@ -102,12 +96,6 @@ if __name__ == '__main__':
 
         sys.exit(1)
 
-    # copy_success = copy_project_to_output_folder(cc3d_proj_fname=cc3d_proj_fname, output_dir=output_dir)
-    #
-    # cc3d_proj_target = cc3d_proj_pth_in_output_dir(cc3d_proj_fname=cc3d_proj_fname, output_dir=output_dir)
-    #
-    # create_param_scan_status(cc3d_proj_target, output_dir=output_dir)
-    iteration = 0
     stop_scan = False
 
     while True:
@@ -121,25 +109,10 @@ if __name__ == '__main__':
                 lock_file=Path(output_dir).joinpath('param_scan_status.lock')))
 
             break
-        # except StopIteration:
-        #
-        #     stop_scan = True
-        #     current_scan_parameters, _ = read_parameters_from_param_scan_status_file(output_dir=output_dir)
-        #     # break
-
-        # except StopIteration:
-        #
-        #     handle_param_scan_complete(output_dir)
-        #
-        #     break
 
         except ParamScanStop:
             stop_scan = True
             current_scan_parameters, _ = read_parameters_from_param_scan_status_file(output_dir=output_dir)
-
-            # break
-
-        print ('running :', current_scan_parameters)
 
         # event with ParamScanStop signal we run the last simuulation int hparam scan. After this last run
         # param_scan.complete.signal will get written to the disk
@@ -153,31 +126,6 @@ if __name__ == '__main__':
                                          current_scan_parameters=current_scan_parameters, output_dir=output_dir,
                                          arg_list=arg_list)
 
-
         if stop_scan:
             handle_param_scan_complete(output_dir)
             break
-
-        # except ParamScanStop:
-        #     handle_param_scan_complete(output_dir)
-        #
-        #     break
-        # print(current_scan_parameters)
-        # iteration += 1
-        # if iteration >= 6:
-        #     sys.exit()
-        # arg_list = [
-        #     '--output-frequency={}'.format(output_frequency),
-        #     '--screenshot-output-frequency={}'.format(screenshot_output_frequency)
-        # ]
-        #
-        # run_single_param_scan_simulation(cc3d_proj_fname=cc3d_proj_fname, run_script=run_script, gui_flag=gui_flag,
-        #                                  current_scan_parameters=current_scan_parameters, output_dir=output_dir,
-        #                                  arg_list=arg_list)
-
-
-
-        # break
-
-
-    print ('exiting the script')

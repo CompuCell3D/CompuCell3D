@@ -1,4 +1,3 @@
-import time
 import sys
 import shutil
 from subprocess import Popen
@@ -14,11 +13,7 @@ from cc3d.core.filelock import FileLock
 from cc3d.core.ParameterScanEnums import SCAN_FINISHED_OR_DIRECTORY_ISSUE
 import cc3d.core.param_scan
 import traceback
-
-
 from .template_utils import generate_simulation_files_from_template
-
-# from cc3d.player5.compucell3d import main as main_player
 
 
 class ParamScanStop(Exception):
@@ -93,7 +88,6 @@ def copy_project_to_output_folder(cc3d_proj_fname: Union[str, Path], output_dir:
 
     cc3d_proj_target = cc3d_proj_pth_in_output_dir(cc3d_proj_fname=cc3d_proj_fname, output_dir=output_dir)
 
-    # if not Path(output_dir).exists():
     if not cc3d_proj_target.exists():
         shutil.copytree(Path(cc3d_proj_fname).parent, cc3d_proj_target.parent)
 
@@ -145,10 +139,6 @@ def create_param_scan_status(cc3d_proj_fname: Union[str, Path], output_dir: Unio
 
         # adding current_idx
         param_list_elem[param_name]['current_idx'] = 0
-        # if i == 1:
-        #     param_list_elem[param_name]['current_idx'] = -1
-        # else:
-        #     param_list_elem[param_name]['current_idx'] = 0
         try:
             values = param_list_elem[param_name]['values']
         except KeyError:
@@ -235,24 +225,6 @@ def fetch_next_set_of_scan_parameters(output_dir: Union[str, Path]) -> dict:
 
     with FileLock(Path(output_dir).joinpath('param_scan_status.lock')):
         ret_dict, param_scan_status_root = read_parameters_from_param_scan_status_file(output_dir=output_dir)
-        # param_scan_status_pth = param_scan_status(output_dir=output_dir)
-        #
-        # with open(str(param_scan_status_pth), 'r') as fin:
-        #     param_scan_status_root = json.load(fin)
-        #
-        # param_list_dict = param_scan_status_root['parameter_list']
-        #
-        # ret_dict = {
-        #     'current_iteration': param_scan_status_root['current_iteration'],
-        # }
-        #
-        # param_dict = OrderedDict(
-        #     [(param_name, param_list_dict[param_name]['values'][param_list_dict[param_name]['current_idx']]) for
-        #      param_name in param_list_dict.keys()]
-        # )
-        #
-        # ret_dict['parameters'] = param_dict
-
         update_param_scan_status(param_scan_status_root=param_scan_status_root, output_dir=output_dir)
 
         return ret_dict
@@ -286,16 +258,6 @@ def advance_param_list(param_scan_status_root: dict) -> dict:
     param_list_dict = param_scan_status_root['parameter_list']
 
     curr_list = list(map(lambda key: param_list_dict[key]['current_idx'], param_list_dict.keys()))
-
-    # if not sum(curr_list):
-    #
-    #     for param_name, current_idx in zip(param_list_dict.keys(), curr_list):
-    #         param_list_dict[param_name]['current_idx'] = current_idx
-    #
-    #     # advancing current iteration
-    #     param_scan_status_root['current_iteration'] = param_scan_status_root['current_iteration'] + 1
-    #
-    #     return param_list_dict
 
     max_list = list(map(lambda key: len(param_list_dict[key]['values']) - 1, param_list_dict.keys()))
     try:
@@ -336,67 +298,13 @@ def next_cartesian_product_from_state(curr_list: List[int], max_list: List[int])
             if curr_list[i] > max_list[i]:
                 curr_list[i] = 0
                 carry_over = 1
-                # if i == list_len - 1:
-                # raise StopIteration('next_cartesian_product_from_state: Parameter Scan Finished')
-                if i == list_len - 1 and carry_over:
+                # if i == list_len - 1 and carry_over:
+                if i == list_len - 1:
                     raise ParamScanStop('next_cartesian_product_from_state: Parameter Scan Finished')
 
             if not carry_over:
                 yield curr_list
                 break
-
-
-# def next_cartesian_product_from_state(curr_list: List[int], max_list: List[int]) -> List[int]:
-#     """
-#     Generator that gives next cartesian product combination from a current state
-#
-#     :param curr_list: {list of ints} current cartesian product combination
-#     :param max_list:{list of ints} maximum values a given position may assume
-#     :return: {list} list of indices - one index per parameter that indicate which values should be used for
-#     the current combination of scanned parameters
-#     """
-#
-#     if len(curr_list) != len(max_list):
-#         raise ValueError("curr_list and max_list must have same length ")
-#
-#     list_len = len(curr_list)
-#     # first_call_done = False
-#     # if not first_call_done:
-#     #     first_call_done = True
-#     #     yield curr_list
-#
-#     # first_call_done = False
-#     iteration_counter = 0
-#     carry_over = 0
-#     while True:
-#         for i in range(len(curr_list)):
-#             # if sum(curr_list) == 0:
-#             #     # iteration_counter += 1
-#             #     yield curr_list
-#             #
-#             #     continue
-#             # if i==0:
-#             #     yield curr_list
-#             # if not first_call_done:
-#             #     first_call_done = True
-#
-#             # if not carry_over:
-#             #     yield curr_list
-#
-#             curr_list[i] += 1
-#             carry_over = 0
-#             if curr_list[i] > max_list[i]:
-#                 curr_list[i] = 0
-#                 carry_over = 1
-#                 # if i == list_len - 1:
-#                     # raise StopIteration('next_cartesian_product_from_state: Parameter Scan Finished')
-#                 if i == list_len -1:
-#                     raise ParamScanStop('next_cartesian_product_from_state: Parameter Scan Finished')
-#
-#             if not carry_over:
-#                 yield curr_list
-#                 print('dupa')
-#                 break
 
 
 def run_main_player_run_script(arg_list_local: list):
@@ -418,9 +326,7 @@ def run_main_player_run_script(arg_list_local: list):
         except:
             code = None
             traceback.print_exc(file=sys.stdout)
-            # handle_error()
 
-        # exec(code)
         if code is not None:
             try:
                 exec(code)
@@ -484,14 +390,3 @@ def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_
     print('repeat: Running simulation with current_scan_parameters=', current_scan_parameters)
 
     # time.sleep(5.0)
-
-
-if __name__ == '__main__':
-    # curr_list = [0,0]
-    # max_list= [1,1]
-    curr_list = [0, 0, 0, 0]
-    max_list = [0, 4, 0, 0]
-
-    while True:
-        curr_list = next(next_cartesian_product_from_state(curr_list=curr_list, max_list=max_list))
-        print(curr_list)
