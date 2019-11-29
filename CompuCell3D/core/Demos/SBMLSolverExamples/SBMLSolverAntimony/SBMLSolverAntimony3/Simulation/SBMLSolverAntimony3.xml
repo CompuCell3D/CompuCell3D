@@ -1,0 +1,106 @@
+<CompuCell3D Revision="20190811" Version="4.0.0">
+   
+   <Metadata>
+      
+      <!-- Basic properties simulation -->
+      <NumberOfProcessors>1</NumberOfProcessors>
+      <DebugOutputFrequency>10</DebugOutputFrequency>
+      <!-- <NonParallelModule Name="Potts"/> -->
+   </Metadata>
+   
+   <Potts>
+      
+      <!-- Basic properties of CPM (GGH) algorithm -->
+      <Dimensions x="100" y="105" z="1"/>
+      <Steps>100000</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+      <Boundary_y>Periodic</Boundary_y>
+   </Potts>
+   
+   <Plugin Name="CellType">
+      
+      <!-- Listing all cell types in the simulation -->
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="StalkCell"/>
+      <CellType TypeId="2" TypeName="TipCell"/>
+   </Plugin>
+   
+   <Plugin Name="Volume">
+      <VolumeEnergyParameters CellType="StalkCell" LambdaVolume="2.0" TargetVolume="50"/>
+      <VolumeEnergyParameters CellType="TipCell" LambdaVolume="2.0" TargetVolume="50"/>
+   </Plugin>
+   
+   <Plugin Name="NeighborTracker">
+      
+      <!-- Module tracking neighboring cells of each cell -->
+   </Plugin>
+   
+   <Plugin Name="PixelTracker">
+      
+      <!-- Module tracking pixels of each cell -->
+   </Plugin>
+   
+   <Plugin Name="Contact">
+      <!-- Specification of adhesion energies -->
+      <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+      <Energy Type1="Medium" Type2="StalkCell">12.0</Energy>
+      <Energy Type1="Medium" Type2="TipCell">12.0</Energy>
+      <Energy Type1="StalkCell" Type2="StalkCell">6.0</Energy>
+      <Energy Type1="StalkCell" Type2="TipCell">6.0</Energy>
+      <Energy Type1="TipCell" Type2="TipCell">6.0</Energy>
+      <NeighborOrder>4</NeighborOrder>
+   </Plugin>
+   
+   <Plugin Name="Chemotaxis">
+      
+      <!-- You may repeat ChemicalField element for each chemical field declared in the PDE solvers -->
+      <!-- Specification of chemotaxis properties of select cell types. -->
+      <ChemicalField Name="VEGF">
+         <ChemotaxisByType ChemotactTowards="Medium" Lambda="5e4" SaturationCoef="1e0" Type="StalkCell"/>
+      </ChemicalField>
+   </Plugin>
+   
+   <Steppable Type="DiffusionSolverFE">
+      
+      <!-- Specification of PDE solvers -->
+      <DiffusionField Name="VEGF">
+         <DiffusionData>
+            <FieldName>VEGF</FieldName>
+            <GlobalDiffusionConstant>0.25</GlobalDiffusionConstant>
+            <GlobalDecayConstant>0</GlobalDecayConstant>
+            <!-- Additional options are: -->
+            <!-- <InitialConcentrationExpression>x*y</InitialConcentrationExpression> -->
+            <!-- <ConcentrationFileName>INITIAL CONCENTRATION FIELD - typically a file with path Simulation/NAME_OF_THE_FILE.txt</ConcentrationFileName> -->
+            <DiffusionCoefficient CellType="StalkCell">0.1</DiffusionCoefficient>
+            <DiffusionCoefficient CellType="TipCell">0.1</DiffusionCoefficient>
+            <DecayCoefficient CellType="StalkCell">0</DecayCoefficient>
+            <DecayCoefficient CellType="TipCell">0</DecayCoefficient>
+            <InitialConcentrationExpression>0*x/100</InitialConcentrationExpression>
+         </DiffusionData>
+         <BoundaryConditions>
+            <Plane Axis="X">
+               <ConstantDerivative PlanePosition="Min" Value="0.0"/>
+               <ConstantValue PlanePosition="Max" Value="1.0"/>
+            </Plane>
+            <Plane Axis="Y">
+               <Periodic/>
+            </Plane>
+         </BoundaryConditions>
+      </DiffusionField>
+   </Steppable>
+   
+   <Steppable Type="UniformInitializer">
+   
+   <!-- Initial layout of cells in the form of rectangular slab -->
+   <Region>
+      <BoxMin x="0"  y="0"   z="0"/>
+      <BoxMax x="20" y="105" z="1"/>
+      <Gap>0</Gap>
+      <Width>7</Width>
+      <Types>StalkCell</Types>
+   </Region>
+</Steppable>
+
+   
+</CompuCell3D>
