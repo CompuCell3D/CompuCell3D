@@ -69,6 +69,9 @@ class PersistentGlobals:
         self.steering_param_dict = OrderedDict()
         self.steering_panel_synchronizer = Lock()
 
+        # dictionary holding shared variables between steppables
+        self.shared_steppable_vars = {}
+
     def add_steering_panel(self, panel_data: dict):
         """
         Adds steering panel if simulation is run using player

@@ -571,33 +571,34 @@ void ECMaterialsSteppable::calculateCellInteractions(Field3D<ECMaterialsData *> 
 
 	// Initialize information for counting cell interactions
 	int numberOfCells = cellInventoryPtr->getSize();
-	cellResponses.clear();
-
-	float probAccumProlif;
-	std::vector<float> probAccumProlifAsym;
-	std::vector<float> probAccumDiff;
-	float probAccumDeath;
+	std::vector<CellG*> *cellResponsesCell = new std::vector<CellG*>(numberOfCells, nullptr);
+	std::vector<std::string> *cellResponsesAction = new std::vector<std::string>(numberOfCells, std::string());
+	std::vector<std::string> *cellResponsesCellTypeDiff = new std::vector<std::string>(numberOfCells, std::string());
+	int idx = 0;
+	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr) {
+		(*cellResponsesCell)[idx] = cInvItr->second;
+		++idx;
+	}
 	
 	//		randomly order evaluation of responses
 	std::vector<std::vector<int> > responseOrderSet = permutations(4);
 	std::vector<int> responseOrder = responseOrderSet[rand() % responseOrderSet.size()];
-	std::tuple<float, float, std::vector<float>, std::vector<float> > probs;
 
 	// Loop over cells and consider each response
-	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr) {
-		cell = cellInventoryPtr->getCell(cInvItr);
+	concurrency::parallel_for(int(0), numberOfCells, [=](int cellIdx) {
+		CellG* cell = (*cellResponsesCell)[cellIdx];
+		(*cellResponsesCell)[cellIdx] = nullptr;
 
-		probs = calculateCellProbabilities(cell, ECMaterialsFieldOld);
+		std::tuple<float, float, std::vector<float>, std::vector<float> > probs = calculateCellProbabilities(cell, ECMaterialsFieldOld);
 
-		probAccumProlif = std::get<0>(probs);
-		probAccumDeath = std::get<1>(probs);
-		probAccumDiff = std::get<2>(probs);
-		probAccumProlifAsym = std::get<3>(probs);
+		float probAccumProlif = std::get<0>(probs);
+		float probAccumDeath = std::get<1>(probs);
+		std::vector<float> probAccumDiff = std::get<2>(probs);
+		std::vector<float> probAccumProlifAsym = std::get<3>(probs);
 
 		// Consider each response in random order of response
-		// Maybe move this out and parallilize before this block
 		bool resp = false;
-		std::string Action;
+		std::string Action = "";
 		std::string CellTypeDiff = "";
 		for each (int respIdx in responseOrder) {
 			switch (respIdx) {
@@ -627,11 +628,18 @@ void ECMaterialsSteppable::calculateCellInteractions(Field3D<ECMaterialsData *> 
 				break;
 			}
 			if (resp) {
-				ecMaterialsPlugin->addCellResponse(cell, Action, CellTypeDiff);
+				(*cellResponsesCell)[cellIdx] = cell;
+				(*cellResponsesAction)[cellIdx] = Action;
+				(*cellResponsesCellTypeDiff)[cellIdx] = CellTypeDiff;
 				break;
 			}
 		}
 
+	});
+
+	for (idx = 0; idx < numberOfCells; ++idx) {
+		if (!(*cellResponsesCell)[idx]) continue;
+		ecMaterialsPlugin->addCellResponse((*cellResponsesCell)[idx], (*cellResponsesAction)[idx], (*cellResponsesCellTypeDiff)[idx]);
 	}
 
 }
@@ -646,6 +654,8 @@ std::tuple<float, float, std::vector<float>, std::vector<float> > ECMaterialsSte
 
 	if (!cell) return make_tuple(probAccumProlif, probAccumDeath, probAccumDiff, probAccumProlifAsym);
 
+	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
+	int nNeighbors = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 	Neighbor neighbor;
 	CellG *nCell = 0;
 	Point3D pt;

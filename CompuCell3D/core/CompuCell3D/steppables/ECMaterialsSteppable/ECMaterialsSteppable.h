@@ -98,8 +98,6 @@ namespace CompuCell3D {
 		std::vector<std::vector<int> > idxidxFromFieldInteractionsDefined;
 		std::vector<int> idxCellInteractionsDefined;
 
-		std::vector<ECMaterialsCellResponse> cellResponses; // return vector of cellular responses
-
 		std::vector<std::vector<float> > toFieldReactionCoefficientsByIndex;
 		std::vector<std::vector<float> > fromFieldReactionCoefficientsByIndex;
 		std::vector<std::vector<std::vector<float> > > materialReactionCoefficientsByIndex;
@@ -167,7 +165,6 @@ namespace CompuCell3D {
 		}
 
 		// Interface with plugin
-		virtual std::vector<ECMaterialsCellResponse> getCellResponses() { return cellResponses; } // Returns vector of cell responses
 		virtual float calculateCellProbabilityProliferation(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
 		virtual float calculateCellProbabilityDeath(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
 		virtual float calculateCellProbabilityDifferentiation(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
