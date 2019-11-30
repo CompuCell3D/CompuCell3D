@@ -768,68 +768,6 @@ void DiffusionSolverFE_OpenCL::initImpl() {
 
 }
 
-//void DiffusionSolverFE_OpenCL::initImpl(){
-//
-//	if(gpuDeviceIndex==-1)
-//		gpuDeviceIndex=0;
-//
-//	//cerr<<"Requested GPU device index is "<<gpuDeviceIndex<<endl;
-//	oclHelper=new OpenCLHelper(gpuDeviceIndex);
-//    
-//    
-//	localWorkSize[0]=BLOCK_SIZE;
-//	localWorkSize[1]=BLOCK_SIZE;
-//	//TODO: BLOCK size can be non-optimal in terms of maximum performance
-//    // on some low-end GPUs we need to limit  number of workers because if the kernel code is too large those cards will go out of  resources 
-//    // here we put heuristic 0.8 factor limiting number of threads - this will give slightly worse performence but will avoid crashes
-//    size_t optimal_z_dim=0.8*(oclHelper->getMaxWorkGroupSize()/(BLOCK_SIZE*BLOCK_SIZE));
-//    localWorkSize[2]=std::min( optimal_z_dim ,  size_t(fieldDim.z));  
-//	// localWorkSize[2]=std::min(oclHelper->getMaxWorkGroupSize())=/(BLOCK_SIZE*BLOCK_SIZE),  size_t(fieldDim.z));  
-//    
-//    
-//    
-//    int xReminder=fieldDim.x % localWorkSize[0];
-//    int yReminder=fieldDim.y % localWorkSize[1];
-//    int zReminder=fieldDim.z % localWorkSize[2];
-//    
-//    
-//	globalWorkSize[0]=fieldDim.x+( (fieldDim.x % localWorkSize[0] ) ? localWorkSize[0] : 0) - xReminder; // we add extra layer of localWorkSize[0] in case fieldDim.x is not divisible by localWorkSize[0]
-//    globalWorkSize[1]=fieldDim.y+( (fieldDim.y % localWorkSize[1])  ? localWorkSize[1] : 0) - yReminder; // we add extra layer of localWorkSize[1] in case fieldDim.y is not divisible by localWorkSize[1]
-//    globalWorkSize[2]=fieldDim.z+( (fieldDim.z % localWorkSize[2])  ? localWorkSize[2] : 0) - zReminder; // we add extra layer of localWorkSize[2] in case fieldDim.z is not divisible by localWorkSize[2]
-//    
-//
-//	// globalWorkSize[0]=fieldDim.x+( fieldDim.x % fieldDim.x ? localWorkSize[0] : 0); // we add extra layer of localWorkSize[0] in case fieldDim.x is not divisible by localWorkSize[0]
-//    // globalWorkSize[1]=fieldDim.y+( fieldDim.y % fieldDim.y ? localWorkSize[1] : 0); // we add extra layer of localWorkSize[1] in case fieldDim.y is not divisible by localWorkSize[1]
-//    // globalWorkSize[2]=fieldDim.z;
-//    
-//     
-//    
-//	field_len=h_celltype_field->getArraySize();
-//	gpuAlloc(field_len);
-//
-//	cerr<<"building OpenCL program"<<endl;
-//    // for now we are using PREFIX_CC3D env var as a efernce pooint in locating OpenCL modules. We might consider introducing separate env var in the future though
-//    // specifically for locating OpenCL modules
-//    char *prefix_cc3d_chr = getenv("PREFIX_CC3D");
-//    cerr << "this is getenv(PREFIX_CC3D) = " << getenv("PREFIX_CC3D") << endl;
-//    string prefix_cc3d = prefix_cc3d_chr;
-//    cerr << "prefix_cc3d=" << prefix_cc3d << endl;
-//
-//	//const char *kernelSource[]={"lib/CompuCell3DSteppables/OpenCL/GPUSolverParams.h",
-//	//	"lib/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl"};
-//
-//	//const char *kernelSource[]={ (prefix_cc3d + string("/lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/GPUSolverParams.h")).c_str(),
-// //       (prefix_cc3d + string("/lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl")).c_str()};
-//
-//
-//     const char *kernelSource[]={ (string("lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/GPUSolverParams.h")).c_str(),
-//        (string("lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl")).c_str()};
-//
-//	if(!oclHelper->LoadProgram(kernelSource, 2, program)){
-//		ASSERT_OR_THROW("Can't load the OpenCL kernel", false);
-//	}	
-//	
-//}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
