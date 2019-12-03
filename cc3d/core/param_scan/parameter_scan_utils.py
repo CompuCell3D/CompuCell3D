@@ -1,4 +1,3 @@
-import time
 import sys
 import shutil
 from subprocess import Popen
@@ -14,10 +13,11 @@ from cc3d.core.filelock import FileLock
 from cc3d.core.ParameterScanEnums import SCAN_FINISHED_OR_DIRECTORY_ISSUE
 import cc3d.core.param_scan
 import traceback
-
 from .template_utils import generate_simulation_files_from_template
 
-# from cc3d.player5.compucell3d import main as main_player
+
+class ParamScanStop(Exception):
+    pass
 
 
 def param_scan_complete_signal(output_dir: Union[str, Path]) -> Path:
@@ -88,7 +88,6 @@ def copy_project_to_output_folder(cc3d_proj_fname: Union[str, Path], output_dir:
 
     cc3d_proj_target = cc3d_proj_pth_in_output_dir(cc3d_proj_fname=cc3d_proj_fname, output_dir=output_dir)
 
-    # if not Path(output_dir).exists():
     if not cc3d_proj_target.exists():
         shutil.copytree(Path(cc3d_proj_fname).parent, cc3d_proj_target.parent)
 
@@ -136,7 +135,7 @@ def create_param_scan_status(cc3d_proj_fname: Union[str, Path], output_dir: Unio
     param_scan_root_elem = parse_param_scan(param_scan_file)
     param_list_elem = param_scan_root_elem['parameter_list']
 
-    for param_name, param_values in param_list_elem.items():
+    for i, (param_name, param_values) in enumerate(param_list_elem.items()):
 
         # adding current_idx
         param_list_elem[param_name]['current_idx'] = 0
@@ -176,6 +175,36 @@ def create_param_scan_status(cc3d_proj_fname: Union[str, Path], output_dir: Unio
         json.dump(param_scan_root_elem, fout, indent=4)
 
 
+def read_parameters_from_param_scan_status_file(output_dir: Union[str, Path]) -> tuple:
+    """
+    reads current set of parameters from parameter scan file. Parses param_scan_status.json
+    :param output_dir:
+    :return: tuple of dictionaries - first element is a dict with current parameters,
+    second one is a json root dictionary for param_scan_status.json
+    """
+
+    param_scan_status_pth = param_scan_status(output_dir=output_dir)
+
+    param_scan_status_root = None
+    with open(str(param_scan_status_pth), 'r') as fin:
+        param_scan_status_root = json.load(fin)
+
+    param_list_dict = param_scan_status_root['parameter_list']
+
+    ret_dict = {
+        'current_iteration': param_scan_status_root['current_iteration'],
+    }
+
+    param_dict = OrderedDict(
+        [(param_name, param_list_dict[param_name]['values'][param_list_dict[param_name]['current_idx']]) for
+         param_name in param_list_dict.keys()]
+    )
+
+    ret_dict['parameters'] = param_dict
+
+    return ret_dict, param_scan_status_root
+
+
 def fetch_next_set_of_scan_parameters(output_dir: Union[str, Path]) -> dict:
     """
     Analyzes param_scan_status.json and picks next set of parameters for parameter scan.
@@ -195,24 +224,7 @@ def fetch_next_set_of_scan_parameters(output_dir: Union[str, Path]) -> dict:
     """
 
     with FileLock(Path(output_dir).joinpath('param_scan_status.lock')):
-        param_scan_status_pth = param_scan_status(output_dir=output_dir)
-
-        with open(str(param_scan_status_pth), 'r') as fin:
-            param_scan_status_root = json.load(fin)
-
-        param_list_dict = param_scan_status_root['parameter_list']
-
-        ret_dict = {
-            'current_iteration': param_scan_status_root['current_iteration'],
-        }
-
-        param_dict = OrderedDict(
-            [(param_name, param_list_dict[param_name]['values'][param_list_dict[param_name]['current_idx']]) for
-             param_name in param_list_dict.keys()]
-        )
-
-        ret_dict['parameters'] = param_dict
-
+        ret_dict, param_scan_status_root = read_parameters_from_param_scan_status_file(output_dir=output_dir)
         update_param_scan_status(param_scan_status_root=param_scan_status_root, output_dir=output_dir)
 
         return ret_dict
@@ -246,9 +258,13 @@ def advance_param_list(param_scan_status_root: dict) -> dict:
     param_list_dict = param_scan_status_root['parameter_list']
 
     curr_list = list(map(lambda key: param_list_dict[key]['current_idx'], param_list_dict.keys()))
-    max_list = list(map(lambda key: len(param_list_dict[key]['values']) - 1, param_list_dict.keys()))
 
-    next_state_list = next(next_cartesian_product_from_state(curr_list=curr_list, max_list=max_list))
+    max_list = list(map(lambda key: len(param_list_dict[key]['values']) - 1, param_list_dict.keys()))
+    try:
+        next_state_list = next(next_cartesian_product_from_state(curr_list=curr_list, max_list=max_list))
+    except StopIteration:
+        print('advance_param_list: finished fetching parameters')
+        raise StopIteration('Parameter scan finished')
 
     for param_name, current_idx in zip(param_list_dict.keys(), next_state_list):
         param_list_dict[param_name]['current_idx'] = current_idx
@@ -259,6 +275,7 @@ def advance_param_list(param_scan_status_root: dict) -> dict:
     return param_list_dict
 
 
+#
 def next_cartesian_product_from_state(curr_list: List[int], max_list: List[int]) -> List[int]:
     """
     Generator that gives next cartesian product combination from a current state
@@ -268,21 +285,22 @@ def next_cartesian_product_from_state(curr_list: List[int], max_list: List[int])
     :return: {list} list of indices - one index per parameter that indicate which values should be used for
     the current combination of scanned parameters
     """
-
+    print('curr_list=', curr_list, 'max_list=', max_list)
     if len(curr_list) != len(max_list):
         raise ValueError("curr_list and max_list must have same length ")
 
     list_len = len(curr_list)
-
     while True:
         for i in range(len(curr_list)):
+
             curr_list[i] += 1
             carry_over = 0
             if curr_list[i] > max_list[i]:
                 curr_list[i] = 0
                 carry_over = 1
+                # if i == list_len - 1 and carry_over:
                 if i == list_len - 1:
-                    raise StopIteration()
+                    raise ParamScanStop('next_cartesian_product_from_state: Parameter Scan Finished')
 
             if not carry_over:
                 yield curr_list
@@ -308,9 +326,7 @@ def run_main_player_run_script(arg_list_local: list):
         except:
             code = None
             traceback.print_exc(file=sys.stdout)
-            # handle_error()
 
-        # exec(code)
         if code is not None:
             try:
                 exec(code)

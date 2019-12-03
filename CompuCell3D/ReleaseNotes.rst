@@ -1,6 +1,24 @@
 Release Notes
 =============
 
+Version 4.1.1
+-------------
+**2019-11-29**
+
+This release adds support for Antimony (see examples in Demos/SBMLSolverExamples/SBMLSolverAntimony)
+and has also multiple bug-fixes:
+
+- Fixed parameter scan to allow runs with multiple workers. See example script - Demos/ParameterScan/pscan_loop.sh
+- Fixed restart files issue
+- fixed PIFF dumper
+- fixed hover over text in Player
+- added support for developing custom C++ steppables and plugins on OSX - see
+https://compucell3ddevelopersmanual.readthedocs.io/en/latest/setting_up_compiler_on_osx.html
+- improved compilation on linux , windows and osx but adding extra conda packages that fix issues
+with incomplete packaging of vtk from conda-forge
+- expanded compilation documentation for all 3 platforms
+
+
 Version 4.1.0
 -------------
 **2019-09-21**

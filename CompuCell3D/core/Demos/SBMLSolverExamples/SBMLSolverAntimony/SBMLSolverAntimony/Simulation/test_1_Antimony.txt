@@ -1,0 +1,9 @@
+model test_1_Antimony()
+# Model
+S1 =>  S2; k1*S1
+
+# Initial conditions
+S1 = 1
+S2 = 0
+k1 = 1
+end

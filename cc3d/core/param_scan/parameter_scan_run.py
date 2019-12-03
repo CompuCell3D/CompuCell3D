@@ -1,18 +1,18 @@
-"""
-Example args
-
-
-"""
-
 import argparse
+import sys
 from pathlib import Path
+from typing import Union
 from cc3d.core.param_scan.parameter_scan_utils import copy_project_to_output_folder
+from cc3d.core.param_scan.parameter_scan_utils import param_scan_status_path
 from cc3d.core.param_scan.parameter_scan_utils import create_param_scan_status
 from cc3d.core.param_scan.parameter_scan_utils import cc3d_proj_pth_in_output_dir
 from cc3d.core.param_scan.parameter_scan_utils import fetch_next_set_of_scan_parameters
 from cc3d.core.param_scan.parameter_scan_utils import run_single_param_scan_simulation
 from cc3d.core.param_scan.parameter_scan_utils import param_scan_complete_signal
 from cc3d.core.param_scan.parameter_scan_utils import handle_param_scan_complete
+from cc3d.core.param_scan.parameter_scan_utils import read_parameters_from_param_scan_status_file
+from cc3d.core.param_scan.parameter_scan_utils import ParamScanStop
+from cc3d.core.filelock import FileLock
 from cc3d.core.filelock import FileLockException
 
 
@@ -48,6 +48,24 @@ def find_run_script(install_dir, gui_flag=False):
     raise FileNotFoundError('Could not find run script')
 
 
+def prepare_param_scan_folder(cc3d_proj_fname: Union[str, Path], output_dir: Union[str, Path]) -> None:
+    """
+    Prepares parameter scan folder - copies necessary files . Only one instance can run this function it is
+    lock-protected.
+    :param cc3d_proj_fname: path to .cc3d project
+    :param output_dir: path to parameter scan output dir
+    :return:
+    """
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    with FileLock(Path(output_dir).joinpath('param_scan_status.lock')):
+        if not param_scan_status_path(output_dir).exists():
+            copy_success = copy_project_to_output_folder(cc3d_proj_fname=cc3d_proj_fname, output_dir=output_dir)
+
+            cc3d_proj_target = cc3d_proj_pth_in_output_dir(cc3d_proj_fname=cc3d_proj_fname, output_dir=output_dir)
+
+            create_param_scan_status(cc3d_proj_target, output_dir=output_dir)
+
+
 if __name__ == '__main__':
     args = process_cml()
 
@@ -68,15 +86,22 @@ if __name__ == '__main__':
     if param_scan_complete_pth.exists():
         handle_param_scan_complete(output_dir)
 
-    copy_success = copy_project_to_output_folder(cc3d_proj_fname=cc3d_proj_fname, output_dir=output_dir)
+    try:
+        prepare_param_scan_folder(cc3d_proj_fname=cc3d_proj_fname, output_dir=output_dir)
+    except FileLockException:
 
-    cc3d_proj_target = cc3d_proj_pth_in_output_dir(cc3d_proj_fname=cc3d_proj_fname, output_dir=output_dir)
+        print('There exists a {lock_file} that prevents param scan from running. '
+              'Please remove this file and start again'.format(
+            lock_file=Path(output_dir).joinpath('param_scan_status.lock')))
 
-    create_param_scan_status(cc3d_proj_target, output_dir=output_dir)
+        sys.exit(1)
+
+    stop_scan = False
 
     while True:
         try:
             current_scan_parameters = fetch_next_set_of_scan_parameters(output_dir=output_dir)
+            print('immediate ', current_scan_parameters)
         except FileLockException:
 
             print('There exists a {lock_file} that prevents param scan from running. '
@@ -85,12 +110,14 @@ if __name__ == '__main__':
 
             break
 
-        except StopIteration:
-            handle_param_scan_complete(output_dir)
+        except ParamScanStop:
+            stop_scan = True
+            current_scan_parameters, _ = read_parameters_from_param_scan_status_file(output_dir=output_dir)
 
-            break
-
+        # event with ParamScanStop signal we run the last simuulation int hparam scan. After this last run
+        # param_scan.complete.signal will get written to the disk
         arg_list = [
+
             '--output-frequency={}'.format(output_frequency),
             '--screenshot-output-frequency={}'.format(screenshot_output_frequency)
         ]
@@ -99,5 +126,6 @@ if __name__ == '__main__':
                                          current_scan_parameters=current_scan_parameters, output_dir=output_dir,
                                          arg_list=arg_list)
 
-        print
-        # break
+        if stop_scan:
+            handle_param_scan_complete(output_dir)
+            break
