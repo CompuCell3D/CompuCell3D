@@ -94,6 +94,7 @@ void ECMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     ECMaterialAdhesionXMLVec = _xmlData->getElements("ECAdhesion");
     CC3DXMLElementList ECMaterialAdvectionBoolXMLVec = _xmlData->getElements("ECMaterialAdvects");
     CC3DXMLElementList ECMaterialDurabilityXMLVec = _xmlData->getElements("ECMaterialDurability");
+	CC3DXMLElementList ECMaterialDiffusivityXMLVec = _xmlData->getElements("ECMaterialDiffusivity");
     ECMaterialRemodelingQuantityXMLVec = _xmlData->getElements("RemodelingQuantity");
 
     // generate name->integer index map for EC materials
@@ -163,6 +164,55 @@ void ECMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
             ECMaterialsVec[ECMaterialIdx].setDurabilityLM(durabilityLM);
         }
     }
+
+	/* 
+	Assign field diffusion coefficients to each material from user specification
+		Fields with incomplete specification throw and error for feedback to user
+		Fields with no specification have no flag for diffusion solvers
+		Fields with complete specification have flag for diffusion solvers 
+	*/
+	if (ECMaterialDiffusivityXMLVec.size() > 0) {
+
+		// Get user specs
+
+		cerr << "Assigning ECMaterial diffusion coefficients..." << endl;
+
+		for (int i = 0; i < ECMaterialDiffusivityXMLVec.size(); ++i) {
+			ECMaterialName = ECMaterialDiffusivityXMLVec[i]->getAttribute("Material");
+			ECMaterialIdx = getECMaterialIndexByName(ECMaterialName);
+			ASSERT_OR_THROW("ECMaterial " + ECMaterialName + " not defined.", ECMaterialIdx >= 0);
+
+			std::string fieldName = ECMaterialDiffusivityXMLVec[i]->getAttribute("Field");
+			float coeff = (float) ECMaterialDiffusivityXMLVec[i]->getDouble();
+
+			ASSERT_OR_THROW("ECMaterial diffusion coefficients must be positive.", coeff >= 0);
+
+			cerr << "   (" << ECMaterialName << ", " << fieldName << "): " << coeff << endl;
+
+			ECMaterialsVec[ECMaterialIdx].setFieldDiffusivity(fieldName, coeff);
+
+			setVariableDiffusivityFieldFlagMap(fieldName, true);
+
+		}
+
+		// Test user specs
+
+		for (std::map<std::string, bool>::iterator mitr = variableDiffusivityFieldFlagMap.begin(); mitr != variableDiffusivityFieldFlagMap.end(); ++mitr) {
+			std::string fieldName = mitr->first;
+			std::vector<std::string> materialsNotDefined;
+
+			cerr << "Checking completion for field " << fieldName << "..." << endl;
+
+			for (int i = 0; i < numberOfMaterials; ++i) if (ECMaterialsVec[i].getFieldDiffusivity(fieldName) < 0.0) materialsNotDefined.push_back(ECMaterialsVec[i].getName());
+			if (materialsNotDefined.size() > 0) {
+				for (int i = 0; i < materialsNotDefined.size(); ++i) {
+					cerr << "   Diffusion coefficient not found for ECMaterial " << materialsNotDefined[i] << endl;
+				}
+			}
+			ASSERT_OR_THROW("If specifying diffusion coefficients for a field in ECMaterials, the diffusion coefficient for each ECMaterial must be specified.", materialsNotDefined.size() == 0)
+		}
+
+	}
 
     // Initialize quantity vector field
 
@@ -876,6 +926,21 @@ std::vector<float> ECMaterialsPlugin::checkQuantities(std::vector<float> _qtyVec
     }
 	if (qtySum > 1.0) { for (int i = 0; i < _qtyVec.size(); ++i) { _qtyVec[i] /= qtySum; } }
     return _qtyVec;
+}
+
+float ECMaterialsPlugin::getLocalDiffusivity(const Point3D &pt, std::string _fieldName) {
+	
+	WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
+	if (fieldG->get(pt)) return 0.0;
+
+	float diffCoeff = 0.0;
+	std::vector<float> qtyVec = this->getMediumECMaterialQuantityVector(pt);
+
+	for (int i = 0; i < this->numberOfMaterials; ++i) {
+		diffCoeff += this->ECMaterialsVec[i].getFieldDiffusivity(_fieldName) * qtyVec[i];
+	}
+
+	return diffCoeff;
 }
 
 void ECMaterialsPlugin::setRemodelingQuantityByName(const CellG * _cell, std::string _ECMaterialName, float _quantity) {

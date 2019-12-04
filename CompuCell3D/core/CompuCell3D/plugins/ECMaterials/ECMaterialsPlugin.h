@@ -106,6 +106,8 @@ namespace CompuCell3D {
 		std::vector<std::string> cellTypeNamesByTypeId;
 		std::vector<std::vector<float> > RemodelingQuantityByTypeId;
 
+		std::map<std::string, bool> variableDiffusivityFieldFlagMap; // true when variable diffusion coefficient is defined for a field
+
 		Dim3D fieldDim;
 		WatchableField3D<ECMaterialsData *> *ECMaterialsField;
 
@@ -202,6 +204,23 @@ namespace CompuCell3D {
 
 		//function to calculate material quantity vector when source is a medium site
 		std::vector<float> calculateCopyQuantityVec(const CellG * _cell, const Point3D &pt);
+
+		// Returns flag for variable field diffusion coefficient
+		// Fields that aren't registered return false
+		bool getVariableDiffusivityFieldFlag(std::string _fieldName) { 
+			std::map<std::string, bool>::iterator mitr = variableDiffusivityFieldFlagMap.find(_fieldName);
+			if (mitr == variableDiffusivityFieldFlagMap.end()) return false;
+			else return variableDiffusivityFieldFlagMap[_fieldName]; 
+		};
+		// Sets flag for variable field diffusion coefficient
+		void setVariableDiffusivityFieldFlagMap(std::string _fieldName, bool _flag) {
+			std::map<std::string, bool>::iterator mitr = variableDiffusivityFieldFlagMap.find(_fieldName);
+			if (mitr == variableDiffusivityFieldFlagMap.end()) variableDiffusivityFieldFlagMap.insert(make_pair(_fieldName, _flag));
+			else variableDiffusivityFieldFlagMap[_fieldName] = _flag;
+		}
+		// Returns diffusion coefficient at point pt for field _fieldName
+		// If site is intracellular, returns 0.0
+		float getLocalDiffusivity(const Point3D &pt, std::string _fieldName);
 
 		// drawing functions
 

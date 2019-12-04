@@ -49,6 +49,8 @@ namespace CompuCell3D {
 			std::map<std::string, std::map<std::string, float> > CellTypeCoefficientsProliferationAsym;
 			std::map<std::string, std::map<std::string, float> > CellTypeCoefficientsDifferentiation;
 			std::map<std::string, float> CellTypeCoefficientsDeath;
+
+			std::map<std::string, float> FieldDiffusivity;
 			
 		public:
 			ECMaterialComponentData() :durabilityLM(0), isTransferable(true) {}
@@ -260,6 +262,25 @@ namespace CompuCell3D {
 				}
 				else return CellTypeCoefficientsDeath[_cellType];
 			}
+
+			// Sets field diffusivity coefficient _val for field with name _fieldName
+			void setFieldDiffusivity(std::string _fieldName, float _val) {
+				std::map<std::string, float>::iterator mitr = FieldDiffusivity.find(_fieldName);
+				if (mitr == FieldDiffusivity.end()) {
+					FieldDiffusivity.insert(make_pair(_fieldName, _val));
+				}
+				else FieldDiffusivity[_fieldName] = _val;
+			}
+			// Returns field diffusivity coefficient for field with name _fieldName
+			float getFieldDiffusivity(std::string _fieldName) {
+				std::map<std::string, float>::iterator mitr = FieldDiffusivity.find(_fieldName);
+				if (mitr == FieldDiffusivity.end()) {
+					cerr << "Warning: requested unregistered diffusion coefficient for pair (" << ECMaterialName << ", " << _fieldName << ")" << endl;
+					return -1.0;
+				}
+				else return FieldDiffusivity[_fieldName];
+			}
+
 	};
 
     class ECMATERIALS_EXPORT ECMaterialsData{
