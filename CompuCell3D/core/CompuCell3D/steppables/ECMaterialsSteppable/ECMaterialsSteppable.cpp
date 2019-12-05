@@ -724,14 +724,62 @@ float ECMaterialsSteppable::calculateCellProbabilityAsymmetricDivision(CellG *ce
 bool ECMaterialsSteppable::getCellResponseProliferation(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField) {
 	return testProb(calculateCellProbabilityProliferation(cell, _ecmaterialsField));
 }
+
 bool ECMaterialsSteppable::getCellResponseDeath(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField) {
 	return testProb(calculateCellProbabilityDeath(cell, _ecmaterialsField));
 }
+
 bool ECMaterialsSteppable::getCellResponseDifferentiation(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField) {
 	return testProb(calculateCellProbabilityDifferentiation(cell, newCellType, _ecmaterialsField));
 }
+
 bool ECMaterialsSteppable::getCellResponseAsymmetricDivision(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField) {
 	return testProb(calculateCellProbabilityAsymmetricDivision(cell, newCellType, _ecmaterialsField));
+}
+
+float ECMaterialsSteppable::calculateTotalInterfaceQuantityByMaterialIndex(CellG *cell, int _materialIdx, Field3D<ECMaterialsData *> *_ecmaterialsField) {
+	if (!_ecmaterialsField) _ecmaterialsField = ECMaterialsField;
+
+	float qty_total = 0.0;
+	
+	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
+	int nNeighbors = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
+	Neighbor neighbor;
+	CellG *nCell = 0;
+	Point3D pt;
+	int cellId = (int)cell->id;
+	int cellType = (int)cell->type;
+	std::vector<float> qtyOld(numberOfMaterials, 0.0);
+
+	// Loop over cell boundaries to find interfaces with ECMaterials
+	std::set<BoundaryPixelTrackerData > *boundarySet = boundaryTrackerPlugin->getPixelSetForNeighborOrderPtr(cell, neighborOrder);
+	for (std::set<BoundaryPixelTrackerData >::iterator bInvItr = boundarySet->begin(); bInvItr != boundarySet->end(); ++bInvItr) {
+
+		// Loop over cell boundary neighbors and accumulate probabilities from medium sites
+		pt = bInvItr->pixel;
+
+		for (unsigned int nIdx = 0; nIdx <= nNeighbors; ++nIdx) {
+			neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
+
+			if (!neighbor.distance) continue;
+
+			nCell = cellFieldG->get(neighbor.pt);
+
+			if (nCell) continue;
+
+			qtyOld = _ecmaterialsField->get(neighbor.pt)->getECMaterialsQuantityVec();
+
+			qty_total += qtyOld[_materialIdx];
+
+		}
+
+	}
+
+	return qty_total;
+}
+
+float ECMaterialsSteppable::calculateTotalInterfaceQuantityByMaterialName(CellG *cell, std::string _materialName, Field3D<ECMaterialsData *> *_ecmaterialsField) {
+	return calculateTotalInterfaceQuantityByMaterialIndex(cell, getECMaterialIndexByName(_materialName), _ecmaterialsField);
 }
 
 void ECMaterialsSteppable::constructFieldReactionCoefficients() {

@@ -178,6 +178,8 @@ namespace CompuCell3D {
 		void setECMaterialAdvectingByIndex(int _idx, bool _isAdvecting);
 		// adhesion functions
 		void setECAdhesionByCell(const CellG *_cell, std::vector<float> _adhVec);
+		void setECAdhesionByCellAndMaterialIndex(const CellG *_cell, int _idx, float _val);
+		void setECAdhesionByCellAndMaterialName(const CellG *_cell, std::string _ECMaterialName, float _val);
 
         //functions used to retrieve extracellular material cell definitions
 		float getRemodelingQuantityByName(const CellG * _cell, std::string _ECMaterialName);
@@ -201,6 +203,8 @@ namespace CompuCell3D {
 		// adhesion functions
 		std::vector<float> getECAdhesionByCell(const CellG *_cell);
 		std::vector<float> getECAdhesionByCellTypeId(int _idx);
+		float getECAdhesionByCellAndMaterialIndex(const CellG *_cell, int _idx);
+		float getECAdhesionByCellAndMaterialName(const CellG *_cell, std::string _ECMaterialName);
 
 		//function to calculate material quantity vector when source is a medium site
 		std::vector<float> calculateCopyQuantityVec(const CellG * _cell, const Point3D &pt);
@@ -252,6 +256,8 @@ namespace CompuCell3D {
 		virtual void addCellResponse(CellG *_cell, std::string _action, std::string _cellTypeDiff = "") { cellResponses.push_back(ECMaterialsCellResponse(_cell, _action, _cellTypeDiff)); };
 
 		// Interface between steppable and python
+		float calculateTotalInterfaceQuantityByMaterialIndex(CellG *cell, int _materialIdx);
+		float calculateTotalInterfaceQuantityByMaterialName(CellG *cell, std::string _materialName);
 		float calculateCellProbabilityProliferation(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
 		float calculateCellProbabilityDeath(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
 		float calculateCellProbabilityDifferentiation(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);

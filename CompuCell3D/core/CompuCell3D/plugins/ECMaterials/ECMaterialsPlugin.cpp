@@ -1024,6 +1024,15 @@ void ECMaterialsPlugin::setECAdhesionByCell(const CellG *_cell, std::vector<floa
 	AdhesionCoefficients = _adhVec;
 }
 
+void ECMaterialsPlugin::setECAdhesionByCellAndMaterialIndex(const CellG *_cell, int _idx, float _val) {
+	vector<float> & AdhesionCoefficients = ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->AdhesionCoefficients;
+	if (_idx >= 0 && _idx < AdhesionCoefficients.size()) AdhesionCoefficients[_idx] = _val;
+}
+
+void ECMaterialsPlugin::setECAdhesionByCellAndMaterialName(const CellG *_cell, std::string _ECMaterialName, float _val) {
+	setECAdhesionByCellAndMaterialIndex(_cell, getECMaterialIndexByName(_ECMaterialName), _val);
+}
+
 float ECMaterialsPlugin::getRemodelingQuantityByName(const CellG * _cell, std::string _ECMaterialName) {
     return getRemodelingQuantityByIndex(_cell, getECMaterialIndexByName(_ECMaterialName));
 }
@@ -1114,6 +1123,14 @@ std::vector<float> ECMaterialsPlugin::getECAdhesionByCellTypeId(int _idx) {
     else return AdhesionCoefficientsByTypeId[_idx];
 }
 
+float ECMaterialsPlugin::getECAdhesionByCellAndMaterialIndex(const CellG *_cell, int _idx) {
+	return ECMaterialCellDataAccessor.get(_cell->extraAttribPtr)->AdhesionCoefficients[_idx];
+}
+
+float ECMaterialsPlugin::getECAdhesionByCellAndMaterialName(const CellG *_cell, std::string _ECMaterialName) {
+	return getECAdhesionByCellAndMaterialIndex(_cell, getECMaterialIndexByName(_ECMaterialName));
+}
+
 std::vector<Neighbor> ECMaterialsPlugin::getFirstOrderNeighbors(const Point3D &pt) {
     // initialize neighborhood according to Potts neighborhood
     boundaryStrategy = BoundaryStrategy::getInstance();
@@ -1129,6 +1146,13 @@ std::vector<Neighbor> ECMaterialsPlugin::getFirstOrderNeighbors(const Point3D &p
         neighbors.push_back(neighbor);
     }
     return neighbors;
+}
+
+float ECMaterialsPlugin::calculateTotalInterfaceQuantityByMaterialIndex(CellG *cell, int _materialIdx) {
+	return ecMaterialsSteppable->calculateTotalInterfaceQuantityByMaterialIndex(cell, _materialIdx);
+}
+float ECMaterialsPlugin::calculateTotalInterfaceQuantityByMaterialName(CellG *cell, std::string _materialName) {
+	return ecMaterialsSteppable->calculateTotalInterfaceQuantityByMaterialName(cell, _materialName);
 }
 
 float ECMaterialsPlugin::calculateCellProbabilityProliferation(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField) { 

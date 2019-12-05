@@ -165,6 +165,8 @@ namespace CompuCell3D {
 		}
 
 		// Interface with plugin
+		virtual float calculateTotalInterfaceQuantityByMaterialIndex(CellG *cell, int _materialIdx, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		virtual float calculateTotalInterfaceQuantityByMaterialName(CellG *cell, std::string _materialName, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
 		virtual float calculateCellProbabilityProliferation(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
 		virtual float calculateCellProbabilityDeath(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
 		virtual float calculateCellProbabilityDifferentiation(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
