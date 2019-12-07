@@ -43,6 +43,8 @@ class PersistentGlobals:
         self.__output_dir = None
         self.output_file_core_name = "Step"
 
+        self.__workspace_dir = None
+
         self.output_frequency = 0
         self.screenshot_output_frequency = 0
 
@@ -96,6 +98,17 @@ class PersistentGlobals:
 
         self.__output_dir = output_dir
 
+    def set_workspace_dir(self, workspace_dir: str) -> None:
+        """
+        Sets screenshot dir - usually this is a custom screenshot directory set based on
+        command line input
+
+        :param workspace_dir:
+        :return:
+        """
+
+        self.__workspace_dir = workspace_dir
+
     @property
     def workspace_dir(self) -> str:
         """
@@ -103,11 +116,14 @@ class PersistentGlobals:
         :return:
         """
 
-        workspace_dir = os.path.join(os.path.expanduser('~'), 'CC3DWorkspace')
-        if not exists(workspace_dir):
-            Path(workspace_dir).mkdir(parents=True, exist_ok=True)
+        if self.__workspace_dir is None:
+            workspace_dir = os.path.join(os.path.expanduser('~'), 'CC3DWorkspace')
+            if not exists(workspace_dir):
+                Path(workspace_dir).mkdir(parents=True, exist_ok=True)
 
-        return workspace_dir
+            return workspace_dir
+        else:
+            return self.__workspace_dir
 
     @property
     def timestamp_string(self) -> str:
