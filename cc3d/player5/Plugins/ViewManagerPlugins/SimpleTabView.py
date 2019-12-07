@@ -1076,8 +1076,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             pg.set_workspace_dir(workspace_dir)
         else:
             # setting default workspace
-            Configuration.setSetting('OutputLocation',pg.workspace_dir)
-
+            Configuration.setSetting('OutputLocation', pg.workspace_dir)
 
         # override settings with command line options
         if self.cml_args is not None:
