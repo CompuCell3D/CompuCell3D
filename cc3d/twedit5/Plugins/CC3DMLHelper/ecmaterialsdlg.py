@@ -1,0 +1,259 @@
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+
+from cc3d.twedit5.twedit.utils.global_imports import *
+from . import ui_ecmaterialsdlg
+
+MAC = "qt_mac_set_native_menubar" in dir()
+
+
+class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
+    def __init__(self, _currentEditor=None, parent=None, cell_types: list = None, previous_info: dict = None):
+        super(ECMaterialsDlg, self).__init__(parent)
+        self.editorWindow = parent
+        self.setupUi(self)
+        if not MAC:
+            self.buttonBox.setFocusPolicy(Qt.NoFocus)
+        self.cell_types = cell_types
+
+        self.keys_set_here = self.get_keys()
+
+        if previous_info is not None:
+            self.ec_materials_dict = None
+            self.load_previous_info(previous_info)
+        else:
+            self.ec_materials_dict = self.initialize_new_info()
+
+        self.connect_all_signals()
+
+        self.update_ui()
+
+    @staticmethod
+    def get_keys():
+        return ["ECMaterials", "Adhesion", "Remodeling", "Advects", "Durability"]
+
+    @staticmethod
+    def initialize_new_info() -> {}:
+        return {"ECMaterials": [],
+                "Adhesion": {},
+                "Remodeling": {},
+                "Advects": {},
+                "Durability": {}}
+
+    def load_previous_info(self, previous_info: dict):
+        self.ec_materials_dict = previous_info
+
+        # Perform checks in case cell types changed
+        adhesion_coefficients = self.ec_materials_dict["Adhesion"]
+        remodeling_quantities = self.ec_materials_dict["Remodeling"]
+        first_ec_material_set = False
+        for ec_material in self.ec_materials_dict["ECMaterials"]:
+            for cell_type in self.cell_types - adhesion_coefficients[ec_material].keys():
+                adhesion_coefficients[ec_material][cell_type] = 0
+
+            adhesion_coefficients[ec_material] = {key: val for key, val in adhesion_coefficients[ec_material].items()
+                                                  if key in self.cell_types}
+
+            self.ec_materials_dict["Adhesion"][ec_material].clear()
+            self.ec_materials_dict["Adhesion"][ec_material] = adhesion_coefficients[ec_material]
+
+            for cell_type in self.cell_types - remodeling_quantities[ec_material].keys():
+                if not first_ec_material_set:
+                    remodeling_quantities[ec_material][cell_type] = 1
+                else:
+                    remodeling_quantities[ec_material][cell_type] = 0
+
+            remodeling_quantities[ec_material] = {key: val for key, val in remodeling_quantities[ec_material].items()
+                                                  if key in self.cell_types}
+
+            self.ec_materials_dict["Remodeling"][ec_material].clear()
+            self.ec_materials_dict["Remodeling"][ec_material] = remodeling_quantities[ec_material]
+
+            first_ec_material_set = True
+
+            first_ec_material_set = True
+
+    def extract_information(self):
+
+        return self.ec_materials_dict
+
+    def connect_all_signals(self):
+        self.tableWidget_materialDefs.cellChanged.connect(self.handle_material_defs_table_edit)
+        self.tableWidget_adhesion.itemChanged.connect(self.handle_adhesion_table_edit)
+        self.tableWidget_remodeling.itemChanged.connect(self.handle_remodeling_table_edit)
+        self.pushButton_add.click.connect(self.handle_add_material)
+        self.pushButton_delete.click.connect(self.handle_delete_material_button)
+        self.pushButton_clear.click.connect(self.handle_clear_materials_button)
+
+    def disconnect_all_signals(self):
+        self.tableWidget_materialDefs.cellChanged.disconnect(self.handle_material_defs_table_edit)
+        self.tableWidget_adhesion.itemChanged.disconnect(self.handle_adhesion_table_edit)
+        self.tableWidget_remodeling.itemChanged.disconnect(self.handle_remodeling_table_edit)
+        self.pushButton_add.click.disconnect(self.handle_add_material)
+        self.pushButton_delete.click.disconnect(self.handle_delete_material_button)
+        self.pushButton_clear.click.disconnect(self.handle_clear_materials_button)
+
+    def update_ui(self):
+
+        self.disconnect_all_signals()
+
+        # Refresh LHS table
+        self.tableWidget_materialDefs.setRowCount(0)
+        for ec_material in self.ec_materials_dict["ECMaterials"]:
+            row_count = self.tableWidget_materialDefs.rowCount()
+            self.tableWidget_materialDefs.insertRow(row_count)
+
+            twi = QTableWidgetItem(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
+            twi.setText(ec_material)
+            self.tableWidget_materialDefs.setItem(row_count, 0, twi)
+
+            cb = QCheckBox()
+            cb.setCheckable(True)
+            cb.setChecked(self.ec_materials_dict["Advects"][ec_material])
+            self.tableWidget_materialDefs.setCellWidget(row_count, 1, cb)
+
+            twi = QTableWidgetItem(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
+            twi.setText(str(self.ec_materials_dict["Durability"][ec_material]))
+            self.tableWidget_materialDefs.setItem(row_count, 2, twi)
+
+        # Refresh RHS Adhesion table
+        self.tableWidget_adhesion.setRowCount(0)
+        self.tableWidget_adhesion.setColumnCount(len(self.cell_types))
+        for ec_material in self.ec_materials_dict["ECMaterials"]:
+            row_count = self.tableWidget_adhesion.rowCount()
+            self.tableWidget_adhesion.insertRow(row_count)
+            for type_index in range(len(self.cell_types)):
+                cell_type = self.cell_types[type_index]
+
+                twi = QTableWidgetItem(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
+                twi.setText(str(self.ec_materials_dict["Adhesion"][ec_material][cell_type]))
+                self.tableWidget_adhesion.setItem(row_count, type_index, twi)
+
+        self.tableWidget_adhesion.setVerticalHeaderLabels(self.ec_materials_dict["ECMaterials"])
+        self.tableWidget_adhesion.setHorizontalHeaderLabels(self.cell_types)
+
+        # Refresh RHS Remodeling table
+        self.tableWidget_remodeling.setRowCount(0)
+        self.tableWidget_remodeling.setColumnCount(len(self.cell_types))
+        for ec_material in self.ec_materials_dict["ECMaterials"]:
+            row_count = self.tableWidget_remodeling.rowCount()
+            self.tableWidget_remodeling.insertRow(row_count)
+            for type_index in range(len(self.cell_types)):
+                cell_type = self.cell_types[type_index]
+
+                twi = QTableWidgetItem(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
+                twi.setText(str(self.ec_materials_dict["Remodeling"][ec_material][cell_type]))
+                self.tableWidget_remodeling.setItem(row_count, type_index, twi)
+
+        self.tableWidget_remodeling.setVerticalHeaderLabels(self.ec_materials_dict["ECMaterials"])
+        self.tableWidget_remodeling.setHorizontalHeaderLabels(self.cell_types)
+
+        self.connect_all_signals()
+
+        if self.tableWidget_materialDefs.rowCount() == 0:
+            self.tableWidget_materialDefs.setEnabled(False)
+            self.tableWidget_adhesion.setEnabled(False)
+            self.tableWidget_remodeling.setEnabled(False)
+        else:
+            self.tableWidget_materialDefs.setEnabled(True)
+            self.tableWidget_adhesion.setEnabled(True)
+            self.tableWidget_remodeling.setEnabled(True)
+
+    def handle_material_defs_table_edit(self, row, col):
+        if col < 0:
+            return
+
+        ec_material = self.ec_materials_dict["ECMaterials"][row]
+        if col == 0:  # Name change
+            item: QTableWidget = self.tableWidget_materialDefs.item(row, col)
+            new_name = item.text()
+            if len(new_name) < 2 or new_name == ec_material:
+                item.setText(ec_material)
+                return
+            for key in self.ec_materials_dict:
+                if key == "ECMaterials":
+                    self.ec_materials_dict[key][row] = new_name
+                else:
+                    self.ec_materials_dict[key][new_name] = self.ec_materials_dict[key][ec_material]
+                    self.ec_materials_dict[key].pop(ec_material)
+        elif col == 1:  # Advection toggle
+            cb: QCheckBox = self.tableWidget_materialDefs.cellWidget(row, col)
+            self.ec_materials_dict["Advects"][ec_material] = cb.isChecked()
+        elif col == 2:  # Durability coefficient change
+            item: QTableWidget = self.tableWidget_materialDefs.item(row, col)
+            try:
+                self.ec_materials_dict["Durability"][ec_material] = float(item.text())
+            except TypeError:
+                item.setText(str(self.ec_materials_dict["Durability"][ec_material]))
+
+        self.update_ui()
+
+    def handle_adhesion_table_edit(self, item: QTableWidgetItem):
+        col = item.column()
+        if col < 0:
+            return
+        row = item.row()
+        ec_material = self.ec_materials_dict["ECMaterials"][row]
+        cell_type = self.cell_types[col]
+        try:
+            new_value = float(item.text())
+            self.ec_materials_dict["Adhesion"][ec_material][cell_type] = new_value
+        except TypeError:
+            item.setText(str(self.ec_materials_dict["Adhesion"][ec_material][cell_type]))
+
+        self.update_ui()
+
+    def handle_remodeling_table_edit(self, item: QTableWidgetItem):
+        col = item.column()
+        if col < 0:
+            return
+        row = item.row()
+        ec_material = self.ec_materials_dict["ECMaterials"][row]
+        cell_type = self.cell_types[col]
+        try:
+            new_value = float(item.text())
+            self.ec_materials_dict["Remodeling"][ec_material][cell_type] = new_value
+        except TypeError:
+            item.setText(str(self.ec_materials_dict["Remodeling"][ec_material][cell_type]))
+
+        self.update_ui()
+
+    def handle_add_material(self):
+        new_material = self.lineEdit.text()
+        if len(new_material) < 2:
+            return
+        self.ec_materials_dict["ECMaterials"].append(new_material)
+        self.ec_materials_dict["Advects"][new_material] = self.checkBox.isChecked()
+        self.ec_materials_dict["Durability"][new_material] = 0.0
+        for cell_type in self.cell_types:
+            self.ec_materials_dict["Adhesion"][new_material][cell_type] = 0.0
+            self.ec_materials_dict["Remodeling"][new_material][cell_type] = 0.0
+
+        # Set empty dictionaries for keys not set here, in case info came back from steppable
+        for key in self.ec_materials_dict.keys():
+            if key not in self.keys_set_here:
+                self.ec_materials_dict[key] = {}
+
+        self.update_ui()
+
+    def handle_delete_material(self, ec_material: str):
+        for key in self.ec_materials_dict.keys():
+            if key == "ECMaterials":
+                self.ec_materials_dict[key].remove(ec_material)
+            else:
+                self.ec_materials_dict[key].pop(ec_material)
+
+    def handle_delete_material_button(self):
+        row = self.tableWidget_materialDefs.currentRow()
+        if row < 0:
+            return
+        ec_material = self.tableWidget_materialDefs.item(row, 0).text()
+        self.handle_delete_material(ec_material=ec_material)
+        self.update_ui()
+
+    def handle_clear_materials_button(self):
+        for ec_material in self.ec_materials_dict["ECMaterials"]:
+            self.handle_delete_material(ec_material=ec_material)
+
+        self.update_ui()
