@@ -1070,6 +1070,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Configuration.initializeCustomSettings(self.customSettingPath)
         self.__paramsChanged()
 
+        pg = CompuCellSetup.persistent_globals
+        workspace_dir = Configuration.getSetting('OutputLocation')
+        if str(workspace_dir).strip():
+            pg.set_workspace_dir(workspace_dir)
+        else:
+            # setting default workspace
+            Configuration.setSetting('OutputLocation', pg.workspace_dir)
+
         # override settings with command line options
         if self.cml_args is not None:
             self.override_settings_using_cml_args(self.cml_args)
