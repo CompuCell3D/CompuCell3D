@@ -9,20 +9,23 @@ MAC = "qt_mac_set_native_menubar" in dir()
 
 
 class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSteppableDlg):
-    def __init__(self, _currentEditor=None, parent=None, field_list: list = None, previous_info: dict = None):
-        super(ECMaterialsSteppableDlg, self).__init__(parent)
-        self.editorWindow = parent
+    def __init__(self, field_names: list, previous_info: dict):
+        super(ECMaterialsSteppableDlg, self).__init__()
+        self.setModal(True)
         self.setupUi(self)
         if not MAC:
             self.buttonBox.setFocusPolicy(Qt.NoFocus)
 
+        self.user_res = False
+
         self.cell_types = None
-        self.field_list = field_list
+
+        self.field_list = field_names
 
         self.keys_set_here = self.get_keys()
 
         self.ec_materials_dict = None
-        self.load_previous_info(previous_info)
+        self.load_previous_info(previous_info=previous_info)
 
         # Containers for interaction design
         self.mtl_interaction = None
@@ -77,7 +80,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         if self.ec_materials_dict["ECMaterials"]:
             self.cell_types = list(self.ec_materials_dict["Adhesion"][self.ec_materials_dict["ECMaterials"][0]].keys())
         else:
-            self.cell_types = None
+            self.cell_types = []
 
         # Initialize data if necessary
         if "MaterialInteractions" not in self.ec_materials_dict.keys():
@@ -117,11 +120,17 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             [val for val in self.ec_materials_dict["FieldInteractions"]
              if len({val["Catalyst"], val["Reactant"]} & set(self.field_list)) == 1]
 
+    def get_user_res(self):
+        return self.user_res
+
     def extract_information(self) -> {}:
 
         return self.ec_materials_dict
 
     def connect_all_signals(self) -> None:
+        self.buttonBox.accepted.connect(self.on_accept)
+        self.buttonBox.rejected.connect(self.on_reject)
+
         # Tab: Material Interactions
         self.lineEdit_mtl.textChanged.connect(self.on_mtl_coefficient_edit)
         self.pushButton_mtlAdd.clicked.connect(self.on_mtl_add)
@@ -145,6 +154,9 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.tableWidget_diff.cellChanged.connect(self.on_diffusion_table_edit)
 
     def disconnect_all_signals(self) -> None:
+        self.buttonBox.accepted.disconnect(self.on_accept)
+        self.buttonBox.rejected.disconnect(self.on_reject)
+
         # Tab: Material Interactions
         self.lineEdit_mtl.textChanged.disconnect(self.on_mtl_coefficient_edit)
         self.pushButton_mtlAdd.clicked.disconnect(self.on_mtl_add)
@@ -173,7 +185,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         if text is None:
             text = ''
         twi.setText(str(text))
-        twi.setFlags(Qt.ItemIsSelectable)
+        twi.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
         return twi
 
     def update_combo_box_field_reactants(self) -> None:
@@ -189,23 +201,19 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.comboBox_fldR.addItems(new_list)
         if current_field in new_list:
             self.comboBox_fldR.setCurrentText(current_field)
-        else:
-            self.comboBox_fldR.setCurrentText('')
 
     def update_combo_box_types_new(self) -> None:
         if self.comboBox_cellR.currentText() not in self.responses_new_types:
             self.comboBox_cellT_New.clear()
-            self.comboBox_cellT_New.setCurrentText('')
             self.comboBox_cellT_New.setEnabled(False)
         else:
             current_type = self.comboBox_cellT_New.currentText()
-            new_list = self.cell_types - self.comboBox_cellT.currentText()
+            new_list = [cell_type for cell_type in self.cell_types if cell_type != self.comboBox_cellT.currentText()]
             self.comboBox_cellT_New.clear()
             self.comboBox_cellT_New.addItems(new_list)
             if current_type in new_list:
                 self.comboBox_cellT_New.setCurrentText(current_type)
-            else:
-                self.comboBox_cellT_New.setCurrentText('')
+
             self.comboBox_cellT_New.setEnabled(True)
 
     def update_ui(self) -> None:
@@ -216,11 +224,13 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.comboBox_mtlC.clear()
         self.comboBox_mtlC.addItems(self.ec_materials_dict["ECMaterials"])
         self.comboBox_mtlC.setEditable(False)
-        self.comboBox_mtlC.setCurrentText(self.mtl_interaction["Catalyst"])
+        if self.mtl_interaction["Catalyst"].__len__() > 0:
+            self.comboBox_mtlC.setCurrentText(self.mtl_interaction["Catalyst"])
         self.comboBox_mtlR.clear()
         self.comboBox_mtlR.addItems(self.ec_materials_dict["ECMaterials"])
         self.comboBox_mtlR.setEditable(False)
-        self.comboBox_mtlR.setCurrentText(self.mtl_interaction["Reactant"])
+        if self.mtl_interaction["Reactant"].__len__() > 0:
+            self.comboBox_mtlR.setCurrentText(self.mtl_interaction["Reactant"])
         self.lineEdit_mtl.setText(str(self.mtl_interaction["Coefficient"]))
 
         self.tableWidget_mtl.setRowCount(0)
@@ -241,13 +251,13 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             self.pushButton__mtlClear.setEnabled(True)
 
         # Tab: Field Interactions
-        mtl_fld_list = list(set(self.ec_materials_dict["ECMaterials"]).union(set(self.field_list)))
+        # mtl_fld_list = list(set(self.ec_materials_dict["ECMaterials"]).union(set(self.field_list)))
+        mtl_fld_list = self.ec_materials_dict["ECMaterials"] + self.field_list
         self.comboBox_fldC.clear()
         self.comboBox_fldC.addItems(mtl_fld_list)
-        self.comboBox_fldC.setCurrentText(self.fld_interaction["Catalyst"])
-        self.comboBox_fldR.clear()
-        self.comboBox_fldR.addItems(mtl_fld_list)
-        self.comboBox_fldR.setCurrentText(self.fld_interaction["Reactant"])
+        if self.fld_interaction["Catalyst"].__len__() > 0:
+            self.comboBox_fldC.setCurrentText(self.fld_interaction["Catalyst"])
+        self.on_fld_catalyst_select(self.comboBox_fldC.currentText())
         self.lineEdit_fld.setText(str(self.fld_interaction["Coefficient"]))
 
         self.tableWidget_fld.setRowCount(0)
@@ -271,12 +281,20 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.comboBox_cellM.clear()
         self.comboBox_cellM.addItems(self.ec_materials_dict["ECMaterials"])
         self.comboBox_cellM.setEditable(False)
-        self.comboBox_cellM.setCurrentText(self.cell_interaction["ECMaterial"])
+        if self.cell_interaction["ECMaterial"].__len__() > 0:
+            self.comboBox_cellM.setCurrentText(self.cell_interaction["ECMaterial"])
         self.comboBox_cellT.clear()
-        self.comboBox_cellT.addItems(self.cell_response_types)
+        self.comboBox_cellT.addItems(self.cell_types)
         self.comboBox_cellT.setEditable(False)
-        self.comboBox_cellT.setCurrentText(self.cell_interaction["ResponseType"])
-        self.lineEdit_mtl.setText(str(self.cell_interaction["Coefficient"]))
+        if self.cell_interaction["CellType"].__len__() > 0:
+            self.comboBox_cellT.setCurrentText(self.cell_interaction["CellType"])
+        self.comboBox_cellR.clear()
+        self.comboBox_cellR.addItems(self.cell_response_types)
+        self.comboBox_cellR.setEditable(False)
+        if self.cell_interaction["ResponseType"].__len__() > 0:
+            self.comboBox_cellR.setCurrentText(self.cell_interaction["ResponseType"])
+        self.lineEdit_cell.setText(str(self.cell_interaction["Coefficient"]))
+        self.update_combo_box_types_new()
 
         self.tableWidget_cell.setRowCount(0)
         for interaction in self.ec_materials_dict["CellInteractions"]:
@@ -307,7 +325,9 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             cb.setChecked(diffusion["Diffuses"])
             cb.setCheckable(True)
             self.tableWidget_diff.setCellWidget(row, 1, cb)
-            self.tableWidget_diff.setItem(row, 2, self.template_table_item(text=diffusion["Coefficient"]))
+            twi = self.template_table_item(text=diffusion["Coefficient"])
+            twi.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
+            self.tableWidget_diff.setItem(row, 2, twi)
 
         self.connect_all_signals()
 
@@ -341,7 +361,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             for key in interaction.keys() - "Coefficient":
                 if interaction[key] != self.mtl_interaction[key]:
                     is_different = True
-                    break
+
             if not is_different:
                 return
 
@@ -361,20 +381,22 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.update_ui()
 
     def on_fld_catalyst_select(self, text) -> None:
+        current_fldR = None
         if text in self.ec_materials_dict["ECMaterials"]:
-            if self.comboBox_fldR.currentText() in ['', self.field_list]:
-                return
+            if self.comboBox_fldR.currentText() in self.field_list:
+                current_fldR = self.comboBox_fldR.currentText()
             new_list = self.field_list
         elif text in self.field_list:
-            if self.comboBox_fldR.currentText() in ['', self.ec_materials_dict["ECMaterials"]]:
-                return
+            if self.comboBox_fldR.currentText() in self.ec_materials_dict["ECMaterials"]:
+                current_fldR = self.comboBox_fldR.currentText()
             new_list = self.ec_materials_dict["ECMaterials"]
         else:
-            new_list = [self.ec_materials_dict["ECMaterials"], self.field_list]
+            new_list = self.ec_materials_dict["ECMaterials"] + self.field_list
 
         self.comboBox_fldR.clear()
         self.comboBox_fldR.addItems(new_list)
-        self.comboBox_fldR.setCurrentText('')
+        if current_fldR is not None:
+            self.comboBox_fldR.setCurrentText(current_fldR)
 
     def on_fld_coefficient_edit(self, text) -> None:
         try:
@@ -405,7 +427,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             for key in interaction.keys() - "Coefficient":
                 if interaction[key] != self.fld_interaction[key]:
                     is_different = True
-                    break
+
             if not is_different:
                 return
 
@@ -430,7 +452,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             self.cell_interaction["Coefficient"] = val
         except ValueError:
             self.lineEdit_cell.textChanged.disconnect(self.on_cell_coefficient_edit)
-            self.lineEdit_cell.clear()
+            self.lineEdit_cell.setText('0')
             self.lineEdit_cell.textChanged.connect(self.on_cell_coefficient_edit)
 
     def on_cell_add(self) -> None:
@@ -438,6 +460,9 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         try:
             val = float(self.lineEdit_cell.text())
         except ValueError:
+            self.lineEdit_cell.textChanged.disconnect(self.on_cell_coefficient_edit)
+            self.lineEdit_cell.setText('0')
+            self.lineEdit_cell.textChanged.connect(self.on_cell_coefficient_edit)
             return
         self.cell_interaction = {"ECMaterial": self.comboBox_cellM.currentText(),
                                  "CellType": self.comboBox_cellT.currentText(),
@@ -460,7 +485,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             for key in interaction.keys() - "Coefficient":
                 if interaction[key] != self.cell_interaction[key]:
                     is_different = True
-                    break
+
             if not is_different:
                 return
 
@@ -498,3 +523,10 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             self.connect_all_signals()
         self.update_ui()
 
+    def on_accept(self):
+        self.user_res = True
+        self.close()
+
+    def on_reject(self):
+        self.user_res = False
+        self.close()

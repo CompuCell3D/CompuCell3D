@@ -1,3 +1,4 @@
+from copy import deepcopy
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -9,19 +10,23 @@ MAC = "qt_mac_set_native_menubar" in dir()
 
 
 class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
-    def __init__(self, _currentEditor=None, parent=None, cell_types: list = None, previous_info: dict = None):
-        super(ECMaterialsDlg, self).__init__(parent)
-        self.editorWindow = parent
+    def __init__(self, cell_types: list, previous_info: dict):
+        super(ECMaterialsDlg, self).__init__()
+        self.setModal(True)
+
         self.setupUi(self)
         if not MAC:
             self.buttonBox.setFocusPolicy(Qt.NoFocus)
+
+        self.user_res = False
+
         self.cell_types = cell_types
 
         self.keys_set_here = self.get_keys()
 
-        if previous_info is not None:
+        if previous_info:
             self.ec_materials_dict = None
-            self.load_previous_info(previous_info)
+            self.load_previous_info(previous_info=previous_info)
         else:
             self.ec_materials_dict = self.initialize_new_info()
 
@@ -74,25 +79,34 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
 
             first_ec_material_set = True
 
+    def get_user_res(self):
+        return self.user_res
+
     def extract_information(self):
 
         return self.ec_materials_dict
 
     def connect_all_signals(self):
+        self.buttonBox.accepted.connect(self.on_accept)
+        self.buttonBox.rejected.connect(self.on_reject)
+        self.tableWidget_materialDefs.itemChanged.connect(self.handle_material_defs_table_item_edit)
         self.tableWidget_materialDefs.cellChanged.connect(self.handle_material_defs_table_edit)
         self.tableWidget_adhesion.itemChanged.connect(self.handle_adhesion_table_edit)
         self.tableWidget_remodeling.itemChanged.connect(self.handle_remodeling_table_edit)
-        self.pushButton_add.click.connect(self.handle_add_material)
-        self.pushButton_delete.click.connect(self.handle_delete_material_button)
-        self.pushButton_clear.click.connect(self.handle_clear_materials_button)
+        self.pushButton_add.clicked.connect(self.handle_add_material)
+        self.pushButton_delete.clicked.connect(self.handle_delete_material_button)
+        self.pushButton_clear.clicked.connect(self.handle_clear_materials_button)
 
     def disconnect_all_signals(self):
+        self.buttonBox.accepted.disconnect(self.on_accept)
+        self.buttonBox.rejected.disconnect(self.on_reject)
+        self.tableWidget_materialDefs.itemChanged.disconnect(self.handle_material_defs_table_item_edit)
         self.tableWidget_materialDefs.cellChanged.disconnect(self.handle_material_defs_table_edit)
         self.tableWidget_adhesion.itemChanged.disconnect(self.handle_adhesion_table_edit)
         self.tableWidget_remodeling.itemChanged.disconnect(self.handle_remodeling_table_edit)
-        self.pushButton_add.click.disconnect(self.handle_add_material)
-        self.pushButton_delete.click.disconnect(self.handle_delete_material_button)
-        self.pushButton_clear.click.disconnect(self.handle_clear_materials_button)
+        self.pushButton_add.clicked.disconnect(self.handle_add_material)
+        self.pushButton_delete.clicked.disconnect(self.handle_delete_material_button)
+        self.pushButton_clear.clicked.disconnect(self.handle_clear_materials_button)
 
     def update_ui(self):
 
@@ -160,6 +174,9 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
             self.tableWidget_adhesion.setEnabled(True)
             self.tableWidget_remodeling.setEnabled(True)
 
+    def handle_material_defs_table_item_edit(self, item):
+        self.handle_material_defs_table_edit(row=item.row(), col=item.column())
+
     def handle_material_defs_table_edit(self, row, col):
         if col < 0:
             return
@@ -169,7 +186,9 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
             item: QTableWidget = self.tableWidget_materialDefs.item(row, col)
             new_name = item.text()
             if len(new_name) < 2 or new_name == ec_material:
+                self.disconnect_all_signals()
                 item.setText(ec_material)
+                self.connect_all_signals()
                 return
             for key in self.ec_materials_dict:
                 if key == "ECMaterials":
@@ -185,7 +204,9 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
             try:
                 self.ec_materials_dict["Durability"][ec_material] = float(item.text())
             except TypeError:
+                self.disconnect_all_signals()
                 item.setText(str(self.ec_materials_dict["Durability"][ec_material]))
+                self.connect_all_signals()
 
         self.update_ui()
 
@@ -200,7 +221,9 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
             new_value = float(item.text())
             self.ec_materials_dict["Adhesion"][ec_material][cell_type] = new_value
         except TypeError:
+            self.disconnect_all_signals()
             item.setText(str(self.ec_materials_dict["Adhesion"][ec_material][cell_type]))
+            self.connect_all_signals()
 
         self.update_ui()
 
@@ -215,7 +238,9 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
             new_value = float(item.text())
             self.ec_materials_dict["Remodeling"][ec_material][cell_type] = new_value
         except TypeError:
+            self.disconnect_all_signals()
             item.setText(str(self.ec_materials_dict["Remodeling"][ec_material][cell_type]))
+            self.connect_all_signals()
 
         self.update_ui()
 
@@ -226,14 +251,18 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         self.ec_materials_dict["ECMaterials"].append(new_material)
         self.ec_materials_dict["Advects"][new_material] = self.checkBox.isChecked()
         self.ec_materials_dict["Durability"][new_material] = 0.0
-        for cell_type in self.cell_types:
-            self.ec_materials_dict["Adhesion"][new_material][cell_type] = 0.0
-            self.ec_materials_dict["Remodeling"][new_material][cell_type] = 0.0
+        self.ec_materials_dict["Adhesion"][new_material] = {cell_type: 0.0 for cell_type in self.cell_types}
+        self.ec_materials_dict["Remodeling"][new_material] = {cell_type: 0.0 for cell_type in self.cell_types}
 
         # Set empty dictionaries for keys not set here, in case info came back from steppable
         for key in self.ec_materials_dict.keys():
             if key not in self.keys_set_here:
-                self.ec_materials_dict[key] = {}
+                self.ec_materials_dict[key][new_material] = {}
+
+        self.disconnect_all_signals()
+        self.lineEdit.clear()
+        self.checkBox.setChecked(True)
+        self.connect_all_signals()
 
         self.update_ui()
 
@@ -253,7 +282,16 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         self.update_ui()
 
     def handle_clear_materials_button(self):
-        for ec_material in self.ec_materials_dict["ECMaterials"]:
+        ec_material_list = deepcopy(self.ec_materials_dict["ECMaterials"])
+        for ec_material in ec_material_list:
             self.handle_delete_material(ec_material=ec_material)
 
         self.update_ui()
+
+    def on_accept(self):
+        self.user_res = True
+        self.close()
+
+    def on_reject(self):
+        self.user_res = False
+        self.close()
