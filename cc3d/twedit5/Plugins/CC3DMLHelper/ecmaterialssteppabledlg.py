@@ -9,12 +9,17 @@ MAC = "qt_mac_set_native_menubar" in dir()
 
 
 class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSteppableDlg):
-    def __init__(self, field_names: list, previous_info: dict):
+    def __init__(self, field_names: [], previous_info: {}):
         super(ECMaterialsSteppableDlg, self).__init__()
         self.setModal(True)
         self.setupUi(self)
         if not MAC:
             self.buttonBox.setFocusPolicy(Qt.NoFocus)
+
+        # To prevent accept on Return key; also nice to have a custom key filter implemented for future dev
+        self.key_event_detector = KeyEventDetector(parent=self)
+        self.installEventFilter(self.key_event_detector)
+        self.was_a_key_press = False
 
         self.user_res = False
 
@@ -524,9 +529,27 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.update_ui()
 
     def on_accept(self):
+        if self.was_a_key_press:
+            return
         self.user_res = True
         self.close()
 
     def on_reject(self):
+        if self.was_a_key_press:
+            return
         self.user_res = False
         self.close()
+
+    def set_key_press_flag(self, key_press_flag):
+        self.was_a_key_press = key_press_flag
+
+
+class KeyEventDetector(QObject):
+    def __init__(self, parent: ECMaterialsSteppableDlg):
+        super(KeyEventDetector, self).__init__(parent)
+        self.main_UI = parent
+
+    def eventFilter(self, a0: QObject, a1: QEvent) -> bool:
+        self.main_UI.set_key_press_flag(key_press_flag=a1.type() == a1.KeyPress)
+
+        return super(KeyEventDetector, self).eventFilter(a0, a1)
