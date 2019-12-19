@@ -29,6 +29,8 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
 
         self.keys_set_here = self.get_keys()
 
+        self.cb_emitters = None
+
         if previous_info:
             self.ec_materials_dict = None
             self.load_previous_info(previous_info=previous_info)
@@ -117,6 +119,7 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
 
         # Refresh LHS table
         self.tableWidget_materialDefs.setRowCount(0)
+        self.cb_emitters = []
         for ec_material in self.ec_materials_dict["ECMaterials"]:
             row_count = self.tableWidget_materialDefs.rowCount()
             self.tableWidget_materialDefs.insertRow(row_count)
@@ -129,6 +132,10 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
             cb.setCheckable(True)
             cb.setChecked(self.ec_materials_dict["Advects"][ec_material])
             self.tableWidget_materialDefs.setCellWidget(row_count, 1, cb)
+            self.cb_emitters.append(QCBCallbackEmitter(parent=self,
+                                                       cb=cb,
+                                                       cb_row=row_count,
+                                                       cb_col=1))
 
             twi = QTableWidgetItem(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
             twi.setText(str(self.ec_materials_dict["Durability"][ec_material]))
@@ -316,3 +323,17 @@ class KeyEventDetector(QObject):
         self.main_UI.set_key_press_flag(key_press_flag=a1.type() == a1.KeyPress)
 
         return super(KeyEventDetector, self).eventFilter(a0, a1)
+
+
+class QCBCallbackEmitter(QObject):
+    def __init__(self, parent: ECMaterialsDlg, cb: QCheckBox, cb_row: int, cb_col: int):
+        super(QCBCallbackEmitter, self).__init__(parent)
+        self.main_UI = parent
+        self.cb = cb
+        self.cb_row = cb_row
+        self.cb_col = cb_col
+
+        self.cb.stateChanged.connect(self.emit)
+
+    def emit(self, state: int):
+        self.main_UI.handle_material_defs_table_edit(row=self.cb_row, col=self.cb_col)

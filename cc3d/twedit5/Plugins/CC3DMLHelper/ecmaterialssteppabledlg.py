@@ -29,6 +29,8 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
 
         self.keys_set_here = self.get_keys()
 
+        self.cb_emitters = None
+
         self.ec_materials_dict = None
         self.load_previous_info(previous_info=previous_info)
 
@@ -322,6 +324,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
 
         # Tab: Material Diffusion
         self.tableWidget_diff.setRowCount(0)
+        self.cb_emitters = []
         for key, diffusion in self.ec_materials_dict["MaterialDiffusion"].items():
             row = self.tableWidget_diff.rowCount()
             self.tableWidget_diff.insertRow(row)
@@ -330,6 +333,10 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             cb.setChecked(diffusion["Diffuses"])
             cb.setCheckable(True)
             self.tableWidget_diff.setCellWidget(row, 1, cb)
+            self.cb_emitters.append(QCBCallbackEmitter(parent=self,
+                                                       cb=cb,
+                                                       cb_row=row,
+                                                       cb_col=1))
             twi = self.template_table_item(text=diffusion["Coefficient"])
             twi.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
             self.tableWidget_diff.setItem(row, 2, twi)
@@ -518,7 +525,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         ec_material = self.tableWidget_diff.item(row, 0).text()
         cb: QCheckBox = self.tableWidget_diff.cellWidget(row, 1)
         self.ec_materials_dict["MaterialDiffusion"][ec_material]["Diffuses"] = cb.isChecked()
-        twi = self.tableWidget_diff.item(row, col)
+        twi = self.tableWidget_diff.item(row, 2)
         try:
             val = float(twi.text())
             self.ec_materials_dict["MaterialDiffusion"][ec_material]["Coefficient"] = val
@@ -553,3 +560,17 @@ class KeyEventDetector(QObject):
         self.main_UI.set_key_press_flag(key_press_flag=a1.type() == a1.KeyPress)
 
         return super(KeyEventDetector, self).eventFilter(a0, a1)
+
+
+class QCBCallbackEmitter(QObject):
+    def __init__(self, parent: ECMaterialsSteppableDlg, cb: QCheckBox, cb_row: int, cb_col: int):
+        super(QCBCallbackEmitter, self).__init__(parent)
+        self.main_UI = parent
+        self.cb = cb
+        self.cb_row = cb_row
+        self.cb_col = cb_col
+
+        self.cb.stateChanged.connect(self.emit)
+
+    def emit(self, state: int):
+        self.main_UI.on_diffusion_table_edit(row=self.cb_row, col=self.cb_col)
