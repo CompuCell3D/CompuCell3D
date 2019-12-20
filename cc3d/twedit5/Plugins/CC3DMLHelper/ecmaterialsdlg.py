@@ -33,9 +33,9 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
 
         if previous_info:
             self.ec_materials_dict = None
-            self.load_previous_info(previous_info=previous_info)
+            self.load_previous_info(previous_info=deepcopy(previous_info))
         else:
-            self.ec_materials_dict = self.initialize_new_info()
+            self.ec_materials_dict = self.get_default_data()
 
         self.connect_all_signals()
 
@@ -46,15 +46,24 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         return ["ECMaterials", "Adhesion", "Remodeling", "Advects", "Durability"]
 
     @staticmethod
-    def initialize_new_info() -> {}:
+    def get_default_data():
         return {"ECMaterials": [],
                 "Adhesion": {},
                 "Remodeling": {},
                 "Advects": {},
-                "Durability": {}}
+                "Durability": {},
+                "MaterialInteractions": [],
+                "FieldInteractions": [],
+                "CellInteractions": [],
+                "MaterialDiffusion": {}}
 
     def load_previous_info(self, previous_info: dict):
         self.ec_materials_dict = previous_info
+
+        # Perform checks on imported data
+        for key, val in self.get_default_data().items():
+            if key not in self.ec_materials_dict.keys():
+                self.ec_materials_dict[key] = val
 
         # Perform checks in case cell types changed
         adhesion_coefficients = self.ec_materials_dict["Adhesion"]
@@ -67,7 +76,6 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
             adhesion_coefficients[ec_material] = {key: val for key, val in adhesion_coefficients[ec_material].items()
                                                   if key in self.cell_types}
 
-            self.ec_materials_dict["Adhesion"][ec_material].clear()
             self.ec_materials_dict["Adhesion"][ec_material] = adhesion_coefficients[ec_material]
 
             for cell_type in self.cell_types - remodeling_quantities[ec_material].keys():
@@ -79,7 +87,6 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
             remodeling_quantities[ec_material] = {key: val for key, val in remodeling_quantities[ec_material].items()
                                                   if key in self.cell_types}
 
-            self.ec_materials_dict["Remodeling"][ec_material].clear()
             self.ec_materials_dict["Remodeling"][ec_material] = remodeling_quantities[ec_material]
 
             first_ec_material_set = True
@@ -264,11 +271,6 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         self.ec_materials_dict["Adhesion"][new_material] = {cell_type: 0.0 for cell_type in self.cell_types}
         self.ec_materials_dict["Remodeling"][new_material] = {cell_type: 0.0 for cell_type in self.cell_types}
 
-        # Set empty dictionaries for keys not set here, in case info came back from steppable
-        for key in self.ec_materials_dict.keys():
-            if key not in self.keys_set_here:
-                self.ec_materials_dict[key][new_material] = {}
-
         self.disconnect_all_signals()
         self.lineEdit.clear()
         self.checkBox.setChecked(True)
@@ -280,7 +282,7 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         for key in self.ec_materials_dict.keys():
             if key == "ECMaterials":
                 self.ec_materials_dict[key].remove(ec_material)
-            else:
+            elif isinstance(self.ec_materials_dict[key], dict) and ec_material in self.ec_materials_dict[key].keys():
                 self.ec_materials_dict[key].pop(ec_material)
 
     def handle_delete_material_button(self):

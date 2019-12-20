@@ -1,9 +1,11 @@
+from copy import deepcopy
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
 from cc3d.twedit5.twedit.utils.global_imports import *
 from . import ui_ecmaterialssteppable
+from .ecmaterialsdlg import ECMaterialsDlg
 
 MAC = "qt_mac_set_native_menubar" in dir()
 
@@ -32,7 +34,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.cb_emitters = None
 
         self.ec_materials_dict = None
-        self.load_previous_info(previous_info=previous_info)
+        self.load_previous_info(previous_info=deepcopy(previous_info))
 
         # Containers for interaction design
         self.mtl_interaction = None
@@ -89,15 +91,10 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         else:
             self.cell_types = []
 
-        # Initialize data if necessary
-        if "MaterialInteractions" not in self.ec_materials_dict.keys():
-            self.ec_materials_dict["MaterialInteractions"] = []
-        if "FieldInteractions" not in self.ec_materials_dict.keys():
-            self.ec_materials_dict["FieldInteractions"] = []
-        if "CellInteractions" not in self.ec_materials_dict.keys():
-            self.ec_materials_dict["CellInteractions"] = []
-        if "MaterialDiffusion" not in self.ec_materials_dict.keys():
-            self.ec_materials_dict["MaterialDiffusion"] = {}
+        # Perform checks on imported data
+        for key, val in ECMaterialsDlg.get_default_data().items():
+            if key not in self.ec_materials_dict.keys():
+                self.ec_materials_dict[key] = val
 
         # Perform checks in case materials changed
         self.ec_materials_dict["CellInteractions"] = \
