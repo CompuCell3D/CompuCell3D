@@ -210,9 +210,17 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
             for key in self.ec_materials_dict:
                 if key == "ECMaterials":
                     self.ec_materials_dict[key][row] = new_name
-                else:
-                    self.ec_materials_dict[key][new_name] = self.ec_materials_dict[key][ec_material]
-                    self.ec_materials_dict[key].pop(ec_material)
+                elif isinstance(self.ec_materials_dict[key], dict):
+                    for key_key, val in self.ec_materials_dict[key].items():
+                        if key_key == ec_material:
+                            self.ec_materials_dict[key][new_name] = self.ec_materials_dict[key].pop(key_key)
+                        elif val == ec_material:
+                            self.ec_materials_dict[key][key_key] = new_name
+                elif isinstance(self.ec_materials_dict[key], list):
+                    for i in range(self.ec_materials_dict[key].__len__()):
+                        for key_key in self.ec_materials_dict[key][i].keys():
+                            if self.ec_materials_dict[key][i][key_key] == ec_material:
+                                self.ec_materials_dict[key][i][key_key] = new_name
         elif col == 1:  # Advection toggle
             cb: QCheckBox = self.tableWidget_materialDefs.cellWidget(row, col)
             self.ec_materials_dict["Advects"][ec_material] = cb.isChecked()

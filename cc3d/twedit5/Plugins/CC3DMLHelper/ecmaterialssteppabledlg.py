@@ -117,7 +117,8 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.ec_materials_dict["CellInteractions"] = \
             [val for val in self.ec_materials_dict["CellInteractions"] if val["CellType"] in self.cell_types]
         self.ec_materials_dict["CellInteractions"] = \
-            [val for val in self.ec_materials_dict["CellInteractions"] if val["CellTypeNew"] in self.cell_types]
+            [val for val in self.ec_materials_dict["CellInteractions"]
+             if val["CellTypeNew"] in self.cell_types or val["CellTypeNew"].__len__() == 0]
 
         # Perform checks in case fields changed
         self.ec_materials_dict["FieldInteractions"] = \
