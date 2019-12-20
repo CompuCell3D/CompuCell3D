@@ -102,7 +102,8 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
              if val["ECMaterial"] in self.ec_materials_dict["ECMaterials"]]
         self.ec_materials_dict["MaterialInteractions"] = \
             [val for val in self.ec_materials_dict["MaterialInteractions"]
-             if len({val["Catalyst"], val["Reactant"]} & set(self.ec_materials_dict["ECMaterials"])) == 2]
+             if val["Catalyst"] in self.ec_materials_dict["ECMaterials"]
+             and val["Reactant"] in self.ec_materials_dict["ECMaterials"]]
         self.ec_materials_dict["FieldInteractions"] = \
             [val for val in self.ec_materials_dict["FieldInteractions"]
              if len({val["Catalyst"], val["Reactant"]} & set(self.ec_materials_dict["ECMaterials"])) == 1]
