@@ -1,4 +1,4 @@
-from cc3d.call_cc3d import CC3DCaller
+from cc3d.CC3DCaller import CC3DCaller
 
 sim_fnames = [r'd:\CC3DProjects\demo_py3\cellsort_2D\cellsort_2D.cc3d'] * 4
 
