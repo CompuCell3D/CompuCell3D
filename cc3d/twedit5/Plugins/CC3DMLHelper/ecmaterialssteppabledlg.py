@@ -36,6 +36,11 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
 
         self.valid_diffusion = {}
         self.invalid_font_color = QColor("red")
+        self.invalid_palette = QPalette()
+        self.invalid_palette.setColor(QPalette.Text, self.invalid_font_color)
+        self.lineEdit_mtl_palette = self.lineEdit_mtl.palette()
+        self.lineEdit_fld_palette = self.lineEdit_fld.palette()
+        self.lineEdit_cell_palette = self.lineEdit_cell.palette()
 
         self.ec_materials_dict = None
         self.load_previous_info(previous_info=deepcopy(previous_info))
@@ -49,9 +54,13 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.responses_new_types = self.get_response_new_types()
 
         # Static connections
+        self.lineEdit_mtl.textChanged.connect(self.on_line_edit_mtl_changed)
+        self.lineEdit_fld.textChanged.connect(self.on_line_edit_fld_changed)
+        self.lineEdit_cell.textChanged.connect(self.on_line_edit_cell_changed)
         self.comboBox_fldC.currentTextChanged.connect(self.on_fld_catalyst_select)
         self.comboBox_cellT.currentTextChanged.connect(self.update_combo_box_types_new)
         self.comboBox_cellR.currentTextChanged.connect(self.update_combo_box_types_new)
+        self.tabWidget.currentChanged.connect(self.resize_tables)
 
         # Connect dynamic connections
         self.connect_all_signals()
@@ -71,6 +80,24 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
     @staticmethod
     def get_response_new_types() -> []:
         return ['Differentiation', 'Asymmetric Division']
+
+    def resize_tables(self) -> None:
+        coefficient_width = 100
+
+        table_dict = {self.tableWidget_mtl: 2, self.tableWidget_fld: 2, self.tableWidget_cell: 3}
+        for table, coefficient_col in table_dict.items():
+            hh = table.horizontalHeader()
+            table_width = table.width()
+            var_width = int((table_width - coefficient_width - 18) / (table.columnCount() - 1))
+            for col in range(table.columnCount()):
+                if col != coefficient_col:
+                    table.setColumnWidth(col, var_width)
+                    hh.setSectionResizeMode(col, QHeaderView.Fixed)
+
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        self.resize_tables()
+
+        QDialog.resizeEvent(self, event)
 
     def init_design_containers(self) -> None:
         self.reset_mtl_interaction()
@@ -337,12 +364,10 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             row = self.tableWidget_diff.rowCount()
             self.tableWidget_diff.insertRow(row)
             self.tableWidget_diff.setItem(row, 0, self.template_table_item(text=key))
-            cb = QCheckBox()
-            cb.setChecked(diffusion["Diffuses"])
-            cb.setCheckable(True)
-            self.tableWidget_diff.setCellWidget(row, 1, cb)
+            ccb = CustomCheckBox(parent=self, check_state=diffusion["Diffuses"])
+            self.tableWidget_diff.setCellWidget(row, 1, ccb)
             self.cb_emitters.append(QCBCallbackEmitter(parent=self,
-                                                       cb=cb,
+                                                       cb=ccb.cb,
                                                        cb_row=row,
                                                        cb_col=1))
             twi = self.template_table_item(text=diffusion["Coefficient"])
@@ -350,6 +375,10 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             if not self.valid_diffusion[key]:
                 twi.setData(Qt.TextColorRole, self.invalid_font_color)
             self.tableWidget_diff.setItem(row, 2, twi)
+
+        self.tableWidget_diff.resizeRowsToContents()
+
+        self.resize_tables()
 
         self.connect_all_signals()
 
@@ -393,6 +422,27 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
     def on_mtl_clear(self) -> None:
         self.ec_materials_dict["MaterialInteractions"].clear()
         self.update_ui()
+
+    def on_line_edit_mtl_changed(self, text: str):
+        try:
+            float(text)
+            self.lineEdit_mtl.setPalette(self.lineEdit_mtl_palette)
+        except ValueError:
+            self.lineEdit_mtl.setPalette(self.invalid_palette)
+
+    def on_line_edit_fld_changed(self, text: str):
+        try:
+            float(text)
+            self.lineEdit_fld.setPalette(self.lineEdit_fld_palette)
+        except ValueError:
+            self.lineEdit_fld.setPalette(self.invalid_palette)
+
+    def on_line_edit_cell_changed(self, text: str):
+        try:
+            float(text)
+            self.lineEdit_cell.setPalette(self.lineEdit_cell_palette)
+        except ValueError:
+            self.lineEdit_cell.setPalette(self.invalid_palette)
 
     def on_fld_catalyst_select(self, text) -> None:
         current_fldR = None
@@ -505,8 +555,8 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         if row < 0 or col <= 0:
             return
         ec_material = self.tableWidget_diff.item(row, 0).text()
-        cb: QCheckBox = self.tableWidget_diff.cellWidget(row, 1)
-        self.ec_materials_dict["MaterialDiffusion"][ec_material]["Diffuses"] = cb.isChecked()
+        ccb: CustomCheckBox = self.tableWidget_diff.cellWidget(row, 1)
+        self.ec_materials_dict["MaterialDiffusion"][ec_material]["Diffuses"] = ccb.is_checked()
         twi = self.tableWidget_diff.item(row, 2)
         try:
             val = float(twi.text())
@@ -561,6 +611,22 @@ class QCBCallbackEmitter(QObject):
 
     def emit(self, state: int):
         self.main_UI.on_diffusion_table_edit(row=self.cb_row, col=self.cb_col)
+
+
+class CustomCheckBox(QWidget):
+    def __init__(self, parent: ECMaterialsSteppableDlg, check_state: bool = True):
+        super(CustomCheckBox, self).__init__(parent)
+
+        self.cb = QCheckBox()
+        self.cb.setCheckable(True)
+        self.cb.setChecked(check_state)
+
+        self.h_layout = QHBoxLayout(self)
+        self.h_layout.addWidget(self.cb)
+        self.h_layout.setAlignment(Qt.AlignCenter)
+
+    def is_checked(self) -> bool:
+        return self.cb.isChecked()
 
 
 # Parsing here; package somewhere else later

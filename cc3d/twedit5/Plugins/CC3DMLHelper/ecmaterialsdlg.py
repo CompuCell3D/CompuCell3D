@@ -48,9 +48,31 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
 
         self.update_ui()
 
+        self.resize_table_material_defs()
+
     @staticmethod
     def get_keys():
         return ["ECMaterials", "Adhesion", "Remodeling", "Advects", "Durability"]
+
+    def resize_table_material_defs(self) -> None:
+        hh = self.tableWidget_materialDefs.horizontalHeader()
+        table_width = self.tableWidget_materialDefs.width()
+
+        cb_width = 50
+        self.tableWidget_materialDefs.setColumnWidth(1, cb_width)
+        hh.setSectionResizeMode(1, QHeaderView.Fixed)
+
+        durability_width = 100
+        self.tableWidget_materialDefs.setColumnWidth(2, durability_width)
+        hh.setSectionResizeMode(2, QHeaderView.Fixed)
+
+        name_width = max(80, table_width - cb_width - durability_width - 18)
+        self.tableWidget_materialDefs.setColumnWidth(0, name_width)
+
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        self.resize_table_material_defs()
+
+        QDialog.resizeEvent(self, event)
 
     def load_previous_info(self, previous_info: dict):
         self.ec_materials_dict = previous_info
@@ -136,12 +158,10 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
             twi.setText(ec_material)
             self.tableWidget_materialDefs.setItem(row_count, 0, twi)
 
-            cb = QCheckBox()
-            cb.setCheckable(True)
-            cb.setChecked(self.ec_materials_dict["Advects"][ec_material])
-            self.tableWidget_materialDefs.setCellWidget(row_count, 1, cb)
+            ccb = CustomCheckBox(parent=self, check_state=self.ec_materials_dict["Advects"][ec_material])
+            self.tableWidget_materialDefs.setCellWidget(row_count, 1, ccb)
             self.cb_emitters.append(QCBCallbackEmitter(parent=self,
-                                                       cb=cb,
+                                                       cb=ccb.cb,
                                                        cb_row=row_count,
                                                        cb_col=1))
 
@@ -150,6 +170,8 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
             if not self.valid_durability[ec_material]:
                 twi.setData(Qt.TextColorRole, self.invalid_font_color)
             self.tableWidget_materialDefs.setItem(row_count, 2, twi)
+
+        self.tableWidget_materialDefs.resizeRowsToContents()
 
         # Refresh RHS Adhesion table
         self.tableWidget_adhesion.setRowCount(0)
@@ -229,8 +251,8 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
                             if self.ec_materials_dict[key][i][key_key] == ec_material:
                                 self.ec_materials_dict[key][i][key_key] = new_name
         elif col == 1:  # Advection toggle
-            cb: QCheckBox = self.tableWidget_materialDefs.cellWidget(row, col)
-            self.ec_materials_dict["Advects"][ec_material] = cb.isChecked()
+            ccb: CustomCheckBox = self.tableWidget_materialDefs.cellWidget(row, col)
+            self.ec_materials_dict["Advects"][ec_material] = ccb.is_checked()
         elif col == 2:  # Durability coefficient change
             item: QTableWidget = self.tableWidget_materialDefs.item(row, col)
             try:
@@ -382,6 +404,22 @@ class QCBCallbackEmitter(QObject):
 
     def emit(self, state: int):
         self.main_UI.handle_material_defs_table_edit(row=self.cb_row, col=self.cb_col)
+
+
+class CustomCheckBox(QWidget):
+    def __init__(self, parent: ECMaterialsDlg, check_state: bool = True):
+        super(CustomCheckBox, self).__init__(parent)
+
+        self.cb = QCheckBox()
+        self.cb.setCheckable(True)
+        self.cb.setChecked(check_state)
+
+        self.h_layout = QHBoxLayout(self)
+        self.h_layout.addWidget(self.cb)
+        self.h_layout.setAlignment(Qt.AlignCenter)
+
+    def is_checked(self) -> bool:
+        return self.cb.isChecked()
 
 
 def get_default_data():

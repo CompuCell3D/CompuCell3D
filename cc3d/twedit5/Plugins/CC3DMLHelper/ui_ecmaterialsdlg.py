@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_ECMaterialsDlg(object):
     def setupUi(self, ECMaterialsDlg):
         ECMaterialsDlg.setObjectName("ECMaterialsDlg")
-        ECMaterialsDlg.resize(789, 437)
+        ECMaterialsDlg.resize(725, 437)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -27,6 +27,12 @@ class Ui_ECMaterialsDlg(object):
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
         self.tableWidget_materialDefs = QtWidgets.QTableWidget(ECMaterialsDlg)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.tableWidget_materialDefs.sizePolicy().hasHeightForWidth())
+        self.tableWidget_materialDefs.setSizePolicy(sizePolicy)
+        self.tableWidget_materialDefs.setMinimumSize(QtCore.QSize(300, 0))
         self.tableWidget_materialDefs.setObjectName("tableWidget_materialDefs")
         self.tableWidget_materialDefs.setColumnCount(3)
         self.tableWidget_materialDefs.setRowCount(0)
