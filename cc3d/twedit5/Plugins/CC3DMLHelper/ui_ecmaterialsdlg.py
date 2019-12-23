@@ -101,7 +101,7 @@ class Ui_ECMaterialsDlg(object):
 
     def retranslateUi(self, ECMaterialsDlg):
         _translate = QtCore.QCoreApplication.translate
-        ECMaterialsDlg.setWindowTitle(_translate("ECMaterialsDlg", "Please define extracellular materials"))
+        ECMaterialsDlg.setWindowTitle(_translate("ECMaterialsDlg", "ECMaterials Plugin: Please define extracellular materials"))
         item = self.tableWidget_materialDefs.horizontalHeaderItem(0)
         item.setText(_translate("ECMaterialsDlg", "ECMaterial"))
         item = self.tableWidget_materialDefs.horizontalHeaderItem(1)

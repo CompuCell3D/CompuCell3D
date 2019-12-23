@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Please define extracellular materials</string>
+   <string>ECMaterials Plugin: Please define extracellular materials</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>false</bool>

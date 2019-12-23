@@ -256,7 +256,7 @@ class Ui_ECMaterialsSteppableDlg(object):
 
     def retranslateUi(self, ECMaterialsSteppableDlg):
         _translate = QtCore.QCoreApplication.translate
-        ECMaterialsSteppableDlg.setWindowTitle(_translate("ECMaterialsSteppableDlg", "Please define extracellular material interactions"))
+        ECMaterialsSteppableDlg.setWindowTitle(_translate("ECMaterialsSteppableDlg", "ECMaterials Steppable: Please define extracellular material interactions"))
         self.label.setText(_translate("ECMaterialsSteppableDlg", "Catalyst"))
         self.label_2.setText(_translate("ECMaterialsSteppableDlg", "Reactant"))
         self.label_3.setText(_translate("ECMaterialsSteppableDlg", "Coefficient"))
