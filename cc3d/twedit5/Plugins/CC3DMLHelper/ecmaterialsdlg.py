@@ -20,6 +20,8 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         if not MAC:
             self.buttonBox.setFocusPolicy(Qt.NoFocus)
 
+        self.setWindowFlags(Qt.Window)
+
         # To prevent accept on Return key; also nice to have a custom key filter implemented for future dev
         self.key_event_detector = KeyEventDetector(parent=self)
         self.installEventFilter(self.key_event_detector)
