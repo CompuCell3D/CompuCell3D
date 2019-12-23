@@ -59,6 +59,7 @@ class CC3DCallerWorker(multiprocessing.Process):
         self.result_queue = result_queue
 
     def run(self):
+
         proc_name = self.name
         while True:
             next_task = self.task_queue.get()
