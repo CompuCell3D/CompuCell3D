@@ -34,6 +34,8 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
 
         self.cb_emitters = None
 
+        self.valid_diffusion = {}
+
         self.ec_materials_dict = None
         self.load_previous_info(previous_info=deepcopy(previous_info))
 
@@ -43,7 +45,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.cell_interaction = None
         self.init_design_containers()
         self.cell_response_types = self.get_cell_response_types()
-        self.responses_new_types = self.get_responses_new_types()
+        self.responses_new_types = self.get_response_new_types()
 
         # Static connections
         self.comboBox_fldC.currentTextChanged.connect(self.on_fld_catalyst_select)
@@ -135,6 +137,9 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             [val for val in self.ec_materials_dict["FieldInteractions"]
              if len({val["Catalyst"], val["Reactant"]} & set(self.field_list)) == 1]
 
+        # Initialize booleans for tracking valid diffusion table entries
+        self.valid_diffusion = {key: True for key in self.ec_materials_dict["ECMaterials"]}
+
     def get_user_res(self):
         return self.user_res
 
@@ -147,19 +152,16 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.buttonBox.rejected.connect(self.on_reject)
 
         # Tab: Material Interactions
-        self.lineEdit_mtl.textChanged.connect(self.on_mtl_coefficient_edit)
         self.pushButton_mtlAdd.clicked.connect(self.on_mtl_add)
         self.pushButton__mtlDel.clicked.connect(self.on_mtl_del)
         self.pushButton__mtlClear.clicked.connect(self.on_mtl_clear)
 
         # Tab: Field Interactions
-        self.lineEdit_fld.textChanged.connect(self.on_fld_coefficient_edit)
         self.pushButton_fldAdd.clicked.connect(self.on_fld_add)
         self.pushButton_fldDel.clicked.connect(self.on_fld_del)
         self.pushButton_fldClear.clicked.connect(self.on_fld_clear)
 
         # Tab: Cell Interactions
-        self.lineEdit_cell.textChanged.connect(self.on_cell_coefficient_edit)
         self.pushButton_cellAdd.clicked.connect(self.on_cell_add)
         self.pushButton_cellDel.clicked.connect(self.on_cell_del)
         self.pushButton_cellClear.clicked.connect(self.on_cell_clear)
@@ -173,19 +175,16 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.buttonBox.rejected.disconnect(self.on_reject)
 
         # Tab: Material Interactions
-        self.lineEdit_mtl.textChanged.disconnect(self.on_mtl_coefficient_edit)
         self.pushButton_mtlAdd.clicked.disconnect(self.on_mtl_add)
         self.pushButton__mtlDel.clicked.disconnect(self.on_mtl_del)
         self.pushButton__mtlClear.clicked.disconnect(self.on_mtl_clear)
 
         # Tab: Field Interactions
-        self.lineEdit_fld.textChanged.disconnect(self.on_fld_coefficient_edit)
         self.pushButton_fldAdd.clicked.disconnect(self.on_fld_add)
         self.pushButton_fldDel.clicked.disconnect(self.on_fld_del)
         self.pushButton_fldClear.clicked.disconnect(self.on_fld_clear)
 
         # Tab: Cell Interactions
-        self.lineEdit_cell.textChanged.disconnect(self.on_cell_coefficient_edit)
         self.pushButton_cellAdd.clicked.disconnect(self.on_cell_add)
         self.pushButton_cellDel.clicked.disconnect(self.on_cell_del)
         self.pushButton_cellClear.clicked.disconnect(self.on_cell_clear)
@@ -347,19 +346,13 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
                                                        cb_col=1))
             twi = self.template_table_item(text=diffusion["Coefficient"])
             twi.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
+            if not self.valid_diffusion[key]:
+                twi.setData(Qt.TextColorRole, QColor("red"))
             self.tableWidget_diff.setItem(row, 2, twi)
 
         self.connect_all_signals()
 
     # Callbacks
-    def on_mtl_coefficient_edit(self, text) -> None:
-        try:
-            float(text)
-        except ValueError:
-            self.lineEdit_mtl.textChanged.disconnect(self.on_mtl_coefficient_edit)
-            self.lineEdit_mtl.clear()
-            self.lineEdit_mtl.textChanged.connect(self.on_mtl_coefficient_edit)
-
     def on_mtl_add(self) -> None:
         # Assemble candidate entry
         try:
@@ -418,14 +411,6 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         if current_fldR is not None:
             self.comboBox_fldR.setCurrentText(current_fldR)
 
-    def on_fld_coefficient_edit(self, text) -> None:
-        try:
-            float(text)
-        except ValueError:
-            self.lineEdit_fld.textChanged.disconnect(self.on_fld_coefficient_edit)
-            self.lineEdit_fld.clear()
-            self.lineEdit_fld.textChanged.connect(self.on_fld_coefficient_edit)
-
     def on_fld_add(self) -> None:
         # Assemble candidate entry
         try:
@@ -466,23 +451,11 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.ec_materials_dict["FieldInteractions"].clear()
         self.update_ui()
 
-    def on_cell_coefficient_edit(self, text) -> None:
-        try:
-            val = float(text)
-            self.cell_interaction["Coefficient"] = val
-        except ValueError:
-            self.lineEdit_cell.textChanged.disconnect(self.on_cell_coefficient_edit)
-            self.lineEdit_cell.setText('0')
-            self.lineEdit_cell.textChanged.connect(self.on_cell_coefficient_edit)
-
     def on_cell_add(self) -> None:
         # Assemble candidate entry
         try:
             val = float(self.lineEdit_cell.text())
         except ValueError:
-            self.lineEdit_cell.textChanged.disconnect(self.on_cell_coefficient_edit)
-            self.lineEdit_cell.setText('0')
-            self.lineEdit_cell.textChanged.connect(self.on_cell_coefficient_edit)
             return
         self.cell_interaction = {"ECMaterial": self.comboBox_cellM.currentText(),
                                  "CellType": self.comboBox_cellT.currentText(),
@@ -537,16 +510,21 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         try:
             val = float(twi.text())
             self.ec_materials_dict["MaterialDiffusion"][ec_material]["Coefficient"] = val
+            self.valid_diffusion[ec_material] = True
         except ValueError:
-            self.disconnect_all_signals()
-            twi.setText(str(self.ec_materials_dict["MaterialDiffusion"][ec_material]["Coefficient"]))
-            self.connect_all_signals()
+            self.ec_materials_dict["MaterialDiffusion"][ec_material]["Coefficient"] = twi.text()
+            self.valid_diffusion[ec_material] = False
         self.update_ui()
 
     def on_accept(self):
         if self.was_a_key_press:
             return
         self.user_res = True
+
+        for key in self.valid_diffusion.keys():
+            if not self.valid_diffusion[key]:
+                self.ec_materials_dict["MaterialDiffusion"][key] = {"Diffuses": False,
+                                                                    "Coefficient": 0}
         self.close()
 
     def on_reject(self):
