@@ -35,6 +35,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.cb_emitters = None
 
         self.valid_diffusion = {}
+        self.invalid_font_color = QColor("red")
 
         self.ec_materials_dict = None
         self.load_previous_info(previous_info=deepcopy(previous_info))
@@ -347,7 +348,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             twi = self.template_table_item(text=diffusion["Coefficient"])
             twi.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
             if not self.valid_diffusion[key]:
-                twi.setData(Qt.TextColorRole, QColor("red"))
+                twi.setData(Qt.TextColorRole, self.invalid_font_color)
             self.tableWidget_diff.setItem(row, 2, twi)
 
         self.connect_all_signals()

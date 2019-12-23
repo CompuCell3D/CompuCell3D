@@ -33,6 +33,11 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
 
         self.cb_emitters = None
 
+        self.valid_adhesion = {}
+        self.valid_remodeling = {}
+        self.valid_durability = {}
+        self.invalid_font_color = QColor("red")
+
         if previous_info:
             self.ec_materials_dict = None
             self.load_previous_info(previous_info=deepcopy(previous_info))
@@ -80,6 +85,12 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
             self.ec_materials_dict["Remodeling"][ec_material] = remodeling_quantities[ec_material]
 
             first_ec_material_set = True
+
+        # Initialize booleans for tracking valid entries
+        for ec_material in self.ec_materials_dict["ECMaterials"]:
+            self.valid_adhesion[ec_material] = {key: True for key in self.cell_types}
+            self.valid_remodeling[ec_material] = {key: True for key in self.cell_types}
+            self.valid_durability[ec_material] = True
 
     def get_user_res(self):
         return self.user_res
@@ -136,6 +147,8 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
 
             twi = QTableWidgetItem(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
             twi.setText(str(self.ec_materials_dict["Durability"][ec_material]))
+            if not self.valid_durability[ec_material]:
+                twi.setData(Qt.TextColorRole, self.invalid_font_color)
             self.tableWidget_materialDefs.setItem(row_count, 2, twi)
 
         # Refresh RHS Adhesion table
@@ -149,6 +162,8 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
 
                 twi = QTableWidgetItem(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
                 twi.setText(str(self.ec_materials_dict["Adhesion"][ec_material][cell_type]))
+                if not self.valid_adhesion[ec_material][cell_type]:
+                    twi.setData(Qt.TextColorRole, self.invalid_font_color)
                 self.tableWidget_adhesion.setItem(row_count, type_index, twi)
 
         self.tableWidget_adhesion.setVerticalHeaderLabels(self.ec_materials_dict["ECMaterials"])
@@ -165,6 +180,8 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
 
                 twi = QTableWidgetItem(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
                 twi.setText(str(self.ec_materials_dict["Remodeling"][ec_material][cell_type]))
+                if not self.valid_remodeling[ec_material][cell_type]:
+                    twi.setData(Qt.TextColorRole, self.invalid_font_color)
                 self.tableWidget_remodeling.setItem(row_count, type_index, twi)
 
         self.tableWidget_remodeling.setVerticalHeaderLabels(self.ec_materials_dict["ECMaterials"])
@@ -217,11 +234,12 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         elif col == 2:  # Durability coefficient change
             item: QTableWidget = self.tableWidget_materialDefs.item(row, col)
             try:
-                self.ec_materials_dict["Durability"][ec_material] = float(item.text())
-            except TypeError:
-                self.disconnect_all_signals()
-                item.setText(str(self.ec_materials_dict["Durability"][ec_material]))
-                self.connect_all_signals()
+                val = float(item.text())
+                self.ec_materials_dict["Durability"][ec_material] = val
+                self.valid_durability[ec_material] = True
+            except ValueError:
+                self.ec_materials_dict["Durability"][ec_material] = item.text()
+                self.valid_durability[ec_material] = False
 
         self.update_ui()
 
@@ -235,10 +253,10 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         try:
             new_value = float(item.text())
             self.ec_materials_dict["Adhesion"][ec_material][cell_type] = new_value
-        except TypeError:
-            self.disconnect_all_signals()
-            item.setText(str(self.ec_materials_dict["Adhesion"][ec_material][cell_type]))
-            self.connect_all_signals()
+            self.valid_adhesion[ec_material][cell_type] = True
+        except ValueError:
+            self.ec_materials_dict["Adhesion"][ec_material][cell_type] = item.text()
+            self.valid_adhesion[ec_material][cell_type] = False
 
         self.update_ui()
 
@@ -252,10 +270,10 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         try:
             new_value = float(item.text())
             self.ec_materials_dict["Remodeling"][ec_material][cell_type] = new_value
-        except TypeError:
-            self.disconnect_all_signals()
-            item.setText(str(self.ec_materials_dict["Remodeling"][ec_material][cell_type]))
-            self.connect_all_signals()
+            self.valid_remodeling[ec_material][cell_type] = True
+        except ValueError:
+            self.ec_materials_dict["Remodeling"][ec_material][cell_type] = item.text()
+            self.valid_remodeling[ec_material][cell_type] = False
 
         self.update_ui()
 
@@ -274,6 +292,10 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         self.checkBox.setChecked(True)
         self.connect_all_signals()
 
+        self.valid_adhesion[new_material] = {key: True for key in self.cell_types}
+        self.valid_remodeling[new_material] = {key: True for key in self.cell_types}
+        self.valid_durability[new_material] = True
+
         self.update_ui()
 
     def handle_delete_material(self, ec_material: str):
@@ -282,6 +304,10 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
                 self.ec_materials_dict[key].remove(ec_material)
             elif isinstance(self.ec_materials_dict[key], dict) and ec_material in self.ec_materials_dict[key].keys():
                 self.ec_materials_dict[key].pop(ec_material)
+
+        self.valid_adhesion.pop(ec_material)
+        self.valid_remodeling.pop(ec_material)
+        self.valid_durability.pop(ec_material)
 
     def handle_delete_material_button(self):
         row = self.tableWidget_materialDefs.currentRow()
@@ -296,12 +322,31 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         for ec_material in ec_material_list:
             self.handle_delete_material(ec_material=ec_material)
 
+        self.valid_adhesion = {}
+        self.valid_remodeling = {}
+        self.valid_durability = {}
+
         self.update_ui()
 
     def on_accept(self):
         if self.was_a_key_press:
             return
         self.user_res = True
+
+        for ec_material in self.ec_materials_dict["Adhesion"].keys():
+            for cell_type in self.cell_types:
+                if not self.valid_adhesion[ec_material][cell_type]:
+                    self.ec_materials_dict["Adhesion"][ec_material][cell_type] = 0.0
+
+        for ec_material in self.ec_materials_dict["Remodeling"].keys():
+            for cell_type in self.cell_types:
+                if not self.valid_remodeling[ec_material][cell_type]:
+                    self.ec_materials_dict["Remodeling"][ec_material][cell_type] = 0.0
+
+        for ec_material in self.ec_materials_dict["Durability"].keys():
+            if not self.valid_durability[ec_material]:
+                self.ec_materials_dict["Durability"][ec_material] = 0.0
+
         self.close()
 
     def on_reject(self):
