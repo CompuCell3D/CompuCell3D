@@ -3,9 +3,10 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
+from cc3d.core import XMLUtils
 from cc3d.twedit5.twedit.utils.global_imports import *
 from . import ui_ecmaterialssteppable
-from .ecmaterialsdlg import ECMaterialsDlg
+from . import ecmaterialsdlg
 
 MAC = "qt_mac_set_native_menubar" in dir()
 
@@ -41,8 +42,8 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.fld_interaction = None
         self.cell_interaction = None
         self.init_design_containers()
-        self.cell_response_types = ['Proliferation', 'Death', 'Differentiation', 'Asymmetric Division']
-        self.responses_new_types = ['Differentiation', 'Asymmetric Division']
+        self.cell_response_types = self.get_cell_response_types()
+        self.responses_new_types = self.get_responses_new_types()
 
         # Static connections
         self.comboBox_fldC.currentTextChanged.connect(self.on_fld_catalyst_select)
@@ -59,6 +60,14 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
     @staticmethod
     def get_keys():
         return ["MaterialInteractions", "FieldInteractions", "CellInteractions", "MaterialDiffusion"]
+
+    @staticmethod
+    def get_cell_response_types() -> []:
+        return ['Proliferation', 'Death', 'Differentiation', 'Asymmetric Division']
+
+    @staticmethod
+    def get_response_new_types() -> []:
+        return ['Differentiation', 'Asymmetric Division']
 
     def init_design_containers(self) -> None:
         self.reset_mtl_interaction()
@@ -92,7 +101,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             self.cell_types = []
 
         # Perform checks on imported data
-        for key, val in ECMaterialsDlg.get_default_data().items():
+        for key, val in ecmaterialsdlg.get_default_data().items():
             if key not in self.ec_materials_dict.keys():
                 self.ec_materials_dict[key] = val
 
@@ -573,3 +582,201 @@ class QCBCallbackEmitter(QObject):
 
     def emit(self, state: int):
         self.main_UI.on_diffusion_table_edit(row=self.cb_row, col=self.cb_col)
+
+
+# Parsing here; package somewhere else later
+def ec_materials_steppable_xml_to_data(xml_data=None, plugin_data=None):
+    if xml_data is None:
+        return ec_materials_steppable_xml_demo()
+
+    ec_materials_data = deepcopy(plugin_data)
+
+    # Import raw data (taken from C++)
+    material_interaction_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("MaterialInteractions"))
+    field_interaction_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("FieldInteractions"))
+    material_diffusion_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("MaterialDiffusion"))
+    cell_interaction_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("CellInteraction"))
+
+    # Get all specified cell types from adhesion
+    cell_types = list(ec_materials_data["Adhesion"][ec_materials_data["ECMaterials"][0]].keys())
+    cell_types.sort()
+
+    # Import all specified field names
+    catalyst_names = [element.getAttribute('Catalyst') for element in field_interaction_xml_list]
+    reactant_names = [element.getAttribute('Reactant') for element in field_interaction_xml_list]
+    field_names = catalyst_names + reactant_names
+    field_names = [field_name for field_name in field_names if field_name not in ec_materials_data["ECMaterials"]]
+    field_names = list(set(field_names))
+    field_names.sort()
+
+    # Import material interactions
+    ec_materials_data["MaterialInteractions"] = []
+    for element in material_interaction_xml_list:
+        ec_material = element.getAttribute('ECMaterial')
+        catalyst_name = element.getFirstElement('Catalyst').getText()
+        val = element.getFirstElement('ConstantCoefficient').getDouble()
+
+        if ec_material not in ec_materials_data["ECMaterials"]:
+            print('Undefined ECMaterial: ' + ec_material + '... rejecting')
+            continue
+        elif catalyst_name not in ec_materials_data["ECMaterials"]:
+            print('Undefined catalyst: ' + catalyst_name + '... rejecting')
+            continue
+
+        try:
+            ec_materials_data["MaterialInteractions"].append({"Catalyst": catalyst_name,
+                                                              "Reactant": ec_material,
+                                                              "Coefficient": val})
+        except KeyError:
+            print('Could not import XML element attribute for material interaction:')
+            print('   ECMaterial: ' + ec_material)
+            print('   Catalyst: ' + catalyst_name)
+            print('   ConstantCoefficient: ' + str(val))
+
+    # Import material diffusion
+    for element in material_diffusion_xml_list:
+        ec_material = element.getAttribute('ECMaterial')
+        val = element.getDouble()
+
+        if ec_material not in ec_materials_data["ECMaterials"]:
+            print('Undefined ECMaterial: ' + ec_material + '... rejecting')
+            continue
+
+        try:
+            ec_materials_data["MaterialDiffusion"][ec_material]["Diffuses"] = True
+            ec_materials_data["MaterialDiffusion"][ec_material]["Coefficient"] = val
+        except KeyError:
+            print('Could not import XML element attribute for material diffusion:')
+            print('   ECMaterial: ' + ec_material)
+            print('   ConstantCoefficient: ' + str(val))
+
+    # Import field interactions
+    ec_materials_data["FieldInteractions"] = []
+    for element in field_interaction_xml_list:
+        reactant_name = element.getFirstElement('Reactant').getText()
+        catalyst_name = element.getFirstElement('Catalyst').getText()
+        val = element.getFirstElement('ConstantCoefficient').getDouble()
+
+        if reactant_name in field_names and catalyst_name in field_names:
+            print('Cannot define field-field interactions here: ' +
+                  reactant_name + ', ' + catalyst_name + '... rejecting')
+            continue
+        elif not (catalyst_name in ec_materials_data["ECMaterials"] and reactant_name in field_names) and not \
+                (catalyst_name in field_names and reactant_name in ec_materials_data["ECMaterials"]):
+            print('Cannot imports as a ECMaterial-field interaction: ' +
+                  catalyst_name + ', ' + reactant_name + '... rejecting')
+            continue
+
+        try:
+            ec_materials_data["FieldInteractions"].append({"Catalyst": catalyst_name,
+                                                           "Reactant": reactant_name,
+                                                           "Coefficient": val})
+        except KeyError:
+            print('Could not import XML element attribute for field interaction:')
+            print('   Reactant: ' + reactant_name)
+            print('   Catalyst: ' + catalyst_name)
+            print('   ConstantCoefficient: ' + str(val))
+
+    # Import cell interactions
+    ec_materials_data["CellInteractions"] = []
+    for element in cell_interaction_xml_list:
+        ec_material = element.getFirstElement('ECMaterial').getText()
+        method_name = element.getAttribute('Method')
+        val = element.getFirstElement('Probability').getDouble()
+        cell_type = element.getFirstElement('CellType').getText()
+        cell_type_new = ''
+        if element.findElement('CellTypeNew'):
+            cell_type_new = element.getFirstElement('CellTypeNew').getText()
+
+        if ec_material not in ec_materials_data["ECMaterials"]:
+            print('Undefined ECMaterial: ' + ec_material + '... rejecting')
+            continue
+        elif method_name not in ECMaterialsSteppableDlg.get_cell_response_types():
+            print('Undefined method: ' + method_name + '... rejecting')
+            continue
+        elif cell_type not in cell_types:
+            print('Undefined cell type: ' + cell_type + '... rejecting')
+            continue
+        elif cell_type_new.__len__() > 0 and cell_type_new not in cell_types:
+            print('Undefined new cell type: ' + cell_type_new + '... rejecting')
+            continue
+        elif cell_type_new.__len__() > 0 and method_name not in ECMaterialsSteppableDlg.get_response_new_types():
+            print('Undefined new cell type for requested method: ' +
+                  cell_type_new + ', ' + method_name + '... rejecting new cell type')
+            cell_type_new = ''
+
+        try:
+            ec_materials_data["CellInteractions"].append({"ECMaterial": ec_material,
+                                                          "CellType": cell_type,
+                                                          "ResponseType": method_name,
+                                                          "Coefficient": val,
+                                                          "CellTypeNew": cell_type_new})
+        except KeyError:
+            print('Could not import XML element attribute for material interaction:')
+            print('   Method: ' + method_name)
+            print('   ECMaterial: ' + ec_material)
+            print('   Probability: ' + str(val))
+            print('   CellType: ' + cell_type)
+            print('   ConstantCoefficient: ' + str(val))
+            if cell_type_new.__len__() > 0:
+                print('   CellTypeNew: ' + cell_type_new)
+
+    return ec_materials_data
+
+
+def ec_materials_steppable_xml_demo():
+    ec_materials_data = ecmaterialsdlg.ec_materials_xml_to_data()
+    ec_materials_ex = ec_materials_data["ECMaterials"]
+    cell_types_ex = list(ec_materials_data["Adhesion"][ec_materials_ex[0]].keys())
+    field_names_ex = ['Field1', 'Field2']
+
+    # Demo ECMaterial diffusion
+    val = 0.1
+    for ec_material in ec_materials_ex:
+        ec_materials_data["MaterialDiffusion"][ec_material] = {"Diffuses": True,
+                                                               "Coefficient": val}
+        val += 0.1
+
+    # Demo material interactions
+    val = 0.1
+    for reactant in ec_materials_ex:
+        for catalyst in ec_materials_ex:
+            ec_materials_data["MaterialInteractions"].append({"Catalyst": catalyst,
+                                                              "Reactant": reactant,
+                                                              "Coefficient": val})
+            val *= -2
+
+    # Demo field interactions
+    reactant_list_ex = [ec_materials_ex[0], field_names_ex[1]]
+    catalyst_list_ex = [field_names_ex[0], ec_materials_ex[1]]
+    val_list = [0.1, -0.2]
+    for int_index in range(catalyst_list_ex.__len__()):
+        ec_materials_data["FieldInteractions"].append({"Catalyst": catalyst_list_ex[int_index],
+                                                       "Reactant": reactant_list_ex[int_index],
+                                                       "Coefficient": val_list[int_index]})
+
+    # Demo cell interactions
+    cell_response_types = ECMaterialsSteppableDlg.get_cell_response_types()
+    alt_index = [1, 0]
+    cell_types_index = 0
+    val = 0.001
+    for method_index in range(cell_response_types.__len__()):
+        method_name = cell_response_types[method_index]
+        if cell_types_index >= cell_types_ex.__len__():
+            cell_types_index = 0
+
+        if method_name in ECMaterialsSteppableDlg.get_response_new_types():
+            cell_type_new = cell_types_ex[alt_index[cell_types_index]]
+        else:
+            cell_type_new = ''
+
+        ec_materials_data["CellInteractions"].append({"ECMaterial": ec_materials_ex[alt_index[cell_types_index]],
+                                                      "CellType": cell_types_ex[cell_types_index],
+                                                      "ResponseType": method_name,
+                                                      "Coefficient": val,
+                                                      "CellTypeNew": cell_type_new})
+
+        cell_types_index += 1
+        val *= 2
+
+    return ec_materials_data

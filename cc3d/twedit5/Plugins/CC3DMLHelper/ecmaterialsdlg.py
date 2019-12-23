@@ -3,8 +3,10 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
+from cc3d.core import XMLUtils
 from cc3d.twedit5.twedit.utils.global_imports import *
 from . import ui_ecmaterialsdlg
+from .ecmaterialssteppabledlg import ECMaterialsSteppableDlg
 
 MAC = "qt_mac_set_native_menubar" in dir()
 
@@ -35,7 +37,7 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
             self.ec_materials_dict = None
             self.load_previous_info(previous_info=deepcopy(previous_info))
         else:
-            self.ec_materials_dict = self.get_default_data()
+            self.ec_materials_dict = get_default_data()
 
         self.connect_all_signals()
 
@@ -45,23 +47,11 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
     def get_keys():
         return ["ECMaterials", "Adhesion", "Remodeling", "Advects", "Durability"]
 
-    @staticmethod
-    def get_default_data():
-        return {"ECMaterials": [],
-                "Adhesion": {},
-                "Remodeling": {},
-                "Advects": {},
-                "Durability": {},
-                "MaterialInteractions": [],
-                "FieldInteractions": [],
-                "CellInteractions": [],
-                "MaterialDiffusion": {}}
-
     def load_previous_info(self, previous_info: dict):
         self.ec_materials_dict = previous_info
 
         # Perform checks on imported data
-        for key, val in self.get_default_data().items():
+        for key, val in get_default_data().items():
             if key not in self.ec_materials_dict.keys():
                 self.ec_materials_dict[key] = val
 
@@ -347,3 +337,145 @@ class QCBCallbackEmitter(QObject):
 
     def emit(self, state: int):
         self.main_UI.handle_material_defs_table_edit(row=self.cb_row, col=self.cb_col)
+
+
+def get_default_data():
+    return {"ECMaterials": [],
+            "Adhesion": {},
+            "Remodeling": {},
+            "Advects": {},
+            "Durability": {},
+            "MaterialInteractions": [],
+            "FieldInteractions": [],
+            "CellInteractions": [],
+            "MaterialDiffusion": {}}
+
+
+# Parsing here; package somewhere else later
+def ec_materials_xml_to_data(xml_data=None) -> {}:
+    if xml_data is None:
+        return ec_materials_plugin_xml_demo()
+
+    ec_materials_data = get_default_data()
+
+    # Import raw data (taken from C++)
+    name_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("ECMaterial"))
+    adhesion_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("ECAdhesion"))
+    advection_bool_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("ECMaterialAdvects"))
+    durability_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("ECMaterialDurability"))
+    remodeling_quantity_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("RemodelingQuantity"))
+
+    # Import ECMaterials
+    for element in name_xml_list:
+        ec_material = element.getAttribute('Material')
+        ec_materials_data["ECMaterials"].append(ec_material)
+
+    # Import all specified cell types in adhesion and remodeling
+    cell_types = []
+    [cell_types.append(element.getAttribute('CellType')) for element in adhesion_xml_list]
+    [cell_types.append(element.getAttribute('CellType')) for element in remodeling_quantity_xml_list]
+    cell_types = list(set(cell_types))
+    cell_types.sort()
+
+    # Generate default data to fill out from XML for plugin completion
+    for ec_material in ec_materials_data["ECMaterials"]:
+        ec_materials_data["Adhesion"][ec_material] = {}
+        ec_materials_data["Remodeling"][ec_material] = {}
+        ec_materials_data["Advects"][ec_material] = True
+        ec_materials_data["Durability"][ec_material] = 0.0
+        ec_materials_data["MaterialDiffusion"][ec_material] = {"Diffuses": False,
+                                                               "Coefficient": 0}
+        for cell_type in cell_types:
+            ec_materials_data["Adhesion"][ec_material][cell_type] = 0.0
+            ec_materials_data["Remodeling"][ec_material][cell_type] = 0.0
+
+    # Import adhesion
+    for element in adhesion_xml_list:
+        ec_material = element.getAttribute('Material')
+        cell_type = element.getAttribute('CellType')
+        val = element.getDouble()
+        try:
+            ec_materials_data["Adhesion"][ec_material][cell_type] = val
+        except KeyError:
+            print('Could not import XML element attribute for adhesion:')
+            print('   Material: ' + ec_material)
+            print('   CellType: ' + cell_type)
+            print('   Value: ' + str(val))
+
+    # Import remodeling
+    for element in remodeling_quantity_xml_list:
+        ec_material = element.getAttribute('Material')
+        cell_type = element.getAttribute('CellType')
+        val = element.getDouble()
+        try:
+            ec_materials_data["Remodeling"][ec_material][cell_type] = val
+        except KeyError:
+            print('Could not import XML element attribute for remodeling quantity:')
+            print('   Material: ' + ec_material)
+            print('   CellType: ' + cell_type)
+            print('   Value: ' + str(val))
+
+    # Import advection
+    for element in advection_bool_xml_list:
+        ec_material = element.getAttribute('Material')
+        val = element.getBool()
+        try:
+            ec_materials_data["Advects"][ec_material] = val
+        except KeyError:
+            print('Could not import XML element attribute for advection:')
+            print('   Material: ' + ec_material)
+            print('   Value: ' + str(val))
+
+    # Import durability
+    for element in durability_xml_list:
+        ec_material = element.getAttribute('Material')
+        val = element.getDouble()
+        try:
+            ec_materials_data["Durability"][ec_material] = val
+        except KeyError:
+            print('Could not import XML element attribute for durability:')
+            print('   Material: ' + ec_material)
+            print('   Value: ' + str(val))
+
+    return ec_materials_data
+
+
+def ec_materials_plugin_xml_demo() -> {}:
+    ec_materials_data = get_default_data()
+    # Generate example data
+    ec_materials_ex = ['ECMaterial1', 'ECMaterial2']
+    cell_types_ex = ['CellType1', 'CellType2']
+
+    # Demo declaring ECMaterials
+    ec_materials_data["ECMaterials"] = ec_materials_ex
+
+    # Demo adhesion
+    adhesion_coefficient_ex = 1.0
+    for ec_material in ec_materials_ex:
+        adhesion_dict = {}
+        for cell_type in cell_types_ex:
+            adhesion_dict[cell_type] = adhesion_coefficient_ex
+            adhesion_coefficient_ex += 1
+
+        ec_materials_data["Adhesion"][ec_material] = adhesion_dict
+
+    # Demo remodeling
+    remodeling_coefficients_ex = [0.25, 0.75]
+    for ec_material in ec_materials_ex:
+        ec_materials_data["Remodeling"][ec_material] = \
+            {cell_types_ex[type_index]: remodeling_coefficients_ex[type_index]
+             for type_index in range(cell_types_ex.__len__())}
+        remodeling_coefficients_ex.reverse()
+
+    # Demo advection
+    advects_bool = False
+    for ec_material in ec_materials_ex:
+        ec_materials_data["Advects"][ec_material] = advects_bool
+        advects_bool = not advects_bool
+
+    # Demo durability
+    durability_coefficient_ex = 1.0
+    ec_materials_data["Durability"] = {ec_materials_ex[idx]: durability_coefficient_ex*(idx + 1)
+                                       for idx in range(ec_materials_ex.__len__())}
+
+    return ec_materials_data
