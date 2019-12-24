@@ -617,6 +617,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         return ClusterCellList(self.inventory.getClusterInventory().getClusterCells(cluster_id))
 
+    def get_box_coordinates(self):
+        return self.potts.getMinCoordinates(), self.potts.getMaxCoordinates()
+
     def process_steering_panel_data(self):
         """
         Function to be implemented in steppable where we react to changes in the steering panel
