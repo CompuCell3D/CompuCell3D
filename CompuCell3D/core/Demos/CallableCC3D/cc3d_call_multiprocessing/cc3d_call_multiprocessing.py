@@ -32,7 +32,7 @@ python cc3d_call_multiprocessing.py
 """
 
 import multiprocessing
-from os.path import dirname, join
+from os.path import dirname, join, expanduser
 from cc3d.CompuCellSetup.CC3DCaller import CC3DCaller
 from cc3d.CompuCellSetup.CC3DCaller import CC3DCallerWorker
 
@@ -44,6 +44,7 @@ def main():
     # You may put a direct path to a simulation of your choice here and comment out simulation_fname line below
     # simulation_fname = <direct path your simulation>
     simulation_fname = join(dirname(dirname(__file__)), 'cellsort_2D', 'cellsort_2D.cc3d')
+    root_output_folder = join(expanduser('~'), 'CC3DCallerOutput')
 
     # this creates a list of simulation file names where simulation_fname is repeated number_of_runs times
     # you can create a list of different simulations if you want.
@@ -64,7 +65,7 @@ def main():
     for i, sim_fname in enumerate(sim_fnames):
         cc3d_caller = CC3DCaller(cc3d_sim_fname=sim_fname,
                                  screenshot_output_frequency=10,
-                                 output_dir=r'c:\Users\m\CC3DWorkspace\cellsort_' + f'{i}',
+                                 output_dir=join(root_output_folder, f'cellsort_{i}'),
                                  result_identifier_tag=i
                                  )
         tasks.put(cc3d_caller)
