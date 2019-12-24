@@ -38,7 +38,7 @@ BoxWatcher::~BoxWatcher() {
 }
 
 Point3D BoxWatcher::getMinCoordinates(){return minCoordinates;}
-Point3D BoxWatcher::getMaxCoordinates(){return minCoordinates;}
+Point3D BoxWatcher::getMaxCoordinates(){return maxCoordinates;}
 
 Point3D BoxWatcher::getMargins(){return Point3D(xMargin,yMargin,zMargin);}
 
