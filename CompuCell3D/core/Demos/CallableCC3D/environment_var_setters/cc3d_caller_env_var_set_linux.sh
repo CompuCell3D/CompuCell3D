@@ -1,19 +1,16 @@
 #!/bin/sh
 current_directory=$(pwd)
 
-
 # necessary to enforce standard convention for numeric values specification on non-English OS
 export LC_NUMERIC="C.UTF-8"
-
 
 # export PREFIX_CC3D=/home/m/411_auto
 export PREFIX_CC3D=<path to where cc3d is installed>
 
+# export PYTHON_INSTALL_PATHC=/home/m/miniconda3/envs/cc3d_2021/bin/python
+export PYTHON_INSTALL_PATH=<path to where python executable is. Make sure it is same python as used by cc3d>
 
-# export PYTHON_EXEC=/home/m/miniconda3/envs/cc3d_2021/bin/python
-export PYTHON_EXEC=<path to where python executable is. Make sure it is same python as used by cc3d>
-
-export PATH=/home/m/miniconda3/envs/cc3d_2020/bin:$PATH
+export PATH=$PYTHON_INSTALL_PATH:$PATH
 #export LD_LIBRARY_PATH=:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=${PREFIX_CC3D}/lib/:$LD_LIBRARY_PATH
 
