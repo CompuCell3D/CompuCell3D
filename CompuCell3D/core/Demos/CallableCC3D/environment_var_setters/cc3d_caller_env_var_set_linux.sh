@@ -7,7 +7,7 @@ export LC_NUMERIC="C.UTF-8"
 # export PREFIX_CC3D=/home/m/411_auto
 export PREFIX_CC3D=<path to where cc3d is installed>
 
-# export PYTHON_INSTALL_PATH=/home/m/miniconda3/envs/cc3d_2021/bin/python
+# export PYTHON_INSTALL_PATH=/home/m/miniconda3/envs/cc3d_2021/bin
 export PYTHON_INSTALL_PATH=<path to where python executable is. Make sure it is same python as used by cc3d>
 
 export PATH=$PYTHON_INSTALL_PATH:$PATH
