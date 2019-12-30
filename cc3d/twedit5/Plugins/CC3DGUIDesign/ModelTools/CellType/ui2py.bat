@@ -1,0 +1,1 @@
+pyuic5 celltypedlg.ui -o ui_celltypedlg.py

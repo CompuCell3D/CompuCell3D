@@ -1,0 +1,1 @@
+pyuic5 contactdlg.ui -o ui_contactdlg.py
