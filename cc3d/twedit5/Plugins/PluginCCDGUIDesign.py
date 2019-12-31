@@ -658,7 +658,9 @@ class CC3DGUIDesign(QObject):
 
         self.context_menu_full_menu[self.active_editor] = menu.addMenu(tool_menu)
 
-        self.__add_check_marks_to_context_menu()
+        menu.installEventFilter(CustomContextMenuEventFilter(editor=self.active_editor,
+                                                             show_fcn=functools.partial(
+                                                                 self.__add_check_marks_to_context_menu)))
 
         self.active_editor.registerCustomContextMenu(menu)
 
@@ -842,3 +844,20 @@ class CC3DGUIDesign(QObject):
                                                                      tools_wrote=tools_wrote)
 
         return sim_dicts, tools_wrote
+
+
+class CustomContextMenuEventFilter(QObject):
+    def __init__(self, editor: QsciScintillaCustom, **kwargs):
+        super(CustomContextMenuEventFilter, self).__init__(editor)
+        self.editor = editor
+        self.focus_in_fcn = None
+        if 'show_fcn' in kwargs.keys():
+            self.show_fcn = kwargs['show_fcn']
+
+    def eventFilter(self, a0: QObject, a1: QEvent) -> bool:
+        if a1.type() == QEvent.Show:
+            if self.show_fcn is not None:
+                self.show_fcn()
+
+        return super(CustomContextMenuEventFilter, self).eventFilter(a0, a1)
+
