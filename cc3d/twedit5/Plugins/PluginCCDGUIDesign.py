@@ -32,11 +32,14 @@ import sys
 import traceback
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+from cc3d.twedit5.PluginManager.PluginManager import PluginManager
 import cc3d.twedit5.Plugins.CC3DMLHelper.SnippetUtils as SnippetUtils
+from cc3d.twedit5.Plugins.PluginCCDProject import CC3DProject, CC3DProjectTreeWidget
 from cc3d.twedit5.QsciScintillaCustom import QsciScintillaCustom
 import cc3d.twedit5.twedit.ActionManager as am
 from cc3d.twedit5.twedit.utils import qt_obj_hash
 from cc3d.core import XMLUtils
+from cc3d.core.CC3DSimulationDataHandler import CC3DSimulationData, CC3DSimulationDataHandler
 from cc3d.core.XMLUtils import dictionaryToMapStrStr as d2mss
 from cc3d.core.XMLUtils import ElementCC3D, CC3DXMLListPy
 from cc3d.cpp.CC3DXML import *
@@ -101,8 +104,6 @@ class CC3DGUIDesign(QObject):
             self.initialize()
 
         except Exception as e:
-
-            module = None
 
             print('Error loading tool: ')
 
@@ -232,11 +233,7 @@ class CC3DGUIDesign(QObject):
         :return:
         """
 
-        from cc3d.twedit5.PluginManager.PluginManager import PluginManager
-
         plugin_manager: PluginManager = self.__ui.pm
-
-        from cc3d.twedit5.Plugins.PluginCCDProject import CC3DProject, CC3DProjectTreeWidget
 
         project_plugin: CC3DProject = plugin_manager.getActivePlugin("PluginCCDProject")
 
@@ -245,8 +242,6 @@ class CC3DGUIDesign(QObject):
         current_tw_item = tw.currentItem()
 
         tw_project_item = tw.getProjectParent(current_tw_item)
-
-        from cc3d.core.CC3DSimulationDataHandler import CC3DSimulationData, CC3DSimulationDataHandler
 
         pdh: CC3DSimulationDataHandler = project_plugin.projectDataHandlers[qt_obj_hash(tw_project_item)]
 
@@ -376,8 +371,6 @@ class CC3DGUIDesign(QObject):
 
     def get_current_root_element(self):
 
-        # cc3d_xml_to_obj_converter = XMLUtils.Xml2Obj()
-
         try:
 
             filtered_main_xml_text = self.filter_current_main_xml_text()
@@ -468,7 +461,6 @@ class CC3DGUIDesign(QObject):
         """
         Public method to find the model tool key of the current editor selection.
         Returns None if editor is not main XML or no enclosing tool found
-        :param editor:
         :param current_line:{int} Optional current line selection
         :return:
         """
@@ -501,9 +493,7 @@ class CC3DGUIDesign(QObject):
 
         while current_line >= 0:
 
-            text = str(self.active_editor.text(current_line)).strip()
-
-            pretty_text = cc3dst.pretty_text(text)
+            pretty_text = cc3dst.pretty_text(str(self.active_editor.text(current_line)).strip())
 
             if pretty_text in self.begin_line_dict.keys():
 
@@ -580,15 +570,11 @@ class CC3DGUIDesign(QObject):
 
             text = cc3dst.pretty_text(str(editor.text(line)))
 
-            module_line_located = re.match(module_line_locator_regex, text)  # \S - non -white space \s whitespace
-
-            if module_line_located:
+            if re.match(module_line_locator_regex, text):
 
                 begin_line = line
 
-            module_sl_line_located = re.match(module_sl_line_locator_regex, text)
-
-            if module_sl_line_located:
+            if re.match(module_sl_line_locator_regex, text):
 
                 return line, line + 1
 
@@ -596,11 +582,7 @@ class CC3DGUIDesign(QObject):
 
             for line in range(begin_line, editor.lines()):
 
-                text = cc3dst.pretty_text(str(editor.text(line)))
-
-                module_closing_line_located = re.match(module_closing_line_locator_regex, text)
-
-                if module_closing_line_located:  # line with getCoreSimulationObjectsRegex
+                if re.match(module_closing_line_locator_regex, cc3dst.pretty_text(str(editor.text(line)))):
 
                     closing_line = line
 
