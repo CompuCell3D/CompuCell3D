@@ -658,7 +658,35 @@ class CC3DGUIDesign(QObject):
 
         self.context_menu_full_menu[self.active_editor] = menu.addMenu(tool_menu)
 
+        self.__add_check_marks_to_context_menu()
+
         self.active_editor.registerCustomContextMenu(menu)
+
+    def __add_check_marks_to_context_menu(self):
+        """
+        Private method to show which tools are present with check marks
+        :return: None
+        """
+
+        current_main_xml_editor = self.get_current_main_xml_editor()
+
+        if current_main_xml_editor is not None:
+
+            if self.current_tool is not None and self.active_editor in self.context_menu_quick_item.keys():
+
+                line_b, line_c = self.__find_tool_lines(current_main_xml_editor, self.current_tool)
+
+                self.context_menu_quick_item[self.active_editor].setCheckable(True)
+
+                self.context_menu_quick_item[self.active_editor].setChecked(line_b >= 0 and line_c >= 0)
+
+            for key, qa in self.active_tools_action_dict.items():
+
+                qa["QAction"].setCheckable(True)
+
+                line_b, line_c = self.__find_tool_lines(current_main_xml_editor, self.active_tools_dict[key])
+
+                qa["QAction"].setChecked(line_b >= 0 and line_c >= 0)
 
     def on_active_editor_change(self):
 
@@ -667,9 +695,16 @@ class CC3DGUIDesign(QObject):
         except Exception as e:
             print(str(e))
 
+        try:
+            self.active_editor.textChanged.disconnect(self.on_active_editor_text_change)
+        except Exception as e:
+            print(str(e))
+
         self.active_editor = self.get_current_editor()
 
         if self.active_editor is not None:
+
+            self.active_editor.textChanged.connect(self.on_active_editor_text_change)
 
             self.active_editor.cursorPositionChanged.connect(self.on_active_editor_line_change)
 
@@ -692,6 +727,8 @@ class CC3DGUIDesign(QObject):
         self.generate_context_menu()
 
     def on_active_editor_text_change(self):
+
+        self.generate_context_menu()
 
         current_file_name = self.get_current_file_name()
 
