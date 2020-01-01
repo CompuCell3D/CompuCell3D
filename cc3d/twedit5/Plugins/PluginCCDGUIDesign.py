@@ -46,6 +46,7 @@ from cc3d.cpp.CC3DXML import *
 import xml
 
 from cc3d.twedit5.Plugins.CC3DGUIDesign.ModelTools.CC3DModelToolBase import CC3DModelToolBase
+from cc3d.twedit5.Plugins.CC3DGUIDesign.CC3DMLCodeScanner import CC3DMLCodeScanner
 from cc3d.twedit5.Plugins.CC3DGUIDesign import CC3DMLScannerTools as cc3dst
 from cc3d.twedit5.Plugins.CC3DGUIDesign.ModelTools.ModelToolsManager import ModelToolsManager
 
@@ -99,6 +100,8 @@ class CC3DGUIDesign(QObject):
 
         self.cc3d_xml_to_obj_converter = XMLUtils.Xml2Obj()  # Need this to keep passed CC3DXML element children
 
+        self.code_scanner = CC3DMLCodeScanner(ui=self.get_ui())
+
         try:
 
             self.initialize()
@@ -143,6 +146,10 @@ class CC3DGUIDesign(QObject):
             if self.tool_links_dict[tool_name]:
 
                 print('Established tool link: {} -> {}'.format(str(tool_name), str(self.tool_links_dict[tool_name])))
+
+        self.code_scanner.set_active_tools(active_tools_dict=self.active_tools_dict,
+                                           active_tools_info=self.active_tools_info,
+                                           tool_links_dict=self.tool_links_dict)
 
         self.connect_all_signals()
 
@@ -300,12 +307,22 @@ class CC3DGUIDesign(QObject):
         return None
 
     def get_current_panel(self):
-        return self.get_current_editor().panel
+        return self.get_editor_panel(self.get_current_editor())
+
+    @staticmethod
+    def get_editor_panel(editor):
+        try:
+            return editor.panel
+        except AttributeError:
+            return None
 
     def get_current_file_name(self):
+        return self.get_editor_file_name(editor=self.get_current_editor())
+
+    def get_editor_file_name(self, editor):
         try:
-            return self.__ui.fileDict[self.get_current_editor()][0]
-        except (KeyError, IndexError):
+            return self.__ui.fileDict[editor][0]
+        except (AttributeError, KeyError, IndexError):
             return None
 
     def set_current_root_element_text(self) -> bool:
@@ -328,52 +345,11 @@ class CC3DGUIDesign(QObject):
 
         return False
 
-    def filter_current_main_xml_text(self):
-        """
-        Public method to generate a reliable
-        :return:
-        """
-        scanned_blocks = cc3dst.scan_xml_model(self.main_xml_text)
-
-        if not scanned_blocks:
-
-            return None
-
-        sb: cc3dst.ScannedBlock
-        text_split = self.main_xml_text.splitlines(keepends=True)
-        tags = [True for i in text_split]
-        for sb in scanned_blocks:
-
-            if sb.module_name == "CompuCell3D":
-
-                if sb.is_problematic:
-
-                    return None
-
-                for i in range(0, sb.beginning_line):
-                    tags[i] = False
-
-                for i in range(sb.closing_line + 1, text_split.__len__()):
-                    tags[i] = False
-
-            elif sb.is_problematic:
-
-                for i in range(sb.beginning_line, sb.closing_line + 1):
-
-                    tags[i] = False
-
-        filtered_text_split = []
-        for i in range(text_split.__len__()):
-            if tags[i]:
-                filtered_text_split.append(text_split[i])
-
-        return ''.join(filtered_text_split)
-
     def get_current_root_element(self):
 
         try:
 
-            filtered_main_xml_text = self.filter_current_main_xml_text()
+            filtered_main_xml_text = self.code_scanner.get_filtered_xml_string(xml_string=self.main_xml_text)
 
             if filtered_main_xml_text is None:
 

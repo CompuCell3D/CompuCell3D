@@ -10,7 +10,7 @@ class BasicToolData(object):
     def __init__(self, _name: str = '', _file_name: str = ''):
 
         self.attribute_names = ['name', 'file_name', 'author', 'version', 'class_name', 'module_type',
-                                'short_description', 'long_description']
+                                'short_description', 'long_description', 'tool_tip']
 
         self.name = _name
 
@@ -27,6 +27,8 @@ class BasicToolData(object):
         self.short_description = ''
 
         self.long_description = ''
+
+        self.tool_tip = ''
 
     def __str__(self):
 

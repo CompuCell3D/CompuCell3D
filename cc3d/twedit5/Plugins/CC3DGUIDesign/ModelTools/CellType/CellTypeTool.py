@@ -12,8 +12,10 @@ module_type = 'Plugin'
 
 short_description = 'CellType plugin tool'
 
-long_description = """This tool provides model design support for the CellType plugin, including a CC3DML parser and 
-generator"""
+long_description = """This tool provides model design support for the CellType plugin, including a graphical user 
+interface and CC3DML parser and generator"""
+
+tool_tip = """This tool provides model design support for the CellType plugin"""
 
 # End-Of-Header
 

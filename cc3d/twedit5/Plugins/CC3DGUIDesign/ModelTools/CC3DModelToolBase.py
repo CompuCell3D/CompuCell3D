@@ -24,6 +24,8 @@ short_description = 'Superclass for defining CC3D model tools'
 
 long_description = """This superclass defines all requisite functionality for a tool in the GUI Design plugin."""
 
+tool_tip = """This superclass defines all requisite functionality for a tool in the GUI Design plugin."""
+
 # End-Of-Header
 
 

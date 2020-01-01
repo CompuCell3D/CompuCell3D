@@ -173,8 +173,11 @@ def scan_xml_model(text: str) -> []:
             if module_type is not None and module_type == "CompuCell3D":
                 module_closings.append((line, module_type))
 
+    problematic_sim = False
     if module_beginnings.__len__() != 1 or module_closings.__len__() != 1:
-        return []
+        module_beginnings = [(0, None)]
+        module_closings = [(text_split.__len__() - 1, None)]
+        problematic_sim = True
 
     sb = ScannedBlock()
     sb.beginning_line = module_beginnings[0][0]
@@ -182,6 +185,9 @@ def scan_xml_model(text: str) -> []:
     sb.module_name = "CompuCell3D"
     sb.block_text = text_split[sb.beginning_line:sb.closing_line]
     scanned_blocks.append(sb)
+    if problematic_sim:
+        sb.is_problematic = True
+        return scanned_blocks
 
     # Find module element pairs of beginning and closing lines
     in_element = None
@@ -200,7 +206,9 @@ def scan_xml_model(text: str) -> []:
                     if module_beginnings.__len__() == 1:
                         prev_line = 0
                     else:
-                        prev_line = module_beginnings[-2][0] + 1
+                        prev_line = module_beginnings[-1][0] + 1
+                        if prev_line == module_beginnings[0][0] + 1:
+                            prev_line = module_closings[0][0] - 1
                     module_closings.append((prev_line, None))
                 in_element = module_type
         elif is_closing_module_line(text_line):
@@ -212,11 +220,16 @@ def scan_xml_model(text: str) -> []:
                         prev_line = 0
                     else:
                         prev_line = module_closings[-2][0] + 1
+                        if prev_line == module_closings[0][0] + 1:
+                            prev_line = module_beginnings[0][0] + 1
                     module_beginnings.append((prev_line, None))
                 in_element = None
 
+    if in_element:
+        module_closings.append((module_closings[0][0] - 1, None))
+
     # Generate module element info
-    for index in range(module_beginnings.__len__()):
+    for index in range(1, module_beginnings.__len__()):
         line_b, type_b = module_beginnings[index]
         line_c, type_c = module_closings[index]
         sb = ScannedBlock()
@@ -227,6 +240,8 @@ def scan_xml_model(text: str) -> []:
             sb.is_problematic = True
         elif type_c is None:
             sb.is_problematic = True
+            sb.module_name = get_module_name(text_split[line_b])
+        else:
             sb.module_name = get_module_name(text_split[line_b])
 
         if line_c < scanned_blocks[0].beginning_line or line_b > scanned_blocks[0].closing_line:

@@ -15,6 +15,8 @@ short_description = 'Contact plugin tool'
 long_description = """This tool provides model design support for the Contact plugin, including a graphical user 
 interface, CC3DML parser and generator, and data validation with CellType plugin"""
 
+tool_tip = """This tool provides model design support for the Contact plugin."""
+
 # End-Of-Header
 
 from collections import OrderedDict
