@@ -159,7 +159,7 @@ class CC3DMLCodeScanner:
         st = CC3DMLScannerTags()
         text_split = xml_string.splitlines()
         tags_inside = [False]*text_split.__len__()
-        tags_valid = [False]*text_split.__len__()
+        tags_valid = [0]*text_split.__len__()
         tags_recognized = [False]*text_split.__len__()
         tags = [st.default_tag()]*text_split.__len__()
         for sb in scanned_blocks:
@@ -177,13 +177,20 @@ class CC3DMLCodeScanner:
                     return [st.scanner_tag(is_inside=False, is_valid=False, is_recognized=False)]*text_split.__len__()
 
                 tags_inside[line_b:line_c] = [True]*num_lines
+                tags_valid[line_b] = True
+                tags_valid[line_c - 1] = True
 
             else:
 
                 tags_valid[line_b:line_c] = [not sb.is_problematic]*num_lines
                 tags_recognized[line_b:line_c] = [sb.module_name in self.active_tools_dict.keys()]*num_lines
 
+        for i in range(tags_valid.__len__()):
+            if tags_valid[i] == 0:
+                tags_valid[i] = tags_inside[i]
+
         for i in range(tags_inside.__len__()):
+            # noinspection PyTypeChecker
             tags[i] = st.scanner_tag(is_inside=tags_inside[i], is_valid=tags_valid[i], is_recognized=tags_recognized[i])
 
         return tags
