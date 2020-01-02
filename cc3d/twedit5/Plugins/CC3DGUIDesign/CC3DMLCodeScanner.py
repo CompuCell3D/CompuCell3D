@@ -309,6 +309,10 @@ class CC3DMLCodeScanner:
 
         return ''.join(filtered_text_split)
 
+    def show_scanning_status(self, msg_time: int = 2000):
+        ui = self.get_ui()
+        ui.statusBar().showMessage('Scanning CC3DML...', msg_time)
+
 
 class CC3DMLScannerTags:
     _inside = True
@@ -540,14 +544,18 @@ class ScannerTimer(QTimer):
 
     draw_delay = int(2000)  # in ms
 
-    def __init__(self, editor: QsciScintillaCustom):
+    def __init__(self, editor: QsciScintillaCustom, cs: CC3DMLCodeScanner):
         super(ScannerTimer, self).__init__(editor)
+
+        self.cs = cs
 
         self.setSingleShot(True)
 
     def start(self, draw_delay: int = None) -> None:
         if draw_delay is None:
             draw_delay = self.draw_delay
+
+        self.cs.show_scanning_status(self.draw_delay)
 
         super(ScannerTimer, self).start(draw_delay)
 
@@ -562,7 +570,7 @@ class ScannerPack(QObject):
         self.hm = CC3DMLHoverMessenger(editor=self.editor,
                                        active_tools_info=self.cs.active_tools_info,
                                        tool_links_dict=self.cs.tool_links_dict)
-        self.cst = ScannerTimer(editor=self.editor)
+        self.cst = ScannerTimer(editor=self.editor, cs=self.cs)
 
         self.editor.SCN_FOCUSIN.connect(self.handle_focus_changed)
         self.editor.SCN_FOCUSOUT.connect(self.handle_focus_changed)
