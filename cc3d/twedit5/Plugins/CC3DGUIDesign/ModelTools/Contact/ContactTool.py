@@ -38,6 +38,7 @@ class ContactTool(CC3DModelToolBase):
     def __init__(self, sim_dicts=None, root_element=None, parent_ui: QObject = None):
         self._dict_keys_to = ['contactMatrix']
         self._dict_keys_from = ['data', 'NeighborOrder']
+        self._requisite_modules = ['Potts', 'CellType']
 
         self.cell_type_names = None
         self.neighbor_order = 4
@@ -45,7 +46,8 @@ class ContactTool(CC3DModelToolBase):
         self.user_decision = None
 
         super(ContactTool, self).__init__(dict_keys_to=self._dict_keys_to, dict_keys_from=self._dict_keys_from,
-                                          sim_dicts=sim_dicts, root_element=root_element, parent_ui=parent_ui)
+                                          requisite_modules=self._requisite_modules, sim_dicts=sim_dicts,
+                                          root_element=root_element, parent_ui=parent_ui)
 
     def _process_imports(self) -> None:
         self.cell_type_names = OrderedDict()

@@ -253,12 +253,55 @@ def scan_xml_model(text: str) -> []:
 
 
 class ScannedBlock:
+
+    WF_OUTSIDE_SIM = 0
+    WF_MISSING_REQUISITE = 1
+
     def __init__(self):
         self.beginning_line = -1
         self.closing_line = -1
         self.module_name = None
         self.is_problematic = False
         self.block_text = []
+        self.warning_flags = []
+        self.warning_msgs = {}
+
+    def clear_warning_flags(self) -> None:
+        self.warning_flags = []
+        self.warning_msgs = {}
+
+    def set_warn_missing_requisite(self, msg: str = None) -> None:
+        if self.WF_MISSING_REQUISITE not in self.warning_flags:
+            self.warning_flags.append(self.WF_MISSING_REQUISITE)
+        if msg is not None:
+            if self.WF_MISSING_REQUISITE not in self.warning_msgs.keys():
+                self.warning_msgs[self.WF_MISSING_REQUISITE] = []
+            self.warning_msgs[self.WF_MISSING_REQUISITE].append(msg)
+
+    def clear_warn_missing_requisite(self) -> None:
+        if self.WF_MISSING_REQUISITE in self.warning_flags:
+            self.warning_flags.remove(self.WF_MISSING_REQUISITE)
+
+        self.warning_msgs[self.WF_MISSING_REQUISITE] = []
+
+    def is_missing_requisite(self) -> bool:
+        return self.WF_MISSING_REQUISITE in self.warning_flags
+
+    def msgs_missing_requisite(self) -> []:
+        if not self.warning_msgs[self.WF_MISSING_REQUISITE]:
+            self.warning_msgs[self.WF_MISSING_REQUISITE] = []
+        return self.warning_msgs[self.WF_MISSING_REQUISITE]
+
+    def set_warn_outside_sim_element(self) -> None:
+        if self.WF_OUTSIDE_SIM not in self.warning_flags:
+            self.warning_flags.append(self.WF_OUTSIDE_SIM)
+
+    def clear_warn_outside_sim_element(self) -> None:
+        if self.WF_OUTSIDE_SIM in self.warning_flags:
+            self.warning_flags.remove(self.WF_OUTSIDE_SIM)
+
+    def is_outside_sim_element(self) -> bool:
+        return self.WF_OUTSIDE_SIM in self.warning_flags
 
 
 class ElementCC3DX(ElementCC3D):

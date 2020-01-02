@@ -48,20 +48,19 @@ class BasicToolData(object):
 
 
 class ModelToolsManager:
+
+    tools_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(twedit.__file__)),
+                                              "Plugins", "CC3DGUIDesign", "ModelTools"))
+
     def __init__(self):
 
         self.model_tools_dict = {}
-
-        self.tools_path = None
 
         self.__tool_queries = {}
 
         self.__initialize()
 
     def __initialize(self):
-
-        self.tools_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(twedit.__file__)),
-                                                       "Plugins", "CC3DGUIDesign", "ModelTools"))
 
         sys.path.insert(2, self.tools_path)
 

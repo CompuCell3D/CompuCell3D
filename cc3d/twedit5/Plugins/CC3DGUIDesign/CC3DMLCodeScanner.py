@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import inspect
 import traceback
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -21,6 +22,7 @@ class CC3DMLCodeScanner:
         self.active_tools_dict = {}
         self.active_tools_info = {}
         self.tool_links_dict = {}
+        self.xml_to_tools_dict = {}
         self.begin_line_dict = {}
         self.close_line_dict = {}
 
@@ -94,6 +96,8 @@ class CC3DMLCodeScanner:
         if active_tools_dict is not None:
             self.active_tools_dict = active_tools_dict
             self.set_active_tool_enclosing_strings()
+            self.xml_to_tools_dict = {tool().get_xml_name(): tool for tool in active_tools_dict.values()
+                                      if tool().get_xml_name() is not None}
 
         if active_tools_info is not None:
             self.active_tools_info = active_tools_info
@@ -106,6 +110,8 @@ class CC3DMLCodeScanner:
             return False
         else:
             self.active_tools_dict[model_tool_name] = model_tool
+            if model_tool().get_xml_name() is not None:
+                self.xml_to_tools_dict[model_tool().get_xml_name()] = model_tool
             return True
 
     def remove_active_tool(self, model_tool_name: str = None, model_tool=None) -> bool:
@@ -114,6 +120,10 @@ class CC3DMLCodeScanner:
                 return False
             else:
                 model_tool = self.active_tools_dict[model_tool_name]
+
+        xml_name = model_tool().get_xml_name()
+        if xml_name in self.xml_to_tools_dict.keys():
+            self.xml_to_tools_dict.pop(xml_name)
 
         for key, val in self.active_tools_dict.items():
             if val is model_tool:
@@ -140,6 +150,86 @@ class CC3DMLCodeScanner:
             self.begin_line_dict[begin_line_string_sl] = key
             self.close_line_dict[begin_line_string_sl] = key
             self.close_line_dict[close_line_string] = key
+
+    def get_xml_module_names(self, xml_string: str = None, editor: QsciScintillaCustom = None) -> []:
+        if xml_string is None and editor is None:
+            return []
+
+        filtered_xml_string = self.get_filtered_xml_string(xml_string=xml_string, editor=editor)
+        if filtered_xml_string is None:
+            return []
+
+        scanned_blocks = cc3dst.scan_xml_model(filtered_xml_string)
+        if not scanned_blocks:
+            return []
+
+        sb: cc3dst.ScannedBlock
+        return [sb.module_name for sb in scanned_blocks if sb.module_name is not None]
+
+    def requisite_check(self, model_tools=None, xml_string: str = None, editor: QsciScintillaCustom = None) -> {}:
+        """
+        Public method to return missing requisite modules in xml specs
+        :param model_tools: list of model tool objects and/or classes; checks all active if input is None
+        :param xml_string: xml model spec
+        :param editor: xml model spec editor
+        :return: dictionary of missing requisite module names per model tool (empty if all are present)
+        """
+
+        missing_requisites = {}
+
+        if xml_string is None and editor is None:
+            return missing_requisites
+        xml_module_names = self.get_xml_module_names(xml_string=xml_string, editor=editor)
+        if not xml_module_names:
+            return missing_requisites
+
+        if model_tools is None:
+            model_tools = self.active_tools_dict.values()
+
+        for model_tool in model_tools:
+            if inspect.isclass(model_tool):
+                tool = model_tool
+            else:
+                tool = model_tool.__class__
+
+            missing_requisites[tool] = [req for req in tool().get_requisite_modules() if req not in xml_module_names]
+
+        return missing_requisites
+
+    def get_scanned_blocks(self, xml_string: str = None, editor: QsciScintillaCustom = None):
+
+        if xml_string is None:
+
+            if editor is None or editor not in self.editor_dict.keys():
+                return None
+
+            xml_string = str(editor.text())
+
+        scanned_blocks = cc3dst.scan_xml_model(xml_string)
+
+        if not scanned_blocks:
+            return None
+
+        sb: cc3dst.ScannedBlock
+        sb_sim_l = [sb for sb in scanned_blocks if sb.module_name == "CompuCell3D"]
+        if sb_sim_l.__len__() != 1 or sb_sim_l[0].is_problematic:
+            for sb in scanned_blocks:
+                sb.is_problematic = True
+
+            return scanned_blocks
+
+        sb_sim: cc3dst.ScannedBlock = sb_sim_l[0]
+
+        for sb in [sb for sb in scanned_blocks if sb is not sb_sim]:
+            if sb.beginning_line > sb_sim.closing_line or sb.closing_line < sb_sim.beginning_line:
+                sb.set_warn_outside_sim_element()
+
+            if sb.module_name in self.xml_to_tools_dict.keys():
+                model_tool = self.xml_to_tools_dict[sb.module_name]
+                requisite_check = self.requisite_check(model_tools=[model_tool], xml_string=xml_string)
+                [sb.set_warn_missing_requisite(msg=missing_req) for missing_req in requisite_check[model_tool]]
+
+        return scanned_blocks
 
     def get_xml_tags(self, xml_string: str = None, editor: QsciScintillaCustom = None):
         if xml_string is None:
@@ -287,6 +377,8 @@ class CC3DMLCodePainter(QObject):
     col_valid.setRgb(114, 208, 114)
     col_recognized = QColor()
     col_recognized.setRgb(148, 175, 228)
+    col_warn = QColor()
+    col_warn.setRgb(166, 166, 0)
     col_default = QColor()
     col_default.setRgb(255, 255, 255)
 
@@ -309,9 +401,10 @@ class CC3DMLCodePainter(QObject):
         self.ind_invalid = self.editor.indicatorDefine(self.editor.FullBoxIndicator)
         self.ind_valid = self.editor.indicatorDefine(self.editor.FullBoxIndicator)
         self.ind_recognized = self.editor.indicatorDefine(self.editor.FullBoxIndicator)
+        self.ind_warn = self.editor.indicatorDefine(self.editor.FullBoxIndicator)
 
-        self.col_list = [self.col_outside, self.col_invalid, self.col_valid, self.col_recognized]
-        self.ind_list = [self.ind_outside, self.ind_invalid, self.ind_valid, self.ind_recognized]
+        self.col_list = [self.col_outside, self.col_invalid, self.col_valid, self.col_recognized, self.col_warn]
+        self.ind_list = [self.ind_outside, self.ind_invalid, self.ind_valid, self.ind_recognized, self.ind_warn]
         self.ind_to_msg = {}
         for i in range(self.col_list.__len__()):
             self.editor.setIndicatorForegroundColor(self.col_list[i], self.ind_list[i])
@@ -344,7 +437,10 @@ class CC3DMLCodePainter(QObject):
                 if sb.is_problematic:
                     ind = self.ind_invalid
                 elif sb.module_name in self.active_tool_names:
-                    ind = self.ind_recognized
+                    if not sb.is_missing_requisite():
+                        ind = self.ind_recognized
+                    else:
+                        ind = self.ind_warn
                 else:
                     ind = self.ind_valid
 
@@ -424,6 +520,9 @@ class CC3DMLHoverMessenger(QObject):
                 if tool_links:
                     msg += '\nDown-stream changes include: ' + ', '.join(tool_links)
 
+            if scanned_block.is_missing_requisite():
+                msg += '\nMissing module requisites: ' + ', '.join(scanned_block.msgs_missing_requisite())
+
         else:
             msg = self.msg_valid
             if scanned_block.module_name is not None:
@@ -493,7 +592,8 @@ class ScannerPack(QObject):
             self.cst.start()
 
     def paint_editor(self):
-        scanned_blocks = cc3dst.scan_xml_model(str(self.editor.text()))
+        # scanned_blocks = cc3dst.scan_xml_model(str(self.editor.text()))
+        scanned_blocks = self.cs.get_scanned_blocks(xml_string=str(self.editor.text()))
         if scanned_blocks is not None and scanned_blocks:
             self.cp.paint_editor(scanned_blocks=scanned_blocks)
             self.is_painted = True

@@ -37,13 +37,15 @@ class CellTypeTool(CC3DModelToolBase):
     def __init__(self, sim_dicts=None, root_element=None, parent_ui: QObject = None):
         self._dict_keys_to = ['data']
         self._dict_keys_from = []
+        self._requisite_modules = ['Potts']
 
         self.cell_type_names = None
         self.cell_type_ids = None
         self.cell_types_frozen = None
 
         super(CellTypeTool, self).__init__(dict_keys_to=self._dict_keys_to, dict_keys_from=self._dict_keys_from,
-                                           sim_dicts=sim_dicts, root_element=root_element, parent_ui=parent_ui)
+                                           requisite_modules=self._requisite_modules, sim_dicts=sim_dicts,
+                                           root_element=root_element, parent_ui=parent_ui)
 
         self._user_decision = True
 

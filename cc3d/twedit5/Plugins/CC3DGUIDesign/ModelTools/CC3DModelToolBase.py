@@ -33,12 +33,13 @@ class CC3DModelToolBase:
     """
     Template superclass for CC3DML editor tools
     """
-    def __init__(self, dict_keys_to: [] = None, dict_keys_from: [] = None, sim_dicts=None,
+    def __init__(self, dict_keys_to: [] = None, dict_keys_from: [] = None, requisite_modules: [] = None, sim_dicts=None,
                  root_element: CC3DXMLElement = None, parent_ui: QObject = None):
         self._xml_element = None
         self._element_cc3d = None
         self._dict_keys_to = dict_keys_to
         self._dict_keys_from = dict_keys_from
+        self._requisite_modules = requisite_modules
         self.__parent_ui = parent_ui
         self._user_decision = False
 
@@ -67,6 +68,26 @@ class CC3DModelToolBase:
         :return: keys of affecting sim dictionaries
         """
         return self._dict_keys_from
+
+    def get_requisite_modules(self):
+        """
+        Returns names of required modules by this model tool
+        :return:{list} required modules by this model tool
+        """
+        return self._requisite_modules
+
+    def get_xml_name(self):
+        """
+        Returns CC3DML name
+        :return:
+        """
+        xml_element = self.get_tool_element().CC3DXMLElement
+        if xml_element.findAttribute("Name"):
+            return xml_element.getAttribute("Name")
+        elif xml_element.findAttribute("Type"):
+            return xml_element.getAttribute("Type")
+        else:
+            return None
 
     def load_xml(self, root_element: CC3DXMLElement) -> None:
         """
