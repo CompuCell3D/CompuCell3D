@@ -309,9 +309,11 @@ class CC3DMLCodeScanner:
 
         return ''.join(filtered_text_split)
 
-    def show_scanning_status(self, msg_time: int = 2000):
+    def show_scanning_status(self, msg: str = None, msg_time: int = 2000):
         ui = self.get_ui()
-        ui.statusBar().showMessage('Scanning CC3DML...', msg_time)
+        if msg is None:
+            msg = 'Scanning CC3DML...'
+        ui.statusBar().showMessage(msg, msg_time)
 
 
 class CC3DMLScannerTags:
@@ -555,7 +557,7 @@ class ScannerTimer(QTimer):
         if draw_delay is None:
             draw_delay = self.draw_delay
 
-        self.cs.show_scanning_status(self.draw_delay)
+        self.cs.show_scanning_status(msg='Scanning CC3DML...', msg_time=self.draw_delay)
 
         super(ScannerTimer, self).start(draw_delay)
 
@@ -578,14 +580,22 @@ class ScannerPack(QObject):
         self.cp.end_dwell.connect(self.hm.remove_dwell_msg)
         self.editor.textChanged.connect(self.handle_text_changed)
         self.cst.timeout.connect(self.paint_editor)
+        self.cs.get_ui().panels[0].tabBarLocal.currentChanged.connect(self.handle_ui_tab_changed)
+        self.cs.get_ui().panels[1].tabBarLocal.currentChanged.connect(self.handle_ui_tab_changed)
+        self.cs.get_ui().statusBar().messageChanged.connect(self.handle_status_bar_changed)
 
         self.is_painted = False
+        self.has_warnings = False
+        self.has_errors = False
 
         if self.is_panel_current():
             self.cst.start()
 
     def is_panel_current(self):
         return self.editor is self.editor.panel.currentWidget()
+
+    def is_ui_active(self):
+        return self.editor is self.cs.get_ui().getActiveEditor()
 
     def handle_text_changed(self):
         # Start time if editor text changed
@@ -599,14 +609,38 @@ class ScannerPack(QObject):
         elif not self.is_painted:
             self.cst.start()
 
+    def handle_ui_tab_changed(self):
+        if self.is_ui_active():
+            self.post_scanning_status()
+        else:
+            self.cs.get_ui().statusBar().clearMessage()
+
+    def handle_status_bar_changed(self, msg: str):
+        if self.is_ui_active() and msg.__len__() == 0:
+            self.post_scanning_status()
+
     def paint_editor(self):
-        # scanned_blocks = cc3dst.scan_xml_model(str(self.editor.text()))
         scanned_blocks = self.cs.get_scanned_blocks(xml_string=str(self.editor.text()))
+        self.has_warnings = False
+        self.has_errors = False
         if scanned_blocks is not None and scanned_blocks:
             self.cp.paint_editor(scanned_blocks=scanned_blocks)
             self.is_painted = True
+
+            self.has_warnings = any([sb.is_missing_requisite() for sb in scanned_blocks])
+            self.has_errors = any([sb.is_problematic for sb in scanned_blocks])
+            self.post_scanning_status()
 
     def erase_paint(self):
         if self.cp.color_blocks is not None:
             self.cp.erase_paint()
             self.is_painted = False
+            self.has_warnings = False
+            self.has_errors = False
+
+    def post_scanning_status(self):
+        if self.has_errors:
+            self.cs.show_scanning_status(msg='CC3DML Code Scanner detected errors.', msg_time=0)
+        elif self.has_warnings:
+            self.cs.show_scanning_status(msg='CC3DML Code Scanner detected warnings.', msg_time=0)
+
