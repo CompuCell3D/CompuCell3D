@@ -18,7 +18,7 @@ class ContactGUI(CC3DModelToolGUIBase, Ui_ContactPluginGUI):
         self.neighbor_order_list = range(1, 5)
         self.cell_types = None
 
-        self.user_decision = False
+        self.user_decision = None
 
         self.valid_color = QColor("black")
         self.invalid_color = QColor("red")
@@ -118,4 +118,5 @@ class ContactGUI(CC3DModelToolGUIBase, Ui_ContactPluginGUI):
         self.close()
 
     def on_reject(self) -> None:
+        self.user_decision = False
         self.close()

@@ -24,6 +24,7 @@ making CC3D simulation building more convenient."""
 """
 Module used to link Twedit++5 with CompuCell3D.
 """
+from collections import OrderedDict
 import functools
 import inspect
 import os
@@ -89,8 +90,6 @@ class CC3DGUIDesign(QObject):
         self.context_menu_full_menu = {}
 
         self.tool_links_dict = {}
-
-        self.active_design_chain = False
 
         self.begin_line_dict = {}
 
@@ -414,6 +413,44 @@ class CC3DGUIDesign(QObject):
 
         editor.beginUndoAction()  # beginning of action sequence
 
+        # Handle new insert
+        inserting_block = begin_line == -1 and closing_line == -1
+
+        if inserting_block:
+            # If selected line is not in a block, make some space and place new block
+            begin_line = editor.getCursorPosition()[0]
+            inside_sim = False
+            outside_blocks = True
+            if begin_line >= 0:
+                scanned_blocks = self.code_scanner.get_scanned_blocks(editor=editor)
+                sb: cc3dst.ScannedBlock
+                for sb in scanned_blocks:
+                    res = sb.contains_line(begin_line)
+                    if res is not None and res:
+                        if sb.module_name == "CompuCell3D":
+                            inside_sim = True
+                        else:
+                            outside_blocks = False
+
+            if not inside_sim or not outside_blocks:
+                begin_line = -1
+
+            closing_line = begin_line
+
+        # Add to end of sim block, if nothing else
+        if begin_line == -1 and closing_line == -1:
+            _, closing_line = self.code_scanner.get_sim_element_lines(editor=editor)
+            if closing_line == -1 or closing_line < 2:
+                editor.endUndoAction()  # end of action sequence
+                return
+            else:
+                editor.insertAt('\n', closing_line, 0)
+
+        if inserting_block:
+            editor.insertAt('\n\n', closing_line, 0)
+            closing_line += 1
+            begin_line = closing_line
+
         # Remove old string block and paste new string
         editor.setSelection(begin_line, 0, closing_line + 1, 0)
 
@@ -512,6 +549,11 @@ class CC3DGUIDesign(QObject):
                 return key
 
         return None
+
+    def get_current_xml_tools(self):
+        xml_module_names = self.code_scanner.get_xml_module_names(editor=self.get_current_editor())
+        return {module_name: self.active_tools_dict[module_name]
+                for module_name in xml_module_names if module_name in self.active_tools_dict.keys()}
 
     @staticmethod
     def __find_tool_lines(editor, model_tool) -> [int, int]:
@@ -717,13 +759,7 @@ class CC3DGUIDesign(QObject):
 
         print('Starting design chain with ' + str(starting_tool))
 
-        sim_dicts = starting_tool(root_element=root_element).get_sim_dicts()
-
-        self.active_design_chain = True
-
-        sim_dicts, tools_wrote = self.design_chain(model_tool=starting_tool, sim_dicts=sim_dicts, tools_wrote={})
-
-        self.active_design_chain = False
+        sim_dicts, tools_wrote = self.design_chain(model_tool=starting_tool, root_element=root_element)
 
         current_main_xml_editor = self.get_current_main_xml_editor()
 
@@ -736,71 +772,91 @@ class CC3DGUIDesign(QObject):
 
         self.set_current_root_element_text()
 
-    def design_chain(self, model_tool, sim_dicts, tools_wrote):
+    def design_chain(self, model_tool, root_element):
 
-        if not self.active_design_chain:
+        tools_wrote = {}
 
-            print('Returning: ' + str(model_tool))
+        # Get active tools in this xml
+        xml_model_tools = self.get_current_xml_tools()
 
-            return sim_dicts, tools_wrote
+        # Append starting tool if necessary
+        add_starting_tool = False
+        if model_tool not in xml_model_tools.values():
+            xml_model_tools[self.get_tool_key(model_tool)] = model_tool
+            add_starting_tool = True
 
-        if model_tool in tools_wrote.keys():
+        # Append any necessary requisites
+        requisites_loaded = False
+        requisites_appended = []
+        while not requisites_loaded:
+            model_tools_appended = {}
+            for requisite_modules in [xml_model_tool().get_requisite_modules()
+                                      for xml_model_tool in xml_model_tools.values()]:
+                for requisite_module in [requisite_module for requisite_module in requisite_modules
+                                         if requisite_module not in model_tools_appended.keys()]:
+                    if requisite_module in self.active_tools_dict.keys() - xml_model_tools.keys():
+                        model_tools_appended[requisite_module] = self.active_tools_dict[requisite_module]
 
-            print('Chain link: ' + str(model_tool))
+            for key, val in model_tools_appended.items():
+                xml_model_tools[key] = val
+                requisites_appended.append(val)
 
-            tool = tools_wrote[model_tool]
+            requisites_loaded = not any(model_tools_appended)
 
-            if tool.get_ui() is None or tool.validate_dicts(sim_dicts=sim_dicts):
+        # Assemble sim dictionary from xml according to starting tool
+        starting_tool = model_tool(root_element=root_element, parent_ui=self.get_ui())
+        starting_tool.update_dicts()
+        sim_dicts = starting_tool.get_sim_dicts()
 
-                return sim_dicts, tools_wrote
+        # If adding new tool to xml, make sure it goes in list of tools writing blocks
+        if add_starting_tool:
+            tools_wrote[model_tool] = starting_tool
 
-        else:
+        # Assemble list of model tool objects, beginning with starting tool
+        xml_tools = OrderedDict()
+        xml_tools[model_tool] = starting_tool
+        for xml_model_tool in xml_model_tools.values():
+            if xml_model_tool is not model_tool:
+                tool = xml_model_tool(root_element=root_element, parent_ui=self.get_ui())
+                tool.update_dicts()
+                sim_dicts = tool.append_to_global_dict(global_sim_dict=sim_dicts)
+                xml_tools[xml_model_tool] = tool
 
-            print('New chain link: ' + str(model_tool))
+                if xml_model_tool in requisites_appended:
+                    tools_wrote[xml_model_tool] = tool
 
-            sim_dicts_append = model_tool(root_element=self.get_current_root_element()).get_sim_dicts()
+        starting_tool.launch_ui()
+        starting_tool.update_dicts()
+        active_design_chain = not starting_tool.validate_dicts(sim_dicts=sim_dicts)
 
-            for key in sim_dicts_append.keys() - sim_dicts.keys():
+        if active_design_chain:
+            sim_dicts = starting_tool.append_to_global_dict(global_sim_dict=sim_dicts)
+            tools_wrote[model_tool] = starting_tool
 
-                sim_dicts[key] = sim_dicts_append[key]
+        tool: CC3DModelToolBase
+        while active_design_chain:
 
-            tool = model_tool(sim_dicts=sim_dicts, parent_ui=self.get_ui())
+            for tool_key, tool in xml_tools.items():
 
-        tool.launch_ui()
+                if not tool.handle_external_changes(sim_dicts=sim_dicts):
 
-        if not tool.get_user_decision():
+                    tool.launch_ui()
 
-            print('Exiting chain.')
+                if tool.get_user_decision() is not None and not tool.get_user_decision():
 
-            self.active_design_chain = False
+                    active_design_chain = False
 
-        elif tool.update_dicts() is None and not tool.validate_dicts(sim_dicts):
+                    break
 
-            tools_wrote[model_tool] = tool
+                if not tool.validate_dicts(sim_dicts=sim_dicts):
 
-            for key, val in tool.extract_sim_dicts():
+                    tool.update_dicts()
+                    sim_dicts = tool.append_to_global_dict(global_sim_dict=sim_dicts)
 
-                if val is not None:
+                    tools_wrote[tool_key] = tool
 
-                    if key in tool.dict_keys_to():
-
-                        print('   Link sim data: ' + str(key))
-
-                    sim_dicts[key] = val
-
-            tool_key = self.get_tool_key(tool=model_tool)
-
-            if tool_key is not None:
-
-                affected_tools = self.tool_links_dict[tool_key]
-
-                for affected_tool in affected_tools:
-
-                    print('Link connection: ' + str(model_tool) + ' -> ' + str(affected_tool))
-
-                    sim_dicts, model_tools_wrote = self.design_chain(model_tool=self.active_tools_dict[affected_tool],
-                                                                     sim_dicts=sim_dicts,
-                                                                     tools_wrote=tools_wrote)
+            active_design_chain = active_design_chain and any([not tool.validate_dicts(sim_dicts=sim_dicts)
+                                                               for tool in xml_tools.values()])
 
         return sim_dicts, tools_wrote
 

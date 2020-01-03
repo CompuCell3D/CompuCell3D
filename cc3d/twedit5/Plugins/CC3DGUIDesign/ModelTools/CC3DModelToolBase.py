@@ -43,6 +43,8 @@ class CC3DModelToolBase:
         self.__parent_ui = parent_ui
         self._user_decision = False
 
+        self.__flag_no_ui = False
+
         self._sim_dicts = {}
         self.__initialize_sim_containers()
         self.load_sim_dicts(sim_dicts=sim_dicts)
@@ -214,7 +216,7 @@ class CC3DModelToolBase:
         """
         if self.extract_sim_dicts() is None:
             return None
-        return {key: val for key, val in self.extract_sim_dicts()}
+        return deepcopy({key: val for key, val in self.extract_sim_dicts()})
 
     def __initialize_sim_containers(self):
         """
@@ -234,13 +236,58 @@ class CC3DModelToolBase:
         """
         raise NotImplementedError
 
-    def validate_dicts(self, sim_dicts) -> bool:
+    def validate_dicts(self, sim_dicts=None) -> bool:
         """
         Validates current sim dictionary states against changes
-        :param sim_dicts: sim dictionaries with changes
+        :param sim_dicts: sim dictionaries with changes; set to None for internal dictionary validation only
         :return:{bool} valid flag is low when changes in sim_dicts affects UI data
         """
         raise NotImplementedError
+
+    def handle_external_changes(self, sim_dicts) -> bool:
+        """
+        Processes changes made to sim dictionaries by other tools
+        :param sim_dicts: sim dictionaries according to other tools
+        :return:{bool} flag is low when external changes affected internal data
+        """
+        if sim_dicts is None:
+            return False
+
+        return_flag = self.validate_dicts(sim_dicts=sim_dicts)
+
+        sim_dicts_local = deepcopy(sim_dicts)
+        for key in self._dict_keys_from:
+            if key in sim_dicts_local.keys():
+                self._sim_dicts[key] = sim_dicts_local[key]
+            else:
+                self._sim_dicts[key] = None
+
+        self._process_imports()
+
+        return return_flag
+
+    def append_to_global_dict(self, global_sim_dict: dict = None, local_sim_dict: dict = None):
+        """
+        Public method to append internal sim dictionary; does not call internal update
+        :param global_sim_dict: sim dictionary of entire simulation
+        :param local_sim_dict: local sim dictionary; default internal dictionary
+        :return:
+        """
+        global_sim_dict_local = deepcopy(global_sim_dict)
+        local_sim_dict_local = deepcopy(local_sim_dict)
+        if global_sim_dict_local is None:
+            global_sim_dict_local = {}
+
+        for key in self._dict_keys_to:
+            if key not in global_sim_dict_local.keys():
+                global_sim_dict_local[key] = {}
+
+        gs_dict_r = self._append_to_global_dict(global_sim_dict=global_sim_dict_local,
+                                                local_sim_dict=local_sim_dict_local)
+        return deepcopy(gs_dict_r)
+
+    def _append_to_global_dict(self, global_sim_dict: dict = None, local_sim_dict: dict = None):
+        return NotImplementedError
 
     def get_user_decision(self) -> bool:
         """
@@ -254,6 +301,9 @@ class CC3DModelToolBase:
         Launches stand-alone GUI
         :return: None
         """
+        if self.get_flag_no_ui():
+            return None
+
         gui = self.get_ui()
         if gui is None:
             return None
@@ -278,6 +328,21 @@ class CC3DModelToolBase:
         :return:
         """
         raise NotImplementedError
+
+    def set_flag_no_ui(self, flag: bool = False):
+        """
+        Set flag high to not call GUI during call to ui launch
+        :param flag:
+        :return:
+        """
+        self.__flag_no_ui = flag
+
+    def get_flag_no_ui(self) -> bool:
+        """
+        Gets flag to call/not call GUI during call to ui launch
+        :return:
+        """
+        return self.__flag_no_ui
 
     def _process_ui_finish(self, gui: QObject):
         """

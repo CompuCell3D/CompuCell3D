@@ -231,6 +231,27 @@ class CC3DMLCodeScanner:
 
         return scanned_blocks
 
+    def get_sim_element_lines(self, xml_string: str = None, editor: QsciScintillaCustom = None):
+        if xml_string is None:
+
+            if editor is None or editor not in self.editor_dict.keys():
+
+                return None
+
+            xml_string = str(editor.text())
+
+        scanned_blocks = cc3dst.scan_xml_model(xml_string)
+
+        if not scanned_blocks:
+            return None
+
+        sb_sim_l = [sb for sb in scanned_blocks if sb.module_name == "CompuCell3D"]
+        if sb_sim_l.__len__() != 1:
+            return -1, -1
+
+        sb_sim = sb_sim_l[0]
+        return sb_sim.beginning_line, sb_sim.closing_line
+
     def get_xml_tags(self, xml_string: str = None, editor: QsciScintillaCustom = None):
         if xml_string is None:
 

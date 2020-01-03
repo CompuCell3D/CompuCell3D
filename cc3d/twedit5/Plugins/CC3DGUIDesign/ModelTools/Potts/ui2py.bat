@@ -1,0 +1,1 @@
+pyuic5 pottsdlg.ui -o ui_pottsdlg.py

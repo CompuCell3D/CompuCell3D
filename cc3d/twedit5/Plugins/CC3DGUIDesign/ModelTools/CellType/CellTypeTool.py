@@ -20,6 +20,7 @@ tool_tip = """This tool provides model design support for the CellType plugin"""
 # End-Of-Header
 
 from collections import OrderedDict
+from copy import deepcopy
 from itertools import product
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -107,12 +108,15 @@ class CellTypeTool(CC3DModelToolBase):
             self.cell_types_frozen.append(cell_type_data[tid][1])
             type_id += 1
 
-    def validate_dicts(self, sim_dicts) -> bool:
+    def validate_dicts(self, sim_dicts=None) -> bool:
         """
         Validates current sim dictionary states against changes
         :param sim_dicts: sim dictionaries with changes
         :return:{bool} valid flag is low when changes in sim_dicts affects UI data
         """
+        if sim_dicts is None:
+            return True
+
         new_data = sim_dicts['data']
         current_data = self._sim_dicts['data']
 
@@ -128,6 +132,28 @@ class CellTypeTool(CC3DModelToolBase):
             return False
         else:
             return new_data == current_data
+
+    def _append_to_global_dict(self, global_sim_dict: dict = None, local_sim_dict: dict = None):
+        """
+        Public method to append internal sim dictionary; does not call internal update
+        :param global_sim_dict: sim dictionary of entire simulation
+        :param local_sim_dict: local sim dictionary; default internal dictionary
+        :return:
+        """
+
+        if global_sim_dict is None:
+            global_sim_dict = {}
+
+        if local_sim_dict is not None:
+            global_sim_dict['data'] = local_sim_dict['data']
+        else:
+            if self._sim_dicts is None:
+                self._sim_dicts = {}
+                global_sim_dict['data'] = None
+
+            global_sim_dict['data'] = deepcopy(self._sim_dicts['data'])
+
+        return global_sim_dict
 
     def get_ui(self):
         """

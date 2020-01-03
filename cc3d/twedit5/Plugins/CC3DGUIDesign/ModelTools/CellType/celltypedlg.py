@@ -16,7 +16,7 @@ class CellTypeGUI(CC3DModelToolGUIBase, Ui_CellTypePluginGUI):
         self.cell_types = deepcopy(cell_types)
         self.is_frozen = deepcopy(is_frozen)
 
-        self.user_decision = False
+        self.user_decision = None
 
         self.selected_row = None
 
@@ -116,6 +116,7 @@ class CellTypeGUI(CC3DModelToolGUIBase, Ui_CellTypePluginGUI):
         self.close()
 
     def on_reject(self):
+        self.user_decision = False
         self.close()
 
     def name_change(self, old_name: str, new_name: str):

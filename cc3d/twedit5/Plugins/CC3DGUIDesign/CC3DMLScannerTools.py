@@ -303,6 +303,11 @@ class ScannedBlock:
     def is_outside_sim_element(self) -> bool:
         return self.WF_OUTSIDE_SIM in self.warning_flags
 
+    def contains_line(self, line):
+        if self.beginning_line == -1 and self.closing_line == -1:
+            return None
+        return self.beginning_line <= line <= self.closing_line
+
 
 class ElementCC3DX(ElementCC3D):
     def __init__(self, name: str = None, attributes: dict = None, cdata: str = None,

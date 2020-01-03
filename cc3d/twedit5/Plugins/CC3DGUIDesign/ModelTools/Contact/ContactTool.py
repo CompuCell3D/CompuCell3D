@@ -20,6 +20,7 @@ tool_tip = """This tool provides model design support for the Contact plugin."""
 # End-Of-Header
 
 from collections import OrderedDict
+from copy import deepcopy
 from itertools import product
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -36,7 +37,7 @@ from cc3d.twedit5.Plugins.CC3DGUIDesign.ModelTools.Contact.contactdlg import Con
 
 class ContactTool(CC3DModelToolBase):
     def __init__(self, sim_dicts=None, root_element=None, parent_ui: QObject = None):
-        self._dict_keys_to = ['contactMatrix']
+        self._dict_keys_to = ['contactMatrix', 'NeighborOrder']
         self._dict_keys_from = ['data', 'NeighborOrder']
         self._requisite_modules = ['Potts', 'CellType']
 
@@ -67,7 +68,12 @@ class ContactTool(CC3DModelToolBase):
 
         for t1 in self.cell_type_names.values():
             self.contact_matrix[t1] = {t2: 0.0 for t2 in self.cell_type_names.values()}
-        contact_matrix_import = self._sim_dicts['contactMatrix']
+
+        if self._sim_dicts['contactMatrix'] is not None:
+            contact_matrix_import = self._sim_dicts['contactMatrix']
+        else:
+            contact_matrix_import = {}
+
         for t1, t2 in product(self.cell_type_names.values(), self.cell_type_names.values()):
             try:
                 val = contact_matrix_import[t1][t2]
@@ -82,7 +88,7 @@ class ContactTool(CC3DModelToolBase):
         for t1, t2 in product(self.cell_type_names.values(), self.cell_type_names.values()):
             self.contact_matrix[t2][t1] = self.contact_matrix[t1][t2]
 
-    def validate_dicts(self, sim_dicts) -> bool:
+    def validate_dicts(self, sim_dicts=None) -> bool:
         """
         Validates current sim dictionary states against changes
         :param sim_dicts: sim dictionaries with changes
@@ -91,22 +97,29 @@ class ContactTool(CC3DModelToolBase):
         if sim_dicts is None:
             return True
 
-        if 'data' in sim_dicts.keys():
+        if 'data' not in sim_dicts.keys():
+            return False
+        else:
             for type_id, type_tuple in sim_dicts['data'].items():
                 if type_id not in self.cell_type_names.keys() or self.cell_type_names[type_id] != type_tuple[0]:
+                    return False
+
+            for type_id, type_name in self.cell_type_names.items():
+                if type_id not in sim_dicts['data'].keys() or sim_dicts['data'][type_id][0] != type_name:
                     return False
 
         if 'NeighborOrder' in sim_dicts.keys() and sim_dicts['NeighborOrder'] != self.neighbor_order:
             return False
 
-        if 'contactMatrix' in sim_dicts.keys():
-            contact_matrix_import = sim_dicts['contactMatrix']
-            for t1, t2 in product(self.cell_type_names.values(), self.cell_type_names.values()):
-                try:
-                    if self.contact_matrix[t1][t2] != contact_matrix_import[t1][t2]:
-                        return False
-                except KeyError:
-                    return False
+        if 'contactMatrix' not in sim_dicts.keys() or self.contact_matrix != sim_dicts['contactMatrix']:
+            return False
+
+        cell_types = [type_tuple[0] for type_tuple in sim_dicts['data'].values()]
+        if any([cell_type for cell_type in cell_types if cell_type not in self.contact_matrix.keys()]):
+            return False
+
+        if any([cell_type for cell_type in self.contact_matrix.keys() if cell_type not in cell_types]):
+            return False
 
         return True
 
@@ -144,6 +157,25 @@ class ContactTool(CC3DModelToolBase):
 
         return element
 
+    def _append_to_global_dict(self, global_sim_dict: dict = None, local_sim_dict: dict = None):
+        """
+        Public method to append internal sim dictionary; does not call internal update
+        :param global_sim_dict: sim dictionary of entire simulation
+        :param local_sim_dict: local sim dictionary; default internal dictionary
+        :return:
+        """
+
+        if global_sim_dict is None:
+            global_sim_dict = {}
+
+        if local_sim_dict is None:
+            local_sim_dict = deepcopy(self._sim_dicts)
+
+        global_sim_dict['contactMatrix'] = local_sim_dict['contactMatrix']
+        global_sim_dict['NeighborOrder'] = local_sim_dict['NeighborOrder']
+
+        return global_sim_dict
+
     def get_ui(self) -> ContactGUI:
         return ContactGUI(parent=self.get_parent_ui(),
                           contact_matrix=self.contact_matrix,
@@ -159,6 +191,7 @@ class ContactTool(CC3DModelToolBase):
         if gui.user_decision:
             self.contact_matrix = gui.contact_matrix
             self.neighbor_order = gui.neighbor_order
+            self.__flag_internal_validate = True
 
     def update_dicts(self):
         """
