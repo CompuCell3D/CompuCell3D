@@ -328,8 +328,6 @@ class ElementCC3DX(ElementCC3D):
                      cc3d_xml_element: CC3DXMLElement = None, map_children: bool = True):
         child = ElementCC3DX(name=name, attributes=attributes, cdata=cdata, cc3d_xml_element=cc3d_xml_element,
                              map_children=map_children)
-        if map_children:
-            child._add_children()
         self.childrenList.append(child.CC3DXMLElement)
         self.element_list.append(child)
 
