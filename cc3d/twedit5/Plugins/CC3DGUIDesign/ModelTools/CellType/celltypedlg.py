@@ -96,7 +96,7 @@ class CellTypeGUI(CC3DModelToolGUIBase, Ui_CellTypePluginGUI):
         if row < 0 or col < 0:
             return
 
-        cell_name = self.cellTypeTable.item(row, 0).name
+        cell_name = self.cellTypeTable.item(row, 0).text()
         if cell_name == "Medium":
             return
         else:
