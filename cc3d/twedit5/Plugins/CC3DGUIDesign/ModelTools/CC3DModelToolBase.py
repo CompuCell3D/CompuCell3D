@@ -125,8 +125,11 @@ class CC3DModelToolBase:
             if search is None:
                 return None, None, None
             m_type = search.group(1).split()[0]
-            content = search.group(1).split()[1]
-            element_string_begin = '<' + m_type + ' ' + content + '>'
+            if search.group(1).split().__len__() == 2:
+                content = ' ' + search.group(1).split()[1]
+            else:
+                content = ''
+            element_string_begin = '<' + m_type + content + '>'
             element_string_end = '</' + m_type + '>'
         else:
             element_string_begin = element_string_rsplit[0]
@@ -136,7 +139,7 @@ class CC3DModelToolBase:
             if search is None:
                 return None, None, None
             m_type = search.group(1).split()[0]
-            element_string_sl = '</' + m_type + '>'
+            element_string_sl = '<' + m_type + '/>'
 
         return element_string_begin, element_string_end, element_string_sl
 
