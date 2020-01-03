@@ -632,7 +632,8 @@ class CC3DGUIDesign(QObject):
 
         if current_main_xml_editor is not None:
 
-            if self.current_tool is not None and self.active_editor in self.context_menu_quick_item.keys():
+            if self.current_tool is not None and self.active_editor in self.context_menu_quick_item.keys() and \
+                    self.context_menu_quick_item[self.active_editor] is not None:
 
                 line_b, line_c = self.__find_tool_lines(current_main_xml_editor, self.current_tool)
 
