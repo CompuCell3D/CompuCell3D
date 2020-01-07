@@ -950,6 +950,88 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         return None
 
+    def get_focal_point_plasticity_neighbor_list(self, cell) -> []:
+        """
+        Return list of all cell objects linked to a cell
+        :param cell: cell object for which to fetch list of linked cells
+        :return: list of linked cells
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return []
+        else:
+            return [fppd.neighborAddress for fppd in self.get_focal_point_plasticity_data_list(cell)]
+
+    def get_focal_point_plasticity_num_neighbors(self, cell) -> int:
+        """
+        Returns number of all cell objects linked to a cell
+        :param cell: cell object for which to count linked cells
+        :return: number of linked cells
+        """
+        return self.get_focal_point_plasticity_neighbor_list(cell).__len__()
+
+    def get_focal_point_plasticity_is_linked(self, cell1, cell2) -> bool:
+        """
+        Returns if two cells are linked
+        :param cell1: first cell object
+        :param cell2: second cell object
+        :return: True if cells are linked
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return False
+        else:
+            return any([n_cell for n_cell in self.get_focal_point_plasticity_neighbor_list(cell1)
+                       if n_cell.id == cell2.id])
+
+    def get_focal_point_plasticity_initiator(self, cell1, cell2):
+        """
+        Returns which cell initiated a link; returns None if cells are not linked
+        :param cell1: first cell object in link
+        :param cell2: second cell object in link
+        :return: cell that initiated the link, or None if cells are not linked
+        """
+        if not self.get_focal_point_plasticity_is_linked(cell1=cell1, cell2=cell2):
+            return None
+        else:
+            is_initiator = [fppd.isInitiator for fppd in self.get_focal_point_plasticity_data_list(cell1)
+                            if fppd.neighborAddress.id == cell2.id][0]
+            if is_initiator:
+                return cell1
+            else:
+                return cell2
+
+    def set_focal_point_plasticity_parameters(self, cell, n_cell=None, lambda_distance: float = None,
+                                              target_distance: float = None, max_distance: float = None) -> None:
+        """
+        Sets focal point plasticity parameters for a cell; unspecified parameters are unchanged
+        :param cell: cell object for which to modify parameters
+        :param n_cell: linked cell object describing link
+        sets parameters for all links attached to cell if n_cell is None
+        :param lambda_distance: Lagrange multiplier for link(s)
+        :param target_distance: target distance of link(s)
+        :param max_distance: maximum distance of link(s)
+        :return: None
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return
+
+        if n_cell is None:
+            fppd_list = self.get_focal_point_plasticity_data_list(cell)
+        else:
+            fppd_list = [fppd for fppd in self.get_focal_point_plasticity_data_list(cell)
+                         if fppd.neighborAddress.id == n_cell.id]
+        for fppd in fppd_list:
+            if lambda_distance is None:
+                lambda_distance = fppd.lambdaDistance
+            if target_distance is None:
+                target_distance = fppd.targetDistance
+            if max_distance is None:
+                max_distance = fppd.maxDistance
+            self.focal_point_plasticity_plugin.setFocalPointPlasticityParameters(cell,
+                                                                                 fppd.neighborAddress,
+                                                                                 lambda_distance,
+                                                                                 target_distance,
+                                                                                 max_distance)
+
     @deprecated(version='4.0.0', reason="You should use : get_elasticity_data_list")
     def getElasticityDataList(self, _cell):
         return self.get_elasticity_data_list(cell=_cell)
