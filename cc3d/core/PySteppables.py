@@ -1130,7 +1130,16 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         # with new cell field and possibly other fields  we have to reinitialize steppables
         for steppable in CompuCellSetup.persistent_globals.steppable_registry.allSteppables():
             if steppable != self:
+                steppable_simulator = None
+                if hasattr(steppable, '_simulator'):
+                    steppable_simulator = steppable._simulator
+
                 steppable.__init__(steppable.frequency)
+
+                if steppable_simulator is not None:
+                    steppable._simulator = steppable_simulator
+                    if hasattr(steppable, 'core_init'):
+                        steppable.core_init(reinitialize_cell_types=False)
 
     @deprecated(version='4.0.0', reason="You should use : distance_vector")
     def distanceVector(self, _from, _to):
