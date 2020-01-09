@@ -29,6 +29,8 @@ class ContactGUI(CC3DModelToolGUIBase, Ui_ContactPluginGUI):
 
         self.connect_all_signals()
 
+        self.showNormal()
+
     def init_data(self):
         if not self.contact_matrix:
             self.cell_types = []
@@ -58,7 +60,6 @@ class ContactGUI(CC3DModelToolGUIBase, Ui_ContactPluginGUI):
                 self.tableWidget.item(id1, id2).setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
 
         self.resize_coefficient_table()
-        self.tableWidget.show()
 
     def connect_all_signals(self):
         self.buttonBox.accepted.connect(self.on_accept)
@@ -66,19 +67,34 @@ class ContactGUI(CC3DModelToolGUIBase, Ui_ContactPluginGUI):
 
         self.tableWidget.itemChanged.connect(self.on_table_edit)
 
-    def resizeEvent(self, event: QResizeEvent) -> None:
-        self.resize_coefficient_table()
-
-        QWidget.resizeEvent(self, event)
-
     def resize_coefficient_table(self) -> None:
         if not self.cell_types:
             return
+        elif self.tableWidget.columnCount() > 10:
+            self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+            return
 
-        width = self.tableWidget.width() - self.tableWidget.verticalHeader().width() - 2
-        num_cols = self.tableWidget.columnCount()
-        col_width = int(width/num_cols)
-        [self.tableWidget.setColumnWidth(col, col_width) for col in range(num_cols)]
+        self.tableWidget.resizeColumnsToContents()
+        self.tableWidget.verticalHeader().adjustSize()
+        col_width = max([self.tableWidget.columnWidth(col) for col in range(0, self.tableWidget.columnCount())])
+        table_width = 0
+        table_height = 0
+        for col in range(0, self.tableWidget.columnCount()):
+            self.tableWidget.setColumnWidth(col, col_width)
+            table_width += col_width
+            table_height += self.tableWidget.rowHeight(col)
+
+        table_width += self.tableWidget.verticalHeader().width()
+        table_width += self.tableWidget.verticalScrollBar().height()
+        table_height += self.tableWidget.horizontalHeader().height()
+        table_height += self.tableWidget.horizontalScrollBar().height()
+
+        self.tableWidget.setMinimumSize(table_width, table_height)
+        self.tableWidget.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.tableWidget.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        self.adjustSize()
 
     def on_table_edit(self, item: QTableWidgetItem):
         try:

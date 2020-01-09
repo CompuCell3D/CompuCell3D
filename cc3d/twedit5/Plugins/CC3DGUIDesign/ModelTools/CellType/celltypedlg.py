@@ -26,6 +26,8 @@ class CellTypeGUI(CC3DModelToolGUIBase, Ui_CellTypePluginGUI):
 
         self.draw_ui()
 
+        self.showNormal()
+
     def init_data(self):
         if self.cell_types is None or not self.cell_types:
             self.cell_types = ["Medium"]
@@ -57,7 +59,11 @@ class CellTypeGUI(CC3DModelToolGUIBase, Ui_CellTypePluginGUI):
         if self.selected_row is not None:
             self.cellTypeTable.setCurrentCell(self.selected_row, 0)
 
+        self.cellTypeTable.setVerticalHeaderLabels([str(row) for row in range(self.cellTypeTable.rowCount())])
+        self.cellTypeTable.resizeColumnsToContents()
         self.cellTypeTable.resizeRowsToContents()
+        self.cellTypeTable.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
+        self.cellTypeTable.horizontalHeader().setSectionResizeMode(1, QHeaderView.Fixed)
 
         self.cellTypeTable.itemChanged.connect(self.on_table_item_change)
 
