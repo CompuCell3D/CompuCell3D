@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from copy import deepcopy
 from itertools import product
+import os
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -13,6 +14,8 @@ class PottsGUI(CC3DModelToolGUIBase, Ui_PottsGUI):
     def __init__(self, parent=None, gpd: {} = None, cell_types: [] = None, valid_functions: [] = None):
         super(PottsGUI, self).__init__(parent)
         self.setupUi(self)
+
+        self.__default_ef_file_name = 'statData.txt'
 
         self.gpd = deepcopy(gpd)
         self.valid_functions = valid_functions
@@ -70,6 +73,44 @@ class PottsGUI(CC3DModelToolGUIBase, Ui_PottsGUI):
 
         self.update_fluctuation_fields()
 
+        self.offset_SB.setValue(self.gpd["Offset"])
+        self.coefficient_SB.setValue(self.gpd["KBoltzman"])
+
+        self.anneal_SB.setValue(self.gpd["Anneal"])
+        self.flip_to_dim_SB.setValue(self.gpd["Flip2DimRatio"])
+
+        self.debug_CB.setChecked(self.gpd["DebugOutputFrequency"] is not None)
+        self.debug_enable(self.debug_CB.isChecked())
+        if self.debug_CB.isChecked():
+            self.debug_SB.setValue(self.gpd["DebugOutputFrequency"])
+
+        self.random_seed_CB.setChecked(self.gpd["RandomSeed"] is not None)
+        self.random_enable(self.random_seed_CB.isChecked())
+        if self.random_seed_SB.isEnabled():
+            self.random_seed_SB.setValue(self.gpd["RandomSeed"])
+
+        if isinstance(self.gpd["EnergyFunctionCalculator"], dict):
+            self.ef_spin_freq_SB.setValue(
+                self.gpd["EnergyFunctionCalculator"]["OutputCoreFileNameSpinFlips"]["Frequency"])
+            self.ef_results_CB.setChecked(
+                self.gpd["EnergyFunctionCalculator"]["OutputCoreFileNameSpinFlips"]["GatherResults"])
+            self.ef_accepted_CB.setChecked(
+                self.gpd["EnergyFunctionCalculator"]["OutputCoreFileNameSpinFlips"]["OutputAccepted"])
+            self.ef_rejected_CB.setChecked(
+                self.gpd["EnergyFunctionCalculator"]["OutputCoreFileNameSpinFlips"]["OutputRejected"])
+            self.ef_total_CB.setChecked(
+                self.gpd["EnergyFunctionCalculator"]["OutputCoreFileNameSpinFlips"]["OutputTotal"])
+            self.ef_file_freq_SB.setValue(self.gpd["EnergyFunctionCalculator"]["OutputFileName"]["Frequency"])
+            self.ef_file_name_LE.setText(
+                self.gpd["EnergyFunctionCalculator"]["OutputFileName"]["OutputFileName"])
+        else:
+            self.ef_file_name_LE.setText(self.__default_ef_file_name)
+
+        self.ef_enable_CB.setChecked(isinstance(self.gpd["EnergyFunctionCalculator"], dict))
+        self.ef_enable_widgets(self.ef_enable_CB.isChecked())
+
+        self.tabWidget.setCurrentIndex(0)
+
     def update_fluctuation_fields(self):
         if self.show_cell_types:
             self.cell_TypeCB.show()
@@ -82,10 +123,32 @@ class PottsGUI(CC3DModelToolGUIBase, Ui_PottsGUI):
             self.label_31.show()
             self.membraneFluctuationsLE.show()
 
+    def debug_enable(self, _enable: bool):
+        self.debug_SB.setEnabled(_enable)
+
+    def random_enable(self, _enable: bool):
+        self.random_seed_SB.setEnabled(_enable)
+
+    def ef_enable_widgets(self, _enable: bool):
+        self.ef_spin_freq_SB.setEnabled(_enable)
+        self.label_10.setEnabled(_enable)
+        self.ef_results_CB.setEnabled(_enable)
+        self.ef_rejected_CB.setEnabled(_enable)
+        self.ef_accepted_CB.setEnabled(_enable)
+        self.ef_total_CB.setEnabled(_enable)
+        self.label_9.setEnabled(_enable)
+        self.ef_file_name_LE.setEnabled(_enable)
+        self.label_8.setEnabled(_enable)
+        self.ef_file_freq_SB.setEnabled(_enable)
+
     def connect_all_signals(self):
         self.fluctuation_FcnCB.currentTextChanged.connect(self.on_function_change)
         self.cell_TypeCB.currentTextChanged.connect(self.on_cell_type_change)
         self.type_ParamLE.textChanged.connect(self.on_cell_param_change)
+
+        self.debug_CB.clicked.connect(self.debug_enable)
+        self.random_seed_CB.clicked.connect(self.random_enable)
+        self.ef_enable_CB.clicked.connect(self.ef_enable_widgets)
 
         self.buttonBox.accepted.connect(self.on_accept)
         self.buttonBox.rejected.connect(self.on_reject)
@@ -118,6 +181,50 @@ class PottsGUI(CC3DModelToolGUIBase, Ui_PottsGUI):
         self.gpd["BoundaryConditions"]['x'] = self.xbcCB.currentText()
         self.gpd["BoundaryConditions"]['y'] = self.ybcCB.currentText()
         self.gpd["BoundaryConditions"]['z'] = self.zbcCB.currentText()
+
+        self.gpd["Offset"] = self.offset_SB.value()
+        self.gpd['KBoltzman'] = self.coefficient_SB.value()
+        self.gpd['Anneal'] = self.anneal_SB.value()
+        self.gpd['Flip2DimRatio'] = self.flip_to_dim_SB.value()
+
+        if self.debug_CB.isChecked():
+            self.gpd['DebugOutputFrequency'] = self.debug_SB.value()
+        else:
+            self.gpd['DebugOutputFrequency'] = None
+
+        if self.random_seed_CB.isChecked():
+            self.gpd["RandomSeed"] = self.random_seed_SB.value()
+        else:
+            self.gpd["RandomSeed"] = None
+
+        if self.ef_enable_CB.isChecked():
+            if self.gpd["EnergyFunctionCalculator"] is None:
+                self.gpd["EnergyFunctionCalculator"] = {}
+                self.gpd["EnergyFunctionCalculator"]["OutputFileName"] = {}
+                self.gpd["EnergyFunctionCalculator"]["OutputCoreFileNameSpinFlips"] = {}
+
+            self.gpd["EnergyFunctionCalculator"]["Type"] = 'Statistics'
+
+            ef_file_name = self.ef_file_name_LE.text()
+            if ef_file_name.__len__() == 0:
+                ef_file_name = self.__default_ef_file_name
+            if os.path.splitext(ef_file_name)[1].__len__() == 0:
+                ef_file_name += '.txt'
+            ef_file_name = os.path.split(os.path.abspath(ef_file_name))[-1]
+            self.gpd["EnergyFunctionCalculator"]["OutputFileName"] = {'OutputFileName': ef_file_name,
+                                                                      'Frequency': self.ef_file_freq_SB.value()}
+
+            self.gpd["EnergyFunctionCalculator"]["OutputCoreFileNameSpinFlips"] = {
+                'OutputCoreFileNameSpinFlips': 'statDataSingleFlip',
+                'Frequency': self.ef_spin_freq_SB.value(),
+                'GatherResults': self.ef_results_CB.isChecked(),
+                'OutputAccepted': self.ef_accepted_CB.isChecked(),
+                'OutputRejected': self.ef_rejected_CB.isChecked(),
+                'OutputTotal': self.ef_total_CB.isChecked()
+            }
+        else:
+            self.gpd["EnergyFunctionCalculator"] = None
+
         self.close()
 
     def on_reject(self) -> None:

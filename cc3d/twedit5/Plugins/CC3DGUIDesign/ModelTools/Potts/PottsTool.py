@@ -40,16 +40,25 @@ class PottsTool(CC3DModelToolBase):
         self._dict_keys_from = ['data']
         self._requisite_modules = ['CellType']
 
-        self.dim_x = default_gpd()['Dim'][0]
-        self.dim_y = default_gpd()['Dim'][1]
-        self.dim_z = default_gpd()['Dim'][2]
-        self.membrane_fluctuations = default_gpd()['MembraneFluctuations']
-        self.neighbor_order = default_gpd()['NeighborOrder']
-        self.mcs = default_gpd()['MCS']
-        self.lattice_type = default_gpd()['LatticeType']
-        self.bc_x = default_gpd()['BoundaryConditions']['x']
-        self.bc_y = default_gpd()['BoundaryConditions']['y']
-        self.bc_z = default_gpd()['BoundaryConditions']['z']
+        self.dim_x = None
+        self.dim_y = None
+        self.dim_z = None
+        self.membrane_fluctuations = None
+        self.neighbor_order = None
+        self.mcs = None
+        self.lattice_type = None
+        self.bc_x = None
+        self.bc_y = None
+        self.bc_z = None
+        self.offset = None
+        self.k_boltzman = None
+        self.anneal = None
+        self.flip_to_dim_ratio = None
+        self.debug_output_freq = None
+        self.random_seed = None
+        self.energy_func_calc = None
+
+        self.__load_internals_gpd_from_dict(default_gpd())
 
         self.cell_types = []
         self.__valid_functions = ['Min', 'Max', 'ArithmeticAverage']
@@ -59,6 +68,45 @@ class PottsTool(CC3DModelToolBase):
         super(PottsTool, self).__init__(dict_keys_to=self._dict_keys_to, dict_keys_from=self._dict_keys_from,
                                         requisite_modules=self._requisite_modules, sim_dicts=sim_dicts,
                                         root_element=root_element, parent_ui=parent_ui)
+
+    def __load_internals_gpd_from_dict(self, _gpd) -> None:
+        self.dim_x = _gpd['Dim'][0]
+        self.dim_y = _gpd['Dim'][1]
+        self.dim_z = _gpd['Dim'][2]
+        self.membrane_fluctuations = _gpd['MembraneFluctuations']
+        self.neighbor_order = _gpd['NeighborOrder']
+        self.mcs = _gpd['MCS']
+        self.lattice_type = _gpd['LatticeType']
+        self.bc_x = _gpd['BoundaryConditions']['x']
+        self.bc_y = _gpd['BoundaryConditions']['y']
+        self.bc_z = _gpd['BoundaryConditions']['z']
+        self.offset = _gpd['Offset']
+        self.k_boltzman = _gpd['KBoltzman']
+        self.anneal = _gpd['Anneal']
+        self.flip_to_dim_ratio = _gpd['Flip2DimRatio']
+        self.debug_output_freq = _gpd['DebugOutputFrequency']
+        self.random_seed = _gpd['RandomSeed']
+        self.energy_func_calc = _gpd['EnergyFunctionCalculator']
+
+    def __get_gpd_from_internals(self) -> dict:
+        gpd = dict()
+        gpd['Dim'] = [self.dim_x, self.dim_y, self.dim_z]
+        gpd['MembraneFluctuations'] = self.membrane_fluctuations
+        gpd['NeighborOrder'] = self.neighbor_order
+        gpd['MCS'] = self.mcs
+        gpd['LatticeType'] = self.lattice_type
+        gpd['BoundaryConditions'] = OrderedDict()
+        gpd['BoundaryConditions']['x'] = self.bc_x
+        gpd['BoundaryConditions']['y'] = self.bc_y
+        gpd['BoundaryConditions']['z'] = self.bc_z
+        gpd['Offset'] = self.offset
+        gpd['KBoltzman'] = self.k_boltzman
+        gpd['Anneal'] = self.anneal
+        gpd['Flip2DimRatio'] = self.flip_to_dim_ratio
+        gpd['DebugOutputFrequency'] = self.debug_output_freq
+        gpd['RandomSeed'] = self.random_seed
+        gpd['EnergyFunctionCalculator'] = self.energy_func_calc
+        return gpd
 
     def _process_imports(self) -> None:
         if 'data' in self._sim_dicts.keys() and self._sim_dicts['data'] is not None:
@@ -110,6 +158,27 @@ class PottsTool(CC3DModelToolBase):
             if 'z' in gpd["BoundaryConditions"].keys():
                 self.bc_z = gpd["BoundaryConditions"]['z']
 
+        if "Offset" in gpd.keys():
+            self.offset = gpd["Offset"]
+
+        if "KBoltzman" in gpd.keys():
+            self.k_boltzman = gpd["KBoltzman"]
+
+        if "Anneal" in gpd.keys():
+            self.anneal = gpd["Anneal"]
+
+        if "Flip2DimRatio" in gpd.keys():
+            self.flip_to_dim_ratio = gpd["Flip2DimRatio"]
+
+        if "DebugOutputFrequency" in gpd.keys():
+            self.debug_output_freq = gpd["DebugOutputFrequency"]
+
+        if "RandomSeed" in gpd.keys():
+            self.random_seed = gpd["RandomSeed"]
+
+        if "EnergyFunctionCalculator" in gpd.keys():
+            self.energy_func_calc = gpd["EnergyFunctionCalculator"]
+
     def validate_dicts(self, sim_dicts=None) -> bool:
         """
         Validates current sim dictionary states against changes
@@ -124,34 +193,8 @@ class PottsTool(CC3DModelToolBase):
 
         if 'generalPropertiesData' not in sim_dicts.keys():
             return False
-        else:
-            gpd = sim_dicts['generalPropertiesData']
-            if "Dim" not in gpd.keys() or [self.dim_x, self.dim_y, self.dim_z] != gpd["Dim"]:
-                return False
-
-            if "MembraneFluctuations" not in gpd.keys() or self.membrane_fluctuations != gpd["MembraneFluctuations"]:
-                return False
-
-            if "NeighborOrder" not in gpd.keys() or self.neighbor_order != gpd["NeighborOrder"]:
-                return False
-
-            if "MCS" not in gpd.keys() or self.mcs != gpd["MCS"]:
-                return False
-
-            if "LatticeType" not in gpd.keys() or self.lattice_type != gpd["LatticeType"]:
-                return False
-
-            if "BoundaryConditions" not in gpd.keys():
-                return False
-
-            if 'x' not in gpd["BoundaryConditions"].keys() or self.bc_x != gpd["BoundaryConditions"]['x']:
-                return False
-
-            if 'y' not in gpd["BoundaryConditions"].keys() or self.bc_y != gpd["BoundaryConditions"]['y']:
-                return False
-
-            if 'z' not in gpd["BoundaryConditions"].keys() or self.bc_z != gpd["BoundaryConditions"]['z']:
-                return False
+        elif sim_dicts['generalPropertiesData'] != self.__get_gpd_from_internals():
+            return False
 
         # If a cell type was added, through validation flag to request user input for parameter IF using a function
         # Otherwise ignore; import processing removes deleted cell types
@@ -199,7 +242,7 @@ class PottsTool(CC3DModelToolBase):
             element.ElementCC3D("FluctuationAmplitude", {}, gpd["MembraneFluctuations"])
         element.ElementCC3D("NeighborOrder", {}, gpd["NeighborOrder"])
 
-        if gpd["LatticeType"] != "Square":
+        if gpd["LatticeType"] != default_gpd()["LatticeType"]:
             element.ElementCC3D("LatticeType", {}, gpd["LatticeType"])
 
         if gpd['Dim'][2] > 1:
@@ -207,6 +250,46 @@ class PottsTool(CC3DModelToolBase):
         else:
             dim_list = ['x', 'y']
         [element.ElementCC3D('Boundary_' + dim_name, {}, gpd['BoundaryConditions'][dim_name]) for dim_name in dim_list]
+
+        if gpd['Offset'] != default_gpd()['Offset']:
+            element.ElementCC3D('Offset', {}, gpd['Offset'])
+
+        if gpd['KBoltzman'] != default_gpd()['KBoltzman']:
+            element.ElementCC3D('KBoltzman', {}, gpd['KBoltzman'])
+
+        if gpd['Anneal'] != default_gpd()['Anneal']:
+            element.ElementCC3D('Anneal', {}, gpd['Anneal'])
+
+        if gpd['Flip2DimRatio'] != default_gpd()['Flip2DimRatio']:
+            element.ElementCC3D('Flip2DimRatio', {}, gpd['Flip2DimRatio'])
+
+        if gpd['DebugOutputFrequency'] != default_gpd()['DebugOutputFrequency']:
+            element.ElementCC3D('DebugOutputFrequency', {}, gpd['DebugOutputFrequency'])
+
+        if gpd['RandomSeed'] != default_gpd()['RandomSeed']:
+            element.ElementCC3D('RandomSeed', {}, int(gpd['RandomSeed']))
+
+        if gpd['EnergyFunctionCalculator'] != default_gpd()['EnergyFunctionCalculator']:
+            energy_func_calc_element: ElementCC3D = element.ElementCC3D(
+                'EnergyFunctionCalculator', {'Type': gpd['EnergyFunctionCalculator']['Type']})
+            energy_func_calc_element.ElementCC3D(
+                'OutputFileName',
+                {'Frequency': gpd['EnergyFunctionCalculator']['OutputFileName']['Frequency']},
+                gpd['EnergyFunctionCalculator']['OutputFileName']['OutputFileName']
+            )
+            ef_dict = {'Frequency': gpd['EnergyFunctionCalculator']['OutputCoreFileNameSpinFlips']['Frequency']}
+            if gpd['EnergyFunctionCalculator']['OutputCoreFileNameSpinFlips']['GatherResults']:
+                ef_dict['GatherResults'] = ''
+            if gpd['EnergyFunctionCalculator']['OutputCoreFileNameSpinFlips']['OutputAccepted']:
+                ef_dict['OutputAccepted'] = ''
+            if gpd['EnergyFunctionCalculator']['OutputCoreFileNameSpinFlips']['OutputRejected']:
+                ef_dict['OutputRejected'] = ''
+            if gpd['EnergyFunctionCalculator']['OutputCoreFileNameSpinFlips']['OutputTotal']:
+                ef_dict['OutputTotal'] = ''
+            energy_func_calc_element.ElementCC3D(
+                'OutputCoreFileNameSpinFlips', ef_dict,
+                gpd['EnergyFunctionCalculator']['OutputCoreFileNameSpinFlips']['OutputCoreFileNameSpinFlips']
+            )
 
         return element
 
@@ -219,30 +302,13 @@ class PottsTool(CC3DModelToolBase):
             for key in self._dict_keys_to:
                 global_sim_dict[key] = {}
 
-        global_sim_dict['generalPropertiesData']['Dim'] = local_sim_dict['generalPropertiesData']['Dim']
-        global_sim_dict['generalPropertiesData']['MembraneFluctuations'] = \
-            local_sim_dict['generalPropertiesData']['MembraneFluctuations']
-        global_sim_dict['generalPropertiesData']['NeighborOrder'] = \
-            local_sim_dict['generalPropertiesData']['NeighborOrder']
-        global_sim_dict['generalPropertiesData']['MCS'] = local_sim_dict['generalPropertiesData']['MCS']
-        global_sim_dict['generalPropertiesData']['LatticeType'] = local_sim_dict['generalPropertiesData']['LatticeType']
-        global_sim_dict['generalPropertiesData']['BoundaryConditions'] = \
-            local_sim_dict['generalPropertiesData']['BoundaryConditions']
+        for key in default_gpd().keys():
+            global_sim_dict['generalPropertiesData'][key] = local_sim_dict['generalPropertiesData'][key]
 
         return global_sim_dict
 
     def get_ui(self) -> PottsGUI:
-        gpd = dict()
-        gpd["Dim"] = [self.dim_x, self.dim_y, self.dim_z]
-        gpd["MembraneFluctuations"] = self.membrane_fluctuations
-        gpd["NeighborOrder"] = self.neighbor_order
-        gpd["MCS"] = self.mcs
-        gpd["LatticeType"] = self.lattice_type
-        gpd["BoundaryConditions"] = OrderedDict()
-        gpd["BoundaryConditions"]['x'] = self.bc_x
-        gpd["BoundaryConditions"]['y'] = self.bc_y
-        gpd["BoundaryConditions"]['z'] = self.bc_z
-        return PottsGUI(parent=self.get_parent_ui(), gpd=gpd, cell_types=self.cell_types,
+        return PottsGUI(parent=self.get_parent_ui(), gpd=self.__get_gpd_from_internals(), cell_types=self.cell_types,
                         valid_functions=self.__valid_functions)
 
     def _process_ui_finish(self, gui: QObject):
@@ -253,29 +319,14 @@ class PottsTool(CC3DModelToolBase):
         """
         self.user_decision = gui.user_decision
         if gui.user_decision:
-            self.dim_x, self.dim_y, self.dim_z = gui.gpd["Dim"]
-            self.membrane_fluctuations = gui.gpd["MembraneFluctuations"]
-            self.neighbor_order = gui.gpd["NeighborOrder"]
-            self.mcs = gui.gpd["MCS"]
-            self.lattice_type = gui.gpd["LatticeType"]
-            self.bc_x = gui.gpd["BoundaryConditions"]['x']
-            self.bc_y = gui.gpd["BoundaryConditions"]['y']
-            self.bc_z = gui.gpd["BoundaryConditions"]['z']
+            self.__load_internals_gpd_from_dict(gui.gpd)
 
     def update_dicts(self):
         """
         Public method to update sim dictionaries from internal data
         :return: None
         """
-        self._sim_dicts['generalPropertiesData']["Dim"] = [self.dim_x, self.dim_y, self.dim_z]
-        self._sim_dicts['generalPropertiesData']["MembraneFluctuations"] = self.membrane_fluctuations
-        self._sim_dicts['generalPropertiesData']["NeighborOrder"] = self.neighbor_order
-        self._sim_dicts['generalPropertiesData']["MCS"] = self.mcs
-        self._sim_dicts['generalPropertiesData']["LatticeType"] = self.lattice_type
-        self._sim_dicts['generalPropertiesData']["BoundaryConditions"] = OrderedDict()
-        self._sim_dicts['generalPropertiesData']["BoundaryConditions"]['x'] = self.bc_x
-        self._sim_dicts['generalPropertiesData']["BoundaryConditions"]['y'] = self.bc_y
-        self._sim_dicts['generalPropertiesData']["BoundaryConditions"]['z'] = self.bc_z
+        self._sim_dicts['generalPropertiesData'] = self.__get_gpd_from_internals()
         return None
 
     def get_user_decision(self) -> bool:
@@ -326,6 +377,8 @@ def load_xml(root_element) -> {}:
             f_element: CC3DXMLElement = potts_element.getFirstElement('FluctuationAmplitudeFunctionName')
             if f_element:
                 gpd['MembraneFluctuations']['FunctionName'] = f_element.getText()
+            else:
+                gpd['MembraneFluctuations'] = float(element.getText())
 
         else:
             gpd['MembraneFluctuations'] = float(element.getText())
@@ -344,6 +397,57 @@ def load_xml(root_element) -> {}:
     if s_element:
         gpd['MCS'] = float(s_element.getText())
 
+    offset_element = potts_element.getFirstElement('Offset')
+    if offset_element:
+        gpd['Offset'] = float(offset_element.getText())
+
+    coefficient_element = potts_element.getFirstElement('KBoltzman')
+    if coefficient_element:
+        gpd['KBoltzman'] = float(coefficient_element.getText())
+
+    anneal_element = potts_element.getFirstElement('Anneal')
+    if anneal_element:
+        gpd['Anneal'] = float(anneal_element.getText())
+
+    flip_to_dim_ratio_element = potts_element.getFirstElement('Flip2DimRatio')
+    if flip_to_dim_ratio_element:
+        gpd['Flip2DimRatio'] = float(flip_to_dim_ratio_element.getText())
+
+    debug_output_freq_element = potts_element.getFirstElement('DebugOutputFrequency')
+    if debug_output_freq_element:
+        gpd['DebugOutputFrequency'] = float(debug_output_freq_element.getText())
+
+    random_seed_element = potts_element.getFirstElement('RandomSeed')
+    if random_seed_element:
+        gpd['RandomSeed'] = int(random_seed_element.getText())
+
+    energy_func_calc_element = potts_element.getFirstElement('EnergyFunctionCalculator')
+    if energy_func_calc_element:
+        func_type = energy_func_calc_element.getAttribute('Type')
+
+        file_name_element = energy_func_calc_element.getFirstElement('OutputFileName')
+        file_name = file_name_element.getText()
+        file_freq = float(file_name_element.getAttribute('Frequency'))
+
+        spin_element = energy_func_calc_element.getFirstElement('OutputCoreFileNameSpinFlips')
+        spin_name = spin_element.getText()
+        spin_freq = float(spin_element.getAttribute('Frequency'))
+        gather_results = spin_element.findAttribute('GatherResults')
+        output_accepted = spin_element.findAttribute('OutputAccepted')
+        output_rejected = spin_element.findAttribute('OutputRejected')
+        output_total = spin_element.findAttribute('OutputTotal')
+
+        gpd['EnergyFunctionCalculator'] = {'Type': func_type,
+                                           'OutputFileName': {'OutputFileName': file_name,
+                                                              'Frequency': file_freq},
+                                           'OutputCoreFileNameSpinFlips': {'OutputCoreFileNameSpinFlips': spin_name,
+                                                                           'Frequency': spin_freq,
+                                                                           'GatherResults': gather_results,
+                                                                           'OutputAccepted': output_accepted,
+                                                                           'OutputRejected': output_rejected,
+                                                                           'OutputTotal': output_total}
+                                           }
+
     sim_dicts['generalPropertiesData'] = gpd
     return sim_dicts
 
@@ -354,4 +458,11 @@ def default_gpd() -> dict:
             'NeighborOrder': 1,
             'MCS': 100000,
             'LatticeType': 'Square',
-            'BoundaryConditions': {'x': 'NoFlux', 'y': 'NoFlux', 'z': 'NoFlux'}}
+            'BoundaryConditions': {'x': 'NoFlux', 'y': 'NoFlux', 'z': 'NoFlux'},
+            'Offset': 0.0,
+            'KBoltzman': 1.0,
+            'Anneal': 0.0,
+            'Flip2DimRatio': 1.0,
+            'DebugOutputFrequency': None,
+            'RandomSeed': None,
+            'EnergyFunctionCalculator': None}
