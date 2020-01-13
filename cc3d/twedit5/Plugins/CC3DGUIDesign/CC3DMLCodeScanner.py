@@ -4,7 +4,9 @@ import traceback
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.Qsci import *
+from xml.parsers.expat import ExpatError
 
+from cc3d.core.XMLUtils import Xml2Obj
 from cc3d.twedit5.EditorWindow import *
 from cc3d.twedit5.QsciScintillaCustom import QsciScintillaCustom
 
@@ -220,14 +222,56 @@ class CC3DMLCodeScanner:
 
         sb_sim: cc3dst.ScannedBlock = sb_sim_l[0]
 
+        to_test_gen = []
+
+        filtered_main_xml_text = self.get_filtered_xml_string(xml_string=xml_string)
+
+        cc3d_xml_to_obj_converter = Xml2Obj()
+
         for sb in [sb for sb in scanned_blocks if sb is not sb_sim]:
             if sb.beginning_line > sb_sim.closing_line or sb.closing_line < sb_sim.beginning_line:
                 sb.set_warn_outside_sim_element()
+
+            try:
+                cc3d_xml_to_obj_converter.ParseString("\n".join(sb.block_text))
+            except ExpatError as e:
+                sb.is_problematic = True
+                sb.error_msgs.append(str(e))
+                continue
 
             if sb.module_name in self.xml_to_tools_dict.keys():
                 model_tool = self.xml_to_tools_dict[sb.module_name]
                 requisite_check = self.requisite_check(model_tools=[model_tool], xml_string=xml_string)
                 [sb.set_warn_missing_requisite(msg=missing_req) for missing_req in requisite_check[model_tool]]
+
+                if requisite_check[model_tool].__len__() == 0:
+                    to_test_gen.append(sb)
+
+            else:
+                to_test_gen.append(sb)
+
+        root_element_x = cc3dst.ElementCC3DX("test_root")
+        [root_element_x.ElementCC3DX(cc3d_xml_element=cc3d_xml_to_obj_converter.ParseString("\n".join(sb.block_text)))
+         for sb in to_test_gen]
+        root_element = root_element_x.CC3DXMLElement
+
+        module_names = [sb.module_name for sb in to_test_gen]
+
+        for sb in to_test_gen:
+            if sb.module_name not in self.xml_to_tools_dict.keys():
+                continue
+
+            model_tool = self.xml_to_tools_dict[sb.module_name]
+
+            for req in model_tool().get_requisite_modules():
+                if req not in module_names:
+                    continue
+
+            try:
+                model_tool(root_element=root_element)
+            except Exception as e:
+                sb.is_problematic = True
+                sb.error_msgs.append(str(e))
 
         return scanned_blocks
 
@@ -535,6 +579,8 @@ class CC3DMLHoverMessenger(QObject):
     def show_dwell_msg(self, scanned_block: cc3dst.ScannedBlock):
         if scanned_block.is_problematic:
             msg = self.msg_invalid
+            if scanned_block.error_msgs:
+                msg += '\n\n' + '\n\n'.join(scanned_block.error_msgs)
         elif scanned_block.module_name == CC3DMLCodePainter.outside_name:
             msg = self.msg_outside
         elif scanned_block.module_name in self.active_tools_info.keys():

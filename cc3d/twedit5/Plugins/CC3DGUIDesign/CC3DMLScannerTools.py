@@ -285,6 +285,7 @@ class ScannedBlock:
         self.block_text = []
         self.warning_flags = []
         self.warning_msgs = {}
+        self.error_msgs = []
 
     def clear_warning_flags(self) -> None:
         self.warning_flags = []
