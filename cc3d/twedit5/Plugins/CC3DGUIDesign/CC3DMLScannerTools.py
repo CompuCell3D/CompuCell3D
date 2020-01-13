@@ -235,7 +235,7 @@ def scan_xml_model(text: str) -> []:
         sb = ScannedBlock()
         sb.beginning_line = line_b
         sb.closing_line = line_c
-        sb.block_text = text_split[line_b:line_c]
+        sb.block_text = text_split[line_b:line_c + 1]
         if type_b is None or type_b != type_c:
             sb.is_problematic = True
         elif type_c is None:
@@ -248,6 +248,26 @@ def scan_xml_model(text: str) -> []:
             sb.is_problematic = True
 
         scanned_blocks.append(sb)
+
+    # Sweep for unidentified lines of text and group them into problematic blocks
+    lines_with_blocks = [scanned_blocks[0].beginning_line, scanned_blocks[0].closing_line]
+    for sb in [sb for sb in scanned_blocks if sb is not scanned_blocks[0]]:
+        lines_with_blocks += list(range(sb.beginning_line, sb.closing_line + 1))
+
+    line = 0
+    while line in range(text_split.__len__()):
+        if text_split[line].__len__() > 0 and line not in lines_with_blocks:
+            sb = ScannedBlock()
+            sb.beginning_line = line
+            while line + 1 not in lines_with_blocks and line < text_split.__len__() - 1:
+                if text_split[line].__len__() > 0:
+                    sb.closing_line = line
+
+                line += 1
+            sb.is_problematic = True
+            scanned_blocks.append(sb)
+
+        line += 1
 
     return scanned_blocks
 
