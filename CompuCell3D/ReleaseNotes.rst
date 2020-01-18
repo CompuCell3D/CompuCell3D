@@ -8,6 +8,7 @@ Version 4.1.1
 This release adds support for Antimony (see examples in Demos/SBMLSolverExamples/SBMLSolverAntimony)
 and has also multiple bug-fixes:
 
+- Added support for specifying reaction kinetics models in Antimony and CellML
 - Fixed parameter scan to allow runs with multiple workers. See example script - Demos/ParameterScan/pscan_loop.sh
 - Added callable API allowing CC3d to be called as a function returning values. See documentation and example in Demos/CallableCC3D.
 - Fixed restart files issue
