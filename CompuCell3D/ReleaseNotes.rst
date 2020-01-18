@@ -12,8 +12,8 @@ and has also multiple bug-fixes:
 - Fixed parameter scan to allow runs with multiple workers. See example script - Demos/ParameterScan/pscan_loop.sh
 - Added callable API allowing CC3d to be called as a function returning values. See documentation and example in Demos/CallableCC3D.
 - Fixed restart files issue
-- fixed PIFF dumper
-- fixed hover over text in Player
+- Fixed PIFF dumper
+- Fixed hover over text in Player
 - Added support for developing custom C++ steppables and plugins on OSX - see
 https://compucell3ddevelopersmanual.readthedocs.io/en/latest/setting_up_compiler_on_osx.html
 - Improved compilation on linux , windows and osx but adding extra conda packages that fix issues
