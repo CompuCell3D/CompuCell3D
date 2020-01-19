@@ -19,6 +19,12 @@ https://compucell3ddevelopersmanual.readthedocs.io/en/latest/setting_up_compiler
 - Improved compilation on linux , windows and osx but adding extra conda packages that fix issues
 with incomplete packaging of vtk from conda-forge
 - Expanded compilation documentation for all 3 platforms
+- Improved data passing between steppables
+- Fixed multiple bugs associated with domain resizing
+- Added optional comments in code snippets
+- Improved interface with fpp plugin and new accessible plugin data in steppables
+- Added command line argument for specification of vtk output file naming
+- Added access to BoxWatcher data in steppables
 
 
 Version 4.1.0
