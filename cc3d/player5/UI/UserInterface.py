@@ -172,14 +172,6 @@ class UserInterface(QMainWindow):
                 #             20)  # resizing vertical dimension to be minimal - for PyQt5 we cannot use 0
                 self.move(Configuration.getSetting("MainWindowPositionFloating"))
 
-        # if playerSizes and playerSizes.size()>0:
-        #     self.resize(Configuration.getSetting("MainWindowSize"))
-        #     self.move(Configuration.getSetting("MainWindowPosition"))
-        #     self.restoreState(playerSizes)
-        # else:
-        #     self.resize(Configuration.getSetting("MainWindowSize"))
-        #     self.move(Configuration.getSetting("MainWindowPosition"))
-
         # MDIFIX
         floatingFlag = Configuration.getSetting('FloatingWindows')
 
