@@ -162,14 +162,14 @@ class UserInterface(QMainWindow):
 
             if playerSizes and playerSizes.size() > 0:
                 self.resize(Configuration.getSetting("MainWindowSizeFloating"))
-                self.resize(self.size().width(),
-                            20)  # resizing vertical dimension to be minimal - for PyQt5 we cannot use 0
+                # self.resize(self.size().width(),
+                #             20)  # resizing vertical dimension to be minimal - for PyQt5 we cannot use 0
                 self.move(Configuration.getSetting("MainWindowPositionFloating"))
                 self.restoreState(playerSizes)
             else:
                 self.resize(Configuration.getSetting("MainWindowSizeFloating"))
-                self.resize(self.size().width(),
-                            20)  # resizing vertical dimension to be minimal - for PyQt5 we cannot use 0
+                # self.resize(self.size().width(),
+                #             20)  # resizing vertical dimension to be minimal - for PyQt5 we cannot use 0
                 self.move(Configuration.getSetting("MainWindowPositionFloating"))
 
         # if playerSizes and playerSizes.size()>0:
@@ -497,6 +497,7 @@ class UserInterface(QMainWindow):
         self.viewmanager.setZoomItems(self.zitems)
 
         # self.viewmanager.setOrientation(Qt.Vertical)
+        self.setCentralWidget(self.viewmanager)
         self.setCentralWidget(self.viewmanager)
 
     def __createLayout(self):
