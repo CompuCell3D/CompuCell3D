@@ -30,7 +30,7 @@ class WebFetcher(QObject):
     def fetch(self, url_str):
         '''
         initiates web page fetch process. self.networkmanager emits 'finished' signal once the content has been fetched
-        or if e.g. network error has occured. In the latter case the content of the web page is an empty QString
+        or if e.g. network error has occurred. In the latter case the content of the web page is an empty QString
         :param url_str: web address
         :return: None
         '''
@@ -50,26 +50,35 @@ class WebFetcher(QObject):
         data = reply.readAll()
         data_qstring = str(data)
         data_str = str(data_qstring)
-        # print data_str
+        # print('Web Feetcher ', data_str)
         self.gotWebContentSignal.emit(data_qstring, str(self.url_str))
 
 
-
 if __name__ == "__main__":
-    import re
+    from PyQt5.QtCore import QCoreApplication, QUrl
+    import sys
 
-    str_http = '<span class="anchor" id="line-1"></span><p class="line874">current version 3.7.4 20150515 <span class="anchor" id="line-2"><'
-
-    current_version_regex = re.compile("(current version)([0-9\. ]*)")
-
-    # current_version_regex = re.compile(r'span')
-    match_obj = re.search(current_version_regex, str_http)
-    print(match_obj.groups())
+    app = QCoreApplication([])
+    ex = WebFetcher()
+    ex.fetch(url_str="http://www.compucell3d.org/current_version")
+    sys.exit(app.exec_())
 
 
-    str_http = 'line874">what is new: Improved Player, Simplified Python Scripting, Easier Specification Of Plots <span cla><this is '
-    whats_new_regex = re.compile("(>[\S]*what is new:)(.*?)(<)")
-
-    search_obj = re.search(whats_new_regex, str_http)
-    print(search_obj.groups())
-
+# if __name__ == "__main__":
+#     import re
+#
+#     str_http = '<span class="anchor" id="line-1"></span><p class="line874">current version 3.7.4 20150515 <span class="anchor" id="line-2"><'
+#
+#     current_version_regex = re.compile("(current version)([0-9\. ]*)")
+#
+#     # current_version_regex = re.compile(r'span')
+#     match_obj = re.search(current_version_regex, str_http)
+#     print(match_obj.groups())
+#
+#
+#     str_http = 'line874">what is new: Improved Player, Simplified Python Scripting, Easier Specification Of Plots <span cla><this is '
+#     whats_new_regex = re.compile("(>[\S]*what is new:)(.*?)(<)")
+#
+#     search_obj = re.search(whats_new_regex, str_http)
+#     print(search_obj.groups())
+#
