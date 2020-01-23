@@ -372,10 +372,10 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	A)
 	______________________
-	<BiasChange Type ="momentum">
-	<BiasChangeParameters Alpha="10" CellType="cell1"/>
-	...
-	</BiasChange>
+	<Steppable Type="BiasVectorSteppable">
+        <BiasChange Type = "Momentum"/>
+        <BiasChangeParameters CellType="Cell" Alpha = "0.5">
+   </Steppable> 
 
 	B)
 	____________________
@@ -389,24 +389,28 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	{
 		biasType = WHITE;
 	}
+
 	else if (_xmlData->findElement("BiasChange"))
 	{
-		string biasChangeStr = _xmlData->getAttribute("BiasChange");// xml style will be <BiasChange="type of change">, 
-																	//might have trouble with the muExpressions?
-		transform(biasChangeStr.begin(), biasChangeStr.end(), biasChangeStr.begin(), ::tolower);
-		if (biasChangeStr == "white")// b = white noise
+		CC3DXMLElement *_xmlDataBiasChange = _xmlData->getFirstElement("BiasChange");
+
+		std::string biasTypeName = _xmlDataBiasChange->getAttribute("Type");
+
+		transform(biasTypeName.begin(), biasTypeName.end(), biasTypeName.begin(), ::tolower);
+		
+		if (biasTypeName == "white")// b = white noise
 		{
 			biasType = WHITE;
 		}
-		else if (biasChangeStr == "momentum")// b(t+1) = a*b(t) + (1-a)*noise
+		else if (biasTypeName == "momentum")// b(t+1) = a*b(t) + (1-a)*noise
 		{
 			biasType = MOMENTUM;
 		}
-		else if (biasChangeStr == "manual")// for changing b in python
+		else if (biasTypeName == "manual")// for changing b in python
 		{
 			biasType = MANUAL;
 		}
-		else if (biasChangeStr == "custom")// for muExpressions
+		else if (biasTypeName == "custom")// for muExpressions
 		{
 			biasType = CUSTOM;
 		}
@@ -414,7 +418,37 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		{
 			throw std::invalid_argument("Invalid bias change type in BiasChange");
 		}
+
+
 	}
+
+
+	//else if (_xmlData->findElement("BiasChange"))
+	//{
+	//	string biasChangeStr = _xmlData->getAttribute("BiasChange");// xml style will be <BiasChange="type of change">, 
+	//																//might have trouble with the muExpressions?
+	//	transform(biasChangeStr.begin(), biasChangeStr.end(), biasChangeStr.begin(), ::tolower);
+	//	if (biasChangeStr == "white")// b = white noise
+	//	{
+	//		biasType = WHITE;
+	//	}
+	//	else if (biasChangeStr == "momentum")// b(t+1) = a*b(t) + (1-a)*noise
+	//	{
+	//		biasType = MOMENTUM;
+	//	}
+	//	else if (biasChangeStr == "manual")// for changing b in python
+	//	{
+	//		biasType = MANUAL;
+	//	}
+	//	else if (biasChangeStr == "custom")// for muExpressions
+	//	{
+	//		biasType = CUSTOM;
+	//	}
+	//	else
+	//	{
+	//		throw std::invalid_argument("Invalid bias change type in BiasChange");
+	//	}
+	//}
 	else
 	{
 		biasType = WHITE;
@@ -512,7 +546,10 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		break;
 	case MOMENTUM:
 		//For now I'll only do by cell type.
-		
+		/*<Steppable Type = "BiasVectorSteppable">
+			<BiasChange Type = "Momentum" / >
+			<BiasChangeParameters CellType = "Cell" Alpha = "0.5">
+		< / Steppable>*/
 		stepFcnPtr = &BiasVectorSteppable::step_momentum_bias;
 
 		biasMomenParamVec.clear();
@@ -522,6 +559,8 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		/*vector<BiasMomenParam> momentumParamVecTmp;*/
 
 		/*CC3DXMLElementList*/ paramVec = _xmlData->getElements("BiasChangeParameters");
+
+		//CC3DXMLElementList _xmlDataBiasChangeParametersList = _xmlData->getElements("BiasChangeParameters");
 
 		for (int i = 0; i < paramVec.size(); ++i)
 		{
