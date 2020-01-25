@@ -31,6 +31,7 @@ from cc3d.player5.Simulation.CMLResultReader import CMLResultReader
 from cc3d.player5.Simulation.SimulationThread import SimulationThread
 from cc3d.player5.Launchers.param_scan_dialog import ParamScanDialog
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
+from cc3d.player5.Plugins.ViewManagerPlugins.ScreenshotDescriptionBrowser import ScreenshotDescriptionBrowser
 from cc3d.player5 import Graphics
 from cc3d.core import XMLUtils
 from .PlotManagerSetup import createPlotManager
@@ -204,6 +205,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # this means that further refactoring is needed but I leave it for now
         self.cmlReplayManager = None
+
+        self.screenshot_desc_browser = ScreenshotDescriptionBrowser(stv=self)
 
         # Here we are checking for new version - notice we use check interval in order not to perform version checks
         # too often. Default check interval is 7 days
@@ -1128,6 +1131,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.pif_from_simulation_act.triggered.connect(self.__generatePIFFromCurrentSnapshot)
         self.pif_from_vtk_act.triggered.connect(self.__generatePIFFromVTK)
         self.restart_snapshot_from_simulation_act.triggered.connect(self.generate_restart_snapshot)
+        self.screenshot_description_browser_act.triggered.connect(self.open_screenshot_description_browser)
 
         # window menu actions
         self.python_steering_panel_act.triggered.connect(self.addPythonSteeringPanel)
@@ -3220,6 +3224,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         pif_file_name = str(pif_file_name_selection[0])
         self.simulation.generate_pif_from_vtk(self.simulation.currentFileName, pif_file_name)
 
+
     def generate_restart_snapshot(self) -> None:
         """
         Generated on-demand restart snapshot
@@ -3252,6 +3257,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
             return
 
         restart_manager.output_restart_files(step=pg.simulator.getStep(), on_demand=True)
+
+    def open_screenshot_description_browser(self):
+        """
+        Opens up a screenshot description browser widget
+        :return:
+        """
+        self.screenshot_desc_browser.open()
+        print('opening scr browser')
 
     def __configsChanged(self):
         """
