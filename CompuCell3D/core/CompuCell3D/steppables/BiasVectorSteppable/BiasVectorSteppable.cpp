@@ -213,7 +213,7 @@ void CompuCell3D::BiasVectorSteppable::step_2d_z(const unsigned int currentStep)
 }
 
 
-void BiasVectorSteppable::step_momentum_bias(const unsigned int currentStep)
+void BiasVectorSteppable::step_persistent_bias(const unsigned int currentStep)
 {
 	CellInventory::cellInventoryIterator cInvItr;
 	CellG * cell = 0;
@@ -221,9 +221,9 @@ void BiasVectorSteppable::step_momentum_bias(const unsigned int currentStep)
 	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr)
 	{
 		cell = cellInventoryPtr->getCell(cInvItr);
-		double alpha = biasMomenParamVec[cell->type].momentumAlpha;
+		double alpha = biasMomenParamVec[cell->type].persistentAlpha;
 
-		gen_momentum_bias(alpha, cell);
+		gen_persistent_bias(alpha, cell);
 
 	}
 }
@@ -235,7 +235,7 @@ void BiasVectorSteppable::step_momentum_bias(const unsigned int currentStep)
 MOMENTUM BIAS GENERATORS
 */
 
-void BiasVectorSteppable::gen_momentum_bias(const double alpha, CellG * cell) {
+void BiasVectorSteppable::gen_persistent_bias(const double alpha, CellG * cell) {
 
 	return (this->*momGenFcnPtr)(alpha,cell);
 
@@ -245,7 +245,7 @@ void BiasVectorSteppable::gen_momentum_bias(const double alpha, CellG * cell) {
 
 
 
-void BiasVectorSteppable::gen_momentum_bias_3d(const double alpha, CellG *cell)
+void BiasVectorSteppable::gen_persistent_bias_3d(const double alpha, CellG *cell)
 {
 	vector<double> noise = BiasVectorSteppable::noise_vec_generator();
 
@@ -256,7 +256,7 @@ void BiasVectorSteppable::gen_momentum_bias_3d(const double alpha, CellG *cell)
 }
 
 
-void BiasVectorSteppable::gen_momentum_bias_2d_x(const double alpha, CellG *cell)
+void BiasVectorSteppable::gen_persistent_bias_2d_x(const double alpha, CellG *cell)
 {
 	vector<double> noise = BiasVectorSteppable::noise_vec_generator();
 
@@ -265,7 +265,7 @@ void BiasVectorSteppable::gen_momentum_bias_2d_x(const double alpha, CellG *cell
 	cell->biasVecZ = alpha*cell->biasVecZ + (1 - alpha)*noise[1];
 }
 
-void BiasVectorSteppable::gen_momentum_bias_2d_y(const double alpha, CellG *cell)
+void BiasVectorSteppable::gen_persistent_bias_2d_y(const double alpha, CellG *cell)
 {
 	vector<double> noise = BiasVectorSteppable::noise_vec_generator();
 
@@ -274,7 +274,7 @@ void BiasVectorSteppable::gen_momentum_bias_2d_y(const double alpha, CellG *cell
 	cell->biasVecZ = alpha*cell->biasVecZ + (1 - alpha)*noise[1];
 }
 
-void BiasVectorSteppable::gen_momentum_bias_2d_z(const double alpha, CellG *cell)
+void BiasVectorSteppable::gen_persistent_bias_2d_z(const double alpha, CellG *cell)
 {
 	vector<double> noise = BiasVectorSteppable::noise_vec_generator();
 
@@ -373,7 +373,7 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	A)
 	______________________
 	<Steppable Type="BiasVectorSteppable">
-        <BiasChange Type = "Momentum"/>
+        <BiasChange Type = "persistent"/>
         <BiasChangeParameters CellType="Cell" Alpha = "0.5"/>
    </Steppable> 
 
@@ -402,9 +402,9 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		{
 			biasType = WHITE;
 		}
-		else if (biasTypeName == "momentum")// b(t+1) = a*b(t) + (1-a)*noise
+		else if (biasTypeName == "persistent")// b(t+1) = a*b(t) + (1-a)*noise
 		{
-			biasType = MOMENTUM;
+			biasType = PERSISTENT;
 		}
 		else if (biasTypeName == "manual")// for changing b in python
 		{
@@ -432,9 +432,9 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	//	{
 	//		biasType = WHITE;
 	//	}
-	//	else if (biasChangeStr == "momentum")// b(t+1) = a*b(t) + (1-a)*noise
+	//	else if (biasChangeStr == "persistent")// b(t+1) = a*b(t) + (1-a)*noise
 	//	{
-	//		biasType = MOMENTUM;
+	//		biasType = PERSISTENT;
 	//	}
 	//	else if (biasChangeStr == "manual")// for changing b in python
 	//	{
@@ -514,7 +514,7 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	vector<int> typeIdVec;
 
-	vector<BiasMomenParam> momentumParamVecTmp;
+	vector<BiasMomenParam> persistentParamVecTmp;
 
 	CC3DXMLElementList paramVec;
 
@@ -544,19 +544,19 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			break;
 		}
 		break;
-	case MOMENTUM:
+	case PERSISTENT:
 		//For now I'll only do by cell type.
 		/*<Steppable Type = "BiasVectorSteppable">
-			<BiasChange Type = "Momentum" / >
+			<BiasChange Type = "Persistent" / >
 			<BiasChangeParameters CellType = "Cell" Alpha = "0.5">
 		< / Steppable>*/
-		stepFcnPtr = &BiasVectorSteppable::step_momentum_bias;
+		stepFcnPtr = &BiasVectorSteppable::step_persistent_bias;
 
 		biasMomenParamVec.clear();
 
 		/*vector<int> typeIdVec;*/
 
-		/*vector<BiasMomenParam> momentumParamVecTmp;*/
+		/*vector<BiasMomenParam> persistentParamVecTmp;*/
 
 		/*CC3DXMLElementList*/ paramVec = _xmlData->getElements("BiasChangeParameters");
 
@@ -566,15 +566,15 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		{
 			BiasMomenParam biasParam;
 
-			biasParam.momentumAlpha = paramVec[i]->getAttributeAsDouble("Alpha");
+			biasParam.persistentAlpha = paramVec[i]->getAttributeAsDouble("Alpha");
 			biasParam.typeName = paramVec[i]->getAttribute("CellType");
 
 			cerr << "automaton=" << automaton << endl;
 
 			typeIdVec.push_back(automaton->getTypeId(biasParam.typeName));
 
-			//momentumParamVecTmp.push_back(biasParam.typeName);
-			momentumParamVecTmp.push_back(biasParam);
+			//persistentParamVecTmp.push_back(biasParam.typeName);
+			persistentParamVecTmp.push_back(biasParam);
 		}
 
 		/*vector<int>::iterator*/ pos = max_element(typeIdVec.begin(), typeIdVec.end());
@@ -582,27 +582,27 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 		biasMomenParamVec.assign(maxTypeID + 1, BiasMomenParam());
 
-		for (int i = 0; i < momentumParamVecTmp.size(); ++i)
+		for (int i = 0; i < persistentParamVecTmp.size(); ++i)
 		{
-			biasMomenParamVec[typeIdVec[i]] = momentumParamVecTmp[i];
+			biasMomenParamVec[typeIdVec[i]] = persistentParamVecTmp[i];
 		}
 
 		switch (fieldType)
 		{
 		case CompuCell3D::BiasVectorSteppable::FTYPE3D:
-			momGenFcnPtr = &BiasVectorSteppable::gen_momentum_bias_3d;
+			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_3d;
 			break;
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DX:
-			momGenFcnPtr = &BiasVectorSteppable::gen_momentum_bias_2d_x;
+			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
 			break;
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DY:
-			momGenFcnPtr = &BiasVectorSteppable::gen_momentum_bias_2d_y;
+			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_y;
 			break;
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DZ:
-			momGenFcnPtr = &BiasVectorSteppable::gen_momentum_bias_2d_z;
+			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_z;
 			break;
 		default:
-			momGenFcnPtr = &BiasVectorSteppable::gen_momentum_bias_3d;
+			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_3d;
 			break;
 		}
 		break;

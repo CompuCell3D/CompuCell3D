@@ -43,8 +43,8 @@ namespace CompuCell3D {
   class BIASVECTORSTEPPABLE_EXPORT BiasMomenParam
   {
   public:
-	  BiasMomenParam() : momentumAlpha(0.0) {}
-	  double momentumAlpha;
+	  BiasMomenParam() : persistentAlpha(0.0) {}
+	  double persistentAlpha;
 	  std::string typeName;
   };
 	  
@@ -80,7 +80,7 @@ namespace CompuCell3D {
 	NoiseType noiseType;
 
 	enum BiasType {WHITE = 0, // b = white noise
-				   MOMENTUM = 1, // b(t+1) = a*b(t) + (1-a)*noise
+				   PERSISTENT = 1, // b(t+1) = a*b(t) + (1-a)*noise
 				   MANUAL = 101, // for changing b in python
 				   CUSTOM = 102};// for muExpressions
 	BiasType biasType;
@@ -134,16 +134,16 @@ namespace CompuCell3D {
 	void step_2d_y(const unsigned int currentStep); // for y == 1
 	void step_2d_z(const unsigned int currentStep); // for z == 1
 
-	void step_momentum_bias(const unsigned int currentStep); // for the momentum bias
+	void step_persistent_bias(const unsigned int currentStep); // for the momentum bias
 
-	virtual void gen_momentum_bias(const double alpha, CellG * cell);
-	void gen_momentum_bias_3d(const double alpha, CellG * cell);
+	virtual void gen_persistent_bias(const double alpha, CellG * cell);
+	void gen_persistent_bias_3d(const double alpha, CellG * cell);
 
-	void gen_momentum_bias_2d_x(const double alpha, CellG * cell);
+	void gen_persistent_bias_2d_x(const double alpha, CellG * cell);
 
-	void gen_momentum_bias_2d_y(const double alpha, CellG * cell);
+	void gen_persistent_bias_2d_y(const double alpha, CellG * cell);
 
-	void gen_momentum_bias_2d_z(const double alpha, CellG * cell);
+	void gen_persistent_bias_2d_z(const double alpha, CellG * cell);
 
 
 	virtual vector<double> noise_vec_generator();
