@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>355</width>
+    <height>428</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,25 @@
    <item>
     <layout class="QVBoxLayout" name="v_layout">
      <item>
-      <widget class="QPlainTextEdit" name="scr_list_TE"/>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Available Screenshot Labels</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPlainTextEdit" name="scr_list_TE">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Screenshot Description </string>
+       </property>
+      </widget>
      </item>
      <item>
       <spacer name="verticalSpacer">
@@ -61,5 +79,22 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>ok_PB</sender>
+   <signal>clicked()</signal>
+   <receiver>screenshotDescriptionDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>361</x>
+     <y>233</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>248</x>
+     <y>216</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

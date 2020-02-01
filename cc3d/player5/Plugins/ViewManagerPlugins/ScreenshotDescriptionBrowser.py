@@ -1,36 +1,78 @@
-from PyQt5 import QtCore
+import sys
+import json
+from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+from cc3d.player5.Plugins.ViewManagerPlugins import ui_screenshot_description_browser
+from cc3d.player5.Plugins.ViewManagerPlugins.QJsonBrowser import QJsonModel
 import weakref
-import cc3d.player5.Plugins.ViewManagerPlugins.SimpleTabView
+import cc3d
 
 
-class ScreenshotDescriptionBrowser(QObject):
+class ScreenshotDescriptionBrowser(QDialog, ui_screenshot_description_browser.Ui_screenshotDescriptionDialog):
 
-    # newPlotWindowSignal = pyqtSignal(QMutex, object)
+    def __init__(self, parent=None):
+        super(ScreenshotDescriptionBrowser, self).__init__(parent)
+        self.stv = weakref.ref(parent)
+        self.model = None
+        self.view = None
 
-    def __init__(self, stv=None):
-        QObject.__init__(self, None)
-        self.__stv = weakref.ref(stv)
+        if sys.platform.startswith('win'):
+            # dialogs without context help - only close button exists
+            self.setWindowFlags(Qt.Drawer)
 
-    @property
-    def stv(self)->cc3d:
-        # dereferencing weakref
-        stv_obj = self.__stv()
-        if not stv_obj:
-            stv_obj = None
-        return stv_obj
+        self.projectPath = ""
 
-    def open(self):
-        stv : cc3d.player5.Plugins.ViewManagerPlugins.SimpleTabView = self.stv
+        self.setupUi(self)
+
+        self.updateUi()
+
+    def load(self):
+        stv: cc3d.player5.Plugins.ViewManagerPlugins.SimpleTabView.SimpleTabView = self.stv()
+        # stv: SimpleTabView = self.stv
         if stv is None:
             return
 
-        scr_mgr =  stv.screenshotManager
+        scr_mgr = stv.screenshotManager
         if scr_mgr is None:
-            return
-        scr_desc_json_pth = stv.screenshotManager.get_screenshot_filename()
+            available_screenshots_str = 'Could not find screenshot description file. ' \
+                                        'Make sure simulation is running (and ideally is paused) ' \
+                                        'and you have generated screenshot description file - by clicking camera button'
+            self.scr_list_TE.setPlainText(available_screenshots_str)
 
+            return
+
+        scr_desc_json_pth = stv.screenshotManager.get_screenshot_filename()
         print('scr_desc_json_pth=', scr_desc_json_pth)
         print(f'this is {self.stv}')
 
+        self.view = QTreeView()
+        self.model = QJsonModel()
 
+        self.view.setModel(self.model)
+
+        scr_path = 'd:/CC3DProjects/bacterium_macrophage/screenshot_data/screenshots.json'
+        with open(scr_path, 'r') as j_in:
+
+            document = json.load(j_in)
+
+        try:
+            available_screenshots = list(document['ScreenshotData'].keys())
+            available_screenshots_str = '\n'.join(available_screenshots)
+        except KeyError:
+            available_screenshots_str = 'COULD NOT FIND SCREENSHOT CONFIGURATION'
+
+        self.scr_list_TE.setPlainText(available_screenshots_str)
+
+        self.model.load(document)
+        # Sanity check
+        assert (
+                json.dumps(self.model.json(), sort_keys=True) ==
+                json.dumps(document, sort_keys=True)
+        )
+        self.v_layout.insertWidget(3, self.view, stretch=10)
+
+    def updateUi(self):
+        """
+
+        :return:
+        """
