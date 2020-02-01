@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_screenshotDescriptionDialog(object):
     def setupUi(self, screenshotDescriptionDialog):
         screenshotDescriptionDialog.setObjectName("screenshotDescriptionDialog")
-        screenshotDescriptionDialog.resize(355, 428)
+        screenshotDescriptionDialog.resize(567, 428)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(screenshotDescriptionDialog)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.v_layout = QtWidgets.QVBoxLayout()

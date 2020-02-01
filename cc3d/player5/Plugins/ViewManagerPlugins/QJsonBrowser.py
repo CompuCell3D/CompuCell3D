@@ -6,6 +6,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
+
 class QJsonTreeItem(object):
     def __init__(self, parent=None):
         self._parent = parent
@@ -104,8 +105,8 @@ class QJsonModel(QAbstractItemModel):
         """
 
         assert isinstance(document, (dict, list, tuple)), (
-            "`document` must be of dict, list or tuple, "
-            "not %s" % type(document)
+                "`document` must be of dict, list or tuple, "
+                "not %s" % type(document)
         )
 
         self.beginResetModel()
@@ -240,3 +241,13 @@ class QJsonModel(QAbstractItemModel):
 
         else:
             return item.value
+
+
+class QJsonTreeView(QTreeView):
+
+    def __init__(self, parent=None):
+        super(QJsonTreeView, self).__init__(parent)
+
+    def resizeEvent(self, event):
+        self.setColumnWidth(0, self.width() / 2)
+        self.setColumnWidth(0, self.width() / 2)

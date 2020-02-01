@@ -3,7 +3,7 @@ import json
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from cc3d.player5.Plugins.ViewManagerPlugins import ui_screenshot_description_browser
-from cc3d.player5.Plugins.ViewManagerPlugins.QJsonBrowser import QJsonModel
+from cc3d.player5.Plugins.ViewManagerPlugins.QJsonBrowser import QJsonModel, QJsonTreeView
 import weakref
 import cc3d
 from os.path import exists
@@ -47,10 +47,11 @@ class ScreenshotDescriptionBrowser(QDialog, ui_screenshot_description_browser.Ui
             self.scr_list_TE.setPlainText(scr_desc_no_found_msg_str)
             return
 
-        self.view = QTreeView()
+        self.view = QJsonTreeView()
         self.model = QJsonModel()
 
         self.view.setModel(self.model)
+
 
         with open(scr_desc_json_pth, 'r') as j_in:
 
