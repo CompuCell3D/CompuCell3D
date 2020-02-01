@@ -6,6 +6,7 @@ from cc3d.player5.Plugins.ViewManagerPlugins import ui_screenshot_description_br
 from cc3d.player5.Plugins.ViewManagerPlugins.QJsonBrowser import QJsonModel
 import weakref
 import cc3d
+from os.path import exists
 
 
 class ScreenshotDescriptionBrowser(QDialog, ui_screenshot_description_browser.Ui_screenshotDescriptionDialog):
@@ -28,30 +29,30 @@ class ScreenshotDescriptionBrowser(QDialog, ui_screenshot_description_browser.Ui
 
     def load(self):
         stv: cc3d.player5.Plugins.ViewManagerPlugins.SimpleTabView.SimpleTabView = self.stv()
-        # stv: SimpleTabView = self.stv
         if stv is None:
             return
 
+        scr_desc_no_found_msg_str = 'Could not find screenshot description file. ' \
+                                    'Make sure simulation is running (and ideally is paused) ' \
+                                    'and you have generated screenshot description file - by clicking camera button'
+
         scr_mgr = stv.screenshotManager
         if scr_mgr is None:
-            available_screenshots_str = 'Could not find screenshot description file. ' \
-                                        'Make sure simulation is running (and ideally is paused) ' \
-                                        'and you have generated screenshot description file - by clicking camera button'
-            self.scr_list_TE.setPlainText(available_screenshots_str)
+            self.scr_list_TE.setPlainText(scr_desc_no_found_msg_str)
 
             return
 
         scr_desc_json_pth = stv.screenshotManager.get_screenshot_filename()
-        print('scr_desc_json_pth=', scr_desc_json_pth)
-        print(f'this is {self.stv}')
+        if not exists(scr_desc_json_pth):
+            self.scr_list_TE.setPlainText(scr_desc_no_found_msg_str)
+            return
 
         self.view = QTreeView()
         self.model = QJsonModel()
 
         self.view.setModel(self.model)
 
-        scr_path = 'd:/CC3DProjects/bacterium_macrophage/screenshot_data/screenshots.json'
-        with open(scr_path, 'r') as j_in:
+        with open(scr_desc_json_pth, 'r') as j_in:
 
             document = json.load(j_in)
 
