@@ -376,8 +376,13 @@ def store_screenshots(cur_step: int) -> None:
     screenshot_output_frequency = persistent_globals.screenshot_output_frequency
     screenshot_mgr = persistent_globals.screenshot_mgr
 
+    if screenshot_mgr.has_ad_hoc_screenshots():
+        screenshot_mgr.output_screenshots(mcs=cur_step)
+
     if screenshot_output_frequency and screenshot_mgr and (not cur_step % screenshot_output_frequency):
         screenshot_mgr.output_screenshots(mcs=cur_step)
+
+
 
 
 def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_enabled=False):
@@ -599,7 +604,11 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         screenshot_frequency = simthread.getScreenshotFrequency()
         screenshot_output_flag = simthread.getImageOutputFlag()
 
-        if (screen_update_frequency > 0 and cur_step % screen_update_frequency == 0) or (
+        if pg.screenshot_manager is not None and pg.screenshot_manager.has_ad_hoc_screenshots():
+            simthread.loopWork(cur_step)
+            simthread.loopWorkPostEvent(cur_step)
+
+        elif (screen_update_frequency > 0 and cur_step % screen_update_frequency == 0) or (
                 screenshot_output_flag and screenshot_frequency > 0 and cur_step % screenshot_frequency == 0):
 
             simthread.loopWork(cur_step)

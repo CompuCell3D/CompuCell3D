@@ -226,20 +226,34 @@ class ScreenshotManager(ScreenshotManagerCore):
         bsd = tvw.basicSimulationData
         return bsd
 
-    def output_screenshots(self, mcs: int) -> None:
-        """
-        outputs screenshots. Called from SimpleTabView:handleCompletedStep{Regular,CML*}
-        :param mcs:
-        :return:
-        """
+    # def output_screenshots(self, mcs: int) -> None:
+    #     """
+    #     Outputs screenshot
+    #     :param mcs:
+    #     :return:
+    #     """
+    #
+    #     if len(self.ad_hoc_screenshot_dict):
+    #         self.output_screenshots_impl(mcs=mcs, screenshot_label_list=list(self.ad_hoc_screenshot_dict.keys()))
+    #         # resetting ad_hoc_screenshot_dict
+    #         self.ad_hoc_screenshot_dict = {}
+    #     else:
+    #         self.output_screenshots_impl(mcs=mcs, screenshot_label_list=list(self.screenshotDataDict.keys()))
 
+    def output_screenshots_impl(self, mcs: int, screenshot_label_list: list):
+        """
+        implementation function ofr taking screenshots
+        :param mcs:
+        :param screenshot_label_list:
+        :return
+        """
         bsd = self.get_basic_simulation_data()
 
         screenshot_directory_name = self.get_screenshot_dir_name()
 
         mcs_formatted_number = str(mcs).zfill(self.screenshot_number_of_digits)
 
-        for i, screenshot_name in enumerate(self.screenshotDataDict.keys()):
+        for i, screenshot_name in enumerate(screenshot_label_list):
             screenshot_data = self.screenshotDataDict[screenshot_name]
 
             if not screenshot_name:
@@ -256,3 +270,35 @@ class ScreenshotManager(ScreenshotManagerCore):
             self.gd.clear_display()
             self.gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)
             self.gd.output_screenshot(screenshot_fname=screenshot_fname, file_format="png", screenshot_data=screenshot_data)
+
+
+    # def output_screenshots(self, mcs: int) -> None:
+    #     """
+    #     outputs screenshots. Called from SimpleTabView:handleCompletedStep{Regular,CML*}
+    #     :param mcs:
+    #     :return:
+    #     """
+    #
+    #     bsd = self.get_basic_simulation_data()
+    #
+    #     screenshot_directory_name = self.get_screenshot_dir_name()
+    #
+    #     mcs_formatted_number = str(mcs).zfill(self.screenshot_number_of_digits)
+    #
+    #     for i, screenshot_name in enumerate(self.screenshotDataDict.keys()):
+    #         screenshot_data = self.screenshotDataDict[screenshot_name]
+    #
+    #         if not screenshot_name:
+    #             screenshot_name = 'screenshot_' + str(i)
+    #
+    #         screenshot_dir = os.path.join(screenshot_directory_name, screenshot_name)
+    #
+    #         # will create screenshot directory if directory does not exist
+    #         if not os.path.isdir(screenshot_dir):
+    #             mkdir_p(screenshot_dir)
+    #
+    #         screenshot_fname = os.path.join(screenshot_dir, screenshot_name + "_" + mcs_formatted_number + ".png")
+    #
+    #         self.gd.clear_display()
+    #         self.gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)
+    #         self.gd.output_screenshot(screenshot_fname=screenshot_fname, file_format="png", screenshot_data=screenshot_data)

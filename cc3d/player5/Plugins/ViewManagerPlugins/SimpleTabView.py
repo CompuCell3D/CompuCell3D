@@ -1240,6 +1240,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.__pauseSim()
 
         self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
+        pg = CompuCellSetup.persistent_globals
+        pg.screenshot_manager = self.screenshotManager
 
         self.read_screenshot_description_file()
 
@@ -1365,6 +1367,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.prepareSimulationView()
 
         self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
+        pg = CompuCellSetup.persistent_globals
+        pg.screenshot_manager = self.screenshotManager
+
         self.read_screenshot_description_file()
 
         if self.simulationIsStepping:
@@ -1503,7 +1508,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # will need to synchronize screenshots with simulation thread .
         # make sure that before simulation thread writes new results all the screenshots are taken
 
-        if self.__imageOutput and not (self.__step % self.__shotFrequency):
+        if self.screenshotManager.has_ad_hoc_screenshots():
+            self.screenshotManager.output_screenshots(self.__step)
+        elif self.__imageOutput and not (self.__step % self.__shotFrequency):
             self.screenshotManager.output_screenshots(self.__step)
 
         self.simulation.drawMutex.unlock()
@@ -1516,6 +1523,25 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.sem.release()
 
         self.cmlReplayManager.keep_going()
+
+    def process_output_screenshots(self):
+        """
+
+        :return:
+        """
+
+        try:
+            self.screenshotManager.output_screenshots(mcs=self.__step)
+        except KeyError:
+
+            self.screenshotManager.screenshotDataDict = {}
+            self.popup_message(
+                title='Error Processing Screnenshots',
+                msg='Could not output screenshots. It is likely that screenshot description file was generated '
+                    'using incompatible code. '
+                    'You may want to remove "screenshot_data" directory from your project '
+                    'and use camera button to generate new screenshot file '
+                    ' No screenshots will be taken'.format(self.screenshotManager.get_screenshot_filename()))
 
     def handleCompletedStepRegular(self, mcs: int) -> None:
         """
@@ -1535,20 +1561,23 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # will need to sync screenshots with simulation thread.
         # Be sure before simulation thread writes new results all the screenshots are taken
+        if self.screenshotManager is not None and self.screenshotManager.has_ad_hoc_screenshots():
+            self.process_output_screenshots()
         if self.__imageOutput and not (self.__step % self.__shotFrequency):
             if self.screenshotManager:
-                try:
-                    self.screenshotManager.output_screenshots(mcs=self.__step)
-                except KeyError:
-
-                    self.screenshotManager.screenshotDataDict = {}
-                    self.popup_message(
-                        title='Error Processing Screnenshots',
-                        msg='Could not output screenshots. It is likely that screenshot description file was generated '
-                            'using incompatible code. '
-                            'You may want to remove "screenshot_data" directory from your project '
-                            'and use camera button to generate new screenshot file '
-                            ' No screenshots will be taken'.format(self.screenshotManager.get_screenshot_filename()))
+                self.process_output_screenshots()
+                # try:
+                #     self.screenshotManager.output_screenshots(mcs=self.__step)
+                # except KeyError:
+                #
+                #     self.screenshotManager.screenshotDataDict = {}
+                #     self.popup_message(
+                #         title='Error Processing Screnenshots',
+                #         msg='Could not output screenshots. It is likely that screenshot description file was generated '
+                #             'using incompatible code. '
+                #             'You may want to remove "screenshot_data" directory from your project '
+                #             'and use camera button to generate new screenshot file '
+                #             ' No screenshots will be taken'.format(self.screenshotManager.get_screenshot_filename()))
 
         if self.cmlHandlerCreated and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):
             CompuCellSetup.persistent_globals.cml_field_handler.write_fields(self.__step)

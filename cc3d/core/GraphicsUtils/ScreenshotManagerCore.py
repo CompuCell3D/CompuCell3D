@@ -29,6 +29,8 @@ class ScreenshotManagerCore(object):
 
         }
 
+        self.ad_hoc_screenshot_dict = {}
+
     def fetch_screenshot_description_file_parser_fcn(self, screenshot_file_version: str):
         """
         Fetches "best" parsing function give the version in the screenshot description file
@@ -356,13 +358,30 @@ class ScreenshotManagerCore(object):
         """
         return self.bsd
 
-    def output_screenshots(self, mcs: int) -> None:
+    def has_ad_hoc_screenshots(self) -> bool:
         """
-        Outputs screenshot        
-        :param mcs:
+        Returns a flag that tells if ad_hoc screenshots have been requested
         :return:
         """
 
+        return len(self.ad_hoc_screenshot_dict) > 0
+
+    def add_ad_hoc_screenshot(self, mcs: int, screenshot_label: str):
+        """
+        adds request to store ad_hoc screenshot
+        :param mcs:
+        :param screenshot_label:
+        :return:
+        """
+        self.ad_hoc_screenshot_dict[screenshot_label] = mcs
+
+    def output_screenshots_impl(self, mcs: int, screenshot_label_list: list):
+        """
+        implementation function ofr taking screenshots
+        :param mcs:
+        :param screenshot_label_list:
+        :return:
+        """
         screenshot_directory_name = self.get_screenshot_dir_name()
 
         bsd = self.get_basic_simulation_data()
@@ -373,8 +392,12 @@ class ScreenshotManagerCore(object):
         # fills string with 0's up to self.screenshotNumberOfDigits width
         mcs_formatted_number = str(mcs).zfill(self.screenshot_number_of_digits)
 
-        for i, screenshot_name in enumerate(self.screenshotDataDict.keys()):
-            screenshot_data = self.screenshotDataDict[screenshot_name]
+        for i, screenshot_name in enumerate(screenshot_label_list):
+            try:
+                screenshot_data = self.screenshotDataDict[screenshot_name]
+            except KeyError:
+                print(f'Could not find screenshot description for the following label: {screenshot_name}')
+                continue
 
             if not screenshot_name:
                 screenshot_name = 'screenshot_' + str(i)
@@ -390,3 +413,45 @@ class ScreenshotManagerCore(object):
             self.gd.clear_display()
             self.gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)
             self.gd.output_screenshot(screenshot_fname=screenshot_fname)
+
+    def output_screenshots(self, mcs: int) -> None:
+        """
+        Outputs screenshot        
+        :param mcs:
+        :return:
+        """
+
+        if len(self.ad_hoc_screenshot_dict):
+            self.output_screenshots_impl(mcs=mcs, screenshot_label_list=list(self.ad_hoc_screenshot_dict.keys()))
+            # resetting ad_hoc_screenshot_dict
+            self.ad_hoc_screenshot_dict = {}
+        else:
+            self.output_screenshots_impl(mcs=mcs, screenshot_label_list=list(self.screenshotDataDict.keys()))
+
+        # screenshot_directory_name = self.get_screenshot_dir_name()
+        #
+        # bsd = self.get_basic_simulation_data()
+        # if self.gd is None or bsd is None:
+        #     print('GenericDrawer or basic simulation data is None. Could not output screenshots')
+        #     return
+        #
+        # # fills string with 0's up to self.screenshotNumberOfDigits width
+        # mcs_formatted_number = str(mcs).zfill(self.screenshot_number_of_digits)
+        #
+        # for i, screenshot_name in enumerate(self.screenshotDataDict.keys()):
+        #     screenshot_data = self.screenshotDataDict[screenshot_name]
+        #
+        #     if not screenshot_name:
+        #         screenshot_name = 'screenshot_' + str(i)
+        #
+        #     screenshot_dir = os.path.join(screenshot_directory_name, screenshot_name)
+        #
+        #     # will create screenshot directory if directory does not exist
+        #     if not os.path.isdir(screenshot_dir):
+        #         os.mkdir(screenshot_dir)
+        #
+        #     screenshot_fname = os.path.join(screenshot_dir, screenshot_name + "_" + mcs_formatted_number + ".png")
+        #
+        #     self.gd.clear_display()
+        #     self.gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)
+        #     self.gd.output_screenshot(screenshot_fname=screenshot_fname)
