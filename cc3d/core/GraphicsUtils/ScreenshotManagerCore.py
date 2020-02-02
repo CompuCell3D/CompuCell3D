@@ -428,30 +428,3 @@ class ScreenshotManagerCore(object):
         else:
             self.output_screenshots_impl(mcs=mcs, screenshot_label_list=list(self.screenshotDataDict.keys()))
 
-        # screenshot_directory_name = self.get_screenshot_dir_name()
-        #
-        # bsd = self.get_basic_simulation_data()
-        # if self.gd is None or bsd is None:
-        #     print('GenericDrawer or basic simulation data is None. Could not output screenshots')
-        #     return
-        #
-        # # fills string with 0's up to self.screenshotNumberOfDigits width
-        # mcs_formatted_number = str(mcs).zfill(self.screenshot_number_of_digits)
-        #
-        # for i, screenshot_name in enumerate(self.screenshotDataDict.keys()):
-        #     screenshot_data = self.screenshotDataDict[screenshot_name]
-        #
-        #     if not screenshot_name:
-        #         screenshot_name = 'screenshot_' + str(i)
-        #
-        #     screenshot_dir = os.path.join(screenshot_directory_name, screenshot_name)
-        #
-        #     # will create screenshot directory if directory does not exist
-        #     if not os.path.isdir(screenshot_dir):
-        #         os.mkdir(screenshot_dir)
-        #
-        #     screenshot_fname = os.path.join(screenshot_dir, screenshot_name + "_" + mcs_formatted_number + ".png")
-        #
-        #     self.gd.clear_display()
-        #     self.gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)
-        #     self.gd.output_screenshot(screenshot_fname=screenshot_fname)
