@@ -275,8 +275,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :return:
         """
         pg = CompuCellSetup.persistent_globals
-        screenshot_mgr = pg.screenshot_manager
-        screenshot_mgr.add_ad_hoc_screenshot(mcs=mcs, screenshot_label=screenshot_label)
+        screenshot_manager = pg.screenshot_manager
+        screenshot_manager.add_ad_hoc_screenshot(mcs=mcs, screenshot_label=screenshot_label)
 
     def core_init(self, reinitialize_cell_types=True):
         """
