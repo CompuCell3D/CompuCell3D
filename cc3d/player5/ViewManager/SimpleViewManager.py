@@ -82,6 +82,8 @@ class SimpleViewManager(QObject):
 
         self.display_no_update_info = False
 
+        self.version_fetcher = None
+
         self.init_actions()
         self.ui = ui
 
@@ -475,40 +477,31 @@ class SimpleViewManager(QObject):
         else:
             print('WILL DO THE CHECK')
 
-        version_fetcher = WebFetcher(_parent=self)
-        version_fetcher.gotWebContentSignal.connect(self.process_version_check)
+        self.version_fetcher = WebFetcher(_parent=self)
+        self.version_fetcher.gotWebContentSignal.connect(self.process_version_check)
 
-        version_fetcher.fetch("http://www.compucell3d.org/current_version")
+        self.version_fetcher.fetch("http://www.compucell3d.org/current_version")
 
-    def process_version_check(self, version_str, url_str):
+    def extract_current_version(self, version_html_str):
         """
-        This function extracts current version and revision numbers from the http://www.compucell3d.org/current_version
-        It informs users that new version is available and allows easy redirection to the download site
-        :param version_str: content of the web page with the current version information
-        :param url_str: url of the webpage with the current version information
-        :return: None
+        parses html string from http://www.compucell3d.org/current_version
+        and returns version and revision numbers
+        :param version_html_str:
+        :return:
         """
-        if str(version_str) == '':
+        if str(version_html_str) == '':
             print('Could not fetch "http://www.compucell3d.org/current_version webpage')
-            return
+            return None, None
 
-        current_version = ''
-        current_revision = ''
-        whats_new_list = []
+        current_version = None
+        current_revision = None
 
         current_version_regex = re.compile("(current version)([0-9\. ]*)")
 
-        # (.*?)(<) ensures non-greedy match i.e. all the characters will be matched until first occurrence of '<'
-        whats_new_regex = re.compile("(>[\S]*what is new:)(.*?)(<)")
-
-        for line in str(version_str).split("\n"):
-
+        for line in str(version_html_str).split("\n"):
             search_obj = re.search(current_version_regex, line)
-            search_obj_whats_new = re.search(whats_new_regex, line)
 
             if search_obj:
-                # print 'search_obj=', search_obj
-                # print search_obj.groups()
                 try:
                     version_info = search_obj.groups()[1]
                     version_info = version_info.strip()
@@ -516,8 +509,26 @@ class SimpleViewManager(QObject):
                 except:
                     pass
 
+        return current_version, current_revision
+
+    def extract_whats_new_list(self, version_html_str):
+        """
+        parses html string from http://www.compucell3d.org/current_version
+        and returns what's new list
+        :param version_html_str:
+        :return:
+        """
+        whats_new_list = []
+
+        # (.*?)(<) ensures non-greedy match i.e. all the characters will be matched until first occurrence of '<'
+        whats_new_regex = re.compile("(>[\S]*what is new:)(.*?)(<)")
+
+        for line in str(version_html_str).split("\n"):
+
+            search_obj_whats_new = re.search(whats_new_regex, line)
+
             if search_obj_whats_new:
-                # print search_obj_whats_new.groups()
+
                 try:
                     whats_new = search_obj_whats_new.groups()[1]
                     whats_new = whats_new.strip()
@@ -525,33 +536,82 @@ class SimpleViewManager(QObject):
                 except:
                     pass
 
+        return whats_new_list
+
+    @staticmethod
+    def check_if_running_latest_version(latest_version, latest_revision):
+        """
+        Checks if latest available version is "greater" than current software version
+        :param latest_version:
+        :param latest_revision:
+        :return:
+        """
         instance_version = cc3d.__version__
         instance_revision = cc3d.__revision__
+
         try:
-            current_version_number = int(current_version.replace('.', ''))
+            latest_version_number = int(latest_version.replace('.', ''))
         except:
             # this can happen when the page gets "decorated" by e.g. your hotel network
             # will have to come up with a better way of dealing with it
-            return
-        current_revision_number = int(current_revision)
+            return True
+
+        latest_revision_number = int(latest_revision)
         instance_version_number = int(instance_version.replace('.', ''))
         instance_revision_number = int(instance_revision)
 
+        if latest_version_number > instance_version_number:
+            return False
+
+        elif latest_version_number == instance_version_number and latest_revision_number > instance_revision_number:
+            return False
+
+        return True
+
+    def process_version_check(self, version_str, url_str="http://www.compucell3d.org/current_version"):
+        """
+        This function extracts current version and revision numbers from the http://www.compucell3d.org/current_version
+        It informs users that new version is available and allows easy redirection to the download site
+        :param version_str: content of the web page with the current version information
+        :param url_str: url of the webpage with the current version information
+        :return: None
+        """
+        # print('got the following string:', version_str)
+        if str(version_str) == '':
+            print(f'Could not fetch {url_str} webpage')
+            return
+
+        current_version, current_revision = self.extract_current_version(version_html_str=version_str)
+
+        whats_new_list = self.extract_whats_new_list(version_html_str=version_str)
+
+        encourage_update = False
         display_new_version_info = False
+        running_latest_version = self.check_if_running_latest_version(latest_version=current_version,
+                                                                      latest_revision=current_revision)
 
-        if current_version_number > instance_version_number:
+        if self.display_no_update_info:
             display_new_version_info = True
-
-        elif current_version_number == instance_version_number and current_revision_number > instance_revision_number:
-            display_new_version_info = True
+            if not running_latest_version:
+                encourage_update = True
+        else:
+            if not running_latest_version:
+                display_new_version_info = True
+                encourage_update = True
 
         today = datetime.date.today()
         today_date_str = today.strftime('%Y%m%d')
 
         last_version_check_date = Configuration.setSetting('LastVersionCheckDate', today_date_str)
 
-        message = 'New version of CompuCell3D is available - %s rev. %s. Would you like to upgrade?' % (
-            current_version, current_revision)
+        if encourage_update:
+            message = f'New version of CompuCell3D is available - {current_version} rev. {current_revision}. ' \
+                      f'Would you like to upgrade?'
+            title = "New Version Available"
+        else:
+            message = f'You have latest version - {current_version} rev. {current_revision}. ' \
+                      'Here is the list of recent features:'
+            title = "You have latest version. No need to upgrade"
 
         if len(whats_new_list):
             message += '<p><b>New Features:</b></p>'
@@ -559,8 +619,13 @@ class SimpleViewManager(QObject):
                 message += '<p> * ' + whats_new_item + '</p>'
 
         if display_new_version_info:
+            if encourage_update:
+                buttons = QMessageBox.Yes | QMessageBox.No
+            else:
+                buttons = QMessageBox.Ok
 
-            ret = QMessageBox.information(self, 'New Version Available', message, QMessageBox.Yes | QMessageBox.No)
+            ret = QMessageBox.information(self, title, message, buttons)
+
             if ret == QMessageBox.Yes:
                 QDesktopServices.openUrl(QUrl('http://sourceforge.net/projects/cc3d/files/' + current_version))
 
@@ -596,7 +661,7 @@ class SimpleViewManager(QObject):
         try:
             version_str = cc3d.__version__
             revision_str = cc3d.__revision__
-        except ImportError :
+        except ImportError:
             pass
 
         # import Configuration

@@ -59,7 +59,8 @@ class NullDevice:
 class DockWidget(QDockWidget):
     def __init__(self, _parent):
         super(DockWidget, self).__init__(_parent)
-
+        features = QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable
+        self.setFeatures(features)
         self.toggleFcn = None
 
     def setToggleFcn(self, fcn): self.toggleFcn = fcn
@@ -161,29 +162,30 @@ class UserInterface(QMainWindow):
 
             if playerSizes and playerSizes.size() > 0:
                 self.resize(Configuration.getSetting("MainWindowSizeFloating"))
-                self.resize(self.size().width(),
-                            20)  # resizing vertical dimension to be minimal - for PyQt5 we cannot use 0
+                # self.resize(self.size().width(),
+                #             20)  # resizing vertical dimension to be minimal - for PyQt5 we cannot use 0
                 self.move(Configuration.getSetting("MainWindowPositionFloating"))
                 self.restoreState(playerSizes)
             else:
                 self.resize(Configuration.getSetting("MainWindowSizeFloating"))
-                self.resize(self.size().width(),
-                            20)  # resizing vertical dimension to be minimal - for PyQt5 we cannot use 0
+                # self.resize(self.size().width(),
+                #             20)  # resizing vertical dimension to be minimal - for PyQt5 we cannot use 0
                 self.move(Configuration.getSetting("MainWindowPositionFloating"))
-
-        # if playerSizes and playerSizes.size()>0:
-        #     self.resize(Configuration.getSetting("MainWindowSize"))
-        #     self.move(Configuration.getSetting("MainWindowPosition"))
-        #     self.restoreState(playerSizes)
-        # else:
-        #     self.resize(Configuration.getSetting("MainWindowSize"))
-        #     self.move(Configuration.getSetting("MainWindowPosition"))
 
         # MDIFIX
         floatingFlag = Configuration.getSetting('FloatingWindows')
-        self.modelEditorDock.setFloating(floatingFlag)
-        self.consoleDock.setFloating(floatingFlag)
-        self.latticeDataDock.setFloating(floatingFlag)
+
+        floatingNonGraphicsFlag = False
+        # we allow non-graphics windows to be docked. This improves
+        # layout when we request floating grahics windows
+        self.modelEditorDock.setFloating(floatingNonGraphicsFlag)
+        self.consoleDock.setFloating(floatingNonGraphicsFlag)
+        self.latticeDataDock.setFloating(floatingNonGraphicsFlag)
+
+        if floatingFlag:
+            # in order to have all dock widgets expand (i.e. fill all available space)
+            # we hide central widget when graphics windows are floating
+            self.centralWidget().hide()
 
     ##########################################################
     ## Below are slots to handle StdOut and StdErr
@@ -448,16 +450,12 @@ class UserInterface(QMainWindow):
         if Configuration.getSetting('DisplayConsole'):
             self.consoleAct.setChecked(True)
 
-        # self.connect(self.consoleAct, SIGNAL("triggered(bool)"), self.toggleConsole)
         self.consoleAct.triggered.connect(self.toggleConsole)
 
         self.actions.append(self.consoleAct)
 
-        # I don't need probably to initActions() here. So I moved it to constructor
-        # self.viewmanager.initActions()
-
     def __zoomItems(self):
-        items = QStringList()
+        items = []
         for i in range(len(self.zitems)):
             num = self.zitems[i] * 100
             items.append("%s%%" % int(num))
@@ -491,6 +489,7 @@ class UserInterface(QMainWindow):
         self.viewmanager.setZoomItems(self.zitems)
 
         # self.viewmanager.setOrientation(Qt.Vertical)
+        self.setCentralWidget(self.viewmanager)
         self.setCentralWidget(self.viewmanager)
 
     def __createLayout(self):
@@ -537,18 +536,6 @@ class UserInterface(QMainWindow):
         self.consoleDock.setWidget(self.console)
         # self.consoleDock.setWindowTitle("Console")
         self.__setupDockWindow(self.consoleDock, Qt.BottomDockWidgetArea, self.console, "Console")
-        # self.viewmanager.addWidget(self.consoleDock)
-        # self.viewmanager.setSizes([400, 50])
-        # self.consoleDock.show()
-
-        # rec = self.console.geometry()
-        # rec.setHeight(300)
-        # print rec.height()
-        # self.console.setGeometry(rec)
-        # """
-        # Don't know why I need dockwindows
-        self.dockwindows = {}
-        # self.dockwindows[0] = (self.trUtf8('Model Editor'), self.modelEditorDock)
 
     def __createDockWindow(self, name):
         """
@@ -573,7 +560,7 @@ class UserInterface(QMainWindow):
         @param caption caption of the dock window (string or QString)
         """
         if caption is None:
-            caption = QString()
+            caption = ""
         self.addDockWidget(where, dock)
         dock.setWidget(widget)
         dock.setWindowTitle(caption)
@@ -626,8 +613,6 @@ class UserInterface(QMainWindow):
         @param w reference to the workspace editor window
         """
 
-        print(' ')
-
         if flag:
             w.show()
         else:
@@ -642,9 +627,6 @@ class UserInterface(QMainWindow):
         else:
             self.__toggleWindow(self.logViewer)
         """
-        # self.__toggleWindow(self.consoleDock)
-
-        # print ' TOGGLE CONSOLE FLAG = ', flag
         self.consoleAct.setChecked(flag)
 
         Configuration.setSetting('DisplayConsole', flag)

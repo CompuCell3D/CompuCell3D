@@ -124,7 +124,7 @@ def main(argv):
 
     error_code_local = app.exec_()
 
-    print('EXITING WITH ERROR CODE=',error_code_local)
+    print('EXITING WITH ERROR CODE=', error_code_local)
     return error_code_local
 
 
