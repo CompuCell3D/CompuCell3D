@@ -680,7 +680,7 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 					energyCalculator->setLastFlipAccepted(false);
 				}
 				else {
-					cellFieldG->set(changePixel, cell);
+					cellFieldG->set(changePixel, flipNeighbor, cell);
 					flips++;
 					energyCalculator->setLastFlipAccepted(true);
 				}
@@ -929,7 +929,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 						}
 					}
 					else {
-						cellFieldG->set(changePixel, cell);
+						cellFieldG->set(changePixel, flipNeighborVec[currentWorkNodeNumber], cell);
 						flipsVec[currentWorkNodeNumber]++;
 						if (numberOfThreads == 1) {
 							energyCalculator->setLastFlipAccepted(true);
@@ -1235,7 +1235,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 						}
 					}
 					else {
-						cellFieldG->set(changePixel, cell);
+						cellFieldG->set(changePixel, flipNeighborVec[currentWorkNodeNumber], cell);
 						flipsVec[currentWorkNodeNumber]++;
 						if (numberOfThreads == 1) {
 							energyCalculator->setLastFlipAccepted(true);
