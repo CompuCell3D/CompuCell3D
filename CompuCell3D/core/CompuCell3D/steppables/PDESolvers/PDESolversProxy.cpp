@@ -28,6 +28,7 @@
 #include "KernelDiffusionSolver.h"
 #include "ReactionDiffusionSolverFE_SavHog.h"
 #include "ReactionDiffusionSolverFE.h"
+#include "ReactionDiffusionSolverFVM.h"
 #include "FlexibleReactionDiffusionSolverFE.h"
 #include "FastDiffusionSolver2DFE.h"
 #include "SteadyStateDiffusionSolver2D.h"
@@ -81,6 +82,10 @@ reactionDiffusion_SavHogSolverProxy("ReactionDiffusionSolverFE_SavHog", "Solves 
  BasicPluginProxy<Steppable, ReactionDiffusionSolverFE> 
  reactionDiffusionSolverProxy("ReactionDiffusionSolverFE", "Solves reaction-diffusion system of equations on the lattice ",
 	     &Simulator::steppableManager);
+
+ BasicPluginProxy<Steppable, ReactionDiffusionSolverFVM>
+	 reactionDiffusionFVMSolverProxy("ReactionDiffusionSolverFVM", "Solves reaction-diffusion system of equations on the lattice using the finite volume method",
+		 &Simulator::steppableManager);
 
 BasicPluginProxy<Steppable, FlexibleReactionDiffusionSolverFE> 
 flexibleReactionDiffusionSolverProxy("FlexibleReactionDiffusionSolverFE", "Solves reaction-diffusion system of equations on the lattice ",
