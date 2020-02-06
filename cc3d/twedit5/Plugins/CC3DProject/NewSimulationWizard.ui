@@ -709,6 +709,11 @@ p, li { white-space: pre-wrap; }
         </item>
         <item>
          <property name="text">
+          <string>ReactionDiffusionSolverFVM</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>SteadyStateDiffusionSolver</string>
          </property>
         </item>

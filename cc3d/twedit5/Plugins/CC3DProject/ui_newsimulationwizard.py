@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'NewSimulationWizard.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_NewSimulationWizard(object):
     def setupUi(self, NewSimulationWizard):
@@ -294,6 +296,7 @@ class Ui_NewSimulationWizard(object):
         self.horizontalLayout_15.addWidget(self.label_19)
         self.solverCB = QtWidgets.QComboBox(self.wizardPage_7)
         self.solverCB.setObjectName("solverCB")
+        self.solverCB.addItem("")
         self.solverCB.addItem("")
         self.solverCB.addItem("")
         self.solverCB.addItem("")
@@ -881,7 +884,8 @@ class Ui_NewSimulationWizard(object):
         self.solverCB.setItemText(1, _translate("NewSimulationWizard", "FlexibleDiffusionSolverFE"))
         self.solverCB.setItemText(2, _translate("NewSimulationWizard", "FastDiffusionSolver2DFE"))
         self.solverCB.setItemText(3, _translate("NewSimulationWizard", "KernelDiffusionSolver"))
-        self.solverCB.setItemText(4, _translate("NewSimulationWizard", "SteadyStateDiffusionSolver"))
+        self.solverCB.setItemText(4, _translate("NewSimulationWizard", "ReactionDiffusionSolverFVM"))
+        self.solverCB.setItemText(5, _translate("NewSimulationWizard", "SteadyStateDiffusionSolver"))
         self.fieldAddPB.setText(_translate("NewSimulationWizard", "Add"))
         self.label_6.setText(_translate("NewSimulationWizard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
@@ -1217,4 +1221,3 @@ class Ui_NewSimulationWizard(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt;\">CC3D project will be generated now</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#0000ff;\">NOTE:</span><span style=\" font-size:12pt;\"> The parameters in the XML and Python scripts will have to be changed to be realistic. Please see CC3D manual on how to choose simulation parameters</span></p></body></html>"))
-
