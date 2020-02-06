@@ -44,7 +44,14 @@ class PIXELTRACKER_EXPORT PixelTrackerPlugin : public Plugin, public CellGChange
       Dim3D fieldDim;
       BasicClassAccessor<PixelTracker> pixelTrackerAccessor;
       Simulator *simulator;
-	  Potts3D *potts;		
+	  Potts3D *potts;	
+
+	  bool fullInitAtStart;
+	  bool fullInitState;
+
+	  std::set<PixelTrackerData> mediumPixelSet;
+	  bool trackMedium;
+	  virtual void fullMediumTrackerDataInit();
     
    public:
       PixelTrackerPlugin();
@@ -64,6 +71,13 @@ class PIXELTRACKER_EXPORT PixelTrackerPlugin : public Plugin, public CellGChange
 		//had to include this function to get set itereation working properly with Python , and Player that has restart capabilities
 		PixelTrackerData * getPixelTrackerData(PixelTrackerData * _psd){return _psd;}
 
+		virtual void enableFullInitAtStart(bool _fullInitAtStart = true) { fullInitAtStart = _fullInitAtStart; }
+		virtual bool fullyInitialized() { return fullInitState; }
+
+		virtual void fullTrackerDataInit(Point3D _ptChange = Point3D(-1, -1, -1), CellG *oldCell = 0);
+		virtual void enableMediumTracker(bool _trackMedium = true) { trackMedium = _trackMedium; }
+		virtual bool trackingMedium() { return trackMedium; }
+		virtual std::set<PixelTrackerData> getMediumPixelSet() { return mediumPixelSet; }
       
   };
 };
