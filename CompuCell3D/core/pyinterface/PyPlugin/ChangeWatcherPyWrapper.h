@@ -20,6 +20,7 @@ namespace CompuCell3D{
 	  ChangeWatcherPyWrapper();
 	  ~ChangeWatcherPyWrapper();
 	  virtual void field3DChange(const Point3D &pt, CellG *_newCell, CellG *_oldCell);
+	  virtual void field3DAdditionalPt(const Point3D &ptAdd);
 	  CellGChangeWatcher * getChangeWatcherPyWrapperPtr();
      void registerPyChangeWatcher(PyObject * _fieldWatcher);
    };

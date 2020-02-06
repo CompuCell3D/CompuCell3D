@@ -59,6 +59,34 @@ namespace CompuCell3D {
       for (unsigned int i = 0; i < changeWatchers.getSize(); i++)
 	changeWatchers[i]->field3DChange(pt, value, oldValue);
     }
+
+	/**
+	* To also pass additional spatial information associated with a change
+	* e.g., spin flip source site
+	* Dev note: Not currently implemented
+	* 
+	* @param pt The location of the change
+	* @param ptAdd Additional location associated with a change
+	* @param value New value at pt
+	*/
+	virtual void set(const Point3D &pt, const Point3D &ptAdd, const T value) {
+		broadcastAdditionalPt(ptAdd);
+		set(pt, value);
+	}
+
+	/**
+	* To directly pass additional spatial information associated with a change
+	* e.g., spin flip source site
+	* Dev note: Currently testing in reaction diffusion fvm solver and ChangeWatcherPyWrapper. Consider moving into standard interface
+	* 
+	* @param ptAdd Additional location associated with a change
+	*/
+	virtual void broadcastAdditionalPt(const Point3D &ptAdd) {
+		for (unsigned int i = 0; i < changeWatchers.getSize(); i++)
+			changeWatchers[i]->field3DAdditionalPt(ptAdd);
+	}
+
+
   };
 };
 #endif
