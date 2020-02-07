@@ -29,20 +29,27 @@ class ScreenshotDescriptionBrowser(QDialog, ui_screenshot_description_browser.Ui
 
     def load(self):
         stv: cc3d.player5.Plugins.ViewManagerPlugins.SimpleTabView.SimpleTabView = self.stv()
-        if stv is None:
-            return
 
         scr_desc_no_found_msg_str = 'Could not find screenshot description file. ' \
                                     'Make sure simulation is running (and ideally is paused) ' \
                                     'and you have generated screenshot description file - by clicking camera button'
 
-        scr_mgr = stv.screenshotManager
-        if scr_mgr is None:
-            self.scr_list_TE.setPlainText(scr_desc_no_found_msg_str)
+        if stv is None or stv.screenshotManager is None:
+            # When not running
+            from cc3d import CompuCellSetup
+            sim_file_name = CompuCellSetup.persistent_globals.simulation_file_name
 
-            return
+            if sim_file_name is None or sim_file_name == '':
+                self.scr_list_TE.setPlainText(scr_desc_no_found_msg_str)
+                return
 
-        scr_desc_json_pth = stv.screenshotManager.get_screenshot_filename()
+            from os.path import dirname, join
+            scr_desc_json_pth = join(dirname(sim_file_name), 'screenshot_data', 'screenshots.json')
+        else:
+            # When running
+            scr_desc_json_pth = stv.screenshotManager.get_screenshot_filename()
+
+
         if not exists(scr_desc_json_pth):
             self.scr_list_TE.setPlainText(scr_desc_no_found_msg_str)
             return
