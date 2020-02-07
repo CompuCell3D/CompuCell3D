@@ -30,6 +30,7 @@ class ScreenshotManagerCore(object):
         }
 
         self.ad_hoc_screenshot_dict = {}
+        self.output_error_flag = False
 
     def fetch_screenshot_description_file_parser_fcn(self, screenshot_file_version: str):
         """
@@ -382,6 +383,9 @@ class ScreenshotManagerCore(object):
         :param screenshot_label_list:
         :return:
         """
+        if self.output_error_flag:
+            return
+
         screenshot_directory_name = self.get_screenshot_dir_name()
 
         bsd = self.get_basic_simulation_data()

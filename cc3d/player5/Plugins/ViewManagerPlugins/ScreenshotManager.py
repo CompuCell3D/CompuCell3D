@@ -233,6 +233,9 @@ class ScreenshotManager(ScreenshotManagerCore):
         :param screenshot_label_list:
         :return
         """
+        if self.output_error_flag:
+            return
+
         bsd = self.get_basic_simulation_data()
 
         screenshot_directory_name = self.get_screenshot_dir_name()

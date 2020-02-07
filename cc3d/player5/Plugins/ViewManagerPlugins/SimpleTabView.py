@@ -1535,8 +1535,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         except KeyError:
 
             self.screenshotManager.screenshotDataDict = {}
+            self.screenshotManager.output_error_flag = True
             self.popup_message(
-                title='Error Processing Screnenshots',
+                title='Error Processing Screenshots',
                 msg='Could not output screenshots. It is likely that screenshot description file was generated '
                     'using incompatible code. '
                     'You may want to remove "screenshot_data" directory from your project '
