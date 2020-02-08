@@ -49,6 +49,7 @@ namespace CompuCell3D {
 
 	template <class T> class WatchableField3D;
 
+	// For passing intracellular responses due to field interactions
 	class ECMATERIALS_EXPORT ECMaterialsCellResponse {
 	public:
 
@@ -75,7 +76,6 @@ namespace CompuCell3D {
 		Simulator *sim;
 	    ParallelUtilsOpenMP *pUtils;
         ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;
-		//Energy function data
 
 		unsigned int numberOfMaterials;
 		std::vector<std::string> fieldNameVec;
@@ -89,11 +89,10 @@ namespace CompuCell3D {
 		Automaton *automaton;
 		bool weightDistance;
 
-		unsigned int maxNeighborIndex; // for first order neighborhood, used in advection
+		unsigned int maxNeighborIndex; // for first order neighborhood, used in material advection
 		unsigned int maxNeighborIndexAdh; // for adhesion neighborhoods
 		BoundaryStrategy *boundaryStrategy;
 		BoundaryStrategy *boundaryStrategyAdh;
-		// float energyOffset;
 
 		bool ECMaterialsInitialized;
 		std::vector<ECMaterialComponentData> ECMaterialsVec;
@@ -109,11 +108,11 @@ namespace CompuCell3D {
 		std::map<std::string, bool> variableDiffusivityFieldFlagMap; // true when variable diffusion coefficient is defined for a field
 
 		Dim3D fieldDim;
-		WatchableField3D<ECMaterialsData *> *ECMaterialsField;
+		WatchableField3D<ECMaterialsData *> *ECMaterialsField; // maybe add watcher interface in future dev.
 
-		ECMaterialsSteppable *ecMaterialsSteppable;
+		ECMaterialsSteppable *ecMaterialsSteppable; // partner steppable
 
-		std::vector<ECMaterialsCellResponse> cellResponses;
+		std::vector<ECMaterialsCellResponse> cellResponses; // populated by steppable and passed to Python
 
 		int dotProduct(Point3D _pt1, Point3D _pt2);
 
@@ -122,9 +121,9 @@ namespace CompuCell3D {
 		ECMaterialsPlugin();
 		virtual ~ECMaterialsPlugin();
 
-		BasicClassAccessor<ECMaterialsData> * getECMaterialsDataAccessorPtr(){return & ECMaterialsDataAccessor;}
-		BasicClassAccessor<ECMaterialComponentData> * getECMaterialComponentDataAccessorPtr(){return & ECMaterialComponentDataAccessor;}
-		BasicClassAccessor<ECMaterialCellData> * getECMaterialCellDataAccessorPtr(){return & ECMaterialCellDataAccessor;}
+		BasicClassAccessor<ECMaterialsData> * getECMaterialsDataAccessorPtr() { return &ECMaterialsDataAccessor; }
+		BasicClassAccessor<ECMaterialComponentData> * getECMaterialComponentDataAccessorPtr() { return &ECMaterialComponentDataAccessor; }
+		BasicClassAccessor<ECMaterialCellData> * getECMaterialCellDataAccessorPtr() { return &ECMaterialCellDataAccessor; }
 
         virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
         virtual void field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell);
@@ -140,20 +139,20 @@ namespace CompuCell3D {
 		virtual std::string steerableName();
 		virtual std::string toString();
 
-		/**
-		Return the cell-ECmaterial contact energy term
-		*/
+		// cell-ECmaterial contact effective energy term
 		double ECMaterialContactEnergy(const CellG *cell, std::vector<float> _qtyVec);
-		/**
-		Return the ECmaterial durability energy term
-		*/
+		// ECmaterial durability effective energy term
 		double ECMaterialDurabilityEnergy(std::vector<float> _qtyVec);
 
-        void initializeECMaterials();
-		std::vector<ECMaterialComponentData> getECMaterialsVec(){return ECMaterialsVec;}
+		void initializeECMaterialsField(Dim3D _fieldDim, bool _resetting = false);
+		void initializeECMaterialsField(bool _resetting = false) { initializeECMaterialsField(fieldDim, _resetting); }
+		void deleteECMaterialsField();
+
+		void initializeECMaterials();
+		std::vector<ECMaterialComponentData> getECMaterialsVec() { return ECMaterialsVec; }
 		std::vector<ECMaterialComponentData> *getECMaterialsVecPtr() { return &ECMaterialsVec; }
-		unsigned int getNumberOfMaterials(){return numberOfMaterials;}
-		std::map<std::string, int> getECMaterialNameIndexMap(){return ECMaterialNameIndexMap;}
+		unsigned int getNumberOfMaterials() { return numberOfMaterials; }
+		std::map<std::string, int> getECMaterialNameIndexMap() { return ECMaterialNameIndexMap; }
 		void setMaterialNameVector();
 		std::vector<std::string> getMaterialNameVector() { 
 			setMaterialNameVector();
@@ -161,36 +160,43 @@ namespace CompuCell3D {
 		}
 		std::vector<float> checkQuantities(std::vector<float> _qtyVec);
 
-		//functions used to manipulate extracellular material cell definitions
+		// functions used to manipulate extracellular material cell definitions
+
 		void setRemodelingQuantityByName(const CellG * _cell, std::string _ECMaterialName, float _quantity);
 		void setRemodelingQuantityByIndex(const CellG * _cell, int _idx, float _quantity);
 		void setRemodelingQuantityVector(const CellG * _cell, std::vector<float> _quantityVec);
 		void assignNewRemodelingQuantityVector(const CellG * _cell, int _numMtls=-1);
-		//Medium functions
+		//		medium functions
+
 		void setMediumECMaterialQuantityByName(const Point3D &pt, std::string _ECMaterialName, float _quantity);
 		void setMediumECMaterialQuantityByIndex(const Point3D &pt, int _idx, float _quantity);
 		void setMediumECMaterialQuantityVector(const Point3D &pt, std::vector<float> _quantityVec);
 		void assignNewMediumECMaterialQuantityVector(const Point3D &pt, int _numMtls);
-		//material functions
+		//		material functions
+
 		void setECMaterialDurabilityByName(std::string _ECMaterialName, float _durabilityLM);
 		void setECMaterialDurabilityByIndex(int _idx, float _durabilityLM);
 		void setECMaterialAdvectingByName(std::string _ECMaterialName, bool _isAdvecting);
 		void setECMaterialAdvectingByIndex(int _idx, bool _isAdvecting);
-		// adhesion functions
+		//		adhesion functions
+
 		void setECAdhesionByCell(const CellG *_cell, std::vector<float> _adhVec);
 		void setECAdhesionByCellAndMaterialIndex(const CellG *_cell, int _idx, float _val);
 		void setECAdhesionByCellAndMaterialName(const CellG *_cell, std::string _ECMaterialName, float _val);
 
-        //functions used to retrieve extracellular material cell definitions
+        // functions used to retrieve extracellular material cell definitions
+
 		float getRemodelingQuantityByName(const CellG * _cell, std::string _ECMaterialName);
 		float getRemodelingQuantityByIndex(const CellG * _cell, int _idx);
 		std::vector<float> getRemodelingQuantityVector(const CellG * _cell);
-		//Medium functions
+		//		medium functions
+
 		float getMediumECMaterialQuantityByName(const Point3D &pt, std::string _ECMaterialName);
 		float getMediumECMaterialQuantityByIndex(const Point3D &pt, int _idx);
 		std::vector<float> getMediumECMaterialQuantityVector(const Point3D &pt);
 		std::vector<float> getMediumAdvectingECMaterialQuantityVector(const Point3D &pt);
-		//material functions
+		//		material functions
+
 		float getECMaterialDurabilityByName(std::string _ECMaterialName);
 		float getECMaterialDurabilityByIndex(int _idx);
 		bool getECMaterialAdvectingByName(std::string _ECMaterialName);
@@ -200,13 +206,14 @@ namespace CompuCell3D {
 			for (std::map<std::string, int>::iterator mitr = ECMaterialNameIndexMap.begin(); mitr != ECMaterialNameIndexMap.end(); ++mitr) if (mitr->second == _idx) return mitr->first;
 			return "";
 		}
-		// adhesion functions
+		//		adhesion functions
+
 		std::vector<float> getECAdhesionByCell(const CellG *_cell);
 		std::vector<float> getECAdhesionByCellTypeId(int _idx);
 		float getECAdhesionByCellAndMaterialIndex(const CellG *_cell, int _idx);
 		float getECAdhesionByCellAndMaterialName(const CellG *_cell, std::string _ECMaterialName);
 
-		//function to calculate material quantity vector when source is a medium site
+		// calculates material quantity vector when source is a medium site
 		std::vector<float> calculateCopyQuantityVec(const CellG * _cell, const Point3D &pt);
 
 		// Returns flag for variable field diffusion coefficient
@@ -226,7 +233,7 @@ namespace CompuCell3D {
 		// If site is intracellular, returns 0.0
 		float getLocalDiffusivity(const Point3D &pt, std::string _fieldName);
 
-		// drawing functions
+		// material field drawing functions
 
 		// Draw a parallelepiped of _qtyVec from _startPos defined by vectors _lenVec1, _lenVec2, and _lenVec3
 		// _lenVec components equal to -1 go to the end of the domain
@@ -242,20 +249,26 @@ namespace CompuCell3D {
 
 		std::vector<Neighbor> getFirstOrderNeighbors(const Point3D &pt);
 
+		// Returns pointer to material field
 		virtual Field3D<ECMaterialsData *> *getECMaterialField() { return (Field3D<ECMaterialsData *> *)ECMaterialsField; }
+
+		// Sets partner steppable
 		void setECMaterialsSteppable(ECMaterialsSteppable *_ecMaterialsSteppable) { ecMaterialsSteppable = _ecMaterialsSteppable; }
 
 		// Interface with python
+
 		int numberOfResponsesOccurred() { return (int)cellResponses.size(); };
 		CellG *getCellResponseCell(int _idx) { return cellResponses[_idx].cell; };
 		std::string getCellResponseAction(int _idx) { return cellResponses[_idx].Action; };
 		std::string getCellResponseCellTypeDiff(int _idx) { return cellResponses[_idx].CellTypeDiff; };
 
 		// Interface with steppable
+
 		virtual void resetCellResponse() { cellResponses.clear(); }
 		virtual void addCellResponse(CellG *_cell, std::string _action, std::string _cellTypeDiff = "") { cellResponses.push_back(ECMaterialsCellResponse(_cell, _action, _cellTypeDiff)); };
 
 		// Interface between steppable and python
+
 		float calculateTotalInterfaceQuantityByMaterialIndex(CellG *cell, int _materialIdx);
 		float calculateTotalInterfaceQuantityByMaterialName(CellG *cell, std::string _materialName);
 		float calculateCellProbabilityProliferation(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);

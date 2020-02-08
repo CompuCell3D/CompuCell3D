@@ -23,6 +23,9 @@
 #ifndef ECMATERIALSSTEPPABLE_H
 #define ECMATERIALSSTEPPABLE_H
 
+#include <ppl.h>
+#include <concurrent_vector.h>
+
 #include <CompuCell3D/CC3D.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 
@@ -118,11 +121,11 @@ namespace CompuCell3D {
 
         // SimObject interface
         virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
-        virtual void extraInit(Simulator *simulator);
+		virtual void extraInit(Simulator *simulator) {};
 		void handleEvent(CC3DEvent & _event);
 
         // Steppable interface
-        virtual void start();
+		virtual void start() {};
         virtual void step(const unsigned int currentStep);
         virtual void finish() {}
 
@@ -146,8 +149,8 @@ namespace CompuCell3D {
 		void constructCellTypeCoefficientsDeath();
 
 		void calculateMaterialToFieldInteractions(const Point3D &pt, std::vector<float> _qtyOld);
-		void calculateCellInteractions(Field3D<ECMaterialsData *> *ECMaterialsFieldOld);
-		std::tuple<float, float, std::vector<float>, std::vector<float> > calculateCellProbabilities(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0, std::vector<bool> _resultsSelect = { true,true,true,true });
+		void calculateCellInteractions(Field3D<ECMaterialsData *> *ECMaterialsField);
+		std::tuple<float, float, std::vector<float>, std::vector<float> > calculateCellProbabilities(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0, std::vector<bool> _resultsSelect = std::vector<bool>(4, true));
 
 		int getCellTypeIndexByName(std::string _cellTypeName) {
 			std::map<std::string, int>::iterator mitr = cellTypeNames.find(_cellTypeName);
@@ -176,6 +179,10 @@ namespace CompuCell3D {
 		virtual bool getCellResponseDifferentiation(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
 		virtual bool getCellResponseAsymmetricDivision(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
 
+
+		Point3D ind2pt(unsigned int _ind);
+		unsigned int pt2ind(const Point3D &_pt, Dim3D _fieldDim);
+		unsigned int pt2ind(const Point3D &_pt) { return pt2ind(_pt, fieldDim); }
     };
 
 };

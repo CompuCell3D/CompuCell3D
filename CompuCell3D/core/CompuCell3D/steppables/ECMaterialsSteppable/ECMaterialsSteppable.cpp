@@ -87,21 +87,10 @@ void ECMaterialsSteppable::init(Simulator *simulator, CC3DXMLElement *_xmlData) 
 
 }
 
-void ECMaterialsSteppable::extraInit(Simulator *simulator){
-
-    //PUT YOUR CODE HERE
-}
-
 void ECMaterialsSteppable::handleEvent(CC3DEvent & _event) {
 	if (_event.id == LATTICE_RESIZE) {
 
 	}
-}
-
-void ECMaterialsSteppable::start(){
-
-    //PUT YOUR CODE HERE
-
 }
 
 void ECMaterialsSteppable::step(const unsigned int currentStep){
@@ -114,10 +103,10 @@ void ECMaterialsSteppable::step(const unsigned int currentStep){
 
 	if (!AnyInteractionsDefined) return;
 
-    // Make a copy of the ECMaterialsField
+    // Copy old field quantities
 	ECMaterialsField = ecMaterialsPlugin->getECMaterialField();
-	Field3D<ECMaterialsData *> *ECMaterialsFieldOld = (Field3D<ECMaterialsData *>*) new WatchableField3D<ECMaterialsData *>(fieldDim, 0);
-	ECMaterialsFieldOld = ECMaterialsField;
+	concurrency::parallel_for(int(0), (int)(fieldDim.x*fieldDim.y*fieldDim.z), [&](int ind) { 
+		ECMaterialsField->get(this->ind2pt(ind))->setECMaterialsQuantityVecOld(); });
 
 	bool MaterialInteractionsDefined = this->MaterialInteractionsDefined;
 	bool FieldInteractionsDefined = this->FieldInteractionsDefined;
@@ -125,125 +114,102 @@ void ECMaterialsSteppable::step(const unsigned int currentStep){
 	boundaryStrategy = sim->getBoundaryStrategy()->getInstance();
 	int nNeighbors = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 
-	// auto bmTimerStart = high_resolution_clock::now();
-
 	if (MaterialInteractionsDefined || FieldInteractionsDefined) {
-		concurrency::parallel_for(int(0), (int) fieldDim.z, [=](int z) {
-			concurrency::parallel_for(int(0), (int) fieldDim.y, [=](int y) {
-				concurrency::parallel_for(int(0), (int) fieldDim.x, [=](int x) {
-					Point3D pt(x, y, z);
-					const Point3D ptC = const_cast<Point3D&>(pt);
-					int i, j;
 
-					if (!cellFieldG->get(ptC)) {
+		concurrency::parallel_for(int(0), (int)(fieldDim.x*fieldDim.y*fieldDim.z), [&](int ind) {
+			Point3D pt = this->ind2pt(ind);
+			const Point3D ptC = const_cast<Point3D&>(pt);
+			int i, j;
 
-						std::vector<float> qtyOld = ECMaterialsFieldOld->get(ptC)->getECMaterialsQuantityVec();
-						std::vector<float> qtyNew = qtyOld;
+			if (!cellFieldG->get(ptC)) {
 
-						// Material interactions
+				std::vector<float> qtyOld = ECMaterialsField->get(ptC)->getECMaterialsQuantityVecOld();
+				std::vector<float> qtyNew = std::vector<float>(qtyOld);
 
-						if (MaterialInteractionsDefined) {
+				// Material interactions
 
-							// Material reactions with at site
-							if (MaterialReactionsDefined) {
-								for each (i in idxMaterialReactionsDefined) {
-									for each (j in idxidxMaterialReactionsDefined[i]) {
+				if (MaterialInteractionsDefined) {
 
-										qtyNew[i] += materialReactionCoefficientsByIndex[i][j][0] * qtyOld[j];
+					// Material reactions with at site
+					if (MaterialReactionsDefined)
+						for each (i in idxMaterialReactionsDefined)
+							for each (j in idxidxMaterialReactionsDefined[i])
+								qtyNew[i] += materialReactionCoefficientsByIndex[i][j][0] * qtyOld[j];
 
-									}
-								}
+					std::vector<float> qtyNeighbor;
+					Point3D nPt;
+					Neighbor neighbor;
+					for (unsigned int nIdx = 0; nIdx <= nNeighbors; ++nIdx) {
+						neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
+						if (!neighbor.distance) continue;
+
+						nPt = neighbor.pt;
+
+						const Point3D nPtC = const_cast<Point3D&>(nPt);
+						if (cellFieldG->get(nPtC)) continue; // Detect extracellular sites
+
+						qtyNeighbor = ECMaterialsField->get(nPtC)->getECMaterialsQuantityVecOld();
+
+						// Material reactions with neighbors
+						if (MaterialReactionsDefined)
+							for each (i in idxMaterialReactionsDefined)
+								for each (j in idxidxMaterialReactionsDefined[i])
+									qtyNew[i] += materialReactionCoefficientsByIndex[i][j][1] * qtyNeighbor[j];
+
+						// Material diffusion
+						if (MaterialDiffusionDefined) {
+							float materialDiffusionCoefficient;
+							for each (i in idxMaterialDiffusionDefined) {
+								materialDiffusionCoefficient = ECMaterialsVec->at(i).getMaterialDiffusionCoefficient();
+								qtyNew[i] -= materialDiffusionCoefficient*qtyOld[i];
+								qtyNew[i] += materialDiffusionCoefficient*qtyNeighbor[i];
 							}
-
-							std::vector<float> qtyNeighbor;
-							Point3D nPt;
-							Neighbor neighbor;
-							unsigned int nIdx;
-							for (nIdx = 0; nIdx <= nNeighbors; ++nIdx) {
-								neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
-								if (!neighbor.distance) continue;
-								nPt = neighbor.pt;
-
-								const Point3D nPtC = const_cast<Point3D&>(nPt);
-								if (cellFieldG->get(nPtC)) continue; // Detect extracellular sites
-
-								qtyNeighbor = ECMaterialsFieldOld->get(nPtC)->getECMaterialsQuantityVec();
-
-								// Material reactions with neighbors
-								if (MaterialReactionsDefined) {
-									for each (i in idxMaterialReactionsDefined) 
-										for each (j in idxidxMaterialReactionsDefined[i]) {
-											qtyNew[i] += materialReactionCoefficientsByIndex[i][j][1] * qtyNeighbor[j];
-										}
-								}
-
-								// Material diffusion
-								if (MaterialDiffusionDefined) {
-									float materialDiffusionCoefficient;
-									for each (i in idxMaterialDiffusionDefined) {
-										materialDiffusionCoefficient = ECMaterialsVec->at(i).getMaterialDiffusionCoefficient();
-										qtyNew[i] -= materialDiffusionCoefficient*qtyOld[i];
-										qtyNew[i] += materialDiffusionCoefficient*qtyNeighbor[i];
-									}
-								}
-
-							}
-
 						}
-
-						// Field interactions
-						if (FieldInteractionsDefined) {
-							// Update quantities
-							for each (i in idxFromFieldInteractionsDefined) 
-								for each (j in idxidxFromFieldInteractionsDefined[i]) {
-									qtyNew[i] += fromFieldReactionCoefficientsByIndex[i][j] * fieldVec[j]->get(ptC);
-								}
-
-							// Generate field source terms
-							// calculateMaterialToFieldInteractions(pt, qtyOld);
-							float thisFieldVal;
-							for each (i in idxToFieldInteractionsDefined) {
-								thisFieldVal = fieldVec[i]->get(ptC);
-
-								for each (j in idxidxToFieldInteractionsDefined[i]) {
-									thisFieldVal += toFieldReactionCoefficientsByIndex[i][j] * qtyOld[j];
-								}
-								if (thisFieldVal < 0.0) thisFieldVal = 0.0;
-
-								fieldVec[i]->set(ptC, thisFieldVal);
-
-							}
-
-						}
-
-						ECMaterialsField->get(ptC)->setECMaterialsQuantityVec(checkQuantities(qtyNew));
 
 					}
 
-				});
-			});
+				}
+
+				// Field interactions
+				if (FieldInteractionsDefined) {
+					// Update quantities
+					for each (i in idxFromFieldInteractionsDefined)
+						for each (j in idxidxFromFieldInteractionsDefined[i])
+							qtyNew[i] += fromFieldReactionCoefficientsByIndex[i][j] * fieldVec[j]->get(ptC);
+
+					// Generate field source terms
+					float thisFieldVal;
+					for each (i in idxToFieldInteractionsDefined) {
+						thisFieldVal = fieldVec[i]->get(ptC);
+
+						for each (j in idxidxToFieldInteractionsDefined[i])
+							thisFieldVal += toFieldReactionCoefficientsByIndex[i][j] * qtyOld[j];
+						
+						if (thisFieldVal < 0.0) thisFieldVal = 0.0;
+
+						fieldVec[i]->set(ptC, thisFieldVal);
+
+					}
+
+				}
+
+				ECMaterialsField->get(ptC)->setECMaterialsQuantityVec(checkQuantities(qtyNew));
+
+			}
+
 		});
 
 	}
 
 	// Cell interactions
-	if (CellInteractionsDefined) { 
-		
-		calculateCellInteractions(ECMaterialsFieldOld);
-
-	}
-
-	// auto bmTimerStop = high_resolution_clock::now();
-	// auto bmDuration = duration_cast<microseconds>(bmTimerStop - bmTimerStart);
-	// cerr << "ECMaterialsSteppable time: " << bmDuration.count() << " ms" << endl;
+	if (CellInteractionsDefined) calculateCellInteractions(ECMaterialsField);
 
 }
 
 void ECMaterialsSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	// Do this to enable initializations independently of startup routine
-	if (ECMaterialsInitialized)
-		return;
+	if (ECMaterialsInitialized) return;
 
 	automaton = potts->getAutomaton();
 	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton);
@@ -251,9 +217,7 @@ void ECMaterialsSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	// Get ECMaterials plugin
 	bool pluginAlreadyRegisteredFlag;
 	ecMaterialsPlugin = (ECMaterialsPlugin*)Simulator::pluginManager.get("ECMaterials", &pluginAlreadyRegisteredFlag);
-	if (!pluginAlreadyRegisteredFlag) {
-		return;
-	}
+	if (!pluginAlreadyRegisteredFlag) return;
 
 	// Forward steppable to plugin
 	ecMaterialsPlugin->setECMaterialsSteppable(this);
@@ -473,12 +437,11 @@ void ECMaterialsSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 		}
 
-		for (int fldIdx = 0; fldIdx < numberOfFields; ++fldIdx) {
+		for (int fldIdx = 0; fldIdx < numberOfFields; ++fldIdx)
 			if (hasToFieldInteractionsDefined[fldIdx]) idxToFieldInteractionsDefined.push_back(fldIdx);
-		}
-		for (int mtlIdx = 0; mtlIdx < numberOfMaterials; ++mtlIdx) {
+		
+		for (int mtlIdx = 0; mtlIdx < numberOfMaterials; ++mtlIdx)
 			if (hasFromFieldInteractionsDefined[mtlIdx]) idxFromFieldInteractionsDefined.push_back(mtlIdx);
-		}
 
 		constructFieldReactionCoefficients();
 
@@ -529,19 +492,18 @@ void ECMaterialsSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			cellTypeIndex = getCellTypeIndexByName(thisCellType);
 			ASSERT_OR_THROW("Cell type " + thisCellType + " not registered.", cellTypeIndex >= 0);
 			cellTypeNewIndex = getCellTypeIndexByName(thisCellTypeNew);
-			if (methodName == "Differentiation") {
+			if (methodName == "Differentiation")
 				ASSERT_OR_THROW("New cell type " + thisCellTypeNew + " not registered.", cellTypeNewIndex >= 0);
-			}
 
-			if (methodName == "Proliferation") {
+			if (methodName == "Proliferation")
 				ECMaterialsVec->at(materialIndex).setCellTypeCoefficientsProliferation(thisCellType, coeff, thisCellTypeNew);
-			}
-			else if (methodName == "Differentiation") {
+			
+			else if (methodName == "Differentiation")
 				ECMaterialsVec->at(materialIndex).setCellTypeCoefficientsDifferentiation(thisCellType, coeff, thisCellTypeNew);
-			}
-			else if (methodName == "Death") {
+			
+			else if (methodName == "Death")
 				ECMaterialsVec->at(materialIndex).setCellTypeCoefficientsDeath(thisCellType, coeff);
-			}
+			
 			else ASSERT_OR_THROW("Undefined cell response method: use Proliferation, Differentiation, or Death.", false);
 
 			hasCellInteractionsDefined[materialIndex] = true;
@@ -557,7 +519,7 @@ void ECMaterialsSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	AnyInteractionsDefined = MaterialInteractionsDefined || FieldInteractionsDefined || CellInteractionsDefined;
 }
 
-void ECMaterialsSteppable::calculateCellInteractions(Field3D<ECMaterialsData *> *ECMaterialsFieldOld) {
+void ECMaterialsSteppable::calculateCellInteractions(Field3D<ECMaterialsData *> *ECMaterialsField) {
 
 	ASSERT_OR_THROW("ECMaterials steppable not yet initialized.", ECMaterialsInitialized);
 
@@ -570,26 +532,26 @@ void ECMaterialsSteppable::calculateCellInteractions(Field3D<ECMaterialsData *> 
 	int nNeighbors = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 
 	// Initialize information for counting cell interactions
+
 	int numberOfCells = cellInventoryPtr->getSize();
-	std::vector<CellG*> *cellResponsesCell = new std::vector<CellG*>(numberOfCells, nullptr);
-	std::vector<std::string> *cellResponsesAction = new std::vector<std::string>(numberOfCells, std::string());
-	std::vector<std::string> *cellResponsesCellTypeDiff = new std::vector<std::string>(numberOfCells, std::string());
+	concurrency::combinable<std::vector<std::tuple<CellG*, int, std::string> > > cellResponses([] {
+		return std::vector<std::tuple<CellG*, int, std::string> >(); });
+	concurrency::concurrent_vector<CellG*> cellVec = concurrency::concurrent_vector<CellG*>(numberOfCells);
+
 	int idx = 0;
 	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr) {
-		(*cellResponsesCell)[idx] = cInvItr->second;
+		cellVec[idx] = cInvItr->second;
 		++idx;
 	}
-	
+
 	//		randomly order evaluation of responses
 	std::vector<std::vector<int> > responseOrderSet = permutations(4);
 	std::vector<int> responseOrder = responseOrderSet[rand() % responseOrderSet.size()];
 
 	// Loop over cells and consider each response
-	concurrency::parallel_for(int(0), numberOfCells, [=](int cellIdx) {
-		CellG* cell = (*cellResponsesCell)[cellIdx];
-		(*cellResponsesCell)[cellIdx] = nullptr;
-
-		std::tuple<float, float, std::vector<float>, std::vector<float> > probs = calculateCellProbabilities(cell, ECMaterialsFieldOld);
+	std::vector<std::string> actionOrderedVec = std::vector<std::string>{ "Proliferation", "Death", "Differentiation", "Proliferation" };
+	concurrency::parallel_for_each(cellVec.begin(), cellVec.end(), [&](CellG* cell) {
+		std::tuple<float, float, std::vector<float>, std::vector<float> > probs = calculateCellProbabilities(cell, ECMaterialsField);
 
 		float probAccumProlif = std::get<0>(probs);
 		float probAccumDeath = std::get<1>(probs);
@@ -598,29 +560,25 @@ void ECMaterialsSteppable::calculateCellInteractions(Field3D<ECMaterialsData *> 
 
 		// Consider each response in random order of response
 		bool resp = false;
-		std::string Action = "";
 		std::string CellTypeDiff = "";
+		std::map<std::string, int>::iterator mitr;
 		for each (int respIdx in responseOrder) {
 			switch (respIdx) {
-			case 0 : // proliferation
+			case 0: // proliferation
 				resp = testProb(probAccumProlif);
-				Action = "Proliferation";
 				break;
-			case 1 : // death
+			case 1: // death
 				resp = testProb(probAccumDeath);
-				Action = "Death";
 				break;
-			case 2 : // differentiation
-				Action = "Differentiation";
-				for (std::map<std::string, int>::iterator mitr = cellTypeNames.begin(); mitr != cellTypeNames.end(); ++mitr) {
+			case 2: // differentiation
+				for (mitr = cellTypeNames.begin(); mitr != cellTypeNames.end(); ++mitr) {
 					resp = testProb(probAccumDiff[mitr->second]);
 					CellTypeDiff = mitr->first;
 					if (resp) break;
 				}
 				break;
-			case 3 : // asymmetric division
-				Action = "Proliferation";
-				for (std::map<std::string, int>::iterator mitr = cellTypeNames.begin(); mitr != cellTypeNames.end(); ++mitr) {
+			case 3: // asymmetric division
+				for (mitr = cellTypeNames.begin(); mitr != cellTypeNames.end(); ++mitr) {
 					resp = testProb(probAccumProlifAsym[mitr->second]);
 					CellTypeDiff = mitr->first;
 					if (resp) break;
@@ -628,19 +586,20 @@ void ECMaterialsSteppable::calculateCellInteractions(Field3D<ECMaterialsData *> 
 				break;
 			}
 			if (resp) {
-				(*cellResponsesCell)[cellIdx] = cell;
-				(*cellResponsesAction)[cellIdx] = Action;
-				(*cellResponsesCellTypeDiff)[cellIdx] = CellTypeDiff;
+				cellResponses.local().push_back(make_tuple(cell, respIdx, CellTypeDiff));
 				break;
 			}
 		}
 
 	});
 
-	for (idx = 0; idx < numberOfCells; ++idx) {
-		if (!(*cellResponsesCell)[idx]) continue;
-		ecMaterialsPlugin->addCellResponse((*cellResponsesCell)[idx], (*cellResponsesAction)[idx], (*cellResponsesCellTypeDiff)[idx]);
-	}
+	std::vector<std::tuple<CellG*, int, std::string> > combinedResponsesAccepted;
+	cellResponses.combine_each([&](std::vector<std::tuple<CellG*, int, std::string> > local) {
+		for each(std::tuple<CellG*, int, std::string> cellResponse in local)
+			combinedResponsesAccepted.push_back(cellResponse); });
+
+	for each(std::tuple<CellG*, int, std::string> cellResponse in combinedResponsesAccepted)
+		ecMaterialsPlugin->addCellResponse(std::get<0>(cellResponse), actionOrderedVec[std::get<1>(cellResponse)], std::get<2>(cellResponse));
 
 }
 
@@ -654,12 +613,10 @@ std::tuple<float, float, std::vector<float>, std::vector<float> > ECMaterialsSte
 
 	if (!cell) return make_tuple(probAccumProlif, probAccumDeath, probAccumDiff, probAccumProlifAsym);
 
-	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
 	int nNeighbors = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 	Neighbor neighbor;
 	CellG *nCell = 0;
 	Point3D pt;
-	int cellId = (int)cell->id;
 	int cellType = (int)cell->type;
 	std::vector<float> qtyOld(numberOfMaterials, 0.0);
 
@@ -675,11 +632,11 @@ std::tuple<float, float, std::vector<float>, std::vector<float> > ECMaterialsSte
 
 			if (!neighbor.distance) continue;
 
-			nCell = cellFieldG->get(neighbor.pt);
+			nCell = potts->getCellFieldG()->get(neighbor.pt);
 
 			if (nCell) continue;
 
-			qtyOld = _ecmaterialsField->get(neighbor.pt)->getECMaterialsQuantityVec();
+			qtyOld = _ecmaterialsField->get(neighbor.pt)->getECMaterialsQuantityVecOld();
 
 			for each (int i in idxCellInteractionsDefined) {
 				if (_resultsSelect[0]) probAccumProlif += CellTypeCoefficientsProliferationByIndex[i][cellType] * qtyOld[i];
@@ -690,8 +647,12 @@ std::tuple<float, float, std::vector<float>, std::vector<float> > ECMaterialsSte
 						probAccumDiff[typeIdx] += CellTypeCoefficientsDifferentiationByIndex[i][cellType][typeIdx] * qtyOld[i];
 					}
 				}
-				else if (_resultsSelect[2]) for (int typeIdx = 0; typeIdx < probAccumDiff.size(); ++typeIdx) probAccumDiff[typeIdx] += CellTypeCoefficientsDifferentiationByIndex[i][cellType][typeIdx] * qtyOld[i];
-				else if (_resultsSelect[3]) for (int typeIdx = 0; typeIdx < probAccumDiff.size(); ++typeIdx) probAccumProlifAsym[typeIdx] += CellTypeCoefficientsProliferationAsymByIndex[i][cellType][typeIdx] * qtyOld[i];
+				else if (_resultsSelect[2])
+					for (int typeIdx = 0; typeIdx < probAccumDiff.size(); ++typeIdx) 
+						probAccumDiff[typeIdx] += CellTypeCoefficientsDifferentiationByIndex[i][cellType][typeIdx] * qtyOld[i];
+				else if (_resultsSelect[3]) 
+					for (int typeIdx = 0; typeIdx < probAccumDiff.size(); ++typeIdx) 
+						probAccumProlifAsym[typeIdx] += CellTypeCoefficientsProliferationAsymByIndex[i][cellType][typeIdx] * qtyOld[i];
 			}
 
 		}
@@ -905,6 +866,20 @@ std::vector<std::vector<int> > ECMaterialsSteppable::permutations(int _numberOfV
 		permutationVec.push_back(permutationSet);
 	} while (next_permutation(permutationSet.begin(), permutationSet.end()));
 	return permutationVec;
+}
+
+Point3D ECMaterialsSteppable::ind2pt(unsigned int _ind) {
+	Point3D pt;
+	pt.x = _ind % fieldDim.x;
+	pt.y = (_ind - pt.x) / fieldDim.x % fieldDim.y;
+	pt.z = ((_ind - pt.x) / fieldDim.x - pt.y) / fieldDim.y;
+	return pt;
+}
+
+unsigned int ECMaterialsSteppable::pt2ind(const Point3D &_pt, Dim3D _fieldDim) {
+	int ind = _pt.x + _fieldDim.x * (_pt.y + _fieldDim.y * _pt.z);
+	if (ind < 0 || ind > fieldDim.x*fieldDim.y*fieldDim.z) { throw BasicException("Point is not valid."); }
+	return (unsigned int)(ind);
 }
 
 std::string ECMaterialsSteppable::toString(){

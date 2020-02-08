@@ -36,6 +36,7 @@ namespace CompuCell3D {
 	@author T.J. Sego, Ph.D.
 	*/
 
+	// Material class definition
     class ECMATERIALS_EXPORT ECMaterialComponentData{
 			std::string ECMaterialName;
 			float durabilityLM;
@@ -207,7 +208,7 @@ namespace CompuCell3D {
 			}
 			// Returns a material reaction coefficient for material name _material name and neighborhood order _order
 			float getMaterialReactionCoefficientByNameAndOrder(std::string _materialName, int _order) {
-				if (_order < 0 || _order>1) return 0.0;
+				if (_order < 0 || _order> 1) return 0.0;
 				std::vector<float> thisVec = getMaterialReactionCoefficientsByName(_materialName);
 				return thisVec[_order];
 			}
@@ -283,13 +284,24 @@ namespace CompuCell3D {
 
 	};
 
+	// Field class definition
     class ECMATERIALS_EXPORT ECMaterialsData{
+			std::vector<float> ECMaterialsQuantityVecOld;
+
 		public:
-            ECMaterialsData():numMtls((unsigned int) 1), ECMaterialsQuantityVec(std::vector<float>(0.0)){};
+            ECMaterialsData():numMtls((unsigned int) 1), ECMaterialsQuantityVec(std::vector<float>(0.0)), ECMaterialsQuantityVecOld(std::vector<float>()){};
             ~ECMaterialsData(){}
+
+			ECMaterialsData(ECMaterialsData *_toCopy) {
+				numMtls = _toCopy->numMtls;
+				ECMaterialsQuantityVec = std::vector<float>(_toCopy->ECMaterialsQuantityVec);
+				ECMaterialsQuantityVecOld = std::vector<float>(_toCopy->ECMaterialsQuantityVecOld);
+			}
 
 			unsigned int numMtls;
 			std::vector<float> ECMaterialsQuantityVec;
+
+			void setECMaterialsQuantityVecOld() { ECMaterialsQuantityVecOld = std::vector<float>(ECMaterialsQuantityVec); }
 
             void setECMaterialsQuantity(unsigned int _pos, float _qty){
                 if(_pos>ECMaterialsQuantityVec.size()-1) return;
@@ -303,6 +315,7 @@ namespace CompuCell3D {
                 return ECMaterialsQuantityVec[_pos];
             }
 			virtual std::vector<float> getECMaterialsQuantityVec(){return ECMaterialsQuantityVec;}
+			virtual std::vector<float> getECMaterialsQuantityVecOld() { return ECMaterialsQuantityVecOld; }
             void setNewECMaterialsQuantityVec(unsigned int _numMtls){
 				numMtls = _numMtls;
 				ECMaterialsQuantityVec.assign(numMtls, 0.0);
@@ -311,6 +324,7 @@ namespace CompuCell3D {
 
 	};
 
+	// Cell-specific data associated with plugin and steppable
 	class ECMATERIALS_EXPORT ECMaterialCellData{
 	    public:
 	        ECMaterialCellData(){};
@@ -323,7 +337,7 @@ namespace CompuCell3D {
 	            std::vector<float> RemodelingQuantity(_numMtls, 0.0);
 	            RemodelingQuantity[0] = 1.0;
 	        }
-	        void setRemodelingQuantityVec(std::vector<float> _qtyVec){std::vector<float> RemodelingQuantity(_qtyVec);}
+			void setRemodelingQuantityVec(std::vector<float> _qtyVec) { std::vector<float> RemodelingQuantity(_qtyVec); }
 	        void setRemodelingQuantity(unsigned int _pos, float _qty){
 	            if(_pos>RemodelingQuantity.size()-1) return;
                 RemodelingQuantity[_pos]=_qty;
@@ -332,10 +346,10 @@ namespace CompuCell3D {
 	            if(_pos>RemodelingQuantity.size()-1) return 0.0;
                 return RemodelingQuantity[_pos];
 	        }
-	        std::vector<float> getRemodelingQuantityVec(){return RemodelingQuantity;}
+			std::vector<float> getRemodelingQuantityVec() { return RemodelingQuantity; }
 
-	        void setNewAdhesionCoefficientsVec(unsigned int _numMtls){std::vector<float> AdhesionCoefficients(_numMtls, 0.0);}
-	        void setAdhesionCoefficientsVec(std::vector<float> _adhVec){std::vector<float> AdhesionCoefficients(_adhVec);}
+			void setNewAdhesionCoefficientsVec(unsigned int _numMtls) { std::vector<float> AdhesionCoefficients(_numMtls, 0.0); }
+			void setAdhesionCoefficientsVec(std::vector<float> _adhVec) { std::vector<float> AdhesionCoefficients(_adhVec); }
 	        void setAdhesionCoefficient(unsigned int _pos, float _adh){
 	            if(_pos>AdhesionCoefficients.size()-1) return;
                 AdhesionCoefficients[_pos]=_adh;
@@ -344,7 +358,7 @@ namespace CompuCell3D {
 	            if(_pos>AdhesionCoefficients.size()-1) return 0.0;
                 return AdhesionCoefficients[_pos];
 	        }
-	        std::vector<float> getAdhesionCoefficientVec(){return AdhesionCoefficients;}
+			std::vector<float> getAdhesionCoefficientVec() { return AdhesionCoefficients; }
 	};
 
 };
