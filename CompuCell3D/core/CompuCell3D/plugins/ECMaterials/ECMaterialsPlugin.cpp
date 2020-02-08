@@ -595,7 +595,37 @@ void ECMaterialsPlugin::extraInit(Simulator *simulator) {
 }
 
 void ECMaterialsPlugin::handleEvent(CC3DEvent & _event) {
-    
+	if (_event.id == LATTICE_RESIZE) {
+
+		pUtils->setLock(lockPtr);
+		
+		WatchableField3D<ECMaterialsData *> ECMaterialsFieldOld = WatchableField3D<ECMaterialsData *>(fieldDim, 0);
+		for (int z = 0; z < fieldDim.z; ++z)
+			for (int y = 0; y < fieldDim.y; ++y)
+				for (int x = 0; x < fieldDim.x; ++x) {
+					Point3D pt = Point3D(x, y, z);
+					ECMaterialsFieldOld.set(pt, ECMaterialsField->get(pt));
+				}
+
+		CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+		fieldDim = ev.newDim;
+
+		initializeECMaterialsField(fieldDim, true);
+
+		for (int z = 0; z < fieldDim.z; ++z)
+			for (int y = 0; y < fieldDim.y; ++y)
+				for (int x = 0; x < fieldDim.x; ++x) {
+					Point3D pt = Point3D(x, y, z);
+					Point3D ptNew = pt;
+					ptNew.x += ev.shiftVec.x;
+					ptNew.y += ev.shiftVec.y;
+					ptNew.z += ev.shiftVec.z;
+					ECMaterialsField->get(ptNew)->setECMaterialsQuantityVec(ECMaterialsFieldOld.get(pt)->getECMaterialsQuantityVec());
+				}
+
+		pUtils->unsetLock(lockPtr);
+
+	}
 }
 
 
