@@ -55,8 +55,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         cellGlyphScaleValid = QDoubleValidator(self.cellGlyphScale)
         self.cellGlyphScale.setValidator(cellGlyphScaleValid)
 
-        # ECMaterials/Colors tab
-        self.componentColorTable.clicked.connect(self.ecmColorTableClicked)
+        # NCMaterials/Colors tab
+        self.componentColorTable.clicked.connect(self.ncmColorTableClicked)
 
         # The following will constrain the input to be valid (double) numeric values
         self.fieldComboBox.currentIndexChanged.connect(self.fieldComboBoxClicked)
@@ -192,9 +192,9 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
     def fppColorButtonClicked(self):
         self.updateColorButton(self.fppColorButton, "FPPLinksColor")
 
-    # -------- Extracellular material (colors) widgets callbacks
-    def ecmColorTableClicked(self):
-        '''handles ECMaterial component color table modifications'''
+    # -------- Noncellular material (colors) widgets callbacks
+    def ncmColorTableClicked(self):
+        '''handles NCMaterial component color table modifications'''
 
         row = self.componentColorTable.currentRow()
         col = self.componentColorTable.currentColumn()
@@ -662,7 +662,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("CellGlyphThetaRes", self.cellGlyphThetaRes.value())  # spinbox
         Configuration.setSetting("CellGlyphPhiRes", self.cellGlyphPhiRes.value())  # spinbox
 
-        # ECMaterials/Colors tab
+        # NCMaterials/Colors tab
         Configuration.setSetting("MaterialColorMap", self.paramCC3D["MaterialColorMap"])
 
         fp = Configuration.getSetting("FieldParams")
@@ -801,9 +801,9 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.cellGlyphThetaRes.setValue(self.paramCC3D["CellGlyphThetaRes"])
         self.cellGlyphPhiRes.setValue(self.paramCC3D["CellGlyphPhiRes"])
 
-        # ECMaterials/Colors tab
+        # NCMaterials/Colors tab
         self.populateMaterialColors()
-        self.tab_ECM_type.setEnabled(CompuCellSetup.simulation_utils.check_ecmaterials_active())
+        self.tab_NCM_type.setEnabled(CompuCellSetup.simulation_utils.check_ncmaterials_active())
         self.componentColorTable.setHorizontalHeaderLabels(['Material', 'Name', 'Color'])
 
         fp = Configuration.getSetting("FieldParams")

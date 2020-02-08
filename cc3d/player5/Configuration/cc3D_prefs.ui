@@ -1010,9 +1010,9 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_ECM_type">
+     <widget class="QWidget" name="tab_NCM_type">
       <attribute name="title">
-       <string>ECMaterials/Colors</string>
+       <string>NCMaterials/Colors</string>
       </attribute>
       <layout class="QHBoxLayout" name="horizontalLayout_38">
        <item>

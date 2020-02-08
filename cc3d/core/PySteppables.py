@@ -240,7 +240,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             "MomentOfInertia": ['moment_of_inertia_plugin', 'momentOfInertiaPlugin'],
             "OrientedGrowth": ['oriented_growth_plugin', 'orientedGrowthPlugin'],
             "Secretion": ["secretion_plugin", 'secretionPlugin'],
-            "ECMaterials": ['ec_materials_plugin', 'ECMaterialsPlugin']
+            "NCMaterials": ['nc_materials_plugin', 'NCMaterialsPlugin']
 
         }
 
@@ -969,16 +969,16 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         if self.plasticity_tracker_plugin:
             return PlasticityDataList(self.plasticity_tracker_plugin, cell)
 
-    def get_ecmaterial_cell_response_list(self):
-        if self.ec_materials_plugin:
-            number_of_responses = self.ec_materials_plugin.numberOfResponsesOccurred()
+    def get_ncmaterial_cell_response_list(self):
+        if self.nc_materials_plugin:
+            number_of_responses = self.nc_materials_plugin.numberOfResponsesOccurred()
             if number_of_responses == 0:
                 return None
             else:
                 for resp_idx in range(number_of_responses):
-                    this_cell = self.ec_materials_plugin.getCellResponseCell(resp_idx)
-                    this_action = self.ec_materials_plugin.getCellResponseAction(resp_idx)
-                    this_cell_type_diff = self.ec_materials_plugin.getCellResponseCellTypeDiff(resp_idx)
+                    this_cell = self.nc_materials_plugin.getCellResponseCell(resp_idx)
+                    this_action = self.nc_materials_plugin.getCellResponseAction(resp_idx)
+                    this_cell_type_diff = self.nc_materials_plugin.getCellResponseCellTypeDiff(resp_idx)
                     yield this_cell, this_action, this_cell_type_diff
         else:
             return None
@@ -1561,12 +1561,12 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                 # FocalPointPLasticityPlugin - this plugin has to be handled manually -
                 # there is no good way to figure out which links shuold be copied from parent to daughter cell
 
-        # ECMaterials
-        if self.ECMaterialsPlugin:
-            c_vec = self.ECMaterialsPlugin.getRemodelingQuantityVector(source_cell)
-            numMtls = self.ECMaterialsPlugin.getNumberOfMaterials()
-            self.ECMaterialsPlugin.assignNewRemodelingQuantityVector(target_cell, numMtls)
-            self.ECMaterialsPlugin.setRemodelingQuantityVector(target_cell, c_vec)
+        # NCMaterials
+        if self.NCMaterialsPlugin:
+            c_vec = self.NCMaterialsPlugin.getRemodelingQuantityVector(source_cell)
+            numMtls = self.NCMaterialsPlugin.getNumberOfMaterials()
+            self.NCMaterialsPlugin.assignNewRemodelingQuantityVector(target_cell, numMtls)
+            self.NCMaterialsPlugin.setRemodelingQuantityVector(target_cell, c_vec)
 
     @deprecated(version='4.0.0', reason="You should use : reassign_cluster_id")
     def reassignClusterId(self, _cell, _clusterId):

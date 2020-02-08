@@ -231,7 +231,7 @@ class MVCDrawView3D(MVCDrawViewBase):
         actor_specs_copy.actors_dict['ecm_actor'] = self.ecmActor
         return actor_specs_copy
 
-    def show_ecm_actors(self, actor_specs, drawing_params=None, show_flag=True):
+    def show_ncm_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
         Shows ECMaterials actors
         :param actor_specs: {ActorSpecs}

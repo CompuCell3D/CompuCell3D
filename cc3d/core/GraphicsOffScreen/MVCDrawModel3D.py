@@ -61,7 +61,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         self.cellGlyphsMapper = vtk.vtkPolyDataMapper()
         self.FPPLinksMapper = vtk.vtkPolyDataMapper()
 
-        self.ecmMapper = vtk.vtkPolyDataMapper()
+        self.ncmMapper = vtk.vtkPolyDataMapper()
 
         # Weird attributes
         # self.typeActors             = {} # vtkActor
@@ -846,9 +846,9 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # coloring borders
         fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
 
-    def init_ecm_actors(self, actor_specs, drawing_params=None):
+    def init_ncm_actors(self, actor_specs, drawing_params=None):
         """
-        Initializes ECMaterials actors for cartesian lattice
+        Initializes NCMaterials actors for cartesian lattice
         :param actor_specs:
         :param drawing_params:
         :return:
@@ -859,32 +859,32 @@ class MVCDrawModel3D(MVCDrawModelBase):
         field_dim = self.currentDrawingParameters.bsd.fieldDim
 
         quantities = vtk.vtkDoubleArray()
-        quantities.SetName("ECMaterialQuantities")
+        quantities.SetName("NCMaterialQuantities")
         quantities_int_addr = extract_address_int_from_vtk_object(vtkObj=quantities)
 
-        self.field_extractor.fillECMaterialFieldData3D(quantities_int_addr, -1)
+        self.field_extractor.fillNCMaterialFieldData3D(quantities_int_addr, -1)
 
-        ecm_data = vtk.vtkImageData()
-        ecm_data.SetDimensions(field_dim.x + 1, field_dim.y + 1, field_dim.z + 1)
-
-        if VTK_MAJOR_VERSION >= 6:
-            ecm_data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 3)
-        else:
-            ecm_data.SetScalarTypeToUnsignedChar()
-
-        ecm_data.GetPointData().SetVectors(quantities)
-
-        ecm_lut = self.get_material_lookup_table()
+        ncm_data = vtk.vtkImageData()
+        ncm_data.SetDimensions(field_dim.x + 1, field_dim.y + 1, field_dim.z + 1)
 
         if VTK_MAJOR_VERSION >= 6:
-            self.ecmMapper.SetInputData(ecm_data)
+            ncm_data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 3)
         else:
-            self.ecmMapper.SetInput(ecm_data)
+            ncm_data.SetScalarTypeToUnsignedChar()
 
-        self.ecmMapper.ScalarVisibilityOn()
-        self.ecmMapper.SetLookupTable(ecm_lut)
-        self.ecmMapper.SetScalarRange(0, 1)
+        ncm_data.GetPointData().SetVectors(quantities)
 
-        ecm_actor = actors_dict['ecm_actor']
-        ecm_actor.SetMapper(self.ecmMapper)
-        ecm_actor.GetProperty().SetOpacity(0.5)  # Probably make this an option
+        ncm_lut = self.get_material_lookup_table()
+
+        if VTK_MAJOR_VERSION >= 6:
+            self.ncmMapper.SetInputData(ncm_data)
+        else:
+            self.ncmMapper.SetInput(ncm_data)
+
+        self.ncmMapper.ScalarVisibilityOn()
+        self.ncmMapper.SetLookupTable(ncm_lut)
+        self.ncmMapper.SetScalarRange(0, 1)
+
+        ncm_actor = actors_dict['ncm_actor']
+        ncm_actor.SetMapper(self.ncmMapper)
+        ncm_actor.GetProperty().SetOpacity(0.5)  # Probably make this an option

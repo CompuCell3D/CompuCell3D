@@ -20,8 +20,8 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-#ifndef ECMATERIALSSTEPPABLE_H
-#define ECMATERIALSSTEPPABLE_H
+#ifndef NCMATERIALSSTEPPABLE_H
+#define NCMATERIALSSTEPPABLE_H
 
 #include <ppl.h>
 #include <concurrent_vector.h>
@@ -29,9 +29,9 @@
 #include <CompuCell3D/CC3D.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 
-#include "ECMaterialsSteppableDLLSpecifier.h"
-#include "CompuCell3D/plugins/ECMaterials/ECMaterialsPlugin.h"
-#include "CompuCell3D/plugins/ECMaterials/ECMaterialsData.h"
+#include "NCMaterialsSteppableDLLSpecifier.h"
+#include "CompuCell3D/plugins/NCMaterials/NCMaterialsPlugin.h"
+#include "CompuCell3D/plugins/NCMaterials/NCMaterialsData.h"
 #include "CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTracker.h"
 #include "CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTrackerPlugin.h"
 
@@ -52,10 +52,10 @@ namespace CompuCell3D {
     class CellG;
 	class BoundaryPixelTrackerData;
 	class BoundaryPixelTrackerPlugin;
-	class ECMaterialsPlugin;
-	class ECMaterialsData;
+	class NCMaterialsPlugin;
+	class NCMaterialsData;
 
-	class ECMATERIALSSTEPPABLE_EXPORT ECMaterialsSteppable : public Steppable {
+	class NCMATERIALSSTEPPABLE_EXPORT NCMaterialsSteppable : public Steppable {
         WatchableField3D<CellG *> *cellFieldG;
         Simulator *sim;
         Potts3D *potts;
@@ -67,16 +67,16 @@ namespace CompuCell3D {
 		ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;
 
 		BoundaryPixelTrackerPlugin *boundaryTrackerPlugin;
-		ECMaterialsPlugin *ecMaterialsPlugin;
+		NCMaterialsPlugin *ncMaterialsPlugin;
 
 		int neighborOrder = 1;
 		int nNeighbors;
 		Dim3D fieldDim;
 
-		bool ECMaterialsInitialized;
+		bool NCMaterialsInitialized;
 		int numberOfMaterials;
-		Field3D<ECMaterialsData *> *ECMaterialsField;
-		std::vector<ECMaterialComponentData> *ECMaterialsVec;
+		Field3D<NCMaterialsData *> *NCMaterialsField;
+		std::vector<NCMaterialComponentData> *NCMaterialsVec;
 
 		int numberOfFields;
 		std::vector<Field3D<float> *> fieldVec;
@@ -116,8 +116,8 @@ namespace CompuCell3D {
 
 	public:
 
-        ECMaterialsSteppable();
-        virtual ~ECMaterialsSteppable();
+        NCMaterialsSteppable();
+        virtual ~NCMaterialsSteppable();
 
         // SimObject interface
         virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
@@ -135,10 +135,10 @@ namespace CompuCell3D {
         virtual std::string toString();
 
 		// Plugin wrappers
-		int getECMaterialIndexByName(std::string _ECMaterialName) { return ecMaterialsPlugin->getECMaterialIndexByName(_ECMaterialName); };
-		std::string getECMaterialNameByIndex(int _idx) { return ecMaterialsPlugin->getECMaterialNameByIndex(_idx); };
-		std::vector<float> checkQuantities(std::vector<float> _qtyVec) { return ecMaterialsPlugin->checkQuantities(_qtyVec); };
-		void setMediumECMaterialQuantityVector(const Point3D &pt, std::vector<float> _quantityVec) { ecMaterialsPlugin->setMediumECMaterialQuantityVector(pt, checkQuantities(_quantityVec)); };
+		int getNCMaterialIndexByName(std::string _NCMaterialName) { return ncMaterialsPlugin->getNCMaterialIndexByName(_NCMaterialName); };
+		std::string getNCMaterialNameByIndex(int _idx) { return ncMaterialsPlugin->getNCMaterialNameByIndex(_idx); };
+		std::vector<float> checkQuantities(std::vector<float> _qtyVec) { return ncMaterialsPlugin->checkQuantities(_qtyVec); };
+		void setMediumNCMaterialQuantityVector(const Point3D &pt, std::vector<float> _quantityVec) { ncMaterialsPlugin->setMediumNCMaterialQuantityVector(pt, checkQuantities(_quantityVec)); };
 
 		// Steppable methods
 		void constructFieldReactionCoefficients();
@@ -149,8 +149,8 @@ namespace CompuCell3D {
 		void constructCellTypeCoefficientsDeath();
 
 		void calculateMaterialToFieldInteractions(const Point3D &pt, std::vector<float> _qtyOld);
-		void calculateCellInteractions(Field3D<ECMaterialsData *> *ECMaterialsField);
-		std::tuple<float, float, std::vector<float>, std::vector<float> > calculateCellProbabilities(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0, std::vector<bool> _resultsSelect = std::vector<bool>(4, true));
+		void calculateCellInteractions(Field3D<NCMaterialsData *> *NCMaterialsField);
+		std::tuple<float, float, std::vector<float>, std::vector<float> > calculateCellProbabilities(CellG *cell, Field3D<NCMaterialsData *> *_ncmaterialsField = 0, std::vector<bool> _resultsSelect = std::vector<bool>(4, true));
 
 		int getCellTypeIndexByName(std::string _cellTypeName) {
 			std::map<std::string, int>::iterator mitr = cellTypeNames.find(_cellTypeName);
@@ -168,16 +168,16 @@ namespace CompuCell3D {
 		}
 
 		// Interface with plugin
-		virtual float calculateTotalInterfaceQuantityByMaterialIndex(CellG *cell, int _materialIdx, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
-		virtual float calculateTotalInterfaceQuantityByMaterialName(CellG *cell, std::string _materialName, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
-		virtual float calculateCellProbabilityProliferation(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
-		virtual float calculateCellProbabilityDeath(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
-		virtual float calculateCellProbabilityDifferentiation(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
-		virtual float calculateCellProbabilityAsymmetricDivision(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
-		virtual bool getCellResponseProliferation(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
-		virtual bool getCellResponseDeath(CellG *cell, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
-		virtual bool getCellResponseDifferentiation(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
-		virtual bool getCellResponseAsymmetricDivision(CellG *cell, std::string newCellType, Field3D<ECMaterialsData *> *_ecmaterialsField = 0);
+		virtual float calculateTotalInterfaceQuantityByMaterialIndex(CellG *cell, int _materialIdx, Field3D<NCMaterialsData *> *_ncmaterialsField = 0);
+		virtual float calculateTotalInterfaceQuantityByMaterialName(CellG *cell, std::string _materialName, Field3D<NCMaterialsData *> *_ncmaterialsField = 0);
+		virtual float calculateCellProbabilityProliferation(CellG *cell, Field3D<NCMaterialsData *> *_ncmaterialsField = 0);
+		virtual float calculateCellProbabilityDeath(CellG *cell, Field3D<NCMaterialsData *> *_ncmaterialsField = 0);
+		virtual float calculateCellProbabilityDifferentiation(CellG *cell, std::string newCellType, Field3D<NCMaterialsData *> *_ncmaterialsField = 0);
+		virtual float calculateCellProbabilityAsymmetricDivision(CellG *cell, std::string newCellType, Field3D<NCMaterialsData *> *_ncmaterialsField = 0);
+		virtual bool getCellResponseProliferation(CellG *cell, Field3D<NCMaterialsData *> *_ncmaterialsField = 0);
+		virtual bool getCellResponseDeath(CellG *cell, Field3D<NCMaterialsData *> *_ncmaterialsField = 0);
+		virtual bool getCellResponseDifferentiation(CellG *cell, std::string newCellType, Field3D<NCMaterialsData *> *_ncmaterialsField = 0);
+		virtual bool getCellResponseAsymmetricDivision(CellG *cell, std::string newCellType, Field3D<NCMaterialsData *> *_ncmaterialsField = 0);
 
 
 		Point3D ind2pt(unsigned int _ind);

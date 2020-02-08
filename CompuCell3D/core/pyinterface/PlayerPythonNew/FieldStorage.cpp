@@ -234,9 +234,9 @@ FieldStorage::vectorFieldCellLevel_t * FieldStorage::getVectorFieldCellLevelFiel
         return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void FieldStorage::allocateECMaterialField(Dim3D _dim, unsigned int _numMtls) {
+void FieldStorage::allocateNCMaterialField(Dim3D _dim, unsigned int _numMtls) {
 	fieldDim = _dim;
-	field3DECGraphicsData.assign(fieldDim.x, vector<vector<vector<float> > >(fieldDim.y, vector<vector<float> >(fieldDim.z, vector<float>(_numMtls))));
+	field3DNCGraphicsData.assign(fieldDim.x, vector<vector<vector<float> > >(fieldDim.y, vector<vector<float> >(fieldDim.z, vector<float>(_numMtls))));
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

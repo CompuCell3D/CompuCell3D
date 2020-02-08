@@ -20,8 +20,8 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-#ifndef ECMATERIALSDATA_H
-#define ECMATERIALSDATA_H
+#ifndef NCMATERIALSDATA_H
+#define NCMATERIALSDATA_H
 
 #include <CompuCell3D/CC3D.h>
 
@@ -29,7 +29,7 @@
 // // // #include <set>
 // // // #include <string>
 
-#include "ECMaterialsDLLSpecifier.h"
+#include "NCMaterialsDLLSpecifier.h"
 namespace CompuCell3D {
 
 	/**
@@ -37,8 +37,8 @@ namespace CompuCell3D {
 	*/
 
 	// Material class definition
-    class ECMATERIALS_EXPORT ECMaterialComponentData{
-			std::string ECMaterialName;
+    class NCMATERIALS_EXPORT NCMaterialComponentData{
+			std::string NCMaterialName;
 			float durabilityLM;
 			bool isTransferable;
 
@@ -54,11 +54,11 @@ namespace CompuCell3D {
 			std::map<std::string, float> FieldDiffusivity;
 			
 		public:
-			ECMaterialComponentData() :durabilityLM(0), isTransferable(true) {}
-			~ECMaterialComponentData() {}
+			NCMaterialComponentData() :durabilityLM(0), isTransferable(true) {}
+			~NCMaterialComponentData() {}
 
-			void setName(std::string _name){ECMaterialName=_name;}
-		    std::string getName(){return ECMaterialName;}
+			void setName(std::string _name){NCMaterialName=_name;}
+		    std::string getName(){return NCMaterialName;}
 		    void setDurabilityLM(float _LM){durabilityLM=_LM;}
 		    float getDurabilityLM(){return durabilityLM;}
 		    void setTransferable(bool _isTransferable){isTransferable=_isTransferable;}
@@ -69,7 +69,7 @@ namespace CompuCell3D {
 			void setToFieldReactionCoefficientByName(std::string _fieldName, float _val) {
 				std::map<std::string, float>::iterator mitr = toFieldReactionCoefficients.find(_fieldName);
 				if (mitr == toFieldReactionCoefficients.end()){
-					cerr << "Registering field reaction coefficient for pair (" << ECMaterialName << ", " << _fieldName << "): " << _val << endl;
+					cerr << "Registering field reaction coefficient for pair (" << NCMaterialName << ", " << _fieldName << "): " << _val << endl;
 					toFieldReactionCoefficients.insert(make_pair(_fieldName, _val));
 				}
 				else toFieldReactionCoefficients[_fieldName] = _val;
@@ -79,12 +79,12 @@ namespace CompuCell3D {
 			void setFromFieldReactionCoefficientByName(std::string _fieldName, float _val) {
 				std::map<std::string, float>::iterator mitr = fromFieldReactionCoefficients.find(_fieldName);
 				if (mitr == fromFieldReactionCoefficients.end()) {
-					cerr << "Registering field reaction coefficient for pair (" << ECMaterialName << ", " << _fieldName << "): " << _val << endl;
+					cerr << "Registering field reaction coefficient for pair (" << NCMaterialName << ", " << _fieldName << "): " << _val << endl;
 					fromFieldReactionCoefficients.insert(make_pair(_fieldName, _val));
 				}
 				else fromFieldReactionCoefficients[_fieldName] = _val;
 			}
-			// Sets a material reaction for ECMaterial name _materialName with coefficient _val of neighborhood order _order in {0, 1}
+			// Sets a material reaction for NCMaterial name _materialName with coefficient _val of neighborhood order _order in {0, 1}
 			// Neighborhood order equal to 0 denotes a reaction in a site; neighborhood order equal to 1 denotes a reaction with a first-order neighborhood site
 			// Registers material reaction if not previously registered
 			void setMaterialReactionCoefficientByName(std::string _materialName, float _val, int _order=0) {
@@ -92,7 +92,7 @@ namespace CompuCell3D {
 				std::map<std::string, std::vector<float> >::iterator mitr = materialReactionCoefficients.find(_materialName);
 				std::vector<float> thisVec(2, 0.0);
 				if (mitr == materialReactionCoefficients.end()) {
-					cerr << "Registering material reaction coefficient for pair (" << ECMaterialName << ", " << _materialName << "): " << _val << endl;
+					cerr << "Registering material reaction coefficient for pair (" << NCMaterialName << ", " << _materialName << "): " << _val << endl;
 					thisVec[_order] = _val;
 					materialReactionCoefficients.insert(make_pair(_materialName, thisVec));
 				}
@@ -113,7 +113,7 @@ namespace CompuCell3D {
 				if (_newCellType.empty()) {
 					std::map<std::string, float>::iterator mitr = CellTypeCoefficientsProliferation.find(_cellType);
 					if (mitr == CellTypeCoefficientsProliferation.end()) {
-						cerr << "Registering proliferation response coefficient for pair (" << ECMaterialName << ", " << _cellType << "): " << _val << endl;
+						cerr << "Registering proliferation response coefficient for pair (" << NCMaterialName << ", " << _cellType << "): " << _val << endl;
 						CellTypeCoefficientsProliferation.insert(make_pair(_cellType, _val));
 					}
 					else CellTypeCoefficientsProliferation[_cellType] = _val;
@@ -128,7 +128,7 @@ namespace CompuCell3D {
 				std::map<std::string, std::map<std::string, float> >::iterator mitr = CellTypeCoefficientsProliferationAsym.find(_cellType);
 				std::map<std::string, float> newCoeffs;
 				if (mitr == CellTypeCoefficientsProliferationAsym.end()) {
-					cerr << "Registering asymmetric differentiation response coefficient for pair (" << ECMaterialName << ", " << _cellType << ", " << _newCellType << "): " << _val << endl;
+					cerr << "Registering asymmetric differentiation response coefficient for pair (" << NCMaterialName << ", " << _cellType << ", " << _newCellType << "): " << _val << endl;
 					newCoeffs.insert(make_pair(_newCellType, _val));
 					CellTypeCoefficientsProliferationAsym.insert(make_pair(_cellType, newCoeffs));
 				}
@@ -136,7 +136,7 @@ namespace CompuCell3D {
 					std::map<std::string, float>thisCellTypeCoefficientsProliferationAsym = CellTypeCoefficientsProliferationAsym[_cellType];
 					std::map<std::string, float>::iterator mmitr = thisCellTypeCoefficientsProliferationAsym.find(_newCellType);
 					if (mmitr == thisCellTypeCoefficientsProliferationAsym.end()) {
-						cerr << "Registering differentiation response coefficient for pair (" << ECMaterialName << ", " << _cellType << ", " << _newCellType << "): " << _val << endl;
+						cerr << "Registering differentiation response coefficient for pair (" << NCMaterialName << ", " << _cellType << ", " << _newCellType << "): " << _val << endl;
 						thisCellTypeCoefficientsProliferationAsym.insert(make_pair(_newCellType, _val));
 						CellTypeCoefficientsProliferationAsym[_cellType] = thisCellTypeCoefficientsProliferationAsym;
 					}
@@ -151,7 +151,7 @@ namespace CompuCell3D {
 				std::map<std::string, std::map<std::string, float> >::iterator mitr = CellTypeCoefficientsDifferentiation.find(_cellType);
 				std::map<std::string, float> newCoeffs;
 				if (mitr == CellTypeCoefficientsDifferentiation.end()) {
-					cerr << "Registering differentiation response coefficient for pair (" << ECMaterialName << ", " << _cellType << ", " << _newCellType << "): " << _val << endl;
+					cerr << "Registering differentiation response coefficient for pair (" << NCMaterialName << ", " << _cellType << ", " << _newCellType << "): " << _val << endl;
 					newCoeffs.insert(make_pair(_newCellType, _val));
 					CellTypeCoefficientsDifferentiation.insert(make_pair(_cellType, newCoeffs));
 				}
@@ -159,7 +159,7 @@ namespace CompuCell3D {
 					std::map<std::string, float>thisCellTypeCoefficientsDifferentiation = CellTypeCoefficientsDifferentiation[_cellType];
 					std::map<std::string, float>::iterator mmitr = thisCellTypeCoefficientsDifferentiation.find(_newCellType);
 					if (mmitr == thisCellTypeCoefficientsDifferentiation.end()) {
-						cerr << "Registering differentiation response coefficient for pair (" << ECMaterialName << ", " << _cellType << ", " << _newCellType << "): " << _val << endl;
+						cerr << "Registering differentiation response coefficient for pair (" << NCMaterialName << ", " << _cellType << ", " << _newCellType << "): " << _val << endl;
 						thisCellTypeCoefficientsDifferentiation.insert(make_pair(_newCellType, _val));
 						CellTypeCoefficientsDifferentiation[_cellType] = thisCellTypeCoefficientsDifferentiation;
 					}
@@ -173,7 +173,7 @@ namespace CompuCell3D {
 				if (_val < 0) return;
 				std::map<std::string, float>::iterator mitr = CellTypeCoefficientsDeath.find(_cellType);
 				if (mitr == CellTypeCoefficientsDeath.end()) {
-					cerr << "Registering death response coefficient for pair (" << ECMaterialName << ", " << _cellType << "): " << _val << endl;
+					cerr << "Registering death response coefficient for pair (" << NCMaterialName << ", " << _cellType << "): " << _val << endl;
 					CellTypeCoefficientsDeath.insert(make_pair(_cellType, _val));
 				}
 				else CellTypeCoefficientsDeath[_cellType] = _val;
@@ -182,7 +182,7 @@ namespace CompuCell3D {
 			float getToFieldReactionCoefficientByName(std::string _fieldName) {
 				std::map<std::string, float>::iterator mitr = toFieldReactionCoefficients.find(_fieldName);
 				if (mitr == toFieldReactionCoefficients.end()) {
-					cerr << "Warning: requested unregistered reaction coefficients for pair (" << ECMaterialName << ", " << _fieldName << ")" << endl;
+					cerr << "Warning: requested unregistered reaction coefficients for pair (" << NCMaterialName << ", " << _fieldName << ")" << endl;
 					return 0.0;
 				}
 				else return toFieldReactionCoefficients[_fieldName];
@@ -191,7 +191,7 @@ namespace CompuCell3D {
 			float getFromFieldReactionCoefficientByName(std::string _fieldName) {
 				std::map<std::string, float>::iterator mitr = fromFieldReactionCoefficients.find(_fieldName);
 				if (mitr == fromFieldReactionCoefficients.end()) {
-					cerr << "Warning: requested unregistered reaction coefficients for pair (" << ECMaterialName << ", " << _fieldName << ")" << endl;
+					cerr << "Warning: requested unregistered reaction coefficients for pair (" << NCMaterialName << ", " << _fieldName << ")" << endl;
 					return 0.0;
 				}
 				else return fromFieldReactionCoefficients[_fieldName];
@@ -201,7 +201,7 @@ namespace CompuCell3D {
 			std::vector<float> getMaterialReactionCoefficientsByName(std::string _materialName) {
 				std::map<std::string, std::vector<float> >::iterator mitr = materialReactionCoefficients.find(_materialName);
 				if (mitr == materialReactionCoefficients.end()) {
-					cerr << "Warning: requested unregistered reaction coefficients for pair (" << ECMaterialName << ", " << _materialName << ")" << endl;
+					cerr << "Warning: requested unregistered reaction coefficients for pair (" << NCMaterialName << ", " << _materialName << ")" << endl;
 					return std::vector<float>(2, 0.0);
 				}
 				else return materialReactionCoefficients[_materialName];
@@ -217,7 +217,7 @@ namespace CompuCell3D {
 			float getCellTypeCoefficientsProliferation(std::string _cellType) {
 				std::map<std::string, float>::iterator mitr = CellTypeCoefficientsProliferation.find(_cellType);
 				if (mitr == CellTypeCoefficientsProliferation.end()) {
-					cerr << "Warning: requested unregistered proliferation response coefficient for pair (" << ECMaterialName << ", " << _cellType << ")" << endl;
+					cerr << "Warning: requested unregistered proliferation response coefficient for pair (" << NCMaterialName << ", " << _cellType << ")" << endl;
 					return 0.0;
 				}
 				else return CellTypeCoefficientsProliferation[_cellType];
@@ -226,13 +226,13 @@ namespace CompuCell3D {
 			float getCellTypeCoefficientsProliferationAsymmetric(std::string _cellType, std::string _newCellType) {
 				std::map<std::string, std::map<std::string, float> >::iterator mitr = CellTypeCoefficientsProliferationAsym.find(_cellType);
 				if (mitr == CellTypeCoefficientsProliferationAsym.end()) {
-					cerr << "Warning: requested unregistered asymmetric division response coefficient for pair (" << ECMaterialName << ", " << _cellType << ", " << _newCellType << ")" << endl;
+					cerr << "Warning: requested unregistered asymmetric division response coefficient for pair (" << NCMaterialName << ", " << _cellType << ", " << _newCellType << ")" << endl;
 					return 0.0;
 				}
 				else {
 					std::map<std::string, float>::iterator mmitr = CellTypeCoefficientsProliferationAsym[_cellType].find(_newCellType);
 					if (mmitr == CellTypeCoefficientsProliferationAsym[_cellType].end()) {
-						cerr << "Warning: requested unregistered asymmetric division response coefficient for pair (" << ECMaterialName << ", " << _cellType << ", " << _newCellType << ")" << endl;
+						cerr << "Warning: requested unregistered asymmetric division response coefficient for pair (" << NCMaterialName << ", " << _cellType << ", " << _newCellType << ")" << endl;
 						return 0.0;
 					}
 					else return CellTypeCoefficientsProliferationAsym[_cellType][_newCellType];
@@ -242,13 +242,13 @@ namespace CompuCell3D {
 			float getCellTypeCoefficientsDifferentiation(std::string _cellType, std::string _newCellType) {
 				std::map<std::string, std::map<std::string, float> >::iterator mitr = CellTypeCoefficientsDifferentiation.find(_cellType);
 				if (mitr == CellTypeCoefficientsDifferentiation.end()) {
-					cerr << "Warning: requested unregistered differentiation response coefficient for pair (" << ECMaterialName << ", " << _cellType << ", " << _newCellType << ")" << endl;
+					cerr << "Warning: requested unregistered differentiation response coefficient for pair (" << NCMaterialName << ", " << _cellType << ", " << _newCellType << ")" << endl;
 					return 0.0;
 				}
 				else {
 					std::map<std::string, float>::iterator mmitr = CellTypeCoefficientsDifferentiation[_cellType].find(_newCellType);
 					if (mmitr == CellTypeCoefficientsDifferentiation[_cellType].end()) {
-						cerr << "Warning: requested unregistered differentiation response coefficient for pair (" << ECMaterialName << ", " << _cellType << ", " << _newCellType << ")" << endl;
+						cerr << "Warning: requested unregistered differentiation response coefficient for pair (" << NCMaterialName << ", " << _cellType << ", " << _newCellType << ")" << endl;
 						return 0.0;
 					}
 					else return CellTypeCoefficientsDifferentiation[_cellType][_newCellType];
@@ -258,7 +258,7 @@ namespace CompuCell3D {
 			float getCellTypeCoefficientsDeath(std::string _cellType) {
 				std::map<std::string, float>::iterator mitr = CellTypeCoefficientsDeath.find(_cellType);
 				if (mitr == CellTypeCoefficientsDeath.end()) {
-					cerr << "Warning: requested unregistered death response coefficient for pair (" << ECMaterialName << ", " << _cellType << ")" << endl;
+					cerr << "Warning: requested unregistered death response coefficient for pair (" << NCMaterialName << ", " << _cellType << ")" << endl;
 					return 0.0;
 				}
 				else return CellTypeCoefficientsDeath[_cellType];
@@ -276,7 +276,7 @@ namespace CompuCell3D {
 			float getFieldDiffusivity(std::string _fieldName) {
 				std::map<std::string, float>::iterator mitr = FieldDiffusivity.find(_fieldName);
 				if (mitr == FieldDiffusivity.end()) {
-					cerr << "Warning: requested unregistered diffusion coefficient for pair (" << ECMaterialName << ", " << _fieldName << ")" << endl;
+					cerr << "Warning: requested unregistered diffusion coefficient for pair (" << NCMaterialName << ", " << _fieldName << ")" << endl;
 					return -1.0;
 				}
 				else return FieldDiffusivity[_fieldName];
@@ -285,50 +285,50 @@ namespace CompuCell3D {
 	};
 
 	// Field class definition
-    class ECMATERIALS_EXPORT ECMaterialsData{
-			std::vector<float> ECMaterialsQuantityVecOld;
+    class NCMATERIALS_EXPORT NCMaterialsData{
+			std::vector<float> NCMaterialsQuantityVecOld;
 
 		public:
-            ECMaterialsData():numMtls((unsigned int) 1), ECMaterialsQuantityVec(std::vector<float>(0.0)), ECMaterialsQuantityVecOld(std::vector<float>()){};
-            ~ECMaterialsData(){}
+            NCMaterialsData():numMtls((unsigned int) 1), NCMaterialsQuantityVec(std::vector<float>(0.0)), NCMaterialsQuantityVecOld(std::vector<float>()){};
+            ~NCMaterialsData(){}
 
-			ECMaterialsData(ECMaterialsData *_toCopy) {
+			NCMaterialsData(NCMaterialsData *_toCopy) {
 				numMtls = _toCopy->numMtls;
-				ECMaterialsQuantityVec = std::vector<float>(_toCopy->ECMaterialsQuantityVec);
-				ECMaterialsQuantityVecOld = std::vector<float>(_toCopy->ECMaterialsQuantityVecOld);
+				NCMaterialsQuantityVec = std::vector<float>(_toCopy->NCMaterialsQuantityVec);
+				NCMaterialsQuantityVecOld = std::vector<float>(_toCopy->NCMaterialsQuantityVecOld);
 			}
 
 			unsigned int numMtls;
-			std::vector<float> ECMaterialsQuantityVec;
+			std::vector<float> NCMaterialsQuantityVec;
 
-			void setECMaterialsQuantityVecOld() { ECMaterialsQuantityVecOld = std::vector<float>(ECMaterialsQuantityVec); }
+			void setNCMaterialsQuantityVecOld() { NCMaterialsQuantityVecOld = std::vector<float>(NCMaterialsQuantityVec); }
 
-            void setECMaterialsQuantity(unsigned int _pos, float _qty){
-                if(_pos>ECMaterialsQuantityVec.size()-1) return;
-                ECMaterialsQuantityVec[_pos]=_qty;
+            void setNCMaterialsQuantity(unsigned int _pos, float _qty){
+                if(_pos>NCMaterialsQuantityVec.size()-1) return;
+                NCMaterialsQuantityVec[_pos]=_qty;
             }
-            void setECMaterialsQuantityVec(std::vector<float> _qtyVec){
-				if (_qtyVec.size() == numMtls) ECMaterialsQuantityVec = _qtyVec;
+            void setNCMaterialsQuantityVec(std::vector<float> _qtyVec){
+				if (_qtyVec.size() == numMtls) NCMaterialsQuantityVec = _qtyVec;
 			}
-            float getECMaterialQuantity(unsigned int _pos){
-                if(_pos>ECMaterialsQuantityVec.size()-1) return 0.0;
-                return ECMaterialsQuantityVec[_pos];
+            float getNCMaterialQuantity(unsigned int _pos){
+                if(_pos>NCMaterialsQuantityVec.size()-1) return 0.0;
+                return NCMaterialsQuantityVec[_pos];
             }
-			virtual std::vector<float> getECMaterialsQuantityVec(){return ECMaterialsQuantityVec;}
-			virtual std::vector<float> getECMaterialsQuantityVecOld() { return ECMaterialsQuantityVecOld; }
-            void setNewECMaterialsQuantityVec(unsigned int _numMtls){
+			virtual std::vector<float> getNCMaterialsQuantityVec(){return NCMaterialsQuantityVec;}
+			virtual std::vector<float> getNCMaterialsQuantityVecOld() { return NCMaterialsQuantityVecOld; }
+            void setNewNCMaterialsQuantityVec(unsigned int _numMtls){
 				numMtls = _numMtls;
-				ECMaterialsQuantityVec.assign(numMtls, 0.0);
-                ECMaterialsQuantityVec[0] = 1.0;
+				NCMaterialsQuantityVec.assign(numMtls, 0.0);
+                NCMaterialsQuantityVec[0] = 1.0;
             }
 
 	};
 
 	// Cell-specific data associated with plugin and steppable
-	class ECMATERIALS_EXPORT ECMaterialCellData{
+	class NCMATERIALS_EXPORT NCMaterialCellData{
 	    public:
-	        ECMaterialCellData(){};
-	        ~ECMaterialCellData(){};
+	        NCMaterialCellData(){};
+	        ~NCMaterialCellData(){};
 
 			std::vector<float> RemodelingQuantity;
 			std::vector<float> AdhesionCoefficients;

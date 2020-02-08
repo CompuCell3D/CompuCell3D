@@ -37,7 +37,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.clusterBorderActor    = vtk.vtkActor()
         self.clusterBorderActorHex = vtk.vtkActor()
         self.cellGlyphsActor  = vtk.vtkActor()
-        self.ecmActor = vtk.vtkActor()
+        self.ncmActor = vtk.vtkActor()
         self.FPPLinksActor  = vtk.vtkActor()  # used for both white and colored links
         self.outlineActor = vtk.vtkActor()
         # self.axesActor = vtk.vtkCubeAxesActor2D()
@@ -278,21 +278,21 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.remove_actor_from_renderer(actor_label='fpp_links_actor', actor_obj=self.FPPLinksActor)
 
-    def prepare_ecm_actors(self, actor_specs, drawing_params=None):
+    def prepare_ncm_actors(self, actor_specs, drawing_params=None):
         """
-        Prepares ECMaterials actors based on actor_specs specifications
+        Prepares NCMaterials actors based on actor_specs specifications
         :param actor_specs {ActorSpecs}: specification of actors to create
         :param drawing_params: {DrawingParameters}
         :return: {dict}
         """
         actor_specs_copy = deepcopy(actor_specs)
         actor_specs_copy.actors_dict = OrderedDict()
-        actor_specs_copy.actors_dict['ecm_actor'] = self.ecmActor
+        actor_specs_copy.actors_dict['ncm_actor'] = self.ncmActor
         return actor_specs_copy
 
-    def show_ecm_actors(self, actor_specs, drawing_params=None, show_flag=True):
+    def show_ncm_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
-        Shows ECMaterials actors
+        Shows NCMaterials actors
         :param actor_specs: {ActorSpecs}
         :param drawing_params: {DrawingParameters}
         :param show_flag: {bool}
@@ -301,9 +301,9 @@ class MVCDrawView2D(MVCDrawViewBase):
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
         if show_flag:
-            self.add_actor_to_renderer(actor_label='ecm_actor', actor_obj=self.ecmActor)
+            self.add_actor_to_renderer(actor_label='ncm_actor', actor_obj=self.ncmActor)
         else:
-            self.remove_actor_from_renderer(actor_label='ecm_actor', actor_obj=self.ecmActor)
+            self.remove_actor_from_renderer(actor_label='ncm_actor', actor_obj=self.ncmActor)
 
     def setPlane(self, plane, pos):
         (self.plane, self.planePos) = (str(plane).upper(), pos)

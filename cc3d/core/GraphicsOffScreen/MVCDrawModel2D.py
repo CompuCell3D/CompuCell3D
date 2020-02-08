@@ -26,8 +26,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.clusterBorderMapperHex = None
         self.cellGlyphsMapper = None
         self.FPPLinksMapper = None
-        self.ecmMapper = None
-        self.hex_ecmMapper = None
+        self.ncmMapper = None
+        self.hex_ncmMapper = None
 
         self.outlineDim = None
 
@@ -65,8 +65,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.clusterBorderMapperHex = vtk.vtkPolyDataMapper()
         self.cellGlyphsMapper = vtk.vtkPolyDataMapper()
         self.FPPLinksMapper = vtk.vtkPolyDataMapper()
-        self.ecmMapper = vtk.vtkPolyDataMapper()
-        self.hex_ecmMapper = vtk.vtkPolyDataMapper()
+        self.ncmMapper = vtk.vtkPolyDataMapper()
+        self.hex_ncmMapper = vtk.vtkPolyDataMapper()
 
         self.outlineDim = [0, 0, 0]
 
@@ -1516,22 +1516,22 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # coloring borders
         fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
 
-    def init_ecm_actors(self, actor_specs, drawing_params=None):
+    def init_ncm_actors(self, actor_specs, drawing_params=None):
         """
-        Initializes ECMaterials actors
+        Initializes NCMaterials actors
         :param actor_specs: {ActorSpecs}
         :param drawing_params: {DrawingParameters}
         :return: None
         """
 
         if self.is_lattice_hex(drawing_params=drawing_params):
-            self.init_ecm_actors_hex(actor_specs=actor_specs, drawing_params=drawing_params)
+            self.init_ncm_actors_hex(actor_specs=actor_specs, drawing_params=drawing_params)
         else:
-            self.init_ecm_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
+            self.init_ncm_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
 
-    def init_ecm_actors_cartesian(self, actor_specs, drawing_params=None):
+    def init_ncm_actors_cartesian(self, actor_specs, drawing_params=None):
         """
-        Initializes ECMaterials actors for cartesian lattice
+        Initializes NCMaterials actors for cartesian lattice
         :param actor_specs: {ActorSpecs}
         :param drawing_params: {DrawingParameters}
         :return: None
@@ -1544,12 +1544,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
                                (field_dim.x, field_dim.y, field_dim.z))
 
         quantities = vtk.vtkDoubleArray()
-        quantities.SetName("ECMaterialQuantities")
+        quantities.SetName("NCMaterialQuantities")
         quantities_int_addr = extract_address_int_from_vtk_object(vtkObj=quantities)
 
         comp_sel = -1
 
-        self.field_extractor.fillECMaterialFieldData2D(
+        self.field_extractor.fillNCMaterialFieldData2D(
             quantities_int_addr,
             self.currentDrawingParameters.plane,
             self.currentDrawingParameters.planePos,
@@ -1558,13 +1558,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
         dim_0 = dim[0]
         dim_1 = dim[1]
 
-        ecm_data = vtk.vtkImageData()
-        ecm_data.SetDimensions(dim_0, dim_1, 1)
+        ncm_data = vtk.vtkImageData()
+        ncm_data.SetDimensions(dim_0, dim_1, 1)
 
         if VTK_MAJOR_VERSION >= 6:
-            ecm_data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 3)
+            ncm_data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 3)
         else:
-            ecm_data.SetScalarTypeToFloat()
+            ncm_data.SetScalarTypeToFloat()
 
         colors_lut = self.get_material_lookup_table()
 
@@ -1572,32 +1572,32 @@ class MVCDrawModel2D(MVCDrawModelBase):
         colors.SetName("Colors")
         colors_int_addr = extract_address_int_from_vtk_object(vtkObj=colors)
         colors_lut_addr = extract_address_int_from_vtk_object(vtkObj=colors_lut)
-        self.field_extractor.fillECMaterialDisplayField(
+        self.field_extractor.fillNCMaterialDisplayField(
             colors_int_addr,
             quantities_int_addr,
             colors_lut_addr)
 
-        ecm_data.GetPointData().SetScalars(colors)
+        ncm_data.GetPointData().SetScalars(colors)
 
-        ecm_filter = vtk.vtkImageDataGeometryFilter()
+        ncm_filter = vtk.vtkImageDataGeometryFilter()
         if VTK_MAJOR_VERSION >= 6:
-            ecm_filter.SetInputData(ecm_data)
+            ncm_filter.SetInputData(ncm_data)
         else:
-            ecm_filter.SetInput(ecm_data)
+            ncm_filter.SetInput(ncm_data)
 
-        self.ecmMapper.SetInputConnection(ecm_filter.GetOutputPort())
+        self.ncmMapper.SetInputConnection(ncm_filter.GetOutputPort())
 
-        self.ecmMapper.ScalarVisibilityOn()
-        self.ecmMapper.SetScalarRange(0, 1)
-        self.ecmMapper.SetColorModeToDirectScalars()
+        self.ncmMapper.ScalarVisibilityOn()
+        self.ncmMapper.SetScalarRange(0, 1)
+        self.ncmMapper.SetColorModeToDirectScalars()
 
-        ecm_actor = actors_dict['ecm_actor']
-        ecm_actor.SetMapper(self.ecmMapper)
-        ecm_actor.GetProperty().SetInterpolationToFlat()
+        ncm_actor = actors_dict['ncm_actor']
+        ncm_actor.SetMapper(self.ncmMapper)
+        ncm_actor.GetProperty().SetInterpolationToFlat()
 
-    def init_ecm_actors_hex(self, actor_specs, drawing_params=None):
+    def init_ncm_actors_hex(self, actor_specs, drawing_params=None):
         """
-        Initializes ECMaterials actors for cartesian lattice
+        Initializes NCMaterials actors for cartesian lattice
         :param actor_specs: {ActorSpecs}
         :param drawing_params: {DrawingParameters}
         :return: None
@@ -1606,7 +1606,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         actors_dict = actor_specs.actors_dict
 
         quantities = vtk.vtkDoubleArray()
-        quantities.SetName("ECMaterialQuantities")
+        quantities.SetName("NCMaterialQuantities")
         quantities_int_addr = extract_address_int_from_vtk_object(vtkObj=quantities)
 
         hex_cells = vtk.vtkCellArray()
@@ -1615,7 +1615,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         hex_points = vtk.vtkPoints()
         hex_points_int_addr = extract_address_int_from_vtk_object(vtkObj=hex_points)
 
-        self.field_extractor.fillECMaterialFieldData2DHex(
+        self.field_extractor.fillNCMaterialFieldData2DHex(
             quantities_int_addr,
             hex_cells_int_addr,
             hex_points_int_addr,
@@ -1629,24 +1629,24 @@ class MVCDrawModel2D(MVCDrawModelBase):
         colors.SetName("Colors")
         colors_int_addr = extract_address_int_from_vtk_object(vtkObj=colors)
         colors_lut_addr = extract_address_int_from_vtk_object(vtkObj=colors_lut)
-        self.field_extractor.fillECMaterialDisplayField(
+        self.field_extractor.fillNCMaterialDisplayField(
             colors_int_addr,
             quantities_int_addr,
             colors_lut_addr)
 
-        ecm_data = vtk.vtkPolyData()
-        ecm_data.SetPoints(hex_points)
-        ecm_data.SetPolys(hex_cells)
-        ecm_data.GetCellData().SetScalars(colors)
+        ncm_data = vtk.vtkPolyData()
+        ncm_data.SetPoints(hex_points)
+        ncm_data.SetPolys(hex_cells)
+        ncm_data.GetCellData().SetScalars(colors)
 
-        self.hex_ecmMapper.SetInputData(ecm_data)
-        self.hex_ecmMapper.ScalarVisibilityOn()
-        self.hex_ecmMapper.SetScalarRange(0, 1)
-        self.hex_ecmMapper.SetColorModeToDirectScalars()
+        self.hex_ncmMapper.SetInputData(ncm_data)
+        self.hex_ncmMapper.ScalarVisibilityOn()
+        self.hex_ncmMapper.SetScalarRange(0, 1)
+        self.hex_ncmMapper.SetColorModeToDirectScalars()
 
-        ecm_actor = actors_dict['ecm_actor']
-        ecm_actor.SetMapper(self.hex_ecmMapper)
-        ecm_actor.GetProperty().SetInterpolationToFlat()
+        ncm_actor = actors_dict['ncm_actor']
+        ncm_actor.SetMapper(self.hex_ncmMapper)
+        ncm_actor.GetProperty().SetInterpolationToFlat()
 
     # Optimize code?
     def dimOrder(self, plane):

@@ -194,7 +194,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # determine if some relevant plugins are defined in the model
         self.pluginFPPDefined = False  # FocalPointPlasticity
         self.pluginCOMDefined = False  # CenterOfMass
-        self.pluginECMDefined = False  # ECMaterials
+        self.pluginNCMDefined = False  # NCMaterials
 
         # Note: we cannot check the plugins here as CompuCellSetup.cc3dXML2ObjConverter.root is not defined
 
@@ -262,7 +262,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.graphicsWindowVisDict[dict_key] = (self.cells_act.isChecked(), self.border_act.isChecked(),
                                                 self.cluster_border_act.isChecked(), self.cell_glyphs_act.isChecked(),
-                                                self.fpp_links_act.isChecked(), self.ECMaterials_act.isChecked())
+                                                self.fpp_links_act.isChecked(), self.NCMaterials_act.isChecked())
 
     def update_window_menu(self) -> None:
         """
@@ -1108,7 +1108,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.cluster_border_act.triggered.connect(self.__checkClusterBorder)
         self.cell_glyphs_act.triggered.connect(self.__checkCellGlyphs)
         self.fpp_links_act.triggered.connect(self.__checkFPPLinks)
-        self.ECMaterials_act.triggered.connect(self.__checkECM)
+        self.NCMaterials_act.triggered.connect(self.__checkNCM)
 
         self.limits_act.triggered.connect(self.__checkLimits)
         self.config_act.triggered.connect(self.__showConfigDialog)
@@ -1342,10 +1342,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.fieldExtractor.init(simObj)
 
-        if CompuCellSetup.simulation_utils.check_ecmaterials_active():
+        if CompuCellSetup.simulation_utils.check_ncmaterials_active():
             material_names_and_ids = CompuCellSetup.simulation_utils.extract_material_names_and_ids()
-            self.fieldStorage.allocateECMaterialField(self.fieldDim, len(material_names_and_ids))
-            self.fieldExtractor.initECMaterials(cc3d.cpp.CompuCell.getECMaterialsPlugin())
+            self.fieldStorage.allocateNCMaterialField(self.fieldDim, len(material_names_and_ids))
+            self.fieldExtractor.initNCMaterials(cc3d.cpp.CompuCell.getNCMaterialsPlugin())
 
         lattice_type_str = CompuCellSetup.simulation_utils.extract_lattice_type()
 
@@ -2536,10 +2536,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             #            print MODULENAME,"setFieldTypes():  Got this conc field: ",fieldName
             self.fieldTypes[fieldName] = FIELD_TYPES[1]
 
-        # Add ECMaterials Fields
-        if CompuCellSetup.simulation_utils.check_ecmaterials_active():
-            ecmaterials_plugin = cc3d.cpp.CompuCell.getECMaterialsPlugin()
-            materials_name_vec = ecmaterials_plugin.getMaterialNameVector()
+        # Add NCMaterials Fields
+        if CompuCellSetup.simulation_utils.check_ncmaterials_active():
+            ncmaterials_plugin = cc3d.cpp.CompuCell.getNCMaterialsPlugin()
+            materials_name_vec = ncmaterials_plugin.getMaterialNameVector()
             for material_name in materials_name_vec:
                 self.fieldTypes[material_name] = FIELD_TYPES[2]
 
@@ -2573,7 +2573,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if cc3d_xml_2_obj_converter is not None:
             self.pluginCOMDefined = False
             self.pluginFPPDefined = False
-            self.pluginECMDefined = False
+            self.pluginNCMDefined = False
 
             self.root_element = cc3d_xml_2_obj_converter.root
             elms = self.root_element.getElements("Plugin")
@@ -2587,8 +2587,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 if plugin_name == "CenterOfMass":
                     self.pluginCOMDefined = True
 
-                if plugin_name == "ECMaterials":
-                    self.pluginECMDefined = True
+                if plugin_name == "NCMaterials":
+                    self.pluginNCMDefined = True
 
             # If appropriate, disable/enable Vis menu options
             if not self.pluginFPPDefined:
@@ -2605,12 +2605,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
             else:
                 self.cell_glyphs_act.setEnabled(True)
 
-            if not self.pluginECMDefined:
-                self.ECMaterials_act.setEnabled(False)
-                self.ECMaterials_act.setChecked(False)
-                Configuration.setSetting("ECMaterialsOn", False)
+            if not self.pluginNCMDefined:
+                self.NCMaterials_act.setEnabled(False)
+                self.NCMaterials_act.setChecked(False)
+                Configuration.setSetting("NCMaterialsOn", False)
             else:
-                self.ECMaterials_act.setEnabled(True)
+                self.NCMaterials_act.setEnabled(True)
 
         # ------------------
         if not self.mainGraphicsWidget: return
@@ -3104,29 +3104,29 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         pass
 
-    def __checkECM(self, checked):
+    def __checkNCM(self, checked):
         '''
-        Slot that triggers display of ECMaterials
+        Slot that triggers display of NCMaterials
         :param checked:
         :return:
         '''
 
-        Configuration.setSetting("ECMaterialsOn", checked)
+        Configuration.setSetting("NCMaterialsOn", checked)
 
         # Should be disabled when the simulation is not loaded!
         self.simulation.drawMutex.lock()
         self.update_active_window_vis_flags()
 
-        if self.ECMaterials_act.isEnabled():
+        if self.NCMaterials_act.isEnabled():
 
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
                 graphicsWidget = win.widget()
                 try:
                     if checked:
-                        self.ECMaterials_act.setChecked(True)
+                        self.NCMaterials_act.setChecked(True)
                         win.activateWindow()
                     else:
-                        self.ECMaterials_act.setChecked(False)
+                        self.NCMaterials_act.setChecked(False)
                         win.activateWindow()
 
                 except AttributeError as e:

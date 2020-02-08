@@ -96,7 +96,7 @@ def extract_material_names_and_ids() -> dict:
     if cc3d_xml2_obj_converter is None:
         return {}
 
-    if not check_ecmaterials_active():
+    if not check_ncmaterials_active():
         return {}
 
     plugin_elements = cc3d_xml2_obj_converter.root.getElements("Plugin")
@@ -105,8 +105,8 @@ def extract_material_names_and_ids() -> dict:
     material_id_material_name_dict = {}
     for element in list_plugin:
 
-        if element.getAttribute("Name") == "ECMaterials":
-            material_elements = element.getElements("ECMaterial")
+        if element.getAttribute("Name") == "NCMaterials":
+            material_elements = element.getElements("NCMaterial")
 
             list_material_elements = CC3DXMLListPy(material_elements)
             material_id = 0
@@ -118,13 +118,13 @@ def extract_material_names_and_ids() -> dict:
     return material_id_material_name_dict
 
 
-def check_ecmaterials_active():
+def check_ncmaterials_active():
     """
-    Checks status of ECMaterials plugin; returns true if active, false if inactive
+    Checks status of NCMaterials plugin; returns true if active, false if inactive
     :return {bool}:
     """
     if CompuCellSetup.persistent_globals.simulator is not None:
-        return CompuCellSetup.persistent_globals.simulator.pluginManager.isLoaded('ECMaterials')
+        return CompuCellSetup.persistent_globals.simulator.pluginManager.isLoaded('NCMaterials')
     else:
         return False
 

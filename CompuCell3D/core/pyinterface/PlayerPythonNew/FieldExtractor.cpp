@@ -6,7 +6,7 @@
 #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
-#include <CompuCell3D/plugins/ECMaterials/ECMaterialsPlugin.h>
+#include <CompuCell3D/plugins/NCMaterials/NCMaterialsPlugin.h>
 #include <Utils/Coordinates3D.h>
 #include <vtkIntArray.h>
 #include <vtkLongArray.h>
@@ -27,7 +27,7 @@ using namespace CompuCell3D;
 
 #include "FieldExtractor.h"
 
-FieldExtractor::FieldExtractor():fsPtr(0),potts(0),sim(0),ecmPlugin(0)
+FieldExtractor::FieldExtractor():fsPtr(0),potts(0),sim(0),ncmPlugin(0)
 {
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1628,14 +1628,14 @@ bool FieldExtractor::fillScalarFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,v
 	FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_conFieldName); 
 
 	if (!conFieldPtr) {
-		if (!ecmPlugin) {
+		if (!ncmPlugin) {
 			return false;
 		}
 		else { 
-			int ECMaterialIndex;
-			ECMaterialIndex = ecmPlugin->getECMaterialIndexByName(_conFieldName);
-			if (ECMaterialIndex < 0) { return false; }
-			fillECMaterialFieldData2DHex(_conArrayAddr, _hexCellsArrayAddr, _pointsArrayAddr, _plane, _pos, ECMaterialIndex);
+			int NCMaterialIndex;
+			NCMaterialIndex = ncmPlugin->getNCMaterialIndexByName(_conFieldName);
+			if (NCMaterialIndex < 0) { return false; }
+			fillNCMaterialFieldData2DHex(_conArrayAddr, _hexCellsArrayAddr, _pointsArrayAddr, _plane, _pos, NCMaterialIndex);
 			return true;
 		}
 	}
@@ -1712,14 +1712,14 @@ bool FieldExtractor::fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArray
 	FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_conFieldName); 
 
 	if (!conFieldPtr) {
-		if (!ecmPlugin) {
+		if (!ncmPlugin) {
 			return false;
 		}
 		else {
-			int ECMaterialIndex;
-			ECMaterialIndex = ecmPlugin->getECMaterialIndexByName(_conFieldName);
-			if (ECMaterialIndex < 0) { return false; }
-			fillECMaterialData2DCartesian(_conArrayAddr, _cartesianCellsArrayAddr, _pointsArrayAddr, _plane, _pos, ECMaterialIndex);
+			int NCMaterialIndex;
+			NCMaterialIndex = ncmPlugin->getNCMaterialIndexByName(_conFieldName);
+			if (NCMaterialIndex < 0) { return false; }
+			fillNCMaterialData2DCartesian(_conArrayAddr, _cartesianCellsArrayAddr, _pointsArrayAddr, _plane, _pos, NCMaterialIndex);
 			return true;
 		}
 	}
@@ -2036,14 +2036,14 @@ bool FieldExtractor::fillScalarFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std:
 	FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_conFieldName); 
 
 	if (!conFieldPtr){
-		if (!ecmPlugin) {
+		if (!ncmPlugin) {
 			return false;
 		}
 		else {
-			int ECMaterialIndex;
-			ECMaterialIndex = ecmPlugin->getECMaterialIndexByName(_conFieldName);
-			if (ECMaterialIndex < 0) { return false; }
-			fillECMaterialFieldData2D(_conArrayAddr, _plane, _pos, ECMaterialIndex);
+			int NCMaterialIndex;
+			NCMaterialIndex = ncmPlugin->getNCMaterialIndexByName(_conFieldName);
+			if (NCMaterialIndex < 0) { return false; }
+			fillNCMaterialFieldData2D(_conArrayAddr, _plane, _pos, NCMaterialIndex);
 			return true;
 		}
 	}
@@ -2704,14 +2704,14 @@ bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk
 	FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_conFieldName);
 
 	if (!conFieldPtr) {
-		if (!ecmPlugin) {
+		if (!ncmPlugin) {
 			return false;
 		}
 		else {
-			int ECMaterialIndex;
-			ECMaterialIndex = ecmPlugin->getECMaterialIndexByName(_conFieldName);
-			if (ECMaterialIndex < 0) { return false; }
-			fillECMaterialFieldData3D(_conArrayAddr, ECMaterialIndex);
+			int NCMaterialIndex;
+			NCMaterialIndex = ncmPlugin->getNCMaterialIndexByName(_conFieldName);
+			if (NCMaterialIndex < 0) { return false; }
+			fillNCMaterialFieldData3D(_conArrayAddr, NCMaterialIndex);
 			return true;
 		}
 	}
@@ -2885,33 +2885,33 @@ bool FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArray
 			return true;
 }
 
-void FieldExtractor::initECMaterials(ECMaterialsPlugin *_ecmPlugin) {
-	ecmPlugin = _ecmPlugin;
+void FieldExtractor::initNCMaterials(NCMaterialsPlugin *_ncmPlugin) {
+	ncmPlugin = _ncmPlugin;
 }
 
-void FieldExtractor::extractECMaterialField() {
+void FieldExtractor::extractNCMaterialField() {
 	Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
 	Dim3D fieldDim = cellFieldG->getDim();
 	Point3D pt;
 
-	unsigned int numberOfMaterials = ecmPlugin->getNumberOfMaterials();
-	Field3D<ECMaterialsData *> *ECMaterialsField = ecmPlugin->getECMaterialField();
+	unsigned int numberOfMaterials = ncmPlugin->getNumberOfMaterials();
+	Field3D<NCMaterialsData *> *NCMaterialsField = ncmPlugin->getNCMaterialField();
 	CellG *cell;
 
 	for (pt.x = 0; pt.x < fieldDim.x; ++pt.x)
 		for (pt.y = 0; pt.y < fieldDim.y; ++pt.y)
 			for (pt.z = 0; pt.z < fieldDim.z; ++pt.z) {
 				cell = cellFieldG->get(pt);
-				if (!cell) { fsPtr->field3DECGraphicsData[pt.x][pt.y][pt.z] = ECMaterialsField->get(pt)->ECMaterialsQuantityVec; }
+				if (!cell) { fsPtr->field3DNCGraphicsData[pt.x][pt.y][pt.z] = NCMaterialsField->get(pt)->NCMaterialsQuantityVec; }
 			}
 }
 
-void FieldExtractor::fillECMaterialFieldData2D(vtk_obj_addr_int_t _ecmQuantityArrayAddr, std::string _plane, int _pos, int _compSel) {
+void FieldExtractor::fillNCMaterialFieldData2D(vtk_obj_addr_int_t _ncmQuantityArrayAddr, std::string _plane, int _pos, int _compSel) {
 
 	Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
 	Dim3D fieldDim = cellFieldG->getDim();
 
-	Field3D<ECMaterialsData *> *ECMaterialsField = ecmPlugin->getECMaterialField();
+	Field3D<NCMaterialsData *> *NCMaterialsField = ncmPlugin->getNCMaterialField();
 
 	vector<int> fieldDimVec(3, 0);
 	fieldDimVec[0] = fieldDim.x;
@@ -2929,7 +2929,7 @@ void FieldExtractor::fillECMaterialFieldData2D(vtk_obj_addr_int_t _ecmQuantityAr
 	int numberOfMaterials;
 	std::vector<int> compSelVec;
 	if (_compSel < 0) {
-		numberOfMaterials = (int)ecmPlugin->getNumberOfMaterials();
+		numberOfMaterials = (int)ncmPlugin->getNumberOfMaterials();
 		for (int i = 0; i < numberOfMaterials; ++i) { compSelVec.push_back(i); }
 	}
 	else {
@@ -2937,7 +2937,7 @@ void FieldExtractor::fillECMaterialFieldData2D(vtk_obj_addr_int_t _ecmQuantityAr
 		compSelVec.push_back(_compSel);
 	}
 
-	vtkDoubleArray *_quantityArray = (vtkDoubleArray *)_ecmQuantityArrayAddr;
+	vtkDoubleArray *_quantityArray = (vtkDoubleArray *)_ncmQuantityArrayAddr;
 	int numberOfTuples = dim[1] * dim[0];
 	_quantityArray->SetNumberOfComponents(numberOfMaterials);
 	_quantityArray->SetNumberOfTuples(numberOfTuples);
@@ -2947,7 +2947,7 @@ void FieldExtractor::fillECMaterialFieldData2D(vtk_obj_addr_int_t _ecmQuantityAr
 	Point3D pt;
 	vector<int> ptVec(3, 0);
 	CellG* cell;
-	std::vector<float> ECMaterialsQuantityVec;
+	std::vector<float> NCMaterialsQuantityVec;
 	float thisQty;
 	double thisQtyDbl;
 
@@ -2964,9 +2964,9 @@ void FieldExtractor::fillECMaterialFieldData2D(vtk_obj_addr_int_t _ecmQuantityAr
 			cell = cellFieldG->get(pt);
 
 			if (!cell) {
-				ECMaterialsQuantityVec = ECMaterialsField->get(pt)->ECMaterialsQuantityVec;
+				NCMaterialsQuantityVec = NCMaterialsField->get(pt)->NCMaterialsQuantityVec;
 				for (int k = 0; k < numberOfMaterials; ++k) {
-					_quantityArray->SetComponent(offset, k, (double)ECMaterialsQuantityVec[compSelVec[k]]);
+					_quantityArray->SetComponent(offset, k, (double)NCMaterialsQuantityVec[compSelVec[k]]);
 				}
 			}
 			else {
@@ -2976,14 +2976,14 @@ void FieldExtractor::fillECMaterialFieldData2D(vtk_obj_addr_int_t _ecmQuantityAr
 		}
 }
 
-void FieldExtractor::fillECMaterialFieldData2DHex(vtk_obj_addr_int_t _ecmQuantityArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos, int _compSel) {
+void FieldExtractor::fillNCMaterialFieldData2DHex(vtk_obj_addr_int_t _ncmQuantityArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos, int _compSel) {
 	vtkPoints *_pointsArray = (vtkPoints *)_pointsArrayAddr;
 	vtkCellArray * _hexCellsArray = (vtkCellArray*)_hexCellsArrayAddr;
 
 	Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
 	Dim3D fieldDim = cellFieldG->getDim();
 
-	Field3D<ECMaterialsData *> *ECMaterialsField = ecmPlugin->getECMaterialField();
+	Field3D<NCMaterialsData *> *NCMaterialsField = ncmPlugin->getNCMaterialField();
 
 	vector<int> fieldDimVec(3, 0);
 	fieldDimVec[0] = fieldDim.x;
@@ -3001,7 +3001,7 @@ void FieldExtractor::fillECMaterialFieldData2DHex(vtk_obj_addr_int_t _ecmQuantit
 	int numberOfMaterials;
 	std::vector<int> compSelVec;
 	if (_compSel < 0) {
-		numberOfMaterials = (int)ecmPlugin->getNumberOfMaterials();
+		numberOfMaterials = (int)ncmPlugin->getNumberOfMaterials();
 		for (int i = 0; i < numberOfMaterials; ++i) { compSelVec.push_back(i); }
 	}
 	else {
@@ -3009,7 +3009,7 @@ void FieldExtractor::fillECMaterialFieldData2DHex(vtk_obj_addr_int_t _ecmQuantit
 		compSelVec.push_back(_compSel);
 	}
 
-	vtkDoubleArray *_quantityArray = (vtkDoubleArray *)_ecmQuantityArrayAddr;
+	vtkDoubleArray *_quantityArray = (vtkDoubleArray *)_ncmQuantityArrayAddr;
 	_quantityArray->SetNumberOfComponents(numberOfMaterials);
 	_quantityArray->SetNumberOfTuples(dim[1] * dim[0]);
 
@@ -3019,7 +3019,7 @@ void FieldExtractor::fillECMaterialFieldData2DHex(vtk_obj_addr_int_t _ecmQuantit
 	vector<int> ptVec(3, 0);
 	long pc = 0;
 	CellG* cell;
-	std::vector<float> ECMaterialsQuantityVec;
+	std::vector<float> NCMaterialsQuantityVec;
 
 	for (int j = 0; j<dim[1]; ++j)
 		for (int i = 0; i<dim[0]; ++i) {
@@ -3048,9 +3048,9 @@ void FieldExtractor::fillECMaterialFieldData2DHex(vtk_obj_addr_int_t _ecmQuantit
 			_hexCellsArray->InsertCellPoint(pc - 1);
 
 			if (!cell) {
-				ECMaterialsQuantityVec = ECMaterialsField->get(pt)->ECMaterialsQuantityVec;
+				NCMaterialsQuantityVec = NCMaterialsField->get(pt)->NCMaterialsQuantityVec;
 				for (int k = 0; k < numberOfMaterials; ++k) {
-					_quantityArray->SetComponent(offset, k, (double) ECMaterialsQuantityVec[compSelVec[k]]);
+					_quantityArray->SetComponent(offset, k, (double) NCMaterialsQuantityVec[compSelVec[k]]);
 				}
 			}
 			else {
@@ -3062,14 +3062,14 @@ void FieldExtractor::fillECMaterialFieldData2DHex(vtk_obj_addr_int_t _ecmQuantit
 		}
 }
 
-void FieldExtractor::fillECMaterialData2DCartesian(vtk_obj_addr_int_t _ecmQuantityArrayAddr, vtk_obj_addr_int_t _cartesianCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos, int _compSel) {
+void FieldExtractor::fillNCMaterialData2DCartesian(vtk_obj_addr_int_t _ncmQuantityArrayAddr, vtk_obj_addr_int_t _cartesianCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos, int _compSel) {
 	vtkPoints *_pointsArray = (vtkPoints *)_pointsArrayAddr;
 	vtkCellArray * _cartesianCellsArray = (vtkCellArray*)_cartesianCellsArrayAddr;
 	
 	Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
 	Dim3D fieldDim = cellFieldG->getDim();
 
-	Field3D<ECMaterialsData *> *ECMaterialsField = ecmPlugin->getECMaterialField();
+	Field3D<NCMaterialsData *> *NCMaterialsField = ncmPlugin->getNCMaterialField();
 
 	vector<int> fieldDimVec(3, 0);
 	fieldDimVec[0] = fieldDim.x;
@@ -3087,7 +3087,7 @@ void FieldExtractor::fillECMaterialData2DCartesian(vtk_obj_addr_int_t _ecmQuanti
 	int numberOfMaterials;
 	std::vector<int> compSelVec;
 	if (_compSel < 0) {
-		numberOfMaterials = (int)ecmPlugin->getNumberOfMaterials();
+		numberOfMaterials = (int)ncmPlugin->getNumberOfMaterials();
 		for (int i = 0; i < numberOfMaterials; ++i) { compSelVec.push_back(i); }
 	}
 	else {
@@ -3095,7 +3095,7 @@ void FieldExtractor::fillECMaterialData2DCartesian(vtk_obj_addr_int_t _ecmQuanti
 		compSelVec.push_back(_compSel);
 	}
 
-	vtkDoubleArray *_quantityArray = (vtkDoubleArray *)_ecmQuantityArrayAddr;
+	vtkDoubleArray *_quantityArray = (vtkDoubleArray *)_ncmQuantityArrayAddr;
 	_quantityArray->SetNumberOfComponents(numberOfMaterials);
 	_quantityArray->SetNumberOfTuples(dim[1] * dim[0]);
 
@@ -3105,7 +3105,7 @@ void FieldExtractor::fillECMaterialData2DCartesian(vtk_obj_addr_int_t _ecmQuanti
 	vector<int> ptVec(3, 0);
 	long pc = 0;
 	CellG* cell;
-	std::vector<float> ECMaterialsQuantityVec;
+	std::vector<float> NCMaterialsQuantityVec;
 
 	for (int j = 0; j<dim[1]; ++j)
 		for (int i = 0; i<dim[0]; ++i) {
@@ -3133,9 +3133,9 @@ void FieldExtractor::fillECMaterialData2DCartesian(vtk_obj_addr_int_t _ecmQuanti
 			_cartesianCellsArray->InsertCellPoint(pc - 1);
 
 			if (!cell) {
-				ECMaterialsQuantityVec = ECMaterialsField->get(pt)->ECMaterialsQuantityVec;
+				NCMaterialsQuantityVec = NCMaterialsField->get(pt)->NCMaterialsQuantityVec;
 				for (int k = 0; k < numberOfMaterials; ++k) {
-					_quantityArray->SetComponent(offset, k, (double)ECMaterialsQuantityVec[compSelVec[k]]);
+					_quantityArray->SetComponent(offset, k, (double)NCMaterialsQuantityVec[compSelVec[k]]);
 				}
 			}
 			else {
@@ -3147,17 +3147,17 @@ void FieldExtractor::fillECMaterialData2DCartesian(vtk_obj_addr_int_t _ecmQuanti
 		}
 }
 
-void FieldExtractor::fillECMaterialFieldData3D(vtk_obj_addr_int_t _ecmQuantityArrayAddr, int _compSel) {
+void FieldExtractor::fillNCMaterialFieldData3D(vtk_obj_addr_int_t _ncmQuantityArrayAddr, int _compSel) {
 
 	Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
 	Dim3D fieldDim = cellFieldG->getDim();
 
-	Field3D<ECMaterialsData *> *ECMaterialsField = ecmPlugin->getECMaterialField();
+	Field3D<NCMaterialsData *> *NCMaterialsField = ncmPlugin->getNCMaterialField();
 
 	int numberOfMaterials;
 	std::vector<int> compSelVec;
 	if (_compSel < 0) {
-		numberOfMaterials = (int)ecmPlugin->getNumberOfMaterials();
+		numberOfMaterials = (int)ncmPlugin->getNumberOfMaterials();
 		for (int i = 0; i < numberOfMaterials; ++i) { compSelVec.push_back(i); }
 	}
 	else { 
@@ -3165,7 +3165,7 @@ void FieldExtractor::fillECMaterialFieldData3D(vtk_obj_addr_int_t _ecmQuantityAr
 		compSelVec.push_back(_compSel);
 	}
 	
-	vtkDoubleArray *_quantityArray = (vtkDoubleArray *)_ecmQuantityArrayAddr;
+	vtkDoubleArray *_quantityArray = (vtkDoubleArray *)_ncmQuantityArrayAddr;
 	_quantityArray->SetNumberOfComponents(numberOfMaterials);
 	_quantityArray->SetNumberOfTuples(fieldDim.x*fieldDim.y*fieldDim.z);
 	
@@ -3174,7 +3174,7 @@ void FieldExtractor::fillECMaterialFieldData3D(vtk_obj_addr_int_t _ecmQuantityAr
 	Point3D pt;
 	vector<int> ptVec(3, 0);
 	CellG* cell;
-	std::vector<float> ECMaterialsQuantityVec(numberOfMaterials);
+	std::vector<float> NCMaterialsQuantityVec(numberOfMaterials);
 
 	for (int k = 0; k<fieldDim.z; ++k)
 		for (int j = 0; j<fieldDim.y; ++j)
@@ -3186,9 +3186,9 @@ void FieldExtractor::fillECMaterialFieldData3D(vtk_obj_addr_int_t _ecmQuantityAr
 				cell = cellFieldG->get(pt);
 
 				if (!cell) {
-					ECMaterialsQuantityVec = ECMaterialsField->get(pt)->ECMaterialsQuantityVec;
+					NCMaterialsQuantityVec = NCMaterialsField->get(pt)->NCMaterialsQuantityVec;
 					for (int l = 0; l < numberOfMaterials; ++l) {
-						_quantityArray->SetComponent(offset, l, (double) ECMaterialsQuantityVec[compSelVec[l]]);
+						_quantityArray->SetComponent(offset, l, (double) NCMaterialsQuantityVec[compSelVec[l]]);
 					}
 				}
 				else {
@@ -3200,7 +3200,7 @@ void FieldExtractor::fillECMaterialFieldData3D(vtk_obj_addr_int_t _ecmQuantityAr
 			}
 }
 
-void FieldExtractor::fillECMaterialDisplayField(vtk_obj_addr_int_t _colorsArrayAddr, vtk_obj_addr_int_t _quantityArrayAddr, vtk_obj_addr_int_t _colors_lutAddr) {
+void FieldExtractor::fillNCMaterialDisplayField(vtk_obj_addr_int_t _colorsArrayAddr, vtk_obj_addr_int_t _quantityArrayAddr, vtk_obj_addr_int_t _colors_lutAddr) {
 
 	vtkDoubleArray *_colorArray = (vtkDoubleArray *)_colorsArrayAddr;
 	vtkDoubleArray *_quantityArray = (vtkDoubleArray *)_quantityArrayAddr;

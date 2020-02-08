@@ -84,7 +84,7 @@
       <e Name="DisplayConsole" Type="bool">True</e>
       <e Name="DisplayLatticeData" Type="bool">False</e>
       <e Name="DisplayModelEditor" Type="bool">True</e>
-      <e Name="ECMaterialsOn" Type="bool">False</e>
+      <e Name="NCMaterialsOn" Type="bool">False</e>
       <e Name="FloatingWindows" Type="bool">False</e>
       <e Name="FPPLinksColorOn" Type="bool">False</e>
       <e Name="FPPLinksOn" Type="bool">False</e>

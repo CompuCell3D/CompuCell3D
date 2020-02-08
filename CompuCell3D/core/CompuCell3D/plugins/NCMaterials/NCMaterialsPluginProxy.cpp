@@ -20,13 +20,13 @@
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
  *************************************************************************/
 
-#include "ECMaterialsPlugin.h"
+#include "NCMaterialsPlugin.h"
 
 #include <CompuCell3D/Simulator.h>
 using namespace CompuCell3D;
 
 #include <BasicUtils/BasicPluginProxy.h>
 
-BasicPluginProxy<Plugin, ECMaterialsPlugin>
-ECMaterialsProxy("ECMaterials", "Extracellular materials model with volume exclusion, local cell-material adhesion, material durability, and simple material advection modeling",
+BasicPluginProxy<Plugin, NCMaterialsPlugin>
+NCMaterialsProxy("NCMaterials", "Noncellular materials model with volume exclusion, local cell-material adhesion, material durability, and simple material advection modeling",
 	     &Simulator::pluginManager);

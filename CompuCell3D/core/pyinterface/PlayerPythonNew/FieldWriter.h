@@ -8,7 +8,7 @@
 #include "FieldStorage.h"
 
 #include <CompuCell3D/Potts3D/Cell.h>
-#include <CompuCell3D/plugins/ECMaterials/ECMaterialsPlugin.h>
+#include <CompuCell3D/plugins/NCMaterials/NCMaterialsPlugin.h>
 
 #include "FieldExtractorDLLSpecifier.h"
 
@@ -29,13 +29,13 @@ namespace CompuCell3D{
 	class Potts3D;
 	class Simulator;
 	class Dim3D;
-	class ECMaterialsPlugin;
+	class NCMaterialsPlugin;
 
 	class FIELDEXTRACTOR_EXPORT  FieldWriter{
 	public:
 		Potts3D * potts;
 		Simulator *sim;
-		ECMaterialsPlugin *ecmPlugin;
+		NCMaterialsPlugin *ncmPlugin;
 		FieldWriter();
 		~FieldWriter();
 
@@ -50,7 +50,7 @@ namespace CompuCell3D{
 		bool addScalarFieldCellLevelForOutput(std::string _scalarFieldCellLevelName);
 		bool addVectorFieldForOutput(std::string _vectorFieldName);
 		bool addVectorFieldCellLevelForOutput(std::string _vectorFieldCellLevelName);
-		void addECMaterialFieldForOutput();
+		void addNCMaterialFieldForOutput();
 
 		void clear();
 		void writeFields(std::string _fileName);

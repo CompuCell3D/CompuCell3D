@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ECMaterialsSteppableDlg</class>
- <widget class="QDialog" name="ECMaterialsSteppableDlg">
+ <class>NCMaterialsSteppableDlg</class>
+ <widget class="QDialog" name="NCMaterialsSteppableDlg">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>ECMaterials Steppable: Please define extracellular material interactions</string>
+   <string>NCMaterials Steppable: Please define noncellular material interactions</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
@@ -273,7 +273,7 @@
              <item row="0" column="0">
               <widget class="QLabel" name="label_7">
                <property name="text">
-                <string>ECMaterial</string>
+                <string>NCMaterial</string>
                </property>
               </widget>
              </item>
@@ -372,7 +372,7 @@
            </property>
            <column>
             <property name="text">
-             <string>ECMaterial</string>
+             <string>NCMaterial</string>
             </property>
            </column>
            <column>
@@ -410,7 +410,7 @@
         <widget class="QTableWidget" name="tableWidget_diff">
          <column>
           <property name="text">
-           <string>ECMaterial</string>
+           <string>NCMaterial</string>
           </property>
          </column>
          <column>

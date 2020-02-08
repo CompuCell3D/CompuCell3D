@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ECMaterialsDlg</class>
- <widget class="QDialog" name="ECMaterialsDlg">
+ <class>NCMaterialsDlg</class>
+ <widget class="QDialog" name="NCMaterialsDlg">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>ECMaterials Plugin: Please define extracellular materials</string>
+   <string>NCMaterials Plugin: Please define noncellular materials</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>false</bool>
@@ -43,7 +43,7 @@
          </property>
          <column>
           <property name="text">
-           <string>ECMaterial</string>
+           <string>NCMaterial</string>
           </property>
          </column>
          <column>
@@ -63,7 +63,7 @@
          <item>
           <widget class="QLabel" name="label">
            <property name="text">
-            <string>ECMaterial</string>
+            <string>NCMaterial</string>
            </property>
           </widget>
          </item>
@@ -94,7 +94,7 @@
          <item>
           <widget class="QPushButton" name="pushButton_delete">
            <property name="text">
-            <string>Delete ECMaterial</string>
+            <string>Delete NCMaterial</string>
            </property>
           </widget>
          </item>

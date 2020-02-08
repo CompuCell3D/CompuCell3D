@@ -24,7 +24,7 @@
 #include <cmath>
 
 #include <vtkPythonUtil.h>
-#include <CompuCell3D/plugins/ECMaterials/ECMaterialsPlugin.h>
+#include <CompuCell3D/plugins/NCMaterials/NCMaterialsPlugin.h>
 
 using namespace std;
 using namespace CompuCell3D;
@@ -421,16 +421,16 @@ bool FieldWriter::addVectorFieldCellLevelForOutput(std::string _vectorFieldCellL
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////
-void FieldWriter::addECMaterialFieldForOutput() {
+void FieldWriter::addNCMaterialFieldForOutput() {
 	Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
 	Dim3D fieldDim = cellFieldG->getDim();
 
-	ECMaterialsPlugin *ecmPlugin = (ECMaterialsPlugin *)sim->pluginManager.get("ECMaterials");
-	long numberOfMaterials = (long) ecmPlugin->getNumberOfMaterials();
-	Field3D<ECMaterialsData *> *ECMaterialsField = ecmPlugin->getECMaterialField();
+	NCMaterialsPlugin *ncmPlugin = (NCMaterialsPlugin *)sim->pluginManager.get("NCMaterials");
+	long numberOfMaterials = (long) ncmPlugin->getNumberOfMaterials();
+	Field3D<NCMaterialsData *> *NCMaterialsField = ncmPlugin->getNCMaterialField();
 
 	vtkDoubleArray *quantityArray = vtkDoubleArray::New();
-	quantityArray->SetName("ECMaterialQuantities");
+	quantityArray->SetName("NCMaterialQuantities");
 	quantityArray->SetNumberOfComponents((int)numberOfMaterials);
 
 	long numberOfValues = fieldDim.x*fieldDim.y*fieldDim.z;
@@ -441,7 +441,7 @@ void FieldWriter::addECMaterialFieldForOutput() {
 
 	long offset = 0;
 	CellG* cell;
-	std::vector<float> ECMaterialsQuantityVec;
+	std::vector<float> NCMaterialsQuantityVec;
 	for (pt.z = 0; pt.z<fieldDim.z; ++pt.z)
 		for (pt.y = 0; pt.y<fieldDim.y; ++pt.y)
 			for (pt.x = 0; pt.x<fieldDim.x; ++pt.x) {
@@ -452,9 +452,9 @@ void FieldWriter::addECMaterialFieldForOutput() {
 					}
 				}
 				else {
-					ECMaterialsQuantityVec = ECMaterialsField->get(pt)->ECMaterialsQuantityVec;
+					NCMaterialsQuantityVec = NCMaterialsField->get(pt)->NCMaterialsQuantityVec;
 					for (int i = 0; i < numberOfMaterials; ++i){
-						quantityArray->SetComponent(offset, i, (double) ECMaterialsQuantityVec[i]);
+						quantityArray->SetComponent(offset, i, (double) NCMaterialsQuantityVec[i]);
 					}
 				}
 				++offset;

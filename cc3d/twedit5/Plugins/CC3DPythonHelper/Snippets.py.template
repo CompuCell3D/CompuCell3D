@@ -1193,59 +1193,59 @@ line
 options
 used in compucell3d.command or runScript.command]
 
-===============  # @Menu@ ECMaterials
+===============  # @Menu@ NCMaterials
 
-----------  # @Submenu@ Get Number of ECMaterials
-number_of_materials = self.ECMaterialsPlugin.getNumberOfMaterials()
+----------  # @Submenu@ Get Number of NCMaterials
+number_of_materials = self.NCMaterialsPlugin.getNumberOfMaterials()
 
-----------  # @Submenu@ Get ECMaterial Index by Name
-ECMaterialName = 'MATERIAL_NAME'
-material_index = self.ECMaterialsPlugin.getECMaterialIndexByName(ECMaterialName)
+----------  # @Submenu@ Get NCMaterial Index by Name
+NCMaterialName = 'MATERIAL_NAME'
+material_index = self.NCMaterialsPlugin.getNCMaterialIndexByName(NCMaterialName)
 
-----------  # @Submenu@ Get/Set Local ECMaterials
+----------  # @Submenu@ Get/Set Local NCMaterials
 pt = CompuCell.Point3D()
 """
-These calls get and set an ECMaterial with name MATERIAL_NAME at point pt
-ECMaterial_name = 'MATERIAL_NAME'
-ECMaterial_qty = self.ECMaterialsPlugin.getMediumECMaterialQuantityByName(pt, ECMaterial_name)
-self.ECMaterialsPlugin.setMediumECMaterialQuantityByName(pt, ECMaterial_name, ECMaterial_qty)
+These calls get and set an NCMaterial with name MATERIAL_NAME at point pt
+NCMaterial_name = 'MATERIAL_NAME'
+NCMaterial_qty = self.NCMaterialsPlugin.getMediumNCMaterialQuantityByName(pt, NCMaterial_name)
+self.NCMaterialsPlugin.setMediumNCMaterialQuantityByName(pt, NCMaterial_name, NCMaterial_qty)
 
-These calls get and set an ECMaterial with index ECMaterial_index at point pt
-ECMaterial_index = 0
-ECMaterial_qty = self.ECMaterialsPlugin.getMediumECMaterialQuantityByIndex(pt, ECMaterial_index)
-self.ECMaterialsPlugin.setMediumECMaterialQuantityByIndex(pt, ECMaterial_index, ECMaterial_qty)
+These calls get and set an NCMaterial with index NCMaterial_index at point pt
+NCMaterial_index = 0
+NCMaterial_qty = self.NCMaterialsPlugin.getMediumNCMaterialQuantityByIndex(pt, NCMaterial_index)
+self.NCMaterialsPlugin.setMediumNCMaterialQuantityByIndex(pt, NCMaterial_index, NCMaterial_qty)
 """
 
 ----------  # @Submenu@ Get/Set Cell Remodeling Quantities
 cell_1 = self.fetch_cell_by_id(1)
 """
-These calls get and set a remodeling quantity for cell cell_1 and ECMaterial with name MATERIAL_NAME
-ECMaterial_name = 'MATERIAL_NAME'
-remodeling_quantity = self.ECMaterialsPlugin.getRemodelingQuantityByName(cell_1, ECMaterialName)
-self.ECMaterialsPlugin.setRemodelingQuantityByName(cell_1, ECMaterialName, adhesion_coefficient)
+These calls get and set a remodeling quantity for cell cell_1 and NCMaterial with name MATERIAL_NAME
+NCMaterial_name = 'MATERIAL_NAME'
+remodeling_quantity = self.NCMaterialsPlugin.getRemodelingQuantityByName(cell_1, NCMaterialName)
+self.NCMaterialsPlugin.setRemodelingQuantityByName(cell_1, NCMaterialName, adhesion_coefficient)
 
-These calls get and set a remodeling quantity for cell cell_1 and ECMaterial with index ECMaterial_index
-ECMaterial_index = 0
-remodeling_quantity = self.ECMaterialsPlugin.getRemodelingQuantityByIndex(cell_1, ECMaterial_index)
-self.ECMaterialsPlugin.setRemodelingQuantityByIndex(cell_1, ECMaterial_index, remodeling_quantity)
+These calls get and set a remodeling quantity for cell cell_1 and NCMaterial with index NCMaterial_index
+NCMaterial_index = 0
+remodeling_quantity = self.NCMaterialsPlugin.getRemodelingQuantityByIndex(cell_1, NCMaterial_index)
+self.NCMaterialsPlugin.setRemodelingQuantityByIndex(cell_1, NCMaterial_index, remodeling_quantity)
 """
 
-----------  # @Submenu@ Get/Set Cell-ECMaterials Adhesion
+----------  # @Submenu@ Get/Set Cell-NCMaterials Adhesion
 cell_1 = self.fetch_cell_by_id(1)
 """
-These calls get and set an adhesion coefficient between cell cell_1 and ECMaterial with name MATERIAL_NAME
-ECMaterial_name = 'MATERIAL_NAME'
-adhesion_coefficient = self.ECMaterialsPlugin.getECAdhesionByCellAndMaterialName(cell_1, ECMaterialName)
-self.ECMaterialsPlugin.setECAdhesionByCellAndMaterialName(cell_1, ECMaterialName, adhesion_coefficient)
+These calls get and set an adhesion coefficient between cell cell_1 and NCMaterial with name MATERIAL_NAME
+NCMaterial_name = 'MATERIAL_NAME'
+adhesion_coefficient = self.NCMaterialsPlugin.getNCAdhesionByCellAndMaterialName(cell_1, NCMaterialName)
+self.NCMaterialsPlugin.setNCAdhesionByCellAndMaterialName(cell_1, NCMaterialName, adhesion_coefficient)
 
-These calls get and set an adhesion coefficient between cell cell_1 and ECMaterial with index ECMaterial_index
-ECMaterial_index = 0
-adhesion_coefficient = self.ECMaterialsPlugin.getECAdhesionByCellAndMaterialIndex(cell_1, ECMaterial_index)
-self.ECMaterialsPlugin.setECAdhesionByCellAndMaterialIndex(cell_1, ECMaterial_index, adhesion_coefficient)
+These calls get and set an adhesion coefficient between cell cell_1 and NCMaterial with index NCMaterial_index
+NCMaterial_index = 0
+adhesion_coefficient = self.NCMaterialsPlugin.getNCAdhesionByCellAndMaterialIndex(cell_1, NCMaterial_index)
+self.NCMaterialsPlugin.setNCAdhesionByCellAndMaterialIndex(cell_1, NCMaterial_index, adhesion_coefficient)
 """
 
 ----------  # @Submenu@ Get and Process Intracellular Responses
-cell_response_list = self.get_ecmaterial_cell_response_list()
+cell_response_list = self.get_ncmaterial_cell_response_list()
 if cell_response_list is not None:
     for this_cell, this_action, this_cell_type_diff in cell_response_list:
         print("Got response for cell " + str(this_cell.id))
@@ -1259,14 +1259,14 @@ if cell_response_list is not None:
         elif this_action == 'Differentiation':
             print("   Got differentiation: " + this_cell_type_diff)
 
-----------  # @Submenu@ Get Total ECMaterial Quantity at a Cell Boundary
+----------  # @Submenu@ Get Total NCMaterial Quantity at a Cell Boundary
 cell_1 = self.fetch_cell_by_id(1)
 """
-This call gets the total quantity of ECMaterial with name MATERIAL_NAME along the boundary of cell cell_1
-ECMaterial_name = 'MATERIAL_NAME'
-total_quantity = self.ECMaterialsPlugin.calculateTotalInterfaceQuantityByMaterialName(cell_1, ECMaterial_name)
+This call gets the total quantity of NCMaterial with name MATERIAL_NAME along the boundary of cell cell_1
+NCMaterial_name = 'MATERIAL_NAME'
+total_quantity = self.NCMaterialsPlugin.calculateTotalInterfaceQuantityByMaterialName(cell_1, NCMaterial_name)
 
-This call gets the total quantity of ECMaterial with index ECMaterial_index along the boundary of cell cell_1
-ECMaterial_index = 0
-total_quantity = self.ECMaterialsPlugin.calculateTotalInterfaceQuantityByMaterialIndex(cell_1, ECMaterial_index)
+This call gets the total quantity of NCMaterial with index NCMaterial_index along the boundary of cell cell_1
+NCMaterial_index = 0
+total_quantity = self.NCMaterialsPlugin.calculateTotalInterfaceQuantityByMaterialIndex(cell_1, NCMaterial_index)
 """

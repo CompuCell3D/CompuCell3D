@@ -5,15 +5,15 @@ from PyQt5.QtGui import *
 
 from cc3d.core import XMLUtils
 from cc3d.twedit5.twedit.utils.global_imports import *
-from . import ui_ecmaterialssteppable
-from . import ecmaterialsdlg
+from . import ui_ncmaterialssteppable
+from . import ncmaterialsdlg
 
 MAC = "qt_mac_set_native_menubar" in dir()
 
 
-class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSteppableDlg):
+class NCMaterialsSteppableDlg(QDialog, ui_ncmaterialssteppable.Ui_NCMaterialsSteppableDlg):
     def __init__(self, field_names: [], previous_info: {}):
-        super(ECMaterialsSteppableDlg, self).__init__()
+        super(NCMaterialsSteppableDlg, self).__init__()
         self.setModal(True)
         self.setupUi(self)
         if not MAC:
@@ -44,7 +44,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.lineEdit_fld_palette = self.lineEdit_fld.palette()
         self.lineEdit_cell_palette = self.lineEdit_cell.palette()
 
-        self.ec_materials_dict = None
+        self.nc_materials_dict = None
         self.load_previous_info(previous_info=deepcopy(previous_info))
 
         # Containers for interaction design
@@ -117,65 +117,65 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
                                 "Coefficient": 0}
 
     def reset_cell_interaction(self) -> None:
-        self.cell_interaction = {"ECMaterial": '',
+        self.cell_interaction = {"NCMaterial": '',
                                  "CellType": '',
                                  "ResponseType": '',
                                  "Coefficient": 0,
                                  "CellTypeNew": ''}
 
     def load_previous_info(self, previous_info: dict) -> None:
-        self.ec_materials_dict = previous_info
+        self.nc_materials_dict = previous_info
 
         # Get cell types from adhesion coefficients defined in plugin
-        if self.ec_materials_dict["ECMaterials"]:
-            self.cell_types = list(self.ec_materials_dict["Adhesion"][self.ec_materials_dict["ECMaterials"][0]].keys())
+        if self.nc_materials_dict["NCMaterials"]:
+            self.cell_types = list(self.nc_materials_dict["Adhesion"][self.nc_materials_dict["NCMaterials"][0]].keys())
         else:
             self.cell_types = []
 
         # Perform checks on imported data
-        for key, val in ecmaterialsdlg.get_default_data().items():
-            if key not in self.ec_materials_dict.keys():
-                self.ec_materials_dict[key] = val
+        for key, val in ncmaterialsdlg.get_default_data().items():
+            if key not in self.nc_materials_dict.keys():
+                self.nc_materials_dict[key] = val
 
         # Perform checks in case materials changed
-        self.ec_materials_dict["CellInteractions"] = \
-            [val for val in self.ec_materials_dict["CellInteractions"]
-             if val["ECMaterial"] in self.ec_materials_dict["ECMaterials"]]
-        self.ec_materials_dict["MaterialInteractions"] = \
-            [val for val in self.ec_materials_dict["MaterialInteractions"]
-             if val["Catalyst"] in self.ec_materials_dict["ECMaterials"]
-             and val["Reactant"] in self.ec_materials_dict["ECMaterials"]]
-        self.ec_materials_dict["FieldInteractions"] = \
-            [val for val in self.ec_materials_dict["FieldInteractions"]
-             if len({val["Catalyst"], val["Reactant"]} & set(self.ec_materials_dict["ECMaterials"])) == 1]
-        self.ec_materials_dict["MaterialDiffusion"] = \
-            {key: val for key, val in self.ec_materials_dict["MaterialDiffusion"].items()
-             if key in self.ec_materials_dict["ECMaterials"]}
-        for ec_material in self.ec_materials_dict["ECMaterials"] - self.ec_materials_dict["MaterialDiffusion"].keys():
-            self.ec_materials_dict["MaterialDiffusion"][ec_material] = {"Diffuses": False,
+        self.nc_materials_dict["CellInteractions"] = \
+            [val for val in self.nc_materials_dict["CellInteractions"]
+             if val["NCMaterial"] in self.nc_materials_dict["NCMaterials"]]
+        self.nc_materials_dict["MaterialInteractions"] = \
+            [val for val in self.nc_materials_dict["MaterialInteractions"]
+             if val["Catalyst"] in self.nc_materials_dict["NCMaterials"]
+             and val["Reactant"] in self.nc_materials_dict["NCMaterials"]]
+        self.nc_materials_dict["FieldInteractions"] = \
+            [val for val in self.nc_materials_dict["FieldInteractions"]
+             if len({val["Catalyst"], val["Reactant"]} & set(self.nc_materials_dict["NCMaterials"])) == 1]
+        self.nc_materials_dict["MaterialDiffusion"] = \
+            {key: val for key, val in self.nc_materials_dict["MaterialDiffusion"].items()
+             if key in self.nc_materials_dict["NCMaterials"]}
+        for nc_material in self.nc_materials_dict["NCMaterials"] - self.nc_materials_dict["MaterialDiffusion"].keys():
+            self.nc_materials_dict["MaterialDiffusion"][nc_material] = {"Diffuses": False,
                                                                         "Coefficient": 0}
 
         # Perform checks in case cell types changed
-        self.ec_materials_dict["CellInteractions"] = \
-            [val for val in self.ec_materials_dict["CellInteractions"] if val["CellType"] in self.cell_types]
-        self.ec_materials_dict["CellInteractions"] = \
-            [val for val in self.ec_materials_dict["CellInteractions"]
+        self.nc_materials_dict["CellInteractions"] = \
+            [val for val in self.nc_materials_dict["CellInteractions"] if val["CellType"] in self.cell_types]
+        self.nc_materials_dict["CellInteractions"] = \
+            [val for val in self.nc_materials_dict["CellInteractions"]
              if val["CellTypeNew"] in self.cell_types or val["CellTypeNew"].__len__() == 0]
 
         # Perform checks in case fields changed
-        self.ec_materials_dict["FieldInteractions"] = \
-            [val for val in self.ec_materials_dict["FieldInteractions"]
+        self.nc_materials_dict["FieldInteractions"] = \
+            [val for val in self.nc_materials_dict["FieldInteractions"]
              if len({val["Catalyst"], val["Reactant"]} & set(self.field_list)) == 1]
 
         # Initialize booleans for tracking valid diffusion table entries
-        self.valid_diffusion = {key: True for key in self.ec_materials_dict["ECMaterials"]}
+        self.valid_diffusion = {key: True for key in self.nc_materials_dict["NCMaterials"]}
 
     def get_user_res(self):
         return self.user_res
 
     def extract_information(self) -> {}:
 
-        return self.ec_materials_dict
+        return self.nc_materials_dict
 
     def connect_all_signals(self) -> None:
         self.buttonBox.accepted.connect(self.on_accept)
@@ -234,12 +234,12 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
 
     def update_combo_box_field_reactants(self) -> None:
         current_field = self.comboBox_fldR.currentText()
-        if self.comboBox_fldC.currentText() in self.ec_materials_dict["ECMaterials"]:
+        if self.comboBox_fldC.currentText() in self.nc_materials_dict["NCMaterials"]:
             new_list = self.field_list
         elif self.comboBox_fldC.currentText() in self.field_list:
-            new_list = self.ec_materials_dict["ECMaterials"]
+            new_list = self.nc_materials_dict["NCMaterials"]
         else:
-            new_list = [self.ec_materials_dict["ECMaterials"], self.field_list]
+            new_list = [self.nc_materials_dict["NCMaterials"], self.field_list]
 
         self.comboBox_fldR.clear()
         self.comboBox_fldR.addItems(new_list)
@@ -266,19 +266,19 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
 
         # Tab: Material Interactions
         self.comboBox_mtlC.clear()
-        self.comboBox_mtlC.addItems(self.ec_materials_dict["ECMaterials"])
+        self.comboBox_mtlC.addItems(self.nc_materials_dict["NCMaterials"])
         self.comboBox_mtlC.setEditable(False)
         if self.mtl_interaction["Catalyst"].__len__() > 0:
             self.comboBox_mtlC.setCurrentText(self.mtl_interaction["Catalyst"])
         self.comboBox_mtlR.clear()
-        self.comboBox_mtlR.addItems(self.ec_materials_dict["ECMaterials"])
+        self.comboBox_mtlR.addItems(self.nc_materials_dict["NCMaterials"])
         self.comboBox_mtlR.setEditable(False)
         if self.mtl_interaction["Reactant"].__len__() > 0:
             self.comboBox_mtlR.setCurrentText(self.mtl_interaction["Reactant"])
         self.lineEdit_mtl.setText(str(self.mtl_interaction["Coefficient"]))
 
         self.tableWidget_mtl.setRowCount(0)
-        for interaction in self.ec_materials_dict["MaterialInteractions"]:
+        for interaction in self.nc_materials_dict["MaterialInteractions"]:
             row = self.tableWidget_mtl.rowCount()
             self.tableWidget_mtl.insertRow(row)
             self.tableWidget_mtl.setItem(row, 0, self.template_table_item(text=interaction["Catalyst"]))
@@ -295,8 +295,8 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             self.pushButton__mtlClear.setEnabled(True)
 
         # Tab: Field Interactions
-        # mtl_fld_list = list(set(self.ec_materials_dict["ECMaterials"]).union(set(self.field_list)))
-        mtl_fld_list = self.ec_materials_dict["ECMaterials"] + self.field_list
+        # mtl_fld_list = list(set(self.nc_materials_dict["NCMaterials"]).union(set(self.field_list)))
+        mtl_fld_list = self.nc_materials_dict["NCMaterials"] + self.field_list
         self.comboBox_fldC.clear()
         self.comboBox_fldC.addItems(mtl_fld_list)
         if self.fld_interaction["Catalyst"].__len__() > 0:
@@ -305,7 +305,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.lineEdit_fld.setText(str(self.fld_interaction["Coefficient"]))
 
         self.tableWidget_fld.setRowCount(0)
-        for interaction in self.ec_materials_dict["FieldInteractions"]:
+        for interaction in self.nc_materials_dict["FieldInteractions"]:
             row = self.tableWidget_fld.rowCount()
             self.tableWidget_fld.insertRow(row)
             self.tableWidget_fld.setItem(row, 0, self.template_table_item(text=interaction["Catalyst"]))
@@ -323,10 +323,10 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
 
         # Tab: Cell Interactions
         self.comboBox_cellM.clear()
-        self.comboBox_cellM.addItems(self.ec_materials_dict["ECMaterials"])
+        self.comboBox_cellM.addItems(self.nc_materials_dict["NCMaterials"])
         self.comboBox_cellM.setEditable(False)
-        if self.cell_interaction["ECMaterial"].__len__() > 0:
-            self.comboBox_cellM.setCurrentText(self.cell_interaction["ECMaterial"])
+        if self.cell_interaction["NCMaterial"].__len__() > 0:
+            self.comboBox_cellM.setCurrentText(self.cell_interaction["NCMaterial"])
         self.comboBox_cellT.clear()
         self.comboBox_cellT.addItems(self.cell_types)
         self.comboBox_cellT.setEditable(False)
@@ -341,10 +341,10 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         self.update_combo_box_types_new()
 
         self.tableWidget_cell.setRowCount(0)
-        for interaction in self.ec_materials_dict["CellInteractions"]:
+        for interaction in self.nc_materials_dict["CellInteractions"]:
             row = self.tableWidget_cell.rowCount()
             self.tableWidget_cell.insertRow(row)
-            self.tableWidget_cell.setItem(row, 0, self.template_table_item(text=interaction["ECMaterial"]))
+            self.tableWidget_cell.setItem(row, 0, self.template_table_item(text=interaction["NCMaterial"]))
             self.tableWidget_cell.setItem(row, 1, self.template_table_item(text=interaction["CellType"]))
             self.tableWidget_cell.setItem(row, 2, self.template_table_item(text=interaction["ResponseType"]))
             self.tableWidget_cell.setItem(row, 3, self.template_table_item(text=interaction["Coefficient"]))
@@ -362,7 +362,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         # Tab: Material Diffusion
         self.tableWidget_diff.setRowCount(0)
         self.cb_emitters = []
-        for key, diffusion in self.ec_materials_dict["MaterialDiffusion"].items():
+        for key, diffusion in self.nc_materials_dict["MaterialDiffusion"].items():
             row = self.tableWidget_diff.rowCount()
             self.tableWidget_diff.insertRow(row)
             self.tableWidget_diff.setItem(row, 0, self.template_table_item(text=key))
@@ -401,7 +401,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
                 return
 
         # Check for duplicates
-        for interaction in self.ec_materials_dict["MaterialInteractions"]:
+        for interaction in self.nc_materials_dict["MaterialInteractions"]:
             is_different = False
             for key in interaction.keys() - "Coefficient":
                 if interaction[key] != self.mtl_interaction[key]:
@@ -410,7 +410,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             if not is_different:
                 return
 
-        self.ec_materials_dict["MaterialInteractions"].append(self.mtl_interaction)
+        self.nc_materials_dict["MaterialInteractions"].append(self.mtl_interaction)
         self.reset_mtl_interaction()
         self.update_ui()
 
@@ -418,11 +418,11 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         row = self.tableWidget_mtl.currentRow()
         if row < 0:
             return
-        self.ec_materials_dict["MaterialInteractions"].pop(row)
+        self.nc_materials_dict["MaterialInteractions"].pop(row)
         self.update_ui()
 
     def on_mtl_clear(self) -> None:
-        self.ec_materials_dict["MaterialInteractions"].clear()
+        self.nc_materials_dict["MaterialInteractions"].clear()
         self.update_ui()
 
     def on_line_edit_mtl_changed(self, text: str):
@@ -448,16 +448,16 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
 
     def on_fld_catalyst_select(self, text) -> None:
         current_fldR = None
-        if text in self.ec_materials_dict["ECMaterials"]:
+        if text in self.nc_materials_dict["NCMaterials"]:
             if self.comboBox_fldR.currentText() in self.field_list:
                 current_fldR = self.comboBox_fldR.currentText()
             new_list = self.field_list
         elif text in self.field_list:
-            if self.comboBox_fldR.currentText() in self.ec_materials_dict["ECMaterials"]:
+            if self.comboBox_fldR.currentText() in self.nc_materials_dict["NCMaterials"]:
                 current_fldR = self.comboBox_fldR.currentText()
-            new_list = self.ec_materials_dict["ECMaterials"]
+            new_list = self.nc_materials_dict["NCMaterials"]
         else:
-            new_list = self.ec_materials_dict["ECMaterials"] + self.field_list
+            new_list = self.nc_materials_dict["NCMaterials"] + self.field_list
 
         self.comboBox_fldR.clear()
         self.comboBox_fldR.addItems(new_list)
@@ -480,7 +480,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
                 return
 
         # Check for duplicates
-        for interaction in self.ec_materials_dict["FieldInteractions"]:
+        for interaction in self.nc_materials_dict["FieldInteractions"]:
             is_different = False
             for key in interaction.keys() - "Coefficient":
                 if interaction[key] != self.fld_interaction[key]:
@@ -489,7 +489,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             if not is_different:
                 return
 
-        self.ec_materials_dict["FieldInteractions"].append(self.fld_interaction)
+        self.nc_materials_dict["FieldInteractions"].append(self.fld_interaction)
         self.reset_fld_interaction()
         self.update_ui()
 
@@ -497,11 +497,11 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         row = self.tableWidget_fld.currentRow()
         if row < 0:
             return
-        self.ec_materials_dict["FieldInteractions"].pop(row)
+        self.nc_materials_dict["FieldInteractions"].pop(row)
         self.update_ui()
 
     def on_fld_clear(self) -> None:
-        self.ec_materials_dict["FieldInteractions"].clear()
+        self.nc_materials_dict["FieldInteractions"].clear()
         self.update_ui()
 
     def on_cell_add(self) -> None:
@@ -510,7 +510,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             val = float(self.lineEdit_cell.text())
         except ValueError:
             return
-        self.cell_interaction = {"ECMaterial": self.comboBox_cellM.currentText(),
+        self.cell_interaction = {"NCMaterial": self.comboBox_cellM.currentText(),
                                  "CellType": self.comboBox_cellT.currentText(),
                                  "ResponseType": self.comboBox_cellR.currentText(),
                                  "Coefficient": val,
@@ -526,7 +526,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
                     return
 
         # Check for duplicates
-        for interaction in self.ec_materials_dict["CellInteractions"]:
+        for interaction in self.nc_materials_dict["CellInteractions"]:
             is_different = False
             for key in interaction.keys() - "Coefficient":
                 if interaction[key] != self.cell_interaction[key]:
@@ -535,7 +535,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
             if not is_different:
                 return
 
-        self.ec_materials_dict["CellInteractions"].append(self.cell_interaction)
+        self.nc_materials_dict["CellInteractions"].append(self.cell_interaction)
         self.reset_cell_interaction()
         self.update_ui()
 
@@ -543,11 +543,11 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
         row = self.tableWidget_cell.currentRow()
         if row < 0:
             return
-        self.ec_materials_dict["CellInteractions"].pop(row)
+        self.nc_materials_dict["CellInteractions"].pop(row)
         self.update_ui()
 
     def on_cell_clear(self) -> None:
-        self.ec_materials_dict["CellInteractions"].clear()
+        self.nc_materials_dict["CellInteractions"].clear()
         self.update_ui()
 
     def on_diffusion_table_item_edit(self, item) -> None:
@@ -556,17 +556,17 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
     def on_diffusion_table_edit(self, row, col) -> None:
         if row < 0 or col <= 0:
             return
-        ec_material = self.tableWidget_diff.item(row, 0).text()
+        nc_material = self.tableWidget_diff.item(row, 0).text()
         ccb: CustomCheckBox = self.tableWidget_diff.cellWidget(row, 1)
-        self.ec_materials_dict["MaterialDiffusion"][ec_material]["Diffuses"] = ccb.is_checked()
+        self.nc_materials_dict["MaterialDiffusion"][nc_material]["Diffuses"] = ccb.is_checked()
         twi = self.tableWidget_diff.item(row, 2)
         try:
             val = float(twi.text())
-            self.ec_materials_dict["MaterialDiffusion"][ec_material]["Coefficient"] = val
-            self.valid_diffusion[ec_material] = True
+            self.nc_materials_dict["MaterialDiffusion"][nc_material]["Coefficient"] = val
+            self.valid_diffusion[nc_material] = True
         except ValueError:
-            self.ec_materials_dict["MaterialDiffusion"][ec_material]["Coefficient"] = twi.text()
-            self.valid_diffusion[ec_material] = False
+            self.nc_materials_dict["MaterialDiffusion"][nc_material]["Coefficient"] = twi.text()
+            self.valid_diffusion[nc_material] = False
         self.update_ui()
 
     def on_accept(self):
@@ -576,7 +576,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
 
         for key in self.valid_diffusion.keys():
             if not self.valid_diffusion[key]:
-                self.ec_materials_dict["MaterialDiffusion"][key] = {"Diffuses": False,
+                self.nc_materials_dict["MaterialDiffusion"][key] = {"Diffuses": False,
                                                                     "Coefficient": 0}
         self.close()
 
@@ -591,7 +591,7 @@ class ECMaterialsSteppableDlg(QDialog, ui_ecmaterialssteppable.Ui_ECMaterialsSte
 
 
 class KeyEventDetector(QObject):
-    def __init__(self, parent: ECMaterialsSteppableDlg):
+    def __init__(self, parent: NCMaterialsSteppableDlg):
         super(KeyEventDetector, self).__init__(parent)
         self.main_UI = parent
 
@@ -602,7 +602,7 @@ class KeyEventDetector(QObject):
 
 
 class QCBCallbackEmitter(QObject):
-    def __init__(self, parent: ECMaterialsSteppableDlg, cb: QCheckBox, cb_row: int, cb_col: int):
+    def __init__(self, parent: NCMaterialsSteppableDlg, cb: QCheckBox, cb_row: int, cb_col: int):
         super(QCBCallbackEmitter, self).__init__(parent)
         self.main_UI = parent
         self.cb = cb
@@ -616,7 +616,7 @@ class QCBCallbackEmitter(QObject):
 
 
 class CustomCheckBox(QWidget):
-    def __init__(self, parent: ECMaterialsSteppableDlg, check_state: bool = True):
+    def __init__(self, parent: NCMaterialsSteppableDlg, check_state: bool = True):
         super(CustomCheckBox, self).__init__(parent)
 
         self.cb = QCheckBox()
@@ -632,11 +632,11 @@ class CustomCheckBox(QWidget):
 
 
 # Parsing here; package somewhere else later
-def ec_materials_steppable_xml_to_data(xml_data=None, plugin_data=None):
+def nc_materials_steppable_xml_to_data(xml_data=None, plugin_data=None):
     if xml_data is None:
-        return ec_materials_steppable_xml_demo()
+        return nc_materials_steppable_xml_demo()
 
-    ec_materials_data = deepcopy(plugin_data)
+    nc_materials_data = deepcopy(plugin_data)
 
     # Import raw data (taken from C++)
     material_interaction_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("MaterialInteractions"))
@@ -645,60 +645,60 @@ def ec_materials_steppable_xml_to_data(xml_data=None, plugin_data=None):
     cell_interaction_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("CellInteraction"))
 
     # Get all specified cell types from adhesion
-    cell_types = list(ec_materials_data["Adhesion"][ec_materials_data["ECMaterials"][0]].keys())
+    cell_types = list(nc_materials_data["Adhesion"][nc_materials_data["NCMaterials"][0]].keys())
     cell_types.sort()
 
     # Import all specified field names
     catalyst_names = [element.getAttribute('Catalyst') for element in field_interaction_xml_list]
     reactant_names = [element.getAttribute('Reactant') for element in field_interaction_xml_list]
     field_names = catalyst_names + reactant_names
-    field_names = [field_name for field_name in field_names if field_name not in ec_materials_data["ECMaterials"]]
+    field_names = [field_name for field_name in field_names if field_name not in nc_materials_data["NCMaterials"]]
     field_names = list(set(field_names))
     field_names.sort()
 
     # Import material interactions
-    ec_materials_data["MaterialInteractions"] = []
+    nc_materials_data["MaterialInteractions"] = []
     for element in material_interaction_xml_list:
-        ec_material = element.getAttribute('ECMaterial')
+        nc_material = element.getAttribute('NCMaterial')
         catalyst_name = element.getFirstElement('Catalyst').getText()
         val = element.getFirstElement('ConstantCoefficient').getDouble()
 
-        if ec_material not in ec_materials_data["ECMaterials"]:
-            print('Undefined ECMaterial: ' + ec_material + '... rejecting')
+        if nc_material not in nc_materials_data["NCMaterials"]:
+            print('Undefined NCMaterial: ' + nc_material + '... rejecting')
             continue
-        elif catalyst_name not in ec_materials_data["ECMaterials"]:
+        elif catalyst_name not in nc_materials_data["NCMaterials"]:
             print('Undefined catalyst: ' + catalyst_name + '... rejecting')
             continue
 
         try:
-            ec_materials_data["MaterialInteractions"].append({"Catalyst": catalyst_name,
-                                                              "Reactant": ec_material,
+            nc_materials_data["MaterialInteractions"].append({"Catalyst": catalyst_name,
+                                                              "Reactant": nc_material,
                                                               "Coefficient": val})
         except KeyError:
             print('Could not import XML element attribute for material interaction:')
-            print('   ECMaterial: ' + ec_material)
+            print('   NCMaterial: ' + nc_material)
             print('   Catalyst: ' + catalyst_name)
             print('   ConstantCoefficient: ' + str(val))
 
     # Import material diffusion
     for element in material_diffusion_xml_list:
-        ec_material = element.getAttribute('ECMaterial')
+        nc_material = element.getAttribute('NCMaterial')
         val = element.getDouble()
 
-        if ec_material not in ec_materials_data["ECMaterials"]:
-            print('Undefined ECMaterial: ' + ec_material + '... rejecting')
+        if nc_material not in nc_materials_data["NCMaterials"]:
+            print('Undefined NCMaterial: ' + nc_material + '... rejecting')
             continue
 
         try:
-            ec_materials_data["MaterialDiffusion"][ec_material]["Diffuses"] = True
-            ec_materials_data["MaterialDiffusion"][ec_material]["Coefficient"] = val
+            nc_materials_data["MaterialDiffusion"][nc_material]["Diffuses"] = True
+            nc_materials_data["MaterialDiffusion"][nc_material]["Coefficient"] = val
         except KeyError:
             print('Could not import XML element attribute for material diffusion:')
-            print('   ECMaterial: ' + ec_material)
+            print('   NCMaterial: ' + nc_material)
             print('   ConstantCoefficient: ' + str(val))
 
     # Import field interactions
-    ec_materials_data["FieldInteractions"] = []
+    nc_materials_data["FieldInteractions"] = []
     for element in field_interaction_xml_list:
         reactant_name = element.getFirstElement('Reactant').getText()
         catalyst_name = element.getFirstElement('Catalyst').getText()
@@ -708,14 +708,14 @@ def ec_materials_steppable_xml_to_data(xml_data=None, plugin_data=None):
             print('Cannot define field-field interactions here: ' +
                   reactant_name + ', ' + catalyst_name + '... rejecting')
             continue
-        elif not (catalyst_name in ec_materials_data["ECMaterials"] and reactant_name in field_names) and not \
-                (catalyst_name in field_names and reactant_name in ec_materials_data["ECMaterials"]):
-            print('Cannot imports as a ECMaterial-field interaction: ' +
+        elif not (catalyst_name in nc_materials_data["NCMaterials"] and reactant_name in field_names) and not \
+                (catalyst_name in field_names and reactant_name in nc_materials_data["NCMaterials"]):
+            print('Cannot imports as a NCMaterial-field interaction: ' +
                   catalyst_name + ', ' + reactant_name + '... rejecting')
             continue
 
         try:
-            ec_materials_data["FieldInteractions"].append({"Catalyst": catalyst_name,
+            nc_materials_data["FieldInteractions"].append({"Catalyst": catalyst_name,
                                                            "Reactant": reactant_name,
                                                            "Coefficient": val})
         except KeyError:
@@ -725,9 +725,9 @@ def ec_materials_steppable_xml_to_data(xml_data=None, plugin_data=None):
             print('   ConstantCoefficient: ' + str(val))
 
     # Import cell interactions
-    ec_materials_data["CellInteractions"] = []
+    nc_materials_data["CellInteractions"] = []
     for element in cell_interaction_xml_list:
-        ec_material = element.getFirstElement('ECMaterial').getText()
+        nc_material = element.getFirstElement('NCMaterial').getText()
         method_name = element.getAttribute('Method')
         val = element.getFirstElement('Probability').getDouble()
         cell_type = element.getFirstElement('CellType').getText()
@@ -735,10 +735,10 @@ def ec_materials_steppable_xml_to_data(xml_data=None, plugin_data=None):
         if element.findElement('CellTypeNew'):
             cell_type_new = element.getFirstElement('CellTypeNew').getText()
 
-        if ec_material not in ec_materials_data["ECMaterials"]:
-            print('Undefined ECMaterial: ' + ec_material + '... rejecting')
+        if nc_material not in nc_materials_data["NCMaterials"]:
+            print('Undefined NCMaterial: ' + nc_material + '... rejecting')
             continue
-        elif method_name not in ECMaterialsSteppableDlg.get_cell_response_types():
+        elif method_name not in NCMaterialsSteppableDlg.get_cell_response_types():
             print('Undefined method: ' + method_name + '... rejecting')
             continue
         elif cell_type not in cell_types:
@@ -747,13 +747,13 @@ def ec_materials_steppable_xml_to_data(xml_data=None, plugin_data=None):
         elif cell_type_new.__len__() > 0 and cell_type_new not in cell_types:
             print('Undefined new cell type: ' + cell_type_new + '... rejecting')
             continue
-        elif cell_type_new.__len__() > 0 and method_name not in ECMaterialsSteppableDlg.get_response_new_types():
+        elif cell_type_new.__len__() > 0 and method_name not in NCMaterialsSteppableDlg.get_response_new_types():
             print('Undefined new cell type for requested method: ' +
                   cell_type_new + ', ' + method_name + '... rejecting new cell type')
             cell_type_new = ''
 
         try:
-            ec_materials_data["CellInteractions"].append({"ECMaterial": ec_material,
+            nc_materials_data["CellInteractions"].append({"NCMaterial": nc_material,
                                                           "CellType": cell_type,
                                                           "ResponseType": method_name,
                                                           "Coefficient": val,
@@ -761,49 +761,49 @@ def ec_materials_steppable_xml_to_data(xml_data=None, plugin_data=None):
         except KeyError:
             print('Could not import XML element attribute for material interaction:')
             print('   Method: ' + method_name)
-            print('   ECMaterial: ' + ec_material)
+            print('   NCMaterial: ' + nc_material)
             print('   Probability: ' + str(val))
             print('   CellType: ' + cell_type)
             print('   ConstantCoefficient: ' + str(val))
             if cell_type_new.__len__() > 0:
                 print('   CellTypeNew: ' + cell_type_new)
 
-    return ec_materials_data
+    return nc_materials_data
 
 
-def ec_materials_steppable_xml_demo():
-    ec_materials_data = ecmaterialsdlg.ec_materials_xml_to_data()
-    ec_materials_ex = ec_materials_data["ECMaterials"]
-    cell_types_ex = list(ec_materials_data["Adhesion"][ec_materials_ex[0]].keys())
+def nc_materials_steppable_xml_demo():
+    nc_materials_data = ncmaterialsdlg.nc_materials_xml_to_data()
+    nc_materials_ex = nc_materials_data["NCMaterials"]
+    cell_types_ex = list(nc_materials_data["Adhesion"][nc_materials_ex[0]].keys())
     field_names_ex = ['Field1', 'Field2']
 
-    # Demo ECMaterial diffusion
+    # Demo NCMaterial diffusion
     val = 0.1
-    for ec_material in ec_materials_ex:
-        ec_materials_data["MaterialDiffusion"][ec_material] = {"Diffuses": True,
+    for nc_material in nc_materials_ex:
+        nc_materials_data["MaterialDiffusion"][nc_material] = {"Diffuses": True,
                                                                "Coefficient": val}
         val += 0.1
 
     # Demo material interactions
     val = 0.1
-    for reactant in ec_materials_ex:
-        for catalyst in ec_materials_ex:
-            ec_materials_data["MaterialInteractions"].append({"Catalyst": catalyst,
+    for reactant in nc_materials_ex:
+        for catalyst in nc_materials_ex:
+            nc_materials_data["MaterialInteractions"].append({"Catalyst": catalyst,
                                                               "Reactant": reactant,
                                                               "Coefficient": val})
             val *= -2
 
     # Demo field interactions
-    reactant_list_ex = [ec_materials_ex[0], field_names_ex[1]]
-    catalyst_list_ex = [field_names_ex[0], ec_materials_ex[1]]
+    reactant_list_ex = [nc_materials_ex[0], field_names_ex[1]]
+    catalyst_list_ex = [field_names_ex[0], nc_materials_ex[1]]
     val_list = [0.1, -0.2]
     for int_index in range(catalyst_list_ex.__len__()):
-        ec_materials_data["FieldInteractions"].append({"Catalyst": catalyst_list_ex[int_index],
+        nc_materials_data["FieldInteractions"].append({"Catalyst": catalyst_list_ex[int_index],
                                                        "Reactant": reactant_list_ex[int_index],
                                                        "Coefficient": val_list[int_index]})
 
     # Demo cell interactions
-    cell_response_types = ECMaterialsSteppableDlg.get_cell_response_types()
+    cell_response_types = NCMaterialsSteppableDlg.get_cell_response_types()
     alt_index = [1, 0]
     cell_types_index = 0
     val = 0.001
@@ -812,12 +812,12 @@ def ec_materials_steppable_xml_demo():
         if cell_types_index >= cell_types_ex.__len__():
             cell_types_index = 0
 
-        if method_name in ECMaterialsSteppableDlg.get_response_new_types():
+        if method_name in NCMaterialsSteppableDlg.get_response_new_types():
             cell_type_new = cell_types_ex[alt_index[cell_types_index]]
         else:
             cell_type_new = ''
 
-        ec_materials_data["CellInteractions"].append({"ECMaterial": ec_materials_ex[alt_index[cell_types_index]],
+        nc_materials_data["CellInteractions"].append({"NCMaterial": nc_materials_ex[alt_index[cell_types_index]],
                                                       "CellType": cell_types_ex[cell_types_index],
                                                       "ResponseType": method_name,
                                                       "Coefficient": val,
@@ -826,4 +826,4 @@ def ec_materials_steppable_xml_demo():
         cell_types_index += 1
         val *= 2
 
-    return ec_materials_data
+    return nc_materials_data

@@ -5,15 +5,15 @@ from PyQt5.QtGui import *
 
 from cc3d.core import XMLUtils
 from cc3d.twedit5.twedit.utils.global_imports import *
-from . import ui_ecmaterialsdlg
-from .ecmaterialssteppabledlg import ECMaterialsSteppableDlg
+from . import ui_ncmaterialsdlg
+from .ncmaterialssteppabledlg import NCMaterialsSteppableDlg
 
 MAC = "qt_mac_set_native_menubar" in dir()
 
 
-class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
+class NCMaterialsDlg(QDialog, ui_ncmaterialsdlg.Ui_NCMaterialsDlg):
     def __init__(self, cell_types: [], previous_info: {}):
-        super(ECMaterialsDlg, self).__init__()
+        super(NCMaterialsDlg, self).__init__()
         self.setModal(True)
 
         self.setupUi(self)
@@ -41,10 +41,10 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         self.invalid_font_color = QColor("red")
 
         if previous_info:
-            self.ec_materials_dict = None
+            self.nc_materials_dict = None
             self.load_previous_info(previous_info=deepcopy(previous_info))
         else:
-            self.ec_materials_dict = get_default_data()
+            self.nc_materials_dict = get_default_data()
 
         self.connect_all_signals()
 
@@ -54,7 +54,7 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
 
     @staticmethod
     def get_keys():
-        return ["ECMaterials", "Adhesion", "Remodeling", "Advects", "Durability"]
+        return ["NCMaterials", "Adhesion", "Remodeling", "Advects", "Durability"]
 
     def resize_table_material_defs(self) -> None:
         hh = self.tableWidget_materialDefs.horizontalHeader()
@@ -77,51 +77,51 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         QDialog.resizeEvent(self, event)
 
     def load_previous_info(self, previous_info: dict):
-        self.ec_materials_dict = previous_info
+        self.nc_materials_dict = previous_info
 
         # Perform checks on imported data
         for key, val in get_default_data().items():
-            if key not in self.ec_materials_dict.keys():
-                self.ec_materials_dict[key] = val
+            if key not in self.nc_materials_dict.keys():
+                self.nc_materials_dict[key] = val
 
         # Perform checks in case cell types changed
-        adhesion_coefficients = self.ec_materials_dict["Adhesion"]
-        remodeling_quantities = self.ec_materials_dict["Remodeling"]
-        first_ec_material_set = False
-        for ec_material in self.ec_materials_dict["ECMaterials"]:
-            for cell_type in self.cell_types - adhesion_coefficients[ec_material].keys():
-                adhesion_coefficients[ec_material][cell_type] = 0
+        adhesion_coefficients = self.nc_materials_dict["Adhesion"]
+        remodeling_quantities = self.nc_materials_dict["Remodeling"]
+        first_nc_material_set = False
+        for nc_material in self.nc_materials_dict["NCMaterials"]:
+            for cell_type in self.cell_types - adhesion_coefficients[nc_material].keys():
+                adhesion_coefficients[nc_material][cell_type] = 0
 
-            adhesion_coefficients[ec_material] = {key: val for key, val in adhesion_coefficients[ec_material].items()
+            adhesion_coefficients[nc_material] = {key: val for key, val in adhesion_coefficients[nc_material].items()
                                                   if key in self.cell_types}
 
-            self.ec_materials_dict["Adhesion"][ec_material] = adhesion_coefficients[ec_material]
+            self.nc_materials_dict["Adhesion"][nc_material] = adhesion_coefficients[nc_material]
 
-            for cell_type in self.cell_types - remodeling_quantities[ec_material].keys():
-                if not first_ec_material_set:
-                    remodeling_quantities[ec_material][cell_type] = 1
+            for cell_type in self.cell_types - remodeling_quantities[nc_material].keys():
+                if not first_nc_material_set:
+                    remodeling_quantities[nc_material][cell_type] = 1
                 else:
-                    remodeling_quantities[ec_material][cell_type] = 0
+                    remodeling_quantities[nc_material][cell_type] = 0
 
-            remodeling_quantities[ec_material] = {key: val for key, val in remodeling_quantities[ec_material].items()
+            remodeling_quantities[nc_material] = {key: val for key, val in remodeling_quantities[nc_material].items()
                                                   if key in self.cell_types}
 
-            self.ec_materials_dict["Remodeling"][ec_material] = remodeling_quantities[ec_material]
+            self.nc_materials_dict["Remodeling"][nc_material] = remodeling_quantities[nc_material]
 
-            first_ec_material_set = True
+            first_nc_material_set = True
 
         # Initialize booleans for tracking valid entries
-        for ec_material in self.ec_materials_dict["ECMaterials"]:
-            self.valid_adhesion[ec_material] = {key: True for key in self.cell_types}
-            self.valid_remodeling[ec_material] = {key: True for key in self.cell_types}
-            self.valid_durability[ec_material] = True
+        for nc_material in self.nc_materials_dict["NCMaterials"]:
+            self.valid_adhesion[nc_material] = {key: True for key in self.cell_types}
+            self.valid_remodeling[nc_material] = {key: True for key in self.cell_types}
+            self.valid_durability[nc_material] = True
 
     def get_user_res(self):
         return self.user_res
 
     def extract_information(self):
 
-        return self.ec_materials_dict
+        return self.nc_materials_dict
 
     def connect_all_signals(self):
         self.buttonBox.accepted.connect(self.on_accept)
@@ -152,15 +152,15 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         # Refresh LHS table
         self.tableWidget_materialDefs.setRowCount(0)
         self.cb_emitters = []
-        for ec_material in self.ec_materials_dict["ECMaterials"]:
+        for nc_material in self.nc_materials_dict["NCMaterials"]:
             row_count = self.tableWidget_materialDefs.rowCount()
             self.tableWidget_materialDefs.insertRow(row_count)
 
             twi = QTableWidgetItem(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
-            twi.setText(ec_material)
+            twi.setText(nc_material)
             self.tableWidget_materialDefs.setItem(row_count, 0, twi)
 
-            ccb = CustomCheckBox(parent=self, check_state=self.ec_materials_dict["Advects"][ec_material])
+            ccb = CustomCheckBox(parent=self, check_state=self.nc_materials_dict["Advects"][nc_material])
             self.tableWidget_materialDefs.setCellWidget(row_count, 1, ccb)
             self.cb_emitters.append(QCBCallbackEmitter(parent=self,
                                                        cb=ccb.cb,
@@ -168,8 +168,8 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
                                                        cb_col=1))
 
             twi = QTableWidgetItem(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
-            twi.setText(str(self.ec_materials_dict["Durability"][ec_material]))
-            if not self.valid_durability[ec_material]:
+            twi.setText(str(self.nc_materials_dict["Durability"][nc_material]))
+            if not self.valid_durability[nc_material]:
                 twi.setData(Qt.TextColorRole, self.invalid_font_color)
             self.tableWidget_materialDefs.setItem(row_count, 2, twi)
 
@@ -178,37 +178,37 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         # Refresh RHS Adhesion table
         self.tableWidget_adhesion.setRowCount(0)
         self.tableWidget_adhesion.setColumnCount(len(self.cell_types))
-        for ec_material in self.ec_materials_dict["ECMaterials"]:
+        for nc_material in self.nc_materials_dict["NCMaterials"]:
             row_count = self.tableWidget_adhesion.rowCount()
             self.tableWidget_adhesion.insertRow(row_count)
             for type_index in range(len(self.cell_types)):
                 cell_type = self.cell_types[type_index]
 
                 twi = QTableWidgetItem(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
-                twi.setText(str(self.ec_materials_dict["Adhesion"][ec_material][cell_type]))
-                if not self.valid_adhesion[ec_material][cell_type]:
+                twi.setText(str(self.nc_materials_dict["Adhesion"][nc_material][cell_type]))
+                if not self.valid_adhesion[nc_material][cell_type]:
                     twi.setData(Qt.TextColorRole, self.invalid_font_color)
                 self.tableWidget_adhesion.setItem(row_count, type_index, twi)
 
-        self.tableWidget_adhesion.setVerticalHeaderLabels(self.ec_materials_dict["ECMaterials"])
+        self.tableWidget_adhesion.setVerticalHeaderLabels(self.nc_materials_dict["NCMaterials"])
         self.tableWidget_adhesion.setHorizontalHeaderLabels(self.cell_types)
 
         # Refresh RHS Remodeling table
         self.tableWidget_remodeling.setRowCount(0)
         self.tableWidget_remodeling.setColumnCount(len(self.cell_types))
-        for ec_material in self.ec_materials_dict["ECMaterials"]:
+        for nc_material in self.nc_materials_dict["NCMaterials"]:
             row_count = self.tableWidget_remodeling.rowCount()
             self.tableWidget_remodeling.insertRow(row_count)
             for type_index in range(len(self.cell_types)):
                 cell_type = self.cell_types[type_index]
 
                 twi = QTableWidgetItem(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
-                twi.setText(str(self.ec_materials_dict["Remodeling"][ec_material][cell_type]))
-                if not self.valid_remodeling[ec_material][cell_type]:
+                twi.setText(str(self.nc_materials_dict["Remodeling"][nc_material][cell_type]))
+                if not self.valid_remodeling[nc_material][cell_type]:
                     twi.setData(Qt.TextColorRole, self.invalid_font_color)
                 self.tableWidget_remodeling.setItem(row_count, type_index, twi)
 
-        self.tableWidget_remodeling.setVerticalHeaderLabels(self.ec_materials_dict["ECMaterials"])
+        self.tableWidget_remodeling.setVerticalHeaderLabels(self.nc_materials_dict["NCMaterials"])
         self.tableWidget_remodeling.setHorizontalHeaderLabels(self.cell_types)
 
         self.connect_all_signals()
@@ -229,41 +229,41 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         if col < 0:
             return
 
-        ec_material = self.ec_materials_dict["ECMaterials"][row]
+        nc_material = self.nc_materials_dict["NCMaterials"][row]
         if col == 0:  # Name change
             item: QTableWidget = self.tableWidget_materialDefs.item(row, col)
             new_name = item.text()
-            if len(new_name) < 2 or new_name == ec_material:
+            if len(new_name) < 2 or new_name == nc_material:
                 self.disconnect_all_signals()
-                item.setText(ec_material)
+                item.setText(nc_material)
                 self.connect_all_signals()
                 return
-            for key in self.ec_materials_dict:
-                if key == "ECMaterials":
-                    self.ec_materials_dict[key][row] = new_name
-                elif isinstance(self.ec_materials_dict[key], dict):
-                    for key_key, val in self.ec_materials_dict[key].items():
-                        if key_key == ec_material:
-                            self.ec_materials_dict[key][new_name] = self.ec_materials_dict[key].pop(key_key)
-                        elif val == ec_material:
-                            self.ec_materials_dict[key][key_key] = new_name
-                elif isinstance(self.ec_materials_dict[key], list):
-                    for i in range(self.ec_materials_dict[key].__len__()):
-                        for key_key in self.ec_materials_dict[key][i].keys():
-                            if self.ec_materials_dict[key][i][key_key] == ec_material:
-                                self.ec_materials_dict[key][i][key_key] = new_name
+            for key in self.nc_materials_dict:
+                if key == "NCMaterials":
+                    self.nc_materials_dict[key][row] = new_name
+                elif isinstance(self.nc_materials_dict[key], dict):
+                    for key_key, val in self.nc_materials_dict[key].items():
+                        if key_key == nc_material:
+                            self.nc_materials_dict[key][new_name] = self.nc_materials_dict[key].pop(key_key)
+                        elif val == nc_material:
+                            self.nc_materials_dict[key][key_key] = new_name
+                elif isinstance(self.nc_materials_dict[key], list):
+                    for i in range(self.nc_materials_dict[key].__len__()):
+                        for key_key in self.nc_materials_dict[key][i].keys():
+                            if self.nc_materials_dict[key][i][key_key] == nc_material:
+                                self.nc_materials_dict[key][i][key_key] = new_name
         elif col == 1:  # Advection toggle
             ccb: CustomCheckBox = self.tableWidget_materialDefs.cellWidget(row, col)
-            self.ec_materials_dict["Advects"][ec_material] = ccb.is_checked()
+            self.nc_materials_dict["Advects"][nc_material] = ccb.is_checked()
         elif col == 2:  # Durability coefficient change
             item: QTableWidget = self.tableWidget_materialDefs.item(row, col)
             try:
                 val = float(item.text())
-                self.ec_materials_dict["Durability"][ec_material] = val
-                self.valid_durability[ec_material] = True
+                self.nc_materials_dict["Durability"][nc_material] = val
+                self.valid_durability[nc_material] = True
             except ValueError:
-                self.ec_materials_dict["Durability"][ec_material] = item.text()
-                self.valid_durability[ec_material] = False
+                self.nc_materials_dict["Durability"][nc_material] = item.text()
+                self.valid_durability[nc_material] = False
 
         self.update_ui()
 
@@ -272,15 +272,15 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         if col < 0:
             return
         row = item.row()
-        ec_material = self.ec_materials_dict["ECMaterials"][row]
+        nc_material = self.nc_materials_dict["NCMaterials"][row]
         cell_type = self.cell_types[col]
         try:
             new_value = float(item.text())
-            self.ec_materials_dict["Adhesion"][ec_material][cell_type] = new_value
-            self.valid_adhesion[ec_material][cell_type] = True
+            self.nc_materials_dict["Adhesion"][nc_material][cell_type] = new_value
+            self.valid_adhesion[nc_material][cell_type] = True
         except ValueError:
-            self.ec_materials_dict["Adhesion"][ec_material][cell_type] = item.text()
-            self.valid_adhesion[ec_material][cell_type] = False
+            self.nc_materials_dict["Adhesion"][nc_material][cell_type] = item.text()
+            self.valid_adhesion[nc_material][cell_type] = False
 
         self.update_ui()
 
@@ -289,15 +289,15 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         if col < 0:
             return
         row = item.row()
-        ec_material = self.ec_materials_dict["ECMaterials"][row]
+        nc_material = self.nc_materials_dict["NCMaterials"][row]
         cell_type = self.cell_types[col]
         try:
             new_value = float(item.text())
-            self.ec_materials_dict["Remodeling"][ec_material][cell_type] = new_value
-            self.valid_remodeling[ec_material][cell_type] = True
+            self.nc_materials_dict["Remodeling"][nc_material][cell_type] = new_value
+            self.valid_remodeling[nc_material][cell_type] = True
         except ValueError:
-            self.ec_materials_dict["Remodeling"][ec_material][cell_type] = item.text()
-            self.valid_remodeling[ec_material][cell_type] = False
+            self.nc_materials_dict["Remodeling"][nc_material][cell_type] = item.text()
+            self.valid_remodeling[nc_material][cell_type] = False
 
         self.update_ui()
 
@@ -305,11 +305,11 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
         new_material = self.lineEdit.text()
         if len(new_material) < 2:
             return
-        self.ec_materials_dict["ECMaterials"].append(new_material)
-        self.ec_materials_dict["Advects"][new_material] = self.checkBox.isChecked()
-        self.ec_materials_dict["Durability"][new_material] = 0.0
-        self.ec_materials_dict["Adhesion"][new_material] = {cell_type: 0.0 for cell_type in self.cell_types}
-        self.ec_materials_dict["Remodeling"][new_material] = {cell_type: 0.0 for cell_type in self.cell_types}
+        self.nc_materials_dict["NCMaterials"].append(new_material)
+        self.nc_materials_dict["Advects"][new_material] = self.checkBox.isChecked()
+        self.nc_materials_dict["Durability"][new_material] = 0.0
+        self.nc_materials_dict["Adhesion"][new_material] = {cell_type: 0.0 for cell_type in self.cell_types}
+        self.nc_materials_dict["Remodeling"][new_material] = {cell_type: 0.0 for cell_type in self.cell_types}
 
         self.disconnect_all_signals()
         self.lineEdit.clear()
@@ -322,29 +322,29 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
 
         self.update_ui()
 
-    def handle_delete_material(self, ec_material: str):
-        for key in self.ec_materials_dict.keys():
-            if key == "ECMaterials":
-                self.ec_materials_dict[key].remove(ec_material)
-            elif isinstance(self.ec_materials_dict[key], dict) and ec_material in self.ec_materials_dict[key].keys():
-                self.ec_materials_dict[key].pop(ec_material)
+    def handle_delete_material(self, nc_material: str):
+        for key in self.nc_materials_dict.keys():
+            if key == "NCMaterials":
+                self.nc_materials_dict[key].remove(nc_material)
+            elif isinstance(self.nc_materials_dict[key], dict) and nc_material in self.nc_materials_dict[key].keys():
+                self.nc_materials_dict[key].pop(nc_material)
 
-        self.valid_adhesion.pop(ec_material)
-        self.valid_remodeling.pop(ec_material)
-        self.valid_durability.pop(ec_material)
+        self.valid_adhesion.pop(nc_material)
+        self.valid_remodeling.pop(nc_material)
+        self.valid_durability.pop(nc_material)
 
     def handle_delete_material_button(self):
         row = self.tableWidget_materialDefs.currentRow()
         if row < 0:
             return
-        ec_material = self.tableWidget_materialDefs.item(row, 0).text()
-        self.handle_delete_material(ec_material=ec_material)
+        nc_material = self.tableWidget_materialDefs.item(row, 0).text()
+        self.handle_delete_material(nc_material=nc_material)
         self.update_ui()
 
     def handle_clear_materials_button(self):
-        ec_material_list = deepcopy(self.ec_materials_dict["ECMaterials"])
-        for ec_material in ec_material_list:
-            self.handle_delete_material(ec_material=ec_material)
+        nc_material_list = deepcopy(self.nc_materials_dict["NCMaterials"])
+        for nc_material in nc_material_list:
+            self.handle_delete_material(nc_material=nc_material)
 
         self.valid_adhesion = {}
         self.valid_remodeling = {}
@@ -357,19 +357,19 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
             return
         self.user_res = True
 
-        for ec_material in self.ec_materials_dict["Adhesion"].keys():
+        for nc_material in self.nc_materials_dict["Adhesion"].keys():
             for cell_type in self.cell_types:
-                if not self.valid_adhesion[ec_material][cell_type]:
-                    self.ec_materials_dict["Adhesion"][ec_material][cell_type] = 0.0
+                if not self.valid_adhesion[nc_material][cell_type]:
+                    self.nc_materials_dict["Adhesion"][nc_material][cell_type] = 0.0
 
-        for ec_material in self.ec_materials_dict["Remodeling"].keys():
+        for nc_material in self.nc_materials_dict["Remodeling"].keys():
             for cell_type in self.cell_types:
-                if not self.valid_remodeling[ec_material][cell_type]:
-                    self.ec_materials_dict["Remodeling"][ec_material][cell_type] = 0.0
+                if not self.valid_remodeling[nc_material][cell_type]:
+                    self.nc_materials_dict["Remodeling"][nc_material][cell_type] = 0.0
 
-        for ec_material in self.ec_materials_dict["Durability"].keys():
-            if not self.valid_durability[ec_material]:
-                self.ec_materials_dict["Durability"][ec_material] = 0.0
+        for nc_material in self.nc_materials_dict["Durability"].keys():
+            if not self.valid_durability[nc_material]:
+                self.nc_materials_dict["Durability"][nc_material] = 0.0
 
         self.close()
 
@@ -384,7 +384,7 @@ class ECMaterialsDlg(QDialog, ui_ecmaterialsdlg.Ui_ECMaterialsDlg):
 
 
 class KeyEventDetector(QObject):
-    def __init__(self, parent: ECMaterialsDlg):
+    def __init__(self, parent: NCMaterialsDlg):
         super(KeyEventDetector, self).__init__(parent)
         self.main_UI = parent
 
@@ -395,7 +395,7 @@ class KeyEventDetector(QObject):
 
 
 class QCBCallbackEmitter(QObject):
-    def __init__(self, parent: ECMaterialsDlg, cb: QCheckBox, cb_row: int, cb_col: int):
+    def __init__(self, parent: NCMaterialsDlg, cb: QCheckBox, cb_row: int, cb_col: int):
         super(QCBCallbackEmitter, self).__init__(parent)
         self.main_UI = parent
         self.cb = cb
@@ -409,7 +409,7 @@ class QCBCallbackEmitter(QObject):
 
 
 class CustomCheckBox(QWidget):
-    def __init__(self, parent: ECMaterialsDlg, check_state: bool = True):
+    def __init__(self, parent: NCMaterialsDlg, check_state: bool = True):
         super(CustomCheckBox, self).__init__(parent)
 
         self.cb = QCheckBox()
@@ -425,7 +425,7 @@ class CustomCheckBox(QWidget):
 
 
 def get_default_data():
-    return {"ECMaterials": [],
+    return {"NCMaterials": [],
             "Adhesion": {},
             "Remodeling": {},
             "Advects": {},
@@ -437,23 +437,23 @@ def get_default_data():
 
 
 # Parsing here; package somewhere else later
-def ec_materials_xml_to_data(xml_data=None) -> {}:
+def nc_materials_xml_to_data(xml_data=None) -> {}:
     if xml_data is None:
-        return ec_materials_plugin_xml_demo()
+        return nc_materials_plugin_xml_demo()
 
-    ec_materials_data = get_default_data()
+    nc_materials_data = get_default_data()
 
     # Import raw data (taken from C++)
-    name_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("ECMaterial"))
-    adhesion_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("ECAdhesion"))
-    advection_bool_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("ECMaterialAdvects"))
-    durability_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("ECMaterialDurability"))
+    name_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("NCMaterial"))
+    adhesion_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("NCAdhesion"))
+    advection_bool_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("NCMaterialAdvects"))
+    durability_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("NCMaterialDurability"))
     remodeling_quantity_xml_list = XMLUtils.CC3DXMLListPy(xml_data.getElements("RemodelingQuantity"))
 
-    # Import ECMaterials
+    # Import NCMaterials
     for element in name_xml_list:
-        ec_material = element.getAttribute('Material')
-        ec_materials_data["ECMaterials"].append(ec_material)
+        nc_material = element.getAttribute('Material')
+        nc_materials_data["NCMaterials"].append(nc_material)
 
     # Import all specified cell types in adhesion and remodeling
     cell_types = []
@@ -463,104 +463,104 @@ def ec_materials_xml_to_data(xml_data=None) -> {}:
     cell_types.sort()
 
     # Generate default data to fill out from XML for plugin completion
-    for ec_material in ec_materials_data["ECMaterials"]:
-        ec_materials_data["Adhesion"][ec_material] = {}
-        ec_materials_data["Remodeling"][ec_material] = {}
-        ec_materials_data["Advects"][ec_material] = True
-        ec_materials_data["Durability"][ec_material] = 0.0
-        ec_materials_data["MaterialDiffusion"][ec_material] = {"Diffuses": False,
+    for nc_material in nc_materials_data["NCMaterials"]:
+        nc_materials_data["Adhesion"][nc_material] = {}
+        nc_materials_data["Remodeling"][nc_material] = {}
+        nc_materials_data["Advects"][nc_material] = True
+        nc_materials_data["Durability"][nc_material] = 0.0
+        nc_materials_data["MaterialDiffusion"][nc_material] = {"Diffuses": False,
                                                                "Coefficient": 0}
         for cell_type in cell_types:
-            ec_materials_data["Adhesion"][ec_material][cell_type] = 0.0
-            ec_materials_data["Remodeling"][ec_material][cell_type] = 0.0
+            nc_materials_data["Adhesion"][nc_material][cell_type] = 0.0
+            nc_materials_data["Remodeling"][nc_material][cell_type] = 0.0
 
     # Import adhesion
     for element in adhesion_xml_list:
-        ec_material = element.getAttribute('Material')
+        nc_material = element.getAttribute('Material')
         cell_type = element.getAttribute('CellType')
         val = element.getDouble()
         try:
-            ec_materials_data["Adhesion"][ec_material][cell_type] = val
+            nc_materials_data["Adhesion"][nc_material][cell_type] = val
         except KeyError:
             print('Could not import XML element attribute for adhesion:')
-            print('   Material: ' + ec_material)
+            print('   Material: ' + nc_material)
             print('   CellType: ' + cell_type)
             print('   Value: ' + str(val))
 
     # Import remodeling
     for element in remodeling_quantity_xml_list:
-        ec_material = element.getAttribute('Material')
+        nc_material = element.getAttribute('Material')
         cell_type = element.getAttribute('CellType')
         val = element.getDouble()
         try:
-            ec_materials_data["Remodeling"][ec_material][cell_type] = val
+            nc_materials_data["Remodeling"][nc_material][cell_type] = val
         except KeyError:
             print('Could not import XML element attribute for remodeling quantity:')
-            print('   Material: ' + ec_material)
+            print('   Material: ' + nc_material)
             print('   CellType: ' + cell_type)
             print('   Value: ' + str(val))
 
     # Import advection
     for element in advection_bool_xml_list:
-        ec_material = element.getAttribute('Material')
+        nc_material = element.getAttribute('Material')
         val = element.getBool()
         try:
-            ec_materials_data["Advects"][ec_material] = val
+            nc_materials_data["Advects"][nc_material] = val
         except KeyError:
             print('Could not import XML element attribute for advection:')
-            print('   Material: ' + ec_material)
+            print('   Material: ' + nc_material)
             print('   Value: ' + str(val))
 
     # Import durability
     for element in durability_xml_list:
-        ec_material = element.getAttribute('Material')
+        nc_material = element.getAttribute('Material')
         val = element.getDouble()
         try:
-            ec_materials_data["Durability"][ec_material] = val
+            nc_materials_data["Durability"][nc_material] = val
         except KeyError:
             print('Could not import XML element attribute for durability:')
-            print('   Material: ' + ec_material)
+            print('   Material: ' + nc_material)
             print('   Value: ' + str(val))
 
-    return ec_materials_data
+    return nc_materials_data
 
 
-def ec_materials_plugin_xml_demo() -> {}:
-    ec_materials_data = get_default_data()
+def nc_materials_plugin_xml_demo() -> {}:
+    nc_materials_data = get_default_data()
     # Generate example data
-    ec_materials_ex = ['ECMaterial1', 'ECMaterial2']
+    nc_materials_ex = ['NCMaterial1', 'NCMaterial2']
     cell_types_ex = ['CellType1', 'CellType2']
 
-    # Demo declaring ECMaterials
-    ec_materials_data["ECMaterials"] = ec_materials_ex
+    # Demo declaring NCMaterials
+    nc_materials_data["NCMaterials"] = nc_materials_ex
 
     # Demo adhesion
     adhesion_coefficient_ex = 1.0
-    for ec_material in ec_materials_ex:
+    for nc_material in nc_materials_ex:
         adhesion_dict = {}
         for cell_type in cell_types_ex:
             adhesion_dict[cell_type] = adhesion_coefficient_ex
             adhesion_coefficient_ex += 1
 
-        ec_materials_data["Adhesion"][ec_material] = adhesion_dict
+        nc_materials_data["Adhesion"][nc_material] = adhesion_dict
 
     # Demo remodeling
     remodeling_coefficients_ex = [0.25, 0.75]
-    for ec_material in ec_materials_ex:
-        ec_materials_data["Remodeling"][ec_material] = \
+    for nc_material in nc_materials_ex:
+        nc_materials_data["Remodeling"][nc_material] = \
             {cell_types_ex[type_index]: remodeling_coefficients_ex[type_index]
              for type_index in range(cell_types_ex.__len__())}
         remodeling_coefficients_ex.reverse()
 
     # Demo advection
     advects_bool = False
-    for ec_material in ec_materials_ex:
-        ec_materials_data["Advects"][ec_material] = advects_bool
+    for nc_material in nc_materials_ex:
+        nc_materials_data["Advects"][nc_material] = advects_bool
         advects_bool = not advects_bool
 
     # Demo durability
     durability_coefficient_ex = 1.0
-    ec_materials_data["Durability"] = {ec_materials_ex[idx]: durability_coefficient_ex*(idx + 1)
-                                       for idx in range(ec_materials_ex.__len__())}
+    nc_materials_data["Durability"] = {nc_materials_ex[idx]: durability_coefficient_ex*(idx + 1)
+                                       for idx in range(nc_materials_ex.__len__())}
 
-    return ec_materials_data
+    return nc_materials_data

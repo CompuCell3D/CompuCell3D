@@ -12,7 +12,7 @@ class Settings():
         self.FPPLinksOn     = False
         self.contoursOn     = False
         self.concentrationLimitsOn    = True
-        self.ECMaterialsOn  = False
+        self.NCMaterialsOn  = False
         self.zoomFactor     = None
         self.defaultColor   = None
         self.borderColor    = None
@@ -77,7 +77,7 @@ class Settings():
         self.FPPLinksOn   = settings.value("/FPPLinksOn",              QVariant(False)).toBool()
 
         self.concentrationLimitsOn    = settings.value("/concentrationLimitsOn",  QVariant(False)).toBool()
-        self.ECMaterialsOn  = settings.value("/ECMaterialsOn", QVariant(False)).toBool()
+        self.NCMaterialsOn  = settings.value("/NCMaterialsOn", QVariant(False)).toBool()
         self.contoursOn     = settings.value("/contoursOn",             QVariant(False)).toBool()
         self.numberOfContourLines,ok     = settings.value("/numberOfContourLines",             QVariant(0)).toInt()
         self.curFile        = settings.value("/recentFile",             QVariant("cellsort_2D.xml")).toString()
@@ -142,15 +142,15 @@ class Settings():
                 self.typeBrushMap[key]  = QBrush(QColor(value))
                 self.typeColorMap[key]  = QColor(value)
 
-        ecmPenColorList = settings.value("/materialColorMap").toStringList()
-        if ecmPenColorList.count() == 0:
-            ecmPenColorList = colorList
+        ncmPenColorList = settings.value("/materialColorMap").toStringList()
+        if ncmPenColorList.count() == 0:
+            ncmPenColorList = colorList
 
         k = 0
-        for i in range(ecmPenColorList.count() / 2):
-            key, ok = ecmPenColorList[k].toInt()
+        for i in range(ncmPenColorList.count() / 2):
+            key, ok = ncmPenColorList[k].toInt()
             k += 1
-            value = ecmPenColorList[k]
+            value = ncmPenColorList[k]
             k += 1
             if ok:
                 self.materialPenMap[key] = QPen(QColor(value))
@@ -207,7 +207,7 @@ class Settings():
         settings.setValue("/cellGlyphsOn",          QVariant(self.cellGlyphsOn))
         settings.setValue("/FPPLinksOn",            QVariant(self.FPPLinksOn))
         settings.setValue("/concentrationLimitsOn", QVariant(self.concentrationLimitsOn))
-        settings.setValue("/ECMaterialsOn",         QVariant(self.ECMaterialsOn))
+        settings.setValue("/NCMaterialsOn",         QVariant(self.NCMaterialsOn))
         
         settings.setValue("/contour",               QVariant(self.contourPen.color().name()))
         settings.setValue("/contoursOn",            QVariant(self.contoursOn ))
@@ -236,15 +236,15 @@ class Settings():
             penColorList.append(str(keys[i]))
             penColorList.append(str(self.typePenMap[keys[i]].color().name()))
 
-        ecmPenColorList = QStringList()
+        ncmPenColorList = QStringList()
 
         for i in range(len(self.materialPenMap)):
             keys = list(self.materialPenMap.keys())
-            ecmPenColorList.append(str(keys[i]))
-            ecmPenColorList.append(str(self.materialPenMap[keys[i]].color().name()))
+            ncmPenColorList.append(str(keys[i]))
+            ncmPenColorList.append(str(self.materialPenMap[keys[i]].color().name()))
 
         settings.setValue("/typeColorMap",          QVariant(penColorList))
-        settings.setValue("/materialColorMap",      QVariant(ecmPenColorList))
+        settings.setValue("/materialColorMap",      QVariant(ncmPenColorList))
         settings.setValue("/zoomFactor",            QVariant(self.zoomFactor))
         settings.setValue("/screenshotFrequency",   QVariant(int(self.screenshotFrequency)))
         settings.setValue("/screenUpdateFrequency", QVariant(int(self.screenUpdateFrequency)))

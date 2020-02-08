@@ -27,7 +27,7 @@ class MVCDrawModelBase:
         self.lattice_type_str = None
 
         self.celltypeLUT = None
-        self.ecmLUT = None
+        self.ncmLUT = None
 
     #        self.scaleGlyphsByVolume = False
 
@@ -93,21 +93,21 @@ class MVCDrawModelBase:
 
     def get_material_lookup_table(self, scene_metadata=None):
         """
-        Returns lookup table for ECMaterials
+        Returns lookup table for NCMaterials
         :param scene_metadata:
         :return: {vtkLookupTable}
         """
-        if self.ecmLUT is not None:
-            return self.ecmLUT
+        if self.ncmLUT is not None:
+            return self.ncmLUT
 
         self.populate_material_type_lookup_table(scene_metadata=scene_metadata)
 
-        return self.ecmLUT
+        return self.ncmLUT
 
     def populate_material_type_lookup_table(self, scene_metadata=None):
         """
-        Populates lookup table for ECMaterials
-        First table element corresponds to appended first quantity value from ECMaterials field, which
+        Populates lookup table for NCMaterials
+        First table element corresponds to appended first quantity value from NCMaterials field, which
         marks cell (==1) or medium (==0) sites.
         :param scene_metadata:
         :return: None
@@ -117,16 +117,16 @@ class MVCDrawModelBase:
         else:
             color_map = scene_metadata["MaterialColorMap"]
 
-        self.ecmLUT = vtk.vtkLookupTable()
-        self.ecmLUT.Build()
-        self.ecmLUT.SetNumberOfTableValues(len(color_map))
-        self.ecmLUT.SetNumberOfColors(len(color_map))
+        self.ncmLUT = vtk.vtkLookupTable()
+        self.ncmLUT.Build()
+        self.ncmLUT.SetNumberOfTableValues(len(color_map))
+        self.ncmLUT.SetNumberOfColors(len(color_map))
 
         material_keys = list(color_map.keys())
         for material_index in range(0, len(material_keys)):
             rgba = to_vtk_rgb(qcolor_to_rgba(color_map[material_keys[material_index]]))
             rgba.append(1.0)
-            self.ecmLUT.SetTableValue(material_index, *rgba)
+            self.ncmLUT.SetTableValue(material_index, *rgba)
 
     def populateLookupTable(self):
         #        print MODULENAME,' populateLookupTable()'
@@ -337,9 +337,9 @@ class MVCDrawModelBase:
         """
         raise NotImplementedError()
 
-    def init_ecm_actors(self, actor_specs, drawing_params=None):
+    def init_ncm_actors(self, actor_specs, drawing_params=None):
         """
-        Initializes ECMaterials actors
+        Initializes NCMaterials actors
         :param actor_specs: {ActorSpecs}
         :param drawing_params: {DrawingParameters}
         :return: None

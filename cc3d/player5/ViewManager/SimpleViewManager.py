@@ -26,7 +26,7 @@ class SimpleViewManager(QObject):
             "FPPLinksOn": Configuration.getSetting("FPPLinksOn"),
             "CC3DOutputOn": Configuration.getSetting("CC3DOutputOn"),
             "ConcentrationLimitsOn": Configuration.getSetting("ConcentrationLimitsOn"),
-            "ECMaterialsOn": Configuration.getSetting("ECMaterialsOn"),
+            "NCMaterialsOn": Configuration.getSetting("NCMaterialsOn"),
             "ZoomFactor": Configuration.getSetting("ZoomFactor"),
         }
 
@@ -48,7 +48,7 @@ class SimpleViewManager(QObject):
         self.border_act = None
         self.cluster_border_act = None
         self.cell_glyphs_act = None
-        self.ECMaterials_act = None
+        self.NCMaterials_act = None
         self.fpp_links_act = None
         self.limits_act = None
         self.cc3d_output_on_act = None
@@ -136,7 +136,7 @@ class SimpleViewManager(QObject):
         menu.addAction(self.cell_glyphs_act)
         menu.addAction(self.fpp_links_act)
         menu.addAction(self.limits_act)
-        menu.addAction(self.ECMaterials_act)
+        menu.addAction(self.NCMaterials_act)
         menu.addSeparator()
         menu.addAction(self.cc3d_output_on_act)
         menu.addSeparator()
@@ -351,9 +351,9 @@ class SimpleViewManager(QObject):
         self.limits_act.setCheckable(True)
         self.limits_act.setChecked(self.visual["ConcentrationLimitsOn"])
 
-        self.ECMaterials_act = QAction("Extracellular Materials", self)
-        self.ECMaterials_act.setCheckable(True)
-        self.ECMaterials_act.setChecked(self.visual["ECMaterialsOn"])
+        self.NCMaterials_act = QAction("Noncellular Materials", self)
+        self.NCMaterials_act.setCheckable(True)
+        self.NCMaterials_act.setChecked(self.visual["NCMaterialsOn"])
 
         self.cc3d_output_on_act = QAction("&Turn On CompuCell3D Output", self)
         self.cc3d_output_on_act.setCheckable(True)

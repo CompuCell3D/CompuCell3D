@@ -297,18 +297,18 @@ class GenericDrawer():
         show_flag = drawing_params.screenshot_data.lattice_axes_on
         view.show_axes_actors(actor_specs=actor_specs_final, drawing_params=drawing_params, show_flag=show_flag)
 
-    def draw_ecm(self, drawing_params):
+    def draw_ncm(self, drawing_params):
 
         model, view = self.get_model_view(drawing_params=drawing_params)
 
         actor_specs = ActorSpecs()
-        actor_specs_final = view.prepare_ecm_actors(actor_specs=actor_specs)
+        actor_specs_final = view.prepare_ncm_actors(actor_specs=actor_specs)
         camera = view.getCamera()
 
-        model.init_ecm_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
-        show_flag = drawing_params.screenshot_data.ecm_on
+        model.init_ncm_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
+        show_flag = drawing_params.screenshot_data.ncm_on
 
-        view.show_ecm_actors(actor_specs=actor_specs_final, drawing_params=drawing_params, show_flag=show_flag)
+        view.show_ncm_actors(actor_specs=actor_specs_final, drawing_params=drawing_params, show_flag=show_flag)
 
     def get_model_view(self, drawing_params):
         # type: (DrawingParameters) -> (MVCDrawModelBase,MVCDrawViewBase)
@@ -401,9 +401,9 @@ class GenericDrawer():
                 except NotImplementedError:
                     pass
 
-            if drawing_params.screenshot_data.ecm_on and key == "CellField":
+            if drawing_params.screenshot_data.ncm_on and key == "CellField":
                 try:
-                    self.draw_ecm(drawing_params=drawing_params)
+                    self.draw_ncm(drawing_params=drawing_params)
                 except NotImplementedError:
                     pass
 

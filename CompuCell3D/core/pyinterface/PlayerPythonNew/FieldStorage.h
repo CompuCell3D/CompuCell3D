@@ -102,9 +102,9 @@ class FIELDEXTRACTOR_EXPORT FieldStorage{
     void clearAllocatedFields();
     
     std::vector<std::vector<std::vector<CellGraphicsData> > > field3DGraphicsData;/// 3d field
-	std::vector<std::vector<std::vector<std::vector<float> > > > field3DECGraphicsData; /// 3d extracellular field
+	std::vector<std::vector<std::vector<std::vector<float> > > > field3DNCGraphicsData; /// 3d noncellular field
 
-	void allocateECMaterialField(Dim3D _dim, unsigned int _numMtls);
+	void allocateNCMaterialField(Dim3D _dim, unsigned int _numMtls);
     
    private:
        
