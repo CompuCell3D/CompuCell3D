@@ -30,6 +30,7 @@ from cc3d.player5.Graphics.GraphicsWindowData import GraphicsWindowData
 from cc3d.player5.Simulation.CMLResultReader import CMLResultReader
 from cc3d.player5.Simulation.SimulationThread import SimulationThread
 from cc3d.player5.Launchers.param_scan_dialog import ParamScanDialog
+from cc3d.player5.Plugins.ViewManagerPlugins.ScreenshotDescriptionBrowser import ScreenshotDescriptionBrowser
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
 from cc3d.player5 import Graphics
 from cc3d.core import XMLUtils
@@ -204,6 +205,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # this means that further refactoring is needed but I leave it for now
         self.cmlReplayManager = None
+
+        # self.screenshot_desc_browser = ScreenshotDescriptionBrowser(stv=self)
+        self.screenshot_desc_browser = None
 
         # Here we are checking for new version - notice we use check interval in order not to perform version checks
         # too often. Default check interval is 7 days
@@ -1128,6 +1132,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.pif_from_simulation_act.triggered.connect(self.__generatePIFFromCurrentSnapshot)
         self.pif_from_vtk_act.triggered.connect(self.__generatePIFFromVTK)
         self.restart_snapshot_from_simulation_act.triggered.connect(self.generate_restart_snapshot)
+        self.screenshot_description_browser_act.triggered.connect(self.open_screenshot_description_browser)
 
         # window menu actions
         self.python_steering_panel_act.triggered.connect(self.addPythonSteeringPanel)
@@ -1235,6 +1240,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.__pauseSim()
 
         self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
+        pg = CompuCellSetup.persistent_globals
+        pg.screenshot_manager = self.screenshotManager
 
         self.read_screenshot_description_file()
 
@@ -1360,6 +1367,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.prepareSimulationView()
 
         self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
+        pg = CompuCellSetup.persistent_globals
+        pg.screenshot_manager = self.screenshotManager
+
         self.read_screenshot_description_file()
 
         if self.simulationIsStepping:
@@ -1498,7 +1508,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # will need to synchronize screenshots with simulation thread .
         # make sure that before simulation thread writes new results all the screenshots are taken
 
-        if self.__imageOutput and not (self.__step % self.__shotFrequency):
+        if self.screenshotManager.has_ad_hoc_screenshots():
+            self.screenshotManager.output_screenshots(self.__step)
+        elif self.__imageOutput and not (self.__step % self.__shotFrequency):
             self.screenshotManager.output_screenshots(self.__step)
 
         self.simulation.drawMutex.unlock()
@@ -1511,6 +1523,26 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.sem.release()
 
         self.cmlReplayManager.keep_going()
+
+    def process_output_screenshots(self):
+        """
+
+        :return:
+        """
+
+        try:
+            self.screenshotManager.output_screenshots(mcs=self.__step)
+        except KeyError:
+
+            self.screenshotManager.screenshotDataDict = {}
+            self.screenshotManager.output_error_flag = True
+            self.popup_message(
+                title='Error Processing Screenshots',
+                msg='Could not output screenshots. It is likely that screenshot description file was generated '
+                    'using incompatible code. '
+                    'You may want to remove "screenshot_data" directory from your project '
+                    'and use camera button to generate new screenshot file '
+                    ' No screenshots will be taken'.format(self.screenshotManager.get_screenshot_filename()))
 
     def handleCompletedStepRegular(self, mcs: int) -> None:
         """
@@ -1530,20 +1562,23 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # will need to sync screenshots with simulation thread.
         # Be sure before simulation thread writes new results all the screenshots are taken
+        if self.screenshotManager is not None and self.screenshotManager.has_ad_hoc_screenshots():
+            self.process_output_screenshots()
         if self.__imageOutput and not (self.__step % self.__shotFrequency):
             if self.screenshotManager:
-                try:
-                    self.screenshotManager.output_screenshots(mcs=self.__step)
-                except KeyError:
-
-                    self.screenshotManager.screenshotDataDict = {}
-                    self.popup_message(
-                        title='Error Processing Screnenshots',
-                        msg='Could not output screenshots. It is likely that screenshot description file was generated '
-                            'using incompatible code. '
-                            'You may want to remove "screenshot_data" directory from your project '
-                            'and use camera button to generate new screenshot file '
-                            ' No screenshots will be taken'.format(self.screenshotManager.get_screenshot_filename()))
+                self.process_output_screenshots()
+                # try:
+                #     self.screenshotManager.output_screenshots(mcs=self.__step)
+                # except KeyError:
+                #
+                #     self.screenshotManager.screenshotDataDict = {}
+                #     self.popup_message(
+                #         title='Error Processing Screnenshots',
+                #         msg='Could not output screenshots. It is likely that screenshot description file was generated '
+                #             'using incompatible code. '
+                #             'You may want to remove "screenshot_data" directory from your project '
+                #             'and use camera button to generate new screenshot file '
+                #             ' No screenshots will be taken'.format(self.screenshotManager.get_screenshot_filename()))
 
         if self.cmlHandlerCreated and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):
             CompuCellSetup.persistent_globals.cml_field_handler.write_fields(self.__step)
@@ -3220,6 +3255,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         pif_file_name = str(pif_file_name_selection[0])
         self.simulation.generate_pif_from_vtk(self.simulation.currentFileName, pif_file_name)
 
+
     def generate_restart_snapshot(self) -> None:
         """
         Generated on-demand restart snapshot
@@ -3252,6 +3288,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
             return
 
         restart_manager.output_restart_files(step=pg.simulator.getStep(), on_demand=True)
+
+    def open_screenshot_description_browser(self):
+        """
+        Opens up a screenshot description browser widget
+        :return:
+        """
+        self.screenshot_desc_browser = ScreenshotDescriptionBrowser(parent=self)
+        self.screenshot_desc_browser.load()
+        if self.screenshot_desc_browser.exec_():
+            print('Screenshots shown')
+
+        print('opening scr browser')
 
     def __configsChanged(self):
         """

@@ -331,7 +331,7 @@ def init_screenshot_manager() -> None:
 
     screenshot_data_fname = join(dirname(persistent_globals.simulation_file_name), 'screenshot_data/screenshots.json')
 
-    persistent_globals.screenshot_mgr = ScreenshotManagerCore()
+    persistent_globals.screenshot_manager = ScreenshotManagerCore()
 
     try:
         field_extractor = persistent_globals.persistent_holder['field_extractor']
@@ -348,12 +348,12 @@ def init_screenshot_manager() -> None:
     bsd.numberOfSteps = persistent_globals.simulator.getNumSteps()
 
     # wiring screenshot manager
-    persistent_globals.screenshot_mgr.gd = gd
-    persistent_globals.screenshot_mgr.bsd = bsd
-    persistent_globals.screenshot_mgr.screenshot_number_of_digits = len(str(bsd.numberOfSteps))
+    persistent_globals.screenshot_manager.gd = gd
+    persistent_globals.screenshot_manager.bsd = bsd
+    persistent_globals.screenshot_manager.screenshot_number_of_digits = len(str(bsd.numberOfSteps))
 
     try:
-        persistent_globals.screenshot_mgr.read_screenshot_description_file(screenshot_data_fname)
+        persistent_globals.screenshot_manager.read_screenshot_description_file(screenshot_data_fname)
     except:
         warnings.warn('Could not parse screenshot description file {screenshot_data_fname}. '
                       'If you want graphical screenshot output please generate '
@@ -374,10 +374,15 @@ def store_screenshots(cur_step: int) -> None:
     persistent_globals = CompuCellSetup.persistent_globals
 
     screenshot_output_frequency = persistent_globals.screenshot_output_frequency
-    screenshot_mgr = persistent_globals.screenshot_mgr
+    screenshot_manager = persistent_globals.screenshot_manager
 
-    if screenshot_output_frequency and screenshot_mgr and (not cur_step % screenshot_output_frequency):
-        screenshot_mgr.output_screenshots(mcs=cur_step)
+    if screenshot_manager.has_ad_hoc_screenshots():
+        screenshot_manager.output_screenshots(mcs=cur_step)
+
+    if screenshot_output_frequency and screenshot_manager and (not cur_step % screenshot_output_frequency):
+        screenshot_manager.output_screenshots(mcs=cur_step)
+
+
 
 
 def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_enabled=False):
@@ -599,7 +604,11 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         screenshot_frequency = simthread.getScreenshotFrequency()
         screenshot_output_flag = simthread.getImageOutputFlag()
 
-        if (screen_update_frequency > 0 and cur_step % screen_update_frequency == 0) or (
+        if pg.screenshot_manager is not None and pg.screenshot_manager.has_ad_hoc_screenshots():
+            simthread.loopWork(cur_step)
+            simthread.loopWorkPostEvent(cur_step)
+
+        elif (screen_update_frequency > 0 and cur_step % screen_update_frequency == 0) or (
                 screenshot_output_flag and screenshot_frequency > 0 and cur_step % screenshot_frequency == 0):
 
             simthread.loopWork(cur_step)

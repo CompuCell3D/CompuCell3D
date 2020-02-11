@@ -59,6 +59,7 @@ class SimpleViewManager(QObject):
         self.pif_from_vtk_act = None
         self.pif_from_simulation_act = None
         self.restart_snapshot_from_simulation_act = None
+        self.screenshot_description_browser_act = None
 
         # windows actions
         self.python_steering_panel_act = None
@@ -162,6 +163,9 @@ class SimpleViewManager(QObject):
 
         menu.addAction(self.restart_snapshot_from_simulation_act)
         self.restart_snapshot_from_simulation_act.setEnabled(False)
+
+        menu.addAction(self.screenshot_description_browser_act)
+        self.screenshot_description_browser_act.setEnabled(True)
 
         return menu
 
@@ -379,6 +383,8 @@ class SimpleViewManager(QObject):
 
         self.pif_from_simulation_act = QAction("& Generate PIF File from current snapshot ...", self)
         self.restart_snapshot_from_simulation_act = QAction("& Generate Restart Snapshot", self)
+
+        self.screenshot_description_browser_act = QAction("& Open Screenshot Description Browser", self)
 
         self.config_act.setWhatsThis(
             """<b>Generate PIF file from current simulation snapshot </b>"""
