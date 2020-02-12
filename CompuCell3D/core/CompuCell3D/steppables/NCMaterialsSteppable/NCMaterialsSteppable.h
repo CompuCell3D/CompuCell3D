@@ -23,6 +23,7 @@
 #ifndef NCMATERIALSSTEPPABLE_H
 #define NCMATERIALSSTEPPABLE_H
 
+#include <muParser/muParser.h>
 #include <ppl.h>
 #include <concurrent_vector.h>
 
@@ -34,6 +35,12 @@
 #include "CompuCell3D/plugins/NCMaterials/NCMaterialsData.h"
 #include "CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTracker.h"
 #include "CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTrackerPlugin.h"
+
+namespace mu {
+
+	class Parser;
+
+}
 
 namespace CompuCell3D {
 
@@ -55,6 +62,46 @@ namespace CompuCell3D {
 	class NCMaterialsPlugin;
 	class NCMaterialsData;
 
+	class NCMATERIALSSTEPPABLE_EXPORT NCMaterialsExpressionEvaluator {
+		
+		double step;
+
+		unsigned int numMaterials;
+		unsigned int numFields;
+
+		std::vector<double> qty;
+		std::vector<double> fld;
+
+		std::vector<mu::Parser> exprQuantities;
+		std::vector<mu::Parser> exprFields;
+
+		mu::Parser templateMuParserFunction(Point3D _pt);
+
+		void setSymbol(std::string _sym, double *_val);
+
+		void updateInternals(std::vector<float> _qty, std::vector<float> _fld);
+
+	protected:
+
+	public:
+
+		NCMaterialsExpressionEvaluator() {};
+		NCMaterialsExpressionEvaluator(unsigned int _numMaterials, unsigned int _numFields);
+
+		virtual ~NCMaterialsExpressionEvaluator() {};
+
+		void init(Point3D _pt);
+		void setSymbols(std::vector<string> _materialSymbols, std::vector<string> _fieldSymbols);
+
+		void setMaterialExpression(unsigned int _materialIndex, std::string _expr);
+		void setFieldExpression(unsigned int _fieldIndex, std::string _expr);
+
+		std::vector<float> evalMaterialExpressions(double _step, std::vector<float> _qty, std::vector<float> _fld);
+		std::vector<float> evalFieldExpressions(double _step, std::vector<float> _qty, std::vector<float> _fld);
+		std::tuple<std::vector<float>, std::vector<float> > evalExpressions(double _step, std::vector<float> _qty, std::vector<float> _fld);
+
+	};
+
 	class NCMATERIALSSTEPPABLE_EXPORT NCMaterialsSteppable : public Steppable {
         WatchableField3D<CellG *> *cellFieldG;
         Simulator *sim;
@@ -69,7 +116,7 @@ namespace CompuCell3D {
 		BoundaryPixelTrackerPlugin *boundaryTrackerPlugin;
 		NCMaterialsPlugin *ncMaterialsPlugin;
 
-		int neighborOrder = 1;
+		int neighborOrder;
 		int nNeighbors;
 		Dim3D fieldDim;
 
@@ -89,6 +136,7 @@ namespace CompuCell3D {
 		bool MaterialReactionsDefined;
 		bool MaterialDiffusionDefined;
 		bool FieldInteractionsDefined;
+		bool GeneralInteractionsDefined;
 		bool CellInteractionsDefined;
 		bool AnyInteractionsDefined;
 
@@ -108,6 +156,12 @@ namespace CompuCell3D {
 		std::vector<std::vector<std::vector<float> > > CellTypeCoefficientsProliferationAsymByIndex;
 		std::vector<std::vector<std::vector<float> > > CellTypeCoefficientsDifferentiationByIndex;
 		std::vector<std::vector<float> > CellTypeCoefficientsDeathByIndex;
+		
+		std::vector<NCMaterialsExpressionEvaluator *> NCMExprEvalLocal;
+		std::vector<std::string> materialSyms;
+		std::vector<std::string> fieldSyms;
+		std::vector<std::string> materialExprs;
+		std::vector<std::string> fieldExprs;
 
 		// Utility functions
 		float randFloatGen01() { return float(rand()) / (float(RAND_MAX) + 1); };
@@ -147,6 +201,12 @@ namespace CompuCell3D {
 		void constructCellTypeCoefficientsProliferation();
 		void constructCellTypeCoefficientsDifferentiation();
 		void constructCellTypeCoefficientsDeath();
+
+		std::vector<float> getFieldVals(const Point3D &_pt);
+		Field3D<NCMaterialsData *> *getNCMaterialsField() { return NCMaterialsField; }
+		std::vector<Field3D<float> *> *getFieldVec() { return &fieldVec; }
+
+		NCMaterialsExpressionEvaluator *getNCMExprEvalLocal(unsigned int _ind) { return NCMExprEvalLocal[_ind]; }
 
 		void calculateMaterialToFieldInteractions(const Point3D &pt, std::vector<float> _qtyOld);
 		void calculateCellInteractions(Field3D<NCMaterialsData *> *NCMaterialsField);

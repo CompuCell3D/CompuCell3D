@@ -303,20 +303,18 @@ namespace CompuCell3D {
 
 			void setNCMaterialsQuantityVecOld() { NCMaterialsQuantityVecOld = std::vector<float>(NCMaterialsQuantityVec); }
 
-            void setNCMaterialsQuantity(unsigned int _pos, float _qty){
+            void setNCMaterialsQuantity(unsigned int _pos, float _qty) {
                 if(_pos>NCMaterialsQuantityVec.size()-1) return;
                 NCMaterialsQuantityVec[_pos]=_qty;
             }
-            void setNCMaterialsQuantityVec(std::vector<float> _qtyVec){
-				if (_qtyVec.size() == numMtls) NCMaterialsQuantityVec = _qtyVec;
+			void setNCMaterialsQuantityVec(std::vector<float> _qtyVec) { if (_qtyVec.size() == numMtls) NCMaterialsQuantityVec = _qtyVec; }
+			float getNCMaterialQuantity(unsigned int _pos) {
+				if (_pos>NCMaterialsQuantityVec.size() - 1) return 0.0;
+				return NCMaterialsQuantityVec[_pos];
 			}
-            float getNCMaterialQuantity(unsigned int _pos){
-                if(_pos>NCMaterialsQuantityVec.size()-1) return 0.0;
-                return NCMaterialsQuantityVec[_pos];
-            }
-			virtual std::vector<float> getNCMaterialsQuantityVec(){return NCMaterialsQuantityVec;}
+			virtual std::vector<float> getNCMaterialsQuantityVec() { return NCMaterialsQuantityVec; }
 			virtual std::vector<float> getNCMaterialsQuantityVecOld() { return NCMaterialsQuantityVecOld; }
-            void setNewNCMaterialsQuantityVec(unsigned int _numMtls){
+            void setNewNCMaterialsQuantityVec(unsigned int _numMtls) {
 				numMtls = _numMtls;
 				NCMaterialsQuantityVec.assign(numMtls, 0.0);
                 NCMaterialsQuantityVec[0] = 1.0;

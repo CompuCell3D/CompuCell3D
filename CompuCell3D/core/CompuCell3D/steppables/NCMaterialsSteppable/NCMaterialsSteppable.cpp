@@ -32,8 +32,122 @@ using namespace std;
 #include "CompuCell3D/plugins/NCMaterials/NCMaterialsPlugin.h"
 
 #include <ppl.h>
-#include <chrono>
-using namespace std::chrono;
+#include <concurrent_vector.h>
+#include <muParser/muParser.h>
+
+NCMaterialsExpressionEvaluator::NCMaterialsExpressionEvaluator(unsigned int _numMaterials, unsigned int _numFields) : 
+	step(0.0), 
+	numMaterials(_numMaterials),
+	numFields(_numFields)
+{}
+
+void NCMaterialsExpressionEvaluator::init(Point3D _pt) {
+	qty = std::vector<double>(numMaterials, 0.0);
+	fld = std::vector<double>(numFields, 0.0);
+
+	exprQuantities = std::vector<mu::Parser>(numMaterials, templateMuParserFunction(_pt));
+	exprFields = std::vector<mu::Parser>(numFields, templateMuParserFunction(_pt));
+}
+
+mu::Parser NCMaterialsExpressionEvaluator::templateMuParserFunction(Point3D _pt) {
+	mu::Parser _fcn = mu::Parser();
+	_fcn.SetExpr("0.0");
+	_fcn.DefineConst("x", (double)_pt.x);
+	_fcn.DefineConst("y", (double)_pt.y);
+	_fcn.DefineConst("z", (double)_pt.z);
+	_fcn.DefineVar("t", &step);
+	return _fcn;
+}
+
+void NCMaterialsExpressionEvaluator::setSymbol(std::string _sym, double *_val) {
+	for (unsigned int i = 0; i < numMaterials; ++i) exprQuantities[i].DefineVar(_sym, _val);
+	for (unsigned int i = 0; i < numFields; ++i) exprFields[i].DefineVar(_sym, _val);
+}
+
+void NCMaterialsExpressionEvaluator::setSymbols(std::vector<string> _materialSymbols, std::vector<string> _fieldSymbols) {
+	for (unsigned int i = 0; i < numMaterials; ++i)
+		setSymbol(_materialSymbols[i], &qty[i]);
+
+	for (unsigned int i = 0; i < numFields; ++i)
+		setSymbol(_fieldSymbols[i], &fld[i]);
+}
+
+void NCMaterialsExpressionEvaluator::setMaterialExpression(unsigned int _materialIndex, std::string _expr) {
+	try { exprQuantities[_materialIndex].SetExpr(_expr); }
+	catch (mu::Parser::exception_type &e) {
+		cerr << e.GetMsg() << endl;
+		ASSERT_OR_THROW(e.GetMsg(), 0);
+	}
+}
+
+void NCMaterialsExpressionEvaluator::setFieldExpression(unsigned int _fieldIndex, std::string _expr) {
+	try { exprFields[_fieldIndex].SetExpr(_expr); }
+	catch (mu::Parser::exception_type &e) {
+		cerr << e.GetMsg() << endl;
+		ASSERT_OR_THROW(e.GetMsg(), 0);
+	}
+}
+
+void NCMaterialsExpressionEvaluator::updateInternals(std::vector<float> _qty, std::vector<float> _fld) {
+
+	for (unsigned int i = 0; i < qty.size(); ++i)
+		qty[i] = (double)_qty[i];
+
+	for (unsigned int i = 0; i < fld.size(); ++i) 
+		fld[i] = (double)_fld[i];
+
+}
+
+std::vector<float> NCMaterialsExpressionEvaluator::evalMaterialExpressions(double _step, std::vector<float> _qty, std::vector<float> _fld) {
+	step = _step;
+
+	updateInternals(_qty, _fld);
+
+	std::vector<float> y = std::vector<float>(numMaterials, 0.0);
+	for (unsigned int i = 0; i < numMaterials; ++i) y[i] = static_cast<float>(exprQuantities[i].Eval());
+	return y;
+}
+
+std::vector<float> NCMaterialsExpressionEvaluator::evalFieldExpressions(double _step, std::vector<float> _qty, std::vector<float> _fld) {
+	step = _step;
+
+	updateInternals(_qty, _fld);
+
+	std::vector<float> y = std::vector<float>(numFields, 0.0);
+	for (unsigned int i = 0; i < numFields; ++i) y[i] = static_cast<float>(exprFields[i].Eval());
+	return y;
+}
+
+std::tuple<std::vector<float>, std::vector<float> > NCMaterialsExpressionEvaluator::evalExpressions(double _step, std::vector<float> _qty, std::vector<float> _fld) {
+	step = _step;
+
+	updateInternals(_qty, _fld);
+
+	std::vector<float> yMtl = std::vector<float>(numMaterials, 0.0);
+	std::vector<float> yFld = std::vector<float>(numFields, 0.0);
+	for (unsigned int i = 0; i < numMaterials; ++i) {
+		try { yMtl[i] = static_cast<float>(exprQuantities[i].Eval()); }
+		catch (mu::Parser::exception_type &e) {
+			cerr << "Message:  " << e.GetMsg() << "\n";
+			cerr << "Formula:  " << e.GetExpr() << "\n";
+			cerr << "Token:    " << e.GetToken() << "\n";
+			cerr << "Position: " << e.GetPos() << "\n";
+			cerr << "Errc:     " << e.GetCode() << "\n";
+		}
+	}
+	for (unsigned int i = 0; i < numFields; ++i) {
+		try { yFld[i] = static_cast<float>(exprFields[i].Eval()); }
+		catch (mu::Parser::exception_type &e) {
+			cerr << "Message:  " << e.GetMsg() << "\n";
+			cerr << "Formula:  " << e.GetExpr() << "\n";
+			cerr << "Token:    " << e.GetToken() << "\n";
+			cerr << "Position: " << e.GetPos() << "\n";
+			cerr << "Errc:     " << e.GetCode() << "\n";
+		}
+	}
+
+	return make_tuple(yMtl, yFld);
+}
 
 NCMaterialsSteppable::NCMaterialsSteppable() : 
 	cellFieldG(0),
@@ -44,11 +158,13 @@ NCMaterialsSteppable::NCMaterialsSteppable() :
 	automaton(0),
 	cellInventoryPtr(0),
 	pUtils(0),
-	numberOfMaterials(0),
+	numberOfMaterials(0), 
+	neighborOrder(1),
 	NCMaterialsInitialized(false),
 	AnyInteractionsDefined(false),
 	MaterialInteractionsDefined(false),
-	FieldInteractionsDefined(false),
+	FieldInteractionsDefined(false), 
+	GeneralInteractionsDefined(false),
 	CellInteractionsDefined(false)
 {}
 
@@ -56,6 +172,8 @@ NCMaterialsSteppable::~NCMaterialsSteppable() {
 	pUtils->destroyLock(lockPtr);
 	delete lockPtr;
 	lockPtr = 0;
+
+	if (GeneralInteractionsDefined) for (unsigned int i = 0; i < NCMExprEvalLocal.size(); ++i) delete NCMExprEvalLocal[i];
 }
 
 void NCMaterialsSteppable::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
@@ -78,7 +196,7 @@ void NCMaterialsSteppable::init(Simulator *simulator, CC3DXMLElement *_xmlData) 
 	}
 
     cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
-    fieldDim=cellFieldG->getDim();
+    fieldDim = cellFieldG->getDim();
     simulator->registerSteerableObject(this);
 
     update(_xmlData,true);
@@ -105,16 +223,18 @@ void NCMaterialsSteppable::step(const unsigned int currentStep){
 
     // Copy old field quantities
 	NCMaterialsField = ncMaterialsPlugin->getNCMaterialField();
-	concurrency::parallel_for(int(0), (int)(fieldDim.x*fieldDim.y*fieldDim.z), [&](int ind) { 
+	concurrency::parallel_for(int(0), (int)(fieldDim.x*fieldDim.y*fieldDim.z), [&](int ind) {
 		NCMaterialsField->get(this->ind2pt(ind))->setNCMaterialsQuantityVecOld(); });
 
 	bool MaterialInteractionsDefined = this->MaterialInteractionsDefined;
 	bool FieldInteractionsDefined = this->FieldInteractionsDefined;
+	bool GeneralInteractionsDefined = this->GeneralInteractionsDefined;
 
 	boundaryStrategy = sim->getBoundaryStrategy()->getInstance();
-	int nNeighbors = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
+	nNeighbors = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
+	int nNeighbors = this->nNeighbors;
 
-	if (MaterialInteractionsDefined || FieldInteractionsDefined) {
+	if (MaterialInteractionsDefined || FieldInteractionsDefined || GeneralInteractionsDefined) {
 
 		concurrency::parallel_for(int(0), (int)(fieldDim.x*fieldDim.y*fieldDim.z), [&](int ind) {
 			Point3D pt = this->ind2pt(ind);
@@ -125,6 +245,28 @@ void NCMaterialsSteppable::step(const unsigned int currentStep){
 
 				std::vector<float> qtyOld = NCMaterialsField->get(ptC)->getNCMaterialsQuantityVecOld();
 				std::vector<float> qtyNew = std::vector<float>(qtyOld);
+
+				unsigned int numFields = fieldVec.size();
+				std::vector<float> fieldValsOld = this->getFieldVals(ptC);
+				std::vector<float> fieldValsNew = std::vector<float>(fieldValsOld);
+
+				// General interactions
+				if (GeneralInteractionsDefined) {
+
+					NCMaterialsExpressionEvaluator *ee = this->getNCMExprEvalLocal((unsigned int)ind);
+					std::tuple<std::vector<float>, std::vector<float> > incGenTuple = ee->evalExpressions(double(currentStep), qtyOld, fieldValsOld);
+
+					if (qtyNew.size() > 0) {
+						std::vector<float> qtyIncGen = std::get<0>(incGenTuple);
+						for (unsigned int qtyIdx = 0; qtyIdx < qtyNew.size(); ++qtyIdx) qtyNew[qtyIdx] += qtyIncGen[qtyIdx];
+					}
+
+					if (numFields > 0) {
+						std::vector<float> fieldIncGen = std::get<1>(incGenTuple);
+						for (unsigned int fldIdx = 0; fldIdx < numFields; ++fldIdx) fieldValsNew[fldIdx] += fieldIncGen[fldIdx];
+					}
+
+				}
 
 				// Material interactions
 
@@ -175,30 +317,21 @@ void NCMaterialsSteppable::step(const unsigned int currentStep){
 					// Update quantities
 					for each (i in idxFromFieldInteractionsDefined)
 						for each (j in idxidxFromFieldInteractionsDefined[i])
-							qtyNew[i] += fromFieldReactionCoefficientsByIndex[i][j] * fieldVec[j]->get(ptC);
+							qtyNew[i] += fromFieldReactionCoefficientsByIndex[i][j] * fieldValsOld[j];
 
 					// Generate field source terms
-					float thisFieldVal;
-					for each (i in idxToFieldInteractionsDefined) {
-						thisFieldVal = fieldVec[i]->get(ptC);
-
+					for each (i in idxToFieldInteractionsDefined)
 						for each (j in idxidxToFieldInteractionsDefined[i])
-							thisFieldVal += toFieldReactionCoefficientsByIndex[i][j] * qtyOld[j];
-						
-						if (thisFieldVal < 0.0) thisFieldVal = 0.0;
-
-						fieldVec[i]->set(ptC, thisFieldVal);
-
-					}
+							fieldValsNew[i] += toFieldReactionCoefficientsByIndex[i][j] * qtyOld[j];
 
 				}
 
 				NCMaterialsField->get(ptC)->setNCMaterialsQuantityVec(checkQuantities(qtyNew));
+				for (unsigned int fieldIdx = 0; fieldIdx < fieldVec.size(); ++fieldIdx)
+					fieldVec[fieldIdx]->set(ptC, max(0.0, fieldValsNew[fieldIdx]));
 
 			}
-
 		});
-
 	}
 
 	// Cell interactions
@@ -267,11 +400,11 @@ void NCMaterialsSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	std::string thisMaterialName;
 	std::string catalystName;
 	float coeff;
-	
-	MaterialInteractionsDefined = false;
 
 	int materialIndex;
 	int catalystIndex;
+	
+	MaterialInteractionsDefined = false;
 	if (xmlData->findElement("MaterialInteraction")) {
 		MaterialReactionsDefined = true;
 
@@ -351,20 +484,22 @@ void NCMaterialsSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	if (MaterialInteractionsDefined) constructMaterialReactionCoefficients();
 
+	// Get diffusion field info
+	map<string, Field3D<float>*> & nameFieldMap = sim->getConcentrationFieldNameMap();
+
+	fieldVec.clear();
+	fieldNames.clear();
+	for (std::map<string, Field3D<float>*>::iterator itr = nameFieldMap.begin(); itr != nameFieldMap.end(); ++itr) {
+		fieldNames.insert(make_pair(itr->first, fieldNames.size()));
+		fieldVec.push_back(itr->second);
+	}
+	numberOfFields = fieldVec.size();
+
 	if (xmlData->findElement("FieldInteraction")) {
 		FieldInteractionsDefined = true;
 
 		cerr << "Getting NCMaterial field interactions..." << endl;
 
-		map<string, Field3D<float>*> & nameFieldMap = sim->getConcentrationFieldNameMap();
-
-		fieldVec.clear();
-		fieldNames.clear();
-		for (std::map<string, Field3D<float>*>::iterator itr = nameFieldMap.begin(); itr != nameFieldMap.end(); ++itr) {
-			fieldNames.insert(make_pair(itr->first, fieldNames.size()));
-			fieldVec.push_back(itr->second);
-		}
-		numberOfFields = fieldVec.size();
 		hasToFieldInteractionsDefined.assign(numberOfFields, false);
 		idxidxToFieldInteractionsDefined.resize(numberOfFields);
 
@@ -447,6 +582,124 @@ void NCMaterialsSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	}
 
+	// Get general interaction expression evaluator info
+
+	// Default symbols are names
+	materialSyms = std::vector<std::string>(ncMaterialsPlugin->getMaterialNameVector());
+	fieldSyms = std::vector<std::string>(numberOfFields);
+	std::vector<std::string> fieldNamesVec(numberOfFields);
+	for (std::map<std::string, int>::iterator mItr = fieldNames.begin(); mItr != fieldNames.end(); ++mItr) {
+		fieldSyms[mItr->second] = mItr->first;
+		fieldNamesVec[mItr->second] = mItr->first;
+	}
+
+	if (xmlData->findElement("GeneralFieldsInteractions")) {
+
+		GeneralInteractionsDefined = true;
+
+		cerr << "Getting NCMaterials general field interactions..." << endl;
+
+		CC3DXMLElement *xmlInts = xmlData->getFirstElement("GeneralFieldsInteractions");
+		for each (CC3DXMLElement *xmlSym in xmlInts->getElements("Symbol")) {
+			std::string sym = xmlSym->getText();
+			std::string name;
+			if (xmlSym->findAttribute("Material")) {
+				name = xmlSym->getAttribute("Material");
+				int idx = getNCMaterialIndexByName(name);
+				if (idx >= 0) materialSyms[idx] = sym;
+				else cerr << "   Material name not recognized for general field interaction: " << name << endl;
+			}
+			else if (xmlSym->findAttribute("Field")) {
+				name = xmlSym->getAttribute("Field");
+				int idx = getFieldIndexByName(name);
+				if (idx >= 0) fieldSyms[idx] = sym;
+				else cerr << "   Field name not recognized for general field interaction: " << name << endl;
+			}
+		}
+
+		cerr << "   Processing expressions... " << endl;
+
+		materialExprs = std::vector<std::string>(numberOfMaterials, "0.0");
+		fieldExprs = std::vector<std::string>(numberOfFields, "0.0");
+		std::vector<bool> materialExprsDefined = std::vector<bool>(numberOfMaterials, false);
+		std::vector<bool> fieldExprsDefined = std::vector<bool>(numberOfFields, false);
+
+		for each (CC3DXMLElement *xmlInt in xmlInts->getElements("Interaction")) {
+
+			std::string expr = xmlInt->getText();
+			std::string productName;
+			int idx;
+
+			if (xmlInt->findAttribute("Material")) {
+				productName = xmlInt->getAttribute("Material");
+				idx = getNCMaterialIndexByName(productName);
+				if (idx >= 0) {
+					if (materialExprsDefined[idx]) materialExprs[idx] += "+" + expr;
+					else {
+						materialExprsDefined[idx] = true;
+						materialExprs[idx] = expr;
+					}
+				}
+				else cerr << "   Material name not recognized for general field interaction: " << productName << endl;
+			}
+			else if (xmlInt->findAttribute("Field")) {
+				productName = xmlInt->getAttribute("Field");
+				std::map<std::string, int>::iterator mItr = fieldNames.find(productName);
+				if (mItr != fieldNames.end()) {
+					idx = mItr->second;
+					if (fieldExprsDefined[idx]) fieldExprs[idx] += "+" + expr;
+					else {
+						fieldExprsDefined[idx] = true;
+						fieldExprs[idx] = expr;
+					}
+
+				}
+				else cerr << "   Field name not recognized for general field interaction: " << productName << endl;
+			}
+
+		}
+
+		cerr << "   Got material expressions: " << endl;
+
+		for (unsigned int symIdx = 0; symIdx < materialExprs.size(); ++symIdx) {
+
+			cerr << "      " << getNCMaterialNameByIndex(symIdx) << "->" << materialExprs[symIdx] << endl;
+
+		}
+
+		cerr << "   Got field expressions: " << endl;
+
+		for (unsigned int symIdx = 0; symIdx < fieldExprs.size(); ++symIdx) {
+
+			cerr << "      " << fieldNamesVec[symIdx] << "->" << fieldExprs[symIdx] << endl;
+
+		}
+
+		cerr << "   Generating field expressions evaluators... ";
+
+		NCMExprEvalLocal = std::vector<NCMaterialsExpressionEvaluator *>(fieldDim.x*fieldDim.y*fieldDim.z, nullptr);
+		for (unsigned int ind = 0; ind < fieldDim.x*fieldDim.y*fieldDim.z; ++ind) {
+			Point3D pt = ind2pt(ind);
+
+			NCMaterialsExpressionEvaluator *_ee = new NCMaterialsExpressionEvaluator(numberOfMaterials, numberOfFields);
+			_ee->init(pt);
+			_ee->setSymbols(materialSyms, fieldSyms);
+
+			for (unsigned int i = 0; i < numberOfMaterials; ++i)
+				_ee->setMaterialExpression(i, materialExprs[i]);
+
+			for (unsigned int i = 0; i < numberOfFields; ++i)
+				_ee->setFieldExpression(i, fieldExprs[i]);
+
+			NCMExprEvalLocal[ind] = _ee;
+
+		}
+
+		cerr << "done." << endl;
+
+	}
+
+
 	if (xmlData->findElement("CellInteraction")) {
 		CellInteractionsDefined = true;
 
@@ -516,7 +769,7 @@ void NCMaterialsSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	}
 
 	NCMaterialsInitialized = true;
-	AnyInteractionsDefined = MaterialInteractionsDefined || FieldInteractionsDefined || CellInteractionsDefined;
+	AnyInteractionsDefined = MaterialInteractionsDefined || FieldInteractionsDefined || GeneralInteractionsDefined || CellInteractionsDefined;
 }
 
 void NCMaterialsSteppable::calculateCellInteractions(Field3D<NCMaterialsData *> *NCMaterialsField) {
@@ -844,6 +1097,14 @@ void NCMaterialsSteppable::constructCellTypeCoefficientsDeath() {
 		}
 	}
 
+}
+
+std::vector<float> NCMaterialsSteppable::getFieldVals(const Point3D &_pt) {
+	if (numberOfFields == 0) return std::vector<float>();
+
+	std::vector<float> _fieldVals = std::vector<float>(numberOfFields, 0.0);
+	for (unsigned int fieldIdx = 0; fieldIdx < numberOfFields; ++fieldIdx) _fieldVals[fieldIdx] = fieldVec[fieldIdx]->get(_pt);
+	return _fieldVals;
 }
 
 void NCMaterialsSteppable::calculateMaterialToFieldInteractions(const Point3D &pt, std::vector<float> _qtyOld) {
