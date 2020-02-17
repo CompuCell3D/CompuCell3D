@@ -464,7 +464,7 @@ void NCMaterialsSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			coeff = (float)MaterialDiffusionXMLVec[XMLidx]->getDouble();
 			cerr << "      Diffusion coefficient " << coeff << endl;
 
-			ASSERT_OR_THROW("Invalid diffusion coefficient: must be positive.", coeff >= 0);
+			// ASSERT_OR_THROW("Invalid diffusion coefficient: must be positive.", coeff >= 0);
 
 			materialIndex = getNCMaterialIndexByName(thisMaterialName);
 
