@@ -1,0 +1,196 @@
+<CompuCell3D Revision="20190906" Version="4.1.0">
+
+    <Metadata>
+        <NumberOfProcessors>1</NumberOfProcessors>
+        <DebugOutputFrequency>10</DebugOutputFrequency>
+    </Metadata>
+   
+    <Potts>
+        <Dimensions x="102" y="102" z="1"/>
+        <Steps>100000</Steps>
+        <Temperature>10.0</Temperature>
+        <NeighborOrder>1</NeighborOrder>
+        <Boundary_x>Periodic</Boundary_x>
+        <Boundary_y>Periodic</Boundary_y>
+    </Potts>
+   
+    <Plugin Name="CellType">
+        <CellType TypeId="0" TypeName="Medium"/>
+        <CellType TypeId="1" TypeName="Type1"/>
+        <CellType TypeId="2" TypeName="Type2"/>
+    </Plugin>
+    
+    <Plugin Name="Volume">
+        <VolumeEnergyParameters CellType="Type1" LambdaVolume="2.0" TargetVolume="36"/>
+        <VolumeEnergyParameters CellType="Type2" LambdaVolume="2.0" TargetVolume="36"/>
+    </Plugin>
+    
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+        <Energy Type1="Medium" Type2="Type1">15.0</Energy>
+        <Energy Type1="Type1" Type2="Type1">5.0</Energy>
+        
+        <Energy Type1="Type1" Type2="Type2">10.0</Energy>
+        
+        <Energy Type1="Medium" Type2="Type2">15.0</Energy>
+        <Energy Type1="Type2" Type2="Type2">5.0</Energy>
+        
+        <NeighborOrder>4</NeighborOrder>
+    </Plugin>
+    
+    <Plugin Name="NeighborTracker"/>
+
+    
+    <Steppable Type="FlexibleDiffusionSolverFE">
+        <DiffusionField Name="F">
+            <DiffusionData>
+                <FieldName>F</FieldName>
+                <DiffusionConstant>0.1</DiffusionConstant>
+                <DecayConstant>1e-02</DecayConstant>
+                <DoNotDiffuseTo>Type2</DoNotDiffuseTo>
+            </DiffusionData>
+            <BoundaryConditions>
+                <Plane Axis="X">
+                    <Periodic/>
+                </Plane>
+                <Plane Axis="Y">
+                    <Periodic/>
+<!--                     <ConstantDerivative PlanePosition="Min" Value="0.0"/> -->
+<!--                     <ConstantDerivative PlanePosition="Max" Value="0.0"/> -->
+                </Plane>
+            </BoundaryConditions>
+        </DiffusionField>
+        
+        <DiffusionField Name="G">
+            <DiffusionData>
+                <FieldName>G</FieldName>
+                <DiffusionConstant>0.1</DiffusionConstant>
+                <DecayConstant>1e-02</DecayConstant>
+                <DoNotDiffuseTo>Type1</DoNotDiffuseTo>
+            </DiffusionData>
+            <BoundaryConditions>
+                <Plane Axis="X">
+                    <Periodic/>
+                </Plane>
+                <Plane Axis="Y">
+                    <Periodic/>
+<!--                     <ConstantDerivative PlanePosition="Min" Value="0.0"/> -->
+<!--                     <ConstantDerivative PlanePosition="Max" Value="0.0"/> -->
+                </Plane>
+            </BoundaryConditions>
+        </DiffusionField>
+    </Steppable>
+    
+    <Plugin Name="Secretion">
+        <Field Name="F">
+            <ConstantConcentration Type="Type1">1.0</ConstantConcentration>
+        </Field>
+        <Field Name="G">
+            <ConstantConcentration Type="Type2">1.0</ConstantConcentration>
+        </Field>
+    </Plugin>
+    
+    <Plugin Name="NCMaterials">
+        <NCMaterial Material="AM"/>
+        <NCMaterial Material="CM"/>
+        <NCMaterial Material="BM"/>
+        
+        <NCMaterialAdvects Material="BM">false</NCMaterialAdvects>
+        <NCMaterialDurability Material="BM">100.0</NCMaterialDurability>
+        
+        <NCAdhesion CellType="Type1" Material="AM">-5.0</NCAdhesion>
+        <NCAdhesion CellType="Type1" Material="CM">0.0</NCAdhesion>
+        <NCAdhesion CellType="Type1" Material="BM">-10.0</NCAdhesion>
+        
+        <NCAdhesion CellType="Type2" Material="AM">0.0</NCAdhesion>
+        <NCAdhesion CellType="Type2" Material="CM">-5.0</NCAdhesion>
+        <NCAdhesion CellType="Type2" Material="BM">-50.0</NCAdhesion>
+        
+        <NeighborOrder>4</NeighborOrder>
+        
+        <RemodelingQuantity CellType="Type1" Material="AM">0.0</RemodelingQuantity>
+        <RemodelingQuantity CellType="Type1" Material="CM">1.0</RemodelingQuantity>
+        <RemodelingQuantity CellType="Type1" Material="BM">0.0</RemodelingQuantity>
+        
+        <RemodelingQuantity CellType="Type2" Material="AM">0.0</RemodelingQuantity>
+        <RemodelingQuantity CellType="Type2" Material="CM">1.0</RemodelingQuantity>
+        <RemodelingQuantity CellType="Type2" Material="BM">0.0</RemodelingQuantity>
+    </Plugin>
+    
+    <Steppable Type="NCMaterialsSteppable">
+        <GeneralFieldsInteractions>
+            <Symbol Material="CM">q2</Symbol>
+            <Symbol Material="BM">q3</Symbol>
+            <Symbol Field="F">f</Symbol>
+            <Symbol Field="G">g</Symbol>
+            
+<!--             BM maintenance: sufficient G -->
+            <Interaction Material="BM">(0.01)*(1.0-q3)*max(0.0,g-0.5)/0.5</Interaction>
+            <Interaction Material="CM">(-0.01)*(1.0-q3)*max(0.0,g-0.5)/0.5</Interaction>
+            <Interaction Field="G">(-0.001)*(1.0-q3)*max(0.0,g-0.5)/0.5</Interaction>
+            
+<!--             BM maintenance: insufficient G-->
+            <Interaction Material="BM">(0.01)*q3*min(0.0,g-0.5)/0.5</Interaction>
+            <Interaction Material="CM">(-0.01)*q3*min(0.0,g-0.5)/0.5</Interaction>
+            
+<!--             BM degradation by F -->
+            <Interaction Material="BM">(-0.01)*f*q3</Interaction>
+            <Interaction Material="CM">(0.01)*f*q3</Interaction>
+            <Interaction Field="F">(-0.01)*f*q3</Interaction>
+        </GeneralFieldsInteractions>
+        
+<!--         Type1->Type2 Differentiation by CM -->
+        <CellInteraction Method="Differentiation">
+            <NCMaterial>CM</NCMaterial>
+            <Probability>1e-03</Probability>
+            <CellType>Type1</CellType>
+            <CellTypeNew>Type2</CellTypeNew>
+        </CellInteraction>
+        
+<!--         Type1->Type2 Differentiation by BM -->
+        <CellInteraction Method="Differentiation">
+            <NCMaterial>BM</NCMaterial>
+            <Probability>5e-03</Probability>
+            <CellType>Type1</CellType>
+            <CellTypeNew>Type2</CellTypeNew>
+        </CellInteraction>
+        
+<!--         Type2->Type1 Differentiation by AM -->
+        <CellInteraction Method="Differentiation">
+            <NCMaterial>AM</NCMaterial>
+            <Probability>1e-03</Probability>
+            <CellType>Type2</CellType>
+            <CellTypeNew>Type1</CellTypeNew>
+        </CellInteraction>
+        
+<!--         Type1->Type1 Proliferation by AM -->
+        <CellInteraction Method="Proliferation">
+            <NCMaterial>AM</NCMaterial>
+            <Probability>1e-04</Probability>
+            <CellType>Type1</CellType>
+        </CellInteraction>
+        
+    </Steppable>
+
+    
+    <Steppable Type="BlobInitializer">
+        <Region>
+            <Center x="51" y="51" z="0"/>
+            <Radius>20</Radius>
+            <Gap>0</Gap>
+            <Width>6</Width>
+            <Types>Type1</Types>
+        </Region>
+    </Steppable>
+    
+<!--     <Steppable Type="UniformInitializer"> -->
+<!--         <Region> -->
+<!--             <BoxMin x="0" y="0" z="0"/> -->
+<!--             <BoxMax x="102" y="24" z="1"/> -->
+<!--             <Gap>0</Gap> -->
+<!--             <Width>6</Width> -->
+<!--             <Types>Type1</Types> -->
+<!--         </Region> -->
+<!--     </Steppable> -->
+    
+</CompuCell3D>

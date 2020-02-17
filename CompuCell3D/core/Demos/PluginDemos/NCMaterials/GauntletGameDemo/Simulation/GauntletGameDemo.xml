@@ -1,0 +1,152 @@
+<CompuCell3D Revision="20190906" Version="4.1.0">
+    
+    <Metadata>
+        <NumberOfProcessors>1</NumberOfProcessors>
+        <DebugOutputFrequency>10</DebugOutputFrequency>
+    </Metadata>
+    
+    <Potts>
+        <Dimensions x="200" y="100" z="1"/>
+        <Steps>100000</Steps>
+        <Temperature>10.0</Temperature>
+        <NeighborOrder>1</NeighborOrder>
+    </Potts>
+    
+    <Plugin Name="CellType">
+        <CellType TypeId="0" TypeName="Medium"/>
+        <CellType TypeId="1" TypeName="Type1"/>
+        <CellType TypeId="2" TypeName="Type2"/>
+        <CellType TypeId="3" TypeName="Type3"/>
+    </Plugin>
+    
+    <Plugin Name="Volume">
+        <VolumeEnergyParameters CellType="Type1" LambdaVolume="2.0" TargetVolume="50"/>
+        <VolumeEnergyParameters CellType="Type2" LambdaVolume="2.0" TargetVolume="50"/>
+        <VolumeEnergyParameters CellType="Type3" LambdaVolume="2.0" TargetVolume="0"/>
+    </Plugin>
+    
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">16.0</Energy>
+        <Energy Type1="Medium" Type2="Type1">16.0</Energy>
+        <Energy Type1="Medium" Type2="Type2">16.0</Energy>
+        <Energy Type1="Medium" Type2="Type3">0.0</Energy>
+        <Energy Type1="Type1" Type2="Type1">6.0</Energy>
+        <Energy Type1="Type1" Type2="Type2">10.0</Energy>
+        <Energy Type1="Type1" Type2="Type3">16.0</Energy>
+        <Energy Type1="Type2" Type2="Type2">14.0</Energy>
+        <Energy Type1="Type2" Type2="Type3">16.0</Energy>
+        <Energy Type1="Type3" Type2="Type3">16.0</Energy>
+        <NeighborOrder>4</NeighborOrder>
+    </Plugin>
+    
+    <Plugin Name="Chemotaxis">
+        <ChemicalField Name="VEGF">
+            <ChemotaxisByType Lambda="3000.0" Type="Type1"/>
+            <ChemotaxisByType Lambda="1000.0" Type="Type2"/>
+            <ChemotaxisByType Lambda="0.0" Type="Type3"/>
+        </ChemicalField>
+    </Plugin>
+    
+    <Steppable Type="DiffusionSolverFE">
+        <DiffusionField Name="VEGF">
+            <DiffusionData>
+                <FieldName>VEGF</FieldName>
+                <GlobalDiffusionConstant>0.1</GlobalDiffusionConstant>
+                <GlobalDecayConstant>1e-05</GlobalDecayConstant>
+                <InitialConcentrationExpression>x/200</InitialConcentrationExpression>
+                <DiffusionCoefficient CellType="Type1">0.1</DiffusionCoefficient>
+                <DiffusionCoefficient CellType="Type2">0.1</DiffusionCoefficient>
+                <DiffusionCoefficient CellType="Type3">0.1</DiffusionCoefficient>
+            </DiffusionData>
+            <BoundaryConditions>
+                <Plane Axis="X">
+                    <ConstantValue PlanePosition="Min" Value="0"/>
+                    <ConstantValue PlanePosition="Max" Value="1.0"/>
+                </Plane>
+                <Plane Axis="Y">
+                    <ConstantDerivative PlanePosition="Min" Value="0.0"/>
+                    <ConstantDerivative PlanePosition="Max" Value="0.0"/>
+                </Plane>
+            </BoundaryConditions>
+        </DiffusionField>
+    </Steppable>
+    
+    <Steppable Type="BlobInitializer">
+        <Region>
+            <Center x="20" y="50" z="0"/>
+            <Radius>5</Radius>
+            <Gap>0</Gap>
+            <Width>7</Width>
+            <Types>Type1</Types>
+        </Region>
+    </Steppable>
+    
+    <Plugin Name="NCMaterials">
+        <NCMaterial Material="ECMarbitrary"/>
+        <NCMaterial Material="ECMcell"/>
+        <NCMaterial Material="ECMsplits"/>
+        <NCMaterial Material="ECMdiffs"/>
+        <NCMaterial Material="ECMkills"/>
+        <NCAdhesion CellType="Type1" Material="ECMkills">50</NCAdhesion>
+        <NCAdhesion CellType="Type2" Material="ECMdiffs">-10</NCAdhesion>
+        <RemodelingQuantity CellType="Type1" Material="ECMarbitrary">0.0</RemodelingQuantity>
+        <RemodelingQuantity CellType="Type1" Material="ECMcell">1.0</RemodelingQuantity>
+        <RemodelingQuantity CellType="Type2" Material="ECMarbitrary">0.0</RemodelingQuantity>
+        <RemodelingQuantity CellType="Type2" Material="ECMcell">1.0</RemodelingQuantity>
+        <RemodelingQuantity CellType="Type3" Material="ECMarbitrary">0.0</RemodelingQuantity>
+        <NeighborOrder>4</NeighborOrder>
+        <FieldDesign>
+            <Design Method="Parallelepiped">
+                <NCMaterial Material="ECMsplits">1.0</NCMaterial>
+                <StartPoint x="40" y="0" z="0"/>
+                <EndPoint x="80" y="100" z="0"/>
+            </Design>
+            <Design Method="Parallelepiped">
+                <NCMaterial Material="ECMdiffs">1.0</NCMaterial>
+                <StartPoint x="81" y="0" z="0"/>
+                <EndPoint x="120" y="100" z="0"/>
+            </Design>
+            <Design Method="Parallelepiped">
+                <NCMaterial Material="ECMkills">1.0</NCMaterial>
+                <StartPoint x="121" y="0" z="0"/>
+                <EndPoint x="160" y="100" z="0"/>
+            </Design>
+        </FieldDesign>
+    </Plugin>
+    
+    <Steppable Type="NCMaterialsSteppable">
+<!--         Component ECMkills (second region from right) kills Type1 cells -->
+        <CellInteraction Method="Death">
+            <NCMaterial>ECMkills</NCMaterial>
+            <Probability>0.001</Probability>
+            <CellType>Type1</CellType>
+        </CellInteraction>
+        
+<!--         Experiment with different response combinations and parameters below -->
+<!--         to find a set of responses such that only one Type1 cell arrives at  -->
+<!--         the right-hand side of the simulation domain -->
+        
+<!--         <CellInteraction Method="Proliferation"> -->
+<!--             <NCMaterial>ECMsplits</NCMaterial> -->
+<!--             <Probability>0.0003</Probability> -->
+<!--             <CellType>Type1</CellType> -->
+<!--         </CellInteraction> -->
+<!--         <CellInteraction Method="Differentiation"> -->
+<!--             <NCMaterial>ECMdiffs</NCMaterial> -->
+<!--             <Probability>0.01</Probability> -->
+<!--             <CellType>Type1</CellType> -->
+<!--             <CellTypeNew>Type2</CellTypeNew> -->
+<!--         </CellInteraction> -->
+        <CellInteraction Method="Proliferation">
+            <NCMaterial>ECMdiffs</NCMaterial>
+            <Probability>0.01</Probability>
+            <CellType>Type1</CellType>
+            <CellTypeNew>Type2</CellTypeNew>
+        </CellInteraction>
+        <CellInteraction Method="Death">
+            <NCMaterial>ECMarbitrary</NCMaterial>
+            <Probability>0.001</Probability>
+            <CellType>Type2</CellType>
+        </CellInteraction>
+    </Steppable>
+</CompuCell3D>

@@ -1,0 +1,147 @@
+<CompuCell3D Revision="20190906" Version="4.1.0">
+   
+    <Metadata>
+        <NumberOfProcessors>1</NumberOfProcessors>
+        <DebugOutputFrequency>10</DebugOutputFrequency>
+    </Metadata>
+   
+    <Potts>
+        <Dimensions x="200" y="100" z="1"/>
+        <Steps>100000</Steps>
+        <Temperature>10.0</Temperature>
+        <NeighborOrder>1</NeighborOrder>
+    </Potts>
+    
+    <Plugin Name="CellType">
+        <CellType TypeId="0" TypeName="Medium"/>
+        <CellType TypeId="1" TypeName="Type1"/>
+    </Plugin>
+   
+    <Plugin Name="Volume">
+        <VolumeEnergyParameters CellType="Type1" LambdaVolume="2.0" TargetVolume="50"/>
+    </Plugin>
+   
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+        <Energy Type1="Medium" Type2="Type1">10.0</Energy>
+        <Energy Type1="Type1" Type2="Type1">10.0</Energy>
+        <NeighborOrder>4</NeighborOrder>
+    </Plugin>
+   
+    <Steppable Type="DiffusionSolverFE">
+        <DiffusionField Name="Attractor">
+            <DiffusionData>
+                <FieldName>Attractor</FieldName>
+                <GlobalDiffusionConstant>0.1</GlobalDiffusionConstant>
+                <InitialConcentrationExpression>x/200</InitialConcentrationExpression>
+                <DiffusionCoefficient CellType="Type1">0.1</DiffusionCoefficient>
+            </DiffusionData>
+            <BoundaryConditions>
+                <Plane Axis="X">
+                    <ConstantValue PlanePosition="Min" Value="0.0"/>
+                    <ConstantValue PlanePosition="Max" Value="1.0"/>
+                </Plane>
+                <Plane Axis="Y">
+                   <ConstantDerivative PlanePosition="Min" Value="0.0"/>
+                   <ConstantDerivative PlanePosition="Max" Value="0.0"/>
+                </Plane>
+            </BoundaryConditions>
+        </DiffusionField>
+        <DiffusionField Name="Dissolver">
+            <DiffusionData>
+                <FieldName>Dissolver</FieldName>
+                <GlobalDiffusionConstant>0.1</GlobalDiffusionConstant>
+                <DecayCoefficient CellType="Medium">0.01</DecayCoefficient>
+            </DiffusionData>
+            <SecretionData>
+                <ConstantConcentration Type="Type1">1.0</ConstantConcentration>
+            </SecretionData>
+            <BoundaryConditions>
+                <Plane Axis="X">
+                    <ConstantDerivative PlanePosition="Min" Value="0.0"/>
+                    <ConstantDerivative PlanePosition="Max" Value="0.0"/>
+                </Plane>
+                <Plane Axis="Y">
+                    <ConstantDerivative PlanePosition="Min" Value="0.0"/>
+                    <ConstantDerivative PlanePosition="Max" Value="0.0"/>
+                </Plane>
+            </BoundaryConditions>
+        </DiffusionField>
+    </Steppable>
+    
+    <Plugin Name="Chemotaxis">
+        <ChemicalField Name="Attractor">
+            <ChemotaxisByType ChemotactTowards="Medium" Lambda="10000.0" SaturationCoef="10.0" Type="Type1"/>
+        </ChemicalField>
+    </Plugin>
+   
+    <Plugin Name="NCMaterials">
+        <NCMaterial Material="AM"/>
+        <NCMaterial Material="RM"/>
+        <NCMaterial Material="BM"/>
+        
+        <NCMaterialAdvects Material="BM">False</NCMaterialAdvects>
+        
+        <NCMaterialDurability Material="BM">100.0</NCMaterialDurability>
+        
+        <NCAdhesion CellType="Type1" Material="AM">0.0</NCAdhesion>
+        <NCAdhesion CellType="Type1" Material="RM">0.0</NCAdhesion>
+        <NCAdhesion CellType="Type1" Material="BM">0.0</NCAdhesion>
+        <NeighborOrder>4</NeighborOrder>
+        
+        <RemodelingQuantity CellType="Type1" Material="AM">0.0</RemodelingQuantity>
+        <RemodelingQuantity CellType="Type1" Material="RM">1.0</RemodelingQuantity>
+        <RemodelingQuantity CellType="Type1" Material="BM">0.0</RemodelingQuantity>
+        
+        <FieldDesign>
+            <Design Method="Parallelepiped">
+                <NCMaterial Material="AM">0.0</NCMaterial>
+                <NCMaterial Material="RM">0.0</NCMaterial>
+                <NCMaterial Material="BM">1.0</NCMaterial>
+                <StartPoint x="40" y="0" z="0"/>
+                <EndPoint x="70" y="75" z="1"/>
+            </Design>
+            
+            <Design Method="Parallelepiped">
+                <NCMaterial Material="AM">0.0</NCMaterial>
+                <NCMaterial Material="RM">0.0</NCMaterial>
+                <NCMaterial Material="BM">1.0</NCMaterial>
+                <StartPoint x="100" y="25" z="0"/>
+                <EndPoint x="130" y="100" z="1"/>
+            </Design>
+            
+            <Design Method="Parallelepiped">
+                <NCMaterial Material="AM">0.0</NCMaterial>
+                <NCMaterial Material="RM">0.0</NCMaterial>
+                <NCMaterial Material="BM">1.0</NCMaterial>
+                <StartPoint x="160" y="0" z="0"/>
+                <EndPoint x="190" y="75" z="1"/>
+            </Design>
+        </FieldDesign>
+
+    </Plugin>
+    
+<!--     If NCMaterialsSteppable is activated, then the cell degrades the barriers -->
+<!--     <Steppable Type="NCMaterialsSteppable"> -->
+<!--         <FieldInteraction> -->
+<!--             <Reactant>BM</Reactant> -->
+<!--             <Catalyst>Dissolver</Catalyst> -->
+<!--             <ConstantCoefficient>-0.01</ConstantCoefficient> -->
+<!--         </FieldInteraction> -->
+<!--         <FieldInteraction> -->
+<!--             <Reactant>Dissolver</Reactant> -->
+<!--             <Catalyst>BM</Catalyst> -->
+<!--             <ConstantCoefficient>-0.01</ConstantCoefficient> -->
+<!--         </FieldInteraction> -->
+<!--     </Steppable> -->
+    
+    <Steppable Type="UniformInitializer">
+        <Region>
+            <BoxMin x="20" y="46" z="0"/>
+            <BoxMax x="26" y="52" z="1"/>
+            <Gap>0</Gap>
+            <Width>7</Width>
+            <Types>Type1</Types>
+        </Region>
+    </Steppable>
+</CompuCell3D>

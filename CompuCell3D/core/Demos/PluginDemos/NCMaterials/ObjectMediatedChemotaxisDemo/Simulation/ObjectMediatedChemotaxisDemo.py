@@ -1,0 +1,6 @@
+from cc3d import CompuCellSetup
+
+from ObjectMediatedChemotaxisDemoSteppables import ObjectMediatedChemotaxisDemoSteppable
+CompuCellSetup.register_steppable(steppable=ObjectMediatedChemotaxisDemoSteppable(frequency=1))
+
+CompuCellSetup.run()

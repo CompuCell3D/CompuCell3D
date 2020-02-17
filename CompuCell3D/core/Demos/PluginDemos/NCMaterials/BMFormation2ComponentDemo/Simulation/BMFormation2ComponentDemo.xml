@@ -1,0 +1,125 @@
+<CompuCell3D Revision="20190906" Version="4.1.0">
+    
+    <Metadata>
+        <NumberOfProcessors>1</NumberOfProcessors>
+        <DebugOutputFrequency>10</DebugOutputFrequency>
+    </Metadata>
+    
+    <Potts>
+        <Dimensions x="100" y="100" z="1"/>
+        <Steps>100000</Steps>
+        <Temperature>10.0</Temperature>
+        <NeighborOrder>1</NeighborOrder>
+        <Boundary_x>Periodic</Boundary_x>
+        <Boundary_y>Periodic</Boundary_y>
+    </Potts>
+    
+    <Plugin Name="CellType">
+        <CellType TypeId="0" TypeName="Medium"/>
+        <CellType TypeId="1" TypeName="Type1"/>
+    </Plugin>
+   
+    <Plugin Name="Volume">
+        <VolumeEnergyParameters CellType="Type1" LambdaVolume="2.0" TargetVolume="50"/>
+    </Plugin>
+    
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+        <Energy Type1="Medium" Type2="Type1">10.0</Energy>
+        <Energy Type1="Type1" Type2="Type1">5.0</Energy>
+        <NeighborOrder>4</NeighborOrder>
+    </Plugin>
+    
+    <Steppable Type="FastDiffusionSolver2DFE">
+        <DiffusionField Name="F">
+            <DiffusionData>
+                <FieldName>F</FieldName>
+                <DiffusionConstant>0.1</DiffusionConstant>
+                <DecayConstant>1e-02</DecayConstant>
+                <DoNotDiffuseTo>Type1</DoNotDiffuseTo>
+                <DoNotDecayIn>Type1</DoNotDecayIn>
+            </DiffusionData>
+            <BoundaryConditions>
+                <Plane Axis="X">
+                    <Periodic/>
+                </Plane>
+                <Plane Axis="Y">
+                    <Periodic/>
+                </Plane>
+            </BoundaryConditions>
+        </DiffusionField>
+    </Steppable>
+    
+    <Plugin Name="Secretion">
+        <Field Name="F">
+            <SecretionOnContact SecreteOnContactWith="Medium" Type="Type1">0.02</SecretionOnContact>
+        </Field>
+    </Plugin>
+    
+<!--     <Plugin Name="Chemotaxis"> -->
+<!--         <ChemicalField Name="F"> -->
+<!--             <ChemotaxisByType ChemotactTowards="Medium" Lambda="-8500.0" SaturationCoef="10.0" Type="Type1"/> -->
+<!--         </ChemicalField> -->
+<!--     </Plugin> -->
+    
+    <Plugin Name="NCMaterials">
+        <NCMaterial Material="AM"/>
+        <NCMaterial Material="BM"/>
+        
+        <NCMaterialAdvects Material="BM">false</NCMaterialAdvects>
+        
+        <NCMaterialDurability Material="AM">0.0</NCMaterialDurability>
+        <NCMaterialDurability Material="BM">500.0</NCMaterialDurability>
+        
+        <NCAdhesion CellType="Type1" Material="AM">0.0</NCAdhesion>
+        <NCAdhesion CellType="Type1" Material="BM">-20.0</NCAdhesion>
+        <NeighborOrder>4</NeighborOrder>
+        
+        <RemodelingQuantity CellType="Type1" Material="AM">0.0</RemodelingQuantity>
+        <RemodelingQuantity CellType="Type1" Material="BM">0.0</RemodelingQuantity>
+    </Plugin>
+   
+    <Steppable Type="NCMaterialsSteppable">
+        <GeneralFieldsInteractions>
+            <Symbol Material="AM">q1</Symbol>
+            <Symbol Material="BM">q2</Symbol>
+            
+<!--             BM formation -->
+            <Interaction Material="AM">(-2e-02)*q1*F</Interaction>
+            <Interaction Material="BM">2.0*(2e-02)*q1*F</Interaction>
+            
+<!--             Formation failure -->
+            <Interaction Material="AM">(1e-02)*(abs(q2-0.55)-(q2-0.55))*q2</Interaction>
+            <Interaction Material="BM">2.0*(-1e-02)*(abs(q2-0.55)-(q2-0.55))*q2</Interaction>
+            
+<!--             Formation criticality -->
+            <Interaction Material="AM">(-5e-03)*(abs(q2-0.45)+(q2-0.45))*q1*(1-q1)</Interaction>
+            <Interaction Material="BM">(5e-03)*(abs(q2-0.45)+(q2-0.45))*(2.0*q1*(1-q1)+1)*(1-q2)</Interaction>
+            
+        </GeneralFieldsInteractions>
+        
+<!--         Integrin field decay -->
+        <FieldInteraction>
+            <Reactant>F</Reactant>
+            <Catalyst>AM</Catalyst>
+            <ConstantCoefficient>-5e-03</ConstantCoefficient>
+        </FieldInteraction>
+        <FieldInteraction>
+            <Reactant>F</Reactant>
+            <Catalyst>BM</Catalyst>
+            <ConstantCoefficient>-0e-03</ConstantCoefficient>
+        </FieldInteraction>
+        
+    </Steppable>
+   
+    <Steppable Type="BlobInitializer">
+        <Region>
+            <Center x="50" y="50" z="0"/>
+            <Radius>20</Radius>
+            <Gap>0</Gap>
+            <Width>7</Width>
+            <Types>Type1</Types>
+        </Region>
+    </Steppable>
+
+</CompuCell3D>

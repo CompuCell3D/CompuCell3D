@@ -1,0 +1,5 @@
+<Simulation version="4.1.0">
+   <XMLScript Type="XMLScript">Simulation/ObjectMediatedChemotaxisDemo.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/ObjectMediatedChemotaxisDemo.py</PythonScript>
+   <Resource Type="Python">Simulation/ObjectMediatedChemotaxisDemoSteppables.py</Resource>
+</Simulation>

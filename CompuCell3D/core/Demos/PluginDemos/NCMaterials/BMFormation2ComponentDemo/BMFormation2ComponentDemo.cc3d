@@ -1,0 +1,5 @@
+<Simulation version="4.1.0">
+   <XMLScript Type="XMLScript">Simulation/BMFormation2ComponentDemo.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/BMFormation2ComponentDemo.py</PythonScript>
+   <Resource Type="Python">Simulation/BMFormation2ComponentDemoSteppables.py</Resource>
+</Simulation>

@@ -1,0 +1,12 @@
+from cc3d import CompuCellSetup
+
+from GauntletGameDemoSteppables import GauntletGameDemoSteppable
+CompuCellSetup.register_steppable(steppable=GauntletGameDemoSteppable(frequency=1))
+
+from GauntletGameDemoSteppables import MitosisSteppable
+CompuCellSetup.register_steppable(steppable=MitosisSteppable(frequency=1))
+
+from GauntletGameDemoSteppables import MitosisSteppableAsym
+CompuCellSetup.register_steppable(steppable=MitosisSteppableAsym(frequency=1))
+
+CompuCellSetup.run()

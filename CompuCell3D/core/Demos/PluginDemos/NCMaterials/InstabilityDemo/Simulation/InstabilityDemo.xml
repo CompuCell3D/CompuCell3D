@@ -1,0 +1,66 @@
+<CompuCell3D Revision="20190906" Version="4.1.0">
+
+    <Metadata>
+        <NumberOfProcessors>1</NumberOfProcessors>
+        <DebugOutputFrequency>10</DebugOutputFrequency>
+    </Metadata>
+   
+    <Potts>
+        <Dimensions x="203" y="200" z="1"/>
+        <Steps>100000</Steps>
+        <Temperature>10.0</Temperature>
+        <NeighborOrder>1</NeighborOrder>
+        <Boundary_x>Periodic</Boundary_x>
+<!--         <Boundary_y>Periodic</Boundary_y> -->
+    </Potts>
+   
+    <Plugin Name="CellType">
+        <CellType TypeId="0" TypeName="Medium"/>
+        <CellType TypeId="1" TypeName="Type1"/>
+    </Plugin>
+    
+    <Plugin Name="Volume">
+        <VolumeEnergyParameters CellType="Type1" LambdaVolume="2.0" TargetVolume="50"/>
+    </Plugin>
+    
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+        <Energy Type1="Medium" Type2="Type1">15.0</Energy>
+        <Energy Type1="Type1" Type2="Type1">5.0</Energy>
+        <NeighborOrder>4</NeighborOrder>
+    </Plugin>
+    
+    <Plugin Name="NCMaterials">
+        <NCMaterial Material="AM"/>
+        <NCMaterial Material="CM"/>
+        
+        <NCAdhesion CellType="Type1" Material="AM">-10</NCAdhesion>
+        <NCAdhesion CellType="Type1" Material="CM">0.0</NCAdhesion>
+        
+        <NeighborOrder>4</NeighborOrder>
+      
+        <RemodelingQuantity CellType="Type1" Material="AM">0.0</RemodelingQuantity>
+        <RemodelingQuantity CellType="Type1" Material="CM">1.0</RemodelingQuantity>
+    </Plugin>
+    
+<!--     <Steppable Type="BlobInitializer"> -->
+<!--         <Region> -->
+<!--             <Center x="101" y="100" z="0"/> -->
+<!--             <Radius>30</Radius> -->
+<!--             <Gap>0</Gap> -->
+<!--             <Width>7</Width> -->
+<!--             <Types>Type1</Types> -->
+<!--         </Region> -->
+<!--     </Steppable> -->
+    
+    <Steppable Type="UniformInitializer">
+        <Region>
+            <BoxMin x="0" y="0" z="0"/>
+            <BoxMax x="203" y="50" z="1"/>
+            <Gap>0</Gap>
+            <Width>7</Width>
+            <Types>Type1</Types>
+        </Region>
+    </Steppable>
+    
+</CompuCell3D>

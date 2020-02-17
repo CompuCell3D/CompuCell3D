@@ -1,0 +1,12 @@
+from cc3d import CompuCellSetup
+
+from RegulatedEpitheliumDemoSteppables import RegulatedEpitheliumDemoSteppable
+CompuCellSetup.register_steppable(steppable=RegulatedEpitheliumDemoSteppable(frequency=1))
+
+from RegulatedEpitheliumDemoSteppables import DiffType2Steppable
+CompuCellSetup.register_steppable(steppable=DiffType2Steppable(frequency=1))
+
+from RegulatedEpitheliumDemoSteppables import MitosisSteppable
+CompuCellSetup.register_steppable(steppable=MitosisSteppable(frequency=1))
+
+CompuCellSetup.run()
