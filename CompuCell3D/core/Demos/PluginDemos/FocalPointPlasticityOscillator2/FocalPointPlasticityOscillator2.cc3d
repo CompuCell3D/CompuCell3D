@@ -1,0 +1,5 @@
+<Simulation version="4.1.0">
+   <XMLScript Type="XMLScript">Simulation/FocalPointPlasticityOscillator2.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/FocalPointPlasticityOscillator2.py</PythonScript>
+   <Resource Type="Python">Simulation/FocalPointPlasticityOscillator2Steppables.py</Resource>
+</Simulation>
