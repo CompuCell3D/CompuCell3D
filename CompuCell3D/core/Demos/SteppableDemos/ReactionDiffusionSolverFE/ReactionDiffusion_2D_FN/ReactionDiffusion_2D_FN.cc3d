@@ -2,6 +2,7 @@
 
     <XMLScript Type="XMLScript">Simulation/ReactionDiffusion_2D_FN.xml</XMLScript>
     <PythonScript Type="XMLScript">Simulation/ReactionDiffusion_2D_FN.py</PythonScript>
+    <Resource Type="Python">Simulation/ReactionDiffusion_2D_FNSteppables.py</Resource>
     <Resource Type="Field" Copy="No">Simulation/FN.pulse.txt</Resource>    
 
 </Simulation>

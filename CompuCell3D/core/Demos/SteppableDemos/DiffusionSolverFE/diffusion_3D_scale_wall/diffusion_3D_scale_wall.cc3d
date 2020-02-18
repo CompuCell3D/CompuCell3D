@@ -2,6 +2,7 @@
 
     <XMLScript Type="XMLScript">Simulation/diffusion_3D_scale_wall.xml</XMLScript>
     <PythonScript >Simulation/diffusion_3D_scale_wall.py</PythonScript>
+    <Resource Type="Python">Simulation/diffusion_3D_scale_wallSteppables.py</Resource>
 
     <Resource Type="Field" Copy="No">Simulation/diffusion_3D_scale_wall.pulse.txt</Resource>    
 

@@ -2,4 +2,5 @@
 
     <XMLScript Type="XMLScript">Simulation/randomFieldInitializer.xml</XMLScript>
     <PythonScript>Simulation/randomFieldInitializer.py</PythonScript>
+    <Resource Type="Python">Simulation/randomFieldInitializerSteppables.py</Resource>
 </Simulation>

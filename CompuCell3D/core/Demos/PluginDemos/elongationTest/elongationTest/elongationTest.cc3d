@@ -2,6 +2,7 @@
 
     <XMLScript Type="XMLScript">Simulation/elongationTest.xml</XMLScript>
     <PythonScript>Simulation/elongationTest.py</PythonScript>
+    <Resource Type="Python">Simulation/elongationTestSteppables.py</Resource>
     <PIFFile>Simulation/elongationTest.piff</PIFFile>
 
 </Simulation>

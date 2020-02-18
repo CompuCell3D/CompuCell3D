@@ -1,3 +1,7 @@
 from cc3d import CompuCellSetup
 
+from cellsort_2D_custom_constraintsSteppables import cellsort_2D_custom_constraintsSteppable
+
+CompuCellSetup.register_steppable(steppable=cellsort_2D_custom_constraintsSteppable(frequency=1))
+
 CompuCellSetup.run()

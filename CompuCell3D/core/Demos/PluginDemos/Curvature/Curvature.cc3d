@@ -2,6 +2,7 @@
 
     <XMLScript Type="XMLScript">Simulation/Curvature.xml</XMLScript>
     <PythonScript>Simulation/Curvature.py</PythonScript>
+    <Resource Type="Python">Simulation/CurvatureSteppables.py</Resource>
     <PIFFile>Simulation/Curvature.piff</PIFFile>
 
 </Simulation>
