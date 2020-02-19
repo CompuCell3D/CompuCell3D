@@ -100,7 +100,7 @@ namespace CompuCell3D{
 		virtual void fillNCMaterialFieldData2DHex(vtk_obj_addr_int_t _ncmQuantityArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos, int _compSel);
 		virtual void fillNCMaterialData2DCartesian(vtk_obj_addr_int_t _ncmQuantityArrayAddr, vtk_obj_addr_int_t _cartesianCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos, int _compSel);
 		virtual void fillNCMaterialFieldData3D(vtk_obj_addr_int_t _ncmQuantityArrayAddr, int _compSel);
-		void fillNCMaterialDisplayField(vtk_obj_addr_int_t _colorsArrayAddr, vtk_obj_addr_int_t _quantityArrayAddr, vtk_obj_addr_int_t _colors_lutAddr);
+		
 
 		void setVtkObj(void * _vtkObj);
 		void setVtkObjInt(long _vtkObjAddr);

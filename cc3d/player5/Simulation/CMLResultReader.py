@@ -84,10 +84,12 @@ class CMLResultReader(SimulationThread.SimulationThread):
         self.newFileBeingLoaded = False
         self.readFileSem = QSemaphore(1)
         self.typeIdTypeNameDict = {}
+        self.ncmIdNameDict = {}
         self.__fileWriter = None
 
         # C++ map<int,string> providing mapping from type id to type name
         self.typeIdTypeNameCppMap = None
+        self.ncmIdTypeNameCppMap = None
         self.customVis = None
         self.__ui = parent
         self.__initialized = False
@@ -336,6 +338,18 @@ class CMLResultReader(SimulationThread.SimulationThread):
         self.typeIdTypeNameCppMap = CC3DXML.MapIntStr()
         for type_id in list(self.typeIdTypeNameDict.keys()):
             self.typeIdTypeNameCppMap[int(type_id)] = self.typeIdTypeNameDict[type_id]
+
+        # now do the same if NCMaterials are stored
+        ncm_elements = root_element.getElements("NCMaterial")
+        list_ncm_elements = CC3DXMLListPy(ncm_elements)
+        for ncm_element in list_ncm_elements:
+            self.ncmIdNameDict[ncm_element.getAttributeAsInt("MaterialId")] = ncm_element.getAttribute("MaterialName")
+
+        self.ncmIdTypeNameCppMap = CC3DXML.MapIntStr()
+        for material_id in list(self.ncmIdNameDict.keys()):
+            self.ncmIdTypeNameCppMap[int(material_id)] = self.ncmIdNameDict[material_id]
+            # Placeholder to trigger quantity field generation in SimpleTabView.setFieldTypesCML
+            self.fieldsUsed['NCMaterial_Field'] = 'NCMaterialField'
 
         lds_file_list = os.listdir(self.ldsDir)
 

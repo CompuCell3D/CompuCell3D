@@ -3200,39 +3200,6 @@ void FieldExtractor::fillNCMaterialFieldData3D(vtk_obj_addr_int_t _ncmQuantityAr
 			}
 }
 
-void FieldExtractor::fillNCMaterialDisplayField(vtk_obj_addr_int_t _colorsArrayAddr, vtk_obj_addr_int_t _quantityArrayAddr, vtk_obj_addr_int_t _colors_lutAddr) {
-
-	vtkDoubleArray *_colorArray = (vtkDoubleArray *)_colorsArrayAddr;
-	vtkDoubleArray *_quantityArray = (vtkDoubleArray *)_quantityArrayAddr;
-	vtkLookupTable *_colors_lut = (vtkLookupTable *)_colors_lutAddr;
-	
-	int numberOfTuples = _quantityArray->GetNumberOfTuples();
-	_colorArray->SetNumberOfComponents(4);
-	_colorArray->SetNumberOfTuples(numberOfTuples);
-
-	int numberOfMaterials = _quantityArray->GetNumberOfComponents();
-	double thisColor[4];
-	std::vector<std::vector<double> > _colors_lut_arr(numberOfMaterials, std::vector<double>(4));
-
-	for (int colorIndex = 0; colorIndex < numberOfMaterials; ++colorIndex) {
-		_colors_lut->GetTableValue(colorIndex, thisColor);
-		for (int i = 0; i < 4; ++i) { _colors_lut_arr[colorIndex][i] = thisColor[i]; }
-	}
-
-	double * thisQuantityTuple;
-	for (int tupleIndex = 0; tupleIndex < numberOfTuples; ++tupleIndex ) {
-		thisQuantityTuple = _quantityArray->GetTuple(tupleIndex);
-		double thisColorTuple[4] = { 0.0, 0.0, 0.0, 0.0 };
-		for (int materialIndex = 0; materialIndex < numberOfMaterials; ++materialIndex) {
-			for (int colorIndex = 0; colorIndex < 4; ++colorIndex) {
-				thisColorTuple[colorIndex] += thisQuantityTuple[materialIndex]*_colors_lut_arr[materialIndex][colorIndex];
-			}
-		}
-		_colorArray->SetTuple(tupleIndex, thisColorTuple);
-	}
-
-}
-
 void FieldExtractor::setVtkObj(void * _vtkObj){
 	cerr<<"INSIDE setVtkObj"<<endl;
 }

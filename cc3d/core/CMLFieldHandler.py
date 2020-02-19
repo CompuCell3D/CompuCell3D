@@ -125,9 +125,16 @@ class CMLFieldHandler:
                                                  {"TypeName": str(type_id_type_name_dict[typeId]),
                                                   "TypeId": str(typeId)})
 
+        # output information about NCMaterial names and ids.
+        material_names_and_ids_dict = cc3d.CompuCellSetup.simulation_utils.extract_material_names_and_ids()
+        for material_id, material_name in material_names_and_ids_dict.items():
+            lattice_data_xml_element.ElementCC3D("NCMaterial", {"MaterialId": str(material_id),
+                                                                "MaterialName": material_name})
+
         fields_xml_element = lattice_data_xml_element.ElementCC3D("Fields")
         for fieldName in self.field_types.keys():
-            fields_xml_element.ElementCC3D("Field", {"Name": fieldName, "Type": self.field_types[fieldName]})
+            if fieldName != "NCMaterial_Field":  # Don't store NCMaterial field here!
+                fields_xml_element.ElementCC3D("Field", {"Name": fieldName, "Type": self.field_types[fieldName]})
 
         # writing XML description to the disk
         if file_name != "":

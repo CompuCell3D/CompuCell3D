@@ -805,7 +805,20 @@ bool FieldExtractorCML::fillScalarFieldData2D(vtk_obj_addr_int_t _conArrayAddr,s
 }
 
 bool FieldExtractorCML::fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
-    return fillConFieldData2DCartesian(_conArrayAddr,_cartesianCellsArrayAddr , _pointsArrayAddr , _conFieldName , _plane ,_pos);
+    bool _res = fillConFieldData2DCartesian(_conArrayAddr, _cartesianCellsArrayAddr, _pointsArrayAddr, _conFieldName, _plane, _pos);
+	
+	if (!_res) {
+		std::map<std::string, int>::iterator mitr = NCMaterialNameIndexMap.find(_conFieldName);
+		if (mitr == NCMaterialNameIndexMap.end()) return false;
+		else {
+			int NCMaterialIndex = mitr->second;
+			if (NCMaterialIndex < 0) { return false; }
+			fillNCMaterialData2DCartesian(_conArrayAddr, _cartesianCellsArrayAddr, _pointsArrayAddr, _plane, _pos, NCMaterialIndex);
+			return true;
+		}
+	}
+	
+	return _res;
 }
 
 bool FieldExtractorCML::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
@@ -1336,6 +1349,212 @@ bool FieldExtractorCML::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conAr
 	return fillConFieldData3D(_conArrayAddr ,_cellTypeArrayAddr, _conFieldName, _typesInvisibeVec);
 }
 
+void FieldExtractorCML::fillNCMaterialFieldData2D(vtk_obj_addr_int_t _ncmQuantityArrayAddr, std::string _plane, int _pos, int _compSel) {
+	
+	vtkDoubleArray *quantityRead = (vtkDoubleArray *)lds->GetPointData()->GetArray("NCMaterialQuantities");
+
+	vector<int> fieldDimVec(3, 0);
+	fieldDimVec[0] = fieldDim.x;
+	fieldDimVec[1] = fieldDim.y;
+	fieldDimVec[2] = fieldDim.z;
+
+	vector<int> pointOrderVec = pointOrder(_plane);
+	vector<int> dimOrderVec = dimOrder(_plane);
+
+	vector<int> dim(3, 0);
+	dim[0] = fieldDimVec[dimOrderVec[0]];
+	dim[1] = fieldDimVec[dimOrderVec[1]];
+	dim[2] = fieldDimVec[dimOrderVec[2]];
+
+	int numberOfMaterials = (int)lds->GetPointData()->GetArray("NCMaterialQuantities")->GetNumberOfComponents();
+	std::vector<int> compSelVec;
+	if (_compSel < 0) { for (int i = 0; i < numberOfMaterials; ++i) { compSelVec.push_back(i); } }
+	else { compSelVec.push_back(_compSel); }
+
+	vtkDoubleArray *_quantityArray = (vtkDoubleArray *)_ncmQuantityArrayAddr;
+	int numberOfTuples = dim[1] * dim[0];
+	_quantityArray->SetNumberOfComponents(numberOfMaterials);
+	_quantityArray->SetNumberOfTuples(numberOfTuples);
+
+	int offset = 0;
+
+	Point3D pt;
+	vector<int> ptVec(3, 0);
+
+	for (int j = 0; j<dim[1]; ++j)
+		for (int i = 0; i<dim[0]; ++i) {
+			ptVec[0] = i;
+			ptVec[1] = j;
+			ptVec[2] = _pos;
+
+			pt.x = ptVec[pointOrderVec[0]];
+			pt.y = ptVec[pointOrderVec[1]];
+			pt.z = ptVec[pointOrderVec[2]];
+
+			for (int k = 0; k < numberOfMaterials; ++k) { _quantityArray->SetComponent(offset, k, quantityRead->GetComponent(indexPoint3D(pt), k)); }
+
+			++offset;
+		}
+}
+
+void FieldExtractorCML::fillNCMaterialFieldData2DHex(vtk_obj_addr_int_t _ncmQuantityArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos, int _compSel) {
+	vtkPoints *_pointsArray = (vtkPoints *)_pointsArrayAddr;
+	vtkCellArray * _hexCellsArray = (vtkCellArray*)_hexCellsArrayAddr;
+
+	vtkDoubleArray *quantityRead = (vtkDoubleArray *)lds->GetPointData()->GetArray("NCMaterialQuantities");
+
+	vector<int> fieldDimVec(3, 0);
+	fieldDimVec[0] = fieldDim.x;
+	fieldDimVec[1] = fieldDim.y;
+	fieldDimVec[2] = fieldDim.z;
+
+	vector<int> pointOrderVec = pointOrder(_plane);
+	vector<int> dimOrderVec = dimOrder(_plane);
+
+	vector<int> dim(3, 0);
+	dim[0] = fieldDimVec[dimOrderVec[0]];
+	dim[1] = fieldDimVec[dimOrderVec[1]];
+	dim[2] = fieldDimVec[dimOrderVec[2]];
+
+	int numberOfMaterials = (int)lds->GetPointData()->GetArray("NCMaterialQuantities")->GetNumberOfComponents();
+	std::vector<int> compSelVec;
+	if (_compSel < 0) { for (int i = 0; i < numberOfMaterials; ++i) { compSelVec.push_back(i); } }
+	else { compSelVec.push_back(_compSel); }
+
+	vtkDoubleArray *_quantityArray = (vtkDoubleArray *)_ncmQuantityArrayAddr;
+	_quantityArray->SetNumberOfComponents(numberOfMaterials);
+	_quantityArray->SetNumberOfTuples(dim[1] * dim[0]);
+
+	int offset = 0;
+
+	Point3D pt;
+	vector<int> ptVec(3, 0);
+	long pc = 0;
+
+	for (int j = 0; j<dim[1]; ++j)
+		for (int i = 0; i<dim[0]; ++i) {
+			ptVec[0] = i;
+			ptVec[1] = j;
+			ptVec[2] = _pos;
+
+			pt.x = ptVec[pointOrderVec[0]];
+			pt.y = ptVec[pointOrderVec[1]];
+			pt.z = ptVec[pointOrderVec[2]];
+
+			Coordinates3D<double> hexCoords = HexCoordXY(pt.x, pt.y, pt.z);
+			for (int idx = 0; idx<6; ++idx) {
+				Coordinates3D<double> hexagonVertex = hexagonVertices[idx] + hexCoords;
+				_pointsArray->InsertNextPoint(hexagonVertex.x, hexagonVertex.y, 0.0);
+			}
+			pc += 6;
+			vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
+			_hexCellsArray->InsertCellPoint(pc - 6);
+			_hexCellsArray->InsertCellPoint(pc - 5);
+			_hexCellsArray->InsertCellPoint(pc - 4);
+			_hexCellsArray->InsertCellPoint(pc - 3);
+			_hexCellsArray->InsertCellPoint(pc - 2);
+			_hexCellsArray->InsertCellPoint(pc - 1);
+
+			for (int k = 0; k < numberOfMaterials; ++k) { _quantityArray->SetComponent(offset, k, quantityRead->GetComponent(indexPoint3D(pt), k)); }
+
+			++offset;
+		}
+}
+
+void FieldExtractorCML::fillNCMaterialData2DCartesian(vtk_obj_addr_int_t _ncmQuantityArrayAddr, vtk_obj_addr_int_t _cartesianCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos, int _compSel) {
+	vtkPoints *_pointsArray = (vtkPoints *)_pointsArrayAddr;
+	vtkCellArray * _cartesianCellsArray = (vtkCellArray*)_cartesianCellsArrayAddr;
+
+	vtkDoubleArray *quantityRead = (vtkDoubleArray *)lds->GetPointData()->GetArray("NCMaterialQuantities");
+
+	vector<int> fieldDimVec(3, 0);
+	fieldDimVec[0] = fieldDim.x;
+	fieldDimVec[1] = fieldDim.y;
+	fieldDimVec[2] = fieldDim.z;
+
+	vector<int> pointOrderVec = pointOrder(_plane);
+	vector<int> dimOrderVec = dimOrder(_plane);
+
+	vector<int> dim(3, 0);
+	dim[0] = fieldDimVec[dimOrderVec[0]];
+	dim[1] = fieldDimVec[dimOrderVec[1]];
+	dim[2] = fieldDimVec[dimOrderVec[2]];
+
+	int numberOfMaterials = (int)lds->GetPointData()->GetArray("NCMaterialQuantities")->GetNumberOfComponents();
+	std::vector<int> compSelVec;
+	if (_compSel < 0) { for (int i = 0; i < numberOfMaterials; ++i) { compSelVec.push_back(i); } }
+	else { compSelVec.push_back(_compSel); }
+
+	vtkDoubleArray *_quantityArray = (vtkDoubleArray *)_ncmQuantityArrayAddr;
+	_quantityArray->SetNumberOfComponents(numberOfMaterials);
+	_quantityArray->SetNumberOfTuples(dim[1] * dim[0]);
+
+	int offset = 0;
+
+	Point3D pt;
+	vector<int> ptVec(3, 0);
+	long pc = 0;
+	std::vector<float> NCMaterialsQuantityVec;
+
+	for (int j = 0; j<dim[1]; ++j)
+		for (int i = 0; i<dim[0]; ++i) {
+			ptVec[0] = i;
+			ptVec[1] = j;
+			ptVec[2] = _pos;
+
+			pt.x = ptVec[pointOrderVec[0]];
+			pt.y = ptVec[pointOrderVec[1]];
+			pt.z = ptVec[pointOrderVec[2]];
+
+			Coordinates3D<double> coords(ptVec[0], ptVec[1], 0);
+			for (int idx = 0; idx<4; ++idx) {
+				Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
+				_pointsArray->InsertNextPoint(cartesianVertex.x, cartesianVertex.y, 0.0);
+			}
+
+			pc += 4;
+			vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
+			_cartesianCellsArray->InsertCellPoint(pc - 4);
+			_cartesianCellsArray->InsertCellPoint(pc - 3);
+			_cartesianCellsArray->InsertCellPoint(pc - 2);
+			_cartesianCellsArray->InsertCellPoint(pc - 1);
+
+			for (int k = 0; k < numberOfMaterials; ++k) { _quantityArray->SetComponent(offset, k, quantityRead->GetComponent(indexPoint3D(pt), k)); }
+
+			++offset;
+		}
+}
+
+void FieldExtractorCML::fillNCMaterialFieldData3D(vtk_obj_addr_int_t _ncmQuantityArrayAddr, int _compSel) {
+
+	vtkDoubleArray *quantityRead = (vtkDoubleArray *)lds->GetPointData()->GetArray("NCMaterialQuantities");
+
+	int numberOfMaterials = (int)lds->GetPointData()->GetArray("NCMaterialQuantities")->GetNumberOfComponents();
+	std::vector<int> compSelVec;
+	if (_compSel < 0) { for (int i = 0; i < numberOfMaterials; ++i) { compSelVec.push_back(i); } }
+	else { compSelVec.push_back(_compSel); }
+
+	vtkDoubleArray *_quantityArray = (vtkDoubleArray *)_ncmQuantityArrayAddr;
+	_quantityArray->SetNumberOfComponents(numberOfMaterials);
+	_quantityArray->SetNumberOfTuples(fieldDim.x*fieldDim.y*fieldDim.z);
+
+	int offset = 0;
+
+	Point3D pt;
+	vector<int> ptVec(3, 0);
+
+	for (int k = 0; k<fieldDim.z; ++k)
+		for (int j = 0; j<fieldDim.y; ++j)
+			for (int i = 0; i<fieldDim.x; ++i) {
+				pt.x = i;
+				pt.y = j;
+				pt.z = k;
+
+				for (int k = 0; k < numberOfMaterials; ++k) { _quantityArray->SetComponent(offset, k, quantityRead->GetComponent(indexPoint3D(pt), k)); }
+
+				++offset;
+			}
+}
 
 bool FieldExtractorCML::readVtkStructuredPointsData(vtk_obj_addr_int_t _structuredPointsReaderAddr){
     vtkStructuredPointsReader * reader=(vtkStructuredPointsReader *)_structuredPointsReaderAddr;

@@ -63,6 +63,12 @@ namespace CompuCell3D{
 		virtual std::vector<int> fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr){return std::vector<int>();}
 		virtual bool fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec){return false;}
 
+		void fillNCMaterialDisplayField(vtk_obj_addr_int_t _colorsArrayAddr, vtk_obj_addr_int_t _quantityArrayAddr, vtk_obj_addr_int_t _colors_lutAddr);
+		virtual void fillNCMaterialFieldData2D(vtk_obj_addr_int_t _ncmQuantityArrayAddr, std::string _plane, int _pos, int _compSel) {}
+		virtual void fillNCMaterialFieldData2DHex(vtk_obj_addr_int_t _ncmQuantityArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos, int _compSel) {}
+		virtual void fillNCMaterialData2DCartesian(vtk_obj_addr_int_t _ncmQuantityArrayAddr, vtk_obj_addr_int_t _cartesianCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos, int _compSel) {}
+		virtual void fillNCMaterialFieldData3D(vtk_obj_addr_int_t _ncmQuantityArrayAddr, int _compSel) {}
+
 	protected:
 		std::vector<Coordinates3D<double> > hexagonVertices;
         std::vector<Coordinates3D<double> > cartesianVertices;

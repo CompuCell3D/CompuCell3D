@@ -2516,7 +2516,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         for fieldName in list(self.simulation.fieldsUsed.keys()):
             if fieldName != "Cell_Field":
-                self.fieldTypes[fieldName] = self.simulation.fieldsUsed[fieldName]
+                if fieldName == 'NCMaterial_Field':  # Do NCMaterials initializations here
+                    self.pluginNCMDefined = True
+                    self.NCMaterials_act.setEnabled(True)
+
+                    materials_id_name_dict = self.simulation.ncmIdNameDict
+                    for material_id, material_name in materials_id_name_dict.items():
+                        self.fieldTypes[material_name] = FIELD_TYPES[2]
+                        self.fieldExtractor.registerNCMaterial(material_name, material_id)
+
+                    self.fieldStorage.allocateNCMaterialField(self.fieldDim, len(materials_id_name_dict))
+
+                else:
+                    self.fieldTypes[fieldName] = self.simulation.fieldsUsed[fieldName]
 
     def setFieldTypes(self):
         '''

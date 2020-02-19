@@ -36,6 +36,8 @@ namespace CompuCell3D{
 	//class Simulator;
 	/*class Dim3D;*/
 
+	std::map<std::string, int> NCMaterialNameIndexMap;
+
 	class FIELDEXTRACTOR_EXPORT FieldExtractorCML:public FieldExtractorBase{
 	public:
 
@@ -86,6 +88,12 @@ namespace CompuCell3D{
 
 		virtual std::vector<int> fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr);
 		virtual bool fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec);
+
+		virtual void fillNCMaterialFieldData2D(vtk_obj_addr_int_t _ncmQuantityArrayAddr, std::string _plane, int _pos, int _compSel);
+		virtual void fillNCMaterialFieldData2DHex(vtk_obj_addr_int_t _ncmQuantityArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos, int _compSel);
+		virtual void fillNCMaterialData2DCartesian(vtk_obj_addr_int_t _ncmQuantityArrayAddr, vtk_obj_addr_int_t _cartesianCellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos, int _compSel);
+		virtual void fillNCMaterialFieldData3D(vtk_obj_addr_int_t _ncmQuantityArrayAddr, int _compSel);
+		void registerNCMaterial(std::string _NCMaterialName, int _NCMaterialIndex) { NCMaterialNameIndexMap.insert(make_pair(_NCMaterialName, _NCMaterialIndex)); }
 
         virtual bool readVtkStructuredPointsData(vtk_obj_addr_int_t _structuredPointsReaderAddr);
         
