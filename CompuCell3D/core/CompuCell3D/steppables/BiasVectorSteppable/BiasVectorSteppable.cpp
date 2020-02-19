@@ -370,18 +370,13 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	/*
 	Example xml:
 
-	A)
-	______________________
+	
 	<Steppable Type="BiasVectorSteppable">
         <BiasChange Type = "persistent"/>
         <BiasChangeParameters CellType="Cell" Alpha = "0.5"/>
    </Steppable> 
 
-	B)
-	____________________
-	<BiasChange>
-	</BiasChange>
-
+	
 	*/
 
     
