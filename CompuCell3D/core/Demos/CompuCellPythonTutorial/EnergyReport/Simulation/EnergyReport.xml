@@ -1,0 +1,44 @@
+<CompuCell3D Revision="20200118" Version="4.1.1">
+   
+    <Metadata>
+        <NumberOfProcessors>1</NumberOfProcessors>
+        <DebugOutputFrequency>10</DebugOutputFrequency>
+    </Metadata>
+   
+    <Potts>
+        <Dimensions x="100" y="100" z="1"/>
+        <Steps>10000</Steps>
+        <Temperature>10.0</Temperature>
+        <NeighborOrder>2</NeighborOrder>
+        <EnergyFunctionCalculator Type="Statistics"/>
+    </Potts>
+   
+    <Plugin Name="Volume"/>
+   
+    <Plugin Name="CellType">
+        <CellType TypeId="0" TypeName="Medium"/>
+        <CellType TypeId="1" TypeName="Condensing"/>
+        <CellType TypeId="2" TypeName="NonCondensing"/>
+    </Plugin>
+    
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="NonCondensing" Type2="NonCondensing">16</Energy>
+        <Energy Type1="Condensing"    Type2="Condensing">2</Energy>
+        <Energy Type1="NonCondensing" Type2="Condensing">11</Energy>
+        <Energy Type1="NonCondensing" Type2="Medium">16</Energy>
+        <Energy Type1="Condensing"    Type2="Medium">16</Energy>
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+   
+    <Steppable Type="UniformInitializer">
+        <Region>
+             <BoxMin x="20" y="20" z="0"/>
+             <BoxMax x="80" y="80" z="1"/>
+             <Gap>0</Gap>
+             <Width>5</Width>
+             <Types>Condensing,NonCondensing</Types>
+        </Region>
+    </Steppable>
+    
+</CompuCell3D>

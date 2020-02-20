@@ -1,0 +1,5 @@
+<Simulation version="4.1.1">
+   <XMLScript Type="XMLScript">Simulation/EnergyReport.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/EnergyReport.py</PythonScript>
+   <Resource Type="Python">Simulation/EnergyReportSteppables.py</Resource>
+</Simulation>
