@@ -67,8 +67,11 @@ namespace CompuCell3D {
 		double changeEnergyByCellId(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
 		double customExpressionFunction(double _lambdaVolume,double _targetVolume, double _volumeBefore,double _volumeAfter);
 
+		void initializeCellVolumeParams();
+		bool cellVolumeParamsInitialized;
+
 	public:
-		VolumePlugin():potts(0),energyExpressionDefined(false),pUtils(0),pluginName("Volume"){};
+		VolumePlugin():potts(0),energyExpressionDefined(false),pUtils(0),pluginName("Volume"),cellVolumeParamsInitialized(false){};
 		virtual ~VolumePlugin();
 
 		// SimObject interface

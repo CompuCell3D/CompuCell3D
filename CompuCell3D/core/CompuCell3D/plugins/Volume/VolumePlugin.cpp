@@ -183,6 +183,54 @@ void VolumePlugin::extraInit(Simulator *simulator){
 	update(xmlData);
 }
 
+void VolumePlugin::initializeCellVolumeParams() {
+
+	if (cellVolumeParamsInitialized) { return; }
+
+	// Assign whatever cell type parameters are specified in XML to all cells by type, which may or may not be overwritten by steppables during start()
+
+	CC3DXMLElementList XMLParamsList = xmlData->getElements("VolumeEnergyParameters");
+	CellInventory *cellInventoryPtr = &potts->getCellInventory();
+	CellInventory::cellInventoryIterator cInvItr;
+	Automaton *automaton = potts->getAutomaton();
+	std::map<unsigned char, std::tuple<float, float> > typeParamsMap;
+
+	for each (CC3DXMLElement *XMLParams in XMLParamsList) {
+
+		std::string cellTypeName = XMLParams->getAttribute("CellType");
+
+		try {
+
+			unsigned char typeId = automaton->getTypeId(cellTypeName);
+			float targetVolume = (float)XMLParams->getAttributeAsDouble("TargetVolume");
+			float lambdaVolume = (float)XMLParams->getAttributeAsDouble("LambdaVolume");
+
+			typeParamsMap.insert(make_pair(typeId, make_tuple(targetVolume, lambdaVolume)));
+
+		}
+		catch (BasicException &e) { cerr << "Unrecognized cell type: " << cellTypeName << endl; }
+
+	}
+
+	std::map<unsigned char, std::tuple<float, float> >::iterator mapItr;
+
+	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr) {
+		CellG *cell = cInvItr->second;
+		unsigned char typeId = cell->type;
+
+		mapItr = typeParamsMap.find(typeId);
+		if (mapItr != typeParamsMap.end())
+			if (cell->targetVolume < std::numeric_limits<float>::epsilon() && abs(cell->lambdaVolume) < std::numeric_limits<float>::epsilon()) {
+				cell->targetVolume = std::get<0>(mapItr->second);
+				cell->lambdaVolume = std::get<1>(mapItr->second);
+			}
+
+	}
+
+	cellVolumeParamsInitialized = true;
+
+}
+
 void VolumePlugin::handleEvent(CC3DEvent & _event){
     if (_event.id==CHANGE_NUMBER_OF_WORK_NODES){    
     	update(xmlData);
@@ -347,6 +395,8 @@ double VolumePlugin::changeEnergyByCellId(const Point3D &pt,const CellG *newCell
 
 
 double VolumePlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
+
+	initializeCellVolumeParams();
 
 	/// E = lambda * (volume - targetVolume) ^ 2 
 	return (this->*changeEnergyFcnPtr)(pt,newCell,oldCell);
