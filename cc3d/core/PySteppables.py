@@ -1037,6 +1037,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                                                                                  target_distance,
                                                                                  max_distance)
 
+    def get_energy_calculations(self):
+        return EnergyDataList(self.potts)
+
     @deprecated(version='4.0.0', reason="You should use : get_elasticity_data_list")
     def getElasticityDataList(self, _cell):
         return self.get_elasticity_data_list(cell=_cell)

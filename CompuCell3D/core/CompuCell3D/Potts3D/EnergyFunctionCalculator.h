@@ -46,6 +46,13 @@ class EnergyFunctionCalculator{
 
       virtual void setLastFlipAccepted(bool _accept){lastFlipAccepted=_accept;}
 	  virtual void set_aceptance_probability(double _prob) { }
+
+	  // Python reporting
+
+	  std::vector<std::string> getEnergyFunctionNames() { return energyFunctionsNameVec; }
+	  virtual std::vector<std::vector<double> > getCurrentEnergyChanges() { return std::vector<std::vector<double> >(); }
+	  virtual std::vector<bool> getCurrentFlipResults() { return std::vector<bool>(); }
+
    protected:
       std::vector<EnergyFunction *> energyFunctions;
       std::vector<std::string> energyFunctionsNameVec;

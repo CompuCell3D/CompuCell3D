@@ -600,6 +600,40 @@ class ElasticityDataIterator:
         return self
 
 
+class EnergyDataList:
+    def __init__(self, _potts):
+        self.function_names = _potts.getEnergyFunctionNames()
+        self.energy_changes = _potts.getCurrentEnergyChanges()
+        self.flip_results = _potts.getCurrentFlipResults()
+
+    def __iter__(self):
+        return EnergyDataListIterator(self)
+
+
+class EnergyDataListIterator:
+    def __init__(self, _energy_data_list: EnergyDataList):
+        self.__function_names = _energy_data_list.function_names
+        self.__energy_changes = _energy_data_list.energy_changes
+        self.__flip_results = _energy_data_list.flip_results
+
+        self.__flip_idx = 0
+        self.__idx_functions = range(self.__function_names.__len__())
+        self.__num_flips = self.__flip_results.__len__()
+
+    def __next__(self):
+        if self.__flip_idx < self.__num_flips:
+            flip_result = self.__flip_results[self.__flip_idx]
+            data_dict = {self.__function_names[idx]: self.__energy_changes[self.__flip_idx][idx]
+                         for idx in self.__idx_functions}
+            self.__flip_idx += 1
+            return flip_result, data_dict
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+        return self
+
+
 class PlasticityDataList:
     def __init__(self, plasticity_tracker_plugin, cell):
         self.plasticity_tracker_plugin = plasticity_tracker_plugin

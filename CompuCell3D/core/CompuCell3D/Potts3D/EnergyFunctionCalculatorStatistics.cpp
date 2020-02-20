@@ -96,6 +96,10 @@ double EnergyFunctionCalculatorStatistics::changeEnergy(Point3D &pt, const CellG
 		if(_flipAttempt<lastFlipAttempt){
 			current_mcs_pos = totEnergyDataList.size();				
 			++mcs;
+
+			totEnergyDataListCurrent.clear();
+			accNotAccListCurrent.clear();
+
 			if(! (mcs % analysisFrequency)){
 				outputResults();
 			}
@@ -128,6 +132,7 @@ double EnergyFunctionCalculatorStatistics::changeEnergy(Point3D &pt, const CellG
 		mcs_list.push_back(mcs);
 		pixel_copy_attempt_points_list.push_back(pt);
 		totEnergyDataList.push_back(lastEnergyVec); //inserting lastEnergyVec into  totEnergyVecVec - for later stdDev calculations
+		totEnergyDataListCurrent.push_back(lastEnergyVec);
 
 	}else{
 		for (unsigned int i = 0; i < energyFunctions.size(); i++){
@@ -205,11 +210,11 @@ void EnergyFunctionCalculatorStatistics::setLastFlipAccepted(bool _accept){
 
 	if (lastFlipAccepted){
 		accNotAccList.push_back(true);
-
+		accNotAccListCurrent.push_back(true);
 
 	}else{
 		accNotAccList.push_back(false);      
-
+		accNotAccListCurrent.push_back(false);
 
 	}
 
@@ -274,6 +279,7 @@ void EnergyFunctionCalculatorStatistics::initialize(){
 
 
 	totEnergyDataList.clear();
+	totEnergyDataListCurrent.clear();
 	accNotAccList.clear();
 	acceptance_probability_list.clear();
 	pixel_copy_attempt_points_list.clear();
