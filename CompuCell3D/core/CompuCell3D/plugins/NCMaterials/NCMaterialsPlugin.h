@@ -141,6 +141,7 @@ namespace CompuCell3D {
 
 		// cell-NCmaterial contact effective energy term
 		double NCMaterialContactEnergy(const CellG *cell, std::vector<float> _qtyVec);
+		double NCMaterialContactEnergyChange(const CellG *cellNew, std::vector<float> _qtyVecNew, const CellG *cellOld, std::vector<float> _qtyVecOld);
 		// NCmaterial durability effective energy term
 		double NCMaterialDurabilityEnergy(std::vector<float> _qtyVec);
 
@@ -246,8 +247,6 @@ namespace CompuCell3D {
 		void EllipsoidDraw(std::vector<float> _qtyVec, Point3D _center = { 0,0,0 }, std::vector<short> _lenVec = std::vector<short>(3, 1.0), std::vector<double> _angleVec = std::vector<double>(3, 0.0));
 		// Draw an ellipse of _qtyVec about _center rotated by angle _angle (in degrees) with semimajor axis length _length and eccentricity _eccentricity
 		void EllipseDraw(std::vector<float> _qtyVec, int _length, Point3D _center = { 0,0,0 }, double _angle = 0.0, double _eccentricity = 0.0);
-
-		std::vector<Neighbor> getFirstOrderNeighbors(const Point3D &pt);
 
 		// Returns pointer to material field
 		virtual Field3D<NCMaterialsData *> *getNCMaterialField() { return (Field3D<NCMaterialsData *> *)NCMaterialsField; }

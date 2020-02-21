@@ -653,9 +653,10 @@ double NCMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
     CellG *nCell = 0;
 
 	unsigned int nIdx;
-	std::vector<float> nQuantityVec;
+	// std::vector<float> nQuantityVec;
 
     if (weightDistance) {
+		/**
         for (nIdx = 0; nIdx <= maxNeighborIndexAdh; ++nIdx) {
             neighbor = boundaryStrategyAdh->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
 
@@ -675,10 +676,49 @@ double NCMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
                 else if (newCell == 0) energy += NCMaterialContactEnergy(nCell, copyQuantityVector) / neighbor.distance;
             }
         }
+		*/
+
+		// Improved algorithm; leaving old in a comment for reference
+		for (nIdx = 0; nIdx <= maxNeighborIndexAdh; ++nIdx) {
+			neighbor = boundaryStrategyAdh->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
+
+			if (!neighbor.distance) continue;
+
+			nCell = potts->getCellFieldG()->get(neighbor.pt);
+
+			CellG *cell1 = 0;
+			CellG *cell2 = 0;
+			std::vector<float> qtyVec1;
+			std::vector<float> qtyVec2;
+
+			if (nCell != oldCell) {
+				if (nCell == 0) {
+					cell1 = const_cast<CellG*>(oldCell);
+					qtyVec1 = NCMaterialsField->get(neighbor.pt)->NCMaterialsQuantityVec;
+				}
+				else if (oldCell == 0) {
+					cell1 = nCell;
+					qtyVec1 = targetQuantityVec;
+				}
+			}
+			if (nCell != newCell) {
+				if (nCell == 0) {
+					cell2 = const_cast<CellG*>(newCell);
+					qtyVec2 = NCMaterialsField->get(neighbor.pt)->NCMaterialsQuantityVec;
+				}
+				else if (newCell == 0) {
+					cell2 = nCell;
+					qtyVec2 = copyQuantityVector;
+				}
+			}
+
+			energy += NCMaterialContactEnergyChange(cell1, qtyVec1, cell2, qtyVec2) / neighbor.distance;
+
+		}
     }
     else {
         //default behaviour  no energy weighting
-
+		/**
         for (nIdx = 0; nIdx <= maxNeighborIndexAdh; ++nIdx) {
             neighbor = boundaryStrategyAdh->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
 
@@ -696,6 +736,49 @@ double NCMaterialsPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, 
                 else if (newCell == 0) energy += NCMaterialContactEnergy(nCell, copyQuantityVector);
             }
         }
+		*/
+
+		// Improved algorithm; leaving old in a comment for reference
+		//		Also tried two different approaches using concurrent_vector and combinable on 8 logical processors
+		//		Both worked CPU to 100% with worse performance than this improved algorithm on a single thread for <= fourth-order neighborhoods
+		//		- T.J.S.
+		for (nIdx = 0; nIdx <= maxNeighborIndexAdh; ++nIdx) {
+			neighbor = boundaryStrategyAdh->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
+
+			if (!neighbor.distance) continue;
+
+			nCell = potts->getCellFieldG()->get(neighbor.pt);
+
+			CellG *cell1 = 0;
+			CellG *cell2 = 0;
+			std::vector<float> qtyVec1;
+			std::vector<float> qtyVec2;
+
+			if (nCell != oldCell) {
+				if (nCell == 0) {
+					cell1 = const_cast<CellG*>(oldCell);
+					qtyVec1 = NCMaterialsField->get(neighbor.pt)->NCMaterialsQuantityVec;
+				}
+				else if (oldCell == 0) {
+					cell1 = nCell;
+					qtyVec1 = targetQuantityVec;
+				}
+			}
+			if (nCell != newCell) {
+				if (nCell == 0) {
+					cell2 = const_cast<CellG*>(newCell);
+					qtyVec2 = NCMaterialsField->get(neighbor.pt)->NCMaterialsQuantityVec;
+				}
+				else if (newCell == 0) {
+					cell2 = nCell;
+					qtyVec2 = copyQuantityVector;
+				}
+			}
+
+			energy += NCMaterialContactEnergyChange(cell1, qtyVec1, cell2, qtyVec2);
+
+		}
+
     }
 
     return energy;
@@ -711,6 +794,34 @@ double NCMaterialsPlugin::NCMaterialContactEnergy(const CellG *cell, std::vector
     }
 
     return energy;
+
+}
+
+double NCMaterialsPlugin::NCMaterialContactEnergyChange(const CellG *cellOld, std::vector<float> _qtyVecOld, const CellG *cellNew, std::vector<float> _qtyVecNew) {
+
+	if (!cellOld && !cellNew) return double(0.0); // Shouldn't happen, but just in case
+
+	double energyOld = 0.0;
+	double energyNew = 0.0;
+
+	if (cellOld && cellNew) {
+		std::vector<float> AdhesionCoefficientsOld = NCMaterialCellDataAccessor.get(cellOld->extraAttribPtr)->AdhesionCoefficients;
+		std::vector<float> AdhesionCoefficientsNew = NCMaterialCellDataAccessor.get(cellNew->extraAttribPtr)->AdhesionCoefficients;
+		for (int i = 0; i < numberOfMaterials; ++i) {
+			energyOld += AdhesionCoefficientsOld[i] * _qtyVecOld[i];
+			energyNew += AdhesionCoefficientsNew[i] * _qtyVecNew[i];
+		}
+	}
+	else if (cellOld) {
+		std::vector<float> AdhesionCoefficientsOld = NCMaterialCellDataAccessor.get(cellOld->extraAttribPtr)->AdhesionCoefficients;
+		for (int i = 0; i < numberOfMaterials; ++i) energyOld += AdhesionCoefficientsOld[i] * _qtyVecOld[i];
+	}
+	else if (cellNew) {
+		std::vector<float> AdhesionCoefficientsNew = NCMaterialCellDataAccessor.get(cellNew->extraAttribPtr)->AdhesionCoefficients;
+		for (int i = 0; i < numberOfMaterials; ++i) energyNew += AdhesionCoefficientsNew[i] * _qtyVecNew[i];
+	}
+
+	return double(energyNew - energyOld);
 
 }
 
@@ -733,22 +844,24 @@ void NCMaterialsPlugin::field3DChange(const Point3D &pt, CellG *newCell, CellG *
     // If source agent is a cell and target agent is the medium, then target NC materials are removed
     // If source agent is the medium, materials advect
 
-	NCMaterialsData *NCMaterialsDataLocal = NCMaterialsField->get(pt);
-	std::vector<float> & NCMaterialsQuantityVec = NCMaterialsDataLocal->NCMaterialsQuantityVec;
-	std::vector<float> NCMaterialsQuantityVecNew(numberOfMaterials);
-
     if (newCell) { // Source agent is a cell
         if (!oldCell){
-			NCMaterialsQuantityVec = NCMaterialsQuantityVecNew;
+
+			NCMaterialsData *NCMaterialsDataLocal = NCMaterialsField->get(pt);
+			std::vector<float> & NCMaterialsQuantityVec = NCMaterialsDataLocal->NCMaterialsQuantityVec;
+
+			NCMaterialsQuantityVec = std::vector<float>(numberOfMaterials, 0.0);
 			NCMaterialsField->set(pt, NCMaterialsDataLocal);
         }
     }
-    else { // Source agent is a medium
-        if (oldCell){
-			NCMaterialsQuantityVec = calculateCopyQuantityVec(oldCell, pt);
-			NCMaterialsField->set(pt, NCMaterialsDataLocal);
-        }
-    }
+    else if (oldCell) { // Source agent is a medium
+
+		NCMaterialsData *NCMaterialsDataLocal = NCMaterialsField->get(pt);
+		std::vector<float> & NCMaterialsQuantityVec = NCMaterialsDataLocal->NCMaterialsQuantityVec;
+
+		NCMaterialsQuantityVec = calculateCopyQuantityVec(oldCell, pt);
+		NCMaterialsField->set(pt, NCMaterialsDataLocal);
+	}
 
 }
 
@@ -758,24 +871,25 @@ std::vector<float> NCMaterialsPlugin::calculateCopyQuantityVec(const CellG * _ce
 
     // Calculate copy quantity vector
     // quantity vector is mean of all transferable neighborhood components + target cell remodeling quantity
-    CellG *neighborCell;
 	if (_cell) { copyQuantityVec = NCMaterialCellDataAccessor.get(_cell->extraAttribPtr)->RemodelingQuantity; }
 
     float numberOfMediumNeighbors = 1.0;
     std::vector<float> neighborQuantityVector(numberOfMaterials);
-    std::vector<Neighbor> neighbors = getFirstOrderNeighbors(pt);
-    WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
-    for (int nIdx = 0; nIdx < neighbors.size(); ++nIdx){
-        neighborCell = fieldG->get(neighbors[nIdx].pt);
-        if (neighborCell) {continue;}
-		neighborQuantityVector = NCMaterialsField->get(neighbors[nIdx].pt)->NCMaterialsQuantityVec;
-		for (int i = 0; i < NCMaterialsVec.size(); ++i) {
-			if ( !(NCMaterialsVec[i].getTransferable()) ) { neighborQuantityVector[i] = 0.0; }
-		}
+	boundaryStrategy = BoundaryStrategy::getInstance();
+	maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
+	Neighbor neighbor;
+	for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
+		neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
+		if (!neighbor.distance || potts->getCellFieldG()->get(neighbor.pt)) continue;
 
-		for (int i = 0; i < copyQuantityVec.size(); ++i) { copyQuantityVec[i] += neighborQuantityVector[i]; }
-        numberOfMediumNeighbors += 1.0;
-    }
+		neighborQuantityVector = NCMaterialsField->get(neighbor.pt)->NCMaterialsQuantityVec;
+		for (int i = 0; i < NCMaterialsVec.size(); ++i)
+			if (NCMaterialsVec[i].getTransferable())
+				copyQuantityVec[i] += neighborQuantityVector[i];
+
+		numberOfMediumNeighbors += 1.0;
+
+	}
 
 	for (std::vector<float>::iterator i = copyQuantityVec.begin(); i != copyQuantityVec.end(); ++i) { *i /= numberOfMediumNeighbors; }
 
@@ -1131,20 +1245,6 @@ float NCMaterialsPlugin::getNCAdhesionByCellAndMaterialIndex(const CellG *_cell,
 
 float NCMaterialsPlugin::getNCAdhesionByCellAndMaterialName(const CellG *_cell, std::string _NCMaterialName) {
 	return getNCAdhesionByCellAndMaterialIndex(_cell, getNCMaterialIndexByName(_NCMaterialName));
-}
-
-std::vector<Neighbor> NCMaterialsPlugin::getFirstOrderNeighbors(const Point3D &pt) {
-    // initialize neighborhood according to Potts neighborhood
-    boundaryStrategy = BoundaryStrategy::getInstance();
-    maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
-    std::vector<Neighbor> neighbors;
-	Neighbor neighbor;
-    for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
-		neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
-		if (!neighbor.distance) continue;
-        neighbors.push_back(neighbor);
-    }
-    return neighbors;
 }
 
 float NCMaterialsPlugin::calculateTotalInterfaceQuantityByMaterialIndex(CellG *cell, int _materialIdx) {
