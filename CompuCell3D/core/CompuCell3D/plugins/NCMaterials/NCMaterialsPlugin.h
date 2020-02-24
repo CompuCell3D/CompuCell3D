@@ -49,6 +49,9 @@ namespace CompuCell3D {
 
 	template <class T> class WatchableField3D;
 
+	class DiffusionSolverFE_CPU;
+	class ReactionDiffusionSolverFE;
+
 	// For passing intracellular responses due to field interactions
 	class NCMATERIALS_EXPORT NCMaterialsCellResponse {
 	public:
@@ -89,6 +92,9 @@ namespace CompuCell3D {
 		Automaton *automaton;
 		bool weightDistance;
 
+		DiffusionSolverFE_CPU *pdeSolverFE_CPU;
+		ReactionDiffusionSolverFE *pdeSolverRDFE;
+
 		unsigned int maxNeighborIndex; // for first order neighborhood, used in material advection
 		unsigned int maxNeighborIndexAdh; // for adhesion neighborhoods
 		BoundaryStrategy *boundaryStrategy;
@@ -106,6 +112,7 @@ namespace CompuCell3D {
 		std::vector<std::vector<float> > RemodelingQuantityByTypeId;
 
 		std::map<std::string, bool> variableDiffusivityFieldFlagMap; // true when variable diffusion coefficient is defined for a field
+		std::map<std::string, float> scalingExtraMCSVec;
 
 		Dim3D fieldDim;
 		WatchableField3D<NCMaterialsData *> *NCMaterialsField; // maybe add watcher interface in future dev.
@@ -225,7 +232,7 @@ namespace CompuCell3D {
 			else return variableDiffusivityFieldFlagMap[_fieldName]; 
 		};
 		// Sets flag for variable field diffusion coefficient
-		void setVariableDiffusivityFieldFlagMap(std::string _fieldName, bool _flag) {
+		void setVariableDiffusivityFieldFlagMap(std::string _fieldName, bool _flag=true) {
 			std::map<std::string, bool>::iterator mitr = variableDiffusivityFieldFlagMap.find(_fieldName);
 			if (mitr == variableDiffusivityFieldFlagMap.end()) variableDiffusivityFieldFlagMap.insert(make_pair(_fieldName, _flag));
 			else variableDiffusivityFieldFlagMap[_fieldName] = _flag;
@@ -233,6 +240,9 @@ namespace CompuCell3D {
 		// Returns diffusion coefficient at point pt for field _fieldName
 		// If site is intracellular, returns 0.0
 		float getLocalDiffusivity(const Point3D &pt, std::string _fieldName);
+		// Returns maxmium diffusion coefficient for field _fieldName
+		float getMaxFieldDiffusivity(std::string _fieldName);
+		void setScalingExtraMCSVec(std::string _fieldName, float _scalingFactor) { scalingExtraMCSVec[_fieldName] = _scalingFactor; }
 
 		// material field drawing functions
 

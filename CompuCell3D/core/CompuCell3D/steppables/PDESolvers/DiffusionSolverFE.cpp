@@ -10,6 +10,7 @@
 #include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 #include <CompuCell3D/plugins/CellTypeMonitor/CellTypeMonitorPlugin.h>
+#include <CompuCell3D/plugins/NCMaterials/NCMaterialsPlugin.h>
 
 #include <BasicUtils/BasicString.h>
 #include <BasicUtils/BasicException.h>
@@ -86,6 +87,7 @@ DiffusionSolverFE<Cruncher>::DiffusionSolverFE()
 	haveCouplingTerms=false;
 	serializeFrequency=0;
 	boxWatcherSteppable=0;
+	ncMaterialsPlugin = 0;
 	diffusionLatticeScalingFactor=1.0;
 	autoscaleDiffusion=false;
     scaleSecretion=true;
@@ -146,6 +148,9 @@ void DiffusionSolverFE<Cruncher>::Scale(std::vector<float> const &maxDiffConstVe
 			diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType] = (decayConstTemp/scalingExtraMCSVec[i]); //scale decay
 			
 		}
+
+		if (ncMaterialsPlugin && ncMaterialsNameFieldMap[diffSecrFieldTuppleVec[i].diffData.fieldName])
+			ncMaterialsPlugin->setScalingExtraMCSVec(diffSecrFieldTuppleVec[i].diffData.fieldName, scalingExtraMCSVec[i]);
         
         if (scaleSecretion){
             //secretion data
@@ -175,6 +180,55 @@ void DiffusionSolverFE<Cruncher>::Scale(std::vector<float> const &maxDiffConstVe
 	}
     
 }
+
+template <class Cruncher>
+void DiffusionSolverFE<Cruncher>::unScale() {
+
+	//scaling of diffusion and secretion coeeficients
+	for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); i++) {
+
+		if (scalingExtraMCSVec[i] == 0)
+			continue;
+
+		//diffusion data
+		for (int currentCellType = 0; currentCellType < UCHAR_MAX + 1; currentCellType++) {
+			float diffConstTemp = diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType];
+			float decayConstTemp = diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType];
+			diffSecrFieldTuppleVec[i].diffData.extraTimesPerMCS = 0;
+			diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType] = (diffConstTemp * scalingExtraMCSVec[i]); //scale diffusion
+			diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType] = (decayConstTemp * scalingExtraMCSVec[i]); //scale decay
+
+		}
+
+		if (scaleSecretion) {
+			//secretion data
+			SecretionData & secrData = diffSecrFieldTuppleVec[i].secrData;
+			for (std::map<unsigned char, float>::iterator mitr = secrData.typeIdSecrConstMap.begin(); mitr != secrData.typeIdSecrConstMap.end(); ++mitr) {
+				mitr->second *= scalingExtraMCSVec[i];
+			}
+
+			for (std::map<unsigned char, float>::iterator mitr = secrData.typeIdSecrConstConstantConcentrationMap.begin(); mitr != secrData.typeIdSecrConstConstantConcentrationMap.end(); ++mitr) {
+				mitr->second *= scalingExtraMCSVec[i];
+			}
+
+			for (std::map<unsigned char, SecretionOnContactData>::iterator mitr = secrData.typeIdSecrOnContactDataMap.begin(); mitr != secrData.typeIdSecrOnContactDataMap.end(); ++mitr) {
+				SecretionOnContactData & secrOnContactData = mitr->second;
+				for (std::map<unsigned char, float>::iterator cmitr = secrOnContactData.contactCellMap.begin(); cmitr != secrOnContactData.contactCellMap.end(); ++cmitr) {
+					cmitr->second *= scalingExtraMCSVec[i];
+				}
+			}
+
+			//uptake data
+			for (std::map<unsigned char, UptakeData>::iterator mitr = secrData.typeIdUptakeDataMap.begin(); mitr != secrData.typeIdUptakeDataMap.end(); ++mitr) {
+				mitr->second.maxUptake *= scalingExtraMCSVec[i];
+				mitr->second.relativeUptakeRate *= scalingExtraMCSVec[i];
+			}
+
+		}
+	}
+
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 bool DiffusionSolverFE<Cruncher>::hasAdditionalTerms()const{
@@ -185,6 +239,44 @@ bool DiffusionSolverFE<Cruncher>::hasAdditionalTerms()const{
 			return true;
 	}
 	return false;
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template <class Cruncher>
+void DiffusionSolverFE<Cruncher>::resetNCMaterialsPlugin() {
+	for (std::map<std::string, bool>::iterator mItr = ncMaterialsNameFieldMap.begin(); mItr != ncMaterialsNameFieldMap.end(); ++mItr) mItr->second = false;
+}
+
+template <class Cruncher>
+void DiffusionSolverFE<Cruncher>::registerNCMaterialsPlugin(const NCMaterialsPlugin *_ncMaterialsPlugin, std::string _fieldName, bool _activate) {
+	ncMaterialsPlugin = const_cast<NCMaterialsPlugin*>(_ncMaterialsPlugin);
+
+	std::map<std::string, bool>::iterator mItr = ncMaterialsNameFieldMap.find(_fieldName);
+	if (mItr != ncMaterialsNameFieldMap.end()) ncMaterialsNameFieldMap[_fieldName] = _activate;  // No new fields after initialization
+}
+
+template <class Cruncher>
+void DiffusionSolverFE<Cruncher>::setDiffDataNCMaterials(std::string _fieldName, bool _updateScaling) {
+	if (!ncMaterialsPlugin) return;
+
+	for (int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
+		DiffusionData &diffData = diffSecrFieldTuppleVec[i].diffData;
+		if (_fieldName.compare(diffData.fieldName) == 0) {
+			diffData.setNCMaterialsPlugin(ncMaterialsPlugin);
+
+			// If updating scaling, undo scaling operations, recalculate max diffusion coefficients and then redo scaling
+			if (_updateScaling) {
+
+				unScale();
+
+				float maxNCMaterialDiffCoeff = ncMaterialsPlugin->getMaxFieldDiffusivity(diffData.fieldName);
+				maxDiffConstVec[i] = (maxDiffConstVec[i] < maxNCMaterialDiffCoeff) ? maxNCMaterialDiffCoeff : maxDiffConstVec[i];
+
+				Scale(maxDiffConstVec, maxStableDiffConstant);
+
+			}
+
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -286,11 +378,15 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 
 	cerr<<"diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size()<<endl;
 
+	ncMaterialsNameFieldMap.clear();
+
 	for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
 		//       cerr<<" concentrationFieldNameVector[i]="<<diffDataVec[i].fieldName<<endl;
 		//       concentrationFieldNameVector.push_back(diffDataVec[i].fieldName);
 		concentrationFieldNameVectorTmp[i] = diffSecrFieldTuppleVec[i].diffData.fieldName;
 		cerr<<" concentrationFieldNameVector[i]="<<concentrationFieldNameVectorTmp[i]<<endl;
+
+		ncMaterialsNameFieldMap.insert(make_pair(concentrationFieldNameVectorTmp[i], false));
 	}
 
 	//setting up couplingData - field-field interaction terms
@@ -1311,6 +1407,8 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
 		diffSecrFieldTuppleVec[i].secrData.setAutomaton(automaton);
 		diffSecrFieldTuppleVec[i].diffData.initialize(automaton);
 		diffSecrFieldTuppleVec[i].secrData.initialize(automaton);
+		if (!_fullInitFlag && diffSecrFieldTuppleVec[i].diffData.fieldName.size() && ncMaterialsNameFieldMap[diffSecrFieldTuppleVec[i].diffData.fieldName])
+			setDiffDataNCMaterials(diffSecrFieldTuppleVec[i].diffData.fieldName);
 	}
 
 	///assigning member method ptrs to the vector
@@ -1344,6 +1442,11 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
 		for(int currentCellType = 0; currentCellType < UCHAR_MAX+1; currentCellType++) {
 			//                 cout << "diffCoef[currentCellType]: " << diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType] << endl;
 			maxDiffConstVec[i] = (maxDiffConstVec[i] < diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType]) ? diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType]: maxDiffConstVec[i];
+		}
+
+		if (ncMaterialsPlugin && ncMaterialsNameFieldMap[diffSecrFieldTuppleVec[i].diffData.fieldName]) {
+			float maxNCMaterialDiffCoeff = ncMaterialsPlugin->getMaxFieldDiffusivity(diffSecrFieldTuppleVec[i].diffData.fieldName);
+			maxDiffConstVec[i] = (maxDiffConstVec[i] < maxNCMaterialDiffCoeff) ? maxNCMaterialDiffCoeff : maxDiffConstVec[i];
 		}
     }
     

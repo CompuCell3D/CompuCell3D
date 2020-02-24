@@ -5,6 +5,7 @@
 #include <PublicUtilities/StringUtils.h>
 #include <CompuCell3D/Automaton/Automaton.h>
 #include <XMLUtils/CC3DXMLElement.h>
+#include <CompuCell3D/plugins/NCMaterials/NCMaterialsPlugin.h>
 
 using namespace CompuCell3D;
 using namespace std;
@@ -151,6 +152,16 @@ void DiffusionData::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 
 bool DiffusionData::getVariableDiffusionCoeeficientFlag(){return variableDiffusionCoefficientFlag;}
+
+float DiffusionData::getVariableDiffusionCoefficient(short _typeId, const Point3D &_pt) {
+	if (_typeId != 0 || !ncMaterialsPlugin) return diffCoef[_typeId];
+	else return ncMaterialsPlugin->getLocalDiffusivity(_pt, fieldName);
+}
+
+void DiffusionData::setNCMaterialsPlugin(NCMaterialsPlugin *_ncMaterialsPlugin) {
+	ncMaterialsPlugin = _ncMaterialsPlugin;
+	variableDiffusionCoefficientFlag = true;
+}
 
 void DiffusionData::DeltaX(float _dx){deltaX=_dx;}
 void DiffusionData::DeltaT(float _dt){deltaT=_dt;}

@@ -20,6 +20,7 @@
 
 namespace CompuCell3D {
 class Automaton;
+class NCMaterialsPlugin;
 
 class PDESOLVERS_EXPORT SecretionOnContactData{
    public:
@@ -139,6 +140,7 @@ public:
 
 class PDESOLVERS_EXPORT DiffusionData : public SteerableObject {
       Automaton * automaton;
+	  NCMaterialsPlugin *ncMaterialsPlugin;
    public:
       DiffusionData():
       active(false),
@@ -151,7 +153,8 @@ class PDESOLVERS_EXPORT DiffusionData : public SteerableObject {
       minConcentration(std::numeric_limits<float>::min()),
       useBoxWatcher(false),
 	  extraTimesPerMCS(0),
-	  variableDiffusionCoefficientFlag(false)
+	  variableDiffusionCoefficientFlag(false),
+	  ncMaterialsPlugin(0)
       {
 		  for(int i = 0 ; i < UCHAR_MAX+1 ; ++i){  
 			decayCoef[i]=0.0;
@@ -188,6 +191,10 @@ class PDESOLVERS_EXPORT DiffusionData : public SteerableObject {
       void initialize(Automaton *_automaton);
 	  //bool getVariableDiffusionCoeeficientFlag();
       bool getVariableDiffusionCoeeficientFlag();
+	  // Returns local diffusivity by cell type or materials field (when loaded)
+	  float getVariableDiffusionCoefficient(short _typeId, const Point3D &_pt);
+	  void setNCMaterialsPlugin(NCMaterialsPlugin *_ncMaterialsPlugin);
+	  bool hasNCMaterialsPlugin() { return ncMaterialsPlugin != 0; }
 
       void DoNotDiffuseTo(std::string _typeName);
       void DoNotDecayIn(std::string _typeName);

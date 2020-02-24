@@ -32,6 +32,9 @@ using namespace CompuCell3D;
 #include "NCMaterialsPlugin.h"
 #include "PublicUtilities/Vector3.h"
 #include <CompuCell3D/steppables/NCMaterialsSteppable/NCMaterialsSteppable.h>
+#include <CompuCell3D/steppables/PDESolvers/DiffusionSolverFE.h>
+#include <CompuCell3D/steppables/PDESolvers/DiffusionSolverFE_CPU.h>
+#include <CompuCell3D/steppables/PDESolvers/ReactionDiffusionSolverFE.h>
 
 
 NCMaterialsPlugin::NCMaterialsPlugin() :
@@ -41,7 +44,10 @@ NCMaterialsPlugin::NCMaterialsPlugin() :
     numberOfMaterials(0),
     weightDistance(false),
     NCMaterialsInitialized(false)
-{}
+{
+	pdeSolverFE_CPU = 0;
+	pdeSolverRDFE = 0;
+}
 
 NCMaterialsPlugin::~NCMaterialsPlugin() {
     pUtils->destroyLock(lockPtr);
@@ -169,10 +175,13 @@ void NCMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
 	/* 
 	Assign field diffusion coefficients to each material from user specification
-		Fields with incomplete specification throw and error for feedback to user
+		Fields with incomplete specification have unspecified diffusivity = 0
 		Fields with no specification have no flag for diffusion solvers
 		Fields with complete specification have flag for diffusion solvers 
 	*/
+
+	scalingExtraMCSVec.clear();
+
 	if (NCMaterialDiffusivityXMLVec.size() > 0) {
 
 		// Get user specs
@@ -195,23 +204,23 @@ void NCMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
 			setVariableDiffusivityFieldFlagMap(fieldName, true);
 
+			scalingExtraMCSVec.insert(make_pair(fieldName, 1.0));
+
 		}
 
 		// Test user specs
+		//	Undefined diffusivity coefficients are zero
 
 		for (std::map<std::string, bool>::iterator mitr = variableDiffusivityFieldFlagMap.begin(); mitr != variableDiffusivityFieldFlagMap.end(); ++mitr) {
+			if (!mitr->second) continue;
+
 			std::string fieldName = mitr->first;
-			std::vector<std::string> materialsNotDefined;
 
-			cerr << "Checking completion for field " << fieldName << "..." << endl;
-
-			for (int i = 0; i < numberOfMaterials; ++i) if (NCMaterialsVec[i].getFieldDiffusivity(fieldName) < 0.0) materialsNotDefined.push_back(NCMaterialsVec[i].getName());
-			if (materialsNotDefined.size() > 0) {
-				for (int i = 0; i < materialsNotDefined.size(); ++i) {
-					cerr << "   Diffusion coefficient not found for NCMaterial " << materialsNotDefined[i] << endl;
+			for (int i = 0; i < numberOfMaterials; ++i) 
+				if (NCMaterialsVec[i].getFieldDiffusivity(fieldName) < 0.0) {
+					cerr << "   Diffusion coefficient not found for NCMaterial " << NCMaterialsVec[i].getName() << ". Assuming zero." << endl;
+					NCMaterialsVec[i].setFieldDiffusivity(fieldName, 0.0);
 				}
-			}
-			ASSERT_OR_THROW("If specifying diffusion coefficients for a field in NCMaterials, the diffusion coefficient for each NCMaterial must be specified.", materialsNotDefined.size() == 0)
 		}
 
 	}
@@ -590,7 +599,85 @@ void NCMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 }
 
 void NCMaterialsPlugin::extraInit(Simulator *simulator) {
-    update(xmlData, true);
+
+	pUtils->setLock(lockPtr);
+
+	// Field diffusion coefficients specification
+
+	CC3DXMLElementList NCMaterialDiffusivityXMLVec = xmlData->getElements("NCMaterialDiffusivity");
+	if (NCMaterialDiffusivityXMLVec.size() > 0) {
+
+		cerr << "NCMaterials setting field diffusion coefficients..." << endl;
+
+		// Check for loaded supported solvers
+		for (std::map<std::string, bool>::iterator mitr = variableDiffusivityFieldFlagMap.begin(); mitr != variableDiffusivityFieldFlagMap.end(); ++mitr) {
+			if (!mitr->second) continue;
+
+			if (Simulator::steppableManager.isLoaded("DiffusionSolverFE")) {
+
+				cerr << "   Got DiffusionSolverFE" << endl;
+
+				pdeSolverFE_CPU = (DiffusionSolverFE_CPU *)Simulator::steppableManager.get("DiffusionSolverFE");
+			}
+			else pdeSolverFE_CPU = 0;
+
+			if (Simulator::steppableManager.isLoaded("ReactionDiffusionSolverFE")) {
+
+				cerr << "   Got ReactionDiffusionSolverFE" << endl;
+
+				pdeSolverRDFE = (ReactionDiffusionSolverFE *)Simulator::steppableManager.get("ReactionDiffusionSolverFE");
+			}
+			else pdeSolverRDFE = 0;
+
+			break;
+
+		}
+
+		// Solver prep
+
+		if (pdeSolverFE_CPU) pdeSolverFE_CPU->resetNCMaterialsPlugin();
+		
+		if (pdeSolverRDFE) pdeSolverRDFE->resetNCMaterialsPlugin();
+
+		// Update field diffusion coefficients to each material from user specification
+
+		std::string NCMaterialName;
+		int NCMaterialIdx;
+		std::string fieldName;
+		float coeff;
+		for (int i = 0; i < NCMaterialDiffusivityXMLVec.size(); ++i) {
+			NCMaterialName = NCMaterialDiffusivityXMLVec[i]->getAttribute("Material");
+			NCMaterialIdx = getNCMaterialIndexByName(NCMaterialName);
+			ASSERT_OR_THROW("NCMaterial " + NCMaterialName + " not defined.", NCMaterialIdx >= 0);
+
+			fieldName = NCMaterialDiffusivityXMLVec[i]->getAttribute("Field");
+			coeff = (float)NCMaterialDiffusivityXMLVec[i]->getDouble();
+
+			ASSERT_OR_THROW("NCMaterial diffusion coefficients must be positive.", coeff >= 0);
+
+			NCMaterialsVec[NCMaterialIdx].setFieldDiffusivity(fieldName, coeff);
+
+			setVariableDiffusivityFieldFlagMap(fieldName, true);
+
+			// Update solvers
+
+			if (pdeSolverFE_CPU) {
+				pdeSolverFE_CPU->registerNCMaterialsPlugin(this, fieldName, true);
+				pdeSolverFE_CPU->setDiffDataNCMaterials(fieldName, true);
+			}
+			
+			if (pdeSolverRDFE) {
+				pdeSolverRDFE->registerNCMaterialsPlugin(this, fieldName, true);
+				pdeSolverRDFE->setDiffDataNCMaterials(fieldName, true);
+			}
+
+		}
+
+	}
+
+	pUtils->unsetLock(lockPtr);
+
+    // update(xmlData, true);
 
 }
 
@@ -902,8 +989,82 @@ std::vector<float> NCMaterialsPlugin::calculateCopyQuantityVec(const CellG * _ce
 void NCMaterialsPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     automaton = potts->getAutomaton();
-    ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
-        set<unsigned char> cellTypesSet;
+	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton);
+
+	// Field diffusion coefficients specification
+
+	CC3DXMLElementList NCMaterialDiffusivityXMLVec = _xmlData->getElements("NCMaterialDiffusivity");
+	if (NCMaterialDiffusivityXMLVec.size() > 0) {
+
+		cerr << "NCMaterials updating field diffusion coefficients..." << endl;
+
+		// Check for loaded supported solvers
+		for (std::map<std::string, bool>::iterator mitr = variableDiffusivityFieldFlagMap.begin(); mitr != variableDiffusivityFieldFlagMap.end(); ++mitr) {
+			if (!mitr->second) continue;
+
+			if (Simulator::steppableManager.isLoaded("DiffusionSolverFE")) {
+
+				cerr << "   Got DiffusionSolverFE" << endl;
+
+				pdeSolverFE_CPU = (DiffusionSolverFE_CPU *)Simulator::steppableManager.get("DiffusionSolverFE");
+			}
+			else pdeSolverFE_CPU = 0;
+			
+			if (Simulator::steppableManager.isLoaded("ReactionDiffusionSolverFE")) {
+
+				cerr << "   Got ReactionDiffusionSolverFE" << endl;
+
+				pdeSolverRDFE = (ReactionDiffusionSolverFE *)Simulator::steppableManager.get("ReactionDiffusionSolverFE");
+			}
+			else pdeSolverRDFE = 0;
+		
+			break;
+
+		}
+
+		// Solver prep
+
+		if (pdeSolverFE_CPU) { 
+
+			if (!_fullInitFlag) pdeSolverFE_CPU->resetNCMaterialsPlugin();
+
+		}
+
+		if (pdeSolverRDFE) {
+
+			if (!_fullInitFlag) pdeSolverRDFE->resetNCMaterialsPlugin();
+
+		}
+
+		// Update field diffusion coefficients to each material from user specification
+
+		std::string NCMaterialName;
+		int NCMaterialIdx;
+		std::string fieldName;
+		float coeff;
+		for (int i = 0; i < NCMaterialDiffusivityXMLVec.size(); ++i) {
+			NCMaterialName = NCMaterialDiffusivityXMLVec[i]->getAttribute("Material");
+			NCMaterialIdx = getNCMaterialIndexByName(NCMaterialName);
+			ASSERT_OR_THROW("NCMaterial " + NCMaterialName + " not defined.", NCMaterialIdx >= 0);
+
+			fieldName = NCMaterialDiffusivityXMLVec[i]->getAttribute("Field");
+			coeff = (float)NCMaterialDiffusivityXMLVec[i]->getDouble();
+
+			ASSERT_OR_THROW("NCMaterial diffusion coefficients must be positive.", coeff >= 0);
+
+			NCMaterialsVec[NCMaterialIdx].setFieldDiffusivity(fieldName, coeff);
+
+			setVariableDiffusivityFieldFlagMap(fieldName, true);
+
+			// Update solvers
+
+			if (pdeSolverFE_CPU) pdeSolverFE_CPU->registerNCMaterialsPlugin(this, fieldName, true);
+
+			if (pdeSolverRDFE) pdeSolverRDFE->registerNCMaterialsPlugin(this, fieldName, true);
+
+		}
+
+	}
 
 }
 
@@ -1067,12 +1228,21 @@ float NCMaterialsPlugin::getLocalDiffusivity(const Point3D &pt, std::string _fie
 	if (potts->getCellFieldG()->get(pt)) return 0.0;
 
 	float diffCoeff = 0.0;
-	std::vector<float> qtyVec = this->getMediumNCMaterialQuantityVector(pt);
+	std::vector<float> qtyVec = getMediumNCMaterialQuantityVector(pt);
 
-	for (int i = 0; i < this->numberOfMaterials; ++i)
-		diffCoeff += this->NCMaterialsVec[i].getFieldDiffusivity(_fieldName) * qtyVec[i];
+	for (int i = 0; i < numberOfMaterials; ++i)
+		diffCoeff += NCMaterialsVec[i].getFieldDiffusivity(_fieldName) * qtyVec[i];
+	
+	return diffCoeff / scalingExtraMCSVec[_fieldName];
+}
 
-	return diffCoeff;
+float NCMaterialsPlugin::getMaxFieldDiffusivity(std::string _fieldName) {
+	float _y = 0.0;
+	for each (NCMaterialComponentData _z in NCMaterialsVec) {
+		float _x = _z.getFieldDiffusivity(_fieldName);
+		_y = (_y < _x) ? _x : _y;
+	}
+	return _y;
 }
 
 void NCMaterialsPlugin::setRemodelingQuantityByName(const CellG * _cell, std::string _NCMaterialName, float _quantity) {
@@ -1189,7 +1359,9 @@ float NCMaterialsPlugin::getMediumNCMaterialQuantityByIndex(const Point3D &pt, i
 }
 
 std::vector<float> NCMaterialsPlugin::getMediumNCMaterialQuantityVector(const Point3D &pt) {
-	return NCMaterialsField->get(pt)->NCMaterialsQuantityVec;
+	NCMaterialsData *_x = NCMaterialsField->get(pt);
+	if (_x) return _x->NCMaterialsQuantityVec;
+	else return std::vector<float>(numberOfMaterials, 0.0);
 }
 
 std::vector<float> NCMaterialsPlugin::getMediumAdvectingNCMaterialQuantityVector(const Point3D &pt) {

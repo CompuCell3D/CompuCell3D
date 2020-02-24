@@ -44,6 +44,7 @@ class Automaton;
 
 
 class BoxWatcher;
+class NCMaterialsPlugin;
 
 class CellTypeMonitorPlugin ;
 class DiffusionData;
@@ -104,11 +105,14 @@ class PDESOLVERS_EXPORT ReactionDiffusionSolverFE :public DiffusableVectorCommon
    typedef Array3DContiguous<precision_t> ConcentrationField_t;
 
 	BoxWatcher *boxWatcherSteppable;
+	NCMaterialsPlugin *ncMaterialsPlugin;
 
 	float diffusionLatticeScalingFactor; // for hex in 2Dlattice it is 2/3.0 , for 3D is 1/2.0, for cartesian lattice it is 1
 	bool autoscaleDiffusion;
 
 	bool scaleSecretion; // this flag is set to true. If user sets it to false via XML then DiffusionSolver will behave like FlexibleDiffusion solver - i.e. secretion will be done in one step followed by multiple diffusive steps
+
+	std::map<std::string, bool> ncMaterialsNameFieldMap; // these flags are true for fields using NCMaterials plugin local diffusivity
 
 protected:
 
@@ -157,6 +161,7 @@ protected:
   
    void prepareForwardDerivativeOffsets();
    void Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant);
+   virtual void unScale(); // Reverse the operations of Scale()
    virtual void prepCellTypeField(int idx);
    virtual Dim3D getInternalDim();
    
@@ -239,6 +244,14 @@ public:
     virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
     virtual std::string steerableName();
 	 virtual std::string toString();
+
+	 // Manage coupling with NCMaterials plugin to diffusion data with steering
+
+	 // NCMaterials plugin calls this at update
+	 virtual void resetNCMaterialsPlugin();
+	 // NCMaterials plugin calls this at update after reset when importing material diffusion from XML
+	 virtual void registerNCMaterialsPlugin(const NCMaterialsPlugin *_ncMaterialsPlugin, std::string _fieldName, bool _activate = true);
+	 virtual void setDiffDataNCMaterials(std::string _fieldName, bool _updateScaling = false);
 
 };
 

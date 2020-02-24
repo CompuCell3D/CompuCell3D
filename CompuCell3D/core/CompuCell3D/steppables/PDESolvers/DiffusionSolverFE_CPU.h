@@ -19,7 +19,6 @@ public:
 	// // // void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData /*const*/ &diffData);
     // // // virtual void boundaryConditionInitImpl(int idx);    
     virtual void handleEventLocal(CC3DEvent & _event);
-		
 protected:
 	//virtual void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData &diffData);
     
