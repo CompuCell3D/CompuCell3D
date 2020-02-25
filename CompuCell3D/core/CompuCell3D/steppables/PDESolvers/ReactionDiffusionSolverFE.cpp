@@ -1850,31 +1850,60 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                                 ev[4 + fieldIdx] = concentrationField.getDirect(x, y, z);
                             }
 
-							if (variableDiffusionCoefficientFlag) {
+							if (bcField.getDirect(x, y, z) == BoundaryConditionSpecifier::INTERNAL) {
 
-								//loop over nearest neighbors
 								const std::vector<Point3D> & offsetVecRef = boundaryStrategy->getOffsetVec(pt);
-								if (bcField.getDirect(x, y, z) == BoundaryConditionSpecifier::INTERNAL) {//internal pixel
 
-									for (register int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/; ++i) {
+								if (variableDiffusionCoefficientFlag) {
+									//internal pixel
+
+									for (register int i = 0; i <= maxNeighborIndex; ++i) {
 										const Point3D & offset = offsetVecRef[i];
 
 										int offX = x + offset.x;
 										int offY = y + offset.y;
 										int offZ = z + offset.z;
 
-										concentrationSum += concentrationField.getDirect(offX, offY, offZ);
+										float c_offset = concentrationField.getDirect(offX, offY, offZ);
+
+										concentrationSum += c_offset;
 
 										const Point3D neighborPt = pt + offsetVecRef[i];
 
-										varDiffSumTerm += diffData.getVariableDiffusionCoefficient(cellTypeArray.getDirect(offX, offY, offZ), neighborPt) * (concentrationField.getDirect(offX, offY, offZ) - currentConcentration);
+										varDiffSumTerm += diffData.getVariableDiffusionCoefficient(cellTypeArray.getDirect(offX, offY, offZ), neighborPt) * (c_offset - currentConcentration);
 
 									}
+
+									concentrationSum -= (maxNeighborIndex + 1)*currentConcentration;
+
+									concentrationSum *= currentDiffCoef / 2.0;
+
+									varDiffSumTerm /= 2.0;
+
 
 								}
 								else {
 
-									//loop over nearest neighbors
+									for (register int i = 0; i <= maxNeighborIndex; ++i) {
+										const Point3D & offset = offsetVecRef[i];
+
+										concentrationSum += concentrationField.getDirect(x + offset.x, y + offset.y, z + offset.z);
+
+									}
+
+									concentrationSum -= (maxNeighborIndex + 1)*currentConcentration;
+
+									concentrationSum *= currentDiffCoef;
+
+								}
+
+							}
+							else {
+
+								//loop over nearest neighbors
+								const std::vector<Point3D> & offsetVecRef = boundaryStrategy->getOffsetVec(pt);
+
+								if (variableDiffusionCoefficientFlag) {
 
 									for (register int i = 0; i <= maxNeighborIndex; ++i) {
 
@@ -1885,64 +1914,47 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
 										int offZ = z + offset.z;
 
 										signed char nBcIndicator = bcField.getDirect(offX, offY, offZ);
-
 										float c_offset = concentrationField.getDirect(offX, offY, offZ);
 										float diffCoef_offset = currentDiffCoef;
 
 										if (nBcIndicator == BoundaryConditionSpecifier::INTERNAL || nBcIndicator == BoundaryConditionSpecifier::BOUNDARY) { // for pixel neighbors which are internal or boundary pixels  calculations use default "internal pixel" algorithm. boundary pixel means belonging to the lattice but touching boundary
 											const Point3D neighborPt = pt + offset;
 											diffCoef_offset = diffData.getVariableDiffusionCoefficient(cellTypeArray.getDirect(offX, offY, offZ), neighborPt);
+											concentrationSum += c_offset;
 										}
 										else {
 											if (bcSpec.planePositions[nBcIndicator] == BoundaryConditionSpecifier::PERIODIC) {// for pixel neighbors which are external pixels with periodic BC  calculations use default "internal pixel" algorithm
 												const Point3D neighborPt = pt + offset;
 												diffCoef_offset = diffData.getVariableDiffusionCoefficient(cellTypeArray.getDirect(offX, offY, offZ), neighborPt);
+												concentrationSum += c_offset;
 											}
 											else if (bcSpec.planePositions[nBcIndicator] == BoundaryConditionSpecifier::CONSTANT_VALUE) {
 												c_offset = bcSpec.values[nBcIndicator];
+												concentrationSum += c_offset;
 											}
 											else if (bcSpec.planePositions[nBcIndicator] == BoundaryConditionSpecifier::CONSTANT_DERIVATIVE) {
 												if (nBcIndicator == BoundaryConditionSpecifier::MIN_X || nBcIndicator == BoundaryConditionSpecifier::MIN_Y || nBcIndicator == BoundaryConditionSpecifier::MIN_Z) { // for "left hand side" edges of the lattice the sign of the derivative expression is '-'
 													c_offset = currentConcentration - bcSpec.values[nBcIndicator] * deltaX; // notice we use values of the field of the central pixel not of the neiighbor. The neighbor is outside of the lattice and for non cartesian lattice with non periodic BC cannot be trusted to hold appropriate value
+													concentrationSum += c_offset;
 												}
 												else { // for "left hand side" edges of the lattice the sign of  the derivative expression is '+'
 													c_offset = currentConcentration + bcSpec.values[nBcIndicator] * deltaX;// notice we use values of the field of the central pixel not of the neiighbor. The neighbor is outside of the lattice and for non cartesian lattice with non periodic BC cannot be trusted to hold appropriate value
+													concentrationSum += c_offset;
 												}
 											}
 										}
 
-										concentrationSum += c_offset;
-
 										varDiffSumTerm += diffCoef_offset * (c_offset - currentConcentration);
 									}
 
-								}
+									concentrationSum -= (maxNeighborIndex + 1)*currentConcentration;
 
-								concentrationSum -= (maxNeighborIndex + 1)*currentConcentration;
+									concentrationSum *= currentDiffCoef / 2.0;
 
-								concentrationSum *= currentDiffCoef / 2.0;
-
-								varDiffSumTerm /= 2.0;
-
-							}
-							else { // !variableDiffusionCoefficientFlag
-
-								   //loop over nearest neighbors
-								if (bcField.getDirect(x, y, z) == BoundaryConditionSpecifier::INTERNAL) {//internal pixel
-
-									const std::vector<Point3D> & offsetVecRef = boundaryStrategy->getOffsetVec(pt);
-									for (register int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/; ++i) {
-										const Point3D & offset = offsetVecRef[i];
-
-										concentrationSum += concentrationField.getDirect(x + offset.x, y + offset.y, z + offset.z);
-
-									}
+									varDiffSumTerm /= 2.0;
 
 								}
 								else {
-
-									//loop over nearest neighbors
-									const std::vector<Point3D> & offsetVecRef = boundaryStrategy->getOffsetVec(pt);
 
 									for (register int i = 0; i <= maxNeighborIndex; ++i) {
 
@@ -1975,11 +1987,12 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
 										}
 									}
 
+									concentrationSum -= (maxNeighborIndex + 1)*currentConcentration;
+
+									concentrationSum *= currentDiffCoef;
+
 								}
 
-								concentrationSum -= (maxNeighborIndex + 1)*currentConcentration;
-
-								concentrationSum *= currentDiffCoef;
 							}
 
                             updatedConcentration = (concentrationSum + varDiffSumTerm) + (1 - decayCoef[currentCellType])*currentConcentration;
@@ -2039,34 +2052,36 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
 
 										signed char nBcIndicator = bcField.getDirect(offX, offY, offZ);
 										float c_offset = concentrationField.getDirect(offX, offY, offZ);
-
 										float diffCoef_offset = currentDiffCoef;
 
 										if (nBcIndicator == BoundaryConditionSpecifier::INTERNAL || nBcIndicator == BoundaryConditionSpecifier::BOUNDARY) { // for pixel neighbors which are internal or boundary pixels  calculations use default "internal pixel" algorithm. boundary pixel means belonging to the lattice but touching boundary
 											const Point3D neighborPt = pt + offset;
 											diffCoef_offset = diffData.getVariableDiffusionCoefficient(cellTypeArray.getDirect(offX, offY, offZ), neighborPt);
+											concentrationSum += c_offset;
 										}
 										else {
 											if (bcSpec.planePositions[nBcIndicator] == BoundaryConditionSpecifier::PERIODIC) {// for pixel neighbors which are external pixels with periodic BC  calculations use default "internal pixel" algorithm
 												const Point3D neighborPt = pt + offset;
 												diffCoef_offset = diffData.getVariableDiffusionCoefficient(cellTypeArray.getDirect(offX, offY, offZ), neighborPt);
+												concentrationSum += c_offset;
 											}
 											else if (bcSpec.planePositions[nBcIndicator] == BoundaryConditionSpecifier::CONSTANT_VALUE) {
 												c_offset = bcSpec.values[nBcIndicator];
+												concentrationSum += c_offset;
 											}
 											else if (bcSpec.planePositions[nBcIndicator] == BoundaryConditionSpecifier::CONSTANT_DERIVATIVE) {
 												if (nBcIndicator == BoundaryConditionSpecifier::MIN_X || nBcIndicator == BoundaryConditionSpecifier::MIN_Y || nBcIndicator == BoundaryConditionSpecifier::MIN_Z) {
 													// for "left hand side" edges of the lattice the sign of the derivative expression is '-'
 													c_offset = currentConcentration - bcSpec.values[nBcIndicator] * deltaX; // notice we use values of the field of the central pixel not of the neiighbor. The neighbor is outside of the lattice and for non cartesian lattice with non periodic BC cannot be trusted to hold appropriate value
+													concentrationSum += c_offset;
 												}
 												else { // for "right hand side" edges of the lattice the sign of  the derivative expression is '+'
 													c_offset = currentConcentration + bcSpec.values[nBcIndicator] * deltaX;// notice we use values of the field of the central pixel not of the neiighbor. The neighbor is outside of the lattice and for non cartesian lattice with non periodic BC cannot be trusted to hold appropriate value
+													concentrationSum += c_offset;
 												}
 											}
 
 										}
-
-										concentrationSum += c_offset;
 
 										varDiffSumTerm += diffCoef_offset * (c_offset - currentConcentration);
 
