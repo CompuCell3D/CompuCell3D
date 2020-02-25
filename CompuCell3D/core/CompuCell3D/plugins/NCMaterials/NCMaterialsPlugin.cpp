@@ -43,7 +43,8 @@ NCMaterialsPlugin::NCMaterialsPlugin() :
     xmlData(0),
     numberOfMaterials(0),
     weightDistance(false),
-    NCMaterialsInitialized(false)
+    NCMaterialsInitialized(false), 
+	normalizeQuantities(false)
 {
 	pdeSolverFE_CPU = 0;
 	pdeSolverRDFE = 0;
@@ -104,6 +105,8 @@ void NCMaterialsPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     CC3DXMLElementList NCMaterialDurabilityXMLVec = _xmlData->getElements("NCMaterialDurability");
 	CC3DXMLElementList NCMaterialDiffusivityXMLVec = _xmlData->getElements("NCMaterialDiffusivity");
     NCMaterialRemodelingQuantityXMLVec = _xmlData->getElements("RemodelingQuantity");
+
+	normalizeQuantities = _xmlData->findElement("NormalizeQuantities");
 
     // generate name->integer index map for NC materials
     // generate array of pointers to NC materials according to user specification
@@ -991,6 +994,8 @@ void NCMaterialsPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     automaton = potts->getAutomaton();
 	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton);
 
+	normalizeQuantities = _xmlData->findElement("NormalizeQuantities");
+
 	// Field diffusion coefficients specification
 
 	CC3DXMLElementList NCMaterialDiffusivityXMLVec = _xmlData->getElements("NCMaterialDiffusivity");
@@ -1219,7 +1224,7 @@ std::vector<float> NCMaterialsPlugin::checkQuantities(std::vector<float> _qtyVec
 		else if (_qtyVec[i] > 1.0) { _qtyVec[i] = 1.0; }
 		qtySum += _qtyVec[i];
     }
-	if (qtySum > 1.0) { for (int i = 0; i < _qtyVec.size(); ++i) { _qtyVec[i] /= qtySum; } }
+	if (qtySum > 1.0 || (normalizeQuantities && qtySum > 0.0)) { for (int i = 0; i < _qtyVec.size(); ++i) { _qtyVec[i] /= qtySum; } }
     return _qtyVec;
 }
 

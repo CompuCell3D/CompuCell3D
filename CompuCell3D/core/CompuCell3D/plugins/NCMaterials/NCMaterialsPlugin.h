@@ -92,6 +92,8 @@ namespace CompuCell3D {
 		Automaton *automaton;
 		bool weightDistance;
 
+		bool normalizeQuantities;
+
 		DiffusionSolverFE_CPU *pdeSolverFE_CPU;
 		ReactionDiffusionSolverFE *pdeSolverRDFE;
 
