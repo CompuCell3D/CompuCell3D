@@ -525,168 +525,142 @@ void DiffusionSolverFE_CPU::getMinMaxBox(bool useBoxWatcher, int threadNumber, D
 // }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void DiffusionSolverFE_CPU::boundaryConditionInit(int idx){
-    // static_cast<Cruncher *>(this)->boundaryConditionInitImpl(idx);
-    // return;
-        
-	ConcentrationField_t & _array = *this->getConcentrationField(idx);    
-    
-	bool detailedBCFlag=bcSpecFlagVec[idx];
-	BoundaryConditionSpecifier & bcSpec=bcSpecVec[idx];
+void DiffusionSolverFE_CPU::boundaryConditionInit(int idx) {
+	// static_cast<Cruncher *>(this)->boundaryConditionInitImpl(idx);
+	// return;
+
+	ConcentrationField_t & _array = *this->getConcentrationField(idx);
+
+	bool detailedBCFlag = bcSpecFlagVec[idx];
+	BoundaryConditionSpecifier & bcSpec = bcSpecVec[idx];
 	DiffusionData & diffData = diffSecrFieldTuppleVec[idx].diffData;
-	float deltaX=diffData.deltaX;
+	float deltaX = diffData.deltaX;
 
 	//ConcentrationField_t & _array=*concentrationField;
-	if (!detailedBCFlag){
+	if (!detailedBCFlag) {
 		//dealing with periodic boundary condition in x direction
 		//have to use internalDim-1 in the for loop as max index because otherwise with extra shitf if we used internalDim we run outside the lattice
-		if(periodicBoundaryCheckVector[0]){//periodic boundary conditions were set in x direction	
+		int x1Set = 0;
+		int x2Set = fieldDim.x + 1;
+		int x1Get, x2Get;
+		if (periodicBoundaryCheckVector[0]) {
+			//periodic boundary conditions were set in x direction
+
 			//x - periodic
-			int x=0;
-			for(int y=0 ; y< workFieldDim.y-1; ++y)
-				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-					_array.setDirect(x,y,z,_array.getDirect(fieldDim.x,y,z));
-                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(fieldDim.x,y,z));                    
-				}
-
-				x=fieldDim.x+1;
-				for(int y=0 ; y< workFieldDim.y-1; ++y)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(1,y,z));
-                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(1,y,z));
-					}
-		}else{//noFlux BC
-			int x=0;
-			for(int y=0 ; y< workFieldDim.y-1; ++y)
-				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-					_array.setDirect(x,y,z,_array.getDirect(x+1,y,z));
-                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x+1,y,z));
-				}
-
-				x=fieldDim.x+1;
-				for(int y=0 ; y< workFieldDim.y-1; ++y)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(x-1,y,z));
-                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x-1,y,z));
-					}
+			x1Get = fieldDim.x;
+			x2Get = 1;
 		}
+		else {
+			//noFlux BC
+
+			x1Get = 1;
+			x2Get = fieldDim.x;
+		}
+		for (int y = 0; y< workFieldDim.y - 1; ++y)
+			for (int z = 0; z<workFieldDim.z - 1; ++z) {
+				_array.setDirect(x1Set, y, z, _array.getDirect(x1Get, y, z));
+				_array.setDirect(x2Set, y, z, _array.getDirect(x2Get, y, z));
+			}
 
 		//dealing with periodic boundary condition in y direction
-		if(periodicBoundaryCheckVector[1]){//periodic boundary conditions were set in x direction
-			int y=0;
-			for(int x=0 ; x< workFieldDim.x-1; ++x)
-				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-					_array.setDirect(x,y,z,_array.getDirect(x,fieldDim.y,z));
-                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,fieldDim.y,z));
-				}
+		int y1Set = 0;
+		int y2Set = fieldDim.y + 1;
+		int y1Get, y2Get;
+		if (periodicBoundaryCheckVector[1]) {
+			//periodic boundary conditions were set in x direction
 
-				y=fieldDim.y+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(x,1,z));
-                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,1,z));
-					}
-		}else{//NoFlux BC
-			int y=0;
-			for(int x=0 ; x< workFieldDim.x-1; ++x)
-				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-					_array.setDirect(x,y,z,_array.getDirect(x,y+1,z));
-                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y+1,z));
-				}
-
-				y=fieldDim.y+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(x,y-1,z));
-                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y-1,z));
-					}
+			y1Get = fieldDim.y;
+			y2Get = 1;
 		}
+		else {
+			//NoFlux BC
+
+			y1Get = 1;
+			y2Get = fieldDim.y;
+		}
+		for (int x = 0; x< workFieldDim.x - 1; ++x)
+			for (int z = 0; z<workFieldDim.z - 1; ++z) {
+				_array.setDirect(x, y1Set, z, _array.getDirect(x, y1Get, z));
+				_array.setDirect(x, y2Set, z, _array.getDirect(x, y2Get, z));
+			}
 
 		//dealing with periodic boundary condition in z direction
-		if(periodicBoundaryCheckVector[2]){//periodic boundary conditions were set in x direction
-			int z=0;
-			for(int x=0 ; x< workFieldDim.x-1; ++x)
-				for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-					_array.setDirect(x,y,z,_array.getDirect(x,y,fieldDim.z));
-                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,fieldDim.z));
-				}
+		int z1Set = 0;
+		int z2Set = fieldDim.z + 1;
+		int z1Get, z2Get;
+		if (periodicBoundaryCheckVector[2]) {
+			//periodic boundary conditions were set in x direction
 
-				z=fieldDim.z+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-						_array.setDirect(x,y,z,_array.getDirect(x,y,1));
-                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,1));
-					}
-		}else{//Noflux BC
-			int z=0;
-			for(int x=0 ; x< workFieldDim.x-1; ++x)
-				for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-					_array.setDirect(x,y,z,_array.getDirect(x,y,z+1));
-                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,z+1));
-				}
-
-				z=fieldDim.z+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-						_array.setDirect(x,y,z,_array.getDirect(x,y,z-1));
-                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,z-1));
-					}
+			z1Get = fieldDim.z;
+			z2Get = 1;
 		}
+		else {
+			//Noflux BC
 
-	}else{
+			z1Get = 1;
+			z2Get = fieldDim.z;
+		}
+		for (int x = 0; x< workFieldDim.x - 1; ++x)
+			for (int y = 0; y<workFieldDim.y - 1; ++y) {
+				_array.setDirect(x, y, z1Set, _array.getDirect(x, y, z1Get));
+				_array.setDirect(x, y, z2Set, _array.getDirect(x, y, z2Get));
+			}
+
+	}
+	else {
 		//detailed specification of boundary conditions
 		// X axis
-		if (bcSpec.planePositions[0]==BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[1]==BoundaryConditionSpecifier::PERIODIC){
-			int x=0;
-			for(int y=0 ; y< workFieldDim.y-1; ++y)
-				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-					_array.setDirect(x,y,z,_array.getDirect(fieldDim.x,y,z));
-                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(fieldDim.x,y,z));
+		if (bcSpec.planePositions[0] == BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[1] == BoundaryConditionSpecifier::PERIODIC) {
+			int x1Set = 0;
+			int x1Get = fieldDim.x;
+			int x2Set = fieldDim.x + 1;
+			int x2Get = 1;
+			for (int y = 0; y< workFieldDim.y - 1; ++y)
+				for (int z = 0; z<workFieldDim.z - 1; ++z) {
+					_array.setDirect(x1Set, y, z, _array.getDirect(x1Get, y, z));
+					_array.setDirect(x2Set, y, z, _array.getDirect(x2Get, y, z));
 				}
 
-				x=fieldDim.x+1;
-				for(int y=0 ; y< workFieldDim.y-1; ++y)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(1,y,z));
-                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(1,y,z));
+		}
+		else {
+
+			if (bcSpec.planePositions[0] == BoundaryConditionSpecifier::CONSTANT_VALUE) {
+				float cValue = bcSpec.values[0];
+				int x = 0;
+				for (int y = 0; y< workFieldDim.y - 1; ++y)
+					for (int z = 0; z<workFieldDim.z - 1; ++z) {
+						_array.setDirect(x, y, z, cValue);
 					}
 
-		}else{
-            
-			if (bcSpec.planePositions[0]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[0];
-				int x=0;
-				for(int y=0 ; y< workFieldDim.y-1; ++y)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,cValue);
-					}
+			}
+			else if (bcSpec.planePositions[0] == BoundaryConditionSpecifier::CONSTANT_DERIVATIVE) {
+				float cdValue = bcSpec.values[0] * deltaX;
+				int x = 0;
 
-			}else if(bcSpec.planePositions[0]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[0];
-				int x=0;
-
-				for(int y=0 ; y< workFieldDim.y-1; ++y)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(1,y,z)-cdValue*deltaX);
+				for (int y = 0; y< workFieldDim.y - 1; ++y)
+					for (int z = 0; z<workFieldDim.z - 1; ++z) {
+						_array.setDirect(x, y, z, _array.getDirect(1, y, z) - cdValue);
 					}
 
 			}
 
-			if (bcSpec.planePositions[1]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[1];
-				int x=fieldDim.x+1;
-				for(int y=0 ; y< workFieldDim.y-1; ++y)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,cValue);
+			if (bcSpec.planePositions[1] == BoundaryConditionSpecifier::CONSTANT_VALUE) {
+				float cValue = bcSpec.values[1];
+				int x = fieldDim.x + 1;
+				for (int y = 0; y< workFieldDim.y - 1; ++y)
+					for (int z = 0; z<workFieldDim.z - 1; ++z) {
+						_array.setDirect(x, y, z, cValue);
 					}
 
-			}else if(bcSpec.planePositions[1]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[1];
-				int x=fieldDim.x+1;
+			}
+			else if (bcSpec.planePositions[1] == BoundaryConditionSpecifier::CONSTANT_DERIVATIVE) {
+				float cdValue = bcSpec.values[1] * deltaX;
+				int xSet = fieldDim.x + 1;
+				int xGet = fieldDim.x;
 
-				for(int y=0 ; y< workFieldDim.y-1; ++y)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(x-1,y,z)+cdValue*deltaX);
+				for (int y = 0; y< workFieldDim.y - 1; ++y)
+					for (int z = 0; z<workFieldDim.z - 1; ++z) {
+						_array.setDirect(xSet, y, z, _array.getDirect(xGet, y, z) + cdValue);
 					}
 
 			}
@@ -694,114 +668,116 @@ void DiffusionSolverFE_CPU::boundaryConditionInit(int idx){
 		}
 		//detailed specification of boundary conditions
 		// Y axis
-		if (bcSpec.planePositions[2]==BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[3]==BoundaryConditionSpecifier::PERIODIC){
-			int y=0;
-			for(int x=0 ; x< workFieldDim.x-1; ++x)
-				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-					_array.setDirect(x,y,z,_array.getDirect(x,fieldDim.y,z));
-                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,fieldDim.y,z));
+		if (bcSpec.planePositions[2] == BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[3] == BoundaryConditionSpecifier::PERIODIC) {
+			int y1Set = 0;
+			int y1Get = fieldDim.y;
+			int y2Set = fieldDim.y + 1;
+			int y2Get = 1;
+			for (int x = 0; x< workFieldDim.x - 1; ++x)
+				for (int z = 0; z<workFieldDim.z - 1; ++z) {
+					_array.setDirect(x, y1Set, z, _array.getDirect(x, y1Get, z));
+					_array.setDirect(x, y2Set, z, _array.getDirect(x, y2Get, z));
 				}
 
-				y=fieldDim.y+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(x,1,z));
-                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,1,z));
+		}
+		else {
+
+			if (bcSpec.planePositions[2] == BoundaryConditionSpecifier::CONSTANT_VALUE) {
+				float cValue = bcSpec.values[2];
+				int y = 0;
+				for (int x = 0; x< workFieldDim.x - 1; ++x)
+					for (int z = 0; z<workFieldDim.z - 1; ++z) {
+						_array.setDirect(x, y, z, cValue);
 					}
 
-		}else{
+			}
+			else if (bcSpec.planePositions[2] == BoundaryConditionSpecifier::CONSTANT_DERIVATIVE) {
+				float cdValue = bcSpec.values[2] * deltaX;
+				int ySet = 0;
+				int yGet = 1;
 
-			if (bcSpec.planePositions[2]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[2];
-				int y=0;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,cValue);
-					}
-
-			}else if(bcSpec.planePositions[2]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[2];
-				int y=0;
-
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(x,1,z)-cdValue*deltaX);
+				for (int x = 0; x< workFieldDim.x - 1; ++x)
+					for (int z = 0; z<workFieldDim.z - 1; ++z) {
+						_array.setDirect(x, ySet, z, _array.getDirect(x, yGet, z) - cdValue);
 					}
 
 			}
 
-			if (bcSpec.planePositions[3]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[3];
-				int y=fieldDim.y+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,cValue);
+			if (bcSpec.planePositions[3] == BoundaryConditionSpecifier::CONSTANT_VALUE) {
+				float cValue = bcSpec.values[3];
+				int y = fieldDim.y + 1;
+				for (int x = 0; x< workFieldDim.x - 1; ++x)
+					for (int z = 0; z<workFieldDim.z - 1; ++z) {
+						_array.setDirect(x, y, z, cValue);
 					}
 
-			}else if(bcSpec.planePositions[3]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[3];
-				int y=fieldDim.y+1;
+			}
+			else if (bcSpec.planePositions[3] == BoundaryConditionSpecifier::CONSTANT_DERIVATIVE) {
+				float cdValue = bcSpec.values[3] * deltaX;
+				int ySet = fieldDim.y + 1;
+				int yGet = fieldDim.y;
 
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(x,y-1,z)+cdValue*deltaX);
+				for (int x = 0; x< workFieldDim.x - 1; ++x)
+					for (int z = 0; z<workFieldDim.z - 1; ++z) {
+						_array.setDirect(x, ySet, z, _array.getDirect(x, yGet, z) + cdValue);
 					}
 			}
 
 		}
 		//detailed specification of boundary conditions
 		// Z axis
-		if (bcSpec.planePositions[4]==BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[5]==BoundaryConditionSpecifier::PERIODIC){
-			int z=0;
-			for(int x=0 ; x< workFieldDim.x-1; ++x)
-				for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-					_array.setDirect(x,y,z,_array.getDirect(x,y,fieldDim.z));
-                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,fieldDim.z));
+		if (bcSpec.planePositions[4] == BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[5] == BoundaryConditionSpecifier::PERIODIC) {
+			int z1Set = 0;
+			int z1Get = fieldDim.z;
+			int z2Set = fieldDim.z + 1;
+			int z2Get = 1;
+			for (int x = 0; x< workFieldDim.x - 1; ++x)
+				for (int y = 0; y<workFieldDim.y - 1; ++y) {
+					_array.setDirect(x, y, z1Set, _array.getDirect(x, y, z1Get));
+					_array.setDirect(x, y, z2Set, _array.getDirect(x, y, z2Get));
 				}
 
-				z=fieldDim.z+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-						_array.setDirect(x,y,z,_array.getDirect(x,y,1));
-                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,1));
+		}
+		else {
+
+			if (bcSpec.planePositions[4] == BoundaryConditionSpecifier::CONSTANT_VALUE) {
+				float cValue = bcSpec.values[4];
+				int z = 0;
+				for (int x = 0; x< workFieldDim.x - 1; ++x)
+					for (int y = 0; y<workFieldDim.y - 1; ++y) {
+						_array.setDirect(x, y, z, cValue);
 					}
 
-		}else{
+			}
+			else if (bcSpec.planePositions[4] == BoundaryConditionSpecifier::CONSTANT_DERIVATIVE) {
+				float cdValue = bcSpec.values[4] * deltaX;
+				int zSet = 0;
+				int zGet = 1;
 
-			if (bcSpec.planePositions[4]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[4];
-				int z=0;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-						_array.setDirect(x,y,z,cValue);
-					}
-
-			}else if(bcSpec.planePositions[4]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[4];
-				int z=0;
-
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-						_array.setDirect(x,y,z,_array.getDirect(x,y,1)-cdValue*deltaX);
+				for (int x = 0; x< workFieldDim.x - 1; ++x)
+					for (int y = 0; y<workFieldDim.y - 1; ++y) {
+						_array.setDirect(x, y, zSet, _array.getDirect(x, y, zGet) - cdValue);
 					}
 
 			}
 
-			if (bcSpec.planePositions[5]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[5];
-				int z=fieldDim.z+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-						_array.setDirect(x,y,z,cValue);
+			if (bcSpec.planePositions[5] == BoundaryConditionSpecifier::CONSTANT_VALUE) {
+				float cValue = bcSpec.values[5];
+				int z = fieldDim.z + 1;
+				for (int x = 0; x< workFieldDim.x - 1; ++x)
+					for (int y = 0; y<workFieldDim.y - 1; ++y) {
+						_array.setDirect(x, y, z, cValue);
 					}
 
-			}else if(bcSpec.planePositions[5]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[5];
-				int z=fieldDim.z+1;
+			}
+			else if (bcSpec.planePositions[5] == BoundaryConditionSpecifier::CONSTANT_DERIVATIVE) {
+				float cdValue = bcSpec.values[5] * deltaX;
+				int zSet = fieldDim.z + 1;
+				int zGet = fieldDim.z;
 
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-						_array.setDirect(x,y,z,_array.getDirect(x,y,z-1)+cdValue*deltaX);
+				for (int x = 0; x< workFieldDim.x - 1; ++x)
+					for (int y = 0; y<workFieldDim.y - 1; ++y) {
+						_array.setDirect(x, y, zSet, _array.getDirect(x, y, zGet) + cdValue);
 					}
 			}
 
