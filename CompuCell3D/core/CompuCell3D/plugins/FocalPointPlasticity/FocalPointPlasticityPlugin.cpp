@@ -804,8 +804,13 @@ double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt,const 
 	WatchableField3D<CellG *> *fieldG =(WatchableField3D<CellG *> *) potts->getCellFieldG();
 	//visit point neighbors of newCell and see if within of specified range there is another cell with which newCell can make a junction
 
+	// Randomly shuffle neighbor selection
+	std::vector<unsigned int> randNeighborIndex = std::vector<unsigned int>(maxNeighborIndexLocal + 1, 0);
+	for (unsigned int nIdx = 0; nIdx <= maxNeighborIndexLocal; ++nIdx) randNeighborIndex[nIdx] = nIdx;
+	std::random_shuffle(randNeighborIndex.begin(), randNeighborIndex.end());
+
 	for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndexLocal ; ++nIdx ){
-		neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
+		neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), randNeighborIndex[nIdx]);
 		if(!neighbor.distance){
 			//if distance is 0 then the neighbor returned is invalid
 			continue;
@@ -899,8 +904,13 @@ double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point
 	WatchableField3D<CellG *> *fieldG =(WatchableField3D<CellG *> *) potts->getCellFieldG();
 	//visit point neighbors of newCell and see if within of specified range there is another cell with which newCell can make a junction
 
+	// Randomly shuffle neighbor selection
+	std::vector<unsigned int> randNeighborIndex = std::vector<unsigned int>(maxNeighborIndexLocal + 1, 0);
+	for (unsigned int nIdx = 0; nIdx <= maxNeighborIndexLocal; ++nIdx) randNeighborIndex[nIdx] = nIdx;
+	std::random_shuffle(randNeighborIndex.begin(), randNeighborIndex.end());
+
 	for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndexLocal ; ++nIdx ){
-		neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
+		neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), randNeighborIndex[nIdx]);
 		if(!neighbor.distance){
 			//if distance is 0 then the neighbor returned is invalid
 			continue;
