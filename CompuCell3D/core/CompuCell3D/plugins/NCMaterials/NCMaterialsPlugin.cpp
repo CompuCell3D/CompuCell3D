@@ -1336,6 +1336,15 @@ void NCMaterialsPlugin::setNCAdhesionByCellAndMaterialName(const CellG *_cell, s
 	setNCAdhesionByCellAndMaterialIndex(_cell, getNCMaterialIndexByName(_NCMaterialName), _val);
 }
 
+void NCMaterialsPlugin::assignNewNCAdhesionCoefficients(const CellG * _cell, int _numMtls) {
+	int numMtls;
+	if (_numMtls < 0) numMtls = numberOfMaterials;
+	else numMtls = _numMtls;
+	std::vector<float> AdhesionCoefficientsNew(numMtls);
+	std::vector<float> & AdhesionCoefficients = NCMaterialCellDataAccessor.get(_cell->extraAttribPtr)->AdhesionCoefficients;
+	AdhesionCoefficients = AdhesionCoefficientsNew;
+}
+
 float NCMaterialsPlugin::getRemodelingQuantityByName(const CellG * _cell, std::string _NCMaterialName) {
     return getRemodelingQuantityByIndex(_cell, getNCMaterialIndexByName(_NCMaterialName));
 }

@@ -193,7 +193,7 @@ namespace CompuCell3D {
 		void setNCAdhesionByCell(const CellG *_cell, std::vector<float> _adhVec);
 		void setNCAdhesionByCellAndMaterialIndex(const CellG *_cell, int _idx, float _val);
 		void setNCAdhesionByCellAndMaterialName(const CellG *_cell, std::string _NCMaterialName, float _val);
-
+		void assignNewNCAdhesionCoefficients(const CellG * _cell, int _numMtls=-1);
         // functions used to retrieve extracellular material cell definitions
 
 		float getRemodelingQuantityByName(const CellG * _cell, std::string _NCMaterialName);

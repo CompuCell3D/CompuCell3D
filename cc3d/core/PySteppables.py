@@ -1563,10 +1563,16 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         # NCMaterials
         if self.NCMaterialsPlugin:
+            num_mtls = self.NCMaterialsPlugin.getNumberOfMaterials()
+
             c_vec = self.NCMaterialsPlugin.getRemodelingQuantityVector(source_cell)
-            numMtls = self.NCMaterialsPlugin.getNumberOfMaterials()
-            self.NCMaterialsPlugin.assignNewRemodelingQuantityVector(target_cell, numMtls)
+            self.NCMaterialsPlugin.assignNewRemodelingQuantityVector(target_cell, num_mtls)
             self.NCMaterialsPlugin.setRemodelingQuantityVector(target_cell, c_vec)
+
+            c_vec = self.NCMaterialsPlugin.getNCAdhesionByCell(source_cell)
+            self.NCMaterialsPlugin.assignNewNCAdhesionCoefficients(target_cell, num_mtls)
+            self.NCMaterialsPlugin.setNCAdhesionByCell(target_cell, c_vec)
+
 
     @deprecated(version='4.0.0', reason="You should use : reassign_cluster_id")
     def reassignClusterId(self, _cell, _clusterId):
