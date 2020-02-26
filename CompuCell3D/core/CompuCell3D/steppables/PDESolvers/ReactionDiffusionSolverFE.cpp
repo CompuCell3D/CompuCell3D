@@ -121,7 +121,7 @@ void ReactionDiffusionSolverFE::Scale(std::vector<float> const &maxDiffConstVec,
     }
 
     //calculate maximumNumber Of calls to the diffusion solver
-    int maxNumberOfDiffusionCalls = *max_element(scalingExtraMCSVec.begin(), scalingExtraMCSVec.end());
+    maxNumberOfDiffusionCalls = *max_element(scalingExtraMCSVec.begin(), scalingExtraMCSVec.end());
 
     if (maxNumberOfDiffusionCalls == 0)
         return;
@@ -793,12 +793,13 @@ void ReactionDiffusionSolverFE::prepCellTypeField(int idx) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ReactionDiffusionSolverFE::step(const unsigned int _currentStep) {
 
+	bool stepInitializing = true;
 
     if (scaleSecretion) {
         for (int callIdx = 0; callIdx < maxNumberOfDiffusionCalls; ++callIdx) {
 
             for (int idx = 0; idx < numberOfFields; ++idx) {
-                prepCellTypeField(idx); // here we initialize celltype array  boundaries - we do it once per  MCS
+                if (stepInitializing) prepCellTypeField(idx); // here we initialize celltype array  boundaries - we do it once per  MCS
                 boundaryConditionInit(idx);//initializing boundary conditions
                 solveRDEquationsSingleField(idx); //reaction-diffusion
                 //secretion
@@ -812,6 +813,8 @@ void ReactionDiffusionSolverFE::step(const unsigned int _currentStep) {
                 ConcentrationField_t & concentrationField = *concentrationFieldVector[fieldIdx];
                 concentrationField.swapArrays();
             }
+
+			stepInitializing = false;
         }
     }
     else { //solver behaves as FlexiblereactionDiffusionSolver - i.e. secretion is done at once followed by multiple diffusive steps
@@ -827,7 +830,7 @@ void ReactionDiffusionSolverFE::step(const unsigned int _currentStep) {
 
             //reaction-diffusive steps
             for (int idx = 0; idx < numberOfFields; ++idx) {
-                prepCellTypeField(idx); // here we initialize celltype array  boundaries - we do it once per  MCS
+                if (stepInitializing) prepCellTypeField(idx); // here we initialize celltype array  boundaries - we do it once per  MCS
                 boundaryConditionInit(idx);//initializing boundary conditions
                 solveRDEquationsSingleField(idx); //reaction-diffusion
             }
@@ -838,6 +841,7 @@ void ReactionDiffusionSolverFE::step(const unsigned int _currentStep) {
             }
         }
 
+		stepInitializing = false;
     }
 
 
@@ -1904,8 +1908,19 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
 
                             updatedConcentration = (concentrationSum + varDiffSumTerm) + (1 - decayCoef[currentCellType])*currentConcentration;
 
-                            updatedConcentration += dt*ev.eval(); //reaction terms are scaled here all other constants e.g. diffusion or secretion constants are scaled in the Scale function
-                            concentrationField.setDirectSwap(x, y, z, updatedConcentration);//updating scratch
+							//reaction terms are scaled here all other constants e.g. diffusion or secretion constants are scaled in the Scale function
+                            updatedConcentration += dt*ev.eval();
+
+							//imposing artificial limits on allowed concentration
+							if (diffData.useThresholds) {
+								if (updatedConcentration>diffData.maxConcentration)
+									updatedConcentration = diffData.maxConcentration;
+								if (updatedConcentration<diffData.minConcentration)
+									updatedConcentration = diffData.minConcentration;
+							}
+
+							//updating scratch
+                            concentrationField.setDirectSwap(x, y, z, updatedConcentration);
                             
 
                         }
@@ -1984,8 +1999,19 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
 
                             updatedConcentration = (concentrationSum + varDiffSumTerm) + (1 - decayCoef[currentCellType])*currentConcentration;
 
-                            updatedConcentration += dt*ev.eval(); //reaction terms are scaled here all other constants e.g. diffusion or secretion constants are scaled in the Scale function
-                            concentrationField.setDirectSwap(x, y, z, updatedConcentration);//updating scratch                            
+							//reaction terms are scaled here all other constants e.g. diffusion or secretion constants are scaled in the Scale function
+                            updatedConcentration += dt*ev.eval();
+
+							//imposing artificial limits on allowed concentration
+							if (diffData.useThresholds) {
+								if (updatedConcentration>diffData.maxConcentration)
+									updatedConcentration = diffData.maxConcentration;
+								if (updatedConcentration<diffData.minConcentration)
+									updatedConcentration = diffData.minConcentration;
+							}
+
+							//updating scratch
+                            concentrationField.setDirectSwap(x, y, z, updatedConcentration);
 
                         }
 
@@ -2215,6 +2241,8 @@ void ReactionDiffusionSolverFE::update(CC3DXMLElement *_xmlData, bool _fullInitF
         cellTypeVariableName = _xmlData->getFirstElement("CellTypeVariableName")->getDouble();
     if (_xmlData->findElement("UseBoxWatcher"))
         useBoxWatcher = true;
+	if (_xmlData->findElement("AutoscaleDiffusion"))
+		autoscaleDiffusion = true;
 
     CC3DXMLElementList diffFieldXMLVec = _xmlData->getElements("DiffusionField");
     for (unsigned int i = 0; i < diffFieldXMLVec.size(); ++i) {
