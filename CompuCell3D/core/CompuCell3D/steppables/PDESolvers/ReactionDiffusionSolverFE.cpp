@@ -121,7 +121,7 @@ void ReactionDiffusionSolverFE::Scale(std::vector<float> const &maxDiffConstVec,
     }
 
     //calculate maximumNumber Of calls to the diffusion solver
-    int maxNumberOfDiffusionCalls = *max_element(scalingExtraMCSVec.begin(), scalingExtraMCSVec.end());
+    maxNumberOfDiffusionCalls = *max_element(scalingExtraMCSVec.begin(), scalingExtraMCSVec.end());
 
     if (maxNumberOfDiffusionCalls == 0)
         return;
