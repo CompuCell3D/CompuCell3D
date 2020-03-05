@@ -182,547 +182,547 @@ using namespace CompuCell3D;
 
 %}
 
-//ConnectivityLocalFlex
-
-%include <CompuCell3D/plugins/ConnectivityLocalFlex/ConnectivityLocalFlexData.h>
-%template (connectivitylocalflexaccessor) BasicClassAccessor<ConnectivityLocalFlexData>; //necessary to get ConnectivityLocalFlexData accessor working
-PLUGINACCESSOR(ConnectivityLocalFlex)
-
-
-//ConnectivityGlobal
-
-%include <CompuCell3D/plugins/ConnectivityGlobal/ConnectivityGlobalData.h>
-%template (connectivityGlobalaccessor) BasicClassAccessor<ConnectivityGlobalData>; //necessary to get ConnectivityGlobalData accessor working
-PLUGINACCESSOR(ConnectivityGlobal)
-
-
-// //LengthConstraintLocalFlex
-// %include <CompuCell3D/plugins/LengthConstraintLocalFlex/LengthConstraintLocalFlexData.h>
-// %template (lengthconstraintlocalflexccessor) BasicClassAccessor<LengthConstraintLocalFlexData>; //necessary to get LengthConstraintLocalFlexData accessor working
-
-// %include <CompuCell3D/plugins/LengthConstraintLocalFlex/LengthConstraintLocalFlexPlugin.h>
-
-// %inline %{
-   // LengthConstraintLocalFlexPlugin * getLengthConstraintLocalFlexPlugin(){
-         // return (LengthConstraintLocalFlexPlugin *)Simulator::pluginManager.get("LengthConstraintLocalFlex");
-    // }
-// %}
-
-
-
-//LengthConstraint - includes local flax option
-%include <CompuCell3D/plugins/LengthConstraint/LengthConstraintData.h>
-%template (lengthconstraintccessor) BasicClassAccessor<LengthConstraintData>; //necessary to get LengthConstraintData accessor working
-
-%include <CompuCell3D/plugins/LengthConstraint/LengthConstraintPlugin.h>
-
-%inline %{
-   LengthConstraintPlugin * getLengthConstraintPlugin(){
-         return (LengthConstraintPlugin *)Simulator::pluginManager.get("LengthConstraint");
-    }
-   LengthConstraintPlugin * getLengthConstraintLocalFlexPlugin(){
-         
-         Plugin  * ptr= Simulator::pluginManager.get("LengthConstraintLocalFlex");
-         
-         if (ptr){
-            return (LengthConstraintPlugin *)ptr;
-         }
-         
-         return (LengthConstraintPlugin *)Simulator::pluginManager.get("LengthConstraintLocalFlex");
-    }
-    
-    
-%}
-
-
-//%include <CompuCell3D/plugins/ChemotaxisSimple/ChemotaxisSimpleEnergy.h>
+////ConnectivityLocalFlex
 //
-////Chemotaxis Plugin
+//%include <CompuCell3D/plugins/ConnectivityLocalFlex/ConnectivityLocalFlexData.h>
+//%template (connectivitylocalflexaccessor) BasicClassAccessor<ConnectivityLocalFlexData>; //necessary to get ConnectivityLocalFlexData accessor working
+//PLUGINACCESSOR(ConnectivityLocalFlex)
 //
-%include <CompuCell3D/plugins/Chemotaxis/ChemotaxisData.h>
-PLUGINACCESSOR(Chemotaxis)
-
-
-////plugins
-//// %include <CompuCell3D/plugins/Mitosis/MitosisParseData.h>
-%include <CompuCell3D/plugins/Mitosis/MitosisPlugin.h>
-%include <CompuCell3D/plugins/Mitosis/MitosisSimplePlugin.h>
-
-////Volume Tracker Plugin
-PLUGINACCESSOR(VolumeTracker)
-
-
-//CenterOfMass Plugin
-PLUGINACCESSOR(CenterOfMass)
-
-//NeighborPlugin
-
-%include <CompuCell3D/plugins/NeighborTracker/NeighborTracker.h>
-
-%template (neighbortrackeraccessor) BasicClassAccessor<NeighborTracker>; //necessary to get NeighborTracker accessor working
-%template (nsdSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::NeighborSurfaceData> , CompuCell3D::NeighborSurfaceData>;
-// %template (nsdSetPyItr) STLPyIterator<std::set<CompuCell3D::NeighborSurfaceData> >;
-%template (neighborsurfacedataset) std::set<CompuCell3D::NeighborSurfaceData>; //necessary to get basis set functionality working
-
-PLUGINACCESSOR(NeighborTracker)
-
-
-%include <CompuCell3D/plugins/PixelTracker/PixelTracker.h>
-%template (PixelTrackerAccessor) BasicClassAccessor<PixelTracker>; //necessary to get PixelTracker accessor working
-// #define std::set<CompuCell3D::PixelTrackerData>::value_type CompuCell3D::PixelTrackerData
-%template (PixelTrackerDataset) std::set<CompuCell3D::PixelTrackerData>; //necessary to get basis set functionality working
-%template (pixelSetPyItr) STLPyIteratorRefRetType< std::set<CompuCell3D::PixelTrackerData>,CompuCell3D::PixelTrackerData >; 
-// %template (pixelSetPyItr) STLPyIterator<std::set<CompuCell3D::PixelTrackerData> >;
-PLUGINACCESSOR(PixelTracker)
-
-
-%include <CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTracker.h>
-%template (BoundaryPixelTrackerAccessor) BasicClassAccessor<BoundaryPixelTracker>; //necessary to get BoundaryPixelTracker accessor working
-%template (BoundaryPixelTrackerDataset) std::set<CompuCell3D::BoundaryPixelTrackerData>; //necessary to get basis set functionality working
-%template (IntBoundaryPixelTrackerDataSetMap) std::map<int, std::set<CompuCell3D::BoundaryPixelTrackerData> >; //necessary to get basis set functionality working
-%template (boundaryPixelSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::BoundaryPixelTrackerData> , CompuCell3D::BoundaryPixelTrackerData >;
-// %template (boundaryPixelSetPyItr) STLPyIterator<std::set<CompuCell3D::BoundaryPixelTrackerData> >;
-PLUGINACCESSOR(BoundaryPixelTracker)
-
-
-%include <CompuCell3D/plugins/ContactLocalFlex/ContactLocalFlexData.h>
-%template (contactlocalflexcontainerccessor) BasicClassAccessor<ContactLocalFlexDataContainer>; //necessary to get ContactlocalFlexData accessor working
-%template (clfdSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::ContactLocalFlexData> , CompuCell3D::ContactLocalFlexData >;
-// %template (clfdSetPyItr) STLPyIterator<std::set<CompuCell3D::ContactLocalFlexData> >;
-%template (contactlocalflexdataset) std::set<CompuCell3D::ContactLocalFlexData>; //necessary to get basis set functionality working
-PLUGINACCESSOR(ContactLocalFlex)
-
-//ContactLocalProductPlugin
-%include <CompuCell3D/plugins/ContactLocalProduct/ContactLocalProductData.h>
-%template (contactproductflexccessor) BasicClassAccessor<ContactLocalProductData>; //necessary to get ContactLocalProductData accessor working
-%template (jVecPyItr) STLPyIteratorRefRetType<ContactLocalProductData::ContainerType_t,float>; //ContainerType_t - this is vector<float> in current implementation
-// %template (jVecPyItr) STLPyIterator<ContactLocalProductData::ContainerType_t>; //ContainerType_t - this is vector<float> in current implementation
-%template (contactproductdatacontainertype) std::vector<float>; //necessary to get basis vector functionality working
-PLUGINACCESSOR(ContactLocalProduct)
-
-//some functions to get more vector function to work
-
-%extend std::vector<float>{
-
-   void set(unsigned int pos, float _x){
-      if(pos <= self->size()-1 ){
-         self->operator[](pos)=_x;
-      }
-   }
-
-   float get(unsigned int pos){
-      if(pos <= self->size()-1 ){
-         return self->operator[](pos);
-      }
-   }
-
-
-}
-
-//ContactMultiCadPlugin
-%include <CompuCell3D/plugins/ContactMultiCad/ContactMultiCadData.h>
-%template (contactmulticaddataaccessor) BasicClassAccessor<ContactMultiCadData>; //necessary to get ContactMultiCadData accessor working
-PLUGINACCESSOR(ContactMultiCad)
-
-//AdhesionFlexPlugin
-%include <CompuCell3D/plugins/AdhesionFlex/AdhesionFlexData.h>
-%template (adhesionflexdataaccessor) BasicClassAccessor<AdhesionFlexData>; //necessary to get AdhesionFlexData accessor working
-PLUGINACCESSOR(AdhesionFlex)
-
-
-
-//CellOrientation Plugin
-%include <CompuCell3D/plugins/CellOrientation/CellOrientationVector.h>
-%template (cellOrientationVectorAccessor) BasicClassAccessor<CellOrientationVector>; //necessary to get CellOrientationVector accessor working
-%template (LambdaCellOrientationAccessor) BasicClassAccessor<LambdaCellOrientation>; //necessary to get LambdaCellOrientation accessor working
-PLUGINACCESSOR(CellOrientation)
-
- ////PolarizationVectorPlugin
-%include <CompuCell3D/plugins/PolarizationVector/PolarizationVector.h>
-%template (polarizationVectorAccessor) BasicClassAccessor<PolarizationVector>; //necessary to get CellOrientationVector accessor working
-PLUGINACCESSOR(PolarizationVector)
-
-//Elasticity Plugin
-%include <CompuCell3D/plugins/ElasticityTracker/ElasticityTracker.h>
-%template (elasticityTrackerAccessor) BasicClassAccessor<ElasticityTracker>; //necessary to get ElasticityTracker accessor working
-%template (elasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::ElasticityTrackerData> , CompuCell3D::ElasticityTrackerData >;
-// %template (elasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::ElasticityTrackerData> >;
-%template (elasticityTrackerDataSet) std::set<CompuCell3D::ElasticityTrackerData>; //necessary to get basic set functionality working
-PLUGINACCESSOR(ElasticityTracker)
-
-
-//Plasticity Plugin
-%include <CompuCell3D/plugins/PlasticityTracker/PlasticityTracker.h>
-%template (plasticityTrackerAccessor) BasicClassAccessor<PlasticityTracker>; //necessary to get PlasticityTracker accessor working
-%template (plasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::PlasticityTrackerData> , CompuCell3D::PlasticityTrackerData >;
-// %template (plasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::PlasticityTrackerData> >;
-%template (plasticityTrackerDataSet) std::set<CompuCell3D::PlasticityTrackerData>; //necessary to get basic set functionality working
-PLUGINACCESSOR(PlasticityTracker)
-
-////Focal Point Plasticity Plugin
 //
-%include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityTracker.h>
-%template (focalPointPlasticityTrackerAccessor) BasicClassAccessor<FocalPointPlasticityTracker>; //necessary to get PlasticityTracker accessor working
-%template (focalPointPlasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::FocalPointPlasticityTrackerData> , CompuCell3D::FocalPointPlasticityTrackerData >;
-%template (focalPointPlasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::FocalPointPlasticityTrackerData> >;
-%template (focalPointPlasticityTrackerDataSet) std::set<CompuCell3D::FocalPointPlasticityTrackerData>; //necessary to get basic set functionality working
-%template (focalPointPlasticityTrackerDataVector) std::vector<CompuCell3D::FocalPointPlasticityTrackerData>; //necessary to get basic set functionality working
-PLUGINACCESSOR(FocalPointPlasticity)
-
-
-//MomentOfInertia
-PLUGINACCESSOR(MomentOfInertia)
-
-
-//Secretion
-%include <CompuCell3D/plugins/Secretion/FieldSecretor.h>
-PLUGINACCESSOR(Secretion)
-
-%extend  CompuCell3D::FieldSecretor{
-
-  bool secreteInsideCellConstantConcentration(CellG * _cell, float _amount){
-    if (!self->pixelTrackerPlugin){
-        throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));        
-    }else{
-        return self->_secreteInsideCellConstantConcentration(_cell,_amount);
-    }               
-  }    
-
-FieldSecretorResult secreteInsideCellConstantConcentrationTotalAmount(CellG * _cell, float _amount) {
-	if (!self->pixelTrackerPlugin) {
-		throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));
-	}
-	else {
-		return self->_secreteInsideCellConstantConcentrationTotalCount(_cell,_amount);
-	}
-}
-
-
-  bool secreteInsideCell(CellG * _cell, float _amount){
-    if (!self->pixelTrackerPlugin){
-        throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));        
-    }else{
-        return self->_secreteInsideCell(_cell,_amount);
-    }               
-  }    
-  
-  FieldSecretorResult secreteInsideCellTotalCount(CellG * _cell, float _amount) {
-	  if (!self->pixelTrackerPlugin) {
-		  throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));
-	  }
-	  else {
-		  return self->_secreteInsideCellTotalCount(_cell,_amount);
-	  }
-  }
-
-
-  bool secreteInsideCellAtBoundary(CellG * _cell, float _amount){
-    if (!self->boundaryPixelTrackerPlugin){
-        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundary function"));        
-    }else{
-        return self->_secreteInsideCellAtBoundary(_cell,_amount);
-    }               
-  }    
-
-  FieldSecretorResult secreteInsideCellAtBoundaryTotalCount(CellG * _cell, float _amount) {
-	  if (!self->boundaryPixelTrackerPlugin) {
-		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundary function"));
-	  }
-	  else {
-		  return self->_secreteInsideCellAtBoundaryTotalCount(_cell,_amount);
-	  }
-  }
-
-
-  bool secreteInsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec){
-      
-    if (!self->boundaryPixelTrackerPlugin){
-        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundaryOnContactWith function"));        
-    }else{
-        return self->_secreteInsideCellAtBoundaryOnContactWith(_cell,_amount,_onContactVec);
-    }                     
-  }
-
-  FieldSecretorResult secreteInsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec) {
-
-	  if (!self->boundaryPixelTrackerPlugin) {
-		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundaryOnContactWith function"));
-	  }
-	  else {
-		  return self->_secreteInsideCellAtBoundaryOnContactWithTotalCount(_cell,_amount,_onContactVec);
-	  }
-  }
-
-
-  bool secreteOutsideCellAtBoundary(CellG * _cell, float _amount) {
-
-	  if (!self->boundaryPixelTrackerPlugin) {
-		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundary function"));
-	  }
-	  else {
-		  return self->_secreteOutsideCellAtBoundary(_cell,_amount);
-	  }
-  }
-
-  FieldSecretorResult secreteOutsideCellAtBoundaryTotalCount(CellG * _cell, float _amount) {
-
-	  if (!self->boundaryPixelTrackerPlugin) {
-		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundary function"));
-	  }
-	  else {
-		  return self->_secreteOutsideCellAtBoundaryTotalCount(_cell,_amount);
-	  }
-  }
-
-
-
-  bool secreteOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec){
-      
-    if (!self->boundaryPixelTrackerPlugin){
-        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundaryOnContactWith function"));        
-    }else{
-        return self->_secreteOutsideCellAtBoundaryOnContactWith(_cell,_amount,_onContactVec);
-    }                     
-  }  
-
-  FieldSecretorResult secreteOutsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _amount, const std::vector<unsigned char> & _onContactVec) {
-
-	  if (!self->boundaryPixelTrackerPlugin) {
-		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundaryOnContactWith function"));
-	  }
-	  else {
-		  return self->_secreteOutsideCellAtBoundaryOnContactWithTotalCount(_cell, _amount, _onContactVec);
-	  }
-  }
-
-
-//   bool secreteInsideCellAtCOM(CellG * _cell, float _amount){
-//     return self->_secreteInsideCellAtCOM(_cell,_amount);  
-//   }
-  
-  bool uptakeInsideCell(CellG * _cell, float _maxUptake, float _relativeUptake){
-    if (!self->pixelTrackerPlugin){
-        throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute uptakeInsideCell function"));        
-    }else{
-        return self->_uptakeInsideCell(_cell, _maxUptake, _relativeUptake);
-    }               
-  }    
-
-  FieldSecretorResult uptakeInsideCellTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake) {
-	  if (!self->pixelTrackerPlugin) {
-		  throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute uptakeInsideCell function"));
-	  }
-	  else {
-		  return self->_uptakeInsideCellTotalCount(_cell, _maxUptake, _relativeUptake);
-	  }
-  }
-
-
-  bool uptakeInsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake){
-    if (!self->pixelTrackerPlugin){
-        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundary function"));        
-    }else{
-        return self->_uptakeInsideCellAtBoundary(_cell,_maxUptake, _relativeUptake);
-    }               
-  }    
-
-  FieldSecretorResult uptakeInsideCellAtBoundaryTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake) {
-	  if (!self->pixelTrackerPlugin) {
-		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundary function"));
-	  }
-	  else {
-		  return self->_uptakeInsideCellAtBoundaryTotalCount(_cell, _maxUptake, _relativeUptake);
-	  }
-  }
-
-
-  bool uptakeInsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec){
-    if (!self->pixelTrackerPlugin){
-        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundaryOnContactWith function"));        
-    }else{
-        return self->_uptakeInsideCellAtBoundaryOnContactWith(_cell,_maxUptake, _relativeUptake,_onContactVec);
-    }               
-  }          
-
-  FieldSecretorResult uptakeInsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec) {
-	  if (!self->pixelTrackerPlugin) {
-		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundaryOnContactWith function"));
-	  }
-	  else {
-		  return self->_uptakeInsideCellAtBoundaryOnContactWithTotalCount(_cell, _maxUptake, _relativeUptake, _onContactVec);
-	  }
-  }
-
-
-
-  bool uptakeOutsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake){
-    if (!self->pixelTrackerPlugin){
-        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundary function"));        
-    }else{
-        return self->_uptakeOutsideCellAtBoundary(_cell,_maxUptake, _relativeUptake);
-    }               
-  }    
-
-  FieldSecretorResult uptakeOutsideCellAtBoundaryTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake) {
-	  if (!self->pixelTrackerPlugin) {
-		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundary function"));
-	  }
-	  else {
-		  return self->_uptakeOutsideCellAtBoundaryTotalCount(_cell, _maxUptake, _relativeUptake);
-	  }
-  }
-
-
-  bool uptakeOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec){
-    if (!self->pixelTrackerPlugin){
-        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundaryOnContactWith function"));        
-    }else{
-        return self->_uptakeOutsideCellAtBoundaryOnContactWith(_cell,_maxUptake, _relativeUptake,_onContactVec);
-    }               
-  }   
-
-  FieldSecretorResult uptakeOutsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec) {
-	  if (!self->pixelTrackerPlugin) {
-		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundaryOnContactWith function"));
-	  }
-	  else {
-		  return self->_uptakeOutsideCellAtBoundaryOnContactWithTotalCount(_cell, _maxUptake, _relativeUptake, _onContactVec);
-	  }
-  }
-
-
-
-//   bool uptakeInsideCellAtCOM(CellG * _cell, float _maxUptake, float _relativeUptake){
-//     return _uptakeInsideCellAtCOM(_cell,_maxUptake,_relativeUptake);
-//   }
-  
-}
-
-
-////Steppables
-%include <CompuCell3D/steppables/Mitosis/MitosisSteppable.h>
-
-////AutogeneratedModules2 - DO NOT REMOVE THIS LINE IT IS USED BY TWEDIT TO LOCATE CODE INSERTION POINT
-//BiasVectorSteppable_autogenerated2
-
-
-%include <CompuCell3D/steppables/BiasVectorSteppable/BiasVectorSteppable.h>
-
-
-
-%inline %{
-
- BiasVectorSteppable * getBiasVectorSteppable(){
-
-      return (BiasVectorSteppable *)Simulator::steppableManager.get("BiasVectorSteppable");
-
-   }
-
-
-
-%}
-
-//ImplicitMotility_autogenerated2
-
-
-%include <CompuCell3D/plugins/ImplicitMotility/ImplicitMotilityPlugin.h>
-
-
-
-%inline %{
-
- ImplicitMotilityPlugin * getImplicitMotilityPlugin(){
-
-      return (ImplicitMotilityPlugin *)Simulator::pluginManager.get("ImplicitMotility");
-
-   }
-
-
-
-%}
-
-////CurvatureCalculator_autogenerated2
+////ConnectivityGlobal
 //
-%include <CompuCell3D/plugins/CurvatureCalculator/CurvatureCalculatorPlugin.h>
-
-%inline %{
- CurvatureCalculatorPlugin * getCurvatureCalculatorPlugin(){
-      return (CurvatureCalculatorPlugin *)Simulator::pluginManager.get("CurvatureCalculator");
-   }
-
-%}
-
-//OrientedGrowth_autogenerated2
-%include <CompuCell3D/plugins/OrientedGrowth/OrientedGrowthData.h>
-%template (OrientedGrowthDataAccessorTemplate) BasicClassAccessor<OrientedGrowthData>; //necessary to get OrientedGrowthData accessor working in Python
-PLUGINACCESSOR(OrientedGrowth)
-
-////CleaverMeshDumper_autogenerated2
-
-%include <CompuCell3D/steppables/CleaverMeshDumper/CleaverMeshDumper.h>
-
-%inline %{
-    CleaverMeshDumper * getCleaverMeshDumper() {
-        return (CleaverMeshDumper *)Simulator::steppableManager.get("CleaverMeshDumper");
-    }
-    %}
-
-//%}
-//// // // //CGALMeshDumper_autogenerated2
-//// // //             
-//// // // %include <CompuCell3D/steppables/CGALMeshDumper/CGALMeshDumper.h>
-//// // // 
-//// // // %inline %{
-//// // //  CGALMeshDumper * getCGALMeshDumper(){
-//// // //       return (CGALMeshDumper *)Simulator::steppableManager.get("CGALMeshDumper");
-//// // //    }
-//// // // 
-//// // // %}
+//%include <CompuCell3D/plugins/ConnectivityGlobal/ConnectivityGlobalData.h>
+//%template (connectivityGlobalaccessor) BasicClassAccessor<ConnectivityGlobalData>; //necessary to get ConnectivityGlobalData accessor working
+//PLUGINACCESSOR(ConnectivityGlobal)
 //
-////ContactOrientation_autogenerated2
 //
-%include <CompuCell3D/plugins/ContactOrientation/ContactOrientationData.h>
-//necessary to get ContactOrientationData accessor working in Python
-%template (ContactOrientationDataAccessorTemplate) BasicClassAccessor<ContactOrientationData>; 
-PLUGINACCESSOR(ContactOrientation)
-
-//note that template Array3DCUDA has to use static_cast<T>(0) instead of T() to enable SWIG to properly generate wrappers for T=ubnsigned char using gcc compiler
-%template (Array3DCUDAunsignedchar) Array3DCUDA<unsigned char>; //necessary Array3DCUDA<unsigned char> working in Python
-//BoundaryMonitor_autogenerated2
-%include <CompuCell3D/plugins/BoundaryMonitor/BoundaryMonitorPlugin.h>
-
-%inline %{
- BoundaryMonitorPlugin * getBoundaryMonitorPlugin(){
-      return (BoundaryMonitorPlugin *)Simulator::pluginManager.get("BoundaryMonitor");
-   }
-
-%}
-////CellTypeMonitor_autogenerated2
-//                   
-//%include <CompuCell3D/plugins/CellTypeMonitor/CellTypeMonitorPlugin.h>
+//// //LengthConstraintLocalFlex
+//// %include <CompuCell3D/plugins/LengthConstraintLocalFlex/LengthConstraintLocalFlexData.h>
+//// %template (lengthconstraintlocalflexccessor) BasicClassAccessor<LengthConstraintLocalFlexData>; //necessary to get LengthConstraintLocalFlexData accessor working
+//
+//// %include <CompuCell3D/plugins/LengthConstraintLocalFlex/LengthConstraintLocalFlexPlugin.h>
+//
+//// %inline %{
+//   // LengthConstraintLocalFlexPlugin * getLengthConstraintLocalFlexPlugin(){
+//         // return (LengthConstraintLocalFlexPlugin *)Simulator::pluginManager.get("LengthConstraintLocalFlex");
+//    // }
+//// %}
+//
+//
+//
+////LengthConstraint - includes local flax option
+//%include <CompuCell3D/plugins/LengthConstraint/LengthConstraintData.h>
+//%template (lengthconstraintccessor) BasicClassAccessor<LengthConstraintData>; //necessary to get LengthConstraintData accessor working
+//
+//%include <CompuCell3D/plugins/LengthConstraint/LengthConstraintPlugin.h>
 //
 //%inline %{
-// CellTypeMonitorPlugin * getCellTypeMonitorPlugin(){
-//      return (CellTypeMonitorPlugin *)Simulator::pluginManager.get("CellTypeMonitor");
+//   LengthConstraintPlugin * getLengthConstraintPlugin(){
+//         return (LengthConstraintPlugin *)Simulator::pluginManager.get("LengthConstraint");
+//    }
+//   LengthConstraintPlugin * getLengthConstraintLocalFlexPlugin(){
+//
+//         Plugin  * ptr= Simulator::pluginManager.get("LengthConstraintLocalFlex");
+//
+//         if (ptr){
+//            return (LengthConstraintPlugin *)ptr;
+//         }
+//
+//         return (LengthConstraintPlugin *)Simulator::pluginManager.get("LengthConstraintLocalFlex");
+//    }
+//
+//
+//%}
+//
+//
+////%include <CompuCell3D/plugins/ChemotaxisSimple/ChemotaxisSimpleEnergy.h>
+////
+//////Chemotaxis Plugin
+////
+//%include <CompuCell3D/plugins/Chemotaxis/ChemotaxisData.h>
+//PLUGINACCESSOR(Chemotaxis)
+//
+//
+//////plugins
+////// %include <CompuCell3D/plugins/Mitosis/MitosisParseData.h>
+//%include <CompuCell3D/plugins/Mitosis/MitosisPlugin.h>
+//%include <CompuCell3D/plugins/Mitosis/MitosisSimplePlugin.h>
+//
+//////Volume Tracker Plugin
+//PLUGINACCESSOR(VolumeTracker)
+//
+//
+////CenterOfMass Plugin
+//PLUGINACCESSOR(CenterOfMass)
+//
+////NeighborPlugin
+//
+//%include <CompuCell3D/plugins/NeighborTracker/NeighborTracker.h>
+//
+//%template (neighbortrackeraccessor) BasicClassAccessor<NeighborTracker>; //necessary to get NeighborTracker accessor working
+//%template (nsdSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::NeighborSurfaceData> , CompuCell3D::NeighborSurfaceData>;
+//// %template (nsdSetPyItr) STLPyIterator<std::set<CompuCell3D::NeighborSurfaceData> >;
+//%template (neighborsurfacedataset) std::set<CompuCell3D::NeighborSurfaceData>; //necessary to get basis set functionality working
+//
+//PLUGINACCESSOR(NeighborTracker)
+//
+//
+//%include <CompuCell3D/plugins/PixelTracker/PixelTracker.h>
+//%template (PixelTrackerAccessor) BasicClassAccessor<PixelTracker>; //necessary to get PixelTracker accessor working
+//// #define std::set<CompuCell3D::PixelTrackerData>::value_type CompuCell3D::PixelTrackerData
+//%template (PixelTrackerDataset) std::set<CompuCell3D::PixelTrackerData>; //necessary to get basis set functionality working
+//%template (pixelSetPyItr) STLPyIteratorRefRetType< std::set<CompuCell3D::PixelTrackerData>,CompuCell3D::PixelTrackerData >;
+//// %template (pixelSetPyItr) STLPyIterator<std::set<CompuCell3D::PixelTrackerData> >;
+//PLUGINACCESSOR(PixelTracker)
+//
+//
+//%include <CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTracker.h>
+//%template (BoundaryPixelTrackerAccessor) BasicClassAccessor<BoundaryPixelTracker>; //necessary to get BoundaryPixelTracker accessor working
+//%template (BoundaryPixelTrackerDataset) std::set<CompuCell3D::BoundaryPixelTrackerData>; //necessary to get basis set functionality working
+//%template (IntBoundaryPixelTrackerDataSetMap) std::map<int, std::set<CompuCell3D::BoundaryPixelTrackerData> >; //necessary to get basis set functionality working
+//%template (boundaryPixelSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::BoundaryPixelTrackerData> , CompuCell3D::BoundaryPixelTrackerData >;
+//// %template (boundaryPixelSetPyItr) STLPyIterator<std::set<CompuCell3D::BoundaryPixelTrackerData> >;
+//PLUGINACCESSOR(BoundaryPixelTracker)
+//
+//
+//%include <CompuCell3D/plugins/ContactLocalFlex/ContactLocalFlexData.h>
+//%template (contactlocalflexcontainerccessor) BasicClassAccessor<ContactLocalFlexDataContainer>; //necessary to get ContactlocalFlexData accessor working
+//%template (clfdSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::ContactLocalFlexData> , CompuCell3D::ContactLocalFlexData >;
+//// %template (clfdSetPyItr) STLPyIterator<std::set<CompuCell3D::ContactLocalFlexData> >;
+//%template (contactlocalflexdataset) std::set<CompuCell3D::ContactLocalFlexData>; //necessary to get basis set functionality working
+//PLUGINACCESSOR(ContactLocalFlex)
+//
+////ContactLocalProductPlugin
+//%include <CompuCell3D/plugins/ContactLocalProduct/ContactLocalProductData.h>
+//%template (contactproductflexccessor) BasicClassAccessor<ContactLocalProductData>; //necessary to get ContactLocalProductData accessor working
+//%template (jVecPyItr) STLPyIteratorRefRetType<ContactLocalProductData::ContainerType_t,float>; //ContainerType_t - this is vector<float> in current implementation
+//// %template (jVecPyItr) STLPyIterator<ContactLocalProductData::ContainerType_t>; //ContainerType_t - this is vector<float> in current implementation
+//%template (contactproductdatacontainertype) std::vector<float>; //necessary to get basis vector functionality working
+//PLUGINACCESSOR(ContactLocalProduct)
+//
+////some functions to get more vector function to work
+//
+//%extend std::vector<float>{
+//
+//   void set(unsigned int pos, float _x){
+//      if(pos <= self->size()-1 ){
+//         self->operator[](pos)=_x;
+//      }
+//   }
+//
+//   float get(unsigned int pos){
+//      if(pos <= self->size()-1 ){
+//         return self->operator[](pos);
+//      }
+//   }
+//
+//
+//}
+//
+////ContactMultiCadPlugin
+//%include <CompuCell3D/plugins/ContactMultiCad/ContactMultiCadData.h>
+//%template (contactmulticaddataaccessor) BasicClassAccessor<ContactMultiCadData>; //necessary to get ContactMultiCadData accessor working
+//PLUGINACCESSOR(ContactMultiCad)
+//
+////AdhesionFlexPlugin
+//%include <CompuCell3D/plugins/AdhesionFlex/AdhesionFlexData.h>
+//%template (adhesionflexdataaccessor) BasicClassAccessor<AdhesionFlexData>; //necessary to get AdhesionFlexData accessor working
+//PLUGINACCESSOR(AdhesionFlex)
+//
+//
+//
+////CellOrientation Plugin
+//%include <CompuCell3D/plugins/CellOrientation/CellOrientationVector.h>
+//%template (cellOrientationVectorAccessor) BasicClassAccessor<CellOrientationVector>; //necessary to get CellOrientationVector accessor working
+//%template (LambdaCellOrientationAccessor) BasicClassAccessor<LambdaCellOrientation>; //necessary to get LambdaCellOrientation accessor working
+//PLUGINACCESSOR(CellOrientation)
+//
+// ////PolarizationVectorPlugin
+//%include <CompuCell3D/plugins/PolarizationVector/PolarizationVector.h>
+//%template (polarizationVectorAccessor) BasicClassAccessor<PolarizationVector>; //necessary to get CellOrientationVector accessor working
+//PLUGINACCESSOR(PolarizationVector)
+//
+////Elasticity Plugin
+//%include <CompuCell3D/plugins/ElasticityTracker/ElasticityTracker.h>
+//%template (elasticityTrackerAccessor) BasicClassAccessor<ElasticityTracker>; //necessary to get ElasticityTracker accessor working
+//%template (elasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::ElasticityTrackerData> , CompuCell3D::ElasticityTrackerData >;
+//// %template (elasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::ElasticityTrackerData> >;
+//%template (elasticityTrackerDataSet) std::set<CompuCell3D::ElasticityTrackerData>; //necessary to get basic set functionality working
+//PLUGINACCESSOR(ElasticityTracker)
+//
+//
+////Plasticity Plugin
+//%include <CompuCell3D/plugins/PlasticityTracker/PlasticityTracker.h>
+//%template (plasticityTrackerAccessor) BasicClassAccessor<PlasticityTracker>; //necessary to get PlasticityTracker accessor working
+//%template (plasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::PlasticityTrackerData> , CompuCell3D::PlasticityTrackerData >;
+//// %template (plasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::PlasticityTrackerData> >;
+//%template (plasticityTrackerDataSet) std::set<CompuCell3D::PlasticityTrackerData>; //necessary to get basic set functionality working
+//PLUGINACCESSOR(PlasticityTracker)
+//
+//////Focal Point Plasticity Plugin
+////
+//%include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityTracker.h>
+//%template (focalPointPlasticityTrackerAccessor) BasicClassAccessor<FocalPointPlasticityTracker>; //necessary to get PlasticityTracker accessor working
+//%template (focalPointPlasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::FocalPointPlasticityTrackerData> , CompuCell3D::FocalPointPlasticityTrackerData >;
+//%template (focalPointPlasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::FocalPointPlasticityTrackerData> >;
+//%template (focalPointPlasticityTrackerDataSet) std::set<CompuCell3D::FocalPointPlasticityTrackerData>; //necessary to get basic set functionality working
+//%template (focalPointPlasticityTrackerDataVector) std::vector<CompuCell3D::FocalPointPlasticityTrackerData>; //necessary to get basic set functionality working
+//PLUGINACCESSOR(FocalPointPlasticity)
+//
+//
+////MomentOfInertia
+//PLUGINACCESSOR(MomentOfInertia)
+//
+//
+////Secretion
+//%include <CompuCell3D/plugins/Secretion/FieldSecretor.h>
+//PLUGINACCESSOR(Secretion)
+//
+//%extend  CompuCell3D::FieldSecretor{
+//
+//  bool secreteInsideCellConstantConcentration(CellG * _cell, float _amount){
+//    if (!self->pixelTrackerPlugin){
+//        throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));
+//    }else{
+//        return self->_secreteInsideCellConstantConcentration(_cell,_amount);
+//    }
+//  }
+//
+//FieldSecretorResult secreteInsideCellConstantConcentrationTotalAmount(CellG * _cell, float _amount) {
+//	if (!self->pixelTrackerPlugin) {
+//		throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));
+//	}
+//	else {
+//		return self->_secreteInsideCellConstantConcentrationTotalCount(_cell,_amount);
+//	}
+//}
+//
+//
+//  bool secreteInsideCell(CellG * _cell, float _amount){
+//    if (!self->pixelTrackerPlugin){
+//        throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));
+//    }else{
+//        return self->_secreteInsideCell(_cell,_amount);
+//    }
+//  }
+//
+//  FieldSecretorResult secreteInsideCellTotalCount(CellG * _cell, float _amount) {
+//	  if (!self->pixelTrackerPlugin) {
+//		  throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));
+//	  }
+//	  else {
+//		  return self->_secreteInsideCellTotalCount(_cell,_amount);
+//	  }
+//  }
+//
+//
+//  bool secreteInsideCellAtBoundary(CellG * _cell, float _amount){
+//    if (!self->boundaryPixelTrackerPlugin){
+//        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundary function"));
+//    }else{
+//        return self->_secreteInsideCellAtBoundary(_cell,_amount);
+//    }
+//  }
+//
+//  FieldSecretorResult secreteInsideCellAtBoundaryTotalCount(CellG * _cell, float _amount) {
+//	  if (!self->boundaryPixelTrackerPlugin) {
+//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundary function"));
+//	  }
+//	  else {
+//		  return self->_secreteInsideCellAtBoundaryTotalCount(_cell,_amount);
+//	  }
+//  }
+//
+//
+//  bool secreteInsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec){
+//
+//    if (!self->boundaryPixelTrackerPlugin){
+//        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundaryOnContactWith function"));
+//    }else{
+//        return self->_secreteInsideCellAtBoundaryOnContactWith(_cell,_amount,_onContactVec);
+//    }
+//  }
+//
+//  FieldSecretorResult secreteInsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec) {
+//
+//	  if (!self->boundaryPixelTrackerPlugin) {
+//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundaryOnContactWith function"));
+//	  }
+//	  else {
+//		  return self->_secreteInsideCellAtBoundaryOnContactWithTotalCount(_cell,_amount,_onContactVec);
+//	  }
+//  }
+//
+//
+//  bool secreteOutsideCellAtBoundary(CellG * _cell, float _amount) {
+//
+//	  if (!self->boundaryPixelTrackerPlugin) {
+//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundary function"));
+//	  }
+//	  else {
+//		  return self->_secreteOutsideCellAtBoundary(_cell,_amount);
+//	  }
+//  }
+//
+//  FieldSecretorResult secreteOutsideCellAtBoundaryTotalCount(CellG * _cell, float _amount) {
+//
+//	  if (!self->boundaryPixelTrackerPlugin) {
+//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundary function"));
+//	  }
+//	  else {
+//		  return self->_secreteOutsideCellAtBoundaryTotalCount(_cell,_amount);
+//	  }
+//  }
+//
+//
+//
+//  bool secreteOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec){
+//
+//    if (!self->boundaryPixelTrackerPlugin){
+//        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundaryOnContactWith function"));
+//    }else{
+//        return self->_secreteOutsideCellAtBoundaryOnContactWith(_cell,_amount,_onContactVec);
+//    }
+//  }
+//
+//  FieldSecretorResult secreteOutsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _amount, const std::vector<unsigned char> & _onContactVec) {
+//
+//	  if (!self->boundaryPixelTrackerPlugin) {
+//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundaryOnContactWith function"));
+//	  }
+//	  else {
+//		  return self->_secreteOutsideCellAtBoundaryOnContactWithTotalCount(_cell, _amount, _onContactVec);
+//	  }
+//  }
+//
+//
+////   bool secreteInsideCellAtCOM(CellG * _cell, float _amount){
+////     return self->_secreteInsideCellAtCOM(_cell,_amount);
+////   }
+//
+//  bool uptakeInsideCell(CellG * _cell, float _maxUptake, float _relativeUptake){
+//    if (!self->pixelTrackerPlugin){
+//        throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute uptakeInsideCell function"));
+//    }else{
+//        return self->_uptakeInsideCell(_cell, _maxUptake, _relativeUptake);
+//    }
+//  }
+//
+//  FieldSecretorResult uptakeInsideCellTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake) {
+//	  if (!self->pixelTrackerPlugin) {
+//		  throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute uptakeInsideCell function"));
+//	  }
+//	  else {
+//		  return self->_uptakeInsideCellTotalCount(_cell, _maxUptake, _relativeUptake);
+//	  }
+//  }
+//
+//
+//  bool uptakeInsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake){
+//    if (!self->pixelTrackerPlugin){
+//        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundary function"));
+//    }else{
+//        return self->_uptakeInsideCellAtBoundary(_cell,_maxUptake, _relativeUptake);
+//    }
+//  }
+//
+//  FieldSecretorResult uptakeInsideCellAtBoundaryTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake) {
+//	  if (!self->pixelTrackerPlugin) {
+//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundary function"));
+//	  }
+//	  else {
+//		  return self->_uptakeInsideCellAtBoundaryTotalCount(_cell, _maxUptake, _relativeUptake);
+//	  }
+//  }
+//
+//
+//  bool uptakeInsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec){
+//    if (!self->pixelTrackerPlugin){
+//        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundaryOnContactWith function"));
+//    }else{
+//        return self->_uptakeInsideCellAtBoundaryOnContactWith(_cell,_maxUptake, _relativeUptake,_onContactVec);
+//    }
+//  }
+//
+//  FieldSecretorResult uptakeInsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec) {
+//	  if (!self->pixelTrackerPlugin) {
+//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundaryOnContactWith function"));
+//	  }
+//	  else {
+//		  return self->_uptakeInsideCellAtBoundaryOnContactWithTotalCount(_cell, _maxUptake, _relativeUptake, _onContactVec);
+//	  }
+//  }
+//
+//
+//
+//  bool uptakeOutsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake){
+//    if (!self->pixelTrackerPlugin){
+//        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundary function"));
+//    }else{
+//        return self->_uptakeOutsideCellAtBoundary(_cell,_maxUptake, _relativeUptake);
+//    }
+//  }
+//
+//  FieldSecretorResult uptakeOutsideCellAtBoundaryTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake) {
+//	  if (!self->pixelTrackerPlugin) {
+//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundary function"));
+//	  }
+//	  else {
+//		  return self->_uptakeOutsideCellAtBoundaryTotalCount(_cell, _maxUptake, _relativeUptake);
+//	  }
+//  }
+//
+//
+//  bool uptakeOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec){
+//    if (!self->pixelTrackerPlugin){
+//        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundaryOnContactWith function"));
+//    }else{
+//        return self->_uptakeOutsideCellAtBoundaryOnContactWith(_cell,_maxUptake, _relativeUptake,_onContactVec);
+//    }
+//  }
+//
+//  FieldSecretorResult uptakeOutsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec) {
+//	  if (!self->pixelTrackerPlugin) {
+//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundaryOnContactWith function"));
+//	  }
+//	  else {
+//		  return self->_uptakeOutsideCellAtBoundaryOnContactWithTotalCount(_cell, _maxUptake, _relativeUptake, _onContactVec);
+//	  }
+//  }
+//
+//
+//
+////   bool uptakeInsideCellAtCOM(CellG * _cell, float _maxUptake, float _relativeUptake){
+////     return _uptakeInsideCellAtCOM(_cell,_maxUptake,_relativeUptake);
+////   }
+//
+//}
+//
+//
+//////Steppables
+//%include <CompuCell3D/steppables/Mitosis/MitosisSteppable.h>
+//
+//////AutogeneratedModules2 - DO NOT REMOVE THIS LINE IT IS USED BY TWEDIT TO LOCATE CODE INSERTION POINT
+////BiasVectorSteppable_autogenerated2
+//
+//
+//%include <CompuCell3D/steppables/BiasVectorSteppable/BiasVectorSteppable.h>
+//
+//
+//
+//%inline %{
+//
+// BiasVectorSteppable * getBiasVectorSteppable(){
+//
+//      return (BiasVectorSteppable *)Simulator::steppableManager.get("BiasVectorSteppable");
+//
+//   }
+//
+//
+//
+//%}
+//
+////ImplicitMotility_autogenerated2
+//
+//
+//%include <CompuCell3D/plugins/ImplicitMotility/ImplicitMotilityPlugin.h>
+//
+//
+//
+//%inline %{
+//
+// ImplicitMotilityPlugin * getImplicitMotilityPlugin(){
+//
+//      return (ImplicitMotilityPlugin *)Simulator::pluginManager.get("ImplicitMotility");
+//
+//   }
+//
+//
+//
+//%}
+//
+//////CurvatureCalculator_autogenerated2
+////
+//%include <CompuCell3D/plugins/CurvatureCalculator/CurvatureCalculatorPlugin.h>
+//
+//%inline %{
+// CurvatureCalculatorPlugin * getCurvatureCalculatorPlugin(){
+//      return (CurvatureCalculatorPlugin *)Simulator::pluginManager.get("CurvatureCalculator");
 //   }
 //
 //%}
-//Polarization23_autogenerated2
-%include <CompuCell3D/plugins/Polarization23/Polarization23Data.h>
-%template (Polarization23DataAccessorTemplate) BasicClassAccessor<Polarization23Data>; //necessary to get Polarization23Data accessor working in Python
-PLUGINACCESSOR(Polarization23)
-
-
-//ClusterSurface_autogenerated2
-PLUGINACCESSOR(ClusterSurface)
-
-//ClusterSurfaceTracker_autogenerated2
-PLUGINACCESSOR(ClusterSurfaceTracker)
-
-//// //List of fields from simulator
+//
+////OrientedGrowth_autogenerated2
+//%include <CompuCell3D/plugins/OrientedGrowth/OrientedGrowthData.h>
+//%template (OrientedGrowthDataAccessorTemplate) BasicClassAccessor<OrientedGrowthData>; //necessary to get OrientedGrowthData accessor working in Python
+//PLUGINACCESSOR(OrientedGrowth)
+//
+//////CleaverMeshDumper_autogenerated2
+//
+//%include <CompuCell3D/steppables/CleaverMeshDumper/CleaverMeshDumper.h>
+//
+//%inline %{
+//    CleaverMeshDumper * getCleaverMeshDumper() {
+//        return (CleaverMeshDumper *)Simulator::steppableManager.get("CleaverMeshDumper");
+//    }
+//    %}
+//
+////%}
+////// // // //CGALMeshDumper_autogenerated2
+////// // //
+////// // // %include <CompuCell3D/steppables/CGALMeshDumper/CGALMeshDumper.h>
+////// // //
+////// // // %inline %{
+////// // //  CGALMeshDumper * getCGALMeshDumper(){
+////// // //       return (CGALMeshDumper *)Simulator::steppableManager.get("CGALMeshDumper");
+////// // //    }
+////// // //
+////// // // %}
+////
+//////ContactOrientation_autogenerated2
+////
+//%include <CompuCell3D/plugins/ContactOrientation/ContactOrientationData.h>
+////necessary to get ContactOrientationData accessor working in Python
+//%template (ContactOrientationDataAccessorTemplate) BasicClassAccessor<ContactOrientationData>;
+//PLUGINACCESSOR(ContactOrientation)
+//
+////note that template Array3DCUDA has to use static_cast<T>(0) instead of T() to enable SWIG to properly generate wrappers for T=ubnsigned char using gcc compiler
+//%template (Array3DCUDAunsignedchar) Array3DCUDA<unsigned char>; //necessary Array3DCUDA<unsigned char> working in Python
+////BoundaryMonitor_autogenerated2
+//%include <CompuCell3D/plugins/BoundaryMonitor/BoundaryMonitorPlugin.h>
+//
+//%inline %{
+// BoundaryMonitorPlugin * getBoundaryMonitorPlugin(){
+//      return (BoundaryMonitorPlugin *)Simulator::pluginManager.get("BoundaryMonitor");
+//   }
+//
+//%}
+//////CellTypeMonitor_autogenerated2
+////
+////%include <CompuCell3D/plugins/CellTypeMonitor/CellTypeMonitorPlugin.h>
+////
+////%inline %{
+//// CellTypeMonitorPlugin * getCellTypeMonitorPlugin(){
+////      return (CellTypeMonitorPlugin *)Simulator::pluginManager.get("CellTypeMonitor");
+////   }
+////
+////%}
+////Polarization23_autogenerated2
+//%include <CompuCell3D/plugins/Polarization23/Polarization23Data.h>
+//%template (Polarization23DataAccessorTemplate) BasicClassAccessor<Polarization23Data>; //necessary to get Polarization23Data accessor working in Python
+//PLUGINACCESSOR(Polarization23)
 //
 //
-//// //%template (simulatorFieldMapPyItr) STLPyIterator<std::map<std::string,Field3DImpl<float>*> >;
-//// //%template (simulatorFieldMap) <std::map<std::string,Field3DImpl<float>*>;
+////ClusterSurface_autogenerated2
+//PLUGINACCESSOR(ClusterSurface)
 //
+////ClusterSurfaceTracker_autogenerated2
+//PLUGINACCESSOR(ClusterSurfaceTracker)
 //
+////// //List of fields from simulator
+////
+////
+////// //%template (simulatorFieldMapPyItr) STLPyIterator<std::map<std::string,Field3DImpl<float>*> >;
+////// //%template (simulatorFieldMap) <std::map<std::string,Field3DImpl<float>*>;
+////
+////
