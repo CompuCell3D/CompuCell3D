@@ -90,12 +90,46 @@ void BiasVectorSteppable::start(){
 
 
   //PUT YOUR CODE HERE
+	CellInventory::cellInventoryIterator cInvItr;
+	CellG * cell = 0;
 
-
-
+	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr)
+	{
+		cell = cellInventoryPtr->getCell(cInvItr);
+		if (fieldDim.x == 1 || fieldDim.y == 1 || fieldDim.z == 1)
+		{
+			vector<double> noise = BiasVectorSteppable::white_noise_2d();
+			if (fieldDim.x == 1)
+			{
+				cell->biasVecX = 0;
+				cell->biasVecY = noise[0];
+				cell->biasVecZ = noise[1];
+			}
+			else if (fieldDim.y == 1)
+			{
+				cell->biasVecX = noise[0];
+				cell->biasVecY = 0;
+				cell->biasVecZ = noise[1];
+			}
+			else
+			{
+				cell->biasVecX = noise[0];
+				cell->biasVecY = noise[1];
+				cell->biasVecZ = 0;
+			}
+		}
+		else
+		{
+			vector<double> noise = BiasVectorSteppable::white_noise_3d();
+			cell->biasVecX = noise[0];
+			cell->biasVecY = noise[1];
+			cell->biasVecZ = noise[2];
+		}
+	}
 }
 
 
+//vector<double> BiasVectorSteppable::
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
