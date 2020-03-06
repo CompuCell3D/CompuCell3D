@@ -137,6 +137,7 @@ namespace CompuCell3D {
 	void step_persistent_bias(const unsigned int currentStep); // for the momentum bias
 
 	virtual void gen_persistent_bias(const double alpha, CellG * cell);
+	void output_test(const double alpha, const CellG * cell, const vector<double> noise);
 	void gen_persistent_bias_3d(const double alpha, CellG * cell);
 
 	void gen_persistent_bias_2d_x(const double alpha, CellG * cell);
