@@ -129,10 +129,10 @@ namespace CompuCell3D {
 
     virtual void step(const unsigned int currentStep);
 
-	void step_3d(const unsigned int currentStep);  // remove virtual, same for the next steps
-	void step_2d_x(const unsigned int currentStep); // for x == 1
-	void step_2d_y(const unsigned int currentStep); // for y == 1
-	void step_2d_z(const unsigned int currentStep); // for z == 1
+	void step_white_3d(const unsigned int currentStep);  // remove virtual, same for the next steps
+	void step_white_2d_x(const unsigned int currentStep); // for x == 1
+	void step_white_2d_y(const unsigned int currentStep); // for y == 1
+	void step_white_2d_z(const unsigned int currentStep); // for z == 1
 
 	void step_persistent_bias(const unsigned int currentStep); // for the momentum bias
 

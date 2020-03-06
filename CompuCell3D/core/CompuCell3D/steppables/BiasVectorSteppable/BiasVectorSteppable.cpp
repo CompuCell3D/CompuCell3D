@@ -147,7 +147,7 @@ void BiasVectorSteppable::step(const unsigned int currentStep){
 
 
 //rename this fncs to white noise 2d/3d
-void CompuCell3D::BiasVectorSteppable::step_3d(const unsigned int currentStep)
+void CompuCell3D::BiasVectorSteppable::step_white_3d(const unsigned int currentStep)
 {
 	CellInventory::cellInventoryIterator cInvItr;
 	CellG * cell = 0;
@@ -172,7 +172,7 @@ void CompuCell3D::BiasVectorSteppable::step_3d(const unsigned int currentStep)
 }
 
 //pure white random change bias:
-void CompuCell3D::BiasVectorSteppable::step_2d_x(const unsigned int currentStep)
+void CompuCell3D::BiasVectorSteppable::step_white_2d_x(const unsigned int currentStep)
 {
 	CellInventory::cellInventoryIterator cInvItr;
 	CellG * cell = 0;
@@ -198,7 +198,7 @@ void CompuCell3D::BiasVectorSteppable::step_2d_x(const unsigned int currentStep)
 }
 
 //pure white random change bias:
-void CompuCell3D::BiasVectorSteppable::step_2d_y(const unsigned int currentStep)
+void CompuCell3D::BiasVectorSteppable::step_white_2d_y(const unsigned int currentStep)
 {
 	CellInventory::cellInventoryIterator cInvItr;
 	CellG * cell = 0;
@@ -222,7 +222,7 @@ void CompuCell3D::BiasVectorSteppable::step_2d_y(const unsigned int currentStep)
 	}
 }
 //pure white random change bias:
-void CompuCell3D::BiasVectorSteppable::step_2d_z(const unsigned int currentStep)
+void CompuCell3D::BiasVectorSteppable::step_white_2d_z(const unsigned int currentStep)
 {
 	CellInventory::cellInventoryIterator cInvItr;
 	CellG * cell = 0;
@@ -557,19 +557,19 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		switch (fieldType)
 		{
 		case FTYPE3D:
-			stepFcnPtr = &BiasVectorSteppable::step_3d;
+			stepFcnPtr = &BiasVectorSteppable::step_white_3d;
 			break;
 		case FTYPE2DX:
-			stepFcnPtr = &BiasVectorSteppable::step_2d_x;
+			stepFcnPtr = &BiasVectorSteppable::step_white_2d_x;
 			break;
 		case FTYPE2DY:
-			stepFcnPtr = &BiasVectorSteppable::step_2d_y;
+			stepFcnPtr = &BiasVectorSteppable::step_white_2d_y;
 			break;
 		case FTYPE2DZ:
-			stepFcnPtr = &BiasVectorSteppable::step_2d_z;
+			stepFcnPtr = &BiasVectorSteppable::step_white_2d_z;
 			break;
 		default:
-			stepFcnPtr = &BiasVectorSteppable::step_3d;
+			stepFcnPtr = &BiasVectorSteppable::step_white_3d;
 			break;
 		}
 		break;
@@ -642,19 +642,19 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		switch (fieldType)
 		{
 		case FTYPE3D:
-			stepFcnPtr = &BiasVectorSteppable::step_3d;
+			stepFcnPtr = &BiasVectorSteppable::step_white_3d;
 			break;
 		case FTYPE2DX:
-			stepFcnPtr = &BiasVectorSteppable::step_2d_x;
+			stepFcnPtr = &BiasVectorSteppable::step_white_2d_x;
 			break;
 		case FTYPE2DY:
-			stepFcnPtr = &BiasVectorSteppable::step_2d_y;
+			stepFcnPtr = &BiasVectorSteppable::step_white_2d_y;
 			break;
 		case FTYPE2DZ:
-			stepFcnPtr = &BiasVectorSteppable::step_2d_z;
+			stepFcnPtr = &BiasVectorSteppable::step_white_2d_z;
 			break;
 		default:
-			stepFcnPtr = &BiasVectorSteppable::step_3d;
+			stepFcnPtr = &BiasVectorSteppable::step_white_3d;
 			break;
 		}
 		break;
