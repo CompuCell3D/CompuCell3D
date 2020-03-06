@@ -71,7 +71,8 @@ namespace CompuCell3D {
 		biasVecZ(0.0),
 		connectivityOn(false),
         extraAttribPtr(0),
-        pyAttrib(0)
+        pyAttrib(0),
+		pressure(0)
 
 
       {}
@@ -104,6 +105,7 @@ namespace CompuCell3D {
 	  double biasVecY;
 	  double biasVecZ;
 	  bool connectivityOn;
+	  double pressure;
       BasicClassGroup *extraAttribPtr;
 
       PyObject *pyAttrib;

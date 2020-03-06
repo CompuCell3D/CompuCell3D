@@ -66,6 +66,12 @@ namespace CompuCell3D {
 
     Dim3D fieldDim;
 
+	typedef double (PressureCalculator::*pressureCalc_t)(const CellG *cell);
+	PressureCalculator::pressureCalc_t pressureCalcFcnPtr;
+
+	double pressureCalcGlobal(const CellG *cell);
+	double pressureCalcByType(const CellG *cell);
+	double pressureCalcByID(const CellG *cell);
 
 
     
@@ -103,6 +109,8 @@ namespace CompuCell3D {
     //SteerableObject interface
 
     virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
+
+	virtual double pressureCalc(const CellG *cell);
 
     virtual std::string steerableName();
 

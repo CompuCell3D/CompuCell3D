@@ -106,7 +106,7 @@ void PressureCalculator::step(const unsigned int currentStep){
 
     
 
-    cerr<<"currentStep="<<currentStep<<endl;
+    //cerr<<"currentStep="<<currentStep<<endl;
 
 	for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr )
 
@@ -114,7 +114,10 @@ void PressureCalculator::step(const unsigned int currentStep){
 
 		cell=cellInventoryPtr->getCell(cInvItr);
 
-        cerr<<"cell.id="<<cell->id<<" vol="<<cell->volume<<endl;
+        //cerr<<"cell.id="<<cell->id<<" vol="<<cell->volume<<endl;
+
+		//double pressure = 0;
+		cell->pressure = pressureCalc(cell);
 
     }
 
@@ -170,6 +173,24 @@ void PressureCalculator::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 
 
+}
+
+
+double pressureCalcByID(const CellG *cell)
+{
+	double pressure = 0;
+
+	pressure = 2 * cell->lambdaVolume * (cell->targetVolume - (int)cell->volume);
+
+	return pressure;
+
+}
+
+double PressureCalculator::pressureCalc(const CellG *cell)
+{
+	// p = - 2 lambda (V - Vt) = 2 lambda (Vt - V)
+	return (this->*pressureCalcFcnPtr)(cell);
+	//return 0.0;
 }
 
 
