@@ -248,7 +248,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                                          'targetClusterSurface', 'lambdaClusterSurface', 'type', 'lambdaVecX',
                                          'lambdaVecY', 'lambdaVecZ', 'fluctAmpl']
 
-    def open_file_in_simulation_output_folder(self, file_name:str, mode:str='w') -> tuple:
+    def open_file_in_simulation_output_folder(self, file_name: str, mode: str = 'w') -> tuple:
         """
         attempts to open file in the simulation output folder
 
@@ -265,6 +265,18 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                 print("Could not open file for writing.")
                 return None, None
             return file_handle, output_path
+
+    @staticmethod
+    def request_screenshot(mcs: int, screenshot_label: str) -> None:
+        """
+        Requests on-demand screenshot
+        :param mcs:
+        :param screenshot_label:
+        :return:
+        """
+        pg = CompuCellSetup.persistent_globals
+        screenshot_manager = pg.screenshot_manager
+        screenshot_manager.add_ad_hoc_screenshot(mcs=mcs, screenshot_label=screenshot_label)
 
     def core_init(self, reinitialize_cell_types=True):
         """
@@ -985,7 +997,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             return False
         else:
             return any([n_cell for n_cell in self.get_focal_point_plasticity_neighbor_list(cell1)
-                       if n_cell.id == cell2.id])
+                        if n_cell.id == cell2.id])
 
     def get_focal_point_plasticity_initiator(self, cell1, cell2):
         """

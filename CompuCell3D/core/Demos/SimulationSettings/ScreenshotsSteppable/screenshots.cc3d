@@ -1,0 +1,7 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/cellsort_2D.xml</XMLScript>
+    <PythonScript>Simulation/screenshots.py</PythonScript>
+    <Resource Type="Python">Simulation/screenshots_steppables.py</Resource>
+
+</Simulation>

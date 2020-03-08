@@ -226,12 +226,15 @@ class ScreenshotManager(ScreenshotManagerCore):
         bsd = tvw.basicSimulationData
         return bsd
 
-    def output_screenshots(self, mcs: int) -> None:
+    def output_screenshots_impl(self, mcs: int, screenshot_label_list: list):
         """
-        outputs screenshots. Called from SimpleTabView:handleCompletedStep{Regular,CML*}
+        implementation function ofr taking screenshots
         :param mcs:
-        :return:
+        :param screenshot_label_list:
+        :return
         """
+        if self.output_error_flag:
+            return
 
         bsd = self.get_basic_simulation_data()
 
@@ -239,7 +242,7 @@ class ScreenshotManager(ScreenshotManagerCore):
 
         mcs_formatted_number = str(mcs).zfill(self.screenshot_number_of_digits)
 
-        for i, screenshot_name in enumerate(self.screenshotDataDict.keys()):
+        for i, screenshot_name in enumerate(screenshot_label_list):
             screenshot_data = self.screenshotDataDict[screenshot_name]
 
             if not screenshot_name:

@@ -927,8 +927,8 @@ self.plot_win.add_plot("MSur", style='Dots', color='green', size=1)
 
 ----------  # @Submenu@ 2. Add Data Points (step fcn)
 # arguments are (name of the data series, x, y)
-self.plot_win.add_data_point("MVol", mcs, mcs**2)
-self.plot_win.add_data_point("MSur", mcs, mcs)
+self.plot_win.add_data_point("MVol", mcs, cell.volume)
+self.plot_win.add_data_point("MSur", mcs, cell.surface)
 
 
 ----------  # @Submenu@ Erase Plot (step fcn)
