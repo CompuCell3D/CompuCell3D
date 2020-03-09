@@ -244,6 +244,11 @@ void CompuCell3D::BiasVectorSteppable::step_white_2d_z(const unsigned int curren
 		cell->biasVecY = noise[1];
 		cell->biasVecZ = 0;
 	}
+
+	std::ofstream func_name;
+	func_name.open("function.txt");
+	func_name << "in gen 2dz white" << std::endl;
+	func_name.close();
 }
 
 
@@ -302,6 +307,11 @@ void BiasVectorSteppable::gen_persistent_bias_3d(const double alpha, CellG *cell
 	cell->biasVecZ = alpha*cell->biasVecZ + (1 - alpha)*noise[2];
 	output_test(alpha, cell, noise);
 
+	std::ofstream func_name;
+	func_name.open("function.txt");
+	func_name << "in gen 3d" << std::endl;
+	func_name.close();
+
 }
 
 
@@ -313,6 +323,11 @@ void BiasVectorSteppable::gen_persistent_bias_2d_x(const double alpha, CellG *ce
 	cell->biasVecY = alpha*cell->biasVecY + (1 - alpha)*noise[0];
 	cell->biasVecZ = alpha*cell->biasVecZ + (1 - alpha)*noise[1];
 	output_test(alpha, cell, noise);
+
+	std::ofstream func_name;
+	func_name.open("function.txt");
+	func_name << "in gen 2dx" << std::endl;
+	func_name.close();
 }
 
 void BiasVectorSteppable::gen_persistent_bias_2d_y(const double alpha, CellG *cell)
@@ -323,6 +338,11 @@ void BiasVectorSteppable::gen_persistent_bias_2d_y(const double alpha, CellG *ce
 	cell->biasVecY = 0;
 	cell->biasVecZ = alpha*cell->biasVecZ + (1 - alpha)*noise[1];
 	output_test(alpha, cell, noise);
+
+	std::ofstream func_name;
+	func_name.open("function.txt");
+	func_name << "in gen 2dy" << std::endl;
+	func_name.close();
 }
 
 void BiasVectorSteppable::gen_persistent_bias_2d_z(const double alpha, CellG *cell)
@@ -333,6 +353,11 @@ void BiasVectorSteppable::gen_persistent_bias_2d_z(const double alpha, CellG *ce
 	cell->biasVecY = alpha*cell->biasVecY + (1 - alpha)*noise[1];
 	cell->biasVecZ = 0;
 	output_test(alpha, cell, noise);
+
+	std::ofstream func_name;
+	func_name.open("function.txt");
+	func_name << "in gen 2d_z" << std::endl;
+	func_name.close();
 }
 
 
