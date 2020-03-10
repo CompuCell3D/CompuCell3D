@@ -627,7 +627,7 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 		for (int i = 0; i < paramVec.size(); ++i)
 		{
-			pvec << paramVec[i] << std::endl;
+			pvec << paramVec[i]->getAttributeAsDouble("Alpha") << paramVec[i]->getAttribute("CellType") << std::endl;
 			BiasMomenParam bParam;
 			bParam.persistentAlpha = paramVec[i]->getAttributeAsDouble("Alpha");
 			bParam.typeName = paramVec[i]->getAttribute("CellType");
@@ -636,37 +636,42 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			biasMomemTemp.push_back(bParam);
 		}
 		pvec.close();
-
+		cerr << "temp vec size" <<biasMomemTemp.size() << std::endl;
 		vector<int>::iterator pos = max_element(typeIdVec.begin(), typeIdVec.end());
 		int maxTypeId = *pos;
+		cerr << "max type id " << maxTypeId << std::endl;
 		biasMomenParamVec.assign(maxTypeId,BiasMomenParam());
-
+		cerr << "inited iterator, biasMomenParamVec" << std::endl;
+		cerr << biasMomenParamVec.size() << std::endl;
 		for (int i = 0; i < biasMomemTemp.size(); ++i)
 		{
-			biasMomenParamVec[typeIdVec[i]] = biasMomemTemp[i];
+			cerr << "loop asingning temp vec to vec" << i << std::endl;
+			//cerr << biasMomemTemp[i].persistentAlpha << biasMomemTemp[i].typeName << std::endl;
+			biasMomenParamVec[typeIdVec[i]] = biasMomemTemp[i];			
+
 		}
-		
+		std::cerr << "just before field type switch" << std::endl;
 		switch (fieldType)
 		{
 			cerr << "in fieldType switch in persistent" << std::endl;
-			case CompuCell3D::BiasVectorSteppable::FTYPE3D:
+		case FTYPE3D://CompuCell3D::BiasVectorSteppable::FTYPE3D:
 				momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_3d;
 				break;
-			case CompuCell3D::BiasVectorSteppable::FTYPE2DX:
+		case FTYPE2DX://CompuCell3D::BiasVectorSteppable::FTYPE2DX:
 				momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
 				break;
-			case CompuCell3D::BiasVectorSteppable::FTYPE2DY:
+		case FTYPE2DY://CompuCell3D::BiasVectorSteppable::FTYPE2DY:
 				momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_y;
 				break;
-			case CompuCell3D::BiasVectorSteppable::FTYPE2DZ:
+		case FTYPE2DZ://CompuCell3D::BiasVectorSteppable::FTYPE2DZ:
 				momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_z;
 				break;
-			default:
+		default:
 				momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_3d;
 				break;
 		}
 		
-		
+		cerr << "just after fieldType switch" << std::endl;
 		//set fcn ptr
 		stepFcnPtr = &BiasVectorSteppable::step_persistent_bias;
 
