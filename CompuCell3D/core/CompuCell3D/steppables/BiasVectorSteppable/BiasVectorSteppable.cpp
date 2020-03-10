@@ -617,8 +617,10 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 		vector<int> typeIdVec;
 		vector<BiasMomenParam> biasMomemTemp;
-
-		CC3DXMLElementList paramVec = _xmlData->getElements("BiasChangeParameters");//is reading size 0
+		
+		//CC3DXMLElementList paramVec = _xmlData->getElements("BiasChangeParameters");//is reading size 0
+		CC3DXMLElement *_xmlDataBiasChange = _xmlData->getFirstElement("BiasChange");
+		CC3DXMLElementList paramVec = _xmlDataBiasChange->getElements("BiasChangeParameters");
 		std::ofstream pvec;
 		pvec.open("param_vector.txt"); 
 		pvec << "size " << paramVec.size() << std::endl;
