@@ -477,6 +477,7 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	xmlFile << _xmlData;
 	xmlFile.close();
 
+	randomize_initial_bias();
     
 	if (!_xmlData)
 	{
