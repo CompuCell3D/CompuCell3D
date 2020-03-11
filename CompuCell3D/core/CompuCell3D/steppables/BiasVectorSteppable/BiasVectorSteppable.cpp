@@ -568,11 +568,11 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 
 
-	vector<int> typeIdVec;
+	/*vector<int> typeIdVec;
 
 	vector<BiasMomenParam> persistentParamVecTmp;
 
-	CC3DXMLElementList paramVec;
+	CC3DXMLElementList paramVec;*/
 
 	//int maxTypeID;
 
