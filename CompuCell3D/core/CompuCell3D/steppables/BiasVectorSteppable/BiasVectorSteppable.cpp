@@ -35,7 +35,7 @@ BiasVectorSteppable::~BiasVectorSteppable() {
 
 void BiasVectorSteppable::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
-	cerr << "got into biasvec step" << endl;
+cerr << "got into biasvec step" << endl;
 
   xmlData=_xmlData;
 
@@ -477,7 +477,7 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	xmlFile << _xmlData;
 	xmlFile.close();
 
-	randomize_initial_bias();
+	//randomize_initial_bias();
     
 	if (!_xmlData)
 	{
@@ -585,14 +585,6 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 
 
-	/*vector<int> typeIdVec;
-
-	vector<BiasMomenParam> persistentParamVecTmp;
-
-	CC3DXMLElementList paramVec;*/
-
-	//int maxTypeID;
-
 	vector<int>::iterator pos;
 	
 	switch (biasType)
@@ -635,7 +627,6 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		vector<int> typeIdVec;
 		vector<BiasMomenParam> biasMomemTemp;
 		
-		//CC3DXMLElementList paramVec = _xmlData->getElements("BiasChangeParameters");//is reading size 0
 		CC3DXMLElement *_xmlDataBiasChange = _xmlData->getFirstElement("BiasChange");
 		CC3DXMLElementList paramVec = _xmlDataBiasChange->getElements("BiasChangeParameters");
 		std::ofstream pvec;
