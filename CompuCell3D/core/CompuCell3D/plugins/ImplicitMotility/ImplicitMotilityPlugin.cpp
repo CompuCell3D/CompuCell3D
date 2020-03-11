@@ -177,7 +177,7 @@ double ImplicitMotilityPlugin::changeEnergyByCellType(const Point3D &pt, const C
         biasVecTmp = Coordinates3D<double>(oldCell->biasVecX, oldCell->biasVecY, oldCell->biasVecZ);
 
         energy -= motilityParamVector[oldCell->type].lambdaMotility*
-            (distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.X() + distVector.Z()*biasVecTmp.Z());
+            (distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.Y() + distVector.Z()*biasVecTmp.Z());
 
     }
 
@@ -207,7 +207,7 @@ double ImplicitMotilityPlugin::changeEnergyByCellType(const Point3D &pt, const C
         biasVecTmp = Coordinates3D<double>(newCell->biasVecX, newCell->biasVecY, newCell->biasVecZ);
 
         energy -= motilityParamVector[newCell->type].lambdaMotility*
-            (distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.X() + distVector.Z()*biasVecTmp.Z());
+            (distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.Y() + distVector.Z()*biasVecTmp.Z());
     }
 
     //cout << "in the by cell type energy" << endl;
@@ -253,7 +253,7 @@ double ImplicitMotilityPlugin::changeEnergyByCellId(const Point3D &pt, const Cel
 		biasVecTmp = Coordinates3D<double>(oldCell->biasVecX, oldCell->biasVecY, oldCell->biasVecZ);
 
         energy -= oldCell->lambdaMotility*
-            (distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.X() + distVector.Z()*biasVecTmp.Z());
+            (distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.Y() + distVector.Z()*biasVecTmp.Z());
         //negative because it'd be confusing for users to have to define a negative lambda to go to a positive direction
     }
 
@@ -284,7 +284,7 @@ double ImplicitMotilityPlugin::changeEnergyByCellId(const Point3D &pt, const Cel
 
 
         energy -= newCell->lambdaMotility*
-            (distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.X() + distVector.Z()*biasVecTmp.Z());
+            (distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.Y() + distVector.Z()*biasVecTmp.Z());
         //negative because it'd be confusing for users to have to define a negative lambda to go to a positive direction
     }
     //cout << "in the by cell id energy" << endl;
