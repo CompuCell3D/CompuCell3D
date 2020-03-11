@@ -90,42 +90,7 @@ void BiasVectorSteppable::start(){
 
 
   //PUT YOUR CODE HERE
-	CellInventory::cellInventoryIterator cInvItr;
-	CellG * cell = 0;
-
-	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr)
-	{
-		cell = cellInventoryPtr->getCell(cInvItr);
-		if (fieldDim.x == 1 || fieldDim.y == 1 || fieldDim.z == 1)
-		{
-			vector<double> noise = BiasVectorSteppable::white_noise_2d();
-			if (fieldDim.x == 1)
-			{
-				cell->biasVecX = 0;
-				cell->biasVecY = noise[0];
-				cell->biasVecZ = noise[1];
-			}
-			else if (fieldDim.y == 1)
-			{
-				cell->biasVecX = noise[0];
-				cell->biasVecY = 0;
-				cell->biasVecZ = noise[1];
-			}
-			else
-			{
-				cell->biasVecX = noise[0];
-				cell->biasVecY = noise[1];
-				cell->biasVecZ = 0;
-			}
-		}
-		else
-		{
-			vector<double> noise = BiasVectorSteppable::white_noise_3d();
-			cell->biasVecX = noise[0];
-			cell->biasVecY = noise[1];
-			cell->biasVecZ = noise[2];
-		}
-	}
+	
 }
 
 
@@ -427,6 +392,57 @@ vector<double> BiasVectorSteppable::white_noise_3d()
 }
 
 
+void BiasVectorSteppable::randomize_initial_bias()//(CellG *cell)//, bool rnd_inited)
+{
+	if (!rnd_inited)//we don't want to re-randomize on xml steering
+	{
+		CellInventory::cellInventoryIterator cInvItr;
+		CellG * cell = 0;
+
+		cerr << "in randomize initial bias" << std::endl;
+
+		for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr)
+		{
+			cell = cellInventoryPtr->getCell(cInvItr);
+			if (fieldDim.x == 1 || fieldDim.y == 1 || fieldDim.z == 1)
+			{
+				vector<double> noise = BiasVectorSteppable::white_noise_2d();
+				if (fieldDim.x == 1)
+				{
+					cell->biasVecX = 0;
+					cell->biasVecY = noise[0];
+					cell->biasVecZ = noise[1];
+				}
+				else if (fieldDim.y == 1)
+				{
+					cell->biasVecX = noise[0];
+					cell->biasVecY = 0;
+					cell->biasVecZ = noise[1];
+				}
+				else
+				{
+					cell->biasVecX = noise[0];
+					cell->biasVecY = noise[1];
+					cell->biasVecZ = 0;
+				}
+			}
+			else
+			{
+				vector<double> noise = BiasVectorSteppable::white_noise_3d();
+				cell->biasVecX = noise[0];
+				cell->biasVecY = noise[1];
+				cell->biasVecZ = noise[2];
+			}
+			cerr << "in randomize initial bias " << cell->biasVecX << ' ' << cell->biasVecY << ' ' << cell->biasVecZ << ' ' << std::endl;
+		}
+		rnd_inited = true;
+		return;
+	}
+	else
+	{
+		return;
+	}
+}
 
 
 void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
@@ -627,7 +643,7 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 		for (int i = 0; i < paramVec.size(); ++i)
 		{
-			pvec << paramVec[i]->getAttributeAsDouble("Alpha") << paramVec[i]->getAttribute("CellType") << std::endl;
+			pvec << paramVec[i]->getAttributeAsDouble("Alpha") << ' '  << paramVec[i]->getAttribute("CellType") << std::endl;
 			BiasMomenParam bParam;
 			bParam.persistentAlpha = paramVec[i]->getAttributeAsDouble("Alpha");
 			bParam.typeName = paramVec[i]->getAttribute("CellType");
@@ -635,7 +651,7 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			typeIdVec.push_back(automaton->getTypeId(bParam.typeName));
 			biasMomemTemp.push_back(bParam);
 		}
-		pvec.close();
+		pvec.close();	
 		cerr << "temp vec size" <<biasMomemTemp.size() << std::endl;
 		vector<int>::iterator pos = max_element(typeIdVec.begin(), typeIdVec.end());
 		int maxTypeId = *pos;

@@ -69,7 +69,7 @@ namespace CompuCell3D {
 
     CellInventory * cellInventoryPtr;
 
-    
+	std::string steppableName = "BiasVectorSteppable";
 
     Dim3D fieldDim;
 
@@ -99,7 +99,8 @@ namespace CompuCell3D {
 	typedef void (BiasVectorSteppable::*mom_gen_t)(const double alpha, CellG * cell);
 	BiasVectorSteppable::mom_gen_t momGenFcnPtr;
 
-    
+	bool rnd_inited = false;
+	void randomize_initial_bias();// (CellG * cell);//, bool rnd_inited);
 
   public:
 
@@ -152,6 +153,8 @@ namespace CompuCell3D {
 	vector<double> white_noise_2d();
 
 	vector<double> white_noise_3d();
+
+	
 
 
     virtual void finish() {}
