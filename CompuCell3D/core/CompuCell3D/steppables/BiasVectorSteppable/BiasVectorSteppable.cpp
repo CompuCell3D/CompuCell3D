@@ -210,10 +210,10 @@ void CompuCell3D::BiasVectorSteppable::step_white_2d_z(const unsigned int curren
 		cell->biasVecZ = 0;
 	}
 
-	std::ofstream func_name;
+	/*std::ofstream func_name;
 	func_name.open("function.txt");
 	func_name << "in gen 2dz white" << std::endl;
-	func_name.close();
+	func_name.close();*/
 }
 
 
@@ -222,18 +222,18 @@ void BiasVectorSteppable::step_persistent_bias(const unsigned int currentStep)
 	CellInventory::cellInventoryIterator cInvItr;
 	CellG * cell = 0;
 
-	std::ofstream alpha_test;
-	alpha_test.open("alpha_test.txt", std::ios_base::app);
+	/*std::ofstream alpha_test;
+	alpha_test.open("alpha_test.txt", std::ios_base::app);*/
 
 	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr)
 	{
 		cell = cellInventoryPtr->getCell(cInvItr);
 		double alpha = biasMomenParamVec[cell->type].persistentAlpha;
-		alpha_test << alpha<<std::endl;
+		//alpha_test << alpha<<std::endl;
 		gen_persistent_bias(alpha, cell);
 
 	}
-	alpha_test.close();
+	//alpha_test.close();
 }
 
 
@@ -253,7 +253,7 @@ void BiasVectorSteppable::gen_persistent_bias(const double alpha, CellG * cell) 
 void BiasVectorSteppable::output_test(const double alpha, const CellG *cell, const vector<double> noise)
 {
 	std::ofstream vec_alpha_test;
-	vec_alpha_test.open("vec_alpha_test.txt", std::ios_base::app);
+	vec_alpha_test.open("vec_alpha_test.txt");// , std::ios_base::app);
 	vec_alpha_test << noise[0] << ',' << noise[1] << ',' << noise[2] << std::endl
 		<< (1 - alpha)*noise[0] << ',' << (1 - alpha)*noise[1] << ',' << (1 - alpha)*noise[2] << std::endl
 		<< alpha*cell->biasVecX << ',' << alpha*cell->biasVecY << ',' << alpha*cell->biasVecZ << std::endl
@@ -270,12 +270,12 @@ void BiasVectorSteppable::gen_persistent_bias_3d(const double alpha, CellG *cell
 	cell->biasVecX = alpha*cell->biasVecX + (1 - alpha)*noise[0];
 	cell->biasVecY = alpha*cell->biasVecY + (1 - alpha)*noise[1];
 	cell->biasVecZ = alpha*cell->biasVecZ + (1 - alpha)*noise[2];
-	output_test(alpha, cell, noise);
+	//output_test(alpha, cell, noise);
 
-	std::ofstream func_name;
+	/*std::ofstream func_name;
 	func_name.open("function.txt");
 	func_name << "in gen 3d" << std::endl;
-	func_name.close();
+	func_name.close();*/
 
 }
 
@@ -287,12 +287,12 @@ void BiasVectorSteppable::gen_persistent_bias_2d_x(const double alpha, CellG *ce
 	cell->biasVecX = 0;
 	cell->biasVecY = alpha*cell->biasVecY + (1 - alpha)*noise[0];
 	cell->biasVecZ = alpha*cell->biasVecZ + (1 - alpha)*noise[1];
-	output_test(alpha, cell, noise);
+	//output_test(alpha, cell, noise);
 
-	std::ofstream func_name;
+	/*std::ofstream func_name;
 	func_name.open("function.txt");
 	func_name << "in gen 2dx" << std::endl;
-	func_name.close();
+	func_name.close();*/
 }
 
 void BiasVectorSteppable::gen_persistent_bias_2d_y(const double alpha, CellG *cell)
@@ -302,12 +302,12 @@ void BiasVectorSteppable::gen_persistent_bias_2d_y(const double alpha, CellG *ce
 	cell->biasVecX = alpha*cell->biasVecX + (1 - alpha)*noise[0];
 	cell->biasVecY = 0;
 	cell->biasVecZ = alpha*cell->biasVecZ + (1 - alpha)*noise[1];
-	output_test(alpha, cell, noise);
+	//output_test(alpha, cell, noise);
 
-	std::ofstream func_name;
+	/*std::ofstream func_name;
 	func_name.open("function.txt");
 	func_name << "in gen 2dy" << std::endl;
-	func_name.close();
+	func_name.close();*/
 }
 
 void BiasVectorSteppable::gen_persistent_bias_2d_z(const double alpha, CellG *cell)
@@ -317,12 +317,12 @@ void BiasVectorSteppable::gen_persistent_bias_2d_z(const double alpha, CellG *ce
 	cell->biasVecX = alpha*cell->biasVecX + (1 - alpha)*noise[0];
 	cell->biasVecY = alpha*cell->biasVecY + (1 - alpha)*noise[1];
 	cell->biasVecZ = 0;
-	output_test(alpha, cell, noise);
+	//output_test(alpha, cell, noise);
 
-	std::ofstream func_name;
+	/*std::ofstream func_name;
 	func_name.open("function.txt");
 	func_name << "in gen 2d_z" << std::endl;
-	func_name.close();
+	func_name.close();*/
 }
 
 
@@ -484,6 +484,7 @@ void BiasVectorSteppable::determine_bias_type(CC3DXMLElement *_xmlData)
 	{
 		biasType = WHITE;
 	}
+	return;
 }
 
 
@@ -673,9 +674,12 @@ void BiasVectorSteppable::set_step_function(CC3DXMLElement *_xmlData)
 			break;
 		}
 	}
+	return;
 }
 
-void BiasVectorSteppable::new_update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
+
+
+void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 {
 	//PARSE XML IN THIS FUNCTION
 
@@ -711,12 +715,12 @@ void BiasVectorSteppable::new_update(CC3DXMLElement *_xmlData, bool _fullInitFla
 	determine_field_type();
 
 	set_step_function(_xmlData);
-
+	return;
 }
 
 
 
-void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
+void BiasVectorSteppable::old_update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 
 
