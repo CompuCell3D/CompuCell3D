@@ -517,6 +517,7 @@ void BiasVectorSteppable::determine_noise_generator()
 			break;
 		}
 	}
+	return;
 }
 
 void BiasVectorSteppable::determine_field_type()
@@ -538,6 +539,7 @@ void BiasVectorSteppable::determine_field_type()
 		fieldType = FTYPE3D;
 	}
 	cerr << "field type " << fieldType << std::endl;
+	return;
 }
 
 void BiasVectorSteppable::set_white_step_function()
@@ -560,6 +562,7 @@ void BiasVectorSteppable::set_white_step_function()
 		stepFcnPtr = &BiasVectorSteppable::step_white_2d_x;
 		break;
 	}
+	return;
 }
 
 void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData)
@@ -634,6 +637,9 @@ void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData)
 		}
 	}
 
+
+	stepFcnPtr = &BiasVectorSteppable::step_persistent_bias;
+	return;
 
 }
 
