@@ -445,6 +445,22 @@ void BiasVectorSteppable::randomize_initial_bias()//(CellG *cell)//, bool rnd_in
 }
 
 
+
+
+void BiasVectorSteppable::new_update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
+{
+	//PARSE XML IN THIS FUNCTION
+
+	//For more information on XML parser function please see CC3D code or lookup XML utils API
+
+	automaton = potts->getAutomaton();
+
+	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
+
+	set<unsigned char> cellTypesSet;
+}
+
+
 void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 

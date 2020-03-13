@@ -165,7 +165,9 @@ namespace CompuCell3D {
 
     //SteerableObject interface
 
-    virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
+	virtual void new_update(CC3DXMLElement * _xmlData, bool _fullInitFlag);
+
+	virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
 
     virtual std::string steerableName();
 
