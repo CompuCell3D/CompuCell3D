@@ -165,6 +165,18 @@ namespace CompuCell3D {
 
     //SteerableObject interface
 
+	void determine_bias_type(CC3DXMLElement * _xmlData);
+
+	void determine_noise_generator();
+
+	void determine_field_type();
+
+	void set_white_step_function();
+
+	void set_persitent_step_function(CC3DXMLElement * _xmlData);
+
+	void set_step_function(CC3DXMLElement * _xmlData);
+
 	virtual void new_update(CC3DXMLElement * _xmlData, bool _fullInitFlag);
 
 	virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);

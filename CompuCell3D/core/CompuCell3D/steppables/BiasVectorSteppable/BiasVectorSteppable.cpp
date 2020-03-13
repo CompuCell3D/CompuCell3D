@@ -445,7 +445,229 @@ void BiasVectorSteppable::randomize_initial_bias()//(CellG *cell)//, bool rnd_in
 }
 
 
+void BiasVectorSteppable::determine_bias_type(CC3DXMLElement *_xmlData)
+{
+	if (!_xmlData)
+	{
+		biasType = WHITE;
+	}
+	else if (_xmlData->findElement("BiasChange"))
+	{
+		CC3DXMLElement *_xmlDataBiasChange = _xmlData->getFirstElement("BiasChange");
 
+		std::string biasTypeName = _xmlDataBiasChange->getAttribute("Type");
+
+		transform(biasTypeName.begin(), biasTypeName.end(), biasTypeName.begin(), ::tolower);
+
+		if (biasTypeName == "white")// b = white noise
+		{
+			biasType = WHITE;
+		}
+		else if (biasTypeName == "persistent")// b(t+1) = a*b(t) + (1-a)*noise
+		{
+			biasType = PERSISTENT;
+		}
+		else if (biasTypeName == "manual")// for changing b in python
+		{
+			biasType = MANUAL;
+		}
+		else if (biasTypeName == "custom")// for muExpressions
+		{
+			biasType = CUSTOM;
+		}
+		else
+		{
+			throw std::invalid_argument("Invalid bias change type in BiasChange");
+		}
+	}
+	else
+	{
+		biasType = WHITE;
+	}
+}
+
+
+void BiasVectorSteppable::determine_noise_generator()
+{
+	if (fieldDim.x == 1 || fieldDim.y == 1 || fieldDim.z == 1)
+	{
+		noiseType = VEC_GEN_WHITE2D;
+	}
+	else
+	{
+		noiseType = VEC_GEN_WHITE3D;
+	}
+
+	std::cerr << "noise type" << noiseType << std::endl;
+	switch (noiseType)
+	{
+		case VEC_GEN_WHITE2D:
+		{
+			noiseFcnPtr = &BiasVectorSteppable::white_noise_2d;
+			break;
+		}
+		case VEC_GEN_WHITE3D:
+		{
+			noiseFcnPtr = &BiasVectorSteppable::white_noise_3d;
+			break;
+		}
+		default:
+		{
+			noiseFcnPtr = &BiasVectorSteppable::white_noise_3d;
+			break;
+		}
+	}
+}
+
+void BiasVectorSteppable::determine_field_type()
+{
+	if (fieldDim.x == 1)
+	{
+		fieldType = FTYPE2DX;
+	}
+	else if (fieldDim.y == 1)
+	{
+		fieldType = FTYPE2DY;
+	}
+	else if (fieldDim.z == 1)
+	{
+		fieldType = FTYPE2DZ;
+	}
+	else
+	{
+		fieldType = FTYPE3D;
+	}
+	cerr << "field type " << fieldType << std::endl;
+}
+
+void BiasVectorSteppable::set_white_step_function()
+{
+	switch (fieldType)
+	{
+	case CompuCell3D::BiasVectorSteppable::FTYPE3D:
+		stepFcnPtr = &BiasVectorSteppable::step_white_3d;
+		break;
+	case CompuCell3D::BiasVectorSteppable::FTYPE2DX:
+		stepFcnPtr = &BiasVectorSteppable::step_white_2d_x;
+		break;
+	case CompuCell3D::BiasVectorSteppable::FTYPE2DY:
+		stepFcnPtr = &BiasVectorSteppable::step_white_2d_y;
+		break;
+	case CompuCell3D::BiasVectorSteppable::FTYPE2DZ:
+		stepFcnPtr = &BiasVectorSteppable::step_white_2d_z;
+		break;
+	default:
+		stepFcnPtr = &BiasVectorSteppable::step_white_2d_x;
+		break;
+	}
+}
+
+void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData)
+{
+	//For now I'll only do by cell type.
+	/*<Steppable Type = "BiasVectorSteppable">
+	<BiasChange Type = "Persistent" / >
+	<BiasChangeParameters CellType = "Cell" Alpha = "0.5">
+	< / Steppable>*/
+
+	CC3DXMLElement *_biasXML = _xmlData->getFirstElement("BiasChange");
+	CC3DXMLElementList paramVec = _biasXML->getElements("BiasChangeParameters");
+
+	biasMomenParamVec.clear();
+
+	vector<int> typeIdVec;
+	vector<BiasMomenParam> biasMomemTemp;
+
+	for (int i = 0; i < paramVec.size(); ++i)
+	{
+
+		double alpha = paramVec[i]->getAttributeAsDouble("Alpha");
+		std::string type = paramVec[i]->getAttribute("CellType");
+
+		BiasMomenParam bParam;
+
+		bParam.persistentAlpha = alpha;
+		bParam.typeName = type;
+
+		std::cerr << "automaton=" << automaton << std::endl;
+		biasMomemTemp.push_back(bParam);
+		typeIdVec.push_back(automaton->getTypeId(type));
+	}
+
+	vector<int>::iterator pos = max_element(typeIdVec.begin(), typeIdVec.end());
+
+	int maxTypeId = *pos;
+	
+	biasMomenParamVec.assign(maxTypeId, BiasMomenParam());
+
+	for (int i = 0; i < biasMomemTemp.size(); ++i)
+	{
+		biasMomenParamVec[typeIdVec[i]] = biasMomemTemp[i];
+	}
+
+	switch (fieldType)
+	{
+		case CompuCell3D::BiasVectorSteppable::FTYPE3D:
+		{
+			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_3d;
+			break;
+		}
+		case CompuCell3D::BiasVectorSteppable::FTYPE2DX:
+		{
+			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
+			break;
+		}
+		case CompuCell3D::BiasVectorSteppable::FTYPE2DY:
+		{
+			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_y;
+			break;
+		}
+		case CompuCell3D::BiasVectorSteppable::FTYPE2DZ:
+		{
+			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_z;
+			break;
+		}
+		default:
+		{
+			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
+			break;
+		}
+	}
+
+
+}
+
+void BiasVectorSteppable::set_step_function(CC3DXMLElement *_xmlData)
+{
+	switch (biasType)
+	{
+		case CompuCell3D::BiasVectorSteppable::WHITE:
+		{
+			set_white_step_function();
+			break;
+		}
+		case CompuCell3D::BiasVectorSteppable::PERSISTENT:
+		{
+			set_persitent_step_function(_xmlData);
+			break;
+		}
+		case CompuCell3D::BiasVectorSteppable::MANUAL:
+		{
+			set_white_step_function();//PLACE HOLDER
+			break;
+		}
+		case CompuCell3D::BiasVectorSteppable::CUSTOM:
+		{	
+			set_white_step_function();//PLACE HOLDER
+			break;
+		}
+		default:
+		{
+			set_white_step_function();
+			break;
+		}
+	}
+}
 
 void BiasVectorSteppable::new_update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 {
@@ -458,7 +680,34 @@ void BiasVectorSteppable::new_update(CC3DXMLElement *_xmlData, bool _fullInitFla
 	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
 
 	set<unsigned char> cellTypesSet;
+
+
+	/*
+	Example xml:
+
+
+	<Steppable Type="BiasVectorSteppable">
+	<BiasChange Type = "persistent"/>
+	<BiasChangeParameters CellType="Cell" Alpha = "0.5"/>
+	</Steppable>
+
+
+	*/
+
+	determine_bias_type(_xmlData);
+	std::cerr << "bias type " << biasType << std::endl;
+	
+	boundaryStrategy = BoundaryStrategy::getInstance();
+
+
+	determine_noise_generator();
+
+	determine_field_type();
+
+	set_step_function(_xmlData);
+
 }
+
 
 
 void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
@@ -601,7 +850,7 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 
 
-	vector<int>::iterator pos;
+	//vector<int>::iterator pos;
 	
 	switch (biasType)
 	{
