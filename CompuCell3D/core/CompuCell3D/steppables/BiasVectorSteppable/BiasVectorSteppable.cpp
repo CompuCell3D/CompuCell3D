@@ -607,39 +607,46 @@ void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData)
 	for (int i = 0; i < biasMomemTemp.size(); ++i)
 	{
 		biasMomenParamVec[typeIdVec[i]] = biasMomemTemp[i];
+		std::cerr << " in bias momen vec assign " << i << std::endl;
 	}
 
 	switch (fieldType)
 	{
 		case CompuCell3D::BiasVectorSteppable::FTYPE3D:
 		{
+			std::cerr << "gen fnc case pers 3d " << std::endl;
 			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_3d;
 			break;
 		}
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DX:
 		{
+			std::cerr << "gen fnc case pers 2dx " << std::endl;
 			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
 			break;
 		}
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DY:
 		{
+			std::cerr << "gen fnc case pers 2dy " << std::endl;
 			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_y;
 			break;
 		}
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DZ:
 		{
+			std::cerr << "gen fnc case pers 2dz " << std::endl;
 			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_z;
 			break;
 		}
 		default:
 		{
+			std::cerr << "gen fnc case pers def " << std::endl;
 			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
 			break;
 		}
 	}
 
-
+	std::cerr << "before assign fcn p" << std::endl;
 	stepFcnPtr = &BiasVectorSteppable::step_persistent_bias;
+	std::cerr << "after assign fcn p" << std::endl;
 	return;
 
 }
