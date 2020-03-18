@@ -26,7 +26,11 @@ BiasVectorSteppable::BiasVectorSteppable() : cellFieldG(0),sim(0),potts(0),xmlDa
 
 
 BiasVectorSteppable::~BiasVectorSteppable() {
+	pUtils->destroyLock(lockPtr);
 
+	delete lockPtr;
+
+	lockPtr = 0;
 }
 
 
@@ -56,6 +60,12 @@ cerr << "got into biasvec step" << endl;
   
   //potts->getCellFactoryGroupPtr()->registerClass(&biasVectorSteppableDataAccessor);
   simulator->registerSteerableObject(this);
+
+  pUtils = sim->getParallelUtils();
+
+  lockPtr = new ParallelUtilsOpenMP::OpenMPLock_t;
+
+  pUtils->initLock(lockPtr);
 
 
 
@@ -722,6 +732,7 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 	determine_field_type();
 
 	set_step_function(_xmlData);
+	std:cerr << "before update return" << std::endl;
 	return;
 }
 

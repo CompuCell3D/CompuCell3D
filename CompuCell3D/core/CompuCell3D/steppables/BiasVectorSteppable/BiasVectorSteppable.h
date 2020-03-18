@@ -73,6 +73,12 @@ namespace CompuCell3D {
 
     Dim3D fieldDim;
 
+	ParallelUtilsOpenMP *pUtils;
+
+
+
+	ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;
+
 	enum FieldType { FTYPE3D = 0, FTYPE2DX = 1, FTYPE2DY = 2, FTYPE2DZ = 3 };
 	FieldType fieldType;
 
