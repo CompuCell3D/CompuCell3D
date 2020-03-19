@@ -943,7 +943,8 @@ void BiasVectorSteppable::old_update(CC3DXMLElement *_xmlData, bool _fullInitFla
 		vector<int>::iterator pos = max_element(typeIdVec.begin(), typeIdVec.end());
 		int maxTypeId = *pos;
 		cerr << "max type id " << maxTypeId << std::endl;
-		biasMomenParamVec.assign(maxTypeId,BiasMomenParam());
+		biasMomenParamVec.clear();
+		biasMomenParamVec.assign(maxTypeId+1,BiasMomenParam());
 		cerr << "inited iterator, biasMomenParamVec" << std::endl;
 		cerr << biasMomenParamVec.size() << std::endl;
 		for (int i = 0; i < biasMomemTemp.size(); ++i)
