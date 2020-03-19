@@ -592,6 +592,8 @@ void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData)
 	vector<int> typeIdVec;
 	vector<BiasMomenParam> biasMomemTemp;
 
+	biasMomemTemp.clear();
+
 	for (int i = 0; i < paramVec.size(); ++i)
 	{
 
@@ -611,7 +613,7 @@ void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData)
 	vector<int>::iterator pos = max_element(typeIdVec.begin(), typeIdVec.end());
 
 	int maxTypeId = *pos;
-	
+	biasMomenParamVec.clear();
 	biasMomenParamVec.assign(maxTypeId, BiasMomenParam());
 
 	for (int i = 0; i < biasMomemTemp.size(); ++i)

@@ -43,11 +43,31 @@ namespace CompuCell3D {
   class BIASVECTORSTEPPABLE_EXPORT BiasMomenParam
   {
   public:
-	  BiasMomenParam() : persistentAlpha(0.0) {}
+	  // add destructor, default initializer
+	  //BiasMomenParam() : persistentAlpha(0.0) {}
+	  BiasMomenParam() {
+		  persistentAlpha = 0;
+		  typeName = "";
+	  };
 	  double persistentAlpha;
 	  std::string typeName;
+	  virtual ~BiasMomenParam() {};
+	  /*{
+		  persistentAlpha = 0;
+		  typeName = "";
+	  };*/
+	 /* {
+		  delete persistentAlpha;
+	  };*/
   };
-	  
+
+ // BiasMomenParam::~BiasMomenParam() {};
+
+  /*BiasMomenParam::~BiasMomenParam()
+  {
+	  delete persistentAlpha;
+  }
+	  */
 
   class BIASVECTORSTEPPABLE_EXPORT BiasVectorSteppable : public Steppable {
 
