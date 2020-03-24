@@ -1,0 +1,5 @@
+<Simulation version="4.1.0">
+   <XMLScript Type="XMLScript">Simulation/CC3DJitTest.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/CC3DJitTest.py</PythonScript>
+   <Resource Type="Python">Simulation/CC3DJitTestSteppables.py</Resource>
+</Simulation>
