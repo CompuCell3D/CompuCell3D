@@ -32,6 +32,10 @@ class EnergyFunctionCalculatorStatistics:public EnergyFunctionCalculator{
 	  virtual long get_number_energy_fcn_calculations();
 	  virtual void range(int *rangevec, int n);
 
+	  // Python reporting
+
+	  std::vector<std::vector<double> > getCurrentEnergyChanges() { return totEnergyDataListCurrent; }
+	  std::vector<bool> getCurrentFlipResults() { return accNotAccListCurrent; }
 
    private:
       
@@ -51,7 +55,9 @@ class EnergyFunctionCalculatorStatistics:public EnergyFunctionCalculator{
 	  std::list<int> mcs_list;
 
       std::list<std::vector<double> > totEnergyDataList; // sotres energies for each spin flip attempt
+	  std::vector<std::vector<double> > totEnergyDataListCurrent; //stores energies for each spin flip attempt for current step; for reporting in Python
       std::list<bool> accNotAccList; //tells whether entry in totEnergyVecVec is accepted or not
+	  std::vector<bool> accNotAccListCurrent; // tells whether entry in totEnergyDataListCurrent is accepted or not
 
       
       //stat data vectors

@@ -275,6 +275,12 @@ void Potts3D::unregisterEnergyFunction(std::string _functionName) {
 
 double Potts3D::getEnergy() { return energy; }
 
+std::vector<std::string> Potts3D::getEnergyFunctionNames() { return energyCalculator->getEnergyFunctionNames(); }
+
+std::vector<std::vector<double> > Potts3D::getCurrentEnergyChanges() { return energyCalculator->getCurrentEnergyChanges(); }
+
+std::vector<bool> Potts3D::getCurrentFlipResults() { return energyCalculator->getCurrentFlipResults(); }
+
 void Potts3D::registerConnectivityConstraint(EnergyFunction * _connectivityConstraint) {
 	connectivityConstraint = _connectivityConstraint;
 }

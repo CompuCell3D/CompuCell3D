@@ -1130,6 +1130,7 @@ FIELD3DEXTENDER(Field3D<int>,int)
 
 %template(vectorint) std::vector<int>;
 %template(vectorunsignedchar) std::vector<unsigned char>;
+%template(vectorbool) std::vector<bool>;
 
 
 %include "Field3D/Field3DChangeWatcher.h"

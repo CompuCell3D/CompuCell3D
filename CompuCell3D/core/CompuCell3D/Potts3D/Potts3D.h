@@ -373,6 +373,15 @@ namespace CompuCell3D {
 		 */
 		double getEnergy();
 
+		// Energy statistics interface
+
+		// Returns registered energy function names
+		virtual std::vector<std::string> getEnergyFunctionNames();
+		// Returns energy calculations for each flip attempt and registered energy function
+		virtual std::vector<std::vector<double> > getCurrentEnergyChanges();
+		// Returns flip attempt results
+		virtual std::vector<bool> getCurrentFlipResults();
+
 		/**
 		 * Allocate a cell.
 		 *
