@@ -1,4 +1,5 @@
 <Simulation version="3.6.1">
     <XMLScript Type="XMLScript">Simulation/ConvergentExtension.xml</XMLScript>
     <PythonScript>Simulation/ConvergentExtension.py</PythonScript>
+    <Resource Type="Python">Simulation/ConvergentExtensionSteppables.py</Resource>
 </Simulation>

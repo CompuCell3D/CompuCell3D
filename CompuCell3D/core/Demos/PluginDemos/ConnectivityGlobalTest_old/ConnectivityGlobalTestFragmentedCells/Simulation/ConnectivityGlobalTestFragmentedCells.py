@@ -1,3 +1,7 @@
 from cc3d import CompuCellSetup
 
+from ConnectivityGlobalTestFragmentedCellsSteppables import ConnectivityGlobalTestFragmentedCellsSteppable
+
+CompuCellSetup.register_steppable(steppable=ConnectivityGlobalTestFragmentedCellsSteppable(frequency=1))
+
 CompuCellSetup.run()

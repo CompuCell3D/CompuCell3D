@@ -1,3 +1,7 @@
 from cc3d import CompuCellSetup
 
+from diffusion_steady_state_2DSteppables import diffusion_steady_state_2DSteppable
+
+CompuCellSetup.register_steppable(steppable=diffusion_steady_state_2DSteppable(frequency=1))
+
 CompuCellSetup.run()

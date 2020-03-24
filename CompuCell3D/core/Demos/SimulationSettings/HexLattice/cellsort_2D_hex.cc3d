@@ -2,5 +2,6 @@
 
     <XMLScript Type="XMLScript">Simulation/cellsort_2D_hex.xml</XMLScript>
     <PythonScript >Simulation/cellsort_2D_hex.py</PythonScript>
+    <Resource Type="Python">Simulation/cellsort_2D_hexSteppables.py</Resource>
 
 </Simulation>

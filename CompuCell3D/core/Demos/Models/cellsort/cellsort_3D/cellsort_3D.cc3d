@@ -2,5 +2,6 @@
 
     <XMLScript Type="XMLScript">Simulation/cellsort_3D.xml</XMLScript>
     <PythonScript>Simulation/cellsort_3D.py</PythonScript>
+    <Resource Type="Python">Simulation/cellsort_3DSteppables.py</Resource>
 
 </Simulation>

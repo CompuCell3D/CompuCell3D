@@ -1,5 +1,6 @@
 <Simulation version="3.6.1">
     <XMLScript Type="XMLScript">Simulation/elasticityTestFlexExternalPotential.xml</XMLScript>
     <PythonScript>Simulation/elasticityTestFlexExternalPotential.py</PythonScript>
+    <Resource Type="Python">Simulation/elasticityTestFlexExternalPotentialSteppables.py</Resource>
     <PIFFile>Simulation/elasticityTest.piff</PIFFile>
 </Simulation>

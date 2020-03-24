@@ -1,3 +1,7 @@
 from cc3d import CompuCellSetup
 
+from cellsort_2D_FluctuationAmplitudeSteppables import cellsort_2D_FluctuationAmplitudeSteppable
+
+CompuCellSetup.register_steppable(steppable=cellsort_2D_FluctuationAmplitudeSteppable(frequency=1))
+
 CompuCellSetup.run()
