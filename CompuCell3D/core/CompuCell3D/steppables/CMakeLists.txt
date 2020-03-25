@@ -42,6 +42,7 @@ ADD_SUBDIRECTORY(Dicty)
 ADD_SUBDIRECTORY(Mitosis)
 ADD_SUBDIRECTORY(ObjInitializer)
 ADD_SUBDIRECTORY(RandomInitializers)
+ADD_SUBDIRECTORY(ForceCalculator)
 
 
 

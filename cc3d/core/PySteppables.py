@@ -622,6 +622,15 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def get_box_coordinates(self):
         return self.potts.getMinCoordinates(), self.potts.getMaxCoordinates()
 
+    @staticmethod
+    def get_calculated_force(x: int, y: int, z: int = 0):
+        fcs = CompuCell.getForceCalculatorSteppable()
+        if fcs is None:
+            return None
+        fcs: CompuCell.ForceCalculator
+        pt = CompuCell.Point3D(x, y, z)
+        return [fcs.getForceComponent(pt, i) for i in range(3)]
+
     def process_steering_panel_data(self):
         """
         Function to be implemented in steppable where we react to changes in the steering panel
