@@ -4,12 +4,18 @@ from os.path import *
 import pandas as pd
 from collections import OrderedDict
 import numpy.testing as npt
+from inspect import currentframe, getframeinfo
+
+
+def get_linenumber_fname():
+    cf = currentframe()
+    return f'line: {cf.f_back.f_lineno} in {getframeinfo(cf).filename} '
 
 
 class DiffusionSolverSteppable(SteppableBasePy):
     def __init__(self, frequency=100):
         SteppableBasePy.__init__(self, frequency)
-        self.generate_reference_flag = True
+        self.generate_reference_flag = False
 
     def start(self):
         """
@@ -24,12 +30,20 @@ class DiffusionSolverSteppable(SteppableBasePy):
         reference_output_df = self.generate_reference_output()
         reference_output_df = reference_output_df.sort_values(by=['x', 'y', 'z'])
 
-        npt.assert_array_almost_equal(in_df.x.values, reference_output_df.x.values, decimal=2)
+        test_log = ''
+        try:
+            npt.assert_array_almost_equal(in_df.x.values, reference_output_df.x.values, decimal=2)
+        except AssertionError as e:
+            test_log += f'{str(e)}\n'
+
         npt.assert_array_almost_equal(in_df.y.values, reference_output_df.y.values, decimal=2)
         npt.assert_array_almost_equal(in_df.z.values, reference_output_df.z.values, decimal=2)
-        npt.assert_array_almost_equal(in_df.val.values, reference_output_df.val.values, decimal=5)
+        try:
+            npt.assert_array_almost_equal(in_df.val.values - 1, reference_output_df.val.values, decimal=10)
+        except AssertionError as e:
+            test_log += f'{get_linenumber_fname()} \n {str(e)}\n'
 
-
+        print(test_log)
 
     def generate_reference_output(self):
 
