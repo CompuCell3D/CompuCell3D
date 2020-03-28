@@ -100,7 +100,7 @@ class UserInterface(QMainWindow):
 
         # # Generate the redirection helpers
         self.stdout = Redirector(False)
-        self.stderr = Redirector(True)
+        self.stderr = Redirector(False)
         # #TODO
         self.stderr.setStdErrConsole(self.console.getStdErrConsole())
 
