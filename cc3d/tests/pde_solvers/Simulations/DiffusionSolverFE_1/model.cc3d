@@ -1,0 +1,6 @@
+<Simulation version="3.6.1">
+   <XMLScript Type="XMLScript">Simulation/diffusion_2D_scale.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/diffusion_2D_scale.py</PythonScript>
+   <Resource Copy="No" Type="Field">Simulation/diffusion_2D.pulse.txt</Resource>
+   <Resource Type="Python">Simulation/diffusion_steppable.py</Resource>
+</Simulation>
