@@ -1,10 +1,23 @@
 from cc3d.core.PySteppables import *
 import numpy as np
 from os.path import *
+import os
+import sys
 import pandas as pd
 from collections import OrderedDict
 import numpy.testing as npt
 from inspect import currentframe, getframeinfo
+from pathlib import Path
+
+
+def get_test_output_dir():
+
+    try:
+        test_output_dir = os.environ['CC3D_TEST_OUTPUT_DIR']
+    except KeyError:
+        test_output_dir = Path().home().joinpath('CC3D_test_output_dir')
+
+    return test_output_dir
 
 
 def get_linenumber_fname():
@@ -43,7 +56,10 @@ class DiffusionSolverSteppable(SteppableBasePy):
         except AssertionError as e:
             test_log += f'{get_linenumber_fname()} \n {str(e)}\n'
 
+        test_output_dir = get_test_output_dir()
+        print(sys.stderr, f'test_output_dir={test_output_dir}')
         print(test_log)
+
 
     def generate_reference_output(self):
 
@@ -74,6 +90,10 @@ class DiffusionSolverSteppable(SteppableBasePy):
         return out_df
 
     def step(self, mcs):
+        if mcs == 100:
+            print(f'get_test_output_dir()={get_test_output_dir()}')
+            print(sys.stderr, 'exiting')
+            sys.exit()
 
         if mcs == 500:
 
