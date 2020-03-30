@@ -238,7 +238,7 @@ void BiasVectorSteppable::step_persistent_bias(const unsigned int currentStep)
 	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr)
 	{
 		cell = cellInventoryPtr->getCell(cInvItr);
-		double alpha = biasMomenParamVec[cell->type].persistentAlpha;
+		double alpha = biasPersistParamVec[cell->type].persistentAlpha;
 		//alpha_test << alpha<<std::endl;
 		gen_persistent_bias(alpha, cell);
 
@@ -250,12 +250,12 @@ void BiasVectorSteppable::step_persistent_bias(const unsigned int currentStep)
 
 //==========================================================
 /*
-MOMENTUM BIAS GENERATORS
+PERSISTENT BIAS GENERATORS
 */
 
 void BiasVectorSteppable::gen_persistent_bias(const double alpha, CellG * cell) {
 
-	return (this->*momGenFcnPtr)(alpha,cell);
+	return (this->*perGenFcnPtr)(alpha,cell);
 
 }
 
@@ -587,12 +587,12 @@ void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData)
 	CC3DXMLElement *_biasXML = _xmlData->getFirstElement("BiasChange");
 	CC3DXMLElementList paramVec = _biasXML->getElements("BiasChangeParameters");
 
-	biasMomenParamVec.clear();
+	biasPersistParamVec.clear();
 
 	vector<int> typeIdVec;
-	vector<BiasMomenParam> biasMomemTemp;
+	vector<BiasPersistParam> biasPersistTemp;
 
-	biasMomemTemp.clear();
+	biasPersistTemp.clear();
 
 	for (int i = 0; i < paramVec.size(); ++i)
 	{
@@ -600,26 +600,26 @@ void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData)
 		double alpha = paramVec[i]->getAttributeAsDouble("Alpha");
 		std::string type = paramVec[i]->getAttribute("CellType");
 
-		BiasMomenParam bParam;
+		BiasPersistParam bParam;
 
 		bParam.persistentAlpha = alpha;
 		bParam.typeName = type;
 
 		std::cerr << "automaton=" << automaton << std::endl;
-		biasMomemTemp.push_back(bParam);
+		biasPersistTemp.push_back(bParam);
 		typeIdVec.push_back(automaton->getTypeId(type));
 	}
 
 	vector<int>::iterator pos = max_element(typeIdVec.begin(), typeIdVec.end());
 
 	int maxTypeId = *pos;
-	biasMomenParamVec.clear();
-	biasMomenParamVec.assign(maxTypeId+1, BiasMomenParam());
+	biasPersistParamVec.clear();
+	biasPersistParamVec.assign(maxTypeId+1, BiasPersistParam());
 
-	for (int i = 0; i < biasMomemTemp.size(); ++i)
+	for (int i = 0; i < biasPersistTemp.size(); ++i)
 	{
-		biasMomenParamVec[typeIdVec[i]] = biasMomemTemp[i];
-		std::cerr << " in bias momen vec assign " << i << std::endl;
+		biasPersistParamVec[typeIdVec[i]] = biasPersistTemp[i];
+		std::cerr << " in bias persist vec assign " << i << std::endl;
 	}
 
 	switch (fieldType)
@@ -627,31 +627,31 @@ void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData)
 		case CompuCell3D::BiasVectorSteppable::FTYPE3D:
 		{
 			std::cerr << "gen fnc case pers 3d " << std::endl;
-			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_3d;
+			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_3d;
 			break;
 		}
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DX:
 		{
 			std::cerr << "gen fnc case pers 2dx " << std::endl;
-			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
+			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
 			break;
 		}
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DY:
 		{
 			std::cerr << "gen fnc case pers 2dy " << std::endl;
-			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_y;
+			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_y;
 			break;
 		}
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DZ:
 		{
 			std::cerr << "gen fnc case pers 2dz " << std::endl;
-			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_z;
+			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_z;
 			break;
 		}
 		default:
 		{
 			std::cerr << "gen fnc case pers def " << std::endl;
-			momGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
+			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
 			break;
 		}
 	}

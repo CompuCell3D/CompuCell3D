@@ -40,18 +40,18 @@ namespace CompuCell3D {
 
     class CellG;
 
-  class BIASVECTORSTEPPABLE_EXPORT BiasMomenParam
+  class BIASVECTORSTEPPABLE_EXPORT BiasPersistParam
   {
   public:
 	  // add destructor, default initializer
 	  //BiasMomenParam() : persistentAlpha(0.0) {}
-	  BiasMomenParam() {
+	  BiasPersistParam() {
 		  persistentAlpha = 0;
 		  typeName = "";
 	  };
 	  double persistentAlpha;
 	  std::string typeName;
-	  virtual ~BiasMomenParam() {};
+	  virtual ~BiasPersistParam() {};
 	  /*{
 		  persistentAlpha = 0;
 		  typeName = "";
@@ -112,7 +112,7 @@ namespace CompuCell3D {
 	BiasType biasType;
 
 
-	std::vector<BiasMomenParam> biasMomenParamVec;
+	std::vector<BiasPersistParam> biasPersistParamVec;
 
 
 
@@ -123,7 +123,7 @@ namespace CompuCell3D {
 	BiasVectorSteppable::noise_t noiseFcnPtr;
 
 	typedef void (BiasVectorSteppable::*mom_gen_t)(const double alpha, CellG * cell);
-	BiasVectorSteppable::mom_gen_t momGenFcnPtr;
+	BiasVectorSteppable::mom_gen_t perGenFcnPtr;
 
 	bool rnd_inited = false;
 	void randomize_initial_bias();// (CellG * cell);//, bool rnd_inited);
