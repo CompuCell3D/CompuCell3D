@@ -43,11 +43,31 @@ namespace CompuCell3D {
   class BIASVECTORSTEPPABLE_EXPORT BiasMomenParam
   {
   public:
-	  BiasMomenParam() : persistentAlpha(0.0) {}
+	  // add destructor, default initializer
+	  //BiasMomenParam() : persistentAlpha(0.0) {}
+	  BiasMomenParam() {
+		  persistentAlpha = 0;
+		  typeName = "";
+	  };
 	  double persistentAlpha;
 	  std::string typeName;
+	  virtual ~BiasMomenParam() {};
+	  /*{
+		  persistentAlpha = 0;
+		  typeName = "";
+	  };*/
+	 /* {
+		  delete persistentAlpha;
+	  };*/
   };
-	  
+
+ // BiasMomenParam::~BiasMomenParam() {};
+
+  /*BiasMomenParam::~BiasMomenParam()
+  {
+	  delete persistentAlpha;
+  }
+	  */
 
   class BIASVECTORSTEPPABLE_EXPORT BiasVectorSteppable : public Steppable {
 
@@ -72,6 +92,12 @@ namespace CompuCell3D {
 	std::string steppableName = "BiasVectorSteppable";
 
     Dim3D fieldDim;
+
+	ParallelUtilsOpenMP *pUtils;
+
+
+
+	ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;
 
 	enum FieldType { FTYPE3D = 0, FTYPE2DX = 1, FTYPE2DY = 2, FTYPE2DZ = 3 };
 	FieldType fieldType;
@@ -165,7 +191,21 @@ namespace CompuCell3D {
 
     //SteerableObject interface
 
-    virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
+	void determine_bias_type(CC3DXMLElement * _xmlData);
+
+	void determine_noise_generator();
+
+	void determine_field_type();
+
+	void set_white_step_function();
+
+	void set_persitent_step_function(CC3DXMLElement * _xmlData);
+
+	void set_step_function(CC3DXMLElement * _xmlData);
+
+	//virtual void new_update(CC3DXMLElement * _xmlData, bool _fullInitFlag);
+
+	virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
 
     virtual std::string steerableName();
 
