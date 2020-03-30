@@ -39,7 +39,7 @@ BiasVectorSteppable::~BiasVectorSteppable() {
 
 void BiasVectorSteppable::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
-cerr << "got into biasvec step" << endl;
+//cerr << "got into biasvec step" << endl;
 
   xmlData=_xmlData;
 
@@ -409,7 +409,7 @@ void BiasVectorSteppable::randomize_initial_bias()//(CellG *cell)//, bool rnd_in
 		CellInventory::cellInventoryIterator cInvItr;
 		CellG * cell = 0;
 
-		cerr << "in randomize initial bias" << std::endl;
+		//cerr << "in randomize initial bias" << std::endl;
 
 		for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr)
 		{
@@ -443,7 +443,7 @@ void BiasVectorSteppable::randomize_initial_bias()//(CellG *cell)//, bool rnd_in
 				cell->biasVecY = noise[1];
 				cell->biasVecZ = noise[2];
 			}
-			cerr << "in randomize initial bias " << cell->biasVecX << ' ' << cell->biasVecY << ' ' << cell->biasVecZ << ' ' << std::endl;
+			//cerr << "in randomize initial bias " << cell->biasVecX << ' ' << cell->biasVecY << ' ' << cell->biasVecZ << ' ' << std::endl;
 		}
 		rnd_inited = true;
 		return;
@@ -509,7 +509,7 @@ void BiasVectorSteppable::determine_noise_generator()
 		noiseType = VEC_GEN_WHITE3D;
 	}
 
-	std::cerr << "noise type" << noiseType << std::endl;
+	//std::cerr << "noise type" << noiseType << std::endl;
 	switch (noiseType)
 	{
 		case VEC_GEN_WHITE2D:
@@ -549,7 +549,7 @@ void BiasVectorSteppable::determine_field_type()
 	{
 		fieldType = FTYPE3D;
 	}
-	cerr << "field type " << fieldType << std::endl;
+	//cerr << "field type " << fieldType << std::endl;
 	return;
 }
 
@@ -619,46 +619,46 @@ void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData)
 	for (int i = 0; i < biasPersistTemp.size(); ++i)
 	{
 		biasPersistParamVec[typeIdVec[i]] = biasPersistTemp[i];
-		std::cerr << " in bias persist vec assign " << i << std::endl;
+		//std::cerr << " in bias persist vec assign " << i << std::endl;
 	}
 
 	switch (fieldType)
 	{
 		case CompuCell3D::BiasVectorSteppable::FTYPE3D:
 		{
-			std::cerr << "gen fnc case pers 3d " << std::endl;
+			//std::cerr << "gen fnc case pers 3d " << std::endl;
 			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_3d;
 			break;
 		}
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DX:
 		{
-			std::cerr << "gen fnc case pers 2dx " << std::endl;
+			//std::cerr << "gen fnc case pers 2dx " << std::endl;
 			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
 			break;
 		}
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DY:
 		{
-			std::cerr << "gen fnc case pers 2dy " << std::endl;
+			//std::cerr << "gen fnc case pers 2dy " << std::endl;
 			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_y;
 			break;
 		}
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DZ:
 		{
-			std::cerr << "gen fnc case pers 2dz " << std::endl;
+			//std::cerr << "gen fnc case pers 2dz " << std::endl;
 			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_z;
 			break;
 		}
 		default:
 		{
-			std::cerr << "gen fnc case pers def " << std::endl;
+			//std::cerr << "gen fnc case pers def " << std::endl;
 			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
 			break;
 		}
 	}
 
-	std::cerr << "before assign fcn p" << std::endl;
+	//std::cerr << "before assign fcn p" << std::endl;
 	stepFcnPtr = &BiasVectorSteppable::step_persistent_bias;
-	std::cerr << "after assign fcn p" << std::endl;
+	//std::cerr << "after assign fcn p" << std::endl;
 	return;
 
 }
@@ -724,7 +724,7 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 	*/
 
 	determine_bias_type(_xmlData);
-	std::cerr << "bias type " << biasType << std::endl;
+	//std::cerr << "bias type " << biasType << std::endl;
 	
 	boundaryStrategy = BoundaryStrategy::getInstance();
 
@@ -734,7 +734,7 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 	determine_field_type();
 
 	set_step_function(_xmlData);
-	std:cerr << "before update return" << std::endl;
+	//std:cerr << "before update return" << std::endl;
 	return;
 }
 
