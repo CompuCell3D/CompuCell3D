@@ -205,8 +205,6 @@ namespace CompuCell3D {
 
 	//virtual void new_update(CC3DXMLElement * _xmlData, bool _fullInitFlag);
 
-	virtual void old_update(CC3DXMLElement * _xmlData, bool _fullInitFlag);
-
 	virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
 
     virtual std::string steerableName();
