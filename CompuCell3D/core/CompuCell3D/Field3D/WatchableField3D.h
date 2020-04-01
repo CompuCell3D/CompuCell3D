@@ -59,6 +59,16 @@ namespace CompuCell3D {
       for (unsigned int i = 0; i < changeWatchers.getSize(); i++)
 	changeWatchers[i]->field3DChange(pt, value, oldValue);
     }
+
+	virtual void set(const Point3D &pt, const Point3D &addPt, const T value) {
+		T oldValue = Field3DImpl<T>::get(pt);
+		Field3DImpl<T>::set(pt, value);
+
+		for (unsigned int i = 0; i < changeWatchers.getSize(); i++) {
+			changeWatchers[i]->field3DChange(pt, value, oldValue);
+			changeWatchers[i]->field3DChange(pt, addPt, value, oldValue);
+		}
+	}
   };
 };
 #endif
