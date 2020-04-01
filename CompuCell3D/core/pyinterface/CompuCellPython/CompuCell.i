@@ -74,6 +74,9 @@
 #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 #include <CompuCell3D/Potts3D/EnergyFunctionCalculator.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
+#include <CompuCell3D/steppables/PDESolvers/DiffusionSolverFE.h>
+#include <CompuCell3D/steppables/PDESolvers/DiffusionSolverFE_CPU.h>
+#include <CompuCell3D/steppables/PDESolvers/ReactionDiffusionSolverFE.h>
 
 //#include <CompuCell3D/BabySim/BabyPottsParseData.h>
 //#include <CompuCell3D/BabySim/BabySim.h>
@@ -1203,6 +1206,24 @@ FIELD3DEXTENDER(Field3D<int>,int)
       }
    }
   
+
+%}
+
+%inline %{
+
+void updateFluctuationCompensators() {
+	
+	if(Simulator::steppableManager.isLoaded("DiffusionSolverFE")) {
+		DiffusionSolverFE_CPU * solver = (DiffusionSolverFE_CPU *)Simulator::steppableManager.get("DiffusionSolverFE");
+		solver->updateFluctuationCompensator();
+	}
+
+	if(Simulator::steppableManager.isLoaded("ReactionDiffusionSolverFE")) {
+		ReactionDiffusionSolverFE * solver = (ReactionDiffusionSolverFE *)Simulator::steppableManager.get("ReactionDiffusionSolverFE");
+		solver->updateFluctuationCompensator();
+	}
+
+}
 
 %}
 
