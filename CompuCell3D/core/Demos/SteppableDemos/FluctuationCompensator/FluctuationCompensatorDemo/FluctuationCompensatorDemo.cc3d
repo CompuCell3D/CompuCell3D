@@ -1,0 +1,5 @@
+<Simulation version="4.1.1">
+   <XMLScript Type="XMLScript">Simulation/FluctuationCompensatorDemo.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/FluctuationCompensatorDemo.py</PythonScript>
+   <Resource Type="Python">Simulation/FluctuationCompensatorDemoSteppables.py</Resource>
+</Simulation>
