@@ -99,13 +99,18 @@ class UserInterface(QMainWindow):
         self.__createLayout()
 
         # # Generate the redirection helpers
-        self.stdout = Redirector(False)
-        self.stderr = Redirector(True)
-        # #TODO
-        self.stderr.setStdErrConsole(self.console.getStdErrConsole())
+        self.stdout = sys.stdout
+        self.stderr = sys.stderr
+        # self.stdout = Redirector(True)
+        # self.stderr = Redirector(True)
+        # # #TODO
+        # self.stderr.setStdErrConsole(self.console.getStdErrConsole())
 
         # Now setup the connections
         if Configuration.getSetting("UseInternalConsole"):
+            self.stdout = Redirector(False)
+            self.stderr = Redirector(True)
+
             self.stdout.appendStdout.connect(self.appendToStdout)
             self.stderr.appendStderr.connect(self.appendToStderr)
             self.appendStdoutSignal.connect(self.console.appendToStdout)
