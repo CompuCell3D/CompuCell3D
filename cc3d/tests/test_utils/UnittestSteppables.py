@@ -18,6 +18,8 @@ class UnittestSteppablePdeSolver(SteppableBasePy):
 
         # override it in actual simulation code
         self.model_output_csv = None
+        # override it in actual simulation code
+        self.model_path = None
 
     @staticmethod
     def get_test_output_dir():
@@ -28,6 +30,16 @@ class UnittestSteppablePdeSolver(SteppableBasePy):
             test_output_dir = Path().home().joinpath('CC3D_test_output_dir')
 
         return test_output_dir
+
+    @staticmethod
+    def get_test_output_summary():
+
+        try:
+            test_output_summary = os.environ['CC3D_TEST_OUTPUT_SUMMARY']
+        except KeyError:
+            test_output_summary = join(UnittestSteppablePdeSolver.get_test_output_dir(), 'test_summary.csv')
+
+        return test_output_summary
 
     @staticmethod
     def get_linenumber_fname():
@@ -46,18 +58,35 @@ class UnittestSteppablePdeSolver(SteppableBasePy):
         try:
             npt.assert_array_almost_equal(in_df.x.values, reference_output_df.x.values, decimal=2)
         except AssertionError as e:
-            test_log += f'{str(e)}\n'
+            test_log += f'{self.get_linenumber_fname()} \n {str(e)}\n'
 
-        npt.assert_array_almost_equal(in_df.y.values, reference_output_df.y.values, decimal=2)
-        npt.assert_array_almost_equal(in_df.z.values, reference_output_df.z.values, decimal=2)
+        try:
+            npt.assert_array_almost_equal(in_df.y.values, reference_output_df.y.values, decimal=2)
+        except AssertionError as e:
+            test_log += f'{self.get_linenumber_fname()} \n {str(e)}\n'
+
+        try:
+            npt.assert_array_almost_equal(in_df.z.values, reference_output_df.z.values, decimal=2)
+        except AssertionError as e:
+            test_log += f'{self.get_linenumber_fname()} \n {str(e)}\n'
+
         try:
             npt.assert_array_almost_equal(in_df.val.values, reference_output_df.val.values, decimal=6)
         except AssertionError as e:
             test_log += f'{self.get_linenumber_fname()} \n {str(e)}\n'
 
         test_output_dir = self.get_test_output_dir()
-        print(sys.stderr, f'test_output_dir={test_output_dir}')
-        print(test_log)
+
+        with open(self.get_test_output_summary(), 'a') as out_file:
+            msg = f'---------------------------------------\n' \
+                  f'simulation: {self.model_path} \n'
+            if test_log.strip():
+                msg += f'error log: {test_log} \n'
+            else:
+                msg += f'OK\n'
+            msg += f'---------------------------------------\n'
+
+            out_file.write(msg)
 
     def generate_pde_solver_reference_output(self):
 

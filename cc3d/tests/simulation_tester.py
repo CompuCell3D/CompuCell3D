@@ -1,3 +1,6 @@
+# todo: make sure this runs with runScript, not only with the player
+# todo add various BC and secretion and non-trivial initial conditions to PDS
+
 from cc3d.tests.test_utils.RunSpecs import RunSpecs
 from cc3d.tests.test_utils.RunExecutor import RunExecutor
 
@@ -6,6 +9,8 @@ from os.path import *
 import os
 import shutil
 import sys
+
+
 
 # windows settings:
 # if sys.platform.startswith('win'):
@@ -62,6 +67,8 @@ with open(join(test_output_root,'cc3d_simulation_test_plan.txt'),'a') as fout:
 error_runs = []
 
 os.environ['CC3D_TEST_OUTPUT_DIR'] = test_output_root
+os.environ['CC3D_TEST_OUTPUT_SUMMARY'] = join(test_output_root, 'test_summary.csv')
+
 
 for i, cc3d_project in enumerate(cc3d_projects):
 
