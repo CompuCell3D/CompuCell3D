@@ -51,7 +51,7 @@ class UnittestSteppablePdeSolver(SteppableBasePy):
         npt.assert_array_almost_equal(in_df.y.values, reference_output_df.y.values, decimal=2)
         npt.assert_array_almost_equal(in_df.z.values, reference_output_df.z.values, decimal=2)
         try:
-            npt.assert_array_almost_equal(in_df.val.values - 1, reference_output_df.val.values, decimal=10)
+            npt.assert_array_almost_equal(in_df.val.values, reference_output_df.val.values, decimal=6)
         except AssertionError as e:
             test_log += f'{self.get_linenumber_fname()} \n {str(e)}\n'
 
