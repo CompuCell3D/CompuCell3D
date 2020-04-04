@@ -15,9 +15,10 @@ class UnittestSteppablePdeSolver(SteppableBasePy):
         SteppableBasePy.__init__(self, frequency)
         self.generate_reference_flag = False
         self.test_mcs = 500
+        self.fields_to_store = ['FGF']
 
         # override it in actual simulation code
-        self.model_output_csv = None
+        self.model_output_core = 'model.output'
         # override it in actual simulation code
         self.model_path = None
 
@@ -48,49 +49,56 @@ class UnittestSteppablePdeSolver(SteppableBasePy):
 
     def run_pde_solver_regression_tests(self):
 
-        in_df = pd.read_csv(self.model_output_csv)
-        in_df = in_df.sort_values(by=['x', 'y', 'z'])
+        for field_to_store in self.fields_to_store:
+            reference_field_csv = f'{self.model_output_core}.{field_to_store}.csv'
+            in_df = pd.read_csv(reference_field_csv)
 
-        reference_output_df = self.generate_pde_solver_reference_output()
-        reference_output_df = reference_output_df.sort_values(by=['x', 'y', 'z'])
+            in_df = in_df.sort_values(by=['x', 'y', 'z'])
 
-        test_log = ''
-        try:
-            npt.assert_array_almost_equal(in_df.x.values, reference_output_df.x.values, decimal=2)
-        except AssertionError as e:
-            test_log += f'{self.get_linenumber_fname()} \n {str(e)}\n'
+            reference_output_df = self.generate_pde_solver_reference_output(field_to_store=field_to_store)
+            reference_output_df = reference_output_df.sort_values(by=['x', 'y', 'z'])
 
-        try:
-            npt.assert_array_almost_equal(in_df.y.values, reference_output_df.y.values, decimal=2)
-        except AssertionError as e:
-            test_log += f'{self.get_linenumber_fname()} \n {str(e)}\n'
+            test_log = ''
+            try:
+                npt.assert_array_almost_equal(in_df.x.values, reference_output_df.x.values, decimal=2)
+            except AssertionError as e:
+                test_log += f'Field: {field_to_store} {self.get_linenumber_fname()} \n {str(e)}\n'
 
-        try:
-            npt.assert_array_almost_equal(in_df.z.values, reference_output_df.z.values, decimal=2)
-        except AssertionError as e:
-            test_log += f'{self.get_linenumber_fname()} \n {str(e)}\n'
+            try:
+                npt.assert_array_almost_equal(in_df.y.values, reference_output_df.y.values, decimal=2)
+            except AssertionError as e:
+                test_log += f'Field: {field_to_store} {self.get_linenumber_fname()} \n {str(e)}\n'
 
-        try:
-            npt.assert_array_almost_equal(in_df.val.values, reference_output_df.val.values, decimal=6)
-        except AssertionError as e:
-            test_log += f'{self.get_linenumber_fname()} \n {str(e)}\n'
+            try:
+                npt.assert_array_almost_equal(in_df.z.values, reference_output_df.z.values, decimal=2)
+            except AssertionError as e:
+                test_log += f'Field: {field_to_store} {self.get_linenumber_fname()} \n {str(e)}\n'
 
-        test_output_dir = self.get_test_output_dir()
+            try:
+                npt.assert_array_almost_equal(in_df.val.values, reference_output_df.val.values, decimal=6)
+            except AssertionError as e:
+                test_log += f'Field: {field_to_store} {self.get_linenumber_fname()} \n {str(e)}\n'
 
-        with open(self.get_test_output_summary(), 'a') as out_file:
+            test_output_dir = self.get_test_output_dir()
+
             msg = f'---------------------------------------\n' \
-                  f'simulation: {self.model_path} \n'
+                  f'field: {field_to_store} : simulation: {self.model_path} \n'
             if test_log.strip():
                 msg += f'error log: {test_log} \n'
             else:
                 msg += f'OK\n'
             msg += f'---------------------------------------\n'
 
-            out_file.write(msg)
+            try:
+                with open(self.get_test_output_summary(), 'a') as out_file:
 
-    def generate_pde_solver_reference_output(self):
+                    out_file.write(msg)
+            except FileNotFoundError:
+                print(msg)
 
-        field = self.field.FGF
+    def generate_pde_solver_reference_output(self, field_to_store):
+
+        field = CompuCell.getConcentrationField(self.simulator, field_to_store)
 
         x_list = []
         y_list = []
@@ -120,15 +128,16 @@ class UnittestSteppablePdeSolver(SteppableBasePy):
         if mcs == self.test_mcs:
 
             if self.generate_reference_flag:
-                out_df = self.generate_pde_solver_reference_output()
-                output_basename = 'model.output.csv'
-                output_path = output_basename
-                output_dir = self.output_dir
-                if output_dir is not None:
-                    output_path = Path(output_dir).joinpath(output_basename)
-                    # create folder to store data
-                    output_path.parent.mkdir(parents=True, exist_ok=True)
-                out_df.to_csv(output_path, index=False)
+                for field_to_store in self.fields_to_store:
+                    out_df = self.generate_pde_solver_reference_output(field_to_store=field_to_store)
+                    output_basename = Path(f'{self.model_output_core}.{field_to_store}.csv').name
+                    output_path = output_basename
+                    output_dir = self.output_dir
+                    if output_dir is not None:
+                        output_path = Path(output_dir).joinpath(output_basename)
+                        # create folder to store data
+                        output_path.parent.mkdir(parents=True, exist_ok=True)
+                    out_df.to_csv(output_path, index=False)
 
             else:
                 self.run_pde_solver_regression_tests()
