@@ -62,7 +62,7 @@ except OSError:
 # writing to the file list of files to be tested
 with open(join(test_output_root,'cc3d_simulation_test_plan.txt'),'a') as fout:
     for i, cc3d_project in enumerate(cc3d_projects):
-        fout.write('{}\n'.format(cc3d_project))
+        fout.write('{}\n'.format(abspath(cc3d_project)))
 
 error_runs = []
 
