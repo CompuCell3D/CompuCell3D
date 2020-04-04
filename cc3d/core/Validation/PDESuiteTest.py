@@ -1,6 +1,8 @@
 from cc3d.core.PySteppables import *
 from cc3d.cpp import CompuCell
 
+import math
+
 
 class PDESuiteTestSteppable(SteppableBasePy):
     """
@@ -13,6 +15,7 @@ class PDESuiteTestSteppable(SteppableBasePy):
         == 'lambda' ->  specify using a lambda function with signature (x, y, z);
                         lambda function goes in *self.analytic_lambda*
         See source code for method *start* for built-in solutions
+        Some built-in solutions require a diffusion coefficient; declare it in self.analytic_diff_coeff
     *self.error_contours* = True -> generate contours of error distributions w.r.t. a specified analytic solution
     *self.compare_solvers* = True -> calculate maximum difference between each solver at every call to *step*
     *self.sample_set_pixels*:   an optional list of points (*[x, y, z]* or *Point3D*) where results should be sampled
@@ -26,6 +29,7 @@ class PDESuiteTestSteppable(SteppableBasePy):
 
         self.analytic_setup = None
         self.analytic_lambda = None
+        self.analytic_diff_coeff = None
 
         self.error_contours = False
         self.compare_solvers = True
@@ -37,7 +41,11 @@ class PDESuiteTestSteppable(SteppableBasePy):
 
         self.analytic_sol = None
 
+        # Coefficients used in analytic lambda generators
+        self.__analytic_coeffs = None
+
         self.plot_win_comp = None
+        self.plot_win_comp_hist = None
         self.plot_win_sol = None
         self.plot_win_err = None
 
@@ -49,6 +57,8 @@ class PDESuiteTestSteppable(SteppableBasePy):
 
         self.max_error_dict = {}
         self.max_diff_dict = {}
+        self.max_diff_hist = {}
+        self.max_diff_legend_str = {}
 
     def start(self):
         """
@@ -73,23 +83,10 @@ class PDESuiteTestSteppable(SteppableBasePy):
         # Generate analytic solution if requested
         if self.analytic_setup is not None:
             self.analytic_sol = self.field.analytic_sol
-
-            if self.analytic_setup == 'line_x':  # 0 on -x bounadry, 1 on +x boundary
-                self.analytic_lambda = lambda _x, _y, _z: (_x + 1.0) / (self.dim.x + 1.0)
-            elif self.analytic_setup == 'line_y':  # 0 on -y bounadry, +y on top boundary
-                self.analytic_lambda = lambda _x, _y, _z: (_y + 1.0) / (self.dim.y + 1.0)
-            elif self.analytic_setup == 'line_z':  # 0 on -z bounadry, +z on top boundary
-                self.analytic_lambda = lambda _x, _y, _z: (_z + 1.0) / (self.dim.z + 1.0)
-            elif self.analytic_setup == 'manual':  # Use this option to specify manually
-                pass
-            elif self.analytic_setup == 'lambda':  # Use this option to specify with a lambda expression
-                pass
-            else:
-                self.analytic_lambda = lambda _x, _y, _z: 0.0
-
+            self.__lambda_generator()
             if self.analytic_setup != 'manual':
                 for x, y, z in self.every_pixel():
-                    self.analytic_sol[x, y, z] = self.analytic_lambda(x, y, z)
+                    self.analytic_sol[x, y, z] = self.analytic_lambda(x, y, z, 0)
 
         # Get solver fields and error fields if requested
         for field_name in self.fields_list_names:
@@ -109,6 +106,10 @@ class PDESuiteTestSteppable(SteppableBasePy):
                 for field_t in [this_field for this_field in self.fields_list if this_field is not field_s]:
                     self.max_diff_dict[field_s][field_t] = 0.0
 
+                if self.analytic_setup is not None:
+                    self.max_diff_dict[field_s][self.analytic_sol] = 0.0
+
+            # For plotting differences at a particular step
             self.plot_win_comp = self.add_new_plot_window(
                 title='Solver differences',
                 x_axis_title='Solver label',
@@ -118,9 +119,34 @@ class PDESuiteTestSteppable(SteppableBasePy):
                 grid=True,
                 config_options={'legend': True}
             )
+
+            # For plotting history of solver differences
+            self.plot_win_comp_hist = self.add_new_plot_window(
+                title='Solver differences history',
+                x_axis_title='Step',
+                y_axis_title='Max. relative difference',
+                x_scale_type='Linear',
+                y_scale_type='log',
+                grid=True,
+                config_options={'legend': True}
+            )
+
             idx = 0
-            for field_name in self.fields_dict.values():
+            for field, field_name in self.fields_dict.items():
                 self.plot_win_comp.add_plot(plot_name=field_name, style='Steps', color=color_list[idx], alpha=50)
+
+                self.max_diff_legend_str[field] = {}
+                for field_t, field_name_t in self.fields_dict.items():
+                    if field is not field_t:
+                        field_comp_str = field_name + ' - ' + field_name_t
+                        self.max_diff_legend_str[field][field_t] = field_comp_str
+                        self.plot_win_comp_hist.add_plot(plot_name=field_comp_str, style='Dots')
+
+                    if self.analytic_setup is not None:
+                        field_comp_str = field_name + ' - analytic'
+                        self.max_diff_legend_str[field][self.analytic_sol] = field_comp_str
+                        self.plot_win_comp_hist.add_plot(plot_name=field_comp_str, style='Dots')
+
                 idx += 1
 
         # Prep for post-processing of sample set if requested
@@ -174,6 +200,10 @@ class PDESuiteTestSteppable(SteppableBasePy):
         for x, y, z in self.every_pixel():
             # Compare with analytic solution if available
             if self.analytic_sol is not None:
+                # Update analytic solution
+                if self.analytic_setup != 'manual':
+                    self.analytic_sol[x, y, z] = self.analytic_lambda(x, y, z, mcs)
+
                 this_analytic_sol = self.analytic_sol[x, y, z]
 
                 if this_analytic_sol != 0:
@@ -193,11 +223,11 @@ class PDESuiteTestSteppable(SteppableBasePy):
 
             # Do solver comparison if requested
             if self.compare_solvers:
-                for field_s in self.fields_list:
+                for field_s in self.max_diff_dict.keys():
                     this_vals_s = field_s[x, y, z]
                     if this_vals_s == 0:
                         continue
-                    for field_t in self.fields_list:
+                    for field_t in self.max_diff_dict[field_s].keys():
                         if field_s is not field_t:
                             this_diff = (field_t[x, y, z] - this_vals_s) / this_vals_s
                             this_max_diff = self.max_diff_dict[field_s][field_t]
@@ -273,12 +303,23 @@ class PDESuiteTestSteppable(SteppableBasePy):
 
                 self.plot_win_comp.add_data_series(self.fields_dict[field_s], solver_labels, solver_diffs)
 
+            # Store and render difference history
+            self.max_diff_hist[mcs] = self.max_diff_dict
+            for field_s in self.max_diff_legend_str.keys():
+                for field_t, comp_str in self.max_diff_legend_str[field_s].items():
+                    this_max_diff = abs(self.max_diff_dict[field_s][field_t])
+                    if this_max_diff > 0:
+                        self.plot_win_comp_hist.add_data_point(comp_str, mcs, this_max_diff)
+
             # Print solver comparison
             print('Difference report: Step', mcs)
             for field_s in self.max_diff_dict.keys():
                 print('\tSolver: ', self.fields_dict[field_s])
                 for field_t, max_diff in self.max_diff_dict[field_s].items():
-                    print('\t\tSolver {}: {}'.format(self.fields_dict[field_t], max_diff))
+                    if field_t is self.analytic_sol:
+                        print('\t\tAnalytic: {}'.format(max_diff))
+                    else:
+                        print('\t\tSolver {}: {}'.format(self.fields_dict[field_t], max_diff))
 
     def finish(self):
         pass
@@ -299,3 +340,91 @@ class PDESuiteTestSteppable(SteppableBasePy):
         if self.error_contours:
             self.error_fields_names_dict = {field_name: "err_" + field_name for field_name in self.fields_list_names}
             [self.create_scalar_field_py(err_field_name) for err_field_name in self.error_fields_names_dict.values()]
+
+    def __lambda_generator(self):
+        if self.analytic_setup not in ['manual', 'lambda']:
+            self.analytic_lambda = self.lambda_generator(self.analytic_setup)
+
+    def lambda_generator(self, _model_str: str):
+        if _model_str == 'line_x':
+            # 0 on -x bounadry, 1 on +x boundary, steady-state
+            return lambda _x, _y, _z, _t: (_x + 1.0) / (self.dim.x + 1.0)
+        elif _model_str == 'line_y':
+            # 0 on -y bounadry, +y on top boundary, steady-state
+            return lambda _x, _y, _z, _t: (_y + 1.0) / (self.dim.y + 1.0)
+        elif _model_str == 'line_z':
+            # 0 on -z bounadry, +z on top boundary, steady-state
+            return lambda _x, _y, _z, _t: (_z + 1.0) / (self.dim.z + 1.0)
+        elif _model_str == 'line_x_t':
+            assert self.analytic_diff_coeff is not None
+            return self.__analytic_lambda_factory_0(self.analytic_diff_coeff, self.dim.x + 1, 20, 'x')
+        elif _model_str == 'line_y_t':
+            assert self.analytic_diff_coeff is not None
+            return self.__analytic_lambda_factory_0(self.analytic_diff_coeff, self.dim.y + 1, 20, 'y')
+        elif _model_str == 'line_z_t':
+            assert self.analytic_diff_coeff is not None
+            return self.__analytic_lambda_factory_0(self.analytic_diff_coeff, self.dim.z + 1, 20, 'z')
+        elif _model_str == 'manual':  # Use this option to specify manually
+            return None
+        elif _model_str == 'lambda':  # Use this option to specify with a lambda expression
+            return None
+        else:
+            return lambda _x, _y, _z, _t: 0.0
+
+    def __analytic_lambda_factory_0(self, _d, _l, _n_terms, _dir: str):
+        """
+        Generates lambda expression for the transient solution to the diffusion equation with Dirichlet conditions 0 on
+        the lower coordinate boundary and 1 on the coordinate upper boundary, and Neumann 0 conditions everywhere else
+        :param _d: diffusion coefficient
+        :param _l: length of domain
+        :param _n_terms: number of summation terms
+        :param _dir: direction label of the coordinate along with diffusion occurs
+        :return: lambda expression
+        """
+        assert _dir in ['x', 'y', 'z']
+
+        _lf = float(_l)
+        _dir_map = {'x': 0, 'y': 1, 'z': 2}
+
+        _resl = self.__analytic_coeffs[0]
+        _resu = self.__analytic_coeffs[1]
+        _resi = self.__analytic_coeffs[2]
+
+        def _analytic_k(_x, _y, _z, _t, _k):
+            _xf, _yf, _zf, _tf, _kf = float(_x), float(_y), float(_z), float(_t), float(_k)
+            _cf = [_xf, _yf, _zf][_dir_map[_dir]]
+            if _k == 0:
+                return _resl + (_resu - _resl) * (_cf + 1.0) / _l
+            else:
+                _kpi = _k * math.pi
+                _e = _kpi / _lf
+                _a = 2.0 * ((-1.0) ** _k * (_resu - _resi) + _resi - _resl) / _kpi
+                return _a * math.exp(-_d * _tf * _e ** 2.0) * math.sin(_e * (_cf + 1.0))
+
+        def _analytic_lambda(_x, _y, _z, _t):
+            if _t == 0:
+                return _resi
+
+            res = 0.0
+            for k in range(0, _n_terms):
+                res += _analytic_k(_x, _y, _z, _t, k)
+            return res
+
+        return _analytic_lambda
+
+    def load_transient_line_coeffs(self, _dir: str, _diff_coeff, _lower_val, _upper_val, _initial_val=0.0):
+        """
+        Convenience function to use a transient line analytic solution
+        Boundary conditions along direction of diffusive transport are Dirichlet
+        :param _dir: string specifying direction along which steady-state line will form
+        :param _diff_coeff: diffusion coefficient
+        :param _initial_val: value of initially homogeneous solution (default 0.0)
+        :param _lower_val: boundary value of minimum coordinate position along line
+        :param _upper_val: boundary value of maximum coordinate position along line
+        :return: None
+        """
+
+        self.analytic_diff_coeff = _diff_coeff
+        self.analytic_setup = {'x': 'line_x_t', 'y': 'line_y_t', 'z': 'line_z_t'}[_dir]
+        self.__analytic_coeffs = [_lower_val, _upper_val, _initial_val]
+
