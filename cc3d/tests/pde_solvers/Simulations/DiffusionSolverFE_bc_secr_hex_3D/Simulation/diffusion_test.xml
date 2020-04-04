@@ -1,0 +1,57 @@
+<CompuCell3D Revision="20200118" Version="4.0.0">
+
+    <Metadata>
+        <NumberOfProcessors>1</NumberOfProcessors>
+        <DebugOutputFrequency>10</DebugOutputFrequency>
+    </Metadata>
+
+    <Potts>
+
+        <Dimensions x="20" y="20" z="21"/>
+        <Steps>100000</Steps>
+        <Temperature>10.0</Temperature>
+        <NeighborOrder>1</NeighborOrder>
+        <LatticeType>Hexagonal</LatticeType>
+    </Potts>
+
+    <Plugin Name="CellType">
+        <CellType TypeId="0" TypeName="Medium"/>
+        <CellType TypeId="1" TypeName="a" Freeze=""/>
+    </Plugin>
+
+    <Plugin Name="CenterOfMass">
+
+    </Plugin>
+
+    <Steppable Type="DiffusionSolverFE">
+
+        <DiffusionField Name="FGF">
+            <DiffusionData>
+                <FieldName>FGF</FieldName>
+                <GlobalDiffusionConstant>0.1</GlobalDiffusionConstant>
+                <GlobalDecayConstant>1e-05</GlobalDecayConstant>
+                <DiffusionCoefficient CellType="a">0.1</DiffusionCoefficient>
+                <DecayCoefficient CellType="a">0.0001</DecayCoefficient>
+            </DiffusionData>
+            <SecretionData>
+                <Secretion Type="a">0.1</Secretion>
+            </SecretionData>
+            <BoundaryConditions>
+                <Plane Axis="X">
+                    <ConstantValue PlanePosition="Min" Value="10.0"/>
+                    <ConstantValue PlanePosition="Max" Value="5.0"/>
+                </Plane>
+                <Plane Axis="Y">
+                    <ConstantDerivative PlanePosition="Min" Value="10.0"/>
+                    <ConstantDerivative PlanePosition="Max" Value="5.0"/>
+                </Plane>
+                <Plane Axis="Z">
+                    <Periodic/>
+                </Plane>
+            </BoundaryConditions>
+
+        </DiffusionField>
+    </Steppable>
+
+
+</CompuCell3D>
