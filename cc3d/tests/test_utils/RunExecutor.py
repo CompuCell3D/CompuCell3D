@@ -24,13 +24,20 @@ class RunExecutor(object):
         test_output_dir_abs = abs_join(rs.test_output_root, test_output_dir_rel)
         # mkdir_p(rs.test_output_dir)
 
-        num_steps_arg = '--numSteps=%s'%rs.num_steps if rs.num_steps > 0 else ''
+        num_steps_arg = ''
+        exit_when_done_arg = ''
+        if rs.player_interactive_flag:
+            num_steps_arg = '--numSteps=%s'%rs.num_steps if rs.num_steps > 0 else ''
+            exit_when_done_arg = r'--exitWhenDone'
+
         cc3d_args = [rs.run_command,
                           r'--input=%s'%rs.cc3d_project,
-                          r'--exitWhenDone',
+                          exit_when_done_arg,
                           num_steps_arg
                           ]
 
+        # removing empty args
+        cc3d_args = [arg for arg in cc3d_args if arg.strip()]
 
         # command_runner = CMLRunner(args=cc3d_args, output_dir=rs.test_output_dir, kill_dependents_flag=False)
         command_runner = CMLRunner(args=cc3d_args, output_dir=test_output_dir_abs, kill_dependents_flag=False)
