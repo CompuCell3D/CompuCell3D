@@ -63,7 +63,7 @@ class PDESuiteTestSteppable(SteppableBasePy):
     def start(self):
         """
         Loads specifications described in subclasses' start()
-        :return:
+        :return: None
         """
         # Check specified sample pixels
         if self.sample_set_pixels is not None:
@@ -187,6 +187,11 @@ class PDESuiteTestSteppable(SteppableBasePy):
                     self.plot_win_err.add_plot(field_name, style='Dots', color=color_list[idx])
 
     def step(self, mcs):
+        """
+        Performs requested analysis and reporting
+        :param mcs: current Monte Carlo step
+        :return: None
+        """
         # Max errors with analytic solution go here when available
         if self.analytic_sol is not None:
             self.max_error_dict = {k: 0.0 for k in self.max_error_dict.keys()}
@@ -364,6 +369,15 @@ class PDESuiteTestSteppable(SteppableBasePy):
         elif _model_str == 'line_z_t':
             assert self.analytic_diff_coeff is not None
             return self.__analytic_lambda_factory_0(self.analytic_diff_coeff, self.dim.z + 1, 20, 'z')
+        elif _model_str == 'sine_x_t':
+            assert self.analytic_diff_coeff is not None
+            return self.__analytic_lambda_factory_1(self.analytic_diff_coeff, self.dim.x, 'x')
+        elif _model_str == 'sine_y_t':
+            assert self.analytic_diff_coeff is not None
+            return self.__analytic_lambda_factory_1(self.analytic_diff_coeff, self.dim.y, 'y')
+        elif _model_str == 'sine_z_t':
+            assert self.analytic_diff_coeff is not None
+            return self.__analytic_lambda_factory_1(self.analytic_diff_coeff, self.dim.z, 'z')
         elif _model_str == 'manual':  # Use this option to specify manually
             return None
         elif _model_str == 'lambda':  # Use this option to specify with a lambda expression
@@ -378,7 +392,7 @@ class PDESuiteTestSteppable(SteppableBasePy):
         :param _d: diffusion coefficient
         :param _l: length of domain
         :param _n_terms: number of summation terms
-        :param _dir: direction label of the coordinate along with diffusion occurs
+        :param _dir: direction label of the coordinate along which diffusion occurs
         :return: lambda expression
         """
         assert _dir in ['x', 'y', 'z']
@@ -410,7 +424,32 @@ class PDESuiteTestSteppable(SteppableBasePy):
                 res += _analytic_k(_x, _y, _z, _t, k)
             return res
 
-        return _analytic_lambda
+        return lambda x, y, z, t: _analytic_lambda(x, y, z, t)
+
+    def __analytic_lambda_factory_1(self, _d, _l, _dir: str):
+        """
+        Generates lambda expression for the transient solution to the diffusion equation with periodic conditions along
+        one direction, and Neumann 0 conditions everywhere else
+        :param _d: diffusion coefficient
+        :param _l: length of domain
+        :param _dir: direction label of the coordinate along which diffusion occurs
+        :return: lambda expression
+        """
+        assert _dir in ['x', 'y', 'z']
+
+        _lf = float(_l)
+        _dir_map = {'x': 0, 'y': 1, 'z': 2}
+
+        _m = self.__analytic_coeffs[0]
+        _a = self.__analytic_coeffs[1]
+        _n = self.__analytic_coeffs[2]
+
+        def _analytic_lambda(_x, _y, _z, _t):
+            _p = [_x, _y, _z][_dir_map[_dir]]
+            _e = 2 * math.pi * _n / _lf
+            return _m + _a * math.exp(-_d * _t * _e ** 2.0) * math.sin(_e * _p)
+
+        return lambda x, y, z, t: _analytic_lambda(x, y, z, t)
 
     def load_transient_line_coeffs(self, _dir: str, _diff_coeff, _lower_val, _upper_val, _initial_val=0.0):
         """
@@ -428,3 +467,18 @@ class PDESuiteTestSteppable(SteppableBasePy):
         self.analytic_setup = {'x': 'line_x_t', 'y': 'line_y_t', 'z': 'line_z_t'}[_dir]
         self.__analytic_coeffs = [_lower_val, _upper_val, _initial_val]
 
+    def load_transient_sine_coeffs(self, _dir: str, _diff_coeff, _mean_val, _ampl_val, _wave_num: int):
+        """
+        Convenience function to test periodic conditions with an initial sine wave distribution
+        :param _dir: string specifying direction along which the initial sine wave distribution is specified
+        :param _diff_coeff: diffusion coefficient
+        :param _mean_val: mean value of initial sine wave (must be greater than zero)
+        :param _ampl_val: amplitude of initial sine wave (must be less than mean value and greater than zero)
+        :param _wave_num: wave number of initial distribution
+        :return: None
+        """
+        assert 0 < _ampl_val < _mean_val
+        assert _wave_num > 0
+        self.analytic_diff_coeff = _diff_coeff
+        self.analytic_setup = {'x': 'sine_x_t', 'y': 'sine_y_t', 'z': 'sine_z_t'}[_dir]
+        self.__analytic_coeffs = [_mean_val, _ampl_val, _wave_num]
