@@ -1,0 +1,5 @@
+<Simulation version="4.1.1">
+   <XMLScript Type="XMLScript">Simulation/PDETestPeriodicFE.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/PDETestPeriodicFE.py</PythonScript>
+   <Resource Type="Python">Simulation/PDETestPeriodicFESteppables.py</Resource>
+</Simulation>
