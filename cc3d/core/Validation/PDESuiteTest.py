@@ -4,6 +4,72 @@ from cc3d.cpp import CompuCell
 import math
 
 
+def analytic_lambda_factory_0(_d, _l, _n_terms, _dir: str, _resl, _resu, _resi):
+    """
+    Generates lambda expression for the transient solution to the diffusion equation with Dirichlet conditions 0 on
+    the lower coordinate boundary and 1 on the coordinate upper boundary, and Neumann 0 conditions everywhere else
+    :param _d: diffusion coefficient
+    :param _l: length of domain
+    :param _n_terms: number of summation terms
+    :param _dir: direction label of the coordinate along which diffusion occurs
+    :param _resl: value at lower boundary (e.g., x=0)
+    :param _resu: value at upper boundary (e.g., x=L)
+    :param _resi: value of initial homogoeneous solution
+    :return: lambda expression
+    """
+    assert _dir in ['x', 'y', 'z']
+
+    _lf = float(_l)
+    _dir_map = {'x': 0, 'y': 1, 'z': 2}
+
+    def _analytic_k(_x, _y, _z, _t, _k):
+        _xf, _yf, _zf, _tf, _kf = float(_x), float(_y), float(_z), float(_t), float(_k)
+        _cf = [_xf, _yf, _zf][_dir_map[_dir]]
+        if _k == 0:
+            return _resl + (_resu - _resl) * (_cf + 1.0) / _l
+        else:
+            _kpi = _k * math.pi
+            _e = _kpi / _lf
+            _a = 2.0 * ((-1.0) ** _k * (_resu - _resi) + _resi - _resl) / _kpi
+            return _a * math.exp(-_d * _tf * _e ** 2.0) * math.sin(_e * (_cf + 1.0))
+
+    def _analytic_lambda(_x, _y, _z, _t):
+        if _t == 0:
+            return _resi
+
+        res = 0.0
+        for k in range(0, _n_terms):
+            res += _analytic_k(_x, _y, _z, _t, k)
+        return res
+
+    return lambda x, y, z, t: _analytic_lambda(x, y, z, t)
+
+
+def analytic_lambda_factory_1(_d, _l, _dir: str, _m, _a, _n):
+    """
+    Generates lambda expression for the transient solution to the diffusion equation with periodic conditions along
+    one direction, and Neumann 0 conditions everywhere else
+    :param _d: diffusion coefficient
+    :param _l: length of domain
+    :param _dir: direction label of the coordinate along which diffusion occurs
+    :param _m: mean value of sine wave
+    :param _a: amplitude of sine wave
+    :param _n: wave number
+    :return: lambda expression
+    """
+    assert _dir in ['x', 'y', 'z']
+
+    _lf = float(_l)
+    _dir_map = {'x': 0, 'y': 1, 'z': 2}
+
+    def _analytic_lambda(_x, _y, _z, _t):
+        _p = [_x, _y, _z][_dir_map[_dir]]
+        _e = 2 * math.pi * _n / _lf
+        return _m + _a * math.exp(-_d * _t * _e ** 2.0) * math.sin(_e * _p)
+
+    return lambda x, y, z, t: _analytic_lambda(x, y, z, t)
+
+
 class PDESuiteTestSteppable(SteppableBasePy):
     """
     Base class for testing solvers in the PDE Solver Suite
@@ -42,7 +108,7 @@ class PDESuiteTestSteppable(SteppableBasePy):
         self.analytic_sol = None
 
         # Coefficients used in analytic lambda generators
-        self.__analytic_coeffs = None
+        self.analytic_coeffs = None
 
         self.plot_win_comp = None
         self.plot_win_comp_hist = None
@@ -362,94 +428,34 @@ class PDESuiteTestSteppable(SteppableBasePy):
             return lambda _x, _y, _z, _t: (_z + 1.0) / (self.dim.z + 1.0)
         elif _model_str == 'line_x_t':
             assert self.analytic_diff_coeff is not None
-            return self.__analytic_lambda_factory_0(self.analytic_diff_coeff, self.dim.x + 1, 20, 'x')
+            return analytic_lambda_factory_0(self.analytic_diff_coeff, self.dim.x + 1, 20, 'x',
+                                             self.analytic_coeffs[0], self.analytic_coeffs[1], self.analytic_coeffs[2])
         elif _model_str == 'line_y_t':
             assert self.analytic_diff_coeff is not None
-            return self.__analytic_lambda_factory_0(self.analytic_diff_coeff, self.dim.y + 1, 20, 'y')
+            return analytic_lambda_factory_0(self.analytic_diff_coeff, self.dim.y + 1, 20, 'y',
+                                             self.analytic_coeffs[0], self.analytic_coeffs[1], self.analytic_coeffs[2])
         elif _model_str == 'line_z_t':
             assert self.analytic_diff_coeff is not None
-            return self.__analytic_lambda_factory_0(self.analytic_diff_coeff, self.dim.z + 1, 20, 'z')
+            return analytic_lambda_factory_0(self.analytic_diff_coeff, self.dim.z + 1, 20, 'z',
+                                             self.analytic_coeffs[0], self.analytic_coeffs[1], self.analytic_coeffs[2])
         elif _model_str == 'sine_x_t':
             assert self.analytic_diff_coeff is not None
-            return self.__analytic_lambda_factory_1(self.analytic_diff_coeff, self.dim.x, 'x')
+            return analytic_lambda_factory_1(self.analytic_diff_coeff, self.dim.x, 'x',
+                                             self.analytic_coeffs[0], self.analytic_coeffs[1], self.analytic_coeffs[2])
         elif _model_str == 'sine_y_t':
             assert self.analytic_diff_coeff is not None
-            return self.__analytic_lambda_factory_1(self.analytic_diff_coeff, self.dim.y, 'y')
+            return analytic_lambda_factory_1(self.analytic_diff_coeff, self.dim.y, 'y',
+                                             self.analytic_coeffs[0], self.analytic_coeffs[1], self.analytic_coeffs[2])
         elif _model_str == 'sine_z_t':
             assert self.analytic_diff_coeff is not None
-            return self.__analytic_lambda_factory_1(self.analytic_diff_coeff, self.dim.z, 'z')
+            return analytic_lambda_factory_1(self.analytic_diff_coeff, self.dim.z, 'z',
+                                             self.analytic_coeffs[0], self.analytic_coeffs[1], self.analytic_coeffs[2])
         elif _model_str == 'manual':  # Use this option to specify manually
             return None
         elif _model_str == 'lambda':  # Use this option to specify with a lambda expression
             return None
         else:
             return lambda _x, _y, _z, _t: 0.0
-
-    def __analytic_lambda_factory_0(self, _d, _l, _n_terms, _dir: str):
-        """
-        Generates lambda expression for the transient solution to the diffusion equation with Dirichlet conditions 0 on
-        the lower coordinate boundary and 1 on the coordinate upper boundary, and Neumann 0 conditions everywhere else
-        :param _d: diffusion coefficient
-        :param _l: length of domain
-        :param _n_terms: number of summation terms
-        :param _dir: direction label of the coordinate along which diffusion occurs
-        :return: lambda expression
-        """
-        assert _dir in ['x', 'y', 'z']
-
-        _lf = float(_l)
-        _dir_map = {'x': 0, 'y': 1, 'z': 2}
-
-        _resl = self.__analytic_coeffs[0]
-        _resu = self.__analytic_coeffs[1]
-        _resi = self.__analytic_coeffs[2]
-
-        def _analytic_k(_x, _y, _z, _t, _k):
-            _xf, _yf, _zf, _tf, _kf = float(_x), float(_y), float(_z), float(_t), float(_k)
-            _cf = [_xf, _yf, _zf][_dir_map[_dir]]
-            if _k == 0:
-                return _resl + (_resu - _resl) * (_cf + 1.0) / _l
-            else:
-                _kpi = _k * math.pi
-                _e = _kpi / _lf
-                _a = 2.0 * ((-1.0) ** _k * (_resu - _resi) + _resi - _resl) / _kpi
-                return _a * math.exp(-_d * _tf * _e ** 2.0) * math.sin(_e * (_cf + 1.0))
-
-        def _analytic_lambda(_x, _y, _z, _t):
-            if _t == 0:
-                return _resi
-
-            res = 0.0
-            for k in range(0, _n_terms):
-                res += _analytic_k(_x, _y, _z, _t, k)
-            return res
-
-        return lambda x, y, z, t: _analytic_lambda(x, y, z, t)
-
-    def __analytic_lambda_factory_1(self, _d, _l, _dir: str):
-        """
-        Generates lambda expression for the transient solution to the diffusion equation with periodic conditions along
-        one direction, and Neumann 0 conditions everywhere else
-        :param _d: diffusion coefficient
-        :param _l: length of domain
-        :param _dir: direction label of the coordinate along which diffusion occurs
-        :return: lambda expression
-        """
-        assert _dir in ['x', 'y', 'z']
-
-        _lf = float(_l)
-        _dir_map = {'x': 0, 'y': 1, 'z': 2}
-
-        _m = self.__analytic_coeffs[0]
-        _a = self.__analytic_coeffs[1]
-        _n = self.__analytic_coeffs[2]
-
-        def _analytic_lambda(_x, _y, _z, _t):
-            _p = [_x, _y, _z][_dir_map[_dir]]
-            _e = 2 * math.pi * _n / _lf
-            return _m + _a * math.exp(-_d * _t * _e ** 2.0) * math.sin(_e * _p)
-
-        return lambda x, y, z, t: _analytic_lambda(x, y, z, t)
 
     def load_transient_line_coeffs(self, _dir: str, _diff_coeff, _lower_val, _upper_val, _initial_val=0.0):
         """
@@ -465,7 +471,7 @@ class PDESuiteTestSteppable(SteppableBasePy):
 
         self.analytic_diff_coeff = _diff_coeff
         self.analytic_setup = {'x': 'line_x_t', 'y': 'line_y_t', 'z': 'line_z_t'}[_dir]
-        self.__analytic_coeffs = [_lower_val, _upper_val, _initial_val]
+        self.analytic_coeffs = [_lower_val, _upper_val, _initial_val]
 
     def load_transient_sine_coeffs(self, _dir: str, _diff_coeff, _mean_val, _ampl_val, _wave_num: int):
         """
@@ -481,4 +487,4 @@ class PDESuiteTestSteppable(SteppableBasePy):
         assert _wave_num > 0
         self.analytic_diff_coeff = _diff_coeff
         self.analytic_setup = {'x': 'sine_x_t', 'y': 'sine_y_t', 'z': 'sine_z_t'}[_dir]
-        self.__analytic_coeffs = [_mean_val, _ampl_val, _wave_num]
+        self.analytic_coeffs = [_mean_val, _ampl_val, _wave_num]
