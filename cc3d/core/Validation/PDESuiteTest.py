@@ -52,9 +52,9 @@ def analytic_lambda_factory_1(_d, _l, _dir: str, _m, _a, _n):
     :param _d: diffusion coefficient
     :param _l: length of domain
     :param _dir: direction label of the coordinate along which diffusion occurs
-    :param _m: mean value of sine wave
-    :param _a: amplitude of sine wave
-    :param _n: wave number
+    :param _m: mean value of initial sine wave
+    :param _a: amplitude of initial sine wave
+    :param _n: wave number of initial sine wave
     :return: lambda expression
     """
     assert _dir in ['x', 'y', 'z']
@@ -66,6 +66,31 @@ def analytic_lambda_factory_1(_d, _l, _dir: str, _m, _a, _n):
         _p = [_x, _y, _z][_dir_map[_dir]]
         _e = 2 * math.pi * _n / _lf
         return _m + _a * math.exp(-_d * _t * _e ** 2.0) * math.sin(_e * _p)
+
+    return lambda x, y, z, t: _analytic_lambda(x, y, z, t)
+
+
+def lambda_analytic_factory_2(_d, _l, _dir: str, _m, _a, _n):
+    """
+    Generates lambda expression for the transient solution to the diffusion equation with Neumann conditions along
+    all directions
+    :param _d: diffusion coefficient
+    :param _l: length of domain
+    :param _dir: direction label of the coordinate along which diffusion occurs
+    :param _m: mean value of initial cosine wave
+    :param _a: amplitude of initial cosine wave
+    :param _n: wave number of initial cosine wave
+    :return: lambda expression
+    """
+    assert _dir in ['x', 'y', 'z']
+
+    _lf = float(_l)
+    _dir_map = {'x': 0, 'y': 1, 'z': 2}
+
+    def _analytic_lambda(_x, _y, _z, _t):
+        _p = [_x, _y, _z][_dir_map[_dir]]
+        _e = 2 * math.pi * _n / _lf
+        return _m + _a * math.exp(- _d * _e ** 2.0 * _t) * math.cos(_e * _p)
 
     return lambda x, y, z, t: _analytic_lambda(x, y, z, t)
 
@@ -450,6 +475,18 @@ class PDESuiteTestSteppable(SteppableBasePy):
             assert self.analytic_diff_coeff is not None
             return analytic_lambda_factory_1(self.analytic_diff_coeff, self.dim.z, 'z',
                                              self.analytic_coeffs[0], self.analytic_coeffs[1], self.analytic_coeffs[2])
+        elif _model_str == 'flat_end_x_t':
+            assert self.analytic_diff_coeff is not None
+            return lambda_analytic_factory_2(self.analytic_diff_coeff, self.dim.x - 1, 'x',
+                                             self.analytic_coeffs[0], self.analytic_coeffs[1], self.analytic_coeffs[2])
+        elif _model_str == 'flat_end_y_t':
+            assert self.analytic_diff_coeff is not None
+            return lambda_analytic_factory_2(self.analytic_diff_coeff, self.dim.y - 1, 'y',
+                                             self.analytic_coeffs[0], self.analytic_coeffs[1], self.analytic_coeffs[2])
+        elif _model_str == 'flat_end_z_t':
+            assert self.analytic_diff_coeff is not None
+            return lambda_analytic_factory_2(self.analytic_diff_coeff, self.dim.z - 1, 'z',
+                                             self.analytic_coeffs[0], self.analytic_coeffs[1], self.analytic_coeffs[2])
         elif _model_str == 'manual':  # Use this option to specify manually
             return None
         elif _model_str == 'lambda':  # Use this option to specify with a lambda expression
@@ -487,4 +524,20 @@ class PDESuiteTestSteppable(SteppableBasePy):
         assert _wave_num > 0
         self.analytic_diff_coeff = _diff_coeff
         self.analytic_setup = {'x': 'sine_x_t', 'y': 'sine_y_t', 'z': 'sine_z_t'}[_dir]
+        self.analytic_coeffs = [_mean_val, _ampl_val, _wave_num]
+
+    def load_flat_line_coeffs(self, _dir: str, _diff_coeff, _mean_val, _ampl_val, _wave_num: int):
+        """
+        Convenience function to test Neumann conditions with an initial cosine wave distribution
+        :param _dir: string specifying direction along which the initial cosine wave distribution is specified
+        :param _diff_coeff: diffusion coefficient
+        :param _mean_val: mean value of initial cosine wave (must be greater than zero)
+        :param _ampl_val: amplitude of initial cosine wave (must be less than mean value and greater than zero)
+        :param _wave_num: wave number of initial distribution
+        :return: None
+        """
+        assert 0 < _ampl_val < _mean_val
+        assert _wave_num > 0
+        self.analytic_diff_coeff = _diff_coeff
+        self.analytic_setup = {'x': 'flat_end_x_t', 'y': 'flat_end_y_t', 'z': 'flat_end_z_t'}[_dir]
         self.analytic_coeffs = [_mean_val, _ampl_val, _wave_num]
