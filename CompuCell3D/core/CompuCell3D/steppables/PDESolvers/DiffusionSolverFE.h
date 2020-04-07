@@ -9,6 +9,7 @@
 #include "DiffusableVectorCommon.h"
 
 #include "DiffSecrData.h"
+#include "FluctuationCompensator.h"
 #include "BoundaryConditionSpecifier.h"
 
 #include <CompuCell3D/Serializer.h>
@@ -39,6 +40,7 @@ class Automaton;
 class BoxWatcher;
 
 class DiffusionData;
+class FluctuationCompensator;
 template <class Cruncher> class PDESOLVERS_EXPORT SecretionDataDiffusionFE;
 template <class Cruncher> class PDESOLVERS_EXPORT DiffusionSolverSerializer;
 class TestDiffusionSolver; // Testing DiffusionSolverFE
@@ -96,7 +98,7 @@ class PDESOLVERS_EXPORT DiffusionSolverFE : public Steppable
 	bool autoscaleDiffusion;
     bool scaleSecretion; // this flag is set to true. If user sets it to false via XML then DiffusionSolver will behave like FlexibleDiffusion solver - i.e. secretion will be done in one step followed by multiple diffusive steps
 
-	
+	FluctuationCompensator *fluctuationCompensator;
 
 protected:
 

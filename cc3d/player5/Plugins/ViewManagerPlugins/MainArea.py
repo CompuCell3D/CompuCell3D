@@ -133,12 +133,12 @@ class MainArea(QWidget):
 
         if self.last_suggested_window_position.x() == 0 and self.last_suggested_window_position.y() == 0:
 
-            self.last_suggested_window_position = QPoint(rec.width() / 5, rec.height() / 5)
+            self.last_suggested_window_position = QPoint(int(rec.width() / 5), int(rec.height() / 5))
             return self.last_suggested_window_position
         else:
             from random import randint
-            self.last_suggested_window_position = QPoint(randint(rec.width() / 5, rec.width() / 2),
-                                                         randint(rec.height() / 5, rec.height() / 2))
+            self.last_suggested_window_position = QPoint(randint(int(rec.width() / 5), int(rec.width() / 2)),
+                                                         randint(int(rec.height() / 5), int(rec.height() / 2)))
             return self.last_suggested_window_position
 
     def addSubWindow(self, widget):
