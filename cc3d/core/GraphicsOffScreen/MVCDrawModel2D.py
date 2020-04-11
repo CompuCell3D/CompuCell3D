@@ -463,7 +463,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 self.init_concentration_field_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
 
         if mdata.get('LegendEnable', default=True):
-            print('Enabling legend')
             self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
     def init_concentration_field_actors_hex(self, actor_specs, drawing_params=None):

@@ -41,7 +41,7 @@ from cc3d.player5.Utilities.CPluginsModel import CPluginsModel
 from cc3d.player5.Utilities.LatticeDataModel import LatticeDataModel
 from cc3d.player5.Utilities.SimDelegate import SimDelegate
 from cc3d.player5 import Configuration
-from cc3d.player5 import  DefaultData
+from cc3d.player5 import DefaultData
 
 cc3dApp = QCoreApplication.instance
 
@@ -72,11 +72,13 @@ class DockWidget(QDockWidget):
         if self.toggleFcn: self.toggleFcn(False)
         # Configuration.setSetting(str(self.objectName(), False)
 
+
 """
 This class represents the MainWindow of CompuCell3D.
 """
-class UserInterface(QMainWindow):
 
+
+class UserInterface(QMainWindow):
     appendStdoutSignal = pyqtSignal(str)
     appendStderrSignal = pyqtSignal(str)
 
@@ -84,8 +86,6 @@ class UserInterface(QMainWindow):
         QMainWindow.__init__(self)
         self.argv = None
         # self.resize(QSize(900, 650))
-
-
 
         QApplication.setWindowIcon(QIcon(gip("cc3d_64x64_logo.png")))
         self.setWindowIcon(QIcon(gip("cc3d_64x64_logo.png")))
@@ -101,10 +101,6 @@ class UserInterface(QMainWindow):
         # # Generate the redirection helpers
         self.stdout = sys.stdout
         self.stderr = sys.stderr
-        # self.stdout = Redirector(True)
-        # self.stderr = Redirector(True)
-        # # #TODO
-        # self.stderr.setStdErrConsole(self.console.getStdErrConsole())
 
         # Now setup the connections
         if Configuration.getSetting("UseInternalConsole"):
@@ -116,13 +112,6 @@ class UserInterface(QMainWindow):
             self.appendStdoutSignal.connect(self.console.appendToStdout)
             self.appendStderrSignal.connect(self.console.appendToStderr)
 
-
-            # self.connect(self.stdout, SIGNAL('appendStdout'), self.appendToStdout)
-            # self.connect(self.stderr, SIGNAL('appendStderr'), self.appendToStderr)
-            #
-            # self.connect(self, SIGNAL('appendStdout'), self.console.appendToStdout)
-            # self.connect(self, SIGNAL('appendStderr'), self.console.appendToStderr)
-
         # I don't know why I need this
         cc3dApp().registerObject("UserInterface", self)
         cc3dApp().registerObject("ViewManager", self.viewmanager)
@@ -133,12 +122,6 @@ class UserInterface(QMainWindow):
         # self.__createViewManager()
         self.__initToolbars()  # Setup toolbars
         self.__initStatusbar()  # Setup status bar
-
-        # self.tabWidget=QTabWidget(self)
-        # self.tabWidget=SimpleTabView(self)
-        # self.setCentralWidget(self.tabWidget)
-
-
 
         # now redirect stdout and stderr
         if Configuration.getSetting("CC3DOutputOn"):
@@ -274,9 +257,6 @@ class UserInterface(QMainWindow):
         self.__menus["toolbars"].aboutToShow.connect(self.__showToolbarsMenu)
         self.__menus["toolbars"].triggered.connect(self.__TBMenuTriggered)
 
-        # self.connect(self.__menus["toolbars"], SIGNAL('aboutToShow()'), self.__showToolbarsMenu)
-        # self.connect(self.__menus["toolbars"], SIGNAL('triggered(QAction *)'), self.__TBMenuTriggered)
-
         self.__showViewMenu()
 
         self.__menus["simulation"] = self.viewmanager.init_sim_menu()
@@ -290,7 +270,6 @@ class UserInterface(QMainWindow):
         mb.addMenu(self.__menus["window"])
 
         self.__menus["window"].aboutToShow.connect(self.viewmanager.update_window_menu)
-        # self.connect(self.__menus["window"] , SIGNAL("aboutToShow()"), self.viewmanager.updateWindowMenu )
 
         self.__menus["help"] = self.viewmanager.init_help_menu()
         mb.addMenu(self.__menus["help"])
@@ -341,7 +320,6 @@ class UserInterface(QMainWindow):
         print("CALLING CLOSE EVENT FROM  SIMTAB")
         # TODO check the rest of the function
 
-
         if self.viewmanager.MDI_ON:
             Configuration.setSetting("PlayerSizes", self.saveState())
             Configuration.setSetting("MainWindowSize", self.size())
@@ -382,9 +360,6 @@ class UserInterface(QMainWindow):
 
         # self.screenshotAct = QAction(QIcon("player5/icons/screenshot.png"), "&Take Screenshot", self)
         # self.actions.append(self.screenshotAct)
-
-
-
 
         self.toolbarFileAct = QAction("&File", self)
         self.toolbarFileAct.setCheckable(True)
@@ -437,7 +412,6 @@ class UserInterface(QMainWindow):
         # self.connect(self.screenshotAct, SIGNAL('triggered()'), self.viewmanager.takeShot)
 
         # self.connect(self.newGraphicsWindowAct, SIGNAL('triggered()'), self.viewmanager.addVTKWindowToWorkspace)
-
 
         # Keep this code. There won't be plotting in 3.4.0 version
         """
@@ -500,7 +474,6 @@ class UserInterface(QMainWindow):
     def __createLayout(self):
         # Zoom items. The only place where the zoom items are specified!
         # self.zitems = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0, 8.0]
-
 
         # Set up the model for the Model Editor
         self.modelEditorDock = self.__createDockWindow("ModelEditor")
