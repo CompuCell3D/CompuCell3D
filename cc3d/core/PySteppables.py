@@ -937,6 +937,17 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         return self.inventory.attemptFetchingCellById(cell_id)
 
+    @staticmethod
+    def get_type_name_by_cell(_cell):
+        if _cell is None:
+            _type_id = 0
+        else:
+            _type_id = _cell.type
+
+        type_id_type_name_dict = CompuCellSetup.simulation_utils.extract_type_names_and_ids()
+        assert type_id_type_name_dict, "CellType plugin not found!"
+        return type_id_type_name_dict[_type_id]
+
     @deprecated(version='4.0.0', reason="You should use : get_focal_point_plasticity_data_list")
     def getFocalPointPlasticityDataList(self, _cell):
         return self.get_focal_point_plasticity_data_list(cell=_cell)
