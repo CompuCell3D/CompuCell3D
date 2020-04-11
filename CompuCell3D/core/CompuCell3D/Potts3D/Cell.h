@@ -23,6 +23,7 @@
 #ifndef CELL_H
 #define CELL_H
 
+#include <vector>
 
 #ifndef PyObject_HEAD
 struct _object; //forward declare
@@ -66,12 +67,13 @@ namespace CompuCell3D {
         clusterId(0),
 		fluctAmpl(-1.0),
 		lambdaMotility(0.0),
-		biasVecX(0.0),
+		biasVecX(1.0),
 		biasVecY(0.0),
 		biasVecZ(0.0),
 		connectivityOn(false),
         extraAttribPtr(0),
         pyAttrib(0)
+		//test_biasV
 
 
       {}
@@ -104,6 +106,7 @@ namespace CompuCell3D {
 	  double biasVecY;
 	  double biasVecZ;
 	  bool connectivityOn;
+	  //std::vector<double> test_biasV = std::vector<double>(3);
       BasicClassGroup *extraAttribPtr;
 
       PyObject *pyAttrib;

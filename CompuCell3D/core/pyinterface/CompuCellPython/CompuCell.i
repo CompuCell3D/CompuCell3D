@@ -1213,7 +1213,7 @@ FIELD3DEXTENDER(Field3D<int>,int)
 %inline %{
 
 void updateFluctuationCompensators() {
-	
+
 	if(Simulator::steppableManager.isLoaded("DiffusionSolverFE")) {
 		DiffusionSolverFE_CPU * solver = (DiffusionSolverFE_CPU *)Simulator::steppableManager.get("DiffusionSolverFE");
 		solver->updateFluctuationCompensator();
