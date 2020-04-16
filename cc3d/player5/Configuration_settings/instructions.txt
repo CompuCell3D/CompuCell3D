@@ -15,3 +15,9 @@ DELETE FROM settings WHERE name='RestartEnable';
 
 To insert binary data it is best to first export "blob" binary data to a file and then insert setting setting
 binary value to 0 and then importing actual binary data
+
+e.g. see how we initialize last entry below of "bytearray" type
+
+insert into settings(name, type, value) VALUES("MainWindowSizeDefault","size","800,600");
+insert into settings(name, type, value) VALUES("MainWindowPositionDefault","point","20,20");
+insert into settings(name, type, value) VALUES("PlayerSizesDefault","bytearray","0");
