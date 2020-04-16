@@ -21,3 +21,4 @@ e.g. see how we initialize last entry below of "bytearray" type
 insert into settings(name, type, value) VALUES("MainWindowSizeDefault","size","800,600");
 insert into settings(name, type, value) VALUES("MainWindowPositionDefault","point","20,20");
 insert into settings(name, type, value) VALUES("PlayerSizesDefault","bytearray","0");
+insert into settings(name, type, value) VALUES("PlayerSizesFloatingDefault","bytearray","0");

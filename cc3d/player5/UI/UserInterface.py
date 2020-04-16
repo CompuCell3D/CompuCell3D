@@ -140,7 +140,10 @@ class UserInterface(QMainWindow):
 
         main_window_size = Configuration.getSetting("MainWindowSizeDefault")
         main_window_position = Configuration.getSetting("MainWindowPositionDefault")
-        player_sizes = Configuration.getSetting("PlayerSizesDefault")
+        if self.viewmanager.MDI_ON:
+            player_sizes = Configuration.getSetting("PlayerSizesDefault")
+        else:
+            player_sizes = Configuration.getSetting("PlayerSizesFloatingDefault")
 
         if current_screen_geometry_settings == saved_screen_geometry_settings:
             # this indicates that saved screen geometry is the same as current screen geometry and we will use
