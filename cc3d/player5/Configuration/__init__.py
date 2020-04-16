@@ -52,7 +52,7 @@ class Configuration:
 
     globalOnlySettings = ['RecentSimulations', 'NumberOfRecentSimulations', 'OutputLocation', 'ProjectLocation',
                           'FloatingWindows', 'MainWindowSizeDefault', 'MainWindowSizeDefault', 'ScreenGeometry']
-    customOnlySettings = ['WindowsLayout', 'PlayerSizes', 'PlayerSizesFloating']
+    customOnlySettings = ['WindowsLayout']
 
     activeFieldNamesList = []
 

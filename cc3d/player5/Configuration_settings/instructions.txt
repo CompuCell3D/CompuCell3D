@@ -22,3 +22,5 @@ insert into settings(name, type, value) VALUES("MainWindowSizeDefault","size","8
 insert into settings(name, type, value) VALUES("MainWindowPositionDefault","point","20,20");
 insert into settings(name, type, value) VALUES("PlayerSizesDefault","bytearray","0");
 insert into settings(name, type, value) VALUES("PlayerSizesFloatingDefault","bytearray","0");
+
+insert into settings(name, type, value) VALUES("ScreenGeometry","list","0");
