@@ -12,3 +12,6 @@ insert into settings(name, type, value) VALUES("RestartAllowMultipleSnapshots","
 to delete row - example
 
 DELETE FROM settings WHERE name='RestartEnable';
+
+To insert binary data it is best to first export "blob" binary data to a file and then insert setting setting
+binary value to 0 and then importing actual binary data
