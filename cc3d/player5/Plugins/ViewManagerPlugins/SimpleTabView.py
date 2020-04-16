@@ -1336,18 +1336,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 simObj.setOutputRedirectionTarget(addr)
                 # redirecting Python output to internal console
-                self.UI.useInternalConsoleForPythonOutput(True)
+                self.UI.use_internal_console_for_python_output(True)
             else:
                 # C++ output goes to system console
                 # simObj.setOutputRedirectionTarget(-1)
                 simObj.restoreCerrStreamBufOrig(self.cerrStreamBufOrig)
                 # Python output goes to system console
-                self.UI.enablePythonOutput(True)
+                self.UI.enable_python_output(True)
         else:
             # silencing output from C++
             simObj.setOutputRedirectionTarget(0)
             # silencing output from Python
-            self.UI.enablePythonOutput(False)
+            self.UI.enable_python_output(False)
 
         self.basicSimulationData.fieldDim = self.fieldDim
         self.basicSimulationData.sim = simObj
@@ -1715,6 +1715,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             self.init_simulation_control_vars()
 
+            # restoring geometry of the UI based on local settings
+            self.customSettingPath = self.cc3dSimulationDataHandler.cc3dSimulationData.custom_settings_path
+            Configuration.initializeCustomSettings(self.customSettingPath)
+            self.UI.initialize_gui_geometry()
+
             if self.rollbackImporter:
                 self.rollbackImporter.uninstall()
 
@@ -1798,6 +1803,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             if prepare_flag:
                 # todo 5 - self.drawingAreaPrepared is initialized elsewhere this is tmp placeholder and a hack
                 self.drawingAreaPrepared = True
+
             else:
                 # when self.prepareSimulation() fails
                 return
@@ -2278,6 +2284,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # re-init (empty) the fieldTypes dict, otherwise get previous/bogus fields in graphics win field combobox
         self.fieldTypes = {}
+
+        self.UI.save_ui_geometry()
 
         # saving settings with the simulation
         if self.customSettingPath:

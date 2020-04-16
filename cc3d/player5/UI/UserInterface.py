@@ -7,37 +7,16 @@ CompuCell3D player invoked from compucell3d_new.py file.
 # FIXME: When you open the XML file the second time, it doesn't expand the tree
 # TODO: Make the tooltip for the description column in Plugins.
 
-import os
 import sys
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtXml import *
-
-import cc3d.player5.ViewManager as ViewManager
-# import ViewManager
-# from cc3d.player5.UI.ViewManager import  ViewManager
-
-# from .ModelEditor import ModelEditor
 from cc3d.player5.UI.ModelEditor import ModelEditor
-
-# TODO
 from cc3d.player5.Plugins.ViewManagerPlugins.SimpleTabView import SimpleTabView
-
-# TODO
-from cc3d.player5.UI.CPlugins import CPlugins
 from .LatticeDataModelTable import LatticeDataModelTable
-
-# TODO
 from .Console import Console
-
-# TODO
-from cc3d.player5.Utilities.QVTKRenderWidget import QVTKRenderWidget
-import vtk
-
 from cc3d.player5.Utilities.SimModel import SimModel
-from cc3d.player5.Utilities.CPluginsModel import CPluginsModel
 from cc3d.player5.Utilities.LatticeDataModel import LatticeDataModel
 from cc3d.player5.Utilities.SimDelegate import SimDelegate
 from cc3d.player5 import Configuration
@@ -70,12 +49,6 @@ class DockWidget(QDockWidget):
         print('self.toggleFcn=', self.toggleFcn)
 
         if self.toggleFcn: self.toggleFcn(False)
-        # Configuration.setSetting(str(self.objectName(), False)
-
-
-"""
-This class represents the MainWindow of CompuCell3D.
-"""
 
 
 class UserInterface(QMainWindow):
@@ -85,7 +58,6 @@ class UserInterface(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
         self.argv = None
-        # self.resize(QSize(900, 650))
 
         QApplication.setWindowIcon(QIcon(gip("cc3d_64x64_logo.png")))
         self.setWindowIcon(QIcon(gip("cc3d_64x64_logo.png")))
@@ -93,8 +65,10 @@ class UserInterface(QMainWindow):
 
         self.origStdout = sys.stdout
         self.origStderr = sys.stderr
+
+        self.__toolbars = {}
+
         # Setting self.viewmanager and dock windows
-        # TODO
         self.__createViewManager()
         self.__createLayout()
 
@@ -116,70 +90,107 @@ class UserInterface(QMainWindow):
         cc3dApp().registerObject("UserInterface", self)
         cc3dApp().registerObject("ViewManager", self.viewmanager)
 
-        self.__initActions()  # Setup actions
-        self.__initMenus()  # Setup menus
+        # Setup actions
+        self.__initActions()
+        # Setup menus
+        self.__initMenus()
 
-        # self.__createViewManager()
-        self.__initToolbars()  # Setup toolbars
-        self.__initStatusbar()  # Setup status bar
+        # Setup toolbars
+        self.__initToolbars()
+
+        # Setup status bar
+        self.__initStatusbar()
 
         # now redirect stdout and stderr
         if Configuration.getSetting("CC3DOutputOn"):
 
             if Configuration.getSetting("UseInternalConsole"):
                 # redirecting Python output to internal console
-                self.useInternalConsoleForPythonOutput(True)
+                self.use_internal_console_for_python_output(True)
             else:
                 # Python output goes to system console
-                self.enablePythonOutput(True)
+                self.enable_python_output(True)
         else:
             # silencing output from Python
-            self.enablePythonOutput(False)
-        # TODO
-        if self.viewmanager.MDI_ON:  # configuration of MDI
-            playerSizes = Configuration.getSetting("PlayerSizes")
-            if playerSizes and playerSizes.size() > 0:
-                self.resize(Configuration.getSetting("MainWindowSize"))
-                self.move(Configuration.getSetting("MainWindowPosition"))
-                self.restoreState(playerSizes)
-            else:
-                self.resize(Configuration.getSetting("MainWindowSize"))
-                self.move(Configuration.getSetting("MainWindowPosition"))
-        else:  # configuration of floating windows
-            playerSizes = Configuration.getSetting("PlayerSizesFloating")
+            self.enable_python_output(False)
 
-            if playerSizes and playerSizes.size() > 0:
-                self.resize(Configuration.getSetting("MainWindowSizeFloating"))
-                # self.resize(self.size().width(),
-                #             20)  # resizing vertical dimension to be minimal - for PyQt5 we cannot use 0
-                self.move(Configuration.getSetting("MainWindowPositionFloating"))
-                self.restoreState(playerSizes)
-            else:
-                self.resize(Configuration.getSetting("MainWindowSizeFloating"))
-                # self.resize(self.size().width(),
-                #             20)  # resizing vertical dimension to be minimal - for PyQt5 we cannot use 0
-                self.move(Configuration.getSetting("MainWindowPositionFloating"))
+        self.initialize_gui_geometry()
 
-        # MDIFIX
-        floatingFlag = Configuration.getSetting('FloatingWindows')
+        floating_flag = Configuration.getSetting('FloatingWindows')
 
-        floatingNonGraphicsFlag = False
+        floating_non_graphics_flag = False
         # we allow non-graphics windows to be docked. This improves
         # layout when we request floating grahics windows
-        self.modelEditorDock.setFloating(floatingNonGraphicsFlag)
-        self.consoleDock.setFloating(floatingNonGraphicsFlag)
-        self.latticeDataDock.setFloating(floatingNonGraphicsFlag)
+        self.modelEditorDock.setFloating(floating_non_graphics_flag)
+        self.consoleDock.setFloating(floating_non_graphics_flag)
+        self.latticeDataDock.setFloating(floating_non_graphics_flag)
 
-        if floatingFlag:
+        if floating_flag:
             # in order to have all dock widgets expand (i.e. fill all available space)
             # we hide central widget when graphics windows are floating
             self.centralWidget().hide()
 
-    ##########################################################
-    ## Below are slots to handle StdOut and StdErr
-    ##########################################################
+    def initialize_gui_geometry(self):
+        """
+        Initializes GUI geometry based on saved settings and based on current screen configuration
+        :return:
+        """
+        current_screen_geometry_settings = self.get_current_screen_geometry_settings()
+        saved_screen_geometry_settings = Configuration.getSetting("ScreenGeometry")
 
-    def enablePythonOutput(self, _flag):
+        main_window_size = Configuration.getSetting("MainWindowSizeDefault")
+        main_window_position = Configuration.getSetting("MainWindowPositionDefault")
+        player_sizes = Configuration.getSetting("PlayerSizesDefault")
+
+        if current_screen_geometry_settings == saved_screen_geometry_settings:
+            # this indicates that saved screen geometry is the same as current screen geometry and we will use
+            # saved settings because we are working with same screend configuration so it is safe to restor
+            if self.viewmanager.MDI_ON:
+                # configuration of MDI
+                main_window_size = Configuration.getSetting("MainWindowSize")
+                main_window_position = Configuration.getSetting("MainWindowPosition")
+                player_sizes = Configuration.getSetting("PlayerSizes")
+            else:
+                main_window_size = Configuration.getSetting("MainWindowSizeFloating")
+                main_window_position = Configuration.getSetting("MainWindowPositionFloating")
+                player_sizes = Configuration.getSetting("PlayerSizesFloating")
+
+        self.resize(main_window_size)
+        self.move(main_window_position)
+        if player_sizes and player_sizes.size() > 0:
+            self.restoreState(player_sizes)
+
+    def save_ui_geometry(self):
+        """
+        Stores ui geometry settings . Called after user presses stop button
+        :return:
+        """
+        if self.viewmanager.MDI_ON:
+            Configuration.setSetting("PlayerSizes", self.saveState())
+            Configuration.setSetting("MainWindowSize", self.size())
+            Configuration.setSetting("MainWindowPosition", self.pos())
+
+        else:
+            Configuration.setSetting("PlayerSizesFloating", self.saveState())
+            Configuration.setSetting("MainWindowSizeFloating", self.size())
+            Configuration.setSetting("MainWindowPositionFloating", self.pos())
+
+    def get_current_screen_geometry_settings(self):
+        """
+        Returns a list of screen coordinates that describe current screens arrangements. Covers multiple
+        monitors
+        :return:
+        """
+        geometry = []
+        for screen in QApplication.screens():
+            screen_rect = screen.availableGeometry()
+
+            geometry += [screen_rect.x(), screen_rect.y(), screen_rect.width(), screen_rect.height()]
+
+        return geometry
+
+    def enable_python_output(self, _flag):
+
         if _flag:
             sys.stdout = self.origStdout
             sys.stderr = self.origStderr
@@ -187,7 +198,7 @@ class UserInterface(QMainWindow):
             sys.stdout = NullDevice()
             sys.stderr = NullDevice()
 
-    def useInternalConsoleForPythonOutput(self, _flag):
+    def use_internal_console_for_python_output(self, _flag):
         sys.stdout = self.stdout
         sys.stderr = self.stderr
 
@@ -241,7 +252,6 @@ class UserInterface(QMainWindow):
         self.__menus["recentSimulations"] = recentSimulationsMenu
 
         self.__menus["recentSimulations"].aboutToShow.connect(self.viewmanager.update_recent_file_menu)
-        # self.connect(self.__menus["recentSimulations"] , SIGNAL("aboutToShow()"), self.viewmanager.updateRecentFileMenu )
 
         mb.addMenu(self.__menus["file"])
 
@@ -249,7 +259,6 @@ class UserInterface(QMainWindow):
         mb.addMenu(self.__menus["view"])
 
         self.__menus["view"].aboutToShow.connect(self.__showViewMenu)
-        # self.connect(self.__menus["view"], SIGNAL('aboutToShow()'), self.__showViewMenu)
 
         self.__menus["toolbars"] = QMenu("&Toolbars", self.__menus["view"])
         self.__menus["toolbars"].setIcon(QIcon(gip("toolbars.png")))
@@ -275,60 +284,27 @@ class UserInterface(QMainWindow):
         mb.addMenu(self.__menus["help"])
 
     def __initToolbars(self):
-        # TODO
-        pass
-        simtb = self.viewmanager.init_sim_toolbar()
-        # filetb = self.viewmanager.initFileToolbar(self.toolbarManager)
-        filetb = self.viewmanager.init_file_toolbar()
 
-        # viewtb = QToolBar("View", self)
-        # viewtb.setIconSize(QSize(20, 18))
-        # viewtb.setObjectName("ViewToolbar")
-        # viewtb.setToolTip("View")
-        # viewtb.addAction(self.zoomInAct)
-        # viewtb.addAction(self.zoomOutAct)
-        # #viewtb.addAction(self.zoomFixedAct)
-        # viewtb.addWidget(self.zoomFixed)
-        # viewtb.addWidget(QLabel("  "))
-        # viewtb.addAction(self.screenshotAct)
+        simtb = self.viewmanager.init_sim_toolbar()
+        filetb = self.viewmanager.init_file_toolbar()
 
         visualizationtb = self.viewmanager.init_visualization_toolbar()
         windowtb = self.viewmanager.init_window_toolbar()
 
-        # cstb = self.viewmanager.initCrossSectionToolbar() #QToolBar("Cross Section", self) #
-        # threeDAct = QAction(self)
-        # threeDRB  = QRadioButton("3D")
-
-        # cstb.insertWidget(threeDAct, threeDRB)
-        # viewtb = self.viewmanager.initViewToolbar()
-
         self.addToolBar(simtb)
         self.addToolBar(filetb)
-        # self.addToolBar(viewtb)
         self.addToolBar(visualizationtb)
         self.addToolBar(windowtb)
-        # self.addToolBar(cstb)
 
         # just add new toolbars to the end of the list
-        self.__toolbars = {}
         self.__toolbars["file"] = [filetb.windowTitle(), filetb]
-        # self.__toolbars["view"] = [viewtb.windowTitle(), viewtb]
         self.__toolbars["simulation"] = [simtb.windowTitle(), simtb]
-        # self.__toolbars["crossSection"] = [cstb.windowTitle(), cstb]
 
     def closeEvent(self, event=None):
-        print("CALLING CLOSE EVENT FROM  SIMTAB")
-        # TODO check the rest of the function
 
-        if self.viewmanager.MDI_ON:
-            Configuration.setSetting("PlayerSizes", self.saveState())
-            Configuration.setSetting("MainWindowSize", self.size())
-            Configuration.setSetting("MainWindowPosition", self.pos())
-
-        else:
-            Configuration.setSetting("PlayerSizesFloating", self.saveState())
-            Configuration.setSetting("MainWindowSizeFloating", self.size())
-            Configuration.setSetting("MainWindowPositionFloating", self.pos())
+        Configuration.setSetting('ScreenGeometry', self.get_current_screen_geometry_settings())
+        # this saves size and position of window when player is opened and closed without running simulation
+        self.save_ui_geometry()
 
         self.viewmanager.closeEventSimpleTabView(event)
 
@@ -336,30 +312,12 @@ class UserInterface(QMainWindow):
         self.__statusBar = self.statusBar()
         self.__statusBar.setSizeGripEnabled(True)
         self.setStatusBar(self.__statusBar)
-        # self.__statusBar.showMessage("Welcome to CompuCell3D")
 
     def __initActions(self):
         """
         Private method to define the user interface actions.
         """
         self.actions = []
-        # self.zoomInAct = QAction(QIcon(gip("zoomIn.png")), "&Zoom In", self)
-        # self.actions.append(self.zoomInAct) # Replaced "viewActions" by "actions":self.viewActions.append(self.zoomInAct)
-        # #
-        # self.zoomOutAct = QAction(QIcon(gip("zoomOut.png")), "&Zoom Out", self)
-        # self.actions.append(self.zoomOutAct)
-
-        # # Why do I need self.zoomFixedAct?
-        # #self.zoomFixedAct = QAction(self)
-        # self.zoomFixed  = QComboBox()
-        # self.zoomFixed.setToolTip("Zoom Fixed")
-        # self.zoomFixed.addItems(self.__zoomItems())
-        # self.zoomFixed.setCurrentIndex(3)
-        # self.zoomFixed.addAction(self.zoomFixedAct)
-        # self.actions.append(self.zoomFixedAct)
-
-        # self.screenshotAct = QAction(QIcon("player5/icons/screenshot.png"), "&Take Screenshot", self)
-        # self.actions.append(self.screenshotAct)
 
         self.toolbarFileAct = QAction("&File", self)
         self.toolbarFileAct.setCheckable(True)
@@ -379,19 +337,17 @@ class UserInterface(QMainWindow):
 
         self.modelAct = QAction("&Model Editor", self)
         self.modelAct.setCheckable(True)
-        # self.modelAct.setChecked(True) #not self.projectBrowserDock.isHidden()
+
         if Configuration.getSetting('DisplayModelEditor'):
             self.modelAct.setChecked(True)
-        # self.connect(self.modelAct, SIGNAL("triggered(bool)"), self.toggleModelEditor)
+
         self.modelAct.triggered.connect(self.toggleModelEditor)
-        # self.connect(self.modelAct, SIGNAL("triggered(bool)"), self.toggleModelEditor)
 
         self.actions.append(self.modelAct)
 
         self.pluginsAct = QAction("&Plugins", self)
         self.pluginsAct.setCheckable(True)
         self.pluginsAct.setChecked(True)
-        # self.connect(self.pluginsAct, SIGNAL("triggered()"), self.__toggleCPlugins)
         self.pluginsAct.triggered.connect(self.__toggleCPlugins)
 
         self.actions.append(self.pluginsAct)
@@ -400,26 +356,9 @@ class UserInterface(QMainWindow):
         self.latticeDataAct.setCheckable(True)
         if Configuration.getSetting('DisplayLatticeData'):
             self.latticeDataAct.setChecked(True)
-        # self.latticeDataAct.setChecked(False)
-        # self.connect(self.latticeDataAct, SIGNAL("triggered(bool)"), self.toggleLatticeData)
         self.latticeDataAct.triggered.connect(self.toggleLatticeData)
 
         self.actions.append(self.latticeDataAct)
-
-        # self.connect(self.zoomInAct, SIGNAL('triggered()'), self.viewmanager.zoomIn)
-        # self.connect(self.zoomOutAct, SIGNAL('triggered()'), self.viewmanager.zoomOut)
-        # self.connect(self.zoomFixed, SIGNAL('activated(int)'), self.viewmanager.zoomFixed)
-        # self.connect(self.screenshotAct, SIGNAL('triggered()'), self.viewmanager.takeShot)
-
-        # self.connect(self.newGraphicsWindowAct, SIGNAL('triggered()'), self.viewmanager.addVTKWindowToWorkspace)
-
-        # Keep this code. There won't be plotting in 3.4.0 version
-        """
-        self.plotAct = QAction("&Plot", self)
-        self.plotAct.setCheckable(True)
-        self.plotAct.setChecked(True)
-        self.actions.append(self.plotAct)
-        """
 
         self.consoleAct = QAction("&Console", self)
         self.consoleAct.setCheckable(True)
@@ -441,55 +380,36 @@ class UserInterface(QMainWindow):
 
         return items
 
-    def setupDisplay3D(self):
-        self.ren = vtk.vtkRenderer()
-        self.display3D.GetRenderWindow().AddRenderer(self.ren)
-
-        cone = vtk.vtkConeSource()
-        cone.SetResolution(8)
-
-        coneMapper = vtk.vtkPolyDataMapper()
-        coneMapper.SetInput(cone.GetOutput())
-
-        coneActor = vtk.vtkActor()
-        coneActor.SetMapper(coneMapper)
-
-        self.ren.AddActor(coneActor)
-
-        # show the widget
-        self.display3D.show()
-
     def __createViewManager(self):
         self.zitems = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0, 8.0]
-        self.viewmanager = SimpleTabView(self)  # ViewManager.factory(self, self)
+
+        # ViewManager.factory(self, self)
+        self.viewmanager = SimpleTabView(self)
 
         self.viewmanager.set_recent_simulation_file(str(Configuration.getSetting("RecentFile")))
 
         self.viewmanager.setZoomItems(self.zitems)
 
-        # self.viewmanager.setOrientation(Qt.Vertical)
         self.setCentralWidget(self.viewmanager)
         self.setCentralWidget(self.viewmanager)
 
     def __createLayout(self):
         # Zoom items. The only place where the zoom items are specified!
-        # self.zitems = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0, 8.0]
-
         # Set up the model for the Model Editor
         self.modelEditorDock = self.__createDockWindow("ModelEditor")
 
         self.modelEditorDock.setToggleFcn(self.toggleModelEditor)
-        modelEditor = ModelEditor(self.modelEditorDock)
+        model_editor = ModelEditor(self.modelEditorDock)
 
         # TODO
         # self.model = SimModel(QDomDocument(), self.modelEditorDock) # Do I need parent self.modelEditorDock
         self.model = SimModel(None, self.modelEditorDock)  # Do I need parent self.modelEditorDock
-        modelEditor.setModel(self.model)  # Set the default model
-        modelEditor.setItemDelegate(SimDelegate(self))
-        modelEditor.setParams()
-        modelEditor.setSelectionBehavior(QAbstractItemView.SelectItems)
-        self.viewmanager.setModelEditor(modelEditor)  # Sets the Model Editor in the ViewManager
-        self.__setupDockWindow(self.modelEditorDock, Qt.LeftDockWidgetArea, modelEditor,
+        model_editor.setModel(self.model)  # Set the default model
+        model_editor.setItemDelegate(SimDelegate(self))
+        model_editor.setParams()
+        model_editor.setSelectionBehavior(QAbstractItemView.SelectItems)
+        self.viewmanager.setModelEditor(model_editor)  # Sets the Model Editor in the ViewManager
+        self.__setupDockWindow(self.modelEditorDock, Qt.LeftDockWidgetArea, model_editor,
                                "Model Editor")  # projectBrowser
 
         self.latticeDataDock = self.__createDockWindow("LatticeData")
@@ -498,9 +418,6 @@ class UserInterface(QMainWindow):
         self.latticeDataModel = LatticeDataModel()
         self.latticeDataModelTable.setModel(self.latticeDataModel)
 
-        # # self.cplugins.latticeDataModelTable()
-        # #self.connect(self.cplugins, SIGNAL("doubleClicked(const QModelIndex &)"), self.__showPluginView)
-        #
         self.__setupDockWindow(self.latticeDataDock, Qt.LeftDockWidgetArea, self.latticeDataModelTable,
                                "LatticeDataFiles")
         self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
@@ -512,7 +429,6 @@ class UserInterface(QMainWindow):
 
         self.console = Console(self.consoleDock)
         self.consoleDock.setWidget(self.console)
-        # self.consoleDock.setWindowTitle("Console")
         self.__setupDockWindow(self.consoleDock, Qt.BottomDockWidgetArea, self.console, "Console")
 
     def __createDockWindow(self, name):
@@ -522,10 +438,9 @@ class UserInterface(QMainWindow):
         @param name object name of the new dock window (string or QString)
         @return the generated dock window (QDockWindow)
         """
-        # dock = QDockWidget(self)
         dock = DockWidget(self)
         dock.setObjectName(name)
-        # dock.setFeatures(QDockWidget.DockWidgetFeatures(QDockWidget.AllDockWidgetFeatures))
+
         return dock
 
     def __setupDockWindow(self, dock, where, widget, caption):
@@ -553,8 +468,6 @@ class UserInterface(QMainWindow):
         Configuration.setSetting('DisplayModelEditor', flag)
         self.__toggleWindowFlag(self.modelEditorDock, flag)
 
-        # self.__toggleWindow(self.modelEditorDock)
-
     def __toggleCPlugins(self):
         """
         Private slot to handle the toggle of the Plugins window.
@@ -570,8 +483,6 @@ class UserInterface(QMainWindow):
 
         Configuration.setSetting('DisplayLatticeData', flag)
         self.__toggleWindowFlag(self.latticeDataDock, flag)
-
-        # self.__toggleWindow(self.latticeDataDock)
 
     def __toggleWindow(self, w):
         """
@@ -617,30 +528,16 @@ class UserInterface(QMainWindow):
         """
         self.__menus["view"].clear()
 
-        # Populate actions
-        # self.__menus["view"].addAction(self.zoomInAct)
-        # self.__menus["view"].addAction(self.zoomOutAct)
-        # self.__menus["view"].addSeparator()
-        # self.__menus["view"].addAction(self.screenshotAct)
-
-        # self.__menus["view"].addSeparator()
-
         self.__menus["view"].addMenu(self.__menus["toolbars"])
 
-        # self.__menus["view"].addSeparator()
         self.__menus["view"].addAction(self.modelAct)
         self.modelAct.setChecked(not self.modelEditorDock.isHidden())
-
-        # # # self.__menus["view"].addAction(self.pluginsAct)
-        # # # self.pluginsAct.setChecked(not self.cpluginsDock.isHidden())
 
         self.__menus["view"].addAction(self.latticeDataAct)
         self.latticeDataAct.setChecked(not self.latticeDataDock.isHidden())
 
         # Plotting action. Leave it here
-        # self.__menus["view"].addAction(self.plotAct)
         self.__menus["view"].addAction(self.consoleAct)
-        # self.consoleAct.setChecked(not self.consoleDock.isHidden())
 
     def __showToolbarsMenu(self):
         """
@@ -659,18 +556,6 @@ class UserInterface(QMainWindow):
             act.setData(QVariant(name))
             act.setChecked(not tb.isHidden())
 
-        """
-        #self.__menus["view"].addActions(self.viewProfileActGrp.actions())
-        self.__menus["view"].addSeparator()
-
-        # Set the options according to what is being displayed.
-        self.__menus["window"].addAction(self.pbAct)
-        if self.layout == "DockWindows":
-            self.pbAct.setChecked(not self.projectBrowserDock.isHidden())
-        else:
-            self.pbAct.setChecked(not self.projectBrowser.isHidden())
-        """
-
     def __TBMenuTriggered(self, act):
         """
         Private method to handle the toggle of a toolbar.
@@ -678,19 +563,6 @@ class UserInterface(QMainWindow):
         @param act reference to the action that was triggered (QAction)
         """
 
-        """
-        if act == self.__toolbarsShowAllAct:
-            for text, tb in self.__toolbars.values():
-                tb.show()
-            if self.__menus["toolbars"].isTearOffMenuVisible():
-                self.__showToolb arsMenu()
-        elif act == self.__toolbarsHideAllAct:
-            for text, tb in self.__toolbars.values():
-                tb.hide()
-            if self.__menus["toolbars"].isTearOffMenuVisible():
-                self.__showToolbarsMenu()
-        else:
-        """
         name = str(act.data().toString())
         if name:
             tb = self.__toolbars[name][1]
@@ -734,10 +606,8 @@ class Redirector(QObject):
             line = self.buffer[:n]
             if self.stderr:
                 self.appendStderr.emit(line)
-                # self.emit(SIGNAL('appendStderr'), line)
             else:
                 self.appendStdout.emit(line)
-                # self.emit(SIGNAL('appendStdout'), line)
 
             self.buffer = self.buffer[n:]
 
@@ -764,7 +634,3 @@ class Redirector(QObject):
 
         self.buffer = self.buffer + str(s)
         self.__nWrite(self.__bufferedWrite())
-        # if self.stdErrConsole:
-        # self.stdErrConsole.ensureCursorVisible()
-        # else:
-        # print "self.stdErrConsole=",self.stdErrConsole
