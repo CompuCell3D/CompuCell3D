@@ -14,7 +14,8 @@ class CC3DCaller:
                  restart_multiple_snapshots=False,
                  output_dir=None,
                  output_file_core_name=None,
-                 result_identifier_tag=None):
+                 result_identifier_tag=None,
+                 sim_input=None):
 
         self.cc3d_sim_fname = cc3d_sim_fname
         self.output_frequency = output_frequency
@@ -24,6 +25,7 @@ class CC3DCaller:
         self.output_dir = output_dir
         self.output_file_core_name = output_file_core_name
         self.result_identifier_tag = result_identifier_tag
+        self.sim_input = sim_input
 
     def run(self):
         persistent_globals = cc3d.CompuCellSetup.persistent_globals
@@ -44,6 +46,7 @@ class CC3DCaller:
         persistent_globals.output_file_core_name = self.output_file_core_name
         persistent_globals.restart_snapshot_frequency = self.restart_snapshot_frequency
         persistent_globals.restart_multiple_snapshots = self.restart_multiple_snapshots
+        persistent_globals.input_object = self.sim_input
 
         run_cc3d_project(cc3d_sim_fname=self.cc3d_sim_fname)
 
