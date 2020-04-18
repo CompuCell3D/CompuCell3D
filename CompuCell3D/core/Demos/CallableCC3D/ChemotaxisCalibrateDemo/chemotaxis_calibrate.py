@@ -4,10 +4,10 @@ import multiprocessing
 from os.path import dirname, join
 import numpy as np
 import scipy
-
+from scipy.optimize import minimize_scalar
 from cc3d.CompuCellSetup.CC3DCaller import CC3DCaller
 from cc3d.CompuCellSetup.CC3DCaller import CC3DCallerWorker
-
+import time
 
 # General setup
 
@@ -126,10 +126,9 @@ def main():
     lam_max = 1E4
 
     # Solve!
-    import time
+
     solve_time = time.time()
 
-    from scipy.optimize import minimize_scalar
     opt_res = minimize_scalar(cost_fun,
                               bounds=(lam_min, lam_max),
                               method='bounded',
