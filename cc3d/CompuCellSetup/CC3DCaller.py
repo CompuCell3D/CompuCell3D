@@ -28,6 +28,13 @@ class CC3DCaller:
     def run(self):
         persistent_globals = cc3d.CompuCellSetup.persistent_globals
 
+        # Clear lingering persistent global data from previous run if any
+        if persistent_globals.simulation_initialized:
+            simulator = persistent_globals.simulator
+            simulator.cleanAfterSimulation()
+            cc3d.CompuCellSetup.resetGlobals()
+            persistent_globals = cc3d.CompuCellSetup.persistent_globals
+
         rollback_importer = RollbackImporter()
 
         persistent_globals.simulation_file_name = self.cc3d_sim_fname
