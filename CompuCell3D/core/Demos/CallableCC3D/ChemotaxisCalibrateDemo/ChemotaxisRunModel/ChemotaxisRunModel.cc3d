@@ -1,0 +1,5 @@
+<Simulation version="4.1.1">
+   <XMLScript Type="XMLScript">Simulation/ChemotaxisRunModel.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/ChemotaxisRunModel.py</PythonScript>
+   <Resource Type="Python">Simulation/ChemotaxisRunModelSteppables.py</Resource>
+</Simulation>
