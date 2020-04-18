@@ -12,6 +12,7 @@ The list of new features added in this release includes the following:
     - fixing contour lines plotting
     - fixing display of chemical/scalar fields
     - floating windows layout now supported on all platforms
+    - dmg-based installer for OSX 10.14+. Solves previous issues with CC3D installations on newer OSX systems
 
 - New floating layout that limits windows clutter (immpotant for OSX users)
 
