@@ -238,9 +238,12 @@ unsigned int PixelTrackerPlugin::getParitionNumber(const Point3D &_pt, unsigned 
 std::set<PixelTrackerData> PixelTrackerPlugin::getMediumPixelSet() {
 
 	std::set<PixelTrackerData> mediumPixelSetCombined;
-	for (unsigned int p = 0; p < mediumPixelSet.size(); ++p)
-		for each (PixelTrackerData ptd in mediumPixelSet[p])
-			mediumPixelSetCombined.insert(ptd);
+	for (unsigned int p = 0; p < mediumPixelSet.size(); ++p){
+//		for each (PixelTrackerData ptd in mediumPixelSet[p])
+        for (auto ptd: mediumPixelSet[p]){
+            mediumPixelSetCombined.insert(ptd);
+        }
+    }
 
 	return mediumPixelSetCombined;
 }
