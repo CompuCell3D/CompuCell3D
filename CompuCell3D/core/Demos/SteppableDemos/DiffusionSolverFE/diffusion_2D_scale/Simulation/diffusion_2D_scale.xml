@@ -26,8 +26,6 @@
                 <DiffusionConstant>1.05</DiffusionConstant>
                 <DecayConstant>0.000</DecayConstant>
                 <ConcentrationFileName>Simulation/diffusion_2D.pulse.txt</ConcentrationFileName>
-                <!--DoNotDecayIn>Medium</DoNotDecayIn-->
-                <!--<DoNotDiffuseTo>Amoeba</DoNotDiffuseTo> -->
             </DiffusionData>
         </DiffusionField>
     </Steppable>

@@ -229,8 +229,6 @@ class MVCDrawModelBase:
         max_str = self.float_formatting(range_array[1])
         min_max_actor.SetInput("Min: {} Max: {}".format(min_str, max_str))
 
-        print('txt = ', min_max_actor.GetInput())
-        # txt.SetInput("Hello World 1!")
         txtprop = min_max_actor.GetTextProperty()
         txtprop.SetFontFamilyToArial()
         txtprop.SetFontSize(10)

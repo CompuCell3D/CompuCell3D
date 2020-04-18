@@ -50,7 +50,7 @@ class VectorFieldVisualizationSteppable(SteppableBasePy):
         # clear vector field
         self.vectorField[:, :, :, :] = 0.0
 
-        for x, y, z in self.everyPixel(10, 10, 5):
+        for x, y, z in self.every_pixel(10, 10, 5):
             self.vectorField[x, y, z] = [x * random(), y * random(), z * random()]
 
 
