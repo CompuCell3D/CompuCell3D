@@ -238,11 +238,7 @@ much better to write your own iterator wrapper like the one included in the CC3D
 This is a bit of the overhead but not too much and if necessary it can be further simplified
 (for the convenience of coding)
 
-
-
-
-
-Version 3.6.0
+Version 3.5.0
 -------------
 
 - Added OpenMP support
