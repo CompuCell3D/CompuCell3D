@@ -75,7 +75,8 @@ class PersistentGlobals:
         # dictionary holding shared variables between steppables
         self.shared_steppable_vars = {}
 
-        # return object
+        # input and return objects
+        self.input_object = None
         self.return_object = None
 
     def add_steering_panel(self, panel_data: dict):
