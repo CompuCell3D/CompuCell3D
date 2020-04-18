@@ -3,9 +3,9 @@ import sys
 from os.path import dirname, join, abspath
 
 versionMajor = 4
-versionMinor = 1
-versionBuild = 1
-revisionNumber = "20200118"
+versionMinor = 2
+versionBuild = 0
+revisionNumber = "20200418"
 
 
 def getVersionAsString():
@@ -101,4 +101,3 @@ elif sys.platform.startswith('linux'):
         ld_env_list.insert(0, cc3d_cpp_lib_path)
 
     os.environ['LD_LIBRARY_PATH'] = ':'.join(ld_env_list)
-

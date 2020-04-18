@@ -1,6 +1,35 @@
 Release Notes
 =============
 
+Version 4.2.0
+-------------
+**2019-04-18*
+
+The list of new features added in this release includes the following:
+
+- Multiple bug fixes including:
+    - fixing CC3D GUI behavior with multiple monitors
+    - fixing contour lines plotting
+    - fixing display of chemical/scalar fields
+    - floating windows layout now supported on all platforms
+
+- New floating layout that limits windows clutter (immpotant for OSX users)
+
+- Added persistent bias to Bias Vector Steppable
+
+- Added Screenshot API
+
+- Added cell type name accessor to Python steppable
+
+- Added Fluctuation Compensator to DiffusionSolverFE and ReactionDiffusionSolverFE
+
+- Added effective energy data Python accessor
+
+- Added Focal Point Plasticity time tracking data
+
+- Added Focal Point Plasticity link initiator data
+
+
 Version 4.1.1
 -------------
 **2019-01-18*
