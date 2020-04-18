@@ -29,6 +29,9 @@ The list of new features added in this release includes the following:
 
 - Added Focal Point Plasticity link initiator data
 
+Known Issues:
+- GPU solvers on OSX 10.14 or higher may not work properly
+
 
 Version 4.1.1
 -------------
