@@ -311,6 +311,10 @@ class UserInterface(QMainWindow):
 
         self.viewmanager.closeEventSimpleTabView(event)
 
+    def resizeEvent(self, event):
+        self.save_ui_geometry()
+        QMainWindow.resizeEvent(self, event)
+
     def __initStatusbar(self):
         self.__statusBar = self.statusBar()
         self.__statusBar.setSizeGripEnabled(True)
