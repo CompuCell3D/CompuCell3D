@@ -1,0 +1,67 @@
+<CompuCell3D Revision="20200118" Version="4.1.1">
+   
+    <Metadata>
+        <NumberOfProcessors>8</NumberOfProcessors>
+        <DebugOutputFrequency>1000</DebugOutputFrequency>
+    </Metadata>
+   
+    <Potts>
+        <Dimensions x="100" y="100" z="1"/>
+        <Steps>100000</Steps>
+        <Temperature>10.0</Temperature>
+        <NeighborOrder>1</NeighborOrder>
+    </Potts>
+   
+    <Plugin Name="CellType">
+        <CellType TypeId="0" TypeName="Medium"/>
+    </Plugin>
+    
+    <Steppable Type="DiffusionSolverFE">
+        <DiffusionField Name="Field_DiffusionSolverFE">
+            <DiffusionData>
+                <FieldName>Field_DiffusionSolverFE</FieldName>
+                <GlobalDiffusionConstant>0.1</GlobalDiffusionConstant>
+                <GlobalDecayConstant>0e0</GlobalDecayConstant>
+            </DiffusionData>
+            <SecretionData>
+            </SecretionData>
+            <BoundaryConditions>
+                <Plane Axis="X">
+                    <ConstantDerivative PlanePosition="Min" Value="0.0"/>
+                    <ConstantDerivative PlanePosition="Max" Value="0.0"/>
+<!--                    <Periodic/>-->
+                </Plane>
+                <Plane Axis="Y">
+<!--                    <ConstantDerivative PlanePosition="Min" Value="0.0"/>-->
+<!--                    <ConstantDerivative PlanePosition="Max" Value="0.0"/>-->
+                    <Periodic/>
+                </Plane>
+            </BoundaryConditions>
+        </DiffusionField>
+    </Steppable>
+    
+    <Steppable Type="ReactionDiffusionSolverFE">
+        <DiffusionField Name="Field_ReactionDiffusionSolverFE">
+            <DiffusionData>
+                <FieldName>Field_ReactionDiffusionSolverFE</FieldName>
+                <GlobalDiffusionConstant>0.1</GlobalDiffusionConstant>
+                <GlobalDecayConstant>0e0</GlobalDecayConstant>
+            </DiffusionData>
+            <SecretionData>
+            </SecretionData>
+            <BoundaryConditions>
+                <Plane Axis="X">
+                    <ConstantDerivative PlanePosition="Min" Value="0.0"/>
+                    <ConstantDerivative PlanePosition="Max" Value="0.0"/>
+<!--                    <Periodic/>-->
+                </Plane>
+                <Plane Axis="Y">
+<!--                    <ConstantDerivative PlanePosition="Min" Value="0.0"/>-->
+<!--                    <ConstantDerivative PlanePosition="Max" Value="0.0"/>-->
+                    <Periodic/>
+                </Plane>
+            </BoundaryConditions>
+        </DiffusionField>
+    </Steppable>
+    
+</CompuCell3D>
