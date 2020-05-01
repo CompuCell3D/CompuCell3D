@@ -130,11 +130,14 @@ class UserInterface(QMainWindow):
             # we hide central widget when graphics windows are floating
             self.centralWidget().hide()
 
-    def initialize_gui_geometry(self):
+    def initialize_gui_geometry(self, allow_main_window_move:bool=True):
         """
         Initializes GUI geometry based on saved settings and based on current screen configuration
+        :param allow_main_window_move: flag that specifies whether we may move main window according to settings or not
+        We typically allow to moving of the main window at the GUI startup but not after loading simulation
         :return:
         """
+
         current_screen_geometry_settings = self.get_current_screen_geometry_settings()
         saved_screen_geometry_settings = Configuration.getSetting("ScreenGeometry")
 
@@ -147,7 +150,7 @@ class UserInterface(QMainWindow):
 
         if current_screen_geometry_settings == saved_screen_geometry_settings:
             # this indicates that saved screen geometry is the same as current screen geometry and we will use
-            # saved settings because we are working with same screend configuration so it is safe to restor
+            # saved settings because we are working with same screen configuration so it is safe to restore
             if self.viewmanager.MDI_ON:
                 # configuration of MDI
                 main_window_size = Configuration.getSetting("MainWindowSize")
@@ -155,11 +158,15 @@ class UserInterface(QMainWindow):
                 player_sizes = Configuration.getSetting("PlayerSizes")
             else:
                 main_window_size = Configuration.getSetting("MainWindowSizeFloating")
+
                 main_window_position = Configuration.getSetting("MainWindowPositionFloating")
                 player_sizes = Configuration.getSetting("PlayerSizesFloating")
 
         self.resize(main_window_size)
-        self.move(main_window_position)
+        # we want main window to move only during initial opening of the GUI but not upon loading new simulation
+        if allow_main_window_move:
+            self.move(main_window_position)
+
         if player_sizes and player_sizes.size() > 0:
             self.restoreState(player_sizes)
 
