@@ -30,6 +30,10 @@ The list of new features added in this release includes the following:
 
 - Added Focal Point Plasticity link initiator data
 
+- Added PDE test-suite
+
+- Improvements to CallableCC3D module (input passing)
+
 Known Issues:
 - GPU solvers on OSX 10.14 or higher may not work properly
 
