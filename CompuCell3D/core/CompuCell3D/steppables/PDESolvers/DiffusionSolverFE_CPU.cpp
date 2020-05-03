@@ -5,6 +5,7 @@
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include "FluctuationCompensator.h"
+#include <cfloat>
 
 using namespace CompuCell3D;
 

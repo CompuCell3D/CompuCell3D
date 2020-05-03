@@ -1,6 +1,43 @@
 Release Notes
 =============
 
+Version 4.2.0
+-------------
+**2019-04-18*
+
+The list of new features added in this release includes the following:
+
+- Multiple bug fixes including:
+    - fixing CC3D GUI behavior with multiple monitors
+    - fixing contour lines plotting
+    - fixing display of chemical/scalar fields
+    - floating windows layout now supported on all platforms
+    - dmg-based installer for OSX 10.14+. Solves previous issues with CC3D installations on newer OSX systems
+
+- New floating layout that limits windows clutter (immpotant for OSX users)
+
+- Added persistent bias to Bias Vector Steppable
+
+- Added Screenshot API
+
+- Added cell type name accessor to Python steppable
+
+- Added Fluctuation Compensator to DiffusionSolverFE and ReactionDiffusionSolverFE
+
+- Added effective energy data Python accessor
+
+- Added Focal Point Plasticity time tracking data
+
+- Added Focal Point Plasticity link initiator data
+
+- Added PDE test-suite
+
+- Improvements to CallableCC3D module (input passing)
+
+Known Issues:
+- GPU solvers on OSX 10.14 or higher may not work properly
+
+
 Version 4.1.1
 -------------
 **2019-01-18*
@@ -209,11 +246,7 @@ much better to write your own iterator wrapper like the one included in the CC3D
 This is a bit of the overhead but not too much and if necessary it can be further simplified
 (for the convenience of coding)
 
-
-
-
-
-Version 3.6.0
+Version 3.5.0
 -------------
 
 - Added OpenMP support

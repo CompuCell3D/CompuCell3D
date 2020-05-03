@@ -130,11 +130,14 @@ class UserInterface(QMainWindow):
             # we hide central widget when graphics windows are floating
             self.centralWidget().hide()
 
-    def initialize_gui_geometry(self):
+    def initialize_gui_geometry(self, allow_main_window_move:bool=True):
         """
         Initializes GUI geometry based on saved settings and based on current screen configuration
+        :param allow_main_window_move: flag that specifies whether we may move main window according to settings or not
+        We typically allow to moving of the main window at the GUI startup but not after loading simulation
         :return:
         """
+
         current_screen_geometry_settings = self.get_current_screen_geometry_settings()
         saved_screen_geometry_settings = Configuration.getSetting("ScreenGeometry")
 
@@ -147,7 +150,7 @@ class UserInterface(QMainWindow):
 
         if current_screen_geometry_settings == saved_screen_geometry_settings:
             # this indicates that saved screen geometry is the same as current screen geometry and we will use
-            # saved settings because we are working with same screend configuration so it is safe to restor
+            # saved settings because we are working with same screen configuration so it is safe to restore
             if self.viewmanager.MDI_ON:
                 # configuration of MDI
                 main_window_size = Configuration.getSetting("MainWindowSize")
@@ -155,11 +158,15 @@ class UserInterface(QMainWindow):
                 player_sizes = Configuration.getSetting("PlayerSizes")
             else:
                 main_window_size = Configuration.getSetting("MainWindowSizeFloating")
+
                 main_window_position = Configuration.getSetting("MainWindowPositionFloating")
                 player_sizes = Configuration.getSetting("PlayerSizesFloating")
 
         self.resize(main_window_size)
-        self.move(main_window_position)
+        # we want main window to move only during initial opening of the GUI but not upon loading new simulation
+        if allow_main_window_move:
+            self.move(main_window_position)
+
         if player_sizes and player_sizes.size() > 0:
             self.restoreState(player_sizes)
 
@@ -216,7 +223,6 @@ class UserInterface(QMainWindow):
         """
         self.showLogTab("stdout")
         self.appendStdoutSignal.emit(s)
-        # self.emit(SIGNAL('appendStdout'), s)
 
     def appendToStderr(self, s):
         """
@@ -226,7 +232,6 @@ class UserInterface(QMainWindow):
         """
         self.showLogTab("stderr")
         self.appendStderrSignal.emit(s)
-        # self.emit(SIGNAL('appendStderr'), s)
 
     def showLogTab(self, tabname):
         """
@@ -235,10 +240,6 @@ class UserInterface(QMainWindow):
         @param tabname string naming the tab to be shown (string)
         """
         self.console.showLogTab(tabname)
-
-        # I don't think I need to show the dock widget
-        # self.consoleDock.show()
-        # self.consoleDock.raise_()
 
     def getMenusDictionary(self):
         return self.__menus
@@ -288,20 +289,20 @@ class UserInterface(QMainWindow):
 
     def __initToolbars(self):
 
-        simtb = self.viewmanager.init_sim_toolbar()
-        filetb = self.viewmanager.init_file_toolbar()
+        sim_tb = self.viewmanager.init_sim_toolbar()
+        file_tb = self.viewmanager.init_file_toolbar()
 
-        visualizationtb = self.viewmanager.init_visualization_toolbar()
-        windowtb = self.viewmanager.init_window_toolbar()
+        visualization_tb = self.viewmanager.init_visualization_toolbar()
+        window_tb = self.viewmanager.init_window_toolbar()
 
-        self.addToolBar(simtb)
-        self.addToolBar(filetb)
-        self.addToolBar(visualizationtb)
-        self.addToolBar(windowtb)
+        self.addToolBar(sim_tb)
+        self.addToolBar(file_tb)
+        self.addToolBar(visualization_tb)
+        self.addToolBar(window_tb)
 
         # just add new toolbars to the end of the list
-        self.__toolbars["file"] = [filetb.windowTitle(), filetb]
-        self.__toolbars["simulation"] = [simtb.windowTitle(), simtb]
+        self.__toolbars["file"] = [file_tb.windowTitle(), file_tb]
+        self.__toolbars["simulation"] = [sim_tb.windowTitle(), sim_tb]
 
     def closeEvent(self, event=None):
 
@@ -386,7 +387,6 @@ class UserInterface(QMainWindow):
     def __createViewManager(self):
         self.zitems = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0, 8.0]
 
-        # ViewManager.factory(self, self)
         self.viewmanager = SimpleTabView(self)
 
         self.viewmanager.set_recent_simulation_file(str(Configuration.getSetting("RecentFile")))
@@ -404,8 +404,6 @@ class UserInterface(QMainWindow):
         self.modelEditorDock.setToggleFcn(self.toggleModelEditor)
         model_editor = ModelEditor(self.modelEditorDock)
 
-        # TODO
-        # self.model = SimModel(QDomDocument(), self.modelEditorDock) # Do I need parent self.modelEditorDock
         self.model = SimModel(None, self.modelEditorDock)  # Do I need parent self.modelEditorDock
         model_editor.setModel(self.model)  # Set the default model
         model_editor.setItemDelegate(SimDelegate(self))

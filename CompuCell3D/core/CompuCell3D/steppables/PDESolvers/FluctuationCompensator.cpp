@@ -244,7 +244,7 @@ std::vector<Point3D> FluctuationCompensator::getCellPixelVec(const CellG *_cell)
 }
 
 std::vector<Point3D> FluctuationCompensator::getMediumPixelVec() {
-	std::set<PixelTrackerData> &pixelSet = pixelTrackerPlugin->getMediumPixelSet();
+	const std::set<PixelTrackerData> &pixelSet = pixelTrackerPlugin->getMediumPixelSet();
 	std::vector<Point3D> pixelVec = std::vector<Point3D>(pixelSet.size());
 	unsigned int ptdIndex = 0;
 	for (set<PixelTrackerData >::iterator sitr = pixelSet.begin(); sitr != pixelSet.end(); ++sitr) {
