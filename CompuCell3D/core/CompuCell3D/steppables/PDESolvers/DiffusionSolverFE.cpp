@@ -10,6 +10,7 @@
 #include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 #include <CompuCell3D/plugins/CellTypeMonitor/CellTypeMonitorPlugin.h>
+#include "FluctuationCompensator.h"
 
 #include <BasicUtils/BasicString.h>
 #include <BasicUtils/BasicException.h>
@@ -107,6 +108,7 @@ DiffusionSolverFE<Cruncher>::DiffusionSolverFE()
     numberOfFields=0;
     scalingExtraMCS=-1;
     bc_indicator_field=0;
+	fluctuationCompensator = 0;
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -121,6 +123,11 @@ DiffusionSolverFE<Cruncher>::~DiffusionSolverFE()
 	if(serializerPtr){
 		delete serializerPtr ; 
 		serializerPtr=0;
+	}
+
+	if (fluctuationCompensator) {
+		delete fluctuationCompensator;
+		fluctuationCompensator = 0;
 	}
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -379,6 +386,17 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
     
     h_celltype_field=cellTypeMonitorPlugin->getCellTypeArray();
     h_cellid_field=cellTypeMonitorPlugin->getCellIdArray();
+
+	if (_xmlData->findElement("FluctuationCompensator")) {
+
+		fluctuationCompensator = new FluctuationCompensator(simPtr);
+
+		for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i)
+			fluctuationCompensator->loadFieldName(concentrationFieldNameVectorTmp[i]);
+
+		fluctuationCompensator->loadFields();
+
+	}
     
 	simulator->registerSteerableObject(this);
 

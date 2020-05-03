@@ -53,6 +53,7 @@ FocalPointPlasticityPlugin::~FocalPointPlasticityPlugin() {
 }
 
 void FocalPointPlasticityPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
+	sim = simulator;
 	potts=simulator->getPotts();
 	fieldDim=potts->getCellFieldG()->getDim();
 	xmlData=_xmlData;
@@ -804,8 +805,13 @@ double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt,const 
 	WatchableField3D<CellG *> *fieldG =(WatchableField3D<CellG *> *) potts->getCellFieldG();
 	//visit point neighbors of newCell and see if within of specified range there is another cell with which newCell can make a junction
 
+	// Randomly shuffle neighbor selection
+	std::vector<unsigned int> randNeighborIndex = std::vector<unsigned int>(maxNeighborIndexLocal + 1, 0);
+	for (unsigned int nIdx = 0; nIdx <= maxNeighborIndexLocal; ++nIdx) randNeighborIndex[nIdx] = nIdx;
+	std::random_shuffle(randNeighborIndex.begin(), randNeighborIndex.end());
+
 	for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndexLocal ; ++nIdx ){
-		neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
+		neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), randNeighborIndex[nIdx]);
 		if(!neighbor.distance){
 			//if distance is 0 then the neighbor returned is invalid
 			continue;
@@ -899,8 +905,13 @@ double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point
 	WatchableField3D<CellG *> *fieldG =(WatchableField3D<CellG *> *) potts->getCellFieldG();
 	//visit point neighbors of newCell and see if within of specified range there is another cell with which newCell can make a junction
 
+	// Randomly shuffle neighbor selection
+	std::vector<unsigned int> randNeighborIndex = std::vector<unsigned int>(maxNeighborIndexLocal + 1, 0);
+	for (unsigned int nIdx = 0; nIdx <= maxNeighborIndexLocal; ++nIdx) randNeighborIndex[nIdx] = nIdx;
+	std::random_shuffle(randNeighborIndex.begin(), randNeighborIndex.end());
+
 	for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndexLocal ; ++nIdx ){
-		neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
+		neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), randNeighborIndex[nIdx]);
 		if(!neighbor.distance){
 			//if distance is 0 then the neighbor returned is invalid
 			continue;
@@ -1255,6 +1266,7 @@ void FocalPointPlasticityPlugin::createFocalPointPlasticityLink(CellG * _cell1,C
 	fpptd1.maxDistance=_maxDistance;			
 	fpptd1.neighborAddress=_cell2;
 	fpptd1.isInitiator = true;
+	fpptd1.initMCS = sim->getStep();
 
 	focalPointPlasticityTrackerAccessor.get(_cell1->extraAttribPtr)->focalPointPlasticityNeighbors.insert(fpptd1);
 
@@ -1266,6 +1278,7 @@ void FocalPointPlasticityPlugin::createFocalPointPlasticityLink(CellG * _cell1,C
 	fpptd2.maxDistance=_maxDistance;			
 	fpptd2.neighborAddress=_cell1;
 	fpptd2.isInitiator = false;
+	fpptd2.initMCS = sim->getStep();
 
 	focalPointPlasticityTrackerAccessor.get(_cell2->extraAttribPtr)->focalPointPlasticityNeighbors.insert(fpptd2);
 
@@ -1281,6 +1294,7 @@ void FocalPointPlasticityPlugin::createInternalFocalPointPlasticityLink(CellG * 
 	fpptd1.maxDistance=_maxDistance;			
 	fpptd1.neighborAddress=_cell2;
 	fpptd1.isInitiator = true;
+	fpptd1.initMCS = sim->getStep();
 
 	focalPointPlasticityTrackerAccessor.get(_cell1->extraAttribPtr)->internalFocalPointPlasticityNeighbors.insert(fpptd1);
 
@@ -1292,6 +1306,7 @@ void FocalPointPlasticityPlugin::createInternalFocalPointPlasticityLink(CellG * 
 	fpptd2.maxDistance=_maxDistance;			
 	fpptd2.neighborAddress=_cell1;
 	fpptd2.isInitiator = false;
+	fpptd2.initMCS = sim->getStep();
 
 	focalPointPlasticityTrackerAccessor.get(_cell2->extraAttribPtr)->internalFocalPointPlasticityNeighbors.insert(fpptd2);
 
@@ -1372,6 +1387,7 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 			//cerr<<"setting fpptd.targetDistance="<<fpptd.targetDistance<<endl;
 			fpptd.neighborAddress=newNeighbor;
 			fpptd.isInitiator = true;
+			fpptd.initMCS = sim->getStep();
 
 			focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->focalPointPlasticityNeighbors.		
 				insert(FocalPointPlasticityTrackerData(fpptd));
@@ -1385,10 +1401,12 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		}else if (functionType==GLOBAL){
 			FocalPointPlasticityTrackerData fpptd = FocalPointPlasticityTrackerData(newNeighbor, lambda, 0.9*distance);
 			fpptd.isInitiator = true;
+			fpptd.initMCS = sim->getStep();
 			focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->focalPointPlasticityNeighbors.insert(FocalPointPlasticityTrackerData(fpptd));
 
 			fpptd = FocalPointPlasticityTrackerData(newCell, lambda, 0.9*distance);
 			fpptd.isInitiator = false;
+			fpptd.initMCS = sim->getStep();
 			focalPointPlasticityTrackerAccessor.get(newNeighbor->extraAttribPtr)->focalPointPlasticityNeighbors.insert(FocalPointPlasticityTrackerData(fpptd));
 		}
 		//}
@@ -1427,6 +1445,7 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 			//cerr<<"setting fpptd.targetDistance="<<fpptd.targetDistance<<endl;
 			fpptd.neighborAddress=newNeighbor;
 			fpptd.isInitiator = true;
+			fpptd.initMCS = sim->getStep();
 			focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors.		
 				insert(FocalPointPlasticityTrackerData(fpptd));
 
@@ -1434,6 +1453,7 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 
 			fpptd.neighborAddress=newCell;
 			fpptd.isInitiator = false;
+			fpptd.initMCS = sim->getStep();
 			focalPointPlasticityTrackerAccessor.get(newNeighbor->extraAttribPtr)->internalFocalPointPlasticityNeighbors.
 				insert(FocalPointPlasticityTrackerData(fpptd));
 
@@ -1442,10 +1462,12 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		}else if (functionType==GLOBAL){
 			FocalPointPlasticityTrackerData fpptd = FocalPointPlasticityTrackerData(newNeighbor, lambda, 0.9*distance);
 			fpptd.isInitiator = true;
+			fpptd.initMCS = sim->getStep();
 			focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors.insert(fpptd);
 
 			fpptd = FocalPointPlasticityTrackerData(newCell, lambda, 0.9*distance);
 			fpptd.isInitiator = false;
+			fpptd.initMCS = sim->getStep();
 			focalPointPlasticityTrackerAccessor.get(newNeighbor->extraAttribPtr)->internalFocalPointPlasticityNeighbors.insert(fpptd);
 		}
 		//}

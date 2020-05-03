@@ -1,3 +1,7 @@
 from cc3d import CompuCellSetup
 
+from ReactionDiffusion_2D_muparserSteppables import ReactionDiffusion_2D_muparserSteppable
+
+CompuCellSetup.register_steppable(steppable=ReactionDiffusion_2D_muparserSteppable(frequency=1))
+
 CompuCellSetup.run()

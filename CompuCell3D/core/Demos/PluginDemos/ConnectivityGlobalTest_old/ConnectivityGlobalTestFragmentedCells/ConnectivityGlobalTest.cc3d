@@ -2,6 +2,7 @@
 
     <XMLScript Type="XMLScript">Simulation/ConnectivityGlobalTestFragmentedCells.xml</XMLScript>
     <PythonScript>Simulation/ConnectivityGlobalTestFragmentedCells.py</PythonScript>
+    <Resource Type="Python">Simulation/ConnectivityGlobalTestFragmentedCellsSteppables.py</Resource>
     <PIFFile>Simulation/ConnectivityGlobalTestFragmentedCells.piff</PIFFile>
 
 </Simulation>

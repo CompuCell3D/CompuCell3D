@@ -1,5 +1,7 @@
 <Simulation version="3.6.1">
 
     <XMLScript Type="XMLScript">Simulation/cellsort_2D_statistics_spin_flip.xml</XMLScript>
+    <PythonScript Type="PythonScript">Simulation/cellsort_2D_statistics_spin_flip.py</PythonScript>
+    <Resource Type="Python">Simulation/cellsort_2D_statistics_spin_flipSteppables.py</Resource>
 
 </Simulation>

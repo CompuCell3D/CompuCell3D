@@ -1,5 +1,7 @@
 <Simulation version="3.6.1">
 
     <XMLScript Type="XMLScript">Simulation/cellsort_2D_statistics.xml</XMLScript>
+    <PythonScript Type="PythonScript">Simulation/cellsort_2D_statistics.py</PythonScript>
+    <Resource Type="Python">Simulation/cellsort_2D_statisticsSteppables.py</Resource>
 
 </Simulation>

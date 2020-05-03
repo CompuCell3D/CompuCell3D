@@ -1,3 +1,5 @@
 <Simulation version="3.6.2">
    <XMLScript Type="XMLScript">Simulation/SimpleDiffusion.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/SimpleDiffusion.py</PythonScript>
+   <Resource Type="Python">Simulation/SimpleDiffusionSteppables.py</Resource>
 </Simulation>

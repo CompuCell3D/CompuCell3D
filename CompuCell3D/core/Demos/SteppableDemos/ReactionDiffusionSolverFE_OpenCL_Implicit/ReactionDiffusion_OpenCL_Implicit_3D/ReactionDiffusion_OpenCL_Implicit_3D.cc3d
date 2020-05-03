@@ -1,3 +1,5 @@
 <Simulation version="3.6.2">
    <XMLScript Type="XMLScript">Simulation/ReactionDiffusion_OpenCL_3D.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/ReactionDiffusion_OpenCL_3D.py</PythonScript>
+   <Resource Type="Python">Simulation/ReactionDiffusion_OpenCL_3DSteppables.py</Resource>
 </Simulation>

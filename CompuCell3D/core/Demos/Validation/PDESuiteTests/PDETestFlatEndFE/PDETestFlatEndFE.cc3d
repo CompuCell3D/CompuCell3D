@@ -1,0 +1,5 @@
+<Simulation version="4.1.1">
+   <XMLScript Type="XMLScript">Simulation/PDETestFlatEndFE.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/PDETestFlatEndFE.py</PythonScript>
+   <Resource Type="Python">Simulation/PDETestFlatEndFESteppables.py</Resource>
+</Simulation>

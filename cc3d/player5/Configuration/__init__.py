@@ -15,7 +15,7 @@
 
 # todo - handle bad file format for settings
 # todo - at the beginning read all settings and make sure there are no issues in the stored settings
-#todo - see if updateFieldsParams() function is needed
+# todo - see if updateFieldsParams() function is needed
 # todo - see if we need syncPreferences
 
 
@@ -28,7 +28,6 @@ from .SettingUtils import _global_setting_path
 # except ImportError:
 #     from Config.settingdict import SettingsSQL
 from .settingdict import SettingsSQL
-
 
 LATTICE_TYPES = {"Square": 1, "Hexagonal": 2}
 
@@ -51,12 +50,13 @@ class Configuration:
     myCustomSettings = None
     myCustomSettingsPath = ''
 
-    globalOnlySettings = ['RecentSimulations', 'NumberOfRecentSimulations', 'OutputLocation', 'ProjectLocation','FloatingWindows']
+    globalOnlySettings = ['RecentSimulations', 'NumberOfRecentSimulations', 'OutputLocation', 'ProjectLocation',
+                          'FloatingWindows', 'MainWindowSizeDefault', 'MainWindowSizeDefault', 'ScreenGeometry']
     customOnlySettings = ['WindowsLayout']
 
     activeFieldNamesList = []
 
-    # dictionary of FieldParams Setings
+    # dictionary of FieldParams Settings
     simFieldsParams = None
 
 
@@ -71,6 +71,7 @@ def initConfiguration():
                                         Configuration.myGlobalSettingsPath)
     Configuration.myCustomSettings = None
     Configuration.myCustomSettingsPath = ''
+
 
 def replace_custom_settings_with_defaults():
     """
@@ -210,7 +211,7 @@ def getDefaultFieldParams():
 
 
 def updateFieldsParams(fieldName, fieldDict):
-    #todo - see if this function is needed
+    # todo - see if this function is needed
     """
     Called by ConfigurationDialog - stores field params dictionary (fieldDict) associated with field (fieldName)
     in the Configuration.simFieldsParams. Also stores this information in the settings file on the hard drive
@@ -243,24 +244,24 @@ def getRecentSimulationsIncludingNewItem(simName):
     :return: {list of str} list of recent simulations
     """
 
-    tmpList = getSetting('RecentSimulations')
-    maxLength = getSetting('NumberOfRecentSimulations')
+    tmp_list = getSetting('RecentSimulations')
+    max_length = getSetting('NumberOfRecentSimulations')
 
-    currentStrlist = [x for x in tmpList]
+    current_strlist = [x for x in tmp_list]
 
     # inserting new element
-    currentStrlist.insert(0, simName)
+    current_strlist.insert(0, simName)
 
     # eliminating duplicates
     seen = set()
     seen_add = seen.add
-    currentStrlist = [x for x in currentStrlist if not (x in seen or seen_add(x))]
+    current_strlist = [x for x in current_strlist if not (x in seen or seen_add(x))]
 
     # ensuring that we keep only NumberOfRecentSimulations elements
-    if len(currentStrlist) > maxLength:
-        currentStrlist = currentStrlist[: - (len(currentStrlist) - maxLength)]
+    if len(current_strlist) > max_length:
+        current_strlist = current_strlist[: - (len(current_strlist) - max_length)]
 
-    return currentStrlist
+    return current_strlist
 
 
 # we append an optional fieldName now to allow for field-dependent parameters from Prefs
@@ -274,37 +275,36 @@ def getSetting(_key, fieldName=None):
     """
 
     if Configuration.myCustomSettings:
-        settingStorage = Configuration.myCustomSettings
+        setting_storage = Configuration.myCustomSettings
 
     else:
-        settingStorage = Configuration.myGlobalSettings
+        setting_storage = Configuration.myGlobalSettings
 
-    # some settings are stored in the global settings e.g. number of recent simualtions or recent simulations list
+    # some settings are stored in the global settings e.g. number of recent simulations or recent simulations list
     if _key in Configuration.globalOnlySettings:
-        settingStorage = Configuration.myGlobalSettings
+        setting_storage = Configuration.myGlobalSettings
 
     if fieldName is not None:
-        fieldParams = getSetting('FieldParams')
+        field_params = getSetting('FieldParams')
         try:
-            singleFieldParams = fieldParams[fieldName]
+            single_field_params = field_params[fieldName]
 
-            return singleFieldParams[_key]
+            return single_field_params[_key]
         except LookupError:
             pass  # returning global parameter for the field
 
     # val = settingStorage.getSetting(_key)
     # a way to fetch unknown setting from default setting and writing it back to the custom settins
     try:
-        val = settingStorage.getSetting(_key)
+        val = setting_storage.getSetting(_key)
     except KeyError:
-        # atempt to fetch setting from global setting
-        settingStorage = Configuration.myGlobalSettings
-        val = settingStorage.getSetting(_key)
+        # attempt to fetch setting from global setting
+        setting_storage = Configuration.myGlobalSettings
+        val = setting_storage.getSetting(_key)
         # and write it to custom setting
         if Configuration.myCustomSettings:
-            settingStorage = Configuration.myCustomSettings
-            settingStorage.setSetting(_key,val)
-
+            setting_storage = Configuration.myCustomSettings
+            setting_storage.setSetting(_key, val)
 
     return val
 
@@ -323,7 +323,8 @@ def setSetting(_key, _value):
         simName = _value
         val = getRecentSimulationsIncludingNewItem(simName)  # val is the value that is stored int hte settings
 
-    if _key in Configuration.globalOnlySettings:  # some settings are stored in the global settings e.g. number of recent simualtions or recent simulations list
+    # some settings are stored in the global settings e.g. number of recent simulations or recent simulations list
+    if _key in Configuration.globalOnlySettings:
         Configuration.myGlobalSettings.setSetting(_key, val)
 
     elif _key in Configuration.customOnlySettings:  # some settings are stored in the custom settings e.g. WindowsLayout

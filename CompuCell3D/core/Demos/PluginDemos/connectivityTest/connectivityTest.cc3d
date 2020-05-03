@@ -2,6 +2,7 @@
 
     <XMLScript Type="XMLScript">Simulation/connectivityTest.xml</XMLScript>
     <PythonScript>Simulation/connectivityTest.py</PythonScript>
+    <Resource Type="Python">Simulation/connectivityTestSteppables.py</Resource>
     <PIFFile>Simulation/connectivityTest.piff</PIFFile>
 
 </Simulation>

@@ -421,7 +421,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
             actor_specs.metadata['mapper'] = self.conMapper
 
         if mdata.get('LegendEnable',default=False):
-            print('Enabling legend')
             self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
     def init_vector_field_actors(self, actor_specs, drawing_params=None):

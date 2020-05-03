@@ -1,3 +1,7 @@
 from cc3d import CompuCellSetup
 
+from diffusion_2D_kernel_coarse_grainSteppables import diffusion_2D_kernel_coarse_grainSteppable
+
+CompuCellSetup.register_steppable(steppable=diffusion_2D_kernel_coarse_grainSteppable(frequency=1))
+
 CompuCellSetup.run()

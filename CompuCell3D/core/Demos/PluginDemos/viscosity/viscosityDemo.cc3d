@@ -2,4 +2,5 @@
 
     <XMLScript Type="XMLScript">Simulation/viscosityDemo.xml</XMLScript>
     <PythonScript>Simulation/viscosityDemo.py</PythonScript>
+    <Resource Type="Python">Simulation/viscosityDemoSteppables.py</Resource>
 </Simulation>

@@ -14,7 +14,7 @@ def extract_address_int_from_vtk_object(vtkObj: str) -> int:
     return addr_hex_int
 
 
-def qcolor_to_rgba(qcolor : object) -> tuple:
+def qcolor_to_rgba(qcolor: object) -> tuple:
     """
     Converts qt_color to rgba tuple
     :param qt_color: {QColor}
@@ -45,7 +45,7 @@ def to_vtk_rgb(color_obj):
         raise AttributeError('color_obj is of unknown type')
 
 
-def cs_string_to_typed_list(cs_str :str , sep="," , type_conv_fcn=float):
+def cs_string_to_typed_list(cs_str: str, sep=",", type_conv_fcn=float):
     """
     Coinvers comma (or sep) separated string into a list of specific type
     :param cs_str: {str} str to convert
@@ -55,6 +55,9 @@ def cs_string_to_typed_list(cs_str :str , sep="," , type_conv_fcn=float):
     """
     try:
         list_strings = cs_str.split(sep)
+        if all(map(lambda s: s.strip() == '', cs_str.split(sep))):
+            # we are getting a list of empty strings we return [] and do not print warning
+            return []
         return list([type_conv_fcn(x) for x in list_strings])
     except:
         warnings.warn('Could not convert string {s} to a typed list'.format(s=cs_str))

@@ -248,7 +248,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                                          'targetClusterSurface', 'lambdaClusterSurface', 'type', 'lambdaVecX',
                                          'lambdaVecY', 'lambdaVecZ', 'fluctAmpl']
 
-    def open_file_in_simulation_output_folder(self, file_name:str, mode:str='w') -> tuple:
+    def open_file_in_simulation_output_folder(self, file_name: str, mode: str = 'w') -> tuple:
         """
         attempts to open file in the simulation output folder
 
@@ -265,6 +265,18 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                 print("Could not open file for writing.")
                 return None, None
             return file_handle, output_path
+
+    @staticmethod
+    def request_screenshot(mcs: int, screenshot_label: str) -> None:
+        """
+        Requests on-demand screenshot
+        :param mcs:
+        :param screenshot_label:
+        :return:
+        """
+        pg = CompuCellSetup.persistent_globals
+        screenshot_manager = pg.screenshot_manager
+        screenshot_manager.add_ad_hoc_screenshot(mcs=mcs, screenshot_label=screenshot_label)
 
     def core_init(self, reinitialize_cell_types=True):
         """
@@ -925,6 +937,17 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         return self.inventory.attemptFetchingCellById(cell_id)
 
+    @staticmethod
+    def get_type_name_by_cell(_cell):
+        if _cell is None:
+            _type_id = 0
+        else:
+            _type_id = _cell.type
+
+        type_id_type_name_dict = CompuCellSetup.simulation_utils.extract_type_names_and_ids()
+        assert type_id_type_name_dict, "CellType plugin not found!"
+        return type_id_type_name_dict[_type_id]
+
     @deprecated(version='4.0.0', reason="You should use : get_focal_point_plasticity_data_list")
     def getFocalPointPlasticityDataList(self, _cell):
         return self.get_focal_point_plasticity_data_list(cell=_cell)
@@ -985,7 +1008,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             return False
         else:
             return any([n_cell for n_cell in self.get_focal_point_plasticity_neighbor_list(cell1)
-                       if n_cell.id == cell2.id])
+                        if n_cell.id == cell2.id])
 
     def get_focal_point_plasticity_initiator(self, cell1, cell2):
         """
@@ -1036,6 +1059,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                                                                                  lambda_distance,
                                                                                  target_distance,
                                                                                  max_distance)
+
+    def get_energy_calculations(self):
+        return EnergyDataList(self.potts)
 
     @deprecated(version='4.0.0', reason="You should use : get_elasticity_data_list")
     def getElasticityDataList(self, _cell):

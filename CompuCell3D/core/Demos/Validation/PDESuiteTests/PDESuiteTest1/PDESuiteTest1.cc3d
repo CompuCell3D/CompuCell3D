@@ -1,0 +1,5 @@
+<Simulation version="4.1.1">
+   <XMLScript Type="XMLScript">Simulation/PDESuiteTest1.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/PDESuiteTest1.py</PythonScript>
+   <Resource Type="Python">Simulation/PDESuiteTest1Steppables.py</Resource>
+</Simulation>

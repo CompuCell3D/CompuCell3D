@@ -2,4 +2,5 @@
 
     <XMLScript Type="XMLScript">Simulation/randomBlobInitializer.xml</XMLScript>
     <PythonScript>Simulation/randomBlobInitializer.py</PythonScript>
+    <Resource Type="Python">Simulation/randomBlobInitializerSteppables.py</Resource>
 </Simulation>

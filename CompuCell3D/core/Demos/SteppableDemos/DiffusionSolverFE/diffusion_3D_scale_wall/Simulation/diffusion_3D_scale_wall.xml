@@ -23,14 +23,10 @@
      <DiffusionField>
         <DiffusionData>
             <FieldName>FGF</FieldName>
-            
             <DiffusionConstant>0.010</DiffusionConstant>
             <DecayConstant>0.000</DecayConstant>
             <DiffusionCoefficient CellType="Wall">0.001</DiffusionCoefficient>
-            
 	       <ConcentrationFileName>Simulation/diffusion_3D_scale_wall.pulse.txt</ConcentrationFileName>
-	    <!--DoNotDecayIn>Medium</DoNotDecayIn-->		
-            <!--<DoNotDiffuseTo>Amoeba</DoNotDiffuseTo> -->
         </DiffusionData>
     </DiffusionField>
  </Steppable>

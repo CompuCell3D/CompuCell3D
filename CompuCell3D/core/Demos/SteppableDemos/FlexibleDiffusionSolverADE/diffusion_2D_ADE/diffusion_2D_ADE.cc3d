@@ -2,6 +2,7 @@
 
     <XMLScript Type="XMLScript">Simulation/diffusion_2D_ADE.xml</XMLScript>
     <PythonScript >Simulation/diffusion_2D_ADE.py</PythonScript>
+    <Resource Type="Python">Simulation/diffusion_2D_ADESteppables.py</Resource>
     <Resource Type="Field" Copy="No">Simulation/diffusion_2D.pulse.txt</Resource>    
 
 </Simulation>

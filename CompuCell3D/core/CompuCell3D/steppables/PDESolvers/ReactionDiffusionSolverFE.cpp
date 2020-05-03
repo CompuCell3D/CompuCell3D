@@ -1,5 +1,4 @@
-
-
+#include <cfloat>
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
@@ -11,6 +10,7 @@
 #include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 #include <CompuCell3D/plugins/CellTypeMonitor/CellTypeMonitorPlugin.h>
+#include "FluctuationCompensator.h"
 
 #include <BasicUtils/BasicString.h>
 #include <BasicUtils/BasicException.h>
@@ -91,6 +91,7 @@ ReactionDiffusionSolverFE::ReactionDiffusionSolverFE()
     scaleSecretion = true;
     maxNumberOfDiffusionCalls = 1;
     bc_indicator_field = 0;
+	fluctuationCompensator = 0;
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -373,6 +374,16 @@ void ReactionDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
     h_celltype_field = cellTypeMonitorPlugin->getCellTypeArray();
     h_cellid_field = cellTypeMonitorPlugin->getCellIdArray();
 
+	if (_xmlData->findElement("FluctuationCompensator")) {
+
+		fluctuationCompensator = new FluctuationCompensator(simPtr);
+
+		for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i)
+			fluctuationCompensator->loadFieldName(concentrationFieldNameVectorTmp[i]);
+
+		fluctuationCompensator->loadFields();
+
+	}
 
     simulator->registerSteerableObject(this);
 
@@ -497,6 +508,7 @@ void ReactionDiffusionSolverFE::extraInit(Simulator *simulator) {
     prepareForwardDerivativeOffsets();
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void ReactionDiffusionSolverFE::prepareForwardDerivativeOffsets() {
     latticeType = this->getBoundaryStrategy()->getLatticeType();
 
@@ -793,6 +805,7 @@ void ReactionDiffusionSolverFE::prepCellTypeField(int idx) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ReactionDiffusionSolverFE::step(const unsigned int _currentStep) {
 
+	if (fluctuationCompensator) fluctuationCompensator->applyCorrections();
 
     if (scaleSecretion) {
         for (int callIdx = 0; callIdx < maxNumberOfDiffusionCalls; ++callIdx) {
@@ -840,6 +853,7 @@ void ReactionDiffusionSolverFE::step(const unsigned int _currentStep) {
 
     }
 
+	if (fluctuationCompensator) fluctuationCompensator->resetCorrections();
 
     if (serializeFrequency > 0 && serializeFlag && !(_currentStep % serializeFrequency)) {
         serializerPtr->setCurrentStep(currentStep);
@@ -1705,6 +1719,7 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
         float * decayCoef = diffData.decayCoef;
         float currentDiffCoef = 0.0;
         bool variableDiffusionCoefficientFlag = diffData.getVariableDiffusionCoeeficientFlag();
+		bool diffusiveSite;
 
         Array3DCUDA<unsigned char> & cellTypeArray = *h_celltype_field;
 
@@ -1741,13 +1756,15 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                             currentCellType = cellTypeArray.getDirect(x, y, z);
                             currentDiffCoef = diffCoef[currentCellType];
                             pt = Point3D(x - 1, y - 1, z - 1);
+							// No diffusion where not diffusive
+							diffusiveSite = abs(currentDiffCoef) > FLT_EPSILON;
 
 
                             updatedConcentration = 0.0;
                             concentrationSum = 0.0;
                             varDiffSumTerm = 0.0;
 
-
+							unsigned int numNeighbors = maxNeighborIndex + 1;
 
                             ev[0] = currentCellType;
                             //setting up x,y,z variables
@@ -1768,11 +1785,23 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                                 for (register int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/; ++i) {
                                     const Point3D & offset = offsetVecRef[i];
 
-                                    concentrationSum += concentrationField.getDirect(x + offset.x, y + offset.y, z + offset.z);
+									int offX = x + offset.x;
+									int offY = y + offset.y;
+									int offZ = z + offset.z;
+
+									float diffCoef_offset = diffCoef[cellTypeArray.getDirect(offX, offY, offZ)];
+
+									// No diffusion where not diffusive
+									if (abs(diffCoef_offset) < FLT_EPSILON) {
+										--numNeighbors;
+										continue;
+									}
+
+									concentrationSum += concentrationField.getDirect(offX, offY, offZ);
 
                                 }
 
-                                concentrationSum -= (maxNeighborIndex + 1)*currentConcentration;
+                                concentrationSum -= numNeighbors*currentConcentration;
 
                                 concentrationSum *= currentDiffCoef;
 
@@ -1781,7 +1810,7 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
 
 
                                 //using forward first derivatives - cartesian lattice 3D
-                                if (variableDiffusionCoefficientFlag) {
+                                if (variableDiffusionCoefficientFlag && diffusiveSite) {
                                     concentrationSum /= 2.0;
                                     //loop over nearest neighbors
                                     const std::vector<Point3D> & offsetVecRef = boundaryStrategy->getOffsetVec(pt);
@@ -1804,12 +1833,35 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                                     const Point3D & offset = offsetVecRef[i];
                                     signed char nBcIndicator = bcField.getDirect(x + offset.x, y + offset.y, z + offset.z);
                                     if (nBcIndicator == BoundaryConditionSpecifier::INTERNAL || nBcIndicator == BoundaryConditionSpecifier::BOUNDARY) { // for pixel neighbors which are internal or boundary pixels  calculations use default "internal pixel" algorithm. boundary pixel means belonging to the lattice but touching boundary
-                                        concentrationSum += concentrationField.getDirect(x + offset.x, y + offset.y, z + offset.z);
+										int offX = x + offset.x;
+										int offY = y + offset.y;
+										int offZ = z + offset.z;
 
+										float diffCoef_offset = diffCoef[cellTypeArray.getDirect(offX, offY, offZ)];
+
+										// No diffusion where not diffusive
+										if (abs(diffCoef_offset) < FLT_EPSILON) {
+											--numNeighbors;
+											continue;
+										}
+
+										concentrationSum += concentrationField.getDirect(offX, offY, offZ);
                                     }
                                     else {
                                         if (bcSpec.planePositions[nBcIndicator] == BoundaryConditionSpecifier::PERIODIC) {// for pixel neighbors which are external pixels with periodic BC  calculations use default "internal pixel" algorithm
-                                            concentrationSum += concentrationField.getDirect(x + offset.x, y + offset.y, z + offset.z);
+											int offX = x + offset.x;
+											int offY = y + offset.y;
+											int offZ = z + offset.z;
+
+											float diffCoef_offset = diffCoef[cellTypeArray.getDirect(offX, offY, offZ)];
+
+											// No diffusion where not diffusive
+											if (abs(diffCoef_offset) < FLT_EPSILON) {
+												--numNeighbors;
+												continue;
+											}
+
+											concentrationSum += concentrationField.getDirect(offX, offY, offZ);
                                         }
                                         else if (bcSpec.planePositions[nBcIndicator] == BoundaryConditionSpecifier::CONSTANT_VALUE) {
                                             concentrationSum += bcSpec.values[nBcIndicator];
@@ -1825,14 +1877,14 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                                     }
                                 }
 
-                                concentrationSum -= (maxNeighborIndex + 1)*currentConcentration;
+                                concentrationSum -= numNeighbors*currentConcentration;
 
 
                                 concentrationSum *= currentDiffCoef;
 
 
 
-                                if (variableDiffusionCoefficientFlag) {
+                                if (variableDiffusionCoefficientFlag && diffusiveSite) {
                                     concentrationSum /= 2.0;
                                     // if (x>=0 &&x <6 && y>=0 &&y<=6){
                                     // cerr<<endl;
@@ -1898,13 +1950,14 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                             currentCellType = cellTypeArray.getDirect(x, y, z);                            
                             currentDiffCoef = diffCoef[currentCellType];                            
                             pt = Point3D(x - 1, y - 1, z - 1);
-
+							// No diffusion where not diffusive
+							diffusiveSite = abs(currentDiffCoef) > FLT_EPSILON;
 
                             updatedConcentration = 0.0;
                             concentrationSum = 0.0;
                             varDiffSumTerm = 0.0;
 
-
+							unsigned int numNeighbors = maxNeighborIndex + 1;
 
                             ev[0] = currentCellType;
                             //setting up x,y,z variables
@@ -1919,24 +1972,38 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                             }
 
                             //loop over nearest neighbors
-                            const std::vector<Point3D> & offsetVecRef = boundaryStrategy->getOffsetVec(pt);
-                            for (register int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/; ++i) {
-                                const Point3D & offset = offsetVecRef[i];
+							if (diffusiveSite) {
+								const std::vector<Point3D> & offsetVecRef = boundaryStrategy->getOffsetVec(pt);
+								for (register int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/; ++i) {
+									const Point3D & offset = offsetVecRef[i];
 
-                                concentrationSum += concentrationField.getDirect(x + offset.x, y + offset.y, z + offset.z);
+									int offX = x + offset.x;
+									int offY = y + offset.y;
+									int offZ = z + offset.z;
 
-                            }
+									float diffCoef_offset = diffCoef[cellTypeArray.getDirect(offX, offY, offZ)];
 
-                            concentrationSum -= (maxNeighborIndex + 1)*currentConcentration;
+									// No diffusion where not diffusive
+									if (abs(diffCoef_offset) < FLT_EPSILON) {
+										--numNeighbors;
+										continue;
+									}
 
-                            concentrationSum *= currentDiffCoef;
+									concentrationSum += concentrationField.getDirect(offX, offY, offZ);
+
+								}
+
+								concentrationSum -= numNeighbors*currentConcentration;
+
+								concentrationSum *= currentDiffCoef;
+							}
 
                             //                                         cout << " diffCoef[currentCellType]: " << diffCoef[currentCellType] << endl;    
 
 
 
                             //using forward first derivatives - cartesian lattice 3D
-                            if (variableDiffusionCoefficientFlag) {
+                            if (variableDiffusionCoefficientFlag && diffusiveSite) {
                                 concentrationSum /= 2.0;
                                 //loop over nearest neighbors
                                 const std::vector<Point3D> & offsetVecRef = boundaryStrategy->getOffsetVec(pt);

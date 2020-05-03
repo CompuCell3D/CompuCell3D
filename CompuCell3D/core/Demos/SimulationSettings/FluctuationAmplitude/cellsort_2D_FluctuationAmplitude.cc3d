@@ -1,4 +1,5 @@
 <Simulation version="3.6.1">
     <XMLScript Type="XMLScript">Simulation/cellsort_2D_FluctuationAmplitude.xml</XMLScript>
     <PythonScript >Simulation/cellsort_2D_FluctuationAmplitude.py</PythonScript>
+    <Resource Type="Python">Simulation/cellsort_2D_FluctuationAmplitudeSteppables.py</Resource>
 </Simulation>

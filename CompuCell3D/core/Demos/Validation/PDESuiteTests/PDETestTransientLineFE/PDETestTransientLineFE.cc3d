@@ -1,0 +1,5 @@
+<Simulation version="4.1.1">
+   <XMLScript Type="XMLScript">Simulation/PDETestTransientLineFE.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/PDETestTransientLineFE.py</PythonScript>
+   <Resource Type="Python">Simulation/PDETestTransientLineFESteppables.py</Resource>
+</Simulation>

@@ -20,8 +20,8 @@ namespace CompuCell3D {
    class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityTrackerData{
       public:
 
-         FocalPointPlasticityTrackerData(CellG * _neighborAddress=0,float _lambdaDistance=0.0, float _targetDistance=0.0, float _maxDistance=100000.0,int _maxNumberOfJunctions=0, float _activationEnergy=0.0,int _neighborOrder=1, bool _isInitiator=true)
-         :neighborAddress(_neighborAddress),lambdaDistance(_lambdaDistance),targetDistance(_targetDistance),maxDistance(_maxDistance),maxNumberOfJunctions(_maxNumberOfJunctions),activationEnergy(_activationEnergy),neighborOrder(_neighborOrder),anchor(false),anchorId(0),isInitiator(_isInitiator)
+         FocalPointPlasticityTrackerData(CellG * _neighborAddress=0,float _lambdaDistance=0.0, float _targetDistance=0.0, float _maxDistance=100000.0,int _maxNumberOfJunctions=0, float _activationEnergy=0.0,int _neighborOrder=1, bool _isInitiator=true, int _initMCS=0)
+         :neighborAddress(_neighborAddress),lambdaDistance(_lambdaDistance),targetDistance(_targetDistance),maxDistance(_maxDistance),maxNumberOfJunctions(_maxNumberOfJunctions),activationEnergy(_activationEnergy),neighborOrder(_neighborOrder),anchor(false),anchorId(0),isInitiator(_isInitiator), initMCS(_initMCS)
           {
 			  
 			  anchorPoint=std::vector<float>(3,0.);
@@ -43,6 +43,7 @@ namespace CompuCell3D {
 			  //anchorPoint[1]=fpptd.anchorPoint[1];
 			  //anchorPoint[2]=fpptd.anchorPoint[2];
 			  isInitiator = fpptd.isInitiator;
+			  initMCS = fpptd.initMCS;
 
 		 }
 
@@ -70,6 +71,7 @@ namespace CompuCell3D {
 		 bool anchor;
 		 std::vector<float> anchorPoint;
 		 bool isInitiator;
+		 int initMCS;
 	
 		 int anchorId;
 

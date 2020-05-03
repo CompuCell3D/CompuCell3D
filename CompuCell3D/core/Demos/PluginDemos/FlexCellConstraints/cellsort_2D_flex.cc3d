@@ -2,5 +2,6 @@
 
     <XMLScript Type="XMLScript">Simulation/cellsort_2D_flex.xml</XMLScript>
     <PythonScript>Simulation/cellsort_2D_flex.py</PythonScript>
+    <Resource Type="Python">Simulation/cellsort_2D_flexSteppables.py</Resource>
 
 </Simulation>

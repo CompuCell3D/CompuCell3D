@@ -44,6 +44,7 @@ class CC3DXMLElement;
 //Note: Target distance is set to be 0.9 * current distance between cells. target distance from xml is ignored
 
 namespace CompuCell3D {
+	class Simulator;
 	class Potts3D;
 	class Automaton;
 	class BoundaryStrategy;
@@ -54,6 +55,8 @@ namespace CompuCell3D {
       
       BasicClassAccessor<FocalPointPlasticityTracker> focalPointPlasticityTrackerAccessor;
       
+	  Simulator *sim;
+
 		Potts3D *potts;
 
         ParallelUtilsOpenMP *pUtils; 
