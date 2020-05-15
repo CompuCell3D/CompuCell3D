@@ -1716,9 +1716,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.init_simulation_control_vars()
 
             # restoring geometry of the UI based on local settings
-            self.customSettingPath = self.cc3dSimulationDataHandler.cc3dSimulationData.custom_settings_path
-            Configuration.initializeCustomSettings(self.customSettingPath)
-            self.UI.initialize_gui_geometry(allow_main_window_move=False)
+            if self.cc3dSimulationDataHandler is not None:
+                self.customSettingPath = self.cc3dSimulationDataHandler.cc3dSimulationData.custom_settings_path
+                Configuration.initializeCustomSettings(self.customSettingPath)
+                self.UI.initialize_gui_geometry(allow_main_window_move=False)
 
             if self.rollbackImporter:
                 self.rollbackImporter.uninstall()
