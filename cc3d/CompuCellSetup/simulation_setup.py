@@ -626,7 +626,6 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         simthread.waitForPlayerTaskToFinish()
         steppable_registry.finish()
         sim.cleanAfterSimulation()
-        simthread.sendStopSimulationRequest()
         simthread.simulationFinishedPostEvent(True)
         steppable_registry.clean_after_simulation()
 
