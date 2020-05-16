@@ -621,15 +621,9 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         # simthread.emitFinishRequest()
         # # then we wait for GUI thread to unlock the finishMutex - it will only happen when all tasks
         # in the GUI thread are completed (especially those that need simulator object to stay alive)
-        # simthread.finishMutex.lock()
-        # simthread.finishMutex.unlock()
-        # # at this point GUI thread finished all the tasks for which simulator had to stay alive
-        # and we can proceed to destroy simulator
-        #
-        # sim.finish()
-        # if sim.getRecentErrorMessage() != "":
-        #     raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
         print("CALLING FINISH")
+
+        simthread.waitForPlayerTaskToFinish()
         steppable_registry.finish()
         sim.cleanAfterSimulation()
         simthread.simulationFinishedPostEvent(True)
