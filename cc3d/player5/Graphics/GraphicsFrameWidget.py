@@ -327,19 +327,9 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         # here we are updating models based on the new set of configs
         self.gd.configsChanged()
         if self.current_bsd is not None:
+            pass
             # todo - fix rendering of the scene immediately after configs chang. Right now
             # you need to wait till next mcs to see the change - there is deadlock somewhere when
-
-            return
-            if sys.platform.startswith('darwin'):
-                # hacky version to trigger redraw. Calling fdirectly draw function caused issues on OSX
-                # still leaving commented out code below . In case we need to resort to more restrictive
-                # handling of updated parameters
-                # we call pg.simthread.completedStep.emit(0)
-                if pg.simthread is not None:
-                    pg.simthread.completedStep.emit(0)
-            else:
-                self.draw(basic_simulation_data=self.current_bsd)
 
     def Render(self):
         color = Configuration.getSetting("WindowColor")

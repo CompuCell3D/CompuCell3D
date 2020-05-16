@@ -139,20 +139,20 @@ class GenericDrawer():
         Extracts basic information about cell field
         :return:
         """
-        cellType = vtk.vtkIntArray()
-        cellType.SetName("celltype")
-        cellTypeIntAddr = extract_address_int_from_vtk_object(cellType)
+        cell_type_array = vtk.vtkIntArray()
+        cell_type_array.SetName("celltype")
+        cell_type_array_int_addr = extract_address_int_from_vtk_object(cell_type_array)
         # Also get the CellId
-        cellId = vtk.vtkLongArray()
-        cellId.SetName("cellid")
-        cellIdIntAddr = extract_address_int_from_vtk_object(cellId)
+        cell_id = vtk.vtkLongArray()
+        cell_id.SetName("cellid")
+        cell_id_int_addr = extract_address_int_from_vtk_object(cell_id)
 
-        usedCellTypesList = self.field_extractor.fillCellFieldData3D(cellTypeIntAddr, cellIdIntAddr)
+        used_cell_types_list = self.field_extractor.fillCellFieldData3D(cell_type_array_int_addr, cell_id_int_addr)
 
         ret_val = {
-            'cell_type_array': cellType,
-            'cell_id_array': cellId,
-            'used_cell_types': usedCellTypesList
+            'cell_type_array': cell_type_array,
+            'cell_id_array': cell_id,
+            'used_cell_types': used_cell_types_list
         }
         return ret_val
 

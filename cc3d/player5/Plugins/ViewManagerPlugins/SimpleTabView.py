@@ -1478,19 +1478,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
         handleSimulationFinishedFcn(_flag)
 
     def handleCompletedStepCMLResultReplay(self, _mcs):
-        '''
+        """
         callback - runs after vtk replay step completed.
         :param _mcs: int - current Monte Carlo step
         :return:None
-        '''
+        """
 
         # synchronization  to allow CMLReader to read data, and report results and then
         # once data is ready drawing can happen.
         self.simulation.drawMutex.lock()
 
-        simulationDataIntAddr = extract_address_int_from_vtk_object(self.simulation.simulationData)
+        simulation_data_int_addr = extract_address_int_from_vtk_object(self.simulation.simulationData)
 
-        self.fieldExtractor.setSimulationData(simulationDataIntAddr)
+        self.fieldExtractor.setSimulationData(simulation_data_int_addr)
         self.__step = self.simulation.currentStep
 
         # self.simulation.stepCounter is incremented by one before it reaches this function
@@ -1964,6 +1964,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:
         """
 
+
         self.simulation.drawMutex.lock()
         self.simulation.readFileSem.acquire()
 
@@ -2008,10 +2009,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.readFileSem.release()
 
     def drawFieldRegular(self):
-        '''
+        """
         Draws field during "regular" simulation
         :return:None
-        '''
+        """
         if not self.simulationIsRunning:
             return
 
@@ -2026,17 +2027,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if self.mysim:
 
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
-                graphicsFrame = win.widget()
+                graphics_frame = win.widget()
 
-                if graphicsFrame.is_screenshot_widget:
+                if graphics_frame.is_screenshot_widget:
                     continue
 
                 # rwh: error if we try to invoke switchdim earlier
-                (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
+                (currentPlane, currentPlanePos) = graphics_frame.getPlane()
 
                 # todo 5
                 # graphicsFrame.drawFieldLocal(self.basicSimulationData)
-                graphicsFrame.draw(self.basicSimulationData)
+                graphics_frame.draw(self.basicSimulationData)
                 # todo 5
                 # self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())  # show MCS in lower-left GUI
                 self.__updateStatusBar(self.__step)  # show MCS in lower-left GUI
@@ -2111,21 +2112,22 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__drawField()
 
     def __drawField(self):
-        '''
+        """
         Dispatch function to draw simulation snapshots
         :return:None
-        '''
+        """
 
-        self.displayWarning(
-            '')  # here we are resetting previous warnings because draw functions may write their own warning
+        # here we are resetting previous warnings because draw functions may write their own warning
+        self.displayWarning('')
 
         __drawFieldFcn = getattr(self, "drawField" + self.__viewManagerType)
 
-        propertiesUpdated = self.updateSimulationProperties()
+        properties_updated = self.updateSimulationProperties()
 
-        if propertiesUpdated:
+        if properties_updated:
             # __drawFieldFcn() # this call is actually unnecessary
-            # for some reason cameras have to be initialized after drawing resized lattice and draw function has to be repeated
+            # for some reason cameras have to be initialized after drawing resized lattice
+            # and draw function has to be repeated
             self.updateVisualization()
 
         __drawFieldFcn()
@@ -2476,33 +2478,33 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 #     str(0)]  # inside windows_layout_dict windows are labeled using ints represented as strings
                 try:
                     # inside windows_layout_dict windows are labeled using ints represented as strings
-                    windowDataDict0 = windows_layout_dict[str(0)]
+                    window_data_dict0 = windows_layout_dict[str(0)]
                 except KeyError:
                     try:
-                        windowDataDict0 = windows_layout_dict[0]
+                        window_data_dict0 = windows_layout_dict[0]
                     except KeyError:
                         raise KeyError('Could not find 0 in the keys of windows_layout_dict')
 
                 gwd = GraphicsWindowData()
 
-                gwd.fromDict(windowDataDict0)
+                gwd.fromDict(window_data_dict0)
 
                 if gwd.winType == GRAPHICS_WINDOW_LABEL:
-                    graphicsWindow = self.lastActiveRealWindow
-                    gfw = graphicsWindow.widget()
+                    graphics_window = self.lastActiveRealWindow
+                    gfw = graphics_window.widget()
 
-                    graphicsWindow.resize(gwd.winSize)
-                    graphicsWindow.move(gwd.winPosition)
+                    graphics_window.resize(gwd.winSize)
+                    graphics_window.move(gwd.winPosition)
 
                     gfw.apply_graphics_window_data(gwd)
 
             except KeyError:
                 # in case there is no main window with id 0 in the settings we kill the main window
 
-                graphicsWindow = self.lastActiveRealWindow
-                graphicsWindow.close()
+                graphics_window = self.lastActiveRealWindow
+                graphics_window.close()
                 self.mainGraphicsWidget = None
-                self.win_inventory.remove_from_inventory(graphicsWindow)
+                self.win_inventory.remove_from_inventory(graphics_window)
 
                 pass
 
@@ -2544,11 +2546,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
             if gwd.sceneName not in list(self.fieldTypes.keys()):
                 continue  # we only create window for a sceneNames (e.g. fieldNames) that exist in the simulation
 
-            graphicsWindow = self.add_new_graphics_window()
-            gfw = graphicsWindow.widget()
+            graphics_window = self.add_new_graphics_window()
+            gfw = graphics_window.widget()
 
-            graphicsWindow.resize(gwd.winSize)
-            graphicsWindow.move(gwd.winPosition)
+            graphics_window.resize(gwd.winSize)
+            graphics_window.move(gwd.winPosition)
 
             gfw.apply_graphics_window_data(gwd)
 
@@ -2570,16 +2572,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
         initializes field types for VTK vidgets during regular simulation
         :return:None
         '''
-        simObj = self.mysim()
-        if not simObj: return
+        sim_obj = self.mysim()
+        if not sim_obj: return
 
         self.fieldTypes["Cell_Field"] = FIELD_TYPES[0]  # "CellField"
 
         # Add concentration fields How? I don't care how I got it at this time
 
-        concFieldNameVec = simObj.getConcentrationFieldNameVector()
+        conc_field_name_vec = sim_obj.getConcentrationFieldNameVector()
         # putting concentration fields from simulator
-        for fieldName in concFieldNameVec:
+        for fieldName in conc_field_name_vec:
             #            print MODULENAME,"setFieldTypes():  Got this conc field: ",fieldName
             self.fieldTypes[fieldName] = FIELD_TYPES[1]
 
@@ -2591,19 +2593,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         for field_name, field_adapter in field_dict.items():
             self.fieldTypes[field_name] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[field_adapter.field_type]
 
-        #
-        # # todo 5 - handle custom visualizations
-        # # # inserting custom visualization
-        # # visDict = CompuCellSetup.customVisStorage.visDataDict
-        # #
-        # # for visName in visDict:
-        # #     self.fieldTypes[visName] = FIELD_TYPES[6]
-
     def showDisplayWidgets(self):
-        '''
+        """
         Displays initial snapthos widgets - called from showSimView
         :return:None
-        '''
+        :return:
+        """
 
         # This block of code simply checks to see if some plugins assoc'd with Vis are defined
         # todo 5 - rework this - remove parsing away from the player
