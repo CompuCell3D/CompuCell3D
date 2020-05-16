@@ -1963,50 +1963,59 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Draws fields during vtk replay mode
         :return:
         """
-
-
-        self.simulation.drawMutex.lock()
-        self.simulation.readFileSem.acquire()
-
         if not self.simulationIsRunning:
-            self.simulation.drawMutex.unlock()
-            self.simulation.readFileSem.release()
-
             return
+
+        detected_new_request = False
+        if self.newDrawingUserRequest:
+            detected_new_request = True
+
+        self.cml_reader_synchronize(acquire=True)
+        self.cml_reader_synchronize(acquire=False)
+        self.cml_reader_synchronize(acquire=True)
+
+        self.__step = self.simulation.getCurrentStep()
+
+        for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+            graphics_frame = win.widget()
+
+            if graphics_frame.is_screenshot_widget:
+                continue
+
+            ok_to_draw = self.simulation.data_ready
+            if detected_new_request and self.pause_act.isEnabled():
+                # new requests i.e. new field configuration or new projection
+                # can only be drawn if simulation is paused otherwise we will get crash in
+                # FielfExtractorCML.fillCellFieldData3D
+                ok_to_draw = False
+
+            if ok_to_draw:
+
+                graphics_frame.draw(self.basicSimulationData)
+
+            self.__updateStatusBar(self.__step)
+
+        self.simulation.drawMutex.unlock()
+        self.simulation.readFileSem.release()
 
         if self.newDrawingUserRequest:
             self.newDrawingUserRequest = False
             if self.pause_act.isEnabled():
                 self.__pauseSim()
 
-        self.simulation.drawMutex.unlock()
-        self.simulation.readFileSem.release()
+    def cml_reader_synchronize(self, acquire=True):
+        """
+        acquires or releases key synchromization primitives from CMLReader
+        :param acquire:
+        :return:
+        """
+        if acquire:
+            self.simulation.drawMutex.lock()
+            self.simulation.readFileSem.acquire()
+        else:
+            self.simulation.drawMutex.unlock()
+            self.simulation.readFileSem.release()
 
-        self.simulation.drawMutex.lock()
-        self.simulation.readFileSem.acquire()
-
-        self.__step = self.simulation.getCurrentStep()
-
-        if True:
-            for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
-                graphicsFrame = win.widget()
-
-                if graphicsFrame.is_screenshot_widget:
-                    continue
-
-                (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
-
-                # this flag is used to prevent calling  draw function when new data is read from hard drive
-                # if not self.simulation.newFileBeingLoaded:
-                if not self.simulation.data_ready:
-                    # graphicsFrame.drawFieldLocal(self.basicSimulationData)
-                    graphicsFrame.draw(self.basicSimulationData)
-                # todo 5
-                # self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())
-                self.__updateStatusBar(self.__step)
-
-        self.simulation.drawMutex.unlock()
-        self.simulation.readFileSem.release()
 
     def drawFieldRegular(self):
         """
@@ -2032,15 +2041,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 if graphics_frame.is_screenshot_widget:
                     continue
 
-                # rwh: error if we try to invoke switchdim earlier
-                (currentPlane, currentPlanePos) = graphics_frame.getPlane()
-
-                # todo 5
-                # graphicsFrame.drawFieldLocal(self.basicSimulationData)
                 graphics_frame.draw(self.basicSimulationData)
-                # todo 5
-                # self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())  # show MCS in lower-left GUI
-                self.__updateStatusBar(self.__step)  # show MCS in lower-left GUI
+
+                # show MCS in lower-left GUI
+                self.__updateStatusBar(self.__step)
 
         self.simulation.drawMutex.unlock()
 
@@ -2049,7 +2053,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         INitializes basic simulation data - fieldDim, number of steps etc.
         :return:bool - flag indicating if initialization of basic simulation data was successful
         '''
-        fieldDim = None
+
         if self.__viewManagerType == "Regular":
 
             if not self.mysim:
