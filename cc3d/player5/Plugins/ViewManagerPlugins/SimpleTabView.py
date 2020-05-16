@@ -2059,23 +2059,22 @@ class SimpleTabView(MainArea, SimpleViewManager):
             if not self.mysim:
                 return
 
-            simObj = self.mysim()
-            if not simObj: return False
+            sim_obj = self.mysim()
+            if not sim_obj: return False
 
-            fieldDim = simObj.getPotts().getCellFieldG().getDim()
+            field_dim = sim_obj.getPotts().getCellFieldG().getDim()
 
-            if fieldDim.x == self.fieldDim.x and fieldDim.y == self.fieldDim.y and fieldDim.z == self.fieldDim.z:
+            if field_dim.x == self.fieldDim.x and field_dim.y == self.fieldDim.y and field_dim.z == self.fieldDim.z:
                 return False
 
-            self.fieldDim = fieldDim
+            self.fieldDim = field_dim
             self.basicSimulationData.fieldDim = self.fieldDim
-            self.basicSimulationData.sim = simObj
-            self.basicSimulationData.numberOfSteps = simObj.getNumSteps()
+            self.basicSimulationData.sim = sim_obj
+            self.basicSimulationData.numberOfSteps = sim_obj.getNumSteps()
 
             return True
 
         elif self.__viewManagerType == "CMLResultReplay":
-            fieldDim = self.simulation.fieldDim
             if self.simulation.dimensionChange():
                 self.simulation.resetDimensionChangeMonitoring()
                 self.fieldDim = self.simulation.fieldDim
