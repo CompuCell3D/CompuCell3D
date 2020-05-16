@@ -76,7 +76,8 @@ namespace CompuCell3D {
 		unsigned int maxNeighborIndex;
 		WatchableField3D<CellG *> *cellFieldG;
 
-		//IMPORTANT to handle exceptions properly all _secrete functinos have secrete counterpart defined int he %extend CompuCell3D::Field secretor in the CompuCellExtraDeclarations.i
+		//IMPORTANT to handle exceptions properly all _secrete functinos have secrete counterpart defined in
+		// the %extend CompuCell3D::Field secretor in the CompuCellExtraDeclarations.i
 		bool _secreteInsideCellConstantConcentration(CellG * _cell, float _amount);
 		FieldSecretorResult _secreteInsideCellConstantConcentrationTotalCount(CellG * _cell, float _amount);
 
@@ -85,7 +86,6 @@ namespace CompuCell3D {
 
 		bool _secreteInsideCellAtBoundary(CellG * _cell, float _amount);
 		FieldSecretorResult _secreteInsideCellAtBoundaryTotalCount(CellG * _cell, float _amount);
-
 
 		bool _secreteInsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec);
 		FieldSecretorResult _secreteInsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _amount, const std::vector<unsigned char> & _onContactVec);
@@ -119,6 +119,10 @@ namespace CompuCell3D {
 		
 		bool uptakeInsideCellAtCOM(CellG * _cell, float _maxUptake, float _relativeUptake);
 		FieldSecretorResult  uptakeInsideCellAtCOMTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake);
+
+        float _amountSeenByCell(CellG * _cell);
+
+        float totalFieldIntegral();
 
 	};
 
