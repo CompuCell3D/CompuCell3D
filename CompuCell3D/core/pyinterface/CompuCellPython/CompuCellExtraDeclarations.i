@@ -590,7 +590,14 @@ FieldSecretorResult secreteInsideCellConstantConcentrationTotalAmount(CellG * _c
 	  }
   }
 
-
+  float amountSeenByCell(CellG * _cell) {
+      if (!self->pixelTrackerPlugin) {
+          throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute  amountSeenByCell function"));
+      }
+      else {
+          return self->_amountSeenByCell(_cell);
+      }
+  }
 
 //   bool uptakeInsideCellAtCOM(CellG * _cell, float _maxUptake, float _relativeUptake){
 //     return _uptakeInsideCellAtCOM(_cell,_maxUptake,_relativeUptake);
