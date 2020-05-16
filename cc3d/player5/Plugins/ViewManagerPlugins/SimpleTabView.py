@@ -410,8 +410,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         new_window.hide()
 
-        # this way we update draw models
-        self.configsChanged.connect(new_window.configsChanged)
+        # this way we update ok_to_draw models
+        self.configsChanged.connect(new_window.configs_changed)
 
         mdi_window = self.addSubWindow(new_window)
 
@@ -428,9 +428,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.simulation.drawMutex.unlock()
 
-        new_window.setConnects(self)  # in GraphicsFrameWidget
-        new_window.setInitialCrossSection(self.basicSimulationData)
-        new_window.setFieldTypesComboBox(self.fieldTypes)
+        new_window.set_connects(self)  # in GraphicsFrameWidget
+        new_window.set_initial_cross_section(self.basicSimulationData)
+        new_window.set_field_types_combo_box(self.fieldTypes)
 
         suggested_win_pos = self.suggested_window_position()
 
@@ -438,53 +438,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             mdi_window.move(suggested_win_pos)
 
         return mdi_window
-
-    # def add_vtk_window_to_workspace(self) -> None:
-    #     """
-    #     called one time, for initial graphics window  (vs. addNewGraphicsWindow())
-    #     :return:
-    #     """
-    #
-    #     self.mainGraphicsWidget = GraphicsFrameWidget(parent=None, originatingWidget=self)
-    #
-    #     # we make sure that first graphics window is positioned in the left upper corner
-    #     # NOTE: we have to perform move prior to calling addSubWindow. or else we will get distorted window
-    #     if self.lastPositionMainGraphicsWindow is not None:
-    #         self.mainGraphicsWidget.move(self.lastPositionMainGraphicsWindow)
-    #     else:
-    #         self.lastPositionMainGraphicsWindow = self.mainGraphicsWidget.pos()
-    #
-    #     self.mainGraphicsWidget.show()
-    #
-    #     # todo ok
-    #     # self.mainGraphicsWidget.setShown(False)
-    #
-    #     # self.mainGraphicsWidget.hide()
-    #     # return
-    #
-    #     # this way we update draw models if configs change
-    #     self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
-    #
-    #     self.simulation.setGraphicsWidget(self.mainGraphicsWidget)
-    #
-    #     mdi_sub_window = self.addSubWindow(self.mainGraphicsWidget)
-    #
-    #     self.mainMdiSubWindow = mdi_sub_window
-    #     self.mainGraphicsWidget.show()
-    #     self.mainGraphicsWidget.setConnects(self)
-    #
-    #     self.lastActiveRealWindow = mdi_sub_window
-    #
-    #     # MDIFIX
-    #     self.set_active_sub_window_custom_slot(self.lastActiveRealWindow)
-    #
-    #     self.update_window_menu()
-    #     self.update_active_window_vis_flags()
-    #
-    #     suggested_win_pos = self.suggested_window_position()
-    #
-    #     if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
-    #         mdi_sub_window.move(suggested_win_pos)
 
     def minimize_all_graphics_windows(self) -> None:
         """
@@ -2094,7 +2047,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # this updates cross sections when dimensions change
 
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
-            win.widget().updateCrossSection(self.basicSimulationData)
+            win.widget().update_cross_section(self.basicSimulationData)
 
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             graphicsWidget = win.widget()
@@ -2182,7 +2135,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             if widget.is_screenshot_widget:
                 continue
 
-            gwd = widget.getGraphicsWindowData()
+            gwd = widget.get_graphics_window_data()
 
             # fill size and position of graphics windows data using mdiWidget,
             # NOT the internal widget such as GraphicsFrameWidget - sizes and positions are base on MID widet settings
@@ -2405,7 +2358,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             graphicsFrame = win.widget()
-            graphicsFrame.setInitialCrossSection(_basicSimulationData)
+            graphicsFrame.set_initial_cross_section(_basicSimulationData)
 
     def initGraphicsWidgetsFieldTypes(self):
         '''
@@ -2414,7 +2367,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             graphicsFrame = win.widget()
-            graphicsFrame.setFieldTypesComboBox(self.fieldTypes)
+            graphicsFrame.set_field_types_combo_box(self.fieldTypes)
 
     # Shows simulation view tab
     def showSimView(self, file):
@@ -2643,27 +2596,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if not self.mainGraphicsWidget: return
 
         # todo 5 -  rework initialization
-        self.mainGraphicsWidget.setStatusBar(self.__statusBar)
+        self.mainGraphicsWidget.set_status_bar(self.__statusBar)
 
         self.mainGraphicsWidget.setZoomItems(self.zitems)  # Set zoomFixed parameters
 
-        # if self.borderAct.isChecked():  # Vis menu "Cell Borders" check box
-        #     self.mainGraphicsWidget.showBorder()
-        # else:
-        #     self.mainGraphicsWidget.hideBorder()
-        #
-        # if self.clusterBorderAct.isChecked():  # Vis menu "Cluster Borders" check box
-        #     self.mainGraphicsWidget.showClusterBorder()
-        #
-        # # ---------------------
-        # if self.cellGlyphsAct.isChecked():  # Vis menu "Cell Glyphs"
-        #     self.mainGraphicsWidget.showCellGlyphs()
-        #
-        # # ---------------------
-        # if self.FPPLinksAct.isChecked():  # Vis menu "FPP (Focal Point Plasticity) Links"
-        #     self.mainGraphicsWidget.showFPPLinks()
-
-        self.mainGraphicsWidget.setPlane(PLANES[0], 0)
+        self.mainGraphicsWidget.set_plane(PLANES[0], 0)
 
     def setParams(self):
         '''
@@ -2716,7 +2653,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             return
 
         if isinstance(active_sub_window.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
-            active_sub_window.widget().zoomIn()
+            active_sub_window.widget().zoom_in()
 
     def zoomOut(self):
         '''
@@ -2730,7 +2667,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             return
 
         if isinstance(active_sub_window.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
-            active_sub_window.widget().zoomOut()
+            active_sub_window.widget().zoom_out()
 
     # # File name should be passed
     def takeShot(self):
@@ -2744,7 +2681,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # print "CAMERA SETTINGS =",camera
                 self.screenshotManager.add_3d_screenshot(self.__fieldType[0], self.__fieldType[1], camera)
             else:
-                plane_position_tupple = self.mainGraphicsWidget.getPlane()
+                plane_position_tupple = self.mainGraphicsWidget.get_plane()
                 self.screenshotManager.add_2d_screenshot(self.__fieldType[0], self.__fieldType[1],
                                                          plane_position_tupple[0], plane_position_tupple[1])
 
@@ -3143,7 +3080,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             return
 
         if isinstance(activeSubWindow.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
-            activeSubWindow.widget().resetCamera()
+            activeSubWindow.widget().reset_camera()
 
     def __checkCC3DOutput(self, checked):
         '''
@@ -3168,7 +3105,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if self.lastActiveRealWindow is not None:
             try:
-                currently_active_field = self.lastActiveRealWindow.widget().fieldComboBox.currentText()
+                currently_active_field = self.lastActiveRealWindow.widget().field_combo_box.currentText()
             except AttributeError:
                 currently_active_field = ''
 
