@@ -1,6 +1,21 @@
 Release Notes
 =============
 
+Version 4.2.1
+-------------
+**2019-05-18*
+
+This is mainly bug-fix release featuring the following improvements:
+
+- Added new convenience function to FieldSecretor class to compute total concentration "seen" by a cell
+as well as total amount of field in the entire lattice
+
+- Multiple bug fixes including:
+    - Fixed Replay of saved simulation snapshots
+    - Fixed simulation shutdown function call sequence to avoid crashes after last MCS was not a multiple of
+    screen update frequency
+
+
 Version 4.2.0
 -------------
 **2019-04-18*
@@ -14,7 +29,7 @@ The list of new features added in this release includes the following:
     - floating windows layout now supported on all platforms
     - dmg-based installer for OSX 10.14+. Solves previous issues with CC3D installations on newer OSX systems
 
-- New floating layout that limits windows clutter (immpotant for OSX users)
+- New floating layout that limits windows clutter (important for OSX users)
 
 - Added persistent bias to Bias Vector Steppable
 
