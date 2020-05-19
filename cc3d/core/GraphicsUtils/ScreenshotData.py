@@ -51,7 +51,7 @@ class ScreenshotData(object):
     def prepareCamera(self):
 
         if self.clippingRange and self.focalPoint and self.position and self.viewUp:
-            cam = self.screenshotGraphicsWidget.getCamera()
+            cam = self.screenshotGraphicsWidget.get_camera()
             cam.SetClippingRange(self.clippingRange)
             cam.SetFocalPoint(self.focalPoint)
             cam.SetPosition(self.position)
