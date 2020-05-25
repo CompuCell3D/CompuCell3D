@@ -44,6 +44,7 @@ namespace CompuCell3D {
 	class CONTACT_EXPORT ContactPlugin : public Plugin,public EnergyFunction {
 
 		Potts3D *potts;
+        Logger * logger;
 
 		typedef std::map<int, double> contactEnergies_t;
 		typedef std::vector<std::vector<double> > contactEnergyArray_t;

@@ -40,6 +40,7 @@ void ContactPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     xmlData = _xmlData;
     simulator->getPotts()->registerEnergyFunctionWithName(this, toString());
     simulator->registerSteerableObject(this);
+    logger = simulator->getLogger();
 }
 
 void ContactPlugin::extraInit(Simulator *simulator) {
@@ -109,12 +110,14 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
             contactEnergyArray[i][j] = contactEnergies[index];
 
-        }
-    cerr << "size=" << size << endl;
+        }    
+    
+    logger->debug(to_str("size=", size));
+    
     for (int i = 0; i < size; ++i)
         for (int j = 0; j < size; ++j) {
 
-            cerr << "contact[" << i << "][" << j << "]=" << contactEnergyArray[i][j] << endl;
+            logger->debug(to_str("contact[", i, "][", j, "]=", contactEnergyArray[i][j]));
 
         }
 
@@ -144,15 +147,12 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     }
 
-    cerr << "Contact maxNeighborIndex=" << maxNeighborIndex << endl;
+    logger->debug(to_str("Contact maxNeighborIndex=", maxNeighborIndex));
 
 }
 
 double ContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
-
-    //cerr<<"ChangeEnergy"<<endl;
-
-
+    
     double energy = 0;
     unsigned int token = 0;
     double distance = 0;
@@ -161,7 +161,6 @@ double ContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, cons
     CellG *nCell = 0;
     WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *) potts->getCellFieldG();
     Neighbor neighbor;
-
 
 
     if (weightDistance) {
@@ -194,7 +193,6 @@ double ContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, cons
 
                 }
             }
-
 
         }
     }
@@ -232,16 +230,10 @@ double ContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, cons
 
             }
 
-
         }
-
 
     }
 
-
-
-    //cerr<<"pt="<<pt<<" energy="<<energy<<endl;
-    //cerr<<"energy="<<energy<<endl;
 
     return energy;
 }
@@ -249,7 +241,6 @@ double ContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, cons
 double ContactPlugin::contactEnergy(const CellG *cell1, const CellG *cell2) {
 
     return contactEnergyArray[cell1 ? cell1->type : 0][cell2 ? cell2->type : 0];
-
 
 }
 
