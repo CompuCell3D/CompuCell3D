@@ -3,10 +3,17 @@
 #include "Logger.h"
 
 using namespace std;
-using namespace CPlusPlusLogging;
+using namespace CompuCell3D;
 
 int main()
 {
+
+   // Log message C++ Interface
+   Logger* pLogger = NULL; // Create the object pointer for Logger Class
+   pLogger = Logger::getInstance();
+   pLogger->initialize("my_log_file.txt");
+
+
    LOG_ALWAYS("<=============================== START OF PROGRAM ===============================>");
    // Log message using Direct Interface
    // Log Level: LOG_ERROR
@@ -18,9 +25,9 @@ int main()
    LOG_TRACE("Message Logged using Direct Interface, Log level: LOG_TRACE");
    LOG_DEBUG("Message Logged using Direct Interface, Log level: LOG_DEBUG");
 
-   // Log message C++ Interface
-   Logger* pLogger = NULL; // Create the object pointer for Logger Class
-   pLogger = Logger::getInstance();
+   //// Log message C++ Interface
+   //Logger* pLogger = NULL; // Create the object pointer for Logger Class
+   //pLogger = Logger::getInstance();
 
    pLogger->error("Message Logged using C++ Interface, Log level: LOG_ERROR");
    pLogger->alarm("Message Logged using C++ Interface, Log level: LOG_ALARM");
