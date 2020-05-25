@@ -48,17 +48,48 @@ PluginManager<Plugin> Simulator::pluginManager;
 PluginManager<Steppable> Simulator::steppableManager;
 BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
 
+using namespace std;
+
 void Syntax(const string name)
 {
     cerr << "Syntax: " << name << " <config>" << endl;
     exit(1);
 }
 
-using namespace std;
+std::string fetchExecutableName() {
+
+#if defined(_WIN32)
+    char ownPth[MAX_PATH];
+
+    // When NULL is passed to GetModuleHandle, the handle of the exe itself is returned
+    HMODULE hModule = GetModuleHandle(NULL);
+    if (hModule != NULL)
+    {
+        // Use GetModuleFileName() with module handle to get the path
+        GetModuleFileName(hModule, ownPth, (sizeof(ownPth)));
+        return std::string(ownPth);
+        //cout << ownPth << endl;
+        //system("PAUSE");
+        //return 0;
+    }
+    else
+    {
+        cout << "Module handle is NULL" << endl;
+        return std::string("");
+        //system("PAUSE");
+        //return ;
+    }
+#endif
+    // for now we support only windows
+    return std::string("");
+}
+
 
 int main(int argc, char* argv[])
 {
     cerr << "Welcome to CC3D command line edition" << endl;
+
+    std::string executablePath = fetchExecutableName();
 
     // If we'd want to redirect cerr & cerr to a file (also see at end)
     //  std::ofstream logFile("cc3d-out.txt");
@@ -176,3 +207,4 @@ int main(int argc, char* argv[])
 
     return 0;
 }
+
