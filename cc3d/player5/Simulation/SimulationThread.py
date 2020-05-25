@@ -390,19 +390,7 @@ class SimulationThread(QtCore.QThread):
         self.emitVisFieldCreatedSignal(field_name=field_name, field_type=field_type)
 
     def run(self):
-        # from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
+
         cc3d_sim_fname = CompuCellSetup.persistent_globals.simulation_file_name
         CompuCellSetup.persistent_globals.simthread = self
         run_cc3d_project(cc3d_sim_fname=cc3d_sim_fname)
-        return
-        # print('SIMTHREAD: GOT INSIDE RUN FUNCTION')
-        # print('self.runUserPythonScriptFlag=',self.runUserPythonScriptFlag)
-        #
-        # if self.runUserPythonScriptFlag:
-        #     # print "runUserPythonScriptFlag=",self.runUserPythonScriptFlag
-        #     globalDict = {'simTabView': 20}
-        #     localDict = {}
-        #
-        #     print('GOT INSIDE RUN FUNCTION');
-        #
-        #     self.runUserPythonScript(self.pythonFileName, globalDict, localDict)
