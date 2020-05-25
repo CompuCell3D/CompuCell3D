@@ -51,6 +51,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     Field3DStatic
     Potts3DStatic
     XMLUtilsShared
+    LoggerLibStatic
     ${QtWrappersLibs}
     # ${PYTHON_LIBRARIES} #added PYTHON LIBRARIES FOR NUMPY FIELD ARRAY INTERFACE
     # ${QT_LIBS}

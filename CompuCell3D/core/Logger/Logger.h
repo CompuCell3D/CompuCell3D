@@ -33,17 +33,13 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <map>
 #include <mutex>
 
 #ifdef WIN32
 // Win Socket Header File(s)
 #include <Windows.h>
 #include <process.h>
-
-#else
-// POSIX Socket Header File(s)
-#include <errno.h>
-#include <pthread.h>
 #endif
 
 namespace  CompuCell3D
@@ -72,7 +68,7 @@ namespace  CompuCell3D
     typedef enum LOG_TYPE
     {
         NO_LOG = 1,
-        CONSOLE = 2,
+        CONSOLE_LOG = 2,
         FILE_LOG = 3,
     }LogType;
 
@@ -81,7 +77,8 @@ namespace  CompuCell3D
     public:
         static Logger* getInstance() throw ();
 
-        void initialize(const char* fname, LogType log_type = CONSOLE);
+        //void initialize(std::string fname=0, LogType log_type = CONSOLE_LOG);
+        void initialize(std::string fname, std::string log_type="file_log", std::string log_level="enable_log");
         // Interface for Error Log 
         void error(const char* text) throw();
         void error(std::string& text) throw();
@@ -141,9 +138,13 @@ namespace  CompuCell3D
 
         std::string getCurrentTime();
 
+
     private:
         void logIntoFile(std::string& data);
         void logOnConsole(std::string& data);
+        LogType stringToLogType(std::string log_type_str);
+        LogLevel stringToLogLevel(std::string log_level_str);
+
         Logger(const Logger& obj) {}
         void operator=(const Logger& obj) {}
 
@@ -153,18 +154,27 @@ namespace  CompuCell3D
 
         std::mutex m_Mutex;
 
-//#ifdef	WIN32
-//        CRITICAL_SECTION        m_Mutex;
-//#else
-//        pthread_mutexattr_t     m_Attr;
-//        pthread_mutex_t         m_Mutex;
-//#endif
 
         LogLevel                m_LogLevel;
         LogType                 m_LogType;
+
+        const std::map<std::string,LogType> log_type_map = {
+            { "no_log", NO_LOG },
+            { "console_log", CONSOLE_LOG },
+            { "file_log", FILE_LOG }
+        };
+
+        const std::map<std::string, LogLevel> log_level_map = {
+            { "disable_log", DISABLE_LOG },
+            { "log_level_info", LOG_LEVEL_INFO },
+            { "log_level_buffer", LOG_LEVEL_BUFFER },
+            { "log_level_trace", LOG_LEVEL_TRACE }, 
+            { "enable_log", ENABLE_LOG },
+            {}
+        };
+        
     };
 
-} // End of namespace
+}
 
-#endif // End of _LOGGER_H_
-
+#endif

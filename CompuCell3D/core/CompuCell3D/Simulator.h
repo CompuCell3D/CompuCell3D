@@ -40,6 +40,7 @@
 #include <CompuCell3D/PottsParseData.h>
 #include <CompuCell3D/ParserStorage.h>
 #include <CompuCell3D/CC3DEvents.h>
+
 //#include <QtWrappers/StreamRedirectors/CustomStreamBuffers.h>
 
 
@@ -98,6 +99,7 @@ namespace CompuCell3D {
         void setOutputDirectory(std::string output_directory);
         std::string getOutputDirectory();
 
+        void initializeLogger(std::string fname, std::string log_type="file_log", std::string log_level="enable_log");
 
 		void setOutputRedirectionTarget(ptrdiff_t  _ptr);
 		ptrdiff_t getCerrStreamBufOrig();

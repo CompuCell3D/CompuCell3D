@@ -41,6 +41,7 @@ class PersistentGlobals:
         self.user_stop_simulation_flag = False
 
         self.__output_dir = None
+        self.__base_log_fname = 'cc3d.log'
         self.output_file_core_name = "Step"
 
         self.__workspace_dir = None
@@ -171,6 +172,10 @@ class PersistentGlobals:
         """
 
         mkdir_p(self.output_directory)
+
+    @property
+    def log_fname(self) -> str:
+        return str(Path(self.output_directory).joinpath(self.__base_log_fname))
 
     def clean(self):
         """

@@ -36,12 +36,15 @@ using namespace CompuCell3D;
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include <string>
 #include <CompuCell3D/Serializer.h>
+#include <Logger/Logger.h>
 
 #include <time.h>
 #include <limits>
 #include <sstream>
+#include <locale>
 
 #include <XMLUtils/CC3DXMLElement.h>
+
 
 #ifdef QT_WRAPPERS_AVAILABLE
 	#include <QtWrappers/StreamRedirectors/CustomStreamBuffers.h>
@@ -121,6 +124,11 @@ std::string Simulator::getOutputDirectory() {
     return output_directory;
 }
 
+
+void Simulator::initializeLogger(std::string fname, std::string log_type, std::string log_level) {
+    Logger * pLogger = Logger::getInstance();
+    pLogger->initialize(fname, log_type, log_level);
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ptrdiff_t Simulator::getCerrStreamBufOrig(){
@@ -523,11 +531,8 @@ void Simulator::initializeCC3D(){
 
 
 	try{
-		cerr<<"BEFORE initializePotts"<<endl;
-		//initializePotts(ps.pottsParseData);
+        LOG_DEBUG("BEFORE initializePotts");		
 		initializePottsCC3D(ps.pottsCC3DXMLElement);
-
-
 
 		//initializing parallel utils  - OpenMP
 		pUtils->init(potts.getCellFieldG()->getDim());
@@ -537,12 +542,10 @@ void Simulator::initializeCC3D(){
         pUtilsSingle->init(potts.getCellFieldG()->getDim());
 
 
-
 		//after pUtils have been initialized we process metadata -  in this function potts may get pUtils limiting it to use single thread
 		processMetadataCC3D(ps.metadataCC3DXMLElement);
 
-
-		cerr<<"AFTER initializePotts"<<endl;
+        LOG_DEBUG("AFTER initializePotts");
 		std::set<std::string> initializedPlugins;
 		std::set<std::string> initializedSteppables;
 
@@ -553,7 +556,7 @@ void Simulator::initializeCC3D(){
 			Plugin *plugin = pluginManager.get(pluginName,&pluginAlreadyRegisteredFlag);
 			if(!pluginAlreadyRegisteredFlag){
 				//Will only process first occurence of a given plugin
-				cerr<<"INITIALIZING "<<pluginName<<endl;
+				LOG_DEBUG("INITIALIZING " + pluginName);
 				plugin->init(this, ps.pluginCC3DXMLElementVector[i]);
 			}
 		}
@@ -565,7 +568,7 @@ void Simulator::initializeCC3D(){
 
 			if(!steppableAlreadyRegisteredFlag){
 				//Will only process first occurence of a given steppable
-				cerr<<"INITIALIZING "<<steppableName<<endl;
+                LOG_DEBUG("INITIALIZING " + steppableName);
 				if(ps.steppableCC3DXMLElementVector[i]->findAttribute("Frequency"))
 					steppable->frequency=ps.steppableCC3DXMLElementVector[i]->getAttributeAsUInt("Frequency");
 
@@ -583,12 +586,15 @@ void Simulator::initializeCC3D(){
 		}
 
 	}catch (const BasicException &e) {
-		cerr << "ERROR: " << e << endl;
+        		
 		stringstream errorMessageStream;
 
 		errorMessageStream<<"Exception during initialization/parsing :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
 		recentErrorMessage=errorMessageStream.str();
-		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
+		//cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
+
+        LOG_ERROR(recentErrorMessage);
+
 		if (!newPlayerFlag){
 			throw e;
 		}
@@ -601,7 +607,7 @@ void Simulator::initializeCC3D(){
 
 void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 
-	cerr<<"INSIDE initializePottsCC3D="<<endl;
+	LOG_DEBUG("INSIDE initializePottsCC3D=");
 	//registering Potts as SteerableObject
 	registerSteerableObject(&potts);
 

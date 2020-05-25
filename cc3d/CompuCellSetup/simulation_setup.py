@@ -15,6 +15,7 @@ import weakref
 from cc3d import CompuCellSetup
 from cc3d.core import RestartManager
 from cc3d.CompuCellSetup.simulation_utils import check_for_cpp_errors
+from pathlib import Path
 
 
 # -------------------- legacy API emulation ----------------------------------------
@@ -208,6 +209,11 @@ def get_core_simulation_objects():
     persistent_globals = CompuCellSetup.persistent_globals
 
     simulator = CompuCell.Simulator()
+    # passing output directory to simulator object
+    simulator.setOutputDirectory(persistent_globals.output_directory)
+    Path(persistent_globals.output_directory).mkdir(exist_ok=True, parents=True)
+    simulator.initializeLogger(persistent_globals.log_fname, 'file_log', 'debug_log')
+
     simthread = None
     # todo 5 - fix logic regarding simthread initialization
     if persistent_globals.simthread is not None:
@@ -383,15 +389,13 @@ def store_screenshots(cur_step: int) -> None:
         screenshot_manager.output_screenshots(mcs=cur_step)
 
 
-
-
 def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_enabled=False):
 
     # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
     sim.extraInit()
-    # passing output directory to simulator object
-    sim.setOutputDirectory(CompuCellSetup.persistent_globals.output_directory)
-    # simthread.preStartInit()
+    # # passing output directory to simulator object
+    # todo - check if setOUtputDir can be set earlier
+    # sim.setOutputDirectory(CompuCellSetup.persistent_globals.output_directory)
     # we skip calling start functions of steppables if restart is enabled and we are using restart
     # directory to restart simulation from a given MCS
     if not init_using_restart_snapshot_enabled:

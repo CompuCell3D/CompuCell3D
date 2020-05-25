@@ -11,7 +11,7 @@ int main()
    // Log message C++ Interface
    Logger* pLogger = NULL; // Create the object pointer for Logger Class
    pLogger = Logger::getInstance();
-   pLogger->initialize("my_log_file.txt");
+   pLogger->initialize("my_log_file.txt", "file_log");
 
 
    LOG_ALWAYS("<=============================== START OF PROGRAM ===============================>");
@@ -25,9 +25,6 @@ int main()
    LOG_TRACE("Message Logged using Direct Interface, Log level: LOG_TRACE");
    LOG_DEBUG("Message Logged using Direct Interface, Log level: LOG_DEBUG");
 
-   //// Log message C++ Interface
-   //Logger* pLogger = NULL; // Create the object pointer for Logger Class
-   //pLogger = Logger::getInstance();
 
    pLogger->error("Message Logged using C++ Interface, Log level: LOG_ERROR");
    pLogger->alarm("Message Logged using C++ Interface, Log level: LOG_ALARM");
