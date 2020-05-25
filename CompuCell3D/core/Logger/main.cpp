@@ -18,6 +18,8 @@ int main()
    // Log message using Direct Interface
    // Log Level: LOG_ERROR
    LOG_ERROR("Message Logged using Direct Interface, Log level: LOG_ERROR");
+   LOG_ERROR(to_str("Fount error with value", 10.0, "and", 2));
+
    LOG_ALARM("Message Logged using Direct Interface, Log level: LOG_ALARM");
    LOG_ALWAYS("Message Logged using Direct Interface, Log level: LOG_ALWAYS");
    LOG_INFO("Message Logged using Direct Interface, Log level: LOG_INFO");

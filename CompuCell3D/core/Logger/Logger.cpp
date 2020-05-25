@@ -43,23 +43,25 @@ Logger::Logger()
 {
 }
 
-void Logger::initialize(std::string fname, std::string log_type, std::string log_level) {
-
+void Logger::initialize(std::string log_fname, std::string log_type, std::string log_level) {
+    
+    _log_level = log_level;
+    _log_type = log_type;
+    _log_fname = log_fname;
     m_LogType = stringToLogType(log_type);
     m_LogLevel = stringToLogLevel(log_level);
 
-    if (fname.size()) {
+
+    if (log_fname.size()) {
         
         if(m_LogType == FILE_LOG) {
-            m_File.open(fname, ios::out | ios::app);            
+            m_File.open(log_fname, ios::out | ios::app);
         }
         else {
             m_LogType = CONSOLE_LOG;
         }
     }
 
-    
-    
 }
 
 Logger::~Logger()
@@ -309,12 +311,8 @@ void Logger::debug(const char* text) throw()
     data.append("[DEBUG]: ");
     data.append(text);
 
-    cerr << "INSIDE DEBUG " << data << endl;
-    cerr << "m_LogLevel=" << m_LogLevel << endl;
-    cerr << "m_LogType=" << m_LogType << endl;
     if ((m_LogType == FILE_LOG) && (m_LogLevel >= LOG_LEVEL_DEBUG))
     {
-        cerr << "logging into file" << endl;
         logIntoFile(data);
     }
     else if ((m_LogType == CONSOLE_LOG) && (m_LogLevel >= LOG_LEVEL_DEBUG))

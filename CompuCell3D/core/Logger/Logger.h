@@ -35,6 +35,8 @@
 #include <string>
 #include <map>
 #include <mutex>
+#include "LoggerUtils.h"
+
 
 #ifdef WIN32
 // Win Socket Header File(s)
@@ -78,7 +80,7 @@ namespace  CompuCell3D
         static Logger* getInstance() throw ();
 
         //void initialize(std::string fname=0, LogType log_type = CONSOLE_LOG);
-        void initialize(std::string fname, std::string log_type="file_log", std::string log_level="enable_log");
+        void initialize(std::string log_fname, std::string log_type="file_log", std::string log_level="enable_log");
         // Interface for Error Log 
         void error(const char* text) throw();
         void error(std::string& text) throw();
@@ -127,6 +129,7 @@ namespace  CompuCell3D
         void enableConsoleLogging();
         void enableFileLogging();
 
+
     protected:
         Logger();
         ~Logger();
@@ -154,6 +157,9 @@ namespace  CompuCell3D
 
         std::mutex m_Mutex;
 
+        std::string _log_type;
+        std::string _log_level;
+        std::string _log_fname;
 
         LogLevel                m_LogLevel;
         LogType                 m_LogType;
