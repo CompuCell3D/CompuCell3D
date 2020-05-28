@@ -69,6 +69,26 @@ Logger::~Logger()
     m_File.close();
 }
 
+
+//LoggerStream CompuCell3D::operator<<(Logger& logger, int const & number) {
+//    cerr << "got number " << number << endl;
+//    LoggerStream logger_stream(&logger);
+//    return logger_stream;
+//}
+
+//LoggerStream&  CompuCell3D::operator<<(LoggerStream& logger, int const & number) {
+//    cerr << "LOGGER STREAM got number " << number << endl;
+//    return logger;
+//}
+
+//void CompuCell3D::printDemo(int number) {
+//    cerr << "got number " << number << endl;
+//}
+
+//int Logger::operator<< (int & number) {
+//    cerr << "got number " << number << endl;
+//}
+
 Logger* Logger::getInstance() throw ()
 {
     if (m_Instance == 0)
@@ -76,6 +96,23 @@ Logger* Logger::getInstance() throw ()
         m_Instance = new Logger();
     }
     return m_Instance;
+}
+
+std::string Logger::getLogType() {
+    return _log_type;
+}
+
+std::string Logger::getLogLevel() {
+    return _log_level;
+}
+
+std::string Logger::getLogFname() {
+    return _log_fname;
+}
+
+LoggerStream Logger::getLoggerStream(std::string message_type) {
+    LoggerStream logger_stream(this);
+    return logger_stream;
 }
 
 void Logger::lock()
@@ -134,7 +171,7 @@ string Logger::getCurrentTime()
 }
 
 // Interface for Error Log
-void Logger::error(const char* text) throw()
+void Logger::_error(const char* text) throw()
 {
     string data;
     data.append("[ERROR]: ");
@@ -151,19 +188,19 @@ void Logger::error(const char* text) throw()
     }
 }
 
-void Logger::error(std::string& text) throw()
+void Logger::_error(std::string& text) throw()
 {
-    error(text.data());
+    _error(text.data());
 }
 
-void Logger::error(std::ostringstream& stream) throw()
+void Logger::_error(std::ostringstream& stream) throw()
 {
     string text = stream.str();
-    error(text.data());
+    _error(text.data());
 }
 
 // Interface for Alarm Log 
-void Logger::alarm(const char* text) throw()
+void Logger::_alarm(const char* text) throw()
 {
     string data;
     data.append("[ALARM]: ");
@@ -180,19 +217,19 @@ void Logger::alarm(const char* text) throw()
     }
 }
 
-void Logger::alarm(std::string& text) throw()
+void Logger::_alarm(std::string& text) throw()
 {
-    alarm(text.data());
+    _alarm(text.data());
 }
 
-void Logger::alarm(std::ostringstream& stream) throw()
+void Logger::_alarm(std::ostringstream& stream) throw()
 {
     string text = stream.str();
-    alarm(text.data());
+    _alarm(text.data());
 }
 
 // Interface for Always Log 
-void Logger::always(const char* text) throw()
+void Logger::_always(const char* text) throw()
 {
     string data;
     data.append("[ALWAYS]: ");
@@ -209,19 +246,19 @@ void Logger::always(const char* text) throw()
     }
 }
 
-void Logger::always(std::string& text) throw()
+void Logger::_always(std::string& text) throw()
 {
-    always(text.data());
+    _always(text.data());
 }
 
-void Logger::always(std::ostringstream& stream) throw()
+void Logger::_always(std::ostringstream& stream) throw()
 {
     string text = stream.str();
-    always(text.data());
+    _always(text.data());
 }
 
 // Interface for Buffer Log 
-void Logger::buffer(const char* text) throw()
+void Logger::_buffer(const char* text) throw()
 {
     // Buffer is the special case. So don't add log level
     // and timestamp in the buffer message. Just log the raw bytes.
@@ -237,19 +274,19 @@ void Logger::buffer(const char* text) throw()
     }
 }
 
-void Logger::buffer(std::string& text) throw()
+void Logger::_buffer(std::string& text) throw()
 {
-    buffer(text.data());
+    _buffer(text.data());
 }
 
-void Logger::buffer(std::ostringstream& stream) throw()
+void Logger::_buffer(std::ostringstream& stream) throw()
 {
     string text = stream.str();
-    buffer(text.data());
+    _buffer(text.data());
 }
 
 // Interface for Info Log
-void Logger::info(const char* text) throw()
+void Logger::_info(const char* text) throw()
 {
     string data;
     data.append("[INFO]: ");
@@ -265,19 +302,19 @@ void Logger::info(const char* text) throw()
     }
 }
 
-void Logger::info(std::string& text) throw()
+void Logger::_info(std::string& text) throw()
 {
-    info(text.data());
+    _info(text.data());
 }
 
-void Logger::info(std::ostringstream& stream) throw()
+void Logger::_info(std::ostringstream& stream) throw()
 {
     string text = stream.str();
-    info(text.data());
+    _info(text.data());
 }
 
 // Interface for Trace Log
-void Logger::trace(const char* text) throw()
+void Logger::_trace(const char* text) throw()
 {
     string data;
     data.append("[TRACE]: ");
@@ -293,19 +330,19 @@ void Logger::trace(const char* text) throw()
     }
 }
 
-void Logger::trace(std::string& text) throw()
+void Logger::_trace(std::string& text) throw()
 {
-    trace(text.data());
+    _trace(text.data());
 }
 
-void Logger::trace(std::ostringstream& stream) throw()
+void Logger::_trace(std::ostringstream& stream) throw()
 {
     string text = stream.str();
-    trace(text.data());
+    _trace(text.data());
 }
 
 // Interface for Debug Log
-void Logger::debug(const char* text) throw()
+void Logger::_debug(const char* text) throw()
 {
     string data;
     data.append("[DEBUG]: ");
@@ -321,15 +358,15 @@ void Logger::debug(const char* text) throw()
     }
 }
 
-void Logger::debug(std::string& text) throw()
+void Logger::_debug(std::string& text) throw()
 {
-    debug(text.data());
+    _debug(text.data());
 }
 
-void Logger::debug(std::ostringstream& stream) throw()
+void Logger::_debug(std::ostringstream& stream) throw()
 {
     string text = stream.str();
-    debug(text.data());
+    _debug(text.data());
 }
 
 // Interfaces to control log levels

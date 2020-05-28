@@ -13,6 +13,14 @@ int main()
    pLogger = Logger::getInstance();
    pLogger->initialize("my_log_file.txt", "file_log");
 
+   //LoggerStream ls = pLogger->getLoggerStream("debug");
+
+   //ls.log("This is a demo ", 2.0, 11, " str");
+
+   pLogger->error("error This is a demo ", 2.0, 11, " str");
+   (*pLogger) << "this is log entry"<< 12<< 14<< 15.1212;
+   //printDemo(12);
+
 
    LOG_ALWAYS("<=============================== START OF PROGRAM ===============================>");
    // Log message using Direct Interface
@@ -28,13 +36,13 @@ int main()
    LOG_DEBUG("Message Logged using Direct Interface, Log level: LOG_DEBUG");
 
 
-   pLogger->error("Message Logged using C++ Interface, Log level: LOG_ERROR");
-   pLogger->alarm("Message Logged using C++ Interface, Log level: LOG_ALARM");
-   pLogger->always("Message Logged using C++ Interface, Log level: LOG_ALWAYS");
-   pLogger->buffer("Message Logged using C++ Interface, Log level: LOG_INFO");
-   pLogger->info("Message Logged using C++ Interface, Log level: LOG_BUFFER");
-   pLogger->trace("Message Logged using C++ Interface, Log level: LOG_TRACE");
-   pLogger->debug("Message Logged using C++ Interface, Log level: LOG_DEBUG");
+   pLogger->_error("Message Logged using C++ Interface, Log level: LOG_ERROR");
+   pLogger->_alarm("Message Logged using C++ Interface, Log level: LOG_ALARM");
+   pLogger->_always("Message Logged using C++ Interface, Log level: LOG_ALWAYS");
+   pLogger->_buffer("Message Logged using C++ Interface, Log level: LOG_INFO");
+   pLogger->_info("Message Logged using C++ Interface, Log level: LOG_BUFFER");
+   pLogger->_trace("Message Logged using C++ Interface, Log level: LOG_TRACE");
+   pLogger->_debug("Message Logged using C++ Interface, Log level: LOG_DEBUG");
 
    // Log Variables
    std::string name = "Pankaj Choudhary";
@@ -61,14 +69,14 @@ int main()
    LOG_TRACE(ss);
    LOG_DEBUG(ss);
 
-   Logger::getInstance()->buffer("Logging ostringstream using C++ Interface");
-   Logger::getInstance()->error(ss);
-   Logger::getInstance()->alarm(ss);
-   Logger::getInstance()->always(ss);
-   Logger::getInstance()->buffer(ss);
-   Logger::getInstance()->info(ss);
-   Logger::getInstance()->trace(ss);
-   Logger::getInstance()->debug(ss);
+   Logger::getInstance()->_buffer("Logging ostringstream using C++ Interface");
+   Logger::getInstance()->_error(ss);
+   Logger::getInstance()->_alarm(ss);
+   Logger::getInstance()->_always(ss);
+   Logger::getInstance()->_buffer(ss);
+   Logger::getInstance()->_info(ss);
+   Logger::getInstance()->_trace(ss);
+   Logger::getInstance()->_debug(ss);
    
    LOG_ALWAYS("<=============================== END OF PROGRAM ===============================>");
    return 0;

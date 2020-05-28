@@ -7,7 +7,7 @@ namespace  CompuCell3D
     std::string to_str(const T& value) {
         std::ostringstream tmp_str;
         tmp_str << value;
-        return tmp_str.str();
+        return tmp_str.str() + " ";
     }
 
     template<typename T, typename ... Args >

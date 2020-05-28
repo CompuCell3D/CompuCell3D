@@ -47,13 +47,13 @@
 namespace  CompuCell3D
 {
     // Direct Interface for logging into log file or console using MACRO(s)
-#define LOG_ERROR(x)    Logger::getInstance()->error(x)
-#define LOG_ALARM(x)	   Logger::getInstance()->alarm(x)
-#define LOG_ALWAYS(x)	Logger::getInstance()->always(x)
-#define LOG_INFO(x)     Logger::getInstance()->info(x)
-#define LOG_BUFFER(x)   Logger::getInstance()->buffer(x)
-#define LOG_TRACE(x)    Logger::getInstance()->trace(x)
-#define LOG_DEBUG(x)    Logger::getInstance()->debug(x)
+#define LOG_ERROR(x)    Logger::getInstance()->_error(x)
+#define LOG_ALARM(x)	   Logger::getInstance()->_alarm(x)
+#define LOG_ALWAYS(x)	Logger::getInstance()->_always(x)
+#define LOG_INFO(x)     Logger::getInstance()->_info(x)
+#define LOG_BUFFER(x)   Logger::getInstance()->_buffer(x)
+#define LOG_TRACE(x)    Logger::getInstance()->_trace(x)
+#define LOG_DEBUG(x)    Logger::getInstance()->_debug(x)
 
 // enum for LOG_LEVEL
     typedef enum LOG_LEVEL
@@ -74,6 +74,8 @@ namespace  CompuCell3D
         FILE_LOG = 3,
     }LogType;
 
+    class LoggerStream;
+
     class Logger
     {
     public:
@@ -82,39 +84,46 @@ namespace  CompuCell3D
         //void initialize(std::string fname=0, LogType log_type = CONSOLE_LOG);
         void initialize(std::string log_fname, std::string log_type="file_log", std::string log_level="enable_log");
         // Interface for Error Log 
-        void error(const char* text) throw();
-        void error(std::string& text) throw();
-        void error(std::ostringstream& stream) throw();
+
+        template<typename T, typename ... Args >
+        void error(const T& value, const Args& ... args) {
+            std::string val = to_str(value) + to_str(args...);
+
+            this->_error(val.c_str());
+        }
+        void _error(const char* text) throw();
+        void _error(std::string& text) throw();
+        void _error(std::ostringstream& stream) throw();
 
         // Interface for Alarm Log 
-        void alarm(const char* text) throw();
-        void alarm(std::string& text) throw();
-        void alarm(std::ostringstream& stream) throw();
+        void _alarm(const char* text) throw();
+        void _alarm(std::string& text) throw();
+        void _alarm(std::ostringstream& stream) throw();
 
         // Interface for Always Log 
-        void always(const char* text) throw();
-        void always(std::string& text) throw();
-        void always(std::ostringstream& stream) throw();
+        void _always(const char* text) throw();
+        void _always(std::string& text) throw();
+        void _always(std::ostringstream& stream) throw();
 
         // Interface for Buffer Log 
-        void buffer(const char* text) throw();
-        void buffer(std::string& text) throw();
-        void buffer(std::ostringstream& stream) throw();
+        void _buffer(const char* text) throw();
+        void _buffer(std::string& text) throw();
+        void _buffer(std::ostringstream& stream) throw();
 
         // Interface for Info Log 
-        void info(const char* text) throw();
-        void info(std::string& text) throw();
-        void info(std::ostringstream& stream) throw();
+        void _info(const char* text) throw();
+        void _info(std::string& text) throw();
+        void _info(std::ostringstream& stream) throw();
 
         // Interface for Trace log 
-        void trace(const char* text) throw();
-        void trace(std::string& text) throw();
-        void trace(std::ostringstream& stream) throw();
+        void _trace(const char* text) throw();
+        void _trace(std::string& text) throw();
+        void _trace(std::ostringstream& stream) throw();
 
         // Interface for Debug log 
-        void debug(const char* text) throw();
-        void debug(std::string& text) throw();
-        void debug(std::ostringstream& stream) throw();
+        void _debug(const char* text) throw();
+        void _debug(std::string& text) throw();
+        void _debug(std::ostringstream& stream) throw();
 
         // Error and Alarm log must be always enable
         // Hence, there is no interfce to control error and alarm logs
@@ -128,6 +137,13 @@ namespace  CompuCell3D
         void updateLogType(LogType logType);
         void enableConsoleLogging();
         void enableFileLogging();
+
+        std::string getLogType();
+        std::string getLogLevel();
+        std::string getLogFname();
+
+        LoggerStream getLoggerStream(std::string message_type);
+        
 
 
     protected:
@@ -181,6 +197,63 @@ namespace  CompuCell3D
         
     };
 
+    class LoggerStream {
+    public:
+        LoggerStream(Logger *logger_p) {
+            this->logger_p = logger_p;
+        }
+
+        ~LoggerStream() {
+            using namespace std;
+            cerr << "THIS IS accumulaterd string:" << logString << endl;
+        }
+
+        template<typename T, typename ... Args >
+        void log(const T& value, const Args& ... args) {
+            logger_p->_debug(to_str(value) + to_str(args...));
+        }
+
+        void addString(std::string & str) {
+            this->logString += str;
+        }
+
+    private:
+        Logger *logger_p;
+        std::string logString;
+
+    };
+
+    template<typename T>
+    LoggerStream operator<<(Logger& logger, const T & val) {        
+        LoggerStream logger_stream(&logger);
+
+        logger_stream << val;
+
+        return logger_stream;
+    }
+
+    template<typename T>
+    LoggerStream& operator<<(LoggerStream& loggerStream, const T & val) {
+        ostringstream s_stream;
+        s_stream << val << " ";
+        loggerStream.addString(s_stream.str());
+
+
+        //cerr << "LOGGER STREAM got number " << val << endl;
+        return loggerStream;
+
+    };
+
+    //void operator<<(Logger& logger, int const & number) {
+    //    using namespace std;
+    //    cerr << "got number " << number << endl;
+    //}
+
+    //void operator<<(Logger* logger, );
+    //void printDemo(int number);
+
 }
+
+
 
 #endif
