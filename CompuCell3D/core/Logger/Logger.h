@@ -58,12 +58,12 @@ namespace  CompuCell3D
 // enum for LOG_LEVEL
     typedef enum LOG_LEVEL
     {
-        DISABLE_LOG = 1,
-        LOG_LEVEL_INFO = 2,
-        LOG_LEVEL_BUFFER = 3,
-        LOG_LEVEL_TRACE = 4,
-        LOG_LEVEL_DEBUG = 5,
-        ENABLE_LOG = 6,
+        NO_LOG_LEVEL = 1,
+        INFO = 2,
+        BUFFER = 3,
+        TRACE = 4,
+        DEBUG = 5,
+        ALL_LOG = 6,
     }LogLevel;
 
     // enum for LOG_TYPE
@@ -73,6 +73,9 @@ namespace  CompuCell3D
         CONSOLE_LOG = 2,
         FILE_LOG = 3,
     }LogType;
+
+
+
 
     class LoggerStream;
 
@@ -187,11 +190,11 @@ namespace  CompuCell3D
         };
 
         const std::map<std::string, LogLevel> log_level_map = {
-            { "disable_log", DISABLE_LOG },
-            { "log_level_info", LOG_LEVEL_INFO },
-            { "log_level_buffer", LOG_LEVEL_BUFFER },
-            { "log_level_trace", LOG_LEVEL_TRACE }, 
-            { "enable_log", ENABLE_LOG },
+            { "disable_log", NO_LOG_LEVEL },
+            { "log_level_info", INFO },
+            { "log_level_buffer", BUFFER },
+            { "log_level_trace", TRACE }, 
+            { "enable_log", ALL_LOG },
             {}
         };
         
@@ -201,11 +204,23 @@ namespace  CompuCell3D
     public:
         LoggerStream(Logger *logger_p) {
             this->logger_p = logger_p;
+            
         }
 
         ~LoggerStream() {
             using namespace std;
-            cerr << "THIS IS accumulaterd string:" << logString << endl;
+            cerr << "THIS IS accumulated string:" << logString << endl;
+            if (this->logLevel == DEBUG) {
+                logger_p->_debug(logString);
+            }
+            else {
+                logger_p->_error(logString);
+            }
+            
+        }
+
+        void setLogLevel(const LogLevel & logLevel = DEBUG) {
+            this->logLevel = logLevel;
         }
 
         template<typename T, typename ... Args >
@@ -216,12 +231,25 @@ namespace  CompuCell3D
         void addString(std::string & str) {
             this->logString += str;
         }
+        
 
     private:
         Logger *logger_p;
         std::string logString;
+        LogLevel logLevel;
 
     };
+
+    ////specialization for stream modifier LogLevel
+    //template<>
+    //LoggerStream operator<<(Logger& logger, const LogLevel & val) {
+    //    LoggerStream logger_stream(&logger);
+    //    logger_stream.setLogLevel(val);
+    //    //logger_stream << val;
+
+    //    return logger_stream;
+    //}
+
 
     template<typename T>
     LoggerStream operator<<(Logger& logger, const T & val) {        
@@ -231,6 +259,12 @@ namespace  CompuCell3D
 
         return logger_stream;
     }
+
+
+    //specialization for stream modifier LogLevel
+    template<>
+    LoggerStream operator<<(Logger& logger, const LogLevel & val);
+
 
     template<typename T>
     LoggerStream& operator<<(LoggerStream& loggerStream, const T & val) {

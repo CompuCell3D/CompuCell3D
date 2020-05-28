@@ -18,7 +18,7 @@ int main()
    //ls.log("This is a demo ", 2.0, 11, " str");
 
    pLogger->error("error This is a demo ", 2.0, 11, " str");
-   (*pLogger) << "this is log entry"<< 12<< 14<< 15.1212;
+   (*pLogger) << DEBUG<< "this is log entry"<< 12<< 14<< 15.1212;
    //printDemo(12);
 
 
@@ -57,7 +57,7 @@ int main()
    ss << "\t" << "Age: " << age << endl << endl;
 
    //pLogger->enableConsoleLogging();
-   pLogger->updateLogLevel(LOG_LEVEL_INFO);
+   pLogger->updateLogLevel(INFO);
 
    // Log ostringstream ss to all the log levels
    LOG_ALWAYS("Logging ostringstream using Direct Interface");

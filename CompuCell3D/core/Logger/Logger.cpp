@@ -70,6 +70,17 @@ Logger::~Logger()
 }
 
 
+template<>
+LoggerStream CompuCell3D::operator<<(Logger& logger, const LogLevel & val)
+{
+    LoggerStream logger_stream(&logger);
+    logger_stream.setLogLevel(val);
+    //logger_stream << val;
+
+    return logger_stream;
+}
+
+
 //LoggerStream CompuCell3D::operator<<(Logger& logger, int const & number) {
 //    cerr << "got number " << number << endl;
 //    LoggerStream logger_stream(&logger);
@@ -153,7 +164,7 @@ LogLevel Logger::stringToLogLevel(std::string log_level_str) {
         return mitr->second;
     }
     else {
-        return ENABLE_LOG;
+        return ALL_LOG;
     }
 }
 
@@ -262,13 +273,13 @@ void Logger::_buffer(const char* text) throw()
 {
     // Buffer is the special case. So don't add log level
     // and timestamp in the buffer message. Just log the raw bytes.
-    if ((m_LogType == FILE_LOG) && (m_LogLevel >= LOG_LEVEL_BUFFER))
+    if ((m_LogType == FILE_LOG) && (m_LogLevel >= BUFFER))
     {
         lock();
         m_File << text << endl;
         unlock();
     }
-    else if ((m_LogType == CONSOLE_LOG) && (m_LogLevel >= LOG_LEVEL_BUFFER))
+    else if ((m_LogType == CONSOLE_LOG) && (m_LogLevel >= BUFFER))
     {
         cout << text << endl;
     }
@@ -292,11 +303,11 @@ void Logger::_info(const char* text) throw()
     data.append("[INFO]: ");
     data.append(text);
 
-    if ((m_LogType == FILE_LOG) && (m_LogLevel >= LOG_LEVEL_INFO))
+    if ((m_LogType == FILE_LOG) && (m_LogLevel >= INFO))
     {
         logIntoFile(data);
     }
-    else if ((m_LogType == CONSOLE_LOG) && (m_LogLevel >= LOG_LEVEL_INFO))
+    else if ((m_LogType == CONSOLE_LOG) && (m_LogLevel >= INFO))
     {
         logOnConsole(data);
     }
@@ -320,11 +331,11 @@ void Logger::_trace(const char* text) throw()
     data.append("[TRACE]: ");
     data.append(text);
 
-    if ((m_LogType == FILE_LOG) && (m_LogLevel >= LOG_LEVEL_TRACE))
+    if ((m_LogType == FILE_LOG) && (m_LogLevel >= TRACE))
     {
         logIntoFile(data);
     }
-    else if ((m_LogType == CONSOLE_LOG) && (m_LogLevel >= LOG_LEVEL_TRACE))
+    else if ((m_LogType == CONSOLE_LOG) && (m_LogLevel >= TRACE))
     {
         logOnConsole(data);
     }
@@ -348,11 +359,11 @@ void Logger::_debug(const char* text) throw()
     data.append("[DEBUG]: ");
     data.append(text);
 
-    if ((m_LogType == FILE_LOG) && (m_LogLevel >= LOG_LEVEL_DEBUG))
+    if ((m_LogType == FILE_LOG) && (m_LogLevel >= DEBUG))
     {
         logIntoFile(data);
     }
-    else if ((m_LogType == CONSOLE_LOG) && (m_LogLevel >= LOG_LEVEL_DEBUG))
+    else if ((m_LogType == CONSOLE_LOG) && (m_LogLevel >= DEBUG))
     {
         logOnConsole(data);
     }
@@ -378,13 +389,13 @@ void Logger::updateLogLevel(LogLevel logLevel)
 // Enable all log levels
 void Logger::enaleLog()
 {
-    m_LogLevel = ENABLE_LOG;
+    m_LogLevel = ALL_LOG;
 }
 
 // Disable all log levels, except error and alarm
 void Logger::disableLog()
 {
-    m_LogLevel = DISABLE_LOG;
+    m_LogLevel = NO_LOG_LEVEL;
 }
 
 // Interfaces to control log Types
