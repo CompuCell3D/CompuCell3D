@@ -112,6 +112,8 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
         }    
     
+    cerr << "logger fname from instance=" << Logger::getInstance()->getLogFname() << endl;
+
     logger->debug(to_str("size=", size));
     
     for (int i = 0; i < size; ++i)
