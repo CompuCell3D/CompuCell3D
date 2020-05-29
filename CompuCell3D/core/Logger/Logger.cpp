@@ -71,7 +71,7 @@ Logger::~Logger()
 
 
 template<>
-LoggerStream CompuCell3D::operator<<(Logger& logger, const LogLevel & val)
+LoggerStream CompuCell3D::operator<<(Logger& logger, const LogMessageType &  val)
 {
     LoggerStream logger_stream(&logger);
     logger_stream.setLogLevel(val);

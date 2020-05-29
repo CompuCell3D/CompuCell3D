@@ -18,7 +18,12 @@ int main()
    //ls.log("This is a demo ", 2.0, 11, " str");
 
    pLogger->error("error This is a demo ", 2.0, 11, " str");
-   (*pLogger) << DEBUG<< "this is log entry"<< 12<< 14<< 15.1212;
+   (*pLogger) << LogMessageType::DEBUG_LOG<< "this is log entry"<< 12<< 14<< 15.1212;
+   (*pLogger) << LogMessageType::TRACE_LOG << "this is log entry" << 12 << 14 << 15.1212;
+   (*pLogger) << LogMessageType::ERROR_LOG<< "this is log entry" << 12 << 14 << 15.1212;
+   (*pLogger) << LogMessageType::INFO_LOG << "this is log entry" << 12 << 14 << 15.1212;
+
+
    //printDemo(12);
 
 

@@ -34,6 +34,7 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <unordered_map>
 #include <mutex>
 #include "LoggerUtils.h"
 
@@ -74,6 +75,14 @@ namespace  CompuCell3D
         FILE_LOG = 3,
     }LogType;
 
+
+    enum class LogMessageType
+    {
+        DEBUG_LOG,
+        ERROR_LOG,        
+        INFO_LOG,
+        TRACE_LOG,
+    };
 
 
 
@@ -203,24 +212,36 @@ namespace  CompuCell3D
     class LoggerStream {
     public:
         LoggerStream(Logger *logger_p) {
+            
             this->logger_p = logger_p;
+
+            //log_level_2_log_function.insert(std::make_pair(0, LoggerStream::no_log));
+            //log_level_2_log_function[0] = &LoggerStream::no_log;
             
         }
 
         ~LoggerStream() {
             using namespace std;
-            cerr << "THIS IS accumulated string:" << logString << endl;
-            if (this->logLevel == DEBUG) {
+            //cerr << "THIS IS accumulated string:" << logString << endl;
+            if (this->logMessageType == LogMessageType::DEBUG_LOG) {
                 logger_p->_debug(logString);
             }
-            else {
+            else if (this->logMessageType == LogMessageType::ERROR_LOG){
                 logger_p->_error(logString);
             }
-            
+            else if (this->logMessageType == LogMessageType::INFO_LOG) {
+                logger_p->_info(logString);
+            }
+            else if (this->logMessageType == LogMessageType::TRACE_LOG) {
+                logger_p->_trace(logString);
+            }
+
+
+
         }
 
-        void setLogLevel(const LogLevel & logLevel = DEBUG) {
-            this->logLevel = logLevel;
+        void setLogLevel(const LogMessageType & logMessageType = LogMessageType::DEBUG_LOG) {
+            this->logMessageType = logMessageType;
         }
 
         template<typename T, typename ... Args >
@@ -231,12 +252,40 @@ namespace  CompuCell3D
         void addString(std::string & str) {
             this->logString += str;
         }
+        typedef double (LoggerStream::*log_function_t)(std::string & text);
+
+    private:
         
+        void no_log(std::string & text);
+        void info(std::string & text);
+        void buffer(std::string & text);
+        void trace(std::string & text);        
+        void debug(std::string & text);        
+        void always(std::string & text);
+
+        //const std::unordered_map<int, log_function_t, std::hash<int> > log_level_2_log_function = {
+        //    { 0 , &LoggerStream::no_log }
+
+        //};
+
+        const std::unordered_map<int, log_function_t, std::hash<int> > log_level_2_log_function;
+
+
+        //NO_LOG_LEVEL = 1,
+        //    INFO = 2,
+        //    BUFFER = 3,
+        //    TRACE = 4,
+        //    DEBUG = 5,
+        //    ALL_LOG = 6,
+
+
 
     private:
         Logger *logger_p;
         std::string logString;
-        LogLevel logLevel;
+        LogMessageType  logMessageType;
+        //LogLevel logLevel;
+    
 
     };
 
@@ -263,7 +312,8 @@ namespace  CompuCell3D
 
     //specialization for stream modifier LogLevel
     template<>
-    LoggerStream operator<<(Logger& logger, const LogLevel & val);
+    LoggerStream CompuCell3D::operator<<(Logger& logger, const LogMessageType &  val);
+    //LoggerStream operator<<(Logger& logger, const LogLevel & val);
 
 
     template<typename T>
