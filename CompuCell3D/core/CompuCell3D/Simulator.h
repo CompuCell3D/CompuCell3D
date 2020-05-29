@@ -101,7 +101,8 @@ namespace CompuCell3D {
         std::string getOutputDirectory();
 
         void initializeLogger(std::string fname, std::string log_type="file_log", std::string log_level="enable_log");
-        Logger * getLogger();
+        Logger * getLoggerPtr();
+        Logger & getLogger();
 
 		void setOutputRedirectionTarget(ptrdiff_t  _ptr);
 		ptrdiff_t getCerrStreamBufOrig();

@@ -40,7 +40,7 @@ void ContactPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     xmlData = _xmlData;
     simulator->getPotts()->registerEnergyFunctionWithName(this, toString());
     simulator->registerSteerableObject(this);
-    logger = simulator->getLogger();
+    logger = simulator->getLoggerPtr();
 }
 
 void ContactPlugin::extraInit(Simulator *simulator) {
@@ -58,6 +58,8 @@ void ContactPlugin::extraInit(Simulator *simulator) {
 }
 
 void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
+    Logger & log = *logger;
+
     automaton = potts->getAutomaton();
     //cerr << "automaton=" << automaton << endl;
     //return;
@@ -112,14 +114,14 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
         }    
     
-    cerr << "logger fname from instance=" << Logger::getInstance()->getLogFname() << endl;
+    //cerr << "logger fname from instance=" << Logger::getInstance()->getLogFname() << endl;
 
-    logger->debug(to_str("size=", size));
+    log<<"size="<< size;
     
     for (int i = 0; i < size; ++i)
         for (int j = 0; j < size; ++j) {
 
-            logger->debug(to_str("contact[", i, "][", j, "]=", contactEnergyArray[i][j]));
+            log<<"contact["<< i<< "]["<< j<< "]="<< contactEnergyArray[i][j];
 
         }
 
@@ -149,7 +151,7 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     }
 
-    logger->debug(to_str("Contact maxNeighborIndex=", maxNeighborIndex));
+    log<<"Contact maxNeighborIndex="<< maxNeighborIndex;
 
 }
 
