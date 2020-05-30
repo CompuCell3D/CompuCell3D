@@ -75,30 +75,8 @@ LoggerStream CompuCell3D::operator<<(Logger& logger, const LogMessageType &  val
 {
     LoggerStream logger_stream(&logger);
     logger_stream.setLogLevel(val);
-    //logger_stream << val;
-
     return logger_stream;
 }
-
-
-//LoggerStream CompuCell3D::operator<<(Logger& logger, int const & number) {
-//    cerr << "got number " << number << endl;
-//    LoggerStream logger_stream(&logger);
-//    return logger_stream;
-//}
-
-//LoggerStream&  CompuCell3D::operator<<(LoggerStream& logger, int const & number) {
-//    cerr << "LOGGER STREAM got number " << number << endl;
-//    return logger;
-//}
-
-//void CompuCell3D::printDemo(int number) {
-//    cerr << "got number " << number << endl;
-//}
-
-//int Logger::operator<< (int & number) {
-//    cerr << "got number " << number << endl;
-//}
 
 Logger* Logger::getInstance() throw ()
 {

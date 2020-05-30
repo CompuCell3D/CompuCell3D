@@ -216,9 +216,6 @@ namespace  CompuCell3D
             
             this->logger_p = logger_p;
 
-            //log_level_2_log_function.insert(std::make_pair(0, LoggerStream::no_log));
-            //log_level_2_log_function[0] = &LoggerStream::no_log;
-            
         }
 
         ~LoggerStream() {
@@ -231,21 +228,6 @@ namespace  CompuCell3D
                 cerr << "Exception in at method while logging " << e.what() << endl;
             }
             
-
-            //// todo - replace it with map lookup
-            //if (this->logMessageType == LogMessageType::DEBUG_LOG ) {
-            //    logger_p->_debug(logString);
-            //}
-            //else if (this->logMessageType == LogMessageType::ERROR_LOG){
-            //    logger_p->_error(logString);
-            //}
-            //else if (this->logMessageType == LogMessageType::INFO_LOG) {
-            //    logger_p->_info(logString);
-            //}
-            //else if (this->logMessageType == LogMessageType::TRACE_LOG) {
-            //    logger_p->_trace(logString);
-            //}
-
 
         }
 
@@ -272,12 +254,6 @@ namespace  CompuCell3D
             { LogMessageType::TRACE_LOG , [](Logger * logger_p, std::string& text) { logger_p->_trace(text); } },
 
         };
-        //const std::unordered_map<int, log_function_t, std::hash<int> > log_level_2_log_function;
-
-            //DEBUG_LOG,
-            //ERROR_LOG,
-            //INFO_LOG,
-            //TRACE_LOG,
 
     private:
         Logger *logger_p;
@@ -297,8 +273,7 @@ namespace  CompuCell3D
 
     //specialization for stream modifier LogLevel -  implementation must be defined in implementation file
     template<>
-    LoggerStream CompuCell3D::operator<<(Logger& logger, const LogMessageType &  val);
-    //LoggerStream operator<<(Logger& logger, const LogLevel & val);
+    LoggerStream CompuCell3D::operator<<(Logger& logger, const LogMessageType &  val);    
 
     template<typename T>
     LoggerStream& operator<<(LoggerStream& loggerStream, const T & val) {
