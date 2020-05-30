@@ -178,17 +178,6 @@ void Logger::_error(const char* text) throw()
     }
 }
 
-void Logger::_error(std::string& text) throw()
-{
-    _error(text.data());
-}
-
-void Logger::_error(std::ostringstream& stream) throw()
-{
-    string text = stream.str();
-    _error(text.data());
-}
-
 // Interface for Alarm Log 
 void Logger::_alarm(const char* text) throw()
 {
@@ -205,17 +194,6 @@ void Logger::_alarm(const char* text) throw()
     {
         logOnConsole(data);
     }
-}
-
-void Logger::_alarm(std::string& text) throw()
-{
-    _alarm(text.data());
-}
-
-void Logger::_alarm(std::ostringstream& stream) throw()
-{
-    string text = stream.str();
-    _alarm(text.data());
 }
 
 // Interface for Always Log 
@@ -236,17 +214,6 @@ void Logger::_always(const char* text) throw()
     }
 }
 
-void Logger::_always(std::string& text) throw()
-{
-    _always(text.data());
-}
-
-void Logger::_always(std::ostringstream& stream) throw()
-{
-    string text = stream.str();
-    _always(text.data());
-}
-
 // Interface for Buffer Log 
 void Logger::_buffer(const char* text) throw()
 {
@@ -262,17 +229,6 @@ void Logger::_buffer(const char* text) throw()
     {
         cout << text << endl;
     }
-}
-
-void Logger::_buffer(std::string& text) throw()
-{
-    _buffer(text.data());
-}
-
-void Logger::_buffer(std::ostringstream& stream) throw()
-{
-    string text = stream.str();
-    _buffer(text.data());
 }
 
 // Interface for Info Log
@@ -292,17 +248,6 @@ void Logger::_info(const char* text) throw()
     }
 }
 
-void Logger::_info(std::string& text) throw()
-{
-    _info(text.data());
-}
-
-void Logger::_info(std::ostringstream& stream) throw()
-{
-    string text = stream.str();
-    _info(text.data());
-}
-
 // Interface for Trace Log
 void Logger::_trace(const char* text) throw()
 {
@@ -320,17 +265,6 @@ void Logger::_trace(const char* text) throw()
     }
 }
 
-void Logger::_trace(std::string& text) throw()
-{
-    _trace(text.data());
-}
-
-void Logger::_trace(std::ostringstream& stream) throw()
-{
-    string text = stream.str();
-    _trace(text.data());
-}
-
 // Interface for Debug Log
 void Logger::_debug(const char* text) throw()
 {
@@ -346,17 +280,6 @@ void Logger::_debug(const char* text) throw()
     {
         logOnConsole(data);
     }
-}
-
-void Logger::_debug(std::string& text) throw()
-{
-    _debug(text.data());
-}
-
-void Logger::_debug(std::ostringstream& stream) throw()
-{
-    string text = stream.str();
-    _debug(text.data());
 }
 
 // Interfaces to control log levels

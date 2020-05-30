@@ -100,39 +100,25 @@ namespace  CompuCell3D
 
             this->_error(val.c_str());
         }
-        void _error(const char* text) throw();
-        void _error(std::string& text) throw();
-        void _error(std::ostringstream& stream) throw();
-
+        void _error(const char* text) throw();        
+        
         // Interface for Alarm Log 
-        void _alarm(const char* text) throw();
-        void _alarm(std::string& text) throw();
-        void _alarm(std::ostringstream& stream) throw();
+        void _alarm(const char* text) throw();        
 
         // Interface for Always Log 
-        void _always(const char* text) throw();
-        void _always(std::string& text) throw();
-        void _always(std::ostringstream& stream) throw();
+        void _always(const char* text) throw();        
 
         // Interface for Buffer Log 
-        void _buffer(const char* text) throw();
-        void _buffer(std::string& text) throw();
-        void _buffer(std::ostringstream& stream) throw();
+        void _buffer(const char* text) throw();        
 
         // Interface for Info Log 
-        void _info(const char* text) throw();
-        void _info(std::string& text) throw();
-        void _info(std::ostringstream& stream) throw();
+        void _info(const char* text) throw();        
 
         // Interface for Trace log 
-        void _trace(const char* text) throw();
-        void _trace(std::string& text) throw();
-        void _trace(std::ostringstream& stream) throw();
+        void _trace(const char* text) throw();        
 
         // Interface for Debug log 
-        void _debug(const char* text) throw();
-        void _debug(std::string& text) throw();
-        void _debug(std::ostringstream& stream) throw();
+        void _debug(const char* text) throw();        
 
         // Error and Alarm log must be always enable
         // Hence, there is no interfce to control error and alarm logs
@@ -154,7 +140,6 @@ namespace  CompuCell3D
 
         LoggerStream getLoggerStream(std::string message_type);
         
-
 
     protected:
         Logger();
@@ -248,10 +233,10 @@ namespace  CompuCell3D
     private:
         
         std::unordered_map<LogMessageType, logger_fcn_t> logger_fcn_map = {
-            { LogMessageType::DEBUG_LOG , [](Logger * logger_p, std::string& text) { logger_p->_debug(text); } },
-            { LogMessageType::ERROR_LOG , [](Logger * logger_p, std::string& text) { logger_p->_error(text); } },
-            { LogMessageType::INFO_LOG , [](Logger * logger_p, std::string& text) { logger_p->_info(text); } },
-            { LogMessageType::TRACE_LOG , [](Logger * logger_p, std::string& text) { logger_p->_trace(text); } },
+            { LogMessageType::DEBUG_LOG , [](Logger * logger_p, std::string& text) { logger_p->_debug(text.c_str()); } },
+            { LogMessageType::ERROR_LOG , [](Logger * logger_p, std::string& text) { logger_p->_error(text.c_str()); } },
+            { LogMessageType::INFO_LOG , [](Logger * logger_p, std::string& text) { logger_p->_info(text.c_str()); } },
+            { LogMessageType::TRACE_LOG , [](Logger * logger_p, std::string& text) { logger_p->_trace(text.c_str()); } },
 
         };
 
