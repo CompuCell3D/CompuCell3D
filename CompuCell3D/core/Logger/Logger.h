@@ -209,6 +209,9 @@ namespace  CompuCell3D
 
     class LoggerStream {
     public:
+
+        using logger_fcn_t = std::function<void(Logger *, std::string& )>;
+
         LoggerStream(Logger *logger_p) {
             
             this->logger_p = logger_p;
@@ -220,19 +223,28 @@ namespace  CompuCell3D
 
         ~LoggerStream() {
             using namespace std;
-            // todo - replace it with map lookup
-            if (this->logMessageType == LogMessageType::DEBUG_LOG ) {
-                logger_p->_debug(logString);
+            try{
+                logger_fcn_map.at(this->logMessageType)(this->logger_p, this->logString);
             }
-            else if (this->logMessageType == LogMessageType::ERROR_LOG){
-                logger_p->_error(logString);
+            catch (const out_of_range &e)
+            {
+                cerr << "Exception in at method while logging " << e.what() << endl;
             }
-            else if (this->logMessageType == LogMessageType::INFO_LOG) {
-                logger_p->_info(logString);
-            }
-            else if (this->logMessageType == LogMessageType::TRACE_LOG) {
-                logger_p->_trace(logString);
-            }
+            
+
+            //// todo - replace it with map lookup
+            //if (this->logMessageType == LogMessageType::DEBUG_LOG ) {
+            //    logger_p->_debug(logString);
+            //}
+            //else if (this->logMessageType == LogMessageType::ERROR_LOG){
+            //    logger_p->_error(logString);
+            //}
+            //else if (this->logMessageType == LogMessageType::INFO_LOG) {
+            //    logger_p->_info(logString);
+            //}
+            //else if (this->logMessageType == LogMessageType::TRACE_LOG) {
+            //    logger_p->_trace(logString);
+            //}
 
 
         }
@@ -253,15 +265,19 @@ namespace  CompuCell3D
 
     private:
         
-        void no_log(std::string & text);
-        void info(std::string & text);
-        void buffer(std::string & text);
-        void trace(std::string & text);        
-        void debug(std::string & text);        
-        void always(std::string & text);
+        std::unordered_map<LogMessageType, logger_fcn_t> logger_fcn_map = {
+            { LogMessageType::DEBUG_LOG , [](Logger * logger_p, std::string& text) { logger_p->_debug(text); } },
+            { LogMessageType::ERROR_LOG , [](Logger * logger_p, std::string& text) { logger_p->_error(text); } },
+            { LogMessageType::INFO_LOG , [](Logger * logger_p, std::string& text) { logger_p->_info(text); } },
+            { LogMessageType::TRACE_LOG , [](Logger * logger_p, std::string& text) { logger_p->_trace(text); } },
 
+        };
         //const std::unordered_map<int, log_function_t, std::hash<int> > log_level_2_log_function;
 
+            //DEBUG_LOG,
+            //ERROR_LOG,
+            //INFO_LOG,
+            //TRACE_LOG,
 
     private:
         Logger *logger_p;

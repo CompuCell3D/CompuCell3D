@@ -140,6 +140,7 @@ void Logger::logIntoFile(std::string& data)
 {
     lock();
     m_File << getCurrentTime() << "  " << data << endl;
+    m_File.flush();
     unlock();
 }
 
