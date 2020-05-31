@@ -5,6 +5,7 @@ OPTION(BUILD_LOGGER_DEMO "Build Logger Demo - debug compilation only" OFF)
 
 set(SRCS
   Logger.cpp
+  MiniLogger.cpp
 )
 
 include_directories (

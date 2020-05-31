@@ -30,6 +30,7 @@
 #include <cstdlib>
 #include <ctime>
 
+
 // Code Specific Header Files(s)
 #include "Logger.h"
 
@@ -44,7 +45,7 @@ Logger::Logger()
 }
 
 void Logger::initialize(std::string log_fname, std::string log_type, std::string log_level) {
-    
+
     _log_level = log_level;
     _log_type = log_type;
     _log_fname = log_fname;
@@ -53,8 +54,8 @@ void Logger::initialize(std::string log_fname, std::string log_type, std::string
 
 
     if (log_fname.size()) {
-        
-        if(m_LogType == FILE_LOG) {
+
+        if (m_LogType == FILE_LOG) {
             m_File.open(log_fname, ios::out | ios::app);
         }
         else {

@@ -3,7 +3,9 @@
 // @Author:        Pankaj Choudhary                                          //
 // @Version:       0.0.1                                                     //
 // @L.M.D:         13th April 2015                                           //
-// @Description:   For Logging into file                                     //
+// @Description:   For Logging into file          
+// @Adapted by: Maciek Swat
+// @M.M.D          29th May 2020 
 //                                                                           // 
 // Detail Description:                                                       //
 // Implemented complete logging mechanism, Supporting multiple logging type  //
@@ -36,6 +38,7 @@
 #include <map>
 #include <unordered_map>
 #include <mutex>
+#include <memory>
 #include "LoggerUtils.h"
 
 
@@ -66,7 +69,7 @@ namespace  CompuCell3D
         ALL_LOG = 6,
     }LogLevel;
 
-    
+
     typedef enum LOG_TYPE
     {
         NO_LOG = 1,
@@ -78,7 +81,7 @@ namespace  CompuCell3D
     enum class LogMessageType
     {
         DEBUG_LOG,
-        ERROR_LOG,        
+        ERROR_LOG,
         INFO_LOG,
         TRACE_LOG,
     };
@@ -91,34 +94,34 @@ namespace  CompuCell3D
         static Logger* getInstance() throw ();
 
         //void initialize(std::string fname=0, LogType log_type = CONSOLE_LOG);
-        void initialize(std::string log_fname, std::string log_type="file_log", std::string log_level="enable_log");
+        void initialize(std::string log_fname, std::string log_type = "file_log", std::string log_level = "enable_log");
         // Interface for Error Log 
 
-        template<typename T, typename ... Args >
-        void error(const T& value, const Args& ... args) {
-            std::string val = to_str(value) + to_str(args...);
+        //template<typename T, typename ... Args >
+        //void error(const T& value, const Args& ... args) {
+        //    std::string val = to_str(value) + to_str(args...);
 
-            this->_error(val.c_str());
-        }
-        void _error(const char* text) throw();        
-        
+        //    this->_error(val.c_str());
+        //}
+        void _error(const char* text) throw();
+
         // Interface for Alarm Log 
-        void _alarm(const char* text) throw();        
+        void _alarm(const char* text) throw();
 
         // Interface for Always Log 
-        void _always(const char* text) throw();        
+        void _always(const char* text) throw();
 
         // Interface for Buffer Log 
-        void _buffer(const char* text) throw();        
+        void _buffer(const char* text) throw();
 
         // Interface for Info Log 
-        void _info(const char* text) throw();        
+        void _info(const char* text) throw();
 
         // Interface for Trace log 
-        void _trace(const char* text) throw();        
+        void _trace(const char* text) throw();
 
         // Interface for Debug log 
-        void _debug(const char* text) throw();        
+        void _debug(const char* text) throw();
 
         // Error and Alarm log must be always enable
         // Hence, there is no interfce to control error and alarm logs
@@ -128,7 +131,7 @@ namespace  CompuCell3D
         void enaleLog();  // Enable all log levels
         void disableLog(); // Disable all log levels, except error and alarm
 
-        // Interfaces to control log Types
+                           // Interfaces to control log Types
         void updateLogType(LogType logType);
         void enableConsoleLogging();
         void enableFileLogging();
@@ -136,10 +139,10 @@ namespace  CompuCell3D
         std::string getLogType();
         std::string getLogLevel();
         std::string getLogFname();
-        
+
 
         LoggerStream getLoggerStream(std::string message_type);
-        
+
 
     protected:
         Logger();
@@ -175,7 +178,7 @@ namespace  CompuCell3D
         LogLevel                m_LogLevel;
         LogType                 m_LogType;
 
-        const std::map<std::string,LogType> log_type_map = {
+        const std::map<std::string, LogType> log_type_map = {
             { "no_log", NO_LOG },
             { "console_log", CONSOLE_LOG },
             { "file_log", FILE_LOG }
@@ -185,34 +188,34 @@ namespace  CompuCell3D
             { "disable_log", NO_LOG_LEVEL },
             { "log_level_info", INFO },
             { "log_level_buffer", BUFFER },
-            { "log_level_trace", TRACE }, 
+            { "log_level_trace", TRACE },
             { "enable_log", ALL_LOG },
             {}
         };
-        
+
     };
 
     class LoggerStream {
     public:
 
-        using logger_fcn_t = std::function<void(Logger *, std::string& )>;
+        using logger_fcn_t = std::function<void(Logger *, std::string&)>;
 
         LoggerStream(Logger *logger_p) {
-            
+
             this->logger_p = logger_p;
 
         }
 
         ~LoggerStream() {
             using namespace std;
-            try{
+            try {
                 logger_fcn_map.at(this->logMessageType)(this->logger_p, this->logString);
             }
             catch (const out_of_range &e)
             {
                 cerr << "Exception in at method while logging " << e.what() << endl;
             }
-            
+
 
         }
 
@@ -231,7 +234,7 @@ namespace  CompuCell3D
         typedef double (LoggerStream::*log_function_t)(std::string & text);
 
     private:
-        
+
         std::unordered_map<LogMessageType, logger_fcn_t> logger_fcn_map = {
             { LogMessageType::DEBUG_LOG , [](Logger * logger_p, std::string& text) { logger_p->_debug(text.c_str()); } },
             { LogMessageType::ERROR_LOG , [](Logger * logger_p, std::string& text) { logger_p->_error(text.c_str()); } },
@@ -243,12 +246,12 @@ namespace  CompuCell3D
     private:
         Logger *logger_p;
         std::string logString;
-        LogMessageType  logMessageType;    
+        LogMessageType  logMessageType;
 
     };
 
     template<typename T>
-    LoggerStream operator<<(Logger& logger, const T & val) {        
+    LoggerStream operator<<(Logger& logger, const T & val) {
         LoggerStream logger_stream(&logger);
 
         logger_stream << val;
@@ -258,17 +261,17 @@ namespace  CompuCell3D
 
     //specialization for stream modifier LogLevel -  implementation must be defined in implementation file
     template<>
-    LoggerStream CompuCell3D::operator<<(Logger& logger, const LogMessageType &  val);    
+    LoggerStream CompuCell3D::operator<<(Logger& logger, const LogMessageType &  val);
 
     template<typename T>
     LoggerStream& operator<<(LoggerStream& loggerStream, const T & val) {
         ostringstream s_stream;
         s_stream << val << " ";
         loggerStream.addString(s_stream.str());
-        
+
         return loggerStream;
 
-    };
+    }
 
 
 }
