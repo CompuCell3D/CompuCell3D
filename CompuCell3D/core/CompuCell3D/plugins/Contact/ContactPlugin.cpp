@@ -40,15 +40,17 @@ void ContactPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     xmlData = _xmlData;
     simulator->getPotts()->registerEnergyFunctionWithName(this, toString());
     simulator->registerSteerableObject(this);
-    logger = simulator->getLoggerPtr();
+    
 }
 
 void ContactPlugin::extraInit(Simulator *simulator) {
-    //cerr << "contact enter extraInit" << endl;
+
+    logger = simulator->getLoggerPtr();
+
     update(xmlData, true);
-    //cerr << "contact after update" << endl;
+    
     Automaton * cellTypePluginAutomaton = potts->getAutomaton();
-    //cerr << "contact after automaton" << endl;
+    
     return;
     if (cellTypePluginAutomaton) {
         ASSERT_OR_THROW("The size of matrix of contact energy coefficients has must equal max_cell_type_id+1. You must list interactions coefficients between all cel types",
@@ -114,9 +116,9 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
         }    
     
-    //cerr << "logger fname from instance=" << Logger::getInstance()->getLogFname() << endl;
-
-    log<<"size="<< size;
+    cerr << "logger fname from instance=" << logger->getLogFname() << endl;
+    logger->_error("CONTACT ENERGY");
+    log<<LogMessageType::ERROR_LOG<<"size="<< size;
     
     for (int i = 0; i < size; ++i)
         for (int j = 0; j < size; ++j) {

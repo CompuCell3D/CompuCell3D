@@ -71,7 +71,8 @@ Simulator::Simulator() :
 cerrStreamBufOrig(0),
 coutStreamBufOrig(0),
 qStreambufPtr(0),
-restartEnabled(false)
+restartEnabled(false),
+loggerPtr(0)
 {
 	newPlayerFlag=false;
 	ppdPtr=0;
@@ -126,12 +127,17 @@ std::string Simulator::getOutputDirectory() {
 
 
 void Simulator::initializeLogger(std::string fname, std::string log_type, std::string log_level) {
-    Logger * pLogger = Logger::getInstance();
+
+    Logger * pLogger = getLoggerPtr();
     pLogger->initialize(fname, log_type, log_level);
 }
 
 Logger * Simulator::getLoggerPtr() {
-    return Logger::getInstance();
+    if (!loggerPtr)
+        loggerPtr = Logger::getInstance();
+
+    return loggerPtr;
+    
 }
 
 Logger & Simulator::getLogger() {
@@ -362,13 +368,13 @@ void Simulator::extraInit(){
 		BasicPluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
 		BasicPluginManager<Plugin>::infos_t::iterator it;
 
-        LOG_DEBUG("begin extraInit calls for plugins");
+        getLogger() << "begin extraInit calls for plugins";
 		for (it = infos->begin(); it != infos->end(); it++)
 			if (pluginManager.isLoaded((*it)->getName())) {
 				pluginManager.get((*it)->getName())->extraInit(this);
 			}
 
-        LOG_DEBUG("finish extraInit calls for plugins");
+        getLogger() << "finish extraInit calls for plugins";
 		classRegistry->extraInit(this);
 
 	}catch (const BasicException &e) {		
@@ -738,8 +744,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 			ppdCC3DPtr->boundary_y = "noflux";
 			ppdCC3DPtr->boundary_z = "noflux";
 		}
-	}
-	//	cerr << "" <<  << endl;
+	}	
 
 	log<<"ppdCC3DPtr->boundary_x = " << ppdCC3DPtr->boundary_x ;
 	//setting boundary conditions
@@ -786,12 +791,12 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 		}
 
 		BoundaryStrategy::instantiate(ppdCC3DPtr->boundary_x, ppdCC3DPtr->boundary_y, ppdCC3DPtr->boundary_z, ppdCC3DPtr->shapeAlgorithm, ppdCC3DPtr->shapeIndex, ppdCC3DPtr->shapeSize, ppdCC3DPtr->shapeInputfile,HEXAGONAL_LATTICE);
-        LOG_DEBUG("initialized hex lattice");
+        log<<"initialized hex lattice";
 	}
 	else
 	{
 		BoundaryStrategy::instantiate(ppdCC3DPtr->boundary_x, ppdCC3DPtr->boundary_y, ppdCC3DPtr->boundary_z, ppdCC3DPtr->shapeAlgorithm, ppdCC3DPtr->shapeIndex, ppdCC3DPtr->shapeSize, ppdCC3DPtr->shapeInputfile,SQUARE_LATTICE);
-        LOG_DEBUG("initialized square lattice");
+        log<<"initialized square lattice";
 	}
 
     //potts.getLatticeType() only works when the BoundaryStrategy singleton is instantiated!

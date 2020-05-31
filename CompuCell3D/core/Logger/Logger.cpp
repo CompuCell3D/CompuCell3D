@@ -29,16 +29,6 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-
-#include "MiniLogger.h"
-
-using namespace std;
-using namespace CompuCell3D;
-
-
-/* |IMPLEMENTATION| User.cpp file */
-
-#include "MiniLogger.h" 
 #include <iostream> 
 #include <fstream>
 #include <sstream>
@@ -47,6 +37,13 @@ using namespace CompuCell3D;
 #include <unordered_map>
 #include <mutex>
 #include <functional> 
+
+#include "Logger.h"
+
+using namespace std;
+using namespace CompuCell3D;
+
+
 
 using namespace std;
 

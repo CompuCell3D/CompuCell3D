@@ -31,6 +31,7 @@
 
 #include <memory> // PImpl 
 #include <string> 
+#include <sstream>
 
 
 namespace  CompuCell3D
@@ -166,10 +167,10 @@ LoggerStream CompuCell3D::operator<<(Logger& logger, const LogMessageType &  val
 
 template<typename T>
 LoggerStream& operator<<(LoggerStream& loggerStream, const T & val) {
-    ostringstream s_stream;
+    using namespace std;
+    std::ostringstream s_stream;
     s_stream << val << " ";
-    loggerStream.addString(s_stream.str());
-        
+    loggerStream.addString(s_stream.str());        
     return loggerStream;
 
 };

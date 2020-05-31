@@ -561,7 +561,9 @@ return partitionVec;
 void ParallelUtilsOpenMP::generateLatticePartition(unsigned int _numberOfProcessors,bool _quasi2DFlag,std::vector<unsigned int> _dimIndexOrderedVec){
 	
 	unsigned int numArrayElements=sizeof latticeGridPartition2D/ sizeof (unsigned int[3]);
-    LOG_DEBUG(to_str("_numberOfProcessors= ", _numberOfProcessors, " numArrayElements=", numArrayElements));	
+    Logger & log = (*Logger::getInstance());
+
+    log<<"_numberOfProcessors= "<< _numberOfProcessors << " numArrayElements="<< numArrayElements;	
 
 	vector<unsigned int> partitionVec(3,1);
 	if (_numberOfProcessors <= numArrayElements-1){ //requested less processors than max number of prepared partitions
@@ -670,6 +672,7 @@ void ParallelUtilsOpenMP::partitionLattice(unsigned int minDimGridPoints,unsigne
 	unsigned short minDimCoord=fieldDim[indexMin];
 	unsigned short middleDimCoord=fieldDim[indexMiddle];
 	unsigned short maxDimCoord=fieldDim[indexMax];
+    Logger & log = (*Logger::getInstance());
 
 	//lattice is divided into minDimGridPoints x middleDimGridPoints x maxDimGridPoints quadrants with division lines passing through min, max middleDimension axes
 
@@ -685,7 +688,8 @@ void ParallelUtilsOpenMP::partitionLattice(unsigned int minDimGridPoints,unsigne
 		Dim3D maxDim=fieldDim;		
 		pottsPartitionVec.assign(1,vector<pair<Dim3D,Dim3D> >(1,make_pair(minDim,maxDim)));
 		pottsDimensionsToDivide.clear() ; //no dimension will be divided - single core simulation
-        LOG_DEBUG(to_str("SINGLE PROCESSOR RUN minDim=", minDim, " maxDim=", maxDim));
+        
+        log<<"SINGLE PROCESSOR RUN minDim="<< minDim<< " maxDim="<< maxDim;
 
 		return;
 	}
@@ -728,7 +732,7 @@ void ParallelUtilsOpenMP::partitionLattice(unsigned int minDimGridPoints,unsigne
 				maxDim[indexMax]=(k<maxDimDivisionVec.size()-1 ?  maxDimDivisionVec[k+1]: fieldDim[indexMax] );
 
                 pottsPartitionVec[gridId][0] = make_pair(minDim, maxDim);
-                LOG_DEBUG("gridId=", gridId, " minDim=", minDim, " maxDim=", maxDim);
+                log<<"gridId="<< gridId<< " minDim="<< minDim<< " maxDim="<< maxDim;
 				
 
 				++gridId;
@@ -783,7 +787,7 @@ void ParallelUtilsOpenMP::partitionLattice(unsigned int minDimGridPoints,unsigne
 							}
 
 							pottsPartitionVec[gid][subgridId]=make_pair(minSubDim,maxSubDim);
-                            LOG_DEBUG(to_str(" GID=", gid, " subgridId=", subgridId, " minSubDim=", minSubDim, " maxSubDim=", maxSubDim));
+                            log<<" GID="<< gid<< " subgridId="<< subgridId<< " minSubDim="<< minSubDim<< " maxSubDim=", maxSubDim;
 							++subgridId;
 
 						}

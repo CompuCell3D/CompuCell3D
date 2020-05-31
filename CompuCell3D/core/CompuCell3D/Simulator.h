@@ -85,6 +85,8 @@ namespace CompuCell3D {
         std::string step_output;
         std::string output_directory;
         
+        Logger *loggerPtr;
+        
 
 	public:
 
