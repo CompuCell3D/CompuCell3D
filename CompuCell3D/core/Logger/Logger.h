@@ -27,39 +27,16 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef _LOGGER_H_
-#define _LOGGER_H_
+#pragma once 
 
-// C++ Header File(s)
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <map>
-#include <unordered_map>
-#include <mutex>
-#include <memory>
-#include "LoggerUtils.h"
+#include <memory> // PImpl 
+#include <string> 
 
-
-#ifdef WIN32
-// Win Socket Header File(s)
-#include <Windows.h>
-#include <process.h>
-#endif
 
 namespace  CompuCell3D
 {
-    // Direct Interface for logging into log file or console using MACRO(s)
-#define LOG_ERROR(x)    Logger::getInstance()->_error(x)
-#define LOG_ALARM(x)	   Logger::getInstance()->_alarm(x)
-#define LOG_ALWAYS(x)	Logger::getInstance()->_always(x)
-#define LOG_INFO(x)     Logger::getInstance()->_info(x)
-#define LOG_BUFFER(x)   Logger::getInstance()->_buffer(x)
-#define LOG_TRACE(x)    Logger::getInstance()->_trace(x)
-#define LOG_DEBUG(x)    Logger::getInstance()->_debug(x)
 
-    typedef enum LOG_LEVEL
+    enum class LogLevel
     {
         NO_LOG_LEVEL = 1,
         INFO = 2,
@@ -67,215 +44,137 @@ namespace  CompuCell3D
         TRACE = 4,
         DEBUG = 5,
         ALL_LOG = 6,
-    }LogLevel;
-
-
-    typedef enum LOG_TYPE
+    };
+    
+        
+    enum class LogType
     {
         NO_LOG = 1,
         CONSOLE_LOG = 2,
         FILE_LOG = 3,
-    }LogType;
-
-
+    };
+    
+    
     enum class LogMessageType
     {
         DEBUG_LOG,
-        ERROR_LOG,
+        ERROR_LOG,        
         INFO_LOG,
         TRACE_LOG,
+        ALARM_LOG,        
+        BUFFER_LOG
     };
 
-    class LoggerStream;
 
-    class Logger
-    {
-    public:
-        static Logger* getInstance() throw ();
+class Logger {
+public:
+    // Constructor and Destructors 
+    static Logger* getInstance() throw ();
 
-        //void initialize(std::string fname=0, LogType log_type = CONSOLE_LOG);
-        void initialize(std::string log_fname, std::string log_type = "file_log", std::string log_level = "enable_log");
-        // Interface for Error Log 
+    // Asssignment Operator and Copy Constructor 
 
-        //template<typename T, typename ... Args >
-        //void error(const T& value, const Args& ... args) {
-        //    std::string val = to_str(value) + to_str(args...);
+    void initialize(std::string log_fname, std::string log_type = "file_log", std::string log_level = "enable_log");
 
-        //    this->_error(val.c_str());
-        //}
-        void _error(const char* text) throw();
+    void _error(const char* text) throw();
 
-        // Interface for Alarm Log 
-        void _alarm(const char* text) throw();
+    // Interface for Alarm Log 
+    void _alarm(const char* text) throw();
 
-        // Interface for Always Log 
-        void _always(const char* text) throw();
+    // Interface for Always Log 
+    void _always(const char* text) throw();
 
-        // Interface for Buffer Log 
-        void _buffer(const char* text) throw();
+    // Interface for Buffer Log 
+    void _buffer(const char* text) throw();
 
-        // Interface for Info Log 
-        void _info(const char* text) throw();
+    // Interface for Info Log 
+    void _info(const char* text) throw();
 
-        // Interface for Trace log 
-        void _trace(const char* text) throw();
+    // Interface for Trace log 
+    void _trace(const char* text) throw();
 
-        // Interface for Debug log 
-        void _debug(const char* text) throw();
-
-        // Error and Alarm log must be always enable
-        // Hence, there is no interfce to control error and alarm logs
-
-        // Interfaces to control log levels
-        void updateLogLevel(LogLevel logLevel);
-        void enaleLog();  // Enable all log levels
-        void disableLog(); // Disable all log levels, except error and alarm
-
-                           // Interfaces to control log Types
-        void updateLogType(LogType logType);
-        void enableConsoleLogging();
-        void enableFileLogging();
-
-        std::string getLogType();
-        std::string getLogLevel();
-        std::string getLogFname();
+    // Interface for Debug log 
+    void _debug(const char* text) throw();
 
 
-        LoggerStream getLoggerStream(std::string message_type);
+    // Interfaces to control log levels
+    void updateLogLevel(LogLevel logLevel);
+    void enaleLog();  // Enable all log levels
+    void disableLog(); // Disable all log levels, except error and alarm
+    
+    // Interfaces to control log Types
+    void updateLogType(LogType logType);
+    void enableConsoleLogging();
+    void enableFileLogging();
+
+    std::string getLogType();
+    std::string getLogLevel();
+    std::string getLogFname();
 
 
-    protected:
-        Logger();
-        ~Logger();
 
-        // Wrapper function for lock/unlock
-        // For Extensible feature, lock and unlock should be in protected
-        void lock();
-        void unlock();
+private:
+    // Internal implementation class 
+    class Impl;
+    // Pointer to the internal implementation 
+    std::unique_ptr<Impl> pimpl;
+    ~Logger();
+    Logger();
 
-        std::string getCurrentTime();
+    Logger(const Logger& other);
+    Logger& operator=(Logger rhs);
 
+    static Logger * m_Instance;
 
-    private:
-        void logIntoFile(std::string& data);
-        void logOnConsole(std::string& data);
-        LogType stringToLogType(std::string log_type_str);
-        LogLevel stringToLogLevel(std::string log_level_str);
-
-        Logger(const Logger& obj) {}
-        void operator=(const Logger& obj) {}
-
-    private:
-        static Logger*          m_Instance;
-        std::ofstream           m_File;
-
-        std::mutex m_Mutex;
-
-        std::string _log_type;
-        std::string _log_level;
-        std::string _log_fname;
-
-        LogLevel                m_LogLevel;
-        LogType                 m_LogType;
-
-        const std::map<std::string, LogType> log_type_map = {
-            { "no_log", NO_LOG },
-            { "console_log", CONSOLE_LOG },
-            { "file_log", FILE_LOG }
-        };
-
-        const std::map<std::string, LogLevel> log_level_map = {
-            { "disable_log", NO_LOG_LEVEL },
-            { "log_level_info", INFO },
-            { "log_level_buffer", BUFFER },
-            { "log_level_trace", TRACE },
-            { "enable_log", ALL_LOG },
-            {}
-        };
-
-    };
-
-    class LoggerStream {
-    public:
-
-        using logger_fcn_t = std::function<void(Logger *, std::string&)>;
-
-        LoggerStream(Logger *logger_p) {
-
-            this->logger_p = logger_p;
-
-        }
-
-        ~LoggerStream() {
-            using namespace std;
-            try {
-                logger_fcn_map.at(this->logMessageType)(this->logger_p, this->logString);
-            }
-            catch (const out_of_range &e)
-            {
-                cerr << "Exception in at method while logging " << e.what() << endl;
-            }
+};
 
 
-        }
+class LoggerStream {
+public:
 
-        void setLogLevel(const LogMessageType & logMessageType = LogMessageType::DEBUG_LOG) {
-            this->logMessageType = logMessageType;
-        }
+        
+    LoggerStream(Logger *logger_p);
+    LoggerStream(const LoggerStream & rhs);
 
-        template<typename T, typename ... Args >
-        void log(const T& value, const Args& ... args) {
-            logger_p->_debug(to_str(value) + to_str(args...));
-        }
+    ~LoggerStream();
 
-        void addString(std::string & str) {
-            this->logString += str;
-        }
-        typedef double (LoggerStream::*log_function_t)(std::string & text);
+    void setLogLevel(const LogMessageType & logMessageType = LogMessageType::DEBUG_LOG);
 
-    private:
+    void addString(std::string & str);
+    
 
-        std::unordered_map<LogMessageType, logger_fcn_t> logger_fcn_map = {
-            { LogMessageType::DEBUG_LOG , [](Logger * logger_p, std::string& text) { logger_p->_debug(text.c_str()); } },
-            { LogMessageType::ERROR_LOG , [](Logger * logger_p, std::string& text) { logger_p->_error(text.c_str()); } },
-            { LogMessageType::INFO_LOG , [](Logger * logger_p, std::string& text) { logger_p->_info(text.c_str()); } },
-            { LogMessageType::TRACE_LOG , [](Logger * logger_p, std::string& text) { logger_p->_trace(text.c_str()); } },
+private:
 
-        };
+    class StreamImpl;
+    // Pointer to the internal implementation 
+    std::unique_ptr<StreamImpl> pimpl;
 
-    private:
-        Logger *logger_p;
-        std::string logString;
-        LogMessageType  logMessageType;
+};
 
-    };
 
-    template<typename T>
-    LoggerStream operator<<(Logger& logger, const T & val) {
-        LoggerStream logger_stream(&logger);
+template<typename T>
+LoggerStream operator<<(Logger& logger, const T & val) {        
+    LoggerStream logger_stream(&logger);
 
-        logger_stream << val;
+    logger_stream << val;
 
-        return logger_stream;
-    }
+    return logger_stream;
+}
 
-    //specialization for stream modifier LogLevel -  implementation must be defined in implementation file
-    template<>
-    LoggerStream CompuCell3D::operator<<(Logger& logger, const LogMessageType &  val);
+//specialization for stream modifier LogLevel -  implementation must be defined in implementation file
+template<>
+LoggerStream CompuCell3D::operator<<(Logger& logger, const LogMessageType &  val);
 
-    template<typename T>
-    LoggerStream& operator<<(LoggerStream& loggerStream, const T & val) {
-        ostringstream s_stream;
-        s_stream << val << " ";
-        loggerStream.addString(s_stream.str());
+template<typename T>
+LoggerStream& operator<<(LoggerStream& loggerStream, const T & val) {
+    ostringstream s_stream;
+    s_stream << val << " ";
+    loggerStream.addString(s_stream.str());
+        
+    return loggerStream;
 
-        return loggerStream;
-
-    }
+};
 
 
 }
 
 
-
-#endif
