@@ -410,8 +410,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         new_window.hide()
 
-        # this way we update draw models
-        self.configsChanged.connect(new_window.configsChanged)
+        # this way we update ok_to_draw models
+        self.configsChanged.connect(new_window.configs_changed)
 
         mdi_window = self.addSubWindow(new_window)
 
@@ -428,9 +428,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.simulation.drawMutex.unlock()
 
-        new_window.setConnects(self)  # in GraphicsFrameWidget
-        new_window.setInitialCrossSection(self.basicSimulationData)
-        new_window.setFieldTypesComboBox(self.fieldTypes)
+        new_window.set_connects(self)  # in GraphicsFrameWidget
+        new_window.set_initial_cross_section(self.basicSimulationData)
+        new_window.set_field_types_combo_box(self.fieldTypes)
 
         suggested_win_pos = self.suggested_window_position()
 
@@ -438,53 +438,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             mdi_window.move(suggested_win_pos)
 
         return mdi_window
-
-    # def add_vtk_window_to_workspace(self) -> None:
-    #     """
-    #     called one time, for initial graphics window  (vs. addNewGraphicsWindow())
-    #     :return:
-    #     """
-    #
-    #     self.mainGraphicsWidget = GraphicsFrameWidget(parent=None, originatingWidget=self)
-    #
-    #     # we make sure that first graphics window is positioned in the left upper corner
-    #     # NOTE: we have to perform move prior to calling addSubWindow. or else we will get distorted window
-    #     if self.lastPositionMainGraphicsWindow is not None:
-    #         self.mainGraphicsWidget.move(self.lastPositionMainGraphicsWindow)
-    #     else:
-    #         self.lastPositionMainGraphicsWindow = self.mainGraphicsWidget.pos()
-    #
-    #     self.mainGraphicsWidget.show()
-    #
-    #     # todo ok
-    #     # self.mainGraphicsWidget.setShown(False)
-    #
-    #     # self.mainGraphicsWidget.hide()
-    #     # return
-    #
-    #     # this way we update draw models if configs change
-    #     self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
-    #
-    #     self.simulation.setGraphicsWidget(self.mainGraphicsWidget)
-    #
-    #     mdi_sub_window = self.addSubWindow(self.mainGraphicsWidget)
-    #
-    #     self.mainMdiSubWindow = mdi_sub_window
-    #     self.mainGraphicsWidget.show()
-    #     self.mainGraphicsWidget.setConnects(self)
-    #
-    #     self.lastActiveRealWindow = mdi_sub_window
-    #
-    #     # MDIFIX
-    #     self.set_active_sub_window_custom_slot(self.lastActiveRealWindow)
-    #
-    #     self.update_window_menu()
-    #     self.update_active_window_vis_flags()
-    #
-    #     suggested_win_pos = self.suggested_window_position()
-    #
-    #     if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
-    #         mdi_sub_window.move(suggested_win_pos)
 
     def minimize_all_graphics_windows(self) -> None:
         """
@@ -1478,19 +1431,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
         handleSimulationFinishedFcn(_flag)
 
     def handleCompletedStepCMLResultReplay(self, _mcs):
-        '''
+        """
         callback - runs after vtk replay step completed.
         :param _mcs: int - current Monte Carlo step
         :return:None
-        '''
+        """
 
         # synchronization  to allow CMLReader to read data, and report results and then
         # once data is ready drawing can happen.
         self.simulation.drawMutex.lock()
 
-        simulationDataIntAddr = extract_address_int_from_vtk_object(self.simulation.simulationData)
+        simulation_data_int_addr = extract_address_int_from_vtk_object(self.simulation.simulationData)
 
-        self.fieldExtractor.setSimulationData(simulationDataIntAddr)
+        self.fieldExtractor.setSimulationData(simulation_data_int_addr)
         self.__step = self.simulation.currentStep
 
         # self.simulation.stepCounter is incremented by one before it reaches this function
@@ -1963,55 +1916,65 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Draws fields during vtk replay mode
         :return:
         """
-
-        self.simulation.drawMutex.lock()
-        self.simulation.readFileSem.acquire()
-
         if not self.simulationIsRunning:
-            self.simulation.drawMutex.unlock()
-            self.simulation.readFileSem.release()
-
             return
+
+        detected_new_request = False
+        if self.newDrawingUserRequest:
+            detected_new_request = True
+
+        self.cml_reader_synchronize(acquire=True)
+        self.cml_reader_synchronize(acquire=False)
+        self.cml_reader_synchronize(acquire=True)
+
+        self.__step = self.simulation.getCurrentStep()
+
+        for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+            graphics_frame = win.widget()
+
+            if graphics_frame.is_screenshot_widget:
+                continue
+
+            ok_to_draw = self.simulation.data_ready
+            if detected_new_request and self.pause_act.isEnabled():
+                # new requests i.e. new field configuration or new projection
+                # can only be drawn if simulation is paused otherwise we will get crash in
+                # FielfExtractorCML.fillCellFieldData3D
+                ok_to_draw = False
+
+            if ok_to_draw:
+
+                graphics_frame.draw(self.basicSimulationData)
+
+            self.__updateStatusBar(self.__step)
+
+        self.simulation.drawMutex.unlock()
+        self.simulation.readFileSem.release()
 
         if self.newDrawingUserRequest:
             self.newDrawingUserRequest = False
             if self.pause_act.isEnabled():
                 self.__pauseSim()
 
-        self.simulation.drawMutex.unlock()
-        self.simulation.readFileSem.release()
+    def cml_reader_synchronize(self, acquire=True):
+        """
+        acquires or releases key synchromization primitives from CMLReader
+        :param acquire:
+        :return:
+        """
+        if acquire:
+            self.simulation.drawMutex.lock()
+            self.simulation.readFileSem.acquire()
+        else:
+            self.simulation.drawMutex.unlock()
+            self.simulation.readFileSem.release()
 
-        self.simulation.drawMutex.lock()
-        self.simulation.readFileSem.acquire()
-
-        self.__step = self.simulation.getCurrentStep()
-
-        if True:
-            for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
-                graphicsFrame = win.widget()
-
-                if graphicsFrame.is_screenshot_widget:
-                    continue
-
-                (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
-
-                # this flag is used to prevent calling  draw function when new data is read from hard drive
-                # if not self.simulation.newFileBeingLoaded:
-                if not self.simulation.data_ready:
-                    # graphicsFrame.drawFieldLocal(self.basicSimulationData)
-                    graphicsFrame.draw(self.basicSimulationData)
-                # todo 5
-                # self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())
-                self.__updateStatusBar(self.__step)
-
-        self.simulation.drawMutex.unlock()
-        self.simulation.readFileSem.release()
 
     def drawFieldRegular(self):
-        '''
+        """
         Draws field during "regular" simulation
         :return:None
-        '''
+        """
         if not self.simulationIsRunning:
             return
 
@@ -2026,20 +1989,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if self.mysim:
 
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
-                graphicsFrame = win.widget()
+                graphics_frame = win.widget()
 
-                if graphicsFrame.is_screenshot_widget:
+                if graphics_frame.is_screenshot_widget:
                     continue
 
-                # rwh: error if we try to invoke switchdim earlier
-                (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
+                graphics_frame.draw(self.basicSimulationData)
 
-                # todo 5
-                # graphicsFrame.drawFieldLocal(self.basicSimulationData)
-                graphicsFrame.draw(self.basicSimulationData)
-                # todo 5
-                # self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())  # show MCS in lower-left GUI
-                self.__updateStatusBar(self.__step)  # show MCS in lower-left GUI
+                # show MCS in lower-left GUI
+                self.__updateStatusBar(self.__step)
 
         self.simulation.drawMutex.unlock()
 
@@ -2048,29 +2006,28 @@ class SimpleTabView(MainArea, SimpleViewManager):
         INitializes basic simulation data - fieldDim, number of steps etc.
         :return:bool - flag indicating if initialization of basic simulation data was successful
         '''
-        fieldDim = None
+
         if self.__viewManagerType == "Regular":
 
             if not self.mysim:
                 return
 
-            simObj = self.mysim()
-            if not simObj: return False
+            sim_obj = self.mysim()
+            if not sim_obj: return False
 
-            fieldDim = simObj.getPotts().getCellFieldG().getDim()
+            field_dim = sim_obj.getPotts().getCellFieldG().getDim()
 
-            if fieldDim.x == self.fieldDim.x and fieldDim.y == self.fieldDim.y and fieldDim.z == self.fieldDim.z:
+            if field_dim.x == self.fieldDim.x and field_dim.y == self.fieldDim.y and field_dim.z == self.fieldDim.z:
                 return False
 
-            self.fieldDim = fieldDim
+            self.fieldDim = field_dim
             self.basicSimulationData.fieldDim = self.fieldDim
-            self.basicSimulationData.sim = simObj
-            self.basicSimulationData.numberOfSteps = simObj.getNumSteps()
+            self.basicSimulationData.sim = sim_obj
+            self.basicSimulationData.numberOfSteps = sim_obj.getNumSteps()
 
             return True
 
         elif self.__viewManagerType == "CMLResultReplay":
-            fieldDim = self.simulation.fieldDim
             if self.simulation.dimensionChange():
                 self.simulation.resetDimensionChangeMonitoring()
                 self.fieldDim = self.simulation.fieldDim
@@ -2090,7 +2047,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # this updates cross sections when dimensions change
 
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
-            win.widget().updateCrossSection(self.basicSimulationData)
+            win.widget().update_cross_section(self.basicSimulationData)
 
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             graphicsWidget = win.widget()
@@ -2111,21 +2068,22 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__drawField()
 
     def __drawField(self):
-        '''
+        """
         Dispatch function to draw simulation snapshots
         :return:None
-        '''
+        """
 
-        self.displayWarning(
-            '')  # here we are resetting previous warnings because draw functions may write their own warning
+        # here we are resetting previous warnings because draw functions may write their own warning
+        self.displayWarning('')
 
         __drawFieldFcn = getattr(self, "drawField" + self.__viewManagerType)
 
-        propertiesUpdated = self.updateSimulationProperties()
+        properties_updated = self.updateSimulationProperties()
 
-        if propertiesUpdated:
+        if properties_updated:
             # __drawFieldFcn() # this call is actually unnecessary
-            # for some reason cameras have to be initialized after drawing resized lattice and draw function has to be repeated
+            # for some reason cameras have to be initialized after drawing resized lattice
+            # and draw function has to be repeated
             self.updateVisualization()
 
         __drawFieldFcn()
@@ -2177,7 +2135,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             if widget.is_screenshot_widget:
                 continue
 
-            gwd = widget.getGraphicsWindowData()
+            gwd = widget.get_graphics_window_data()
 
             # fill size and position of graphics windows data using mdiWidget,
             # NOT the internal widget such as GraphicsFrameWidget - sizes and positions are base on MID widet settings
@@ -2400,7 +2358,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             graphicsFrame = win.widget()
-            graphicsFrame.setInitialCrossSection(_basicSimulationData)
+            graphicsFrame.set_initial_cross_section(_basicSimulationData)
 
     def initGraphicsWidgetsFieldTypes(self):
         '''
@@ -2409,7 +2367,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             graphicsFrame = win.widget()
-            graphicsFrame.setFieldTypesComboBox(self.fieldTypes)
+            graphicsFrame.set_field_types_combo_box(self.fieldTypes)
 
     # Shows simulation view tab
     def showSimView(self, file):
@@ -2476,33 +2434,33 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 #     str(0)]  # inside windows_layout_dict windows are labeled using ints represented as strings
                 try:
                     # inside windows_layout_dict windows are labeled using ints represented as strings
-                    windowDataDict0 = windows_layout_dict[str(0)]
+                    window_data_dict0 = windows_layout_dict[str(0)]
                 except KeyError:
                     try:
-                        windowDataDict0 = windows_layout_dict[0]
+                        window_data_dict0 = windows_layout_dict[0]
                     except KeyError:
                         raise KeyError('Could not find 0 in the keys of windows_layout_dict')
 
                 gwd = GraphicsWindowData()
 
-                gwd.fromDict(windowDataDict0)
+                gwd.fromDict(window_data_dict0)
 
                 if gwd.winType == GRAPHICS_WINDOW_LABEL:
-                    graphicsWindow = self.lastActiveRealWindow
-                    gfw = graphicsWindow.widget()
+                    graphics_window = self.lastActiveRealWindow
+                    gfw = graphics_window.widget()
 
-                    graphicsWindow.resize(gwd.winSize)
-                    graphicsWindow.move(gwd.winPosition)
+                    graphics_window.resize(gwd.winSize)
+                    graphics_window.move(gwd.winPosition)
 
                     gfw.apply_graphics_window_data(gwd)
 
             except KeyError:
                 # in case there is no main window with id 0 in the settings we kill the main window
 
-                graphicsWindow = self.lastActiveRealWindow
-                graphicsWindow.close()
+                graphics_window = self.lastActiveRealWindow
+                graphics_window.close()
                 self.mainGraphicsWidget = None
-                self.win_inventory.remove_from_inventory(graphicsWindow)
+                self.win_inventory.remove_from_inventory(graphics_window)
 
                 pass
 
@@ -2544,11 +2502,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
             if gwd.sceneName not in list(self.fieldTypes.keys()):
                 continue  # we only create window for a sceneNames (e.g. fieldNames) that exist in the simulation
 
-            graphicsWindow = self.add_new_graphics_window()
-            gfw = graphicsWindow.widget()
+            graphics_window = self.add_new_graphics_window()
+            gfw = graphics_window.widget()
 
-            graphicsWindow.resize(gwd.winSize)
-            graphicsWindow.move(gwd.winPosition)
+            graphics_window.resize(gwd.winSize)
+            graphics_window.move(gwd.winPosition)
 
             gfw.apply_graphics_window_data(gwd)
 
@@ -2570,16 +2528,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
         initializes field types for VTK vidgets during regular simulation
         :return:None
         '''
-        simObj = self.mysim()
-        if not simObj: return
+        sim_obj = self.mysim()
+        if not sim_obj: return
 
         self.fieldTypes["Cell_Field"] = FIELD_TYPES[0]  # "CellField"
 
         # Add concentration fields How? I don't care how I got it at this time
 
-        concFieldNameVec = simObj.getConcentrationFieldNameVector()
+        conc_field_name_vec = sim_obj.getConcentrationFieldNameVector()
         # putting concentration fields from simulator
-        for fieldName in concFieldNameVec:
+        for fieldName in conc_field_name_vec:
             #            print MODULENAME,"setFieldTypes():  Got this conc field: ",fieldName
             self.fieldTypes[fieldName] = FIELD_TYPES[1]
 
@@ -2591,19 +2549,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         for field_name, field_adapter in field_dict.items():
             self.fieldTypes[field_name] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[field_adapter.field_type]
 
-        #
-        # # todo 5 - handle custom visualizations
-        # # # inserting custom visualization
-        # # visDict = CompuCellSetup.customVisStorage.visDataDict
-        # #
-        # # for visName in visDict:
-        # #     self.fieldTypes[visName] = FIELD_TYPES[6]
-
     def showDisplayWidgets(self):
-        '''
+        """
         Displays initial snapthos widgets - called from showSimView
         :return:None
-        '''
+        :return:
+        """
 
         # This block of code simply checks to see if some plugins assoc'd with Vis are defined
         # todo 5 - rework this - remove parsing away from the player
@@ -2645,27 +2596,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if not self.mainGraphicsWidget: return
 
         # todo 5 -  rework initialization
-        self.mainGraphicsWidget.setStatusBar(self.__statusBar)
+        self.mainGraphicsWidget.set_status_bar(self.__statusBar)
 
         self.mainGraphicsWidget.setZoomItems(self.zitems)  # Set zoomFixed parameters
 
-        # if self.borderAct.isChecked():  # Vis menu "Cell Borders" check box
-        #     self.mainGraphicsWidget.showBorder()
-        # else:
-        #     self.mainGraphicsWidget.hideBorder()
-        #
-        # if self.clusterBorderAct.isChecked():  # Vis menu "Cluster Borders" check box
-        #     self.mainGraphicsWidget.showClusterBorder()
-        #
-        # # ---------------------
-        # if self.cellGlyphsAct.isChecked():  # Vis menu "Cell Glyphs"
-        #     self.mainGraphicsWidget.showCellGlyphs()
-        #
-        # # ---------------------
-        # if self.FPPLinksAct.isChecked():  # Vis menu "FPP (Focal Point Plasticity) Links"
-        #     self.mainGraphicsWidget.showFPPLinks()
-
-        self.mainGraphicsWidget.setPlane(PLANES[0], 0)
+        self.mainGraphicsWidget.set_plane(PLANES[0], 0)
 
     def setParams(self):
         '''
@@ -2718,7 +2653,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             return
 
         if isinstance(active_sub_window.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
-            active_sub_window.widget().zoomIn()
+            active_sub_window.widget().zoom_in()
 
     def zoomOut(self):
         '''
@@ -2732,7 +2667,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             return
 
         if isinstance(active_sub_window.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
-            active_sub_window.widget().zoomOut()
+            active_sub_window.widget().zoom_out()
 
     # # File name should be passed
     def takeShot(self):
@@ -2746,7 +2681,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # print "CAMERA SETTINGS =",camera
                 self.screenshotManager.add_3d_screenshot(self.__fieldType[0], self.__fieldType[1], camera)
             else:
-                plane_position_tupple = self.mainGraphicsWidget.getPlane()
+                plane_position_tupple = self.mainGraphicsWidget.get_plane()
                 self.screenshotManager.add_2d_screenshot(self.__fieldType[0], self.__fieldType[1],
                                                          plane_position_tupple[0], plane_position_tupple[1])
 
@@ -3145,7 +3080,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             return
 
         if isinstance(activeSubWindow.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
-            activeSubWindow.widget().resetCamera()
+            activeSubWindow.widget().reset_camera()
 
     def __checkCC3DOutput(self, checked):
         '''
@@ -3170,7 +3105,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if self.lastActiveRealWindow is not None:
             try:
-                currently_active_field = self.lastActiveRealWindow.widget().fieldComboBox.currentText()
+                currently_active_field = self.lastActiveRealWindow.widget().field_combo_box.currentText()
             except AttributeError:
                 currently_active_field = ''
 

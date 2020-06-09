@@ -218,7 +218,7 @@ class CMLResultReader(SimulationThread.SimulationThread):
 
     @property
     def data_ready(self):
-        return self.newFileBeingLoaded
+        return not self.newFileBeingLoaded
 
     def read_simulation_data_non_blocking(self, file_number: int) -> bool:
         """
