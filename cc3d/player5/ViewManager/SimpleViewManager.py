@@ -9,6 +9,13 @@ import cc3d
 import datetime
 from cc3d.player5.Utilities.WebFetcher import WebFetcher
 
+try:
+    from cc3d.player5.Utilities.WebFetcherRequests import WebFetcherRequests
+
+    requests_web_fetcher_available = True
+except ImportError:
+    requests_web_fetcher_available = False
+
 gip = DefaultData.getIconPath
 
 MODULENAME = '------- SimpleViewManager: '
@@ -28,6 +35,8 @@ class SimpleViewManager(QObject):
             "ConcentrationLimitsOn": Configuration.getSetting("ConcentrationLimitsOn"),
             "ZoomFactor": Configuration.getSetting("ZoomFactor"),
         }
+
+        self.cc3d_updates_url = "http://www.compucell3d.org/current_version"
 
         # file actions
         self.open_act = None
@@ -483,10 +492,13 @@ class SimpleViewManager(QObject):
         else:
             print('WILL DO THE CHECK')
 
-        self.version_fetcher = WebFetcher(_parent=self)
-        self.version_fetcher.gotWebContentSignal.connect(self.process_version_check)
+        if requests_web_fetcher_available:
+            self.version_fetcher = WebFetcherRequests(_parent=self)
+        else:
+            self.version_fetcher = WebFetcher(_parent=self)
 
-        self.version_fetcher.fetch("http://www.compucell3d.org/current_version")
+        self.version_fetcher.gotWebContentSignal.connect(self.process_version_check)
+        self.version_fetcher.fetch(self.cc3d_updates_url)
 
     def extract_current_version(self, version_html_str):
         """
@@ -496,7 +508,7 @@ class SimpleViewManager(QObject):
         :return:
         """
         if str(version_html_str) == '':
-            print('Could not fetch "http://www.compucell3d.org/current_version webpage')
+            print(f'Could not fetch {self.cc3d_updates_url} webpage')
             return None, None
 
         current_version = None
