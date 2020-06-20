@@ -978,7 +978,7 @@ void ReactionDiffusionSolverFE::secreteOnContactSingleField(unsigned int idx) {
                             if (mitrTypeConst != contactCellMapMediumPtr->end()) {//OK to secrete, contact detected
                                 secrConstMedium = mitrTypeConst->second;
 
-                                concentrationField.setDirect(x, y, z, currentConcentration + secrConstMedium);
+                                concentrationField.setDirectSwap(x, y, z, currentConcentration + secrConstMedium);
                             }
                         }
                         continue;
@@ -1009,7 +1009,7 @@ void ReactionDiffusionSolverFE::secreteOnContactSingleField(unsigned int idx) {
                                 if (mitrTypeConst != contactCellMapPtr->end()) {//OK to secrete, contact detected
                                     secrConst = mitrTypeConst->second;
                                     //                         concentrationField->set(pt,currentConcentration+secrConst);
-                                    concentrationField.setDirect(x, y, z, currentConcentration + secrConst);
+                                    concentrationField.setDirectSwap(x, y, z, currentConcentration + secrConst);
                                 }
                             }
                         }
@@ -1142,24 +1142,24 @@ void ReactionDiffusionSolverFE::secreteSingleField(unsigned int idx) {
                     currentConcentration = concentrationField.getDirect(x, y, z);
 
                     if (secreteInMedium && !currentCellPtr) {
-                        concentrationField.setDirect(x, y, z, currentConcentration + secrConstMedium);
+                        concentrationField.setDirectSwap(x, y, z, currentConcentration + secrConstMedium);
                     }
 
                     if (currentCellPtr) {
                         mitr = secrData.typeIdSecrConstMap.find(currentCellPtr->type);
                         if (mitr != end_mitr) {
                             secrConst = mitr->second;
-                            concentrationField.setDirect(x, y, z, currentConcentration + secrConst);
+                            concentrationField.setDirectSwap(x, y, z, currentConcentration + secrConst);
                         }
                     }
 
                     if (doUptakeFlag) {
                         if (uptakeInMediumFlag && !currentCellPtr) {
                             if (currentConcentration*relativeUptakeRateInMedium > maxUptakeInMedium) {
-                                concentrationField.setDirect(x, y, z, concentrationField.getDirect(x, y, z) - maxUptakeInMedium);
+                                concentrationField.setDirectSwap(x, y, z, concentrationField.getDirect(x, y, z) - maxUptakeInMedium);
                             }
                             else {
-                                concentrationField.setDirect(x, y, z, concentrationField.getDirect(x, y, z) - currentConcentration*relativeUptakeRateInMedium);
+                                concentrationField.setDirectSwap(x, y, z, concentrationField.getDirect(x, y, z) - currentConcentration*relativeUptakeRateInMedium);
                             }
                         }
                         if (currentCellPtr) {
@@ -1167,12 +1167,12 @@ void ReactionDiffusionSolverFE::secreteSingleField(unsigned int idx) {
                             mitrUptake = secrData.typeIdUptakeDataMap.find(currentCellPtr->type);
                             if (mitrUptake != end_mitrUptake) {
                                 if (currentConcentration*mitrUptake->second.relativeUptakeRate > mitrUptake->second.maxUptake) {
-                                    concentrationField.setDirect(x, y, z, concentrationField.getDirect(x, y, z) - mitrUptake->second.maxUptake);
+                                    concentrationField.setDirectSwap(x, y, z, concentrationField.getDirect(x, y, z) - mitrUptake->second.maxUptake);
                                     //cerr<<" uptake concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<mitrUptake->second.maxUptake<<endl;
                                 }
                                 else {
                                     //cerr<<"concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<currentConcentration*mitrUptake->second.relativeUptakeRate<<endl;
-                                    concentrationField.setDirect(x, y, z, concentrationField.getDirect(x, y, z) - currentConcentration*mitrUptake->second.relativeUptakeRate);
+                                    concentrationField.setDirectSwap(x, y, z, concentrationField.getDirect(x, y, z) - currentConcentration*mitrUptake->second.relativeUptakeRate);
                                 }
                             }
                         }
@@ -1278,14 +1278,14 @@ void ReactionDiffusionSolverFE::secreteConstantConcentrationSingleField(unsigned
                     //currentConcentration = concentrationArray[x][y][z];
 
                     if (secreteInMedium && !currentCellPtr) {
-                        concentrationField.setDirect(x, y, z, secrConstMedium);
+                        concentrationField.setDirectSwap(x, y, z, secrConstMedium);
                     }
 
                     if (currentCellPtr) {
                         mitr = secrData.typeIdSecrConstConstantConcentrationMap.find(currentCellPtr->type);
                         if (mitr != end_mitr) {
                             secrConst = mitr->second;
-                            concentrationField.setDirect(x, y, z, secrConst);
+                            concentrationField.setDirectSwap(x, y, z, secrConst);
                         }
                     }
                 }
