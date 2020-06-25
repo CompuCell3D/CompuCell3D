@@ -313,24 +313,7 @@ class MVCDrawViewBase:
             return False
 
     def setParams(self):
-        # You can use either Build() method (256 color by default) or
-        # SetNumberOfTableValues() to allocate much more colors!
-        # self.lut = vtk.vtkLookupTable()
-        # # You need to explicitly call Build() when constructing the LUT by hand
-        # self.lut.Build()
-        # self.populateLookupTable()
         pass
-
-
-    def populateLookupTable(self):  # rwh: why is this method in both View & Model?
-
-        self.drawModel.populateLookupTable()  # have to update colors in model objects
-        colorMap = Configuration.getSetting("TypeColorMap")
-        for key in list(colorMap.keys()):
-            r = colorMap[key].red()
-            g = colorMap[key].green()
-            b = colorMap[key].blue()
-            self.lut.SetTableValue(key, self.toVTKColor(r), self.toVTKColor(g), self.toVTKColor(b), 1.0)
 
     def set_custom_camera(self, camera_settings):
         """

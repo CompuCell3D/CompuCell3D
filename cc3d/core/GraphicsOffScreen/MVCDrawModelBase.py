@@ -28,22 +28,9 @@ class MVCDrawModelBase:
 
         self.celltypeLUT = None
 
-    #        self.scaleGlyphsByVolume = False
-
     # should also set "periodic" boundary condition flag(s) (e.g. for drawing FPP links that wraparound)
 
     def setParams(self):
-        # # You can use either Build() method (256 color by default) or
-        # # SetNumberOfTableValues() to allocate much more colors!
-        # self.celltypeLUT = vtk.vtkLookupTable()
-        # # You need to explicitly call Build() when constructing the LUT by hand
-        # self.celltypeLUT.Build()
-        #
-        # self.populate_cell_type_lookup_table()
-
-        # self.populateLookupTable()
-
-        # self.dim = [100, 100, 1] # Default values
 
         # for FPP links (and offset also for cell glyphs)
         self.eps = 1.e-4  # not sure how small this should be (checking to see if cell volume -> 0)
@@ -61,6 +48,16 @@ class MVCDrawModelBase:
         self.lutBlueRed.Build()
 
     def get_type_lookup_table(self, scene_metadata=None):
+        try:
+            actual_screenshot = scene_metadata['actual_screenshot']
+        except KeyError:
+            actual_screenshot = False
+
+        # todo - optimize it to avoid generating it each time we take screenshot
+        if actual_screenshot:
+            cell_type_color_lookup_table = self.generate_cell_type_lookup_table(scene_metadata=scene_metadata, actual_screenshot=actual_screenshot)
+            return cell_type_color_lookup_table
+
         if self.celltypeLUT is not None:
             return self.celltypeLUT
 
@@ -68,49 +65,47 @@ class MVCDrawModelBase:
 
         return self.celltypeLUT
 
+    @staticmethod
+    def generate_cell_type_lookup_table(scene_metadata=None, actual_screenshot=False):
+        """
+        generates cell type color lookup table. Depending whether we got metadata for
+        actual screenshot or not we will use cell type color lookup table based on
+        settings or we will use colors defined int he screenshot description file
+        :param scene_metadata: scene metadata dict
+        :param actual_screenshot: flag that tells if we got metadata for actual screenshot
+        :return:
+        """
+        if actual_screenshot:
+            if scene_metadata is None:
+                color_map = Configuration.getSetting("TypeColorMap")
+            else:
+                color_map = scene_metadata["TypeColorMap"]
+        else:
+            color_map = Configuration.getSetting("TypeColorMap")
+
+        cell_type_color_lookup_table = vtk.vtkLookupTable()
+        # You need to explicitly call Build() when constructing the LUT by hand
+        cell_type_color_lookup_table.Build()
+        cell_type_color_lookup_table.SetNumberOfTableValues(len(color_map))
+        cell_type_color_lookup_table.SetNumberOfColors(len(color_map))
+
+        for type_id, color_obj in list(color_map.items()):
+            type_id = int(type_id)
+            rgba = to_vtk_rgb(color_obj=color_obj)
+
+            rgba.append(1.0)
+            cell_type_color_lookup_table.SetTableValue(type_id, *rgba)
+
+        return cell_type_color_lookup_table
+
     def populate_cell_type_lookup_table(self, scene_metadata=None):
         """
-        Populates lookup table
+        Populates "global" cell type color lookup table - based on stored settings
         :param scene_metadata:
         :return:
         """
-        if scene_metadata is None:
-            color_map = Configuration.getSetting("TypeColorMap")
-        else:
-            color_map = scene_metadata["TypeColorMap"]
 
-        self.celltypeLUT = vtk.vtkLookupTable()
-        # You need to explicitly call Build() when constructing the LUT by hand
-        self.celltypeLUT.Build()
-        self.celltypeLUT.SetNumberOfTableValues(len(color_map))
-        self.celltypeLUT.SetNumberOfColors(len(color_map))
-
-        for type_id, qt_color in list(color_map.items()):
-            rgba = to_vtk_rgb(qcolor_to_rgba(qt_color))
-            rgba.append(1.0)
-            self.celltypeLUT.SetTableValue(type_id, *rgba)
-
-    def populateLookupTable(self):
-        #        print MODULENAME,' populateLookupTable()'
-        colorMap = Configuration.getSetting("TypeColorMap")
-        #        print MODULENAME,' populateLookupTable():  len(colorMap)=',len(colorMap)
-        self.celltypeLUT.SetNumberOfTableValues(len(colorMap))
-        self.celltypeLUT.SetNumberOfColors(len(colorMap))
-        #        lutGlyph.SetTableValue(5, 1,0,0, 1.0)     # SetTableValue (vtkIdType indx, double r, double g, double b, double a=1.0)
-        #        lutGlyph.SetTableValue(8, 0,1,1, 1.0)     # SetTableValue (vtkIdType indx, double r, double g, double b, double a=1.0)
-        for key in list(colorMap.keys()):
-            r = colorMap[key].red()
-            g = colorMap[key].green()
-            b = colorMap[key].blue()
-            self.celltypeLUT.SetTableValue(key, self.toVTKColor(r), self.toVTKColor(g), self.toVTKColor(b), 1.0)
-        #            print "       type=",key," red=",r," green=",g," blue=",b
-        #            print "       type=",key," (VTK) red=",self.toVTKColor(r)," green=",self.toVTKColor(g)," blue=",self.toVTKColor(b)
-        # self.qvtkWidget.repaint()
-        self.celltypeLUT.Build()
-        self.celltypeLUTMax = self.celltypeLUT.GetNumberOfTableValues() - 1  # cell types = [0,max]
-        self.celltypeLUT.SetTableRange(0, self.celltypeLUTMax)
-
-    #        print "       celltypeLUTMax=",self.celltypeLUTMax
+        self.celltypeLUT = self.generate_cell_type_lookup_table(scene_metadata=scene_metadata)
 
     def init_lattice_type(self):
         """

@@ -2,6 +2,7 @@
 Class that specifies drawing scene properties/settings
 """
 
+
 class ScreenshotData(object):
     def __init__(self):
         self.screenshotName = ""
