@@ -449,9 +449,6 @@ def main_loop(sim, simthread, steppable_registry=None):
     if steppable_registry is not None and not init_using_restart_snapshot_enabled:
         steppable_registry.start()
 
-    if steppable_registry is not None:
-        steppable_registry.start()
-
     run_finish_flag = True
 
     restart_manager.prepare_restarter()
