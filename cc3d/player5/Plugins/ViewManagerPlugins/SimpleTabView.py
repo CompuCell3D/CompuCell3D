@@ -1367,6 +1367,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.plotManager.restore_plots_layout()
 
+        # restore steering panel
+        self.restore_steering_panel()
+
     def handleSimulationFinishedCMLResultReplay(self, _flag):
         '''
         callback - runs after CML replay mode finished. Cleans after vtk replay
@@ -2128,7 +2131,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         windows_layout = {}
 
-        for key, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+        window_list_to_save_layout = list(
+            self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL)) + list(
+            self.win_inventory.getWindowsItems(STEERING_PANEL_LABEL))
+
+        for key, win in list(self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL)):
             print('key, win = ', (key, win))
             widget = win.widget()
             # if not widget.allowSaveLayout: continue
@@ -2144,6 +2151,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             windows_layout[key] = gwd.toDict()
 
+        # handling plot windows
         try:
             print(self.plotManager.plotWindowList)
         except AttributeError:
@@ -2155,7 +2163,54 @@ class SimpleTabView(MainArea, SimpleViewManager):
         windows_layout_combined = windows_layout.copy()
         windows_layout_combined.update(plot_layout_dict)
 
+        # handling steerling panel
+        steering_panel_layout_dict = self.get_steering_panel_layout_dict()
+
+        windows_layout_combined.update(steering_panel_layout_dict)
+
         Configuration.setSetting('WindowsLayout', windows_layout_combined)
+
+    def get_steering_panel_layout_dict(self)->dict:
+        """
+        returns a dictionary with steering panel(s) layout specs - used in saving/restoring layout
+        :return:
+        """
+
+        windows_layout = {}
+
+        for winId, win in self.win_inventory.getWindowsItems(STEERING_PANEL_LABEL):
+
+            gwd = GraphicsWindowData()
+            gwd.sceneName = 'Steering Panel'
+            gwd.winType = 'steering_panel'
+            gwd.winSize = win.size()
+            gwd.winPosition = win.pos()
+
+            windows_layout[gwd.sceneName] = gwd.toDict()
+
+        return windows_layout
+
+    def restore_steering_panel(self):
+        """
+        Restores layout of the steering panel
+        :return:
+        """
+        windows_layout_dict = Configuration.getSetting('WindowsLayout')
+
+        if not windows_layout_dict:
+            return
+
+        for winId, win in self.win_inventory.getWindowsItems(STEERING_PANEL_LABEL):
+
+            window_data_dict = windows_layout_dict['Steering Panel']
+            gwd = GraphicsWindowData()
+            gwd.fromDict(window_data_dict)
+
+            if gwd.winType != 'steering_panel':
+                return
+
+            win.resize(gwd.winSize)
+            win.move(gwd.winPosition)
 
     def __simulationStop(self):
         '''

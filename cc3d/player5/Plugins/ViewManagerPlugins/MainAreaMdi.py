@@ -84,6 +84,7 @@ class PythonSteeringSubWindow(QMdiSubWindow):
         parent points to QMdiArea
         '''
         super(PythonSteeringSubWindow, self).__init__(_parent)
+        self.title = 'Steering Panel'
         self.parent = _parent
         self.main_widget = None
 
@@ -234,7 +235,7 @@ class MainArea(QMdiArea):
         mdi_sub_window = PythonSteeringSubWindow(self)
         mdi_sub_window.setWidget(widget)
         mdi_sub_window.setAttribute(Qt.WA_DeleteOnClose)
-        mdi_sub_window.setWindowTitle('Steering Panel')
+        mdi_sub_window.setWindowTitle(mdi_sub_window.title)
 
         QMdiArea.addSubWindow(self, mdi_sub_window)
 
