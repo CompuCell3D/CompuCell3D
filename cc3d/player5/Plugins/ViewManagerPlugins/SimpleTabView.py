@@ -34,7 +34,7 @@ from cc3d.player5.Plugins.ViewManagerPlugins.ScreenshotDescriptionBrowser import
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
 from cc3d.player5 import Graphics
 from cc3d.core import XMLUtils
-from .PlotManagerSetup import createPlotManager
+from .PlotManagerSetup import create_plot_manager
 from .WidgetManager import WidgetManager
 from cc3d.cpp import PlayerPython
 from cc3d.core.CMLFieldHandler import CMLFieldHandler
@@ -120,8 +120,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # object responsible for creating/managing plot windows so they're accessible from steppable level
 
-        self.plotManager = createPlotManager(self)
-        self.plotManager = createPlotManager(self)
+        self.plotManager = create_plot_manager(self)
+        self.plotManager = create_plot_manager(self)
 
         self.widgetManager = WidgetManager(self)
 
@@ -742,7 +742,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.redoCompletedStepSignal.connect(self.simulation.redoCompletedStep)
             self.stopRequestSignal.connect(self.simulation.stop)
 
-            self.plotManager.initSignalAndSlots()
+            self.plotManager.init_signal_and_slots()
             self.widgetManager.initSignalAndSlots()
 
             self.fieldStorage = PlayerPython.FieldStorage()

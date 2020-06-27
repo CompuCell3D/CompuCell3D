@@ -43,7 +43,7 @@ def add_new_plot_window(title='', xAxisTitle='', yAxisTitle='', xScaleType='line
         return pwd
 
     try:
-        pW = view_manager.plotManager.getNewPlotWindow()
+        plot_window = view_manager.plotManager.get_new_plot_window()
     except:
         full_options_dict = {
             'title': title,
@@ -56,16 +56,16 @@ def add_new_plot_window(title='', xAxisTitle='', yAxisTitle='', xScaleType='line
         if config_options:
             full_options_dict.update(config_options)
 
-        pW = view_manager.plotManager.getNewPlotWindow(full_options_dict)
+        plot_window = view_manager.plotManager.get_new_plot_window(full_options_dict)
 
-    if not pW:
+    if not plot_window:
         raise AttributeError(
             'Missing plot modules. Windows/OSX Users: Make sure you have numpy installed. '
             'For instructions please visit www.compucell3d.org/Downloads. '
             'Linux Users: Make sure you have numpy and PyQwt installed. '
             'Please consult your linux distributioun manual pages on how to best install those packages')
 
-    return pW
+    return plot_window
 
 
 def create_extra_field(field_name: str, field_type: int) -> ExtraFieldAdapter:
