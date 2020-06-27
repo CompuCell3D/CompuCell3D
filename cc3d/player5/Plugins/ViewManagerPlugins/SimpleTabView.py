@@ -2201,8 +2201,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
             return
 
         for winId, win in self.win_inventory.getWindowsItems(STEERING_PANEL_LABEL):
+            try:
+                window_data_dict = windows_layout_dict['Steering Panel']
+            except KeyError:
+                continue
 
-            window_data_dict = windows_layout_dict['Steering Panel']
             gwd = GraphicsWindowData()
             gwd.fromDict(window_data_dict)
 
