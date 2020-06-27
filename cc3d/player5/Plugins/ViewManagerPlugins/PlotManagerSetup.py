@@ -34,7 +34,7 @@ class PlotManagerBase:
     def restore_plots_layout(self):
         pass
 
-    def getPlotWindowsLayoutDict(self):
+    def get_plot_windows_layout_dict(self):
         return {}
 
 

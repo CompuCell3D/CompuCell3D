@@ -118,29 +118,29 @@ class PlotManager(QtCore.QObject):
             plot_window.move(gwd.winPosition)
             plot_window.setWindowTitle(plotWindowInterface.title)
 
-    def getPlotWindowsLayoutDict(self):
-        windowsLayout = {}
+    def get_plot_windows_layout_dict(self):
+        windows_layout = {}
 
         for winId, win in self.vm.win_inventory.getWindowsItems(PLOT_WINDOW_LABEL):
-            plotFrameWidget = win.widget()
-            plotInterface = plotFrameWidget.plotInterface()  # getting weakref
-            if not plotInterface:
+            plot_frame_widget = win.widget()
+            plot_interface = plot_frame_widget.plotInterface()  # getting weakref
+            if not plot_interface:
                 continue
 
             gwd = GraphicsWindowData()
-            gwd.sceneName = plotInterface.title
+            gwd.sceneName = plot_interface.title
             gwd.winType = 'plot'
-            plotWindow = plotInterface.plotWindow
-            mdiPlotWindow = win
+            plot_window = plot_interface.plotWindow
+            mdi_plot_window = win
             # mdiPlotWindow = self.vm.findMDISubWindowForWidget(plotWindow)
-            print('plotWindow=', plotWindow)
-            print('mdiPlotWindow=', mdiPlotWindow)
-            gwd.winSize = mdiPlotWindow.size()
-            gwd.winPosition = mdiPlotWindow.pos()
+            print('plotWindow=', plot_window)
+            print('mdiPlotWindow=', mdi_plot_window)
+            gwd.winSize = mdi_plot_window.size()
+            gwd.winPosition = mdi_plot_window.pos()
 
-            windowsLayout[gwd.sceneName] = gwd.toDict()
+            windows_layout[gwd.sceneName] = gwd.toDict()
 
-        return windowsLayout
+        return windows_layout
 
 
     def processRequestForNewPlotWindow(self, _mutex, obj):

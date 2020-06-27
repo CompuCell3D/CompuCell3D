@@ -553,6 +553,7 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
 
     if not steppable_registry is None and not init_using_restart_snapshot_enabled:
         steppable_registry.start()
+        simthread.steppablePostStartPrep()
 
     run_finish_flag = True
 
@@ -561,8 +562,6 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
 
     if init_using_restart_snapshot_enabled:
         steppable_registry.restart_steering_panel()
-
-    simthread.setScreenUpdateFrequency()
 
     cur_step = beginning_step
 

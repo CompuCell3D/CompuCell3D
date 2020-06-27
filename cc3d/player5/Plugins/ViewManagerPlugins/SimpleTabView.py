@@ -1596,7 +1596,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # we do not save windows layout for simulation replay
         if self.__viewManagerType != "CMLResultReplay":
-            self.__saveWindowsLayout()
+            self.__save_windows_layout()
 
         self.simulation.drawMutex.lock()
         self.simulation.drawMutex.unlock()
@@ -2120,13 +2120,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.run_act.setEnabled(True)
             self.pause_act.setEnabled(False)
 
-    def __saveWindowsLayout(self):
+    def __save_windows_layout(self):
         """
         Saves windows layout in the _settings.xml
         :return:None
         """
 
-        windowsLayout = {}
+        windows_layout = {}
 
         for key, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             print('key, win = ', (key, win))
@@ -2142,27 +2142,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
             gwd.winPosition = win.pos()
             gwd.winSize = win.size()
 
-            # print 'getGraphicsWindowData=', gwd
-            # print 'toDict=', gwd.toDict()
+            windows_layout[key] = gwd.toDict()
 
-            windowsLayout[key] = gwd.toDict()
-
-        # print 'AFTER self.fieldTypes = ', self.fieldTypes
         try:
             print(self.plotManager.plotWindowList)
         except AttributeError:
             print("plot manager does not have plotWindowList member")
 
-        plotLayoutDict = self.plotManager.getPlotWindowsLayoutDict()
-        # for key, gwd in plotLayoutDict.iteritems():
-        #     print 'key=', key
-        #     print 'gwd=', gwd
+        plot_layout_dict = self.plotManager.get_plot_windows_layout_dict()
 
         # combining two layout dicts
-        windowsLayoutCombined = windowsLayout.copy()
-        windowsLayoutCombined.update(plotLayoutDict)
-        # print 'windowsLayoutCombined=',windowsLayoutCombined
-        Configuration.setSetting('WindowsLayout', windowsLayoutCombined)
+        windows_layout_combined = windows_layout.copy()
+        windows_layout_combined.update(plot_layout_dict)
+
+        Configuration.setSetting('WindowsLayout', windows_layout_combined)
 
     def __simulationStop(self):
         '''
@@ -2176,7 +2169,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # we do not save windows layout for simulation replay
         if self.__viewManagerType != "CMLResultReplay":
-            self.__saveWindowsLayout()
+            self.__save_windows_layout()
 
         if self.__viewManagerType == "CMLResultReplay":
             self.cmlReplayManager.set_run_state(state=STOP_STATE)
@@ -2189,10 +2182,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.cmlReplayManager.initial_data_read.disconnect(self.initializeSimulationViewWidget)
             self.cmlReplayManager.subsequent_data_read.disconnect(self.handleCompletedStep)
             self.cmlReplayManager.final_data_read.disconnect(self.handleSimulationFinished)
-
-        # if not self.singleSimulation:
-        #     self.singleSimulation = True
-        #     self.parameterScanFile = ''
 
         if not self.pause_act.isEnabled():
             self.__stopSim()
