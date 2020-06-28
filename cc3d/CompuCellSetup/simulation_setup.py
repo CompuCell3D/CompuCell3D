@@ -614,11 +614,12 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
 
     if run_finish_flag:
         # # we emit request to finish simulation
-        # simthread.emitFinishRequest()
+        simthread.emitFinishRequest()
         # # then we wait for GUI thread to unlock the finishMutex - it will only happen when all tasks
         # in the GUI thread are completed (especially those that need simulator object to stay alive)
         print("CALLING FINISH")
 
+        simthread.waitForFinishingTasksToConclude()
         simthread.waitForPlayerTaskToFinish()
         steppable_registry.finish()
         sim.cleanAfterSimulation()

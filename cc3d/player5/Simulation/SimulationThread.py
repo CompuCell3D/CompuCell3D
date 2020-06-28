@@ -192,6 +192,10 @@ class SimulationThread(QtCore.QThread):
         self.sem.acquire()
         self.sem.release()
 
+    def waitForFinishingTasksToConclude(self):
+        self.finishMutex.lock()
+        self.finishMutex.unlock()
+
     # added for compatibility reasons
     def setStopSimulation(self, _flag):
         self.stopped = _flag
