@@ -62,8 +62,8 @@ try:
     if not appended:
         sys.path.append(python_module_path)
     from cc3d import CompuCellSetup
-except:
-    print('STView: sys.path=', sys.path)
+except (KeyError, ImportError):
+    print('Ignoring initial imports')
 
 # *********** TODO
 # 1. add example with simplified plots
@@ -1062,6 +1062,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.stop_act.triggered.connect(self.__simulationStop)
 
         self.restore_default_settings_act.triggered.connect(self.restore_default_settings)
+        self.restore_default_global_settings_act.triggered.connect(self.restore_default_global_settings)
 
         self.open_act.triggered.connect(self.__openSim)
         self.open_lds_act.triggered.connect(self.__openLDSFile)
@@ -2223,10 +2224,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         Configuration.replace_custom_settings_with_defaults()
 
+    @staticmethod
+    def restore_default_global_settings():
+        """
+        Removes global settings
+        :return:
+        """
+
+        Configuration.restore_default_global_settings()
+
     def quit(self, error_code=0):
         """Quit the application."""
-        # self.closeEvent(None)
-        # QtCore.QCoreApplication.instance().quit()
         print('error_code = ', error_code)
         QCoreApplication.instance().exit(error_code)
         print('AFTER QtCore.QCoreApplication.instance()')

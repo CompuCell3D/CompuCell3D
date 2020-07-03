@@ -9,6 +9,13 @@ import cc3d
 import datetime
 from cc3d.player5.Utilities.WebFetcher import WebFetcher
 
+try:
+    from cc3d.player5.Utilities.WebFetcherRequests import WebFetcherRequests
+
+    requests_web_fetcher_available = True
+except ImportError:
+    requests_web_fetcher_available = False
+
 gip = DefaultData.getIconPath
 
 MODULENAME = '------- SimpleViewManager: '
@@ -29,6 +36,8 @@ class SimpleViewManager(QObject):
             "ZoomFactor": Configuration.getSetting("ZoomFactor"),
         }
 
+        self.cc3d_updates_url = "http://www.compucell3d.org/current_version"
+
         # file actions
         self.open_act = None
         self.open_lds_act = None
@@ -41,6 +50,7 @@ class SimpleViewManager(QObject):
         self.pause_act = None
         self.stop_act = None
         self.restore_default_settings_act = None
+        self.restore_default_global_settings_act = None
 
         # visualization actions
         self.cells_act = None
@@ -122,6 +132,7 @@ class SimpleViewManager(QObject):
         menu.addSeparator()
         # --------------------
         menu.addAction(self.restore_default_settings_act)
+        menu.addAction(self.restore_default_global_settings_act)
 
         return menu
 
@@ -323,7 +334,8 @@ class SimpleViewManager(QObject):
         self.stop_act = QAction(QIcon(gip("stop.png")), "&Stop", self)
         self.stop_act.setShortcut(Qt.CTRL + Qt.Key_X)
 
-        self.restore_default_settings_act = QAction("Restore Default Settings", self)
+        self.restore_default_settings_act = QAction("Restore Default Settings For Current Project", self)
+        self.restore_default_global_settings_act = QAction("Restore Default Global Settings", self)
 
     def init_visual_actions(self):
         """
@@ -483,10 +495,13 @@ class SimpleViewManager(QObject):
         else:
             print('WILL DO THE CHECK')
 
-        self.version_fetcher = WebFetcher(_parent=self)
-        self.version_fetcher.gotWebContentSignal.connect(self.process_version_check)
+        if requests_web_fetcher_available:
+            self.version_fetcher = WebFetcherRequests(_parent=self)
+        else:
+            self.version_fetcher = WebFetcher(_parent=self)
 
-        self.version_fetcher.fetch("http://www.compucell3d.org/current_version")
+        self.version_fetcher.gotWebContentSignal.connect(self.process_version_check)
+        self.version_fetcher.fetch(self.cc3d_updates_url)
 
     def extract_current_version(self, version_html_str):
         """
@@ -496,7 +511,7 @@ class SimpleViewManager(QObject):
         :return:
         """
         if str(version_html_str) == '':
-            print('Could not fetch "http://www.compucell3d.org/current_version webpage')
+            print(f'Could not fetch {self.cc3d_updates_url} webpage')
             return None, None
 
         current_version = None
