@@ -53,7 +53,6 @@ class WidgetManager(QtCore.QObject):
         # self.item_data = panel_data
         item_data = panel_data
 
-        print('THIS IS ADD STEERING PANEL')
         # from steering.SteeringPanelView import SteeringPanelView
         # from steering.SteeringPanelModel import SteeringPanelModel
         # from steering.SteeringEditorDelegate import SteeringEditorDelegate
@@ -95,38 +94,11 @@ class WidgetManager(QtCore.QObject):
         return mdiWindow
 
     def processRequestForNewWidget(self, _mutex, obj_name, obj_data=None):
-        print('obj_name=', obj_name)
 
         if not self.vm.simulationIsRunning:
             return
 
-        # mdiWindow = self.vm.addPythonSteeringPanel()
-
         mdiWindow = self.addPythonSteeringPanel(obj_data)
         self.windowList.append(mdiWindow)
-        # self.windowList.append(None)
         _mutex.unlock()
 
-        # newWindow = PlotFrameWidget(self.vm, **obj)
-        #
-        # newWindow.show()
-        #
-        # mdiPlotWindow = self.vm.addSubWindow(newWindow)
-        #
-        # mdiPlotWindow.setWindowTitle(obj['title'])
-        #
-        # suggested_win_pos = self.vm.suggested_window_position()
-        #
-        # if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
-        #     mdiPlotWindow.move(suggested_win_pos)
-        #
-        # self.vm.lastActiveRealWindow = mdiPlotWindow
-        #
-        # print 'mdiPlotWindow=', mdiPlotWindow
-        # print 'newWindow=', newWindow
-        # newWindow.show()
-        #
-        # plotWindowInterface = PlotWindowInterface(newWindow)
-        # self.plotWindowList.append(plotWindowInterface)  # store plot window interface in the window list
-
-        # self.plotWindowMutex.unlock()

@@ -327,54 +327,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.windowMapper.setMapping(action, win)
             counter += 1
 
-    def addPythonSteeringPanel(self):
-        '''
-        callback method to create Steering Panel window with sliders
-        :return: {None or mdiWindow}
-        '''
-        if not self.simulationIsRunning:
-            return
-
-        print('THIS IS ADD STEERING PANEL')
-        from steering.SteeringParam import SteeringParam
-        from steering.SteeringPanelView import SteeringPanelView
-        from steering.SteeringPanelModel import SteeringPanelModel
-        from steering.SteeringEditorDelegate import SteeringEditorDelegate
-
-        self.item_data = []
-        self.item_data.append(SteeringParam(name='vol', val=25, min_val=0, max_val=100, widget_name='slider'))
-        self.item_data.append(
-            SteeringParam(name='lam_vol', val=2.0, min_val=0, max_val=10.0, decimal_precision=2, widget_name='slider'))
-
-        self.item_data.append(
-            SteeringParam(name='lam_vol_enum', val=2.0, min_val=0, max_val=10.0, decimal_precision=2,
-                          widget_name='slider'))
-
-        self.steering_window = QWidget()
-        layout = QHBoxLayout()
-
-        # cdf = get_data_frame()
-        self.steering_model = SteeringPanelModel()
-        self.steering_model.update(self.item_data)
-        # model.update_type_conv_fcn(get_types())
-
-        self.steering_table_view = SteeringPanelView()
-        self.steering_table_view.setModel(self.steering_model)
-
-        delegate = SteeringEditorDelegate()
-        self.steering_table_view.setItemDelegate(delegate)
-
-        layout.addWidget(self.steering_table_view)
-        self.steering_window.setLayout(layout)
-        self.steering_table_view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
-        mdiWindow = self.addSteeringSubWindow(self.steering_window)
-
-        # IMPORTANT show() method needs to be called AFTER creating MDI subwindow
-        self.steering_window.show()
-
-        return mdiWindow
-
     def handle_vis_field_created(self, field_name: str, field_type: int) -> None:
         """
         slot that handles new visualization field creation. This mechanism is necessary to handle fields
@@ -1089,7 +1041,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.screenshot_description_browser_act.triggered.connect(self.open_screenshot_description_browser)
 
         # window menu actions
-        self.python_steering_panel_act.triggered.connect(self.addPythonSteeringPanel)
         self.new_graphics_window_act.triggered.connect(self.add_new_graphics_window)
 
         self.tile_act.triggered.connect(self.tileSubWindows)
