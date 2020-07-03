@@ -1,48 +1,44 @@
-# from PlotWindowInterface import PlotWindowInterface
-# -*- coding: utf-8 -*-
 from .PlotWindowInterface import PlotWindowInterface
 from cc3d.player5.Graphics.GraphicsWindowData import GraphicsWindowData
 from PyQt5 import QtCore
 from cc3d.player5.Graphics.PlotFrameWidget import PlotFrameWidget
-# from . import PlotManagerSetup
 import cc3d.player5.Configuration as Configuration
 from cc3d.core.enums import *
+from cc3d.player5.Plugins.ViewManagerPlugins.PlotManagerBase import PlotManagerBase
 
 
-class PlotManager(QtCore.QObject):
+class PlotManager(QtCore.QObject, PlotManagerBase):
 
     newPlotWindowSignal = QtCore.pyqtSignal(QtCore.QMutex, object)
 
-    def __init__(self, _viewManager=None, _plotSupportFlag=False):
+    def __init__(self, view_manager=None, plot_support_flag=False):
         QtCore.QObject.__init__(self, None)
-        self.vm = _viewManager
-        self.plotsSupported = _plotSupportFlag
+        PlotManagerBase.__init__(self, view_manager, plot_support_flag)
+
+        self.vm = view_manager
+        self.plotsSupported = plot_support_flag
         self.plotWindowList = []
         self.plotWindowMutex = QtCore.QMutex()
         self.signalsInitialized = False
 
-    # def getPlotWindow(self):
-    #     if self.plotsSupported:
-    #         return PlotWindow()
-    #     else:
-    #         return PlotWindowBase()
-
     def reset(self):
         self.plotWindowList = []
 
-    def initSignalAndSlots(self):
-        # since initSignalAndSlots can be called in SimTabView multiple times (after each simulation restart) we have to ensure that signals are connected only once
-        # otherwise there will be an avalanche of signals - each signal for each additional simulation run this will cause lots of extra windows to pop up
+    def init_signal_and_slots(self):
+        # since initSignalAndSlots can be called in SimTabView multiple times
+        # (after each simulation restart) we have to ensure that signals are connected only once
+        # otherwise there will be an avalanche of signals - each signal for each additional
+        # simulation run this will cause lots of extra windows to pop up
 
         if not self.signalsInitialized:
-            self.newPlotWindowSignal.connect(self.processRequestForNewPlotWindow)
+            self.newPlotWindowSignal.connect(self.process_request_for_new_plot_window)
             self.signalsInitialized = True
-            # self.connect(self,SIGNAL("newPlotWindow(QtCore.QMutex)"),self.processRequestForNewPlotWindow)
 
     def restore_plots_layout(self):
-        ''' This function restores plot layout - it is called from CompuCellSetup.py inside mainLoopNewPlayer function
-        :return: None
-        '''
+        """
+        This function restores plot layout - it is called from CompuCellSetup.py inside mainLoopNewPlayer function
+        :return:
+        """
 
         windows_layout_dict = Configuration.getSetting('WindowsLayout')
 
@@ -52,15 +48,15 @@ class PlotManager(QtCore.QObject):
         for winId, win in self.vm.win_inventory.getWindowsItems(PLOT_WINDOW_LABEL):
             plot_frame_widget = win.widget()
 
-            plot_interface = plot_frame_widget.plotInterface()  # plot_frame_widget.plotInterface is a weakref
+            # plot_frame_widget.plotInterface is a weakref
+            plot_interface = plot_frame_widget.plotInterface()
 
-            if not plot_interface:  # if weakref to plot_interface is None we ignore such window
+            # if weakref to plot_interface is None we ignore such window
+            if not plot_interface:
                 continue
 
             if str(plot_interface.title) in list(windows_layout_dict.keys()):
                 window_data_dict = windows_layout_dict[str(plot_interface.title)]
-
-
 
                 gwd = GraphicsWindowData()
                 gwd.fromDict(window_data_dict)
@@ -71,11 +67,16 @@ class PlotManager(QtCore.QObject):
                 win.move(gwd.winPosition)
                 win.setWindowTitle(plot_interface.title)
 
-    def getNewPlotWindow(self, obj=None):
-
+    def get_new_plot_window(self, obj=None):
+        """
+        Returns recently added plot window
+        :param obj:
+        :return:
+        """
 
         if obj is None:
-            message = "You are most likely using old syntax for scientific plots. When adding new plot window please use " \
+            message = "You are most likely using old syntax for scientific plots. " \
+                      "When adding new plot window please use " \
                       "the following updated syntax:" \
                       "self.pW = self.addNewPlotWindow" \
                       "(_title='Average Volume And Surface',_xAxisTitle='MonteCarlo Step (MCS)'," \
@@ -86,96 +87,61 @@ class PlotManager(QtCore.QObject):
         self.plotWindowMutex.lock()
 
         self.newPlotWindowSignal.emit(self.plotWindowMutex, obj)
-        # processRequestForNewPlotWindow will be called and it will unlock drawMutex but before it will finish runnning (i.e. before the new window is actually added)we must make sure that getNewPlotwindow does not return
+        # processRequestForNewPlotWindow will be called and it will
+        # unlock drawMutex but before it will finish runnning
+        # (i.e. before the new window is actually added)we must make sure that getNewPlotwindow does not return
         self.plotWindowMutex.lock()
         self.plotWindowMutex.unlock()
-        return self.plotWindowList[-1]  # returning recently added window
 
-    def restoreSingleWindow(self, plotWindowInterface):
-        '''
-        Restores size and position of a single, just-added plot window
-        :param plotWindowInterface: an insance of PlotWindowInterface - can be fetchet from PlotFrameWidget using PlotFrameWidgetInstance.plotInterface
-        :return: None
-        '''
+        # returning recently added window
+        return self.plotWindowList[-1]
 
-        windows_layout_dict = Configuration.getSetting('WindowsLayout')
-        # print 'windowsLayoutDict=', windowsLayoutDict
-
-        if not windows_layout_dict:
-            return
-
-        if str(plotWindowInterface.title) in list(windows_layout_dict.keys()):
-            window_data_dict = windows_layout_dict[str(plotWindowInterface.title)]
-
-            gwd = GraphicsWindowData()
-            gwd.fromDict(window_data_dict)
-
-            if gwd.winType != 'plot':
-                return
-
-            plot_window = self.vm.lastActiveRealWindow
-            plot_window.resize(gwd.winSize)
-            plot_window.move(gwd.winPosition)
-            plot_window.setWindowTitle(plotWindowInterface.title)
-
-    def getPlotWindowsLayoutDict(self):
-        windowsLayout = {}
+    def get_plot_windows_layout_dict(self):
+        windows_layout = {}
 
         for winId, win in self.vm.win_inventory.getWindowsItems(PLOT_WINDOW_LABEL):
-            plotFrameWidget = win.widget()
-            plotInterface = plotFrameWidget.plotInterface()  # getting weakref
-            if not plotInterface:
+            plot_frame_widget = win.widget()
+            # getting weakref
+            plot_interface = plot_frame_widget.plotInterface()
+            if not plot_interface:
                 continue
 
             gwd = GraphicsWindowData()
-            gwd.sceneName = plotInterface.title
+            gwd.sceneName = plot_interface.title
             gwd.winType = 'plot'
-            plotWindow = plotInterface.plotWindow
-            mdiPlotWindow = win
-            # mdiPlotWindow = self.vm.findMDISubWindowForWidget(plotWindow)
-            print('plotWindow=', plotWindow)
-            print('mdiPlotWindow=', mdiPlotWindow)
-            gwd.winSize = mdiPlotWindow.size()
-            gwd.winPosition = mdiPlotWindow.pos()
+            plot_window = plot_interface.plotWindow
+            mdi_plot_window = win
+            gwd.winSize = mdi_plot_window.size()
+            gwd.winPosition = mdi_plot_window.pos()
 
-            windowsLayout[gwd.sceneName] = gwd.toDict()
+            windows_layout[gwd.sceneName] = gwd.toDict()
 
-        return windowsLayout
+        return windows_layout
 
-
-    def processRequestForNewPlotWindow(self, _mutex, obj):
-        print('obj=', obj)
-        #        print MODULENAME,"processRequestForNewPlotWindow(): GOT HERE mutex=",_mutex
-        if not self.plotsSupported:
-            return PlotWindowInterfaceBase(None)  # dummy PlotwindowInterface
-
+    def process_request_for_new_plot_window(self, _mutex, obj):
 
         if not self.vm.simulationIsRunning:
             return
 
-        newWindow = PlotFrameWidget(self.vm, **obj)
+        new_window = PlotFrameWidget(self.vm, **obj)
 
-        newWindow.show()
+        new_window.show()
 
-        mdiPlotWindow = self.vm.addSubWindow(newWindow)
+        mdi_plot_window = self.vm.addSubWindow(new_window)
 
-        mdiPlotWindow.setWindowTitle(obj['title'])
+        mdi_plot_window.setWindowTitle(obj['title'])
 
         suggested_win_pos = self.vm.suggested_window_position()
 
         if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
-            mdiPlotWindow.move(suggested_win_pos)
+            mdi_plot_window.move(suggested_win_pos)
 
-        self.vm.lastActiveRealWindow = mdiPlotWindow
+        self.vm.lastActiveRealWindow = mdi_plot_window
 
-        print('mdiPlotWindow=', mdiPlotWindow)
-        print('newWindow=', newWindow)
-        newWindow.show()
+        new_window.show()
 
-        plotWindowInterface = PlotWindowInterface(newWindow)
-        self.plotWindowList.append(plotWindowInterface)  # store plot window interface in the window list
-
-        # self.restoreSingleWindow(plotWindowInterface)
+        plot_window_interface = PlotWindowInterface(new_window)
+        # store plot window interface in the window list
+        self.plotWindowList.append(plot_window_interface)
 
         self.plotWindowMutex.unlock()
-

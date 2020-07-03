@@ -106,6 +106,7 @@ class SubWindow(QFrame):
 class PythonSteeringSubWindow(QFrame):
     def __init__(self, _parent=None):
         super(PythonSteeringSubWindow, self).__init__(_parent)
+        self.title = 'Steering Panel'
         self.parent = _parent
         self.main_widget = None
 

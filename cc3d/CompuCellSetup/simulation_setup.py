@@ -449,9 +449,6 @@ def main_loop(sim, simthread, steppable_registry=None):
     if steppable_registry is not None and not init_using_restart_snapshot_enabled:
         steppable_registry.start()
 
-    if steppable_registry is not None:
-        steppable_registry.start()
-
     run_finish_flag = True
 
     restart_manager.prepare_restarter()
@@ -553,6 +550,7 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
 
     if not steppable_registry is None and not init_using_restart_snapshot_enabled:
         steppable_registry.start()
+        simthread.steppablePostStartPrep()
 
     run_finish_flag = True
 
@@ -561,8 +559,6 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
 
     if init_using_restart_snapshot_enabled:
         steppable_registry.restart_steering_panel()
-
-    simthread.setScreenUpdateFrequency()
 
     cur_step = beginning_step
 
@@ -618,11 +614,12 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
 
     if run_finish_flag:
         # # we emit request to finish simulation
-        # simthread.emitFinishRequest()
+        simthread.emitFinishRequest()
         # # then we wait for GUI thread to unlock the finishMutex - it will only happen when all tasks
         # in the GUI thread are completed (especially those that need simulator object to stay alive)
         print("CALLING FINISH")
 
+        simthread.waitForFinishingTasksToConclude()
         simthread.waitForPlayerTaskToFinish()
         steppable_registry.finish()
         sim.cleanAfterSimulation()
