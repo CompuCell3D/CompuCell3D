@@ -64,12 +64,12 @@ void MitosisSimplePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	potts = simulator->getPotts();
 	bool pluginAlreadyRegisteredFlag;
 	Plugin *plugin=Simulator::pluginManager.get("VolumeTracker",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
-	cerr<<"GOT HERE BEFORE CALLING INIT"<<endl;
+	
 	if(!pluginAlreadyRegisteredFlag)
 		plugin->init(simulator);
 
 	Plugin *pluginCOM=Simulator::pluginManager.get("CenterOfMass",&pluginAlreadyRegisteredFlag); //this will load CenterOfMass plugin if it is not already loaded
-	cerr<<"GOT HERE BEFORE CALLING INIT"<<endl;
+	
 	if(!pluginAlreadyRegisteredFlag)
 		pluginCOM->init(simulator);
 

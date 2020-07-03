@@ -44,8 +44,7 @@ void VolumePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
 
 	pUtils=simulator->getParallelUtils();
 	pluginName=_xmlData->getAttribute("Name");
-
-	cerr<<"GOT HERE BEFORE CALLING INIT"<<endl;
+	
 	if(!pluginAlreadyRegisteredFlag)
 		plugin->init(simulator);
 	potts->registerEnergyFunctionWithName(this,toString());
@@ -124,8 +123,7 @@ void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		else //in case users put garbage xml use changeEnergyByCellId
 			functionType=BYCELLID;
 	}
-	Automaton *automaton=potts->getAutomaton();
-	cerr<<"automaton="<<automaton<<endl;
+	Automaton *automaton=potts->getAutomaton();	
 
 	switch(functionType){
 		case BYCELLID:

@@ -241,7 +241,7 @@ def get_core_simulation_objects():
     init_modules(simulator, persistent_globals.cc3d_xml_2_obj_converter)
 
     # # this loads all plugins/steppables - need to recode it to make loading on-demand only
-    CompuCell.initializePlugins()
+    CompuCell.initializePlugins(simulator)
 
     simulator.initializeCC3D()
 

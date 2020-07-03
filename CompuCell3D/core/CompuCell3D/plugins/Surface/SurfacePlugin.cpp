@@ -41,8 +41,7 @@ void SurfacePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
 
 
 	bool pluginAlreadyRegisteredFlag;
-	SurfaceTrackerPlugin *plugin=(SurfaceTrackerPlugin*)Simulator::pluginManager.get("SurfaceTracker",&pluginAlreadyRegisteredFlag); //this will load SurfaceTracker plugin if it is not already loaded
-	cerr<<"GOT HERE BEFORE CALLING INIT"<<endl;
+	SurfaceTrackerPlugin *plugin=(SurfaceTrackerPlugin*)Simulator::pluginManager.get("SurfaceTracker",&pluginAlreadyRegisteredFlag); //this will load SurfaceTracker plugin if it is not already loaded	
 	if(!pluginAlreadyRegisteredFlag)
 		plugin->init(simulator);
 
@@ -115,8 +114,7 @@ void SurfacePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		else //in case users put garbage xml use changeEnergyByCellId
 			functionType=BYCELLID;
 	}
-	Automaton *automaton=potts->getAutomaton();
-	cerr<<"automaton="<<automaton<<endl;
+	Automaton *automaton=potts->getAutomaton();	
 
 	switch(functionType){
 		case BYCELLID:

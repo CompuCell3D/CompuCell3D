@@ -106,8 +106,7 @@ void UniformFieldInitializer::layOutCells(const UniformFieldInitializerData & _i
 	if (boxDim.y % size) itDim.y += 1;
 	itDim.z = boxDim.z / size;
 	if (boxDim.z % size) itDim.z += 1;
-
-	cerr << "itDim=" << itDim << endl;
+	
 	Point3D pt;
 	Point3D cellPt;
 	CellG *cell;

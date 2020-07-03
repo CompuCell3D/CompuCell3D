@@ -63,7 +63,10 @@
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 #include <CompuCell3D/ClassRegistry.h>
 #include <CompuCell3D/CC3DEvents.h>
+
+#include <Logger/Logger.h>
 #include <CompuCell3D/Simulator.h>
+
 
 #include <CompuCell3D/PluginManager.h>
 #include <CompuCell3D/Potts3D/CellInventory.h>
@@ -1383,27 +1386,27 @@ public:
 
 
   // todo - plugin manager
-  void initializePlugins() {
-	  cerr << "initialize plugin fcn" << endl;
-    // Set the path and load the plugins
-	  //char * cellTypePluginPath = "d:/Program Files/cc3d_py3/lib/CompuCell3DPlugins/CC3DCellType.dll";
-	  //Simulator::pluginManager.loadLibrary(cellTypePluginPath);
-	  //Simulator::pluginManager.loadLibraries(cellTypePluginPath);
+    void initializePlugins(Simulator * simulator) {
 
-    char *steppablePath = getenv("COMPUCELL3D_STEPPABLE_PATH");
-    cerr<<"steppablePath="<<steppablePath<<endl;
-    if (steppablePath) Simulator::steppableManager.loadLibraries(steppablePath);
-	  
-    char *pluginPath = getenv("COMPUCELL3D_PLUGIN_PATH");
-    cerr<<"pluginPath="<<pluginPath<<endl;
-    cerr<<"THIS IS JUST BEFORE LOADING LIBRARIES"<<endl;
-      
-   
-    if (pluginPath) Simulator::pluginManager.loadLibraries(pluginPath);
+        Logger * logger = simulator->getLoggerPtr();
+        logger->_info("initialize plugin fcn");
 
-    //cerr<<" AFTER LOAD LIBRARIES"<<endl;
-    // Display the plugins that were loaded
-  }
+
+        char *steppablePath = getenv("COMPUCELL3D_STEPPABLE_PATH");
+
+        logger->_info("steppablePath=");
+        logger->_info(steppablePath);
+
+        if (steppablePath) Simulator::steppableManager.loadLibraries(steppablePath);
+
+        char *pluginPath = getenv("COMPUCELL3D_PLUGIN_PATH");
+        logger->_info("pluginPath=");
+        logger->_info(pluginPath);
+
+        if (pluginPath) Simulator::pluginManager.loadLibraries(pluginPath);
+
+
+    }
 
 
 

@@ -144,17 +144,10 @@ void BlobFieldInitializer::init(Simulator *simulator,  CC3DXMLElement * _xmlData
 		initData.center.x=regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("x");
 		initData.center.y=regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("y");
 		initData.center.z=regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("z");
-
-		cerr<<"radius="<<initData.radius<<" gap="<<initData.gap<<" types="<<initData.typeNamesString<<endl;
+		
 		blobInitializerData.push_back(initData);
 	}
 
-
-
-
-
-
-	cerr<<"GOT HERE BEFORE EXIT"<<endl;
 
 }
 
@@ -200,7 +193,6 @@ void BlobFieldInitializer::layOutCells(const BlobFieldInitializerData & _initDat
 
 
 	Dim3D itDim=getBlobDimensions(dim,size);
-	cerr<<"itDim="<<itDim<<endl;
 
 
 	Point3D pt;
@@ -285,13 +277,11 @@ void BlobFieldInitializer::start() {
 	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
 	ASSERT_OR_THROW("initField() Cell field G cannot be null!", cellFieldG);
 
-	cerr<<"********************BLOB INIT***********************"<<endl;
+	
 	Dim3D dim = cellFieldG->getDim();
 	if(blobInitializerData.size()!=0){
-		for (int i = 0 ; i < blobInitializerData.size(); ++i){
-			cerr<<"GOT HERE"<<endl;
+		for (int i = 0 ; i < blobInitializerData.size(); ++i){	
 			layOutCells(blobInitializerData[i]);
-			//          exit(0);
 		}
 	}else{
 		oldStyleInitData.center=Point3D(dim.x / 2,dim.y / 2,dim.z / 2);
@@ -338,11 +328,7 @@ void BlobFieldInitializer::initializeEngulfment(){
 
 	topId=cellTypePluginPtr->getTypeId(enData.topType);
 	bottomId=cellTypePluginPtr->getTypeId(enData.bottomType);
-
-	cerr<<"topId="<<(int)topId<<" bottomId="<<(int)bottomId<<" enData.engulfmentCutoff="<<enData.engulfmentCutoff<<" enData.engulfmentCoordinate="<<enData.engulfmentCoordinate<<endl;
-
-
-
+	
 
 	WatchableField3D<CellG *> *cellFieldG =(WatchableField3D<CellG *> *) potts->getCellFieldG();
 	Dim3D dim = cellFieldG->getDim();
@@ -432,95 +418,3 @@ void BlobFieldInitializer::initializeCellTypesCellSort(){
 
 }
 
-
-//void BlobFieldInitializer::readXML(XMLPullParser &in) {
-//  in.skip(TEXT);
-//  
-//   
-//   string cellSortOpt;
-//
-//   pd=&bipd;
-//   
-//  while (in.check(START_ELEMENT)) {
-//    if (in.getName() == "Region"){
-//      cerr<<"Inside Region Definition"<<endl;
-//      in.match(START_ELEMENT);
-//      in.skip(TEXT);
-//
-//      BlobFieldInitializerData initData;
-//
-//      while (in.check(START_ELEMENT)){
-//         
-//         if (in.getName() == "Radius"){
-//            initData.radius=BasicString::parseUInteger(in.matchSimple());;
-//         }else if (in.getName() == "Center"){
-//            initData.center.readXML(in);
-//            in.matchSimple();
-//         }else if (in.getName() == "Types"){
-//            initData.typeNamesString=in.matchSimple();
-//         }else if (in.getName() == "Width"){
-//            initData.width = BasicString::parseUInteger(in.matchSimple());
-//            cerr<<"width="<<initData.width <<endl;
-//         }else if (in.getName() == "Gap"){
-//            initData.gap = BasicString::parseUInteger(in.matchSimple());
-//         }else {
-//            throw BasicException(string("Unexpected element '") + in.getName() + 
-//			   "'!", in.getLocation());
-//         }
-//         
-//         in.skip(TEXT);
-//      }
-//      in.match(END_ELEMENT);
-//      //Checking whether input values are sane
-//      //apending to the init data vector
-//      bipd.initDataVec.push_back(initData);
-////       exit(0);
-//    }
-//    else if (in.getName() == "Gap") {
-//      bipd.gap = BasicString::parseUInteger(in.matchSimple());
-//
-//    } else if (in.getName() == "Width") {
-//      bipd.width = BasicString::parseUInteger(in.matchSimple());
-//
-//    } else if (in.getName() == "CellSortInit") {
-//
-//      bipd.cellSortOpt=in.matchSimple();
-//      
-//
-//    }
-//    else if(in.getName()=="Engulfment"){
-//      bipd.engulfmentData.engulfment=true;
-//
-//      if(in.findAttribute("BottomType")>=0){
-//            bipd.engulfmentData.bottomType=in.getAttribute("BottomType").value;
-//      }
-//      if(in.findAttribute("TopType")>=0){
-//            bipd.engulfmentData.topType=in.getAttribute("TopType").value;
-//      }
-//
-//      if(in.findAttribute("EngulfmentCutoff")>=0){
-//            bipd.engulfmentData.engulfmentCutoff=BasicString::parseUInteger(in.getAttribute("EngulfmentCutoff").value);
-//      }
-//
-//
-//      if(in.findAttribute("EngulfmentCoordinate")>=0){
-//            bipd.engulfmentData.engulfmentCoordinate=in.getAttribute("EngulfmentCoordinate").value;
-//      }
-//
-//      in.matchSimple();
-//    }
-//    else if (in.getName() == "Radius") {
-//      bipd.radius = BasicString::parseUInteger(in.matchSimple());
-//    }
-//    else {
-//      throw BasicException(string("Unexpected element '") + in.getName() + 
-//			   "'!", in.getLocation());
-//    }
-//    
-//
-//    in.skip(TEXT);
-//  }
-//}
-//
-//void BlobFieldInitializer::writeXML(XMLSerializer &out) {
-//}

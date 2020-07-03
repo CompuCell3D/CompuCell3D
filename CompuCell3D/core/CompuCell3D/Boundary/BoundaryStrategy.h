@@ -143,28 +143,21 @@ namespace CompuCell3D {
 		}
 		static BoundaryStrategy *getInstance() {
 			using namespace std;
-			if (!singleton) {
-				cerr << "CONSTRUCTING an instance" << endl;
+			if (!singleton) {				
 				singleton = new BoundaryStrategy();
 			}
 
 			return singleton;
 		}
 
-		static void destroy() {
-			cerr << "destroy fcn: destroying bondary strategy" << endl;
+		static void destroy() {			
 			if (singleton)
-			{
-				cerr << "will destroy boundary strategy singleton = " << singleton << endl;
-
+			{				
 				delete singleton;
-				singleton = 0;
-
-				cerr << "BoundaryStrategy singleton is DEAD!\n";
+				singleton = 0;				
 			}
 			else
-			{
-				cerr << "BoundaryStrategy singleton WAS NOT DeSTROYED BECAUSE IT IS DEAD!\n";
+			{				
 			}
 
 		}

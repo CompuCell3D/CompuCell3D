@@ -54,8 +54,7 @@ void MitosisPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
 
      bool pluginAlreadyRegisteredFlag;
-   Plugin *plugin=Simulator::pluginManager.get("VolumeTracker",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
-	cerr<<"GOT HERE BEFORE CALLING INIT"<<endl;
+   Plugin *plugin=Simulator::pluginManager.get("VolumeTracker",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded	
 	if(!pluginAlreadyRegisteredFlag)
       plugin->init(simulator);
 
