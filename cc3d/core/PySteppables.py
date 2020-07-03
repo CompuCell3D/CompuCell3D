@@ -1198,7 +1198,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         ok_flag = self.volume_tracker_plugin.checkIfOKToResize(CompuCell.Dim3D(new_size[0], new_size[1], new_size[2]),
                                                                CompuCell.Dim3D(shift_vec[0], shift_vec[1],
                                                                                shift_vec[2]))
-        print('ok_flag=', ok_flag)
         if not ok_flag:
             warnings.warn('WARNING: Lattice Resize Denied. '
                           'The proposed lattice resizing/shift would lead to disappearance of cells.', Warning)

@@ -388,7 +388,6 @@ class CC3DSimulationDataHandler:
                 os.path.join(self.cc3dSimulationData.basePath, 'Simulation', settings_data.SETTINGS_FILE_NAME))
 
             self.cc3dSimulationData.playerSettingsResource.type = "PlayerSettings"
-            print('GOT CUSTOM SETTINGS : ', self.cc3dSimulationData.playerSettingsResource.path)
 
         # Get the version of the file
         if root_element.findAttribute('version'):

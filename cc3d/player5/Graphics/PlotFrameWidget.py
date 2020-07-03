@@ -15,10 +15,7 @@ class PlotFrameWidget(QtGui.QFrame):
         QtGui.QFrame.__init__(self, parent)
 
         self.plot_params = kwds
-        print('kwds=', kwds)
 
-        # self.plotWidget=CartesianPlot()
-        # self.plotWidget = pg.PlotWidget(background='w')
         self.plotWidget = pg.PlotWidget()
 
         try:

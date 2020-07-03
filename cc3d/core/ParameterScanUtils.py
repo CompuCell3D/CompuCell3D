@@ -133,18 +133,14 @@ class XMLHandler:
         
         self.lineToElem[self.lineNumber]=_elem
         self.lineToAccessPath[self.lineNumber]=copy.deepcopy(self.accesspath)
-        # print dir(_elem.children)
-        # print 'len(childElemList)=',len(childElemList)
-        
+
         if _elem.children.size():
-            self.xmlString+='>'
+            self.xmlString += '>'
             if _elem.cdata:
-                self.xmlString+=spaces+_elem.cdata
+                self.xmlString += spaces+_elem.cdata
             self.newline()                
-            
-            
-            
-            childElemList=XMLUtils.CC3DXMLListPy(_elem.children) 
+
+            childElemList = XMLUtils.CC3DXMLListPy(_elem.children)
             for childElem in childElemList:
                 self.writeXMLElement(childElem,_indent+self.indentOffset)
             self.xmlString+=spaces+'</'+_elem.name+'>'

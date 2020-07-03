@@ -133,8 +133,6 @@ class PlotManager(QtCore.QObject):
             plotWindow = plotInterface.plotWindow
             mdiPlotWindow = win
             # mdiPlotWindow = self.vm.findMDISubWindowForWidget(plotWindow)
-            print('plotWindow=', plotWindow)
-            print('mdiPlotWindow=', mdiPlotWindow)
             gwd.winSize = mdiPlotWindow.size()
             gwd.winPosition = mdiPlotWindow.pos()
 
@@ -144,7 +142,6 @@ class PlotManager(QtCore.QObject):
 
 
     def processRequestForNewPlotWindow(self, _mutex, obj):
-        print('obj=', obj)
         #        print MODULENAME,"processRequestForNewPlotWindow(): GOT HERE mutex=",_mutex
         if not self.plotsSupported:
             return PlotWindowInterfaceBase(None)  # dummy PlotwindowInterface
@@ -168,8 +165,6 @@ class PlotManager(QtCore.QObject):
 
         self.vm.lastActiveRealWindow = mdiPlotWindow
 
-        print('mdiPlotWindow=', mdiPlotWindow)
-        print('newWindow=', newWindow)
         newWindow.show()
 
         plotWindowInterface = PlotWindowInterface(newWindow)

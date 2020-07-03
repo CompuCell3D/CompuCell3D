@@ -63,7 +63,6 @@ class SBMLSolverHelper(object):
             'absolute': 'absolute_tolerance',
             'steps': 'maximum_num_steps'
         }
-        print(dir(self))
         if not roadrunner_available:
             sbml_solver_api = ['add_free_floating_sbml', 'add_sbml_to_cell', 'add_sbml_to_cell_ids',
                                'add_sbml_to_cell_types',
