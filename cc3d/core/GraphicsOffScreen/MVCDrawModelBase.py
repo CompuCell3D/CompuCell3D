@@ -1,10 +1,9 @@
 import vtk
 import cc3d.player5.Configuration as Configuration
 from cc3d import CompuCellSetup
-from cc3d.player5.Utilities.utils import to_vtk_rgb, qcolor_to_rgba
+from cc3d.player5.Utilities.utils import to_vtk_rgb
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
-MODULENAME = '----- MVCDrawModelBase.py: '
 
 
 class MVCDrawModelBase:
@@ -12,9 +11,6 @@ class MVCDrawModelBase:
 
         (self.minCon, self.maxCon) = (0, 0)
 
-        from weakref import ref
-        # # # self.graphicsFrameWidget=graphicsFrameWidget
-        # # # self.qvtkWidget=self.graphicsFrameWidget.qvtkWidget
         self.currentDrawingFunction = None
         self.fieldTypes = None
         self.currentDrawingParameters = None
@@ -55,7 +51,8 @@ class MVCDrawModelBase:
 
         # todo - optimize it to avoid generating it each time we take screenshot
         if actual_screenshot:
-            cell_type_color_lookup_table = self.generate_cell_type_lookup_table(scene_metadata=scene_metadata, actual_screenshot=actual_screenshot)
+            cell_type_color_lookup_table = self.generate_cell_type_lookup_table(scene_metadata=scene_metadata,
+                                                                                actual_screenshot=actual_screenshot)
             return cell_type_color_lookup_table
 
         if self.celltypeLUT is not None:
@@ -159,7 +156,6 @@ class MVCDrawModelBase:
         self.fieldtype = _fieldType
 
     def setDrawingFunctionName(self, _fcnName):
-        # print "\n\n\n THIS IS _fcnName=",_fcnName," self.drawingFcnName=",self.drawingFcnName
 
         if self.drawingFcnName != _fcnName:
             self.drawingFcnHasChanged = True
@@ -168,15 +164,10 @@ class MVCDrawModelBase:
         self.drawingFcnName = _fcnName
 
     def clearDisplay(self):
-        print(MODULENAME, "     clearDisplay() ")
         for actor in self.currentActors:
             self.graphicsFrameWidget.ren.RemoveActor(self.currentActors[actor])
 
         self.currentActors.clear()
-
-    def Render(self):  # never called?!
-        #        print MODULENAME,"     --------- Render() "
-        self.graphicsFrameWidget.Render()
 
     def is_lattice_hex(self, drawing_params):
         """
@@ -228,10 +219,7 @@ class MVCDrawModelBase:
         txtprop.SetFontFamilyToArial()
         txtprop.SetFontSize(10)
         txtprop.SetColor(1, 1, 1)
-        # txt.SetDisplayPosition(200, 200)
         min_max_actor.SetPosition(20, 20)
-
-
 
     def get_min_max_metadata(self, scene_metadata, field_name):
         """
@@ -246,7 +234,7 @@ class MVCDrawModelBase:
         :return: {dict}
         """
         out_dict = {}
-        if set(['MinRangeFixed', "MaxRangeFixed", 'MinRange', 'MaxRange']).issubset(set(scene_metadata.keys())):
+        if {'MinRangeFixed', "MaxRangeFixed", 'MinRange', 'MaxRange'}.issubset(set(scene_metadata.keys())):
 
             min_range_fixed = scene_metadata['MinRangeFixed']
             max_range_fixed = scene_metadata['MaxRangeFixed']
@@ -371,33 +359,15 @@ class MVCDrawModelBase:
         """
         raise NotImplementedError()
 
-    # def initConFieldActors(self, _actors): pass
-    #
-    # def initVectorFieldCellLevelActors(self, _fillVectorFieldFcn, _actors): pass
-    #
-    # def initVectorFieldActors(self, _actors): pass
-    #
-    # def initScalarFieldCellLevelActors(self, _actors): pass
-    #
-    # def initScalarFieldActors(self, _fillScalarField, _actors): pass
-
     def prepareOutlineActors(self, _actors):
         pass
 
     def getCamera(self):
         return self.ren.GetActiveCamera()
 
-    # def initSimArea(self, _bsd):
-    # fieldDim   = _bsd.fieldDim
-    # # sim.getPotts().getCellFieldG().getDim()
-    # self.setCamera(fieldDim)
-
     def configsChanged(self):
         pass
 
-    # Transforms interval [0, 255] to [0, 1]
-    def toVTKColor(self, val):
-        return float(val) / 255
 
     def largestDim(self, dim):
         ldim = dim[0]
@@ -406,56 +376,6 @@ class MVCDrawModelBase:
                 ldim = dim[i]
 
         return ldim
-
-
-    # self.graphicsFrameWidget.Render()
-
-    # Do I need this method?
-    # Calculates min and max concentration
-    def findMinMax(self, conField, dim):
-        import CompuCell
-        pt = CompuCell.Point3D()
-
-        maxCon = 0
-        minCon = 0
-        for k in range(dim[2]):
-            for j in range(dim[1]):
-                for i in range(dim[0]):
-                    pt.x = i
-                    pt.y = j
-                    pt.z = k
-
-                    con = float(conField.get(pt))
-
-                    if maxCon < con:
-                        maxCon = con
-
-                    if minCon > con:
-                        minCon = con
-
-        # Make sure that the concentration is positive
-        if minCon < 0:
-            minCon = 0
-
-        return (minCon, maxCon)
-
-    # Just returns min and max concentration
-    def conMinMax(self):
-        return (self.minCon, self.maxCon)
-
-    def frac(self, con, minCon, maxCon):
-        if maxCon == minCon:
-            return 0.0
-        else:
-            frac = (con - minCon) / (maxCon - minCon)
-
-        if frac > 1.0:
-            frac = 1.0
-
-        if frac < 0.0:
-            frac = 0.0
-
-        return frac
 
     def prepareAxesActors(self, _mappers, _actors):
         pass

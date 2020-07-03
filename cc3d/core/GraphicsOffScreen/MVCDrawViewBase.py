@@ -288,14 +288,6 @@ class MVCDrawViewBase:
         return self.ren.GetActiveCamera()
 
 
-    def toVTKColor(self, val):
-        """
-        Transforms interval [0, 255] to [0, 1]
-        :param val:{int}
-        :return: {float}
-        """
-        return float(val) / 255
-
     def largestDim(self, dim):
         ldim = dim[0]
         for i in range(len(dim)):
