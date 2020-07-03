@@ -18,7 +18,7 @@
 # todo - see if updateFieldsParams() function is needed
 # todo - see if we need syncPreferences
 
-
+import os
 from .SettingUtils import *
 from .SettingUtils import _global_setting_path
 
@@ -86,6 +86,19 @@ def replace_custom_settings_with_defaults():
     Configuration.myCustomSettings, Configuration.myCustomSettingsPath = loadSettings(
         Configuration.myCustomSettingsPath)
 
+
+def restore_default_global_settings():
+    """
+    Removes global settings
+    :return:
+    """
+
+    default_settings, default_settings_path = loadDefaultSettings()
+    copy_settings(src_setting_path=default_settings_path,
+                  dst_setting_dir=os.path.dirname(Configuration.myGlobalSettingsPath))
+
+    Configuration.myGlobalSettings, Configuration.myGlobalSettingsPath = loadSettings(
+        Configuration.myGlobalSettingsPath)
 
 def getSettingNameList():
     """
