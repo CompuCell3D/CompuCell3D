@@ -1416,11 +1416,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :param _flag:bool - unused
         :return:None
         '''
-        print('INSIDE handleSimulationFinishedRegular')
-        self.__cleanAfterSimulation()
 
-        # if not self.singleSimulation:
-        #     self.launchNextParameterScanRun()
+        self.__cleanAfterSimulation()
 
     def handleSimulationFinished(self, _flag):
         '''
@@ -2130,7 +2127,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         windowsLayout = {}
 
         for key, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
-            print('key, win = ', (key, win))
             widget = win.widget()
             # if not widget.allowSaveLayout: continue
             if widget.is_screenshot_widget:

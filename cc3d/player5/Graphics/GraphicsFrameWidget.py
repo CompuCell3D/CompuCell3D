@@ -626,7 +626,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         :return:
         """
         tvw = self.parentWidget()
-        print('UPDATE getGraphicsWindowData')
 
         gwd = GraphicsWindowData()
         active_camera = self.get_active_camera()
