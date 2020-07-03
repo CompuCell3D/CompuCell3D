@@ -50,7 +50,7 @@ class MVCDrawModelBase:
     def get_type_lookup_table(self, scene_metadata=None):
         try:
             actual_screenshot = scene_metadata['actual_screenshot']
-        except KeyError:
+        except (KeyError, TypeError):
             actual_screenshot = False
 
         # todo - optimize it to avoid generating it each time we take screenshot
