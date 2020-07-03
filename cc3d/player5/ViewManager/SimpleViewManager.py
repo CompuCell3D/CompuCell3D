@@ -50,7 +50,7 @@ class SimpleViewManager(QObject):
         self.pause_act = None
         self.stop_act = None
         self.restore_default_settings_act = None
-        self.remove_global_settings_act = None
+        self.restore_default_global_settings_act = None
 
         # visualization actions
         self.cells_act = None
@@ -132,7 +132,7 @@ class SimpleViewManager(QObject):
         menu.addSeparator()
         # --------------------
         menu.addAction(self.restore_default_settings_act)
-        menu.addAction(self.remove_global_settings_act)
+        menu.addAction(self.restore_default_global_settings_act)
 
         return menu
 
@@ -335,7 +335,7 @@ class SimpleViewManager(QObject):
         self.stop_act.setShortcut(Qt.CTRL + Qt.Key_X)
 
         self.restore_default_settings_act = QAction("Restore Default Settings For Current Project", self)
-        self.remove_global_settings_act = QAction("Remove Global Settings", self)
+        self.restore_default_global_settings_act = QAction("Restore Default Global Settings", self)
 
     def init_visual_actions(self):
         """
