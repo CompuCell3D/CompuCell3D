@@ -631,7 +631,6 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         sim.cleanAfterSimulation()
 
         # # sim.unloadModules()
-        print("CALLING UNLOAD MODULES NEW PLAYER")
         if simthread is not None:
             simthread.sendStopSimulationRequest()
             simthread.simulationFinishedPostEvent(True)
