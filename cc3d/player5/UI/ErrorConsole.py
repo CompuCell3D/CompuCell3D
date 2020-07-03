@@ -265,8 +265,6 @@ class SyntaxErrorLexer(QsciLexerCustom):
         self.baseFont = Qsci.QsciLexerCustom.setDefaultFont(self, self.baseFont)
         self.baseFont = Qsci.QsciLexerCustom.defaultFont(self, 0)
         self.baseFont.setFixedPitch(True)
-        print("self.baseFont.fixedPitch()=", self.baseFont.fixedPitch())
-        # sys.exit()
 
         self.baseFontBold = QFont(self.baseFont)
         self.baseFontBold.setBold(True)

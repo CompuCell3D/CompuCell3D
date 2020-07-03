@@ -62,8 +62,8 @@ try:
     if not appended:
         sys.path.append(python_module_path)
     from cc3d import CompuCellSetup
-except:
-    print('STView: sys.path=', sys.path)
+except (KeyError, ImportError):
+    print('Ignoring initial imports')
 
 # *********** TODO
 # 1. add example with simplified plots
