@@ -442,18 +442,30 @@ public:
 
     ~StreamImpl() {
         using namespace std;
+
+        //std::map<LogMessageType, logger_fcn_t>::iterator mitr;
+
+        //mitr = 
+
+
         try {
+            
             logger_fcn_map.at(this->logMessageType)(this->logger_p, this->logString);
+            //cerr << "OK (this->logMessageType= " << (int) this->logMessageType << endl;
+            //cerr << "this->logString " << this->logString << endl;
         }
         catch (const out_of_range &e)
         {
+            //cerr << "logger_fcn_map.size()= " << logger_fcn_map.size() << endl;
             cerr << "Exception in at method while logging " << e.what() << endl;
+            //cerr << "(this->logMessageType= " << (int) this->logMessageType << endl;
+            //cerr << "this->logString " << this->logString << endl;
         }
-
-
     }
 
     void setLogLevel(const LogMessageType & logMessageType = LogMessageType::DEBUG_LOG) {
+        using namespace std;
+        //cerr << "setting setLogLevel = " << (int)logMessageType << endl;
         this->logMessageType = logMessageType;
     }
 
@@ -471,13 +483,12 @@ private:
         { LogMessageType::TRACE_LOG , [](Logger * logger_p, std::string& text) { logger_p->_trace(text.c_str()); } },
         { LogMessageType::ALARM_LOG , [](Logger * logger_p, std::string& text) { logger_p->_alarm(text.c_str()); } },
         { LogMessageType::BUFFER_LOG , [](Logger * logger_p, std::string& text) { logger_p->_buffer(text.c_str()); } },
-
     };
 
 private:
     Logger *logger_p;
     std::string logString;
-    LogMessageType  logMessageType;
+    LogMessageType  logMessageType= LogMessageType::DEBUG_LOG;
 
 };
 
