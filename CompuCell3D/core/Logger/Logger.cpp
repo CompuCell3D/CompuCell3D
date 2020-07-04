@@ -443,29 +443,17 @@ public:
     ~StreamImpl() {
         using namespace std;
 
-        //std::map<LogMessageType, logger_fcn_t>::iterator mitr;
-
-        //mitr = 
-
-
-        try {
-            
+        try {            
             logger_fcn_map.at(this->logMessageType)(this->logger_p, this->logString);
-            //cerr << "OK (this->logMessageType= " << (int) this->logMessageType << endl;
-            //cerr << "this->logString " << this->logString << endl;
         }
         catch (const out_of_range &e)
         {
-            //cerr << "logger_fcn_map.size()= " << logger_fcn_map.size() << endl;
             cerr << "Exception in at method while logging " << e.what() << endl;
-            //cerr << "(this->logMessageType= " << (int) this->logMessageType << endl;
-            //cerr << "this->logString " << this->logString << endl;
         }
     }
 
     void setLogLevel(const LogMessageType & logMessageType = LogMessageType::DEBUG_LOG) {
         using namespace std;
-        //cerr << "setting setLogLevel = " << (int)logMessageType << endl;
         this->logMessageType = logMessageType;
     }
 
