@@ -5,6 +5,7 @@
 #include <PublicUtilities/StringUtils.h>
 #include <CompuCell3D/Automaton/Automaton.h>
 #include <XMLUtils/CC3DXMLElement.h>
+#include <Logger/Logger.h>
 
 using namespace CompuCell3D;
 using namespace std;
@@ -145,10 +146,21 @@ void DiffusionData::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
         for(int i = 0; i< fieldDependencies.size(); i++) {
             cout << "fieldDependencies: " << fieldDependencies[i] << endl;
         }
-        cerr<<*this<<endl;
-
+        //cerr<<*this<<endl;
+        this->log();
 }
 
+void DiffusionData::log() {
+    if (!this->logger) {
+        return;
+    }
+    Logger & log = *(this->logger);
+    log<<"DiffusionConstant: "<<diffConst;
+    log <<"DecayConstant: "<<decayConst;
+    log <<"DeltaX: "<<deltaX;
+    log<<"DeltaT: "<<deltaT;
+    log<<"fieldName: "<<fieldName;
+}
 
 bool DiffusionData::getVariableDiffusionCoeeficientFlag(){return variableDiffusionCoefficientFlag;}
 

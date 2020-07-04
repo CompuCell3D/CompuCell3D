@@ -76,7 +76,7 @@ class PDESOLVERS_EXPORT DiffusionSecretionDiffusionFEFieldTupple{
 template <class Cruncher>
 class PDESOLVERS_EXPORT DiffusionSolverFE : public Steppable
 {
-
+    Logger * logger;
   template <class CruncherFoo>
   friend class PDESOLVERS_EXPORT DiffusionSolverSerializer;
 

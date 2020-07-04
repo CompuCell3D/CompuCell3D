@@ -787,7 +787,7 @@ void ParallelUtilsOpenMP::partitionLattice(unsigned int minDimGridPoints,unsigne
 							}
 
 							pottsPartitionVec[gid][subgridId]=make_pair(minSubDim,maxSubDim);
-                            log<<" GID="<< gid<< " subgridId="<< subgridId<< " minSubDim="<< minSubDim<< " maxSubDim=", maxSubDim;
+                            log<<" GID="<< gid<< " subgridId="<< subgridId<< " minSubDim="<< minSubDim<< " maxSubDim="<< maxSubDim;
 							++subgridId;
 
 						}

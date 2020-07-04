@@ -64,6 +64,8 @@ void ChemotaxisPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
 	sim = simulator;
 	potts = simulator->getPotts();
+    logger = simulator->getLoggerPtr();
+    
 
   
   BasicClassAccessorBase * chemotaxisDataAccessorPtr=&chemotaxisDataAccessor;
@@ -107,36 +109,27 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	//}	
 
 	std::vector<ChemotaxisFieldData> chemotaxisFieldDataVec; 
-
+    Logger & log = *logger;
 
 	if(_xmlData->findElement("Algorithm")){
 		chemotaxisAlgorithm=_xmlData->getFirstElement("Algorithm")->getText();
 		changeToLower(chemotaxisAlgorithm);
 	}
 	
-
 	//Parsing ChemicalField Sections
 	CC3DXMLElementList chemicalFieldXMlList=_xmlData->getElements("ChemicalField");
-
-	//cerr<<"chemicalFieldXMlList.size()="<<chemicalFieldXMlList.size()<<endl;
-
+	
 
 	for (int i  = 0 ; i < chemicalFieldXMlList.size() ; ++i){
 
-
-
-
 		chemotaxisFieldDataVec.push_back(ChemotaxisFieldData());
 		ChemotaxisFieldData & cfd=chemotaxisFieldDataVec[chemotaxisFieldDataVec.size()-1];
-
-		//cfd.chemicalFieldSource = chemicalFieldXMlList[i]->getAttribute("Source");// deprecated
+		
 		cfd.chemicalFieldName =chemicalFieldXMlList[i]->getAttribute("Name");
 
 		cfd.vecChemotaxisData.clear();
 		//Parsing Chemotaxis by type elements
 		CC3DXMLElementList chemotactByTypeXMlList=chemicalFieldXMlList[i]->getElements("ChemotaxisByType");
-
-		//cerr<<"chemotactByTypeXMlList.size()="<<chemotactByTypeXMlList.size()<<endl;
 
 		for (int j = 0 ; j < chemotactByTypeXMlList.size() ; ++j){
 			cfd.vecChemotaxisData.push_back(ChemotaxisData());
@@ -217,8 +210,7 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 					cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactTowards");
 				}else if (chemotactByTypeXMlList[j]->findAttribute("ChemotactAtInterfaceWith")){// both keywords are OK
 					cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactAtInterfaceWith");
-				}
-				//cerr<<"cd.typeName="<<cd.typeName<<" cd.lambda="<<endl;
+				}				
 				
 				
 				//jfg:
@@ -245,22 +237,16 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	unsigned char maxType=0;
 	//first will find max type value
 
-//	cerr<<"chemotaxisFieldDataVec[0].vecChemotaxisData.size()="<<chemotaxisFieldDataVec[0].vecChemotaxisData.size()<<endl;
 
 	for(int i = 0 ; i < chemotaxisFieldDataVec.size() ; ++ i)
 		for(int j = 0 ; j < chemotaxisFieldDataVec[i].vecChemotaxisData.size() ; ++j){
 			if( automaton->getTypeId(chemotaxisFieldDataVec[i].vecChemotaxisData[j].typeName) > maxType )
 				maxType = automaton->getTypeId(chemotaxisFieldDataVec[i].vecChemotaxisData[j].typeName);
 		}
-
-		//make copy vector vecVecChemotaxisData 
-		//    std::vector<std::vector<ChemotaxisData> > vecVecChemotaxisDataTmp=vecVecChemotaxisData;
 		vecVecChemotaxisData.clear();
 
-		cerr<<"maxType="<<(int)maxType<<endl;
+		log<<"maxType="<<(int)maxType;
 		//now will allocate vectors based on maxType - this will result in t=0 lookup time later...
-		//    cerr<<"vecVecChemotaxisDataTmp.size()="<<vecVecChemotaxisDataTmp.size()<<endl;
-		//    cerr<<"(int)maxType+1="<<(int)maxType+1<<endl;
 		vecVecChemotaxisData.assign(chemotaxisFieldDataVec.size() , vector<ChemotaxisData>((int)maxType+1,ChemotaxisData() ) );
 
 
@@ -342,13 +328,13 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::simpleChemotaxisFormula;
 				}
 
-				cerr<<"i="<<i<<" cellTypeId="<<cellTypeId<<endl;
-				vecVecChemotaxisData[i][cellTypeId].outScr();
+				log<<"i="<<i<<" cellTypeId="<<cellTypeId;
+				vecVecChemotaxisData[i][cellTypeId].outScr(log);
 
 			}
 
 			//Now need to initialize field pointers
-			cerr<<"chemicalFieldSourceVec.size()="<<chemotaxisFieldDataVec.size()<<endl;
+			log<<"chemicalFieldSourceVec.size()="<<chemotaxisFieldDataVec.size();
 			fieldVec.clear();
 			fieldVec.assign(chemotaxisFieldDataVec.size(),0);//allocate fieldVec
 
@@ -369,9 +355,7 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 					}
 				}
-	
 			}
-
 }
 
 

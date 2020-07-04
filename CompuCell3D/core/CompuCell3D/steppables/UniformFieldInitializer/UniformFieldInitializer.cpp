@@ -34,6 +34,8 @@ UniformFieldInitializer::UniformFieldInitializer() :
 void UniformFieldInitializer::init(Simulator *simulator, CC3DXMLElement * _xmlData) {
 	sim = simulator;
 	potts = simulator->getPotts();
+    logger = simulator->getLoggerPtr();
+
 	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
 	ASSERT_OR_THROW("initField() Cell field G cannot be null!", cellFieldG);
 	Dim3D dim = cellFieldG->getDim();
@@ -73,14 +75,13 @@ void UniformFieldInitializer::init(Simulator *simulator, CC3DXMLElement * _xmlDa
 				initData.boxMin.z = regionVec[i]->getFirstElement("BoxMin")->getAttributeAsUInt("z");
 			}
 
-
 			initDataVec.push_back(initData);
 		}
 	}
-
 }
 void UniformFieldInitializer::layOutCells(const UniformFieldInitializerData & _initData) {
 
+    Logger & log = *logger;
 	int size = _initData.gap + _initData.width;
 	int cellWidth = _initData.width;
 
@@ -89,7 +90,7 @@ void UniformFieldInitializer::layOutCells(const UniformFieldInitializerData & _i
 
 	Dim3D dim = cellField->getDim();
 	Point3D boxDim = _initData.boxMax - _initData.boxMin;
-	cerr << " _initData.boxMin " << _initData.boxMin << " _initData.boxMax=" << _initData.boxMax << " dim=" << dim << endl;
+	log << " _initData.boxMin " << _initData.boxMin << " _initData.boxMax=" << _initData.boxMax << " dim=" << dim;
 
 	ASSERT_OR_THROW(" BOX DOES NOT FIT INTO LATTICE ",
 		_initData.boxMin.x >= 0 && _initData.boxMin.y >= 0 && _initData.boxMin.z >= 0
@@ -172,8 +173,7 @@ unsigned char UniformFieldInitializer::initCellType(const UniformFieldInitialize
 void UniformFieldInitializer::start() {
 	if (sim->getRestartEnabled()) {
 		return;  // we will not initialize cells if restart flag is on
-	}
-	cerr << "INSIDE START" << endl;
+	}	
 
 	WatchableField3D<CellG *> *cellField = (WatchableField3D<CellG *> *) potts->getCellFieldG();
 	ASSERT_OR_THROW("initField() Cell field cannot be null!", cellField);

@@ -1391,7 +1391,6 @@ public:
         Logger * logger = simulator->getLoggerPtr();
         logger->_info("initialize plugin fcn");
 
-
         char *steppablePath = getenv("COMPUCELL3D_STEPPABLE_PATH");
 
         logger->_info("steppablePath=");

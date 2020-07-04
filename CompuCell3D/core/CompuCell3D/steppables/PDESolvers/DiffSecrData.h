@@ -20,6 +20,7 @@
 
 namespace CompuCell3D {
 class Automaton;
+class Logger;
 
 class PDESOLVERS_EXPORT SecretionOnContactData{
    public:
@@ -139,6 +140,7 @@ public:
 
 class PDESOLVERS_EXPORT DiffusionData : public SteerableObject {
       Automaton * automaton;
+      Logger *logger=0;
    public:
       DiffusionData():
       active(false),
@@ -160,6 +162,7 @@ class PDESOLVERS_EXPORT DiffusionData : public SteerableObject {
 	  }
 
       void setAutomaton(Automaton * _automaton){automaton=_automaton;}
+      void setLogger(Logger * logger) { this->logger = logger; }
       bool active;
       float diffConst;
       float decayConst; 
@@ -227,24 +230,24 @@ class PDESOLVERS_EXPORT DiffusionData : public SteerableObject {
       std::string funcName;
       
 
-
-      friend std::ostream & operator<<(std::ostream & out,CompuCell3D::DiffusionData & diffData);
+      void log();
+      //friend std::ostream & operator<<(std::ostream & out,CompuCell3D::DiffusionData & diffData);
 };
 
 
 
 
-inline std::ostream & operator<<(std::ostream & out,CompuCell3D::DiffusionData & diffData){
-   using namespace std;
-   
-   out<<"DiffusionConstant: "<<diffData.diffConst<<endl;
-   out<<"DecayConstant: "<<diffData.decayConst<<endl;
-   out<<"DeltaX: "<<diffData.deltaX<<endl;
-   out<<"DeltaT: "<<diffData.deltaT<<endl;
-   out<<"fieldName: "<<diffData.fieldName<<endl;
-
-   return out;
-}
+//inline std::ostream & operator<<(std::ostream & out,CompuCell3D::DiffusionData & diffData){
+//   using namespace std;
+//   
+//   out<<"DiffusionConstant: "<<diffData.diffConst<<endl;
+//   out<<"DecayConstant: "<<diffData.decayConst<<endl;
+//   out<<"DeltaX: "<<diffData.deltaX<<endl;
+//   out<<"DeltaT: "<<diffData.deltaT<<endl;
+//   out<<"fieldName: "<<diffData.fieldName<<endl;
+//
+//   return out;
+//}
 
 
 

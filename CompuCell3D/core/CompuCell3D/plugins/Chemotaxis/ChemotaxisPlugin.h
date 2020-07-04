@@ -30,97 +30,98 @@
 
 class CC3DXMLElement;
 namespace CompuCell3D {
-  
-  class Simulator;
 
-  class Automaton;
+    class Simulator;
 
-  template <class T>
-  class Field3DImpl;
+    class Automaton;
 
-  template <class T>
-  class Field3D;
+    template <class T>
+    class Field3DImpl;
 
-  class Potts3D;
-  //class ChemotaxisData;
+    template <class T>
+    class Field3D;
 
-  class CHEMOTAXIS_EXPORT ChemotaxisPlugin : public Plugin,public EnergyFunction {
+    class Potts3D;
+    //class ChemotaxisData;
 
-    Simulator* sim;
-	 CC3DXMLElement * xmlData;
-	 Automaton *automaton;
-	 //EnergyFunction data
+    class CHEMOTAXIS_EXPORT ChemotaxisPlugin : public Plugin, public EnergyFunction {
 
-    Potts3D *potts;
-    std::vector<Field3D<float> *> fieldVec;
-	std::vector<std::string> fieldNameVec;
-	
-   std::vector<std::vector<ChemotaxisData> > vecVecChemotaxisData;
+        Simulator* sim;
+        CC3DXMLElement * xmlData;
+        Logger * logger;
+        Automaton *automaton;
+        //EnergyFunction data
 
-   float simpleChemotaxisFormula(float _flipNeighborConc,float _conc,ChemotaxisData & _chemotaxisData);
-   float saturationChemotaxisFormula(float _flipNeighborConc,float _conc,ChemotaxisData & _chemotaxisData);
-   float saturationLinearChemotaxisFormula(float _flipNeighborConc,float _conc,ChemotaxisData & _chemotaxisData);
-   float saturationDifferenceChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
-   float powerChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
-   float log10DivisionFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
-   float logNatDivisionFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
-   float log10DifferenceFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
-   float logNatDifferenceFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
-   
-   //bool okToChemotact(unsigned int fieldIdx,unsigned char cellType);
-   std::string chemotaxisAlgorithm;
+        Potts3D *potts;
+        std::vector<Field3D<float> *> fieldVec;
+        std::vector<std::string> fieldNameVec;
 
-   BasicClassAccessor< std::map<std::string,ChemotaxisData> > chemotaxisDataAccessor;
-	 
-  public:
-    typedef float (ChemotaxisPlugin::*chemotaxisEnergyFormulaFcnPtr_t)(float,float,ChemotaxisData &);
+        std::vector<std::vector<ChemotaxisData> > vecVecChemotaxisData;
 
-    typedef double (ChemotaxisPlugin::*changeEnergyEnergyFormulaFcnPtr_t)(const Point3D &, const CellG *,
-                                const CellG *);
-   private:
-      changeEnergyEnergyFormulaFcnPtr_t algorithmPtr;
-	  std::map<std::string,chemotaxisEnergyFormulaFcnPtr_t> chemotaxisFormulaDict;
+        float simpleChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+        float saturationChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+        float saturationLinearChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+        float saturationDifferenceChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+        float powerChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+        float log10DivisionFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+        float logNatDivisionFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+        float log10DifferenceFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+        float logNatDifferenceFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
 
+        //bool okToChemotact(unsigned int fieldIdx,unsigned char cellType);
+        std::string chemotaxisAlgorithm;
 
-  public:
-    ChemotaxisPlugin();
-    virtual ~ChemotaxisPlugin();
+        BasicClassAccessor< std::map<std::string, ChemotaxisData> > chemotaxisDataAccessor;
 
-    virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
-    virtual void extraInit(Simulator *simulator);
+    public:
+        typedef float (ChemotaxisPlugin::*chemotaxisEnergyFormulaFcnPtr_t)(float, float, ChemotaxisData &);
 
-	 //EnergyFunction interface    
-    virtual double changeEnergy(const Point3D &pt, const CellG *newCell,
-                                const CellG *oldCell);
+        typedef double (ChemotaxisPlugin::*changeEnergyEnergyFormulaFcnPtr_t)(const Point3D &, const CellG *,
+            const CellG *);
+    private:
+        changeEnergyEnergyFormulaFcnPtr_t algorithmPtr;
+        std::map<std::string, chemotaxisEnergyFormulaFcnPtr_t> chemotaxisFormulaDict;
 
 
+    public:
+        ChemotaxisPlugin();
+        virtual ~ChemotaxisPlugin();
 
-    //Steerable interface
-    virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
-    virtual std::string steerableName();
-	 virtual std::string toString();
+        virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData = 0);
+        virtual void extraInit(Simulator *simulator);
+
+        //EnergyFunction interface    
+        virtual double changeEnergy(const Point3D &pt, const CellG *newCell,
+            const CellG *oldCell);
 
 
 
-   
-    
-    //EnergyFunction Methods    
+        //Steerable interface
+        virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag = false);
+        virtual std::string steerableName();
+        virtual std::string toString();
 
-    
-    double regularChemotaxis(const Point3D &pt, const CellG *newCell,
-                                const CellG *oldCell);
-   
-    double merksChemotaxis(const Point3D &pt, const CellG *newCell,
-                                const CellG *oldCell);
 
-	ChemotaxisData * addChemotaxisData(CellG * _cell,std::string _fieldName);
-	ChemotaxisData * getChemotaxisData(CellG * _cell,std::string _fieldName);
 
-    //misslepped name - should be getFieldNamesWithChemotaxisData
-	std::vector<std::string> getFieldNamesWithChemotaxisData(CellG * _cell);
 
-	 
 
-  };
+        //EnergyFunction Methods    
+
+
+        double regularChemotaxis(const Point3D &pt, const CellG *newCell,
+            const CellG *oldCell);
+
+        double merksChemotaxis(const Point3D &pt, const CellG *newCell,
+            const CellG *oldCell);
+
+        ChemotaxisData * addChemotaxisData(CellG * _cell, std::string _fieldName);
+        ChemotaxisData * getChemotaxisData(CellG * _cell, std::string _fieldName);
+
+        //misslepped name - should be getFieldNamesWithChemotaxisData
+        std::vector<std::string> getFieldNamesWithChemotaxisData(CellG * _cell);
+
+
+
+    };
 };
 #endif

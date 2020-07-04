@@ -57,6 +57,7 @@ namespace CompuCell3D {
 		Potts3D *potts;
 		Simulator *sim;
 		CellInventory * cellInventoryPtr;
+        Logger * logger;
 		void layOutCells(const UniformFieldInitializerData & _initData);
 		unsigned char initCellType(const UniformFieldInitializerData & _initData);
 		std::vector<UniformFieldInitializerData> initDataVec;

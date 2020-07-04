@@ -202,6 +202,7 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 	simulator=_simulator;
 	potts = _simulator->getPotts();
 	automaton=potts->getAutomaton();
+    logger = simulator->getLoggerPtr();
 
 	///getting cell inventory
 	cellInventoryPtr=& potts->getCellInventory();
@@ -294,8 +295,6 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 	cerr<<"diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size()<<endl;
 
 	for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
-		//       cerr<<" concentrationFieldNameVector[i]="<<diffDataVec[i].fieldName<<endl;
-		//       concentrationFieldNameVector.push_back(diffDataVec[i].fieldName);
 		concentrationFieldNameVectorTmp[i] = diffSecrFieldTuppleVec[i].diffData.fieldName;
 		cerr<<" concentrationFieldNameVector[i]="<<concentrationFieldNameVectorTmp[i]<<endl;
 	}
@@ -1030,9 +1029,10 @@ void DiffusionSolverFE<Cruncher>::readConcentrationField(std::string fileName,Co
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
+    Logger &log = *logger;
 	//notice, only basic steering is enabled for PDE solvers - changing diffusion constants, do -not-diffuse to types etc...
 	// Coupling coefficients cannot be changed and also there is no way to allocate extra fields while simulation is running
-    cerr<<"\n\n\n\n\n INSIDE UPDATE XML"<<endl;
+    log<<"\n\n\n\n\n INSIDE UPDATE XML";
 	//if(potts->getDisplayUnitsFlag()){
 	//	Unit diffConstUnit=powerUnit(potts->getLengthUnit(),2)/potts->getTimeUnit();
 	//	Unit decayConstUnit=1/potts->getTimeUnit();
@@ -1160,6 +1160,7 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
 	for(unsigned int i = 0 ; i < diffFieldXMLVec.size() ; ++i ){
 		diffSecrFieldTuppleVec.push_back(DiffusionSecretionDiffusionFEFieldTupple<Cruncher>());
 		DiffusionData & diffData=diffSecrFieldTuppleVec[diffSecrFieldTuppleVec.size()-1].diffData;
+        diffData.setLogger(logger);
 		SecretionData & secrData=diffSecrFieldTuppleVec[diffSecrFieldTuppleVec.size()-1].secrData;
 
         if(diffFieldXMLVec[i]->findAttribute("Name")){

@@ -40,13 +40,11 @@ void ContactPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     xmlData = _xmlData;
     simulator->getPotts()->registerEnergyFunctionWithName(this, toString());
     simulator->registerSteerableObject(this);
-    
+    logger = simulator->getLoggerPtr();
 }
 
 void ContactPlugin::extraInit(Simulator *simulator) {
-
-    logger = simulator->getLoggerPtr();
-
+    
     update(xmlData, true);
     
     Automaton * cellTypePluginAutomaton = potts->getAutomaton();
@@ -63,8 +61,6 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     Logger & log = *logger;
 
     automaton = potts->getAutomaton();
-    //cerr << "automaton=" << automaton << endl;
-    //return;
     ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
         set<unsigned char> cellTypesSet;
     contactEnergies.clear();

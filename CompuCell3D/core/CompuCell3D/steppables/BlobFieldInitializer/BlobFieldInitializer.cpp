@@ -22,131 +22,111 @@
 
 #include <CompuCell3D/CC3D.h>
 #include <CompuCell3D/plugins/CellType/CellTypePlugin.h>
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Field3D/Point3D.h>
-// // // #include <CompuCell3D/Field3D/Dim3D.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
 using namespace CompuCell3D;
-
-//#include <XMLCereal/XMLPullParser.h>
-//#include <XMLCereal/XMLSerializer.h>
-
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-
-// // // #include <BasicUtils/BasicClassGroup.h>
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
-// // // #include <CompuCell3D/Potts3D/CellInventory.h>
-// // // #include <CompuCell3D/plugins/CellType/CellTypePlugin.h>
-// // // #include <PublicUtilities/StringUtils.h>
-// // // #include <XMLUtils/CC3DXMLElement.h>
-
-// // // #include <string>
-
-// // // #include <math.h>
-
-// // // #include <iostream>
 using namespace std;
-
 
 #include "BlobFieldInitializer.h"
 
 
-std::string BlobFieldInitializer::steerableName(){
-	return toString();
+std::string BlobFieldInitializer::steerableName() {
+    return toString();
 }
 
-std::string BlobFieldInitializer::toString(){
-	return "BlobInitializer";
+std::string BlobFieldInitializer::toString() {
+    return "BlobInitializer";
 }
 
 
 BlobFieldInitializer::BlobFieldInitializer() :
-potts(0),sim(0){}
+    potts(0), sim(0) {}
 
-void BlobFieldInitializer::init(Simulator *simulator,  CC3DXMLElement * _xmlData){
+void BlobFieldInitializer::init(Simulator *simulator, CC3DXMLElement * _xmlData) {
 
-	sim=simulator;
-	potts = simulator->getPotts();   
-	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
-	ASSERT_OR_THROW("initField() Cell field G cannot be null!", cellFieldG);
-	Dim3D dim = cellFieldG->getDim();
+    sim = simulator;
+    potts = simulator->getPotts();
 
+    logger = simulator->getLoggerPtr();
 
-	bool pluginAlreadyRegisteredFlag;
-	Plugin *plugin=Simulator::pluginManager.get("VolumeTracker",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
-	if(!pluginAlreadyRegisteredFlag)
-		plugin->init(simulator);
+    Logger & log = *logger;
 
-	if(_xmlData->getFirstElement("Radius")){
-		oldStyleInitData.radius=_xmlData->getFirstElement("Radius")->getUInt();
-		cerr<<"Got FE This Radius: "<<oldStyleInitData.radius<<endl;
-		ASSERT_OR_THROW("Radius has to be greater than 0 and 2*radius cannot be bigger than lattice dimension x", oldStyleInitData.radius>0 && 2*(oldStyleInitData.radius)<(dim.x-2));
-	}
-
-	if(_xmlData->getFirstElement("Width")){
-		oldStyleInitData.width=_xmlData->getFirstElement("Width")->getUInt();
-		cerr<<"Got FE This Width: "<<oldStyleInitData.width<<endl;
-	}
-	if(_xmlData->getFirstElement("Gap")){
-		oldStyleInitData.gap=_xmlData->getFirstElement("Gap")->getUInt();
-		cerr<<"Got FE This Gap: "<<oldStyleInitData.gap<<endl;
-	}
+    WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
+    ASSERT_OR_THROW("initField() Cell field G cannot be null!", cellFieldG);
+    Dim3D dim = cellFieldG->getDim();
 
 
+    bool pluginAlreadyRegisteredFlag;
+    Plugin *plugin = Simulator::pluginManager.get("VolumeTracker", &pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
+    if (!pluginAlreadyRegisteredFlag)
+        plugin->init(simulator);
 
-	if (_xmlData->getFirstElement("CellSortInit")){
-		if(_xmlData->getFirstElement("CellSortInit")->getText()=="yes" ||_xmlData->getFirstElement("CellSortInit")->getText()=="Yes"){
-			cellSortInit=true;
-			cerr<<"SET CELLSORT INIT"<<endl;
-		}
-	}
+    if (_xmlData->getFirstElement("Radius")) {
+        oldStyleInitData.radius = _xmlData->getFirstElement("Radius")->getUInt();
+        log << "Got FE This Radius: " << oldStyleInitData.radius;
+        ASSERT_OR_THROW("Radius has to be greater than 0 and 2*radius cannot be bigger than lattice dimension x", oldStyleInitData.radius > 0 && 2 * (oldStyleInitData.radius) < (dim.x - 2));
+    }
+
+    if (_xmlData->getFirstElement("Width")) {
+        oldStyleInitData.width = _xmlData->getFirstElement("Width")->getUInt();
+        log << "Got FE This Width: " << oldStyleInitData.width;
+        cerr << "Got FE This Width: " << oldStyleInitData.width;
+    }
+    if (_xmlData->getFirstElement("Gap")) {
+        oldStyleInitData.gap = _xmlData->getFirstElement("Gap")->getUInt();
+        log << "Got FE This Gap: " << oldStyleInitData.gap;
+    }
 
 
 
-	CC3DXMLElement *elem=_xmlData->getFirstElement("Engulfment");
-	if (elem){
-		engulfmentData.engulfment=true;
-		engulfmentData.bottomType=elem->getAttribute("BottomType");
-		engulfmentData.topType=elem->getAttribute("TopType");
-		engulfmentData.engulfmentCutoff=elem->getAttributeAsUInt("EngulfmentCutoff");
-		engulfmentData.engulfmentCoordinate=elem->getAttribute("EngulfmentCoordinate");
-	}
+    if (_xmlData->getFirstElement("CellSortInit")) {
+        if (_xmlData->getFirstElement("CellSortInit")->getText() == "yes" || _xmlData->getFirstElement("CellSortInit")->getText() == "Yes") {
+            cellSortInit = true;
+            log << "SET CELLSORT INIT";
+        }
+    }
 
 
-	//clearing vector storing BlobFieldInitializerData (region definitions)
-	blobInitializerData.clear();
 
-	CC3DXMLElementList regionVec=_xmlData->getElements("Region");
-	
+    CC3DXMLElement *elem = _xmlData->getFirstElement("Engulfment");
+    if (elem) {
+        engulfmentData.engulfment = true;
+        engulfmentData.bottomType = elem->getAttribute("BottomType");
+        engulfmentData.topType = elem->getAttribute("TopType");
+        engulfmentData.engulfmentCutoff = elem->getAttributeAsUInt("EngulfmentCutoff");
+        engulfmentData.engulfmentCoordinate = elem->getAttribute("EngulfmentCoordinate");
+    }
 
-	for (int i = 0 ; i<regionVec.size(); ++i){
-		BlobFieldInitializerData initData;
-		ASSERT_OR_THROW("BlobInitializer requires Radius element inside Region section.See manual for details.",regionVec[i]->getFirstElement("Radius"));
-		initData.radius=regionVec[i]->getFirstElement("Radius")->getUInt();
-		if (regionVec[i]->getFirstElement("Gap")){
-			initData.gap=regionVec[i]->getFirstElement("Gap")->getUInt();
-		}
 
-		if (regionVec[i]->getFirstElement("Width")){
-			initData.width=regionVec[i]->getFirstElement("Width")->getUInt();
-		}
+    //clearing vector storing BlobFieldInitializerData (region definitions)
+    blobInitializerData.clear();
 
-		ASSERT_OR_THROW("BlobInitializer requires Types element inside Region section.See manual for details.",regionVec[i]->getFirstElement("Types"));
-		initData.typeNamesString=regionVec[i]->getFirstElement("Types")->cdata;
+    CC3DXMLElementList regionVec = _xmlData->getElements("Region");
 
-		parseStringIntoList(initData.typeNamesString , initData.typeNames , ",");
 
-		ASSERT_OR_THROW("BlobInitializer requires Center element inside Region section.See manual for details.",regionVec[i]->getFirstElement("Center"));
+    for (int i = 0; i < regionVec.size(); ++i) {
+        BlobFieldInitializerData initData;
+        ASSERT_OR_THROW("BlobInitializer requires Radius element inside Region section.See manual for details.", regionVec[i]->getFirstElement("Radius"));
+        initData.radius = regionVec[i]->getFirstElement("Radius")->getUInt();
+        if (regionVec[i]->getFirstElement("Gap")) {
+            initData.gap = regionVec[i]->getFirstElement("Gap")->getUInt();
+        }
 
-		initData.center.x=regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("x");
-		initData.center.y=regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("y");
-		initData.center.z=regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("z");
-		
-		blobInitializerData.push_back(initData);
-	}
+        if (regionVec[i]->getFirstElement("Width")) {
+            initData.width = regionVec[i]->getFirstElement("Width")->getUInt();
+        }
+
+        ASSERT_OR_THROW("BlobInitializer requires Types element inside Region section.See manual for details.", regionVec[i]->getFirstElement("Types"));
+        initData.typeNamesString = regionVec[i]->getFirstElement("Types")->cdata;
+
+        parseStringIntoList(initData.typeNamesString, initData.typeNames, ",");
+
+        ASSERT_OR_THROW("BlobInitializer requires Center element inside Region section.See manual for details.", regionVec[i]->getFirstElement("Center"));
+
+        initData.center.x = regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("x");
+        initData.center.y = regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("y");
+        initData.center.z = regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("z");
+
+        blobInitializerData.push_back(initData);
+    }
 
 
 }
@@ -154,267 +134,250 @@ void BlobFieldInitializer::init(Simulator *simulator,  CC3DXMLElement * _xmlData
 
 
 double BlobFieldInitializer::distance(double ax, double ay, double az, double bx, double by, double bz) {
-	//   printf("%f\n",sqrt((double)(ax - bx) * (ax - bx) + 
-	//               (double)(ay - by) * (ay - by) + 
-	//                      (double)(az - bz) * (az - bz)));
-	return sqrt((double)(ax - bx) * (ax - bx) + 
-		(double)(ay - by) * (ay - by) + 
-		(double)(az - bz) * (az - bz));
+
+    return sqrt((double)(ax - bx) * (ax - bx) +
+        (double)(ay - by) * (ay - by) +
+        (double)(az - bz) * (az - bz));
 }
 
-void BlobFieldInitializer::layOutCells(const BlobFieldInitializerData & _initData){
+void BlobFieldInitializer::layOutCells(const BlobFieldInitializerData & _initData) {
 
-	int size = _initData.gap + _initData.width;
-	int cellWidth=_initData.width;
+    int size = _initData.gap + _initData.width;
+    int cellWidth = _initData.width;
 
-	WatchableField3D<CellG *> *cellField =(WatchableField3D<CellG *> *) potts->getCellFieldG();
-	ASSERT_OR_THROW("initField() Cell field cannot be null!", cellField);
+    WatchableField3D<CellG *> *cellField = (WatchableField3D<CellG *> *) potts->getCellFieldG();
+    ASSERT_OR_THROW("initField() Cell field cannot be null!", cellField);
 
-	Dim3D dim = cellField->getDim();
+    Dim3D dim = cellField->getDim();
 
-	ASSERT_OR_THROW("Radius has to be greater than 0 and 2*radius cannot be bigger than lattice dimension x", _initData.radius>0 && 2*_initData.radius<(dim.x-2));
+    ASSERT_OR_THROW("Radius has to be greater than 0 and 2*radius cannot be bigger than lattice dimension x", _initData.radius > 0 && 2 * _initData.radius < (dim.x - 2));
 
+    Dim3D itDim = getBlobDimensions(dim, size);
 
+    Point3D pt;
+    Point3D cellPt;
+    CellG *cell;
 
-	//  CenterOfMassPlugin * comPlugin=(CenterOfMassPlugin*)(Simulator::pluginManager.get("CenterOfMass"));
-	//  Cell *c;
+    for (int z = 0; z < itDim.z; z++)
+        for (int y = 0; y < itDim.y; y++)
+            for (int x = 0; x < itDim.x; x++) {
+                pt.x = x * size;
+                pt.y = y * size;
+                pt.z = z * size;
 
-	//  comPlugin->getCenterOfMass(c);
+                //such cell will not be inside spherical region
+                if (!(distance(pt.x, pt.y, pt.z, _initData.center.x, _initData.center.y, _initData.center.z) < _initData.radius)) {
+                    continue;
+                }
 
-	//   Dim3D itDim;
-	// 
-	//   itDim.x = boxDim.x / size;
-	//   if (boxDim.x % size) itDim.x += 1;
-	//   itDim.y = boxDim.y / size;
-	//   if (boxDim.y % size) itDim.y += 1;
-	//   itDim.z = boxDim.z / size;
-	//   if (boxDim.z % size) itDim.z += 1;
+                if (BoundaryStrategy::getInstance()->isValid(pt)) {
+                    cell = potts->createCellG(pt);
+                    cell->type = initCellType(_initData);
 
-
-
-	Dim3D itDim=getBlobDimensions(dim,size);
-
-
-	Point3D pt;
-	Point3D cellPt;
-	CellG *cell;
-
-	for (int z = 0; z < itDim.z; z++)
-		for (int y = 0; y < itDim.y; y++)
-			for (int x = 0; x < itDim.x; x++) {
-				pt.x =  x * size;
-				pt.y =  y * size;
-				pt.z =  z * size;
-				//cerr<<" pt="<<pt<<endl;
-
-				if(! (distance(pt.x, pt.y, pt.z, _initData.center.x, _initData.center.y, _initData.center.z) < _initData.radius) ){
-					continue; //such cell will not be inside spherical region
-				}
-
-				if (BoundaryStrategy::getInstance()->isValid(pt)){
-					cell = potts->createCellG(pt);
-					cell->type=initCellType(_initData);
-					potts->runSteppers(); //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
-					//It is necessary to do it this way because steppers are called only when we are performing pixel copies
-					// but if we initialize steppers are not called thus is you overwrite a cell here it will not get removed from
-					//inventory unless you call steppers(VolumeTrackerPlugin) explicitely
-
-					
-				}
-				else{
-					continue;
-				}
-
-				for (cellPt.z = pt.z; cellPt.z < pt.z + cellWidth &&
-					cellPt.z < dim.z; cellPt.z++)
-					for (cellPt.y = pt.y; cellPt.y < pt.y + cellWidth &&
-						cellPt.y < dim.y; cellPt.y++)
-						for (cellPt.x = pt.x; cellPt.x < pt.x + cellWidth &&
-							cellPt.x < dim.x; cellPt.x++){
-
-								if (BoundaryStrategy::getInstance()->isValid(pt))
-									cellField->set(cellPt, cell);
-
-						}
-						potts->runSteppers(); //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
-						//It is necessary to do it this way because steppers are called only when we are performing pixel copies
-						// but if we initialize steppers are not called thus is you overwrite a cell here it will not get removed from
-						//inventory unless you call steppers(VolumeTrackerPlugin) explicitely
-
-			}
+                    //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
+                    //It is necessary to do it this way because steppers are called only when we are performing pixel copies
+                    // but if we initialize steppers are not called thus is you overwrite a cell here it will not get removed from
+                    //inventory unless you call steppers(VolumeTrackerPlugin) explicitely
+                    potts->runSteppers();
 
 
+                }
+                else {
+                    continue;
+                }
+
+                for (cellPt.z = pt.z; cellPt.z < pt.z + cellWidth &&
+                    cellPt.z < dim.z; cellPt.z++)
+                    for (cellPt.y = pt.y; cellPt.y < pt.y + cellWidth &&
+                        cellPt.y < dim.y; cellPt.y++)
+                        for (cellPt.x = pt.x; cellPt.x < pt.x + cellWidth &&
+                            cellPt.x < dim.x; cellPt.x++) {
+
+                            if (BoundaryStrategy::getInstance()->isValid(pt))
+                                cellField->set(cellPt, cell);
+
+                        }
+                //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
+                //It is necessary to do it this way because steppers are called only when we are performing pixel copies
+                // but if we initialize steppers are not called thus is you overwrite a cell here it will not get removed from
+                //inventory unless you call steppers(VolumeTrackerPlugin) explicitely
+
+                potts->runSteppers();
+            }
 
 }
 
-unsigned char BlobFieldInitializer::initCellType(const BlobFieldInitializerData & _initData){
-	Automaton * automaton=potts->getAutomaton();
-	if(_initData.typeNames.size()==0){//by default each newly created type will be 1 
-		return 1;
-	}/*else if (_initData.typeNames.size()==1){ //user specifie just one type
-	 return automaton->getTypeId(_initData.typeNames[0]);
-	 }*/else{ //user has specified more than one cell type - will pick randomly the type
-		 BasicRandomNumberGenerator * randGen=BasicRandomNumberGenerator::getInstance();
-		 int index = randGen->getInteger(0, _initData.typeNames.size()-1);        
-		 return automaton->getTypeId(_initData.typeNames[index]);
-	}
+unsigned char BlobFieldInitializer::initCellType(const BlobFieldInitializerData & _initData) {
+    Automaton * automaton = potts->getAutomaton();
+    if (_initData.typeNames.size() == 0) {
+        //by default each newly created type will be 1 
+        return 1;
+    }
+    else {
+        //user has specified more than one cell type - will pick randomly the type
+        BasicRandomNumberGenerator * randGen = BasicRandomNumberGenerator::getInstance();
+        int index = randGen->getInteger(0, _initData.typeNames.size() - 1);
+        return automaton->getTypeId(_initData.typeNames[index]);
+    }
 
 }
 
 void BlobFieldInitializer::start() {
-	if (sim->getRestartEnabled()){
-		return ;  // we will not initialize cells if restart flag is on
-	}
-	// TODO: Chage this code so it write the 0 spins too.  This will make it
-	//       possible to re-initialize a previously used field.
+    if (sim->getRestartEnabled()) {
+        // we will not initialize cells if restart flag is on
+        return;
+    }
+    // TODO: Chage this code so it write the 0 spins too.  This will make it
+    //       possible to re-initialize a previously used field.
 
-	/// I am changing here so that now I will work with cellFieldG - the field of CellG
-	/// - this way CompuCell will have more functionality
+    /// I am changing here so that now I will work with cellFieldG - the field of CellG
+    /// - this way CompuCell will have more functionality
 
-	//  std::vector<BlobFieldInitializerData> & initDataVec=bipdPtr->initDataVec;
-	//  int size = bipdPtr->gap + bipdPtr->width;
+    //  std::vector<BlobFieldInitializerData> & initDataVec=bipdPtr->initDataVec;
+    //  int size = bipdPtr->gap + bipdPtr->width;
 
-	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
-	ASSERT_OR_THROW("initField() Cell field G cannot be null!", cellFieldG);
-
-	
-	Dim3D dim = cellFieldG->getDim();
-	if(blobInitializerData.size()!=0){
-		for (int i = 0 ; i < blobInitializerData.size(); ++i){	
-			layOutCells(blobInitializerData[i]);
-		}
-	}else{
-		oldStyleInitData.center=Point3D(dim.x / 2,dim.y / 2,dim.z / 2);
-		layOutCells(oldStyleInitData);
-
-		if(cellSortInit){
-			initializeCellTypesCellSort();
-		}
-
-		if(engulfmentData.engulfment){
-			initializeEngulfment();
-		}
-	}
+    WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
+    ASSERT_OR_THROW("initField() Cell field G cannot be null!", cellFieldG);
 
 
+    Dim3D dim = cellFieldG->getDim();
+    if (blobInitializerData.size() != 0) {
+        for (int i = 0; i < blobInitializerData.size(); ++i) {
+            layOutCells(blobInitializerData[i]);
+        }
+    }
+    else {
+        oldStyleInitData.center = Point3D(dim.x / 2, dim.y / 2, dim.z / 2);
+        layOutCells(oldStyleInitData);
+
+        if (cellSortInit) {
+            initializeCellTypesCellSort();
+        }
+
+        if (engulfmentData.engulfment) {
+            initializeEngulfment();
+        }
+    }
 
 
-}
-
-Dim3D BlobFieldInitializer::getBlobDimensions(const Dim3D & dim,int size){
-	Dim3D itDim;
-
-	itDim.x = dim.x / size;
-	if (dim.x % size) itDim.x += 1;
-	itDim.y = dim.y / size;
-	if (dim.y % size) itDim.y += 1;
-	itDim.z = dim.z / size;
-	if (dim.z % size) itDim.z += 1;
-
-	blobDim=itDim;
-
-	return itDim; 
-
-}
-
-
-void BlobFieldInitializer::initializeEngulfment(){
-
-	unsigned char topId,bottomId;
-	CellTypePlugin * cellTypePluginPtr=(CellTypePlugin*)(Simulator::pluginManager.get("CellType"));
-	ASSERT_OR_THROW("CellType plugin not initialized!", cellTypePluginPtr);
-
-	EngulfmentData &enData=engulfmentData;
-
-	topId=cellTypePluginPtr->getTypeId(enData.topType);
-	bottomId=cellTypePluginPtr->getTypeId(enData.bottomType);
-	
-
-	WatchableField3D<CellG *> *cellFieldG =(WatchableField3D<CellG *> *) potts->getCellFieldG();
-	Dim3D dim = cellFieldG->getDim();
-
-	CellInventory * cellInventoryPtr=& potts->getCellInventory();
-	///will initialize cell type to be 1
-	CellInventory::cellInventoryIterator cInvItr;
-
-	CellG * cell;
-	Point3D pt;
-
-	///loop over all the cells in the inventory   
-	for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
-		cell=cellInventoryPtr->getCell(cInvItr);
-		
-		//cell=*cInvItr;
-		cell->type=1; 
-	}
-
-	for (int x = 0 ; x < dim.x ; ++x){
-		for (int y = 0 ; y < dim.y ; ++y){
-			for (int z = 0 ; z < dim.z ; ++z){
-				pt.x=x;
-				pt.y=y;
-				pt.z=z;
-				cell=cellFieldG->get(pt);
-
-				if(enData.engulfmentCoordinate=="x" || enData.engulfmentCoordinate=="X"){
-					if(cell && pt.x<enData.engulfmentCutoff){
-						cell->type=bottomId;
-					}else if(cell && pt.x>=enData.engulfmentCutoff){
-						cell->type=topId;
-					}
-
-				}
-				if(enData.engulfmentCoordinate=="y" || enData.engulfmentCoordinate=="Y"){
-					if(cell && pt.y<enData.engulfmentCutoff){
-						cell->type=bottomId;
-					}else if(cell && pt.y>=enData.engulfmentCutoff){
-						cell->type=topId;
-					}
-				}
-				if(enData.engulfmentCoordinate=="z" || enData.engulfmentCoordinate=="Z"){
-					if(cell && pt.z<enData.engulfmentCutoff){
-						cell->type=bottomId;
-					}else if(cell && pt.z>=enData.engulfmentCutoff){
-						cell->type=topId;
-					}
-				}
-
-			}
-
-		}
-	}
 
 
 }
 
+Dim3D BlobFieldInitializer::getBlobDimensions(const Dim3D & dim, int size) {
+    Dim3D itDim;
 
-void BlobFieldInitializer::initializeCellTypesCellSort(){
-	//Note that because cells are ordered by physical address in the memory you get additional 
-	//randomization of the cell types assignment. Assuming that randiom number generator is fixed i.e. it produces
-	//same sequence of numbers every run, you still get random initial configuration and it comes from the fact that 
-	// in general ordering of cells in the inventory is not repetitive between runs
+    itDim.x = dim.x / size;
+    if (dim.x % size) itDim.x += 1;
+    itDim.y = dim.y / size;
+    if (dim.y % size) itDim.y += 1;
+    itDim.z = dim.z / size;
+    if (dim.z % size) itDim.z += 1;
 
-	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
-	CellInventory * cellInventoryPtr=& potts->getCellInventory();
+    blobDim = itDim;
 
-	///will initialize cell type here depending on the position of the cells
-	CellInventory::cellInventoryIterator cInvItr;
+    return itDim;
 
-	CellG * cell;
+}
 
-	///loop over all the cells in the inventory   
-	for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
-		
-		cell=cellInventoryPtr->getCell(cInvItr);
-		//cell=*cInvItr;
 
-		if(rand->getRatio()<0.5){ /// randomly assign types for cell sort
-			cell->type=1;
-		}else{
-			cell->type=2;
-		}
+void BlobFieldInitializer::initializeEngulfment() {
 
-	}
+    unsigned char topId, bottomId;
+    CellTypePlugin * cellTypePluginPtr = (CellTypePlugin*)(Simulator::pluginManager.get("CellType"));
+    ASSERT_OR_THROW("CellType plugin not initialized!", cellTypePluginPtr);
+
+    EngulfmentData &enData = engulfmentData;
+
+    topId = cellTypePluginPtr->getTypeId(enData.topType);
+    bottomId = cellTypePluginPtr->getTypeId(enData.bottomType);
+
+
+    WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *) potts->getCellFieldG();
+    Dim3D dim = cellFieldG->getDim();
+
+    CellInventory * cellInventoryPtr = &potts->getCellInventory();
+    ///will initialize cell type to be 1
+    CellInventory::cellInventoryIterator cInvItr;
+
+    CellG * cell;
+    Point3D pt;
+
+    ///loop over all the cells in the inventory   
+    for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr) {
+        cell = cellInventoryPtr->getCell(cInvItr);
+
+        //cell=*cInvItr;
+        cell->type = 1;
+    }
+
+    for (int x = 0; x < dim.x; ++x) {
+        for (int y = 0; y < dim.y; ++y) {
+            for (int z = 0; z < dim.z; ++z) {
+                pt.x = x;
+                pt.y = y;
+                pt.z = z;
+                cell = cellFieldG->get(pt);
+
+                if (enData.engulfmentCoordinate == "x" || enData.engulfmentCoordinate == "X") {
+                    if (cell && pt.x < enData.engulfmentCutoff) {
+                        cell->type = bottomId;
+                    }
+                    else if (cell && pt.x >= enData.engulfmentCutoff) {
+                        cell->type = topId;
+                    }
+
+                }
+                if (enData.engulfmentCoordinate == "y" || enData.engulfmentCoordinate == "Y") {
+                    if (cell && pt.y < enData.engulfmentCutoff) {
+                        cell->type = bottomId;
+                    }
+                    else if (cell && pt.y >= enData.engulfmentCutoff) {
+                        cell->type = topId;
+                    }
+                }
+                if (enData.engulfmentCoordinate == "z" || enData.engulfmentCoordinate == "Z") {
+                    if (cell && pt.z < enData.engulfmentCutoff) {
+                        cell->type = bottomId;
+                    }
+                    else if (cell && pt.z >= enData.engulfmentCutoff) {
+                        cell->type = topId;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+void BlobFieldInitializer::initializeCellTypesCellSort() {
+    //Note that because cells are ordered by physical address in the memory you get additional 
+    //randomization of the cell types assignment. Assuming that randiom number generator is fixed i.e. it produces
+    //same sequence of numbers every run, you still get random initial configuration and it comes from the fact that 
+    // in general ordering of cells in the inventory is not repetitive between runs
+
+    BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+    CellInventory * cellInventoryPtr = &potts->getCellInventory();
+
+    ///will initialize cell type here depending on the position of the cells
+    CellInventory::cellInventoryIterator cInvItr;
+
+    CellG * cell;
+
+    ///loop over all the cells in the inventory   
+    for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr) {
+
+        cell = cellInventoryPtr->getCell(cInvItr);
+
+        if (rand->getRatio() < 0.5) {
+            /// randomly assign types for cell sort
+            cell->type = 1;
+        }
+        else {
+            cell->type = 2;
+        }
+
+    }
 
 }
 

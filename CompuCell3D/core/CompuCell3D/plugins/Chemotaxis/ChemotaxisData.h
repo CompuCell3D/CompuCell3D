@@ -139,17 +139,17 @@ namespace CompuCell3D {
 
          }
 
-         void outScr(){
+         void outScr(Logger &log){
             using namespace std;
-            cerr<<"**************ChemotaxisData**************"<<endl;
-            cerr<<"formulaPtr="<<formulaPtr<<endl;
-            cerr<<"lambda="<<lambda<<" saturationCoef="<<saturationCoef<<" typaName="<<typeName<<endl;
-            cerr<<"chemotactTowards="<<chemotactTowardsTypesString<<endl;
-            cerr<<"Chemotact towards types:"<<endl;
+            log<<"**************ChemotaxisData**************";
+            log<<"formulaPtr="<<formulaPtr;
+            log<<"lambda="<<lambda<<" saturationCoef="<<saturationCoef<<" typaName="<<typeName;
+            log<<"chemotactTowards="<<chemotactTowardsTypesString;
+            log<<"Chemotact towards types:";
             for (int i = 0 ; i < chemotactTowardsTypesVec.size() ; ++i){
-               cerr<<"chemotact Towards type id="<<(int)chemotactTowardsTypesVec[i]<<endl;
+               log<<"chemotact Towards type id="<<(int)chemotactTowardsTypesVec[i];
             }
-            cerr<<"**************ChemotaxisData END**************"<<endl;
+            log<<"**************ChemotaxisData END**************";
          }
 
          bool okToChemotact( const CellG * _oldCell, const CellG * _newCell){
