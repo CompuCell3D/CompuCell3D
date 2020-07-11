@@ -4,8 +4,8 @@ from os.path import dirname, join, abspath
 
 versionMajor = 4
 versionMinor = 2
-versionBuild = 1
-revisionNumber = "20200518"
+versionBuild = 2
+revisionNumber = "20200711"
 
 
 def getVersionAsString():
@@ -73,18 +73,10 @@ elif sys.platform.startswith('darwin'):
         dyld_library_env = ''
 
     dyld_env_list = dyld_library_env.split(':')
-    #
-    # dyld_env_list = list(map(lambda pth: abspath(pth), dyld_env_list))
-    #
-    # cc3d_cpp_path = abspath(join(cc3d_py_dir, 'cpp'))
-    # if cc3d_cpp_path not in dyld_env_list:
-    #     dyld_env_list.insert(0, cc3d_cpp_path)
-    #
+
     cc3d_cpp_lib_path = abspath(join(cc3d_py_dir, 'cpp', 'lib'))
     if cc3d_cpp_lib_path not in dyld_env_list:
         dyld_env_list.insert(0, cc3d_cpp_lib_path)
-
-    # dyld_env_list.insert(0,os.environ['COMPUCELL3D_PLUGIN_PATH'])
 
     os.environ['DYLD_LIBRARY_PATH'] = ':'.join(dyld_env_list)
 
