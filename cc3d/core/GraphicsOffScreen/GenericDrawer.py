@@ -578,10 +578,6 @@ class GenericDrawer():
         self.draw_view_2D.resetAllCameras()
         self.draw3D.resetAllCameras()
 
-    def populateLookupTable(self):
-        self.draw_model_2D.populateLookupTable()
-        self.drawModel3D.populateLookupTable()
-
     def Render(self):
         color = Configuration.getSetting("WindowColor")
         self.ren.SetBackground(float(color.red()) / 255, float(color.green()) / 255, float(color.blue()) / 255)

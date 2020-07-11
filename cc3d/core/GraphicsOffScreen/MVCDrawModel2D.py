@@ -1044,7 +1044,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         else:
             self.cellsMapper.SetInput(cartesian_cells_poly_data)
 
-        cell_type_lut = self.get_type_lookup_table()
+        cell_type_lut = self.get_type_lookup_table(scene_metadata=scene_metadata)
         cell_type_lut_max = cell_type_lut.GetNumberOfTableValues() - 1
 
         self.cellsMapper.ScalarVisibilityOn()

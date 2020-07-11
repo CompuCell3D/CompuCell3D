@@ -244,6 +244,10 @@ class ScreenshotManager(ScreenshotManagerCore):
 
         for i, screenshot_name in enumerate(screenshot_label_list):
             screenshot_data = self.screenshotDataDict[screenshot_name]
+            # we are inserting a flag into scene metadata that informs the rest
+            # of the visualization pipeline that we are dealing with actual screenshop
+            # and if so we will use e.g. colors from screenshot description file, and not from settings
+            screenshot_data.metadata['actual_screenshot'] = True
 
             if not screenshot_name:
                 screenshot_name = 'screenshot_' + str(i)
