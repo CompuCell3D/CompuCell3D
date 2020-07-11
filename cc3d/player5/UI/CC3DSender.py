@@ -22,22 +22,11 @@ class CC3DSender(QObject):
         self.errorConsole = _parent
 
         self.socket = QtNetwork.QTcpSocket()
-        print("TWEDIT socket.socketDescriptor()=", self.socket.socketDescriptor())
 
         self.socket.connected.connect(self.sendRequest)
         self.socket.readyRead.connect(self.readResponse)
         self.socket.disconnected.connect(self.serverHasStopped)
         self.socket.error.connect(self.serverHasError)
-
-        # self.connect(self.socket, SIGNAL("connected()"),
-        #              self.sendRequest)
-        # self.connect(self.socket, SIGNAL("readyRead()"),
-        #              self.readResponse)
-        # self.connect(self.socket, SIGNAL("disconnected()"),
-        #              self.serverHasStopped)
-        # self.connect(self.socket,
-        #              SIGNAL("error(QAbstractSocket::SocketError)"),
-        #              self.serverHasError)
 
         self.request = "ABC"
 
@@ -47,14 +36,13 @@ class CC3DSender(QObject):
         self.editorStarted = False
 
         # try to figure out the port to communicate on with editor
-        print("TRY TO FIGURE OUT PORT\n\n\n\n\n\n")
+
         for port in range(47406, 47506):
-            print("CHECKING PORT=", port)
+
             tcpServer = QTcpServer(self)
             if tcpServer.listen(QHostAddress("127.0.0.1"), port):
                 self.port = port
                 tcpServer.close()
-                print("established empty port=", self.port)
                 break
 
         self.editorMessageBox = None
@@ -85,11 +73,10 @@ class CC3DSender(QObject):
 
         self.editorOpenedBySender = False
 
-        # self.portSetByExternalProcess=False
-
     def setServerPort(self, port):
         self.port = port
-        # port is set externally only when editor is already started - altohugh will have to find better solution than this...
+        # port is set externally only when editor is already started -
+        # although will have to find better solution than this...
         self.editorStarted = True
         self.connectionEstablished = self.establishConnection()
 
@@ -121,7 +108,8 @@ class CC3DSender(QObject):
                 self.editorOpenedBySender = True
 
             connectionEstablished = False
-            # On non-windows platforms we will try 10 times to establish connection - sleeping 0.5 seconds between consecutive attempts
+            # On non-windows platforms we will try 10 times to establish connection -
+            # sleeping 0.5 seconds between consecutive attempts
             if not sys.platform.startswith('win'):
                 for i in range(10):
                     self.socket.connectToHost(QHostAddress("127.0.0.1"), self.port)
@@ -200,7 +188,8 @@ class CC3DSender(QObject):
             p = Popen(["python", self.bringupTweditPath, str(self.tweditPID)])
             print("\n\n\n\n\n\n\n\n\n\n tweditPID=", self.tweditPID)
 
-        print("\n\n\n\n\n\n\n\n\n\n SENDER(issueRequest): self.socket.socketDescriptor()=", self.socket.socketDescriptor())
+        print("\n\n\n\n\n\n\n\n\n\n SENDER(issueRequest): self.socket.socketDescriptor()=",
+              self.socket.socketDescriptor())
 
     def sendToEditor(self, _request):
         self.request = _request
@@ -248,12 +237,10 @@ class CC3DSender(QObject):
         # stream1.device().seek(0)
         # stream1.writeUInt16(reply.size() - SIZEOF_UINT16)            
 
-
         # self.socket.write(reply)
         # self.socket.flush()
 
         # return
-
 
         print("self.socket.bytesAvailable()=", self.socket.bytesAvailable())
         if self.nextBlockSize == 0:
@@ -318,7 +305,6 @@ class CC3DSender(QObject):
 
             # self.socket.disconnectFromHost()
             # return
-
 
             reply = QByteArray()
             stream1 = QDataStream(reply, QIODevice.WriteOnly)

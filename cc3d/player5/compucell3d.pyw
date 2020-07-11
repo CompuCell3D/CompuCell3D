@@ -68,8 +68,6 @@ if sys.platform == 'darwin':
 
 
 def main(argv):
-    print('compucell3d.pyw:   type(argv)=', type(argv))
-    print('compucell3d.pyw:   argv=', argv)
 
     # if sys.platform.startswith('darwin'):
     #     PyQt5.QtCore.QCoreApplication.setAttribute(Qt.AA_DontUseNativeMenuBar)
