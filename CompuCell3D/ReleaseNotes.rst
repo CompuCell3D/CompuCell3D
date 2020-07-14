@@ -18,6 +18,8 @@ screenshot description file, and not on current player settings
 
 New Features:
 
+- Added ability top open zipped .cc3d project directly from Twedit++ - no need to
+do unzipping using 3rd party tools
 - Added saving of simulation layout on simulation stop or simulation finish events
 - Added automatic zip file name fill-in in Twedit++ when zipping .cc3d project
 -Added Simulation menu action to reset global settings - as of now users can reset simulation-specific
