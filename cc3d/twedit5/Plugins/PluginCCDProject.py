@@ -17,6 +17,10 @@ Module used to link Twedit++5 with CompuCell3D.
 # THIS HAS TO BE REVRITTEN USING MVC, otherwise ti is hard to maintain
 
 import os.path
+from pathlib import Path
+from typing import Union
+from zipfile import ZipFile
+from glob import glob
 import re
 import os
 import shutil
@@ -62,6 +66,7 @@ longDescription = """This plugin provides functionality that allows users to man
 # End-Of-Header
 
 error = ''
+
 
 # this is bidirectional dictionary - tree-item to CC3DResource and path of the resource to item
 
@@ -354,7 +359,6 @@ class CC3DProjectTreeWidget(QTreeWidget):
             return
 
         if self.currentItem() == projItem:
-
             self.addActionToContextMenu(menu, self.plugin.actions["Open XML/Python In Editor"])
 
             self.addActionToContextMenu(menu, self.plugin.actions["Open in Player"])
@@ -392,9 +396,9 @@ class CC3DProjectTreeWidget(QTreeWidget):
         # if resourceName == 'CC3DSerializerResource':
         #     self.addActionToContextMenu(menu, self.plugin.actions["Serializer..."])
 
-            # if resourceName=='CC3DParameterScanResource':
+        # if resourceName=='CC3DParameterScanResource':
 
-            # menu.addAction(self.plugin.actions["Reset Parameter Scan"])    
+        # menu.addAction(self.plugin.actions["Reset Parameter Scan"])
 
         self.addActionToContextMenu(menu, self.plugin.actions["Save CC3D Project"])
 
@@ -1071,7 +1075,6 @@ class CC3DProject(QObject):
 
         """
 
-
         self.actions["New CC3D Project..."] = QtWidgets.QAction(QIcon(':/icons/new-project.png'), "New CC3D Project...",
                                                                 self, shortcut="Ctrl+Shift+N",
                                                                 statusTip="New CC3D Project Wizard ",
@@ -1299,8 +1302,6 @@ class CC3DProject(QObject):
             return
 
         if pdh.cc3dSimulationData.parameterScanResource:
-
-
             psu = ParameterScanUtils()
 
             psu.resetParameterScan(pdh.cc3dSimulationData.parameterScanResource.path)
@@ -1553,8 +1554,6 @@ class CC3DProject(QObject):
             cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
 
             root_element = cc3dXML2ObjConverter.Parse(self.access_path_fname)
-
-
 
             xml_handler = XMLHandler()
 
@@ -1971,7 +1970,6 @@ class CC3DProject(QObject):
 
                 parvaldlg = ParValDlg(self.parameterScanEditor)
 
-
                 parvaldlg.initParameterScanData(_parValue=varValue, _parName=varName, _parType=PYTHON_GLOBAL,
 
                                                 _parAccessPath='')
@@ -2128,7 +2126,7 @@ class CC3DProject(QObject):
         pdh = None
         try:
             pdh = self.projectDataHandlers[qt_obj_hash(proj_item)]
-        except LookupError :
+        except LookupError:
             return
 
         main_python_script_path = pdh.cc3dSimulationData.pythonScriptResource.path
@@ -2262,7 +2260,8 @@ class CC3DProject(QObject):
             return
 
         steppable_registration_code = self.steppableTemplates.generate_steppable_registration_code(
-            steppeble_name, frequency, basename_for_import, indentation_level, main_script_editor_window.indentationWidth())
+            steppeble_name, frequency, basename_for_import, indentation_level,
+            main_script_editor_window.indentationWidth())
 
         if indentation_level == -1:
             QMessageBox.warning(tw, "Possible indentation problem",
@@ -2321,8 +2320,8 @@ class CC3DProject(QObject):
         main_loop_regex = re.compile('^[\s]*CompuCellSetup\.run()')
 
         return self.find_regex_occurrence(regex=main_loop_regex,
-                                        script_editor_window=main_script_editor_window,
-                                        find_first=False)
+                                          script_editor_window=main_script_editor_window,
+                                          find_first=False)
 
     def showProjectPanel(self, _flag):
 
@@ -2368,7 +2367,6 @@ class CC3DProject(QObject):
 
             else:
                 return
-
 
         try:
             pdh = self.projectDataHandlers[qt_obj_hash(proj_item)]
@@ -3359,8 +3357,6 @@ class CC3DProject(QObject):
 
         """
 
-
-
         # dirName=os.path.dirname(fullDirPath)
 
         try:
@@ -3678,17 +3674,86 @@ class CC3DProject(QObject):
         self.openProjectsDict[proj_file_name] = proj_item
 
     def showOpenProjectDialogAndLoad(self, _dir=''):
+        """
+        Displays CC3D project open dialog and actually opens a CC3D project
+        :param _dir: default directory to open file dialog to
+        :return:
+        """
 
-        file_name, _ = QFileDialog.getOpenFileName(self.__ui, "Open CC3D file...", _dir, "*.cc3d")
+        allowed_extensions = "*.cc3d ; *.zip"
 
-        print("FILE NAME=", file_name)
+        file_name, _ = QFileDialog.getOpenFileName(self.__ui, "Open CC3D file...", _dir, allowed_extensions)
+        file_name_path = Path(file_name)
+        if file_name_path.suffix in ['.zip']:
+            file_name = self.unzip_project(file_name_path)
 
-        if str(file_name) == "":
+        # this happens when e.g. during unzipping of cc3d project we could not identify uniquely
+        # a file or if we skip opening altogether
+
+        if file_name is None or str(file_name) == "":
             return
 
-        file_name = os.path.abspath(str(file_name))  # normalizing filename
+        # normalizing filename
+        file_name = os.path.abspath(str(file_name))
 
         self.openCC3Dproject(file_name)
+
+    def unzip_project(self, file_name_path: Path) -> Union[str,  None]:
+        """
+        unzips project files and returns a path to .cc3d project in the uppacked folder
+        :param file_name_path:
+        :return:
+        """
+
+        proposed_dir = file_name_path.parent.joinpath(file_name_path.stem)
+        unzip_dirname = self.find_available_dir_name(proposed_dir=proposed_dir)
+        dir_empty = self.check_dir_empty(directory=unzip_dirname)
+        if not dir_empty:
+            ret = QMessageBox.question(self.__ui, 'Directory not empty',
+                                 f'The directory you selected '
+                                 f'<br> <i>{unzip_dirname}</i> <br>'
+                                 f'is not empty would you like to overwrite use it to unpack <b>.cc3d</b> project? <br>'
+                                 f'Warning: you may corrupt data in this directory', QMessageBox.Yes|QMessageBox.No
+                                 )
+            if ret == QMessageBox.No:
+                return
+
+        with ZipFile(file_name_path, 'r') as zip_file:
+            zip_file.extractall(unzip_dirname)
+
+        cc3d_file_path_glob = glob(join(str(unzip_dirname), '**.cc3d'))
+        if len(cc3d_file_path_glob) != 1:
+            QMessageBox.warning(self.__ui, 'Could not uniquely identify .cc3d project',
+                                f'Could not uniquely identify a <b>.cc3d</b> project in the unzipped folder:  '
+                                f'<br> <i>{unzip_dirname}</i> <br>'
+                                f'Please use <b>CC3D Project -> Open CC3D project...</b> menu option to select '
+                                f'which <b>.cc3d</b> project you want to open')
+            return
+        else:
+            return cc3d_file_path_glob[0]
+
+    def check_dir_empty(self, directory):
+        """
+        Checks if directory is empty or not
+        :param directory:
+        :return:
+        """
+
+        return len(os.listdir(directory)) == 0
+
+    def find_available_dir_name(self, proposed_dir):
+        """
+        Returns available directory name - if proposed directory exists it asks user to create and pick different one
+        :param proposed_dir:
+        :return:
+        """
+        if not proposed_dir.exists():
+            return proposed_dir
+
+        new_dirname = QFileDialog.getExistingDirectory(self.__ui, 'Create or Select a Directory '
+                                                                  'to Extract Zip Archive to',
+                                                       str(proposed_dir.parent))
+        return new_dirname
 
     def __openCC3DProject(self):
         """
