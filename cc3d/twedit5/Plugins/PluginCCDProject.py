@@ -3704,7 +3704,7 @@ class CC3DProject(QObject):
 
     def unzip_project(self, file_name_path: Path) -> Union[str, None]:
         """
-        unzips project files and returns a path to .cc3d project in the uppacked folder
+        unzips project files and returns a path to .cc3d project in the unpacked folder
         :param file_name_path:
         :return:
         """
