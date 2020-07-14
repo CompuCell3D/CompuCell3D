@@ -861,6 +861,7 @@ class CC3DProject(QObject):
         self.cc3dProjectMenu.addAction(self.actions["Save CC3D Project As..."])
 
         self.cc3dProjectMenu.addAction(self.actions["Zip It!"])
+        self.cc3dProjectMenu.addAction(self.actions["UnZip It..."])
 
         self.cc3dProjectMenu.addSeparator()
 
@@ -1107,10 +1108,13 @@ class CC3DProject(QObject):
 
                                                     statusTip="Zips project directory", triggered=self.__zip_project)
 
+        self.actions["UnZip It..."] = QtWidgets.QAction("UnZip It...", self,
+                                                          statusTip="Unzip and open zipped CC3D project ",
+                                                          triggered=self.__openCC3DProject)
+
         self.actions["Go To Project Directory"] = QtWidgets.QAction("Go To Project Directory", self, shortcut="",
-
-                                                                    statusTip="Opens directory of the project in default file manager",
-
+                                                                    statusTip="Opens directory of the project in "
+                                                                              "default file manager",
                                                                     triggered=self.__goToProjectDirectory)
 
         # self.actions["Zip'n'Mail"]=QtWidgets.QAction("Zip'n'Mail", self, statusTip="Zips project directory and opens email clinet with attachement", triggered=self.__zipAndMailProject)
@@ -3698,7 +3702,7 @@ class CC3DProject(QObject):
 
         self.openCC3Dproject(file_name)
 
-    def unzip_project(self, file_name_path: Path) -> Union[str,  None]:
+    def unzip_project(self, file_name_path: Path) -> Union[str, None]:
         """
         unzips project files and returns a path to .cc3d project in the uppacked folder
         :param file_name_path:
@@ -3707,14 +3711,23 @@ class CC3DProject(QObject):
 
         proposed_dir = file_name_path.parent.joinpath(file_name_path.stem)
         unzip_dirname = self.find_available_dir_name(proposed_dir=proposed_dir)
+
+        if not Path(unzip_dirname).exists():
+            unzip_dirname.mkdir(parents=True, exist_ok=True)
+            QMessageBox.information(self.__ui, 'About to unzip CC3D project',
+                                    f'Will unzip <b>.cc3d</b> project into <br> '
+                                    f'<br> <i>{unzip_dirname}</i> <br>')
+
         dir_empty = self.check_dir_empty(directory=unzip_dirname)
         if not dir_empty:
             ret = QMessageBox.question(self.__ui, 'Directory not empty',
-                                 f'The directory you selected '
-                                 f'<br> <i>{unzip_dirname}</i> <br>'
-                                 f'is not empty would you like to overwrite use it to unpack <b>.cc3d</b> project? <br>'
-                                 f'Warning: you may corrupt data in this directory', QMessageBox.Yes|QMessageBox.No
-                                 )
+                                       f'The directory you selected '
+                                       f'<br> <i>{unzip_dirname}</i> <br>'
+                                       f'is not empty would you like to overwrite use it to '
+                                       f'unpack <b>.cc3d</b> project? <br>'
+                                       f'Warning: you may corrupt data in this directory',
+                                       QMessageBox.Yes | QMessageBox.No
+                                       )
             if ret == QMessageBox.No:
                 return
 
@@ -3732,12 +3745,15 @@ class CC3DProject(QObject):
         else:
             return cc3d_file_path_glob[0]
 
-    def check_dir_empty(self, directory):
+    @staticmethod
+    def check_dir_empty(directory):
         """
-        Checks if directory is empty or not
+        Checks if directory is empty or not. If directory dies not exists it returns True
         :param directory:
         :return:
         """
+        if not Path(directory).exists():
+            return True
 
         return len(os.listdir(directory)) == 0
 
