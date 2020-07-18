@@ -563,7 +563,7 @@ void ParallelUtilsOpenMP::generateLatticePartition(unsigned int _numberOfProcess
 	unsigned int numArrayElements=sizeof latticeGridPartition2D/ sizeof (unsigned int[3]);
     Logger & log = (*Logger::getInstance());
 
-    log<<"_numberOfProcessors= "<< _numberOfProcessors << " numArrayElements="<< numArrayElements;	
+    log<<"_numberOfProcessors= "<< _numberOfProcessors << " numArrayElements="<< numArrayElements;
 
 	vector<unsigned int> partitionVec(3,1);
 	if (_numberOfProcessors <= numArrayElements-1){ //requested less processors than max number of prepared partitions

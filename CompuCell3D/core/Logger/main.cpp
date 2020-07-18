@@ -14,11 +14,15 @@ int main()
     pLogger = Logger::getInstance();
     pLogger->initialize("my_log_file.txt", "file_log");
 
+    Logger & log = (*pLogger);
+
+    log <<  12<<" demo";
 
     (*pLogger) << LogMessageType::DEBUG_LOG << "this is log entry" << 12 << 14 << 15.1212;
     (*pLogger) << LogMessageType::TRACE_LOG << "this is log entry" << 12 << 14 << 15.1212;
     (*pLogger) << LogMessageType::ERROR_LOG << "this is log entry" << 12 << 14 << 15.1212;
     (*pLogger) << LogMessageType::INFO_LOG << "this is log entry" << 12 << 14 << 15.1212;
+
 
     return 0;
 }
