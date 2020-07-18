@@ -37,6 +37,12 @@
 namespace  CompuCell3D
 {
 
+    template<typename T, typename... Args>
+    std::unique_ptr<T> make_unique(Args&&... args)
+    {
+        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
+
     enum class LogLevel
     {
         NO_LOG_LEVEL = 1,
@@ -153,7 +159,7 @@ private:
 
 
 template<typename T>
-LoggerStream operator<<(Logger& logger, const T & val) {        
+LoggerStream operator<<(Logger & logger, const T & val) {
     LoggerStream logger_stream(&logger);
 
     logger_stream << val;
@@ -163,14 +169,34 @@ LoggerStream operator<<(Logger& logger, const T & val) {
 
 //specialization for stream modifier LogLevel -  implementation must be defined in implementation file
 template<>
-LoggerStream CompuCell3D::operator<<(Logger& logger, const LogMessageType &  val);
+LoggerStream operator<<(Logger & logger, const LogMessageType &  val);
 
+
+
+// T && is necessary when we are chaining operators because then we might be passing rvalue references (temporaries)
+// use this or const T & - some compilers are picky how you define this. MSVS for example is not picky and T & works
 template<typename T>
-LoggerStream& operator<<(LoggerStream& loggerStream, const T & val) {
+LoggerStream & operator<<(LoggerStream  & loggerStream, T && val) {
     using namespace std;
     std::ostringstream s_stream;
     s_stream << val << " ";
-    loggerStream.addString(s_stream.str());        
+    std::string str = s_stream.str();
+    loggerStream.addString(str);
+    return loggerStream;
+
+};
+
+// in c++11 it looks like for certain compilers we need to provide specialized version of that takes universal reference
+// to handle situations where e.g. log<<a<<"demo"; we do chaining and as a consequence compiler is looking for
+// a signature where we could pass LoggerStream temporary object (rvalue)
+// https://stackoverflow.com/questions/41216362/c-passing-rvalue-reference-to-functions-that-takes-lvalue-reference
+template<typename T>
+LoggerStream & operator<<(LoggerStream  && loggerStream, T && val) {
+    using namespace std;
+    std::ostringstream s_stream;
+    s_stream << val << " ";
+    std::string str = s_stream.str();
+    loggerStream.addString(str);
     return loggerStream;
 
 };

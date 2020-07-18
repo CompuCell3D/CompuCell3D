@@ -333,7 +333,7 @@ public:
 
 // Constructor connected with our Impl structure 
 Logger::Logger()
-    : pimpl(std::make_unique<Impl>())
+    : pimpl(make_unique<Impl>())
 {    }
 
 void Logger::initialize(std::string log_fname, std::string log_type, std::string log_level) {
@@ -389,7 +389,7 @@ void Logger::enableFileLogging()
     this->pimpl->enableFileLogging();
 }
 
-void  Logger::_debug(const char* text) {
+void  Logger::_debug(const char* text) throw() {
     this->pimpl->_debug(text);
 }
 
@@ -421,7 +421,7 @@ void Logger::_trace(const char* text) throw() {
 
 
 template<>
-LoggerStream CompuCell3D::operator<<(Logger& logger, const LogMessageType &  val) {
+LoggerStream CompuCell3D::operator<<(Logger & logger, const LogMessageType &  val) {
     LoggerStream logger_stream(&logger);
     logger_stream.setLogLevel(val);
     return logger_stream;
@@ -443,7 +443,7 @@ public:
     ~StreamImpl() {
         using namespace std;
 
-        try {            
+        try {
             logger_fcn_map.at(this->logMessageType)(this->logger_p, this->logString);
         }
         catch (const out_of_range &e)
@@ -457,7 +457,7 @@ public:
         this->logMessageType = logMessageType;
     }
 
-    void addString(std::string & str) {
+    void addString(const std::string & str){
         this->logString += str;
     }
     typedef double (LoggerStream::*log_function_t)(std::string & text);
@@ -482,11 +482,11 @@ private:
 
 
 LoggerStream::LoggerStream(Logger *logger_p): 
-    pimpl(std::make_unique<StreamImpl>(logger_p))
+    pimpl(make_unique<StreamImpl>(logger_p))
 {}
 
 LoggerStream::LoggerStream(const LoggerStream & rhs) :
-    pimpl(std::make_unique<StreamImpl>(*rhs.pimpl))
+    pimpl(make_unique<StreamImpl>(*rhs.pimpl))
 {
 
 }
