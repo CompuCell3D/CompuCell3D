@@ -113,8 +113,8 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         }    
     
     //cerr << "logger fname from instance=" << logger->getLogFname() << endl;
-    logger->_error("CONTACT ENERGY");
-    log<<LogMessageType::ERROR_LOG<<"size="<< size;
+    log<<"CONTACT ENERGY";
+    log<<"size="<< size;
     
     for (int i = 0; i < size; ++i)
         for (int j = 0; j < size; ++j) {
