@@ -46,6 +46,13 @@ using namespace CompuCell3D;
 
 
 using namespace std;
+namespace std{
+    template<>
+    struct hash<LogMessageType>
+    {
+      std::size_t operator()(const LogMessageType& s) const noexcept { return (int)s; }
+    };
+}
 
 Logger* Logger::m_Instance = 0;
 
