@@ -26,19 +26,11 @@ else()
         ADD_SHARED_LIBRARY(PublicUtilities ${SRCS} LINK_LIBRARIES Field3DShared BoundaryShared gomp LoggerLibStatic EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
     endif()
     if (UNIX AND NOT APPLE)
-        ADD_SHARED_LIBRARY(PublicUtilities ${SRCS} LINK_LIBRARIES Field3DShared BoundaryShared gomp EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
+        ADD_SHARED_LIBRARY(PublicUtilities ${SRCS} LINK_LIBRARIES Field3DShared BoundaryShared gomp LoggerLibShared EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
     endif()
 
 endif()
 
-
-# if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-#    ADD_STATIC_LIBRARY(PublicUtilities ${SRCS} LINK_LIBRARIES Field3DStatic EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS}
-#    # unit_calculator_lib fl
-#    )
-# else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-#    ADD_SHARED_LIBRARY(PublicUtilities ${SRCS} LINK_LIBRARIES Field3DShared BoundaryShared gomp EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
-# endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 INSTALL_FILES(/include/CompuCell3D/PublicUtilities .h
   NumericalUtils
