@@ -165,6 +165,7 @@ class FieldRegistry:
                 field_creating_fcn(field_name)
                 if self.simthread is not None:
                     self.simthread.add_visualization_field(field_name, field_adapter.field_type)
+                self.update_field_info()
 
         self.enable_ad_hoc_field_creation = True
 
@@ -243,3 +244,11 @@ class FieldRegistry:
             # GUI-less mode
             from cc3d.CompuCellSetup import persistent_globals
             return persistent_globals.persistent_holder['field_storage']
+
+    def update_field_info(self):
+        """
+        Perform updates elsewhere after field creation
+        :return: None
+        """
+        from cc3d.CompuCellSetup import persistent_globals
+        persistent_globals.cml_field_handler.get_info_about_fields()
