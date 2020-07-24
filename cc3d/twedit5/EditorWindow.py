@@ -5392,12 +5392,16 @@ class EditorWindow(QMainWindow):
         am.addAction(self.configurationAct)
 
         self.keyboardShortcutsAct = QtWidgets.QAction("Keyboard Shortcuts...", self, shortcut="",
-
                                                       statusTip="Reassign keyboard shortcuts",
-
                                                       triggered=self.keyboardShortcuts)
 
         am.addAction(self.keyboardShortcutsAct)
+
+        self.reset_settings_act = QtWidgets.QAction("Reset Settings", self, shortcut="",
+                                                      statusTip="Resets Settings to their default values",
+                                                      triggered=self.reset_settings)
+
+        am.addAction(self.reset_settings_act)
 
         self.switchToTabOnTheLeftAct = QtWidgets.QAction("Switch To Tab On The Left", self, shortcut="Ctrl+1",
 
@@ -5613,8 +5617,12 @@ class EditorWindow(QMainWindow):
         self.configurationMenu.addAction(am.actionDict["Configure..."])
 
         self.configurationMenu.addAction(am.actionDict["Keyboard Shortcuts..."])
+        # ---------------------------
+        self.configurationMenu.addSeparator()
+        self.configurationMenu.addAction(am.actionDict["Reset Settings"])
 
         self.menuBar().addSeparator()
+
 
         self.helpMenu = self.menuBar().addMenu("&Help")
 
@@ -5740,6 +5748,13 @@ class EditorWindow(QMainWindow):
 
         if ret:
             self.keyboardShortcutDlg.reassignNewShortcuts()
+
+    def reset_settings(self):
+        """
+        Resets settings to their default values
+        :return:
+        """
+        self.configuration.reset_settings()
 
     def maybeSave(self, _editor=None):
 
