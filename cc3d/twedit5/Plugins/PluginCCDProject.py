@@ -3768,6 +3768,13 @@ class CC3DProject(QObject):
         if not proposed_dir.exists():
             return proposed_dir
 
+        QMessageBox.information(self.__ui, 'Select Folder For Unzipping .cc3d Project',
+                                f'Could not create default unzip folder: '
+                                f'<br> <i>{proposed_dir}</i> <br>'
+                                f'(perhaps it already exists). <br>  '
+                                f'Please select folder where you want to unzip .cc3d project '
+                                )
+
         new_dirname = QFileDialog.getExistingDirectory(self.__ui, 'Create or Select a Directory '
                                                                   'to Extract Zip Archive to',
                                                        str(proposed_dir.parent))
