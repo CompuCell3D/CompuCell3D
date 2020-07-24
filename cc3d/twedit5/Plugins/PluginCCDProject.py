@@ -3711,6 +3711,8 @@ class CC3DProject(QObject):
 
         proposed_dir = file_name_path.parent.joinpath(file_name_path.stem)
         unzip_dirname = self.find_available_dir_name(proposed_dir=proposed_dir)
+        if not unzip_dirname:
+            return
 
         if not Path(unzip_dirname).exists():
             unzip_dirname.mkdir(parents=True, exist_ok=True)
