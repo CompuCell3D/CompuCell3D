@@ -85,9 +85,6 @@ class SimpleViewManager(QObject):
         self.tutor_act = None
         self.ref_man_act = None
         self.about_act = None
-        # self.mail_subscribe_act = None
-        # self.mail_unsubscribe_act = None
-        # self.mail_subscribe_unsubscribe_web_act = None
         self.check_update_act = None
         self.whats_this_act = None
 
@@ -323,15 +320,15 @@ class SimpleViewManager(QObject):
         :return:
         """
 
-        gip = DefaultData.getIconPath
+        get_icon_path = DefaultData.getIconPath
 
-        self.run_act = QAction(QIcon(gip("play.png")), "&Run", self)
+        self.run_act = QAction(QIcon(get_icon_path("play.png")), "&Run", self)
         self.run_act.setShortcut(Qt.CTRL + Qt.Key_M)
-        self.step_act = QAction(QIcon(gip("step.png")), "&Step", self)
+        self.step_act = QAction(QIcon(get_icon_path("step.png")), "&Step", self)
         self.step_act.setShortcut(Qt.CTRL + Qt.Key_E)
-        self.pause_act = QAction(QIcon(gip("pause.png")), "&Pause", self)
+        self.pause_act = QAction(QIcon(get_icon_path("pause.png")), "&Pause", self)
         self.pause_act.setShortcut(Qt.CTRL + Qt.Key_D)
-        self.stop_act = QAction(QIcon(gip("stop.png")), "&Stop", self)
+        self.stop_act = QAction(QIcon(get_icon_path("stop.png")), "&Stop", self)
         self.stop_act.setShortcut(Qt.CTRL + Qt.Key_X)
 
         self.restore_default_settings_act = QAction("Restore Default Settings For Current Project", self)
@@ -442,18 +439,6 @@ class SimpleViewManager(QObject):
         self.about_act = QAction(QIcon(gip("cc3d_64x64_logo.png")), "&About CompuCell3D", self)
         self.about_act.triggered.connect(self.__about)
 
-        # # leaving it here
-        # self.mail_subscribe_act = QAction(QIcon(gip("email-at-sign-icon.png")), "Subscribe to Mailing List", self)
-        # self.mail_subscribe_act.triggered.connect(self.__mail_subscribe)
-        #
-        # self.mail_unsubscribe_act = QAction(QIcon(gip("email-at-sign-icon-unsubscribe.png")),
-        #                                     "Unsubscribe from Mailing List", self)
-        # self.mail_unsubscribe_act.triggered.connect(self.__mail_unsubscribe)
-        #
-        # self.mail_subscribe_unsubscribe_web_act = QAction("Subscribe/Unsubscribe Mailing List - Web browser", self)
-        # self.mail_subscribe_unsubscribe_web_act.triggered.connect(
-        #     self.__mail_subscribe_unsubscribe_web)
-
         self.check_update_act = QAction("Check for CC3D Updates", self)
         self.check_update_act.triggered.connect(self.__check_update)
         self.display_no_update_info = False
@@ -481,11 +466,11 @@ class SimpleViewManager(QObject):
 
         self.display_no_update_info = display_no_update_info
 
-        # determine if check is necessary - for now we check every week in order not to bother users with too many checks
+        # determine if check is necessary - for now we check every week in order
+        # not to bother users with too many checks
         last_version_check_date = Configuration.getSetting('LastVersionCheckDate')
 
         today = datetime.date.today()
-        today_date_str = today.strftime('%Y%m%d')
 
         old_date = datetime.date(int(last_version_check_date[:4]), int(last_version_check_date[4:6]),
                                  int(last_version_check_date[6:]))
@@ -625,7 +610,7 @@ class SimpleViewManager(QObject):
         today = datetime.date.today()
         today_date_str = today.strftime('%Y%m%d')
 
-        last_version_check_date = Configuration.setSetting('LastVersionCheckDate', today_date_str)
+        Configuration.setSetting('LastVersionCheckDate', today_date_str)
 
         if encourage_update:
             message = f'New version of CompuCell3D is available - {current_version} rev. {current_revision}. ' \
@@ -652,7 +637,7 @@ class SimpleViewManager(QObject):
             if ret == QMessageBox.Yes:
                 QDesktopServices.openUrl(QUrl('http://sourceforge.net/projects/cc3d/files/' + current_version))
 
-        elif self.display_no_update_info == True:
+        elif self.display_no_update_info:
             ret = QMessageBox.information(self, 'Software update check', 'You are running latest version of CC3D.',
                                           QMessageBox.Ok)
 
@@ -664,21 +649,16 @@ class SimpleViewManager(QObject):
 
         self.check_version(check_interval=-1, display_no_update_info=True)
 
+    @staticmethod
     def __open_manuals_webpage(self):
-        # print 'THIS IS QUICK START GUIDE'
+        """
+        Opens a web page with CompuCell3D manuals
+        :return:
+        """
         QDesktopServices.openUrl(QUrl('http://www.compucell3d.org/Manuals'))
 
-    # def __mail_subscribe(self):
-    #     QDesktopServices.openUrl(QUrl('mailto:list@iu.edu?body=SUBSCRIBE compucell3d-l'))
-    #
-    # def __mail_unsubscribe(self):
-    #     QDesktopServices.openUrl(QUrl('mailto:list@iu.edu?body=UNSUBSCRIBE compucell3d-l'))
-    #
-    # def __mail_subscribe_unsubscribe_web(self):
-    #     QDesktopServices.openUrl(QUrl('http://www.compucell3d.org/mailinglist'))
-
     def __about(self):
-        version_str = '4.0.0'
+        version_str = '4.2.2'
         revision_str = '0'
 
         try:
