@@ -35,6 +35,26 @@ def getSVNRevisionAsString():
 __version__ = getVersionAsString()
 __revision__ = revisionNumber
 
+
+def get_version_info():
+    """
+    returns CC3D version string
+    :return:
+    """
+    return "CompuCell3D Version: %s Revision: %s" % (__version__, __revision__)
+
+
+def get_formatted_version_info():
+    """
+    returns formatted CC3D version string
+    :return:
+    """
+    formatted_version_info = f'#################################################\n' \
+                             f'# {get_version_info()}\n' \
+                             f'#################################################'
+    return formatted_version_info
+
+
 path_postfix = ''
 if sys.platform.startswith('win'):
     path_postfix = '\\'

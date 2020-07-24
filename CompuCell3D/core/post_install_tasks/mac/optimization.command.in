@@ -9,17 +9,6 @@ export PYTHON_MINOR_VERSION=@PYTHON_MINOR_VERSION@
 cd "${0%/*}"
 
 
-export COMPUCELL3D_MAJOR_VERSION=@COMPUCELL3D_MAJOR_VERSION@
-export COMPUCELL3D_MINOR_VERSION=@COMPUCELL3D_MINOR_VERSION@
-export COMPUCELL3D_BUILD_VERSION=@COMPUCELL3D_BUILD_VERSION@
-
-echo " "
-echo "---- ---- ---- ---- ---- ---- ---- ---- "
-echo "  OPtimization Package for CompuCell3D version $COMPUCELL3D_MAJOR_VERSION.$COMPUCELL3D_MINOR_VERSION.$COMPUCELL3D_BUILD_VERSION"
-echo "---- ---- ---- ---- ---- ---- ---- ---- "
-
-
-
 # the "PREFIX_CC3D" shell variable is used by CompuCell3D code, its name can NOT be modified:
 export PREFIX_CC3D=$(pwd)
 export CC3D_RUN_SCRIPT=${PREFIX_CC3D}/runScript.command

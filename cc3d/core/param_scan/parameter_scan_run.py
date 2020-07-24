@@ -2,6 +2,7 @@ import argparse
 import sys
 from pathlib import Path
 from typing import Union
+import cc3d
 from cc3d.core.param_scan.parameter_scan_utils import copy_project_to_output_folder
 from cc3d.core.param_scan.parameter_scan_utils import param_scan_status_path
 from cc3d.core.param_scan.parameter_scan_utils import create_param_scan_status
@@ -67,7 +68,10 @@ def prepare_param_scan_folder(cc3d_proj_fname: Union[str, Path], output_dir: Uni
 
 
 if __name__ == '__main__':
+
     args = process_cml()
+
+    print(cc3d.get_formatted_version_info())
 
     cc3d_proj_fname = args.input
     cc3d_proj_fname = cc3d_proj_fname.replace('"', '')
