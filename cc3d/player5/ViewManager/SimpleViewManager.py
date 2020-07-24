@@ -85,9 +85,9 @@ class SimpleViewManager(QObject):
         self.tutor_act = None
         self.ref_man_act = None
         self.about_act = None
-        self.mail_subscribe_act = None
-        self.mail_unsubscribe_act = None
-        self.mail_subscribe_unsubscribe_web_act = None
+        # self.mail_subscribe_act = None
+        # self.mail_unsubscribe_act = None
+        # self.mail_subscribe_unsubscribe_web_act = None
         self.check_update_act = None
         self.whats_this_act = None
 
@@ -202,9 +202,9 @@ class SimpleViewManager(QObject):
         menu.addAction(self.tutor_act)
         menu.addAction(self.ref_man_act)
         menu.addSeparator()
-        menu.addAction(self.mail_subscribe_act)
-        menu.addAction(self.mail_unsubscribe_act)
-        menu.addAction(self.mail_subscribe_unsubscribe_web_act)
+        # menu.addAction(self.mail_subscribe_act)
+        # menu.addAction(self.mail_unsubscribe_act)
+        # menu.addAction(self.mail_subscribe_unsubscribe_web_act)
         menu.addSeparator()
         menu.addAction(self.check_update_act)
         menu.addSeparator()
@@ -441,16 +441,18 @@ class SimpleViewManager(QObject):
         self.ref_man_act.triggered.connect(self.__open_manuals_webpage)
         self.about_act = QAction(QIcon(gip("cc3d_64x64_logo.png")), "&About CompuCell3D", self)
         self.about_act.triggered.connect(self.__about)
-        self.mail_subscribe_act = QAction(QIcon(gip("email-at-sign-icon.png")), "Subscribe to Mailing List", self)
-        self.mail_subscribe_act.triggered.connect(self.__mail_subscribe)
 
-        self.mail_unsubscribe_act = QAction(QIcon(gip("email-at-sign-icon-unsubscribe.png")),
-                                            "Unsubscribe from Mailing List", self)
-        self.mail_unsubscribe_act.triggered.connect(self.__mail_unsubscribe)
-
-        self.mail_subscribe_unsubscribe_web_act = QAction("Subscribe/Unsubscribe Mailing List - Web browser", self)
-        self.mail_subscribe_unsubscribe_web_act.triggered.connect(
-            self.__mail_subscribe_unsubscribe_web)
+        # # leaving it here
+        # self.mail_subscribe_act = QAction(QIcon(gip("email-at-sign-icon.png")), "Subscribe to Mailing List", self)
+        # self.mail_subscribe_act.triggered.connect(self.__mail_subscribe)
+        #
+        # self.mail_unsubscribe_act = QAction(QIcon(gip("email-at-sign-icon-unsubscribe.png")),
+        #                                     "Unsubscribe from Mailing List", self)
+        # self.mail_unsubscribe_act.triggered.connect(self.__mail_unsubscribe)
+        #
+        # self.mail_subscribe_unsubscribe_web_act = QAction("Subscribe/Unsubscribe Mailing List - Web browser", self)
+        # self.mail_subscribe_unsubscribe_web_act.triggered.connect(
+        #     self.__mail_subscribe_unsubscribe_web)
 
         self.check_update_act = QAction("Check for CC3D Updates", self)
         self.check_update_act.triggered.connect(self.__check_update)
@@ -666,14 +668,14 @@ class SimpleViewManager(QObject):
         # print 'THIS IS QUICK START GUIDE'
         QDesktopServices.openUrl(QUrl('http://www.compucell3d.org/Manuals'))
 
-    def __mail_subscribe(self):
-        QDesktopServices.openUrl(QUrl('mailto:list@iu.edu?body=SUBSCRIBE compucell3d-l'))
-
-    def __mail_unsubscribe(self):
-        QDesktopServices.openUrl(QUrl('mailto:list@iu.edu?body=UNSUBSCRIBE compucell3d-l'))
-
-    def __mail_subscribe_unsubscribe_web(self):
-        QDesktopServices.openUrl(QUrl('http://www.compucell3d.org/mailinglist'))
+    # def __mail_subscribe(self):
+    #     QDesktopServices.openUrl(QUrl('mailto:list@iu.edu?body=SUBSCRIBE compucell3d-l'))
+    #
+    # def __mail_unsubscribe(self):
+    #     QDesktopServices.openUrl(QUrl('mailto:list@iu.edu?body=UNSUBSCRIBE compucell3d-l'))
+    #
+    # def __mail_subscribe_unsubscribe_web(self):
+    #     QDesktopServices.openUrl(QUrl('http://www.compucell3d.org/mailinglist'))
 
     def __about(self):
         version_str = '4.0.0'
