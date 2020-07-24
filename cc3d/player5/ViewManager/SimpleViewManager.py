@@ -199,10 +199,6 @@ class SimpleViewManager(QObject):
         menu.addAction(self.tutor_act)
         menu.addAction(self.ref_man_act)
         menu.addSeparator()
-        # menu.addAction(self.mail_subscribe_act)
-        # menu.addAction(self.mail_unsubscribe_act)
-        # menu.addAction(self.mail_subscribe_unsubscribe_web_act)
-        menu.addSeparator()
         menu.addAction(self.check_update_act)
         menu.addSeparator()
         menu.addAction(self.about_act)
@@ -355,7 +351,8 @@ class SimpleViewManager(QObject):
         self.cell_glyphs_act.setCheckable(True)
         self.cell_glyphs_act.setChecked(self.visual["CellGlyphsOn"])
 
-        self.fpp_links_act = QAction("&FPP Links", self)  # callbacks for these menu items in child class SimpleTabView
+        # callbacks for these menu items in child class SimpleTabView
+        self.fpp_links_act = QAction("&FPP Links", self)
         self.fpp_links_act.setCheckable(True)
         self.fpp_links_act.setChecked(self.visual["FPPLinksOn"])
 
@@ -452,7 +449,7 @@ class SimpleViewManager(QObject):
             """ feature can be accessed using the context help button in the"""
             """ titlebar.</p>"""
         )
-        self.whats_this_act.triggered.connect(self.__whatsThis)
+        self.whats_this_act.triggered.connect(self.whats_this)
 
     def check_version(self, check_interval=-1, display_no_update_info=False):
         """
@@ -650,7 +647,7 @@ class SimpleViewManager(QObject):
         self.check_version(check_interval=-1, display_no_update_info=True)
 
     @staticmethod
-    def __open_manuals_webpage(self):
+    def __open_manuals_webpage():
         """
         Opens a web page with CompuCell3D manuals
         :return:
@@ -667,8 +664,6 @@ class SimpleViewManager(QObject):
         except ImportError:
             pass
 
-        # import Configuration
-        # version_str=Configuration.getVersion()
         about_text = "<h2>CompuCell3D</h2> Version: " + version_str + " Revision: " + revision_str + "<br />\
                           Copyright &copy; Biocomplexity Institute, <br />\
                           Indiana University, Bloomington, IN\
@@ -686,7 +681,8 @@ class SimpleViewManager(QObject):
 
         QMessageBox.about(self, "CompuCell3D", about_text + more_info_text + l_version_string)
 
-    def __whatsThis(self):
+    @staticmethod
+    def whats_this():
         """
         Private slot called in to enter Whats This mode.
         """
