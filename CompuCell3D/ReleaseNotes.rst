@@ -15,6 +15,8 @@ screenshot description file, and not on current player settings
 - Fixed handling of secretion in ReactionDiffusionSolverFE
 - Fixed "Check for New Version" functionality in the player
 - Fixed behavior of simulations that use plots but are run in gui-less mode
+- Fixed Twedit++ zoom in / zoom out issues
+- Fixed CC3D version printout issues
 
 New Features:
 
@@ -22,8 +24,8 @@ New Features:
 do unzipping using 3rd party tools
 - Added saving of simulation layout on simulation stop or simulation finish events
 - Added automatic zip file name fill-in in Twedit++ when zipping .cc3d project
--Added Simulation menu action to reset global settings - as of now users can reset simulation-specific
-and global settings directly from Player menu
+-Added Simulation menu action to reset global settings - as of now users can reset simulation-specific and global settings directly from Player menu
+- Added option to reset Twedit++ settings directly from Twedit++ GUI
 
 
 Version 4.2.1
