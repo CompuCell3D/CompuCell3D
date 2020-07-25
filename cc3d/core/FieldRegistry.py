@@ -231,7 +231,7 @@ class FieldRegistry:
         except (LookupError, IndexError) as e:
             return None, None
 
-    def get_field_adapter(self,field_name):
+    def get_field_adapter(self, field_name):
         return self.__fields_to_create[field_name]
 
     def get_field_storage(self):
@@ -244,8 +244,8 @@ class FieldRegistry:
             return self.simthread.callingWidget.fieldStorage
         else:
             # GUI-less mode
-            from cc3d.CompuCellSetup import persistent_globals
-            return persistent_globals.persistent_holder['field_storage']
+            pg = CompuCellSetup.persistent_globals
+            return pg.persistent_holder['field_storage']
 
     @staticmethod
     def update_field_info():
