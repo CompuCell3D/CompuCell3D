@@ -3,7 +3,7 @@ Release Notes
 
 Version 4.2.2
 -------------
-**2019-07-11*
+**2019-07-24*
 
 This is a bug-fix release featuring the following improvements:
 
