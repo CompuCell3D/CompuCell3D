@@ -1,6 +1,8 @@
 from cc3d.core.enums import *
+from cc3d import CompuCellSetup
 import numpy as np
 from .ExtraFieldAdapter import ExtraFieldAdapter
+
 
 class FieldRegistry:
     # def __init__(self, persistent_globals=None):
@@ -245,10 +247,12 @@ class FieldRegistry:
             from cc3d.CompuCellSetup import persistent_globals
             return persistent_globals.persistent_holder['field_storage']
 
-    def update_field_info(self):
+    @staticmethod
+    def update_field_info():
         """
         Perform updates elsewhere after field creation
         :return: None
         """
-        from cc3d.CompuCellSetup import persistent_globals
-        persistent_globals.cml_field_handler.get_info_about_fields()
+        pg = CompuCellSetup.persistent_globals
+        if pg.cml_field_handler is not None:
+            pg.cml_field_handler.get_info_about_fields()
