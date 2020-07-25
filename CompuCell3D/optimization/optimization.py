@@ -447,7 +447,7 @@ class Optimizer(object):
         self.workload_dict = self.prepare_optimization_run(simulation_name=simulation_name)
         workload_dict = self.workload_dict
 
-        print workload_dict
+        print(workload_dict)
 
         std_dev = optim_param_mgr.std_dev
         default_bounds = optim_param_mgr.default_bounds
@@ -469,14 +469,14 @@ class Optimizer(object):
             # evaluate  targert function values at the candidate solutions
             return_result_vec = np.array([], dtype=float)
             for param_set in self.param_generator(self.num_workers):
-                print 'CURRENT PARAM SET=', param_set
+                print('CURRENT PARAM SET=', param_set)
                 # distribution param_set to workers - run tasks spawns appropriate number of workers
                 # given self.num_workers and the size of the param_set
                 partial_return_result_vec = self.run_task(workload_dict, param_set)
 
                 return_result_vec = np.append(return_result_vec, partial_return_result_vec)
 
-                print 'FINISHED PARAM_SET=', param_set
+                print('FINISHED PARAM_SET=', param_set)
 
 
             optim.tell(param_set_list, return_result_vec)  # do all the real "update" work
@@ -492,7 +492,7 @@ class Optimizer(object):
 
         # print('best solution =', optim_param_mgr.params_from_0_1(optim.result()[0]))
 
-        print optim_param_mgr.params_names
+        print(optim_param_mgr.params_names)
 
         self.save_optimal_parameters(optimal_parameters)
         self.save_optimal_simulation(optimal_parameters)
@@ -561,8 +561,9 @@ def main_debug_win():
     try:
         optimizer.run()
     except AssertionError as e:
-        print 'ABNORMAL EXIT ', e.message
-        print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
+        print('ABNORMAL EXIT ', e.message())
+        print('Make sure your simulation scripts run correctly. '
+              'Run them using Player or runScript and watch for errors')
 
 
 def main_debug_osx():
@@ -589,8 +590,9 @@ def main_debug_osx():
     try:
         optimizer.run()
     except AssertionError as e:
-        print 'ABNORMAL EXIT ', e.message
-        print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
+        print('ABNORMAL EXIT ', e.message)
+        print('Make sure your simulation scripts run correctly. '
+              'Run them using Player or runScript and watch for errors')
 
 
 def main_debug_linux():
@@ -617,8 +619,9 @@ def main_debug_linux():
     try:
         optimizer.run()
     except AssertionError as e:
-        print 'ABNORMAL EXIT ', e.message
-        print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
+        print( 'ABNORMAL EXIT ', e.message)
+        print('Make sure your simulation scripts run correctly. '
+              'Run them using Player or runScript and watch for errors')
 
 
 
@@ -650,8 +653,8 @@ def main():
     try:
         optimizer.run()
     except AssertionError as e:
-        print 'ABNORMAL EXIT ',e.message
-        print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
+        print('ABNORMAL EXIT ',e.message)
+        print('Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors')
 
 if __name__ == '__main__':
     if sys.platform.startswith('win'):

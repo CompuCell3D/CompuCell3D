@@ -69,6 +69,9 @@ def handle_error():
 
 if __name__ == '__main__':
     args = process_cml()
+
+    print(cc3d.get_formatted_version_info())
+
     cc3d_sim_fname = args.input
     output_frequency = args.output_frequency
     screenshot_output_frequency = args.screenshot_output_frequency

@@ -1,6 +1,33 @@
 Release Notes
 =============
 
+Version 4.2.2
+-------------
+**2019-07-24*
+
+This is a bug-fix release featuring the following improvements:
+
+Bug Fixes:
+
+- Fixed saving of windows layout - including plots and steering panel
+- Fixed screenshot color issues - as of now coloring is based on specification inside
+screenshot description file, and not on current player settings
+- Fixed handling of secretion in ReactionDiffusionSolverFE
+- Fixed "Check for New Version" functionality in the player
+- Fixed behavior of simulations that use plots but are run in gui-less mode
+- Fixed Twedit++ zoom in / zoom out issues
+- Fixed CC3D version printout issues
+
+New Features:
+
+- Added ability top open zipped .cc3d project directly from Twedit++ - no need to
+do unzipping using 3rd party tools
+- Added saving of simulation layout on simulation stop or simulation finish events
+- Added automatic zip file name fill-in in Twedit++ when zipping .cc3d project
+-Added Simulation menu action to reset global settings - as of now users can reset simulation-specific and global settings directly from Player menu
+- Added option to reset Twedit++ settings directly from Twedit++ GUI
+
+
 Version 4.2.1
 -------------
 **2019-05-18*

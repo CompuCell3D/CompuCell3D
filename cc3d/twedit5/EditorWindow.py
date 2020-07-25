@@ -4663,13 +4663,12 @@ class EditorWindow(QMainWindow):
             slot - zooms in on all documents
 
         """
-
         self.zoomRange += 1
 
         self.configuration.setSetting("ZoomRange", self.zoomRange)
 
         for editor in self.getEditorList():
-            editor.zoomIn()
+            editor.zoomTo(self.zoomRange)
 
     def zoomOut(self):
 
@@ -4678,13 +4677,12 @@ class EditorWindow(QMainWindow):
             slot - zooms out on all documents
 
         """
-
         self.zoomRange -= 1
 
         self.configuration.setSetting("ZoomRange", self.zoomRange)
 
         for editor in self.getEditorList():
-            editor.zoomOut()
+            editor.zoomTo(self.zoomRange)
 
     def save(self, _editor=None):
 
@@ -4696,13 +4694,13 @@ class EditorWindow(QMainWindow):
 
         editor = self.getActiveEditor()
 
-        fileName = ''
+        file_name = ''
 
         if editor in self.getEditorList():
-            fileName = self.getEditorFileName(editor)
+            file_name = self.getEditorFileName(editor)
 
-        if fileName:
-            return self.saveFile(fileName)
+        if file_name:
+            return self.saveFile(file_name)
 
         return self.saveAs()
 
@@ -4714,27 +4712,19 @@ class EditorWindow(QMainWindow):
 
         """
 
-        # self.deactivateChangeSensing=True
+        current_file_path = None
 
-        currentFilePath = None
-
-        currentExtension = ""
+        current_extension = ""
 
         editor = None
 
         try:
-
             if _editor:
-
                 editor = _editor
 
             else:
-
                 editor = self.getActiveEditor()
-
-            currentFilePath = self.getEditorFileName(editor)
-
-            # print "currentFilePath=",currentFilePath
+            current_file_path = self.getEditorFileName(editor)
 
         except KeyError:
 
@@ -4746,25 +4736,23 @@ class EditorWindow(QMainWindow):
 
             # self.adjustLineNumbers(editor,True)
 
-        if currentFilePath:
+        if current_file_path:
 
-            fileSplit = os.path.splitext(str(currentFilePath))
+            file_split = os.path.splitext(str(current_file_path))
 
-            currentExtension = fileSplit[1]
+            current_extension = file_split[1]
 
-            # currentFilePath=os.path.dirname(str(currentFilePath))
-
-            self.lastFileOpenPath = currentFilePath
+            self.lastFileOpenPath = current_file_path
 
         elif self.lastFileOpenPath != '':
 
-            currentFilePath = self.lastFileOpenPath
+            current_file_path = self.lastFileOpenPath
 
         else:
 
             index = editor.panel.indexOf(editor)
 
-            currentFilePath = str(editor.panel.tabText(index))
+            current_file_path = str(editor.panel.tabText(index))
 
             # else:
 
@@ -4778,7 +4766,7 @@ class EditorWindow(QMainWindow):
 
                                                bool):  # saveAs is called by default with False bool type argument and we need to make sure that it is not converted to int index
 
-            currentFilterString = self.getCurrentFilterString(currentExtension)
+            currentFilterString = self.getCurrentFilterString(current_extension)
 
             dbgMsg("currentFilterString=", currentFilterString)
 
@@ -4788,12 +4776,12 @@ class EditorWindow(QMainWindow):
 
             if sys.platform == 'darwin':
 
-                fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", currentFilePath,
+                fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", current_file_path,
                                                                     self.fileDialogFilters)
 
             else:
 
-                fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", currentFilePath,
+                fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", current_file_path,
 
                                                                     currentFilterString + ";;" + self.fileDialogFilters)
 
@@ -5404,12 +5392,16 @@ class EditorWindow(QMainWindow):
         am.addAction(self.configurationAct)
 
         self.keyboardShortcutsAct = QtWidgets.QAction("Keyboard Shortcuts...", self, shortcut="",
-
                                                       statusTip="Reassign keyboard shortcuts",
-
                                                       triggered=self.keyboardShortcuts)
 
         am.addAction(self.keyboardShortcutsAct)
+
+        self.reset_settings_act = QtWidgets.QAction("Reset Settings", self, shortcut="",
+                                                      statusTip="Resets Settings to their default values",
+                                                      triggered=self.reset_settings)
+
+        am.addAction(self.reset_settings_act)
 
         self.switchToTabOnTheLeftAct = QtWidgets.QAction("Switch To Tab On The Left", self, shortcut="Ctrl+1",
 
@@ -5625,8 +5617,12 @@ class EditorWindow(QMainWindow):
         self.configurationMenu.addAction(am.actionDict["Configure..."])
 
         self.configurationMenu.addAction(am.actionDict["Keyboard Shortcuts..."])
+        # ---------------------------
+        self.configurationMenu.addSeparator()
+        self.configurationMenu.addAction(am.actionDict["Reset Settings"])
 
         self.menuBar().addSeparator()
+
 
         self.helpMenu = self.menuBar().addMenu("&Help")
 
@@ -5752,6 +5748,13 @@ class EditorWindow(QMainWindow):
 
         if ret:
             self.keyboardShortcutDlg.reassignNewShortcuts()
+
+    def reset_settings(self):
+        """
+        Resets settings to their default values
+        :return:
+        """
+        self.configuration.reset_settings()
 
     def maybeSave(self, _editor=None):
 

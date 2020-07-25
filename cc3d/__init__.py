@@ -4,8 +4,8 @@ from os.path import dirname, join, abspath
 
 versionMajor = 4
 versionMinor = 2
-versionBuild = 1
-revisionNumber = "20200518"
+versionBuild = 2
+revisionNumber = "20200724"
 
 
 def getVersionAsString():
@@ -34,6 +34,26 @@ def getSVNRevisionAsString():
 
 __version__ = getVersionAsString()
 __revision__ = revisionNumber
+
+
+def get_version_info():
+    """
+    returns CC3D version string
+    :return:
+    """
+    return "CompuCell3D Version: %s Revision: %s" % (__version__, __revision__)
+
+
+def get_formatted_version_info():
+    """
+    returns formatted CC3D version string
+    :return:
+    """
+    formatted_version_info = f'#################################################\n' \
+                             f'# {get_version_info()}\n' \
+                             f'#################################################'
+    return formatted_version_info
+
 
 path_postfix = ''
 if sys.platform.startswith('win'):
@@ -73,18 +93,10 @@ elif sys.platform.startswith('darwin'):
         dyld_library_env = ''
 
     dyld_env_list = dyld_library_env.split(':')
-    #
-    # dyld_env_list = list(map(lambda pth: abspath(pth), dyld_env_list))
-    #
-    # cc3d_cpp_path = abspath(join(cc3d_py_dir, 'cpp'))
-    # if cc3d_cpp_path not in dyld_env_list:
-    #     dyld_env_list.insert(0, cc3d_cpp_path)
-    #
+
     cc3d_cpp_lib_path = abspath(join(cc3d_py_dir, 'cpp', 'lib'))
     if cc3d_cpp_lib_path not in dyld_env_list:
         dyld_env_list.insert(0, cc3d_cpp_lib_path)
-
-    # dyld_env_list.insert(0,os.environ['COMPUCELL3D_PLUGIN_PATH'])
 
     os.environ['DYLD_LIBRARY_PATH'] = ':'.join(dyld_env_list)
 
