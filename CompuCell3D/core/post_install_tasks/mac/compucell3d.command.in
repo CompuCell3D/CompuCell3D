@@ -7,24 +7,9 @@
 export PYTHON_MINOR_VERSION=
 cd "${0%/*}"
 
-
-
 # language settings
 export LANG=en_EN
 export __CF_USER_TEXT_ENCODING=""
-
-export COMPUCELL3D_MAJOR_VERSION=4
-export COMPUCELL3D_MINOR_VERSION=0
-export COMPUCELL3D_BUILD_VERSION=0
-
-
-echo " "
-echo "---- ---- ---- ---- ---- ---- ---- ---- "
-echo "  CompuCell3D version $COMPUCELL3D_MAJOR_VERSION.$COMPUCELL3D_MINOR_VERSION.$COMPUCELL3D_BUILD_VERSION"
-echo "     (OS X 10.8 x86_64 build) "
-echo "---- ---- ---- ---- ---- ---- ---- ---- "
-
-
 
 export PREFIX_CC3D=$(pwd)
 
@@ -35,7 +20,6 @@ export QT_QPA_PLATFORM_PLUGIN_PATH=${PREFIX_CC3D}/python37/plugins
 export CC3D_PYTHON_APP=${PREFIX_CC3D}/python37/compucell3d.app/Contents/MacOS/python
 
 export DYLD_LIBRARY_PATH=${PREFIX_CC3D}/lib/site-packages/cc3d/cpp/lib:${DYLD_LIBRARY_PATH}
-
 
 if [ -e ${CC3D_PYTHON_APP} ]
 then

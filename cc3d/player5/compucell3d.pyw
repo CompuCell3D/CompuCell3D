@@ -68,8 +68,6 @@ if sys.platform == 'darwin':
 
 
 def main(argv):
-    print('compucell3d.pyw:   type(argv)=', type(argv))
-    print('compucell3d.pyw:   argv=', argv)
 
     # if sys.platform.startswith('darwin'):
     #     PyQt5.QtCore.QCoreApplication.setAttribute(Qt.AA_DontUseNativeMenuBar)
@@ -84,19 +82,15 @@ def main(argv):
     if sys.platform.startswith('darwin'):
         splash.raise_()
 
-    # TODO Fix this - set paths and uncomment
-    # sys.path.append(os.environ["PYTHON_MODULE_PATH"])
-    # sys.path.append(os.environ["SWIG_LIB_INSTALL_DIR"])
+    print(cc3d.get_formatted_version_info())
 
-    version_str = cc3d.__version__
-    revision_str = cc3d.__revision__
+    base_message = f'{cc3d.get_version_info()}\n'
 
-    base_message = "CompuCell3D Version: %s Revision: %s\n" % (version_str, revision_str)
     first_message = base_message + "Loading User Interface ..."
 
     splash.showMessage(first_message, Qt.AlignLeft, Qt.white)
 
-    second_message = base_message + "Loading CompuCnell3D Python Modules..."
+    second_message = base_message + "Loading CompuCell3D Python Modules..."
 
     splash.showMessage(second_message, Qt.AlignLeft, Qt.white)
 

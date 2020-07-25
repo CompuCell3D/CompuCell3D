@@ -9,6 +9,13 @@ import cc3d
 import datetime
 from cc3d.player5.Utilities.WebFetcher import WebFetcher
 
+try:
+    from cc3d.player5.Utilities.WebFetcherRequests import WebFetcherRequests
+
+    requests_web_fetcher_available = True
+except ImportError:
+    requests_web_fetcher_available = False
+
 gip = DefaultData.getIconPath
 
 MODULENAME = '------- SimpleViewManager: '
@@ -29,6 +36,8 @@ class SimpleViewManager(QObject):
             "ZoomFactor": Configuration.getSetting("ZoomFactor"),
         }
 
+        self.cc3d_updates_url = "http://www.compucell3d.org/current_version"
+
         # file actions
         self.open_act = None
         self.open_lds_act = None
@@ -41,6 +50,7 @@ class SimpleViewManager(QObject):
         self.pause_act = None
         self.stop_act = None
         self.restore_default_settings_act = None
+        self.restore_default_global_settings_act = None
 
         # visualization actions
         self.cells_act = None
@@ -75,9 +85,6 @@ class SimpleViewManager(QObject):
         self.tutor_act = None
         self.ref_man_act = None
         self.about_act = None
-        self.mail_subscribe_act = None
-        self.mail_unsubscribe_act = None
-        self.mail_subscribe_unsubscribe_web_act = None
         self.check_update_act = None
         self.whats_this_act = None
 
@@ -122,6 +129,7 @@ class SimpleViewManager(QObject):
         menu.addSeparator()
         # --------------------
         menu.addAction(self.restore_default_settings_act)
+        menu.addAction(self.restore_default_global_settings_act)
 
         return menu
 
@@ -190,10 +198,6 @@ class SimpleViewManager(QObject):
         menu.addAction(self.quick_act)
         menu.addAction(self.tutor_act)
         menu.addAction(self.ref_man_act)
-        menu.addSeparator()
-        menu.addAction(self.mail_subscribe_act)
-        menu.addAction(self.mail_unsubscribe_act)
-        menu.addAction(self.mail_subscribe_unsubscribe_web_act)
         menu.addSeparator()
         menu.addAction(self.check_update_act)
         menu.addSeparator()
@@ -312,18 +316,19 @@ class SimpleViewManager(QObject):
         :return:
         """
 
-        gip = DefaultData.getIconPath
+        get_icon_path = DefaultData.getIconPath
 
-        self.run_act = QAction(QIcon(gip("play.png")), "&Run", self)
+        self.run_act = QAction(QIcon(get_icon_path("play.png")), "&Run", self)
         self.run_act.setShortcut(Qt.CTRL + Qt.Key_M)
-        self.step_act = QAction(QIcon(gip("step.png")), "&Step", self)
+        self.step_act = QAction(QIcon(get_icon_path("step.png")), "&Step", self)
         self.step_act.setShortcut(Qt.CTRL + Qt.Key_E)
-        self.pause_act = QAction(QIcon(gip("pause.png")), "&Pause", self)
+        self.pause_act = QAction(QIcon(get_icon_path("pause.png")), "&Pause", self)
         self.pause_act.setShortcut(Qt.CTRL + Qt.Key_D)
-        self.stop_act = QAction(QIcon(gip("stop.png")), "&Stop", self)
+        self.stop_act = QAction(QIcon(get_icon_path("stop.png")), "&Stop", self)
         self.stop_act.setShortcut(Qt.CTRL + Qt.Key_X)
 
-        self.restore_default_settings_act = QAction("Restore Default Settings", self)
+        self.restore_default_settings_act = QAction("Restore Default Settings For Current Project", self)
+        self.restore_default_global_settings_act = QAction("Restore Default Global Settings", self)
 
     def init_visual_actions(self):
         """
@@ -346,7 +351,8 @@ class SimpleViewManager(QObject):
         self.cell_glyphs_act.setCheckable(True)
         self.cell_glyphs_act.setChecked(self.visual["CellGlyphsOn"])
 
-        self.fpp_links_act = QAction("&FPP Links", self)  # callbacks for these menu items in child class SimpleTabView
+        # callbacks for these menu items in child class SimpleTabView
+        self.fpp_links_act = QAction("&FPP Links", self)
         self.fpp_links_act.setCheckable(True)
         self.fpp_links_act.setChecked(self.visual["FPPLinksOn"])
 
@@ -429,16 +435,6 @@ class SimpleViewManager(QObject):
         self.ref_man_act.triggered.connect(self.__open_manuals_webpage)
         self.about_act = QAction(QIcon(gip("cc3d_64x64_logo.png")), "&About CompuCell3D", self)
         self.about_act.triggered.connect(self.__about)
-        self.mail_subscribe_act = QAction(QIcon(gip("email-at-sign-icon.png")), "Subscribe to Mailing List", self)
-        self.mail_subscribe_act.triggered.connect(self.__mail_subscribe)
-
-        self.mail_unsubscribe_act = QAction(QIcon(gip("email-at-sign-icon-unsubscribe.png")),
-                                            "Unsubscribe from Mailing List", self)
-        self.mail_unsubscribe_act.triggered.connect(self.__mail_unsubscribe)
-
-        self.mail_subscribe_unsubscribe_web_act = QAction("Subscribe/Unsubscribe Mailing List - Web browser", self)
-        self.mail_subscribe_unsubscribe_web_act.triggered.connect(
-            self.__mail_subscribe_unsubscribe_web)
 
         self.check_update_act = QAction("Check for CC3D Updates", self)
         self.check_update_act.triggered.connect(self.__check_update)
@@ -453,7 +449,7 @@ class SimpleViewManager(QObject):
             """ feature can be accessed using the context help button in the"""
             """ titlebar.</p>"""
         )
-        self.whats_this_act.triggered.connect(self.__whatsThis)
+        self.whats_this_act.triggered.connect(self.whats_this)
 
     def check_version(self, check_interval=-1, display_no_update_info=False):
         """
@@ -467,11 +463,11 @@ class SimpleViewManager(QObject):
 
         self.display_no_update_info = display_no_update_info
 
-        # determine if check is necessary - for now we check every week in order not to bother users with too many checks
+        # determine if check is necessary - for now we check every week in order
+        # not to bother users with too many checks
         last_version_check_date = Configuration.getSetting('LastVersionCheckDate')
 
         today = datetime.date.today()
-        today_date_str = today.strftime('%Y%m%d')
 
         old_date = datetime.date(int(last_version_check_date[:4]), int(last_version_check_date[4:6]),
                                  int(last_version_check_date[6:]))
@@ -483,10 +479,13 @@ class SimpleViewManager(QObject):
         else:
             print('WILL DO THE CHECK')
 
-        self.version_fetcher = WebFetcher(_parent=self)
-        self.version_fetcher.gotWebContentSignal.connect(self.process_version_check)
+        if requests_web_fetcher_available:
+            self.version_fetcher = WebFetcherRequests(_parent=self)
+        else:
+            self.version_fetcher = WebFetcher(_parent=self)
 
-        self.version_fetcher.fetch("http://www.compucell3d.org/current_version")
+        self.version_fetcher.gotWebContentSignal.connect(self.process_version_check)
+        self.version_fetcher.fetch(self.cc3d_updates_url)
 
     def extract_current_version(self, version_html_str):
         """
@@ -496,7 +495,7 @@ class SimpleViewManager(QObject):
         :return:
         """
         if str(version_html_str) == '':
-            print('Could not fetch "http://www.compucell3d.org/current_version webpage')
+            print(f'Could not fetch {self.cc3d_updates_url} webpage')
             return None, None
 
         current_version = None
@@ -608,7 +607,7 @@ class SimpleViewManager(QObject):
         today = datetime.date.today()
         today_date_str = today.strftime('%Y%m%d')
 
-        last_version_check_date = Configuration.setSetting('LastVersionCheckDate', today_date_str)
+        Configuration.setSetting('LastVersionCheckDate', today_date_str)
 
         if encourage_update:
             message = f'New version of CompuCell3D is available - {current_version} rev. {current_revision}. ' \
@@ -635,7 +634,7 @@ class SimpleViewManager(QObject):
             if ret == QMessageBox.Yes:
                 QDesktopServices.openUrl(QUrl('http://sourceforge.net/projects/cc3d/files/' + current_version))
 
-        elif self.display_no_update_info == True:
+        elif self.display_no_update_info:
             ret = QMessageBox.information(self, 'Software update check', 'You are running latest version of CC3D.',
                                           QMessageBox.Ok)
 
@@ -647,21 +646,16 @@ class SimpleViewManager(QObject):
 
         self.check_version(check_interval=-1, display_no_update_info=True)
 
-    def __open_manuals_webpage(self):
-        # print 'THIS IS QUICK START GUIDE'
+    @staticmethod
+    def __open_manuals_webpage():
+        """
+        Opens a web page with CompuCell3D manuals
+        :return:
+        """
         QDesktopServices.openUrl(QUrl('http://www.compucell3d.org/Manuals'))
 
-    def __mail_subscribe(self):
-        QDesktopServices.openUrl(QUrl('mailto:list@iu.edu?body=SUBSCRIBE compucell3d-l'))
-
-    def __mail_unsubscribe(self):
-        QDesktopServices.openUrl(QUrl('mailto:list@iu.edu?body=UNSUBSCRIBE compucell3d-l'))
-
-    def __mail_subscribe_unsubscribe_web(self):
-        QDesktopServices.openUrl(QUrl('http://www.compucell3d.org/mailinglist'))
-
     def __about(self):
-        version_str = '4.0.0'
+        version_str = '4.2.2'
         revision_str = '0'
 
         try:
@@ -670,8 +664,6 @@ class SimpleViewManager(QObject):
         except ImportError:
             pass
 
-        # import Configuration
-        # version_str=Configuration.getVersion()
         about_text = "<h2>CompuCell3D</h2> Version: " + version_str + " Revision: " + revision_str + "<br />\
                           Copyright &copy; Biocomplexity Institute, <br />\
                           Indiana University, Bloomington, IN\
@@ -689,7 +681,8 @@ class SimpleViewManager(QObject):
 
         QMessageBox.about(self, "CompuCell3D", about_text + more_info_text + l_version_string)
 
-    def __whatsThis(self):
+    @staticmethod
+    def whats_this():
         """
         Private slot called in to enter Whats This mode.
         """

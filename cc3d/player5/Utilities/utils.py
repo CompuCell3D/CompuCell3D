@@ -26,13 +26,14 @@ def qcolor_to_rgba(qcolor: object) -> tuple:
 
 def to_vtk_rgb(color_obj):
     """
-
+    Converts color object (either QColor or a tuple of intergers) into vtk rgb values
     :param color_obj:{color obj} can be either qcolor or a list/tuple of 3-4 integers
     :return: {tuple of 0-1 floats}
     """
     # try qcolor conversion
     try:
-        return qcolor_to_rgba(color_obj)[:3]
+        qcolor_rgb = qcolor_to_rgba(color_obj)[:3]
+        color_obj = qcolor_rgb
     except AttributeError:
         pass
 

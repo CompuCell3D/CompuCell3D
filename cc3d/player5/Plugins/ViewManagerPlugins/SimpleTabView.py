@@ -34,7 +34,7 @@ from cc3d.player5.Plugins.ViewManagerPlugins.ScreenshotDescriptionBrowser import
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
 from cc3d.player5 import Graphics
 from cc3d.core import XMLUtils
-from .PlotManagerSetup import createPlotManager
+from .PlotManagerSetup import create_plot_manager
 from .WidgetManager import WidgetManager
 from cc3d.cpp import PlayerPython
 from cc3d.core.CMLFieldHandler import CMLFieldHandler
@@ -62,8 +62,8 @@ try:
     if not appended:
         sys.path.append(python_module_path)
     from cc3d import CompuCellSetup
-except:
-    print('STView: sys.path=', sys.path)
+except (KeyError, ImportError):
+    print('Ignoring initial imports')
 
 # *********** TODO
 # 1. add example with simplified plots
@@ -120,8 +120,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # object responsible for creating/managing plot windows so they're accessible from steppable level
 
-        self.plotManager = createPlotManager(self)
-        self.plotManager = createPlotManager(self)
+        self.plotManager = create_plot_manager(self)
+        self.plotManager = create_plot_manager(self)
 
         self.widgetManager = WidgetManager(self)
 
@@ -742,7 +742,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.redoCompletedStepSignal.connect(self.simulation.redoCompletedStep)
             self.stopRequestSignal.connect(self.simulation.stop)
 
-            self.plotManager.initSignalAndSlots()
+            self.plotManager.init_signal_and_slots()
             self.widgetManager.initSignalAndSlots()
 
             self.fieldStorage = PlayerPython.FieldStorage()
@@ -1062,6 +1062,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.stop_act.triggered.connect(self.__simulationStop)
 
         self.restore_default_settings_act.triggered.connect(self.restore_default_settings)
+        self.restore_default_global_settings_act.triggered.connect(self.restore_default_global_settings)
 
         self.open_act.triggered.connect(self.__openSim)
         self.open_lds_act.triggered.connect(self.__openLDSFile)
@@ -1367,6 +1368,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.plotManager.restore_plots_layout()
 
+        # restore steering panel
+        self.restore_steering_panel()
+
     def handleSimulationFinishedCMLResultReplay(self, _flag):
         '''
         callback - runs after CML replay mode finished. Cleans after vtk replay
@@ -1596,7 +1600,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # we do not save windows layout for simulation replay
         if self.__viewManagerType != "CMLResultReplay":
-            self.__saveWindowsLayout()
+            self.__save_windows_layout()
 
         self.simulation.drawMutex.lock()
         self.simulation.drawMutex.unlock()
@@ -2120,15 +2124,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.run_act.setEnabled(True)
             self.pause_act.setEnabled(False)
 
-    def __saveWindowsLayout(self):
+    def __save_windows_layout(self):
         """
         Saves windows layout in the _settings.xml
         :return:None
         """
 
-        windowsLayout = {}
+        windows_layout = {}
 
-        for key, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+        window_list_to_save_layout = list(
+            self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL)) + list(
+            self.win_inventory.getWindowsItems(STEERING_PANEL_LABEL))
+
+        for key, win in list(self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL)):
             print('key, win = ', (key, win))
             widget = win.widget()
             # if not widget.allowSaveLayout: continue
@@ -2142,27 +2150,71 @@ class SimpleTabView(MainArea, SimpleViewManager):
             gwd.winPosition = win.pos()
             gwd.winSize = win.size()
 
-            # print 'getGraphicsWindowData=', gwd
-            # print 'toDict=', gwd.toDict()
+            windows_layout[key] = gwd.toDict()
 
-            windowsLayout[key] = gwd.toDict()
-
-        # print 'AFTER self.fieldTypes = ', self.fieldTypes
+        # handling plot windows
         try:
             print(self.plotManager.plotWindowList)
         except AttributeError:
             print("plot manager does not have plotWindowList member")
 
-        plotLayoutDict = self.plotManager.getPlotWindowsLayoutDict()
-        # for key, gwd in plotLayoutDict.iteritems():
-        #     print 'key=', key
-        #     print 'gwd=', gwd
+        plot_layout_dict = self.plotManager.get_plot_windows_layout_dict()
 
         # combining two layout dicts
-        windowsLayoutCombined = windowsLayout.copy()
-        windowsLayoutCombined.update(plotLayoutDict)
-        # print 'windowsLayoutCombined=',windowsLayoutCombined
-        Configuration.setSetting('WindowsLayout', windowsLayoutCombined)
+        windows_layout_combined = windows_layout.copy()
+        windows_layout_combined.update(plot_layout_dict)
+
+        # handling steerling panel
+        steering_panel_layout_dict = self.get_steering_panel_layout_dict()
+
+        windows_layout_combined.update(steering_panel_layout_dict)
+
+        Configuration.setSetting('WindowsLayout', windows_layout_combined)
+
+    def get_steering_panel_layout_dict(self)->dict:
+        """
+        returns a dictionary with steering panel(s) layout specs - used in saving/restoring layout
+        :return:
+        """
+
+        windows_layout = {}
+
+        for winId, win in self.win_inventory.getWindowsItems(STEERING_PANEL_LABEL):
+
+            gwd = GraphicsWindowData()
+            gwd.sceneName = 'Steering Panel'
+            gwd.winType = 'steering_panel'
+            gwd.winSize = win.size()
+            gwd.winPosition = win.pos()
+
+            windows_layout[gwd.sceneName] = gwd.toDict()
+
+        return windows_layout
+
+    def restore_steering_panel(self):
+        """
+        Restores layout of the steering panel
+        :return:
+        """
+        windows_layout_dict = Configuration.getSetting('WindowsLayout')
+
+        if not windows_layout_dict:
+            return
+
+        for winId, win in self.win_inventory.getWindowsItems(STEERING_PANEL_LABEL):
+            try:
+                window_data_dict = windows_layout_dict['Steering Panel']
+            except KeyError:
+                continue
+
+            gwd = GraphicsWindowData()
+            gwd.fromDict(window_data_dict)
+
+            if gwd.winType != 'steering_panel':
+                return
+
+            win.resize(gwd.winSize)
+            win.move(gwd.winPosition)
 
     def __simulationStop(self):
         '''
@@ -2176,7 +2228,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # we do not save windows layout for simulation replay
         if self.__viewManagerType != "CMLResultReplay":
-            self.__saveWindowsLayout()
+            self.__save_windows_layout()
 
         if self.__viewManagerType == "CMLResultReplay":
             self.cmlReplayManager.set_run_state(state=STOP_STATE)
@@ -2189,10 +2241,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.cmlReplayManager.initial_data_read.disconnect(self.initializeSimulationViewWidget)
             self.cmlReplayManager.subsequent_data_read.disconnect(self.handleCompletedStep)
             self.cmlReplayManager.final_data_read.disconnect(self.handleSimulationFinished)
-
-        # if not self.singleSimulation:
-        #     self.singleSimulation = True
-        #     self.parameterScanFile = ''
 
         if not self.pause_act.isEnabled():
             self.__stopSim()
@@ -2223,10 +2271,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         Configuration.replace_custom_settings_with_defaults()
 
+    @staticmethod
+    def restore_default_global_settings():
+        """
+        Removes global settings
+        :return:
+        """
+
+        Configuration.restore_default_global_settings()
+
     def quit(self, error_code=0):
         """Quit the application."""
-        # self.closeEvent(None)
-        # QtCore.QCoreApplication.instance().quit()
         print('error_code = ', error_code)
         QCoreApplication.instance().exit(error_code)
         print('AFTER QtCore.QCoreApplication.instance()')

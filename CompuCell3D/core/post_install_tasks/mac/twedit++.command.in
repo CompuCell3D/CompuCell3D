@@ -38,13 +38,6 @@ export PYTHONPATH=${PREFIX_CC3D}/lib/site-packages
 
 echo "====> PYTHONPATH directory: $PYTHONPATH"
 
-
-
-export TWEDIT_MAJOR_VERSION=0
-export TWEDIT_MINOR_VERSION=9
-export TWEDIT_BUILD_VERSION=0
-
-
 ${PYTHON_EXEC} ${PREFIX_CC3D}/lib/site-packages/cc3d/twedit5/twedit_plus_plus_cc3d.py $*
 
 

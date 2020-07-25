@@ -2,6 +2,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import *
 from PyQt5.QtNetwork import *
 
+
 class WebFetcher(QObject):
     '''
     This class fetches content of web page
@@ -13,7 +14,7 @@ class WebFetcher(QObject):
     def __init__(self, _parent=None):
         super(WebFetcher, self).__init__()
         self.parent = _parent
-
+        self.user_agent = b'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
         self.network_manager = QNetworkAccessManager()
 
         self.network_manager.finished.connect(self.reply_finished)
@@ -27,9 +28,18 @@ class WebFetcher(QObject):
         :return: None
         '''
         self.url_str = url_str
-        print('fetch=',url_str)
-        self.network_manager.get(QNetworkRequest(QUrl(url_str)))
+        print('fetch=', url_str)
 
+        config = QSslConfiguration.defaultConfiguration()
+        request = QNetworkRequest()
+        request.setRawHeader(b'User-Agent', self.user_agent)
+        # config.setProtocol(QSsl.TlsV1_2)
+        # request.setSslConfiguration(config)
+        request.setUrl(QUrl(url_str))
+
+        self.network_manager.get(request)
+
+        # self.network_manager.get(QNetworkRequest(QUrl(url_str)))
 
     def reply_finished(self, reply):
         '''
@@ -42,7 +52,9 @@ class WebFetcher(QObject):
 
         data = reply.readAll()
         data_qstring = str(data)
+        data_qstring = str(data, 'utf-8')
         data_str = str(data_qstring)
+        print('data_qstring=', data_qstring)
         self.gotWebContentSignal.emit(data_qstring, str(self.url_str))
 
 
@@ -54,5 +66,3 @@ if __name__ == "__main__":
     ex = WebFetcher()
     ex.fetch(url_str="http://www.compucell3d.org/current_version")
     sys.exit(app.exec_())
-
-

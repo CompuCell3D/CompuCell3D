@@ -192,6 +192,10 @@ class SimulationThread(QtCore.QThread):
         self.sem.acquire()
         self.sem.release()
 
+    def waitForFinishingTasksToConclude(self):
+        self.finishMutex.lock()
+        self.finishMutex.unlock()
+
     # added for compatibility reasons
     def setStopSimulation(self, _flag):
         self.stopped = _flag
@@ -237,13 +241,6 @@ class SimulationThread(QtCore.QThread):
 
     def getScreenUpdateFrequency(self):
         return self.screenUpdateFrequency
-
-    def setScreenUpdateFrequency(self):
-        import cc3d.player5.Configuration as Configuration
-        try:
-            self.screenUpdateFrequency = Configuration.getSetting("ScreenUpdateFrequency")
-        except:
-            print('SIMTHREAD: Could not access configuration.')
 
     def getImageOutputFlag(self):
         return self.imageOutputFlag
