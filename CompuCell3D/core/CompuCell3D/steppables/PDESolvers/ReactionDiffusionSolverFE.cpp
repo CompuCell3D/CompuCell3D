@@ -811,21 +811,30 @@ void ReactionDiffusionSolverFE::step(const unsigned int _currentStep) {
         for (int callIdx = 0; callIdx < maxNumberOfDiffusionCalls; ++callIdx) {
 
             for (int idx = 0; idx < numberOfFields; ++idx) {
-                prepCellTypeField(idx); // here we initialize celltype array  boundaries - we do it once per  MCS
+				if (callIdx == 0) prepCellTypeField(idx); // here we initialize celltype array  boundaries - we do it once per  MCS
                 boundaryConditionInit(idx);//initializing boundary conditions
-                solveRDEquationsSingleField(idx); //reaction-diffusion
                 //secretion
                 for (unsigned int j = 0; j < diffSecrFieldTuppleVec[idx].secrData.secretionFcnPtrVec.size(); ++j) {
                     (this->*diffSecrFieldTuppleVec[idx].secrData.secretionFcnPtrVec[j])(idx);
                 }
 
             }
-
-            for (int fieldIdx = 0; fieldIdx < numberOfFields; ++fieldIdx) {
-                ConcentrationField_t & concentrationField = *concentrationFieldVector[fieldIdx];
-                concentrationField.swapArrays();
-            }
         }
+
+		for (int callIdx = 0; callIdx < maxNumberOfDiffusionCalls; ++callIdx) {
+
+			for (int idx = 0; idx < numberOfFields; ++idx) {
+				boundaryConditionInit(idx);//initializing boundary conditions
+				solveRDEquationsSingleField(idx); //reaction-diffusion
+			}
+
+			for (int fieldIdx = 0; fieldIdx < numberOfFields; ++fieldIdx) {
+				ConcentrationField_t & concentrationField = *concentrationFieldVector[fieldIdx];
+				concentrationField.swapArrays();
+			}
+
+		}
+
     }
     else { //solver behaves as FlexiblereactionDiffusionSolver - i.e. secretion is done at once followed by multiple diffusive steps
 
@@ -840,7 +849,7 @@ void ReactionDiffusionSolverFE::step(const unsigned int _currentStep) {
 
             //reaction-diffusive steps
             for (int idx = 0; idx < numberOfFields; ++idx) {
-                prepCellTypeField(idx); // here we initialize celltype array  boundaries - we do it once per  MCS
+				if (callIdx == 0) prepCellTypeField(idx); // here we initialize celltype array  boundaries - we do it once per  MCS
                 boundaryConditionInit(idx);//initializing boundary conditions
                 solveRDEquationsSingleField(idx); //reaction-diffusion
             }

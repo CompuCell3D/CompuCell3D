@@ -85,7 +85,7 @@ class FieldRegistry:
             return
 
         fieldNP = np.zeros(shape=(self.dim.x, self.dim.y, self.dim.z), dtype=np.float32)
-        ndarrayAdapter = self.simthread.callingWidget.fieldStorage.createFloatFieldPy(self.dim, field_name)
+        ndarrayAdapter = self.get_field_storage().createFloatFieldPy(self.dim, field_name)
         # initializing  numpyAdapter using numpy array (copy dims and data ptr)
         ndarrayAdapter.initFromNumpy(fieldNP)
         self.addNewField(ndarrayAdapter, field_name, SCALAR_FIELD)
@@ -105,7 +105,7 @@ class FieldRegistry:
         if field_adapter is None:
             return
 
-        field_ref = self.simthread.callingWidget.fieldStorage.createScalarFieldCellLevelPy(field_name)
+        field_ref = self.get_field_storage().createScalarFieldCellLevelPy(field_name)
         self.addNewField(field_ref, field_name, SCALAR_FIELD_CELL_LEVEL)
         field_adapter.set_ref(field_ref)
 
@@ -121,8 +121,7 @@ class FieldRegistry:
             return
 
         fieldNP = np.zeros(shape=(self.dim.x, self.dim.y, self.dim.z, 3), dtype=np.float32)
-        ndarrayAdapter = self.simthread.callingWidget.fieldStorage.createVectorFieldPy(self.dim, field_name)
-
+        ndarrayAdapter = self.get_field_storage().createVectorFieldPy(self.dim, field_name)
         # initializing  numpyAdapter using numpy array (copy dims and data ptr)
         ndarrayAdapter.initFromNumpy(fieldNP)
         self.addNewField(ndarrayAdapter, field_name, VECTOR_FIELD)
@@ -141,7 +140,7 @@ class FieldRegistry:
         if field_adapter is None:
             return
 
-        field_ref = self.simthread.callingWidget.fieldStorage.createVectorFieldCellLevelPy(field_name)
+        field_ref = self.get_field_storage().createVectorFieldCellLevelPy(field_name)
         self.addNewField(field_ref, field_name, VECTOR_FIELD_CELL_LEVEL)
         field_adapter.set_ref(field_ref)
 
@@ -166,6 +165,7 @@ class FieldRegistry:
                 field_creating_fcn(field_name)
                 if self.simthread is not None:
                     self.simthread.add_visualization_field(field_name, field_adapter.field_type)
+                self.update_field_info()
 
         self.enable_ad_hoc_field_creation = True
 
@@ -230,6 +230,25 @@ class FieldRegistry:
             return None, None
 
     def get_field_adapter(self,field_name):
-
-
         return self.__fields_to_create[field_name]
+
+    def get_field_storage(self):
+        """
+        Returns field storage
+        :return:
+        """
+        if self.simthread is not None:
+            # GUI mode
+            return self.simthread.callingWidget.fieldStorage
+        else:
+            # GUI-less mode
+            from cc3d.CompuCellSetup import persistent_globals
+            return persistent_globals.persistent_holder['field_storage']
+
+    def update_field_info(self):
+        """
+        Perform updates elsewhere after field creation
+        :return: None
+        """
+        from cc3d.CompuCellSetup import persistent_globals
+        persistent_globals.cml_field_handler.get_info_about_fields()
