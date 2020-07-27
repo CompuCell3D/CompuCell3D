@@ -44,6 +44,7 @@ from cc3d import CompuCellSetup
 from cc3d.core.RollbackImporter import RollbackImporter
 from cc3d.CompuCellSetup.readers import readCC3DFile
 from typing import Union, Optional
+from cc3d.gui_plugins.unzipper import Unzipper
 
 # import cc3d.Version as Version
 FIELD_TYPES = (
@@ -2865,7 +2866,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         #     2: Directory of currently active project
         #     3: CWD
 
-        path_filter = "CompuCell3D simulation (*.cc3d *.xml *.py)"  # self._getOpenFileFilter()
+        path_filter = "CompuCell3D simulation (*.cc3d *.xml *.py *.zip)"  # self._getOpenFileFilter()
 
         default_dir = str(Configuration.getSetting('ProjectLocation'))
 
@@ -2891,9 +2892,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.__sim_file_name = os.path.abspath(str(self.__sim_file_name))
 
-        if os.path.splitext(self.__sim_file_name)[1].lower() not in ['.cc3d', '.dml']:
+        sim_extension = os.path.splitext(self.__sim_file_name)[1].lower()
+        if sim_extension not in ['.cc3d', '.dml', '.zip']:
             print('Not a .cc3d of .dml file. Ignoring ')
             self.__sim_file_name = ''
+            return
+
+        if sim_extension in ['.zip']:
+            unzipper = Unzipper(ui=self)
+            self.__sim_file_name = unzipper.unzip_project(Path(self.__sim_file_name))
+
+        # this happens when e.g. during unzipping of cc3d project we could not identify uniquely
+        # a file or if we skip opening altogether
+        if self.__sim_file_name is None or str(self.__sim_file_name) == '':
             return
 
         print('__openSim: self.__fileName=', self.__sim_file_name)

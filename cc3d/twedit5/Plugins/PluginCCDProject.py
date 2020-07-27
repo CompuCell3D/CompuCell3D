@@ -3696,7 +3696,7 @@ class CC3DProject(QObject):
         # this happens when e.g. during unzipping of cc3d project we could not identify uniquely
         # a file or if we skip opening altogether
 
-        if file_name is None or str(file_name) == "":
+        if file_name is None or str(file_name) == '':
             return
 
         # normalizing filename
