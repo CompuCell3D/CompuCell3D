@@ -30,16 +30,11 @@ class WebFetcher(QObject):
         self.url_str = url_str
         print('fetch=', url_str)
 
-        config = QSslConfiguration.defaultConfiguration()
         request = QNetworkRequest()
         request.setRawHeader(b'User-Agent', self.user_agent)
-        # config.setProtocol(QSsl.TlsV1_2)
-        # request.setSslConfiguration(config)
         request.setUrl(QUrl(url_str))
 
         self.network_manager.get(request)
-
-        # self.network_manager.get(QNetworkRequest(QUrl(url_str)))
 
     def reply_finished(self, reply):
         '''
