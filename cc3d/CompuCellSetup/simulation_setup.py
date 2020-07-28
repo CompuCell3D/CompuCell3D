@@ -494,6 +494,8 @@ def main_loop(sim, simthread, steppable_registry=None):
     if run_finish_flag:
         print("CALLING FINISH")
         steppable_registry.finish()
+    else:
+        steppable_registry.on_stop()
 
     t2 = time.time()
     print_profiling_report(py_steppable_profiler_report=steppable_registry.get_profiler_report(),
@@ -627,6 +629,7 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         steppable_registry.clean_after_simulation()
 
     else:
+        steppable_registry.on_stop()
         sim.cleanAfterSimulation()
 
         # # sim.unloadModules()
