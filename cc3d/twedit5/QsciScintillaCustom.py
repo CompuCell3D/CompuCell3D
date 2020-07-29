@@ -12,6 +12,10 @@ class QsciScintillaCustom(QsciScintilla):
         super(QsciScintillaCustom, self).__init__(parent)
 
         self.editorWindow = parent
+        try:
+            self.line_numbers_enabled = self.editorWindow.configuration.setting('DisplayLineNumbers')
+        except AttributeError:
+            self.line_numbers_enabled = False
 
         self.panel = _panel
 
@@ -99,18 +103,17 @@ class QsciScintillaCustom(QsciScintilla):
 
         super(self.__class__, self).focusInEvent(event)
 
+
     def linesChangedHandler(self):
         '''
             adjusting width of the line number margin
-
         '''
-        display_line_numbers = self.editorWindow.configuration.setting('DisplayLineNumbers')
-        if not display_line_numbers:
+
+        if not self.line_numbers_enabled:
             return
+
         if self.marginLineNumbers(0):
-            # self.setMarginLineNumbers(0, _flag)
 
             number_of_lines = self.lines()
-
             number_of_digits = int(log(number_of_lines, 10)) + 2 if number_of_lines > 0 else 2
             self.setMarginWidth(0, '0' * number_of_digits)

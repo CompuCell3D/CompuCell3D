@@ -116,6 +116,7 @@ TO DO:
 # todo - fix plugin load / unload dialog in settings
 # todo - add warning when cannot detect encoding during opening of the dile
 
+from math import log
 import fnmatch
 import os
 import codecs
@@ -4054,13 +4055,21 @@ class EditorWindow(QMainWindow):
                 self.adjustLineNumbers(editor, _flag)
                 self.checkActions()
 
+    def fix_line_number_margin_width(self, editor):
+
+        number_of_lines = editor.lines()
+
+        number_of_digits = int(log(number_of_lines, 10)) + 2 if number_of_lines > 0 else 2
+        editor.setMarginWidth(0, '0' * number_of_digits)
+
+
     def adjustLineNumbers(self, _editor, _flag):
 
-        # print 'setting line margin ',_flag
-
         _editor.setMarginLineNumbers(0, _flag)
-
-        _editor.linesChangedHandler()
+        if _flag:
+            self.fix_line_number_margin_width(editor=_editor)
+        else:
+            _editor.setMarginWidth(0, '0' * 1)
 
     def configureEnableAutocompletion(self, _flag):
 
@@ -6189,10 +6198,11 @@ class EditorWindow(QMainWindow):
             if editor.marginLineNumbers(0):  # checking if margin 0 (default for line numbers) is enabled
 
                 self.showLineNumbersAct.setChecked(True)
+                editor.line_numbers_enabled = True
 
             else:
-
                 self.showLineNumbersAct.setChecked(False)
+                editor.line_numbers_enabled = False
 
             self.languageManager.selectLexerBasedOnLexerObject(editor.lexer())
 
