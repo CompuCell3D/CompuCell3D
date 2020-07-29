@@ -3757,22 +3757,22 @@ class EditorWindow(QMainWindow):
 
         editor = self.getActiveEditor()
 
-        configurationDlg = ConfigurationDlg(editor, self)
+        configuration_dlg = ConfigurationDlg(editor, self)
 
-        oldThemeName = self.currentThemeName
+        old_theme_name = self.currentThemeName
 
-        if configurationDlg.exec_():
+        if configuration_dlg.exec_():
 
             for key in list(self.configuration.updatedConfigs.keys()):
                 dbgMsg("NEW SETTING = ", key, ":", self.configuration.updatedConfigs[key])
 
-                configureFcn = getattr(self, "configure" + key)
+                configure_fcn = getattr(self, "configure" + key)
 
-                configureFcn(self.configuration.updatedConfigs[key])
+                configure_fcn(self.configuration.updatedConfigs[key])
 
         else:
 
-            self.applyTheme(oldThemeName)
+            self.applyTheme(old_theme_name)
 
         self.checkActions()
 
@@ -4052,6 +4052,7 @@ class EditorWindow(QMainWindow):
                 editor = panel.widget(i)
 
                 self.adjustLineNumbers(editor, _flag)
+                self.checkActions()
 
     def adjustLineNumbers(self, _editor, _flag):
 
@@ -4648,13 +4649,10 @@ class EditorWindow(QMainWindow):
 
         """
 
-        # print 'showLineNumbers ',_flag
-
+        # QsciScintillaCustom linesChangedHandler sets margin width for line numbers
         editor = self.getActiveEditor()
 
         self.adjustLineNumbers(editor, _flag)
-
-        # # # editor.setMarginWidth(0,QString('0'*8*int(_flag)))
 
     def zoomIn(self):
 
@@ -6605,8 +6603,6 @@ class EditorWindow(QMainWindow):
 
         editor.setIndentationGuides(self.configuration.setting("TabGuidelines"))
 
-        self.checkActions()
-
         #         editor.zoomTo(self.zoomRange) # we set zoom in setEditorproperties
 
         self.commentStyleDict[editor] = [lexer[1], lexer[2]]  # associating comment style with the lexer
@@ -6642,8 +6638,13 @@ class EditorWindow(QMainWindow):
         dbgMsg(" SETTING fileName=", fileName, " os.path.getmtime(fileName)=", os.path.getmtime(str(fileName)))
 
         self.statusBar().showMessage("File loaded", 2000)
+        if self.configuration.setting('DisplayLineNumbers'):
 
-        # self.addItemtoConfigurationStringList("RecentDocuments",fileName)
+            self.adjustLineNumbers(activeTab.widget(editorIndex), True)
+        else:
+            self.adjustLineNumbers(activeTab.widget(editorIndex), False)
+
+        self.checkActions()
 
     def check_for_proper_text_file_encoding(self, encoding):
         """

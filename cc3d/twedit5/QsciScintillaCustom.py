@@ -104,12 +104,13 @@ class QsciScintillaCustom(QsciScintilla):
             adjusting width of the line number margin
 
         '''
-
+        display_line_numbers = self.editorWindow.configuration.setting('DisplayLineNumbers')
+        if not display_line_numbers:
+            return
         if self.marginLineNumbers(0):
             # self.setMarginLineNumbers(0, _flag)
 
             number_of_lines = self.lines()
 
             number_of_digits = int(log(number_of_lines, 10)) + 2 if number_of_lines > 0 else 2
-
             self.setMarginWidth(0, '0' * number_of_digits)
