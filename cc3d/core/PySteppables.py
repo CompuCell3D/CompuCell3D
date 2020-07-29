@@ -50,12 +50,18 @@ class SteppablePy:
 
         :return:
         """
+    def on_stop(self):
+        """
+        Called when simulation is stopped by user
+        :return:
+        """
 
     def cleanup(self):
         """
 
         :return:
         """
+
 
 
 class FieldVisData:
