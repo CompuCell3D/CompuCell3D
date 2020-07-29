@@ -116,6 +116,7 @@ TO DO:
 # todo - fix plugin load / unload dialog in settings
 # todo - add warning when cannot detect encoding during opening of the dile
 
+from math import log
 import fnmatch
 import os
 import codecs
@@ -3757,22 +3758,22 @@ class EditorWindow(QMainWindow):
 
         editor = self.getActiveEditor()
 
-        configurationDlg = ConfigurationDlg(editor, self)
+        configuration_dlg = ConfigurationDlg(editor, self)
 
-        oldThemeName = self.currentThemeName
+        old_theme_name = self.currentThemeName
 
-        if configurationDlg.exec_():
+        if configuration_dlg.exec_():
 
             for key in list(self.configuration.updatedConfigs.keys()):
                 dbgMsg("NEW SETTING = ", key, ":", self.configuration.updatedConfigs[key])
 
-                configureFcn = getattr(self, "configure" + key)
+                configure_fcn = getattr(self, "configure" + key)
 
-                configureFcn(self.configuration.updatedConfigs[key])
+                configure_fcn(self.configuration.updatedConfigs[key])
 
         else:
 
-            self.applyTheme(oldThemeName)
+            self.applyTheme(old_theme_name)
 
         self.checkActions()
 
@@ -4052,14 +4053,23 @@ class EditorWindow(QMainWindow):
                 editor = panel.widget(i)
 
                 self.adjustLineNumbers(editor, _flag)
+                self.checkActions()
+
+    def fix_line_number_margin_width(self, editor):
+
+        number_of_lines = editor.lines()
+
+        number_of_digits = int(log(number_of_lines, 10)) + 2 if number_of_lines > 0 else 2
+        editor.setMarginWidth(0, '0' * number_of_digits)
+
 
     def adjustLineNumbers(self, _editor, _flag):
 
-        # print 'setting line margin ',_flag
-
         _editor.setMarginLineNumbers(0, _flag)
-
-        _editor.linesChangedHandler()
+        if _flag:
+            self.fix_line_number_margin_width(editor=_editor)
+        else:
+            _editor.setMarginWidth(0, '0' * 1)
 
     def configureEnableAutocompletion(self, _flag):
 
@@ -4648,13 +4658,10 @@ class EditorWindow(QMainWindow):
 
         """
 
-        # print 'showLineNumbers ',_flag
-
+        # QsciScintillaCustom linesChangedHandler sets margin width for line numbers
         editor = self.getActiveEditor()
 
         self.adjustLineNumbers(editor, _flag)
-
-        # # # editor.setMarginWidth(0,QString('0'*8*int(_flag)))
 
     def zoomIn(self):
 
@@ -6191,10 +6198,11 @@ class EditorWindow(QMainWindow):
             if editor.marginLineNumbers(0):  # checking if margin 0 (default for line numbers) is enabled
 
                 self.showLineNumbersAct.setChecked(True)
+                editor.line_numbers_enabled = True
 
             else:
-
                 self.showLineNumbersAct.setChecked(False)
+                editor.line_numbers_enabled = False
 
             self.languageManager.selectLexerBasedOnLexerObject(editor.lexer())
 
@@ -6605,8 +6613,6 @@ class EditorWindow(QMainWindow):
 
         editor.setIndentationGuides(self.configuration.setting("TabGuidelines"))
 
-        self.checkActions()
-
         #         editor.zoomTo(self.zoomRange) # we set zoom in setEditorproperties
 
         self.commentStyleDict[editor] = [lexer[1], lexer[2]]  # associating comment style with the lexer
@@ -6642,8 +6648,13 @@ class EditorWindow(QMainWindow):
         dbgMsg(" SETTING fileName=", fileName, " os.path.getmtime(fileName)=", os.path.getmtime(str(fileName)))
 
         self.statusBar().showMessage("File loaded", 2000)
+        if self.configuration.setting('DisplayLineNumbers'):
 
-        # self.addItemtoConfigurationStringList("RecentDocuments",fileName)
+            self.adjustLineNumbers(activeTab.widget(editorIndex), True)
+        else:
+            self.adjustLineNumbers(activeTab.widget(editorIndex), False)
+
+        self.checkActions()
 
     def check_for_proper_text_file_encoding(self, encoding):
         """
