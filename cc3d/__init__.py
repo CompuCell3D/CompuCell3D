@@ -4,8 +4,8 @@ from os.path import dirname, join, abspath
 
 versionMajor = 4
 versionMinor = 2
-versionBuild = 2
-revisionNumber = "20200724"
+versionBuild = 3
+revisionNumber = "20200731"
 
 
 def getVersionAsString():

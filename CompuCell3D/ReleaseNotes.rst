@@ -1,6 +1,20 @@
 Release Notes
 =============
 
+Version 4.2.3
+-------------
+**2019-07-31*
+
+New Features:
+
+- Added on_stop function to steppable - called if user stops the simulation
+- Added ability to open zipped project from both Player and Twedit++
+
+Bug Fixes:
+
+- Fixed settings handling in Twedit++
+- Fixed display of line numbers in Twedit++
+
 Version 4.2.2
 -------------
 **2019-07-24*
