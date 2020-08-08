@@ -329,93 +329,50 @@ class EditorWindow(QMainWindow):
         QMainWindow.__init__(self)
 
         self.extensionLanguageMap = {".py": "Python",
-
                                      ".pyw": "Python",
-
                                      ".xml": "XML",
-
+                                     ".cc3d": "XML",
                                      ".c": "C",
-
                                      ".cpp": "C",
-
                                      ".cc": "C",
-
                                      ".cxx": "C",
-
                                      ".h": "C",
-
                                      ".hxx": "C",
-
                                      ".hpp": "C",
-
                                      ".cmake": "CMake",
-
                                      ".cs": "C#",
-
                                      ".css": "CSS",
-
                                      ".d": "D",
-
                                      ".diff": "Diff",
-
                                      ".patch": "Diff",
-
                                      ".pas": "Pascal",
-
                                      ".inc": "Pascal",
-
                                      ".pl": "Perl",
-
                                      ".rb": "Ruby",
-
                                      ".rbw": "Ruby",
-
                                      ".f": "Fortran77",
-
                                      ".F": "Fortran77",
-
                                      ".f90": "Fortran",
-
                                      ".F90": "Fortran",
-
                                      ".java": "Java",
-
                                      ".js": "JavaScript",
-
                                      ".lua": "Lua",
-
                                      ".m": "Matlab",
-
                                      ".oct": "Octave",
-
                                      ".pro": "IDL",
-
                                      ".ps": "PostScript",
-
                                      ".properties": "Properties",
-
                                      ".pov": "POV",
-
                                      ".cir": "Spice",
-
                                      ".sql": "SQL",
-
                                      ".tcl": "TCL",
-
                                      ".v": "Verilog",
-
                                      ".vhd": "VHDL",
-
                                      ".vhdl": "VHDL",
-
                                      ".yml": "YML",
-
                                      ".bat": "Batch",
-
                                      ".sh": "Bash",
-
                                      ".html": "HTML",
-
                                      ".tex": "TeX"
 
                                      }
