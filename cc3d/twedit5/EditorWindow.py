@@ -1976,7 +1976,7 @@ class EditorWindow(QMainWindow):
 
         dbgMsg("THIS IS CHANGED DOCUMENT")
 
-    def blockComment(self):
+    def block_comment(self):
 
         """
 
@@ -1986,66 +1986,66 @@ class EditorWindow(QMainWindow):
 
         editor = self.getActiveEditor()
 
-        if not self.commentStyleDict[editor][0]:  # this language does not allow comments
-
+        if not self.commentStyleDict[editor][0]:
+            # this language does not allow comments
             return
 
-        commentStringBegin = self.commentStyleDict[editor][0]
+        comment_string_begin = self.commentStyleDict[editor][0]
 
-        commentStringEnd = self.commentStyleDict[editor][1]
+        comment_string_end = self.commentStyleDict[editor][1]
 
         if editor.hasSelectedText():
 
             line_from, index_from, line_to, index_to = editor.getSelection()
 
-            if index_to == 0:  # do not comment last line if no character in this line is selected
-
+            if index_to == 0:
+                # do not comment last line if no character in this line is selected
                 line_to -= 1
 
+            num_existing_comments = self.check_for_existing_comments(
+                line_from=line_from, line_to=line_to, comment_string_begin=comment_string_begin)
+            if num_existing_comments == line_to - line_from + 1:
+                # if every line has comments then comment action turns into uncomment
+                self.block_uncomment()
+                return
+
             editor.beginUndoAction()
 
-            for l in range(line_from, line_to + 1):
-                # dbgMsg("inside loop of single line comments=",l)
-
-                self.commentSingleLine(l, commentStringBegin, commentStringEnd)
+            for line_no in range(line_from, line_to + 1):
+                self.comment_single_line(line_no, comment_string_begin, comment_string_end)
 
             editor.endUndoAction()
-
-            # dbgMsg("line_from, _index_from, line_to, _index_to=",line_from, index_from, line_to, index_to)
 
             # restoring selection
-
             if index_to == 0:
-
                 line_to += 1
-
-                editor.setSelection(line_from, index_from + len(commentStringBegin), line_to, index_to)
-
+                editor.setSelection(line_from, index_from + len(comment_string_begin), line_to, index_to)
             else:
+                editor.setSelection(line_from, index_from + len(comment_string_begin), line_to,
+                                    index_to + len(comment_string_begin))
 
-                editor.setSelection(line_from, index_from + len(commentStringBegin), line_to,
+        else:
 
-                                    index_to + len(commentStringBegin))
+            # single line comments
+            current_line, current_column = editor.getCursorPosition()
 
+            num_existing_comments = self.check_for_existing_comments(
+                line_from=current_line, line_to=current_line, comment_string_begin=comment_string_begin)
+            if num_existing_comments == 1:
+                comment_string_begin, comment_string_begin_trunc = self.get_comment_string_begin(editor=editor)
+                comment_string_end, comment_string_end_trunc = self.get_comment_string_end(editor=editor)
 
-
-
-
-
-
-
-
-        else:  # single line comments
-
-            currentLine, currentColumn = editor.getCursorPosition()
+                self.uncomment_line(current_line, comment_string_begin, comment_string_begin_trunc, comment_string_end,
+                                    comment_string_end_trunc)
+                return
 
             editor.beginUndoAction()
 
-            self.commentSingleLine(currentLine, commentStringBegin, commentStringEnd)
+            self.comment_single_line(current_line, comment_string_begin, comment_string_end)
 
             editor.endUndoAction()
 
-    def commentSingleLine(self, currentLine, commentStringBegin, commentStringEnd):
+    def comment_single_line(self, currentLine, commentStringBegin, commentStringEnd):
 
         """
 
@@ -2055,49 +2055,44 @@ class EditorWindow(QMainWindow):
 
         editor = self.getActiveEditor()
 
-        # dbgMsg("trying to comment current line:",editor.text(currentLine))
-
-        if commentStringEnd:  # handling comments which require additions at the beginning and at the end of the line
-
-            # if not editor.text(currentLine).trimmed().isEmpty():  # checking if the line contains non-white characters
+        if commentStringEnd:
+            # handling comments which require additions at the beginning and at the end of the line
 
             if editor.text(currentLine).strip():  # checking if the line contains non-white characters
 
                 # editor.beginUndoAction()
 
                 editor.insertAt(commentStringBegin, currentLine, 0)
-
-                # dbgMsg("currentLineLength=",editor.text(currentLine).size())
-
-                # dbgMsg("editor.text(currentLine)=",editor.text(currentLine),"|")
 
                 # we have to account for the fact the EOL character can be CR LF or CR or LF
 
-                eolPos = len(editor.text(currentLine))
+                eol_pos = len(editor.text(currentLine))
 
-                lineText = editor.text(currentLine)
+                line_text = editor.text(currentLine)
 
-                if lineText[eolPos - 2] == "\r" or lineText[
+                # second option is just in case - checking if we are dealign with CR LF or simple CR or LF end of line
+                if line_text[eol_pos - 2] == "\r" or line_text[
 
-                    eolPos - 2] == "\n":  # second option is just in case - checking if we are dealign with CR LF or simple CR or LF end of line
+                    eol_pos - 2] == "\n":
 
-                    editor.insertAt(commentStringEnd, currentLine, eolPos - 2)
+                    editor.insertAt(commentStringEnd, currentLine, eol_pos - 2)
 
                 else:
 
-                    editor.insertAt(commentStringEnd, currentLine, eolPos - 1)
+                    editor.insertAt(commentStringEnd, currentLine, eol_pos - 1)
 
                     # editor.endUndoAction()
 
-        else:  # handling comments which require additions only at the beginning of the line
-
+        else:
+            # handling comments which require additions only at the beginning of the line
             # if not editor.text(currentLine).trimmed().isEmpty():  # checking if the line contains non-white characters
 
-            if editor.text(currentLine).strip():  # checking if the line contains non-white characters
+            cur_line_text = editor.text(currentLine)
+            if cur_line_text.strip():  # checking if the line contains non-white characters
 
                 # editor.beginUndoAction()
-
-                editor.insertAt(commentStringBegin, currentLine, 0)
+                first_pos_non_whitespace = len(cur_line_text) - len(cur_line_text.lstrip())
+                editor.insertAt(commentStringBegin, currentLine, first_pos_non_whitespace)
 
                 # editor.endUndoAction()
 
@@ -2225,7 +2220,64 @@ class EditorWindow(QMainWindow):
 
             editor.unindent(line)
 
-    def blockUncomment(self):
+    def check_for_existing_comments(self, line_from, line_to, comment_string_begin):
+        """
+        Checks if a comment exists already in the line
+        :param line_from:
+        :param line_to:
+        :param comment_string_begin:
+        :return: number of lines where comment exists already
+        """
+
+        editor = self.getActiveEditor()
+
+        num_existing_comments = 0
+
+        for line_no in range(line_from, line_to+1):
+            line_text = editor.text(line_no)
+
+            orig_line_text_length = len(line_text)
+
+            index_of = line_text.find(comment_string_begin)
+            is_line_empty = not line_text.strip()
+            if index_of >= 0 or is_line_empty:
+                num_existing_comments += 1
+
+        return num_existing_comments
+
+    def get_comment_string_begin(self, editor) -> tuple:
+        """
+        Returns comment string begin and truncated comment begin
+        :param editor:
+        :return:
+        """
+        comment_string_begin = self.commentStyleDict[editor][0]
+
+        comment_string_begin_trunc = comment_string_begin.strip()  # comments without white spaces
+
+        if comment_string_begin_trunc == "REM":
+            # comments which begin with a word  - e.g. REM should not be truncated
+            comment_string_begin_trunc = comment_string_begin
+
+        return comment_string_begin, comment_string_begin_trunc
+
+    def get_comment_string_end(self, editor) -> tuple:
+        """
+        Returns comment string end and truncated comment end
+        :param editor:
+        :return:
+        """
+        comment_string_end = ''
+
+        if self.commentStyleDict[editor][1]:
+            comment_string_end = self.commentStyleDict[editor][1]
+
+        comment_string_end_trunc = comment_string_end.strip()
+
+        return comment_string_end, comment_string_end_trunc
+
+
+    def block_uncomment(self):
 
         """
 
@@ -2239,19 +2291,16 @@ class EditorWindow(QMainWindow):
 
             return
 
-        commentStringBegin = self.commentStyleDict[editor][0]
+        # comment_string_begin = self.commentStyleDict[editor][0]
+        #
+        # comment_string_begin_trunc = comment_string_begin.strip()  # comments without white spaces
+        #
+        # if comment_string_begin_trunc == "REM":
+        #     # comments which begin with a word  - e.g. REM should not be truncated
+        #     comment_string_begin_trunc = comment_string_begin
 
-        commentStringBeginTrunc = commentStringBegin.strip()  # comments without white spaces
-
-        if commentStringBeginTrunc == "REM":
-            commentStringBeginTrunc = commentStringBegin  # comments which begin with a word  - e.g. REM should not be truncated
-
-        commentStringEnd = ''
-
-        if self.commentStyleDict[editor][1]:
-            commentStringEnd = self.commentStyleDict[editor][1]
-
-        commentStringEndTrunc = commentStringEnd.strip()
+        comment_string_begin, comment_string_begin_trunc = self.get_comment_string_begin(editor=editor)
+        comment_string_end, comment_string_end_trunc = self.get_comment_string_end(editor=editor)
 
         if editor.hasSelectedText():
 
@@ -2260,25 +2309,24 @@ class EditorWindow(QMainWindow):
             if index_to == 0:
                 line_to -= 1
 
-            firstLineBeginCommentLength = 0
+            first_line_begin_comment_length = 0
 
-            lastLineBeginCommentLength = 0
+            last_line_begin_comment_length = 0
 
             editor.beginUndoAction()
 
             for line in range(line_from, line_to + 1):
 
-                beginCommentLength, endCommentLength = self.uncommentLine(line, commentStringBegin,
-
-                                                                          commentStringBeginTrunc, commentStringEnd,
-
-                                                                          commentStringEndTrunc)
+                begin_comment_length, end_comment_length = self.uncomment_line(line, comment_string_begin,
+                                                                               comment_string_begin_trunc,
+                                                                               comment_string_end,
+                                                                               comment_string_end_trunc)
 
                 if line == line_from:
-                    firstLineBeginCommentLength = beginCommentLength
+                    first_line_begin_comment_length = begin_comment_length
 
                 if line == line_to:
-                    lastLineBeginCommentLength = beginCommentLength
+                    last_line_begin_comment_length = begin_comment_length
 
             editor.endUndoAction()
 
@@ -2288,17 +2336,13 @@ class EditorWindow(QMainWindow):
 
                 line_to += 1
 
-                editor.setSelection(line_from, index_from - firstLineBeginCommentLength, line_to, index_to)
+                editor.setSelection(line_from, index_from - first_line_begin_comment_length, line_to, index_to)
 
             else:
 
-                editor.setSelection(line_from, index_from - firstLineBeginCommentLength, line_to,
+                editor.setSelection(line_from, index_from - first_line_begin_comment_length, line_to,
 
-                                    index_to - lastLineBeginCommentLength)
-
-
-
-
+                                    index_to - last_line_begin_comment_length)
 
         else:
 
@@ -2308,137 +2352,94 @@ class EditorWindow(QMainWindow):
 
             editor.beginUndoAction()
 
-            self.uncommentLine(line, commentStringBegin, commentStringBeginTrunc, commentStringEnd,
+            self.uncomment_line(line, comment_string_begin, comment_string_begin_trunc, comment_string_end,
 
-                               commentStringEndTrunc)
+                                comment_string_end_trunc)
 
             editor.endUndoAction()
 
-    def uncommentLine(self, line, commentStringBegin, commentStringBeginTrunc, commentStringEnd, commentStringEndTrunc):
-
+    def uncomment_line(self, line, comment_string_begin, comment_string_begin_trunc, comment_string_end,
+                       comment_string_end_trunc):
         """
-
-            helper function called during block-uncommenting of the code to uncomment single line of code
-
+        helper function called during block-uncommenting of the code to uncomment single line of code
         """
 
         editor = self.getActiveEditor()
 
-        commentsFound = False
+        comments_found = False
 
-        lineText = editor.text(line)
+        line_text = editor.text(line)
 
-        origLineTextLength = len(lineText)
+        orig_line_text_length = len(line_text)
 
-        # indexOf = lineText.indexOf(commentStringBegin)
+        index_of = line_text.find(comment_string_begin)
 
-        indexOf = lineText.find(commentStringBegin)
+        begin_comment_length = 0
 
-        beginCommentLength = 0
+        end_comment_length = 0
 
-        endCommentLength = 0
+        # processing beginning of the line
+        if index_of != -1:
 
-        # processing begining of the line
+            line_text = remove_n_chars(line_text, index_of, len(comment_string_begin))
 
-        if indexOf != -1:
+            begin_comment_length = len(comment_string_begin)
 
-            # lineText.remove(indexOf, commentStringBegin.size())
-
-            # beginCommentLength = commentStringBegin.size()
-
-            # commentsFound = True
-
-            lineText = remove_n_chars(lineText, indexOf, len(commentStringBegin))
-
-            beginCommentLength = len(commentStringBegin)
-
-            commentsFound = True
-
-
-
-
+            comments_found = True
 
         else:
 
-            # indexOf = lineText.indexOf(commentStringBeginTrunc)
+            index_of = line_text.find(comment_string_begin_trunc)
 
-            indexOf = lineText.find(commentStringBeginTrunc)
+            if index_of != -1:
 
-            if indexOf != -1:
-                # lineText.remove(indexOf, commentStringBeginTrunc.size())
+                line_text = remove_n_chars(line_text, index_of, len(comment_string_begin_trunc))
 
-                # beginCommentLength = commentStringBeginTrunc.size()
+                begin_comment_length = len(comment_string_begin_trunc)
 
-                # commentsFound = True
+                comments_found = True
 
-                lineText = remove_n_chars(lineText, indexOf, len(commentStringBeginTrunc))
+        if len(comment_string_end):
 
-                beginCommentLength = len(commentStringBeginTrunc)
+            # processing beginning of the line
+            last_index_of = line_text.rfind(comment_string_end)
 
-                commentsFound = True
+            if last_index_of != -1:
 
-        if len(commentStringEnd):
+                line_text = remove_n_chars(line_text, last_index_of, len(comment_string_end))
 
-            # processing begining of the line
+                end_comment_length = len(comment_string_end)
 
-            # lastIndexOf = lineText.lastIndexOf(commentStringEnd)
-
-            lastIndexOf = lineText.rfind(commentStringEnd)
-
-            if lastIndexOf != -1:
-
-                # lineText.remove(lastIndexOf, commentStringEnd.size())
-
-                # endCommentLength = commentStringEnd.size()
-
-                # commentsFound = True
-
-                lineText = remove_n_chars(lineText, lastIndexOf, len(commentStringEnd))
-
-                endCommentLength = len(commentStringEnd)
-
-                commentsFound = True
-
-
+                comments_found = True
 
             else:
 
-                # lastIndexOf = lineText.lastIndexOf(commentStringEndTrunc)
+                last_index_of = line_text.rfind(comment_string_end_trunc)
 
-                lastIndexOf = lineText.rfind(commentStringEndTrunc)
+                if last_index_of != -1:
 
-                if lastIndexOf != -1:
-                    # lineText.remove(lastIndexOf, commentStringEndTrunc.size())
+                    line_text = remove_n_chars(line_text, last_index_of, len(comment_string_end_trunc))
+                    end_comment_length = len(comment_string_end_trunc)
+                    comments_found = True
 
-                    # endCommentLength = commentStringEndTrunc.size()
+        if comments_found:
 
-                    # commentsFound = True
+            eol_pos = len(line_text)
 
-                    lineText = remove_n_chars(lineText, lastIndexOf, len(commentStringEndTrunc))
+            if line_text[eol_pos - 2] == "\r" or line_text[eol_pos - 2] == "\n":
 
-                    endCommentLength = len(commentStringEndTrunc)
-
-                    commentsFound = True
-
-        if commentsFound:
-
-            eolPos = len(lineText)
-
-            if lineText[eolPos - 2] == "\r" or lineText[
-
-                eolPos - 2] == "\n":  # second option is just in case - checking if we are dealign with CR LF or simple CR or LF end of line
-
-                editor.setSelection(line, 0, line, origLineTextLength - 1)
+                # second option is just in case - checking if we are dealign with CR LF or simple CR or LF end of line
+                editor.setSelection(line, 0, line, orig_line_text_length - 1)
 
             else:
 
-                editor.setSelection(line, 0, line, origLineTextLength)
+                editor.setSelection(line, 0, line, orig_line_text_length)
 
             editor.removeSelectedText()
 
-            editor.insertAt(lineText, line, 0)
+            editor.insertAt(line_text, line, 0)
 
-        return beginCommentLength, endCommentLength
+        return begin_comment_length, end_comment_length
 
     def find(self):
 
@@ -5212,17 +5213,12 @@ class EditorWindow(QMainWindow):
 
         am.addAction(self.showFindInFilesDockAct)
 
-        self.blockCommentAct = QtWidgets.QAction("Block Comment", self, shortcut="Ctrl+/",
+        self.blockCommentAct = QtWidgets.QAction("Block Comment/Uncomment", self, shortcut="Ctrl+/",
 
-                                                 statusTip="Block Comment", triggered=self.blockComment)
+                                                 statusTip="Block Comment/Uncomment", triggered=self.block_comment)
 
         am.addAction(self.blockCommentAct)
 
-        self.blockUncommentAct = QtWidgets.QAction("Block Uncomment", self, shortcut="Ctrl+Alt+/",
-
-                                                   statusTip="Block Uncomment", triggered=self.blockUncomment)
-
-        am.addAction(self.blockUncommentAct)
 
         self.findAct = QtWidgets.QAction(QtGui.QIcon(':/icons/edit-find.png'), "Find...", self, shortcut="Ctrl+F",
 
@@ -5527,9 +5523,7 @@ class EditorWindow(QMainWindow):
 
         self.editMenu.addSeparator()
 
-        self.editMenu.addAction(am.actionDict["Block Comment"])
-
-        self.editMenu.addAction(am.actionDict["Block Uncomment"])
+        self.editMenu.addAction(am.actionDict["Block Comment/Uncomment"])
 
         self.editMenu.addAction(am.actionDict["Increase Indent"])
 
