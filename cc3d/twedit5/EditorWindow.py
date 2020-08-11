@@ -1,16 +1,9 @@
 """
-
 TO DO:
-
 * fix configuration dialog to display loaded plugins
-
 * fix searching in unicode paths - as of now those dirs are reported as non-existent
 
-
-
-
-
-* cannot find  new line character 
+* cannot find  new line character
 
 * window menu
 
