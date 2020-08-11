@@ -2002,6 +2002,33 @@ class EditorWindow(QMainWindow):
 
             editor.endUndoAction()
 
+    @staticmethod
+    def check_if_eol_comment_already_exists(line_text, comment_string_end):
+        """
+        Checks if a given line_text contains closing comment
+        :param line_text:
+        :param comment_string_end:
+        :return:
+        """
+        return line_text.rstrip().endswith(comment_string_end.strip())
+
+    @staticmethod
+    def check_if_multiple_begin_comments_already_exists(line_text, comment_string_begin):
+        """
+        Checks if a given line_text contains at least two opening comment sequence
+        :param line_text:
+        :param comment_string_begin:
+        :return:
+        """
+        comment_string_begin = comment_string_begin.strip()
+        pattern = f'^(({comment_string_begin})(\s*)({comment_string_begin}))'
+        return re.search(pattern, line_text.lstrip())
+        # lstrip_line_text = line_text.lstrip()
+        # first_comment_pos = lstrip_line_text.find(comment_string_begin.strip()):
+        #
+        # return .endswith(comment_string_end.strip())
+
+
     def comment_single_line(self, currentLine, commentStringBegin, commentStringEnd):
 
         """
@@ -2027,18 +2054,20 @@ class EditorWindow(QMainWindow):
 
                 line_text = editor.text(currentLine)
 
-                # second option is just in case - checking if we are dealign with CR LF or simple CR or LF end of line
-                if line_text[eol_pos - 2] == "\r" or line_text[
+                if not self.check_if_eol_comment_already_exists(
+                        line_text=line_text, comment_string_end=commentStringEnd):
 
-                    eol_pos - 2] == "\n":
+                    if line_text[eol_pos - 2] == "\r" or line_text[eol_pos - 2] == "\n":
+                        # second option is just in case - checking if we are dealing
+                        # with CR LF or simple CR or LF end of line
 
-                    editor.insertAt(commentStringEnd, currentLine, eol_pos - 2)
+                        editor.insertAt(commentStringEnd, currentLine, eol_pos - 2)
 
-                else:
+                    else:
 
-                    editor.insertAt(commentStringEnd, currentLine, eol_pos - 1)
+                        editor.insertAt(commentStringEnd, currentLine, eol_pos - 1)
 
-                    # editor.endUndoAction()
+                        # editor.endUndoAction()
 
         else:
             # handling comments which require additions only at the beginning of the line
@@ -2335,6 +2364,10 @@ class EditorWindow(QMainWindow):
 
         end_comment_length = 0
 
+        multiple_opening_comments_found = self.check_if_multiple_begin_comments_already_exists(
+            line_text=line_text,
+            comment_string_begin=comment_string_begin)
+
         # processing beginning of the line
         if index_of != -1:
 
@@ -2358,26 +2391,28 @@ class EditorWindow(QMainWindow):
 
         if len(comment_string_end):
 
-            # processing beginning of the line
+            # processing end of the line
             last_index_of = line_text.rfind(comment_string_end)
 
-            if last_index_of != -1:
-
-                line_text = remove_n_chars(line_text, last_index_of, len(comment_string_end))
-
-                end_comment_length = len(comment_string_end)
-
-                comments_found = True
-
-            else:
-
-                last_index_of = line_text.rfind(comment_string_end_trunc)
-
+            if not multiple_opening_comments_found:
+                # we only remove closing comment when we have a single opening comment
                 if last_index_of != -1:
 
-                    line_text = remove_n_chars(line_text, last_index_of, len(comment_string_end_trunc))
-                    end_comment_length = len(comment_string_end_trunc)
+                    line_text = remove_n_chars(line_text, last_index_of, len(comment_string_end))
+
+                    end_comment_length = len(comment_string_end)
+
                     comments_found = True
+
+                else:
+
+                    last_index_of = line_text.rfind(comment_string_end_trunc)
+
+                    if last_index_of != -1:
+
+                        line_text = remove_n_chars(line_text, last_index_of, len(comment_string_end_trunc))
+                        end_comment_length = len(comment_string_end_trunc)
+                        comments_found = True
 
         if comments_found:
 
@@ -2385,7 +2420,7 @@ class EditorWindow(QMainWindow):
 
             if line_text[eol_pos - 2] == "\r" or line_text[eol_pos - 2] == "\n":
 
-                # second option is just in case - checking if we are dealign with CR LF or simple CR or LF end of line
+                # second option is just in case - checking if we are dealin with CR LF or simple CR or LF end of line
                 editor.setSelection(line, 0, line, orig_line_text_length - 1)
 
             else:
