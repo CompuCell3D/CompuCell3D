@@ -1,3 +1,4 @@
+import re
 import itertools
 from pathlib import Path
 import numpy as np
@@ -752,27 +753,33 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :param type_id:{str}
         :return:
         """
+        alphanumeric_underscore_regex = r'^\w+$'
 
         if cell_type_name.isspace() or not len(cell_type_name.strip()):
-            raise AttributeError('cell type "{}" contains whitespaces'.format(cell_type_name))
+            raise AttributeError(f'cell type "{cell_type_name}" contains whitespaces')
 
         if not cell_type_name[0].isalpha():
-            raise AttributeError('Invalid cell type "{}" . Type name must start with a letter'.format(cell_type_name))
+            raise AttributeError(f'Invalid cell type "{cell_type_name}" . Type name must start with a letter')
 
-        cell_type_name_attr = cell_type_name.upper()
+        if not re.match(alphanumeric_underscore_regex, cell_type_name):
+            raise AttributeError(f'Invalid character detected in a cell type "{cell_type_name}" . '
+                                 f'Type name must consist of alphanumeric characters and (optionally) an underscore')
 
-        try:
-            getattr(self, cell_type_name_attr)
-            attribute_already_exists = True
-        except AttributeError:
-            attribute_already_exists = False
+        cell_type_name_attr_list = [cell_type_name.upper(), f't_{cell_type_name}']
 
-        if attribute_already_exists:
-            raise AttributeError('Could not convert cell type {cell_type} to steppable attribute. '
-                                 'Attribute {attr_name} already exists . Please change your cell type name'.format(
-                cell_type=cell_type_name, attr_name=cell_type_name_attr))
+        for cell_type_name_attr in cell_type_name_attr_list:
+            try:
+                getattr(self, cell_type_name_attr)
+                attribute_already_exists = True
+            except AttributeError:
+                attribute_already_exists = False
 
-        setattr(self, cell_type_name_attr, type_id)
+            if attribute_already_exists:
+                raise AttributeError(
+                    f'Could not convert cell type {cell_type_name} to steppable attribute. '
+                    f'Attribute {cell_type_name_attr} already exists . Please change your cell type name')
+
+            setattr(self, cell_type_name_attr, type_id)
 
     def stop_simulation(self):
         """
