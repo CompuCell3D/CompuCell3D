@@ -357,6 +357,13 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
     def on_fieldAddPB_clicked(self):
 
         field_name = str(self.fieldNameLE.text()).strip()
+
+        try:
+            validate_cc3d_entity_identifier(field_name, entity_type_label='field label')
+        except AttributeError as e:
+            self.display_invalid_entity_label_message(error_message=str(e))
+            return
+
         rows = self.fieldTable.rowCount()
 
         if field_name == "":
