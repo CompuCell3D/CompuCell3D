@@ -428,7 +428,7 @@ class CC3DMLGeneratorBase:
         m_element.addComment("newline")
         m_element.addComment("External force applied to cell. Each cell type has different force.")
         m_element.addComment("For more flexible specification of the constraint (done in Python) "
-                             "please use ExternalPotentialLocalFlex plugin")
+                             "please use ExternalPotential plugin without specifying per-type parameters")
 
         m_element.addComment("Algorithm options are: PixelBased, CenterOfMassBased")
 
