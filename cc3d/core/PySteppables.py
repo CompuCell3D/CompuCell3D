@@ -114,6 +114,13 @@ class CellTypeFetcher:
         except KeyError:
             raise KeyError(f'The requested cell type {item} does not exist')
 
+    def get_data(self) -> dict:
+        """
+        Returns cell type data
+        :return: dictionary mapping cell type name to cell type id
+        """
+        return self.type_name_type_id_dict
+
 
 class FieldFetcher:
     def __init__(self):
