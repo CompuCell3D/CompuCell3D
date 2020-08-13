@@ -64,7 +64,6 @@ class SteppablePy:
         """
 
 
-
 class FieldVisData:
     (CELL_LEVEL_SCALAR_FIELD, CELL_LEVEL_VECTOR_FIELD, HISTOGRAM) = list(range(0, 3))
 
@@ -101,6 +100,19 @@ class PlotData:
             self.function_obj = lambda x: x
 
         self.plot_type = plot_type
+
+
+class CellTypeFetcher:
+    def __init__(self, type_id_type_name_dict):
+        # reversing dictionary from
+        self.type_name_type_id_dict = {v: k for k, v in type_id_type_name_dict.items()}
+
+    def __getattr__(self, item):
+
+        try:
+            return self.type_name_type_id_dict[item]
+        except KeyError:
+            raise KeyError(f'The requested cell type {item} does not exist')
 
 
 class FieldFetcher:
@@ -201,6 +213,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.volume_tracker_plugin = None
 
         self._simulator = None
+
+        # created and initialized in core_init method
+        self.cell_type = None
 
         self.cell_field = None
         self.cellField = None
@@ -321,6 +336,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         persistent_globals.attach_dictionary_to_cells()
 
         type_id_type_name_dict = extract_type_names_and_ids()
+
+        self.cell_type = CellTypeFetcher(type_id_type_name_dict=type_id_type_name_dict)
 
         if reinitialize_cell_types:
             for type_id, type_name in type_id_type_name_dict.items():
