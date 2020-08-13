@@ -539,7 +539,6 @@ Point3D BoundaryStrategy::getNeighborCustomDim(const Point3D& pt, unsigned int& 
 
 
 void BoundaryStrategy::prepareNeighborListsSquare(float _maxDistance) {
-	//    cerr<<"_maxDistance="<<_maxDistance<<endl;
 
 	char a = '0';
     Dim3D dim_test_field;
@@ -555,8 +554,6 @@ void BoundaryStrategy::prepareNeighborListsSquare(float _maxDistance) {
         dim_test_field.y = std::max((short)3, dim.y);
         dim_test_field.z = std::max((short)3, dim.z);
     }
-
-    cerr << "dim_test_field=" << dim_test_field << endl;
 
 	Field3DImpl<char> tempField(dim_test_field, a);
 	int margin = 2 * (int)fabs(_maxDistance) + 1;	
