@@ -206,11 +206,12 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.cellField = None
         self.cell_list = None
         self.cellList = None
-        self.cell_list_by_type = None
+        # cell_list_by_type is handled via a function call
         self.cellListByType = None
         self.cluster_list = None
-        self.clusters = None
         self.clusterList = None
+        self.clusters = None
+
         self.mcs = -1
         # {plot_name:plotWindow  - pW object}
         self.plot_dict = {}
@@ -254,6 +255,15 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.clonable_attribute_names = ['lambdaVolume', 'targetVolume', 'targetSurface', 'lambdaSurface',
                                          'targetClusterSurface', 'lambdaClusterSurface', 'type', 'lambdaVecX',
                                          'lambdaVecY', 'lambdaVecZ', 'fluctAmpl']
+
+    def cell_list_by_type(self, *args):
+        """
+        Returns a CellListByType object that represents list of ells with a given type
+        :param args: list of cell types
+        :return:
+        """
+        list_by_type_obj = CellListByType(self.inventory, *args)
+        return list_by_type_obj
 
     def open_file_in_simulation_output_folder(self, file_name: str, mode: str = 'w') -> tuple:
         """
@@ -302,7 +312,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.cellField = self.cell_field
         self.cell_list = CellList(self.inventory)
         self.cellList = self.cell_list
-        self.cell_list_by_type = CellListByType(self.inventory)
         self.cellListByType = self.cell_list_by_type
         self.cluster_list = ClusterList(self.inventory)
         self.clusterList = self.cluster_list

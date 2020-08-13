@@ -56,12 +56,6 @@ class CellListByType:
     def __iter__(self):
         return CellListByTypeIterator(self)
 
-    def __call__(self, *args):
-        self.initTypeVec(args)
-        self.inventory.initCellInventoryByMultiType(self.inventoryByType, self.types)
-
-        return self
-
     def __len__(self):
         return int(self.inventoryByType.size())
 
