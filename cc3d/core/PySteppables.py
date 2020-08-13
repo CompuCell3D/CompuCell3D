@@ -104,7 +104,7 @@ class PlotData:
 
 class CellTypeFetcher:
     def __init__(self, type_id_type_name_dict):
-        # reversing dictionary from
+        # reversing dictionary from type_id_type_name_dict -> type_name_type_id_dict
         self.type_name_type_id_dict = {v: k for k, v in type_id_type_name_dict.items()}
 
     def __getattr__(self, item):
