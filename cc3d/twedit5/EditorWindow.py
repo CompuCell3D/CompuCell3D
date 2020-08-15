@@ -3808,9 +3808,9 @@ class EditorWindow(QMainWindow):
 
         # TODO enable it
 
-        # self.pm.runForAllPlugins(_functionName='applyStyleFromTheme',
+        # self.pm.runForAllPlugins(function_name='applyStyleFromTheme',
 
-        #                          _argumentDict={'styleName': 'Default Style', 'themeName': self.currentThemeName})
+        #                          argument_dict={'styleName': 'Default Style', 'themeName': self.currentThemeName})
 
     def configureBaseFontName(self, _name):
 

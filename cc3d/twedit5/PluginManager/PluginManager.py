@@ -36,33 +36,24 @@ class BasicPluginData(object):
 
     def __str__(self):
 
-        attributeNames = ['name', 'fileName', 'author', 'autoactivate', 'deactivateable', 'version', 'className',
+        attribute_names = ['name', 'fileName', 'author', 'autoactivate', 'deactivateable', 'version', 'className',
                           'packageName', 'shortDescription', 'longDescription']
 
-        retStr = ''
+        ret_str = ''
 
-        for attributeName in attributeNames:
+        for attributeName in attribute_names:
 
             try:
+                ret_str += attributeName + '=' + str(getattr(self, attributeName)) + '\n'
+            except TypeError:
+                ret_str += attributeName + '=' + getattr(self, attributeName) + '\n'
 
-                retStr += attributeName + '=' + str(getattr(self, attributeName)) + '\n'
-
-            except TypeError as e:
-
-                retStr += attributeName + '=' + getattr(self, attributeName) + '\n'
-
-        return retStr
+        return ret_str
 
 
 class PluginManager(QObject):
     """
-
     Class implementing the Plugin Manager.
-
-    
-
-
-
     """
 
     def __init__(self, parent=None, doLoadPlugins=True, develPlugin=None):
@@ -70,8 +61,6 @@ class PluginManager(QObject):
         """
 
         Constructor
-
-        
 
         The Plugin Manager deals with three different plugin directories.
 
@@ -132,9 +121,11 @@ class PluginManager(QObject):
         # check if it exists
 
         if not os.path.exists(self.pluginPath):
-            # when packaging on Windows with pyinstaller the path to executable is accesible via sys.executable as Python is bundled with the distribution
+            # when packaging on Windows with pyinstaller the path to executable is
+            # accesible via sys.executable as Python is bundled with the distribution
 
-            # os.path.dirname(Configuration.__file__) returned by pyInstaller will not work without some modifications so it is best tu use os.path.dirname(sys.executable) approach
+            # os.path.dirname(Configuration.__file__) returned by pyInstaller will not work without
+            # some modifications so it is best tu use os.path.dirname(sys.executable) approach
 
             self.tweditRootPath = os.path.dirname(sys.executable)
 
@@ -142,20 +133,20 @@ class PluginManager(QObject):
 
         # self.__checkPluginsDownloadDirectory()
 
-        pluginModules = self.getPluginModules(self.pluginPath)
+        plugin_modules = self.get_plugin_modules(self.pluginPath)
 
-        self.__insertPluginsPaths()
+        self.__insert_plugins_paths()
 
-        print('pluginModules=', pluginModules)
+        print('pluginModules=', plugin_modules)
 
-        for pluginName in pluginModules:
+        for pluginName in plugin_modules:
             self.queryPlugin(pluginName, self.pluginPath)
 
             # checking out which plugins were succesfully querried
 
         # discovered plugin names are storred in pluginModules list
 
-        defined_plugin_module_name_set = set(pluginModules)
+        defined_plugin_module_name_set = set(plugin_modules)
 
         # print 'defined_plugin_module_name_set=',defined_plugin_module_name_set
 
@@ -177,102 +168,83 @@ class PluginManager(QObject):
             warning_string += problematic_plugin_name + ", "
 
         # removing trailing ", "
-
         warning_string = warning_string[:-2]
 
         if len(problematic_module_set):
             self.__ui.display_popup_message(message_title='Module Error', message_text=warning_string)
 
-            # print 'WARNING  '+warning_string
-
-        # print '\n\n\n\n self.__pluginQueries=',self.__pluginQueries
-
         # load and activate plugins
 
-        # for pluginName in pluginModules:        
-
         for pluginName, bpd in list(self.__pluginQueries.items()):
-            # bpd=self.__pluginQueries[pluginName]
 
             print('************PLUGIN NAME=', pluginName)
-
             print(bpd)
-
             self.loadPlugin(pluginName)
 
-    def runForAllPlugins(self, _functionName, _argumentDict):
+        # postactivate initialization -  extra initialization steps needed after plugin is ready
+        self.run_for_all_plugins(function_name='post_activate', argument_dict={})
 
-        '''attempts to run function (_functionName) with arguments given by _argumentDict for all plugins
-
-        '''
+    def run_for_all_plugins(self, function_name, argument_dict):
+        """
+        attempts to run function (function_name) with arguments given by argument_dict for all plugins
+        :param function_name:
+        :param argument_dict:
+        :return:
+        """
 
         for pluginName, plugin in self.__activePlugins.items():
-
             try:
+                function = getattr(plugin, function_name)
+                function(argument_dict)
+            except (TypeError, AttributeError) as e:
+                print('PLUGIN: ', pluginName, ' COULD NOT APPLY ', function_name, ' with arguments=', argument_dict)
+                print(e)
 
-                function = getattr(plugin, _functionName)
-
-                function(_argumentDict)
-
-            except:
-
-                print('PLUGIN: ', pluginName, ' COULD NOT APPLY ', _functionName, ' with arguments=', _argumentDict)
-
-    def getActivePlugin(self, _name):
+    def get_active_plugin(self, name):
 
         try:
 
-            return self.__activePlugins[_name]
+            return self.__activePlugins[name]
 
         except LookupError as e:
 
             return None
 
-    def getPluginModules(self, pluginPath):
+    def get_plugin_modules(self, plugin_path):
 
         """
-
         Public method to get a list of plugin modules.
 
-        
-
-        @param pluginPath name of the path to search (string)
+        @param plugin_path name of the path to search (string)
 
         @return list of plugin module names (list of string)
 
         """
 
-        pluginFiles = [f[:-3] for f in os.listdir(pluginPath) \
- \
-                       if self.isValidPluginName(f)]
+        plugin_files = [f[:-3] for f in os.listdir(plugin_path) if self.is_valid_plugin_name(f)]
 
-        return pluginFiles[:]
+        return plugin_files[:]
 
-    def isValidPluginName(self, pluginName):
+    def is_valid_plugin_name(self, plugin_name):
 
         """
 
         Public methode to check, if a file name is a valid plugin name.
 
-        
-
         Plugin modules must start with "Plugin" and have the extension ".py".
 
-        
-
-        @param pluginName name of the file to be checked (string)
+        @param plugin_name name of the file to be checked (string)
 
         @return flag indicating a valid plugin name (boolean)
 
         """
 
-        return pluginName.startswith("Plugin") and pluginName.endswith(".py")
+        return plugin_name.startswith("Plugin") and plugin_name.endswith(".py")
 
-    def __insertPluginsPaths(self):
+    def __insert_plugins_paths(self):
 
         """
-
-        Private method to insert the valid plugin paths intos the search path.
+        Private method to insert the valid plugin paths into the search path.
 
         """
 
