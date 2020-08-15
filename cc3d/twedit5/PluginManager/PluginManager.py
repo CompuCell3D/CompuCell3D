@@ -3,7 +3,6 @@
 Module implementing the Plugin Manager.
 
 """
-import imp
 import traceback
 import cc3d.twedit5.twedit as twedit
 from cc3d.twedit5.PluginManager.PluginExceptions import *
@@ -12,32 +11,23 @@ from cc3d.twedit5.PluginManager.PluginExceptions import *
 # this class will store basic plugin data
 class BasicPluginData(object):
 
-    def __init__(self, _name='', _fileName=''):
+    def __init__(self, name='', file_name=''):
 
-        self.name = _name
-
-        self.fileName = _fileName
-
+        self.name = name
+        self.fileName = file_name
         self.author = ''
-
         self.autoactivate = False
-
         self.deactivateable = False
-
         self.version = ''
-
         self.className = ''
-
         self.packageName = ''
-
         self.shortDescription = ''
-
         self.longDescription = ''
 
     def __str__(self):
 
         attribute_names = ['name', 'fileName', 'author', 'autoactivate', 'deactivateable', 'version', 'className',
-                          'packageName', 'shortDescription', 'longDescription']
+                           'packageName', 'shortDescription', 'longDescription']
 
         ret_str = ''
 
@@ -176,7 +166,6 @@ class PluginManager(QObject):
         # load and activate plugins
 
         for pluginName, bpd in list(self.__pluginQueries.items()):
-
             print('************PLUGIN NAME=', pluginName)
             print(bpd)
             self.load_plugin(pluginName)
@@ -225,7 +214,8 @@ class PluginManager(QObject):
 
         return plugin_files[:]
 
-    def is_valid_plugin_name(self, plugin_name):
+    @staticmethod
+    def is_valid_plugin_name(plugin_name):
 
         """
 
@@ -250,6 +240,14 @@ class PluginManager(QObject):
 
         sys.path.insert(2, self.pluginPath)
 
+    @staticmethod
+    def load_plugin_source(plugin_name, plugin_fname):
+        import importlib.machinery
+        print("\n\n\n ##################loading source for ", plugin_fname)
+        loader = importlib.machinery.SourceFileLoader(plugin_name, plugin_fname)
+        module = loader.load_module(plugin_name)
+        return module
+
     def query_plugin(self, name, directory, reload_=False):
 
         """
@@ -265,17 +263,15 @@ class PluginManager(QObject):
         """
 
         attribute_names = ['author', 'autoactivate', 'deactivateable', 'version', 'className', 'packageName',
-                          'shortDescription', 'longDescription']
+                           'shortDescription', 'longDescription']
 
         try:
 
             print('plugin name=', name)
 
-            fname = "%s.py" % os.path.join(directory, name)
+            fname = f"{os.path.join(directory, name)}.py"
 
-            print("\n\n\n ##################loading source for ", fname)
-
-            module = imp.load_source(name, fname)
+            module = self.load_plugin_source(plugin_name=name, plugin_fname=fname)
 
             bpd = BasicPluginData(name, fname)
 
@@ -287,10 +283,6 @@ class PluginManager(QObject):
             self.__pluginQueries[name] = bpd
 
         except Exception as err:
-
-            module = imp.new_module(name)
-
-            module.error = "\n\n\n\n\n Module failed to load. Error: %s" % str(err)
 
             print("Error loading plugin module:", name)
 
@@ -304,41 +296,31 @@ class PluginManager(QObject):
         Public method to load aand activate plugin module.
 
         @param name name of the p[lugin to load  - used as a key to self.__pluginQueries
-
+        @param force_activate
         """
 
         try:
             bpd = self.__pluginQueries[name]
-        except LookupError as e:
+        except LookupError:
 
             return
 
         try:
-
             name = bpd.name
-
             fname = bpd.fileName
-
             print('LOADING ', name, 'from ', fname)
-
-            # fname = "%s.py" % os.path.join(directory, name)
-
             print("loading source for ", fname)
 
-            module = imp.load_source(name, fname)
-
+            module = self.load_plugin_source(plugin_name=name, plugin_fname=fname)
             module.pluginModuleName = name
 
             module.pluginModuleFilename = fname
 
             self.__modulesCount += 1
-
             # self.__inactiveModules[name] = module
-
             self.__availableModules[name] = module
 
             # checking whether user has specific load on startup setting for this plugin
-
             configuration = self.__ui.configuration
 
             plugin_autoload_data = configuration.pluginAutoloadData()
@@ -361,14 +343,8 @@ class PluginManager(QObject):
             return module
 
         except Exception as err:
-
-            module = imp.new_module(name)
-            module.error = "Module failed to load. Error: %s" % str(err)
-
-            self.__failedModules[name] = module
-
+            self.__failedModules[name] = "Module failed to load. Error: %s" % str(err)
             print("Error loading plugin module:", name)
-            print("\n\n\n", str(err), '\n\n\n ')
             traceback.print_exc(file=sys.stdout)
 
     def is_plugin_active(self, name):
@@ -381,7 +357,7 @@ class PluginManager(QObject):
 
             return self.__pluginQueries[name]
 
-        except LookupError as e:
+        except LookupError:
 
             return None
 
@@ -394,14 +370,12 @@ class PluginManager(QObject):
         """
         Public method to unload and deactivate plugin module.
         @param name name of the module to be unloaded (string)
-        @param directory name of the plugin directory (string)
 
         @return flag indicating success (boolean)
 
         """
 
         if name in self.__activePlugins:
-
             self.deactivate_plugin(name)
             # replacing module (potentially arge object with simple bdp plugin descriptor)
             self.__availableModules[name] = self.__pluginQueries[name]
@@ -422,44 +396,38 @@ class PluginManager(QObject):
         for pluginName in unloaded_plugin_names:
             del self.__activePlugins[pluginName]
 
-    def remove_plugin_from_sys_modules(self, pluginName, package, internalPackages):
+    @staticmethod
+    def remove_plugin_from_sys_modules(plugin_name, package, internal_packages):
 
         """
         Public method to remove a plugin and all related modules from sys.modules.
 
-        @param pluginName name of the plugin module (string)
+        @param plugin_name name of the plugin module (string)
 
         @param package name of the plugin package (string)
 
-        @param internalPackages list of intenal packages (list of string)
+        @param internal_packages list of intenal packages (list of string)
 
         @return flag indicating the plugin module was found in sys.modules (boolean)
 
         """
 
-        packages = [package] + internalPackages
+        packages = [package] + internal_packages
 
         found = False
 
-        if not package:
-            package = "__None__"
-
         for moduleName in list(sys.modules.keys())[:]:
 
-            if moduleName == pluginName or moduleName.split(".")[0] in packages:
+            if moduleName == plugin_name or moduleName.split(".")[0] in packages:
                 found = True
 
                 del sys.modules[moduleName]
 
         return found
 
-    def initOnDemandPlugins(self):
-
+    def init_on_demand_plugins(self):
         """
-
         Public method to create plugin objects for all on demand plugins.
-
-
 
         Note: The plugins are not activated.
 
@@ -509,22 +477,14 @@ class PluginManager(QObject):
             return None
 
     def activate_plugin(self, name):
-
         """
-
         Public method to activate a plugin.
-
-        
-
         @param name name of the module to be activated
-
         @return reference to the initialized plugin object
-
         """
 
         try:
             try:
-
                 module = self.__availableModules[name]
             except KeyError:
 
@@ -547,9 +507,7 @@ class PluginManager(QObject):
             except TypeError:
 
                 module.error = "Incompatible plugin activation method."
-
                 obj = None
-
                 ok = True
 
             except Exception as err:
@@ -563,11 +521,8 @@ class PluginManager(QObject):
                 return None
 
             plugin_object.pluginModule = module
-
             plugin_object.pluginName = class_name
-
             plugin_object.pluginVersion = version
-
             self.__activePlugins[name] = plugin_object
 
             return obj
@@ -576,13 +531,11 @@ class PluginManager(QObject):
 
             return None
 
-    def __can_activate_plugin(self, module):
-
+    @staticmethod
+    def __can_activate_plugin(module):
         """
-
         Private method to check, if a plugin can be activated.
         @param module reference to the module to be activated
-
         @return flag indicating, if the module satisfies all requirements
             for being activated (boolean)
 
@@ -649,18 +602,18 @@ class PluginManager(QObject):
 
         if self.__can_deactivate_plugin(module):
 
-            pluginObject = None
+            plugin_object = None
 
             if name in self.__activePlugins:
-                pluginObject = self.__activePlugins[name]
+                plugin_object = self.__activePlugins[name]
 
-            if pluginObject:
+            if plugin_object:
 
-                self.emit(SIGNAL("pluginAboutToBeDeactivated"), name, pluginObject)
+                self.emit(SIGNAL("pluginAboutToBeDeactivated"), name, plugin_object)
 
-                pluginObject.deactivate()
+                plugin_object.deactivate()
 
-                self.emit(SIGNAL("pluginDeactivated"), name, pluginObject)
+                self.emit(SIGNAL("pluginDeactivated"), name, plugin_object)
 
                 try:
 
@@ -670,7 +623,8 @@ class PluginManager(QObject):
 
                     pass
 
-    def __can_deactivate_plugin(self, module):
+    @staticmethod
+    def __can_deactivate_plugin(module):
         """
         Private method to check, if a plugin can be deactivated.
         @param module reference to the module to be deactivated
@@ -679,4 +633,3 @@ class PluginManager(QObject):
         """
 
         return getattr(module, "deactivateable", True)
-
