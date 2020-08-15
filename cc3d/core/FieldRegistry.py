@@ -2,6 +2,7 @@ from cc3d.core.enums import *
 from cc3d import CompuCellSetup
 import numpy as np
 from .ExtraFieldAdapter import ExtraFieldAdapter
+from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 
 
 class FieldRegistry:
@@ -35,7 +36,7 @@ class FieldRegistry:
         :return:
         """
         # todo - need to add mechanism to inform player about new field
-
+        validate_cc3d_entity_identifier(entity_identifier=field_name, entity_type_label='visualization field')
         field_adapter = self.schedule_field_creation(field_name=field_name, field_type=field_type)
 
         if self.enable_ad_hoc_field_creation:
@@ -122,14 +123,14 @@ class FieldRegistry:
         if field_adapter is None:
             return
 
-        fieldNP = np.zeros(shape=(self.dim.x, self.dim.y, self.dim.z, 3), dtype=np.float32)
-        ndarrayAdapter = self.get_field_storage().createVectorFieldPy(self.dim, field_name)
+        field_np = np.zeros(shape=(self.dim.x, self.dim.y, self.dim.z, 3), dtype=np.float32)
+        ndarray_adapter = self.get_field_storage().createVectorFieldPy(self.dim, field_name)
         # initializing  numpyAdapter using numpy array (copy dims and data ptr)
-        ndarrayAdapter.initFromNumpy(fieldNP)
-        self.addNewField(ndarrayAdapter, field_name, VECTOR_FIELD)
-        self.addNewField(fieldNP, field_name + '_npy', VECTOR_FIELD_NPY)
+        ndarray_adapter.initFromNumpy(field_np)
+        self.addNewField(ndarray_adapter, field_name, VECTOR_FIELD)
+        self.addNewField(field_np, field_name + '_npy', VECTOR_FIELD_NPY)
 
-        field_adapter.set_ref(fieldNP)
+        field_adapter.set_ref(field_np)
 
     def create_vector_field_cell_level(self, field_name: str) -> None:
         """
@@ -156,6 +157,7 @@ class FieldRegistry:
         """
 
         for field_name, field_adapter in self.__fields_to_create.items():
+
             try:
                 field_creating_fcn = self.field_creating_fcns[field_adapter.field_type]
             except KeyError:

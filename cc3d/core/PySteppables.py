@@ -1,3 +1,4 @@
+import re
 import itertools
 from pathlib import Path
 import numpy as np
@@ -20,6 +21,7 @@ from cc3d.core.SteeringParam import SteeringParam
 from copy import deepcopy
 from math import sqrt
 from cc3d.core.numerics import *
+from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 
 
 class SteppablePy:
@@ -63,7 +65,6 @@ class SteppablePy:
         """
 
 
-
 class FieldVisData:
     (CELL_LEVEL_SCALAR_FIELD, CELL_LEVEL_VECTOR_FIELD, HISTOGRAM) = list(range(0, 3))
 
@@ -100,6 +101,26 @@ class PlotData:
             self.function_obj = lambda x: x
 
         self.plot_type = plot_type
+
+
+class CellTypeFetcher:
+    def __init__(self, type_id_type_name_dict):
+        # reversing dictionary from type_id_type_name_dict -> type_name_type_id_dict
+        self.type_name_type_id_dict = {v: k for k, v in type_id_type_name_dict.items()}
+
+    def __getattr__(self, item):
+
+        try:
+            return self.type_name_type_id_dict[item]
+        except KeyError:
+            raise KeyError(f'The requested cell type {item} does not exist')
+
+    def get_data(self) -> dict:
+        """
+        Returns cell type data
+        :return: dictionary mapping cell type name to cell type id
+        """
+        return self.type_name_type_id_dict
 
 
 class FieldFetcher:
@@ -201,15 +222,19 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         self._simulator = None
 
+        # created and initialized in core_init method
+        self.cell_type = None
+
         self.cell_field = None
         self.cellField = None
         self.cell_list = None
         self.cellList = None
-        self.cell_list_by_type = None
+        # cell_list_by_type is handled via a function call
         self.cellListByType = None
         self.cluster_list = None
-        self.clusters = None
         self.clusterList = None
+        self.clusters = None
+
         self.mcs = -1
         # {plot_name:plotWindow  - pW object}
         self.plot_dict = {}
@@ -253,6 +278,15 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.clonable_attribute_names = ['lambdaVolume', 'targetVolume', 'targetSurface', 'lambdaSurface',
                                          'targetClusterSurface', 'lambdaClusterSurface', 'type', 'lambdaVecX',
                                          'lambdaVecY', 'lambdaVecZ', 'fluctAmpl']
+
+    def cell_list_by_type(self, *args):
+        """
+        Returns a CellListByType object that represents list of ells with a given type
+        :param args: list of cell types
+        :return:
+        """
+        list_by_type_obj = CellListByType(self.inventory, *args)
+        return list_by_type_obj
 
     def open_file_in_simulation_output_folder(self, file_name: str, mode: str = 'w') -> tuple:
         """
@@ -301,7 +335,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.cellField = self.cell_field
         self.cell_list = CellList(self.inventory)
         self.cellList = self.cell_list
-        self.cell_list_by_type = CellListByType(self.inventory)
         self.cellListByType = self.cell_list_by_type
         self.cluster_list = ClusterList(self.inventory)
         self.clusterList = self.cluster_list
@@ -311,6 +344,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         persistent_globals.attach_dictionary_to_cells()
 
         type_id_type_name_dict = extract_type_names_and_ids()
+
+        self.cell_type = CellTypeFetcher(type_id_type_name_dict=type_id_type_name_dict)
 
         if reinitialize_cell_types:
             for type_id, type_name in type_id_type_name_dict.items():
@@ -752,27 +787,22 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :param type_id:{str}
         :return:
         """
+        validate_cc3d_entity_identifier(cell_type_name, entity_type_label='cell type')
+        cell_type_name_attr_list = [cell_type_name.upper(), f't_{cell_type_name}']
 
-        if cell_type_name.isspace() or not len(cell_type_name.strip()):
-            raise AttributeError('cell type "{}" contains whitespaces'.format(cell_type_name))
+        for cell_type_name_attr in cell_type_name_attr_list:
+            try:
+                getattr(self, cell_type_name_attr)
+                attribute_already_exists = True
+            except AttributeError:
+                attribute_already_exists = False
 
-        if not cell_type_name[0].isalpha():
-            raise AttributeError('Invalid cell type "{}" . Type name must start with a letter'.format(cell_type_name))
+            if attribute_already_exists:
+                raise AttributeError(
+                    f'Could not convert cell type {cell_type_name} to steppable attribute. '
+                    f'Attribute {cell_type_name_attr} already exists . Please change your cell type name')
 
-        cell_type_name_attr = cell_type_name.upper()
-
-        try:
-            getattr(self, cell_type_name_attr)
-            attribute_already_exists = True
-        except AttributeError:
-            attribute_already_exists = False
-
-        if attribute_already_exists:
-            raise AttributeError('Could not convert cell type {cell_type} to steppable attribute. '
-                                 'Attribute {attr_name} already exists . Please change your cell type name'.format(
-                cell_type=cell_type_name, attr_name=cell_type_name_attr))
-
-        setattr(self, cell_type_name_attr, type_id)
+            setattr(self, cell_type_name_attr, type_id)
 
     def stop_simulation(self):
         """

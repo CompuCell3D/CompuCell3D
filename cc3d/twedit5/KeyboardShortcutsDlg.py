@@ -94,29 +94,29 @@ class KeyboardShortcutsDlg(QDialog, ui_KeyboardShortcuts.Ui_KeyboardShortcutsDlg
 
             self.shortcutTable.insertRow(row_idx)
 
-            actionItem = QTableWidgetItem(action)
+            action_item = QTableWidgetItem(action)
 
-            flags = actionItem.flags()
+            flags = action_item.flags()
 
             flags &= ~flags
 
-            actionItem.setFlags(flags)
+            action_item.setFlags(flags)
 
-            actionItem.setFont(font)
+            action_item.setFont(font)
 
-            actionItem.setForeground(foreground_brush)
+            action_item.setForeground(foreground_brush)
 
-            self.shortcutTable.setItem(row_idx, 0, actionItem)
+            self.shortcutTable.setItem(row_idx, 0, action_item)
 
-            shortcutItem = QTableWidgetItem(shortcut)
+            shortcut_item = QTableWidgetItem(shortcut)
 
-            shortcutItem.setFlags(flags)
+            shortcut_item.setFlags(flags)
 
-            shortcutItem.setFont(font)
+            shortcut_item.setFont(font)
 
-            shortcutItem.setForeground(foreground_brush)
+            shortcut_item.setForeground(foreground_brush)
 
-            self.shortcutTable.setItem(row_idx, 1, shortcutItem)
+            self.shortcutTable.setItem(row_idx, 1, shortcut_item)
 
             # self.shortcutItemDict[shortcutItem]=shortcut
 
