@@ -56,7 +56,7 @@ class PluginManager(QObject):
     Class implementing the Plugin Manager.
     """
 
-    def __init__(self, parent=None, doLoadPlugins=True, develPlugin=None):
+    def __init__(self, parent=None, do_load_plugins=True, devel_plugin=None):
 
         """
 
@@ -140,7 +140,7 @@ class PluginManager(QObject):
         print('pluginModules=', plugin_modules)
 
         for pluginName in plugin_modules:
-            self.queryPlugin(pluginName, self.pluginPath)
+            self.query_plugin(pluginName, self.pluginPath)
 
             # checking out which plugins were succesfully querried
 
@@ -179,7 +179,7 @@ class PluginManager(QObject):
 
             print('************PLUGIN NAME=', pluginName)
             print(bpd)
-            self.loadPlugin(pluginName)
+            self.load_plugin(pluginName)
 
         # postactivate initialization -  extra initialization steps needed after plugin is ready
         self.run_for_all_plugins(function_name='post_activate', argument_dict={})
@@ -206,7 +206,7 @@ class PluginManager(QObject):
 
             return self.__activePlugins[name]
 
-        except LookupError as e:
+        except LookupError:
 
             return None
 
@@ -250,13 +250,11 @@ class PluginManager(QObject):
 
         sys.path.insert(2, self.pluginPath)
 
-    def queryPlugin(self, name, directory, reload_=False):
+    def query_plugin(self, name, directory, reload_=False):
 
         """
 
-        Public method to preload a plugin module and run few queries like plugin name, author, descriptiopn etc 
-
-                
+        Public method to preload a plugin module and run few queries like plugin name, author, descriptiopn etc
 
         @param name name of the module to be loaded (string)
 
@@ -266,7 +264,7 @@ class PluginManager(QObject):
 
         """
 
-        attributeNames = ['author', 'autoactivate', 'deactivateable', 'version', 'className', 'packageName',
+        attribute_names = ['author', 'autoactivate', 'deactivateable', 'version', 'className', 'packageName',
                           'shortDescription', 'longDescription']
 
         try:
@@ -281,14 +279,12 @@ class PluginManager(QObject):
 
             bpd = BasicPluginData(name, fname)
 
-            for attributeName in attributeNames:
+            for attributeName in attribute_names:
 
                 if hasattr(module, "autoactivate"):
                     setattr(bpd, attributeName, getattr(module, attributeName))
 
             self.__pluginQueries[name] = bpd
-
-
 
         except Exception as err:
 
@@ -302,24 +298,17 @@ class PluginManager(QObject):
 
             traceback.print_exc(file=sys.stdout)
 
-            # sys.exit()
-
-    def loadPlugin(self, name, forceActivate=False):
+    def load_plugin(self, name, force_activate=False):
 
         """
-
         Public method to load aand activate plugin module.
-
-        
 
         @param name name of the p[lugin to load  - used as a key to self.__pluginQueries
 
         """
 
         try:
-
             bpd = self.__pluginQueries[name]
-
         except LookupError as e:
 
             return
@@ -352,51 +341,41 @@ class PluginManager(QObject):
 
             configuration = self.__ui.configuration
 
-            pluginAutoloadData = configuration.pluginAutoloadData()
+            plugin_autoload_data = configuration.pluginAutoloadData()
 
-            autoloadFlag = bpd.autoactivate
+            autoload_flag = bpd.autoactivate
 
             try:
-
-                autoloadFlag = pluginAutoloadData[name]
-
-            except LookupError as e:
-
+                autoload_flag = plugin_autoload_data[name]
+            except LookupError:
                 pass
 
-            if autoloadFlag:
+            if autoload_flag:
+                # instantiates plugin object based on code stored in module
+                self.activate_plugin(name)
 
-                self.activatePlugin(name)  # instantiates plugin object based on code stored in module
-
-            elif forceActivate:
-
-                self.activatePlugin(name)  # instantiates plugin object based on code stored in module
+            elif force_activate:
+                # instantiates plugin object based on code stored in module
+                self.activate_plugin(name)
 
             return module
-
-
 
         except Exception as err:
 
             module = imp.new_module(name)
-
             module.error = "Module failed to load. Error: %s" % str(err)
 
             self.__failedModules[name] = module
 
             print("Error loading plugin module:", name)
-
             print("\n\n\n", str(err), '\n\n\n ')
-
             traceback.print_exc(file=sys.stdout)
 
-            # sys.exit()
-
-    def isPluginActive(self, name):
+    def is_plugin_active(self, name):
 
         return name in list(self.__activePlugins.keys())
 
-    def getBasicPluginData(self, name):
+    def get_basic_plugin_data(self, name):
 
         try:
 
@@ -406,20 +385,15 @@ class PluginManager(QObject):
 
             return None
 
-    def getAvailableModules(self):
+    def get_available_modules(self):
 
         return list(self.__availableModules.keys())
 
-    def unloadPlugin(self, name):
+    def unload_plugin(self, name):
 
         """
-
         Public method to unload and deactivate plugin module.
-
-        
-
         @param name name of the module to be unloaded (string)
-
         @param directory name of the plugin directory (string)
 
         @return flag indicating success (boolean)
@@ -427,36 +401,31 @@ class PluginManager(QObject):
         """
 
         if name in self.__activePlugins:
-            # self.__activeModules[name].eric4PluginModuleFilename == fname:
 
-            self.deactivatePlugin(name)
-
-            self.__availableModules[name] = self.__pluginQueries[
-                name]  # replacing module (potentially arge object with simple bdp plugin descriptor)
+            self.deactivate_plugin(name)
+            # replacing module (potentially arge object with simple bdp plugin descriptor)
+            self.__availableModules[name] = self.__pluginQueries[name]
 
         self.__modulesCount -= 1
 
         return True
 
-    def unloadPlugins(self):
+    def unload_plugins(self):
 
-        unloadedPluginNames = []
+        unloaded_plugin_names = []
 
         for pluginName in list(self.__activePlugins.keys()):
             self.__activePlugins[pluginName].deactivate()
 
-            unloadedPluginNames.append(pluginName)
+            unloaded_plugin_names.append(pluginName)
 
-        for pluginName in unloadedPluginNames:
+        for pluginName in unloaded_plugin_names:
             del self.__activePlugins[pluginName]
 
-    def removePluginFromSysModules(self, pluginName, package, internalPackages):
+    def remove_plugin_from_sys_modules(self, pluginName, package, internalPackages):
 
         """
-
         Public method to remove a plugin and all related modules from sys.modules.
-
-        
 
         @param pluginName name of the plugin module (string)
 
@@ -490,7 +459,7 @@ class PluginManager(QObject):
 
         Public method to create plugin objects for all on demand plugins.
 
-        
+
 
         Note: The plugins are not activated.
 
@@ -499,91 +468,47 @@ class PluginManager(QObject):
         names = sorted(self.__onDemandInactiveModules.keys())
 
         for name in names:
-            self.initOnDemandPlugin(name)
+            self.init_on_demand_plugin(name)
 
-    def initOnDemandPlugin(self, name):
+    def init_on_demand_plugin(self, name):
 
         """
-
         Public method to create a plugin object for the named on demand plugin.
-
-        
 
         Note: The plugin is not activated.
 
         """
 
         try:
-
             try:
-
                 module = self.__onDemandInactiveModules[name]
-
             except KeyError:
-
                 return None
 
-            if not self.__canActivatePlugin(module):
+            if not self.__can_activate_plugin(module):
                 raise PluginActivationError(module.eric4PluginModuleName)
 
             version = getattr(module, "version")
 
-            className = getattr(module, "className")
+            class_name = getattr(module, "className")
 
-            pluginClass = getattr(module, className)
-
-            pluginObject = None
+            plugin_class = getattr(module, class_name)
 
             if name not in self.__onDemandInactivePlugins:
-                pluginObject = pluginClass(self.__ui)
+                plugin_object = plugin_class(self.__ui)
 
-                pluginObject.eric4PluginModule = module
+                plugin_object.eric4PluginModule = module
 
-                pluginObject.eric4PluginName = className
+                plugin_object.eric4PluginName = class_name
 
-                pluginObject.eric4PluginVersion = version
+                plugin_object.eric4PluginVersion = version
 
-                self.__onDemandInactivePlugins[name] = pluginObject
+                self.__onDemandInactivePlugins[name] = plugin_object
 
         except PluginActivationError:
-
             return None
 
-    def activatePlugins(self):
-
-        """
-
-        Public method to activate all plugins having the "autoactivate" attribute
-
-        set to True.
-
-        """
-
-        ial = Preferences.Prefs.settings.value(self.__inactivePluginsKey)
-
-        if ial.isValid():
-
-            savedInactiveList = ial.toStringList()
-
-        else:
-
-            savedInactiveList = None
-
-        if self.__develPluginName is not None and savedInactiveList is not None:
-            savedInactiveList.removeAll(self.__develPluginName)
-
-        names = list(self.__inactiveModules.keys())
-
-        names.sort()
-
-        for name in names:
-
-            if savedInactiveList is None or name not in savedInactiveList:
-                self.activatePlugin(name)
-
-        self.emit(SIGNAL("allPlugginsActivated()"))
-
-    def activatePlugin(self, name):
+    def activate_plugin(self, name):
 
         """
 
@@ -598,38 +523,27 @@ class PluginManager(QObject):
         """
 
         try:
-
             try:
 
                 module = self.__availableModules[name]
-
             except KeyError:
 
                 return None
 
-            if not self.__canActivatePlugin(module):
+            if not self.__can_activate_plugin(module):
                 raise PluginActivationError(module.pluginModuleName)
 
             version = getattr(module, "version")
+            class_name = getattr(module, "className")
+            plugin_class = getattr(module, class_name)
 
-            className = getattr(module, "className")
+            print("version=", version, " className=", class_name, " pluginClass=", plugin_class)
 
-            pluginClass = getattr(module, className)
-
-            print("version=", version, " className=", className, " pluginClass=", pluginClass)
-
-            pluginObject = None
-
-            pluginObject = pluginClass(self.__ui)
-
+            plugin_object = plugin_class(self.__ui)
             try:
-
-                print("WILL TRY TO ACTIVATE ", pluginObject)
-
-                obj, ok = pluginObject.activate()
-
+                print("WILL TRY TO ACTIVATE ", plugin_object)
+                obj, ok = plugin_object.activate()
                 print("ACTIVATED")
-
             except TypeError:
 
                 module.error = "Incompatible plugin activation method."
@@ -641,23 +555,20 @@ class PluginManager(QObject):
             except Exception as err:
 
                 module.error = str(err)
-
                 traceback.print_exc(file=sys.stdout)
-
                 obj = None
-
                 ok = False
 
             if not ok:
                 return None
 
-            pluginObject.pluginModule = module
+            plugin_object.pluginModule = module
 
-            pluginObject.pluginName = className
+            plugin_object.pluginName = class_name
 
-            pluginObject.pluginVersion = version
+            plugin_object.pluginVersion = version
 
-            self.__activePlugins[name] = pluginObject
+            self.__activePlugins[name] = plugin_object
 
             return obj
 
@@ -665,18 +576,14 @@ class PluginManager(QObject):
 
             return None
 
-    def __canActivatePlugin(self, module):
+    def __can_activate_plugin(self, module):
 
         """
 
         Private method to check, if a plugin can be activated.
-
-        
-
         @param module reference to the module to be activated
 
         @return flag indicating, if the module satisfies all requirements
-
             for being activated (boolean)
 
         """
@@ -689,27 +596,21 @@ class PluginManager(QObject):
             if not hasattr(module, "className"):
                 raise PluginModuleFormatError(module.pluginModuleName, "className")
 
-            className = getattr(module, "className")
+            class_name = getattr(module, "className")
 
-            if not hasattr(module, className):
-                raise PluginModuleFormatError(module.pluginModuleName, className)
+            if not hasattr(module, class_name):
+                raise PluginModuleFormatError(module.pluginModuleName, class_name)
 
-            pluginClass = getattr(module, className)
+            plugin_class = getattr(module, class_name)
 
-            if not hasattr(pluginClass, "__init__"):
-                raise PluginClassFormatError(module.pluginModuleName,
+            if not hasattr(plugin_class, "__init__"):
+                raise PluginClassFormatError(module.pluginModuleName, class_name, "__init__")
 
-                                             className, "__init__")
+            if not hasattr(plugin_class, "activate"):
+                raise PluginClassFormatError(module.pluginModuleName, class_name, "activate")
 
-            if not hasattr(pluginClass, "activate"):
-                raise PluginClassFormatError(module.pluginModuleName,
-
-                                             className, "activate")
-
-            if not hasattr(pluginClass, "deactivate"):
-                raise PluginClassFormatError(module.pluginModuleName,
-
-                                             className, "deactivate")
+            if not hasattr(plugin_class, "deactivate"):
+                raise PluginClassFormatError(module.pluginModuleName, class_name, "deactivate")
 
             return True
 
@@ -725,13 +626,10 @@ class PluginManager(QObject):
 
             return False
 
-    def deactivatePlugin(self, name, onDemand=False):
+    def deactivate_plugin(self, name):
 
         """
-
         Public method to deactivate a plugin.
-
-        
 
         @param name name of the module to be deactivated
 
@@ -749,7 +647,7 @@ class PluginManager(QObject):
 
             return
 
-        if self.__canDeactivatePlugin(module):
+        if self.__can_deactivate_plugin(module):
 
             pluginObject = None
 
@@ -772,36 +670,13 @@ class PluginManager(QObject):
 
                     pass
 
-    def __canDeactivatePlugin(self, module):
-
+    def __can_deactivate_plugin(self, module):
         """
-
         Private method to check, if a plugin can be deactivated.
-
-        
-
         @param module reference to the module to be deactivated
-
         @return flag indicating, if the module satisfies all requirements
-
             for being deactivated (boolean)
-
         """
 
         return getattr(module, "deactivateable", True)
 
-    def isPluginLoaded(self, pluginName):
-
-        """
-
-        Public method to check, if a certain plugin is loaded.
-
-        
-
-        @param pluginName name of the plugin to check for (string or QString)
-
-        @return flag indicating, if the plugin is loaded (boolean)
-
-        """
-
-        return str(pluginName) in list(self.__activePlugins.keys())
