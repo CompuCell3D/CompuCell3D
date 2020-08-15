@@ -10,6 +10,7 @@ from . import ui_newsimulationwizard
 from collections import OrderedDict
 import cc3d
 from cc3d.core.XMLUtils import ElementCC3D
+from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 from cc3d.twedit5.Plugins.CC3DMLGenerator.CC3DMLGeneratorBase import CC3DMLGeneratorBase
 from .CC3DPythonGenerator import CC3DPythonGenerator
 
@@ -46,6 +47,16 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
 
         if sys.platform.startswith('win'):
             self.setWizardStyle(QWizard.ClassicStyle)
+
+    def display_invalid_entity_label_message(self, error_message):
+        """
+        Displays warning about invalid identifier
+        :param error_message:
+        :return:
+        """
+
+        QMessageBox.warning(self, 'Invalid Identifier', error_message)
+
 
     def keyPressEvent(self, event):
 
@@ -262,6 +273,11 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
     def on_cellTypeAddPB_clicked(self):
 
         cell_type = str(self.cellTypeLE.text()).strip()
+        try:
+            validate_cc3d_entity_identifier(cell_type, entity_type_label='cell type')
+        except AttributeError as e:
+            self.display_invalid_entity_label_message(error_message=str(e))
+            return
 
         rows = self.cellTypeTable.rowCount()
 
@@ -341,6 +357,13 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
     def on_fieldAddPB_clicked(self):
 
         field_name = str(self.fieldNameLE.text()).strip()
+
+        try:
+            validate_cc3d_entity_identifier(field_name, entity_type_label='field label')
+        except AttributeError as e:
+            self.display_invalid_entity_label_message(error_message=str(e))
+            return
+
         rows = self.fieldTable.rowCount()
 
         if field_name == "":

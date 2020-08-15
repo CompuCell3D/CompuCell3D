@@ -21,6 +21,7 @@ from cc3d.core.SteeringParam import SteeringParam
 from copy import deepcopy
 from math import sqrt
 from cc3d.core.numerics import *
+from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 
 
 class SteppablePy:
@@ -762,18 +763,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :param type_id:{str}
         :return:
         """
-        alphanumeric_underscore_regex = r'^\w+$'
-
-        if cell_type_name.isspace() or not len(cell_type_name.strip()):
-            raise AttributeError(f'cell type "{cell_type_name}" contains whitespaces')
-
-        if not cell_type_name[0].isalpha():
-            raise AttributeError(f'Invalid cell type "{cell_type_name}" . Type name must start with a letter')
-
-        if not re.match(alphanumeric_underscore_regex, cell_type_name):
-            raise AttributeError(f'Invalid character detected in a cell type "{cell_type_name}" . '
-                                 f'Type name must consist of alphanumeric characters and (optionally) an underscore')
-
+        validate_cc3d_entity_identifier(cell_type_name, entity_type_label='cell type')
         cell_type_name_attr_list = [cell_type_name.upper(), f't_{cell_type_name}']
 
         for cell_type_name_attr in cell_type_name_attr_list:
