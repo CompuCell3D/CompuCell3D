@@ -3,17 +3,23 @@ Release Notes
 
 Version 4.2.3
 -------------
-**2019-07-31*
+**2019-08-15**
 
 New Features:
 
 - Added on_stop function to steppable - called if user stops the simulation
 - Added ability to open zipped project from both Player and Twedit++
+- Improved commenting / uncommenting of XML scripts
+- Added more natural syntax to refer to cell types
+- Added pre-check for cell types and fields
+- Added Add Steppable ... function to CC3D Python menu, making it easier to add steppables in Twedit
 
 Bug Fixes:
 
 - Fixed settings handling in Twedit++
 - Fixed display of line numbers in Twedit++
+- Fixed issues with 2.5D simulations where dim z=2
+- Fixed behavior of cell_list_by_cell type when using nested loops
 
 Version 4.2.2
 -------------
