@@ -78,9 +78,9 @@ class ConfigurationDlg(QDialog, ui_configurationdlg.Ui_ConfigurationDlg):
 
         moduleName.rstrip()
 
-        bpd = pm.getBasicPluginData(moduleName)
+        bpd = pm.get_basic_plugin_data(moduleName)
 
-        isActive = pm.isPluginActive(moduleName)
+        isActive = pm.is_plugin_active(moduleName)
 
         if bpd:
             self.pluginsTE.setText(bpd.longDescription)
@@ -120,15 +120,15 @@ class ConfigurationDlg(QDialog, ui_configurationdlg.Ui_ConfigurationDlg):
 
         moduleName.rstrip()
 
-        bpd = pm.getBasicPluginData(moduleName)
+        bpd = pm.get_basic_plugin_data(moduleName)
 
         # plugins listed in the list widget are in fact modules which appear to be instantiable plugins 
 
         # pm.activatePlugin(moduleName)        
 
-        pm.loadPlugin(moduleName, True)
+        pm.load_plugin(moduleName, True)
 
-        if pm.isPluginActive(moduleName):
+        if pm.is_plugin_active(moduleName):
             self.loadPB.setEnabled(False)
 
             self.unloadPB.setEnabled(bpd.deactivateable)
@@ -144,13 +144,13 @@ class ConfigurationDlg(QDialog, ui_configurationdlg.Ui_ConfigurationDlg):
 
         moduleName.rstrip()
 
-        bpd = pm.getBasicPluginData(moduleName)
+        bpd = pm.get_basic_plugin_data(moduleName)
 
         # plugins listed in the list widget are in fact modules which appear to be instantiable plugins 
 
-        pm.unloadPlugin(moduleName)
+        pm.unload_plugin(moduleName)
 
-        if not pm.isPluginActive(moduleName):
+        if not pm.is_plugin_active(moduleName):
             self.loadPB.setEnabled(True)
 
             self.unloadPB.setEnabled(False)
@@ -175,7 +175,7 @@ class ConfigurationDlg(QDialog, ui_configurationdlg.Ui_ConfigurationDlg):
 
         pm = self.editorWindow.pm
 
-        moduleList = pm.getAvailableModules()  # this is alist of python modules (not python objects!) whci are in the PLugins directory and appear to be vaild plugins
+        moduleList = pm.get_available_modules()  # this is alist of python modules (not python objects!) whci are in the PLugins directory and appear to be vaild plugins
 
         self.pluginsLW.addItems(moduleList)
 
