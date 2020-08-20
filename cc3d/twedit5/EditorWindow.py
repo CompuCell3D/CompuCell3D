@@ -2208,6 +2208,8 @@ class EditorWindow(QMainWindow):
         :return: number of lines where comment exists already
         """
 
+        comment_string_begin = comment_string_begin.strip()
+
         editor = self.getActiveEditor()
 
         num_existing_comments = 0
@@ -2337,6 +2339,55 @@ class EditorWindow(QMainWindow):
 
             editor.endUndoAction()
 
+    @staticmethod
+    def is_xml_comment(comment: str):
+        """
+        Checks if comment element (begin or end is XML comment)
+        :param comment:
+        :return:
+        """
+        return comment.strip() in ['<!--', '-->']
+
+    @staticmethod
+    def is_xml_proper_begin(line):
+        """
+        Checks if xml line has proper begin character
+        :param line:
+        :return:
+        """
+        try:
+            return line.lstrip()[0] == '<'
+        except IndexError:
+            return False
+
+    @staticmethod
+    def is_xml_proper_end(line):
+        """
+        Checks if xml line has proper begin character
+        :param line:
+        :return:
+        """
+        try:
+            return line.rstrip()[-1] == '>'
+        except IndexError:
+            return False
+
+    @staticmethod
+    def insert_string(str_to_insert, target_str, pos):
+        """
+        Inserts string into target string
+        :param str_to_insert:
+        :param target_str:
+        :param pos:
+        :return:
+        """
+        try:
+            final_str = target_str[:pos] + str_to_insert + target_str[pos:]
+        except IndexError:
+            final_str = target_str
+
+        return final_str
+
     def uncomment_line(self, line, comment_string_begin, comment_string_begin_trunc, comment_string_end,
                        comment_string_end_trunc):
         """
@@ -2365,6 +2416,9 @@ class EditorWindow(QMainWindow):
         if index_of != -1:
 
             line_text = remove_n_chars(line_text, index_of, len(comment_string_begin))
+            if self.is_xml_comment(comment_string_begin_trunc):
+                if not self.is_xml_proper_begin(line_text):
+                    line_text = self.insert_string(str_to_insert='<', target_str=line_text, pos=index_of)
 
             begin_comment_length = len(comment_string_begin)
 
@@ -2377,6 +2431,9 @@ class EditorWindow(QMainWindow):
             if index_of != -1:
 
                 line_text = remove_n_chars(line_text, index_of, len(comment_string_begin_trunc))
+                if self.is_xml_comment(comment_string_begin_trunc):
+                    if not self.is_xml_proper_begin(line_text):
+                        line_text = self.insert_string(str_to_insert='<', target_str=line_text, pos=index_of)
 
                 begin_comment_length = len(comment_string_begin_trunc)
 
@@ -2392,7 +2449,9 @@ class EditorWindow(QMainWindow):
                 if last_index_of != -1:
 
                     line_text = remove_n_chars(line_text, last_index_of, len(comment_string_end))
-
+                    if self.is_xml_comment(comment_string_end_trunc):
+                        if not self.is_xml_proper_end(line_text):
+                            line_text = self.insert_string(str_to_insert='>', target_str=line_text, pos=last_index_of)
                     end_comment_length = len(comment_string_end)
 
                     comments_found = True
@@ -2404,6 +2463,10 @@ class EditorWindow(QMainWindow):
                     if last_index_of != -1:
 
                         line_text = remove_n_chars(line_text, last_index_of, len(comment_string_end_trunc))
+                        if self.is_xml_comment(comment_string_end_trunc):
+                            if not self.is_xml_proper_end(line_text):
+                                line_text = self.insert_string(str_to_insert='>', target_str=line_text,
+                                                               pos=last_index_of)
                         end_comment_length = len(comment_string_end_trunc)
                         comments_found = True
 
