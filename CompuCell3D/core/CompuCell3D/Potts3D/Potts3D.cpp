@@ -43,6 +43,7 @@
 #include <deque>
 #include <sstream>
 #include <algorithm>
+#include <chrono>
 
 #include "Potts3D.h"
 
@@ -565,7 +566,7 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 
 		for (unsigned int i = 0; i <randNSVec.size(); ++i) {
 			if (!sim->ppdCC3DPtr->seed) {
-				srand(time(0));
+				srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
 				unsigned int randomSeed = (unsigned int)rand()*((std::numeric_limits<unsigned int>::max)() - 1);
 				randNSVec[i].setSeed(randomSeed);
 			}
@@ -747,7 +748,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
 		for (unsigned int i = 0; i <randNSVec.size(); ++i) {
 			if (!sim->ppdCC3DPtr->seed) {
-				srand(time(0));
+				srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
 				unsigned int randomSeed = (unsigned int)rand()*((std::numeric_limits<unsigned int>::max)() - 1);
 				randNSVec[i].setSeed(randomSeed);
 			}
@@ -1040,7 +1041,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 
 		for (unsigned int i = 0; i <randNSVec.size(); ++i) {
 			if (!sim->ppdCC3DPtr->seed) {
-				srand(time(0));
+				srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
 				unsigned int randomSeed = (unsigned int)rand()*((std::numeric_limits<unsigned int>::max)() - 1);
 				randNSVec[i].setSeed(randomSeed);
 			}
