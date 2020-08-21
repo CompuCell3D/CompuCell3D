@@ -140,6 +140,8 @@ namespace CompuCell3D {
 		void setStep(int currstep) { this->currstep = currstep; }
 		bool isStepping(){return simulatorIsStepping;}
 		double getFlip2DimRatio(){return ppdCC3DPtr->flip2DimRatio;}
+		void setRandomSeed(unsigned int seed) { ppdCC3DPtr->RandomSeed(seed); }
+		unsigned int getRandomSeed() { return ppdCC3DPtr->seed; }
 		Potts3D *getPotts() {return &potts;}
 		Simulator *getSimulatorPtr(){return this;}
 		ClassRegistry *getClassRegistry() {return classRegistry;}
