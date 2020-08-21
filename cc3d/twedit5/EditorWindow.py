@@ -2021,6 +2021,94 @@ class EditorWindow(QMainWindow):
         #
         # return .endswith(comment_string_end.strip())
 
+    @staticmethod
+    def remove_line(editor, line_num):
+        line_len = editor.lineLength(line_num)
+        editor.setSelection(line_num, 0, line_num, line_len-1)
+        editor.removeSelectedText()
+
+    def lreplace(self, pattern, sub, string):
+        """
+        Replaces 'pattern' in 'string' with 'sub' if 'pattern' starts 'string'.
+        """
+        first_pos_non_whitespace = self.first_non_whitespace_pos(string)
+            # len(string) - len(string.lstrip())
+        openning_spaces = string[:first_pos_non_whitespace]
+
+        replacement = re.sub('^%s' % pattern, sub, string[first_pos_non_whitespace:])
+        replacement = openning_spaces + replacement
+
+        return replacement
+
+    def rreplace(self, pattern, sub, string):
+        """
+        Replaces 'pattern' in 'string' with 'sub' if 'pattern' ends 'string'.
+        """
+        first_end_whitespace = self.first_end_whitespace(string)
+        trailing_spaces = string[first_end_whitespace:]
+        replacement = re.sub('%s$' % pattern, sub, string.rstrip()) + trailing_spaces
+
+        return replacement
+
+    @staticmethod
+    def first_non_whitespace_pos(text):
+        return len(text) - len(text.lstrip())
+
+    @staticmethod
+    def first_end_whitespace(text):
+        return len(text.rstrip())
+
+    def comment_xml_begin(self, editor, cur_line_num):
+        comment_begin = '<!-- '
+        nested_comment_extra = '&lt;!&ndash;'
+        cur_line_text = editor.text(cur_line_num)
+        comment_found = self.find_comment_pos_begin(text=cur_line_text, comment=comment_begin)
+        if comment_found is not None:
+            cur_line_text = self.lreplace(comment_found, f'{comment_begin}{nested_comment_extra} ', cur_line_text)
+            self.remove_line(editor=editor, line_num=cur_line_num)
+            editor.insertAt(cur_line_text, cur_line_num, 0)
+        else:
+            first_pos_non_whitespace = len(cur_line_text) - len(cur_line_text.lstrip())
+            editor.insertAt(comment_begin, cur_line_num, first_pos_non_whitespace)
+
+    def find_comment_pos_end(self, text, comment):
+        comments = [comment, comment.strip()]
+        for comment in comments:
+            if text.rstrip().endswith(comment):
+                return comment
+        return None
+
+    def find_comment_pos_begin(self, text, comment):
+        comments = [comment, comment.strip()]
+        for comment in comments:
+            if text.lstrip().startswith(comment):
+                return comment
+        return None
+
+    def comment_xml_end(self, editor, cur_line_num):
+        comment_end = ' -->'
+        nested_comment_extra = '&ndash;&gt;'
+        cur_line_text = editor.text(cur_line_num)
+
+        comment_found = self.find_comment_pos_end(text=cur_line_text, comment=comment_end)
+
+        if comment_found is not None:
+            cur_line_text = self.rreplace(comment_found, f' {nested_comment_extra} {comment_end}', cur_line_text)
+
+            self.remove_line(editor=editor, line_num=cur_line_num)
+            editor.insertAt(cur_line_text, cur_line_num, 0)
+        else:
+
+            eol_pos = len(cur_line_text)
+            if cur_line_text[eol_pos - 2] == "\r" or cur_line_text[eol_pos - 2] == "\n":
+                # second option is just in case - checking if we are dealing
+                # with CR LF or simple CR or LF end of line
+
+                editor.insertAt(comment_end, cur_line_num, eol_pos - 2)
+
+            else:
+
+                editor.insertAt(comment_end, cur_line_num, eol_pos - 1)
 
     def comment_single_line(self, currentLine, commentStringBegin, commentStringEnd):
 
@@ -2038,8 +2126,12 @@ class EditorWindow(QMainWindow):
             if editor.text(currentLine).strip():  # checking if the line contains non-white characters
 
                 # editor.beginUndoAction()
-
-                editor.insertAt(commentStringBegin, currentLine, 0)
+                cur_line_text = editor.text(currentLine)
+                if self.is_xml_comment(comment=commentStringBegin):
+                    self.comment_xml_begin(editor=editor, cur_line_num=currentLine)
+                else:
+                    first_pos_non_whitespace = len(cur_line_text) - len(cur_line_text.lstrip())
+                    editor.insertAt(commentStringBegin, currentLine, first_pos_non_whitespace)
 
                 # we have to account for the fact the EOL character can be CR LF or CR or LF
 
@@ -2047,20 +2139,23 @@ class EditorWindow(QMainWindow):
 
                 line_text = editor.text(currentLine)
 
-                if not self.check_if_eol_comment_already_exists(
-                        line_text=line_text, comment_string_end=commentStringEnd):
+                if self.is_xml_comment(comment=commentStringEnd):
+                    self.comment_xml_end(editor=editor, cur_line_num=currentLine)
+                else:
+                    if not self.check_if_eol_comment_already_exists(
+                            line_text=line_text, comment_string_end=commentStringEnd):
 
-                    if line_text[eol_pos - 2] == "\r" or line_text[eol_pos - 2] == "\n":
-                        # second option is just in case - checking if we are dealing
-                        # with CR LF or simple CR or LF end of line
+                        if line_text[eol_pos - 2] == "\r" or line_text[eol_pos - 2] == "\n":
+                            # second option is just in case - checking if we are dealing
+                            # with CR LF or simple CR or LF end of line
 
-                        editor.insertAt(commentStringEnd, currentLine, eol_pos - 2)
+                            editor.insertAt(commentStringEnd, currentLine, eol_pos - 2)
 
-                    else:
+                        else:
 
-                        editor.insertAt(commentStringEnd, currentLine, eol_pos - 1)
+                            editor.insertAt(commentStringEnd, currentLine, eol_pos - 1)
 
-                        # editor.endUndoAction()
+                            # editor.endUndoAction()
 
         else:
             # handling comments which require additions only at the beginning of the line
@@ -2417,8 +2512,24 @@ class EditorWindow(QMainWindow):
 
             line_text = remove_n_chars(line_text, index_of, len(comment_string_begin))
             if self.is_xml_comment(comment_string_begin_trunc):
-                if not self.is_xml_proper_begin(line_text):
-                    line_text = self.insert_string(str_to_insert='<', target_str=line_text, pos=index_of)
+                nested_comment_extras = ['&lt;!&ndash; ',  '&lt;!&ndash;']
+                nested_comment_extra = nested_comment_extras[0]
+                nested_comment_pos = -1
+
+                for nested_comment_extra_local in nested_comment_extras:
+                    nested_comment_pos = line_text.find(nested_comment_extra_local)
+                    if nested_comment_pos != -1:
+                        nested_comment_extra = nested_comment_extra_local
+                        break
+
+                if nested_comment_pos != -1:
+                    line_text = remove_n_chars(line_text, nested_comment_pos, len(nested_comment_extra))
+                    pos = self.first_non_whitespace_pos(line_text)
+                    line_text = line_text[:pos] + comment_string_begin + line_text[pos:]
+                else:
+                    if not self.is_xml_proper_begin(line_text):
+                        pos = self.first_non_whitespace_pos(line_text)
+                        line_text = self.insert_string(str_to_insert='<', target_str=line_text, pos=pos)
 
             begin_comment_length = len(comment_string_begin)
 
@@ -2431,9 +2542,26 @@ class EditorWindow(QMainWindow):
             if index_of != -1:
 
                 line_text = remove_n_chars(line_text, index_of, len(comment_string_begin_trunc))
+
                 if self.is_xml_comment(comment_string_begin_trunc):
-                    if not self.is_xml_proper_begin(line_text):
-                        line_text = self.insert_string(str_to_insert='<', target_str=line_text, pos=index_of)
+                    nested_comment_extras = ['&lt;!&ndash; ', '&lt;!&ndash;']
+                    nested_comment_extra = nested_comment_extras[0]
+                    nested_comment_pos = -1
+
+                    for nested_comment_extra_local in nested_comment_extras:
+                        nested_comment_pos = line_text.find(nested_comment_extra_local)
+                        if nested_comment_pos != -1:
+                            nested_comment_extra = nested_comment_extra_local
+                            break
+
+                    if nested_comment_pos != -1:
+                        line_text = remove_n_chars(line_text, nested_comment_pos, len(nested_comment_extra))
+                        pos = self.first_non_whitespace_pos(line_text)
+                        line_text = line_text[:pos] + comment_string_begin + line_text[pos:]
+                    else:
+                        if not self.is_xml_proper_begin(line_text):
+                            pos = self.first_non_whitespace_pos(line_text)
+                            line_text = self.insert_string(str_to_insert='<', target_str=line_text, pos=pos)
 
                 begin_comment_length = len(comment_string_begin_trunc)
 
@@ -2447,11 +2575,26 @@ class EditorWindow(QMainWindow):
             if not multiple_opening_comments_found:
                 # we only remove closing comment when we have a single opening comment
                 if last_index_of != -1:
-
                     line_text = remove_n_chars(line_text, last_index_of, len(comment_string_end))
                     if self.is_xml_comment(comment_string_end_trunc):
+
+                        nested_comment_extras = [' &ndash;&gt;', '&ndash;&gt;']
+                        nested_comment_extra = nested_comment_extras[0]
+                        nested_comment_pos = -1
+
+                        for nested_comment_extra_local in nested_comment_extras:
+                            nested_comment_pos = line_text.rfind(nested_comment_extra_local)
+                            if nested_comment_pos != -1:
+                                nested_comment_extra = nested_comment_extra_local
+                                break
+
+                        if nested_comment_pos != -1:
+                            line_text = remove_n_chars(line_text, nested_comment_pos, len(nested_comment_extra))
+                            pos = self.first_end_whitespace(line_text)
+                            line_text = line_text[:pos] + comment_string_end + line_text[pos:]
                         if not self.is_xml_proper_end(line_text):
-                            line_text = self.insert_string(str_to_insert='>', target_str=line_text, pos=last_index_of)
+                            pos = self.first_end_whitespace(line_text)
+                            line_text = self.insert_string(str_to_insert='>', target_str=line_text, pos=pos)
                     end_comment_length = len(comment_string_end)
 
                     comments_found = True
@@ -2464,9 +2607,26 @@ class EditorWindow(QMainWindow):
 
                         line_text = remove_n_chars(line_text, last_index_of, len(comment_string_end_trunc))
                         if self.is_xml_comment(comment_string_end_trunc):
-                            if not self.is_xml_proper_end(line_text):
-                                line_text = self.insert_string(str_to_insert='>', target_str=line_text,
-                                                               pos=last_index_of)
+
+                            nested_comment_extras = [' &ndash;&gt;', '&ndash;&gt;']
+                            nested_comment_extra = nested_comment_extras[0]
+                            nested_comment_pos = -1
+
+                            for nested_comment_extra_local in nested_comment_extras:
+                                nested_comment_pos = line_text.rfind(nested_comment_extra_local)
+                                if nested_comment_pos != -1:
+                                    nested_comment_extra = nested_comment_extra_local
+                                    break
+
+                            if nested_comment_pos != -1:
+                                line_text = remove_n_chars(line_text, nested_comment_pos, len(nested_comment_extra))
+                                pos = self.first_end_whitespace(line_text)
+                                line_text = line_text[:pos] + comment_string_end + line_text[pos:]
+                            else:
+                                if not self.is_xml_proper_end(line_text):
+                                    pos = self.first_end_whitespace(line_text)
+                                    line_text = self.insert_string(str_to_insert='>', target_str=line_text,
+                                                               pos=pos)
                         end_comment_length = len(comment_string_end_trunc)
                         comments_found = True
 
