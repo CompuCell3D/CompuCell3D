@@ -15,6 +15,7 @@ import weakref
 from cc3d import CompuCellSetup
 from cc3d.core import RestartManager
 from cc3d.CompuCellSetup.simulation_utils import check_for_cpp_errors
+from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 
 
 # -------------------- legacy API emulation ----------------------------------------
@@ -383,12 +384,22 @@ def store_screenshots(cur_step: int) -> None:
         screenshot_manager.output_screenshots(mcs=cur_step)
 
 
-
-
 def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_enabled=False):
+    """
+    Performs extra initializations. Also checks for validity of concentration field names (those defined in C++)
+    :param sim:
+    :param simthread:
+    :param init_using_restart_snapshot_enabled:
+    :return:
+    """
 
     # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
     sim.extraInit()
+    concentration_field_names = CompuCell.getConcentrationFieldNames(sim)
+    for conc_field_name in concentration_field_names:
+        validate_cc3d_entity_identifier(entity_identifier=conc_field_name,
+                                        entity_type_label='Concentration Field Label')
+
     # passing output directory to simulator object
     sim.setOutputDirectory(CompuCellSetup.persistent_globals.output_directory)
     # simthread.preStartInit()
@@ -494,6 +505,8 @@ def main_loop(sim, simthread, steppable_registry=None):
     if run_finish_flag:
         print("CALLING FINISH")
         steppable_registry.finish()
+    else:
+        steppable_registry.on_stop()
 
     t2 = time.time()
     print_profiling_report(py_steppable_profiler_report=steppable_registry.get_profiler_report(),
@@ -627,6 +640,7 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         steppable_registry.clean_after_simulation()
 
     else:
+        steppable_registry.on_stop()
         sim.cleanAfterSimulation()
 
         # # sim.unloadModules()

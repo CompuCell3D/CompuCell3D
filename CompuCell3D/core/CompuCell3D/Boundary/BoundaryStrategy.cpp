@@ -21,19 +21,6 @@
  *************************************************************************/
 
 
-//#include "BoundaryStrategy.h"
-//
-//#include "Boundary.h"
-//#include "BoundaryFactory.h"
-//
-//#include "AlgorithmFactory.h"
-//#include "Algorithm.h"
-//#include <CompuCell3D/Field3D/Field3DImpl.h>
-//#include <CompuCell3D/Field3D/Dim3D.h>
-//#include <CompuCell3D/Field3D/Point3D.h>
-//#include <CompuCell3D/Field3D/Neighbor.h>
-//#include <CompuCell3D/Field3D/NeighborFinder.h>
-//#include <map>
 
 
 #include <CompuCell3D/Field3D/Point3D.h>
@@ -43,6 +30,7 @@
 #include <CompuCell3D/Field3D/NeighborFinder.h>
 #include <map>
 #include <sstream>
+#include <algorithm>
 #include <Utils/Coordinates3D.h>
 
 
@@ -551,15 +539,27 @@ Point3D BoundaryStrategy::getNeighborCustomDim(const Point3D& pt, unsigned int& 
 
 
 void BoundaryStrategy::prepareNeighborListsSquare(float _maxDistance) {
-	//    cerr<<"_maxDistance="<<_maxDistance<<endl;
 
 	char a = '0';
-	Field3DImpl<char> tempField(dim, a);
-	int margin = 2 * (int)fabs(_maxDistance) + 1;
-	//    cerr<<"margin="<<margin<<" distance="<<_maxDistance<<endl;
-	Point3D ctPt(dim.x / 2, dim.y / 2, dim.z / 2);
+    Dim3D dim_test_field;
+
+    if (dim.x == 1 || dim.y == 1 || dim.z == 1) {
+        // we are dealing with 2D case 
+        dim_test_field = dim;
+    }
+    else {
+        // we are dealing with 3D case but we want to make sure that if we set one dimension to 2 we get center point that is truly in the middle of the lattice therefore minimum
+        // dimension in 3D for a test field is set to 3
+        dim_test_field.x = std::max((short)3, dim.x);
+        dim_test_field.y = std::max((short)3, dim.y);
+        dim_test_field.z = std::max((short)3, dim.z);
+    }
+
+	Field3DImpl<char> tempField(dim_test_field, a);
+	int margin = 2 * (int)fabs(_maxDistance) + 1;	
+	Point3D ctPt(dim_test_field.x / 2, dim_test_field.y / 2, dim_test_field.z / 2);
 	//    if (margin > dim.x/2 && margin > dim.y/2 && margin > dim.z/2){
-	if (3 * _maxDistance > dim.x && 3 * _maxDistance > dim.y && 3 * _maxDistance> dim.z) {
+	if (3 * _maxDistance > dim_test_field.x && 3 * _maxDistance > dim_test_field.y && 3 * _maxDistance> dim_test_field.z) {
 
 		ostringstream outStr;
 		outStr << "NeighborOrder too large for this lattice. Increase lattice size so that at least two dimensions ";
