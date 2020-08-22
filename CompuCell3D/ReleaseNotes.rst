@@ -3,7 +3,7 @@ Release Notes
 
 Version 4.2.3
 -------------
-**2019-08-15**
+**2019-08-21**
 
 New Features:
 
@@ -20,6 +20,8 @@ Bug Fixes:
 - Fixed display of line numbers in Twedit++
 - Fixed issues with 2.5D simulations where dim z=2
 - Fixed behavior of cell_list_by_cell type when using nested loops
+- Improved random seed generation (matters if two identical simulations are started within less than a second
+of each other)
 
 Version 4.2.2
 -------------
