@@ -1559,15 +1559,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
                     #         link_end[other_coord_idx] - link_begin[other_coord_idx])
 
 
-                    # points.InsertNextPoint(link_begin[0] + vector_piece_to_add[0],
-                    #                        link_begin[1] + vector_piece_to_add[1], 0)
-
                     points.InsertNextPoint(link_end[0], link_end[1], 0)
 
                     # our line has 2 points
-                    lines.InsertNextCell(2)
-                    lines.InsertCellPoint(begin_pt_counter)
-                    lines.InsertCellPoint(end_pt_counter)
+                    if self.inside_link_box(coord_2=coord_2, n_coord_2=n_coord_2,
+                                        plane_pos=drawing_params.planePosition, margin=1):
+                        lines.InsertNextCell(2)
+
+                        lines.InsertCellPoint(begin_pt_counter)
+                        lines.InsertCellPoint(end_pt_counter)
 
                     # end_pt_counter += 1
 
@@ -1583,15 +1583,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
                     points.InsertNextPoint(n_link_begin[0], n_link_begin[1], 0)
                     # begin_pt_counter += 1
-                    # points.InsertNextPoint(n_link_begin[0] + n_vector_piece_to_add[0],
-                    #                        n_link_begin[1] + n_vector_piece_to_add[1],
-                    #                        0)
 
                     points.InsertNextPoint(n_link_end[0] ,n_link_end[1] , 0)
 
-                    lines.InsertNextCell(2)
-                    lines.InsertCellPoint(end_pt_counter + 1)
-                    lines.InsertCellPoint(end_pt_counter + 2)
+                    if self.inside_link_box(coord_2=coord_2, n_coord_2=n_coord_2,
+                                        plane_pos=drawing_params.planePosition, margin=1):
+                        lines.InsertNextCell(2)
+                        lines.InsertCellPoint(end_pt_counter + 1)
+                        lines.InsertCellPoint(end_pt_counter + 2)
+
                     end_pt_counter += 3
                     # todo inner break
                     # break
