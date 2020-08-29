@@ -2,6 +2,7 @@ from .MVCDrawModelBase import MVCDrawModelBase
 import vtk
 import math
 from math import sqrt
+import numpy as np
 import string
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
 from cc3d.core.GraphicsOffScreen.MetadataHandler import MetadataHandler
@@ -1221,6 +1222,126 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # coloring borders
         cluster_border_actor.GetProperty().SetColor(*cluster_border_color)
 
+    def invariant_distance_vector(self, p1, p2, dim):
+        import numpy as np
+        dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, dim)
+        return np.array([dist_vec.x, dist_vec.y, dist_vec.z])
+
+
+
+    def compute_clipped_segment(self, begin, end, dim):
+        """
+
+        :param begin: position within lattice
+        :param end: end position maybe in or out the lattice
+        :param dim: lattice dim
+        :return:
+        """
+        vec_to_add = end - begin
+        seg_info_list = []
+        for idx in range(2):
+            if not self.is_within_lattice(coord=end[idx], coord_dim=dim[idx]):
+                pos = 0 if end[idx] < 0 else dim[idx]
+                coord_idx_array = np.ones(2, dtype=int)
+                coord_idx_array[idx] = 0
+
+                seg_info = (coord_idx_array, pos)
+
+                seg_info_list.append(seg_info)
+
+                vec_to_add = self.compute_vector_piece_to_add(begin=begin,end=end,seg_info=seg_info)
+                other_intersect = self.other_intersect(begin, vec_to_add, coord_idx_array)
+                if self.is_within_lattice(coord=other_intersect, coord_dim=dim[coord_idx_array[1]]):
+                    break
+
+        return vec_to_add
+
+    @staticmethod
+    def compute_vector_piece_to_add(begin, end, seg_info):
+        coord_idx_array =  seg_info[0]
+        clip_coord_idx = coord_idx_array[0]
+        other_coord_idx = coord_idx_array[1]
+        clip_pos = seg_info[1]
+        ratio = (end[clip_coord_idx] - clip_pos) / (
+                end[clip_coord_idx] - begin[clip_coord_idx])
+
+        vector_piece_to_add = np.zeros(2, dtype=np.float)
+
+        vector_piece_to_add[clip_coord_idx] = clip_pos - begin[clip_coord_idx]
+        vector_piece_to_add[other_coord_idx] = (1 - ratio) * (
+                end[other_coord_idx] - begin[other_coord_idx])
+
+        return vector_piece_to_add
+
+
+    # def compute_clipped_segment_1(self, begin, end, field_dim_ord_np_clip, dim):
+    #     combos = []
+    #     for i, dim_coord in enumerate(field_dim_ord_np_clip):
+    #         if field_dim_ord_np_clip[i] < 0:
+    #             continue
+    #         combo = np.zeros(2, dtype=int)
+    #         combo[i] = 1
+    #         combos.append(combo)
+    #
+    #     if len(combos) == 1:
+    #         return self.compute_vector_piece_to_add(begin=begin,
+    #                                                       end=end, field_dim_ord_np_test=field_dim_ord_np_clip,
+    #                                                       coord_idx_array=combos[0]
+    #                                                       )
+    #     else:
+    #         coord_idx_array = combos[0]
+    #         vec_to_add = self.compute_vector_piece_to_add(begin=begin,
+    #                                                       end=end, field_dim_ord_np_test=field_dim_ord_np_clip,
+    #                                                       coord_idx_array=coord_idx_array
+    #                                                       )
+    #
+    #         other_intersect = self.other_intersect(begin, vec_to_add, coord_idx_array)
+    #         if self.is_within_lattice(coord=other_intersect, coord_dim=dim[coord_idx_array[1]]):
+    #             return vec_to_add
+    #         else:
+    #
+    #             coord_idx_array = combos[1]
+    #             vec_to_add = self.compute_vector_piece_to_add(begin=begin,
+    #                                                           end=end, field_dim_ord_np_test=field_dim_ord_np_clip,
+    #                                                           coord_idx_array=coord_idx_array
+    #                                                           )
+    #
+    #             return vec_to_add
+    #     print
+
+    # @staticmethod
+    # def compute_vector_piece_to_add(begin, end, field_dim_ord_np_test, coord_idx_array):
+    #     clip_coord_idx = coord_idx_array[0]
+    #     other_coord_idx = coord_idx_array[1]
+    #     ratio = (end[clip_coord_idx] - field_dim_ord_np_test[clip_coord_idx]) / (
+    #             end[clip_coord_idx] - begin[clip_coord_idx])
+    #
+    #     vector_piece_to_add = np.zeros(2, dtype=np.float)
+    #
+    #     vector_piece_to_add[clip_coord_idx] = field_dim_ord_np_test[clip_coord_idx] - begin[clip_coord_idx]
+    #     vector_piece_to_add[other_coord_idx] = (1 - ratio) * (
+    #             end[other_coord_idx] - begin[other_coord_idx])
+    #
+    #     return vector_piece_to_add
+
+    @staticmethod
+    def other_intersect(begin, vec_to_add, coord_idx_array):
+        other_coord_idx = coord_idx_array[1]
+
+        lattice_edge_pos = begin + vec_to_add
+        return lattice_edge_pos[other_coord_idx]
+
+    @staticmethod
+    def is_within_lattice(coord, coord_dim, eps=0.01):
+        return 0 - eps <= coord <= coord_dim + eps
+
+    def compute_clip_pos(self, pt, dim, coord_idx):
+
+        clip_pos = -1
+        if not self.is_within_lattice(pt[coord_idx], dim[coord_idx]):
+            clip_pos = 0 if pt[0] < 0 else dim[0]
+        return clip_pos
+
     def init_fpp_links_actors(self, actor_specs, drawing_params=None):
         """
         initializes fpp links actors
@@ -1229,167 +1350,328 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :return: None
         """
 
-        fppPlugin = CompuCell.getFocalPointPlasticityPlugin()
+        fpp_plugin = CompuCell.getFocalPointPlasticityPlugin()
         # if (fppPlugin == 0):  # bogus check
-        if not fppPlugin:  # bogus check
+        if not fpp_plugin:  # bogus check
             print('    fppPlugin is null, returning')
             return
 
         actors_dict = actor_specs.actors_dict
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        field_dim_ordered = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))
+
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
 
-        xdim = field_dim.x
-        ydim = field_dim.y
-
         try:
-            cellField = self.currentDrawingParameters.bsd.sim.getPotts().getCellFieldG()
+            # cellField = self.currentDrawingParameters.bsd.sim.getPotts().getCellFieldG()
             inventory = self.currentDrawingParameters.bsd.sim.getPotts().getCellInventory()
         except AttributeError:
             raise AttributeError('Could not access Potts object')
 
-        cellList = CellList(inventory)
+        cell_list = CellList(inventory)
 
         points = vtk.vtkPoints()
         lines = vtk.vtkCellArray()
 
-        beginPt = 0
-        lineNum = 0
+        begin_pt_counter = 0
+        line_num = 0
 
-        for cell in cellList:
+        for cell in cell_list:
             vol = cell.volume
-            if vol < self.eps: continue
+            if vol < self.eps:
+                continue
+            mid_com = self.planeMapper(dim_order, (cell.xCOM, cell.yCOM, cell.zCOM))
+            coord_0 = mid_com[0]
+            coord_1 = mid_com[1]
 
-            xmid0 = cell.xCOM
-            ymid0 = cell.yCOM
+            coord_2 = mid_com[2]
 
-            points.InsertNextPoint(xmid0, ymid0, 0)
-            endPt = beginPt + 1
+            points.InsertNextPoint(coord_0, coord_1, 0)
+            end_pt_counter = begin_pt_counter + 1
 
-            for fppd in InternalFocalPointPlasticityDataList(fppPlugin, cell):
-                xmid = fppd.neighborAddress.xCOM
-                ymid = fppd.neighborAddress.yCOM
+            # for fppd in InternalFocalPointPlasticityDataList(fpp_plugin, cell):
+            #     n = fppd.neighborAddress
+            #     n_mid_com = self.planeMapper(dim_order, (n.xCOM, n.yCOM, n.zCOM))
+            #     n_coord_0 = n_mid_com[0]
+            #     n_coord_1 = n_mid_com[1]
+            #     n_coord_2 = n_mid_com[2]
+            #
+            #     coord_0_diff = n_coord_0 - coord_0
+            #     coord_1_diff = n_coord_1 - coord_1
+            #
+            #     actual_dist = math.sqrt((coord_0_diff * coord_0_diff) + (coord_1_diff * coord_1_diff))
+            #
+            #     if actual_dist > 1.1 * fppd.maxDistance:
+            #         # implies we have wraparound (via periodic BCs)
+            #         # add dangling "out" line to beginning cell
+            #         # if abs(coord_0_diff) > abs(coord_1_diff):  # wraps around in x-direction
+            #         if abs(coord_0_diff) > field_dim_ordered[0]/2:
+            #             # wraps around in coord 0 direction
+            #             if coord_0_diff < 0:
+            #                 coord_0_end = coord_0 + self.stubSize
+            #             else:
+            #                 coord_0_end = coord_0 - self.stubSize
+            #             coord_1_end = coord_1
+            #             points.InsertNextPoint(coord_0_end, coord_1_end, 0)
+            #             if min(coord_2, n_coord_2) -1 <= drawing_params.planePosition < max(coord_2, n_coord_2)+1:
+            #                 lines.InsertNextCell(2)  # our line has 2 points
+            #                 lines.InsertCellPoint(begin_pt_counter)
+            #                 lines.InsertCellPoint(end_pt_counter)
+            #
+            #                 # actual_dist = dim_0 - actual_dist  # compute (approximate) real actualDist
+            #                 line_num += 1
+            #             end_pt_counter += 1
+            #         else:  # wraps around in y-direction
+            #             coord_0_end = coord_0
+            #             if coord_1_diff < 0:
+            #                 coord_1_end = coord_1 + self.stubSize
+            #             else:
+            #                 coord_1_end = coord_1 - self.stubSize
+            #             points.InsertNextPoint(coord_0_end, coord_1_end, 0)
+            #
+            #             if min(coord_2, n_coord_2)-1 <= drawing_params.planePosition < max(coord_2, n_coord_2)+1:
+            #                 lines.InsertNextCell(2)  # our line has 2 points
+            #                 lines.InsertCellPoint(begin_pt_counter)
+            #                 lines.InsertCellPoint(end_pt_counter)
+            #
+            #                 # lines.InsertNextCell(2)  # our line has 2 points
+            #                 # lines.InsertCellPoint(begin_pt)
+            #                 # lines.InsertCellPoint(end_pt)
+            #
+            #                 # actual_dist = dim_1 - actual_dist  # compute (approximate) real actualDist
+            #
+            #                 line_num += 1
+            #
+            #             end_pt_counter += 1
+            #
+            #     # link didn't wrap around on lattice
+            #     else:
+            #         points.InsertNextPoint(n_coord_0, n_coord_1, 0)
+            #         print("min(coord_2, n_coord_2)-1=",min(coord_2, n_coord_2)-1)
+            #         print("max(coord_2, n_coord_2)+1=", max(coord_2, n_coord_2) + 1)
+            #         print('drawing_params.planePosition=',drawing_params.planePosition)
+            #         if (min(coord_2, n_coord_2)-1) <= drawing_params.planePosition < (max(coord_2, n_coord_2)+1):
+            #             print('adding line')
+            #             lines.InsertNextCell(2)  # our line has 2 points
+            #             lines.InsertCellPoint(begin_pt_counter)
+            #             lines.InsertCellPoint(end_pt_counter)
+            #             line_num += 1
+            #
+            #         end_pt_counter += 1
+            #
+            for fppd in FocalPointPlasticityDataList(fpp_plugin, cell):
 
-                xdiff = xmid - xmid0
-                ydiff = ymid - ymid0
-                actualDist = math.sqrt((xdiff * xdiff) + (ydiff * ydiff))
-                if actualDist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
-                    # add dangling "out" line to beginning cell
-                    if abs(xdiff) > abs(ydiff):  # wraps around in x-direction
-                        if xdiff < 0:
-                            xmid0end = xmid0 + self.stubSize
-                        else:
-                            xmid0end = xmid0 - self.stubSize
-                        ymid0end = ymid0
-                        points.InsertNextPoint(xmid0end, ymid0end, 0)
-                        lines.InsertNextCell(2)  # our line has 2 points
-                        lines.InsertCellPoint(beginPt)
-                        lines.InsertCellPoint(endPt)
+                n = fppd.neighborAddress
 
-                        actualDist = xdim - actualDist  # compute (approximate) real actualDist
-                        lineNum += 1
-                        endPt += 1
-                    else:  # wraps around in y-direction
-                        xmid0end = xmid0
-                        if ydiff < 0:
-                            ymid0end = ymid0 + self.stubSize
-                        else:
-                            ymid0end = ymid0 - self.stubSize
-                        points.InsertNextPoint(xmid0end, ymid0end, 0)
-                        lines.InsertNextCell(2)  # our line has 2 points
-                        lines.InsertCellPoint(beginPt)
-                        lines.InsertCellPoint(endPt)
+                points_added = 0
 
-                        actualDist = ydim - actualDist  # compute (approximate) real actualDist
+                n_mid_com = self.planeMapper(dim_order, (n.xCOM, n.yCOM, n.zCOM))
+                n_coord_0 = n_mid_com[0]
+                n_coord_1 = n_mid_com[1]
+                n_coord_2 = n_mid_com[2]
 
-                        lineNum += 1
+                n_link_begin = np.array([n_coord_0, n_coord_1], dtype=np.float)
 
-                        endPt += 1
+                coord_0_diff = n_coord_0 - coord_0
+                coord_1_diff = n_coord_1 - coord_1
+                actual_dist = math.sqrt((coord_0_diff * coord_0_diff) + (coord_1_diff * coord_1_diff))
+                if actual_dist > fppd.maxDistance:
+                    # implies we have wraparound (via periodic BCs)
+                    inv_dist_vec = self.invariant_distance_vector(p1=[coord_0, coord_1, 0],
+                                                                  p2=[n_coord_0, n_coord_1, 0],
+                                                                  dim=[field_dim_ordered[0], field_dim_ordered[1], 1])
+
+                    inv_dist_vec = np.array([inv_dist_vec[0], inv_dist_vec[1]], dtype=np.float)
+                    link_begin = np.array([coord_0, coord_1], dtype=np.float)
+                    link_end = link_begin + inv_dist_vec
+
+                    field_dim_ord_np = np.array([field_dim_ordered[0], field_dim_ordered[1]], dtype=np.int)
+
+                    field_dim_ord_np_clip = field_dim_ord_np.copy()
+                    field_dim_ord_np_clip[0] = self.compute_clip_pos(link_end, field_dim_ord_np, coord_idx=0)
+                    field_dim_ord_np_clip[1] = self.compute_clip_pos(link_end, field_dim_ord_np, coord_idx=1)
+                    # if self.is_within_lattice(link_end[0], field_dim_ord_np[0]):
+                    #     field_dim_ord_np_clip[0] = -1
+                    # else:
+                    #     field_dim_ord_np_clip[0] = 0 if link_end[0] <0 else field_dim_ord_np[0]
+                    #
+                    # if self.is_within_lattice(link_end[1], field_dim_ord_np[1]):
+                    #     field_dim_ord_np_clip[1] = -1
+                    # else:
+                    #     field_dim_ord_np_clip[1] = 0 if link_end[1] < 0 else field_dim_ord_np[1]
+
+                    # field_dim_ord_np_clip[inv_dist_vec < 0] = 0
+
+                    origin_dim_ordered = np.array([0, 0], dtype=np.int)
+
+                    # outside_plus = link_end > field_dim_ord_np
+                    # outside_minus = origin_dim_ordered > link_end
+                    # outside_indicator = outside_plus.astype(np.int) - outside_minus.astype(np.int)
+
+                    # todo add exception here
+                    # we are finding which boundary (x -  coord_0 or y- coord_1) gets intersected
+                    # clip_coord_idx = np.argsort(link_end - field_dim_ord_np_clip)[0]
+                    # clip_coord_idx = np.where(outside_indicator != 0)[0][0]
+                    vector_piece_to_add = self.compute_clipped_segment(begin=link_begin, end=link_end,
+                                                                       dim=field_dim_ord_np)
+
+                    reminder_vector = inv_dist_vec - vector_piece_to_add
+
+                    n_link_end = n_link_begin - reminder_vector
+                    # outside_plus = link_end_other > field_dim_ord_np
+                    # outside_minus = origin_dim_ordered > link_end
+                    # outside_indicator = outside_plus.astype(np.int) - outside_minus.astype(np.int)
+
+                    field_dim_ord_np_clip_n = field_dim_ord_np.copy()
+
+                    field_dim_ord_np_clip_n[0] = self.compute_clip_pos(n_link_end, field_dim_ord_np,
+                                                                               coord_idx=0)
+                    field_dim_ord_np_clip_n[1] = self.compute_clip_pos(n_link_end, field_dim_ord_np,
+                                                                               coord_idx=1)
+
+                    n_vector_piece_to_add = self.compute_clipped_segment(begin=n_link_begin,
+                                                                         end=n_link_end,
+                                                                         dim=field_dim_ord_np)
+
+                    # other_coord_idx = ({0, 1} - {clip_coord_idx}).pop()
+                    #
+                    # clip_0_vec_to_add = self.compute_vector_piece_to_add(begin=link_begin, end=link_end,
+                    #                                                      field_dim_ord_np_clip=field_dim_ord_np_clip,
+                    #                                                      coord_idx_array=[0, 1])
+                    #
+                    # clip_1_vec_to_add = self.compute_vector_piece_to_add(begin=link_begin, end=link_end,
+                    #                                                      field_dim_ord_np_clip=field_dim_ord_np_clip,
+                    #                                                      coord_idx_array=[1, 0])
+                    #
+                    # clip_coord_idx = 0
+                    # other_coord_idx = 1
+                    # # todo consider here if we extend + or - direction
+                    # ratio = (link_end[clip_coord_idx] - field_dim_ord_np_clip[clip_coord_idx]) / (
+                    #         link_end[clip_coord_idx] - link_begin[clip_coord_idx])
+                    #
+                    # vector_piece_to_add = np.zeros(2, dtype=np.float)
+                    #
+                    # vector_piece_to_add[clip_coord_idx] = field_dim_ord_np_clip[clip_coord_idx] - link_begin[
+                    #     clip_coord_idx]
+                    # vector_piece_to_add[other_coord_idx] = (1 - ratio) * (
+                    #         link_end[other_coord_idx] - link_begin[other_coord_idx])
+                    #
+                    # clip_coord_idx = 1
+                    # other_coord_idx = 0
+                    #
+                    # vector_piece_to_add_1 = np.zeros(2, dtype=np.float)
+                    #
+                    # vector_piece_to_add_1[clip_coord_idx] = field_dim_ord_np_clip[clip_coord_idx] - link_begin[
+                    #     clip_coord_idx]
+                    # vector_piece_to_add_1[other_coord_idx] = (1 - ratio) * (
+                    #         link_end[other_coord_idx] - link_begin[other_coord_idx])
+
+                    points.InsertNextPoint(link_begin[0] + vector_piece_to_add[0],
+                                           link_begin[1] + vector_piece_to_add[1], 0)
+
+                    # our line has 2 points
+                    lines.InsertNextCell(2)
+                    lines.InsertCellPoint(begin_pt_counter)
+                    lines.InsertCellPoint(end_pt_counter)
+
+                    # end_pt_counter += 1
+
+                    # shift reminder vector
+                    # shift_vector = - outside_indicator * field_dim_ord_np
+
+                    # adding reminder
+                    # points.InsertNextPoint(n_link_begin[0], n_link_begin[1], 0)
+                    # # begin_pt_counter += 1
+                    # points.InsertNextPoint(n_link_begin[0] - reminder_vector[0], n_link_begin[1] - reminder_vector[1],
+                    #                        0)
+                    # end_pt_counter += 1
+
+                    points.InsertNextPoint(n_link_begin[0], n_link_begin[1], 0)
+                    # begin_pt_counter += 1
+                    points.InsertNextPoint(n_link_begin[0]+ n_vector_piece_to_add[0], n_link_begin[1]+ n_vector_piece_to_add[1],
+                                           0)
+
+
+                    lines.InsertNextCell(2)
+                    lines.InsertCellPoint(end_pt_counter + 1)
+                    lines.InsertCellPoint(end_pt_counter + 2)
+                    end_pt_counter += 3
+                    # todo inner break
+                    # break
+
+                    # coord_0_end = coord_0 + inv_dist_vec[0]
+                    #
+                    # # add dangling "out" line to beginning cell
+                    # # if abs(coord_0_diff) > abs(coord_1_diff):  # wraps around in x-direction
+                    # if abs(coord_0_diff) > field_dim_ordered[0]/2:
+                    #     # wraps around in coord_0 direction
+                    #     if coord_0_diff < 0:
+                    #         coord_0_end = coord_0 + self.stubSize
+                    #     else:
+                    #         coord_0_end = coord_0 - self.stubSize
+                    #     coord_1_end = coord_1
+                    #     points.InsertNextPoint(coord_0_end, coord_1_end, 0)
+                    #     if min(coord_2, n_coord_2) - 1 <= drawing_params.planePosition < max(coord_2, n_coord_2) + 1:
+                    #         lines.InsertNextCell(2)  # our line has 2 points
+                    #         lines.InsertCellPoint(begin_pt_counter)
+                    #         lines.InsertCellPoint(end_pt_counter)
+                    #
+                    #         # coloring the FPP links
+                    #         # actual_dist = dim_0 - actual_dist  # compute (approximate) real actualDist
+                    #
+                    #         line_num += 1
+                    #
+                    #     end_pt_counter += 1
+                    # else:  # wraps around in y-direction
+                    #     coord_0_end = coord_0
+                    #     if coord_1_diff < 0:
+                    #         coord_1_end = coord_1 + self.stubSize
+                    #     else:
+                    #         coord_1_end = coord_1 - self.stubSize
+                    #     points.InsertNextPoint(coord_0_end, coord_1_end, 0)
+                    #     if min(coord_2, n_coord_2)-1 <= drawing_params.planePosition < max(coord_2, n_coord_2)+1:
+                    #         lines.InsertNextCell(2)  # our line has 2 points
+                    #         lines.InsertCellPoint(begin_pt_counter)
+                    #         lines.InsertCellPoint(end_pt_counter)
+                    #
+                    #         # coloring the FPP links
+                    #         # actual_dist = dim_1 - actual_dist  # compute (approximate) real actualDist
+                    #
+                    #         line_num += 1
+                    #
+                    #     end_pt_counter += 1
 
                 # link didn't wrap around on lattice
                 else:
-                    points.InsertNextPoint(xmid, ymid, 0)
-                    lines.InsertNextCell(2)  # our line has 2 points
-                    lines.InsertCellPoint(beginPt)
-                    lines.InsertCellPoint(endPt)
-
-                    lineNum += 1
-                    endPt += 1
-            for fppd in FocalPointPlasticityDataList(fppPlugin, cell):
-
-                xmid = fppd.neighborAddress.xCOM
-                ymid = fppd.neighborAddress.yCOM
-
-                xdiff = xmid - xmid0
-                ydiff = ymid - ymid0
-                actualDist = math.sqrt((xdiff * xdiff) + (ydiff * ydiff))
-                if actualDist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
-
-                    # add dangling "out" line to beginning cell
-                    if abs(xdiff) > abs(ydiff):  # wraps around in x-direction
-                        #                    print '>>>>>> wraparound X'
-                        if xdiff < 0:
-                            xmid0end = xmid0 + self.stubSize
-                        else:
-                            xmid0end = xmid0 - self.stubSize
-                        ymid0end = ymid0
-                        points.InsertNextPoint(xmid0end, ymid0end, 0)
+                    points.InsertNextPoint(n_coord_0, n_coord_1, 0)
+                    if min(coord_2, n_coord_2) - 1 <= drawing_params.planePosition < max(coord_2, n_coord_2) + 1:
                         lines.InsertNextCell(2)  # our line has 2 points
-                        lines.InsertCellPoint(beginPt)
-                        lines.InsertCellPoint(endPt)
+                        lines.InsertCellPoint(begin_pt_counter)
+                        lines.InsertCellPoint(end_pt_counter)
 
-                        # coloring the FPP links
-                        actualDist = xdim - actualDist  # compute (approximate) real actualDist
-
-                        lineNum += 1
-
-                        endPt += 1
-                    else:  # wraps around in y-direction
-                        xmid0end = xmid0
-                        if ydiff < 0:
-                            ymid0end = ymid0 + self.stubSize
-                        else:
-                            ymid0end = ymid0 - self.stubSize
-                        points.InsertNextPoint(xmid0end, ymid0end, 0)
-                        lines.InsertNextCell(2)  # our line has 2 points
-                        lines.InsertCellPoint(beginPt)
-                        lines.InsertCellPoint(endPt)
-
-                        # coloring the FPP links
-                        actualDist = ydim - actualDist  # compute (approximate) real actualDist
-
-                        lineNum += 1
-
-                        endPt += 1
-
-                # link didn't wrap around on lattice
-                else:
-                    points.InsertNextPoint(xmid, ymid, 0)
-                    lines.InsertNextCell(2)  # our line has 2 points
-                    lines.InsertCellPoint(beginPt)
-                    lines.InsertCellPoint(endPt)
-
-                    lineNum += 1
-                    endPt += 1
-            beginPt = endPt  # update point index
+                        line_num += 1
+                    end_pt_counter += 1
+            begin_pt_counter = end_pt_counter  # update point index
+            # todo - outer break
+            # break
 
         # -----------------------
-        if lineNum == 0:
-            return
+        # if line_num == 0:
+        #     return
 
-        FPPLinksPD = vtk.vtkPolyData()
-        FPPLinksPD.SetPoints(points)
-        FPPLinksPD.SetLines(lines)
+        fpp_links_pd = vtk.vtkPolyData()
+        fpp_links_pd.SetPoints(points)
+        fpp_links_pd.SetLines(lines)
 
         fpp_links_actor = actors_dict['fpp_links_actor']
 
         if VTK_MAJOR_VERSION >= 6:
-            self.FPPLinksMapper.SetInputData(FPPLinksPD)
+            self.FPPLinksMapper.SetInputData(fpp_links_pd)
         else:
-            FPPLinksPD.Update()
-            self.FPPLinksMapper.SetInput(FPPLinksPD)
+            fpp_links_pd.Update()
+            self.FPPLinksMapper.SetInput(fpp_links_pd)
 
         fpp_links_actor.SetMapper(self.FPPLinksMapper)
         fpp_links_color = to_vtk_rgb(mdata.get('FPPLinksColor', data_type='color'))
