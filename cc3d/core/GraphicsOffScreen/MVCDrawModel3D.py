@@ -692,107 +692,19 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
             mid_com = np.array([cell.xCOM, cell.yCOM, cell.zCOM], dtype=float)
 
-            # xmid0 = cell.xCOM
-            # ymid0 = cell.yCOM
-            # zmid0 = cell.zCOM
-
             points.InsertNextPoint(mid_com[0], mid_com[1], mid_com[2])
             end_pt_counter = begin_pt_counter + 1
 
             for fppd in InternalFocalPointPlasticityDataList(fpp_plugin, cell):
-                continue
-                xmid = fppd.neighborAddress.xCOM
-                ymid = fppd.neighborAddress.yCOM
-                zmid = fppd.neighborAddress.zCOM
 
-                xdiff = xmid - xmid0
-                ydiff = ymid - ymid0
-                zdiff = zmid - zmid0
-
-                naive_actual_dist = math.sqrt(xdiff**2 + ydiff**2 + zdiff**2)
-
-                if naive_actual_dist > fppd.maxDistance:
-                    # implies we have wraparound (via periodic BCs)
-                    # we are not drawing those links that wrap around the lattice - leaving the code for now
-                    # todo - most likely will redo this part later
-                    continue
-
-                    # add dangling "out" line to beginning cell
-                    if abs(xdiff) > abs(ydiff):  # wraps around in x-direction
-                        if xdiff < 0:
-                            xmid0end = xmid0 + self.stubSize
-                        else:
-                            xmid0end = xmid0 - self.stubSize
-                        ymid0end = ymid0
-                        points.InsertNextPoint(xmid0end, ymid0end, 0)
-                        lines.InsertNextCell(2)  # our line has 2 points
-                        lines.InsertCellPoint(begin_pt_counter)
-                        lines.InsertCellPoint(end_pt_counter)
-
-                        naive_actual_dist = xdim - naive_actual_dist  # compute (approximate) real actualDist
-                        lineNum += 1
-                        end_pt_counter += 1
-                    else:  # wraps around in y-direction
-                        xmid0end = xmid0
-                        if ydiff < 0:
-                            ymid0end = ymid0 + self.stubSize
-                        else:
-                            ymid0end = ymid0 - self.stubSize
-                        points.InsertNextPoint(xmid0end, ymid0end, 0)
-                        lines.InsertNextCell(2)  # our line has 2 points
-                        lines.InsertCellPoint(begin_pt_counter)
-                        lines.InsertCellPoint(end_pt_counter)
-
-                        naive_actual_dist = ydim - naive_actual_dist  # compute (approximate) real actualDist
-
-                        lineNum += 1
-
-                        end_pt_counter += 1
-
-                # link didn't wrap around on lattice
-                else:
-                    points.InsertNextPoint(xmid, ymid, zmid)
-                    lines.InsertNextCell(2)  # our line has 2 points
-                    lines.InsertCellPoint(begin_pt_counter)
-                    lines.InsertCellPoint(end_pt_counter)
-
-                    lineNum += 1
-                    end_pt_counter += 1
-            for fppd in FocalPointPlasticityDataList(fpp_plugin, cell):
                 end_pt_counter = self.add_link(field_dim=field_dim,
                               fppd=fppd, mid_com=mid_com, begin_pt_counter=begin_pt_counter,
                               end_pt_counter=end_pt_counter, lines=lines, points=points)
 
-                # n_cell = fppd.neighborAddress
-                #
-                # n_mid_com = np.array([n_cell.xCOM, n_cell.yCOM, n_cell.zCOM], dtype=float)
-                #
-                # naive_actual_dist = np.linalg.norm(mid_com - n_mid_com)
-                # if naive_actual_dist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
-                #     # we are drawing links that currently stick out of the lattice.
-                #
-                #     inv_dist_vec = self.invariant_distance_vector(p1=mid_com,
-                #                                                   p2=n_mid_com,
-                #                                                   dim=field_dim)
-                #     link_begin = mid_com
-                #     link_end = link_begin + inv_dist_vec
-                #
-                #     points.InsertNextPoint(link_end[0], link_end[1], link_end[2])
-                #     # our line has 2 points
-                #     lines.InsertNextCell(2)
-                #     lines.InsertCellPoint(begin_pt_counter)
-                #     lines.InsertCellPoint(end_pt_counter)
-                #     end_pt_counter += 1
-                #
-                # # link didn't wrap around on lattice
-                # else:
-                #     points.InsertNextPoint(n_mid_com[0], n_mid_com[1], n_mid_com[2])
-                #     # our line has 2 points
-                #     lines.InsertNextCell(2)
-                #     lines.InsertCellPoint(begin_pt_counter)
-                #     lines.InsertCellPoint(end_pt_counter)
-                #
-                #     end_pt_counter += 1
+            for fppd in FocalPointPlasticityDataList(fpp_plugin, cell):
+                end_pt_counter = self.add_link(field_dim=field_dim,
+                              fppd=fppd, mid_com=mid_com, begin_pt_counter=begin_pt_counter,
+                              end_pt_counter=end_pt_counter, lines=lines, points=points)
 
             # update point index
             begin_pt_counter = end_pt_counter
