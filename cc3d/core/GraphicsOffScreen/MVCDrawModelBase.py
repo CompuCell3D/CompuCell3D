@@ -370,7 +370,6 @@ class MVCDrawModelBase:
     def configsChanged(self):
         pass
 
-
     def largestDim(self, dim):
         ldim = dim[0]
         for i in range(len(dim)):
