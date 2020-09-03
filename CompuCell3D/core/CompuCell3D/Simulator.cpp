@@ -40,6 +40,7 @@ using namespace CompuCell3D;
 #include <time.h>
 #include <limits>
 #include <sstream>
+#include <chrono>
 
 #include <XMLUtils/CC3DXMLElement.h>
 
@@ -701,7 +702,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 
 
 	if(!_xmlData->getFirstElement("RandomSeed")){
-		srand((unsigned int)time(0));
+		srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
 		unsigned int randomSeed=(unsigned int)rand()*((std::numeric_limits<unsigned int>::max)()-1);
 
 		BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
