@@ -9,7 +9,6 @@ from cc3d.cpp import PlayerPython
 from cc3d.core.iterators import CellList, FocalPointPlasticityDataList, InternalFocalPointPlasticityDataList
 from cc3d.cpp import CompuCell
 
-
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 MODULENAME = '------  MVCDrawModel3D.py'
 
@@ -259,14 +258,14 @@ class MVCDrawModel3D(MVCDrawModelBase):
         mdata = MetadataHandler(mdata=scene_metadata)
 
         try:
-            isovalues = mdata.get('ScalarIsoValues',default=[])
+            isovalues = mdata.get('ScalarIsoValues', default=[])
             isovalues = list([float(x) for x in isovalues])
         except:
             print('Could not process isovalue list ')
             isovalues = []
 
         try:
-            numIsos = mdata.get('NumberOfContourLines',default=3)
+            numIsos = mdata.get('NumberOfContourLines', default=3)
         except:
             print('could not process NumberOfContourLines setting')
             numIsos = 0
@@ -275,8 +274,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         lattice_type_str = self.get_lattice_type_str()
         if lattice_type_str.lower() == 'hexagonal':
             hex_flag = True
-
-
 
         types_invisible = PlayerPython.vectorint()
         for type_label in drawing_params.screenshot_data.invisible_types:
@@ -420,7 +417,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         else:
             actor_specs.metadata['mapper'] = self.conMapper
 
-        if mdata.get('LegendEnable',default=False):
+        if mdata.get('LegendEnable', default=False):
             self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
     def init_vector_field_actors(self, actor_specs, drawing_params=None):
@@ -438,10 +435,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
 
-
-
         dim = [field_dim.x, field_dim.y, field_dim.z]
-
 
         vector_grid = vtk.vtkUnstructuredGrid()
 
@@ -543,7 +537,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # scaling factor for an arrow - ArrowLength indicates scaling factor not actual length
         arrowScalingFactor = mdata.get('ArrowLength', default=1.0)
 
-        if mdata.get('FixedArrowColorOn',default=False):
+        if mdata.get('FixedArrowColorOn', default=False):
             glyphs.SetScaleModeToScaleByVector()
 
             dataScalingFactor = max(abs(min_magnitude), abs(max_magnitude))
@@ -555,7 +549,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
             glyphs.SetScaleFactor(arrowScalingFactor / dataScalingFactor)
 
             # coloring arrows
-            arrow_color = to_vtk_rgb(mdata.get('ArrowColor',data_type='color'))
+            arrow_color = to_vtk_rgb(mdata.get('ArrowColor', data_type='color'))
             vector_field_actor.GetProperty().SetColor(arrow_color)
 
         else:
@@ -609,7 +603,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if self.is_lattice_hex(drawing_params=drawing_params):
             outline_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
 
-        outline_color = to_vtk_rgb(mdata.get('BoundingBoxColor',data_type='color'))
+        outline_color = to_vtk_rgb(mdata.get('BoundingBoxColor', data_type='color'))
         outline_actor.GetProperty().SetColor(*outline_color)
 
     def init_axes_actors(self, actor_specs, drawing_params=None):
@@ -625,7 +619,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         mdata = MetadataHandler(mdata=scene_metadata)
 
         axes_actor = actors_dict['axes_actor']
-        axes_color = to_vtk_rgb(mdata.get('AxesColor',data_type='color'))
+        axes_color = to_vtk_rgb(mdata.get('AxesColor', data_type='color'))
 
         tprop = vtk.vtkTextProperty()
         tprop.SetColor(axes_color)
@@ -683,7 +677,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         points = vtk.vtkPoints()
         lines = vtk.vtkCellArray()
 
-        begin_pt_counter = 0
+        pt_counter = 0
 
         for cell in cell_list:
             vol = cell.volume
@@ -692,22 +686,15 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
             mid_com = np.array([cell.xCOM, cell.yCOM, cell.zCOM], dtype=float)
 
-            points.InsertNextPoint(mid_com[0], mid_com[1], mid_com[2])
-            end_pt_counter = begin_pt_counter + 1
-
             for fppd in InternalFocalPointPlasticityDataList(fpp_plugin, cell):
-
-                end_pt_counter = self.add_link(field_dim=field_dim,
-                              fppd=fppd, mid_com=mid_com, begin_pt_counter=begin_pt_counter,
-                              end_pt_counter=end_pt_counter, lines=lines, points=points)
+                pt_counter = self.add_link(field_dim=field_dim,
+                                           fppd=fppd, mid_com=mid_com, pt_counter=pt_counter,
+                                           lines=lines, points=points)
 
             for fppd in FocalPointPlasticityDataList(fpp_plugin, cell):
-                end_pt_counter = self.add_link(field_dim=field_dim,
-                              fppd=fppd, mid_com=mid_com, begin_pt_counter=begin_pt_counter,
-                              end_pt_counter=end_pt_counter, lines=lines, points=points)
-
-            # update point index
-            begin_pt_counter = end_pt_counter
+                pt_counter = self.add_link(field_dim=field_dim,
+                                           fppd=fppd, mid_com=mid_com, pt_counter=pt_counter, lines=lines,
+                                           points=points)
 
         fpp_links_pd = vtk.vtkPolyData()
         fpp_links_pd.SetPoints(points)
@@ -727,16 +714,14 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # coloring borders
         fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
 
-
-    def add_link(self, field_dim,  fppd, mid_com, begin_pt_counter, end_pt_counter, lines, points) -> int:
+    def add_link(self, field_dim, fppd, mid_com, pt_counter, lines, points) -> int:
         """
-        Draws single link in 3D. Returns end point counter
+        Draws single link in 3D. Returns updated point counter
 
         :param field_dim:
         :param fppd:
         :param mid_com: link begin
-        :param begin_pt_counter: begin point counter
-        :param end_pt_counter: begin point counter
+        :param pt_counter: point counter
         :param lines: vtk lines structure that holds line specification
         :param points: vtk points sstructure
         :return: end point counter
@@ -756,21 +741,23 @@ class MVCDrawModel3D(MVCDrawModelBase):
             link_begin = mid_com
             link_end = link_begin + inv_dist_vec
 
+            points.InsertNextPoint(mid_com[0], mid_com[1], mid_com[2])
             points.InsertNextPoint(link_end[0], link_end[1], link_end[2])
             # our line has 2 points
             lines.InsertNextCell(2)
-            lines.InsertCellPoint(begin_pt_counter)
-            lines.InsertCellPoint(end_pt_counter)
-            end_pt_counter += 1
+            lines.InsertCellPoint(pt_counter)
+            lines.InsertCellPoint(pt_counter + 1)
+            pt_counter += 2
 
         # link didn't wrap around on lattice
         else:
+            points.InsertNextPoint(mid_com[0], mid_com[1], mid_com[2])
             points.InsertNextPoint(n_mid_com[0], n_mid_com[1], n_mid_com[2])
             # our line has 2 points
             lines.InsertNextCell(2)
-            lines.InsertCellPoint(begin_pt_counter)
-            lines.InsertCellPoint(end_pt_counter)
+            lines.InsertCellPoint(pt_counter)
+            lines.InsertCellPoint(pt_counter + 1)
 
-            end_pt_counter += 1
+            pt_counter += 2
 
-        return end_pt_counter
+        return pt_counter
