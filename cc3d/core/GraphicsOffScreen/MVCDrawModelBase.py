@@ -2,6 +2,8 @@ import vtk
 import cc3d.player5.Configuration as Configuration
 from cc3d import CompuCellSetup
 from cc3d.player5.Utilities.utils import to_vtk_rgb
+import numpy as np
+from cc3d.cpp import CompuCell
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 
@@ -414,3 +416,9 @@ class MVCDrawModelBase:
     def configs_changed(self):
 
         self.populate_cell_type_lookup_table()
+
+    @staticmethod
+    def invariant_distance_vector(p1, p2, dim):
+
+        dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, dim)
+        return np.array([dist_vec.x, dist_vec.y, dist_vec.z])

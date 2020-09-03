@@ -1231,7 +1231,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         """
 
         fpp_plugin = CompuCell.getFocalPointPlasticityPlugin()
-        # if (fppPlugin == 0):  # bogus check
         if not fpp_plugin:  # bogus check
             print('    fppPlugin is null, returning')
             return
@@ -1266,154 +1265,18 @@ class MVCDrawModel2D(MVCDrawModelBase):
             points.InsertNextPoint(mid_com[0], mid_com[1], 0)
             end_pt_counter = begin_pt_counter + 1
 
-            # for fppd in InternalFocalPointPlasticityDataList(fpp_plugin, cell):
-            #     n = fppd.neighborAddress
-            #     n_mid_com = self.planeMapper(dim_order, (n.xCOM, n.yCOM, n.zCOM))
-            #     n_coord_0 = n_mid_com[0]
-            #     n_coord_1 = n_mid_com[1]
-            #     n_coord_2 = n_mid_com[2]
-            #
-            #     coord_0_diff = n_coord_0 - coord_0
-            #     coord_1_diff = n_coord_1 - coord_1
-            #
-            #     actual_dist = math.sqrt((coord_0_diff * coord_0_diff) + (coord_1_diff * coord_1_diff))
-            #
-            #     if actual_dist > 1.1 * fppd.maxDistance:
-            #         # implies we have wraparound (via periodic BCs)
-            #         # add dangling "out" line to beginning cell
-            #         # if abs(coord_0_diff) > abs(coord_1_diff):  # wraps around in x-direction
-            #         if abs(coord_0_diff) > field_dim_ordered[0]/2:
-            #             # wraps around in coord 0 direction
-            #             if coord_0_diff < 0:
-            #                 coord_0_end = coord_0 + self.stubSize
-            #             else:
-            #                 coord_0_end = coord_0 - self.stubSize
-            #             coord_1_end = coord_1
-            #             points.InsertNextPoint(coord_0_end, coord_1_end, 0)
-            #             if min(coord_2, n_coord_2) -1 <= drawing_params.planePosition < max(coord_2, n_coord_2)+1:
-            #                 lines.InsertNextCell(2)  # our line has 2 points
-            #                 lines.InsertCellPoint(begin_pt_counter)
-            #                 lines.InsertCellPoint(end_pt_counter)
-            #
-            #                 # actual_dist = dim_0 - actual_dist  # compute (approximate) real actualDist
-            #                 line_num += 1
-            #             end_pt_counter += 1
-            #         else:  # wraps around in y-direction
-            #             coord_0_end = coord_0
-            #             if coord_1_diff < 0:
-            #                 coord_1_end = coord_1 + self.stubSize
-            #             else:
-            #                 coord_1_end = coord_1 - self.stubSize
-            #             points.InsertNextPoint(coord_0_end, coord_1_end, 0)
-            #
-            #             if min(coord_2, n_coord_2)-1 <= drawing_params.planePosition < max(coord_2, n_coord_2)+1:
-            #                 lines.InsertNextCell(2)  # our line has 2 points
-            #                 lines.InsertCellPoint(begin_pt_counter)
-            #                 lines.InsertCellPoint(end_pt_counter)
-            #
-            #                 # lines.InsertNextCell(2)  # our line has 2 points
-            #                 # lines.InsertCellPoint(begin_pt)
-            #                 # lines.InsertCellPoint(end_pt)
-            #
-            #                 # actual_dist = dim_1 - actual_dist  # compute (approximate) real actualDist
-            #
-            #                 line_num += 1
-            #
-            #             end_pt_counter += 1
-            #
-            #     # link didn't wrap around on lattice
-            #     else:
-            #         points.InsertNextPoint(n_coord_0, n_coord_1, 0)
-            #         print("min(coord_2, n_coord_2)-1=",min(coord_2, n_coord_2)-1)
-            #         print("max(coord_2, n_coord_2)+1=", max(coord_2, n_coord_2) + 1)
-            #         print('drawing_params.planePosition=',drawing_params.planePosition)
-            #         if (min(coord_2, n_coord_2)-1) <= drawing_params.planePosition < (max(coord_2, n_coord_2)+1):
-            #             print('adding line')
-            #             lines.InsertNextCell(2)  # our line has 2 points
-            #             lines.InsertCellPoint(begin_pt_counter)
-            #             lines.InsertCellPoint(end_pt_counter)
-            #             line_num += 1
-            #
-            #         end_pt_counter += 1
-            #
-            for fppd in FocalPointPlasticityDataList(fpp_plugin, cell):
-                # print
-                end_pt_counter = self.add_link(dim_order=dim_order, field_dim_ordered=field_dim_ordered,  drawing_params=drawing_params,
-                              fppd=fppd,  mid_com=mid_com, begin_pt_counter=begin_pt_counter,
-                              end_pt_counter=end_pt_counter, lines=lines, points=points)
-                # n = fppd.neighborAddress
-                #
-                # n_mid_com = np.array(self.planeMapper(dim_order, (n.xCOM, n.yCOM, n.zCOM)), dtype=float)
-                #
-                # n_link_begin = np.array([n_mid_com[0], n_mid_com[1]], dtype=np.float)
-                #
-                # link_begin_3d = mid_com
-                # n_link_begin_3d = n_mid_com
-                #
-                # actual_dist = np.linalg.norm(n_link_begin_3d-link_begin_3d)
-                # if actual_dist > fppd.maxDistance:
-                #     # implies we have wraparound (via periodic BCs)
-                #     inv_dist_vec = self.invariant_distance_vector(p1=[mid_com[0], mid_com[1], 0],
-                #                                                   p2=[n_mid_com[0], n_mid_com[1], 0],
-                #                                                   dim=[field_dim_ordered[0], field_dim_ordered[1], 1])
-                #
-                #     inv_dist_vec = np.array([inv_dist_vec[0], inv_dist_vec[1]], dtype=np.float)
-                #     link_begin = np.array([mid_com[0], mid_com[1]], dtype=np.float)
-                #     link_end = link_begin + inv_dist_vec
-                #
-                #     field_dim_ord_np = np.array([field_dim_ordered[0], field_dim_ordered[1]], dtype=np.int)
-                #
-                #     vector_piece_to_add = self.compute_clipped_segment(begin=link_begin, end=link_end,
-                #                                                        dim=field_dim_ord_np)
-                #
-                #     # changing linkg end  by adding first clipped segment
-                #     link_end = link_begin + vector_piece_to_add
-                #     reminder_vector = inv_dist_vec - vector_piece_to_add
-                #
-                #     n_link_end = n_link_begin - reminder_vector
-                #
-                #
-                #     n_vector_piece_to_add = self.compute_clipped_segment(begin=n_link_begin,
-                #                                                          end=n_link_end,
-                #                                                          dim=field_dim_ord_np)
-                #
-                #     n_link_end = n_link_begin + n_vector_piece_to_add
-                #
-                #     points.InsertNextPoint(link_end[0], link_end[1], 0)
-                #
-                #     # our line has 2 points
-                #
-                #     if self.is_link_visible(mid_com[2], drawing_params.planePosition):
-                #         lines.InsertNextCell(2)
-                #
-                #         lines.InsertCellPoint(begin_pt_counter)
-                #         lines.InsertCellPoint(end_pt_counter)
-                #
-                #     points.InsertNextPoint(n_link_begin[0], n_link_begin[1], 0)
-                #
-                #     points.InsertNextPoint(n_link_end[0] ,n_link_end[1] , 0)
-                #
-                #     # todo - fix behavior when 3rd coord is periodic and link crosses two planes
-                #     if self.is_link_visible(n_mid_com[2], drawing_params.planePosition):
-                #         lines.InsertNextCell(2)
-                #         lines.InsertCellPoint(end_pt_counter + 1)
-                #         lines.InsertCellPoint(end_pt_counter + 2)
-                #
-                #     end_pt_counter += 3
-                #
-                # # link didn't wrap around on lattice
-                # else:
-                #     points.InsertNextPoint(n_mid_com[0], n_mid_com[1], 0)
-                #     if self.inside_link_box(coord_2=mid_com[2], n_coord_2=n_mid_com[2],
-                #                             plane_pos=drawing_params.planePosition, margin=1):
-                #
-                #         # our line has 2 points
-                #         lines.InsertNextCell(2)
-                #         lines.InsertCellPoint(begin_pt_counter)
-                #         lines.InsertCellPoint(end_pt_counter)
-                #
+            for fppd in InternalFocalPointPlasticityDataList(fpp_plugin, cell):
 
-                    # end_pt_counter += 1
+                end_pt_counter = self.add_link(dim_order=dim_order, field_dim_ordered=field_dim_ordered,
+                                               drawing_params=drawing_params,
+                                               fppd=fppd, mid_com=mid_com, begin_pt_counter=begin_pt_counter,
+                                               end_pt_counter=end_pt_counter, lines=lines, points=points)
+
+            for fppd in FocalPointPlasticityDataList(fpp_plugin, cell):
+                end_pt_counter = self.add_link(dim_order=dim_order, field_dim_ordered=field_dim_ordered,
+                                               drawing_params=drawing_params,
+                                               fppd=fppd, mid_com=mid_com, begin_pt_counter=begin_pt_counter,
+                                               end_pt_counter=end_pt_counter, lines=lines, points=points)
 
             begin_pt_counter = end_pt_counter  # update point index
             # todo - outer break
@@ -1436,15 +1299,19 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # coloring borders
         fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
 
-    def add_link(self, dim_order, field_dim_ordered,  drawing_params, fppd,
+    def add_link(self, dim_order, field_dim_ordered, drawing_params, fppd,
                  mid_com, begin_pt_counter, end_pt_counter, lines, points):
         """
-
-        :param cell:
+        adds a single link to lines and points vtk structures
+        :param dim_order:
+        :param field_dim_ordered:
+        :param drawing_params:
+        :param fppd:
         :param mid_com:
-        :param fpp_link_list:
         :param begin_pt_counter:
         :param end_pt_counter:
+        :param lines:
+        :param points:
         :return:
         """
 
@@ -1499,7 +1366,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
             points.InsertNextPoint(n_link_end[0], n_link_end[1], 0)
 
-            # todo - fix behavior when 3rd coord is periodic and link crosses two planes
             if self.is_link_visible(n_mid_com[2], drawing_params.planePosition):
                 lines.InsertNextCell(2)
                 lines.InsertCellPoint(end_pt_counter + 1)
@@ -1510,8 +1376,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # link didn't wrap around on lattice
         else:
             points.InsertNextPoint(n_mid_com[0], n_mid_com[1], 0)
-            if self.inside_link_box(coord_2=mid_com[2], n_coord_2=n_mid_com[2],
-                                    plane_pos=drawing_params.planePosition, margin=1):
+            if self.is_link_visible(mid_com[2], drawing_params.planePosition):
                 # our line has 2 points
                 lines.InsertNextCell(2)
                 lines.InsertCellPoint(begin_pt_counter)
@@ -1519,11 +1384,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 end_pt_counter += 1
 
         return end_pt_counter
-
-    def invariant_distance_vector(self, p1, p2, dim):
-        import numpy as np
-        dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, dim)
-        return np.array([dist_vec.x, dist_vec.y, dist_vec.z])
 
     def compute_clipped_segment(self, begin, end, dim):
         """
@@ -1569,56 +1429,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         return vector_piece_to_add
 
-    # def compute_clipped_segment_1(self, begin, end, field_dim_ord_np_clip, dim):
-    #     combos = []
-    #     for i, dim_coord in enumerate(field_dim_ord_np_clip):
-    #         if field_dim_ord_np_clip[i] < 0:
-    #             continue
-    #         combo = np.zeros(2, dtype=int)
-    #         combo[i] = 1
-    #         combos.append(combo)
-    #
-    #     if len(combos) == 1:
-    #         return self.compute_vector_piece_to_add(begin=begin,
-    #                                                       end=end, field_dim_ord_np_test=field_dim_ord_np_clip,
-    #                                                       coord_idx_array=combos[0]
-    #                                                       )
-    #     else:
-    #         coord_idx_array = combos[0]
-    #         vec_to_add = self.compute_vector_piece_to_add(begin=begin,
-    #                                                       end=end, field_dim_ord_np_test=field_dim_ord_np_clip,
-    #                                                       coord_idx_array=coord_idx_array
-    #                                                       )
-    #
-    #         other_intersect = self.other_intersect(begin, vec_to_add, coord_idx_array)
-    #         if self.is_within_lattice(coord=other_intersect, coord_dim=dim[coord_idx_array[1]]):
-    #             return vec_to_add
-    #         else:
-    #
-    #             coord_idx_array = combos[1]
-    #             vec_to_add = self.compute_vector_piece_to_add(begin=begin,
-    #                                                           end=end, field_dim_ord_np_test=field_dim_ord_np_clip,
-    #                                                           coord_idx_array=coord_idx_array
-    #                                                           )
-    #
-    #             return vec_to_add
-    #     print
-
-    # @staticmethod
-    # def compute_vector_piece_to_add(begin, end, field_dim_ord_np_test, coord_idx_array):
-    #     clip_coord_idx = coord_idx_array[0]
-    #     other_coord_idx = coord_idx_array[1]
-    #     ratio = (end[clip_coord_idx] - field_dim_ord_np_test[clip_coord_idx]) / (
-    #             end[clip_coord_idx] - begin[clip_coord_idx])
-    #
-    #     vector_piece_to_add = np.zeros(2, dtype=np.float)
-    #
-    #     vector_piece_to_add[clip_coord_idx] = field_dim_ord_np_test[clip_coord_idx] - begin[clip_coord_idx]
-    #     vector_piece_to_add[other_coord_idx] = (1 - ratio) * (
-    #             end[other_coord_idx] - begin[other_coord_idx])
-    #
-    #     return vector_piece_to_add
-
     @staticmethod
     def other_intersect(begin, vec_to_add, coord_idx_array):
         other_coord_idx = coord_idx_array[1]
@@ -1628,6 +1438,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
     @staticmethod
     def is_within_lattice(coord, coord_dim, eps=0.01):
+        """
+        checks if a coordinate is within the lattice
+        :param coord:
+        :param coord_dim:
+        :param eps:
+        :return:
+        """
         return 0 - eps <= coord <= coord_dim + eps
 
     def compute_clip_pos(self, pt, dim, coord_idx):
@@ -1638,30 +1455,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
         return clip_pos
 
     @staticmethod
-    def inside_link_box(coord_2, n_coord_2, plane_pos, margin=1) -> bool:
-        """
-        returns boolean value depending if the plane intersects link box (think 3D  minimal box than contains link)
-        :param coord_2: 3rd coordinate for link begin
-        :param n_coord_2: 3rd coordinate for link end
-        :param plane_pos:
-        :param margin: margin that enlarges link box in the 3rd coord
-        :return:
-        """
-        return min(coord_2, n_coord_2) - margin <= plane_pos < max(coord_2, n_coord_2) + margin
-
-
-    @staticmethod
     def is_link_visible(link_begin_coord, plane_pos, margin=1) -> bool:
         """
         returns boolean value depending if the plane intersects link box (think 3D  minimal box than contains link)
-        :param coord_2: 3rd coordinate for link begin
-        :param n_coord_2: 3rd coordinate for link end
+        :param link_begin_coord:
         :param plane_pos:
         :param margin: margin that enlarges link box in the 3rd coord
         :return:
         """
         return link_begin_coord - margin <= plane_pos < link_begin_coord + margin
-
 
     # Optimize code?
     def dimOrder(self, plane):
