@@ -1254,7 +1254,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         points = vtk.vtkPoints()
         lines = vtk.vtkCellArray()
 
-        begin_pt_counter = 0
+        pt_counter = 0
 
         for cell in cell_list:
             vol = cell.volume
@@ -1262,25 +1262,24 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 continue
             mid_com = np.array(self.planeMapper(dim_order, (cell.xCOM, cell.yCOM, cell.zCOM)), dtype=float)
 
-            points.InsertNextPoint(mid_com[0], mid_com[1], 0)
-            end_pt_counter = begin_pt_counter + 1
+            # points.InsertNextPoint(mid_com[0], mid_com[1], 0)
 
             for fppd in InternalFocalPointPlasticityDataList(fpp_plugin, cell):
 
-                end_pt_counter = self.add_link(dim_order=dim_order, field_dim_ordered=field_dim_ordered,
+                pt_counter = self.add_link(dim_order=dim_order, field_dim_ordered=field_dim_ordered,
                                                drawing_params=drawing_params,
-                                               fppd=fppd, mid_com=mid_com, begin_pt_counter=begin_pt_counter,
-                                               end_pt_counter=end_pt_counter, lines=lines, points=points)
+                                               fppd=fppd, mid_com=mid_com, pt_counter=pt_counter,
+                                                lines=lines, points=points)
 
             for fppd in FocalPointPlasticityDataList(fpp_plugin, cell):
-                end_pt_counter = self.add_link(dim_order=dim_order, field_dim_ordered=field_dim_ordered,
+                pt_counter = self.add_link(dim_order=dim_order, field_dim_ordered=field_dim_ordered,
                                                drawing_params=drawing_params,
-                                               fppd=fppd, mid_com=mid_com, begin_pt_counter=begin_pt_counter,
-                                               end_pt_counter=end_pt_counter, lines=lines, points=points)
+                                               fppd=fppd, mid_com=mid_com, pt_counter=pt_counter,
+                                               lines=lines, points=points)
 
-            begin_pt_counter = end_pt_counter  # update point index
-            # todo - outer break
-            # break
+            # begin_pt_counter = end_pt_counter  # update point index
+            # # todo - outer break
+            # # break
 
         fpp_links_pd = vtk.vtkPolyData()
         fpp_links_pd.SetPoints(points)
@@ -1300,7 +1299,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
 
     def add_link(self, dim_order, field_dim_ordered, drawing_params, fppd,
-                 mid_com, begin_pt_counter, end_pt_counter, lines, points):
+                 mid_com, pt_counter, lines, points):
         """
         adds a single link to lines and points vtk structures
         :param dim_order:
@@ -1308,24 +1307,23 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :param drawing_params:
         :param fppd:
         :param mid_com:
-        :param begin_pt_counter:
-        :param end_pt_counter:
+        :param pt_counter: point counter - helps keeping track of which points form a segment
         :param lines:
         :param points:
         :return:
         """
 
-        n = fppd.neighborAddress
+        n_cell = fppd.neighborAddress
 
-        n_mid_com = np.array(self.planeMapper(dim_order, (n.xCOM, n.yCOM, n.zCOM)), dtype=float)
+        n_mid_com = np.array(self.planeMapper(dim_order, (n_cell.xCOM, n_cell.yCOM, n_cell.zCOM)), dtype=float)
 
         n_link_begin = np.array([n_mid_com[0], n_mid_com[1]], dtype=np.float)
 
         link_begin_3d = mid_com
         n_link_begin_3d = n_mid_com
 
-        actual_dist = np.linalg.norm(n_link_begin_3d - link_begin_3d)
-        if actual_dist > fppd.maxDistance:
+        naive_actual_dist = np.linalg.norm(n_link_begin_3d - link_begin_3d)
+        if naive_actual_dist > fppd.maxDistance:
             # implies we have wraparound (via periodic BCs)
             inv_dist_vec = self.invariant_distance_vector(p1=[mid_com[0], mid_com[1], 0],
                                                           p2=[n_mid_com[0], n_mid_com[1], 0],
@@ -1340,7 +1338,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
             vector_piece_to_add = self.compute_clipped_segment(begin=link_begin, end=link_end,
                                                                dim=field_dim_ord_np)
 
-            # changing linkg end  by adding first clipped segment
+            # changing link end by adding first clipped segment
             link_end = link_begin + vector_piece_to_add
             reminder_vector = inv_dist_vec - vector_piece_to_add
 
@@ -1352,38 +1350,40 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
             n_link_end = n_link_begin + n_vector_piece_to_add
 
-            points.InsertNextPoint(link_end[0], link_end[1], 0)
-
             # our line has 2 points
 
             if self.is_link_visible(mid_com[2], drawing_params.planePosition):
+                points.InsertNextPoint(mid_com[0], mid_com[1], 0)
+                points.InsertNextPoint(link_end[0], link_end[1], 0)
+
                 lines.InsertNextCell(2)
 
-                lines.InsertCellPoint(begin_pt_counter)
-                lines.InsertCellPoint(end_pt_counter)
+                lines.InsertCellPoint(pt_counter)
+                lines.InsertCellPoint(pt_counter+1)
 
-            points.InsertNextPoint(n_link_begin[0], n_link_begin[1], 0)
-
-            points.InsertNextPoint(n_link_end[0], n_link_end[1], 0)
+                pt_counter += 2
 
             if self.is_link_visible(n_mid_com[2], drawing_params.planePosition):
+                points.InsertNextPoint(n_link_begin[0], n_link_begin[1], 0)
+                points.InsertNextPoint(n_link_end[0], n_link_end[1], 0)
                 lines.InsertNextCell(2)
-                lines.InsertCellPoint(end_pt_counter + 1)
-                lines.InsertCellPoint(end_pt_counter + 2)
-
-            end_pt_counter += 3
+                lines.InsertCellPoint(pt_counter)
+                lines.InsertCellPoint(pt_counter + 1)
+                pt_counter += 2
 
         # link didn't wrap around on lattice
         else:
-            points.InsertNextPoint(n_mid_com[0], n_mid_com[1], 0)
+
             if self.is_link_visible(mid_com[2], drawing_params.planePosition):
+                points.InsertNextPoint(mid_com[0], mid_com[1], 0)
+                points.InsertNextPoint(n_mid_com[0], n_mid_com[1], 0)
                 # our line has 2 points
                 lines.InsertNextCell(2)
-                lines.InsertCellPoint(begin_pt_counter)
-                lines.InsertCellPoint(end_pt_counter)
-                end_pt_counter += 1
+                lines.InsertCellPoint(pt_counter)
+                lines.InsertCellPoint(pt_counter+1)
+                pt_counter += 2
 
-        return end_pt_counter
+        return pt_counter
 
     def compute_clipped_segment(self, begin, end, dim):
         """
