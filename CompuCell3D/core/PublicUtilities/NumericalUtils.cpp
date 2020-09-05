@@ -424,6 +424,7 @@ double distInvariantCM(double x0,double y0,double z0,double x1,double y1,double 
    double x0_t,y0_t,z0_t;
    double x1_t,y1_t,z1_t;
 
+   std::vector<unsigned int> boundaryConditionIndicator = boundaryStrategy->getBoundaryConditionIndicator();
 
 ////    Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);
 //   Coordinates3D<double> fieldDimTrans= boundaryStrategy->calculatePointCoordinates(Point3D(fieldDim.x,fieldDim.y,fieldDim.z));
@@ -465,9 +466,9 @@ double distInvariantCM(double x0,double y0,double z0,double x1,double y1,double 
 
 
    //shift is defined to be zero vector for non-periodic b.c. - everything reduces to naive calculations then   
-   shiftVec.x= (x0-((int)fieldDimTrans.x)/2);
-   shiftVec.y= (y0-((int)fieldDimTrans.y)/2);
-   shiftVec.z= (z0-((int)fieldDimTrans.z)/2);
+   shiftVec.x= (x0-((int)fieldDimTrans.x)/2)*boundaryConditionIndicator[0];
+   shiftVec.y= (y0-((int)fieldDimTrans.y)/2)*boundaryConditionIndicator[1];
+   shiftVec.z= (z0-((int)fieldDimTrans.z)/2)*boundaryConditionIndicator[2];
    //moving x0,y0,z0 to approximetely center of the lattice
    x0_t=x0-shiftVec.x;
    y0_t=y0-shiftVec.y;

@@ -117,6 +117,7 @@ namespace CompuCell3D {
 
 
 		BoundaryStrategy();
+        std::vector<unsigned int> boundaryConditionIndicator;
 
 
 	public:
@@ -124,6 +125,9 @@ namespace CompuCell3D {
 		Coordinates3D<double> getLatticeSizeVector()const { return latticeSizeVector; } //actual size of the lattice in x,y,z directions
 		LatticeType getLatticeType()const { return latticeType; }
 		float getMaxDistance()const { return maxDistance; }
+        std::vector<unsigned int> getBoundaryConditionIndicator() {
+            return boundaryConditionIndicator;
+        };
 
 		~BoundaryStrategy();
 
