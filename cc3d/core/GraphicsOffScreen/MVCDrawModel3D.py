@@ -735,9 +735,9 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if naive_actual_dist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
             # we are drawing links that currently stick out of the lattice.
 
-            inv_dist_vec = self.invariant_distance_vector(p1=mid_com,
-                                                          p2=n_mid_com,
-                                                          dim=field_dim)
+            inv_dist_vec = self.unconditional_invariant_distance_vector(p1=mid_com,
+                                                                        p2=n_mid_com,
+                                                                        dim=field_dim)
             link_begin = mid_com
             link_end = link_begin + inv_dist_vec
 

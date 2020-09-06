@@ -1324,31 +1324,35 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :return: {float} invariant distance between two points
         """
 
-        return self.vector_norm(self.invariant_distance_vector(p1, p2))
+        return self.vector_norm(self.unconditional_invariant_distance_vector(p1, p2))
 
-    @deprecated(version='4.0.0', reason="You should use : invariant_distance_vector_integer")
-    def invariantDistanceVectorInteger(self, _from, _to):
-        return self.invariant_distance_vector_integer(p1=_from, p2=_to)
+    @deprecated(version='4.0.0', reason="You should use : unconditional_invariant_distance_vector_integer")
+    def unconditionalInvariantDistanceVectorInteger(self, _from, _to):
+        return self.unconditional_invariant_distance_vector_integer(p1=_from, p2=_to)
 
-    def invariant_distance_vector_integer(self, p1, p2):
+    def unconditional_invariant_distance_vector_integer(self, p1, p2):
         """
         This function will calculate distance vector with integer coordinates between two Point3D points
         and make sure that the absolute values of the vector are smaller than 1/2 of the corresponding lattice dimension
-        this way we simulate 'invariance' of distance assuming that periodic boundary conditions are in place
+        this way we simulate 'invariance' of distance assuming that periodic boundary conditions are in place.
+        The reason we call it unconditional is because invariant distance this function computes assumes we have
+        periodic boundary conditions in place irrespective if this is true or not. For some applications this
+        function may be inappropriate. It is appropriate if the two points we are computing distance between are
+        relatively close
 
         :param p1: {list} position of first point
         :param p2: {list} position of second point
         :return: {ndarray} distance vector
         """
 
-        dist_vec = CompuCell.distanceVectorInvariant(p2, p1, self.dim)
+        dist_vec = CompuCell.unconditionalDistanceVectorInvariant(p2, p1, self.dim)
         return np.array([float(dist_vec.x), float(dist_vec.y), float(dist_vec.z)])
 
     @deprecated(version='4.0.0', reason="You should use : invariant_distance_vector")
-    def invariantDistanceVector(self, _from, _to):
-        return self.invariant_distance_vector(p1=_from, p2=_to)
+    def unconditionalInvariantDistanceVector(self, _from, _to):
+        return self.unconditional_invariant_distance_vector(p1=_from, p2=_to)
 
-    def invariant_distance_vector(self, p1, p2):
+    def unconditional_invariant_distance_vector(self, p1, p2):
         """
         This function will calculate distance vector with integer coordinates between two Coordinates3D<double> points
         and make sure that the absolute values of the vector are smaller than 1/2 of the corresponding lattice dimension
@@ -1358,7 +1362,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :return: {ndarray} distance vector
         """
 
-        dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, self.dim)
+        dist_vec = CompuCell.unconditionalDistanceVectorCoordinatesInvariant(p2, p1, self.dim)
         return np.array([dist_vec.x, dist_vec.y, dist_vec.z])
 
     @deprecated(version='4.0.0', reason="You should use : vector_norm")
@@ -1397,8 +1401,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         is greater than 1/2 corresponding dimension
         :return: {ndarray} distance vector
         """
-        return self.invariant_distance_vector([cell1.xCOM, cell1.yCOM, cell1.zCOM],
-                                              [cell2.xCOM, cell2.yCOM, cell2.zCOM])
+        return self.unconditional_invariant_distance_vector([cell1.xCOM, cell1.yCOM, cell1.zCOM],
+                                                            [cell2.xCOM, cell2.yCOM, cell2.zCOM])
 
     @deprecated(version='4.0.0', reason="You should use : distance_between_cells")
     def distanceBetweenCells(self, _cell_from, _cell_to):

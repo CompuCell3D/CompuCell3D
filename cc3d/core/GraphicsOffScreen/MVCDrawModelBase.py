@@ -417,7 +417,7 @@ class MVCDrawModelBase:
         self.populate_cell_type_lookup_table()
 
     @staticmethod
-    def invariant_distance_vector(p1, p2, dim):
+    def unconditional_invariant_distance_vector(p1, p2, dim):
 
         dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, dim)
         return np.array([dist_vec.x, dist_vec.y, dist_vec.z])

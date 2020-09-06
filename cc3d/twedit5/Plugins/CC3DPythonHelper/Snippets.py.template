@@ -326,7 +326,7 @@ vec = self.invariant_distance_between_cells(CELL1, CELL2)
 vec = self.distance(p1=[10, 10, 0], p2=[11, 11, 0])
 
 ----------  # @Submenu@ Distance Vector Between Points (Invariant)
-vec = self.invariant_distance_vector(p1=[10, 10, 0], p2=[11, 11, 0])
+vec = self.unconditional_invariant_distance_vector(p1=[10, 10, 0], p2=[11, 11, 0])
 
 ----------  # @Submenu@ Distance Vector Between Points (Invariant, Integer)
 vec = self.invariant_distance_vector_integer(p1=[10, 10, 0], p2=[11, 11, 0])
