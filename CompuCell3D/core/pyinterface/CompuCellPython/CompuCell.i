@@ -1210,6 +1210,7 @@ FIELD3DEXTENDER(Field3D<int>,int)
 %}
 
 
+
 %inline %{
 
     std::vector<std::string> getConcentrationFieldNames(CompuCell3D::Simulator & simulator) {
