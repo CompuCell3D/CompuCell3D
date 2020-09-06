@@ -1318,13 +1318,27 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     def invariant_distance(self, p1, p2):
         """
-        Distance between two points. Assumes periodic boundary conditions
-        - or simply makes sure that no component of distance vector
-        is greater than 1/2 corresponding dimension
+        Distance between two points. Respects boundary conditions
         :return: {float} invariant distance between two points
         """
 
-        return self.vector_norm(self.unconditional_invariant_distance_vector(p1, p2))
+        return self.vector_norm(self.invariant_distance_vector(p1, p2))
+
+    @deprecated(version='4.0.0', reason="You should use : invariant_distance_vector_integer")
+    def invariantDistanceVectorInteger(self, _from, _to):
+        return self.invariant_distance_vector_integer(p1=_from, p2=_to)
+
+    def invariant_distance_vector_integer(self, p1, p2):
+        """
+        This function will calculate distance vector with integer coordinates between two Point3D points. respects
+        Boundary conditions
+        :param p1: {list} position of first point
+        :param p2: {list} position of second point
+        :return: {ndarray} distance vector
+        """
+        boundary_strategy = CompuCell.BoundaryStrategy.getInstance()
+        dist_vec = CompuCell.distanceVectorInvariant(p2, p1, self.dim, boundary_strategy)
+        return np.array([float(dist_vec.x), float(dist_vec.y), float(dist_vec.z)])
 
     @deprecated(version='4.0.0', reason="You should use : unconditional_invariant_distance_vector_integer")
     def unconditionalInvariantDistanceVectorInteger(self, _from, _to):
@@ -1349,7 +1363,25 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         return np.array([float(dist_vec.x), float(dist_vec.y), float(dist_vec.z)])
 
     @deprecated(version='4.0.0', reason="You should use : invariant_distance_vector")
+    def invariantDistanceVector(self, _from, _to):
+        return self.invariant_distance_vector(p1=_from, p2=_to)
+
+    def invariant_distance_vector(self, p1, p2):
+        """
+        This function will calculate distance vector with integer coordinates between two Coordinates3D<double> points
+        Respects boundary conditions
+        :param p1: {list} position of first point
+        :param p2: {list} position of second point
+        :return: {ndarray} distance vector
+        """
+
+        boundary_strategy = CompuCell.BoundaryStrategy.getInstance()
+        dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, self.dim, boundary_strategy)
+        return np.array([dist_vec.x, dist_vec.y, dist_vec.z])
+
+    @deprecated(version='4.0.0', reason="You should use : unconditional_invariant_distance_vector")
     def unconditionalInvariantDistanceVector(self, _from, _to):
+
         return self.unconditional_invariant_distance_vector(p1=_from, p2=_to)
 
     def unconditional_invariant_distance_vector(self, p1, p2):
@@ -1386,6 +1418,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def distance_vector_between_cells(self, cell1, cell2):
         """
         This function will calculate distance vector between  COM's of cells  assuming non-periodic boundary conditions
+        It is the most straightforward way to compute distance
         :return: {ndarray} distance vector
         """
         return self.distance_vector([cell1.xCOM, cell1.yCOM, cell1.zCOM], [cell2.xCOM, cell2.yCOM, cell2.zCOM])
@@ -1396,12 +1429,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     def invariant_distance_vector_between_cells(self, cell1, cell2):
         """
-        This function will calculate distance vector between  COM's of cells  assuming periodic boundary conditions
-        - or simply makes sure that no component of distance vector
-        is greater than 1/2 corresponding dimension
+        This function will calculate distance vector between  COM's of cells . Respects boundary conditions
         :return: {ndarray} distance vector
         """
-        return self.unconditional_invariant_distance_vector([cell1.xCOM, cell1.yCOM, cell1.zCOM],
+        return self.invariant_distance_vector([cell1.xCOM, cell1.yCOM, cell1.zCOM],
                                                             [cell2.xCOM, cell2.yCOM, cell2.zCOM])
 
     @deprecated(version='4.0.0', reason="You should use : distance_between_cells")
