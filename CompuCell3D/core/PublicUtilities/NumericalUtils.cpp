@@ -308,58 +308,8 @@ namespace CompuCell3D {
     /// </summary>
     double distInvariantCM(double x0, double y0, double z0, double x1, double y1, double z1, const Point3D & fieldDim, BoundaryStrategy *boundaryStrategy) {
 
-
-        double x0_t, y0_t, z0_t;
-        double x1_t, y1_t, z1_t;
-
-        std::vector<unsigned int> boundaryConditionIndicator = boundaryStrategy->getBoundaryConditionIndicator();
-
-
-        Coordinates3D<double> field_dim_vec = boundaryStrategy->getLatticeSizeVector();
-
-        Coordinates3D<double> field_span_vec = boundaryStrategy->getLatticeSpanVector();
-
-        Coordinates3D<double> shiftVec;
-
-        //shift is defined to be zero vector for non-periodic b.c. - everything reduces to naive calculations then   
-        shiftVec.x = (x0 - ((int)field_dim_vec.x) / 2)*boundaryConditionIndicator[0];
-        shiftVec.y = (y0 - ((int)field_dim_vec.y) / 2)*boundaryConditionIndicator[1];
-        shiftVec.z = (z0 - ((int)field_dim_vec.z) / 2)*boundaryConditionIndicator[2];
-
-        //moving x0,y0,z0 to approximetely center of the lattice
-        x0_t = x0 - shiftVec.x;
-        y0_t = y0 - shiftVec.y;
-        z0_t = z0 - shiftVec.z;
-
-        //shifting accordingly other coordinates
-        x1_t = x1 - shiftVec.x;
-        y1_t = y1 - shiftVec.y;
-        z1_t = z1 - shiftVec.z;
-
-        //making sure that x1_t,y1_t,z1_t is in the lattice
-
-        if (x1_t < 0) {
-            x1_t += field_dim_vec.x;
-        }
-        else if (x1_t > field_span_vec.x) {
-            x1_t -= field_dim_vec.x;
-        }
-
-        if (y1_t < 0) {
-            y1_t += field_dim_vec.y;
-        }
-        else if (y1_t > field_span_vec.y) {
-            y1_t -= field_dim_vec.y;
-        }
-
-        if (z1_t < 0) {
-            z1_t += field_dim_vec.z;
-        }
-        else if (z1_t > field_span_vec.z) {
-            z1_t -= field_dim_vec.z;
-        }
-
-        return dist(x0_t, y0_t, z0_t, x1_t, y1_t, z1_t);
+        Coordinates3D<double> dist_vec = distanceVectorCoordinatesInvariant(Coordinates3D<double>(x1, y1, z1), Coordinates3D<double>(x0, y0, z0), fieldDim, boundaryStrategy);
+        return dist(dist_vec.x, dist_vec.y, dist_vec.z);
 
     }
 
@@ -378,67 +328,10 @@ namespace CompuCell3D {
     /// </summary>
     Point3D distanceVectorInvariant(const Point3D & _pt1, const Point3D & _pt0, const Point3D & _fieldDim, BoundaryStrategy *boundaryStrategy) {
 
-        Point3D shiftVec;
-        double x0_t, y0_t, z0_t;
-        double x1_t, y1_t, z1_t;
 
-        if (boundaryStrategy) {
-            std::vector<unsigned int> boundaryConditionIndicator = boundaryStrategy->getBoundaryConditionIndicator();
+        Coordinates3D<double> dist = distanceVectorCoordinatesInvariant(Coordinates3D<double>(_pt1.x, _pt1.y, _pt1.z), Coordinates3D<double>(_pt0.x, _pt0.y, _pt0.z), _fieldDim, boundaryStrategy);
 
-            Coordinates3D<double> field_dim_vec = boundaryStrategy->getLatticeSizeVector();
-
-            Coordinates3D<double> field_span_vec = boundaryStrategy->getLatticeSpanVector();
-
-            Coordinates3D<double> shiftVec;
-
-            //shift is defined to be zero vector for non-periodic b.c. - everything reduces to naive calculations then   
-            shiftVec.x = (_pt0.x - ((int)field_dim_vec.x) / 2)*boundaryConditionIndicator[0];
-            shiftVec.y = (_pt0.y - ((int)field_dim_vec.y) / 2)*boundaryConditionIndicator[1];
-            shiftVec.z = (_pt0.z - ((int)field_dim_vec.z) / 2)*boundaryConditionIndicator[2];
-        }
-        else {
-            shiftVec.x = (short)(_pt0.x - _fieldDim.x / 2);
-            shiftVec.y = (short)(_pt0.y - _fieldDim.y / 2);
-            shiftVec.z = (short)(_pt0.z - _fieldDim.z / 2);
-
-        }
-
-        //moving x0,y0,z0 to approximetely center of the lattice
-        x0_t = _pt0.x - shiftVec.x;
-        y0_t = _pt0.y - shiftVec.y;
-        z0_t = _pt0.z - shiftVec.z;
-
-        //shifting accordingly other coordinates
-        x1_t = _pt1.x - shiftVec.x;
-        y1_t = _pt1.y - shiftVec.y;
-        z1_t = _pt1.z - shiftVec.z;
-
-        //making sure that x1_t,y1_t,z1_t is in the lattice
-
-        if (x1_t < 0) {
-            x1_t += _fieldDim.x;
-        }
-        else if (x1_t > _fieldDim.x - 1) {
-            x1_t -= _fieldDim.x;
-        }
-
-        if (y1_t < 0) {
-            y1_t += _fieldDim.y;
-        }
-        else if (y1_t > _fieldDim.y - 1) {
-            y1_t -= _fieldDim.y;
-        }
-
-        if (z1_t < 0) {
-            z1_t += _fieldDim.z;
-        }
-        else if (z1_t > _fieldDim.z - 1) {
-            z1_t -= _fieldDim.z;
-        }
-
-
-        return Point3D(static_cast<short>(x1_t - x0_t), static_cast<short>(y1_t - y0_t), static_cast<short>(z1_t - z0_t));
-
+        return Point3D((short)dist.x, (short)dist.y, (short)dist.z);
 
     }
 
