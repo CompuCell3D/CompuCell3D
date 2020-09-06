@@ -1325,9 +1325,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         naive_actual_dist = np.linalg.norm(n_link_begin_3d - link_begin_3d)
         if naive_actual_dist > fppd.maxDistance:
             # implies we have wraparound (via periodic BCs)
-            inv_dist_vec = self.invariant_distance_vector(p1=[mid_com[0], mid_com[1], 0],
-                                                          p2=[n_mid_com[0], n_mid_com[1], 0],
-                                                          dim=[field_dim_ordered[0], field_dim_ordered[1], 1])
+            inv_dist_vec = self.unconditional_invariant_distance_vector(p1=[mid_com[0], mid_com[1], 0],
+                                                                        p2=[n_mid_com[0], n_mid_com[1], 0],
+                                                                        dim=[field_dim_ordered[0], field_dim_ordered[1], 1])
 
             inv_dist_vec = np.array([inv_dist_vec[0], inv_dist_vec[1]], dtype=np.float)
             link_begin = np.array([mid_com[0], mid_com[1]], dtype=np.float)
