@@ -117,7 +117,7 @@ double Polarization23Plugin::changeEnergy(const Point3D &pt,const CellG *newCell
         
         if (oldComp1 && oldComp2){
             
-            Coordinates3D<double> oldPolVecBeforeCoordinates = distanceVectorCoordinatesInvariant(Coordinates3D<double>(oldComp1->xCOM,oldComp1->yCOM, oldComp1->zCOM), Coordinates3D<double>(oldComp2->xCOM,oldComp2->yCOM, oldComp2->zCOM),fieldDim);
+            Coordinates3D<double> oldPolVecBeforeCoordinates = unconditionalDistanceVectorCoordinatesInvariant(Coordinates3D<double>(oldComp1->xCOM,oldComp1->yCOM, oldComp1->zCOM), Coordinates3D<double>(oldComp2->xCOM,oldComp2->yCOM, oldComp2->zCOM),fieldDim);
             oldPolVecBefore.fX=oldPolVecBeforeCoordinates.X();    
             oldPolVecBefore.fY=oldPolVecBeforeCoordinates.Y();    
             oldPolVecBefore.fZ=oldPolVecBeforeCoordinates.Z();    
@@ -170,7 +170,7 @@ double Polarization23Plugin::changeEnergy(const Point3D &pt,const CellG *newCell
         
         if (newComp1 && newComp2){
             
-            Coordinates3D<double> newPolVecBeforeCoordinates = distanceVectorCoordinatesInvariant(Coordinates3D<double>(newComp1->xCOM,newComp1->yCOM, newComp1->zCOM), Coordinates3D<double>(newComp2->xCOM,newComp2->yCOM, newComp2->zCOM),fieldDim);
+            Coordinates3D<double> newPolVecBeforeCoordinates = unconditionalDistanceVectorCoordinatesInvariant(Coordinates3D<double>(newComp1->xCOM,newComp1->yCOM, newComp1->zCOM), Coordinates3D<double>(newComp2->xCOM,newComp2->yCOM, newComp2->zCOM),fieldDim);
             newPolVecBefore.fX=newPolVecBeforeCoordinates.X();    
             newPolVecBefore.fY=newPolVecBeforeCoordinates.Y();    
             newPolVecBefore.fZ=newPolVecBeforeCoordinates.Z();    
@@ -219,7 +219,7 @@ double Polarization23Plugin::changeEnergy(const Point3D &pt,const CellG *newCell
                 oldPolVecAfter=oldPolVecBefore;
                 
             }else{
-                Coordinates3D<double> oldPolVecAfterCoordinates = distanceVectorCoordinatesInvariant(Coordinates3D<double>(vec1.fX,vec1.fY, vec1.fZ), Coordinates3D<double>(vec2.fX,vec2.fY, vec2.fZ),fieldDim);
+                Coordinates3D<double> oldPolVecAfterCoordinates = unconditionalDistanceVectorCoordinatesInvariant(Coordinates3D<double>(vec1.fX,vec1.fY, vec1.fZ), Coordinates3D<double>(vec2.fX,vec2.fY, vec2.fZ),fieldDim);
                 oldPolVecAfter.fX=oldPolVecAfterCoordinates.X();    
                 oldPolVecAfter.fY=oldPolVecAfterCoordinates.Y();    
                 oldPolVecAfter.fZ=oldPolVecAfterCoordinates.Z();    
@@ -264,7 +264,7 @@ double Polarization23Plugin::changeEnergy(const Point3D &pt,const CellG *newCell
                 //if cell is about to disappear we do not impose any energy penalty in this plugin            
                 newPolVecAfter=newPolVecBefore;
             }else{
-                Coordinates3D<double> newPolVecAfterCoordinates = distanceVectorCoordinatesInvariant(Coordinates3D<double>(vec1.fX,vec1.fY, vec1.fZ), Coordinates3D<double>(vec2.fX,vec2.fY, vec2.fZ),fieldDim);
+                Coordinates3D<double> newPolVecAfterCoordinates = unconditionalDistanceVectorCoordinatesInvariant(Coordinates3D<double>(vec1.fX,vec1.fY, vec1.fZ), Coordinates3D<double>(vec2.fX,vec2.fY, vec2.fZ),fieldDim);
                 newPolVecAfter.fX=newPolVecAfterCoordinates.X();
                 newPolVecAfter.fY=newPolVecAfterCoordinates.Y();
                 newPolVecAfter.fZ=newPolVecAfterCoordinates.Z();                

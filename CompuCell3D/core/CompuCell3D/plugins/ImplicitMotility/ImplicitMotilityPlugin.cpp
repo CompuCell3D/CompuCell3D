@@ -175,7 +175,7 @@ double ImplicitMotilityPlugin::changeEnergyByCellType(const Point3D &pt, const C
         }
 
         Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM / oldCell->volume, oldCell->yCM / oldCell->volume, oldCell->zCM / oldCell->volume);
-        Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip, oldCOMBeforeFlip, fieldDim);
+        Coordinates3D<double> distVector = unconditionalDistanceVectorCoordinatesInvariant(oldCOMAfterFlip, oldCOMBeforeFlip, fieldDim);
 
 		double norm = std::sqrt(distVector.X()*distVector.X() + distVector.Y()*distVector.Y() + distVector.Z()*distVector.Z());
 		if (norm != 0)
@@ -205,7 +205,7 @@ double ImplicitMotilityPlugin::changeEnergyByCellType(const Point3D &pt, const C
 
 
 		Coordinates3D<double> newCOMBeforeFlip(newCell->xCM / newCell->volume, newCell->yCM / newCell->volume, newCell->zCM / newCell->volume);
-		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(newCOMAfterFlip, newCOMBeforeFlip, fieldDim);
+		Coordinates3D<double> distVector = unconditionalDistanceVectorCoordinatesInvariant(newCOMAfterFlip, newCOMBeforeFlip, fieldDim);
 		
 		double norm = std::sqrt(distVector.X()*distVector.X() + distVector.Y()*distVector.Y() + distVector.Z()*distVector.Z());
 		if (norm != 0)
@@ -252,7 +252,7 @@ double ImplicitMotilityPlugin::changeEnergyByCellId(const Point3D &pt, const Cel
         }
 
         Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM / oldCell->volume, oldCell->yCM / oldCell->volume, oldCell->zCM / oldCell->volume);
-        Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip, oldCOMBeforeFlip, fieldDim);
+        Coordinates3D<double> distVector = unconditionalDistanceVectorCoordinatesInvariant(oldCOMAfterFlip, oldCOMBeforeFlip, fieldDim);
 
 		double norm = std::sqrt(distVector.X()*distVector.X() + distVector.Y()*distVector.Y() + distVector.Z()*distVector.Z());
 		if (norm != 0)
@@ -282,7 +282,7 @@ double ImplicitMotilityPlugin::changeEnergyByCellId(const Point3D &pt, const Cel
 
 
         Coordinates3D<double> newCOMBeforeFlip(newCell->xCM / newCell->volume, newCell->yCM / newCell->volume, newCell->zCM / newCell->volume);
-        Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(newCOMAfterFlip, newCOMBeforeFlip, fieldDim);
+        Coordinates3D<double> distVector = unconditionalDistanceVectorCoordinatesInvariant(newCOMAfterFlip, newCOMBeforeFlip, fieldDim);
 
 		double norm = std::sqrt(distVector.X()*distVector.X() + distVector.Y()*distVector.Y() + distVector.Z()*distVector.Z());
 		if (norm != 0)
