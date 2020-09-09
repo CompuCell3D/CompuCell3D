@@ -157,7 +157,7 @@ double CellOrientationPlugin::changeEnergyPixelBased(const Point3D &pt,const Cel
 	//    spinCopyVector=pt-potts->getFlipNeighbor();
 
 	//this will return distance vector which will properly account for different boundary conditions   
-	spinCopyVector=unconditionalDistanceVectorInvariant(pt,potts->getFlipNeighbor(),fieldDim);
+	spinCopyVector=distanceVectorInvariant(pt,potts->getFlipNeighbor(),fieldDim);
 
 
 	double lambdaCellOrientationValue=0.0;
@@ -225,7 +225,7 @@ double CellOrientationPlugin::changeEnergyCOMBased(const Point3D &pt,const CellG
 		
 
 		Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM/oldCell->volume, oldCell->yCM/oldCell->volume, oldCell->zCM/oldCell->volume);		
-		Coordinates3D<double> distVector = unconditionalDistanceVectorCoordinatesInvariant(oldCOMAfterFlip ,oldCOMBeforeFlip,fieldDim);
+		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip ,oldCOMBeforeFlip,fieldDim);
 
 
 		//cerr<<"lambdaCellOrientationValue="<<lambdaCellOrientationValue<<endl;		
@@ -254,7 +254,7 @@ double CellOrientationPlugin::changeEnergyCOMBased(const Point3D &pt,const CellG
 		polarizationVecPtr = polarizationVectorAccessorPtr->get(newCell->extraAttribPtr);	
 
 		Coordinates3D<double> newCOMBeforeFlip(newCell->xCM/newCell->volume, newCell->yCM/newCell->volume, newCell->zCM/newCell->volume);
-		Coordinates3D<double> distVector = unconditionalDistanceVectorCoordinatesInvariant(newCOMAfterFlip ,newCOMBeforeFlip,fieldDim);
+		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(newCOMAfterFlip ,newCOMBeforeFlip,fieldDim);
 
 		energy += -lambdaCellOrientationValue*(polarizationVecPtr->x * distVector.x + polarizationVecPtr->y * distVector.y + polarizationVecPtr->z * distVector.z);
 

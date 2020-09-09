@@ -217,7 +217,7 @@ double ExternalPotentialPlugin::changeEnergyGlobalCOMBased(const Point3D &pt,  c
 	  }
 
 		Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM/oldCell->volume, oldCell->yCM/oldCell->volume, oldCell->zCM/oldCell->volume);
-		Coordinates3D<double> distVector = unconditionalDistanceVectorCoordinatesInvariant(oldCOMAfterFlip ,oldCOMBeforeFlip,fieldDim);
+		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip ,oldCOMBeforeFlip,fieldDim);
 		energy += distVector.X()*lambdaVec.X() + distVector.Y()*lambdaVec.Y() + distVector.Z()*lambdaVec.Z();
 	}
 
@@ -232,7 +232,7 @@ double ExternalPotentialPlugin::changeEnergyGlobalCOMBased(const Point3D &pt,  c
 
 
 		Coordinates3D<double> newCOMBeforeFlip(newCell->xCM/newCell->volume, newCell->yCM/newCell->volume, newCell->zCM/newCell->volume);
-		Coordinates3D<double> distVector = unconditionalDistanceVectorCoordinatesInvariant(newCOMAfterFlip ,newCOMBeforeFlip,fieldDim);
+		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(newCOMAfterFlip ,newCOMBeforeFlip,fieldDim);
 
 		energy += distVector.X()*lambdaVec.X() + distVector.Y()*lambdaVec.Y() + distVector.Z()*lambdaVec.Z();
 
@@ -260,7 +260,7 @@ double ExternalPotentialPlugin::changeEnergyByCellTypeCOMBased(const Point3D &pt
 	  }
 
 		Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM/oldCell->volume, oldCell->yCM/oldCell->volume, oldCell->zCM/oldCell->volume);
-		Coordinates3D<double> distVector = unconditionalDistanceVectorCoordinatesInvariant(oldCOMAfterFlip ,oldCOMBeforeFlip,fieldDim);
+		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip ,oldCOMBeforeFlip,fieldDim);
 		energy += distVector.X()*externalPotentialParamVector[oldCell->type].lambdaVec.X() 
 				  + distVector.Y()*externalPotentialParamVector[oldCell->type].lambdaVec.Y()
 				  + distVector.Z()*externalPotentialParamVector[oldCell->type].lambdaVec.Z();
@@ -277,7 +277,7 @@ double ExternalPotentialPlugin::changeEnergyByCellTypeCOMBased(const Point3D &pt
 
 
 		Coordinates3D<double> newCOMBeforeFlip(newCell->xCM/newCell->volume, newCell->yCM/newCell->volume, newCell->zCM/newCell->volume);
-		Coordinates3D<double> distVector = unconditionalDistanceVectorCoordinatesInvariant(newCOMAfterFlip ,newCOMBeforeFlip,fieldDim);
+		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(newCOMAfterFlip ,newCOMBeforeFlip,fieldDim);
 
 		energy += distVector.X()*externalPotentialParamVector[newCell->type].lambdaVec.X() 
 			      + distVector.Y()*externalPotentialParamVector[newCell->type].lambdaVec.Y() 
@@ -307,7 +307,7 @@ double ExternalPotentialPlugin::changeEnergyByCellIdCOMBased(const Point3D &pt, 
 	  }
 
 		Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM/oldCell->volume, oldCell->yCM/oldCell->volume, oldCell->zCM/oldCell->volume);
-		Coordinates3D<double> distVector = unconditionalDistanceVectorCoordinatesInvariant(oldCOMAfterFlip ,oldCOMBeforeFlip,fieldDim);
+		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip ,oldCOMBeforeFlip,fieldDim);
 		energy += distVector.X()*oldCell->lambdaVecX + distVector.Y()*oldCell->lambdaVecY + distVector.Z()*oldCell->lambdaVecZ;
 	}
 
@@ -322,7 +322,7 @@ double ExternalPotentialPlugin::changeEnergyByCellIdCOMBased(const Point3D &pt, 
 
 
 		Coordinates3D<double> newCOMBeforeFlip(newCell->xCM/newCell->volume, newCell->yCM/newCell->volume, newCell->zCM/newCell->volume);
-		Coordinates3D<double> distVector = unconditionalDistanceVectorCoordinatesInvariant(newCOMAfterFlip ,newCOMBeforeFlip,fieldDim);
+		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(newCOMAfterFlip ,newCOMBeforeFlip,fieldDim);
 
 		energy += distVector.X()*newCell->lambdaVecX + distVector.Y()*newCell->lambdaVecY + distVector.Z()*newCell->lambdaVecZ;
 

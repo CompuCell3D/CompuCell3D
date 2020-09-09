@@ -267,8 +267,8 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 
 			nCellCMBeforeBefore=Coordinates3D<double>(nCell->xCOMPrev,nCell->yCOMPrev,nCell->zCOMPrev);
 
-			oldCellVel = unconditionalDistanceVectorCoordinatesInvariant(oldCellCMBefore ,oldCellCMBeforeBefore,fieldDim);
-			nCellVel = unconditionalDistanceVectorCoordinatesInvariant(nCellCMBefore ,nCellCMBeforeBefore,fieldDim);
+			oldCellVel = distanceVectorCoordinatesInvariant(oldCellCMBefore ,oldCellCMBeforeBefore,fieldDim);
+			nCellVel = distanceVectorCoordinatesInvariant(nCellCMBefore ,nCellCMBeforeBefore,fieldDim);
 
 			//if (pt.x>50 && pt.x<60){		
 			//	//cerr<<"oldCellCMBefore="<<oldCellCMBefore<<" oldCellCMBeforeBefore="<<oldCellCMBeforeBefore<<endl;
@@ -279,7 +279,7 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 			velocityDiffZ = oldCellVel.z-nCellVel.z;
 
 
-			distanceInvariantVec=unconditionalDistanceVectorCoordinatesInvariant(oldCellCMBefore ,nCellCMBefore,fieldDim);
+			distanceInvariantVec=distanceVectorCoordinatesInvariant(oldCellCMBefore ,nCellCMBefore,fieldDim);
 
 			x0=distanceInvariantVec.x;
 			y0=distanceInvariantVec.y;
@@ -374,8 +374,8 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 
 			nCellCMBeforeBefore=Coordinates3D<double>(nCell->xCOMPrev,nCell->yCOMPrev,nCell->zCOMPrev);
 
-			newCellVel = unconditionalDistanceVectorCoordinatesInvariant(newCellCMBefore ,newCellCMBeforeBefore,fieldDim);
-			nCellVel = unconditionalDistanceVectorCoordinatesInvariant(nCellCMBefore ,nCellCMBeforeBefore,fieldDim);
+			newCellVel = distanceVectorCoordinatesInvariant(newCellCMBefore ,newCellCMBeforeBefore,fieldDim);
+			nCellVel = distanceVectorCoordinatesInvariant(nCellCMBefore ,nCellCMBeforeBefore,fieldDim);
 
 			velocityDiffX = newCellVel.x-nCellVel.x;
 			velocityDiffY = newCellVel.y-nCellVel.y;
@@ -385,7 +385,7 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 
 
 
-			distanceInvariantVec=unconditionalDistanceVectorCoordinatesInvariant(newCellCMBefore ,nCellCMBefore,fieldDim);
+			distanceInvariantVec=distanceVectorCoordinatesInvariant(newCellCMBefore ,nCellCMBefore,fieldDim);
 
 			x0=distanceInvariantVec.x;
 			y0=distanceInvariantVec.y;
@@ -489,8 +489,8 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 				nCellCMBeforeBefore=Coordinates3D<double>(nCell->xCOMPrev,nCell->yCOMPrev,nCell->zCOMPrev);
 
 
-				oldCellVel = unconditionalDistanceVectorCoordinatesInvariant(oldCellCMAfter ,oldCellCMBefore,fieldDim);
-				nCellVel = unconditionalDistanceVectorCoordinatesInvariant(nCellCMBefore ,nCellCMBeforeBefore,fieldDim); //if nCell is not a new cell then its velocity before and after spin flip is the same - so I am using earlier expression 
+				oldCellVel = distanceVectorCoordinatesInvariant(oldCellCMAfter ,oldCellCMBefore,fieldDim);
+				nCellVel = distanceVectorCoordinatesInvariant(nCellCMBefore ,nCellCMBeforeBefore,fieldDim); //if nCell is not a new cell then its velocity before and after spin flip is the same - so I am using earlier expression
 
 				velocityDiffX = oldCellVel.x-nCellVel.x;
 				velocityDiffY = oldCellVel.y-nCellVel.y;
@@ -506,8 +506,8 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 					);
 
 			}else{            
-				oldCellVel = unconditionalDistanceVectorCoordinatesInvariant(oldCellCMAfter ,oldCellCMBefore,fieldDim);
-				nCellVel = unconditionalDistanceVectorCoordinatesInvariant(newCellCMAfter ,newCellCMBefore,fieldDim); 
+				oldCellVel = distanceVectorCoordinatesInvariant(oldCellCMAfter ,oldCellCMBefore,fieldDim);
+				nCellVel = distanceVectorCoordinatesInvariant(newCellCMAfter ,newCellCMBefore,fieldDim);
 
 
 
@@ -518,7 +518,7 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 				nCellCMAfter = newCellCMAfter;
 			}
 
-			distanceInvariantVec=unconditionalDistanceVectorCoordinatesInvariant(oldCellCMAfter ,nCellCMAfter,fieldDim);
+			distanceInvariantVec=distanceVectorCoordinatesInvariant(oldCellCMAfter ,nCellCMAfter,fieldDim);
 
 			x0=distanceInvariantVec.x;
 			y0=distanceInvariantVec.y;
@@ -610,8 +610,8 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 
 				nCellCMBeforeBefore=Coordinates3D<double>(nCell->xCOMPrev,nCell->yCOMPrev,nCell->zCOMPrev);
 
-				newCellVel = unconditionalDistanceVectorCoordinatesInvariant(newCellCMAfter ,newCellCMBefore,fieldDim);
-				nCellVel = unconditionalDistanceVectorCoordinatesInvariant(nCellCMBefore ,nCellCMBeforeBefore,fieldDim); //if nCell is not an old cell then its velocity before and after spin flip is the same - so I am using earlier expression 
+				newCellVel = distanceVectorCoordinatesInvariant(newCellCMAfter ,newCellCMBefore,fieldDim);
+				nCellVel = distanceVectorCoordinatesInvariant(nCellCMBefore ,nCellCMBeforeBefore,fieldDim); //if nCell is not an old cell then its velocity before and after spin flip is the same - so I am using earlier expression
 
 				velocityDiffX = newCellVel.x-nCellVel.x;
 				velocityDiffY = newCellVel.y-nCellVel.y;
@@ -627,8 +627,8 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 
 			}else{
 				//this should never get executed
-				newCellVel = unconditionalDistanceVectorCoordinatesInvariant(newCellCMAfter ,newCellCMBefore,fieldDim);
-				nCellVel = unconditionalDistanceVectorCoordinatesInvariant(oldCellCMAfter ,oldCellCMBefore,fieldDim); 
+				newCellVel = distanceVectorCoordinatesInvariant(newCellCMAfter ,newCellCMBefore,fieldDim);
+				nCellVel = distanceVectorCoordinatesInvariant(oldCellCMAfter ,oldCellCMBefore,fieldDim);
 
 
 
@@ -643,7 +643,7 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 			}
 
 
-			distanceInvariantVec=unconditionalDistanceVectorCoordinatesInvariant(newCellCMAfter ,nCellCMAfter,fieldDim);
+			distanceInvariantVec=distanceVectorCoordinatesInvariant(newCellCMAfter ,nCellCMAfter,fieldDim);
 
 			x0=distanceInvariantVec.x;
 			y0=distanceInvariantVec.y;
