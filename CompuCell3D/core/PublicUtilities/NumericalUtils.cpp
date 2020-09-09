@@ -356,8 +356,7 @@ namespace CompuCell3D {
         double x1_t, y1_t, z1_t;
 
         if (boundaryStrategy) {
-            std::vector<unsigned int> boundaryConditionIndicator = boundaryStrategy->getBoundaryConditionIndicator();
-            cerr << "boundaryConditionIndicator[0]=" << boundaryConditionIndicator[0] << endl;
+            std::vector<unsigned int> boundaryConditionIndicator = boundaryStrategy->getBoundaryConditionIndicator();            
 
             Coordinates3D<double> field_dim_vec = boundaryStrategy->getLatticeSizeVector();
 
@@ -367,7 +366,6 @@ namespace CompuCell3D {
             shiftVec.x = (_pt0.x - ((int)field_dim_vec.x) / 2)*boundaryConditionIndicator[0];
             shiftVec.y = (_pt0.y - ((int)field_dim_vec.y) / 2)*boundaryConditionIndicator[1];
             shiftVec.z = (_pt0.z - ((int)field_dim_vec.z) / 2)*boundaryConditionIndicator[2];
-            cerr << "shiftVec=" << shiftVec << endl;
         }
         else {
             shiftVec.x = (short)(_pt0.x - _fieldDim.x / 2);
@@ -375,25 +373,17 @@ namespace CompuCell3D {
             shiftVec.z = (short)(_pt0.z - _fieldDim.z / 2);
 
         }
-
-        cerr << "pt_1=" << _pt1 << endl;
-        cerr << "pt_0=" << _pt0 << endl;
-
-        cerr << "shiftVec=" << shiftVec << endl;
-        cerr << "_pt0.x=" << _pt0.x << endl;
+        
         //moving x0,y0,z0 to approximetely center of the lattice
         x0_t = _pt0.x - shiftVec.x;
         y0_t = _pt0.y - shiftVec.y;
         z0_t = _pt0.z - shiftVec.z;
 
-        cerr << "x0_t=" << x0_t << endl;
 
-        cerr << "_p1.x=" << _pt1.x << endl;
         //shifting accordingly other coordinates
         x1_t = _pt1.x - shiftVec.x;
         y1_t = _pt1.y - shiftVec.y;
         z1_t = _pt1.z - shiftVec.z;
-        cerr << "x1_t=" << x1_t << endl;
 
         //making sure that x1_t,y1_t,z1_t is in the lattice
 
@@ -417,12 +407,8 @@ namespace CompuCell3D {
         else if (z1_t > _fieldDim.z - 1) {
             z1_t -= _fieldDim.z;
         }
-
-        cerr << "Coordinates3D<double>(x1_t - x0_t, y1_t - y0_t, z1_t - z0_t)=" << Coordinates3D<double>(x1_t - x0_t, y1_t - y0_t, z1_t - z0_t) << endl;
-
+        
         return Coordinates3D<double>(x1_t - x0_t, y1_t - y0_t, z1_t - z0_t);
-
-
 
     }
 
