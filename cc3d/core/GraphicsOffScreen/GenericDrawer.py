@@ -51,10 +51,10 @@ class GenericDrawer:
         self.interactive_camera_flag = False
 
         # MDIFIX
-        self.draw_model_2D = MVCDrawModel2D()
+        self.draw_model_2D = MVCDrawModel2D(boundary_strategy=boundary_strategy)
         self.draw_view_2D = MVCDrawView2D(self.draw_model_2D)
 
-        self.draw_model_3D = MVCDrawModel3D()
+        self.draw_model_3D = MVCDrawModel3D(boundary_strategy=boundary_strategy)
         self.draw_view_3D = MVCDrawView3D(self.draw_model_3D)
 
         self.draw_view_2D.ren = self.ren_2D
@@ -82,6 +82,17 @@ class GenericDrawer:
         """
 
         self.draw_model_2D.pixelized_cartesian_field = flag
+
+    def set_boundary_strategy(self, boundary_strategy):
+        """
+        sets boundary strategy C++ obj reference
+        :param boundary_strategy:
+        :return:
+        """
+
+        self.boundary_strategy = boundary_strategy
+        self.draw_model_2D.set_boundary_strategy(boundary_strategy=boundary_strategy)
+        self.draw_model_3D.set_boundary_strategy(boundary_strategy=boundary_strategy)
 
     def configsChanged(self):
         """

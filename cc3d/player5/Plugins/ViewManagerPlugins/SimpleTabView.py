@@ -1167,20 +1167,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.fieldDim = self.simulation.fieldDim
         self.mysim = self.simulation.sim
 
-        # currentl;y not supported - likely race conditions/synchronization because it works
+        # currently not supported - likely race conditions/synchronization because it works
         # when slowly stepping through the code but crashes during actual run
         # opening screenshot description file
 
-        latticeTypeStr = self.simulation.latticeType
-        if latticeTypeStr in list(Configuration.LATTICE_TYPES.keys()):
-            self.latticeType = Configuration.LATTICE_TYPES[latticeTypeStr]
+        lattice_type_str = self.simulation.latticeType
+        if lattice_type_str in list(Configuration.LATTICE_TYPES.keys()):
+            self.latticeType = Configuration.LATTICE_TYPES[lattice_type_str]
         else:
             self.latticeType = Configuration.LATTICE_TYPES["Square"]  # default choice
 
         # simulationDataIntAddr = self.extractAddressIntFromVtkObject(self.simulation.simulationData)
 
-        simulationDataIntAddr = extract_address_int_from_vtk_object(self.simulation.simulationData)
-        self.fieldExtractor.setSimulationData(simulationDataIntAddr)
+        simulation_data_int_addr = extract_address_int_from_vtk_object(self.simulation.simulationData)
+        self.fieldExtractor.setSimulationData(simulation_data_int_addr)
 
         # this flag is used to prevent calling  draw function
         # when new data is read from hard drive

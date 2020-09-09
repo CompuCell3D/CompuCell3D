@@ -8,14 +8,16 @@ from cc3d.core.GraphicsOffScreen.MetadataHandler import MetadataHandler
 from cc3d.cpp import PlayerPython
 from cc3d.core.iterators import CellList, FocalPointPlasticityDataList, InternalFocalPointPlasticityDataList
 from cc3d.cpp import CompuCell
+import sys
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
+epsilon = sys.float_info.epsilon
 MODULENAME = '------  MVCDrawModel3D.py'
 
 
 class MVCDrawModel3D(MVCDrawModelBase):
-    def __init__(self):
-        MVCDrawModelBase.__init__(self)
+    def __init__(self, boundary_strategy=None):
+        MVCDrawModelBase.__init__(self, boundary_strategy)
 
         self.initArea()
         self.setParams()
@@ -27,16 +29,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # Zoom items
         self.zitems = []
 
-        # self.cellTypeActors={}
-        # self.outlineActor = vtk.vtkActor()
         self.outlineDim = [0, 0, 0]
-
-        # self.invisibleCellTypes={}
-        # self.typesInvisibleStr=""
-        # self.set3DInvisibleTypes()
-
-        # axesActor = vtk.vtkActor()
-        # axisTextActor = vtk.vtkFollower()
 
         self.numberOfTableColors = 1024
         self.scalarLUT = vtk.vtkLookupTable()
@@ -732,12 +725,18 @@ class MVCDrawModel3D(MVCDrawModelBase):
         n_mid_com = np.array([n_cell.xCOM, n_cell.yCOM, n_cell.zCOM], dtype=float)
 
         naive_actual_dist = np.linalg.norm(mid_com - n_mid_com)
-        if naive_actual_dist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
+        inv_dist = self.invariant_distance(p1=mid_com, p2=n_mid_com, dim=field_dim)
+        if abs((inv_dist - naive_actual_dist) / (naive_actual_dist + epsilon)) > 10 * epsilon:
+            # if naive distance is different than invariant distance then we are dealing with link that is wrapped
+            # if naive_actual_dist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
             # we are drawing links that currently stick out of the lattice.
+            inv_dist_vec = self.invariant_distance_vector(p1=mid_com,
+                                                          p2=n_mid_com,
+                                                          dim=field_dim)
 
-            inv_dist_vec = self.unconditional_invariant_distance_vector(p1=mid_com,
-                                                                        p2=n_mid_com,
-                                                                        dim=field_dim)
+            # inv_dist_vec = self.unconditional_invariant_distance_vector(p1=mid_com,
+            #                                                             p2=n_mid_com,
+            #                                                             dim=field_dim)
             link_begin = mid_com
             link_end = link_begin + inv_dist_vec
 

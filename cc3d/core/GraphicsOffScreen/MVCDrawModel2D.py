@@ -8,15 +8,18 @@ from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object, to
 from cc3d.core.GraphicsOffScreen.MetadataHandler import MetadataHandler
 from cc3d.core.iterators import CellList, FocalPointPlasticityDataList, InternalFocalPointPlasticityDataList
 from cc3d.cpp import CompuCell
+import sys
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
+
+epsilon = sys.float_info.epsilon
 
 MODULENAME = '----- MVCDrawModel2D.py:  '
 
 
 class MVCDrawModel2D(MVCDrawModelBase):
-    def __init__(self):
-        MVCDrawModelBase.__init__(self)
+    def __init__(self, boundary_strategy=None):
+        MVCDrawModelBase.__init__(self,boundary_strategy)
 
         self.cellsMapper = None
         self.hex_cells_mapper = None
@@ -1265,17 +1268,16 @@ class MVCDrawModel2D(MVCDrawModelBase):
             # points.InsertNextPoint(mid_com[0], mid_com[1], 0)
 
             for fppd in InternalFocalPointPlasticityDataList(fpp_plugin, cell):
-
                 pt_counter = self.add_link(dim_order=dim_order, field_dim_ordered=field_dim_ordered,
-                                               drawing_params=drawing_params,
-                                               fppd=fppd, mid_com=mid_com, pt_counter=pt_counter,
-                                                lines=lines, points=points)
+                                           drawing_params=drawing_params,
+                                           fppd=fppd, mid_com=mid_com, pt_counter=pt_counter,
+                                           lines=lines, points=points)
 
             for fppd in FocalPointPlasticityDataList(fpp_plugin, cell):
                 pt_counter = self.add_link(dim_order=dim_order, field_dim_ordered=field_dim_ordered,
-                                               drawing_params=drawing_params,
-                                               fppd=fppd, mid_com=mid_com, pt_counter=pt_counter,
-                                               lines=lines, points=points)
+                                           drawing_params=drawing_params,
+                                           fppd=fppd, mid_com=mid_com, pt_counter=pt_counter,
+                                           lines=lines, points=points)
 
             # begin_pt_counter = end_pt_counter  # update point index
             # # todo - outer break
@@ -1322,12 +1324,25 @@ class MVCDrawModel2D(MVCDrawModelBase):
         link_begin_3d = mid_com
         n_link_begin_3d = n_mid_com
 
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+
         naive_actual_dist = np.linalg.norm(n_link_begin_3d - link_begin_3d)
-        if naive_actual_dist > fppd.maxDistance:
+
+        inv_dist = self.invariant_distance(p1=link_begin_3d, p2=n_link_begin_3d, dim=field_dim)
+        if abs((inv_dist - naive_actual_dist)/(naive_actual_dist + epsilon)) > 10 * epsilon:
+            # if naive distance is different than invariant distance then we are dealing with link that is wrapped
+        # if naive_actual_dist > fppd.maxDistance:
             # implies we have wraparound (via periodic BCs)
-            inv_dist_vec = self.unconditional_invariant_distance_vector(p1=[mid_com[0], mid_com[1], 0],
+            # inv_dist_vec = self.unconditional_invariant_distance_vector(p1=[mid_com[0], mid_com[1], 0],
+            #                                                             p2=[n_mid_com[0], n_mid_com[1], 0],
+            #                                                             dim=[field_dim_ordered[0], field_dim_ordered[1],
+            #                                                                  1])
+
+            inv_dist_vec = self.invariant_distance_vector(p1=[mid_com[0], mid_com[1], 0],
                                                                         p2=[n_mid_com[0], n_mid_com[1], 0],
-                                                                        dim=[field_dim_ordered[0], field_dim_ordered[1], 1])
+                                                                        dim=[field_dim_ordered[0], field_dim_ordered[1],
+                                                                             1])
+
 
             inv_dist_vec = np.array([inv_dist_vec[0], inv_dist_vec[1]], dtype=np.float)
             link_begin = np.array([mid_com[0], mid_com[1]], dtype=np.float)
@@ -1359,7 +1374,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 lines.InsertNextCell(2)
 
                 lines.InsertCellPoint(pt_counter)
-                lines.InsertCellPoint(pt_counter+1)
+                lines.InsertCellPoint(pt_counter + 1)
 
                 pt_counter += 2
 
@@ -1380,7 +1395,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 # our line has 2 points
                 lines.InsertNextCell(2)
                 lines.InsertCellPoint(pt_counter)
-                lines.InsertCellPoint(pt_counter+1)
+                lines.InsertCellPoint(pt_counter + 1)
                 pt_counter += 2
 
         return pt_counter

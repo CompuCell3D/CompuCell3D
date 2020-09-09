@@ -341,7 +341,7 @@ def init_screenshot_manager() -> None:
         field_extractor = persistent_globals.persistent_holder['field_extractor']
 
     persistent_globals.create_output_dir()
-    gd = GenericDrawer.GenericDrawer()
+    gd = GenericDrawer.GenericDrawer(boundary_strategy=persistent_globals.simulator.getBoundaryStrategy())
     gd.set_field_extractor(field_extractor=field_extractor)
 
     bsd = BasicSimulationData()

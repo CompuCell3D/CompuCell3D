@@ -11,6 +11,7 @@ from cc3d.core.enums import *
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
 from .GraphicsWindowData import GraphicsWindowData
 from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
+import cc3d.CompuCellSetup
 from cc3d.player5.Utilities import qcolor_to_rgba, cs_string_to_typed_list
 import sys
 from collections import OrderedDict
@@ -77,7 +78,12 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         # todo 5 - adding generic drawer
 
-        self.gd = GenericDrawer()
+        sim = cc3d.CompuCellSetup.persistent_globals.simulator
+        boundary_strategy = None
+        if sim:
+            boundary_strategy = sim.getBoundaryStrategy()
+
+        self.gd = GenericDrawer(boundary_strategy=boundary_strategy)
         self.gd.set_interactive_camera_flag(True)
         self.gd.set_pixelized_cartesian_scene(Configuration.getSetting("PixelizedCartesianFields"))
 
