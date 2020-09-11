@@ -142,7 +142,9 @@ protected:
 
    std::vector<int> scalingExtraMCSVec; //TODO: check if used
    std::vector<float> maxDiffConstVec;
-   float maxStableDiffConstant;           
+   std::vector<float> maxDecayConstVec;
+   float maxStableDiffConstant;
+   float maxStableDecayConstant;
 
    std::vector<float> diffConstVec; 
    std::vector<float> decayConstVec; 
@@ -166,7 +168,7 @@ protected:
    }
   
    void prepareForwardDerivativeOffsets();
-   void Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant);
+   void Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant, std::vector<float> const &maxDecayConstVec);
    virtual void prepCellTypeField(int idx);
    virtual Dim3D getInternalDim();
    
