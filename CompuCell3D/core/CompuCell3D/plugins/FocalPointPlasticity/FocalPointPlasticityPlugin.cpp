@@ -247,16 +247,11 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 
 	for(int i = 0 ; i < cellTypesVector.size() ; ++i)
 		for(int j = 0 ; j < cellTypesVector.size() ; ++j){
-			cerr<<"cellTypesVector[i]="<<(int)cellTypesVector[i]<<endl;
-			cerr<<"cellTypesVector[j]="<<(int)cellTypesVector[j]<<endl;
 			index = getIndex(cellTypesVector[i],cellTypesVector[j]);
-			cerr<<"index="<<index <<endl;
-
 			plastParamsArray[cellTypesVector[i]][cellTypesVector[j]] = plastParams[index];
-            cerr << "plastParams[index].lambdaDistance=" << plastParams[index].lambdaDistance << endl;
-            cerr << "plastParams[index].targetDistance=" << plastParams[index].targetDistance << endl;
 		}
-		//initializing maxNumberOfJunctionsTotalVec based on plastParamsArray .maxNumberOfJunctionsTotalVec is indexed by cell type  	
+		// initializing maxNumberOfJunctionsTotalVec based on plastParamsArray .maxNumberOfJunctionsTotalVec
+		// is indexed by cell type
 		maxNumberOfJunctionsTotalVec.assign(size,0);
 		for (int idx=0 ; idx<maxNumberOfJunctionsTotalVec.size() ; ++idx){
 			int mNJ=0;
@@ -265,7 +260,6 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 				mNJ+=plastParamsArray[idx][j].maxNumberOfJunctions;
 			}
 			maxNumberOfJunctionsTotalVec[idx]=mNJ;
-			cerr<<"maxNumberOfJunctions for type "<<idx<<" is "<<maxNumberOfJunctionsTotalVec[idx]<<endl;
 		}
 
 		//Now internal parameters
@@ -288,7 +282,8 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 			}
 
 
-			//initializing maxNumberOfJunctionsInternalTotalVec based on plastParamsArray .maxNumberOfJunctionsInternalTotalVec is indexed by cell type  	
+			// initializing maxNumberOfJunctionsInternalTotalVec based on
+			// plastParamsArray .maxNumberOfJunctionsInternalTotalVec is indexed by cell type
 			maxNumberOfJunctionsInternalTotalVec.assign(size,0);
 			for (int idx=0 ; idx<maxNumberOfJunctionsInternalTotalVec.size() ; ++idx){
 				int mNJ=0;
