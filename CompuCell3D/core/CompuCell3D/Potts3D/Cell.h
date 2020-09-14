@@ -86,11 +86,15 @@ namespace CompuCell3D {
 	   float getPressure();
 	   // Function defining the value of derived property: surface tension
 	   float getSurfaceTension();
+	   // Function defining the value of derived property: cluster surface tension
+	   float getClusterSurfaceTension();
 
 	   // Internal pressure
 	   DerivedProperty<CellG, float, &CellG::getPressure> pressure;
 	   // Surface tension
 	   DerivedProperty<CellG, float, &CellG::getSurfaceTension> surfaceTension;
+	   // Cluster surface tension
+	   DerivedProperty<CellG, float, &CellG::getClusterSurfaceTension> clusterSurfaceTension;
 
    };
 
