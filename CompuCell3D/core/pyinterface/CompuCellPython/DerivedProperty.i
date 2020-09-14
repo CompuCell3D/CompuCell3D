@@ -21,3 +21,7 @@
 	%}
 }
 %enddef
+
+// CellG DerivedProperties
+
+DERIVEDPROPERTYEXTENSORPY(CompuCell3D::CellG, pressure, getPressure)
