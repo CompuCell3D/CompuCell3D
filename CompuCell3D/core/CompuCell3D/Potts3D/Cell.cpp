@@ -61,6 +61,7 @@ CellG::CellG() :
 
 {
 	DerivedProperty<CellG, float, &CellG::getPressure> pressure(this);
+	DerivedProperty<CellG, float, &CellG::getSurfaceTension> surfaceTension(this);
 }
 
 float CellG::getPressure() { return 2.0 * lambdaVolume * (volume - targetVolume); }
