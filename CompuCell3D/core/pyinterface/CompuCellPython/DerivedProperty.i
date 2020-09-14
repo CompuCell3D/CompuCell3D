@@ -25,3 +25,4 @@
 // CellG DerivedProperties
 
 DERIVEDPROPERTYEXTENSORPY(CompuCell3D::CellG, pressure, getPressure)
+DERIVEDPROPERTYEXTENSORPY(CompuCell3D::CellG, surfaceTension, getSurfaceTension)
