@@ -1,4 +1,3 @@
-
 #ifndef FOCALPOINTPLASTICITYTRACKER_H
 #define FOCALPOINTPLASTICITYTRACKER_H
 
@@ -39,9 +38,6 @@ namespace CompuCell3D {
 			  anchor=fpptd.anchor;
 			  anchorId=fpptd.anchorId;
 			  anchorPoint=fpptd.anchorPoint;
-			  //anchorPoint[0]=fpptd.anchorPoint[0];
-			  //anchorPoint[1]=fpptd.anchorPoint[1];
-			  //anchorPoint[2]=fpptd.anchorPoint[2];
 			  isInitiator = fpptd.isInitiator;
 			  initMCS = fpptd.initMCS;
 
@@ -50,13 +46,7 @@ namespace CompuCell3D {
          ///have to define < operator if using a class in the set and no < operator is defined for this class
          bool operator<(const FocalPointPlasticityTrackerData & _rhs) const{
 			// notice that anchor links will be listed first and the last of such links will have highest anchorId 
-			 //return neighborAddress < _rhs.neighborAddress || (!(neighborAddress < _rhs.neighborAddress) && anchorId<_rhs.anchorId); //old and wrong implementation of comparison operator might give side effects on windows - it can crash CC3D or in some cases windows OS entirely
              return neighborAddress < _rhs.neighborAddress || (!(_rhs.neighborAddress <neighborAddress ) && anchorId<_rhs.anchorId);
-
-
-			// return (neighborAddress && _rhs.neighborAddress) ? neighborAddress < _rhs.neighborAddress :
-			//	 anchorPoint[0] < _rhs.anchorPoint[0] || (!(_rhs.anchorPoint[0] < anchorPoint[0])&& anchorPoint[1] < _rhs.anchorPoint[1])
-			//||(!(_rhs.anchorPoint[0] < anchorPoint[0])&& !(_rhs.anchorPoint[1] <anchorPoint[1] )&& anchorPoint[2] < _rhs.anchorPoint[2]);
          }
 
 
@@ -104,4 +94,3 @@ namespace CompuCell3D {
 
 };
 #endif
-

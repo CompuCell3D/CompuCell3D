@@ -35,10 +35,6 @@ FocalPointPlasticityPlugin::FocalPointPlasticityPlugin():pUtils(0),xmlData(0)   
 
 	maxDistance=1000.0;
 
-	// changeOccuredFlag=false;
-	// returnedJunctionToPoolFlag=false;
-	// newJunctionInitiatedFlag=false;
-	// newJunctionInitiatedFlagWithinCluster=false;
 	diffEnergyFcnPtr=&FocalPointPlasticityPlugin::diffEnergyByType;
 
 	//setting default elastic link constituent law
@@ -102,39 +98,6 @@ void FocalPointPlasticityPlugin::handleEvent(CC3DEvent & _event){
 
 void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
-	//if(potts->getDisplayUnitsFlag()){
-	//	Unit targetLengthPlasticityUnit=potts->getLengthUnit();
-	//	Unit lambdaPlasticityUnit=potts->getEnergyUnit()/(targetLengthPlasticityUnit*targetLengthPlasticityUnit);
-
-	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-	//	if (!unitsElem){ //add Units element
-	//		unitsElem=_xmlData->attachElement("Units");
-	//	}
-
-	//	if(unitsElem->getFirstElement("TargetDistanceUnit")){
-	//		unitsElem->getFirstElement("TargetDistanceUnit")->updateElementValue(targetLengthPlasticityUnit.toString());
-	//	}else{
-	//		unitsElem->attachElement("TargetDistanceUnit",targetLengthPlasticityUnit.toString());
-	//	}
-
-	//	if(unitsElem->getFirstElement("MaxDistanceUnit")){
-	//		unitsElem->getFirstElement("MaxDistanceUnit")->updateElementValue(targetLengthPlasticityUnit.toString());
-	//	}else{
-	//		unitsElem->attachElement("MaxDistanceUnit",targetLengthPlasticityUnit.toString());
-	//	}
-
-	//	if(unitsElem->getFirstElement("LambdaUnit")){
-	//		unitsElem->getFirstElement("LambdaUnit")->updateElementValue(lambdaPlasticityUnit.toString());
-	//	}else{
-	//		unitsElem->attachElement("LambdaUnit",lambdaPlasticityUnit.toString());
-	//	}
-
-	//	if(unitsElem->getFirstElement("ActivationEnergyUnit")){
-	//		unitsElem->getFirstElement("ActivationEnergyUnit")->updateElementValue(potts->getEnergyUnit().toString());
-	//	}else{
-	//		unitsElem->attachElement("ActivationEnergyUnit",(potts->getEnergyUnit()).toString());
-	//	}
-	//}
 	automaton = potts->getAutomaton();
 
 	set<unsigned char> cellTypesSet;
@@ -250,55 +213,6 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 		internalCellTypesSet.insert(type2);			
 	}
 
-	////////extracting type specific parameters
-	//////CC3DXMLElement * typeSpecificParams=_xmlData->getFirstElement("TypeSpecificParameters");
-	//////CC3DXMLElementList typeSpecificPlastParamVec;
-	//////if(typeSpecificParams)
-	//////	typeSpecificPlastParamVec=typeSpecificParams->getElements("Parameters");
-	//////
-	//////for (int i = 0 ; i<typeSpecificPlastParamVec.size(); ++i){
-	//////	
-	//////	FocalPointPlasticityTrackerData fpptd;
-
-	//////	char type = automaton->getTypeId(typeSpecificPlastParamVec[i]->getAttribute("TypeName"));
-
-	//////	if(typeSpecificPlastParamVec[i]->findAttribute("MaxNumberOfJunctions"))				
-	//////		fpptd.maxNumberOfJunctions=typeSpecificPlastParamVec[i]->getAttributeAsUInt("MaxNumberOfJunctions");
-
-	//////	if(typeSpecificPlastParamVec[i]->findAttribute("NeighborOrder"))				
-	//////		fpptd.neighborOrder=typeSpecificPlastParamVec[i]->getAttributeAsUInt("NeighborOrder");
-
-	//////	typeSpecificPlastParams[type]=fpptd;
-	//////	typeSpecCellTypesSet.insert(type);
-	//////}
-	//////
-	//////
-	////////extracting internal type specific parameters
-	//////CC3DXMLElement * internalTypeSpecificParams=_xmlData->getFirstElement("InternalTypeSpecificParameters");
-	//////CC3DXMLElementList internalTypeSpecificPlastParamVec;
-	//////if(internalTypeSpecificParams)
-	//////	internalTypeSpecificPlastParamVec=internalTypeSpecificParams->getElements("Parameters");
-
-	//////
-	//////
-	//////for (int i = 0 ; i<internalTypeSpecificPlastParamVec.size(); ++i){
-	//////	
-	//////	FocalPointPlasticityTrackerData fpptd;
-
-	//////	char type = automaton->getTypeId(internalTypeSpecificPlastParamVec[i]->getAttribute("TypeName"));
-
-	//////	if(internalTypeSpecificPlastParamVec[i]->findAttribute("MaxNumberOfJunctions"))				
-	//////		fpptd.maxNumberOfJunctions=internalTypeSpecificPlastParamVec[i]->getAttributeAsUInt("MaxNumberOfJunctions");
-
-	//////
-	//////	if(internalTypeSpecificPlastParamVec[i]->findAttribute("NeighborOrder"))				
-	//////		fpptd.neighborOrder=internalTypeSpecificPlastParamVec[i]->getAttributeAsUInt("NeighborOrder");
-
-	//////	internalTypeSpecificPlastParams[type]=fpptd;
-	//////	internalTypeSpecCellTypesSet.insert(type);		
-
-	//////}
-
 	//Now that we know all the types used in the simulation we will find size of the plastParams
 	vector<unsigned char> cellTypesVector(cellTypesSet.begin(),cellTypesSet.end());//coping set to the vector
 
@@ -352,7 +266,6 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 				internalPlastParamsArray[internalCellTypesVector[i]][internalCellTypesVector[j]] = internalPlastParams[index];				
 			}
 
-
 			//initializing maxNumberOfJunctionsInternalTotalVec based on plastParamsArray .maxNumberOfJunctionsInternalTotalVec is indexed by cell type  	
 			maxNumberOfJunctionsInternalTotalVec.assign(size,0);
 			for (int idx=0 ; idx<maxNumberOfJunctionsInternalTotalVec.size() ; ++idx){
@@ -370,7 +283,6 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 			if( linkXMLElem  && linkXMLElem->findElement("Formula")){
 				ASSERT_OR_THROW("CC3DML Error: Please change Formula tag to Expression tag inside LinkConstituentLaw element",false);
 			}
-
 
 			if (linkXMLElem){
 				unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
@@ -390,191 +302,6 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 				constituentLawFcnPtr=&FocalPointPlasticityPlugin::elasticLinkConstituentLaw;;
 			}
 
-			//if (linkXMLElem){
-			//	map<string,double> variableMap;
-
-
-
-			//	CC3DXMLElementList variableXMLVec = linkXMLElem->getElements("Variable");
-			//	for (int i = 0 ; i <variableXMLVec.size() ; ++i){
-			//		string varName = variableXMLVec[i]->getAttribute("Name");
-			//		double varVal = variableXMLVec[i]->getAttributeAsDouble("Value");
-			//		variableMap.insert(make_pair(varName,varVal));
-			//	}
-
-			//	CC3DXMLElement *formulaXMLElem = linkXMLElem->getFirstElement("Formula");
-			//	if (formulaXMLElem){		
-			//		formulaString=formulaXMLElem->getText();
-			//	}
-
-			//	//allocating muPArser related vectors	
-			//	unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
-			//	pVec.assign(maxNumberOfWorkNodes,mu::Parser());    
-			//	lambdaVec.assign(maxNumberOfWorkNodes,0.0);
-			//	lengthVec.assign(maxNumberOfWorkNodes,0.0);
-			//	targetLengthVec.assign(maxNumberOfWorkNodes,0.0);
-			//	//extra parame vector - first index goes over node numbers second one is for parameter mapping	
-			//	extraParamVec.assign(maxNumberOfWorkNodes,vector<double>(variableMap.size(),0.0));
-
-
-			//	for (int i  = 0 ; i< maxNumberOfWorkNodes ; ++i){
-			//		pVec[i].DefineVar("Lambda",&lambdaVec[i]);
-			//		pVec[i].DefineVar("TargetLength",&targetLengthVec[i]);
-			//		pVec[i].DefineVar("Length",&lengthVec[i]);
-
-			//		int j=0;
-
-			//		for (map<string,double>::iterator mitr = variableMap.begin() ; mitr != variableMap.end() ; ++mitr){
-			//			extraParamVec[i][j]=mitr->second;
-			//			pVec[i].DefineVar(mitr->first, &extraParamVec[i][j]);
-			//			++j;
-			//		}
-
-			//		pVec[i].SetExpr(formulaString);		
-			//	}
-
-			//	constituentLawFcnPtr=&FocalPointPlasticityPlugin::customLinkConstituentLaw;
-
-			//}
-
-
-
-			//vectorized variables for convenient parallel access 
-			//if (!formulaString.empty()){
-			//   unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
-			//   pVec.assign(maxNumberOfWorkNodes,mu::Parser());    
-			//   lambdaVec.assign(maxNumberOfWorkNodes,0.0);
-			//   lengthVec.assign(maxNumberOfWorkNodes,0.0);
-			//   targetLengthVec.assign(maxNumberOfWorkNodes,0.0);
-
-			//   
-			//   for (int i  = 0 ; i< maxNumberOfWorkNodes ; ++i){
-			//	pVec[i].DefineVar("Lambda",&lambdaVec[i]);
-			//	pVec[i].DefineVar("TargetLength",&targetLengthVec[i]);
-			//	pVec[i].DefineVar("Length",&lengthVec[i]);
-			//	pVec[i].SetExpr(formulaString);
-			//   }
-
-			//   constituentLawFcnPtr=&FocalPointPlasticityPlugin::customLinkConstituentLaw;
-
-			//}else{
-			//	constituentLawFcnPtr=&FocalPointPlasticityPlugin::elasticLinkConstituentLaw;
-			//}
-
-
-			//exit(0);
-
-
-			////////Now type specific parameters
-			////////Now that we know all the types used in the simulation we will find size of the plastParams
-			//////vector<unsigned char> typeSpecCellTypesVector(typeSpecCellTypesSet.begin(),typeSpecCellTypesSet.end());//coping set to the vector
-
-			//////size=0;
-			//////if (typeSpecCellTypesVector.size()){
-			//////	size= * max_element(typeSpecCellTypesVector.begin(),typeSpecCellTypesVector.end());
-			//////	size+=1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-			//////}
-			//////
-			//////typeSpecificPlastParamsVec.clear();
-			//////typeSpecificPlastParamsVec.assign(size,FocalPointPlasticityTrackerData());
-
-			//////for(int i = 0 ; i < typeSpecCellTypesVector.size() ; ++i){
-			//////		
-			//////		
-			//////		typeSpecificPlastParamsVec[typeSpecCellTypesVector[i]]=typeSpecificPlastParams[typeSpecCellTypesVector[i]];
-			//////		
-
-			//////	}
-
-
-			//////ASSERT_OR_THROW("THE NUMBER TYPE NAMES IN THE TYPE SPECIFIC SECTION DOES NOT MATCH THE NUMBER OF CELL TYPES IN PARAMETERS SECTION",typeSpecificPlastParamsVec.size()==plastParamsArray.size());
-			//Now internal type specific parameters
-
-			////////Now that we know all the types used in the simulation we will find size of the plastParams
-			//////vector<unsigned char> internalTypeSpecCellTypesVector(internalTypeSpecCellTypesSet.begin(),internalTypeSpecCellTypesSet.end());//coping set to the vector
-			//////size=0;
-
-			//////if(internalTypeSpecCellTypesVector.size()){ 
-			//////	size= * max_element(internalTypeSpecCellTypesVector.begin(),internalTypeSpecCellTypesVector.end());
-			//////	size+=1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-			//////}
-			//////
-			//////internalTypeSpecificPlastParamsVec.clear();
-			//////internalTypeSpecificPlastParamsVec.assign(size,FocalPointPlasticityTrackerData());
-
-			//////for(int i = 0 ; i < internalTypeSpecCellTypesVector.size() ; ++i){
-			//////	
-
-			//////		internalTypeSpecificPlastParamsVec[internalTypeSpecCellTypesVector[i]]=internalTypeSpecificPlastParams[internalTypeSpecCellTypesVector[i]];						
-
-			//////	}
-
-			//////ASSERT_OR_THROW("THE NUMBER TYPE NAMES IN THE INTERNAL TYPE SPECIFIC SECTION DOES NOT MATCH THE NUMBER OF CELL TYPES IN INTERNAL PARAMETERS SECTION",internalTypeSpecificPlastParamsVec.size()==internalPlastParamsArray.size());
-			//if(_xmlData->getFirstElement("Lambda")){
-			//	lambda=_xmlData->getFirstElement("Lambda")->getDouble();
-			//}
-
-
-			//if(_xmlData->getFirstElement("MaxNumberOfJunctions")){
-			//	maxNumberOfJunctions=_xmlData->getFirstElement("MaxNumberOfJunctions")->getUInt();
-			//}
-
-			//if(_xmlData->getFirstElement("ActivationEnergy")){
-			//	activationEnergy=_xmlData->getFirstElement("ActivationEnergy")->getDouble();
-			//}
-
-			//if(_xmlData->getFirstElement("TargetDistance")){
-			//	targetDistance=_xmlData->getFirstElement("TargetDistance")->getDouble();
-			//}
-			//if(_xmlData->getFirstElement("MaxDistance")){
-			//	maxDistance=_xmlData->getFirstElement("MaxDistance")->getDouble();
-			//}
-			//if(_xmlData->getFirstElement("Local")){
-			//	diffEnergyFcnPtr=&FocalPointPlasticityPlugin::diffEnergyLocal;
-			//}
-
-			////read types of cells which are supposed to participate in the focalPlasticity calculations. If the list is empty than it is assumed that all the cell types participate
-			//plasticityTypesNames.clear();
-			//plasticityTypes.clear();
-			//CC3DXMLElementList includeTypeNamesXMLVec=xmlData->getElements("IncludeType");
-			//for(int i = 0 ; i < includeTypeNamesXMLVec.size() ; ++i){
-			//	plasticityTypesNames.insert(includeTypeNamesXMLVec[i]->getText());			
-			//}
-
-			//
-			//// Initializing set of elasticitytypes
-			//for (set<string>::iterator sitr = plasticityTypesNames.begin() ; sitr != plasticityTypesNames.end() ; ++sitr){
-			//	plasticityTypes.insert(automaton->getTypeId( *sitr));
-			//}
-			//
-
-
-			////Here I initialize max neighbor index for direct acces to the list of neighbors 
-			//boundaryStrategy=BoundaryStrategy::getInstance();
-			//maxNeighborIndex=0;
-
-			//maxNeighborIndexJunctionMove=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
-			//if(_xmlData->getFirstElement("NeighborOrderJunctionMove")){
-			//	maxNeighborIndexJunctionMove=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrderJunctionMove")->getUInt());
-			//}
-
-			//if(_xmlData->getFirstElement("Depth")){
-			//	maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
-			//	//cerr<<"got here will do depth"<<endl;
-			//}else{
-			//	//cerr<<"got here will do neighbor order"<<endl;
-			//	if(_xmlData->getFirstElement("NeighborOrder")){
-
-			//		maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());	
-			//	}else{
-			//		maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
-
-			//	}
-
-			//}
-
-			//cerr<<"maxNeighborIndex="<<maxNeighborIndex<<endl;
-
 			boundaryStrategy=BoundaryStrategy::getInstance();
 
 }
@@ -589,27 +316,11 @@ double FocalPointPlasticityPlugin::elasticLinkConstituentLaw(float _lambda,float
 
 }
 
-
-//double FocalPointPlasticityPlugin::customLinkConstituentLaw(float _lambda,float _length,float _targetLength){
-//	int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();
-//	mu::Parser & p=pVec[currentWorkNodeNumber];
-//
-//	lambdaVec[currentWorkNodeNumber]=_lambda;
-//	lengthVec[currentWorkNodeNumber]=_length;
-//	targetLengthVec[currentWorkNodeNumber]=_targetLength;
-//	//double l=p.Eval();
-//	//cerr<<"l="<<l<<endl;
-//	return p.Eval();
-//	//return _lambda*(_length-_targetLength)*(_length-_targetLength);
-//
-//}
-
 double FocalPointPlasticityPlugin::customLinkConstituentLaw(float _lambda,float _length,float _targetLength){
 
 		int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();	
 		ExpressionEvaluator & ev=eed[currentWorkNodeNumber];
 		double linkLaw=0.0;
-
 
 		ev[0]=_lambda;
 		ev[1]=_length;	
@@ -617,21 +328,7 @@ double FocalPointPlasticityPlugin::customLinkConstituentLaw(float _lambda,float 
 		
 		linkLaw=ev.eval();
 
-
 		return linkLaw;
-
-
-
-	//int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();
-	//mu::Parser & p=pVec[currentWorkNodeNumber];
-
-	//lambdaVec[currentWorkNodeNumber]=_lambda;
-	//lengthVec[currentWorkNodeNumber]=_length;
-	//targetLengthVec[currentWorkNodeNumber]=_targetLength;
-	////double l=p.Eval();
-	////cerr<<"l="<<l<<endl;
-	//return p.Eval();
-	////return _lambda*(_length-_targetLength)*(_length-_targetLength);
 
 }
 
@@ -711,18 +408,9 @@ double FocalPointPlasticityPlugin::diffEnergyByType(float _deltaL,float _lBefore
 	}
 
 	if(_cell->volume>1){
-		//double diffEnergy=lambdaDistanceLocal*_deltaL*(2*(_lBefore-targetDistanceLocal)+_deltaL);
-
-		//double diffEnergy=_plasticityTrackerData->lambdaDistance*_deltaL*(2*(_lBefore-_plasticityTrackerData->targetDistance)+_deltaL);
-		//cerr<<"_plasticityTrackerData->targetDistance="<<_plasticityTrackerData->targetDistance<<endl;
-		//cerr<<"_plasticityTrackerData->lambdaDistance="<<_plasticityTrackerData->lambdaDistance<<endl;
-		//cerr<<"diff energy="<<diffEnergy<<endl;
-		//return diffEnergy;
-
 		return (this->*constituentLawFcnPtr)(lambdaDistanceLocal,_lBefore+_deltaL,targetDistanceLocal)-(this->*constituentLawFcnPtr)(lambdaDistanceLocal,_lBefore,targetDistanceLocal);
 	}else{//after spin flip oldCell will disappear so the only contribution from before spin flip i.e. -(l-l0)^2
 		return -(this->*constituentLawFcnPtr)(lambdaDistanceLocal,_lBefore,targetDistanceLocal);
-		//return -_plasticityTrackerData->lambdaDistance*(_lBefore-_plasticityTrackerData->targetDistance)*(_lBefore-_plasticityTrackerData->targetDistance);
 	}
 }
 
@@ -745,14 +433,11 @@ void FocalPointPlasticityPlugin::insertAnchorFPPData(CellG * _cell,FocalPointPla
 
 std::vector<FocalPointPlasticityTrackerData> FocalPointPlasticityPlugin::getFPPDataVec(CellG * _cell){
 
-	//std::vector<FocalPointPlasticityTrackerData> fppDataVec;
-
 	return std::vector<FocalPointPlasticityTrackerData>(focalPointPlasticityTrackerAccessor.get(_cell->extraAttribPtr)->focalPointPlasticityNeighbors.begin(),focalPointPlasticityTrackerAccessor.get(_cell->extraAttribPtr)->focalPointPlasticityNeighbors.end());
 
 }
 
 std::vector<FocalPointPlasticityTrackerData> FocalPointPlasticityPlugin::getInternalFPPDataVec(CellG * _cell){
-	//std::vector<FocalPointPlasticityTrackerData> fppDataVec;
 	return std::vector<FocalPointPlasticityTrackerData>(focalPointPlasticityTrackerAccessor.get(_cell->extraAttribPtr)->internalFocalPointPlasticityNeighbors.begin(),focalPointPlasticityTrackerAccessor.get(_cell->extraAttribPtr)->internalFocalPointPlasticityNeighbors.end());
 }
 
@@ -761,34 +446,17 @@ std::vector<FocalPointPlasticityTrackerData> FocalPointPlasticityPlugin::getAnch
 }
 
 double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt,const CellG *newCell) {
-	//cerr<<"typeSpecificPlastParamsVec.size()="<<typeSpecificPlastParamsVec.size()<<endl;
-
-	//////if (((int)typeSpecificPlastParamsVec.size())-1<newCell->type){ //the newCell type is not listed by the user
-	//////		newJunctionInitiatedFlag=false;
-	//////		return 0.0;
-	//////}
 
 	int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();	
 	short &  newJunctionInitiatedFlag = newJunctionInitiatedFlagVec[currentWorkNodeNumber];
 	CellG * & newNeighbor=newNeighborVec[currentWorkNodeNumber];
 
-	//cerr<<"plastParamsArray.size()="<<plastParamsArray.size()<<endl;
 	if (((int)plastParamsArray.size())-1<newCell->type){ //the newCell type is not listed by the user
 		newJunctionInitiatedFlag=false;
 		return 0.0;
 	}
 
-
 	//check if new cell can accept new junctions
-	//////if(focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->focalPointPlasticityNeighbors.size()>=typeSpecificPlastParamsVec[newCell->type].maxNumberOfJunctions){
-	//////	newJunctionInitiatedFlag=false;
-	//////	return 0.0;
-	//////	
-	//////}
-	//cerr<<"maxNumberOfJunctionsTotalVec.size()="<<maxNumberOfJunctionsTotalVec.size()<<endl;
-	//cerr<<"boundaryStrategy="<<boundaryStrategy<<endl;
-	//cerr<<"maxNumberOfJunctionsTotalVec[newCell->type]="<<maxNumberOfJunctionsTotalVec[newCell->type]<<endl;
-	//cerr<<"neighborOrder="<<neighborOrder<<endl;
 	if(focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->focalPointPlasticityNeighbors.size()>=maxNumberOfJunctionsTotalVec[newCell->type]){
 		newJunctionInitiatedFlag=false;
 		return 0.0;
@@ -797,9 +465,7 @@ double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt,const 
 
 	boundaryStrategy=BoundaryStrategy::getInstance();
 
-	//////int maxNeighborIndexLocal=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(typeSpecificPlastParamsVec[newCell->type].neighborOrder);
 	int maxNeighborIndexLocal=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(neighborOrder);
-	//cerr<<"maxNeighborIndexLocal="<<maxNeighborIndexLocal<<endl;
 	Neighbor neighbor;
 	CellG * nCell;
 	WatchableField3D<CellG *> *fieldG =(WatchableField3D<CellG *> *) potts->getCellFieldG();
@@ -826,37 +492,22 @@ double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt,const 
 			continue;
 
 		//check if type of neighbor cell is listed by the user
-		//////if(((int)typeSpecificPlastParamsVec.size())-1<nCell->type || typeSpecificPlastParamsVec[nCell->type].maxNumberOfJunctions==0){	
-		//////	
-		//////	continue;
-		//////}
-
 		if(((int)plastParamsArray.size())-1<nCell->type || plastParamsArray[newCell->type][nCell->type].maxNumberOfJunctions==0){	
 			continue;
 		}
 
 		// check if neighbor cell can accept another junction
-		//////if(focalPointPlasticityTrackerAccessor.get(nCell->extraAttribPtr)->focalPointPlasticityNeighbors.size()>=typeSpecificPlastParamsVec[nCell->type].maxNumberOfJunctions){
-		//////	//checkIfJunctionPossible=false;
-		//////	continue;
-		//////}
 		set<FocalPointPlasticityTrackerData> &nCellFPPTD=focalPointPlasticityTrackerAccessor.get(nCell->extraAttribPtr)->focalPointPlasticityNeighbors;
 		int currentNumberOfJunctionsNCell = count_if(nCellFPPTD.begin(),nCellFPPTD.end(),FocalPointPlasticityJunctionCounter(newCell->type)); //this will count number of junctions between nCell and cells of same type as newCell
 		if( currentNumberOfJunctionsNCell >= plastParamsArray[newCell->type][nCell->type].maxNumberOfJunctions ){
-			//checkIfJunctionPossible=false;
 			continue;
 		}
 
 
 		// check if new cell can accept another junction
-		//////if(focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->focalPointPlasticityNeighbors.size()>=typeSpecificPlastParamsVec[newCell->type].maxNumberOfJunctions){
-		//////	//checkIfJunctionPossible=false;
-		//////	continue;
-		//////}
 		set<FocalPointPlasticityTrackerData> &newCellFPPTD=focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->focalPointPlasticityNeighbors;
 		int currentNumberOfJunctionsNewCell = count_if(newCellFPPTD.begin(),newCellFPPTD.end(),FocalPointPlasticityJunctionCounter(nCell->type)); //this will count number of junctions between newCell and cells of same type as nCell
 		if(currentNumberOfJunctionsNewCell>=plastParamsArray[newCell->type][nCell->type].maxNumberOfJunctions){
-			//checkIfJunctionPossible=false;
 			continue;
 		}
 
@@ -872,7 +523,6 @@ double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt,const 
 	}
 
 	if(newJunctionInitiatedFlag){
-		//cerr<<"newCell->type="<<(int)newCell->type<<" newNeighbor->type="<<(int)newNeighbor->type<<" energy="<<plastParamsArray[newCell->type][newNeighbor->type].activationEnergy<<endl; 		
 		return plastParamsArray[newCell->type][newNeighbor->type].activationEnergy;
 	}	else{
 		return 0.0;
@@ -880,8 +530,6 @@ double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt,const 
 }
 
 double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point3D &pt,const CellG *newCell) {
-	//cerr<<"internalTypeSpecificPlastParamsVec.size()="<<internalTypeSpecificPlastParamsVec.size()<<endl;
-	//cerr<<"newCell->type="<<(int)newCell->type<<" internalPlastParamsArray.size()="<<internalPlastParamsArray.size()<<endl;
 	int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();	
 	short &  newJunctionInitiatedFlagWithinCluster = newJunctionInitiatedFlagWithinClusterVec[currentWorkNodeNumber];
 	CellG * & newNeighbor=newNeighborVec[currentWorkNodeNumber];
@@ -898,7 +546,6 @@ double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point
 	}
 
 	boundaryStrategy=BoundaryStrategy::getInstance();
-	//////int maxNeighborIndexLocal=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(internalTypeSpecificPlastParamsVec[newCell->type].neighborOrder);
 	int maxNeighborIndexLocal=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(neighborOrder);
 	Neighbor neighbor;
 	CellG * nCell;
@@ -925,38 +572,24 @@ double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point
 			continue;
 
 		//check if type of neighbor cell is listed by the user
-		//////if(((int)internalTypeSpecificPlastParamsVec.size())-1<nCell->type || internalTypeSpecificPlastParamsVec[nCell->type].maxNumberOfJunctions==0){	
-		//////	
-		//////	continue;
-		//////}
 		if(((int)internalPlastParamsArray.size())-1<nCell->type || maxNumberOfJunctionsInternalTotalVec[newCell->type]==0){	
 			continue;
 		}
 
 
 		// check if neighbor cell can accept another junction
-		//////if(focalPointPlasticityTrackerAccessor.get(nCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors.size()>=internalTypeSpecificPlastParamsVec[nCell->type].maxNumberOfJunctions){
-		//////	//checkIfJunctionPossible=false;
-		//////	continue;
-		//////}
 
 		set<FocalPointPlasticityTrackerData> &nCellFPPTD=focalPointPlasticityTrackerAccessor.get(nCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
 		int currentNumberOfJunctionsNCell = count_if(nCellFPPTD.begin(),nCellFPPTD.end(),FocalPointPlasticityJunctionCounter(newCell->type)); //this will count number of junctions between nCell and cells of same type as newCell
 		if( currentNumberOfJunctionsNCell >= internalPlastParamsArray[newCell->type][nCell->type].maxNumberOfJunctions ){
-			//checkIfJunctionPossible=false;
 			continue;
 		}
 
 		// check if newCell can accept another junction
-		//////if(focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors.size()>=internalTypeSpecificPlastParamsVec[newCell->type].maxNumberOfJunctions){
-		//////	//checkIfJunctionPossible=false;
-		//////	continue;
-		//////}
 
 		set<FocalPointPlasticityTrackerData> &newCellFPPTD=focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
 		int currentNumberOfJunctionsNewCell = count_if(newCellFPPTD.begin(),newCellFPPTD.end(),FocalPointPlasticityJunctionCounter(nCell->type)); //this will count number of junctions between newCell and cells of same type as nCell
 		if(currentNumberOfJunctionsNewCell>=internalPlastParamsArray[newCell->type][nCell->type].maxNumberOfJunctions){
-			//checkIfJunctionPossible=false;
 			continue;
 		}
 
@@ -973,12 +606,6 @@ double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point
 
 
 	if(newJunctionInitiatedFlagWithinCluster){
-		//cerr<<"\t\t\t newCell="<<newCell<<" newNeighbor="<<newNeighbor<<endl;
-		//cerr<<"\t\t\t newCell->type="<<(int)newCell->type<<" newNeighbor->type="<<(int)newNeighbor->type<<" energy="<<internalPlastParamsArray[newCell->type][newNeighbor->type].activationEnergy<<endl; 		
-		//cerr<<"\t\t\t internal nCell->.maxNumberOfJunctions="<<internalTypeSpecificPlastParamsVec[nCell->type].maxNumberOfJunctions<<endl;
-		//cerr<<"\t\t\t newCell number of internal neighbors "<<focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors.size()<<endl;
-		//cerr<<"\t\t\t internal newCell.maxNumberOfJunctions="<<internalTypeSpecificPlastParamsVec[newCell->type].maxNumberOfJunctions<<endl;
-
 		return internalPlastParamsArray[newCell->type][newNeighbor->type].activationEnergy;
 	}	else{
 		return 0.0;
@@ -1007,16 +634,12 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt,const CellG *n
 	CellG * nCell;
 	CellG * nnCell;
 
-	// changeOccuredFlag=false;
-	// returnedJunctionToPoolFlag=false;
 	newJunctionInitiatedFlag=false;
 	newJunctionInitiatedFlagWithinCluster=false;
 
 	newNeighbor=0;
 
 	//check if we need to create new junctions only new cell can initiate junctions
-	//cerr<<" ENERGY="<<energy<<endl;
-	//cerr<<"newCell="<<newCell<<" oldCell="<<oldCell<<endl;
 	if(newCell){
 		//cerr<<"trying adding new cell within a cluster"<<endl;
 		double activationEnergy=tryAddingNewJunctionWithinCluster(pt,newCell);
@@ -1105,7 +728,6 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt,const CellG *n
 		//cerr<<"focalPointPlasticityNeighborsTmpPtr->size()="<<focalPointPlasticityNeighborsTmpPtr->size()<<endl;
 		for (sitr=focalPointPlasticityNeighborsTmpPtr->begin() ; sitr != focalPointPlasticityNeighborsTmpPtr->end() ;++sitr){
 
-
 			nCell=sitr->neighborAddress;
 			nCellVol=nCell->volume;
 
@@ -1120,8 +742,6 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt,const CellG *n
 					distInvariantCM(centMassOldAfter.X(),centMassOldAfter.Y(),centMassOldAfter.Z(),centMassNewAfter.X(),centMassNewAfter.Y(),centMassNewAfter.Z(),fieldDim,boundaryStrategy)
 					-lBefore;
 			}
-
-
 
 			energy+=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),oldCell,false);
 		}
@@ -1231,7 +851,6 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt,const CellG *n
 			energy+=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),newCell,false);
 		}
 
-
 	}
 	//cerr<<"pt="<<pt<<" DELTA E="<<energy<<endl;
 	return energy;
@@ -1254,7 +873,6 @@ void FocalPointPlasticityPlugin::deleteInternalFocalPointPlasticityLink(CellG * 
 
 	std::set<FocalPointPlasticityTrackerData> & internalPlastNeighbors2=focalPointPlasticityTrackerAccessor.get(_cell2->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
 	internalPlastNeighbors2.erase(FocalPointPlasticityTrackerData(_cell1));
-
 
 }
 void FocalPointPlasticityPlugin::createFocalPointPlasticityLink(CellG * _cell1,CellG * _cell2,double _lambda, double _targetDistance,double _maxDistance){
@@ -1281,8 +899,6 @@ void FocalPointPlasticityPlugin::createFocalPointPlasticityLink(CellG * _cell1,C
 	fpptd2.initMCS = sim->getStep();
 
 	focalPointPlasticityTrackerAccessor.get(_cell2->extraAttribPtr)->focalPointPlasticityNeighbors.insert(fpptd2);
-
-
 
 }
 
@@ -1511,7 +1127,6 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 
 			}else{
 
-
 				double xCMNeighbor=sitr->neighborAddress->xCM/float(sitr->neighborAddress->volume);
 				double yCMNeighbor=sitr->neighborAddress->yCM/float(sitr->neighborAddress->volume);
 				double zCMNeighbor=sitr->neighborAddress->zCM/float(sitr->neighborAddress->volume);
@@ -1574,17 +1189,6 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 			if(distance>maxDistanceLocal){
 				CellG* removedNeighbor=sitr->neighborAddress;
 
-				// // // cerr<<"REMOVE NEW "<<distance<<endl;
-                // // // cerr<<"internalPlastNeighbors.size()="<<internalPlastNeighbors.size()<<endl;
-                // // // cerr<<"removedNeighbor->xCM="<<removedNeighbor->xCM<<" removedNeighbor->yCM="<<removedNeighbor->yCM<<" removedNeighbor->zCM="<<removedNeighbor->zCM<<endl;
-				// // // cerr<<"removedNeighbor="<<removedNeighbor<<" id="<<removedNeighbor->id<<" extraAttribPtr="<<removedNeighbor->extraAttribPtr<<" volume="<<removedNeighbor->volume<<" tv="<<removedNeighbor->targetVolume<<" lv="<<removedNeighbor->lambdaVolume<<endl;
-				// // // cerr<<"newCell="<<newCell<<" id="<<newCell->id<<" extraAttribPtr="<<removedNeighbor->extraAttribPtr<<" volume="<<newCell->volume<<" tv="<<newCell->targetVolume<<" lv="<<newCell->lambdaVolume<<endl;
-
-				// // // for (std::set<FocalPointPlasticityTrackerData>::iterator sitr1=internalPlastNeighbors.begin() ; sitr1 != internalPlastNeighbors.end() ; ++sitr1 ){
-					// // // if (sitr1->neighborAddress->id==removedNeighbor->id){
-						// // // cerr<<"removing neighbor.id="<<sitr1->neighborAddress->id<<endl;	
-					// // // }
-				// // // }
 				std::set<FocalPointPlasticityTrackerData> & plastNeighborsRemovedNeighbor=
 					focalPointPlasticityTrackerAccessor.get(removedNeighbor->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
 
@@ -1599,14 +1203,6 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 			}
 		}
 
-		//for(list<CellG*>::iterator litr=toBeRemovedNeighborsOfNewCell.begin() ; litr!=toBeRemovedNeighborsOfNewCell.end() ; ++litr){
-		//	plastNeighbors.erase(FocalPointPlasticityTrackerData(*litr));
-		//	std::set<FocalPointPlasticityTrackerData> & plastNeighborsRemovedNeighbor=
-		//		focalPointPlasticityTrackerAccessor.get((*litr)->extraAttribPtr)->focalPointPlasticityNeighbors;
-		//	plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(newCell));
-		//}	
-
-		//toBeRemovedNeighborsOfNewCell.clear();
 	}
 
 	if(oldCell){
@@ -1671,9 +1267,6 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		//go over compartments
 		std::set<FocalPointPlasticityTrackerData> & internalPlastNeighbors=focalPointPlasticityTrackerAccessor.get(oldCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
         
-        
-        
-        
 		for(sitr=internalPlastNeighbors.begin() ; sitr != internalPlastNeighbors.end() ; ++sitr){
 			//we remove only one cell at a time even though we could do it for many cells many cells
 			double xCMNeighbor=sitr->neighborAddress->xCM/float(sitr->neighborAddress->volume);
@@ -1692,23 +1285,6 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 
 				CellG* removedNeighbor=sitr->neighborAddress;
                 
-				// // // cerr<<"REMOVE OLD "<<distance<<endl;
-                // // // cerr<<"internalPlastNeighbors.size()="<<internalPlastNeighbors.size()<<endl;
-                // // // cerr<<"removedNeighbor->xCM="<<removedNeighbor->xCM<<" removedNeighbor->yCM="<<removedNeighbor->yCM<<" removedNeighbor->zCM="<<removedNeighbor->zCM<<endl;
-				// // // cerr<<"removedNeighbor="<<removedNeighbor<<" id="<<removedNeighbor->id<<" extraAttribPtr="<<removedNeighbor->extraAttribPtr<<" volume="<<removedNeighbor->volume<<" tv="<<removedNeighbor->targetVolume<<" lv="<<removedNeighbor->lambdaVolume<<endl;
-				// // // cerr<<"oldCell="<<oldCell<<" id="<<oldCell->id<<" extraAttribPtr="<<removedNeighbor->extraAttribPtr<<" volume="<<oldCell->volume<<" tv="<<oldCell->targetVolume<<" lv="<<oldCell->lambdaVolume<<endl;
-                
-				
-				// // // for (std::set<FocalPointPlasticityTrackerData>::iterator sitr1=internalPlastNeighbors.begin() ; sitr1 != internalPlastNeighbors.end() ; ++sitr1 ){
-					// // // if (sitr1->neighborAddress->id==removedNeighbor->id){
-						// // // cerr<<"removing neighbor.id="<<sitr1->neighborAddress->id<<endl;	
-					// // // }
-				// // // }
-
-
-                
-                
-                
 				std::set<FocalPointPlasticityTrackerData> & internalPlastNeighborsRemovedNeighbor=
 					focalPointPlasticityTrackerAccessor.get(removedNeighbor->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
 
@@ -1716,49 +1292,13 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 				//plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(removedNeighbor));
 
 				//plastNeighbors.erase(sitr);
-				// // // plastNeighbors.erase(FocalPointPlasticityTrackerData(sitr->neighborAddress));
                 internalPlastNeighbors.erase(FocalPointPlasticityTrackerData(sitr->neighborAddress));
-                
-                
                 
 				break; 
 			}
 		}
 	}
 
-
-
-
-
-
-	// if(oldCell && oldCell->id==1082){
-	// cerr<<"\t\t before oldCell.volume==0 section oldCell 1082 volume="<<oldCell->volume<<endl;
-	// }
-	// oldCell is about to disappear so we need to remove all references to it from plasticity neighbors
-	//if(oldCell && oldCell->volume==0){
-
-	//	cerr<<"\t\t\t oldCell.id="<<oldCell->id<<" is to be removed"<<endl;
-
-	//	std::set<FocalPointPlasticityTrackerData>::iterator sitr;
-	//	std::set<FocalPointPlasticityTrackerData> & plastNeighbors=focalPointPlasticityTrackerAccessor.get(oldCell->extraAttribPtr)->focalPointPlasticityNeighbors;
-	//	for(sitr=plastNeighbors.begin() ; sitr != plastNeighbors.end() ; ++sitr){
-	//		//cerr<<" REMOVING NEIGHBOR "<<oldCell->id<<" from list of "<<sitr->neighborAddress->id<<endl;
-	//		std::set<FocalPointPlasticityTrackerData> & plastNeighborsRemovedNeighbor=
-	//		focalPointPlasticityTrackerAccessor.get(sitr->neighborAddress->extraAttribPtr)->focalPointPlasticityNeighbors;
-	//		plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(oldCell));
-	//		
-	//	}
-	//	//go over compartments
-	//	std::set<FocalPointPlasticityTrackerData> & internalPlastNeighbors=focalPointPlasticityTrackerAccessor.get(oldCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
-	//	for(sitr=internalPlastNeighbors.begin() ; sitr != internalPlastNeighbors.end() ; ++sitr){
-	//		//cerr<<" REMOVING NEIGHBOR "<<oldCell->id<<" from list of "<<sitr->neighborAddress->id<<endl;
-	//		std::set<FocalPointPlasticityTrackerData> & plastNeighborsRemovedNeighbor=
-	//		focalPointPlasticityTrackerAccessor.get(sitr->neighborAddress->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
-	//		plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(oldCell));
-	//		
-	//	}
-
-	//}
 }
 
 void FocalPointPlasticityPlugin::setFocalPointPlasticityParameters(CellG * _cell1,CellG * _cell2,double _lambda, double _targetDistance,double _maxDistance){
@@ -1919,11 +1459,9 @@ void FocalPointPlasticityPlugin::setAnchorParameters(CellG * _cell, int _anchorI
 			(const_cast<FocalPointPlasticityTrackerData & >(*sitr)).anchorPoint[2]=_z;
 		}
 
-
 	}
 
 }
-
 
 std::string FocalPointPlasticityPlugin::steerableName(){return "FocalPointPlasticity";}
 std::string FocalPointPlasticityPlugin::toString(){return steerableName();}

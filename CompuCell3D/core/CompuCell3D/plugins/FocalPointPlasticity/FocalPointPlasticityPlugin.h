@@ -52,10 +52,9 @@ namespace CompuCell3D {
 
 	class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityPlugin : public Plugin,public EnergyFunction, public CellGChangeWatcher  {
 
-      
-      BasicClassAccessor<FocalPointPlasticityTracker> focalPointPlasticityTrackerAccessor;
-      
-	  Simulator *sim;
+		BasicClassAccessor<FocalPointPlasticityTracker> focalPointPlasticityTrackerAccessor;
+
+		Simulator *sim;
 
 		Potts3D *potts;
 
@@ -66,29 +65,28 @@ namespace CompuCell3D {
 		Automaton *automaton;
 		bool weightDistance;
 		unsigned int maxNeighborIndex;
-	   unsigned int maxNeighborIndexJunctionMove;
+		unsigned int maxNeighborIndexJunctionMove;
 		BoundaryStrategy * boundaryStrategy;
 		CC3DXMLElement *xmlData;
 
-      std::set<std::string> plasticityTypesNames;
-      std::set<unsigned char> plasticityTypes;
-      std::set<unsigned char> internalPlasticityTypes;
-      
+		std::set<std::string> plasticityTypesNames;
+		std::set<unsigned char> plasticityTypes;
+		std::set<unsigned char> internalPlasticityTypes;
+
 		Dim3D fieldDim;
-      double lambda;
-		
-      double activationEnergy;
-      double targetDistance;
-	  double maxDistance;
-      double potentialFunction(double _lambda,double _offset,double _targetDistance, double _distance);
-      
-    //vectorized variables for convenient parallel access      
-      std::vector<short> newJunctionInitiatedFlagVec;
-	  std::vector<short> newJunctionInitiatedFlagWithinClusterVec;
-	  std::vector<CellG *> newNeighborVec;
+		double lambda;
+
+		double activationEnergy;
+		double targetDistance;
+		double maxDistance;
+		double potentialFunction(double _lambda, double _offset, double _targetDistance, double _distance);
+
+		//vectorized variables for convenient parallel access      
+		std::vector<short> newJunctionInitiatedFlagVec;
+		std::vector<short> newJunctionInitiatedFlagWithinClusterVec;
+		std::vector<CellG *> newNeighborVec;
 	  
 		unsigned int maxNumberOfJunctions;
-
 
 		enum FunctionType {GLOBAL=0,BYCELLTYPE=1,BYCELLID=2};
 
@@ -96,15 +94,6 @@ namespace CompuCell3D {
 
 		typedef double (FocalPointPlasticityPlugin::*diffEnergyFcnPtr_t)(float _deltaL,float _lBefore,const FocalPointPlasticityTrackerData * _plasticityTrackerData,const CellG *_cell,bool _useCluster);
 		diffEnergyFcnPtr_t diffEnergyFcnPtr;
-		
-		//std::vector<mu::Parser> pVec; //used to implement custom constituent laws
-		//std::string formulaString;
-		//std::vector<double> lambdaVec; //used to keep link lambda parameter
-		//std::vector<double> lengthVec; //used to keep link length parameter
-		//std::vector<double> targetLengthVec; //used to keep link target length parameter
-
-		//std::vector<std::vector<double> > extraParamVec;
-
 
 		ExpressionEvaluatorDepot eed;
 
@@ -119,21 +108,16 @@ namespace CompuCell3D {
 		double diffEnergyGlobal(float _deltaL,float _lBefore,const FocalPointPlasticityTrackerData * _plasticityTrackerData,const CellG *_cell,bool _useCluster=false);
 		double diffEnergyByType(float _deltaL,float _lBefore,const FocalPointPlasticityTrackerData * _plasticityTrackerData,const CellG *_cell,bool _useCluster=false);
 
-		
-
-
 		double tryAddingNewJunction(const Point3D &pt,const CellG *newCell);
 		double tryAddingNewJunctionWithinCluster(const Point3D &pt,const CellG *newCell);
 
 		typedef std::map<int, FocalPointPlasticityTrackerData> plastParams_t;
 		
-
 		plastParams_t plastParams;
 		plastParams_t internalPlastParams;
 
 		plastParams_t typeSpecificPlastParams;
 		plastParams_t internalTypeSpecificPlastParams;
-
 
 		typedef std::vector<std::vector<FocalPointPlasticityTrackerData> > FocalPointPlasticityTrackerDataArray_t;
 		typedef std::vector<FocalPointPlasticityTrackerData> FocalPointPlasticityTrackerDataVector_t;
@@ -151,7 +135,6 @@ namespace CompuCell3D {
 		FocalPointPlasticityPlugin();
 		virtual ~FocalPointPlasticityPlugin();
 
-
 		//Plugin interface
 		virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
 		virtual void extraInit(Simulator *simulator);
@@ -160,10 +143,9 @@ namespace CompuCell3D {
 		//EnergyFunction Interface
 		virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
 
-      // Field3DChangeWatcher interface
-      virtual void field3DChange(const Point3D &pt, CellG *newCell,
-                                 CellG *oldCell);
-
+		// Field3DChangeWatcher interface
+		virtual void field3DChange(const Point3D &pt, CellG *newCell,
+			CellG *oldCell);
 
 		//used to manually control parameters plasticity term for pair of cells involved
 		void setFocalPointPlasticityParameters(CellG * _cell1,CellG * _cell2,double _lambda, double _targetDistance=0.0,double _maxDistance=0.0);
@@ -194,14 +176,12 @@ namespace CompuCell3D {
 		//had to include this function to get set inereation working properly with Python , and Player that has restart capabilities 
         FocalPointPlasticityTrackerData * getFocalPointPlasticityTrackerData(FocalPointPlasticityTrackerData * _fpsd){return _fpsd;}
 		
-		
-
 		//Steerable interface
 		virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
 		virtual std::string steerableName();
 		virtual std::string toString();
 	protected:
-	int getIndex(const int type1, const int type2) const ;
+		int getIndex(const int type1, const int type2) const;
 
 	};
 };
