@@ -944,18 +944,14 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		std::set<FocalPointPlasticityTrackerData> & plastNeighbors=focalPointPlasticityTrackerAccessor.get(oldCell->extraAttribPtr)->focalPointPlasticityNeighbors;
 		for(sitr=plastNeighbors.begin() ; sitr != plastNeighbors.end() ; ++sitr){
 			//cerr<<" REMOVING NEIGHBOR "<<oldCell->id<<" from list of "<<sitr->neighborAddress->id<<endl;
-			std::set<FocalPointPlasticityTrackerData> & plastNeighborsRemovedNeighbor=
-				focalPointPlasticityTrackerAccessor.get(sitr->neighborAddress->extraAttribPtr)->focalPointPlasticityNeighbors;
-			plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(oldCell));
+			deleteFocalPointPlasticityLink(oldCell, sitr->neighborAddress);
 
 		}
 		//go over compartments
 		std::set<FocalPointPlasticityTrackerData> & internalPlastNeighbors=focalPointPlasticityTrackerAccessor.get(oldCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
 		for(sitr=internalPlastNeighbors.begin() ; sitr != internalPlastNeighbors.end() ; ++sitr){
 			//cerr<<" REMOVING NEIGHBOR "<<oldCell->id<<" from list of "<<sitr->neighborAddress->id<<endl;
-			std::set<FocalPointPlasticityTrackerData> & plastNeighborsRemovedNeighbor=
-				focalPointPlasticityTrackerAccessor.get(sitr->neighborAddress->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
-			plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(oldCell));
+			deleteInternalFocalPointPlasticityLink(oldCell, sitr->neighborAddress);
 		}
 	}
 
@@ -998,32 +994,12 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		if (functionType==BYCELLTYPE || functionType==BYCELLID){
 			//cerr<<"adding external junction between "<<newCell<<" and "<<newNeighbor<<endl;
 			FocalPointPlasticityTrackerData fpptd=plastParamsArray[newCell->type][newNeighbor->type];
-			//////fpptd.targetDistance=0.9*distance;
-			fpptd.targetDistance=fpptd.targetDistance;
-			//cerr<<"setting fpptd.targetDistance="<<fpptd.targetDistance<<endl;
-			fpptd.neighborAddress=newNeighbor;
-			fpptd.isInitiator = true;
-			fpptd.initMCS = sim->getStep();
-
-			focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->focalPointPlasticityNeighbors.		
-				insert(FocalPointPlasticityTrackerData(fpptd));
-
-
-			fpptd.neighborAddress=newCell;
-			fpptd.isInitiator = false;
-			focalPointPlasticityTrackerAccessor.get(newNeighbor->extraAttribPtr)->focalPointPlasticityNeighbors.
-				insert(FocalPointPlasticityTrackerData(fpptd));
+			createFocalPointPlasticityLink(newCell, newNeighbor, fpptd.lambdaDistance, fpptd.targetDistance, fpptd.maxDistance);
 
 		}else if (functionType==GLOBAL){
 			FocalPointPlasticityTrackerData fpptd = FocalPointPlasticityTrackerData(newNeighbor, lambda, 0.9*distance);
-			fpptd.isInitiator = true;
-			fpptd.initMCS = sim->getStep();
-			focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->focalPointPlasticityNeighbors.insert(FocalPointPlasticityTrackerData(fpptd));
+			createFocalPointPlasticityLink(newCell, newNeighbor, fpptd.lambdaDistance, fpptd.targetDistance, fpptd.maxDistance);
 
-			fpptd = FocalPointPlasticityTrackerData(newCell, lambda, 0.9*distance);
-			fpptd.isInitiator = false;
-			fpptd.initMCS = sim->getStep();
-			focalPointPlasticityTrackerAccessor.get(newNeighbor->extraAttribPtr)->focalPointPlasticityNeighbors.insert(FocalPointPlasticityTrackerData(fpptd));
 		}
 		//}
 		return;
@@ -1056,35 +1032,12 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		if (functionType==BYCELLTYPE || functionType==BYCELLID){
 			//cerr<<"adding internal junction between "<<newCell<<" and "<<newNeighbor<<endl;
 			FocalPointPlasticityTrackerData fpptd=internalPlastParamsArray[newCell->type][newNeighbor->type];
-			//////fpptd.targetDistance=0.9*distance;
-			fpptd.targetDistance=fpptd.targetDistance;
-			//cerr<<"setting fpptd.targetDistance="<<fpptd.targetDistance<<endl;
-			fpptd.neighborAddress=newNeighbor;
-			fpptd.isInitiator = true;
-			fpptd.initMCS = sim->getStep();
-			focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors.		
-				insert(FocalPointPlasticityTrackerData(fpptd));
-
-			//cerr<<"newCell="<<newCell<< " FTTPDs="<<focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors.size()<<endl;
-
-			fpptd.neighborAddress=newCell;
-			fpptd.isInitiator = false;
-			fpptd.initMCS = sim->getStep();
-			focalPointPlasticityTrackerAccessor.get(newNeighbor->extraAttribPtr)->internalFocalPointPlasticityNeighbors.
-				insert(FocalPointPlasticityTrackerData(fpptd));
-
-			//cerr<<"newNeighbor="<<newNeighbor<<" FTTPDs="<<focalPointPlasticityTrackerAccessor.get(newNeighbor->extraAttribPtr)->internalFocalPointPlasticityNeighbors.size()<<endl;
+			createInternalFocalPointPlasticityLink(newCell, newNeighbor, fpptd.lambdaDistance, fpptd.targetDistance, fpptd.maxDistance);
 
 		}else if (functionType==GLOBAL){
 			FocalPointPlasticityTrackerData fpptd = FocalPointPlasticityTrackerData(newNeighbor, lambda, 0.9*distance);
-			fpptd.isInitiator = true;
-			fpptd.initMCS = sim->getStep();
-			focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors.insert(fpptd);
+			createInternalFocalPointPlasticityLink(newCell, newNeighbor, fpptd.lambdaDistance, fpptd.targetDistance, fpptd.maxDistance);
 
-			fpptd = FocalPointPlasticityTrackerData(newCell, lambda, 0.9*distance);
-			fpptd.isInitiator = false;
-			fpptd.initMCS = sim->getStep();
-			focalPointPlasticityTrackerAccessor.get(newNeighbor->extraAttribPtr)->internalFocalPointPlasticityNeighbors.insert(fpptd);
 		}
 		//}
 		return;
@@ -1121,7 +1074,7 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 
 				if(distance>maxDistanceLocal){
 
-					plastNeighbors.erase(sitr);
+					deleteAnchor(newCell, sitr->anchorId);
 					break; 
 				}
 
@@ -1140,28 +1093,7 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 				}
 
 				if(distance>maxDistanceLocal){
-					CellG* removedNeighbor=sitr->neighborAddress;
-
-					//toBeRemovedNeighborsOfNewCell.push_back(removedNeighbor);
-					//if(newCell->id==64){
-					//	cerr<<"distance="<<distance<<" maxDistanceLocal="<<maxDistanceLocal<<endl;
-					//	cerr<<"removedNeighbor.id="<<removedNeighbor->id<<" type="<<(int)removedNeighbor->type<<" of newCell->id="<<newCell->id<<endl;
-					//
-					//}
-					//if (removedNeighbor->id==1082){
-					//	cerr<<"removedNeighbor.volume="<<removedNeighbor->volume<<" removedNeighbor->targetVolume="<<removedNeighbor->targetVolume<<endl;
-					//	cerr<<"unsigned short size="<<sizeof(unsigned short)<<endl;
-					//}
-					std::set<FocalPointPlasticityTrackerData> & plastNeighborsRemovedNeighbor=
-						focalPointPlasticityTrackerAccessor.get(removedNeighbor->extraAttribPtr)->focalPointPlasticityNeighbors;
-
-					plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(newCell));
-
-					//plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(removedNeighbor));
-
-					//plastNeighbors.erase(sitr);
-
-					plastNeighbors.erase(FocalPointPlasticityTrackerData(sitr->neighborAddress));
+					deleteFocalPointPlasticityLink(newCell, sitr->neighborAddress);
 					break; 
 				}
 			}
@@ -1187,18 +1119,7 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 			}
 
 			if(distance>maxDistanceLocal){
-				CellG* removedNeighbor=sitr->neighborAddress;
-
-				std::set<FocalPointPlasticityTrackerData> & plastNeighborsRemovedNeighbor=
-					focalPointPlasticityTrackerAccessor.get(removedNeighbor->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
-
-				plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(newCell));
-
-				//plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(removedNeighbor));
-
-				//plastNeighbors.erase(sitr);
-
-				internalPlastNeighbors.erase(FocalPointPlasticityTrackerData(sitr->neighborAddress));
+				deleteInternalFocalPointPlasticityLink(newCell, sitr->neighborAddress);
 				break; 
 			}
 		}
@@ -1228,8 +1149,7 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 				}
 
 				if(distance>maxDistanceLocal){
-
-					plastNeighbors.erase(sitr);
+					deleteAnchor(oldCell, sitr->anchorId);
 					break; 
 				}
 
@@ -1248,17 +1168,7 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 				}
 
 				if(distance>maxDistanceLocal){
-
-					CellG* removedNeighbor=sitr->neighborAddress;
-
-					std::set<FocalPointPlasticityTrackerData> & plastNeighborsRemovedNeighbor=
-						focalPointPlasticityTrackerAccessor.get(removedNeighbor->extraAttribPtr)->focalPointPlasticityNeighbors;
-
-					plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(oldCell));
-					//plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(removedNeighbor));
-
-					//plastNeighbors.erase(sitr);
-					plastNeighbors.erase(FocalPointPlasticityTrackerData(sitr->neighborAddress));
+					deleteFocalPointPlasticityLink(oldCell, sitr->neighborAddress);
 					break; 
 				}
 			}
@@ -1282,18 +1192,7 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 			}
 
 			if(distance>maxDistanceLocal){
-
-				CellG* removedNeighbor=sitr->neighborAddress;
-                
-				std::set<FocalPointPlasticityTrackerData> & internalPlastNeighborsRemovedNeighbor=
-					focalPointPlasticityTrackerAccessor.get(removedNeighbor->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
-
-				internalPlastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(oldCell));
-				//plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(removedNeighbor));
-
-				//plastNeighbors.erase(sitr);
-                internalPlastNeighbors.erase(FocalPointPlasticityTrackerData(sitr->neighborAddress));
-                
+				deleteInternalFocalPointPlasticityLink(oldCell, sitr->neighborAddress);
 				break; 
 			}
 		}
