@@ -262,5 +262,6 @@ class _RenderDataJob:
             if self._manipulator is not None:
                 r.set_render_manipulator(self._manipulator)
             r.export_all()
+            return True
         except Exception:
             return False
