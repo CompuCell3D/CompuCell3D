@@ -447,37 +447,29 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if self.is_lattice_hex(drawing_params=drawing_params):
             hex_flag = True
             if field_type == 'vectorfield':
-                fill_successful = self.field_extractor.fillVectorFieldData2DHex(
+                fill_successful = self.field_extractor.fillVectorFieldData3DHex(
                     points_int_addr,
                     vectors_int_addr,
-                    field_name,
-                    self.currentDrawingParameters.plane,
-                    self.currentDrawingParameters.planePos
+                    field_name
                 )
             elif field_type == 'vectorfieldcelllevel':
-                fill_successful = self.field_extractor.fillVectorFieldCellLevelData2DHex(
+                fill_successful = self.field_extractor.fillVectorFieldCellLevelData3DHex(
                     points_int_addr,
                     vectors_int_addr,
-                    field_name,
-                    self.currentDrawingParameters.plane,
-                    self.currentDrawingParameters.planePos
+                    field_name
                 )
         else:
             if field_type == 'vectorfield':
-                fill_successful = self.field_extractor.fillVectorFieldData2D(
+                fill_successful = self.field_extractor.fillVectorFieldData3D(
                     points_int_addr,
                     vectors_int_addr,
                     field_name,
-                    self.currentDrawingParameters.plane,
-                    self.currentDrawingParameters.planePos
                 )
             elif field_type == 'vectorfieldcelllevel':
-                fill_successful = self.field_extractor.fillVectorFieldCellLevelData2D(
+                fill_successful = self.field_extractor.fillVectorFieldCellLevelData3D(
                     points_int_addr,
                     vectors_int_addr,
                     field_name,
-                    self.currentDrawingParameters.plane,
-                    self.currentDrawingParameters.planePos
                 )
 
         if not fill_successful:
