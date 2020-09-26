@@ -3802,6 +3802,13 @@ class CC3DProject(QObject):
 
         proj_exist = True
 
+        proj_file_name_path = Path(proj_file_name)
+        if not proj_file_name_path.exists():
+            QMessageBox.warning(self.treeWidget, 'Project file missing',
+                                f'Project file <br> {proj_file_name} is missing')
+            self.__ui.remove_item_from_configuration_string_list(self.configuration, "RecentProjects", proj_file_name)
+            return
+
         self.__ui.addItemtoConfigurationStringList(self.configuration, "RecentProjects", proj_file_name)
 
         # extract file directory name and add it to settings
@@ -3813,6 +3820,7 @@ class CC3DProject(QObject):
         except LookupError:
 
             proj_exist = False
+
 
         if proj_exist:
             proj_item = self.openProjectsDict[proj_file_name]

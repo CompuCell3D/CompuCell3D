@@ -5200,7 +5200,7 @@ class EditorWindow(QMainWindow):
 
         recentItems = _settingObj.setting(_settingName)
 
-        print('_settingName=', _settingName)
+        print('setting_name=', _settingName)
 
         print('recentItems=', recentItems)
 
@@ -6942,6 +6942,16 @@ class EditorWindow(QMainWindow):
         string_list = remove_duplicates(string_list)
 
         _settingObj.setSetting(_settingName, string_list)
+
+    def remove_item_from_configuration_string_list(self, setting_obj, setting_name, item_name):
+
+        string_list = setting_obj.setting(setting_name)
+
+        string_list = [item for item in string_list if item != item_name]
+
+        string_list = remove_duplicates(string_list)
+
+        setting_obj.setSetting(setting_name, string_list)
 
     def handleNewFocusEditor(self, _editor):
 
