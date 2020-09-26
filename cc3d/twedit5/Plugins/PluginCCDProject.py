@@ -966,29 +966,28 @@ class CC3DProject(QObject):
 
             self.openCC3Dproject(fileName)
 
-    def __openRecentProjectDirectory(self):
+    def open_recent_project_directory(self):
 
         action = self.sender()
 
         if isinstance(action, QAction):
-            fileName = str(action.data())
+            dir_name = str(action.data())
+            dir_name_path = Path(dir_name)
+            if not dir_name_path.exists():
+                QMessageBox.warning(self.treeWidget, 'Directory not found',
+                                    f'Directory you are trying to access <br> '
+                                    f'{dir_name} <br>'
+                                    f'does not exist')
+                self.__ui.remove_item_from_configuration_string_list(self.configuration, "RecentProjectDirectories",
+                                                                     dir_name)
 
-            self.openCC3Dproject(fileName)
+                return
 
-    def __openRecentProjectDirectory(self):
+            dir_name = os.path.abspath(dir_name)
 
-        action = self.sender()
+            self.__ui.add_item_to_configuration_string_list(self.configuration, "RecentProjectDirectories", dir_name)
 
-        dirName = ''
-
-        if isinstance(action, QAction):
-            dirName = str(action.data())
-
-            dirName = os.path.abspath(dirName)
-
-            self.__ui.addItemtoConfigurationStringList(self.configuration, "RecentProjectDirectories", dirName)
-
-            self.showOpenProjectDialogAndLoad(dirName)
+            self.showOpenProjectDialogAndLoad(dir_name)
 
     def updateRecentProjectsMenu(self):
 
@@ -998,7 +997,7 @@ class CC3DProject(QObject):
 
     def updateRecentProjectDirectoriesMenu(self):
 
-        self.__ui.updateRecentItemMenu(self, self.recentProjectDirectoriesMenu, self.__openRecentProjectDirectory,
+        self.__ui.updateRecentItemMenu(self, self.recentProjectDirectoriesMenu, self.open_recent_project_directory,
 
                                        self.configuration, "RecentProjectDirectories")
 
@@ -3809,11 +3808,11 @@ class CC3DProject(QObject):
             self.__ui.remove_item_from_configuration_string_list(self.configuration, "RecentProjects", proj_file_name)
             return
 
-        self.__ui.addItemtoConfigurationStringList(self.configuration, "RecentProjects", proj_file_name)
+        self.__ui.add_item_to_configuration_string_list(self.configuration, "RecentProjects", proj_file_name)
 
         # extract file directory name and add it to settings
         dir_name = os.path.abspath(os.path.dirname(str(proj_file_name)))
-        self.__ui.addItemtoConfigurationStringList(self.configuration, "RecentProjectDirectories", dir_name)
+        self.__ui.add_item_to_configuration_string_list(self.configuration, "RecentProjectDirectories", dir_name)
 
         try:
             self.openProjectsDict[proj_file_name]
