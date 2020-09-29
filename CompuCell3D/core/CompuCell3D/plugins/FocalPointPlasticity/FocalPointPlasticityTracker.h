@@ -13,8 +13,7 @@
 namespace CompuCell3D {
 
    class CellG;
-
-
+   class FocalPointPlasticityLinkTrackerData;
 
    class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityTrackerData{
       public:
@@ -42,6 +41,11 @@ namespace CompuCell3D {
 			  initMCS = fpptd.initMCS;
 
 		 }
+
+		 // type cast from FocalPointPlasticityLinkTrackerData
+		 FocalPointPlasticityTrackerData(const FocalPointPlasticityLinkTrackerData& fppltd);
+
+		 FocalPointPlasticityTrackerData& operator=(const FocalPointPlasticityLinkTrackerData& fppltd);
 
          ///have to define < operator if using a class in the set and no < operator is defined for this class
          bool operator<(const FocalPointPlasticityTrackerData & _rhs) const{
@@ -90,6 +94,52 @@ namespace CompuCell3D {
 			return _fpptd.neighborAddress->type==type;
 		}
 		
+   };
+
+   class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityLinkTrackerData {
+   public:
+
+	   FocalPointPlasticityLinkTrackerData(float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _maxNumberOfJunctions = 0, float _activationEnergy = 0.0, int _neighborOrder = 1, int _initMCS = 0)
+		   :lambdaDistance(_lambdaDistance), targetDistance(_targetDistance), maxDistance(_maxDistance), maxNumberOfJunctions(_maxNumberOfJunctions), activationEnergy(_activationEnergy), neighborOrder(_neighborOrder), anchor(false), anchorId(0), initMCS(_initMCS)
+	   {
+
+		   anchorPoint = std::vector<float>(3, 0.);
+	   }
+
+	   //copy constructor
+	   FocalPointPlasticityLinkTrackerData(const FocalPointPlasticityLinkTrackerData &fppltd)
+	   {
+		   lambdaDistance = fppltd.lambdaDistance;
+		   targetDistance = fppltd.targetDistance;
+		   maxDistance = fppltd.maxDistance;
+		   activationEnergy = fppltd.activationEnergy;
+		   maxNumberOfJunctions = fppltd.maxNumberOfJunctions;
+		   neighborOrder = fppltd.neighborOrder;
+		   anchor = fppltd.anchor;
+		   anchorId = fppltd.anchorId;
+		   anchorPoint = fppltd.anchorPoint;
+		   initMCS = fppltd.initMCS;
+
+	   }
+
+	   // type cast from FocalPointPlasticityTrackerData
+	   FocalPointPlasticityLinkTrackerData(const FocalPointPlasticityTrackerData& fpptd);
+
+	   FocalPointPlasticityLinkTrackerData& operator=(const FocalPointPlasticityTrackerData& fpptd);
+
+	   ///members
+	   float lambdaDistance;
+	   float targetDistance;
+	   float maxDistance;
+	   int maxNumberOfJunctions;
+	   float activationEnergy;
+	   int neighborOrder;
+	   bool anchor;
+	   std::vector<float> anchorPoint;
+	   int initMCS;
+
+	   int anchorId;
+
    };
 
 };
