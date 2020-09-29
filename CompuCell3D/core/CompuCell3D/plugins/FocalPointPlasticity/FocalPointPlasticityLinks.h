@@ -137,9 +137,13 @@ namespace CompuCell3D {
 
 	};
 
+	class FPPLinkInventory;
+
 	class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityLink : public FocalPointPlasticityLinkBase {
 
 		FocalPointPlasticityLinkType type = FocalPointPlasticityLinkType::REGULAR;
+
+		friend FPPLinkInventory;
 
 	public:
 		FocalPointPlasticityLink() {};
@@ -164,9 +168,13 @@ namespace CompuCell3D {
 
 	};
 
+	class FPPInternalLinkInventory;
+
 	class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityInternalLink : public FocalPointPlasticityLinkBase {
 
 		FocalPointPlasticityLinkType type = FocalPointPlasticityLinkType::INTERNAL;
+
+		friend FPPInternalLinkInventory;
 
 	public:
 		FocalPointPlasticityInternalLink() {};
@@ -191,9 +199,13 @@ namespace CompuCell3D {
 
 	};
 
+	class FPPAnchorInventory;
+
 	class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityAnchor : public FocalPointPlasticityLinkBase {
 
 		FocalPointPlasticityLinkType type = FocalPointPlasticityLinkType::ANCHOR;
+
+		friend FPPAnchorInventory;
 
 	public:
 		FocalPointPlasticityAnchor() {}
