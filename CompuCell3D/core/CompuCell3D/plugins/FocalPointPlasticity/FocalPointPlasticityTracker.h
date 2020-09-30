@@ -9,6 +9,7 @@
 
 #include "FocalPointPlasticityDLLSpecifier.h"
 #include <vector>
+#include <CompuCell3D/Potts3D/Cell.h>
 
 namespace CompuCell3D {
 
@@ -45,7 +46,9 @@ namespace CompuCell3D {
 		 // type cast from FocalPointPlasticityLinkTrackerData
 		 FocalPointPlasticityTrackerData(const FocalPointPlasticityLinkTrackerData& fppltd);
 
-		 FocalPointPlasticityTrackerData& operator=(const FocalPointPlasticityLinkTrackerData& fppltd);
+		 FocalPointPlasticityTrackerData& operator=(const FocalPointPlasticityLinkTrackerData& fppltd) {
+			 return FocalPointPlasticityTrackerData(fppltd);
+		 }
 
          ///have to define < operator if using a class in the set and no < operator is defined for this class
          bool operator<(const FocalPointPlasticityTrackerData & _rhs) const{
@@ -123,9 +126,22 @@ namespace CompuCell3D {
 	   }
 
 	   // type cast from FocalPointPlasticityTrackerData
-	   FocalPointPlasticityLinkTrackerData(const FocalPointPlasticityTrackerData& fpptd);
+	   FocalPointPlasticityLinkTrackerData(const FocalPointPlasticityTrackerData& fpptd) {
+		   lambdaDistance = fpptd.lambdaDistance;
+		   targetDistance = fpptd.targetDistance;
+		   maxDistance = fpptd.maxDistance;
+		   activationEnergy = fpptd.activationEnergy;
+		   maxNumberOfJunctions = fpptd.maxNumberOfJunctions;
+		   neighborOrder = fpptd.neighborOrder;
+		   anchor = fpptd.anchor;
+		   anchorId = fpptd.anchorId;
+		   anchorPoint = fpptd.anchorPoint;
+		   initMCS = fpptd.initMCS;
+	   }
 
-	   FocalPointPlasticityLinkTrackerData& operator=(const FocalPointPlasticityTrackerData& fpptd);
+	   FocalPointPlasticityLinkTrackerData& operator=(const FocalPointPlasticityTrackerData& fpptd) {
+		   return FocalPointPlasticityLinkTrackerData(fpptd);
+	   }
 
 	   ///members
 	   float lambdaDistance;

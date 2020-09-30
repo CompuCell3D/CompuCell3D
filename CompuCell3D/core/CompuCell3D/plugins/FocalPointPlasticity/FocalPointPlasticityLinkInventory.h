@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "FocalPointPlasticityLinks.h"
+#include "FocalPointPlasticityDLLSpecifier.h"
 
 namespace CompuCell3D {
 
@@ -34,6 +35,7 @@ namespace CompuCell3D {
 	Written by T.J. Sego, Ph.D.
 	*/
 
+	class FocalPointPlasticityLinkBase;
 	class FocalPointPlasticityLink;
 	class FocalPointPlasticityInternalLink;
 	class FocalPointPlasticityAnchor;
@@ -42,10 +44,10 @@ namespace CompuCell3D {
 	class FPPLinkListBase : public std::vector<T*> {
 	public:
 		typedef typename std::vector<T*>::iterator FPPLinkListIterator_t;
-		virtual ~FPPLinkListBase();
+		virtual ~FPPLinkListBase() {}
 	};
 
-	class FPPLinkID {
+	class FOCALPOINTPLASTICITY_EXPORT FPPLinkID {
 	public:
 		long id0;
 		long id1;
@@ -61,41 +63,37 @@ namespace CompuCell3D {
 				id0 = _id1;
 			}
 		}
-		virtual ~FPPLinkID();
+		virtual ~FPPLinkID() {}
 		bool operator < (const FPPLinkID & _rhs) const { return id0 < _rhs.id0 || (id0 == _rhs.id0 && id1 < _rhs.id1); }
 		bool operator == (const FPPLinkID & _rhs) const { return id0 == _rhs.id0 && id1 == _rhs.id1; }
 		bool operator != (const FPPLinkID & _rhs) const { return !(operator==(_rhs)); }
 	};
 
 	template <class LinkType>
-	class FPPLinkInventoryBase {
+	class FOCALPOINTPLASTICITY_EXPORT FPPLinkInventoryBase {
+
 	public:
 
 		typedef FPPLinkListBase<LinkType> FPPLinkList;
 
-		typedef std::map<FPPLinkID, LinkType*> linkInventory_t;
+		typedef std::map<const FPPLinkID, LinkType*> linkInventory_t;
 		typedef typename linkInventory_t::iterator linkInventoryItr_t;
-		typedef std::pair<FPPLinkID, LinkType*> linkInventoryPair_t;
+		typedef std::pair<const FPPLinkID, LinkType*> linkInventoryPair_t;
 
-		typedef std::map<CellG*, FPPLinkInventoryBase<LinkType> > cellLinkInventory_t;
+		typedef std::map<const CellG*, FPPLinkInventoryBase<LinkType> > cellLinkInventory_t;
 		typedef typename cellLinkInventory_t::iterator cellLinkInventoryItr_t;
-		typedef std::pair<CellG*, FPPLinkInventoryBase<LinkType> > cellLinkInventoryPair_t;
+		typedef std::pair<const CellG*, FPPLinkInventoryBase<LinkType> > cellLinkInventoryPair_t;
 
 	protected:
 
 		linkInventory_t linkInventory;
 
-		LinkType* getLinkById(FPPLinkID _id) { return linkInventory[_id]; }
-		FPPLinkID getLinkId(LinkType* _link) const { return FPPLinkID(getObjId0(_link), getObjId1(_link)); }
-
-		// Get the first object attached to a link
-		virtual CellG* getObj0(LinkType* _link) const;
-		// Get the second object attached to a link
-		virtual CellG* getObj1(LinkType* _link) const;
-		// Get the ID of the first object attached to a link
-		virtual long getObjId0(LinkType* _link) const;
-		// Get the ID of the second object attached to a link
-		virtual long getObjId1(LinkType* _link) const;
+		LinkType* getLinkById(const FPPLinkID _id) {
+			linkInventoryItr_t itr = linkInventory.find(_id);
+			if (itr != linkInventory.end()) return itr->second;
+			return (LinkType*)(0);
+		}
+		const FPPLinkID getLinkId(LinkType* _link) { return FPPLinkID(_link->getId0(), _link->getId1()); }
 
 		// Add a link without any additional internal work
 		void addLinkNoChain(LinkType* _link) {
@@ -103,14 +101,17 @@ namespace CompuCell3D {
 		}
 		// Remove a link without any additional internal work
 		void removeLinkNoChain(LinkType* _link) {
-			FPPLinkID linkId = getLinkId(_link);
+			const FPPLinkID linkId = getLinkId(_link);
 			linkInventoryItr_t itr = linkInventory.find(linkId);
 			if (itr != linkInventory.end()) linkInventory.erase(linkId);
 		}
 
 		cellLinkInventory_t cellLinkInventory;
 
-		FPPLinkInventoryBase<LinkType> getCellLinkInventory(CellG* _cell) { return cellLinkInventory[_cell]; }
+		FPPLinkInventoryBase<LinkType>* getCellLinkInventory(const CellG* _cell) {
+			return getCellLinkInventory(const_cast<CellG*>(_cell));
+		}
+		FPPLinkInventoryBase<LinkType>* getCellLinkInventory(CellG* _cell) { return &cellLinkInventory[_cell]; }
 
 	public:
 		FPPLinkInventoryBase() {
@@ -118,7 +119,7 @@ namespace CompuCell3D {
 			linkInventory = linkInventory_t();
 
 		};
-		virtual ~FPPLinkInventoryBase() {};
+		virtual ~FPPLinkInventoryBase() {}
 
 		int getLinkInventorySize() { return linkInventory.size(); }
 		linkInventoryItr_t linkInventoryBegin() { return linkInventory.begin(); }
@@ -129,25 +130,25 @@ namespace CompuCell3D {
 		// Add a link to the link inventory and update internals
 		void addToInventory(LinkType* _link) {
 			addLinkNoChain(_link);
-			getCellLinkInventory(getObj0(_link)).addLinkNoChain(_link);
-			getCellLinkInventory(getObj1(_link)).addLinkNoChain(_link);
+			getCellLinkInventory(_link->getObj0())->addLinkNoChain(_link);
+			getCellLinkInventory(_link->getObj1())->addLinkNoChain(_link);
 		}
 		// Remove a link to the link inventory and update internals
 		void removeFromInventory(LinkType* _link) {
 			removeLinkNoChain(_link);
-			getCellLinkInventory(getObj0(_link)).removeLinkNoChain(_link);
-			getCellLinkInventory(getObj1(_link)).removeLinkNoChain(_link);
+			getCellLinkInventory(_link->getObj0())->removeLinkNoChain(_link);
+			getCellLinkInventory(_link->getObj1())->removeLinkNoChain(_link);
 		}
 
 		// Get link inventory list
-		FPPLinkList getLinkList() { 
+		const FPPLinkList getLinkList() {
 			FPPLinkList fppLinkList;
 			for (linkInventoryItr_t itr = linkInventory.begin(); itr != linkInventory.end(); ++itr)
 				fppLinkList.push_back(itr->second);
 			return fppLinkList;
 		}
 		// Get link inventory list by cell
-		FPPLinkList getCellLinkList(CellG* _cell) { return getCellLinkInventory(_cell).getLinkList(); }
+		const FPPLinkList getCellLinkList(CellG* _cell) { return getCellLinkInventory(_cell)->getLinkList(); }
 		// Remove all links attached to a cell
 		void removeCellLinks(CellG* _cell) {
 			FPPLinkList cellLinkList = getCellLinkList(_cell);
@@ -160,73 +161,42 @@ namespace CompuCell3D {
 
 	};
 
-	class FPPLinkInventory : public FPPLinkInventoryBase<FocalPointPlasticityLink> {
-
-	protected:
-
-		CellG* getObj0(FocalPointPlasticityLink* _link) const { return _link->initiator; }
-		CellG* getObj1(FocalPointPlasticityLink* _link) const { return _link->initiated; }
-		long getObjId0(FocalPointPlasticityLink* _link) const { return _link->getId0(); }
-		long getObjId1(FocalPointPlasticityLink* _link) const { return _link->getId1(); }
+	class FOCALPOINTPLASTICITY_EXPORT FPPLinkInventory : public FPPLinkInventoryBase<FocalPointPlasticityLink> {
 
 	public:
 
 		FPPLinkInventory() {}
 		virtual ~FPPLinkInventory() {}
 
-		FocalPointPlasticityLink* getLinkByCells(CellG* _cell0, CellG* _cell1) {
-			FPPLinkList linkList = getCellLinkList(_cell0);
-			FPPLinkID linkId(_cell0->id, _cell1->id);
-			for (FPPLinkList::iterator itr = linkList.begin(); itr != linkList.end(); ++itr)
-				if (getLinkId((*itr)) == linkId) return (*itr);
-
-			return (FocalPointPlasticityLink*)(0);
-		}
+		FocalPointPlasticityLink* getLinkByCells(CellG* _cell0, CellG* _cell1) { return getLinkById(FPPLinkID(_cell0->id, _cell1->id)); }
 
 	};
 
-	class FPPInternalLinkInventory : public FPPLinkInventoryBase<FocalPointPlasticityInternalLink> {
-
-	protected:
-
-		CellG* getObj0(FocalPointPlasticityInternalLink* _link) const { return _link->initiator; }
-		CellG* getObj1(FocalPointPlasticityInternalLink* _link) const { return _link->initiated; }
-		long getObjId0(FocalPointPlasticityInternalLink* _link) const { return _link->getId0(); }
-		long getObjId1(FocalPointPlasticityInternalLink* _link) const { return _link->getId1(); }
+	class FOCALPOINTPLASTICITY_EXPORT FPPInternalLinkInventory : public FPPLinkInventoryBase<FocalPointPlasticityInternalLink> {
 
 	public:
 
 		FPPInternalLinkInventory() {}
 		virtual ~FPPInternalLinkInventory() {}
 
-		FocalPointPlasticityInternalLink* getLinkByCells(CellG* _cell0, CellG* _cell1) {
-			FPPLinkList linkList = getCellLinkList(_cell0);
-			FPPLinkID linkId(_cell0->id, _cell1->id);
-			for (FPPLinkList::iterator itr = linkList.begin(); itr != linkList.end(); ++itr)
-				if (getLinkId((*itr)) == linkId) return (*itr);
-
-			return (FocalPointPlasticityInternalLink*)(0);
-		}
+		FocalPointPlasticityInternalLink* getLinkByCells(CellG* _cell0, CellG* _cell1) { return getLinkById(FPPLinkID(_cell0->id, _cell1->id)); }
 
 	};
-
-	class FPPAnchorInventory : public FPPLinkInventoryBase<FocalPointPlasticityAnchor> {
-
-		CellG *mediumPointer;
-
-	protected:
-
-		CellG* getObj0(FocalPointPlasticityAnchor* _link) const { return _link->initiator; }
-		CellG* getObj1(FocalPointPlasticityAnchor* _link) const { return mediumPointer; }
-		long getObjId0(FocalPointPlasticityAnchor* _link) const { return _link->getId0(); }
-		long getObjId1(FocalPointPlasticityAnchor* _link) const { return _link->getId1(); }
+	
+	class FOCALPOINTPLASTICITY_EXPORT FPPAnchorInventory : public FPPLinkInventoryBase<FocalPointPlasticityAnchor> {
 
 	public:
 
-		FPPAnchorInventory() :
-			mediumPointer((CellG*)(0))
-		{}
+		FPPAnchorInventory() {}
 		virtual ~FPPAnchorInventory() {}
+
+		FocalPointPlasticityAnchor* getAnchor(CellG* _cell, long _anchorId) { return getLinkById(FPPLinkID(_cell->id, _anchorId)); }
+
+		int getNextAnchorId(CellG* _cell) {
+			FPPLinkList ll = getCellLinkList(_cell);
+			if (ll.size() == 0) return int(0);
+			else return (*ll.end())->getAnchorId() + 1;
+		}
 
 	};
 

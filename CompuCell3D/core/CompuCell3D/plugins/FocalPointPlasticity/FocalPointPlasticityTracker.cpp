@@ -36,25 +36,3 @@ FocalPointPlasticityTrackerData::FocalPointPlasticityTrackerData(const FocalPoin
 	anchorPoint = fppltd.anchorPoint;
 	initMCS = fppltd.initMCS;
 }
-
-FocalPointPlasticityTrackerData& FocalPointPlasticityTrackerData::operator=(const FocalPointPlasticityLinkTrackerData& fppltd) {
-	return FocalPointPlasticityTrackerData(fppltd);
-}
-
-FocalPointPlasticityLinkTrackerData::FocalPointPlasticityLinkTrackerData(const FocalPointPlasticityTrackerData& fpptd)
-{
-	lambdaDistance = fpptd.lambdaDistance;
-	targetDistance = fpptd.targetDistance;
-	maxDistance = fpptd.maxDistance;
-	activationEnergy = fpptd.activationEnergy;
-	maxNumberOfJunctions = fpptd.maxNumberOfJunctions;
-	neighborOrder = fpptd.neighborOrder;
-	anchor = fpptd.anchor;
-	anchorId = fpptd.anchorId;
-	anchorPoint = fpptd.anchorPoint;
-	initMCS = fpptd.initMCS;
-}
-
-FocalPointPlasticityLinkTrackerData& FocalPointPlasticityLinkTrackerData::operator=(const FocalPointPlasticityTrackerData& fpptd) {
-	return FocalPointPlasticityLinkTrackerData(fpptd);
-}

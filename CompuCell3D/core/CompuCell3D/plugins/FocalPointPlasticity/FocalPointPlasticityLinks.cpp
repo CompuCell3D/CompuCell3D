@@ -50,17 +50,17 @@ double FocalPointPlasticityLinkBase::constitutiveLaw(float _lambda, float _lengt
 	return ev.eval();
 }
 
-std::vector<FocalPointPlasticityTrackerData> FocalPointPlasticityLinkBase::getFPPTrackerData() {
-	FocalPointPlasticityTrackerData fpptd1 = FocalPointPlasticityTrackerData(fppltd);
-	FocalPointPlasticityTrackerData fpptd2 = FocalPointPlasticityTrackerData(fppltd);
-	fpptd1.neighborAddress = initiated;
-	fpptd1.isInitiator = true;
-	fpptd2.neighborAddress = initiator;
-	fpptd2.isInitiator = false;
-	std::vector<FocalPointPlasticityTrackerData> out = std::vector<FocalPointPlasticityTrackerData>(2);
-	out[0] = fpptd1;
-	out[1] = fpptd2;
-	return out;
+FocalPointPlasticityTrackerData FocalPointPlasticityLinkBase::getFPPTrackerData(CellG* _cell) {
+	FocalPointPlasticityTrackerData fpptd = FocalPointPlasticityTrackerData(fppltd);
+	if (_cell == initiator || !initiator) {
+		fpptd.neighborAddress = initiated;
+		fpptd.isInitiator = true;
+	}
+	else if (_cell == initiated || !initiated) {
+		fpptd.neighborAddress = initiator;
+		fpptd.isInitiator = false;
+	}
+	return fpptd;
 }
 
 float FocalPointPlasticityLinkBase::getDistance() {
