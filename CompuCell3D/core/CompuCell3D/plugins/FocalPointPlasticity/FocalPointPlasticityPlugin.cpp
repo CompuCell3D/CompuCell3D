@@ -432,17 +432,24 @@ void FocalPointPlasticityPlugin::insertAnchorFPPData(CellG * _cell,FocalPointPla
 
 
 std::vector<FocalPointPlasticityTrackerData> FocalPointPlasticityPlugin::getFPPDataVec(CellG * _cell){
-
-	return std::vector<FocalPointPlasticityTrackerData>(focalPointPlasticityTrackerAccessor.get(_cell->extraAttribPtr)->focalPointPlasticityNeighbors.begin(),focalPointPlasticityTrackerAccessor.get(_cell->extraAttribPtr)->focalPointPlasticityNeighbors.end());
-
+	std::vector<FocalPointPlasticityTrackerData> dataVec;
+	for each(FocalPointPlasticityLink* link in linkInv.getCellLinkList(_cell))
+		dataVec.push_back(link->getFPPTrackerData(_cell));
+	return dataVec;
 }
 
 std::vector<FocalPointPlasticityTrackerData> FocalPointPlasticityPlugin::getInternalFPPDataVec(CellG * _cell){
-	return std::vector<FocalPointPlasticityTrackerData>(focalPointPlasticityTrackerAccessor.get(_cell->extraAttribPtr)->internalFocalPointPlasticityNeighbors.begin(),focalPointPlasticityTrackerAccessor.get(_cell->extraAttribPtr)->internalFocalPointPlasticityNeighbors.end());
+	std::vector<FocalPointPlasticityTrackerData> dataVec;
+	for each(FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(_cell))
+		dataVec.push_back(link->getFPPTrackerData(_cell));
+	return dataVec;
 }
 
 std::vector<FocalPointPlasticityTrackerData> FocalPointPlasticityPlugin::getAnchorFPPDataVec(CellG * _cell){
-	return std::vector<FocalPointPlasticityTrackerData>(focalPointPlasticityTrackerAccessor.get(_cell->extraAttribPtr)->anchors.begin(),focalPointPlasticityTrackerAccessor.get(_cell->extraAttribPtr)->anchors.end());
+	std::vector<FocalPointPlasticityTrackerData> dataVec;
+	for each (FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(_cell))
+		dataVec.push_back(link->getFPPTrackerData(_cell));
+	return dataVec;
 }
 
 double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt,const CellG *newCell) {
@@ -632,7 +639,6 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt,const CellG *n
 	Neighbor neighbor;
 	Neighbor neighborOfNeighbor;
 	CellG * nCell;
-	CellG * nnCell;
 
 	newJunctionInitiatedFlag=false;
 	newJunctionInitiatedFlagWithinCluster=false;
@@ -712,8 +718,8 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt,const CellG *n
 	}
 
 	//will loop over neighbors of the oldCell and calculate Plasticity energy
-	set<FocalPointPlasticityTrackerData> * focalPointPlasticityNeighborsTmpPtr;
-	set<FocalPointPlasticityTrackerData>::iterator sitr;
+
+	std::vector<float> anchorPoint;
 
 	float deltaL;
 	float lBefore;
@@ -723,13 +729,9 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt,const CellG *n
 	//cerr<<"energy before old cell section="<<energy<<endl;
 	if(oldCell){
 		//cerr<<"energy for old cell section"<<endl;
-		oldVol=oldCell->volume;
-		focalPointPlasticityNeighborsTmpPtr=&focalPointPlasticityTrackerAccessor.get(oldCell->extraAttribPtr)->focalPointPlasticityNeighbors ;
-		//cerr<<"focalPointPlasticityNeighborsTmpPtr->size()="<<focalPointPlasticityNeighborsTmpPtr->size()<<endl;
-		for (sitr=focalPointPlasticityNeighborsTmpPtr->begin() ; sitr != focalPointPlasticityNeighborsTmpPtr->end() ;++sitr){
 
-			nCell=sitr->neighborAddress;
-			nCellVol=nCell->volume;
+		for each (FocalPointPlasticityLink* link in linkInv.getCellLinkList(const_cast<CellG*>(oldCell))) {
+			nCell = link->getOtherCell(oldCell);
 
 			if(nCell!=newCell){
 				lBefore=distInvariantCM(centMassOldBefore.X(),centMassOldBefore.Y(),centMassOldBefore.Z(),nCell->xCM/nCellVol,nCell->yCM/nCellVol,nCell->zCM/nCellVol,fieldDim,boundaryStrategy);
@@ -743,14 +745,12 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt,const CellG *n
 					-lBefore;
 			}
 
-			energy+=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),oldCell,false);
+			energy+=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&link->getFPPTrackerData(const_cast<CellG*>(oldCell)),oldCell,false);
 		}
 
 		//go over compartments
-		focalPointPlasticityNeighborsTmpPtr=&focalPointPlasticityTrackerAccessor.get(oldCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors ;
-
-		for (sitr=focalPointPlasticityNeighborsTmpPtr->begin() ; sitr != focalPointPlasticityNeighborsTmpPtr->end() ;++sitr){
-			nCell=sitr->neighborAddress;
+		for each (FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(const_cast<CellG*>(oldCell))) {
+			nCell = link->getOtherCell(oldCell);
 			nCellVol=nCell->volume;
 
 			if(nCell!=newCell){
@@ -765,19 +765,19 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt,const CellG *n
 					-lBefore;
 			}
 			//cerr<<"deltaL="<<deltaL<<" lBefore="<<lBefore<<" lambda="<<sitr->lambdaDistance<<endl;
-			double clusterOldCellEnergy=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),oldCell,true);
+			double clusterOldCellEnergy=(this->*diffEnergyFcnPtr)(deltaL,lBefore, &link->getFPPTrackerData(const_cast<CellG*>(oldCell)),oldCell,true);
 			//cerr<<"clusterOldCellEnergy="<<clusterOldCellEnergy<<endl;
 			energy+=clusterOldCellEnergy;
 		}
 
 		//go over anchors
-		focalPointPlasticityNeighborsTmpPtr=&focalPointPlasticityTrackerAccessor.get(oldCell->extraAttribPtr)->anchors;
-		for (sitr=focalPointPlasticityNeighborsTmpPtr->begin() ; sitr != focalPointPlasticityNeighborsTmpPtr->end() ;++sitr){
-			lBefore=distInvariantCM(centMassOldBefore.X(),centMassOldBefore.Y(),centMassOldBefore.Z(),sitr->anchorPoint[0],sitr->anchorPoint[1],sitr->anchorPoint[2],fieldDim,boundaryStrategy);
+		for each (FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(const_cast<CellG*>(oldCell))) {
+			anchorPoint = link->getAnchorPoint();
+			lBefore=distInvariantCM(centMassOldBefore.X(),centMassOldBefore.Y(),centMassOldBefore.Z(),anchorPoint[0],anchorPoint[1],anchorPoint[2],fieldDim,boundaryStrategy);
 			deltaL=
-				distInvariantCM(centMassOldAfter.X(),centMassOldAfter.Y(),centMassOldAfter.Z(),sitr->anchorPoint[0],sitr->anchorPoint[1],sitr->anchorPoint[2],fieldDim,boundaryStrategy)
+				distInvariantCM(centMassOldAfter.X(),centMassOldAfter.Y(),centMassOldAfter.Z(),anchorPoint[0],anchorPoint[1],anchorPoint[2],fieldDim,boundaryStrategy)
 				-lBefore;
-			energy+=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),oldCell,false);
+			energy+=(this->*diffEnergyFcnPtr)(deltaL,lBefore, &link->getFPPTrackerData(const_cast<CellG*>(oldCell)),oldCell,false);
 		}
 
 	}
@@ -786,46 +786,30 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt,const CellG *n
 	if(newCell){
 		//cerr<<"energy for new cell section"<<endl;
 		//cerr<<"energy before new section starts="<<energy<<endl;
-		newVol=newCell->volume;
-		focalPointPlasticityNeighborsTmpPtr=&focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->focalPointPlasticityNeighbors ;
-		for (sitr=focalPointPlasticityNeighborsTmpPtr->begin() ; sitr != focalPointPlasticityNeighborsTmpPtr->end() ;++sitr){
-			if (sitr->anchor){
-				lBefore=distInvariantCM(centMassNewBefore.X(),centMassNewBefore.Y(),centMassNewBefore.Z(),sitr->anchorPoint[0],sitr->anchorPoint[1],sitr->anchorPoint[2],fieldDim,boundaryStrategy);
-				deltaL=
-					distInvariantCM(centMassNewAfter.X(),centMassNewAfter.Y(),centMassNewAfter.Z(),sitr->anchorPoint[0],sitr->anchorPoint[1],sitr->anchorPoint[2],fieldDim,boundaryStrategy)
-					-lBefore;
+		
+		for each (FocalPointPlasticityLink* link in linkInv.getCellLinkList(const_cast<CellG*>(newCell))) {
+			nCell = link->getOtherCell(newCell);
+			nCellVol = nCell->volume;
 
-				double newDeltaEnergy=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),newCell,false);
+			if (nCell != oldCell) {
+				lBefore = distInvariantCM(centMassNewBefore.X(), centMassNewBefore.Y(), centMassNewBefore.Z(), nCell->xCM / nCellVol, nCell->yCM / nCellVol, nCell->zCM / nCellVol, fieldDim, boundaryStrategy);
+				deltaL =
+					distInvariantCM(centMassNewAfter.X(), centMassNewAfter.Y(), centMassNewAfter.Z(), nCell->xCM / nCellVol, nCell->yCM / nCellVol, nCell->zCM / nCellVol, fieldDim, boundaryStrategy)
+					- lBefore;
+
+				double newDeltaEnergy = (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(const_cast<CellG*>(newCell)), newCell, false);
 				//cerr<<"newDeltaEnergy="<<newDeltaEnergy<<endl;
-				energy+=newDeltaEnergy;
+				energy += newDeltaEnergy;
 
-			}else{
-				nCell=sitr->neighborAddress;		 
-				nCellVol=nCell->volume;
-
-				if(nCell!=oldCell){
-					lBefore=distInvariantCM(centMassNewBefore.X(),centMassNewBefore.Y(),centMassNewBefore.Z(),nCell->xCM/nCellVol,nCell->yCM/nCellVol,nCell->zCM/nCellVol,fieldDim,boundaryStrategy);
-					deltaL=
-						distInvariantCM(centMassNewAfter.X(),centMassNewAfter.Y(),centMassNewAfter.Z(),nCell->xCM/nCellVol,nCell->yCM/nCellVol,nCell->zCM/nCellVol,fieldDim,boundaryStrategy)
-						-lBefore;
-
-					double newDeltaEnergy=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),newCell,false);
-					//cerr<<"newDeltaEnergy="<<newDeltaEnergy<<endl;
-					energy+=newDeltaEnergy;
-
-				}else{// this was already taken into account in the oldCell secion - we need to avoid double counting
-
-			 }
-		 }
-
-			//////double newDeltaEnergy=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),newCell,false);
-			////////cerr<<"newDeltaEnergy="<<newDeltaEnergy<<endl;
-			//////      energy+=newDeltaEnergy;
+			}
+			else {
+				// this was already taken into account in the oldCell secion - we need to avoid double counting
+			}
 		}
+
 		//go ever compartments
-		focalPointPlasticityNeighborsTmpPtr=&focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors ;
-		for (sitr=focalPointPlasticityNeighborsTmpPtr->begin() ; sitr != focalPointPlasticityNeighborsTmpPtr->end() ;++sitr){
-			nCell=sitr->neighborAddress;		 
+		for each (FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(const_cast<CellG*>(newCell))) {
+			nCell = link->getOtherCell(newCell);
 			nCellVol=nCell->volume;
 
 			if(nCell!=oldCell){
@@ -833,22 +817,23 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt,const CellG *n
 				deltaL=
 					distInvariantCM(centMassNewAfter.X(),centMassNewAfter.Y(),centMassNewAfter.Z(),nCell->xCM/nCellVol,nCell->yCM/nCellVol,nCell->zCM/nCellVol,fieldDim,boundaryStrategy)
 					-lBefore;
-				energy+=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),newCell,true);
-			}else{// this was already taken into account in the oldCell secion - we need to avoid double counting
-
+				energy+=(this->*diffEnergyFcnPtr)(deltaL,lBefore, &link->getFPPTrackerData(const_cast<CellG*>(newCell)),newCell,true);
+			}
+			else{
+				// this was already taken into account in the oldCell secion - we need to avoid double counting
 			} 
 			//////energy+=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),newCell,true);
 		}
 
 		//go over anchors
-		focalPointPlasticityNeighborsTmpPtr=&focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->anchors;
-		for (sitr=focalPointPlasticityNeighborsTmpPtr->begin() ; sitr != focalPointPlasticityNeighborsTmpPtr->end() ;++sitr){
-			lBefore=distInvariantCM(centMassNewBefore.X(),centMassNewBefore.Y(),centMassNewBefore.Z(),sitr->anchorPoint[0],sitr->anchorPoint[1],sitr->anchorPoint[2],fieldDim,boundaryStrategy);
+		for each (FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(const_cast<CellG*>(newCell))) {
+			anchorPoint = link->getAnchorPoint();
+			lBefore=distInvariantCM(centMassNewBefore.X(),centMassNewBefore.Y(),centMassNewBefore.Z(),anchorPoint[0],anchorPoint[1],anchorPoint[2],fieldDim,boundaryStrategy);
 			deltaL=
-				distInvariantCM(centMassNewAfter.X(),centMassNewAfter.Y(),centMassNewAfter.Z(),sitr->anchorPoint[0],sitr->anchorPoint[1],sitr->anchorPoint[2],fieldDim,boundaryStrategy)
+				distInvariantCM(centMassNewAfter.X(),centMassNewAfter.Y(),centMassNewAfter.Z(),anchorPoint[0],anchorPoint[1],anchorPoint[2],fieldDim,boundaryStrategy)
 				-lBefore;
 
-			energy+=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),newCell,false);
+			energy+=(this->*diffEnergyFcnPtr)(deltaL,lBefore, &link->getFPPTrackerData(const_cast<CellG*>(newCell)),newCell,false);
 		}
 
 	}
@@ -865,6 +850,9 @@ void FocalPointPlasticityPlugin::deleteFocalPointPlasticityLink(CellG * _cell1,C
 	std::set<FocalPointPlasticityTrackerData> & plastNeighbors2=focalPointPlasticityTrackerAccessor.get(_cell2->extraAttribPtr)->focalPointPlasticityNeighbors;
 	plastNeighbors2.erase(FocalPointPlasticityTrackerData(_cell1));
 
+	FocalPointPlasticityLink* link = linkInv.getLinkByCells(_cell1, _cell2);
+	if (link) linkInv.removeFromInventory(link);
+
 }
 
 void FocalPointPlasticityPlugin::deleteInternalFocalPointPlasticityLink(CellG * _cell1,CellG * _cell2){
@@ -874,7 +862,11 @@ void FocalPointPlasticityPlugin::deleteInternalFocalPointPlasticityLink(CellG * 
 	std::set<FocalPointPlasticityTrackerData> & internalPlastNeighbors2=focalPointPlasticityTrackerAccessor.get(_cell2->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
 	internalPlastNeighbors2.erase(FocalPointPlasticityTrackerData(_cell1));
 
+	FocalPointPlasticityInternalLink* link = linkInvInternal.getLinkByCells(_cell1, _cell2);
+	if (link) linkInvInternal.removeFromInventory(link);
+
 }
+
 void FocalPointPlasticityPlugin::createFocalPointPlasticityLink(CellG * _cell1,CellG * _cell2,double _lambda, double _targetDistance,double _maxDistance){
 //	FocalPointPlasticityTrackerData fpptd1=plastParamsArray[_cell1->type][_cell2->type];
 
@@ -899,6 +891,9 @@ void FocalPointPlasticityPlugin::createFocalPointPlasticityLink(CellG * _cell1,C
 	fpptd2.initMCS = sim->getStep();
 
 	focalPointPlasticityTrackerAccessor.get(_cell2->extraAttribPtr)->focalPointPlasticityNeighbors.insert(fpptd2);
+
+	FocalPointPlasticityLink link = FocalPointPlasticityLink(_cell1, _cell2, potts, fpptd1);
+	linkInv.addToInventory(&link);
 
 }
 
@@ -926,6 +921,9 @@ void FocalPointPlasticityPlugin::createInternalFocalPointPlasticityLink(CellG * 
 
 	focalPointPlasticityTrackerAccessor.get(_cell2->extraAttribPtr)->internalFocalPointPlasticityNeighbors.insert(fpptd2);
 
+	FocalPointPlasticityInternalLink link = FocalPointPlasticityInternalLink(_cell1, _cell2, potts, fpptd1);
+	linkInvInternal.addToInventory(&link);
+
 }
 
 
@@ -940,19 +938,16 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 
 		//cerr<<"\t\t\t oldCell.id="<<oldCell->id<<" is to be removed"<<endl;
 
-		std::set<FocalPointPlasticityTrackerData>::iterator sitr;
-		std::set<FocalPointPlasticityTrackerData> & plastNeighbors=focalPointPlasticityTrackerAccessor.get(oldCell->extraAttribPtr)->focalPointPlasticityNeighbors;
-		for(sitr=plastNeighbors.begin() ; sitr != plastNeighbors.end() ; ++sitr){
-			//cerr<<" REMOVING NEIGHBOR "<<oldCell->id<<" from list of "<<sitr->neighborAddress->id<<endl;
-			deleteFocalPointPlasticityLink(oldCell, sitr->neighborAddress);
+		for each (FocalPointPlasticityLink* link in linkInv.getCellLinkList(oldCell))
+			deleteFocalPointPlasticityLink(oldCell, link->getOtherCell(oldCell));
 
-		}
 		//go over compartments
-		std::set<FocalPointPlasticityTrackerData> & internalPlastNeighbors=focalPointPlasticityTrackerAccessor.get(oldCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
-		for(sitr=internalPlastNeighbors.begin() ; sitr != internalPlastNeighbors.end() ; ++sitr){
-			//cerr<<" REMOVING NEIGHBOR "<<oldCell->id<<" from list of "<<sitr->neighborAddress->id<<endl;
-			deleteInternalFocalPointPlasticityLink(oldCell, sitr->neighborAddress);
-		}
+		for each (FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(oldCell))
+			deleteInternalFocalPointPlasticityLink(oldCell, link->getOtherCell(oldCell));
+
+		//go over anchors
+		for each (FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(oldCell))
+			deleteAnchor(oldCell, link->getAnchorId());
 	}
 
 	//if(oldCell && oldCell->id==1082){
@@ -1047,81 +1042,84 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 	newJunctionInitiatedFlag = false;
 	newJunctionInitiatedFlagWithinCluster = false;
 
+	CellG* nCell;
+
 	if(newCell){
 		double xCMNew=newCell->xCM/float(newCell->volume);
 		double yCMNew=newCell->yCM/float(newCell->volume);
 		double zCMNew=newCell->zCM/float(newCell->volume);
-		CellG * cell2BRemoved=0;
-		std::set<FocalPointPlasticityTrackerData>::iterator sitr;
-
-
-		std::set<FocalPointPlasticityTrackerData> & plastNeighbors=focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->focalPointPlasticityNeighbors;
-		std::set<FocalPointPlasticityTrackerData>::iterator sitrErasePos=plastNeighbors.end();
 
 		//list<CellG *> toBeRemovedNeighborsOfNewCell;
 
-		for(sitr=plastNeighbors.begin() ; sitr != plastNeighbors.end() ; ++sitr){
-			//we remove only one cell at a time even though we could do it for many cells 
-			if (sitr->anchor){
-				//we will first remove anchor links if they fit removal criteria
-				double distance=distInvariantCM(xCMNew,yCMNew,zCMNew,sitr->anchorPoint[0],sitr->anchorPoint[1],sitr->anchorPoint[2],fieldDim,boundaryStrategy);
+		//we remove only one cell at a time even though we could do it for many cells 
+		bool linkRemoved = false;
+		std::vector<float> anchorPoint;
+		//we will first remove anchor links if they fit removal criteria
+		for each(FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(newCell)) {
+			anchorPoint = link->getAnchorPoint();
+
+			double distance = distInvariantCM(xCMNew, yCMNew, zCMNew, anchorPoint[0], anchorPoint[1], anchorPoint[2], fieldDim, boundaryStrategy);
+			int maxDistanceLocal;
+			if (functionType == BYCELLTYPE || functionType == BYCELLID) {
+				maxDistanceLocal = link->getMaxDistance();
+			}
+			else if (functionType == GLOBAL) {
+				maxDistanceLocal = maxDistance;
+			}
+
+			if (distance>maxDistanceLocal) {
+
+				deleteAnchor(newCell, link->getAnchorId());
+				linkRemoved = true;
+				break;
+			}
+		}
+
+		if (!linkRemoved) {
+			for each(FocalPointPlasticityLink* link in linkInv.getCellLinkList(newCell)) {
+				nCell = link->getOtherCell(newCell);
+
+				double xCMNeighbor = nCell->xCM / float(nCell->volume);
+				double yCMNeighbor = nCell->yCM / float(nCell->volume);
+				double zCMNeighbor = nCell->zCM / float(nCell->volume);
+				double distance = distInvariantCM(xCMNew, yCMNew, zCMNew, xCMNeighbor, yCMNeighbor, zCMNeighbor, fieldDim, boundaryStrategy);
 				int maxDistanceLocal;
-				if (functionType==BYCELLTYPE || functionType==BYCELLID){
-					maxDistanceLocal=sitr->maxDistance;
-				}else if(functionType==GLOBAL){
-					maxDistanceLocal=maxDistance;
+				if (functionType == BYCELLTYPE || functionType == BYCELLID) {
+					maxDistanceLocal = link->getMaxDistance();
+				}
+				else if (functionType == GLOBAL) {
+					maxDistanceLocal = maxDistance;
 				}
 
-				if(distance>maxDistanceLocal){
-
-					deleteAnchor(newCell, sitr->anchorId);
-					break; 
-				}
-
-			}else{
-
-				double xCMNeighbor=sitr->neighborAddress->xCM/float(sitr->neighborAddress->volume);
-				double yCMNeighbor=sitr->neighborAddress->yCM/float(sitr->neighborAddress->volume);
-				double zCMNeighbor=sitr->neighborAddress->zCM/float(sitr->neighborAddress->volume);
-				double distance=distInvariantCM(xCMNew,yCMNew,zCMNew,xCMNeighbor,yCMNeighbor,zCMNeighbor,fieldDim,boundaryStrategy);
-				//double distance=dist(xCMNew,yCMNew,zCMNew,xCMNeighbor,yCMNeighbor,zCMNeighbor);
-				int maxDistanceLocal;
-				if (functionType==BYCELLTYPE || functionType==BYCELLID){
-					maxDistanceLocal=sitr->maxDistance;
-				}else if(functionType==GLOBAL){
-					maxDistanceLocal=maxDistance;
-				}
-
-				if(distance>maxDistanceLocal){
-					deleteFocalPointPlasticityLink(newCell, sitr->neighborAddress);
-					break; 
+				if (distance>maxDistanceLocal) {
+					deleteFocalPointPlasticityLink(newCell, nCell);
+					break;
 				}
 			}
 		}
+
 		//go over compartments
-		std::set<FocalPointPlasticityTrackerData> & internalPlastNeighbors=focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
-		sitrErasePos=internalPlastNeighbors.end();
 
-		//list<CellG *> toBeRemovedNeighborsOfNewCell;
-
-		for(sitr=internalPlastNeighbors.begin() ; sitr != internalPlastNeighbors.end() ; ++sitr){
+		for each(FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(newCell)) {
+			nCell = link->getOtherCell(newCell);
 			//we remove only one cell at a time even though we could do it for many cells 
-			double xCMNeighbor=sitr->neighborAddress->xCM/float(sitr->neighborAddress->volume);
-			double yCMNeighbor=sitr->neighborAddress->yCM/float(sitr->neighborAddress->volume);
-			double zCMNeighbor=sitr->neighborAddress->zCM/float(sitr->neighborAddress->volume);
-			double distance=distInvariantCM(xCMNew,yCMNew,zCMNew,xCMNeighbor,yCMNeighbor,zCMNeighbor,fieldDim,boundaryStrategy);
-			//double distance=dist(xCMNew,yCMNew,zCMNew,xCMNeighbor,yCMNeighbor,zCMNeighbor);
+			double xCMNeighbor = nCell->xCM / float(nCell->volume);
+			double yCMNeighbor = nCell->yCM / float(nCell->volume);
+			double zCMNeighbor = nCell->zCM / float(nCell->volume);
+			double distance = distInvariantCM(xCMNew, yCMNew, zCMNew, xCMNeighbor, yCMNeighbor, zCMNeighbor, fieldDim, boundaryStrategy);
 			int maxDistanceLocal;
-			if (functionType==BYCELLTYPE || functionType==BYCELLID){
-				maxDistanceLocal=sitr->maxDistance;
-			}else if(functionType==GLOBAL){
-				maxDistanceLocal=maxDistance;
+			if (functionType == BYCELLTYPE || functionType == BYCELLID) {
+				maxDistanceLocal = link->getMaxDistance();
+			}
+			else if (functionType == GLOBAL) {
+				maxDistanceLocal = maxDistance;
 			}
 
-			if(distance>maxDistanceLocal){
-				deleteInternalFocalPointPlasticityLink(newCell, sitr->neighborAddress);
-				break; 
+			if (distance>maxDistanceLocal) {
+				deleteInternalFocalPointPlasticityLink(newCell, nCell);
+				break;
 			}
+
 		}
 
 	}
@@ -1130,70 +1128,75 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		double xCMOld=oldCell->xCM/float(oldCell->volume);
 		double yCMOld=oldCell->yCM/float(oldCell->volume);
 		double zCMOld=oldCell->zCM/float(oldCell->volume);
-		CellG * cell2BRemoved=0;
-		std::set<FocalPointPlasticityTrackerData>::iterator sitr;
+		//we remove only one cell at a time even though we could do it for many cells 
+		bool linkRemoved = false;
+		std::vector<float> anchorPoint;
+		//we will first remove anchor links if they fit removal criteria
+		for each(FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(oldCell)) {
+			anchorPoint = link->getAnchorPoint();
 
-		std::set<FocalPointPlasticityTrackerData> & plastNeighbors=focalPointPlasticityTrackerAccessor.get(oldCell->extraAttribPtr)->focalPointPlasticityNeighbors;
+			double distance = distInvariantCM(xCMOld, yCMOld, zCMOld, anchorPoint[0], anchorPoint[1], anchorPoint[2], fieldDim, boundaryStrategy);
+			int maxDistanceLocal;
+			if (functionType == BYCELLTYPE || functionType == BYCELLID) {
+				maxDistanceLocal = link->getMaxDistance();
+			}
+			else if (functionType == GLOBAL) {
+				maxDistanceLocal = maxDistance;
+			}
 
-		for(sitr=plastNeighbors.begin() ; sitr != plastNeighbors.end() ; ++sitr){
-			//we remove only one cell at a time even though we could do it for many cells many cells
-			if (sitr->anchor){
+			if (distance>maxDistanceLocal) {
+				deleteAnchor(oldCell, link->getAnchorId());
+				linkRemoved = true;
+				break;
+			}
 
-				//we will first remove anchor links if they fit removal criteria
-				double distance=distInvariantCM(xCMOld,yCMOld,zCMOld,sitr->anchorPoint[0],sitr->anchorPoint[1],sitr->anchorPoint[2],fieldDim,boundaryStrategy);
-				int maxDistanceLocal;
-				if (functionType==BYCELLTYPE || functionType==BYCELLID){
-					maxDistanceLocal=sitr->maxDistance;
-				}else if(functionType==GLOBAL){
-					maxDistanceLocal=maxDistance;
-				}
+		}
 
-				if(distance>maxDistanceLocal){
-					deleteAnchor(oldCell, sitr->anchorId);
-					break; 
-				}
+		if (!linkRemoved) {
+			for each(FocalPointPlasticityLink* link in linkInv.getCellLinkList(oldCell)) {
+				nCell = link->getOtherCell(oldCell);
 
-			}else{
-
-				double xCMNeighbor=sitr->neighborAddress->xCM/float(sitr->neighborAddress->volume);
-				double yCMNeighbor=sitr->neighborAddress->yCM/float(sitr->neighborAddress->volume);
-				double zCMNeighbor=sitr->neighborAddress->zCM/float(sitr->neighborAddress->volume);
-				double distance=distInvariantCM(xCMOld,yCMOld,zCMOld,xCMNeighbor,yCMNeighbor,zCMNeighbor,fieldDim,boundaryStrategy);
+				double xCMNeighbor = nCell->xCM / float(nCell->volume);
+				double yCMNeighbor = nCell->yCM / float(nCell->volume);
+				double zCMNeighbor = nCell->zCM / float(nCell->volume);
+				double distance = distInvariantCM(xCMOld, yCMOld, zCMOld, xCMNeighbor, yCMNeighbor, zCMNeighbor, fieldDim, boundaryStrategy);
 				//double distance=dist(xCMOld,yCMOld,zCMOld,xCMNeighbor,yCMNeighbor,zCMNeighbor);
 				int maxDistanceLocal;
-				if (functionType==BYCELLTYPE || functionType==BYCELLID){
-					maxDistanceLocal=sitr->maxDistance;
-				}else if(functionType==GLOBAL){
-					maxDistanceLocal=maxDistance;
+				if (functionType == BYCELLTYPE || functionType == BYCELLID) {
+					maxDistanceLocal = link->getMaxDistance();
+				}
+				else if (functionType == GLOBAL) {
+					maxDistanceLocal = maxDistance;
 				}
 
-				if(distance>maxDistanceLocal){
-					deleteFocalPointPlasticityLink(oldCell, sitr->neighborAddress);
-					break; 
+				if (distance>maxDistanceLocal) {
+					deleteFocalPointPlasticityLink(oldCell, nCell);
+					break;
 				}
 			}
+
 		}
 
 		//go over compartments
-		std::set<FocalPointPlasticityTrackerData> & internalPlastNeighbors=focalPointPlasticityTrackerAccessor.get(oldCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
-        
-		for(sitr=internalPlastNeighbors.begin() ; sitr != internalPlastNeighbors.end() ; ++sitr){
+		for each(FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(oldCell)) {
+			nCell = link->getOtherCell(oldCell);
 			//we remove only one cell at a time even though we could do it for many cells many cells
-			double xCMNeighbor=sitr->neighborAddress->xCM/float(sitr->neighborAddress->volume);
-			double yCMNeighbor=sitr->neighborAddress->yCM/float(sitr->neighborAddress->volume);
-			double zCMNeighbor=sitr->neighborAddress->zCM/float(sitr->neighborAddress->volume);
-			double distance=distInvariantCM(xCMOld,yCMOld,zCMOld,xCMNeighbor,yCMNeighbor,zCMNeighbor,fieldDim,boundaryStrategy);
+			double xCMNeighbor = nCell->xCM / float(nCell->volume);
+			double yCMNeighbor = nCell->yCM / float(nCell->volume);
+			double zCMNeighbor = nCell->zCM / float(nCell->volume);
+			double distance = distInvariantCM(xCMOld, yCMOld, zCMOld, xCMNeighbor, yCMNeighbor, zCMNeighbor, fieldDim, boundaryStrategy);
 			//double distance=dist(xCMOld,yCMOld,zCMOld,xCMNeighbor,yCMNeighbor,zCMNeighbor);
 			int maxDistanceLocal;
-			if (functionType==BYCELLTYPE || functionType==BYCELLID){
-				maxDistanceLocal=sitr->maxDistance;
-			}else if(functionType==GLOBAL){
-				maxDistanceLocal=maxDistance;
+			if (functionType == BYCELLTYPE || functionType == BYCELLID) {
+				maxDistanceLocal = link->getMaxDistance();
+			}
+			else if (functionType == GLOBAL) {
+				maxDistanceLocal = maxDistance;
 			}
 
-			if(distance>maxDistanceLocal){
-				deleteInternalFocalPointPlasticityLink(oldCell, sitr->neighborAddress);
-				break; 
+			if (distance>maxDistanceLocal) {
+				deleteInternalFocalPointPlasticityLink(oldCell, nCell);
+				break;
 			}
 		}
 	}
@@ -1234,6 +1237,13 @@ void FocalPointPlasticityPlugin::setFocalPointPlasticityParameters(CellG * _cell
 			}
 		}
 	}
+
+	FocalPointPlasticityLink* link = linkInv.getLinkByCells(_cell1, _cell2);
+	if (link) {
+		link->setLambdaDistance(_lambda);
+		if (_targetDistance != 0.0) link->setTargetDistance(_targetDistance);
+		if (_maxDistance != 0.0) link->setMaxDistance(_maxDistance);
+	}
 }
 
 void FocalPointPlasticityPlugin::setInternalFocalPointPlasticityParameters(CellG * _cell1,CellG * _cell2,double _lambda, double _targetDistance,double _maxDistance){
@@ -1270,43 +1280,41 @@ void FocalPointPlasticityPlugin::setInternalFocalPointPlasticityParameters(CellG
 			}
 		}
 	}
+
+	FocalPointPlasticityInternalLink* link = linkInvInternal.getLinkByCells(_cell1, _cell2);
+	if (link) {
+		link->setLambdaDistance(_lambda);
+		if (_targetDistance != 0.0) link->setTargetDistance(_targetDistance);
+		if (_maxDistance != 0.0) link->setMaxDistance(_maxDistance);
+	}
 }
 
 double FocalPointPlasticityPlugin::getPlasticityParametersLambdaDistance(CellG * _cell1,CellG * _cell2){
 
-	std::set<FocalPointPlasticityTrackerData>::iterator sitr1=focalPointPlasticityTrackerAccessor.get(_cell1->extraAttribPtr)->focalPointPlasticityNeighbors.find(FocalPointPlasticityTrackerData(_cell2));
-	if(sitr1!=focalPointPlasticityTrackerAccessor.get(_cell1->extraAttribPtr)->focalPointPlasticityNeighbors.end()){
-		return sitr1->lambdaDistance;
-	}else{
+	FocalPointPlasticityLink* link = linkInv.getLinkByCells(_cell1, _cell2);
+	if (link) {
+		return link->getLambdaDistance();
+	}
+	else {
 		return 0.0;
 	}
 }
 
 double FocalPointPlasticityPlugin::getPlasticityParametersTargetDistance(CellG * _cell1,CellG * _cell2){
 
-	std::set<FocalPointPlasticityTrackerData>::iterator sitr1=focalPointPlasticityTrackerAccessor.get(_cell1->extraAttribPtr)->focalPointPlasticityNeighbors.find(FocalPointPlasticityTrackerData(_cell2));
-	if(sitr1!=focalPointPlasticityTrackerAccessor.get(_cell1->extraAttribPtr)->focalPointPlasticityNeighbors.end()){
-		return sitr1->targetDistance;
-	}else{
+	FocalPointPlasticityLink* link = linkInv.getLinkByCells(_cell1, _cell2);
+	if (link) {
+		return link->getTargetDistance();
+	}
+	else {
 		return 0.0;
 	}
 }
 
 int FocalPointPlasticityPlugin::createAnchor(CellG * _cell, double _lambda, double _targetDistance,double _maxDistance,float _x, float _y, float _z){
 	std::set<FocalPointPlasticityTrackerData> & anchorsSet=focalPointPlasticityTrackerAccessor.get(_cell->extraAttribPtr)->anchors;
-	std::set<FocalPointPlasticityTrackerData>::iterator sitr=anchorsSet.begin();
-	int newAnchorId=0;
-	//cerr<<"anchorsSet.size()="<<anchorsSet.size()<<endl;
-
-	if (sitr!=anchorsSet.end()){
-		sitr=anchorsSet.end();
-		--sitr; // point to the last anchor fppd 
-
-		//cerr<<"sitr->anchorId="<<sitr->anchorId<<endl;
-		//cerr<<"x="<<sitr->anchorPoint[0]<<" y="<<sitr->anchorPoint[1]<<" z="<<sitr->anchorPoint[2]<<endl;
-		newAnchorId=sitr->anchorId+1;
-
-	}
+	int newAnchorId = linkInvAnchor.getNextAnchorId(_cell);
+	
 	//cerr<<"newAnchorId="<<newAnchorId<<endl;
 	FocalPointPlasticityTrackerData fpptd(0,_lambda, _targetDistance, _maxDistance);
 	fpptd.anchor=true;
@@ -1315,6 +1323,9 @@ int FocalPointPlasticityPlugin::createAnchor(CellG * _cell, double _lambda, doub
 	fpptd.anchorPoint[1]=_y;
 	fpptd.anchorPoint[2]=_z;
 	anchorsSet.insert(fpptd);
+
+	FocalPointPlasticityAnchor link = FocalPointPlasticityAnchor(_cell, potts, fpptd);
+	linkInvAnchor.addToInventory(&link);
 
 	//cerr<<"anchorsSet.size()="<<anchorsSet.size()<<endl;
 	return newAnchorId;
@@ -1329,7 +1340,8 @@ void FocalPointPlasticityPlugin::deleteAnchor(CellG * _cell, int _anchorId){
 	if (sitr!=anchorsSet.end()){
 		anchorsSet.erase(fpptd);
 	}
-
+	FocalPointPlasticityAnchor* link = linkInvAnchor.getAnchor(_cell, _anchorId);
+	if (link) linkInvAnchor.removeFromInventory(link);
 }
 
 void FocalPointPlasticityPlugin::setAnchorParameters(CellG * _cell, int _anchorId,double _lambda, double _targetDistance,double _maxDistance,float _x, float _y, float _z){
@@ -1358,6 +1370,19 @@ void FocalPointPlasticityPlugin::setAnchorParameters(CellG * _cell, int _anchorI
 			(const_cast<FocalPointPlasticityTrackerData & >(*sitr)).anchorPoint[2]=_z;
 		}
 
+	}
+
+	FocalPointPlasticityAnchor* link = linkInvAnchor.getAnchor(_cell, _anchorId);
+	if (link) {
+		link->setLambdaDistance(_lambda);
+		if (_targetDistance != 0.0) link->setTargetDistance(_targetDistance);
+		if (_maxDistance != 0.0) link->setMaxDistance(_maxDistance);
+
+		std::vector<float> anchorPoint(link->getAnchorPoint());
+		if (_x != -1) anchorPoint[0] = _x;
+		if (_y != -1) anchorPoint[1] = _y;
+		if (_z != -1) anchorPoint[2] = _z;
+		link->setAnchorPoint(anchorPoint);
 	}
 
 }
