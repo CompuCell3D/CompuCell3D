@@ -115,17 +115,17 @@ namespace CompuCell3D {
 		// Set maximum distance
 		void setMaxDistance(float _maxDistance) { fppltd.maxDistance = _maxDistance; }
 		// Get maximum number of junctions
-		const int getMaxNumberOfJunctions() { return fppltd.maxNumberOfJunctions; }
+		const int getMaxNumberOfJunctions(unsigned char _idx) { return fppltd.maxNumberOfJunctions[_idx]; }
 		// Set maximum number of junctions
-		void setMaxNumberOfJunctions(int _maxNumberOfJunctions) { fppltd.maxNumberOfJunctions = _maxNumberOfJunctions; }
+		void setMaxNumberOfJunctions(int _maxNumberOfJunctions, unsigned char _idx) { fppltd.maxNumberOfJunctions[_idx] = _maxNumberOfJunctions; }
 		// Get activation energy
-		const float getActivationEnergy() { return fppltd.activationEnergy; }
+		const float getActivationEnergy(unsigned char _idx) { return fppltd.activationEnergy[_idx]; }
 		// Set activation energy
-		void setActivationEnergy(float _activationEnergy) { fppltd.activationEnergy = _activationEnergy; }
+		void setActivationEnergy(float _activationEnergy, unsigned char _idx) { fppltd.activationEnergy[_idx] = _activationEnergy; }
 		// Get neighbor order
-		const int getNeighborOrder() { return fppltd.neighborOrder; }
+		const int getNeighborOrder(unsigned char _idx) { return fppltd.neighborOrder[_idx]; }
 		// Set neighbor order
-		void getNeighborOrder(int _neighborOrder) { fppltd.neighborOrder = _neighborOrder; }
+		void getNeighborOrder(int _neighborOrder, char _idx) { fppltd.neighborOrder[_idx] = _neighborOrder; }
 		// Get is anchor
 		const bool isAnchor() { return fppltd.anchor; }
 		// Get initialization step
@@ -157,12 +157,12 @@ namespace CompuCell3D {
 		FocalPointPlasticityLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) {
 			FocalPointPlasticityLink(_initiator, _initiated, _potts, FocalPointPlasticityLinkTrackerData(_fpptd));
 		}
-		FocalPointPlasticityLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _maxNumberOfJunctions = 0, float _activationEnergy = 0.0, int _neighborOrder = 1, int _initMCS = 0)
+		FocalPointPlasticityLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0)
 		{
 			initiator = _initiator;
 			initiated = _initiated;
 			potts = _potts;
-			fppltd = FocalPointPlasticityLinkTrackerData(_lambdaDistance, _targetDistance, _maxDistance, _maxNumberOfJunctions, _activationEnergy, _neighborOrder, _initMCS);
+			fppltd = FocalPointPlasticityLinkTrackerData(_lambdaDistance, _targetDistance, _maxDistance, _initMCS);
 		}
 
 		const long getId0() { return initiator->id; }
@@ -195,12 +195,12 @@ namespace CompuCell3D {
 		FocalPointPlasticityInternalLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) {
 			FocalPointPlasticityInternalLink(_initiator, _initiated, _potts, FocalPointPlasticityLinkTrackerData(_fpptd));
 		}
-		FocalPointPlasticityInternalLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _maxNumberOfJunctions = 0, float _activationEnergy = 0.0, int _neighborOrder = 1, int _initMCS = 0)
+		FocalPointPlasticityInternalLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0)
 		{
 			initiator = _initiator;
 			initiated = _initiated;
 			potts = _potts;
-			fppltd = FocalPointPlasticityLinkTrackerData(_lambdaDistance, _targetDistance, _maxDistance, _maxNumberOfJunctions, _activationEnergy, _neighborOrder, _initMCS);
+			fppltd = FocalPointPlasticityLinkTrackerData(_lambdaDistance, _targetDistance, _maxDistance, _initMCS);
 		}
 
 		const long getId0() { return initiator->id; }
@@ -234,11 +234,11 @@ namespace CompuCell3D {
 		FocalPointPlasticityAnchor(CellG *_cell, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) {
 			FocalPointPlasticityAnchor(_cell, _potts, FocalPointPlasticityLinkTrackerData(_fpptd));
 		}
-		FocalPointPlasticityAnchor(CellG *_cell, Potts3D *_potts, float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _maxNumberOfJunctions = 0, float _activationEnergy = 0.0, int _neighborOrder = 1, int _initMCS = 0, std::vector<float> _anchorPoint = std::vector<float>(3, 0.0)) {
+		FocalPointPlasticityAnchor(CellG *_cell, Potts3D *_potts, float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0, std::vector<float> _anchorPoint = std::vector<float>(3, 0.0)) {
 			initiator = _cell;
 			initiated = (CellG*)(0);
 			potts = _potts;
-			fppltd = FocalPointPlasticityLinkTrackerData(_lambdaDistance, _targetDistance, _maxDistance, _maxNumberOfJunctions, _activationEnergy, _neighborOrder, _initMCS);
+			fppltd = FocalPointPlasticityLinkTrackerData(_lambdaDistance, _targetDistance, _maxDistance, _initMCS);
 			fppltd.anchor = true;
 			fppltd.anchorPoint = _anchorPoint;
 		}

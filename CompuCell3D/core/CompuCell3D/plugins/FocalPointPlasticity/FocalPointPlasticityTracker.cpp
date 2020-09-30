@@ -28,9 +28,9 @@ FocalPointPlasticityTrackerData::FocalPointPlasticityTrackerData(const FocalPoin
 	lambdaDistance = fppltd.lambdaDistance;
 	targetDistance = fppltd.targetDistance;
 	maxDistance = fppltd.maxDistance;
-	activationEnergy = fppltd.activationEnergy;
-	maxNumberOfJunctions = fppltd.maxNumberOfJunctions;
-	neighborOrder = fppltd.neighborOrder;
+	activationEnergy = fppltd.activationEnergy[0];
+	maxNumberOfJunctions = fppltd.maxNumberOfJunctions[0];
+	neighborOrder = fppltd.neighborOrder[0];
 	anchor = fppltd.anchor;
 	anchorId = fppltd.anchorId;
 	anchorPoint = fppltd.anchorPoint;
