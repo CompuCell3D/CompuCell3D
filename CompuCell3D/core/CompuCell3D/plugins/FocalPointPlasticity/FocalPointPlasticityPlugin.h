@@ -28,7 +28,7 @@
 // // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 // // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
 // // // #include <CompuCell3D/Plugin.h>
-#include "FocalPointPlasticityTracker.h"
+#include "FocalPointPlasticityLinkInventory.h"
 
 // // // #include <map>
 // // // #include <set>
@@ -50,6 +50,10 @@ namespace CompuCell3D {
 	class BoundaryStrategy;
     class ParallelUtilsOpenMP;
 
+	class FPPLinkInventory;
+	class FPPInternalLinkInventory;
+	class FPPAnchorInventory;
+
 	class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityPlugin : public Plugin,public EnergyFunction, public CellGChangeWatcher  {
 
 		BasicClassAccessor<FocalPointPlasticityTracker> focalPointPlasticityTrackerAccessor;
@@ -68,6 +72,10 @@ namespace CompuCell3D {
 		unsigned int maxNeighborIndexJunctionMove;
 		BoundaryStrategy * boundaryStrategy;
 		CC3DXMLElement *xmlData;
+
+		FPPLinkInventory linkInv;
+		FPPInternalLinkInventory linkInvInternal;
+		FPPAnchorInventory linkInvAnchor;
 
 		std::set<std::string> plasticityTypesNames;
 		std::set<unsigned char> plasticityTypes;
