@@ -55,16 +55,16 @@ FocalPointPlasticityTrackerData FocalPointPlasticityLinkBase::getFPPTrackerData(
 	if (_cell == initiator || !initiator) {
 		fpptd.neighborAddress = initiated;
 		fpptd.isInitiator = true;
-		fpptd.maxNumberOfJunctions = getMaxNumberOfJunctions(0);
-		fpptd.activationEnergy = getActivationEnergy(0);
-		fpptd.neighborOrder = getNeighborOrder(0);
+		fpptd.maxNumberOfJunctions = getMaxNumberOfJunctions();
+		fpptd.activationEnergy = getActivationEnergy();
+		fpptd.neighborOrder = getNeighborOrder();
 	}
 	else if (_cell == initiated || !initiated) {
 		fpptd.neighborAddress = initiator;
 		fpptd.isInitiator = false;
-		fpptd.maxNumberOfJunctions = getMaxNumberOfJunctions(1);
-		fpptd.activationEnergy = getActivationEnergy(1);
-		fpptd.neighborOrder = getNeighborOrder(1);
+		fpptd.maxNumberOfJunctions = getMaxNumberOfJunctions();
+		fpptd.activationEnergy = getActivationEnergy();
+		fpptd.neighborOrder = getNeighborOrder();
 	}
 	return fpptd;
 }

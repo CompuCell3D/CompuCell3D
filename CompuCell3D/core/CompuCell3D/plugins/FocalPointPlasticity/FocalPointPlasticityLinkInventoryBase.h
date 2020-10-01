@@ -176,6 +176,7 @@ namespace CompuCell3D {
 			removeLinkNoChain(_link);
 			getCellLinkInventory(_link->getObj0())->removeLinkNoChain(_link);
 			getCellLinkInventory(_link->getObj1())->removeLinkNoChain(_link);
+			delete _link;
 		}
 
 		// Get link inventory list

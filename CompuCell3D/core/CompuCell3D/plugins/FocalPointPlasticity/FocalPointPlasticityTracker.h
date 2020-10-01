@@ -44,7 +44,6 @@ namespace CompuCell3D {
 		 }
 
 		 // type cast from FocalPointPlasticityLinkTrackerData
-		 // cell properties are assumed to be the same
 		 // be sure to set isInitiator after type cast!
 		 FocalPointPlasticityTrackerData(const FocalPointPlasticityLinkTrackerData& fppltd);
 
@@ -105,20 +104,18 @@ namespace CompuCell3D {
    public:
 
 	   // Tracker data associated with link
-	   // Standard usage is to first set link-specific properties on construction, then cell-specific properties when necessary
 	   FocalPointPlasticityLinkTrackerData(float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0)
 		   :lambdaDistance(_lambdaDistance), targetDistance(_targetDistance), maxDistance(_maxDistance), anchor(false), anchorId(0), initMCS(_initMCS)
 	   {
 
-		   maxNumberOfJunctions = std::vector<int>(2, 0);
-		   activationEnergy = std::vector<float>(2, 0.);
-		   neighborOrder = std::vector<int>(2, 0);
+		   maxNumberOfJunctions = 0;
+		   activationEnergy = 0.;
+		   neighborOrder = 0;
 
 		   anchorPoint = std::vector<float>(3, 0.);
 	   }
 
 	   // type cast from FocalPointPlasticityTrackerData
-	   // cell properties are assumed to be the same
 	   FocalPointPlasticityLinkTrackerData(const FocalPointPlasticityTrackerData& fpptd) {
 		   lambdaDistance = fpptd.lambdaDistance;
 		   targetDistance = fpptd.targetDistance;
@@ -128,9 +125,9 @@ namespace CompuCell3D {
 		   anchorPoint = fpptd.anchorPoint;
 		   initMCS = fpptd.initMCS;
 
-		   maxNumberOfJunctions = std::vector<int>(2, fpptd.maxNumberOfJunctions);
-		   activationEnergy = std::vector<float>(2, fpptd.activationEnergy);
-		   neighborOrder = std::vector<int>(2, fpptd.neighborOrder);
+		   maxNumberOfJunctions = fpptd.maxNumberOfJunctions;
+		   activationEnergy = fpptd.activationEnergy;
+		   neighborOrder = fpptd.neighborOrder;
 	   }
 
 	   FocalPointPlasticityLinkTrackerData& operator=(const FocalPointPlasticityTrackerData& fpptd) {
@@ -142,18 +139,14 @@ namespace CompuCell3D {
 	   float lambdaDistance;
 	   float targetDistance;
 	   float maxDistance;
+	   int maxNumberOfJunctions;
+	   float activationEnergy;
+	   int neighborOrder;
 	   bool anchor;
 	   std::vector<float> anchorPoint;
 	   int initMCS;
 
 	   int anchorId;
-
-	   // members: attached cell properties related to this link
-	   // first element is for initiator
-
-	   std::vector<int> maxNumberOfJunctions;
-	   std::vector<float> activationEnergy;
-	   std::vector<int> neighborOrder;
 
    };
 

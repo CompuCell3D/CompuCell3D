@@ -888,17 +888,25 @@ void FocalPointPlasticityPlugin::deleteInternalFocalPointPlasticityLink(CellG * 
 
 void FocalPointPlasticityPlugin::createFocalPointPlasticityLink(CellG * _cell1, CellG * _cell2, double _lambda, double _targetDistance, double _maxDistance) {
 
-	FocalPointPlasticityLinkTrackerData fppltd(_lambda, _targetDistance, _maxDistance, sim->getStep());
-	FocalPointPlasticityLink link = FocalPointPlasticityLink(_cell1, _cell2, potts, fppltd);
-	linkInv.addToInventory(&link);
+	FocalPointPlasticityLinkTrackerData fpptld = FocalPointPlasticityLinkTrackerData(plastParamsArray[_cell1->type][_cell2->type]);
+	fpptld.lambdaDistance = _lambda;
+	fpptld.targetDistance = _targetDistance;
+	fpptld.maxDistance = _maxDistance;
+	fpptld.initMCS = sim->getStep();
+	FocalPointPlasticityLink* link = new FocalPointPlasticityLink(_cell1, _cell2, potts, fpptld);
+	linkInv.addToInventory(link);
 
 }
 
 void FocalPointPlasticityPlugin::createInternalFocalPointPlasticityLink(CellG * _cell1, CellG * _cell2, double _lambda, double _targetDistance, double _maxDistance) {
 
-	FocalPointPlasticityLinkTrackerData fppltd(_lambda, _targetDistance, _maxDistance, sim->getStep());
-	FocalPointPlasticityInternalLink link = FocalPointPlasticityInternalLink(_cell1, _cell2, potts, fppltd);
-	linkInvInternal.addToInventory(&link);
+	FocalPointPlasticityLinkTrackerData fpptld = FocalPointPlasticityLinkTrackerData(plastParamsArray[_cell1->type][_cell2->type]);
+	fpptld.lambdaDistance = _lambda;
+	fpptld.targetDistance = _targetDistance;
+	fpptld.maxDistance = _maxDistance;
+	fpptld.initMCS = sim->getStep();
+	FocalPointPlasticityInternalLink* link = new FocalPointPlasticityInternalLink(_cell1, _cell2, potts, fpptld);
+	linkInvInternal.addToInventory(link);
 
 }
 
@@ -1228,8 +1236,8 @@ int FocalPointPlasticityPlugin::createAnchor(CellG * _cell, double _lambda, doub
 	fppltd.anchorPoint[1] = _y;
 	fppltd.anchorPoint[2] = _z;
 	fppltd.anchorId = newAnchorId;
-	FocalPointPlasticityAnchor link = FocalPointPlasticityAnchor(_cell, potts, fppltd);
-	linkInvAnchor.addToInventory(&link);
+	FocalPointPlasticityAnchor* link = new FocalPointPlasticityAnchor(_cell, potts, fppltd);
+	linkInvAnchor.addToInventory(link);
 
 	return newAnchorId;
 

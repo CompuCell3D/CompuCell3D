@@ -70,14 +70,7 @@ namespace CompuCell3D {
 		FocalPointPlasticityLinkBase() :
 			initiator(0), initiated(0), potts(0), fppltd(FocalPointPlasticityLinkTrackerData())
 		{}
-		~FocalPointPlasticityLinkBase() {
-			delete initiator;
-			delete initiated;
-			delete potts;
-			initiator = 0;
-			initiated = 0;
-			potts = 0;
-		}
+		~FocalPointPlasticityLinkBase() {}
 
 		const FocalPointPlasticityLinkType getType() { return type; }
 
@@ -115,17 +108,17 @@ namespace CompuCell3D {
 		// Set maximum distance
 		void setMaxDistance(float _maxDistance) { fppltd.maxDistance = _maxDistance; }
 		// Get maximum number of junctions
-		const int getMaxNumberOfJunctions(unsigned char _idx) { return fppltd.maxNumberOfJunctions[_idx]; }
+		const int getMaxNumberOfJunctions() { return fppltd.maxNumberOfJunctions; }
 		// Set maximum number of junctions
-		void setMaxNumberOfJunctions(int _maxNumberOfJunctions, unsigned char _idx) { fppltd.maxNumberOfJunctions[_idx] = _maxNumberOfJunctions; }
+		void setMaxNumberOfJunctions(int _maxNumberOfJunctions) { fppltd.maxNumberOfJunctions = _maxNumberOfJunctions; }
 		// Get activation energy
-		const float getActivationEnergy(unsigned char _idx) { return fppltd.activationEnergy[_idx]; }
+		const float getActivationEnergy() { return fppltd.activationEnergy; }
 		// Set activation energy
-		void setActivationEnergy(float _activationEnergy, unsigned char _idx) { fppltd.activationEnergy[_idx] = _activationEnergy; }
+		void setActivationEnergy(float _activationEnergy) { fppltd.activationEnergy = _activationEnergy; }
 		// Get neighbor order
-		const int getNeighborOrder(unsigned char _idx) { return fppltd.neighborOrder[_idx]; }
+		const int getNeighborOrder() { return fppltd.neighborOrder; }
 		// Set neighbor order
-		void getNeighborOrder(int _neighborOrder, char _idx) { fppltd.neighborOrder[_idx] = _neighborOrder; }
+		void setNeighborOrder(int _neighborOrder) { fppltd.neighborOrder = _neighborOrder; }
 		// Get is anchor
 		const bool isAnchor() { return fppltd.anchor; }
 		// Get initialization step
