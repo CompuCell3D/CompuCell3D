@@ -165,6 +165,12 @@ namespace CompuCell3D {
 		void deleteInternalFocalPointPlasticityLink(CellG * _cell1,CellG * _cell2);
 		void createFocalPointPlasticityLink(CellG * _cell1, CellG * _cell2,double _lambda, double _targetDistance=0.0,double _maxDistance=0.0);
 		void createInternalFocalPointPlasticityLink(CellG * _cell1,CellG * _cell2,double _lambda, double _targetDistance=0.0,double _maxDistance=0.0);
+
+		// Inventory accessors
+
+		FPPLinkInventory* getLinkInventory() { return &linkInv; }
+		FPPInternalLinkInventory* getInternalLinkInventory() { return &linkInvInternal; }
+		FPPAnchorInventory* getAnchorInventory() { return &linkInvAnchor; }
 		
 		//used for serialization and restart 
 		void insertFPPData(CellG * _cell,FocalPointPlasticityTrackerData * _fpptd);

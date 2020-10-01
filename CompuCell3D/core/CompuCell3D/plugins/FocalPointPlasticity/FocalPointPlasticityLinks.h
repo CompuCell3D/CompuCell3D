@@ -45,7 +45,7 @@ namespace CompuCell3D {
 
 	// Link definitions
 
-	enum FocalPointPlasticityLinkType : unsigned char { REGULAR = 0, INTERNAL = 1, ANCHOR = 2 };
+	enum FocalPointPlasticityLinkType { REGULAR, INTERNAL, ANCHOR };
 
 	class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityLinkBase {
 

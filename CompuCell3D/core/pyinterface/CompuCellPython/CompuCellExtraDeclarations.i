@@ -361,12 +361,29 @@ PLUGINACCESSOR(PlasticityTracker)
 
 ////Focal Point Plasticity Plugin
 //
+%ignore CompuCell3D::FocalPointPlasticityLinkTrackerData;
 %include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityTracker.h>
 %template (focalPointPlasticityTrackerAccessor) BasicClassAccessor<FocalPointPlasticityTracker>; //necessary to get PlasticityTracker accessor working
 %template (focalPointPlasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::FocalPointPlasticityTrackerData> , CompuCell3D::FocalPointPlasticityTrackerData >;
 %template (focalPointPlasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::FocalPointPlasticityTrackerData> >;
 %template (focalPointPlasticityTrackerDataSet) std::set<CompuCell3D::FocalPointPlasticityTrackerData>; //necessary to get basic set functionality working
 %template (focalPointPlasticityTrackerDataVector) std::vector<CompuCell3D::FocalPointPlasticityTrackerData>; //necessary to get basic set functionality working
+
+%ignore CompuCell3D::FocalPointPlasticityLinkType;
+%include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityLinks.h>
+
+%ignore CompuCell3D::FPPLinkID;
+%include "plugins/FocalPointPlasticity/FocalPointPlasticityLinkInventoryBase.h"
+%template(FPPLinkList) CompuCell3D::FPPLinkListBase<CompuCell3D::FocalPointPlasticityLink>;
+%template(FPPInternalLinkList) CompuCell3D::FPPLinkListBase<CompuCell3D::FocalPointPlasticityInternalLink>;
+%template(FPPAnchorList) CompuCell3D::FPPLinkListBase<CompuCell3D::FocalPointPlasticityAnchor>;
+
+%template (_fppInventoryBaseLink) CompuCell3D::FPPLinkInventoryBase<CompuCell3D::FocalPointPlasticityLink>;
+%template (_fppInventoryBaseInternalLink) CompuCell3D::FPPLinkInventoryBase<CompuCell3D::FocalPointPlasticityInternalLink>;
+%template (_fppInventoryBaseAnchor) CompuCell3D::FPPLinkInventoryBase<CompuCell3D::FocalPointPlasticityAnchor>;
+
+%include "plugins/FocalPointPlasticity/FocalPointPlasticityLinkInventory.h"
+
 PLUGINACCESSOR(FocalPointPlasticity)
 
 
