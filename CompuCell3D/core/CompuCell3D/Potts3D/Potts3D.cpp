@@ -992,6 +992,10 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 	return flips;
 
 }
+
+//Point3D Potts3D::test_data_output(ofstream & out, Point3D pt, Point3D nPt, bool accepted, float motility, ) {
+//}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Point3D Potts3D::randomPickBoundaryPixel(BasicRandomNumberGeneratorNonStatic * rand) {
 

@@ -6,6 +6,7 @@ SET(SRCS
   CustomAcceptanceFunction.cpp
   EnergyFunctionCalculator.cpp
   EnergyFunctionCalculatorStatistics.cpp
+  EnergyFunctionCalculatorTestDataGeneration.cpp
   TypeTransition.cpp
   StandardFluctuationAmplitudeFunctions.cpp
   Potts3D.cpp)
@@ -47,6 +48,7 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D/Potts3D .h
   EnergyFunction
   EnergyFunctionCalculator
   EnergyFunctionCalculatorStatistics
+  EnergyFunctionCalculatorTestDataGeneration
   FirstOrderExpansionAcceptanceFunction
   FixedStepper
   Potts3D

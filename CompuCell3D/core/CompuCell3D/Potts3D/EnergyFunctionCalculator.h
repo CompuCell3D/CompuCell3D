@@ -52,12 +52,15 @@ class EnergyFunctionCalculator{
 	  std::vector<std::string> getEnergyFunctionNames() { return energyFunctionsNameVec; }
 	  virtual std::vector<std::vector<double> > getCurrentEnergyChanges() { return std::vector<std::vector<double> >(); }
 	  virtual std::vector<bool> getCurrentFlipResults() { return std::vector<bool>(); }
+      virtual std::map<std::string, double> getEnergyFuctionNametoValueMap() { return energyFuctionNametoValueMap; }
+
 
    protected:
       std::vector<EnergyFunction *> energyFunctions;
       std::vector<std::string> energyFunctionsNameVec;
 
       std::map<std::string,EnergyFunction *> nameToEnergyFuctionMap;
+      std::map<std::string, double> energyFuctionNametoValueMap;
       Potts3D *potts;
       Simulator *sim;
 
