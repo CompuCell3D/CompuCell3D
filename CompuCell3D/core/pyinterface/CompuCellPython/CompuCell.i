@@ -1448,3 +1448,5 @@ public:
 
 
 %include "CompuCellExtraDeclarations.i"
+
+%include "DerivedProperty.i"
