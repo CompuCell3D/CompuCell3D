@@ -71,9 +71,9 @@ void FocalPointPlasticityPlugin::init(Simulator *simulator, CC3DXMLElement *_xml
 	potts->getCellFactoryGroupPtr()->registerClass(&focalPointPlasticityTrackerAccessor);
 	potts->registerCellGChangeWatcher(this);
 
-	linkInv = FPPLinkInventory(&focalPointPlasticityTrackerAccessor);
-	linkInvInternal = FPPInternalLinkInventory(&focalPointPlasticityTrackerAccessor);
-	linkInvAnchor = FPPAnchorInventory(&focalPointPlasticityTrackerAccessor);
+	linkInv = FPPLinkInventory(potts, &focalPointPlasticityTrackerAccessor);
+	linkInvInternal = FPPInternalLinkInventory(potts, &focalPointPlasticityTrackerAccessor);
+	linkInvAnchor = FPPAnchorInventory(potts, &focalPointPlasticityTrackerAccessor);
 
 	pUtils = simulator->getParallelUtils();
 	unsigned int maxNumberOfWorkNodes = pUtils->getMaxNumberOfWorkNodesPotts();
@@ -758,27 +758,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 	if (oldCell) {
 		//cerr<<"energy for old cell section"<<endl;
 
-		for each (FocalPointPlasticityLink* link in linkInv.getCellLinkList(const_cast<CellG*>(oldCell))) {
-			nCell = link->getOtherCell(oldCell);
-
-			if (nCell != newCell) {
-				lBefore = distInvariantCM(centMassOldBefore.X(), centMassOldBefore.Y(), centMassOldBefore.Z(), nCell->xCM / nCellVol, nCell->yCM / nCellVol, nCell->zCM / nCellVol, fieldDim, boundaryStrategy);
-				deltaL =
-					distInvariantCM(centMassOldAfter.X(), centMassOldAfter.Y(), centMassOldAfter.Z(), nCell->xCM / nCellVol, nCell->yCM / nCellVol, nCell->zCM / nCellVol, fieldDim, boundaryStrategy)
-					- lBefore;
-			}
-			else {
-				lBefore = distInvariantCM(centMassOldBefore.X(), centMassOldBefore.Y(), centMassOldBefore.Z(), centMassNewBefore.X(), centMassNewBefore.Y(), centMassNewBefore.Z(), fieldDim, boundaryStrategy);
-				deltaL =
-					distInvariantCM(centMassOldAfter.X(), centMassOldAfter.Y(), centMassOldAfter.Z(), centMassNewAfter.X(), centMassNewAfter.Y(), centMassNewAfter.Z(), fieldDim, boundaryStrategy)
-					- lBefore;
-			}
-
-			energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(const_cast<CellG*>(oldCell)), oldCell, false);
-		}
-
-		//go over compartments
-		for each (FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(const_cast<CellG*>(oldCell))) {
+		for each (FocalPointPlasticityLink* link in linkInv.getCellLinkList(oldCell)) {
 			nCell = link->getOtherCell(oldCell);
 			nCellVol = nCell->volume;
 
@@ -794,20 +774,39 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 					distInvariantCM(centMassOldAfter.X(), centMassOldAfter.Y(), centMassOldAfter.Z(), centMassNewAfter.X(), centMassNewAfter.Y(), centMassNewAfter.Z(), fieldDim, boundaryStrategy)
 					- lBefore;
 			}
-			//cerr<<"deltaL="<<deltaL<<" lBefore="<<lBefore<<" lambda="<<sitr->lambdaDistance<<endl;
-			double clusterOldCellEnergy = (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(const_cast<CellG*>(oldCell)), oldCell, true);
+			energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(oldCell), oldCell, false);
+		}
+
+		//go over compartments
+		for each (FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(oldCell)) {
+			nCell = link->getOtherCell(oldCell);
+			nCellVol = nCell->volume;
+
+			if (nCell != newCell) {
+				lBefore = distInvariantCM(centMassOldBefore.X(), centMassOldBefore.Y(), centMassOldBefore.Z(), nCell->xCM / nCellVol, nCell->yCM / nCellVol, nCell->zCM / nCellVol, fieldDim, boundaryStrategy);
+				deltaL =
+					distInvariantCM(centMassOldAfter.X(), centMassOldAfter.Y(), centMassOldAfter.Z(), nCell->xCM / nCellVol, nCell->yCM / nCellVol, nCell->zCM / nCellVol, fieldDim, boundaryStrategy)
+					- lBefore;
+			}
+			else {
+				lBefore = distInvariantCM(centMassOldBefore.X(), centMassOldBefore.Y(), centMassOldBefore.Z(), centMassNewBefore.X(), centMassNewBefore.Y(), centMassNewBefore.Z(), fieldDim, boundaryStrategy);
+				deltaL =
+					distInvariantCM(centMassOldAfter.X(), centMassOldAfter.Y(), centMassOldAfter.Z(), centMassNewAfter.X(), centMassNewAfter.Y(), centMassNewAfter.Z(), fieldDim, boundaryStrategy)
+					- lBefore;
+			}
+			double clusterOldCellEnergy = (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(oldCell), oldCell, true);
 			//cerr<<"clusterOldCellEnergy="<<clusterOldCellEnergy<<endl;
 			energy += clusterOldCellEnergy;
 		}
 
 		//go over anchors
-		for each (FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(const_cast<CellG*>(oldCell))) {
+		for each (FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(oldCell)) {
 			anchorPoint = link->getAnchorPoint();
 			lBefore = distInvariantCM(centMassOldBefore.X(), centMassOldBefore.Y(), centMassOldBefore.Z(), anchorPoint[0], anchorPoint[1], anchorPoint[2], fieldDim, boundaryStrategy);
 			deltaL =
 				distInvariantCM(centMassOldAfter.X(), centMassOldAfter.Y(), centMassOldAfter.Z(), anchorPoint[0], anchorPoint[1], anchorPoint[2], fieldDim, boundaryStrategy)
 				- lBefore;
-			energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(const_cast<CellG*>(oldCell)), oldCell, false);
+			energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(oldCell), oldCell, false);
 		}
 
 	}
@@ -817,7 +816,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 		//cerr<<"energy for new cell section"<<endl;
 		//cerr<<"energy before new section starts="<<energy<<endl;
 
-		for each (FocalPointPlasticityLink* link in linkInv.getCellLinkList(const_cast<CellG*>(newCell))) {
+		for each (FocalPointPlasticityLink* link in linkInv.getCellLinkList(newCell)) {
 			nCell = link->getOtherCell(newCell);
 			nCellVol = nCell->volume;
 
@@ -827,7 +826,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 					distInvariantCM(centMassNewAfter.X(), centMassNewAfter.Y(), centMassNewAfter.Z(), nCell->xCM / nCellVol, nCell->yCM / nCellVol, nCell->zCM / nCellVol, fieldDim, boundaryStrategy)
 					- lBefore;
 
-				double newDeltaEnergy = (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(const_cast<CellG*>(newCell)), newCell, false);
+				double newDeltaEnergy = (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(newCell), newCell, false);
 				//cerr<<"newDeltaEnergy="<<newDeltaEnergy<<endl;
 				energy += newDeltaEnergy;
 
@@ -838,7 +837,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 		}
 
 		//go ever compartments
-		for each (FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(const_cast<CellG*>(newCell))) {
+		for each (FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(newCell)) {
 			nCell = link->getOtherCell(newCell);
 			nCellVol = nCell->volume;
 
@@ -847,7 +846,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 				deltaL =
 					distInvariantCM(centMassNewAfter.X(), centMassNewAfter.Y(), centMassNewAfter.Z(), nCell->xCM / nCellVol, nCell->yCM / nCellVol, nCell->zCM / nCellVol, fieldDim, boundaryStrategy)
 					- lBefore;
-				energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(const_cast<CellG*>(newCell)), newCell, true);
+				energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(newCell), newCell, true);
 			}
 			else {
 				// this was already taken into account in the oldCell secion - we need to avoid double counting
@@ -856,14 +855,13 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 		}
 
 		//go over anchors
-		for each (FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(const_cast<CellG*>(newCell))) {
+		for each (FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(newCell)) {
 			anchorPoint = link->getAnchorPoint();
 			lBefore = distInvariantCM(centMassNewBefore.X(), centMassNewBefore.Y(), centMassNewBefore.Z(), anchorPoint[0], anchorPoint[1], anchorPoint[2], fieldDim, boundaryStrategy);
 			deltaL =
 				distInvariantCM(centMassNewAfter.X(), centMassNewAfter.Y(), centMassNewAfter.Z(), anchorPoint[0], anchorPoint[1], anchorPoint[2], fieldDim, boundaryStrategy)
 				- lBefore;
-
-			energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(const_cast<CellG*>(newCell)), newCell, false);
+			energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(newCell), newCell, false);
 		}
 
 	}

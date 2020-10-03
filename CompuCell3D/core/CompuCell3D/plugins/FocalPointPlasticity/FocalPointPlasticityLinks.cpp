@@ -30,6 +30,14 @@ using namespace CompuCell3D;
 Written by T.J. Sego, Ph.D.
 */
 
+CellG* FocalPointPlasticityLinkBase::getCellGFromConst(const CellG* _cell) {
+	if (!_cell) return (CellG*)(0);
+	else {
+		CellG* _cellNC = potts->getCellInventory().getCellByIds(_cell->id, _cell->clusterId);
+		return _cellNC;
+	}
+}
+
 void FocalPointPlasticityLinkBase::initializeConstitutiveLaw(std::string _localLaw) {
 	ev = ExpressionEvaluator();
 	ev.addVariable("Lambda");
@@ -48,25 +56,6 @@ double FocalPointPlasticityLinkBase::constitutiveLaw(float _lambda, float _lengt
 	ev[1] = _length;
 	ev[2] = _targetLength;
 	return ev.eval();
-}
-
-FocalPointPlasticityTrackerData FocalPointPlasticityLinkBase::getFPPTrackerData(CellG* _cell) {
-	FocalPointPlasticityTrackerData fpptd = FocalPointPlasticityTrackerData(fppltd);
-	if (_cell == initiator || !initiator) {
-		fpptd.neighborAddress = initiated;
-		fpptd.isInitiator = true;
-		fpptd.maxNumberOfJunctions = getMaxNumberOfJunctions();
-		fpptd.activationEnergy = getActivationEnergy();
-		fpptd.neighborOrder = getNeighborOrder();
-	}
-	else if (_cell == initiated || !initiated) {
-		fpptd.neighborAddress = initiator;
-		fpptd.isInitiator = false;
-		fpptd.maxNumberOfJunctions = getMaxNumberOfJunctions();
-		fpptd.activationEnergy = getActivationEnergy();
-		fpptd.neighborOrder = getNeighborOrder();
-	}
-	return fpptd;
 }
 
 float FocalPointPlasticityLinkBase::getDistance() {

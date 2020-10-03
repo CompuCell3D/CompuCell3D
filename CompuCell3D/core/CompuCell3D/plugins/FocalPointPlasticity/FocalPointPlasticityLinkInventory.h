@@ -38,11 +38,7 @@ namespace CompuCell3D {
 
 	public:
 
-		FPPLinkInventory() {}
-		FPPLinkInventory(BasicClassAccessor<FocalPointPlasticityTracker>* _focalPointPlasticityTrackerAccessor)
-		{
-			focalPointPlasticityTrackerAccessor = _focalPointPlasticityTrackerAccessor;
-		}
+		using FPPLinkInventoryBase<FocalPointPlasticityLink>::FPPLinkInventoryBase<FocalPointPlasticityLink>;
 		virtual ~FPPLinkInventory() {}
 
 		FPPTrackerDataSet& getFPPTrackerDataSet(CellG* _cell) {
@@ -53,8 +49,8 @@ namespace CompuCell3D {
 		// Get the link connecting two cells
 		FocalPointPlasticityLink* getLinkByCells(CellG* _cell0, CellG* _cell1) { return getLinkById(FPPLinkID(_cell0->id, _cell1->id)); }
 		// Get list of cells linked to a cell
-		const std::vector<const CellG*> getLinkedCells(CellG* _cell) {
-			std::vector<const CellG*> o;
+		std::vector<CellG*> getLinkedCells(CellG* _cell) {
+			std::vector<CellG*> o;
 			FPPInventory_t *cInv = getCellLinkInventory(_cell);
 			for (linkInventoryItr_t itr = cInv->linkInventoryBegin(); itr != cInv->linkInventoryEnd(); ++itr) {
 				o.push_back(itr->second->getOtherCell(_cell));
@@ -62,7 +58,7 @@ namespace CompuCell3D {
 			return o;
 		}
 		// Get number of junctions for a cell by type
-		const int getNumberOfJunctionsByType(CellG* _cell, long _type) {
+		int getNumberOfJunctionsByType(CellG* _cell, unsigned char _type) {
 			FPPInventory_t *cInv = getCellLinkInventory(_cell);
 			return count_if(cInv->linkInventoryBegin(), cInv->linkInventoryEnd(), [&](linkInventoryPair_t p) {
 				return p.second->getOtherCell(_cell)->type == _type;
@@ -75,11 +71,7 @@ namespace CompuCell3D {
 
 	public:
 
-		FPPInternalLinkInventory() {}
-		FPPInternalLinkInventory(BasicClassAccessor<FocalPointPlasticityTracker>* _focalPointPlasticityTrackerAccessor)
-		{
-			focalPointPlasticityTrackerAccessor = _focalPointPlasticityTrackerAccessor;
-		}
+		using FPPLinkInventoryBase<FocalPointPlasticityInternalLink>::FPPLinkInventoryBase<FocalPointPlasticityInternalLink>;
 		virtual ~FPPInternalLinkInventory() {}
 
 		FPPTrackerDataSet& getFPPTrackerDataSet(CellG* _cell) {
@@ -90,8 +82,8 @@ namespace CompuCell3D {
 		// Get the link connecting two cells
 		FocalPointPlasticityInternalLink* getLinkByCells(CellG* _cell0, CellG* _cell1) { return getLinkById(FPPLinkID(_cell0->id, _cell1->id)); }
 		// Get list of cells linked to a cell
-		const std::vector<const CellG*> getLinkedCells(CellG* _cell) {
-			std::vector<const CellG*> o;
+		std::vector<CellG*> getLinkedCells(CellG* _cell) {
+			std::vector<CellG*> o;
 			FPPInventory_t *cInv = getCellLinkInventory(_cell);
 			for (linkInventoryItr_t itr = cInv->linkInventoryBegin(); itr != cInv->linkInventoryEnd(); ++itr) {
 				o.push_back(itr->second->getOtherCell(_cell));
@@ -99,7 +91,7 @@ namespace CompuCell3D {
 			return o;
 		}
 		// Get number of junctions for a cell by type
-		const int getNumberOfJunctionsByType(CellG* _cell, long _type) {
+		int getNumberOfJunctionsByType(CellG* _cell, unsigned char _type) {
 			FPPInventory_t *cInv = getCellLinkInventory(_cell);
 			return count_if(cInv->linkInventoryBegin(), cInv->linkInventoryEnd(), [&](linkInventoryPair_t p) {
 				return p.second->getOtherCell(_cell)->type == _type;
@@ -112,11 +104,7 @@ namespace CompuCell3D {
 
 	public:
 
-		FPPAnchorInventory() {}
-		FPPAnchorInventory(BasicClassAccessor<FocalPointPlasticityTracker>* _focalPointPlasticityTrackerAccessor)
-		{
-			focalPointPlasticityTrackerAccessor = _focalPointPlasticityTrackerAccessor;
-		}
+		using FPPLinkInventoryBase<FocalPointPlasticityAnchor>::FPPLinkInventoryBase<FocalPointPlasticityAnchor>;
 		virtual ~FPPAnchorInventory() {}
 
 		FPPTrackerDataSet& getFPPTrackerDataSet(CellG* _cell) {
