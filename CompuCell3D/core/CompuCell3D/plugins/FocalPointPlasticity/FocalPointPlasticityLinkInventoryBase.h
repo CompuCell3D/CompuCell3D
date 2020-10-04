@@ -71,6 +71,19 @@ namespace CompuCell3D {
 		bool operator != (const FPPLinkID & _rhs) const { return !(operator==(_rhs)); }
 	};
 
+	template <class LinkType> class FPPLinkInventoryBase;
+
+	template <class LinkType>
+	class FOCALPOINTPLASTICITY_EXPORT FPPLinkInventoryTracker {
+	public:
+		typedef FPPLinkInventoryBase<LinkType> FPPLinkInventory;
+
+		FPPLinkInventoryTracker(): linkInv(FPPLinkInventory()) {};
+		~FPPLinkInventoryTracker() {};
+		
+		FPPLinkInventory linkInv;
+	};
+
 
 	template <class LinkType>
 	class FOCALPOINTPLASTICITY_EXPORT FPPLinkInventoryBase {
@@ -88,10 +101,13 @@ namespace CompuCell3D {
 		typedef typename cellLinkInventory_t::iterator cellLinkInventoryItr_t;
 		typedef std::pair<CellG*, typename FPPInventory_t> cellLinkInventoryPair_t;
 
+		typedef BasicClassAccessor<FPPLinkInventoryTracker<LinkType> > cellLinkInventoryAcc_t;
+
 	protected:
 
 		Potts3D* potts;
 		BasicClassAccessor<FocalPointPlasticityTracker>* focalPointPlasticityTrackerAccessor;
+		cellLinkInventoryAcc_t* cellLinkInventoryTrackerAccessor;
 
 		linkInventory_t linkInventory;
 
@@ -146,7 +162,9 @@ namespace CompuCell3D {
 
 		cellLinkInventory_t cellLinkInventory;
 
-		FPPInventory_t* getCellLinkInventory(CellG* _cell) { return &cellLinkInventory[_cell]; }
+		FPPInventory_t* getCellLinkInventory(CellG* _cell) { 
+			return &cellLinkInventoryTrackerAccessor->get(_cell->extraAttribPtr)->linkInv;
+		}
 
 		CellG* getCellGFromConst(const CellG* _cell) {
 			if (!_cell) return (CellG*)(0);
@@ -158,14 +176,17 @@ namespace CompuCell3D {
 
 	public:
 		FPPLinkInventoryBase() {}
-		FPPLinkInventoryBase(Potts3D* _potts, BasicClassAccessor<FocalPointPlasticityTracker>* _focalPointPlasticityTrackerAccessor)
+		FPPLinkInventoryBase(cellLinkInventoryAcc_t* _cellLinkInventoryTrackerAccessor, Potts3D* _potts, BasicClassAccessor<FocalPointPlasticityTracker>* _focalPointPlasticityTrackerAccessor)
 		{
+			cellLinkInventoryTrackerAccessor = _cellLinkInventoryTrackerAccessor;
 			potts = _potts;
 			focalPointPlasticityTrackerAccessor = _focalPointPlasticityTrackerAccessor;
 		}
 		virtual ~FPPLinkInventoryBase() {}
 
 		BasicClassAccessor<FocalPointPlasticityTracker> * getFocalPointPlasticityTrackerAccessorPtr() { return focalPointPlasticityTrackerAccessor; }
+		cellLinkInventoryAcc_t* getFocalPointPlasticityCellLinkInventoryTrackerAccessorPtr() { return cellLinkInventoryTrackerAccessor; }
+
 		virtual FPPTrackerDataSet& getFPPTrackerDataSet(CellG* _cell) { return FPPTrackerDataSet(); }
 
 		virtual int getLinkInventorySize() { return linkInventory.size(); }
@@ -198,21 +219,18 @@ namespace CompuCell3D {
 			return fppLinkList;
 		}
 		// Get link inventory list by cell
-		FPPLinkList getCellLinkList(CellG* _cell) { return cellLinkInventory[_cell].getLinkList(); }
+		FPPLinkList getCellLinkList(CellG* _cell) { return getCellLinkInventory(_cell)->getLinkList(); }
 		FPPLinkList getCellLinkList(const CellG* _cell) {
 			CellG* _cellNC = getCellGFromConst(_cell);
 			return getCellLinkList(_cellNC);
 		}
 		// Get number of junctions for a cell
-		virtual int getNumberOfJunctions(CellG* _cell) { return cellLinkInventory[_cell].getLinkInventorySize(); }
+		virtual int getNumberOfJunctions(CellG* _cell) { return getCellLinkInventory(_cell)->getLinkInventorySize(); }
 		// Remove all links attached to a cell
 		void removeCellLinks(CellG* _cell) {
 			FPPLinkList cellLinkList = getCellLinkList(_cell);
 			for (FPPLinkList::iterator itr = cellLinkList.begin(); itr != cellLinkList.end(); ++itr)
 				removeFromInventory((*itr));
-
-			cellLinkInventoryItr_t cItr = cellLinkInventory.find(_cell);
-			if (cItr != cellLinkInventory.end()) cellLinkInventory.erase(_cell);
 		}
 
 	};

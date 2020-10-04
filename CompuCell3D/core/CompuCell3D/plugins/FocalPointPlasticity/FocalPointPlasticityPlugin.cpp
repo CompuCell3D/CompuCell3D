@@ -70,10 +70,14 @@ void FocalPointPlasticityPlugin::init(Simulator *simulator, CC3DXMLElement *_xml
 	//first need to register center of mass plugin and then register FocalPointPlasticity
 	potts->getCellFactoryGroupPtr()->registerClass(&focalPointPlasticityTrackerAccessor);
 	potts->registerCellGChangeWatcher(this);
-
-	linkInv = FPPLinkInventory(potts, &focalPointPlasticityTrackerAccessor);
-	linkInvInternal = FPPInternalLinkInventory(potts, &focalPointPlasticityTrackerAccessor);
-	linkInvAnchor = FPPAnchorInventory(potts, &focalPointPlasticityTrackerAccessor);
+	// Instantiate these here for safe garbage collection
+	potts->getCellFactoryGroupPtr()->registerClass(&cellLinkInventoryTracker);
+	potts->getCellFactoryGroupPtr()->registerClass(&cellInternalLinkInventoryTracker);
+	potts->getCellFactoryGroupPtr()->registerClass(&cellAnchorInventoryTracker);
+	// Initialize link inventories
+	linkInv = FPPLinkInventory(&cellLinkInventoryTracker, potts, &focalPointPlasticityTrackerAccessor);
+	linkInvInternal = FPPInternalLinkInventory(&cellInternalLinkInventoryTracker, potts, &focalPointPlasticityTrackerAccessor);
+	linkInvAnchor = FPPAnchorInventory(&cellAnchorInventoryTracker, potts, &focalPointPlasticityTrackerAccessor);
 
 	pUtils = simulator->getParallelUtils();
 	unsigned int maxNumberOfWorkNodes = pUtils->getMaxNumberOfWorkNodesPotts();

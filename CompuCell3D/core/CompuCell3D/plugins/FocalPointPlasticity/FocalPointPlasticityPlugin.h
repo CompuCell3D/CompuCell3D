@@ -50,13 +50,12 @@ namespace CompuCell3D {
 	class BoundaryStrategy;
     class ParallelUtilsOpenMP;
 
-	class FPPLinkInventory;
-	class FPPInternalLinkInventory;
-	class FPPAnchorInventory;
-
 	class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityPlugin : public Plugin,public EnergyFunction, public CellGChangeWatcher  {
 
 		BasicClassAccessor<FocalPointPlasticityTracker> focalPointPlasticityTrackerAccessor;
+		BasicClassAccessor<FPPLinkInventoryTracker<FocalPointPlasticityLink> > cellLinkInventoryTracker;
+		BasicClassAccessor<FPPLinkInventoryTracker<FocalPointPlasticityInternalLink> > cellInternalLinkInventoryTracker;
+		BasicClassAccessor<FPPLinkInventoryTracker<FocalPointPlasticityAnchor> > cellAnchorInventoryTracker;
 
 		Simulator *sim;
 
