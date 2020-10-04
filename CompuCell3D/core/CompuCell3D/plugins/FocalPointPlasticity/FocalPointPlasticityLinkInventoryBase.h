@@ -97,10 +97,6 @@ namespace CompuCell3D {
 		typedef typename linkInventory_t::iterator linkInventoryItr_t;
 		typedef std::pair<const FPPLinkID, LinkType*> linkInventoryPair_t;
 
-		typedef std::map<CellG*, typename FPPInventory_t> cellLinkInventory_t;
-		typedef typename cellLinkInventory_t::iterator cellLinkInventoryItr_t;
-		typedef std::pair<CellG*, typename FPPInventory_t> cellLinkInventoryPair_t;
-
 		typedef BasicClassAccessor<FPPLinkInventoryTracker<LinkType> > cellLinkInventoryAcc_t;
 
 	protected:
@@ -159,8 +155,6 @@ namespace CompuCell3D {
 				if (itr != fppdSet.end()) fppdSet.erase(fppd);
 			}
 		}
-
-		cellLinkInventory_t cellLinkInventory;
 
 		FPPInventory_t* getCellLinkInventory(CellG* _cell) { 
 			return &cellLinkInventoryTrackerAccessor->get(_cell->extraAttribPtr)->linkInv;
