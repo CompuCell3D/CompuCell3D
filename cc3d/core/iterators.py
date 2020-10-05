@@ -334,6 +334,7 @@ class CellNeighborIteratorFlex:
     def __iter__(self):
         return self
 
+
 class FocalPointPlasticityDataList:
     def __init__(self, _focalPointPlasticityPlugin, _cell):
         self.focalPointPlasticityPlugin = _focalPointPlasticityPlugin
@@ -465,6 +466,115 @@ class AnchorFocalPointPlasticityDataIterator:
 
     def __iter__(self):
         return self
+
+
+class _FocalPointPlasticityLinkListBase:
+
+    # Python iterator type
+    inv_itr_t = None
+
+    def __init__(self, _fpp_plugin):
+        self._inv = self._get_inventory(_fpp_plugin)
+
+    def __len__(self):
+        return int(self._inv.getLinkInventorySize())
+
+    def __iter__(self):
+        return self.inv_itr_t(self)
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        """
+        Get link inventory container
+        :param _fpp_plugin: focal point plasticity plugin
+        :return: link inventory container
+        """
+        raise NotImplementedError
+
+
+class _FocalPointPlasticityDataIteratorBase:
+
+    # C++ iterator type
+    py_itr_t = None
+
+    def __init__(self, _link_list: _FocalPointPlasticityLinkListBase):
+        self._link_list = _link_list
+        self._inv = self._link_list._inv
+        self._itr = self.py_itr_t()
+        self._itr.initialize(self._inv.getContainer())
+        self._itr.setToBegin()
+
+    def __next__(self):
+        if self._itr.isEnd():
+            raise StopIteration
+        else:
+            _itr_val = self._itr.getCurrentRef()
+            self._itr.next()
+            return _itr_val
+
+    def __iter__(self):
+        return self
+
+
+class FocalPointPlasticityLinkListItr(_FocalPointPlasticityDataIteratorBase):
+
+    py_itr_t = CompuCell.mapFPPLinkIDFPPLinkPyItr
+
+    def __init__(self, _data_list):
+        super().__init__(_data_list)
+
+
+class FocalPointPlasticityLinkList(_FocalPointPlasticityLinkListBase):
+
+    inv_itr_t = FocalPointPlasticityLinkListItr
+
+    def __init__(self, _fpp_plugin):
+        super().__init__(_fpp_plugin)
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        return _fpp_plugin.getLinkInventory()
+
+
+class FocalPointPlasticityInternalLinkListItr(_FocalPointPlasticityDataIteratorBase):
+
+    py_itr_t = CompuCell.mapFPPLinkIDFPPInternalLinkPyItr
+
+    def __init__(self, _data_list):
+        super().__init__(_data_list)
+
+
+class FocalPointPlasticityInternalLinkList(_FocalPointPlasticityLinkListBase):
+
+    inv_itr_t = FocalPointPlasticityInternalLinkListItr
+
+    def __init__(self, _fpp_plugin):
+        super().__init__(_fpp_plugin)
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        return _fpp_plugin.getInternalLinkInventory()
+
+
+class FocalPointPlasticityAnchorListItr(_FocalPointPlasticityDataIteratorBase):
+
+    py_itr_t = CompuCell.mapFPPLinkIDFPPAnchorPyItr
+
+    def __init__(self, _data_list):
+        super().__init__(_data_list)
+
+
+class FocalPointPlasticityAnchorList(_FocalPointPlasticityLinkListBase):
+
+    inv_itr_t = FocalPointPlasticityAnchorListItr
+
+    def __init__(self, _fpp_plugin):
+        super().__init__(_fpp_plugin)
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        return _fpp_plugin.getAnchorInventory()
+
 
 class CellPixelList:
     def __init__(self, _pixelTrackerPlugin, _cell):

@@ -369,15 +369,26 @@ PLUGINACCESSOR(PlasticityTracker)
 %template (focalPointPlasticityTrackerDataSet) std::set<CompuCell3D::FocalPointPlasticityTrackerData>; //necessary to get basic set functionality working
 %template (focalPointPlasticityTrackerDataVector) std::vector<CompuCell3D::FocalPointPlasticityTrackerData>; //necessary to get basic set functionality working
 
+%{
+namespace swig{
+
+	// link id
+	template<> struct traits<CompuCell3D::FPPLinkID>{
+		typedef pointer_category category;
+		static const char* type_name() {return "FPPLinkID";}
+	};
+
+}
+
+%}
+
 %ignore CompuCell3D::FocalPointPlasticityLinkType;
 %include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityLinks.h>
 
-%ignore CompuCell3D::FPPLinkID;
 %include "plugins/FocalPointPlasticity/FocalPointPlasticityLinkInventoryBase.h"
-%template(FPPLinkList) CompuCell3D::FPPLinkListBase<CompuCell3D::FocalPointPlasticityLink>;
-%template(FPPInternalLinkList) CompuCell3D::FPPLinkListBase<CompuCell3D::FocalPointPlasticityInternalLink>;
-%template(FPPAnchorList) CompuCell3D::FPPLinkListBase<CompuCell3D::FocalPointPlasticityAnchor>;
-
+%template (mapFPPLinkIDFPPLinkPyItr) STLPyIteratorMap<std::map<const CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityLink*>, CompuCell3D::FocalPointPlasticityLink*>;
+%template (mapFPPLinkIDFPPInternalLinkPyItr) STLPyIteratorMap<std::map<const CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityInternalLink*>, CompuCell3D::FocalPointPlasticityInternalLink*>;
+%template (mapFPPLinkIDFPPAnchorPyItr) STLPyIteratorMap<std::map<const CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityAnchor*>, CompuCell3D::FocalPointPlasticityAnchor*>;
 %template (_fppInventoryBaseLink) CompuCell3D::FPPLinkInventoryBase<CompuCell3D::FocalPointPlasticityLink>;
 %template (_fppInventoryBaseInternalLink) CompuCell3D::FPPLinkInventoryBase<CompuCell3D::FocalPointPlasticityInternalLink>;
 %template (_fppInventoryBaseAnchor) CompuCell3D::FPPLinkInventoryBase<CompuCell3D::FocalPointPlasticityAnchor>;

@@ -54,6 +54,7 @@ namespace CompuCell3D {
 		long id0;
 		long id1;
 
+		FPPLinkID() : id0(0), id1(0) {};
 		FPPLinkID(long _id0, long _id1)
 		{
 			if (_id0 < _id1) {
@@ -65,7 +66,7 @@ namespace CompuCell3D {
 				id0 = _id1;
 			}
 		}
-		virtual ~FPPLinkID() {}
+		~FPPLinkID() {}
 		bool operator < (const FPPLinkID & _rhs) const { return id0 < _rhs.id0 || (id0 == _rhs.id0 && id1 < _rhs.id1); }
 		bool operator == (const FPPLinkID & _rhs) const { return id0 == _rhs.id0 && id1 == _rhs.id1; }
 		bool operator != (const FPPLinkID & _rhs) const { return !(operator==(_rhs)); }
@@ -76,12 +77,11 @@ namespace CompuCell3D {
 	template <class LinkType>
 	class FOCALPOINTPLASTICITY_EXPORT FPPLinkInventoryTracker {
 	public:
-		typedef FPPLinkInventoryBase<LinkType> FPPLinkInventory;
 
-		FPPLinkInventoryTracker(): linkInv(FPPLinkInventory()) {};
+		FPPLinkInventoryTracker() {};
 		~FPPLinkInventoryTracker() {};
 		
-		FPPLinkInventory linkInv;
+		FPPLinkInventoryBase<LinkType> linkInv;
 	};
 
 
@@ -97,13 +97,11 @@ namespace CompuCell3D {
 		typedef typename linkInventory_t::iterator linkInventoryItr_t;
 		typedef std::pair<const FPPLinkID, LinkType*> linkInventoryPair_t;
 
-		typedef BasicClassAccessor<FPPLinkInventoryTracker<LinkType> > cellLinkInventoryAcc_t;
-
 	protected:
 
 		Potts3D* potts;
 		BasicClassAccessor<FocalPointPlasticityTracker>* focalPointPlasticityTrackerAccessor;
-		cellLinkInventoryAcc_t* cellLinkInventoryTrackerAccessor;
+		BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* cellLinkInventoryTrackerAccessor;
 
 		linkInventory_t linkInventory;
 
@@ -170,7 +168,7 @@ namespace CompuCell3D {
 
 	public:
 		FPPLinkInventoryBase() {}
-		FPPLinkInventoryBase(cellLinkInventoryAcc_t* _cellLinkInventoryTrackerAccessor, Potts3D* _potts, BasicClassAccessor<FocalPointPlasticityTracker>* _focalPointPlasticityTrackerAccessor)
+		FPPLinkInventoryBase(BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* _cellLinkInventoryTrackerAccessor, Potts3D* _potts, BasicClassAccessor<FocalPointPlasticityTracker>* _focalPointPlasticityTrackerAccessor)
 		{
 			cellLinkInventoryTrackerAccessor = _cellLinkInventoryTrackerAccessor;
 			potts = _potts;
@@ -179,11 +177,12 @@ namespace CompuCell3D {
 		virtual ~FPPLinkInventoryBase() {}
 
 		BasicClassAccessor<FocalPointPlasticityTracker> * getFocalPointPlasticityTrackerAccessorPtr() { return focalPointPlasticityTrackerAccessor; }
-		cellLinkInventoryAcc_t* getFocalPointPlasticityCellLinkInventoryTrackerAccessorPtr() { return cellLinkInventoryTrackerAccessor; }
+		BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* getFocalPointPlasticityCellLinkInventoryTrackerAccessorPtr() { return cellLinkInventoryTrackerAccessor; }
 
 		virtual FPPTrackerDataSet& getFPPTrackerDataSet(CellG* _cell) { return FPPTrackerDataSet(); }
 
 		virtual int getLinkInventorySize() { return linkInventory.size(); }
+		linkInventory_t& getContainer() { return linkInventory; }
 		virtual linkInventoryItr_t linkInventoryBegin() { return linkInventory.begin(); }
 		virtual linkInventoryItr_t linkInventoryEnd() { return linkInventory.end(); }
 		virtual void incrementIterator(linkInventoryItr_t& _itr) { ++_itr; }

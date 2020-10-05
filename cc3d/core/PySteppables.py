@@ -1096,6 +1096,33 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                                                                                  target_distance,
                                                                                  max_distance)
 
+    def get_focal_point_plasticity_link_list(self):
+        """
+        Returns list of all links
+        :return: {list} list of all links
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return None
+        return FocalPointPlasticityLinkList(self.focal_point_plasticity_plugin)
+
+    def get_focal_point_plasticity_internal_link_list(self):
+        """
+        Returns list of all internal links
+        :return: {list} list of all internal links
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return None
+        return FocalPointPlasticityInternalLinkList(self.focal_point_plasticity_plugin)
+
+    def get_focal_point_plasticity_anchor_list(self):
+        """
+        Returns list of all anchors
+        :return: {list} list of all anchors
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return None
+        return FocalPointPlasticityAnchorList(self.focal_point_plasticity_plugin)
+
     def get_energy_calculations(self):
         return EnergyDataList(self.potts)
 
