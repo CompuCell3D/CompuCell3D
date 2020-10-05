@@ -1029,6 +1029,40 @@ bool FieldExtractorCML::fillVectorFieldData3D(vtk_obj_addr_int_t _pointsArrayInt
 			return true;
 }
 
+
+bool FieldExtractorCML::fillVectorFieldData3DHex(vtk_obj_addr_int_t _pointsArrayIntAddr, vtk_obj_addr_int_t _vectorArrayIntAddr, std::string _fieldName) {
+
+    vtkFloatArray * vectorArray = (vtkFloatArray *)_vectorArrayIntAddr;
+    vtkPoints *pointsArray = (vtkPoints *)_pointsArrayIntAddr;
+
+    vtkFloatArray *vecArrayRead = (vtkFloatArray *)lds->GetPointData()->GetArray(_fieldName.c_str());
+
+    if (!vecArrayRead)
+        return false;
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+
+    double vecTmp[3];
+
+    int offset = 0;
+    for (pt.z = 0; pt.z<fieldDim.z; ++pt.z)
+        for (pt.y = 0; pt.y<fieldDim.y; ++pt.y)
+            for (pt.x = 0; pt.x<fieldDim.x; ++pt.x) {
+
+                vecArrayRead->GetTuple(indexPoint3D(pt), vecTmp);
+                if (vecTmp[0] != 0.0 || vecTmp[1] != 0.0 || vecTmp[2] != 0.0) {
+                    Coordinates3D<double> hexCoords = HexCoordXY(pt.x, pt.y, pt.z);
+                    pointsArray->InsertPoint(offset, hexCoords.x, hexCoords.y, hexCoords.z);
+                    
+                    vectorArray->InsertTuple3(offset, vecTmp[0], vecTmp[1], vecTmp[2]);
+                    ++offset;
+                }
+            }
+    return true;
+}
+
+
 bool FieldExtractorCML::fillVectorFieldCellLevelData2D(vtk_obj_addr_int_t _pointsArrayIntAddr,vtk_obj_addr_int_t _vectorArrayIntAddr,std::string _fieldName, std::string _plane ,  int _pos){
 	vtkFloatArray * vectorArray=(vtkFloatArray *)_vectorArrayIntAddr;
 	vtkPoints *pointsArray=(vtkPoints *)_pointsArrayIntAddr;
@@ -1225,6 +1259,58 @@ bool FieldExtractorCML::fillVectorFieldCellLevelData3D(vtk_obj_addr_int_t _point
 			}
 			return true;
 }
+
+bool FieldExtractorCML::fillVectorFieldCellLevelData3DHex(vtk_obj_addr_int_t _pointsArrayIntAddr, vtk_obj_addr_int_t _vectorArrayIntAddr, std::string _fieldName) {
+    vtkFloatArray * vectorArray = (vtkFloatArray *)_vectorArrayIntAddr;
+    vtkPoints *pointsArray = (vtkPoints *)_pointsArrayIntAddr;
+
+    set<long> visitedCells;
+
+    vtkLongArray *idArray = (vtkLongArray *)lds->GetPointData()->GetArray("CellId");
+
+    vtkFloatArray *vecArrayRead = (vtkFloatArray *)lds->GetPointData()->GetArray(_fieldName.c_str());
+
+    if (!vecArrayRead)
+        return false;
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+    long cellId;
+    long idx;
+
+    double vecTmp[3];
+
+    int offset = 0;
+    for (pt.z = 0; pt.z<fieldDim.z; ++pt.z)
+        for (pt.y = 0; pt.y<fieldDim.y; ++pt.y)
+            for (pt.x = 0; pt.x<fieldDim.x; ++pt.x) {
+
+                idx = indexPoint3D(pt);
+
+                cellId = idArray->GetValue(idx);
+
+                if (cellId) {
+                    //check if this cell is in the set of visited Cells
+                    if (visitedCells.find(cellId) != visitedCells.end()) {
+                        continue; //cell have been visited 
+                    }
+                    else {
+                        //this is first time we visit given cell
+                        vecArrayRead->GetTuple(idx, vecTmp);
+                        if (vecTmp[0] != 0.0 || vecTmp[1] != 0.0 || vecTmp[2] != 0.0) {
+
+                            Coordinates3D<double> hexCoords = HexCoordXY(pt.x, pt.y, pt.z);
+                            pointsArray->InsertPoint(offset, hexCoords.x, hexCoords.y, hexCoords.z);
+                            vectorArray->InsertTuple3(offset, vecTmp[0], vecTmp[1], vecTmp[2]);
+                            ++offset;
+                        }
+                        visitedCells.insert(cellId);
+                    }
+                }
+            }
+    return true;
+}
+
 
 //vector<int> FieldExtractorCML::fillCellFieldData3D(long _cellTypeArrayAddr){
 vector<int> FieldExtractorCML::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr){

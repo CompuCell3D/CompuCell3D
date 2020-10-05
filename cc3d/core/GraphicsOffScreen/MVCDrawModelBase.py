@@ -2,12 +2,14 @@ import vtk
 import cc3d.player5.Configuration as Configuration
 from cc3d import CompuCellSetup
 from cc3d.player5.Utilities.utils import to_vtk_rgb
+import numpy as np
+from cc3d.cpp import CompuCell
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 
 
 class MVCDrawModelBase:
-    def __init__(self):
+    def __init__(self, boundary_strategy):
 
         (self.minCon, self.maxCon) = (0, 0)
 
@@ -15,6 +17,7 @@ class MVCDrawModelBase:
         self.fieldTypes = None
         self.currentDrawingParameters = None
         self.field_extractor = None
+        self.boundary_strategy = boundary_strategy
 
         self.cell_type_array = None
         self.cell_id_array = None
@@ -23,6 +26,15 @@ class MVCDrawModelBase:
         self.lattice_type_str = None
 
         self.celltypeLUT = None
+
+    def set_boundary_strategy(self, boundary_strategy):
+        """
+        sets boundary strategy C++ obj reference
+        :param boundary_strategy:
+        :return:
+        """
+
+        self.boundary_strategy = boundary_strategy
 
     # should also set "periodic" boundary condition flag(s) (e.g. for drawing FPP links that wraparound)
 
@@ -368,7 +380,6 @@ class MVCDrawModelBase:
     def configsChanged(self):
         pass
 
-
     def largestDim(self, dim):
         ldim = dim[0]
         for i in range(len(dim)):
@@ -414,3 +425,33 @@ class MVCDrawModelBase:
     def configs_changed(self):
 
         self.populate_cell_type_lookup_table()
+
+    # @staticmethod
+    # def unconditional_invariant_distance_vector(p1, p2, dim):
+    #
+    #     dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, dim)
+    #     return np.array([dist_vec.x, dist_vec.y, dist_vec.z])
+
+    def invariant_distance(self, p1, p2, dim):
+        """
+        Computes invariant distance
+        :param p1: 3-element array like obj representing point
+        :param p2: 3-element array like obj representing point
+        :param dim: field dimension
+        :return: invariant distance
+        """
+
+        inv_dist = CompuCell.distInvariantCM(p2[0], p2[1], p2[2], p1[0], p1[1], p1[2], dim, self.boundary_strategy)
+        return inv_dist
+
+    def invariant_distance_vector(self, p1, p2, dim):
+        """
+        Computes invariant distance
+        :param p1: 3-element array like obj representing point
+        :param p2: 3-element array like obj representing point
+        :param dim: field dimension
+        :return: invariant distance
+        """
+
+        dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, dim, self.boundary_strategy)
+        return np.array([dist_vec.x, dist_vec.y, dist_vec.z])

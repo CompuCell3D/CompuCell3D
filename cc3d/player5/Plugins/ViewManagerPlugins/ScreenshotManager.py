@@ -10,6 +10,7 @@ from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
 from cc3d.core.GraphicsUtils.ScreenshotManagerCore import ScreenshotManagerCore
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
 from weakref import ref
+from cc3d.CompuCellSetup import persistent_globals
 from cc3d.core.utils import mkdir_p
 from cc3d import CompuCellSetup
 
@@ -30,8 +31,14 @@ class ScreenshotManager(ScreenshotManagerCore):
 
         self.screenshotGraphicsWidget = None
 
-        self.gd = GenericDrawer()
+        try:
+            boundary_strategy = persistent_globals.simulator.getBoundaryStrategy()
+        except AttributeError:
+            boundary_strategy = None
+
+        self.gd = GenericDrawer(boundary_strategy=boundary_strategy)
         self.gd.set_field_extractor(field_extractor=tvw.fieldExtractor)
+
 
     def cleanup(self):
         # have to do cleanup to ensure some of the memory intensive resources e.g. self.screenshotGraphicsWidget get deallocated

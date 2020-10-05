@@ -56,6 +56,8 @@ BoundaryStrategy* BoundaryStrategy::singleton;
 //BoundaryStrategy* BoundaryStrategy::singleton;
 
 BoundaryStrategy::BoundaryStrategy() {
+    boundaryConditionIndicator.assign(3, 0);
+
 
 	strategy_x = BoundaryFactory::createBoundary(BoundaryFactory::no_flux);
 	strategy_y = BoundaryFactory::createBoundary(BoundaryFactory::no_flux);
@@ -84,9 +86,17 @@ BoundaryStrategy::BoundaryStrategy(string boundary_x, string boundary_y,
 
 {
 
+    boundaryConditionIndicator.assign(3, 0);
+
 	strategy_x = BoundaryFactory::createBoundary(boundary_x);
 	strategy_y = BoundaryFactory::createBoundary(boundary_y);
 	strategy_z = BoundaryFactory::createBoundary(boundary_z);
+
+    boundaryConditionIndicator[0] = boundary_x == "Periodic" ? 1 : 0;
+    boundaryConditionIndicator[1] = boundary_y == "Periodic" ? 1 : 0;
+    boundaryConditionIndicator[2] = boundary_z == "Periodic" ? 1 : 0;
+
+
 	algorithm = AlgorithmFactory::createAlgorithm(alg, index, size, inputfile);
 	regular = true;
 	neighborListsInitializedFlag = false;

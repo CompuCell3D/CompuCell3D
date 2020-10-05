@@ -490,7 +490,7 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 
 
 				oldCellVel = distanceVectorCoordinatesInvariant(oldCellCMAfter ,oldCellCMBefore,fieldDim);
-				nCellVel = distanceVectorCoordinatesInvariant(nCellCMBefore ,nCellCMBeforeBefore,fieldDim); //if nCell is not a new cell then its velocity before and after spin flip is the same - so I am using earlier expression 
+				nCellVel = distanceVectorCoordinatesInvariant(nCellCMBefore ,nCellCMBeforeBefore,fieldDim); //if nCell is not a new cell then its velocity before and after spin flip is the same - so I am using earlier expression
 
 				velocityDiffX = oldCellVel.x-nCellVel.x;
 				velocityDiffY = oldCellVel.y-nCellVel.y;
@@ -507,7 +507,7 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 
 			}else{            
 				oldCellVel = distanceVectorCoordinatesInvariant(oldCellCMAfter ,oldCellCMBefore,fieldDim);
-				nCellVel = distanceVectorCoordinatesInvariant(newCellCMAfter ,newCellCMBefore,fieldDim); 
+				nCellVel = distanceVectorCoordinatesInvariant(newCellCMAfter ,newCellCMBefore,fieldDim);
 
 
 
@@ -611,7 +611,7 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 				nCellCMBeforeBefore=Coordinates3D<double>(nCell->xCOMPrev,nCell->yCOMPrev,nCell->zCOMPrev);
 
 				newCellVel = distanceVectorCoordinatesInvariant(newCellCMAfter ,newCellCMBefore,fieldDim);
-				nCellVel = distanceVectorCoordinatesInvariant(nCellCMBefore ,nCellCMBeforeBefore,fieldDim); //if nCell is not an old cell then its velocity before and after spin flip is the same - so I am using earlier expression 
+				nCellVel = distanceVectorCoordinatesInvariant(nCellCMBefore ,nCellCMBeforeBefore,fieldDim); //if nCell is not an old cell then its velocity before and after spin flip is the same - so I am using earlier expression
 
 				velocityDiffX = newCellVel.x-nCellVel.x;
 				velocityDiffY = newCellVel.y-nCellVel.y;
@@ -628,7 +628,7 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 			}else{
 				//this should never get executed
 				newCellVel = distanceVectorCoordinatesInvariant(newCellCMAfter ,newCellCMBefore,fieldDim);
-				nCellVel = distanceVectorCoordinatesInvariant(oldCellCMAfter ,oldCellCMBefore,fieldDim); 
+				nCellVel = distanceVectorCoordinatesInvariant(oldCellCMAfter ,oldCellCMBefore,fieldDim);
 
 
 
