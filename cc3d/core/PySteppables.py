@@ -1138,23 +1138,117 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             return None
         return FocalPointPlasticityAnchorList(self.focal_point_plasticity_plugin)
 
-    @staticmethod
-    def _get_number_of_fpp_links(_inv) -> int:
+    def new_fpp_link(self, initiator: CompuCell.CellG, initiated: CompuCell.CellG,
+                     lambda_distance: float, target_distance: float = 0.0, max_distance: float = 0.0):
         """
-        Returns number of links
-        :param _inv: link inventory
-        :return: {int} number of links
+        Create a focal point plasticity link
+        :param initiator: {CompuCell.CellG} cell initiating the link
+        :param initiated: {CompuCell.CellG} second cell of the link
+        :param lambda_distance: {float} link lambda coefficient
+        :param target_distance: {float} target link distance
+        :param max_distance: {float} maximum link distance
+        :return: {CompuCell.FocalPointPlasticityLink} created link
         """
-        return int(_inv.getLinkInventorySize())
+        if self.focal_point_plasticity_plugin is None:
+            return None
+        self.focal_point_plasticity_plugin.createFocalPointPlasticityLink(
+            initiator, initiated, lambda_distance, target_distance, max_distance)
+        return self.fpp_link_inventory.getLinkByCells(initiator, initiated)
+
+    def new_fpp_internal_link(self, initiator: CompuCell.CellG, initiated: CompuCell.CellG,
+                              lambda_distance: float, target_distance: float = 0.0, max_distance: float = 0.0):
+        """
+        Create a focal point plasticity internal link
+        :param initiator: {CompuCell.CellG} cell initiating the link
+        :param initiated: {CompuCell.CellG} second cell of the link
+        :param lambda_distance: {float} link lambda coefficient
+        :param target_distance: {float} target link distance
+        :param max_distance: {float} maximum link distance
+        :return: {CompuCell.FocalPointPlasticityInternalLink} created link
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return None
+        self.focal_point_plasticity_plugin.createInternalFocalPointPlasticityLink(
+            initiator, initiated, lambda_distance, target_distance, max_distance)
+        return self.fpp_internal_link_inventory.getLinkByCells(initiator, initiated)
+
+    def new_fpp_anchor(self, cell: CompuCell.CellG,
+                       lambda_distance: float, target_distance: float = 0.0, max_distance: float = 0.0,
+                       x: float = 0.0, y: float = 0.0, z: float = 0.0, pt: CompuCell.Point3D = None):
+        """
+        Create a focal point plasticity internal link
+        :param cell: {CompuCell.CellG} cell
+        :param lambda_distance: {float} link lambda coefficient
+        :param target_distance: {float} target link distance
+        :param max_distance: {float} maximum link distance
+        :param x: {float} x-coordinate of anchor
+        :param y: {float} y-coordinate of anchor
+        :param z: {float} z-coordinate of anchor
+        :param pt: {CompuCell3D.Point3D} anchor point
+        :return: {CompuCell.FocalPointPlasticityAnchor} created link
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return None
+        if pt is not None:
+            x, y, z = pt.x, pt.y, pt.z
+        anchor_id = int(self.focal_point_plasticity_plugin.createAnchor(
+            cell, lambda_distance, target_distance, max_distance, x, y, z))
+        return self.fpp_anchor_inventory.getAnchor(cell, anchor_id)
+
+    def delete_fpp_link(self, _link):
+        """
+        Deletes a focal point plasticity link, internal link or anhcor
+        :param _link: link, internal link or anchor
+        :return: None
+        """
+        assert self.focal_point_plasticity_plugin is not None, 'Load focal point plasticity plugin'
+        if isinstance(_link, CompuCell.FocalPointPlasticityLink):
+            self.focal_point_plasticity_plugin.deleteFocalPointPlasticityLink(_link.getObj0(), _link.getObj1())
+        elif isinstance(_link, CompuCell.FocalPointPlasticityInternalLink):
+            self.focal_point_plasticity_plugin.deleteInternalFocalPointPlasticityLink(_link.getObj0(), _link.getObj1())
+        elif isinstance(_link, CompuCell.FocalPointPlasticityAnchor):
+            self.focal_point_plasticity_plugin.deleteAnchor(_link.getObj0(), _link.getAnchorId())
+
+    def remove_all_cell_fpp_links(self, _cell: CompuCell.CellG,
+                                  links: bool = False, internal_links: bool = False, anchors: bool = False):
+        """
+        Removes all links associated with a cell; if no optional arguments are specified, then all links are removed
+        :param _cell: {CompuCell.CellG} cell
+        :param links: {bool} option for fpp links
+        :param internal_links: {bool} option for fpp internal links
+        :param anchors: {bool} option for fpp anchors
+        :return: None
+        """
+        assert self.focal_point_plasticity_plugin is not None, 'Load focal point plasticity plugin'
+        if not any([links, internal_links, anchors]):
+            links, internal_links, anchors = True, True, True
+        if links:
+            self.fpp_link_inventory.removeCellLinks(_cell)
+        if internal_links:
+            self.fpp_internal_link_inventory.removeCellLinks(_cell)
+        if anchors:
+            self.fpp_anchor_inventory.removeCellLinks(_cell)
 
     def get_number_of_fpp_links(self) -> int:
-        return self._get_number_of_fpp_links(self.fpp_link_inventory)
+        """
+        Returns number of links
+        :return: {int} number of links
+        """
+        return int(self.fpp_link_inventory.getLinkInventorySize())
 
     def get_number_of_fpp_internal_links(self) -> int:
-        return self._get_number_of_fpp_links(self.fpp_internal_link_inventory)
+        """
+        Returns number of internal links
+        :return: {int} number of internal links
+        """
+        return int(self.fpp_internal_link_inventory.getLinkInventorySize())
 
     def get_number_of_fpp_anchors(self) -> int:
-        return self._get_number_of_fpp_links(self.fpp_anchor_inventory)
+        """
+        Returns number of anchors
+        :return: {int} number of anchors
+        """
+        return int(self.fpp_anchor_inventory.getLinkInventorySize())
 
     def get_fpp_link_by_cells(self, cell1: CompuCell.CellG, cell2: CompuCell.CellG) -> CompuCell.FocalPointPlasticityLink:
         """
@@ -1183,57 +1277,62 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         return self.fpp_anchor_inventory.getAnchor(cell, anchor_id)
 
-    @staticmethod
-    def _get_fpp_links_by_cell(_cell: CompuCell.CellG, _inv):
+    def get_fpp_links_by_cell(self, _cell: CompuCell.CellG) -> CompuCell.FPPLinkList:
         """
         Get list of links by cell
         :param _cell: cell
-        :param _inv: link inventory
         :return: links
         """
-        return _inv.getCellLinkList(_cell)
-
-    def get_fpp_links_by_cell(self, _cell: CompuCell.CellG) -> CompuCell.FPPLinkList:
-        return self._get_fpp_links_by_cell(_cell, self.fpp_link_inventory)
+        return self.fpp_link_inventory.getCellLinkList(_cell)
 
     def get_fpp_internal_links_by_cell(self, _cell: CompuCell.CellG) -> CompuCell.FPPInternalLinkList:
-        return self._get_fpp_links_by_cell(_cell, self.fpp_internal_link_inventory)
+        """
+        Get list of internal links by cell
+        :param _cell: cell
+        :return: internal links
+        """
+        return self.fpp_internal_link_inventory.getCellLinkList(_cell)
 
     def get_fpp_anchors_by_cell(self, _cell: CompuCell.CellG) -> CompuCell.FPPAnchorList:
-        return self._get_fpp_links_by_cell(_cell, self.fpp_anchor_inventory)
+        """
+        Get list of anchors by cell
+        :param _cell: cell
+        :return: anchors
+        """
+        return self.fpp_anchor_inventory.getCellLinkList(_cell)
 
-    @staticmethod
-    def _get_fpp_linked_cells(_cell: CompuCell.CellG, _inv):
+    def get_fpp_linked_cells(self, _cell: CompuCell.CellG) -> CompuCell.mvectorCellGPtr:
         """
         Get list of cells linked to a cell
         :param _cell: cell
-        :param _inv: link inventory
         :return: list of linked cells
         """
-        return _inv.getLinkedCells(_cell)
-
-    def get_fpp_linked_cells(self, _cell: CompuCell.CellG) -> CompuCell.mvectorCellGPtr:
-        return self._get_fpp_linked_cells(_cell, self.fpp_link_inventory)
+        return self.fpp_link_inventory.getLinkedCells(_cell)
 
     def get_fpp_internal_linked_cells(self, _cell: CompuCell.CellG) -> CompuCell.mvectorCellGPtr:
-        return self._get_fpp_linked_cells(_cell, self.fpp_internal_link_inventory)
+        """
+        Get list of cells internally linked to a cell
+        :param _cell: cell
+        :return: list of linked cells
+        """
+        return self.fpp_internal_link_inventory.getLinkedCells(_cell)
 
-    @staticmethod
-    def _get_number_of_fpp_junctions_by_type(_cell: CompuCell.CellG, _type: int, _inv) -> int:
+    def get_number_of_fpp_junctions_by_type(self, _cell: CompuCell.CellG, _type: int) -> int:
         """
         Get number of link junctions by type for a cell
         :param _cell: cell
         :param _type: type id
-        :param _inv: link inventory
         :return: {int} number of junctions
         """
-        return int(_inv.getNumberOfJunctionsByType(_cell, _type))
-
-    def get_number_of_fpp_junctions_by_type(self, _cell: CompuCell.CellG, _type: int) -> int:
-        return self._get_number_of_fpp_junctions_by_type(_cell, _type, self.fpp_link_inventory)
+        return int(self.fpp_link_inventory.getNumberOfJunctionsByType(_cell, _type))
 
     def get_number_of_fpp_internal_junctions_by_type(self, _cell: CompuCell.CellG, _type: int) -> int:
-        return self._get_number_of_fpp_junctions_by_type(_cell, _type, self.fpp_internal_link_inventory)
+        """
+        Get number of internal link junctions by type for a cell
+        :param _cell: cell
+        :return: {int} number of internal junctions
+        """
+        return int(self.fpp_internal_link_inventory.getNumberOfJunctionsByType(_cell, _type))
 
     def get_energy_calculations(self):
         return EnergyDataList(self.potts)
