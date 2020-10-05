@@ -385,7 +385,13 @@ namespace swig{
 %ignore CompuCell3D::FocalPointPlasticityLinkType;
 %include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityLinks.h>
 
+%template(_FPPLinkList) std::vector<CompuCell3D::FocalPointPlasticityLink*>;
+%template(_FPPInternalLinkList) std::vector<CompuCell3D::FocalPointPlasticityInternalLink*>;
+%template(_FPPAnchorList) std::vector<CompuCell3D::FocalPointPlasticityAnchor*>;
 %include "plugins/FocalPointPlasticity/FocalPointPlasticityLinkInventoryBase.h"
+%template(FPPLinkList) CompuCell3D::FPPLinkListBase<CompuCell3D::FocalPointPlasticityLink>;
+%template(FPPInternalLinkList) CompuCell3D::FPPLinkListBase<CompuCell3D::FocalPointPlasticityInternalLink>;
+%template(FPPAnchorList) CompuCell3D::FPPLinkListBase<CompuCell3D::FocalPointPlasticityAnchor>;
 %template (mapFPPLinkIDFPPLinkPyItr) STLPyIteratorMap<std::map<const CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityLink*>, CompuCell3D::FocalPointPlasticityLink*>;
 %template (mapFPPLinkIDFPPInternalLinkPyItr) STLPyIteratorMap<std::map<const CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityInternalLink*>, CompuCell3D::FocalPointPlasticityInternalLink*>;
 %template (mapFPPLinkIDFPPAnchorPyItr) STLPyIteratorMap<std::map<const CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityAnchor*>, CompuCell3D::FocalPointPlasticityAnchor*>;
