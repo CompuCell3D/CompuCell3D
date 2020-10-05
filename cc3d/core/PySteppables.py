@@ -1023,7 +1023,18 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         if self.focal_point_plasticity_plugin is None:
             return []
         else:
-            return [fppd.neighborAddress for fppd in self.get_focal_point_plasticity_data_list(cell)]
+            return [c for c in self.get_fpp_linked_cells(cell)]
+
+    def get_focal_point_plasticity_internal_neighbor_list(self, cell) -> []:
+        """
+        Return list of all cell objects linked to a cell
+        :param cell: cell object for which to fetch list of linked cells
+        :return: list of linked cells
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return []
+        else:
+            return [c for c in self.get_fpp_internal_linked_cells(cell)]
 
     def get_focal_point_plasticity_num_neighbors(self, cell) -> int:
         """
@@ -1031,7 +1042,15 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :param cell: cell object for which to count linked cells
         :return: number of linked cells
         """
-        return self.get_focal_point_plasticity_neighbor_list(cell).__len__()
+        return len(self.get_fpp_linked_cells(cell))
+
+    def get_focal_point_plasticity_num_internal_neighbors(self, cell) -> int:
+        """
+        Returns number of all cell objects internally linked to a cell
+        :param cell: cell object for which to count internally linked cells
+        :return: number of internally linked cells
+        """
+        return len(self.get_fpp_internal_linked_cells(cell))
 
     def get_focal_point_plasticity_is_linked(self, cell1, cell2) -> bool:
         """
@@ -1043,8 +1062,19 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         if self.focal_point_plasticity_plugin is None:
             return False
         else:
-            return any([n_cell for n_cell in self.get_focal_point_plasticity_neighbor_list(cell1)
-                        if n_cell.id == cell2.id])
+            return self.get_fpp_link_by_cells(cell1, cell2) is not None
+
+    def get_focal_point_plasticity_is_internally_linked(self, cell1, cell2) -> bool:
+        """
+        Returns if two cells are internally linked
+        :param cell1: first cell object
+        :param cell2: second cell object
+        :return: True if cells are internally linked
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return False
+        else:
+            return self.get_fpp_internal_link_by_cells(cell1, cell2) is not None
 
     def get_focal_point_plasticity_initiator(self, cell1, cell2):
         """
@@ -1056,12 +1086,25 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         if not self.get_focal_point_plasticity_is_linked(cell1=cell1, cell2=cell2):
             return None
         else:
-            is_initiator = [fppd.isInitiator for fppd in self.get_focal_point_plasticity_data_list(cell1)
-                            if fppd.neighborAddress.id == cell2.id][0]
-            if is_initiator:
-                return cell1
-            else:
-                return cell2
+            link = self.get_fpp_link_by_cells(cell1, cell2)
+            if link is None:
+                return None
+            return link.getObj0()
+
+    def get_focal_point_plasticity_internal_initiator(self, cell1, cell2):
+        """
+        Returns which cell initiated an internal link; returns None if cells are not linked
+        :param cell1: first cell object in internal link
+        :param cell2: second cell object in internal link
+        :return: cell that initiated the internal link, or None if cells are not linked
+        """
+        if not self.get_focal_point_plasticity_is_linked(cell1=cell1, cell2=cell2):
+            return None
+        else:
+            link = self.get_fpp_internal_link_by_cells(cell1, cell2)
+            if link is None:
+                return None
+            return link.getObj0()
 
     def set_focal_point_plasticity_parameters(self, cell, n_cell=None, lambda_distance: float = None,
                                               target_distance: float = None, max_distance: float = None) -> None:
@@ -1079,22 +1122,16 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             return
 
         if n_cell is None:
-            fppd_list = self.get_focal_point_plasticity_data_list(cell)
+            linked_list = self.get_fpp_linked_cells(cell)
         else:
-            fppd_list = [fppd for fppd in self.get_focal_point_plasticity_data_list(cell)
-                         if fppd.neighborAddress.id == n_cell.id]
-        for fppd in fppd_list:
-            if lambda_distance is None:
-                lambda_distance = fppd.lambdaDistance
-            if target_distance is None:
-                target_distance = fppd.targetDistance
-            if max_distance is None:
-                max_distance = fppd.maxDistance
-            self.focal_point_plasticity_plugin.setFocalPointPlasticityParameters(cell,
-                                                                                 fppd.neighborAddress,
-                                                                                 lambda_distance,
-                                                                                 target_distance,
-                                                                                 max_distance)
+            linked_list = [self.get_fpp_link_by_cells(cell, n_cell)]
+        for link in linked_list:
+            if lambda_distance is not None:
+                link.setLambdaDistance(lambda_distance)
+            if target_distance is not None:
+                link.setTargetDistance(target_distance)
+            if max_distance is not None:
+                link.setMaxDistance(max_distance)
 
     @property
     def fpp_link_inventory(self):
