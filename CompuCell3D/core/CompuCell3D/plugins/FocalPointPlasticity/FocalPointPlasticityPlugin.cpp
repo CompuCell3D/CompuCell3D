@@ -922,15 +922,18 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 
 	if (oldCell && oldCell->volume == 0) {
 
-		//cerr<<"\t\t\t oldCell.id="<<oldCell->id<<" is to be removed"<<endl;
+#pragma omp critical
+		{
 
-		linkInv.removeCellLinks(oldCell);
+			linkInv.removeCellLinks(oldCell);
 
-		//go over compartments
-		linkInvInternal.removeCellLinks(oldCell);
+			//go over compartments
+			linkInvInternal.removeCellLinks(oldCell);
 
-		//go over anchors
-		linkInvAnchor.removeCellLinks(oldCell);
+			//go over anchors
+			linkInvAnchor.removeCellLinks(oldCell);
+
+		}
 	}
 
 	//if(oldCell && oldCell->id==1082){
@@ -1040,30 +1043,61 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		bool linkRemoved = false;
 		std::vector<float> anchorPoint;
 		//we will first remove anchor links if they fit removal criteria
-		for each(FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(newCell)) {
-			anchorPoint = link->getAnchorPoint();
+#pragma omp critical
+		{
 
-			double distance = distInvariantCM(xCMNew, yCMNew, zCMNew, anchorPoint[0], anchorPoint[1], anchorPoint[2], fieldDim, boundaryStrategy);
-			int maxDistanceLocal;
-			if (functionType == BYCELLTYPE || functionType == BYCELLID) {
-				maxDistanceLocal = link->getMaxDistance();
-			}
-			else if (functionType == GLOBAL) {
-				maxDistanceLocal = maxDistance;
+			for each(FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(newCell)) {
+				anchorPoint = link->getAnchorPoint();
+
+				double distance = distInvariantCM(xCMNew, yCMNew, zCMNew, anchorPoint[0], anchorPoint[1], anchorPoint[2], fieldDim, boundaryStrategy);
+				int maxDistanceLocal;
+				if (functionType == BYCELLTYPE || functionType == BYCELLID) {
+					maxDistanceLocal = link->getMaxDistance();
+				}
+				else if (functionType == GLOBAL) {
+					maxDistanceLocal = maxDistance;
+				}
+
+				if (distance>maxDistanceLocal) {
+
+					deleteAnchor(newCell, link->getAnchorId());
+					linkRemoved = true;
+					break;
+				}
 			}
 
-			if (distance>maxDistanceLocal) {
+			if (!linkRemoved) {
+				for each(FocalPointPlasticityLink* link in linkInv.getCellLinkList(newCell)) {
+					nCell = link->getOtherCell(newCell);
 
-				deleteAnchor(newCell, link->getAnchorId());
-				linkRemoved = true;
-				break;
+					double xCMNeighbor = nCell->xCM / float(nCell->volume);
+					double yCMNeighbor = nCell->yCM / float(nCell->volume);
+					double zCMNeighbor = nCell->zCM / float(nCell->volume);
+					double distance = distInvariantCM(xCMNew, yCMNew, zCMNew, xCMNeighbor, yCMNeighbor, zCMNeighbor, fieldDim, boundaryStrategy);
+					int maxDistanceLocal;
+					if (functionType == BYCELLTYPE || functionType == BYCELLID) {
+						maxDistanceLocal = link->getMaxDistance();
+					}
+					else if (functionType == GLOBAL) {
+						maxDistanceLocal = maxDistance;
+					}
+
+					if (distance>maxDistanceLocal) {
+						deleteFocalPointPlasticityLink(newCell, nCell);
+						break;
+					}
+				}
 			}
+
 		}
 
-		if (!linkRemoved) {
-			for each(FocalPointPlasticityLink* link in linkInv.getCellLinkList(newCell)) {
-				nCell = link->getOtherCell(newCell);
+		//go over compartments
+#pragma omp critical
+		{
 
+			for each(FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(newCell)) {
+				nCell = link->getOtherCell(newCell);
+				//we remove only one cell at a time even though we could do it for many cells 
 				double xCMNeighbor = nCell->xCM / float(nCell->volume);
 				double yCMNeighbor = nCell->yCM / float(nCell->volume);
 				double zCMNeighbor = nCell->zCM / float(nCell->volume);
@@ -1077,32 +1111,10 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 				}
 
 				if (distance>maxDistanceLocal) {
-					deleteFocalPointPlasticityLink(newCell, nCell);
+					deleteInternalFocalPointPlasticityLink(newCell, nCell);
 					break;
 				}
-			}
-		}
 
-		//go over compartments
-
-		for each(FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(newCell)) {
-			nCell = link->getOtherCell(newCell);
-			//we remove only one cell at a time even though we could do it for many cells 
-			double xCMNeighbor = nCell->xCM / float(nCell->volume);
-			double yCMNeighbor = nCell->yCM / float(nCell->volume);
-			double zCMNeighbor = nCell->zCM / float(nCell->volume);
-			double distance = distInvariantCM(xCMNew, yCMNew, zCMNew, xCMNeighbor, yCMNeighbor, zCMNeighbor, fieldDim, boundaryStrategy);
-			int maxDistanceLocal;
-			if (functionType == BYCELLTYPE || functionType == BYCELLID) {
-				maxDistanceLocal = link->getMaxDistance();
-			}
-			else if (functionType == GLOBAL) {
-				maxDistanceLocal = maxDistance;
-			}
-
-			if (distance>maxDistanceLocal) {
-				deleteInternalFocalPointPlasticityLink(newCell, nCell);
-				break;
 			}
 
 		}
@@ -1117,30 +1129,63 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		bool linkRemoved = false;
 		std::vector<float> anchorPoint;
 		//we will first remove anchor links if they fit removal criteria
-		for each(FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(oldCell)) {
-			anchorPoint = link->getAnchorPoint();
+#pragma omp critical
+		{
 
-			double distance = distInvariantCM(xCMOld, yCMOld, zCMOld, anchorPoint[0], anchorPoint[1], anchorPoint[2], fieldDim, boundaryStrategy);
-			int maxDistanceLocal;
-			if (functionType == BYCELLTYPE || functionType == BYCELLID) {
-				maxDistanceLocal = link->getMaxDistance();
-			}
-			else if (functionType == GLOBAL) {
-				maxDistanceLocal = maxDistance;
+			for each(FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(oldCell)) {
+				anchorPoint = link->getAnchorPoint();
+
+				double distance = distInvariantCM(xCMOld, yCMOld, zCMOld, anchorPoint[0], anchorPoint[1], anchorPoint[2], fieldDim, boundaryStrategy);
+				int maxDistanceLocal;
+				if (functionType == BYCELLTYPE || functionType == BYCELLID) {
+					maxDistanceLocal = link->getMaxDistance();
+				}
+				else if (functionType == GLOBAL) {
+					maxDistanceLocal = maxDistance;
+				}
+
+				if (distance>maxDistanceLocal) {
+					deleteAnchor(oldCell, link->getAnchorId());
+					linkRemoved = true;
+					break;
+				}
+
 			}
 
-			if (distance>maxDistanceLocal) {
-				deleteAnchor(oldCell, link->getAnchorId());
-				linkRemoved = true;
-				break;
+			if (!linkRemoved) {
+				for each(FocalPointPlasticityLink* link in linkInv.getCellLinkList(oldCell)) {
+					nCell = link->getOtherCell(oldCell);
+
+					double xCMNeighbor = nCell->xCM / float(nCell->volume);
+					double yCMNeighbor = nCell->yCM / float(nCell->volume);
+					double zCMNeighbor = nCell->zCM / float(nCell->volume);
+					double distance = distInvariantCM(xCMOld, yCMOld, zCMOld, xCMNeighbor, yCMNeighbor, zCMNeighbor, fieldDim, boundaryStrategy);
+					//double distance=dist(xCMOld,yCMOld,zCMOld,xCMNeighbor,yCMNeighbor,zCMNeighbor);
+					int maxDistanceLocal;
+					if (functionType == BYCELLTYPE || functionType == BYCELLID) {
+						maxDistanceLocal = link->getMaxDistance();
+					}
+					else if (functionType == GLOBAL) {
+						maxDistanceLocal = maxDistance;
+					}
+
+					if (distance>maxDistanceLocal) {
+						deleteFocalPointPlasticityLink(oldCell, nCell);
+						break;
+					}
+				}
+
 			}
 
 		}
 
-		if (!linkRemoved) {
-			for each(FocalPointPlasticityLink* link in linkInv.getCellLinkList(oldCell)) {
-				nCell = link->getOtherCell(oldCell);
+		//go over compartments
+#pragma omp critical
+		{
 
+			for each(FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(oldCell)) {
+				nCell = link->getOtherCell(oldCell);
+				//we remove only one cell at a time even though we could do it for many cells many cells
 				double xCMNeighbor = nCell->xCM / float(nCell->volume);
 				double yCMNeighbor = nCell->yCM / float(nCell->volume);
 				double zCMNeighbor = nCell->zCM / float(nCell->volume);
@@ -1155,35 +1200,13 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 				}
 
 				if (distance>maxDistanceLocal) {
-					deleteFocalPointPlasticityLink(oldCell, nCell);
+					deleteInternalFocalPointPlasticityLink(oldCell, nCell);
 					break;
 				}
 			}
 
 		}
-
-		//go over compartments
-		for each(FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(oldCell)) {
-			nCell = link->getOtherCell(oldCell);
-			//we remove only one cell at a time even though we could do it for many cells many cells
-			double xCMNeighbor = nCell->xCM / float(nCell->volume);
-			double yCMNeighbor = nCell->yCM / float(nCell->volume);
-			double zCMNeighbor = nCell->zCM / float(nCell->volume);
-			double distance = distInvariantCM(xCMOld, yCMOld, zCMOld, xCMNeighbor, yCMNeighbor, zCMNeighbor, fieldDim, boundaryStrategy);
-			//double distance=dist(xCMOld,yCMOld,zCMOld,xCMNeighbor,yCMNeighbor,zCMNeighbor);
-			int maxDistanceLocal;
-			if (functionType == BYCELLTYPE || functionType == BYCELLID) {
-				maxDistanceLocal = link->getMaxDistance();
-			}
-			else if (functionType == GLOBAL) {
-				maxDistanceLocal = maxDistance;
-			}
-
-			if (distance>maxDistanceLocal) {
-				deleteInternalFocalPointPlasticityLink(oldCell, nCell);
-				break;
-			}
-		}
+		
 	}
 
 }
