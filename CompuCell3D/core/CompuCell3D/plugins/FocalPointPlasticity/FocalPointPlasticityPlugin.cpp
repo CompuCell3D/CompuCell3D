@@ -56,13 +56,8 @@ void FocalPointPlasticityPlugin::init(Simulator *simulator, CC3DXMLElement *_xml
 	simulator->getPotts()->registerEnergyFunctionWithName(this, toString());
 	simulator->registerSteerableObject(this);
 
-	///will register FocalPointBoundaryPixelTracker here
-	//BasicClassAccessorBase * cellFocalPointBoundaryPixelTrackerAccessorPtr=&focalPointPlasticityTrackerAccessor;
-	///************************************************************************************************  
-	///REMARK. HAVE TO USE THE SAME BASIC CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
-	///************************************************************************************************  
-
 	bool pluginAlreadyRegisteredFlag;
+  //this will load VolumeTracker plugin if it is not already loaded
 	Plugin *plugin = Simulator::pluginManager.get("CenterOfMass", &pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
 	if (!pluginAlreadyRegisteredFlag)
 		plugin->init(simulator);
@@ -128,7 +123,6 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 	if (_xmlData->getFirstElement("Local")) {
 		diffEnergyFcnPtr = &FocalPointPlasticityPlugin::diffEnergyLocal;
 		functionType = BYCELLID;
-		//return;
 	}
 
 	if (_xmlData->getFirstElement("NeighborOrder")) {
@@ -164,9 +158,6 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 		if (plastParamVec[i]->getFirstElement("MaxNumberOfJunctions")) {
 			CC3DXMLElement * maxNumberOfJunctionsElement = plastParamVec[i]->getFirstElement("MaxNumberOfJunctions");
 			fpptd.maxNumberOfJunctions = maxNumberOfJunctionsElement->getInt();
-
-			//if(maxNumberOfJunctionsElement->findAttribute("NeighborOrder"))				
-			//	fpptd.neighborOrder=maxNumberOfJunctionsElement->getAttributeAsUInt("NeighborOrder");
 		}
 
 		plastParams[index] = fpptd;
@@ -209,9 +200,6 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 			CC3DXMLElement * maxNumberOfJunctionsElement = internalPlastParamVec[i]->getFirstElement("MaxNumberOfJunctions");
 			fpptd.maxNumberOfJunctions = maxNumberOfJunctionsElement->getInt();
 
-			//if(maxNumberOfJunctionsElement->findAttribute("NeighborOrder"))				
-			//	fpptd.neighborOrder=maxNumberOfJunctionsElement->getAttributeAsUInt("NeighborOrder");
-
 		}
 
 		internalPlastParams[index] = fpptd;
@@ -223,6 +211,7 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 
 	//Now that we know all the types used in the simulation we will find size of the plastParams
 	vector<unsigned char> cellTypesVector(cellTypesSet.begin(), cellTypesSet.end());//coping set to the vector
+
 
 	int size = 0;
 	int index;
@@ -341,45 +330,6 @@ double FocalPointPlasticityPlugin::customLinkConstituentLaw(float _lambda, float
 
 }
 
-//not used
-//double FocalPointPlasticityPlugin::diffEnergyLocal(float _deltaL,float _lBefore,const FocalPointPlasticityTrackerData * _plasticityTrackerData,const CellG *_cell,bool _useCluster){
-//
-//   float lambdaLocal=_plasticityTrackerData->lambdaDistance;
-//   float targetDistanceLocal=_plasticityTrackerData->targetDistance;
-//
-//   if(_cell->volume>1){
-//      return lambdaLocal*_deltaL*(2*(_lBefore-targetDistanceLocal)+_deltaL);
-//   }else{//after spin flip oldCell will disappear so the only contribution from before spin flip i.e. -(l-l0)^2
-//      return -lambdaLocal*(_lBefore-targetDistanceLocal)*(_lBefore-targetDistanceLocal);
-//   }
-//   	
-//}
-
-//double FocalPointPlasticityPlugin::diffEnergyByType(float _deltaL,float _lBefore,const FocalPointPlasticityTrackerData * _plasticityTrackerData,const CellG *_cell,bool _useCluster){
-//   float lambdaDistanceLocal;
-//   float targetDistanceLocal;
-//   if(_useCluster){
-//	   lambdaDistanceLocal=internalPlastParamsArray[_plasticityTrackerData->neighborAddress->type][_cell->type].lambdaDistance;
-//	   targetDistanceLocal=internalPlastParamsArray[_plasticityTrackerData->neighborAddress->type][_cell->type].targetDistance;
-//   }else{
-//	   lambdaDistanceLocal=plastParamsArray[_plasticityTrackerData->neighborAddress->type][_cell->type].lambdaDistance;
-//	   targetDistanceLocal=plastParamsArray[_plasticityTrackerData->neighborAddress->type][_cell->type].targetDistance;
-//   }
-//
-//   if(_cell->volume>1){
-//	   double diffEnergy=lambdaDistanceLocal*_deltaL*(2*(_lBefore-targetDistanceLocal)+_deltaL);
-//
-//	   //double diffEnergy=_plasticityTrackerData->lambdaDistance*_deltaL*(2*(_lBefore-_plasticityTrackerData->targetDistance)+_deltaL);
-//	   //cerr<<"_plasticityTrackerData->targetDistance="<<_plasticityTrackerData->targetDistance<<endl;
-//	   //cerr<<"_plasticityTrackerData->lambdaDistance="<<_plasticityTrackerData->lambdaDistance<<endl;
-//	   //cerr<<"diff energy="<<diffEnergy<<endl;
-//	   return diffEnergy;
-//   }else{//after spin flip oldCell will disappear so the only contribution from before spin flip i.e. -(l-l0)^2
-//		return -lambdaDistanceLocal*(_lBefore-targetDistanceLocal)*(_lBefore-targetDistanceLocal);
-//      //return -_plasticityTrackerData->lambdaDistance*(_lBefore-_plasticityTrackerData->targetDistance)*(_lBefore-_plasticityTrackerData->targetDistance);
-//   }
-//}
-
 double FocalPointPlasticityPlugin::diffEnergyLocal(float _deltaL, float _lBefore, const FocalPointPlasticityTrackerData * _plasticityTrackerData, const CellG *_cell, bool _useCluster) {
 
 	float lambdaLocal = _plasticityTrackerData->lambdaDistance;
@@ -391,18 +341,6 @@ double FocalPointPlasticityPlugin::diffEnergyLocal(float _deltaL, float _lBefore
 	}
 	else {//after spin flip oldCell will disappear so the only contribution from before spin flip i.e. -(l-l0)^2
 		return -(this->*constituentLawFcnPtr)(lambdaLocal, _lBefore, targetDistanceLocal);
-	}
-
-}
-
-//not used
-double FocalPointPlasticityPlugin::diffEnergyGlobal(float _deltaL, float _lBefore, const FocalPointPlasticityTrackerData * _plasticityTrackerData, const CellG *_cell, bool _useCluster) {
-
-	if (_cell->volume>1) {
-		return lambda*_deltaL*(2 * (_lBefore - targetDistance) + _deltaL);
-	}
-	else {//after spin flip oldCell will disappear so the only contribution from before spin flip i.e. -(l-l0)^2
-		return -lambda*(_lBefore - targetDistance)*(_lBefore - targetDistance);
 	}
 
 }
@@ -462,7 +400,6 @@ void FocalPointPlasticityPlugin::insertInternalFPPData(CellG * _cell, FocalPoint
 	}
 
 }
-
 
 void FocalPointPlasticityPlugin::insertAnchorFPPData(CellG * _cell, FocalPointPlasticityTrackerData * _fpptd) {
 
@@ -534,14 +471,14 @@ double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt, const
 		}
 		nCell = fieldG->get(neighbor.pt);
 
-		if (!nCell) //no junctions with medium
+		if (!nCell) 
+            //no junctions with medium
 			continue;
 
 
 		if (nCell == newCell || nCell->clusterId == newCell->clusterId)	// make sure that newCell and nCell are different and belong to different clusters
 			continue;
 
-		//check if type of neighbor cell is listed by the user
 		if (((int)plastParamsArray.size()) - 1<nCell->type || plastParamsArray[newCell->type][nCell->type].maxNumberOfJunctions == 0) {
 			continue;
 		}
@@ -575,6 +512,7 @@ double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt, const
 
 double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point3D &pt, const CellG *newCell) {
 	int currentWorkNodeNumber = pUtils->getCurrentWorkNodeNumber();
+
 	short &  newJunctionInitiatedFlagWithinCluster = newJunctionInitiatedFlagWithinClusterVec[currentWorkNodeNumber];
 	CellG * & newNeighbor = newNeighborVec[currentWorkNodeNumber];
 
@@ -609,14 +547,15 @@ double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point
 		}
 		nCell = fieldG->get(neighbor.pt);
 
-		if (!nCell) //no junctions with medium
+		if (!nCell) 
+            //no junctions with medium
 			continue;
 
 		if (nCell == newCell || nCell->clusterId != newCell->clusterId)	// make sure that newCell and nCell are different and belong to the same clusters
 			continue;
 
 		//check if type of neighbor cell is listed by the user
-		if (((int)internalPlastParamsArray.size()) - 1<nCell->type || maxNumberOfJunctionsInternalTotalVec[newCell->type] == 0) {
+		if (((int)internalPlastParamsArray.size()) - 1 < nCell->type || maxNumberOfJunctionsInternalTotalVec[newCell->type] == 0) {
 			continue;
 		}
 
@@ -628,7 +567,6 @@ double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point
 		}
 
 		// check if newCell can accept another junction
-
 		if (linkInvInternal.getNumberOfJunctionsByType(const_cast<CellG*>(newCell), nCell->type) >= internalPlastParamsArray[newCell->type][nCell->type].maxNumberOfJunctions) {
 			continue;
 		}
@@ -656,7 +594,6 @@ double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point
 double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
 
 	//This plugin will not work properly with periodic boundary conditions. If necessary I can fix it
-	//cerr<<"THIS IS pt="<<pt<<endl;
 	if (newCell == oldCell) //this may happen if you are trying to assign same cell to one pixel twice 
 		return 0.0;
 
@@ -680,14 +617,10 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 
 	//check if we need to create new junctions only new cell can initiate junctions
 	if (newCell) {
-		//cerr<<"trying adding new cell within a cluster"<<endl;
 		double activationEnergy = tryAddingNewJunctionWithinCluster(pt, newCell);
 		if (newJunctionInitiatedFlagWithinCluster) {
-			//cerr<<"GOT NEW JUNCTION"<<endl;
-
-			//exit(0);
 			energy += activationEnergy;
-
+      
 			return energy;
 		}
 	}
@@ -695,16 +628,11 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 	if (newCell) {
 		double activationEnergy = tryAddingNewJunction(pt, newCell);
 		if (newJunctionInitiatedFlag) {
-			//cerr<<"GOT NEW INTERNAL JUNCTION"<<endl;
-
-			//exit(0);
 			energy += activationEnergy;
 
 			return energy;
 		}
 	}
-	//cerr<<"GOT HERE"<<endl;
-
 
 	Coordinates3D<double> centroidOldAfter;
 	Coordinates3D<double> centroidNewAfter;
@@ -714,15 +642,12 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 	Coordinates3D<float> centMassNewBefore;
 
 
-	//    cerr<<"fieldDim="<<fieldDim<<endl;
 	if (oldCell) {
 		centMassOldBefore.XRef() = oldCell->xCM / (float)oldCell->volume;
 		centMassOldBefore.YRef() = oldCell->yCM / (float)oldCell->volume;
 		centMassOldBefore.ZRef() = oldCell->zCM / (float)oldCell->volume;
 
 		if (oldCell->volume>1) {
-			//cerr<<"THIS IS oldCellVolume="<<oldCell->volume<<endl;
-			//cerr<<" FPP boundaryStrategy="<<boundaryStrategy<<endl;
 			centroidOldAfter = precalculateCentroid(pt, oldCell, -1, fieldDim, boundaryStrategy);
 			centMassOldAfter.XRef() = centroidOldAfter.X() / (float)(oldCell->volume - 1);
 			centMassOldAfter.YRef() = centroidOldAfter.Y() / (float)(oldCell->volume - 1);
@@ -730,7 +655,6 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 
 		}
 		else {
-			//          return 0.0;//if oldCell is to disappear the Plasticity energy will be zero
 			centroidOldAfter.XRef() = oldCell->xCM;
 			centroidOldAfter.YRef() = oldCell->yCM;
 			centroidOldAfter.ZRef() = oldCell->zCM;
@@ -758,9 +682,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 	float deltaL;
 	float lBefore;
 	float nCellVol;
-	//cerr<<"energy before old cell section="<<energy<<endl;
 	if (oldCell) {
-		//cerr<<"energy for old cell section"<<endl;
 
 		for each (FocalPointPlasticityLink* link in linkInv.getCellLinkList(oldCell)) {
 			nCell = link->getOtherCell(oldCell);
@@ -799,7 +721,6 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 					- lBefore;
 			}
 			double clusterOldCellEnergy = (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(oldCell), oldCell, true);
-			//cerr<<"clusterOldCellEnergy="<<clusterOldCellEnergy<<endl;
 			energy += clusterOldCellEnergy;
 		}
 
@@ -815,10 +736,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 
 	}
 
-	//cerr<<"energy before new cell section="<<energy<<endl;
 	if (newCell) {
-		//cerr<<"energy for new cell section"<<endl;
-		//cerr<<"energy before new section starts="<<energy<<endl;
 
 		for each (FocalPointPlasticityLink* link in linkInv.getCellLinkList(newCell)) {
 			nCell = link->getOtherCell(newCell);
@@ -831,7 +749,6 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 					- lBefore;
 
 				double newDeltaEnergy = (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(newCell), newCell, false);
-				//cerr<<"newDeltaEnergy="<<newDeltaEnergy<<endl;
 				energy += newDeltaEnergy;
 
 			}
@@ -855,7 +772,6 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 			else {
 				// this was already taken into account in the oldCell secion - we need to avoid double counting
 			}
-			//////energy+=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),newCell,true);
 		}
 
 		//go over anchors
@@ -869,7 +785,6 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 		}
 
 	}
-	//cerr<<"pt="<<pt<<" DELTA E="<<energy<<endl;
 	return energy;
 }
 
@@ -932,33 +847,17 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 
 			//go over anchors
 			linkInvAnchor.removeCellLinks(oldCell);
-
 		}
 	}
 
-	//if(oldCell && oldCell->id==1082){
-	//	cerr<<"\t\t oldCell 1082 volume="<<oldCell->volume<<endl;
-	//	cerr<<"newJunctionInitiatedFlag="<<newJunctionInitiatedFlag<<endl;
-	//	cerr<<"newJunctionInitiatedFlagWithinCluster="<<newJunctionInitiatedFlagWithinCluster<<endl;
-	//}
-	//if(newCell && newCell->id==1082){
-	//	cerr<<"\t\t newCell 1082 volume="<<newCell->volume<<endl;
-	//}
-
 	//because newJunctionInitiatedFlag is in principle "global" variable changing lattice configuration from python e.g. delete cell
 	// can cause newJunctionInitiatedFlag be still after last change and thus falsly indicate new junction even when cell is e.g. Medium
-
-
 
 	if (newJunctionInitiatedFlag && newCell) {
 
 		// we reset the flags here to avoid  keeping true value in the "global" class-wide variable- this might have ide effects
 		newJunctionInitiatedFlag = false;
 
-		//if(newCell->id==1082 ||newNeighbor->id==1082  ){
-		//cerr<<"newJunctionInitiatedFlag="<<newJunctionInitiatedFlag<<" newCell="<<newCell->id<<endl;
-		//cerr<<"newJunctionInitiatedFlag="<<newJunctionInitiatedFlag<<" newNeighborCell="<<newNeighbor->id<<endl;
-		//}
 		double xCMNew = newCell->xCM / float(newCell->volume);
 		double yCMNew = newCell->yCM / float(newCell->volume);
 		double zCMNew = newCell->zCM / float(newCell->volume);
@@ -968,9 +867,6 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		double zCMNeighbor = newNeighbor->zCM / float(newNeighbor->volume);
 
 		double distance = distInvariantCM(xCMNew, yCMNew, zCMNew, xCMNeighbor, yCMNeighbor, zCMNeighbor, fieldDim, boundaryStrategy);
-		//double distance=dist(xCMNew,yCMNew,zCMNew,xCMNeighbor,yCMNeighbor,zCMNeighbor);
-
-		//if (plasticityTypes.size()==0||(plasticityTypes.find(newNeighbor->type)!=plasticityTypes.end() && plasticityTypes.find(newCell->type)!=plasticityTypes.end())){
 
 		if (functionType == BYCELLTYPE || functionType == BYCELLID) {
 			//cerr<<"adding external junction between "<<newCell<<" and "<<newNeighbor<<endl;
@@ -995,10 +891,6 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		// we reset the flags here to avoid  keeping true value in the "global" class-wide variable- this might have ide effects		
 		newJunctionInitiatedFlagWithinCluster = false;
 
-		//if(newCell->id==1082 ||newNeighbor->id==1082  ){
-		//cerr<<"newJunctionInitiatedFlagWithinCluster="<<newJunctionInitiatedFlagWithinCluster<<" newCell="<<newCell->id<<endl;
-		//cerr<<"newJunctionInitiatedFlagWithinCluster="<<newJunctionInitiatedFlagWithinCluster<<" newNeighborCell="<<newNeighbor->id<<endl;
-		//}
 		double xCMNew = newCell->xCM / float(newCell->volume);
 		double yCMNew = newCell->yCM / float(newCell->volume);
 		double zCMNew = newCell->zCM / float(newCell->volume);
@@ -1008,9 +900,7 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		double zCMNeighbor = newNeighbor->zCM / float(newNeighbor->volume);
 
 		double distance = distInvariantCM(xCMNew, yCMNew, zCMNew, xCMNeighbor, yCMNeighbor, zCMNeighbor, fieldDim, boundaryStrategy);
-		//double distance=dist(xCMNew,yCMNew,zCMNew,xCMNeighbor,yCMNeighbor,zCMNeighbor);
 
-		//if (plasticityTypes.size()==0||(plasticityTypes.find(newNeighbor->type)!=plasticityTypes.end() && plasticityTypes.find(newCell->type)!=plasticityTypes.end())){
 		if (functionType == BYCELLTYPE || functionType == BYCELLID) {
 			//cerr<<"adding internal junction between "<<newCell<<" and "<<newNeighbor<<endl;
 			FocalPointPlasticityTrackerData fpptd = internalPlastParamsArray[newCell->type][newNeighbor->type];
@@ -1022,7 +912,6 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 			createInternalFocalPointPlasticityLink(newCell, newNeighbor, fpptd.lambdaDistance, fpptd.targetDistance, fpptd.maxDistance);
 
 		}
-		//}
 		return;
 	}
 
@@ -1037,15 +926,13 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		double yCMNew = newCell->yCM / float(newCell->volume);
 		double zCMNew = newCell->zCM / float(newCell->volume);
 
-		//list<CellG *> toBeRemovedNeighborsOfNewCell;
-
 		//we remove only one cell at a time even though we could do it for many cells 
 		bool linkRemoved = false;
 		std::vector<float> anchorPoint;
 		//we will first remove anchor links if they fit removal criteria
 #pragma omp critical
 		{
-
+      
 			for each(FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(newCell)) {
 				anchorPoint = link->getAnchorPoint();
 
@@ -1118,7 +1005,6 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 			}
 
 		}
-
 	}
 
 	if (oldCell) {

@@ -24,54 +24,43 @@
 #define FOCALPOINTPLACTICITYPLUGIN_H
 
 #include <CompuCell3D/CC3D.h>
-
-// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-// // // #include <CompuCell3D/Plugin.h>
 #include "FocalPointPlasticityLinkInventory.h"
-
-// // // #include <map>
-// // // #include <set>
-// // // #include <string>
-// // // #include <vector>
-// // // #include <muParser/muParser.h>
-
 #include "FocalPointPlasticityDLLSpecifier.h"
-// // // #include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
 
 class CC3DXMLElement;
 
 //Note: Target distance is set to be 0.9 * current distance between cells. target distance from xml is ignored
 
 namespace CompuCell3D {
-	class Simulator;
-	class Potts3D;
-	class Automaton;
-	class BoundaryStrategy;
+    class Simulator;
+    class Potts3D;
+    class Automaton;
+    class BoundaryStrategy;
     class ParallelUtilsOpenMP;
 
-	class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityPlugin : public Plugin,public EnergyFunction, public CellGChangeWatcher  {
+    class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityPlugin : public Plugin, public EnergyFunction, public CellGChangeWatcher {
 
-		BasicClassAccessor<FocalPointPlasticityTracker> focalPointPlasticityTrackerAccessor;
-		BasicClassAccessor<FPPLinkInventoryTracker<FocalPointPlasticityLink> > cellLinkInventoryTracker;
-		BasicClassAccessor<FPPLinkInventoryTracker<FocalPointPlasticityInternalLink> > cellInternalLinkInventoryTracker;
-		BasicClassAccessor<FPPLinkInventoryTracker<FocalPointPlasticityAnchor> > cellAnchorInventoryTracker;
 
-		Simulator *sim;
+        BasicClassAccessor<FocalPointPlasticityTracker> focalPointPlasticityTrackerAccessor;
+        BasicClassAccessor<FPPLinkInventoryTracker<FocalPointPlasticityLink> > cellLinkInventoryTracker;
+        BasicClassAccessor<FPPLinkInventoryTracker<FocalPointPlasticityInternalLink> > cellInternalLinkInventoryTracker;
+        BasicClassAccessor<FPPLinkInventoryTracker<FocalPointPlasticityAnchor> > cellAnchorInventoryTracker;
 
-		Potts3D *potts;
+        Simulator *sim;
 
-        ParallelUtilsOpenMP *pUtils; 
-		std::string autoName;
-		double depth;
+        Potts3D *potts;
 
-		Automaton *automaton;
-		bool weightDistance;
-		unsigned int maxNeighborIndex;
-		unsigned int maxNeighborIndexJunctionMove;
-		BoundaryStrategy * boundaryStrategy;
-		CC3DXMLElement *xmlData;
+        ParallelUtilsOpenMP *pUtils;
+        std::string autoName;
+        double depth;
 
+        Automaton *automaton;
+        bool weightDistance;
+        unsigned int maxNeighborIndex;
+        unsigned int maxNeighborIndexJunctionMove;
+        BoundaryStrategy * boundaryStrategy;
+        CC3DXMLElement *xmlData;
+		
 		FPPLinkInventory linkInv;
 		FPPInternalLinkInventory linkInvInternal;
 		FPPAnchorInventory linkInvAnchor;
@@ -92,55 +81,53 @@ namespace CompuCell3D {
 		std::vector<short> newJunctionInitiatedFlagVec;
 		std::vector<short> newJunctionInitiatedFlagWithinClusterVec;
 		std::vector<CellG *> newNeighborVec;
-	  
+
 		unsigned int maxNumberOfJunctions;
 
-		enum FunctionType {GLOBAL=0,BYCELLTYPE=1,BYCELLID=2};
+        enum FunctionType { GLOBAL = 0, BYCELLTYPE = 1, BYCELLID = 2 };
 
-		FunctionType functionType;
+        FunctionType functionType;
 
-		typedef double (FocalPointPlasticityPlugin::*diffEnergyFcnPtr_t)(float _deltaL,float _lBefore,const FocalPointPlasticityTrackerData * _plasticityTrackerData,const CellG *_cell,bool _useCluster);
-		diffEnergyFcnPtr_t diffEnergyFcnPtr;
-
-		ExpressionEvaluatorDepot eed;
+        typedef double (FocalPointPlasticityPlugin::*diffEnergyFcnPtr_t)(float _deltaL, float _lBefore, const FocalPointPlasticityTrackerData * _plasticityTrackerData, const CellG *_cell, bool _useCluster);
+        diffEnergyFcnPtr_t diffEnergyFcnPtr;
 
 
-		typedef double (FocalPointPlasticityPlugin::*constituentLawFcnPtr_t)(float _lambda,float _length,float _targetLength);
+        ExpressionEvaluatorDepot eed;
 
-		constituentLawFcnPtr_t constituentLawFcnPtr;
-		double elasticLinkConstituentLaw(float _lambda,float _length,float _targetLength);
-		double customLinkConstituentLaw(float _lambda,float _length,float _targetLength);
 
-		double diffEnergyLocal(float _deltaL,float _lBefore,const FocalPointPlasticityTrackerData * _plasticityTrackerData,const CellG *_cell,bool _useCluster=false);
-		double diffEnergyGlobal(float _deltaL,float _lBefore,const FocalPointPlasticityTrackerData * _plasticityTrackerData,const CellG *_cell,bool _useCluster=false);
-		double diffEnergyByType(float _deltaL,float _lBefore,const FocalPointPlasticityTrackerData * _plasticityTrackerData,const CellG *_cell,bool _useCluster=false);
+        typedef double (FocalPointPlasticityPlugin::*constituentLawFcnPtr_t)(float _lambda, float _length, float _targetLength);
 
-		double tryAddingNewJunction(const Point3D &pt,const CellG *newCell);
-		double tryAddingNewJunctionWithinCluster(const Point3D &pt,const CellG *newCell);
+        constituentLawFcnPtr_t constituentLawFcnPtr;
+        double elasticLinkConstituentLaw(float _lambda, float _length, float _targetLength);
+        double customLinkConstituentLaw(float _lambda, float _length, float _targetLength);
 
-		typedef std::map<int, FocalPointPlasticityTrackerData> plastParams_t;
-		
-		plastParams_t plastParams;
-		plastParams_t internalPlastParams;
+        double diffEnergyLocal(float _deltaL, float _lBefore, const FocalPointPlasticityTrackerData * _plasticityTrackerData, const CellG *_cell, bool _useCluster = false);        
+        double diffEnergyByType(float _deltaL, float _lBefore, const FocalPointPlasticityTrackerData * _plasticityTrackerData, const CellG *_cell, bool _useCluster = false);
 
-		plastParams_t typeSpecificPlastParams;
-		plastParams_t internalTypeSpecificPlastParams;
+        double tryAddingNewJunction(const Point3D &pt, const CellG *newCell);
+        double tryAddingNewJunctionWithinCluster(const Point3D &pt, const CellG *newCell);
+  
+        typedef std::map<int, FocalPointPlasticityTrackerData> plastParams_t;
 
+        plastParams_t plastParams;
+        plastParams_t internalPlastParams;
+
+        plastParams_t typeSpecificPlastParams;
+        plastParams_t internalTypeSpecificPlastParams;
+      
 		typedef std::vector<std::vector<FocalPointPlasticityTrackerData> > FocalPointPlasticityTrackerDataArray_t;
 		typedef std::vector<FocalPointPlasticityTrackerData> FocalPointPlasticityTrackerDataVector_t;
 
-		FocalPointPlasticityTrackerDataArray_t plastParamsArray;
-		FocalPointPlasticityTrackerDataArray_t internalPlastParamsArray;
+        FocalPointPlasticityTrackerDataArray_t plastParamsArray;
+        FocalPointPlasticityTrackerDataArray_t internalPlastParamsArray;
 
-		//////FocalPointPlasticityTrackerDataVector_t typeSpecificPlastParamsVec;
-		//////FocalPointPlasticityTrackerDataVector_t internalTypeSpecificPlastParamsVec;
-		std::vector<int> maxNumberOfJunctionsTotalVec;
-		std::vector<int> maxNumberOfJunctionsInternalTotalVec;
-		int neighborOrder;
+        std::vector<int> maxNumberOfJunctionsTotalVec;
+        std::vector<int> maxNumberOfJunctionsInternalTotalVec;
+        int neighborOrder;
 
-	public:
-		FocalPointPlasticityPlugin();
-		virtual ~FocalPointPlasticityPlugin();
+    public:
+        FocalPointPlasticityPlugin();
+        virtual ~FocalPointPlasticityPlugin();
 
 		//Plugin interface
 		virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
@@ -151,8 +138,7 @@ namespace CompuCell3D {
 		virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
 
 		// Field3DChangeWatcher interface
-		virtual void field3DChange(const Point3D &pt, CellG *newCell,
-			CellG *oldCell);
+		virtual void field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell);
 
 		//used to manually control parameters plasticity term for pair of cells involved
 		void setFocalPointPlasticityParameters(CellG * _cell1,CellG * _cell2,double _lambda, double _targetDistance=0.0,double _maxDistance=0.0);

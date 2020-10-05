@@ -8,7 +8,8 @@ class CellsortSteppable(SteppableBasePy):
         SteppableBasePy.__init__(self, frequency)
 
     def start(self):
-        pass
+        pg = CompuCellSetup.persistent_globals
+        input_val = pg.input_object
 
     def step(self, mcs):
         if mcs == 100:

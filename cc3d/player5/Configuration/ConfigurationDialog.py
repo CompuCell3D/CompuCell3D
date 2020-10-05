@@ -152,7 +152,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
     def changeButtonColor(self, _btn, _color, _settingName):
         '''
-        assigns color (_color)  to button (_btn) and changes corresponding color setting (_settingName). Does not shows Choose color dialog 
+        assigns color (_color)  to button (_btn) and changes corresponding color setting (setting_name). Does not shows Choose color dialog
         '''
         if _color.isValid():
             size = _btn.iconSize()

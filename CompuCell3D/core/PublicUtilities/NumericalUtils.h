@@ -51,13 +51,16 @@ namespace CompuCell3D{
 	Coordinates3D<double> precalculateCentroid(const Point3D & pt, const CellG *_cell, int _volumeIncrement,const Point3D & fieldDim, BoundaryStrategy *boundaryStrategy=0);
 
 	double distInvariantCM(double x0,double y0,double z0,double x1,double y1,double z1,const Point3D & fieldDim, BoundaryStrategy *boundaryStrategy=0);
+
+    Point3D distanceVectorInvariant(const Point3D & _pt1, const Point3D & _pt0, const Point3D & _fieldDim, BoundaryStrategy *boundaryStrategy=0);
+
+    Coordinates3D<double> distanceVectorCoordinatesInvariant(const Coordinates3D<double> & _pt1, const Coordinates3D<double> & _pt0, const Point3D & _fieldDim, BoundaryStrategy *boundaryStrategy = 0);
+
+
+               
+	Point3D unconditionalDistanceVectorInvariant(const Point3D & _pt1 ,const Point3D & _pt0,const Point3D & _fieldDim);
     
-    double distanceInvariantCM(double x0,double y0,double z0,double x1,double y1,double z1,const Point3D & fieldDim, BoundaryStrategy *boundaryStrategy=0,int _pbcX=0,int _pbcY=0,int _pbcZ=0);
-    
-    
-	Point3D distanceVectorInvariant(const Point3D & _pt1 ,const Point3D & _pt0,const Point3D & _fieldDim);
-    
-    Coordinates3D<double> distanceVectorCoordinatesInvariant(const Coordinates3D<double> & _pt1 ,const Coordinates3D<double> & _pt0,const Point3D & _fieldDim);
+    Coordinates3D<double> unconditionalDistanceVectorCoordinatesInvariant(const Coordinates3D<double> & _pt1 ,const Coordinates3D<double> & _pt0,const Point3D & _fieldDim);
     
 
 	std::pair<InertiaTensorComponents,InertiaTensorComponents> precalculateInertiaTensorComponentsAfterFlip(const Coordinates3D<double> & ptTrans,const CellG *newCell ,const CellG *oldCell);
