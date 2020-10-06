@@ -629,6 +629,11 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 	//	fluctAmplGlobalReadFlag=true;
 	//}
 
+    bool test_output_generate_flag = false;
+    
+    if (_xmlData->getFirstElement("TestOutoutGenerate")) {
+        test_output_generate_flag = true;
+    }
 
 	bool fluctAmplGlobalReadFlag=false;
 
@@ -684,6 +689,8 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 
 	ASSERT_OR_THROW("You must set Dimensions!", ppdCC3DPtr->dim.x!=0 || ppdCC3DPtr->dim.y!=0 || ppdCC3DPtr->dim.z!=0);
 	potts.createCellField(ppdCC3DPtr->dim);
+    potts.set_test_output_generate_flag(test_output_generate_flag);
+
 	//cerr<<"DIM="<<ppdCC3DPtr->dim<<endl;
 	//cerr<<"Temp="<<_xmlData->getFirstElement("Temperature")->getDouble()<<endl;
 	//cerr<<"Flip2DimRatio="<<_xmlData->getFirstElement("Flip2DimRatio")->getDouble()<<endl;
@@ -895,7 +902,13 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 		EnergyFunctionCalculator * enCalculator=potts.getEnergyFunctionCalculator();
 		enCalculator->setSimulator(this);
 		enCalculator->init(_xmlData->getFirstElement("EnergyFunctionCalculator"));
-	}
+    }
+    else if (test_output_generate_flag) {
+        potts.createEnergyFunction("TestOutputDataGeneration");
+        EnergyFunctionCalculator * enCalculator = potts.getEnergyFunctionCalculator();
+        enCalculator->setSimulator(this);
+
+    }
 
 
 

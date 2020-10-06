@@ -31,7 +31,6 @@ class EnergyFunctionCalculatorTestDataGeneration: public EnergyFunctionCalculato
        virtual void  get_current_mcs_prob_npy_array(double * doublevec, int n) {}
        virtual void  get_current_mcs_flip_attempt_points_npy_array(short * shortvec, int n) {}
 
-
        virtual void setLastFlipAccepted(bool _accept) { lastFlipAccepted = _accept; }
        virtual void set_aceptance_probability(double _prob) { }
 
@@ -39,13 +38,12 @@ class EnergyFunctionCalculatorTestDataGeneration: public EnergyFunctionCalculato
        std::vector<std::string> getEnergyFunctionNames() { return energyFunctionsNameVec; }
        virtual std::vector<std::vector<double> > getCurrentEnergyChanges() { return std::vector<std::vector<double> >(); }
        virtual std::vector<bool> getCurrentFlipResults() { return std::vector<bool>(); }
+       virtual void log_output(Point3D pt, Point3D nPt, bool accepted, float motility);
 
 protected:
     std::vector<EnergyFunction *> energyFunctions;
     std::vector<std::string> energyFunctionsNameVec;
-
-    std::map<std::string, EnergyFunction *> nameToEnergyFuctionMap;
-    //std::map<std::string, double> energyFuctionNametoValueMap;
+    std::map<std::string, EnergyFunction *> nameToEnergyFuctionMap;    
     Potts3D *potts;
     Simulator *sim;
 

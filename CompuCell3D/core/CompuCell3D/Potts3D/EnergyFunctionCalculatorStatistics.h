@@ -16,8 +16,6 @@ class EnergyFunctionCalculatorStatistics:public EnergyFunctionCalculator{
       virtual ~EnergyFunctionCalculatorStatistics();
       virtual double changeEnergy(Point3D &pt, const CellG *newCell,const CellG *oldCell,const unsigned int _flipAttempt);
 
-	  
-
       virtual void setLastFlipAccepted(bool _accept);
 	  virtual void set_aceptance_probability(double _prob);
 	  

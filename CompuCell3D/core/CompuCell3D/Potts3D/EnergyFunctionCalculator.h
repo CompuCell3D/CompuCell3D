@@ -54,6 +54,8 @@ class EnergyFunctionCalculator{
 	  virtual std::vector<bool> getCurrentFlipResults() { return std::vector<bool>(); }
       virtual std::map<std::string, double> getEnergyFuctionNametoValueMap() { return energyFuctionNametoValueMap; }
 
+      virtual void log_output(Point3D pt, Point3D nPt, bool accepted, float motility, double prob_acceptance) {};
+
 
    protected:
       std::vector<EnergyFunction *> energyFunctions;

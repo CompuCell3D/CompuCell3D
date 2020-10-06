@@ -124,6 +124,7 @@ namespace CompuCell3D {
 		WatchableField3D<CellG *> *cellFieldG;
 		AttributeAdder * attrAdder;
 		EnergyFunctionCalculator * energyCalculator;
+        bool test_output_generate_flag;
 		/// Cell class aggregator and allocator.
 
 		BasicClassGroupFactory cellFactoryGroup; 	//creates aggregate of objects associated with cell 
@@ -277,6 +278,8 @@ namespace CompuCell3D {
 		double getDepth() { return depth; }
 		void setDepth(double _depth);
 		void setNeighborOrder(unsigned int _neighborOrder);
+        void set_test_output_generate_flag(bool flag) { test_output_generate_flag = flag; }
+        bool get_test_output_generate_flag() { return test_output_generate_flag; }
 
 		void initializeCellTypeMotility(std::vector<CellTypeMotilityData> & _cellTypeMotilityVector);
 		void setCellTypeMotilityVec(std::vector<float> & _cellTypeMotilityVec);
@@ -287,8 +290,6 @@ namespace CompuCell3D {
 
 		void setFrozenTypeVector(std::vector<unsigned char> & _frozenTypeVec);
 		const std::vector<unsigned char> & getFrozenTypeVector() { return frozenTypeVec; }
-
-
 
 		void setMassUnit(const Unit & _unit) { massUnit = _unit; }
 		void setLengthUnit(const Unit & _unit) { lengthUnit = _unit; }

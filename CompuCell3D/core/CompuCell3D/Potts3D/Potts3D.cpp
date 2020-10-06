@@ -35,6 +35,7 @@
 #include <CompuCell3D/Potts3D/TypeTransition.h>
 #include "EnergyFunctionCalculator.h"
 #include "EnergyFunctionCalculatorStatistics.h"
+#include "EnergyFunctionCalculatorTestDataGeneration.h"
 #include <CompuCell3D/Simulator.h>
 #include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <BasicUtils/BasicPluginInfo.h>
@@ -68,6 +69,7 @@ Potts3D::Potts3D() :
 	pUtils(0)
 
 {
+    test_output_generate_flag = false;
 	neighbors.assign(100, Point3D());//statically allocated this buffer maybe will come with something better later
 	frozenTypeVec.assign(0, 0);
 	energyCalculator = new EnergyFunctionCalculator();
@@ -96,6 +98,7 @@ Potts3D::Potts3D(const Dim3D dim) :
 	pUtils(0)
 
 {
+    test_output_generate_flag = false;
 	neighbors.assign(100, Point3D());//statically allocated this buffer maybe will come with something better later
 	frozenTypeVec.assign(0, 0);
 
@@ -123,25 +126,24 @@ void Potts3D::createEnergyFunction(std::string _energyFunctionType) {
 		if (energyCalculator) delete energyCalculator; energyCalculator = 0;
 		energyCalculator = new EnergyFunctionCalculatorStatistics();
 		energyCalculator->setPotts(this);
-		//initialize Statistics Output Energy Finction Here
-		return;
 	}
-	else {
-		//default is not to reassign energy function calculator
-		return;
+	else if (_energyFunctionType == "TestOutputDataGeneration") {
+        if (energyCalculator) delete energyCalculator; energyCalculator = 0;
+        energyCalculator = new EnergyFunctionCalculatorTestDataGeneration();
+        energyCalculator->setPotts(this);
 	}
 }
 
 void Potts3D::clean_cell_field(bool reset_cell_inventory) {
 
-	cerr << "cellFieldG=" << cellFieldG << endl;
+	//cerr << "cellFieldG=" << cellFieldG << endl;
 	if (!cellFieldG) {
 		return;
 	}
 
 	Point3D pt;
 	Dim3D dim_max = cellFieldG->getDim();
-	cerr << "dim_max=" << dim_max << endl;
+	//cerr << "dim_max=" << dim_max << endl;
 
 	//cleaning cell field
 	for (pt.x = 0; pt.x < dim_max.x; ++pt.x)
@@ -927,6 +929,9 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 				//     cerr<<"change E="<<change<<" prob="<<prob<<endl;
 				if (prob >= 1.0 || rand->getRatio() < prob) {
 					// Accept the change
+                    if (test_output_generate_flag) {
+                        energyCalculator->log_output(pt, n.pt, true, motility);
+                    }
 
 					energyVec[currentWorkNodeNumber] += change;
 

@@ -42,3 +42,6 @@ double EnergyFunctionCalculatorTestDataGeneration::changeEnergy(Point3D &pt, con
     return change;    
 }
 
+void EnergyFunctionCalculatorTestDataGeneration::log_output(Point3D pt, Point3D nPt, bool accepted, float motility) {
+    cerr << "logging output" << endl;
+}
