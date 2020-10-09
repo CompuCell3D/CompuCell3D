@@ -27,3 +27,7 @@
 DERIVEDPROPERTYEXTENSORPY(CompuCell3D::CellG, pressure, getPressure)
 DERIVEDPROPERTYEXTENSORPY(CompuCell3D::CellG, surfaceTension, getSurfaceTension)
 DERIVEDPROPERTYEXTENSORPY(CompuCell3D::CellG, clusterSurfaceTension, getClusterSurfaceTension)
+
+// Link DerivedProperties
+DERIVEDPROPERTYEXTENSORPY(CompuCell3D::FocalPointPlasticityLinkBase, length, getDistance)
+DERIVEDPROPERTYEXTENSORPY(CompuCell3D::FocalPointPlasticityLinkBase, tension, getTension)
