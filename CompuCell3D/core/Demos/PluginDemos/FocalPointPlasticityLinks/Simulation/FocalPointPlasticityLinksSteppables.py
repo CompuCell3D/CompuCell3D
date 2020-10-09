@@ -27,21 +27,20 @@ class FocalPointPlasticityLinksSteppable(SteppableBasePy):
             cellj = link1j.getOtherCell(cell1)
             print(f'\nLinked cell id: {cellj.id}')
 
-            if link1j is not None:
-                # If data-handling is wrong, then the fetched data for this link might have multiple entries
-                fppd = [fppd for fppd in fpp_data_list if fppd.neighborAddress.id == cellj.id]
-                assert len(fppd) == 1
-                fppd = fppd[0]
+            # If data-handling is wrong, then the fetched data for this link might have multiple entries
+            fppd = [fppd for fppd in fpp_data_list if fppd.neighborAddress.id == cellj.id]
+            assert len(fppd) == 1
+            fppd = fppd[0]
 
-                # Let's get link data via the old CC3D method and through new link-based methods
-                print(f'Confirming linked cell by id: {cellj.id}, {fppd.neighborAddress.id}')
-                print(f'lambda_distance: {link1j.getLambdaDistance()}, {fppd.lambdaDistance}')
-                print(f'target_distance: {link1j.getTargetDistance()}, {fppd.targetDistance}')
-                print(f'max_distance: {link1j.getMaxDistance()}, {fppd.maxDistance}')
-                print(f'max_num_junctions: {link1j.getMaxNumberOfJunctions()}, {fppd.maxNumberOfJunctions}')
-                print(f'activation_energy: {link1j.getActivationEnergy()}, {fppd.activationEnergy}')
-                print(f'neighbor_order: {link1j.getNeighborOrder()}, {fppd.neighborOrder}')
-                print(f'init_mcs: {link1j.getInitMCS()}, {fppd.initMCS}')
+            # Let's get link data via the old CC3D method and through new link-based methods
+            print(f'Confirming linked cell by id: {cellj.id}, {fppd.neighborAddress.id}')
+            print(f'lambda_distance: {link1j.getLambdaDistance()}, {fppd.lambdaDistance}')
+            print(f'target_distance: {link1j.getTargetDistance()}, {fppd.targetDistance}')
+            print(f'max_distance: {link1j.getMaxDistance()}, {fppd.maxDistance}')
+            print(f'max_num_junctions: {link1j.getMaxNumberOfJunctions()}, {fppd.maxNumberOfJunctions}')
+            print(f'activation_energy: {link1j.getActivationEnergy()}, {fppd.activationEnergy}')
+            print(f'neighbor_order: {link1j.getNeighborOrder()}, {fppd.neighborOrder}')
+            print(f'init_mcs: {link1j.getInitMCS()}, {fppd.initMCS}')
 
         # Now let's quickly get the list of all cells linked to cell 1
         linked_list = self.get_fpp_linked_cells(cell1)
