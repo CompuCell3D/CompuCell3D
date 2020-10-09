@@ -42,6 +42,10 @@ class FocalPointPlasticityLinksSteppable(SteppableBasePy):
             print(f'neighbor_order: {link1j.getNeighborOrder()}, {fppd.neighborOrder}')
             print(f'init_mcs: {link1j.getInitMCS()}, {fppd.initMCS}')
 
+            # Let's check the link's derived properties
+            print(f'length: {link1j.length}')
+            print(f'tension: {link1j.tension}')
+
         # Now let's quickly get the list of all cells linked to cell 1
         linked_list = self.get_fpp_linked_cells(cell1)
         [print(f'Cell 1 has a link with cell {c.id}') for c in linked_list]
