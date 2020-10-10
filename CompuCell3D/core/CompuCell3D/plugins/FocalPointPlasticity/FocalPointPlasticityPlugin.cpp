@@ -225,14 +225,10 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 
 	for (int i = 0; i < cellTypesVector.size(); ++i)
 		for (int j = 0; j < cellTypesVector.size(); ++j) {
-			//cerr<<"cellTypesVector[i]="<<(int)cellTypesVector[i]<<endl;
-			//cerr<<"cellTypesVector[j]="<<(int)cellTypesVector[j]<<endl;
 			index = getIndex(cellTypesVector[i], cellTypesVector[j]);
-			//cerr<<"index="<<index <<endl;
 
 			plastParamsArray[cellTypesVector[i]][cellTypesVector[j]] = plastParams[index];
 		}
-	//initializing maxNumberOfJunctionsTotalVec based on plastParamsArray .maxNumberOfJunctionsTotalVec is indexed by cell type  	
 	maxNumberOfJunctionsTotalVec.assign(size, 0);
 	for (int idx = 0; idx<maxNumberOfJunctionsTotalVec.size(); ++idx) {
 		int mNJ = 0;
@@ -241,7 +237,6 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 			mNJ += plastParamsArray[idx][j].maxNumberOfJunctions;
 		}
 		maxNumberOfJunctionsTotalVec[idx] = mNJ;
-		cerr << "maxNumberOfJunctions for type " << idx << " is " << maxNumberOfJunctionsTotalVec[idx] << endl;
 	}
 
 	//Now internal parameters
@@ -272,7 +267,6 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 			mNJ += internalPlastParamsArray[idx][j].maxNumberOfJunctions;
 		}
 		maxNumberOfJunctionsInternalTotalVec[idx] = mNJ;
-		cerr << "maxNumberOfInternalJunctions for type " << idx << " is " << maxNumberOfJunctionsInternalTotalVec[idx] << endl;
 	}
 
 	CC3DXMLElement * linkXMLElem = _xmlData->getFirstElement("LinkConstituentLaw");
@@ -869,7 +863,6 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		double distance = distInvariantCM(xCMNew, yCMNew, zCMNew, xCMNeighbor, yCMNeighbor, zCMNeighbor, fieldDim, boundaryStrategy);
 
 		if (functionType == BYCELLTYPE || functionType == BYCELLID) {
-			//cerr<<"adding external junction between "<<newCell<<" and "<<newNeighbor<<endl;
 			FocalPointPlasticityTrackerData fpptd = plastParamsArray[newCell->type][newNeighbor->type];
 			createFocalPointPlasticityLink(newCell, newNeighbor, fpptd.lambdaDistance, fpptd.targetDistance, fpptd.maxDistance);
 
@@ -902,7 +895,6 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		double distance = distInvariantCM(xCMNew, yCMNew, zCMNew, xCMNeighbor, yCMNeighbor, zCMNeighbor, fieldDim, boundaryStrategy);
 
 		if (functionType == BYCELLTYPE || functionType == BYCELLID) {
-			//cerr<<"adding internal junction between "<<newCell<<" and "<<newNeighbor<<endl;
 			FocalPointPlasticityTrackerData fpptd = internalPlastParamsArray[newCell->type][newNeighbor->type];
 			createInternalFocalPointPlasticityLink(newCell, newNeighbor, fpptd.lambdaDistance, fpptd.targetDistance, fpptd.maxDistance);
 
