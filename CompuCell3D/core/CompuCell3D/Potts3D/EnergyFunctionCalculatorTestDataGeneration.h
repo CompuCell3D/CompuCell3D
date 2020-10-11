@@ -43,8 +43,8 @@ class EnergyFunctionCalculatorTestDataGeneration: public EnergyFunctionCalculato
        virtual void log_output(PottsTestData &potts_test_data);
 
 protected:
-    std::vector<EnergyFunction *> energyFunctions;
-    std::vector<std::string> energyFunctionsNameVec;
+    //std::vector<EnergyFunction *> energyFunctions;
+    //std::vector<std::string> energyFunctionsNameVec;
     std::map<std::string, EnergyFunction *> nameToEnergyFuctionMap;    
     Potts3D *potts;
     Simulator *sim;

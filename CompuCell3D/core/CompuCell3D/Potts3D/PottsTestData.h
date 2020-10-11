@@ -15,6 +15,7 @@ namespace CompuCell3D {
         Point3D changePixelNeighbor;
         double motility;
         bool pixelCopyAccepted;
+        double acceptanceFunctionProbability;
         
 
 

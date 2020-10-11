@@ -938,6 +938,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
                         potts_test_data.changePixelNeighbor = n.pt;
                         potts_test_data.motility = motility;
                         potts_test_data.pixelCopyAccepted = true;
+                        potts_test_data.acceptanceFunctionProbability = prob;
 
                         energyCalculator->log_output(potts_test_data);
                     }
@@ -968,6 +969,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
                     potts_test_data.changePixelNeighbor = n.pt;
                     potts_test_data.motility = motility;
                     potts_test_data.pixelCopyAccepted = false;
+                    potts_test_data.acceptanceFunctionProbability = prob;
 
                     energyCalculator->log_output(potts_test_data);
 				}
