@@ -18,13 +18,6 @@ class EnergyFunctionCalculatorTestDataGeneration: public EnergyFunctionCalculato
        virtual ~EnergyFunctionCalculatorTestDataGeneration();
 
        virtual void init(CC3DXMLElement *_xmlData) {}
-       //virtual void registerEnergyFunction(EnergyFunction *_function);
-       //virtual void registerEnergyFunctionWithName(EnergyFunction *_function, std::string _functionName);
-       //virtual void unregisterEnergyFunction(std::string _functionName);
-       //virtual void configureEnergyCalculator(std::vector<std::string> &_configVector) {}
-       //virtual long get_number_energy_fcn_calculations() { return 0; }
-       //virtual void range(int *rangevec, int n) {}
-
        virtual double changeEnergy(Point3D &pt, const CellG *newCell, const CellG *oldCell, const unsigned int _flipAttempt);
        void setPotts(Potts3D * _potts) { potts = _potts; }
        void setSimulator(Simulator * _sim) { sim = _sim; }
@@ -43,13 +36,11 @@ class EnergyFunctionCalculatorTestDataGeneration: public EnergyFunctionCalculato
        virtual void log_output(PottsTestData &potts_test_data);
 
 protected:
-    //std::vector<EnergyFunction *> energyFunctions;
-    //std::vector<std::string> energyFunctionsNameVec;
     std::map<std::string, EnergyFunction *> nameToEnergyFuctionMap;    
-    Potts3D *potts;
-    Simulator *sim;
-
-    bool lastFlipAccepted;
+private:
+    bool header_written = false;
+    void write_header();    
+    std::string get_output_file_name();
 
 };
 
