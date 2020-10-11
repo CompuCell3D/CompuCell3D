@@ -9,6 +9,8 @@
 
 namespace CompuCell3D{
 
+    class PottsTestData;
+
 class EnergyFunctionCalculatorTestDataGeneration: public EnergyFunctionCalculator{
 
    public:
@@ -16,12 +18,12 @@ class EnergyFunctionCalculatorTestDataGeneration: public EnergyFunctionCalculato
        virtual ~EnergyFunctionCalculatorTestDataGeneration();
 
        virtual void init(CC3DXMLElement *_xmlData) {}
-       virtual void registerEnergyFunction(EnergyFunction *_function);
-       virtual void registerEnergyFunctionWithName(EnergyFunction *_function, std::string _functionName);
-       virtual void unregisterEnergyFunction(std::string _functionName);
-       virtual void configureEnergyCalculator(std::vector<std::string> &_configVector) {}
-       virtual long get_number_energy_fcn_calculations() { return 0; }
-       virtual void range(int *rangevec, int n) {}
+       //virtual void registerEnergyFunction(EnergyFunction *_function);
+       //virtual void registerEnergyFunctionWithName(EnergyFunction *_function, std::string _functionName);
+       //virtual void unregisterEnergyFunction(std::string _functionName);
+       //virtual void configureEnergyCalculator(std::vector<std::string> &_configVector) {}
+       //virtual long get_number_energy_fcn_calculations() { return 0; }
+       //virtual void range(int *rangevec, int n) {}
 
        virtual double changeEnergy(Point3D &pt, const CellG *newCell, const CellG *oldCell, const unsigned int _flipAttempt);
        void setPotts(Potts3D * _potts) { potts = _potts; }
@@ -38,7 +40,7 @@ class EnergyFunctionCalculatorTestDataGeneration: public EnergyFunctionCalculato
        std::vector<std::string> getEnergyFunctionNames() { return energyFunctionsNameVec; }
        virtual std::vector<std::vector<double> > getCurrentEnergyChanges() { return std::vector<std::vector<double> >(); }
        virtual std::vector<bool> getCurrentFlipResults() { return std::vector<bool>(); }
-       virtual void log_output(Point3D pt, Point3D nPt, bool accepted, float motility);
+       virtual void log_output(PottsTestData &potts_test_data);
 
 protected:
     std::vector<EnergyFunction *> energyFunctions;

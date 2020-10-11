@@ -15,6 +15,7 @@ class Point3D;
 class Potts3D;
 class Simulator;
 class ParseData;
+class PottsTestData;
 
 class EnergyFunctionCalculator{
 
@@ -54,7 +55,7 @@ class EnergyFunctionCalculator{
 	  virtual std::vector<bool> getCurrentFlipResults() { return std::vector<bool>(); }
       virtual std::map<std::string, double> getEnergyFuctionNametoValueMap() { return energyFuctionNametoValueMap; }
 
-      virtual void log_output(Point3D pt, Point3D nPt, bool accepted, float motility, double prob_acceptance) {};
+      virtual void log_output(PottsTestData & pottst_test_data) {};
 
 
    protected:

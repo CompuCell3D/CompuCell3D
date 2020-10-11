@@ -45,6 +45,7 @@
 #include <sstream>
 #include <algorithm>
 #include <chrono>
+#include "PottsTestData.h"
 
 #include "Potts3D.h"
 
@@ -930,7 +931,15 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 				if (prob >= 1.0 || rand->getRatio() < prob) {
 					// Accept the change
                     if (test_output_generate_flag) {
-                        energyCalculator->log_output(pt, n.pt, true, motility);
+                        
+                        PottsTestData potts_test_data;
+
+                        potts_test_data.changePixel = pt;
+                        potts_test_data.changePixelNeighbor = n.pt;
+                        potts_test_data.motility = motility;
+                        potts_test_data.pixelCopyAccepted = true;
+
+                        energyCalculator->log_output(potts_test_data);
                     }
 
 					energyVec[currentWorkNodeNumber] += change;
@@ -952,6 +961,15 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 					if (numberOfThreads == 1) {
 						energyCalculator->setLastFlipAccepted(false);
 					}
+
+                    PottsTestData potts_test_data;
+
+                    potts_test_data.changePixel = pt;
+                    potts_test_data.changePixelNeighbor = n.pt;
+                    potts_test_data.motility = motility;
+                    potts_test_data.pixelCopyAccepted = false;
+
+                    energyCalculator->log_output(potts_test_data);
 				}
 
 

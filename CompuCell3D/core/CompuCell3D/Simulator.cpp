@@ -631,7 +631,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 
     bool test_output_generate_flag = false;
     
-    if (_xmlData->getFirstElement("TestOutoutGenerate")) {
+    if (_xmlData->getFirstElement("TestOutputGenerate")) {
         test_output_generate_flag = true;
     }
 

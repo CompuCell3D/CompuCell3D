@@ -14,6 +14,7 @@
 #include <sstream>
 #include <CompuCell3D/PottsParseData.h>
 #include <XMLUtils/CC3DXMLElement.h>
+#include "PottsTestData.h"
 
 
 using namespace CompuCell3D;
@@ -42,6 +43,10 @@ double EnergyFunctionCalculatorTestDataGeneration::changeEnergy(Point3D &pt, con
     return change;    
 }
 
-void EnergyFunctionCalculatorTestDataGeneration::log_output(Point3D pt, Point3D nPt, bool accepted, float motility) {
+void EnergyFunctionCalculatorTestDataGeneration::log_output(PottsTestData & potts_test_data) {
     cerr << "logging output" << endl;
+    cerr << " changePixel=" << potts_test_data.changePixel ;
+    cerr << " changePixelNeighbor=" << potts_test_data.changePixelNeighbor;
+    cerr << " motility=" << potts_test_data.motility;
+    cerr << " pixelCopyAccepted=" << potts_test_data.pixelCopyAccepted << endl;
 }
