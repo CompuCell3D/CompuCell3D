@@ -1,7 +1,7 @@
 SET(SRCS
   AttributeAdder.cpp
   Cell.cpp
-  CellInventory.cpp
+  CellInventory.cpp  
   DefaultAcceptanceFunction.cpp
   CustomAcceptanceFunction.cpp
   EnergyFunctionCalculator.cpp
@@ -9,7 +9,9 @@ SET(SRCS
   EnergyFunctionCalculatorTestDataGeneration.cpp
   TypeTransition.cpp
   StandardFluctuationAmplitudeFunctions.cpp
-  Potts3D.cpp)
+  Potts3D.cpp
+  PottsTestData.cpp
+  )
 
 INCLUDE_DIRECTORIES ( 
     ${COMPUCELL3D_SOURCE_DIR}/core
@@ -52,7 +54,8 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D/Potts3D .h
   FirstOrderExpansionAcceptanceFunction
   FixedStepper
   Potts3D
-  Stepper
+  PottsTestData
+  Stepper  
   TypeChangeWatcher
   TypeTransition
   FluctuationAmplitudeFunction

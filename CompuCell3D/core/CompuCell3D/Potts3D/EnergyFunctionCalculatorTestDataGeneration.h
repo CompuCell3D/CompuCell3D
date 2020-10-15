@@ -39,7 +39,7 @@ protected:
     std::map<std::string, EnergyFunction *> nameToEnergyFuctionMap;    
 private:
     bool header_written = false;
-    void write_header();    
+    //void write_header();    
     std::string get_output_file_name();
 
 };
