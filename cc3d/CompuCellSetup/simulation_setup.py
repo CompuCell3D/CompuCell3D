@@ -191,7 +191,8 @@ def convert_time_interval_to_hmsm(time_interval):
         return str(int(floor(x)))
 
     if hours > 1.0:
-        out_str = s_int_fl(hours) + " h : " + s_int_fl(minutes) + " m : " + s_int_fl(seconds) + " s : " + str(miliseconds) + " ms"
+        out_str = s_int_fl(hours) + " h : " + s_int_fl(minutes) + " m : " + s_int_fl(seconds) + " s : " + str(
+            miliseconds) + " ms"
 
     elif minutes > 1.0:
         out_str = s_int_fl(minutes) + " m : " + s_int_fl(seconds) + " s : " + str(miliseconds) + " ms"
@@ -416,6 +417,34 @@ def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_en
         simthread.waitForPlayerTaskToFinish()
 
 
+def check_nanohub_and_count():
+    """
+    Function for proper counting of number of runs in NanoHub
+    Checks for NANOHUB_SIM in the environment variables
+    If NANOHUB_SIM is there will attempt to call TOOL_HOME/bin/cc3d_count.sh
+    NANOHUB_SIM must be TOOL_HOME/bin/
+    :return:
+    """
+    from os import environ
+    import subprocess
+    if 'NANOHUB_SIM' in environ or True:
+        # NANOHUB_SIM will be the path to the sh script that starts the nanohub run. That info is already in the .sh
+        # files under binDir
+        bin_dir = environ.get('NANOHUB_SIM')
+        if bin_dir is not None:
+            count_sh = join(bin_dir, r'cc3d_count.sh')
+            try:
+                subprocess.call(['sh', count_sh])
+                return
+            except:
+                print(f"Couldn't call {count_sh}! Is the file there?\nProceeding.")
+                return
+        else:
+            print("Coundn't find NANOHUB_SIM in the environment variables.\nProceeding")
+            return
+    return
+
+
 def main_loop(sim, simthread, steppable_registry=None):
     """
     main loop for CML simulation
@@ -439,6 +468,8 @@ def main_loop(sim, simthread, steppable_registry=None):
     # init_using_restart_snapshot_enabled = False
     sim.setRestartEnabled(init_using_restart_snapshot_enabled)
     check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+
+    check_nanohub_and_count()
 
     if init_using_restart_snapshot_enabled:
         print('WILL RESTART SIMULATION')
@@ -538,6 +569,8 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
     # init_using_restart_snapshot_enabled = False
     sim.setRestartEnabled(init_using_restart_snapshot_enabled)
 
+    check_nanohub_and_count()
+
     if init_using_restart_snapshot_enabled:
         print('WILL RESTART SIMULATION')
         restart_manager.loadRestartFiles()
@@ -555,8 +588,6 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
 
     if not steppable_registry is None:
         steppable_registry.init(sim)
-
-
 
     # called in extraInitSimulationObjects
     # sim.start()
