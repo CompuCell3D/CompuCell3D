@@ -434,7 +434,7 @@ def check_nanohub_and_count():
         if bin_dir is not None:
             count_sh = join(bin_dir, r'cc3d_count.sh')
             try:
-                subprocess.call(['sh', count_sh])
+                subprocess.call(['submit', '--local', count_sh])
                 return
             except:
                 print(f"Couldn't call {count_sh}! Is the file there?\nProceeding.")
