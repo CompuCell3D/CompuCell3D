@@ -2,7 +2,6 @@
 import os, sys
 import shutil
 
-# import cc3d.twedit5.twedit.editor.Configuration as Configuration
 # import cc3d.core.DefaultSettingsData as settings_data
 from cc3d.core.ParameterScanUtils import ParameterScanUtils
 from cc3d.core import DefaultSettingsData as settings_data

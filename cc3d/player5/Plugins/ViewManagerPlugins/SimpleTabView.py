@@ -19,6 +19,7 @@ from PyQt5.QtCore import QCoreApplication
 import cc3d
 from cc3d.core.enums import *
 from os.path import basename, dirname, join
+from cc3d.player5.enums import FIELD_TYPES, PLANES, PlayerType, ViewManagerType
 from cc3d.player5.ViewManager.SimpleViewManager import SimpleViewManager
 from cc3d.player5.Graphics.GraphicsFrameWidget import GraphicsFrameWidget
 from cc3d.player5.Utilities.SimModel import SimModel
@@ -47,10 +48,6 @@ from typing import Union, Optional
 from cc3d.gui_plugins.unzipper import Unzipper
 
 # import cc3d.Version as Version
-FIELD_TYPES = (
-    "CellField", "ConField", "ScalarField", "ScalarFieldCellLevel", "VectorField", "VectorFieldCellLevel", "CustomVis")
-
-PLANES = ("xy", "xz", "yz")
 
 MODULENAME = '---- SimpleTabView.py: '
 
@@ -173,7 +170,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.__outputDirectory = ""
 
-        self.__viewManagerType = "Regular"
+        self.__viewManagerType = ViewManagerType.REGULAR
 
         self.graphicsWindowVisDict = OrderedDict()  # stores visualization settings for each open window
 
@@ -703,10 +700,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # normally called after "stop".
         # If users decide to use *.dml  prepare simulation will be called again with False argument
         if force_generic_initialization:
-            persistent_globals.player_type = "new"
+            persistent_globals.player_type = PlayerType.NEW
 
-        if persistent_globals.player_type == "CMLResultReplay":
-            self.__viewManagerType = "CMLResultReplay"
+        if persistent_globals.player_type == PlayerType.REPLAY:
+            self.__viewManagerType = ViewManagerType.REPLAY
 
             # note that this variable will be the same as self.simulation when doing CMLReplay mode.
             # I keep it under diffferent name to keep track of the places in the code where I am using
@@ -728,7 +725,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.fieldExtractor.setFieldDim(self.basicSimulationData.fieldDim)
 
         else:
-            self.__viewManagerType = "Regular"
+            self.__viewManagerType = ViewManagerType.REGULAR
 
             # have to reinitialize cmlFieldHandler to None
             CompuCellSetup.persistent_globals.cml_field_handler = None
@@ -970,7 +967,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             #                self.graphicsWindowVisDict[self.lastActiveWindow.winId()][4] = False
             self.fpp_links_act.setChecked(False)
 
-        persistent_globals.player_type = 'CMLResultReplay'
+        persistent_globals.player_type = PlayerType.REPLAY
         persistent_globals.cc3d_xml_2_obj_converter = CompuCellSetup.parseXML(file_name)
 
         self.prepare_for_new_simulation()
@@ -1341,7 +1338,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.close_all_windows()
 
-        initializeSimulationViewWidgetFcn = getattr(self, "initializeSimulationViewWidget" + self.__viewManagerType)
+        initializeSimulationViewWidgetFcn = getattr(self, "initializeSimulationViewWidget" + str(self.__viewManagerType))
         initializeSimulationViewWidgetFcn()
 
         # copy simulation files to output directory  for single simulation
@@ -1379,7 +1376,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
         persistent_globals = CompuCellSetup.persistent_globals
-        if persistent_globals.player_type == "CMLResultReplay":
+        if persistent_globals.player_type == ViewManagerType.REPLAY:
             self.latticeDataModelTable.prepareToClose()
 
         # # # self.__stopSim()
@@ -1432,7 +1429,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :param _flag: bool - unused
         :return:
         '''
-        handleSimulationFinishedFcn = getattr(self, "handleSimulationFinished" + self.__viewManagerType)
+        handleSimulationFinishedFcn = getattr(self, "handleSimulationFinished" + str(self.__viewManagerType))
         handleSimulationFinishedFcn(_flag)
 
     def handleCompletedStepCMLResultReplay(self, _mcs):
@@ -1585,7 +1582,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.__step = mcs
 
-        handle_completed_step_fcn = getattr(self, "handleCompletedStep" + self.__viewManagerType)
+        handle_completed_step_fcn = getattr(self, "handleCompletedStep" + str(self.__viewManagerType))
         handle_completed_step_fcn(mcs)
 
     def handleFinishRequest(self, _flag):
@@ -1600,7 +1597,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
 
         # we do not save windows layout for simulation replay
-        if self.__viewManagerType != "CMLResultReplay":
+        if self.__viewManagerType != ViewManagerType.REPLAY:
             self.__save_windows_layout()
 
         self.simulation.drawMutex.lock()
@@ -1768,7 +1765,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 return
 
         # print 'SIMULATION PREPARED self.__viewManagerType=',self.__viewManagerType
-        if self.__viewManagerType == "CMLResultReplay":
+        if self.__viewManagerType == ViewManagerType.REPLAY:
 
             self.simulation.semPause.release()  # just in case
 
@@ -1839,7 +1836,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # when self.prepareSimulation() fails
                 return
 
-        if self.__viewManagerType == "CMLResultReplay":
+        if self.__viewManagerType == ViewManagerType.REPLAY:
 
             self.simulation.semPause.release()
             self.simulationIsRunning = True
@@ -2012,7 +2009,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:bool - flag indicating if initialization of basic simulation data was successful
         '''
 
-        if self.__viewManagerType == "Regular":
+        if self.__viewManagerType == ViewManagerType.REGULAR:
 
             if not self.mysim:
                 return
@@ -2032,7 +2029,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             return True
 
-        elif self.__viewManagerType == "CMLResultReplay":
+        elif self.__viewManagerType == ViewManagerType.REPLAY:
             if self.simulation.dimensionChange():
                 self.simulation.resetDimensionChangeMonitoring()
                 self.fieldDim = self.simulation.fieldDim
@@ -2081,7 +2078,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # here we are resetting previous warnings because draw functions may write their own warning
         self.displayWarning('')
 
-        __drawFieldFcn = getattr(self, "drawField" + self.__viewManagerType)
+        __drawFieldFcn = getattr(self, "drawField" + str(self.__viewManagerType))
 
         properties_updated = self.updateSimulationProperties()
 
@@ -2115,7 +2112,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         slot that pauses simulation
         :return:None
         '''
-        if self.__viewManagerType == "CMLResultReplay":
+        if self.__viewManagerType == ViewManagerType.REPLAY:
             self.cmlReplayManager.set_run_state(state=PAUSE_STATE)
 
         semaphore_unlocked = self.simulation.semPause.available()
@@ -2228,10 +2225,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.runAgainFlag = False
 
         # we do not save windows layout for simulation replay
-        if self.__viewManagerType != "CMLResultReplay":
+        if self.__viewManagerType != ViewManagerType.REPLAY:
             self.__save_windows_layout()
 
-        if self.__viewManagerType == "CMLResultReplay":
+        if self.__viewManagerType == ViewManagerType.REPLAY:
             self.cmlReplayManager.set_run_state(state=STOP_STATE)
 
             self.run_act.setEnabled(True)
@@ -3217,7 +3214,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         __generatePIFFromRunningSimulation depending on th4e running mode
         :return:None
         '''
-        if self.__viewManagerType == "CMLResultReplay":
+        if self.__viewManagerType == ViewManagerType.REPLAY:
             self.__generatePIFFromVTK()
         else:
             self.__generatePIFFromRunningSimulation()

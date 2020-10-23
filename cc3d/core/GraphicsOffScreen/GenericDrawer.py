@@ -23,7 +23,7 @@
 # 3. Edit ScreenshotManagerCore - readScreenshotData fcn and write screenshot fct data
 # 4. Edit Graphics widget function that geenrate sceen metadata to have this new setting be reflected in sscene metadata
 
-import cc3d.player5.Configuration as Configuration
+from cc3d.core import Configuration
 import vtk
 from os.path import splitext
 from cc3d.core.enums import *
@@ -33,7 +33,7 @@ from .MVCDrawModel2D import MVCDrawModel2D
 from .MVCDrawView3D import MVCDrawView3D
 from .MVCDrawModel3D import MVCDrawModel3D
 from .Specs import ActorSpecs
-from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
+from cc3d.core.GraphicsUtils.utils import extract_address_int_from_vtk_object
 from .DrawingParameters import DrawingParameters
 
 MODULENAME = '---- GraphicsFrameWidget.py: '

@@ -2,15 +2,7 @@ import os
 import shutil
 import sys
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-
-# from CompuCell3D.core.pythonSetupScripts.DefaultSettingsData import *
 from cc3d.core.DefaultSettingsData import *
-# From core; do not remove unless you're looking for trouble, or making Player-specific implementations!
-from cc3d.core.Configuration.SettingUtils import _check_settings_sanity
-from cc3d.core.Configuration import copy_settings, synchronizeGlobalAndDefaultSettings
 
 
 def load_settings(setting_path):
@@ -22,15 +14,37 @@ def load_settings(setting_path):
     return _load_sql_settings(setting_path=setting_path)
 
 
+def loadSettings(path):
+    """
+    Loads settings file
+    :param path: {str} absolute path to settings file
+    :return: {tuple} (settings object - SettingsSQL, abs path to settings file)
+    """
+    return load_settings(path)
+
+
+def _check_settings_sanity(settings_object):
+    """
+    Checks whether all settings listed in settings_object are accessible.
+    :param settings_object: {instance of SettingsSQL} settings object
+    :return: {list of str} list of settings that are problematic
+    """
+    problematic_settings = []
+    for setting_name in settings_object.names():
+        try:
+            settings_object.getSetting(setting_name)
+        except:
+            problematic_settings.append(setting_name)
+    return problematic_settings
+
+
 def _load_sql_settings(setting_path):
     """
     reads sql setting file from the disk
     :param path: {str} path to SQL settings
     :return: {tuple} (SettingsSQL object, path to SQL settings)
     """
-    # from CompuCell3D.player5.Configuration.settingdict import SettingsSQL
-    # from .settingdict import SettingsSQL
-    from cc3d.player5.Configuration.settingdict import SettingsSQL
+    from cc3d.core.Configuration.settingdict import SettingsSQL
 
     # workaround for Windows leftover DefaultSettingPath.pyc
     from os.path import splitext
@@ -86,16 +100,26 @@ def _global_setting_path():
     return global_setting_path
 
 
-def loadSettings(path):
+def copy_settings(src_setting_path, dst_setting_dir):
     """
-    Loads settings file
-    :param path: {str} absolute path to settings file
-    :return: {tuple} (settings object - SettingsSQL, abs path to settings file)
+    Copies settings file specified by src_setting_path to directory specified by dst_setting_dir
+    :param src_setting_path: {str} full path to settins file
+    :param dst_setting_dir: {str} full path to targe directory for settings
+    :return: None
     """
-    return _load_sql_settings(path)
+
+    try:
+        shutil.copy(src_setting_path, dst_setting_dir)
+    except:
+        exception_str = 'Configuration: ' \
+                        'Could not copy setting file: {} ' \
+                        'to {} directory. ' \
+                        'Please make sure that you have ' \
+                        'appropriate write permissions'.format(src_setting_path, dst_setting_dir)
+        raise RuntimeError(exception_str)
 
 
-def loadGlobalSettings():
+def load_global_settings():
     """
     loads global settings
     :return: {tuple} (settings object - SettingsSQL, abs path to settings file)
@@ -126,9 +150,43 @@ def loadGlobalSettings():
     return global_settings, global_settings_path
 
 
-def loadDefaultSettings():
+def loadGlobalSettings():
+    return load_global_settings()
+
+
+def load_default_settings():
     """
     loads default settings
     :return: {tuple} (settings object - SettingsSQL, abs path to settings file)
     """
     return _load_sql_settings(_default_setting_path())
+
+
+def loadDefaultSettings():
+    return load_default_settings()
+
+
+def synchronize_global_and_default_settings(default_settings, global_settings, global_settings_path):
+    """
+    Synchronizes global settings and default settings. This function checks for
+    new settings in the default settings file
+    :param default_settings: {SettingsSQL} settings object with default settings
+    :param global_settings: {SettingsSQL} settings object with global settings
+    :param global_settings_path: {str} path to global settings file
+    :return: None
+    """
+
+    default_settings_names = default_settings.names()
+    global_settings_names = global_settings.names()
+
+    new_setting_names = set(default_settings_names) - set(global_settings_names)
+
+    for new_setting_name in new_setting_names:
+        print('new_setting_name = ', new_setting_name)
+        new_default_setting_val = default_settings.setting(new_setting_name)
+
+        global_settings.setSetting(new_setting_name, new_default_setting_val)
+
+
+def synchronizeGlobalAndDefaultSettings(default_settings, global_settings, global_settings_path):
+    return synchronize_global_and_default_settings(default_settings, global_settings, global_settings_path)

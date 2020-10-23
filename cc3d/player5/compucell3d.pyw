@@ -8,10 +8,9 @@ When running automated testing f Demo suite use the following cml options:
  or for automatic starting of a particular simulation you use :
  --input=/home/m/376_dz/Demos/Models/cellsort/cellsort_2D/cellsort_2D.cc3d
 """
-import cc3d
 import sys
-import os
-from cc3d.core.CMLParser import CMLParser
+from cc3d import player5
+from cc3d.player5.CMLParser import CMLParser
 from cc3d.player5.UI.UserInterface import UserInterface
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
