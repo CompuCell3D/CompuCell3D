@@ -1,0 +1,5 @@
+<Simulation version="4.2.4">
+   <XMLScript Type="XMLScript">Simulation/EffectorProductionSite.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/EffectorProductionSite.py</PythonScript>
+   <Resource Type="Python">Simulation/EffectorProductionSiteSteppables.py</Resource>
+</Simulation>
