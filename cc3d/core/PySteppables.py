@@ -22,6 +22,8 @@ from copy import deepcopy
 from math import sqrt
 from cc3d.core.numerics import *
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
+# To safely work with Service in various environments, import must be at this level (issues with RollbackImporter)
+from cc3d.core import sim_service
 
 
 class SteppablePy:
@@ -2297,3 +2299,108 @@ class SecretionBasePy(SteppableBasePy):
     def __init__(self, frequency=1):
         SteppableBasePy.__init__(self, frequency)
         self.runBeforeMCS = 1
+
+
+class ServiceSteppableBasePy(SteppablePy):
+    """
+    Steppable wrap of the service interface defined in cc3d.core.Service.PySimService.PySimService
+    """
+
+    service_name = ""
+
+    def __init__(self, frequency):
+        super().__init__()
+
+        self.frequency = frequency
+        self.shared_steppable_vars = {}
+
+        self.sim_service = None
+
+    def service_constructor(self):
+        """
+        Service constructor and initializer; service process should be running by the end of this call
+        :return: None
+        """
+        raise NotImplementedError
+
+    @property
+    def output_dir(self):
+        return CompuCellSetup.persistent_globals.output_directory
+
+    def core_init(self):
+        self.service_constructor()
+
+        print(f"Initialized embedded service {type(self).service_name}: {self.sim_service}")
+
+        persistent_globals = CompuCellSetup.persistent_globals
+        self.shared_steppable_vars = persistent_globals.shared_steppable_vars
+
+    def init(self, _simulator):
+        self.sim_service.init()
+
+    def start(self):
+        self.sim_service.start()
+
+    def step(self, mcs):
+        self.sim_service.step()
+
+    def finish(self):
+        self.sim_service.finish()
+
+    def on_stop(self):
+        self.sim_service.stop()
+
+    def add_steering_panel(self):
+        pass
+
+    def process_steering_panel_data_wrapper(self):
+        pass
+
+    def set_steering_param_dirty(self, flag):
+        pass
+
+
+class CC3DServiceSteppableBasePy(ServiceSteppableBasePy):
+
+    service_name = "CC3D"
+
+    def __init__(self, frequency):
+        super().__init__(frequency)
+
+        self.cc3d_sim_fname = None
+        self.cc3d_sim_output_frequency = 0
+        self.cc3d_sim_screenshot_output_frequency = 0
+        self.cc3d_sim_restart_snapshot_frequency = 0
+        self.cc3d_sim_restart_multiple_snapshots = False
+        self.cc3d_sim_output_dir = None
+        self.cc3d_sim_output_file_core_name = None
+        self.cc3d_sim_input = None
+
+    def service_constructor(self):
+
+        self.sim_service = sim_service.service_cc3d(
+            cc3d_sim_fname=self.cc3d_sim_fname,
+            output_frequency=self.cc3d_sim_output_frequency,
+            screenshot_output_frequency=self.cc3d_sim_screenshot_output_frequency,
+            restart_snapshot_frequency=self.cc3d_sim_restart_snapshot_frequency,
+            restart_multiple_snapshots=self.cc3d_sim_restart_multiple_snapshots,
+            output_dir=self.cc3d_sim_output_dir,
+            output_file_core_name=self.cc3d_sim_output_file_core_name,
+            sim_input=self.cc3d_sim_input)
+        self.sim_service.run()
+
+    def finish(self):
+        print(self.sim_service.profiler_report)
+        super().finish()
+
+    def on_stop(self):
+        print(self.sim_service.profiler_report)
+        super().on_stop()
+
+    @property
+    def service_input(self):
+        return self.sim_service.sim_input
+
+    @property
+    def service_output(self):
+        return self.sim_service.sim_output
