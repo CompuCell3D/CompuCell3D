@@ -1,6 +1,7 @@
 import random
 
 from cc3d.core.PySteppables import *
+from cc3d.core.sim_service import service_function
 
 random.seed()
 
@@ -76,7 +77,7 @@ class MitosisSteppable(MitosisSteppableBase):
         for cell in cells_to_divide:
             cell.dict['growth_delay'] = mcs + delay_time
 
-        if len(cells_to_divide) > 0:
+        if debug and len(cells_to_divide) > 0:
             print(f'EffectorProductionSite {self.__class__} growing {len(cells_to_divide)} cells.')
 
     def update_attributes(self):
@@ -111,27 +112,18 @@ class SignalHandlerSteppable(SteppableBasePy):
     def __init__(self, frequency=1):
         SteppableBasePy.__init__(self, frequency)
         self.runBeforeMCS = 1
+
         self.total_signal = dict()
+
+        # Signal values from the outside world can be deposited into this list via signal_receiver
+        self._signal_buffer = list()
+        service_function(self.signal_receiver)
+        # For reporting total signal received
+        self._total_received = 0
+        service_function(self.total_signal_received)
 
         if debug:
             print(f'EffectorProductionSite {self.__class__} reporting init!')
-
-    def start(self):
-        """
-        Expose signal receiver to the outside world
-        :return:
-        """
-
-        if debug:
-            print(f'EffectorProductionSite {self.__class__} reporting start!')
-
-        pg = CompuCellSetup.persistent_globals
-        if not isinstance(pg.input_object, dict):
-            pg.input_object = dict()
-        if 'SignalHandlerSteppable' not in pg.input_object.keys():
-            pg.input_object['SignalHandlerSteppable'] = dict()
-        if 'receive_signal' not in pg.input_object['SignalHandlerSteppable']:
-            pg.input_object['SignalHandlerSteppable']['receive_signal'] = list()
 
     def step(self, mcs):
         """
@@ -144,13 +136,14 @@ class SignalHandlerSteppable(SteppableBasePy):
             print(f'EffectorProductionSite {self.__class__} reporting step!')
 
         # Process inputs from outside world
-        pg = CompuCellSetup.persistent_globals
         self.total_signal[mcs] = 0
-        for _val in pg.input_object['SignalHandlerSteppable']['receive_signal']:
+        for _val in self._signal_buffer:
             self.total_signal[mcs] += _val
-        pg.input_object['SignalHandlerSteppable']['receive_signal'] = list()
+        self._signal_buffer = list()
+        self._total_received += self.total_signal[mcs]
 
-        print(f'EffectorProductionSite {self.__class__} reporting {self.total_signal[mcs]} signal received.')
+        if debug:
+            print(f'EffectorProductionSite {self.__class__} reporting {self.total_signal[mcs]} signal received.')
 
         delay_steps = 100
         if mcs - delay_steps in self.total_signal.keys():
@@ -159,12 +152,28 @@ class SignalHandlerSteppable(SteppableBasePy):
             # signal_val = 1.0
             self.field.Signal[self.dim.x - 1, 0:self.dim.y, 0] = signal_val / self.dim.y
 
-            print(f'EffectorProductionSite {self.__class__} reporting {signal_val} signal added.')
+            if debug:
+                print(f'EffectorProductionSite {self.__class__} reporting {signal_val} signal added.')
+
+    def signal_receiver(self, val):
+        self._signal_buffer.append(val)
+
+    def total_signal_received(self):
+        return self._total_received
 
 
 class EffectorMigrationSignalSteppable(SteppableBasePy):
     def __init__(self, frequency=1):
         SteppableBasePy.__init__(self, frequency)
+
+        # Keeps a record of the cells that have left for a step
+        # They can be withdrawn by the outside world via the transaction functions departed_cells and receive_cells
+        self._cells_departed = 0
+        service_function(self.departed_cells)
+        service_function(self.receive_cells)
+        # Keep a record of total cells sent
+        self._total_cells_departed = 0
+        service_function(self.total_cells_departed)
 
         if debug:
             print(f'EffectorProductionSite {self.__class__} reporting init!')
@@ -175,20 +184,26 @@ class EffectorMigrationSignalSteppable(SteppableBasePy):
             print(f'EffectorProductionSite {self.__class__} reporting step!')
 
         exit_threshold = self.dim.x - 10
-        
-        cells_leaving = 0
+
+        self._cells_departed = 0
         for cell in self.cell_list_by_type(self.EFFECTOR):
             if cell.xCOM > exit_threshold:
-                cells_leaving += 1
+                self._cells_departed += 1
                 for ptd in self.get_cell_pixel_list(cell=cell):
                     self.cell_field[ptd.pixel.x, ptd.pixel.y, ptd.pixel.z] = None
 
-        pg = CompuCellSetup.persistent_globals
-        if not isinstance(pg.return_object, dict):
-            pg.return_object = dict()
-        if 'EffectorMigrationSignalSteppable' not in pg.return_object.keys():
-            pg.return_object['EffectorMigrationSignalSteppable'] = dict()
-        pg.return_object['EffectorMigrationSignalSteppable']['cells_leaving'] = cells_leaving
+        if self._cells_departed > 0:
+            self._total_cells_departed += self._cells_departed
+            if debug:
+                print(f'EffectorProductionSite {self.__class__} has {self._cells_departed} cells available.')
 
-        if cells_leaving > 0:
-            print(f'EffectorProductionSite {self.__class__} sending {cells_leaving} cells.')
+    def departed_cells(self):
+        return self._cells_departed
+
+    def receive_cells(self, val):
+        val = min(val, self._cells_departed)
+        self._cells_departed -= val
+        return val
+
+    def total_cells_departed(self):
+        return self._total_cells_departed

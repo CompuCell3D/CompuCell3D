@@ -6,9 +6,9 @@ import time
 
 # Either of these works
 # The first is the underlying process class of the server process presented by the second as a proxy
-# However, only the second allows extensions of the service interface from within the simulation model specification
-# These extensions are called "service functions", and can be accessed by calling cc3d.core.Service.service_functions
-# on the proxy. Each declared service function is a method of the returned object after calling the proxy method "run"
+# However, only the second allows extensions of the service interface from within the simulation service specification
+# These extensions are called "service functions". They define internal service methods that can be employed through
+# the service interface and can be accessed as attributes on the service proxy.
 from cc3d.CompuCellSetup.CC3DCaller import CC3DSimService
 # from cc3d.core.sim_service import service_cc3d as CC3DSimService
 
@@ -32,7 +32,6 @@ run_parallel = False
 
 simulation_fname = join(dirname(__file__), 'steppableBasedMitosis', 'steppableBasedMitosis.cc3d')  # Local version; replace with call to demo directory in PR
 root_output_folder = join(dirname(__file__), 'steppableBasedMitosis', 'Output')
-# output_frequency = 10
 output_frequency = None
 population_threshold = 10
 

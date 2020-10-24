@@ -53,8 +53,15 @@ class InfectionSteppable(SteppableBasePy):
 
 
 class SignalCountingSteppable(SteppableBasePy):
+    """
+    Keeps a record of the outbound signal in recent simulation history
+    """
     def __init__(self, frequency=1):
         SteppableBasePy.__init__(self, frequency)
+
+        # For reporting total signal sent
+        self._total_sent = 0
+        service_function(self.total_signal_sent)
 
         if debug:
             print(f'InfectionSite {self.__class__} reporting init!')
@@ -68,8 +75,11 @@ class SignalCountingSteppable(SteppableBasePy):
         if debug:
             print(f'InfectionSite {self.__class__} reporting step!')
 
+        # Add signal to record
         secretor = self.get_field_secretor("SiteSignal")
-        self.send_signal(secretor.totalFieldIntegral())
+        val = secretor.totalFieldIntegral()
+        self.send_signal(val)
+        self._total_sent += val
 
     def finish(self):
         return
@@ -79,10 +89,10 @@ class SignalCountingSteppable(SteppableBasePy):
 
     def send_signal(self, val):
         recruitment_sim = self.shared_steppable_vars['recruitment_sim']
-        sim_input = recruitment_sim.sim_input
-        sim_input['SignalHandlerSteppable']['receive_signal'].append(val)
-        recruitment_sim.sim_input = sim_input
-        print(f'InfectionSite {self.__class__} passing {val} signal')
+        recruitment_sim.signal_receiver(val)
+
+    def total_signal_sent(self):
+        return self._total_sent
 
 
 class RecruitmentHandlerSteppable(SteppableBasePy):
@@ -90,6 +100,9 @@ class RecruitmentHandlerSteppable(SteppableBasePy):
         SteppableBasePy.__init__(self, frequency)
 
         self.cells_en_route = dict()
+        # For reporting
+        self._total_received = 0
+        service_function(self.total_cells_received)
 
         if debug:
             print(f'InfectionSite {self.__class__} reporting init!')
@@ -99,15 +112,16 @@ class RecruitmentHandlerSteppable(SteppableBasePy):
         if debug:
             print(f'InfectionSite {self.__class__} reporting step!')
 
-        cells_migrating = self.get_migrating_cells()
+        cells_migrating = self.get_all_migrating_cells()
         if cells_migrating > 0:
-            print(f'InfectionSite {self.__class__} reporting {cells_migrating} migrating cells.')
+            if debug:
+                print(f'InfectionSite {self.__class__} reporting {cells_migrating} migrating cells.')
             self.cells_en_route[mcs] = cells_migrating
 
         delay_steps = 200
         if mcs - delay_steps in self.cells_en_route.keys():
             cells_arriving = self.cells_en_route.pop(mcs - delay_steps)
-            if cells_arriving > 0:
+            if debug and cells_arriving > 0:
                 print(f'InfectionSite {self.__class__} reporting {cells_arriving} arriving cells.')
             for _ in range(cells_arriving):
                 pt = CompuCell.Point3D()
@@ -116,16 +130,19 @@ class RecruitmentHandlerSteppable(SteppableBasePy):
                 pt.z = 0
                 self.add_effector_cell(pt)
 
+            self._total_received += cells_arriving
+
     def finish(self):
         return
 
     def on_stop(self):
         return
 
-    def get_migrating_cells(self):
+    def get_all_migrating_cells(self):
         recruitment_sim = self.shared_steppable_vars['recruitment_sim']
-        sim_output = recruitment_sim.sim_output
-        return sim_output['EffectorMigrationSignalSteppable']['cells_leaving']
+        departed_cells = recruitment_sim.departed_cells()
+        received_cells = recruitment_sim.receive_cells(departed_cells)
+        return received_cells
 
     def add_effector_cell(self, pt):
         """
@@ -141,6 +158,9 @@ class RecruitmentHandlerSteppable(SteppableBasePy):
 
         # Build seed site
         self.cell_field[pt.x:pt.x + int(cell_diameter), pt.y:pt.y + int(cell_diameter), 0] = cell
+
+    def total_cells_received(self):
+        return self._total_received
 
 
 class ChemotaxisSteppable(SteppableBasePy):
@@ -196,9 +216,6 @@ class EffectorProductionSiteSimHandler(CC3DServiceSteppableBasePy):
         super().start()
         self.shared_steppable_vars['recruitment_sim'] = self.sim_service
 
-
-def add(x, y):
-    return x + y
-
-
-service_function(add, function_name='user_named_add')
+        # Forward service functions from recruitment site sim
+        service_function(self.sim_service.total_cells_departed)
+        service_function(self.sim_service.total_signal_received)
