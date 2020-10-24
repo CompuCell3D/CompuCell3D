@@ -30,14 +30,6 @@ using namespace CompuCell3D;
 Written by T.J. Sego, Ph.D.
 */
 
-CellG* FocalPointPlasticityLinkBase::getCellGFromConst(const CellG* _cell) {
-	if (!_cell) return (CellG*)(0);
-	else {
-		CellG* _cellNC = potts->getCellInventory().getCellByIds(_cell->id, _cell->clusterId);
-		return _cellNC;
-	}
-}
-
 void FocalPointPlasticityLinkBase::initializeConstitutiveLaw(std::string _localLaw) {
 	ev = ExpressionEvaluator();
 	ev.addVariable("Lambda");
