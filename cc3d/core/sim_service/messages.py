@@ -115,12 +115,17 @@ class RemoteFunctionEvaluator:
     """
     Safe way to evaluate a function in a different process
     """
-    def __init__(self, conn):
+    def __init__(self, conn, func=None):
         """
         :param conn: {multiprocessing.connection.Connection} RemoteFunctionEvaluator-RemoteFunctionWorker connection,
         RemoteFunctionEvaluator side
+        :param func: function to evaluate
         """
         self.__conn = conn
+        if func is not None:
+            self.__name__ = func.__name__
+        else:
+            self.__name__ = f"RemoteFunctionEvaluator_{conn.__name__}"
 
     def __call__(self, *args, **kwargs):
         return safe_transmit(self.__conn)(dispatch_transmit, self.__conn, None, *args, **kwargs)
@@ -175,7 +180,7 @@ def remote_function_factory(_func, daemon: bool = False) -> (RemoteFunctionEvalu
     :return: {RemoteFunctionEvaluator, RemoteFunctionWorker} evaluator-worker pair
     """
     e_conn, w_conn = Pipe()
-    evaluator = RemoteFunctionEvaluator(e_conn)
+    evaluator = RemoteFunctionEvaluator(e_conn, _func)
     worker = RemoteFunctionWorker(w_conn, _func, daemon=daemon)
     worker.start()
     return evaluator, worker
