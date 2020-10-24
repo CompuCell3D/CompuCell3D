@@ -897,6 +897,22 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
                 }
 
+                cerr << "change_pixel=" << changePixel << " change_pixelNeighbor="<<pt<<endl;
+                if (changePixelCell) {
+                    cerr << "changePixelCell.type=" << (int)changePixelCell->type << " volume="<< changePixelCell->volume<<endl;
+                }
+                else {
+                    cerr << "changePixelCell.type=0" << endl;
+                }
+
+                if (cell) {
+                    cerr << "cell.type=" << (int)cell->type << " volume=" << cell->volume << endl;
+                }
+                else {
+                    cerr << "cell.type=0" << endl;
+                }
+
+
 
                 if (sizeFrozenTypeVec && changePixelCell) {///must also make sure that cell ptr is different 0; Will never freeze medium
                     if (checkIfFrozen(changePixelCell->type))
@@ -932,8 +948,8 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
                         PottsTestData potts_test_data;
 
-                        potts_test_data.changePixel = pt;
-                        potts_test_data.changePixelNeighbor = n.pt;
+                        potts_test_data.changePixel = n.pt;
+                        potts_test_data.changePixelNeighbor = pt;
                         potts_test_data.motility = motility;
                         potts_test_data.pixelCopyAccepted = true;
                         potts_test_data.acceptanceFunctionProbability = prob;
@@ -949,7 +965,9 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
                         }
                     }
                     else {
+                        
                         cellFieldG->set(changePixel, flipNeighborVec[currentWorkNodeNumber], cell);
+
                         flipsVec[currentWorkNodeNumber]++;
                         if (numberOfThreads == 1) {
                             energyCalculator->setLastFlipAccepted(true);
@@ -963,8 +981,8 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
                     PottsTestData potts_test_data;
 
-                    potts_test_data.changePixel = pt;
-                    potts_test_data.changePixelNeighbor = n.pt;
+                    potts_test_data.changePixel = n.pt;
+                    potts_test_data.changePixelNeighbor = pt;
                     potts_test_data.motility = motility;
                     potts_test_data.pixelCopyAccepted = false;
                     potts_test_data.acceptanceFunctionProbability = prob;
@@ -1319,6 +1337,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 
 unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double temp) {
 
+
     cerr << "This is  simulation_input_dir=" << simulation_input_dir << endl;
 
     std::string simulation_test_data = simulation_input_dir + "/" + "potts_data_output.csv";
@@ -1333,8 +1352,8 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
         //std::string line;
 
         std::vector<PottsTestData> potts_test_data_vector = potts_test_data.deserialize_potts_data_sequence(infile);
-
-        for (auto i = 1; i < 11; ++i) {
+        int pixel_copy_id = 0;
+        for (auto i = 0; i < 11; ++i) {
             cerr << "-------------------------------------------------------------" << endl;
             PottsTestData potts_test_data_local = potts_test_data_vector[i];
             cerr << "potts_test_data_local.changePixel =" << potts_test_data_local.changePixel << endl;
@@ -1345,6 +1364,92 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
             for (const auto& kv : potts_test_data_local.energyFuctionNametoValueMap) {
                 cerr << " plugin=" << kv.first << " energy=" << kv.second << endl;
             }
+
+            Point3D changePixel = potts_test_data_local.changePixel;
+            Point3D changePixelNeighbor = potts_test_data_local.changePixelNeighbor;
+
+            CellG *cell = cellFieldG->getQuick(changePixelNeighbor);
+            CellG* changePixelCell = cellFieldG->getQuick(changePixel);
+            
+            double change = energyCalculator->changeEnergy(changePixel, cell, changePixelCell, pixel_copy_id); 
+            
+
+            cerr << "change_pixel=" << changePixel << " change_pixelNeighbor=" << changePixelNeighbor << endl;
+            if (changePixelCell) {
+                cerr << "changePixelCell.type=" << (int)changePixelCell->type << " volume=" << changePixelCell->volume << endl;
+            }
+            else {
+                cerr << "changePixelCell.type=0" << endl;
+            }
+
+            if (cell) {
+                cerr << "cell.type=" << (int)cell->type << " volume=" << cell->volume << endl;
+            }
+            else {
+                cerr << "cell.type=0" << endl;
+            }
+
+
+            cerr << "change=" << change << endl;
+            pixel_copy_id += 1;
+
+            // Acceptance based on probability
+            double motility = fluctAmplFcn->fluctuationAmplitude(cell, changePixelCell);
+
+            double prob = acceptanceFunction->accept(motility, change);
+            if (potts_test_data_local.pixelCopyAccepted) {
+                cellFieldG->set(changePixel, changePixelNeighbor, cell);
+            }
+                
+
+            for (unsigned int j = 0; j < steppers.size(); j++) {
+                steppers[j]->step();
+            }
+
+            PottsTestData potts_test_data;
+
+            potts_test_data.changePixel = changePixel;
+            potts_test_data.changePixelNeighbor = changePixelNeighbor;
+            potts_test_data.motility = motility;            
+            potts_test_data.acceptanceFunctionProbability = prob;
+            cerr << "energyCalculator->getEnergyFuctionNametoValueMap().size()=" << energyCalculator->getEnergyFuctionNametoValueMap().size() << endl;
+            potts_test_data.energyFuctionNametoValueMap = energyCalculator->getEnergyFuctionNametoValueMap();
+
+            potts_test_data_local.compare_potts_data(potts_test_data);
+
+            // handle connectivity - add it 
+            //if (prob >= 1.0 || rand->getRatio() < prob) {
+            //    // Accept the change
+            //    energyVec[currentWorkNodeNumber] += change;
+
+            //    if (connectivityConstraint && connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell)) {
+            //        if (numberOfThreads == 1) {
+            //            energyCalculator->setLastFlipAccepted(false);
+            //        }
+            //    }
+            //    else {
+            //        cellFieldG->set(changePixel, flipNeighborVec[currentWorkNodeNumber], cell);
+            //        flipsVec[currentWorkNodeNumber]++;
+            //        if (numberOfThreads == 1) {
+            //            energyCalculator->setLastFlipAccepted(true);
+            //        }
+            //    }
+            //}
+            //else {
+
+            //    PottsTestData potts_test_data;
+
+            //    potts_test_data.changePixel = n.pt;
+            //    potts_test_data.changePixelNeighbor = pt;
+            //    potts_test_data.motility = motility;
+            //    potts_test_data.pixelCopyAccepted = false;
+            //    potts_test_data.acceptanceFunctionProbability = prob;
+
+            //    energyCalculator->log_output(potts_test_data);
+            //}
+
+
+
         }
 
 

@@ -909,7 +909,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 		enCalculator->setSimulator(this);
 		enCalculator->init(_xmlData->getFirstElement("EnergyFunctionCalculator"));
     }
-    else if (test_output_generate_flag) {
+    else if (test_output_generate_flag|| test_run_flag) {
         potts.createEnergyFunction("TestOutputDataGeneration");
         EnergyFunctionCalculator * enCalculator = potts.getEnergyFunctionCalculator();
         enCalculator->setSimulator(this);
