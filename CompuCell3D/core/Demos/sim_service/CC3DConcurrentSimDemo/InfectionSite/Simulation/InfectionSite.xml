@@ -2,7 +2,7 @@
 
    <Metadata>
       <NumberOfProcessors>1</NumberOfProcessors>
-      <DebugOutputFrequency>10</DebugOutputFrequency>
+      <DebugOutputFrequency>0</DebugOutputFrequency>
    </Metadata>
 
    <Potts>
