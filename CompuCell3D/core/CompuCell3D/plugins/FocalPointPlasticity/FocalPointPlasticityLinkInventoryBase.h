@@ -170,14 +170,6 @@ namespace CompuCell3D {
 			return &cellLinkInventoryTrackerAccessor->get(_cell->extraAttribPtr)->linkInv;
 		}
 
-		CellG* getCellGFromConst(const CellG* _cell) {
-			if (!_cell) return (CellG*)(0);
-			else {
-				CellG* _cellNC = potts->getCellInventory().getCellByIds(_cell->id, _cell->clusterId);
-				return _cellNC;
-			}
-		}
-
 	public:
 		FPPLinkInventoryBase() {}
 		FPPLinkInventoryBase(BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* _cellLinkInventoryTrackerAccessor, Potts3D* _potts, BasicClassAccessor<FocalPointPlasticityTracker>* _focalPointPlasticityTrackerAccessor)
@@ -225,10 +217,6 @@ namespace CompuCell3D {
 		}
 		// Get link inventory list by cell
 		FPPLinkList getCellLinkList(CellG* _cell) { return getCellLinkInventory(_cell)->getLinkList(); }
-		FPPLinkList getCellLinkList(const CellG* _cell) {
-			CellG* _cellNC = getCellGFromConst(_cell);
-			return getCellLinkList(_cellNC);
-		}
 		// Get number of junctions for a cell
 		virtual int getNumberOfJunctions(CellG* _cell) { return getCellLinkInventory(_cell)->getLinkInventorySize(); }
 		// Remove all links attached to a cell
