@@ -22,7 +22,7 @@
 #ifndef FOCALPOINTPLASTICITYLINKINVENTORYBASE_H
 #define FOCALPOINTPLASTICITYLINKINVENTORYBASE_H
 
-#include <map>
+#include <unordered_map>
 #include <set>
 #include <vector>
 
@@ -84,6 +84,18 @@ namespace CompuCell3D {
 		FPPLinkInventoryBase<LinkType> linkInv;
 	};
 
+	
+	// Hasher using Cantor pairing function
+	class FOCALPOINTPLASTICITY_EXPORT LinkInventoryHasher {
+
+	public:
+
+		size_t operator() (FPPLinkID key) const {
+			return 0.5 * (key.id0 + key.id1) * (key.id0 + key.id1 + 1) + key.id1;
+		}
+
+	};
+
 
 	template <class LinkType>
 	class FOCALPOINTPLASTICITY_EXPORT FPPLinkInventoryBase {
@@ -93,7 +105,7 @@ namespace CompuCell3D {
 		typedef FPPLinkListBase<LinkType> FPPLinkList;
 		typedef FPPLinkInventoryBase<LinkType> FPPInventory_t;
 
-		typedef std::map<const FPPLinkID, LinkType*> linkInventory_t;
+		typedef std::unordered_map<const FPPLinkID, LinkType*, LinkInventoryHasher> linkInventory_t;
 		typedef typename linkInventory_t::iterator linkInventoryItr_t;
 		typedef std::pair<const FPPLinkID, LinkType*> linkInventoryPair_t;
 
