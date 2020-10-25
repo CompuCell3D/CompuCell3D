@@ -636,36 +636,28 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 
 
 	if (oldCell) {
-		centMassOldBefore.XRef() = oldCell->xCM / (float)oldCell->volume;
-		centMassOldBefore.YRef() = oldCell->yCM / (float)oldCell->volume;
-		centMassOldBefore.ZRef() = oldCell->zCM / (float)oldCell->volume;
+
+		float volOldCell = (float)oldCell->volume;
+		centMassOldBefore = Coordinates3D<float>(oldCell->xCM / volOldCell, oldCell->yCM / volOldCell, oldCell->zCM / volOldCell);
 
 		if (oldCell->volume>1) {
 			centroidOldAfter = precalculateCentroid(pt, oldCell, -1, fieldDim, boundaryStrategy);
-			centMassOldAfter.XRef() = centroidOldAfter.X() / (float)(oldCell->volume - 1);
-			centMassOldAfter.YRef() = centroidOldAfter.Y() / (float)(oldCell->volume - 1);
-			centMassOldAfter.ZRef() = centroidOldAfter.Z() / (float)(oldCell->volume - 1);
+			centMassOldAfter = Coordinates3D<float>(centroidOldAfter.x / (volOldCell - 1), centroidOldAfter.y / (volOldCell - 1), centroidOldAfter.z / (volOldCell - 1));
 
 		}
 		else {
-			centroidOldAfter.XRef() = oldCell->xCM;
-			centroidOldAfter.YRef() = oldCell->yCM;
-			centroidOldAfter.ZRef() = oldCell->zCM;
-			centMassOldAfter.XRef() = centroidOldAfter.X() / (float)(oldCell->volume);
-			centMassOldAfter.YRef() = centroidOldAfter.Y() / (float)(oldCell->volume);
-			centMassOldAfter.ZRef() = centroidOldAfter.Z() / (float)(oldCell->volume);
+			centroidOldAfter = Coordinates3D<double>(oldCell->xCM, oldCell->yCM, oldCell->zCM);
+			centMassOldAfter = Coordinates3D<float>(centroidOldAfter.x / volOldCell, centroidOldAfter.y / volOldCell, centroidOldAfter.z / volOldCell);
+
 		}
 	}
 
 	if (newCell) {
-		centMassNewBefore.XRef() = newCell->xCM / (float)newCell->volume;
-		centMassNewBefore.YRef() = newCell->yCM / (float)newCell->volume;
-		centMassNewBefore.ZRef() = newCell->zCM / (float)newCell->volume;
+		float volNewCell = (float)newCell->volume;
 
+		centMassNewBefore = Coordinates3D<float>(newCell->xCM / volNewCell, newCell->yCM / volNewCell, newCell->zCM / volNewCell);
 		centroidNewAfter = precalculateCentroid(pt, newCell, 1, fieldDim, boundaryStrategy);
-		centMassNewAfter.XRef() = centroidNewAfter.X() / (float)(newCell->volume + 1);
-		centMassNewAfter.YRef() = centroidNewAfter.Y() / (float)(newCell->volume + 1);
-		centMassNewAfter.ZRef() = centroidNewAfter.Z() / (float)(newCell->volume + 1);
+		centMassNewAfter = Coordinates3D<float>(centroidNewAfter.x / (volNewCell + 1), centroidNewAfter.y / (volNewCell + 1), centroidNewAfter.z / (volNewCell + 1));
 	}
 
 	//will loop over neighbors of the oldCell and calculate Plasticity energy
