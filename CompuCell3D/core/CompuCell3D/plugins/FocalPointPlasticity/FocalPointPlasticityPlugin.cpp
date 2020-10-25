@@ -678,7 +678,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 	float nCellVol;
 	if (oldCell) {
 
-		for each (FocalPointPlasticityLink* link in linkInv.getCellLinkList(oldCell)) {
+		for each (FocalPointPlasticityLink* link in linkInv.getCellLinkList(const_cast<CellG*>(oldCell))) {
 			nCell = link->getOtherCell(oldCell);
 			nCellVol = nCell->volume;
 
@@ -698,7 +698,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 		}
 
 		//go over compartments
-		for each (FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(oldCell)) {
+		for each (FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(const_cast<CellG*>(oldCell))) {
 			nCell = link->getOtherCell(oldCell);
 			nCellVol = nCell->volume;
 
@@ -719,7 +719,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 		}
 
 		//go over anchors
-		for each (FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(oldCell)) {
+		for each (FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(const_cast<CellG*>(oldCell))) {
 			anchorPoint = link->getAnchorPoint();
 			lBefore = distInvariantCM(centMassOldBefore.X(), centMassOldBefore.Y(), centMassOldBefore.Z(), anchorPoint[0], anchorPoint[1], anchorPoint[2], fieldDim, boundaryStrategy);
 			deltaL =
@@ -732,7 +732,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 
 	if (newCell) {
 
-		for each (FocalPointPlasticityLink* link in linkInv.getCellLinkList(newCell)) {
+		for each (FocalPointPlasticityLink* link in linkInv.getCellLinkList(const_cast<CellG*>(newCell))) {
 			nCell = link->getOtherCell(newCell);
 			nCellVol = nCell->volume;
 
@@ -752,7 +752,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 		}
 
 		//go ever compartments
-		for each (FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(newCell)) {
+		for each (FocalPointPlasticityInternalLink* link in linkInvInternal.getCellLinkList(const_cast<CellG*>(newCell))) {
 			nCell = link->getOtherCell(newCell);
 			nCellVol = nCell->volume;
 
@@ -769,7 +769,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 		}
 
 		//go over anchors
-		for each (FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(newCell)) {
+		for each (FocalPointPlasticityAnchor* link in linkInvAnchor.getCellLinkList(const_cast<CellG*>(newCell))) {
 			anchorPoint = link->getAnchorPoint();
 			lBefore = distInvariantCM(centMassNewBefore.X(), centMassNewBefore.Y(), centMassNewBefore.Z(), anchorPoint[0], anchorPoint[1], anchorPoint[2], fieldDim, boundaryStrategy);
 			deltaL =
