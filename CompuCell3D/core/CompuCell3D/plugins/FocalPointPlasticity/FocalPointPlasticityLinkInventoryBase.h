@@ -40,8 +40,6 @@ namespace CompuCell3D {
 	class Potts3D;
 	class FocalPointPlasticityTracker;
 
-	typedef std::set<FocalPointPlasticityTrackerData> FPPTrackerDataSet;
-
 	template <typename T>
 	class FPPLinkListBase : public std::vector<T*> {
 	public:
@@ -112,7 +110,6 @@ namespace CompuCell3D {
 	protected:
 
 		Potts3D* potts;
-		BasicClassAccessor<FocalPointPlasticityTracker>* focalPointPlasticityTrackerAccessor;
 		BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* cellLinkInventoryTrackerAccessor;
 
 		linkInventory_t linkInventory;
@@ -128,42 +125,11 @@ namespace CompuCell3D {
 		void addLinkNoChain(LinkType* _link) {
 			linkInventory.insert(linkInventoryPair_t(getLinkId(_link), _link));
 		}
-		// Add tracker data to cells
-		void addTrackerData(LinkType* _link) {
-			CellG* cell0 = _link->getObj0();
-			CellG* cell1 = _link->getObj1();
-			if (cell0) {
-				FocalPointPlasticityTrackerData fppd = _link->getFPPTrackerData(cell0);
-				getFPPTrackerDataSet(cell0).insert(fppd);
-			}
-			if (cell1) {
-				FocalPointPlasticityTrackerData fppd = _link->getFPPTrackerData(cell1);
-				getFPPTrackerDataSet(cell1).insert(fppd);
-			}
-		}
 		// Remove a link without any additional internal work
 		void removeLinkNoChain(LinkType* _link) {
 			const FPPLinkID linkId = getLinkId(_link);
 			linkInventoryItr_t itr = linkInventory.find(linkId);
 			if (itr != linkInventory.end()) linkInventory.erase(linkId);
-		}
-		// Remove tracker data from cells
-		void removeTrackerData(LinkType* _link) {
-			FPPTrackerDataSet::iterator itr;
-			CellG* cell0 = const_cast<CellG*>(_link->getObj0());
-			CellG* cell1 = const_cast<CellG*>(_link->getObj1());
-			if (cell0) {
-				FPPTrackerDataSet &fppdSet = getFPPTrackerDataSet(cell0);
-				FocalPointPlasticityTrackerData fppd = _link->getFPPTrackerData(cell0);
-				itr = fppdSet.find(fppd);
-				if (itr != fppdSet.end()) fppdSet.erase(fppd);
-			}
-			if (cell1) {
-				FPPTrackerDataSet &fppdSet = getFPPTrackerDataSet(cell1);
-				FocalPointPlasticityTrackerData fppd = _link->getFPPTrackerData(cell1);
-				itr = fppdSet.find(fppd);
-				if (itr != fppdSet.end()) fppdSet.erase(fppd);
-			}
 		}
 
 		FPPInventory_t* getCellLinkInventory(CellG* _cell) { 
@@ -172,18 +138,21 @@ namespace CompuCell3D {
 
 	public:
 		FPPLinkInventoryBase() {}
-		FPPLinkInventoryBase(BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* _cellLinkInventoryTrackerAccessor, Potts3D* _potts, BasicClassAccessor<FocalPointPlasticityTracker>* _focalPointPlasticityTrackerAccessor)
+		FPPLinkInventoryBase(BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* _cellLinkInventoryTrackerAccessor, Potts3D* _potts)
 		{
 			cellLinkInventoryTrackerAccessor = _cellLinkInventoryTrackerAccessor;
 			potts = _potts;
-			focalPointPlasticityTrackerAccessor = _focalPointPlasticityTrackerAccessor;
 		}
 		virtual ~FPPLinkInventoryBase() {}
 
-		BasicClassAccessor<FocalPointPlasticityTracker> * getFocalPointPlasticityTrackerAccessorPtr() { return focalPointPlasticityTrackerAccessor; }
 		BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* getFocalPointPlasticityCellLinkInventoryTrackerAccessorPtr() { return cellLinkInventoryTrackerAccessor; }
 
-		virtual FPPTrackerDataSet& getFPPTrackerDataSet(CellG* _cell) { return FPPTrackerDataSet(); }
+		virtual std::set<FocalPointPlasticityTrackerData> getFPPTrackerDataSet(CellG* _cell)
+		{
+			std::set<FocalPointPlasticityTrackerData> o;
+			for each (LinkType* link in getCellLinkList(_cell)) o.insert(link->getFPPTrackerData(_cell));
+			return o;
+		}
 
 		virtual int getLinkInventorySize() { return linkInventory.size(); }
 		linkInventory_t& getContainer() { return linkInventory; }
@@ -194,14 +163,12 @@ namespace CompuCell3D {
 
 		// Add a link to the link inventory and update internals
 		void addToInventory(LinkType* _link) {
-			addTrackerData(_link);
 			addLinkNoChain(_link);
 			getCellLinkInventory(_link->getObj0())->addLinkNoChain(_link);
 			getCellLinkInventory(_link->getObj1())->addLinkNoChain(_link);
 		}
 		// Remove a link to the link inventory and update internals
 		void removeFromInventory(LinkType* _link) {
-			removeTrackerData(_link);
 			removeLinkNoChain(_link);
 			getCellLinkInventory(_link->getObj0())->removeLinkNoChain(_link);
 			getCellLinkInventory(_link->getObj1())->removeLinkNoChain(_link);
