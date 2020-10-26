@@ -8,9 +8,16 @@ from PyQt5.QtWidgets import *
 
 # from CompuCell3D.core.pythonSetupScripts.DefaultSettingsData import *
 from cc3d.core.DefaultSettingsData import *
-# From core; do not remove unless you're looking for trouble, or making Player-specific implementations!
-from cc3d.core.Configuration.SettingUtils import _check_settings_sanity
-from cc3d.core.Configuration import copy_settings, synchronizeGlobalAndDefaultSettings
+
+
+def copy_settings(src_setting_path, dst_setting_dir):
+    from cc3d.core.Configuration import copy_settings as f
+    return f(src_setting_path, dst_setting_dir)
+
+
+def synchronizeGlobalAndDefaultSettings(default_settings, global_settings, global_settings_path):
+    from cc3d.core.Configuration import synchronize_global_and_default_settings as f
+    return f(default_settings, global_settings, global_settings_path)
 
 
 def load_settings(setting_path):
@@ -31,6 +38,7 @@ def _load_sql_settings(setting_path):
     # from CompuCell3D.player5.Configuration.settingdict import SettingsSQL
     # from .settingdict import SettingsSQL
     from cc3d.player5.Configuration.settingdict import SettingsSQL
+    from cc3d.core.Configuration.SettingUtils import _check_settings_sanity
 
     # workaround for Windows leftover DefaultSettingPath.pyc
     from os.path import splitext

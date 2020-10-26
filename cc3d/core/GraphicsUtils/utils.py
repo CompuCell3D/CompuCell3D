@@ -14,26 +14,26 @@ def extract_address_int_from_vtk_object(vtkObj: str) -> int:
     return addr_hex_int
 
 
-def qcolor_to_rgba(qcolor: object) -> tuple:
+def qcolor_to_rgba(color: object) -> tuple:
     """
-    Converts qt_color to rgba tuple
-    :param qt_color: {QColor}
+    Converts color to rgba tuple
+    :param color: {Color}
     :return: {tuple (int, int, int, int)} rgba
     """
 
-    return (qcolor.red(), qcolor.green(), qcolor.blue(), qcolor.alpha())
+    return (color.red(), color.green(), color.blue(), color.alpha())
 
 
 def to_vtk_rgb(color_obj):
     """
-    Converts color object (either QColor or a tuple of intergers) into vtk rgb values
-    :param color_obj:{color obj} can be either qcolor or a list/tuple of 3-4 integers
+    Converts color object (either Color or a tuple of intergers) into vtk rgb values
+    :param color_obj:{color obj} can be either Color or a list/tuple of 3-4 integers
     :return: {tuple of 0-1 floats}
     """
-    # try qcolor conversion
+    # try Color conversion
     try:
-        qcolor_rgb = qcolor_to_rgba(color_obj)[:3]
-        color_obj = qcolor_rgb
+        color_rgb = qcolor_to_rgba(color_obj)[:3]
+        color_obj = color_rgb
     except AttributeError:
         pass
 

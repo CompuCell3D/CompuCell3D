@@ -27,7 +27,6 @@ from .SettingUtils import _global_setting_path
 #     from CompuCell3D.player5.Configuration.settingdict import SettingsSQL
 # except ImportError:
 #     from Config.settingdict import SettingsSQL
-from .settingdict import SettingsSQL
 
 LATTICE_TYPES = {"Square": 1, "Hexagonal": 2}
 

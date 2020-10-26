@@ -1,11 +1,13 @@
 import sqlite3
+import locale
 
 try:
     import pickle as pickle
 except ImportError:
     import pickle
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+from cc3d.core.GraphicsOffScreen.primitives import *
+
+_enc = locale.getdefaultlocale()[1]
 
 
 class SerializerUtil(object):
@@ -15,7 +17,7 @@ class SerializerUtil(object):
 
     def __init__(self):
         self.type_2_serializer_dict = {
-            'QColor': self.qcolor_2_sql,
+            'Color': lambda val: ('color', val.to_str_rgb()),
             'str': lambda val: ('str', val),
             'unicode': lambda val: ('unicode', val),
             'int': lambda val: ('int', str(val)),
@@ -23,9 +25,9 @@ class SerializerUtil(object):
             'float': lambda val: ('float', str(val)),
             'complex': lambda val: ('complex', str(val)),
             'bool': lambda val: ('bool', int(val)),
-            'QSize': self.qsize_2_sql,
-            'QPoint': self.qpoint_2_sql,
-            'QByteArray': self.qbytearray_2_sql,
+            'Size2D': lambda val: ('size', str(val)),
+            'Point2D': lambda val: ('point', str(val)),
+            'bytearray': lambda val: ('bytearray', val.decode(encoding=_enc)),
             'dict': self.dict_2_sql,
             'list': self.list_2_sql,
             'tuple': self.tuple_2_sql
@@ -43,58 +45,33 @@ class SerializerUtil(object):
             'bool': lambda val: False if int(val) == 0 else True,
             'size': self.sql_2_size,
             'point': self.sql_2_point,
-            'bytearray': self.sql_2_bytearray,
+            'bytearray': lambda val: str(val, encoding=_enc),
             'dict': self.sql_2_dict,
             'list': self.sql_2_list,
             'tuple': self.sql_2_tuple,
 
         }
 
-    def qcolor_2_sql(self, val):
-        """
-        QColor to sql string representation
-        :param val: {QColor}
-        :return: {tuple} ('color',QColor representation string)
-        """
-        return 'color', val.name()
-
-    def sql_2_color(self, val):
+    def sql_2_color(self, val: str):
         """
         sql string representation to QColor
         :param val: {str} sql string representation
-        :return: {QColor}
+        :return: {Color}
         """
-        return QColor(val)
+        return Color.from_str_rgb(val)
 
-    def qsize_2_sql(self, val):
-        """
-        QSize to sql string representation
-        :param val: {QSize}
-        :return: {tuple} ('size',QSize representation string)
-        """
-
-        return 'size', str(val.width()) + ',' + str(val.height())
-
-    def sql_2_size(self, val):
+    def sql_2_size(self, val: str):
         """
         sql string representation to QSize
         :param val: {str} sql string representation
-        :return: {QSize}
+        :return: {Size2D}
         """
         sizeList = val.split(',')
         sizeListInt = list(map(int, sizeList))
 
-        return QSize(sizeListInt[0], sizeListInt[1])
+        return Size2D(width=sizeListInt[0], height=sizeListInt[1])
 
-    def qpoint_2_sql(self, val):
-        """
-        QPoint to sql string representation
-        :param val: {QPoint}
-        :return: {tuple} ('point',QPoint representation string)
-        """
-        return 'point', str(val.x()) + ',' + str(val.y())
-
-    def sql_2_point(self, val):
+    def sql_2_point(self, val: str):
         """
         sql string representation to QPoint
         :param val: {str} sql string representation
@@ -103,24 +80,7 @@ class SerializerUtil(object):
         sizeList = val.split(',')
         sizeListInt = list(map(int, sizeList))
 
-        return QPoint(sizeListInt[0], sizeListInt[1])
-
-    def qbytearray_2_sql(self, val):
-        """
-        QByteArray to sql string representation
-        :param val: {QByteArray}
-        :return: {tuple} ('bytearray',QByteArray representation string)
-        """
-        out_str = val.data()
-        return 'bytearray', out_str
-
-    def sql_2_bytearray(self, val):
-        """
-        sql string representation to QByteArray
-        :param val: {str} sql string representation
-        :return: {QByteArray}
-        """
-        return QByteArray(val)
+        return Point2D(x=sizeListInt[0], y=sizeListInt[1])
 
     def generic_2_sql(self, val):
         """
@@ -285,6 +245,8 @@ class DictWrapper(dict):
     Wrapper class that facilitates conversion of the dictionaries into sql picklable string
     """
 
+    _SerializerUtil = SerializerUtil
+
     def __init__(self, *args, **kwds):
         super(DictWrapper, self).__init__(*args, **kwds)
 
@@ -292,11 +254,11 @@ class DictWrapper(dict):
         """
         Generates pickled string representation of the dictionary
         Note: this is not the same representation that one gets by calling pickle.dumps on a python dictionary
-        Here we are avoiding direct pickling of PyQt objects, instead we are generating
-        representations that are independent on the particular details of the Qt python wrapper implementations
+        Here we are avoiding direct pickling of objects, instead we are generating
+        representations that are independent of the particular details of the implementations
         :return: {str} pickle serialization string of the dictionary
         """
-        su = SerializerUtil()
+        su = self._SerializerUtil()
         state = self.copy()
         for key, val in list(self.items()):
             state[key] = su.val_2_sql(val)
@@ -317,7 +279,7 @@ class DictWrapper(dict):
         :return: {dict} representation of the dict
         """
 
-        su = SerializerUtil()
+        su = self._SerializerUtil()
 
         state = self.copy()
 
@@ -340,6 +302,8 @@ class ListWrapper(list):
     Wrapper class that facilitates conversion of the dictionaries into sql picklable string
     """
 
+    _SerializerUtil = SerializerUtil
+
     def __init__(self, *args, **kwds):
         super(ListWrapper, self).__init__(*args, **kwds)
 
@@ -347,11 +311,11 @@ class ListWrapper(list):
         """
         Generates pickled string representation of the list
         Note: this is not the same representation that one gets by calling pickle.dumps on a python list
-        Here we are avoiding direct pickling of PyQt objects, instead we are generating
-        representations that are independent on the particular details of the Qt python wrapper implementations
+        Here we are avoiding direct pickling of objects, instead we are generating
+        representations that are independent on the particular details of the implementations
         :return: {str} pickle serialization string of the list
         """
-        su = SerializerUtil()
+        su = self._SerializerUtil()
         out_state = []
 
         for val in self:
@@ -369,6 +333,9 @@ class ListWrapper(list):
 
 
 class SettingsSQL(object):
+
+    _SerializerUtil = SerializerUtil
+
     def __init__(self, filename=".shared.db", **kwargs):
         self.filename = filename
         self.conn = sqlite3.connect(self.filename)
@@ -378,7 +345,7 @@ class SettingsSQL(object):
             for key, value in list(kwargs.items()):
                 self[key] = value
 
-        self.su = SerializerUtil()
+        self.su = self._SerializerUtil()
 
     def __enter__(self):
         return self
