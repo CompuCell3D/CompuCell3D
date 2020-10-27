@@ -91,21 +91,22 @@ def worker_transmit(conn, func):
             conn.send(val)
 
 
-def safe_transmit(conn=None):
+def safe_transmit(conn=None, debug: bool = False):
     """
     Wrap to do communication protocol with safe handling of common exceptions
     :param conn: connection
+    :param debug: {bool} option for notifications when pipes break or close
     :return:
     """
     def wrapper(func, *args, **kwargs):
         try:
             return func(*args, **kwargs)
         except BrokenPipeError:
-            if conn is not None:
+            if debug and conn is not None:
                 print(f"Pipe has been broken: {conn}")
             return None
         except EOFError:
-            if conn is not None:
+            if debug and conn is not None:
                 print(f"Pipe has been closed: {conn}")
             return None
     return wrapper
