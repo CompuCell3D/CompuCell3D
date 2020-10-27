@@ -3,6 +3,7 @@ from .ServiceFunctionRegistry import service_function
 
 # Implementation service generators
 from cc3d.core.sim_service.impl.CC3D.PyServiceCC3D import service_cc3d
+from cc3d.core.sim_service.impl.RoadRunner.PyServiceRoadRunner import service_roadrunner
 
 
 def close():
