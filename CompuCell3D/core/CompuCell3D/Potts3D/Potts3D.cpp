@@ -953,6 +953,11 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
                         potts_test_data.motility = motility;
                         potts_test_data.pixelCopyAccepted = true;
                         potts_test_data.acceptanceFunctionProbability = prob;
+                        if (connectivityConstraint) {
+                            potts_test_data.using_connectivity = true;
+                            potts_test_data.connectivity_energy = connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell);
+                        }
+
 
                         energyCalculator->log_output(potts_test_data);
                     }
@@ -986,6 +991,10 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
                     potts_test_data.motility = motility;
                     potts_test_data.pixelCopyAccepted = false;
                     potts_test_data.acceptanceFunctionProbability = prob;
+                    if (connectivityConstraint) {
+                        potts_test_data.using_connectivity = true;
+                        potts_test_data.connectivity_energy = connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell);
+                    }
 
                     energyCalculator->log_output(potts_test_data);
                 }
@@ -1353,7 +1362,7 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
 
         std::vector<PottsTestData> potts_test_data_vector = potts_test_data.deserialize_potts_data_sequence(infile);
         int pixel_copy_id = 0;
-        for (auto i = 0; i < 11; ++i) {
+        for (auto i = 0; i < potts_test_data_vector.size(); ++i) {
             cerr << "-------------------------------------------------------------" << endl;
             PottsTestData potts_test_data_local = potts_test_data_vector[i];
             cerr << "potts_test_data_local.changePixel =" << potts_test_data_local.changePixel << endl;

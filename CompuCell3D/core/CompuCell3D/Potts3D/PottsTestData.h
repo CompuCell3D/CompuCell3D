@@ -30,6 +30,8 @@ namespace CompuCell3D {
         double acceptanceFunctionProbability;        
 
         std::map<std::string, double> energyFuctionNametoValueMap;
+        bool using_connectivity = false;
+        double connectivity_energy = 0.0;
 
         bool write_header(std::string file_name);
         bool serialize(std::string file_name);
