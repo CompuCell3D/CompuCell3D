@@ -7,7 +7,7 @@
         <Flip2DimRatio>1</Flip2DimRatio>
         <NeighborOrder>2</NeighborOrder>
         <RandomSeed>1</RandomSeed>
-        <TestOutputGenerate/>
+        <TestRun/>
     </Potts>
 
 
