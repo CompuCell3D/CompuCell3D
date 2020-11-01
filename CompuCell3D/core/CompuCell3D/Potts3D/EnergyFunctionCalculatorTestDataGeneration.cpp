@@ -39,7 +39,7 @@ double EnergyFunctionCalculatorTestDataGeneration::changeEnergy(Point3D &pt, con
         energy = energyFunctions[i]->changeEnergy(pt, newCell, oldCell);
         change += energy;
         energyFuctionNametoValueMap[energyFunctionsNameVec[i]] = energy;
-        cerr<<"i="<<i<<" CHANGE FROM ACCEPTANCE FUNCTION ="<<change<<" FCNNAME="<<energyFunctionsNameVec[i]<<endl;
+        cerr<<"i="<<i<<" CHANGE FROM ENERGY FUNCTION ="<< energy <<" FCNNAME="<<energyFunctionsNameVec[i]<<endl;
     }
     return change;    
 }

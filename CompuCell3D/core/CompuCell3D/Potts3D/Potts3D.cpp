@@ -956,6 +956,9 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
                         if (connectivityConstraint) {
                             potts_test_data.using_connectivity = true;
                             potts_test_data.connectivity_energy = connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell);
+                            if (potts_test_data.connectivity_energy) {
+                                potts_test_data.pixelCopyAccepted = false;
+                            }
                         }
 
 
@@ -994,6 +997,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
                     if (connectivityConstraint) {
                         potts_test_data.using_connectivity = true;
                         potts_test_data.connectivity_energy = connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell);
+                        // no need to set potts_test_data.pixelCopyAccepted = false; because it is already set to this value
                     }
 
                     energyCalculator->log_output(potts_test_data);
@@ -1346,6 +1350,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 
 unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double temp) {
 
+    flipNeighborVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), Point3D());
 
     cerr << "This is  simulation_input_dir=" << simulation_input_dir << endl;
 
@@ -1370,6 +1375,7 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
             cerr << "motility=" << potts_test_data_local.motility << endl;
             cerr << "pixelCopyAccepted=" << potts_test_data_local.pixelCopyAccepted << endl;
             cerr << "acceptanceFunctionProbability=" << potts_test_data_local.acceptanceFunctionProbability << endl;
+            cerr << "potts_test_data_local.using_connectivity=" << potts_test_data_local.using_connectivity << endl;
             for (const auto& kv : potts_test_data_local.energyFuctionNametoValueMap) {
                 cerr << " plugin=" << kv.first << " energy=" << kv.second << endl;
             }
@@ -1379,6 +1385,9 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
 
             CellG *cell = cellFieldG->getQuick(changePixelNeighbor);
             CellG* changePixelCell = cellFieldG->getQuick(changePixel);
+            unsigned int currentWorkNodeNumber = 0;
+            flipNeighborVec[currentWorkNodeNumber] = changePixelNeighbor;
+            
             
             double change = energyCalculator->changeEnergy(changePixel, cell, changePixelCell, pixel_copy_id); 
             
@@ -1421,6 +1430,11 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
             potts_test_data.changePixelNeighbor = changePixelNeighbor;
             potts_test_data.motility = motility;            
             potts_test_data.acceptanceFunctionProbability = prob;
+            if (connectivityConstraint) {
+                potts_test_data.using_connectivity = true;
+                potts_test_data.connectivity_energy = connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell);
+            }
+
             cerr << "energyCalculator->getEnergyFuctionNametoValueMap().size()=" << energyCalculator->getEnergyFuctionNametoValueMap().size() << endl;
             potts_test_data.energyFuctionNametoValueMap = energyCalculator->getEnergyFuctionNametoValueMap();
 
