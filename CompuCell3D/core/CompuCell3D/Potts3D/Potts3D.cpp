@@ -777,7 +777,8 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
     unsigned int numberOfSections = pUtils->getNumberOfSubgridSectionsPotts();
 
-    currentAttempt = 0; //reset current attepmt counter
+    //reset current attepmt counter
+    currentAttempt = 0;
 
     //THESE VARIABLES ARE SHARED
     flips = 0;
@@ -843,11 +844,11 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
                     // PDESolverCaller plugin and Secretion plugin. PDESolverCaller is deprecated and Secretion plugin section that mimics functionality of PDE sovler Secretion data section is depreecated as well
                     // However Secretion plugin can be used to do "per cell" secretion (using python scripting). This will not slow down multicore simulation
 
-                    //cerr<<"pUtils->getCurrentWorkNodeNumber()="<<pUtils->getCurrentWorkNodeNumber()<<" currentAttempt="<<currentAttempt<<endl;
                     for (unsigned int j = 0; j < fixedSteppers.size(); j++)
                         fixedSteppers[j]->step();
 
-                    ++currentAttempt; //to be consistent with serial code currentAttampt has to be increamented after fixedSteppers run 
+                    //to be consistent with serial code currentAttampt has to be increamented after fixedSteppers run
+                    ++currentAttempt;
 
 
                 }
@@ -860,7 +861,6 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
                 pt.y = rand->getInteger(sectionDims.first.y, sectionDims.second.y - 1);
                 pt.z = rand->getInteger(sectionDims.first.z, sectionDims.second.z - 1);
 
-                ///Cell *cell = cellField->get(pt);
                 CellG *cell = cellFieldG->getQuick(pt);
 
 
@@ -873,12 +873,6 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
 
                 Neighbor n = boundaryStrategy->getNeighborDirect(pt, directIdx);
-                //if(currentWorkNodeNumber==0){
-
-                //      cerr<<" pt="<<pt<<" n.pt"<<n.pt<<" n.distance="<<n.distance<<endl;
-                //      cerr<<"directIdx="<<directIdx<<" maxNeighborIndex="<<maxNeighborIndex<<endl;
-                //}
-
 
                 if (!n.distance) {
                     //if distance is 0 then the neighbor returned is invalid
@@ -890,29 +884,13 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
                 CellG* changePixelCell = cellFieldG->getQuick(changePixel);
 
                 if (changePixelCell == cell) {
-                    continue;//skip the rest of the loop if change pixel points to the same cell as pt
+                    //skip the rest of the loop if change pixel points to the same cell as pt
+                    continue;
                 }
                 else {
                     ;
 
                 }
-
-                cerr << "change_pixel=" << changePixel << " change_pixelNeighbor="<<pt<<endl;
-                if (changePixelCell) {
-                    cerr << "changePixelCell.type=" << (int)changePixelCell->type << " volume="<< changePixelCell->volume<<endl;
-                }
-                else {
-                    cerr << "changePixelCell.type=0" << endl;
-                }
-
-                if (cell) {
-                    cerr << "cell.type=" << (int)cell->type << " volume=" << cell->volume << endl;
-                }
-                else {
-                    cerr << "cell.type=0" << endl;
-                }
-
-
 
                 if (sizeFrozenTypeVec && changePixelCell) {///must also make sure that cell ptr is different 0; Will never freeze medium
                     if (checkIfFrozen(changePixelCell->type))
@@ -931,17 +909,12 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
                 double motility = fluctAmplFcn->fluctuationAmplitude(cell, changePixelCell);
 
                 double prob = acceptanceFunction->accept(motility, change);
-                //#pragma omp critical
-                //				{
-                //				cerr<<" thread="<<currentWorkNodeNumber<<" section="<<s<<" prob="<<prob<<" energy="<<energy<<endl;
-                //				}
 
 
                 if (numberOfThreads == 1) {
                     energyCalculator->set_aceptance_probability(prob);
                 }
 
-                //     cerr<<"change E="<<change<<" prob="<<prob<<endl;
                 if (prob >= 1.0 || rand->getRatio() < prob) {
                     // Accept the change
                     if (test_output_generate_flag) {
@@ -960,7 +933,6 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
                                 potts_test_data.pixelCopyAccepted = false;
                             }
                         }
-
 
                         energyCalculator->log_output(potts_test_data);
                     }
@@ -1018,15 +990,10 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
 #pragma omp critical
         {
-            //cerr<<"energyVec.size()="<<energyVec.size()<<endl;
-            //cerr<<"attemptedECVec.size()="<<attemptedECVec.size()<<endl;
-            //cerr<<"flipsVec.size()="<<flipsVec.size()<<endl;
 
             energy += energyVec[currentWorkNodeNumber];
             attemptedEC += attemptedECVec[currentWorkNodeNumber];
             flips += flipsVec[currentWorkNodeNumber];
-
-            //cerr<<"thread "<<currentWorkNodeNumber<<" has finished calculations and did "<<attemptedECVec[currentWorkNodeNumber]<<" calculations"<<endl;
 
             //reseting values before processing new slice
 
@@ -1041,14 +1008,10 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
     if (debugOutputFrequency && !(currentStep % debugOutputFrequency)) {
         cerr << "Number of Attempted Energy Calculations=" << attemptedEC << endl;
     }
-    //cerr<<"CURRENT ATTEMPT="<<currentAttempt<<" numberOfAttempts="<<numberOfAttempts<<endl;
-    //    exit(0);
+
     return flips;
 
 }
-
-//Point3D Potts3D::test_data_output(ofstream & out, Point3D pt, Point3D nPt, bool accepted, float motility, ) {
-//}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Point3D Potts3D::randomPickBoundaryPixel(BasicRandomNumberGeneratorNonStatic * rand) {
@@ -1351,34 +1314,16 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double temp) {
 
     flipNeighborVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), Point3D());
-
-    cerr << "This is  simulation_input_dir=" << simulation_input_dir << endl;
-
+    
     std::string simulation_test_data = simulation_input_dir + "/" + "potts_data_output.csv";
     PottsTestData potts_test_data;
     ifstream infile(simulation_test_data);
     if (infile) {
-        //PottsTestDataHeaderSpecs potts_test_data_headers_specs = potts_test_data.deserialize_header(infile);
-        //for (const auto& col_name : potts_test_data_headers_specs.columns) {
-        //    cerr << "col_name=" << col_name << endl;
-        //}
-
-        //std::string line;
 
         std::vector<PottsTestData> potts_test_data_vector = potts_test_data.deserialize_potts_data_sequence(infile);
         int pixel_copy_id = 0;
         for (auto i = 0; i < potts_test_data_vector.size(); ++i) {
-            cerr << "-------------------------------------------------------------" << endl;
             PottsTestData potts_test_data_local = potts_test_data_vector[i];
-            cerr << "potts_test_data_local.changePixel =" << potts_test_data_local.changePixel << endl;
-            cerr << "potts_test_data_local.changePixelNeighbor =" << potts_test_data_local.changePixelNeighbor << endl;
-            cerr << "motility=" << potts_test_data_local.motility << endl;
-            cerr << "pixelCopyAccepted=" << potts_test_data_local.pixelCopyAccepted << endl;
-            cerr << "acceptanceFunctionProbability=" << potts_test_data_local.acceptanceFunctionProbability << endl;
-            cerr << "potts_test_data_local.using_connectivity=" << potts_test_data_local.using_connectivity << endl;
-            for (const auto& kv : potts_test_data_local.energyFuctionNametoValueMap) {
-                cerr << " plugin=" << kv.first << " energy=" << kv.second << endl;
-            }
 
             Point3D changePixel = potts_test_data_local.changePixel;
             Point3D changePixelNeighbor = potts_test_data_local.changePixelNeighbor;
@@ -1387,28 +1332,9 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
             CellG* changePixelCell = cellFieldG->getQuick(changePixel);
             unsigned int currentWorkNodeNumber = 0;
             flipNeighborVec[currentWorkNodeNumber] = changePixelNeighbor;
-            
-            
+                        
             double change = energyCalculator->changeEnergy(changePixel, cell, changePixelCell, pixel_copy_id); 
             
-
-            cerr << "change_pixel=" << changePixel << " change_pixelNeighbor=" << changePixelNeighbor << endl;
-            if (changePixelCell) {
-                cerr << "changePixelCell.type=" << (int)changePixelCell->type << " volume=" << changePixelCell->volume << endl;
-            }
-            else {
-                cerr << "changePixelCell.type=0" << endl;
-            }
-
-            if (cell) {
-                cerr << "cell.type=" << (int)cell->type << " volume=" << cell->volume << endl;
-            }
-            else {
-                cerr << "cell.type=0" << endl;
-            }
-
-
-            cerr << "change=" << change << endl;
             pixel_copy_id += 1;
 
             // Acceptance based on probability
@@ -1435,48 +1361,11 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
                 potts_test_data.connectivity_energy = connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell);
             }
 
-            cerr << "energyCalculator->getEnergyFuctionNametoValueMap().size()=" << energyCalculator->getEnergyFuctionNametoValueMap().size() << endl;
             potts_test_data.energyFuctionNametoValueMap = energyCalculator->getEnergyFuctionNametoValueMap();
 
             potts_test_data_local.compare_potts_data(potts_test_data);
 
-            // handle connectivity - add it 
-            //if (prob >= 1.0 || rand->getRatio() < prob) {
-            //    // Accept the change
-            //    energyVec[currentWorkNodeNumber] += change;
-
-            //    if (connectivityConstraint && connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell)) {
-            //        if (numberOfThreads == 1) {
-            //            energyCalculator->setLastFlipAccepted(false);
-            //        }
-            //    }
-            //    else {
-            //        cellFieldG->set(changePixel, flipNeighborVec[currentWorkNodeNumber], cell);
-            //        flipsVec[currentWorkNodeNumber]++;
-            //        if (numberOfThreads == 1) {
-            //            energyCalculator->setLastFlipAccepted(true);
-            //        }
-            //    }
-            //}
-            //else {
-
-            //    PottsTestData potts_test_data;
-
-            //    potts_test_data.changePixel = n.pt;
-            //    potts_test_data.changePixelNeighbor = pt;
-            //    potts_test_data.motility = motility;
-            //    potts_test_data.pixelCopyAccepted = false;
-            //    potts_test_data.acceptanceFunctionProbability = prob;
-
-            //    energyCalculator->log_output(potts_test_data);
-            //}
-
-
-
         }
-
-
-
     }
 
 
@@ -1566,12 +1455,9 @@ void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         }
     }
 
-
     if (!fluctAmplGlobalReadFlag && _xmlData->getFirstElement("Temperature")) {
         sim->ppdCC3DPtr->temperature = _xmlData->getFirstElement("Temperature")->getDouble();
     }
-
-
 
     if (_xmlData->getFirstElement("RandomSeed")) {
         BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();

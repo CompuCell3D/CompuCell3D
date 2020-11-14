@@ -38,8 +38,7 @@ double EnergyFunctionCalculatorTestDataGeneration::changeEnergy(Point3D &pt, con
         
         energy = energyFunctions[i]->changeEnergy(pt, newCell, oldCell);
         change += energy;
-        energyFuctionNametoValueMap[energyFunctionsNameVec[i]] = energy;
-        cerr<<"i="<<i<<" CHANGE FROM ENERGY FUNCTION ="<< energy <<" FCNNAME="<<energyFunctionsNameVec[i]<<endl;
+        energyFuctionNametoValueMap[energyFunctionsNameVec[i]] = energy;        
     }
     return change;    
 }
@@ -47,24 +46,6 @@ double EnergyFunctionCalculatorTestDataGeneration::changeEnergy(Point3D &pt, con
 std::string EnergyFunctionCalculatorTestDataGeneration::get_output_file_name() {
     return sim->getOutputDirectory() + "/" + "potts_data_output.csv";
 }
-
-//void EnergyFunctionCalculatorTestDataGeneration::write_header() {
-//    ofstream out(get_output_file_name(), std::ofstream::out);
-//    if (out) {
-//        out << "change_pixel_x,";
-//        out << "change_pixel_y,";
-//        out << "change_pixel_z,";
-//        out << "neighbor_change_pixel_x,";
-//        out << "neighbor_change_pixel_y,";
-//        out << "neighbor_change_pixel_z,";
-//        out << "motility,";
-//        out << "pixel_copy_accepted,";
-//        out << "acceptance_function_probability";
-//
-//    }
-//
-//    header_written = true;
-//}
 
 void EnergyFunctionCalculatorTestDataGeneration::log_output(PottsTestData & potts_test_data) {
 
@@ -74,38 +55,10 @@ void EnergyFunctionCalculatorTestDataGeneration::log_output(PottsTestData & pott
     if (!header_written) {        
         header_written = potts_test_data.write_header(file_name);
         ASSERT_OR_THROW(" Could not write header to " + file_name, header_written);        
-
     }
 
     bool write_ok = potts_test_data.serialize(file_name);
     ASSERT_OR_THROW(" Could not write data to " + file_name, write_ok);
 
-
-
-    //ofstream out(get_output_file_name(), std::ofstream::app);
-    //if (out) {
-    //    out << potts_test_data.changePixel.x<<",";
-    //    out << potts_test_data.changePixel.y << ",";
-    //    out << potts_test_data.changePixel.z << ",";
-    //    out << potts_test_data.changePixelNeighbor.x << ",";
-    //    out << potts_test_data.changePixelNeighbor.y << ",";
-    //    out << potts_test_data.changePixelNeighbor.z << ",";
-    //    out << potts_test_data.motility<<",";
-    //    out << potts_test_data.pixelCopyAccepted << ",";
-    //    out << potts_test_data.pixelCopyAccepted << ",";
-    //    out << potts_test_data.acceptanceFunctionProbability<<endl;
-
-    //}
-    //cerr << "logging output" << endl;
-    //cerr << " changePixel=" << potts_test_data.changePixel ;
-    //cerr << " changePixelNeighbor=" << potts_test_data.changePixelNeighbor;
-    //cerr << " motility=" << potts_test_data.motility;
-    //cerr << " pixelCopyAccepted=" << potts_test_data.pixelCopyAccepted << endl;
-    //cerr << "energyFuctionNametoValueMap.size()=" << energyFuctionNametoValueMap.size() << endl;
-    //cerr << "energyFunctions=" << energyFunctions.size() << endl;    
-
-    //for (auto mitr = energyFuctionNametoValueMap.begin(); mitr != energyFuctionNametoValueMap.end(); ++mitr) {
-    //    cerr << "energy function name = " << mitr->first << " value=" << mitr->second << endl;
-    //}
 }
 
