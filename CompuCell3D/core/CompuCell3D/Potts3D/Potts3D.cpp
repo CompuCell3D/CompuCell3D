@@ -1321,7 +1321,6 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
     if (infile) {
 
         std::vector<PottsTestData> potts_test_data_vector = potts_test_data.deserialize_potts_data_sequence(infile);
-        int pixel_copy_id = 0;
         for (auto i = 0; i < potts_test_data_vector.size(); ++i) {
             PottsTestData potts_test_data_local = potts_test_data_vector[i];
 
@@ -1333,9 +1332,7 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
             unsigned int currentWorkNodeNumber = 0;
             flipNeighborVec[currentWorkNodeNumber] = changePixelNeighbor;
                         
-            double change = energyCalculator->changeEnergy(changePixel, cell, changePixelCell, pixel_copy_id); 
-            
-            pixel_copy_id += 1;
+            double change = energyCalculator->changeEnergy(changePixel, cell, changePixelCell, i);
 
             // Acceptance based on probability
             double motility = fluctAmplFcn->fluctuationAmplitude(cell, changePixelCell);
