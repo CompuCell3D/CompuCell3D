@@ -46,7 +46,7 @@ class EnergyFunctionCalculator{
 
 
       virtual void setLastFlipAccepted(bool _accept){lastFlipAccepted=_accept;}
-	  virtual void set_aceptance_probability(double _prob) { }
+	  virtual void set_acceptance_probability(double _prob) { }
 
 	  // Python reporting
 

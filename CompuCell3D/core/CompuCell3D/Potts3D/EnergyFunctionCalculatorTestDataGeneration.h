@@ -27,7 +27,7 @@ class EnergyFunctionCalculatorTestDataGeneration: public EnergyFunctionCalculato
        virtual void  get_current_mcs_flip_attempt_points_npy_array(short * shortvec, int n) {}
 
        virtual void setLastFlipAccepted(bool _accept) { lastFlipAccepted = _accept; }
-       virtual void set_aceptance_probability(double _prob) { }
+       virtual void set_acecptance_probability(double _prob) { }
 
        // Python reporting
        std::vector<std::string> getEnergyFunctionNames() { return energyFunctionsNameVec; }

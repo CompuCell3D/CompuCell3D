@@ -912,7 +912,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
 
                 if (numberOfThreads == 1) {
-                    energyCalculator->set_aceptance_probability(prob);
+                    energyCalculator->set_acceptance_probability(prob);
                 }
 
                 if (prob >= 1.0 || rand->getRatio() < prob) {
@@ -1250,7 +1250,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 
 
                 if (numberOfThreads == 1) {
-                    energyCalculator->set_aceptance_probability(prob);
+                    energyCalculator->set_acceptance_probability(prob);
                 }
 
                 if (prob >= 1.0 || rand->getRatio() < prob) {
@@ -1316,6 +1316,7 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
     flipNeighborVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), Point3D());
     
     std::string simulation_test_data = simulation_input_dir + "/" + "potts_data_output.csv";
+
     PottsTestData potts_test_data;
     ifstream infile(simulation_test_data);
     if (infile) {
