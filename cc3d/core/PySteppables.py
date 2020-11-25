@@ -14,6 +14,7 @@ from cc3d.core.XMLDomUtils import XMLElemAdapter
 from typing import Union
 from cc3d.cpp import CompuCell
 from cc3d.core.SBMLSolverHelper import SBMLSolverHelper
+from cc3d.core.bionetgencc3d import BNGSolverHelper
 import types
 import warnings
 from deprecated import deprecated
@@ -177,7 +178,7 @@ class GlobalSBMLFetcher:
             return rr_object.model
 
 
-class SteppableBasePy(SteppablePy, SBMLSolverHelper):
+class SteppableBasePy(SteppablePy, SBMLSolverHelper, BNGSolverHelper):
     (CC3D_FORMAT, TUPLE_FORMAT) = range(0, 2)
 
     def __init__(self, *args, **kwds):
@@ -202,6 +203,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         SteppablePy.__init__(self)
         SBMLSolverHelper.__init__(self)
+        BNGSolverHelper.__init__(self)
 
         # free floating SBML model accessor
         self.sbml = GlobalSBMLFetcher()
@@ -1591,6 +1593,14 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         for pixel in pixels_to_delete:
             self.cell_field[pixel[0], pixel[1], pixel[2]] = medium_cell
 
+    def timestep_bng(self) -> None:
+        """
+        Integrate all BioNetGen models by one time step
+        :return: None
+        """
+        self.timestep_free_floating_bng()
+        [self.timestep_cell_bng(_cell) for _cell in self.cell_list]
+
     @deprecated(version='4.0.0', reason="You should use : clone_attributes")
     def cloneAttributes(self, sourceCell, targetCell, no_clone_key_dict_list=None):
         if no_clone_key_dict_list is None:
@@ -1627,6 +1637,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                 continue
             elif key == 'SBMLSolver':
                 self.copy_sbml_simulators(from_cell=source_cell, to_cell=target_cell)
+            elif key == 'BNGSolver':
+                self.copy_bng_simulators(from_cell=source_cell, to_cell=target_cell)
             else:
                 # copying the rest of dictionary entries
                 target_cell.dict[key] = deepcopy(source_cell.dict[key])

@@ -579,6 +579,41 @@ using namespace CompuCell3D;
 
     if _newclass : sbml = property(getsbml, setsbml)
 
+    # simplifying access to bionetgen models
+
+    __bng_fetcher__ = '__bng_fetcher'
+    __bng_solvers__ = '__bng_solvers'
+
+    def setbng(self, bng):
+        raise AttributeError('ASSIGNMENT cell.bng = %s is illegal. '
+                             '"bng" attribute can only be modified but not replaced' % (bng))
+
+    def getbng(self):
+        import weakref
+        try:
+            return self.dict[self.__bng_fetcher__]
+        except (KeyError, AttributeError):
+            class BNGFetcher:
+                def __getattr__(_self, item):
+                    try:
+                        bng_solver_dict = self.dict[self.__bng_solvers__]
+                    except KeyError:
+                        raise KeyError(f'Cell id={self.id} has no BioNetGen solvers')
+
+                    try:
+                        return bng_solver_dict[item]
+                    except KeyError:
+                        raise KeyError(f'Could not find BioNetGen solver with id={item} in cell id={self.id}')
+
+            bng_fetcher = BNGFetcher()
+            self.dict[self.__bng_fetcher__] = bng_fetcher
+            return bng_fetcher
+
+    __swig_setmethods__["bng"] = setbng
+    __swig_getmethods__["bng"] = getbng
+
+    if _newclass : sbml = property(getbng, setbng)
+
       %}
     };
 
