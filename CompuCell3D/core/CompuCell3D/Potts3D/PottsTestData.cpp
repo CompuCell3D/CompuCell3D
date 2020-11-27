@@ -168,12 +168,16 @@ bool PottsTestData::compare_potts_data(PottsTestData & potts_data_to_compare) {
     ASSERT_OR_THROW("using_connectivity is different ", using_connectivity == potts_data_to_compare.using_connectivity);
 
     ASSERT_OR_THROW("connectivity_energy is different ", connectivity_energy == potts_data_to_compare.connectivity_energy);
-        
+    
+    // cerr << "pt=" << potts_data_to_compare.changePixel << " neighbor=" << potts_data_to_compare.changePixelNeighbor << endl;
+
     for (const auto& kv : energyFunctionNameToValueMap) {
         const auto & mitr_computed = potts_data_to_compare.energyFunctionNameToValueMap.find(kv.first);
         if (mitr_computed != potts_data_to_compare.energyFunctionNameToValueMap.end()) {
 
             double difference_value = abs_difference(kv.second, mitr_computed->second);
+            
+            // cerr<<"comparison energy: "<< kv.first << " recorded=" << kv.second << " computed=" << mitr_computed->second << endl;
 
             if (difference_value > tol) {
                 cerr << "detected a difference in " << kv.first << " recorded=" << kv.second << " computed=" << mitr_computed->second << endl;
