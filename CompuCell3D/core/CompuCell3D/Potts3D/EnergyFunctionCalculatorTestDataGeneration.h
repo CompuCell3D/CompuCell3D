@@ -35,12 +35,16 @@ class EnergyFunctionCalculatorTestDataGeneration: public EnergyFunctionCalculato
        virtual std::vector<bool> getCurrentFlipResults() { return std::vector<bool>(); }
        virtual void log_output(PottsTestData &potts_test_data);
 
+
+       std::string get_output_file_name();
+       std::string get_input_file_name();
+
 protected:
     std::map<std::string, EnergyFunction *> nameToEnergyFunctionMap;
 private:
     bool header_written = false;
-    //void write_header();    
-    std::string get_output_file_name();
+
+
 
 };
 

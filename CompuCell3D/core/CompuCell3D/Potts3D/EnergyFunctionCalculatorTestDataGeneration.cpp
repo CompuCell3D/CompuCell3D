@@ -38,7 +38,7 @@ double EnergyFunctionCalculatorTestDataGeneration::changeEnergy(Point3D &pt, con
         
         energy = energyFunctions[i]->changeEnergy(pt, newCell, oldCell);
         change += energy;
-        energyFuctionNametoValueMap[energyFunctionsNameVec[i]] = energy;        
+        energyFunctionNameToValueMap[energyFunctionsNameVec[i]] = energy;
     }
     return change;    
 }
@@ -47,9 +47,14 @@ std::string EnergyFunctionCalculatorTestDataGeneration::get_output_file_name() {
     return sim->getOutputDirectory() + "/" + "potts_data_output.csv";
 }
 
+std::string EnergyFunctionCalculatorTestDataGeneration::get_input_file_name() {
+    return potts->get_simulation_input_dir() + "/" + "potts_data_output.csv";
+}
+
+
 void EnergyFunctionCalculatorTestDataGeneration::log_output(PottsTestData & potts_test_data) {
 
-    potts_test_data.energyFuctionNametoValueMap = energyFuctionNametoValueMap;
+    potts_test_data.energyFunctionNameToValueMap = energyFunctionNameToValueMap;
     std::string file_name = get_output_file_name();
 
     if (!header_written) {        

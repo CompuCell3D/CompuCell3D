@@ -1315,7 +1315,13 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
 
     flipNeighborVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), Point3D());
     
-    std::string simulation_test_data = simulation_input_dir + "/" + "potts_data_output.csv";
+    EnergyFunctionCalculatorTestDataGeneration * energy_calculator_tdg = static_cast<EnergyFunctionCalculatorTestDataGeneration *> (energyCalculator);
+    
+
+    //std::string simulation_test_data = simulation_input_dir + "/" + "potts_data_output.csv";
+    std::string simulation_test_data = energy_calculator_tdg->get_input_file_name();
+    
+
 
     PottsTestData potts_test_data;
     ifstream infile(simulation_test_data);
@@ -1359,7 +1365,7 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
                 potts_test_data.connectivity_energy = connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell);
             }
 
-            potts_test_data.energyFuctionNametoValueMap = energyCalculator->getEnergyFuctionNametoValueMap();
+            potts_test_data.energyFunctionNameToValueMap = energyCalculator->getenergyFunctionNameToValueMap();
 
             potts_test_data_local.compare_potts_data(potts_test_data);
 

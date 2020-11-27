@@ -53,7 +53,7 @@ class EnergyFunctionCalculator{
 	  std::vector<std::string> getEnergyFunctionNames() { return energyFunctionsNameVec; }
 	  virtual std::vector<std::vector<double> > getCurrentEnergyChanges() { return std::vector<std::vector<double> >(); }
 	  virtual std::vector<bool> getCurrentFlipResults() { return std::vector<bool>(); }
-      virtual std::map<std::string, double> getEnergyFuctionNametoValueMap() { return energyFuctionNametoValueMap; }
+      virtual std::map<std::string, double> getenergyFunctionNameToValueMap() { return energyFunctionNameToValueMap; }
 
       virtual void log_output(PottsTestData & pottst_test_data) {};
 
@@ -63,7 +63,7 @@ class EnergyFunctionCalculator{
       std::vector<std::string> energyFunctionsNameVec;
 
       std::map<std::string,EnergyFunction *> nameToEnergyFunctionMap;
-      std::map<std::string, double> energyFuctionNametoValueMap;
+      std::map<std::string, double> energyFunctionNameToValueMap;
       Potts3D *potts;
       Simulator *sim;
 

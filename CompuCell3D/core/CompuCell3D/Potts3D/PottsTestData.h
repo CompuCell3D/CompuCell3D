@@ -29,7 +29,7 @@ namespace CompuCell3D {
         bool pixelCopyAccepted;
         double acceptanceFunctionProbability;        
 
-        std::map<std::string, double> energyFuctionNametoValueMap;
+        std::map<std::string, double> energyFunctionNameToValueMap;
         bool using_connectivity = false;
         double connectivity_energy = 0.0;
 

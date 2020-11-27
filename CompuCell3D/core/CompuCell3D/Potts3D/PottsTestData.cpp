@@ -1,6 +1,7 @@
 #include "PottsTestData.h"
 #include <fstream> 
 #include <sstream>
+#include <iomanip>
 #include <BasicUtils/BasicString.h>
 #include <BasicUtils/BasicException.h>
 
@@ -23,7 +24,7 @@ bool PottsTestData::write_header(std::string file_name) {
         out << "motility,";
         out << "pixel_copy_accepted,";
         out << "acceptance_function_probability";
-        for (const auto& kv : energyFuctionNametoValueMap) {
+        for (const auto& kv : energyFunctionNameToValueMap) {
             out << "," << kv.first;
         }
         if (using_connectivity) {
@@ -36,6 +37,7 @@ bool PottsTestData::write_header(std::string file_name) {
 }
 
 bool PottsTestData::serialize(std::string file_name) {
+    
     ofstream out(file_name, std::ofstream::app);
     if (out) {
         out << changePixel.x << ",";
@@ -48,8 +50,8 @@ bool PottsTestData::serialize(std::string file_name) {
         out << pixelCopyAccepted << ",";        
         out << acceptanceFunctionProbability;
 
-        for (const auto& kv : energyFuctionNametoValueMap) {
-            out << "," << kv.second;
+        for (const auto& kv : energyFunctionNameToValueMap) {
+            out << "," << std::setprecision(6)<< std::fixed << kv.second;            
         }
         if (using_connectivity) {
             out << "," << connectivity_energy;
@@ -62,12 +64,7 @@ bool PottsTestData::serialize(std::string file_name) {
     return false;
 
 }
-//
-//PottsTestData PottsTestData::deserialize(std::ifstream & in){
-//    PottsTestData potts_test_data;
-//
-//    
-//}
+
 
 std::vector<std::string> PottsTestData::split_string(std::string str_to_plit, char delimiter) {
 
@@ -126,7 +123,7 @@ PottsTestData PottsTestData::deserialize_single_potts_data(std::string line, Pot
     }
 
     for (unsigned int i = potts_test_data_header_specs.energy_function_position; i < max_col_idx; ++i) {
-        potts_test_data.energyFuctionNametoValueMap[potts_test_data_header_specs.columns[i]] = BasicString::parseDouble(line_values[i]);
+        potts_test_data.energyFunctionNameToValueMap[potts_test_data_header_specs.columns[i]] = BasicString::parseDouble(line_values[i]);
     }
 
     
@@ -165,9 +162,9 @@ bool PottsTestData::compare_potts_data(PottsTestData & potts_data_to_compare) {
 
     ASSERT_OR_THROW("connectivity_energy is different ", connectivity_energy == potts_data_to_compare.connectivity_energy);
         
-    for (const auto& kv : energyFuctionNametoValueMap) {    
-        const auto & mitr_computed = potts_data_to_compare.energyFuctionNametoValueMap.find(kv.first);
-        if (mitr_computed != potts_data_to_compare.energyFuctionNametoValueMap.end()) {
+    for (const auto& kv : energyFunctionNameToValueMap) {
+        const auto & mitr_computed = potts_data_to_compare.energyFunctionNameToValueMap.find(kv.first);
+        if (mitr_computed != potts_data_to_compare.energyFunctionNameToValueMap.end()) {
 
             double relative_difference_value = relative_difference(kv.second, mitr_computed->second);
 
@@ -184,7 +181,7 @@ bool PottsTestData::compare_potts_data(PottsTestData & potts_data_to_compare) {
     }
         
 
-    ASSERT_OR_THROW("motility is different", relative_difference(motility , potts_data_to_compare.motility) < 1e-4);    
+    ASSERT_OR_THROW("motility is different", relative_difference(motility , potts_data_to_compare.motility) < 1e-6);    
     ASSERT_OR_THROW("acceptanceFunctionProbability is different", relative_difference(acceptanceFunctionProbability, potts_data_to_compare.acceptanceFunctionProbability)< 1e-4);
     
 }
