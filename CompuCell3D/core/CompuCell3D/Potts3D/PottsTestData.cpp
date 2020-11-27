@@ -154,8 +154,15 @@ double PottsTestData::relative_difference(double x, double y) {
     
 }
 
+double PottsTestData::abs_difference(double x, double y) {
+
+    return fabs(x - y);
+
+}
+
 bool PottsTestData::compare_potts_data(PottsTestData & potts_data_to_compare) {
     
+    double tol = 1e-6;
     ASSERT_OR_THROW("change pixel is different ", changePixel == potts_data_to_compare.changePixel);
     ASSERT_OR_THROW("change pixel neighbor is different ", changePixelNeighbor == potts_data_to_compare.changePixelNeighbor);    
     ASSERT_OR_THROW("using_connectivity is different ", using_connectivity == potts_data_to_compare.using_connectivity);
@@ -166,11 +173,11 @@ bool PottsTestData::compare_potts_data(PottsTestData & potts_data_to_compare) {
         const auto & mitr_computed = potts_data_to_compare.energyFunctionNameToValueMap.find(kv.first);
         if (mitr_computed != potts_data_to_compare.energyFunctionNameToValueMap.end()) {
 
-            double relative_difference_value = relative_difference(kv.second, mitr_computed->second);
+            double difference_value = abs_difference(kv.second, mitr_computed->second);
 
-            if (relative_difference_value > 1e-4) {
+            if (difference_value > tol) {
                 cerr << "detected a difference in " << kv.first << " recorded=" << kv.second << " computed=" << mitr_computed->second << endl;
-                cerr << "relative_difference_value=" << relative_difference_value << endl;
+                cerr << "difference_value=" << difference_value << endl;
 
                 ASSERT_OR_THROW(string(kv.first) + " energy term different ", false);
             }
@@ -181,7 +188,7 @@ bool PottsTestData::compare_potts_data(PottsTestData & potts_data_to_compare) {
     }
         
 
-    ASSERT_OR_THROW("motility is different", relative_difference(motility , potts_data_to_compare.motility) < 1e-6);    
-    ASSERT_OR_THROW("acceptanceFunctionProbability is different", relative_difference(acceptanceFunctionProbability, potts_data_to_compare.acceptanceFunctionProbability)< 1e-4);
+    ASSERT_OR_THROW("motility is different", abs_difference(motility , potts_data_to_compare.motility) < tol);
+    ASSERT_OR_THROW("acceptanceFunctionProbability is different", abs_difference(acceptanceFunctionProbability, potts_data_to_compare.acceptanceFunctionProbability)< 1e-4);
     
 }

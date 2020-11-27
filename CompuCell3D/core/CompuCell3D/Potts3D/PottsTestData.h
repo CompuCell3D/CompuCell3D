@@ -43,6 +43,7 @@ namespace CompuCell3D {
 
         bool compare_potts_data(PottsTestData & potts_data_to_compare);
         double relative_difference(double x, double y);
+        double abs_difference(double x, double y);
 
     };
 
