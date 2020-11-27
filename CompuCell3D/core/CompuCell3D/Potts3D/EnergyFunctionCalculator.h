@@ -62,7 +62,7 @@ class EnergyFunctionCalculator{
       std::vector<EnergyFunction *> energyFunctions;
       std::vector<std::string> energyFunctionsNameVec;
 
-      std::map<std::string,EnergyFunction *> nameToEnergyFuctionMap;
+      std::map<std::string,EnergyFunction *> nameToEnergyFunctionMap;
       std::map<std::string, double> energyFuctionNametoValueMap;
       Potts3D *potts;
       Simulator *sim;

@@ -136,7 +136,7 @@ namespace CompuCell3D {
 		std::vector<EnergyFunction *> energyFunctions;
 		EnergyFunction * connectivityConstraint;
 
-		std::map<std::string, EnergyFunction *> nameToEnergyFuctionMap;
+		std::map<std::string, EnergyFunction *> nameToEnergyFunctionMap;
 
 		//containers associated with BoundaryWalker/GlobalPixelTracker
 		//std::set<Point3D> boundaryPixelSet;
