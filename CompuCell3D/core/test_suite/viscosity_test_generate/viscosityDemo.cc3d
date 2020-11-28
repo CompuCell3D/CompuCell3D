@@ -1,0 +1,5 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/viscosityDemo.xml</XMLScript>
+    <PythonScript>Simulation/viscosityDemo.py</PythonScript>
+</Simulation>
