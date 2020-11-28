@@ -1,0 +1,6 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/bacterium_macrophage_periodic.xml</XMLScript>
+   <PythonScript >Simulation/bacterium_macrophage_periodic.py</PythonScript>
+   <Resource Type="Python">Simulation/bacterium_macrophage_periodicSteppables.py</Resource>
+   <PIFFile>Simulation/bacterium_macrophage.piff</PIFFile>
+</Simulation>
