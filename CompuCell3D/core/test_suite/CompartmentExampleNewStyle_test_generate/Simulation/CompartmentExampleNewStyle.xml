@@ -1,0 +1,125 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="200" y="200" z="50"/>
+        <Steps>20000</Steps>
+        <Temperature>7</Temperature>
+        <Flip2DimRatio>1.0</Flip2DimRatio>
+        <Boundary_y>Periodic</Boundary_y>
+        <Boundary_x>Periodic</Boundary_x>
+        <NeighborOrder>2</NeighborOrder>
+        <RandomSeed>1</RandomSeed>
+        <TestOutputGenerate/>
+    </Potts>
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Top" TypeId="1"/>
+        <CellType TypeName="Bottom" TypeId="2"/>
+        <CellType TypeName="Side1" TypeId="3"/>
+        <CellType TypeName="Side2" TypeId="4"/>
+        <CellType TypeName="Center" TypeId="5"/>
+        <CellType TypeName="Base" TypeId="6" Freeze=""/>
+    </Plugin>
+
+    <Plugin Name="Contact">
+
+        <Energy Type1="Base" Type2="Base">0</Energy>
+        <Energy Type1="Top" Type2="Base">25</Energy>
+        <Energy Type1="Center" Type2="Base">30</Energy>
+        <Energy Type1="Bottom" Type2="Base">-2</Energy>
+        <Energy Type1="Side1" Type2="Base">25</Energy>
+        <Energy Type1="Side2" Type2="Base">25</Energy>
+        <Energy Type1="Medium" Type2="Base">0</Energy>
+
+
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="Top" Type2="Medium">30</Energy>
+        <Energy Type1="Bottom" Type2="Medium">20</Energy>
+        <Energy Type1="Side1" Type2="Medium">30</Energy>
+        <Energy Type1="Side2" Type2="Medium">30</Energy>
+        <Energy Type1="Center" Type2="Medium">45</Energy>
+
+        <!--  <Energy Type1="Top" Type2="Top">35</Energy> -->
+        <Energy Type1="Top" Type2="Top">2</Energy>
+        <Energy Type1="Top" Type2="Bottom">100</Energy>
+        <Energy Type1="Top" Type2="Side1">25</Energy>
+        <Energy Type1="Top" Type2="Side2">25</Energy>
+        <Energy Type1="Top" Type2="Center">35</Energy>
+
+        <!--  <Energy Type1="Bottom" Type2="Bottom">35</Energy> -->
+        <Energy Type1="Bottom" Type2="Bottom">10</Energy>
+        <Energy Type1="Bottom" Type2="Side1">25</Energy>
+        <Energy Type1="Bottom" Type2="Side2">25</Energy>
+        <Energy Type1="Bottom" Type2="Center">35</Energy>
+
+        <Energy Type1="Side1" Type2="Side1">25</Energy>
+        <Energy Type1="Side1" Type2="Center">25</Energy>
+        <Energy Type1="Side2" Type2="Side2">25</Energy>
+        <Energy Type1="Side2" Type2="Center">25</Energy>
+        <Energy Type1="Side1" Type2="Side2">15</Energy>
+
+        <Energy Type1="Center" Type2="Center">20</Energy>
+
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+
+    <Plugin Name="ContactInternal">
+
+        <Energy Type1="Base" Type2="Base">0</Energy>
+        <Energy Type1="Base" Type2="Bottom">0</Energy>
+        <Energy Type1="Base" Type2="Side1">0</Energy>
+        <Energy Type1="Base" Type2="Side2">0</Energy>
+        <Energy Type1="Base" Type2="Center">0</Energy>
+
+        <Energy Type1="Top" Type2="Top">4</Energy>
+        <Energy Type1="Top" Type2="Bottom">25</Energy>
+        <Energy Type1="Top" Type2="Side1">22</Energy>
+        <Energy Type1="Top" Type2="Side2">22</Energy>
+        <Energy Type1="Top" Type2="Center">15</Energy>
+
+        <Energy Type1="Bottom" Type2="Bottom">4</Energy>
+        <Energy Type1="Bottom" Type2="Side1">15</Energy>
+        <Energy Type1="Bottom" Type2="Side2">15</Energy>
+        <Energy Type1="Bottom" Type2="Center">10</Energy>
+
+        <Energy Type1="Side1" Type2="Side1">11</Energy>
+        <Energy Type1="Side2" Type2="Side2">11</Energy>
+        <Energy Type1="Side1" Type2="Side2">11</Energy>
+
+        <Energy Type1="Side2" Type2="Center">10</Energy>
+        <Energy Type1="Side1" Type2="Center">10</Energy>
+
+        <Energy Type1="Center" Type2="Center">2</Energy>
+
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+
+
+    <Plugin Name="CenterOfMass"/>
+
+
+    <Plugin Name="VolumeFlex">
+        <VolumeEnergyParameters CellType="Top" TargetVolume="60" LambdaVolume="10"/>
+        <VolumeEnergyParameters CellType="Bottom" TargetVolume="60" LambdaVolume="10"/>
+        <VolumeEnergyParameters CellType="Side1" TargetVolume="60" LambdaVolume="10"/>
+        <VolumeEnergyParameters CellType="Side2" TargetVolume="60" LambdaVolume="10"/>
+        <VolumeEnergyParameters CellType="Center" TargetVolume="60" LambdaVolume="10"/>
+        <VolumeEnergyParameters CellType="Base" TargetVolume="60" LambdaVolume="10"/>
+    </Plugin>
+
+    <Plugin Name="SurfaceFlex">
+        <SurfaceEnergyParameters CellType="Top" TargetSurface="100" LambdaSurface="10"/>
+        <SurfaceEnergyParameters CellType="Bottom" TargetSurface="100" LambdaSurface="10"/>
+        <SurfaceEnergyParameters CellType="Side1" TargetSurface="100" LambdaSurface="10"/>
+        <SurfaceEnergyParameters CellType="Side2" TargetSurface="100" LambdaSurface="10"/>
+        <SurfaceEnergyParameters CellType="Center" TargetSurface="100" LambdaSurface="10"/>
+        <SurfaceEnergyParameters CellType="Base" TargetSurface="100" LambdaSurface="10"/>
+    </Plugin>
+
+
+    <Steppable Type="PIFInitializer">
+        <PIFName>Simulation/3D_LINE_BASE.piff</PIFName>
+    </Steppable>
+
+
+</CompuCell3D>
