@@ -1,0 +1,4 @@
+<Simulation version="3.6.1">
+   <XMLScript Type="XMLScript">Simulation/AdhesionFlex.xml</XMLScript>
+   <PythonScript>Simulation/AdhesionFlex.py</PythonScript>
+</Simulation>
