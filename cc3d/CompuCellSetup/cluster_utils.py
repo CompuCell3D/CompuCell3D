@@ -9,7 +9,7 @@ def check_nanohub_and_count():
     """
     from os import environ
     import subprocess
-    if 'NANOHUB_SIM' in environ or True:
+    if 'NANOHUB_SIM' in environ:
         # NANOHUB_SIM will be the path to the sh script that starts the nanohub run. That info is already in the .sh
         # files under binDir
         bin_dir = environ.get('NANOHUB_SIM')
