@@ -2,6 +2,7 @@ import time
 from math import floor
 from os.path import dirname, join
 from cc3d.cpp import CompuCell
+
 from cc3d.core.XMLDomUtils import XMLIdLocator
 from cc3d.CompuCellSetup import init_modules, parseXML
 from cc3d.core.CMLFieldHandler import CMLFieldHandler
@@ -16,6 +17,7 @@ from cc3d import CompuCellSetup
 from cc3d.core import RestartManager
 from cc3d.CompuCellSetup.simulation_utils import check_for_cpp_errors
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
+from cc3d.CompuCellSetup.cluster_utils import check_nanohub_and_count
 
 
 # -------------------- legacy API emulation ----------------------------------------
@@ -417,32 +419,32 @@ def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_en
         simthread.waitForPlayerTaskToFinish()
 
 
-def check_nanohub_and_count():
-    """
-    Function for proper counting of number of runs in NanoHub
-    Checks for NANOHUB_SIM in the environment variables
-    If NANOHUB_SIM is there will attempt to call TOOL_HOME/bin/cc3d_count.sh
-    NANOHUB_SIM must be TOOL_HOME/bin/
-    :return:
-    """
-    from os import environ
-    import subprocess
-    if 'NANOHUB_SIM' in environ or True:
-        # NANOHUB_SIM will be the path to the sh script that starts the nanohub run. That info is already in the .sh
-        # files under binDir
-        bin_dir = environ.get('NANOHUB_SIM')
-        if bin_dir is not None:
-            count_sh = join(bin_dir, r'cc3d_count.sh')
-            try:
-                subprocess.call(['submit', '--local', count_sh])
-                return
-            except:
-                print(f"Couldn't call {count_sh}! Is the file there?\nProceeding.")
-                return
-        else:
-            print("Coundn't find NANOHUB_SIM in the environment variables.\nProceeding")
-            return
-    return
+# def check_nanohub_and_count():
+#     """
+#     Function for proper counting of number of runs in NanoHub
+#     Checks for NANOHUB_SIM in the environment variables
+#     If NANOHUB_SIM is there will attempt to call TOOL_HOME/bin/cc3d_count.sh
+#     NANOHUB_SIM must be TOOL_HOME/bin/
+#     :return:
+#     """
+#     from os import environ
+#     import subprocess
+#     if 'NANOHUB_SIM' in environ or True:
+#         # NANOHUB_SIM will be the path to the sh script that starts the nanohub run. That info is already in the .sh
+#         # files under binDir
+#         bin_dir = environ.get('NANOHUB_SIM')
+#         if bin_dir is not None:
+#             count_sh = join(bin_dir, r'cc3d_count.sh')
+#             try:
+#                 subprocess.call(['submit', '--local', count_sh])
+#                 return
+#             except:
+#                 print(f"Couldn't call {count_sh}! Is the file there?\nProceeding.")
+#                 return
+#         else:
+#             print("Coundn't find NANOHUB_SIM in the environment variables.\nProceeding")
+#             return
+#     return
 
 
 def main_loop(sim, simthread, steppable_registry=None):
