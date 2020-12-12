@@ -1,0 +1,47 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="100" y="100" z="1"/>
+        <Anneal>10</Anneal>
+        <Steps>10000</Steps>
+        <Temperature>100</Temperature>
+        <Flip2DimRatio>1</Flip2DimRatio>
+        <NeighborOrder>2</NeighborOrder>
+        <RandomSeed>1</RandomSeed>
+        <TestOutputGenerate/>
+    </Potts>
+
+
+    <Plugin Name="Volume">
+        <TargetVolume>25</TargetVolume>
+        <LambdaVolume>2.0</LambdaVolume>
+    </Plugin>
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Condensing" TypeId="1"/>
+        <CellType TypeName="NonCondensing" TypeId="2"/>
+    </Plugin>
+
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="NonCondensing" Type2="NonCondensing">16</Energy>
+        <Energy Type1="Condensing" Type2="Condensing">2</Energy>
+        <Energy Type1="NonCondensing" Type2="Condensing">11</Energy>
+        <Energy Type1="NonCondensing" Type2="Medium">16</Energy>
+        <Energy Type1="Condensing" Type2="Medium">16</Energy>
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+
+    <Plugin Name="ConnectivityGlobal">
+        <FastAlgorithm/>
+        <ConnectivityOn Type="NonCondensing"/>
+        <ConnectivityOn Type="Condensing"/>
+
+    </Plugin>
+
+
+    <Steppable Type="PIFInitializer">
+        <PIFName>Simulation/initial_configuration.piff</PIFName>
+    </Steppable>
+
+</CompuCell3D>

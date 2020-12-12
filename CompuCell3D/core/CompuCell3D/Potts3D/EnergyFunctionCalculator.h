@@ -15,6 +15,7 @@ class Point3D;
 class Potts3D;
 class Simulator;
 class ParseData;
+class PottsTestData;
 
 class EnergyFunctionCalculator{
 
@@ -45,19 +46,24 @@ class EnergyFunctionCalculator{
 
 
       virtual void setLastFlipAccepted(bool _accept){lastFlipAccepted=_accept;}
-	  virtual void set_aceptance_probability(double _prob) { }
+	  virtual void set_acceptance_probability(double _prob) { }
 
 	  // Python reporting
 
 	  std::vector<std::string> getEnergyFunctionNames() { return energyFunctionsNameVec; }
 	  virtual std::vector<std::vector<double> > getCurrentEnergyChanges() { return std::vector<std::vector<double> >(); }
 	  virtual std::vector<bool> getCurrentFlipResults() { return std::vector<bool>(); }
+      virtual std::map<std::string, double> getenergyFunctionNameToValueMap() { return energyFunctionNameToValueMap; }
+
+      virtual void log_output(PottsTestData & pottst_test_data) {};
+
 
    protected:
       std::vector<EnergyFunction *> energyFunctions;
       std::vector<std::string> energyFunctionsNameVec;
 
-      std::map<std::string,EnergyFunction *> nameToEnergyFuctionMap;
+      std::map<std::string,EnergyFunction *> nameToEnergyFunctionMap;
+      std::map<std::string, double> energyFunctionNameToValueMap;
       Potts3D *potts;
       Simulator *sim;
 

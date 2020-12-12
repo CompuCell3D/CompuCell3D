@@ -1,0 +1,6 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/oriented-cellsort.xml</XMLScript>
+    <PythonScript>Simulation/oriented_cellsort.py</PythonScript>
+    <Resource Type="Python">Simulation/oriented_cellsortSteppables.py</Resource>
+</Simulation>

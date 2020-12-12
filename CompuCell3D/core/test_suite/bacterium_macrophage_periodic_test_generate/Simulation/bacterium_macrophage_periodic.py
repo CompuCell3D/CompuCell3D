@@ -1,0 +1,7 @@
+from cc3d import CompuCellSetup
+
+from bacterium_macrophage_periodicSteppables import bacterium_macrophage_periodicSteppable
+
+CompuCellSetup.register_steppable(steppable=bacterium_macrophage_periodicSteppable(frequency=1))
+
+CompuCellSetup.run()

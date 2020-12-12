@@ -486,7 +486,7 @@ double ExternalPotentialPlugin::changeEnergyByCellType(const Point3D &pt,  const
    
    deltaFlip=pt;
    deltaFlip-=ptFlipNeighbor;
-      
+
    for(unsigned int i = 0 ; i < neighborSize ; ++i){
       ptAdj=pt;
       ptAdj+=neighborsOffsetVec[i];

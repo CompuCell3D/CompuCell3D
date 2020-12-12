@@ -1,0 +1,11 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/chemotaxis_by_cell_id.xml</XMLScript>
+
+    <PythonScript>Simulation/chemotaxis_by_cell_id.py</PythonScript> 
+
+    <Resource Type="Python">Simulation/chemotaxis_by_cell_id_steppables.py</Resource>    
+
+    <PIFFile>Simulation/chemotaxis_by_cell_id.piff</PIFFile>
+
+</Simulation>

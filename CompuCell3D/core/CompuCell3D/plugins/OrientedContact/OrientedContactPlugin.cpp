@@ -21,21 +21,12 @@
  *************************************************************************/
 
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
+#include <cmath>
+#include <limits>
+
 using namespace CompuCell3D;
 
-
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-
-
-
 #include "OrientedContactPlugin.h"
-
-
 
 
 OrientedContactPlugin::OrientedContactPlugin() :xmlData(0),depth(1),alpha(1.0),weightDistance(false) {
@@ -50,6 +41,8 @@ double OrientedContactPlugin::getOrientation(const Point3D &pt, const CellG *new
    double ecc1, ecc2, v1x, v1y, v2x,v2y, r1x,r1y,r2x,r2y,s01,s02, E1, E2, deltaE;
    double ecc1_before, ecc2_before, v1x_before, v1y_before, v2x_before,v2y_before, s01_before,s02_before;
     
+   double eps = std::numeric_limits<double>::epsilon();
+
    if (newCell != 0)
    {
        // Assumption: COM and Volume has not been updated.
@@ -106,7 +99,8 @@ double OrientedContactPlugin::getOrientation(const Point3D &pt, const CellG *new
       double l1_min_before = .5*((newCell->iXX+newCell->iYY)-sqrt((newCell->iXX-newCell->iYY)*(newCell->iXX-newCell->iYY)+4.0*newCell->iXY*newCell->iXY));
       v1y_before = .5*((newCell->iXX-newCell->iYY)-sqrt((newCell->iXX-newCell->iYY)*(newCell->iXX-newCell->iYY)+4.0*newCell->iXY*newCell->iXY));
       v1x_before = newCell->iXY;
-      ecc1_before = sqrt(1.0-l1_min_before/l1_max_before);
+      // taking case of numerical rounding
+      ecc1_before = sqrt(fabs(1.0-l1_min_before/(l1_max_before + eps)));
         /*cerr << "  l1_min_before: " << l1_min_before <<  "  l1_max_before: " << l1_max_before<< endl;
       cerr << "  iXX" << newCell->iXX << "  iXY" << newCell->iXY << endl;
         */ 
@@ -116,7 +110,8 @@ double OrientedContactPlugin::getOrientation(const Point3D &pt, const CellG *new
       v1x = newIxy;
       r1x = pt.x-xcm;
       r1y = pt.y-ycm;
-      ecc1 = sqrt(1.0-l1_min/l1_max);
+      // taking case of numerical rounding
+      ecc1 = sqrt(fabs(1.0-l1_min/(l1_max + eps)));
 //         cerr << "  l1_min: " << l1_min <<  "  l1_max: " << l1_max<< endl;
 	
 
@@ -179,7 +174,8 @@ double OrientedContactPlugin::getOrientation(const Point3D &pt, const CellG *new
       double l2_min_before = .5*((oldCell->iXX+oldCell->iYY)-sqrt((oldCell->iXX-oldCell->iYY)*(oldCell->iXX-oldCell->iYY)+4.0*oldCell->iXY*oldCell->iXY));
       v2y_before = .5*((oldCell->iXX-oldCell->iYY)-sqrt((oldCell->iXX-oldCell->iYY)*(oldCell->iXX-oldCell->iYY)+4.0*oldCell->iXY*oldCell->iXY));
       v2x_before = oldCell->iXY;
-      ecc2_before = sqrt(1.0-l2_min_before/l2_max_before);
+      // taking case of numerical rounding
+      ecc2_before = sqrt(fabs(1.0-l2_min_before/(l2_max_before+eps)));
 	 
       double l2_max = .5*((newIxx+newIyy)+sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
       double l2_min = .5*((newIxx+newIyy)-sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
@@ -187,7 +183,8 @@ double OrientedContactPlugin::getOrientation(const Point3D &pt, const CellG *new
       v2x = newIxy;
       r2x = pt.x-xcm;
       r2y = pt.y-ycm;
-      ecc2 = sqrt(1.0-l2_min/l2_max);
+      // taking case of numerical rounding
+      ecc2 = sqrt(fabs(1.0-l2_min/(l2_max+eps)));
 //        cerr << "l2_min: " << l2_min<< "  l2_max: " << l2_max << endl;
    }
         
@@ -196,21 +193,28 @@ double OrientedContactPlugin::getOrientation(const Point3D &pt, const CellG *new
       ecc2 = 0;
    }
 
-   s01 = (r1x*v1x+r1y*v1y)/sqrt((r1x*r1x+r1y*r1y)*(v1x*v1x+v1y*v1y));
-   s01 = sqrt(1.0-s01*s01);
-   s02 = (r2x*v2x+r2y*v2y)/sqrt((r2x*r2x+r2y*r2y)*(v2x*v2x+v2y*v2y));
-   s02 = sqrt(1.0-s02*s02);
+   s01 = (r1x*v1x+r1y*v1y)/(sqrt((r1x*r1x+r1y*r1y)*(v1x*v1x+v1y*v1y))+eps);
+
+   // taking case of numerical rounding
+   s01 = sqrt(fabs(1.0-s01*s01)); 
+   s02 = (r2x*v2x+r2y*v2y)/(sqrt((r2x*r2x+r2y*r2y)*(v2x*v2x+v2y*v2y))+eps);
+   // taking case of numerical rounding
+   s02 = sqrt(fabs(1.0-s02*s02));
         
-   s01_before = (r1x*v1x_before+r1y*v1y_before)/sqrt((r1x*r1x+r1y*r1y)*(v1x_before*v1x_before+v1y_before*v1y_before));
-   s01_before = sqrt(1.0-s01_before*s01_before);
-   s02_before = (r2x*v2x_before+r2y*v2y_before)/sqrt((r2x*r2x+r2y*r2y)*(v2x_before*v2x_before+v2y_before*v2y_before));
-   s02_before = sqrt(1.0-s02_before*s02_before);
-        
+   s01_before = (r1x*v1x_before+r1y*v1y_before)/(sqrt((r1x*r1x+r1y*r1y)*(v1x_before*v1x_before+v1y_before*v1y_before))+eps);
+   // taking case of numerical rounding
+   s01_before = sqrt(fabs(1.0-s01_before*s01_before));
+   s02_before = (r2x*v2x_before+r2y*v2y_before)/(sqrt((r2x*r2x+r2y*r2y)*(v2x_before*v2x_before+v2y_before*v2y_before))+eps);
+   // taking case of numerical rounding
+   s02_before = sqrt(fabs(1.0-s02_before*s02_before));
+   
+
    E1 = ecc1_before*ecc2_before*s01_before*s01_before*sqrt((r1x*r1x+r1y*r1y)*(r2x*r2x+r2y*r2y));
    E2 = ecc1*ecc2*s01*s01*sqrt((r1x*r1x+r1y*r1y)*(r2x*r2x+r2y*r2y));
         
    deltaE = E2-E1;
-        
+
+  
 //         cerr << "ecc1: " << ecc1 << "  ecc2: " << ecc2 << "  ecc1_before: " << ecc1_before <<  "  ecc2_before: " << ecc2_before << endl;
         
        //       " r1x: " << r1x << " r1y: " << r1y << "  vx: " << v1x << "  v1y: " << v1y << endl;
@@ -227,6 +231,8 @@ double OrientedContactPlugin::getOrientation(const Point3D &pt, const CellG *new
 double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
    double ecc1, ecc2, v1x, v1y, v2x,v2y, r1x,r1y,r2x,r2y,s01,s02, E1, E2, deltaE;
    double ecc1_before, ecc2_before, v1x_before, v1y_before, v2x_before,v2y_before, s01_before,s02_before;
+
+   double eps = std::numeric_limits<double>::epsilon();
 
    if (!newCell && !oldCell) {
 //       cerr << "only medium" << endl;
@@ -290,7 +296,10 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
       double l1_min_before = .5*((newCell->iXX+newCell->iYY)-sqrt((newCell->iXX-newCell->iYY)*(newCell->iXX-newCell->iYY)+4.0*newCell->iXY*newCell->iXY));
       v1y_before = .5*((newCell->iXX-newCell->iYY)-sqrt((newCell->iXX-newCell->iYY)*(newCell->iXX-newCell->iYY)+4.0*newCell->iXY*newCell->iXY));
       v1x_before = newCell->iXY;
-      ecc1_before = sqrt(1.0-l1_min_before/l1_max_before);
+
+      // taking case of numerical rounding
+
+      ecc1_before = sqrt(fabs(1.0-l1_min_before/(l1_max_before+eps)));
         /*cerr << "  l1_min_before: " << l1_min_before <<  "  l1_max_before: " << l1_max_before<< endl;
       cerr << "  iXX" << newCell->iXX << "  iXY" << newCell->iXY << endl;
         */ 
@@ -300,13 +309,15 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
       v1x = newIxy;
       r1x = pt.x-xcm;
       r1y = pt.y-ycm;
-      ecc1 = sqrt(1.0-l1_min/l1_max);
+      ecc1 = sqrt(1.0-l1_min/(l1_max+eps));
       
       s01 = (r1x*v1x+r1y*v1y)/sqrt((r1x*r1x+r1y*r1y)*(v1x*v1x+v1y*v1y));
-      s01 = sqrt(1.0-s01*s01);
+      // taking case of numerical rounding
+      s01 = sqrt(fabs(1.0-s01*s01));
         
-      s01_before = (r1x*v1x_before+r1y*v1y_before)/sqrt((r1x*r1x+r1y*r1y)*(v1x_before*v1x_before+v1y_before*v1y_before));
-      s01_before = sqrt(1.0-s01_before*s01_before);
+      s01_before = (r1x*v1x_before+r1y*v1y_before)/(sqrt((r1x*r1x+r1y*r1y)*(v1x_before*v1x_before+v1y_before*v1y_before))+eps);
+      // taking case of numerical rounding
+      s01_before = sqrt(fabs(1.0-s01_before*s01_before));
       
       double theta = asin(s01);
       double theta_before = asin(s01_before);
@@ -371,7 +382,8 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
       double l2_min_before = .5*((oldCell->iXX+oldCell->iYY)-sqrt((oldCell->iXX-oldCell->iYY)*(oldCell->iXX-oldCell->iYY)+4.0*oldCell->iXY*oldCell->iXY));
       v2y_before = .5*((oldCell->iXX-oldCell->iYY)-sqrt((oldCell->iXX-oldCell->iYY)*(oldCell->iXX-oldCell->iYY)+4.0*oldCell->iXY*oldCell->iXY));
       v2x_before = oldCell->iXY;
-      ecc2_before = sqrt(1.0-l2_min_before/l2_max_before);
+      // taking case of numerical rounding
+      ecc2_before = sqrt(fabs(1.0-l2_min_before/(l2_max_before+eps)));
 	 
       double l2_max = .5*((newIxx+newIyy)+sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
       double l2_min = .5*((newIxx+newIyy)-sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
@@ -379,11 +391,14 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
       v2x = newIxy;
       r2x = pt.x-xcm;
       r2y = pt.y-ycm;
-      ecc2 = sqrt(1.0-l2_min/l2_max);
+      // taking case of numerical rounding
+      ecc2 = sqrt(fabs(1.0-l2_min/(l2_max+eps)));
 //        cerr << "l2_min: " << l2_min<< "  l2_max: " << l2_max << endl;
-      s02 = (r2x*v2x+r2y*v2y)/sqrt((r2x*r2x+r2y*r2y)*(v2x*v2x+v2y*v2y));
-      s02 = sqrt(1.0-s02*s02);
-      s02_before = (r2x*v2x_before+r2y*v2y_before)/sqrt((r2x*r2x+r2y*r2y)*(v2x_before*v2x_before+v2y_before*v2y_before));
+      s02 = (r2x*v2x+r2y*v2y)/(sqrt((r2x*r2x+r2y*r2y)*(v2x*v2x+v2y*v2y))+eps);
+
+      // taking case of numerical rounding
+      s02 = sqrt(fabs(1.0-s02*s02));
+      s02_before = (r2x*v2x_before+r2y*v2y_before)/(sqrt((r2x*r2x+r2y*r2y)*(v2x_before*v2x_before+v2y_before*v2y_before))+eps);
       s02_before = sqrt(1.0-s02_before*s02_before);
       
       double theta = asin(s02);
