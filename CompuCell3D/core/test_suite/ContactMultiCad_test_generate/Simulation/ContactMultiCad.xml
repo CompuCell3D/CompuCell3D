@@ -1,0 +1,54 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="200" y="200" z="1"/>
+        <Steps>1000000</Steps>
+        <Temperature>5</Temperature>
+        <Flip2DimRatio>1</Flip2DimRatio>
+        <Boundary_x>Periodic</Boundary_x>
+        <Boundary_y>Periodic</Boundary_y>
+        <NeighborOrder>2</NeighborOrder>
+        <RandomSeed>1</RandomSeed>
+        <TestOutputGenerate/>
+    </Potts>
+
+
+    <Plugin Name="Volume">
+        <TargetVolume>25</TargetVolume>
+        <LambdaVolume>1</LambdaVolume>
+    </Plugin>
+
+
+    <Plugin Name="CenterOfMass"/>
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="CadExpLevel1" TypeId="1"/>
+        <CellType TypeName="CadExpLevel2" TypeId="2"/>
+    </Plugin>
+
+
+    <Plugin Name="ContactMultiCad">
+
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="Medium" Type2="CadExpLevel1">0</Energy>
+        <Energy Type1="Medium" Type2="CadExpLevel2">0</Energy>
+        <Energy Type1="CadExpLevel1" Type2="CadExpLevel1">0</Energy>
+        <Energy Type1="CadExpLevel1" Type2="CadExpLevel2">0</Energy>
+        <Energy Type1="CadExpLevel2" Type2="CadExpLevel2">0</Energy>
+
+        <SpecificityCadherin>
+            <Specificity Cadherin1="NCad" Cadherin2="NCad">-1</Specificity>
+            <Specificity Cadherin1="NCam" Cadherin2="NCam">-1</Specificity>
+            <Specificity Cadherin1="NCad" Cadherin2="NCam">-1</Specificity>
+        </SpecificityCadherin>
+
+        <EnergyOffset>0.0</EnergyOffset>
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+
+
+    <Steppable Type="PIFInitializer">
+        <PIFName>Simulation/initial_configuration.piff</PIFName>
+    </Steppable>
+
+</CompuCell3D>

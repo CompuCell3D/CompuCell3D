@@ -1,0 +1,9 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/ContactMultiCad.xml</XMLScript>
+
+    <PythonScript>Simulation/ContactMultiCad.py</PythonScript> 
+
+    <Resource Type="Python">Simulation/ContactMultiCadSteppables.py</Resource>    
+
+</Simulation>
