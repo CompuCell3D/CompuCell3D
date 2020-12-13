@@ -29,6 +29,8 @@ class FocalPointPlasticityLinksSteppable(SteppableBasePy):
 
             # If data-handling is wrong, then the fetched data for this link might have multiple entries
             fppd = [fppd for fppd in fpp_data_list if fppd.neighborAddress.id == cellj.id]
+            if len(fppd) != 1:
+                print(fppd)
             assert len(fppd) == 1
             fppd = fppd[0]
 

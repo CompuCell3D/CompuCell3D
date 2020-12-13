@@ -66,8 +66,6 @@ namespace CompuCell3D {
 		void initializeConstitutiveLaw(std::string _localLaw);
 		bool usingLocalLaw = false;
 
-		CellG* getCellGFromConst(const CellG* _cell);
-
 	public:
 
 		FocalPointPlasticityLinkBase() :
@@ -90,7 +88,6 @@ namespace CompuCell3D {
 			fpptd.neighborOrder = getNeighborOrder();
 			return fpptd;
 		}
-		FocalPointPlasticityTrackerData getFPPTrackerData(const CellG* _cell) { return getFPPTrackerData(getCellGFromConst(_cell)); }
 
 		// Derived properties
 
@@ -224,30 +221,10 @@ namespace CompuCell3D {
 			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(this);
 			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension(this);
 		}
-		FocalPointPlasticityInternalLink(const CellG *_initiator, CellG *_initiated, Potts3D *_potts, FocalPointPlasticityLinkTrackerData _fppltd) :
-			FocalPointPlasticityInternalLink(getCellGFromConst(_initiator), _initiated, _potts, _fppltd) {}
-		FocalPointPlasticityInternalLink(CellG *_initiator, const CellG *_initiated, Potts3D *_potts, FocalPointPlasticityLinkTrackerData _fppltd) :
-			FocalPointPlasticityInternalLink(_initiator, getCellGFromConst(_initiated), _potts, _fppltd) {}
-		FocalPointPlasticityInternalLink(const CellG *_initiator, const CellG *_initiated, Potts3D *_potts, FocalPointPlasticityLinkTrackerData _fppltd) :
-			FocalPointPlasticityInternalLink(getCellGFromConst(_initiator), getCellGFromConst(_initiated), _potts, _fppltd) {}
-
 		FocalPointPlasticityInternalLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) :
 			FocalPointPlasticityInternalLink(_initiator, _initiated, _potts, FocalPointPlasticityLinkTrackerData(_fpptd)) {}
-		FocalPointPlasticityInternalLink(const CellG *_initiator, CellG *_initiated, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) :
-			FocalPointPlasticityInternalLink(getCellGFromConst(_initiator), _initiated, _potts, _fpptd) {}
-		FocalPointPlasticityInternalLink(CellG *_initiator, const CellG *_initiated, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) :
-			FocalPointPlasticityInternalLink(_initiator, getCellGFromConst(_initiated), _potts, _fpptd) {}
-		FocalPointPlasticityInternalLink(const CellG *_initiator, const CellG *_initiated, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) :
-			FocalPointPlasticityInternalLink(getCellGFromConst(_initiator), getCellGFromConst(_initiated), _potts, _fpptd) {}
-
 		FocalPointPlasticityInternalLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0) :
 			FocalPointPlasticityInternalLink(_initiator, _initiated, _potts, FocalPointPlasticityLinkTrackerData(_lambdaDistance, _targetDistance, _maxDistance, _initMCS)) {}
-		FocalPointPlasticityInternalLink(const CellG *_initiator, CellG *_initiated, Potts3D *_potts, float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0) :
-			FocalPointPlasticityInternalLink(getCellGFromConst(_initiator), _initiated, _potts, _lambdaDistance, _targetDistance, _maxDistance, _initMCS) {}
-		FocalPointPlasticityInternalLink(CellG *_initiator, const CellG *_initiated, Potts3D *_potts, float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0) :
-			FocalPointPlasticityInternalLink(_initiator, getCellGFromConst(_initiated), _potts, _lambdaDistance, _targetDistance, _maxDistance, _initMCS) {}
-		FocalPointPlasticityInternalLink(const CellG *_initiator, const CellG *_initiated, Potts3D *_potts, float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0) :
-			FocalPointPlasticityInternalLink(getCellGFromConst(_initiator), getCellGFromConst(_initiated), _potts, _lambdaDistance, _targetDistance, _maxDistance, _initMCS) {}
 
 		const long getId0() { return initiator->id; }
 		const long getId1() { return initiated->id; }
@@ -272,16 +249,10 @@ namespace CompuCell3D {
 			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(this);
 			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension(this);
 		}
-		FocalPointPlasticityAnchor(const CellG *_cell, Potts3D *_potts, FocalPointPlasticityLinkTrackerData _fppltd) :
-			FocalPointPlasticityAnchor(getCellGFromConst(_cell), _potts, _fppltd) {}
 		FocalPointPlasticityAnchor(CellG *_cell, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) :
 			FocalPointPlasticityAnchor(_cell, _potts, FocalPointPlasticityLinkTrackerData(_fpptd)) {}
-		FocalPointPlasticityAnchor(const CellG *_cell, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) :
-			FocalPointPlasticityAnchor(getCellGFromConst(_cell), _potts, _fpptd) {}
 		FocalPointPlasticityAnchor(CellG *_cell, Potts3D *_potts, float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0, std::vector<float> _anchorPoint = std::vector<float>(3, 0.0)) :
 			FocalPointPlasticityAnchor(_cell, _potts, FocalPointPlasticityLinkTrackerData(_lambdaDistance, _targetDistance, _maxDistance, _initMCS)) {}
-		FocalPointPlasticityAnchor(const CellG *_cell, Potts3D *_potts, float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0, std::vector<float> _anchorPoint = std::vector<float>(3, 0.0)) :
-			FocalPointPlasticityAnchor(getCellGFromConst(_cell), _potts, _lambdaDistance, _targetDistance, _maxDistance, _initMCS, _anchorPoint) {}
 
 		const long getId0() { return initiator->id; }
 		const long getId1() { return fppltd.anchorId; }

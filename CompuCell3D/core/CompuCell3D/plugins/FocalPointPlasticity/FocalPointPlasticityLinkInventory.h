@@ -41,11 +41,6 @@ namespace CompuCell3D {
 		using FPPLinkInventoryBase<FocalPointPlasticityLink>::FPPLinkInventoryBase<FocalPointPlasticityLink>;
 		virtual ~FPPLinkInventory() {}
 
-		FPPTrackerDataSet& getFPPTrackerDataSet(CellG* _cell) {
-			if (focalPointPlasticityTrackerAccessor)
-				return focalPointPlasticityTrackerAccessor->get(_cell->extraAttribPtr)->focalPointPlasticityNeighbors;
-			else return FPPTrackerDataSet();
-		}
 		// Get the link connecting two cells
 		FocalPointPlasticityLink* getLinkByCells(CellG* _cell0, CellG* _cell1) { return getLinkById(FPPLinkID(_cell0->id, _cell1->id)); }
 		// Get list of cells linked to a cell
@@ -74,11 +69,6 @@ namespace CompuCell3D {
 		using FPPLinkInventoryBase<FocalPointPlasticityInternalLink>::FPPLinkInventoryBase<FocalPointPlasticityInternalLink>;
 		virtual ~FPPInternalLinkInventory() {}
 
-		FPPTrackerDataSet& getFPPTrackerDataSet(CellG* _cell) {
-			if (focalPointPlasticityTrackerAccessor)
-				return focalPointPlasticityTrackerAccessor->get(_cell->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
-			else return FPPTrackerDataSet();
-		}
 		// Get the link connecting two cells
 		FocalPointPlasticityInternalLink* getLinkByCells(CellG* _cell0, CellG* _cell1) { return getLinkById(FPPLinkID(_cell0->id, _cell1->id)); }
 		// Get list of cells linked to a cell
@@ -106,12 +96,6 @@ namespace CompuCell3D {
 
 		using FPPLinkInventoryBase<FocalPointPlasticityAnchor>::FPPLinkInventoryBase<FocalPointPlasticityAnchor>;
 		virtual ~FPPAnchorInventory() {}
-
-		FPPTrackerDataSet& getFPPTrackerDataSet(CellG* _cell) {
-			if (focalPointPlasticityTrackerAccessor)
-				return focalPointPlasticityTrackerAccessor->get(_cell->extraAttribPtr)->anchors;
-			else return FPPTrackerDataSet();
-		}
 
 		FocalPointPlasticityAnchor* getAnchor(CellG* _cell, long _anchorId) { return getLinkById(FPPLinkID(_cell->id, _anchorId)); }
 

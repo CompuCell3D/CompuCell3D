@@ -22,7 +22,7 @@
 #ifndef FOCALPOINTPLASTICITYLINKINVENTORYBASE_H
 #define FOCALPOINTPLASTICITYLINKINVENTORYBASE_H
 
-#include <map>
+#include <unordered_map>
 #include <set>
 #include <vector>
 
@@ -39,8 +39,6 @@ namespace CompuCell3D {
 
 	class Potts3D;
 	class FocalPointPlasticityTracker;
-
-	typedef std::set<FocalPointPlasticityTrackerData> FPPTrackerDataSet;
 
 	template <typename T>
 	class FPPLinkListBase : public std::vector<T*> {
@@ -84,6 +82,18 @@ namespace CompuCell3D {
 		FPPLinkInventoryBase<LinkType> linkInv;
 	};
 
+	
+	// Hasher using Cantor pairing function
+	class FOCALPOINTPLASTICITY_EXPORT LinkInventoryHasher {
+
+	public:
+
+		size_t operator() (FPPLinkID key) const {
+			return 0.5 * (key.id0 + key.id1) * (key.id0 + key.id1 + 1) + key.id1;
+		}
+
+	};
+
 
 	template <class LinkType>
 	class FOCALPOINTPLASTICITY_EXPORT FPPLinkInventoryBase {
@@ -93,14 +103,13 @@ namespace CompuCell3D {
 		typedef FPPLinkListBase<LinkType> FPPLinkList;
 		typedef FPPLinkInventoryBase<LinkType> FPPInventory_t;
 
-		typedef std::map<const FPPLinkID, LinkType*> linkInventory_t;
+		typedef std::unordered_map<const FPPLinkID, LinkType*, LinkInventoryHasher> linkInventory_t;
 		typedef typename linkInventory_t::iterator linkInventoryItr_t;
 		typedef std::pair<const FPPLinkID, LinkType*> linkInventoryPair_t;
 
 	protected:
 
 		Potts3D* potts;
-		BasicClassAccessor<FocalPointPlasticityTracker>* focalPointPlasticityTrackerAccessor;
 		BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* cellLinkInventoryTrackerAccessor;
 
 		linkInventory_t linkInventory;
@@ -116,70 +125,34 @@ namespace CompuCell3D {
 		void addLinkNoChain(LinkType* _link) {
 			linkInventory.insert(linkInventoryPair_t(getLinkId(_link), _link));
 		}
-		// Add tracker data to cells
-		void addTrackerData(LinkType* _link) {
-			CellG* cell0 = _link->getObj0();
-			CellG* cell1 = _link->getObj1();
-			if (cell0) {
-				FocalPointPlasticityTrackerData fppd = _link->getFPPTrackerData(cell0);
-				getFPPTrackerDataSet(cell0).insert(fppd);
-			}
-			if (cell1) {
-				FocalPointPlasticityTrackerData fppd = _link->getFPPTrackerData(cell1);
-				getFPPTrackerDataSet(cell1).insert(fppd);
-			}
-		}
 		// Remove a link without any additional internal work
 		void removeLinkNoChain(LinkType* _link) {
 			const FPPLinkID linkId = getLinkId(_link);
 			linkInventoryItr_t itr = linkInventory.find(linkId);
 			if (itr != linkInventory.end()) linkInventory.erase(linkId);
 		}
-		// Remove tracker data from cells
-		void removeTrackerData(LinkType* _link) {
-			FPPTrackerDataSet::iterator itr;
-			CellG* cell0 = const_cast<CellG*>(_link->getObj0());
-			CellG* cell1 = const_cast<CellG*>(_link->getObj1());
-			if (cell0) {
-				FPPTrackerDataSet &fppdSet = getFPPTrackerDataSet(cell0);
-				FocalPointPlasticityTrackerData fppd = _link->getFPPTrackerData(cell0);
-				itr = fppdSet.find(fppd);
-				if (itr != fppdSet.end()) fppdSet.erase(fppd);
-			}
-			if (cell1) {
-				FPPTrackerDataSet &fppdSet = getFPPTrackerDataSet(cell1);
-				FocalPointPlasticityTrackerData fppd = _link->getFPPTrackerData(cell1);
-				itr = fppdSet.find(fppd);
-				if (itr != fppdSet.end()) fppdSet.erase(fppd);
-			}
-		}
 
 		FPPInventory_t* getCellLinkInventory(CellG* _cell) { 
 			return &cellLinkInventoryTrackerAccessor->get(_cell->extraAttribPtr)->linkInv;
 		}
 
-		CellG* getCellGFromConst(const CellG* _cell) {
-			if (!_cell) return (CellG*)(0);
-			else {
-				CellG* _cellNC = potts->getCellInventory().getCellByIds(_cell->id, _cell->clusterId);
-				return _cellNC;
-			}
-		}
-
 	public:
 		FPPLinkInventoryBase() {}
-		FPPLinkInventoryBase(BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* _cellLinkInventoryTrackerAccessor, Potts3D* _potts, BasicClassAccessor<FocalPointPlasticityTracker>* _focalPointPlasticityTrackerAccessor)
+		FPPLinkInventoryBase(BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* _cellLinkInventoryTrackerAccessor, Potts3D* _potts)
 		{
 			cellLinkInventoryTrackerAccessor = _cellLinkInventoryTrackerAccessor;
 			potts = _potts;
-			focalPointPlasticityTrackerAccessor = _focalPointPlasticityTrackerAccessor;
 		}
 		virtual ~FPPLinkInventoryBase() {}
 
-		BasicClassAccessor<FocalPointPlasticityTracker> * getFocalPointPlasticityTrackerAccessorPtr() { return focalPointPlasticityTrackerAccessor; }
 		BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* getFocalPointPlasticityCellLinkInventoryTrackerAccessorPtr() { return cellLinkInventoryTrackerAccessor; }
 
-		virtual FPPTrackerDataSet& getFPPTrackerDataSet(CellG* _cell) { return FPPTrackerDataSet(); }
+		virtual std::set<FocalPointPlasticityTrackerData> getFPPTrackerDataSet(CellG* _cell)
+		{
+			std::set<FocalPointPlasticityTrackerData> o;
+			for each (LinkType* link in getCellLinkList(_cell)) o.insert(link->getFPPTrackerData(_cell));
+			return o;
+		}
 
 		virtual int getLinkInventorySize() { return linkInventory.size(); }
 		linkInventory_t& getContainer() { return linkInventory; }
@@ -190,14 +163,12 @@ namespace CompuCell3D {
 
 		// Add a link to the link inventory and update internals
 		void addToInventory(LinkType* _link) {
-			addTrackerData(_link);
 			addLinkNoChain(_link);
 			getCellLinkInventory(_link->getObj0())->addLinkNoChain(_link);
 			getCellLinkInventory(_link->getObj1())->addLinkNoChain(_link);
 		}
 		// Remove a link to the link inventory and update internals
 		void removeFromInventory(LinkType* _link) {
-			removeTrackerData(_link);
 			removeLinkNoChain(_link);
 			getCellLinkInventory(_link->getObj0())->removeLinkNoChain(_link);
 			getCellLinkInventory(_link->getObj1())->removeLinkNoChain(_link);
@@ -213,10 +184,6 @@ namespace CompuCell3D {
 		}
 		// Get link inventory list by cell
 		FPPLinkList getCellLinkList(CellG* _cell) { return getCellLinkInventory(_cell)->getLinkList(); }
-		FPPLinkList getCellLinkList(const CellG* _cell) {
-			CellG* _cellNC = getCellGFromConst(_cell);
-			return getCellLinkList(_cellNC);
-		}
 		// Get number of junctions for a cell
 		virtual int getNumberOfJunctions(CellG* _cell) { return getCellLinkInventory(_cell)->getLinkInventorySize(); }
 		// Remove all links attached to a cell
