@@ -806,7 +806,7 @@ void FocalPointPlasticityPlugin::createFocalPointPlasticityLink(CellG * _cell1, 
 
 void FocalPointPlasticityPlugin::createInternalFocalPointPlasticityLink(CellG * _cell1, CellG * _cell2, double _lambda, double _targetDistance, double _maxDistance) {
 
-	FocalPointPlasticityLinkTrackerData fpptld = FocalPointPlasticityLinkTrackerData(plastParamsArray[_cell1->type][_cell2->type]);
+	FocalPointPlasticityLinkTrackerData fpptld = FocalPointPlasticityLinkTrackerData(internalPlastParamsArray[_cell1->type][_cell2->type]);
 	fpptld.lambdaDistance = _lambda;
 	fpptld.targetDistance = _targetDistance;
 	fpptld.maxDistance = _maxDistance;

@@ -164,14 +164,18 @@ namespace CompuCell3D {
 		// Add a link to the link inventory and update internals
 		void addToInventory(LinkType* _link) {
 			addLinkNoChain(_link);
-			getCellLinkInventory(_link->getObj0())->addLinkNoChain(_link);
-			getCellLinkInventory(_link->getObj1())->addLinkNoChain(_link);
+			CellG* linkObj0 = _link->getObj0();
+			CellG* linkObj1 = _link->getObj1();
+			if (linkObj0) getCellLinkInventory(linkObj0)->addLinkNoChain(_link);
+			if (linkObj1) getCellLinkInventory(linkObj1)->addLinkNoChain(_link);
 		}
 		// Remove a link to the link inventory and update internals
 		void removeFromInventory(LinkType* _link) {
 			removeLinkNoChain(_link);
-			getCellLinkInventory(_link->getObj0())->removeLinkNoChain(_link);
-			getCellLinkInventory(_link->getObj1())->removeLinkNoChain(_link);
+			CellG* linkObj0 = _link->getObj0();
+			CellG* linkObj1 = _link->getObj1();
+			if (linkObj0) getCellLinkInventory(linkObj0)->removeLinkNoChain(_link);
+			if (linkObj1) getCellLinkInventory(linkObj1)->removeLinkNoChain(_link);
 			delete _link;
 		}
 
