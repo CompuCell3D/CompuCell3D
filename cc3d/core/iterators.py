@@ -10,13 +10,25 @@ from deprecated import deprecated
 
 
 class CellList:
+    """
+    Wraps current inventory of all CellG instances in simulation
+    """
+
     def __init__(self, inventory):
         self.inventory = inventory
 
     def __iter__(self):
+        """
+
+        :return: {:class:`CellListIterator`}
+        """
         return CellListIterator(self)
 
     def __len__(self):
+        """
+
+        :return: {int}
+        """
         return int(self.inventory.getSize())
 
 
@@ -29,6 +41,10 @@ class CellListIterator:
         self.invItr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: {:class:`cc3d.cpp.CompuCell.CellG`}
+        """
         if not self.invItr.isEnd():
             self.cell = self.invItr.getCurrentRef()
             self.invItr.next()
@@ -54,9 +70,17 @@ class CellListByType:
         self.inventory.initCellInventoryByMultiType(self.inventoryByType, self.types)
 
     def __iter__(self):
+        """
+
+        :return: {:class:`CellListByTypeIterator`}
+        """
         return CellListByTypeIterator(self)
 
     def __len__(self):
+        """
+
+        :return: {int}
+        """
         return int(self.inventoryByType.size())
 
     def initTypeVec(self, _type_list):
@@ -86,6 +110,10 @@ class CellListByTypeIterator:
         self.next = self.__next__
 
     def __next__(self):
+        """
+
+        :return: {:class:`cc3d.cpp.CompuCell.CellG`}
+        """
         if not self.invItr.isEnd():
             self.cell = self.invItr.getCurrentRef()
             # print 'self.idCellPair=',self.idCellPair
@@ -108,9 +136,17 @@ class ClusterList:
         self.inventory = _inventory.getClusterInventory().getContainer()
 
     def __iter__(self):
+        """
+
+        :return: {:class:`ClusterListIterator`}
+        """
         return ClusterListIterator(self)
 
     def __len__(self):
+        """
+
+        :return: {int}
+        """
         return int(self.inventory.size())
 
 
@@ -124,6 +160,10 @@ class ClusterListIterator:
         self.next = self.__next__
 
     def __next__(self):
+        """
+
+        :return: {:class:`cc3d.cpp.CompuCell.CellG`}
+        """
 
         if not self.invItr.isEnd():
             self.compartmentList = self.invItr.getCurrentRef()
@@ -141,9 +181,17 @@ class Clusters:
         self.inventory = _inventory.getClusterInventory().getContainer()
 
     def __iter__(self):
+        """
+
+        :return: {:class:`ClustersIterator`}
+        """
         return ClustersIterator(self)
 
     def __len__(self):
+        """
+
+        :return: {int}
+        """
         return int(self.inventory.size())
 
 
@@ -160,6 +208,10 @@ class ClustersIterator:
         self.compartmentList = None
 
     def __next__(self):
+        """
+
+        :return: {:class:`CompartmentList`}
+        """
 
         if not self.invItr.isEnd():
             self.compartmentList = self.invItr.getCurrentRef()
@@ -179,9 +231,17 @@ class CompartmentList:
         self.inventory = _inventory
 
     def __iter__(self):
+        """
+
+        :return: {:class:`CompartmentListIterator`}
+        """
         return CompartmentListIterator(self)
 
     def __len__(self):
+        """
+
+        :return: {int}
+        """
         return int(self.inventory.size())
 
     def clusterId(self):
@@ -196,6 +256,10 @@ class CompartmentListIterator:
         self.invItr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: {:class:`cc3d.cpp.CompuCell.CellG`}
+        """
         if not self.invItr.isEnd():
             self.cell = self.invItr.getCurrentRef()
             # print 'self.idCellPair=',self.idCellPair
@@ -216,12 +280,25 @@ class ClusterCellList:
         self.inventory = _inventory
 
     def __iter__(self):
+        """
+
+        :return: {:class:`ClusterCellListIterator`}
+        """
         return ClusterCellListIterator(self)
 
     def __getitem__(self, item):
+        """
+
+        :param item: {int}
+        :return: {:class:`cc3d.cpp.CompuCell.CellG`}
+        """
         return self.inventory[item]
 
     def __len__(self):
+        """
+
+        :return: {int}
+        """
         return int(self.inventory.size())
 
     @deprecated(version='4.0.0', reason="You should use : len()")
@@ -240,6 +317,10 @@ class ClusterCellListIterator:
         # self.invItr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: {:class:`cc3d.cpp.CompuCell.CellG`}
+        """
         # if self.invItr !=  self.inventory.end():
         if self.currentIdx < self.inventory.size():
             # print "self.invItr=",dir(self.invItr)
@@ -273,16 +354,30 @@ class CellNeighborListFlex:
         self.neighborCountByType = self.neighbor_count_by_type
 
     def __len__(self):
+        """
+
+        :return: {int}
+        """
         neighborTracker = self.neighborTrackerAccessor.get(self.cell.extraAttribPtr)
         return int(neighborTracker.cellNeighbors.size())
 
     def __getitem__(self, idx):
+        """
+
+        :param idx: {int}
+        :return: {tuple} neighbor (:class:`cc3d.cpp.CompuCell.CellG`), common surface area (int)
+        """
         if idx > self.__len__() - 1: raise IndexError(
             "Out of bounds index: CellNeighborListAuto index = %s is out of bounds" % str(idx))
         for counter, data in enumerate(self.__iter__()):
             if idx == counter: return data
 
     def common_surface_area_with_cell_types(self, cell_type_list):
+        """
+
+        :param cell_type_list: {list} list of cell types
+        :return: {int} total common surface area with all given types
+        """
         area = 0
         for neighbor, commonSurfaceArea in self.__iter__():
             cell_type = 0 if not neighbor else neighbor.type
@@ -291,6 +386,10 @@ class CellNeighborListFlex:
         return area
 
     def common_surface_area_by_type(self):
+        """
+
+        :return: {collections.defaultdict} total common surface area by cell type
+        """
         from collections import defaultdict
         area_dict = defaultdict(int)
         for neighbor, commonSurfaceArea in self.__iter__():
@@ -299,6 +398,10 @@ class CellNeighborListFlex:
         return area_dict
 
     def neighbor_count_by_type(self):
+        """
+
+        :return: {collections.defaultdict} number of neighbors by type
+        """
         from collections import defaultdict
         neighbor_counter_dict = defaultdict(int)
 
@@ -308,6 +411,10 @@ class CellNeighborListFlex:
         return neighbor_counter_dict
 
     def __iter__(self):
+        """
+
+        :return: {:class:`CellNeighborIteratorFlex`}
+        """
         return CellNeighborIteratorFlex(self)
 
 
@@ -321,6 +428,10 @@ class CellNeighborIteratorFlex:
         self.nsdItr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: {tuple} neighbor (:class:`cc3d.cpp.CompuCell.CellG`), common surface area (int)
+        """
         if not self.nsdItr.isEnd():
             self.neighborCell = self.nsdItr.getCurrentRef().neighborAddress
             self.currentNsdItr = self.nsdItr.current
@@ -341,16 +452,29 @@ class FocalPointPlasticityDataList:
         self.cell = _cell
 
     def __len__(self):
+        """
+
+        :return: {int}
+        """
         self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
         return int(self.focalPointPlasticityTracker.focalPointPlasticityNeighbors.size())
 
     def __getitem__(self, idx):
+        """
+
+        :param idx: {int}
+        :return: {:class:`cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData`}
+        """
         if idx > self.__len__() - 1: raise IndexError(
             "Out of bounds index: FocalPointPlasticityDataList index = %s is out of bounds" % str(idx))
         for counter, data in enumerate(self.__iter__()):
             if idx == counter: return data
 
     def __iter__(self):
+        """
+
+        :return: {:class:`FocalPointPlasticityDataIterator`}
+        """
         return FocalPointPlasticityDataIterator(self)
 
 
@@ -365,6 +489,10 @@ class FocalPointPlasticityDataIterator:
         self.focalPointPlasticityDataSetItr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: {:class:`cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData`}
+        """
         if not self.focalPointPlasticityDataSetItr.isEnd():
             self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
             self.focalPointPlasticityData = self.focalPointPlasticityDataSetItr.getCurrentRef()
@@ -385,16 +513,29 @@ class InternalFocalPointPlasticityDataList:
         self.cell = _cell
 
     def __getitem__(self, idx):
+        """
+
+        :param idx: {int}
+        :return: {:class:`cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData`}
+        """
         if idx > self.__len__() - 1: raise IndexError(
             "Out of bounds index: InternalFocalPointPlasticityDataList index = %s is out of bounds" % str(idx))
         for counter, data in enumerate(self.__iter__()):
             if idx == counter: return data
 
     def __len__(self):
+        """
+
+        :return: {int}
+        """
         self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
         return int(self.focalPointPlasticityTracker.internalFocalPointPlasticityNeighbors.size())
 
     def __iter__(self):
+        """
+
+        :return: {:class:`InternalFocalPointPlasticityDataIterator`}
+        """
         return InternalFocalPointPlasticityDataIterator(self)
 
 
@@ -410,6 +551,10 @@ class InternalFocalPointPlasticityDataIterator:
         self.focalPointPlasticityDataSetItr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: {:class:`cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData`}
+        """
         if not self.focalPointPlasticityDataSetItr.isEnd():
             self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
             self.focalPointPlasticityData = self.focalPointPlasticityDataSetItr.getCurrentRef()
@@ -430,16 +575,29 @@ class AnchorFocalPointPlasticityDataList:
         self.cell = _cell
 
     def __getitem__(self, idx):
+        """
+
+        :param idx: {int}
+        :return: {:class:`cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData`}
+        """
         if idx > self.__len__() - 1: raise IndexError(
             "Out of bounds index: AnchorFocalPointPlasticityDataList index = %s is out of bounds" % str(idx))
         for counter, data in enumerate(self.__iter__()):
             if idx == counter: return data
 
     def __len__(self):
+        """
+
+        :return: {int}
+        """
         self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
         return int(self.focalPointPlasticityTracker.anchors.size())
 
     def __iter__(self):
+        """
+
+        :return: {:class:`AnchorFocalPointPlasticityDataIterator`}
+        """
         return AnchorFocalPointPlasticityDataIterator(self)
 
 
@@ -454,6 +612,10 @@ class AnchorFocalPointPlasticityDataIterator:
         self.focalPointPlasticityDataSetItr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: {:class:`cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData`}
+        """
         if not self.focalPointPlasticityDataSetItr.isEnd():
             self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
             self.focalPointPlasticityData = self.focalPointPlasticityDataSetItr.getCurrentRef()
@@ -473,6 +635,10 @@ class CellPixelList:
         self.cell = _cell
 
     def __iter__(self):
+        """
+
+        :return: {:class:`CellPixelIterator`}
+        """
         return CellPixelIterator(self)
 
     @deprecated(version='4.0.0', reason="You should use : number_of_pixels")
@@ -480,6 +646,10 @@ class CellPixelList:
         return self.number_of_pixels()
 
     def number_of_pixels(self):
+        """
+
+        :return: {int}
+        """
         return self.pixelTrackerAccessor.get(self.cell.extraAttribPtr).pixelSet.size()
 
 
@@ -495,6 +665,10 @@ class CellPixelIterator:
         self.pixelItr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: {:class:`cc3d.cpp.CompuCell.PixelTrackerData`}
+        """
         if not self.pixelItr.isEnd():
             #             self.neighborCell = self.nsdItr.getCurrentRef().neighborAddress
             #             self.currentNsdItr = self.nsdItr.current
@@ -518,6 +692,10 @@ class CellBoundaryPixelList:
         self.cell = cell
 
     def __iter__(self):
+        """
+
+        :return: {:class:`CellBoundaryPixelIterator`}
+        """
         return CellBoundaryPixelIterator(self, self.neighbor_order)
 
     @deprecated(version='4.0.0', reason="You should use : number_of_pixels")
@@ -525,6 +703,10 @@ class CellBoundaryPixelList:
         return self.number_of_pixels()
 
     def number_of_pixels(self):
+        """
+
+        :return: {int}
+        """
         return self.boundary_pixel_tracker_accessor.get(self.cell.extraAttribPtr).pixelSet.size()
 
 
@@ -549,6 +731,10 @@ class CellBoundaryPixelIterator:
         self.boundary_pixel_itr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: {:class:`cc3d.cpp.CompuCell.BoundaryPixelTrackerData`}
+        """
         if not self.boundary_pixel_itr.isEnd():
             self.current_boundary_pixel_tracker_data = self.boundary_pixel_itr.getCurrentRef()
             self.boundary_pixel_itr.next()
@@ -568,6 +754,10 @@ class ElasticityDataList:
         self.cell = _cell
 
     def __iter__(self):
+        """
+
+        :return: {:class:`ElasticityDataIterator`}
+        """
         return ElasticityDataIterator(self)
 
 
@@ -582,6 +772,10 @@ class ElasticityDataIterator:
         self.elasticity_data_set_itr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: {:class:`cc3d.cpp.CompuCell.ElasticityTrackerData`}
+        """
         if not self.elasticity_data_set_itr.isEnd():
             self.current_elasticity_data_set_itr = self.elasticity_data_set_itr.current
             self.elasticity_data = self.elasticity_data_set_itr.getCurrentRef()
@@ -601,6 +795,10 @@ class EnergyDataList:
         self.flip_results = _potts.getCurrentFlipResults()
 
     def __iter__(self):
+        """
+
+        :return: {:class:`EnergyDataListIterator`}
+        """
         return EnergyDataListIterator(self)
 
 
@@ -615,6 +813,10 @@ class EnergyDataListIterator:
         self.__num_flips = self.__flip_results.__len__()
 
     def __next__(self):
+        """
+
+        :return: {tuple} flip result (bool), energy change by energy function (dict)
+        """
         if self.__flip_idx < self.__num_flips:
             flip_result = self.__flip_results[self.__flip_idx]
             data_dict = {self.__function_names[idx]: self.__energy_changes[self.__flip_idx][idx]
@@ -635,6 +837,10 @@ class PlasticityDataList:
         self.cell = cell
 
     def __iter__(self):
+        """
+
+        :return: {:class:`PlasticityDataIterator`}
+        """
         return PlasticityDataIterator(self)
 
 
@@ -649,6 +855,10 @@ class PlasticityDataIterator:
         self.plasticityDataSetItr.setToBegin()
 
     def next(self):
+        """
+
+        :return: {:class:`cc3d.cpp.CompuCell.PlasticityTrackerData`}
+        """
         if not self.plasticityDataSetItr.isEnd():
             self.currentPlasticityDataSetItr = self.plasticityDataSetItr.current
             self.plasticityData = self.plasticityDataSetItr.getCurrentRef()

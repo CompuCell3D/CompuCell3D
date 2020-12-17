@@ -49,6 +49,11 @@ def AntimonyTranslatorError(self, getAntimonyMessage=False, *args, **kwrds):
 
 
 class SBMLSolverHelper(object):
+    """
+    Supporting class for deploying SBML, Antimony and CellML model specification via
+    :class:`cc3d.core.PySteppables.SteppableBasePy`
+    """
+
     @classmethod
     def remove_attribute(cls, name):
         print('cls=', cls)

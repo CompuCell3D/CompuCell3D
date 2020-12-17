@@ -17,7 +17,7 @@ class PersistentGlobals:
         self.cc3d_xml_2_obj_converter = None
         self.steppable_registry = SteppableRegistry()
 
-        # c++ object reference Simulator.cpp
+        #: c++ object reference :class:`cc3d.cpp.CompuCell.Simulator`
         self.simulator = None
 
         #  Simulation Thread - either from the player or from CML
@@ -76,7 +76,9 @@ class PersistentGlobals:
         self.shared_steppable_vars = {}
 
         # input and return objects
+        #: API input object used with :class:`cc3d.CompuCellSetup.CC3DCaller.CC3DCaller`
         self.input_object = None
+        #: API return object used with :class:`cc3d.CompuCellSetup.CC3DCaller.CC3DCaller`
         self.return_object = None
 
     def add_steering_panel(self, panel_data: dict):

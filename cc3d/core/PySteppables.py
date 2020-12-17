@@ -25,7 +25,14 @@ from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 
 
 class SteppablePy:
+    """
+    Steppable model specification interface
+    All CC3D model specification using a steppable should be done by overriding the methods `start`, `step`, `on_stop`
+    and `finish`
+    """
+
     def __init__(self):
+        #: flag to step before engine when equal to 1
         self.runBeforeMCS = 0
 
     def core_init(self):
@@ -36,26 +43,30 @@ class SteppablePy:
 
     def start(self):
         """
+        any code in the start function runs before MCS=0
 
-        :return:
+        :return: None
         """
 
     def step(self, mcs):
         """
+        type here the code that will run every frequency MCS
 
-        :param _mcs:
-        :return:
+        :param mcs: current Monte Carlo step
+        :return: None
         """
 
     def finish(self):
         """
+        Finish Function is called after the last MCS
 
-        :return:
+        :return: None
         """
     def on_stop(self):
         """
         Called when simulation is stopped by user
-        :return:
+
+        :return: None
         """
 
     def cleanup(self):
@@ -104,6 +115,10 @@ class PlotData:
 
 
 class CellTypeFetcher:
+    """
+    Values assigned to cell types are accessible as attributes by name
+    """
+
     def __init__(self, type_id_type_name_dict):
         # reversing dictionary from type_id_type_name_dict -> type_name_type_id_dict
         self.type_name_type_id_dict = {v: k for k, v in type_id_type_name_dict.items()}
@@ -124,10 +139,12 @@ class CellTypeFetcher:
 
 
 class FieldFetcher:
-    def __init__(self):
-        """
+    """
+    PDE solver fields are accessible as attributes by name
+    """
 
-        """
+    def __init__(self):
+        pass
 
     def __getattr__(self, item):
         pg = CompuCellSetup.persistent_globals
@@ -148,10 +165,12 @@ class FieldFetcher:
 
 
 class GlobalSBMLFetcher:
-    def __init__(self):
-        """
+    """
+    Free-floating :class:`cc3d.core.RoadRunnerPy.RoadRunnerPy` instances are accessible as attributes by model name
+    """
 
-        """
+    def __init__(self):
+        pass
 
     def __getattr__(self, item):
 
@@ -178,6 +197,10 @@ class GlobalSBMLFetcher:
 
 
 class SteppableBasePy(SteppablePy, SBMLSolverHelper):
+    """
+    Main base class for CC3D steppable model specification
+    """
+
     (CC3D_FORMAT, TUPLE_FORMAT) = range(0, 2)
 
     def __init__(self, *args, **kwds):
@@ -203,42 +226,51 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         SteppablePy.__init__(self)
         SBMLSolverHelper.__init__(self)
 
-        # free floating SBML model accessor
-        self.sbml = GlobalSBMLFetcher()
+        #: free floating SBML model accessor
+        self.sbml: GlobalSBMLFetcher = GlobalSBMLFetcher()
 
         # SBMLSolverHelper.__init__(self)
+        #: frequency at which `step` is called
         self.frequency = frequency
         # self._simulator = simulator
         self.__modulesToUpdateDict = OrderedDict()
 
-        self.field = FieldFetcher()
+        #: field accessor
+        self.field: FieldFetcher = FieldFetcher()
 
         # plugin declarations - including legacy members
         self.neighbor_tracker_plugin = None
         self.neighborTrackerPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.FocalPointPlasticityPlugin` if loaded
         self.focal_point_plasticity_plugin = None
         self.focalPointPlasticityPlugin = None
         self.volume_tracker_plugin = None
 
         self._simulator = None
 
-        # created and initialized in core_init method
+        #: cell type accessor (:class:`CellTypeFetcher`); created and initialized in `core_init` method
         self.cell_type = None
 
+        #: :class:`cc3d.cpp.CompuCell.cellfield` instance
         self.cell_field = None
         self.cellField = None
+        #: :class:`cc3d.core.iterators.CellList` instance
         self.cell_list = None
         self.cellList = None
         # cell_list_by_type is handled via a function call
         self.cellListByType = None
+        #: :class:`cc3d.core.iterators.ClusterList` instance
         self.cluster_list = None
         self.clusterList = None
+        #: :class:`cc3d.core.iterators.Clusters` instance
         self.clusters = None
 
+        #: current simulation step
         self.mcs = -1
         # {plot_name:plotWindow  - pW object}
         self.plot_dict = {}
-        self.shared_steppable_vars = {}
+        #: common dictionary shared by all steppables
+        self.shared_steppable_vars: dict = {}
 
         # {field_name:FieldVisData } -  used to keep track of simple cell tracking visualizations
         self.tracking_field_vis_dict = {}
@@ -281,9 +313,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     def cell_list_by_type(self, *args):
         """
-        Returns a CellListByType object that represents list of ells with a given type
-        :param args: list of cell types
-        :return:
+        Returns a CellListByType object that represents list of cells of all passed types
+
+        :param list args: variable number of cell types
+        :return: CellListByType object
+        :rtype: :class:`cc3d.core.iterators.CellListByType`
         """
         list_by_type_obj = CellListByType(self.inventory, *args)
         return list_by_type_obj
@@ -310,6 +344,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def request_screenshot(mcs: int, screenshot_label: str) -> None:
         """
         Requests on-demand screenshot
+
         :param mcs:
         :param screenshot_label:
         :return:
@@ -360,6 +395,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         Processes self.plugin_init_dict and initializes member variables according to specification in
         self.plugin_init_dict. relies on fixed naming convention for plugin accessor functions defined in
         pyinterface/CompuCellPython/CompuCellExtraDeclarations.i in  PLUGINACCESSOR macro
+
         :return:
         """
 
@@ -396,6 +432,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                                           cell_type_list: Union[list, None] = None):
         """
         Adds custom field that visualizes cell scalar attribute
+
         :param field_name:
         :param attribute_name:
         :param function_obj: function object that takes scalar and returns a scalar
@@ -416,8 +453,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def track_cell_level_vector_attribute(self, field_name: str, attribute_name: str, function_obj: object = None,
                                           cell_type_list: Union[list, None] = None):
         """
-
         Adds custom field that visualizes cell vector attribute
+
         :param field_name:
         :param attribute_name:
         :param function_obj: function object that takes vector and returns a vector
@@ -444,6 +481,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         """
         Adds histogram that displays distribution of selected cell attribute
+
         :param histogram_name:
         :param attribute_name:
         :param number_of_bins:
@@ -482,8 +520,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     def fetch_attribute(self, cell: object, attrib_name: str):
         """
-        Fetches element of a dictionary attached to a cell or an attribute of cell (e.g.
-        volume or lambdaSurface)
+        Fetches element of a dictionary attached to a cell or an attribute of cell (e.g. volume or lambdaSurface)
+
         :param cell:
         :param attrib_name:
         :return:
@@ -533,6 +571,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def update_tracking_fields(self):
         """
         Method that updates tracking fields that were initialized using track_cell_level... function
+
         :return: None
         """
         # tracking visualization part
@@ -598,6 +637,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         Performs automatic tasks that normally woudl need to be called explicitely in tyhe steppale code
         updating plots at the end of steppable is one such task
+
         :return:
         """
         self.update_tracking_fields()
@@ -607,6 +647,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def update_all_plots_windows(self):
         """
         Updates all plots
+
         :return:
         """
         # tracking visualization part
@@ -622,6 +663,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         Sets output directory to output_dir. If  abs_path is False
         then the directory path will be w.r.t to workspace directory
         Otherwise it is expected that user provides absolute output path
+
         :param output_dir: directory name - relative (w.r.t to workspace dir) or absolute
         :param abs_path:  flag specifying if user provided absolute or relative path
         :return:
@@ -630,6 +672,12 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     @property
     def output_dir(self):
+        """
+        Output directory of simulation
+
+        :return: absolute path to simulation output directory
+        :rtype: str
+        """
         return CompuCellSetup.persistent_globals.output_directory
 
     @property
@@ -667,6 +715,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def get_cluster_cells(self, cluster_id):
         """
         returns a container with cell objects that are members of compartmentalized cell (a cluster)
+
         :param cluster_id: {long int}
         :return:
         """
@@ -678,6 +727,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def process_steering_panel_data(self):
         """
         Function to be implemented in steppable where we react to changes in the steering panel
+
         :return:
         """
         pass
@@ -685,13 +735,14 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def add_steering_panel(self):
         """
         To be implemented in the subclass
+
         :return:
         """
 
     def process_steering_panel_data_wrapper(self):
         """
-        Calls process_steering_panel_data if and only if there are dirty
-        parameters in the steering panel model
+        Calls process_steering_panel_data if and only if there are dirty parameters in the steering panel model
+
         :return: None
         """
         # NOTE: resetting of the dirty flag for the steering
@@ -704,6 +755,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                            widget_name=None):
         """
         Adds steering parameter
+
         :param name:
         :param val:
         :param min_val:
@@ -733,6 +785,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def get_steering_param(name: str) -> object:
         """
         Fetches value of the steering parameter
+
         :param name: parameter name
         :return: value
         """
@@ -783,6 +836,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         sets steppable attribute based on type name
         Performs basic sanity checks
+
         :param cell_type_name:{str}
         :param type_id:{str}
         :return:
@@ -807,6 +861,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def stop_simulation(self):
         """
         Stops simulation
+
         :return:
         """
 
@@ -847,9 +902,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     def create_scalar_field_py(self, fieldName: str) -> ExtraFieldAdapter:
         """
-        Created extra visualization field
-        :param fieldName: {str}
-        :return:
+        Creates extra visualization field (voxel-based)
+
+        :param str fieldName: name of field
+        :return: Extra visualization field (voxel-based)
+        :rtype: cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter
         """
 
         return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,
@@ -861,9 +918,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     def create_scalar_field_cell_level_py(self, field_name: str) -> ExtraFieldAdapter:
         """
-        Creates extra visualization field
-        :param field_name: {str}
-        :return:
+        Creates extra visualization field (cell-based)
+
+        :param str field_name: name of field
+        :return: Extra visualization field (cell-based)
+        :rtype: cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter
         """
         return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=field_name,
                                                                          field_type=SCALAR_FIELD_CELL_LEVEL)
@@ -875,8 +934,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def create_vector_field_py(self, field_name: str) -> ExtraFieldAdapter:
         """
         Creates extra visualization vector field (voxel-based)
-        :param field_name: {str}
-        :return:
+
+        :param str field_name: name of field
+        :return: Extra visualization vector field (voxel-based)
+        :rtype: cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter
         """
 
         return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=field_name,
@@ -888,9 +949,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     def create_vector_field_cell_level_py(self, field_name: str) -> ExtraFieldAdapter:
         """
-        Creates extra visualization vector field (voxel-based)
-        :param field_name: {str}
-        :return:
+        Creates extra visualization vector field (cell-based)
+
+        :param str field_name: name of field
+        :return: Extra visualization vector field (cell-based)
+        :rtype: cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter
         """
 
         return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=field_name,
@@ -903,6 +966,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def every_pixel_with_steps(self, step_x, step_y, step_z):
         """
         Helper function called by every_pixel method. See documentation of every_pixel for details
+
         :param step_x:
         :param step_y:
         :param step_z:
@@ -922,6 +986,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         Returns iterator that walks through pixels of the lattixe. Step variables
         determine if we walk through every pixel - step=1 in this case
         or if we jump step variables then are > 1
+
         :param step_x:
         :param step_y:
         :param step_z:
@@ -940,7 +1005,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         properties of the underlying XML element
 
         :param tag: {str}  xml element identifier - must be present in the xml
-        :return: {XMLElemAdapter} xml element adapter
+        :return: {:class:`cc3d.core.XMLDomUtils.XMLElemAdapter`} xml element adapter
         """
         xml_id_locator = CompuCellSetup.persistent_globals.xml_id_locator
 
@@ -968,8 +1033,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def fetch_cell_by_id(self, cell_id: int) -> Union[None, object]:
         """
         Fetches cell by id. If cell does not exist it returns None
+
         :param cell_id: cell id
-        :return: successfully fetched cell id or None
+        :return: successfully fetched :class:`cc3d.cpp.CompuCell.CellG` or None
         """
         return self.inventory.attemptFetchingCellById(cell_id)
 
@@ -1017,6 +1083,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def get_focal_point_plasticity_neighbor_list(self, cell) -> []:
         """
         Return list of all cell objects linked to a cell
+
         :param cell: cell object for which to fetch list of linked cells
         :return: list of linked cells
         """
@@ -1028,6 +1095,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def get_focal_point_plasticity_num_neighbors(self, cell) -> int:
         """
         Returns number of all cell objects linked to a cell
+
         :param cell: cell object for which to count linked cells
         :return: number of linked cells
         """
@@ -1036,6 +1104,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def get_focal_point_plasticity_is_linked(self, cell1, cell2) -> bool:
         """
         Returns if two cells are linked
+
         :param cell1: first cell object
         :param cell2: second cell object
         :return: True if cells are linked
@@ -1049,6 +1118,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def get_focal_point_plasticity_initiator(self, cell1, cell2):
         """
         Returns which cell initiated a link; returns None if cells are not linked
+
         :param cell1: first cell object in link
         :param cell2: second cell object in link
         :return: cell that initiated the link, or None if cells are not linked
@@ -1067,6 +1137,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                                               target_distance: float = None, max_distance: float = None) -> None:
         """
         Sets focal point plasticity parameters for a cell; unspecified parameters are unchanged
+
         :param cell: cell object for which to modify parameters
         :param n_cell: linked cell object describing link
         sets parameters for all links attached to cell if n_cell is None
@@ -1122,8 +1193,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def build_wall(self, cell_type):
         """
         builds a 1px wide wall around the lattice
-        :param cell_type: type pf cells that will make up the wall. This should be a frozen cell type
-        :return:
+
+        :param int cell_type: type of cells that will make up the wall. This should be a frozen cell type
+        :return: None
         """
         # medium:
         if cell_type == 0:
@@ -1187,7 +1259,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def destroy_wall(self):
         """
         removes wall around the lattice
-        :return:
+
+        :return: None
         """
         # build wall of Medium
         self.build_wall(0)
@@ -1199,8 +1272,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def change_number_of_work_nodes(self, number_of_work_nodes: int):
         """
         changes number of CPU's while simulation runs
-        :param number_of_work_nodes:
-        :return:
+
+        :param int number_of_work_nodes:
+        :return: None
         """
 
         number_of_work_nodes_ev = CompuCell.CC3DEventChangeNumberOfWorkNodes()
@@ -1216,8 +1290,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         resizes and shits lattice. Checks if the operation is possible , if not the action is abandoned
 
-        :param new_size: {list} new size
-        :param shift_vec: {list} shift vector
+        :param list new_size: new size
+        :param list shift_vec: shift vector
         :return: None
         """
 
@@ -1298,6 +1372,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         This function will calculate distance vector between  two points - (_to-_from)
         This is most straightforward implementation and will ignore periodic boundary conditions if such are present
+
         :param p1: {list} position of first point
         :param p2: {list} position of second point
         :return: {ndarray} distance vector
@@ -1308,6 +1383,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def distance(self, p1, p2):
         """
         Distance between two points. Assumes non-periodic boundary conditions
+
         :return: {float} "naive" distance between two points
         """
         return self.vectorNorm(self.distance_vector(p1, p2))
@@ -1321,6 +1397,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         Distance between two points. Assumes periodic boundary conditions
         - or simply makes sure that no component of distance vector
         is greater than 1/2 corresponding dimension
+
         :return: {float} invariant distance between two points
         """
 
@@ -1353,6 +1430,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         This function will calculate distance vector with integer coordinates between two Coordinates3D<double> points
         and make sure that the absolute values of the vector are smaller than 1/2 of the corresponding lattice dimension
         this way we simulate 'invariance' of distance assuming that periodic boundary conditions are in place
+
         :param p1: {list} position of first point
         :param p2: {list} position of second point
         :return: {ndarray} distance vector
@@ -1369,6 +1447,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def vector_norm(vec):
         """
         Computes norm of a vector
+
         :param vec: vector
         :return:
         """
@@ -1382,6 +1461,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def distance_vector_between_cells(self, cell1, cell2):
         """
         This function will calculate distance vector between  COM's of cells  assuming non-periodic boundary conditions
+
         :return: {ndarray} distance vector
         """
         return self.distance_vector([cell1.xCOM, cell1.yCOM, cell1.zCOM], [cell2.xCOM, cell2.yCOM, cell2.zCOM])
@@ -1395,6 +1475,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         This function will calculate distance vector between  COM's of cells  assuming periodic boundary conditions
         - or simply makes sure that no component of distance vector
         is greater than 1/2 corresponding dimension
+
         :return: {ndarray} distance vector
         """
         return self.invariant_distance_vector([cell1.xCOM, cell1.yCOM, cell1.zCOM],
@@ -1407,6 +1488,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def distance_between_cells(self, cell1, cell2):
         """
         Distance between COM's between cells. Assumes non-periodic boundary conditions
+
         :return: naive distance between COM of cells
         """
 
@@ -1421,6 +1503,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         Distance between COM's of two cells. Assumes periodic boundary conditions
         - or simply makes sure that no component of distance vector
         is greater than 1/2 corresponding dimension
+
         :return: invariant distance between COM of cells
         """
         return self.vector_norm(self.invariant_distance_vector_between_cells(cell1, cell2))
@@ -1441,6 +1524,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def get_pixel_neighbors_based_on_neighbor_order(self, pixel, neighbor_order=1):
         """
         generator that returns a sequence of pixel neighbors up to specified neighbor order
+
         :param pixel: {CompuCell.Point3D} pixel
         :param neighbor_order: {int} neighbor order
         :return:
@@ -1489,6 +1573,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def move_cell(self, cell, shift_vector):
         """
         Moves cell by shift_vector
+
         :param cell: {CompuCell.CellG} cell
         :param shift_vector: {tuple,  list, array, or CompuCell.Point3D} 3-element list specifying shoft vector
         :return: None
@@ -1582,7 +1667,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def delete_cell(self, cell):
         """
         Deletes given cell by overwriting its pixels with medium pixels
-        :param cell:
+
+        :param cc3d.cpp.CompuCell.CellG cell:
         :return:
         """
         # returns list of tuples
@@ -1603,9 +1689,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         Copies attributes from source cell to target cell. Users can specify which attributes should not be clones
         using no_clone_key_dict_list
-        :param source_cell: {CompuCell.CellG} source cell
-        :param target_cell: {CompuCell.CellG} target cell
-        :param no_clone_key_dict_list: {list} list of dictionaries of attributes that are not to be cloned
+
+        :param cc3d.cpp.CompuCell.CellG source_cell: source cell
+        :param cc3d.cpp.CompuCell.CellG target_cell: target cell
+        :param list no_clone_key_dict_list: list of dictionaries of attributes that are not to be cloned
         :return:
         """
         if no_clone_key_dict_list is None:
@@ -1709,6 +1796,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def reassign_cluster_id(self, cell, cluster_id):
         """
         reassigns cluster id of cells
+
         :param cell: {cell}
         :param cluster_id:{int} new cluster id
         :return:
@@ -1725,6 +1813,13 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         return self.get_field_secretor(field_name=_fieldName)
 
     def get_field_secretor(self, field_name):
+        """
+        Get FieldSecretor instance for a PDE solver field
+
+        :param str field_name: name of field
+        :return: FieldSecretor instance
+        :rtype: cc3d.cpp.CompuCell.FieldSecretor
+        """
 
         if self.secretionPlugin:
             return self.secretionPlugin.getFieldSecretor(field_name)
@@ -1840,6 +1935,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def are_cells_different(self, cell1, cell2):
         """
         Checks if two cells are different
+
         :param cell1: {CellG c++ obj}
         :param cell2: {CellG c++ obj}
         :return: {bool}
@@ -1886,6 +1982,7 @@ class MitosisSteppableBase(SteppableBasePy):
     def set_parent_child_position_flag(self, flag):
         """
         Specifies which position of the "child" cell after mitosis process
+
         :param flag:{int} 0 - parent child position will be randomized between mitosis event
         negative integer - parent appears on the 'left' of the child
         positive integer - parent appears on the 'right' of the child
@@ -1910,6 +2007,7 @@ class MitosisSteppableBase(SteppableBasePy):
     def clone_parent_2_child(self):
         """
         clones attributes of parent cell to daughter cell
+
         :return: None
         """
         # these calls seem to be necessary to ensure whatever is setin in mitosisSteppable (C++) is reflected in Python
@@ -1922,6 +2020,7 @@ class MitosisSteppableBase(SteppableBasePy):
         """
         This function is supposed to be reimplemented in the subclass. It is called immediately after cell division
         takes place
+
         :return:
         """
 
@@ -1949,6 +2048,7 @@ class MitosisSteppableBase(SteppableBasePy):
         """
         Performs actions and bookipping that has to be done after actual cell division happened.
         One of such actions is calling update_attributes function that users typically overload
+
         :param mitosis_done: {bool} flag indicating if mitosis has been sucessful
         :return: None
         """
@@ -1995,6 +2095,7 @@ class MitosisSteppableBase(SteppableBasePy):
         Divides cell into two daughter cells along cleavage plane specified by a normal vector (nx, ny, nz).
         For tracking reasons one daughter cell is considered a "parent"
         and refers to a cell object that existed before division
+
         :param cell: {CompuCell.CellG} cell to divide
         :param nx: {float} 'x' component of vector normal to the cleavage plane
         :param ny: {float} 'y' component of vector normal to the cleavage plane
@@ -2015,6 +2116,7 @@ class MitosisSteppableBase(SteppableBasePy):
         Divides cell into two daughter cells along cleavage plane parallel to major axis of the cell.
         For tracking reasons one daughter cell is considered a "parent"
         and refers to a cell object that existed before division
+
         :param cell: {CompuCell.CellG} cell to divide
         :return: None
         """
@@ -2032,6 +2134,7 @@ class MitosisSteppableBase(SteppableBasePy):
         Divides cell into two daughter cells along cleavage plane parallel to minor axis of the cell.
         For tracking reasons one daughter cell is considered a "parent"
         and refers to a cell object that existed before division
+
         :param cell: {CompuCell.CellG} cell to divide
         :return: None
         """
@@ -2094,6 +2197,7 @@ class MitosisSteppableClustersBase(SteppableBasePy):
     def clone_cluster_attributes(self, source_cell_cluster, target_cell_cluster, no_clone_key_dict_list=None):
         """
         Clones attributes for cluster members
+
         :param source_cell_cluster: {vector of CellG objects} vector (C++) of CellG object representing
         source cluster
         :param target_cell_cluster: {vector of CellG objects} vector (C++) of CellG object representing
@@ -2121,6 +2225,7 @@ class MitosisSteppableClustersBase(SteppableBasePy):
         refer to objects that existed before and after mitosis
         these calls seem to be necessary to ensure
         whatever is set in in mitosisSteppable (C++) is reflected in Python
+
         :return:
         """
 
@@ -2137,6 +2242,7 @@ class MitosisSteppableClustersBase(SteppableBasePy):
         immediately after the mitosis happens. This function is supposed
         to be reimplemented in the subclass. Default implementation only copies type
         attribute from parent to child cell
+
         :return:
         """
 
@@ -2153,6 +2259,7 @@ class MitosisSteppableClustersBase(SteppableBasePy):
         """
         Performs actions and bookipping that has to be done after actual cell division happened.
         One of such actions is calling update_attributes function that users typically overload
+
         :param mitosis_done: {bool} flag indicating if mitosis has been successful
         :return: None
         """
@@ -2201,6 +2308,7 @@ class MitosisSteppableClustersBase(SteppableBasePy):
         Divides cluster into two daughter clusters along cleavage plane specified by a normal vector (nx, ny, nz).
         For tracking reasons one daughter cluster is considered a "parent"
         and refers to a set of cell objects that existed before division
+
         :param cluster_id: {long int} cluster id
         :param nx: {float} 'x' component of vector normal to the cleavage plane
         :param ny: {float} 'y' component of vector normal to the cleavage plane
@@ -2259,6 +2367,9 @@ class RunBeforeMCSSteppableBasePy(SteppableBasePy):
 
 
 class SecretionBasePy(SteppableBasePy):
+    """
+    Steppable class for managing field secretion in Python. This steppable is always called before the engine
+    """
     def __init__(self, frequency=1):
         SteppableBasePy.__init__(self, frequency)
         self.runBeforeMCS = 1

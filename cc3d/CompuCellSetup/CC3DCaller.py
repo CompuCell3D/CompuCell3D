@@ -6,6 +6,10 @@ import multiprocessing
 
 
 class CC3DCaller:
+    """
+    CC3D Python API
+    """
+
     def __init__(self,
                  cc3d_sim_fname=None,
                  output_frequency=0,
@@ -16,6 +20,19 @@ class CC3DCaller:
                  output_file_core_name=None,
                  result_identifier_tag=None,
                  sim_input=None):
+        """
+
+        :param cc3d_sim_fname:
+        :param output_frequency:
+        :param screenshot_output_frequency:
+        :param restart_snapshot_frequency:
+        :param restart_multiple_snapshots:
+        :param output_dir:
+        :param output_file_core_name:
+        :param result_identifier_tag:
+        :param sim_input: input set on :class:`cc3d.CompuCellSetup.persistent_globals.PersistentGlobals.input_object`
+                        inside simulation
+        """
 
         self.cc3d_sim_fname = cc3d_sim_fname
         self.output_frequency = output_frequency
@@ -27,7 +44,12 @@ class CC3DCaller:
         self.result_identifier_tag = result_identifier_tag
         self.sim_input = sim_input
 
-    def run(self):
+    def run(self) -> dict:
+        """
+        Runs simulation and returns :class:`cc3d.CompuCellSetup.persistent_globals.PersistentGlobals.return_object`
+
+        :return:
+        """
         persistent_globals = cc3d.CompuCellSetup.persistent_globals
 
         # Clear lingering persistent global data from previous run if any
@@ -62,6 +84,9 @@ class CC3DCaller:
 
 
 class CC3DCallerWorker(multiprocessing.Process):
+    """
+    `multiprocessing.Process` derived class for multithreaded usage of :class:`CC3DCaller`
+    """
 
     def __init__(self, task_queue, result_queue):
         multiprocessing.Process.__init__(self)

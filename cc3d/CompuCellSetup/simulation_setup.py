@@ -121,7 +121,7 @@ def run():
 def register_steppable(steppable):
     """
 
-    :param steppable:{SteppableBasePy object}
+    :param cc3d.core.PySteppables.SteppableBasePy steppable: {SteppableBasePy object}
     :return: None
     """
     steppable_registry = CompuCellSetup.persistent_globals.steppable_registry
