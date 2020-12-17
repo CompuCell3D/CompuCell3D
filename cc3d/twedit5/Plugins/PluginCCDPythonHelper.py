@@ -270,9 +270,59 @@ class CC3DPythonHelper(QObject):
 
         self.cc3dPythonMenu.addAction(self.actions["Skip Comments In Python Snippets"])
 
+        self.cc3dPythonMenu.addSeparator()
+
+        # ---------------------------------------
+
+        self.actions["Code User Reference Manual"] = QAction("Code User Reference Manual", self,
+                                                             shortcut="",
+                                                             statusTip="Open Code User Reference Manual")
+        self.cc3dPythonMenu.addAction(self.actions["Code User Reference Manual"])
+        self.actions["Code User Reference Manual"].triggered.connect(self.open_code_ref_user)
+
+        self.actions["Code Developer Reference Manual"] = QAction("Code Developer Reference Manual", self,
+                                                                  shortcut="",
+                                                                  statusTip="Open Code Developer Reference Manual")
+        self.cc3dPythonMenu.addAction(self.actions["Code Developer Reference Manual"])
+        self.actions["Code Developer Reference Manual"].triggered.connect(self.open_code_ref_dev)
+
     def skipCommentsInPythonSnippets(self, _flag):
 
         self.skipCommentsFlag = _flag
+
+    def open_code_ref_user(self):
+        """
+        Opens code user reference manual; builds manual if necessary
+
+        :return: None
+        """
+        import webbrowser
+        from cc3d.doc.code_ref.user.build import build as code_ref_build
+
+        html_man_filename = os.path.join(code_ref_build.man_build_dir, "html", "index.html")
+        if not os.path.isfile(html_man_filename):
+            self.__ui.statusBar().showMessage("Building manual...")
+            code_ref_build.build(builder="html")
+            self.__ui.statusBar().showMessage("Manual built!")
+        webbrowser.open_new(os.path.join(code_ref_build.man_build_dir, "html", "index.html"))
+
+    def open_code_ref_dev(self):
+        """
+        Opens code developer reference manual; builds manual if necessary
+
+        :return: None
+        """
+        import webbrowser
+        from cc3d.doc.code_ref.developer.build import build as code_ref_build
+
+        html_man_filename = os.path.join(code_ref_build.man_build_dir, "html", "index.html")
+        if not os.path.isfile(html_man_filename):
+            self.__ui.statusBar().showMessage("Building API docs...")
+            code_ref_build.build_api()
+            self.__ui.statusBar().showMessage("Building manual...")
+            code_ref_build.build(builder="html")
+            self.__ui.statusBar().showMessage("Manual built!")
+        webbrowser.open_new(os.path.join(code_ref_build.man_build_dir, "html", "index.html"))
 
     def __insertSnippet(self, _snippetName):
 
