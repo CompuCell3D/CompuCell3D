@@ -34,8 +34,8 @@ graphviz_dot = os.path.join(os.path.dirname(sys.executable), "Library", "bin", g
 
 # General information about the project.
 project = u'CC3D_code_reference_manual'
-copyright = u'2020, T.J. Sego, Maciej H. Swat, James A. Glazier'
-author = u'T.J. Sego, Maciej H. Swat, James A. Glazier'
+copyright = u'2020, T.J. Sego, Juliano F. Gianlupi, Maciej H. Swat, James A. Glazier'
+author = u'T.J. Sego, Juliano F. Gianlupi, Maciej H. Swat, James A. Glazier'
 project_title = u'CC3D Code Reference Manual'
 
 # The version info

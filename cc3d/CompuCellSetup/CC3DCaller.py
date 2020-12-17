@@ -7,7 +7,7 @@ import multiprocessing
 
 class CC3DCaller:
     """
-    CC3D Python API
+    CC3D Python simulation instance
     """
 
     def __init__(self,
@@ -44,7 +44,7 @@ class CC3DCaller:
         self.result_identifier_tag = result_identifier_tag
         self.sim_input = sim_input
 
-    def run(self) -> dict:
+    def run(self):
         """
         Runs simulation and returns :class:`cc3d.CompuCellSetup.persistent_globals.PersistentGlobals.return_object`
 
