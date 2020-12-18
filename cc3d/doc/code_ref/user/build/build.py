@@ -1,7 +1,9 @@
 from os import mkdir
 from os.path import abspath, dirname, isdir, join
 
+#: source directory for doc generation
 man_source_dir = dirname(abspath(__file__))
+#: build directory for doc generation
 man_build_dir = dirname(man_source_dir)
 
 
@@ -30,6 +32,11 @@ def build(builder: str = 'html'):
 
 
 def main():
+    """
+    Generates HTML manual and stores in *man_build_dir*/html
+
+    :return: None
+    """
     build()
 
 

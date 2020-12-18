@@ -2,9 +2,13 @@ from os import mkdir
 from os.path import abspath, dirname, isdir, join
 from shutil import rmtree
 
+#: source directory for API source code auto-generation
 api_source_dir = dirname(dirname(dirname(dirname(dirname(abspath(__file__))))))
+#: build directory for API source code auto-generation
 api_build_dir = join(dirname(abspath(__file__)), "api")
+#: source directory for doc generation
 man_source_dir = dirname(abspath(__file__))
+#: build directory for doc generation
 man_build_dir = dirname(man_source_dir)
 
 
@@ -67,6 +71,11 @@ def clear_api():
 
 
 def main():
+    """
+    Generates HTML manual with fresh API and stores in *man_build_dir*/html
+
+    :return: None
+    """
     clear_api()
     build_api()
     build()
