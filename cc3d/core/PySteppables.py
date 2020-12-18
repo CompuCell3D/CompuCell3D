@@ -238,14 +238,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         #: field accessor
         self.field: FieldFetcher = FieldFetcher()
 
-        # plugin declarations - including legacy members
-        self.neighbor_tracker_plugin = None
-        self.neighborTrackerPlugin = None
-        #: instance of :class:`cc3d.cpp.CompuCell.FocalPointPlasticityPlugin` if loaded
-        self.focal_point_plasticity_plugin = None
-        self.focalPointPlasticityPlugin = None
-        self.volume_tracker_plugin = None
-
         self._simulator = None
 
         #: cell type accessor (:class:`CellTypeFetcher`); created and initialized in `core_init` method
@@ -277,6 +269,80 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         # {field_name:PlotData } -  used to keep track of simple cell tracking plots
         self.tracking_plot_dict = {}
+
+        # plugin declarations - including legacy members
+
+        #: instance of :class:`cc3d.cpp.CompuCell.VolumeTrackerPlugin` if loaded
+        self.volume_tracker_plugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.NeighborTrackerPlugin` if loaded
+        self.neighbor_tracker_plugin = None
+        self.neighborTrackerPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.FocalPointPlasticityPlugin` if loaded
+        self.focal_point_plasticity_plugin = None
+        self.focalPointPlasticityPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.PixelTrackerPlugin` if loaded
+        self.pixel_tracker_plugin = None
+        self.pixelTrackerPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.BoundaryPixelTrackerPlugin` if loaded
+        self.boundary_pixel_tracker_plugin = None
+        self.boundaryPixelTrackerPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.BoundaryMonitorPlugin` if loaded
+        self.boundary_monitor_plugin = None
+        self.boundaryMonitorPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.AdhesionFlexPlugin` if loaded
+        self.adhesion_flex_plugin = None
+        self.adhesionFlexPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.PolarizationVectorPlugin` if loaded
+        self.polarization_vector_plugin = None
+        self.polarizationVectorPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.Polarization23Plugin` if loaded
+        self.polarization_23_plugin = None
+        self.polarization23Plugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.CellOrientationPlugin` if loaded
+        self.cell_orientation_plugin = None
+        self.cellOrientationPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.ContactOrientationPlugin` if loaded
+        self.contact_orientation_plugin = None
+        self.contactOrientationPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.ContactLocalProductPlugin` if loaded
+        self.contact_local_product_plugin = None
+        self.contactLocalProductPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.ContactMultiCadPlugin` if loaded
+        self.contact_multi_cad_plugin = None
+        self.contactMultiCadPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.LengthConstraintPlugin` if loaded
+        self.length_constraint_plugin = None
+        self.lengthConstraintPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.ConnectivityGlobalPlugin` if loaded
+        self.connectivity_global_plugin = None
+        self.connectivityGlobalPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.ConnectivityLocalFlexPlugin` if loaded
+        self.connectivity_local_flex_plugin = None
+        self.connectivityLocalFlexPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.ChemotaxisPlugin` if loaded
+        self.chemotaxis_plugin = None
+        self.chemotaxisPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.ClusterSurfacePlugin` if loaded
+        self.cluster_surface_plugin = None
+        self.clusterSurfacePlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.ClusterSurfaceTrackerPlugin` if loaded
+        self.cluster_surface_tracker_plugin = None
+        self.clusterSurfaceTrackerPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.ElasticityTrackerPlugin` if loaded
+        self.elasticity_tracker_plugin = None
+        self.elasticityTrackerPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.PlasticityTrackerPlugin` if loaded
+        self.plasticity_tracker_plugin = None
+        self.plasticityTrackerPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.MomentOfInertiaPlugin` if loaded
+        self.moment_of_inertia_plugin = None
+        self.momentOfInertiaPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.OrientedGrowthPlugin` if loaded
+        self.oriented_growth_plugin = None
+        self.orientedGrowthPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.SecretionPlugin` if loaded
+        self.secretion_plugin = None
+        self.secretionPlugin = None
 
         self.plugin_init_dict = {
             "NeighborTracker": ['neighbor_tracker_plugin', 'neighborTrackerPlugin'],
