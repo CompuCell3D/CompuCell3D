@@ -11,7 +11,7 @@ from deprecated import deprecated
 
 class CellList:
     """
-    Wraps current inventory of all CellG instances in simulation
+    Wraps current inventory of all :class:`~cc3d.cpp.CompuCell.CellG` instances in simulation
     """
 
     def __init__(self, inventory):
@@ -20,14 +20,16 @@ class CellList:
     def __iter__(self):
         """
 
-        :return: {:class:`CellListIterator`}
+        :return: CellListIterator instance
+        :rtype: CellListIterator
         """
         return CellListIterator(self)
 
     def __len__(self):
         """
 
-        :return: {int}
+        :return: number of cells
+        :rtype: int
         """
         return int(self.inventory.getSize())
 
@@ -43,7 +45,8 @@ class CellListIterator:
     def __next__(self):
         """
 
-        :return: {:class:`cc3d.cpp.CompuCell.CellG`}
+        :return: a cell
+        :rtype: cc3d.cpp.CompuCell.CellG
         """
         if not self.invItr.isEnd():
             self.cell = self.invItr.getCurrentRef()
@@ -59,6 +62,9 @@ class CellListIterator:
 #########################################################################
 # iterating over inventory of cells of a given type
 class CellListByType:
+    """
+    List of all cells in current inventory of a variable number of particular types
+    """
     def __init__(self, inventory, *args):
         self.inventory = inventory
 
@@ -72,14 +78,16 @@ class CellListByType:
     def __iter__(self):
         """
 
-        :return: {:class:`CellListByTypeIterator`}
+        :return: CellListByTypeIterator instance
+        :rtype: CellListByTypeIterator
         """
         return CellListByTypeIterator(self)
 
     def __len__(self):
         """
 
-        :return: {int}
+        :return: number of cells
+        :rtype: int
         """
         return int(self.inventoryByType.size())
 
@@ -112,7 +120,8 @@ class CellListByTypeIterator:
     def __next__(self):
         """
 
-        :return: {:class:`cc3d.cpp.CompuCell.CellG`}
+        :return: a cell
+        :rtype: cc3d.cpp.CompuCell.CellG
         """
         if not self.invItr.isEnd():
             self.cell = self.invItr.getCurrentRef()
@@ -128,7 +137,6 @@ class CellListByTypeIterator:
         return self
 
 
-
 #########################################################################
 # this is used to iterate more easily over clusters
 class ClusterList:
@@ -138,14 +146,16 @@ class ClusterList:
     def __iter__(self):
         """
 
-        :return: {:class:`ClusterListIterator`}
+        :return: ClusterListIterator instance
+        :rtype: ClusterListIterator
         """
         return ClusterListIterator(self)
 
     def __len__(self):
         """
 
-        :return: {int}
+        :return: number of clusters
+        :rtype: int
         """
         return int(self.inventory.size())
 
@@ -162,7 +172,8 @@ class ClusterListIterator:
     def __next__(self):
         """
 
-        :return: {:class:`cc3d.cpp.CompuCell.CellG`}
+        :return: a cell
+        :rtype: cc3d.cpp.CompuCell.CellG
         """
 
         if not self.invItr.isEnd():
@@ -183,14 +194,16 @@ class Clusters:
     def __iter__(self):
         """
 
-        :return: {:class:`ClustersIterator`}
+        :return: ClustersIterator instance
+        :rtype: ClustersIterator
         """
         return ClustersIterator(self)
 
     def __len__(self):
         """
 
-        :return: {int}
+        :return: number of clusters
+        :rtype: int
         """
         return int(self.inventory.size())
 
@@ -210,7 +223,8 @@ class ClustersIterator:
     def __next__(self):
         """
 
-        :return: {:class:`CompartmentList`}
+        :return: CompartmentList instance
+        :rtype: CompartmentList
         """
 
         if not self.invItr.isEnd():
@@ -224,7 +238,8 @@ class ClustersIterator:
             raise StopIteration
 
 
-# this is used to iterate more easily over list of compartments , notice regular map iteration will work too but this is more abstracted out and will work with other containers too
+# this is used to iterate more easily over list of compartments,
+# notice regular map iteration will work too but this is more abstracted out and will work with other containers too
 
 class CompartmentList:
     def __init__(self, _inventory):
@@ -233,19 +248,22 @@ class CompartmentList:
     def __iter__(self):
         """
 
-        :return: {:class:`CompartmentListIterator`}
+        :return: CompartmentListIterator instance
+        :rtype: CompartmentListIterator
         """
         return CompartmentListIterator(self)
 
     def __len__(self):
         """
 
-        :return: {int}
+        :return: number of compartments
+        :rtype: int
         """
         return int(self.inventory.size())
 
     def clusterId(self):
         return self.__iter__().next().clusterId
+
 
 class CompartmentListIterator:
     def __init__(self, _cellList):
@@ -258,7 +276,8 @@ class CompartmentListIterator:
     def __next__(self):
         """
 
-        :return: {:class:`cc3d.cpp.CompuCell.CellG`}
+        :return: a cell
+        :rtype: cc3d.cpp.CompuCell.CellG
         """
         if not self.invItr.isEnd():
             self.cell = self.invItr.getCurrentRef()
@@ -282,22 +301,25 @@ class ClusterCellList:
     def __iter__(self):
         """
 
-        :return: {:class:`ClusterCellListIterator`}
+        :return: ClusterCellListIterator instance
+        :rtype: ClusterCellListIterator
         """
         return ClusterCellListIterator(self)
 
     def __getitem__(self, item):
         """
 
-        :param item: {int}
-        :return: {:class:`cc3d.cpp.CompuCell.CellG`}
+        :param int item:
+        :return: a cell
+        :rtype: cc3d.cpp.CompuCell.CellG
         """
         return self.inventory[item]
 
     def __len__(self):
         """
 
-        :return: {int}
+        :return: number of cells
+        :rtype: int
         """
         return int(self.inventory.size())
 
@@ -319,15 +341,14 @@ class ClusterCellListIterator:
     def __next__(self):
         """
 
-        :return: {:class:`cc3d.cpp.CompuCell.CellG`}
+        :return: a cell
+        :rtype: cc3d.cpp.CompuCell.CellG
         """
         # if self.invItr !=  self.inventory.end():
         if self.currentIdx < self.inventory.size():
             # print "self.invItr=",dir(self.invItr)
             # print "self.invItr.next()=",self.invItr.next()
             # self.compartmentList = self.invItr.next()
-
-
 
             self.cell = self.inventory[self.currentIdx]
             self.currentIdx += 1
@@ -356,7 +377,8 @@ class CellNeighborListFlex:
     def __len__(self):
         """
 
-        :return: {int}
+        :return: number of cells
+        :rtype: int
         """
         neighborTracker = self.neighborTrackerAccessor.get(self.cell.extraAttribPtr)
         return int(neighborTracker.cellNeighbors.size())
@@ -364,8 +386,10 @@ class CellNeighborListFlex:
     def __getitem__(self, idx):
         """
 
-        :param idx: {int}
-        :return: {tuple} neighbor (:class:`cc3d.cpp.CompuCell.CellG`), common surface area (int)
+        :param int idx:
+        :raises IndexError: Out of bounds index
+        :return: neighbor, common surface area
+        :rtype: (cc3d.cpp.CompuCell.CellG, int)
         """
         if idx > self.__len__() - 1: raise IndexError(
             "Out of bounds index: CellNeighborListAuto index = %s is out of bounds" % str(idx))
@@ -374,9 +398,12 @@ class CellNeighborListFlex:
 
     def common_surface_area_with_cell_types(self, cell_type_list):
         """
+        Returns common surface area with a variable number of cell types
 
-        :param cell_type_list: {list} list of cell types
-        :return: {int} total common surface area with all given types
+        :param cell_type_list: list or tuple of cell types
+        :type cell_type_list: list of int or tuple of int
+        :return: total common surface area with all given types
+        :rtype: int
         """
         area = 0
         for neighbor, commonSurfaceArea in self.__iter__():
@@ -387,8 +414,10 @@ class CellNeighborListFlex:
 
     def common_surface_area_by_type(self):
         """
+        Returns common surface area with all cell types
 
-        :return: {collections.defaultdict} total common surface area by cell type
+        :return: total common surface area by cell type
+        :rtype: collections.defaultdict of {int: int}
         """
         from collections import defaultdict
         area_dict = defaultdict(int)
@@ -399,8 +428,10 @@ class CellNeighborListFlex:
 
     def neighbor_count_by_type(self):
         """
+        Returns number of neighbors of all cell types
 
-        :return: {collections.defaultdict} number of neighbors by type
+        :return: number of neighbors by type
+        :rtype: collections.defaultdict of {int: int}
         """
         from collections import defaultdict
         neighbor_counter_dict = defaultdict(int)
@@ -413,7 +444,8 @@ class CellNeighborListFlex:
     def __iter__(self):
         """
 
-        :return: {:class:`CellNeighborIteratorFlex`}
+        :return: CellNeighborIteratorFlex instance
+        :rtype: CellNeighborIteratorFlex
         """
         return CellNeighborIteratorFlex(self)
 
@@ -430,7 +462,8 @@ class CellNeighborIteratorFlex:
     def __next__(self):
         """
 
-        :return: {tuple} neighbor (:class:`cc3d.cpp.CompuCell.CellG`), common surface area (int)
+        :return: neighbor, common surface area
+        :rtype: (cc3d.cpp.CompuCell.CellG, int)
         """
         if not self.nsdItr.isEnd():
             self.neighborCell = self.nsdItr.getCurrentRef().neighborAddress
@@ -445,6 +478,7 @@ class CellNeighborIteratorFlex:
     def __iter__(self):
         return self
 
+
 class FocalPointPlasticityDataList:
     def __init__(self, _focalPointPlasticityPlugin, _cell):
         self.focalPointPlasticityPlugin = _focalPointPlasticityPlugin
@@ -454,7 +488,8 @@ class FocalPointPlasticityDataList:
     def __len__(self):
         """
 
-        :return: {int}
+        :return: number of links
+        :rtype: int
         """
         self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
         return int(self.focalPointPlasticityTracker.focalPointPlasticityNeighbors.size())
@@ -473,7 +508,8 @@ class FocalPointPlasticityDataList:
     def __iter__(self):
         """
 
-        :return: {:class:`FocalPointPlasticityDataIterator`}
+        :return: FocalPointPlasticityDataIterator instance
+        :rtype: FocalPointPlasticityDataIterator
         """
         return FocalPointPlasticityDataIterator(self)
 
@@ -491,7 +527,8 @@ class FocalPointPlasticityDataIterator:
     def __next__(self):
         """
 
-        :return: {:class:`cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData`}
+        :return: FocalPointPlasticityTrackerData instance
+        :rtype: cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData
         """
         if not self.focalPointPlasticityDataSetItr.isEnd():
             self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
@@ -515,8 +552,10 @@ class InternalFocalPointPlasticityDataList:
     def __getitem__(self, idx):
         """
 
-        :param idx: {int}
-        :return: {:class:`cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData`}
+        :param int idx:
+        :raises IndexError: Out of bounds index
+        :return: FocalPointPlasticityTrackerData instance
+        :rtype: cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData
         """
         if idx > self.__len__() - 1: raise IndexError(
             "Out of bounds index: InternalFocalPointPlasticityDataList index = %s is out of bounds" % str(idx))
@@ -526,7 +565,8 @@ class InternalFocalPointPlasticityDataList:
     def __len__(self):
         """
 
-        :return: {int}
+        :return: number of internal links
+        :rtype: int
         """
         self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
         return int(self.focalPointPlasticityTracker.internalFocalPointPlasticityNeighbors.size())
@@ -534,7 +574,8 @@ class InternalFocalPointPlasticityDataList:
     def __iter__(self):
         """
 
-        :return: {:class:`InternalFocalPointPlasticityDataIterator`}
+        :return: InternalFocalPointPlasticityDataIterator instance
+        :rtype: InternalFocalPointPlasticityDataIterator
         """
         return InternalFocalPointPlasticityDataIterator(self)
 
@@ -553,7 +594,8 @@ class InternalFocalPointPlasticityDataIterator:
     def __next__(self):
         """
 
-        :return: {:class:`cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData`}
+        :return: FocalPointPlasticityTrackerData instance
+        :rtype: cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData
         """
         if not self.focalPointPlasticityDataSetItr.isEnd():
             self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
@@ -577,8 +619,10 @@ class AnchorFocalPointPlasticityDataList:
     def __getitem__(self, idx):
         """
 
-        :param idx: {int}
-        :return: {:class:`cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData`}
+        :param int idx:
+        :raises IndexError: Out of bounds index
+        :return: FocalPointPlasticityTrackerData instance
+        :rtype: cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData
         """
         if idx > self.__len__() - 1: raise IndexError(
             "Out of bounds index: AnchorFocalPointPlasticityDataList index = %s is out of bounds" % str(idx))
@@ -588,7 +632,8 @@ class AnchorFocalPointPlasticityDataList:
     def __len__(self):
         """
 
-        :return: {int}
+        :return: number of anchors
+        :rtype: int
         """
         self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
         return int(self.focalPointPlasticityTracker.anchors.size())
@@ -596,7 +641,8 @@ class AnchorFocalPointPlasticityDataList:
     def __iter__(self):
         """
 
-        :return: {:class:`AnchorFocalPointPlasticityDataIterator`}
+        :return: AnchorFocalPointPlasticityDataIterator instance
+        :rtype: AnchorFocalPointPlasticityDataIterator
         """
         return AnchorFocalPointPlasticityDataIterator(self)
 
@@ -614,7 +660,8 @@ class AnchorFocalPointPlasticityDataIterator:
     def __next__(self):
         """
 
-        :return: {:class:`cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData`}
+        :return: FocalPointPlasticityTrackerData instance
+        :rtype: cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData
         """
         if not self.focalPointPlasticityDataSetItr.isEnd():
             self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
@@ -628,6 +675,7 @@ class AnchorFocalPointPlasticityDataIterator:
     def __iter__(self):
         return self
 
+
 class CellPixelList:
     def __init__(self, _pixelTrackerPlugin, _cell):
         self.pixelTrackerPlugin = _pixelTrackerPlugin
@@ -637,7 +685,8 @@ class CellPixelList:
     def __iter__(self):
         """
 
-        :return: {:class:`CellPixelIterator`}
+        :return: CellPixelIterator instance
+        :rtype: CellPixelIterator
         """
         return CellPixelIterator(self)
 
@@ -648,7 +697,8 @@ class CellPixelList:
     def number_of_pixels(self):
         """
 
-        :return: {int}
+        :return: number of pixels
+        :rtype: int
         """
         return self.pixelTrackerAccessor.get(self.cell.extraAttribPtr).pixelSet.size()
 
@@ -667,7 +717,8 @@ class CellPixelIterator:
     def __next__(self):
         """
 
-        :return: {:class:`cc3d.cpp.CompuCell.PixelTrackerData`}
+        :return: PixelTrackerData instance
+        :rtype: cc3d.cpp.CompuCell.PixelTrackerData
         """
         if not self.pixelItr.isEnd():
             #             self.neighborCell = self.nsdItr.getCurrentRef().neighborAddress
@@ -694,7 +745,8 @@ class CellBoundaryPixelList:
     def __iter__(self):
         """
 
-        :return: {:class:`CellBoundaryPixelIterator`}
+        :return: CellBoundaryPixelIterator instance
+        :rtype: CellBoundaryPixelIterator
         """
         return CellBoundaryPixelIterator(self, self.neighbor_order)
 
@@ -705,7 +757,8 @@ class CellBoundaryPixelList:
     def number_of_pixels(self):
         """
 
-        :return: {int}
+        :return: number of pixels
+        :rtype: int
         """
         return self.boundary_pixel_tracker_accessor.get(self.cell.extraAttribPtr).pixelSet.size()
 
@@ -733,7 +786,8 @@ class CellBoundaryPixelIterator:
     def __next__(self):
         """
 
-        :return: {:class:`cc3d.cpp.CompuCell.BoundaryPixelTrackerData`}
+        :return: BoundaryPixelTrackerData instance
+        :rtype: cc3d.cpp.CompuCell.BoundaryPixelTrackerData
         """
         if not self.boundary_pixel_itr.isEnd():
             self.current_boundary_pixel_tracker_data = self.boundary_pixel_itr.getCurrentRef()
@@ -756,7 +810,8 @@ class ElasticityDataList:
     def __iter__(self):
         """
 
-        :return: {:class:`ElasticityDataIterator`}
+        :return: ElasticityDataIterator instance
+        :rtype: ElasticityDataIterator
         """
         return ElasticityDataIterator(self)
 
@@ -774,7 +829,8 @@ class ElasticityDataIterator:
     def __next__(self):
         """
 
-        :return: {:class:`cc3d.cpp.CompuCell.ElasticityTrackerData`}
+        :return: ElasticityTrackerData instance
+        :rtype: cc3d.cpp.CompuCell.ElasticityTrackerData
         """
         if not self.elasticity_data_set_itr.isEnd():
             self.current_elasticity_data_set_itr = self.elasticity_data_set_itr.current
@@ -797,7 +853,8 @@ class EnergyDataList:
     def __iter__(self):
         """
 
-        :return: {:class:`EnergyDataListIterator`}
+        :return: EnergyDataListIterator instance
+        :rtype: EnergyDataListIterator
         """
         return EnergyDataListIterator(self)
 
@@ -815,7 +872,8 @@ class EnergyDataListIterator:
     def __next__(self):
         """
 
-        :return: {tuple} flip result (bool), energy change by energy function (dict)
+        :return: flip result, energy change by energy function
+        :rtype: (bool, dict of {str: float})
         """
         if self.__flip_idx < self.__num_flips:
             flip_result = self.__flip_results[self.__flip_idx]
@@ -839,7 +897,8 @@ class PlasticityDataList:
     def __iter__(self):
         """
 
-        :return: {:class:`PlasticityDataIterator`}
+        :return: PlasticityDataIterator instance
+        :rtype: PlasticityDataIterator
         """
         return PlasticityDataIterator(self)
 
@@ -857,7 +916,8 @@ class PlasticityDataIterator:
     def next(self):
         """
 
-        :return: {:class:`cc3d.cpp.CompuCell.PlasticityTrackerData`}
+        :return: PlasticityTrackerData instance
+        :rtype: cc3d.cpp.CompuCell.PlasticityTrackerData
         """
         if not self.plasticityDataSetItr.isEnd():
             self.currentPlasticityDataSetItr = self.plasticityDataSetItr.current

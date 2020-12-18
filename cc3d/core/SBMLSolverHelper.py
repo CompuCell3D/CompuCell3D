@@ -99,6 +99,7 @@ class SBMLSolverHelper(object):
         object, list, dict]:
         """
         helper function  - deals with default mutable arguments of function
+
         :param obj: {}
         :param obj_default:
         :return:
@@ -121,32 +122,36 @@ class SBMLSolverHelper(object):
                          initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None,
                          current_state_sbml: object = None) -> None:
         """
-        Attaches RoadRunner SBML solver to a particular cell. The sbml solver is stored as an element
-        of the cell's dictionary - cell.dict['SBMLSolver'][_modelName]. The function has a dual operation mode.
-        When user provides current_state_sbml, cell model_name, step_size the add_sbml_to_cell function creates a clone
-        of a solver whose state is described by the current_state_sbml . If current_state_sbml is None
+        Attaches :class:`~cc3d.core.RoadRunnerPy.RoadRunnerPy` instance to a particular cell. The sbml solver is stored
+        as an element of the cell's dictionary - cell.dict['SBMLSolver'][_modelName]. The function has a dual operation
+        mode. When user provides current_state_sbml, cell model_name, step_size the add_sbml_to_cell function creates a
+        clone of a solver whose state is described by the current_state_sbml . If current_state_sbml is None
         then the new SBML solver
         is being created,  SBML file (model_file) or string (model_string) loaded and initial conditions are applied.
         It is important to always set
         ste_size to make sure that after calling timestep() fcn the solver advances appropriate delta time
 
-        :param model_file: name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path
+        :param str model_file:
+            name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path
 
-        :param model_string: string of SBML file
+        :param str model_string: string of SBML file
 
-        :param model_name: name of the model - this is a label used to store mode in the cell.dict['SBMLSolver']
-        dictionary
+        :param str model_name:
+            name of the model - this is a label used to store mode in the cell.dict['SBMLSolver'] dictionary
 
-        :param cell: {CellG object} cc3d cell object
+        :param cc3d.cpp.CompuCell.CellG cell: cc3d cell object
 
-        :param step_size:  time step- determines how much in "real" time units timestep() fcn advances SBML solver
+        :param float step_size: time step- determines how much in "real" time units timestep() fcn advances SBML solver
 
-        :param initial_conditions: initial conditions dictionary
+        :param dict initial_conditions: initial conditions dictionary, optional
 
-        :param options: dictionary that currently only defines what type of ODE solver to choose.
-        In the newer versions of RR this might be not necessary. The keys that are supported are the following:
+        :param dict options: dictionary that currently only defines what type of ODE solver to choose.
+            In the newer versions of RR this might be not necessary. The keys that are supported are the following:
+              - absolute - determines absolute tolerance default 1e-10
+              - relative - determines relative tolerance default 1e-5
+              - stiff - determines if using stiff solver or not default False
 
-        :param current_state_sbml:  string representation  of the SBML representing current state of the solver.
+        :param current_state_sbml: string representation of the SBML representing current state of the solver.
 
         :return: None
         """
@@ -237,9 +242,19 @@ class SBMLSolverHelper(object):
                              initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None,
                              current_state_sbml: object = None) -> None:
         """
-        Same as add_sbml_to_cell, but with Antimony model specification
+        Same as :meth:`add_sbml_to_cell`, but with Antimony model specification
         Note that initial conditions can be specified either in the Antimony model specification,
         or with initial_conditions. If both are specified, initial_conditions takes precedence
+
+        :param str model_file: name of the Antimony file
+        :param str model_string: string of Antimony file
+        :param str model_name: name of the model
+        :param cc3d.cpp.CompuCell.CellG cell: cc3d cell object
+        :param float step_size: time step
+        :param dict initial_conditions: initial conditions dictionary, optional
+        :param dict options: dictionary that currently only defines what type of ODE solver to choose.
+        :param current_state_sbml: string representation of the SBML representing current state of the solver.
+        :return: None
         """
         translated_model_string, main_module_name = self.translate_to_sbml_string(model_file=model_file,
                                                                                   model_string=model_string)
@@ -254,9 +269,19 @@ class SBMLSolverHelper(object):
                            initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None,
                            current_state_sbml: object = None) -> None:
         """
-        Same as add_sbml_to_cell, but with CellML model specification
+        Same as :meth:`add_sbml_to_cell`, but with CellML model specification
         Note that initial conditions can be specified either in the CellML model specification,
         or with initial_conditions. If both are specified, initial_conditions takes precedence
+
+        :param str model_file: name of the CellML file
+        :param str model_string: string of CellML file
+        :param str model_name: name of the model
+        :param cc3d.cpp.CompuCell.CellG cell: cc3d cell object
+        :param float step_size: time step
+        :param dict initial_conditions: initial conditions dictionary, optional
+        :param dict options: dictionary that currently only defines what type of ODE solver to choose.
+        :param current_state_sbml: string representation of the SBML representing current state of the solver.
+        :return: None
         """
         self.add_antimony_to_cell(model_file=model_file, model_string=model_string, model_name=model_name,
                                   cell=cell, step_size=step_size,
@@ -270,7 +295,9 @@ class SBMLSolverHelper(object):
     def get_sbml_global_options(self):
         """
         returns global options for the SBML solver - deprecated as newer version of CC3D
-        :return {dict}: global SBML solver options
+
+        :return: global SBML solver options
+        :rtype: dict
         """
         pg = CompuCellSetup.persistent_globals
         return pg.global_sbml_simulator_options
@@ -281,7 +308,8 @@ class SBMLSolverHelper(object):
 
     def set_sbml_global_options(self, options: dict) -> None:
         """
-        Deprecated  - sets global SBML options
+        Deprecated - sets global SBML options
+
         :param options:
         :return: None
         """
@@ -306,18 +334,17 @@ class SBMLSolverHelper(object):
 
         :param model_file: name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path
         :param model_string: string of SBML file
-        :param model_name: name of the model - this is a label used to store mode in the cell.dict['SBMLSolver']
-        dictionary
+        :param model_name:
+            name of the model - this is a label used to store mode in the cell.dict['SBMLSolver'] dictionary
 
         :param cell_types: list of cell types
         :param step_size: time step - determines how much in "real" time units timestep() fcn advances SBML solver
         :param initial_conditions: initial conditions dictionary
         :param options: dictionary that currently only defines what type of ODE solver to choose.
-        In the newer versions of RR this might be not necessary. The keys that are supported are the following:
-
-        absolute - determines absolute tolerance default 1e-10
-        relative - determines relative tolerance default 1e-5
-        stiff - determines if using stiff solver or not default False
+            In the newer versions of RR this might be not necessary. The keys that are supported are the following:
+              - absolute - determines absolute tolerance default 1e-10
+              - relative - determines relative tolerance default 1e-5
+              - stiff - determines if using stiff solver or not default False
 
         :return: None
         """
@@ -341,9 +368,19 @@ class SBMLSolverHelper(object):
                                    step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
                                    options: Union[None, dict] = None) -> None:
         """
-        Same as add_sbml_to_cell_types, but with Antimony model specification
+        Same as :meth:`add_sbml_to_cell_types`, but with Antimony model specification
         Note that initial conditions can be specified either in the Antimony model specification,
         or with initial_conditions. If both are specified, initial_conditions takes precedence
+
+        :param str model_file: name of the Antimony file
+        :param str model_string: string of Antimony file
+        :param str model_name: name of the model
+        :param cell_types: list of cell types, optional
+        :type cell_types: list of int
+        :param float step_size: time step
+        :param dict initial_conditions: initial conditions dictionary
+        :param options: dictionary that currently only defines what type of ODE solver to choose.
+        :return: None
         """
         translated_model_string, main_module_name = self.translate_to_sbml_string(model_file=model_file,
                                                                                   model_string=model_string)
@@ -358,9 +395,19 @@ class SBMLSolverHelper(object):
                                  step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
                                  options: Union[None, dict] = None) -> None:
         """
-        Same as add_sbml_to_cell_types, but with CellML model specification
+        Same as :meth:`add_sbml_to_cell_types`, but with CellML model specification
         Note that initial conditions can be specified either in the CellML model specification,
         or with initial_conditions. If both are specified, initial_conditions takes precedence
+
+        :param str model_file: name of the CellML file
+        :param str model_string: string of CellML file
+        :param str model_name: name of the model
+        :param cell_types: list of cell types, optional
+        :type cell_types: list of int
+        :param float step_size: time step
+        :param dict initial_conditions: initial conditions dictionary
+        :param options: dictionary that currently only defines what type of ODE solver to choose.
+        :return: None
         """
         self.add_antimony_to_cell_types(model_file=model_file, model_string=model_string,
                                         model_name=model_name, cell_types=cell_types, step_size=step_size,
@@ -394,11 +441,10 @@ class SBMLSolverHelper(object):
         :param initial_conditions: initial conditions dictionary
 
         :param options: dictionary that currently only defines what type of ODE solver to choose.
-        In the newer versions of RR this might be not necessary. The keys that are supported are the following:
-
-        absolute - determines absolute tolerance default 1e-10
-        relative - determines relative tolerance default 1e-5
-        stiff - determines if using stiff solver or not default False
+            In the newer versions of RR this might be not necessary. The keys that are supported are the following:
+              - absolute - determines absolute tolerance default 1e-10
+              - relative - determines relative tolerance default 1e-5
+              - stiff - determines if using stiff solver or not default False
 
         :return: None
         """
@@ -425,9 +471,19 @@ class SBMLSolverHelper(object):
                                  initial_conditions: Union[None, dict] = None,
                                  options: Union[None, dict] = None) -> None:
         """
-        Same as add_sbml_to_cell_ids, but with Antimony model specification
+        Same as :meth:`add_sbml_to_cell_ids`, but with Antimony model specification
         Note that initial conditions can be specified either in the Antimony model specification,
         or with initial_conditions. If both are specified, initial_conditions takes precedence
+
+        :param model_file:
+            name of the Antimony file - can be relative path (e.g. Simulation/file.sbml) or absolute path
+        :param model_string: string of Antimony file
+        :param model_name: name of the model
+        :param cell_ids: list of cell ids
+        :param step_size: time step - determines how much in "real" time units timestep() fcn advances SBML solver
+        :param initial_conditions: initial conditions dictionary
+        :param options: dictionary that currently only defines what type of ODE solver to choose.
+        :return: None
         """
         translated_model_string, main_module_name = self.translate_to_sbml_string(model_file=model_file,
                                                                                   model_string=model_string)
@@ -442,9 +498,19 @@ class SBMLSolverHelper(object):
                                initial_conditions: Union[None, dict] = None,
                                options: Union[None, dict] = None) -> None:
         """
-        Same as add_sbml_to_cell_ids, but with CellML model specification
+        Same as :meth:`add_sbml_to_cell_ids`, but with CellML model specification
         Note that initial conditions can be specified either in the CellML model specification,
         or with initial_conditions. If both are specified, initial_conditions takes precedence
+
+        :param model_file:
+            name of the CellML file - can be relative path (e.g. Simulation/file.sbml) or absolute path
+        :param model_string: string of CellML file
+        :param model_name: name of the model
+        :param cell_ids: list of cell ids
+        :param step_size: time step - determines how much in "real" time units timestep() fcn advances SBML solver
+        :param initial_conditions: initial conditions dictionary
+        :param options: dictionary that currently only defines what type of ODE solver to choose.
+        :return: None
         """
         self.add_antimony_to_cell_ids(model_file=model_file, model_string=model_string,
                                       model_name=model_name, cell_ids=cell_ids, step_size=step_size,
@@ -460,18 +526,20 @@ class SBMLSolverHelper(object):
                                step_size: float = 1.0,
                                initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None):
         """
-        Adds free floating SBML model - not attached to any cell. The model will be identified/referenced by the _modelName
+        Adds free floating SBML model - not attached to any cell.
+        The model will be identified/referenced by the _modelName
+
         :param model_file: name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path
         :param model_string: string of SBML file
-        :param model_name: name of the model - this is a label used to store mode in the cell.dict['SBMLSolver'] dictionary
+        :param model_name:
+            name of the model - this is a label used to store mode in the cell.dict['SBMLSolver'] dictionary
         :param step_size: time step - determines how much in "real" time units timestep() fcn advances SBML solver
         :param initial_conditions: initial conditions dictionary
         :param options: dictionary that currently only defines what type of ODE solver to choose.
-        In the newer versions of RR this might be not necessary. The keys that are supported are the following:
-
-        absolute - determines absolute tolerance default 1e-10
-        relative - determines relative tolerance default 1e-5
-        stiff - determines if using stiff solver or not default False
+            In the newer versions of RR this might be not necessary. The keys that are supported are the following:
+              - absolute - determines absolute tolerance default 1e-10
+              - relative - determines relative tolerance default 1e-5
+              - stiff - determines if using stiff solver or not default False
 
         :return: None
         """
@@ -530,9 +598,17 @@ class SBMLSolverHelper(object):
                                    initial_conditions: Union[None, dict] = None,
                                    options: Union[None, dict] = None):
         """
-        Same as add_free_floating_sbml, but with Antimony model specification
+        Same as :meth:`add_free_floating_sbml`, but with Antimony model specification
         Note that initial conditions can be specified either in the Antimony model specification,
         or with initial_conditions. If both are specified, initial_conditions takes precedence
+
+        :param model_file: name of the Antimony file - can be relative path (e.g. Simulation/file.sbml) or absolute path
+        :param model_string: string of Antimony file
+        :param model_name: name of the model
+        :param step_size: time step - determines how much in "real" time units timestep() fcn advances SBML solver
+        :param initial_conditions: initial conditions dictionary
+        :param options: dictionary that currently only defines what type of ODE solver to choose.
+        :return: None
         """
         translated_model_string, main_module_name = self.translate_to_sbml_string(model_file=model_file,
                                                                                   model_string=model_string)
@@ -547,9 +623,17 @@ class SBMLSolverHelper(object):
                                  initial_conditions: Union[None, dict] = None,
                                  options: Union[None, dict] = None):
         """
-        Same as add_free_floating_sbml, but with CellML model specification
+        Same as :meth:`add_free_floating_sbml`, but with CellML model specification
         Note that initial conditions can be specified either in the CellML model specification,
         or with initial_conditions. If both are specified, initial_conditions takes precedence
+
+        :param model_file: name of the CellML file - can be relative path (e.g. Simulation/file.sbml) or absolute path
+        :param model_string: string of CellML file
+        :param model_name: name of the model
+        :param step_size: time step - determines how much in "real" time units timestep() fcn advances SBML solver
+        :param initial_conditions: initial conditions dictionary
+        :param options: dictionary that currently only defines what type of ODE solver to choose.
+        :return: None
         """
         self.add_free_floating_antimony(model_file=model_file, model_string=model_string,
                                         model_name=model_name, step_size=step_size,
@@ -562,14 +646,10 @@ class SBMLSolverHelper(object):
     def delete_sbml_from_cell_ids(self, model_name: str, cell_ids: Union[None, list] = None) -> None:
         """
         Deletes  SBML model from cells whose ids match those stered int he _ids list
-        :param model_name: model name
-        :param cell_ids: list of cell ids
-        :return:
-        """
-        """
 
-        :param _modelName {str}: 
-        :param _ids {list}: 
+        :param str model_name: model name
+        :param cell_ids: list of cell ids
+        :type cell_ids: list of int
         :return: None
         """
         cell_ids = self.__default_mutable_type(cell_ids, [])
@@ -593,16 +673,11 @@ class SBMLSolverHelper(object):
     def delete_sbml_from_cell_types(self, model_name: str, cell_types: Union[None, list] = None) -> None:
         """
         Deletes  SBML model from cells whose type match those stered in the cell_types list
-        :param model_name: model name
-        :param cell_types: list of cell cell types
-        :return:
-        """
-        """
 
-        :param _modelName {str}: 
-        :param types: 
+        :param str model_name: model name
+        :param cell_types: list of cell types
+        :type cell_types: list of int
         :return: None
-
         """
         cell_types = self.__default_mutable_type(cell_types, [])
 
@@ -621,8 +696,9 @@ class SBMLSolverHelper(object):
     def delete_sbml_from_cell(self, model_name: str = '', cell: object = None) -> None:
         """
         Deletes SBML from a particular cell
-        :param model_name: model name
-        :param cell: CellG cell obj
+
+        :param str model_name: model name
+        :param cc3d.cpp.CompuCell.CellG cell: cell obj
         :return: None
         """
 
@@ -639,8 +715,8 @@ class SBMLSolverHelper(object):
 
     def delete_free_floating_sbml(self, model_name: str) -> None:
         """
-        Deletes free floating SBLM mo
-        del
+        Deletes free floating SBLM model
+
         :param model_name: model name
         :return: None
         """
@@ -658,6 +734,7 @@ class SBMLSolverHelper(object):
     def timestep_cell_sbml(self):
         """
         advances (integrats forward) models stored as attributes of cells
+
         :return: None
         """
 
@@ -679,9 +756,9 @@ class SBMLSolverHelper(object):
         """
         Sets integration step size for SBML model attached to _cell
 
-        :param model_name: model name
-        :param cell: CellG cell object
-        :param step_size: integration step size
+        :param str model_name: model name
+        :param cc3d.cpp.CompuCell.CellG cell: cell object
+        :param float step_size: integration step size
         :return: None
         """
         dict_attrib = CompuCell.getPyAttrib(cell)
@@ -699,13 +776,13 @@ class SBMLSolverHelper(object):
 
     def set_step_size_for_cell_ids(self, model_name: str = '', cell_ids: Union[None, list] = None,
                                    step_size: float = 1.0) -> None:
-
         """
         Sets integration step size for SBML model attached to cells of given ids
 
-        :param model_name:  model name
-        :param cell_ids : list of cell ids
-        :param step_size : integration step size
+        :param str model_name:  model name
+        :param cell_ids: list of cell ids, optional
+        :type cell_ids: list of int
+        :param float step_size: integration step size
         :return: None
         """
         cell_ids = self.__default_mutable_type(cell_ids, [])
@@ -726,9 +803,10 @@ class SBMLSolverHelper(object):
         """
         Sets integration step size for SBML model attached to cells of given cell types
 
-        :param model_name: model name
+        :param str model_name: model name
         :param cell_types: list of cell types
-        :param step_size: integration step size
+        :type cell_types: list of int
+        :param float step_size: integration step size
         :return: None
         """
         cell_types = self.__default_mutable_type(cell_types, [])
@@ -744,8 +822,9 @@ class SBMLSolverHelper(object):
 
         """
         Sets integration step size for free floating SBML
-        :param model_name: model name
-        :param step_size: integration time step
+
+        :param str model_name: model name
+        :param float step_size: integration time step
         :return: None
         """
 
@@ -764,6 +843,7 @@ class SBMLSolverHelper(object):
     def timestep_free_floating_sbml(self):
         """
         Integrates forward all free floating SBML solvers
+
         :return: None
         """
         pg = CompuCellSetup.persistent_globals
@@ -778,6 +858,7 @@ class SBMLSolverHelper(object):
     def timestep_sbml(self):
         """
         Integrates forward all free floating SBML solvers and all sbmlsolvers attached to cells
+
         :return: None
         """
         self.timestep_cell_sbml()
@@ -789,10 +870,12 @@ class SBMLSolverHelper(object):
 
     def get_sbml_simulator(self, model_name: str, cell: object = None) -> Union[object, None]:
         """
-        Returns a reference to RoadRunnerPy or None
-        :param model_name: model name
-        :param cell: CellG cell object
-        :return {instance of RoadRunnerPy} or {None}:
+        Returns a reference to :class:`~cc3d.core.RoadRunnerPy.RoadRunnerPy` or None
+
+        :param str model_name: model name
+        :param cc3d.cpp.CompuCell.CellG cell: cell object
+        :return instance of RoadRunnerPy or None
+        :rtype: RoadRunnerPy or None
         """
 
         pg = CompuCellSetup.persistent_globals
@@ -819,9 +902,10 @@ class SBMLSolverHelper(object):
         Returns dictionary-like object representing state of the SBML solver - instance of the RoadRunner.model
         which behaves as a python dictionary but has many entries some of which are non-assignable /non-mutable
 
-        :param model_name: model name
-        :param cell: CellG object
-        :return {instance of RoadRunner.model}: dict-like object
+        :param str model_name: model name
+        :param cc3d.cpp.CompuCell.CellG cell: cell object
+        :return: instance of RoadRunner.model
+        :rtype: dict-like object
         """
         # might use roadrunner.SelectionRecord.STATE_VECTOR to limit dictionary iterations
         # to only values which are settable
@@ -844,9 +928,10 @@ class SBMLSolverHelper(object):
         """
         Returns Python dictionary representing state of the SBML solver
 
-        :param model_name: model name
-        :param cell: CellG object
+        :param str model_name: model name
+        :param cc3d.cpp.CompuCell.CellG cell: cell object
         :return : dictionary representing state of the SBML Solver
+        :rtype: dict
         """
         return self.get_sbml_state(model_name, cell)
 
@@ -858,9 +943,10 @@ class SBMLSolverHelper(object):
         """
         Sets SBML state for the solver - only for advanced uses. Requires detailed knowledge of how underlying
         SBML solver (roadrunner) works
-        :param model_name: model name
-        :param cell: CellG object
-        :param state : dictionary with state variables to set
+
+        :param str model_name: model name
+        :param cc3d.cpp.CompuCell.CellG cell: cell object
+        :param dict state: dictionary with state variables to set, optional
         :return: None
         """
         state = self.__default_mutable_type(state, {})
@@ -888,10 +974,12 @@ class SBMLSolverHelper(object):
     def get_sbml_value(self, model_name: str, value_name: str, cell: object = None) -> float:
         """
         Retrieves value of the SBML state variable
-        :param model_name: model name
-        :param value_name: name of the state variable
-        :param cell: CellG object
+
+        :param str model_name: model name
+        :param str value_name: name of the state variable
+        :param cc3d.cpp.CompuCell.CellG cell: cell object
         :return: value of the state variable
+        :rtype: float
         """
         sbml_simulator = self.get_sbml_simulator(model_name, cell)
         if not sbml_simulator:
@@ -909,11 +997,13 @@ class SBMLSolverHelper(object):
     def set_sbml_value(self, model_name: str, value_name: str, value: float = 0.0, cell: object = None) -> bool:
         """
         Sets SBML solver state variable
-        :param model_name: model name
-        :param value_name: name of the stae variable
-        :param value: value of the state variable
-        :param cell: CellG object
-        :return: None
+
+        :param str model_name: model name
+        :param str value_name: name of the stae variable
+        :param float value: value of the state variable
+        :param cc3d.cpp.CompuCell.CellG cell: cell object
+        :return: True if set
+        :rtype: bool
         """
         sbml_simulator = self.get_sbml_simulator(model_name, cell)
         if not sbml_simulator:
@@ -930,10 +1020,12 @@ class SBMLSolverHelper(object):
                              options: Union[dict, None] = None):
         """
         Copies SBML solvers (with their states - effectively clones the solver) from one cell to another
-        :param from_cell: source CellG cell
-        :param to_cell: target CellG cell
-        :param sbml_names: list of SBML model name whose solver are to be copied
-        :param options: - deprecated - list of SBML solver options
+
+        :param cc3d.cpp.CompuCell.CellG from_cell: source cell
+        :param cc3d.cpp.CompuCell.CellG to_cell: target cell
+        :param sbml_names: list of SBML model name whose solver are to be copied, optional
+        :type sbml_names: list of str
+        :param options: Deprecated - list of SBML solver options
         :return: None
         """
         sbml_names = self.__default_mutable_type(sbml_names, [])
@@ -985,8 +1077,10 @@ class SBMLSolverHelper(object):
     def normalize_path(self, path: str) -> str:
         """
         Checks if file exists and if not it joins basepath (path to the root of the cc3d project) with path
-        :param path: relative path to CC3D resource
-        :return {str}: absolute path to CC3D resource
+
+        :param str path: relative path to CC3D resource
+        :return: absolute path to CC3D resource
+        :rtype: str
         """
 
         path_normalized = path
@@ -1002,9 +1096,11 @@ class SBMLSolverHelper(object):
     def translate_to_sbml_string(self, model_file: str = '', model_string: str = ''):
         """
         Returns string of SBML model specification translated from Antimony or CellML model specification file or string
-        :param model_file: relative path to model specification file
-        :param model_string: model specification string
-        :return {str,str}: string of SBML model specification, string of main module name
+
+        :param str model_file: relative path to model specification file
+        :param str model_string: model specification string
+        :return: string of SBML model specification, string of main module name
+        :rtype: (str, str)
         """
 
         # Just to be sure, call clear previous loads

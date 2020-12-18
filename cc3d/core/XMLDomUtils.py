@@ -1,9 +1,27 @@
+from typing import Union
 from cc3d.core.XMLUtils import dictionaryToMapStrStr as d2mss
+
 
 class XMLElemAdapter:
     """
     This class gives easy access to XML attributes
+
+    For a CC3DML element defined as follows,
+
+    .. code-block:: xml
+
+        <Energy Type1="Medium" Type2="Condensing">10</Energy>
+
+    Usage in Python can be performed as follows,
+
+    .. code-block:: python
+
+        xml_element_adapter: XMLElemAdapter
+        x: str = xml_element_adapter.Type1  # = "Medium"
+        y: str = xml_element_adapter.cdata  # = "10"
+
     """
+
     def __init__(self, reference_elem=None, super_parent=None):
 
         # reference to the C++ XML element representation
@@ -47,7 +65,6 @@ class XMLElemAdapter:
     def set_dirty(self, flag=True):
         self._dirty_flag = flag
 
-
     @property
     def dirty(self):
         return self._dirty_flag
@@ -58,7 +75,7 @@ class XMLElemAdapter:
         try:
             self.attribs_initialized
             be_selective = True
-        except (KeyError,AttributeError):
+        except (KeyError, AttributeError):
             be_selective = False
             print('self.attribs_initialized does not exist')
 
@@ -77,7 +94,6 @@ class XMLElemAdapter:
                 else:
                     self.__reference_elem.updateElementAttributes(d2mss({key: value}))
 
-
                 self.__dict__['_dirty_flag'] = True
                 # print
             else:
@@ -85,8 +101,8 @@ class XMLElemAdapter:
                                      'The list of assignable attributes is: {attr_list}'.format(
                     attr=key,
                     attr_list=self.__allowed_assignment_properties
-
                 ))
+
 
 class XMLIdLocator:
     def __init__(self, root_elem):
@@ -116,25 +132,26 @@ class XMLIdLocator:
         self.walk_and_locate_id_elements(elem=self.root_elem)
 
     @property
-    def dirty_super_parents(self)->dict:
+    def dirty_super_parents(self) -> dict:
         """
         returns a dictionary of super-parents whose content has
         been modified by the user
+
         :return:
         """
+
         def super_parent_identifier(xml_elem):
             name = xml_elem.name
             secondary_id = ''
-            possible_secondary_ids = ['Name','Type']
+            possible_secondary_ids = ['Name', 'Type']
             xml_elem_attributes = xml_elem.getAttributes()
-
 
             for possible_attr in possible_secondary_ids:
                 if possible_attr in xml_elem_attributes.keys():
                     secondary_id = xml_elem_attributes[possible_attr]
                     break
 
-            return (name,secondary_id)
+            return name, secondary_id
 
         dirty_module_dict = {}
 
@@ -144,7 +161,6 @@ class XMLIdLocator:
                 dirty_module_dict[identifier] = elem_adapter.super_parent
 
         return dirty_module_dict
-
 
     def walk_and_locate_id_elements(self, elem):
         """
@@ -175,11 +191,12 @@ class XMLIdLocator:
         if popped_elem.name in ['Potts', 'Plugin', 'Steppable']:
             self.super_parent_stack.pop()
 
-    def get_xml_element(self, tag:str)->XMLElemAdapter:
+    def get_xml_element(self, tag: str) -> Union[XMLElemAdapter, None]:
         """
-        Returns  XMLElemAdapter for the XML element with give id
-        :param tag:
-        :return:
+        Returns XMLElemAdapter for the XML element with give id
+        :param str tag:
+        :return: XMLElemAdapter if tag is defined, otherwise None
+        :rtype: XMLElemAdapter or None
         """
 
         # first we try to see if given ide has been accessed recently. If so we return it
