@@ -1,5 +1,6 @@
 from os import mkdir
 from os.path import abspath, dirname, isdir, join
+from shutil import rmtree
 
 api_source_dir = dirname(dirname(dirname(dirname(dirname(abspath(__file__))))))
 api_build_dir = join(dirname(abspath(__file__)), "api")
@@ -55,7 +56,18 @@ def build_api():
     apidoc.main(argv)
 
 
+def clear_api():
+    """
+    Clears auto-generated API documentation source code
+
+    :return: None
+    """
+    if isdir(api_build_dir):
+        rmtree(api_build_dir)
+
+
 def main():
+    clear_api()
     build_api()
     build()
 
