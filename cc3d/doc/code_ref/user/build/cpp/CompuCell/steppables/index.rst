@@ -7,3 +7,4 @@ Steppables
    :maxdepth: 2
 
    BiasVectorSteppable
+   MitosisSteppable

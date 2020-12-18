@@ -15,3 +15,4 @@ cc3d.cpp.CompuCell
    Fields
    plugins/index
    steppables/index
+   misc/index
