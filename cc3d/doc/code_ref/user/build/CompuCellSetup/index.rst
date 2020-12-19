@@ -4,7 +4,8 @@ cc3d.CompuCellSetup
 ========================
 
 
-.. autoattribute:: cc3d.CompuCellSetup.persistent_globals
+.. autodata:: cc3d.CompuCellSetup.persistent_globals
+   :annotation:
 
 
 .. autofunction:: cc3d.CompuCellSetup.register_steppable
