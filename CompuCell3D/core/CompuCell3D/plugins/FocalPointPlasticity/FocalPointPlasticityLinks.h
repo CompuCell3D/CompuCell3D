@@ -192,6 +192,8 @@ namespace CompuCell3D {
 
 			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(this);
 			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension(this);
+
+			DerivedProperty<FocalPointPlasticityLink, std::vector<CellG*>, &FocalPointPlasticityLink::getCellPair> cellPair;
 		}
 		FocalPointPlasticityLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) :
 			FocalPointPlasticityLink(_initiator, _initiated, _potts, FocalPointPlasticityLinkTrackerData(_fpptd)) {}
@@ -201,6 +203,9 @@ namespace CompuCell3D {
 
 		const long getId0() { return initiator->id; }
 		const long getId1() { return initiated->id; }
+
+		std::vector<CellG*> getCellPair();
+		DerivedProperty<FocalPointPlasticityLink, std::vector<CellG*>, &FocalPointPlasticityLink::getCellPair> cellPair;
 
 	};
 
@@ -220,6 +225,8 @@ namespace CompuCell3D {
 
 			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(this);
 			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension(this);
+
+			DerivedProperty<FocalPointPlasticityInternalLink, std::vector<CellG*>, &FocalPointPlasticityInternalLink::getCellPair> cellPair(this);
 		}
 		FocalPointPlasticityInternalLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) :
 			FocalPointPlasticityInternalLink(_initiator, _initiated, _potts, FocalPointPlasticityLinkTrackerData(_fpptd)) {}
@@ -228,6 +235,9 @@ namespace CompuCell3D {
 
 		const long getId0() { return initiator->id; }
 		const long getId1() { return initiated->id; }
+
+		std::vector<CellG*> getCellPair();
+		DerivedProperty<FocalPointPlasticityInternalLink, std::vector<CellG*>, &FocalPointPlasticityInternalLink::getCellPair> cellPair;
 
 	};
 
@@ -248,6 +258,8 @@ namespace CompuCell3D {
 
 			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(this);
 			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension(this);
+
+			DerivedProperty<FocalPointPlasticityLinkBase, CellG*, &FocalPointPlasticityLinkBase::getObj0> cell(this);
 		}
 		FocalPointPlasticityAnchor(CellG *_cell, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) :
 			FocalPointPlasticityAnchor(_cell, _potts, FocalPointPlasticityLinkTrackerData(_fpptd)) {}
@@ -263,6 +275,8 @@ namespace CompuCell3D {
 		void setAnchorPoint(std::vector<float> _anchorPoint) { fppltd.anchorPoint = _anchorPoint; }
 		// Get anchor id
 		const int getAnchorId() { return fppltd.anchorId; }
+
+		DerivedProperty<FocalPointPlasticityLinkBase, CellG*, &FocalPointPlasticityLinkBase::getObj0> cell;
 
 	};
 

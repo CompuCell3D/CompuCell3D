@@ -27,6 +27,10 @@ class FocalPointPlasticityLinksSteppable(SteppableBasePy):
             cellj = link1j.getOtherCell(cell1)
             print(f'\nLinked cell id: {cellj.id}')
 
+            # Or just knowing the link, we can get both linked cells
+            initiator_cell, initiated_cell = link1j.cellPair
+            print(f'Cell pair ids: {initiator_cell.id}, {initiated_cell.id}')
+
             # If data-handling is wrong, then the fetched data for this link might have multiple entries
             fppd = [fppd for fppd in fpp_data_list if fppd.neighborAddress.id == cellj.id]
             if len(fppd) != 1:

@@ -72,3 +72,18 @@ float FocalPointPlasticityLinkBase::getDistance() {
 float FocalPointPlasticityLinkBase::getTension() {
 	return fppltd.lambdaDistance * (getDistance() - fppltd.targetDistance);
 }
+
+std::vector<CellG*> FocalPointPlasticityLink::getCellPair() {
+	std::vector<CellG*> o = std::vector<CellG*>(2);
+	o[0] = getObj0();
+	o[1] = getObj1();
+	return o;
+}
+
+std::vector<CellG*> FocalPointPlasticityInternalLink::getCellPair() {
+	std::vector<CellG*> o = std::vector<CellG*>(2);
+	o[0] = getObj0();
+	o[1] = getObj1();
+	return o;
+}
+
