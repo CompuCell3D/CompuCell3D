@@ -1,4 +1,3 @@
-
 #ifndef FOCALPOINTPLASTICITYTRACKER_H
 #define FOCALPOINTPLASTICITYTRACKER_H
 
@@ -10,12 +9,12 @@
 
 #include "FocalPointPlasticityDLLSpecifier.h"
 #include <vector>
+#include <CompuCell3D/Potts3D/Cell.h>
 
 namespace CompuCell3D {
 
    class CellG;
-
-
+   class FocalPointPlasticityLinkTrackerData;
 
    class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityTrackerData{
       public:
@@ -39,24 +38,23 @@ namespace CompuCell3D {
 			  anchor=fpptd.anchor;
 			  anchorId=fpptd.anchorId;
 			  anchorPoint=fpptd.anchorPoint;
-			  //anchorPoint[0]=fpptd.anchorPoint[0];
-			  //anchorPoint[1]=fpptd.anchorPoint[1];
-			  //anchorPoint[2]=fpptd.anchorPoint[2];
 			  isInitiator = fpptd.isInitiator;
 			  initMCS = fpptd.initMCS;
 
 		 }
 
+		 // type cast from FocalPointPlasticityLinkTrackerData
+		 // be sure to set isInitiator after type cast!
+		 FocalPointPlasticityTrackerData(const FocalPointPlasticityLinkTrackerData& fppltd);
+
+		 FocalPointPlasticityTrackerData& operator=(const FocalPointPlasticityLinkTrackerData& fppltd) {
+			 return FocalPointPlasticityTrackerData(fppltd);
+		 }
+
          ///have to define < operator if using a class in the set and no < operator is defined for this class
          bool operator<(const FocalPointPlasticityTrackerData & _rhs) const{
 			// notice that anchor links will be listed first and the last of such links will have highest anchorId 
-			 //return neighborAddress < _rhs.neighborAddress || (!(neighborAddress < _rhs.neighborAddress) && anchorId<_rhs.anchorId); //old and wrong implementation of comparison operator might give side effects on windows - it can crash CC3D or in some cases windows OS entirely
              return neighborAddress < _rhs.neighborAddress || (!(_rhs.neighborAddress <neighborAddress ) && anchorId<_rhs.anchorId);
-
-
-			// return (neighborAddress && _rhs.neighborAddress) ? neighborAddress < _rhs.neighborAddress :
-			//	 anchorPoint[0] < _rhs.anchorPoint[0] || (!(_rhs.anchorPoint[0] < anchorPoint[0])&& anchorPoint[1] < _rhs.anchorPoint[1])
-			//||(!(_rhs.anchorPoint[0] < anchorPoint[0])&& !(_rhs.anchorPoint[1] <anchorPoint[1] )&& anchorPoint[2] < _rhs.anchorPoint[2]);
          }
 
 
@@ -102,6 +100,55 @@ namespace CompuCell3D {
 		
    };
 
+   class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityLinkTrackerData {
+   public:
+
+	   // Tracker data associated with link
+	   FocalPointPlasticityLinkTrackerData(float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0)
+		   :lambdaDistance(_lambdaDistance), targetDistance(_targetDistance), maxDistance(_maxDistance), anchor(false), anchorId(0), initMCS(_initMCS)
+	   {
+
+		   maxNumberOfJunctions = 0;
+		   activationEnergy = 0.;
+		   neighborOrder = 0;
+
+		   anchorPoint = std::vector<float>(3, 0.);
+	   }
+
+	   // type cast from FocalPointPlasticityTrackerData
+	   FocalPointPlasticityLinkTrackerData(const FocalPointPlasticityTrackerData& fpptd) {
+		   lambdaDistance = fpptd.lambdaDistance;
+		   targetDistance = fpptd.targetDistance;
+		   maxDistance = fpptd.maxDistance;
+		   anchor = fpptd.anchor;
+		   anchorId = fpptd.anchorId;
+		   anchorPoint = fpptd.anchorPoint;
+		   initMCS = fpptd.initMCS;
+
+		   maxNumberOfJunctions = fpptd.maxNumberOfJunctions;
+		   activationEnergy = fpptd.activationEnergy;
+		   neighborOrder = fpptd.neighborOrder;
+	   }
+
+	   FocalPointPlasticityLinkTrackerData& operator=(const FocalPointPlasticityTrackerData& fpptd) {
+		   return FocalPointPlasticityLinkTrackerData(fpptd);
+	   }
+
+	   // members: link properties
+
+	   float lambdaDistance;
+	   float targetDistance;
+	   float maxDistance;
+	   int maxNumberOfJunctions;
+	   float activationEnergy;
+	   int neighborOrder;
+	   bool anchor;
+	   std::vector<float> anchorPoint;
+	   int initMCS;
+
+	   int anchorId;
+
+   };
+
 };
 #endif
-
