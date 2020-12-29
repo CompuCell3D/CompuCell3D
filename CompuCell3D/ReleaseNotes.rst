@@ -1,9 +1,31 @@
 Release Notes
 =============
 
+Version 4.2.4
+-------------
+**2020-12-30**
+
+New features:
+
+- Added regression test suite
+- Major overhaul of FocalPointPlasticity Plugin including
+    - Added regular, internal and anchor link objects
+    - Revised plugin throughout on the basis of link objects
+    - Added link attributes and methods for link-specific manipulations
+    - Added link inventory management methods to SteppableBasePy
+- Added Callable CC3D renderer
+- Added DerivedProperty for read-only attributes in python calculated on-demand in C++
+- Added derived properties for cells: pressure, surface tension, 
+- Added derived properties to regular and internal links: length, tension, linked cells
+- Added derived properties to anchor links: length, tension, linked cell
+
+Bug fixes:
+
+- Minor bug fixes
+
 Version 4.2.3
 -------------
-**2019-08-21**
+**2020-08-21**
 
 New Features:
 
@@ -25,7 +47,7 @@ of each other)
 
 Version 4.2.2
 -------------
-**2019-07-24*
+**2020-07-24**
 
 This is a bug-fix release featuring the following improvements:
 
@@ -52,7 +74,7 @@ do unzipping using 3rd party tools
 
 Version 4.2.1
 -------------
-**2019-05-18*
+**2020-05-18**
 
 This is mainly bug-fix release featuring the following improvements:
 
@@ -67,7 +89,7 @@ as well as total amount of field in the entire lattice
 
 Version 4.2.0
 -------------
-**2019-04-18*
+**2020-04-18**
 
 The list of new features added in this release includes the following:
 
@@ -104,7 +126,7 @@ Known Issues:
 
 Version 4.1.1
 -------------
-**2019-01-18*
+**2020-01-18**
 
 This release adds support for Antimony (see examples in Demos/SBMLSolverExamples/SBMLSolverAntimony)
 and has also multiple bug-fixes:
