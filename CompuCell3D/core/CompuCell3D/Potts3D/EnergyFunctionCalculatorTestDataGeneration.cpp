@@ -44,7 +44,8 @@ double EnergyFunctionCalculatorTestDataGeneration::changeEnergy(Point3D &pt, con
 }
 
 std::string EnergyFunctionCalculatorTestDataGeneration::get_output_file_name() {
-    return sim->getOutputDirectory() + "/" + "potts_data_output.csv";
+    return "dupa";
+//    return sim->getOutputDirectory() + "/" + "potts_data_output.csv";
 }
 
 std::string EnergyFunctionCalculatorTestDataGeneration::get_input_file_name() {
