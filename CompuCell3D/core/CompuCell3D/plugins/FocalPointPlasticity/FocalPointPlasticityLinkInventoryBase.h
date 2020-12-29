@@ -150,7 +150,11 @@ namespace CompuCell3D {
 		virtual std::set<FocalPointPlasticityTrackerData> getFPPTrackerDataSet(CellG* _cell)
 		{
 			std::set<FocalPointPlasticityTrackerData> o;
-			for each (LinkType* link in getCellLinkList(_cell)) o.insert(link->getFPPTrackerData(_cell));
+//			for each (LinkType* link in getCellLinkList(_cell)) o.insert(link->getFPPTrackerData(_cell));
+            for (auto & link : getCellLinkList(_cell)) {
+                o.insert(link->getFPPTrackerData(_cell));
+            }
+
 			return o;
 		}
 
@@ -158,8 +162,8 @@ namespace CompuCell3D {
 		linkInventory_t& getContainer() { return linkInventory; }
 		virtual linkInventoryItr_t linkInventoryBegin() { return linkInventory.begin(); }
 		virtual linkInventoryItr_t linkInventoryEnd() { return linkInventory.end(); }
-		virtual void incrementIterator(linkInventoryItr_t& _itr) { ++_itr; }
-		virtual void decrementIterator(linkInventoryItr_t& _itr) { --_itr; }
+//		virtual void incrementIterator(linkInventoryItr_t& _itr) { ++_itr; }
+//		virtual void decrementIterator(linkInventoryItr_t& _itr) { --_itr; }
 
 		// Add a link to the link inventory and update internals
 		void addToInventory(LinkType* _link) {
@@ -193,8 +197,14 @@ namespace CompuCell3D {
 		// Remove all links attached to a cell
 		void removeCellLinks(CellG* _cell) {
 			FPPLinkList cellLinkList = getCellLinkList(_cell);
-			for (FPPLinkList::iterator itr = cellLinkList.begin(); itr != cellLinkList.end(); ++itr)
-				removeFromInventory((*itr));
+//			for (FPPLinkList::iterator itr = cellLinkList.begin(); itr != cellLinkList.end(); ++itr)
+//				removeFromInventory((*itr));
+
+            for (auto & link : cellLinkList) {
+                removeFromInventory(link);
+            }
+
+
 		}
 
 	};
