@@ -4,6 +4,8 @@
 #include <iomanip>
 #include <BasicUtils/BasicString.h>
 #include <BasicUtils/BasicException.h>
+#include <limits>
+#include <cmath>
 
 
 using namespace CompuCell3D;
@@ -46,9 +48,9 @@ bool PottsTestData::serialize(std::string file_name) {
         out << changePixelNeighbor.x << ",";
         out << changePixelNeighbor.y << ",";
         out << changePixelNeighbor.z << ",";
-        out << motility << ",";
+        out << std::setprecision(6)<< std::fixed << motility << ",";
         out << pixelCopyAccepted << ",";        
-        out << acceptanceFunctionProbability;
+        out << std::setprecision(6)<< std::fixed << acceptanceFunctionProbability;
 
         for (const auto& kv : energyFunctionNameToValueMap) {
             out << "," << std::setprecision(6)<< std::fixed << kv.second;            
@@ -150,7 +152,7 @@ std::vector<PottsTestData> PottsTestData::deserialize_potts_data_sequence(std::i
 
 double PottsTestData::relative_difference(double x, double y) {
     
-    return fabs(x - y) / (x + y + std::numeric_limits<double>::epsilon());
+    return fabs(x - y) / (x + y + numeric_limits<double>::epsilon());
     
 }
 
