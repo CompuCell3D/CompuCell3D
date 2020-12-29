@@ -15,9 +15,9 @@ def get_sha_label() -> str:
     :return: sha tag
     """
     try:
-        import cc3d.sha_label
+        import cc3d.commit_tag
         try:
-            sha_tag = cc3d.sha_label.sha_label
+            sha_tag = cc3d.commit_tag.sha_label
             return sha_tag
         except AttributeError:
             return revisionNumber
