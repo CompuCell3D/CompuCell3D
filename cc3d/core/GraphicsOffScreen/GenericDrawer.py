@@ -427,8 +427,31 @@ class GenericDrawer:
         writer.Write()
 
     def resetCamera(self):
-        """
+        '''
+        Resets camera to default settings
+        :return:None
+        '''
+        pass
 
-        :return:
-        """
 
+class GenericDrawerCC3DPy(GenericDrawer):
+    """
+    Subclass with necessary hooks for Python API
+    """
+    def __init__(self, parent=None, originating_widget=None):
+        super().__init__()
+
+    def get_model_view(self, drawing_params):
+        model, view = GenericDrawer.get_model_view(self, drawing_params)
+
+        lattice_type = self.lattice_type
+        lattice_type_str = [k for k, v in Configuration.LATTICE_TYPES.items() if v == lattice_type][0]
+
+        def init_lattice_type():
+            model.lattice_type = lattice_type
+            model.lattice_type_str = lattice_type_str
+
+        model.init_lattice_type = init_lattice_type
+        model.init_lattice_type()
+
+        return model, view
