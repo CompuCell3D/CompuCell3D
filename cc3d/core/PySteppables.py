@@ -755,7 +755,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         with pg.steering_panel_synchronizer:
 
             if name is not None:
-                return self.get_steering_param(name=name).dirty_flag
+                try:
+                    return CompuCellSetup.persistent_globals.steering_param_dict[name].dirty_flag
+                except KeyError:
+                    raise RuntimeError('Could not find steering_parameter named {}'.format(name))
             else:
                 for p_name, steering_param in CompuCellSetup.persistent_globals.steering_param_dict.items():
                     if steering_param.dirty_flag:
@@ -774,7 +777,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         pg = CompuCellSetup.persistent_globals
         with pg.steering_panel_synchronizer:
             if name is not None:
-                self.get_steering_param(name=name).dirty_flag = flag
+                try:
+                    pg.steering_param_dict[name].dirty_flag = flag
+                except KeyError:
+                    raise RuntimeError('Could not find steering_parameter named {}'.format(name))
             else:
                 for p_name, steering_param in CompuCellSetup.persistent_globals.steering_param_dict.items():
                     steering_param.dirty_flag = flag
