@@ -35,13 +35,14 @@ public:
     void setToBegin(){current=begin;}
     typename C::iterator & getCurrent(){return current;}
     typename C::iterator & getEnd(){return end;}
-    void previous(){
-        if(current != begin){
-        
-            --current;
-         }
-      
-    }
+//  previous function is never used and we cannot decrement iterators for e.g. unordered_map so commenting this out
+//    void previous(){
+//        if(current != begin){
+//
+//            --current;
+//         }
+//
+//    }
     void next()
     {
         
