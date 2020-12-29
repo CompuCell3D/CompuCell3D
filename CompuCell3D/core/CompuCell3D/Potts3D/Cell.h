@@ -24,7 +24,7 @@
 #define CELL_H
 
 #include <vector>
-#include <CompuCell3D\DerivedProperty.h>
+#include <CompuCell3D/DerivedProperty.h>
 
 #ifndef PyObject_HEAD
 struct _object; //forward declare

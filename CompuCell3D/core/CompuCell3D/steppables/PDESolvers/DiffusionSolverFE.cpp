@@ -24,6 +24,7 @@
 #include "GPUEnabled.h"
 
 #include "MyTime.h"
+#include <cfloat>
 
 #if OPENCL_ENABLED == 1
 #include "OpenCL/DiffusionSolverFE_OpenCL.h"

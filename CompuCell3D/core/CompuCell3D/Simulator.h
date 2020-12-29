@@ -96,7 +96,7 @@ namespace CompuCell3D {
 		double simValue;
 		
         void setOutputDirectory(std::string output_directory);
-        std::string getOutputDirectory();
+        std::string getOutputDirectory(); 
 
 
 		void setOutputRedirectionTarget(ptrdiff_t  _ptr);

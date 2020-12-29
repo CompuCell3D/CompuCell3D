@@ -118,10 +118,10 @@ void Simulator::setOutputDirectory(std::string output_directory) {
     this->output_directory = output_directory;
 }
 
-std::string Simulator::getOutputDirectory() {
-    return output_directory;
-}
+std::string Simulator::getOutputDirectory(){
+    return this->output_directory;
 
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ptrdiff_t Simulator::getCerrStreamBufOrig(){

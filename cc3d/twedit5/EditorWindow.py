@@ -135,7 +135,7 @@ from cc3d.twedit5.QsciScintillaCustom import QsciScintillaCustom
 from cc3d.twedit5.PrinterTwedit import PrinterTwedit
 from cc3d.twedit5.KeyboardShortcutsDlg import KeyboardShortcutsDlg
 from cc3d.twedit5.DataSocketCommunicators import FileNameReceiver
-from cc3d.twedit5 import Encoding, __version__, __revision__
+from cc3d.twedit5 import Encoding, __version__, __revision__, __commit_tag__
 from cc3d.twedit5.twedit.utils.collection_utils import remove_duplicates
 # from codecs import BOM_UTF8, BOM_UTF16, BOM_UTF32
 from cc3d.twedit5.PluginManager.PluginManager import PluginManager
@@ -5168,8 +5168,8 @@ class EditorWindow(QMainWindow):
 
                                     "Copyright: Maciej Swat, <b>Swat International Productions, Inc.</b><br><br>"
 
-                                    "Version {version}  rev. {revision}".format(version=__version__,
-                                                                                revision=__revision__)
+                                    "Version {version}  rev. {revision} \n Commit tag: {commit_tag}".format(
+                                        version=__version__, revision=__revision__, commit_tag=__commit_tag__)
 
                                     )
 

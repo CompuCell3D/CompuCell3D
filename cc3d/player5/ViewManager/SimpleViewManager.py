@@ -661,11 +661,13 @@ class SimpleViewManager(QObject):
         try:
             version_str = cc3d.__version__
             revision_str = cc3d.__revision__
+            commit_label = cc3d.get_sha_label()
         except ImportError:
             pass
 
-        about_text = "<h2>CompuCell3D</h2> Version: " + version_str + " Revision: " + revision_str + "<br />\
-                          Copyright &copy; Biocomplexity Institute, <br />\
+        about_text = "<h2>CompuCell3D</h2> Version: " + version_str + " Revision: " + revision_str + "" \
+                         "<br /> Commit Tag: " + commit_label + "<br />" \
+                          "Copyright &copy; Biocomplexity Institute, <br />\
                           Indiana University, Bloomington, IN\
                           <p><b>CompuCell Player</b> is a visualization engine for CompuCell.</p>"
         more_info_text = "More information " \

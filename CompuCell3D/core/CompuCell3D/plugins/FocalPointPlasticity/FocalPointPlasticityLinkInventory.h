@@ -38,7 +38,18 @@ namespace CompuCell3D {
 
 	public:
 
-		using FPPLinkInventoryBase<FocalPointPlasticityLink>::FPPLinkInventoryBase<FocalPointPlasticityLink>;
+//		using FPPLinkInventoryBase<FocalPointPlasticityLink>::FPPLinkInventoryBase<FocalPointPlasticityLink>;
+        FPPLinkInventory():FPPLinkInventoryBase(){}
+
+        FPPLinkInventory(
+                BasicClassAccessor<
+                        FPPLinkInventoryTracker<FocalPointPlasticityLink> >* _cellLinkInventoryTrackerAccessor,
+                        Potts3D* _potts): FPPLinkInventoryBase(_cellLinkInventoryTrackerAccessor, _potts){
+
+        }
+
+//        FPPLinkInventoryBase(BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* _cellLinkInventoryTrackerAccessor, Potts3D* _potts)
+
 		virtual ~FPPLinkInventory() {}
 
 		// Get the link connecting two cells
@@ -66,7 +77,16 @@ namespace CompuCell3D {
 
 	public:
 
-		using FPPLinkInventoryBase<FocalPointPlasticityInternalLink>::FPPLinkInventoryBase<FocalPointPlasticityInternalLink>;
+//		using FPPLinkInventoryBase<FocalPointPlasticityInternalLink>::FPPLinkInventoryBase<FocalPointPlasticityInternalLink>;
+        FPPInternalLinkInventory():FPPLinkInventoryBase(){}
+
+        FPPInternalLinkInventory(
+                BasicClassAccessor<
+                FPPLinkInventoryTracker<FocalPointPlasticityInternalLink> >* _cellLinkInventoryTrackerAccessor,
+        Potts3D* _potts): FPPLinkInventoryBase(_cellLinkInventoryTrackerAccessor, _potts){
+
+        }
+
 		virtual ~FPPInternalLinkInventory() {}
 
 		// Get the link connecting two cells
@@ -94,7 +114,16 @@ namespace CompuCell3D {
 
 	public:
 
-		using FPPLinkInventoryBase<FocalPointPlasticityAnchor>::FPPLinkInventoryBase<FocalPointPlasticityAnchor>;
+//		using FPPLinkInventoryBase<FocalPointPlasticityAnchor>::FPPLinkInventoryBase<FocalPointPlasticityAnchor>;
+        FPPAnchorInventory():FPPLinkInventoryBase(){}
+
+        FPPAnchorInventory(
+                BasicClassAccessor<
+                FPPLinkInventoryTracker<FocalPointPlasticityAnchor> >* _cellLinkInventoryTrackerAccessor,
+        Potts3D* _potts): FPPLinkInventoryBase(_cellLinkInventoryTrackerAccessor, _potts){
+
+        }
+
 		virtual ~FPPAnchorInventory() {}
 
 		FocalPointPlasticityAnchor* getAnchor(CellG* _cell, long _anchorId) { return getLinkById(FPPLinkID(_cell->id, _anchorId)); }

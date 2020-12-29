@@ -47,7 +47,7 @@ namespace CompuCell3D {
 		 // be sure to set isInitiator after type cast!
 		 FocalPointPlasticityTrackerData(const FocalPointPlasticityLinkTrackerData& fppltd);
 
-		 FocalPointPlasticityTrackerData& operator=(const FocalPointPlasticityLinkTrackerData& fppltd) {
+		 FocalPointPlasticityTrackerData operator=(const FocalPointPlasticityLinkTrackerData& fppltd) {
 			 return FocalPointPlasticityTrackerData(fppltd);
 		 }
 
@@ -130,7 +130,7 @@ namespace CompuCell3D {
 		   neighborOrder = fpptd.neighborOrder;
 	   }
 
-	   FocalPointPlasticityLinkTrackerData& operator=(const FocalPointPlasticityTrackerData& fpptd) {
+	   FocalPointPlasticityLinkTrackerData operator=(const FocalPointPlasticityTrackerData& fpptd) {
 		   return FocalPointPlasticityLinkTrackerData(fpptd);
 	   }
 

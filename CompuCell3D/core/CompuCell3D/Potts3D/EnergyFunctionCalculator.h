@@ -33,8 +33,8 @@ class EnergyFunctionCalculator{
 
       virtual double changeEnergy(Point3D &pt, const CellG *newCell,
 				const CellG *oldCell,const unsigned int _flipAttempt);
-      void setPotts(Potts3D * _potts){potts=_potts;}
-      void setSimulator(Simulator * _sim){sim=_sim ;}
+      virtual void setPotts(Potts3D * _potts){potts=_potts;}
+      virtual void setSimulator(Simulator * _sim){sim=_sim ;}
 	  
 	  //virtual void  request_current_mcs_accepted_mask_array(bool * mask_array, size_t len) {}
 	  //virtual void  request_current_mcs_prob_array(double * double_array, size_t len) {}

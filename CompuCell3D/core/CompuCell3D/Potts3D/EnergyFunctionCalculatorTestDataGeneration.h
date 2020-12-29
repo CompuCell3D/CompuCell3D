@@ -10,6 +10,7 @@
 namespace CompuCell3D{
 
     class PottsTestData;
+    class Simulator;
 
 class EnergyFunctionCalculatorTestDataGeneration: public EnergyFunctionCalculator{
 
@@ -17,10 +18,10 @@ class EnergyFunctionCalculatorTestDataGeneration: public EnergyFunctionCalculato
        EnergyFunctionCalculatorTestDataGeneration();
        virtual ~EnergyFunctionCalculatorTestDataGeneration();
 
-       virtual void init(CC3DXMLElement *_xmlData) {}
-       virtual double changeEnergy(Point3D &pt, const CellG *newCell, const CellG *oldCell, const unsigned int _flipAttempt);
-       void setPotts(Potts3D * _potts) { potts = _potts; }
-       void setSimulator(Simulator * _sim) { sim = _sim; }
+       void init(CC3DXMLElement *_xmlData) override {}
+       double changeEnergy(Point3D &pt, const CellG *newCell, const CellG *oldCell, const unsigned int _flipAttempt) override;
+//       void setPotts(Potts3D * _potts) override { potts = _potts; }
+//       void setSimulator(Simulator * _sim) override { sim = _sim; }
 
        virtual void  get_current_mcs_accepted_mask_npy_array(int * intvec, int n) {}
        virtual void  get_current_mcs_prob_npy_array(double * doublevec, int n) {}
