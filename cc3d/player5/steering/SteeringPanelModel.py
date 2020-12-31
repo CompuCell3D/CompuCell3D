@@ -7,10 +7,14 @@ class SteeringPanelModel(QtCore.QAbstractTableModel):
 
         self.item_data = None
         self.dirty_flag = False
-        self.header_data = ['Value', 'Type']
+
+        self.header_data = [
+            'Value',
+            # 'Type'
+        ]
         self.item_data_attr_name = {
             0: 'val',
-            1: 'item_type'
+            # 1: 'item_type'
         }
 
     def set_dirty(self, flag):
