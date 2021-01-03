@@ -136,7 +136,7 @@ class RestartManager:
 
         try:
             fXMLNew = open(_fileName + '.new', 'w')
-        except IOerror as e:
+        except IOError as e:
             print(__file__ + ' updatePythonScript: could not open ', _fileName, ' for writing')
 
         fieldDim = self.sim.getPotts().getCellFieldG().getDim()
@@ -179,7 +179,7 @@ class RestartManager:
 
         try:
             fXMLNew = open(_fileName + '.new', 'w')
-        except IOerror as e:
+        except IOError as e:
             print(__file__ + ' updateXMLScript: could not open ', _fileName, ' for writing')
 
         fieldDim = self.sim.getPotts().getCellFieldG().getDim()
