@@ -9,6 +9,7 @@ from cc3d.core.ExtraFieldAdapter import ExtraFieldAdapter
 # from cc3d.CompuCellSetup.simulation_utils import stop_simulation
 from cc3d.CompuCellSetup.simulation_utils import extract_type_names_and_ids
 from cc3d import CompuCellSetup
+from cc3d.core.CoreSpecsRegistry import CoreSpecsAccessor
 from cc3d.core.XMLUtils import dictionaryToMapStrStr as d2mss
 from cc3d.core.XMLDomUtils import XMLElemAdapter
 from typing import Union
@@ -205,6 +206,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         # free floating SBML model accessor
         self.sbml = GlobalSBMLFetcher()
+        self.specs = CoreSpecsAccessor(CompuCellSetup.persistent_globals.core_specs_registry)
+        """core specification accessor"""
 
         # SBMLSolverHelper.__init__(self)
         self.frequency = frequency
