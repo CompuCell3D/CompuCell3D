@@ -8,6 +8,8 @@ from cc3d.core import XMLUtils
 from cc3d import CompuCellSetup
 from deprecated import deprecated
 from cc3d.core.XMLUtils import ElementCC3D
+from cc3d.core.PyCoreSpecs import _PyCoreSpecsBase
+
 
 class XML2ObjConverterAdapter:
     def __init__(self):
@@ -42,6 +44,7 @@ def init_modules(sim, _cc3dXML2ObjConverter):
         for metadataData in metadata_data_list:
             sim.ps.addMetadataDataCC3D(metadataData)
 
+
 def parseXML( xml_fname):
     """
 
@@ -63,7 +66,8 @@ def setSimulationXMLDescription(_xmlTree):
     """
     return set_simulation_xml_description(xml_tree=_xmlTree)
 
-def set_simulation_xml_description(xml_tree:ElementCC3D)->None:
+
+def set_simulation_xml_description(xml_tree: ElementCC3D) -> None:
     """
     
     :param xml_tree: 
@@ -74,6 +78,19 @@ def set_simulation_xml_description(xml_tree:ElementCC3D)->None:
     cc3d_xml_2_obj_converter.xmlTree = xml_tree
     cc3d_xml_2_obj_converter.root = xml_tree.CC3DXMLElement
 
+
+def register_specs(*_specs) -> None:
+    """
+    Register core specification with CC3D
+
+    :param _specs: variable number of _PyCoreSpecsBase-derived class instances
+    :return: None
+    """
+    for _spec in _specs:
+        if not issubclass(type(_spec), _PyCoreSpecsBase):
+            raise TypeError("Not a core specs instance")
+        CompuCellSetup.persistent_globals.core_specs_registry.register_spec(_spec)
+    CompuCellSetup.persistent_globals.core_specs_registry.inject()
 
 
 def getSteppableRegistry():
