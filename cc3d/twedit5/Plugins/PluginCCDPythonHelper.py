@@ -145,6 +145,8 @@ class CC3DPythonHelper(QObject):
 
         self.__initActions()
 
+        self.__init_cc3d_api()
+
         return None, True
 
     def deactivate(self):
@@ -203,7 +205,7 @@ class CC3DPythonHelper(QObject):
 
         """
 
-        # lists begining of action names which will be grouped 
+        # lists begining of action names which will be grouped
 
         self.snippetDictionary = {}
 
@@ -269,6 +271,22 @@ class CC3DPythonHelper(QObject):
         # ---------------------------------------
 
         self.cc3dPythonMenu.addAction(self.actions["Skip Comments In Python Snippets"])
+
+    def __init_cc3d_api(self):
+        """
+        Initializes cc3d python api
+
+        :return: None
+        """
+        from cc3d.twedit5.LanguageManager import LANGS
+        from cc3d.twedit5.Plugins.CC3DPythonHelper import cc3dpy_api
+
+        lexer_name = LANGS["Python"][0]
+
+        if not os.path.isfile(cc3dpy_api.api_filename):
+            cc3dpy_api.main()
+
+        self.__ui.languageManager.loadSingleAPI(lexer_name, cc3dpy_api.api_filename)
 
     def skipCommentsInPythonSnippets(self, _flag):
 
