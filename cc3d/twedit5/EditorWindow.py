@@ -588,6 +588,8 @@ class EditorWindow(QMainWindow):
 
         self.pm = PluginManager(self)
 
+        self.languageManager.finalize_apis()
+
         self.setDefaultStyling()
 
         # # # lexer=textEditLocal.lexer()

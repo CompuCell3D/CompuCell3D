@@ -2,6 +2,83 @@ from cc3d.twedit5.twedit.utils.global_imports import *
 from cc3d.twedit5 import twedit
 from cc3d.twedit5.Messaging import stdMsg, dbgMsg, errMsg, dbgMsg
 
+# first determine where APIs are located
+
+# initial guess is in the "APIs" subrirestory of the directory which holds Configuration.py
+
+# tweditRootPath = os.path.dirname(Configuration.__file__)
+tweditRootPath = os.path.dirname(os.path.dirname(twedit.__file__))
+apisPath = os.path.join(tweditRootPath, "APIs")
+
+# check if it exists
+
+if not os.path.exists(apisPath):
+    # when packaging on Windows with pyinstaller the path to executable is accesible via
+    # sys.executable as Python is bundled with the distribution
+
+    # os.path.dirname(Configuration.__file__) returned by pyInstaller will not work without some
+    # modifications so it is best tu use os.path.dirname(sys.executable) approach
+
+    tweditRootPath = os.path.dirname(sys.executable)
+
+    apisPath = os.path.join(tweditRootPath, "APIs")
+
+
+LANGS = {
+    "Bash": ["QsciLexerBash", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Batch": ["QsciLexerBatch", "REM ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "C": ["QsciLexerCPP", "// ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "C#": ["QsciLexerCSharp", "// ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "CMake": ["QsciLexerCMake", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "CSS": ["QsciLexerCSS", "/* ", " */", 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "D": ["QsciLexerD", "// ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Diff": ["QsciLexerDiff", None, None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Fortran": ["QsciLexerFortran", "! ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Fortran77": ["QsciLexerFortran77", "c ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "HTML": ["QsciLexerHTML", "<!-- ", " -->", 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "IDL": ["QsciLexerIDL", "; ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Java": ["QsciLexerJava", "// ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "JavaScript": ["QsciLexerJavaScript", "// ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Lua": ["QsciLexerLua", "-- ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Makefile": ["QsciLexerMakefile", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Matlab":  ["QsciLexerMatlab", "% ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Octave": ["QsciLexerOctave", "% ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Pascal": ["QsciLexerPascal", "{ ", " }", 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Perl": ["QsciLexerPerl", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "PostScript": ["QsciLexerPostScript", "% ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Properties": ["QsciLexerProperties", "; ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Python": ["QsciLexerPython", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "POV": ["QsciLexerPOV", "// ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Spice": ["QsciLexerSpice", "* ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "SQL": ["QsciLexerSQL", "/* ", " */", 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Ruby": ["QsciLexerRuby", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "TCL": ["QsciLexerTCL", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "Verilog": ["QsciLexerVerilog", "// ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "VHDL": ["QsciLexerVHDL", "-- ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "TeX": ["QsciLexerTeX", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "XML": ["QsciLexerXML", "<!-- ", " -->", 1, 5, QsciScintilla.SCWS_INVISIBLE],
+    "YML": ["QsciLexerYAML", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE]
+}
+"""Supported languages and their lexers and lexer properties"""
+
+APIS = {
+    "QsciLexerCPP": os.path.abspath(os.path.join(apisPath, "cplusplus.api")),
+    "QsciLexerCSharp": os.path.abspath(os.path.join(apisPath, "csharp.api")),
+    "QsciLexerCSS": os.path.abspath(os.path.join(apisPath, "css.api")),
+    "QsciLexerHTML": os.path.abspath(os.path.join(apisPath, "html.api")),
+    "QsciLexerJava": os.path.abspath(os.path.join(apisPath, "java.api")),
+    "QsciLexerJavaScript": os.path.abspath(os.path.join(apisPath, "javascript.api")),
+    "QsciLexerPearl": os.path.abspath(os.path.join(apisPath, "perl.api")),
+    "QsciLexerRuby": os.path.abspath(os.path.join(apisPath, "ruby.api"))
+}
+"""Built-in apis; automatically loaded"""
+
+if isfile(join(tweditRootPath, "APIs", f"Python-{sys.version_info.major}.{sys.version_info.minor}.api")):
+    APIS["QsciLexerPython"] = join(tweditRootPath, "APIs",
+                                   f"Python-{sys.version_info.major}.{sys.version_info.minor}.api")
+else:
+    APIS["QsciLexerPython"] = join(apisPath, "python.api")
+
 
 class LanguageManager:
 
@@ -26,6 +103,9 @@ class LanguageManager:
 
         self.apiDict = {}
 
+        self.api_file_dict = {v[0]: [] for v in LANGS.values()}
+        """Dictionary containing .api files for autocompletion"""
+
         self.installAutocompletionAPIs()
 
         # format [lexer,begin comment, end comment, brace matching (0- nor matching, 1 matching), codeFolding]
@@ -36,118 +116,13 @@ class LanguageManager:
 
         self.lexerLanguageDictionary = {}
 
-        self.addLanguageLexerDictionaryEntry("Bash", ["QsciLexerBash", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Batch",
-
-                                             ["QsciLexerBatch", "REM ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("C", ["QsciLexerCPP", "// ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("C#", ["QsciLexerCSharp", "// ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("CSS", ["QsciLexerCSS", "/* ", " */", 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("D", ["QsciLexerD", "// ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Diff", ["QsciLexerDiff", None, None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Python",
-
-                                             ["QsciLexerPython", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("CMake",
-
-                                             ["QsciLexerCMake", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Fortran",
-
-                                             ["QsciLexerFortran", "! ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Fortran77",
-
-                                             ["QsciLexerFortran77", "c ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("HTML",
-
-                                             ["QsciLexerHTML", "<!-- ", " -->", 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("IDL", ["QsciLexerIDL", "; ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Java", ["QsciLexerJava", "// ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("JavaScript",
-
-                                             ["QsciLexerJavaScript", "// ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Lua", ["QsciLexerLua", "-- ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Makefile",
-
-                                             ["QsciLexerMakefile", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Matlab",
-
-                                             ["QsciLexerMatlab", "% ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Octave",
-
-                                             ["QsciLexerOctave", "% ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Pascal",
-
-                                             ["QsciLexerPascal", "{ ", " }", 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Perl", ["QsciLexerPerl", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("PostScript",
-
-                                             ["QsciLexerPostScript", "% ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Properties",
-
-                                             ["QsciLexerProperties", "; ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("POV", ["QsciLexerPOV", "// ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Spice",
-
-                                             ["QsciLexerSpice", "* ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("SQL", ["QsciLexerSQL", "/* ", " */", 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Ruby", ["QsciLexerRuby", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("TCL", ["QsciLexerTCL", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("Verilog",
-
-                                             ["QsciLexerVerilog", "// ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("VHDL", ["QsciLexerVHDL", "-- ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("TeX", ["QsciLexerTeX", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("XML",
-
-                                             ["QsciLexerXML", "<!-- ", " -->", 1, 5, QsciScintilla.SCWS_INVISIBLE])
-
-        self.addLanguageLexerDictionaryEntry("YML", ["QsciLexerYAML", "# ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
+        [self.addLanguageLexerDictionaryEntry(k, v.copy()) for k, v in LANGS.items()]
 
         self.lDict = {"XML": QsciLexerXML()}
 
     def importAllAvailableLexers(self):
 
-        lexerNames = ["QsciLexerBash", "QsciLexerBatch", "QsciLexerCPP", "QsciLexerCSharp", "QsciLexerCSS",
-                      "QsciLexerD", "QsciLexerDiff", "QsciLexerPython", "QsciLexerCMake",
-                      "QsciLexerFortran", "QsciLexerFortran77", "QsciLexerHTML", "QsciLexerIDL", "QsciLexerJava",
-                      "QsciLexerJavaScript", "QsciLexerLua", "QsciLexerMakefile", "QsciLexerMatlab", "QsciLexerOctave",
-                      "QsciLexerPascal", "QsciLexerPerl",
-                      "QsciLexerPostScript", "QsciLexerProperties", "QsciLexerPOV", "QsciLexerSpice", "QsciLexerSQL",
-                      "QsciLexerRuby", "QsciLexerTCL", "QsciLexerVerilog", "QsciLexerVHDL", "QsciLexerTeX",
-                      "QsciLexerXML", "QsciLexerYAML"]
-
-        for lexerName in lexerNames:
+        for lexerName in [v[0] for v in LANGS.values()]:
 
             try:
                 exec("from PyQt5.Qsci import " + lexerName + "\n")
@@ -162,13 +137,9 @@ class LanguageManager:
 
         try:
 
-            self.apiDict[_lexerName] = QsciAPIs(self.lexerObjectDict[_lexerName])
+            if _apiName not in self.api_file_dict[_lexerName]:
 
-            self.apiDict[_lexerName].load(_apiName)
-
-            self.apiDict[_lexerName].prepare()
-
-            self.lexerObjectDict[_lexerName].setAPIs(self.apiDict[_lexerName])
+                self.api_file_dict[_lexerName].append(_apiName)
 
         except KeyError:
 
@@ -176,47 +147,9 @@ class LanguageManager:
 
     def installAutocompletionAPIs(self):
 
-        # first determine where APIs are located
-
-        # initial guess is in the "APIs" subrirestory of the directory which holds Configuration.py        
-
-        # tweditRootPath = os.path.dirname(Configuration.__file__)
-        osp_dir = os.path.dirname
-        tweditRootPath = osp_dir(osp_dir(twedit.__file__))
-        apisPath = os.path.join(tweditRootPath, "APIs")
-
-        # check if it exists
-
-        if not os.path.exists(apisPath):
-            # when packaging on Windows with pyinstaller the path to executable is accesible via
-            # sys.executable as Python is bundled with the distribution
-
-            # os.path.dirname(Configuration.__file__) returned by pyInstaller will not work without some
-            # modifications so it is best tu use os.path.dirname(sys.executable) approach
-
-            tweditRootPath = os.path.dirname(sys.executable)
-
-            apisPath = os.path.join(tweditRootPath, "APIs")
-
         dbgMsg("apisPath=", os.path.abspath(apisPath))
 
-        self.loadSingleAPI("QsciLexerCPP", os.path.abspath(os.path.join(apisPath, "cplusplus.api")))
-
-        self.loadSingleAPI("QsciLexerCSharp", os.path.abspath(os.path.join(apisPath, "csharp.api")))
-
-        self.loadSingleAPI("QsciLexerCSS", os.path.abspath(os.path.join(apisPath, "css.api")))
-
-        self.loadSingleAPI("QsciLexerHTML", os.path.abspath(os.path.join(apisPath, "html.api")))
-
-        self.loadSingleAPI("QsciLexerJava", os.path.abspath(os.path.join(apisPath, "java.api")))
-
-        self.loadSingleAPI("QsciLexerJavaScript", os.path.abspath(os.path.join(apisPath, "javascript.api")))
-
-        self.loadSingleAPI("QsciLexerPearl", os.path.abspath(os.path.join(apisPath, "perl.api")))
-
-        self.loadSingleAPI("QsciLexerPython", os.path.abspath(os.path.join(apisPath, "python.api")))
-
-        self.loadSingleAPI("QsciLexerRuby", os.path.abspath(os.path.join(apisPath, "ruby.api")))
+        [self.loadSingleAPI(k, v) for k, v in APIS.items()]
 
     def addLanguageLexerDictionaryEntry(self, _languageName, _languagePropertiesData):
 
@@ -259,6 +192,25 @@ class LanguageManager:
             # self.actionDict[key]=QtGui.QAction(key, self, shortcut="",
 
             # statusTip=key, triggered=self.increaseIndent)
+
+    def finalize_apis(self):
+        """
+        All APIs loaded internally and externally are finalized
+
+        :return: None
+        """
+
+        for lexer_name, api_files in self.api_file_dict.items():
+
+            api = QsciAPIs(self.lexerObjectDict[lexer_name])
+
+            [api.load(af) for af in api_files]
+
+            api.prepare()
+
+            self.lexerObjectDict[lexer_name].setAPIs(api)
+
+            self.apiDict[lexer_name] = api
 
     def selectLexerBasedOnLexerObject(self, _lexerObj):
 
