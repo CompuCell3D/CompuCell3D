@@ -958,7 +958,7 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
                        f"Invalid boundary specification. Valid boundaries are {BOUNDARYTYPESPOTTS}"),
         "boundary_z": (lambda x: x not in BOUNDARYTYPESPOTTS,
                        f"Invalid boundary specification. Valid boundaries are {BOUNDARYTYPESPOTTS}"),
-        "neighbor_order": (lambda x: not 0 < x < 4, "Invalid neighbor order. Must be in [1, 3]"),
+        "neighbor_order": (lambda x: x < 1, "Neighbor order must be positive"),
         "debug_output_frequency": (lambda x: x < 0,
                                    "Invalid debug output frequency. Must be non-negative"),
         "random_seed": (lambda x: x is not None and x < 0, "Invalid random seed. Must be non-negative"),
@@ -2494,7 +2494,7 @@ class ContactPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
     name = "contact"
     registered_name = "Contact"
 
-    check_dict = {"neighbor_order": (lambda x: not (0 < x < 5), "Valid neighbor orders are in [1, 4]")}
+    check_dict = {"neighbor_order": (lambda x: x < 1, "Neighbor order must be positive")}
 
     def __init__(self, neighbor_order: int = 1, *_params):
         """
@@ -2837,7 +2837,7 @@ class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSt
     name = "adhesion_flex"
     registered_name = "AdhesionFlex"
 
-    check_dict = {"neighbor_order": (lambda x: not (0 < x < 5), "Valid neighbor orders are in [1, 4]")}
+    check_dict = {"neighbor_order": (lambda x: x < 1, "Neighbor order must be positive")}
 
     def __init__(self, neighbor_order: int = 1):
         super().__init__()
@@ -3720,7 +3720,7 @@ class FocalPointPlasticityParamSpec(_PyCoreSpecsBase):
         "target_distance": (lambda x: x < 0, "Target distance must be non-negative"),
         "max_distance": (lambda x: x < 0, "Maximum distance must be non-negative"),
         "max_junctions": (lambda x: x < 1, "Maximum number of junctions must be positive"),
-        "neighbor_order": (lambda x: not 0 < x < 5, "Invalid neighbor order. Must be in [1, 5]")
+        "neighbor_order": (lambda x: x < 1, "Neighbor order must be positive")
     }
 
     def __init__(self,
@@ -3837,7 +3837,7 @@ class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _
     name = "focal_point_plasticity"
     registered_name = "FocalPointPlasticity"
 
-    check_dict = {"neighbor_order": (lambda x: not 0 < x < 5, "Invalid neighbor order. Must be in [1, 5]")}
+    check_dict = {"neighbor_order": (lambda x: x < 1, "Neighbor order must be positive")}
 
     def __init__(self, neighbor_order: int = 1, *_params):
         super().__init__()
@@ -4085,7 +4085,7 @@ class CurvatureInternalTypeParameters(_PyCoreSpecsBase):
 
     check_dict = {
         "max_junctions": (lambda x: x < 1, "Maximum number of junctions must be positive"),
-        "neighbor_order": (lambda x: not 0 < x < 5, "Invalid neighbor order. Must be in [1, 5]")
+        "neighbor_order": (lambda x: x < 1, "Neighbor order must be positive")
     }
 
     def __init__(self,
@@ -4344,7 +4344,7 @@ class BoundaryPixelTrackerPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
     name = "boundary_pixel_tracker"
     registered_name = "BoundaryPixelTracker"
 
-    check_dict = {"neighbor_order": (lambda x: not 0 < x < 5, "Invalid neighbor order. Must be in [1, 5]")}
+    check_dict = {"neighbor_order": (lambda x: x < 1, "Neighbor order must be positive")}
 
     def __init__(self, neighbor_order: int = 1):
         super().__init__()
