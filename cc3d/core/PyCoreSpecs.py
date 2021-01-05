@@ -3370,8 +3370,9 @@ class ConnectivityGlobalPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
         """
         el = cls.find_xml_by_attr(_xml)
         el_list = el.getElements("ConnectivityOn")
-        return cls(fast=el.findAttribute("FastAlgorithm"),
-                   *[e.getAttribute("Type") for e in el_list])
+        o = cls(*[e.getAttribute("Type") for e in el_list])
+        o.fast = el.findAttribute("FastAlgorithm")
+        return o
 
     @property
     def cell_types(self) -> List[str]:
