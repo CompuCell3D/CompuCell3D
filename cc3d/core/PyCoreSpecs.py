@@ -1418,12 +1418,18 @@ class CellTypePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
         :param str _name: name of cell type
         :param int type_id: id of cell type, optional
         :param bool frozen: freeze cell type if True, defaults to False
-        :raises SpecValueError: when name or id is already specified
+        :raises SpecValueError:
+        when name or id is already specified, or when setting the id of the medium to a nonzero value
         :return: None
         """
 
         if _name in self.cell_types:
-            raise SpecValueError(f"Type name {_name} already specified")
+            if _name == "Medium":
+                if type_id is not None and type_id != 0:
+                    raise SpecValueError(f"Medium always had id 0")
+                return
+            else:
+                raise SpecValueError(f"Type name {_name} already specified")
 
         if type_id is not None:
             if type_id in self.cell_type_ids:
