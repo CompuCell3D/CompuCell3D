@@ -243,7 +243,8 @@ class _PyCoreXMLInterface(_PyCoreSpecsBase, ABC):
                 raise SpecImportError("Attribute name not known")
 
         el = None
-        for els in _xml.getElements(cls.type):
+        el_list = _xml.getElements(cls.type)
+        for els in el_list:
             els: CC3DXMLElement
             if els.findElement(attr_name) and els.getAttribute(attr_name) == cls.registered_name:
                 el = els
@@ -1184,7 +1185,8 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
         if el.findElement("FluctuationAmplitude"):
             amp_el: CC3DXMLElement = el.getFirstElement("FluctuationAmplitude")
             if amp_el.findElement("FluctuationAmplitudeParameters"):
-                for ampt_el in amp_el.getElements("FluctuationAmplitudeParameters"):
+                amp_el_list = amp_el.getElements("FluctuationAmplitudeParameters")
+                for ampt_el in amp_el_list:
                     ampt_el: CC3DXMLElement
                     o.fluctuation_amplitude_type(ampt_el.getAttribute("CellType"),
                                                  ampt_el.getAttributeAsDouble("FluctuationAmplitude"))
@@ -1373,7 +1375,9 @@ class CellTypePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
 
         o = cls()
 
-        for tp_el in cls.find_xml_by_attr(_xml).getElements("CellType"):
+        el_list = cls.find_xml_by_attr(_xml).getElements("CellType")
+
+        for tp_el in el_list:
             kwargs = {"frozen": tp_el.findAttribute("Freeze")}
             if tp_el.findAttribute("TypeId"):
                 kwargs["type_id"] = tp_el.getAttributeAsInt("TypeId")
@@ -1603,7 +1607,9 @@ class VolumePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
 
         o = cls()
 
-        for p_el in cls.find_xml_by_attr(_xml).getElements("VolumeEnergyParameters"):
+        el_list = cls.find_xml_by_attr(_xml).getElements("VolumeEnergyParameters")
+
+        for p_el in el_list:
             o.param_new(p_el.getAttribute("CellType"),
                         target_volume=p_el.getAttributeAsDouble("TargetVolume"),
                         lambda_volume=p_el.getAttributeAsDouble("LambdaVolume"))
@@ -1759,7 +1765,9 @@ class SurfacePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerab
 
         o = cls()
 
-        for p_el in cls.find_xml_by_attr(_xml).getElements("SurfaceEnergyParameters"):
+        el_list = cls.find_xml_by_attr(_xml).getElements("SurfaceEnergyParameters")
+
+        for p_el in el_list:
             o.param_new(p_el.getAttribute("CellType"),
                         target_surface=p_el.getAttributeAsDouble("TargetSurface"),
                         lambda_surface=p_el.getAttributeAsDouble("LambdaSurface"))
@@ -2094,10 +2102,14 @@ class ChemotaxisPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreStee
 
         o = cls()
 
-        for f_el in cls.find_xml_by_attr(_xml).getElements("ChemicalField"):
+        el_list = cls.find_xml_by_attr(_xml).getElements("ChemicalField")
+
+        for f_el in el_list:
             f = ChemotaxisParams(field_name=f_el.getAttribute("Name"),
                                  solver_name=f_el.getAttribute("Source"))
-            for p_el in f_el.getElements("ChemotaxisByType"):
+            f_el_list = f_el.getElements("ChemotaxisByType")
+
+            for p_el in f_el_list:
                 cell_type = p_el.getAttribute("Type")
                 kwargs = {"lambda_chemo": p_el.getAttributeAsDouble("Lambda")}
                 if p_el.findAttribute("SaturationCoef"):
@@ -2317,7 +2329,9 @@ class ExternalPotentialPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyC
             if el.getFirstElement("Algorithm").getText().lower() == "centerofmassbased":
                 o.com_based = True
 
-        for p_el in el.getElements("ExternalPotentialParameters"):
+        el_list = el.getElements("ExternalPotentialParameters")
+
+        for p_el in el_list:
             p_el: CC3DXMLElement
             kwargs = {comp: p_el.getAttributeAsDouble(comp) for comp in ["x", "y", "z"] if p_el.findAttribute(comp)}
             o.param_append(ExternalPotentialParameter(p_el.getAttribute("CellType"), **kwargs))
@@ -2524,7 +2538,9 @@ class ContactPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
 
         o = cls()
 
-        for p_el in el.getElements("Energy"):
+        el_list = el.getElements("Energy")
+
+        for p_el in el_list:
             p_el: CC3DXMLElement
             o.param_append(ContactEnergyParam(type_1=p_el.getAttribute("Type1"),
                                               type_2=p_el.getAttribute("Type2"),
@@ -2857,21 +2873,30 @@ class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSt
 
         o = cls()
 
-        for m_el in el.getElements("AdhesionMolecule"):
+        el_list = el.getElements("AdhesionMolecule")
+
+        for m_el in el_list:
             o.molecule_append(m_el.getAttribute("Molecule"))
 
-        for d_el in el.getElements("AdhesionMoleculeDensity"):
+        el_list = el.getElements("AdhesionMoleculeDensity")
+
+        for d_el in el_list:
             d_el: CC3DXMLElement
             o.density_append(AdhesionMoleculeDensitySpecs(molecule=d_el.getAttribute("Molecule"),
                                                           cell_type=d_el.getAttribute("CellType"),
                                                           density=d_el.getAttributeAsDouble("Density")))
 
-        for f_el in el.getElements("BindingFormula"):
+        el_list = el.getElements("BindingFormula")
+
+        for f_el in el_list:
             f_el: CC3DXMLElement
             f = AdhesionFlexBindingFormulaSpecs(formula_name=f_el.getAttribute("Name"),
                                                 formula=f_el.getFirstElement("Formula").getText())
             for p_mat_el in f_el.getFirstElement("Variables").getFirstElement("AdhesionInteractionMatrix"):
-                for p_el in p_mat_el.getElements("BindingParameter"):
+
+                p_el_list = p_mat_el.getElements("BindingParameter")
+
+                for p_el in p_el_list:
                     p_el: CC3DXMLElement
                     f.param_set(p_el.getAttribute("Molecule1"), p_el.getAttribute("Molecule2"), p_el.getDouble())
 
@@ -3189,7 +3214,9 @@ class LengthConstraintPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCo
         """
         o = cls()
 
-        for p_el in cls.find_xml_by_attr(_xml).getElements("LengthEnergyParameters"):
+        el_list = cls.find_xml_by_attr(_xml).getElements("LengthEnergyParameters")
+
+        for p_el in el_list:
             p_el: CC3DXMLElement
             kwargs = {"target_length": p_el.getAttributeAsDouble("TargetLength"),
                       "lambda_length": p_el.getAttributeAsDouble("LambdaLength")}
@@ -3335,8 +3362,9 @@ class ConnectivityGlobalPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
         :rtype: ConnectivityGlobalPluginSpecs
         """
         el = cls.find_xml_by_attr(_xml)
+        el_list = el.getElements("ConnectivityOn")
         return cls(fast=el.findAttribute("FastAlgorithm"),
-                   *[e.getAttribute("Type") for e in el.getElements("ConnectivityOn")])
+                   *[e.getAttribute("Type") for e in el_list])
 
     @property
     def cell_types(self) -> List[str]:
@@ -3540,22 +3568,30 @@ class SecretionPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteer
         o = cls(pixel_tracker=not el.findElement("DisablePixelTracker"),
                 boundary_pixel_tracker=not el.findElement("DisableBoundaryPixelTracker"))
 
-        for f_el in el.getElements("Field"):
+        el_list = el.getElements("Field")
+
+        for f_el in el_list:
             f_el: CC3DXMLElement
             f = SecretionFieldSpecs(field_name=f_el.getAttribute("Name"))
 
             if f_el.findAttribute("ExtraTimesPerMC"):
                 f.frequency = f_el.getAttributeAsInt("ExtraTimesPerMC")
 
-            for p_el in f_el.getElements("Secretion"):
+            f_el_list = f_el.getElements("Secretion")
+
+            for p_el in f_el_list:
                 p_el: CC3DXMLElement
                 f.param_append(SecretionSpecs(p_el.getAttribute("Type"), p_el.getDouble()))
 
-            for p_el in f_el.getElements("ConstantConcentration"):
+            f_el_list = f_el.getElements("ConstantConcentration")
+
+            for p_el in f_el_list:
                 f.param_append(SecretionSpecs(p_el.getAttribute("Type"), p_el.getDouble(),
                                               constant=True))
 
-            for p_el in f_el.getElements("SecretionOnContact"):
+            f_el_list = f_el.getElements("SecretionOnContact")
+
+            for p_el in f_el_list:
                 f.param_append(SecretionSpecs(p_el.getAttribute("Type"), p_el.getDouble(),
                                               contact_type=p_el.getAttribute("SecreteOnContactWith")))
 
@@ -3841,7 +3877,9 @@ class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _
         if el.findElement("NeighborOrder"):
             o.neighbor_order = el.getFirstElement("NeighborOrder").getInt()
 
-        for p_el in el.getElements("Parameters"):
+        el_list = el.getElements("Parameters")
+
+        for p_el in el_list:
             p_el: CC3DXMLElement
             p = FocalPointPlasticityParamSpec(p_el.getAttribute("Type1"),
                                               p_el.getAttribute("Type2"),
@@ -3856,14 +3894,19 @@ class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _
             if p_el.findElement("LinkConstituentLaw"):
                 l_el: CC3DXMLElement = p_el.getFirstElement("LinkConstituentLaw")
                 law = LinkConstituentLawSpecs(formula=l_el.getFirstElement("Formula").getText())
-                for v_el in l_el.getElements("Variable"):
+
+                l_el_list = l_el.getElements("Variable")
+
+                for v_el in l_el_list:
                     v_el: CC3DXMLElement
                     law.variable[v_el.getAttribute("Name")] = v_el.getAttributeAsDouble("Value")
                 p.law = law
 
             o.param_append(p)
 
-        for p_el in el.getElements("InternalParameters"):
+        el_list = el.getElements("InternalParameters")
+
+        for p_el in el_list:
             p_el: CC3DXMLElement
             p = FocalPointPlasticityParamSpec(p_el.getAttribute("Type1"),
                                               p_el.getAttribute("Type2"),
@@ -3879,7 +3922,10 @@ class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _
             if p_el.findElement("LinkConstituentLaw"):
                 l_el: CC3DXMLElement = p_el.getFirstElement("LinkConstituentLaw")
                 law = LinkConstituentLawSpecs(formula=l_el.getFirstElement("Formula").getText())
-                for v_el in l_el.getElements("Variable"):
+
+                l_el_list = l_el.getElements("Variable")
+
+                for v_el in l_el_list:
                     v_el: CC3DXMLElement
                     law.variable[v_el.getAttribute("Name")] = v_el.getAttributeAsDouble("Value")
                 p.law = law
@@ -4139,7 +4185,9 @@ class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteer
 
         o = cls()
 
-        for p_el in el.getElements("InternalParameters"):
+        el_list = el.getElements("InternalParameters")
+
+        for p_el in el_list:
             p_el: CC3DXMLElement
             o.param_internal_new(p_el.getAttribute("Type1"),
                                  p_el.getAttribute("Type2"),
@@ -4148,7 +4196,10 @@ class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteer
 
         if el.findElement("InternalTypeSpecificParameters"):
             t_el: CC3DXMLElement = el.getFirstElement("InternalTypeSpecificParameters")
-            for pt_el in t_el.getElements("Parameters"):
+
+            t_el_list = t_el.getElements("Parameters")
+
+            for pt_el in t_el_list:
                 pt_el: CC3DXMLElement
                 o.param_type_new(pt_el.getAttribute("TypeName"),
                                  pt_el.getAttributeAsInt("MaxNumberOfJunctions"),
@@ -4544,7 +4595,9 @@ class BlobInitializerSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
 
         o = cls()
 
-        for r_el in cls.find_xml_by_attr(_xml).getElements("Region"):
+        el_list = cls.find_xml_by_attr(_xml).getElements("Region")
+
+        for r_el in el_list:
             r_el: CC3DXMLElement
 
             kwargs = {"gap": r_el.getAttributeAsInt("Gap"),
@@ -4718,7 +4771,9 @@ class UniformInitializerSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
 
         o = cls()
 
-        for r_el in cls.find_xml_by_attr(_xml).getElements("Region"):
+        el_list = cls.find_xml_by_attr(_xml).getElements("Region")
+
+        for r_el in el_list:
             r_el: CC3DXMLElement
 
             min_el: CC3DXMLElement = r_el.getFirstElement("BoxMin")
@@ -5045,7 +5100,9 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
         o.gpu = gpu
         o.fluc_comp = el.findElement("FluctuationCompensator")
 
-        for f_el in el.getElements("DiffusionField"):
+        el_list = el.getElements("DiffusionField")
+
+        for f_el in el_list:
             f_el: CC3DXMLElement
 
             f = o.field_new(f_el.getAttribute("Name"))
@@ -5059,9 +5116,15 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
                 f.diff_data.decay_global = dd_el.getFirstElement("DecayConstant").getDouble()
             if dd_el.findElement("GlobalDecayConstant"):
                 f.diff_data.decay_global = dd_el.getFirstElement("GlobalDecayConstant").getDouble()
-            for t_el in dd_el.getElements("DiffusionCoefficient"):
+
+            el_list = dd_el.getElements("DiffusionCoefficient")
+
+            for t_el in el_list:
                 f.diff_data.diff_types[t_el.getAttribute("CellType")] = t_el.getDouble()
-            for t_el in dd_el.getElements("DecayCoefficient"):
+
+            el_list = dd_el.getElements("DecayCoefficient")
+
+            for t_el in el_list:
                 f.diff_data.decay_types[t_el.getAttribute("CellType")] = t_el.getDouble()
             if dd_el.findElement("InitialConcentrationExpression"):
                 f.diff_data.init_expression = dd_el.getFirstElement("InitialConcentrationExpression").getText()
@@ -5072,30 +5135,39 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
                 sd_el: CC3DXMLElement = el.getFirstElement("SecretionData")
                 p_el: CC3DXMLElement
 
-                for p_el in sd_el.getElements("Secretion"):
+                sd_el_list = sd_el.getElements("Secretion")
+
+                for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"), p_el.getDouble())
 
-                for p_el in sd_el.getElements("ConstantConcentration"):
+                sd_el_list = sd_el.getElements("ConstantConcentration")
+
+                for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"), p_el.getDouble(), constant=True)
 
-                for p_el in sd_el.getElements("SecretionOnContact"):
+                sd_el_list = sd_el.getElements("SecretionOnContact")
+
+                for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"),
                                          p_el.getDouble(),
                                          contact_type=p_el.getAttribute("SecreteOnContactWith"))
 
             b_el: CC3DXMLElement = f_el.getFirstElement("BoundaryConditions")
-            for p_el in b_el.getElements("Plane"):
+            b_el_list = b_el.getElements("Plane")
+            for p_el in b_el_list:
                 p_el: CC3DXMLElement
                 axis: str = p_el.getAttribute("Axis").lower()
                 if p_el.findElement("Periodic"):
                     setattr(f.bcs, f"{axis}_min_type", BOUNDARYTYPESPDE[2])
                 else:
                     c_el: CC3DXMLElement
-                    for c_el in p_el.getElements("ConstantValue"):
+                    p_el_list = p_el.getElements("ConstantValue")
+                    for c_el in p_el_list:
                         pos: str = c_el.getAttribute("PlanePosition").lower()
                         setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[0])
                         setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
-                    for c_el in p_el.getElements("ConstantDerivative"):
+                    p_el_list = p_el.getElements("ConstantDerivative")
+                    for c_el in p_el_list:
                         pos: str = c_el.getAttribute("PlanePosition").lower()
                         setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[1])
                         setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
@@ -5320,7 +5392,9 @@ class KernelDiffusionSolverSpecs(_PDESolverSpecs[KernelDiffusionSolverDiffusionD
 
         o = cls()
 
-        for f_el in el.getElements("DiffusionField"):
+        el_list = el.getElements("DiffusionField")
+
+        for f_el in el_list:
             f_el: CC3DXMLElement
 
             f = o.field_new(f_el.getAttribute("Name"))
@@ -5348,13 +5422,19 @@ class KernelDiffusionSolverSpecs(_PDESolverSpecs[KernelDiffusionSolverDiffusionD
                 sd_el: CC3DXMLElement = el.getFirstElement("SecretionData")
                 p_el: CC3DXMLElement
 
-                for p_el in sd_el.getElements("Secretion"):
+                sd_el_list = sd_el.getElements("Secretion")
+
+                for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"), p_el.getDouble())
 
-                for p_el in sd_el.getElements("ConstantConcentration"):
+                sd_el_list = sd_el.getElements("ConstantConcentration")
+
+                for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"), p_el.getDouble(), constant=True)
 
-                for p_el in sd_el.getElements("SecretionOnContact"):
+                sd_el_list = sd_el.getElements("SecretionOnContact")
+
+                for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"),
                                          p_el.getDouble(),
                                          contact_type=p_el.getAttribute("SecreteOnContactWith"))
@@ -5515,7 +5595,9 @@ class ReactionDiffusionSolverFESpecs(_PDESolverSpecs[ReactionDiffusionSolverFEDi
         o.autoscale = el.findElement("AutoscaleDiffusion")
         o.fluc_comp = el.findElement("FluctuationCompensator")
 
-        for f_el in el.getElements("DiffusionField"):
+        el_list = el.getElements("DiffusionField")
+
+        for f_el in el_list:
             f_el: CC3DXMLElement
 
             f = o.field_new(f_el.getAttribute("Name"))
@@ -5529,9 +5611,15 @@ class ReactionDiffusionSolverFESpecs(_PDESolverSpecs[ReactionDiffusionSolverFEDi
                 f.diff_data.decay_global = dd_el.getFirstElement("DecayConstant").getDouble()
             if dd_el.findElement("GlobalDecayConstant"):
                 f.diff_data.decay_global = dd_el.getFirstElement("GlobalDecayConstant").getDouble()
-            for t_el in dd_el.getElements("DiffusionCoefficient"):
+
+            dd_el_list = dd_el.getElements("DiffusionCoefficient")
+
+            for t_el in dd_el_list:
                 f.diff_data.diff_types[t_el.getAttribute("CellType")] = t_el.getDouble()
-            for t_el in dd_el.getElements("DecayCoefficient"):
+
+            dd_el_list = dd_el.getElements("DecayCoefficient")
+
+            for t_el in dd_el_list:
                 f.diff_data.decay_types[t_el.getAttribute("CellType")] = t_el.getDouble()
             if dd_el.findElement("InitialConcentrationExpression"):
                 f.diff_data.init_expression = dd_el.getFirstElement("InitialConcentrationExpression").getText()
@@ -5544,30 +5632,39 @@ class ReactionDiffusionSolverFESpecs(_PDESolverSpecs[ReactionDiffusionSolverFEDi
                 sd_el: CC3DXMLElement = el.getFirstElement("SecretionData")
                 p_el: CC3DXMLElement
 
-                for p_el in sd_el.getElements("Secretion"):
+                sd_el_list = sd_el.getElements("Secretion")
+
+                for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"), p_el.getDouble())
 
-                for p_el in sd_el.getElements("ConstantConcentration"):
+                sd_el_list = sd_el.getElements("ConstantConcentration")
+
+                for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"), p_el.getDouble(), constant=True)
 
-                for p_el in sd_el.getElements("SecretionOnContact"):
+                sd_el_list = sd_el.getElements("SecretionOnContact")
+
+                for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"),
                                          p_el.getDouble(),
                                          contact_type=p_el.getAttribute("SecreteOnContactWith"))
 
             b_el: CC3DXMLElement = f_el.getFirstElement("BoundaryConditions")
-            for p_el in b_el.getElements("Plane"):
+            b_el_list = b_el.getElements("Plane")
+            for p_el in b_el_list:
                 p_el: CC3DXMLElement
                 axis: str = p_el.getAttribute("Axis").lower()
                 if p_el.findElement("Periodic"):
                     setattr(f.bcs, f"{axis}_min_type", BOUNDARYTYPESPDE[2])
                 else:
                     c_el: CC3DXMLElement
-                    for c_el in p_el.getElements("ConstantValue"):
+                    p_el_list = p_el.getElements("ConstantValue")
+                    for c_el in p_el_list:
                         pos: str = c_el.getAttribute("PlanePosition").lower()
                         setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[0])
                         setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
-                    for c_el in p_el.getElements("ConstantDerivative"):
+                    p_el_list = p_el.getElements("ConstantDerivative")
+                    for c_el in p_el_list:
                         pos: str = c_el.getAttribute("PlanePosition").lower()
                         setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[1])
                         setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
@@ -5745,7 +5842,9 @@ class SteadyStateDiffusionSolverSpecs(_PDESolverSpecs[SteadyStateDiffusionSolver
             o.three_d = True
             el = o.find_xml_by_attr(_xml)
 
-        for f_el in el.getElements("DiffusionField"):
+        el_list = el.getElements("DiffusionField")
+
+        for f_el in el_list:
             f_el: CC3DXMLElement
 
             f = o.field_new(f_el.getAttribute("Name"))
@@ -5769,22 +5868,27 @@ class SteadyStateDiffusionSolverSpecs(_PDESolverSpecs[SteadyStateDiffusionSolver
                 sd_el: CC3DXMLElement = el.getFirstElement("SecretionData")
                 p_el: CC3DXMLElement
 
-                for p_el in sd_el.getElements("Secretion"):
+                sd_el_list = sd_el.getElements("Secretion")
+
+                for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"), p_el.getDouble())
 
             b_el: CC3DXMLElement = f_el.getFirstElement("BoundaryConditions")
-            for p_el in b_el.getElements("Plane"):
+            b_el_list = b_el.getElements("Plane")
+            for p_el in b_el_list:
                 p_el: CC3DXMLElement
                 axis: str = p_el.getAttribute("Axis").lower()
                 if p_el.findElement("Periodic"):
                     setattr(f.bcs, f"{axis}_min_type", BOUNDARYTYPESPDE[2])
                 else:
                     c_el: CC3DXMLElement
-                    for c_el in p_el.getElements("ConstantValue"):
+                    p_el_list = p_el.getElements("ConstantValue")
+                    for c_el in p_el_list:
                         pos: str = c_el.getAttribute("PlanePosition").lower()
                         setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[0])
                         setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
-                    for c_el in p_el.getElements("ConstantDerivative"):
+                    p_el_list = p_el.getElements("ConstantDerivative")
+                    for c_el in p_el_list:
                         pos: str = c_el.getAttribute("PlanePosition").lower()
                         setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[1])
                         setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
