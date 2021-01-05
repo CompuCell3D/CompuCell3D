@@ -5048,7 +5048,6 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
     """ DiffusionSolverFE """
 
     name = "diffusion_solver_fe"
-    registered_name = "DiffusionSolverFE"
 
     _field_spec = DiffusionSolverFEFieldSpecs
     _diff_data = DiffusionSolverFEDiffusionDataSpecs
@@ -5065,6 +5064,17 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
     gpu: bool = SpecProperty(name="gpu")
     """flag to use GPU acceleration"""
 
+    @property
+    def registered_name(self) -> str:
+        """
+
+        :return: name according to core
+        :rtype: str
+        """
+        if self.gpu:
+            return "DiffusionSolverFE_OpenCL"
+        return "DiffusionSolverFE"
+
     def generate_header(self) -> Union[ElementCC3D, None]:
         """
         Generate and return the top :class:`ElementCC3D` instance
@@ -5072,9 +5082,7 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
         :return: top ElementCC3D instance
         :rtype: ElementCC3D
         """
-        if self.gpu:
-            return ElementCC3D("Steppable", {"Type": "DiffusionSolverFE_OpenCL"})
-        return ElementCC3D("Steppable", {"Type": "DiffusionSolverFE"})
+        return ElementCC3D("Steppable", {"Type": self.registered_name})
 
     @property
     def xml(self) -> ElementCC3D:
@@ -5099,18 +5107,13 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
         :return: python class instace
         :rtype: DiffusionSolverFESpecs
         """
-        gpu = False
-        try:
-            el = cls.find_xml_by_attr(_xml)
-        except SpecImportError:
-            registered_name = cls.registered_name
-            cls.registered_name = "DiffusionSolverFE_OpenCL"
-            el = cls.find_xml_by_attr(_xml)
-            cls.registered_name = registered_name
-            gpu = True
-
         o = cls()
-        o.gpu = gpu
+        try:
+            el = o.find_xml_by_attr(_xml)
+        except SpecImportError:
+            o.gpu = not o.gpu
+            el = o.find_xml_by_attr(_xml)
+
         o.fluc_comp = el.findElement("FluctuationCompensator")
 
         el_list = el.getElements("DiffusionField")
@@ -5852,7 +5855,7 @@ class SteadyStateDiffusionSolverSpecs(_PDESolverSpecs[SteadyStateDiffusionSolver
         try:
             el = o.find_xml_by_attr(_xml)
         except SpecImportError:
-            o.three_d = True
+            o.three_d = not o.three_d
             el = o.find_xml_by_attr(_xml)
 
         el_list = el.getElements("DiffusionField")
