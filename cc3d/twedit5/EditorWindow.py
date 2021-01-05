@@ -4326,7 +4326,7 @@ class EditorWindow(QMainWindow):
 
             for i in range(panel.count()):
 
-                if _flag:
+                if flag:
 
                     panel.widget(i).setAutoCompletionThreshold(_value)
 
