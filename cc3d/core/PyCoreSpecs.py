@@ -8,10 +8,11 @@ Defines python-based core specification classes
 # todo: add to python reference manual
 
 from abc import ABC
+import os
 from typing import Any, Callable, Dict, Generic, List, Tuple, TypeVar, Union
 
 import cc3d
-from cc3d.core.XMLUtils import ElementCC3D, CC3DXMLElement
+from cc3d.core.XMLUtils import ElementCC3D, CC3DXMLElement, Xml2Obj
 from cc3d.cpp.CompuCell import Point3D
 
 
@@ -5998,3 +5999,56 @@ PDESOLVERS = [
     SteadyStateDiffusionSolverSpecs
 ]
 """list of PDE solvers that can be registered with cc3d"""
+
+
+def from_xml(_xml: CC3DXMLElement) -> List[_PyCoreSpecsBase]:
+    """
+    Returns a list of spec instances instantiated from specification in a :class:`CC3DXMLElement` parent instance
+
+    :param _xml: cc3dml specification parent instance
+    :type _xml: CC3DXMLElement
+    :return: list of instantiated specs
+    :rtype: list of _PyCoreSpecsBase
+    """
+    o = []
+
+    for s in PLUGINS + STEPPABLES + INITIALIZERS + PDESOLVERS:
+        try:
+            s_inst = s.from_xml(_xml)
+            o.append(s_inst)
+        except SpecImportError:
+            pass
+
+    return o
+
+
+def from_file(_fn: str) -> List[_PyCoreSpecsBase]:
+    """
+    Returns a list of spec instances instantiated from specification in a .cc3d or .xml file
+
+    :param _fn: absolute path to file
+    :type _fn: str
+    :raises SpecImportError: when the file does not exist
+    :raises SpecValueError: when the file type is not supported
+    :return: list of instantiated specs
+    :rtype: list of _PyCoreSpecsBase
+    """
+
+    if not os.path.isfile(_fn):
+        raise SpecImportError("File not found:", _fn)
+
+    filename, filetype = os.path.splitext(_fn)
+
+    if filetype == ".cc3d":
+        from cc3d.CompuCellSetup import readCC3DFile
+        sdh = readCC3DFile(_fn)
+        xml_filename = sdh.cc3dSimulationData.xmlScript
+
+    elif filetype == ".xml":
+        xml_filename = _fn
+    else:
+        raise SpecValueError("Unsupported file type. Supported types are .cc3d and .xml")
+
+    xml2_obj_converter = Xml2Obj()
+    xml_el = xml2_obj_converter.Parse(xml_filename)
+    return from_xml(xml_el)
