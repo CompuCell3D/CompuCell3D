@@ -1024,12 +1024,14 @@ class MetadataSpecs(_PyCoreXMLInterface):
         return o
 
 
-#: Supported lattice types
 LATTICETYPES = ["Cartesian", "Hexagonal"]
-#: Supported boundary types
+"""Supported lattice types"""
+
 BOUNDARYTYPESPOTTS = ["NoFlux", "Periodic"]
-#: Supported fluctuation amplitude function names
+"""Supported boundary types"""
+
 FLUCAMPFCNS = ["Min", "Max", "ArithmeticAverage"]
+"""Supported fluctuation amplitude function names"""
 
 
 class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
@@ -2202,7 +2204,7 @@ class ChemotaxisPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreStee
             # Allowing unspecified Source
             solver_name = ""
             if f_el.findAttribute("Source"):
-                solver_name=f_el.getAttribute("Source")
+                solver_name = f_el.getAttribute("Source")
             f = ChemotaxisParams(field_name=field_name, solver_name=solver_name)
             f_el_list = f_el.getElements("ChemotaxisByType")
 
@@ -6088,14 +6090,14 @@ PDESOLVERS = [
 """list of PDE solvers that can be registered with cc3d"""
 
 
-def from_xml(_xml: CC3DXMLElement) -> List[_PyCoreSpecsBase]:
+def from_xml(_xml: CC3DXMLElement) -> List[_PyCoreXMLInterface]:
     """
     Returns a list of spec instances instantiated from specification in a :class:`CC3DXMLElement` parent instance
 
     :param _xml: cc3dml specification parent instance
     :type _xml: CC3DXMLElement
     :return: list of instantiated specs
-    :rtype: list of _PyCoreSpecsBase
+    :rtype: list of _PyCoreXMLInterface
     """
     o = []
 
@@ -6109,7 +6111,7 @@ def from_xml(_xml: CC3DXMLElement) -> List[_PyCoreSpecsBase]:
     return o
 
 
-def from_file(_fn: str) -> List[_PyCoreSpecsBase]:
+def from_file(_fn: str) -> List[_PyCoreXMLInterface]:
     """
     Returns a list of spec instances instantiated from specification in a .cc3d or .xml file
 
@@ -6118,7 +6120,7 @@ def from_file(_fn: str) -> List[_PyCoreSpecsBase]:
     :raises SpecImportError: when the file does not exist
     :raises SpecValueError: when the file type is not supported
     :return: list of instantiated specs
-    :rtype: list of _PyCoreSpecsBase
+    :rtype: list of _PyCoreXMLInterface
     """
 
     if not os.path.isfile(_fn):
