@@ -931,6 +931,99 @@ class PyCoreSpecsMaster:
         return persistent_globals.simulator
 
 
+class MetadataSpecs(_PyCoreXMLInterface):
+    """
+    Metadata Specs
+    """
+
+    name = "metadata"
+    registered_name = "Metadata"
+
+    check_dict = {
+        "num_processors": (lambda x: x < 0, "Number of processors must be non-negative"),
+        "debug_output_frequency": (lambda x: x < 0, "Debug output frequency must be non-negative")
+    }
+
+    def __init__(self,
+                 num_processors: int = 1,
+                 debug_output_frequency: int = 0):
+        """
+
+        :param num_processors: number of processors, defaults to 1
+        :type num_processors: int
+        :param debug_output_frequency: debug output frequency, defaults to 0
+        :type debug_output_frequency: int
+        """
+        super().__init__()
+
+        self.check_inputs(num_processors=num_processors,
+                          debug_output_frequency=debug_output_frequency)
+
+        self.spec_dict = {"num_processors": num_processors,
+                          "debug_output_frequency": debug_output_frequency}
+
+    num_processors: int = SpecProperty("num_processors")
+    """Number of processors"""
+
+    debug_output_frequency: int = SpecProperty("debug_output_frequency")
+    """Debug output frequency"""
+
+    def generate_header(self) -> Union[ElementCC3D, None]:
+        """
+        Generates base element according to name and type
+
+        :raises SpecValueError: spec type not recognized
+        :return: Base element
+        :rtype: CC3DXMLElement or None
+        """
+        return ElementCC3D(self.registered_name)
+
+    @property
+    def xml(self) -> ElementCC3D:
+        """
+        CC3DXML element; generated from specification dictionary. Implementations should override this
+
+        :return: CC3DML XML element
+        :rtype: ElementCC3D
+        """
+        self._el = self.generate_header()
+        self._el.add_child(ElementCC3D("NumberOfProcessors", {}, str(self.num_processors)))
+        self._el.add_child(ElementCC3D("DebugOutputFrequency", {}, str(self.debug_output_frequency)))
+        return self._el
+
+    @classmethod
+    def find_xml_by_attr(cls, _xml: CC3DXMLElement, attr_name: str = None) -> CC3DXMLElement:
+        """
+        Returns first found xml element in parent by attribute value
+
+        :param CC3DXMLElement _xml: parent element
+        :param str attr_name: attribute name, default read from class type
+        :raises SpecImportError: When xml element not found
+        :return: first found element
+        :rtype: CC3DXMLElement
+        """
+        if not _xml.findElement(cls.registered_name):
+            raise SpecImportError(f"{cls.registered_name} not found")
+        return _xml.getFirstElement(cls.registered_name)
+
+    @classmethod
+    def from_xml(cls, _xml: CC3DXMLElement):
+        """
+        Instantiate an instance from a CC3DXMLElement parent instance
+
+        :param CC3DXMLElement _xml: parent xml
+        :return: python class instace
+        :rtype: _PyCoreSpecsBase
+        """
+        el = cls.find_xml_by_attr(_xml)
+        o = cls()
+        if el.findElement("NumberOfProcessors"):
+            o.num_processors = el.getFirstElement("NumberOfProcessors").getUInt()
+        if el.findElement("DebugOutputFrequency"):
+            o.debug_output_frequency = el.getFirstElement("DebugOutputFrequency").getUInt()
+        return o
+
+
 #: Supported lattice types
 LATTICETYPES = ["Cartesian", "Hexagonal"]
 #: Supported boundary types
@@ -962,8 +1055,6 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
         "boundary_z": (lambda x: x not in BOUNDARYTYPESPOTTS,
                        f"Invalid boundary specification. Valid boundaries are {BOUNDARYTYPESPOTTS}"),
         "neighbor_order": (lambda x: x < 1, "Neighbor order must be positive"),
-        "debug_output_frequency": (lambda x: x < 0,
-                                   "Invalid debug output frequency. Must be non-negative"),
         "random_seed": (lambda x: x is not None and x < 0, "Invalid random seed. Must be non-negative"),
         "lattice_type": (lambda x: x not in LATTICETYPES,
                          f"Invalid lattice type. Valid types are {LATTICETYPES}")
@@ -981,7 +1072,6 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
                  boundary_y: str = "NoFlux",
                  boundary_z: str = "NoFlux",
                  neighbor_order: int = 1,
-                 debug_output_frequency: int = 10,
                  random_seed: int = None,
                  lattice_type: str = "Cartesian",
                  offset: float = 0):
@@ -999,7 +1089,6 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
         :param str boundary_y: boundary conditions orthogonal to y-direction, defaults to "NoFlux"
         :param str boundary_z: boundary conditions orthogonal to z-direction, defaults to "NoFlux"
         :param int neighbor_order: neighbor order of flip attempts, defaults to 1
-        :param int debug_output_frequency: debug output frequency, defaults to 10
         :param int random_seed: random seed, optional
         :param str lattice_type: type of lattice, defaults to "Cartesian"
         :param float offset: offset in Boltzmann acceptance function
@@ -1017,7 +1106,6 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
                           boundary_y=boundary_y,
                           boundary_z=boundary_z,
                           neighbor_order=neighbor_order,
-                          debug_output_frequency=debug_output_frequency,
                           random_seed=random_seed,
                           lattice_type=lattice_type)
 
@@ -1032,7 +1120,7 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
                           "boundary_y": boundary_y,
                           "boundary_z": boundary_z,
                           "neighbor_order": neighbor_order,
-                          "debug_output_frequency": debug_output_frequency,
+                          "debug_output_frequency": 0,  # Legacy support; standard is to use MetadataSpecs
                           "random_seed": random_seed,
                           "lattice_type": lattice_type,
                           "offset": offset,
@@ -1067,9 +1155,6 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
 
     neighbor_order: int = SpecProperty(name="neighbor_order")
     """neighbor order of flip attempts"""
-
-    debug_output_frequency: int = SpecProperty(name="debug_output_frequency")
-    """debug output frequency"""
 
     random_seed: Union[int, None] = SpecProperty(name="random_seed")
     """random seed"""
@@ -1126,7 +1211,8 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
         if self.neighbor_order > 1:
             self._el.ElementCC3D("NeighborOrder", {}, str(self.neighbor_order))
 
-        self._el.ElementCC3D("DebugOutputFrequency", {}, str(self.debug_output_frequency))
+        # Legacy support; standard is to use MetadataSpecs
+        self._el.ElementCC3D("DebugOutputFrequency", {}, str(self.spec_dict["debug_output_frequency"]))
 
         if self.random_seed is not None:
             self._el.ElementCC3D("RandomSeed", {}, str(self.random_seed))
@@ -1207,7 +1293,8 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
             o.neighbor_order = el.getFirstElement("NeighborOrder").getUInt()
 
         if el.findElement("DebugOutputFrequency"):
-            o.debug_output_frequency = el.getFirstElement("DebugOutputFrequency").getUInt()
+            # Legacy support; standard is to use MetadataSpecs
+            o.spec_dict["debug_output_frequency"] = el.getFirstElement("DebugOutputFrequency").getUInt()
 
         if el.findElement("RandomSeed"):
             o.random_seed = el.getFirstElement("RandomSeed").getUInt()
@@ -6012,7 +6099,7 @@ def from_xml(_xml: CC3DXMLElement) -> List[_PyCoreSpecsBase]:
     """
     o = []
 
-    for s in PLUGINS + STEPPABLES + INITIALIZERS + PDESOLVERS:
+    for s in [MetadataSpecs] + PLUGINS + STEPPABLES + INITIALIZERS + PDESOLVERS:
         try:
             s_inst = s.from_xml(_xml)
             o.append(s_inst)
