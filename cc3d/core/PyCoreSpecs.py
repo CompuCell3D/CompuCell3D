@@ -1106,13 +1106,13 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
         if self.anneal > 0:
             self._el.ElementCC3D("Anneal", {}, str(self.anneal))
 
-        if isinstance(self.spec_dict["fluctuation_amplitude"], float):
-            self._el.ElementCC3D("FluctuationAmplitude", {}, str(self.spec_dict["fluctuation_amplitude"]))
-        else:
+        if isinstance(self.spec_dict["fluctuation_amplitude"], dict):
             fa_el = self._el.ElementCC3D("FluctuationAmplitude")
             for _type, _fa in self.spec_dict["fluctuation_amplitude"].items():
                 fa_el.ElementCC3D("FluctuationAmplitudeParameters", {"CellType": _type,
                                                                      "FluctuationAmplitude": str(_fa)})
+        else:
+            self._el.ElementCC3D("FluctuationAmplitude", {}, str(self.spec_dict["fluctuation_amplitude"]))
 
         if self.fluctuation_amplitude_function != FLUCAMPFCNS[0]:
             self._el.ElementCC3D("FluctuationAmplitudeFunctionName",
