@@ -6141,3 +6141,17 @@ def from_file(_fn: str) -> List[_PyCoreXMLInterface]:
     xml2_obj_converter = Xml2Obj()
     xml_el = xml2_obj_converter.Parse(xml_filename)
     return from_xml(xml_el)
+
+
+def build_xml(*specs: _PyCoreSpecsBase) -> ElementCC3D:
+    """
+    Returns a complete CC3DML model specification from a variable number of specs
+
+    :param specs: variable number of _PyCoreSpecsBase-derived class instances
+    :type specs: _PyCoreSpecsBase
+    :return: CC3DML model specification
+    :rtype: ElementCC3D
+    """
+    el = PyCoreSpecsMaster().xml
+    [el.add_child(s.xml) for s in specs]
+    return el
