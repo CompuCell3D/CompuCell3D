@@ -2,8 +2,6 @@
 # todo - check if cml replay or regular simulation always exits cleanly right now
 # todo there is a segfault after several repeated opens of simulations
 
-# enabling with statement in python 2.5 - CC3D was first implemented with Python 2.2 or 2.3. Those were the times...
-
 # -*- coding: utf-8 -*-
 import os
 import argparse
@@ -11,7 +9,6 @@ import sys
 import re
 import xml
 from pathlib import Path
-import inspect
 from collections import OrderedDict
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -45,6 +42,9 @@ from cc3d.core.RollbackImporter import RollbackImporter
 from cc3d.CompuCellSetup.readers import readCC3DFile
 from typing import Union, Optional
 from cc3d.gui_plugins.unzipper import Unzipper
+from weakref import ref
+from subprocess import Popen
+
 
 # import cc3d.Version as Version
 FIELD_TYPES = (
@@ -1215,9 +1215,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         sim = CompuCellSetup.persistent_globals.simulator
         if sim:
             self.fieldDim = sim.getPotts().getCellFieldG().getDim()
-            # any references to simulator shuold be weak to avoid possible memory leaks - when not using weak references one has to be super careful to set to Non all references to sim to break any reference cycles
+            # any references to simulator shuold be weak to avoid possible memory
+            # leaks - when not using weak references one has to be super careful
+            # to set to Non all references to sim to break any reference cycles
             # weakref is much easier to handle and code is cleaner
-            from weakref import ref
 
             self.mysim = ref(sim)
 
@@ -1235,7 +1236,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # redirecting output from C++ to internal console
                 import sip
 
-                stdErrConsole = self.UI.console.getStdErrConsole()  # we use __stdout console (see UI/Consile.py) as main output console for both stdout and std err from C++ and Python - sort of internal system console
+                # we use __stdout console (see UI/Consile.py) as main output console for both
+                # stdout and std err from C++ and Python - sort of internal system console
+                stdErrConsole = self.UI.console.getStdErrConsole()
                 stdErrConsole.clear()
                 addr = sip.unwrapinstance(stdErrConsole)
 
@@ -1335,35 +1338,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # # # self.__stopSim()
         self.__cleanAfterSimulation()
 
-    def launchNextParameterScanRun(self):
-        '''
-        launches next aprameter scan. Deprecated - parameter scans shuld be run from command line
-        :return:None
-        '''
-        fileName = self.__sim_file_name
-        # when running parameter scan after simulatino finish we run again the same simulation file. When cc3d project with parameter scan gets opened 'next iteration' simulation is generatet and this
-        # newly generated cc3d file is substituted instead of the "master" cc3d with parameter scan
-        # From user stand point whan matters is that the only thing that user needs to worry abuot is the "master" .cc3d project and this is what is opened in the player5
-        self.consecutiveRunCounter += 1
-        if self.consecutiveRunCounter >= self.maxNumberOfConsecutiveRuns:
-
-            from ParameterScanUtils import getParameterScanCommandLineArgList
-            from SystemUtils import getCC3DPlayerRunScriptPath
-
-            print('getCC3DPlayerRunScriptPath=', getCC3DPlayerRunScriptPath())
-            # had to use tw-line to do simple thing
-            cc3dPlayerRunScriptPath = getCC3DPlayerRunScriptPath()
-            popenArgs = [cc3dPlayerRunScriptPath] + getParameterScanCommandLineArgList(fileName)
-            # this code, although valid, will not work on Apple....
-            # popenArgs =[ getCC3DPlayerRunscriptPath() ] +getParameterScanCommandLineArgList(fileName)
-
-            from subprocess import Popen
-
-            cc3dProcess = Popen(popenArgs)
-            sys.exit()
-        else:
-            self.__runSim()
-
     def handleSimulationFinishedRegular(self, _flag):
         '''
         Callback - called after "regular" simulation finishes
@@ -1372,9 +1346,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         print('INSIDE handleSimulationFinishedRegular')
         self.__cleanAfterSimulation()
-
-        # if not self.singleSimulation:
-        #     self.launchNextParameterScanRun()
 
     def handleSimulationFinished(self, _flag):
         '''
@@ -1475,18 +1446,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if self.__imageOutput and not (self.__step % self.__shotFrequency):
             if self.screenshotManager:
                 self.process_output_screenshots()
-                # try:
-                #     self.screenshotManager.output_screenshots(mcs=self.__step)
-                # except KeyError:
-                #
-                #     self.screenshotManager.screenshotDataDict = {}
-                #     self.popup_message(
-                #         title='Error Processing Screnenshots',
-                #         msg='Could not output screenshots. It is likely that screenshot description file was generated '
-                #             'using incompatible code. '
-                #             'You may want to remove "screenshot_data" directory from your project '
-                #             'and use camera button to generate new screenshot file '
-                #             ' No screenshots will be taken'.format(self.screenshotManager.get_screenshot_filename()))
 
         if self.cmlHandlerCreated and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):
             CompuCellSetup.persistent_globals.cml_field_handler.write_fields(self.__step)
@@ -1668,7 +1627,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if param_scan_dialog.exec_():
             # starting param scan
-            from subprocess import Popen
             try:
                 cml_list = param_scan_dialog.get_cml_list()
             except RuntimeError as e:
@@ -2014,12 +1972,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if self.simulationIsRunning and not self.simulationIsStepping:
             self.__runSim()  # we are immediately restarting it after e.g. lattice resizing took place
 
-    def _drawField(self):  # called from GraphicsFrameWidget.py
+    def _drawField(self):
         '''
-        Calls __drawField
+        Calls __drawField . Called from GraphicsFrameWidget.py
         :return:None
         '''
-        #        print MODULENAME,'   _drawField called'
+
         self.__drawField()
 
     def __drawField(self):
@@ -2427,7 +2385,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         """
 
         windows_layout_dict = Configuration.getSetting('WindowsLayout')
-        # print('from settings windowsLayout = ', windows_layout_dict)
 
         # first restore main window with id 0 - this window is the only window open at this point
         # and it is open by default when simulation is started
@@ -2712,7 +2669,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     # print 'AFTER showSimView'
 
         self.drawingAreaPrepared = True
-        self.update_active_window_vis_flags()  # needed in case switching from one sim to another (e.g. 1st has FPP, 2nd doesn't)
+        # needed in case switching from one sim to another (e.g. 1st has FPP, 2nd doesn't)
+        self.update_active_window_vis_flags()
 
     def set_title_window_from_sim_fname(self, widget, abs_sim_fname):
         """
@@ -2731,7 +2689,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:none
         '''
 
-        # self._getOpenFileFilter()
         filter_ext = "Lattice Description Summary file  (*.dml )"
 
         default_dir = self.__outputDirectory
