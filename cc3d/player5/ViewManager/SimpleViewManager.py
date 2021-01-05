@@ -72,7 +72,6 @@ class SimpleViewManager(QObject):
         self.screenshot_description_browser_act = None
 
         # windows actions
-        self.python_steering_panel_act = None
         self.new_graphics_window_act = None
         self.tile_act = None
         self.cascade_act = None
@@ -401,9 +400,6 @@ class SimpleViewManager(QObject):
         initializes Window Actions
         :return:
         """
-
-        self.python_steering_panel_act = QAction("Steering Panel", self)
-        self.python_steering_panel_act.setShortcut(self.tr("Ctrl+U"))
 
         self.new_graphics_window_act = QAction(QIcon(gip("kcmkwm.png")), "&New Graphics Window", self)
         self.new_graphics_window_act.setShortcut(self.tr("Ctrl+I"))
