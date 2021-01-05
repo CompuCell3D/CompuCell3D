@@ -2899,13 +2899,13 @@ class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSt
             f_el: CC3DXMLElement
             f = AdhesionFlexBindingFormulaSpecs(formula_name=f_el.getAttribute("Name"),
                                                 formula=f_el.getFirstElement("Formula").getText())
-            for p_mat_el in f_el.getFirstElement("Variables").getFirstElement("AdhesionInteractionMatrix"):
+            p_mat_el = f_el.getFirstElement("Variables").getFirstElement("AdhesionInteractionMatrix")
 
-                p_el_list = p_mat_el.getElements("BindingParameter")
+            p_el_list = p_mat_el.getElements("BindingParameter")
 
-                for p_el in p_el_list:
-                    p_el: CC3DXMLElement
-                    f.param_set(p_el.getAttribute("Molecule1"), p_el.getAttribute("Molecule2"), p_el.getDouble())
+            for p_el in p_el_list:
+                p_el: CC3DXMLElement
+                f.param_set(p_el.getAttribute("Molecule1"), p_el.getAttribute("Molecule2"), p_el.getDouble())
 
             o.formula_append(f)
 
