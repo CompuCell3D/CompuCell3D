@@ -1934,7 +1934,7 @@ class ChemotaxisParams(_PyCoreSpecsBase):
 
     check_dict = {
         "field_name": (lambda x: not isinstance(x, str), "Field name must be a string"),
-        "solver_name": (lambda x: not isinstance(x, float), "Solver name must be a string")
+        "solver_name": (lambda x: not isinstance(x, str), "Solver name must be a string")
     }
 
     def __init__(self,
@@ -1964,7 +1964,10 @@ class ChemotaxisParams(_PyCoreSpecsBase):
         :return: top ElementCC3D instance
         :rtype: ElementCC3D
         """
-        return ElementCC3D("ChemicalField", {"Source": self.solver_name, "Name": self.field_name})
+        attrs = {"Name": self.field_name}
+        if self.solver_name:
+            attrs["Source"] = self.solver_name
+        return ElementCC3D("ChemicalField", attrs)
 
     @property
     def xml(self) -> ElementCC3D:
@@ -2105,8 +2108,12 @@ class ChemotaxisPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreStee
         el_list = cls.find_xml_by_attr(_xml).getElements("ChemicalField")
 
         for f_el in el_list:
-            f = ChemotaxisParams(field_name=f_el.getAttribute("Name"),
-                                 solver_name=f_el.getAttribute("Source"))
+            field_name = f_el.getAttribute("Name")
+            # Allowing unspecified Source
+            solver_name = ""
+            if f_el.findAttribute("Source"):
+                solver_name=f_el.getAttribute("Source")
+            f = ChemotaxisParams(field_name=field_name, solver_name=solver_name)
             f_el_list = f_el.getElements("ChemotaxisByType")
 
             for p_el in f_el_list:
