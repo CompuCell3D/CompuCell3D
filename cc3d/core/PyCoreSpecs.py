@@ -246,9 +246,11 @@ class _PyCoreXMLInterface(_PyCoreSpecsBase, ABC):
         el_list = _xml.getElements(cls.type)
         for els in el_list:
             els: CC3DXMLElement
-            if els.findElement(attr_name) and els.getAttribute(attr_name) == cls.registered_name:
-                el = els
-                break
+            if els.findAttribute(attr_name):
+                registered_name = els.getAttribute(attr_name)
+                if registered_name == cls.registered_name:
+                    el = els
+                    break
 
         if el is None:
             raise SpecImportError(f"{cls.registered_name} not found")
