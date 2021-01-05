@@ -5121,9 +5121,20 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
         for f_el in el_list:
             f_el: CC3DXMLElement
 
-            f = o.field_new(f_el.getAttribute("Name"))
+            # Handling ambiguous field naming procedure
+            # DiffusionField attribute Name takes precedence over DiffusionData element FieldName
+            field_name = None
+            if f_el.findAttribute("Name"):
+                field_name = f_el.getAttribute("Name")
 
             dd_el: CC3DXMLElement = f_el.getFirstElement("DiffusionData")
+            if field_name is None:
+                if not dd_el.findElement("FieldName"):
+                    raise SpecImportError("Unknown field name")
+                field_name = dd_el.getFirstElement("FieldName").getText()
+
+            f = o.field_new(field_name)
+
             if dd_el.findElement("DiffusionConstant"):
                 f.diff_data.diff_global = dd_el.getFirstElement("DiffusionConstant").getDouble()
             if dd_el.findElement("GlobalDiffusionConstant"):
@@ -5413,14 +5424,20 @@ class KernelDiffusionSolverSpecs(_PDESolverSpecs[KernelDiffusionSolverDiffusionD
         for f_el in el_list:
             f_el: CC3DXMLElement
 
-            f = o.field_new(f_el.getAttribute("Name"))
-
-            if f_el.findElement("Kernel"):
-                f.kernel = f_el.getFirstElement("Kernel").getInt()
-            if f_el.findElement("CoarseGrainFactor"):
-                f.cgfactor = f_el.getFirstElement("CoarseGrainFactor").getInt()
+            # Handling ambiguous field naming procedure
+            # DiffusionField attribute Name takes precedence over DiffusionData element FieldName
+            field_name = None
+            if f_el.findAttribute("Name"):
+                field_name = f_el.getAttribute("Name")
 
             dd_el: CC3DXMLElement = f_el.getFirstElement("DiffusionData")
+            if field_name is None:
+                if not dd_el.findElement("FieldName"):
+                    raise SpecImportError("Unknown field name")
+                field_name = dd_el.getFirstElement("FieldName").getText()
+
+            f = o.field_new(field_name)
+
             if dd_el.findElement("DiffusionConstant"):
                 f.diff_data.diff_global = dd_el.getFirstElement("DiffusionConstant").getDouble()
             if dd_el.findElement("GlobalDiffusionConstant"):
@@ -5616,9 +5633,20 @@ class ReactionDiffusionSolverFESpecs(_PDESolverSpecs[ReactionDiffusionSolverFEDi
         for f_el in el_list:
             f_el: CC3DXMLElement
 
-            f = o.field_new(f_el.getAttribute("Name"))
+            # Handling ambiguous field naming procedure
+            # DiffusionField attribute Name takes precedence over DiffusionData element FieldName
+            field_name = None
+            if f_el.findAttribute("Name"):
+                field_name = f_el.getAttribute("Name")
 
             dd_el: CC3DXMLElement = f_el.getFirstElement("DiffusionData")
+            if field_name is None:
+                if not dd_el.findElement("FieldName"):
+                    raise SpecImportError("Unknown field name")
+                field_name = dd_el.getFirstElement("FieldName").getText()
+
+            f = o.field_new(field_name)
+
             if dd_el.findElement("DiffusionConstant"):
                 f.diff_data.diff_global = dd_el.getFirstElement("DiffusionConstant").getDouble()
             if dd_el.findElement("GlobalDiffusionConstant"):
@@ -5863,10 +5891,21 @@ class SteadyStateDiffusionSolverSpecs(_PDESolverSpecs[SteadyStateDiffusionSolver
         for f_el in el_list:
             f_el: CC3DXMLElement
 
-            f = o.field_new(f_el.getAttribute("Name"))
-            f.pymanage = f_el.findElement("ManageSecretionInPython")
+            # Handling ambiguous field naming procedure
+            # DiffusionField attribute Name takes precedence over DiffusionData element FieldName
+            field_name = None
+            if f_el.findAttribute("Name"):
+                field_name = f_el.getAttribute("Name")
 
             dd_el: CC3DXMLElement = f_el.getFirstElement("DiffusionData")
+            if field_name is None:
+                if not dd_el.findElement("FieldName"):
+                    raise SpecImportError("Unknown field name")
+                field_name = dd_el.getFirstElement("FieldName").getText()
+
+            f = o.field_new(field_name)
+            f.pymanage = f_el.findElement("ManageSecretionInPython")
+
             if dd_el.findElement("DiffusionConstant"):
                 f.diff_data.diff_global = dd_el.getFirstElement("DiffusionConstant").getDouble()
             if dd_el.findElement("GlobalDiffusionConstant"):
