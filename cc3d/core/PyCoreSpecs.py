@@ -4600,15 +4600,18 @@ class BlobInitializerSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
         for r_el in el_list:
             r_el: CC3DXMLElement
 
-            kwargs = {"gap": r_el.getAttributeAsInt("Gap"),
-                      "width": r_el.getAttributeAsInt("Width"),
-                      "radius": r_el.getAttributeAsInt("Radius"),
+            kwargs = {"gap": 0,
+                      "width": r_el.getFirstElement("Width").getUInt(),
+                      "radius": r_el.getFirstElement("Radius").getUInt(),
                       "center": Point3D(0, 0, 0)}
+            # Making Gap optional
+            if r_el.findElement("Gap"):
+                kwargs["gap"] = r_el.getFirstElement("Gap").getUInt()
 
             c_el: CC3DXMLElement = r_el.getFirstElement("Center")
             for comp in ["x", "y", "z"]:
                 if c_el.findAttribute(comp):
-                    setattr(kwargs["center"], comp, c_el.getAttributeAsDouble(comp))
+                    setattr(kwargs["center"], comp, c_el.getAttributeAsShort(comp))
 
             if r_el.findElement("Types"):
                 kwargs["cell_types"] = [x.replace(" ", "") for x in r_el.getFirstElement("Types").getText().split(",")]
@@ -4787,8 +4790,11 @@ class UniformInitializerSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
 
             kwargs = {"pt_min": pt_min,
                       "pt_max": pt_max,
-                      "gap": r_el.getAttributeAsInt("Gap"),
-                      "width": r_el.getAttributeAsInt("Width")}
+                      "gap": 0,
+                      "width": r_el.getFirstElement("Width").getUInt()}
+            # Making Gap optional
+            if r_el.findElement("Gap"):
+                kwargs["gap"] = r_el.getFirstElement("Gap").getUInt()
 
             if r_el.findElement("Types"):
                 kwargs["cell_types"] = [x.replace(" ", "") for x in r_el.getFirstElement("Types").getText().split(",")]
