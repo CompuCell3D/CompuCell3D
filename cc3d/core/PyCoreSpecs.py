@@ -5180,24 +5180,25 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
                                          contact_type=p_el.getAttribute("SecreteOnContactWith"))
 
             b_el: CC3DXMLElement = f_el.getFirstElement("BoundaryConditions")
-            b_el_list = b_el.getElements("Plane")
-            for p_el in b_el_list:
-                p_el: CC3DXMLElement
-                axis: str = p_el.getAttribute("Axis").lower()
-                if p_el.findElement("Periodic"):
-                    setattr(f.bcs, f"{axis}_min_type", BOUNDARYTYPESPDE[2])
-                else:
-                    c_el: CC3DXMLElement
-                    p_el_list = p_el.getElements("ConstantValue")
-                    for c_el in p_el_list:
-                        pos: str = c_el.getAttribute("PlanePosition").lower()
-                        setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[0])
-                        setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
-                    p_el_list = p_el.getElements("ConstantDerivative")
-                    for c_el in p_el_list:
-                        pos: str = c_el.getAttribute("PlanePosition").lower()
-                        setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[1])
-                        setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
+            if b_el is not None:
+                b_el_list = b_el.getElements("Plane")
+                for p_el in b_el_list:
+                    p_el: CC3DXMLElement
+                    axis: str = p_el.getAttribute("Axis").lower()
+                    if p_el.findElement("Periodic"):
+                        setattr(f.bcs, f"{axis}_min_type", BOUNDARYTYPESPDE[2])
+                    else:
+                        c_el: CC3DXMLElement
+                        p_el_list = p_el.getElements("ConstantValue")
+                        for c_el in p_el_list:
+                            pos: str = c_el.getAttribute("PlanePosition").lower()
+                            setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[0])
+                            setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
+                        p_el_list = p_el.getElements("ConstantDerivative")
+                        for c_el in p_el_list:
+                            pos: str = c_el.getAttribute("PlanePosition").lower()
+                            setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[1])
+                            setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
 
         return o
 
@@ -5694,24 +5695,25 @@ class ReactionDiffusionSolverFESpecs(_PDESolverSpecs[ReactionDiffusionSolverFEDi
                                          contact_type=p_el.getAttribute("SecreteOnContactWith"))
 
             b_el: CC3DXMLElement = f_el.getFirstElement("BoundaryConditions")
-            b_el_list = b_el.getElements("Plane")
-            for p_el in b_el_list:
-                p_el: CC3DXMLElement
-                axis: str = p_el.getAttribute("Axis").lower()
-                if p_el.findElement("Periodic"):
-                    setattr(f.bcs, f"{axis}_min_type", BOUNDARYTYPESPDE[2])
-                else:
-                    c_el: CC3DXMLElement
-                    p_el_list = p_el.getElements("ConstantValue")
-                    for c_el in p_el_list:
-                        pos: str = c_el.getAttribute("PlanePosition").lower()
-                        setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[0])
-                        setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
-                    p_el_list = p_el.getElements("ConstantDerivative")
-                    for c_el in p_el_list:
-                        pos: str = c_el.getAttribute("PlanePosition").lower()
-                        setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[1])
-                        setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
+            if b_el is not None:
+                b_el_list = b_el.getElements("Plane")
+                for p_el in b_el_list:
+                    p_el: CC3DXMLElement
+                    axis: str = p_el.getAttribute("Axis").lower()
+                    if p_el.findElement("Periodic"):
+                        setattr(f.bcs, f"{axis}_min_type", BOUNDARYTYPESPDE[2])
+                    else:
+                        c_el: CC3DXMLElement
+                        p_el_list = p_el.getElements("ConstantValue")
+                        for c_el in p_el_list:
+                            pos: str = c_el.getAttribute("PlanePosition").lower()
+                            setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[0])
+                            setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
+                        p_el_list = p_el.getElements("ConstantDerivative")
+                        for c_el in p_el_list:
+                            pos: str = c_el.getAttribute("PlanePosition").lower()
+                            setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[1])
+                            setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
 
         return o
 
@@ -5929,24 +5931,25 @@ class SteadyStateDiffusionSolverSpecs(_PDESolverSpecs[SteadyStateDiffusionSolver
                     f.secretion_data_new(p_el.getAttribute("Type"), p_el.getDouble())
 
             b_el: CC3DXMLElement = f_el.getFirstElement("BoundaryConditions")
-            b_el_list = b_el.getElements("Plane")
-            for p_el in b_el_list:
-                p_el: CC3DXMLElement
-                axis: str = p_el.getAttribute("Axis").lower()
-                if p_el.findElement("Periodic"):
-                    setattr(f.bcs, f"{axis}_min_type", BOUNDARYTYPESPDE[2])
-                else:
-                    c_el: CC3DXMLElement
-                    p_el_list = p_el.getElements("ConstantValue")
-                    for c_el in p_el_list:
-                        pos: str = c_el.getAttribute("PlanePosition").lower()
-                        setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[0])
-                        setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
-                    p_el_list = p_el.getElements("ConstantDerivative")
-                    for c_el in p_el_list:
-                        pos: str = c_el.getAttribute("PlanePosition").lower()
-                        setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[1])
-                        setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
+            if b_el is not None:
+                b_el_list = b_el.getElements("Plane")
+                for p_el in b_el_list:
+                    p_el: CC3DXMLElement
+                    axis: str = p_el.getAttribute("Axis").lower()
+                    if p_el.findElement("Periodic"):
+                        setattr(f.bcs, f"{axis}_min_type", BOUNDARYTYPESPDE[2])
+                    else:
+                        c_el: CC3DXMLElement
+                        p_el_list = p_el.getElements("ConstantValue")
+                        for c_el in p_el_list:
+                            pos: str = c_el.getAttribute("PlanePosition").lower()
+                            setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[0])
+                            setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
+                        p_el_list = p_el.getElements("ConstantDerivative")
+                        for c_el in p_el_list:
+                            pos: str = c_el.getAttribute("PlanePosition").lower()
+                            setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[1])
+                            setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
 
         return o
 
