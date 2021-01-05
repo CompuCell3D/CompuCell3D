@@ -5393,8 +5393,7 @@ class KernelDiffusionSolverSpecs(_PDESolverSpecs[KernelDiffusionSolverDiffusionD
     def __init__(self):
         super().__init__()
 
-        delattr(self, "bcs")  # Fixed boundary conditions
-        delattr(self, "steer")  # Not steerable
+        self.steer = None  # Not currently steerable
 
     @property
     def xml(self) -> ElementCC3D:
