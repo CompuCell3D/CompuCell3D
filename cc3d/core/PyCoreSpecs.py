@@ -121,7 +121,7 @@ class _PyCoreSpecsBase:
 
     """
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.spec_dict: Dict[str, Any] = {}
         """specification dictionary"""
 
@@ -241,7 +241,24 @@ class _PyCoreXMLInterface(_PyCoreSpecsBase, ABC):
     Any class that inherits must implement :meth:`from_xml` such that, when passed a :class:`CC3DXMLElement` instance
     that contains a child element describing the data of the derived-class instance, :meth:`from_xml` returns an
     instance of the derived class initialized from the :class:`CC3DXMLElement` instance
+
+    All implementations support serialization
     """
+
+    def __getstate__(self) -> Tuple[str, tuple, dict]:
+        return self.xml.getCC3DXMLElementString(), tuple(), dict()
+
+    def __setstate__(self, state):
+        xml_str, args, kwargs = state
+
+        xml2_obj_converter = Xml2Obj()
+        parent_el = ElementCC3D("dummy").CC3DXMLElement
+        el = xml2_obj_converter.ParseString(xml_str)
+        parent_el.addChild(el)
+        o = self.from_xml_str(parent_el.getCC3DXMLElementString())
+
+        super().__init__(*args, **kwargs)
+        self.spec_dict.update(o.spec_dict)
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -253,6 +270,20 @@ class _PyCoreXMLInterface(_PyCoreSpecsBase, ABC):
         :rtype: _PyCoreSpecsBase
         """
         raise NotImplementedError
+
+    @classmethod
+    def from_xml_str(cls, _xml: str):
+        """
+        Instantiate an instance from a CC3DXMLElement parent string instance
+
+        :param _xml:
+        :type _xml: str
+        :return: python class instace
+        :rtype: _PyCoreSpecsBase
+        """
+        xml2_obj_converter = Xml2Obj()
+        el = xml2_obj_converter.ParseString(_xml)
+        return cls.from_xml(el)
 
     @classmethod
     def find_xml_by_attr(cls, _xml: CC3DXMLElement, attr_name: str = None) -> CC3DXMLElement:
@@ -5753,6 +5784,9 @@ class PIFDumperSteppableSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
         self._el = self.generate_header()
         self._el.ElementCC3D("PIFName", {}, self.pif_name)
         return self._el
+
+    def __getstate__(self) -> Tuple[str, tuple, dict]:
+        return self.xml.getCC3DXMLElementString(), tuple(), {"pif_name": self.pif_name}
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
