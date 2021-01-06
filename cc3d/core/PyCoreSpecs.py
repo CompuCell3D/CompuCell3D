@@ -2,14 +2,14 @@
 Defines python-based core specification classes
 """
 
-# todo: add validation interface; e.g., chemotaxis checks field specification in pde solver
 # todo: add automatic type checks of spec parameter sets
 # todo: add to source code doc autogen
 # todo: add to python reference manual
 
 from abc import ABC
+import itertools
 import os
-from typing import Any, Callable, Dict, Generic, List, Tuple, TypeVar, Union
+from typing import Any, Callable, Dict, Generic, Iterable, List, Tuple, TypeVar, Union
 
 import cc3d
 from cc3d.core.XMLUtils import ElementCC3D, CC3DXMLElement, Xml2Obj
@@ -170,6 +170,17 @@ class _PyCoreSpecsBase:
         :rtype: ElementCC3D
         """
         raise NotImplementedError
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        pass
 
     @property
     def core(self):
@@ -456,6 +467,22 @@ class SecretionSpecs(_PyCoreSpecsBase):
         self._el = ElementCC3D(n, attr, str(self.value))
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
+                if self.contact_type is not None:
+                    CoreSpecsValidator.validate_cell_type_names(type_names=[self.contact_type], cell_type_spec=s)
+
     @property
     def contact_type(self) -> Union[str, None]:
         """
@@ -524,6 +551,18 @@ class _PDESecretionDataSpecs(_PyCoreSpecsBase):
         self._el = self.generate_header()
         [self._el.add_child(_ps.xml) for _ps in self.spec_dict["param_specs"]]
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        # Validate parameters
+        [ps.validate(*specs) for ps in self.spec_dict["param_specs"]]
 
     def param_append(self, _ps: SecretionSpecs) -> None:
         """
@@ -772,6 +811,29 @@ class PDEBoundaryConditionsSpec(_PyCoreSpecsBase):
         [self._el.add_child(self._xml_plane(x)) for x in ["X", "Y", "Z"]]
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in PottsCoreSpecs
+            # Constant value and flux are compatible with no flux
+            # Perdioc is compatible with periodic
+            if isinstance(s, PottsCoreSpecs):
+                for c in ["x", "y", "z"]:
+                    if getattr(s, f"boundary_{c}") == BOUNDARYTYPESPOTTS[0]:
+                        if getattr(self, f"{c}_min_type") not in BOUNDARYTYPESPDE[0:2]:
+                            raise SpecValueError(f"Min-{c} boundary could not be validated")
+                        elif getattr(self, f"{c}_max_type") not in BOUNDARYTYPESPDE[0:2]:
+                            raise SpecValueError(f"Max-{c} boundary could not be validated")
+                    elif getattr(self, f"{c}_min_type") != BOUNDARYTYPESPDE[2]:
+                        raise SpecValueError(f"Periodic-{c} boundary could not be validated")
+
 
 _DD = TypeVar('_DD')
 """Diffusion data generic"""
@@ -826,16 +888,33 @@ class _PDESolverFieldSpecs(_PyCoreSpecsBase, Generic[_DD, _SD]):
         self._el.add_child(self.spec_dict["bc_specs"].xml)
         return self._el
 
-    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> None:
+    def validate(self, *specs) -> None:
         """
-        Specify a new secretion data spec
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+        Does not validate field name or solver existence
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        # Validate constituent data
+        self.diff_data.validate(*specs)
+        self.spec_dict["secr_data"].validate(*specs)
+        self.bcs.validate(*specs)
+
+    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> SecretionSpecs:
+        """
+        Specify and return a new secretion data spec
 
         :param str _cell_type: name of cell type
         :param float _val: value
         :param kwargs:
-        :return: None
+        :return: new secretion data spec
+        :rtype: SecretionSpecs
         """
-        self.spec_dict["secr_data"].param_new(_cell_type, _val, **kwargs)
+        p = self.spec_dict["secr_data"].param_new(_cell_type, _val, **kwargs)
+        return p
 
     def secretion_data_remove(self, _cell_type: str, **kwargs) -> None:
         """
@@ -859,6 +938,29 @@ class _PDESolverSpecs(_PyCoreSteppableSpecs, _PyCoreSteerableInterface, _PyCoreX
 
         self.spec_dict = {"fluc_comp": False,
                           "fields": dict()}
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+        Does not validate field name or solver existence
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        # Validate fields
+        [self.fields[field_name].validate(*specs) for field_name in self.field_names]
+
+        # Validate field names against self
+        for field_name in self.field_names:
+            f = self.fields[field_name]
+            if f.field_name not in self.field_names:
+                raise SpecValueError("Field name could not be validated:", f.field_name)
+
+        # Validate field names
+        CoreSpecsValidator.validate_field_names(*specs, field_names=self.field_names)
+        [CoreSpecsValidator.validate_field_name_unique(*specs, field_name=f) for f in self.field_names]
 
     @property
     def fields(self) -> _PyCoreParamAccessor[_PDESolverFieldSpecs[_DD, _SD]]:
@@ -1214,7 +1316,8 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
             self._el.ElementCC3D("NeighborOrder", {}, str(self.neighbor_order))
 
         # Legacy support; standard is to use MetadataSpecs
-        self._el.ElementCC3D("DebugOutputFrequency", {}, str(self.spec_dict["debug_output_frequency"]))
+        if self.spec_dict["debug_output_frequency"] > 0:
+            self._el.ElementCC3D("DebugOutputFrequency", {}, str(self.spec_dict["debug_output_frequency"]))
 
         if self.random_seed is not None:
             self._el.ElementCC3D("RandomSeed", {}, str(self.random_seed))
@@ -1249,6 +1352,22 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
                     efc_el.ElementCC3D("OutputCoreFileNameSpinFlips", efc_dict)
 
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                if isinstance(self.spec_dict["fluctuation_amplitude"], dict):
+                    CoreSpecsValidator.validate_cell_type_names(
+                        type_names=self.spec_dict["fluctuation_amplitude"].keys(), cell_type_spec=s)
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -1645,6 +1764,20 @@ class VolumeEnergyParameter(_PyCoreSpecsBase):
                                                           "LambdaVolume": str(self.lambda_volume)})
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
+
 
 class VolumePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
     """
@@ -1686,6 +1819,23 @@ class VolumePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
         for _p in self.spec_dict["params"].values():
             self._el.add_child(_p.xml)
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=self.cell_types, cell_type_spec=s)
+
+        # Validate parameters
+        [param.validate(*specs) for param in self.spec_dict["params"].values()]
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -1803,6 +1953,20 @@ class SurfaceEnergyParameterSpecs(_PyCoreSpecsBase):
                                                            "LambdaSurface": str(self.lambda_surface)})
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
+
 
 class SurfacePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerableInterface):
     """
@@ -1844,6 +2008,23 @@ class SurfacePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerab
         for _p in self.spec_dict["params"].values():
             self._el.add_child(_p.xml)
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=self.cell_types, cell_type_spec=s)
+
+        # Validate parameters
+        [param.validate(*specs) for param in self.spec_dict["params"].values()]
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -2020,6 +2201,20 @@ class ChemotaxisTypeSpecs(_PyCoreSpecsBase):
         self._el = ElementCC3D("ChemotaxisByType", attr_dict)
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
+
 
 class ChemotaxisParams(_PyCoreSpecsBase):
     """ Chemotaxis parameter specs"""
@@ -2049,6 +2244,12 @@ class ChemotaxisParams(_PyCoreSpecsBase):
                           "solver_name": solver_name,
                           "type_specs": {_ts.cell_type: _ts for _ts in _type_specs}}
 
+    field_name: str = SpecProperty(name="field_name")
+    """name of field"""
+
+    solver_name: str = SpecProperty(name="solver_name")
+    """name of PDE solver of field"""
+
     def generate_header(self) -> Union[ElementCC3D, None]:
         """
         Generate and return the top :class:`ElementCC3D` instance
@@ -2073,11 +2274,26 @@ class ChemotaxisParams(_PyCoreSpecsBase):
         [self._el.add_child(_ts.xml) for _ts in self.spec_dict["type_specs"].values()]
         return self._el
 
-    field_name: str = SpecProperty(name="field_name")
-    """name of field"""
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
 
-    solver_name: str = SpecProperty(name="solver_name")
-    """name of PDE solver of field"""
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=self.cell_types, cell_type_spec=s)
+
+        # Validate field name against solvers
+        CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
+
+        # Validate type specs
+        [param.validate(*specs) for param in self.spec_dict["type_specs"].values()]
 
     def __getitem__(self, item):
         if item not in self.spec_dict["type_specs"].keys():
@@ -2184,6 +2400,22 @@ class ChemotaxisPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreStee
         self._el = self.generate_header()
         [self._el.add_child(_fs.xml) for _fs in self.spec_dict["field_specs"].values()]
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        # Validate field name against solvers
+        CoreSpecsValidator.validate_field_names(*specs, field_names=self.fields)
+        [CoreSpecsValidator.validate_field_name_unique(*specs, field_name=f) for f in self.fields]
+
+        # Validate fields
+        [fs.validate(*specs) for fs in self.spec_dict["field_specs"].values()]
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -2296,6 +2528,18 @@ class ExternalPotentialParameter(_PyCoreSpecsBase):
                           "y": y,
                           "z": z}
 
+    cell_type: str = SpecProperty(name="cell_type")
+    """cell type name"""
+
+    x: float = SpecProperty(name="x")
+    """x-component of external potential lambda vector"""
+
+    y: float = SpecProperty(name="y")
+    """y-component of external potential lambda vector"""
+
+    z: float = SpecProperty(name="z")
+    """z-component of external potential lambda vector"""
+
     def generate_header(self) -> Union[ElementCC3D, None]:
         """
         Generate and return the top :class:`ElementCC3D` instance
@@ -2317,17 +2561,19 @@ class ExternalPotentialParameter(_PyCoreSpecsBase):
         self._el = self.generate_header()
         return self._el
 
-    cell_type: str = SpecProperty(name="cell_type")
-    """cell type name"""
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
 
-    x: float = SpecProperty(name="x")
-    """x-component of external potential lambda vector"""
-
-    y: float = SpecProperty(name="y")
-    """y-component of external potential lambda vector"""
-
-    z: float = SpecProperty(name="z")
-    """z-component of external potential lambda vector"""
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
 
 
 class ExternalPotentialPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerableInterface):
@@ -2364,6 +2610,18 @@ class ExternalPotentialPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyC
                           "com_based": com_based,
                           "param_specs": dict()}
 
+    com_based: bool = SpecProperty(name="com_based")
+    """center-of-mass-based flag"""
+
+    lambda_x: float = SpecProperty(name="lambda_x")
+    """global x-component of external potential lambda vector"""
+
+    lambda_y: float = SpecProperty(name="lambda_y")
+    """global y-component of external potential lambda vector"""
+
+    lambda_z: float = SpecProperty(name="lambda_z")
+    """global z-component of external potential lambda vector"""
+
     @property
     def xml(self) -> ElementCC3D:
         """
@@ -2390,17 +2648,22 @@ class ExternalPotentialPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyC
 
         return self._el
 
-    com_based: bool = SpecProperty(name="com_based")
-    """center-of-mass-based flag"""
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
 
-    lambda_x: float = SpecProperty(name="lambda_x")
-    """global x-component of external potential lambda vector"""
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=self.cell_types, cell_type_spec=s)
 
-    lambda_y: float = SpecProperty(name="lambda_y")
-    """global y-component of external potential lambda vector"""
-
-    lambda_z: float = SpecProperty(name="lambda_z")
-    """global z-component of external potential lambda vector"""
+        # Validate parameters
+        [param.validate(*specs) for param in self.spec_dict["param_specs"].values()]
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -2566,6 +2829,20 @@ class ContactEnergyParam(_PyCoreSpecsBase):
         self._el = ElementCC3D("Energy", {"Type1": self.type_1, "Type2": self.type_2}, str(self.energy))
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=[self.type_1, self.type_2], cell_type_spec=s)
+
 
 class ContactPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
     """
@@ -2623,6 +2900,26 @@ class ContactPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
                 self._el.add_child(_p.xml)
         self._el.ElementCC3D("NeighborOrder", {}, str(self.neighbor_order))
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                for t1 in self.spec_dict["energies"].keys():
+                    CoreSpecsValidator.validate_cell_type_names(type_names=self.types_specified(t1) + [t1],
+                                                                cell_type_spec=s)
+
+        # Validate parameters
+        for _pdict in self.spec_dict["energies"].values():
+            [_p.validate(*specs) for _p in _pdict.values()]
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -2894,6 +3191,20 @@ class AdhesionMoleculeDensitySpecs(_PyCoreSpecsBase):
         self._el = self.generate_header()
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
+
 
 class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerableInterface):
     """
@@ -2958,6 +3269,25 @@ class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSt
         [self._el.add_child(e.xml) for e in self.spec_dict["binding_formulas"].values()]
         self._el.ElementCC3D("NeighborOrder", {}, str(self.neighbor_order))
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                for param_dict in self.spec_dict["densities"].values():
+                    CoreSpecsValidator.validate_cell_type_names(type_names=param_dict.keys(), cell_type_spec=s)
+
+        # Validate density parameters
+        for param_dict in self.spec_dict["densities"].values():
+            [param.validate(*specs) for param in param_dict.values()]
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -3264,6 +3594,20 @@ class LengthEnergyParametersSpecs(_PyCoreSpecsBase):
         self._el = self.generate_header()
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
+
 
 class LengthConstraintPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerableInterface):
     """
@@ -3301,6 +3645,23 @@ class LengthConstraintPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCo
         self._el = self.generate_header()
         [self._el.add_child(_ps.xml) for _ps in self.spec_dict["param_specs"].values()]
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=self.cell_types, cell_type_spec=s)
+
+        # Validate parameters
+        [param.validate(*specs) for param in self.spec_dict["param_specs"].values()]
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -3451,6 +3812,20 @@ class ConnectivityGlobalPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
             self._el.ElementCC3D("ConnectivityOn", {"Type": _ct})
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=self.cell_types, cell_type_spec=s)
+
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
         """
@@ -3551,6 +3926,21 @@ class SecretionFieldSpecs(_PyCoreSpecsBase):
         self._el = ElementCC3D("Field", attr)
         [self._el.add_child(_ps.xml) for _ps in self.spec_dict["param_specs"]]
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        # Validate field name against solvers
+        CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
+
+        # Validate parameters
+        [param.validate(*specs) for param in self.spec_dict["param_specs"]]
 
     def param_append(self, _ps: SecretionSpecs) -> None:
         """
@@ -3653,6 +4043,31 @@ class SecretionPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteer
             self._el.ElementCC3D("DisableBoundaryPixelTracker")
         [self._el.add_child(_fs.xml) for _fs in self.spec_dict["field_specs"].values()]
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate PixelTracker
+            if isinstance(s, PixelTrackerPluginSpecs) and not self.pixel_tracker:
+                raise SpecValueError("Could not validated disabled PixelTracker Plugin")
+
+            # Validate disabled BoundaryPixelTracker
+            if isinstance(s, BoundaryPixelTrackerPluginSpecs) and not self.boundary_pixel_tracker:
+                raise SpecValueError("Could not validated disabled BoundaryPixelTracker Plugin")
+
+        # Validate field name against solvers
+        CoreSpecsValidator.validate_field_names(*specs, field_names=self.field_names)
+        [CoreSpecsValidator.validate_field_name_unique(*specs, field_name=f) for f in self.field_names]
+
+        # Validate fields
+        [f.validate(*specs) for f in self.spec_dict["field_specs"].values()]
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -3911,6 +4326,20 @@ class FocalPointPlasticityParamSpec(_PyCoreSpecsBase):
         self._el = el
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=[self.type1, self.type2], cell_type_spec=s)
+
 
 class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerableInterface):
     """
@@ -3960,6 +4389,26 @@ class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _
             for t2 in self.spec_dict["param_specs"][t1].keys():
                 self._el.add_child(self.spec_dict["param_specs"][t1][t2].xml)
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                for t1 in self.spec_dict["param_specs"].keys():
+                    CoreSpecsValidator.validate_cell_type_names(
+                        type_names=[t1] + list(self.spec_dict["param_specs"][t1].keys()), cell_type_spec=s)
+
+        # Validate parameters
+        for param_dict in self.spec_dict["param_specs"].values():
+            [param.validate(*specs) for param in param_dict.values()]
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -4172,6 +4621,20 @@ class CurvatureInternalParamSpecs(_PyCoreSpecsBase):
         self._el.ElementCC3D("ActivationEnergy", {}, str(self.activation_energy))
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=[self.type1, self.type2], cell_type_spec=s)
+
 
 class CurvatureInternalTypeParameters(_PyCoreSpecsBase):
     """ CurvatureInternalTypeParameters """
@@ -4223,6 +4686,20 @@ class CurvatureInternalTypeParameters(_PyCoreSpecsBase):
                                 "NeighborOrder": self.neighbor_order})
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
+
 
 class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerableInterface):
     """
@@ -4271,6 +4748,30 @@ class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteer
             el = self._el.ElementCC3D("InternalTypeSpecificParameters")
             [el.add_child(x.xml) for x in self.spec_dict["type_spec"].values()]
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                for t1, p_dict in self.spec_dict["param_specs"].items():
+                    CoreSpecsValidator.validate_cell_type_names(type_names=[t1] + list(p_dict.keys()),
+                                                                cell_type_spec=s)
+
+                CoreSpecsValidator.validate_cell_type_names(type_names=self.spec_dict["type_spec"].keys(),
+                                                            cell_type_spec=s)
+
+        # Validate parameters
+        for param_dict in self.spec_dict["param_specs"].values():
+            [param.validate(*specs) for param in param_dict.values()]
+        [param.validate(*specs) for param in self.spec_dict["type_spec"].values()]
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -4655,6 +5156,27 @@ class BlobRegionSpecs(_PyCoreSpecsBase):
         self._el.ElementCC3D("Types", {}, ",".join(self.spec_dict["cell_types"]))
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=self.spec_dict["cell_types"], cell_type_spec=s)
+
+            # Validate BlobRegionSpecs shape against Potts
+            if isinstance(s, PottsCoreSpecs):
+                for c, o in itertools.product(["x", "y", "z"], [-self.radius, self.radius]):
+                    pt = Point3D(self.center)
+                    setattr(pt, c, getattr(pt, c) + o)
+                    CoreSpecsValidator.validate_point(pt=pt, potts_spec=s)
+
 
 class BlobInitializerSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
     """ BlobInitializer """
@@ -4682,6 +5204,18 @@ class BlobInitializerSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
         self._el = self.generate_header()
         [self._el.add_child(reg.xml) for reg in self.spec_dict["regions"]]
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        # Validate regions
+        [reg.validate(*specs) for reg in self.spec_dict["regions"]]
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -4834,6 +5368,25 @@ class UniformRegionSpecs(_PyCoreSpecsBase):
         self._el.ElementCC3D("Types", {}, ",".join(self.spec_dict["cell_types"]))
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=self.spec_dict["cell_types"],
+                                                            cell_type_spec=s)
+
+            # Validate BlobRegionSpecs shape against Potts
+            if isinstance(s, PottsCoreSpecs):
+                [CoreSpecsValidator.validate_point(pt=pt, potts_spec=s) for pt in [self.pt_min, self.pt_max]]
+
 
 class UniformInitializerSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
     """ Uniform Initializer Specs """
@@ -4861,6 +5414,18 @@ class UniformInitializerSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
         self._el = self.generate_header()
         [self._el.add_child(reg.xml) for reg in self.spec_dict["regions"]]
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        # Validate regions
+        [reg.validate(*specs) for reg in self.spec_dict["regions"]]
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -4973,6 +5538,19 @@ class PIFInitializerSteppableSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
         self._el.ElementCC3D("PIFName", {}, self.pif_name)
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        # Validate file existence
+        if not os.path.isfile(self.pif_name):
+            raise SpecValueError("Could not validate pif file existence:", self.pif_name)
+
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
         """
@@ -5075,6 +5653,37 @@ class DiffusionSolverFEDiffusionDataSpecs(_PDEDiffusionDataSpecs):
             self._el.ElementCC3D("ConcentrationFileName", {}, self.init_filename)
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+
+        solver = DiffusionSolverFESpecs
+
+        # Validate against solver existence
+        if not any([isinstance(s, solver) for s in specs]):
+            raise SpecValueError("Solver not found")
+
+        # Validate field name uniqueness
+        CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
+
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=self.spec_dict["diff_types"].keys(),
+                                                            cell_type_spec=s)
+                CoreSpecsValidator.validate_cell_type_names(type_names=self.spec_dict["decay_types"].keys(),
+                                                            cell_type_spec=s)
+
+            if isinstance(s, solver):
+                # Validate field name against solver
+                CoreSpecsValidator.validate_field_name_unique(s, field_name=self.field_name)
+
     @property
     def diff_types(self) -> _PyCoreParamAccessor[float]:
         """
@@ -5097,19 +5706,61 @@ class DiffusionSolverFEDiffusionDataSpecs(_PDEDiffusionDataSpecs):
 class DiffusionSolverFESecretionDataSpecs(_PDESecretionDataSpecs):
     """ Secretion Data Specs for DiffusionSolverFE """
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+
+        solver = DiffusionSolverFESpecs
+
+        # Validate against solver existence
+        if not any([isinstance(s, solver) for s in specs]):
+            raise SpecValueError("Solver not found")
+
+        # Validate parameters
+        super().validate(*specs)
+
 
 class DiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[DiffusionSolverFEDiffusionDataSpecs,
                                                        DiffusionSolverFESecretionDataSpecs]):
     """ DiffusionSolverFE Field Specs """
 
-    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> None:
+    def validate(self, *specs) -> None:
         """
-        Specify a new secretion data spec
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+        Does not validate field name or solver existence
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        super().validate(*specs)
+
+        solver = DiffusionSolverFESpecs
+
+        # Validate field name uniqueness
+        CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
+
+        for s in specs:
+            # Validate field name with solver (diffusion data tests for solver)
+            if isinstance(s, solver):
+                CoreSpecsValidator.validate_field_name_unique(s, field_name=self.field_name)
+
+    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> SecretionSpecs:
+        """
+        Specify and return a new secretion data spec
 
         :param str _cell_type: name of cell type
         :param float _val: value
         :param kwargs:
-        :return: None
+        :return: new secretion data spec
+        :rtype: SecretionSpecs
         """
         try:
             contact_type = kwargs["contact_type"]
@@ -5119,7 +5770,8 @@ class DiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[DiffusionSolverFEDiffusio
             constant = kwargs["constant"]
         except KeyError:
             constant = False
-        _PDESolverFieldSpecs.secretion_data_new(self, _cell_type, _val, constant=constant, contact_type=contact_type)
+        return _PDESolverFieldSpecs.secretion_data_new(
+            self, _cell_type, _val, constant=constant, contact_type=contact_type)
 
     def secretion_data_remove(self, _cell_type: str, **kwargs) -> None:
         """
@@ -5332,9 +5984,52 @@ class KernelDiffusionSolverDiffusionDataSpecs(_PDEDiffusionDataSpecs):
             self._el.ElementCC3D("ConcentrationFileName", {}, self.init_filename)
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+
+        solver = KernelDiffusionSolverSpecs
+
+        # Validate against solver existence
+        if not any([isinstance(s, solver) for s in specs]):
+            raise SpecValueError("Solver not found")
+
+        # Validate field name uniqueness
+        CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
+
+        for s in specs:
+            if isinstance(s, solver):
+                # Validate field name against solver
+                CoreSpecsValidator.validate_field_name_unique(s, field_name=self.field_name)
+
 
 class KernelDiffusionSolverSecretionDataSpecs(_PDESecretionDataSpecs):
     """ KernelDiffusionSolver Secretion Data Specs """
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+
+        solver = KernelDiffusionSolverSpecs
+
+        # Validate against solver existence
+        if not any([isinstance(s, solver) for s in specs]):
+            raise SpecValueError("Solver not found")
+
+        # Validate parameters
+        super().validate(*specs)
 
 
 class KernelDiffusionSolverBoundaryConditionsSpecs(PDEBoundaryConditionsSpec):
@@ -5437,14 +6132,37 @@ class KernelDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[KernelDiffusionSolver
         self._el.add_child(self.spec_dict["secr_data"].xml)
         return self._el
 
-    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> None:
+    def validate(self, *specs) -> None:
         """
-        Specify a new secretion data spec
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+        Does not validate field name or solver existence
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        super().validate(*specs)
+
+        solver = KernelDiffusionSolverSpecs
+
+        # Validate field name uniqueness
+        CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
+
+        for s in specs:
+            # Validate field name with solver (diffusion data tests for solver)
+            if isinstance(s, solver):
+                CoreSpecsValidator.validate_field_name_unique(s, field_name=self.field_name)
+
+    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> SecretionSpecs:
+        """
+        Specify and return a new secretion data spec
 
         :param str _cell_type: name of cell type
         :param float _val: value
         :param kwargs:
-        :return: None
+        :return: new secretion data spec
+        :rtype: SecretionSpecs
         """
         try:
             contact_type = kwargs["contact_type"]
@@ -5454,7 +6172,8 @@ class KernelDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[KernelDiffusionSolver
             constant = kwargs["constant"]
         except KeyError:
             constant = False
-        _PDESolverFieldSpecs.secretion_data_new(self, _cell_type, _val, constant=constant, contact_type=contact_type)
+        return _PDESolverFieldSpecs.secretion_data_new(
+            self, _cell_type, _val, constant=constant, contact_type=contact_type)
 
     def secretion_data_remove(self, _cell_type: str, **kwargs) -> None:
         """
@@ -5498,6 +6217,21 @@ class KernelDiffusionSolverSpecs(_PDESolverSpecs[KernelDiffusionSolverDiffusionD
         self._el = self.generate_header()
         [self._el.add_child(f.xml) for f in self.spec_dict["fields"].values()]
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+        Does not validate field name or solver existence
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        # Validate constituent data
+        super().validate(*specs)
+        # Validate fields
+        [self.fields[f].validate(*specs) for f in self.field_names]
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -5608,6 +6342,37 @@ class ReactionDiffusionSolverFEDiffusionDataSpecs(_PDEDiffusionDataSpecs):
             self._el.ElementCC3D("AdditionalTerm", {}, self.additional_term)
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+
+        solver = ReactionDiffusionSolverFESpecs
+
+        # Validate against solver existence
+        if not any([isinstance(s, solver) for s in specs]):
+            raise SpecValueError("Solver not found")
+
+        # Validate field name uniqueness
+        CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
+
+        for s in specs:
+            # Validate against cell types defined in CellTypePluginSpecs
+            if isinstance(s, CellTypePluginSpecs):
+                CoreSpecsValidator.validate_cell_type_names(type_names=self.spec_dict["diff_types"].keys(),
+                                                            cell_type_spec=s)
+                CoreSpecsValidator.validate_cell_type_names(type_names=self.spec_dict["decay_types"].keys(),
+                                                            cell_type_spec=s)
+
+            if isinstance(s, solver):
+                # Validate field name against solver
+                CoreSpecsValidator.validate_field_name_unique(s, field_name=self.field_name)
+
     @property
     def diff_types(self) -> _PyCoreParamAccessor[float]:
         """
@@ -5630,20 +6395,61 @@ class ReactionDiffusionSolverFEDiffusionDataSpecs(_PDEDiffusionDataSpecs):
 class ReactionDiffusionSolverFESecretionSpecs(_PDESecretionDataSpecs):
     """ ReactionDiffusionSolverFE Secretion Specs"""
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        solver = ReactionDiffusionSolverFESpecs
+
+        # Validate against solver existence
+        if not any([isinstance(s, solver) for s in specs]):
+            raise SpecValueError("Solver not found")
+
+        # Validate parameters
+        super().validate(*specs)
+
 
 class ReactionDiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[ReactionDiffusionSolverFEDiffusionDataSpecs,
                                                                ReactionDiffusionSolverFESecretionSpecs]):
     """ ReactionDiffusionSolverFE Field Specs"""
 
-    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> None:
+    def validate(self, *specs) -> None:
         """
-        Specify a new secretion data spec
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+        Does not validate field name or solver existence
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        super().validate(*specs)
+
+        solver = ReactionDiffusionSolverFESpecs
+
+        # Validate field name uniqueness
+        CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
+
+        for s in specs:
+            # Validate field name with solver (diffusion data tests for solver)
+            if isinstance(s, solver):
+                CoreSpecsValidator.validate_field_name_unique(s, field_name=self.field_name)
+
+    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> SecretionSpecs:
+        """
+        Specify and return a new secretion data spec
 
         :param str _cell_type: name of cell type
         :param float _val: value
         :param kwargs:
         :raises SpecValueError: if setting constant concentration
-        :return: None
+        :return: new secretion data spec
+        :rtype: SecretionSpecs
         """
         try:
             contact_type = kwargs["contact_type"]
@@ -5651,7 +6457,7 @@ class ReactionDiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[ReactionDiffusion
             contact_type = None
         if "constant" in kwargs.keys():
             raise SpecValueError("ReactionDiffusionSolverFE does not support constant concentrations")
-        _PDESolverFieldSpecs.secretion_data_new(self, _cell_type, _val, contact_type=contact_type)
+        return _PDESolverFieldSpecs.secretion_data_new(self, _cell_type, _val, contact_type=contact_type)
 
     def secretion_data_remove(self, _cell_type: str, **kwargs) -> None:
         """
@@ -5705,6 +6511,21 @@ class ReactionDiffusionSolverFESpecs(_PDESolverSpecs[ReactionDiffusionSolverFEDi
             self._el.ElementCC3D("AutoscaleDiffusion")
         [self._el.add_child(f.xml) for f in self.spec_dict["fields"].values()]
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+        Does not validate field name or solver existence
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        # Validate constituent data
+        super().validate(*specs)
+        # Validate fields
+        [self.fields[f].validate(*specs) for f in self.field_names]
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -5845,9 +6666,51 @@ class SteadyStateDiffusionSolverDiffusionDataSpecs(_PDEDiffusionDataSpecs):
             self._el.ElementCC3D("ConcentrationFileName", {}, self.init_filename)
         return self._el
 
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+
+        solver = SteadyStateDiffusionSolverSpecs
+
+        # Validate against solver existence
+        if not any([isinstance(s, solver) for s in specs]):
+            raise SpecValueError("Solver not found")
+
+        # Validate field name uniqueness
+        CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
+
+        for s in specs:
+            if isinstance(s, solver):
+                # Validate field name against solver
+                CoreSpecsValidator.validate_field_name_unique(s, field_name=self.field_name)
+
 
 class SteadyStateDiffusionSolverSecretionDataSpecs(_PDESecretionDataSpecs):
     """ SteadyStateDiffusionSolver Secretion Data Specs """
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        solver = SteadyStateDiffusionSolverSpecs
+
+        # Validate against solver existence
+        if not any([isinstance(s, solver) for s in specs]):
+            raise SpecValueError("Solver not found")
+
+        # Validate parameters
+        super().validate(*specs)
 
 
 class SteadyStateDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[SteadyStateDiffusionSolverDiffusionDataSpecs,
@@ -5884,21 +6747,44 @@ class SteadyStateDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[SteadyStateDiffu
         self._el.add_child(self.spec_dict["bc_specs"].xml)
         return self._el
 
-    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> None:
+    def validate(self, *specs) -> None:
         """
-        Specify a new secretion data spec
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+        Does not validate field name or solver existence
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        super().validate(*specs)
+
+        solver = SteadyStateDiffusionSolverSpecs
+
+        # Validate field name uniqueness
+        CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
+
+        for s in specs:
+            # Validate field name with solver (diffusion data tests for solver)
+            if isinstance(s, solver):
+                CoreSpecsValidator.validate_field_name_unique(s, field_name=self.field_name)
+
+    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> SecretionSpecs:
+        """
+        Specify and return a new secretion data spec
 
         :param str _cell_type: name of cell type
         :param float _val: value
         :param kwargs:
         :raises SpecValueError: if setting constant concentration or on contact with
-        :return: None
+        :return: new secretion data spec
+        :rtype: SecretionSpecs
         """
         if "contact_type" in kwargs.keys():
             raise SpecValueError("SteadyStateDiffusionSolver does not support contact-based secretion")
         if "constant" in kwargs.keys():
             raise SpecValueError("SteadyStateDiffusionSolver does not support constant concentrations")
-        _PDESolverFieldSpecs.secretion_data_new(self, _cell_type, _val)
+        return _PDESolverFieldSpecs.secretion_data_new(self, _cell_type, _val)
 
     def secretion_data_remove(self, _cell_type: str, **kwargs) -> None:
         """
@@ -5962,6 +6848,21 @@ class SteadyStateDiffusionSolverSpecs(_PDESolverSpecs[SteadyStateDiffusionSolver
         self._el = self.generate_header()
         [self._el.add_child(f.xml) for f in self.spec_dict["fields"].values()]
         return self._el
+
+    def validate(self, *specs) -> None:
+        """
+        Validates specs against a variable number of _PyCoreSpecsBase-derived class instances
+        Does not validate field name or solver existence
+
+        :param specs: variable number of _PyCoreSpecsBase-derived class instances
+        :type specs: _PyCoreSpecsBase
+        :raises SpecValueError: when something could not be validated
+        :return: None
+        """
+        # Validate constituent data
+        super().validate(*specs)
+        # Validate fields
+        [self.fields[f].validate(*specs) for f in self.field_names]
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -6088,6 +6989,91 @@ PDESOLVERS = [
     SteadyStateDiffusionSolverSpecs
 ]
 """list of PDE solvers that can be registered with cc3d"""
+
+
+class CoreSpecsValidator:
+    """A class containing common validation methods"""
+
+    @classmethod
+    def validate_cell_type_names(cls, type_names: Iterable[str], cell_type_spec: CellTypePluginSpecs) -> None:
+        """
+        Validate a list of cell type names against a CellTypePluginSpecs instance
+
+        :param type_names: cell type names
+        :type type_names: Iterable[str]
+        :param cell_type_spec: CellTypePluginSpecs instance
+        :type cell_type_spec: CellTypePluginSpecs
+        :raises SpecValueError: when a name is not registered with a CellTypePluginSpecs instance
+        :return: None
+        """
+        names_not_found = [f for f in type_names if f not in cell_type_spec.cell_types]
+        if names_not_found:
+            raise SpecValueError("Could not validate the following names:", names_not_found)
+
+    @classmethod
+    def validate_field_names(cls, *specs: _PyCoreSpecsBase, field_names: Iterable[str]) -> None:
+        """
+        Validate a list of field names against a variable number of specs
+
+        :param specs: spec
+        :type specs: _PyCoreSpecsBase
+        :param field_names: names of fields
+        :type field_names: Iterable[str]
+        :raises SpecValueError: when a name is not registered with a solver
+        :return: None
+        """
+        solvers_found = {f: False for f in field_names}
+        for s in specs:
+            if isinstance(s, _PDESolverSpecs):
+                for f in field_names:
+                    if f in s.field_names:
+                        solvers_found[f] = True
+
+        fields_not_found = [k for k, v in solvers_found.items() if not v]
+        if fields_not_found:
+            raise SpecValueError("Could not validate the following fields:", fields_not_found)
+
+    @classmethod
+    def validate_field_name_unique(cls, *specs: _PyCoreSpecsBase, field_name: str) -> None:
+        """
+        Validate uniqueness of a field name against a variable number of specs
+
+        :param specs: spec
+        :type specs: _PyCoreSpecsBase
+        :param field_name: names of fields
+        :type field_name: str
+        :raises SpecValueError: when a name is not registered with a solver, or with multiple solvers
+        :return: None
+        """
+        solvers_found = list()
+        for s in specs:
+            if isinstance(s, _PDESolverSpecs):
+                if field_name in s.field_names:
+                    solvers_found.append(s.registered_name)
+
+        if len(solvers_found) == 0:
+            raise SpecValueError("Could not validate field registration:", field_name)
+        elif len(solvers_found) > 1:
+            raise SpecValueError("Could not validate uniqueness of field:", field_name, solvers_found)
+
+    @classmethod
+    def validate_point(cls, pt: Point3D, potts_spec: PottsCoreSpecs) -> None:
+        """
+        Validate a point against a PottsCoreSpecs instance
+
+        :param pt: a point
+        :type pt: Point3D
+        :param potts_spec: potts spec
+        :type potts_spec: PottsCoreSpecs
+        :raises SpecValueError: when a point is outside of the domain defined in potts_spec
+        :return: None
+        """
+        for c in ["x", "y", "z"]:
+            c_val = getattr(pt, c)
+            if c_val < 0:
+                raise SpecValueError(f"Could not validate uniform region {c}-min")
+            elif c_val > getattr(potts_spec, f"dim_{c}"):
+                raise SpecValueError(f"Could not validate uniform region {c}-max")
 
 
 def from_xml(_xml: CC3DXMLElement) -> List[_PyCoreXMLInterface]:
