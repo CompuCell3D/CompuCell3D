@@ -53,7 +53,15 @@ def test_import():
             from_file(cc3d_filename)
 
 
-def _test_validation_dependencies(*dep_obj, target):
+def _test_validation_dependencies(*dep_obj, target) -> (bool, str):
+    """
+    Performs basic checking of dependencies on a target object
+
+    :param dep_obj: dependency instances
+    :param target: target instance
+    :return: True with SpecValueError message if passed, False with nothing if failed
+    :rtype: (bool, str)
+    """
     try:
         target.validate()
         return False, ""

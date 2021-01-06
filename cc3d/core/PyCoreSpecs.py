@@ -847,6 +847,12 @@ class PDEBoundaryConditionsSpec(_PyCoreSpecsBase):
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return [PottsCoreSpecs]
 
     def validate(self, *specs) -> None:
@@ -930,6 +936,12 @@ class _PDESolverFieldSpecs(_PyCoreSpecsBase, Generic[_DD, _SD]):
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return []
 
     def validate(self, *specs) -> None:
@@ -987,6 +999,12 @@ class _PDESolverSpecs(_PyCoreSteppableSpecs, _PyCoreSteerableInterface, _PyCoreX
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return [PottsCoreSpecs]
 
     def validate(self, *specs) -> None:
@@ -1407,6 +1425,12 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return [CellTypePluginSpecs]
 
     def validate(self, *specs) -> None:
@@ -4139,6 +4163,12 @@ class SecretionPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteer
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         deps = super().depends_on
         if self.pixel_tracker:
             deps.append(PixelTrackerPluginSpecs)
@@ -5779,6 +5809,12 @@ class DiffusionSolverFEDiffusionDataSpecs(_PDEDiffusionDataSpecs):
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return super().depends_on + [DiffusionSolverFESpecs]
 
     def validate(self, *specs) -> None:
@@ -5833,6 +5869,12 @@ class DiffusionSolverFESecretionDataSpecs(_PDESecretionDataSpecs):
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return super().depends_on + [DiffusionSolverFESpecs]
 
 
@@ -5842,6 +5884,12 @@ class DiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[DiffusionSolverFEDiffusio
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return super().depends_on + [DiffusionSolverFESpecs]
 
     def validate(self, *specs) -> None:
@@ -6100,6 +6148,12 @@ class KernelDiffusionSolverDiffusionDataSpecs(_PDEDiffusionDataSpecs):
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return super().depends_on + [KernelDiffusionSolverSpecs]
 
     def validate(self, *specs) -> None:
@@ -6129,6 +6183,12 @@ class KernelDiffusionSolverSecretionDataSpecs(_PDESecretionDataSpecs):
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return super().depends_on + [KernelDiffusionSolverSpecs]
 
 
@@ -6234,6 +6294,12 @@ class KernelDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[KernelDiffusionSolver
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return super().depends_on + [KernelDiffusionSolverSpecs]
 
     def validate(self, *specs) -> None:
@@ -6433,6 +6499,12 @@ class ReactionDiffusionSolverFEDiffusionDataSpecs(_PDEDiffusionDataSpecs):
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return super().depends_on + [ReactionDiffusionSolverFESpecs]
 
     def validate(self, *specs) -> None:
@@ -6487,6 +6559,12 @@ class ReactionDiffusionSolverFESecretionSpecs(_PDESecretionDataSpecs):
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return super().depends_on + [ReactionDiffusionSolverFESpecs]
 
 
@@ -6496,6 +6574,12 @@ class ReactionDiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[ReactionDiffusion
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return super().depends_on + [ReactionDiffusionSolverFESpecs]
 
     def validate(self, *specs) -> None:
@@ -6733,6 +6817,12 @@ class SteadyStateDiffusionSolverDiffusionDataSpecs(_PDEDiffusionDataSpecs):
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return super().depends_on + [SteadyStateDiffusionSolverSpecs]
 
     def validate(self, *specs) -> None:
@@ -6762,6 +6852,12 @@ class SteadyStateDiffusionSolverSecretionDataSpecs(_PDESecretionDataSpecs):
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return super().depends_on + [SteadyStateDiffusionSolverSpecs]
 
 
@@ -6801,6 +6897,12 @@ class SteadyStateDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[SteadyStateDiffu
 
     @property
     def depends_on(self) -> List[Type]:
+        """
+        Returns a list of depencies, each of which must be instantiated exactly once to validate
+
+        :return: list of dependencies
+        :rtype: list of Type
+        """
         return super().depends_on + [SteadyStateDiffusionSolverSpecs]
 
     def validate(self, *specs) -> None:
