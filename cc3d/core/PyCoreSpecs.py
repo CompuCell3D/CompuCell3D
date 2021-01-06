@@ -338,7 +338,7 @@ class _PyCoreSteerableInterface(_PyCoreSpecsBase, ABC):
             raise SteerableError("Not steerable")
 
 
-class _PyCorePluginSpecs(_PyCoreSpecsBase, ABC):
+class _PyCorePluginSpecs(_PyCoreXMLInterface, ABC):
     """
     Base class for plugins
     """
@@ -381,7 +381,7 @@ class _PyCorePluginSpecs(_PyCoreSpecsBase, ABC):
             return ""
 
 
-class _PyCoreSteppableSpecs(_PyCoreSpecsBase, ABC):
+class _PyCoreSteppableSpecs(_PyCoreXMLInterface, ABC):
     """
     Base class for steppables
     """
@@ -1016,7 +1016,7 @@ class _PDESolverFieldSpecs(_PyCoreSpecsBase, Generic[_DD, _SD]):
         self.spec_dict["secr_data"].param_remove(_cell_type, **kwargs)
 
 
-class _PDESolverSpecs(_PyCoreSteppableSpecs, _PyCoreSteerableInterface, _PyCoreXMLInterface, ABC, Generic[_DD, _SD]):
+class _PDESolverSpecs(_PyCoreSteppableSpecs, _PyCoreSteerableInterface, ABC, Generic[_DD, _SD]):
 
     _field_spec = _PDESolverFieldSpecs
     _diff_data: _DD = _PDEDiffusionDataSpecs
@@ -1648,7 +1648,7 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
             raise SpecValueError("Potts unavailable")
 
 
-class CellTypePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
+class CellTypePluginSpecs(_PyCorePluginSpecs):
     """
     CellType Plugin specs
 
@@ -1894,7 +1894,7 @@ class VolumeEnergyParameter(_PyCoreSpecsBase):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
 
 
-class VolumePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
+class VolumePluginSpecs(_PyCorePluginSpecs):
     """
     Volume Plugin
 
@@ -2087,7 +2087,7 @@ class SurfaceEnergyParameterSpecs(_PyCoreSpecsBase):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
 
 
-class SurfacePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerableInterface):
+class SurfacePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     Surface Plugin
 
@@ -2218,7 +2218,7 @@ class SurfacePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerab
         return p
 
 
-class NeighborTrackerPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
+class NeighborTrackerPluginSpecs(_PyCorePluginSpecs):
     """ NeighborTracker Plugin """
 
     name = "neighbor_tracker"
@@ -2481,7 +2481,7 @@ class ChemotaxisParams(_PyCoreSpecsBase):
         return p
 
 
-class ChemotaxisPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerableInterface):
+class ChemotaxisPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     Chemotaxis Plugin
 
@@ -2704,7 +2704,7 @@ class ExternalPotentialParameter(_PyCoreSpecsBase):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
 
 
-class ExternalPotentialPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerableInterface):
+class ExternalPotentialPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     ExternalPotential Plugin
 
@@ -2890,7 +2890,7 @@ class ExternalPotentialPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyC
         return p
 
 
-class CenterOfMassPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
+class CenterOfMassPluginSpecs(_PyCorePluginSpecs):
     """ CenterOfMass Plugin """
 
     name = "center_of_mass"
@@ -2977,7 +2977,7 @@ class ContactEnergyParam(_PyCoreSpecsBase):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.type_1, self.type_2], cell_type_spec=s)
 
 
-class ContactPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
+class ContactPluginSpecs(_PyCorePluginSpecs):
     """
     Contact Plugin
 
@@ -3344,7 +3344,7 @@ class AdhesionMoleculeDensitySpecs(_PyCoreSpecsBase):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
 
 
-class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerableInterface):
+class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     AdhesionFlex Plugin
 
@@ -3751,7 +3751,7 @@ class LengthEnergyParametersSpecs(_PyCoreSpecsBase):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
 
 
-class LengthConstraintPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerableInterface):
+class LengthConstraintPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     LengthConstraint Plugin
 
@@ -3891,7 +3891,7 @@ class LengthConstraintPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCo
         return param_spec
 
 
-class ConnectivityPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
+class ConnectivityPluginSpecs(_PyCorePluginSpecs):
     """ Connectivity Plugin """
 
     name = "connectivity"
@@ -3921,7 +3921,7 @@ class ConnectivityPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
         return cls()
 
 
-class ConnectivityGlobalPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
+class ConnectivityGlobalPluginSpecs(_PyCorePluginSpecs):
     """ ConnectivityGlobal Plugin """
 
     name = "connectivity_global"
@@ -4139,7 +4139,7 @@ class SecretionFieldSpecs(_PyCoreSpecsBase):
         return ps
 
 
-class SecretionPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerableInterface):
+class SecretionPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     Secretion Plugin
 
@@ -4508,7 +4508,7 @@ class FocalPointPlasticityParamSpec(_PyCoreSpecsBase):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.type1, self.type2], cell_type_spec=s)
 
 
-class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerableInterface):
+class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     FocalPointPlasticity Plugin
 
@@ -4874,7 +4874,7 @@ class CurvatureInternalTypeParameters(_PyCoreSpecsBase):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
 
 
-class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteerableInterface):
+class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     Curvature Plugin
 
@@ -5107,7 +5107,7 @@ class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface, _PyCoreSteer
         return p
 
 
-class BoundaryPixelTrackerPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
+class BoundaryPixelTrackerPluginSpecs(_PyCorePluginSpecs):
     """ BoundaryPixelTracker Plugin """
 
     name = "boundary_pixel_tracker"
@@ -5149,7 +5149,7 @@ class BoundaryPixelTrackerPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
         return cls()
 
 
-class PixelTrackerPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
+class PixelTrackerPluginSpecs(_PyCorePluginSpecs):
     """ PixelTracker Plugin """
 
     name = "pixel_tracker"
@@ -5189,7 +5189,7 @@ class PixelTrackerPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
         return cls()
 
 
-class MomentOfInertiaPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
+class MomentOfInertiaPluginSpecs(_PyCorePluginSpecs):
     """ MomentOfInertia Plugin """
 
     name = "moment_of_inertia"
@@ -5222,7 +5222,7 @@ class MomentOfInertiaPluginSpecs(_PyCorePluginSpecs, _PyCoreXMLInterface):
         return cls()
 
 
-class BoxWatcherSteppableSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
+class BoxWatcherSteppableSpecs(_PyCoreSteppableSpecs):
     """ BoxWatcher Steppable """
 
     name = "box_watcher"
@@ -5355,7 +5355,7 @@ class BlobRegionSpecs(_PyCoreSpecsBase):
                     CoreSpecsValidator.validate_point(pt=pt, potts_spec=s)
 
 
-class BlobInitializerSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
+class BlobInitializerSpecs(_PyCoreSteppableSpecs):
     """ BlobInitializer """
 
     name = "blob_initializer"
@@ -5569,7 +5569,7 @@ class UniformRegionSpecs(_PyCoreSpecsBase):
                 [CoreSpecsValidator.validate_point(pt=pt, potts_spec=s) for pt in [self.pt_min, self.pt_max]]
 
 
-class UniformInitializerSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
+class UniformInitializerSpecs(_PyCoreSteppableSpecs):
     """ Uniform Initializer Specs """
 
     name = "uniform_initializer"
@@ -5691,7 +5691,7 @@ class UniformInitializerSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
         return reg
 
 
-class PIFInitializerSteppableSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
+class PIFInitializerSteppableSpecs(_PyCoreSteppableSpecs):
     """ PIF Initializer """
 
     name = "pif_initiazer"
@@ -5748,7 +5748,7 @@ class PIFInitializerSteppableSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
         return cls(pif_name=cls.find_xml_by_attr(_xml).getFirstElement("PIFName").getText())
 
 
-class PIFDumperSteppableSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
+class PIFDumperSteppableSpecs(_PyCoreSteppableSpecs):
     """ PIFDumper Steppable """
 
     name = "pif_dumper"
@@ -5987,8 +5987,7 @@ class DiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[DiffusionSolverFEDiffusio
         _PDESolverFieldSpecs.secretion_data_remove(self, _cell_type, contact_type=contact_type)
 
 
-class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs, DiffusionSolverFESecretionDataSpecs],
-                             _PyCoreXMLInterface):
+class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs, DiffusionSolverFESecretionDataSpecs]):
     """ DiffusionSolverFE """
 
     name = "diffusion_solver_fe"
