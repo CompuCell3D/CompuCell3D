@@ -1519,6 +1519,35 @@ def test_validation():
             raise SpecValueError("Validation failed: " + name)
 
 
+def test_serial() -> None:
+    """
+    Tests whether all main specs can be serialized
+
+    :return: None
+    """
+    from cc3d.core.PyCoreSpecs import PLUGINS, STEPPABLES, INITIALIZERS, MetadataSpecs
+    from cc3d.core.PyCoreSpecs import PIFDumperSteppableSpecs, PIFInitializerSteppableSpecs
+    import pickle
+
+    from cc3d.core.PyCoreSpecs import VolumePluginSpecs
+
+    ins = {PIFDumperSteppableSpecs: ([], {"pif_name": "dummy", "frequency": 1}),
+           PIFInitializerSteppableSpecs: ([], {"pif_name": "dummy"})}
+
+    for spec in PLUGINS + STEPPABLES + INITIALIZERS + [MetadataSpecs]:
+        print("Testing serialization:", spec)
+
+        try:
+            args, kwargs = ins[spec]
+        except KeyError:
+            args, kwargs = [], {}
+
+        o = spec(*args, **kwargs)
+        dumpo = pickle.dumps(o)
+        loado = pickle.loads(dumpo)
+        print(o, loado, dumpo)
+
+
 def main():
     """
     Performs tests
@@ -1527,6 +1556,7 @@ def main():
     """
     test_import()
     test_validation()
+    test_serial()
 
 
 if __name__ == "__main__":

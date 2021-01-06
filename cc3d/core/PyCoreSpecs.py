@@ -5759,7 +5759,7 @@ class PIFDumperSteppableSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
         "frequency": (lambda x: x < 1, "Frequency must be positive")
     }
 
-    def __init__(self, pif_name: str, frequency: int = 0):
+    def __init__(self, pif_name: str, frequency: int = 1):
         super().__init__()
 
         self.check_inputs(pif_name=pif_name, frequency=frequency)
@@ -5798,7 +5798,10 @@ class PIFDumperSteppableSpecs(_PyCoreSteppableSpecs, _PyCoreXMLInterface):
         :rtype: PIFDumperSteppableSpecs
         """
         el = cls.find_xml_by_attr(_xml)
-        return cls(pif_name=el.getFirstElement("PIFName").getText(), frequency=el.getAttributeAsInt("Frequency"))
+        kwargs = {"pif_name": el.getFirstElement("PIFName").getText()}
+        if el.findAttribute("Frequency"):
+            kwargs["frequency"] = el.getAttributeAsInt("Frequency")
+        return cls(**kwargs)
 
 
 # DiffusionSolverFE
