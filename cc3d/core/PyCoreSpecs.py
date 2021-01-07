@@ -7,6 +7,7 @@ Defines python-based core specification classes
 # todo: add to python reference manual
 
 from abc import ABC
+from contextlib import AbstractContextManager
 import itertools
 import os
 from typing import Any, Callable, Dict, Generic, Iterable, List, Tuple, Type, TypeVar, Union
@@ -22,6 +23,117 @@ _Type = TypeVar('_Type')
 
 class SpecValueError(Exception):
     """ Base class for specification value errors """
+
+    def __init__(self, *args, names: List[str] = None):
+        super().__init__(*args)
+
+        self.names = []
+        if names is not None:
+            self.names.extend(names)
+
+
+class _SpecValueErrorContext(AbstractContextManager):
+    """
+    A context manager for aggregating multiple raised SpecValueError exceptions into one exception
+
+    Typical usage is as follows,
+
+    .. code-block:: python
+
+       err_ctx = _SpecValueErrorContext()
+       with err_ctx:
+          raise SpecValueError("first message", names=["name1"])
+       with err_ctx:
+          raise SpecValueError("second message", names=["name2"])
+       if err_ctx:  # Returns True if any SpecValueError exceptions were raised
+          # Here a SpecValueError is raised equivalent to
+          # raise SpecValueError("first message\\nsecond message, names=["name1", "name2"])
+          err_ctx.raise_error()
+
+    Note that :meth:`__call__` defines functionality to wrap a function for usage as follows,
+
+    .. code-block:: python
+
+       err_ctx = _SpecValueErrorContext()
+       err_ctx(func1, 1, x=2)  # For def func1(_z, x)
+       err_ctx(func2, 3, y=4)  # For def func2(_z, y)
+       if err_ctx:  # Test for any raised SpecValueError exceptions by func1 and func2
+          err_ctx.raise_error()  # Raise aggregated SpecValueError exception
+
+    """
+    def __init__(self):
+        super().__init__()
+
+        self._errs: List[SpecValueError] = []
+
+    def __call__(self, func, *args, **kwargs):
+        with self:
+            return func(*args, **kwargs)
+
+    def __enter__(self, *args, **kwargs):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if exc_type is not None and issubclass(exc_type, SpecValueError):
+            exc_value: SpecValueError
+            self._errs.append(exc_value)
+            return True
+
+    def __bool__(self):
+        return len(self._errs) > 0
+
+    def raise_error(self):
+        """
+        Raises all collected exceptions and aggregates messages and names into one exception
+
+        :raises SpecValueError: when called
+        :return: None
+        """
+        names = []
+        msgs = "\n".join([str(e) for e in self._errs])
+        [names.extend(e.names) for e in self._errs]
+        raise SpecValueError(msgs, names=names)
+
+
+class _SpecValueErrorContextBlock(AbstractContextManager):
+    """
+    A convenience context manager for aggregating multiple raised SpecValueError exceptions into one exception
+
+    Typical usage is as follows,
+
+    .. code-block:: python
+
+       with _SpecValueErrorContextBlock() as err_ctx:
+          with err_ctx.ctx:
+             raise SpecValueError("first message", names=["name1"])
+          with err_ctx.ctx:
+             raise SpecValueError("second message", names=["name2"])
+       # Here a SpecValueError is raised equivalent to
+       # raise SpecValueError("first message\\nsecond message, names=["name1", "name2"])
+
+    """
+    def __init__(self):
+        super().__init__()
+
+        self.ctx = _SpecValueErrorContext()
+
+    def __enter__(self, *args, **kwargs):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            return self.ctx.__exit__(exc_type, exc_val, exc_tb)
+
+        if self.ctx:
+            self.ctx.raise_error()
+
+
+class SpecValueCheckError(SpecValueError):
+    """ Execption for when value check fails """
+
+
+class SpecValueReadOnlyError(SpecValueError):
+    """ Exception for when attempting to set a read-only SpecProperty """
 
 
 class SpecImportError(Exception):
@@ -54,14 +166,14 @@ class SpecProperty(property, Generic[_Type]):
             :param _self: parent
             :type _self: _PyCoreSpecsBase
             :param val: value
-            :raises SpecValueError: when check_dict criterion is True, if any
+            :raises SpecValueCheckError: when check_dict criterion is True, if any
             :return: None
             :rtype: _Type
             """
             try:
                 fcn, msg = _self.check_dict[name]
                 if fcn(val):
-                    raise SpecValueError(msg)
+                    raise SpecValueCheckError(msg, names=[name])
             except KeyError:
                 pass
             _self.spec_dict[name] = val
@@ -73,11 +185,11 @@ class SpecProperty(property, Generic[_Type]):
             :param _self: parent
             :type _self: _PyCoreSpecsBase
             :param val: value
-            :raises SpecValueError: when setting
+            :raises SpecValueReadOnlyError: when setting
             :return: None
             :rtype: _Type
             """
-            raise SpecValueError(f"Setting attribute is illegal.")
+            raise SpecValueReadOnlyError(f"Setting attribute is illegal.", names=[name])
 
         if readonly:
             fset = _fset_err
@@ -142,7 +254,7 @@ class _PyCoreSpecsBase:
             return ElementCC3D("Plugin", {"Name": self.registered_name})
         elif self.type.lower() == "steppable":
             return ElementCC3D("Steppable", {"Type": self.registered_name})
-        raise SpecValueError(f"Spec type {self.type} not recognized")
+        raise SpecValueError(f"Spec type {self.type} not recognized", names=["spec_type"])
 
     def check_inputs(self, **kwargs) -> None:
         """
@@ -153,13 +265,16 @@ class _PyCoreSpecsBase:
         :raises SpecValueError: when check criterion is True
         :return: None
         """
-        for k, v in kwargs.items():
-            try:
-                fcn, msg = self.check_dict[k]
-                if fcn(v):
-                    raise SpecValueError(msg)
-            except KeyError:
-                pass
+        with _SpecValueErrorContextBlock() as err_ctx:
+
+            for k, v in kwargs.items():
+                with err_ctx.ctx:
+                    try:
+                        fcn, msg = self.check_dict[k]
+                        if fcn(v):
+                            raise SpecValueError(msg, names=[k])
+                    except KeyError:
+                        pass
 
     @property
     def xml(self) -> ElementCC3D:
@@ -191,15 +306,17 @@ class _PyCoreSpecsBase:
         :return: None
         """
         # Validate dependencies
-        missing_deps = []
-        for s in self.depends_on:
-            try:
-                CoreSpecsValidator.validate_single_instance(*specs, cls_oi=s, caller_name=self.registered_name)
-            except SpecValueError as err:
-                missing_deps.append((s, str(err)))
-
-        if len(missing_deps) > 0:
-            raise SpecValueError("\n".join([md[1] for md in missing_deps]))
+        with _SpecValueErrorContextBlock() as err_ctx:
+            for s in self.depends_on:
+                with err_ctx.ctx:
+                    try:
+                        CoreSpecsValidator.validate_single_instance(*specs, cls_oi=s, caller_name=self.registered_name)
+                    except SpecValueError as err:
+                        if hasattr(s, "registered_name"):
+                            name = s.registered_name
+                        else:
+                            name = s.__name__
+                        raise SpecValueError(str(err), names=["depends_on", name])
 
     @property
     def core(self):
@@ -217,7 +334,7 @@ class _PyCoreSpecsBase:
 
     @core.setter
     def core(self, _val):
-        raise SpecValueError("Core object cannot be set")
+        raise SpecValueReadOnlyError("Core object cannot be set")
 
 
 class _PyCoreParamAccessor(Generic[_Type]):
@@ -480,6 +597,7 @@ class SecretionSpecs(_PyCoreSpecsBase):
         :param float _val: value of parameter
         :param bool constant: flag for constant concentration, optional
         :param str contact_type: name of cell type for on-contact dependence, optional
+        :raises SpecValueError: when using both constant concentration and on-contact dependence
         """
         super().__init__()
 
@@ -536,15 +654,23 @@ class SecretionSpecs(_PyCoreSpecsBase):
         :raises SpecValueError: when something could not be validated
         :return: None
         """
+        err_ctx = _SpecValueErrorContext()
+
         # Validate dependencies
-        super().validate(*specs)
+        with err_ctx:
+            super().validate(*specs)
 
         for s in specs:
             # Validate against cell types defined in CellTypePluginSpecs
             if isinstance(s, CellTypePluginSpecs):
-                CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
+                with err_ctx:
+                    CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
                 if self.contact_type is not None:
-                    CoreSpecsValidator.validate_cell_type_names(type_names=[self.contact_type], cell_type_spec=s)
+                    with err_ctx:
+                        CoreSpecsValidator.validate_cell_type_names(type_names=[self.contact_type], cell_type_spec=s)
+
+        if err_ctx:
+            err_ctx.raise_error()
 
     @property
     def contact_type(self) -> Union[str, None]:
@@ -587,9 +713,12 @@ class _PDESecretionDataSpecs(_PyCoreSpecsBase):
         """
         super().__init__()
 
-        for _ps in _param_specs:
-            if not isinstance(_ps, SecretionSpecs):
-                raise SpecValueError("Only SecretionSpecs instances can be passed")
+        with _SpecValueErrorContextBlock() as err_ctx:
+            for _ps in _param_specs:
+                with err_ctx.ctx:
+                    if not isinstance(_ps, SecretionSpecs):
+                        raise SpecValueError("Only SecretionSpecs instances can be passed",
+                                             names=[_ps.__name__])
 
         self.spec_dict = {"param_specs": []}
         [self.param_append(_ps) for _ps in _param_specs]
@@ -895,21 +1024,29 @@ class PDEBoundaryConditionsSpec(_PyCoreSpecsBase):
         :raises SpecValueError: when something could not be validated
         :return: None
         """
-        super().validate(*specs)
 
-        for s in specs:
-            # Validate against cell types defined in PottsCoreSpecs
-            # Constant value and flux are compatible with no flux
-            # Perdioc is compatible with periodic
-            if isinstance(s, PottsCoreSpecs):
-                for c in ["x", "y", "z"]:
-                    if getattr(s, f"boundary_{c}") == BOUNDARYTYPESPOTTS[0]:
-                        if getattr(self, f"{c}_min_type") not in BOUNDARYTYPESPDE[0:2]:
-                            raise SpecValueError(f"Min-{c} boundary could not be validated")
-                        elif getattr(self, f"{c}_max_type") not in BOUNDARYTYPESPDE[0:2]:
-                            raise SpecValueError(f"Max-{c} boundary could not be validated")
-                    elif getattr(self, f"{c}_min_type") != BOUNDARYTYPESPDE[2]:
-                        raise SpecValueError(f"Periodic-{c} boundary could not be validated")
+        with _SpecValueErrorContextBlock() as err_ctx:
+
+            with err_ctx.ctx:
+                super().validate(*specs)
+
+            for s in specs:
+                # Validate against cell types defined in PottsCoreSpecs
+                # Constant value and flux are compatible with no flux
+                # Perdioc is compatible with periodic
+                if isinstance(s, PottsCoreSpecs):
+                    for c in ["x", "y", "z"]:
+                        with err_ctx.ctx:
+                            if getattr(s, f"boundary_{c}") == BOUNDARYTYPESPOTTS[0]:
+                                if getattr(self, f"{c}_min_type") not in BOUNDARYTYPESPDE[0:2]:
+                                    raise SpecValueError(f"Min-{c} boundary could not be validated",
+                                                         names=[f"{c}_min_type"])
+                                elif getattr(self, f"{c}_max_type") not in BOUNDARYTYPESPDE[0:2]:
+                                    raise SpecValueError(f"Max-{c} boundary could not be validated",
+                                                         names=[f"{c}_max_type"])
+                            elif getattr(self, f"{c}_min_type") != BOUNDARYTYPESPDE[2]:
+                                raise SpecValueError(f"Periodic-{c} boundary could not be validated",
+                                                     names=[f"{c}_min_type"])
 
 
 _DD = TypeVar('_DD')
@@ -1048,20 +1185,30 @@ class _PDESolverSpecs(_PyCoreSteppableSpecs, _PyCoreSteerableInterface, ABC, Gen
         :raises SpecValueError: when something could not be validated
         :return: None
         """
-        super().validate(*specs)
+        with _SpecValueErrorContextBlock() as err_ctx:
 
-        # Validate fields
-        [self.fields[field_name].validate(*specs) for field_name in self.field_names]
+            with err_ctx.ctx:
+                super().validate(*specs)
 
-        # Validate field names against self
-        for field_name in self.field_names:
-            f = self.fields[field_name]
-            if f.field_name not in self.field_names:
-                raise SpecValueError("Field name could not be validated:", f.field_name)
+            # Validate fields
+            for field_name in self.field_names:
+                with err_ctx.ctx:
+                    self.fields[field_name].validate(*specs)
 
-        # Validate field names
-        CoreSpecsValidator.validate_field_names(*specs, field_names=self.field_names)
-        [CoreSpecsValidator.validate_field_name_unique(*specs, field_name=f) for f in self.field_names]
+            # Validate field names against self
+            for field_name in self.field_names:
+                with err_ctx.ctx:
+                    f = self.fields[field_name]
+                    if f.field_name not in self.field_names:
+                        raise SpecValueError("Field name could not be validated: " + f.field_name)
+
+            # Validate field names
+            with err_ctx.ctx:
+                CoreSpecsValidator.validate_field_names(*specs, field_names=self.field_names)
+
+            for f in self.field_names:
+                with err_ctx.ctx:
+                    CoreSpecsValidator.validate_field_name_unique(*specs, field_name=f)
 
     @property
     def fields(self) -> _PyCoreParamAccessor[_PDESolverFieldSpecs[_DD, _SD]]:
@@ -1916,9 +2063,12 @@ class VolumePluginSpecs(_PyCorePluginSpecs):
     def __init__(self, *_params):
         super().__init__()
 
-        for _p in _params:
-            if not isinstance(_p, VolumeEnergyParameter):
-                raise SpecValueError("Only VolumeEnergyParameter instances can be passed")
+        with _SpecValueErrorContextBlock() as err_ctx:
+            for _p in _params:
+                with err_ctx.ctx:
+                    if not isinstance(_p, VolumeEnergyParameter):
+                        raise SpecValueError("Only VolumeEnergyParameter instances can be passed",
+                                             names=[_p.__name__])
 
         self.spec_dict = {"params": {_p.cell_type: _p for _p in _params}}
 
@@ -2109,9 +2259,12 @@ class SurfacePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     def __init__(self, *_params):
         super().__init__()
 
-        for _p in _params:
-            if not isinstance(_p, SurfaceEnergyParameterSpecs):
-                raise SpecValueError("Only SurfaceEnergyParameter instances can be passed")
+        with _SpecValueErrorContextBlock() as err_ctx:
+            for _p in _params:
+                with err_ctx.ctx:
+                    if not isinstance(_p, SurfaceEnergyParameterSpecs):
+                        raise SpecValueError("Only SurfaceEnergyParameter instances can be passed",
+                                             names=[_p.__name__])
 
         self.spec_dict = {"params": {_p.cell_type: _p for _p in _params}}
 
@@ -2359,9 +2512,12 @@ class ChemotaxisParams(_PyCoreSpecsBase):
         """
         super().__init__()
 
-        for _ts in _type_specs:
-            if not isinstance(_ts, ChemotaxisTypeSpecs):
-                raise SpecValueError("Only ChemotaxisTypeSpecs instances can specify chemotaxis type data")
+        with _SpecValueErrorContextBlock() as err_ctx:
+            for _ts in _type_specs:
+                with err_ctx.ctx:
+                    if not isinstance(_ts, ChemotaxisTypeSpecs):
+                        raise SpecValueError("Only ChemotaxisTypeSpecs instances can specify chemotaxis type data",
+                                             names=[_ts.__name__])
 
         self.spec_dict = {"field_name": field_name,
                           "solver_name": solver_name,
@@ -2507,9 +2663,12 @@ class ChemotaxisPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     def __init__(self, *_field_specs):
         super().__init__()
 
-        for _fs in _field_specs:
-            if not isinstance(_fs, ChemotaxisParams):
-                raise SpecValueError("Can only pass ChemotaxisParams instances")
+        with _SpecValueErrorContextBlock() as err_ctx:
+            for _fs in _field_specs:
+                with err_ctx.ctx:
+                    if not isinstance(_fs, ChemotaxisParams):
+                        raise SpecValueError("Can only pass ChemotaxisParams instances",
+                                             names=[_fs.__name__])
 
         self.spec_dict = {"field_specs": {_fs.field_name: _fs for _fs in _field_specs}}
 
@@ -3006,11 +3165,14 @@ class ContactPluginSpecs(_PyCorePluginSpecs):
         """
         super().__init__()
 
-        for _p in _params:
-            if not isinstance(_p, ContactEnergyParam):
-                raise SpecValueError("Only ContactEnergyParam instances can be passed")
+        with _SpecValueErrorContextBlock() as err_ctx:
+            for _p in _params:
+                with err_ctx.ctx:
+                    if not isinstance(_p, ContactEnergyParam):
+                        raise SpecValueError("Only ContactEnergyParam instances can be passed",
+                                             names=[_p.__name__])
 
-        self.check_inputs(neighbor_order=neighbor_order)
+            self.check_inputs(neighbor_order=neighbor_order)
 
         self.spec_dict = {"energies": {},
                           "neighbor_order": neighbor_order}
@@ -3930,9 +4092,12 @@ class ConnectivityGlobalPluginSpecs(_PyCorePluginSpecs):
     def __init__(self, fast: bool = False, *_cell_types):
         super().__init__()
 
-        for _ct in _cell_types:
-            if not isinstance(_ct, str):
-                raise SpecValueError("Only cell type names as strings can be pass")
+        with _SpecValueErrorContextBlock() as err_ctx:
+            for _ct in _cell_types:
+                with err_ctx.ctx:
+                    if not isinstance(_ct, str):
+                        raise SpecValueError("Only cell type names as strings can be pass",
+                                             names=[_ct.__name__])
 
         self.spec_dict = {"fast": fast,
                           "cell_types": []}
@@ -4040,9 +4205,12 @@ class SecretionFieldSpecs(_PyCoreSpecsBase):
         """
         super().__init__()
 
-        for _ps in _param_specs:
-            if not isinstance(_ps, SecretionSpecs):
-                raise SpecValueError("Only SecretionSpecs instances can be passed")
+        with _SpecValueErrorContextBlock() as err_ctx:
+            for _ps in _param_specs:
+                with err_ctx.ctx:
+                    if not isinstance(_ps, SecretionSpecs):
+                        raise SpecValueError("Only SecretionSpecs instances can be passed",
+                                             names=[_ps.__name__])
 
         self.spec_dict = {"field_name": field_name,
                           "frequency": frequency,
@@ -4161,9 +4329,12 @@ class SecretionPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     def __init__(self, pixel_tracker: bool = True, boundary_pixel_tracker: bool = True, *_field_spec):
         super().__init__()
 
-        for _fs in _field_spec:
-            if not isinstance(_fs, SecretionFieldSpecs):
-                raise SpecValueError("Only SecretionFieldSpecs instances can be passed")
+        with _SpecValueErrorContextBlock() as err_ctx:
+            for _fs in _field_spec:
+                with err_ctx.ctx:
+                    if not isinstance(_fs, SecretionFieldSpecs):
+                        raise SpecValueError("Only SecretionFieldSpecs instances can be passed",
+                                             names=[_fs.__name__])
 
         self.spec_dict = {"pixel_tracker": pixel_tracker,
                           "boundary_pixel_tracker": boundary_pixel_tracker,
@@ -4216,23 +4387,33 @@ class SecretionPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         :raises SpecValueError: when something could not be validated
         :return: None
         """
-        super().validate(*specs)
+        with _SpecValueErrorContextBlock() as err_ctx:
 
-        for s in specs:
-            # Validate PixelTracker
-            if isinstance(s, PixelTrackerPluginSpecs) and not self.pixel_tracker:
-                raise SpecValueError("Could not validated disabled PixelTracker Plugin")
+            with err_ctx.ctx:
+                super().validate(*specs)
 
-            # Validate disabled BoundaryPixelTracker
-            if isinstance(s, BoundaryPixelTrackerPluginSpecs) and not self.boundary_pixel_tracker:
-                raise SpecValueError("Could not validated disabled BoundaryPixelTracker Plugin")
+            for s in specs:
+                with err_ctx.ctx:
+                    # Validate PixelTracker
+                    if isinstance(s, PixelTrackerPluginSpecs) and not self.pixel_tracker:
+                        raise SpecValueError("Could not validated disabled PixelTracker Plugin")
 
-        # Validate field name against solvers
-        CoreSpecsValidator.validate_field_names(*specs, field_names=self.field_names)
-        [CoreSpecsValidator.validate_field_name_unique(*specs, field_name=f) for f in self.field_names]
+                    # Validate disabled BoundaryPixelTracker
+                    if isinstance(s, BoundaryPixelTrackerPluginSpecs) and not self.boundary_pixel_tracker:
+                        raise SpecValueError("Could not validated disabled BoundaryPixelTracker Plugin")
 
-        # Validate fields
-        [f.validate(*specs) for f in self.spec_dict["field_specs"].values()]
+            # Validate field name against solvers
+            with err_ctx.ctx:
+                CoreSpecsValidator.validate_field_names(*specs, field_names=self.field_names)
+
+            for f in self.field_names:
+                with err_ctx.ctx:
+                    CoreSpecsValidator.validate_field_name_unique(*specs, field_name=f)
+
+            # Validate fields
+            for f in self.spec_dict["field_specs"].values():
+                with err_ctx.ctx:
+                    f.validate(*specs)
 
     @classmethod
     def from_xml(cls, _xml: CC3DXMLElement):
@@ -4531,9 +4712,12 @@ class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterf
     def __init__(self, neighbor_order: int = 1, *_params):
         super().__init__()
 
-        for _p in _params:
-            if not isinstance(_p, FocalPointPlasticityParamSpec):
-                raise SpecValueError("Only FocalPointPlasticityParamSpec instances can be passed")
+        with _SpecValueErrorContextBlock() as err_ctx:
+            for _p in _params:
+                with err_ctx.ctx:
+                    if not isinstance(_p, FocalPointPlasticityParamSpec):
+                        raise SpecValueError("Only FocalPointPlasticityParamSpec instances can be passed",
+                                             names=[_p.__name__])
 
         self.spec_dict = {"neighbor_order": neighbor_order,
                           "param_specs": {}}
@@ -5364,9 +5548,12 @@ class BlobInitializerSpecs(_PyCoreSteppableSpecs):
     def __init__(self, *_regions):
         super().__init__()
 
-        for r in _regions:
-            if not isinstance(r, BlobRegionSpecs):
-                raise SpecValueError("Only BlobRegionSpecs instances can be passed")
+        with _SpecValueErrorContextBlock() as err_ctx:
+            for r in _regions:
+                with err_ctx.ctx:
+                    if not isinstance(r, BlobRegionSpecs):
+                        raise SpecValueError("Only BlobRegionSpecs instances can be passed",
+                                             names=[r.__name__])
 
         self.spec_dict = {"regions": list(_regions)}
 
@@ -5578,9 +5765,12 @@ class UniformInitializerSpecs(_PyCoreSteppableSpecs):
     def __init__(self, *_regions):
         super().__init__()
 
-        for r in _regions:
-            if not isinstance(r, UniformRegionSpecs):
-                raise SpecValueError("Only UniformRegionSpecs instances can be passed")
+        with _SpecValueErrorContextBlock() as err_ctx:
+            for r in _regions:
+                with err_ctx.ctx:
+                    if not isinstance(r, UniformRegionSpecs):
+                        raise SpecValueError("Only UniformRegionSpecs instances can be passed",
+                                             names=[r.__name__])
 
         self.spec_dict = {"regions": list(_regions)}
 
@@ -7247,12 +7437,16 @@ class CoreSpecsValidator:
         :raises SpecValueError: when a point is outside of the domain defined in potts_spec
         :return: None
         """
-        for c in ["x", "y", "z"]:
-            c_val = getattr(pt, c)
-            if c_val < 0:
-                raise SpecValueError(f"Could not validate uniform region {c}-min")
-            elif c_val > getattr(potts_spec, f"dim_{c}"):
-                raise SpecValueError(f"Could not validate uniform region {c}-max")
+        with _SpecValueErrorContextBlock() as err_ctx:
+            for c in ["x", "y", "z"]:
+                with err_ctx.ctx:
+                    c_val = getattr(pt, c)
+                    if c_val < 0:
+                        raise SpecValueError(f"Could not validate uniform region {c}-min",
+                                             names=[f"{c}-min"])
+                    elif c_val > getattr(potts_spec, f"dim_{c}"):
+                        raise SpecValueError(f"Could not validate uniform region {c}-max",
+                                             names=[f"{c}-max"])
 
     @classmethod
     def validate_single_instance(cls,

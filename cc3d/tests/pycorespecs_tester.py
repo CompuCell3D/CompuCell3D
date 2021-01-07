@@ -3,7 +3,7 @@
 from os import listdir, walk
 from os.path import abspath, dirname, join, splitext
 
-from cc3d.core.PyCoreSpecs import from_file, SpecValueError
+from cc3d.core.PyCoreSpecs import from_file, SpecValueError, _SpecValueErrorContextBlock
 
 
 tests_dir = join(dirname(dirname(dirname(abspath(__file__)))), "CompuCell3D", "core", "Demos")
@@ -68,7 +68,7 @@ def _test_validation_dependencies(*dep_obj, target) -> (bool, str):
     except SpecValueError as e:
         try:
             target.validate(*dep_obj)
-            return True, str(e)
+            return True, str(e) + ", " + str(e.names)
         except SpecValueError:
             return False, ""
 
@@ -106,13 +106,13 @@ def test_validation_adhesion_flex() -> (str, bool):
         param.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         param.cell_type = "T1"
     try:
         adhesion_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     return name, True
@@ -151,12 +151,12 @@ def test_validation_blob_initializer() -> (str, bool):
                 reg.validate(*specs)
                 return name, False
             except SpecValueError as e:
-                print(name, str(e))
+                print(name, str(e), str(e.names))
                 try:
                     blob_init_specs.validate(*specs)
                     return name, False
                 except SpecValueError as e:
-                    print(name, str(e))
+                    print(name, str(e), str(e.names))
                     setattr(reg.center, comp, getattr(reg.center, comp) - offset)
 
     # Validation error: undefined cell type
@@ -165,12 +165,12 @@ def test_validation_blob_initializer() -> (str, bool):
         reg.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         try:
             blob_init_specs.validate(*specs)
             return name, False
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             pass
 
     return name, True
@@ -211,12 +211,12 @@ def test_validation_chemotaxis() -> (str, bool):
         chemotaxis_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         f1_solver_specs.field_new("F2")
         try:
             chemotaxis_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     # Validation error: solver not registered
@@ -224,11 +224,11 @@ def test_validation_chemotaxis() -> (str, bool):
         chemotaxis_specs.validate(*[s for s in specs if not isinstance(s, DiffusionSolverFESpecs)])
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         try:
             chemotaxis_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     # Validation error: cell type name not registered
@@ -237,12 +237,12 @@ def test_validation_chemotaxis() -> (str, bool):
         chemotaxis_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T1")
         try:
             chemotaxis_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     return name, True
@@ -276,12 +276,12 @@ def test_validation_connectivity_global() -> (str, bool):
         connectivity_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T1")
         try:
             connectivity_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     return name, True
@@ -315,14 +315,14 @@ def test_validation_contact() -> (str, bool):
         param1.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         param1.type_1 = "Medium"
         param1.type_2 = "T2"
         try:
             param1.validate(*specs)
             return name, False
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             param1.type_2 = "T1"
 
     # Validation error: T3 not defined
@@ -331,7 +331,7 @@ def test_validation_contact() -> (str, bool):
         contact_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     return name, True
@@ -365,14 +365,14 @@ def test_validation_contact_internal() -> (str, bool):
         param1.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         param1.type_1 = "Medium"
         param1.type_2 = "T2"
         try:
             param1.validate(*specs)
             return name, False
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             param1.type_2 = "T1"
 
     # Validation error: T3 not defined
@@ -381,7 +381,7 @@ def test_validation_contact_internal() -> (str, bool):
         contact_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     return name, True
@@ -415,14 +415,14 @@ def test_validation_contact_local_flex() -> (str, bool):
         param1.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         param1.type_1 = "Medium"
         param1.type_2 = "T2"
         try:
             param1.validate(*specs)
             return name, False
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             param1.type_2 = "T1"
 
     # Validation error: T3 not defined
@@ -431,7 +431,7 @@ def test_validation_contact_local_flex() -> (str, bool):
         contact_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     return name, True
@@ -465,12 +465,12 @@ def test_validation_curvature() -> (str, bool):
         curvature_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T1")
         try:
             curvature_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     p.cell_type = "T2"
@@ -478,7 +478,7 @@ def test_validation_curvature() -> (str, bool):
         curvature_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         p.cell_type = "T1"
 
     pt = curvature_specs.param_internal_new("T1", "T2", 1, 1)
@@ -486,12 +486,12 @@ def test_validation_curvature() -> (str, bool):
         curvature_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T2")
         try:
             curvature_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     pt.type1 = "T3"
@@ -499,12 +499,12 @@ def test_validation_curvature() -> (str, bool):
         curvature_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T3")
         try:
             curvature_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     pt.type2 = "T4"
@@ -512,12 +512,12 @@ def test_validation_curvature() -> (str, bool):
         curvature_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T4")
         try:
             curvature_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     return name, True
@@ -553,7 +553,7 @@ def test_validation_diffusion_solver_fe() -> (str, bool):
         f1.diff_data.validate(*[s for s in specs if not isinstance(s, DiffusionSolverFESpecs)])
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     # Validation error: SecretionDataSpecs requires a solver
@@ -561,7 +561,7 @@ def test_validation_diffusion_solver_fe() -> (str, bool):
         f1.spec_dict["secr_data"].validate(*[s for s in specs if not isinstance(s, DiffusionSolverFESpecs)])
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     # Validation error: Unrecognized field name in DiffusionData
@@ -570,7 +570,7 @@ def test_validation_diffusion_solver_fe() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         f1.diff_data.field_name = "F1"
 
     # Validation error: Unrecognized cell type names in DiffusionData
@@ -579,12 +579,12 @@ def test_validation_diffusion_solver_fe() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T3")
         try:
             f1_solver_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     f1.diff_data.decay_types["T4"] = 0.0
@@ -592,12 +592,12 @@ def test_validation_diffusion_solver_fe() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T4")
         try:
             f1_solver_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     # Validation error: Unrecognized cell type names in SecretionData
@@ -607,14 +607,14 @@ def test_validation_diffusion_solver_fe() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         p.cell_type = "T1"
         p.contact_type = "T5"
         try:
             f1_solver_specs.validate(*specs)
             return name, False
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             p.contact_type = "T2"
             pass
 
@@ -624,7 +624,7 @@ def test_validation_diffusion_solver_fe() -> (str, bool):
         f1.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         f1.field_name = "F1"
 
     # Validation error: non-unique field name
@@ -635,7 +635,7 @@ def test_validation_diffusion_solver_fe() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     return name, True
@@ -669,12 +669,12 @@ def test_validation_external_potential() -> (str, bool):
         ext_pot_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T1")
         try:
             ext_pot_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     p.cell_type = "T2"
@@ -682,12 +682,12 @@ def test_validation_external_potential() -> (str, bool):
         ext_pot_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T2")
         try:
             ext_pot_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     return name, True
@@ -722,12 +722,12 @@ def test_validation_focal_point_plasticity() -> (str, bool):
         fpp_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T2")
         try:
             fpp_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     try:
@@ -735,12 +735,12 @@ def test_validation_focal_point_plasticity() -> (str, bool):
         fpp_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T3")
         try:
             fpp_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     fpp_specs.param_new("T1", "T4", lambda_fpp=1, activation_energy=1, target_distance=1, max_distance=1)
@@ -748,12 +748,12 @@ def test_validation_focal_point_plasticity() -> (str, bool):
         fpp_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T4")
         try:
             fpp_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     return name, True
@@ -789,7 +789,7 @@ def test_validation_kernel_diffusion_solver() -> (str, bool):
         f1.diff_data.validate(*[s for s in specs if not isinstance(s, KernelDiffusionSolverSpecs)])
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     # Validation error: SecretionDataSpecs requires a solver
@@ -797,7 +797,7 @@ def test_validation_kernel_diffusion_solver() -> (str, bool):
         f1.spec_dict["secr_data"].validate(*[s for s in specs if not isinstance(s, KernelDiffusionSolverSpecs)])
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     # Validation error: Unrecognized field name in DiffusionData
@@ -806,7 +806,7 @@ def test_validation_kernel_diffusion_solver() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         f1.diff_data.field_name = "F1"
 
     # Validation error: Unrecognized cell type names in SecretionData
@@ -816,14 +816,14 @@ def test_validation_kernel_diffusion_solver() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         p.cell_type = "T1"
         p.contact_type = "T5"
         try:
             f1_solver_specs.validate(*specs)
             return name, False
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             p.contact_type = "T2"
             pass
 
@@ -833,7 +833,7 @@ def test_validation_kernel_diffusion_solver() -> (str, bool):
         f1.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         f1.field_name = "F1"
 
     # Validation error: non-unique field name
@@ -844,7 +844,7 @@ def test_validation_kernel_diffusion_solver() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     return name, True
@@ -880,12 +880,12 @@ def test_validation_length_constraint() -> (str, bool):
         param.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T2")
         try:
             length_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     # Validation error: undefined cell type
@@ -894,12 +894,12 @@ def test_validation_length_constraint() -> (str, bool):
         length_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T3")
         try:
             length_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     return name, True
@@ -948,13 +948,13 @@ def test_validation_pde_boundary_condition() -> (str, bool):
                     try:
                         bcs.validate(*specs)
                     except SpecValueError as e:
-                        print(name, str(e))
+                        print(name, str(e), str(e.names))
                         test = True
                 except SpecValueError as e:
-                    print(name, str(e))
+                    print(name, str(e), str(e.names))
                     pass
             except SpecValueError as e:
-                print(name, str(e))
+                print(name, str(e), str(e.names))
                 pass
             if not test:
                 return name, False
@@ -968,18 +968,18 @@ def test_validation_pde_boundary_condition() -> (str, bool):
             try:
                 bcs.validate(*specs)
             except SpecValueError as e:
-                print(name, str(e))
+                print(name, str(e), str(e.names))
                 setattr(bcs, bc_attr, pde_n)
                 try:
                     bcs.validate(*specs)
                 except SpecValueError as e:
-                    print(name, str(e))
+                    print(name, str(e), str(e.names))
                     setattr(bcs, bc_attr, pde_p)
                     try:
                         bcs.validate(*specs)
                         test = True
                     except SpecValueError as e:
-                        print(name, str(e))
+                        print(name, str(e), str(e.names))
                         pass
             if not test:
                 return name, False
@@ -1016,12 +1016,12 @@ def test_validation_potts() -> (str, bool):
         potts_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T1")
         try:
             potts_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     return name, True
@@ -1057,7 +1057,7 @@ def test_validation_reaction_diffusion_solver_fe() -> (str, bool):
         f1.diff_data.validate(*[s for s in specs if not isinstance(s, ReactionDiffusionSolverFESpecs)])
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     # Validation error: SecretionDataSpecs requires a solver
@@ -1065,7 +1065,7 @@ def test_validation_reaction_diffusion_solver_fe() -> (str, bool):
         f1.spec_dict["secr_data"].validate(*[s for s in specs if not isinstance(s, ReactionDiffusionSolverFESpecs)])
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     # Validation error: Unrecognized field name in DiffusionData
@@ -1074,7 +1074,7 @@ def test_validation_reaction_diffusion_solver_fe() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         f1.diff_data.field_name = "F1"
 
     # Validation error: Unrecognized cell type names in DiffusionData
@@ -1083,12 +1083,12 @@ def test_validation_reaction_diffusion_solver_fe() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T3")
         try:
             f1_solver_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     f1.diff_data.decay_types["T4"] = 0.0
@@ -1096,12 +1096,12 @@ def test_validation_reaction_diffusion_solver_fe() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T4")
         try:
             f1_solver_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     # Validation error: Unrecognized cell type names in SecretionData
@@ -1111,14 +1111,14 @@ def test_validation_reaction_diffusion_solver_fe() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         p.cell_type = "T1"
         p.contact_type = "T5"
         try:
             f1_solver_specs.validate(*specs)
             return name, False
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             p.contact_type = "T2"
             pass
 
@@ -1128,7 +1128,7 @@ def test_validation_reaction_diffusion_solver_fe() -> (str, bool):
         f1.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         f1.field_name = "F1"
 
     # Validation error: non-unique field name
@@ -1139,7 +1139,7 @@ def test_validation_reaction_diffusion_solver_fe() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     return name, True
@@ -1176,12 +1176,12 @@ def test_validation_secretion() -> (str, bool):
         secretion_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         try:
             secretion_specs.validate(*[s for s in specs if not isinstance(s, PixelTrackerPluginSpecs)])
             secretion_specs.pixel_tracker = True
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     # Validation error: disabled boundary pixel tracker
@@ -1190,12 +1190,12 @@ def test_validation_secretion() -> (str, bool):
         secretion_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         try:
             secretion_specs.validate(*[s for s in specs if not isinstance(s, BoundaryPixelTrackerPluginSpecs)])
             secretion_specs.boundary_pixel_tracker = True
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     # Validation error: field name not registered
@@ -1204,12 +1204,12 @@ def test_validation_secretion() -> (str, bool):
         secretion_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pde_solver.field_new("F1")
         try:
             secretion_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     fs.field_name = "F2"
@@ -1217,12 +1217,12 @@ def test_validation_secretion() -> (str, bool):
         secretion_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pde_solver.field_new("F2")
         try:
             secretion_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     return name, True
@@ -1258,7 +1258,7 @@ def test_validation_steady_state_diffusion_solver() -> (str, bool):
         f1.diff_data.validate(*[s for s in specs if not isinstance(s, SteadyStateDiffusionSolverSpecs)])
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     # Validation error: SecretionDataSpecs requires a solver
@@ -1266,7 +1266,7 @@ def test_validation_steady_state_diffusion_solver() -> (str, bool):
         f1.spec_dict["secr_data"].validate(*[s for s in specs if not isinstance(s, SteadyStateDiffusionSolverSpecs)])
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     # Validation error: Unrecognized field name in DiffusionData
@@ -1275,7 +1275,7 @@ def test_validation_steady_state_diffusion_solver() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         f1.diff_data.field_name = "F1"
 
     # Validation error: Unrecognized cell type names in SecretionData
@@ -1285,7 +1285,7 @@ def test_validation_steady_state_diffusion_solver() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         p.cell_type = "T1"
 
     # Validation error: unrecognized field name
@@ -1294,7 +1294,7 @@ def test_validation_steady_state_diffusion_solver() -> (str, bool):
         f1.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         f1.field_name = "F1"
 
     # Validation error: non-unique field name
@@ -1305,7 +1305,7 @@ def test_validation_steady_state_diffusion_solver() -> (str, bool):
         f1_solver_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         pass
 
     return name, True
@@ -1341,12 +1341,12 @@ def test_validation_surface() -> (str, bool):
         param.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T2")
         try:
             surface_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     # Validation error: undefined cell type
@@ -1355,12 +1355,12 @@ def test_validation_surface() -> (str, bool):
         surface_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T3")
         try:
             surface_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     return name, True
@@ -1401,12 +1401,12 @@ def test_validation_uniform_initializer() -> (str, bool):
                 reg.validate(*specs)
                 return name, False
             except SpecValueError as e:
-                print(name, str(e))
+                print(name, str(e), str(e.names))
                 try:
                     unif_init_specs.validate(*specs)
                     return name, False
                 except SpecValueError as e:
-                    print(name, str(e))
+                    print(name, str(e), str(e.names))
                     setattr(getattr(reg, attr), comp, getattr(getattr(reg, attr), comp) - offset)
 
     # Validation error: undefined cell type
@@ -1415,12 +1415,12 @@ def test_validation_uniform_initializer() -> (str, bool):
         reg.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         try:
             unif_init_specs.validate(*specs)
             return name, False
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             pass
 
     return name, True
@@ -1456,12 +1456,12 @@ def test_validation_volume() -> (str, bool):
         param.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T2")
         try:
             volume_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     # Validation error: undefined cell type
@@ -1470,12 +1470,12 @@ def test_validation_volume() -> (str, bool):
         volume_specs.validate(*specs)
         return name, False
     except SpecValueError as e:
-        print(name, str(e))
+        print(name, str(e), str(e.names))
         cell_type_specs.cell_type_append("T3")
         try:
             volume_specs.validate(*specs)
         except SpecValueError as e:
-            print(name, str(e))
+            print(name, str(e), str(e.names))
             return name, False
 
     return name, True
@@ -1511,12 +1511,15 @@ def test_validation():
         test_validation_uniform_initializer,
         test_validation_volume
     ]
-    for vt in validation_tests:
-        name, result = vt()
-        if result:
-            print("Validation passed:", name)
-        else:
-            raise SpecValueError("Validation failed: " + name)
+
+    with _SpecValueErrorContextBlock() as err_ctx:
+        for vt in validation_tests:
+            with err_ctx.ctx:
+                name, result = vt()
+                if result:
+                    print("Validation passed:", name)
+                else:
+                    raise SpecValueError("Validation failed: " + name)
 
 
 def test_serial() -> None:
@@ -1528,8 +1531,6 @@ def test_serial() -> None:
     from cc3d.core.PyCoreSpecs import PLUGINS, STEPPABLES, INITIALIZERS, MetadataSpecs
     from cc3d.core.PyCoreSpecs import PIFDumperSteppableSpecs, PIFInitializerSteppableSpecs
     import pickle
-
-    from cc3d.core.PyCoreSpecs import VolumePluginSpecs
 
     ins = {PIFDumperSteppableSpecs: ([], {"pif_name": "dummy", "frequency": 1}),
            PIFInitializerSteppableSpecs: ([], {"pif_name": "dummy"})}
@@ -1554,9 +1555,10 @@ def main():
 
     :return: None
     """
-    test_import()
-    test_validation()
-    test_serial()
+    with _SpecValueErrorContextBlock() as err_ctx:
+        err_ctx.ctx(test_import)
+        err_ctx.ctx(test_validation)
+        err_ctx.ctx(test_serial)
 
 
 if __name__ == "__main__":
