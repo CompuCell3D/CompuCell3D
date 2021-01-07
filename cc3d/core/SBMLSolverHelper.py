@@ -48,21 +48,6 @@ def AntimonyTranslatorError(self, getAntimonyMessage=False, *args, **kwrds):
     raise AttributeError(error_string)
 
 
-def get_roadrunner_for_single_antimony(model: str = ''):
-    """
-    Fetches and returns the roadrunner object of name model
-    :param model: str
-        name of the model to be fetched
-    :return rr: roadrunner object
-        roadrunner object of model
-    """
-    from cc3d.CompuCellSetup import persistent_globals as pg
-    for model_name, rr in pg.free_floating_sbml_simulators.items():
-        if model_name == model:
-            return rr
-    return None
-
-
 class SBMLSolverHelper(object):
     @classmethod
     def remove_attribute(cls, name):
@@ -797,7 +782,8 @@ class SBMLSolverHelper(object):
     def getSBMLSimulator(self, _modelName, _cell=None):
         return self.get_sbml_simulator(model_name=_modelName, cell=_cell)
 
-    def get_sbml_simulator(self, model_name: str, cell: object = None) -> Union[object, None]:
+    @classmethod
+    def get_sbml_simulator(cls, model_name: str, cell: object = None) -> Union[object, None]:
         """
         Returns a reference to RoadRunnerPy or None
         :param model_name: model name
