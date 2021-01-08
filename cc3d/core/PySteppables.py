@@ -289,7 +289,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         source_vxs = self.get_cell_pixel_list(source_cell)
         if source_vxs is None:
-            raise Exception('Couldnt fetch voxels of source_cell, did you load PixelTracker plugin?')
+            raise Exception("Couldn't fetch voxels of source_cell, did you load PixelTracker plugin?")
 
         for pixel_tracker_data in source_vxs:
             x, y, z = pixel_tracker_data.pixel.x, pixel_tracker_data.pixel.y, pixel_tracker_data.pixel.z
