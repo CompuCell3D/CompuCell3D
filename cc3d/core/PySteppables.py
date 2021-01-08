@@ -282,8 +282,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def merge_cells(self, source_cell, destination_cell):
         """
         Turns all voxels of source_cell into voxels of destination_cell
-        :param source_cell:
-        :param destination_cell:
+        :param source_cell: {CompuCell.CellG} cell to be "eaten"
+        :param destination_cell: {CompuCell.CellG} cell "eating"
         :return:
         """
 
