@@ -77,26 +77,21 @@ class CC3DPythonHelper(QObject, TweditPluginBase):
         self.initialize()
 
         # useful regular expressions
-
         self.nonwhitespaceRegex = re.compile('^[\s]*[\S]+')
 
         self.commentRegex = re.compile('^[\s]*#')
 
         self.defFunRegex = re.compile('^[\s]*def')
 
-        self.blockStatementRegex = re.compile(
+        # block statement - : followed by whitespaces at the end of the line
+        self.blockStatementRegex = re.compile(':[\s]*$')
 
-            ':[\s]*$')  # block statement - : followed by whitespaces at the end of the line
+        # block statement - : followed by whitespaces at the end of the line
+        self.blockStatementWithCommentRegex = re.compile(':[\s]*[#]+[\s\S]*$')
 
-        self.blockStatementWithCommentRegex = re.compile(
-
-            ':[\s]*[#]+[\s\S]*$')  # block statement - : followed by whitespaces at the end of the line
-
-        #         self.lineWithCommentAtTheEndRegex=re.compile('([\s\S]*)([[#]+[\s\S]*]*)$') # line with comment at the end
-
-        self.lineWithCommentAtTheEndRegex = re.compile(
-
-            '([^#]*)([\s\S]*)')  # line with comment at the end first group matches anythin except '#' the remainig group catches the rest of the line
+        # line with comment at the end first group matches anythin except '#' the remaining
+        # group catches the rest of the line
+        self.lineWithCommentAtTheEndRegex = re.compile('([^#]*)([\s\S]*)')
 
         self.skipCommentsFlag = False
 
@@ -138,8 +133,6 @@ class CC3DPythonHelper(QObject, TweditPluginBase):
 
         self.snippetMapper = QSignalMapper(self.__ui)
 
-        # self.__ui.connect(self.snippetMapper, SIGNAL("mapped(const QString&)"), self.__insertSnippet)
-
         self.snippetMapper.mapped[str].connect(self.__insertSnippet)
 
         self.__initMenus()
@@ -149,39 +142,22 @@ class CC3DPythonHelper(QObject, TweditPluginBase):
         return None, True
 
     def deactivate(self):
-
         """
-
         Public method to deactivate this plugin.
-
         """
-
-        # self.__ui.disconnect(self.snippetMapper, SIGNAL("mapped(const QString&)"), self.__insertSnippet)
 
         self.snippetMapper.mapped[str].disconnect(self.__insertSnippet)
 
         for actionName, action in self.actions.items():
 
-            # self.__ui.disconnect(action, SIGNAL("triggered()"), self.snippetMapper, SLOT("map()"))
-
-            print('actionName=', actionName)
-
             try:
-
                 action.triggered.disconnect(self.snippetMapper.map)
-
             except TypeError:
-
                 print('Skipping disconnecting from map of action {}'.format(actionName))
-
-                pass
 
         self.cc3dPythonMenu.clear()
 
-        # self.cppMenuAction = self.__ui.menuBar().insertMenu(self.__ui.fileMenu.menuAction(),self.cc3dcppMenu)
-
-        skipCommentsInPythonSnippets = self.configuration.setSetting("SkipCommentsInPythonSnippets", self.actions[
-
+        skip_comments_in_python_snippets = self.configuration.setSetting("SkipCommentsInPythonSnippets", self.actions[
             "Skip Comments In Python Snippets"].isChecked())
 
         self.__ui.menuBar().removeAction(self.cc3dPythonMenuAction)
@@ -193,7 +169,6 @@ class CC3DPythonHelper(QObject, TweditPluginBase):
         self.cc3dPythonMenu = QMenu("CC3D P&ython", self.__ui.menuBar())
 
         # inserting CC3D Project Menu as first item of the menu bar of twedit++
-
         self.cc3dPythonMenuAction = self.__ui.menuBar().insertMenu(self.__ui.fileMenu.menuAction(), self.cc3dPythonMenu)
 
     def __initActions(self):
@@ -204,46 +179,39 @@ class CC3DPythonHelper(QObject, TweditPluginBase):
 
         """
 
-        # lists begining of action names which will be grouped 
-
+        # lists begining of action names which will be grouped
         self.snippetDictionary = {}
 
         psmp = SnippetMenuParser()
 
-        snippetFilePath = os.path.abspath(
+        snippet_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                         'CC3DPythonHelper/Snippets.py.template'))
 
-            os.path.join(os.path.dirname(__file__), 'CC3DPythonHelper/Snippets.py.template'))
+        psmp.readSnippetMenu(snippet_file_path)
 
-        psmp.readSnippetMenu(snippetFilePath)
-
-        snippetMenuDict = psmp.getSnippetMenuDict()
+        snippet_menu_dict = psmp.getSnippetMenuDict()
 
         # print 'snippet menu dict = ',snippetMenuDict
 
-        for menuName, submenuDict in iter(sorted(snippetMenuDict.items())):
+        for menuName, submenuDict in iter(sorted(snippet_menu_dict.items())):
 
             print('menuName=', menuName)
 
-            groupMenu = self.cc3dPythonMenu.addMenu(menuName)
-
-            # for subMenuName, snippetText in iter(sorted(submenuDict.iteritems())):
+            group_menu = self.cc3dPythonMenu.addMenu(menuName)
 
             for subMenuName, snippet_tuple in iter(sorted(submenuDict.items())):
-                action = groupMenu.addAction(subMenuName)
+                action = group_menu.addAction(subMenuName)
 
-                actionKey = menuName.strip() + ' ' + subMenuName.strip()  # for lookup int he self.snippetDictionary
+                # for lookup int he self.snippetDictionary
+                action_key = menuName.strip() + ' ' + subMenuName.strip()
 
-                # self.snippetDictionary[actionKey] = snippetText
+                self.snippetDictionary[action_key] = snippet_tuple
 
-                self.snippetDictionary[actionKey] = snippet_tuple
-
-                self.actions[actionKey] = action
-
-                # self.__ui.connect(action, SIGNAL("triggered()"), self.snippetMapper, SLOT("map()"))
+                self.actions[action_key] = action
 
                 action.triggered.connect(self.snippetMapper.map)
 
-                self.snippetMapper.setMapping(action, actionKey)
+                self.snippetMapper.setMapping(action, action_key)
 
         self.actions["Skip Comments In Python Snippets"] = QAction("Skip Comments In Python Snippets", self,
 
@@ -259,10 +227,6 @@ class CC3DPythonHelper(QObject, TweditPluginBase):
 
         self.actions["Skip Comments In Python Snippets"].setChecked(flag)
 
-        # self.connect(self.actions["Skip Comments In Python Snippets"], SIGNAL('triggered(bool)'),
-
-        #              self.skipCommentsInPythonSnippets)
-
         self.actions["Skip Comments In Python Snippets"].triggered.connect(self.skipCommentsInPythonSnippets)
 
         self.cc3dPythonMenu.addSeparator()
@@ -277,11 +241,7 @@ class CC3DPythonHelper(QObject, TweditPluginBase):
 
     def __insertSnippet(self, _snippetName):
 
-        # print "GOT REQUEST FOR SNIPPET ",_snippetName
-
-        snippetNameStr = str(_snippetName)
-
-        # text = self.snippetDictionary[str(_snippetName)]
+        snippet_name_str = str(_snippetName)
 
         text = self.snippetDictionary[str(_snippetName)].snippet_text
 
@@ -289,65 +249,66 @@ class CC3DPythonHelper(QObject, TweditPluginBase):
 
         editor = self.__ui.getCurrentEditor()
 
-        curFileName = str(self.__ui.getCurrentDocumentName())
+        cur_file_name = str(self.__ui.getCurrentDocumentName())
 
-        basename, ext = os.path.splitext(curFileName)
+        base_name, ext = os.path.splitext(cur_file_name)
 
         if ext != ".py" and ext != ".pyw":
             QMessageBox.warning(self.__ui, "Python files only", "Python code snippets work only for Python files")
 
             return
 
-        curLine = 0
+        cur_line = 0
 
-        curCol = 0
+        cur_col = 0
 
-        if snippetNameStr == "Cell Attributes Add Dictionary To Cells" or snippetNameStr == "Cell Attributes Add List To Cells":
+        if snippet_name_str == "Cell Attributes Add Dictionary To Cells" or snippet_name_str == "Cell Attributes Add List To Cells":
 
-            curLine, curCol = self.findEntryLineForCellAttributes(editor)
+            cur_line, cur_col = self.findEntryLineForCellAttributes(editor)
 
-            if curLine == -1:
+            if cur_line == -1:
                 QMessageBox.warning(self.__ui, "Could not find insert point",
 
-                                    "Could not find insert point for code cell attribute code. Please make sure you are editing CC3D Main Python script")
+                                    "Could not find insert point for code cell attribute code. "
+                                    "Please make sure you are editing CC3D Main Python script")
 
                 return
 
-        elif snippetNameStr.startswith("Bionet Solver 3. Load SBML Model"):
+        elif snippet_name_str.startswith("Bionet Solver 3. Load SBML Model"):
 
             print('LOADING MODEL')
 
-            currentPath = os.path.abspath(os.path.dirname(curFileName))
+            current_path = os.path.abspath(os.path.dirname(cur_file_name))
 
-            print('currentPath=', currentPath)
+            print('currentPath=', current_path)
 
             dlg = SBMLLoadDlg(self)
 
-            dlg.setCurrentPath(currentPath)
+            dlg.setCurrentPath(current_path)
 
-            modelName = 'MODEL_NAME'
+            model_name = 'MODEL_NAME'
 
-            modelNickname = 'MODEL_NICKNAME'
+            model_nickname = 'MODEL_NICKNAME'
 
-            modelPath = 'PATH_TO_SBML_FILE'
+            model_path = 'PATH_TO_SBML_FILE'
 
             ret = dlg.exec_()
 
             if ret:
 
-                modelName = str(dlg.modelNameLE.text())
+                model_name = str(dlg.modelNameLE.text())
 
-                modelNickname = str(dlg.modelNicknameLE.text())
+                model_nickname = str(dlg.modelNicknameLE.text())
 
-                modelFileName = os.path.abspath(str(dlg.fileNameLE.text()))
+                model_file_name = os.path.abspath(str(dlg.fileNameLE.text()))
 
-                modelDir = os.path.abspath(os.path.dirname(modelFileName))
+                model_dir = os.path.abspath(os.path.dirname(model_file_name))
 
-                modelPath = 'Simulation/' + os.path.basename(modelFileName)
+                model_path = 'Simulation/' + os.path.basename(model_file_name)
 
-                if modelDir != currentPath:  # copy sbml file into simulation directory
+                if model_dir != current_path:  # copy sbml file into simulation directory
 
-                    shutil.copy(modelFileName, currentPath)
+                    shutil.copy(model_file_name, current_path)
 
             text = """
 
@@ -361,91 +322,71 @@ integrationStep = 0.2
 
 bionetAPI.loadSBMLModel(modelName, modelPath,modelNickname,  integrationStep)
 
-""" % (modelName, modelNickname, modelPath)
+""" % (model_name, model_nickname, model_path)
 
+        elif snippet_name_str.startswith("Extra Fields"):
 
+            # this function potentially inserts new text - will have to get new cursor position after that
+            self.includeExtraFieldsImports(editor)
 
-
-
-
-
-        elif snippetNameStr.startswith("Extra Fields"):
-
-            self.includeExtraFieldsImports(
-
-                editor)  # this function potentially inserts new text - will have to get new cursor position after that
-
-            curLine, curCol = editor.getCursorPosition()
-
-
+            cur_line, cur_col = editor.getCursorPosition()
 
         else:
 
-            curLine, curCol = editor.getCursorPosition()
+            cur_line, cur_col = editor.getCursorPosition()
 
-        indentationLevels, indentConsistency = self.findIndentationForSnippet(editor, curLine)
-
-        print("indentationLevels=", indentationLevels, " consistency=", indentConsistency)
+        indentation_levels, indent_consistency = self.findIndentationForSnippet(editor, cur_line)
 
         if suggested_indent >= 0:
-            indentationLevels = suggested_indent
+            indentation_levels = suggested_indent
 
-        textLines = text.splitlines(True)
+        text_lines = text.splitlines(True)
 
-        for i in range(len(textLines)):
+        for i in range(len(text_lines)):
 
-            textLines[i] = ' ' * editor.indentationWidth() * indentationLevels + textLines[i]
+            text_lines[i] = ' ' * editor.indentationWidth() * indentation_levels + text_lines[i]
 
             try:  # since we dont want twedit to crash when removing coments the code catches all exceptions
 
                 if self.skipCommentsFlag:
 
-                    commentFound = re.match(self.commentRegex, textLines[i])
+                    comment_found = re.match(self.commentRegex, text_lines[i])
 
-                    if commentFound:  # if it is 'regular' line we check if this line is begining of a block statement
-
-                        textLines[i] = ''
+                    if comment_found:
+                        # if it is 'regular' line we check if this line is beginning of a block statement
+                        text_lines[i] = ''
 
                     else:
-
-                        # print 'could not find whole line comment will search eol comment'
-
-                        match = re.match(self.lineWithCommentAtTheEndRegex, textLines[i])
+                        match = re.match(self.lineWithCommentAtTheEndRegex, text_lines[i])
 
                         if match:
 
                             matchGroups = match.groups()
 
                             if matchGroups[1] != '':
-                                #                                 print 'before textLines[i]=',textLines[i]
-
-                                textLines[i] = self.lineWithCommentAtTheEndRegex.sub(r"\1\n", textLines[i])
-
-                            #                                 print 'after textLines[i]=',textLines[i]
-
-
+                                text_lines[i] = self.lineWithCommentAtTheEndRegex.sub(r"\1\n", text_lines[i])
 
             except:
 
-                print('ERROR WHEN REMOVING COMMENTS IN ', textLines[i])
+                print('ERROR WHEN REMOVING COMMENTS IN ', text_lines[i])
 
-        indentedText = ''.join(textLines)
+        indented_text = ''.join(text_lines)
 
-        currentLineText = str(editor.text(curLine))
+        current_line_text = str(editor.text(cur_line))
 
-        nonwhitespaceFound = re.match(self.nonwhitespaceRegex, currentLineText)
+        nonwhitespace_found = re.match(self.nonwhitespaceRegex, current_line_text)
 
-        print("currentLineText=", currentLineText, " nonwhitespaceFound=", nonwhitespaceFound)
+        print("currentLineText=", current_line_text, " nonwhitespaceFound=", nonwhitespace_found)
 
         editor.beginUndoAction()  # begining of action sequence
 
-        if nonwhitespaceFound:  # we only add new line if the current line has someting in it other than whitespaces
+        if nonwhitespace_found:  # we only add new line if the current line has someting in it other than whitespaces
 
-            editor.insertAt("\n", curLine, editor.lineLength(curLine))
+            editor.insertAt("\n", cur_line, editor.lineLength(cur_line))
 
-            curLine += 1
+            cur_line += 1
 
-        editor.insertAt(indentedText, curLine, 0)
+        editor.insertAt(indented_text, cur_line, 0)
 
         # editor.insertAt(text,curLine,0)
 
@@ -453,44 +394,44 @@ bionetAPI.loadSBMLModel(modelName, modelPath,modelNickname,  integrationStep)
 
         # highlighting inserted text
 
-        editor.findFirst(indentedText, False, False, False, True, curLine)
+        editor.findFirst(indented_text, False, False, False, True, cur_line)
 
-        lineFrom, colFrom, lineTo, colTo = editor.getSelection()
+        line_from, col_from, line_to, col_to = editor.getSelection()
 
     def includeExtraFieldsImports(self, _editor):
 
-        playerFromImportRegex = re.compile('^[\s]*from[\s]*cc3d.*cpp.*PlayerPython[\s]*import[\s]*\*')
+        player_from_import_regex = re.compile('^[\s]*from[\s]*cc3d.*cpp.*PlayerPython[\s]*import[\s]*\*')
 
-        compuCellSetupImportRegex = re.compile('^[\s]*from[\s]*cc3d[\s]*import[\s]*CompuCellSetup')
+        compu_cell_setup_import_regex = re.compile('^[\s]*from[\s]*cc3d[\s]*import[\s]*CompuCellSetup')
 
-        curLine, curCol = _editor.getCursorPosition()
+        cur_line, cur_col = _editor.getCursorPosition()
 
-        foundPlayerImports = None
+        found_player_imports = None
 
-        foundCompuCellSetupImport = None
+        found_compu_cell_setup_import = None
 
-        for line in range(curLine, -1, -1):
-
-            text = str(_editor.text(line))
-
-            foundPlayerImports = re.match(playerFromImportRegex, text)
-
-            if foundPlayerImports:
-                break
-
-        for line in range(curLine, -1, -1):
+        for line in range(cur_line, -1, -1):
 
             text = str(_editor.text(line))
 
-            foundCompuCellSetupImport = re.match(compuCellSetupImportRegex, text)
+            found_player_imports = re.match(player_from_import_regex, text)
 
-            if foundCompuCellSetupImport:
+            if found_player_imports:
                 break
 
-        if not foundCompuCellSetupImport:
+        for line in range(cur_line, -1, -1):
+
+            text = str(_editor.text(line))
+
+            found_compu_cell_setup_import = re.match(compu_cell_setup_import_regex, text)
+
+            if found_compu_cell_setup_import:
+                break
+
+        if not found_compu_cell_setup_import:
             _editor.insertAt("from cc3d import CompuCellSetup\n", 0, 0)
 
-        if not foundPlayerImports:
+        if not found_player_imports:
             _editor.insertAt("from cc3d.cpp.PlayerPython import * \n", 0, 0)
 
     def findEntryLineForCellAttributes(self, _editor):
@@ -499,54 +440,51 @@ bionetAPI.loadSBMLModel(modelName, modelPath,modelNickname,  integrationStep)
 
         text = ''
 
-        foundLine = -1
+        found_line = -1
 
         for line in range(_editor.lines()):
 
             text = str(_editor.text(line))
 
-            getCoreSimulationObjectsRegexFound = re.match(getCoreSimulationObjectsRegex,
+            get_core_simulation_objects_regex_found = re.match(getCoreSimulationObjectsRegex,
 
                                                           text)  # \S - non -white space \swhitespace
 
-            if getCoreSimulationObjectsRegexFound:  # line with getCoreSimulationObjectsRegex
+            if get_core_simulation_objects_regex_found:  # line with getCoreSimulationObjectsRegex
 
-                foundLine = line
+                found_line = line
 
                 break
 
-        if foundLine >= 0:
+        if found_line >= 0:
 
             # check for comment code  - #add extra attributes here
 
-            attribCommentRegex = re.compile('^[\s]*#[\s]*add[\s]*extra[\s]*attrib')
+            attrib_comment_regex = re.compile('^[\s]*#[\s]*add[\s]*extra[\s]*attrib')
 
-            for line in range(foundLine, _editor.lines()):
+            for line in range(found_line, _editor.lines()):
 
                 text = str(_editor.text(line))
 
-                attribCommentFound = re.match(attribCommentRegex, text)
+                attrib_comment_found = re.match(attrib_comment_regex, text)
 
-                if attribCommentFound:
-                    foundLine = line
+                if attrib_comment_found:
+                    found_line = line
 
-                    return foundLine, 0
+                    return found_line, 0
 
-            return foundLine, 0
+            return found_line, 0
 
         return -1, -1
 
     def findIndentationForSnippet(self, _editor, _line):
 
         # nonwhitespaceRegex=re.compile('^[\s]*[\S]+')
-
         # commentRegex=re.compile('^[\s]*#')
-
         # defFunRegex=re.compile('^[\s]*def')
-
         # blockStatementRegex=re.compile(':[\s]*$') # block statement - : followed by whitespaces at the end of the line
-
-        # blockStatementWithCommentRegex=re.compile(':[\s]*[#]+[\s\S]*$') # block statement - : followed by whitespaces at the end of the line
+        # blockStatementWithCommentRegex=re.compile(':[\s]*[#]+[\s\S]*$') # block statement - :
+        # followed by whitespaces at the end of the line
 
         # ':[\s]*$|:[\s]*[#]+[\s\S*]$'
 
@@ -560,57 +498,52 @@ bionetAPI.loadSBMLModel(modelName, modelPath,modelNickname,  integrationStep)
 
             text = str(_editor.text(line))
 
-            nonwhitespaceFound = re.match(self.nonwhitespaceRegex, text)  # \S - non -white space \swhitespace
+            nonwhitespace_found = re.match(self.nonwhitespaceRegex, text)  # \S - non -white space \swhitespace
 
-            if nonwhitespaceFound:  # once we have line with non-white spaces we check if this is non comment line
+            if nonwhitespace_found:  # once we have line with non-white spaces we check if this is non comment line
 
-                commentFound = re.match(self.commentRegex, text)
+                comment_found = re.match(self.commentRegex, text)
 
-                if not commentFound:  # if it is 'regular' line we check if this line is begining of a block statement
+                if not comment_found:
+                    # if it is 'regular' line we check if this line is beginning of a block statement
+                    block_statement_found = re.search(self.blockStatementRegex, text)
 
-                    blockStatementFound = re.search(self.blockStatementRegex, text)
+                    block_statement_with_comment_found = re.search(self.blockStatementWithCommentRegex, text)
 
-                    blockStatementWithCommentFound = re.search(self.blockStatementWithCommentRegex, text)
+                    if block_statement_found or block_statement_with_comment_found:
+                        # we insert code snippet increasing indentation after beginning of block statement
 
-                    # print "blockStatementFound=",blockStatementFound," blockStatementWithCommentFound=",blockStatementWithCommentFound
-
-                    if blockStatementFound or blockStatementWithCommentFound:  # we insert code snippet increasing indentation after begining of block statement
-
-                        # print "_editor.indentationWidth=",_editor.indentationWidth
-
-                        indentationLevels = (_editor.indentation(
+                        indentation_levels = (_editor.indentation(
                             line) + _editor.indentationWidth()) // _editor.indentationWidth()
 
                         # if this is non-zero indentations in the code are inconsistent
-                        indentationLevelConsistency = not (_editor.indentation(
+                        indentation_level_consistency = not (_editor.indentation(
                             line) + _editor.indentationWidth()) % _editor.indentationWidth()
 
-                        if not indentationLevelConsistency:
+                        if not indentation_level_consistency:
                             QMessageBox.warning(self.__ui, "Possible indentation problems",
+                                                "Please position code snippet manually using "
+                                                "TAB (indent) Shift+Tab (Unindent)")
 
-                                                "Please position code snippet manually using TAB (indent) Shift+Tab (Unindent)")
+                            return 0, indentation_level_consistency
 
-                            return 0, indentationLevelConsistency
+                        return indentation_levels, indentation_level_consistency
 
-                        return indentationLevels, indentationLevelConsistency
+                    else:
+                        # we use indentation of the previous line
 
+                        indentation_levels = (_editor.indentation(line)) // _editor.indentationWidth()
 
+                        # if this is non-zero indentations in the code are inconsistent
+                        indentation_level_consistency = not (_editor.indentation(line)) % _editor.indentationWidth()
 
-                    else:  # we use indentation of the previous line
-
-                        indentationLevels = (_editor.indentation(line)) // _editor.indentationWidth()
-
-                        indentationLevelConsistency = not (_editor.indentation(
-
-                            line)) % _editor.indentationWidth()  # if this is non-zero indentations in the code are inconsistent
-
-                        if not indentationLevelConsistency:
+                        if not indentation_level_consistency:
                             QMessageBox.warning(self.__ui, "Possible indentation problems",
+                                                "Please position code snippet manually "
+                                                "using TAB (indent) Shift+Tab (Unindent)")
 
-                                                "Please position code snippet manually using TAB (indent) Shift+Tab (Unindent)")
+                            return 0, indentation_level_consistency
 
-                            return 0, indentationLevelConsistency
-
-                        return indentationLevels, indentationLevelConsistency
+                        return indentation_levels, indentation_level_consistency
 
         return 0, 0
