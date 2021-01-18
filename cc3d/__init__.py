@@ -5,7 +5,7 @@ from os.path import dirname, join, abspath
 versionMajor = 4
 versionMinor = 2
 versionBuild = 4
-revisionNumber = "20200912"
+revisionNumber = "20201230"
 
 
 def get_sha_label() -> str:

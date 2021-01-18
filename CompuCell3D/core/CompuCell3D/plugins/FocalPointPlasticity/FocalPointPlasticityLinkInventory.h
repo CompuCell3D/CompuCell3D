@@ -38,7 +38,6 @@ namespace CompuCell3D {
 
 	public:
 
-//		using FPPLinkInventoryBase<FocalPointPlasticityLink>::FPPLinkInventoryBase<FocalPointPlasticityLink>;
         FPPLinkInventory():FPPLinkInventoryBase(){}
 
         FPPLinkInventory(
@@ -47,8 +46,6 @@ namespace CompuCell3D {
                         Potts3D* _potts): FPPLinkInventoryBase(_cellLinkInventoryTrackerAccessor, _potts){
 
         }
-
-//        FPPLinkInventoryBase(BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* _cellLinkInventoryTrackerAccessor, Potts3D* _potts)
 
 		virtual ~FPPLinkInventory() {}
 
@@ -77,7 +74,6 @@ namespace CompuCell3D {
 
 	public:
 
-//		using FPPLinkInventoryBase<FocalPointPlasticityInternalLink>::FPPLinkInventoryBase<FocalPointPlasticityInternalLink>;
         FPPInternalLinkInventory():FPPLinkInventoryBase(){}
 
         FPPInternalLinkInventory(
@@ -91,6 +87,7 @@ namespace CompuCell3D {
 
 		// Get the link connecting two cells
 		FocalPointPlasticityInternalLink* getLinkByCells(CellG* _cell0, CellG* _cell1) { return getLinkById(FPPLinkID(_cell0->id, _cell1->id)); }
+
 		// Get list of cells linked to a cell
 		std::vector<CellG*> getLinkedCells(CellG* _cell) {
 			std::vector<CellG*> o;
@@ -114,7 +111,6 @@ namespace CompuCell3D {
 
 	public:
 
-//		using FPPLinkInventoryBase<FocalPointPlasticityAnchor>::FPPLinkInventoryBase<FocalPointPlasticityAnchor>;
         FPPAnchorInventory():FPPLinkInventoryBase(){}
 
         FPPAnchorInventory(

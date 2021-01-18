@@ -1365,7 +1365,7 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
                 potts_test_data.connectivity_energy = connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell);
             }
 
-            potts_test_data.energyFunctionNameToValueMap = energyCalculator->getenergyFunctionNameToValueMap();
+            potts_test_data.energyFunctionNameToValueMap = energyCalculator->getEnergyFunctionNameToValueMap();
 
             potts_test_data_local.compare_potts_data(potts_test_data);
 
