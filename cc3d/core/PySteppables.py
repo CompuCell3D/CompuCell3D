@@ -279,6 +279,22 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                                          'targetClusterSurface', 'lambdaClusterSurface', 'type', 'lambdaVecX',
                                          'lambdaVecY', 'lambdaVecZ', 'fluctAmpl']
 
+    def merge_cells(self, source_cell, destination_cell):
+        """
+        Turns all voxels of source_cell into voxels of destination_cell
+        :param source_cell: {CompuCell.CellG} cell to be "eaten"
+        :param destination_cell: {CompuCell.CellG} cell "eating"
+        :return:
+        """
+
+        source_vxs = self.get_cell_pixel_list(source_cell)
+        if source_vxs is None:
+            raise Exception("Couldn't fetch voxels of source_cell, did you load PixelTracker plugin?")
+
+        for pixel_tracker_data in source_vxs:
+            x, y, z = pixel_tracker_data.pixel.x, pixel_tracker_data.pixel.y, pixel_tracker_data.pixel.z
+            self.cell_field[x, y, z] = destination_cell
+
     def cell_list_by_type(self, *args):
         """
         Returns a CellListByType object that represents list of ells with a given type
