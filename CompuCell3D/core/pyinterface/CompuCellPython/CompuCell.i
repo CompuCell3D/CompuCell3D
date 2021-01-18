@@ -1217,8 +1217,7 @@ FIELD3DEXTENDER(Field3D<int>,int)
         std::map<std::string, Field3D<float>*>::iterator mitr;
         std::vector<std::string> field_names;
         for (mitr = fieldMap.begin(); mitr != fieldMap.end(); ++mitr)
-            field_names.push_back(mitr->first);
-        
+            field_names.push_back(mitr->first);         
         return field_names;
 
     }
@@ -1448,3 +1447,5 @@ public:
 
 
 %include "CompuCellExtraDeclarations.i"
+
+%include "DerivedProperty.i"

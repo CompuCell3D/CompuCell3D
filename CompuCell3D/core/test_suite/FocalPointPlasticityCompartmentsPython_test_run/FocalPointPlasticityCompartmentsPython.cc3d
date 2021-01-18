@@ -1,0 +1,9 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/FocalPointPlasticityCompartments.xml</XMLScript>
+
+    <PythonScript>Simulation/FocalPointPlasticityCompartments.py</PythonScript> 
+
+    <PIFFile>Simulation/plasticityCompartments.piff</PIFFile>
+
+</Simulation>

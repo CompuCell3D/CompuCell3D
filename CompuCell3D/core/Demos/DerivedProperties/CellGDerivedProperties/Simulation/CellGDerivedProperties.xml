@@ -1,0 +1,49 @@
+<CompuCell3D Revision="20200912" Version="4.2.4">
+   
+   <Metadata>
+      <NumberOfProcessors>1</NumberOfProcessors>
+      <DebugOutputFrequency>1000</DebugOutputFrequency>
+   </Metadata>
+   
+   <Potts>
+      <Dimensions x="100" y="100" z="1"/>
+      <Steps>100000</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+   </Potts>
+   
+   <Plugin Name="CellType">
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="T1"/>
+      <CellType TypeId="2" TypeName="T2"/>
+   </Plugin>
+   
+   <Plugin Name="Volume"/>
+   
+   <Plugin Name="Surface"/>
+
+   <Plugin Name="ClusterSurface"/>
+   
+   <Plugin Name="ContactCompartment">
+      <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+      <Energy Type1="Medium" Type2="T1">10.0</Energy>
+      <Energy Type1="Medium" Type2="T2">10.0</Energy>
+      <Energy Type1="T1" Type2="T1">10.0</Energy>
+      <Energy Type1="T1" Type2="T2">10.0</Energy>
+      <Energy Type1="T2" Type2="T2">10.0</Energy>
+      <InternalEnergy Type1="T1" Type2="T1">5.0</InternalEnergy>
+      <InternalEnergy Type1="T1" Type2="T2">5.0</InternalEnergy>
+      <InternalEnergy Type1="T2" Type2="T2">5.0</InternalEnergy>
+      <NeighborOrder>4</NeighborOrder>
+   </Plugin>
+   
+   <Steppable Type="UniformInitializer">
+      <Region>
+         <BoxMin x="20" y="20" z="0"/>
+         <BoxMax x="80" y="80" z="1"/>
+         <Gap>0</Gap>
+         <Width>7</Width>
+         <Types>T1,T2</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>

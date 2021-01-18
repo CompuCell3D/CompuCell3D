@@ -782,7 +782,8 @@ class SBMLSolverHelper(object):
     def getSBMLSimulator(self, _modelName, _cell=None):
         return self.get_sbml_simulator(model_name=_modelName, cell=_cell)
 
-    def get_sbml_simulator(self, model_name: str, cell: object = None) -> Union[object, None]:
+    @classmethod
+    def get_sbml_simulator(cls, model_name: str, cell: object = None) -> Union[object, None]:
         """
         Returns a reference to RoadRunnerPy or None
         :param model_name: model name

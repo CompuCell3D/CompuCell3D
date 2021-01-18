@@ -18,6 +18,7 @@ longDescription = """This plugin provides functionality to link Twedit with Comp
 
 # End-Of-Header
 
+from cc3d.twedit5.Plugins.TweditPluginBase import TweditPluginBase
 from cc3d.twedit5.twedit.utils.global_imports import *
 
 from cc3d.twedit5.Plugins.CompuCell3D.CC3DListener import CC3DListener
@@ -26,7 +27,7 @@ import cc3d.twedit5.Plugins.CompuCell3D.PluginCompuCell3D_rc
 error = ''
 
 
-class CC3DApp(QObject):
+class CC3DApp(QObject, TweditPluginBase):
     """
 
     Class implementing the About plugin.
@@ -46,6 +47,7 @@ class CC3DApp(QObject):
         """
 
         QObject.__init__(self, ui)
+        TweditPluginBase.__init__(self)
 
         self.__ui = ui
 

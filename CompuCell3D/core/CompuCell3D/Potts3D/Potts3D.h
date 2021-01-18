@@ -124,6 +124,9 @@ namespace CompuCell3D {
 		WatchableField3D<CellG *> *cellFieldG;
 		AttributeAdder * attrAdder;
 		EnergyFunctionCalculator * energyCalculator;
+        bool test_output_generate_flag = false;
+        bool test_run_flag = false;
+        std::string simulation_input_dir;
 		/// Cell class aggregator and allocator.
 
 		BasicClassGroupFactory cellFactoryGroup; 	//creates aggregate of objects associated with cell 
@@ -133,7 +136,7 @@ namespace CompuCell3D {
 		std::vector<EnergyFunction *> energyFunctions;
 		EnergyFunction * connectivityConstraint;
 
-		std::map<std::string, EnergyFunction *> nameToEnergyFuctionMap;
+		std::map<std::string, EnergyFunction *> nameToEnergyFunctionMap;
 
 		//containers associated with BoundaryWalker/GlobalPixelTracker
 		//std::set<Point3D> boundaryPixelSet;
@@ -277,6 +280,15 @@ namespace CompuCell3D {
 		double getDepth() { return depth; }
 		void setDepth(double _depth);
 		void setNeighborOrder(unsigned int _neighborOrder);
+        void set_test_output_generate_flag(bool flag) { test_output_generate_flag = flag; }
+        bool get_test_output_generate_flag() { return test_output_generate_flag; }
+
+        void set_test_run_flag(bool flag) { test_run_flag = flag; }
+        bool get_test_run_flag() { return test_run_flag; }
+
+        void set_simulation_input_dir(std::string path) { simulation_input_dir=path; }
+        std::string get_simulation_input_dir() { return simulation_input_dir; }
+
 
 		void initializeCellTypeMotility(std::vector<CellTypeMotilityData> & _cellTypeMotilityVector);
 		void setCellTypeMotilityVec(std::vector<float> & _cellTypeMotilityVec);
@@ -287,8 +299,6 @@ namespace CompuCell3D {
 
 		void setFrozenTypeVector(std::vector<unsigned char> & _frozenTypeVec);
 		const std::vector<unsigned char> & getFrozenTypeVector() { return frozenTypeVec; }
-
-
 
 		void setMassUnit(const Unit & _unit) { massUnit = _unit; }
 		void setLengthUnit(const Unit & _unit) { lengthUnit = _unit; }
@@ -460,6 +470,7 @@ namespace CompuCell3D {
 
 		unsigned int metropolisFast(const unsigned int steps, const double temp);
 		unsigned int metropolisBoundaryWalker(const unsigned int steps, const double temp);
+        unsigned int metropolisTestRun(const unsigned int steps, const double temp);
 		void setMetropolisAlgorithm(std::string _algName);
 
 		/// @return A pointer to the potts cell field.

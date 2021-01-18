@@ -432,3 +432,33 @@ class ScreenshotManagerCore(object):
         else:
             self.output_screenshots_impl(mcs=mcs, screenshot_label_list=list(self.screenshotDataDict.keys()))
 
+
+class ScreenshotManagerCC3DPy(ScreenshotManagerCore):
+    """
+    Subclass with necessary hooks for Python API
+    """
+    def __init__(self, screenshot_dir_name):
+        super().__init__()
+
+        def get_screenshot_dir_name():
+            return screenshot_dir_name
+        self.get_screenshot_dir_name = get_screenshot_dir_name
+
+    def cleanup(self):
+        """
+        Implementes cleanup actions
+        :return: None
+        """
+        pass
+
+    def safe_write_screenshot_description_file(self, out_fname):
+        raise EnvironmentError
+
+    def serialize_screenshot_data(self):
+        raise EnvironmentError
+
+    def add_2d_screenshot(self, _plotName, _plotType, _projection, _projectionPosition, _camera, metadata):
+        raise EnvironmentError
+
+    def add_3d_screenshot(self, _plotName, _plotType, _camera, metadata):
+        raise EnvironmentError

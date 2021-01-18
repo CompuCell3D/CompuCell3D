@@ -1,0 +1,6 @@
+<Simulation version="3.6.1">
+    <XMLScript Type="XMLScript">Simulation/FocalPointPlasticityAnchors.xml</XMLScript>
+    <PythonScript>Simulation/FocalPointPlasticityAnchors.py</PythonScript>
+    <Resource Type="Python">Simulation/FocalPointPlasticityAnchorsSteppables.py</Resource>
+    <PIFFile>Simulation/FocalPointInit.piff</PIFFile>
+</Simulation>

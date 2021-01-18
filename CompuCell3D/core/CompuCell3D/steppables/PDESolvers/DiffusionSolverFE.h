@@ -182,7 +182,9 @@ protected:
    int scalingExtraMCS;
    std::vector<int> scalingExtraMCSVec; //TODO: check if used
    std::vector<float> maxDiffConstVec;
-    float maxStableDiffConstant;           
+   std::vector<float> maxDecayConstVec;
+   float maxStableDiffConstant;
+   float maxStableDecayConstant;
    
    std::vector<float> diffConstVec; 
    std::vector<float> decayConstVec; 
@@ -250,7 +252,7 @@ public:
 	int getFieldsCount()const{return diffSecrFieldTuppleVec.size();}
 
 protected:
-	virtual void Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant);
+	virtual void Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant, std::vector<float> const &maxDecayConstVec);
     
     virtual void prepCellTypeField(int idx);
     virtual Dim3D getInternalDim();

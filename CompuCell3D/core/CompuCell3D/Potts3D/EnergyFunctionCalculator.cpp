@@ -32,7 +32,7 @@ void EnergyFunctionCalculator::registerEnergyFunction(EnergyFunction *_function)
   string functionName;
 
   functionName=automaticNameStream.str();
-  nameToEnergyFuctionMap.insert(make_pair(functionName,_function));
+  nameToEnergyFunctionMap.insert(make_pair(functionName,_function));
 
   energyFunctions.push_back(_function);
   energyFunctionsNameVec.push_back(functionName);
@@ -56,7 +56,7 @@ void EnergyFunctionCalculator::registerEnergyFunctionWithName(EnergyFunction *_f
   }else{
       functionName=_functionName;
   }
-  nameToEnergyFuctionMap.insert(make_pair(functionName,_function));
+  nameToEnergyFunctionMap.insert(make_pair(functionName,_function));
 
   energyFunctions.push_back(_function);
   energyFunctionsNameVec.push_back(functionName);
@@ -68,9 +68,9 @@ void EnergyFunctionCalculator::registerEnergyFunctionWithName(EnergyFunction *_f
 void EnergyFunctionCalculator::unregisterEnergyFunction(std::string _functionName){
 
   map<string,EnergyFunction*>::iterator mitr;
-  mitr = nameToEnergyFuctionMap.find(_functionName);
+  mitr = nameToEnergyFunctionMap.find(_functionName);
 
-  if(mitr==nameToEnergyFuctionMap.end()){
+  if(mitr==nameToEnergyFunctionMap.end()){
       cerr<<"Sorry, Could not find "<<_functionName<<" energy Function"<<endl;
       return; //plugin name not found
    }

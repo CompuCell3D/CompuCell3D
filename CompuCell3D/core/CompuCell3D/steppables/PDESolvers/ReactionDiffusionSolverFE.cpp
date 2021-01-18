@@ -107,7 +107,7 @@ ReactionDiffusionSolverFE::~ReactionDiffusionSolverFE()
         delete serializerPtr; serializerPtr = 0;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ReactionDiffusionSolverFE::Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant)
+void ReactionDiffusionSolverFE::Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant, std::vector<float> const &maxDecayConstVec)
 {
     //for RD solver we have to find max diff constant of all all diff constants for all fields
     //based on that we calculate number of calls to reaction diffusion solver system and we call diffusion system same numnr of times to ensure that scratch and concentration field are synchronized between extra diffusion calls
@@ -118,7 +118,7 @@ void ReactionDiffusionSolverFE::Scale(std::vector<float> const &maxDiffConstVec,
 
     //scaling of diffusion and secretion coeeficients
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); i++) {
-        scalingExtraMCSVec[i] = ceil(maxDiffConstVec[i] / maxStableDiffConstant); //compute number of calls to diffusion solver for individual fuields
+        scalingExtraMCSVec[i] = max(ceil(maxDiffConstVec[i] / maxStableDiffConstant), ceil(maxDecayConstVec[i] / maxStableDecayConstant)); //compute number of calls to diffusion solver for individual fuields
     }
 
     //calculate maximumNumber Of calls to the diffusion solver
@@ -258,6 +258,8 @@ void ReactionDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
             maxStableDiffConstant = 0.14f;
         }
     }
+	//setting max stable decay coefficient
+	maxStableDecayConstant = 1.0 - FLT_MIN;
 
 
     //determining latticeType and setting diffusionLatticeScalingFactor
@@ -2531,17 +2533,19 @@ void ReactionDiffusionSolverFE::update(CC3DXMLElement *_xmlData, bool _fullInitF
 
     scalingExtraMCSVec.assign(diffSecrFieldTuppleVec.size(), 0);
     maxDiffConstVec.assign(diffSecrFieldTuppleVec.size(), 0.0);
+	maxDecayConstVec.assign(diffSecrFieldTuppleVec.size(), 0.0);
 
     //finding maximum diffusion coefficients for each field
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
         for (int currentCellType = 0; currentCellType < UCHAR_MAX + 1; currentCellType++) {
             maxDiffConstVec[i] = (maxDiffConstVec[i] < diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType]) ? diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType] : maxDiffConstVec[i];
+			maxDecayConstVec[i] = (maxDecayConstVec[i] < diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType]) ? diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType] : maxDecayConstVec[i];
         }
     }
 
 
 
-    Scale(maxDiffConstVec, maxStableDiffConstant);//TODO: remove for implicit solvers?    
+    Scale(maxDiffConstVec, maxStableDiffConstant, maxDecayConstVec);//TODO: remove for implicit solvers?    
 
 }
 

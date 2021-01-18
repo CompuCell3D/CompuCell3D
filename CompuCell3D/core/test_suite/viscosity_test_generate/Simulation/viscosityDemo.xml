@@ -1,0 +1,94 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="210" y="84" z="1"/>
+        <Steps>10000</Steps>
+        <Temperature>500</Temperature>
+        <Boundary_x>Periodic</Boundary_x>
+        <NeighborOrder>2</NeighborOrder>
+        <RandomSeed>1</RandomSeed>
+        <TestOutputGenerate/>
+    </Potts>
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Fluid1" TypeId="1"/>
+        <CellType TypeName="Fluid2" TypeId="2"/>
+        <CellType TypeName="Fluid3" TypeId="3"/>
+        <CellType TypeName="Fluid4" TypeId="4"/>
+        <CellType TypeName="Wall" TypeId="5" Freeze=""/>
+    </Plugin>
+
+
+    <Plugin Name="Volume">
+        <TargetVolume>49</TargetVolume>
+        <LambdaVolume>15</LambdaVolume>
+    </Plugin>
+
+    <Plugin Name="Surface">
+        <TargetSurface>28</TargetSurface>
+        <LambdaSurface>15</LambdaSurface>
+    </Plugin>
+
+    <Plugin Name="ExternalPotential">
+        <Lambda x="-50" y="0.0" z="0.0"/>
+    </Plugin>
+
+
+    <Plugin Name="Viscosity">
+        <LambdaViscosity>100000.0</LambdaViscosity>
+    </Plugin>
+
+
+    <Steppable Type="UniformInitializer">
+        <Region>
+            <BoxMin x="0" y="0" z="0"/>
+            <BoxMax x="210" y="7" z="1"/>
+            <Gap>0</Gap>
+            <Width>50</Width>
+            <Types>Wall</Types>
+        </Region>
+
+        <Region>
+            <BoxMin x="0" y="7" z="0"/>
+            <BoxMax x="21" y="77" z="1"/>
+            <Gap>0</Gap>
+            <Width>7</Width>
+            <Types>Fluid1</Types>
+        </Region>
+
+        <Region>
+            <BoxMin x="21" y="7" z="0"/>
+            <BoxMax x="42" y="77" z="1"/>
+            <Gap>0</Gap>
+            <Width>7</Width>
+            <Types>Fluid2</Types>
+        </Region>
+
+        <Region>
+            <BoxMin x="42" y="7" z="0"/>
+            <BoxMax x="63" y="77" z="1"/>
+            <Gap>0</Gap>
+            <Width>7</Width>
+            <Types>Fluid3</Types>
+        </Region>
+
+        <Region>
+            <BoxMin x="63" y="7" z="0"/>
+            <BoxMax x="210" y="77" z="1"/>
+            <Gap>0</Gap>
+            <Width>7</Width>
+            <Types>Fluid4</Types>
+        </Region>
+
+
+        <Region>
+            <BoxMin x="0" y="77" z="0"/>
+            <BoxMax x="210" y="84" z="1"/>
+            <Gap>0</Gap>
+            <Width>50</Width>
+            <Types>Wall</Types>
+        </Region>
+
+    </Steppable>
+
+</CompuCell3D>

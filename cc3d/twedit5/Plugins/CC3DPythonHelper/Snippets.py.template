@@ -326,7 +326,7 @@ vec = self.invariant_distance_between_cells(CELL1, CELL2)
 vec = self.distance(p1=[10, 10, 0], p2=[11, 11, 0])
 
 ----------  # @Submenu@ Distance Vector Between Points (Invariant)
-vec = self.invariant_distance_vector(p1=[10, 10, 0], p2=[11, 11, 0])
+vec = self.unconditional_invariant_distance_vector(p1=[10, 10, 0], p2=[11, 11, 0])
 
 ----------  # @Submenu@ Distance Vector Between Points (Invariant, Integer)
 vec = self.invariant_distance_vector_integer(p1=[10, 10, 0], p2=[11, 11, 0])
@@ -524,64 +524,137 @@ eccentricity = cell.ecc
 
 ===============  # @Menu@ Focal Point Placticity
 
-----------  # @Submenu@ Properties
-# Make sure FocalPointPlasticity plugin is loaded
-# visiting all focal links cell 'cell' has with other cells
-for fppd in self.get_focal_point_plasticity_data_list(cell):
-    print("fppd.neighborId", fppd.neighborAddress.id, " lambda=", fppd.lambdaDistance,
-           " targetDistance=", fppd.targetDistance)
+----------  # @Submenu@ Link property: lambda
+# ld = link.getLambdaDistance()
+# link.setLambdaDistance(1.0)
 
-    # arguments are (cell1,cell2,lambda,targetDistance,maxDistance)
-    self.focalPointPlasticityPlugin.setFocalPointPlasticityParameters(cell, fppd.neighborAddress, 1.0, 7.0, 20.0)
+----------  # @Submenu@ Link property: target distance
+# td = link.getTargetDistance()
+# link.setTargetDistance(1.0)
 
-----------  # @Submenu@ Properties (Within Cluster)
+----------  # @Submenu@ Link property: maximum distance
+# md = link.getMaxDistance()
+# link.setMaxDistance(1.0)
+
+----------  # @Submenu@ Link property: maximum number of junctions
+# mnj = link.getMaxNumberOfJunctions()
+# link.setMaxNumberOfJunctions(1)
+
+----------  # @Submenu@ Link property: activation energy
+# ae = link.getActivationEnergy()
+# link.setActivationEnergy(1.0)
+
+----------  # @Submenu@ Link property: neighbor order
+# no = link.getNeighborOrder()
+# link.setNeighborOrder(1)
+
+----------  # @Submenu@ Link property: initialization step
+# im = link.getInitMCS()
+
+----------  # @Submenu@ Link property: linked cell(s)
+# For regular and internal links, two cells are linked:
+# initiator_cell, initiated_cell = link.cellPair
+# For anchors, only one cell is linked:
+# linked_cell = link.cell
+
+----------  # @Submenu@ Link property: anchor point (anchor only)
+ap = link.getAnchorPoint()
+link.setAnchorPoint([0.0, 1.0, 2.0])
+
+----------  # @Submenu@ Link property: anchor id (anchor only)
+aid = link.getAnchorId()
+
+----------  # @Submenu@ Link management: Create FPP Link
 # Make sure FocalPointPlacticity plugin is loaded
-# visiting all focal links cell 'cell' has with other cells
-for fppd in self.get_internal_focal_point_plasticity_data_list(cell):
-    print("fppd.neighborId", fppd.neighborAddress.id, " lambda=", fppd.lambdaDistance,
-          " targetDistance=", fppd.targetDistance)
+# Arguments are:
+# initiator: CellG, initiated: CellG, lambda_distance: float, target_distance: float, max_distance: float
+link = self.new_fpp_link(initiator, initiated, lambda_distance, target_distance, max_distance)
 
-    # arguments are (cell1,cell2,lambda,targetDistance,maxDistance)
-    self.focalPointPlasticityPlugin.setInternalFocalPointPlasticityParameters(cell, fppd.neighborAddress, 1.0, 7.0,
-                                                                              20.0)
-
-----------  # @Submenu@ Create FPP Link
+----------  # @Submenu@ Link management: Create FPP Internal Link (Within Cluster)
 # Make sure FocalPointPlacticity plugin is loaded
-self.focalPointPlasticityPlugin.createFocalPointPlasticityLink(CELL1, CELL2, LAMBDA, TARGET_DISTANCE, MAX_DISTANCE)
+# Arguments are:
+# initiator: CellG, initiated: CellG, lambda_distance: float, target_distance: float, max_distance: float
+link = self.new_fpp_internal_link(initiator, initiated, lambda_distance, target_distance, max_distance)
 
-----------  # @Submenu@ Create FPP Link (Within Cluster)
+----------  # @Submenu@ Link management: Create Anchor
 # Make sure FocalPointPlacticity plugin is loaded
-self.focalPointPlasticityPlugin.createInternalFocalPointPlasticityLink(CELL1, CELL2, LAMBDA, TARGET_DISTANCE,
-                                                                       MAX_DISTANCE)
+# Arguments are cell: CellG lambda_distance: float, target_distance: float, max_distance: float
+# You can specify an anchor point with (float) keyword arguments "x", "y", "z" or with a (Point3D) keyword argument "pt"
+# link = self.new_fpp_anchor(cell, lambda_distance, target_distance, max_distance, x=0.0, y=1.0, z=2.0)
+# link = self.new_fpp_anchor(cell, lambda_distance, target_distance, max_distance, pt=Point3D(0, 1, 2))
 
-----------  # @Submenu@ Get Lambda for FPP Link (Within Cluster)
+----------  # @Submenu@ Link management: Delete FPP Link (any type)
+self.delete_fpp_link(link)
+
+----------  # @Submenu@ Link management: Delete FPP Links Attached to a Cell (any type)
+# To select which types of links to remove, set any of the following keyword arguments to True
+#   Remove all links          : links
+#   Remove all internal links : internal_links
+#   Remove all anchors        : anchors
+# If none of these are specified, then all links of any type are removed
+self.remove_all_cell_fpp_links(cell)
+
+----------  # @Submenu@ Link inventory: Get number of links
 # Make sure FocalPointPlacticity plugin is loaded
-self.focalPointPlasticityPlugin.getPlasticityParametersLambdaDistance(CELL1, CELL2)
+nl = self.get_number_of_fpp_links()
 
-----------  # @Submenu@ Get Target Distance for FPP Link (Within Cluster)
+----------  # @Submenu@ Link inventory: Get number of internal links
 # Make sure FocalPointPlacticity plugin is loaded
-self.focalPointPlasticityPlugin.getPlasticityParametersTargetDistance(CELL1, CELL2)
+nil = self.get_number_of_fpp_internal_links()
 
-----------  # @Submenu@ Delete FPP Link
+----------  # @Submenu@ Link inventory: Get number of anchors
 # Make sure FocalPointPlacticity plugin is loaded
-self.focalPointPlasticityPlugin.deleteFocalPointPlasticityLink(CELL1, CELL2)
+na = self.get_number_of_fpp_anchors()
 
-----------  # @Submenu@ Delete FPP Link (Within Cluster)
+----------  # @Submenu@ Link inventory: Get link associated with two cells
 # Make sure FocalPointPlacticity plugin is loaded
-self.focalPointPlasticityPlugin.deleteInternalFocalPointPlasticityLink(CELL1, CELL2)
+link = self.get_fpp_link_by_cells(cell1, cell2)
 
-----------  # @Submenu@ Create Anchor
+----------  # @Submenu@ Link inventory: Get internal link associated with two cells
 # Make sure FocalPointPlacticity plugin is loaded
-anchorId = self.focalPointPlasticityPlugin.createAnchor(CELL, LAMBDA, TARGET_DISTANCE, MAX_DISTANCE, ANCHOR_X, ANCHOR_Y,
-                                                        ANCHOR_Z)
+link = self.get_fpp_internal_link_by_cells(cell1, cell2)
 
-----------  # @Submenu@ Delete Anchor
+----------  # @Submenu@ Link inventory: Get anchor assicated with a cell and anchor id
 # Make sure FocalPointPlacticity plugin is loaded
-self.focalPointPlasticityPlugin.deleteAnchor(CELL, ANCHOR_ID)
+link = self.get_fpp_anchor_by_cell_and_id(cell, anchor_id)
 
-----------  # @Submenu@ Set Anchor Parameters
-self.focalPointPlasticityPlugin.setAnchorParameters(CELL, ANCHOR_ID, LAMBDA, TARGET_DISTANCE, MAX_DISTANCE, ANCHOR_X,
-                                                    ANCHOR_Y, ANCHOR_Z)
+----------  # @Submenu@ Link inventory: Get number of link junctions by type for a cell
+# Make sure FocalPointPlacticity plugin is loaded
+njt = self.get_number_of_fpp_junctions_by_type(cell, attached_cell_type)
+
+----------  # @Submenu@ Link inventory: Get number of internal link junctions by type for a cell
+# Make sure FocalPointPlacticity plugin is loaded
+nijt = self.get_number_of_fpp_internal_junctions_by_type(cell, attached_cell_type)
+
+----------  # @Submenu@ Visit: All links attached to a cell
+# Make sure FocalPointPlacticity plugin is loaded
+# Visit all links attached to a cell
+for link in self.get_fpp_links_by_cell(cell):
+    # operations here
+
+----------  # @Submenu@ Visit: All internal links attached to a cell
+# Make sure FocalPointPlacticity plugin is loaded
+# Visit all internal links attached to a cell in a cluster
+for link in self.get_fpp_internal_links_by_cell(cell):
+    # operations here
+
+----------  # @Submenu@ Visit: All anchors attached to a cell
+# Make sure FocalPointPlacticity plugin is loaded
+# Visit all anchors attached to a cell
+for link in self.get_fpp_anchors_by_cell(cell):
+    # operations here
+
+----------  # @Submenu@ Visit: All cells attached to a cell by a link
+# Make sure FocalPointPlacticity plugin is loaded
+# Visit all cells attached to a cell by a link
+for linked_cell in self.get_fpp_linked_cells(cell):
+    # operations here
+
+----------  # @Submenu@ Visit: All cells attached to a cell by an internal link
+# Make sure FocalPointPlacticity plugin is loaded
+# Visit all cells attached to a cell by an internal link
+for linked_cell in self.get_fpp_internal_linked_cells(cell):
+    # operations here
 
 ===============  # @Menu@ Adhesion Flex
 

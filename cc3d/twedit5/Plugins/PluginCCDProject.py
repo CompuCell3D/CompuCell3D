@@ -29,6 +29,7 @@ from copy import deepcopy
 from distutils.file_util import write_file
 from distutils.dir_util import mkpath
 from cc3d.twedit5.Plugins.CC3DProject.NewSimulationWizard import NewSimulationWizard
+from cc3d.twedit5.Plugins.TweditPluginBase import TweditPluginBase
 from cc3d.twedit5.Plugins.CC3DProject.SerializerEdit import SerializerEdit
 from cc3d.twedit5.Plugins.CC3DProject.SteppableGeneratorDialog import SteppableGeneratorDialog
 from cc3d.core.CC3DSimulationDataHandler import CC3DSimulationDataHandler
@@ -668,7 +669,7 @@ class CustomDockWidget(QDockWidget):
         ev.ignore()
 
 
-class CC3DProject(QObject):
+class CC3DProject(QObject, TweditPluginBase):
     """
 
     Class implementing the About plugin.
@@ -688,6 +689,7 @@ class CC3DProject(QObject):
         """
 
         QObject.__init__(self, ui)
+        TweditPluginBase.__init__(self)
 
         self.__ui = ui
 
@@ -789,7 +791,7 @@ class CC3DProject(QObject):
 
         return None, True
 
-    def post_activate(self, kwds):
+    def post_activate(self, **kwds):
         """
         Post activation function used to add actions to different menus to make certain actions more visible
         e.g. Add Steppable ... action
@@ -966,29 +968,28 @@ class CC3DProject(QObject):
 
             self.openCC3Dproject(fileName)
 
-    def __openRecentProjectDirectory(self):
+    def open_recent_project_directory(self):
 
         action = self.sender()
 
         if isinstance(action, QAction):
-            fileName = str(action.data())
+            dir_name = str(action.data())
+            dir_name_path = Path(dir_name)
+            if not dir_name_path.exists():
+                QMessageBox.warning(self.treeWidget, 'Directory not found',
+                                    f'Directory you are trying to access <br> '
+                                    f'{dir_name} <br>'
+                                    f'does not exist')
+                self.__ui.remove_item_from_configuration_string_list(self.configuration, "RecentProjectDirectories",
+                                                                     dir_name)
 
-            self.openCC3Dproject(fileName)
+                return
 
-    def __openRecentProjectDirectory(self):
+            dir_name = os.path.abspath(dir_name)
 
-        action = self.sender()
+            self.__ui.add_item_to_configuration_string_list(self.configuration, "RecentProjectDirectories", dir_name)
 
-        dirName = ''
-
-        if isinstance(action, QAction):
-            dirName = str(action.data())
-
-            dirName = os.path.abspath(dirName)
-
-            self.__ui.addItemtoConfigurationStringList(self.configuration, "RecentProjectDirectories", dirName)
-
-            self.showOpenProjectDialogAndLoad(dirName)
+            self.showOpenProjectDialogAndLoad(dir_name)
 
     def updateRecentProjectsMenu(self):
 
@@ -998,7 +999,7 @@ class CC3DProject(QObject):
 
     def updateRecentProjectDirectoriesMenu(self):
 
-        self.__ui.updateRecentItemMenu(self, self.recentProjectDirectoriesMenu, self.__openRecentProjectDirectory,
+        self.__ui.updateRecentItemMenu(self, self.recentProjectDirectoriesMenu, self.open_recent_project_directory,
 
                                        self.configuration, "RecentProjectDirectories")
 
@@ -3802,17 +3803,25 @@ class CC3DProject(QObject):
 
         proj_exist = True
 
-        self.__ui.addItemtoConfigurationStringList(self.configuration, "RecentProjects", proj_file_name)
+        proj_file_name_path = Path(proj_file_name)
+        if not proj_file_name_path.exists():
+            QMessageBox.warning(self.treeWidget, 'Project file missing',
+                                f'Project file <br> {proj_file_name} is missing')
+            self.__ui.remove_item_from_configuration_string_list(self.configuration, "RecentProjects", proj_file_name)
+            return
+
+        self.__ui.add_item_to_configuration_string_list(self.configuration, "RecentProjects", proj_file_name)
 
         # extract file directory name and add it to settings
         dir_name = os.path.abspath(os.path.dirname(str(proj_file_name)))
-        self.__ui.addItemtoConfigurationStringList(self.configuration, "RecentProjectDirectories", dir_name)
+        self.__ui.add_item_to_configuration_string_list(self.configuration, "RecentProjectDirectories", dir_name)
 
         try:
             self.openProjectsDict[proj_file_name]
         except LookupError:
 
             proj_exist = False
+
 
         if proj_exist:
             proj_item = self.openProjectsDict[proj_file_name]

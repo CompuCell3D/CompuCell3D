@@ -1,0 +1,8 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/CompartmentExample.xml</XMLScript>
+    <PythonScript>Simulation/CompartmentExample.py</PythonScript>
+    <Resource Type="Python">Simulation/CompartmentExampleSteppables.py</Resource>
+    <PIFFile>Simulation/3D_LINE_BASE.piff</PIFFile>
+
+</Simulation>

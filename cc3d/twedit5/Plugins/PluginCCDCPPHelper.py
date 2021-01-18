@@ -13,7 +13,7 @@ longDescription = """This plugin provides provides users with CC3D C++ code gene
 
 # End-Of-Header
 
-
+from cc3d.twedit5.Plugins.TweditPluginBase import TweditPluginBase
 from cc3d.twedit5.twedit.utils.global_imports import *
 from cc3d.twedit5.Plugins.CC3DCPPHelper.Configuration import Configuration
 from cc3d.twedit5.Plugins.PluginUtils.SnippetMenuParser import SnippetMenuParser
@@ -26,7 +26,7 @@ import re
 error = ''
 
 
-class CC3DCPPHelper(QObject):
+class CC3DCPPHelper(QObject, TweditPluginBase):
     """
 
     Class implementing the About plugin.
@@ -46,6 +46,7 @@ class CC3DCPPHelper(QObject):
         """
 
         QObject.__init__(self, ui)
+        TweditPluginBase.__init__(self)
 
         self.__ui = ui
 

@@ -2,6 +2,7 @@ import time
 from math import floor
 from os.path import dirname, join
 from cc3d.cpp import CompuCell
+
 from cc3d.core.XMLDomUtils import XMLIdLocator
 from cc3d.CompuCellSetup import init_modules, parseXML
 from cc3d.core.CMLFieldHandler import CMLFieldHandler
@@ -16,6 +17,7 @@ from cc3d import CompuCellSetup
 from cc3d.core import RestartManager
 from cc3d.CompuCellSetup.simulation_utils import check_for_cpp_errors
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
+from cc3d.CompuCellSetup.cluster_utils import check_nanohub_and_count
 
 
 # -------------------- legacy API emulation ----------------------------------------
@@ -191,7 +193,8 @@ def convert_time_interval_to_hmsm(time_interval):
         return str(int(floor(x)))
 
     if hours > 1.0:
-        out_str = s_int_fl(hours) + " h : " + s_int_fl(minutes) + " m : " + s_int_fl(seconds) + " s : " + str(miliseconds) + " ms"
+        out_str = s_int_fl(hours) + " h : " + s_int_fl(minutes) + " m : " + s_int_fl(seconds) + " s : " + str(
+            miliseconds) + " ms"
 
     elif minutes > 1.0:
         out_str = s_int_fl(minutes) + " m : " + s_int_fl(seconds) + " s : " + str(miliseconds) + " ms"
@@ -341,7 +344,7 @@ def init_screenshot_manager() -> None:
         field_extractor = persistent_globals.persistent_holder['field_extractor']
 
     persistent_globals.create_output_dir()
-    gd = GenericDrawer.GenericDrawer()
+    gd = GenericDrawer.GenericDrawer(boundary_strategy=persistent_globals.simulator.getBoundaryStrategy())
     gd.set_field_extractor(field_extractor=field_extractor)
 
     bsd = BasicSimulationData()
@@ -439,6 +442,8 @@ def main_loop(sim, simthread, steppable_registry=None):
     # init_using_restart_snapshot_enabled = False
     sim.setRestartEnabled(init_using_restart_snapshot_enabled)
     check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+
+    check_nanohub_and_count()
 
     if init_using_restart_snapshot_enabled:
         print('WILL RESTART SIMULATION')
@@ -538,6 +543,8 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
     # init_using_restart_snapshot_enabled = False
     sim.setRestartEnabled(init_using_restart_snapshot_enabled)
 
+    check_nanohub_and_count()
+
     if init_using_restart_snapshot_enabled:
         print('WILL RESTART SIMULATION')
         restart_manager.loadRestartFiles()
@@ -555,8 +562,6 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
 
     if not steppable_registry is None:
         steppable_registry.init(sim)
-
-
 
     # called in extraInitSimulationObjects
     # sim.start()

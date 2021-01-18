@@ -279,6 +279,22 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                                          'targetClusterSurface', 'lambdaClusterSurface', 'type', 'lambdaVecX',
                                          'lambdaVecY', 'lambdaVecZ', 'fluctAmpl']
 
+    def merge_cells(self, source_cell, destination_cell):
+        """
+        Turns all voxels of source_cell into voxels of destination_cell
+        :param source_cell: {CompuCell.CellG} cell to be "eaten"
+        :param destination_cell: {CompuCell.CellG} cell "eating"
+        :return:
+        """
+
+        source_vxs = self.get_cell_pixel_list(source_cell)
+        if source_vxs is None:
+            raise Exception("Couldn't fetch voxels of source_cell, did you load PixelTracker plugin?")
+
+        for pixel_tracker_data in source_vxs:
+            x, y, z = pixel_tracker_data.pixel.x, pixel_tracker_data.pixel.y, pixel_tracker_data.pixel.z
+            self.cell_field[x, y, z] = destination_cell
+
     def cell_list_by_type(self, *args):
         """
         Returns a CellListByType object that represents list of ells with a given type
@@ -755,7 +771,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         with pg.steering_panel_synchronizer:
 
             if name is not None:
-                return self.get_steering_param(name=name).dirty_flag
+                try:
+                    return CompuCellSetup.persistent_globals.steering_param_dict[name].dirty_flag
+                except KeyError:
+                    raise RuntimeError('Could not find steering_parameter named {}'.format(name))
             else:
                 for p_name, steering_param in CompuCellSetup.persistent_globals.steering_param_dict.items():
                     if steering_param.dirty_flag:
@@ -774,7 +793,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         pg = CompuCellSetup.persistent_globals
         with pg.steering_panel_synchronizer:
             if name is not None:
-                self.get_steering_param(name=name).dirty_flag = flag
+                try:
+                    pg.steering_param_dict[name].dirty_flag = flag
+                except KeyError:
+                    raise RuntimeError('Could not find steering_parameter named {}'.format(name))
             else:
                 for p_name, steering_param in CompuCellSetup.persistent_globals.steering_param_dict.items():
                     steering_param.dirty_flag = flag
@@ -1023,7 +1045,18 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         if self.focal_point_plasticity_plugin is None:
             return []
         else:
-            return [fppd.neighborAddress for fppd in self.get_focal_point_plasticity_data_list(cell)]
+            return [c for c in self.get_fpp_linked_cells(cell)]
+
+    def get_focal_point_plasticity_internal_neighbor_list(self, cell) -> []:
+        """
+        Return list of all cell objects linked to a cell
+        :param cell: cell object for which to fetch list of linked cells
+        :return: list of linked cells
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return []
+        else:
+            return [c for c in self.get_fpp_internal_linked_cells(cell)]
 
     def get_focal_point_plasticity_num_neighbors(self, cell) -> int:
         """
@@ -1031,7 +1064,15 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :param cell: cell object for which to count linked cells
         :return: number of linked cells
         """
-        return self.get_focal_point_plasticity_neighbor_list(cell).__len__()
+        return len(self.get_fpp_linked_cells(cell))
+
+    def get_focal_point_plasticity_num_internal_neighbors(self, cell) -> int:
+        """
+        Returns number of all cell objects internally linked to a cell
+        :param cell: cell object for which to count internally linked cells
+        :return: number of internally linked cells
+        """
+        return len(self.get_fpp_internal_linked_cells(cell))
 
     def get_focal_point_plasticity_is_linked(self, cell1, cell2) -> bool:
         """
@@ -1043,8 +1084,19 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         if self.focal_point_plasticity_plugin is None:
             return False
         else:
-            return any([n_cell for n_cell in self.get_focal_point_plasticity_neighbor_list(cell1)
-                        if n_cell.id == cell2.id])
+            return self.get_fpp_link_by_cells(cell1, cell2) is not None
+
+    def get_focal_point_plasticity_is_internally_linked(self, cell1, cell2) -> bool:
+        """
+        Returns if two cells are internally linked
+        :param cell1: first cell object
+        :param cell2: second cell object
+        :return: True if cells are internally linked
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return False
+        else:
+            return self.get_fpp_internal_link_by_cells(cell1, cell2) is not None
 
     def get_focal_point_plasticity_initiator(self, cell1, cell2):
         """
@@ -1056,12 +1108,25 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         if not self.get_focal_point_plasticity_is_linked(cell1=cell1, cell2=cell2):
             return None
         else:
-            is_initiator = [fppd.isInitiator for fppd in self.get_focal_point_plasticity_data_list(cell1)
-                            if fppd.neighborAddress.id == cell2.id][0]
-            if is_initiator:
-                return cell1
-            else:
-                return cell2
+            link = self.get_fpp_link_by_cells(cell1, cell2)
+            if link is None:
+                return None
+            return link.getObj0()
+
+    def get_focal_point_plasticity_internal_initiator(self, cell1, cell2):
+        """
+        Returns which cell initiated an internal link; returns None if cells are not linked
+        :param cell1: first cell object in internal link
+        :param cell2: second cell object in internal link
+        :return: cell that initiated the internal link, or None if cells are not linked
+        """
+        if not self.get_focal_point_plasticity_is_linked(cell1=cell1, cell2=cell2):
+            return None
+        else:
+            link = self.get_fpp_internal_link_by_cells(cell1, cell2)
+            if link is None:
+                return None
+            return link.getObj0()
 
     def set_focal_point_plasticity_parameters(self, cell, n_cell=None, lambda_distance: float = None,
                                               target_distance: float = None, max_distance: float = None) -> None:
@@ -1079,22 +1144,254 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             return
 
         if n_cell is None:
-            fppd_list = self.get_focal_point_plasticity_data_list(cell)
+            linked_list = self.get_fpp_linked_cells(cell)
         else:
-            fppd_list = [fppd for fppd in self.get_focal_point_plasticity_data_list(cell)
-                         if fppd.neighborAddress.id == n_cell.id]
-        for fppd in fppd_list:
-            if lambda_distance is None:
-                lambda_distance = fppd.lambdaDistance
-            if target_distance is None:
-                target_distance = fppd.targetDistance
-            if max_distance is None:
-                max_distance = fppd.maxDistance
-            self.focal_point_plasticity_plugin.setFocalPointPlasticityParameters(cell,
-                                                                                 fppd.neighborAddress,
-                                                                                 lambda_distance,
-                                                                                 target_distance,
-                                                                                 max_distance)
+            linked_list = [self.get_fpp_link_by_cells(cell, n_cell)]
+        for link in linked_list:
+            if lambda_distance is not None:
+                link.setLambdaDistance(lambda_distance)
+            if target_distance is not None:
+                link.setTargetDistance(target_distance)
+            if max_distance is not None:
+                link.setMaxDistance(max_distance)
+
+    @property
+    def fpp_link_inventory(self):
+        assert self.focal_point_plasticity_plugin is not None, 'Load focal point plasticity plugin'
+        return self.focal_point_plasticity_plugin.getLinkInventory()
+
+    @property
+    def fpp_internal_link_inventory(self):
+        assert self.focal_point_plasticity_plugin is not None, 'Load focal point plasticity plugin'
+        return self.focal_point_plasticity_plugin.getInternalLinkInventory()
+
+    @property
+    def fpp_anchor_inventory(self):
+        assert self.focal_point_plasticity_plugin is not None, 'Load focal point plasticity plugin'
+        return self.focal_point_plasticity_plugin.getAnchorInventory()
+
+    def get_focal_point_plasticity_link_list(self):
+        """
+        Returns list of all links
+        :return: {list} list of all links
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return None
+        return FocalPointPlasticityLinkList(self.focal_point_plasticity_plugin)
+
+    def get_focal_point_plasticity_internal_link_list(self):
+        """
+        Returns list of all internal links
+        :return: {list} list of all internal links
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return None
+        return FocalPointPlasticityInternalLinkList(self.focal_point_plasticity_plugin)
+
+    def get_focal_point_plasticity_anchor_list(self):
+        """
+        Returns list of all anchors
+        :return: {list} list of all anchors
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return None
+        return FocalPointPlasticityAnchorList(self.focal_point_plasticity_plugin)
+
+    def new_fpp_link(self, initiator: CompuCell.CellG, initiated: CompuCell.CellG,
+                     lambda_distance: float, target_distance: float = 0.0, max_distance: float = 0.0):
+        """
+        Create a focal point plasticity link
+        :param initiator: {CompuCell.CellG} cell initiating the link
+        :param initiated: {CompuCell.CellG} second cell of the link
+        :param lambda_distance: {float} link lambda coefficient
+        :param target_distance: {float} target link distance
+        :param max_distance: {float} maximum link distance
+        :return: {CompuCell.FocalPointPlasticityLink} created link
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return None
+        self.focal_point_plasticity_plugin.createFocalPointPlasticityLink(
+            initiator, initiated, lambda_distance, target_distance, max_distance)
+        return self.fpp_link_inventory.getLinkByCells(initiator, initiated)
+
+    def new_fpp_internal_link(self, initiator: CompuCell.CellG, initiated: CompuCell.CellG,
+                              lambda_distance: float, target_distance: float = 0.0, max_distance: float = 0.0):
+        """
+        Create a focal point plasticity internal link
+        :param initiator: {CompuCell.CellG} cell initiating the link
+        :param initiated: {CompuCell.CellG} second cell of the link
+        :param lambda_distance: {float} link lambda coefficient
+        :param target_distance: {float} target link distance
+        :param max_distance: {float} maximum link distance
+        :return: {CompuCell.FocalPointPlasticityInternalLink} created link
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return None
+        self.focal_point_plasticity_plugin.createInternalFocalPointPlasticityLink(
+            initiator, initiated, lambda_distance, target_distance, max_distance)
+        return self.fpp_internal_link_inventory.getLinkByCells(initiator, initiated)
+
+    def new_fpp_anchor(self, cell: CompuCell.CellG,
+                       lambda_distance: float, target_distance: float = 0.0, max_distance: float = 0.0,
+                       x: float = 0.0, y: float = 0.0, z: float = 0.0, pt: CompuCell.Point3D = None):
+        """
+        Create a focal point plasticity internal link
+        :param cell: {CompuCell.CellG} cell
+        :param lambda_distance: {float} link lambda coefficient
+        :param target_distance: {float} target link distance
+        :param max_distance: {float} maximum link distance
+        :param x: {float} x-coordinate of anchor
+        :param y: {float} y-coordinate of anchor
+        :param z: {float} z-coordinate of anchor
+        :param pt: {CompuCell3D.Point3D} anchor point
+        :return: {CompuCell.FocalPointPlasticityAnchor} created link
+        """
+        if self.focal_point_plasticity_plugin is None:
+            return None
+        if pt is not None:
+            x, y, z = pt.x, pt.y, pt.z
+        anchor_id = int(self.focal_point_plasticity_plugin.createAnchor(
+            cell, lambda_distance, target_distance, max_distance, x, y, z))
+        return self.fpp_anchor_inventory.getAnchor(cell, anchor_id)
+
+    def delete_fpp_link(self, _link):
+        """
+        Deletes a focal point plasticity link, internal link or anhcor
+        :param _link: link, internal link or anchor
+        :return: None
+        """
+        assert self.focal_point_plasticity_plugin is not None, 'Load focal point plasticity plugin'
+        if isinstance(_link, CompuCell.FocalPointPlasticityLink):
+            self.focal_point_plasticity_plugin.deleteFocalPointPlasticityLink(_link.getObj0(), _link.getObj1())
+        elif isinstance(_link, CompuCell.FocalPointPlasticityInternalLink):
+            self.focal_point_plasticity_plugin.deleteInternalFocalPointPlasticityLink(_link.getObj0(), _link.getObj1())
+        elif isinstance(_link, CompuCell.FocalPointPlasticityAnchor):
+            self.focal_point_plasticity_plugin.deleteAnchor(_link.getObj0(), _link.getAnchorId())
+
+    def remove_all_cell_fpp_links(self, _cell: CompuCell.CellG,
+                                  links: bool = False, internal_links: bool = False, anchors: bool = False):
+        """
+        Removes all links associated with a cell; if no optional arguments are specified, then all links are removed
+        :param _cell: {CompuCell.CellG} cell
+        :param links: {bool} option for fpp links
+        :param internal_links: {bool} option for fpp internal links
+        :param anchors: {bool} option for fpp anchors
+        :return: None
+        """
+        assert self.focal_point_plasticity_plugin is not None, 'Load focal point plasticity plugin'
+        if not any([links, internal_links, anchors]):
+            links, internal_links, anchors = True, True, True
+        if links:
+            self.fpp_link_inventory.removeCellLinks(_cell)
+        if internal_links:
+            self.fpp_internal_link_inventory.removeCellLinks(_cell)
+        if anchors:
+            self.fpp_anchor_inventory.removeCellLinks(_cell)
+
+    def get_number_of_fpp_links(self) -> int:
+        """
+        Returns number of links
+        :return: {int} number of links
+        """
+        return int(self.fpp_link_inventory.getLinkInventorySize())
+
+    def get_number_of_fpp_internal_links(self) -> int:
+        """
+        Returns number of internal links
+        :return: {int} number of internal links
+        """
+        return int(self.fpp_internal_link_inventory.getLinkInventorySize())
+
+    def get_number_of_fpp_anchors(self) -> int:
+        """
+        Returns number of anchors
+        :return: {int} number of anchors
+        """
+        return int(self.fpp_anchor_inventory.getLinkInventorySize())
+
+    def get_fpp_link_by_cells(self, cell1: CompuCell.CellG, cell2: CompuCell.CellG) -> CompuCell.FocalPointPlasticityLink:
+        """
+        Returns link associated with two cells
+        :param cell1: first cell
+        :param cell2: second cell
+        :return: {CompuCell.FocalPointPlasticityLink} link
+        """
+        return self.fpp_link_inventory.getLinkByCells(cell1, cell2)
+
+    def get_fpp_internal_link_by_cells(self, cell1: CompuCell.CellG, cell2: CompuCell.CellG) -> CompuCell.FocalPointPlasticityInternalLink:
+        """
+        Returns internal link associated with two cells
+        :param cell1: first cell
+        :param cell2: second cell
+        :return: {CompuCell.FocalPointPlasticityInternalLink} internal link
+        """
+        return self.fpp_internal_link_inventory.getLinkByCells(cell1, cell2)
+
+    def get_fpp_anchor_by_cell_and_id(self, cell: CompuCell.CellG, anchor_id: int) -> CompuCell.FocalPointPlasticityAnchor:
+        """
+        Returns internal link associated with two cells
+        :param cell: cell
+        :param anchor_id: anchor id
+        :return: {CompuCell.FocalPointPlasticityAnchor} anchor
+        """
+        return self.fpp_anchor_inventory.getAnchor(cell, anchor_id)
+
+    def get_fpp_links_by_cell(self, _cell: CompuCell.CellG) -> CompuCell.FPPLinkList:
+        """
+        Get list of links by cell
+        :param _cell: cell
+        :return: links
+        """
+        return self.fpp_link_inventory.getCellLinkList(_cell)
+
+    def get_fpp_internal_links_by_cell(self, _cell: CompuCell.CellG) -> CompuCell.FPPInternalLinkList:
+        """
+        Get list of internal links by cell
+        :param _cell: cell
+        :return: internal links
+        """
+        return self.fpp_internal_link_inventory.getCellLinkList(_cell)
+
+    def get_fpp_anchors_by_cell(self, _cell: CompuCell.CellG) -> CompuCell.FPPAnchorList:
+        """
+        Get list of anchors by cell
+        :param _cell: cell
+        :return: anchors
+        """
+        return self.fpp_anchor_inventory.getCellLinkList(_cell)
+
+    def get_fpp_linked_cells(self, _cell: CompuCell.CellG) -> CompuCell.mvectorCellGPtr:
+        """
+        Get list of cells linked to a cell
+        :param _cell: cell
+        :return: list of linked cells
+        """
+        return self.fpp_link_inventory.getLinkedCells(_cell)
+
+    def get_fpp_internal_linked_cells(self, _cell: CompuCell.CellG) -> CompuCell.mvectorCellGPtr:
+        """
+        Get list of cells internally linked to a cell
+        :param _cell: cell
+        :return: list of linked cells
+        """
+        return self.fpp_internal_link_inventory.getLinkedCells(_cell)
+
+    def get_number_of_fpp_junctions_by_type(self, _cell: CompuCell.CellG, _type: int) -> int:
+        """
+        Get number of link junctions by type for a cell
+        :param _cell: cell
+        :param _type: type id
+        :return: {int} number of junctions
+        """
+        return int(self.fpp_link_inventory.getNumberOfJunctionsByType(_cell, _type))
+
+    def get_number_of_fpp_internal_junctions_by_type(self, _cell: CompuCell.CellG, _type: int) -> int:
+        """
+        Get number of internal link junctions by type for a cell
+        :param _cell: cell
+        :return: {int} number of internal junctions
+        """
+        return int(self.fpp_internal_link_inventory.getNumberOfJunctionsByType(_cell, _type))
 
     def get_energy_calculations(self):
         return EnergyDataList(self.potts)
@@ -1318,9 +1615,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     def invariant_distance(self, p1, p2):
         """
-        Distance between two points. Assumes periodic boundary conditions
-        - or simply makes sure that no component of distance vector
-        is greater than 1/2 corresponding dimension
+        Distance between two points. Respects boundary conditions
         :return: {float} invariant distance between two points
         """
 
@@ -1332,16 +1627,36 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     def invariant_distance_vector_integer(self, p1, p2):
         """
+        This function will calculate distance vector with integer coordinates between two Point3D points. respects
+        Boundary conditions
+        :param p1: {list} position of first point
+        :param p2: {list} position of second point
+        :return: {ndarray} distance vector
+        """
+        boundary_strategy = CompuCell.BoundaryStrategy.getInstance()
+        dist_vec = CompuCell.distanceVectorInvariant(p2, p1, self.dim, boundary_strategy)
+        return np.array([float(dist_vec.x), float(dist_vec.y), float(dist_vec.z)])
+
+    @deprecated(version='4.0.0', reason="You should use : unconditional_invariant_distance_vector_integer")
+    def unconditionalInvariantDistanceVectorInteger(self, _from, _to):
+        return self.unconditional_invariant_distance_vector_integer(p1=_from, p2=_to)
+
+    def unconditional_invariant_distance_vector_integer(self, p1, p2):
+        """
         This function will calculate distance vector with integer coordinates between two Point3D points
         and make sure that the absolute values of the vector are smaller than 1/2 of the corresponding lattice dimension
-        this way we simulate 'invariance' of distance assuming that periodic boundary conditions are in place
+        this way we simulate 'invariance' of distance assuming that periodic boundary conditions are in place.
+        The reason we call it unconditional is because invariant distance this function computes assumes we have
+        periodic boundary conditions in place irrespective if this is true or not. For some applications this
+        function may be inappropriate. It is appropriate if the two points we are computing distance between are
+        relatively close
 
         :param p1: {list} position of first point
         :param p2: {list} position of second point
         :return: {ndarray} distance vector
         """
 
-        dist_vec = CompuCell.distanceVectorInvariant(p2, p1, self.dim)
+        dist_vec = CompuCell.unconditionalDistanceVectorInvariant(p2, p1, self.dim)
         return np.array([float(dist_vec.x), float(dist_vec.y), float(dist_vec.z)])
 
     @deprecated(version='4.0.0', reason="You should use : invariant_distance_vector")
@@ -1351,6 +1666,24 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def invariant_distance_vector(self, p1, p2):
         """
         This function will calculate distance vector with integer coordinates between two Coordinates3D<double> points
+        Respects boundary conditions
+        :param p1: {list} position of first point
+        :param p2: {list} position of second point
+        :return: {ndarray} distance vector
+        """
+
+        boundary_strategy = CompuCell.BoundaryStrategy.getInstance()
+        dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, self.dim, boundary_strategy)
+        return np.array([dist_vec.x, dist_vec.y, dist_vec.z])
+
+    @deprecated(version='4.0.0', reason="You should use : unconditional_invariant_distance_vector")
+    def unconditionalInvariantDistanceVector(self, _from, _to):
+
+        return self.unconditional_invariant_distance_vector(p1=_from, p2=_to)
+
+    def unconditional_invariant_distance_vector(self, p1, p2):
+        """
+        This function will calculate distance vector with integer coordinates between two Coordinates3D<double> points
         and make sure that the absolute values of the vector are smaller than 1/2 of the corresponding lattice dimension
         this way we simulate 'invariance' of distance assuming that periodic boundary conditions are in place
         :param p1: {list} position of first point
@@ -1358,7 +1691,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :return: {ndarray} distance vector
         """
 
-        dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, self.dim)
+        dist_vec = CompuCell.unconditionalDistanceVectorCoordinatesInvariant(p2, p1, self.dim)
         return np.array([dist_vec.x, dist_vec.y, dist_vec.z])
 
     @deprecated(version='4.0.0', reason="You should use : vector_norm")
@@ -1382,6 +1715,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def distance_vector_between_cells(self, cell1, cell2):
         """
         This function will calculate distance vector between  COM's of cells  assuming non-periodic boundary conditions
+        It is the most straightforward way to compute distance
         :return: {ndarray} distance vector
         """
         return self.distance_vector([cell1.xCOM, cell1.yCOM, cell1.zCOM], [cell2.xCOM, cell2.yCOM, cell2.zCOM])
@@ -1392,13 +1726,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     def invariant_distance_vector_between_cells(self, cell1, cell2):
         """
-        This function will calculate distance vector between  COM's of cells  assuming periodic boundary conditions
-        - or simply makes sure that no component of distance vector
-        is greater than 1/2 corresponding dimension
+        This function will calculate distance vector between  COM's of cells . Respects boundary conditions
         :return: {ndarray} distance vector
         """
         return self.invariant_distance_vector([cell1.xCOM, cell1.yCOM, cell1.zCOM],
-                                              [cell2.xCOM, cell2.yCOM, cell2.zCOM])
+                                                            [cell2.xCOM, cell2.yCOM, cell2.zCOM])
 
     @deprecated(version='4.0.0', reason="You should use : distance_between_cells")
     def distanceBetweenCells(self, _cell_from, _cell_to):

@@ -1,0 +1,62 @@
+<!-- This demo demonstrates how to block chemotaxis between compartments of the same cell -->
+<CompuCell3D Revision="20180621" Version="3.7.8">
+
+    <Potts>
+
+        <Dimensions x="100" y="100" z="1"/>
+        <Steps>1</Steps>
+        <Temperature>2.0</Temperature>
+        <NeighborOrder>3</NeighborOrder>
+        <RandomSeed>1</RandomSeed>
+        <TestRun/>
+    </Potts>
+
+    <Plugin Name="CellType">
+
+        <CellType TypeId="0" TypeName="Medium"/>
+        <CellType TypeId="1" TypeName="A"/>
+        <CellType TypeId="2" TypeName="B"/>
+        <CellType TypeId="3" TypeName="C"/>
+    </Plugin>
+
+    <Plugin Name="Volume">
+        <VolumeEnergyParameters CellType="A" LambdaVolume="20.0" TargetVolume="200"/>
+        <VolumeEnergyParameters CellType="B" LambdaVolume="20.0" TargetVolume="200"/>
+        <VolumeEnergyParameters CellType="C" LambdaVolume="20.0" TargetVolume="200"/>
+    </Plugin>
+
+    <Plugin Name="CenterOfMass"/>
+
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+        <Energy Type1="Medium" Type2="A">16.0</Energy>
+        <Energy Type1="Medium" Type2="B">16.0</Energy>
+        <Energy Type1="Medium" Type2="C">16.0</Energy>
+        <Energy Type1="A" Type2="A">10.0</Energy>
+        <Energy Type1="A" Type2="B">14.0</Energy>
+        <Energy Type1="A" Type2="C">14.0</Energy>
+        <Energy Type1="B" Type2="B">10.0</Energy>
+        <Energy Type1="B" Type2="C">14.0</Energy>
+        <Energy Type1="C" Type2="C">10.0</Energy>
+        <NeighborOrder>3</NeighborOrder>
+    </Plugin>
+
+    <Plugin Name="Chemotaxis">
+        <ChemicalField Name="FGF" Source="DiffusionSolverFE">
+            <ChemotaxisByType Lambda="100.0" Type="A" DisallowChemotaxisBetweenCompartments=""/>
+        </ChemicalField>
+    </Plugin>
+
+    <Steppable Type="DiffusionSolverFE">
+
+        <DiffusionField Name="FGF">
+            <DiffusionData>
+                <FieldName>FGF</FieldName>
+                <GlobalDiffusionConstant>0.0</GlobalDiffusionConstant>
+                <GlobalDecayConstant>0.0</GlobalDecayConstant>
+            </DiffusionData>
+        </DiffusionField>
+    </Steppable>
+
+
+</CompuCell3D>

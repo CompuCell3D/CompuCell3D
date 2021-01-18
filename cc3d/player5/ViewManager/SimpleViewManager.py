@@ -72,7 +72,6 @@ class SimpleViewManager(QObject):
         self.screenshot_description_browser_act = None
 
         # windows actions
-        self.python_steering_panel_act = None
         self.new_graphics_window_act = None
         self.tile_act = None
         self.cascade_act = None
@@ -402,9 +401,6 @@ class SimpleViewManager(QObject):
         :return:
         """
 
-        self.python_steering_panel_act = QAction("Steering Panel", self)
-        self.python_steering_panel_act.setShortcut(self.tr("Ctrl+U"))
-
         self.new_graphics_window_act = QAction(QIcon(gip("kcmkwm.png")), "&New Graphics Window", self)
         self.new_graphics_window_act.setShortcut(self.tr("Ctrl+I"))
 
@@ -661,11 +657,13 @@ class SimpleViewManager(QObject):
         try:
             version_str = cc3d.__version__
             revision_str = cc3d.__revision__
+            commit_label = cc3d.get_sha_label()
         except ImportError:
             pass
 
-        about_text = "<h2>CompuCell3D</h2> Version: " + version_str + " Revision: " + revision_str + "<br />\
-                          Copyright &copy; Biocomplexity Institute, <br />\
+        about_text = "<h2>CompuCell3D</h2> Version: " + version_str + " Revision: " + revision_str + "" \
+                         "<br /> Commit Tag: " + commit_label + "<br />" \
+                          "Copyright &copy; Biocomplexity Institute, <br />\
                           Indiana University, Bloomington, IN\
                           <p><b>CompuCell Player</b> is a visualization engine for CompuCell.</p>"
         more_info_text = "More information " \

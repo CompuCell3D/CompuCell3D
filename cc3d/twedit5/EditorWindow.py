@@ -135,7 +135,7 @@ from cc3d.twedit5.QsciScintillaCustom import QsciScintillaCustom
 from cc3d.twedit5.PrinterTwedit import PrinterTwedit
 from cc3d.twedit5.KeyboardShortcutsDlg import KeyboardShortcutsDlg
 from cc3d.twedit5.DataSocketCommunicators import FileNameReceiver
-from cc3d.twedit5 import Encoding, __version__, __revision__
+from cc3d.twedit5 import Encoding, __version__, __revision__, __commit_tag__
 from cc3d.twedit5.twedit.utils.collection_utils import remove_duplicates
 # from codecs import BOM_UTF8, BOM_UTF16, BOM_UTF32
 from cc3d.twedit5.PluginManager.PluginManager import PluginManager
@@ -4326,7 +4326,7 @@ class EditorWindow(QMainWindow):
 
             for i in range(panel.count()):
 
-                if _flag:
+                if flag:
 
                     panel.widget(i).setAutoCompletionThreshold(_value)
 
@@ -4427,7 +4427,7 @@ class EditorWindow(QMainWindow):
 
         fileNames = QtGui.QFileDialog.getOpenFileNames(self, "Open new file...", dirName, self.fileDialogFilters)
 
-        self.addItemtoConfigurationStringList(self.configuration, "RecentDirectories", dirName)
+        self.add_item_to_configuration_string_list(self.configuration, "RecentDirectories", dirName)
 
         if fileNames.count():
             # extract path name and add it to settings
@@ -4436,7 +4436,7 @@ class EditorWindow(QMainWindow):
 
             dirName = os.path.abspath(os.path.dirname(str(sampleFileName)))
 
-            self.addItemtoConfigurationStringList(self.configuration, "RecentDirectories", dirName)
+            self.add_item_to_configuration_string_list(self.configuration, "RecentDirectories", dirName)
 
             self.loadFiles(fileNames)
 
@@ -4493,7 +4493,7 @@ class EditorWindow(QMainWindow):
 
             dirName = os.path.abspath(os.path.dirname(str(sampleFileName)))
 
-            self.addItemtoConfigurationStringList(self.configuration, "RecentDirectories", dirName)
+            self.add_item_to_configuration_string_list(self.configuration, "RecentDirectories", dirName)
 
             self.loadFiles(file_names)
 
@@ -5168,8 +5168,8 @@ class EditorWindow(QMainWindow):
 
                                     "Copyright: Maciej Swat, <b>Swat International Productions, Inc.</b><br><br>"
 
-                                    "Version {version}  rev. {revision}".format(version=__version__,
-                                                                                revision=__revision__)
+                                    "Version {version}  rev. {revision} \n Commit tag: {commit_tag}".format(
+                                        version=__version__, revision=__revision__, commit_tag=__commit_tag__)
 
                                     )
 
@@ -5200,7 +5200,7 @@ class EditorWindow(QMainWindow):
 
         recentItems = _settingObj.setting(_settingName)
 
-        print('_settingName=', _settingName)
+        print('setting_name=', _settingName)
 
         print('recentItems=', recentItems)
 
@@ -6567,7 +6567,7 @@ class EditorWindow(QMainWindow):
         # "normalizing" file name to make sure \ and / are used in a consistent manner
         fileName = os.path.abspath(fileName)
 
-        self.addItemtoConfigurationStringList(self.configuration, "RecentDocuments", fileName)
+        self.add_item_to_configuration_string_list(self.configuration, "RecentDocuments", fileName)
 
         # fileName = string.rstrip(fileName)  # remove extra trailing spaces - just in case
         fileName = fileName.rstrip()  # remove extra trailing spaces - just in case
@@ -6918,15 +6918,23 @@ class EditorWindow(QMainWindow):
 
         return guessed_encoding
 
-    def addItemtoConfigurationStringList(self, _settingObj, _settingName, _itemName, _maxItems=8):
+    def add_item_to_configuration_string_list(self, setting_obj, setting_name, item_name, max_items=8):
+        """
+        Adds item (usually a path) to appropriate setting
+        :param setting_obj:
+        :param setting_name:
+        :param item_name:
+        :param max_items:
+        :return:
+        """
 
-        string_list = _settingObj.setting(_settingName)
+        string_list = setting_obj.setting(setting_name)
 
-        number_of_items_to_remove = max(0, len(string_list) - _maxItems + 1)  # ideally this should be 1 or 0
+        number_of_items_to_remove = max(0, len(string_list) - max_items + 1)  # ideally this should be 1 or 0
 
         len_before = len(string_list)
 
-        string_list = [item for item in string_list if item != _itemName]
+        string_list = [item for item in string_list if item != item_name]
 
         len_after = len(string_list)
 
@@ -6937,11 +6945,28 @@ class EditorWindow(QMainWindow):
             for i in range(number_of_items_to_remove):
                 string_list = string_list[:-1]
 
-        string_list.insert(0, _itemName)
+        string_list.insert(0, item_name)
 
         string_list = remove_duplicates(string_list)
 
-        _settingObj.setSetting(_settingName, string_list)
+        setting_obj.setSetting(setting_name, string_list)
+
+    def remove_item_from_configuration_string_list(self, setting_obj, setting_name, item_name):
+        """
+        Removes an item (usually a path) from appropriate setting
+        :param setting_obj:
+        :param setting_name:
+        :param item_name:
+        :return:
+        """
+
+        string_list = setting_obj.setting(setting_name)
+
+        string_list = [item for item in string_list if item != item_name]
+
+        string_list = remove_duplicates(string_list)
+
+        setting_obj.setSetting(setting_name, string_list)
 
     def handleNewFocusEditor(self, _editor):
 

@@ -16,6 +16,7 @@ making Python scripting in CC3D more convenient."""
 """
 Module used to link Twedit++5 with CompuCell3D.
 """
+from cc3d.twedit5.Plugins.TweditPluginBase import TweditPluginBase
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 import os
@@ -30,7 +31,7 @@ import xml
 error = ''
 
 
-class CC3DMLHelper(QObject):
+class CC3DMLHelper(QObject,TweditPluginBase):
     """
 
     Class implementing the About plugin.
@@ -47,6 +48,7 @@ class CC3DMLHelper(QObject):
         """
 
         QObject.__init__(self, ui)
+        TweditPluginBase.__init__()
 
         self.__ui = ui
 
