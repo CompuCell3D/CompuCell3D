@@ -184,7 +184,7 @@ class PluginManager(QObject):
         for pluginName, plugin in self.__activePlugins.items():
             try:
                 function = getattr(plugin, function_name)
-                function(argument_dict)
+                function(**argument_dict)
             except (TypeError, AttributeError) as e:
                 print('PLUGIN: ', pluginName, ' COULD NOT APPLY ', function_name, ' with arguments=', argument_dict)
                 print(e)

@@ -29,6 +29,7 @@ from copy import deepcopy
 from distutils.file_util import write_file
 from distutils.dir_util import mkpath
 from cc3d.twedit5.Plugins.CC3DProject.NewSimulationWizard import NewSimulationWizard
+from cc3d.twedit5.Plugins.TweditPluginBase import TweditPluginBase
 from cc3d.twedit5.Plugins.CC3DProject.SerializerEdit import SerializerEdit
 from cc3d.twedit5.Plugins.CC3DProject.SteppableGeneratorDialog import SteppableGeneratorDialog
 from cc3d.core.CC3DSimulationDataHandler import CC3DSimulationDataHandler
@@ -668,7 +669,7 @@ class CustomDockWidget(QDockWidget):
         ev.ignore()
 
 
-class CC3DProject(QObject):
+class CC3DProject(QObject, TweditPluginBase):
     """
 
     Class implementing the About plugin.
@@ -688,6 +689,7 @@ class CC3DProject(QObject):
         """
 
         QObject.__init__(self, ui)
+        TweditPluginBase.__init__(self)
 
         self.__ui = ui
 
@@ -789,7 +791,7 @@ class CC3DProject(QObject):
 
         return None, True
 
-    def post_activate(self, kwds):
+    def post_activate(self, **kwds):
         """
         Post activation function used to add actions to different menus to make certain actions more visible
         e.g. Add Steppable ... action
