@@ -14,9 +14,21 @@ def check_nanohub_and_count():
         # files under binDir
         bin_dir = environ.get('NANOHUB_SIM')
         if bin_dir is not None:
+            try:
+                runDir = environ.get('SESSIONDIR')
+            except:
+                runDir = join(os.sep, 'tmp')
             count_sh = join(bin_dir, r'cc3d_count.sh')
             try:
-                subprocess.call(['submit', '--local', count_sh])
+                countp = subprocess.run(['submit', '--local', count_sh],
+                                        cwd=runDir,
+                                        universal_newlines=True,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
+                if countp.returncode != 0:
+                    print(countp.stdout)
+                    print(countp.stderr)
+                    print(countp.returncode)
                 return
             except:
                 print(f"Couldn't call {count_sh}! Is the file there?\nProceeding.")
