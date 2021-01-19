@@ -323,10 +323,10 @@ double FocalPointPlasticityPlugin::customLinkConstituentLaw(float _lambda, float
 
 }
 
-double FocalPointPlasticityPlugin::diffEnergyLocal(float _deltaL, float _lBefore, const FocalPointPlasticityTrackerData * _plasticityTrackerData, const CellG *_cell, bool _useCluster) {
+double FocalPointPlasticityPlugin::diffEnergyLocal(float _deltaL, float _lBefore, const FocalPointPlasticityTrackerData & _plasticityTrackerData, const CellG *_cell, bool _useCluster) {
 
-	float lambdaLocal = _plasticityTrackerData->lambdaDistance;
-	float targetDistanceLocal = _plasticityTrackerData->targetDistance;
+	float lambdaLocal = _plasticityTrackerData.lambdaDistance;
+	float targetDistanceLocal = _plasticityTrackerData.targetDistance;
 
 	if (_cell->volume>1) {
 
@@ -338,16 +338,16 @@ double FocalPointPlasticityPlugin::diffEnergyLocal(float _deltaL, float _lBefore
 
 }
 
-double FocalPointPlasticityPlugin::diffEnergyByType(float _deltaL, float _lBefore, const FocalPointPlasticityTrackerData * _plasticityTrackerData, const CellG *_cell, bool _useCluster) {
+double FocalPointPlasticityPlugin::diffEnergyByType(float _deltaL, float _lBefore, const FocalPointPlasticityTrackerData & _plasticityTrackerData, const CellG *_cell, bool _useCluster) {
 	float lambdaDistanceLocal;
 	float targetDistanceLocal;
 	if (_useCluster) {
-		lambdaDistanceLocal = internalPlastParamsArray[_plasticityTrackerData->neighborAddress->type][_cell->type].lambdaDistance;
-		targetDistanceLocal = internalPlastParamsArray[_plasticityTrackerData->neighborAddress->type][_cell->type].targetDistance;
+		lambdaDistanceLocal = internalPlastParamsArray[_plasticityTrackerData.neighborAddress->type][_cell->type].lambdaDistance;
+		targetDistanceLocal = internalPlastParamsArray[_plasticityTrackerData.neighborAddress->type][_cell->type].targetDistance;
 	}
 	else {
-		lambdaDistanceLocal = plastParamsArray[_plasticityTrackerData->neighborAddress->type][_cell->type].lambdaDistance;
-		targetDistanceLocal = plastParamsArray[_plasticityTrackerData->neighborAddress->type][_cell->type].targetDistance;
+		lambdaDistanceLocal = plastParamsArray[_plasticityTrackerData.neighborAddress->type][_cell->type].lambdaDistance;
+		targetDistanceLocal = plastParamsArray[_plasticityTrackerData.neighborAddress->type][_cell->type].targetDistance;
 	}
 
 	if (_cell->volume>1) {
@@ -700,7 +700,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 					distInvariantCM(centMassOldAfter.X(), centMassOldAfter.Y(), centMassOldAfter.Z(), centMassNewAfter.X(), centMassNewAfter.Y(), centMassNewAfter.Z(), fieldDim, boundaryStrategy)
 					- lBefore;
 			}
-			energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(const_cast<CellG*>(oldCell)), oldCell, false);
+			energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, link->getFPPTrackerData(const_cast<CellG*>(oldCell)), oldCell, false);
 		}
 
 		//go over compartments
@@ -720,7 +720,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 					distInvariantCM(centMassOldAfter.X(), centMassOldAfter.Y(), centMassOldAfter.Z(), centMassNewAfter.X(), centMassNewAfter.Y(), centMassNewAfter.Z(), fieldDim, boundaryStrategy)
 					- lBefore;
 			}
-			double clusterOldCellEnergy = (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(const_cast<CellG*>(oldCell)), oldCell, true);
+			double clusterOldCellEnergy = (this->*diffEnergyFcnPtr)(deltaL, lBefore, link->getFPPTrackerData(const_cast<CellG*>(oldCell)), oldCell, true);
 			energy += clusterOldCellEnergy;
 		}
 
@@ -731,7 +731,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 			deltaL =
 				distInvariantCM(centMassOldAfter.X(), centMassOldAfter.Y(), centMassOldAfter.Z(), anchorPoint[0], anchorPoint[1], anchorPoint[2], fieldDim, boundaryStrategy)
 				- lBefore;
-			energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(const_cast<CellG*>(oldCell)), oldCell, false);
+			energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, link->getFPPTrackerData(const_cast<CellG*>(oldCell)), oldCell, false);
 		}
 
 	}
@@ -748,7 +748,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 					distInvariantCM(centMassNewAfter.X(), centMassNewAfter.Y(), centMassNewAfter.Z(), nCell->xCM / nCellVol, nCell->yCM / nCellVol, nCell->zCM / nCellVol, fieldDim, boundaryStrategy)
 					- lBefore;
 
-				double newDeltaEnergy = (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(const_cast<CellG*>(newCell)), newCell, false);
+				double newDeltaEnergy = (this->*diffEnergyFcnPtr)(deltaL, lBefore, link->getFPPTrackerData(const_cast<CellG*>(newCell)), newCell, false);
 				energy += newDeltaEnergy;
 
 			}
@@ -767,7 +767,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 				deltaL =
 					distInvariantCM(centMassNewAfter.X(), centMassNewAfter.Y(), centMassNewAfter.Z(), nCell->xCM / nCellVol, nCell->yCM / nCellVol, nCell->zCM / nCellVol, fieldDim, boundaryStrategy)
 					- lBefore;
-				energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(const_cast<CellG*>(newCell)), newCell, true);
+				energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, link->getFPPTrackerData(const_cast<CellG*>(newCell)), newCell, true);
 			}
 			else {
 				// this was already taken into account in the oldCell secion - we need to avoid double counting
@@ -781,7 +781,7 @@ double FocalPointPlasticityPlugin::changeEnergy(const Point3D &pt, const CellG *
 			deltaL =
 				distInvariantCM(centMassNewAfter.X(), centMassNewAfter.Y(), centMassNewAfter.Z(), anchorPoint[0], anchorPoint[1], anchorPoint[2], fieldDim, boundaryStrategy)
 				- lBefore;
-			energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, &link->getFPPTrackerData(const_cast<CellG*>(newCell)), newCell, false);
+			energy += (this->*diffEnergyFcnPtr)(deltaL, lBefore, link->getFPPTrackerData(const_cast<CellG*>(newCell)), newCell, false);
 		}
 
 	}

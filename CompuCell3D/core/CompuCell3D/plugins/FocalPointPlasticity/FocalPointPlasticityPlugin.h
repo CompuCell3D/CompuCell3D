@@ -87,7 +87,7 @@ namespace CompuCell3D {
 
         FunctionType functionType;
 
-        typedef double (FocalPointPlasticityPlugin::*diffEnergyFcnPtr_t)(float _deltaL, float _lBefore, const FocalPointPlasticityTrackerData * _plasticityTrackerData, const CellG *_cell, bool _useCluster);
+        typedef double (FocalPointPlasticityPlugin::*diffEnergyFcnPtr_t)(float _deltaL, float _lBefore, const FocalPointPlasticityTrackerData & _plasticityTrackerData, const CellG *_cell, bool _useCluster);
         diffEnergyFcnPtr_t diffEnergyFcnPtr;
 
 
@@ -100,8 +100,8 @@ namespace CompuCell3D {
         double elasticLinkConstituentLaw(float _lambda, float _length, float _targetLength);
         double customLinkConstituentLaw(float _lambda, float _length, float _targetLength);
 
-        double diffEnergyLocal(float _deltaL, float _lBefore, const FocalPointPlasticityTrackerData * _plasticityTrackerData, const CellG *_cell, bool _useCluster = false);        
-        double diffEnergyByType(float _deltaL, float _lBefore, const FocalPointPlasticityTrackerData * _plasticityTrackerData, const CellG *_cell, bool _useCluster = false);
+        double diffEnergyLocal(float _deltaL, float _lBefore, const FocalPointPlasticityTrackerData & _plasticityTrackerData, const CellG *_cell, bool _useCluster = false);        
+        double diffEnergyByType(float _deltaL, float _lBefore, const FocalPointPlasticityTrackerData & _plasticityTrackerData, const CellG *_cell, bool _useCluster = false);
 
         double tryAddingNewJunction(const Point3D &pt, const CellG *newCell);
         double tryAddingNewJunctionWithinCluster(const Point3D &pt, const CellG *newCell);
