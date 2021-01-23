@@ -3,7 +3,7 @@ Release Notes
 
 Version 4.2.4
 -------------
-**2021-01-18**
+**2021-01-23**
 
 New features:
 
