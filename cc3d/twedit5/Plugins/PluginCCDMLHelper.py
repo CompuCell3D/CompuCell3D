@@ -48,7 +48,7 @@ class CC3DMLHelper(QObject,TweditPluginBase):
         """
 
         QObject.__init__(self, ui)
-        TweditPluginBase.__init__()
+        TweditPluginBase.__init__(self)
 
         self.__ui = ui
 
