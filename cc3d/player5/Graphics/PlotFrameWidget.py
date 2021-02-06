@@ -8,6 +8,7 @@ except ImportError:
 import sys
 from PyQt5 import QtCore, QtGui, QtOpenGL
 import pyqtgraph as pg
+from pyqtgraph.graphicsItems.PlotItem import PlotItem
 
 
 class PlotFrameWidget(QtGui.QFrame):
@@ -20,6 +21,13 @@ class PlotFrameWidget(QtGui.QFrame):
         # self.plotWidget=CartesianPlot()
         # self.plotWidget = pg.PlotWidget(background='w')
         self.plotWidget = pg.PlotWidget()
+
+        self.tweak_context_menu(plot_item=self.plotWidget.plotItem)
+
+        # self.plotWidget.plotItem.ctrl.fftCheck.setEnabled(False)
+        # self.plotWidget.plotItem.setMenuEnabled(False)
+
+        print
 
         try:
             bg_color = kwds['background']
@@ -61,6 +69,39 @@ class PlotFrameWidget(QtGui.QFrame):
         self.setLayout(layout)
         # self.resize(600, 600)
         self.setMinimumSize(100, 100)  # needs to be defined to resize smaller than 400x400
+
+    def tweak_context_menu(self, plot_item:PlotItem):
+        """
+        We are turning off some options for plot's context menus if they are known to cause troubles
+        Because we are dealing with various pyqtgraph versions the code will need to consider this
+        context menu actions are defined in and are accessible via pyqtgrtaph.graphicsItems.PlotItem.PlotItem
+        if you look in the constructor of the PlotItem you will fine lines like:
+        c.fftCheck.toggled.connect(self.updateSpectrumMode)
+        replace c with
+        plot_item.ctrl and then you can turn off actions as you see fit
+
+        :param plot_item:
+        :return:
+        """
+        pg_version_list = pg.__version__.split('.')
+        major_ver = int(pg_version_list[0])
+        minor_ver = int(pg_version_list[1])
+        subminor_ver = int(pg_version_list[2])
+
+        plot_item.ctrl.fftCheck.setEnabled(False)
+
+        if major_ver <= 0 and minor_ver < 11:
+            plot_item.ctrl.fftCheck.setEnabled(False)
+            plot_item.ctrl.logXCheck.setEnabled(False)
+            plot_item.ctrl.logYCheck.setEnabled(False)
+            plot_item.ctrl.downsampleCheck.setEnabled(False)
+
+        # c.downsampleSpin.valueChanged.connect(self.updateDownsampling)
+        # c.downsampleCheck.toggled.connect(self.updateDownsampling)
+        # c.autoDownsampleCheck.toggled.connect(self.updateDownsampling)
+        # c.subsampleRadio.toggled.connect(self.updateDownsampling)
+
+
 
 
     def resizePlot(self, x, y):
