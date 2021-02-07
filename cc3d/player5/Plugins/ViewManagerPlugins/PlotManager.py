@@ -88,7 +88,7 @@ class PlotManager(QtCore.QObject, PlotManagerBase):
 
         self.newPlotWindowSignal.emit(self.plotWindowMutex, obj)
         # processRequestForNewPlotWindow will be called and it will
-        # unlock drawMutex but before it will finish runnning
+        # unlock drawMutex but before it will finish running
         # (i.e. before the new window is actually added)we must make sure that getNewPlotwindow does not return
         self.plotWindowMutex.lock()
         self.plotWindowMutex.unlock()
