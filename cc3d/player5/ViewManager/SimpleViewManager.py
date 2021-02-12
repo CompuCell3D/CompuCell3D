@@ -453,6 +453,11 @@ class SimpleViewManager(QObject):
         :return:None
         """
 
+        from os import environ
+        # checking if cc3d is running in nanohub. if it is do not check for updates (it'll be blocked by their firewall)
+        if 'NANOHUB_SIM' in environ:
+            return
+
         # here we decide whether the information about no new updates is displayed or not. For automatic update checks
         # this information should not be displayed. For manual update checks we need to inform the user
         # that there are no updates
