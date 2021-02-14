@@ -143,6 +143,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.__fieldType = ("Cell_Field", FIELD_TYPES[0])
 
+        self.__step = 0
+
         self.output_step_max_items = 3
         self.step_output_list = []
 
@@ -213,6 +215,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # Here we are checking for new version - notice we use check interval in order not to perform version checks
         # too often. Default check interval is 7 days
         self.check_version(check_interval=7)
+
+    @property
+    def current_step(self) -> int:
+        """
+        returns current mcs
+        :return:
+        """
+        return self.__step
 
     def update_recent_file_menu(self) -> None:
         """
@@ -1998,7 +2008,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # for some reason cameras have to be initialized after drawing resized lattice
             # and draw function has to be repeated
             self.updateVisualization()
-
+        self.basicSimulationData.current_step = self.current_step
         __drawFieldFcn()
 
     def displayWarning(self, warning_text):

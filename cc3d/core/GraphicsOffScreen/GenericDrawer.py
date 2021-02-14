@@ -32,6 +32,7 @@ from .MVCDrawView2D import MVCDrawView2D
 from .MVCDrawModel2D import MVCDrawModel2D
 from .MVCDrawView3D import MVCDrawView3D
 from .MVCDrawModel3D import MVCDrawModel3D
+from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
 from .Specs import ActorSpecs
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
 from .DrawingParameters import DrawingParameters
@@ -73,6 +74,10 @@ class GenericDrawer:
         }
         self.screenshotWindowFlag = False
         self.lattice_type = Configuration.LATTICE_TYPES['Square']
+
+        self.current_step = None
+        self.cell_field_data_dict = None
+        self.cell_shell_optimization = None
 
     def set_pixelized_cartesian_scene(self, flag: bool) -> None:
         """
@@ -133,7 +138,7 @@ class GenericDrawer:
         self.draw_view_2D.remove_all_actors_from_renderer()
         self.draw_view_3D.remove_all_actors_from_renderer()
 
-    def extract_cell_field_data(self):
+    def extract_cell_field_data(self, cell_shell_optimization=False):
         """
         Extracts basic information about cell field
         :return:
@@ -146,7 +151,8 @@ class GenericDrawer:
         cell_id.SetName("cellid")
         cell_id_int_addr = extract_address_int_from_vtk_object(cell_id)
 
-        used_cell_types_list = self.field_extractor.fillCellFieldData3D(cell_type_array_int_addr, cell_id_int_addr)
+        used_cell_types_list = self.field_extractor.fillCellFieldData3D(cell_type_array_int_addr, cell_id_int_addr,
+                                                                        cell_shell_optimization)
 
         ret_val = {
             'cell_type_array': cell_type_array,
@@ -307,7 +313,7 @@ class GenericDrawer:
         else:
             return self.draw_model_3D, self.draw_view_3D
 
-    def draw(self, screenshot_data, bsd, screenshot_name=None):
+    def draw(self, screenshot_data: ScreenshotData, bsd, screenshot_name=None):
         """
 
         :param screenshot_data:
@@ -315,9 +321,6 @@ class GenericDrawer:
         :param screenshot_name:
         :return:
         """
-
-        cell_field_data_dict = self.extract_cell_field_data()
-        bsd.cell_types_used = deepcopy(cell_field_data_dict['used_cell_types'])
 
         drawing_params = DrawingParameters()
         drawing_params.screenshot_data = screenshot_data
@@ -330,8 +333,30 @@ class GenericDrawer:
         drawing_params.fieldType = screenshot_data.plotData[1]
 
         model, view = self.get_model_view(drawing_params=drawing_params)
-        # passes information about cell lattice
-        model.set_cell_field_data(cell_field_data_dict=cell_field_data_dict)
+
+        if self.current_step is None:
+            self.current_step = bsd.current_step
+
+        current_cell_shell_optimization = screenshot_data.cell_borders_on
+        if self.cell_shell_optimization is None:
+            self.cell_shell_optimization = current_cell_shell_optimization
+
+        if (self.current_step != bsd.current_step
+                or self.cell_field_data_dict is None
+                or current_cell_shell_optimization != self.cell_shell_optimization):
+            self.cell_shell_optimization = current_cell_shell_optimization
+
+            self.cell_field_data_dict = self.extract_cell_field_data(
+                cell_shell_optimization=self.cell_shell_optimization)
+
+            self.current_step = bsd.current_step
+
+            bsd.cell_types_used = deepcopy(self.cell_field_data_dict['used_cell_types'])
+
+            drawing_params.bsd = bsd
+
+            # passes information about cell lattice
+        model.set_cell_field_data(cell_field_data_dict=self.cell_field_data_dict)
 
         model.setDrawingParametersObject(drawing_params)
 
@@ -438,6 +463,7 @@ class GenericDrawerCC3DPy(GenericDrawer):
     """
     Subclass with necessary hooks for Python API
     """
+
     def __init__(self, parent=None, originating_widget=None):
         super().__init__()
 
