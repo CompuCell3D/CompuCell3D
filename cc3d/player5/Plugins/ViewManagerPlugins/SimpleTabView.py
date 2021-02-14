@@ -1907,7 +1907,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.__pauseSim()
         self.simulation.drawMutex.lock()
 
-        self.__step = self.simulation.getCurrentStep()
+        start_completed_no_mcs = False
+        if self.__step < 0:
+            start_completed_no_mcs = True
+        else:
+            self.__step = self.simulation.getCurrentStep()
 
         if self.mysim:
 
@@ -1920,7 +1924,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 graphics_frame.draw(self.basicSimulationData)
 
                 # show MCS in lower-left GUI
-                self.__updateStatusBar(self.__step)
+                if start_completed_no_mcs:
+                    self.__updateStatusBar('start')
+                else:
+                    self.__updateStatusBar(self.__step)
 
         self.simulation.drawMutex.unlock()
 
@@ -2019,14 +2026,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         self.warnings.setText(warning_text)
 
-    def __updateStatusBar(self, step):
-        '''
+    def __updateStatusBar(self, step: Union[int, str]) -> None:
+        """
         Updates status bar
-        :param step: int - current MCS
+        :param step:  - current MCS
         :return:
-        '''
-        self.mcSteps.setText("MC Step: %s" % step)
-        # self.conSteps.setText("Min: %s Max: %s" % conMinMax)
+        """
+        self.mcSteps.setText(f"MC Step: {step}")
 
     def __pauseSim(self):
         '''
