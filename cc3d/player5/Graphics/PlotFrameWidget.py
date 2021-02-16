@@ -8,6 +8,7 @@ except ImportError:
 import sys
 from PyQt5 import QtCore, QtGui, QtOpenGL
 import pyqtgraph as pg
+from pyqtgraph.graphicsItems.PlotItem import PlotItem
 
 
 class PlotFrameWidget(QtGui.QFrame):
@@ -15,11 +16,9 @@ class PlotFrameWidget(QtGui.QFrame):
         QtGui.QFrame.__init__(self, parent)
 
         self.plot_params = kwds
-        print('kwds=', kwds)
-
-        # self.plotWidget=CartesianPlot()
-        # self.plotWidget = pg.PlotWidget(background='w')
         self.plotWidget = pg.PlotWidget()
+
+        self.tweak_context_menu(plot_item=self.plotWidget.plotItem)
 
         try:
             bg_color = kwds['background']
@@ -33,8 +32,6 @@ class PlotFrameWidget(QtGui.QFrame):
             except ValueError as e:
                 print('Could not decode the color %s : Exception : %s'%(bg_color, str(e)), file=sys.stderr)
 
-
-        # self.plotWidget = pg.GraphicsView()
         self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding))
 
         self.plotInterface = None
@@ -43,7 +40,6 @@ class PlotFrameWidget(QtGui.QFrame):
         layout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
         layout.addWidget(self.plotWidget)
 
-        # self.setWindowTitle(kwds['title']) # setting title bar on the window
         self.plotWidget.setTitle(kwds['title'])
         self.plotWidget.setLabel(axis='bottom', text=kwds['xAxisTitle'])
         self.plotWidget.setLabel(axis='left', text=kwds['yAxisTitle'])
@@ -59,19 +55,40 @@ class PlotFrameWidget(QtGui.QFrame):
             self.plotWidget.showGrid(x=True, y=True, alpha=1.0)
 
         self.setLayout(layout)
-        # self.resize(600, 600)
-        self.setMinimumSize(100, 100)  # needs to be defined to resize smaller than 400x400
+        # needs to be defined to resize smaller than 400x400
+        self.setMinimumSize(100, 100)
 
+    @staticmethod
+    def tweak_context_menu(plot_item: PlotItem):
+        """
+        We are turning off some options for plot's context menus if they are known to cause troubles
+        Because we are dealing with various pyqtgraph versions the code will need to consider this
+        context menu actions are defined in and are accessible via pyqtgrtaph.graphicsItems.PlotItem.PlotItem
+        if you look in the constructor of the PlotItem you will fine lines like:
+        c.fftCheck.toggled.connect(self.updateSpectrumMode)
+        replace c with
+        plot_item.ctrl and then you can turn off actions as you see fit
+
+        :param plot_item:
+        :return:
+        """
+        pg_version_list = pg.__version__.split('.')
+        major_ver = int(pg_version_list[0])
+        minor_ver = int(pg_version_list[1])
+        subminor_ver = int(pg_version_list[2])
+
+        plot_item.ctrl.fftCheck.setEnabled(False)
+
+        if major_ver <= 0 and minor_ver < 11:
+            plot_item.ctrl.fftCheck.setEnabled(False)
+            plot_item.ctrl.logXCheck.setEnabled(False)
+            plot_item.ctrl.logYCheck.setEnabled(False)
+            plot_item.ctrl.downsampleCheck.setEnabled(False)
 
     def resizePlot(self, x, y):
         self.plotWidget.sizeHint = QtCore.QSize(x, y)
         self.plotWidget.resize(self.plotWidget.sizeHint)
         self.resize(self.plotWidget.sizeHint)
-
-
-    # # note that if you close widget using X button this slot is not called
-    # # we need to reimplement closeEvent
-    # # def close(self):
 
     def getPlotParams(self):
         """
@@ -82,5 +99,3 @@ class PlotFrameWidget(QtGui.QFrame):
 
     def closeEvent(self, ev):
         pass
-        # self.parentWidget.closeActiveSubWindowSlot()
-
