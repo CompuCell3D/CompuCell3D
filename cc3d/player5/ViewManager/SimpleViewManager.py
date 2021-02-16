@@ -8,6 +8,7 @@ from cc3d.player5 import DefaultData
 import cc3d
 import datetime
 from cc3d.player5.Utilities.WebFetcher import WebFetcher
+from os import environ
 
 try:
     from cc3d.player5.Utilities.WebFetcherRequests import WebFetcherRequests
@@ -453,7 +454,7 @@ class SimpleViewManager(QObject):
         :return:None
         """
 
-        from os import environ
+        
         # checking if cc3d is running in nanohub. if it is do not check for updates (it'll be blocked by their firewall)
         if 'NANOHUB_SIM' in environ:
             return
