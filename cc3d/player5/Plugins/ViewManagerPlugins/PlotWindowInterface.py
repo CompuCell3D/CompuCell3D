@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import weakref
 from PyQt5 import QtCore
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import numpy as np
 from collections import OrderedDict
@@ -17,11 +15,6 @@ except ImportError:
     warnings.warn('Could not find webcolors. Run "pip install webcolors" to fix this', RuntimeWarning)
 
 import pyqtgraph as pg
-# pg.setConfigOption('background', 'w')
-import pyqtgraph.exporters
-
-from . import PlotManagerSetup
-import os
 from cc3d.core.enums import *
 
 MODULENAME = '---- PlotManager.py: '
@@ -100,15 +93,10 @@ class PlotWindowInterface(QtCore.QObject):
         self.addPlotSignal.connect(self.add_plot_handler)
 
     def clear(self):
-        # self.pW.clear()
         self.pW.detachItems()
 
     def replot(self):
         self.pW.replot()
-
-    # @deprecated(version='4.0.0', reason="You should use : set_title_handler")
-    # def setTitleHandler(self, _title):
-    #     return self.set_title_handler(title=_title)
 
     def set_title_handler(self, title):
         self.title = str(title)
@@ -121,7 +109,6 @@ class PlotWindowInterface(QtCore.QObject):
     def set_title(self, title):
         self.title = str(title)
         self.setTitleSignal.emit(title)
-        # self.pW.setTitle(_title)
 
     @deprecated(version='4.0.0', reason="You should use : set_title_size")
     def setTitleSize(self, _size):
@@ -144,17 +131,10 @@ class PlotWindowInterface(QtCore.QObject):
 
     def set_plot_background_color_handler(self, color_name):
         print('_colorName=', color_name)
-        # self.pW.setCanvasBackground(QColor(_colorName))
-
-    # @deprecated(version='4.0.0', reason="You should use : set_plot_background_color")
-    # def setPlotBackgroundColor(self, _colorName):
-    #     return self.set_plot_background_color(color_name=_colorName)
 
     def set_plot_background_color(self, color_name):
         self.setPlotBackgroundColorSignal.emit(color_name)
         self.pW.getViewBox().setBackgroundColor((255, 255, 255, 255))
-
-        # self.pW.setCanvasBackground(QColor(_colorName))
 
     @deprecated(version='4.0.0', reason="You should use : set_data_default")
     def setDataDefault(self, plot_obj, x, y):
@@ -192,10 +172,6 @@ class PlotWindowInterface(QtCore.QObject):
         self.plotWindowInterfaceMutex.lock()
         self.plotWindowInterfaceMutex.unlock()
 
-    # @deprecated(version='4.0.0', reason="You should use : add_plot_handler")
-    # def addPlotHandler(self, plot_param_dict):
-    #     return self.add_plot_handler(plot_param_dict=plot_param_dict)
-
     def add_plot_handler(self, plot_param_dict):
 
         plot_name = plot_param_dict['_plotName']
@@ -222,9 +198,36 @@ class PlotWindowInterface(QtCore.QObject):
 
         yd, xd = np.array([], dtype=np.float), np.array([], dtype=np.float)
 
+        color = wc.name_to_rgb(color) + (alpha,)
+        plot_obj, set_data_fcn = self.construct_plot_item(xd=xd, yd=yd, color=color, size=size, plot_name=plot_name,
+                                                          style=style)
+
+        self.plotData[plot_name] = [xd, yd, False, XYPLOT, False]
+        self.plotDrawingObjects[plot_name] = {'curve': plot_obj,
+                                              'LineWidth': size,
+                                              'LineColor': color,
+                                              'Style': style,
+                                              'SetData': set_data_fcn,
+                                              'separate_y_axis': separate_y_axis}
+
+        self.add_plot_item_to_the_scene(plot_obj=plot_obj, plot_name=plot_name, axis_color=color,
+                                        separate_y_axis=separate_y_axis)
+
+        self.plotWindowInterfaceMutex.unlock()
+
+    def construct_plot_item(self, xd: Iterable, yd: Iterable, color: Iterable, size: int, plot_name: str, style: str):
+        """
+        Constructs plot item
+        :param xd: x coordinates of data series to plot
+        :param yd: y coordinates of data series to plot
+        :param color: tuple - with RGBA point color specification
+        :param size: size of the marker
+        :param plot_name: data series label
+        :param style: style of the plot
+        :return: (tuple ) plot item , set_data_fcn
+        """
         set_data_fcn = self.set_data_default
 
-        color = wc.name_to_rgb(color) + (alpha,)
         if style.lower() == 'dots':
 
             plot_obj = pg.ScatterPlotItem(y=yd, x=xd, pen=color, size=size, name=plot_name)
@@ -247,18 +250,7 @@ class PlotWindowInterface(QtCore.QObject):
             # dots is the default
             plot_obj = pg.ScatterPlotItem(y=yd, x=xd, pen=color, size=size, name=plot_name)
 
-        self.plotData[plot_name] = [xd, yd, False, XYPLOT, False]
-        self.plotDrawingObjects[plot_name] = {'curve': plot_obj,
-                                              'LineWidth': size,
-                                              'LineColor': color,
-                                              'Style': style,
-                                              'SetData': set_data_fcn,
-                                              'separate_y_axis': separate_y_axis}
-
-        self.add_plot_item_to_the_scene(plot_obj=plot_obj, plot_name=plot_name, axis_color=color,
-                                        separate_y_axis=separate_y_axis)
-
-        self.plotWindowInterfaceMutex.unlock()
+        return plot_obj, set_data_fcn
 
     def add_plot_item_to_the_scene(self, plot_obj, plot_name: str, axis_color: Iterable, separate_y_axis: bool):
         """
