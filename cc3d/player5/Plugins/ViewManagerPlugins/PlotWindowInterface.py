@@ -5,6 +5,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import numpy as np
+from collections import OrderedDict
 
 import warnings
 from deprecated import deprecated
@@ -62,10 +63,10 @@ class PlotWindowInterface(QtCore.QObject):
 
         self.plot_params = self.plotWindow.getPlotParams()
 
-        self.plotData = {}
+        self.plotData = OrderedDict()
         self.plot_data = self.plotData
-        self.plotHistData = {}
-        self.plotDrawingObjects = {}
+        self.plotHistData = OrderedDict()
+        self.plotDrawingObjects = OrderedDict()
         self.initSignalsAndSlots()
         self.plotWindowInterfaceMutex = QtCore.QMutex()
         # this is the index of the flag tha is used to signal wheather the data has been modified or not
@@ -82,6 +83,8 @@ class PlotWindowInterface(QtCore.QObject):
 
         self.eraseAllFlag = False
         self.logScaleFlag = False
+
+        self.first_plot_item = None
         try:
             self.title = self.plot_params['title']
         except:
@@ -169,13 +172,16 @@ class PlotWindowInterface(QtCore.QObject):
     def addPlot(self, _plotName, _style="Lines", _color='white', _size=3, _alpha=255):
         return self.add_plot(plot_name=_plotName, style=_style, color=_color, size=_size, alpha=_alpha)
 
-    def add_plot(self, plot_name, style="Lines", color='white', size=3, alpha=255):
+    def add_plot(self, plot_name, style="Lines", color='white', size=3, alpha=255, separate_x_axis=False,
+                 separate_y_axis=False):
         plot_param_dict = {
             '_plotName': plot_name,
             '_style': style,
             '_color': color,
             '_size': size,
-            '_alpha': alpha
+            '_alpha': alpha,
+            'separate_x_axis': separate_x_axis,
+            'separate_y_axis': separate_y_axis
         }
 
         self.plotWindowInterfaceMutex.lock()
@@ -193,6 +199,8 @@ class PlotWindowInterface(QtCore.QObject):
         plot_name = plot_param_dict['_plotName']
         style = plot_param_dict['_style']
         color = plot_param_dict['_color']
+        separate_x_axis = plot_param_dict['separate_x_axis']
+        separate_y_axis = plot_param_dict['separate_y_axis']
 
         background_color = self.pW.backgroundBrush().color()
 
@@ -219,12 +227,22 @@ class PlotWindowInterface(QtCore.QObject):
 
         color = wc.name_to_rgb(color) + (alpha,)
         if style.lower() == 'dots':
-            plot_obj = self.pW.plot(y=yd, x=xd, pen=background_color, symbolBrush=color, symbolSize=size,
-                                   name=plot_name)
+            # plot_obj = self.pW.plot(y=yd, x=xd, pen=background_color, symbolBrush=color, symbolSize=size,
+            #                         name=plot_name)
+
+            plot_obj = pg.PlotCurveItem(y=yd, x=xd, pen=color
+                                    #     pen=background_color, symbolBrush=color, symbolSize=size,
+                                    # name=plot_name
+                                        )
+            plot_obj = pg.ScatterPlotItem(y=yd, x=xd, pen=color, size=size, name=plot_name)
+
+            # self.pW.addItem(plot_obj)
 
         elif style.lower() == 'lines':
             pen = pg.mkPen(color=color, width=size)
-            plot_obj = self.pW.plot(y=yd, x=xd, pen=pen, name=plot_name)
+            plot_obj = pg.PlotCurveItem(y=yd, x=xd, pen=pen, name=plot_name)
+
+            # plot_obj = self.pW.plot(y=yd, x=xd, pen=pen, name=plot_name)
 
         elif style.lower() == 'steps':
             xd, yd = np.array([0, .00001], dtype=np.float), np.array([1], dtype=np.float)
@@ -233,27 +251,101 @@ class PlotWindowInterface(QtCore.QObject):
 
             plot_obj = pg.PlotCurveItem(xd, yd, stepMode=True, fillLevel=0, brush=color, name=plot_name)
 
-            self.pW.addItem(plot_obj)
+            # self.pW.addItem(plot_obj)
             # plt1.addItem(curve)
 
         elif style.lower() == 'bars':
 
             plot_obj = pg.BarGraphItem(x=xd, height=yd, width=size, brush=color, name=plot_name)
             set_data_fcn = self.set_data_bar_graph_item
-            self.pW.addItem(plot_obj)
+            # self.pW.addItem(plot_obj)
 
         else:  # dots is the default
-            plot_obj = self.pW.plot(y=yd, x=xd, pen=background_color, symbolBrush=color, symbolSize=size,
-                                   name=plot_name)
+
+            plot_obj = pg.ScatterPlotItem(y=yd, x=xd, pen=color, size=size, name=plot_name)
+
+            # self.pW.addItem(plot_obj)
+
+            # plot_obj = self.pW.plot(y=yd, x=xd, pen=background_color, symbolBrush=color, symbolSize=size,
+            #                         name=plot_name)
 
         self.plotData[plot_name] = [xd, yd, False, XYPLOT, False]
         self.plotDrawingObjects[plot_name] = {'curve': plot_obj,
                                               'LineWidth': size,
                                               'LineColor': color,
                                               'Style': style,
-                                              'SetData': set_data_fcn}
+                                              'SetData': set_data_fcn,
+                                              'separate_y_axis':separate_y_axis}
+
+        # self.pW.addItem(plot_obj)
+
+        if len(self.plotDrawingObjects) == 1:
+            self.first_plot_item = self.pW.plotItem
+            # self.pW.getViewBox().addItem(plot_obj)
+            self.first_plot_item.vb.sigResized.connect(self.update_views)
+            self.pW.addItem(plot_obj)
+        else:
+            if separate_y_axis:
+                p1 = self.first_plot_item
+                if len(self.plotDrawingObjects) == 2:
+                    # adding another data series to the same plot window=
+                    p2 = pg.ViewBox()
+                    p1.showAxis('right')
+                    p1.scene().addItem(p2)
+                    p1.getAxis('right').linkToView(p2)
+                    p2.setXLink(p1)
+
+                    line_color = wc.rgb_to_hex(color[:3])
+                    p1.getAxis('right').setLabel(plot_name, color=line_color)
+                    p2.addItem(plot_obj)
+                else:
+                    # we need to create a new axis as well
+                    p2 = pg.ViewBox()
+                    ax2 = pg.AxisItem('right')
+                    p1.layout.addItem(ax2, 2, 3)
+                    p1.scene().addItem(p2)
+                    ax2.linkToView(p2)
+                    p2.setXLink(p1)
+                    # ax3.setZValue(-10000)
+                    line_color = wc.rgb_to_hex(color[:3])
+                    ax2.setLabel(plot_name, color=line_color)
+                    p2.addItem(plot_obj)
+
+            else:
+                self.pW.addItem(plot_obj)
+
+                # p1 = self.first_plot_item
+                # p2 = pg.ViewBox()
+                # # p1.showAxis('right')
+                # p1.scene().addItem(p2)
+                #
+                # p2.addItem(plot_obj)
+
+            self.update_views()
 
         self.plotWindowInterfaceMutex.unlock()
+
+    def update_views(self):
+        """
+        This function ensures that the view boxes that operate with different axes are linked properly and behave
+        properly during widget resizing
+        The code is based on MultiplePlotAxes.py demo from pyqtgraph
+        :return:
+        """
+        p1 = self.first_plot_item
+        for i, (plot_name, plot_drawing_objects_data_dict) in enumerate(self.plotDrawingObjects.items()):
+
+            if i == 0 or not plot_drawing_objects_data_dict['separate_y_axis']:
+                # we link link view box of plots second third etc to the view box of plot one
+                continue
+            plot_item = plot_drawing_objects_data_dict['curve']
+            view_box = plot_item.getViewBox()
+            try:
+                view_box.setGeometry(p1.vb.sceneBoundingRect())
+            except AttributeError:
+                print
+            view_box.linkedViewChanged(p1.vb, view_box.XAxis)
+
 
     @deprecated(version='4.0.0', reason="You should use : erase_all_data")
     def eraseAllData(self):
@@ -286,8 +378,7 @@ class PlotWindowInterface(QtCore.QObject):
                 data[0], data[1] = np.array([], dtype=np.float), np.array([], dtype=np.float)
             data[self.dirtyFlagIndex] = True
 
-
-    def erase_data(self, plot_name:str):
+    def erase_data(self, plot_name: str):
         """
         Erases data for a particular plot
         :param plot_name: plot name for which data will be erased
@@ -360,7 +451,7 @@ class PlotWindowInterface(QtCore.QObject):
 
         # print('exit add_data_point: self.plotData=', self.plotData)
 
-    def get_drawing_objects_settings(self, plot_name:str):
+    def get_drawing_objects_settings(self, plot_name: str):
         """
         returns settings for plot
         :param plot_name: plot name
@@ -593,4 +684,3 @@ class PlotWindowInterface(QtCore.QObject):
         :return:
         """
         self.add_plot(plot_name=plot_name, style='Steps', color=color, size=1.0, alpha=alpha)
-
