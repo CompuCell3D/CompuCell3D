@@ -324,9 +324,6 @@ class PlotWindowInterface(QtCore.QObject):
                 y_axis_item.setLabel(plot_name, color=color)
 
                 y_axis_item.setLogMode(y_log_flag)
-                # if y_log_flag:
-                #     print('this should neve happen y_log_flag=', y_log_flag)
-                #     y_axis_item.setLogMode(y_log_flag)
 
             if set_y_range_allowed:
                 # print('this should never happen set_y_range_allowed=', set_y_range_allowed)
@@ -387,7 +384,6 @@ class PlotWindowInterface(QtCore.QObject):
 
             else:
                 self.pW.addItem(plot_obj)
-                # self.pW.plotItem.setYRange(0,20.)
 
             self.update_views()
 
@@ -698,41 +694,32 @@ class PlotWindowInterface(QtCore.QObject):
     @staticmethod
     def allow_individual_limit_change(plot_drawing_objects: dict):
         """
-
+        Checks if user requests setting of individual limits for y_axis
         :param plot_drawing_objects:
         :return:
         """
-        fcn_list = [np.min, np.max]
-        compute_limit_tuple_indices = [0, 1]
-        fixed_limit_tuple_indices = [1, 0]
-
-        # num_limits_set = np.sum(
-        #     np.array([plot_drawing_objects['y_min'] is None, plot_drawing_objects['y_max'] is None]))
 
         min_max_indices = np.where(
             np.array([plot_drawing_objects['y_min'] is None, plot_drawing_objects['y_max'] is None]))[0]
         allow_changes = len(min_max_indices) == 1
-        compute_limit_fcn = None
-        compute_limit_tuple_idx = None
-        fixed_limit_tuple_idx = None
 
-        if allow_changes:
-            compute_limit_fcn = fcn_list[min_max_indices[0]]
-            compute_limit_tuple_idx = compute_limit_tuple_indices[min_max_indices[0]]
-            fixed_limit_tuple_idx = fixed_limit_tuple_indices[min_max_indices[0]]
-
-        return allow_changes, compute_limit_fcn, compute_limit_tuple_idx, fixed_limit_tuple_idx
+        return allow_changes, min_max_indices
 
     @staticmethod
-    def adjust_individual_limits(plot_drawing_objects, compute_limit_fcn, compute_limit_tuple_idx, vec):
+    def adjust_individual_limits(plot_drawing_objects, min_max_indices, vec):
+
+        fcn_list = [np.min, np.max]
+        compute_limit_tuple_indices = [0, 1]
+
+        compute_limit_fcn = fcn_list[min_max_indices[0]]
+        compute_limit_tuple_idx = compute_limit_tuple_indices[min_max_indices[0]]
+
         pdo = plot_drawing_objects
         plot_item = pdo['plot_item_ref']()
         limit = compute_limit_fcn(vec)
         y_range = [pdo['y_min'], pdo['y_max']]
         y_range[compute_limit_tuple_idx] = limit
         plot_item.setYRange(*y_range)
-
-        # y_range[fixed_limit_tuple_idx] = limit
 
     def __show_all_plots_handler(self, _mutex=None):
 
@@ -742,30 +729,19 @@ class PlotWindowInterface(QtCore.QObject):
                     x_vec = self.plotData[plotName][0]
                     y_vec = self.plotData[plotName][1]
 
-                    (allow_changes, compute_limit_fcn,
-                     compute_limit_tuple_idx, fixed_limit_tuple_idx) = self.allow_individual_limit_change(
+                    allow_changes, min_max_indices = self.allow_individual_limit_change(
                         plot_drawing_objects=self.plotDrawingObjects[plotName])
 
                     if allow_changes:
                         self.adjust_individual_limits(
-                            plot_drawing_objects=self.plotDrawingObjects[plotName], compute_limit_fcn=compute_limit_fcn,
-                            compute_limit_tuple_idx=compute_limit_tuple_idx, vec=y_vec)
-                        print('allow_individual changes')
+                            plot_drawing_objects=self.plotDrawingObjects[plotName], min_max_indices=min_max_indices,
+                            vec=y_vec)
+
                     plot_obj = self.plotDrawingObjects[plotName]['curve']
 
-                    # try:
-                    #     set_y_range_allowed = self.plotDrawingObjects[plotName]['set_y_range_allowed']
-                    # except KeyError:
-                    #     set_y_range_allowed = True
+                    set_data_fcn = self.plotDrawingObjects[plotName]['SetData']
+                    set_data_fcn(plot_obj, x_vec, y_vec)
 
-                    # print 'plotName=',plotName
-                    # print 'x_vec=',x_vec
-                    # print 'y_vec=', y_vec
-                    setData_fcn = self.plotDrawingObjects[plotName]['SetData']
-                    setData_fcn(plot_obj, x_vec, y_vec)
-
-                    # todo OK
-                    # plotObj.setData(x_vec,y_vec)
                     self.plotData[plotName][self.dirtyFlagIndex] = False
 
         _mutex.unlock()
