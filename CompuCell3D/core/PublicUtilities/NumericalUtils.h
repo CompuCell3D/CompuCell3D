@@ -68,7 +68,8 @@ namespace CompuCell3D{
 	typedef std::pair<Coordinates3D<float>, Coordinates3D<float> > CenterOfMassPair_t;
 	CenterOfMassPair_t precalculateAfterFlipCM(const Point3D &pt, const CellG *newCell, const CellG *oldCell,const Point3D & fieldDim, const Point3D & boundaryConditionIndicator);
 
-	
+	// Cell velocity at center of mass, in units lattice sites / step
+	Coordinates3D<double> cellVelocity(const CellG *cell, const Point3D & _fieldDim, BoundaryStrategy *boundaryStrategy = 0);
 
 
 };

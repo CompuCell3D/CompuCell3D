@@ -1757,6 +1757,29 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         return self.vector_norm(self.invariant_distance_vector_between_cells(cell1, cell2))
 
+    def cell_velocity(self, _cell: CompuCell.CellG) -> CompuCell.Coordinates3DDouble:
+        """
+        Get the velocity of a cell, in units lattice sites / step
+
+        Note that this method is slightly slower than manually calculating velocity from cell attributes
+        but is safe for periodic boundary conditions.
+
+        To manually perform the same calculations, do something like the following,
+
+        .. code-block:: python
+
+            cell: CompuCell.CellG
+            vx, vy, vz = cell.xCOM - cell.xCOMPrev, cell.yCOM - cell.yCOMPrev, cell.zCOM - cell.zCOMPrev
+            cell_velocity = CompuCell.Coordinates3DDouble(vx, vy, vz)
+
+        :param _cell: cell
+        :type _cell: CompuCell.CellG
+        :return: instantaneous velocity of the cell at its center of mass
+        :rtype: CompuCell.Coordinates3DDouble
+        """
+        boundary_strategy = CompuCell.BoundaryStrategy.getInstance()
+        return CompuCell.cellVelocity(_cell, self.dim, boundary_strategy)
+
     @deprecated(version='4.0.0', reason="You should use : new_cell")
     def newCell(self, type=0):
         return self.new_cell(cell_type=type)
