@@ -154,16 +154,44 @@ class PlotWindowInterface(QtCore.QObject):
     def addPlot(self, _plotName, _style="Lines", _color='white', _size=3, _alpha=255):
         return self.add_plot(plot_name=_plotName, style=_style, color=_color, size=_size, alpha=_alpha)
 
-    def add_plot(self, plot_name, style="Lines", color='white', size=3, alpha=255, separate_x_axis=False,
-                 separate_y_axis=False):
+    def add_plot(self, plot_name, style="Lines", color='white', size=3, alpha=255,
+                 separate_y_axis=False, y_min=None, y_max=None, y_scale_type=None):
+        """
+        User's API function - adds a data series plot to the plotting window
+        :param plot_name:
+        :param style:
+        :param color:
+        :param size:
+        :param alpha:
+        :param separate_y_axis:
+        :param y_min:
+        :param y_max:
+        :param y_scale_type:
+        :return:
+        """
+
+        if not separate_y_axis:
+            if y_min is not None or y_max is not None:
+                raise RuntimeError('y_min or y_max can only be set if you set separate_y_axis=True '
+                                   'for this data series')
+            if y_scale_type is not None:
+                raise RuntimeError('y_scale_type can only be set if you set separate_y_axis=True '
+                                   'for this data series')
+        else:
+            allowed_y_scaled_types = ['linear', 'log']
+            if y_scale_type is not None and y_scale_type.lower() not in allowed_y_scaled_types:
+                raise RuntimeError(f'y_scale_type can be only one of {allowed_y_scaled_types}')
+
         plot_param_dict = {
             '_plotName': plot_name,
             '_style': style,
             '_color': color,
             '_size': size,
             '_alpha': alpha,
-            'separate_x_axis': separate_x_axis,
-            'separate_y_axis': separate_y_axis
+            'separate_y_axis': separate_y_axis,
+            'y_min': y_min,
+            'y_max': y_max,
+            'y_scale_type': y_scale_type
         }
 
         self.plotWindowInterfaceMutex.lock()
@@ -203,15 +231,23 @@ class PlotWindowInterface(QtCore.QObject):
                                                           style=style)
 
         self.plotData[plot_name] = [xd, yd, False, XYPLOT, False]
+
+        set_y_range_allowed = plot_param_dict['y_min'] is not None and plot_param_dict['y_max'] is not None
+
         self.plotDrawingObjects[plot_name] = {'curve': plot_obj,
                                               'LineWidth': size,
                                               'LineColor': color,
                                               'Style': style,
                                               'SetData': set_data_fcn,
-                                              'separate_y_axis': separate_y_axis}
+                                              'separate_y_axis': separate_y_axis,
+                                              'y_scale_type': plot_param_dict['y_scale_type'],
+                                              'y_min': plot_param_dict['y_min'],
+                                              'y_max': plot_param_dict['y_max'],
+                                              'set_y_range_allowed': set_y_range_allowed
 
-        self.add_plot_item_to_the_scene(plot_obj=plot_obj, plot_name=plot_name, axis_color=color,
-                                        separate_y_axis=separate_y_axis)
+                                              }
+
+        self.add_plot_item_to_the_scene(plot_name=plot_name, plot_specs_dict=self.plotDrawingObjects[plot_name])
 
         self.plotWindowInterfaceMutex.unlock()
 
@@ -252,23 +288,54 @@ class PlotWindowInterface(QtCore.QObject):
 
         return plot_obj, set_data_fcn
 
-    def add_plot_item_to_the_scene(self, plot_obj, plot_name: str, axis_color: Iterable, separate_y_axis: bool):
+    def add_plot_item_to_the_scene(self, plot_name: str, plot_specs_dict: dict):
         """
-        adds plot object to exisging plot scene
-        :param plot_obj: instance of PlotItem,  pg.PlotCurveItem
+        adds plot object to existing plot scene
         :param plot_name:
-        :param axis_color:
-        :param separate_y_axis:
+        :param plot_specs_dict:
         :return:
         """
+
+        psd = plot_specs_dict
+        plot_obj = psd['curve']
+        axis_color = psd['LineColor']
+        separate_y_axis = psd['separate_y_axis']
+        y_min = psd['y_min']
+        y_max = psd['y_max']
+        y_scale_type = psd['y_scale_type']
+        set_y_range_allowed = psd['set_y_range_allowed']
+
+        y_log_flag = False
+        if y_scale_type is not None and y_scale_type.strip().lower() == 'log':
+            y_log_flag = True
+
         if len(self.plotDrawingObjects) == 1:
             self.first_plot_item = self.pW.plotItem
+            plot_specs_dict['plot_item_ref'] = weakref.ref(self.first_plot_item)
+
             # self.pW.getViewBox().addItem(plot_obj)
             self.first_plot_item.vb.sigResized.connect(self.update_views)
             self.pW.addItem(plot_obj)
+            # if firstly added item requests to use separate y axis we will rename left y axis to correspond to this
+            # data series
+            if separate_y_axis:
+                y_axis_item = self.first_plot_item.getAxis('left')
+                color = wc.rgb_to_hex(axis_color[:3])
+                y_axis_item.setLabel(plot_name, color=color)
+
+                y_axis_item.setLogMode(y_log_flag)
+                # if y_log_flag:
+                #     print('this should neve happen y_log_flag=', y_log_flag)
+                #     y_axis_item.setLogMode(y_log_flag)
+
+            if set_y_range_allowed:
+                # print('this should never happen set_y_range_allowed=', set_y_range_allowed)
+                # if user specifies both limits we can set it here
+                self.first_plot_item.setYRange(y_min, y_max)
         else:
             if separate_y_axis:
                 p1 = self.first_plot_item
+
                 if len(self.plotDrawingObjects) == 2:
                     # adding another data series to the same plot window=
                     self.right_axis_count += 1
@@ -276,17 +343,26 @@ class PlotWindowInterface(QtCore.QObject):
                     p1.showAxis('right')
                     p1.scene().addItem(p2)
                     p1.getAxis('right').linkToView(p2)
+
+                    p1.getAxis('right').setLogMode(y_log_flag)
                     p2.setXLink(p1)
 
                     line_color = wc.rgb_to_hex(axis_color[:3])
                     p1.getAxis('right').setLabel(plot_name, color=line_color)
                     p2.addItem(plot_obj)
+                    # plot_obj.setLogMode(x=False, y=y_log_flag)
+                    if set_y_range_allowed:
+                        # if user specifies both limits we can set it here
+                        p2.setYRange(y_min, y_max)
+
+                    plot_specs_dict['plot_item_ref'] = weakref.ref(p2)
 
                 else:
                     # we need to create a new axis as well
                     self.right_axis_count += 1
                     p2 = pg.ViewBox()
                     ax2 = pg.AxisItem('right')
+                    ax2.setLogMode(y_log_flag)
                     # note addItem function in general takes parameters that tell where to add an item in terms of
                     # layout position e.g. l.addItem(a2, row = 2, col = 5,  rowspan=1, colspan=1)
                     # see for example
@@ -295,10 +371,14 @@ class PlotWindowInterface(QtCore.QObject):
                     p1.scene().addItem(p2)
                     ax2.linkToView(p2)
                     p2.setXLink(p1)
-                    # ax3.setZValue(-10000)
                     line_color = wc.rgb_to_hex(axis_color[:3])
                     ax2.setLabel(plot_name, color=line_color)
                     p2.addItem(plot_obj)
+                    if set_y_range_allowed:
+                        # if user specifies both limits we can set it here
+                        p2.setYRange(y_min, y_max)
+
+                    plot_specs_dict['plot_item_ref'] = weakref.ref(p2)
 
                 # adding item to the legend
                 legend = self.first_plot_item.legend
@@ -307,16 +387,7 @@ class PlotWindowInterface(QtCore.QObject):
 
             else:
                 self.pW.addItem(plot_obj)
-
-                # p1 = self.first_plot_item
-                # p2 = pg.ViewBox()
-                # p1.showAxis('left')
-                # p1.scene().addItem(p2)
-                # p1.getAxis('left').linkToView(p2)
-                #
-                # p2.setXLink(p1)
-                #
-                # p2.addItem(plot_obj)
+                # self.pW.plotItem.setYRange(0,20.)
 
             self.update_views()
 
@@ -624,6 +695,45 @@ class PlotWindowInterface(QtCore.QObject):
         self.plotWindowInterfaceMutex.lock()
         self.plotWindowInterfaceMutex.unlock()
 
+    @staticmethod
+    def allow_individual_limit_change(plot_drawing_objects: dict):
+        """
+
+        :param plot_drawing_objects:
+        :return:
+        """
+        fcn_list = [np.min, np.max]
+        compute_limit_tuple_indices = [0, 1]
+        fixed_limit_tuple_indices = [1, 0]
+
+        # num_limits_set = np.sum(
+        #     np.array([plot_drawing_objects['y_min'] is None, plot_drawing_objects['y_max'] is None]))
+
+        min_max_indices = np.where(
+            np.array([plot_drawing_objects['y_min'] is None, plot_drawing_objects['y_max'] is None]))[0]
+        allow_changes = len(min_max_indices) == 1
+        compute_limit_fcn = None
+        compute_limit_tuple_idx = None
+        fixed_limit_tuple_idx = None
+
+        if allow_changes:
+            compute_limit_fcn = fcn_list[min_max_indices[0]]
+            compute_limit_tuple_idx = compute_limit_tuple_indices[min_max_indices[0]]
+            fixed_limit_tuple_idx = fixed_limit_tuple_indices[min_max_indices[0]]
+
+        return allow_changes, compute_limit_fcn, compute_limit_tuple_idx, fixed_limit_tuple_idx
+
+    @staticmethod
+    def adjust_individual_limits(plot_drawing_objects, compute_limit_fcn, compute_limit_tuple_idx, vec):
+        pdo = plot_drawing_objects
+        plot_item = pdo['plot_item_ref']()
+        limit = compute_limit_fcn(vec)
+        y_range = [pdo['y_min'], pdo['y_max']]
+        y_range[compute_limit_tuple_idx] = limit
+        plot_item.setYRange(*y_range)
+
+        # y_range[fixed_limit_tuple_idx] = limit
+
     def __show_all_plots_handler(self, _mutex=None):
 
         for plotName in list(self.plotData.keys()):
@@ -632,12 +742,27 @@ class PlotWindowInterface(QtCore.QObject):
                     x_vec = self.plotData[plotName][0]
                     y_vec = self.plotData[plotName][1]
 
-                    plotObj = self.plotDrawingObjects[plotName]['curve']
+                    (allow_changes, compute_limit_fcn,
+                     compute_limit_tuple_idx, fixed_limit_tuple_idx) = self.allow_individual_limit_change(
+                        plot_drawing_objects=self.plotDrawingObjects[plotName])
+
+                    if allow_changes:
+                        self.adjust_individual_limits(
+                            plot_drawing_objects=self.plotDrawingObjects[plotName], compute_limit_fcn=compute_limit_fcn,
+                            compute_limit_tuple_idx=compute_limit_tuple_idx, vec=y_vec)
+                        print('allow_individual changes')
+                    plot_obj = self.plotDrawingObjects[plotName]['curve']
+
+                    # try:
+                    #     set_y_range_allowed = self.plotDrawingObjects[plotName]['set_y_range_allowed']
+                    # except KeyError:
+                    #     set_y_range_allowed = True
+
                     # print 'plotName=',plotName
                     # print 'x_vec=',x_vec
                     # print 'y_vec=', y_vec
                     setData_fcn = self.plotDrawingObjects[plotName]['SetData']
-                    setData_fcn(plotObj, x_vec, y_vec)
+                    setData_fcn(plot_obj, x_vec, y_vec)
 
                     # todo OK
                     # plotObj.setData(x_vec,y_vec)
