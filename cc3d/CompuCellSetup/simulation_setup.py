@@ -580,6 +580,10 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
 
     cur_step = beginning_step
 
+    # initial drawing - we use mcs = -2 as a sentinel for mcs right after start function of steppables is completed
+    simthread.loopWork(-2)
+    simthread.loopWorkPostEvent(-2)
+
     while cur_step < sim.getNumSteps():
         simthread.beforeStep(_mcs=cur_step)
         if simthread.getStopSimulation() or CompuCellSetup.persistent_globals.user_stop_simulation_flag:

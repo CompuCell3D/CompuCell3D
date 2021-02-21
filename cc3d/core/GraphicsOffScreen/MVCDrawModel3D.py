@@ -164,10 +164,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         field_dim = self.currentDrawingParameters.bsd.fieldDim
 
-        hex_flag = False
-        lattice_type_str = self.get_lattice_type_str()
-        # if lattice_type_str.lower() == 'hexagonal':
-        #     hex_flag = True
         hex_flag = self.is_lattice_hex(drawing_params=drawing_params)
 
         cell_type_image_data = vtk.vtkImageData()
