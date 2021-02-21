@@ -767,5 +767,11 @@ namespace CompuCell3D {
         return make_pair(newCellInertiaTensor, oldCellInertiaTensor);
     }
 
+	Coordinates3D<double> cellVelocity(const CellG *cell, const Point3D & _fieldDim, BoundaryStrategy *boundaryStrategy) {
+		Coordinates3D<double> pt1(double(cell->xCOM), double(cell->yCOM), double(cell->zCOM));
+		Coordinates3D<double> pt0(double(cell->xCOMPrev), double(cell->yCOMPrev), double(cell->zCOMPrev));
+		return distanceVectorCoordinatesInvariant(pt1, pt0, _fieldDim, boundaryStrategy);
+	}
+
 
 };
