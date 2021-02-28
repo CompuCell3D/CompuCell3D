@@ -296,8 +296,10 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         if invisible_types:
             scr_data.invisible_types = list([int(x) for x in invisible_types.split(',')])
+            if 0 not in scr_data.invisible_types:
+                scr_data.invisible_types = [0] + scr_data.invisible_types
         else:
-            scr_data.invisible_types = []
+            scr_data.invisible_types = [0]
 
     def render_repaint(self):
         """
