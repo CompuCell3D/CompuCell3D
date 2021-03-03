@@ -1,6 +1,15 @@
 Release Notes
 =============
 
+Version 4.?.?
+-------------
+**2021-??-??**
+
+Bug fixes:
+
+- Do not check for updates if CC3D is running on nanohub
+
+
 Version 4.2.4
 -------------
 **2021-01-23**
