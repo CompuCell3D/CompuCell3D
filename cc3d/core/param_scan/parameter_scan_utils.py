@@ -352,7 +352,11 @@ def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_
 
     # make dir for the current simulation
     scan_iteration_output_dir = Path(output_dir).joinpath('scan_iteration_{}'.format(current_iteration))
-    scan_iteration_output_dir.mkdir(parents=True)
+    try:
+        scan_iteration_output_dir.mkdir(parents=True)
+    except FileExistsError:
+        raise RuntimeError(f'This particular simulation of parameter scan was already processed. '
+                           f'If you want to  proceed make sure to delete folder {str(scan_iteration_output_dir)}')
 
     # write what parameters will be applied for the current itneration fo the scan
     with open(str(scan_iteration_output_dir.joinpath('current_scan_parameters.json')), 'w') as fout:
