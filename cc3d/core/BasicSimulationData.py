@@ -7,3 +7,4 @@ class BasicSimulationData():
         self.fieldDim = None
         self.cell_types_used = None
         self.numberOfSteps = 0
+        self.current_step = 0

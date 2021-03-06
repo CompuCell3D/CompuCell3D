@@ -114,7 +114,8 @@ class SBMLSolverHelper(object):
     def add_sbml_to_cell(self, model_file: str = '', model_string: str = '', model_name: str = '', cell: object = None,
                          step_size: float = 1.0,
                          initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None,
-                         current_state_sbml: object = None) -> None:
+                         current_state_sbml: object = None,
+                         integrator: str = None) -> None:
         """
         Attaches RoadRunner SBML solver to a particular cell. The sbml solver is stored as an element
         of the cell's dictionary - cell.dict['SBMLSolver'][_modelName]. The function has a dual operation mode.
@@ -142,6 +143,9 @@ class SBMLSolverHelper(object):
         In the newer versions of RR this might be not necessary. The keys that are supported are the following:
 
         :param current_state_sbml:  string representation  of the SBML representing current state of the solver.
+
+        :param integrator: name of integrator; passed to ``RoadRunner.setIntegrator()``;
+            only applied if ``current_state_sbml`` is None
 
         :return: None
         """
@@ -178,6 +182,8 @@ class SBMLSolverHelper(object):
             rr.stepSize = step_size
             # loading SBML and LLVM-ing it
             rr.loadSBML(_externalPath=model_path_normalized, _modelString=model_string)
+            if integrator is not None:
+                rr.setIntegrator(name=integrator)
 
         else:
             rr = RoadRunnerPy(sbml=current_state_sbml)
@@ -230,7 +236,8 @@ class SBMLSolverHelper(object):
     def add_antimony_to_cell(self, model_file: str = '', model_string: str = '', model_name: str = '',
                              cell: object = None, step_size: float = 1.0,
                              initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None,
-                             current_state_sbml: object = None) -> None:
+                             current_state_sbml: object = None,
+                             integrator: str = None) -> None:
         """
         Same as add_sbml_to_cell, but with Antimony model specification
         Note that initial conditions can be specified either in the Antimony model specification,
@@ -242,12 +249,13 @@ class SBMLSolverHelper(object):
             model_name = main_module_name
         self.add_sbml_to_cell(model_string=translated_model_string, model_name=model_name,
                               cell=cell, step_size=step_size, initial_conditions=initial_conditions,
-                              options=options, current_state_sbml=current_state_sbml)
+                              options=options, current_state_sbml=current_state_sbml, integrator=integrator)
 
     def add_cellml_to_cell(self, model_file: str = '', model_string: str = '', model_name: str = '',
                            cell: object = None, step_size: float = 1.0,
                            initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None,
-                           current_state_sbml: object = None) -> None:
+                           current_state_sbml: object = None,
+                           integrator: str = None) -> None:
         """
         Same as add_sbml_to_cell, but with CellML model specification
         Note that initial conditions can be specified either in the CellML model specification,
@@ -256,7 +264,7 @@ class SBMLSolverHelper(object):
         self.add_antimony_to_cell(model_file=model_file, model_string=model_string, model_name=model_name,
                                   cell=cell, step_size=step_size,
                                   initial_conditions=initial_conditions, options=options,
-                                  current_state_sbml=current_state_sbml)
+                                  current_state_sbml=current_state_sbml, integrator=integrator)
 
     @deprecated(version='4.0.0', reason="You should use : get_sbml_global_options")
     def getSBMLGlobalOptions(self):
@@ -293,7 +301,8 @@ class SBMLSolverHelper(object):
     def add_sbml_to_cell_types(self, model_file: str = '', model_string: str = '', model_name: str = '',
                                cell_types: Union[None, list] = None,
                                step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
-                               options: Union[None, dict] = None) -> None:
+                               options: Union[None, dict] = None,
+                               integrator: str = None) -> None:
         """
         Adds SBML Solver to all cells of given cell type - internally it calls addSBMLToCell(fcn).
         Used during initialization of the simulation. It is important to always set
@@ -314,6 +323,8 @@ class SBMLSolverHelper(object):
         relative - determines relative tolerance default 1e-5
         stiff - determines if using stiff solver or not default False
 
+        :param integrator: name of integrator; passed to ``RoadRunner.setIntegrator()``
+
         :return: None
         """
 
@@ -329,12 +340,13 @@ class SBMLSolverHelper(object):
         for cell in self.cellListByType(*cell_types):
             self.add_sbml_to_cell(model_file=model_file, model_string=model_string, model_name=model_name, cell=cell,
                                   step_size=step_size,
-                                  initial_conditions=initial_conditions, options=options)
+                                  initial_conditions=initial_conditions, options=options, integrator=integrator)
 
     def add_antimony_to_cell_types(self, model_file: str = '', model_string: str = '',
                                    model_name: str = '', cell_types: Union[None, list] = None,
                                    step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
-                                   options: Union[None, dict] = None) -> None:
+                                   options: Union[None, dict] = None,
+                                   integrator: str = None) -> None:
         """
         Same as add_sbml_to_cell_types, but with Antimony model specification
         Note that initial conditions can be specified either in the Antimony model specification,
@@ -346,12 +358,13 @@ class SBMLSolverHelper(object):
             model_name = main_module_name
         self.add_sbml_to_cell_types(model_string=translated_model_string, model_name=model_name,
                                     cell_types=cell_types, step_size=step_size,
-                                    initial_conditions=initial_conditions, options=options)
+                                    initial_conditions=initial_conditions, options=options, integrator=integrator)
 
     def add_cellml_to_cell_types(self, model_file: str = '', model_string: str = '',
                                  model_name: str = '', cell_types: Union[None, list] = None,
                                  step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
-                                 options: Union[None, dict] = None) -> None:
+                                 options: Union[None, dict] = None,
+                                 integrator: str = None) -> None:
         """
         Same as add_sbml_to_cell_types, but with CellML model specification
         Note that initial conditions can be specified either in the CellML model specification,
@@ -359,7 +372,7 @@ class SBMLSolverHelper(object):
         """
         self.add_antimony_to_cell_types(model_file=model_file, model_string=model_string,
                                         model_name=model_name, cell_types=cell_types, step_size=step_size,
-                                        initial_conditions=initial_conditions, options=options)
+                                        initial_conditions=initial_conditions, options=options, integrator=integrator)
 
     @deprecated(version='4.0.0', reason="You should use : add_sbml_to_cell_ids")
     def addSBMLToCellIds(self, _modelFile, _modelName='', _ids=[], _stepSize=1.0, _initialConditions={}, _options={}):
@@ -369,7 +382,8 @@ class SBMLSolverHelper(object):
     def add_sbml_to_cell_ids(self, model_file: str = '', model_string: str = '', model_name: str = '',
                              cell_ids: Union[None, list] = None,
                              step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
-                             options: Union[None, dict] = None) -> None:
+                             options: Union[None, dict] = None,
+                             integrator: str = None) -> None:
         """
         Adds SBML Solver to all cells of given cell ids - internally it calls add_sbml_to_cell fcn.
         Used during initialization of the simulation. It is important to always set
@@ -395,6 +409,8 @@ class SBMLSolverHelper(object):
         relative - determines relative tolerance default 1e-5
         stiff - determines if using stiff solver or not default False
 
+        :param integrator: name of integrator; passed to ``RoadRunner.setIntegrator()``
+
         :return: None
         """
 
@@ -413,12 +429,13 @@ class SBMLSolverHelper(object):
 
             self.add_sbml_to_cell(model_file=model_file, model_string=model_string, model_name=model_name, cell=cell,
                                   step_size=step_size,
-                                  initial_conditions=initial_conditions, options=options)
+                                  initial_conditions=initial_conditions, options=options, integrator=integrator)
 
     def add_antimony_to_cell_ids(self, model_file: str = '', model_string: str = '', model_name: str = '',
                                  cell_ids: Union[None, list] = None, step_size: float = 1.0,
                                  initial_conditions: Union[None, dict] = None,
-                                 options: Union[None, dict] = None) -> None:
+                                 options: Union[None, dict] = None,
+                                 integrator: str = None) -> None:
         """
         Same as add_sbml_to_cell_ids, but with Antimony model specification
         Note that initial conditions can be specified either in the Antimony model specification,
@@ -430,12 +447,13 @@ class SBMLSolverHelper(object):
             model_name = main_module_name
         self.add_sbml_to_cell_ids(model_string=translated_model_string, model_name=model_name,
                                   cell_ids=cell_ids, step_size=step_size, initial_conditions=initial_conditions,
-                                  options=options)
+                                  options=options, integrator=integrator)
 
     def add_cellml_to_cell_ids(self, model_file: str = '', model_string: str = '', model_name: str = '',
                                cell_ids: Union[None, list] = None, step_size: float = 1.0,
                                initial_conditions: Union[None, dict] = None,
-                               options: Union[None, dict] = None) -> None:
+                               options: Union[None, dict] = None,
+                               integrator: str = None) -> None:
         """
         Same as add_sbml_to_cell_ids, but with CellML model specification
         Note that initial conditions can be specified either in the CellML model specification,
@@ -444,18 +462,24 @@ class SBMLSolverHelper(object):
         self.add_antimony_to_cell_ids(model_file=model_file, model_string=model_string,
                                       model_name=model_name, cell_ids=cell_ids, step_size=step_size,
                                       initial_conditions=initial_conditions,
-                                      options=options)
+                                      options=options, integrator=integrator)
 
     @deprecated(version='4.0.0', reason="You should use : add_free_floating_sbml")
     def addFreeFloatingSBML(self, _modelFile, _modelName, _stepSize=1.0, _initialConditions={}, _options={}):
         return self.add_free_floating_sbml(model_file=_modelFile, model_name=_modelName, step_size=_stepSize,
                                            initial_conditions=_initialConditions, options=_options)
 
-    def add_free_floating_sbml(self, model_file: str = '', model_string: str = '', model_name: str = '',
+    def add_free_floating_sbml(self,
+                               model_file: str = '',
+                               model_string: str = '',
+                               model_name: str = '',
                                step_size: float = 1.0,
-                               initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None):
+                               initial_conditions: Union[None, dict] = None,
+                               options: Union[None, dict] = None,
+                               integrator: str = None):
         """
         Adds free floating SBML model - not attached to any cell. The model will be identified/referenced by the _modelName
+
         :param model_file: name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path
         :param model_string: string of SBML file
         :param model_name: name of the model - this is a label used to store mode in the cell.dict['SBMLSolver'] dictionary
@@ -467,6 +491,8 @@ class SBMLSolverHelper(object):
         absolute - determines absolute tolerance default 1e-10
         relative - determines relative tolerance default 1e-5
         stiff - determines if using stiff solver or not default False
+
+        :param integrator: name of integrator; passed to ``RoadRunner.setIntegrator()``
 
         :return: None
         """
@@ -490,6 +516,8 @@ class SBMLSolverHelper(object):
 
         # setting stepSize
         rr.stepSize = step_size
+        if integrator is not None:
+            rr.setIntegrator(name=integrator)
 
         # storing
         pg = CompuCellSetup.persistent_globals
@@ -523,7 +551,8 @@ class SBMLSolverHelper(object):
     def add_free_floating_antimony(self, model_file: str = '', model_string: str = '',
                                    model_name: str = '', step_size: float = 1.0,
                                    initial_conditions: Union[None, dict] = None,
-                                   options: Union[None, dict] = None):
+                                   options: Union[None, dict] = None,
+                                   integrator: str = None):
         """
         Same as add_free_floating_sbml, but with Antimony model specification
         Note that initial conditions can be specified either in the Antimony model specification,
@@ -535,12 +564,13 @@ class SBMLSolverHelper(object):
             model_name = main_module_name
         self.add_free_floating_sbml(model_file=model_file, model_string=translated_model_string,
                                     model_name=model_name, step_size=step_size,
-                                    initial_conditions=initial_conditions, options=options)
+                                    initial_conditions=initial_conditions, options=options, integrator=integrator)
 
     def add_free_floating_cellml(self, model_file: str = '', model_string: str = '',
                                  model_name: str = '', step_size: float = 1.0,
                                  initial_conditions: Union[None, dict] = None,
-                                 options: Union[None, dict] = None):
+                                 options: Union[None, dict] = None,
+                                 integrator: str = None):
         """
         Same as add_free_floating_sbml, but with CellML model specification
         Note that initial conditions can be specified either in the CellML model specification,
@@ -548,7 +578,7 @@ class SBMLSolverHelper(object):
         """
         self.add_free_floating_antimony(model_file=model_file, model_string=model_string,
                                         model_name=model_name, step_size=step_size,
-                                        initial_conditions=initial_conditions, options=options)
+                                        initial_conditions=initial_conditions, options=options, integrator=integrator)
 
     @deprecated(version='4.0.0', reason="You should use : delete_sbml_from_cell_ids")
     def deleteSBMLFromCellIds(self, _modelName, _ids=[]):
@@ -973,6 +1003,9 @@ class SBMLSolverHelper(object):
                 options=options,
                 current_state_sbml=current_state_sbml
             )
+            # Assume same integrator; user can decide what to do with settings
+            rr_to = self.get_sbml_simulator(model_name=sbml_name, cell=to_cell)
+            rr_to.setIntegrator(rr_from.getIntegrator().getName())
 
     @deprecated(version='4.0.0', reason="You should use : normalize_path")
     def normalizePath(self, _path):

@@ -1066,6 +1066,10 @@ self.resize_and_shift_lattice(new_size=(X, Y, Z), shift_vec=(VX, VY, VZ))
 ----------  # @Submenu@ Change Number of CPU's (worknodes)
 self.change_number_of_work_nodes(8)
 
+----------  # @Submenu@ Shared steppable dictionary
+# This dictionary is shared by all registered steppables
+self.shared_steppable_vars
+
 ===============  # @Menu@ Mitosis
 
 ----------  # @Submenu@ 1. Clone Attributes Parent -> Child
