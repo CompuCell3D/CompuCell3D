@@ -1501,6 +1501,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if not self.completedFirstMCS:
             self.completedFirstMCS = True
+            # initializes cell type data
+            self.ui.cell_type_color_map_model.read_cell_type_color_data()
+            self.ui.cell_type_color_map_view.setModel(self.ui.cell_type_color_map_model)
 
         self.__step = mcs
 
