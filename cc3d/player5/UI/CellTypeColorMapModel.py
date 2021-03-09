@@ -51,14 +51,6 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
 
 
         self.update(item_data=self.item_data)
-        # if names_ids is None:
-        #     return
-
-        # vals = list(names_ids.values())
-        # for i in range(len(vals)):
-        #     item = QTableWidgetItem(str(vals[i]))
-        #     self.typeColorTable.setItem(i, 1, item)
-
 
     def set_dirty(self, flag):
         self.dirty_flag = flag
@@ -71,6 +63,9 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
         self.item_data = item_data
 
     def headerData(self, p_int, orientation, role=None):
+
+        if self.item_data is None or not len(self.item_data):
+            return
 
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             try:
@@ -88,7 +83,6 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
         return QVariant()
 
     def rowCount(self, parent=QtCore.QModelIndex()):
-        print('self.item_data=', self.item_data)
         if self.item_data is None:
             return 0
         return len(self.item_data)

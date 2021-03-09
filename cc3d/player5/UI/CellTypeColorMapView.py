@@ -27,8 +27,9 @@ class CellTypeColorMapView(QTableView):
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setColumnWidth(0, 100)
         self.setAlternatingRowColors(True)
-        self.horizontalHeader().setStretchLastSection(True)        
-        
+        self.horizontalHeader().setStretchLastSection(True)
+        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.setSelectionMode(QAbstractItemView.NoSelection)
 
         # on OSX we do not resize row height, we do it only on windows and linux
         if not sys.platform.startswith('darwin'):
@@ -40,7 +41,17 @@ class CellTypeColorMapView(QTableView):
         # vm - viewmanager, instance of class TabView
         self.vm = vm
         #self.__resizeColumns()
-    
+
+    def update_content(self):
+        model = self.model()
+        if model is None:
+            return
+
+        model.beginResetModel()
+        model.read_cell_type_color_data()
+        model.endResetModel()
+
+
     # def setParams(self):
     #     """
     #     Sets the parameters if the QTableView when the model is set

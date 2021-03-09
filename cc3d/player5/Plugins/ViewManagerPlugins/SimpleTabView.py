@@ -1504,6 +1504,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # initializes cell type data
             self.ui.cell_type_color_map_model.read_cell_type_color_data()
             self.ui.cell_type_color_map_view.setModel(self.ui.cell_type_color_map_model)
+            # update_content function gets called each time configsChanged signal gets emitted and we
+            # reread entire cell type information at this point - effectively updating cell type color map display
+            self.configsChanged.connect(self.ui.cell_type_color_map_view.update_content)
 
         self.__step = mcs
 
