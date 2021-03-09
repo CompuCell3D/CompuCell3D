@@ -106,8 +106,11 @@ class ScreenshotManager(ScreenshotManagerCore):
 
         if invisible_types:
             scrData.invisible_types = list([int(x) for x in invisible_types.split(',')])
+            if 0 not in scrData.invisible_types:
+                scrData.invisible_types = [0] + scrData.invisible_types
+
         else:
-            scrData.invisible_types = []
+            scrData.invisible_types = [0]
 
     # called from GraphicsFrameWidget
     def add_2d_screenshot(self, _plotName, _plotType, _projection, _projectionPosition,
