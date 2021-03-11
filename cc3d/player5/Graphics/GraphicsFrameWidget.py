@@ -15,6 +15,7 @@ import cc3d.CompuCellSetup
 from cc3d.player5.Utilities import qcolor_to_rgba, cs_string_to_typed_list
 import sys
 from collections import OrderedDict
+from PyQt5.QtWidgets import QApplication
 
 platform = sys.platform
 if platform == 'darwin':
@@ -33,6 +34,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.qvtkWidget = QVTKRenderWindowInteractor(self)  # a QWidget
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.vertical_resolution = QApplication.desktop().screenGeometry().height()
 
         # MDIFIX
         self.parentWidget = ref(originatingWidget)
@@ -86,6 +88,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.gd = GenericDrawer(boundary_strategy=boundary_strategy)
         self.gd.set_interactive_camera_flag(True)
         self.gd.set_pixelized_cartesian_scene(Configuration.getSetting("PixelizedCartesianFields"))
+        self.gd.set_vertical_resolution(vertical_resoultion=self.vertical_resolution)
 
         # placeholder for current screenshot data
         self.current_screenshot_data = None
