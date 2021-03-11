@@ -354,6 +354,9 @@ class UserInterface(QMainWindow):
 
         self.cell_type_color_map_act = QAction("Cell T&ype Color Map", self)
         self.cell_type_color_map_act.setCheckable(True)
+        if Configuration.getSetting('DisplayCellTypeColorMap'):
+            self.cell_type_color_map_act.setChecked(True)
+
         # if Configuration.getSetting('DisplayCellTypeColorMap'):
         #     self.self.cell_type_color_map_act.setChecked(True)
 
@@ -519,11 +522,7 @@ class UserInterface(QMainWindow):
         print ('toggle_cell_type_color_map_dock')
         self.cell_type_color_map_act.setChecked(flag)
         self.__toggleWindowFlag(self.cell_type_color_map_dock, flag)
-        # self.latticeDataAct.setChecked(flag)
-        #
-        # Configuration.setSetting('DisplayLatticeData', flag)
-        # self.__toggleWindowFlag(self.latticeDataDock, flag)
-
+        Configuration.setSetting('DisplayCellTypeColorMap', flag)
 
     def __toggleWindow(self, w):
         """
