@@ -309,7 +309,7 @@ shift_vector = [20, 20, 0]
 self.move_cell(cell, shift_vector)
 
 ----------  # @Submenu@ Move Cell
-# merges SOURCE_CELL to DESTINATION_CELL.
+# Turns all voxels of SOURCE_CELL into voxels of DESTINATION_CELL
 # This function will merge the cells regardless of the distance between them.
 # It won't update the DESTINATION_CELL target volume.
 # Use with care.
