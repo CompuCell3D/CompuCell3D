@@ -308,6 +308,12 @@ cell = self.cell_field[10, 11, 0]
 shift_vector = [20, 20, 0]
 self.move_cell(cell, shift_vector)
 
+----------  # @Submenu@ Move Cell
+# merging SOURCE_CELL to DESTINATION_CELL.
+# this function will merge the cells regardless of the distance between them
+# use with care
+self.merge_cells(SOURCE_CELL, DESTINATION_CELL)
+
 ===============  # @Menu@ Distances, Vectors, Transformations
 
 ----------  # @Submenu@ Distance Vector Between Cells
