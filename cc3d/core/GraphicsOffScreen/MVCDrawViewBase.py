@@ -37,6 +37,7 @@ class MVCDrawViewBase:
         self.__initDist = 0  # initial camera distance - used in zoom functions
         self.min_max_text_actor = vtk.vtkTextActor()
 
+
         # CUSTOM ACTORS
         self.customActors = {}  # {visName: CustomActorsStorage() }
         self.currentCustomVisName = ''  # stores name of the current custom visualization

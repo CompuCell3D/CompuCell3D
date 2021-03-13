@@ -4,6 +4,7 @@ from cc3d import CompuCellSetup
 from cc3d.player5.Utilities.utils import to_vtk_rgb
 import numpy as np
 from cc3d.cpp import CompuCell
+import weakref
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 
@@ -26,6 +27,17 @@ class MVCDrawModelBase:
         self.lattice_type_str = None
 
         self.celltypeLUT = None
+
+        self.gd_ref = None
+
+    def set_generic_drawer(self, gd):
+        """
+
+        :param gd:
+        :return:
+        """
+        self.gd_ref = weakref.ref(gd)
+
 
     def set_boundary_strategy(self, boundary_strategy):
         """
@@ -227,9 +239,16 @@ class MVCDrawModelBase:
         max_str = self.float_formatting(range_array[1])
         min_max_actor.SetInput("Min: {} Max: {}".format(min_str, max_str))
 
+        font_size = 11
+        if self.gd_ref is not None:
+            generic_drawer = self.gd_ref()
+            vertical_resolution = generic_drawer.vertical_resolution
+            if vertical_resolution is not None:
+                font_size = int(generic_drawer.vertical_resolution / 100 * 1.1)
+
         txtprop = min_max_actor.GetTextProperty()
         txtprop.SetFontFamilyToArial()
-        txtprop.SetFontSize(10)
+        txtprop.SetFontSize(font_size)
         txtprop.SetColor(1, 1, 1)
         min_max_actor.SetPosition(20, 20)
 

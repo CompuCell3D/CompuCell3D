@@ -50,12 +50,15 @@ class GenericDrawer:
 
         self.ren_2D = vtk.vtkRenderer()
         self.interactive_camera_flag = False
+        self.vertical_resolution = None
 
         # MDIFIX
         self.draw_model_2D = MVCDrawModel2D(boundary_strategy=boundary_strategy)
+        self.draw_model_2D.set_generic_drawer(gd=self)
         self.draw_view_2D = MVCDrawView2D(self.draw_model_2D)
 
         self.draw_model_3D = MVCDrawModel3D(boundary_strategy=boundary_strategy)
+        self.draw_model_3D.set_generic_drawer(gd=self)
         self.draw_view_3D = MVCDrawView3D(self.draw_model_3D)
 
         self.draw_view_2D.ren = self.ren_2D
@@ -78,6 +81,15 @@ class GenericDrawer:
         self.current_step = None
         self.cell_field_data_dict = None
         self.cell_shell_optimization = None
+
+    def set_vertical_resolution(self, vertical_resoultion):
+        """
+
+        :param vertical_resoultion:
+        :return:
+        """
+        self.vertical_resolution = vertical_resoultion
+
 
     def set_pixelized_cartesian_scene(self, flag: bool) -> None:
         """
