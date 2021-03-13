@@ -308,6 +308,13 @@ cell = self.cell_field[10, 11, 0]
 shift_vector = [20, 20, 0]
 self.move_cell(cell, shift_vector)
 
+----------  # @Submenu@ Move Cell
+# Turns all voxels of SOURCE_CELL into voxels of DESTINATION_CELL
+# This function will merge the cells regardless of the distance between them.
+# It won't update the DESTINATION_CELL target volume.
+# Use with care.
+self.merge_cells(SOURCE_CELL, DESTINATION_CELL)
+
 ===============  # @Menu@ Distances, Vectors, Transformations
 
 ----------  # @Submenu@ Distance Vector Between Cells
