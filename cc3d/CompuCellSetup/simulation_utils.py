@@ -68,20 +68,49 @@ def extract_type_names_and_ids() -> dict:
     if cc3d_xml2_obj_converter is None:
         return {}
 
+    type_id_type_name_dict = {}
+
     plugin_elements = cc3d_xml2_obj_converter.root.getElements("Plugin")
 
-    list_plugin = CC3DXMLListPy(plugin_elements)
+    if len(plugin_elements):
+        # handle situation where we have plugins and we are looking for CellType plugin to extract elements
+        list_plugin = CC3DXMLListPy(plugin_elements)
+
+        for element in list_plugin:
+
+            if element.getAttribute("Name") == "CellType":
+                cell_types_elements = element.getElements("CellType")
+                type_id_type_name_dict = extract_type_id_type_name_dict(cell_types_elements=cell_types_elements)
+    else:
+        # try if <CompuCell3DLatticeData> is available - it will be stored in cc3d_xml2_obj_converter.root
+
+        if cc3d_xml2_obj_converter.root.name == 'CompuCell3DLatticeData':
+
+            cell_types_elements = cc3d_xml2_obj_converter.root.getElements("CellType")
+            type_id_type_name_dict = extract_type_id_type_name_dict(cell_types_elements=cell_types_elements)
+
+    return type_id_type_name_dict
+
+
+def extract_type_id_type_name_dict(cell_types_elements):
+    """
+    Extract dictionary mapping cell type id to cell type name from a sequence of xml elements that look as follows:
+    <CellType TypeId="0" TypeName="Medium"/>
+    <CellType TypeId="1" TypeName="Condensing"/>
+    <CellType TypeId="2" TypeName="NonCondensing"/>
+    Note that this sequence of elements can be found int he CellTypePlugin or in the <CompuCell3DLatticeData> in the
+    dml.files
+    :param cell_types_elements:
+    :return:
+    """
+
     type_id_type_name_dict = {}
-    for element in list_plugin:
 
-        if element.getAttribute("Name") == "CellType":
-            cell_types_elements = element.getElements("CellType")
-
-            list_cell_type_elements = CC3DXMLListPy(cell_types_elements)
-            for cell_type_element in list_cell_type_elements:
-                type_name = cell_type_element.getAttribute("TypeName")
-                type_id = cell_type_element.getAttributeAsInt("TypeId")
-                type_id_type_name_dict[type_id] = type_name
+    list_cell_type_elements = CC3DXMLListPy(cell_types_elements)
+    for cell_type_element in list_cell_type_elements:
+        type_name = cell_type_element.getAttribute("TypeName")
+        type_id = cell_type_element.getAttributeAsInt("TypeId")
+        type_id_type_name_dict[type_id] = type_name
 
     return type_id_type_name_dict
 
