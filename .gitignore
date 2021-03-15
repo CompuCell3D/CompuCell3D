@@ -3,6 +3,12 @@ BionetSolver/0.0.6/include/sbmlsolver/config.h
 CompuCell3D/core/BasicUtils/BasicPluginManager.h
 CompuCell3D/core/pythonSetupScripts/Version.py
 RoadRunner/ThirdParty/libsbml/src/sbml/common/libsbml-config-common.h
+CompuCell3D/core/MaBoSS/engine/src/BooleanGrammar.cc
+CompuCell3D/core/MaBoSS/engine/src/BooleanGrammar.tab.c
+CompuCell3D/core/MaBoSS/engine/src/lex.CTBNDL.cc
+CompuCell3D/core/MaBoSS/engine/src/lex.RC.cc
+CompuCell3D/core/MaBoSS/engine/src/RunConfigGrammar.cc
+CompuCell3D/core/MaBoSS/engine/src/RunConfigGrammar.tab.c
 
 # Python Byte-compiled / optimized / DLL files
 __pycache__/
