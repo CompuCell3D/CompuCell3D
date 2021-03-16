@@ -172,6 +172,7 @@ MABOSSTOSTRINGPY(Node)
 
 // Extending Network
 READONLYPROPERTYEXTENSORPY(Network, nodes, getNodes)
+READONLYPROPERTYEXTENSORPY(Network, symbol_table, getSymbolTable)
 MABOSSTOSTRINGPY(Network)
 
 // Extending CC3DMaBoSSNodeAttributeAccessorPy
