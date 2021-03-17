@@ -170,6 +170,24 @@ MABOSSTOSTRINGPY(Expression)
 // Extending Node
 MABOSSTOSTRINGPY(Node)
 
+// Extending SymbolTable
+READONLYPROPERTYEXTENSORPY(SymbolTable, names, getSymbolsNames)
+%extend SymbolTable {
+    %pythoncode %{
+        def __getitem__(self, item: str):
+            symbol = self.getSymbol(item)
+            if symbol is None:
+                raise KeyError(f"symbol {item} is not defined")
+            return self.getSymbolValue(symbol, check=False)
+
+        def __setitem__(self, item: str, value: float):
+            symbol = self.getSymbol(item)
+            if symbol is None:
+                raise KeyError(f"symbol {item} is not defined")
+            self.setSymbolValue(symbol, value)
+    %}
+}
+
 // Extending Network
 READONLYPROPERTYEXTENSORPY(Network, nodes, getNodes)
 READONLYPROPERTYEXTENSORPY(Network, symbol_table, getSymbolTable)
