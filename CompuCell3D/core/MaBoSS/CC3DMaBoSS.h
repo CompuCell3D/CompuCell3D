@@ -172,7 +172,6 @@ namespace MaBoSSCC3D {
 
     public:
 
-        CC3DMaBoSSEngine(Network* _network, CC3DRunConfig* _runConfig, const double& stepSize=1.0);
         CC3DMaBoSSEngine(const char* ctbndl_file, const char* cfg_file, const double& stepSize=1.0);
 
         ~CC3DMaBoSSEngine();
@@ -182,7 +181,9 @@ namespace MaBoSSCC3D {
         // load a network
         void loadNetworkState(const NetworkState& _networkState);
 
-        double getTime() const { return time; }
+        const double getTime() const { return time; }
+        void setTime(const double& _time) { time = _time; }
+        const double getStepSize() const { return stepSize; }
 
         // Component accessors
 
@@ -190,6 +191,8 @@ namespace MaBoSSCC3D {
         Network* getNetwork();
         // Run configuration
         CC3DRunConfig* getRunConfig();
+        // NetworkState
+        NetworkState* getNetworkState();
 
         // Node accessor
         CC3DMaBoSSNode getNode(const std::string& label);
@@ -200,7 +203,6 @@ namespace MaBoSSCC3D {
         #ifdef SWIGPYTHON
         CC3DMaBoSSNode __getitem__(const std::string &key) { return getNode(key); }
         void __setitem__(const std::string &key, NodeState value) { network->getNode(key)->setNodeState(networkState, value); }
-        CC3DMaBoSSEngine* copy() { return new CC3DMaBoSSEngine(network, runConfig, stepSize); }
         #endif // SWIGPYTHON
         
 

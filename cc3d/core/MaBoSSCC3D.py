@@ -198,13 +198,3 @@ class MaBoSSHelper:
                     model.step()
             except KeyError:
                 pass
-
-    def copy_maboss(self, from_cell: CompuCell.CellG, to_cell: CompuCell.CellG):
-        maboss_key = CompuCell.CellG.__maboss__
-        to_cell.dict[maboss_key] = dict()
-        try:
-            maboss_models_from: Dict[str, MaBoSSCC3DPy.CC3DMaBoSSEngine] = from_cell.dict[maboss_key]
-            for model_name, model in maboss_models_from.items():
-                to_cell.dict[maboss_key][model_name] = model.copy()
-        except KeyError:
-            pass

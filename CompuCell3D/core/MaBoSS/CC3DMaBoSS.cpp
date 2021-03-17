@@ -106,6 +106,9 @@ CC3DRunConfig::CC3DRunConfig()
 
 CC3DRunConfig::CC3DRunConfig(const CC3DRunConfig& other) 
 {
+    runConfig = new RunConfig();
+    randGen = new CC3DRandomGenerator();
+
     setTimeTick(other.getTimeTick());
     setSampleCount(other.getSampleCount());
     setDiscreteTime(other.getDiscreteTime());
@@ -185,17 +188,6 @@ void CC3DMaBoSSNodeAttributeAccessorPy::setString(const std::string& str)
 }
 
 // CC3DMaBoSSEngine
-
-CC3DMaBoSSEngine::CC3DMaBoSSEngine(Network* _network, CC3DRunConfig* _runConfig, const double& stepSize) :
-    time(0.0), 
-    stepSize(stepSize), 
-    networkState(NetworkState())
-{
-    network = _network;
-    runConfig = _runConfig;
-    IStateGroup::checkAndComplete(network);
-    network->initStates(networkState, runConfig->getRandomGenerator()->getRandomGenerator());
-}
 
 CC3DMaBoSSEngine::CC3DMaBoSSEngine(const char* ctbndl_file, const char* cfg_file, const double& stepSize) :
     time(0.0), 
@@ -307,6 +299,10 @@ Network* CC3DMaBoSSEngine::getNetwork() {
 
 CC3DRunConfig* CC3DMaBoSSEngine::getRunConfig() {
     return runConfig;
+}
+
+NetworkState* CC3DMaBoSSEngine::getNetworkState() {
+    return &networkState;
 }
 
 CC3DMaBoSSNode CC3DMaBoSSEngine::getNode(const std::string& label) 
