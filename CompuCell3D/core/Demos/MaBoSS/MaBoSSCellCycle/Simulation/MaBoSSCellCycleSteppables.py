@@ -82,17 +82,22 @@ class MaBoSSCellCycleSteppable(MitosisSteppableBase):
                 cell.targetVolume = target_volume
 
     def update_attributes(self):
+        self.clone_parent_2_child()
         # Reset parent cell cycle model to initial state and report rates during mitosis
         maboss_model = self.parent_cell.maboss.cell_cycle
         print(f"Parent cell {self.parent_cell.id} split with rates...")
         for x in model_vars:
             print(f"   {x} = ({maboss_model[x].rate_down}, {maboss_model[x].rate_up})")
             maboss_model[x].state = maboss_model[x].istate
-        # Copy parent cell cycle model to child cell
-        self.copy_maboss(from_cell=self.parent_cell, to_cell=self.child_cell)
-        # Parent MaBoSS model is exactly copied, so set a new seed on the child cell model
-        self.child_cell.maboss.cell_cycle.run_config.setSeed(random.randint(0, int(1E9)))
-        # Update parameters
-        self.parent_cell.targetVolume = target_volume
-        self.child_cell.targetVolume = target_volume
-        self.child_cell.lambdaVolume = lambda_volume
+        # Instantiate cell cycle model in child cell
+        self.add_maboss_to_cell(cell=self.child_cell,
+                                model_name=model_name,
+                                bnd_file=bnd_file,
+                                cfg_file=cfg_file,
+                                time_step=time_step,
+                                time_tick=time_tick,
+                                discrete_time=discrete_time,
+                                seed=random.randint(0, int(1E9)))
+        # Ensure child cell cycle model is in the same state as that of the parent cell
+        maboss_model_child = self.child_cell.maboss.cell_cycle
+        maboss_model_child.loadNetworkState(maboss_model.getNetworkState())

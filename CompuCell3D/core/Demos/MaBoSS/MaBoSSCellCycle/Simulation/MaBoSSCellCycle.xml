@@ -7,7 +7,7 @@
    
    <Potts>
       <Dimensions x="100" y="100" z="1"/>
-      <Steps>5000</Steps>
+      <Steps>3000</Steps>
       <Temperature>10.0</Temperature>
       <NeighborOrder>1</NeighborOrder>
    </Potts>
