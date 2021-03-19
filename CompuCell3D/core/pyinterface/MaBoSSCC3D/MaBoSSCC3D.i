@@ -175,12 +175,16 @@ READONLYPROPERTYEXTENSORPY(SymbolTable, names, getSymbolsNames)
 %extend SymbolTable {
     %pythoncode %{
         def __getitem__(self, item: str):
+            if not item.startswith('$'):
+                item = '$' + item
             symbol = self.getSymbol(item)
             if symbol is None:
                 raise KeyError(f"symbol {item} is not defined")
             return self.getSymbolValue(symbol, check=False)
 
         def __setitem__(self, item: str, value: float):
+            if not item.startswith('$'):
+                item = '$' + item
             symbol = self.getSymbol(item)
             if symbol is None:
                 raise KeyError(f"symbol {item} is not defined")
