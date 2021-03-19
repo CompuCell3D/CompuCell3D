@@ -123,6 +123,11 @@ CC3DRunConfig::~CC3DRunConfig()
     randGen = 0;
 }
 
+RunConfig* CC3DRunConfig::getRunConfig() 
+{
+    return runConfig;
+}
+
 CC3DRandomGenerator* CC3DRunConfig::getRandomGenerator() {
     return randGen;
 }
@@ -189,7 +194,7 @@ void CC3DMaBoSSNodeAttributeAccessorPy::setString(const std::string& str)
 
 // CC3DMaBoSSEngine
 
-CC3DMaBoSSEngine::CC3DMaBoSSEngine(const char* ctbndl_file, const char* cfg_file, const double& stepSize) :
+CC3DMaBoSSEngine::CC3DMaBoSSEngine(const char* ctbndl_file, const char* cfg_file, const double& stepSize, const int& seed, const bool& cfgSeed) :
     time(0.0), 
     stepSize(stepSize), 
     networkState(NetworkState())
@@ -199,9 +204,11 @@ CC3DMaBoSSEngine::CC3DMaBoSSEngine(const char* ctbndl_file, const char* cfg_file
 
     runConfig = new CC3DRunConfig();
     runConfig->parse(network, cfg_file);
+    if (!cfgSeed) runConfig->setSeed(seed);
 
     IStateGroup::checkAndComplete(network);
     network->initStates(networkState, runConfig->getRandomGenerator()->getRandomGenerator());
+    networkStateInit = networkState;
 }
 
 CC3DMaBoSSEngine::~CC3DMaBoSSEngine()
@@ -230,58 +237,11 @@ NodeIndex CC3DMaBoSSEngine::getTargetNode(CC3DRandomGenerator *random_generator,
 
 void CC3DMaBoSSEngine::step(const double& _stepSize)
 {
-    const std::vector<Node *>& nodes = network->getNodes();
-    CC3DRandomGenerator* randomGenerator = runConfig->getRandomGenerator();
-    Node* targetNode;
-
-    double t = 0.;
-    double tf = _stepSize > 0. ? _stepSize : stepSize;
-    bool discrete_time = runConfig->getDiscreteTime();
-    double dt;
-    if (discrete_time) dt = runConfig->getTimeTick();
-
-    while (t <= tf) {
-        
-        double totalRate = 0.;
-        MAP<NodeIndex, double> nodeTransitionRates;
-        bool activeStep = false;
-
-        for (std::vector<Node *>::const_iterator itr = nodes.begin(); itr != nodes.end(); ++itr) {
-            Node *node = *itr;
-            NodeIndex nodeIdx = node->getIndex();
-            if (node->getNodeState(networkState)) {
-                double r = node->getRateDown(networkState);
-                if (r != 0.0) {
-                    activeStep = true;
-                    totalRate += r;
-                    nodeTransitionRates[nodeIdx] = r;
-                }
-            }
-            else {
-                double r = node->getRateUp(networkState);
-                if (r != 0.0) {
-                    activeStep = true;
-                    totalRate += r;
-                    nodeTransitionRates[nodeIdx] = r;
-                }
-            }
-        }
-
-        if (activeStep) {
-            if (!discrete_time) dt = -log(randomGenerator->generate()) / totalRate;
-            t += dt;
-        }
-        else break;
-        if (t > tf) break;
-
-        NodeIndex nodeIdx = getTargetNode(randomGenerator, nodeTransitionRates, totalRate);
-        targetNode = network->getNode(nodeIdx);
-        networkState.flipState(targetNode);
-
-    }
-
-    time += tf;
-
+    double simTime = _stepSize > 0. ? _stepSize : stepSize;
+    StochasticSimulationEngine engine(network, runConfig->getRunConfig(), runConfig->getSeed());
+    engine.setMaxTime(simTime);
+    networkState = engine.run(networkState);
+    time += simTime;
 }
 
 void CC3DMaBoSSEngine::loadNetworkState(const NetworkState& _networkState)
@@ -307,5 +267,5 @@ NetworkState* CC3DMaBoSSEngine::getNetworkState() {
 
 CC3DMaBoSSNode CC3DMaBoSSEngine::getNode(const std::string& label) 
 {
-    return CC3DMaBoSSNode(network->getNode(label), network, &networkState, runConfig->getRandomGenerator()->getRandomGenerator());
+    return CC3DMaBoSSNode(network->getNode(label), network, &networkState, &networkStateInit, runConfig->getRandomGenerator()->getRandomGenerator());
 }

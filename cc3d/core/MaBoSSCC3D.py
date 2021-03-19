@@ -27,7 +27,7 @@ def maboss_model(bnd_file: str = None,
                  time_step: float = 1.0,
                  time_tick: float = 1.0,
                  discrete_time: bool = False,
-                 seed: int = 0) -> MaBoSSCC3DPy.CC3DMaBoSSEngine:
+                 seed: int = None) -> MaBoSSCC3DPy.CC3DMaBoSSEngine:
     """
     Instantiate a MaBoSS simulation instance from files and/or strings.
 
@@ -64,10 +64,15 @@ def maboss_model(bnd_file: str = None,
         with os.fdopen(cfg_file_obj, 'w') as f:
             f.write(cfg_str)
 
-    engine = MaBoSSCC3DPy.CC3DMaBoSSEngine(bnd_file, cfg_file, time_step)
+    kwargs = {'ctbndl_file': bnd_file,
+              'cfg_file': cfg_file,
+              'stepSize': time_step}
+    if seed is not None:
+        kwargs['seed'] = seed
+        kwargs['cfgSeed'] = False
+    engine = MaBoSSCC3DPy.CC3DMaBoSSEngine(**kwargs)
     engine.run_config.setDiscreteTime(discrete_time=discrete_time)
     engine.run_config.setTimeTick(time_tick=time_tick)
-    engine.run_config.setSeed(seed=seed)
 
     if bnd_str is not None:
         os.remove(path=bnd_file)

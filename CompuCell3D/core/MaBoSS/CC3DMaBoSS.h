@@ -16,6 +16,7 @@ Bloomington, IN, U.S.A.
 #include "BooleanNetwork.h"
 #include "RandomGenerator.h"
 #include "RunConfig.h"
+#include "StochasticSimulationEngine.h"
 
 #include "CC3DMaBoSSDLLSpecifier.h"
 
@@ -58,6 +59,7 @@ namespace MaBoSSCC3D {
         CC3DRunConfig(const CC3DRunConfig& other);
         ~CC3DRunConfig();
 
+        RunConfig* getRunConfig();
         CC3DRandomGenerator* getRandomGenerator();
 
         double getTimeTick() const;
@@ -106,16 +108,18 @@ namespace MaBoSSCC3D {
         Node* node;
         Network* network;
         NetworkState* networkState;
+        NetworkState* networkStateInit;
         RandomGenerator* randGen;
 
     public:
-        CC3DMaBoSSNode(Node* _node, Network* _network, NetworkState* _networkState, RandomGenerator* _randGen) : 
+        CC3DMaBoSSNode(Node* _node, Network* _network, NetworkState* _networkState, NetworkState* _networkStateInit, RandomGenerator* _randGen) : 
             node(_node), 
             network(_network), 
             networkState(_networkState), 
+            networkStateInit(_networkStateInit), 
             randGen(_randGen)
         {}
-        ~CC3DMaBoSSNode() {};
+        ~CC3DMaBoSSNode() { };
 
         const std::string& getLabel() const { return node->getLabel(); }
         void setDescription(const std::string& description) { node->setDescription(description); }
@@ -127,9 +131,9 @@ namespace MaBoSSCC3D {
         const Expression* getRateUpExpression() const { return node->getRateUpExpression(); }
         const Expression* getRateDownExpression() const { return node->getRateDownExpression(); }
         void setAttributeExpression(const std::string& attr_name, const Expression* expr) { node->setAttributeExpression(attr_name, expr); }
-        NodeState getIState() { return node->getIState(network, randGen);}
-        void setIState(NodeState istate) { node->setIState(istate); }
-        bool istateSetRandomly() const { return node->istateSetRandomly(); }
+        NodeState getIState() { return node->getNodeState(*networkStateInit);}  // node->getIState when initial state correctly tracks from config file
+        void setIState(NodeState istate) { node->setNodeState(*networkStateInit, istate); }  // node->setIState when initial state correctly tracks from config file
+        // bool istateSetRandomly() const { return node->istateSetRandomly(); }  // enable when initial state correctly tracks from config file
         bool isInternal() const { return node->isInternal(); }
         void setInternal(bool is_internal) { node->isInternal(is_internal); }
         bool isReference() const { return node->isReference(); }
@@ -167,12 +171,13 @@ namespace MaBoSSCC3D {
         CC3DRunConfig* runConfig;
 
         NetworkState networkState;
+        NetworkState networkStateInit;
         
         NodeIndex getTargetNode(CC3DRandomGenerator* random_generator, const MAP<NodeIndex, double>& nodeTransitionRates, double total_rate) const;
 
     public:
 
-        CC3DMaBoSSEngine(const char* ctbndl_file, const char* cfg_file, const double& stepSize=1.0);
+        CC3DMaBoSSEngine(const char* ctbndl_file, const char* cfg_file, const double& stepSize=1.0, const int& seed=0, const bool& cfgSeed=true);
 
         ~CC3DMaBoSSEngine();
 
