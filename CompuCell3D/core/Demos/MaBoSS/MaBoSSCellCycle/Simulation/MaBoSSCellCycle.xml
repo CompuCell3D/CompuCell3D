@@ -6,10 +6,11 @@
    </Metadata>
    
    <Potts>
-      <Dimensions x="100" y="100" z="1"/>
+      <Dimensions x="200" y="120" z="1"/>
       <Steps>3000</Steps>
       <Temperature>10.0</Temperature>
       <NeighborOrder>1</NeighborOrder>
+      <Boundary_y>Periodic</Boundary_y>
    </Potts>
    
    <Plugin Name="CellType">
@@ -52,10 +53,10 @@
    
    <Steppable Type="UniformInitializer">
       <Region>
-         <BoxMin x="40" y="40" z="0"/>
-         <BoxMax x="60" y="60" z="1"/>
+         <BoxMin x="0" y="0" z="0"/>
+         <BoxMax x="30" y="120" z="1"/>
          <Gap>0</Gap>
-         <Width>7</Width>
+         <Width>6</Width>
          <Types>NonCycling</Types>
       </Region>
    </Steppable>
