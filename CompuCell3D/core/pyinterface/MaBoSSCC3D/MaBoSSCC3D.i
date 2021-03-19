@@ -185,6 +185,7 @@ READONLYPROPERTYEXTENSORPY(SymbolTable, names, getSymbolsNames)
             if symbol is None:
                 raise KeyError(f"symbol {item} is not defined")
             self.setSymbolValue(symbol, value)
+            self.unsetSymbolExpressions()
     %}
 }
 
