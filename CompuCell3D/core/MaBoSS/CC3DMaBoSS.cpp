@@ -209,6 +209,8 @@ CC3DMaBoSSEngine::CC3DMaBoSSEngine(const char* ctbndl_file, const char* cfg_file
     IStateGroup::checkAndComplete(network);
     network->initStates(networkState, runConfig->getRandomGenerator()->getRandomGenerator());
     networkStateInit = networkState;
+
+    engine = new StochasticSimulationEngine(network, runConfig->getRunConfig(), runConfig->getSeed());
 }
 
 CC3DMaBoSSEngine::~CC3DMaBoSSEngine()
@@ -217,6 +219,8 @@ CC3DMaBoSSEngine::~CC3DMaBoSSEngine()
     network = 0;
     delete runConfig;
     runConfig = 0;
+    delete engine;
+    engine = 0;
 }
 
 NodeIndex CC3DMaBoSSEngine::getTargetNode(CC3DRandomGenerator *random_generator, const MAP<NodeIndex, double> &nodeTransitionRates, double total_rate) const
@@ -238,9 +242,10 @@ NodeIndex CC3DMaBoSSEngine::getTargetNode(CC3DRandomGenerator *random_generator,
 void CC3DMaBoSSEngine::step(const double& _stepSize)
 {
     double simTime = _stepSize > 0. ? _stepSize : stepSize;
-    StochasticSimulationEngine engine(network, runConfig->getRunConfig(), runConfig->getSeed());
-    engine.setMaxTime(simTime);
-    networkState = engine.run(networkState);
+    engine->setDiscreteTime(runConfig->getDiscreteTime());
+    engine->setTimeTick(runConfig->getTimeTick());
+    engine->setMaxTime(simTime);
+    networkState = engine->run(networkState);
     time += simTime;
 }
 

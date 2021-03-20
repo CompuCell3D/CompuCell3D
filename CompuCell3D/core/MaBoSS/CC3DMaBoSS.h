@@ -169,6 +169,7 @@ namespace MaBoSSCC3D {
         double stepSize;
         Network* network;
         CC3DRunConfig* runConfig;
+        StochasticSimulationEngine* engine;
 
         NetworkState networkState;
         NetworkState networkStateInit;
