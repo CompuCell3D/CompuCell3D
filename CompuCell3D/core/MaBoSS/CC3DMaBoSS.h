@@ -190,6 +190,7 @@ namespace MaBoSSCC3D {
         const double getTime() const { return time; }
         void setTime(const double& _time) { time = _time; }
         const double getStepSize() const { return stepSize; }
+        void setStepSize(const double& _stepSize) { stepSize = _stepSize; }
 
         // Component accessors
 
