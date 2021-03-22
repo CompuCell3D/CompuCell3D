@@ -987,7 +987,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def attemptFetchingCellById(self, _id):
         return self.fetch_cell_by_id(cell_id=_id)
 
-    def fetch_cell_by_id(self, cell_id: int) -> Union[None, object]:
+    def fetch_cell_by_id(self, cell_id: int) -> Union[None, CompuCell.CellG]:
         """
         Fetches cell by id. If cell does not exist it returns None
         :param cell_id: cell id
