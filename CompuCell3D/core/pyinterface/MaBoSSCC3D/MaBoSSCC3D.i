@@ -221,6 +221,7 @@ MABOSSTOSTRINGPY(MaBoSSCC3D::CC3DMaBoSSNode)
 PROPERTYEXTENSORPY(MaBoSSCC3D::CC3DRunConfig, sample_count, getSampleCount, setSampleCount)
 PROPERTYEXTENSORPY(MaBoSSCC3D::CC3DRunConfig, seed, getSeed, setSeed)
 PROPERTYEXTENSORPY(MaBoSSCC3D::CC3DRunConfig, time_tick, getTimeTick, setTimeTick)
+PROPERTYEXTENSORPY(MaBoSSCC3D::CC3DRunConfig, discrete_time, getDiscreteTime, setDiscreteTime)
 
 // Extending CC3DMaBoSSEngine
 READONLYPROPERTYEXTENSORPY(MaBoSSCC3D::CC3DMaBoSSEngine, run_config, getRunConfig)
