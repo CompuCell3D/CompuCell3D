@@ -594,10 +594,7 @@ double ChemotaxisPlugin::reciprocatedChemotaxis(const Point3D &pt, const CellG *
 
 				formulaCurrentPtr = chemotaxisDataRef.formulaPtr;
 
-				// when chemotaxis is not allowed towards this type of oldCell
-				if(!chemotaxisDataRef.okToChemotact(oldCell, newCell)) continue;
-
-				if(chemotaxisDataRef.lambda!=0.0 && formulaCurrentPtr)
+				if(chemotaxisDataRef.okToChemotact(oldCell, newCell) && chemotaxisDataRef.lambda!=0.0 && formulaCurrentPtr)
 					energy += (this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()), fieldVec[i]->get(pt), chemotaxisDataRef);
 			}
 		}
@@ -628,10 +625,7 @@ double ChemotaxisPlugin::reciprocatedChemotaxis(const Point3D &pt, const CellG *
 
 				formulaCurrentPtr=chemotaxisDataRef.formulaPtr;
 
-				// when chemotaxis is not allowed towards this type of newCell
-				if(!chemotaxisDataRef.okToChemotact(newCell, oldCell)) continue;
-
-				if(chemotaxisDataRef.lambda!=0.0 && formulaCurrentPtr)
+				if(chemotaxisDataRef.okToChemotact(newCell, oldCell) && chemotaxisDataRef.lambda!=0.0 && formulaCurrentPtr)
 					energy += (this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()), fieldVec[i]->get(pt), chemotaxisDataRef);
 			}
 		}
