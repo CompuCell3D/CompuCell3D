@@ -274,6 +274,8 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			algorithmPtr=&ChemotaxisPlugin::merksChemotaxis;
 		} else if(chemotaxisAlgorithm=="regular") {
 			algorithmPtr=&ChemotaxisPlugin::regularChemotaxis;
+		} else if (chemotaxisAlgorithm=="reciprocated") {
+			algorithmPtr=&ChemotaxisPlugin::reciprocatedChemotaxis;
 		}
 
 
@@ -554,6 +556,88 @@ double ChemotaxisPlugin::regularChemotaxis(const Point3D &pt, const CellG *newCe
 	}
 	//   cerr<<"CHEMOTAXIS EN="<<energy<<endl;
 	return 0;
+}
+
+double ChemotaxisPlugin::reciprocatedChemotaxis(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
+	// Equivalent to regularChemotaxis(pt, newCell, oldCell) + regularChemotaxis(pt, oldCell, newCell), but in a single loop over fields
+	// return regularChemotaxis(pt, newCell, oldCell) + regularChemotaxis(pt, oldCell, newCell);
+
+	double energy = 0;
+
+	std::map<std::string,ChemotaxisData>::iterator mitr;
+
+	for(unsigned int i = 0; i < fieldVec.size(); ++i){
+		if(newCell){
+			bool chemotaxisDone = false;
+
+			// first try "locally defined" chemotaxis
+			std::map<std::string,ChemotaxisData> & chemotaxisDataDictRef = *chemotaxisDataAccessor.get(newCell->extraAttribPtr);
+			mitr = chemotaxisDataDictRef.find(fieldNameVec[i]);
+			
+			ChemotaxisData * chemotaxisDataPtr = 0;
+			if (mitr != chemotaxisDataDictRef.end()) chemotaxisDataPtr=&mitr->second;
+			
+			// when chemotaxis is allowed towards this type of oldCell and lambda is non-zero
+			if(chemotaxisDataPtr && chemotaxisDataPtr->okToChemotact(oldCell, newCell)){ 
+				ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr = 0;
+				formulaCurrentPtr=chemotaxisDataPtr->formulaPtr;
+				if(formulaCurrentPtr){
+					energy += (this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()), fieldVec[i]->get(pt), *chemotaxisDataPtr);
+					chemotaxisDone = true;
+				}
+			}
+
+			if(!chemotaxisDone && (int)newCell->type < vecVecChemotaxisData[i].size()){
+				ChemotaxisData & chemotaxisDataRef = vecVecChemotaxisData[i][(int)newCell->type];
+				ChemotaxisData * chemotaxisDataPtr = & vecVecChemotaxisData[i][(int)newCell->type];
+				ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr = 0;
+
+				formulaCurrentPtr = chemotaxisDataRef.formulaPtr;
+
+				// when chemotaxis is not allowed towards this type of oldCell
+				if(!chemotaxisDataRef.okToChemotact(oldCell, newCell)) continue;
+
+				if(chemotaxisDataRef.lambda!=0.0 && formulaCurrentPtr)
+					energy += (this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()), fieldVec[i]->get(pt), chemotaxisDataRef);
+			}
+		}
+		if(oldCell){
+			bool chemotaxisDone=false;
+
+			// first try "locally defined" chemotaxis
+			std::map<std::string,ChemotaxisData> & chemotaxisDataDictRef = *chemotaxisDataAccessor.get(oldCell->extraAttribPtr);
+			mitr = chemotaxisDataDictRef.find(fieldNameVec[i]);
+			
+			ChemotaxisData * chemotaxisDataPtr = 0;
+			if (mitr != chemotaxisDataDictRef.end()) chemotaxisDataPtr=&mitr->second;
+			
+			// when chemotaxis is allowed towards this type of newCell and lambda is non-zero
+			if(chemotaxisDataPtr && chemotaxisDataPtr->okToChemotact(newCell, oldCell)){ 
+				ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr = 0;
+				formulaCurrentPtr = chemotaxisDataPtr->formulaPtr;
+				if(formulaCurrentPtr){
+					energy += (this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()), fieldVec[i]->get(pt), *chemotaxisDataPtr);
+					chemotaxisDone = true;
+				}
+			}
+
+			if(!chemotaxisDone && (int)oldCell->type < vecVecChemotaxisData[i].size()){
+				ChemotaxisData & chemotaxisDataRef = vecVecChemotaxisData[i][(int)oldCell->type];
+				ChemotaxisData * chemotaxisDataPtr = & vecVecChemotaxisData[i][(int)oldCell->type];
+				ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr = 0;
+
+				formulaCurrentPtr=chemotaxisDataRef.formulaPtr;
+
+				// when chemotaxis is not allowed towards this type of newCell
+				if(!chemotaxisDataRef.okToChemotact(newCell, oldCell)) continue;
+
+				if(chemotaxisDataRef.lambda!=0.0 && formulaCurrentPtr)
+					energy += (this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()), fieldVec[i]->get(pt), chemotaxisDataRef);
+			}
+		}
+	}
+
+	return energy;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
