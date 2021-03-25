@@ -3,6 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtNetwork import *
 import requests
 import time
+from weakref import ref
 
 
 class WebFetcherRequestsThread(QThread):
@@ -13,9 +14,25 @@ class WebFetcherRequestsThread(QThread):
         self.parent = parent
         self.url_str = ''
 
+    @property
+    def parent(self):
+        try:
+            o = self._parent()
+        except TypeError:
+            o = self._parent
+        return o
+
+    @parent.setter
+    def parent(self, _i):
+        try:
+            self._parent = ref(_i)
+        except TypeError:
+            self._parent = _i
+
     def set_url_str(self, url_str: str):
         """
         sets url to fetch
+
         :param url_str:
         :return:
         """
@@ -24,6 +41,7 @@ class WebFetcherRequestsThread(QThread):
     def get_web_content(self):
         """
         returns web content
+
         :return:
         """
         ok = False
@@ -52,9 +70,9 @@ class WebFetcherRequestsThread(QThread):
 
 
 class WebFetcherRequests(QObject):
-    '''
+    """
     This class fetches content of web page
-    '''
+    """
     # signal emited once the web page content is fetched - first argument is a full content fo the web page,
     # second is url from which the content is fetched
     gotWebContentSignal = QtCore.pyqtSignal(str, str)
@@ -64,13 +82,29 @@ class WebFetcherRequests(QObject):
         self.parent = _parent
         self.url_str = ''
 
+    @property
+    def parent(self):
+        try:
+            o = self._parent()
+        except TypeError:
+            o = self._parent
+        return o
+
+    @parent.setter
+    def parent(self, _i):
+        try:
+            self._parent = ref(_i)
+        except TypeError:
+            self._parent = _i
+
     def fetch(self, url_str):
-        '''
+        """
         initiates web page fetch process. self.networkmanager emits 'finished' signal once the content has been fetched
         or if e.g. network error has occurred. In the latter case the content of the web page is an empty QString
+
         :param url_str: web address
         :return: None
-        '''
+        """
 
         self.web_fetcher_thread = WebFetcherRequestsThread(self)
         self.web_fetcher_thread.set_url_str(url_str=url_str)

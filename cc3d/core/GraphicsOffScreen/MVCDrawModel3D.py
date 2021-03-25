@@ -16,8 +16,8 @@ MODULENAME = '------  MVCDrawModel3D.py'
 
 
 class MVCDrawModel3D(MVCDrawModelBase):
-    def __init__(self, boundary_strategy=None):
-        MVCDrawModelBase.__init__(self, boundary_strategy)
+    def __init__(self, boundary_strategy=None, ren=None):
+        MVCDrawModelBase.__init__(self, boundary_strategy=boundary_strategy, ren=ren)
 
         self.initArea()
         self.setParams()

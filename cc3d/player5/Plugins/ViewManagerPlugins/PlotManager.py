@@ -15,8 +15,6 @@ class PlotManager(QtCore.QObject, PlotManagerBase):
         QtCore.QObject.__init__(self, None)
         PlotManagerBase.__init__(self, view_manager, plot_support_flag)
 
-        self.vm = view_manager
-        self.plotsSupported = plot_support_flag
         self.plotWindowList = []
         self.plotWindowMutex = QtCore.QMutex()
         self.signalsInitialized = False

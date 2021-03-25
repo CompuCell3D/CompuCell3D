@@ -14,8 +14,9 @@ VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 VTK_MINOR_VERSION = vtk.vtkVersion.GetVTKMinorVersion()
 VTK_BUILD_VERSION = vtk.vtkVersion.GetVTKBuildVersion()
 
+
 class MVCDrawViewBase:
-    def __init__(self, _drawModel):
+    def __init__(self, _drawModel, ren=None):
         self.legendActor = vtk.vtkScalarBarActor()
         self.legendActor.SetNumberOfLabels(8)
         (self.minCon, self.maxCon) = (0, 0)
@@ -23,8 +24,7 @@ class MVCDrawViewBase:
         self.planePos = 0
         self.ren = None
 
-        dM = ref(_drawModel)
-        self.drawModel = dM()
+        self.drawModel = _drawModel
 
         self.currentDrawingFunction = None
         self.currentActors = {}  # dictionary of current actors
@@ -37,12 +37,35 @@ class MVCDrawViewBase:
         self.__initDist = 0  # initial camera distance - used in zoom functions
         self.min_max_text_actor = vtk.vtkTextActor()
 
-
         # CUSTOM ACTORS
         self.customActors = {}  # {visName: CustomActorsStorage() }
         self.currentCustomVisName = ''  # stores name of the current custom visualization
         self.currentVisName = ''  # stores name of the current visualization
         self.cameraSettingsDict = {}  # {fieldName:CameraSettings()}
+        self.ren = ren
+
+    @property
+    def drawModel(self):
+        return self._drawModel()
+
+    @drawModel.setter
+    def drawModel(self, _i):
+        self._drawModel = ref(_i)
+
+    @property
+    def ren(self):
+        try:
+            o = self._ren()
+        except TypeError:
+            o = self._ren
+        return o
+
+    @ren.setter
+    def ren(self, _i):
+        try:
+            self._ren = ref(_i)
+        except TypeError:
+            self._ren = _i
 
     def version_identifier(self, major, minor, build):
         return major * 10 ** 6 + minor * 10 ** 3 + build
@@ -59,7 +82,6 @@ class MVCDrawViewBase:
             self.drawingFcnHasChanged = False
         self.drawingFcnName = _fcnName
 
-
     def clear_scene(self):
         """
         removes all actors from the renderer
@@ -75,14 +97,13 @@ class MVCDrawViewBase:
     def setPlotData(self, _plotData):
         self.currentFieldType = _plotData
 
-
-
     def resetAllCameras(self):
         self.cameraSettingsDict = {}
 
     def getActors(self, actor_label_list=None):
         """
         returns container with actors
+
         :param actor_label_list:{list of str} list of actors
         :return: {OrderedDict} 
         """
@@ -91,7 +112,8 @@ class MVCDrawViewBase:
     def prepare_vector_field_actors(self, actor_specs, drawing_params=None):
         """
         Prepares vector field actors
-        :param actor_specs {ActorSpecs}: specification of actors to create
+
+        :param actor_specs: {ActorSpecs} specification of actors to create
         :param drawing_params: {DrawingParameters}
         :return: {ActorSpecs}
         """
@@ -101,6 +123,7 @@ class MVCDrawViewBase:
     def show_vector_field_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
         Shows vector field actors
+
         :param actor_specs: {ActorSpecs}
         :param drawing_params: {DrawingParameters}
         :param show_flag: {bool}
@@ -111,7 +134,8 @@ class MVCDrawViewBase:
     def prepare_concentration_field_actors(self, actor_specs, drawing_params=None):
         """
         Prepares concentration field actors
-        :param actor_specs {ActorSpecs}: specification of actors to create
+
+        :param actor_specs: {ActorSpecs} specification of actors to create
         :param drawing_params: {DrawingParameters}
         :return: {ActorSpecs}
         """
@@ -121,6 +145,7 @@ class MVCDrawViewBase:
     def show_concentration_field_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
         Shows concentration actors
+
         :param actor_specs: {ActorSpecs}
         :param drawing_params: {DrawingParameters}
         :param show_flag: {bool}
@@ -132,7 +157,8 @@ class MVCDrawViewBase:
     def prepare_cell_field_actors(self, actor_specs, drawing_params=None):
         """
         Prepares cell_field_actors  based on actor_specs specifications
-        :param actor_specs {ActorSpecs}: specification of actors to create
+
+        :param actor_specs: {ActorSpecs} specification of actors to create
         :param drawing_params: {DrawingParameters}
         :return: {dict}
         """
@@ -142,6 +168,7 @@ class MVCDrawViewBase:
     def show_cell_actors(self,  actor_specs, drawing_params=None, show_flag=True):
         """
         Shows cell_field actors
+
         :param actor_specs: {ActorSpecs}
         :param show_flag: {bool}
         :return: None
@@ -151,7 +178,8 @@ class MVCDrawViewBase:
     def prepare_outline_actors(self, actor_specs, drawing_params=None):
         """
         Prepares bounding box actors  based on actor_specs specifications
-        :param actor_specs {ActorSpecs}: specification of actors to create
+
+        :param actor_specs: {ActorSpecs} specification of actors to create
         :param drawing_params: {DrawingParameters}
         :return: {dict}
         """
@@ -161,6 +189,7 @@ class MVCDrawViewBase:
     def show_outline_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
         shows/hides bounding box
+
         :param actor_specs:
         :param drawing_params:
         :param show_flag:
@@ -171,7 +200,8 @@ class MVCDrawViewBase:
     def prepare_axes_actors(self, actor_specs, drawing_params=None):
         """
         Prepares axes  based on actor_specs specifications
-        :param actor_specs {ActorSpecs}: specification of actors to create
+
+        :param actor_specs: {ActorSpecs} specification of actors to create
         :param drawing_params: {DrawingParameters}
         :return: {dict}
         """
@@ -181,6 +211,7 @@ class MVCDrawViewBase:
     def show_axes_actors(self,  actor_specs, drawing_params=None, show_flag=True):
         """
         shows/hides axes box
+
         :param actor_specs:
         :param drawing_params:
         :param show_flag:
@@ -192,7 +223,8 @@ class MVCDrawViewBase:
     def prepare_cluster_border_actors(self, actor_specs, drawing_params=None):
         """
         Prepares border actors  based on actor_specs specifications
-        :param actor_specs {ActorSpecs}: specification of actors to create
+
+        :param actor_specs: {ActorSpecs} specification of actors to create
         :param drawing_params: {DrawingParameters}
         :return: {dict}
         """
@@ -202,6 +234,7 @@ class MVCDrawViewBase:
     def show_cluster_border_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
         Shows cluster borders actors
+
         :param actor_specs: {ActorSpecs}
         :param drawing_params: {DrawingParameters}
         :param show_flag: {bool}
@@ -212,7 +245,8 @@ class MVCDrawViewBase:
     def prepare_border_actors(self, actor_specs, drawing_params=None):
         """
         Prepares border actors  based on actor_specs specifications
-        :param actor_specs {ActorSpecs}: specification of actors to create
+
+        :param actor_specs: {ActorSpecs} specification of actors to create
         :param drawing_params: {DrawingParameters}
         :return: {dict}
         """
@@ -220,7 +254,7 @@ class MVCDrawViewBase:
         raise NotImplementedError(self.__class__.prepare_border_actors.__name__)
 
     def show_cell_borders(self, actor_specs,drawing_params=None, show_flag=True):
-        '''
+        """
         Shows or hides cell border actor
 
         :param actor_specs: {ActorSpecs}
@@ -228,13 +262,13 @@ class MVCDrawViewBase:
         :param show_flag: {bool}
         :return: None
         """
-        '''
 
         raise NotImplementedError(self.__class__.show_cell_borders.__name__)
 
     def prepare_fpp_links_actors(self, actor_specs, drawing_params=None):
         """
         Prepares fpp links actors  based on actor_specs specifications
+
         :param actor_specs {ActorSpecs}: specification of actors to create
         :param drawing_params: {DrawingParameters}
         :return: {dict}
@@ -245,6 +279,7 @@ class MVCDrawViewBase:
     def show_fpp_links_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
         Shows fpp links actors
+
         :param actor_specs: {ActorSpecs}
         :param drawing_params: {DrawingParameters}
         :param show_flag: {bool}
@@ -255,6 +290,7 @@ class MVCDrawViewBase:
     def remove_all_actors_from_renderer(self):
         """
         Removes all actors from renderer
+
         :return:
         """
 
@@ -265,6 +301,7 @@ class MVCDrawViewBase:
         """
         Convenience fcn that adds actor to a renderer and updates
         current actor container
+
         :param actor_label:  {str} actor label
         :param actor_obj: {vtkActor} instance of the actor
         :return: None
@@ -277,6 +314,7 @@ class MVCDrawViewBase:
         """
         Convenience fcn that removes actor from a renderer and updates
         current actor container
+
         :param actor_label:  {str} actor label
         :param actor_obj: {vtkActor} instance of the actor
         :return: None
@@ -287,7 +325,6 @@ class MVCDrawViewBase:
 
     def getCamera(self):
         return self.ren.GetActiveCamera()
-
 
     def largestDim(self, dim):
         ldim = dim[0]
@@ -326,11 +363,12 @@ class MVCDrawViewBase:
             camera.SetViewUp(cs.viewUp)
 
     def set_default_camera(self, fieldDim=None):
-        '''
+        """
         Initializes default camera view
-        :param fieldDim:field dimension (Dim3D C++ object)
+
+        :param fieldDim: field dimension (Dim3D C++ object)
         :return: None
-        '''
+        """
         raise NotImplementedError()
 
     def setStatusBar(self, statusBar):
