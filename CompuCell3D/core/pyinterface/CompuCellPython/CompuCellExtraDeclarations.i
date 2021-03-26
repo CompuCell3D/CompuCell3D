@@ -401,6 +401,28 @@ namespace swig{
 
 %include "plugins/FocalPointPlasticity/FocalPointPlasticityLinkInventory.h"
 
+%inline %{
+   PyObject* getLinkPyAttrib(CompuCell3D::FocalPointPlasticityLinkBase* _link){
+        PyObject* pyAttrib = _link->getPyAttrib();
+        Py_INCREF(pyAttrib);
+        return pyAttrib;
+   }
+%}
+
+%extend CompuCell3D::FocalPointPlasticityLinkBase {
+    %pythoncode %{
+        def get_dict(self):
+            return getLinkPyAttrib(self)
+        
+        def set_dict(self, _dict):
+            raise AttributeError('ASSIGNMENT link.dict=%s is illegal. Dictionary "dict" can only be modified but not replaced'%(_dict))
+        
+        __swig_setmethods__["dict"] = set_dict
+        __swig_getmethods__["dict"] = get_dict
+        if _newclass: dict = property(get_dict, set_dict)
+    %}
+}
+
 PLUGINACCESSOR(FocalPointPlasticity)
 
 
