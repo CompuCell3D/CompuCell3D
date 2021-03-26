@@ -53,3 +53,4 @@ else()
 endif()
 
 install(FILES ${CC3DMaBoSS_HDRS} DESTINATION include/CompuCell3D/MaBoSS)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE DESTINATION include/CompuCell3D/MaBoSS)
