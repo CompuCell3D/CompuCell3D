@@ -52,6 +52,15 @@ class FocalPointPlasticityLinksSteppable(SteppableBasePy):
             print(f'length: {link1j.length}')
             print(f'tension: {link1j.tension}')
 
+            # Links also have a general dictionary to store custom information!
+            # Let's count how many times this link has been accessed
+            my_var_name = 'times_counted'
+            if my_var_name not in link1j.dict.keys():
+                link1j.dict[my_var_name] = 0
+            else:
+                link1j.dict[my_var_name] += 1
+            print(f'Number of times accessed: {link1j.dict[my_var_name]}')
+
         # Now let's quickly get the list of all cells linked to cell 1
         linked_list = self.get_fpp_linked_cells(cell1)
         [print(f'Cell 1 has a link with cell {c.id}') for c in linked_list]
