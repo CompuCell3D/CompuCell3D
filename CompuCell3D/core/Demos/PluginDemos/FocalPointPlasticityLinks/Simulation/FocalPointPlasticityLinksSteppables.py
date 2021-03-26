@@ -2,6 +2,13 @@ from cc3d.core.PySteppables import *
 
 import random
 
+test_str = """
+model MyModel()
+-> A ; 0.01;
+A = 0;
+end
+"""
+
 
 class FocalPointPlasticityLinksSteppable(SteppableBasePy):
 
@@ -60,6 +67,15 @@ class FocalPointPlasticityLinksSteppable(SteppableBasePy):
             else:
                 link1j.dict[my_var_name] += 1
             print(f'Number of times accessed: {link1j.dict[my_var_name]}')
+
+            # Links can also have SBML, Antimony and CellML models
+            if link1j.dict[my_var_name] == 0:
+                self.add_antimony_to_link(link=link1j,
+                                          model_string=test_str,
+                                          model_name='myModel')
+            A_val = link1j.sbml.myModel["A"]
+            print(f'Current ODE variable value: {A_val}')
+            self.timestep_sbml()
 
         # Now let's quickly get the list of all cells linked to cell 1
         linked_list = self.get_fpp_linked_cells(cell1)
