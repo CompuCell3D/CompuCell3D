@@ -75,7 +75,8 @@ class FocalPointPlasticityLinksSteppable(SteppableBasePy):
                                           model_name='myModel')
             A_val = link1j.sbml.myModel["A"]
             print(f'Current ODE variable value: {A_val}')
-            self.timestep_sbml()
+
+        self.timestep_sbml()
 
         # Now let's quickly get the list of all cells linked to cell 1
         linked_list = self.get_fpp_linked_cells(cell1)
