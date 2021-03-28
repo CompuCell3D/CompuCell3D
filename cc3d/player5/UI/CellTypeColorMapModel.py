@@ -77,7 +77,7 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
             try:
                 # return self.item_data[p_int].name
                 return self.item_data[p_int]
-            except IndexError:
+            except KeyError:
                 return QVariant()
 
         return QVariant()
