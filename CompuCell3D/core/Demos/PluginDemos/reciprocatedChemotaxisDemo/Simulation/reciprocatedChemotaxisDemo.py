@@ -1,0 +1,5 @@
+from cc3d import CompuCellSetup
+from reciprocatedChemotaxisDemoSteppables import reciprocatedChemotaxisDemoSteppable
+
+CompuCellSetup.register_steppable(steppable=reciprocatedChemotaxisDemoSteppable(frequency=100))
+CompuCellSetup.run()

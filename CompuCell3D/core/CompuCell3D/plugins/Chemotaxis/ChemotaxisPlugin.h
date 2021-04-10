@@ -110,6 +110,8 @@ namespace CompuCell3D {
     
     double regularChemotaxis(const Point3D &pt, const CellG *newCell,
                                 const CellG *oldCell);
+    
+    double reciprocatedChemotaxis(const Point3D &pt, const CellG *newCell, const CellG *oldCell);  // Two-sided regularChemotaxis
    
     double merksChemotaxis(const Point3D &pt, const CellG *newCell,
                                 const CellG *oldCell);
