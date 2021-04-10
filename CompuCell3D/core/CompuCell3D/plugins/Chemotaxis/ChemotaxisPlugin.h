@@ -66,6 +66,7 @@ namespace CompuCell3D {
    float logNatDivisionFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
    float log10DifferenceFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
    float logNatDifferenceFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+   float COMLogScaledChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
    
    //bool okToChemotact(unsigned int fieldIdx,unsigned char cellType);
    std::string chemotaxisAlgorithm;
