@@ -94,6 +94,10 @@ class CMLParser(object):
         cml_parser.add_argument('--guiScan', required=False, action='store_true', default=False,
                                 help='enables running parameter scan in the Player')
 
+        cml_parser.add_argument('--title-window-display-label', required=False, type=str, default='',
+                                help='any string that user wants to add to be displayed in the title of Player window '
+                                     'when simulation runs. Typically used in conjunction with parameter scan')
+
         cml_parser.add_argument('--maxNumberOfConsecutiveRuns', required=False, action='store', default=0, type=int,
                                 help='maximum number of consecutive runs in the Player before Player restarts')
 

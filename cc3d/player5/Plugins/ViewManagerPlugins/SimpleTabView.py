@@ -2702,7 +2702,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return: None
         """
         title_to_display = join(basename(dirname(self.__sim_file_name)), basename(self.__sim_file_name))
-        widget.setWindowTitle(title_to_display + " - CompuCell3D Player")
+        # handling extra display label - only when user passes it via command line option
+        try:
+            title_window_display_label = self.cml_args.title_window_display_label
+            # padding it with extra space
+            title_window_display_label = f' - {title_window_display_label} '
+        except AttributeError:
+            title_window_display_label = ''
+
+        widget.setWindowTitle(title_to_display + f" - CompuCell3D Player{title_window_display_label}")
 
     def __openLDSFile(self, fileName=None):
         '''
