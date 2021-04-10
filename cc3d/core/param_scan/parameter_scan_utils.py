@@ -376,8 +376,12 @@ def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_
 
     # at this point arg_list may have args from main script
     arg_list_local = deepcopy(arg_list)
-    arg_list_local += ['--input={}'.format(cc3d_proj_template),
-                       '--output-dir={}'.format(cc3d_proj_template.parent), ]
+    arg_list_local += [
+        f'--input={cc3d_proj_template}',
+        f'--output-dir={cc3d_proj_template.parent}',
+        f'--parameter-scan-iteration={current_scan_parameters["current_iteration"]}'
+    ]
+
     if gui_flag:
         arg_list_local += ['--exit-when-done']
 

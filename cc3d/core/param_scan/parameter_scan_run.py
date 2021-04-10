@@ -71,13 +71,9 @@ def main():
         # event with ParamScanStop signal we run the last simulation in the param scan. After this last run
         # param_scan.complete.signal will get written to the disk
         arg_list = [
-
             f'--output-frequency={output_frequency}',
             f'--screenshot-output-frequency={screenshot_output_frequency}'
         ]
-
-        if gui_flag:
-            arg_list += [f'--title-window-display-label={current_scan_parameters["current_iteration"]}']
 
         run_single_param_scan_simulation(cc3d_proj_fname=cc3d_proj_fname, run_script=run_script, gui_flag=gui_flag,
                                          current_scan_parameters=current_scan_parameters, output_dir=output_dir,
