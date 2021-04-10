@@ -53,16 +53,13 @@ class GenericDrawer:
         self.vertical_resolution = None
 
         # MDIFIX
-        self.draw_model_2D = MVCDrawModel2D(boundary_strategy=boundary_strategy)
+        self.draw_model_2D = MVCDrawModel2D(boundary_strategy=boundary_strategy, ren=self.ren_2D)
         self.draw_model_2D.set_generic_drawer(gd=self)
-        self.draw_view_2D = MVCDrawView2D(self.draw_model_2D)
+        self.draw_view_2D = MVCDrawView2D(self.draw_model_2D, ren=self.ren_2D)
 
-        self.draw_model_3D = MVCDrawModel3D(boundary_strategy=boundary_strategy)
+        self.draw_model_3D = MVCDrawModel3D(boundary_strategy=boundary_strategy, ren=self.ren_2D)
         self.draw_model_3D.set_generic_drawer(gd=self)
-        self.draw_view_3D = MVCDrawView3D(self.draw_model_3D)
-
-        self.draw_view_2D.ren = self.ren_2D
-        self.draw_view_3D.ren = self.ren_2D
+        self.draw_view_3D = MVCDrawView3D(self.draw_model_3D, ren=self.ren_2D)
 
         #
         # dict {field_type: drawing fcn}
@@ -90,10 +87,10 @@ class GenericDrawer:
         """
         self.vertical_resolution = vertical_resoultion
 
-
     def set_pixelized_cartesian_scene(self, flag: bool) -> None:
         """
         Enables pixelized cartesian scene
+
         :param flag:
         :return:
         """
@@ -103,6 +100,7 @@ class GenericDrawer:
     def set_boundary_strategy(self, boundary_strategy):
         """
         sets boundary strategy C++ obj reference
+
         :param boundary_strategy:
         :return:
         """
@@ -115,6 +113,7 @@ class GenericDrawer:
         """
         Function called by the GraphicsFrameWidget after configuration dialog has been approved
         We update information from configuration dialog here
+
         :return: None
         """
         self.draw_model_2D.populate_cell_type_lookup_table()
@@ -125,6 +124,7 @@ class GenericDrawer:
         sets flag that allows resetting of camera parameters during each draw function. for
         Interactive model when GenericDrwer is called form the GUI this should be set to False
         but for screenshots this should be True
+
         :param flag:{bool}
         :return:
         """
@@ -141,6 +141,7 @@ class GenericDrawer:
     def get_active_camera(self):
         """
         returns active camera object
+
         :return: {vtkCamera}
         """
 
@@ -153,6 +154,7 @@ class GenericDrawer:
     def extract_cell_field_data(self, cell_shell_optimization=False):
         """
         Extracts basic information about cell field
+
         :return:
         """
         cell_type_array = vtk.vtkIntArray()
@@ -181,7 +183,8 @@ class GenericDrawer:
 
     def draw_vector_field(self, drawing_params):
         """
-        Draws  vector field
+        Draws vector field
+
         :param drawing_params: {DrawingParameters}
         :return: None
         """
@@ -199,6 +202,7 @@ class GenericDrawer:
     def draw_concentration_field(self, drawing_params):
         """
         Draws concentration field
+
         :param drawing_params: {DrawingParameters}
         :return: None
         """
@@ -217,8 +221,9 @@ class GenericDrawer:
     def draw_cell_field(self, drawing_params):
         """
         Draws cell field
+
         :param drawing_params:{DrawingParameters}
-        :return:None
+        :return: None
         """
         if not drawing_params.screenshot_data.cells_on:
             return
@@ -245,6 +250,7 @@ class GenericDrawer:
     def draw_cell_borders(self, drawing_params):
         """
         Draws cell borders
+
         :param drawing_params:
         :return:
         """
@@ -261,6 +267,7 @@ class GenericDrawer:
     def draw_cluster_borders(self, drawing_params):
         """
         Draws cluster borders
+
         :param drawing_params:
         :return: None
         """
@@ -275,6 +282,7 @@ class GenericDrawer:
     def draw_fpp_links(self, drawing_params):
         """
         Draws FPP links
+
         :param drawing_params:
         :return: None
         """
@@ -312,11 +320,16 @@ class GenericDrawer:
         view.show_axes_actors(actor_specs=actor_specs_final, drawing_params=drawing_params, show_flag=show_flag)
 
     def get_model_view(self, drawing_params):
-        # type: (DrawingParameters) -> (MVCDrawModelBase,MVCDrawViewBase)
         """
         returns pair of model view objects depending on the dimension label
-        :param drawing_params: {Graphics.DrawingParameters instance}
-        :return: {tuple} mode, view object tuple
+
+        :param drawing_params: DrawingParameters instance for the model view
+        :type drawing_params: DrawingParameters
+        :return: mode, view object tuple
+        :rtype: (cc3d.core.GraphicsOffScreen.MVCDrawModel2D.MVCDrawModel2D,
+            cc3d.core.GraphicsOffScreen.MVCDrawView2D.MVCDrawView2D) or
+            (cc3d.core.GraphicsOffScreen.MVCDrawModel3D.MVCDrawModel3D,
+            cc3d.core.GraphicsOffScreen.MVCDrawView3D.MVCDrawView3D)
         """
         dimension_label = drawing_params.screenshot_data.spaceDimension
 
@@ -431,8 +444,13 @@ class GenericDrawer:
     def output_screenshot(self, screenshot_fname, file_format='png', screenshot_data=None):
         """
         Saves scene rendered in the renderer to the image
-        :param ren: {vtkRenderer} renderer
-        :param screenshot_fname: {str} screenshot filename
+
+        :param screenshot_fname: screenshot filename
+        :type screenshot_fname: str
+        :param file_format: output suffix
+        :type file_format: str
+        :param screenshot_data: screenshot data
+        :type screenshot_data: ScreenshotData
         :return: None
         """
 
@@ -464,10 +482,11 @@ class GenericDrawer:
         writer.Write()
 
     def resetCamera(self):
-        '''
+        """
         Resets camera to default settings
-        :return:None
-        '''
+
+        :return: None
+        """
         pass
 
 

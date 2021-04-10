@@ -401,6 +401,49 @@ namespace swig{
 
 %include "plugins/FocalPointPlasticity/FocalPointPlasticityLinkInventory.h"
 
+%inline %{
+   PyObject* getLinkPyAttrib(CompuCell3D::FocalPointPlasticityLinkBase* _link){
+        PyObject* pyAttrib = _link->getPyAttrib();
+        Py_INCREF(pyAttrib);
+        return pyAttrib;
+   }
+%}
+
+%extend CompuCell3D::FocalPointPlasticityLinkBase {
+    %pythoncode %{
+        def get_dict(self):
+            return getLinkPyAttrib(self)
+        
+        def set_dict(self, _dict):
+            raise AttributeError('ASSIGNMENT link.dict=%s is illegal. Dictionary "dict" can only be modified but not replaced'%(_dict))
+        
+        __swig_setmethods__["dict"] = set_dict
+        __swig_getmethods__["dict"] = get_dict
+        if _newclass: dict = property(get_dict, set_dict)
+
+        __sbml__ = '__sbml__'
+
+        def setsbml(self, sbml) :		
+            raise AttributeError('ASSIGNMENT link.sbml = %s is illegal. '
+                                '"sbml" attribute can only be modified but not replaced' % (sbml))
+
+        def getsbml(self):
+            link_dict = self.dict
+            class LinkSBMLFetcher:
+                def __getattr__(self, item):
+                    if FocalPointPlasticityLinkBase.__sbml__ not in link_dict.keys():
+                        raise KeyError('Link has no SBML solvers')
+                    elif item not in link_dict[FocalPointPlasticityLinkBase.__sbml__].keys():
+                        raise KeyError(f'Cound not find SBML model with name {item}.')
+                    return link_dict[FocalPointPlasticityLinkBase.__sbml__][item]
+            return LinkSBMLFetcher()
+
+        __swig_getmethods__["sbml"] = getsbml
+        __swig_setmethods__["sbml"] = setsbml
+        if _newclass : sbml = property(getsbml, setsbml)
+    %}
+}
+
 PLUGINACCESSOR(FocalPointPlasticity)
 
 

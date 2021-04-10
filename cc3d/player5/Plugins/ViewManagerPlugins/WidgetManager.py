@@ -1,5 +1,6 @@
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import *
+from weakref import ref
 
 from cc3d.player5.steering.SteeringPanelView import SteeringPanelView
 from cc3d.player5.steering.SteeringPanelModel import SteeringPanelModel
@@ -19,6 +20,21 @@ class WidgetManager(QtCore.QObject):
         self.windowMutex = QtCore.QMutex()
         self.signalsInitialized = False
         self.windowList = []
+
+    @property
+    def vm(self):
+        try:
+            o = self._vm()
+        except TypeError:
+            o = self._vm
+        return o
+
+    @vm.setter
+    def vm(self, _i):
+        try:
+            self._vm = ref(_i)
+        except TypeError:
+            self._vm = _i
 
     def initSignalAndSlots(self):
         # since initSignalAndSlots can be called in SimTabView multiple times

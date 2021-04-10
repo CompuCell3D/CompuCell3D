@@ -1,4 +1,5 @@
 import warnings
+from weakref import ref
 
 try:
     import webcolors as wc
@@ -58,6 +59,24 @@ class PlotFrameWidget(QtGui.QFrame):
         # needs to be defined to resize smaller than 400x400
         self.setMinimumSize(100, 100)
 
+    @property
+    def parentWidget(self):
+        """
+        Parent if any, otherwise None
+        """
+        try:
+            o = self._parentWidget()
+        except TypeError:
+            o = self._parentWidget
+        return o
+
+    @parentWidget.setter
+    def parentWidget(self, _i):
+        try:
+            self._parentWidget = ref(_i)
+        except TypeError:
+            self._parentWidget = _i
+
     @staticmethod
     def tweak_context_menu(plot_item: PlotItem):
         """
@@ -93,7 +112,8 @@ class PlotFrameWidget(QtGui.QFrame):
     def getPlotParams(self):
         """
         Fetches a dictionary of parameters describing plot
-        @return: {dict}
+
+        :return: {dict}
         """
         return self.plot_params
 
