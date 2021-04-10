@@ -10,7 +10,7 @@ VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 
 
 class MVCDrawModelBase:
-    def __init__(self, boundary_strategy):
+    def __init__(self, boundary_strategy, ren=None):
 
         (self.minCon, self.maxCon) = (0, 0)
 
@@ -29,6 +29,30 @@ class MVCDrawModelBase:
         self.celltypeLUT = None
 
         self.gd_ref = None
+        self.ren = ren
+
+    @property
+    def boundary_strategy(self):
+        return self._boundary_strategy()
+
+    @boundary_strategy.setter
+    def boundary_strategy(self, _i):
+        self._boundary_strategy = weakref.ref(_i)
+
+    @property
+    def ren(self):
+        try:
+            o = self._ren()
+        except TypeError:
+            o = self._ren
+        return o
+
+    @ren.setter
+    def ren(self, _i):
+        try:
+            self._ren = weakref.ref(_i)
+        except TypeError:
+            self._ren = _i
 
     def set_generic_drawer(self, gd):
         """
@@ -37,7 +61,6 @@ class MVCDrawModelBase:
         :return:
         """
         self.gd_ref = weakref.ref(gd)
-
 
     def set_boundary_strategy(self, boundary_strategy):
         """

@@ -9,8 +9,8 @@ MODULENAME = '==== MVCDrawView3D.py:  '
 
 
 class MVCDrawView3D(MVCDrawViewBase):
-    def __init__(self, _drawModel):
-        MVCDrawViewBase.__init__(self, _drawModel)
+    def __init__(self, _drawModel, ren=None):
+        MVCDrawViewBase.__init__(self, _drawModel, ren=ren)
 
         self.initArea()
         self.setParams()

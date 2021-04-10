@@ -1,12 +1,13 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
 from PyQt5.QtNetwork import *
+from weakref import ref
 
 
 class WebFetcher(QObject):
-    '''
+    """
     This class fetches content of web page
-    '''
+    """
     # signal emited once the web page content is fetched - first argument is a full content fo the web page,
     # second is url from which the content is fetched
     gotWebContentSignal = QtCore.pyqtSignal(str, str)
@@ -20,13 +21,29 @@ class WebFetcher(QObject):
         self.network_manager.finished.connect(self.reply_finished)
         self.url_str = ''
 
+    @property
+    def parent(self):
+        try:
+            o = self._parent()
+        except TypeError:
+            o = self._parent
+        return o
+
+    @parent.setter
+    def parent(self, _i):
+        try:
+            self._parent = ref(_i)
+        except TypeError:
+            self._parent = _i
+
     def fetch(self, url_str):
-        '''
+        """
         initiates web page fetch process. self.networkmanager emits 'finished' signal once the content has been fetched
         or if e.g. network error has occurred. In the latter case the content of the web page is an empty QString
+
         :param url_str: web address
         :return: None
-        '''
+        """
         self.url_str = url_str
         print('fetch=', url_str)
 
@@ -37,13 +54,14 @@ class WebFetcher(QObject):
         self.network_manager.get(request)
 
     def reply_finished(self, reply):
-        '''
+        """
         slot for the 'finished' signal from self.network_manager. This slots emits another signal
         'gotWebContentSignal' that takes two arguments - content of the webpage (QString) and the url (QString) from
         which the page is requested
+
         :param reply: QString - is the content of the web page
         :return:
-        '''
+        """
 
         data = reply.readAll()
         data_qstring = str(data)

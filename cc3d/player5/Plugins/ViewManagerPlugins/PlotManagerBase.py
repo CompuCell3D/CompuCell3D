@@ -1,7 +1,25 @@
+from weakref import ref
+
+
 class PlotManagerBase:
     def __init__(self, view_manager=None, plot_support_flag=False):
         self.vm = view_manager
         self.plotsSupported = plot_support_flag
+
+    @property
+    def vm(self):
+        try:
+            o = self._vm()
+        except TypeError:
+            o = self._vm
+        return o
+
+    @vm.setter
+    def vm(self, _i):
+        try:
+            self._vm = ref(_i)
+        except TypeError:
+            self._vm = _i
 
     def init_signal_and_slots(self):
         pass

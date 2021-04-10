@@ -1,5 +1,6 @@
 import sys
 import re
+from weakref import ref
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -94,6 +95,20 @@ class SimpleViewManager(QObject):
 
         self.init_actions()
         self.ui = ui
+
+    @property
+    def ui(self):
+        """
+        Parent UserInterface instance
+
+        :return: parent
+        :rtype: cc3d.player5.UI.UserInterface.UserInterface
+        """
+        return self._ui()
+
+    @ui.setter
+    def ui(self, _ui):
+        self._ui = ref(_ui)
 
     def init_file_menu(self):
         """

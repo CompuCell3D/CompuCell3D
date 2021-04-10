@@ -11,6 +11,7 @@ import sys
 import os
 from os import environ
 import time
+from weakref import ref
 
 SIZEOF_UINT16 = 2
 
@@ -72,6 +73,21 @@ class CC3DSender(QObject):
         self.column_Request = 0
 
         self.editorOpenedBySender = False
+
+    @property
+    def errorConsole(self):
+        try:
+            o = self._errorConsole()
+        except TypeError:
+            o = self._errorConsole
+        return o
+
+    @errorConsole.setter
+    def errorConsole(self, _i):
+        try:
+            self._errorConsole = ref(_i)
+        except TypeError:
+            self._errorConsole = _i
 
     def setServerPort(self, port):
         self.port = port
