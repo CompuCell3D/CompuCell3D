@@ -14,7 +14,7 @@ class CellSortingSteppable(SteppableBasePy):
         iteration = self.param_scan_iteration
 
         # creating file in the parameter scan main output folder - the top level one where we also store
-        # subfolders with outputs from individual parameter scaniteration simulations
+        # subfolders with outputs from individual parameter scan iteration simulations
         file_handle, output_path = self.open_file_in_parameter_scan_main_output_folder(f'demo_file_{iteration}')
         file_handle.close()
 
