@@ -162,9 +162,9 @@ void DiffusionSolverFE<Cruncher>::Scale(std::vector<float> const &maxDiffConstVe
                 mitr->second/=scalingExtraMCSVec[i];
             }
 
-            for (std::map<unsigned char,float>::iterator mitr=secrData.typeIdSecrConstConstantConcentrationMap.begin() ; mitr!=secrData.typeIdSecrConstConstantConcentrationMap.end() ; ++mitr){
-                mitr->second/=scalingExtraMCSVec[i];
-            }
+            // Notice we do not scale constant concentration secretion. When users use Constant concentration secretion they want to keep concentration at a given cell at the specified level
+            // so no scaling
+
 
             for (std::map<unsigned char,SecretionOnContactData>::iterator mitr=secrData.typeIdSecrOnContactDataMap.begin() ; mitr!=secrData.typeIdSecrOnContactDataMap.end() ; ++mitr){
                 SecretionOnContactData & secrOnContactData=mitr->second;
