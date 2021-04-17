@@ -512,37 +512,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.cml_args = cml_args
 
         persistent_globals.output_file_core_name = cml_args.output_file_core_name
+        persistent_globals.parameter_scan_iteration = self.cml_args.parameter_scan_iteration
 
         settings_dict = self.override_settings_using_cml_args(cml_args=self.cml_args)
         start_simulation = settings_dict['start_simulation']
 
-        # if cml_args.input:
-        #     self.__sim_file_name = cml_args.input
-        #     start_simulation = True
-        #
-        # self.__imageOutput = not cml_args.noOutput
-        #
-        # if cml_args.screenshotOutputDir:
-        #     persistent_globals.set_output_dir(output_dir=cml_args.screenshotOutputDir)
-        #     self.__imageOutput = True
-        #
-        # if cml_args.screenshot_output_frequency > 0:
-        #     self.__imageOutput = True
-        #     self.__shotFrequency = cml_args.screenshot_output_frequency
-        #
-        # if cml_args.outputFrequency:
-        #     self.__latticeOutputFlag = True
-        #     self.__latticeOutputFrequency = cml_args.outputFrequency
-        #
-        # if cml_args.playerSettings:
-        #     self.playerSettingsFileName = cml_args.playerSettings
-
         current_dir = cml_args.currentDir if cml_args.currentDir else ''
         if cml_args.windowSize:
-            winSizes = cml_args.windowSize.split('x')
-            # print MODULENAME, "  winSizes=", winSizes
-            width = int(winSizes[0])
-            height = int(winSizes[1])
+            win_sizes = cml_args.windowSize.split('x')
+            width = int(win_sizes[0])
+            height = int(win_sizes[1])
             Configuration.setSetting("GraphicsWinWidth", width)
             Configuration.setSetting("GraphicsWinHeight", height)
 
@@ -2756,7 +2735,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return: None
         """
         title_to_display = join(basename(dirname(self.__sim_file_name)), basename(self.__sim_file_name))
-        widget.setWindowTitle(title_to_display + " - CompuCell3D Player")
+        # handling extra display label - only when user passes it via command line option
+
+        persistent_globals = CompuCellSetup.persistent_globals
+        title_window_display_label = ''
+        if persistent_globals.parameter_scan_iteration is not None:
+            title_window_display_label = f' - iteration - {persistent_globals.parameter_scan_iteration}'
+
+        widget.setWindowTitle(title_to_display + f" - CompuCell3D Player{title_window_display_label}")
 
     def __openLDSFile(self, fileName=None):
         """

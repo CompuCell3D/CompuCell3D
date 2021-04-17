@@ -11,7 +11,7 @@ from cc3d.CompuCellSetup.simulation_utils import extract_type_names_and_ids
 from cc3d import CompuCellSetup
 from cc3d.core.XMLUtils import dictionaryToMapStrStr as d2mss
 from cc3d.core.XMLDomUtils import XMLElemAdapter
-from typing import Union
+from typing import Union, Optional
 from cc3d.cpp import CompuCell
 from cc3d.core.SBMLSolverHelper import SBMLSolverHelper
 import types
@@ -304,6 +304,61 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         list_by_type_obj = CellListByType(self.inventory, *args)
         return list_by_type_obj
 
+    def parameter_scan_main_output_folder(self) -> Optional[Path]:
+        """
+        Returns parameter scan main output folder. For example if instance of parameter scan is
+        being written to
+        C:/Users/m/CC3DWorkspace/CellSortingParameterScanWorkshop2020_output/scan_iteration_3/
+        CellSortingParameterScanWorkshop2020
+        it will return :
+        C:/Users/m/CC3DWorkspace/CellSortingParameterScanWorkshop2020_output
+        :return:
+        """
+        if self.output_dir is not None:
+            param_scan_main_output_dir = Path(*Path(self.output_dir).parts[:-2])
+            return param_scan_main_output_dir
+
+    def open_file_in_parameter_scan_main_output_folder(self, file_name: str, mode: str = 'w') -> tuple:
+        """
+        opens file for writing in parameter scan main output folder. for example
+        if instance of parameter scan is
+        being written to
+        C:/Users/m/CC3DWorkspace/CellSortingParameterScanWorkshop2020_output/scan_iteration_3/
+        CellSortingParameterScanWorkshop2020
+        it will open file - file_name in
+        C:/Users/m/CC3DWorkspace/CellSortingParameterScanWorkshop2020_output
+        :param file_name:
+        :param mode:
+        :return: tuple of (file_obj, full filepath)
+        """
+        parameter_scan_main_output_folder = self.parameter_scan_main_output_folder()
+        if self.parameter_scan_main_output_folder() is not None:
+            output_path = parameter_scan_main_output_folder.joinpath(file_name)
+
+            return self.open_file(abs_path=output_path, mode=mode)
+
+        return None, None
+
+    @property
+    def param_scan_iteration(self):
+        return CompuCellSetup.persistent_globals.parameter_scan_iteration
+
+    def open_file(self, abs_path: Union[Path, str], mode='w') -> tuple:
+        """
+        Opens file
+        :param abs_path:
+        :param mode:
+        :return: tuple of (file_obj, full filepath)
+        """
+        output_path = Path(abs_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            file_handle = open(output_path, mode)
+        except IOError:
+            print(f"Could not open file: {abs_path} for writing")
+            return None, None
+        return file_handle, output_path
+
     def open_file_in_simulation_output_folder(self, file_name: str, mode: str = 'w') -> tuple:
         """
         attempts to open file in the simulation output folder
@@ -314,13 +369,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         if self.output_dir is not None:
             output_path = Path(self.output_dir).joinpath(file_name)
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            try:
-                file_handle = open(output_path, 'w')
-            except IOError:
-                print("Could not open file for writing.")
-                return None, None
-            return file_handle, output_path
+            return self.open_file(abs_path=output_path, mode=mode)
 
     @staticmethod
     def request_screenshot(mcs: int, screenshot_label: str) -> None:
