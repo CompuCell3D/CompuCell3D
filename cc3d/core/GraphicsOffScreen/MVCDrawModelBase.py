@@ -5,6 +5,7 @@ from cc3d.player5.Utilities.utils import to_vtk_rgb
 import numpy as np
 from cc3d.cpp import CompuCell
 import weakref
+from math import log10, fabs
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 
@@ -235,16 +236,16 @@ class MVCDrawModelBase:
         :param max_exp:
         :return:
         """
-        from math import log10, fabs
+
         if val == 0.0:
             return '0.0'
 
         try:
-            val_log = fabs(log10(val))
+            val_log = fabs(log10(fabs(val)))
             if val_log <= max_exp:
-                val_str = '{:f}'.format(val)
+                val_str = f'{val:f}'
             else:
-                val_str = '{:e}'.format(val)
+                val_str = f'{val:e}'
         except:
             val_str = 'NaN'
 
