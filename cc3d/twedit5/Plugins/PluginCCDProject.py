@@ -53,6 +53,7 @@ import cc3d.twedit5.Plugins.CC3DProject.CC3DPythonGenerator as cc3dPythonGen
 from cc3d.core.ParameterScanUtils import ParameterScanUtils
 from cc3d.core.ParameterScanEnums import PYTHON_GLOBAL
 from cc3d.gui_plugins.unzipper import Unzipper
+from pathlib import Path
 
 # Start-Of-Header
 
@@ -412,11 +413,11 @@ class CC3DProjectTreeWidget(QTreeWidget):
 
         # --------------------------------------------------------------------
 
-        # menu.addSeparator()
+        menu.addSeparator()
 
         # parameter scan menus
 
-        # self.addActionToContextMenu(menu, self.plugin.actions["Add Parameter Scan"])
+        self.addActionToContextMenu(menu, self.plugin.actions["Add Parameter Scan"])
         #
         # self.addParameterScanMenus(menu, projItem)
 
@@ -882,6 +883,8 @@ class CC3DProject(QObject, TweditPluginBase):
 
         self.cc3dProjectMenu.addAction(self.actions["Open CC3D Project..."])
 
+        self.cc3dProjectMenu.addAction(self.actions['Open Most Recent CC3D Project'])
+
         self.cc3dProjectMenu.addAction(self.actions["Save CC3D Project"])
 
         self.cc3dProjectMenu.addAction(self.actions["Save CC3D Project As..."])
@@ -919,7 +922,7 @@ class CC3DProject(QObject, TweditPluginBase):
 
         # Parameter scan Menu
 
-        # self.cc3dProjectMenu.addAction(self.actions["Add Parameter Scan"])
+        self.cc3dProjectMenu.addAction(self.actions["Add Parameter Scan"])
 
         # self.cc3dProjectMenu.addAction(self.actions["Add To Scan..."])
 
@@ -1112,6 +1115,13 @@ class CC3DProject(QObject, TweditPluginBase):
                                                                  statusTip="Open CC3D Project ",
                                                                  triggered=self.__openCC3DProject)
 
+        self.actions["Open Most Recent CC3D Project"] = QtWidgets.QAction(QIcon(':/icons/open-project.png'),
+                                                                 "Open Most Recent CC3D Project",
+                                                                 self, shortcut="Ctrl+Shift+Alt+O",
+                                                                 statusTip="Opens Most Recent CC3D Project ",
+                                                                 triggered=self.open_most_recent_cc3d_project)
+
+
         self.actions["Open in Player"] = QtWidgets.QAction(QIcon(':/icons/player5-icon.png'), "Open In Player", self,
                                                            shortcut="", statusTip="Open simulation in Player ",
                                                            triggered=self.__runInPlayer)
@@ -1238,6 +1248,7 @@ class CC3DProject(QObject, TweditPluginBase):
                                                                shortcut="Ctrl+Shift+P", statusTip="Add Parameter Scan ",
 
                                                                triggered=self.__addParameterScan)
+
 
         # on osx 10.9 context menu icons are not rendered properly so we do not include them at all on OSX
 
@@ -1383,7 +1394,9 @@ class CC3DProject(QObject, TweditPluginBase):
 
         pdh.cc3dSimulationData.parameterScanResource.writeParameterScanSpecs()
 
-        pdh.cc3dSimulationData.parameterScanResource.basePath = pdh.cc3dSimulationData.basePath  # setting same base path for parameter scan as for the project - necessary to get relative paths in the parameterSpec file        
+        # setting same base path for parameter scan as for the project - necessary to get relative
+        # paths in the parameterSpec file
+        pdh.cc3dSimulationData.parameterScanResource.basePath = pdh.cc3dSimulationData.basePath
 
         self.__save_cc3d_project()
 
@@ -3884,6 +3897,17 @@ class CC3DProject(QObject, TweditPluginBase):
 
         current_file_path = str(self.configuration.setting("RecentProject"))
         self.showOpenProjectDialogAndLoad(current_file_path)
+
+    def open_most_recent_cc3d_project(self):
+        current_file_path = str(self.configuration.setting("RecentProject"))
+        if not len(current_file_path):
+            self.showOpenProjectDialogAndLoad()
+            return
+
+        current_proj_pth = Path(current_file_path)
+        if current_proj_pth.exists():
+            self.openCC3Dproject(str(current_proj_pth))
+
 
     def findTypeItemByName(self, _typeName):
 
