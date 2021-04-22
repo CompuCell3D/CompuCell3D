@@ -3853,9 +3853,10 @@ class CC3DProject(QObject, TweditPluginBase):
 
         # we read manually the content of the parameter spec file
 
-        if self.projectDataHandlers[qt_obj_hash(proj_item)].cc3dSimulationData.parameterScanResource:
-            self.projectDataHandlers[
-                qt_obj_hash(proj_item)].cc3dSimulationData.parameterScanResource.readParameterScanSpecs()
+        # todo - reimplement reading of parameter scan spec on project open
+        # if self.projectDataHandlers[qt_obj_hash(proj_item)].cc3dSimulationData.parameterScanResource:
+        #     self.projectDataHandlers[
+        #         qt_obj_hash(proj_item)].cc3dSimulationData.parameterScanResource.readParameterScanSpecs()
 
         self.__populateCC3DProjectWidget(proj_item, proj_file_name)
 

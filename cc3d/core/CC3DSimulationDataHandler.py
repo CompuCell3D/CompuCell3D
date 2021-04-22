@@ -106,11 +106,8 @@ class CC3DParameterScanResource(CC3DResource):
         self.type = 'ParameterScan'
         self.basePath = ''
 
-        self.parameterScanXMLElements = {}
-        # {file name:dictionary of parameterScanData} parameterScanDataMap={hash:parameterScanData}
         self.parameterScanFileToDataMap = {}
-        self.fileTypeForEditor = 'xml'
-        self.parameterScanXMLHandler = None
+        self.fileTypeForEditor = 'json'
 
         # ParameterScanUtils is the class where all parsing and parameter scan data processing takes place
         self.psu = ParameterScanUtils()
@@ -197,13 +194,9 @@ class CC3DSimulationData:
 
     def addNewParameterScanResource(self):
         self.parameterScanResource = CC3DParameterScanResource()
-        self.parameterScanResource.path = os.path.abspath(
-            os.path.join(self.basePath, 'Simulation/ParameterScanSpecs.json'))
+        self.parameterScanResource.path = os.path.abspath(os.path.join(self.basePath,
+                                                                       'Simulation/ParameterScanSpecs.json'))
 
-        # extracting core simulation name from full cc3d project path
-        base_core_name, ext = os.path.splitext(os.path.basename(self.path))
-
-        self.parameterScanResource.psu.setOutputDirectoryRelativePath(base_core_name + '_ParameterScan')
 
     def removeParameterScanResource(self):
         self.parameterScanResource = None
