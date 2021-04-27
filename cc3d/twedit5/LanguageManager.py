@@ -80,6 +80,11 @@ class LanguageManager:
 
                                              ["QsciLexerJavaScript", "// ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
 
+        self.addLanguageLexerDictionaryEntry("JSON",
+
+                                             ["QsciLexerJSON", None, None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
+
+
         self.addLanguageLexerDictionaryEntry("Lua", ["QsciLexerLua", "-- ", None, 1, 5, QsciScintilla.SCWS_INVISIBLE])
 
         self.addLanguageLexerDictionaryEntry("Makefile",
