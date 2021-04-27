@@ -5,6 +5,7 @@ import shutil
 # import cc3d.twedit5.twedit.editor.Configuration as Configuration
 # import cc3d.core.DefaultSettingsData as settings_data
 from cc3d.core.ParameterScanUtils import ParameterScanUtils
+from cc3d.core.ParameterScanUtils import ParameterScanData
 from cc3d.core import DefaultSettingsData as settings_data
 from cc3d.core.XMLUtils import ElementCC3D
 from cc3d.core.XMLUtils import Xml2Obj
@@ -112,14 +113,8 @@ class CC3DParameterScanResource(CC3DResource):
         # ParameterScanUtils is the class where all parsing and parameter scan data processing takes place
         self.psu = ParameterScanUtils()
 
-    def addParameterScanData(self, _file, _psd):
-        print('self.basePath=', self.basePath)
-        print('_file=', _file)
-
-        # relative path of the scanned simulation file w.r.t. project directory
-        relativePath = find_relative_path(self.basePath, _file)
-        print('relativePath=', relativePath)
-        self.psu.addParameterScanData(relativePath, _psd)
+    def addParameterScanData(self, psd: ParameterScanData):
+        self.psu.addParameterScanData(psd)
 
     def readParameterScanSpecs(self):
         self.psu.readParameterScanSpecs(self.path)
@@ -196,7 +191,6 @@ class CC3DSimulationData:
         self.parameterScanResource = CC3DParameterScanResource()
         self.parameterScanResource.path = os.path.abspath(os.path.join(self.basePath,
                                                                        'Simulation/ParameterScanSpecs.json'))
-
 
     def removeParameterScanResource(self):
         self.parameterScanResource = None
@@ -449,6 +443,8 @@ class CC3DSimulationDataHandler:
             # setting same base path for parameter scan as for the project
             # - necessary to get relative paths in the parameterSpec file
             self.cc3dSimulationData.parameterScanResource.basePath = self.cc3dSimulationData.basePath
+            self.cc3dSimulationData.parameterScanResource.readParameterScanSpecs()
+
             # reading content of XML parameter scan specs
             # ------------------------------------------------------------------ IMPORTANT IMPOTRANT ----------------
             # WE HAVE TO CALL MANUALLY readParameterScanSpecs because

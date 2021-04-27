@@ -166,6 +166,7 @@ class XMLHandler:
 class ParameterScanData:
     def __init__(self):
         self.name = ''
+        self.previous_name = None
         self.valueType = FLOAT
         self.type = XML_ATTR
         self.accessPath = ''
@@ -275,8 +276,14 @@ class ParameterScanUtils:
 
     def __init__(self):
 
-        self.cc3dXML2ObjConverter = None
-        self.parameter_scan_specs = {}
+        self.parameter_scan_specs = {
+            'version': '4.0.0',
+            'parameter_list': {
+
+            }
+
+        }
+        self.parameter_scan_specs_fname = None
 
         # self.root_element = None
         # # {file name:dictionary of parameterScanData} parameterScanDataMap={hash:parameterScanData}
@@ -323,140 +330,50 @@ class ParameterScanUtils:
     #
     #     return params
 
-    def addParameterScanData(self, _relativePath, _psd):
-
+    def addParameterScanData(self, psd: ParameterScanData):
+        """
+        Adds parameter scan soecification (for a single scanned parameter) to the dictionary of all  scanned parameters
+        :param psd:
+        :return:
+        """
         try:
-            parameterScanDataMap = self.parameterScanFileToDataMap[_relativePath]
-        except LookupError as e:
-            parameterScanDataMap = OrderedDict()
-            self.parameterScanFileToDataMap[_relativePath] = parameterScanDataMap
+            parameter_list_dict = self.parameter_scan_specs['parameter_list']
+        except KeyError:
+            raise ValueError('<b>parameter_list</b> key is missing from parameter_scan_specs dictionary. '
+                             'This indicates corrupt <b>ParameterScan.json</b> file. Please delete content of this '
+                             'file and start again')
 
-        parameterScanDataMap[_psd.stringHash()] = _psd
+        modifying_existing_parameter = False
+        if psd.previous_name is not None and psd.name != psd.previous_name:
+            modifying_existing_parameter = True
 
-    # def parseXML(self, _xmlFile):
-    #     import xml
-    #
-    #     from . import XMLUtils
-    #     import os
-    #     cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
-    #     try:
-    #         root_element = cc3dXML2ObjConverter.Parse(_xmlFile)
-    #
-    #         return root_element, cc3dXML2ObjConverter
-    #
-    #     except xml.parsers.expat.ExpatError as e:
-    #         print('Error Parsing Parameter scan file\n\n\n')
-    #         return None, None
+        if not modifying_existing_parameter and psd.name in parameter_list_dict.keys():
+            raise ValueError(f'You are requesting to add parameter <b>{psd.name}</b> but this identifier already '
+                             f'exists in the parameter scan specs')
+
+        if modifying_existing_parameter:
+            try:
+                del parameter_list_dict[psd.previous_name]
+            except KeyError:
+                raise ValueError(f'Could not find entry for the previous name <b>{psd.previous_name}</b> '
+                                 f'of the parameter {psd.name}')
+
+        parameter_list_dict[psd.name] = {'values': psd.customValues}
 
     def refreshParamSpecsContent(self, _pScanFileName):
         self.readParameterScanSpecs(_pScanFileName)
 
-    def readParameterScanSpecs(self, _pScanFileName=''):
+    def readParameterScanSpecs(self, fname):
 
-        self.initialize()
+        pth = Path(fname)
+        with pth.open('r') as json_in:
+            self.parameter_scan_specs = json.load(json_in)
+            self.parameter_scan_specs_fname = pth
 
-        if not _pScanFileName: return
+    def writeParameterScanSpecs(self, fname):
 
-        root_element, xml2ObjConverter = self.parseXML(_pScanFileName)
-
-        if not root_element: return
-
-        self.parameterScanFileToDataMap = OrderedDict()
-
-        # print 'elem=',elem 
-        self.outputDirectoryRelativePath = str(root_element.getFirstElement("OutputDirectory").getText())
-
-        paramListElemList = XMLUtils.CC3DXMLListPy(root_element.getElements("ParameterList"))
-        for paramListElem in paramListElemList:
-            filePath = paramListElem.getAttribute('Resource')
-            # # print 'filePath=',filePath 
-
-            parameterScanDataMap = OrderedDict()
-            self.parameterScanFileToDataMap[filePath] = parameterScanDataMap
-
-            # # print 'READING self.parameterScanFileToDataMap=',self.parameterScanFileToDataMap
-
-            paramElemList = XMLUtils.CC3DXMLListPy(paramListElem.getElements("Parameter"))
-
-            for paramElem in paramElemList:
-                # from ParameterScanUtils import ParameterScanData            
-                psd = ParameterScanData()
-                psd.fromXMLElem(paramElem)
-
-                # storing psd in the dictionary
-                parameterScanDataMap[psd.stringHash()] = psd
-
-                # # print 'AFTER READING PARAM SCAN SPECS ',self.parameterScanFileToDataMap
-        # sys.exit()
-
-    # def normalizeParameterScanSpecs(self,_pScanFileName):
-    # '''This function writes parameter scan file in order set by internal dictionaries of the ParameterScanUtils class. We call it each time we run new parameters scan to ensure that the ordering of dictionaries and file content is the same
-    # '''
-    # pass
-    # # self.readParameterScanSpecs(_pScanFileName)
-    # # self.writeParameterScanSpecs(_pScanFileName)
-
-    def getParameterScanSpecsXMLString(self):
-        from . import XMLUtils
-        from .XMLUtils import ElementCC3D
-        import os
-
-        root_elem = ElementCC3D('ParameterScan', {'version': '3.7.0'})
-        root_elem.ElementCC3D('OutputDirectory', {}, self.outputDirectoryRelativePath)
-
-        # print 'csd.parameterScanResource.parameterScanXMLElements=',self.parameterScanXMLElements
-
-        xmlElemTmpStorage = []
-
-        # # print 'JUST BEFORE WRITING self.parameterScanFileToDataMap=',self.parameterScanFileToDataMap
-
-        for fileName, parameterScanDataMap in self.parameterScanFileToDataMap.items():
-            if len(list(parameterScanDataMap.keys())):
-                # # print ' adding paramList element =',fileName
-                paramListElem = root_elem.ElementCC3D('ParameterList', {'Resource': fileName})
-
-                xmlElemTmpStorage.append(paramListElem)
-
-                for hash, psd in parameterScanDataMap.items():
-                    xmlElem = psd.toXMLElem()
-                    xmlElemTmpStorage.append(xmlElem)
-
-                    paramListElem.CC3DXMLElement.addChild(xmlElem.CC3DXMLElement)
-
-        return root_elem.CC3DXMLElement.getCC3DXMLElementString()
-
-    def writeParameterScanSpecs(self, _pScanFileName):
-
-        with Path(_pScanFileName).open('w') as json_out:
-            json.dump(self.parameter_scan_specs, json_out)
-
-        # from . import XMLUtils
-        # from .XMLUtils import ElementCC3D
-        # import os
-        #
-        # root_elem = ElementCC3D('ParameterScan', {'version': '3.7.0'})
-        # root_elem.ElementCC3D('OutputDirectory', {}, self.outputDirectoryRelativePath)
-        #
-        # # print 'csd.parameterScanResource.parameterScanXMLElements=',self.parameterScanXMLElements
-        #
-        # xmlElemTmpStorage = []
-        #
-        # # # print 'JUST BEFORE WRITING self.parameterScanFileToDataMap=',self.parameterScanFileToDataMap
-        #
-        # for fileName, parameterScanDataMap in self.parameterScanFileToDataMap.items():
-        #     if len(list(parameterScanDataMap.keys())):
-        #         # # print ' adding paramList element =',fileName
-        #         paramListElem = root_elem.ElementCC3D('ParameterList', {'Resource': fileName})
-        #
-        #         xmlElemTmpStorage.append(paramListElem)
-        #
-        #         for hash, psd in parameterScanDataMap.items():
-        #             xmlElem = psd.toXMLElem()
-        #             xmlElemTmpStorage.append(xmlElem)
-        #
-        #             paramListElem.CC3DXMLElement.addChild(xmlElem.CC3DXMLElement)
-        #
-        # root_elem.CC3DXMLElement.saveXML(_pScanFileName)
+        with Path(fname).open('w') as json_out:
+            json.dump(self.parameter_scan_specs, json_out, indent=4)
 
     def resetParameterScan(self, _pScanFileName):
         '''This function resets state of the parameter scan to the beginning

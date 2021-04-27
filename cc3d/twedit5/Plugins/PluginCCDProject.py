@@ -924,7 +924,7 @@ class CC3DProject(QObject, TweditPluginBase):
 
         self.cc3dProjectMenu.addAction(self.actions["Add Parameter Scan"])
 
-        # self.cc3dProjectMenu.addAction(self.actions["Add To Scan..."])
+        self.cc3dProjectMenu.addAction(self.actions["Add To Scan..."])
 
         # self.cc3dProjectMenu.addSeparator()
 
@@ -1899,8 +1899,6 @@ class CC3DProject(QObject, TweditPluginBase):
 
         print('self.projectDataHandlers=', self.projectDataHandlers)
 
-        pdh = None
-
         try:
 
             pdh = self.projectDataHandlers[qt_obj_hash(projItem)]
@@ -1911,21 +1909,63 @@ class CC3DProject(QObject, TweditPluginBase):
 
         csd = pdh.cc3dSimulationData
 
-        pScanResource = pdh.cc3dSimulationData.parameterScanResource
+        p_scan_resource = pdh.cc3dSimulationData.parameterScanResource
 
-        if not self.parameterScanEditor: return
+        editor = self.__ui.getCurrentEditor()
 
-        # check if the editor is still open
+        selection_ok = self.check_selection_end_characters_param_scan()
+        if not selection_ok:
+            current_fname = self.__ui.get_editor_file_name(editor=editor)
 
-        editorExists = self.__ui.checkIfEditorExists(self.parameterScanEditor)
-
-        if not editorExists:
-            self.parameterScanEditor = None
-
+            QMessageBox.warning(tw, "Parameter Scan Selection Issue",
+                                "The selected fragment does not look like it can be part of the Parameter Scan. <br>"
+                                "Notice: you can still add it to parameter scan but you need to edit manually <br>"
+                                f"<b>{current_fname}</b> <br> and <br> <b>ParameterScan.json</b> file. <br>"
+                                "Please follow the guidelines outlined here: <br>"
+                                "<a href='https://pythonscriptingmanual.readthedocs.io/en/latest/parameter_scans.html?highlight=parameter%20scan#parameter-scans'>Parameter Scan Tutorial</a>"
+                                )
             return
 
-        line, col = self.parameterScanEditor.getCursorPosition()
+        already_added_param_name = self.get_already_added_param()
 
+        parvaldlg = ParValDlg(self.parameterScanEditor)
+        if already_added_param_name is not None:
+            parvaldlg.set_identifier(val=already_added_param_name)
+
+        if parvaldlg.exec_():
+
+            try:
+
+                parvaldlg.recordValues()
+
+            except ValueError as e:
+                warning_str = str(e)
+
+                if not len(warning_str):
+                    QMessageBox.warning(tw, "Error Parsing Parameter List",
+                                        "Please make sure that parameter list entries have correct type")
+
+                else:
+                    QMessageBox.warning(tw, "Error With Parameter Specification", warning_str)
+
+                return
+
+            psd = parvaldlg.psd
+
+            if len(psd.customValues):
+
+                try:
+                    csd.parameterScanResource.addParameterScanData(psd)
+                except ValueError as e:
+                    QMessageBox.warning(tw, 'Could Not Add Parameter Scan Specs', str(e) )
+                    return
+
+                p_scan_resource.writeParameterScanSpecs()
+
+
+        self.replace_selection_with(replacement_text='{{' + f'{psd.name}' + '}}')
+
+        return
         print('line,col=', (line, col))
 
         # if pScanResource
@@ -1934,7 +1974,7 @@ class CC3DProject(QObject, TweditPluginBase):
 
         if scannedFileExt == '.xml':
 
-            psXMLHandler = pScanResource.parameterScanXMLHandler
+            psXMLHandler = p_scan_resource.parameterScanXMLHandler
 
             if psXMLHandler:
 
@@ -1961,7 +2001,7 @@ class CC3DProject(QObject, TweditPluginBase):
 
             try:
 
-                pdlg.displayXMLScannableParameters(xmlElem, psXMLHandler.lineToAccessPath[line], pScanResource.path)
+                pdlg.displayXMLScannableParameters(xmlElem, psXMLHandler.lineToAccessPath[line], p_scan_resource.path)
 
                 ret = pdlg.exec_()
 
@@ -1971,7 +2011,7 @@ class CC3DProject(QObject, TweditPluginBase):
 
                     csd.parameterScanResource.psu.refreshParamSpecsContent(
 
-                        pScanResource.path)  # before adding new parameter scan we need to read file again om case user made any change
+                        p_scan_resource.path)  # before adding new parameter scan we need to read file again om case user made any change
 
                     for key, val in pdlg.parameterScanDataMap.items():
                         print('Adding key,val=', (key, val))
@@ -1983,7 +2023,7 @@ class CC3DProject(QObject, TweditPluginBase):
                         # csd.parameterScanResource.parameterScanDataMap[key]=val ###
 
                     if haveNewItems:
-                        pScanResource.writeParameterScanSpecs()
+                        p_scan_resource.writeParameterScanSpecs()
 
 
 
@@ -2040,17 +2080,91 @@ class CC3DProject(QObject, TweditPluginBase):
                     if len(psd.customValues):
                         csd.parameterScanResource.addParameterScanData(self.scannedFileName, psd)
 
-                        pScanResource.writeParameterScanSpecs()
-
-
+                        p_scan_resource.writeParameterScanSpecs()
 
                 else:
-
                     # user canceled
-
                     return
 
         self.__ui.checkIfDocumentsWereModified()
+
+    def check_selection_end_characters_param_scan(self):
+        current_editor = self.__ui.getCurrentEditor()
+        line_start, col_start, line_end, col_end = current_editor.getSelection()
+        if line_end != line_start:
+            QMessageBox.warning(current_editor, "Multi-Line Selection Detected",
+                                "For Parameter Scans multi-line selections are disallowed")
+
+            return False
+
+        current_fname = self.__ui.get_editor_file_name(editor=current_editor)
+        ext = Path(current_fname).suffix
+        xml_allowed_pairs = [
+            ('>', '<'),
+            ('"', '"'),
+            ('>', ','),
+            ('>', ' '),
+            (' ', '<'),
+            (',', '<'),
+        ]
+        if ext.lower() in ['.xml', '.sbml']:
+            for allowed_pair in xml_allowed_pairs:
+                line_text = current_editor.text(line_start)
+
+                try:
+                    left_limit_char = line_text[col_start-1]
+                except IndexError:
+                    left_limit_char = None
+
+                try:
+                    right_limit_char = line_text[col_end]
+                except IndexError:
+                    right_limit_char = None
+
+                if allowed_pair[0] == left_limit_char and allowed_pair[1] == right_limit_char:
+                    return True
+
+    def get_already_added_param(self):
+        """
+        Returns label of already added parameter (if such exist) -  it woudl be par_name for
+        {{par_name}} example, or returns None . Used to see if user has selected a parameter that has been already
+        added.
+        :return:
+        """
+        current_editor = self.__ui.getCurrentEditor()
+        line_start, col_start, line_end, col_end = current_editor.getSelection()
+        line_text = current_editor.text(line_start)
+        left_braces = False
+        try:
+            if line_text[col_start:col_start+2] == '{{':
+                left_braces = True
+        except IndexError:
+            pass
+
+        right_braces = False
+        try:
+            if line_text[col_end-2:col_end] == '}}':
+                right_braces = True
+        except IndexError:
+            pass
+
+        if left_braces and right_braces:
+            return line_text[col_start + 2: col_end-2]
+
+
+    def replace_selection_with(self, replacement_text):
+        """
+        Replaces selected text with replacemtn_text for the current editor
+        :param replacement_text:
+        :return:
+        """
+        current_editor = self.__ui.getCurrentEditor()
+        line_start, col_start, line_end, col_end = current_editor.getSelection()
+        current_editor.removeSelectedText()
+        current_editor.insertAt(replacement_text, line_start, col_start)
+
+        current_fname = self.__ui.get_editor_file_name(editor=current_editor)
+        self.__ui.saveFile(current_fname, _editor=current_editor)
 
     def restoreIcons(self):
 
@@ -3908,7 +4022,6 @@ class CC3DProject(QObject, TweditPluginBase):
         current_proj_pth = Path(current_file_path)
         if current_proj_pth.exists():
             self.openCC3Dproject(str(current_proj_pth))
-
 
     def findTypeItemByName(self, _typeName):
 

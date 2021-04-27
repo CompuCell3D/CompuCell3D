@@ -35,6 +35,16 @@ class ParValDlg(QDialog, ui_parvaldlg.Ui_ParValDlg):
 
         self.psd = ParameterScanData()
 
+    def set_identifier(self, val):
+        """
+        prepopulates identifier line edit
+        :param val:
+        :return:
+        """
+        self.identifierLE.setText(val)
+        self.psd.previous_name = val
+
+
     def guessParameterValueType(self, _val):
 
         ''' this fcn attempts to guess type of the parameter in this order:int,float, default string
@@ -65,36 +75,34 @@ class ParValDlg(QDialog, ui_parvaldlg.Ui_ParValDlg):
 
         return STRING
 
-    def initParameterScanData(self, _parValue, _parName, _parType=XML_CDATA, _parAccessPath=''):
-
-        psd = self.psd
-
-        psd.name = _parName
-
-        psd.type = _parType
-
-        psd.accessPath = _parAccessPath
-
-        guessedType = self.guessParameterValueType(_parValue)
-
-        print('guessedType=', guessedType)
-
-        self.typeCB.setCurrentIndex(self.typeToCBindexDict[guessedType])
-
-        self.setAutoMinMax(_parValue, guessedType)
-
-        self.valueType = str(self.typeCB.currentText())
-
-        # self.recordValues()
+    # def initParameterScanData(self, _parValue, _parName, _parType=XML_CDATA, _parAccessPath=''):
+    #
+    #     psd = self.psd
+    #
+    #     psd.name = _parName
+    #
+    #     psd.type = _parType
+    #
+    #     psd.accessPath = _parAccessPath
+    #
+    #     guessedType = self.guessParameterValueType(_parValue)
+    #
+    #     print('guessedType=', guessedType)
+    #
+    #     self.typeCB.setCurrentIndex(self.typeToCBindexDict[guessedType])
+    #
+    #     self.setAutoMinMax(_parValue, guessedType)
+    #
+    #     self.valueType = str(self.typeCB.currentText())
+    #
+    #     # self.recordValues()
 
     def recordValues(self):
 
         psd = self.psd
 
         psd.valueType = self.getValueType()
-
-        # VALUE_TYPE_DICT_REVERSE[self.getValueType()]                
-
+        psd.name = self.identifierLE.text()
         psd.customValues = self.getValues()
 
     def __changeValueType(self, _index):
@@ -151,48 +159,48 @@ class ParValDlg(QDialog, ui_parvaldlg.Ui_ParValDlg):
 
         '''returns list of numerical values for parameter scan'''
 
-        valueStr = str(self.valuesLE.text())
+        value_str = str(self.valuesLE.text())
+        if not len(value_str.strip()):
+            raise ValueError('Empty value list. Make sure you clicked "Generate Values" prior to closing '
+                             'dialog with "OK" button')
 
-        valueStr = removeWhiteSpaces(valueStr)
+        value_str = removeWhiteSpaces(value_str)
 
         values = []
 
-        if valueStr == '': return values
+        if value_str == '':
+            return values
 
-        if valueStr[-1] == ',':
-            valueStr = valueStr[:-1]
+        if value_str[-1] == ',':
+            value_str = value_str[:-1]
 
-        typeToCompare = self.getValueType()
+        type_to_compare = self.getValueType()
 
         # str(self.typeCB.currentText())
 
         if _castToType:
-            typeToCompare = _castToType
+            type_to_compare = _castToType
 
             # we have to split values differently depending whether they are strings or numbers
 
         values = None
 
-        if typeToCompare == STRING:
+        if type_to_compare == STRING:
 
-            values = extractListOfStrings(valueStr)
+            values = extractListOfStrings(value_str)
 
         else:
 
-            if len(valueStr):
-                values = valueStr.split(',')
+            if len(value_str):
+                values = value_str.split(',')
 
         if len(values):
 
-            # if typeToCompare=='float':
-
-            if typeToCompare == FLOAT:
+            if type_to_compare == FLOAT:
 
                 values = list(map(float, values))
 
-            elif typeToCompare == INT:
-
-                # elif typeToCompare=='int':
+            elif type_to_compare == INT:
 
                 values = list(map(int, values))
 
@@ -257,7 +265,6 @@ class ParValDlg(QDialog, ui_parvaldlg.Ui_ParValDlg):
 
 
         elif distr == 'random':
-
 
             values = [minVal + random() * (maxVal - minVal) for i in range(steps)]
 
