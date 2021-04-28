@@ -54,7 +54,6 @@ endif()
 IF(SWIG_FOUND)
     add_subdirectory(CC3DXML)
     add_subdirectory(CompuCellPython)
-    add_subdirectory(MaBoSSCC3D)
 
 # if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
