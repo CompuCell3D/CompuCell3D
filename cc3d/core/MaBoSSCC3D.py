@@ -17,7 +17,17 @@ Defines helpers and steppable class features for using MaBoSS in CC3D Python
 import os
 import tempfile
 from typing import Dict
-from cc3d.cpp import CompuCell, MaBoSSCC3DPy
+from cc3d.cpp import CompuCell
+try:
+    from cc3dext import MaBoSSCC3DPy
+    __has_extension__ = True
+except ModuleNotFoundError:
+    __has_extension__ = False
+
+
+class NoMaBoSSExtensionError(Exception):
+    """Simple exception to notify of missing required extension"""
+    pass
 
 
 def maboss_model(bnd_file: str = None,
@@ -50,6 +60,9 @@ def maboss_model(bnd_file: str = None,
     :return: MaBoSS simulation instance
     :rtype: MaBoSSCC3DPy.CC3DMaBoSSEngine
     """
+    if not __has_extension__:
+        raise NoMaBoSSExtensionError
+
     if bnd_file is None:
         if bnd_str is None:
             raise ValueError("No network specified")
@@ -203,3 +216,7 @@ class MaBoSSHelper:
                     model.step()
             except KeyError:
                 pass
+
+
+if not __has_extension__:
+    MaBoSSHelper = object
