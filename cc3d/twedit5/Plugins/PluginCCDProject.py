@@ -1882,11 +1882,65 @@ class CC3DProject(QObject, TweditPluginBase):
 
         QApplication.clipboard().setText(s)
 
+    def check_current_editor_project(self):
+
+        editor = self.__ui.getCurrentEditor()
+        current_fname = self.__ui.get_editor_file_name(editor=editor)
+
+        tw = self.treeWidget
+
+        proj_item = tw.getProjectParent(tw.currentItem())
+
+        if not proj_item:
+            return
+
+        try:
+            ild = tw.projects[qt_obj_hash(proj_item)]
+        except LookupError:
+            ild = None
+
+        if ild is None:
+            return False
+
+        for tw_item, cc3d_resource in ild.itemToResource.items():
+            if os.path.abspath(cc3d_resource.path) == os.path.abspath(current_fname):
+                return True
+
+        return False
+
     def remove_from_parameter_scan(self):
         tw = self.treeWidget
-        selection_ok = self.check_selection_end_characters_param_scan()
-        if not selection_ok:
 
+        already_added_param_name = self.get_already_added_param()
+
+        if already_added_param_name is None:
+            QMessageBox.warning(tw, 'Not a Definition of Scanned Parameter',
+                                'The selected Item is not a definition of the scanned parameter. '
+                                'Scanned parameters are enclosed between <b>"{{"</b> and <b>"}}"</b>')
+            return
+
+        proj_item = tw.getProjectParent(tw.currentItem())
+
+        try:
+            pdh = self.projectDataHandlers[qt_obj_hash(proj_item)]
+        except KeyError:
+            QMessageBox.warning(tw, 'Could Not Find Active CC3D Project',
+                                'Please Open or activate (by clicking on the project in the left panel) '
+                                'CC3D project before trying tro modify parameter scan specifications')
+            return
+
+        csd = pdh.cc3dSimulationData
+
+        if csd.parameterScanResource is None:
+            QMessageBox.warning(tw, "Parameter Scan resource Does not Exist for This Project",
+                                'Please add Parameter Scan Resource to the project')
+            return
+
+        selection_ok = self.check_selection_end_characters_param_scan()
+        editor = self.__ui.getCurrentEditor()
+        current_fname = self.__ui.get_editor_file_name(editor=editor)
+
+        if not selection_ok:
             QMessageBox.warning(tw, "Parameter Scan Selection Issue",
                                 "The selected fragment does not look like it can be part of the Parameter Scan. <br>"
                                 "Notice: you can still delete it from parameter scan but you need to edit manually <br>"
@@ -1896,8 +1950,6 @@ class CC3DProject(QObject, TweditPluginBase):
                                 )
             return
 
-        already_added_param_name = self.get_already_added_param()
-
         ans = QMessageBox.question(tw,
                                    'Remove Parameter From Scan?',
                                    f'Are you sure you want to delete <b>{already_added_param_name}</b> '
@@ -1905,14 +1957,13 @@ class CC3DProject(QObject, TweditPluginBase):
 
         if ans == QMessageBox.Yes:
 
-            projItem = tw.getProjectParent(tw.currentItem())
-
-            try:
-                pdh = self.projectDataHandlers[qt_obj_hash(projItem)]
-            except KeyError:
+            ok_flag = self.check_current_editor_project()
+            if not ok_flag:
+                QMessageBox.warning(tw, "File Does Not Belong to Currently Select Project",
+                                    f"File {current_fname} does belong to currenly active project. <br>"
+                                    f"Please click on project in the Project Panel to which this file belongs to"
+                                    )
                 return
-
-            csd = pdh.cc3dSimulationData
 
             psu = csd.parameterScanResource.psu
             existing_param_scan_data_dict = psu.get_parameter_scan_data_dict(already_added_param_name)
@@ -1939,8 +1990,6 @@ class CC3DProject(QObject, TweditPluginBase):
         p_scan_resource = pdh.cc3dSimulationData.parameterScanResource
         return p_scan_resource
 
-
-
     def __addToScan(self):
 
         tw = self.treeWidget
@@ -1949,14 +1998,20 @@ class CC3DProject(QObject, TweditPluginBase):
 
         try:
             pdh = self.projectDataHandlers[qt_obj_hash(proj_item)]
-        except LookupError as e:
+        except LookupError:
             return
 
         csd = pdh.cc3dSimulationData
 
+        if csd.parameterScanResource is None:
+            QMessageBox.warning(tw, "Parameter Scan resource Does not Exist for This Project",
+                                'Please add Parameter Scan Resource to the project')
+            return
+
         p_scan_resource = pdh.cc3dSimulationData.parameterScanResource
 
         editor = self.__ui.getCurrentEditor()
+        current_fname = self.__ui.get_editor_file_name(editor=editor)
 
         selection_ok = self.check_selection_end_characters_param_scan()
         if not selection_ok:
@@ -1968,6 +2023,15 @@ class CC3DProject(QObject, TweditPluginBase):
                                 f"<b>{current_fname}</b> <br> and <br> <b>ParameterScan.json</b> file. <br>"
                                 "Please follow the guidelines outlined here: <br>"
                                 "<a href='https://pythonscriptingmanual.readthedocs.io/en/latest/parameter_scans.html?highlight=parameter%20scan#parameter-scans'>Parameter Scan Tutorial</a>"
+                                )
+            return
+
+        ok_flag = self.check_current_editor_project()
+
+        if not ok_flag:
+            QMessageBox.warning(tw, "File Does Not Belong to Currently Select Project",
+                                f"File {current_fname} does belong to currenly active project. <br>"
+                                f"Please click on project in the Project Panel to which this file belongs to"
                                 )
             return
 
@@ -2126,7 +2190,6 @@ class CC3DProject(QObject, TweditPluginBase):
 
         self.addActionToContextMenu(menu, self.actions["Add To Scan..."])
         self.addActionToContextMenu(menu, self.actions["Remove From Scan..."])
-
 
         # self.addActionToContextMenu(menu, self.actions["XML Access Path to Clipboard"])
 
@@ -2782,7 +2845,7 @@ class CC3DProject(QObject, TweditPluginBase):
         if _fileName != "":
 
             # we will check if current tab before and after opening new document
-            # are the same (meaning an attampt to open same document twice)
+            # are the same (meaning an attempt to open same document twice)
 
             self.__ui.loadFile(_fileName)
 
