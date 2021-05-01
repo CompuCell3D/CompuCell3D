@@ -1999,6 +1999,9 @@ class CC3DProject(QObject, TweditPluginBase):
         try:
             pdh = self.projectDataHandlers[qt_obj_hash(proj_item)]
         except LookupError:
+            QMessageBox.warning(tw, 'Could Not Find Active CC3D Project',
+                                'Please Open or activate (by clicking on the project in the left panel) '
+                                'CC3D project before trying tro modify parameter scan specifications')
             return
 
         csd = pdh.cc3dSimulationData
