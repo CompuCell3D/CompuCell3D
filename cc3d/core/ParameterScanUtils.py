@@ -287,11 +287,6 @@ class ParameterScanUtils:
         }
         self.parameter_scan_specs_fname = None
 
-        # self.root_element = None
-        # # {file name:dictionary of parameterScanData} parameterScanDataMap={hash:parameterScanData}
-        # self.parameterScanFileToDataMap = OrderedDict()
-        # self.outputDirectoryRelativePath = ''
-
     def get_parameter_scan_data_dict(self, key: str) ->dict:
         """
         returns a dictionary corresponding to entry ['parameter_list'][key] in  self.parameter_scan_specs
@@ -312,46 +307,6 @@ class ParameterScanUtils:
             del self.parameter_scan_specs['parameter_list'][key]
 
         self.write_parameter_scan_specs(fname=self.parameter_scan_specs_fname)
-    # def initialize(self):
-    #     self.cc3dXML2ObjConverter = None
-    #     self.root_element = None
-    #     # {file name:dictionary of parameterScanData} parameterScanDataMap={hash:parameterScanData}
-    #     self.parameterScanFileToDataMap = OrderedDict()
-    #     self.outputDirectoryRelativePath = ''
-
-    # def setOutputDirectoryRelativePath(self, _path):
-    #     self.outputDirectoryRelativePath = _path
-
-    # def extractXMLScannableParameters(self, _elem, _scanFile):
-    #     '''
-    #         returns dictionary of scannable parameters for a given XML file
-    #     '''
-    #     # parse current scan file
-    #     self.xmlHandler = XMLHandler
-    #
-    #     params = {}
-    #     # # print '_elem=',_elem.name
-    #     # # print '_elem.attributes.size()=',_elem.attributes
-    #
-    #     if _elem.attributes.size():
-    #         for key in list(_elem.attributes.keys()):
-    #             try:  # checki if attribute can be converted to floating point value - if so it can be added to scannable parameters
-    #                 print('_elem.attributes[key]=', _elem.attributes[key])
-    #                 float(_elem.attributes[key])
-    #                 params[key] = [_elem.attributes[key], XML_ATTR, FLOAT]
-    #             except ValueError as e:
-    #                 pass
-    #
-    #     # check if cdata is a number - if so this could be scannable parameter
-    #     try:  # checki if attribute can be converted to floating point value - if so it can be added to scannable parameters
-    #
-    #         float(_elem.cdata)
-    #         params[_elem.name] = [_elem.cdata, XML_CDATA, FLOAT]
-    #     except ValueError as e:
-    #         pass
-    #
-    #     return params
-
 
     def addParameterScanData(self, psd: ParameterScanData, original_value: Optional[str] = None):
         """
