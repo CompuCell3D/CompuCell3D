@@ -11,6 +11,7 @@ from cc3d.core import DefaultSettingsData as settings_data
 from cc3d.core.XMLUtils import ElementCC3D
 from cc3d.core.XMLUtils import Xml2Obj
 from cc3d.core.XMLUtils import CC3DXMLListPy
+from typing import Optional
 
 MODULENAME = '------- pythonSetupScripts/CC3DSimulationDataHandler.py: '
 
@@ -114,8 +115,8 @@ class CC3DParameterScanResource(CC3DResource):
         # ParameterScanUtils is the class where all parsing and parameter scan data processing takes place
         self.psu = ParameterScanUtils()
 
-    def addParameterScanData(self, psd: ParameterScanData):
-        self.psu.addParameterScanData(psd)
+    def addParameterScanData(self, psd: ParameterScanData, original_value: Optional[str] = None):
+        self.psu.addParameterScanData(psd, original_value=original_value)
 
     def readParameterScanSpecs(self):
         self.psu.readParameterScanSpecs(self.path)

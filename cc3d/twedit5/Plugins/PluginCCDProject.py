@@ -53,6 +53,7 @@ import cc3d.twedit5.Plugins.CC3DProject.CC3DPythonGenerator as cc3dPythonGen
 from cc3d.core.ParameterScanUtils import ParameterScanUtils
 from cc3d.core.ParameterScanEnums import PYTHON_GLOBAL
 from cc3d.gui_plugins.unzipper import Unzipper
+import contextlib
 from pathlib import Path
 
 # Start-Of-Header
@@ -925,6 +926,7 @@ class CC3DProject(QObject, TweditPluginBase):
         self.cc3dProjectMenu.addAction(self.actions["Add Parameter Scan"])
 
         self.cc3dProjectMenu.addAction(self.actions["Add To Scan..."])
+        self.cc3dProjectMenu.addAction(self.actions["Remove From Scan..."])
 
         # self.cc3dProjectMenu.addSeparator()
 
@@ -1116,11 +1118,10 @@ class CC3DProject(QObject, TweditPluginBase):
                                                                  triggered=self.__openCC3DProject)
 
         self.actions["Open Most Recent CC3D Project"] = QtWidgets.QAction(QIcon(':/icons/open-project.png'),
-                                                                 "Open Most Recent CC3D Project",
-                                                                 self, shortcut="Ctrl+Shift+Alt+O",
-                                                                 statusTip="Opens Most Recent CC3D Project ",
-                                                                 triggered=self.open_most_recent_cc3d_project)
-
+                                                                          "Open Most Recent CC3D Project",
+                                                                          self, shortcut="Ctrl+Shift+Alt+O",
+                                                                          statusTip="Opens Most Recent CC3D Project ",
+                                                                          triggered=self.open_most_recent_cc3d_project)
 
         self.actions["Open in Player"] = QtWidgets.QAction(QIcon(':/icons/player5-icon.png'), "Open In Player", self,
                                                            shortcut="", statusTip="Open simulation in Player ",
@@ -1144,8 +1145,8 @@ class CC3DProject(QObject, TweditPluginBase):
                                                     statusTip="Zips project directory", triggered=self.__zip_project)
 
         self.actions["UnZip It..."] = QtWidgets.QAction("UnZip It...", self,
-                                                          statusTip="Unzip and open zipped CC3D project ",
-                                                          triggered=self.__openCC3DProject)
+                                                        statusTip="Unzip and open zipped CC3D project ",
+                                                        triggered=self.__openCC3DProject)
 
         self.actions["Go To Project Directory"] = QtWidgets.QAction("Go To Project Directory", self, shortcut="",
                                                                     statusTip="Opens directory of the project in "
@@ -1230,7 +1231,6 @@ class CC3DProject(QObject, TweditPluginBase):
                                                                          statusTip="Adds Steppable to Python File ",
                                                                          triggered=self.add_steppable_cc3d_python)
 
-
         self.actions["Convert XML to Python"] = QtWidgets.QAction(QIcon(':/icons/xml-icon.png'),
 
                                                                   "Convert XML to Python",
@@ -1249,7 +1249,6 @@ class CC3DProject(QObject, TweditPluginBase):
 
                                                                triggered=self.__addParameterScan)
 
-
         # on osx 10.9 context menu icons are not rendered properly so we do not include them at all on OSX
 
         if self.hideContextMenuIcons:
@@ -1261,15 +1260,16 @@ class CC3DProject(QObject, TweditPluginBase):
             addToScanIcon = QIcon(':/icons/add.png')
 
         self.actions["Add To Scan..."] = QtWidgets.QAction(addToScanIcon, "Add To Scan...", self, shortcut="Ctrl+I",
-
                                                            statusTip="Add Parameter To Scan",
-
                                                            triggered=self.__addToScan)
 
+        self.actions["Remove From Scan..."] = QtWidgets.QAction(QIcon(':/icons/remove.png'), "Remove From Scan...",
+                                                                self, shortcut="Ctrl+Shift+I",
+                                                                statusTip="Remove Parameter from Scan",
+                                                                triggered=self.remove_from_parameter_scan)
+
         self.actions['Open Scan Editor'] = QtWidgets.QAction(QIcon(':/icons/editor.png'), "Open Scan Editor", self,
-
                                                              shortcut="", statusTip="Open Scan Editor",
-
                                                              triggered=self.__openScanEditor)
 
         self.actions['Reset Parameter Scan'] = QtWidgets.QAction(QIcon(':/icons/reset_32x32.png'),
@@ -1889,6 +1889,50 @@ class CC3DProject(QObject, TweditPluginBase):
 
         QApplication.clipboard().setText(s)
 
+    def remove_from_parameter_scan(self):
+        tw = self.treeWidget
+        selection_ok = self.check_selection_end_characters_param_scan()
+        if not selection_ok:
+
+            QMessageBox.warning(tw, "Parameter Scan Selection Issue",
+                                "The selected fragment does not look like it can be part of the Parameter Scan. <br>"
+                                "Notice: you can still delete it from parameter scan but you need to edit manually <br>"
+                                f"<b>{current_fname}</b> <br> and <br> <b>ParameterScan.json</b> file. <br>"
+                                "Please follow the guidelines outlined here: <br>"
+                                "<a href='https://pythonscriptingmanual.readthedocs.io/en/latest/parameter_scans.html?highlight=parameter%20scan#parameter-scans'>Parameter Scan Tutorial</a>"
+                                )
+            return
+
+        already_added_param_name = self.get_already_added_param()
+
+        ans = QMessageBox.question(tw,
+                                   'Remove Parameter From Scan?',
+                                   f'Are you sure you want to delete <b>{already_added_param_name}</b> '
+                                   f'from parameter scan', buttons=QMessageBox.Yes | QMessageBox.No)
+
+        if ans == QMessageBox.Yes:
+
+            projItem = tw.getProjectParent(tw.currentItem())
+
+            try:
+                pdh = self.projectDataHandlers[qt_obj_hash(projItem)]
+            except KeyError:
+                return
+
+            csd = pdh.cc3dSimulationData
+
+            psu = csd.parameterScanResource.psu
+            existing_param_scan_data_dict = psu.get_parameter_scan_data_dict(already_added_param_name)
+            with contextlib.suppress(KeyError):
+                original_value = existing_param_scan_data_dict['original_value']
+
+            psu. remove_from_param_scan(already_added_param_name)
+            self.replace_selection_with(replacement_text=original_value)
+            # reopening json file to show recent changes
+            self.__ui.loadFile(csd.parameterScanResource.path)
+
+            self.__ui.checkIfDocumentsWereModified()
+
     def __addToScan(self):
 
         tw = self.treeWidget
@@ -1953,140 +1997,151 @@ class CC3DProject(QObject, TweditPluginBase):
             psd = parvaldlg.psd
 
             if len(psd.customValues):
+                if already_added_param_name is not None:
+                    psu = csd.parameterScanResource.psu
+                    existing_param_scan_data_dict = psu.get_parameter_scan_data_dict(already_added_param_name)
+                    with contextlib.suppress(KeyError):
+                        original_value = existing_param_scan_data_dict['original_value']
+
+                else:
+                    original_value = editor.selectedText()
 
                 try:
-                    csd.parameterScanResource.addParameterScanData(psd)
+
+                    csd.parameterScanResource.addParameterScanData(psd, original_value=original_value)
                 except ValueError as e:
-                    QMessageBox.warning(tw, 'Could Not Add Parameter Scan Specs', str(e) )
+                    QMessageBox.warning(tw, 'Could Not Add Parameter Scan Specs', str(e))
                     return
 
                 p_scan_resource.writeParameterScanSpecs()
 
-
             self.replace_selection_with(replacement_text='{{' + f'{psd.name}' + '}}')
-
-        return
-        print('line,col=', (line, col))
-
-        # if pScanResource
-
-        scannedFileExt = os.path.splitext(self.scannedFileName)[1].lower()
-
-        if scannedFileExt == '.xml':
-
-            psXMLHandler = p_scan_resource.parameterScanXMLHandler
-
-            if psXMLHandler:
-
-                try:
-
-                    accessPath = psXMLHandler.lineToAccessPath[line]
-
-                    xmlElem = psXMLHandler.lineToElem[line]
-
-                except LookupError as e:
-
-                    accessPath = ''
-
-                print('AccessPath=', accessPath)
-
-            if not accessPath:
-                return
-
-            print('self.scannedFileName=', self.scannedFileName, '\n\n\n\n\n')
-
-            pdlg = ParameterDialog(self.parameterScanEditor)
-
-            print('DICT BEFORE=', csd.parameterScanResource.parameterScanFileToDataMap)
-
-            try:
-
-                pdlg.displayXMLScannableParameters(xmlElem, psXMLHandler.lineToAccessPath[line], p_scan_resource.path)
-
-                ret = pdlg.exec_()
-
-                if ret:
-
-                    haveNewItems = False
-
-                    csd.parameterScanResource.psu.refreshParamSpecsContent(
-
-                        p_scan_resource.path)  # before adding new parameter scan we need to read file again om case user made any change
-
-                    for key, val in pdlg.parameterScanDataMap.items():
-                        print('Adding key,val=', (key, val))
-
-                        csd.parameterScanResource.addParameterScanData(self.scannedFileName, val)
-
-                        haveNewItems = True
-
-                        # csd.parameterScanResource.parameterScanDataMap[key]=val ###
-
-                    if haveNewItems:
-                        p_scan_resource.writeParameterScanSpecs()
-
-
-
-            except LookupError as e:  # to protect against elements that are not in psXMLHandler.lineToAccessPath
-
-                return
-
-
-
-        elif scannedFileExt == '.py':
-
-            psu = ParameterScanUtils()
-
-            pythonLine = str(self.parameterScanEditor.text(line))
-
-            foundGlobalVar = psu.checkPythonLineForGlobalVariable(pythonLine)
-
-            if foundGlobalVar:
-
-                try:
-
-                    varName, varValue = psu.extractGlobalVarFromLine(pythonLine)
-
-                    print('varName,varValue=', (varName, varValue))
-
-                except:
-
-                    QMessageBox.warning(tw, "Problem Parsing Python Line",
-
-                                        "Could Not Parse Python Line to find global variable. Make sure you declare global variables in separate lines e.g. myvar=10 ")
-
-                parvaldlg = ParValDlg(self.parameterScanEditor)
-
-                parvaldlg.initParameterScanData(_parValue=varValue, _parName=varName, _parType=PYTHON_GLOBAL,
-
-                                                _parAccessPath='')
-
-                if parvaldlg.exec_():
-
-                    try:
-
-                        parvaldlg.recordValues()
-
-                    except ValueError as e:
-
-                        QMessageBox.warning(tw, "Error Parsing Parameter List",
-
-                                            "Please make sure that parameter list entries have correct type")
-
-                        return
-
-                    psd = parvaldlg.psd
-
-                    if len(psd.customValues):
-                        csd.parameterScanResource.addParameterScanData(self.scannedFileName, psd)
-
-                        p_scan_resource.writeParameterScanSpecs()
-
-                else:
-                    # user canceled
-                    return
+            # reopening json file to show recent changes
+            self.__ui.loadFile(p_scan_resource.path)
 
         self.__ui.checkIfDocumentsWereModified()
+        return
+        # print('line,col=', (line, col))
+        #
+        # # if pScanResource
+        #
+        # scannedFileExt = os.path.splitext(self.scannedFileName)[1].lower()
+        #
+        # if scannedFileExt == '.xml':
+        #
+        #     psXMLHandler = p_scan_resource.parameterScanXMLHandler
+        #
+        #     if psXMLHandler:
+        #
+        #         try:
+        #
+        #             accessPath = psXMLHandler.lineToAccessPath[line]
+        #
+        #             xmlElem = psXMLHandler.lineToElem[line]
+        #
+        #         except LookupError as e:
+        #
+        #             accessPath = ''
+        #
+        #         print('AccessPath=', accessPath)
+        #
+        #     if not accessPath:
+        #         return
+        #
+        #     print('self.scannedFileName=', self.scannedFileName, '\n\n\n\n\n')
+        #
+        #     pdlg = ParameterDialog(self.parameterScanEditor)
+        #
+        #     print('DICT BEFORE=', csd.parameterScanResource.parameterScanFileToDataMap)
+        #
+        #     try:
+        #
+        #         pdlg.displayXMLScannableParameters(xmlElem, psXMLHandler.lineToAccessPath[line], p_scan_resource.path)
+        #
+        #         ret = pdlg.exec_()
+        #
+        #         if ret:
+        #
+        #             haveNewItems = False
+        #
+        #             csd.parameterScanResource.psu.refreshParamSpecsContent(
+        #
+        #                 p_scan_resource.path)  # before adding new parameter scan we need to read file again om case user made any change
+        #
+        #             for key, val in pdlg.parameterScanDataMap.items():
+        #                 print('Adding key,val=', (key, val))
+        #
+        #                 csd.parameterScanResource.addParameterScanData(self.scannedFileName, val)
+        #
+        #                 haveNewItems = True
+        #
+        #                 # csd.parameterScanResource.parameterScanDataMap[key]=val ###
+        #
+        #             if haveNewItems:
+        #                 p_scan_resource.writeParameterScanSpecs()
+        #
+        #
+        #
+        #     except LookupError as e:  # to protect against elements that are not in psXMLHandler.lineToAccessPath
+        #
+        #         return
+        #
+        #
+        #
+        # elif scannedFileExt == '.py':
+        #
+        #     psu = ParameterScanUtils()
+        #
+        #     pythonLine = str(self.parameterScanEditor.text(line))
+        #
+        #     foundGlobalVar = psu.checkPythonLineForGlobalVariable(pythonLine)
+        #
+        #     if foundGlobalVar:
+        #
+        #         try:
+        #
+        #             varName, varValue = psu.extractGlobalVarFromLine(pythonLine)
+        #
+        #             print('varName,varValue=', (varName, varValue))
+        #
+        #         except:
+        #
+        #             QMessageBox.warning(tw, "Problem Parsing Python Line",
+        #
+        #                                 "Could Not Parse Python Line to find global variable. Make sure you declare global variables in separate lines e.g. myvar=10 ")
+        #
+        #         parvaldlg = ParValDlg(self.parameterScanEditor)
+        #
+        #         parvaldlg.initParameterScanData(_parValue=varValue, _parName=varName, _parType=PYTHON_GLOBAL,
+        #
+        #                                         _parAccessPath='')
+        #
+        #         if parvaldlg.exec_():
+        #
+        #             try:
+        #
+        #                 parvaldlg.recordValues()
+        #
+        #             except ValueError as e:
+        #
+        #                 QMessageBox.warning(tw, "Error Parsing Parameter List",
+        #
+        #                                     "Please make sure that parameter list entries have correct type")
+        #
+        #                 return
+        #
+        #             psd = parvaldlg.psd
+        #
+        #             if len(psd.customValues):
+        #                 csd.parameterScanResource.addParameterScanData(self.scannedFileName, psd)
+        #
+        #                 p_scan_resource.writeParameterScanSpecs()
+        #
+        #         else:
+        #             # user canceled
+        #             return
+        #
+        # self.__ui.checkIfDocumentsWereModified()
 
     def check_selection_end_characters_param_scan(self):
         current_editor = self.__ui.getCurrentEditor()
@@ -2112,7 +2167,7 @@ class CC3DProject(QObject, TweditPluginBase):
                 line_text = current_editor.text(line_start)
 
                 try:
-                    left_limit_char = line_text[col_start-1]
+                    left_limit_char = line_text[col_start - 1]
                 except IndexError:
                     left_limit_char = None
 
@@ -2136,21 +2191,20 @@ class CC3DProject(QObject, TweditPluginBase):
         line_text = current_editor.text(line_start)
         left_braces = False
         try:
-            if line_text[col_start:col_start+2] == '{{':
+            if line_text[col_start:col_start + 2] == '{{':
                 left_braces = True
         except IndexError:
             pass
 
         right_braces = False
         try:
-            if line_text[col_end-2:col_end] == '}}':
+            if line_text[col_end - 2:col_end] == '}}':
                 right_braces = True
         except IndexError:
             pass
 
         if left_braces and right_braces:
-            return line_text[col_start + 2: col_end-2]
-
+            return line_text[col_start + 2: col_end - 2]
 
     def replace_selection_with(self, replacement_text):
         """
@@ -2270,7 +2324,7 @@ class CC3DProject(QObject, TweditPluginBase):
             self.xmlFileToConvert = None
 
     @staticmethod
-    def check_if_in_project(pdh, file_path:str)->bool:
+    def check_if_in_project(pdh, file_path: str) -> bool:
         """
         Checks if a given file is belongs to a project(represented by pdh)
         :param pdh: project data handle
@@ -2293,7 +2347,7 @@ class CC3DProject(QObject, TweditPluginBase):
 
         return False
 
-    def find_project_for_file(self, file_path:str):
+    def find_project_for_file(self, file_path: str):
         """
         Scans all open projects in the CCC3D Project panel to locate a project that a given file (file_path)
         belongs to. If nothing can be found it returns None
@@ -3948,7 +4002,6 @@ class CC3DProject(QObject, TweditPluginBase):
         except LookupError:
 
             proj_exist = False
-
 
         if proj_exist:
             proj_item = self.openProjectsDict[proj_file_name]

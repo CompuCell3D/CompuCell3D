@@ -9,6 +9,8 @@ from .ParameterScanEnums import *
 from collections import OrderedDict
 import json
 from pathlib import Path
+from typing import Optional
+import contextlib
 
 
 def removeWhiteSpaces(_str):
@@ -290,6 +292,26 @@ class ParameterScanUtils:
         # self.parameterScanFileToDataMap = OrderedDict()
         # self.outputDirectoryRelativePath = ''
 
+    def get_parameter_scan_data_dict(self, key: str) ->dict:
+        """
+        returns a dictionary corresponding to entry ['parameter_list'][key] in  self.parameter_scan_specs
+        :param key:
+        :return:
+        """
+        with contextlib.suppress(KeyError):
+            psd = self.parameter_scan_specs['parameter_list'][key]
+            return psd
+
+    def remove_from_param_scan(self, key):
+        """
+        Removes parameter scan entry from self.parameter_scan_specs
+        :param key:
+        :return:
+        """
+        with contextlib.suppress(KeyError):
+            del self.parameter_scan_specs['parameter_list'][key]
+
+
     # def initialize(self):
     #     self.cc3dXML2ObjConverter = None
     #     self.root_element = None
@@ -330,10 +352,12 @@ class ParameterScanUtils:
     #
     #     return params
 
-    def addParameterScanData(self, psd: ParameterScanData):
+
+    def addParameterScanData(self, psd: ParameterScanData, original_value: Optional[str] = None):
         """
-        Adds parameter scan soecification (for a single scanned parameter) to the dictionary of all  scanned parameters
+        Adds parameter scan specification (for a single scanned parameter) to the dictionary of all  scanned parameters
         :param psd:
+        :param original_value
         :return:
         """
         try:
@@ -358,7 +382,10 @@ class ParameterScanUtils:
                 raise ValueError(f'Could not find entry for the previous name <b>{psd.previous_name}</b> '
                                  f'of the parameter {psd.name}')
 
-        parameter_list_dict[psd.name] = {'values': psd.customValues}
+        parameter_list_dict[psd.name] = {
+            'original_value': original_value if original_value is not None else '',
+            'values': psd.customValues
+        }
 
     def refreshParamSpecsContent(self, _pScanFileName):
         self.readParameterScanSpecs(_pScanFileName)
@@ -375,284 +402,3 @@ class ParameterScanUtils:
         with Path(fname).open('w') as json_out:
             json.dump(self.parameter_scan_specs, json_out, indent=4)
 
-    def resetParameterScan(self, _pScanFileName):
-        '''This function resets state of the parameter scan to the beginning
-        '''
-
-        self.readParameterScanSpecs(_pScanFileName)
-        for filePath, parameterScanDataMap in list(self.parameterScanFileToDataMap.items()):
-            for hash, psd in list(parameterScanDataMap.items()):
-                psd.currentIteration = 0
-
-        self.writeParameterScanSpecs(_pScanFileName)
-
-    def prepareParameterScanOutputDirs(self, _outputDirRoot):
-        import os
-        pScanOutputDirRelPath = self.outputDirectoryRelativePath
-
-        if pScanOutputDirRelPath == '':
-            pScanOutputDirRelPath = 'ParameterScan'
-
-        customPath = os.path.join(_outputDirRoot, pScanOutputDirRelPath)
-
-        iterationId = self.computeCurrentIterationIdNumber()
-        # print 'param SCAN XML=',self.getParameterScanSpecsXMLString()
-
-        print('\n\n\n iterationId=', iterationId)
-
-        customOutputPath = os.path.join(_outputDirRoot, pScanOutputDirRelPath)
-        customOutputPath = os.path.join(customOutputPath, str(iterationId))
-
-        # make output directory
-
-        try:
-            os.makedirs(customOutputPath)
-        except:
-            print('COULD NOT WRITE customOutputPath=', customOutputPath)
-            # return None
-            raise AssertionError('Parameter Scan ERRORCODE=' + str(
-                SCAN_FINISHED_OR_DIRECTORY_ISSUE) + ': Could not create directory ' + customOutputPath + ' . It is likely that parameter scan has finished running or you may have permission issues preventing directory creation. If it is the latter, please make sure you have necessary write permissions or choose another directory')
-            # print 'Could not create directory ',customOutputPath, ' . please make sure you have necessary write permissions'
-
-        return customOutputPath
-
-    def reachedMaxIteration(self):
-        maxVals = []  # max values for parameter scans
-        currentIteration = []  # current iteration
-
-        for filePath, parameterScanDataMap in list(self.parameterScanFileToDataMap.items()):
-            for hash, psd in list(parameterScanDataMap.items()):
-                maxVals.append(len(psd.customValues) - 1)
-                currentIteration.append(psd.currentIteration)
-
-        return True if currentIteration == maxVals else False
-
-    def computeNextIteration(self):
-        '''given current state of the parameter scan computes next combination of the parameters for the parameter scan 
-        '''
-
-        maxVals = []  # max values for parameter scans
-        currentIteration = []  # current iteration
-
-        for filePath, parameterScanDataMap in list(self.parameterScanFileToDataMap.items()):
-            for hash, psd in list(parameterScanDataMap.items()):
-                maxVals.append(len(psd.customValues) - 1)
-                currentIteration.append(psd.currentIteration)
-
-        print('maxVals=', maxVals)
-        print('currentIteration=', currentIteration)
-
-        iteration = nextIterationCartProd(currentIteration, maxVals)
-
-        return iteration
-
-    def writeParameterScanSpecsWithIteration(self, _pScanFileName, _iteration):
-        '''Saves parameter scan spec file with updated iteration state. dictionary traversal must be done in an identical way as in computeNextIteration function . these two functions have to be in sync
-        '''
-        counter = 0
-        print('\n\n\n writeParameterScanSpecsWithIteration self.parameterScanFileToDataMap=',
-              self.parameterScanFileToDataMap)
-        for filePath, parameterScanDataMap in list(self.parameterScanFileToDataMap.items()):
-            for hash, psd in list(parameterScanDataMap.items()):
-                psd.currentIteration = _iteration[counter]
-                counter += 1
-
-        self.writeParameterScanSpecs(_pScanFileName)
-
-    def saveParameterScanState(self, _pScanFileName):
-
-        self.refreshParamSpecsContent(_pScanFileName)
-        iteration = self.computeNextIteration()
-        self.writeParameterScanSpecsWithIteration(_pScanFileName, iteration)
-
-    def computeCurrentIterationIdNumber(self):
-
-        currentIteration = []  # current iteration
-
-        for filePath, parameterScanDataMap in list(self.parameterScanFileToDataMap.items()):
-            for hash, psd in list(parameterScanDataMap.items()):
-                currentIteration.append(psd.currentIteration)
-
-        return self.computeIterationIdNumber(currentIteration)
-
-    def computeIterationIdNumber(self, _iteration):
-        maxValsMultiply = []  # max values for parameter scans - increased by one for multiplication purposes
-        currentIteration = _iteration
-
-        for filePath, parameterScanDataMap in list(self.parameterScanFileToDataMap.items()):
-            for hash, psd in list(parameterScanDataMap.items()):
-                maxValsMultiply.append(len(psd.customValues))
-
-        multiplicativeFactors = [1 for i in currentIteration]
-
-        for i in range(1, len(multiplicativeFactors)):
-            multiplicativeFactors[i] = multiplicativeFactors[i - 1] * maxValsMultiply[i - 1]
-
-        print('currentIteration=', currentIteration)
-        print('multiplicativeFactors=', multiplicativeFactors)
-        id = 0
-        for i in range(len(multiplicativeFactors)):
-            id += multiplicativeFactors[i] * currentIteration[i]
-
-        return id
-
-    def getXMLElementFromAccessPath(self, _root_element, _accessPathList):
-        ''' This fcn fetches xml element 
-            This Function greatly simplifies access to XML data - one line  easily replaces  many lines of code
-        '''
-        # import types                
-
-        from .XMLUtils import dictionaryToMapStrStr as d2mss
-
-        tmpElement = _root_element
-        attrDict = None
-        for arg in _accessPathList[1:]:  # we skip first element of the acces path as it points to root_element
-            # constructing attribute dictionary
-
-            if len(arg) >= 3:
-                attrDict = {}
-                for tuple in zip(arg[1::2], arg[2::2]):
-                    if tuple[0] in attrDict:
-                        raise LookupError('Duplicate attribute name in the access path ' + str(_accessPathList))
-                    else:
-                        attrDict[tuple[0]] = tuple[1]
-                attrDict = d2mss(attrDict)
-                # attrDict=d2mss(dict((tuple[0],tuple[1]) for tuple in izip(arg[1::2],arg[2::2])))
-
-            elemName = arg[0]
-            # print 'elemName=',elemName
-            # print 'attrDict=',attrDict
-            tmpElement = tmpElement.getFirstElement(arg[0],
-                                                    attrDict) if attrDict is not None else tmpElement.getFirstElement(
-                arg[0])
-            attrDict = None
-            # tmpElement=tmpElement.getFirstElement(arg[0],attrDict)
-
-        return tmpElement
-
-    def getXMLElementValue(self, _root_element, _accessPathList):
-
-        element = self.getXMLElementFromAccessPath(_root_element, _accessPathList)
-        return element.getText() if element else None
-
-    def setXMLElementValue(self, _root_element, _accessPathList, _value):
-
-        element = self.getXMLElementFromAccessPath(_root_element, _accessPathList)
-        if element:
-            element.updateElementValue(str(_value))
-
-    def getXMLAttributeValue(self, _root_element, _accessPathList, _attr):
-
-        element = self.getXMLElementFromAccessPath(_root_element, _accessPathList)
-
-        if element is not None:
-            if element.findAttribute(_attr):
-                return element.getAttribute(_attr)
-            else:
-                raise LookupError('Could not find attribute ' + _attr + ' in ' + _accessPathList)
-        else:
-            return None
-
-    def setXMLAttributeValue(self, _root_element, _accessPathList, _attr, _value):
-
-        element = self.getXMLElementFromAccessPath(_root_element, _accessPathList)
-
-        if element:
-            if element.findAttribute(_attr):
-                from .XMLUtils import dictionaryToMapStrStr as d2mss
-                element.updateElementAttributes(d2mss({_attr: _value}))
-
-    def replaceValuesInXMLFile(self, _parameterScanDataMap, _xmlFile):
-        # print 'processing XML'
-        root_element, xml2ObjConverter = self.parseXML(_xmlFile)
-        for hash, psd in list(_parameterScanDataMap.items()):
-            # print 'psd.accessPath=',psd.accessPath
-            accessPathList = psd.accessPathToList()
-
-            elem = self.getXMLElementFromAccessPath(root_element, accessPathList)
-            if elem:
-                if psd.type == XML_CDATA:
-                    self.setXMLElementValue(root_element, accessPathList, psd.currentValue())
-                elif psd.type == XML_ATTR:
-                    self.setXMLAttributeValue(root_element, accessPathList, psd.name, psd.currentValue())
-
-            # print 'accessPathList=',accessPathList
-            # print 'elem=',elem
-            # print 'customValue=',psd.currentValue()
-
-        root_element.saveXML(_xmlFile)
-
-    def checkPythonLineForGlobalVariable(self, _line, _variableName=''):
-        import re
-        globalPythonVarRegex = None
-        if not _variableName:
-            globalPythonVarRegex = re.compile("[\S]*[\s]*=")
-        else:
-            globalPythonVarRegex = re.compile(_variableName + "[\s]*=")
-        matchObj = re.match(globalPythonVarRegex, _line)
-
-        return True if matchObj else False
-
-    def extractGlobalVarFromLine(self, _line, _variableName=''):
-        import re
-        globalPythonVarRegex = None
-        if not _variableName:
-            globalPythonVarRegex = re.compile("([\S]*)[\s]*=[\s]*([\S]*)")
-        else:
-            globalPythonVarRegex = re.compile("(" + _variableName + ")" + "[\s]*=[\s]*([\S]*)")
-        matchObj = re.match(globalPythonVarRegex, _line)
-
-        return matchObj.group(1), matchObj.group(2)
-        # return True if matchObj else False 
-
-    def replaceValuesInPythonFile(self, _parameterScanDataMap, _pythonFile):
-        fileContent = []
-
-        for line in open(_pythonFile):
-            fileContent.append(line)
-
-        import re
-
-        for hash, psd in list(_parameterScanDataMap.items()):
-
-            if psd.type == PYTHON_GLOBAL:
-
-                for idx in range(len(fileContent)):
-
-                    line = fileContent[idx]
-
-                    foundGlobalVar = self.checkPythonLineForGlobalVariable(line, psd.name)
-
-                    if foundGlobalVar:
-
-                        if psd.valueType == STRING:
-                            # print 'GOT STRING VALUE FOR ',psd.name
-                            # if psd.name=='MYVAR1':
-                            # print 'psd.currentValue()=',psd.currentValue()
-
-                            fileContent[idx] = psd.name + " = '" + str(psd.currentValue()) + "'\n"
-                        else:
-                            fileContent[idx] = psd.name + ' = ' + str(psd.currentValue()) + '\n'
-                        break
-
-            else:
-                raise AssertionError('ParameterScans: Trying to replace parameter which is not of PYTHON_GLOBAL type')
-
-        with open(_pythonFile, 'w') as f:
-            for line in fileContent: print(line, end=' ',
-                                           file=f)  # last comma is to avoid autiomatic insertion of the new line
-
-    def replaceValuesInSimulationFiles(self, _pScanFileName='', _simulationDir=''):
-
-        self.readParameterScanSpecs(_pScanFileName)
-        for filePath, parameterScanDataMap in list(self.parameterScanFileToDataMap.items()):
-            fullFilePath = os.path.join(_simulationDir, filePath)
-
-            if os.path.splitext(filePath)[1].lower() == '.xml':
-                self.replaceValuesInXMLFile(_parameterScanDataMap=parameterScanDataMap, _xmlFile=fullFilePath)
-            elif os.path.splitext(filePath)[1].lower() == '.py':
-                self.replaceValuesInPythonFile(_parameterScanDataMap=parameterScanDataMap, _pythonFile=fullFilePath)
-
-            else:
-                raise AssertionError(
-                    'Can only replace values in the XML and Python files. please make sure file extensions are .xml or .py')
