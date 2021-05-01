@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, sys
 import shutil
+import contextlib
 
 # import cc3d.twedit5.twedit.editor.Configuration as Configuration
 # import cc3d.core.DefaultSettingsData as settings_data
@@ -193,6 +194,10 @@ class CC3DSimulationData:
                                                                        'Simulation/ParameterScanSpecs.json'))
 
     def removeParameterScanResource(self):
+
+        with contextlib.suppress(FileNotFoundError, OSError):
+            os.remove(self.parameterScanResource.path)
+
         self.parameterScanResource = None
 
     def addNewSerializerResource(self, _outFreq=0, _multipleRestartDirs=False, _format='text', _restartDir=''):

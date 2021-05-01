@@ -1963,7 +1963,7 @@ class CC3DProject(QObject, TweditPluginBase):
                 p_scan_resource.writeParameterScanSpecs()
 
 
-        self.replace_selection_with(replacement_text='{{' + f'{psd.name}' + '}}')
+            self.replace_selection_with(replacement_text='{{' + f'{psd.name}' + '}}')
 
         return
         print('line,col=', (line, col))
