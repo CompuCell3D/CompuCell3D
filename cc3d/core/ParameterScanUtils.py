@@ -311,7 +311,7 @@ class ParameterScanUtils:
         with contextlib.suppress(KeyError):
             del self.parameter_scan_specs['parameter_list'][key]
 
-
+        self.write_parameter_scan_specs(fname=self.parameter_scan_specs_fname)
     # def initialize(self):
     #     self.cc3dXML2ObjConverter = None
     #     self.root_element = None
@@ -387,6 +387,8 @@ class ParameterScanUtils:
             'values': psd.customValues
         }
 
+        self.write_parameter_scan_specs(fname=self.parameter_scan_specs_fname)
+
     def refreshParamSpecsContent(self, _pScanFileName):
         self.readParameterScanSpecs(_pScanFileName)
 
@@ -397,8 +399,9 @@ class ParameterScanUtils:
             self.parameter_scan_specs = json.load(json_in)
             self.parameter_scan_specs_fname = pth
 
-    def writeParameterScanSpecs(self, fname):
+    def write_parameter_scan_specs(self, fname):
 
         with Path(fname).open('w') as json_out:
             json.dump(self.parameter_scan_specs, json_out, indent=4)
+            self.parameter_scan_specs_fname = fname
 

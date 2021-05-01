@@ -121,8 +121,8 @@ class CC3DParameterScanResource(CC3DResource):
     def readParameterScanSpecs(self):
         self.psu.readParameterScanSpecs(self.path)
 
-    def writeParameterScanSpecs(self):
-        self.psu.writeParameterScanSpecs(self.path)
+    def write_parameter_scan_specs(self):
+        self.psu.write_parameter_scan_specs(self.path)
 
 
 class CC3DSimulationData:

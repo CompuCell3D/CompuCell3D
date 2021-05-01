@@ -1362,19 +1362,12 @@ class CC3DProject(QObject, TweditPluginBase):
     def __addParameterScan(self):
 
         tw = self.treeWidget
-
-        projItem = tw.getProjectParent(tw.currentItem())
-
-        pdh = None
+        proj_item = tw.getProjectParent(tw.currentItem())
 
         try:
-
-            pdh = self.projectDataHandlers[qt_obj_hash(projItem)]
-
-        except LookupError as e:
-
+            pdh = self.projectDataHandlers[qt_obj_hash(proj_item)]
+        except LookupError:
             print("could not find simulation data handler for this item")
-
             return
 
         if pdh.cc3dSimulationData.parameterScanResource:
@@ -1392,7 +1385,7 @@ class CC3DProject(QObject, TweditPluginBase):
 
         self.insertNewGenericResourceTreeItem(pdh.cc3dSimulationData.parameterScanResource)
 
-        pdh.cc3dSimulationData.parameterScanResource.writeParameterScanSpecs()
+        pdh.cc3dSimulationData.parameterScanResource.write_parameter_scan_specs()
 
         # setting same base path for parameter scan as for the project - necessary to get relative
         # paths in the parameterSpec file
@@ -1926,29 +1919,37 @@ class CC3DProject(QObject, TweditPluginBase):
             with contextlib.suppress(KeyError):
                 original_value = existing_param_scan_data_dict['original_value']
 
-            psu. remove_from_param_scan(already_added_param_name)
+            psu.remove_from_param_scan(already_added_param_name)
             self.replace_selection_with(replacement_text=original_value)
             # reopening json file to show recent changes
             self.__ui.loadFile(csd.parameterScanResource.path)
 
             self.__ui.checkIfDocumentsWereModified()
 
+    def get_current_param_scan_resource(self):
+        tw = self.treeWidget
+
+        proj_item = tw.getProjectParent(tw.currentItem())
+
+        try:
+            pdh = self.projectDataHandlers[qt_obj_hash(proj_item)]
+        except LookupError as e:
+            return
+
+        p_scan_resource = pdh.cc3dSimulationData.parameterScanResource
+        return p_scan_resource
+
+
+
     def __addToScan(self):
 
         tw = self.treeWidget
 
-        projItem = tw.getProjectParent(tw.currentItem())
-
-        print('projItem=', projItem)
-
-        print('self.projectDataHandlers=', self.projectDataHandlers)
+        proj_item = tw.getProjectParent(tw.currentItem())
 
         try:
-
-            pdh = self.projectDataHandlers[qt_obj_hash(projItem)]
-
+            pdh = self.projectDataHandlers[qt_obj_hash(proj_item)]
         except LookupError as e:
-
             return
 
         csd = pdh.cc3dSimulationData
@@ -2013,7 +2014,7 @@ class CC3DProject(QObject, TweditPluginBase):
                     QMessageBox.warning(tw, 'Could Not Add Parameter Scan Specs', str(e))
                     return
 
-                p_scan_resource.writeParameterScanSpecs()
+                # p_scan_resource.write_parameter_scan_specs()
 
             self.replace_selection_with(replacement_text='{{' + f'{psd.name}' + '}}')
             # reopening json file to show recent changes
@@ -2021,127 +2022,6 @@ class CC3DProject(QObject, TweditPluginBase):
 
         self.__ui.checkIfDocumentsWereModified()
         return
-        # print('line,col=', (line, col))
-        #
-        # # if pScanResource
-        #
-        # scannedFileExt = os.path.splitext(self.scannedFileName)[1].lower()
-        #
-        # if scannedFileExt == '.xml':
-        #
-        #     psXMLHandler = p_scan_resource.parameterScanXMLHandler
-        #
-        #     if psXMLHandler:
-        #
-        #         try:
-        #
-        #             accessPath = psXMLHandler.lineToAccessPath[line]
-        #
-        #             xmlElem = psXMLHandler.lineToElem[line]
-        #
-        #         except LookupError as e:
-        #
-        #             accessPath = ''
-        #
-        #         print('AccessPath=', accessPath)
-        #
-        #     if not accessPath:
-        #         return
-        #
-        #     print('self.scannedFileName=', self.scannedFileName, '\n\n\n\n\n')
-        #
-        #     pdlg = ParameterDialog(self.parameterScanEditor)
-        #
-        #     print('DICT BEFORE=', csd.parameterScanResource.parameterScanFileToDataMap)
-        #
-        #     try:
-        #
-        #         pdlg.displayXMLScannableParameters(xmlElem, psXMLHandler.lineToAccessPath[line], p_scan_resource.path)
-        #
-        #         ret = pdlg.exec_()
-        #
-        #         if ret:
-        #
-        #             haveNewItems = False
-        #
-        #             csd.parameterScanResource.psu.refreshParamSpecsContent(
-        #
-        #                 p_scan_resource.path)  # before adding new parameter scan we need to read file again om case user made any change
-        #
-        #             for key, val in pdlg.parameterScanDataMap.items():
-        #                 print('Adding key,val=', (key, val))
-        #
-        #                 csd.parameterScanResource.addParameterScanData(self.scannedFileName, val)
-        #
-        #                 haveNewItems = True
-        #
-        #                 # csd.parameterScanResource.parameterScanDataMap[key]=val ###
-        #
-        #             if haveNewItems:
-        #                 p_scan_resource.writeParameterScanSpecs()
-        #
-        #
-        #
-        #     except LookupError as e:  # to protect against elements that are not in psXMLHandler.lineToAccessPath
-        #
-        #         return
-        #
-        #
-        #
-        # elif scannedFileExt == '.py':
-        #
-        #     psu = ParameterScanUtils()
-        #
-        #     pythonLine = str(self.parameterScanEditor.text(line))
-        #
-        #     foundGlobalVar = psu.checkPythonLineForGlobalVariable(pythonLine)
-        #
-        #     if foundGlobalVar:
-        #
-        #         try:
-        #
-        #             varName, varValue = psu.extractGlobalVarFromLine(pythonLine)
-        #
-        #             print('varName,varValue=', (varName, varValue))
-        #
-        #         except:
-        #
-        #             QMessageBox.warning(tw, "Problem Parsing Python Line",
-        #
-        #                                 "Could Not Parse Python Line to find global variable. Make sure you declare global variables in separate lines e.g. myvar=10 ")
-        #
-        #         parvaldlg = ParValDlg(self.parameterScanEditor)
-        #
-        #         parvaldlg.initParameterScanData(_parValue=varValue, _parName=varName, _parType=PYTHON_GLOBAL,
-        #
-        #                                         _parAccessPath='')
-        #
-        #         if parvaldlg.exec_():
-        #
-        #             try:
-        #
-        #                 parvaldlg.recordValues()
-        #
-        #             except ValueError as e:
-        #
-        #                 QMessageBox.warning(tw, "Error Parsing Parameter List",
-        #
-        #                                     "Please make sure that parameter list entries have correct type")
-        #
-        #                 return
-        #
-        #             psd = parvaldlg.psd
-        #
-        #             if len(psd.customValues):
-        #                 csd.parameterScanResource.addParameterScanData(self.scannedFileName, psd)
-        #
-        #                 p_scan_resource.writeParameterScanSpecs()
-        #
-        #         else:
-        #             # user canceled
-        #             return
-        #
-        # self.__ui.checkIfDocumentsWereModified()
 
     def check_selection_end_characters_param_scan(self):
         current_editor = self.__ui.getCurrentEditor()
@@ -2178,6 +2058,9 @@ class CC3DProject(QObject, TweditPluginBase):
 
                 if allowed_pair[0] == left_limit_char and allowed_pair[1] == right_limit_char:
                     return True
+        else:
+            # for now we allow changes in all other files
+            return True
 
     def get_already_added_param(self):
         """
@@ -2242,6 +2125,8 @@ class CC3DProject(QObject, TweditPluginBase):
         menu.aboutToHide.connect(self.restoreIcons)
 
         self.addActionToContextMenu(menu, self.actions["Add To Scan..."])
+        self.addActionToContextMenu(menu, self.actions["Remove From Scan..."])
+
 
         # self.addActionToContextMenu(menu, self.actions["XML Access Path to Clipboard"])
 
@@ -2879,16 +2764,16 @@ class CC3DProject(QObject, TweditPluginBase):
 
         tw = self.treeWidget
 
-        projItem = tw.getProjectParent(tw.currentItem())
+        proj_item = tw.getProjectParent(tw.currentItem())
 
-        if not projItem:
+        if not proj_item:
             return
 
         ild = None
 
         try:
 
-            ild = tw.projects[qt_obj_hash(projItem)]
+            ild = tw.projects[qt_obj_hash(proj_item)]
 
         except LookupError as e:
 
@@ -2896,36 +2781,37 @@ class CC3DProject(QObject, TweditPluginBase):
 
         if _fileName != "":
 
-            # we will check if current tab before and after opening new document are the same (meaning an attampt to open same document twice)
-
-            currentTabWidgetBefore = self.__ui.getCurrentEditor()
+            # we will check if current tab before and after opening new document
+            # are the same (meaning an attampt to open same document twice)
 
             self.__ui.loadFile(_fileName)
 
-            currentTabWidgetAfter = self.__ui.getCurrentEditor()
+            current_document_name = self.__ui.getCurrentDocumentName()
 
-            currentDocumentName = self.__ui.getCurrentDocumentName()
+            current_editor = self.__ui.getCurrentEditor()
 
-            currentTabWidget = self.__ui.getCurrentEditor()
+            current_editor.registerCustomContextMenu(self.createParameterScanMenu(current_editor))
 
             # check if opening of document was successful
 
-            if currentDocumentName == _fileName:
+            if current_document_name == _fileName:
 
-                # next we check if _fileName is already present in self.projectLinkedTweditTabs as a value and linked to tab different than currentTabWidget
+                # next we check if _fileName is already present in self.projectLinkedTweditTabs as
+                # a value and linked to tab different than currentTabWidget
 
-                # this happens when user opens _fileName from project widget, renames it in Twedit and then attempts to open _fileName again from project widget
+                # this happens when user opens _fileName from project widget,
+                # renames it in Twedit and then attempts to open _fileName again from project widget
 
                 if ild:
 
-                    tabReferencesToRemove = []
+                    tab_references_to_remove = []
 
                     for tabWidget, path in ild.projectLinkedTweditTabs.items():
 
-                        if path == _fileName and tabWidget != currentTabWidget:
-                            tabReferencesToRemove.append(tabWidget)
+                        if path == _fileName and tabWidget != current_editor:
+                            tab_references_to_remove.append(tabWidget)
 
-                    for tab in tabReferencesToRemove:
+                    for tab in tab_references_to_remove:
 
                         try:
 
@@ -2937,9 +2823,10 @@ class CC3DProject(QObject, TweditPluginBase):
 
                     # insert current tab and associate it with _fileName -
 
-                    # if projectLinkedTweditTabs[currentTabWidget] is already present we will next statement is ignored - at most it changes value projectLinkedTweditTabs[currentTabWidget] 
+                    # if projectLinkedTweditTabs[currentTabWidget] is already present we will
+                    # next statement is ignored - at most it changes value projectLinkedTweditTabs[currentTabWidget]
 
-                    ild.projectLinkedTweditTabs[currentTabWidget] = _fileName
+                    ild.projectLinkedTweditTabs[current_editor] = _fileName
 
     def __openInEditor(self):
 
