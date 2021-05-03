@@ -14,6 +14,7 @@ from cc3d.core.XMLDomUtils import XMLElemAdapter
 from typing import Union, Optional
 from cc3d.cpp import CompuCell
 from cc3d.core.SBMLSolverHelper import SBMLSolverHelper
+from cc3d.core.MaBoSSCC3D import MaBoSSHelper
 import types
 import warnings
 from deprecated import deprecated
@@ -177,7 +178,7 @@ class GlobalSBMLFetcher:
             return rr_object.model
 
 
-class SteppableBasePy(SteppablePy, SBMLSolverHelper):
+class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
     (CC3D_FORMAT, TUPLE_FORMAT) = range(0, 2)
 
     def __init__(self, *args, **kwds):
@@ -2031,6 +2032,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                 continue
             elif key == 'SBMLSolver':
                 self.copy_sbml_simulators(from_cell=source_cell, to_cell=target_cell)
+            elif key == CompuCell.CellG.__maboss__:
+                # skipping MaBoSS models; need a reliable copy constructor
+                continue
             else:
                 # copying the rest of dictionary entries
                 target_cell.dict[key] = deepcopy(source_cell.dict[key])

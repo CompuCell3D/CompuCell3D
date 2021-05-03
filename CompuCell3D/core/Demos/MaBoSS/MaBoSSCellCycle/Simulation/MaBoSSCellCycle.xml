@@ -1,0 +1,63 @@
+<CompuCell3D Revision="20210123" Version="4.2.4">
+   
+   <Metadata>
+      <NumberOfProcessors>1</NumberOfProcessors>
+      <DebugOutputFrequency>10</DebugOutputFrequency>
+   </Metadata>
+   
+   <Potts>
+      <Dimensions x="200" y="120" z="1"/>
+      <Steps>3000</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+      <Boundary_y>Periodic</Boundary_y>
+   </Potts>
+   
+   <Plugin Name="CellType">
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="NonCycling"/>
+      <CellType TypeId="2" TypeName="CycleG1"/>
+      <CellType TypeId="3" TypeName="CycleS"/>
+      <CellType TypeId="4" TypeName="CycleG2"/>
+      <CellType TypeId="5" TypeName="CycleM"/>
+   </Plugin>
+   
+   <Plugin Name="Volume"/>
+   
+   <Plugin Name="CenterOfMass"/>
+   
+   <Plugin Name="Contact">
+      <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+      <Energy Type1="Medium" Type2="NonCycling">10.0</Energy>
+      <Energy Type1="Medium" Type2="CycleG1">10.0</Energy>
+      <Energy Type1="Medium" Type2="CycleS">10.0</Energy>
+      <Energy Type1="Medium" Type2="CycleG2">10.0</Energy>
+      <Energy Type1="Medium" Type2="CycleM">10.0</Energy>
+      <Energy Type1="NonCycling" Type2="NonCycling">10.0</Energy>
+      <Energy Type1="NonCycling" Type2="CycleG1">10.0</Energy>
+      <Energy Type1="NonCycling" Type2="CycleS">10.0</Energy>
+      <Energy Type1="NonCycling" Type2="CycleG2">10.0</Energy>
+      <Energy Type1="NonCycling" Type2="CycleM">10.0</Energy>
+      <Energy Type1="CycleG1" Type2="CycleG1">10.0</Energy>
+      <Energy Type1="CycleG1" Type2="CycleS">10.0</Energy>
+      <Energy Type1="CycleG1" Type2="CycleG2">10.0</Energy>
+      <Energy Type1="CycleG1" Type2="CycleM">10.0</Energy>
+      <Energy Type1="CycleS" Type2="CycleS">10.0</Energy>
+      <Energy Type1="CycleS" Type2="CycleG2">10.0</Energy>
+      <Energy Type1="CycleS" Type2="CycleM">10.0</Energy>
+      <Energy Type1="CycleG2" Type2="CycleG2">10.0</Energy>
+      <Energy Type1="CycleG2" Type2="CycleM">10.0</Energy>
+      <Energy Type1="CycleM" Type2="CycleM">10.0</Energy>
+      <NeighborOrder>3</NeighborOrder>
+   </Plugin>
+   
+   <Steppable Type="UniformInitializer">
+      <Region>
+         <BoxMin x="0" y="0" z="0"/>
+         <BoxMax x="30" y="120" z="1"/>
+         <Gap>0</Gap>
+         <Width>6</Width>
+         <Types>NonCycling</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>
