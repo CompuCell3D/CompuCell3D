@@ -39,6 +39,7 @@ from cc3d.twedit5.Plugins.CC3DProject.ParameterDialog import ParameterDialog
 from cc3d.twedit5.Plugins.CC3DProject.ParValDlg import ParValDlg
 from cc3d.twedit5.Plugins.CC3DProject.SerializerEdit import SerializerEdit
 from cc3d.twedit5.Plugins.CC3DProject.NewFileWizard import NewFileWizard
+from cc3d.twedit5.Plugins import installed_player
 from cc3d.core.ParameterScanUtils import XMLHandler
 from cc3d.twedit5.Plugins.CC3DProject.ItemProperties import ItemProperties
 from cc3d.core import XMLUtils
@@ -363,7 +364,8 @@ class CC3DProjectTreeWidget(QTreeWidget):
         if self.currentItem() == projItem:
             self.addActionToContextMenu(menu, self.plugin.actions["Open XML/Python In Editor"])
 
-            self.addActionToContextMenu(menu, self.plugin.actions["Open in Player"])
+            if installed_player:
+                self.addActionToContextMenu(menu, self.plugin.actions["Open in Player"])
 
             # --------------------------------------------------------------------
 
@@ -893,7 +895,8 @@ class CC3DProject(QObject, TweditPluginBase):
 
         # ---------------------------------------
 
-        self.cc3dProjectMenu.addAction(self.actions["Open in Player"])
+        if installed_player:
+            self.cc3dProjectMenu.addAction(self.actions["Open in Player"])
 
         self.cc3dProjectMenu.addSeparator()
 
@@ -1112,9 +1115,11 @@ class CC3DProject(QObject, TweditPluginBase):
                                                                  statusTip="Open CC3D Project ",
                                                                  triggered=self.__openCC3DProject)
 
-        self.actions["Open in Player"] = QtWidgets.QAction(QIcon(':/icons/player5-icon.png'), "Open In Player", self,
-                                                           shortcut="", statusTip="Open simulation in Player ",
-                                                           triggered=self.__runInPlayer)
+        if installed_player:
+            self.actions["Open in Player"] = QtWidgets.QAction(QIcon(':/icons/player5-icon.png'), "Open In Player",
+                                                               self, shortcut="",
+                                                               statusTip="Open simulation in Player ",
+                                                               triggered=self.__runInPlayer)
 
         self.actions["Save CC3D Project"] = QtWidgets.QAction(QIcon(':/icons/save-project.png'), "Save CC3D Project",
                                                               self,
@@ -2514,6 +2519,8 @@ class CC3DProject(QObject, TweditPluginBase):
             self.actions["Show Project Panel"].setChecked(_flag)
 
     def __runInPlayer(self):
+        if not installed_player:
+            return
 
         tw = self.treeWidget
         cur_item = tw.currentItem()

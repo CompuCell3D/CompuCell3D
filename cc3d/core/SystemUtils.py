@@ -1,3 +1,4 @@
+# todo: add system utils support for additional software/extensions
 "This module contains platform specific initializations"
 
 def setSwigPaths():

@@ -1,3 +1,5 @@
+# todo: abstract current connectivity to Twedit
+
 import os.path
 import argparse
 
