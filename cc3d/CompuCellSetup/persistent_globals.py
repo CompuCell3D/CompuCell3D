@@ -33,7 +33,9 @@ class PersistentGlobals:
         # an object that stores graphics screenshots
         self.screenshot_manager = None
 
-        # variable that tells what type of player mode we have
+        # variable that tells what type of simulation mode we have
+        self.sim_type = None
+        # variable that tells what type of player mode we have; this is designated for use by external controllers
         self.player_type = None
 
         self.simulation_initialized = False
