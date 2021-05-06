@@ -1,5 +1,5 @@
 import vtk
-import cc3d.player5.Configuration as Configuration
+from cc3d.core import Configuration
 from cc3d import CompuCellSetup
 from cc3d.core.GraphicsUtils.utils import to_vtk_rgb
 import numpy as np
@@ -120,13 +120,14 @@ class MVCDrawModelBase:
         :param actual_screenshot: flag that tells if we got metadata for actual screenshot
         :return:
         """
+        configuration = CompuCellSetup.persistent_globals.configuration
         if actual_screenshot:
             if scene_metadata is None:
-                color_map = Configuration.getSetting("TypeColorMap")
+                color_map = configuration.getSetting("TypeColorMap")
             else:
                 color_map = scene_metadata["TypeColorMap"]
         else:
-            color_map = Configuration.getSetting("TypeColorMap")
+            color_map = configuration.getSetting("TypeColorMap")
 
         cell_type_color_lookup_table = vtk.vtkLookupTable()
         # You need to explicitly call Build() when constructing the LUT by hand
@@ -296,10 +297,12 @@ class MVCDrawModelBase:
             min_range = scene_metadata['MinRange']
             max_range = scene_metadata['MaxRange']
         else:
-            min_range_fixed = Configuration.getSetting("MinRangeFixed", field_name)
-            max_range_fixed = Configuration.getSetting("MaxRangeFixed", field_name)
-            min_range = Configuration.getSetting("MinRange", field_name)
-            max_range = Configuration.getSetting("MaxRange", field_name)
+            configuration = CompuCellSetup.persistent_globals.configuration
+
+            min_range_fixed = configuration.getSetting("MinRangeFixed", field_name)
+            max_range_fixed = configuration.getSetting("MaxRangeFixed", field_name)
+            min_range = configuration.getSetting("MinRange", field_name)
+            max_range = configuration.getSetting("MaxRange", field_name)
 
         out_dict['MinRangeFixed'] = min_range_fixed
         out_dict['MaxRangeFixed'] = max_range_fixed

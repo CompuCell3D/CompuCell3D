@@ -16,6 +16,8 @@ class PersistentGlobals:
     def __init__(self):
         self.cc3d_xml_2_obj_converter = None
         self.steppable_registry = SteppableRegistry()
+        self._configuration = None
+        self._configuration_getter = None
 
         # c++ object reference Simulator.cpp
         self.simulator = None
@@ -82,6 +84,33 @@ class PersistentGlobals:
         # input and return objects
         self.input_object = None
         self.return_object = None
+
+    def set_configuration_getter(self, _fget) -> None:
+        """
+        Hook to inject a third-party Configuration
+
+        :param _fget: configuration getter
+        :type _fget: Callable[[], Configuration]
+        :return: None
+        """
+        self._configuration_getter = _fget
+
+    @property
+    def configuration(self):
+        """
+        Configuration loaded just in time, for hooking third-party Configuration instances
+
+        :return: configuration
+        :rtype: Configuration
+        """
+        if self._configuration is None:
+            try:
+                self._configuration = self._configuration_getter()
+            except:
+                from cc3d.core.Configuration import Configuration
+                self._configuration_getter = Configuration
+                self._configuration = self._configuration_getter()
+        return self._configuration
 
     def add_steering_panel(self, panel_data: dict):
         """
