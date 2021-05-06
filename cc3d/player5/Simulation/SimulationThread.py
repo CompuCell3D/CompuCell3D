@@ -388,6 +388,15 @@ class SimulationThread(QtCore.QThread, SimulationThreadBase):
         print(" field_name, field_type=",( field_name, field_type))
         self.emitVisFieldCreatedSignal(field_name=field_name, field_type=field_type)
 
+    def get_field_storage(self):
+        """
+        Returns field storage
+
+        :return: field storage
+        :rtype: cc3d.cpp.PlayerPython.FieldStorage
+        """
+        return self.callingWidget.fieldStorage
+
     def run(self):
         # from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
         cc3d_sim_fname = CompuCellSetup.persistent_globals.simulation_file_name

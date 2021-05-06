@@ -104,3 +104,24 @@ class SimulationThread:
         :rtype:
         """
         pass
+
+    def add_visualization_field(self, field_name, field_type):
+        """
+        Called when adding a visualization field
+
+        :param field_name: name of field
+        :type field_name: str
+        :param field_type: type of field
+        :type field_type: str
+        :return: None
+        """
+        pass
+
+    def get_field_storage(self):
+        """
+        Returns field storage
+
+        :return: field storage
+        :rtype: cc3d.cpp.PlayerPython.FieldStorage
+        """
+        pass
