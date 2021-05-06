@@ -34,7 +34,7 @@ from .MVCDrawView3D import MVCDrawView3D
 from .MVCDrawModel3D import MVCDrawModel3D
 from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
 from .Specs import ActorSpecs
-from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
+from cc3d.core.GraphicsUtils.utils import extract_address_int_from_vtk_object
 from .DrawingParameters import DrawingParameters
 
 MODULENAME = '---- GraphicsFrameWidget.py: '
