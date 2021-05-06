@@ -85,3 +85,22 @@ class SimulationThread:
         :return:
         """
         pass
+
+    def sendStopSimulationRequest(self):
+        """
+        Called to send request to stop simulation
+
+        :return: None
+        """
+        pass
+
+    def simulationFinishedPostEvent(self, _flag=True):
+        """
+        Called when a simulation has finished
+
+        :param _flag:
+        :type _flag:
+        :return:
+        :rtype:
+        """
+        pass
