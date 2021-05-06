@@ -60,7 +60,6 @@ class XMLElemAdapter:
             be_selective = True
         except (KeyError,AttributeError):
             be_selective = False
-            print('self.attribs_initialized does not exist')
 
         if not be_selective:
             self.__dict__[key] = value
