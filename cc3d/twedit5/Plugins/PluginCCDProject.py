@@ -39,6 +39,7 @@ from cc3d.twedit5.Plugins.CC3DProject.ParameterDialog import ParameterDialog
 from cc3d.twedit5.Plugins.CC3DProject.ParValDlg import ParValDlg
 from cc3d.twedit5.Plugins.CC3DProject.SerializerEdit import SerializerEdit
 from cc3d.twedit5.Plugins.CC3DProject.NewFileWizard import NewFileWizard
+from cc3d.twedit5.Plugins.CC3DProject.unzipper import Unzipper
 from cc3d.twedit5.Plugins import installed_player
 from cc3d.core.ParameterScanUtils import XMLHandler
 from cc3d.twedit5.Plugins.CC3DProject.ItemProperties import ItemProperties
@@ -53,7 +54,6 @@ from cc3d.core.ParameterScanEnums import *
 import cc3d.twedit5.Plugins.CC3DProject.CC3DPythonGenerator as cc3dPythonGen
 from cc3d.core.ParameterScanUtils import ParameterScanUtils
 from cc3d.core.ParameterScanEnums import PYTHON_GLOBAL
-from cc3d.gui_plugins.unzipper import Unzipper
 
 # Start-Of-Header
 

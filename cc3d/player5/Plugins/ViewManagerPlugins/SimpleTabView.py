@@ -42,7 +42,7 @@ from cc3d import CompuCellSetup
 from cc3d.core.RollbackImporter import RollbackImporter
 from cc3d.CompuCellSetup.readers import readCC3DFile
 from typing import Union, Optional
-from cc3d.gui_plugins.unzipper import Unzipper
+from cc3d.player5.Utilities.unzipper import Unzipper
 from weakref import ref
 from subprocess import Popen
 
