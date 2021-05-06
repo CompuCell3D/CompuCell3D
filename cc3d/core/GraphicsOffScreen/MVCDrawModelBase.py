@@ -34,11 +34,18 @@ class MVCDrawModelBase:
 
     @property
     def boundary_strategy(self):
-        return self._boundary_strategy()
+        try:
+            o = self._boundary_strategy()
+        except TypeError:
+            o = self._boundary_strategy
+        return o
 
     @boundary_strategy.setter
     def boundary_strategy(self, _i):
-        self._boundary_strategy = weakref.ref(_i)
+        try:
+            self._boundary_strategy = weakref.ref(_i)
+        except TypeError:
+            self._boundary_strategy = _i
 
     @property
     def ren(self):
