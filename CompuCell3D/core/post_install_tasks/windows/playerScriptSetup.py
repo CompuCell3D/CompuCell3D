@@ -32,7 +32,5 @@ def localize_script(name: str):
 
 
 # Localize scripts
-localize_script(name='runScript')
-localize_script(name='paramScan')
-if os.path.isfile("celldraw.bat.in.v2"):
-    localize_script(name='celldraw')
+localize_script(name='compucell3d')
+localize_script(name='playerParamScan')
