@@ -3,4 +3,4 @@
 # __all__ = ['QVTKRenderWidget', 'QVTKRenderWindowInteractor']
 __all__ = ['QVTKRenderWidget']
 
-from cc3d.core.GraphicsUtils.utils import *
+from cc3d.player5.Utilities.utils import *
