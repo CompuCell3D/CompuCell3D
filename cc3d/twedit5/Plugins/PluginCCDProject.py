@@ -35,7 +35,6 @@ from cc3d.twedit5.Plugins.CC3DProject.SteppableGeneratorDialog import SteppableG
 from cc3d.core.CC3DSimulationDataHandler import CC3DSimulationDataHandler
 from cc3d.twedit5.Plugins.CC3DProject.XmlAccessPathDialog import XmlAccessPathDialog
 from cc3d.twedit5.Plugins.CC3DProject.SteppableTemplates import SteppableTemplates
-from cc3d.twedit5.Plugins.CC3DProject.ParameterDialog import ParameterDialog
 from cc3d.twedit5.Plugins.CC3DProject.ParValDlg import ParValDlg
 from cc3d.twedit5.Plugins.CC3DProject.SerializerEdit import SerializerEdit
 from cc3d.twedit5.Plugins.CC3DProject.NewFileWizard import NewFileWizard
@@ -2001,7 +2000,7 @@ class CC3DProject(QObject, TweditPluginBase):
         except LookupError:
             QMessageBox.warning(tw, 'Could Not Find Active CC3D Project',
                                 'Please Open or activate (by clicking on the project in the left panel) '
-                                'CC3D project before trying tro modify parameter scan specifications')
+                                'CC3D project before trying tro modify parameter scan specifications')  
             return
 
         csd = pdh.cc3dSimulationData
@@ -2048,7 +2047,7 @@ class CC3DProject(QObject, TweditPluginBase):
 
             try:
 
-                parvaldlg.recordValues()
+                parvaldlg.record_values()
 
             except ValueError as e:
                 warning_str = str(e)
@@ -2183,7 +2182,8 @@ class CC3DProject(QObject, TweditPluginBase):
 
     def createParameterScanMenu(self, _widget):
 
-        self.__iconDict = {}  # resetting icon dictionary
+        # resetting icon dictionary
+        self.__iconDict = {}
 
         self.hideContextMenuIcons = True
 
@@ -2193,10 +2193,6 @@ class CC3DProject(QObject, TweditPluginBase):
 
         self.addActionToContextMenu(menu, self.actions["Add To Scan..."])
         self.addActionToContextMenu(menu, self.actions["Remove From Scan..."])
-
-        # self.addActionToContextMenu(menu, self.actions["XML Access Path to Clipboard"])
-
-        #         menu.addAction(self.actions["Add To Scan..."])
 
         return menu
 
