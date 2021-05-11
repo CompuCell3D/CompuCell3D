@@ -1082,6 +1082,86 @@ self.change_number_of_work_nodes(8)
 # This dictionary is shared by all registered steppables
 self.shared_steppable_vars
 
+===============  # @Menu@ MaBoSS
+
+----------  # @Submenu@ Add a MaBoSS simulation to a cell
+# Input MaBoSS network description in file 'bnd_file' or string 'bnd_str'
+# Input MaBoSS configuration in file 'cfg_file' or string 'cfg_str'
+# If using strings, enclose entire network/configuration in a multiline string
+# Input
+self.add_maboss_to_cell(cell=cell,
+                        model_name=model_name,
+                        bnd_file=bnd_file,
+                        bnd_str=bnd_str,
+                        cfg_file=cfg_file,
+                        cfg_str=cfg_str,
+                        time_step=1.0,
+                        time_tick=1.0,
+                        discrete_time=False,
+                        seed=0)
+
+----------  # @Submenu@ Create a MaBoSS simulation
+# Input MaBoSS network description in file 'bnd_file' or string 'bnd_str'
+# Input MaBoSS configuration in file 'cfg_file' or string 'cfg_str'
+# If using strings, enclose entire network/configuration in a multiline string
+# Input
+from cc3d.core import MaBoSSCC3D
+mm = MaBoSSCC3D.maboss_model(model_name=model_name,
+                             bnd_file=bnd_file,
+                             bnd_str=bnd_str,
+                             cfg_file=cfg_file,
+                             cfg_str=cfg_str,
+                             time_step=1.0,
+                             time_tick=1.0,
+                             discrete_time=False,
+                             seed=0)
+
+----------  # @Submenu@ Get a MaBoSS simulation attached to a cell
+# 'MyModel' is the alias of the particular model to get e.g., self.add_maboss_to_cell(model_name='MyModel', ...)
+mm = cell.maboss.MyModel
+
+----------  # @Submenu@ Delete a MaBoSS model attached to a cell
+# 'model_name' contains the alias of the particular model to get e.g., self.add_maboss_to_cell(model_name=model_name, ...)
+self.delete_maboss_from_cell(cell=cell, model_name=model_name)
+
+----------  # @Submenu@ Step all attached MaBoSS models
+self.timestep_maboss()
+
+----------  # @Submenu@ Get a MaBoSS network node
+# 'MyModel' is the alias of the particular model to get e.g., self.add_maboss_to_cell(model_name='MyModel', ...)
+# 'MyNode' is the name of the node in the MaBoSS network
+node = cell.maboss.MyModel['MyNode']
+
+----------  # @Submenu@ Get/set a MaBoSS network node property
+# node is a MaBoSS node
+node_description: str = node.description  # Description; read-only
+node_is_input: bool = node.is_input  # Input node flag; read-only
+node_is_internal: bool = node.is_internal  # Internal node flag
+node_is_reference: bool = node.is_reference  # Reference node flag
+node_istate: bool = node.istate  # Initial state
+node_rate_down: float = node.rate_down  # Current rate down; read-only
+node_rate_up: float = node.rate_up  # Current rate up; read-only
+node_ref_state: bool = node.ref_state  # Reference state
+node_state: bool = node.state  # Current state
+
+----------  # @Submenu@ Get/set a MaBoSS simulation property
+# mm is a MaBoSS simulation
+mm_time: float = mm.time  # Current simulation time; read-only
+mm_step_size: float = mm.step_size  # Step size
+mm_time_tick: float = mm.run_config.time_tick  # Time tick
+mm_discrete_time: bool = mm.run_config.discrete_time  # Continuous/discrete flag
+mm_seed: int = mm.run_config.seed  # Random generator seed
+
+----------  # @Submenu@ Get/set a MaBoSS external variable
+# mm is a MaBoSS simulation
+# myVar is declared as '$myVar' in the MaBoSS specification
+mm_myVar = mm.network.symbol_table['myVar']
+
+----------  # @Submenu@ Copy a MaBoSS network state
+# mm_from and mm_to is are MaBoSS simulations
+mm_to.loadNetworkState(mm_from.getNetworkState())
+
+
 ===============  # @Menu@ Mitosis
 
 ----------  # @Submenu@ 1. Clone Attributes Parent -> Child

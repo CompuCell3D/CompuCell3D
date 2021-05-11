@@ -1,0 +1,5 @@
+<Simulation version="4.2.4">
+   <XMLScript Type="XMLScript">Simulation/MaBoSSCellCycle.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/MaBoSSCellCycle.py</PythonScript>
+   <Resource Type="Python">Simulation/MaBoSSCellCycleSteppables.py</Resource>
+</Simulation>
