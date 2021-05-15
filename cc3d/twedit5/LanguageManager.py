@@ -143,24 +143,25 @@ class LanguageManager:
 
     def importAllAvailableLexers(self):
 
-        lexerNames = ["QsciLexerBash", "QsciLexerBatch", "QsciLexerCPP", "QsciLexerCSharp", "QsciLexerCSS",
+        lexer_names = ["QsciLexerBash", "QsciLexerBatch", "QsciLexerCPP", "QsciLexerCSharp", "QsciLexerCSS",
                       "QsciLexerD", "QsciLexerDiff", "QsciLexerPython", "QsciLexerCMake",
                       "QsciLexerFortran", "QsciLexerFortran77", "QsciLexerHTML", "QsciLexerIDL", "QsciLexerJava",
-                      "QsciLexerJavaScript", "QsciLexerLua", "QsciLexerMakefile", "QsciLexerMatlab", "QsciLexerOctave",
+                      "QsciLexerJavaScript", 'QsciLexerJSON',
+                      "QsciLexerLua", "QsciLexerMakefile", "QsciLexerMatlab", "QsciLexerOctave",
                       "QsciLexerPascal", "QsciLexerPerl",
                       "QsciLexerPostScript", "QsciLexerProperties", "QsciLexerPOV", "QsciLexerSpice", "QsciLexerSQL",
                       "QsciLexerRuby", "QsciLexerTCL", "QsciLexerVerilog", "QsciLexerVHDL", "QsciLexerTeX",
                       "QsciLexerXML", "QsciLexerYAML"]
 
-        for lexerName in lexerNames:
+        for lexer_name in lexer_names:
 
             try:
-                exec("from PyQt5.Qsci import " + lexerName + "\n")
+                exec("from PyQt5.Qsci import " + lexer_name + "\n")
 
-                self.lexerObjectDict[lexerName] = eval(lexerName + "()")
+                self.lexerObjectDict[lexer_name] = eval(lexer_name + "()")
 
             except ImportError:
-
+                print('Could not import lexer', lexer_name)
                 pass
 
     def loadSingleAPI(self, _lexerName, _apiName):
