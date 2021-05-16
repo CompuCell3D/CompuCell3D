@@ -8,14 +8,21 @@
 cd "${0%/*}"
 
 
-export PREFIX_CC3D=$(pwd)
+
+
+
+
+export PYTHONPATH=@SITE_PACKAGES_INSTALL@
+
 export PYTHON_EXEC_FILE=@PYTHON_EXEC_FILE@
 
-export QT_QPA_PLATFORM_PLUGIN_PATH=${PREFIX_CC3D}/python37/plugins
+export ENV_PREFIX=@PYTHON_ENV_PREFIX@
 
-export DYLD_LIBRARY_PATH=${PREFIX_CC3D}/lib/site-packages/cc3d/cpp/lib:${DYLD_LIBRARY_PATH}
+export APP_PREFIX=@APP_INSTALL_PREFIX@
 
-export TWEDIT_PYTHON_APP=${PREFIX_CC3D}/python37/twedit++.app/Contents/MacOS/python
+export QT_QPA_PLATFORM_PLUGIN_PATH=${ENV_PREFIX}/plugins
+
+export TWEDIT_PYTHON_APP=${APP_PREFIX}/twedit++.app/Contents/MacOS/python
 
 if [ -e ${TWEDIT_PYTHON_APP} ]
 then
@@ -24,21 +31,14 @@ then
     export PYTHON_EXEC=${TWEDIT_PYTHON_APP}
 else
     echo "Using script"
-    ln -s ${PYTHON_EXEC_FILE} ${PREFIX_CC3D}/Twedit++
-    export PYTHON_EXEC=${PREFIX_CC3D}/Twedit++
+    ln -s ${PYTHON_EXEC_FILE} ${APP_PREFIX}/Twedit++
+    export PYTHON_EXEC=${APP_PREFIX}/Twedit++
 fi
 
 current_directory=$(pwd)
 
-cd $PREFIX_CC3D
-
-echo "====> twedit++ working directory: $PREFIX_CC3D"
-
-export PYTHONPATH=${PREFIX_CC3D}/lib/site-packages
-
 echo "====> PYTHONPATH directory: $PYTHONPATH"
 
-${PYTHON_EXEC} ${PREFIX_CC3D}/lib/site-packages/cc3d/twedit5/twedit_plus_plus_cc3d.py $*
-
+${PYTHON_EXEC} ${PYTHONPATH}/cc3d/twedit5/twedit_plus_plus_cc3d.py $*
 
 cd ${current_directory}

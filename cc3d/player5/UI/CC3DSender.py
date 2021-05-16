@@ -1,6 +1,3 @@
-# from PyQt4.QtCore import *
-# from PyQt4.QtGui import *
-# from PyQt4.QtNetwork import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -12,6 +9,8 @@ import os
 from os import environ
 import time
 from weakref import ref
+
+from cc3d import cc3d_scripts_path
 
 SIZEOF_UINT16 = 2
 
@@ -51,11 +50,11 @@ class CC3DSender(QObject):
         self.tweditCC3DPath = None
 
         if sys.platform.startswith('win'):
-            self.tweditCC3DPath = os.path.join(environ['PREFIX_CC3D'], 'twedit++.bat')
+            self.tweditCC3DPath = os.path.join(cc3d_scripts_path, 'twedit++.bat')
         elif sys.platform.startswith('darwin'):
-            self.tweditCC3DPath = os.path.join(environ['PREFIX_CC3D'], 'twedit++.command')
+            self.tweditCC3DPath = os.path.join(cc3d_scripts_path, 'twedit++.command')
         else:  # linux/unix
-            self.tweditCC3DPath = os.path.join(environ['PREFIX_CC3D'], 'twedit++.sh')
+            self.tweditCC3DPath = os.path.join(cc3d_scripts_path, 'twedit++.sh')
 
         self.tweditCC3DPath = os.path.abspath(self.tweditCC3DPath)
         # checking inf file exists
