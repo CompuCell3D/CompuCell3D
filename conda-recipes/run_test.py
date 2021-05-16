@@ -1,0 +1,41 @@
+from cc3d.tests import simulation_tester
+from cc3d import cc3d_scripts_path
+import os
+import subprocess
+import sys
+
+
+test_dir = os.path.join(os.getcwd(), 'tests')
+if not os.path.isdir(test_dir):
+    os.mkdir(test_dir)
+
+exec_dir = os.path.dirname(simulation_tester.__file__)
+
+if sys.platform.startswith('win'):
+    ext = '.bat'
+elif sys.platform.startswith('darwin'):
+    ext = '.command'
+else:
+    ext = '.sh'
+run_script = os.path.join(cc3d_scripts_path, 'runScript' + ext)
+# If something goes wrong in a test, then this file is created during post-processing
+# We'll use it as a signal to signal failure
+fail_file = os.path.join(test_dir, 'cc3d_simulation_tests.txt')
+
+
+def main():
+    print()
+    print('-----------------PERFORMING CC3D TESTS----------------------')
+    print('Generating test results data in', test_dir)
+    print()
+
+    subprocess.check_call(args=['python', simulation_tester.__file__,
+                                f'--run-command={run_script}',
+                                f'--output-dir={test_dir}'],
+                          cwd=exec_dir)
+    if os.path.isfile(fail_file):
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()
