@@ -1,0 +1,53 @@
+package:
+  name: cc3d
+  version: 0.0.0
+
+about:
+  home: https://compucell3d.org
+  license: GPL
+
+extra:
+  maintainers: T.J. Sego, Maciek Swat
+
+source:
+  # url: https://github.com/CompuCell3D/CompuCell3D/archive/master.tar.gz
+  path: ../
+
+build:
+  number: 0
+  ignore_run_exports:
+    # Mitigating hard dependency on tbb by tbb-devel
+    - tbb
+
+requirements:
+  host:
+    - python {{ python }}
+    - numpy
+    - vtk=8.2
+    - eigen
+    - tbb-devel=2020
+
+  build:
+    - cmake>=3.14
+    - swig=3
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+
+  run:
+    - python 
+    - {{ pin_compatible('numpy') }}
+    - {{ pin_compatible('vtk') }}
+    - scipy
+    - pandas
+    - jinja2
+    - webcolors
+    - deprecated
+    - chardet
+    - requests
+    - psutil
+    - pyqt
+    - pyqtgraph
+    - qscintilla2
+
+  run_constrained:
+    - tbb=2020
