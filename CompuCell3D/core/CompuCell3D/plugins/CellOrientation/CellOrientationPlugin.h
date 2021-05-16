@@ -33,7 +33,7 @@
 // // // #include <BasicUtils/BasicClassAccessor.h>
 // // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 // // // // #include "CellOrientationVector.h"
-// #include <CompuCell3D/plugins/PolarizationVector/PolarizationVector.h>
+#include <CompuCell3D/plugins/PolarizationVector/PolarizationVector.h>
 
 #include "CellOrientationDLLSpecifier.h"
 

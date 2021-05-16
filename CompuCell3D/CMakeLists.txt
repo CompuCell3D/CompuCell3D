@@ -81,9 +81,6 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "MinSizeRel" "RelWithDebInfo")
 endif()
 
-INCLUDE_DIRECTORIES (${COMPUCELL3D_SOURCE_DIR}/core)
-
-
 OPTION(USE_LIBRARY_VERSIONS "Use version numbers in libraries" OFF)
 
 SET(USE_LIBRARY_VERSIONS OFF)
@@ -186,8 +183,31 @@ if(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
     endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 endif(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
 
+# handle rpath
+set(CMAKE_MACOSX_RPATH TRUE)
+set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+
+if(APPLE AND NOT UNIX)
+    set(RPATH_BASE @loader_path)
+else()
+    set(RPATH_BASE $ORIGIN)
+endif()
+file(RELATIVE_PATH BinToLibRelPath 
+    ${CMAKE_INSTALL_PREFIX}/bin 
+    ${CMAKE_INSTALL_PREFIX}/lib
+)
+file(RELATIVE_PATH CPPLibToLibRelPath 
+    ${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} 
+    ${CMAKE_INSTALL_PREFIX}/lib
+)
+set(CMAKE_INSTALL_RPATH ${RPATH_BASE} ${RPATH_BASE}/${BinToLibRelPath} ${RPATH_BASE}/${CPPLibToLibRelPath} ${RPATH_BASE}/CompuCell3DPlugins ${RPATH_BASE}/CompuCell3DSteppables)
+
 
 include(compucell3d_cmake_macros.cmake)
+
+if(MSVC)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
 
 # setting up compilation environment for XML parser based on Expat library
 if(BUILD_CPP_ONLY_EXECUTABLE)

@@ -9,7 +9,7 @@ namespace CompuCell3D {
    class CellG;
    
 
-   class CELLORIENTATION_EXPORT CellOrientationVector{
+   class CellOrientationVector{
       public:
 
          CellOrientationVector(float _x=0.0 ,float _y=0.0 , float _z=0.0)

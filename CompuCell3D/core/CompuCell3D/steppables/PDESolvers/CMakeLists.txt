@@ -13,7 +13,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 
 #for the implicit diffusion solver
 find_package(Eigen3 REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIR})
+SET(INCLUDE_DIRS $<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>)
 
 SET (HEADER_FILES
   DiffSecrData.h
@@ -40,7 +40,8 @@ SET (HEADER_FILES
   KernelDiffusionSolver.h
   GPUSolverParams.h
   FluctuationCompensator.h
-  ${OPENCL_HDRS})
+  ${OPENCL_HDRS}
+)
 
 # SET(CUDA_LIBS )    
 # SET(CUDA_SRCS )
@@ -102,13 +103,18 @@ IF(NOT NO_OPENCL)
 		MESSAGE(STATUS "OpenCL library: " ${OPENCL_LIBRARIES})
 		ADD_SUBDIRECTORY(OpenCL)
 		ADD_DEFINITIONS(-DPDESOLVERSGPU_EXPORT_COMPILER_DEFINITION -DVIENNACL_WITH_OPENCL)
-		INCLUDE_DIRECTORIES(${OPENCL_INCLUDE_DIRS})
-		include_directories(${CMAKE_SOURCE_DIR}/core/ViennaCL)
+		# INCLUDE_DIRECTORIES(${OPENCL_INCLUDE_DIRS})
+		# include_directories(${CMAKE_SOURCE_DIR}/core/ViennaCL)
+    LIST(APPEND INCLUDE_DIRS 
+      ${OPENCL_INCLUDE_DIRS} 
+      $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/core/ViennaCL>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/ViennaCL>
+    )
 		SET(OpenCLEnabled 1)
 		SET(OPENCL_HDRS 
 			#DiffusableVectorGPU.h
 			#FlexibleDiffusionSolverFE_OpenCL.h
-			)
+    )
 		SET(OPENCL_SRCS
 #			OpenCL/FlexibleDiffusionSolverFE_OpenCL.cpp
 			OpenCL/DiffusionSolverFE_OpenCL.cpp
@@ -124,8 +130,7 @@ IF(NOT NO_OPENCL)
 			OpenCL/LinearSolver.cpp
 			OpenCL/Solver.cpp
 		)	
-		SET(OPENCL_LIBS
-			FlexibleDiffusionSolverFE_OpenCL)
+		SET(OPENCL_LIBS FlexibleDiffusionSolverFE_OpenCL)
 		SET(HEADER_FILES
 			${HEADER_FILES}
 #			FlexibleDiffusionSolverFE_GPU_Device.h
@@ -146,7 +151,8 @@ IF(NOT NO_OPENCL)
 			OpenCL/Solver.h
 			OpenCL/LinearSolver.h
 #			OpenCL/ArrayRDOpenCLImpl.hpp
-			${OPENCL_HDRS})
+			${OPENCL_HDRS}
+    )
 		
 	ELSE(OPENCL_FOUND)
 		MESSAGE('No OpenCL found')
@@ -168,7 +174,7 @@ CONFIGURE_FILE (
 
 # add the binary tree to the search path for include files
 # so that we will find CudaEnabled.h
-INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}")
+LIST(APPEND INCLUDE_DIRS $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>)
 
 
 message("OPENMP FLAGS " ${OpenMP_CXX_FLAGS})
@@ -197,12 +203,18 @@ ADD_COMPUCELL3D_STEPPABLE(PDESolvers
   ${OPENCL_SRCS}
   ${HEADER_FILES}
 
-LINK_LIBRARIES ${STEPPABLE_DEPENDENCIES} ${OPENCL_LIBS} 
+  LINK_LIBRARIES 
+  ${STEPPABLE_DEPENDENCIES} 
+  ${OPENCL_LIBS} 
 #  ${CUDA_LIBS} 
-  PixelTrackerShared
-  EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS}
+  cc3d::PixelTracker 
+  cc3d::NeighborTracker 
+  cc3d::BoxWatcher 
+
+  EXTRA_COMPILER_FLAGS 
+  ${OpenMP_CXX_FLAGS}
 )
 
-ADD_COMPUCELL3D_STEPPABLE_HEADERS(PDESolvers
-  ${HEADER_FILES}
-  )
+TARGET_INCLUDE_DIRECTORIES(${PDESolversLib} PUBLIC ${INCLUDE_DIRS})
+
+ADD_COMPUCELL3D_STEPPABLE_HEADERS(PDESolvers ${HEADER_FILES})

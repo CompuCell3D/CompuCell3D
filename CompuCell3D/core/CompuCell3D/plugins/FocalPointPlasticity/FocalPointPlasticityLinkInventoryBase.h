@@ -73,7 +73,7 @@ namespace CompuCell3D {
 	template <class LinkType> class FPPLinkInventoryBase;
 
 	template <class LinkType>
-	class FOCALPOINTPLASTICITY_EXPORT FPPLinkInventoryTracker {
+	class FPPLinkInventoryTracker {
 	public:
 
 		FPPLinkInventoryTracker() {};
@@ -84,7 +84,7 @@ namespace CompuCell3D {
 
 	
 	// Hasher using Cantor pairing function
-	class FOCALPOINTPLASTICITY_EXPORT LinkInventoryHasher {
+	class LinkInventoryHasher {
 
 	public:
 
@@ -96,7 +96,7 @@ namespace CompuCell3D {
 
 
 	template <class LinkType>
-	class FOCALPOINTPLASTICITY_EXPORT FPPLinkInventoryBase {
+	class FPPLinkInventoryBase {
 
 	public:
 

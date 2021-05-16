@@ -26,46 +26,18 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 SET(SRCS
-        BasicException.cpp
-        BasicFileLocation.cpp
-        BasicString.cpp
-        BasicRandomNumberGenerator.cpp
-        BasicDynamicClassFactory.cpp
-        BasicDynamicClassNodeBase.cpp
-        BasicClassGroupFactory.cpp
-        BasicPluginInfo.cpp
-        BasicClassRegistry.cpp
-        BasicStringTable.cpp
-        ${ADDITIONAL_BASIC_UTILS_FILES}
+   BasicException.cpp
+   BasicFileLocation.cpp
+   BasicString.cpp
+   BasicRandomNumberGenerator.cpp
+   BasicDynamicClassFactory.cpp
+   BasicDynamicClassNodeBase.cpp
+   BasicClassGroupFactory.cpp
+   BasicPluginInfo.cpp
+   BasicClassRegistry.cpp
+   BasicStringTable.cpp
+   ${ADDITIONAL_BASIC_UTILS_FILES}
 )
-
-
-
-# If we have pthreads build BasicThread
-# IF(CMAKE_USE_PTHREADS_INIT)
-#   SET(SRCS ${SRCS}
-#     BasicCondition.cpp
-#     BasicLockable.cpp
-#     BasicThread.cpp)
-#   SET(LIBS ${LIBS} ${CMAKE_THREAD_LIBS_INIT})
-# ENDIF(CMAKE_USE_PTHREADS_INIT)
-#
-# CHECK_INCLUDE_FILE(regex.h HAS_REGEX_H)
-# IF(HAS_REGEX_H)
-#   SET(SRCS ${SRCS} BasicRegex.cpp)
-# ENDIF(HAS_REGEX_H)
-#
-#
-#
-#
-# CHECK_INCLUDE_FILE(unistd.h HAS_UNISTD_H)
-# IF(HAS_UNISTD_H)
-#   SET(SRCS ${SRCS}
-#     BasicDebugger.cpp
-#     BasicPipe.cpp
-#     BasicProcess.cpp)
-# ENDIF(HAS_UNISTD_H)
-
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
    ADD_STATIC_LIBRARY(BasicUtils ${SRCS})
@@ -74,12 +46,12 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
+target_include_directories(${BasicUtilsLib} PUBLIC 
+   $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core>
+   $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_INCLUDE_DIR}>
+)
 
-
-
-
-
-INSTALL_FILES(/include/CompuCell3D/BasicUtils .h
+INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/BasicUtils .h
   BasicArray
   BasicClassAccessorBase
   BasicClassAccessor
