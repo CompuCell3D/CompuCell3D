@@ -34,8 +34,6 @@
 using namespace CompuCell3D;
 
 
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
 
 
 
@@ -227,7 +225,8 @@ void ConnectivityLocalFlexPlugin::initializeNeighborsOffsets(){
 
    maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(1.45);//second nearest neighbor
 
-   ASSERT_OR_THROW("This plugin will only work for 2D simulations i.e. one lattice dimansion must be equal to 1 Your simulations appears to be 3D", !(fieldDim.x>1 && fieldDim.y>1 && fieldDim.z>1 ) );
+   if (fieldDim.x>1 && fieldDim.y>1 && fieldDim.z>1)
+      throw CC3DException("This plugin will only work for 2D simulations i.e. one lattice dimansion must be equal to 1 Your simulations appears to be 3D");
 
    //here we define neighbors  offsets in the "clockwise order"
    if(fieldDim.x==1){

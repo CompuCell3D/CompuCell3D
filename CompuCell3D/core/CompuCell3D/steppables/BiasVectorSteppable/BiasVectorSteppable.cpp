@@ -706,7 +706,7 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 
 	automaton = potts->getAutomaton();
 
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
 	set<unsigned char> cellTypesSet;
 

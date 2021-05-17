@@ -83,7 +83,7 @@ void NeighborFinder::addNeighbors(int nums[3], const double distance) {
 	while (true) {
 	  while (true) {
 	    while (true) {
-	      neighbors.put(Neighbor(pt, distance));
+	      neighbors.push_back(Neighbor(pt, distance));
 
 	      pt.z = -pt.z;
 	      if (pt.z >= 0) break;

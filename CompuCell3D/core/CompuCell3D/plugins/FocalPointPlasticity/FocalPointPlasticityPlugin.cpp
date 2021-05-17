@@ -112,7 +112,7 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 	typeSpecificPlastParams.clear();
 	internalTypeSpecificPlastParams.clear();
 
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton);
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
 	CC3DXMLElementList plastParamVec = _xmlData->getElements("Parameters");
 	if (plastParamVec.size()>0) {
@@ -138,8 +138,7 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 		int index = getIndex(type1, type2);
 
 		plastParams_t::iterator it = plastParams.find(index);
-		ASSERT_OR_THROW(string("Plasticity parameters for ") + type1 + " " + type2 +
-			" already set!", it == plastParams.end());
+		if (it != plastParams.end()) throw CC3DException(string("Plasticity parameters for ") + type1 + " " + type2 + " already set!");
 
 		if (plastParamVec[i]->getFirstElement("Lambda"))
 			fpptd.lambdaDistance = plastParamVec[i]->getFirstElement("Lambda")->getDouble();
@@ -179,9 +178,7 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 		int index = getIndex(type1, type2);
 
 		plastParams_t::iterator it = internalPlastParams.find(index);
-		ASSERT_OR_THROW(string("Internal plasticity parameters for ") + type1 + " " + type2 +
-			" already set!", it == internalPlastParams.end());
-
+		if (it != internalPlastParams.end()) throw CC3DException(string("Internal plasticity parameters for ") + type1 + " " + type2 + " already set!");
 
 		if (internalPlastParamVec[i]->getFirstElement("Lambda"))
 			fpptd.lambdaDistance = internalPlastParamVec[i]->getFirstElement("Lambda")->getDouble();
@@ -271,7 +268,7 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 	CC3DXMLElement * linkXMLElem = _xmlData->getFirstElement("LinkConstituentLaw");
 
 	if (linkXMLElem  && linkXMLElem->findElement("Formula")) {
-		ASSERT_OR_THROW("CC3DML Error: Please change Formula tag to Expression tag inside LinkConstituentLaw element", false);
+		throw CC3DException("CC3DML Error: Please change Formula tag to Expression tag inside LinkConstituentLaw element");
 	}
 
 	if (linkXMLElem) {

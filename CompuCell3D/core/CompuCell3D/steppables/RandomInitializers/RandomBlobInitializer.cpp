@@ -71,7 +71,7 @@ void RandomBlobInitializer::init(Simulator *_simulator, CC3DXMLElement *_xmlData
 	simulator = _simulator;
 	potts = _simulator->getPotts();
 	cellField = (WatchableField3D<CellG *> *)potts->getCellFieldG();
-	ASSERT_OR_THROW("initField() Cell field G cannot be null!", cellField);
+	if (!cellField) throw CC3DException("initField() Cell field G cannot be null!");
 	dim=cellField->getDim();
 	cellInventoryPtr = & potts->getCellInventory();
 	builder = new FieldBuilder(_simulator);
@@ -164,7 +164,7 @@ void RandomBlobInitializer::extraInit(Simulator *simulator){
 	if (!pluginAlreadyRegisteredFlag){
 		mit->init(simulator);
 	}
-	ASSERT_OR_THROW("MitosisSteppable not initialized!", mit);
+	if (!mit) throw CC3DException("MitosisSteppable not initialized!");
 }
 
 void RandomBlobInitializer::start(){

@@ -2,6 +2,7 @@
 #ifndef CC3D_MAIN_H
 #define CC3D_MAIN_H
     #include <CompuCell3D/CC3DEvents.h>
+    #include <CompuCell3D/CC3DExceptions.h>
     #include <CompuCell3D/SimObject.h>
     #include <CompuCell3D/ParseData.h>
     #include <CompuCell3D/CC3D.h>

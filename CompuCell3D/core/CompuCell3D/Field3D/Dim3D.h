@@ -121,8 +121,8 @@ namespace CompuCell3D {
    * Overloads the operator std::string + Point3D.
    */
   inline std::string operator+(const std::string s, const Dim3D pt) { 
-    return s + "(" + BasicString(pt.x) + "," + BasicString(pt.y) + "," +
-      BasicString(pt.z) + ")";
+    return s + "(" + std::to_string((int)pt.x) + "," + std::to_string((int)pt.y) + "," +
+      std::to_string((int)pt.z) + ")";
   }
 
 };

@@ -34,7 +34,6 @@ FieldSecretorResult FieldSecretor::_secreteInsideCellTotalCount(CellG * _cell, f
 
 	FieldSecretorResult res;
 	if (!pixelTrackerPlugin) {
-		// ASSERT_OR_THROW("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function",pixelTrackerPlugin);
 		res.success_flag = false;
 		return res;
 		
@@ -73,7 +72,6 @@ FieldSecretorResult FieldSecretor::_secreteInsideCellConstantConcentrationTotalC
 	FieldSecretorResult res;
 
 	if (!pixelTrackerPlugin) {
-		// ASSERT_OR_THROW("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function",pixelTrackerPlugin);
 		res.success_flag = false;
 		return res;
 	}
@@ -371,7 +369,6 @@ FieldSecretorResult FieldSecretor::_uptakeInsideCellTotalCount(CellG * _cell, fl
 	FieldSecretorResult res;
 
 	if (!pixelTrackerPlugin) {
-		// ASSERT_OR_THROW("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function",pixelTrackerPlugin);
 		res.success_flag = false;
 		return res;
 
@@ -775,9 +772,7 @@ bool FieldSecretor::uptakeInsideCellAtCOM(CellG * _cell, float _maxUptake, float
 
 float FieldSecretor::_amountSeenByCell(CellG * _cell) {
 
-    if (!pixelTrackerPlugin) {
-        // ASSERT_OR_THROW("PixelTracker Plugin has been turned off. Cannot execute _amountSeenByCell function",pixelTrackerPlugin);
-        
+    if (!pixelTrackerPlugin) { 
         return -1.0;
     }
 

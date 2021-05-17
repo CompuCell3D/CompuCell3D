@@ -20,6 +20,7 @@
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
  *************************************************************************/
 
+#include <string>
 #include <CompuCell3D/CC3D.h>
  // // // #include <CompuCell3D/Simulator.h>
  // // // #include <CompuCell3D/Potts3D/Potts3D.h>
@@ -249,8 +250,8 @@ void BoundaryPixelTrackerPlugin::updateBoundaryPixels(const Point3D &pt, CellG *
 
 				std::set<BoundaryPixelTrackerData >::iterator sitr = pixelSetRef.find(BoundaryPixelTrackerData(neighbor.pt));
 
-				ASSERT_OR_THROW("Could not find point:" + neighbor.pt + " in the boundary of cell id: " + BasicString(newCell->id) + " type: " + BasicString((int)newCell->type),
-					sitr != pixelSetRef.end());
+				if (sitr == pixelSetRef.end())
+					throw CC3DException("Could not find point:" + neighbor.pt + " in the boundary of cell id: " + std::to_string(newCell->id) + " type: " + std::to_string((int)newCell->type));
 
 				pixelSetRef.erase(sitr);
 			}
@@ -283,8 +284,6 @@ void BoundaryPixelTrackerPlugin::updateBoundaryPixels(const Point3D &pt, CellG *
 		//std::set<BoundaryPixelTrackerData > & pixelSetRef=boundaryPixelTrackerAccessor.get(oldCell->extraAttribPtr)->pixelSet;
 		std::set<BoundaryPixelTrackerData >::iterator sitr;
 		sitr = pixelSetRef.find(BoundaryPixelTrackerData(pt));
-		//ASSERT_OR_THROW("Could not find point:"+pt+" inside cell of id: "+BasicString(oldCell->id)+" type: "+BasicString((int)oldCell->type),
-		//sitr!=pixelSetRef.end());
 
 		if (sitr != pixelSetRef.end()) {//means that pt belongs to oldCell border
 			pixelSetRef.erase(sitr);

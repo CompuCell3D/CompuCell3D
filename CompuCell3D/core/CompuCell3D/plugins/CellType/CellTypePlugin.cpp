@@ -81,12 +81,12 @@ void CellTypePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	type_name_mitr = typeNameMap.find(type_id);
 
-	ASSERT_OR_THROW("Type id: "+SSTR((int)type_id)+" has already been defined", (type_name_mitr == typeNameMap.end()));
+	if (type_name_mitr != typeNameMap.end()) throw CC3DException("Type id: "+SSTR((int)type_id)+" has already been defined");
 	typeNameMap[type_id] = type_name;
 
 	name_type_mitr = nameTypeMap.find(type_name);
 
-	ASSERT_OR_THROW("Type name "+type_name+" has already been defined",(name_type_mitr == nameTypeMap.end()));
+	if (name_type_mitr != nameTypeMap.end()) throw CC3DException("Type name "+type_name+" has already been defined");
 	nameTypeMap[type_name] = type_id;
 
 	if(cellTypeVec[i]->findAttribute("Freeze")){
@@ -99,10 +99,10 @@ void CellTypePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
       //enforcing the Medium has id =0
 	  name_type_mitr = nameTypeMap.find("Medium");
 	  if (name_type_mitr == nameTypeMap.end()) {
-		  ASSERT_OR_THROW("Medium cell type is not defined. Please define Medium cell type and make sure its type id is set to 0 ",false)
+		  throw CC3DException("Medium cell type is not defined. Please define Medium cell type and make sure its type id is set to 0 ");
 	  }
 	  else if (name_type_mitr->second!=0) {
-		  ASSERT_OR_THROW("Medium type id can only be set to 0. Please define Medium cell type and make sure its type id is set to 0.",false)
+		  throw CC3DException("Medium type id can only be set to 0. Please define Medium cell type and make sure its type id is set to 0.");
 	  }
 
 	  
@@ -137,7 +137,7 @@ string CellTypePlugin::getTypeName(const char type) const {
   if(typeNameMapItr!=typeNameMap.end()){
       return typeNameMapItr->second;
   }else{
-      THROW(string("getTypeName: Unknown cell type  ") + BasicString(type) + "!");
+      THROW(string("getTypeName: Unknown cell type  ") + type + "!");
   }
 
 

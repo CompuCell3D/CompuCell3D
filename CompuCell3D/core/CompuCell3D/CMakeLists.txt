@@ -31,7 +31,8 @@ SET(SRCS
   ClassRegistry.cpp
   DerivedProperty.cpp
   PottsParseData.cpp
-  ParserStorage.cpp
+  ParserStorage.cpp 
+  CC3DExceptions.cpp
   # CustomStreamBuffers.cpp
   # ${MOC_FILES}
   )
@@ -162,6 +163,7 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D .h
   CC3D_Main
   CC3D_STL
   CC3DEvents
+  CC3DExceptions
   
   )
 

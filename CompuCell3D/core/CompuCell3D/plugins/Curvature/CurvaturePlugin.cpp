@@ -37,8 +37,6 @@
 using namespace CompuCell3D;
 
 
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
 // // // #include <iostream>
 // // // #include <algorithm>
 
@@ -147,58 +145,7 @@ void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 
 
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
-
-		//if(_xmlData->getFirstElement("Local")){
-		//	diffEnergyFcnPtr=&CurvaturePlugin::diffEnergyLocal;
-		//	return;
-		//}
-
-
-
-		// CC3DXMLElementList plastParamVec=_xmlData->getElements("Parameters");
-		// if (plastParamVec.size()>0){
-		// functionType=BYCELLTYPE;
-		// }
-
-		// for (int i = 0 ; i<plastParamVec.size(); ++i){
-
-		// CurvatureTrackerData ctd;
-
-		// char type1 = automaton->getTypeId(plastParamVec[i]->getAttribute("Type1"));
-		// char type2 = automaton->getTypeId(plastParamVec[i]->getAttribute("Type2"));
-
-		// int index = getIndex(type1, type2);
-
-		// plastParams_t::iterator it = plastParams.find(index);
-		// ASSERT_OR_THROW(string("Plasticity parameters for ") + type1 + " " + type2 +
-		// " already set!", it == plastParams.end());
-
-
-		// if(plastParamVec[i]->getFirstElement("Lambda"))
-		// ctd.lambdaDistance=plastParamVec[i]->getFirstElement("Lambda")->getDouble();
-
-		// if(plastParamVec[i]->getFirstElement("TargetDistance"))
-		// ctd.targetDistance=plastParamVec[i]->getFirstElement("TargetDistance")->getDouble();
-
-		// if(plastParamVec[i]->getFirstElement("ActivationEnergy")){
-		// ctd.activationEnergy=plastParamVec[i]->getFirstElement("ActivationEnergy")->getDouble();
-		// }
-
-		// if(plastParamVec[i]->getFirstElement("MaxDistance"))
-		// ctd.maxDistance=plastParamVec[i]->getFirstElement("MaxDistance")->getDouble();
-
-
-		// plastParams[index] = ctd;
-
-
-
-		// //inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
-		// cellTypesSet.insert(type1);
-		// cellTypesSet.insert(type2);			
-
-		// }
-
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
 		// extracting internal parameters - used with compartmental cells
 		CC3DXMLElementList internalCurvatureParamVec=_xmlData->getElements("InternalParameters");
@@ -212,8 +159,8 @@ void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		int index = getIndex(type1, type2);
         cerr << "setting curvature parameters between type1=" << (int)type1 << " and type2=" << (int)type2 << endl;
 		curvatureParams_t::iterator it = internalCurvatureParams.find(index);
-		ASSERT_OR_THROW(string("Internal curvature parameters for ") + type1 + " " + type2 +
-			" already set!", it == internalCurvatureParams.end());
+		if (it != internalCurvatureParams.end()) 
+			throw CC3DException(string("Internal curvature parameters for ") + type1 + " " + type2 + " already set!");
 
 		if(internalCurvatureParamVec[i]->getFirstElement("ActivationEnergy"))
 			ctd.activationEnergy=internalCurvatureParamVec[i]->getFirstElement("ActivationEnergy")->getDouble();
@@ -333,34 +280,6 @@ void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			index = getIndex(internalCellTypesVector[i],internalCellTypesVector[j]);
 			internalCurvatureParamsArray[internalCellTypesVector[i]][internalCellTypesVector[j]] = internalCurvatureParams[index];				
 		}
-
-
-
-
-
-		// //Now type specific parameters
-		// //Now that we know all the types used in the simulation we will find size of the plastParams
-		// vector<unsigned char> typeSpecCellTypesVector(typeSpecCellTypesSet.begin(),typeSpecCellTypesSet.end());//coping set to the vector
-
-		// size=0;
-		// if (typeSpecCellTypesVector.size()){
-		// size= * max_element(typeSpecCellTypesVector.begin(),typeSpecCellTypesVector.end());
-		// size+=1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-		// }
-
-		// typeSpecificCurvatureParamsVec.clear();
-		// typeSpecificCurvatureParamsVec.assign(size,CurvatureTrackerData());
-
-		// for(int i = 0 ; i < typeSpecCellTypesVector.size() ; ++i){
-
-
-		// typeSpecificCurvatureParamsVec[typeSpecCellTypesVector[i]]=typeSpecificCurvatureParams[typeSpecCellTypesVector[i]];
-
-
-		// }
-
-
-		// ASSERT_OR_THROW("THE NUMBER TYPE NAMES IN THE TYPE SPECIFIC SECTION DOES NOT MATCH THE NUMBER OF CELL TYPES IN PARAMETERS SECTION",typeSpecificCurvatureParamsVec.size()==plastParamsArray.size());
 		//Now internal type specific parameters
 
 		//Now that we know all the types used in the simulation we will find size of the plastParams
@@ -382,7 +301,8 @@ void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 		}
 
-		ASSERT_OR_THROW("THE NUMBER TYPE NAMES IN THE INTERNAL TYPE SPECIFIC SECTION DOES NOT MATCH THE NUMBER OF CELL TYPES IN INTERNAL PARAMETERS SECTION",internalTypeSpecificCurvatureParamsVec.size()==internalCurvatureParamsArray.size());
+		if (internalTypeSpecificCurvatureParamsVec.size() != internalCurvatureParamsArray.size())
+			throw CC3DException("THE NUMBER TYPE NAMES IN THE INTERNAL TYPE SPECIFIC SECTION DOES NOT MATCH THE NUMBER OF CELL TYPES IN INTERNAL PARAMETERS SECTION");
 
 		boundaryStrategy=BoundaryStrategy::getInstance();
 }

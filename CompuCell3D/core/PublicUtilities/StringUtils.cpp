@@ -66,3 +66,50 @@ void changeToUpper(std::string & str){
    transform(str.begin(),str.end(),str.begin(),up);
 
 }
+
+string toUpper(const string &str) {
+   string s(str);
+   changeToUpper(s);
+   return s;
+}
+
+string toLower(const string &str) {
+   string s(str);
+   changeToLower(s);
+   return s;
+}
+
+bool strToBool(const string &str) {
+   string s = toLower(str);
+   if (s == "true") return true;
+   if (s == "false") return false;
+   throw string("Invalid bool: ") + str;
+}
+
+int strToInt(const std::string &str) {
+	return stoi(str);
+}
+
+unsigned int strToUInt(const std::string &str) {
+	return (unsigned int)strToInt(str);
+}
+
+short strToShort(const std::string &str) {
+	return (short)strToInt(str);
+}
+
+unsigned short strToUShort(const std::string &str) {
+	return (unsigned short)strToInt(str);
+}
+
+double strToDouble(const std::string &str) {
+	return stod(str);
+}
+
+char strToByte(const std::string &str) {
+	return (char)strToUInt(str);
+}
+
+unsigned char strToUByte(const std::string &str) {
+	return (unsigned char)strToUInt(str);
+}

@@ -26,7 +26,7 @@
 //#include <CompuCell3D/dllDeclarationSpecifier.h>
 #include <CompuCell3D/CompuCellLibDLLSpecifier.h>
 
-
+#include "CC3DExceptions.h"
 #include "PluginManager.h"
 #include "Plugin.h"
 #include "PluginBase.h"
@@ -161,7 +161,7 @@ namespace CompuCell3D {
 		Simulator *getSimulatorPtr(){return this;}
 		ClassRegistry *getClassRegistry() {return classRegistry;}
 
-        std::string formatErrorMessage(const BasicException &e);
+        std::string formatErrorMessage(const CC3DException &e);
 
 		void registerConcentrationField(std::string _name,Field3D<float>* _fieldPtr);
 		std::map<std::string,Field3D<float>*> & getConcentrationFieldNameMap(){

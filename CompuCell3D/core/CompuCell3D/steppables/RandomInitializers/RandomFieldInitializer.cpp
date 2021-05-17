@@ -63,7 +63,7 @@ void RandomFieldInitializer::init(Simulator *_simulator, CC3DXMLElement *_xmlDat
 	simulator = _simulator;
 	potts = _simulator->getPotts();
 	cellField = (WatchableField3D<CellG *> *)potts->getCellFieldG();
-	ASSERT_OR_THROW("initField() Cell field G cannot be null!", cellField);
+	if (!cellField) throw CC3DException("initField() Cell field G cannot be null!");
 	dim=cellField->getDim();
 	builder = new FieldBuilder(_simulator);
 	// setParameters(_simulator,_xmlData);

@@ -35,7 +35,7 @@ void UniformFieldInitializer::init(Simulator *simulator, CC3DXMLElement * _xmlDa
 	sim = simulator;
 	potts = simulator->getPotts();
 	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
-	ASSERT_OR_THROW("initField() Cell field G cannot be null!", cellFieldG);
+	if (!cellFieldG) throw CC3DException("initField() Cell field G cannot be null!");
 	Dim3D dim = cellFieldG->getDim();
 
 
@@ -57,7 +57,8 @@ void UniformFieldInitializer::init(Simulator *simulator, CC3DXMLElement * _xmlDa
 			if (regionVec[i]->findElement("Width"))
 				initData.width = regionVec[i]->getFirstElement("Width")->getUInt();
 
-			ASSERT_OR_THROW("UniformInitializer requires Types element inside Region section.See manual for details.", regionVec[i]->getFirstElement("Types"));
+			if (!regionVec[i]->getFirstElement("Types")) 
+				throw CC3DException("UniformInitializer requires Types element inside Region section.See manual for details.");
 			initData.typeNamesString = regionVec[i]->getFirstElement("Types")->getText();
 			parseStringIntoList(initData.typeNamesString, initData.typeNames, ",");
 
@@ -85,18 +86,17 @@ void UniformFieldInitializer::layOutCells(const UniformFieldInitializerData & _i
 	int cellWidth = _initData.width;
 
 	WatchableField3D<CellG *> *cellField = (WatchableField3D<CellG *> *)potts->getCellFieldG();
-	ASSERT_OR_THROW("initField() Cell field cannot be null!", cellField);
+	if (!cellField) throw CC3DException("initField() Cell field cannot be null!");
 
 	Dim3D dim = cellField->getDim();
 	Point3D boxDim = _initData.boxMax - _initData.boxMin;
 	cerr << " _initData.boxMin " << _initData.boxMin << " _initData.boxMax=" << _initData.boxMax << " dim=" << dim << endl;
 
-	ASSERT_OR_THROW(" BOX DOES NOT FIT INTO LATTICE ",
-		_initData.boxMin.x >= 0 && _initData.boxMin.y >= 0 && _initData.boxMin.z >= 0
+	if (!(_initData.boxMin.x >= 0 && _initData.boxMin.y >= 0 && _initData.boxMin.z >= 0
 		&& _initData.boxMax.x <= dim.x
 		&& _initData.boxMax.y <= dim.y
-		&& _initData.boxMax.z <= dim.z
-		);
+		&& _initData.boxMax.z <= dim.z)) 
+		throw CC3DException(" BOX DOES NOT FIT INTO LATTICE ");
 
 	Dim3D itDim;
 
@@ -177,7 +177,7 @@ void UniformFieldInitializer::start() {
 	cerr << "INSIDE START" << endl;
 
 	WatchableField3D<CellG *> *cellField = (WatchableField3D<CellG *> *) potts->getCellFieldG();
-	ASSERT_OR_THROW("initField() Cell field cannot be null!", cellField);
+	if (!cellField) throw CC3DException("initField() Cell field cannot be null!");
 	Dim3D dim = cellField->getDim();
 
 

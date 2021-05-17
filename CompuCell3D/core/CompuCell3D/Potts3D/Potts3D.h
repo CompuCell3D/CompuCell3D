@@ -37,13 +37,7 @@
 #include "CustomAcceptanceFunction.h"
 
 #include <BasicUtils/BasicUtils.h>
-// #include <BasicUtils/BasicArray.h>
-// #include <BasicUtils/BasicDynamicClassFactory.h>
 
-// #include <BasicUtils/BasicClassAccessor.h>
-// #include <BasicUtils/BasicClassGroupFactory.h>
-// #include <BasicUtils/BasicClassGroup.h>
-// #include <BasicUtils/BasicRandomNumberGenerator.h>
 #include "CellInventory.h"
 #include "Cell.h"
 #include <string>

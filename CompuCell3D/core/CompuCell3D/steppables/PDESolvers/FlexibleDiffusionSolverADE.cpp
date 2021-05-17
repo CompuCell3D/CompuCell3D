@@ -10,8 +10,6 @@
 #include <CompuCell3D/Field3D/Field3DIO.h>
 #include <BasicUtils/BasicClassGroup.h>
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
 #include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <PublicUtilities/StringUtils.h>
 #include <string>
@@ -229,7 +227,7 @@ void FlexibleDiffusionSolverADE::start() {
 
 			serializerPtr->readFromFile();
 
-		} catch (BasicException &e){
+		} catch (CC3DException &e){
 			cerr<<"Going to fail-safe initialization"<<endl;
 			initializeConcentration(); //if there was error, initialize using failsafe defaults
 		}
@@ -1124,8 +1122,7 @@ void FlexibleDiffusionSolverADE::readConcentrationField(std::string fileName,Con
 
 	ifstream in(fn.c_str());
 
-	ASSERT_OR_THROW(string("Could not open chemical concentration file '") +
-		fn	 + "'!", in.is_open());
+	if (in.is_open()) throw CC3DException(string("Could not open chemical concentration file '") + fn + "'!");
 
 
 

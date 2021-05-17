@@ -61,7 +61,7 @@ void DictyChemotaxisSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 		chemicalFieldSource=_xmlData->getFirstElement("ChemicalField")->getAttribute("Source");
 	}
 
-	ASSERT_OR_THROW("ChemotactUntil has to be smaller than Clock Reload Value!",chemotactUntil<clockReloadValue);
+	if (chemotactUntil>=clockReloadValue) throw CC3DException("ChemotactUntil has to be smaller than Clock Reload Value!");
 
 }
 
@@ -95,7 +95,7 @@ void DictyChemotaxisSteppable::extraInit(Simulator *_simulator){
 
 	field=((DiffusableVector<float> *) steppable)->getConcentrationField(chemicalFieldName);
 
-	ASSERT_OR_THROW("No chemical field has been loaded!", field);
+	if (!field) throw CC3DException("No chemical field has been loaded!");
 	cerr<<"GOT FIELD INTO CHEMOTAXIS STEPPABLE: "<<field<<endl;
 
 	fieldDim=field->getDim();

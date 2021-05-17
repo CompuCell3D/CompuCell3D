@@ -43,7 +43,6 @@ INCLUDE_DIRECTORIES(
    ${COMPUCELL3D_SOURCE_DIR}/core/CompuCell3D/plugins
    ${COMPUCELL3D_SOURCE_DIR}/core/pyinterface/PyPlugin
    # ${NUMPY_INCLUDE_DIR}
-   # ${COMPUCELL3D_SOURCE_DIR}/BasicUtils
    # ${PYINTERFACE_SRC_DIR}/PyPlugin
     )
 

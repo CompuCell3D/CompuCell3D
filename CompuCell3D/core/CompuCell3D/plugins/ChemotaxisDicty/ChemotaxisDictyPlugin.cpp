@@ -37,8 +37,6 @@
 using namespace CompuCell3D;
 
 
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
 // // // #include <BasicUtils/BasicClassFactoryBase.h>
 
 
@@ -145,71 +143,10 @@ void ChemotaxisDictyPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 double ChemotaxisDictyPlugin::changeEnergy(const Point3D &pt,
                                   const CellG *newCell,
                                   const CellG *oldCell) {
-                                           
-/*  if(!gotChemicalField){///this is only temporary solution will have to come up with something better
-      ClassRegistry *classRegistry=sim->getClassRegistry();
-      Steppable * steppable=classRegistry->getStepper(chemicalFieldSource);
-      //if(chemicalFieldSource=="DiffusionSolverBiofilmFE"){
-         field=((DiffusableVector<float> *) steppable)->getConcentrationField(chemicalFieldName);
-         gotChemicalField=true;
-      //}
-  cerr<<"initializing concentration field "<<field<<endl;
-  
-  ASSERT_OR_THROW("No chemical field has been loaded!", field);      
-  } */
- 
-  
-//   if (oldCell) { /// assuming lambda >0,  the bigger the concentration the harder it will be to flip the spin at this pt - this is pseudo-energy
-//     float concentration = field->get(pt);
-//     return concentration*lambda;
-//   }
-
- //float concentration = field->get(pt);
- //float energy=field->get(pt)*lambda;
-// cells want to keep the highest concentration and move towards regions of highest concentrations
-//   if (newCell) {
-//     
-//    return energy;
-//   } else{
-//    return -energy;
-//   }
-
-
-//    //Rolover condition for linear y concentration and periondic y boundary conditions
-//    energy=fabs(energy);
-//    if((potts->getFlipNeighbor().y-pt.y)==0){
-//       energy=0.0;
-//    }else{
-//       if(pt.y==0 && potts->getFlipNeighbor().y==54){
-//       //if(pt.y==0 && potts->getFlipNeighbor().y==54){
-//          //cerr<<"pt="<<pt<<" potts->getFlipNeighbor()="<<potts->getFlipNeighbor()<<endl;
-//          energy=-lambda;
-// 
-//          //cerr<<"energy="<<energy<<endl;
-// 
-//       }else{
-//          energy=(potts->getFlipNeighbor().y-pt.y)*energy;
-// 
-// 
-//          //cerr<<"energy="<<energy<<endl;
-//       }
-// 
-//    }
 
 
    if(!gotChemicalField)
       return 0.0;
-
-//    if(newCell && !simpleClockAccessorPtr->get(newCell->extraAttribPtr)->flag){
-//       ///flag must be non-zero and clock must be counting down in order for chemotaxis to work
-//       return 0.0;
-//    }
-   //cerr<<"Chemotacting"<<endl;
-//    if(newCell){
-//       cerr<<"Chemotacting ";
-//       cerr<<simpleClockAccessorPtr->get(newCell->extraAttribPtr)->clock<<endl;
-//    }
-
    
 ///cells move up the concentration gradient
 float concentration=field->get(pt);
@@ -224,16 +161,6 @@ bool chemotaxisDone=false;
    if(newCell && simpleClockAccessorPtr->get(newCell->extraAttribPtr)->flag){
       energy+=(neighborConcentration - concentration)*lambda;
       chemotaxisDone=true;
-/*         type=newCell->type;
-         for(unsigned int i=0;i<nonChemotacticTypeVector.size();++i){
-            if(type==nonChemotacticTypeVector[i])
-               return 0.0;
-         }*/
-/*      if(energy!=0.0){
-         cerr<<"pt="<<pt<<" potts->getFlipNeighbor()="<<potts->getFlipNeighbor()<<endl;
-      
-         cerr<<"energy change chmotaxis="<<energy<<endl;
-      }*/
       
    }
  
@@ -246,7 +173,7 @@ bool chemotaxisDone=false;
 }
 
 double ChemotaxisDictyPlugin::getConcentration(const Point3D &pt) {
-  ASSERT_OR_THROW("No chemical field has been initialized!", field);
+  if (!field) throw CC3DException("No chemical field has been initialized!");
   return field->get(pt);
 }
 
@@ -260,7 +187,7 @@ void ChemotaxisDictyPlugin::initializeField(){
          gotChemicalField=true;
       //}
   
-  ASSERT_OR_THROW("No chemical field has been loaded!", field);
+  if (!field) throw CC3DException("No chemical field has been initialized!");
   
   }
 	//cerr<<"field="<<field<<" conc="<<field->get(Point3D(10,10,10))<<endl;

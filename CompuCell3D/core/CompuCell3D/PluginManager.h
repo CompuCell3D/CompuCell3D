@@ -23,8 +23,8 @@
 #ifndef PLUGINMANAGER_H
 #define PLUGINMANAGER_H
 
+#include "CC3DExceptions.h"
 #include <BasicUtils/BasicPluginManager.h>
-#include <BasicUtils/BasicException.h>
 
 // #include "Plugin.h"
 namespace CompuCell3D {
@@ -45,7 +45,7 @@ namespace CompuCell3D {
     void setSimulator(Simulator *simulator) {this->simulator = simulator;}
 
     virtual void init(PluginType *plugin) {
-      ASSERT_OR_THROW("PluginManager::init() Simulator not set!", simulator);
+      if (!simulator) throw CC3DException("PluginManager::init() Simulator not set!");
       //plugin->init(simulator);
     }
 

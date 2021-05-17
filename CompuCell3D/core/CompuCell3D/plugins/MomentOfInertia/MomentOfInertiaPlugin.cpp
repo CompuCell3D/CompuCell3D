@@ -32,8 +32,6 @@
 // // // #include <CompuCell3D/Potts3D/Potts3D.h>
 // // // #include <CompuCell3D/Potts3D/Cell.h>
 // // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
 // // // #include <PublicUtilities/NumericalUtils.h>
 // // // #include <complex>
 // // // #include <algorithm>

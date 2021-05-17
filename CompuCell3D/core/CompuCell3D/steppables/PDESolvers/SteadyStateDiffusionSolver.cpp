@@ -12,8 +12,6 @@
 
 
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
 #include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <PublicUtilities/StringUtils.h>
 #include <string>
@@ -64,9 +62,9 @@ void SteadyStateDiffusionSolverSerializer::readFromFile(){
 			solverPtr->readConcentrationField(inName.str().c_str(),solverPtr->concentrationFieldVector[i]);;
 		}
 
-	} catch (BasicException &e) {
+	} catch (CC3DException &e) {
 		cerr<<"COULD NOT FIND ONE OF THE FILES"<<endl;
-		throw BasicException("Error in reading diffusion fields from file",e);
+		throw CC3DException("Error in reading diffusion fields from file", e);
 	}
 
 
@@ -312,7 +310,7 @@ void SteadyStateDiffusionSolver::start() {
 
 			//          serializerPtr->readFromFile();
 
-		} catch (BasicException &e){
+		} catch (CC3DException &e){
 			cerr<<"Going to fail-safe initialization"<<endl;
 			initializeConcentration(); //if there was error, initialize using failsafe defaults
 		}
@@ -966,8 +964,7 @@ void SteadyStateDiffusionSolver::readConcentrationField(std::string fileName,Con
 
 	ifstream in(fn.c_str());
 
-	ASSERT_OR_THROW(string("Could not open chemical concentration file '") +
-		fn	 + "'!", in.is_open());
+	if (!in.is_open()) throw CC3DException(string("Could not open chemical concentration file '") + fn + "'!");
 
 	Point3D pt;
 	double c;
@@ -1209,7 +1206,7 @@ void SteadyStateDiffusionSolver::update(CC3DXMLElement *_xmlData, bool _fullInit
 
 
 			for(unsigned int ip = 0 ; ip < planeVec.size() ; ++ip ){
-				ASSERT_OR_THROW ("Boundary Condition specification Plane element is missing Axis attribute",planeVec[ip]->findAttribute("Axis"));
+				if (!planeVec[ip]->findAttribute("Axis")) throw CC3DException("Boundary Condition specification Plane element is missing Axis attribute");
 				string axisName=planeVec[ip]->getAttribute("Axis");
 				int index=0;
 				if (axisName=="x" ||axisName=="X" ){
@@ -1242,7 +1239,7 @@ void SteadyStateDiffusionSolver::update(CC3DXMLElement *_xmlData, bool _fullInit
 							bcSpec.planePositions[index+1]=BoundaryConditionSpecifier::CONSTANT_VALUE;
 							bcSpec.values[index+1]=value;
 						}else{
-							ASSERT_OR_THROW("PlanePosition attribute has to be either max on min",false);
+							throw CC3DException("PlanePosition attribute has to be either max on min");
 						}
 
 					}
@@ -1259,7 +1256,7 @@ void SteadyStateDiffusionSolver::update(CC3DXMLElement *_xmlData, bool _fullInit
 								bcSpec.planePositions[index+1]=BoundaryConditionSpecifier::CONSTANT_DERIVATIVE;
 								bcSpec.values[index+1]=value;
 							}else{
-								ASSERT_OR_THROW("PlanePosition attribute has to be either max on min",false);
+								throw CC3DException("PlanePosition attribute has to be either max on min");
 							}
 
 						}

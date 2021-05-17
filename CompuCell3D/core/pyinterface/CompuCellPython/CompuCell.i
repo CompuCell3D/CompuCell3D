@@ -91,7 +91,6 @@
 #include <PublicUtilities/NumericalUtils.h>
 #include <PublicUtilities/Vector3.h>
 
-#include <BasicUtils/BasicException.h>
 #include <BasicUtils/BasicSmartPointer.h>
 #include <BasicUtils/BasicClassFactory.h>
 #include <BasicUtils/BasicPluginManager.h>
@@ -1194,8 +1193,6 @@ FIELD3DEXTENDER(Field3D<int>,int)
 
 %include <PublicUtilities/NumericalUtils.h>
 %include <PublicUtilities/Vector3.h>
-
-%include <BasicUtils/BasicException.h>
 
 
 //%include exception.i

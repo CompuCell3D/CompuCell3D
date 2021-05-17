@@ -30,7 +30,6 @@
 // // // #include <iostream>
 
 // // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <BasicUtils/BasicException.h>
 // // // #include <PublicUtilities/StringUtils.h>
 #include "ChemotaxisDLLSpecifier.h"
 // // // #include <CompuCell3D/Automaton/Automaton.h>

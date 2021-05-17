@@ -41,4 +41,15 @@ private:
 
 void changeToLower(std::string & str);
 void changeToUpper(std::string & str);
+std::string strToUpper(const std::string &str);
+std::string strToLower(const std::string &str);
+bool strToBool(const std::string &str);
+int strToInt(const std::string &str);
+unsigned int strToUInt(const std::string &str);
+short strToShort(const std::string &str);
+unsigned short strToUShort(const std::string &str);
+double strToDouble(const std::string &str);
+char strToByte(const std::string &str);
+unsigned char strToUByte(const std::string &str);
+
 #endif

@@ -49,9 +49,8 @@ void ContactPlugin::extraInit(Simulator *simulator) {
     Automaton * cellTypePluginAutomaton = potts->getAutomaton();
     //cerr << "contact after automaton" << endl;
     return;
-    if (cellTypePluginAutomaton) {
-        ASSERT_OR_THROW("The size of matrix of contact energy coefficients has must equal max_cell_type_id+1. You must list interactions coefficients between all cel types",
-            contactEnergyArray.size() == ((unsigned int)cellTypePluginAutomaton->getMaxTypeId() + 1));
+    if (cellTypePluginAutomaton && contactEnergyArray.size() != ((unsigned int)cellTypePluginAutomaton->getMaxTypeId() + 1)) {
+        throw CC3DException("The size of matrix of contact energy coefficients has must equal max_cell_type_id+1. You must list interactions coefficients between all cel types");
     }
 
 }
@@ -60,8 +59,8 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     automaton = potts->getAutomaton();
     //cerr << "automaton=" << automaton << endl;
     //return;
-    ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
-        set<unsigned char> cellTypesSet;
+    if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
+    set<unsigned char> cellTypesSet;
     contactEnergies.clear();
 
 
@@ -261,8 +260,7 @@ void ContactPlugin::setContactEnergy(const string typeName1, const string typeNa
     int index = getIndex(type1, type2);
 
     contactEnergies_t::iterator it = contactEnergies.find(index);
-    ASSERT_OR_THROW(string("Contact energy for ") + typeName1 + " " + typeName2 +
-        " already set!", it == contactEnergies.end());
+    if (it != contactEnergies.end()) throw CC3DException(string("Contact energy for ") + typeName1 + " " + typeName2 + " already set!");
 
     contactEnergies[index] = energy;
 }

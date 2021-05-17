@@ -70,10 +70,10 @@ namespace CompuCell3D {
     
     void getMomentOfInertia(CellG *cell, float I[3]) const
     {
-      ASSERT_OR_THROW("getMomentOfInertia() Cell cannot be NULL!", cell);
+      if (!cell) throw CC3DException("getMomentOfInertia() Cell cannot be NULL!");
 
       unsigned int volume = cell->volume;
-      ASSERT_OR_THROW("getMomentOfInertia() Cell volume is 0!", volume);
+      if (!volume) throw CC3DException("getMomentOfInertia() Cell volume is 0!");
 
       
 

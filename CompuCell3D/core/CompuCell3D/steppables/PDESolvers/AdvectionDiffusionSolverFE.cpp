@@ -14,8 +14,6 @@
 
 
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
 #include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <PublicUtilities/StringUtils.h>
 #include <string>
@@ -233,8 +231,7 @@ void AdvectionDiffusionSolverFE::readConcentrationField(std::string fileName,Con
 
 	ifstream in(fn.c_str());
 
-	ASSERT_OR_THROW(string("Could not open chemical concentration file '") +
-		fn	 + "'!", in.is_open());
+	if (!in.is_open()) throw CC3DException(string("Could not open chemical concentration file '") + fn	 + "'!");
 
 
    Point3D pt;

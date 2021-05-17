@@ -224,7 +224,7 @@ void NeighborTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell, Cel
                     //}
                     testLatticeSanityFull();
                     cerr << "Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ..." << endl;
-                    ASSERT_OR_THROW("Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ...", 0);
+                    throw CC3DException("Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ...");
                 }
 
 

@@ -29,8 +29,6 @@ using namespace CompuCell3D;
 #include <CompuCell3D/Potts3D/EnergyFunctionCalculator.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
 #include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <PublicUtilities/StringUtils.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
@@ -225,7 +223,7 @@ void Simulator::registerSteerableObject(SteerableObject * _steerableObject){
 	mitr=steerableObjectMap.find(_steerableObject->steerableName());
 	// cerr<<"after find"<<endl;
 
-	ASSERT_OR_THROW("Steerable Object "+_steerableObject->steerableName()+" already exist!",  mitr==steerableObjectMap.end());
+	if (mitr!=steerableObjectMap.end()) throw CC3DException("Steerable Object "+_steerableObject->steerableName()+" already exist!");
 
 	steerableObjectMap[_steerableObject->steerableName()]=_steerableObject;
 }
@@ -317,7 +315,7 @@ void Simulator::start() {
 				<< endl;
 
 			simulatorIsStepping=true; //initialize flag that simulator is stepping
-	}catch (const BasicException &e) {
+	}catch (const CC3DException &e) {
 		cerr << "ERROR: " << e << endl;
 		unloadModules();
 		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
@@ -328,9 +326,9 @@ void Simulator::start() {
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::string Simulator::formatErrorMessage(const BasicException &e){
+std::string Simulator::formatErrorMessage(const CC3DException &e){
     stringstream errorMessageStream;
-    errorMessageStream<<"Exception in C++ code :"<<endl<<e.getMessage()<<endl<<"Location"<<endl<<"FILE :"<<e.getLocation().getFilename()<<endl<<"LINE :"<<e.getLocation().getLine();
+    errorMessageStream<<"Exception in C++ code :"<<endl<<e.getMessage()<<endl<<"Location"<<endl<<"FILE :"<<e.getFilename();
     recentErrorMessage=errorMessageStream.str();
     cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
     return recentErrorMessage;
@@ -359,7 +357,7 @@ void Simulator::extraInit(){
         cerr<<"finish extraInit calls for plugins"<<endl;
 		classRegistry->extraInit(this);
 
-	}catch (const BasicException &e) {
+	}catch (const CC3DException &e) {
 		cerr << "ERROR: " << e << endl;
 		unloadModules();
 		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
@@ -408,7 +406,7 @@ void Simulator::step(const unsigned int currentStep) {
             
 		}
 
-	}catch (const BasicException &e) {
+	}catch (const CC3DException &e) {
 		cerr << "ERROR: " << e << endl;
 		unloadModules();
 		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
@@ -449,7 +447,7 @@ void Simulator::finish() {
 		unloadModules();
 		//cerr<<"inside finish 3"<<endl;
 
-	}catch (const BasicException &e) {
+	}catch (const CC3DException &e) {
 		cerr << "ERROR: " << e << endl;
 		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
 		if (!newPlayerFlag){
@@ -583,11 +581,11 @@ void Simulator::initializeCC3D(){
 			potts.initializeCellTypeMotility(ppdCC3DPtr->cellTypeMotilityVector);
 		}
 
-	}catch (const BasicException &e) {
+	}catch (const CC3DException &e) {
 		cerr << "ERROR: " << e << endl;
 		stringstream errorMessageStream;
 
-		errorMessageStream<<"Exception during initialization/parsing :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
+		errorMessageStream<<"Exception during initialization/parsing :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getFilename();
 		recentErrorMessage=errorMessageStream.str();
 		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
 		if (!newPlayerFlag){
@@ -688,7 +686,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 		ppdCC3DPtr->flip2DimRatio=_xmlData->getFirstElement("Flip2DimRatio")->getDouble();
 	}
 
-	ASSERT_OR_THROW("You must set Dimensions!", ppdCC3DPtr->dim.x!=0 || ppdCC3DPtr->dim.y!=0 || ppdCC3DPtr->dim.z!=0);
+	if (!(ppdCC3DPtr->dim.x!=0 || ppdCC3DPtr->dim.y!=0 || ppdCC3DPtr->dim.z!=0)) throw CC3DException("You must set Dimensions!");
 	potts.createCellField(ppdCC3DPtr->dim);
     potts.set_test_output_generate_flag(test_output_generate_flag);
     potts.set_test_run_flag(test_run_flag);
@@ -799,15 +797,15 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 	{
 		if(ppdCC3DPtr->boundary_x=="Periodic")
 		{
-			ASSERT_OR_THROW("For hexagonal lattice and x periodic boundary conditions x dimension must be an even number",!(ppdCC3DPtr->dim.x%2));
+			if (ppdCC3DPtr->dim.x%2) throw CC3DException("For hexagonal lattice and x periodic boundary conditions x dimension must be an even number");
 		}
 		if(ppdCC3DPtr->boundary_y=="Periodic")
 		{
-			ASSERT_OR_THROW("For hexagonal lattice and y periodic boundary conditions y dimension must be an even number",!(ppdCC3DPtr->dim.y%2));
+			if (ppdCC3DPtr->dim.y%2) throw CC3DException("For hexagonal lattice and y periodic boundary conditions y dimension must be an even number");
 		}
 		if(ppdCC3DPtr->boundary_z=="Periodic")
 		{
-			ASSERT_OR_THROW("For hexagonal lattice and z periodic boundary conditions z dimension must be a number divisible by 3",!(ppdCC3DPtr->dim.z%3));
+			if (ppdCC3DPtr->dim.z%3) throw CC3DException("For hexagonal lattice and z periodic boundary conditions z dimension must be a number divisible by 3");
 		}
 
 		BoundaryStrategy::instantiate(ppdCC3DPtr->boundary_x, ppdCC3DPtr->boundary_y, ppdCC3DPtr->boundary_z, ppdCC3DPtr->shapeAlgorithm, ppdCC3DPtr->shapeIndex, ppdCC3DPtr->shapeSize, ppdCC3DPtr->shapeInputfile,HEXAGONAL_LATTICE);

@@ -10,8 +10,6 @@
 #include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
 #include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <string>
 #include <cmath>
@@ -201,8 +199,8 @@ void ReactionDiffusionSolverFE_SavHog::update(CC3DXMLElement *_xmlData, bool _fu
 	}
 
 
-   ASSERT_OR_THROW("You are trying to define more field that you declared!",fieldNameVector.size()<=numberOfFields);
-   ASSERT_OR_THROW("You need to declare how many fields you will be using.\n Use <NumberOfFields>N</NumberOfFields> syntax before listing any fields.\n N denotes number of fields",numberOfFieldsDeclared);
+   if (fieldNameVector.size() > numberOfFields) throw CC3DException("You are trying to define more field that you declared!");
+   if (!numberOfFieldsDeclared) throw CC3DException("You need to declare how many fields you will be using.\n Use <NumberOfFields>N</NumberOfFields> syntax before listing any fields.\n N denotes number of fields");
 
 }
 

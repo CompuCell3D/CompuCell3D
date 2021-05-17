@@ -11,9 +11,9 @@ INCLUDE_DIRECTORIES (
     )
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-   ADD_SHARED_LIBRARY(Boundary ${SRCS} LINK_LIBRARIES BasicUtilsStatic Field3DStatic)
+   ADD_SHARED_LIBRARY(Boundary ${SRCS} LINK_LIBRARIES Field3DStatic)
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-   ADD_SHARED_LIBRARY(Boundary ${SRCS} LINK_LIBRARIES BasicUtilsShared Field3DShared)
+   ADD_SHARED_LIBRARY(Boundary ${SRCS} LINK_LIBRARIES Field3DShared)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 INSTALL_FILES(/include/CompuCell3D/CompuCell3D/Boundary .h
