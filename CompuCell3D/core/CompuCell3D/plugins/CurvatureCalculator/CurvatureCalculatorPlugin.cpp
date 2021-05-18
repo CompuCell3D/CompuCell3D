@@ -119,7 +119,7 @@ std::map<long, float> CurvatureCalculatorPlugin::getProbabilityByNeighbor(CellG 
 	CellG  *nCell;
 	WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *) potts->getCellFieldG();
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundary_pixel_tracker_plugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundary_pixel_tracker_plugin->getBoundaryPixelTrackerAccessorPtr();
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(cell->extraAttribPtr)->pixelSet;
 
 

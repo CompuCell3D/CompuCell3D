@@ -33,7 +33,6 @@ class RANDOMINITIALIZERS_EXPORT FieldBuilder {
 private:
 	WatchableField3D<CellG *> *cellField;
 	CellInventory * cellInventoryPtr;
-//	BasicClassAccessor<PixelTracker> * pixelTrackerAccessorPtr;
     RandomNumberGenerator * rand;
     Potts3D *potts;
     Dim3D boxMin,boxMax;

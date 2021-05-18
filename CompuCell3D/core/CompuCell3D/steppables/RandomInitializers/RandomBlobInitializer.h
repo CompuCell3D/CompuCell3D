@@ -51,7 +51,7 @@ namespace CompuCell3D {
     Potts3D *potts;
     Simulator *simulator;
     RandomNumberGenerator * rand;
-    BasicClassAccessor<PixelTracker> * pixelTrackerAccessorPtr;
+    ExtraMembersGroupAccessor<PixelTracker> * pixelTrackerAccessorPtr;
     WatchableField3D<CellG *> *cellField;
     FieldBuilder * builder;
 	CellInventory * cellInventoryPtr;

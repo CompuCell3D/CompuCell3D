@@ -29,8 +29,6 @@
 #include "ContactLocalProductData.h"
 
 // // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 
 // // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 // // // #include <CompuCell3D/Plugin.h>
@@ -58,7 +56,7 @@ namespace CompuCell3D {
    private:
    	ParallelUtilsOpenMP *pUtils;    
     
-    BasicClassAccessor<ContactLocalProductData> contactProductDataAccessor;
+    ExtraMembersGroupAccessor<ContactLocalProductData> contactProductDataAccessor;
     Potts3D *potts;
     Simulator *sim;
     CC3DXMLElement *xmlData;
@@ -75,7 +73,7 @@ namespace CompuCell3D {
 	 std::string contactFunctionType;
     double depth;
 
-    BasicClassAccessor<ContactLocalProductData> * contactProductDataAccessorPtr;
+    ExtraMembersGroupAccessor<ContactLocalProductData> * contactProductDataAccessorPtr;
 
     Automaton *automaton;
     bool weightDistance;
@@ -104,7 +102,7 @@ namespace CompuCell3D {
     ContactLocalProductPlugin();
     virtual ~ContactLocalProductPlugin();
     
-    BasicClassAccessor<ContactLocalProductData> * getContactProductDataAccessorPtr(){return & contactProductDataAccessor;}
+    ExtraMembersGroupAccessor<ContactLocalProductData> * getContactProductDataAccessorPtr(){return & contactProductDataAccessor;}
 
 		//EnergyFunction Interface
 		virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);

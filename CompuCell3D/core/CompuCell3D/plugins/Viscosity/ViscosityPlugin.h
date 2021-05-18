@@ -50,7 +50,7 @@ namespace CompuCell3D {
     Potts3D *potts;
 	CC3DXMLElement *xmlData;
     Simulator *sim;
-    BasicClassAccessor<NeighborTracker> *neighborTrackerAccessorPtr;
+    ExtraMembersGroupAccessor<NeighborTracker> *neighborTrackerAccessorPtr;
    Point3D boundaryConditionIndicator;
    Dim3D fieldDim;
    BoundaryStrategy *boundaryStrategy;

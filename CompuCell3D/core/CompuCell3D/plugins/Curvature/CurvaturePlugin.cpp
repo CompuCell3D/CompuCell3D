@@ -83,14 +83,6 @@ void CurvaturePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	simulator->getPotts()->registerEnergyFunctionWithName(this,toString());
 	simulator->registerSteerableObject(this);
 
-	///will register FocalPointBoundaryPixelTracker here
-	//BasicClassAccessorBase * cellFocalPointBoundaryPixelTrackerAccessorPtr=&CurvatureTrackerAccessor;
-	///************************************************************************************************  
-	///REMARK. HAVE TO USE THE SAME BASIC CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
-	///************************************************************************************************  
-
-
-
 	bool pluginAlreadyRegisteredFlag;
 	Plugin *plugin=Simulator::pluginManager.get("CenterOfMass",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
 	if(!pluginAlreadyRegisteredFlag)

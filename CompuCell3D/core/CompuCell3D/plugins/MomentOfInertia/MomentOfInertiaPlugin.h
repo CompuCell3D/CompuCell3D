@@ -34,8 +34,6 @@
 
 // // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 // // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 // // // #include <cmath>
 // // // #include <vector>
 #define roundf(a) ((fmod(a,1)<0.5)?floor(a):ceil(a))

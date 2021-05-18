@@ -56,9 +56,9 @@ void BoundaryPixelTrackerPlugin::init(Simulator *_simulator, CC3DXMLElement *_xm
 
 
 	///will register BoundaryPixelTracker here
-	BasicClassAccessorBase * cellBoundaryPixelTrackerAccessorPtr = &boundaryPixelTrackerAccessor;
+	ExtraMembersGroupAccessorBase * cellBoundaryPixelTrackerAccessorPtr = &boundaryPixelTrackerAccessor;
 	///************************************************************************************************  
-   ///REMARK. HAVE TO USE THE SAME BASIC CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
+    ///REMARK. HAVE TO USE THE SAME CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
 	///************************************************************************************************  
 	potts->getCellFactoryGroupPtr()->registerClass(cellBoundaryPixelTrackerAccessorPtr);
 

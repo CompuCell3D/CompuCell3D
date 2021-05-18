@@ -30,7 +30,6 @@
 //#include <XMLCereal/XMLPullParser.h>
 //#include <XMLCereal/XMLSerializer.h>
 
-#include <BasicUtils/BasicClassFactory.h>
 #include <BasicUtils/BasicSmartPointer.h>
 
 #include "ClassRegistry.h"

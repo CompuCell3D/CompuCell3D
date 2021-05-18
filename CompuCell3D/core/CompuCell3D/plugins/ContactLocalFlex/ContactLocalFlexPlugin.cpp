@@ -258,7 +258,7 @@ void ContactLocalFlexPlugin::updateContactEnergyData(CellG *_cell) {
     //entries
 
     NeighborTrackerPlugin *neighborTrackerPlugin = (NeighborTrackerPlugin *)Simulator::pluginManager.get("NeighborTracker");
-    BasicClassAccessor<NeighborTracker> *neighborTrackerAccessorPtr = neighborTrackerPlugin->getNeighborTrackerAccessorPtr();
+    ExtraMembersGroupAccessor<NeighborTracker> *neighborTrackerAccessorPtr = neighborTrackerPlugin->getNeighborTrackerAccessorPtr();
     unsigned int size1 = 0, size2 = 0;
     //neighborTrackerAccessor.get(newCell->extraAttribPtr)->cellNeighbors
 

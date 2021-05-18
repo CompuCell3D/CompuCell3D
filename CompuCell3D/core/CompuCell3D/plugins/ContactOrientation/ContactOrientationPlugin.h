@@ -6,9 +6,6 @@
 
 // // // #include <CompuCell3D/Plugin.h>
 
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
-
 // // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
 
 
@@ -17,13 +14,6 @@
 // // // #include <CompuCell3D/Potts3D/Cell.h>
 
 // // // #include <muParser/muParser.h>
-
-// // // // basic STL includes
-// // // #include <vector>
-// // // #include <list>
-// // // #include <map>
-// // // #include <set>
-// // // #include <string>
 
 #include "ContactOrientationDLLSpecifier.h"
 // // // #include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
@@ -44,7 +34,7 @@ namespace CompuCell3D {
     class CONTACTORIENTATION_EXPORT  ContactOrientationPlugin : public Plugin ,public EnergyFunction  {
         
     private:    
-        BasicClassAccessor<ContactOrientationData> contactOrientationDataAccessor;                
+        ExtraMembersGroupAccessor<ContactOrientationData> contactOrientationDataAccessor;                
         CC3DXMLElement *xmlData;        
         
         Potts3D *potts;
@@ -86,7 +76,7 @@ namespace CompuCell3D {
         ContactOrientationPlugin();
         virtual ~ContactOrientationPlugin();
         
-        BasicClassAccessor<ContactOrientationData> * getContactOrientationDataAccessorPtr(){return & contactOrientationDataAccessor;}                
+        ExtraMembersGroupAccessor<ContactOrientationData> * getContactOrientationDataAccessorPtr(){return & contactOrientationDataAccessor;}                
 
         
         //Energy function interface

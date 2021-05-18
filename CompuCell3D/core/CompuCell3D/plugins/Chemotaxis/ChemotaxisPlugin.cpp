@@ -69,9 +69,9 @@ void ChemotaxisPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	Plugin *plugin = Simulator::pluginManager.get("CenterOfMass", &pluginAlreadyRegisteredFlag);
 	if (!pluginAlreadyRegisteredFlag) plugin->init(simulator);
   
-  BasicClassAccessorBase * chemotaxisDataAccessorPtr=&chemotaxisDataAccessor;
+  ExtraMembersGroupAccessorBase * chemotaxisDataAccessorPtr=&chemotaxisDataAccessor;
   ///************************************************************************************************  
-  ///REMARK. HAVE TO USE THE SAME BASIC CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
+  ///REMARK. HAVE TO USE THE SAME CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
   ///************************************************************************************************  
   potts->getCellFactoryGroupPtr()->registerClass(chemotaxisDataAccessorPtr);
 

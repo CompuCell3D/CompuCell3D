@@ -92,7 +92,6 @@
 #include <PublicUtilities/Vector3.h>
 
 #include <BasicUtils/BasicSmartPointer.h>
-#include <BasicUtils/BasicClassFactory.h>
 #include <BasicUtils/BasicPluginManager.h>
 
 // System Libraries
@@ -178,8 +177,6 @@ using namespace CompuCell3D;
 // Third Party Classes
 // ******************************
 
-%include "BasicUtils/BasicClassFactoryBase.h"
-%include "BasicUtils/BasicClassFactory.h"
 // %include <CompuCell3D/Plugin.h>
 // %include <BasicUtils/BasicPluginManager.h>
 

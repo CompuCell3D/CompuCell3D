@@ -40,7 +40,7 @@ FieldSecretorResult FieldSecretor::_secreteInsideCellTotalCount(CellG * _cell, f
 	}
 	
 
-	BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
 	set<PixelTrackerData > & pixelSetRef = pixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
 	for (set<PixelTrackerData>::iterator sitr = pixelSetRef.begin(); sitr != pixelSetRef.end(); ++sitr) {
@@ -77,7 +77,7 @@ FieldSecretorResult FieldSecretor::_secreteInsideCellConstantConcentrationTotalC
 	}
 
 	float total_amount = 0.0;
-	BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
 	set<PixelTrackerData > & pixelSetRef = pixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 	for (set<PixelTrackerData>::iterator sitr = pixelSetRef.begin(); sitr != pixelSetRef.end(); ++sitr) {
 
@@ -110,7 +110,7 @@ FieldSecretorResult FieldSecretor::_secreteInsideCellAtBoundaryTotalCount(CellG 
 		return res;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -148,7 +148,7 @@ FieldSecretorResult FieldSecretor::_secreteInsideCellAtBoundaryOnContactWithTota
 		return res;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -212,7 +212,7 @@ FieldSecretorResult FieldSecretor::_secreteOutsideCellAtBoundaryTotalCount(CellG
 		return res;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -274,7 +274,7 @@ FieldSecretorResult  FieldSecretor::_secreteOutsideCellAtBoundaryOnContactWithTo
 		return res;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -375,7 +375,7 @@ FieldSecretorResult FieldSecretor::_uptakeInsideCellTotalCount(CellG * _cell, fl
 	}
 
 
-	BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
 	set<PixelTrackerData > & pixelSetRef = pixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
 	float currentConcentration;
@@ -421,7 +421,7 @@ FieldSecretorResult FieldSecretor::_uptakeInsideCellAtBoundaryTotalCount(CellG *
 		return res;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -477,7 +477,7 @@ FieldSecretorResult FieldSecretor::_uptakeInsideCellAtBoundaryOnContactWithTotal
 		return false;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -566,7 +566,7 @@ FieldSecretorResult FieldSecretor::_uptakeOutsideCellAtBoundaryTotalCount(CellG 
 		return res;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -648,7 +648,7 @@ FieldSecretorResult FieldSecretor::_uptakeOutsideCellAtBoundaryOnContactWithTota
 		return false;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -777,7 +777,7 @@ float FieldSecretor::_amountSeenByCell(CellG * _cell) {
     }
 
     float amount_seen = 0.0;
-	BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
 	set<PixelTrackerData > & pixelSetRef = pixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
 	for (set<PixelTrackerData>::iterator sitr = pixelSetRef.begin(); sitr != pixelSetRef.end(); ++sitr) {

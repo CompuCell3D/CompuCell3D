@@ -34,6 +34,7 @@ SET(SRCS
   PottsParseData.cpp
   ParserStorage.cpp 
   CC3DExceptions.cpp
+  ExtraMembers.cpp
   # CustomStreamBuffers.cpp
   # ${MOC_FILES}
   )
@@ -148,7 +149,7 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D .h
   ClassRegistry
   CompuCellLibDLLSpecifier  
   DerivedProperty
-  RandomNumberGenerators
+  ExtraMembers
   ParseData
   Parser
   ParserStorage
@@ -156,6 +157,7 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D .h
   PluginBase
   PluginManager
   PottsParseData
+  RandomNumberGenerators
   Serializer
   SimObject
   Simulator

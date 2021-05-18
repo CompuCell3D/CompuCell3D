@@ -38,7 +38,6 @@
 #include "EnergyFunctionCalculatorStatistics.h"
 #include "EnergyFunctionCalculatorTestDataGeneration.h"
 #include <CompuCell3D/Simulator.h>
-#include <BasicUtils/BasicPluginInfo.h>
 #include <PublicUtilities/StringUtils.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include <deque>
@@ -330,7 +329,7 @@ void  Potts3D::setFluctuationAmplitudeFunctionByName(std::string _fluctuationAmp
     }
 }
 
-///BasicClassChange watcher reistration
+///CellG change watcher registration
 void Potts3D::registerCellGChangeWatcher(CellGChangeWatcher *_watcher) {
     if (!_watcher) throw CC3DException("registerBCGChangeWatcher() _watcher cannot be NULL!");
 
@@ -339,7 +338,7 @@ void Potts3D::registerCellGChangeWatcher(CellGChangeWatcher *_watcher) {
 }
 
 
-void Potts3D::registerClassAccessor(BasicClassAccessorBase *_accessor) {
+void Potts3D::registerClassAccessor(ExtraMembersGroupAccessorBase *_accessor) {
     if (!_accessor) throw CC3DException("registerClassAccessor() _accessor cannot be NULL!");
 
     cellFactoryGroup.registerClass(_accessor);
@@ -1559,7 +1558,7 @@ void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     }
     else {
 
-        //displaying basic units
+        //displaying units
 
         CC3DXMLElement * unitsPtr = _xmlData->attachElement("Units", "");
         if (displayUnitsFlag) {
@@ -1574,7 +1573,7 @@ void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 void Potts3D::updateUnits(CC3DXMLElement * _unitsPtr) {
 
 
-    ////displaying basic units
+    ////displaying units
 
     //if (_unitsPtr->getFirstElement("MassUnit")) {
     //	_unitsPtr->getFirstElement("MassUnit")->updateElementValue(massUnit.toString());

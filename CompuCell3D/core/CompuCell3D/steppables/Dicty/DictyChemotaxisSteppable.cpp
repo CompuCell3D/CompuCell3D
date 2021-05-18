@@ -8,7 +8,6 @@
 // // // #include <CompuCell3D/Potts3D/Potts3D.h>
 // // // #include <CompuCell3D/Potts3D/CellInventory.h>
 #include <CompuCell3D/plugins/SimpleClock/SimpleClockPlugin.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
 #include <CompuCell3D/steppables/PDESolvers/DiffusableVector.h>
 // // // #include <CompuCell3D/Field3D/Field3D.h>
 // // // #include <CompuCell3D/Field3D/WatchableField3D.h>

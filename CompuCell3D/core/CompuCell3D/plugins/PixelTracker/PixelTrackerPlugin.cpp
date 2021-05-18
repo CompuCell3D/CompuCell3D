@@ -57,9 +57,9 @@ void PixelTrackerPlugin::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
 
 
   ///will register PixelTracker here
-  BasicClassAccessorBase * cellPixelTrackerAccessorPtr=&pixelTrackerAccessor;
+  ExtraMembersGroupAccessorBase * cellPixelTrackerAccessorPtr=&pixelTrackerAccessor;
    ///************************************************************************************************  
-  ///REMARK. HAVE TO USE THE SAME BASIC CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
+  ///REMARK. HAVE TO USE THE SAME CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
    ///************************************************************************************************  
   potts->getCellFactoryGroupPtr()->registerClass(cellPixelTrackerAccessorPtr);
 

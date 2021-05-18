@@ -72,14 +72,6 @@ void MomentOfInertiaPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 
 	potts->registerCellGChangeWatcher(this);
 
-	//   simulator->getClassRegistry()
-	//     ->registerRenderer("MomentOfInertia", new BasicClassFactory<FieldRenderer,
-	// 		       MomentOfInertiaRenderer>);
-	// 
-	//   simulator->getClassRegistry()
-	//     ->registerRenderer("MomentOfInertiaType", new BasicClassFactory<FieldRenderer,
-	//                        MomentOfInertiaTypeRenderer>);
-
 	potts->getBoundaryXName()=="Periodic" ? boundaryConditionIndicator.x=1 : boundaryConditionIndicator.x=0 ;
 	potts->getBoundaryYName()=="Periodic" ? boundaryConditionIndicator.y=1 : boundaryConditionIndicator.y=0;
 	potts->getBoundaryZName()=="Periodic" ? boundaryConditionIndicator.z=1 : boundaryConditionIndicator.z=0;

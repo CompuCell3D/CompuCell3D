@@ -26,7 +26,6 @@
 
 // // // #include <CompuCell3D/Steppable.h>
 #include "MitosisSteppableDLLSpecifier.h"
-// // // #include <BasicUtils/BasicClassAccessor.h>
 // // // #include <vector>
 // // // #include <set>
 // // // #include <CompuCell3D/Field3D/Dim3D.h>
@@ -113,7 +112,7 @@ namespace CompuCell3D {
 	 void setParentChildPositionFlag(int _flag);
 	 int getParentChildPositionFlag();
 
-	 BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr;
+	 ExtraMembersGroupAccessor<PixelTracker> *pixelTrackerAccessorPtr;
 	 PixelTrackerPlugin * pixelTrackerPlugin;
 	 //comaprtment mitosis members
 	 std::vector<CompartmentMitosisData> parentBeforeMitosis;

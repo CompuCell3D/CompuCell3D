@@ -268,23 +268,6 @@ void SecretionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 }
 
-//bool SecretionPlugin::secreteInsideCell(CellG * _cell, string _fieldName, float _amount){
-//	if (!pixelTrackerPlugin){
-//		return false;
-//	}
-//	BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr=pixelTrackerPlugin->getPixelTrackerAccessorPtr();
-//	set<PixelTrackerData > & pixelSetRef=pixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
-//
-//	Field3DImpl<float> & concentrationField=*getConcentrationFieldByName(_fieldName);
-//	
-//	for (set<PixelTrackerData>::iterator sitr=pixelSetRef.begin() ; sitr!=pixelSetRef.end(); ++sitr){		
-//
-//		concentrationField.set(sitr->pixel,concentrationField.get(sitr->pixel)+_amount);
-//
-//	}
-//
-//	return true;
-//}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SecretionPlugin::secreteSingleField(unsigned int idx){
 

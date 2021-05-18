@@ -31,8 +31,6 @@
 
 // // // #include <CompuCell3D/Potts3D/Cell.h>
 
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 #include "LengthConstraintData.h"
 
 #include "LengthConstraintDLLSpecifier.h"
@@ -65,7 +63,7 @@ namespace CompuCell3D {
 		Potts3D *potts;
 		//energy function parse data
 
-		BasicClassAccessor<LengthConstraintData> lengthConstraintDataAccessor;
+		ExtraMembersGroupAccessor<LengthConstraintData> lengthConstraintDataAccessor;
 
 		std::vector<LengthEnergyParam> lengthEnergyParamVector;
 		std::vector<std::string> typeNameVec;//temporary vector for storage type names
@@ -84,7 +82,7 @@ namespace CompuCell3D {
 		virtual void extraInit(Simulator *simulator);
 		virtual std::string toString();
 
-		BasicClassAccessor<LengthConstraintData> * getLengthConstraintDataPtr(){return & lengthConstraintDataAccessor;}
+		ExtraMembersGroupAccessor<LengthConstraintData> * getLengthConstraintDataPtr(){return & lengthConstraintDataAccessor;}
 
 		void setLengthConstraintData(CellG * _cell, double _lambdaLength=0.0, double _targetLength=0.0 ,double _minorTargetLength=0.0);    	
 		double getLambdaLength(CellG * _cell);  

@@ -8,7 +8,6 @@
 #include <CompuCell3D/Field3D/Field3DImpl.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/Field3D/Field3DIO.h>
-#include <BasicUtils/BasicClassGroup.h>
 
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 
@@ -566,7 +565,7 @@ void AdvectionDiffusionSolverFE::secrete() {
 
 void AdvectionDiffusionSolverFE::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
-	//notice, only basic steering is enabled for PDE solvers - changing diffusion constants, do -not-diffuse to types etc...
+	//notice, limited steering is enabled for PDE solvers - changing diffusion constants, do -not-diffuse to types etc...
 	// Coupling coefficients cannot be changed and also there is no way to allocate extra fields while simulation is running
 	diffSecrFieldTuppleVec.clear();
 

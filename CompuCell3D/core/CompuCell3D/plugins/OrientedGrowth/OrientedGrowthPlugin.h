@@ -24,7 +24,7 @@ namespace CompuCell3D {
     class ORIENTEDGROWTH_EXPORT  OrientedGrowthPlugin : public Plugin ,public EnergyFunction  ,public Stepper{
         
     private:    
-        BasicClassAccessor<OrientedGrowthData> orientedGrowthDataAccessor;                
+        ExtraMembersGroupAccessor<OrientedGrowthData> orientedGrowthDataAccessor;                
         CC3DXMLElement *xmlData;        
         
         Potts3D *potts;
@@ -45,7 +45,7 @@ namespace CompuCell3D {
         OrientedGrowthPlugin();
         virtual ~OrientedGrowthPlugin();
         
-        BasicClassAccessor<OrientedGrowthData> * getOrientedGrowthDataAccessorPtr(){return & orientedGrowthDataAccessor;}                
+        ExtraMembersGroupAccessor<OrientedGrowthData> * getOrientedGrowthDataAccessorPtr(){return & orientedGrowthDataAccessor;}                
 
         
         //Energy function interface

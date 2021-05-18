@@ -7,7 +7,6 @@
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 #include <CompuCell3D/Field3D/Field3DImpl.h>
 #include <CompuCell3D/Field3D/Field3D.h>
-#include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 
 #include <string>

@@ -63,11 +63,6 @@ namespace CompuCell3D {
   public:
     ClassRegistry(Simulator *simulator);
     virtual ~ClassRegistry() {}
-
-//     void registerSteppable(std::string id,
-// 			  BasicClassFactoryBase<SteppableG> *steppable)
-//     {steppableRegistry.registerFactory(steppable, id);}
-
     
     Steppable *getStepper(std::string id);
     

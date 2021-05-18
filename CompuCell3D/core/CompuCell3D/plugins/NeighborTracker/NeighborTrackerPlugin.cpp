@@ -74,9 +74,9 @@ void NeighborTrackerPlugin::init(Simulator *_simulator, CC3DXMLElement *_xmlData
 
 
     ///will register NeighborTracker here
-    BasicClassAccessorBase * cellBTAPtr = &neighborTrackerAccessor;
+    ExtraMembersGroupAccessorBase * cellBTAPtr = &neighborTrackerAccessor;
     ///************************************************************************************************  
-    ///REMARK. HAVE TO USE THE SAME BASIC CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
+    ///REMARK. HAVE TO USE THE SAME CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
     ///************************************************************************************************  
     potts->getCellFactoryGroupPtr()->registerClass(cellBTAPtr);
 

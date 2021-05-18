@@ -27,8 +27,6 @@
 
 // // // #include <CompuCell3D/Potts3D/Cell.h>
 // // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 // // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include "NeighborTracker.h"
 
@@ -54,7 +52,7 @@ class NEIGHBORTRACKER_EXPORT NeighborTrackerPlugin : public Plugin, public CellG
       ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;
       WatchableField3D<CellG *> *cellFieldG;
       Dim3D fieldDim;
-      BasicClassAccessor<NeighborTracker> neighborTrackerAccessor;
+      ExtraMembersGroupAccessor<NeighborTracker> neighborTrackerAccessor;
       Simulator *simulator;
       bool periodicX,periodicY,periodicZ;
       CellInventory * cellInventoryPtr;
@@ -80,7 +78,7 @@ class NEIGHBORTRACKER_EXPORT NeighborTrackerPlugin : public Plugin, public CellG
 
 
 
-		BasicClassAccessor<NeighborTracker> * getNeighborTrackerAccessorPtr(){return & neighborTrackerAccessor;}
+		ExtraMembersGroupAccessor<NeighborTracker> * getNeighborTrackerAccessorPtr(){return & neighborTrackerAccessor;}
       // End XMLSerializable interface
       int returnNumber(){return 23432;}
 	  short getCommonSurfaceArea(NeighborSurfaceData * _nsd){return _nsd->commonSurfaceArea;}

@@ -71,7 +71,7 @@ namespace CompuCell3D {
    //bool okToChemotact(unsigned int fieldIdx,unsigned char cellType);
    std::string chemotaxisAlgorithm;
 
-   BasicClassAccessor< std::map<std::string,ChemotaxisData> > chemotaxisDataAccessor;
+   ExtraMembersGroupAccessor< std::map<std::string,ChemotaxisData> > chemotaxisDataAccessor;
 	 
   public:
     typedef float (ChemotaxisPlugin::*chemotaxisEnergyFormulaFcnPtr_t)(float,float,ChemotaxisData &);
