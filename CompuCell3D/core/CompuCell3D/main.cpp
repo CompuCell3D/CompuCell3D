@@ -27,8 +27,6 @@
 #include "CC3DExceptions.h"
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicSmartPointer.h>
-
 #include <iostream>
 #include <string>
 #include <fstream>

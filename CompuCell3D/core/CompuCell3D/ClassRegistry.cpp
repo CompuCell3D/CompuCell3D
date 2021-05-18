@@ -30,8 +30,6 @@
 //#include <XMLCereal/XMLPullParser.h>
 //#include <XMLCereal/XMLSerializer.h>
 
-#include <BasicUtils/BasicSmartPointer.h>
-
 #include "ClassRegistry.h"
 
 
@@ -45,7 +43,6 @@ ClassRegistry::ClassRegistry(Simulator *simulator) : simulator(simulator) {
 
 
 Steppable *ClassRegistry::getStepper(string id) {
-//   BasicSmartPointer<Steppable> stepper = activeSteppersMap[id];
   Steppable* stepper = activeSteppersMap[id];
 //   cerr<<"REQUESTING STEPPER: "<<id<<endl;
   if (!stepper) throw CC3DException(string("Stepper '") + id + "' not found!");

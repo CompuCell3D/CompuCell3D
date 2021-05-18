@@ -32,7 +32,6 @@
 
 
 #include <BasicUtils/BasicClassRegistry.h>
-#include <BasicUtils/BasicSmartPointer.h>
 
 #include <map>
 #include <list>
@@ -46,11 +45,9 @@ namespace CompuCell3D {
   class COMPUCELLLIB_EXPORT ClassRegistry : public Steppable {
     BasicClassRegistry<Steppable> steppableRegistry;
 
-//     typedef std::list<BasicSmartPointer<Steppable> > ActiveSteppers_t;
     typedef std::list<Steppable *> ActiveSteppers_t;
     ActiveSteppers_t activeSteppers;
 
-//     typedef std::map<std::string, BasicSmartPointer<Steppable> > ActiveSteppersMap_t;
     typedef std::map<std::string, Steppable *> ActiveSteppersMap_t;
     ActiveSteppersMap_t activeSteppersMap;
 

@@ -91,7 +91,6 @@
 #include <PublicUtilities/NumericalUtils.h>
 #include <PublicUtilities/Vector3.h>
 
-#include <BasicUtils/BasicSmartPointer.h>
 #include <BasicUtils/BasicPluginManager.h>
 
 // System Libraries

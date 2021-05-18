@@ -27,8 +27,6 @@
 #include "Simulator.h"
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicSmartPointer.h>
-
 // #include <XMLCereal/XMLPullParser.h>
 
 // #include <XercesUtils/XercesStr.h>
