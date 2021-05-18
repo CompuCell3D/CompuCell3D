@@ -27,7 +27,6 @@
 // // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 // // // #include <CompuCell3D/Field3D/WatchableField3D.h>
 // // // #include <PublicUtilities/NumericalUtils.h>
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
 
 #include <time.h>
 #include <limits>
@@ -54,7 +53,12 @@ MitosisSteppable::MitosisSteppable()
 
 }
 
-MitosisSteppable::~MitosisSteppable() {}
+MitosisSteppable::~MitosisSteppable() {
+	if (randGen) {
+		delete randGen;
+		randGen = 0;
+	}
+}
 
 // // // void MitosisSteppable::setDivideAlongMinorAxis(){
 // // // divideAlongMinorAxisFlag=true;
@@ -69,6 +73,7 @@ MitosisSteppable::~MitosisSteppable() {}
 
 void MitosisSteppable::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
+	sim = simulator;
 	potts = simulator->getPotts();
 	bool pluginAlreadyRegisteredFlag;
 	Plugin *plugin=Simulator::pluginManager.get("VolumeTracker",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
@@ -146,13 +151,7 @@ void MitosisSteppable::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 		zFactor=3.0/sqrt(6.0);
 	}
 
-	if(!simulator->ppdCC3DPtr->seed){
-		srand(time(0));
-		unsigned int randomSeed=(unsigned int)rand()*((std::numeric_limits<unsigned int>::max)()-1);                
-		randGen.setSeed(randomSeed);
-	}else{
-		randGen.setSeed(simulator->ppdCC3DPtr->seed);
-	}            
+	randGen = simulator->generateRandomNumberGenerator();
 
 }
 
@@ -526,17 +525,19 @@ bool MitosisSteppable::doDirectionalMitosisAlongMinorAxis(CellG* _cell){
 
 
 bool MitosisSteppable::doDirectionalMitosisRandomOrientation(CellG* _cell){
-	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+	RandomNumberGenerator* rand = sim->generateRandomNumberGenerator();
 	double cos_theta=-1.0+rand->getRatio()*2.0;
 	double sin_theta=sqrt(1.0-cos_theta*cos_theta);
 	double sin_phi=-1.0+rand->getRatio()*2.0;
 	double cos_phi=sqrt(1.0-sin_phi*sin_phi);
+	bool out;
 	if (cos_theta==1.0 || cos_theta==0.0)
-		return doDirectionalMitosisOrientationVectorBased(_cell,1,1,1);
+		out = doDirectionalMitosisOrientationVectorBased(_cell,1,1,1);
 	else
-		return doDirectionalMitosisOrientationVectorBased(_cell,sin_theta*cos_phi,sin_theta*sin_phi,cos_theta);
+		out = doDirectionalMitosisOrientationVectorBased(_cell,sin_theta*cos_phi,sin_theta*sin_phi,cos_theta);
 
-
+	delete rand;
+	return out;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //bool MitosisSteppable::doDirectionalMitosisOrientationVectorBased(CellG* _cell,double _nx, double _ny, double _nz){
@@ -735,12 +736,10 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBased(CellG* _cell,d
 	if (parentChildPositionFlag<0){
 		lessThanFlag=false;
 	}else if (parentChildPositionFlag==0){
-		lessThanFlag=(randGen.getRatio()<0.5);
+		lessThanFlag=(randGen->getRatio()<0.5);
 	}else{
 		lessThanFlag=true;
 	}
-	//bool lessThanFlag=(randGen.getRatio()<0.5);
-	//cerr<<"lessThanFlag="<<lessThanFlag<<endl;
 
 	for(set<PixelTrackerData>::iterator sitr=pixelsToDividePtr->begin() ; sitr != pixelsToDividePtr->end() ;++sitr){
 		Coordinates3D<double> pixelTrans= boundaryStrategy->calculatePointCoordinates(sitr->pixel);
@@ -821,20 +820,14 @@ bool MitosisSteppable::doDirectionalMitosisAlongMinorAxisCompartments(long _clus
 
 bool MitosisSteppable::doDirectionalMitosisRandomOrientationCompartments(long _clusterId){
 
-	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+	RandomNumberGenerator* rand = sim->generateRandomNumberGenerator();
 	double cos_theta=-1.0+rand->getRatio()*2.0;
 	double sin_theta=sqrt(1.0-cos_theta*cos_theta);
 	double sin_phi=-1.0+rand->getRatio()*2.0;
 	double cos_phi=sqrt(1.0-sin_phi*sin_phi);
 	//cerr<<"MITOSIS N VEC="<<sin_theta*cos_phi<<","<<sin_theta*sin_phi<<","<<cos_theta<<endl;
+	delete rand;
 	return doDirectionalMitosisOrientationVectorBasedCompartments(_clusterId,sin_theta*cos_phi,sin_theta*sin_phi,cos_theta);
-	
-	if (cos_theta==1.0 || cos_theta==0.0)
-		return doDirectionalMitosisOrientationVectorBasedCompartments(_clusterId,1,1,1);
-	else
-		return doDirectionalMitosisOrientationVectorBasedCompartments(_clusterId,sin_theta*cos_phi,sin_theta*sin_phi,cos_theta);
-
-	
 }
 
 bool MitosisSteppable::tryAdjustingCompartmentCOM(Vector3 & _com, const set<PixelTrackerData> & _clusterPixels){
@@ -1535,11 +1528,10 @@ bool MitosisSteppable::divideClusterPixelsOrientationVectorBased(set<PixelTracke
 	if (parentChildPositionFlag<0){
 		lessThanFlag=false;
 	}else if (parentChildPositionFlag==0){
-		lessThanFlag=(randGen.getRatio()<0.5);
+		lessThanFlag=(randGen->getRatio()<0.5);
 	}else{
 		lessThanFlag=true;
 	}
-	//bool lessThanFlag=(randGen.getRatio()<0.5);
 
 	for(set<PixelTrackerData>::iterator sitr=clusterPixels.begin() ; sitr != clusterPixels.end() ;++sitr){
 		Coordinates3D<double> pixelTrans= boundaryStrategy->calculatePointCoordinates(sitr->pixel);

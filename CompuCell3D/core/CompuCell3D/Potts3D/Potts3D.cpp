@@ -38,7 +38,6 @@
 #include "EnergyFunctionCalculatorStatistics.h"
 #include "EnergyFunctionCalculatorTestDataGeneration.h"
 #include <CompuCell3D/Simulator.h>
-#include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <BasicUtils/BasicPluginInfo.h>
 #include <PublicUtilities/StringUtils.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
@@ -119,6 +118,7 @@ Potts3D::~Potts3D() {
     if (typeTransition) delete typeTransition; typeTransition = 0;
     //   if (attrAdder) delete attrAdder; attrAdder=0;
     if (fluctAmplFcn) delete fluctAmplFcn;
+    uninitRandomNumberGenerators();
 }
 
 void Potts3D::createEnergyFunction(std::string _energyFunctionType) {
@@ -567,18 +567,7 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 
     //here we will allocate Random number generators for each thread. Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of random number generator vector 
     if (!randNSVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > randNSVec.size()) { //each thread will have different random number ghenerator
-        randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), BasicRandomNumberGeneratorNonStatic());
-
-        for (unsigned int i = 0; i <randNSVec.size(); ++i) {
-            if (!sim->ppdCC3DPtr->seed) {
-                srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-                unsigned int randomSeed = (unsigned int)rand()*((std::numeric_limits<unsigned int>::max)() - 1);
-                randNSVec[i].setSeed(randomSeed);
-            }
-            else {
-                randNSVec[i].setSeed(sim->ppdCC3DPtr->seed);
-            }
-        }
+        initRandomNumberGenerators();
     }
     // Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of flipNeighborVec
     if (!flipNeighborVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > flipNeighborVec.size()) {
@@ -586,7 +575,7 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
     }
     flips = 0;
     attemptedEC = 0;
-    BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+    RandomNumberGenerator *rand = sim->getRandomNumberGeneratorInstance();
     ///Dim3D dim = cellField->getDim();
     Dim3D dim = cellFieldG->getDim();
     if (!acceptanceFunction) throw CC3DException("Potts3D: You must supply an acceptance function!");
@@ -748,18 +737,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
     //here we will allocate Random number generators for each thread. Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of random number generator vector 
     if (!randNSVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > randNSVec.size()) { //each thread will have different random number ghenerator
-        randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), BasicRandomNumberGeneratorNonStatic());
-
-        for (unsigned int i = 0; i <randNSVec.size(); ++i) {
-            if (!sim->ppdCC3DPtr->seed) {
-                srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-                unsigned int randomSeed = (unsigned int)rand()*((std::numeric_limits<unsigned int>::max)() - 1);
-                randNSVec[i].setSeed(randomSeed);
-            }
-            else {
-                randNSVec[i].setSeed(sim->ppdCC3DPtr->seed);
-            }
-        }
+        initRandomNumberGenerators();
     }
 
 
@@ -823,7 +801,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
         unsigned int currentWorkNodeNumber = pUtils->getCurrentWorkNodeNumber();
 
-        BasicRandomNumberGeneratorNonStatic * rand = randNSVec[currentWorkNodeNumber].getInstance();
+        RandomNumberGenerator * rand = randNSVec[currentWorkNodeNumber];
         BoundaryStrategy * boundaryStrategy = BoundaryStrategy::getInstance();
 
         //iterating over subgridSections
@@ -1017,7 +995,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Point3D Potts3D::randomPickBoundaryPixel(BasicRandomNumberGeneratorNonStatic * rand) {
+Point3D Potts3D::randomPickBoundaryPixel(RandomNumberGenerator * rand) {
 
     size_t vec_size = boundaryPixelVector.size();
     Point3D pt;
@@ -1048,6 +1026,46 @@ Point3D Potts3D::randomPickBoundaryPixel(BasicRandomNumberGeneratorNonStatic * r
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void Potts3D::initRandomNumberGenerators() {
+
+    uninitRandomNumberGenerators();
+
+    randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), 0);
+
+    for (unsigned int i = 0; i <randNSVec.size(); ++i) {
+        unsigned int randomSeed;
+        if (!sim->ppdCC3DPtr->seed) {
+            srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+            randomSeed = (unsigned int)rand()*((std::numeric_limits<unsigned int>::max)() - 1);
+        }
+        else {
+            randomSeed = sim->ppdCC3DPtr->seed;
+        }
+        randNSVec[i] = sim->generateRandomNumberGenerator(randomSeed);
+    }
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void Potts3D::uninitRandomNumberGenerators() {
+
+    if (randNSVec.size()) {
+
+        for (unsigned int i = 0; i <randNSVec.size(); ++i) {
+            RandomNumberGenerator* x = randNSVec[i];
+            delete x;
+            randNSVec[i] = 0;
+        }
+
+        randNSVec.clear();
+
+    }
+    
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const double temp) {
 
     this->step_output = "";
@@ -1063,18 +1081,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 
     //here we will allocate Random number generators for each thread. Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of random number generator vector 
     if (!randNSVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > randNSVec.size()) { //each thread will have different random number ghenerator
-        randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), BasicRandomNumberGeneratorNonStatic());
-
-        for (unsigned int i = 0; i <randNSVec.size(); ++i) {
-            if (!sim->ppdCC3DPtr->seed) {
-                srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-                unsigned int randomSeed = (unsigned int)rand()*((std::numeric_limits<unsigned int>::max)() - 1);
-                randNSVec[i].setSeed(randomSeed);
-            }
-            else {
-                randNSVec[i].setSeed(sim->ppdCC3DPtr->seed);
-            }
-        }
+        initRandomNumberGenerators();
     }
 
     // Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of flipNeighborVec
@@ -1150,7 +1157,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 
         unsigned int currentWorkNodeNumber = pUtils->getCurrentWorkNodeNumber();
 
-        BasicRandomNumberGeneratorNonStatic * rand = randNSVec[currentWorkNodeNumber].getInstance();
+        RandomNumberGenerator * rand = randNSVec[currentWorkNodeNumber];
         BoundaryStrategy * boundaryStrategy = BoundaryStrategy::getInstance();
 
         //iterating over subgridSections
@@ -1467,7 +1474,7 @@ void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     }
 
     if (_xmlData->getFirstElement("RandomSeed")) {
-        BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+        RandomNumberGenerator *rand = sim->getRandomNumberGeneratorInstance();
         if (rand->getSeed() != _xmlData->getFirstElement("RandomSeed")->getUInt())
             rand->setSeed(_xmlData->getFirstElement("RandomSeed")->getUInt());
     }

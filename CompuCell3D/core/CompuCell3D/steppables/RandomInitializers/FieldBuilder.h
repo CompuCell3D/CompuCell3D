@@ -17,7 +17,6 @@
 // // // #include <CompuCell3D/Field3D/WatchableField3D.h>
 // // // #include <CompuCell3D/Potts3D/Cell.h>
 // // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <CompuCell3D/plugins/PixelTracker/PixelTracker.h>
 
 // // // #include <string>
@@ -35,7 +34,7 @@ private:
 	WatchableField3D<CellG *> *cellField;
 	CellInventory * cellInventoryPtr;
 //	BasicClassAccessor<PixelTracker> * pixelTrackerAccessorPtr;
-    BasicRandomNumberGenerator * rand;
+    RandomNumberGenerator * rand;
     Potts3D *potts;
     Dim3D boxMin,boxMax;
     void saveField(int n);
@@ -50,7 +49,7 @@ public:
     void setBoxes(Dim3D _boxMin,Dim3D _boxMax);
     void setNeighborListFO();
     void setNeighborListSO();
-    void setRandomGenerator(BasicRandomNumberGenerator * _rand);
+    void setRandomGenerator(RandomNumberGenerator * _rand);
 	void addCell();
     void addCell(Dim3D pos);
 	void addCell(Dim3D pos,Dim3D size);

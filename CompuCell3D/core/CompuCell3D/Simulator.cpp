@@ -29,7 +29,6 @@ using namespace CompuCell3D;
 #include <CompuCell3D/Potts3D/EnergyFunctionCalculator.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 
-#include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <PublicUtilities/StringUtils.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include <string>
@@ -250,6 +249,18 @@ SteerableObject * Simulator::getSteerableObject(const std::string & _objectName)
 	}
 
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+RandomNumberGenerator* Simulator::generateRandomNumberGenerator(const unsigned int& seed) {
+	return rngFactory.generateRandomNumberGenerator(seed);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+RandomNumberGenerator* Simulator::getRandomNumberGeneratorInstance(const unsigned int& seed) {
+	return rngFactory.getInstance(seed);
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Simulator::postEvent(CC3DEvent & _ev){
 	//cerr<<"INSIDE SIMULATOR::postEvent"<<endl;
@@ -712,20 +723,28 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 		potts.setMetropolisAlgorithm(metropolisAlgorithmName);
 	}
 
+	RandomNumberGeneratorFactory::Type rngType = RandomNumberGeneratorFactory::DEFAULT;
+	CC3DXMLElement* rngEl = _xmlData->getFirstElement("RandomNumberGenerator");
+	if (rngEl && rngEl->findAttribute("Name")) {
+		std::string rngTypeName = rngEl->getAttribute("Name");
+		if (rngTypeName == "MersenneTwister") rngType = RandomNumberGeneratorFactory::MERSENNE_TWISTER;
+		else if (rngTypeName == "Legacy") rngType = RandomNumberGeneratorFactory::LEGACY;
+	}
+	rngFactory = RandomNumberGeneratorFactory(rngType);
+
+	cerr << "Random number generator: " << rngFactory.getName() << endl;
+
+	unsigned int randomSeed;
 	if(!_xmlData->getFirstElement("RandomSeed")){
 		srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-		unsigned int randomSeed=(unsigned int)rand()*((std::numeric_limits<unsigned int>::max)()-1);
-
-		BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
-		rand->setSeed(randomSeed);
+		randomSeed=(unsigned int)rand()*((std::numeric_limits<unsigned int>::max)()-1);
 	}else{
-		BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
-		rand->setSeed(_xmlData->getFirstElement("RandomSeed")->getUInt());
-		ppdCC3DPtr->seed=_xmlData->getFirstElement("RandomSeed")->getUInt();
+		randomSeed = _xmlData->getFirstElement("RandomSeed")->getUInt();
+		ppdCC3DPtr->seed = randomSeed;
 	}
+	RandomNumberGenerator *rand = rngFactory.getInstance(randomSeed);
 
 	cerr << " ppdCC3DPtr->seed = " << ppdCC3DPtr->seed << endl;
-
 
 	if (_xmlData->getFirstElement("Shape")) {
 		ppdCC3DPtr->shapeFlag=true;

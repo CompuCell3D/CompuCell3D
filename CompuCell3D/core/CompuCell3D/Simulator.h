@@ -30,6 +30,7 @@
 #include "PluginManager.h"
 #include "Plugin.h"
 #include "PluginBase.h"
+#include "RandomNumberGenerators.h"
 #include "Steppable.h"
 #include <map>
 #include <vector>
@@ -81,6 +82,7 @@ namespace CompuCell3D {
 		std::string basePath;
 		bool restartEnabled;
         std::string step_output;
+		RandomNumberGeneratorFactory rngFactory;
 
 	public:
 
@@ -157,6 +159,9 @@ namespace CompuCell3D {
 		double getFlip2DimRatio(){return ppdCC3DPtr->flip2DimRatio;}
 		void setRandomSeed(unsigned int seed) { ppdCC3DPtr->RandomSeed(seed); }
 		unsigned int getRandomSeed() { return ppdCC3DPtr->seed; }
+		// Client is responsible for deallocation. 
+		RandomNumberGenerator* generateRandomNumberGenerator(const unsigned int& seed = 1);
+		RandomNumberGenerator* getRandomNumberGeneratorInstance(const unsigned int& seed = 1);
 		Potts3D *getPotts() {return &potts;}
 		Simulator *getSimulatorPtr(){return this;}
 		ClassRegistry *getClassRegistry() {return classRegistry;}

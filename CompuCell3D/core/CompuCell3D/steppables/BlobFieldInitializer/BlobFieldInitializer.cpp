@@ -34,7 +34,6 @@ using namespace CompuCell3D;
 //#include <XMLCereal/XMLSerializer.h>
 
 // // // #include <BasicUtils/BasicClassGroup.h>
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
 // // // #include <CompuCell3D/Potts3D/CellInventory.h>
 // // // #include <CompuCell3D/plugins/CellType/CellTypePlugin.h>
 // // // #include <PublicUtilities/StringUtils.h>
@@ -264,7 +263,7 @@ unsigned char BlobFieldInitializer::initCellType(const BlobFieldInitializerData 
 	}/*else if (_initData.typeNames.size()==1){ //user specifie just one type
 	 return automaton->getTypeId(_initData.typeNames[0]);
 	 }*/else{ //user has specified more than one cell type - will pick randomly the type
-		 BasicRandomNumberGenerator * randGen=BasicRandomNumberGenerator::getInstance();
+		 RandomNumberGenerator* randGen = sim->getRandomNumberGeneratorInstance();
 		 int index = randGen->getInteger(0, _initData.typeNames.size()-1);        
 		 return automaton->getTypeId(_initData.typeNames[index]);
 	}
@@ -410,7 +409,7 @@ void BlobFieldInitializer::initializeCellTypesCellSort(){
 	//same sequence of numbers every run, you still get random initial configuration and it comes from the fact that 
 	// in general ordering of cells in the inventory is not repetitive between runs
 
-	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+	RandomNumberGenerator* rand = sim->getRandomNumberGeneratorInstance();
 	CellInventory * cellInventoryPtr=& potts->getCellInventory();
 
 	///will initialize cell type here depending on the position of the cells

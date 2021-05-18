@@ -12,7 +12,6 @@
 #include <CompuCell3D/plugins/CellTypeMonitor/CellTypeMonitorPlugin.h>
 #include "FluctuationCompensator.h"
 
-#include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <PublicUtilities/StringUtils.h>
 #include <PublicUtilities/Vector3.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>

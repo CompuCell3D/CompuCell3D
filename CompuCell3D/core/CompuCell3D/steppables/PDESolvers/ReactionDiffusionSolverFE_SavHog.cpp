@@ -10,7 +10,6 @@
 #include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 
-#include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <string>
 #include <cmath>
 #include <iostream>
@@ -265,7 +264,7 @@ void ReactionDiffusionSolverFE_SavHog::start() {
 void ReactionDiffusionSolverFE_SavHog::initializeConcentration(){
 
    
-   BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+   RandomNumberGenerator* rand = simPtr->getRandomNumberGeneratorInstance();
    
 
    CellInventory::cellInventoryIterator cInvItr;

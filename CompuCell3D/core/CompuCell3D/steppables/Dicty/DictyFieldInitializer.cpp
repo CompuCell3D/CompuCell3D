@@ -35,9 +35,6 @@
 // // // #include <CompuCell3D/Field3D/WatchableField3D.h>
 using namespace CompuCell3D;
 
-
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
-
 // // // #include <string>
 using namespace std;
 
@@ -80,6 +77,7 @@ void DictyFieldInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 
 	update(_xmlData,true);
 
+	sim = simulator;
 	potts = simulator->getPotts();
 	automaton=potts->getAutomaton();
 	cellField = (WatchableField3D<CellG*> *)potts->getCellFieldG();
@@ -221,7 +219,7 @@ void DictyFieldInitializer::start() {
 
 void DictyFieldInitializer::initializeCellTypes(){
 
-	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+	RandomNumberGenerator* rand = sim->getRandomNumberGeneratorInstance();
 	cellInventoryPtr=& potts->getCellInventory();
 
 	///will initialize cell type here depending on the position of the cells

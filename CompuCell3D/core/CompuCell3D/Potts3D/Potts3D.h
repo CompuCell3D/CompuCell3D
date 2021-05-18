@@ -53,8 +53,6 @@
 
 // #include <CompuCell3D/dllDeclarationSpecifier.h>
 
-class BasicRandomNumberGeneratorNonStatic;
-
 namespace CompuCell3D {
 
 
@@ -73,6 +71,7 @@ namespace CompuCell3D {
 	class Simulator;
 	class CellTypeMotilityData;
 	class ParallelUtilsOpenMP;
+	class RandomNumberGenerator;
 
 	template<typename T>
 	class WatchableField3D;
@@ -141,11 +140,13 @@ namespace CompuCell3D {
 		std::unordered_set<Point3D, Point3DHasher, Point3DComparator> justInsertedBoundaryPixelSet;
 		std::unordered_set<Point3D, Point3DHasher, Point3DComparator> justDeletedBoundaryPixelSet;
 		std::vector<Point3D> boundaryPixelVector;
-		Point3D randomPickBoundaryPixel(BasicRandomNumberGeneratorNonStatic * rand);
+		Point3D randomPickBoundaryPixel(RandomNumberGenerator * rand);
 
 
 
-		std::vector<BasicRandomNumberGeneratorNonStatic> randNSVec;
+		std::vector<RandomNumberGenerator*> randNSVec;
+		void initRandomNumberGenerators();
+		void uninitRandomNumberGenerators();
 
 		TypeTransition *typeTransition; //fires up automatic tasks associated with type reassignment
 

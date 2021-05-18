@@ -13,6 +13,7 @@
     #include <CompuCell3D/ParserStorage.h>
     #include <CompuCell3D/Parser.h>
     #include <CompuCell3D/PluginBase.h>
+    #include <CompuCell3D/RandomNumberGenerators.h>
     #include <CompuCell3D/Simulator.h>
     #include <CompuCell3D/Steppable.h>
     #include <CompuCell3D/PottsParseData.h>

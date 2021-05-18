@@ -10,7 +10,6 @@
 #include <CompuCell3D/Field3D/Field3DIO.h>
 #include <BasicUtils/BasicClassGroup.h>
 
-#include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <PublicUtilities/StringUtils.h>
 #include <string>
 #include <cmath>

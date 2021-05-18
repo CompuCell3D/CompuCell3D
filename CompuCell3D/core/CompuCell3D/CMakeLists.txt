@@ -30,6 +30,7 @@ SET(SRCS
   Simulator.cpp
   ClassRegistry.cpp
   DerivedProperty.cpp
+  RandomNumberGenerators.cpp 
   PottsParseData.cpp
   ParserStorage.cpp 
   CC3DExceptions.cpp
@@ -147,6 +148,7 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D .h
   ClassRegistry
   CompuCellLibDLLSpecifier  
   DerivedProperty
+  RandomNumberGenerators
   ParseData
   Parser
   ParserStorage

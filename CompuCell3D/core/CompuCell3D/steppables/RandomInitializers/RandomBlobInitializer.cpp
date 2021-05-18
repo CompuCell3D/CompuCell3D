@@ -34,7 +34,6 @@
 
 using namespace CompuCell3D;
 
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
 // // // #include <PublicUtilities/StringUtils.h>
 
 // // // #include <string>
@@ -64,6 +63,7 @@ RandomBlobInitializer::RandomBlobInitializer():
 
 RandomBlobInitializer::~RandomBlobInitializer(){
     delete builder;
+	delete rand;
 }
 
 void RandomBlobInitializer::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
@@ -87,9 +87,7 @@ void RandomBlobInitializer::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 
 void RandomBlobInitializer::setParameters(Simulator *_simulator, CC3DXMLElement *_xmlData){
 	// initiate random generator
-	rand = BasicRandomNumberGenerator::getInstance();
-	if(_xmlData->getFirstElement("seed"))
-		rand->setSeed(_xmlData->getFirstElement("seed")->getInt());
+	rand = _simulator->generateRandomNumberGenerator();
 	builder->setRandomGenerator(rand);
 	// set builder boxes
 	Dim3D boxMin = Dim3D(0,0,0);

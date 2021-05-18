@@ -36,8 +36,6 @@ using namespace std;
 
 #include <stdlib.h>
 
-#include <BasicUtils/BasicRandomNumberGenerator.h>
-
 #include <XMLUtils/XMLParserExpat.h>
 
 #if defined(_WIN32)

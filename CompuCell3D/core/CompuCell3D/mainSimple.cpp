@@ -44,7 +44,6 @@ using namespace std;
 #include <stdlib.h>
 
 //#include <config.h>
-#include <BasicUtils/BasicRandomNumberGenerator.h>
 
 //void Syntax(const string name) {
 //  cerr << "Syntax: " << name << " <config>" << endl;

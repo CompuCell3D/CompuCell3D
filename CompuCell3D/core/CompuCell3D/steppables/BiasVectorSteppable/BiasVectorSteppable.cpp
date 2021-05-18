@@ -18,7 +18,6 @@ using namespace std;
 
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include <BasicUtils/BasicRandomNumberGenerator.h>
 
 
 BiasVectorSteppable::BiasVectorSteppable() : cellFieldG(0),sim(0),potts(0),xmlData(0),boundaryStrategy(0),automaton(0),cellInventoryPtr(0){}
@@ -352,7 +351,7 @@ vector<double> BiasVectorSteppable::white_noise_2d()
 {
 	// cout << "in the 2d white noise method" << endl;
 
-	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+	RandomNumberGenerator *rand = sim->getRandomNumberGeneratorInstance();
 
 	double angle = rand->getRatio() * 2 * M_PI;
 	double x0 = std::cos(angle);
@@ -367,7 +366,7 @@ vector<double> BiasVectorSteppable::white_noise_2d()
 vector<double> BiasVectorSteppable::white_noise_3d()
 {
 	//cout << "in the 3d white noise method" << endl;
-	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+	RandomNumberGenerator *rand = sim->getRandomNumberGeneratorInstance();
 
 	//method for getting random unitary vector in sphere from Marsaglia 1972
 	//example and reason for not using a uniform distribution

@@ -161,7 +161,7 @@ unsigned char UniformFieldInitializer::initCellType(const UniformFieldInitialize
 		return 1;
 	}
 	else { //user has specified more than one cell type - will pick randomly the type
-		BasicRandomNumberGenerator * randGen = BasicRandomNumberGenerator::getInstance();
+		RandomNumberGenerator * randGen = sim->getRandomNumberGeneratorInstance();
 		int index = randGen->getInteger(0, _initData.typeNames.size() - 1);
 
 
