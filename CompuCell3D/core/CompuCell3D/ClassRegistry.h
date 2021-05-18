@@ -27,12 +27,6 @@
 #include <CompuCell3D/CompuCellLibDLLSpecifier.h>
 #include "Steppable.h"
 
-
-
-
-
-#include <BasicUtils/BasicClassRegistry.h>
-
 #include <map>
 #include <list>
 #include <string>
@@ -43,7 +37,6 @@ namespace CompuCell3D {
   
 
   class COMPUCELLLIB_EXPORT ClassRegistry : public Steppable {
-    BasicClassRegistry<Steppable> steppableRegistry;
 
     typedef std::list<Steppable *> ActiveSteppers_t;
     ActiveSteppers_t activeSteppers;
