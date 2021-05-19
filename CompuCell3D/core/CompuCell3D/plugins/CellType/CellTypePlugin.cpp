@@ -137,7 +137,7 @@ string CellTypePlugin::getTypeName(const char type) const {
   if(typeNameMapItr!=typeNameMap.end()){
       return typeNameMapItr->second;
   }else{
-      THROW(string("getTypeName: Unknown cell type  ") + type + "!");
+      throw CC3DException(string("getTypeName: Unknown cell type  ") + type + "!");
   }
 
 
@@ -152,7 +152,7 @@ unsigned char CellTypePlugin::getTypeId(const string typeName) const {
   if(nameTypeMapItr!=nameTypeMap.end()){
       return nameTypeMapItr->second;
   }else{
-      THROW(string("getTypeName: Unknown cell type  ") + typeName + "!");
+      throw CC3DException(string("getTypeName: Unknown cell type  ") + typeName + "!");
   }
 
 }
