@@ -121,7 +121,7 @@ namespace CompuCell3D {
 
 		static PluginManager<Plugin> pluginManager;
 		static PluginManager<Steppable> steppableManager;
-		static BasicPluginManager<PluginBase> pluginBaseManager;
+		static PluginManager<PluginBase> pluginBaseManager;
 
 		Simulator();
 		virtual ~Simulator();

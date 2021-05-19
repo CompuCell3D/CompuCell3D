@@ -59,7 +59,7 @@ using namespace std;
 
 PluginManager<Plugin> Simulator::pluginManager;
 PluginManager<Steppable> Simulator::steppableManager;
-BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
+PluginManager<PluginBase> Simulator::pluginBaseManager;
 
 
 Simulator::Simulator() :
@@ -137,7 +137,7 @@ void Simulator::setOutputRedirectionTarget(ptrdiff_t  _ptr){
 	//qStreambufPtr=bufferFactory.getQTextEditBuffer();
 
 //we may also try to implement buffer switching during player runtime so that it does not require player restart
-//for now it is ok to have this basic type of switching
+//for now it is ok to have this type of switching
 #ifdef QT_WRAPPERS_AVAILABLE
 
 
@@ -267,8 +267,8 @@ void Simulator::postEvent(CC3DEvent & _ev){
 		pUtils->handleEvent(_ev); //let parallel utils konw about all events
 
 		string pluginName;
-		BasicPluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
-		BasicPluginManager<Plugin>::infos_t::iterator it;
+		PluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
+		PluginManager<Plugin>::infos_t::iterator it;
 		//for (it = infos->begin(); it != infos->end(); it++)	{
 		//	cerr<<" THIS IS PLUGIN NAME "<<(*it)->getName()<<endl;
 		//}
@@ -283,8 +283,8 @@ void Simulator::postEvent(CC3DEvent & _ev){
 		}
 
 		string steppableName;
-		BasicPluginManager<Steppable>::infos_t *infos_step = &steppableManager.getPluginInfos();
-		BasicPluginManager<Steppable>::infos_t::iterator it_step;
+		PluginManager<Steppable>::infos_t *infos_step = &steppableManager.getPluginInfos();
+		PluginManager<Steppable>::infos_t::iterator it_step;
 		for (it_step = infos_step->begin(); it_step != infos_step->end(); it_step++){
 
 			steppableName=(*it_step)->getName();
@@ -306,8 +306,8 @@ void Simulator::start() {
 	try{
 		// Print the names of loaded plugins
 		cerr << "Simulator::start():  Plugins:";
-		BasicPluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
-		BasicPluginManager<Plugin>::infos_t::iterator it;
+		PluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
+		PluginManager<Plugin>::infos_t::iterator it;
 		for (it = infos->begin(); it != infos->end(); it++)
 			if (pluginManager.isLoaded((*it)->getName())) {
 				if (it != infos->begin()) cerr << ",";
@@ -351,8 +351,8 @@ std::string Simulator::formatErrorMessage(const CC3DException &e){
 void Simulator::extraInit(){
 
 	try{
-		BasicPluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
-		BasicPluginManager<Plugin>::infos_t::iterator it;
+		PluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
+		PluginManager<Plugin>::infos_t::iterator it;
 
         cerr<<"begin extraInit calls for plugins"<<endl;
 		for (it = infos->begin(); it != infos->end(); it++)

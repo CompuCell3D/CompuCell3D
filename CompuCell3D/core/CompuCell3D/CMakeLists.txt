@@ -26,6 +26,7 @@ endif(BUILD_QT_WRAPPERS)
 
 
 SET(SRCS
+  PluginInfo.cpp
   PluginManager.cpp
   Simulator.cpp
   ClassRegistry.cpp
@@ -155,6 +156,7 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D .h
   ParserStorage
   Plugin
   PluginBase
+  PluginInfo
   PluginManager
   PottsParseData
   RandomNumberGenerators

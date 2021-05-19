@@ -42,7 +42,7 @@ using namespace std;
 
 PluginManager<Plugin> Simulator::pluginManager;
 PluginManager<Steppable> Simulator::steppableManager;
-BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
+PluginManager<PluginBase> Simulator::pluginBaseManager;
 
 void Syntax(const string name)
 {
@@ -84,21 +84,21 @@ int main(int argc, char* argv[])
 //     Simulator::pluginManager.loadLibraries(DEFAULT_PLUGIN_PATH);
 #endif
 
-        BasicPluginManager<Steppable>::infos_t* infosG = &Simulator::steppableManager.getPluginInfos();
+        PluginManager<Steppable>::infos_t* infosG = &Simulator::steppableManager.getPluginInfos();
 
         if (!infosG->empty()) {
             cerr << "Found the following Steppables:" << endl;
-            BasicPluginManager<Steppable>::infos_t::iterator it;
+            PluginManager<Steppable>::infos_t::iterator it;
             for (it = infosG->begin(); it != infosG->end(); it++)
                 cerr << "  " << *(*it) << endl;
             cerr << endl;
         }
 
-        BasicPluginManager<Plugin>::infos_t* infos = &Simulator::pluginManager.getPluginInfos();
+        PluginManager<Plugin>::infos_t* infos = &Simulator::pluginManager.getPluginInfos();
 
         if (!infos->empty()) {
             cerr << "Found the following plugins:" << endl;
-            BasicPluginManager<Plugin>::infos_t::iterator it;
+            PluginManager<Plugin>::infos_t::iterator it;
             for (it = infos->begin(); it != infos->end(); it++)
                 cerr << "  " << *(*it) << endl;
             cerr << endl;

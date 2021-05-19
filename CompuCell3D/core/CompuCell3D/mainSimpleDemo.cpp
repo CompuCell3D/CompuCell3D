@@ -55,7 +55,7 @@ using namespace std;
 //
 PluginManager<Plugin> Simulator::pluginManager;
 PluginManager<Steppable> Simulator::steppableManager;
-BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
+PluginManager<PluginBase> Simulator::pluginBaseManager;
 //
 //int main(int argc, char *argv[]) {
 //

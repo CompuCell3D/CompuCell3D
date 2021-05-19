@@ -23,11 +23,12 @@
 #include "ConnectivityPlugin.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-BasicPluginProxy<Plugin, ConnectivityPlugin>
-connectivityProxy("Connectivity", 
-             "Adds connectivity constraints.",
-	     &Simulator::pluginManager);
+auto connectivityProxy = registerPlugin<Plugin, ConnectivityPlugin>(
+    "Connectivity", 
+    "Adds connectivity constraints.",
+    &Simulator::pluginManager
+);
