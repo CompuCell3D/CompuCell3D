@@ -23,7 +23,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     SET(GOMP_LIB gomp)
    endif(MINGW)
 
-  ADD_STATIC_LIBRARY(Potts3D ${SRCS} LINK_LIBRARIES BasicUtilsStatic
+  ADD_STATIC_LIBRARY(Potts3D ${SRCS} LINK_LIBRARIES 
   BoundaryShared
   ${GOMP_LIB}  Field3DStatic PublicUtilitiesStatic UnitsStatic ExpressionEvaluatorShared EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
 
@@ -31,7 +31,7 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
   ADD_SHARED_LIBRARY(Potts3D ${SRCS} 
   LINK_LIBRARIES 
-  gomp BoundaryShared BasicUtilsShared Field3DShared PublicUtilitiesShared UnitsShared ExpressionEvaluatorShared
+  gomp BoundaryShared Field3DShared PublicUtilitiesShared UnitsShared ExpressionEvaluatorShared
   EXTRA_COMPILER_FLAGS 
   ${OpenMP_CXX_FLAGS})
 

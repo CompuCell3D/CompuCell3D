@@ -46,7 +46,6 @@ INCLUDE_DIRECTORIES (
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   ADD_SHARED_LIBRARY(CompuCellLib ${SRCS} LINK_LIBRARIES
-    BasicUtilsStatic
  #   XercesUtilsStatic
 #    XMLCerealStatic
     PublicUtilitiesStatic
@@ -83,7 +82,6 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
   ADD_SHARED_LIBRARY(CompuCellLib ${SRCS} LINK_LIBRARIES
 
-  BasicUtilsShared
  # XercesUtilsShared
  # XMLCerealShared
   PublicUtilitiesShared
@@ -103,7 +101,6 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
           ADD_EXECUTABLE(CompuCell3DCML main.cpp)
           TARGET_LINK_LIBRARIES(CompuCell3DCML
             CompuCellLibShared
-            BasicUtilsShared
            # XercesUtilsShared
             #XMLCerealShared
             PublicUtilitiesShared
@@ -122,7 +119,6 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
         #   TARGET_LINK_LIBRARIES(CompuCell3D
         #     CompuCellLibShared
-        #     BasicUtilsShared
         #    # XercesUtilsShared
         #     #XMLCerealShared
         #     PublicUtilitiesShared

@@ -11,7 +11,6 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 SET(LIBS
     CompuCellLibShared
     Field3DStatic
-    BasicUtilsStatic
     PublicUtilitiesStatic
     UnitsStatic
     ${PYTHON_LIBRARY_TO_LINK}
@@ -30,7 +29,6 @@ endif()
 SET(LIBS
   CompuCellLibShared
   Field3DShared
-  BasicUtilsShared
   PublicUtilitiesShared
   UnitsShared
   ${PYTHON_LIBRARY_TO_LINK}
