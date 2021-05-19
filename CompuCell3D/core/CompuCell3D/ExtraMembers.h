@@ -5,6 +5,10 @@
 
 namespace CompuCell3D {
 
+    /**
+	Written by T.J. Sego, Ph.D.
+	*/
+
     // Member creation interface with group factory
     template <class T>
     class ExtraMembersFactory {

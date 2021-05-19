@@ -14,6 +14,10 @@
 
 namespace CompuCell3D {
 
+    /**
+	Written by T.J. Sego, Ph.D.
+	*/
+
     class RandomNumberGenerator {
 
         unsigned int bitBuffer;

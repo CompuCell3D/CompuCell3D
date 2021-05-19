@@ -7,6 +7,11 @@
 #include "CompuCellLibDLLSpecifier.h"
 
 namespace CompuCell3D {
+
+    /**
+	Written by T.J. Sego, Ph.D.
+	*/
+
     // Simple information about a plugin
     class COMPUCELLLIB_EXPORT PluginInfo {
 

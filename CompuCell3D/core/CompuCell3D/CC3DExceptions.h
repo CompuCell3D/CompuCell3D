@@ -6,6 +6,10 @@
 #include <string>
 
 namespace CompuCell3D {
+
+    /**
+	Written by T.J. Sego, Ph.D.
+	*/
     
     class CC3DException: public std::exception {
 
