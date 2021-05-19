@@ -51,6 +51,18 @@ void parseStringIntoList(std::string &str,std::vector<std::string> &strVec,std::
    
 }
 
+std::vector<std::string> splitString(const std::string& str, const std::string& token) {
+   std::vector<std::string> o;
+   char* cStr = strdup(str.c_str());
+   char* cTok = strdup(token.c_str());
+   char* oStr = strtok(cStr, cTok);
+   while (oStr) {
+      o.push_back(oStr);
+      oStr = strtok(NULL, cTok);
+   }
+   return o;
+}
+
 void changeToLower(std::string & str){
 
    std::locale loc("C");

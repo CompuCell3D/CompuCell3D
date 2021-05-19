@@ -8,6 +8,14 @@
 #include <functional>
 
 void parseStringIntoList(std::string &str,std::vector<std::string> &strVec,std::string separator);
+/**
+ * @brief Splits a string into a vector of strings by a given token
+ * 
+ * @param str string to split
+ * @param token token by which to split the string
+ * @return vector of strings
+ */
+std::vector<std::string> splitString(const std::string& str, const std::string& token);
 
 class isWhiteSpaceFunctor: public std::unary_function<char,bool>{
    private:
