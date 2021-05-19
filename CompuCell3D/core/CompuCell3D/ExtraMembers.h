@@ -10,6 +10,7 @@ namespace CompuCell3D {
     class ExtraMembersFactory {
     public:
         virtual T* create() = 0;
+        virtual void destroy(T* em) = 0;
     };
 
     // Member factory interface with accessor
@@ -17,6 +18,7 @@ namespace CompuCell3D {
     class ExtraMembersCastor: public ExtraMembersFactory<B> {
     public:
         B* create() { return new T; }
+        virtual void destroy(B* em) { delete (B*)em; }
     };
 
     class ExtraMembersGroupFactory;
