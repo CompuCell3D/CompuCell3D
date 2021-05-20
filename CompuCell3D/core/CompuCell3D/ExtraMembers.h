@@ -87,8 +87,8 @@ namespace CompuCell3D {
 
         // Registers a class as an extra member using its accessor
         void registerClass(ExtraMembersGroupAccessorBase* accessor) {
-            factories.push_back(accessor->createFactory());
             accessor->setId((unsigned int)factories.size());
+            factories.push_back(accessor->createFactory());
         }
         // Creates a new instance of a group
         ExtraMembersGroup* create() { return new ExtraMembersGroup(factories); }
