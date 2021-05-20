@@ -194,7 +194,7 @@ bool PottsTestData::compare_potts_data(PottsTestData & potts_data_to_compare) {
     }
         
 
-    if (abs_difference(motility , potts_data_to_compare.motility) < tol) throw CC3DException("motility is different");
+    if (abs_difference(motility , potts_data_to_compare.motility) >= tol) throw CC3DException("motility is different");
     if (abs_difference(acceptanceFunctionProbability, potts_data_to_compare.acceptanceFunctionProbability) >= 1e-4) 
         throw CC3DException("acceptanceFunctionProbability is different");
     
