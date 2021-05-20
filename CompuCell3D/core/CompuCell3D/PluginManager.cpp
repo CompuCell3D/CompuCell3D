@@ -27,11 +27,7 @@ template<typename PluginType>
 typename PluginManager<PluginType>::plugins_t & PluginManager<PluginType>::getPluginMap() { return plugins; }
 
 template<typename PluginType>
-typename PluginManager<PluginType>::infos_t PluginManager<PluginType>::getPluginInfos() {
-    PluginManager<PluginType>::infos_t o;
-    for (auto& x: infos) o.push_back(x.second);
-    return o;
-}
+typename PluginManager<PluginType>::infos_t& PluginManager<PluginType>::getPluginInfos() { return infos_list; }
 
 template<typename PluginType>
 std::list<std::string> PluginManager<PluginType>::getLibraryNames() {
@@ -43,15 +39,16 @@ std::list<std::string> PluginManager<PluginType>::getLibraryNames() {
 template<typename PluginType>
 PluginType* PluginManager<PluginType>::get(const std::string pluginName, bool* _alreadyRegistered = 0) {
     if (plugins[pluginName]){
-    if (_alreadyRegistered)
-    *_alreadyRegistered = true;
-    return plugins[pluginName];
+        if (_alreadyRegistered)
+            *_alreadyRegistered = true;
+        return plugins[pluginName];
     }
 
     // Create the plugin
     PluginType* plugin = getFactory(pluginName)->create();
     init(plugin);
 
+    plugins[pluginName] = plugin;
     proxies[pluginName]->instance = plugin;
 
     if (_alreadyRegistered) *_alreadyRegistered = false;
@@ -59,10 +56,14 @@ PluginType* PluginManager<PluginType>::get(const std::string pluginName, bool* _
 }
 
 template<typename PluginType>
-bool PluginManager<PluginType>::isLoaded(const std::string& pluginName) { return plugins[pluginName] != 0; }
+bool PluginManager<PluginType>::isLoaded(const std::string& pluginName) {
+    return plugins.find(pluginName) != plugins.end();
+}
 
 template<typename PluginType>
-bool PluginManager<PluginType>::isRegistered(const std::string& pluginName) { return factories[pluginName] != 0; }
+bool PluginManager<PluginType>::isRegistered(const std::string& pluginName) {
+    return factories.find(pluginName) != factories.end();
+}
 
 template<typename PluginType>
 void PluginManager<PluginType>::registerDependency(const std::string& parentPlugin, const std::string& dependentPlugin) {
@@ -157,6 +158,7 @@ typename PluginManager<PluginType>::proxy_t* PluginManager<PluginType>::register
 
     // Register
     infos[info->getName()] = info;
+    infos_list.push_back(info);
     factories[info->getName()] = factory;
     PluginManager<PluginType>::proxy_t* proxy = new PluginManager<PluginType>::proxy_t();
     proxies[info->getName()] = proxy;

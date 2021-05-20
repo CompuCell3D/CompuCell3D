@@ -101,6 +101,7 @@ namespace CompuCell3D {
     pluginFactory_t factories;
     libraryHandles_t libHandles;
     proxies_t proxies;
+    infos_t infos_list;
 
 #ifdef CC3D_ISWIN
     char* pathDelim = ";";
@@ -120,7 +121,7 @@ namespace CompuCell3D {
     plugins_t & getPluginMap();
 
     // Returns info for all registered plugins
-    infos_t getPluginInfos();
+    infos_t& getPluginInfos();
 
     // Returns name of all loaded libraries
     std::list<std::string> getLibraryNames();
