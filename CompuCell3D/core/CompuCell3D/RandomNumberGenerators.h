@@ -101,7 +101,7 @@ namespace CompuCell3D {
 
     public:
 
-        RandomNumberGeneratorFactory(Type _type = DEFAULT) : type(_type) {
+        RandomNumberGeneratorFactory(Type _type = DEFAULT) : type(_type), singleton(0) {
             if (type == DEFAULT) type = MERSENNE_TWISTER;
         }
         ~RandomNumberGeneratorFactory() {
