@@ -485,7 +485,7 @@ void OrientedContactPlugin::setOrientedContactEnergy(const string typeName1,
   int index = getIndex(type1, type2);
 
   orientedContactEnergies_t::iterator it = orientedContactEnergies.find(index);
-  if (it == orientedContactEnergies.end()) throw CC3DException(string("OrientedOrientedContact energy for ") + typeName1 + " " + typeName2 + " already set!");
+  if (it != orientedContactEnergies.end()) throw CC3DException(string("OrientedOrientedContact energy for ") + typeName1 + " " + typeName2 + " already set!");
 
   orientedContactEnergies[index] = energy;
 }

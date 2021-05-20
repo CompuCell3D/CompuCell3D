@@ -218,7 +218,7 @@ void ContactMultiCadPlugin::setContactEnergy(const string typeName1,
     int index = getIndex(type1, type2);
 
     contactEnergies_t::iterator it = contactEnergies.find(index);
-    if (it == contactEnergies.end()) throw CC3DException(string("Contact energy for ") + typeName1 + " " + typeName2 + " already set!");
+    if (it != contactEnergies.end()) throw CC3DException(string("Contact energy for ") + typeName1 + " " + typeName2 + " already set!");
 
     contactEnergies[index] = energy;
 }
