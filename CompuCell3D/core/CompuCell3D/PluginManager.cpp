@@ -123,7 +123,7 @@ void PluginManager<PluginType>::loadLibrary(const std::string& filename) {
 
 template<typename PluginType>
 void PluginManager<PluginType>::loadLibraryFromPath(const std::string& path) {
-    for (std::string f: filesInDir<false>(path, "*" + libExtension)) loadLibrary(f);
+    for (std::string f: filesInDir<false>(path, ".*(" + libExtension + ")")) loadLibrary(f);
 }
 
 template<typename PluginType>
