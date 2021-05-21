@@ -104,12 +104,16 @@ namespace CompuCell3D {
     infos_t infos_list;
 
 #ifdef CC3D_ISWIN
-    char* pathDelim = ";";
+    std::string pathDelim = ";";
     std::string libExtension = ".dll";
-#else
-    char* pathDelim = ":";
+#else // CC3D_ISWIN
+    std::string pathDelim = ":";
+#ifdef CC3D_ISMAC
+    std::string libExtension = ".dylib";
+#else // CC3D_ISMAC
     std::string libExtension = ".so";
-#endif
+#endif // CC3D_ISMAC
+#endif // CC3D_ISWIN
 
   public:
     
