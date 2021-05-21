@@ -1,6 +1,7 @@
 #ifndef EXTRAMEMBERS_H
 #define EXTRAMEMBERS_H
 
+#include <climits>
 #include <vector>
 
 namespace CompuCell3D {
