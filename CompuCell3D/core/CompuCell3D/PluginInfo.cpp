@@ -20,6 +20,6 @@ bool PluginInfo::dependsOn(const std::string& pluginName) {
 }
 
 std::ostream& operator<<(std::ostream& _os, PluginInfo &_info) {
-    _os << _info.getName() << ': ' << _info.getDescription();
+    _os << _info.getName() << std::string(": ") << _info.getDescription();
     return _os;
 }

@@ -34,7 +34,7 @@
 #if defined(CC3D_ISWIN)
 
 #include <windows.h>
-typedef typename HINSTANCE libHandle_t;
+typedef HINSTANCE libHandle_t;
 
 #else
 

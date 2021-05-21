@@ -37,7 +37,7 @@ std::list<std::string> PluginManager<PluginType>::getLibraryNames() {
 }
 
 template<typename PluginType>
-PluginType* PluginManager<PluginType>::get(const std::string pluginName, bool* _alreadyRegistered = 0) {
+PluginType* PluginManager<PluginType>::get(const std::string pluginName, bool* _alreadyRegistered) {
     if (plugins[pluginName]){
         if (_alreadyRegistered)
             *_alreadyRegistered = true;
