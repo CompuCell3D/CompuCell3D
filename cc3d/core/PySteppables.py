@@ -1898,6 +1898,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         :param shift_vector: {tuple,  list, array, or CompuCell.Point3D} 3-element list specifying shoft vector
         :return: None
         """
+		
+		if not cell:
+			raise TypeError(f'Cannot move non existing cell. Expected cell to be CompuCell.CellG, got {type(cell)}')
 
         # we have to make two list of pixels :
         # used to hold pixels to delete
@@ -1915,6 +1918,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         # If we try to reassign pixels in the loop where we iterate over pixel data
         # we will corrupt the container so in the loop below all we will do is to populate the two list mentioned above
         pixel_list = self.get_cell_pixel_list(cell)
+		if pixel_list is None:
+			raise AttributeError('Could not find PixelTracker Plugin')
         pt = CompuCell.Point3D()
 
         for pixelTrackerData in pixel_list:
@@ -1935,7 +1940,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         # Now we will delete old pixels
         medium_cell = CompuCell.getMediumCell()
         for pixel in pixels_to_delete:
-            self.cell_field[pixel.x, pixel.y, pixel.z] = medium_cell
+			# Safe deletion. Don't delete the old pixel 
+			# if it is part of the new pixel set
+			if pixel not in pixel_list:
+				self.cell_field[pixel.x, pixel.y, pixel.z] = medium_cell
 
     @deprecated(version='4.0.0', reason="You should use : check_if_in_the_lattice")
     def checkIfInTheLattice(self, _pt):
