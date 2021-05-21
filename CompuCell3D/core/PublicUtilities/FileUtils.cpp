@@ -5,7 +5,7 @@ namespace filesystem = std::experimental::filesystem;
 template<bool recursive>
 std::vector<std::string> filesInDir(const filesystem::path& dirpath, const std::regex& regex_expr) {
     std::vector<std::string> o;
-    typedef std::conditional<recursive, filesystem::recursive_directory_iterator, filesystem::directory_iterator>::type itr_t;
+    typedef typename std::conditional<recursive, filesystem::recursive_directory_iterator, filesystem::directory_iterator>::type itr_t;
     for (auto& itr: itr_t(dirpath))
         if (filesystem::is_regular_file(itr) && std::regex_match(itr.path().extension().string(), regex_expr))
             o.push_back(itr.path().string());

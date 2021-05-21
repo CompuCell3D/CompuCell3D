@@ -1,7 +1,7 @@
 #ifndef STRINGUTILS_H
 #define STRINGUTILS_H
 #include <vector>
-#include <string>
+#include <cstring>
 #include <algorithm>
 #include <locale>
 #include <cctype>
