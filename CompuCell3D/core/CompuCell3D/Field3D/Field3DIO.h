@@ -124,7 +124,7 @@ namespace CompuCell3D {
     stream.read(typeStr, 2);
     typeStr[2] = '\0';
     if (!(typeStr[0] == field.typeStr[0] && typeStr[1] == field.typeStr[1]))
-      throw CC3DException(std::string("Field3D<T> Type string mismatch on read! ") + "Expected '" + field.typeStr + "' read '" + typeStr + "'.")
+      throw CC3DException(std::string("Field3D<T> Type string mismatch on read! ") + "Expected '" + std::string(field.typeStr) + "' read '" + typeStr + "'.");
     
     char dims = 0;
     uint32_t x = 0;
