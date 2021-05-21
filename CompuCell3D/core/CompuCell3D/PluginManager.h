@@ -39,7 +39,7 @@ typedef typename HINSTANCE libHandle_t;
 #else
 
 #include <dlfcn.h>
-typedef typename void* libHandle_t;
+typedef void* libHandle_t;
 
 #endif // defined(CC3D_ISWIN)
 
@@ -84,17 +84,17 @@ namespace CompuCell3D {
 
   public:
 
-    typedef typename std::map<std::string, PluginType *> plugins_t;
-    typedef typename ExtraMembersFactory<PluginType> PluginFactory;
-    typedef typename PluginProxy<PluginType> proxy_t;
-    typedef typename std::list<PluginInfo* > infos_t;
+    typedef std::map<std::string, PluginType *> plugins_t;
+    typedef ExtraMembersFactory<PluginType> PluginFactory;
+    typedef PluginProxy<PluginType> proxy_t;
+    typedef std::list<PluginInfo* > infos_t;
 
   private:
     
-    typedef typename std::map<std::string, PluginInfo* > pluginInfo_t;
-    typedef typename std::map<std::string, PluginFactory* > pluginFactory_t;
-    typedef typename std::map<std::string, libHandle_t> libraryHandles_t;
-    typedef typename std::map<std::string, proxy_t* > proxies_t;
+    typedef std::map<std::string, PluginInfo* > pluginInfo_t;
+    typedef std::map<std::string, PluginFactory* > pluginFactory_t;
+    typedef std::map<std::string, libHandle_t> libraryHandles_t;
+    typedef std::map<std::string, proxy_t* > proxies_t;
 
     plugins_t plugins;
     pluginInfo_t infos;
