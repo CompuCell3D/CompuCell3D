@@ -1891,6 +1891,14 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
     def moveCell(self, cell, shiftVector):
         return self.move_cell(cell=cell, shift_vector=shiftVector)
 
+    def point3d_to_tuple(self, pt: CompuCell.Point3D) -> tuple:
+        """
+        Converts CompuCell.Point3D into tuple
+        :param pt:
+        :return:
+        """
+        return pt.x, pt.y, pt.z
+
     def move_cell(self, cell, shift_vector):
         """
         Moves cell by shift_vector
@@ -1902,12 +1910,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         if not cell:
             raise TypeError(f'Cannot move non existing cell. Expected cell to be CompuCell.CellG, got {type(cell)}')
 
-        # we have to make two list of pixels :
-        # used to hold pixels to delete
-        pixels_to_delete = []
-        # used to hold pixels to move
-        pixels_to_move = []
-
         shift_vec = CompuCell.Point3D()
         if isinstance(shift_vector, list) or isinstance(shift_vector, tuple):
             shift_vec.x = shift_vector[0]
@@ -1915,6 +1917,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
             shift_vec.z = shift_vector[2]
         else:
             shift_vec = shift_vector
+
         # If we try to reassign pixels in the loop where we iterate over pixel data
         # we will corrupt the container so in the loop below all we will do is to populate the two list mentioned above
         pixel_list = self.get_cell_pixel_list(cell)
@@ -1922,28 +1925,32 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
             raise AttributeError('Could not find PixelTracker Plugin')
         pt = CompuCell.Point3D()
 
-        for pixelTrackerData in pixel_list:
-            pt.x = pixelTrackerData.pixel.x + shift_vec.x
-            pt.y = pixelTrackerData.pixel.y + shift_vec.y
-            pt.z = pixelTrackerData.pixel.z + shift_vec.z
+        # we have to make two sets (for faster lookup) of pixels :
+        # set used to hold pixels to delete
+        pixels_to_delete_set = set()
+        # set used to hold pixels to move
+        pixels_to_move_set = set()
+        for pixel_tracker_data in pixel_list:
+            pt.x = pixel_tracker_data.pixel.x + shift_vec.x
+            pt.y = pixel_tracker_data.pixel.y + shift_vec.y
+            pt.z = pixel_tracker_data.pixel.z + shift_vec.z
             # here we are making a copy of the cell
-            pixels_to_delete.append(CompuCell.Point3D(pixelTrackerData.pixel))
+            pixels_to_delete_set.add(self.point3d_to_tuple(pixel_tracker_data.pixel))
 
             if self.check_if_in_the_lattice(pt):
-                pixels_to_move.append(CompuCell.Point3D(pt))
-                # self.cellField.set(pt,cell)
+                pixels_to_move_set.add(self.point3d_to_tuple(pt))
 
         # Now we will move cell
-        for pixel in pixels_to_move:
-            self.cell_field[pixel.x, pixel.y, pixel.z] = cell
+        for pt_tuple in pixels_to_move_set:
+            self.cell_field[pt_tuple] = cell
 
         # Now we will delete old pixels
         medium_cell = CompuCell.getMediumCell()
-        for pixel in pixels_to_delete:
+        for pixel_tuple in pixels_to_delete_set:
             # Safe deletion. Don't delete the old pixel
             # if it is part of the new pixel set
-            if pixel not in pixel_list:
-                self.cell_field[pixel.x, pixel.y, pixel.z] = medium_cell
+            if pixel_tuple not in pixels_to_move_set:
+                self.cell_field[pixel_tuple] = medium_cell
 
     @deprecated(version='4.0.0', reason="You should use : check_if_in_the_lattice")
     def checkIfInTheLattice(self, _pt):
