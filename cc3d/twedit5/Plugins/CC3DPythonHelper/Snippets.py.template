@@ -309,7 +309,8 @@ self.cell_field[x:x + size - 1, y:y + size - 1, 0] = cell
 cell = self.cell_field[10, 11, 0]
 
 ----------  # @Submenu@ Move Cell
-# Shifting entire cell by a 'shiftVector'         
+# Shifting entire cell by a 'shiftVector'
+# Requires PixelTracker Plugin         
 shift_vector = [20, 20, 0]
 self.move_cell(cell, shift_vector)
 
