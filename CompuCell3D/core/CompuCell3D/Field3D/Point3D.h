@@ -23,8 +23,6 @@
 #ifndef POINT3D_H
 #define POINT3D_H
 
-//#include <XMLCereal/XMLSerializable.h>
-
 #include <BasicUtils/BasicString.h>
 
 #include <iostream>
@@ -35,7 +33,7 @@ namespace CompuCell3D {
    * A 3D point.
    * 
    */
-  class Point3D /*: public virtual XMLSerializable*/ {
+  class Point3D {
   public:
     short x;
     short y;
@@ -98,12 +96,16 @@ namespace CompuCell3D {
       return x < _rhs.x || (!(_rhs.x < x)&& y < _rhs.y)
 			||(!(_rhs.x < x)&& !(_rhs.y <y )&& z < _rhs.z);
    }
-    //// Begin XMLSerializable interface
-    //virtual void readXML(XMLPullParser &in);
-    //virtual void writeXML(XMLSerializer &out);
-    //// End XMLSerializable interface
     
     friend std::ostream &operator<<(std::ostream &stream, const Point3D &pt);
+
+    // Python support
+
+#ifdef SWIGPYTHON
+
+    PyObject* to_tuple() { return PyTuple_Pack(3, PyLong_FromLong(x), PyLong_FromLong(y), PyLong_FromLong(z)); }
+
+#endif // SWIGPYTHON
   };
 
   /** 
