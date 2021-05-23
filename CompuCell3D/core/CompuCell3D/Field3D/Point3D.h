@@ -42,60 +42,37 @@ namespace CompuCell3D {
     /** 
      * Construct a point at the origin.
      */    
-    Point3D() : x(0), y(0), z(0) {}
+    Point3D();
 
-    Point3D(const short x, const short y, const short z) :
-      x(x), y(y), z(z) {}
+    Point3D(const short x, const short y, const short z);
 
     /** 
      * Copy constructor
      */
-    Point3D(const Point3D &pt) : x(pt.x), y(pt.y), z(pt.z) {}
+    Point3D(const Point3D &pt);
 
     /** 
      * Assignment operator.
      */    
-    Point3D &operator=(const Point3D pt) {
-      x = pt.x;
-      y = pt.y;
-      z = pt.z;
-      return *this;
-    }
+    Point3D &operator=(const Point3D pt);
 
     /** 
      * Add the coordinates of pt to this Point3D.
      */
-    Point3D &operator+=(const Point3D pt) {
-      x += pt.x;
-      y += pt.y;
-      z += pt.z;
-      return *this;
-    }
+    Point3D &operator+=(const Point3D pt);
 
     /** 
      * Subtract the coordinates of pt to this Point3D.
      */
-    Point3D &operator-=(const Point3D pt) {
-      x -= pt.x;
-      y -= pt.y;
-      z -= pt.z;
-      return *this;
-    }
+    Point3D &operator-=(const Point3D pt);
         
     /// Comparison operator
-    bool operator==(const Point3D pt) const {
-      return (x == pt.x && y == pt.y && z == pt.z);
-    }
+    bool operator==(const Point3D pt) const;
+
     /// Not equal operator
-    bool operator!=(const Point3D pt) const {
-		
-      return !(*this==pt);
-    }
+    bool operator!=(const Point3D pt) const;
     
-   bool operator<(const Point3D  _rhs) const{
-      return x < _rhs.x || (!(_rhs.x < x)&& y < _rhs.y)
-			||(!(_rhs.x < x)&& !(_rhs.y <y )&& z < _rhs.z);
-   }
+    bool operator<(const Point3D _rhs) const;
     
     friend std::ostream &operator<<(std::ostream &stream, const Point3D &pt);
 

@@ -22,3 +22,53 @@
 
 #include "Dim3D.h"
 using namespace CompuCell3D;
+
+Dim3D::Dim3D() : Point3D() {}
+
+Dim3D::Dim3D(const short x, const short y, const short z) : Point3D(x, y, z) {}
+
+Dim3D::Dim3D(const Dim3D &dim) : Point3D(dim) {}  
+
+Dim3D &Dim3D::operator=(const Dim3D pt) {
+    x = pt.x;
+    y = pt.y;
+    z = pt.z;
+    return *this;
+}
+
+Dim3D &Dim3D::operator+=(const Dim3D pt) {
+    x += pt.x;
+    y += pt.y;
+    z += pt.z;
+    return *this;
+}
+
+Dim3D &Dim3D::operator-=(const Dim3D pt) {
+    x -= pt.x;
+    y -= pt.y;
+    z -= pt.z;
+    return *this;
+}
+    
+bool Dim3D::operator==(const Dim3D pt) const {
+    return (x == pt.x && y == pt.y && z == pt.z);
+}
+
+bool Dim3D::operator!=(const Dim3D pt) const {
+    
+    return !(*this==pt);
+}
+
+bool Dim3D::operator<(const Dim3D  _rhs) const{
+    return x < _rhs.x || (!(_rhs.x < x)&& y < _rhs.y)
+        ||(!(_rhs.x < x)&& !(_rhs.y <y )&& z < _rhs.z);
+}
+short & Dim3D::operator[](int _idx){
+    if(!_idx){
+        return x;
+    }else if(_idx==1){
+        return y;
+    }else { //there is no error checking here so in case user picks index out of range we return z coordinate
+        return z;
+    }
+}

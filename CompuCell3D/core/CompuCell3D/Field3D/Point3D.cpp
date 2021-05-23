@@ -25,14 +25,44 @@ using namespace CompuCell3D;
 
 #include <BasicUtils/BasicString.h>
 
-//#include <XMLCereal/XMLPullParser.h>
-//#include <XMLCereal/XMLSerializer.h>
+Point3D::Point3D() : x(0), y(0), z(0) {}
 
-//void Point3D::readXML(XMLPullParser &in) {
-//  x = BasicString::parseUInteger(in.getAttribute("x").value);
-//  y = BasicString::parseUInteger(in.getAttribute("y").value);
-//  z = BasicString::parseUInteger(in.getAttribute("z").value);
-//}
-//
-//void Point3D::writeXML(XMLSerializer &out) {
-//}
+Point3D::Point3D(const short x, const short y, const short z) :
+    x(x), y(y), z(z) {}
+
+Point3D::Point3D(const Point3D &pt) : x(pt.x), y(pt.y), z(pt.z) {}
+
+Point3D &Point3D::operator=(const Point3D pt) {
+    x = pt.x;
+    y = pt.y;
+    z = pt.z;
+    return *this;
+}
+
+Point3D &Point3D::operator+=(const Point3D pt) {
+    x += pt.x;
+    y += pt.y;
+    z += pt.z;
+    return *this;
+}
+
+Point3D &Point3D::operator-=(const Point3D pt) {
+    x -= pt.x;
+    y -= pt.y;
+    z -= pt.z;
+    return *this;
+}
+
+bool Point3D::operator==(const Point3D pt) const {
+    return (x == pt.x && y == pt.y && z == pt.z);
+}
+
+bool Point3D::operator!=(const Point3D pt) const {
+    
+    return !(*this==pt);
+}
+    
+bool Point3D::operator<(const Point3D  _rhs) const{
+    return x < _rhs.x || (!(_rhs.x < x)&& y < _rhs.y)
+        ||(!(_rhs.x < x)&& !(_rhs.y <y )&& z < _rhs.z);
+}

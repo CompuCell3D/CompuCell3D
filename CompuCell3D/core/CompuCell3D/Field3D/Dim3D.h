@@ -25,8 +25,6 @@
 
 #include "Point3D.h"
 
-//#include <XMLCereal/XMLSerializable.h>
-
 #include <string>
 
 namespace CompuCell3D {
@@ -37,68 +35,39 @@ namespace CompuCell3D {
   class Dim3D : public Point3D {
   public:
     /// Construct a Dim3D with dimensions (0,0,0).
-    Dim3D() : Point3D() {}
+    Dim3D();
 
-    Dim3D(const short x, const short y, const short z) : Point3D(x, y, z) {}
+    Dim3D(const short x, const short y, const short z);
 
     /// Copy constructor
-    Dim3D(const Dim3D &dim) : Point3D(dim) {}  
+    Dim3D(const Dim3D &dim);
 
-    Dim3D &operator=(const Dim3D pt) {
-      x = pt.x;
-      y = pt.y;
-      z = pt.z;
-      return *this;
-    }
+    Dim3D &operator=(const Dim3D pt);
 
     /** 
      * Add the coordinates of pt to this Point3D.
      */
-    Dim3D &operator+=(const Dim3D pt) {
-      x += pt.x;
-      y += pt.y;
-      z += pt.z;
-      return *this;
-    }
+    Dim3D &operator+=(const Dim3D pt);
 
     /** 
      * Subtract the coordinates of pt to this Point3D.
      */
-    Dim3D &operator-=(const Dim3D pt) {
-      x -= pt.x;
-      y -= pt.y;
-      z -= pt.z;
-      return *this;
-    }
+    Dim3D &operator-=(const Dim3D pt);
         
     /// Comparison operator
-    bool operator==(const Dim3D pt) const {
-      return (x == pt.x && y == pt.y && z == pt.z);
-    }
-    /// Not equal operator
-    bool operator!=(const Dim3D pt) const {
-		
-      return !(*this==pt);
-    }
-    
-   bool operator<(const Dim3D  _rhs) const{
-      return x < _rhs.x || (!(_rhs.x < x)&& y < _rhs.y)
-			||(!(_rhs.x < x)&& !(_rhs.y <y )&& z < _rhs.z);
-   }
-   short & operator[](int _idx){
-	   if(!_idx){
-			return x;
-	   }else if(_idx==1){
-			return y;
-	   }else { //there is no error checking here so in case user picks index out of range we return z coordinate
-			return z;
-	   }
-   }
+    bool operator==(const Dim3D pt) const;
 
-   friend std::ostream &operator<<(std::ostream &stream, const Dim3D &pt);
+    /// Not equal operator
+    bool operator!=(const Dim3D pt) const;
+    
+    bool operator<(const Dim3D  _rhs) const;
+
+    short & operator[](int _idx);
+
+    friend std::ostream &operator<<(std::ostream &stream, const Dim3D &pt);
   };
 
-    inline std::ostream &operator<<(std::ostream &stream, const Dim3D &pt) {
+  inline std::ostream &operator<<(std::ostream &stream, const Dim3D &pt) {
     stream << '(' << pt.x << ',' << pt.y << ',' << pt.z << ')';
     return stream;
   }
