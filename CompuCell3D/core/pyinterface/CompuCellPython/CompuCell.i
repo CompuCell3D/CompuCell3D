@@ -281,9 +281,12 @@ using namespace CompuCell3D;
     def __setstate__(self,tup):
         print( 'tuple=',tup)
         self.this = _CompuCell.new_Point3D(tup[0],tup[1],tup[2])
-        self.thisown=1            
-	
-%}   
+        self.thisown=1
+
+    def to_tuple(self):
+        return self.x, self.y, self.z
+
+%}
 };
 
 
@@ -293,6 +296,13 @@ using namespace CompuCell3D;
     s<<(*self);
     return s.str();
   }
+
+%pythoncode %{
+    def to_tuple(self):
+        return self.x, self.y, self.z
+
+%}
+
 };
 
 %include <Utils/Coordinates3D.h>
