@@ -1,10 +1,7 @@
 from cc3d.core.PySteppables import *
 from cc3d import CompuCellSetup
-import numpy as np
-from scipy import special, optimize
 from scipy import integrate
 from numpy import exp
-from scipy import stats
 
 
 class InventoryCheckSteppable(SteppableBasePy):
@@ -29,7 +26,6 @@ class InventoryCheckSteppable(SteppableBasePy):
             print("To get scientific plots working you need extra packages installed: numpy pyqtgraph")
             return
 
-        # self.pW.addDataPoint("MCS1",mcs,-2*mcs)
         # this is non optimized code. It is for illustrative purposes only.
 
         f = lambda x: exp(-x ** 2)
@@ -61,6 +57,3 @@ class InventoryCheckSteppable(SteppableBasePy):
                     pass
 
         self.plot_win.show_all_plots()
-
-        if mcs == 300:
-            self.stop_simulation()

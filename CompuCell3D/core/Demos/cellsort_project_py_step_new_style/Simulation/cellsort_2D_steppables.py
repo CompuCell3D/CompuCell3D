@@ -1,6 +1,4 @@
 from cc3d.core.PySteppables import *
-import sys
-import time
 
 
 class CellsortSteppable(SteppableBasePy):
@@ -15,13 +13,4 @@ class CellsortSteppable(SteppableBasePy):
         for i, cell in enumerate(self.cell_list):
             if i > 3:
                 break
-            # print ('cell=', cell)
             print('cell.id=', cell.id)
-
-        print('sleeping')
-        time.sleep(0.3)
-
-        print('woke up')
-
-        if mcs == 50:
-            self.stop_simulation()
