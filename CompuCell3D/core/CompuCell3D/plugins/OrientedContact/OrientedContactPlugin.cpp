@@ -416,83 +416,74 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
         
 }
 
-double OrientedContactPlugin::changeEnergy(const Point3D &pt,
-                                  const CellG *newCell,
-                                  const CellG *oldCell) {
+double OrientedContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
 //    cerr<<"ChangeEnergy"<<endl;
    
    
-  double energy = 0;
-  unsigned int token = 0;
-  double distance = 0;
-  Point3D n;
-  
-  CellG *nCell=0;
-  WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
-  Neighbor neighbor;
-  
-     
-      for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
-         neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
-         if(!neighbor.distance){
-         //if distance is 0 then the neighbor returned is invalid
-         continue;
-         }
-         
-         nCell = fieldG->get(neighbor.pt);
-         if(nCell!=oldCell){
-            if(!nCell) {
-               energy -= orientedContactEnergy(oldCell, nCell)*getMediumOrientation(pt,oldCell,nCell);
-                
-            }
-            else {
-               energy -= orientedContactEnergy(oldCell, nCell)+getOrientation(pt,oldCell,nCell);
-            }
-//             cerr<<"!=oldCell neighbor.pt="<<neighbor.pt<<" energyTmp="<<energy<<endl;
-         }
-         if(nCell!=newCell){
-            if(!nCell) {
-					energy += orientedContactEnergy(newCell, nCell)*getMediumOrientation(pt,newCell,nCell);
-            }
-            else {
-               energy += orientedContactEnergy(newCell, nCell)+getOrientation(pt,newCell,nCell);
-            }
-         }
-      
-   
-      }
-   
-   
-   
+   double energy = 0;
+   unsigned int token = 0;
+   double distance = 0;
+   Point3D n;
 
-  return energy;
+   CellG *nCell=0;
+   WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
+   Neighbor neighbor;
+     
+   for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
+      neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
+      if(!neighbor.distance){
+      //if distance is 0 then the neighbor returned is invalid
+      continue;
+      }
+      
+      nCell = fieldG->get(neighbor.pt);
+      if(nCell!=oldCell){
+         if(!nCell) {
+            energy -= orientedContactEnergy(oldCell, nCell)*getMediumOrientation(pt,oldCell,nCell);
+               
+         }
+         else {
+            energy -= orientedContactEnergy(oldCell, nCell)+getOrientation(pt,oldCell,nCell);
+         }
+   //             cerr<<"!=oldCell neighbor.pt="<<neighbor.pt<<" energyTmp="<<energy<<endl;
+      }
+      if(nCell!=newCell){
+         if(!nCell) {
+            energy += orientedContactEnergy(newCell, nCell)*getMediumOrientation(pt,newCell,nCell);
+         }
+         else {
+            energy += orientedContactEnergy(newCell, nCell)+getOrientation(pt,newCell,nCell);
+         }
+      }
+
+
+   }
+   
+   return energy;
 }
 
 double OrientedContactPlugin::orientedContactEnergy(const CellG *cell1, const CellG *cell2) {
    
    return orientedContactEnergyArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0];
 
-
 }
 
-void OrientedContactPlugin::setOrientedContactEnergy(const string typeName1,
-				     const string typeName2,
-				     const double energy) {
+void OrientedContactPlugin::setOrientedContactEnergy(const string typeName1, const string typeName2, const double energy) {
                     
-  unsigned char type1 = automaton->getTypeId(typeName1);
-  unsigned char type2 = automaton->getTypeId(typeName2);
-    
-  orientedContactEnergyArray[type1][type2] = energy;
-  orientedContactEnergyArray[type2][type1] = energy;
+   unsigned char type1 = automaton->getTypeId(typeName1);
+   unsigned char type2 = automaton->getTypeId(typeName2);
+      
+   orientedContactEnergyArray[type1][type2] = energy;
+   orientedContactEnergyArray[type2][type1] = energy;
 }
 
 
 void OrientedContactPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
-  xmlData=_xmlData;
-  potts=simulator->getPotts();
-  potts->registerEnergyFunctionWithName(this,"OrientedContact");
-  simulator->registerSteerableObject(this);
+   xmlData=_xmlData;
+   potts=simulator->getPotts();
+   potts->registerEnergyFunctionWithName(this,"OrientedContact");
+   simulator->registerSteerableObject(this);
 
 }
 void OrientedContactPlugin::extraInit(Simulator *simulator){
@@ -537,23 +528,22 @@ void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
    maxNeighborIndex=0;
 
 
-			if(_xmlData->getFirstElement("Depth")){
-				maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
-				//cerr<<"got here will do depth"<<endl;
-			}else{
-				//cerr<<"got here will do neighbor order"<<endl;
-				if(_xmlData->getFirstElement("NeighborOrder")){
+   if(_xmlData->getFirstElement("Depth")){
+      maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
+      //cerr<<"got here will do depth"<<endl;
+   }else{
+      //cerr<<"got here will do neighbor order"<<endl;
+      if(_xmlData->getFirstElement("NeighborOrder")){
 
-					maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());	
-				}else{
-					maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
+         maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());	
+      }else{
+         maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 
-				}
+      }
 
-			}
+   }
 
-			cerr<<"Contact maxNeighborIndex="<<maxNeighborIndex<<endl;
-
+   cerr<<"Contact maxNeighborIndex="<<maxNeighborIndex<<endl;
    
 }
 
