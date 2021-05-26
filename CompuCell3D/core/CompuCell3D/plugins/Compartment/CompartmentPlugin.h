@@ -44,11 +44,7 @@ namespace CompuCell3D {
 	//Energy function data
     Potts3D *potts;
 	 CC3DXMLElement *xmlData;
-    typedef std::map<int, double> contactEnergies_t;
-    typedef std::vector<std::vector<double> > contactEnergyArray_t;
-    
-    contactEnergies_t contactEnergies;
-    contactEnergies_t internalEnergies;
+    typedef std::unordered_map<unsigned char, std::unordered_map<unsigned char, double> > contactEnergyArray_t;
 
     contactEnergyArray_t contactEnergyArray;
     contactEnergyArray_t internalEnergyArray;
