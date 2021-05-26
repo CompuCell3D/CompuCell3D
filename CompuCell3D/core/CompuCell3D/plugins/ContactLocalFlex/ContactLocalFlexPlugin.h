@@ -66,10 +66,7 @@ namespace CompuCell3D {
 
     // EnergyFunction Data
 
-    typedef std::map<int, double> contactEnergies_t;
-    typedef std::vector<std::vector<double> > contactEnergyArray_t;
-    
-    contactEnergies_t contactEnergies;
+    typedef std::unordered_map<unsigned char, std::unordered_map<unsigned char, double> > contactEnergyArray_t;
 
     contactEnergyArray_t contactEnergyArray;
     
