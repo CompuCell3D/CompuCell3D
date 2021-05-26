@@ -60,7 +60,7 @@ namespace CompuCell3D {
     Dim3D fieldDim;
 	 enum FunctionType {GLOBAL=0,BYCELLTYPE=1,BYCELLID=2};
 	 FunctionType functionType;
-	 std::vector<ExternalPotentialParam> externalPotentialParamVector;
+	 std::unordered_map<unsigned char, ExternalPotentialParam> externalPotentialParamMap;
 
 	 typedef double (ExternalPotentialPlugin::*changeEnergy_t)(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
 
