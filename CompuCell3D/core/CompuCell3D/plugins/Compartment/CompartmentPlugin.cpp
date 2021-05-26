@@ -20,26 +20,11 @@
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
  *************************************************************************/
 
- #include <CompuCell3D/CC3D.h>
- // // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+#include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
 using namespace CompuCell3D;
 
-
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-
-
-
 #include "CompartmentPlugin.h"
-
-
-
-
 
 CompartmentPlugin::CompartmentPlugin() : potts(0), depth(1),weightDistance(false) {
 }
@@ -78,11 +63,6 @@ double CompartmentPlugin::changeEnergy(const Point3D &pt,
 
    if(weightDistance){
 
-//       while (true) {
-//          n = fieldG->getNeighbor(pt, token, distance, false);
-//          if (distance > depth) break;
-// 
-//          nCell = fieldG->get(n);
       for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
          neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
          if(!neighbor.distance){
@@ -99,12 +79,7 @@ double CompartmentPlugin::changeEnergy(const Point3D &pt,
          }
       }
   }else{
-   //default behaviour  no energy weighting 
-//       while (true) {
-//          n = fieldG->getNeighbor(pt, token, distance, false);
-//          if (distance > depth) break;
-// 
-//          nCell = fieldG->get(n);
+	  
       for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
          neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
          if(!neighbor.distance){
@@ -189,31 +164,6 @@ int CompartmentPlugin::getIndex(const int type1, const int type2) const {
 
 void CompartmentPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
-	//if(potts->getDisplayUnitsFlag()){
-	//	Unit contactEnergyUnit=potts->getEnergyUnit()/powerUnit(potts->getLengthUnit(),2);
-
-
-
-
-	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-	//	if (!unitsElem){ //add Units element
-	//		unitsElem=_xmlData->attachElement("Units");
-	//	}
-
-	//	if(unitsElem->getFirstElement("EnergyUnit")){
-	//		unitsElem->getFirstElement("EnergyUnit")->updateElementValue(contactEnergyUnit.toString());
-	//	}else{
-	//		CC3DXMLElement * energyUnitElem = unitsElem->attachElement("EnergyUnit",contactEnergyUnit.toString());
-	//	}
-	//	if(unitsElem->getFirstElement("InternalEnergyUnit")){
-	//		unitsElem->getFirstElement("InternalEnergyUnit")->updateElementValue(contactEnergyUnit.toString());
-	//	}else{
-	//		CC3DXMLElement * internalEnergyUnitElem = unitsElem->attachElement("InternalEnergyUnit",contactEnergyUnit.toString());
-	//	}
-
-	//}
-
-
 	contactEnergyArray.clear();
 	internalEnergyArray.clear();
 
@@ -294,5 +244,3 @@ std::string CompartmentPlugin::toString(){
 std::string CompartmentPlugin::steerableName(){
    return toString();
 }
-
-

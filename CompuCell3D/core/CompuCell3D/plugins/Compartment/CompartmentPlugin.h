@@ -23,13 +23,9 @@
 #ifndef COMPARTMENTPLUGIN_H
 #define COMPARTMENTPLUGIN_H
 
- #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-// // // #include <CompuCell3D/Plugin.h>
+#include <CompuCell3D/CC3D.h>
+
 #include "CompartmentDLLSpecifier.h"
-// // // #include <map>
-// // // #include <vector>
-// // // #include <string>
 
 
 class CC3DXMLElement;
@@ -65,14 +61,17 @@ namespace CompuCell3D {
     virtual ~CompartmentPlugin();
 
 	//EnergyFunction interface
-    virtual double changeEnergy(const Point3D &pt, const CellG *newCell,
-                                const CellG *oldCell);
-	//Plugin interface 
-	virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
-	virtual void extraInit(Simulator *simulator);
-	virtual std::string toString();
+
+    virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+	
+  //Plugin interface 
+
+    virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
+    virtual void extraInit(Simulator *simulator);
+    virtual std::string toString();
 
     //Steerrable interface
+    
     virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
     virtual std::string steerableName();
 
