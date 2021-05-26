@@ -28,13 +28,6 @@
 
 #include "ContactMultiCadData.h"
 
-
-// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
-
-// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// // // #include <CompuCell3D/Plugin.h>
 #include "ContactMultiCadDLLSpecifier.h"
 
 
@@ -50,21 +43,19 @@ namespace CompuCell3D {
 
 
   class CONTACTMULTICAD_EXPORT ContactMultiCadPlugin : public Plugin,public EnergyFunction {
-   public:
-      typedef double (ContactMultiCadPlugin::*contactEnergyPtr_t)(const CellG *cell1, const CellG *cell2);
+  public:
+    typedef double (ContactMultiCadPlugin::*contactEnergyPtr_t)(const CellG *cell1, const CellG *cell2);
 
 
-   private:
+  private:
     BasicClassAccessor<ContactMultiCadData> contactMultiCadDataAccessor;
-	 CC3DXMLElement *xmlData;
+	  CC3DXMLElement *xmlData;
     Potts3D *potts;
     Simulator *sim;
-	 //Energy function data
+	  //Energy function data
 
     typedef std::unordered_map<unsigned char, std::unordered_map<unsigned char, double> > contactEnergyArray_t;
     typedef std::vector<std::vector<double> > cadherinSpecificityArray_t;
-    typedef std::vector<contactEnergyArray_t> multiSpecificityArray_t;
-
     
     std::set<std::string> cadherinNameSet;
     std::vector<std::string> cadherinNameOrderedVector;
@@ -75,7 +66,6 @@ namespace CompuCell3D {
     cadherinSpecificityArray_t cadherinSpecificityArray;
     std::map<std::string,unsigned int> mapCadNameToIndex;
     unsigned int numberOfCadherins;
-//     multiSpecificityArray_t multiSpecificityArray;
         
     std::string contactFunctionType;
     std::string autoName;
@@ -116,9 +106,9 @@ namespace CompuCell3D {
 
 
     //Steerrable interface
-	 virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
-	 virtual std::string steerableName();
-	 virtual std::string toString();
+    virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
+    virtual std::string steerableName();
+    virtual std::string toString();
 
 	//Energy Function fcns
   	double contactEnergy(const CellG *cell1, const CellG *cell2);
