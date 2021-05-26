@@ -161,43 +161,6 @@ double ContactOrientationPlugin::changeEnergy(const Point3D &pt,const CellG *new
         
                 }
             }else{
-     //           double nonMediumTerm=0.0;
-				
-				
-
-     //           if (oldCell){
-     //               double termOld=0.0;
-     //               Vector3 oldCellPolVector=getOriantationVector(oldCell);                   
-     //               double alphaOld=getAlpha(oldCell);                    
-     //               Vector3 oldDistVec=ptVec-comOldBefore;
-     //               double thetaOld=oldDistVec.Angle(oldCellPolVector);
-     //                                       
-     //               if (oldCell->volume>1){
-     //                   //termOld=alphaOld*fabs(cos(thetaOld));
-					//	//termOld=alphaOld*cos(thetaOld);
-					//	termOld=singleTermFormula(alphaOld,thetaOld);
-     //               }else{
-     //                   termOld=0.0;
-     //               }             
-     //               
-     //               nonMediumTerm=termOld;
-     //           }else{
-     //               
-     //               double termN=0.0;    
-     //               Vector3 comNBefore(nCell->xCOM,nCell->yCOM,nCell->zCOM);
-     //               Vector3 nCellPolVector=getOriantationVector(nCell);
-     //               double alphaN=getAlpha(nCell);                        
-     //               Vector3 nDistVec=ptVec-comNBefore;                    
-
-     //               double thetaN=nDistVec.Angle(nCellPolVector);                                                
-     //               
-     //               //termN=alphaN*fabs(cos(thetaN)); 
-					////termN=alphaN*cos(thetaN); 
-					//termN=singleTermFormula(alphaN,thetaN); 
-     //               
-     //               nonMediumTerm=termN;               
-     //           }    
-     //           energy -= nonMediumTerm;
            }
                 
         }
@@ -249,45 +212,6 @@ double ContactOrientationPlugin::changeEnergy(const Point3D &pt,const CellG *new
 
             }
             else{
-     //           double nonMediumTerm=0.0;
-					//			
-
-     //           if (newCell){
-     //               double termNew=0.0;
-     //               Vector3 newCellPolVector=getOriantationVector(newCell);                   
-     //               double alphaNew=getAlpha(newCell);                    
-     //               Vector3 newDistVec=ptVec-comNewAfter;
-     //               double thetaNew=newDistVec.Angle(newCellPolVector);
-
-					////termNew=alphaNew*fabs(cos(thetaNew));                                                                
-					////termNew=alphaNew*cos(thetaNew);                                                                
-					//termNew=singleTermFormula(alphaNew,thetaNew);
-     //               nonMediumTerm=termNew;
-
-     //           }else{
-     //               
-     //               double termN=0.0;    
-
-					//Vector3 comNAfter;
-					//if (nCell==oldCell){
-					//	comNAfter=comOldAfter;
-					//}else{
-					//	comNAfter=Vector3(nCell->xCOM,nCell->yCOM,nCell->zCOM);
-					//}
-
-     //               Vector3 nCellPolVector=getOriantationVector(nCell);
-     //               double alphaN=getAlpha(nCell);                        
-     //               Vector3 nDistVec=ptVec-comNAfter;                    
-
-     //               double thetaN=nDistVec.Angle(nCellPolVector);                                                
-     //               
-     //               //termN=alphaN*fabs(cos(thetaN)); 
-     //               //termN=alphaN*cos(thetaN); 
-					//termN=singleTermFormula(alphaN,thetaN); 
-
-     //               nonMediumTerm=termN;               
-     //           }    
-     //           energy += nonMediumTerm;               
             }
         }
     }
