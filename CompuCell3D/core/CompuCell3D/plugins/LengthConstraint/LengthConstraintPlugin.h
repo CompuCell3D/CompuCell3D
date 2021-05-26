@@ -67,7 +67,7 @@ namespace CompuCell3D {
 
 		BasicClassAccessor<LengthConstraintData> lengthConstraintDataAccessor;
 
-		std::vector<LengthEnergyParam> lengthEnergyParamVector;
+		std::unordered_map<unsigned char, LengthEnergyParam> lengthEnergyParamMap;
 		std::vector<std::string> typeNameVec;//temporary vector for storage type names
 		BoundaryStrategy * boundaryStrategy;
 
@@ -106,8 +106,6 @@ namespace CompuCell3D {
 		double changeEnergy_3D(const Point3D &pt,const CellG *newCell,const CellG *oldCell);
 
 		changeEnergyFcnPtr_t changeEnergyFcnPtr;
-
-		void initTypeId(Potts3D * potts);
 
 		//SteerableObject interface
 		virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
