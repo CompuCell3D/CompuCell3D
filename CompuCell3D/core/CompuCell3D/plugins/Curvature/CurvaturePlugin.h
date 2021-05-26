@@ -119,14 +119,13 @@ namespace CompuCell3D {
 		curvatureParams_t internalTypeSpecificCurvatureParams;
 
 
-		typedef std::vector<std::vector<CurvatureTrackerData> > CurvatureTrackerDataArray_t;
-		typedef std::vector<CurvatureTrackerData> CurvatureTrackerDataVector_t;
+		typedef std::unordered_map<unsigned char, std::unordered_map<unsigned char, CurvatureTrackerData> > CurvatureTrackerDataArray_t;
+		typedef std::unordered_map<unsigned char, CurvatureTrackerData> CurvatureTrackerDataMap_t;
 
 		// CurvatureTrackerDataArray_t plastParamsArray;
 		CurvatureTrackerDataArray_t internalCurvatureParamsArray;
 
-		// CurvatureTrackerDataVector_t typeSpecificPlastParamsVec;
-		CurvatureTrackerDataVector_t internalTypeSpecificCurvatureParamsVec;
+		CurvatureTrackerDataMap_t internalTypeSpecificCurvatureParamsMap;
 
 	public:
 		CurvaturePlugin();

@@ -326,7 +326,6 @@ void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	}
 
 	internalCurvatureParamsArray.clear();
-	internalCurvatureParamsArray.assign(size,vector<CurvatureTrackerData>(size,CurvatureTrackerData()));
 	int index;
 	for(int i = 0 ; i < internalCellTypesVector.size() ; ++i)
 		for(int j = 0 ; j < internalCellTypesVector.size() ; ++j){
@@ -372,17 +371,16 @@ void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			size+=1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
 		}
 
-		internalTypeSpecificCurvatureParamsVec.clear();
-		internalTypeSpecificCurvatureParamsVec.assign(size,CurvatureTrackerData());
+		internalTypeSpecificCurvatureParamsMap.clear();
 
 		for(int i = 0 ; i < internalTypeSpecCellTypesVector.size() ; ++i){
 
 
-			internalTypeSpecificCurvatureParamsVec[internalTypeSpecCellTypesVector[i]]=internalTypeSpecificCurvatureParams[internalTypeSpecCellTypesVector[i]];						
+			internalTypeSpecificCurvatureParamsMap[internalTypeSpecCellTypesVector[i]]=internalTypeSpecificCurvatureParams[internalTypeSpecCellTypesVector[i]];						
 
 		}
 
-		ASSERT_OR_THROW("THE NUMBER TYPE NAMES IN THE INTERNAL TYPE SPECIFIC SECTION DOES NOT MATCH THE NUMBER OF CELL TYPES IN INTERNAL PARAMETERS SECTION",internalTypeSpecificCurvatureParamsVec.size()==internalCurvatureParamsArray.size());
+		ASSERT_OR_THROW("THE NUMBER TYPE NAMES IN THE INTERNAL TYPE SPECIFIC SECTION DOES NOT MATCH THE NUMBER OF CELL TYPES IN INTERNAL PARAMETERS SECTION",internalTypeSpecificCurvatureParamsMap.size()==internalCurvatureParamsArray.size());
 
 		boundaryStrategy=BoundaryStrategy::getInstance();
 }
@@ -520,22 +518,24 @@ double CurvaturePlugin::diffEnergyByType(float _deltaL,float _lAfter,const Curva
 // }
 
 double CurvaturePlugin::tryAddingNewJunctionWithinCluster(const Point3D &pt,const CellG *newCell) {
-	//cerr<<"internalTypeSpecificCurvatureParamsVec.size()="<<internalTypeSpecificCurvatureParamsVec.size()<<endl;
+	//cerr<<"internalTypeSpecificCurvatureParamsMap.size()="<<internalTypeSpecificCurvatureParamsMap.size()<<endl;
 	//cerr<<"newCell->type="<<(int)newCell->type<<endl;
 
 	int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();	
 	short &  newJunctionInitiatedFlagWithinCluster = newJunctionInitiatedFlagWithinClusterVec[currentWorkNodeNumber];
 	CellG * & newNeighbor=newNeighborVec[currentWorkNodeNumber];
 
-	if (((int)internalTypeSpecificCurvatureParamsVec.size())-1<newCell->type){ //the newCell type is not listed by the user
+	auto newCellInternalParamItr = internalTypeSpecificCurvatureParamsMap.find(newCell->type);
+
+	if (newCellInternalParamItr == internalTypeSpecificCurvatureParamsMap.end()){ //the newCell type is not listed by the user
 		newJunctionInitiatedFlagWithinCluster=false;
 		return 0.0;
 	}
 
-
+	auto newCellInternalParam = newCellInternalParamItr->second;
 
 	//check if new cell can accept new junctions
-	if(curvatureTrackerAccessor.get(newCell->extraAttribPtr)->internalCurvatureNeighbors.size()>=internalTypeSpecificCurvatureParamsVec[newCell->type].maxNumberOfJunctions){
+	if(curvatureTrackerAccessor.get(newCell->extraAttribPtr)->internalCurvatureNeighbors.size()>=newCellInternalParam.maxNumberOfJunctions){
 		newJunctionInitiatedFlagWithinCluster=false;
 		return 0.0;
 
@@ -544,7 +544,7 @@ double CurvaturePlugin::tryAddingNewJunctionWithinCluster(const Point3D &pt,cons
 
 
 	boundaryStrategy=BoundaryStrategy::getInstance();
-	int maxNeighborIndexLocal=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(internalTypeSpecificCurvatureParamsVec[newCell->type].neighborOrder);
+	int maxNeighborIndexLocal=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(newCellInternalParam.neighborOrder);
 	Neighbor neighbor;
 	CellG * nCell;
 	WatchableField3D<CellG *> *fieldG =(WatchableField3D<CellG *> *) potts->getCellFieldG();
@@ -565,21 +565,25 @@ double CurvaturePlugin::tryAddingNewJunctionWithinCluster(const Point3D &pt,cons
 		if (nCell==newCell || nCell->clusterId!=newCell->clusterId)	// make sure that newCell and nCell are different and belong to the same clusters
 			continue;
 
-
+		auto nCellInternalParamItr = internalTypeSpecificCurvatureParamsMap.find(nCell->type);
 
 		//check if type of neighbor cell is listed by the user
-		if(((int)internalTypeSpecificCurvatureParamsVec.size())-1<nCell->type || internalTypeSpecificCurvatureParamsVec[nCell->type].maxNumberOfJunctions==0){	
+		if (nCellInternalParamItr == internalTypeSpecificCurvatureParamsMap.end()) continue;
+
+		auto nCellInternalParam = nCellInternalParamItr->second;
+
+		if(nCellInternalParam.maxNumberOfJunctions==0){	
 
 			continue;
 		}
 
 		// check if neighbor cell can accept another junction
-		if(curvatureTrackerAccessor.get(nCell->extraAttribPtr)->internalCurvatureNeighbors.size()>=internalTypeSpecificCurvatureParamsVec[nCell->type].maxNumberOfJunctions){
+		if(curvatureTrackerAccessor.get(nCell->extraAttribPtr)->internalCurvatureNeighbors.size()>=nCellInternalParam.maxNumberOfJunctions){
 			//checkIfJunctionPossible=false;
 			continue;
 		}
 		// check if newCell can accept another junction
-		if(curvatureTrackerAccessor.get(newCell->extraAttribPtr)->internalCurvatureNeighbors.size()>=internalTypeSpecificCurvatureParamsVec[newCell->type].maxNumberOfJunctions){
+		if(curvatureTrackerAccessor.get(newCell->extraAttribPtr)->internalCurvatureNeighbors.size()>=newCellInternalParam.maxNumberOfJunctions){
 			//checkIfJunctionPossible=false;
 			continue;
 		}
@@ -604,9 +608,9 @@ double CurvaturePlugin::tryAddingNewJunctionWithinCluster(const Point3D &pt,cons
 	if(newJunctionInitiatedFlagWithinCluster){
 		//cerr<<"\t\t\t newCell="<<newCell<<" newNeighbor="<<newNeighbor<<endl;
 		//cerr<<"\t\t\t newCell->type="<<(int)newCell->type<<" newNeighbor->type="<<(int)newNeighbor->type<<" energy="<<internalCurvatureParamsArray[newCell->type][newNeighbor->type].activationEnergy<<endl; 		
-		//cerr<<"\t\t\t internal nCell->.maxNumberOfJunctions="<<internalTypeSpecificCurvatureParamsVec[nCell->type].maxNumberOfJunctions<<endl;
+		//cerr<<"\t\t\t internal nCell->.maxNumberOfJunctions="<<internalTypeSpecificCurvatureParamsMap[nCell->type].maxNumberOfJunctions<<endl;
 		//cerr<<"\t\t\t newCell number of internal neighbors "<<CurvatureTrackerAccessor.get(newCell->extraAttribPtr)->internalCurvatureNeighbors.size()<<endl;
-		//cerr<<"\t\t\t internal newCell.maxNumberOfJunctions="<<internalTypeSpecificCurvatureParamsVec[newCell->type].maxNumberOfJunctions<<endl;
+		//cerr<<"\t\t\t internal newCell.maxNumberOfJunctions="<<internalTypeSpecificCurvatureParamsMap[newCell->type].maxNumberOfJunctions<<endl;
 		//cerr<<"internalCurvatureParamsArray="<<internalCurvatureParamsArray.size()<<" internalCurvatureParamsArray.size().size()="<<internalCurvatureParamsArray[0].size()<<endl;
 		//cerr<<"newCell->type="<<(int)newCell->type<<endl;
 		//cerr<<"1 newNeighbor="<<newNeighbor<<endl;
