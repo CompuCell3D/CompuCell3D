@@ -47,7 +47,6 @@ namespace CompuCell3D {
 		std::set<unsigned char> interactingTypes ;
 	   	std::unordered_map<unsigned char, double> alphaConvExtMap;
 		std::map<std::string , double> typeNameAlphaConvExtMap;
-		unsigned char maxTypeId;
 
 		double depth;
 

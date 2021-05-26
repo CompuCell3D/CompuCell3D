@@ -21,21 +21,8 @@
 *************************************************************************/
 
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
 
-
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
 using namespace CompuCell3D;
-
-
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-// // // #include <iostream>
-// // // #include <algorithm>
 
 using namespace std;
 
@@ -72,8 +59,7 @@ void ConvergentExtensionPlugin::extraInit(Simulator *simulator){
 
 void ConvergentExtensionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
-		set<unsigned char> cellTypesSet;
+	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton);
 
 	interactingTypes.clear();
 	alphaConvExtMap.clear();
@@ -82,28 +68,14 @@ void ConvergentExtensionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
 
 	for (int i = 0 ; i<alphaVec.size(); ++i){
 		typeNameAlphaConvExtMap.insert(make_pair(alphaVec[i]->getAttribute("Type"),alphaVec[i]->getDouble()));
-
-
-		//inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
-		cellTypesSet.insert(automaton->getTypeId(alphaVec[i]->getAttribute("Type")));
-
-
 	}
 
-	//Now that we know all the types used in the simulation we will find size of the contactEnergyArray
-	vector<unsigned char> cellTypesVector(cellTypesSet.begin(),cellTypesSet.end());//coping set to the vector
-
-	int size= * max_element(cellTypesVector.begin(),cellTypesVector.end());
-	maxTypeId=size;
-	size+=1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-
-	int index ;
 	//inserting alpha values to alphaConvExtMap;
 	for(map<std::string , double>::iterator mitr=typeNameAlphaConvExtMap.begin() ; mitr!=typeNameAlphaConvExtMap.end(); ++mitr){
 		alphaConvExtMap[automaton->getTypeId(mitr->first)]=mitr->second;
 	}
 
-	cerr<<"size="<<size<<endl;
+	cerr<<"size="<<alphaConvExtMap.size()<<endl;
 	for(auto& itr : alphaConvExtMap){
 		cerr<<"alphaConvExt["<<to_string(itr.first)<<"]="<<itr.second<<endl;
 	}
@@ -113,7 +85,7 @@ void ConvergentExtensionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
 	maxNeighborIndex=0;
 
 	if(_xmlData->getFirstElement("Depth")){
-		maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
+		maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth((float)_xmlData->getFirstElement("Depth")->getDouble());
 		//cerr<<"got here will do depth"<<endl;
 	}else{
 		//cerr<<"got here will do neighbor order"<<endl;
@@ -139,7 +111,6 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 	double energy = 0;
 	unsigned int token = 0;
 	double distance = 0;
-	double nCellAlpha,cellAlpha;
 	Point3D n;
 
 	CellG *nCell=0;
