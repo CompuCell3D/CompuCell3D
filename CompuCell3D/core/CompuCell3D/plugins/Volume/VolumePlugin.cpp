@@ -135,9 +135,7 @@ void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 		case BYCELLTYPE:
 			{
-				volumeEnergyParamVector.clear();
-				vector<int> typeIdVec;
-				vector<VolumeEnergyParam> volumeEnergyParamVectorTmp;
+				volumeEnergyParamMap.clear();
 
 				CC3DXMLElementList energyVec=_xmlData->getElements("VolumeEnergyParameters");
 
@@ -147,16 +145,7 @@ void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 					volParam.targetVolume=energyVec[i]->getAttributeAsDouble("TargetVolume");
 					volParam.lambdaVolume=energyVec[i]->getAttributeAsDouble("LambdaVolume");
 					volParam.typeName=energyVec[i]->getAttribute("CellType");
-					cerr<<"automaton="<<automaton<<endl;
-					typeIdVec.push_back(automaton->getTypeId(volParam.typeName));
-
-					volumeEnergyParamVectorTmp.push_back(volParam);				
-				}
-				vector<int>::iterator pos=max_element(typeIdVec.begin(),typeIdVec.end());
-				int maxTypeId=*pos;
-				volumeEnergyParamVector.assign(maxTypeId+1,VolumeEnergyParam());
-				for (int i = 0 ; i < volumeEnergyParamVectorTmp.size() ; ++i){
-					volumeEnergyParamVector[typeIdVec[i]]=volumeEnergyParamVectorTmp[i];
+					volumeEnergyParamMap[automaton->getTypeId(volParam.typeName)] = volParam;
 				}
 
 				//set fcn ptr
@@ -269,12 +258,12 @@ double VolumePlugin::changeEnergyByCellType(const Point3D &pt,const CellG *newCe
 
 	if (!energyExpressionDefined){
 		if (newCell)
-			energy += volumeEnergyParamVector[newCell->type].lambdaVolume *
-			(1 + 2 * (newCell->volume - fabs(volumeEnergyParamVector[newCell->type].targetVolume)));
+			energy += volumeEnergyParamMap[newCell->type].lambdaVolume *
+			(1 + 2 * (newCell->volume - fabs(volumeEnergyParamMap[newCell->type].targetVolume)));
 
 		if (oldCell)
-			energy += volumeEnergyParamVector[oldCell->type].lambdaVolume  *
-			(1 - 2 * (oldCell->volume - fabs(volumeEnergyParamVector[oldCell->type].targetVolume)));
+			energy += volumeEnergyParamMap[oldCell->type].lambdaVolume  *
+			(1 - 2 * (oldCell->volume - fabs(volumeEnergyParamMap[oldCell->type].targetVolume)));
 
 
 		//cerr<<"VOLUME CHANGE ENERGY NEW: "<<energy<<endl;
@@ -284,11 +273,11 @@ double VolumePlugin::changeEnergyByCellType(const Point3D &pt,const CellG *newCe
 	}else{
 
 		if (newCell){
-			energy+=customExpressionFunction(volumeEnergyParamVector[newCell->type].lambdaVolume,fabs(volumeEnergyParamVector[newCell->type].targetVolume),newCell->volume,newCell->volume+1);
+			energy+=customExpressionFunction(volumeEnergyParamMap[newCell->type].lambdaVolume,fabs(volumeEnergyParamMap[newCell->type].targetVolume),newCell->volume,newCell->volume+1);
 		}
 
 		if (oldCell){
-			energy+=customExpressionFunction(volumeEnergyParamVector[oldCell->type].lambdaVolume,fabs(volumeEnergyParamVector[oldCell->type].targetVolume),oldCell->volume,oldCell->volume-1);
+			energy+=customExpressionFunction(volumeEnergyParamMap[oldCell->type].lambdaVolume,fabs(volumeEnergyParamMap[oldCell->type].targetVolume),oldCell->volume,oldCell->volume-1);
 
 		}		
 		return energy;
