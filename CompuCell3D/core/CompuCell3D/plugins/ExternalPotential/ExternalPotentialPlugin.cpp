@@ -72,26 +72,6 @@ void ExternalPotentialPlugin::extraInit(Simulator *_simulator){
 
 void ExternalPotentialPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
-
-	//if(potts->getDisplayUnitsFlag()){
-	//	Unit extternalPotentialLambdaUnit=potts->getEnergyUnit()/potts->getLengthUnit();
-
-
-
-
-	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-	//	if (!unitsElem){ //add Units element
-	//		unitsElem=_xmlData->attachElement("Units");
-	//	}
-
-	//	if(unitsElem->getFirstElement("LambdaUnit")){
-	//		unitsElem->getFirstElement("LambdaUnit")->updateElementValue(extternalPotentialLambdaUnit.toString());
-	//	}else{
-	//		unitsElem->attachElement("LambdaUnit",extternalPotentialLambdaUnit.toString());
-	//	}
-
-	//}
-
 	bool comBasedAlgorithm=false;
 	if(_xmlData->findElement("Algorithm")){ 
 
