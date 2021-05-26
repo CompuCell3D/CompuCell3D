@@ -21,22 +21,8 @@
 *************************************************************************/
 #include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <PublicUtilities/NumericalUtils.h>
-// // // #include <complex>
-// // // #include <algorithm>
-
 using namespace CompuCell3D;
 
-
-
-// // // #include <iostream>
 using namespace std;
 
 
@@ -78,8 +64,6 @@ void LengthConstraintPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData
 
 	}else{
 		changeEnergyFcnPtr=&LengthConstraintPlugin::changeEnergy_3D;
-
-		//ASSERT_OR_THROW("Currently LengthConstraint plugin can only be used in 2D",0);
 	}
 
 }
@@ -116,37 +100,6 @@ double LengthConstraintPlugin::getMinorTargetLength(CellG * _cell){
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void LengthConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
-
-	//if(potts->getDisplayUnitsFlag()){		
-	//	Unit lambdaLengthUnit=potts->getEnergyUnit()/(potts->getLengthUnit()*potts->getLengthUnit());
-
-	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-	//	if (!unitsElem){ //add Units element
-	//		unitsElem=_xmlData->attachElement("Units");
-	//	}
-
-	//	if(unitsElem->getFirstElement("TargetLengthUnit")){
-	//		unitsElem->getFirstElement("TargetLengthUnit")->updateElementValue(potts->getLengthUnit().toString());
-	//	}else{
-	//		unitsElem->attachElement("TargetLengthUnit",potts->getLengthUnit().toString());
-	//	}
-
-
-
-	//	if(unitsElem->getFirstElement("MinorTargetLengthUnit")){
-	//		unitsElem->getFirstElement("MinorTargetLengthUnit")->updateElementValue(potts->getLengthUnit().toString());
-	//	}else{
-	//		unitsElem->attachElement("MinorTargetLengthUnit",potts->getLengthUnit().toString());
-	//	}
-
-	//	if(unitsElem->getFirstElement("LambdaLengthUnit")){
-	//		unitsElem->getFirstElement("LambdaLengthUnit")->updateElementValue(lambdaLengthUnit.toString());
-	//	}else{
-	//		unitsElem->attachElement("LambdaLengthUnit",lambdaLengthUnit.toString());
-	//	}
-
-	//}
-
 
 	typeNameVec.clear();
 	lengthEnergyParamMap.clear();
