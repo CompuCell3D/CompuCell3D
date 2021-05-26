@@ -22,17 +22,11 @@
 
 #include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
 using namespace CompuCell3D;
 
 using namespace std;
 
 #include "VolumePlugin.h"
-
-
-// VolumePlugin::VolumePlugin() : potts(0) {}
 
 VolumePlugin::~VolumePlugin() {}
 
@@ -60,42 +54,6 @@ void VolumePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
 
 void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	//if there are no child elements for this plugin it means will use changeEnergyByCellId
-
-	//if(potts->getDisplayUnitsFlag()){
-	//	Unit targetVolumeUnit=powerUnit(potts->getLengthUnit(),3);
-	//	Unit lambdaVolumeUnit=potts->getEnergyUnit()/(targetVolumeUnit*targetVolumeUnit);
-	//	//Unit demoUnit("10^-15*kg");
-	//	//cerr<<"demoUnit="<<demoUnit<<endl;
-	//	//cerr<<"Length Unit"<<potts->getLengthUnit()<<endl;
-	//	//cerr<<"targetVolumeUnit="<<targetVolumeUnit.toString()<<endl;
-	//	//cerr<<"lambdaVolumeUnit="<<lambdaVolumeUnit.toString()<<endl;
-
-
-	//	//CC3DXMLElement * volumeUnitElem = _xmlData->attachElement("TargetVolumeUnit",targetVolumeUnit.toString());
-	//	//CC3DXMLElement * volumeUnitElem1 = _xmlData->attachElement("TargetVolumeUnit1",targetVolumeUnit.toString());
-	//	//CC3DXMLElement * volumeUnitElem2 = _xmlData->attachElement("TargetVolumeUnit2","demoElement");
-
-	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-	//	if (!unitsElem){ //add Units element
-	//		unitsElem=_xmlData->attachElement("Units");
-	//	}
-
-	//	if(unitsElem->getFirstElement("TargetVolumeUnit")){
-	//		unitsElem->getFirstElement("TargetVolumeUnit")->updateElementValue(targetVolumeUnit.toString());
-	//	}else{
-	//		CC3DXMLElement * volumeUnitElem = unitsElem->attachElement("TargetVolumeUnit",targetVolumeUnit.toString());
-	//	}
-
-	//	if(unitsElem->getFirstElement("LambdaVolumeUnit")){
-	//		unitsElem->getFirstElement("LambdaVolumeUnit")->updateElementValue(lambdaVolumeUnit.toString());
-	//	}else{
-	//		CC3DXMLElement * lambdaVolumeUnitElem = unitsElem->attachElement("LambdaVolumeUnit",lambdaVolumeUnit.toString());
-	//	}
-
-
-	//}
-
-	
 
 	if (_xmlData->findElement("VolumeEnergyExpression")){
 		unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
@@ -180,21 +138,21 @@ void VolumePlugin::handleEvent(CC3DEvent & _event){
 }
 double VolumePlugin::customExpressionFunction(double _lambdaVolume,double _targetVolume, double _volumeBefore,double _volumeAfter){
 
-		int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();	
-		ExpressionEvaluator & ev=eed[currentWorkNodeNumber];
-		double energyBefore=0.0,energyAfter=0.0;
+	int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();	
+	ExpressionEvaluator & ev=eed[currentWorkNodeNumber];
+	double energyBefore=0.0,energyAfter=0.0;
 
-		//before
-		ev[0]=_lambdaVolume;
-		ev[1]=_volumeBefore;
-		ev[2]=_targetVolume;
-		energyBefore=ev.eval();
+	//before
+	ev[0]=_lambdaVolume;
+	ev[1]=_volumeBefore;
+	ev[2]=_targetVolume;
+	energyBefore=ev.eval();
 
-		//after		
-		ev[1]=_volumeAfter;		
-		energyAfter=ev.eval();
+	//after		
+	ev[1]=_volumeAfter;		
+	energyAfter=ev.eval();
 
-		return energyAfter-energyBefore;
+	return energyAfter-energyBefore;
 }
 
 double VolumePlugin::changeEnergyGlobal(const Point3D &pt, const CellG *newCell,const CellG *oldCell){
@@ -217,18 +175,6 @@ double VolumePlugin::changeEnergyGlobal(const Point3D &pt, const CellG *newCell,
 
 		}
 
-
-		//cerr<<"energy="<<energy<<endl;
-		//if (energy>300){
-		//	if (newCell){
-		//		cerr<<"newCell->volume="<<newCell->volume<<endl;
-		//	}
-		//	if (oldCell){
-		//		cerr<<"oldCell->volume="<<oldCell->volume<<endl;
-		//	}
-
-
-		//}
 		return energy;
 	}else{
 
@@ -353,7 +299,3 @@ std::string VolumePlugin::toString(){
 	return pluginName;
 	//return "Volume";
 }
-
-
-
-
