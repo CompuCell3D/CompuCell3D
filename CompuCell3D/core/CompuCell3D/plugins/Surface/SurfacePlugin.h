@@ -87,7 +87,7 @@ namespace CompuCell3D {
 
 
 
-		std::vector<SurfaceEnergyParam> surfaceEnergyParamVector;
+		std::unordered_map<unsigned char, SurfaceEnergyParam> surfaceEnergyParamMap;
 
 		typedef double (SurfacePlugin::*changeEnergy_t)(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
 

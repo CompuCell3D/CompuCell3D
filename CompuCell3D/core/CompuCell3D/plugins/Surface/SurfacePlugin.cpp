@@ -126,9 +126,7 @@ void SurfacePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 		case BYCELLTYPE:
 			{
-				surfaceEnergyParamVector.clear();
-				vector<int> typeIdVec;
-				vector<SurfaceEnergyParam> surfaceEnergyParamVectorTmp;
+				surfaceEnergyParamMap.clear();
 
 				CC3DXMLElementList energyVec=_xmlData->getElements("SurfaceEnergyParameters");
 
@@ -137,16 +135,8 @@ void SurfacePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 					surParam.targetSurface=energyVec[i]->getAttributeAsDouble("TargetSurface");
 					surParam.lambdaSurface=energyVec[i]->getAttributeAsDouble("LambdaSurface");
-					surParam.typeName=energyVec[i]->getAttribute("CellType");					
-					typeIdVec.push_back(automaton->getTypeId(surParam.typeName));
-
-					surfaceEnergyParamVectorTmp.push_back(surParam);				
-				}
-				vector<int>::iterator pos=max_element(typeIdVec.begin(),typeIdVec.end());
-				int maxTypeId=*pos;
-				surfaceEnergyParamVector.assign(maxTypeId+1,SurfaceEnergyParam());
-				for (int i = 0 ; i < surfaceEnergyParamVectorTmp.size() ; ++i){
-					surfaceEnergyParamVector[typeIdVec[i]]=surfaceEnergyParamVectorTmp[i];
+					surParam.typeName=energyVec[i]->getAttribute("CellType");
+					surfaceEnergyParamMap[automaton->getTypeId(surParam.typeName)] = surParam;
 				}
 
 				//set fcn ptr
@@ -272,11 +262,11 @@ double SurfacePlugin::changeEnergyByCellType(const Point3D &pt,
   pair<double,double> newOldDiffs=getNewOldSurfaceDiffs(pt,newCell,oldCell);
 
   if (newCell){
-    energy += diffEnergy(surfaceEnergyParamVector[newCell->type].lambdaSurface , surfaceEnergyParamVector[newCell->type].targetSurface , newCell->surface*scaleSurface, newOldDiffs.first * scaleSurface);
+    energy += diffEnergy(surfaceEnergyParamMap[newCell->type].lambdaSurface , surfaceEnergyParamMap[newCell->type].targetSurface , newCell->surface*scaleSurface, newOldDiffs.first * scaleSurface);
 
    }
   if (oldCell){
-	 energy += diffEnergy(surfaceEnergyParamVector[oldCell->type].lambdaSurface , surfaceEnergyParamVector[oldCell->type].targetSurface , oldCell->surface*scaleSurface, newOldDiffs.second*scaleSurface);
+	 energy += diffEnergy(surfaceEnergyParamMap[oldCell->type].lambdaSurface , surfaceEnergyParamMap[oldCell->type].targetSurface , oldCell->surface*scaleSurface, newOldDiffs.second*scaleSurface);
   }
    
   
