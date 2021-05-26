@@ -135,16 +135,6 @@ void CellTypePlugin::update(ParseData *_pd, bool _fullInitFlag){
 }
 
 
-
-unsigned char CellTypePlugin::getCellType(const CellG *cell) const {
-
-   if(!cell) return 0;
-
-   return cell->type;
-
-}
-
-
 string CellTypePlugin::getTypeName(const char type) const {
 
 
@@ -173,15 +163,3 @@ unsigned char CellTypePlugin::getTypeId(const string typeName) const {
   }
 
 }
-
-
-unsigned char CellTypePlugin::getMaxTypeId() const {
-	cerr<<"typeNameMap.size()="<<typeNameMap.size()<<endl;
-	if (typeNameMap.empty()){
-		return 0;
-	}else{
-		return maxTypeId;
-	}
-}
-
-

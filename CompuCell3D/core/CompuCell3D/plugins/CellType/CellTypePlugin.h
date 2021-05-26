@@ -72,6 +72,10 @@ namespace CompuCell3D {
 
   };
 
+  inline unsigned char CellTypePlugin::getCellType(const CellG* cell) const { return cell ? cell->type : 0; };
+
+  inline unsigned char CellTypePlugin::getMaxTypeId() const { return typeNameMap.empty() ? 0 : maxTypeId; };
+
   inline const std::vector<unsigned char> CellTypePlugin::getTypeIds() const {
     std::vector<unsigned char> o;
     for (auto& x : nameTypeMap) o.push_back(x.second);
