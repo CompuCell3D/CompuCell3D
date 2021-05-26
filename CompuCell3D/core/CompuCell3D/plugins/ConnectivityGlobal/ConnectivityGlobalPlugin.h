@@ -58,7 +58,7 @@ namespace CompuCell3D {
     BoundaryStrategy * boundaryStrategy;
     
 	 Potts3D *potts;
-	 std::vector<double> penaltyVec;
+	 std::unordered_map<unsigned char, double> penaltyMap;
 	 unsigned char maxTypeId;
 	 bool doNotPrecheckConnectivity;
 	 bool fast_algorithm;

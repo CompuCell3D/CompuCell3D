@@ -83,11 +83,10 @@ void ConnectivityGlobalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 	//	}
 	//}
 
-	penaltyVec.clear();
+	penaltyMap.clear();
 
 	Automaton *automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
-		set<unsigned char> cellTypesSet;
+	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton);
 
 
 	map<unsigned char, double> typeIdConnectivityPenaltyMap;
@@ -112,47 +111,20 @@ void ConnectivityGlobalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 
 	for (int i = 0; i < penaltyVecXML.size(); ++i) {
 		typeIdConnectivityPenaltyMap.insert(make_pair(automaton->getTypeId(penaltyVecXML[i]->getAttribute("Type")), penaltyVecXML[i]->getDouble()));
-
-
-		//inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
-		cellTypesSet.insert(automaton->getTypeId(penaltyVecXML[i]->getAttribute("Type")));
-
 	}
-
-
 
 	for (int i = 0; i < connectivityOnVecXML.size(); ++i) {
 		typeIdConnectivityPenaltyMap.insert(make_pair(automaton->getTypeId(connectivityOnVecXML[i]->getAttribute("Type")), 1.0));
-		//inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
-		cellTypesSet.insert(automaton->getTypeId(connectivityOnVecXML[i]->getAttribute("Type")));
-
 	}
 
-
-	//Now that we know all the types used in the simulation we will find size of the penaltyVec
-	vector<unsigned char> cellTypesVector(cellTypesSet.begin(), cellTypesSet.end());//coping set to the vector
-
-	int size = 0;
-	if (cellTypesVector.size()) {
-		size = *max_element(cellTypesVector.begin(), cellTypesVector.end());
-	}
-
-	maxTypeId = size;
-
-	size += 1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-
-
-
-	int index;
-	penaltyVec.assign(size, 0.0);
 	//inserting connectivity penalty values to penaltyVec;
 	for (map<unsigned char, double>::iterator mitr = typeIdConnectivityPenaltyMap.begin(); mitr != typeIdConnectivityPenaltyMap.end(); ++mitr) {
-		penaltyVec[mitr->first] = fabs(mitr->second);
+		penaltyMap[mitr->first] = fabs(mitr->second);
 	}
 
-	cerr << "size=" << size << endl;
-	for (int i = 0; i < size; ++i) {
-		cerr << "penaltyVec[" << i << "]=" << penaltyVec[i] << endl;
+	cerr << "size=" << penaltyMap.size() << endl;
+	for (auto& itr : penaltyMap) {
+		cerr << "penaltyMap[" << to_string(itr.first) << "]=" << itr.second << endl;
 	}
 
 	//Here I initialize max neighbor index for direct acces to the list of neighbors 
@@ -434,7 +406,7 @@ double ConnectivityGlobalPlugin::changeEnergyFast(const Point3D &pt, const CellG
 			oldCellByTypeCalculations = true;
 			oldCellConnectivityPenalty = 1.0;
 		}
-		else if (oldCell->type <= maxTypeId && penaltyVec[oldCell->type] != 0.0) {
+		else if (oldCell->type <= maxTypeId && penaltyMap[oldCell->type] != 0.0) {
 			oldCellByTypeCalculations = true;
 			oldCellConnectivityPenalty = 1.0;
 
@@ -447,7 +419,7 @@ double ConnectivityGlobalPlugin::changeEnergyFast(const Point3D &pt, const CellG
 			newCellByTypeCalculations = true;
 			newCellConnectivityPenalty = 1.0;
 		}
-		else if (newCell->type <= maxTypeId && penaltyVec[newCell->type] != 0.0) {
+		else if (newCell->type <= maxTypeId && penaltyMap[newCell->type] != 0.0) {
 			newCellByTypeCalculations = true;
 			newCellConnectivityPenalty = 1.0;
 
@@ -497,7 +469,7 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 			oldCellByTypeCalculations = true;
 		}
 
-		else if (oldCell->type <= maxTypeId && penaltyVec[oldCell->type] != 0.0) {
+		else if (oldCell->type <= maxTypeId && penaltyMap[oldCell->type] != 0.0) {
 			oldCellByTypeCalculations = true;
 			oldCellConnectivityPenalty = 1.0;
 
@@ -513,18 +485,11 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 			newCellByTypeCalculations = true;
 		}
 
-		else if (newCell->type <= maxTypeId && penaltyVec[newCell->type] != 0.0) {
+		else if (newCell->type <= maxTypeId && penaltyMap[newCell->type] != 0.0) {
 			newCellByTypeCalculations = true;
 			newCellConnectivityPenalty = 1.0;
 
 		}
-
-		//newCellConnectivityPenalty = connectivityGlobalDataAccessor.get(newCell->extraAttribPtr)->connectivityStrength;
-
-		//if (newCell->type <= maxTypeId && penaltyVec[newCell->type] != 0.0) {
-		//	newCellByTypeCalculations = true;
-
-		//}
 
 	}
 
@@ -589,13 +554,6 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 	if (!newCellFragmented && newCell && (newCellByTypeCalculations || newCellConnectivityPenalty)) {
 
 		double newPenalty = newCellConnectivityPenalty;
-		//double newPenalty = 0.0;
-		//if (newCellConnectivityPenalty) {
-		//	newPenalty = newCellConnectivityPenalty; //locally defined connectivity strength has priority over by-type definition
-		//}
-		//else {
-		//	newPenalty = penaltyVec[newCell->type];
-		//}
 
 		//pt becomes newCell's pixel after pixel copy 
 
@@ -710,15 +668,6 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 	if (!oldCellFragmented && !newCell && (oldCellByTypeCalculations || oldCellConnectivityPenalty)) {
 
 		double oldPenalty = oldCellConnectivityPenalty;
-		//if(!newCell && oldCell->type<=maxTypeId && penaltyVec[oldCell->type]!=0.0){
-		//double oldPenalty = 0.0;
-		//if (oldCellConnectivityPenalty) {
-		//	oldPenalty = oldCellConnectivityPenalty;
-		//}
-		//else {
-		//	oldPenalty = penaltyVec[oldCell->type];
-		//}
-
 
 		CellG *nCell = 0;
 		WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
@@ -762,15 +711,6 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 		//pick pixel belonging to oldCell - simply pick one of the first nearest neighbors of the pt
 
 		double oldPenalty = oldCellConnectivityPenalty;
-
-		//double oldPenalty = 0.0;
-		//if (oldCellConnectivityPenalty) {
-		//	oldPenalty = oldCellConnectivityPenalty;
-		//}
-		//else {
-		//	oldPenalty = penaltyVec[oldCell->type];
-		//}
-
 
 		CellG *nCell = 0;
 		WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
