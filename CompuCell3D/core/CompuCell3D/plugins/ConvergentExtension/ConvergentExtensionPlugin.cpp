@@ -76,7 +76,7 @@ void ConvergentExtensionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
 		set<unsigned char> cellTypesSet;
 
 	interactingTypes.clear();
-	alphaConvExtVec.clear();
+	alphaConvExtMap.clear();
 	typeNameAlphaConvExtMap.clear();
 	CC3DXMLElementList alphaVec=_xmlData->getElements("Alpha");
 
@@ -98,15 +98,14 @@ void ConvergentExtensionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
 	size+=1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
 
 	int index ;
-	alphaConvExtVec.assign(size,0.0);
-	//inserting alpha values to alphaConvExtVec;
+	//inserting alpha values to alphaConvExtMap;
 	for(map<std::string , double>::iterator mitr=typeNameAlphaConvExtMap.begin() ; mitr!=typeNameAlphaConvExtMap.end(); ++mitr){
-		alphaConvExtVec[automaton->getTypeId(mitr->first)]=mitr->second;
+		alphaConvExtMap[automaton->getTypeId(mitr->first)]=mitr->second;
 	}
 
 	cerr<<"size="<<size<<endl;
-	for(int i = 0 ; i < size ; ++i){
-		cerr<<"alphaConvExt["<<i<<"]="<<alphaConvExtVec[i]<<endl;
+	for(auto& itr : alphaConvExtMap){
+		cerr<<"alphaConvExt["<<to_string(itr.first)<<"]="<<itr.second<<endl;
 	}
 
 	//Here I initialize max neighbor index for direct acces to the list of neighbors 
@@ -156,14 +155,20 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 		}
 
 		nCell = fieldG->get(neighbor.pt);
+		if(!nCell) continue;
+
+		auto nCellalphaConvExtMapItr = alphaConvExtMap.find(nCell->type);
+		if(nCellalphaConvExtMapItr == alphaConvExtMap.end()) continue;
+
 		Coordinates3D<double> ptTransNeighbor=boundaryStrategy->calculatePointCoordinates(neighbor.pt);
 
-		if(nCell!=oldCell){
-			if( !nCell || !oldCell || nCell->type>maxTypeId || oldCell->type>maxTypeId || !alphaConvExtVec[oldCell->type] || !alphaConvExtVec[nCell->type]){
-				; //convergent extention contribution from this pair of cells is zero
-			}else{
+		if(nCell!=oldCell && oldCell){
+
+			auto oldCellalphaConvExtMapItr = alphaConvExtMap.find(oldCell->type);
+
+			if(oldCellalphaConvExtMapItr != alphaConvExtMap.end()){
 				//nCell
-				double deltaNCell=alphaConvExtVec[nCell->type]*nCell->ecc;
+				double deltaNCell=nCellalphaConvExtMapItr->second*nCell->ecc;
 
 				Coordinates3D<double> nCellCM((nCell->xCM / (float) nCell->volume),(nCell->yCM / (float) nCell->volume),(nCell->zCM / (float) nCell->volume));
 				Coordinates3D<double> nCellCMPtVec=ptTransNeighbor-nCellCM;
@@ -199,7 +204,7 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 
 				deltaNCell*=rSinThetaNCell;
 				//oldCell
-				double deltaOldCell=alphaConvExtVec[oldCell->type]*oldCell->ecc;
+				double deltaOldCell=oldCellalphaConvExtMapItr->second*oldCell->ecc;
 				Coordinates3D<double> oldCellCM((oldCell->xCM / (float) oldCell->volume),(oldCell->yCM / (float) oldCell->volume),(oldCell->zCM / (float) oldCell->volume));
 				Coordinates3D<double> oldCellCMPtVec=ptTrans-oldCellCM;
 
@@ -256,10 +261,11 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 
 			}
 		}
-		if(nCell!=newCell){
-			if( !nCell || !newCell || nCell->type>maxTypeId || newCell->type>maxTypeId || !alphaConvExtVec[newCell->type] || !alphaConvExtVec[nCell->type]){
-				; //convergent extention contribution from this pair of cells is zero
-			}else{
+		if(nCell!=newCell && newCell){
+
+			auto newCellalphaConvExtMapItr = alphaConvExtMap.find(newCell->type);
+
+			if(newCellalphaConvExtMapItr != alphaConvExtMap.end()){
 				//calculating quantities needed for delta computations for newCell after pixel copy
 
 				double xcm;
@@ -296,7 +302,7 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 						orientationVecNew=Coordinates3D<double>(sqrt(newIyy),0.0,0.0);
 				}
 
-				double deltaNewCell=alphaConvExtVec[newCell->type]*newEcc;
+				double deltaNewCell=newCellalphaConvExtMapItr->second*newEcc;
 
 				Coordinates3D<double> newCellCM(newXCM,newYCM,0.0);
 				Coordinates3D<double> newCellCMPtVec=ptTrans-newCellCM;
@@ -361,7 +367,10 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 
 
 					//oldCell
-					double deltaOldCell=alphaConvExtVec[oldCell->type]*newEccOldCell;
+					auto oldCellalphaConvExtMapItr = alphaConvExtMap.find(oldCell->type);
+					if (oldCellalphaConvExtMapItr==alphaConvExtMap.end()) continue;
+					
+					double deltaOldCell=oldCellalphaConvExtMapItr->second*newEccOldCell;
 					Coordinates3D<double> oldCellCM(newXCMOldCell,newXCMOldCell,0.0);
 					Coordinates3D<double> oldCellCMPtVec=ptTransNeighbor-oldCellCM;
 
@@ -398,7 +407,7 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 				}else{
 
 					//nCell
-					double deltaNCell=alphaConvExtVec[nCell->type]*nCell->ecc;
+					double deltaNCell=nCellalphaConvExtMapItr->second*nCell->ecc;
 
 					Coordinates3D<double> nCellCM((nCell->xCM / (float) nCell->volume),(nCell->yCM / (float) nCell->volume),(nCell->zCM / (float) nCell->volume));
 					Coordinates3D<double> nCellCMPtVec=ptTransNeighbor-nCellCM;
