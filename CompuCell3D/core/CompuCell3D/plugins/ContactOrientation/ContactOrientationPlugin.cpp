@@ -360,52 +360,24 @@ void ContactOrientationPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 
 	return ;
     set<unsigned char> cellTypesSet;
-    contactEnergies.clear();
-    
-    //if(potts->getDisplayUnitsFlag()){
-    //    Unit contactEnergyUnit=potts->getEnergyUnit()/powerUnit(potts->getLengthUnit(),2);
-    //    CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-    //    if (!unitsElem){ //add Units element
-    //            unitsElem=_xmlData->attachElement("Units");
-    //    }
-
-    //    if(unitsElem->getFirstElement("EnergyUnit")){
-    //            unitsElem->getFirstElement("EnergyUnit")->updateElementValue(contactEnergyUnit.toString());
-    //    }else{
-    //            CC3DXMLElement * energyUnitElem = unitsElem->attachElement("EnergyUnit",contactEnergyUnit.toString());
-    //    }
-    //}
     
     CC3DXMLElementList energyVec=_xmlData->getElements("Energy");
     
+    contactEnergyArray.clear();
+    
     for (int i = 0 ; i<energyVec.size(); ++i){
-            setContactEnergy(energyVec[i]->getAttribute("Type1"), energyVec[i]->getAttribute("Type2"), energyVec[i]->getDouble());
-            //inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
-            cellTypesSet.insert(automaton->getTypeId(energyVec[i]->getAttribute("Type1")));
-            cellTypesSet.insert(automaton->getTypeId(energyVec[i]->getAttribute("Type2")));
+        setContactEnergy(energyVec[i]->getAttribute("Type1"), energyVec[i]->getAttribute("Type2"), energyVec[i]->getDouble());
+        //inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
+        cellTypesSet.insert(automaton->getTypeId(energyVec[i]->getAttribute("Type1")));
+        cellTypesSet.insert(automaton->getTypeId(energyVec[i]->getAttribute("Type2")));
     }
     
     //Now that we know all the types used in the simulation we will find size of the contactEnergyArray
     vector<unsigned char> cellTypesVector(cellTypesSet.begin(),cellTypesSet.end());//coping set to the vector
-    
-    int size= * max_element(cellTypesVector.begin(),cellTypesVector.end());
-    size+=1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-    
-    int index ;
-    contactEnergyArray.clear();
-    contactEnergyArray.assign(size,vector<double>(size,0.0));
-    
-    for(int i = 0 ; i < size ; ++i)
-        for(int j = 0 ; j < size ; ++j){
-            index = getIndex(cellTypesVector[i],cellTypesVector[j]);
-            contactEnergyArray[i][j] = contactEnergies[index];
-        }
-        
-    cerr<<"size="<<size<<endl;
-    for(int i = 0 ; i < size ; ++i)
-        for(int j = 0 ; j < size ; ++j){
-                cerr<<"contact["<<i<<"]["<<j<<"]="<<contactEnergyArray[i][j]<<endl;
-        }
+
+    for(auto& i : cellTypesSet)
+        for(auto& j : cellTypesSet)
+            cerr<<"contact["<<to_string(i)<<"]["<<to_string(j)<<"]="<<contactEnergyArray[i][j]<<endl;
 
     
 }
@@ -415,22 +387,11 @@ double ContactOrientationPlugin::contactEnergy(const CellG *cell1, const CellG *
 }
 
 void ContactOrientationPlugin::setContactEnergy(const string typeName1,const string typeName2, const double energy){
-    char type1 = automaton->getTypeId(typeName1);
-    char type2 = automaton->getTypeId(typeName2);
+    unsigned char type1 = automaton->getTypeId(typeName1);
+    unsigned char type2 = automaton->getTypeId(typeName2);
 
-    int index = getIndex(type1, type2);
-
-    contactEnergies_t::iterator it = contactEnergies.find(index);
-    ASSERT_OR_THROW(string("Contact energy for ") + typeName1 + " " + typeName2 +
-            " already set!", it == contactEnergies.end());
-
-    contactEnergies[index] = energy;
-}
-
-
-int ContactOrientationPlugin::getIndex(const int type1, const int type2) const {
-	if (type1 < type2) return ((type1 + 1) | ((type2 + 1) << 16));
-	else return ((type2 + 1) | ((type1 + 1) << 16));
+    contactEnergyArray[type1][type2] = energy;
+    contactEnergyArray[type2][type1] = energy;
 }
 
 

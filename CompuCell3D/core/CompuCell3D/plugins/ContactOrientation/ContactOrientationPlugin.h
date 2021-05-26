@@ -67,10 +67,7 @@ namespace CompuCell3D {
         WatchableField3D<CellG *> *cellFieldG;
     
         //contact energy part
-        typedef std::map<int, double> contactEnergies_t;
-        typedef std::vector<std::vector<double> > contactEnergyArray_t;
-
-        contactEnergies_t contactEnergies;
+        typedef std::unordered_map<unsigned char, std::unordered_map<unsigned char, double> > contactEnergyArray_t;
 
         contactEnergyArray_t contactEnergyArray;
 
@@ -121,7 +118,6 @@ namespace CompuCell3D {
         /**
         * @return The index used for ordering contact energies in the map.
         */
-        int getIndex(const int type1, const int type2) const; 
 		double singleTermFormula(double _alpha,double _theta);
         double angularTermFunction(double _alpha,double _theta);
         
