@@ -112,7 +112,7 @@ namespace CompuCell3D {
 	BiasType biasType;
 
 
-	std::vector<BiasPersistParam> biasPersistParamVec;
+	std::unordered_map<unsigned char, BiasPersistParam> biasPersistParamMap;
 
 
 

@@ -238,7 +238,7 @@ void BiasVectorSteppable::step_persistent_bias(const unsigned int currentStep)
 	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr)
 	{
 		cell = cellInventoryPtr->getCell(cInvItr);
-		double alpha = biasPersistParamVec[cell->type].persistentAlpha;
+		double alpha = biasPersistParamMap[cell->type].persistentAlpha;
 		//alpha_test << alpha<<std::endl;
 		gen_persistent_bias(alpha, cell);
 
@@ -587,12 +587,9 @@ void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData)
 	CC3DXMLElement *_biasXML = _xmlData->getFirstElement("BiasChange");
 	CC3DXMLElementList paramVec = _biasXML->getElements("BiasChangeParameters");
 
-	biasPersistParamVec.clear();
+	biasPersistParamMap.clear();
 
 	vector<int> typeIdVec;
-	vector<BiasPersistParam> biasPersistTemp;
-
-	biasPersistTemp.clear();
 
 	for (int i = 0; i < paramVec.size(); ++i)
 	{
@@ -606,20 +603,8 @@ void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData)
 		bParam.typeName = type;
 
 		std::cerr << "automaton=" << automaton << std::endl;
-		biasPersistTemp.push_back(bParam);
 		typeIdVec.push_back(automaton->getTypeId(type));
-	}
-
-	vector<int>::iterator pos = max_element(typeIdVec.begin(), typeIdVec.end());
-
-	int maxTypeId = *pos;
-	biasPersistParamVec.clear();
-	biasPersistParamVec.assign(maxTypeId+1, BiasPersistParam());
-
-	for (int i = 0; i < biasPersistTemp.size(); ++i)
-	{
-		biasPersistParamVec[typeIdVec[i]] = biasPersistTemp[i];
-		//std::cerr << " in bias persist vec assign " << i << std::endl;
+		biasPersistParamMap[automaton->getTypeId(type)] = bParam;
 	}
 
 	switch (fieldType)
