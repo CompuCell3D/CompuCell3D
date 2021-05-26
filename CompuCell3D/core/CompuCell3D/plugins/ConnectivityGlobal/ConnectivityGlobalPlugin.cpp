@@ -387,10 +387,13 @@ double ConnectivityGlobalPlugin::changeEnergyFast(const Point3D &pt, const CellG
 			oldCellByTypeCalculations = true;
 			oldCellConnectivityPenalty = 1.0;
 		}
-		else if (oldCell->type <= maxTypeId && penaltyMap[oldCell->type] != 0.0) {
-			oldCellByTypeCalculations = true;
-			oldCellConnectivityPenalty = 1.0;
+		else {
+			auto itr = penaltyMap.find(oldCell->type);
+			if (itr != penaltyMap.end() && itr->second != 0.0) {
+				oldCellByTypeCalculations = true;
+				oldCellConnectivityPenalty = 1.0;
 
+			}
 		}
 	}
 	if (newCell) {
@@ -400,10 +403,13 @@ double ConnectivityGlobalPlugin::changeEnergyFast(const Point3D &pt, const CellG
 			newCellByTypeCalculations = true;
 			newCellConnectivityPenalty = 1.0;
 		}
-		else if (newCell->type <= maxTypeId && penaltyMap[newCell->type] != 0.0) {
-			newCellByTypeCalculations = true;
-			newCellConnectivityPenalty = 1.0;
+		else {
+			auto itr = penaltyMap.find(newCell->type);
+			if (itr != penaltyMap.end() && itr->second != 0.0) {
+				newCellByTypeCalculations = true;
+				newCellConnectivityPenalty = 1.0;
 
+			}
 		}
 	}
 
@@ -450,10 +456,13 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 			oldCellByTypeCalculations = true;
 		}
 
-		else if (oldCell->type <= maxTypeId && penaltyMap[oldCell->type] != 0.0) {
-			oldCellByTypeCalculations = true;
-			oldCellConnectivityPenalty = 1.0;
+		else {
+			auto itr = penaltyMap.find(oldCell->type);
+			if (itr != penaltyMap.end() && itr->second != 0.0) {
+				oldCellByTypeCalculations = true;
+				oldCellConnectivityPenalty = 1.0;
 
+			}
 		}
 	}
 	if (newCell) {
@@ -466,10 +475,13 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 			newCellByTypeCalculations = true;
 		}
 
-		else if (newCell->type <= maxTypeId && penaltyMap[newCell->type] != 0.0) {
-			newCellByTypeCalculations = true;
-			newCellConnectivityPenalty = 1.0;
+		else {
+			auto itr = penaltyMap.find(newCell->type);
+			if (itr != penaltyMap.end() && itr->second != 0.0) {
+				newCellByTypeCalculations = true;
+				newCellConnectivityPenalty = 1.0;
 
+			}
 		}
 
 	}
