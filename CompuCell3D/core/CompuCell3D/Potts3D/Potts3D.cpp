@@ -660,22 +660,7 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 
             // Acceptance based on probability
             double motility = fluctAmplFcn->fluctuationAmplitude(cell, cellFieldG->get(changePixel));
-            //double motility=0.0;
-            //if(cellTypeMotilityVec.size()){
-            //	unsigned int newCellTypeId=(cell ? (unsigned int)cell->type :0);
-            //	unsigned int oldCellTypeId=(cellFieldG->get(changePixel)? (unsigned int)cellFieldG->get(changePixel)->type :0);
-            //	if(newCellTypeId && oldCellTypeId)
-            //		motility=(cellTypeMotilityVec[newCellTypeId]<cellTypeMotilityVec[oldCellTypeId] ? cellTypeMotilityVec[newCellTypeId]:cellTypeMotilityVec[oldCellTypeId]);
-            //	else if(newCellTypeId){
-            //		motility=cellTypeMotilityVec[newCellTypeId];
-            //	}else if (oldCellTypeId){
-            //		motility=cellTypeMotilityVec[oldCellTypeId];
-            //	}else{//should never get here
-            //		motility=0;
-            //	}
-            //}else{
-            //	motility=temp;
-            //}
+            
             double prob = acceptanceFunction->accept(motility, change);
 
 
@@ -1403,28 +1388,15 @@ void Potts3D::setMetropolisAlgorithm(std::string _algName) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Potts3D::setCellTypeMotilityVec(std::vector<float> & _cellTypeMotilityVec) {
-    cellTypeMotilityVec = _cellTypeMotilityVec;
-}
+void Potts3D::setCellTypeMotility(const std::string& _typeName, const float& _val) { setCellTypeMotility(automaton->getTypeId(_typeName), _val); }
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Potts3D::initializeCellTypeMotility(std::vector<CellTypeMotilityData> & _cellTypeMotilityVector) {
 
     ASSERT_OR_THROW("AUTOMATON IS NOT INITIALIZED", automaton);
 
-    unsigned int typeIdMax = 0;
-    //finding max typeId
-    for (int i = 0; i < _cellTypeMotilityVector.size(); ++i) {
-        //cerr<<"CHECKING "<<_cellTypeMotilityVector[i].typeName<<endl;
-        unsigned int id = automaton->getTypeId(_cellTypeMotilityVector[i].typeName);
-        if (id > typeIdMax)
-            typeIdMax = id;
-    }
-
-    cellTypeMotilityVec.assign(typeIdMax + 1, 0.0);
-    for (int i = 0; i < _cellTypeMotilityVector.size(); ++i) {
-        unsigned int id = automaton->getTypeId(_cellTypeMotilityVector[i].typeName);
-        cellTypeMotilityVec[id] = _cellTypeMotilityVector[i].motility;
-    }
+    cellTypeMotilityMap.clear();
+    for (auto& x : _cellTypeMotilityVector) setCellTypeMotility(x.typeName, x.motility);
 
 }
 
