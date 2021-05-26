@@ -24,18 +24,8 @@
 #define CURVATUREPLUGIN_H
 
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-// // // #include <CompuCell3D/Plugin.h>
+
 #include "CurvatureTracker.h"
-// // // #include <PublicUtilities/Vector3.h>
-
-
-// // // #include <map>
-// // // #include <set>
-// // // #include <string>
-// // // #include <vector>
-
 
 #include "CurvatureDLLSpecifier.h"
 
@@ -54,7 +44,7 @@ namespace CompuCell3D {
 	    ParallelUtilsOpenMP *pUtils;            
         
         
-      BasicClassAccessor<CurvatureTracker> curvatureTrackerAccessor;
+      	BasicClassAccessor<CurvatureTracker> curvatureTrackerAccessor;
       
 		Potts3D *potts;
 
@@ -65,26 +55,26 @@ namespace CompuCell3D {
 		Automaton *automaton;
 		bool weightDistance;
 		unsigned int maxNeighborIndex;
-	   unsigned int maxNeighborIndexJunctionMove;
+	   	unsigned int maxNeighborIndexJunctionMove;
 		BoundaryStrategy * boundaryStrategy;
 		CC3DXMLElement *xmlData;
 
-      std::set<std::string> plasticityTypesNames;
-      std::set<unsigned char> plasticityTypes;
-      std::set<unsigned char> internalPlasticityTypes;
+		std::set<std::string> plasticityTypesNames;
+		std::set<unsigned char> plasticityTypes;
+		std::set<unsigned char> internalPlasticityTypes;
       
 		Dim3D fieldDim;
-      double lambda;
+      	double lambda;
 		
-      double activationEnergy;
-      double targetDistance;
-      double maxDistance;
-      double potentialFunction(double _lambda,double _offset,double _targetDistance, double _distance);
+		double activationEnergy;
+		double targetDistance;
+		double maxDistance;
+		double potentialFunction(double _lambda,double _offset,double _targetDistance, double _distance);
       
       
-      //vectorized variables for convenient parallel access
-	  std::vector<short> newJunctionInitiatedFlagWithinClusterVec;           
-	  std::vector<CellG *> newNeighborVec;
+		//vectorized variables for convenient parallel access
+		std::vector<short> newJunctionInitiatedFlagWithinClusterVec;
+		std::vector<CellG *> newNeighborVec;
 
 		unsigned int maxNumberOfJunctions;
 
@@ -140,9 +130,9 @@ namespace CompuCell3D {
 		//EnergyFunction Interface
 		virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
 
-      // Field3DChangeWatcher interface
-      virtual void field3DChange(const Point3D &pt, CellG *newCell,
-                                 CellG *oldCell);
+		// Field3DChangeWatcher interface
+		virtual void field3DChange(const Point3D &pt, CellG *newCell,
+									CellG *oldCell);
 
 
 		//used to manually control parameters plasticity term for pair of cells involved
@@ -155,7 +145,7 @@ namespace CompuCell3D {
 		virtual std::string steerableName();
 		virtual std::string toString();
 	protected:
-	int getIndex(const int type1, const int type2) const ;
+		int getIndex(const int type1, const int type2) const ;
 
 	};
 };
