@@ -24,21 +24,6 @@
 #define SURFACEPLUGIN_H
 
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Plugin.h>
-
-
-
-
-// // // #include <CompuCell3D/Potts3D/Stepper.h>
-// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-
-// // // #include <CompuCell3D/Boundary/BoundaryTypeDefinitions.h>  
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-
-// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
-// // // #include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
-
 
 #include "SurfaceDLLSpecifier.h"
 
@@ -99,7 +84,6 @@ namespace CompuCell3D {
 
 		std::pair<double,double> getNewOldSurfaceDiffs(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
 		double diffEnergy(double lambda, double targetSurface,double surface,  double diff);
-		//double customExpressionFunction(double _lambdaVolume,double _targetVolume, double _volumeBefore,double _volumeAfter);
 
 
 	public:
@@ -109,6 +93,7 @@ namespace CompuCell3D {
 
 
 		// SimObject interface
+		
 		virtual void extraInit(Simulator *simulator);
 		virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
 		virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
@@ -116,7 +101,7 @@ namespace CompuCell3D {
         virtual void handleEvent(CC3DEvent & _event);        
         
 		//EnergyFunction interface
-		//virtual double localEnergy(const Point3D &pt);
+		
 		virtual double changeEnergy(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
 
 
