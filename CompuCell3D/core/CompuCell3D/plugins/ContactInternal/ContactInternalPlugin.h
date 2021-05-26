@@ -45,10 +45,7 @@ namespace CompuCell3D {
     Potts3D *potts;
 	 CC3DXMLElement *xmlData;
     typedef std::map<int, double> contactEnergies_t;
-    typedef std::vector<std::vector<double> > contactEnergyArray_t;
-    
-    
-    contactEnergies_t internalEnergies;
+    typedef std::unordered_map<unsigned char, std::unordered_map<unsigned char, double> > contactEnergyArray_t;
 
     
     contactEnergyArray_t internalEnergyArray;
@@ -95,14 +92,6 @@ namespace CompuCell3D {
 
     void setContactInternalEnergy(const std::string typeName1,
 			  const std::string typeName2, const double energy);
-
-  protected:
-    /**
-     * @return The index used for ordering contact energies in the map.
-     */
-    int getIndex(const int type1, const int type2) const;
-
-
 
   };
 };
