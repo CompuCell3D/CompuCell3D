@@ -61,20 +61,18 @@ namespace CompuCell3D {
     Simulator *sim;
 	 //Energy function data
 
-    typedef std::map<int, double> contactEnergies_t;
-    typedef std::vector<std::vector<double> > contactEnergyArray_t;
+    typedef std::unordered_map<unsigned char, std::unordered_map<unsigned char, double> > contactEnergyArray_t;
+    typedef std::vector<std::vector<double> > cadherinSpecificityArray_t;
     typedef std::vector<contactEnergyArray_t> multiSpecificityArray_t;
 
     
     std::set<std::string> cadherinNameSet;
     std::vector<std::string> cadherinNameOrderedVector;
 
-    contactEnergies_t contactEnergies;
-
 
     contactEnergyArray_t contactEnergyArray;
 
-    contactEnergyArray_t cadherinSpecificityArray;
+    cadherinSpecificityArray_t cadherinSpecificityArray;
     std::map<std::string,unsigned int> mapCadNameToIndex;
     unsigned int numberOfCadherins;
 //     multiSpecificityArray_t multiSpecificityArray;
@@ -130,12 +128,6 @@ namespace CompuCell3D {
     double contactEnergyLinear(const CellG *cell1, const CellG *cell2);
     void setContactEnergy(const std::string typeName1,
 			  const std::string typeName2, const double energy);
-
-  protected:
-    /**
-     * @return The index used for ordering contact energies in the map.
-     */
-    int getIndex(const int type1, const int type2) const;
 
 
   };
