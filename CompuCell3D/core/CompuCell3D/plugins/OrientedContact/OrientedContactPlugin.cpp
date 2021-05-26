@@ -479,21 +479,11 @@ void OrientedContactPlugin::setOrientedContactEnergy(const string typeName1,
 				     const string typeName2,
 				     const double energy) {
                     
-  char type1 = automaton->getTypeId(typeName1);
-  char type2 = automaton->getTypeId(typeName2);
+  unsigned char type1 = automaton->getTypeId(typeName1);
+  unsigned char type2 = automaton->getTypeId(typeName2);
     
-  int index = getIndex(type1, type2);
-
-  orientedContactEnergies_t::iterator it = orientedContactEnergies.find(index);
-  ASSERT_OR_THROW(string("OrientedOrientedContact energy for ") + typeName1 + " " + typeName2 +
-		  " already set!", it == orientedContactEnergies.end());
-
-  orientedContactEnergies[index] = energy;
-}
-
-int OrientedContactPlugin::getIndex(const int type1, const int type2) const {
-  if (type1 < type2) return ((type1 + 1) | ((type2 + 1) << 16));
-  else return ((type2 + 1) | ((type1 + 1) << 16));
+  orientedContactEnergyArray[type1][type2] = energy;
+  orientedContactEnergyArray[type2][type1] = energy;
 }
 
 
@@ -512,10 +502,9 @@ void OrientedContactPlugin::extraInit(Simulator *simulator){
 void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
+	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton);
    set<unsigned char> cellTypesSet;
 
-   orientedContactEnergies.clear();
    orientedContactEnergyArray.clear();
 
 	CC3DXMLElementList energyVec=_xmlData->getElements("Energy");
@@ -534,32 +523,14 @@ void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 		alpha=_xmlData->getFirstElement("Alpha")->getDouble();
 	}
 
-  //Now that we know all the types used in the simulation we will find size of the contactEnergyArray
-  vector<unsigned char> cellTypesVector(cellTypesSet.begin(),cellTypesSet.end());//coping set to the vector
-
-  int size= * max_element(cellTypesVector.begin(),cellTypesVector.end());
-  size+=1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-  
-  int index ;
-  orientedContactEnergyArray.clear();
-  orientedContactEnergyArray.assign(size,vector<double>(size,0.0));
-
-  for(int i = 0 ; i < size ; ++i)
-   for(int j = 0 ; j < size ; ++j){
+   cerr<<"size="<<orientedContactEnergyArray.size()<<endl;
    
-      index = getIndex(cellTypesVector[i],cellTypesVector[j]);
+   for(auto& i : cellTypesSet)
+      for(auto& j : cellTypesSet){
       
-      orientedContactEnergyArray[i][j] = orientedContactEnergies[index];
-      
-   }
-   cerr<<"size="<<size<<endl;
-   
-  for(int i = 0 ; i < size ; ++i)
-   for(int j = 0 ; j < size ; ++j){
-   
-      cerr<<"contact["<<i<<"]["<<j<<"]="<<orientedContactEnergyArray[i][j]<<endl;
-      
-   }
+         cerr<<"contact["<<to_string(i)<<"]["<<to_string(j)<<"]="<<orientedContactEnergyArray[i][j]<<endl;
+         
+      }
    
    //Here I initialize max neighbor index for direct acces to the list of neighbors 
    boundaryStrategy=BoundaryStrategy::getInstance();
