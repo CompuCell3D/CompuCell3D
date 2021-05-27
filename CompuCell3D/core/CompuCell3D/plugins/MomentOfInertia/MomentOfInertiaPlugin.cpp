@@ -175,28 +175,28 @@ void MomentOfInertiaPlugin::cellOrientation_xy(const Point3D &pt, CellG *newCell
 		lMinNew=0.5*(newCell->iXX+newCell->iYY)-radicalNew;
 		lMaxNew=0.5*(newCell->iXX+newCell->iYY)+radicalNew;
 		double ratio=lMinNew/lMaxNew;
-		if(ratio!=ratio || fabs(ratio)>1.0){
-			newCell->ecc=sqrt(1.0);
+		if(fabs(ratio)>1.0){
+			newCell->ecc=1.0;
 		}
 		else{
-			newCell->ecc=sqrt(1.0-ratio);
+			newCell->ecc=(float)sqrt(1.0-ratio);
 		}
-		newCell->lX=newCell->iXY;
-		newCell->lY=lMaxNew-newCell->iXX;
+		newCell->lX=(float)newCell->iXY;
+		newCell->lY=(float)(lMaxNew-newCell->iXX);
 	}
 	if(oldCell){	
 		double radicalOld=0.5*sqrt((oldCell->iXX-oldCell->iYY)*(oldCell->iXX-oldCell->iYY)+4.0*oldCell->iXY*oldCell->iXY);
 		lMinOld=0.5*(oldCell->iXX+oldCell->iYY)-radicalOld;
 		lMaxOld=0.5*(oldCell->iXX+oldCell->iYY)+radicalOld;
 		double ratio=lMinOld/lMaxOld;
-		if(ratio!=ratio || fabs(ratio)>1.0){
+		if(fabs(ratio)>1.0){
 			oldCell->ecc=1.0;
 		}
 		else{
-			oldCell->ecc=sqrt(1.0-ratio);
+			oldCell->ecc=(float)sqrt(1.0-ratio);
 		}
-		oldCell->lX=oldCell->iXY;
-		oldCell->lY=lMaxOld-oldCell->iXX;
+		oldCell->lX=(float)oldCell->iXY;
+		oldCell->lY=(float)(lMaxOld-oldCell->iXX);
 	}
 
 }
@@ -214,15 +214,15 @@ void MomentOfInertiaPlugin::cellOrientation_xz(const Point3D &pt, CellG *newCell
 		lMinNew=0.5*(newCell->iXX+newCell->iZZ)-radicalNew;
 		lMaxNew=0.5*(newCell->iXX+newCell->iZZ)+radicalNew;
 		double ratio=lMinNew/lMaxNew;
-		if(ratio!=ratio || fabs(ratio)>1.0){
-			newCell->ecc=sqrt(1.0);
+		if(fabs(ratio)>1.0){
+			newCell->ecc=1.0;
 		}
 		else{
-			newCell->ecc=sqrt(1.0-ratio);
+			newCell->ecc=(float)sqrt(1.0-ratio);
 		}
 
-		newCell->lX=newCell->iXZ;
-		newCell->lZ=lMaxNew-newCell->iXX;
+		newCell->lX=(float)newCell->iXZ;
+		newCell->lZ=(float)(lMaxNew-newCell->iXX);
 	}
 	if(oldCell){
 		//oldCell
@@ -230,14 +230,14 @@ void MomentOfInertiaPlugin::cellOrientation_xz(const Point3D &pt, CellG *newCell
 		lMinOld=0.5*(oldCell->iXX+oldCell->iZZ)-radicalOld;
 		lMaxOld=0.5*(oldCell->iXX+oldCell->iZZ)+radicalOld;
 		double ratio=lMinOld/lMaxOld;
-		if(ratio!=ratio || fabs(ratio)>1.0){
+		if(fabs(ratio)>1.0){
 			oldCell->ecc=1.0;
 		}
 		else{
-			oldCell->ecc=sqrt(1.0-ratio);
+			oldCell->ecc=(float)sqrt(1.0-ratio);
 		}
-		oldCell->lX=oldCell->iXZ;
-		oldCell->lZ=lMaxOld-oldCell->iXX;
+		oldCell->lX=(float)oldCell->iXZ;
+		oldCell->lZ=(float)(lMaxOld-oldCell->iXX);
 	}
 }
 
@@ -253,14 +253,14 @@ void MomentOfInertiaPlugin::cellOrientation_yz(const Point3D &pt, CellG *newCell
 		lMinNew=0.5*(newCell->iYY+newCell->iZZ)-radicalNew;
 		lMaxNew=0.5*(newCell->iYY+newCell->iZZ)+radicalNew;
 		double ratio=lMinNew/lMaxNew;
-		if(ratio!=ratio || fabs(ratio)>1.0){
-			newCell->ecc=sqrt(1.0);
+		if(fabs(ratio)>1.0){
+			newCell->ecc=1.0;
 		}
 		else{
-			newCell->ecc=sqrt(1.0-ratio);
+			newCell->ecc=(float)sqrt(1.0-ratio);
 		}
-		newCell->lY=newCell->iYZ;
-		newCell->lZ=lMaxNew-newCell->iYY;
+		newCell->lY=(float)newCell->iYZ;
+		newCell->lZ=(float)(lMaxNew-newCell->iYY);
 	}
 	if(oldCell){
 		//oldCell
@@ -268,14 +268,14 @@ void MomentOfInertiaPlugin::cellOrientation_yz(const Point3D &pt, CellG *newCell
 		lMinOld=0.5*(oldCell->iYY+oldCell->iZZ)-radicalOld;
 		lMaxOld=0.5*(oldCell->iYY+oldCell->iZZ)+radicalOld;
 		double ratio=lMinOld/lMaxOld;
-		if(ratio!=ratio || fabs(ratio)>1.0){
+		if(fabs(ratio)>1.0){
 			oldCell->ecc=1.0;
 		}
 		else{
-			oldCell->ecc=sqrt(1.0-ratio);
+			oldCell->ecc=(float)sqrt(1.0-ratio);
 		}
-		oldCell->lY=oldCell->iYZ;
-		oldCell->lZ=lMaxOld-oldCell->iYY;
+		oldCell->lY=(float)oldCell->iYZ;
+		oldCell->lZ=(float)(lMaxOld-oldCell->iYY);
 	}
 }
 
