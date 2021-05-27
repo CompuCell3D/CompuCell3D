@@ -722,8 +722,9 @@ self.adhesionFlexPlugin.setMediumAdhesionMoleculeDensityByIndex(0, 11.2)
 # defining chemotaxis properties of individual cell 'cell'
 cd = self.chemotaxisPlugin.addChemotaxisData(cell, "FIELDNAME")
 cd.setLambda(20.0)
-# cd.initializeChemotactTowardsVectorTypes("Bacterium,Medium")
-cd.assignChemotactTowardsVectorTypes([0, 1])
+# If assigning chemotaxis only towards one or more specific cell types, then use the following,
+# where the list references the cell types (shown here for type names 'type_name_1' and 'type_name_2')
+# cd.assignChemotactTowardsVectorTypes([self.cell_type.type_name_1, self.cell_type.type_name_2])
 
 ----------  # @Submenu@  By Cell Id (Modify)
 # Make sure Chemotaxis Plugin is loaded
