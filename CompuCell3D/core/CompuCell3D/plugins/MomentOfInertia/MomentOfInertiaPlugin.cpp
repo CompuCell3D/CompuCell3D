@@ -20,42 +20,15 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-
-
 #include "CellMomentOfInertia.h"
 
 #include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/ClassRegistry.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-// // // #include <PublicUtilities/NumericalUtils.h>
-// // // #include <complex>
-// // // #include <algorithm>
-
-// // // #include <CompuCell3D/Potts3D/CellInventory.h>
-
-
 using namespace CompuCell3D;
-
-
-
-// // // #include <cmath>
-
-// // // #include <iostream>
-
 
 #include "MomentOfInertiaPlugin.h"
 
 using namespace std;
-
-
-
 
 MomentOfInertiaPlugin::MomentOfInertiaPlugin():potts(0),simulator(0),boundaryStrategy(0),lastMCSPrintedWarning(-1),cellOrientationFcnPtr(0) {}
 
@@ -70,25 +43,11 @@ void MomentOfInertiaPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 	if(!pluginAlreadyRegisteredFlag)
 		plugin->init(simulator);
 
-	//   Simulator::pluginManager.get("CenterOfMass"); //this will load CenterOfMass plugin if it is not already loaded
-
 	potts->registerCellGChangeWatcher(this);
-
-	//   simulator->getClassRegistry()
-	//     ->registerRenderer("MomentOfInertia", new BasicClassFactory<FieldRenderer,
-	// 		       MomentOfInertiaRenderer>);
-	// 
-	//   simulator->getClassRegistry()
-	//     ->registerRenderer("MomentOfInertiaType", new BasicClassFactory<FieldRenderer,
-	//                        MomentOfInertiaTypeRenderer>);
 
 	potts->getBoundaryXName()=="Periodic" ? boundaryConditionIndicator.x=1 : boundaryConditionIndicator.x=0 ;
 	potts->getBoundaryYName()=="Periodic" ? boundaryConditionIndicator.y=1 : boundaryConditionIndicator.y=0;
 	potts->getBoundaryZName()=="Periodic" ? boundaryConditionIndicator.z=1 : boundaryConditionIndicator.z=0;
-
-
-
-
 
 	fieldDim=potts->getCellFieldG()->getDim();
 
@@ -107,7 +66,6 @@ void MomentOfInertiaPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 	}else{
 		getSemiaxesFctPtr=&MomentOfInertiaPlugin::getSemiaxes3D;
 	}
-
 
 	boundaryStrategy=BoundaryStrategy::getInstance();
 }
@@ -216,7 +174,6 @@ void MomentOfInertiaPlugin::cellOrientation_xy(const Point3D &pt, CellG *newCell
 		double radicalNew=0.5*sqrt((newCell->iXX-newCell->iYY)*(newCell->iXX-newCell->iYY)+4.0*newCell->iXY*newCell->iXY);	
 		lMinNew=0.5*(newCell->iXX+newCell->iYY)-radicalNew;
 		lMaxNew=0.5*(newCell->iXX+newCell->iYY)+radicalNew;
-		//cerr<<"MI lMinOld="<<lMinOld<<" lMaxOld="<<lMaxOld<<endl;
 		double ratio=lMinNew/lMaxNew;
 		if(ratio!=ratio || fabs(ratio)>1.0){
 			newCell->ecc=sqrt(1.0);
@@ -224,43 +181,13 @@ void MomentOfInertiaPlugin::cellOrientation_xy(const Point3D &pt, CellG *newCell
 		else{
 			newCell->ecc=sqrt(1.0-ratio);
 		}
-
-
-		//cerr<<"MI newCell->ecc="<<newCell->ecc<<endl;
-
-		//components of eigenvector corersponding to larger eigenvalue - it points along semiminor axis
-		//in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M where a is semimajor axis
-		//double xHat=newCell->iXY; 
-		//double yHat=lMaxNew-newCell->iXX;
-		//double cosAlpha=xHat*xHat/sqrt(xHat*xHat+yHat*yHat);
-		//double sinAlpha=sqrt(1-cosAlpha);
-
 		newCell->lX=newCell->iXY;
 		newCell->lY=lMaxNew-newCell->iXX;
-
-		//if(newCell->iXY!=0.0){
-		//	newCell->lX=newCell->iXY;
-		//	newCell->lY=lMaxOld-newCell->iXX;
-		//}else{
-		//	if(newCell->iXX>newCell->iYY){
-		//		newCell->lX=newCell->iXX;
-		//		newCell->lY=0.0;
-		//	}else{
-
-		//		newCell->lX=0.0;
-		//		newCell->lY=newCell->iYY;
-		//	}
-
-		//}
-
 	}
 	if(oldCell){	
 		double radicalOld=0.5*sqrt((oldCell->iXX-oldCell->iYY)*(oldCell->iXX-oldCell->iYY)+4.0*oldCell->iXY*oldCell->iXY);
-		//cerr<<"MI oldCell->volume="<<oldCell->volume<<endl;
-		//cerr<<" MI radicalOld="<<radicalOld<<endl;	
 		lMinOld=0.5*(oldCell->iXX+oldCell->iYY)-radicalOld;
 		lMaxOld=0.5*(oldCell->iXX+oldCell->iYY)+radicalOld;
-		//cerr<<"MI lMinOld="<<lMinOld<<" lMaxOld="<<lMaxOld<<endl;
 		double ratio=lMinOld/lMaxOld;
 		if(ratio!=ratio || fabs(ratio)>1.0){
 			oldCell->ecc=1.0;
@@ -268,27 +195,8 @@ void MomentOfInertiaPlugin::cellOrientation_xy(const Point3D &pt, CellG *newCell
 		else{
 			oldCell->ecc=sqrt(1.0-ratio);
 		}
-
-
 		oldCell->lX=oldCell->iXY;
 		oldCell->lY=lMaxOld-oldCell->iXX;
-
-		
-		//cerr<<"MI oldCell->ecc="<<oldCell->ecc<<endl;
-		//if(oldCell->iXY!=0.0){
-		//	oldCell->lX=oldCell->iXY;
-		//	oldCell->lY=lMaxOld-oldCell->iXX;
-		//}else{
-		//	if(oldCell->iXX>oldCell->iYY){
-		//		oldCell->lX=oldCell->iXX;
-		//		oldCell->lY=0.0;
-		//	}else{
-
-		//		oldCell->lX=0.0;
-		//		oldCell->lY=oldCell->iYY;
-		//	}
-
-		//}
 	}
 
 }
@@ -303,13 +211,8 @@ void MomentOfInertiaPlugin::cellOrientation_xz(const Point3D &pt, CellG *newCell
 	if(newCell){
 		//newCell
 		double radicalNew=0.5*sqrt((newCell->iXX-newCell->iZZ)*(newCell->iXX-newCell->iZZ)+4.0*newCell->iXZ*newCell->iXZ);
-		
-
 		lMinNew=0.5*(newCell->iXX+newCell->iZZ)-radicalNew;
 		lMaxNew=0.5*(newCell->iXX+newCell->iZZ)+radicalNew;
-
-
-		
 		double ratio=lMinNew/lMaxNew;
 		if(ratio!=ratio || fabs(ratio)>1.0){
 			newCell->ecc=sqrt(1.0);
@@ -317,7 +220,6 @@ void MomentOfInertiaPlugin::cellOrientation_xz(const Point3D &pt, CellG *newCell
 		else{
 			newCell->ecc=sqrt(1.0-ratio);
 		}
-
 
 		newCell->lX=newCell->iXZ;
 		newCell->lZ=lMaxNew-newCell->iXX;
@@ -327,7 +229,6 @@ void MomentOfInertiaPlugin::cellOrientation_xz(const Point3D &pt, CellG *newCell
 		double radicalOld=0.5*sqrt((oldCell->iXX-oldCell->iZZ)*(oldCell->iXX-oldCell->iZZ)+4.0*oldCell->iXZ*oldCell->iXZ);
 		lMinOld=0.5*(oldCell->iXX+oldCell->iZZ)-radicalOld;
 		lMaxOld=0.5*(oldCell->iXX+oldCell->iZZ)+radicalOld;
-
 		double ratio=lMinOld/lMaxOld;
 		if(ratio!=ratio || fabs(ratio)>1.0){
 			oldCell->ecc=1.0;
@@ -358,7 +259,6 @@ void MomentOfInertiaPlugin::cellOrientation_yz(const Point3D &pt, CellG *newCell
 		else{
 			newCell->ecc=sqrt(1.0-ratio);
 		}
-		
 		newCell->lY=newCell->iYZ;
 		newCell->lZ=lMaxNew-newCell->iYY;
 	}
@@ -367,7 +267,6 @@ void MomentOfInertiaPlugin::cellOrientation_yz(const Point3D &pt, CellG *newCell
 		double radicalOld=0.5*sqrt((oldCell->iYY-oldCell->iZZ)*(oldCell->iYY-oldCell->iZZ)+4.0*oldCell->iYZ*oldCell->iYZ);
 		lMinOld=0.5*(oldCell->iYY+oldCell->iZZ)-radicalOld;
 		lMaxOld=0.5*(oldCell->iYY+oldCell->iZZ)+radicalOld;
-
 		double ratio=lMinOld/lMaxOld;
 		if(ratio!=ratio || fabs(ratio)>1.0){
 			oldCell->ecc=1.0;
@@ -380,81 +279,6 @@ void MomentOfInertiaPlugin::cellOrientation_yz(const Point3D &pt, CellG *newCell
 	}
 }
 
-
-//void MomentOfInertiaPlugin::getSemiaxes(CellG *_cell,double & _majorAxis , double & _medianAxis, double &_minorAxis)
-//{
-//
-//	(this->*getSemiaxesFctPtr)(_cell,_majorAxis,_medianAxis,_minorAxis);
-//}
-//
-//void MomentOfInertiaPlugin::getSemiaxesXY(CellG *_cell,double & _majorAxis , double & _medianAxis, double &_minorAxis){
-//	    //in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M where a is semimajor axis
-//		double radical=0.5*sqrt((_cell->iXX-_cell->iYY)*(_cell->iXX-_cell->iYY)+4.0*_cell->iXY*_cell->iXY);	
-//		double lMin=0.5*(_cell->iXX+_cell->iYY)-radical;
-//		double lMax=0.5*(_cell->iXX+_cell->iYY)+radical;
-//		_majorAxis=2*sqrt(lMax/_cell->volume);
-//		_medianAxis=0.0;
-//	    _minorAxis=2*sqrt(lMin/_cell->volume);
-//}
-//
-//void MomentOfInertiaPlugin::getSemiaxesXZ(CellG *_cell,double & _majorAxis , double & _medianAxis, double &_minorAxis){
-//	    //in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M where a is semimajor axis
-//		double radical=0.5*sqrt((_cell->iXX-_cell->iZZ)*(_cell->iXX-_cell->iZZ)+4.0*_cell->iXZ*_cell->iXZ);	
-//		double lMin=0.5*(_cell->iXX+_cell->iZZ)-radical;
-//		double lMax=0.5*(_cell->iXX+_cell->iZZ)+radical;
-//		_majorAxis=2*sqrt(lMax/_cell->volume);
-//		_medianAxis=0.0;
-//	    _minorAxis=2*sqrt(lMin/_cell->volume);
-//}
-//
-//void MomentOfInertiaPlugin::getSemiaxesYZ(CellG *_cell,double & _majorAxis , double & _medianAxis, double &_minorAxis){
-//	    //in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M where a is semimajor axis
-//		double radical=0.5*sqrt((_cell->iYY-_cell->iZZ)*(_cell->iYY-_cell->iZZ)+4.0*_cell->iYZ*_cell->iYZ);	
-//		double lMin=0.5*(_cell->iYY+_cell->iZZ)-radical;
-//		double lMax=0.5*(_cell->iYY+_cell->iZZ)+radical;
-//		_majorAxis=2*sqrt(lMax/_cell->volume);
-//		_medianAxis=0.0;
-//	    _minorAxis=2*sqrt(lMin/_cell->volume);
-//}
-//
-//
-//void MomentOfInertiaPlugin::getSemiaxes3D(CellG *_cell,double & _majorAxis , double & _medianAxis, double &_minorAxis){
-//
-//	 vector<double> aCoeff(4,0.0);	 
-//	 vector<complex<double> > roots;
-//	 //initialize coefficients of cubic eq used to find eigenvalues of inertia tensor - before pixel copy
-//	 aCoeff[0]=-1.0;
-//
-//	 aCoeff[1]=_cell->iXX + _cell->iYY + _cell->iZZ;
-//
-//	 aCoeff[2]=_cell->iXY*_cell->iXY + _cell->iXZ*_cell->iXZ + _cell->iYZ*_cell->iYZ
-//	 -_cell->iXX*_cell->iYY - _cell->iXX*_cell->iZZ - _cell->iYY*_cell->iZZ;
-//
-//	 aCoeff[3]=_cell->iXX*_cell->iYY*_cell->iZZ + 2*_cell->iXY*_cell->iXZ*_cell->iYZ
-//	 -_cell->iXX*_cell->iYZ*_cell->iYZ
-//	 -_cell->iYY*_cell->iXZ*_cell->iXZ
-//	 -_cell->iZZ*_cell->iXY*_cell->iXY;
-//
-//	 roots=solveCubicEquationRealCoeeficients(aCoeff);
-//
-//	 //finding semiaxes of the ellipsoid
-//	 //Ixx=m/5.0*(a_y^2+a_z^2) - andy cyclical permutations for other coordinate combinations
-//	 //a_x,a_y,a_z are lengths of semiaxes of the allipsoid
-//	 // We can invert above system of equations to get:
-//	vector<double> axes(3,0.0);
-//
-//	axes[0]=sqrt((2.5/_cell->volume)*(roots[1].real()+roots[2].real()-roots[0].real()));
-//	axes[1]=sqrt((2.5/_cell->volume)*(roots[0].real()+roots[2].real()-roots[1].real()));
-//	axes[2]=sqrt((2.5/_cell->volume)*(roots[0].real()+roots[1].real()-roots[2].real()));
-//
-//	//sorting semiaxes according the their lengths (shortest first)
-//	sort(axes.begin(),axes.end());
-//	_majorAxis=axes[2];
-//	_medianAxis=axes[1];
-//	_minorAxis=axes[0];
-//
-//}
-
 vector<double> MomentOfInertiaPlugin::getSemiaxes(CellG *_cell)
 {
 
@@ -462,86 +286,76 @@ vector<double> MomentOfInertiaPlugin::getSemiaxes(CellG *_cell)
 }
 
 vector<double> MomentOfInertiaPlugin::getSemiaxesXY(CellG *_cell){
-	    //in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M where a is semimajor axis
-		double radical=0.5*sqrt((_cell->iXX-_cell->iYY)*(_cell->iXX-_cell->iYY)+4.0*_cell->iXY*_cell->iXY);	
-		double lMin=0.5*(_cell->iXX+_cell->iYY)-radical;
-		double lMax=0.5*(_cell->iXX+_cell->iYY)+radical;
-		vector<double> axes(3,0);
-		if (fabs(lMin)<0.000001){ //to deal with round off errors
-			lMin=0.0;
-		}
-		axes[0]=2*sqrt(lMin/_cell->volume); //semiminor axis
-		axes[1]=0.0; //semimedian axis
-		axes[2]=2*sqrt(lMax/_cell->volume); //semiminor axis
-		//if (lMin<0){
-		//	cerr<<"\t\t\t lMin="<<lMin<<" axes[0]="<<axes[0]<<endl;
-		//}
-		return axes;
+	//in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M where a is semimajor axis
+	double radical=0.5*sqrt((_cell->iXX-_cell->iYY)*(_cell->iXX-_cell->iYY)+4.0*_cell->iXY*_cell->iXY);	
+	double lMin=0.5*(_cell->iXX+_cell->iYY)-radical;
+	double lMax=0.5*(_cell->iXX+_cell->iYY)+radical;
+	vector<double> axes(3,0);
+	if (fabs(lMin)<0.000001){ //to deal with round off errors
+		lMin=0.0;
+	}
+	axes[0]=2*sqrt(lMin/_cell->volume); //semiminor axis
+	axes[1]=0.0; //semimedian axis
+	axes[2]=2*sqrt(lMax/_cell->volume); //semiminor axis
+	return axes;
 
 }
 
 vector<double> MomentOfInertiaPlugin::getSemiaxesXZ(CellG *_cell){
-	    //in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M where a is semimajor axis
-		double radical=0.5*sqrt((_cell->iXX-_cell->iZZ)*(_cell->iXX-_cell->iZZ)+4.0*_cell->iXZ*_cell->iXZ);	
-		double lMin=0.5*(_cell->iXX+_cell->iZZ)-radical;
-		double lMax=0.5*(_cell->iXX+_cell->iZZ)+radical;
-		vector<double> axes(3,0);
-		if (fabs(lMin)<0.000001){ //to deal with round off errors
-			lMin=0.0;
-		}
-		axes[0]=2*sqrt(lMin/_cell->volume); //semiminor axis
-		axes[1]=0.0; //semimedian axis
-		axes[2]=2*sqrt(lMax/_cell->volume); //semiminor axis
-
-		//if (lMin<0){
-		//	cerr<<"\t\t\t lMin="<<lMin<<" axes[0]="<<axes[0]<<endl;
-		//}
-		return axes;
+	//in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M where a is semimajor axis
+	double radical=0.5*sqrt((_cell->iXX-_cell->iZZ)*(_cell->iXX-_cell->iZZ)+4.0*_cell->iXZ*_cell->iXZ);	
+	double lMin=0.5*(_cell->iXX+_cell->iZZ)-radical;
+	double lMax=0.5*(_cell->iXX+_cell->iZZ)+radical;
+	vector<double> axes(3,0);
+	if (fabs(lMin)<0.000001){ //to deal with round off errors
+		lMin=0.0;
+	}
+	axes[0]=2*sqrt(lMin/_cell->volume); //semiminor axis
+	axes[1]=0.0; //semimedian axis
+	axes[2]=2*sqrt(lMax/_cell->volume); //semiminor axis
+	return axes;
 }
 
 vector<double> MomentOfInertiaPlugin::getSemiaxesYZ(CellG *_cell){
-	    //in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M where a is semimajor axis
-		double radical=0.5*sqrt((_cell->iYY-_cell->iZZ)*(_cell->iYY-_cell->iZZ)+4.0*_cell->iYZ*_cell->iYZ);	
-		double lMin=0.5*(_cell->iYY+_cell->iZZ)-radical;
-		double lMax=0.5*(_cell->iYY+_cell->iZZ)+radical;
-		vector<double> axes(3,0);
-		if (fabs(lMin)<0.000001){ //to deal with round off errors
-			lMin=0.0;
-		}
+	//in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M where a is semimajor axis
+	double radical=0.5*sqrt((_cell->iYY-_cell->iZZ)*(_cell->iYY-_cell->iZZ)+4.0*_cell->iYZ*_cell->iYZ);	
+	double lMin=0.5*(_cell->iYY+_cell->iZZ)-radical;
+	double lMax=0.5*(_cell->iYY+_cell->iZZ)+radical;
+	vector<double> axes(3,0);
+	if (fabs(lMin)<0.000001){ //to deal with round off errors
+		lMin=0.0;
+	}
 
-		axes[0]=2*sqrt(lMin/_cell->volume); //semiminor axis
-		axes[1]=0.0; //semimedian axis
-		axes[2]=2*sqrt(lMax/_cell->volume); //semiminor axis
-		//if (lMin<0){
-		//	cerr<<"\t\t\t lMin="<<lMin<<" axes[0]="<<axes[0]<<endl;
-		//}
-		return axes;
+	axes[0]=2*sqrt(lMin/_cell->volume); //semiminor axis
+	axes[1]=0.0; //semimedian axis
+	axes[2]=2*sqrt(lMax/_cell->volume); //semiminor axis
+	return axes;
 }
 
 
 vector<double> MomentOfInertiaPlugin::getSemiaxes3D(CellG *_cell){
 
-	 vector<double> aCoeff(4,0.0);	 
-	 vector<complex<double> > roots;
-	 //initialize coefficients of cubic eq used to find eigenvalues of inertia tensor - before pixel copy
-	 aCoeff[0]=-1.0;
+	vector<double> aCoeff(4,0.0);
+	vector<complex<double> > roots;
+	//initialize coefficients of cubic eq used to find eigenvalues of inertia tensor - before pixel copy
+	aCoeff[0]=-1.0;
 
-	 aCoeff[1]=_cell->iXX + _cell->iYY + _cell->iZZ;
+	aCoeff[1]=_cell->iXX + _cell->iYY + _cell->iZZ;
 
-	 aCoeff[2]=_cell->iXY*_cell->iXY + _cell->iXZ*_cell->iXZ + _cell->iYZ*_cell->iYZ
-	 -_cell->iXX*_cell->iYY - _cell->iXX*_cell->iZZ - _cell->iYY*_cell->iZZ;
+	aCoeff[2]=_cell->iXY*_cell->iXY + _cell->iXZ*_cell->iXZ + _cell->iYZ*_cell->iYZ
+	-_cell->iXX*_cell->iYY - _cell->iXX*_cell->iZZ - _cell->iYY*_cell->iZZ;
 
-	 aCoeff[3]=_cell->iXX*_cell->iYY*_cell->iZZ + 2*_cell->iXY*_cell->iXZ*_cell->iYZ
-	 -_cell->iXX*_cell->iYZ*_cell->iYZ
-	 -_cell->iYY*_cell->iXZ*_cell->iXZ
-	 -_cell->iZZ*_cell->iXY*_cell->iXY;
+	aCoeff[3]=_cell->iXX*_cell->iYY*_cell->iZZ + 2*_cell->iXY*_cell->iXZ*_cell->iYZ
+	-_cell->iXX*_cell->iYZ*_cell->iYZ
+	-_cell->iYY*_cell->iXZ*_cell->iXZ
+	-_cell->iZZ*_cell->iXY*_cell->iXY;
 
-	 roots=solveCubicEquationRealCoeeficients(aCoeff);
+	roots=solveCubicEquationRealCoeeficients(aCoeff);
 
-	 //finding semiaxes of the ellipsoid
-	 //Ixx=m/5.0*(a_y^2+a_z^2) - andy cyclical permutations for other coordinate combinations
-	 //a_x,a_y,a_z are lengths of semiaxes of the allipsoid
-	 // We can invert above system of equations to get:
+	//finding semiaxes of the ellipsoid
+	//Ixx=m/5.0*(a_y^2+a_z^2) - andy cyclical permutations for other coordinate combinations
+	//a_x,a_y,a_z are lengths of semiaxes of the allipsoid
+	// We can invert above system of equations to get:
 	vector<double> axes(3,0.0);
 
 	axes[0]=sqrt((2.5/_cell->volume)*(roots[1].real()+roots[2].real()-roots[0].real()));
@@ -551,10 +365,5 @@ vector<double> MomentOfInertiaPlugin::getSemiaxes3D(CellG *_cell){
 	//sorting semiaxes according the their lengths (shortest first)
 	sort(axes.begin(),axes.end());
 
-     return axes;
-
-	// _majorAxis=axes[2];
-	//_medianAxis=axes[1];
-	//_minorAxis=axes[0];
-
+	return axes;
 }
