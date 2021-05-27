@@ -30,6 +30,28 @@ using namespace CompuCell3D;
 
 using namespace std;
 
+std::vector<double> CompuCell3D::minMaxComps(const double& i11, const double& i22, const double& i12) {
+	double radical = 0.5*sqrt((i11-i22)*(i11-i22)+4.0*i12*i12);
+	return std::vector<double>{0.5*(i11+i22)-radical, 0.5*(i11+i22)+radical};  // lMin, lMax
+}
+
+double CompuCell3D::eccFromComps(const double& lMin, const double& lMax) {
+	double ratio=lMin/lMax;
+	return fabs(ratio)>1.0 ? 1.0 : sqrt(1.0-ratio);
+}
+
+std::vector<double> CompuCell3D::cellOrientation_12(const double& i11, const double& i22, const double& i12) {
+	auto lComps = CompuCell3D::minMaxComps(i11, i22, i12);
+	return std::vector<double>{CompuCell3D::eccFromComps(lComps[0], lComps[1]), i12, lComps[1]-i11}; // ecc, l1, l2
+}
+
+vector<double> CompuCell3D::getSemiaxes12(const double& i11, const double& i22, const double& i12, const double& volume) {
+	//in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M where a is semimajor axis
+	auto lComps = CompuCell3D::minMaxComps(i11, i22, i12);
+	auto lMin = fabs(lComps[0])<0.000001 ? 0.0 : lComps[0]; //to deal with round off errors
+	return vector<double>{2*sqrt(lMin/volume), 2*sqrt(lComps[1]/volume)}; // semimajor axis, semimajor axis
+}
+
 MomentOfInertiaPlugin::MomentOfInertiaPlugin():potts(0),simulator(0),boundaryStrategy(0),lastMCSPrintedWarning(-1),cellOrientationFcnPtr(0) {}
 
 MomentOfInertiaPlugin::~MomentOfInertiaPlugin() {}
@@ -164,118 +186,49 @@ void CompuCell3D::MomentOfInertiaPlugin::field3DChange(const Point3D &pt, CellG 
 string MomentOfInertiaPlugin::toString(){return "MomentOfInertia";}
 
 void MomentOfInertiaPlugin::cellOrientation_xy(const Point3D &pt, CellG *newCell,CellG *oldCell){
-
-	double lMinNew;
-	double lMaxNew;
-	double lMinOld;
-	double lMaxOld;
-
 	if(newCell){
-		double radicalNew=0.5*sqrt((newCell->iXX-newCell->iYY)*(newCell->iXX-newCell->iYY)+4.0*newCell->iXY*newCell->iXY);	
-		lMinNew=0.5*(newCell->iXX+newCell->iYY)-radicalNew;
-		lMaxNew=0.5*(newCell->iXX+newCell->iYY)+radicalNew;
-		double ratio=lMinNew/lMaxNew;
-		if(fabs(ratio)>1.0){
-			newCell->ecc=1.0;
-		}
-		else{
-			newCell->ecc=(float)sqrt(1.0-ratio);
-		}
-		newCell->lX=(float)newCell->iXY;
-		newCell->lY=(float)(lMaxNew-newCell->iXX);
+		auto c = cellOrientation_12(newCell->iXX, newCell->iYY, newCell->iXY);
+		newCell->ecc = (float)c[0];
+		newCell->lX = (float)c[1];
+		newCell->lY = (float)c[2];
 	}
-	if(oldCell){	
-		double radicalOld=0.5*sqrt((oldCell->iXX-oldCell->iYY)*(oldCell->iXX-oldCell->iYY)+4.0*oldCell->iXY*oldCell->iXY);
-		lMinOld=0.5*(oldCell->iXX+oldCell->iYY)-radicalOld;
-		lMaxOld=0.5*(oldCell->iXX+oldCell->iYY)+radicalOld;
-		double ratio=lMinOld/lMaxOld;
-		if(fabs(ratio)>1.0){
-			oldCell->ecc=1.0;
-		}
-		else{
-			oldCell->ecc=(float)sqrt(1.0-ratio);
-		}
-		oldCell->lX=(float)oldCell->iXY;
-		oldCell->lY=(float)(lMaxOld-oldCell->iXX);
+	if(oldCell){
+		auto c = cellOrientation_12(oldCell->iXX, oldCell->iYY, oldCell->iXY);
+		oldCell->ecc = (float)c[0];
+		oldCell->lX = (float)c[1];
+		oldCell->lY = (float)c[2];
 	}
 
 }
 
 
 void MomentOfInertiaPlugin::cellOrientation_xz(const Point3D &pt, CellG *newCell,CellG *oldCell){
-
-	double lMinNew;
-	double lMaxNew;
-	double lMinOld;
-	double lMaxOld;
 	if(newCell){
-		//newCell
-		double radicalNew=0.5*sqrt((newCell->iXX-newCell->iZZ)*(newCell->iXX-newCell->iZZ)+4.0*newCell->iXZ*newCell->iXZ);
-		lMinNew=0.5*(newCell->iXX+newCell->iZZ)-radicalNew;
-		lMaxNew=0.5*(newCell->iXX+newCell->iZZ)+radicalNew;
-		double ratio=lMinNew/lMaxNew;
-		if(fabs(ratio)>1.0){
-			newCell->ecc=1.0;
-		}
-		else{
-			newCell->ecc=(float)sqrt(1.0-ratio);
-		}
-
-		newCell->lX=(float)newCell->iXZ;
-		newCell->lZ=(float)(lMaxNew-newCell->iXX);
+		auto c = cellOrientation_12(newCell->iXX, newCell->iZZ, newCell->iXZ);
+		newCell->ecc = (float)c[0];
+		newCell->lX = (float)c[1];
+		newCell->lZ = (float)c[2];
 	}
 	if(oldCell){
-		//oldCell
-		double radicalOld=0.5*sqrt((oldCell->iXX-oldCell->iZZ)*(oldCell->iXX-oldCell->iZZ)+4.0*oldCell->iXZ*oldCell->iXZ);
-		lMinOld=0.5*(oldCell->iXX+oldCell->iZZ)-radicalOld;
-		lMaxOld=0.5*(oldCell->iXX+oldCell->iZZ)+radicalOld;
-		double ratio=lMinOld/lMaxOld;
-		if(fabs(ratio)>1.0){
-			oldCell->ecc=1.0;
-		}
-		else{
-			oldCell->ecc=(float)sqrt(1.0-ratio);
-		}
-		oldCell->lX=(float)oldCell->iXZ;
-		oldCell->lZ=(float)(lMaxOld-oldCell->iXX);
+		auto c = cellOrientation_12(oldCell->iXX, oldCell->iZZ, oldCell->iXZ);
+		oldCell->ecc = (float)c[0];
+		oldCell->lX = (float)c[1];
+		oldCell->lZ = (float)c[2];
 	}
 }
 
 void MomentOfInertiaPlugin::cellOrientation_yz(const Point3D &pt, CellG *newCell,CellG *oldCell){
-
-	double lMinNew;
-	double lMaxNew;
-	double lMinOld;
-	double lMaxOld;
 	if(newCell){
-		//newCell
-		double radicalNew=0.5*sqrt((newCell->iYY-newCell->iZZ)*(newCell->iYY-newCell->iZZ)+4.0*newCell->iYZ*newCell->iYZ);
-		lMinNew=0.5*(newCell->iYY+newCell->iZZ)-radicalNew;
-		lMaxNew=0.5*(newCell->iYY+newCell->iZZ)+radicalNew;
-		double ratio=lMinNew/lMaxNew;
-		if(fabs(ratio)>1.0){
-			newCell->ecc=1.0;
-		}
-		else{
-			newCell->ecc=(float)sqrt(1.0-ratio);
-		}
-		newCell->lY=(float)newCell->iYZ;
-		newCell->lZ=(float)(lMaxNew-newCell->iYY);
+		auto c = cellOrientation_12(newCell->iYY, newCell->iZZ, newCell->iYZ);
+		newCell->ecc = (float)c[0];
+		newCell->lY = (float)c[1];
+		newCell->lZ = (float)c[2];
 	}
 	if(oldCell){
-		//oldCell
-		double radicalOld=0.5*sqrt((oldCell->iYY-oldCell->iZZ)*(oldCell->iYY-oldCell->iZZ)+4.0*oldCell->iYZ*oldCell->iYZ);
-		lMinOld=0.5*(oldCell->iYY+oldCell->iZZ)-radicalOld;
-		lMaxOld=0.5*(oldCell->iYY+oldCell->iZZ)+radicalOld;
-		double ratio=lMinOld/lMaxOld;
-		if(fabs(ratio)>1.0){
-			oldCell->ecc=1.0;
-		}
-		else{
-			oldCell->ecc=(float)sqrt(1.0-ratio);
-		}
-		oldCell->lY=(float)oldCell->iYZ;
-		oldCell->lZ=(float)(lMaxOld-oldCell->iYY);
+		auto c = cellOrientation_12(oldCell->iYY, oldCell->iZZ, oldCell->iYZ);
+		oldCell->ecc = (float)c[0];
+		oldCell->lY = (float)c[1];
+		oldCell->lZ = (float)c[2];
 	}
 }
 
@@ -286,50 +239,18 @@ vector<double> MomentOfInertiaPlugin::getSemiaxes(CellG *_cell)
 }
 
 vector<double> MomentOfInertiaPlugin::getSemiaxesXY(CellG *_cell){
-	//in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M where a is semimajor axis
-	double radical=0.5*sqrt((_cell->iXX-_cell->iYY)*(_cell->iXX-_cell->iYY)+4.0*_cell->iXY*_cell->iXY);	
-	double lMin=0.5*(_cell->iXX+_cell->iYY)-radical;
-	double lMax=0.5*(_cell->iXX+_cell->iYY)+radical;
-	vector<double> axes(3,0);
-	if (fabs(lMin)<0.000001){ //to deal with round off errors
-		lMin=0.0;
-	}
-	axes[0]=2*sqrt(lMin/_cell->volume); //semiminor axis
-	axes[1]=0.0; //semimedian axis
-	axes[2]=2*sqrt(lMax/_cell->volume); //semiminor axis
-	return axes;
-
+	auto sa = getSemiaxes12(_cell->iXX, _cell->iYY, _cell->iXY, _cell->volume);
+	return vector<double>{sa[0], 0.0, sa[1]};
 }
 
 vector<double> MomentOfInertiaPlugin::getSemiaxesXZ(CellG *_cell){
-	//in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M where a is semimajor axis
-	double radical=0.5*sqrt((_cell->iXX-_cell->iZZ)*(_cell->iXX-_cell->iZZ)+4.0*_cell->iXZ*_cell->iXZ);	
-	double lMin=0.5*(_cell->iXX+_cell->iZZ)-radical;
-	double lMax=0.5*(_cell->iXX+_cell->iZZ)+radical;
-	vector<double> axes(3,0);
-	if (fabs(lMin)<0.000001){ //to deal with round off errors
-		lMin=0.0;
-	}
-	axes[0]=2*sqrt(lMin/_cell->volume); //semiminor axis
-	axes[1]=0.0; //semimedian axis
-	axes[2]=2*sqrt(lMax/_cell->volume); //semiminor axis
-	return axes;
+	auto sa = getSemiaxes12(_cell->iXX, _cell->iZZ, _cell->iXZ, _cell->volume);
+	return vector<double>{sa[0], 0.0, sa[1]};
 }
 
 vector<double> MomentOfInertiaPlugin::getSemiaxesYZ(CellG *_cell){
-	//in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M where a is semimajor axis
-	double radical=0.5*sqrt((_cell->iYY-_cell->iZZ)*(_cell->iYY-_cell->iZZ)+4.0*_cell->iYZ*_cell->iYZ);	
-	double lMin=0.5*(_cell->iYY+_cell->iZZ)-radical;
-	double lMax=0.5*(_cell->iYY+_cell->iZZ)+radical;
-	vector<double> axes(3,0);
-	if (fabs(lMin)<0.000001){ //to deal with round off errors
-		lMin=0.0;
-	}
-
-	axes[0]=2*sqrt(lMin/_cell->volume); //semiminor axis
-	axes[1]=0.0; //semimedian axis
-	axes[2]=2*sqrt(lMax/_cell->volume); //semiminor axis
-	return axes;
+	auto sa = getSemiaxes12(_cell->iYY, _cell->iZZ, _cell->iYZ, _cell->volume);
+	return vector<double>{sa[0], 0.0, sa[1]};
 }
 
 

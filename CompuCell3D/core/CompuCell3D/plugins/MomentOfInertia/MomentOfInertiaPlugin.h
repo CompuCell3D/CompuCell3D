@@ -35,6 +35,11 @@ namespace CompuCell3D {
   class MomentOfInertiaPlugin;
   class BoundaryStrategy; 
 
+  std::vector<double> MOMENTOFINERTIA_EXPORT minMaxComps(const double& i11, const double& i22, const double& i12);
+  double MOMENTOFINERTIA_EXPORT eccFromComps(const double& lMin, const double& lMax);
+  std::vector<double> MOMENTOFINERTIA_EXPORT cellOrientation_12(const double& i11, const double& i22, const double& i12);
+  std::vector<double> MOMENTOFINERTIA_EXPORT getSemiaxes12(const double& i11, const double& i22, const double& i12, const double& volume);
+
   class MOMENTOFINERTIA_EXPORT MomentOfInertiaPlugin : public Plugin, public CellGChangeWatcher {
     Potts3D *potts;
     Simulator *simulator;
