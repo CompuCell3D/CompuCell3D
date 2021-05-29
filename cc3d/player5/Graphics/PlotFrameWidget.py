@@ -94,7 +94,6 @@ class PlotFrameWidget(QtGui.QFrame):
         pg_version_list = pg.__version__.split('.')
         major_ver = int(pg_version_list[0])
         minor_ver = int(pg_version_list[1])
-        subminor_ver = int(pg_version_list[2])
 
         plot_item.ctrl.fftCheck.setEnabled(False)
 
