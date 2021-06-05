@@ -5,8 +5,8 @@ from pathlib import Path
 
 versionMajor = 4
 versionMinor = 2
-versionBuild = 4
-revisionNumber = "20210123"
+versionBuild = 5
+revisionNumber = "20210605"
 
 
 def get_sha_label() -> str:
