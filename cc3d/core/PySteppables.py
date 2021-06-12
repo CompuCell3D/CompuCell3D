@@ -11,9 +11,10 @@ from cc3d.CompuCellSetup.simulation_utils import extract_type_names_and_ids
 from cc3d import CompuCellSetup
 from cc3d.core.XMLUtils import dictionaryToMapStrStr as d2mss
 from cc3d.core.XMLDomUtils import XMLElemAdapter
-from typing import Union
+from typing import Union, Optional
 from cc3d.cpp import CompuCell
 from cc3d.core.SBMLSolverHelper import SBMLSolverHelper
+from cc3d.core.MaBoSSCC3D import MaBoSSHelper
 import types
 import warnings
 from deprecated import deprecated
@@ -177,7 +178,7 @@ class GlobalSBMLFetcher:
             return rr_object.model
 
 
-class SteppableBasePy(SteppablePy, SBMLSolverHelper):
+class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
     (CC3D_FORMAT, TUPLE_FORMAT) = range(0, 2)
 
     def __init__(self, *args, **kwds):
@@ -304,6 +305,61 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         list_by_type_obj = CellListByType(self.inventory, *args)
         return list_by_type_obj
 
+    def parameter_scan_main_output_folder(self) -> Optional[Path]:
+        """
+        Returns parameter scan main output folder. For example if instance of parameter scan is
+        being written to
+        C:/Users/m/CC3DWorkspace/CellSortingParameterScanWorkshop2020_output/scan_iteration_3/
+        CellSortingParameterScanWorkshop2020
+        it will return :
+        C:/Users/m/CC3DWorkspace/CellSortingParameterScanWorkshop2020_output
+        :return:
+        """
+        if self.output_dir is not None:
+            param_scan_main_output_dir = Path(*Path(self.output_dir).parts[:-2])
+            return param_scan_main_output_dir
+
+    def open_file_in_parameter_scan_main_output_folder(self, file_name: str, mode: str = 'w') -> tuple:
+        """
+        opens file for writing in parameter scan main output folder. for example
+        if instance of parameter scan is
+        being written to
+        C:/Users/m/CC3DWorkspace/CellSortingParameterScanWorkshop2020_output/scan_iteration_3/
+        CellSortingParameterScanWorkshop2020
+        it will open file - file_name in
+        C:/Users/m/CC3DWorkspace/CellSortingParameterScanWorkshop2020_output
+        :param file_name:
+        :param mode:
+        :return: tuple of (file_obj, full filepath)
+        """
+        parameter_scan_main_output_folder = self.parameter_scan_main_output_folder()
+        if self.parameter_scan_main_output_folder() is not None:
+            output_path = parameter_scan_main_output_folder.joinpath(file_name)
+
+            return self.open_file(abs_path=output_path, mode=mode)
+
+        return None, None
+
+    @property
+    def param_scan_iteration(self):
+        return CompuCellSetup.persistent_globals.parameter_scan_iteration
+
+    def open_file(self, abs_path: Union[Path, str], mode='w') -> tuple:
+        """
+        Opens file
+        :param abs_path:
+        :param mode:
+        :return: tuple of (file_obj, full filepath)
+        """
+        output_path = Path(abs_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            file_handle = open(output_path, mode)
+        except IOError:
+            print(f"Could not open file: {abs_path} for writing")
+            return None, None
+        return file_handle, output_path
+
     def open_file_in_simulation_output_folder(self, file_name: str, mode: str = 'w') -> tuple:
         """
         attempts to open file in the simulation output folder
@@ -314,13 +370,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         if self.output_dir is not None:
             output_path = Path(self.output_dir).joinpath(file_name)
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            try:
-                file_handle = open(output_path, 'w')
-            except IOError:
-                print("Could not open file for writing.")
-                return None, None
-            return file_handle, output_path
+            return self.open_file(abs_path=output_path, mode=mode)
 
     @staticmethod
     def request_screenshot(mcs: int, screenshot_label: str) -> None:
@@ -987,7 +1037,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def attemptFetchingCellById(self, _id):
         return self.fetch_cell_by_id(cell_id=_id)
 
-    def fetch_cell_by_id(self, cell_id: int) -> Union[None, object]:
+    def fetch_cell_by_id(self, cell_id: int) -> Union[None, CompuCell.CellG]:
         """
         Fetches cell by id. If cell does not exist it returns None
         :param cell_id: cell id
@@ -1757,6 +1807,29 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         return self.vector_norm(self.invariant_distance_vector_between_cells(cell1, cell2))
 
+    def cell_velocity(self, _cell: CompuCell.CellG) -> CompuCell.Coordinates3DDouble:
+        """
+        Get the velocity of a cell, in units lattice sites / step
+
+        Note that this method is slightly slower than manually calculating velocity from cell attributes
+        but is safe for periodic boundary conditions.
+
+        To manually perform the same calculations, do something like the following,
+
+        .. code-block:: python
+
+            cell: CompuCell.CellG
+            vx, vy, vz = cell.xCOM - cell.xCOMPrev, cell.yCOM - cell.yCOMPrev, cell.zCOM - cell.zCOMPrev
+            cell_velocity = CompuCell.Coordinates3DDouble(vx, vy, vz)
+
+        :param _cell: cell
+        :type _cell: CompuCell.CellG
+        :return: instantaneous velocity of the cell at its center of mass
+        :rtype: CompuCell.Coordinates3DDouble
+        """
+        boundary_strategy = CompuCell.BoundaryStrategy.getInstance()
+        return CompuCell.cellVelocity(_cell, self.dim, boundary_strategy)
+
     @deprecated(version='4.0.0', reason="You should use : new_cell")
     def newCell(self, type=0):
         return self.new_cell(cell_type=type)
@@ -1818,6 +1891,14 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def moveCell(self, cell, shiftVector):
         return self.move_cell(cell=cell, shift_vector=shiftVector)
 
+    def point3d_to_tuple(self, pt: CompuCell.Point3D) -> tuple:
+        """
+        Converts CompuCell.Point3D into tuple
+        :param pt:
+        :return:
+        """
+        return pt.x, pt.y, pt.z
+
     def move_cell(self, cell, shift_vector):
         """
         Moves cell by shift_vector
@@ -1826,11 +1907,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :return: None
         """
 
-        # we have to make two list of pixels :
-        # used to hold pixels to delete
-        pixels_to_delete = []
-        # used to hold pixels to move
-        pixels_to_move = []
+        if not cell:
+            raise TypeError(f'Cannot move non existing cell. Expected cell to be CompuCell.CellG, got {type(cell)}')
 
         shift_vec = CompuCell.Point3D()
         if isinstance(shift_vector, list) or isinstance(shift_vector, tuple):
@@ -1839,30 +1917,40 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             shift_vec.z = shift_vector[2]
         else:
             shift_vec = shift_vector
+
         # If we try to reassign pixels in the loop where we iterate over pixel data
         # we will corrupt the container so in the loop below all we will do is to populate the two list mentioned above
         pixel_list = self.get_cell_pixel_list(cell)
+        if pixel_list is None:
+            raise AttributeError('Could not find PixelTracker Plugin')
         pt = CompuCell.Point3D()
 
-        for pixelTrackerData in pixel_list:
-            pt.x = pixelTrackerData.pixel.x + shift_vec.x
-            pt.y = pixelTrackerData.pixel.y + shift_vec.y
-            pt.z = pixelTrackerData.pixel.z + shift_vec.z
+        # we have to make two sets (for faster lookup) of pixels :
+        # set used to hold pixels to delete
+        pixels_to_delete_set = set()
+        # set used to hold pixels to move
+        pixels_to_move_set = set()
+        for pixel_tracker_data in pixel_list:
+            pt.x = pixel_tracker_data.pixel.x + shift_vec.x
+            pt.y = pixel_tracker_data.pixel.y + shift_vec.y
+            pt.z = pixel_tracker_data.pixel.z + shift_vec.z
             # here we are making a copy of the cell
-            pixels_to_delete.append(CompuCell.Point3D(pixelTrackerData.pixel))
+            pixels_to_delete_set.add(self.point3d_to_tuple(pixel_tracker_data.pixel))
 
             if self.check_if_in_the_lattice(pt):
-                pixels_to_move.append(CompuCell.Point3D(pt))
-                # self.cellField.set(pt,cell)
+                pixels_to_move_set.add(self.point3d_to_tuple(pt))
 
         # Now we will move cell
-        for pixel in pixels_to_move:
-            self.cell_field[pixel.x, pixel.y, pixel.z] = cell
+        for pt_tuple in pixels_to_move_set:
+            self.cell_field[pt_tuple] = cell
 
         # Now we will delete old pixels
         medium_cell = CompuCell.getMediumCell()
-        for pixel in pixels_to_delete:
-            self.cell_field[pixel.x, pixel.y, pixel.z] = medium_cell
+        for pixel_tuple in pixels_to_delete_set:
+            # Safe deletion. Don't delete the old pixel
+            # if it is part of the new pixel set
+            if pixel_tuple not in pixels_to_move_set:
+                self.cell_field[pixel_tuple] = medium_cell
 
     @deprecated(version='4.0.0', reason="You should use : check_if_in_the_lattice")
     def checkIfInTheLattice(self, _pt):
@@ -1959,6 +2047,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                 continue
             elif key == 'SBMLSolver':
                 self.copy_sbml_simulators(from_cell=source_cell, to_cell=target_cell)
+            elif key == CompuCell.CellG.__maboss__:
+                # skipping MaBoSS models; need a reliable copy constructor
+                continue
             else:
                 # copying the rest of dictionary entries
                 target_cell.dict[key] = deepcopy(source_cell.dict[key])

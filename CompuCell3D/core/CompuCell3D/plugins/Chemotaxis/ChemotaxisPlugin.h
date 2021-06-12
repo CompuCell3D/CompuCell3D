@@ -66,6 +66,7 @@ namespace CompuCell3D {
    float logNatDivisionFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
    float log10DifferenceFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
    float logNatDifferenceFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+   float COMLogScaledChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
    
    //bool okToChemotact(unsigned int fieldIdx,unsigned char cellType);
    std::string chemotaxisAlgorithm;
@@ -109,6 +110,8 @@ namespace CompuCell3D {
     
     double regularChemotaxis(const Point3D &pt, const CellG *newCell,
                                 const CellG *oldCell);
+    
+    double reciprocatedChemotaxis(const Point3D &pt, const CellG *newCell, const CellG *oldCell);  // Two-sided regularChemotaxis
    
     double merksChemotaxis(const Point3D &pt, const CellG *newCell,
                                 const CellG *oldCell);

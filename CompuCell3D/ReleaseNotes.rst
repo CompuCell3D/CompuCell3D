@@ -1,6 +1,35 @@
 Release Notes
 =============
 
+Version 4.2.5
+-------------
+**2021-06-05**
+
+New features:
+- Added selection of RoadRunner integrator to API
+- Added Reciprocated algorithm to Chemotaxis plugin
+- Added log-scaled chemotaxis by cell center of mass concentration
+- Added multiple vertical axes in Player plots
+- Added python dictionary to all Link classes
+- Added support for attaching Antimony, SBML and CellML models to individual links
+- Optimization of cell shell made optional in Player
+- First rendering now occurs after start in Player
+- Added cell velocity to CellG derived properties
+- Added a cell type color map to Player
+- Added display of parameter scan iteration in Player
+- Minor updates to Twedit++ code snippets
+- AddedBoolean Network solver (MaBoSS)
+
+Bug fixes:
+- Disabled problematic plot menu items in Player
+- Fixed memory leaks assiociated with Player plot windows
+- Better handling of output folder location by parameter scans
+- Fixed static font size show concentration ranges in Player
+- Fixed automatic scaling in diffusion solver ConstantConcentration
+- Fixed eccentricity calculations in moment of inertia plugin
+- Do not check for updates if CC3D is running on nanohub
+- Fixed a bug in moveCell functionality
+
 Version 4.2.4
 -------------
 **2021-01-23**

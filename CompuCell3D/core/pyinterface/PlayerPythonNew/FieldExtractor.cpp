@@ -2597,7 +2597,7 @@ bool FieldExtractor::fillVectorFieldCellLevelData3DHex(vtk_obj_addr_int_t _point
 }
 
 
-vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr){
+vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr, bool extractOuterShellOnly){
 	set<int> usedCellTypes;
 	vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 	vtkLongArray *cellIdArray=(vtkLongArray *)_cellIdArrayAddr;
@@ -2619,7 +2619,11 @@ vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArra
     }
 
     std::unordered_set<long> outer_cell_ids_set;
-    if (neighbor_tracker_loaded) {
+
+    // to optimize drawing individual cells in 3D we may use cell shell optimization where we draw only cells that make up a cell shell opf the volume and skip inner cells that are not visible
+    bool cellShellOnlyOptimization = neighbor_tracker_loaded && extractOuterShellOnly;
+
+    if (cellShellOnlyOptimization) {
         
         CellInventory::cellInventoryIterator cInvItr;
         CellG * cell;
@@ -2649,6 +2653,7 @@ vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArra
 	long id;
 	int offset=0;
 	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    
 	for(int k =0 ; k<fieldDim.z+2 ; ++k)
 		for(int j =0 ; j<fieldDim.y+2 ; ++j)
 			for(int i =0 ; i<fieldDim.x+2 ; ++i){
@@ -2669,7 +2674,7 @@ vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArra
 						id = cell->id;
 						usedCellTypes.insert(type);
 					}
-                    if (neighbor_tracker_loaded) {
+                    if (cellShellOnlyOptimization) {
                         if (outer_cell_ids_set.find(id) != outer_cell_ids_set.end()) {
                             cellTypeArray->InsertValue(offset, type);
                             cellIdArray->InsertValue(offset, id);

@@ -175,28 +175,22 @@ class ChangedTextHandler:
 
         self.editorWindow.setWindowModified(m)
 
-        currentTabWidget = self.editorWindow.panels[0]
+        current_tab_widget = self.editorWindow.panels[0]
 
         if self.editor.panel:
-            currentTabWidget = self.editor.panel
+            current_tab_widget = self.editor.panel
 
             # for rean only editors we do not change tab icons
 
         if self.editor.isReadOnly(): return
 
         if m:  # document has been modified
-
-            index = currentTabWidget.indexOf(self.editor)
-
-            currentTabWidget.setTabIcon(index, QtGui.QIcon(':/icons/document-edited.png'))
-
-
+            index = current_tab_widget.indexOf(self.editor)
+            current_tab_widget.setTabIcon(index, QtGui.QIcon(':/icons/document-edited.png'))
 
         else:  # document has been restored to original state
-
-            index = currentTabWidget.indexOf(self.editor)
-
-            currentTabWidget.setTabIcon(index, QtGui.QIcon(':/icons/document-clean.png'))
+            index = current_tab_widget.indexOf(self.editor)
+            current_tab_widget.setTabIcon(index, QtGui.QIcon(':/icons/document-clean.png'))
 
         self.editorWindow.checkActions()
 
@@ -349,6 +343,7 @@ class EditorWindow(QMainWindow):
                                      ".F90": "Fortran",
                                      ".java": "Java",
                                      ".js": "JavaScript",
+                                     ".json": "JSON",
                                      ".lua": "Lua",
                                      ".m": "Matlab",
                                      ".oct": "Octave",
@@ -1125,6 +1120,23 @@ class EditorWindow(QMainWindow):
                     openFileDict[documentName] = key
 
         return openFileDict
+
+    def get_editor_file_name(self, editor):
+        """
+        Return file name given editor as an argument. Returns None if fname cannot be found
+        :param editor:
+        :return:
+        """
+
+        try:
+            return self.fileDict[editor][0]
+        except (KeyError, IndexError):
+            pass
+        # open_file_dict = self.getFileNameToEditorWidgetMap()
+        #
+        # for f_name, editor_local in open_file_dict.items():
+        #     if editor_local == editor:
+        #         return f_name
 
     def getActiveEditor(self):
 

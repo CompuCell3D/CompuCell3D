@@ -145,9 +145,8 @@ void ReactionDiffusionSolverFE::Scale(std::vector<float> const &maxDiffConstVec,
                 mitr->second /= maxNumberOfDiffusionCalls;
             }
 
-            for (std::map<unsigned char, float>::iterator mitr = secrData.typeIdSecrConstConstantConcentrationMap.begin(); mitr != secrData.typeIdSecrConstConstantConcentrationMap.end(); ++mitr) {
-                mitr->second /= maxNumberOfDiffusionCalls;
-            }
+            // Notice we do not scale constant concentration secretion. When users use Constant concentration secretion they want to keep concentration at a given cell at the specified level
+            // so no scaling
 
             for (std::map<unsigned char, SecretionOnContactData>::iterator mitr = secrData.typeIdSecrOnContactDataMap.begin(); mitr != secrData.typeIdSecrOnContactDataMap.end(); ++mitr) {
                 SecretionOnContactData & secrOnContactData = mitr->second;
@@ -161,54 +160,8 @@ void ReactionDiffusionSolverFE::Scale(std::vector<float> const &maxDiffConstVec,
                 mitr->second.maxUptake /= maxNumberOfDiffusionCalls;
                 mitr->second.relativeUptakeRate /= maxNumberOfDiffusionCalls;
             }
-
         }
     }
-    //scale all equations using the same maxNumberOfDiffusionCalls for all equations, yes there will be redundant calls  but it will ensure sanity of the solution I leave optimizations for later
-
-    //scaling of diffusion and secretion coeeficients
-    //for(unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); i++){
-    //	scalingExtraMCSVec[i] = ceil(maxDiffConstVec[i]/maxStableDiffConstant); //compute number of calls to diffusion solver
-    //	if (scalingExtraMCSVec[i]==0)
-    //		continue;
-
-    //	//diffusion data
-    //	for(int currentCellType = 0; currentCellType < UCHAR_MAX+1; currentCellType++) {
-    //		float diffConstTemp = diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType];					
-    //		float decayConstTemp = diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType];
- //           diffSecrFieldTuppleVec[i].diffData.extraTimesPerMCS=scalingExtraMCSVec[i];
-    //		diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType] = (diffConstTemp/scalingExtraMCSVec[i]); //scale diffusion
-    //		diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType] = (decayConstTemp/scalingExtraMCSVec[i]); //scale decay
-    //		
-    //	}
- //       
- //       if (scaleSecretion){
- //           //secretion data
- //           SecretionData & secrData=diffSecrFieldTuppleVec[i].secrData;
- //           for (std::map<unsigned char,float>::iterator mitr=secrData.typeIdSecrConstMap.begin() ; mitr!=secrData.typeIdSecrConstMap.end() ; ++mitr){
- //               mitr->second/=scalingExtraMCSVec[i];
- //           }
-
- //           for (std::map<unsigned char,float>::iterator mitr=secrData.typeIdSecrConstConstantConcentrationMap.begin() ; mitr!=secrData.typeIdSecrConstConstantConcentrationMap.end() ; ++mitr){
- //               mitr->second/=scalingExtraMCSVec[i];
- //           }
-
- //           for (std::map<unsigned char,SecretionOnContactData>::iterator mitr=secrData.typeIdSecrOnContactDataMap.begin() ; mitr!=secrData.typeIdSecrOnContactDataMap.end() ; ++mitr){
- //               SecretionOnContactData & secrOnContactData=mitr->second;
- //               for (std::map<unsigned char,float>::iterator cmitr=secrOnContactData.contactCellMap.begin() ; cmitr!=secrOnContactData.contactCellMap.end() ; ++cmitr){
- //                   cmitr->second/=scalingExtraMCSVec[i];
- //               }	
- //           }
-
- //           //uptake data
- //           for (std::map<unsigned char,UptakeData>::iterator mitr=secrData.typeIdUptakeDataMap.begin() ; mitr!=secrData.typeIdUptakeDataMap.end() ; ++mitr){
- //               mitr->second.maxUptake/=scalingExtraMCSVec[i];
- //               mitr->second.relativeUptakeRate/=scalingExtraMCSVec[i];			
- //           }
- //           
- //       }
-    //}
-
 }
 
 

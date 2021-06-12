@@ -1,4 +1,3 @@
-import sys
 import os.path
 import argparse
 
@@ -27,7 +26,7 @@ class CMLParser(object):
     def getSimulationFileName(self):
         return self.__fileName
 
-    def parse_cml(self, arg_list=[]):
+    def parse_cml(self, arg_list=None):
         """
         Parses command line
         :return:
@@ -94,6 +93,11 @@ class CMLParser(object):
         cml_parser.add_argument('--guiScan', required=False, action='store_true', default=False,
                                 help='enables running parameter scan in the Player')
 
+        cml_parser.add_argument('--parameter-scan-iteration', required=False, type=str, default='',
+                                help='optional argument that specifies parameter scan iteration - '
+                                     'used to enable steppables and player gui (to display in the title window)'
+                                     'to access current param scan iteration number')
+
         cml_parser.add_argument('--maxNumberOfConsecutiveRuns', required=False, action='store', default=0, type=int,
                                 help='maximum number of consecutive runs in the Player before Player restarts')
 
@@ -102,6 +106,9 @@ class CMLParser(object):
 
         cml_parser.add_argument('--returnValueTag', required=False, action='store',
                                 help='return value tag (optimization runs only))')
+
+        if arg_list is None:
+            arg_list = []
 
         self.__cml_args = cml_parser.parse_args(arg_list)
 

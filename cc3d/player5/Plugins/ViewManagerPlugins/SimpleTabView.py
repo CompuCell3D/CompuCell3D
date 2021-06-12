@@ -96,7 +96,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def __init__(self, parent):
 
         # QMainWindow -> UI.UserInterface
-        self.__parent = parent
         self.UI = parent
 
         SimpleViewManager.__init__(self, parent)
@@ -122,7 +121,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # object responsible for creating/managing plot windows so they're accessible from steppable level
 
         self.plotManager = create_plot_manager(self)
-        self.plotManager = create_plot_manager(self)
 
         self.widgetManager = WidgetManager(self)
 
@@ -142,6 +140,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__sim_file_name = ""  # simulation model filename
 
         self.__fieldType = ("Cell_Field", FIELD_TYPES[0])
+
+        self.__step = 0
 
         self.output_step_max_items = 3
         self.step_output_list = []
@@ -190,8 +190,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.prepare_for_new_simulation(force_generic_initialization=True)
 
         self.setParams()
-        self.mainGraphicsWidget = None  # vs.  lastActiveWindow
-        self.lastActiveRealWindow = None
 
         # determine if some relevant plugins are defined in the model
         self.pluginFPPDefined = False  # FocalPointPlasticity
@@ -214,14 +212,36 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # too often. Default check interval is 7 days
         self.check_version(check_interval=7)
 
-    def update_recent_file_menu(self) -> None:
+    @property
+    def UI(self):
         """
-        Updates recent simulations File menu - called on demand only
-        :return: None
+        Parent UserInterface instance
+
+        :return: parent
+        :rtype: cc3d.player5.UI.UserInterface.UserInterface
+        """
+        return self._UI()
+
+    @UI.setter
+    def UI(self, _i):
+        self._UI = ref(_i)
+
+    @property
+    def current_step(self) -> int:
+        """
+        returns current mcs
 
         :return:
         """
-        menus_dict = self.__parent.getMenusDictionary()
+        return self.__step
+
+    def update_recent_file_menu(self) -> None:
+        """
+        Updates recent simulations File menu - called on demand only
+
+        :return: None
+        """
+        menus_dict = self.UI.getMenusDictionary()
         rencent_simulations_menu = menus_dict["recentSimulations"]
         rencent_simulations_menu.clear()
         recent_simulations = Configuration.getSetting("RecentSimulations")
@@ -240,9 +260,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def set_active_sub_window_custom_slot(self, window: object) -> None:
         """
         Activates window
-        :param window: QDockWidget or QMdiWindow instance
-        :return:None
 
+        :param window: QDockWidget or QMdiWindow instance
+        :return: None
         """
 
         self.lastActiveRealWindow = window
@@ -251,6 +271,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def update_active_window_vis_flags(self, window: object = None) -> None:
         """
         Updates graphics visualization dictionary - checks if border, cells fpp links etc should be drawn
+
         :param window: QDockWidget or QMdiWindow instance - but only for graphics windows
         :return: None
         """
@@ -272,10 +293,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         """
         Invoked whenever 'Window' menu is clicked.
         It does NOT modify lastActiveWindow directly (setActiveSubWindowCustomSlot does)
-        :return:None
+
+        :return: None
         """
 
-        menus_dict = self.__parent.getMenusDictionary()
+        menus_dict = self.UI.getMenusDictionary()
         window_menu = menus_dict["window"]
         window_menu.clear()
         window_menu.addAction(self.new_graphics_window_act)
@@ -331,6 +353,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         """
         slot that handles new visualization field creation. This mechanism is necessary to handle fields
         created outside steppable constructor
+
         :param field_name:
         :param field_type:
         :return:
@@ -345,8 +368,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def add_new_graphics_window(self) -> object:
         """
         callback method to create additional ("Aux") graphics windows
-        :return: None
 
+        :return: None
         """
 
         if not self.simulationIsRunning:
@@ -370,10 +393,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # MDIFIX
         self.lastActiveRealWindow = mdi_window
 
-        # this happens when during restoration graphics window with id 0 had to be closed
-        if self.mainGraphicsWidget is None:
-            self.mainGraphicsWidget = mdi_window.widget()
-
         self.update_active_window_vis_flags()
 
         new_window.show()
@@ -394,8 +413,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def minimize_all_graphics_windows(self) -> None:
         """
         Minimizes all graphics windows. Used ony with MDI window layout
-        :return:None
 
+        :return: None
         """
 
         if not self.MDI_ON: return
@@ -408,7 +427,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def restore_all_graphics_windows(self) -> None:
         """
         Restores all graphics windows. Used ony with MDI window layout
-        :return:None
+
+        :return: None
         """
         if not self.MDI_ON: return
 
@@ -420,8 +440,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def close_active_sub_window_slot(self):
         """
         This method is called whenever a user closes a graphics window - it is a slot for closeActiveWindow action
-        :return:None
 
+        :return: None
         """
 
         active_window = self.activeSubWindow()
@@ -436,6 +456,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def set_cml_args(self, cml_args: argparse.Namespace):
         """
         storing parsed cml arguments
+
         :param cml_args: {}
         :return:
         """
@@ -444,6 +465,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def override_settings_using_cml_args(self, cml_args: argparse.Namespace) -> dict:
         """
         overrides settings using cml arguments
+
         :param cml_args:
         :return:
         """
@@ -481,6 +503,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         """
         initializes player internal variables based on command line input.
         Also if user passes appropriate option this function may get simulation going directly from command line
+
         :param cml_args: {}
         :return:
         """
@@ -489,37 +512,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.cml_args = cml_args
 
         persistent_globals.output_file_core_name = cml_args.output_file_core_name
+        persistent_globals.parameter_scan_iteration = self.cml_args.parameter_scan_iteration
 
         settings_dict = self.override_settings_using_cml_args(cml_args=self.cml_args)
         start_simulation = settings_dict['start_simulation']
 
-        # if cml_args.input:
-        #     self.__sim_file_name = cml_args.input
-        #     start_simulation = True
-        #
-        # self.__imageOutput = not cml_args.noOutput
-        #
-        # if cml_args.screenshotOutputDir:
-        #     persistent_globals.set_output_dir(output_dir=cml_args.screenshotOutputDir)
-        #     self.__imageOutput = True
-        #
-        # if cml_args.screenshot_output_frequency > 0:
-        #     self.__imageOutput = True
-        #     self.__shotFrequency = cml_args.screenshot_output_frequency
-        #
-        # if cml_args.outputFrequency:
-        #     self.__latticeOutputFlag = True
-        #     self.__latticeOutputFrequency = cml_args.outputFrequency
-        #
-        # if cml_args.playerSettings:
-        #     self.playerSettingsFileName = cml_args.playerSettings
-
         current_dir = cml_args.currentDir if cml_args.currentDir else ''
         if cml_args.windowSize:
-            winSizes = cml_args.windowSize.split('x')
-            # print MODULENAME, "  winSizes=", winSizes
-            width = int(winSizes[0])
-            height = int(winSizes[1])
+            win_sizes = cml_args.windowSize.split('x')
+            width = int(win_sizes[0])
+            height = int(win_sizes[1])
             Configuration.setSetting("GraphicsWinWidth", width)
             Configuration.setSetting("GraphicsWinHeight", height)
 
@@ -561,7 +563,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             if not os.access(self.__sim_file_name, os.F_OK):
                 raise FileNotFoundError("Could not find simulation file: " + self.__sim_file_name)
 
-        self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__sim_file_name)
+        self.set_title_window_from_sim_fname(widget=self.UI, abs_sim_fname=self.__sim_file_name)
 
         if self.playerSettingsFileName != '':
             player_settings_full_file_name = os.path.abspath(self.playerSettingsFileName)
@@ -580,22 +582,22 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def set_recent_simulation_file(self, file_name: str) -> None:
         """
         sets recent simulation file name
+
         :param file_name: {str}
         :return: None
         """
 
         self.__sim_file_name = file_name
-        self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__sim_file_name)
+        self.set_title_window_from_sim_fname(widget=self.UI, abs_sim_fname=self.__sim_file_name)
 
         CompuCellSetup.persistent_globals.simulation_file_name = self.__sim_file_name
 
     def reset_control_buttons_and_actions(self) -> None:
         """
-
         Resets control buttons and actions - called either after simulation is done
         (__cleanAfterSimulation) or in prepareForNewSimulation
-        :return:
 
+        :return: None
         """
 
         self.run_act.setEnabled(True)
@@ -610,7 +612,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def reset_control_variables(self) -> None:
         """
-        Resets control variables - called either after simulation is done (__cleanAfterSimulation) or in prepareForNewSimulation
+        Resets control variables - called either after simulation is done (__cleanAfterSimulation) or in
+        prepareForNewSimulation
+
         :return: None
         """
 
@@ -708,7 +712,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def prepare_area_for_new_simulation(self) -> None:
         """
         Closes all open windows (from previous simulation) and creates new VTK window for the new simulation
-        :return:
+
+        :return: None
         """
 
         self.close_all_windows()
@@ -718,6 +723,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def popup_message(self, title: str, msg: str) -> None:
         """
         displays popup message window
+
         :param title: {str} title
         :param msg: {str} message
         :return: None
@@ -729,13 +735,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
                                   QMessageBox.Ok
                                   )
 
-    def handleErrorMessage(self, _errorType, _traceback_message):
-        '''
+    def handleErrorMessage(self, _errorType, _traceback_message) -> None:
+        """
         Callback function used to display any type of errors from the simulation script
+
         :param _errorType: str - error type
         :param _traceback_message: str - contains full Python traceback
-        :return:
-        '''
+        :return: None
+        """
         msg = QMessageBox.warning(self, _errorType,
                                   _traceback_message,
                                   QMessageBox.Ok,
@@ -756,11 +763,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         syntaxErrorConsole.setText(text)
 
     def handleErrorFormatted(self, _errorMessage):
-        '''
+        """
         Pastes errorMessage directly into error console
+
         :param _errorMessage: str with error message
-        :return:None
-        '''
+        :return: None
+        """
         CompuCellSetup.error_code = 1
 
         self.__cleanAfterSimulation()
@@ -776,13 +784,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         return
 
     def processIncommingSimulation(self, _fileName, _stopCurrentSim=False):
-        '''
+        """
         Callback function used to start new simulation. Currently invoked indirectly from the twedit++ when users choose
         "Open In Player" option form the CC3D project in the project context menu
+
         :param _fileName: str - simulation file name - full path
         :param _stopCurrentSim: bool , flag indicating if current simulation needs to be stopped
-        :return:None
-        '''
+        :return: None
+        """
         print("processIncommingSimulation = ", _fileName, ' _stopCurrentSim=', _stopCurrentSim)
         persistent_globals = CompuCellSetup.persistent_globals
         if _stopCurrentSim:
@@ -806,14 +815,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
             persistent_globals.simulation_file_name = os.path.abspath(self.__sim_file_name)
             self.nextSimulation = _fileName
 
-        self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=str(_fileName))
-        # self.__parent.setWindowTitle(basename(str(_fileName)) + " - CompuCell3D Player")
+        self.set_title_window_from_sim_fname(widget=self.UI, abs_sim_fname=str(_fileName))
+        # self.UI.setWindowTitle(basename(str(_fileName)) + " - CompuCell3D Player")
 
     def prepareXMLTreeView(self):
-        '''
+        """
         Initializes model editor tree view of the CC3DML - Model editor is used for steering
-        :return:None
-        '''
+
+        :return: None
+        """
 
         # todo 5 -  restore model view
 
@@ -827,11 +837,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.model.setPrintFlag(True)
 
     def prepareLatticeDataView(self):
-        '''
+        """
         Initializes widget that displays vtk file names during vtk file replay mode in the Player
-        :return:None
-        '''
-        ui = self.__parent
+
+        :return: None
+        """
+        ui = self.UI
 
         ui.latticeDataModel.setLatticeDataFileList(self.simulation.ldsFileList)
         self.latticeDataModel = ui.latticeDataModel
@@ -846,6 +857,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def __loadSim(self, file):
         """
         Loads simulation
+
         :param file: str - full path to the CC3D simulation (usually .cc3d file or .dml vtk replay file path) .
         XML and python files are also acceptable options for the simulation but they are deprecated in favor of .cc3d
         :param file:
@@ -870,8 +882,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if re.match(".*\.cc3d$", file_name):
             self.__loadCC3DFile(file_name)
 
-            self.__parent.toggleLatticeData(False)
-            self.__parent.toggleModelEditor(True)
+            self.UI.toggleLatticeData(False)
+            self.UI.toggleModelEditor(True)
 
         elif re.match(".*\.dml$", file_name):
             self.__loadDMLFile(file_name=file_name)
@@ -884,8 +896,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def __loadDMLFile(self, file_name: str) -> None:
         """
         loads lattice descriotion file and initializes simulation result replay
+
         :param file_name:
-        :return:
+        :return: None
         """
         persistent_globals = CompuCellSetup.persistent_globals
         # Let's toggle these off (and not tell the user for now)
@@ -926,8 +939,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.prepare_for_new_simulation()
 
-        self.__parent.toggleLatticeData(True)
-        self.__parent.toggleModelEditor(False)
+        self.UI.toggleLatticeData(True)
+        self.UI.toggleModelEditor(False)
 
         self.prepareLatticeDataView()
 
@@ -936,8 +949,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Loads .cc3d file . loads project-specific settings for the project if such exist or creates them based on the
         global settings stored in ~/.compucell3d. It internally invokes the data reader modules which reads the file
         and populate resources and file paths in CC3DSimulationDataHandler class object.
+
         :param fileName: str - .cc3d file name
-        :return:None
+        :return: None
         """
 
         """
@@ -1003,10 +1017,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
             Configuration.writeSettingsForSingleSimulation(self.customSettingPath)
 
     def __setConnects(self):
-        '''
+        """
         Sets up signal slot connections for actions
-        :return:None
-        '''
+
+        :return: None
+        """
         # QShortcut(QKeySequence("Ctrl+p"), self, self.__dumpPlayerParams)  # Cmd-3 on Mac
         self.run_act.triggered.connect(self.__runSim)
         self.step_act.triggered.connect(self.__stepSim)
@@ -1055,19 +1070,21 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.configsChanged.connect(self.__paramsChanged)
 
     def setFieldType(self, _fieldTypeTuple):
-        '''
+        """
         Called from GraphicsFrameWidget
+
         :param _fieldTypeTuple: tuple with field types
-        :return:None
-        '''
+        :return: None
+        """
         self.__fieldType = _fieldTypeTuple
 
     def closeEventSimpleTabView(self, event=None):
-        '''
+        """
         Handles player5 CloseEvent - called from closeEvent in UserInterface.py
+
         :param event: Qt CloseEvent
-        :return:None
-        '''
+        :return: None
+        """
 
         if self.saveSettings:
             Configuration.syncPreferences()
@@ -1088,6 +1105,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def read_screenshot_description_file(self, scr_file=None):
         """
         Reads screenshot_description file
+
         :param scr_file: {str} scr file
         :return: None
         """
@@ -1109,10 +1127,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     self.screenshotManager.get_screenshot_filename()))
 
     def initializeSimulationViewWidgetCMLResultReplay(self):
-        '''
+        """
         Initializes PLayer during VTK replay run mode
-        :return:None
-        '''
+
+        :return: None
+        """
 
         self.fieldDim = self.simulation.fieldDim
         self.mysim = self.simulation.sim
@@ -1154,10 +1173,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.cmlReplayManager.set_stay_in_current_step(True)
 
     # def createOutputDirs(self):
-    #     '''
+    #     """
     #     Creates Simulation output directory
     #     :return:None
-    #     '''
+    #     """
     #
     #     # todo 5 - restore it
     #     return
@@ -1209,7 +1228,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def initializeSimulationViewWidgetRegular(self) -> None:
         """
         Initializes Player during simualtion run mode
-        :return:
+
+        :return: None
         """
 
         sim = CompuCellSetup.persistent_globals.simulator
@@ -1289,7 +1309,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         """
         Dispatch function - calls player5 initialization functions
         (initializeSimulationViewWidgetRegular or initializeSimulationViewWidgetCML) depending on the run mode
-        :return:None
+
+        :return: None
         """
 
         self.close_all_windows()
@@ -1309,10 +1330,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.sem.release()
 
     def runSteppablePostStartPlayerPrep(self):
-        '''
+        """
         Handler function runs after steppables executed start functions. Restores window layout for plot windows
-        :return:None
-        '''
+
+        :return: None
+        """
         self.setFieldTypes()
 
         self.simulation.sem.tryAcquire()
@@ -1326,11 +1348,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.restore_steering_panel()
 
     def handleSimulationFinishedCMLResultReplay(self, _flag):
-        '''
+        """
         callback - runs after CML replay mode finished. Cleans after vtk replay
+
         :param _flag: bool - not used at tyhe moment
-        :return:None
-        '''
+        :return: None
+        """
         persistent_globals = CompuCellSetup.persistent_globals
         if persistent_globals.player_type == "CMLResultReplay":
             self.latticeDataModelTable.prepareToClose()
@@ -1339,28 +1362,31 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__cleanAfterSimulation()
 
     def handleSimulationFinishedRegular(self, _flag):
-        '''
+        """
         Callback - called after "regular" simulation finishes
+
         :param _flag:bool - unused
-        :return:None
-        '''
+        :return: None
+        """
         print('INSIDE handleSimulationFinishedRegular')
         self.__cleanAfterSimulation()
 
     def handleSimulationFinished(self, _flag):
-        '''
+        """
         dispatch function for simulation finished event
+
         :param _flag: bool - unused
-        :return:
-        '''
+        :return: None
+        """
         handleSimulationFinishedFcn = getattr(self, "handleSimulationFinished" + self.__viewManagerType)
         handleSimulationFinishedFcn(_flag)
 
     def handleCompletedStepCMLResultReplay(self, _mcs):
         """
         callback - runs after vtk replay step completed.
+
         :param _mcs: int - current Monte Carlo step
-        :return:None
+        :return: None
         """
 
         # synchronization  to allow CMLReader to read data, and report results and then
@@ -1406,7 +1432,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def process_output_screenshots(self):
         """
 
-        :return:
+        :return: None
         """
 
         try:
@@ -1426,8 +1452,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def handleCompletedStepRegular(self, mcs: int) -> None:
         """
         callback - runs after simulation step completed.
+
         :param mcs: {int} current Monte Carlo step
-        :return:
+        :return: None
         """
         persistent_globals = CompuCellSetup.persistent_globals
         # creating cml field handler in case lattice output is ON
@@ -1484,13 +1511,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Dispatch function for handleCompletedStep functions
 
         :param mcs: int - current Monte Carlo step
-
-        :return:None
-
+        :return: None
         """
 
         if not self.completedFirstMCS:
             self.completedFirstMCS = True
+            # initializes cell type data
+            self.ui.cell_type_color_map_model.read_cell_type_color_data()
+            self.ui.cell_type_color_map_view.setModel(self.ui.cell_type_color_map_model)
+            # update_content function gets called each time configsChanged signal gets emitted and we
+            # reread entire cell type information at this point - effectively updating cell type color map display
+            self.configsChanged.connect(self.ui.cell_type_color_map_view.update_content)
 
         self.__step = mcs
 
@@ -1498,15 +1529,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
         handle_completed_step_fcn(mcs)
 
     def handleFinishRequest(self, _flag):
-        '''
+        """
         Ensures that all the tasks in the GUI thread that need simulator to be alive are completed before proceeding
         further with finalizing the simulation. For example SimpleTabView.py. function handleCompletedStepRegular
         may need a lot of time to output simulations fields and those fields need to have alive simulator otherwise
         accessing to destroyed field will lead to segmentation fault
         Saves Window layout into project settings
+
         :param _flag: bool - unused
-        :return:None
-        '''
+        :return: None
+        """
 
         # we do not save windows layout for simulation replay
         if self.__viewManagerType != "CMLResultReplay":
@@ -1519,10 +1551,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.finishMutex.unlock()
 
     def init_simulation_control_vars(self):
-        '''
+        """
         Sets several output-related variables in simulation thread
-        :return:None
-        '''
+
+        :return: None
+        """
         self.simulation.screenUpdateFrequency = self.__updateScreen
         self.simulation.imageOutputFlag = self.__imageOutput
         self.simulation.screenshotFrequency = self.__shotFrequency
@@ -1543,10 +1576,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
             pg.restart_manager.allow_multiple_restart_directories = pg.restart_multiple_snapshots
 
     def prepareSimulation(self):
-        '''
+        """
         Prepares simulation - loads simulation, installs rollback importer - to unimport previously used modules
-        :return:None
-        '''
+
+        :return: None
+        """
         if not self.drawingAreaPrepared:
             # checking if the simulation file is not an empty string
             if self.__sim_file_name == "":
@@ -1593,15 +1627,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             self.rollbackImporter = RollbackImporter()
 
-            #
-
             return True
 
     def start_parameter_scan(self, sim_file_name):
         """
 
         :param sim_file_name:
-        :return:
+        :return: None
         """
 
         pg = CompuCellSetup.persistent_globals
@@ -1642,7 +1674,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def maybe_launch_param_scan(self) -> bool:
         """
         Launches parameter scan if indeed the simulation is a parameter scan otherwise takes no action
-        :return: returns Tru if indeed parameter scan launcher was open
+
+        :return: returns True if indeed parameter scan launcher was open
         """
 
         param_scan_flag = self.check_for_param_scan(sim_file_name=self.__sim_file_name)
@@ -1653,10 +1686,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         return False
 
     def __runSim(self):
-        '''
+        """
         Slot that actually runs the simulation
-        :return:None
-        '''
+
+        :return: None
+        """
 
         # when we run simulation we ensure that self.simulation.screenUpdateFrequency
         # is whatever is written in the settings
@@ -1727,10 +1761,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 return
 
     def __stepSim(self):
-        '''
+        """
         Slot that steps through simulation
-        :return:Nonea
-        '''
+
+        :return: None
+        """
 
         self.simulation.screenUpdateFrequency = 1  # when we step we need to ensure screenUpdateFrequency is 1
 
@@ -1817,17 +1852,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
             return
 
     def requestRedraw(self):
-        '''
+        """
         Responds to request to redraw simulatin snapshots if the simulation is running
-        :return:
-        '''
+
+        :return: None
+        """
         if self.simulationIsRunning or self.simulationIsStepping:
             self.__drawField()
 
     def drawFieldCMLResultReplay(self) -> None:
         """
         Draws fields during vtk replay mode
-        :return:
+
+        :return: None
         """
         if not self.simulationIsRunning:
             return
@@ -1872,8 +1909,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def cml_reader_synchronize(self, acquire=True):
         """
         acquires or releases key synchromization primitives from CMLReader
+
         :param acquire:
-        :return:
+        :return: None
         """
         if acquire:
             self.simulation.drawMutex.lock()
@@ -1886,7 +1924,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def drawFieldRegular(self):
         """
         Draws field during "regular" simulation
-        :return:None
+
+        :return: None
         """
         if not self.simulationIsRunning:
             return
@@ -1897,7 +1936,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.__pauseSim()
         self.simulation.drawMutex.lock()
 
-        self.__step = self.simulation.getCurrentStep()
+        start_completed_no_mcs = False
+        if self.__step < 0:
+            start_completed_no_mcs = True
+        else:
+            self.__step = self.simulation.getCurrentStep()
 
         if self.mysim:
 
@@ -1910,15 +1953,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 graphics_frame.draw(self.basicSimulationData)
 
                 # show MCS in lower-left GUI
-                self.__updateStatusBar(self.__step)
+                if start_completed_no_mcs:
+                    self.__updateStatusBar('start')
+                else:
+                    self.__updateStatusBar(self.__step)
 
         self.simulation.drawMutex.unlock()
 
     def updateSimulationProperties(self):
-        '''
-        INitializes basic simulation data - fieldDim, number of steps etc.
-        :return:bool - flag indicating if initialization of basic simulation data was successful
-        '''
+        """
+        Initializes basic simulation data - fieldDim, number of steps etc.
+
+        :return: bool - flag indicating if initialization of basic simulation data was successful
+        """
 
         if self.__viewManagerType == "Regular":
 
@@ -1951,10 +1998,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
             return False
 
     def updateVisualization(self):
-        '''
+        """
         Updates visualization properties - called e.g. after resizing of the lattice
-        :return:None
-        '''
+
+        :return: None
+        """
 
         self.fieldStorage.allocateCellField(self.fieldDim)
         # this updates cross sections when dimensions change
@@ -1973,17 +2021,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.__runSim()  # we are immediately restarting it after e.g. lattice resizing took place
 
     def _drawField(self):
-        '''
+        """
         Calls __drawField . Called from GraphicsFrameWidget.py
-        :return:None
-        '''
+
+        :return: None
+        """
 
         self.__drawField()
 
     def __drawField(self):
         """
         Dispatch function to draw simulation snapshots
-        :return:None
+
+        :return: None
         """
 
         # here we are resetting previous warnings because draw functions may write their own warning
@@ -1998,31 +2048,33 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # for some reason cameras have to be initialized after drawing resized lattice
             # and draw function has to be repeated
             self.updateVisualization()
-
+        self.basicSimulationData.current_step = self.current_step
         __drawFieldFcn()
 
     def displayWarning(self, warning_text):
-        '''
+        """
         Displays Warnings in the status bar
+
         :param warning_text: str - warning text
-        :return:None
-        '''
+        :return: None
+        """
         self.warnings.setText(warning_text)
 
-    def __updateStatusBar(self, step):
-        '''
+    def __updateStatusBar(self, step: Union[int, str]) -> None:
+        """
         Updates status bar
-        :param step: int - current MCS
-        :return:
-        '''
-        self.mcSteps.setText("MC Step: %s" % step)
-        # self.conSteps.setText("Min: %s Max: %s" % conMinMax)
+
+        :param step:  - current MCS
+        :return: None
+        """
+        self.mcSteps.setText(f"MC Step: {step}")
 
     def __pauseSim(self):
-        '''
+        """
         slot that pauses simulation
-        :return:None
-        '''
+
+        :return: None
+        """
         if self.__viewManagerType == "CMLResultReplay":
             self.cmlReplayManager.set_run_state(state=PAUSE_STATE)
 
@@ -2036,7 +2088,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def __save_windows_layout(self):
         """
         Saves windows layout in the _settings.xml
-        :return:None
+
+        :return: None
         """
 
         windows_layout = {}
@@ -2080,9 +2133,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         Configuration.setSetting('WindowsLayout', windows_layout_combined)
 
-    def get_steering_panel_layout_dict(self)->dict:
+    def get_steering_panel_layout_dict(self) -> dict:
         """
         returns a dictionary with steering panel(s) layout specs - used in saving/restoring layout
+
         :return:
         """
 
@@ -2103,7 +2157,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def restore_steering_panel(self):
         """
         Restores layout of the steering panel
-        :return:
+
+        :return: None
         """
         windows_layout_dict = Configuration.getSetting('WindowsLayout')
 
@@ -2126,10 +2181,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
             win.move(gwd.winPosition)
 
     def __simulationStop(self):
-        '''
+        """
         Slot that handles simulation stop
-        :return:None
-        '''
+
+        :return: None
+        """
         # Once user requests explicit stop of the simulation we stop regardless whether this is parameter scan or not.
         # To stop parameter scan we reset variables used to seer parameter scan to their default (non-param scan) values
 
@@ -2158,10 +2214,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.simulation.setStopSimulation(True)
 
     # def __simulationSerialize(self):
-    #     '''
+    #     """
     #     Slot that handles request to serialize simulation
     #     :return:None
-    #     '''
+    #     """
     #     # print self.simulation.restartManager
     #     currentStep = self.simulation.sim.getStep()
     #     if self.pause_act.isEnabled():
@@ -2171,6 +2227,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def restore_default_settings(self):
         """
         Replaces existing simulation's settings with the default ones
+
         :return: None
         """
         # works only for running simulation
@@ -2184,7 +2241,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def restore_default_global_settings():
         """
         Removes global settings
-        :return:
+
+        :return: None
         """
 
         Configuration.restore_default_global_settings()
@@ -2196,11 +2254,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         print('AFTER QtCore.QCoreApplication.instance()')
 
     def __cleanAfterSimulation(self, _exitCode=0):
-        '''
+        """
         Cleans after simulation is done
+
         :param _exitCode: exit code from the simulation
-        :return:None
-        '''
+        :return: None
+        """
 
         self.reset_control_buttons_and_actions()
         self.reset_control_variables()
@@ -2247,12 +2306,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # self.close_all_windows()
 
     def close_all_windows(self):
-        '''
+        """
         Closes all windows
-        :return:None
-        '''
+
+        :return: None
+        """
         for win in list(self.win_inventory.values()):
-            self.win_inventory.remove_from_inventory(win)
             try:
                 if not sys.platform.startswith('win'):
                     win.showNormal()
@@ -2263,21 +2322,23 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.win_inventory.set_counter(0)
 
     def __stopSim(self):
-        '''
+        """
         stops simulation thread
-        :return:None
-        '''
+
+        :return: None
+        """
         # self.simulation.stop()
         self.stopRequestSignal.emit()
         self.simulation.wait()
 
     def makeCustomSimDir(self, _dirName, _simulationFileName):
-        '''
+        """
         Creates custom simulation output directory
+
         :param _dirName: str - custom directory name
         :param _simulationFileName: current simulation file name
-        :return: tupple (custom directory name, base file name for directory)
-        '''
+        :return: tuple (custom directory name, base file name for directory)
+        """
         fullFileName = os.path.abspath(_simulationFileName)
         (filePath, baseFileName) = os.path.split(fullFileName)
         baseFileNameForDirectory = baseFileName.replace('.', '_')
@@ -2289,11 +2350,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     # # Shows the plugin view tab
     # def showPluginView(self, pluginInfo):
-    #     '''
+    #     """
     #     Shows PLugin information - deprecated
     #     :param pluginInfo:plugin information
     #     :return:None
-    #     '''
+    #     """
     #     textStr = QString('<div style="margin: 10px 10px 10px 20px; font-size: 14px"><br />\
     #     Plugin: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <b>%1</b><br />\
     #     Description: &nbsp; %2</div>').arg(pluginInfo[0]).arg(pluginInfo[1])
@@ -2315,31 +2376,34 @@ class SimpleTabView(MainArea, SimpleViewManager):
     #     self.setCurrentIndex(1)
 
     def setInitialCrossSection(self, _basicSimulationData):
-        '''
+        """
         Initializes cross section bar for vtk graphics window
+
         :param _basicSimulationData: BasicSimulationData
-        :return:None
-        '''
+        :return: None
+        """
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             graphicsFrame = win.widget()
             graphicsFrame.set_initial_cross_section(_basicSimulationData)
 
     def initGraphicsWidgetsFieldTypes(self):
-        '''
+        """
         Initializes graphics field types for vtk graphics window
-        :return:None
-        '''
+
+        :return: None
+        """
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             graphicsFrame = win.widget()
             graphicsFrame.set_field_types_combo_box(self.fieldTypes)
 
     # Shows simulation view tab
     def showSimView(self, file):
-        '''
+        """
         Shows Initial simulation view. calls function to restore windows layout
+
         :param file: str - file path - unused
-        :return:None
-        '''
+        :return: None
+        """
 
         self.prepare_area_for_new_simulation()
 
@@ -2381,7 +2445,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Restores windows layout based on the WindowsLayout setting.
         Known limitation - when extra field is specified outside steppable constructopr
         this window will NOT be restored. Instead it will default to cell field
-        :return:
+
+        :return: None
         """
 
         windows_layout_dict = Configuration.getSetting('WindowsLayout')
@@ -2422,8 +2487,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 graphics_window = self.lastActiveRealWindow
                 graphics_window.close()
-                self.mainGraphicsWidget = None
-                self.win_inventory.remove_from_inventory(graphics_window)
 
                 pass
 
@@ -2474,10 +2537,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
             gfw.apply_graphics_window_data(gwd)
 
     def setFieldTypesCML(self):
-        '''
+        """
         initializes field types for VTK vidgets during vtk replay mode
-        :return:None
-        '''
+
+        :return: None
+        """
 
         # Add cell field
         self.fieldTypes["Cell_Field"] = FIELD_TYPES[0]  # "CellField"
@@ -2487,10 +2551,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.fieldTypes[fieldName] = self.simulation.fieldsUsed[fieldName]
 
     def setFieldTypes(self):
-        '''
+        """
         initializes field types for VTK vidgets during regular simulation
-        :return:None
-        '''
+
+        :return: None
+        """
         sim_obj = self.mysim()
         if not sim_obj: return
 
@@ -2515,8 +2580,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def showDisplayWidgets(self):
         """
         Displays initial snapthos widgets - called from showSimView
-        :return:None
-        :return:
+
+        :return: None
         """
 
         # This block of code simply checks to see if some plugins assoc'd with Vis are defined
@@ -2555,29 +2620,21 @@ class SimpleTabView(MainArea, SimpleViewManager):
             else:
                 self.cell_glyphs_act.setEnabled(True)
 
-        # ------------------
-        if not self.mainGraphicsWidget: return
-
-        # todo 5 -  rework initialization
-        self.mainGraphicsWidget.set_status_bar(self.__statusBar)
-
-        self.mainGraphicsWidget.setZoomItems(self.zitems)  # Set zoomFixed parameters
-
-        self.mainGraphicsWidget.set_plane(PLANES[0], 0)
-
     def setParams(self):
-        '''
+        """
         Calls __paramsChanged. Used from outside SimpleTabView
-        :return:None
-        '''
+
+        :return: None
+        """
         self.__paramsChanged()
 
     def __paramsChanged(self):
-        '''
+        """
         Slot linked to configsChanged signal - called after we hit 'OK' button on configuration dialog
         Also called during run initialization
-        :return:None
-        '''
+
+        :return: None
+        """
 
         self.__updateScreen = Configuration.getSetting("ScreenUpdateFrequency")
         self.__imageOutput = Configuration.getSetting("ImageOutputOn")
@@ -2597,18 +2654,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.init_simulation_control_vars()
 
     def setZoomItems(self, zitems):
-        '''
+        """
         Deprecated - was used to set zoom items in the combo box. We do not use it any longer
+
         :param zitems: list of zoom items e.g. 25,50,100, 125 etc...
-        :return:
-        '''
+        :return: None
+        """
         self.zitems = zitems
 
     def zoomIn(self):
-        '''
+        """
         Slot called after user presses Zoom In button
-        :return:None
-        '''
+
+        :return: None
+        """
 
         active_sub_window = self.activeSubWindow()
 
@@ -2619,10 +2678,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
             active_sub_window.widget().zoom_in()
 
     def zoomOut(self):
-        '''
+        """
         Slot called after user presses Zoom Out button
-        :return:None
-        '''
+
+        :return: None
+        """
 
         active_sub_window = self.activeSubWindow()
 
@@ -2634,39 +2694,33 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     # # File name should be passed
     def takeShot(self):
-        '''
+        """
         slot that adds screenshot configuration
-        :return:None
-        '''
-        if self.screenshotManager is not None:
+
+        :return: None
+        """
+        if self.screenshotManager is not None and self.lastActiveRealWindow is not None:
+            graphics_widget = self.lastActiveRealWindow.widget()
             if self.threeDRB.isChecked():
-                camera = self.mainGraphicsWidget.ren.GetActiveCamera()
+                camera = graphics_widget.ren.GetActiveCamera()
                 # print "CAMERA SETTINGS =",camera
                 self.screenshotManager.add_3d_screenshot(self.__fieldType[0], self.__fieldType[1], camera)
             else:
-                plane_position_tupple = self.mainGraphicsWidget.get_plane()
+                plane_position_tupple = graphics_widget.get_plane()
                 self.screenshotManager.add_2d_screenshot(self.__fieldType[0], self.__fieldType[1],
                                                          plane_position_tupple[0], plane_position_tupple[1])
 
     def prepareSimulationView(self):
-        '''
+        """
         One of the initialization functions - prepares initial simulation view
-        :return:
-        '''
+
+        :return: None
+        """
 
         if self.__sim_file_name != "":
             file = QFile(self.__sim_file_name)
             if file is not None:
-                if self.mainGraphicsWidget is None:
-
-                    self.showSimView(file)
-
-                else:
-
-                    # self.__closeSim()
-                    # print 'BEFORE showSimView'
-                    self.showSimView(file)
-                    # print 'AFTER showSimView'
+                self.showSimView(file)
 
         self.drawingAreaPrepared = True
         # needed in case switching from one sim to another (e.g. 1st has FPP, 2nd doesn't)
@@ -2675,19 +2729,28 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def set_title_window_from_sim_fname(self, widget, abs_sim_fname):
         """
         Sets window title based on current simulation full name
+
         :param widget: {QWidget}
         :param abs_sim_fname: {str} absolute simulation fname
         :return: None
         """
         title_to_display = join(basename(dirname(self.__sim_file_name)), basename(self.__sim_file_name))
-        widget.setWindowTitle(title_to_display + " - CompuCell3D Player")
+        # handling extra display label - only when user passes it via command line option
+
+        persistent_globals = CompuCellSetup.persistent_globals
+        title_window_display_label = ''
+        if persistent_globals.parameter_scan_iteration is not None:
+            title_window_display_label = f' - iteration - {persistent_globals.parameter_scan_iteration}'
+
+        widget.setWindowTitle(title_to_display + f" - CompuCell3D Player{title_window_display_label}")
 
     def __openLDSFile(self, fileName=None):
-        '''
+        """
         Opens Lattice Description File - for vtk replay mode
+
         :param fileName: str - .dml file name
-        :return:none
-        '''
+        :return: None
+        """
 
         filter_ext = "Lattice Description Summary file  (*.dml )"
 
@@ -2707,8 +2770,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.__sim_file_name = os.path.abspath(str(self.__sim_file_name))
 
-        # setting text for main window (self.__parent) title bar
-        self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__sim_file_name)
+        # setting text for main window (self.UI) title bar
+        self.set_title_window_from_sim_fname(widget=self.UI, abs_sim_fname=self.__sim_file_name)
 
         Configuration.setSetting("ImageOutputOn", False)
         Configuration.setSetting("LatticeOutputOn", False)
@@ -2716,6 +2779,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def open_recent_sim(self) -> None:
         """
         Slot - opens recent simulation
+
         :return: None
         """
         if self.simulationIsRunning:
@@ -2728,8 +2792,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # # opening screenshot description file
         # self.open_implicit_screenshot_descr_file()
 
-        # setting text for main window (self.__parent) title bar
-        self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__sim_file_name)
+        # setting text for main window (self.UI) title bar
+        self.set_title_window_from_sim_fname(widget=self.UI, abs_sim_fname=self.__sim_file_name)
 
         persistent_globals = CompuCellSetup.persistent_globals
 
@@ -2743,6 +2807,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def check_for_param_scan(self, sim_file_name: Union[str, Path]) -> bool:
         """
         Checks for parameter scan simulation
+
         :param sim_file_name:
         :return:
         """
@@ -2761,12 +2826,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         return param_scan_flag
 
     def __openSim(self, fileName=None):
-        '''
+        """
         This function is called when open file is triggered.
         Displays File open dialog to open new simulation
+
         :param fileName: str - unused
-        :return:None
-        '''
+        :return: None
+        """
 
         # set the cwd of the dialog based on the following search criteria:
         #     1: Directory of currently active editor
@@ -2816,8 +2882,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         print('__openSim: self.__fileName=', self.__sim_file_name)
 
-        # setting text for main window (self.__parent) title bar
-        self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__sim_file_name)
+        # setting text for main window (self.UI) title bar
+        self.set_title_window_from_sim_fname(widget=self.UI, abs_sim_fname=self.__sim_file_name)
 
         CompuCellSetup.persistent_globals.simulation_file_name = self.__sim_file_name
 
@@ -2828,11 +2894,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Configuration.setSetting("RecentSimulations", self.__sim_file_name)
 
     def __checkCells(self, checked):
-        '''
+        """
         Slot that triggers display of cells
+
         :param checked: bool - flag determines if action is on or off
-        :return:None
-        '''
+        :return: None
+        """
 
         # Should be disabled when the simulation is not loaded!
         self.simulation.drawMutex.lock()
@@ -2851,11 +2918,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.unlock()
 
     def __checkBorder(self, checked):
-        '''
+        """
         Slot that triggers display of borders
+
         :param checked: bool - flag determines if action is on or off
-        :return:None
-        '''
+        :return: None
+        """
         # Should be disabled when the simulation is not loaded!
         self.simulation.drawMutex.lock()
         self.update_active_window_vis_flags()
@@ -2873,11 +2941,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.unlock()
 
     def __checkClusterBorder(self, checked):
-        '''
+        """
         Slot that triggers display of cluster borders
+
         :param checked: bool - flag determines if action is on or off
-        :return:None
-        '''
+        :return: None
+        """
         # Should be disabled when the simulation is not loaded!
         self.simulation.drawMutex.lock()
 
@@ -2894,11 +2963,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.unlock()
 
     def __checkCellGlyphs(self, checked):
-        '''
+        """
         Slot that triggers display of cell glyphs
+
         :param checked: bool - flag determines if action is on or off
-        :return:None
-        '''
+        :return: None
+        """
         # Should be disabled when the simulation is not loaded!
         self.simulation.drawMutex.lock()
         self.update_active_window_vis_flags()
@@ -2924,11 +2994,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.unlock()
 
     def __checkFPPLinks(self, checked):
-        '''
+        """
         Slot that triggers display of FPP links
+
         :param checked: bool - flag determines if action is on or off
-        :return:None
-        '''
+        :return: None
+        """
 
         Configuration.setSetting("FPPLinksOn", checked)
         # Should be disabled when the simulation is not loaded!
@@ -2956,11 +3027,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.unlock()
 
     def __checkFPPLinksColor(self, checked):
-        '''
+        """
         Slot that triggers display of colored FPP links
+
         :param checked: bool - flag determines if action is on or off
-        :return:None
-        '''
+        :return: None
+        """
         if checked and self.fpp_links_act.isChecked():
             self.fpp_links_act.setChecked(False)
             self.__checkFPPLinks(False)
@@ -3008,11 +3080,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.unlock()
 
     def __checkContour(self, checked):
-        '''
+        """
         Slot that triggers display of contours - may be deprecated
+
         :param checked: bool - flag determines if action is on or off
-        :return:None
-        '''
+        :return: None
+        """
         if self.contourAct.isEnabled():
 
             # MDIFIX
@@ -3034,18 +3107,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.update_active_window_vis_flags(graphicsWidget)
 
     def __checkLimits(self, checked):
-        '''
+        """
         Placeholder function for concentration limits on/off - to be implemented
+
         :param checked:bool - flag determines if action is on or off
-        :return:None
-        '''
+        :return: None
+        """
         pass
 
     def __resetCamera(self):
-        '''
+        """
         Resets Camera for the current window
-        :return:None
-        '''
+
+        :return: None
+        """
         # print 'INSIDE RESET CAMERA'
         activeSubWindow = self.activeSubWindow()
         # print 'activeSubWindow=', activeSubWindow
@@ -3056,19 +3131,21 @@ class SimpleTabView(MainArea, SimpleViewManager):
             activeSubWindow.widget().reset_camera()
 
     def __checkCC3DOutput(self, checked):
-        '''
+        """
         Slot that triggers display output information in the console -may not work properly without QT
         linked to the core cc3d code
+
         :param checked: bool - flag determines if action is on or off
-        :return:None
-        '''
+        :return: None
+        """
         Configuration.setSetting("CC3DOutputOn", checked)
 
     def __showConfigDialog(self, pageName=None):
         """
         Private slot to set the configurations.
-        @param pageName name of the configuration page to show (string or QString)
-        :return:None
+
+        :param pageName: name of the configuration page to show (string or QString)
+        :return: None
         """
         active_field_names_list = []
         for idx in range(len(self.fieldTypes)):
@@ -3119,17 +3196,22 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.__redoCompletedStep()
 
     def __generatePIFFromCurrentSnapshot(self):
-        '''
+        """
         Slot that generates PIFF file from current snapshot - calls either __generatePIFFromVTK or
         __generatePIFFromRunningSimulation depending on th4e running mode
-        :return:None
-        '''
+
+        :return: None
+        """
         if self.__viewManagerType == "CMLResultReplay":
             self.__generatePIFFromVTK()
         else:
             self.__generatePIFFromRunningSimulation()
 
     def __generatePIFFromRunningSimulation(self):
+        """
+
+        :return: None
+        """
         if self.pause_act.isEnabled():
             self.__pauseSim()
 
@@ -3151,7 +3233,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def __generatePIFFromVTK(self):
         """
         Slot that generates PIFF file from current vtk replay snapshot - calls __generatePIFFromVTK
-        :return:None
+
+        :return: None
         """
 
         if self.pause_act.isEnabled():
@@ -3176,7 +3259,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def generate_restart_snapshot(self) -> None:
         """
         Generated on-demand restart snapshot
-        :return:None
+
+        :return: None
         """
 
         pg = CompuCellSetup.persistent_globals
@@ -3209,7 +3293,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def open_screenshot_description_browser(self):
         """
         Opens up a screenshot description browser widget
-        :return:
+
+        :return: None
         """
         self.screenshot_desc_browser = ScreenshotDescriptionBrowser(parent=self)
         self.screenshot_desc_browser.load()
@@ -3221,33 +3306,37 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def __configsChanged(self):
         """
         Private slot to handle a change of the preferences. Called after we hit Ok builtin on configuration dialog
-        :return:None
+
+        :return: None
         """
         self.configsChanged.emit()
 
     def __redoCompletedStep(self):
         """
         requests redo of the completed step
+
         :return: None
         """
 
         self.redoCompletedStepSignal.emit()
 
     def setModelEditor(self, modelEditor):
-        '''
+        """
         assigns model editor to a local variable - called from UserInterface.py
+
         :param modelEditor: model editor
-        :return:
-        '''
+        :return: None
+        """
         self.__modelEditor = modelEditor
 
     def __createStatusBar(self):
-        '''
+        """
         Creates Status bar layout
-        :return:None
-        '''
 
-        self.__statusBar = self.__parent.statusBar()
+        :return: None
+        """
+
+        self.__statusBar = self.UI.statusBar()
         self.mcSteps = QLabel()
         self.mcSteps.setStyleSheet("QLabel { background-color : white; color : red; }")
 

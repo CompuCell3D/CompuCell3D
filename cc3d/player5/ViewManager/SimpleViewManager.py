@@ -1,5 +1,6 @@
 import sys
 import re
+from weakref import ref
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -8,6 +9,7 @@ from cc3d.player5 import DefaultData
 import cc3d
 import datetime
 from cc3d.player5.Utilities.WebFetcher import WebFetcher
+from os import environ
 
 try:
     from cc3d.player5.Utilities.WebFetcherRequests import WebFetcherRequests
@@ -93,6 +95,20 @@ class SimpleViewManager(QObject):
 
         self.init_actions()
         self.ui = ui
+
+    @property
+    def ui(self):
+        """
+        Parent UserInterface instance
+
+        :return: parent
+        :rtype: cc3d.player5.UI.UserInterface.UserInterface
+        """
+        return self._ui()
+
+    @ui.setter
+    def ui(self, _ui):
+        self._ui = ref(_ui)
 
     def init_file_menu(self):
         """
@@ -452,6 +468,11 @@ class SimpleViewManager(QObject):
         This function checks if new CC3D version is available
         :return:None
         """
+
+        
+        # checking if cc3d is running in nanohub. if it is do not check for updates (it'll be blocked by their firewall)
+        if 'NANOHUB_SIM' in environ:
+            return
 
         # here we decide whether the information about no new updates is displayed or not. For automatic update checks
         # this information should not be displayed. For manual update checks we need to inform the user

@@ -24,15 +24,3 @@
 using namespace CompuCell3D;
 
 #include <BasicUtils/BasicString.h>
-
-//#include <XMLCereal/XMLPullParser.h>
-//#include <XMLCereal/XMLSerializer.h>
-
-//void Point3D::readXML(XMLPullParser &in) {
-//  x = BasicString::parseUInteger(in.getAttribute("x").value);
-//  y = BasicString::parseUInteger(in.getAttribute("y").value);
-//  z = BasicString::parseUInteger(in.getAttribute("z").value);
-//}
-//
-//void Point3D::writeXML(XMLSerializer &out) {
-//}
