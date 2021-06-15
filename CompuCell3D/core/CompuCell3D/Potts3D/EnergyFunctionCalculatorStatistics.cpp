@@ -200,7 +200,7 @@ void  EnergyFunctionCalculatorStatistics::get_current_mcs_flip_attempt_points_np
 }
 
 
-void EnergyFunctionCalculatorStatistics::set_aceptance_probability(double _prob) {
+void EnergyFunctionCalculatorStatistics::set_acceptance_probability(double _prob) {
 	acceptance_probability_list.push_back(_prob);
 }
 

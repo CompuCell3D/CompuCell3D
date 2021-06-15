@@ -12,11 +12,13 @@ INCLUDE(UseSWIG)
 # FIND_PACKAGE(PythonLibs)
 # FIND_PACKAGE(PythonInterp)
 
-
-SET(NUMPY_INCLUDE_DIR )
-# searching for numpy include dir
+if(NOT DEFINED NUMPY_INCLUDE_DIR)
+    SET(NUMPY_INCLUDE_DIR )
+    # searching for numpy include dir
 EXEC_PROGRAM(${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/core/pyinterface ARGS NumpyHeader.py
-      OUTPUT_VARIABLE NUMPY_INCLUDE_DIR)
+    OUTPUT_VARIABLE NUMPY_INCLUDE_DIR
+)
+endif()
 
 message ("NUMPY_INCLUDE_DIR = ${NUMPY_INCLUDE_DIR}")
 INCLUDE_DIRECTORIES(${Python_INCLUDE_DIRS})

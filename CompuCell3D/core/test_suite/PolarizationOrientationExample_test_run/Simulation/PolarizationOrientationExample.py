@@ -1,0 +1,7 @@
+from cc3d import CompuCellSetup
+from .PolarizationOrientationExampleSteppables import PolarizationOrientationExampleSteppable
+
+CompuCellSetup.register_steppable(steppable=PolarizationOrientationExampleSteppable(frequency=100))
+
+CompuCellSetup.run()
+

@@ -45,6 +45,8 @@ class PersistentGlobals:
 
         self.__workspace_dir = None
 
+        self.__param_scan_iteration = None
+
         self.output_frequency = 0
         self.screenshot_output_frequency = 0
 
@@ -114,6 +116,18 @@ class PersistentGlobals:
         """
 
         self.__workspace_dir = workspace_dir
+
+    @property
+    def parameter_scan_iteration(self):
+        """
+        returns current parameter scan iteration
+        :return:
+        """
+        return self.__param_scan_iteration
+
+    @parameter_scan_iteration.setter
+    def parameter_scan_iteration(self, val):
+        self.__param_scan_iteration = val
 
     @property
     def workspace_dir(self) -> str:

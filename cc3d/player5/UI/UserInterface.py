@@ -15,6 +15,9 @@ from PyQt5.QtWidgets import *
 from cc3d.player5.UI.ModelEditor import ModelEditor
 from cc3d.player5.Plugins.ViewManagerPlugins.SimpleTabView import SimpleTabView
 from .LatticeDataModelTable import LatticeDataModelTable
+from .CellTypeColorMapView import CellTypeColorMapView
+from .CellTypeColorMapModel import CellTypeColorMapModel
+
 from .Console import Console
 from cc3d.player5.Utilities.SimModel import SimModel
 from cc3d.player5.Utilities.LatticeDataModel import LatticeDataModel
@@ -349,6 +352,18 @@ class UserInterface(QMainWindow):
 
         self.actions.append(self.modelAct)
 
+        self.cell_type_color_map_act = QAction("Cell T&ype Color Map", self)
+        self.cell_type_color_map_act.setCheckable(True)
+        if Configuration.getSetting('DisplayCellTypeColorMap'):
+            self.cell_type_color_map_act.setChecked(True)
+
+        # if Configuration.getSetting('DisplayCellTypeColorMap'):
+        #     self.self.cell_type_color_map_act.setChecked(True)
+
+        self.cell_type_color_map_act.triggered.connect(self.toggle_cell_type_color_map_dock)
+
+        self.actions.append(self.cell_type_color_map_act)
+
         self.pluginsAct = QAction("&Plugins", self)
         self.pluginsAct.setCheckable(True)
         self.pluginsAct.setChecked(True)
@@ -423,6 +438,19 @@ class UserInterface(QMainWindow):
                                "LatticeDataFiles")
         self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
 
+
+        self.cell_type_color_map_dock = self.__createDockWindow("CellTypeColorMapView")
+        self.cell_type_color_map_dock.setToggleFcn(self.toggle_cell_type_color_map_dock)
+        self.cell_type_color_map_model = CellTypeColorMapModel()
+        self.cell_type_color_map_view = CellTypeColorMapView(parent=self.cell_type_color_map_dock, vm=self.viewmanager)
+        # self.cell_type_color_map_view.setModel(self.cell_type_color_map_model)
+
+        self.__setupDockWindow(self.cell_type_color_map_dock, Qt.LeftDockWidgetArea, self.cell_type_color_map_view,
+                               "Cell Type Colors")
+
+        self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
+
+
         # Set up the console
         self.consoleDock = self.__createDockWindow("Console")
 
@@ -485,6 +513,17 @@ class UserInterface(QMainWindow):
         Configuration.setSetting('DisplayLatticeData', flag)
         self.__toggleWindowFlag(self.latticeDataDock, flag)
 
+    def toggle_cell_type_color_map_dock(self, flag):
+        """
+
+        :param flag:
+        :return:
+        """
+        print ('toggle_cell_type_color_map_dock')
+        self.cell_type_color_map_act.setChecked(flag)
+        self.__toggleWindowFlag(self.cell_type_color_map_dock, flag)
+        Configuration.setSetting('DisplayCellTypeColorMap', flag)
+
     def __toggleWindow(self, w):
         """
         Private method to toggle a workspace editor window.
@@ -533,6 +572,10 @@ class UserInterface(QMainWindow):
 
         self.__menus["view"].addAction(self.modelAct)
         self.modelAct.setChecked(not self.modelEditorDock.isHidden())
+
+        # adding Cell Type Color Map to the menu
+        self.__menus["view"].addAction(self.cell_type_color_map_act)
+        self.cell_type_color_map_act.setChecked(not self.cell_type_color_map_dock.isHidden())
 
         self.__menus["view"].addAction(self.latticeDataAct)
         self.latticeDataAct.setChecked(not self.latticeDataDock.isHidden())

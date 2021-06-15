@@ -2,12 +2,16 @@ import vtk
 import cc3d.player5.Configuration as Configuration
 from cc3d import CompuCellSetup
 from cc3d.player5.Utilities.utils import to_vtk_rgb
+import numpy as np
+from cc3d.cpp import CompuCell
+import weakref
+from math import log10, fabs
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 
 
 class MVCDrawModelBase:
-    def __init__(self):
+    def __init__(self, boundary_strategy, ren=None):
 
         (self.minCon, self.maxCon) = (0, 0)
 
@@ -15,6 +19,7 @@ class MVCDrawModelBase:
         self.fieldTypes = None
         self.currentDrawingParameters = None
         self.field_extractor = None
+        self.boundary_strategy = boundary_strategy
 
         self.cell_type_array = None
         self.cell_id_array = None
@@ -23,6 +28,56 @@ class MVCDrawModelBase:
         self.lattice_type_str = None
 
         self.celltypeLUT = None
+
+        self.gd_ref = None
+        self.ren = ren
+
+    @property
+    def boundary_strategy(self):
+        try:
+            o = self._boundary_strategy()
+        except TypeError:
+            o = self._boundary_strategy
+        return o
+
+    @boundary_strategy.setter
+    def boundary_strategy(self, _i):
+        try:
+            self._boundary_strategy = weakref.ref(_i)
+        except TypeError:
+            self._boundary_strategy = _i
+
+    @property
+    def ren(self):
+        try:
+            o = self._ren()
+        except TypeError:
+            o = self._ren
+        return o
+
+    @ren.setter
+    def ren(self, _i):
+        try:
+            self._ren = weakref.ref(_i)
+        except TypeError:
+            self._ren = _i
+
+    def set_generic_drawer(self, gd):
+        """
+
+        :param gd:
+        :return:
+        """
+        self.gd_ref = weakref.ref(gd)
+
+    def set_boundary_strategy(self, boundary_strategy):
+        """
+        sets boundary strategy C++ obj reference
+        :param boundary_strategy:
+        :return:
+        """
+
+        self.boundary_strategy = boundary_strategy
 
     # should also set "periodic" boundary condition flag(s) (e.g. for drawing FPP links that wraparound)
 
@@ -188,16 +243,16 @@ class MVCDrawModelBase:
         :param max_exp:
         :return:
         """
-        from math import log10, fabs
+
         if val == 0.0:
             return '0.0'
 
         try:
-            val_log = fabs(log10(val))
+            val_log = fabs(log10(fabs(val)))
             if val_log <= max_exp:
-                val_str = '{:f}'.format(val)
+                val_str = f'{val:f}'
             else:
-                val_str = '{:e}'.format(val)
+                val_str = f'{val:e}'
         except:
             val_str = 'NaN'
 
@@ -215,9 +270,16 @@ class MVCDrawModelBase:
         max_str = self.float_formatting(range_array[1])
         min_max_actor.SetInput("Min: {} Max: {}".format(min_str, max_str))
 
+        font_size = 11
+        if self.gd_ref is not None:
+            generic_drawer = self.gd_ref()
+            vertical_resolution = generic_drawer.vertical_resolution
+            if vertical_resolution is not None:
+                font_size = int(generic_drawer.vertical_resolution / 100 * 1.1)
+
         txtprop = min_max_actor.GetTextProperty()
         txtprop.SetFontFamilyToArial()
-        txtprop.SetFontSize(10)
+        txtprop.SetFontSize(font_size)
         txtprop.SetColor(1, 1, 1)
         min_max_actor.SetPosition(20, 20)
 
@@ -368,7 +430,6 @@ class MVCDrawModelBase:
     def configsChanged(self):
         pass
 
-
     def largestDim(self, dim):
         ldim = dim[0]
         for i in range(len(dim)):
@@ -414,3 +475,33 @@ class MVCDrawModelBase:
     def configs_changed(self):
 
         self.populate_cell_type_lookup_table()
+
+    # @staticmethod
+    # def unconditional_invariant_distance_vector(p1, p2, dim):
+    #
+    #     dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, dim)
+    #     return np.array([dist_vec.x, dist_vec.y, dist_vec.z])
+
+    def invariant_distance(self, p1, p2, dim):
+        """
+        Computes invariant distance
+        :param p1: 3-element array like obj representing point
+        :param p2: 3-element array like obj representing point
+        :param dim: field dimension
+        :return: invariant distance
+        """
+
+        inv_dist = CompuCell.distInvariantCM(p2[0], p2[1], p2[2], p1[0], p1[1], p1[2], dim, self.boundary_strategy)
+        return inv_dist
+
+    def invariant_distance_vector(self, p1, p2, dim):
+        """
+        Computes invariant distance
+        :param p1: 3-element array like obj representing point
+        :param p2: 3-element array like obj representing point
+        :param dim: field dimension
+        :return: invariant distance
+        """
+
+        dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, dim, self.boundary_strategy)
+        return np.array([dist_vec.x, dist_vec.y, dist_vec.z])

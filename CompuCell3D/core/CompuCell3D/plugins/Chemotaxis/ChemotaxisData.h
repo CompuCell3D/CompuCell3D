@@ -42,15 +42,21 @@ namespace CompuCell3D {
    class CHEMOTAXIS_EXPORT  ChemotaxisData{
       public:
          ChemotaxisData(float _lambda=0.0 , float _saturationCoef=0.0 , std::string _typeName=""):
-         lambda(_lambda),saturationCoef(_saturationCoef),typeName(_typeName),formulaPtr(0),formulaName("SimpleChemotaxisFormula"),
-	     chemotaxisFormulaDictPtr(0),
-		 automaton(0),
-		 allowChemotaxisBetweenCompartmentsGlobal(true)
+            lambda(_lambda), 
+            saturationCoef(_saturationCoef),
+            typeName(_typeName),
+            formulaPtr(0),
+            formulaName("SimpleChemotaxisFormula"),
+            chemotaxisFormulaDictPtr(0),
+            automaton(0),
+            allowChemotaxisBetweenCompartmentsGlobal(true),
+            concCOM(0.0)
          {}
 	
          float lambda;
          float saturationCoef;
 		 float powerLevel;
+         float concCOM;  // Storage for pre-calculated concentration at the COM of a cell
          std::string formulaName;
          typedef float (ChemotaxisPlugin::*chemotaxisEnergyFormulaFcnPtr_t)(float,float,ChemotaxisData &);
          chemotaxisEnergyFormulaFcnPtr_t  formulaPtr;
@@ -114,29 +120,17 @@ namespace CompuCell3D {
 
          void setSaturationCoef(float _saturationCoef){
             saturationCoef=_saturationCoef;
-            
-			if (chemotaxisFormulaDictPtr){
-				std::map<std::string,chemotaxisEnergyFormulaFcnPtr_t>::iterator mitr;
-				mitr=chemotaxisFormulaDictPtr->find("SaturationChemotaxisFormula");
-				if(mitr!=chemotaxisFormulaDictPtr->end()){
-					formulaName="SaturationChemotaxisFormula";
-					formulaPtr=mitr->second;					
-				}
-			}
-
+            setChemotaxisFormulaByName("SaturationChemotaxisFormula");
          }
+
          void setSaturationLinearCoef(float _saturationCoef){
             saturationCoef=_saturationCoef;
-            
-			if (chemotaxisFormulaDictPtr){
-				std::map<std::string,chemotaxisEnergyFormulaFcnPtr_t>::iterator mitr;
-				mitr=chemotaxisFormulaDictPtr->find("SaturationLinearChemotaxisFormula");
-				if(mitr!=chemotaxisFormulaDictPtr->end()){
-					formulaName="SaturationLinearChemotaxisFormula";
-					formulaPtr=mitr->second;
-				}
-			}
+            setChemotaxisFormulaByName("SaturationLinearChemotaxisFormula");
+         }
 
+         void setLogScaledCoef(const float& _logScaledCoef) {
+            saturationCoef = _logScaledCoef;
+            setChemotaxisFormulaByName("COMLogScaledChemotaxisFormula");
          }
 
          void outScr(){

@@ -5,6 +5,11 @@ file_obj, file_path = self.open_file_in_simulation_output_folder("<FILE_NAME>", 
 if file_obj is None:
     return
 
+----------  # @Submenu@ Open File In Parameter Scan Main  Output Directory
+file_obj, file_path = self.open_file_in_parameter_scan_main_output_folder("<FILE_NAME>", mode='w')
+if file_obj is None:
+    return
+
 ----------  # @Submenu@ Open File In Simulation Output Directory (low-level)
 from pathlib import Path
 
@@ -304,9 +309,17 @@ self.cell_field[x:x + size - 1, y:y + size - 1, 0] = cell
 cell = self.cell_field[10, 11, 0]
 
 ----------  # @Submenu@ Move Cell
-# Shifting entire cell by a 'shiftVector'         
+# Shifting entire cell by a 'shiftVector'
+# Requires PixelTracker Plugin         
 shift_vector = [20, 20, 0]
 self.move_cell(cell, shift_vector)
+
+----------  # @Submenu@ Merge Cell
+# Turns all voxels of SOURCE_CELL into voxels of DESTINATION_CELL
+# This function will merge the cells regardless of the distance between them.
+# It won't update the DESTINATION_CELL target volume.
+# Use with care.
+self.merge_cells(SOURCE_CELL, DESTINATION_CELL)
 
 ===============  # @Menu@ Distances, Vectors, Transformations
 
@@ -326,7 +339,7 @@ vec = self.invariant_distance_between_cells(CELL1, CELL2)
 vec = self.distance(p1=[10, 10, 0], p2=[11, 11, 0])
 
 ----------  # @Submenu@ Distance Vector Between Points (Invariant)
-vec = self.invariant_distance_vector(p1=[10, 10, 0], p2=[11, 11, 0])
+vec = self.unconditional_invariant_distance_vector(p1=[10, 10, 0], p2=[11, 11, 0])
 
 ----------  # @Submenu@ Distance Vector Between Points (Invariant, Integer)
 vec = self.invariant_distance_vector_integer(p1=[10, 10, 0], p2=[11, 11, 0])
@@ -524,64 +537,137 @@ eccentricity = cell.ecc
 
 ===============  # @Menu@ Focal Point Placticity
 
-----------  # @Submenu@ Properties
-# Make sure FocalPointPlasticity plugin is loaded
-# visiting all focal links cell 'cell' has with other cells
-for fppd in self.get_focal_point_plasticity_data_list(cell):
-    print("fppd.neighborId", fppd.neighborAddress.id, " lambda=", fppd.lambdaDistance,
-           " targetDistance=", fppd.targetDistance)
+----------  # @Submenu@ Link property: lambda
+# ld = link.getLambdaDistance()
+# link.setLambdaDistance(1.0)
 
-    # arguments are (cell1,cell2,lambda,targetDistance,maxDistance)
-    self.focalPointPlasticityPlugin.setFocalPointPlasticityParameters(cell, fppd.neighborAddress, 1.0, 7.0, 20.0)
+----------  # @Submenu@ Link property: target distance
+# td = link.getTargetDistance()
+# link.setTargetDistance(1.0)
 
-----------  # @Submenu@ Properties (Within Cluster)
+----------  # @Submenu@ Link property: maximum distance
+# md = link.getMaxDistance()
+# link.setMaxDistance(1.0)
+
+----------  # @Submenu@ Link property: maximum number of junctions
+# mnj = link.getMaxNumberOfJunctions()
+# link.setMaxNumberOfJunctions(1)
+
+----------  # @Submenu@ Link property: activation energy
+# ae = link.getActivationEnergy()
+# link.setActivationEnergy(1.0)
+
+----------  # @Submenu@ Link property: neighbor order
+# no = link.getNeighborOrder()
+# link.setNeighborOrder(1)
+
+----------  # @Submenu@ Link property: initialization step
+# im = link.getInitMCS()
+
+----------  # @Submenu@ Link property: linked cell(s)
+# For regular and internal links, two cells are linked:
+# initiator_cell, initiated_cell = link.cellPair
+# For anchors, only one cell is linked:
+# linked_cell = link.cell
+
+----------  # @Submenu@ Link property: anchor point (anchor only)
+ap = link.getAnchorPoint()
+link.setAnchorPoint([0.0, 1.0, 2.0])
+
+----------  # @Submenu@ Link property: anchor id (anchor only)
+aid = link.getAnchorId()
+
+----------  # @Submenu@ Link management: Create FPP Link
 # Make sure FocalPointPlacticity plugin is loaded
-# visiting all focal links cell 'cell' has with other cells
-for fppd in self.get_internal_focal_point_plasticity_data_list(cell):
-    print("fppd.neighborId", fppd.neighborAddress.id, " lambda=", fppd.lambdaDistance,
-          " targetDistance=", fppd.targetDistance)
+# Arguments are:
+# initiator: CellG, initiated: CellG, lambda_distance: float, target_distance: float, max_distance: float
+link = self.new_fpp_link(initiator, initiated, lambda_distance, target_distance, max_distance)
 
-    # arguments are (cell1,cell2,lambda,targetDistance,maxDistance)
-    self.focalPointPlasticityPlugin.setInternalFocalPointPlasticityParameters(cell, fppd.neighborAddress, 1.0, 7.0,
-                                                                              20.0)
-
-----------  # @Submenu@ Create FPP Link
+----------  # @Submenu@ Link management: Create FPP Internal Link (Within Cluster)
 # Make sure FocalPointPlacticity plugin is loaded
-self.focalPointPlasticityPlugin.createFocalPointPlasticityLink(CELL1, CELL2, LAMBDA, TARGET_DISTANCE, MAX_DISTANCE)
+# Arguments are:
+# initiator: CellG, initiated: CellG, lambda_distance: float, target_distance: float, max_distance: float
+link = self.new_fpp_internal_link(initiator, initiated, lambda_distance, target_distance, max_distance)
 
-----------  # @Submenu@ Create FPP Link (Within Cluster)
+----------  # @Submenu@ Link management: Create Anchor
 # Make sure FocalPointPlacticity plugin is loaded
-self.focalPointPlasticityPlugin.createInternalFocalPointPlasticityLink(CELL1, CELL2, LAMBDA, TARGET_DISTANCE,
-                                                                       MAX_DISTANCE)
+# Arguments are cell: CellG lambda_distance: float, target_distance: float, max_distance: float
+# You can specify an anchor point with (float) keyword arguments "x", "y", "z" or with a (Point3D) keyword argument "pt"
+# link = self.new_fpp_anchor(cell, lambda_distance, target_distance, max_distance, x=0.0, y=1.0, z=2.0)
+# link = self.new_fpp_anchor(cell, lambda_distance, target_distance, max_distance, pt=Point3D(0, 1, 2))
 
-----------  # @Submenu@ Get Lambda for FPP Link (Within Cluster)
+----------  # @Submenu@ Link management: Delete FPP Link (any type)
+self.delete_fpp_link(link)
+
+----------  # @Submenu@ Link management: Delete FPP Links Attached to a Cell (any type)
+# To select which types of links to remove, set any of the following keyword arguments to True
+#   Remove all links          : links
+#   Remove all internal links : internal_links
+#   Remove all anchors        : anchors
+# If none of these are specified, then all links of any type are removed
+self.remove_all_cell_fpp_links(cell)
+
+----------  # @Submenu@ Link inventory: Get number of links
 # Make sure FocalPointPlacticity plugin is loaded
-self.focalPointPlasticityPlugin.getPlasticityParametersLambdaDistance(CELL1, CELL2)
+nl = self.get_number_of_fpp_links()
 
-----------  # @Submenu@ Get Target Distance for FPP Link (Within Cluster)
+----------  # @Submenu@ Link inventory: Get number of internal links
 # Make sure FocalPointPlacticity plugin is loaded
-self.focalPointPlasticityPlugin.getPlasticityParametersTargetDistance(CELL1, CELL2)
+nil = self.get_number_of_fpp_internal_links()
 
-----------  # @Submenu@ Delete FPP Link
+----------  # @Submenu@ Link inventory: Get number of anchors
 # Make sure FocalPointPlacticity plugin is loaded
-self.focalPointPlasticityPlugin.deleteFocalPointPlasticityLink(CELL1, CELL2)
+na = self.get_number_of_fpp_anchors()
 
-----------  # @Submenu@ Delete FPP Link (Within Cluster)
+----------  # @Submenu@ Link inventory: Get link associated with two cells
 # Make sure FocalPointPlacticity plugin is loaded
-self.focalPointPlasticityPlugin.deleteInternalFocalPointPlasticityLink(CELL1, CELL2)
+link = self.get_fpp_link_by_cells(cell1, cell2)
 
-----------  # @Submenu@ Create Anchor
+----------  # @Submenu@ Link inventory: Get internal link associated with two cells
 # Make sure FocalPointPlacticity plugin is loaded
-anchorId = self.focalPointPlasticityPlugin.createAnchor(CELL, LAMBDA, TARGET_DISTANCE, MAX_DISTANCE, ANCHOR_X, ANCHOR_Y,
-                                                        ANCHOR_Z)
+link = self.get_fpp_internal_link_by_cells(cell1, cell2)
 
-----------  # @Submenu@ Delete Anchor
+----------  # @Submenu@ Link inventory: Get anchor assicated with a cell and anchor id
 # Make sure FocalPointPlacticity plugin is loaded
-self.focalPointPlasticityPlugin.deleteAnchor(CELL, ANCHOR_ID)
+link = self.get_fpp_anchor_by_cell_and_id(cell, anchor_id)
 
-----------  # @Submenu@ Set Anchor Parameters
-self.focalPointPlasticityPlugin.setAnchorParameters(CELL, ANCHOR_ID, LAMBDA, TARGET_DISTANCE, MAX_DISTANCE, ANCHOR_X,
-                                                    ANCHOR_Y, ANCHOR_Z)
+----------  # @Submenu@ Link inventory: Get number of link junctions by type for a cell
+# Make sure FocalPointPlacticity plugin is loaded
+njt = self.get_number_of_fpp_junctions_by_type(cell, attached_cell_type)
+
+----------  # @Submenu@ Link inventory: Get number of internal link junctions by type for a cell
+# Make sure FocalPointPlacticity plugin is loaded
+nijt = self.get_number_of_fpp_internal_junctions_by_type(cell, attached_cell_type)
+
+----------  # @Submenu@ Visit: All links attached to a cell
+# Make sure FocalPointPlacticity plugin is loaded
+# Visit all links attached to a cell
+for link in self.get_fpp_links_by_cell(cell):
+    # operations here
+
+----------  # @Submenu@ Visit: All internal links attached to a cell
+# Make sure FocalPointPlacticity plugin is loaded
+# Visit all internal links attached to a cell in a cluster
+for link in self.get_fpp_internal_links_by_cell(cell):
+    # operations here
+
+----------  # @Submenu@ Visit: All anchors attached to a cell
+# Make sure FocalPointPlacticity plugin is loaded
+# Visit all anchors attached to a cell
+for link in self.get_fpp_anchors_by_cell(cell):
+    # operations here
+
+----------  # @Submenu@ Visit: All cells attached to a cell by a link
+# Make sure FocalPointPlacticity plugin is loaded
+# Visit all cells attached to a cell by a link
+for linked_cell in self.get_fpp_linked_cells(cell):
+    # operations here
+
+----------  # @Submenu@ Visit: All cells attached to a cell by an internal link
+# Make sure FocalPointPlacticity plugin is loaded
+# Visit all cells attached to a cell by an internal link
+for linked_cell in self.get_fpp_internal_linked_cells(cell):
+    # operations here
 
 ===============  # @Menu@ Adhesion Flex
 
@@ -636,8 +722,9 @@ self.adhesionFlexPlugin.setMediumAdhesionMoleculeDensityByIndex(0, 11.2)
 # defining chemotaxis properties of individual cell 'cell'
 cd = self.chemotaxisPlugin.addChemotaxisData(cell, "FIELDNAME")
 cd.setLambda(20.0)
-# cd.initializeChemotactTowardsVectorTypes("Bacterium,Medium")
-cd.assignChemotactTowardsVectorTypes([0, 1])
+# If assigning chemotaxis only towards one or more specific cell types, then use the following,
+# where the list references the cell types (shown here for type names 'type_name_1' and 'type_name_2')
+# cd.assignChemotactTowardsVectorTypes([self.cell_type.type_name_1, self.cell_type.type_name_2])
 
 ----------  # @Submenu@  By Cell Id (Modify)
 # Make sure Chemotaxis Plugin is loaded
@@ -993,6 +1080,90 @@ self.resize_and_shift_lattice(new_size=(X, Y, Z), shift_vec=(VX, VY, VZ))
 ----------  # @Submenu@ Change Number of CPU's (worknodes)
 self.change_number_of_work_nodes(8)
 
+----------  # @Submenu@ Shared steppable dictionary
+# This dictionary is shared by all registered steppables
+self.shared_steppable_vars
+
+===============  # @Menu@ MaBoSS
+
+----------  # @Submenu@ Add a MaBoSS simulation to a cell
+# Input MaBoSS network description in file 'bnd_file' or string 'bnd_str'
+# Input MaBoSS configuration in file 'cfg_file' or string 'cfg_str'
+# If using strings, enclose entire network/configuration in a multiline string
+# Input
+self.add_maboss_to_cell(cell=cell,
+                        model_name=model_name,
+                        bnd_file=bnd_file,
+                        bnd_str=bnd_str,
+                        cfg_file=cfg_file,
+                        cfg_str=cfg_str,
+                        time_step=1.0,
+                        time_tick=1.0,
+                        discrete_time=False,
+                        seed=0)
+
+----------  # @Submenu@ Create a MaBoSS simulation
+# Input MaBoSS network description in file 'bnd_file' or string 'bnd_str'
+# Input MaBoSS configuration in file 'cfg_file' or string 'cfg_str'
+# If using strings, enclose entire network/configuration in a multiline string
+# Input
+from cc3d.core import MaBoSSCC3D
+mm = MaBoSSCC3D.maboss_model(model_name=model_name,
+                             bnd_file=bnd_file,
+                             bnd_str=bnd_str,
+                             cfg_file=cfg_file,
+                             cfg_str=cfg_str,
+                             time_step=1.0,
+                             time_tick=1.0,
+                             discrete_time=False,
+                             seed=0)
+
+----------  # @Submenu@ Get a MaBoSS simulation attached to a cell
+# 'MyModel' is the alias of the particular model to get e.g., self.add_maboss_to_cell(model_name='MyModel', ...)
+mm = cell.maboss.MyModel
+
+----------  # @Submenu@ Delete a MaBoSS model attached to a cell
+# 'model_name' contains the alias of the particular model to get e.g., self.add_maboss_to_cell(model_name=model_name, ...)
+self.delete_maboss_from_cell(cell=cell, model_name=model_name)
+
+----------  # @Submenu@ Step all attached MaBoSS models
+self.timestep_maboss()
+
+----------  # @Submenu@ Get a MaBoSS network node
+# 'MyModel' is the alias of the particular model to get e.g., self.add_maboss_to_cell(model_name='MyModel', ...)
+# 'MyNode' is the name of the node in the MaBoSS network
+node = cell.maboss.MyModel['MyNode']
+
+----------  # @Submenu@ Get/set a MaBoSS network node property
+# node is a MaBoSS node
+node_description: str = node.description  # Description; read-only
+node_is_input: bool = node.is_input  # Input node flag; read-only
+node_is_internal: bool = node.is_internal  # Internal node flag
+node_is_reference: bool = node.is_reference  # Reference node flag
+node_istate: bool = node.istate  # Initial state
+node_rate_down: float = node.rate_down  # Current rate down; read-only
+node_rate_up: float = node.rate_up  # Current rate up; read-only
+node_ref_state: bool = node.ref_state  # Reference state
+node_state: bool = node.state  # Current state
+
+----------  # @Submenu@ Get/set a MaBoSS simulation property
+# mm is a MaBoSS simulation
+mm_time: float = mm.time  # Current simulation time; read-only
+mm_step_size: float = mm.step_size  # Step size
+mm_time_tick: float = mm.run_config.time_tick  # Time tick
+mm_discrete_time: bool = mm.run_config.discrete_time  # Continuous/discrete flag
+mm_seed: int = mm.run_config.seed  # Random generator seed
+
+----------  # @Submenu@ Get/set a MaBoSS external variable
+# mm is a MaBoSS simulation
+# myVar is declared as '$myVar' in the MaBoSS specification
+mm_myVar = mm.network.symbol_table['myVar']
+
+----------  # @Submenu@ Copy a MaBoSS network state
+# mm_from and mm_to is are MaBoSS simulations
+mm_to.loadNetworkState(mm_from.getNetworkState())
+
+
 ===============  # @Menu@ Mitosis
 
 ----------  # @Submenu@ 1. Clone Attributes Parent -> Child
@@ -1192,3 +1363,7 @@ command
 line
 options
 used in compucell3d.command or runScript.command]
+
+----------  # @Submenu@ Current Parameter Scan Iteration
+# accessing current parameter scan iteration from steppable
+iteration = self.param_scan_iteration

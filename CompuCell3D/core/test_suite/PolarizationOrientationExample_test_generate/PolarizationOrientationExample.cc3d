@@ -1,0 +1,9 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/PolarizationOrientationExample.xml</XMLScript>
+
+    <PythonScript>Simulation/PolarizationOrientationExample.py</PythonScript> 
+
+    <Resource Type="Python">Simulation/PolarizationOrientationExampleSteppables.py</Resource>    
+
+</Simulation>

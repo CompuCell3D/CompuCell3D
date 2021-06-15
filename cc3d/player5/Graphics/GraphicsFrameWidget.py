@@ -1,6 +1,7 @@
 # todo - check simulation replay
 # todo - resolve the issue of imports in the CompuCellSetup
 
+from gc import collect
 from weakref import ref
 import cc3d.player5.DefaultData as DefaultData
 import cc3d.player5.Configuration as Configuration
@@ -11,9 +12,12 @@ from cc3d.core.enums import *
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
 from .GraphicsWindowData import GraphicsWindowData
 from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
+import cc3d.CompuCellSetup
 from cc3d.player5.Utilities import qcolor_to_rgba, cs_string_to_typed_list
 import sys
+import typing
 from collections import OrderedDict
+from PyQt5.QtWidgets import QApplication
 
 platform = sys.platform
 if platform == 'darwin':
@@ -32,6 +36,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.qvtkWidget = QVTKRenderWindowInteractor(self)  # a QWidget
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.vertical_resolution = QApplication.desktop().screenGeometry().height()
 
         # MDIFIX
         self.parentWidget = ref(originatingWidget)
@@ -77,9 +82,15 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         # todo 5 - adding generic drawer
 
-        self.gd = GenericDrawer()
+        sim = cc3d.CompuCellSetup.persistent_globals.simulator
+        boundary_strategy = None
+        if sim:
+            boundary_strategy = sim.getBoundaryStrategy()
+
+        self.gd = GenericDrawer(boundary_strategy=boundary_strategy)
         self.gd.set_interactive_camera_flag(True)
         self.gd.set_pixelized_cartesian_scene(Configuration.getSetting("PixelizedCartesianFields"))
+        self.gd.set_vertical_resolution(vertical_resoultion=self.vertical_resolution)
 
         # placeholder for current screenshot data
         self.current_screenshot_data = None
@@ -93,7 +104,15 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.renWin = self.qvtkWidget.GetRenderWindow()
         self.renWin.AddRenderer(self.gd.get_renderer())
 
-        self.metadata_fetcher_dict = {
+    @property
+    def metadata_fetcher_dict(self) -> typing.Dict[str, typing.Callable[[str, str], dict]]:
+        """
+        Map from field type to field metadata getter
+
+        :return: map
+        :rtype: typing.Dict[str, typing.Callable[[str, str], dict]]
+        """
+        return {
             'CellField': self.get_cell_field_metadata,
             'ConField': self.get_con_field_metadata,
             'ScalarField': self.get_con_field_metadata,
@@ -105,6 +124,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def copy_camera(self, src, dst):
         """
         Copies camera settings
+
         :param src: 
         :param dst: 
         :return: None
@@ -117,6 +137,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def get_metadata(self, field_name, field_type):
         """
         Fetches a dictionary that summarizes graphics/configs settings for the current scene
+
         :param field_name: {str} field name
         :param field_type: {str} field type
         :return: {dict}
@@ -133,6 +154,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def get_cell_field_metadata(self, field_name, field_type):
         """
         Returns dictionary of auxiliary information needed to cell field
+
         :param field_name:{str} field_name
         :param field_type: {str} field type
         :return: {dict}
@@ -144,6 +166,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def get_config_metadata(self, field_name, field_type):
         """
         Returns dictionary of auxiliary information needed to render borders
+
         :param field_name:{str} field_name
         :param field_type: {str} field type
         :return: {dict}
@@ -174,6 +197,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def get_con_field_metadata(self, field_name, field_type):
         """
         Returns dictionary of auxiliary information needed to render a give scene
+
         :param field_name:{str} field_name
         :param field_type: {str} field type
         :return: {dict}
@@ -198,6 +222,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def get_vector_field_metadata(self, field_name, field_type):
         """
         Returns dictionary of auxiliary information needed to render a give scene
+
         :param field_name:{str} field_name
         :param field_type: {str} field type
         :return: {dict}
@@ -214,6 +239,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def initialize_scene(self):
         """
         initialization function that sets up field extractor for the generic Drawer
+
         :return:
         """
         tvw = self.parentWidget()
@@ -224,6 +250,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def get_current_field_name_and_type(self):
         """
         Returns current field name and type
+
         :return: {tuple}
         """
         tvw = self.parentWidget()
@@ -241,6 +268,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         """
         Computes/populates Screenshot Description data based ont he current GUI configuration
         for the current window
+
         :return: {screenshotData}
         """
 
@@ -290,8 +318,10 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         if invisible_types:
             scr_data.invisible_types = list([int(x) for x in invisible_types.split(',')])
+            if 0 not in scr_data.invisible_types:
+                scr_data.invisible_types = [0] + scr_data.invisible_types
         else:
-            scr_data.invisible_types = []
+            scr_data.invisible_types = [0]
 
     def render_repaint(self):
         """
@@ -303,6 +333,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def draw(self, basic_simulation_data):
         """
         Main drawing function - calls ok_to_draw fcn from the GenericDrawer. All drawing happens there
+
         :param basic_simulation_data: {instance of BasicSimulationData}
         :return: None
         """
@@ -325,6 +356,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def set_status_bar(self, status_bar):
         """
         Sets status bar
+
         :param status_bar:
         :return:
         """
@@ -355,6 +387,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def get_camera(self):
         """
         Conveenince function that fetches active camera obj
+
         :return: {vtkCamera}
         """
         return self.get_active_camera()
@@ -366,6 +399,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def get_camera_3D(self):
         """
         Convenince function that fetches 3D camera obj
+
         :return: {vtkCamera}
         """
         return self.camera3D
@@ -386,6 +420,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def get_plane(self):
         """
         Gets current plane tuple
+
         :return: {tuple} (plane label, plane position)
         """
         return self.plane, self.planePos
@@ -393,6 +428,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def init_cross_section_toolbar(self):
         """
         Initializes cross section toolbar
+
         :return: None
         """
 
@@ -411,6 +447,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def init_cross_section_actions(self):
         """
         Initializes actions associated with the cross section toolbar
+
         :return: None
         """
 
@@ -438,6 +475,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def proj_combo_box_changed(self):
         """
         slot reacting to changes in the projection combo box
+
         :return: None
         """
 
@@ -472,6 +510,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def update_projection_spin_box(self, spin_box_value: int):
         """
         updates projection spin box without causing redundant redraws
+
         :param spin_box_value:
         :return:
         """
@@ -485,6 +524,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def proj_spin_box_changed(self, val, ok_to_draw=True):
         """
         Slot that reacts to position spin boox changes
+
         :param val: {int} number corresponding to the position of the crosse section
         :param ok_to_draw: flag indicating if it is OK to call draw function
         :return: None
@@ -525,6 +565,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def field_type_changed(self):
         """
         Slot reacting to the field type combo box changes
+
         :return: None
         """
 
@@ -541,6 +582,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def set_drawing_style(self, _style):
         """
         Function that wires-up the widget to behave according tpo the dimension of the visualization
+
         :param _style:{str} '2D' or '3D'
         :return: None
         """
@@ -559,6 +601,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def set_camera_from_graphics_window_data(camera, gwd):
         """
         Sets camera from graphics window data
+
         :param camera: {vtkCamera} camera obj
         :param gwd: {instance og GrtaphicsWindowData}
         :return: None
@@ -571,6 +614,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def apply_3D_graphics_window_data(self, gwd):
         """
         Applies graphics window configuration data (stored on a disk) to graphics window (3D version)
+
         :param gwd: {instrance of GraphicsWindowData}
         :return: None
         """
@@ -586,6 +630,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def apply_2D_graphics_window_data(self, gwd):
         """
         Applies graphics window configuration data (stored on a disk) to graphics window (2D version)
+
         :param gwd: {instrance of GraphicsWindowData}
         :return: None
         """
@@ -603,6 +648,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def apply_graphics_window_data(self, gwd):
         """
         Applies graphics window configuration data (stored on a disk) to graphics window (2D version)
+
         :param gwd: {instrance of GraphicsWindowData}
         :return: None
         """
@@ -623,6 +669,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def get_graphics_window_data(self)->GraphicsWindowData:
         """
         returns instance of GraphicsWindowData for current widget
+
         :return:
         """
         tvw = self.parentWidget()
@@ -652,6 +699,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def add_screenshot_conf(self):
         """
         Adds screenshot configuration data for a current scene
+
         :return: None
         """
         tvw = self.parentWidget()
@@ -677,6 +725,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def set_connects(self, _workspace):
         """
         connects signals and slots
+
         :param _workspace:
         :return:
         """
@@ -725,6 +774,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def update_field_types_combo_box(self, field_types: dict) -> None:
         """
         Updates combo boxes
+
         :param field_types:{str}
         :return:
         """
@@ -783,6 +833,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def zoom_in(self):
         """
         Zooms in view
+
         :return:
         """
         self.qvtkWidget.zoomIn()
@@ -790,6 +841,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def zoom_out(self):
         """
         Zooms out view
+
         :return:
         """
 
@@ -798,12 +850,11 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def reset_camera(self):
         """
         Resets camera to default settings
+
         :return:
         """
         self.qvtkWidget.resetCamera()
 
-    # note that if you close widget using X button this slot is not called
-    # we need to reimplement closeEvent
     def closeEvent(self, ev):
         """
 
@@ -815,6 +866,8 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         # will not be destroyed and will take sizeable portion of the memory
         # not a big deal for a single simulation but repeated runs can easily exhaust all system memory
 
-        self.qvtkWidget.close()
+        if self.qvtkWidget:
+            self.qvtkWidget.close()
         self.qvtkWidget = None
-
+        collect()
+        super(GraphicsFrameWidget, self).closeEvent(ev)

@@ -1,0 +1,82 @@
+<CompuCell3D Revision="20210123" Version="4.2.4">
+   
+   <Metadata>
+      <NumberOfProcessors>1</NumberOfProcessors>
+      <DebugOutputFrequency>-1</DebugOutputFrequency>
+   </Metadata>
+   
+   <Potts>
+      <Dimensions x="105" y="105" z="1"/>
+      <Steps>10000</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+      <Boundary_x>Periodic</Boundary_x>
+      <Boundary_y>Periodic</Boundary_y>
+   </Potts>
+   
+   <Plugin Name="CellType">
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="LogScaled"/>
+      <CellType TypeId="2" TypeName="NotScaled"/>
+   </Plugin>
+   
+   <Plugin Name="Volume">
+      <VolumeEnergyParameters CellType="LogScaled" LambdaVolume="2.0" TargetVolume="50"/>
+      <VolumeEnergyParameters CellType="NotScaled" LambdaVolume="2.0" TargetVolume="50"/>
+   </Plugin>
+   
+   <Plugin Name="CenterOfMass"/>
+   
+   <Plugin Name="Contact">
+      <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+      <Energy Type1="Medium" Type2="LogScaled">10.0</Energy>
+      <Energy Type1="Medium" Type2="NotScaled">10.0</Energy>
+      <Energy Type1="LogScaled" Type2="LogScaled">10.0</Energy>
+      <Energy Type1="LogScaled" Type2="NotScaled">10.0</Energy>
+      <Energy Type1="NotScaled" Type2="NotScaled">10.0</Energy>
+      <NeighborOrder>3</NeighborOrder>
+   </Plugin>
+   
+   <Plugin Name="Chemotaxis">
+      <ChemicalField Name="Chemoattractant">
+         <!-- Observe differences in behavior between which cells are log-scaled and which are not.  -->
+         <!-- Hint: how many survive to the end of simulation? -->
+         <!-- Chemotaxis for LogScaled type can also be specified in Python -->
+         <!-- using the commented code in the steppables script. -->
+         <ChemotaxisByType Lambda="1000.0" Type="LogScaled" LogScaledCoef="1.0"/>
+         <ChemotaxisByType Lambda="1000.0" Type="NotScaled"/>
+      </ChemicalField>
+   </Plugin>
+   
+   <Steppable Type="DiffusionSolverFE">
+      <DiffusionField Name="Chemoattractant">
+         <DiffusionData>
+            <FieldName>Chemoattractant</FieldName>
+            <GlobalDiffusionConstant>0.1</GlobalDiffusionConstant>
+            <GlobalDecayConstant>1E-3</GlobalDecayConstant>
+         </DiffusionData>
+         <SecretionData>
+             <Secretion Type="LogScaled">1E-2</Secretion>
+            <Secretion Type="NotScaled">1E-2</Secretion>
+          </SecretionData>
+         <BoundaryConditions>
+            <Plane Axis="X">
+               <Periodic/>
+            </Plane>
+            <Plane Axis="Y">
+               <Periodic/>
+            </Plane>
+         </BoundaryConditions>
+      </DiffusionField>
+   </Steppable>
+   
+   <Steppable Type="UniformInitializer">
+      <Region>
+         <BoxMin x="5" y="5" z="0"/>
+         <BoxMax x="100" y="100" z="1"/>
+         <Gap>5</Gap>
+         <Width>5</Width>
+         <Types>LogScaled, NotScaled</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>

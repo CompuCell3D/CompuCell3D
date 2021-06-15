@@ -1,5 +1,6 @@
 import sys
 import re
+from weakref import ref
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -8,6 +9,7 @@ from cc3d.player5 import DefaultData
 import cc3d
 import datetime
 from cc3d.player5.Utilities.WebFetcher import WebFetcher
+from os import environ
 
 try:
     from cc3d.player5.Utilities.WebFetcherRequests import WebFetcherRequests
@@ -72,7 +74,6 @@ class SimpleViewManager(QObject):
         self.screenshot_description_browser_act = None
 
         # windows actions
-        self.python_steering_panel_act = None
         self.new_graphics_window_act = None
         self.tile_act = None
         self.cascade_act = None
@@ -94,6 +95,20 @@ class SimpleViewManager(QObject):
 
         self.init_actions()
         self.ui = ui
+
+    @property
+    def ui(self):
+        """
+        Parent UserInterface instance
+
+        :return: parent
+        :rtype: cc3d.player5.UI.UserInterface.UserInterface
+        """
+        return self._ui()
+
+    @ui.setter
+    def ui(self, _ui):
+        self._ui = ref(_ui)
 
     def init_file_menu(self):
         """
@@ -402,9 +417,6 @@ class SimpleViewManager(QObject):
         :return:
         """
 
-        self.python_steering_panel_act = QAction("Steering Panel", self)
-        self.python_steering_panel_act.setShortcut(self.tr("Ctrl+U"))
-
         self.new_graphics_window_act = QAction(QIcon(gip("kcmkwm.png")), "&New Graphics Window", self)
         self.new_graphics_window_act.setShortcut(self.tr("Ctrl+I"))
 
@@ -456,6 +468,11 @@ class SimpleViewManager(QObject):
         This function checks if new CC3D version is available
         :return:None
         """
+
+        
+        # checking if cc3d is running in nanohub. if it is do not check for updates (it'll be blocked by their firewall)
+        if 'NANOHUB_SIM' in environ:
+            return
 
         # here we decide whether the information about no new updates is displayed or not. For automatic update checks
         # this information should not be displayed. For manual update checks we need to inform the user
@@ -661,11 +678,13 @@ class SimpleViewManager(QObject):
         try:
             version_str = cc3d.__version__
             revision_str = cc3d.__revision__
+            commit_label = cc3d.get_sha_label()
         except ImportError:
             pass
 
-        about_text = "<h2>CompuCell3D</h2> Version: " + version_str + " Revision: " + revision_str + "<br />\
-                          Copyright &copy; Biocomplexity Institute, <br />\
+        about_text = "<h2>CompuCell3D</h2> Version: " + version_str + " Revision: " + revision_str + "" \
+                         "<br /> Commit Tag: " + commit_label + "<br />" \
+                          "Copyright &copy; Biocomplexity Institute, <br />\
                           Indiana University, Bloomington, IN\
                           <p><b>CompuCell Player</b> is a visualization engine for CompuCell.</p>"
         more_info_text = "More information " \

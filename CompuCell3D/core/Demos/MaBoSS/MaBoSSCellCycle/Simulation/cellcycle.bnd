@@ -1,0 +1,72 @@
+node CycD
+{
+  logic = CycD;
+  rate_up = (NOT $CycD_del) ? 0.0 : 0.0;
+  rate_down = $CycD_del ? $fast : 0.0;
+}
+
+
+node CycE
+{
+  logic = !Rb & E2F;
+  rate_up = @logic ? $slow : 0.0;
+  rate_down = @logic ? 0.0 : $fast;
+}
+
+node CycA
+{
+  logic = !Rb & !Cdc20 & !(UbcH10 & cdh1) & (CycA | E2F);
+  rate_up = @logic ? $slow : 0.0;
+  rate_down = @logic ? 0.0 : $fast;
+}
+
+
+node CycB
+{
+  logic = !Cdc20 & !cdh1;
+  rate_up = @logic ? $slow : 0.0;
+  rate_down = @logic ? 0.0 : $fast;
+}
+
+node Rb
+{
+  logic = !CycD & !CycB & (p27 | !(CycA | CycE));
+  rate_up = (@logic AND (NOT $Rb_del)) ? $fast : 0.0;
+  rate_down = (@logic AND (NOT $Rb_del)) ? 0.0 : $fast;
+}
+
+node E2F
+{
+  logic = !Rb & !CycB & (!CycA | p27);
+  rate_up = @logic ? $slow : 0.0;
+  rate_down = @logic ? 0.0 : $fast;
+ }
+
+
+node p27
+{
+  logic = !CycD & !CycB & (!(CycA | CycE) | (p27 & !(CycE & CycA)));
+  rate_up = @logic ? $fast : 0.0;
+  rate_down = @logic ? 0.0 : $fast;
+}
+
+node Cdc20
+{
+  logic = CycB;
+  rate_up = (@logic AND (NOT $Cdc20_del)) ? $slow : 0.0;
+  rate_down = (@logic AND (NOT $Cdc20_del)) ? 0.0 : $fast;
+}
+
+node UbcH10
+{
+  logic = (!(cdh1 & !UbcH10) & (CycA | CycB)) | (!CycA & !CycB & (!cdh1 | (Cdc20 & UbcH10)));
+  rate_up = @logic ? $slow : 0.0;
+  rate_down = @logic ? 0.0 : $fast;
+}
+
+node cdh1
+{
+  logic = Cdc20 | (!CycB & (!CycA | p27));
+  rate_up = @logic ? $fast : 0.0;
+  rate_down = @logic ? 0.0 : $fast;
+}

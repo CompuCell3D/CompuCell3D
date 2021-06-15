@@ -29,6 +29,7 @@ SET(SRCS
   PluginManager.cpp
   Simulator.cpp
   ClassRegistry.cpp
+  DerivedProperty.cpp
   PottsParseData.cpp
   ParserStorage.cpp
   # CustomStreamBuffers.cpp
@@ -144,6 +145,7 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 INSTALL_FILES(/include/CompuCell3D/CompuCell3D .h
   ClassRegistry
   CompuCellLibDLLSpecifier  
+  DerivedProperty
   ParseData
   Parser
   ParserStorage

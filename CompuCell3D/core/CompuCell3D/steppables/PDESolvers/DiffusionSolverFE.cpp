@@ -24,6 +24,7 @@
 #include "GPUEnabled.h"
 
 #include "MyTime.h"
+#include <cfloat>
 
 #if OPENCL_ENABLED == 1
 #include "OpenCL/DiffusionSolverFE_OpenCL.h"
@@ -132,15 +133,15 @@ DiffusionSolverFE<Cruncher>::~DiffusionSolverFE()
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
-void DiffusionSolverFE<Cruncher>::Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant)
+void DiffusionSolverFE<Cruncher>::Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant, std::vector<float> const &maxDecayConstVec)
 {
     if (!maxDiffConstVec.size()){ //we will pass empty vector from update function . At the time of calling the update function we have no knowledge of maxDiffConstVec, maxStableDiffConstant
         return;
     }
     
 	//scaling of diffusion and secretion coeeficients
-	for(unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); i++){
-		scalingExtraMCSVec[i] = ceil(maxDiffConstVec[i]/maxStableDiffConstant); //compute number of calls to diffusion solver
+	for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); i++){
+		scalingExtraMCSVec[i] = max(ceil(maxDiffConstVec[i] / maxStableDiffConstant), ceil(maxDecayConstVec[i] / maxStableDecayConstant)); //compute number of calls to diffusion solver
 		if (scalingExtraMCSVec[i]==0)
 			continue;
 
@@ -161,9 +162,9 @@ void DiffusionSolverFE<Cruncher>::Scale(std::vector<float> const &maxDiffConstVe
                 mitr->second/=scalingExtraMCSVec[i];
             }
 
-            for (std::map<unsigned char,float>::iterator mitr=secrData.typeIdSecrConstConstantConcentrationMap.begin() ; mitr!=secrData.typeIdSecrConstConstantConcentrationMap.end() ; ++mitr){
-                mitr->second/=scalingExtraMCSVec[i];
-            }
+            // Notice we do not scale constant concentration secretion. When users use Constant concentration secretion they want to keep concentration at a given cell at the specified level
+            // so no scaling
+
 
             for (std::map<unsigned char,SecretionOnContactData>::iterator mitr=secrData.typeIdSecrOnContactDataMap.begin() ; mitr!=secrData.typeIdSecrOnContactDataMap.end() ; ++mitr){
                 SecretionOnContactData & secrOnContactData=mitr->second;
@@ -236,7 +237,8 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 			maxStableDiffConstant=0.14f;
 		}
 	}
-	
+	//setting max stable decay coefficient
+	maxStableDecayConstant = 1.0 - FLT_MIN;
 
 	//determining latticeType and setting diffusionLatticeScalingFactor
 	//When you evaluate div as a flux through the surface divided bby volume those scaling factors appear automatically. On cartesian lattife everythink is one so this is easy to forget that on different lattices they are not1
@@ -1356,16 +1358,18 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
     //allocating  maxDiffConstVec and  scalingExtraMCSVec   
 	scalingExtraMCSVec.assign(diffSecrFieldTuppleVec.size(),0);
 	maxDiffConstVec.assign(diffSecrFieldTuppleVec.size(),0.0);
+	maxDecayConstVec.assign(diffSecrFieldTuppleVec.size(), 0.0);
     
     //finding maximum diffusion coefficients for each field
     for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
 		for(int currentCellType = 0; currentCellType < UCHAR_MAX+1; currentCellType++) {
 			//                 cout << "diffCoef[currentCellType]: " << diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType] << endl;
 			maxDiffConstVec[i] = (maxDiffConstVec[i] < diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType]) ? diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType]: maxDiffConstVec[i];
+			maxDecayConstVec[i] = (maxDecayConstVec[i] < diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType]) ? diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType] : maxDecayConstVec[i];
 		}
     }
     
-	Scale(maxDiffConstVec, maxStableDiffConstant);//TODO: remove for implicit solvers?    
+	Scale(maxDiffConstVec, maxStableDiffConstant, maxDecayConstVec);//TODO: remove for implicit solvers?    
     
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

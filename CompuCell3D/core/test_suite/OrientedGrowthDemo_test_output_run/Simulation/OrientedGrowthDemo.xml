@@ -1,0 +1,43 @@
+<CompuCell3D Revision="20150910" Version="3.7.4">
+
+    <Potts>
+        <Dimensions x="100" y="100" z="1"/>
+        <Steps>1</Steps>
+        <Temperature>10.0</Temperature>
+        <NeighborOrder>1</NeighborOrder>
+        <RandomSeed>1</RandomSeed>
+        <TestRun/>
+    </Potts>
+
+    <Plugin Name="CellType">
+        <CellType TypeId="0" TypeName="Medium"/>
+        <CellType TypeId="1" TypeName="Cell"/>
+    </Plugin>
+
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+        <Energy Type1="Medium" Type2="Cell">10.0</Energy>
+        <Energy Type1="Cell" Type2="Cell">10.0</Energy>
+        <NeighborOrder>1</NeighborOrder>
+    </Plugin>
+
+    <Plugin Name="Volume"/>
+    <Plugin Name="Surface"/>
+    <Plugin Name="CenterOfMass"/>
+    <Plugin Name="ConnectivityGlobal"/>
+
+    <Plugin Name="OrientedGrowth">
+        <Penalty>999</Penalty>
+        <Falloff>2</Falloff>
+    </Plugin>
+
+    <Steppable Type="UniformInitializer">
+        <Region>
+            <BoxMin x="40" y="40" z="0"/>
+            <BoxMax x="60" y="60" z="1"/>
+            <Gap>2</Gap>
+            <Width>5</Width>
+            <Types/>
+        </Region>
+    </Steppable>
+</CompuCell3D>

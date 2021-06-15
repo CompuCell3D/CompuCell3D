@@ -12,8 +12,8 @@ VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
 VTK_MINOR_VERSION=vtk.vtkVersion.GetVTKMinorVersion()
 
 class MVCDrawView2D(MVCDrawViewBase):
-    def __init__(self, _drawModel):
-        MVCDrawViewBase.__init__(self,_drawModel)
+    def __init__(self, _drawModel, ren=None):
+        MVCDrawViewBase.__init__(self, _drawModel, ren=ren)
         
         self.initArea()
         self.setParams()

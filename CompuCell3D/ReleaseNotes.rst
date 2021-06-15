@@ -1,9 +1,60 @@
 Release Notes
 =============
 
+Version 4.2.5
+-------------
+**2021-06-05**
+
+New features:
+- Added selection of RoadRunner integrator to API
+- Added Reciprocated algorithm to Chemotaxis plugin
+- Added log-scaled chemotaxis by cell center of mass concentration
+- Added multiple vertical axes in Player plots
+- Added python dictionary to all Link classes
+- Added support for attaching Antimony, SBML and CellML models to individual links
+- Optimization of cell shell made optional in Player
+- First rendering now occurs after start in Player
+- Added cell velocity to CellG derived properties
+- Added a cell type color map to Player
+- Added display of parameter scan iteration in Player
+- Minor updates to Twedit++ code snippets
+- AddedBoolean Network solver (MaBoSS)
+
+Bug fixes:
+- Disabled problematic plot menu items in Player
+- Fixed memory leaks assiociated with Player plot windows
+- Better handling of output folder location by parameter scans
+- Fixed static font size show concentration ranges in Player
+- Fixed automatic scaling in diffusion solver ConstantConcentration
+- Fixed eccentricity calculations in moment of inertia plugin
+- Do not check for updates if CC3D is running on nanohub
+- Fixed a bug in moveCell functionality
+
+Version 4.2.4
+-------------
+**2021-01-23**
+
+New features:
+
+- Added regression test suite
+- Major overhaul of FocalPointPlasticity Plugin including
+    - Added regular, internal and anchor link objects
+    - Revised plugin throughout on the basis of link objects
+    - Added link attributes and methods for link-specific manipulations
+    - Added link inventory management methods to SteppableBasePy
+- Added Callable CC3D renderer
+- Added DerivedProperty for read-only attributes in python calculated on-demand in C++
+- Added derived properties for cells: pressure, surface tension, 
+- Added derived properties to regular and internal links: length, tension, linked cells
+- Added derived properties to anchor links: length, tension, linked cell
+
+Bug fixes:
+
+- Minor bug fixes
+
 Version 4.2.3
 -------------
-**2019-08-21**
+**2020-08-21**
 
 New Features:
 
@@ -25,7 +76,7 @@ of each other)
 
 Version 4.2.2
 -------------
-**2019-07-24*
+**2020-07-24**
 
 This is a bug-fix release featuring the following improvements:
 
@@ -52,7 +103,7 @@ do unzipping using 3rd party tools
 
 Version 4.2.1
 -------------
-**2019-05-18*
+**2020-05-18**
 
 This is mainly bug-fix release featuring the following improvements:
 
@@ -67,7 +118,7 @@ as well as total amount of field in the entire lattice
 
 Version 4.2.0
 -------------
-**2019-04-18*
+**2020-04-18**
 
 The list of new features added in this release includes the following:
 
@@ -104,7 +155,7 @@ Known Issues:
 
 Version 4.1.1
 -------------
-**2019-01-18*
+**2020-01-18**
 
 This release adds support for Antimony (see examples in Demos/SBMLSolverExamples/SBMLSolverAntimony)
 and has also multiple bug-fixes:
