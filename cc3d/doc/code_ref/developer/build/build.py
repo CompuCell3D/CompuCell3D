@@ -22,6 +22,9 @@ def build(builder: str = 'html'):
     from sphinx.cmd import build as sphinx_build
     from sphinx.cmd.make_mode import BUILDERS
 
+    if not isdir(api_build_dir):
+        build_api()
+
     if builder not in [x[1] for x in BUILDERS]:
         raise EnvironmentError("Builder not supported")
 
@@ -77,7 +80,6 @@ def main():
     :return: None
     """
     clear_api()
-    build_api()
     build()
 
 
