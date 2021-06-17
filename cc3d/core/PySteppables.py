@@ -2042,9 +2042,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
 
     def invariant_distance_vector_integer(self, p1, p2):
         """
-        This function will calculate distance vector with integer coordinates between two Point3D points
-        and make sure that the absolute values of the vector are smaller than 1/2 of the corresponding lattice dimension
-        this way we simulate 'invariance' of distance assuming that periodic boundary conditions are in place
+        This function will calculate distance vector with integer coordinates between two Point3D points.
+        Respects boundary conditions.
 
         :param p1: position of first point
         :type p1: list or tuple
@@ -2085,9 +2084,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
 
     def invariant_distance_vector(self, p1, p2):
         """
-        This function will calculate distance vector with integer coordinates between two Coordinates3D<double> points
-        and make sure that the absolute values of the vector are smaller than 1/2 of the corresponding lattice dimension
-        this way we simulate 'invariance' of distance assuming that periodic boundary conditions are in place
+        This function will calculate distance vector with integer coordinates between two Coordinates3D<double> points.
+        Respects boundary conditions.
 
         :param p1: position of first point
         :type p1: list or tuple
@@ -2187,9 +2185,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
 
     def invariant_distance_between_cells(self, cell1, cell2):
         """
-        Distance between COM's of two cells. Assumes periodic boundary conditions
-        - or simply makes sure that no component of distance vector
-        is greater than 1/2 corresponding dimension
+        Distance between COM's of two cells. Respects boundary conditions.
 
         :param cc3d.cpp.CompuCell.CellG cell1: first cell
         :param cc3d.cpp.CompuCell.CellG cell2: second cell
