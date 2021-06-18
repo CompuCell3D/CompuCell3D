@@ -20,9 +20,11 @@ from typing import Dict
 from cc3d.cpp import CompuCell
 try:
     from cc3dext import MaBoSSCC3DPy
+    maboss_engine_type = MaBoSSCC3DPy.CC3DMaBoSSEngine
     __has_extension__ = True
 except ModuleNotFoundError:
     __has_extension__ = False
+    maboss_engine_type = object
 
 
 class NoMaBoSSExtensionError(Exception):
@@ -37,7 +39,7 @@ def maboss_model(bnd_file: str = None,
                  time_step: float = 1.0,
                  time_tick: float = 1.0,
                  discrete_time: bool = False,
-                 seed: int = None) -> MaBoSSCC3DPy.CC3DMaBoSSEngine:
+                 seed: int = None) -> maboss_engine_type:
     """
     Instantiate a MaBoSS simulation instance from files and/or strings.
 
@@ -170,7 +172,7 @@ class MaBoSSHelper:
                      time_step: float = 1.0,
                      time_tick: float = 1.0,
                      discrete_time: bool = False,
-                     seed: int = 0) -> MaBoSSCC3DPy.CC3DMaBoSSEngine:
+                     seed: int = 0) -> maboss_engine_type:
         """
         Instantiate a MaBoSS simulation instance from files and/or strings.
 

@@ -25,8 +25,6 @@
 
 #include "Point3D.h"
 
-//#include <XMLCereal/XMLSerializable.h>
-
 #include <string>
 
 namespace CompuCell3D {
@@ -44,63 +42,70 @@ namespace CompuCell3D {
     /// Copy constructor
     Dim3D(const Dim3D &dim) : Point3D(dim) {}  
 
-    Dim3D &operator=(const Dim3D pt) {
-      x = pt.x;
-      y = pt.y;
-      z = pt.z;
-      return *this;
-    }
+    Dim3D &operator=(const Dim3D pt);
 
     /** 
      * Add the coordinates of pt to this Point3D.
      */
-    Dim3D &operator+=(const Dim3D pt) {
-      x += pt.x;
-      y += pt.y;
-      z += pt.z;
-      return *this;
-    }
+    Dim3D &operator+=(const Dim3D pt);
 
     /** 
      * Subtract the coordinates of pt to this Point3D.
      */
-    Dim3D &operator-=(const Dim3D pt) {
-      x -= pt.x;
-      y -= pt.y;
-      z -= pt.z;
-      return *this;
-    }
+    Dim3D &operator-=(const Dim3D pt);
         
     /// Comparison operator
-    bool operator==(const Dim3D pt) const {
-      return (x == pt.x && y == pt.y && z == pt.z);
-    }
-    /// Not equal operator
-    bool operator!=(const Dim3D pt) const {
-		
-      return !(*this==pt);
-    }
-    
-   bool operator<(const Dim3D  _rhs) const{
-      return x < _rhs.x || (!(_rhs.x < x)&& y < _rhs.y)
-			||(!(_rhs.x < x)&& !(_rhs.y <y )&& z < _rhs.z);
-   }
-   short & operator[](int _idx){
-	   if(!_idx){
-			return x;
-	   }else if(_idx==1){
-			return y;
-	   }else { //there is no error checking here so in case user picks index out of range we return z coordinate
-			return z;
-	   }
-   }
+    bool operator==(const Dim3D pt) const { return (x == pt.x && y == pt.y && z == pt.z); }
 
-   friend std::ostream &operator<<(std::ostream &stream, const Dim3D &pt);
+    /// Not equal operator
+    bool operator!=(const Dim3D pt) const { return !(*this==pt); }
+    
+    bool operator<(const Dim3D  _rhs) const;
+
+    short & operator[](int _idx);
+
+    friend std::ostream &operator<<(std::ostream &stream, const Dim3D &pt);
   };
 
-    inline std::ostream &operator<<(std::ostream &stream, const Dim3D &pt) {
+  inline Dim3D &Dim3D::operator=(const Dim3D pt) {
+    x = pt.x;
+    y = pt.y;
+    z = pt.z;
+    return *this;
+  }
+
+  inline Dim3D &Dim3D::operator+=(const Dim3D pt) {
+    x += pt.x;
+    y += pt.y;
+    z += pt.z;
+    return *this;
+  }
+
+  inline Dim3D &Dim3D::operator-=(const Dim3D pt) {
+    x -= pt.x;
+    y -= pt.y;
+    z -= pt.z;
+    return *this;
+  }
+
+  inline bool Dim3D::operator<(const Dim3D  _rhs) const {
+    return x < _rhs.x || (!(_rhs.x < x)&& y < _rhs.y)
+    ||(!(_rhs.x < x)&& !(_rhs.y <y )&& z < _rhs.z);
+  }
+
+  inline std::ostream &operator<<(std::ostream &stream, const Dim3D &pt) {
     stream << '(' << pt.x << ',' << pt.y << ',' << pt.z << ')';
     return stream;
+  }
+
+  inline short & Dim3D::operator[](int _idx) {
+    if(!_idx){
+      return x;
+    }else if(_idx==1){
+      return y;
+    }else { //there is no error checking here so in case user picks index out of range we return z coordinate
+      return z;
+    }
   }
 
   /** 

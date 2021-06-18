@@ -24,20 +24,8 @@
 #define MOMENTOFINERTIAPLUGIN_H
 
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Plugin.h>
 
-
-
-
-// // // #include <CompuCell3D/Field3D/Point3D.h>
-// // // #include <CompuCell3D/Field3D/Dim3D.h>
-
-// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <cmath>
-// // // #include <vector>
 #define roundf(a) ((fmod(a,1)<0.5)?floor(a):ceil(a))
-
 
 #include "MomentOfInertiaDLLSpecifier.h"
 
@@ -46,21 +34,22 @@ namespace CompuCell3D {
   class ParseData;
   class MomentOfInertiaPlugin;
   class BoundaryStrategy; 
-  
-  
+
+  std::vector<double> MOMENTOFINERTIA_EXPORT minMaxComps(const double& i11, const double& i22, const double& i12);
+  double MOMENTOFINERTIA_EXPORT eccFromComps(const double& lMin, const double& lMax);
+  std::vector<double> MOMENTOFINERTIA_EXPORT cellOrientation_12(const double& i11, const double& i22, const double& i12);
+  std::vector<double> MOMENTOFINERTIA_EXPORT getSemiaxes12(const double& i11, const double& i22, const double& i12, const double& volume);
 
   class MOMENTOFINERTIA_EXPORT MomentOfInertiaPlugin : public Plugin, public CellGChangeWatcher {
     Potts3D *potts;
-	 Simulator *simulator;
-   Point3D boundaryConditionIndicator;
-   Dim3D fieldDim;
-	BoundaryStrategy *boundaryStrategy;
-	int lastMCSPrintedWarning;
+    Simulator *simulator;
+    Point3D boundaryConditionIndicator;
+    Dim3D fieldDim;
+    BoundaryStrategy *boundaryStrategy;
+    int lastMCSPrintedWarning;
    
   public:
-	    typedef void (MomentOfInertiaPlugin::*field3DChangeFcnPtr_t)(const Point3D &pt,  CellG *newCell,CellG *oldCell);
-
-	    //typedef void (MomentOfInertiaPlugin::*getSemiaxesFctPtr_t)(CellG *_cell,double & _majorAxis , double & _medianAxis, double &_minorAxis);
+    typedef void (MomentOfInertiaPlugin::*field3DChangeFcnPtr_t)(const Point3D &pt,  CellG *newCell,CellG *oldCell);
 		typedef std::vector<double>(MomentOfInertiaPlugin::*getSemiaxesFctPtr_t)(CellG *_cell);
 
     MomentOfInertiaPlugin();
@@ -68,12 +57,10 @@ namespace CompuCell3D {
     
     void getMomentOfInertia(CellG *cell, float I[3]) const
     {
-      if (!cell) throw CC3DException("getMomentOfInertia() Cell cannot be NULL!");
+      ASSERT_OR_THROW("getMomentOfInertia() Cell cannot be NULL!", cell);
 
       unsigned int volume = cell->volume;
-      if (!volume) throw CC3DException("getMomentOfInertia() Cell volume is 0!");
-
-      
+      ASSERT_OR_THROW("getMomentOfInertia() Cell volume is 0!", volume);
 
       I[0] = cell->iXX;
       I[1] = cell->iYY;
@@ -81,44 +68,31 @@ namespace CompuCell3D {
 
     }
 
-  
     // SimObject interface
+
     virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
 
-	
-
     // BCGChangeWatcher interface
-    virtual void field3DChange(const Point3D &pt, CellG *newCell,
-                                CellG *oldCell);
 
-    virtual void cellOrientation_xy(const Point3D &pt, CellG *newCell,
-                                CellG *oldCell);
+    virtual void field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell);
 
-    virtual void cellOrientation_xz(const Point3D &pt, CellG *newCell,
-                                CellG *oldCell);
+    virtual void cellOrientation_xy(const Point3D &pt, CellG *newCell, CellG *oldCell);
 
-    virtual void cellOrientation_yz(const Point3D &pt, CellG *newCell,
-                                CellG *oldCell);
+    virtual void cellOrientation_xz(const Point3D &pt, CellG *newCell, CellG *oldCell);
 
-	field3DChangeFcnPtr_t cellOrientationFcnPtr;
+    virtual void cellOrientation_yz(const Point3D &pt, CellG *newCell, CellG *oldCell);
 
-	getSemiaxesFctPtr_t getSemiaxesFctPtr;
+    field3DChangeFcnPtr_t cellOrientationFcnPtr;
 
-	//convenience functions for accessing semiaxes
-	//void getSemiaxes(CellG *_cell,double & _majorAxis , double & _medianAxis, double &_minorAxis);
-	//void getSemiaxesXY(CellG *_cell,double & _majorAxis , double & _medianAxis, double &_minorAxis);
-	//void getSemiaxesXZ(CellG *_cell,double & _majorAxis , double & _medianAxis, double &_minorAxis);
-	//void getSemiaxesYZ(CellG *_cell,double & _majorAxis , double & _medianAxis, double &_minorAxis);
-	//void getSemiaxes3D(CellG *_cell,double & _majorAxis , double & _medianAxis, double &_minorAxis);
+    getSemiaxesFctPtr_t getSemiaxesFctPtr;
 
-	std::vector<double> getSemiaxes(CellG *_cell);
-	std::vector<double> getSemiaxesXY(CellG *_cell);
-	std::vector<double> getSemiaxesXZ(CellG *_cell);
-	std::vector<double> getSemiaxesYZ(CellG *_cell);
-	std::vector<double> getSemiaxes3D(CellG *_cell);
+    std::vector<double> getSemiaxes(CellG *_cell);
+    std::vector<double> getSemiaxesXY(CellG *_cell);
+    std::vector<double> getSemiaxesXZ(CellG *_cell);
+    std::vector<double> getSemiaxesYZ(CellG *_cell);
+    std::vector<double> getSemiaxes3D(CellG *_cell);
 
-
-   virtual std::string toString();
+    virtual std::string toString();
 
   };
 };
