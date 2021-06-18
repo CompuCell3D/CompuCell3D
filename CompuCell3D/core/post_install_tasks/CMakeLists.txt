@@ -42,6 +42,15 @@ if(INSTALL_PLAYER)
         PATTERN "__pycache__" EXCLUDE
         PATTERN ${cc3d_py_source_dir}/core/*)
 
+    INSTALL(DIRECTORY  ${cc3d_py_source_dir}/doc DESTINATION ${cc3d_py_dir_target}
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "*.ui" EXCLUDE
+        PATTERN "*.in" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "*.bak" EXCLUDE
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN ${cc3d_py_source_dir}/doc/*)
+
     INSTALL(DIRECTORY  ${cc3d_py_source_dir}/gui_plugins DESTINATION ${cc3d_py_dir_target}
         PATTERN "*.svn" EXCLUDE
         PATTERN "*.ui" EXCLUDE
