@@ -3,8 +3,8 @@ import sys
 import time
 
 # PREFIX_CC3D=os.getcwd()
-PREFIX_CC3D = sys.argv[1]
-PYTHON_INSTALL_PATH = sys.argv[2]
+PREFIX_CC3D = str(sys.argv[1]).strip()
+PYTHON_INSTALL_PATH = str(sys.argv[2]).strip()
 os.chdir(PREFIX_CC3D)
 # print "CWD=",os.getcwd()
 
@@ -19,6 +19,7 @@ tmpFile = open("tmp.bat", "w")
 tmpFile.write("%s\n" % ("@ECHO OFF"))
 tmpFile.write("%s\n" % ("@SET PREFIX_CC3D=" + PREFIX_CC3D))
 tmpFile.write("%s\n" % ("@SET PYTHON_INSTALL_PATH=" + PYTHON_INSTALL_PATH))
+tmpFile.write("%s\n" % r"@SET PATH=%PYTHON_INSTALL_PATH%\Library\bin;%PATH%")
 tmpFile.close()
 
 # #concatenate
@@ -45,6 +46,7 @@ tmpFile = open("tmp.bat", "w")
 tmpFile.write("%s\n" % ("@ECHO OFF"))
 tmpFile.write("%s\n" % ("@SET PREFIX_CC3D=" + PREFIX_CC3D))
 tmpFile.write("%s\n" % ("@SET PYTHON_INSTALL_PATH=" + PYTHON_INSTALL_PATH))
+tmpFile.write("%s\n" % r"@SET PATH=%PYTHON_INSTALL_PATH%\Library\bin;%PATH%")
 tmpFile.close()
 
 # concatenate
@@ -70,6 +72,7 @@ tmpFile = open("tmp.bat", "w")
 tmpFile.write("%s\n" % ("@ECHO OFF"))
 tmpFile.write("%s\n" % ("@SET PREFIX_CC3D=" + PREFIX_CC3D))
 tmpFile.write("%s\n" % ("@SET PYTHON_INSTALL_PATH=" + PYTHON_INSTALL_PATH))
+tmpFile.write("%s\n" % r"@SET PATH=%PYTHON_INSTALL_PATH%\Library\bin;%PATH%")
 tmpFile.close()
 
 # concatenate
@@ -95,6 +98,7 @@ tmpFile = open("tmp.bat", "w")
 tmpFile.write("%s\n" % ("@ECHO OFF"))
 tmpFile.write("%s\n" % ("@SET PREFIX_CC3D=" + PREFIX_CC3D))
 tmpFile.write("%s\n" % ("@SET PYTHON_INSTALL_PATH=" + PYTHON_INSTALL_PATH))
+tmpFile.write("%s\n" % r"@SET PATH=%PYTHON_INSTALL_PATH%\Library\bin;%PATH%")
 tmpFile.close()
 
 # concatenate
@@ -120,6 +124,7 @@ tmpFile = open("tmp.bat", "w")
 tmpFile.write("%s\n" % ("@ECHO OFF"))
 tmpFile.write("%s\n" % ("@SET PREFIX_CC3D=" + PREFIX_CC3D))
 tmpFile.write("%s\n" % ("@SET PYTHON_INSTALL_PATH=" + PYTHON_INSTALL_PATH))
+tmpFile.write("%s\n" % r"@SET PATH=%PYTHON_INSTALL_PATH%\Library\bin;%PATH%")
 tmpFile.close()
 
 # concatenate
@@ -151,6 +156,7 @@ if os.path.isfile("celldraw.bat.in.v2"):
     tmpFile.write("%s\n" % ("@ECHO OFF"))
     tmpFile.write("%s\n" % ("@SET PREFIX_CELLDRAW=" + PREFIX_CC3D))
     tmpFile.write("%s\n" % ("@SET PYTHON_INSTALL_PATH=" + PYTHON_INSTALL_PATH))
+    tmpFile.write("%s\n" % r"@SET PATH=%PYTHON_INSTALL_PATH%\Library\bin;%PATH%")
     tmpFile.close()
 
     # concatenate
