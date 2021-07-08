@@ -10,7 +10,7 @@ import time
 # These extensions are called "service functions". They define internal service methods that can be employed through
 # the service interface and can be accessed as attributes on the service proxy.
 from cc3d.CompuCellSetup.CC3DCaller import CC3DSimService
-# from cc3d.core.sim_service import service_cc3d as CC3DSimService
+# from cc3d.core.simservice import service_cc3d as CC3DSimService
 
 from cc3d.CompuCellSetup.CC3DCaller import CC3DCallerWorker
 from cc3d.core.PySteppables import *
@@ -26,11 +26,12 @@ __author__ = "T.J. Sego, Ph.D."
 __email__ = "tjsego@iu.edu"
 
 
-run_basic = True
-run_parallel = False
+# Demo options
+run_basic = True  # Run the basic demo: execute an interactive simulation
+run_parallel = False  # Run the parallel demo: execute multiple simulations in parallel
 
 
-simulation_fname = join(dirname(__file__), 'steppableBasedMitosis', 'steppableBasedMitosis.cc3d')  # Local version; replace with call to demo directory in PR
+simulation_fname = join(dirname(__file__), 'steppableBasedMitosis', 'steppableBasedMitosis.cc3d')
 root_output_folder = join(dirname(__file__), 'steppableBasedMitosis', 'Output')
 output_frequency = None
 population_threshold = 10

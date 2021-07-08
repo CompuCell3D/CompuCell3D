@@ -1,7 +1,7 @@
 import random
 
 from cc3d.core.PySteppables import *
-from cc3d.core.sim_service import service_function
+from cc3d.core.simservice import service_function
 
 random.seed()
 
