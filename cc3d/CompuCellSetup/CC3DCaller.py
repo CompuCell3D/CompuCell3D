@@ -5,7 +5,7 @@ from cc3d.core.RollbackImporter import RollbackImporter
 from cc3d.CompuCellSetup.CC3DPy import CC3DPySim
 import multiprocessing
 # Placing here as an extended usage of this module
-from cc3d.core.sim_service.impl.CC3D.CC3DSimService import CC3DSimService
+from cc3d.core.simservice.CC3DSimService import CC3DSimService
 
 
 class CC3DCaller(CC3DPySim):

@@ -23,7 +23,7 @@ from math import sqrt
 from cc3d.core.numerics import *
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 # To safely work with Service in various environments, import must be at this level (issues with RollbackImporter)
-from cc3d.core import sim_service
+from cc3d.core import simservice
 
 
 class SteppablePy:
@@ -2303,7 +2303,7 @@ class SecretionBasePy(SteppableBasePy):
 
 class ServiceSteppableBasePy(SteppablePy):
     """
-    Steppable wrap of the service interface defined in cc3d.core.Service.PySimService.PySimService
+    Steppable wrap of the service interface defined in simservice.PySimService.PySimService
     """
 
     service_name = ""
@@ -2378,7 +2378,7 @@ class CC3DServiceSteppableBasePy(ServiceSteppableBasePy):
 
     def service_constructor(self):
 
-        self.sim_service = sim_service.service_cc3d(
+        self.sim_service = simservice.service_cc3d(
             cc3d_sim_fname=self.cc3d_sim_fname,
             output_frequency=self.cc3d_sim_output_frequency,
             screenshot_output_frequency=self.cc3d_sim_screenshot_output_frequency,

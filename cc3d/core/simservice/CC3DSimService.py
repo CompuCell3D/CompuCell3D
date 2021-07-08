@@ -1,3 +1,6 @@
+"""
+CC3D core implementation of simservice PySimService
+"""
 import os
 import time
 
@@ -5,7 +8,7 @@ from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.CC3DPy import CC3DPy, CC3DPySim
 from cc3d.core.RollbackImporter import RollbackImporter
 
-from ...PySimService import PySimService, SimStatus
+from simservice.PySimService import PySimService, SimStatus
 from .SimulationServiceThread import SimulationServiceThread
 
 

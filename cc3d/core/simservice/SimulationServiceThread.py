@@ -1,12 +1,12 @@
+"""
+Supporting infrastructure for running CC3D core in a simservice environment
+"""
 from cc3d.core.enums import SimType
 from cc3d.CompuCellSetup.SimulationThread import SimulationThread
 
-"""
-Supporting infrastructure for running CC3D core in a sim_service environment
-"""
-
 
 class SimulationServiceThread(SimulationThread):
+    """Simulation thread for running as a service"""
 
     sim_type = SimType.SERVICE
 
