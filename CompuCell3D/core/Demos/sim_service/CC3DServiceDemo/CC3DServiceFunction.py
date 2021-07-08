@@ -1,34 +1,35 @@
-from os.path import dirname, join
-from cc3d.core.sim_service import service_cc3d
 """
-This demo teaches some applications of the sim_service module CC3D implementation, including
+This demo teaches some applications of the simservice CC3D implementation, including
     - How to interactively run a CC3D simulation service in Python using a service proxy
     - How to run CC3D simulations within a CC3D simulation as a service
     - How to define and use a service function
     - How to forward the service functions of services running within services 
-    
-    A simulation service behaves similarly to an interactive CC3D simulation, but with some subtle differences. When 
-    instantiating a simulation service through the sim_service module, a reference to the actual simulation service is 
-    not returned. Rather, a proxy to the simulation service is returned that has methods to interact with the 
-    underlying simulation service, which is runnning elsewhere on a server (whether locally, or remotely). Some of the 
-    methods available are demonstrated below, including interactively running a simulation and designing/employing 
-    customization of a service interface through service functions. 
-    
-    A service function defines an internal service method that can be employed through the service interface,
-    which can be accessed as an attribute on the service proxy. They can be designed into a simulation without 
-    breaking the simulation when running normally (e.g., when running directly in Player), as the sim_service module 
-    will detect if a simulation is being run as a service. In cases where a simulation is employed as a service, 
-    service function instantiations occur. In cases where a simulation is not being employed as a serivce, service 
-    function instantiations are simply ignored. 
-    
-    A service proxy can be instantiated using its service factory defined in the sim_service module. For CC3D, the 
-    factory is service_cc3d, which takes the same arguments as those that we would pass to CC3DCaller and 
-    CC3DSimService to instantiate a simulation. 
-    
-    When running services within services, the service functions of a child service can be mapped onto the proxy of 
-    the parent service by simply declaring the service functions of the child service as service functions of the parent 
-    service in the typical way. 
+
+A simulation service behaves similarly to an interactive CC3D simulation, but with some subtle differences. When
+instantiating a simulation service, a reference to the actual simulation service is not returned. Rather, a proxy
+to the simulation service is returned that has methods to interact with the underlying simulation service, which
+is runnning elsewhere on a server (whether locally, or remotely). Some of the methods available are demonstrated
+below, including interactively running a simulation and designing/employing customization of a service interface
+through service functions.
+
+A service function defines an internal service method that can be employed through the service interface,
+which can be accessed as an attribute on the service proxy. They can be designed into a simulation without
+breaking the simulation when running normally (e.g., when running directly in Player), as the simservice
+implementation will detect if a simulation is being run as a service. In cases where a simulation is employed as
+a service, service function instantiations occur. In cases where a simulation is not being employed as a serivce,
+service function instantiations are simply ignored.
+
+A service proxy can be instantiated using its service factory defined in simservice. For CC3D, the
+factory is service_cc3d, which takes the same arguments as those that we would pass to CC3DCaller and
+CC3DSimService to instantiate a simulation.
+
+When running services within services, the service functions of a child service can be mapped onto the proxy of
+the parent service by simply declaring the service functions of the child service as service functions of the parent
+service in the typical way.
 """
+from os.path import dirname, join
+from cc3d.core.simservice import service_cc3d
+
 __author__ = "T.J. Sego, Ph.D."
 __email__ = "tjsego@iu.edu"
 
@@ -37,7 +38,7 @@ total_steps = 10000  # Total number of simulation steps
 report_frequency = 100  # Frequency of reporting simulation details
 
 # Embedded CC3D: the CC3D project InfectionSite embeds a second CC3D project EffectorProductionSite. It can be executed
-# in Player, or through the sim_service module as demonstrated here
+# in Player, or through the simservice implementation as demonstrated here
 root_dir = join(dirname(dirname(__file__)), 'CC3DConcurrentSimDemo', 'InfectionSite')
 simulation_fname = join(root_dir, r'InfectionSite.cc3d')
 root_output_folder = join(root_dir, 'Output')
