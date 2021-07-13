@@ -1,0 +1,66 @@
+<CompuCell3D>
+
+    <Potts>
+        <Dimensions x="200" y="200" z="1"/> <!-- Z >1 become 3D -->
+        <Steps>1</Steps>
+        <Temperature>5</Temperature>
+        <Flip2DimRatio>1</Flip2DimRatio>
+        <Boundary_x>Periodic</Boundary_x>
+        <Boundary_y>Periodic</Boundary_y>
+        <NeighborOrder>2</NeighborOrder>
+        <RandomSeed>1</RandomSeed>
+        <TestRun/>
+    </Potts>
+
+
+    <Plugin Name="Volume">
+        <TargetVolume>25</TargetVolume>
+        <LambdaVolume>1</LambdaVolume>
+    </Plugin>
+
+    <Plugin Name="CenterOfMass"/>
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Cell1" TypeId="1"/>
+        <CellType TypeName="Cell2" TypeId="2"/>
+    </Plugin>
+
+
+    <Plugin Name="AdhesionFlex">
+
+
+        <AdhesionMolecule Molecule="NCad"/>
+        <AdhesionMolecule Molecule="NCam"/>
+        <AdhesionMolecule Molecule="Int"/>
+
+
+        <AdhesionMoleculeDensity CellType="Cell1" Molecule="NCad" Density="6.1"/>
+        <AdhesionMoleculeDensity CellType="Cell1" Molecule="NCam" Density="4.1"/>
+        <AdhesionMoleculeDensity CellType="Cell1" Molecule="Int" Density="8.1"/>
+        <AdhesionMoleculeDensity CellType="Medium" Molecule="Int" Density="3.1"/>
+        <AdhesionMoleculeDensity CellType="Cell2" Molecule="NCad" Density="2.1"/>
+        <AdhesionMoleculeDensity CellType="Cell2" Molecule="NCam" Density="3.1"/>
+
+        <BindingFormula Name="Binary">
+            <Formula>min(Molecule1,Molecule2)</Formula>
+            <Variables>
+                <AdhesionInteractionMatrix>
+                    <BindingParameter Molecule1="NCad" Molecule2="NCad">-1.0</BindingParameter>
+                    <BindingParameter Molecule1="NCam" Molecule2="NCam">2.0</BindingParameter>
+                    <BindingParameter Molecule1="NCad" Molecule2="NCam">-10.0</BindingParameter>
+                    <BindingParameter Molecule1="Int" Molecule2="Int">-10.0</BindingParameter>
+                </AdhesionInteractionMatrix>
+            </Variables>
+        </BindingFormula>
+
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+
+
+    <Steppable Type="PIFInitializer">
+        <PIFName>Simulation/initial_configuration.piff</PIFName>
+    </Steppable>
+
+
+</CompuCell3D>

@@ -20,6 +20,7 @@ from cc3d.player5.Messaging import stdMsg, dbgMsg, pd, errMsg, setDebugging
 from . import CC3DSender
 import os
 import sys
+from weakref import ref
 
 
 # setDebugging(0)
@@ -59,7 +60,6 @@ class ErrorConsole(QsciScintilla):
         self.setReadOnly(True)
         #         self.setReadOnly(False)
 
-
         self.setCaretLineVisible(True)
         # font=self.font()
         font = QFont("Courier New", 10)
@@ -89,7 +89,6 @@ class ErrorConsole(QsciScintilla):
 
         # self.SendScintilla(QsciScintilla.SCI_SETCARETSTYLE, QsciScintilla.CARETSTYLE_INVISIBLE) # make caret invisible
 
-
         self.lineNumberExtractRegex = re.compile('^[\s\S]*[L|l]ine:[\s]*([0-9]*)')
         self.colNumberExtractRegex = re.compile('^[\s\S]*[C|c]ol:[\s]*([0-9]*)')
 
@@ -101,6 +100,36 @@ class ErrorConsole(QsciScintilla):
         dbgMsg("marginSensitivity=", self.marginSensitivity(0))
 
         self.cc3dSender = CC3DSender.CC3DSender(self)
+
+    @property
+    def editorWindow(self):
+        try:
+            o = self._editorWindow()
+        except TypeError:
+            o = self._editorWindow
+        return o
+
+    @editorWindow.setter
+    def editorWindow(self, _i):
+        try:
+            self._editorWindow = ref(_i)
+        except TypeError:
+            self._editorWindow = _i
+
+    @property
+    def playerMainWidget(self):
+        try:
+            o = self._playerMainWidget()
+        except TypeError:
+            o = self._playerMainWidget
+        return o
+
+    @playerMainWidget.setter
+    def playerMainWidget(self, _i):
+        try:
+            self._playerMainWidget = ref(_i)
+        except TypeError:
+            self._playerMainWidget = _i
 
     def setPlayerMainWidget(self, _playerMainWidget):
 
@@ -265,13 +294,19 @@ class SyntaxErrorLexer(QsciLexerCustom):
         self.baseFont = Qsci.QsciLexerCustom.setDefaultFont(self, self.baseFont)
         self.baseFont = Qsci.QsciLexerCustom.defaultFont(self, 0)
         self.baseFont.setFixedPitch(True)
-        print("self.baseFont.fixedPitch()=", self.baseFont.fixedPitch())
-        # sys.exit()
 
         self.baseFontBold = QFont(self.baseFont)
         self.baseFontBold.setBold(True)
         self.baseFontBold.setFixedPitch(True)
         self.searchText = ""
+
+    @property
+    def editorWidget(self):
+        return self._editorWidget()
+
+    @editorWidget.setter
+    def editorWidget(self, _i):
+        self._editorWidget = ref(_i)
 
     def description(self, style):
         return self._styles.get(style, '')
@@ -404,8 +439,6 @@ class SyntaxErrorLexer(QsciLexerCustom):
                     # except IndexError,e:
                     # self.searchText=""
                     # dbgMsg("COULD NOT EXTRACT TEXT")
-
-
 
                 # elif line.startswith('  File'):
                 elif line.startswith('  F'):

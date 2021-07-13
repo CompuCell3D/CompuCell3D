@@ -1,0 +1,7 @@
+<Simulation version="3.5.1">
+    <XMLScript>Simulation/on_stop_demo.xml</XMLScript>
+    <PythonScript>Simulation/on_stop_demo.py</PythonScript>
+    <Resource Type="Python">Simulation/on_stop_demo_steppables.py</Resource>
+</Simulation>
+
+ 

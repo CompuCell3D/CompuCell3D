@@ -1,24 +1,25 @@
 import vtk
 import cc3d.player5.Configuration as Configuration
 from cc3d import CompuCellSetup
-from cc3d.player5.Utilities.utils import to_vtk_rgb, qcolor_to_rgba
+from cc3d.player5.Utilities.utils import to_vtk_rgb
+import numpy as np
+from cc3d.cpp import CompuCell
+import weakref
+from math import log10, fabs
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
-MODULENAME = '----- MVCDrawModelBase.py: '
 
 
 class MVCDrawModelBase:
-    def __init__(self):
+    def __init__(self, boundary_strategy, ren=None):
 
         (self.minCon, self.maxCon) = (0, 0)
 
-        from weakref import ref
-        # # # self.graphicsFrameWidget=graphicsFrameWidget
-        # # # self.qvtkWidget=self.graphicsFrameWidget.qvtkWidget
         self.currentDrawingFunction = None
         self.fieldTypes = None
         self.currentDrawingParameters = None
         self.field_extractor = None
+        self.boundary_strategy = boundary_strategy
 
         self.cell_type_array = None
         self.cell_id_array = None
@@ -28,22 +29,59 @@ class MVCDrawModelBase:
 
         self.celltypeLUT = None
 
-    #        self.scaleGlyphsByVolume = False
+        self.gd_ref = None
+        self.ren = ren
+
+    @property
+    def boundary_strategy(self):
+        try:
+            o = self._boundary_strategy()
+        except TypeError:
+            o = self._boundary_strategy
+        return o
+
+    @boundary_strategy.setter
+    def boundary_strategy(self, _i):
+        try:
+            self._boundary_strategy = weakref.ref(_i)
+        except TypeError:
+            self._boundary_strategy = _i
+
+    @property
+    def ren(self):
+        try:
+            o = self._ren()
+        except TypeError:
+            o = self._ren
+        return o
+
+    @ren.setter
+    def ren(self, _i):
+        try:
+            self._ren = weakref.ref(_i)
+        except TypeError:
+            self._ren = _i
+
+    def set_generic_drawer(self, gd):
+        """
+
+        :param gd:
+        :return:
+        """
+        self.gd_ref = weakref.ref(gd)
+
+    def set_boundary_strategy(self, boundary_strategy):
+        """
+        sets boundary strategy C++ obj reference
+        :param boundary_strategy:
+        :return:
+        """
+
+        self.boundary_strategy = boundary_strategy
 
     # should also set "periodic" boundary condition flag(s) (e.g. for drawing FPP links that wraparound)
 
     def setParams(self):
-        # # You can use either Build() method (256 color by default) or
-        # # SetNumberOfTableValues() to allocate much more colors!
-        # self.celltypeLUT = vtk.vtkLookupTable()
-        # # You need to explicitly call Build() when constructing the LUT by hand
-        # self.celltypeLUT.Build()
-        #
-        # self.populate_cell_type_lookup_table()
-
-        # self.populateLookupTable()
-
-        # self.dim = [100, 100, 1] # Default values
 
         # for FPP links (and offset also for cell glyphs)
         self.eps = 1.e-4  # not sure how small this should be (checking to see if cell volume -> 0)
@@ -61,6 +99,17 @@ class MVCDrawModelBase:
         self.lutBlueRed.Build()
 
     def get_type_lookup_table(self, scene_metadata=None):
+        try:
+            actual_screenshot = scene_metadata['actual_screenshot']
+        except (KeyError, TypeError):
+            actual_screenshot = False
+
+        # todo - optimize it to avoid generating it each time we take screenshot
+        if actual_screenshot:
+            cell_type_color_lookup_table = self.generate_cell_type_lookup_table(scene_metadata=scene_metadata,
+                                                                                actual_screenshot=actual_screenshot)
+            return cell_type_color_lookup_table
+
         if self.celltypeLUT is not None:
             return self.celltypeLUT
 
@@ -68,49 +117,47 @@ class MVCDrawModelBase:
 
         return self.celltypeLUT
 
+    @staticmethod
+    def generate_cell_type_lookup_table(scene_metadata=None, actual_screenshot=False):
+        """
+        generates cell type color lookup table. Depending whether we got metadata for
+        actual screenshot or not we will use cell type color lookup table based on
+        settings or we will use colors defined int he screenshot description file
+        :param scene_metadata: scene metadata dict
+        :param actual_screenshot: flag that tells if we got metadata for actual screenshot
+        :return:
+        """
+        if actual_screenshot:
+            if scene_metadata is None:
+                color_map = Configuration.getSetting("TypeColorMap")
+            else:
+                color_map = scene_metadata["TypeColorMap"]
+        else:
+            color_map = Configuration.getSetting("TypeColorMap")
+
+        cell_type_color_lookup_table = vtk.vtkLookupTable()
+        # You need to explicitly call Build() when constructing the LUT by hand
+        cell_type_color_lookup_table.Build()
+        cell_type_color_lookup_table.SetNumberOfTableValues(len(color_map))
+        cell_type_color_lookup_table.SetNumberOfColors(len(color_map))
+
+        for type_id, color_obj in list(color_map.items()):
+            type_id = int(type_id)
+            rgba = to_vtk_rgb(color_obj=color_obj)
+
+            rgba.append(1.0)
+            cell_type_color_lookup_table.SetTableValue(type_id, *rgba)
+
+        return cell_type_color_lookup_table
+
     def populate_cell_type_lookup_table(self, scene_metadata=None):
         """
-        Populates lookup table
+        Populates "global" cell type color lookup table - based on stored settings
         :param scene_metadata:
         :return:
         """
-        if scene_metadata is None:
-            color_map = Configuration.getSetting("TypeColorMap")
-        else:
-            color_map = scene_metadata["TypeColorMap"]
 
-        self.celltypeLUT = vtk.vtkLookupTable()
-        # You need to explicitly call Build() when constructing the LUT by hand
-        self.celltypeLUT.Build()
-        self.celltypeLUT.SetNumberOfTableValues(len(color_map))
-        self.celltypeLUT.SetNumberOfColors(len(color_map))
-
-        for type_id, qt_color in list(color_map.items()):
-            rgba = to_vtk_rgb(qcolor_to_rgba(qt_color))
-            rgba.append(1.0)
-            self.celltypeLUT.SetTableValue(type_id, *rgba)
-
-    def populateLookupTable(self):
-        #        print MODULENAME,' populateLookupTable()'
-        colorMap = Configuration.getSetting("TypeColorMap")
-        #        print MODULENAME,' populateLookupTable():  len(colorMap)=',len(colorMap)
-        self.celltypeLUT.SetNumberOfTableValues(len(colorMap))
-        self.celltypeLUT.SetNumberOfColors(len(colorMap))
-        #        lutGlyph.SetTableValue(5, 1,0,0, 1.0)     # SetTableValue (vtkIdType indx, double r, double g, double b, double a=1.0)
-        #        lutGlyph.SetTableValue(8, 0,1,1, 1.0)     # SetTableValue (vtkIdType indx, double r, double g, double b, double a=1.0)
-        for key in list(colorMap.keys()):
-            r = colorMap[key].red()
-            g = colorMap[key].green()
-            b = colorMap[key].blue()
-            self.celltypeLUT.SetTableValue(key, self.toVTKColor(r), self.toVTKColor(g), self.toVTKColor(b), 1.0)
-        #            print "       type=",key," red=",r," green=",g," blue=",b
-        #            print "       type=",key," (VTK) red=",self.toVTKColor(r)," green=",self.toVTKColor(g)," blue=",self.toVTKColor(b)
-        # self.qvtkWidget.repaint()
-        self.celltypeLUT.Build()
-        self.celltypeLUTMax = self.celltypeLUT.GetNumberOfTableValues() - 1  # cell types = [0,max]
-        self.celltypeLUT.SetTableRange(0, self.celltypeLUTMax)
-
-    #        print "       celltypeLUTMax=",self.celltypeLUTMax
+        self.celltypeLUT = self.generate_cell_type_lookup_table(scene_metadata=scene_metadata)
 
     def init_lattice_type(self):
         """
@@ -164,7 +211,6 @@ class MVCDrawModelBase:
         self.fieldtype = _fieldType
 
     def setDrawingFunctionName(self, _fcnName):
-        # print "\n\n\n THIS IS _fcnName=",_fcnName," self.drawingFcnName=",self.drawingFcnName
 
         if self.drawingFcnName != _fcnName:
             self.drawingFcnHasChanged = True
@@ -173,15 +219,10 @@ class MVCDrawModelBase:
         self.drawingFcnName = _fcnName
 
     def clearDisplay(self):
-        print(MODULENAME, "     clearDisplay() ")
         for actor in self.currentActors:
             self.graphicsFrameWidget.ren.RemoveActor(self.currentActors[actor])
 
         self.currentActors.clear()
-
-    def Render(self):  # never called?!
-        #        print MODULENAME,"     --------- Render() "
-        self.graphicsFrameWidget.Render()
 
     def is_lattice_hex(self, drawing_params):
         """
@@ -202,16 +243,16 @@ class MVCDrawModelBase:
         :param max_exp:
         :return:
         """
-        from math import log10, fabs
+
         if val == 0.0:
             return '0.0'
 
         try:
-            val_log = fabs(log10(val))
+            val_log = fabs(log10(fabs(val)))
             if val_log <= max_exp:
-                val_str = '{:f}'.format(val)
+                val_str = f'{val:f}'
             else:
-                val_str = '{:e}'.format(val)
+                val_str = f'{val:e}'
         except:
             val_str = 'NaN'
 
@@ -229,16 +270,18 @@ class MVCDrawModelBase:
         max_str = self.float_formatting(range_array[1])
         min_max_actor.SetInput("Min: {} Max: {}".format(min_str, max_str))
 
-        print('txt = ', min_max_actor.GetInput())
-        # txt.SetInput("Hello World 1!")
+        font_size = 11
+        if self.gd_ref is not None:
+            generic_drawer = self.gd_ref()
+            vertical_resolution = generic_drawer.vertical_resolution
+            if vertical_resolution is not None:
+                font_size = int(generic_drawer.vertical_resolution / 100 * 1.1)
+
         txtprop = min_max_actor.GetTextProperty()
         txtprop.SetFontFamilyToArial()
-        txtprop.SetFontSize(10)
+        txtprop.SetFontSize(font_size)
         txtprop.SetColor(1, 1, 1)
-        # txt.SetDisplayPosition(200, 200)
         min_max_actor.SetPosition(20, 20)
-
-
 
     def get_min_max_metadata(self, scene_metadata, field_name):
         """
@@ -253,7 +296,7 @@ class MVCDrawModelBase:
         :return: {dict}
         """
         out_dict = {}
-        if set(['MinRangeFixed', "MaxRangeFixed", 'MinRange', 'MaxRange']).issubset(set(scene_metadata.keys())):
+        if {'MinRangeFixed', "MaxRangeFixed", 'MinRange', 'MaxRange'}.issubset(set(scene_metadata.keys())):
 
             min_range_fixed = scene_metadata['MinRangeFixed']
             max_range_fixed = scene_metadata['MaxRangeFixed']
@@ -378,33 +421,14 @@ class MVCDrawModelBase:
         """
         raise NotImplementedError()
 
-    # def initConFieldActors(self, _actors): pass
-    #
-    # def initVectorFieldCellLevelActors(self, _fillVectorFieldFcn, _actors): pass
-    #
-    # def initVectorFieldActors(self, _actors): pass
-    #
-    # def initScalarFieldCellLevelActors(self, _actors): pass
-    #
-    # def initScalarFieldActors(self, _fillScalarField, _actors): pass
-
     def prepareOutlineActors(self, _actors):
         pass
 
     def getCamera(self):
         return self.ren.GetActiveCamera()
 
-    # def initSimArea(self, _bsd):
-    # fieldDim   = _bsd.fieldDim
-    # # sim.getPotts().getCellFieldG().getDim()
-    # self.setCamera(fieldDim)
-
     def configsChanged(self):
         pass
-
-    # Transforms interval [0, 255] to [0, 1]
-    def toVTKColor(self, val):
-        return float(val) / 255
 
     def largestDim(self, dim):
         ldim = dim[0]
@@ -413,56 +437,6 @@ class MVCDrawModelBase:
                 ldim = dim[i]
 
         return ldim
-
-
-    # self.graphicsFrameWidget.Render()
-
-    # Do I need this method?
-    # Calculates min and max concentration
-    def findMinMax(self, conField, dim):
-        import CompuCell
-        pt = CompuCell.Point3D()
-
-        maxCon = 0
-        minCon = 0
-        for k in range(dim[2]):
-            for j in range(dim[1]):
-                for i in range(dim[0]):
-                    pt.x = i
-                    pt.y = j
-                    pt.z = k
-
-                    con = float(conField.get(pt))
-
-                    if maxCon < con:
-                        maxCon = con
-
-                    if minCon > con:
-                        minCon = con
-
-        # Make sure that the concentration is positive
-        if minCon < 0:
-            minCon = 0
-
-        return (minCon, maxCon)
-
-    # Just returns min and max concentration
-    def conMinMax(self):
-        return (self.minCon, self.maxCon)
-
-    def frac(self, con, minCon, maxCon):
-        if maxCon == minCon:
-            return 0.0
-        else:
-            frac = (con - minCon) / (maxCon - minCon)
-
-        if frac > 1.0:
-            frac = 1.0
-
-        if frac < 0.0:
-            frac = 0.0
-
-        return frac
 
     def prepareAxesActors(self, _mappers, _actors):
         pass
@@ -501,3 +475,33 @@ class MVCDrawModelBase:
     def configs_changed(self):
 
         self.populate_cell_type_lookup_table()
+
+    # @staticmethod
+    # def unconditional_invariant_distance_vector(p1, p2, dim):
+    #
+    #     dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, dim)
+    #     return np.array([dist_vec.x, dist_vec.y, dist_vec.z])
+
+    def invariant_distance(self, p1, p2, dim):
+        """
+        Computes invariant distance
+        :param p1: 3-element array like obj representing point
+        :param p2: 3-element array like obj representing point
+        :param dim: field dimension
+        :return: invariant distance
+        """
+
+        inv_dist = CompuCell.distInvariantCM(p2[0], p2[1], p2[2], p1[0], p1[1], p1[2], dim, self.boundary_strategy)
+        return inv_dist
+
+    def invariant_distance_vector(self, p1, p2, dim):
+        """
+        Computes invariant distance
+        :param p1: 3-element array like obj representing point
+        :param p2: 3-element array like obj representing point
+        :param dim: field dimension
+        :return: invariant distance
+        """
+
+        dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, dim, self.boundary_strategy)
+        return np.array([dist_vec.x, dist_vec.y, dist_vec.z])

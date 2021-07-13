@@ -74,6 +74,9 @@
 #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 #include <CompuCell3D/Potts3D/EnergyFunctionCalculator.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
+#include <CompuCell3D/steppables/PDESolvers/DiffusionSolverFE.h>
+#include <CompuCell3D/steppables/PDESolvers/DiffusionSolverFE_CPU.h>
+#include <CompuCell3D/steppables/PDESolvers/ReactionDiffusionSolverFE.h>
 
 //#include <CompuCell3D/BabySim/BabyPottsParseData.h>
 //#include <CompuCell3D/BabySim/BabySim.h>
@@ -278,9 +281,12 @@ using namespace CompuCell3D;
     def __setstate__(self,tup):
         print( 'tuple=',tup)
         self.this = _CompuCell.new_Point3D(tup[0],tup[1],tup[2])
-        self.thisown=1            
-	
-%}   
+        self.thisown=1
+
+    def to_tuple(self):
+        return self.x, self.y, self.z
+
+%}
 };
 
 
@@ -290,6 +296,13 @@ using namespace CompuCell3D;
     s<<(*self);
     return s.str();
   }
+
+%pythoncode %{
+    def to_tuple(self):
+        return self.x, self.y, self.z
+
+%}
+
 };
 
 %include <Utils/Coordinates3D.h>
@@ -575,6 +588,28 @@ using namespace CompuCell3D;
     __swig_getmethods__["sbml"] = getsbml
 
     if _newclass : sbml = property(getsbml, setsbml)
+
+    __maboss__ = '__maboss__'
+    
+    def _get_maboss(self):
+        cell_dict = self.dict
+        class MaBoSSAccessor:
+            def __getattr__(self, item):
+                if CellG.__maboss__ not in cell_dict.keys():
+                    raise KeyError('No registered MaBoSS models.')
+                elif item not in cell_dict[CellG.__maboss__].keys():
+                    raise KeyError(f'Could not find MaBoSS solver with name {item}.')
+                return cell_dict[CellG.__maboss__][item]
+        return MaBoSSAccessor()
+
+    def _set_maboss(self, val):
+        raise AttributeError('ASSIGNMENT cell.maboss = %s is illegal. '
+                             '"maboss" attribute can only be modified but not replaced' % (maboss))
+
+    __swig_getmethods__["maboss"] = _get_maboss
+    __swig_setmethods__["maboss"] = _set_maboss
+
+    if _newclass : maboss = property(_get_maboss, _set_maboss)
 
       %}
     };
@@ -1130,6 +1165,7 @@ FIELD3DEXTENDER(Field3D<int>,int)
 
 %template(vectorint) std::vector<int>;
 %template(vectorunsignedchar) std::vector<unsigned char>;
+%template(vectorbool) std::vector<bool>;
 
 
 %include "Field3D/Field3DChangeWatcher.h"
@@ -1203,6 +1239,39 @@ FIELD3DEXTENDER(Field3D<int>,int)
       }
    }
   
+%}
+
+
+%inline %{
+
+    std::vector<std::string> getConcentrationFieldNames(CompuCell3D::Simulator & simulator) {
+        std::map<std::string, Field3D<float>*> & fieldMap = simulator.getConcentrationFieldNameMap();
+        std::map<std::string, Field3D<float>*>::iterator mitr;
+        std::vector<std::string> field_names;
+        for (mitr = fieldMap.begin(); mitr != fieldMap.end(); ++mitr)
+            field_names.push_back(mitr->first);         
+
+        return field_names;
+    }
+
+%}
+
+
+%inline %{
+
+void updateFluctuationCompensators() {
+
+	if(Simulator::steppableManager.isLoaded("DiffusionSolverFE")) {
+		DiffusionSolverFE_CPU * solver = (DiffusionSolverFE_CPU *)Simulator::steppableManager.get("DiffusionSolverFE");
+		solver->updateFluctuationCompensator();
+	}
+
+	if(Simulator::steppableManager.isLoaded("ReactionDiffusionSolverFE")) {
+		ReactionDiffusionSolverFE * solver = (ReactionDiffusionSolverFE *)Simulator::steppableManager.get("ReactionDiffusionSolverFE");
+		solver->updateFluctuationCompensator();
+	}
+
+}
 
 %}
 
@@ -1410,3 +1479,5 @@ public:
 
 
 %include "CompuCellExtraDeclarations.i"
+
+%include "DerivedProperty.i"

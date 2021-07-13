@@ -1,4 +1,5 @@
 <Simulation version="3.6.1">
     <XMLScript Type="XMLScript">Simulation/cellsort_3D_open_mp.xml</XMLScript>
     <PythonScript >Simulation/cellsort_3D_open_mp.py</PythonScript>
+    <Resource Type="Python">Simulation/cellsort_3D_open_mpSteppables.py</Resource>
 </Simulation>

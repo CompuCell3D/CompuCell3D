@@ -28,8 +28,6 @@
                 <DecayConstant>0.001</DecayConstant>
                 <DiffusionCoefficient CellType="Wall">1.901</DiffusionCoefficient>
                 <ConcentrationFileName>Simulation/diffusion_2D_scale_wall.pulse.txt</ConcentrationFileName>
-                <!--DoNotDecayIn>Medium</DoNotDecayIn-->
-                <!--<DoNotDiffuseTo>Amoeba</DoNotDiffuseTo> -->
             </DiffusionData>
         </DiffusionField>
     </Steppable>

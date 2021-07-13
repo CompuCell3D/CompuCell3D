@@ -8,15 +8,16 @@ from cc3d.core.GraphicsOffScreen.MetadataHandler import MetadataHandler
 from cc3d.cpp import PlayerPython
 from cc3d.core.iterators import CellList, FocalPointPlasticityDataList, InternalFocalPointPlasticityDataList
 from cc3d.cpp import CompuCell
-
+import sys
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
+epsilon = sys.float_info.epsilon
 MODULENAME = '------  MVCDrawModel3D.py'
 
 
 class MVCDrawModel3D(MVCDrawModelBase):
-    def __init__(self):
-        MVCDrawModelBase.__init__(self)
+    def __init__(self, boundary_strategy=None, ren=None):
+        MVCDrawModelBase.__init__(self, boundary_strategy=boundary_strategy, ren=ren)
 
         self.initArea()
         self.setParams()
@@ -28,16 +29,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # Zoom items
         self.zitems = []
 
-        # self.cellTypeActors={}
-        # self.outlineActor = vtk.vtkActor()
         self.outlineDim = [0, 0, 0]
-
-        # self.invisibleCellTypes={}
-        # self.typesInvisibleStr=""
-        # self.set3DInvisibleTypes()
-
-        # axesActor = vtk.vtkActor()
-        # axisTextActor = vtk.vtkFollower()
 
         self.numberOfTableColors = 1024
         self.scalarLUT = vtk.vtkLookupTable()
@@ -172,10 +164,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         field_dim = self.currentDrawingParameters.bsd.fieldDim
 
-        hex_flag = False
-        lattice_type_str = self.get_lattice_type_str()
-        # if lattice_type_str.lower() == 'hexagonal':
-        #     hex_flag = True
         hex_flag = self.is_lattice_hex(drawing_params=drawing_params)
 
         cell_type_image_data = vtk.vtkImageData()
@@ -259,14 +247,14 @@ class MVCDrawModel3D(MVCDrawModelBase):
         mdata = MetadataHandler(mdata=scene_metadata)
 
         try:
-            isovalues = mdata.get('ScalarIsoValues',default=[])
+            isovalues = mdata.get('ScalarIsoValues', default=[])
             isovalues = list([float(x) for x in isovalues])
         except:
             print('Could not process isovalue list ')
             isovalues = []
 
         try:
-            numIsos = mdata.get('NumberOfContourLines',default=3)
+            numIsos = mdata.get('NumberOfContourLines', default=3)
         except:
             print('could not process NumberOfContourLines setting')
             numIsos = 0
@@ -275,8 +263,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         lattice_type_str = self.get_lattice_type_str()
         if lattice_type_str.lower() == 'hexagonal':
             hex_flag = True
-
-
 
         types_invisible = PlayerPython.vectorint()
         for type_label in drawing_params.screenshot_data.invisible_types:
@@ -420,8 +406,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         else:
             actor_specs.metadata['mapper'] = self.conMapper
 
-        if mdata.get('LegendEnable',default=False):
-            print('Enabling legend')
+        if mdata.get('LegendEnable', default=False):
             self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
     def init_vector_field_actors(self, actor_specs, drawing_params=None):
@@ -439,10 +424,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
 
-
-
         dim = [field_dim.x, field_dim.y, field_dim.z]
-
 
         vector_grid = vtk.vtkUnstructuredGrid()
 
@@ -461,37 +443,29 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if self.is_lattice_hex(drawing_params=drawing_params):
             hex_flag = True
             if field_type == 'vectorfield':
-                fill_successful = self.field_extractor.fillVectorFieldData2DHex(
+                fill_successful = self.field_extractor.fillVectorFieldData3DHex(
                     points_int_addr,
                     vectors_int_addr,
-                    field_name,
-                    self.currentDrawingParameters.plane,
-                    self.currentDrawingParameters.planePos
+                    field_name
                 )
             elif field_type == 'vectorfieldcelllevel':
-                fill_successful = self.field_extractor.fillVectorFieldCellLevelData2DHex(
+                fill_successful = self.field_extractor.fillVectorFieldCellLevelData3DHex(
                     points_int_addr,
                     vectors_int_addr,
-                    field_name,
-                    self.currentDrawingParameters.plane,
-                    self.currentDrawingParameters.planePos
+                    field_name
                 )
         else:
             if field_type == 'vectorfield':
-                fill_successful = self.field_extractor.fillVectorFieldData2D(
+                fill_successful = self.field_extractor.fillVectorFieldData3D(
                     points_int_addr,
                     vectors_int_addr,
                     field_name,
-                    self.currentDrawingParameters.plane,
-                    self.currentDrawingParameters.planePos
                 )
             elif field_type == 'vectorfieldcelllevel':
-                fill_successful = self.field_extractor.fillVectorFieldCellLevelData2D(
+                fill_successful = self.field_extractor.fillVectorFieldCellLevelData3D(
                     points_int_addr,
                     vectors_int_addr,
                     field_name,
-                    self.currentDrawingParameters.plane,
-                    self.currentDrawingParameters.planePos
                 )
 
         if not fill_successful:
@@ -544,7 +518,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # scaling factor for an arrow - ArrowLength indicates scaling factor not actual length
         arrowScalingFactor = mdata.get('ArrowLength', default=1.0)
 
-        if mdata.get('FixedArrowColorOn',default=False):
+        if mdata.get('FixedArrowColorOn', default=False):
             glyphs.SetScaleModeToScaleByVector()
 
             dataScalingFactor = max(abs(min_magnitude), abs(max_magnitude))
@@ -556,7 +530,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
             glyphs.SetScaleFactor(arrowScalingFactor / dataScalingFactor)
 
             # coloring arrows
-            arrow_color = to_vtk_rgb(mdata.get('ArrowColor',data_type='color'))
+            arrow_color = to_vtk_rgb(mdata.get('ArrowColor', data_type='color'))
             vector_field_actor.GetProperty().SetColor(arrow_color)
 
         else:
@@ -610,7 +584,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if self.is_lattice_hex(drawing_params=drawing_params):
             outline_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
 
-        outline_color = to_vtk_rgb(mdata.get('BoundingBoxColor',data_type='color'))
+        outline_color = to_vtk_rgb(mdata.get('BoundingBoxColor', data_type='color'))
         outline_actor.GetProperty().SetColor(*outline_color)
 
     def init_axes_actors(self, actor_specs, drawing_params=None):
@@ -626,7 +600,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         mdata = MetadataHandler(mdata=scene_metadata)
 
         axes_actor = actors_dict['axes_actor']
-        axes_color = to_vtk_rgb(mdata.get('AxesColor',data_type='color'))
+        axes_color = to_vtk_rgb(mdata.get('AxesColor', data_type='color'))
 
         tprop = vtk.vtkTextProperty()
         tprop.SetColor(axes_color)
@@ -664,9 +638,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
         :return: None
         """
 
-        fppPlugin = CompuCell.getFocalPointPlasticityPlugin()
-        # if (fppPlugin == 0):  # bogus check
-        if not fppPlugin:  # bogus check
+        fpp_plugin = CompuCell.getFocalPointPlasticityPlugin()
+        if not fpp_plugin:
             print('    fppPlugin is null, returning')
             return
 
@@ -675,171 +648,103 @@ class MVCDrawModel3D(MVCDrawModelBase):
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
 
-        xdim = field_dim.x
-        ydim = field_dim.y
-
         try:
-            cellField = self.currentDrawingParameters.bsd.sim.getPotts().getCellFieldG()
             inventory = self.currentDrawingParameters.bsd.sim.getPotts().getCellInventory()
         except AttributeError:
             raise AttributeError('Could not access Potts object')
 
-        cellList = CellList(inventory)
+        cell_list = CellList(inventory)
 
         points = vtk.vtkPoints()
         lines = vtk.vtkCellArray()
 
-        beginPt = 0
-        lineNum = 0
+        pt_counter = 0
 
-        for cell in cellList:
+        for cell in cell_list:
             vol = cell.volume
-            if vol < self.eps: continue
+            if vol < self.eps:
+                continue
 
-            xmid0 = cell.xCOM
-            ymid0 = cell.yCOM
-            zmid0 = cell.zCOM
+            mid_com = np.array([cell.xCOM, cell.yCOM, cell.zCOM], dtype=float)
 
-            points.InsertNextPoint(xmid0, ymid0, zmid0)
-            endPt = beginPt + 1
+            for fppd in InternalFocalPointPlasticityDataList(fpp_plugin, cell):
+                pt_counter = self.add_link(field_dim=field_dim,
+                                           fppd=fppd, mid_com=mid_com, pt_counter=pt_counter,
+                                           lines=lines, points=points)
 
-            for fppd in InternalFocalPointPlasticityDataList(fppPlugin, cell):
-                xmid = fppd.neighborAddress.xCOM
-                ymid = fppd.neighborAddress.yCOM
-                zmid = fppd.neighborAddress.zCOM
+            for fppd in FocalPointPlasticityDataList(fpp_plugin, cell):
+                pt_counter = self.add_link(field_dim=field_dim,
+                                           fppd=fppd, mid_com=mid_com, pt_counter=pt_counter, lines=lines,
+                                           points=points)
 
-                xdiff = xmid - xmid0
-                ydiff = ymid - ymid0
-                zdiff = zmid - zmid0
-
-                actualDist = math.sqrt(xdiff**2 + ydiff**2 + zdiff**2)
-                if actualDist > fppd.maxDistance:
-                    # implies we have wraparound (via periodic BCs)
-                    # we are not drawing those links that wrap around the lattice - leaving the code for now
-                    # todo - most likely will redo this part later
-                    continue
-
-                    # add dangling "out" line to beginning cell
-                    if abs(xdiff) > abs(ydiff):  # wraps around in x-direction
-                        if xdiff < 0:
-                            xmid0end = xmid0 + self.stubSize
-                        else:
-                            xmid0end = xmid0 - self.stubSize
-                        ymid0end = ymid0
-                        points.InsertNextPoint(xmid0end, ymid0end, 0)
-                        lines.InsertNextCell(2)  # our line has 2 points
-                        lines.InsertCellPoint(beginPt)
-                        lines.InsertCellPoint(endPt)
-
-                        actualDist = xdim - actualDist  # compute (approximate) real actualDist
-                        lineNum += 1
-                        endPt += 1
-                    else:  # wraps around in y-direction
-                        xmid0end = xmid0
-                        if ydiff < 0:
-                            ymid0end = ymid0 + self.stubSize
-                        else:
-                            ymid0end = ymid0 - self.stubSize
-                        points.InsertNextPoint(xmid0end, ymid0end, 0)
-                        lines.InsertNextCell(2)  # our line has 2 points
-                        lines.InsertCellPoint(beginPt)
-                        lines.InsertCellPoint(endPt)
-
-                        actualDist = ydim - actualDist  # compute (approximate) real actualDist
-
-                        lineNum += 1
-
-                        endPt += 1
-
-                # link didn't wrap around on lattice
-                else:
-                    points.InsertNextPoint(xmid, ymid, zmid)
-                    lines.InsertNextCell(2)  # our line has 2 points
-                    lines.InsertCellPoint(beginPt)
-                    lines.InsertCellPoint(endPt)
-
-                    lineNum += 1
-                    endPt += 1
-            for fppd in FocalPointPlasticityDataList(fppPlugin, cell):
-
-                xmid = fppd.neighborAddress.xCOM
-                ymid = fppd.neighborAddress.yCOM
-                zmid = fppd.neighborAddress.zCOM
-
-                xdiff = xmid - xmid0
-                ydiff = ymid - ymid0
-                zdiff = ymid - zmid0
-
-                actualDist = math.sqrt(xdiff**2 + ydiff**2 + zdiff**2)
-                if actualDist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
-                    # we are not drawing those links that wrap around the lattice - leaving the code for now
-                    # todo - most likely will redo this part later
-                    continue
-                    # add dangling "out" line to beginning cell
-                    if abs(xdiff) > abs(ydiff):  # wraps around in x-direction
-                        #                    print '>>>>>> wraparound X'
-                        if xdiff < 0:
-                            xmid0end = xmid0 + self.stubSize
-                        else:
-                            xmid0end = xmid0 - self.stubSize
-                        ymid0end = ymid0
-                        points.InsertNextPoint(xmid0end, ymid0end, 0)
-                        lines.InsertNextCell(2)  # our line has 2 points
-                        lines.InsertCellPoint(beginPt)
-                        lines.InsertCellPoint(endPt)
-
-                        # coloring the FPP links
-                        actualDist = xdim - actualDist  # compute (approximate) real actualDist
-
-                        lineNum += 1
-
-                        endPt += 1
-                    else:  # wraps around in y-direction
-                        xmid0end = xmid0
-                        if ydiff < 0:
-                            ymid0end = ymid0 + self.stubSize
-                        else:
-                            ymid0end = ymid0 - self.stubSize
-                        points.InsertNextPoint(xmid0end, ymid0end, 0)
-                        lines.InsertNextCell(2)  # our line has 2 points
-                        lines.InsertCellPoint(beginPt)
-                        lines.InsertCellPoint(endPt)
-
-                        # coloring the FPP links
-                        actualDist = ydim - actualDist  # compute (approximate) real actualDist
-
-                        lineNum += 1
-
-                        endPt += 1
-
-                # link didn't wrap around on lattice
-                else:
-                    points.InsertNextPoint(xmid, ymid, zmid)
-                    lines.InsertNextCell(2)  # our line has 2 points
-                    lines.InsertCellPoint(beginPt)
-                    lines.InsertCellPoint(endPt)
-
-                    lineNum += 1
-                    endPt += 1
-            beginPt = endPt  # update point index
-
-        # -----------------------
-        if lineNum == 0:
-            return
-
-        FPPLinksPD = vtk.vtkPolyData()
-        FPPLinksPD.SetPoints(points)
-        FPPLinksPD.SetLines(lines)
+        fpp_links_pd = vtk.vtkPolyData()
+        fpp_links_pd.SetPoints(points)
+        fpp_links_pd.SetLines(lines)
 
         fpp_links_actor = actors_dict['fpp_links_actor']
 
         if VTK_MAJOR_VERSION >= 6:
-            self.FPPLinksMapper.SetInputData(FPPLinksPD)
+            self.FPPLinksMapper.SetInputData(fpp_links_pd)
         else:
-            FPPLinksPD.Update()
-            self.FPPLinksMapper.SetInput(FPPLinksPD)
+            fpp_links_pd.Update()
+            self.FPPLinksMapper.SetInput(fpp_links_pd)
 
         fpp_links_actor.SetMapper(self.FPPLinksMapper)
-        fpp_links_color = to_vtk_rgb(mdata.get('FPPLinksColor',data_type='color'))
+        fpp_links_color = to_vtk_rgb(mdata.get('FPPLinksColor', data_type='color'))
+
         # coloring borders
         fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
+
+    def add_link(self, field_dim, fppd, mid_com, pt_counter, lines, points) -> int:
+        """
+        Draws single link in 3D. Returns updated point counter
+
+        :param field_dim:
+        :param fppd:
+        :param mid_com: link begin
+        :param pt_counter: point counter
+        :param lines: vtk lines structure that holds line specification
+        :param points: vtk points sstructure
+        :return: end point counter
+        """
+
+        n_cell = fppd.neighborAddress
+
+        n_mid_com = np.array([n_cell.xCOM, n_cell.yCOM, n_cell.zCOM], dtype=float)
+
+        naive_actual_dist = np.linalg.norm(mid_com - n_mid_com)
+        inv_dist = self.invariant_distance(p1=mid_com, p2=n_mid_com, dim=field_dim)
+        if abs((inv_dist - naive_actual_dist) / (naive_actual_dist + epsilon)) > 10 * epsilon:
+            # if naive distance is different than invariant distance then we are dealing with link that is wrapped
+            # if naive_actual_dist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
+            # we are drawing links that currently stick out of the lattice.
+            inv_dist_vec = self.invariant_distance_vector(p1=mid_com,
+                                                          p2=n_mid_com,
+                                                          dim=field_dim)
+
+            # inv_dist_vec = self.unconditional_invariant_distance_vector(p1=mid_com,
+            #                                                             p2=n_mid_com,
+            #                                                             dim=field_dim)
+            link_begin = mid_com
+            link_end = link_begin + inv_dist_vec
+
+            points.InsertNextPoint(mid_com[0], mid_com[1], mid_com[2])
+            points.InsertNextPoint(link_end[0], link_end[1], link_end[2])
+            # our line has 2 points
+            lines.InsertNextCell(2)
+            lines.InsertCellPoint(pt_counter)
+            lines.InsertCellPoint(pt_counter + 1)
+            pt_counter += 2
+
+        # link didn't wrap around on lattice
+        else:
+            points.InsertNextPoint(mid_com[0], mid_com[1], mid_com[2])
+            points.InsertNextPoint(n_mid_com[0], n_mid_com[1], n_mid_com[2])
+            # our line has 2 points
+            lines.InsertNextCell(2)
+            lines.InsertCellPoint(pt_counter)
+            lines.InsertCellPoint(pt_counter + 1)
+
+            pt_counter += 2
+
+        return pt_counter

@@ -1,5 +1,4 @@
-
-
+#include <cfloat>
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
@@ -11,6 +10,7 @@
 #include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 #include <CompuCell3D/plugins/CellTypeMonitor/CellTypeMonitorPlugin.h>
+#include "FluctuationCompensator.h"
 
 #include <BasicUtils/BasicString.h>
 #include <BasicUtils/BasicException.h>
@@ -91,6 +91,7 @@ ReactionDiffusionSolverFE::ReactionDiffusionSolverFE()
     scaleSecretion = true;
     maxNumberOfDiffusionCalls = 1;
     bc_indicator_field = 0;
+	fluctuationCompensator = 0;
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,7 +107,7 @@ ReactionDiffusionSolverFE::~ReactionDiffusionSolverFE()
         delete serializerPtr; serializerPtr = 0;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ReactionDiffusionSolverFE::Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant)
+void ReactionDiffusionSolverFE::Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant, std::vector<float> const &maxDecayConstVec)
 {
     //for RD solver we have to find max diff constant of all all diff constants for all fields
     //based on that we calculate number of calls to reaction diffusion solver system and we call diffusion system same numnr of times to ensure that scratch and concentration field are synchronized between extra diffusion calls
@@ -117,11 +118,11 @@ void ReactionDiffusionSolverFE::Scale(std::vector<float> const &maxDiffConstVec,
 
     //scaling of diffusion and secretion coeeficients
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); i++) {
-        scalingExtraMCSVec[i] = ceil(maxDiffConstVec[i] / maxStableDiffConstant); //compute number of calls to diffusion solver for individual fuields
+        scalingExtraMCSVec[i] = max(ceil(maxDiffConstVec[i] / maxStableDiffConstant), ceil(maxDecayConstVec[i] / maxStableDecayConstant)); //compute number of calls to diffusion solver for individual fuields
     }
 
     //calculate maximumNumber Of calls to the diffusion solver
-    int maxNumberOfDiffusionCalls = *max_element(scalingExtraMCSVec.begin(), scalingExtraMCSVec.end());
+    maxNumberOfDiffusionCalls = *max_element(scalingExtraMCSVec.begin(), scalingExtraMCSVec.end());
 
     if (maxNumberOfDiffusionCalls == 0)
         return;
@@ -144,9 +145,8 @@ void ReactionDiffusionSolverFE::Scale(std::vector<float> const &maxDiffConstVec,
                 mitr->second /= maxNumberOfDiffusionCalls;
             }
 
-            for (std::map<unsigned char, float>::iterator mitr = secrData.typeIdSecrConstConstantConcentrationMap.begin(); mitr != secrData.typeIdSecrConstConstantConcentrationMap.end(); ++mitr) {
-                mitr->second /= maxNumberOfDiffusionCalls;
-            }
+            // Notice we do not scale constant concentration secretion. When users use Constant concentration secretion they want to keep concentration at a given cell at the specified level
+            // so no scaling
 
             for (std::map<unsigned char, SecretionOnContactData>::iterator mitr = secrData.typeIdSecrOnContactDataMap.begin(); mitr != secrData.typeIdSecrOnContactDataMap.end(); ++mitr) {
                 SecretionOnContactData & secrOnContactData = mitr->second;
@@ -160,54 +160,8 @@ void ReactionDiffusionSolverFE::Scale(std::vector<float> const &maxDiffConstVec,
                 mitr->second.maxUptake /= maxNumberOfDiffusionCalls;
                 mitr->second.relativeUptakeRate /= maxNumberOfDiffusionCalls;
             }
-
         }
     }
-    //scale all equations using the same maxNumberOfDiffusionCalls for all equations, yes there will be redundant calls  but it will ensure sanity of the solution I leave optimizations for later
-
-    //scaling of diffusion and secretion coeeficients
-    //for(unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); i++){
-    //	scalingExtraMCSVec[i] = ceil(maxDiffConstVec[i]/maxStableDiffConstant); //compute number of calls to diffusion solver
-    //	if (scalingExtraMCSVec[i]==0)
-    //		continue;
-
-    //	//diffusion data
-    //	for(int currentCellType = 0; currentCellType < UCHAR_MAX+1; currentCellType++) {
-    //		float diffConstTemp = diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType];					
-    //		float decayConstTemp = diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType];
- //           diffSecrFieldTuppleVec[i].diffData.extraTimesPerMCS=scalingExtraMCSVec[i];
-    //		diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType] = (diffConstTemp/scalingExtraMCSVec[i]); //scale diffusion
-    //		diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType] = (decayConstTemp/scalingExtraMCSVec[i]); //scale decay
-    //		
-    //	}
- //       
- //       if (scaleSecretion){
- //           //secretion data
- //           SecretionData & secrData=diffSecrFieldTuppleVec[i].secrData;
- //           for (std::map<unsigned char,float>::iterator mitr=secrData.typeIdSecrConstMap.begin() ; mitr!=secrData.typeIdSecrConstMap.end() ; ++mitr){
- //               mitr->second/=scalingExtraMCSVec[i];
- //           }
-
- //           for (std::map<unsigned char,float>::iterator mitr=secrData.typeIdSecrConstConstantConcentrationMap.begin() ; mitr!=secrData.typeIdSecrConstConstantConcentrationMap.end() ; ++mitr){
- //               mitr->second/=scalingExtraMCSVec[i];
- //           }
-
- //           for (std::map<unsigned char,SecretionOnContactData>::iterator mitr=secrData.typeIdSecrOnContactDataMap.begin() ; mitr!=secrData.typeIdSecrOnContactDataMap.end() ; ++mitr){
- //               SecretionOnContactData & secrOnContactData=mitr->second;
- //               for (std::map<unsigned char,float>::iterator cmitr=secrOnContactData.contactCellMap.begin() ; cmitr!=secrOnContactData.contactCellMap.end() ; ++cmitr){
- //                   cmitr->second/=scalingExtraMCSVec[i];
- //               }	
- //           }
-
- //           //uptake data
- //           for (std::map<unsigned char,UptakeData>::iterator mitr=secrData.typeIdUptakeDataMap.begin() ; mitr!=secrData.typeIdUptakeDataMap.end() ; ++mitr){
- //               mitr->second.maxUptake/=scalingExtraMCSVec[i];
- //               mitr->second.relativeUptakeRate/=scalingExtraMCSVec[i];			
- //           }
- //           
- //       }
-    //}
-
 }
 
 
@@ -257,6 +211,8 @@ void ReactionDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
             maxStableDiffConstant = 0.14f;
         }
     }
+	//setting max stable decay coefficient
+	maxStableDecayConstant = 1.0 - FLT_MIN;
 
 
     //determining latticeType and setting diffusionLatticeScalingFactor
@@ -373,6 +329,16 @@ void ReactionDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
     h_celltype_field = cellTypeMonitorPlugin->getCellTypeArray();
     h_cellid_field = cellTypeMonitorPlugin->getCellIdArray();
 
+	if (_xmlData->findElement("FluctuationCompensator")) {
+
+		fluctuationCompensator = new FluctuationCompensator(simPtr);
+
+		for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i)
+			fluctuationCompensator->loadFieldName(concentrationFieldNameVectorTmp[i]);
+
+		fluctuationCompensator->loadFields();
+
+	}
 
     simulator->registerSteerableObject(this);
 
@@ -497,6 +463,7 @@ void ReactionDiffusionSolverFE::extraInit(Simulator *simulator) {
     prepareForwardDerivativeOffsets();
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void ReactionDiffusionSolverFE::prepareForwardDerivativeOffsets() {
     latticeType = this->getBoundaryStrategy()->getLatticeType();
 
@@ -793,26 +760,36 @@ void ReactionDiffusionSolverFE::prepCellTypeField(int idx) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ReactionDiffusionSolverFE::step(const unsigned int _currentStep) {
 
+	if (fluctuationCompensator) fluctuationCompensator->applyCorrections();
 
     if (scaleSecretion) {
         for (int callIdx = 0; callIdx < maxNumberOfDiffusionCalls; ++callIdx) {
 
             for (int idx = 0; idx < numberOfFields; ++idx) {
-                prepCellTypeField(idx); // here we initialize celltype array  boundaries - we do it once per  MCS
+				if (callIdx == 0) prepCellTypeField(idx); // here we initialize celltype array  boundaries - we do it once per  MCS
                 boundaryConditionInit(idx);//initializing boundary conditions
-                solveRDEquationsSingleField(idx); //reaction-diffusion
                 //secretion
                 for (unsigned int j = 0; j < diffSecrFieldTuppleVec[idx].secrData.secretionFcnPtrVec.size(); ++j) {
                     (this->*diffSecrFieldTuppleVec[idx].secrData.secretionFcnPtrVec[j])(idx);
                 }
 
             }
-
-            for (int fieldIdx = 0; fieldIdx < numberOfFields; ++fieldIdx) {
-                ConcentrationField_t & concentrationField = *concentrationFieldVector[fieldIdx];
-                concentrationField.swapArrays();
-            }
         }
+
+		for (int callIdx = 0; callIdx < maxNumberOfDiffusionCalls; ++callIdx) {
+
+			for (int idx = 0; idx < numberOfFields; ++idx) {
+				boundaryConditionInit(idx);//initializing boundary conditions
+				solveRDEquationsSingleField(idx); //reaction-diffusion
+			}
+
+			for (int fieldIdx = 0; fieldIdx < numberOfFields; ++fieldIdx) {
+				ConcentrationField_t & concentrationField = *concentrationFieldVector[fieldIdx];
+				concentrationField.swapArrays();
+			}
+
+		}
+
     }
     else { //solver behaves as FlexiblereactionDiffusionSolver - i.e. secretion is done at once followed by multiple diffusive steps
 
@@ -827,7 +804,7 @@ void ReactionDiffusionSolverFE::step(const unsigned int _currentStep) {
 
             //reaction-diffusive steps
             for (int idx = 0; idx < numberOfFields; ++idx) {
-                prepCellTypeField(idx); // here we initialize celltype array  boundaries - we do it once per  MCS
+				if (callIdx == 0) prepCellTypeField(idx); // here we initialize celltype array  boundaries - we do it once per  MCS
                 boundaryConditionInit(idx);//initializing boundary conditions
                 solveRDEquationsSingleField(idx); //reaction-diffusion
             }
@@ -840,6 +817,7 @@ void ReactionDiffusionSolverFE::step(const unsigned int _currentStep) {
 
     }
 
+	if (fluctuationCompensator) fluctuationCompensator->resetCorrections();
 
     if (serializeFrequency > 0 && serializeFlag && !(_currentStep % serializeFrequency)) {
         serializerPtr->setCurrentStep(currentStep);
@@ -1705,6 +1683,7 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
         float * decayCoef = diffData.decayCoef;
         float currentDiffCoef = 0.0;
         bool variableDiffusionCoefficientFlag = diffData.getVariableDiffusionCoeeficientFlag();
+		bool diffusiveSite;
 
         Array3DCUDA<unsigned char> & cellTypeArray = *h_celltype_field;
 
@@ -1741,13 +1720,15 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                             currentCellType = cellTypeArray.getDirect(x, y, z);
                             currentDiffCoef = diffCoef[currentCellType];
                             pt = Point3D(x - 1, y - 1, z - 1);
+							// No diffusion where not diffusive
+							diffusiveSite = abs(currentDiffCoef) > FLT_EPSILON;
 
 
                             updatedConcentration = 0.0;
                             concentrationSum = 0.0;
                             varDiffSumTerm = 0.0;
 
-
+							unsigned int numNeighbors = maxNeighborIndex + 1;
 
                             ev[0] = currentCellType;
                             //setting up x,y,z variables
@@ -1768,11 +1749,23 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                                 for (register int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/; ++i) {
                                     const Point3D & offset = offsetVecRef[i];
 
-                                    concentrationSum += concentrationField.getDirect(x + offset.x, y + offset.y, z + offset.z);
+									int offX = x + offset.x;
+									int offY = y + offset.y;
+									int offZ = z + offset.z;
+
+									float diffCoef_offset = diffCoef[cellTypeArray.getDirect(offX, offY, offZ)];
+
+									// No diffusion where not diffusive
+									if (abs(diffCoef_offset) < FLT_EPSILON) {
+										--numNeighbors;
+										continue;
+									}
+
+									concentrationSum += concentrationField.getDirect(offX, offY, offZ);
 
                                 }
 
-                                concentrationSum -= (maxNeighborIndex + 1)*currentConcentration;
+                                concentrationSum -= numNeighbors*currentConcentration;
 
                                 concentrationSum *= currentDiffCoef;
 
@@ -1781,7 +1774,7 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
 
 
                                 //using forward first derivatives - cartesian lattice 3D
-                                if (variableDiffusionCoefficientFlag) {
+                                if (variableDiffusionCoefficientFlag && diffusiveSite) {
                                     concentrationSum /= 2.0;
                                     //loop over nearest neighbors
                                     const std::vector<Point3D> & offsetVecRef = boundaryStrategy->getOffsetVec(pt);
@@ -1804,12 +1797,35 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                                     const Point3D & offset = offsetVecRef[i];
                                     signed char nBcIndicator = bcField.getDirect(x + offset.x, y + offset.y, z + offset.z);
                                     if (nBcIndicator == BoundaryConditionSpecifier::INTERNAL || nBcIndicator == BoundaryConditionSpecifier::BOUNDARY) { // for pixel neighbors which are internal or boundary pixels  calculations use default "internal pixel" algorithm. boundary pixel means belonging to the lattice but touching boundary
-                                        concentrationSum += concentrationField.getDirect(x + offset.x, y + offset.y, z + offset.z);
+										int offX = x + offset.x;
+										int offY = y + offset.y;
+										int offZ = z + offset.z;
 
+										float diffCoef_offset = diffCoef[cellTypeArray.getDirect(offX, offY, offZ)];
+
+										// No diffusion where not diffusive
+										if (abs(diffCoef_offset) < FLT_EPSILON) {
+											--numNeighbors;
+											continue;
+										}
+
+										concentrationSum += concentrationField.getDirect(offX, offY, offZ);
                                     }
                                     else {
                                         if (bcSpec.planePositions[nBcIndicator] == BoundaryConditionSpecifier::PERIODIC) {// for pixel neighbors which are external pixels with periodic BC  calculations use default "internal pixel" algorithm
-                                            concentrationSum += concentrationField.getDirect(x + offset.x, y + offset.y, z + offset.z);
+											int offX = x + offset.x;
+											int offY = y + offset.y;
+											int offZ = z + offset.z;
+
+											float diffCoef_offset = diffCoef[cellTypeArray.getDirect(offX, offY, offZ)];
+
+											// No diffusion where not diffusive
+											if (abs(diffCoef_offset) < FLT_EPSILON) {
+												--numNeighbors;
+												continue;
+											}
+
+											concentrationSum += concentrationField.getDirect(offX, offY, offZ);
                                         }
                                         else if (bcSpec.planePositions[nBcIndicator] == BoundaryConditionSpecifier::CONSTANT_VALUE) {
                                             concentrationSum += bcSpec.values[nBcIndicator];
@@ -1825,14 +1841,14 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                                     }
                                 }
 
-                                concentrationSum -= (maxNeighborIndex + 1)*currentConcentration;
+                                concentrationSum -= numNeighbors*currentConcentration;
 
 
                                 concentrationSum *= currentDiffCoef;
 
 
 
-                                if (variableDiffusionCoefficientFlag) {
+                                if (variableDiffusionCoefficientFlag && diffusiveSite) {
                                     concentrationSum /= 2.0;
                                     // if (x>=0 &&x <6 && y>=0 &&y<=6){
                                     // cerr<<endl;
@@ -1898,13 +1914,14 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                             currentCellType = cellTypeArray.getDirect(x, y, z);                            
                             currentDiffCoef = diffCoef[currentCellType];                            
                             pt = Point3D(x - 1, y - 1, z - 1);
-
+							// No diffusion where not diffusive
+							diffusiveSite = abs(currentDiffCoef) > FLT_EPSILON;
 
                             updatedConcentration = 0.0;
                             concentrationSum = 0.0;
                             varDiffSumTerm = 0.0;
 
-
+							unsigned int numNeighbors = maxNeighborIndex + 1;
 
                             ev[0] = currentCellType;
                             //setting up x,y,z variables
@@ -1919,24 +1936,38 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                             }
 
                             //loop over nearest neighbors
-                            const std::vector<Point3D> & offsetVecRef = boundaryStrategy->getOffsetVec(pt);
-                            for (register int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/; ++i) {
-                                const Point3D & offset = offsetVecRef[i];
+							if (diffusiveSite) {
+								const std::vector<Point3D> & offsetVecRef = boundaryStrategy->getOffsetVec(pt);
+								for (register int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/; ++i) {
+									const Point3D & offset = offsetVecRef[i];
 
-                                concentrationSum += concentrationField.getDirect(x + offset.x, y + offset.y, z + offset.z);
+									int offX = x + offset.x;
+									int offY = y + offset.y;
+									int offZ = z + offset.z;
 
-                            }
+									float diffCoef_offset = diffCoef[cellTypeArray.getDirect(offX, offY, offZ)];
 
-                            concentrationSum -= (maxNeighborIndex + 1)*currentConcentration;
+									// No diffusion where not diffusive
+									if (abs(diffCoef_offset) < FLT_EPSILON) {
+										--numNeighbors;
+										continue;
+									}
 
-                            concentrationSum *= currentDiffCoef;
+									concentrationSum += concentrationField.getDirect(offX, offY, offZ);
+
+								}
+
+								concentrationSum -= numNeighbors*currentConcentration;
+
+								concentrationSum *= currentDiffCoef;
+							}
 
                             //                                         cout << " diffCoef[currentCellType]: " << diffCoef[currentCellType] << endl;    
 
 
 
                             //using forward first derivatives - cartesian lattice 3D
-                            if (variableDiffusionCoefficientFlag) {
+                            if (variableDiffusionCoefficientFlag && diffusiveSite) {
                                 concentrationSum /= 2.0;
                                 //loop over nearest neighbors
                                 const std::vector<Point3D> & offsetVecRef = boundaryStrategy->getOffsetVec(pt);
@@ -2455,17 +2486,19 @@ void ReactionDiffusionSolverFE::update(CC3DXMLElement *_xmlData, bool _fullInitF
 
     scalingExtraMCSVec.assign(diffSecrFieldTuppleVec.size(), 0);
     maxDiffConstVec.assign(diffSecrFieldTuppleVec.size(), 0.0);
+	maxDecayConstVec.assign(diffSecrFieldTuppleVec.size(), 0.0);
 
     //finding maximum diffusion coefficients for each field
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
         for (int currentCellType = 0; currentCellType < UCHAR_MAX + 1; currentCellType++) {
             maxDiffConstVec[i] = (maxDiffConstVec[i] < diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType]) ? diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType] : maxDiffConstVec[i];
+			maxDecayConstVec[i] = (maxDecayConstVec[i] < diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType]) ? diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType] : maxDecayConstVec[i];
         }
     }
 
 
 
-    Scale(maxDiffConstVec, maxStableDiffConstant);//TODO: remove for implicit solvers?    
+    Scale(maxDiffConstVec, maxStableDiffConstant, maxDecayConstVec);//TODO: remove for implicit solvers?    
 
 }
 

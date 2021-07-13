@@ -41,15 +41,17 @@ namespace CompuCell3D {
      */
     virtual void field3DChange(const Point3D &pt, T newValue,
 			       T oldValue) = 0;
-
+	
 	/**
-	* Notify the watcher of additional spatial information associated with a change
-	* This function will be called after the change has occurred, and before field3DChange
-	* 
-	* @param ptAdd The additional location associated with the change
+	* Notify the watcher that a set is being performed with respect to two points.
+	* This function will be called after the change has occured!
+	*
+	* @param pt The location of the set.
+	* @param addPt Another point with respect to the set.
+	* @param newValue The current value.
+	* @param oldValue The previous value.
 	*/
-	virtual void field3DAdditionalPt(const Point3D &ptAdd) {}
-
+	virtual void field3DChange(const Point3D &pt, const Point3D &addPt, T newValue, T oldValue) {};
   };
 };
 #endif

@@ -29,6 +29,9 @@ class ScreenshotManagerCore(object):
 
         }
 
+        self.ad_hoc_screenshot_dict = {}
+        self.output_error_flag = False
+
     def fetch_screenshot_description_file_parser_fcn(self, screenshot_file_version: str):
         """
         Fetches "best" parsing function give the version in the screenshot description file
@@ -356,12 +359,32 @@ class ScreenshotManagerCore(object):
         """
         return self.bsd
 
-    def output_screenshots(self, mcs: int) -> None:
+    def has_ad_hoc_screenshots(self) -> bool:
         """
-        Outputs screenshot        
-        :param mcs:
+        Returns a flag that tells if ad_hoc screenshots have been requested
         :return:
         """
+
+        return len(self.ad_hoc_screenshot_dict) > 0
+
+    def add_ad_hoc_screenshot(self, mcs: int, screenshot_label: str):
+        """
+        adds request to store ad_hoc screenshot
+        :param mcs:
+        :param screenshot_label:
+        :return:
+        """
+        self.ad_hoc_screenshot_dict[screenshot_label] = mcs
+
+    def output_screenshots_impl(self, mcs: int, screenshot_label_list: list):
+        """
+        implementation function ofr taking screenshots
+        :param mcs:
+        :param screenshot_label_list:
+        :return:
+        """
+        if self.output_error_flag:
+            return
 
         screenshot_directory_name = self.get_screenshot_dir_name()
 
@@ -373,8 +396,12 @@ class ScreenshotManagerCore(object):
         # fills string with 0's up to self.screenshotNumberOfDigits width
         mcs_formatted_number = str(mcs).zfill(self.screenshot_number_of_digits)
 
-        for i, screenshot_name in enumerate(self.screenshotDataDict.keys()):
-            screenshot_data = self.screenshotDataDict[screenshot_name]
+        for i, screenshot_name in enumerate(screenshot_label_list):
+            try:
+                screenshot_data = self.screenshotDataDict[screenshot_name]
+            except KeyError:
+                print(f'Could not find screenshot description for the following label: {screenshot_name}')
+                continue
 
             if not screenshot_name:
                 screenshot_name = 'screenshot_' + str(i)
@@ -390,3 +417,48 @@ class ScreenshotManagerCore(object):
             self.gd.clear_display()
             self.gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)
             self.gd.output_screenshot(screenshot_fname=screenshot_fname)
+
+    def output_screenshots(self, mcs: int) -> None:
+        """
+        Outputs screenshot        
+        :param mcs:
+        :return:
+        """
+
+        if len(self.ad_hoc_screenshot_dict):
+            self.output_screenshots_impl(mcs=mcs, screenshot_label_list=list(self.ad_hoc_screenshot_dict.keys()))
+            # resetting ad_hoc_screenshot_dict
+            self.ad_hoc_screenshot_dict = {}
+        else:
+            self.output_screenshots_impl(mcs=mcs, screenshot_label_list=list(self.screenshotDataDict.keys()))
+
+
+class ScreenshotManagerCC3DPy(ScreenshotManagerCore):
+    """
+    Subclass with necessary hooks for Python API
+    """
+    def __init__(self, screenshot_dir_name):
+        super().__init__()
+
+        def get_screenshot_dir_name():
+            return screenshot_dir_name
+        self.get_screenshot_dir_name = get_screenshot_dir_name
+
+    def cleanup(self):
+        """
+        Implementes cleanup actions
+        :return: None
+        """
+        pass
+
+    def safe_write_screenshot_description_file(self, out_fname):
+        raise EnvironmentError
+
+    def serialize_screenshot_data(self):
+        raise EnvironmentError
+
+    def add_2d_screenshot(self, _plotName, _plotType, _projection, _projectionPosition, _camera, metadata):
+        raise EnvironmentError
+
+    def add_3d_screenshot(self, _plotName, _plotType, _camera, metadata):
+        raise EnvironmentError

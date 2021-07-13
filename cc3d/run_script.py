@@ -43,6 +43,10 @@ def process_cml():
     cml_parser.add_argument('--restart-multiple-snapshots', required=False, action='store_true', default=False,
                             help='turns on storing of multiple restart snapshots')
 
+    cml_parser.add_argument('--parameter-scan-iteration', required=False, type=str, default='',
+                            help='optional argument that specifies parameter scan iteration - used to enable steppables'
+                                 'to access current param scan iteration number')
+
     return cml_parser.parse_args()
 
 
@@ -69,6 +73,9 @@ def handle_error():
 
 if __name__ == '__main__':
     args = process_cml()
+
+    print(cc3d.get_formatted_version_info())
+
     cc3d_sim_fname = args.input
     output_frequency = args.output_frequency
     screenshot_output_frequency = args.screenshot_output_frequency
@@ -89,6 +96,7 @@ if __name__ == '__main__':
     persistent_globals.output_file_core_name = output_file_core_name
     persistent_globals.restart_snapshot_frequency = restart_snapshot_frequency
     persistent_globals.restart_multiple_snapshots = restart_multiple_snapshots
+    persistent_globals.parameter_scan_iteration = args.parameter_scan_iteration
 
     run_cc3d_project(cc3d_sim_fname=cc3d_sim_fname)
 

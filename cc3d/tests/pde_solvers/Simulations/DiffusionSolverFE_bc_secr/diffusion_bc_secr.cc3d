@@ -1,0 +1,5 @@
+<Simulation version="4.0.0">
+   <XMLScript Type="XMLScript">Simulation/diffusion_test.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/diffusion_test.py</PythonScript>
+   <Resource Type="Python">Simulation/diffusion_testSteppables.py</Resource>
+</Simulation>

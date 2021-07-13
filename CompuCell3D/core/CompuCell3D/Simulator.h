@@ -81,8 +81,6 @@ namespace CompuCell3D {
 		std::string basePath;
 		bool restartEnabled;
         std::string step_output;
-        std::string output_directory;
-        
 
 	public:
 
@@ -91,12 +89,24 @@ namespace CompuCell3D {
 		PottsParseData ppd;
 		PottsParseData *ppdPtr;
 		ParallelUtilsOpenMP *pUtils;
-        ParallelUtilsOpenMP *pUtilsSingle; // stores same information as pUtils but assumes that we use only single CPU - used in modules for which user requests single CPU runs e.g. Potts with large cells
-        
+        // stores same information as pUtils but assumes that we use only single CPU - used in modules
+        // for which user requests single CPU runs e.g. Potts with large cells
+        ParallelUtilsOpenMP *pUtilsSingle;
+        //making this public to avoid cross-platform compilation.linking issues.
+        // todo - fix it in the next release
+        std::string output_directory;
+
 		double simValue;
-		
+		/**
+		 * Sets simulation output directory
+		 * @param output_directory [in] output directory
+		 */
         void setOutputDirectory(std::string output_directory);
-        std::string getOutputDirectory();
+        /**
+         * returns output directory
+         * @return output directory
+         */
+        std::string getOutputDirectory(); 
 
 
 		void setOutputRedirectionTarget(ptrdiff_t  _ptr);
@@ -110,6 +120,7 @@ namespace CompuCell3D {
 		static PluginManager<Plugin> pluginManager;
 		static PluginManager<Steppable> steppableManager;
 		static BasicPluginManager<PluginBase> pluginBaseManager;
+
 		Simulator();
 		virtual ~Simulator();
 		//     PluginManager::plugins_t & getPluginMap(){return pluginManager.getPluginMap();}
@@ -128,6 +139,10 @@ namespace CompuCell3D {
 		ParallelUtilsOpenMP * getParallelUtils(){return pUtils;}
         ParallelUtilsOpenMP * getParallelUtilsSingleThread(){return pUtilsSingle;}
 
+        /**
+         * returns BoundaryStrategy object
+         * @return BoundaryStrategy object
+         */
 
 		BoundaryStrategy * getBoundaryStrategy();
 		void registerSteerableObject(SteerableObject *);
@@ -140,6 +155,8 @@ namespace CompuCell3D {
 		void setStep(int currstep) { this->currstep = currstep; }
 		bool isStepping(){return simulatorIsStepping;}
 		double getFlip2DimRatio(){return ppdCC3DPtr->flip2DimRatio;}
+		void setRandomSeed(unsigned int seed) { ppdCC3DPtr->RandomSeed(seed); }
+		unsigned int getRandomSeed() { return ppdCC3DPtr->seed; }
 		Potts3D *getPotts() {return &potts;}
 		Simulator *getSimulatorPtr(){return this;}
 		ClassRegistry *getClassRegistry() {return classRegistry;}

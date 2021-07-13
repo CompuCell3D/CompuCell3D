@@ -2,6 +2,7 @@ import time
 from math import floor
 from os.path import dirname, join
 from cc3d.cpp import CompuCell
+
 from cc3d.core.XMLDomUtils import XMLIdLocator
 from cc3d.CompuCellSetup import init_modules, parseXML
 from cc3d.core.CMLFieldHandler import CMLFieldHandler
@@ -15,6 +16,8 @@ import weakref
 from cc3d import CompuCellSetup
 from cc3d.core import RestartManager
 from cc3d.CompuCellSetup.simulation_utils import check_for_cpp_errors
+from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
+from cc3d.CompuCellSetup.cluster_utils import check_nanohub_and_count
 
 
 # -------------------- legacy API emulation ----------------------------------------
@@ -190,7 +193,8 @@ def convert_time_interval_to_hmsm(time_interval):
         return str(int(floor(x)))
 
     if hours > 1.0:
-        out_str = s_int_fl(hours) + " h : " + s_int_fl(minutes) + " m : " + s_int_fl(seconds) + " s : " + str(miliseconds) + " ms"
+        out_str = s_int_fl(hours) + " h : " + s_int_fl(minutes) + " m : " + s_int_fl(seconds) + " s : " + str(
+            miliseconds) + " ms"
 
     elif minutes > 1.0:
         out_str = s_int_fl(minutes) + " m : " + s_int_fl(seconds) + " s : " + str(miliseconds) + " ms"
@@ -331,7 +335,7 @@ def init_screenshot_manager() -> None:
 
     screenshot_data_fname = join(dirname(persistent_globals.simulation_file_name), 'screenshot_data/screenshots.json')
 
-    persistent_globals.screenshot_mgr = ScreenshotManagerCore()
+    persistent_globals.screenshot_manager = ScreenshotManagerCore()
 
     try:
         field_extractor = persistent_globals.persistent_holder['field_extractor']
@@ -340,7 +344,7 @@ def init_screenshot_manager() -> None:
         field_extractor = persistent_globals.persistent_holder['field_extractor']
 
     persistent_globals.create_output_dir()
-    gd = GenericDrawer.GenericDrawer()
+    gd = GenericDrawer.GenericDrawer(boundary_strategy=persistent_globals.simulator.getBoundaryStrategy())
     gd.set_field_extractor(field_extractor=field_extractor)
 
     bsd = BasicSimulationData()
@@ -348,12 +352,12 @@ def init_screenshot_manager() -> None:
     bsd.numberOfSteps = persistent_globals.simulator.getNumSteps()
 
     # wiring screenshot manager
-    persistent_globals.screenshot_mgr.gd = gd
-    persistent_globals.screenshot_mgr.bsd = bsd
-    persistent_globals.screenshot_mgr.screenshot_number_of_digits = len(str(bsd.numberOfSteps))
+    persistent_globals.screenshot_manager.gd = gd
+    persistent_globals.screenshot_manager.bsd = bsd
+    persistent_globals.screenshot_manager.screenshot_number_of_digits = len(str(bsd.numberOfSteps))
 
     try:
-        persistent_globals.screenshot_mgr.read_screenshot_description_file(screenshot_data_fname)
+        persistent_globals.screenshot_manager.read_screenshot_description_file(screenshot_data_fname)
     except:
         warnings.warn('Could not parse screenshot description file {screenshot_data_fname}. '
                       'If you want graphical screenshot output please generate '
@@ -374,16 +378,31 @@ def store_screenshots(cur_step: int) -> None:
     persistent_globals = CompuCellSetup.persistent_globals
 
     screenshot_output_frequency = persistent_globals.screenshot_output_frequency
-    screenshot_mgr = persistent_globals.screenshot_mgr
+    screenshot_manager = persistent_globals.screenshot_manager
 
-    if screenshot_output_frequency and screenshot_mgr and (not cur_step % screenshot_output_frequency):
-        screenshot_mgr.output_screenshots(mcs=cur_step)
+    if screenshot_manager.has_ad_hoc_screenshots():
+        screenshot_manager.output_screenshots(mcs=cur_step)
+
+    if screenshot_output_frequency and screenshot_manager and (not cur_step % screenshot_output_frequency):
+        screenshot_manager.output_screenshots(mcs=cur_step)
 
 
 def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_enabled=False):
+    """
+    Performs extra initializations. Also checks for validity of concentration field names (those defined in C++)
+    :param sim:
+    :param simthread:
+    :param init_using_restart_snapshot_enabled:
+    :return:
+    """
 
     # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
     sim.extraInit()
+    concentration_field_names = CompuCell.getConcentrationFieldNames(sim)
+    for conc_field_name in concentration_field_names:
+        validate_cc3d_entity_identifier(entity_identifier=conc_field_name,
+                                        entity_type_label='Concentration Field Label')
+
     # passing output directory to simulator object
     sim.setOutputDirectory(CompuCellSetup.persistent_globals.output_directory)
     # simthread.preStartInit()
@@ -424,6 +443,8 @@ def main_loop(sim, simthread, steppable_registry=None):
     sim.setRestartEnabled(init_using_restart_snapshot_enabled)
     check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
+    check_nanohub_and_count()
+
     if init_using_restart_snapshot_enabled:
         print('WILL RESTART SIMULATION')
         restart_manager.loadRestartFiles()
@@ -442,9 +463,6 @@ def main_loop(sim, simthread, steppable_registry=None):
     init_screenshot_manager()
 
     if steppable_registry is not None and not init_using_restart_snapshot_enabled:
-        steppable_registry.start()
-
-    if steppable_registry is not None:
         steppable_registry.start()
 
     run_finish_flag = True
@@ -492,6 +510,8 @@ def main_loop(sim, simthread, steppable_registry=None):
     if run_finish_flag:
         print("CALLING FINISH")
         steppable_registry.finish()
+    else:
+        steppable_registry.on_stop()
 
     t2 = time.time()
     print_profiling_report(py_steppable_profiler_report=steppable_registry.get_profiler_report(),
@@ -523,6 +543,8 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
     # init_using_restart_snapshot_enabled = False
     sim.setRestartEnabled(init_using_restart_snapshot_enabled)
 
+    check_nanohub_and_count()
+
     if init_using_restart_snapshot_enabled:
         print('WILL RESTART SIMULATION')
         restart_manager.loadRestartFiles()
@@ -541,13 +563,12 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
     if not steppable_registry is None:
         steppable_registry.init(sim)
 
-
-
     # called in extraInitSimulationObjects
     # sim.start()
 
     if not steppable_registry is None and not init_using_restart_snapshot_enabled:
         steppable_registry.start()
+        simthread.steppablePostStartPrep()
 
     run_finish_flag = True
 
@@ -557,9 +578,11 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
     if init_using_restart_snapshot_enabled:
         steppable_registry.restart_steering_panel()
 
-    simthread.setScreenUpdateFrequency()
-
     cur_step = beginning_step
+
+    # initial drawing - we use mcs = -2 as a sentinel for mcs right after start function of steppables is completed
+    simthread.loopWork(-2)
+    simthread.loopWorkPostEvent(-2)
 
     while cur_step < sim.getNumSteps():
         simthread.beforeStep(_mcs=cur_step)
@@ -599,7 +622,11 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         screenshot_frequency = simthread.getScreenshotFrequency()
         screenshot_output_flag = simthread.getImageOutputFlag()
 
-        if (screen_update_frequency > 0 and cur_step % screen_update_frequency == 0) or (
+        if pg.screenshot_manager is not None and pg.screenshot_manager.has_ad_hoc_screenshots():
+            simthread.loopWork(cur_step)
+            simthread.loopWorkPostEvent(cur_step)
+
+        elif (screen_update_frequency > 0 and cur_step % screen_update_frequency == 0) or (
                 screenshot_output_flag and screenshot_frequency > 0 and cur_step % screenshot_frequency == 0):
 
             simthread.loopWork(cur_step)
@@ -609,24 +636,20 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
 
     if run_finish_flag:
         # # we emit request to finish simulation
-        # simthread.emitFinishRequest()
+        simthread.emitFinishRequest()
         # # then we wait for GUI thread to unlock the finishMutex - it will only happen when all tasks
         # in the GUI thread are completed (especially those that need simulator object to stay alive)
-        # simthread.finishMutex.lock()
-        # simthread.finishMutex.unlock()
-        # # at this point GUI thread finished all the tasks for which simulator had to stay alive
-        # and we can proceed to destroy simulator
-        #
-        # sim.finish()
-        # if sim.getRecentErrorMessage() != "":
-        #     raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
         print("CALLING FINISH")
+
+        simthread.waitForFinishingTasksToConclude()
+        simthread.waitForPlayerTaskToFinish()
         steppable_registry.finish()
         sim.cleanAfterSimulation()
         simthread.simulationFinishedPostEvent(True)
         steppable_registry.clean_after_simulation()
 
     else:
+        steppable_registry.on_stop()
         sim.cleanAfterSimulation()
 
         # # sim.unloadModules()

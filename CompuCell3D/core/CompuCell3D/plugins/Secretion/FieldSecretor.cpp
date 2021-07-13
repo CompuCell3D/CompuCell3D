@@ -772,3 +772,37 @@ bool FieldSecretor::uptakeInsideCellAtCOM(CellG * _cell, float _maxUptake, float
 
 
 }
+
+float FieldSecretor::_amountSeenByCell(CellG * _cell) {
+
+    if (!pixelTrackerPlugin) {
+        // ASSERT_OR_THROW("PixelTracker Plugin has been turned off. Cannot execute _amountSeenByCell function",pixelTrackerPlugin);
+        
+        return -1.0;
+    }
+
+    float amount_seen = 0.0;
+	BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
+	set<PixelTrackerData > & pixelSetRef = pixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
+
+	for (set<PixelTrackerData>::iterator sitr = pixelSetRef.begin(); sitr != pixelSetRef.end(); ++sitr) {
+
+        amount_seen += concentrationFieldPtr->get(sitr->pixel);
+
+	}
+
+	return amount_seen;
+
+}
+
+float FieldSecretor::totalFieldIntegral() {
+    Dim3D dim = concentrationFieldPtr->getDim();
+
+    float tot_amount = 0.0;
+    for (int x = 0; x < dim.x; ++x) 
+        for (int y = 0; y < dim.y; ++y)
+            for (int z = 0; z < dim.z; ++z) {
+                tot_amount += concentrationFieldPtr->get(Point3D(x, y, z));
+            }
+    return tot_amount;
+}

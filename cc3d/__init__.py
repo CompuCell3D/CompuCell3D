@@ -1,11 +1,30 @@
 import os
 import sys
 from os.path import dirname, join, abspath
+from pathlib import Path
 
 versionMajor = 4
-versionMinor = 1
-versionBuild = 0
-revisionNumber = "20190906"
+versionMinor = 2
+versionBuild = 5
+revisionNumber = "20210612"
+
+
+def get_sha_label() -> str:
+    """
+    Fetches git sha tag - relies on the file sha_label.py . This file is NOT part of git repo but instead it is
+    written during installation scripts run. Main use case is to know exact tag based on which binaries have been built
+    :return: sha tag
+    """
+    try:
+        import cc3d.commit_tag
+        try:
+            sha_tag = cc3d.commit_tag.sha_label
+            return sha_tag
+        except AttributeError:
+            return revisionNumber
+
+    except ImportError:
+        return revisionNumber
 
 
 def getVersionAsString():
@@ -35,6 +54,26 @@ def getSVNRevisionAsString():
 __version__ = getVersionAsString()
 __revision__ = revisionNumber
 
+
+def get_version_info():
+    """
+    returns CC3D version string
+    :return:
+    """
+    return f"CompuCell3D Version: {__version__} Revision: {__revision__} \n Commit Label: {get_sha_label()}"
+
+
+def get_formatted_version_info():
+    """
+    returns formatted CC3D version string
+    :return:
+    """
+    formatted_version_info = f'#################################################\n' \
+                             f'# {get_version_info()}\n' \
+                             f'#################################################'
+    return formatted_version_info
+
+
 path_postfix = ''
 if sys.platform.startswith('win'):
     path_postfix = '\\'
@@ -51,8 +90,14 @@ print(os.environ['COMPUCELL3D_PLUGIN_PATH'])
 
 if sys.platform.startswith('win'):
     path_env = os.environ['PATH']
-
+    # needed for pyqt modules installed via conda
+    python_exe = Path(sys.executable)
+    python_exe_dir = python_exe.parent
+    pyqt_library_bin_path = python_exe_dir.joinpath('Library', 'bin')
     path_env_list = path_env.split(';')
+
+    # needed for maboss
+    mingw_bin_path = python_exe_dir.joinpath('Library', 'mingw-w64', 'bin')
 
     path_env_list = list(map(lambda pth: abspath(pth), path_env_list))
 
@@ -63,6 +108,8 @@ if sys.platform.startswith('win'):
     # todo - this needs to have platform specific behavior
     path_env_list.insert(0, os.environ['COMPUCELL3D_PLUGIN_PATH'])
     path_env_list.insert(0, os.environ['COMPUCELL3D_STEPPABLE_PATH'])
+    path_env_list.insert(0, str(pyqt_library_bin_path))
+    path_env_list.insert(0, str(mingw_bin_path))
 
     os.environ['PATH'] = ';'.join(path_env_list)
 
@@ -73,18 +120,10 @@ elif sys.platform.startswith('darwin'):
         dyld_library_env = ''
 
     dyld_env_list = dyld_library_env.split(':')
-    #
-    # dyld_env_list = list(map(lambda pth: abspath(pth), dyld_env_list))
-    #
-    # cc3d_cpp_path = abspath(join(cc3d_py_dir, 'cpp'))
-    # if cc3d_cpp_path not in dyld_env_list:
-    #     dyld_env_list.insert(0, cc3d_cpp_path)
-    #
+
     cc3d_cpp_lib_path = abspath(join(cc3d_py_dir, 'cpp', 'lib'))
     if cc3d_cpp_lib_path not in dyld_env_list:
         dyld_env_list.insert(0, cc3d_cpp_lib_path)
-
-    # dyld_env_list.insert(0,os.environ['COMPUCELL3D_PLUGIN_PATH'])
 
     os.environ['DYLD_LIBRARY_PATH'] = ':'.join(dyld_env_list)
 
@@ -101,4 +140,3 @@ elif sys.platform.startswith('linux'):
         ld_env_list.insert(0, cc3d_cpp_lib_path)
 
     os.environ['LD_LIBRARY_PATH'] = ':'.join(ld_env_list)
-

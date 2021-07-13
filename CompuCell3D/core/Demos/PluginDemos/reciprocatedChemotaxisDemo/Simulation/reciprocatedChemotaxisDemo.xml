@@ -1,0 +1,68 @@
+<CompuCell3D Revision="20210123" Version="4.2.4">
+   <Metadata>
+      <NumberOfProcessors>1</NumberOfProcessors>
+      <DebugOutputFrequency>100</DebugOutputFrequency>
+   </Metadata>
+
+   <Potts>
+      <Dimensions x="200" y="50" z="1"/>
+      <Steps>10000</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+      <Boundary_y>Periodic</Boundary_y>
+   </Potts>
+
+   <Plugin Name="CellType">
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="Towards"/>
+   </Plugin>
+
+   <Plugin Name="Volume"/>
+
+   <Plugin Name="CenterOfMass"/>
+
+   <Plugin Name="Contact">
+      <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+      <Energy Type1="Medium" Type2="Towards">10.0</Energy>
+      <Energy Type1="Towards" Type2="Towards">10.0</Energy>
+      <NeighborOrder>3</NeighborOrder>
+   </Plugin>
+
+   <Plugin Name="Chemotaxis">
+      <ChemicalField Name="Field">
+         <ChemotaxisByType Lambda="1000.0" Type="Towards"/>
+      </ChemicalField>
+      <!-- Toggle the next element to observed differences in behavior -->
+      <!-- (hint: how much time elapses before the aggregate arrives at the righthand side of the domain?) -->
+      <Algorithm>Reciprocated</Algorithm>
+   </Plugin>
+
+   <Steppable Type="DiffusionSolverFE">
+      <DiffusionField Name="Field">
+         <DiffusionData>
+            <FieldName>Field</FieldName>
+            <GlobalDiffusionConstant>0.1</GlobalDiffusionConstant>
+            <InitialConcentrationExpression>x/200</InitialConcentrationExpression>
+         </DiffusionData>
+         <BoundaryConditions>
+            <Plane Axis="X">
+               <ConstantValue PlanePosition="Min" Value="0.0"/>
+               <ConstantValue PlanePosition="Max" Value="1.0"/>
+            </Plane>
+            <Plane Axis="Y">
+               <Periodic/>
+            </Plane>
+         </BoundaryConditions>
+      </DiffusionField>
+   </Steppable>
+   
+   <Steppable Type="BlobInitializer">
+      <Region>
+         <Center x="25" y="25" z="0"/>
+         <Radius>14</Radius>
+         <Gap>0</Gap>
+         <Width>7</Width>
+         <Types>Towards</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>

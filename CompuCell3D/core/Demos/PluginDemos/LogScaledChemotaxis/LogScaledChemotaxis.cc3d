@@ -1,0 +1,5 @@
+<Simulation version="4.2.4">
+   <XMLScript Type="XMLScript">Simulation/LogScaledChemotaxis.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/LogScaledChemotaxis.py</PythonScript>
+   <Resource Type="Python">Simulation/LogScaledChemotaxisSteppables.py</Resource>
+</Simulation>

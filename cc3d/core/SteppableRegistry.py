@@ -207,6 +207,14 @@ class SteppableRegistry(SteppablePy):
         for steppable in self.steppableList:
             steppable.finish()
 
+    def on_stop(self):
+        for steppable in self.runBeforeMCSSteppableList:
+            steppable.on_stop()
+
+        for steppable in self.steppableList:
+            steppable.on_stop()
+
+
     def cleanup(self):
         print('inside cleanup')
         for steppable in self.runBeforeMCSSteppableList:

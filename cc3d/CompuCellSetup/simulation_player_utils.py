@@ -3,14 +3,17 @@ from cc3d.core.ExtraFieldAdapter import ExtraFieldAdapter
 
 
 class PlotWindowDummy(object):
-    '''
+    """
     This class serves as a dummy object that is used when viewManager is None
     It "emulates" plotWindow API but does nothing except ensures that
     in the simulation that does not use CC3D Player (ciew manager in such simulation is set to None)
-    any call to plotWindow object gets captured/intercepted by __getattr__ function which returns a dummy method that accepts any
-    type of arguments and has ampty body. This way any calls to plots defined in the simulation that runs in the console are gently
-    ignored and simulation runs just fine. Most importantly it does not require plots to be commented out int he command line applications
-    '''
+    any call to plotWindow object gets captured/intercepted by __getattr__ function which returns a dummy
+    method that accepts any
+    type of arguments and has ampty body. This way any calls to plots defined in the simulation that runs in
+    the console are gently
+    ignored and simulation runs just fine. Most importantly it does not require plots to be commented out in
+    the command line applications
+    """
 
     def __init__(self):
         pass
@@ -43,7 +46,7 @@ def add_new_plot_window(title='', xAxisTitle='', yAxisTitle='', xScaleType='line
         return pwd
 
     try:
-        pW = view_manager.plotManager.getNewPlotWindow()
+        plot_window = view_manager.plotManager.get_new_plot_window()
     except:
         full_options_dict = {
             'title': title,
@@ -56,16 +59,16 @@ def add_new_plot_window(title='', xAxisTitle='', yAxisTitle='', xScaleType='line
         if config_options:
             full_options_dict.update(config_options)
 
-        pW = view_manager.plotManager.getNewPlotWindow(full_options_dict)
+        plot_window = view_manager.plotManager.get_new_plot_window(full_options_dict)
 
-    if not pW:
+    if not plot_window:
         raise AttributeError(
             'Missing plot modules. Windows/OSX Users: Make sure you have numpy installed. '
             'For instructions please visit www.compucell3d.org/Downloads. '
             'Linux Users: Make sure you have numpy and PyQwt installed. '
-            'Please consult your linux distributioun manual pages on how to best install those packages')
+            'Please consult your linux distribution manual pages on how to best install those packages')
 
-    return pW
+    return plot_window
 
 
 def create_extra_field(field_name: str, field_type: int) -> ExtraFieldAdapter:

@@ -56,12 +56,6 @@ class CellListByType:
     def __iter__(self):
         return CellListByTypeIterator(self)
 
-    def __call__(self, *args):
-        self.initTypeVec(args)
-        self.inventory.initCellInventoryByMultiType(self.inventoryByType, self.types)
-
-        return self
-
     def __len__(self):
         return int(self.inventoryByType.size())
 
@@ -340,137 +334,196 @@ class CellNeighborIteratorFlex:
     def __iter__(self):
         return self
 
-class FocalPointPlasticityDataList:
-    def __init__(self, _focalPointPlasticityPlugin, _cell):
-        self.focalPointPlasticityPlugin = _focalPointPlasticityPlugin
-        self.focalPointPlasticityTrackerAccessor = self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
+
+class _FocalPointPlasticityDataListBase:
+    def __init__(self, _fpp_plugin, _cell):
+        # Maintaining legacy feature: cell is attached to data list
         self.cell = _cell
 
+        self._data = self._get_inventory(_fpp_plugin).getFPPTrackerDataSet(_cell)
+
     def __len__(self):
-        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
-        return int(self.focalPointPlasticityTracker.focalPointPlasticityNeighbors.size())
+        return len(self._data)
 
     def __getitem__(self, idx):
-        if idx > self.__len__() - 1: raise IndexError(
-            "Out of bounds index: FocalPointPlasticityDataList index = %s is out of bounds" % str(idx))
-        for counter, data in enumerate(self.__iter__()):
-            if idx == counter: return data
+        return self._data[idx]
 
     def __iter__(self):
-        return FocalPointPlasticityDataIterator(self)
+        return self._data.__iter__()
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        """
+        Get link inventory container
+        :param _fpp_plugin: focal point plasticity plugin
+        :return: link inventory container
+        """
+        raise NotImplementedError
 
 
-class FocalPointPlasticityDataIterator:
-    def __init__(self, _focalPointPlasticityDataList):
-        self.focalPointPlasticityTrackerAccessor = _focalPointPlasticityDataList.focalPointPlasticityTrackerAccessor
-        self.cell = _focalPointPlasticityDataList.cell
-        self.focalPointPlasticityPlugin = _focalPointPlasticityDataList.focalPointPlasticityPlugin
-        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
-        self.focalPointPlasticityDataSetItr = CompuCell.focalPointPlasticitySetPyItr()
-        self.focalPointPlasticityDataSetItr.initialize(self.focalPointPlasticityTracker.focalPointPlasticityNeighbors)
-        self.focalPointPlasticityDataSetItr.setToBegin()
+class _FocalPointPlasticityDataListIteratorBase:
+    def __init__(self, _fpp_data_list: _FocalPointPlasticityDataListBase):
+        # Maintaining legacy feature: cell is attached to data list iterator
+        self.cell = _fpp_data_list.cell
+
+        self._val = iter(_fpp_data_list._data)
 
     def __next__(self):
-        if not self.focalPointPlasticityDataSetItr.isEnd():
-            self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
-            self.focalPointPlasticityData = self.focalPointPlasticityDataSetItr.getCurrentRef()
-            self.focalPointPlasticityDataSetItr.next()
-            return self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerData(self.focalPointPlasticityData)
-        #             return self.plasticityData
-        else:
+        return self._val.__next__()
+
+    def __iter__(self):
+        return self._val
+
+
+class FocalPointPlasticityDataList(_FocalPointPlasticityDataListBase):
+    def __init__(self, _fpp_plugin, _cell):
+        super().__init__(_fpp_plugin, _cell)
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        return _fpp_plugin.getLinkInventory()
+
+
+class FocalPointPlasticityDataIterator(_FocalPointPlasticityDataListIteratorBase):
+    def __init__(self, _fpp_data_list: FocalPointPlasticityDataList):
+        super().__init__(_fpp_data_list)
+
+
+class InternalFocalPointPlasticityDataList(_FocalPointPlasticityDataListBase):
+    def __init__(self, _fpp_plugin, _cell):
+        super().__init__(_fpp_plugin, _cell)
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        return _fpp_plugin.getInternalLinkInventory()
+
+
+class InternalFocalPointPlasticityDataIterator(_FocalPointPlasticityDataListIteratorBase):
+    def __init__(self, _fpp_data_list: InternalFocalPointPlasticityDataList):
+        super().__init__(_fpp_data_list)
+
+
+class AnchorFocalPointPlasticityDataList(_FocalPointPlasticityDataListBase):
+    def __init__(self, _fpp_plugin, _cell):
+        super().__init__(_fpp_plugin, _cell)
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        return _fpp_plugin.getAnchorInventory()
+
+
+class AnchorFocalPointPlasticityDataIterator(_FocalPointPlasticityDataListIteratorBase):
+    def __init__(self, _fpp_data_list: AnchorFocalPointPlasticityDataList):
+        super().__init__(_fpp_data_list)
+
+
+class _FocalPointPlasticityLinkListBase:
+
+    # Python iterator type
+    inv_itr_t = None
+
+    def __init__(self, _fpp_plugin):
+        self._inv = self._get_inventory(_fpp_plugin)
+
+    def __len__(self):
+        return int(self._inv.getLinkInventorySize())
+
+    def __iter__(self):
+        return self.inv_itr_t(self)
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        """
+        Get link inventory container
+        :param _fpp_plugin: focal point plasticity plugin
+        :return: link inventory container
+        """
+        raise NotImplementedError
+
+
+class _FocalPointPlasticityDataIteratorBase:
+
+    # C++ iterator type
+    py_itr_t = None
+
+    def __init__(self, _link_list: _FocalPointPlasticityLinkListBase):
+        self._link_list = _link_list
+        self._inv = self._link_list._inv
+        self._itr = self.py_itr_t()
+        self._itr.initialize(self._inv.getContainer())
+        self._itr.setToBegin()
+
+    def __next__(self):
+        if self._itr.isEnd():
             raise StopIteration
+        else:
+            _itr_val = self._itr.getCurrentRef()
+            self._itr.next()
+            return _itr_val
 
     def __iter__(self):
         return self
 
 
-class InternalFocalPointPlasticityDataList:
-    def __init__(self, _focalPointPlasticityPlugin, _cell):
-        self.focalPointPlasticityPlugin = _focalPointPlasticityPlugin
-        self.focalPointPlasticityTrackerAccessor = self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
-        self.cell = _cell
+class FocalPointPlasticityLinkListItr(_FocalPointPlasticityDataIteratorBase):
 
-    def __getitem__(self, idx):
-        if idx > self.__len__() - 1: raise IndexError(
-            "Out of bounds index: InternalFocalPointPlasticityDataList index = %s is out of bounds" % str(idx))
-        for counter, data in enumerate(self.__iter__()):
-            if idx == counter: return data
+    py_itr_t = CompuCell.mapFPPLinkIDFPPLinkPyItr
 
-    def __len__(self):
-        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
-        return int(self.focalPointPlasticityTracker.internalFocalPointPlasticityNeighbors.size())
-
-    def __iter__(self):
-        return InternalFocalPointPlasticityDataIterator(self)
+    def __init__(self, _data_list):
+        super().__init__(_data_list)
 
 
-class InternalFocalPointPlasticityDataIterator:
-    def __init__(self, _focalPointPlasticityDataList):
-        self.focalPointPlasticityTrackerAccessor = _focalPointPlasticityDataList.focalPointPlasticityTrackerAccessor
-        self.cell = _focalPointPlasticityDataList.cell
-        self.focalPointPlasticityPlugin = _focalPointPlasticityDataList.focalPointPlasticityPlugin
-        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
-        self.focalPointPlasticityDataSetItr = CompuCell.focalPointPlasticitySetPyItr()
-        self.focalPointPlasticityDataSetItr.initialize(
-            self.focalPointPlasticityTracker.internalFocalPointPlasticityNeighbors)
-        self.focalPointPlasticityDataSetItr.setToBegin()
+class FocalPointPlasticityLinkList(_FocalPointPlasticityLinkListBase):
 
-    def __next__(self):
-        if not self.focalPointPlasticityDataSetItr.isEnd():
-            self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
-            self.focalPointPlasticityData = self.focalPointPlasticityDataSetItr.getCurrentRef()
-            self.focalPointPlasticityDataSetItr.next()
-            return self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerData(self.focalPointPlasticityData)
-        #             return self.plasticityData
-        else:
-            raise StopIteration
+    inv_itr_t = FocalPointPlasticityLinkListItr
 
-    def __iter__(self):
-        return self
+    def __init__(self, _fpp_plugin):
+        super().__init__(_fpp_plugin)
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        return _fpp_plugin.getLinkInventory()
 
 
-class AnchorFocalPointPlasticityDataList:
-    def __init__(self, _focalPointPlasticityPlugin, _cell):
-        self.focalPointPlasticityPlugin = _focalPointPlasticityPlugin
-        self.focalPointPlasticityTrackerAccessor = self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
-        self.cell = _cell
+class FocalPointPlasticityInternalLinkListItr(_FocalPointPlasticityDataIteratorBase):
 
-    def __getitem__(self, idx):
-        if idx > self.__len__() - 1: raise IndexError(
-            "Out of bounds index: AnchorFocalPointPlasticityDataList index = %s is out of bounds" % str(idx))
-        for counter, data in enumerate(self.__iter__()):
-            if idx == counter: return data
+    py_itr_t = CompuCell.mapFPPLinkIDFPPInternalLinkPyItr
 
-    def __len__(self):
-        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
-        return int(self.focalPointPlasticityTracker.anchors.size())
-
-    def __iter__(self):
-        return AnchorFocalPointPlasticityDataIterator(self)
+    def __init__(self, _data_list):
+        super().__init__(_data_list)
 
 
-class AnchorFocalPointPlasticityDataIterator:
-    def __init__(self, _focalPointPlasticityDataList):
-        self.focalPointPlasticityTrackerAccessor = _focalPointPlasticityDataList.focalPointPlasticityTrackerAccessor
-        self.cell = _focalPointPlasticityDataList.cell
-        self.focalPointPlasticityPlugin = _focalPointPlasticityDataList.focalPointPlasticityPlugin
-        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
-        self.focalPointPlasticityDataSetItr = CompuCell.focalPointPlasticitySetPyItr()
-        self.focalPointPlasticityDataSetItr.initialize(self.focalPointPlasticityTracker.anchors)
-        self.focalPointPlasticityDataSetItr.setToBegin()
+class FocalPointPlasticityInternalLinkList(_FocalPointPlasticityLinkListBase):
 
-    def __next__(self):
-        if not self.focalPointPlasticityDataSetItr.isEnd():
-            self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
-            self.focalPointPlasticityData = self.focalPointPlasticityDataSetItr.getCurrentRef()
-            self.focalPointPlasticityDataSetItr.next()
-            return self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerData(self.focalPointPlasticityData)
-        #             return self.plasticityData
-        else:
-            raise StopIteration
+    inv_itr_t = FocalPointPlasticityInternalLinkListItr
 
-    def __iter__(self):
-        return self
+    def __init__(self, _fpp_plugin):
+        super().__init__(_fpp_plugin)
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        return _fpp_plugin.getInternalLinkInventory()
+
+
+class FocalPointPlasticityAnchorListItr(_FocalPointPlasticityDataIteratorBase):
+
+    py_itr_t = CompuCell.mapFPPLinkIDFPPAnchorPyItr
+
+    def __init__(self, _data_list):
+        super().__init__(_data_list)
+
+
+class FocalPointPlasticityAnchorList(_FocalPointPlasticityLinkListBase):
+
+    inv_itr_t = FocalPointPlasticityAnchorListItr
+
+    def __init__(self, _fpp_plugin):
+        super().__init__(_fpp_plugin)
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        return _fpp_plugin.getAnchorInventory()
+
 
 class CellPixelList:
     def __init__(self, _pixelTrackerPlugin, _cell):
@@ -593,6 +646,40 @@ class ElasticityDataIterator:
             self.elasticity_data = self.elasticity_data_set_itr.getCurrentRef()
             self.elasticity_data_set_itr.next()
             return self.elasticity_tracker_plugin.getElasticityTrackerData(self.elasticity_data)
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+        return self
+
+
+class EnergyDataList:
+    def __init__(self, _potts):
+        self.function_names = _potts.getEnergyFunctionNames()
+        self.energy_changes = _potts.getCurrentEnergyChanges()
+        self.flip_results = _potts.getCurrentFlipResults()
+
+    def __iter__(self):
+        return EnergyDataListIterator(self)
+
+
+class EnergyDataListIterator:
+    def __init__(self, _energy_data_list: EnergyDataList):
+        self.__function_names = _energy_data_list.function_names
+        self.__energy_changes = _energy_data_list.energy_changes
+        self.__flip_results = _energy_data_list.flip_results
+
+        self.__flip_idx = 0
+        self.__idx_functions = range(self.__function_names.__len__())
+        self.__num_flips = self.__flip_results.__len__()
+
+    def __next__(self):
+        if self.__flip_idx < self.__num_flips:
+            flip_result = self.__flip_results[self.__flip_idx]
+            data_dict = {self.__function_names[idx]: self.__energy_changes[self.__flip_idx][idx]
+                         for idx in self.__idx_functions}
+            self.__flip_idx += 1
+            return flip_result, data_dict
         else:
             raise StopIteration
 

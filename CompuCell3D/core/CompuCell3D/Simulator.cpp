@@ -40,6 +40,7 @@ using namespace CompuCell3D;
 #include <time.h>
 #include <limits>
 #include <sstream>
+#include <chrono>
 
 #include <XMLUtils/CC3DXMLElement.h>
 
@@ -117,10 +118,10 @@ void Simulator::setOutputDirectory(std::string output_directory) {
     this->output_directory = output_directory;
 }
 
-std::string Simulator::getOutputDirectory() {
-    return output_directory;
-}
+std::string Simulator::getOutputDirectory(){
+    return this->output_directory;
 
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ptrdiff_t Simulator::getCerrStreamBufOrig(){
@@ -628,6 +629,16 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 	//	fluctAmplGlobalReadFlag=true;
 	//}
 
+    bool test_output_generate_flag = false;
+    bool test_run_flag = false;
+    
+    if (_xmlData->getFirstElement("TestOutputGenerate")) {
+        test_output_generate_flag = true;
+    }
+
+    if (_xmlData->getFirstElement("TestRun")) {
+        test_run_flag = true;
+    }
 
 	bool fluctAmplGlobalReadFlag=false;
 
@@ -677,12 +688,14 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 		ppdCC3DPtr->flip2DimRatio=_xmlData->getFirstElement("Flip2DimRatio")->getDouble();
 	}
 
-
-
-
-
 	ASSERT_OR_THROW("You must set Dimensions!", ppdCC3DPtr->dim.x!=0 || ppdCC3DPtr->dim.y!=0 || ppdCC3DPtr->dim.z!=0);
 	potts.createCellField(ppdCC3DPtr->dim);
+    potts.set_test_output_generate_flag(test_output_generate_flag);
+    potts.set_test_run_flag(test_run_flag);
+
+    // setting path to simulation input folder
+    potts.set_simulation_input_dir(basePath);
+
 	//cerr<<"DIM="<<ppdCC3DPtr->dim<<endl;
 	//cerr<<"Temp="<<_xmlData->getFirstElement("Temperature")->getDouble()<<endl;
 	//cerr<<"Flip2DimRatio="<<_xmlData->getFirstElement("Flip2DimRatio")->getDouble()<<endl;
@@ -693,15 +706,16 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 
 	cerr << "_ppdCC3DPtr->algorithmName = " << metropolisAlgorithmName << endl;
 
+    if (test_run_flag) {
+        metropolisAlgorithmName = "testrun";
+    }
+
 	if(metropolisAlgorithmName!=""){
 		potts.setMetropolisAlgorithm(metropolisAlgorithmName);
 	}
 
-
-
-
 	if(!_xmlData->getFirstElement("RandomSeed")){
-		srand((unsigned int)time(0));
+		srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
 		unsigned int randomSeed=(unsigned int)rand()*((std::numeric_limits<unsigned int>::max)()-1);
 
 		BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
@@ -894,7 +908,13 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 		EnergyFunctionCalculator * enCalculator=potts.getEnergyFunctionCalculator();
 		enCalculator->setSimulator(this);
 		enCalculator->init(_xmlData->getFirstElement("EnergyFunctionCalculator"));
-	}
+    }
+    else if (test_output_generate_flag|| test_run_flag) {
+        potts.createEnergyFunction("TestOutputDataGeneration");
+        EnergyFunctionCalculator * enCalculator = potts.getEnergyFunctionCalculator();
+        enCalculator->setSimulator(this);
+
+    }
 
 
 

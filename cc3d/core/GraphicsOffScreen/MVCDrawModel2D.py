@@ -2,20 +2,24 @@ from .MVCDrawModelBase import MVCDrawModelBase
 import vtk
 import math
 from math import sqrt
+import numpy as np
 import string
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
 from cc3d.core.GraphicsOffScreen.MetadataHandler import MetadataHandler
 from cc3d.core.iterators import CellList, FocalPointPlasticityDataList, InternalFocalPointPlasticityDataList
 from cc3d.cpp import CompuCell
+import sys
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
+
+epsilon = sys.float_info.epsilon
 
 MODULENAME = '----- MVCDrawModel2D.py:  '
 
 
 class MVCDrawModel2D(MVCDrawModelBase):
-    def __init__(self):
-        MVCDrawModelBase.__init__(self)
+    def __init__(self, boundary_strategy=None, ren=None):
+        MVCDrawModelBase.__init__(self, boundary_strategy=boundary_strategy, ren=ren)
 
         self.cellsMapper = None
         self.hex_cells_mapper = None
@@ -49,8 +53,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         self.pixelized_cartesian_field = True
 
-
-    # Sets up the VTK simulation area 
+    # Sets up the VTK simulation area
     def initArea(self):
 
         ## Set up the mappers (2D) for cell vis.
@@ -115,24 +118,24 @@ class MVCDrawModel2D(MVCDrawModelBase):
         """
 
         actors_dict = actor_specs.actors_dict
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        # field_dim = self.currentDrawingParameters.bsd.fieldDim
+        # dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
 
         outlineData = vtk.vtkImageData()
 
         fieldDim = self.currentDrawingParameters.bsd.fieldDim
         dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
-        self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))
+        dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))
 
         # lattice_type_str = self.get_lattice_type_str()
         # if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
         if self.is_lattice_hex(drawing_params=drawing_params):
 
-            outlineData.SetDimensions(self.dim[0] + 1, int(self.dim[1] * math.sqrt(3.0) / 2.0) + 2, 1)
-            # print "self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1= ",(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
+            outlineData.SetDimensions(dim[0] + 1, int(dim[1] * math.sqrt(3.0) / 2.0) + 2, 1)
+            # print "dim[0]+1,int(dim[1]*math.sqrt(3.0)/2.0)+2,1= ",(dim[0]+1,int(dim[1]*math.sqrt(3.0)/2.0)+2,1)
         else:
-            outlineData.SetDimensions(self.dim[0] + 1, self.dim[1] + 1, 1)
+            outlineData.SetDimensions(dim[0] + 1, dim[1] + 1, 1)
 
         outline = vtk.vtkOutlineFilter()
 
@@ -167,7 +170,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         axes_actor = actors_dict['axes_actor']
 
-        lattice_type_str = self.get_lattice_type_str()
+        # lattice_type_str = self.get_lattice_type_str()
 
         dim_array = [field_dim.x, field_dim.y, field_dim.z]
         # if lattice_type_str.lower() == 'hexagonal':
@@ -220,7 +223,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         axes_actor.SetYTitle(vertical_label)
         # axesActor.SetFlyModeToOuterEdges()
 
-        label_prop = axes_actor.GetLabelTextProperty(0)
+        # label_prop = axes_actor.GetLabelTextProperty(0)
         # print 'label_prop=',label_prop
 
         # print 'axesActor.GetXTitle()=',axesActor.GetXTitle()
@@ -295,8 +298,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         dim_order = self.dimOrder(self.currentDrawingParameters.plane)
-        dim = self.planeMapper(dim_order,
-                               (field_dim.x, field_dim.y, field_dim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
+        # dim = self.planeMapper(dim_order,
+        #                        (field_dim.x, field_dim.y, field_dim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
         field_name = drawing_params.fieldName
         field_type = drawing_params.fieldType.lower()
         scene_metadata = drawing_params.screenshot_data.metadata
@@ -402,31 +405,31 @@ class MVCDrawModel2D(MVCDrawModelBase):
             glyphs.SetScaleModeToScaleByVector()
             # rangeSpan = maxMagnitude - minMagnitude
             dataScalingFactor = max(abs(min_magnitude), abs(max_magnitude))
-            #            print MODULENAME,"initVectorFieldCellLevelActors():  self.minMagnitude=",self.minMagnitude," self.maxMagnitude=",self.maxMagnitude
+            # print(MODULENAME, "initVectorFieldCellLevelActors():  self.minMagnitude=", self.minMagnitude,
+            #       " self.maxMagnitude=", self.maxMagnitude)
 
             if dataScalingFactor == 0.0:
-                dataScalingFactor = 1.0  # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
+                # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
+                dataScalingFactor = 1.0
             glyphs.SetScaleFactor(arrowScalingFactor / dataScalingFactor)
             # coloring arrows
             # arrow_color = to_vtk_rgb(scene_metadata['ArrowColor'])
 
             arrow_color = to_vtk_rgb(mdata.get('ArrowColor', data_type='color'))
             vector_field_actor.GetProperty().SetColor(arrow_color)
-
-
-
         else:
 
             if mdata.get('ScaleArrowsOn', data_type='bool'):
                 glyphs.SetColorModeToColorByVector()
                 glyphs.SetScaleModeToScaleByVector()
 
-                rangeSpan = max_magnitude - min_magnitude
+                # rangeSpan = max_magnitude - min_magnitude
                 dataScalingFactor = max(abs(min_magnitude), abs(max_magnitude))
-                #                print "self.minMagnitude=",self.minMagnitude," self.maxMagnitude=",self.maxMagnitude
+                # print("self.minMagnitude=",self.minMagnitude," self.maxMagnitude=",self.maxMagnitude)
 
                 if dataScalingFactor == 0.0:
-                    dataScalingFactor = 1.0  # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
+                    # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
+                    dataScalingFactor = 1.0
                 glyphs.SetScaleFactor(arrowScalingFactor / dataScalingFactor)
 
             else:
@@ -457,13 +460,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
             self.init_concentration_field_actors_hex(actor_specs=actor_specs, drawing_params=drawing_params)
         else:
             if self.pixelized_cartesian_field:
-                self.init_concentration_field_actors_cartesian_pixelized(actor_specs=actor_specs, drawing_params=drawing_params)
+                self.init_concentration_field_actors_cartesian_pixelized(actor_specs=actor_specs,
+                                                                         drawing_params=drawing_params)
             else:
 
                 self.init_concentration_field_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
 
         if mdata.get('LegendEnable', default=True):
-            print('Enabling legend')
             self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
     def init_concentration_field_actors_hex(self, actor_specs, drawing_params=None):
@@ -473,13 +476,14 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :param drawing_params: {DrawingParameters}
         :return: None
         """
-        print("init_concentration_field_actors_hex")
         actors_dict = actor_specs.actors_dict
 
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+
+        # [fieldDim.x, fieldDim.y, fieldDim.z]
         dim = self.planeMapper(dim_order,
-                               (field_dim.x, field_dim.y, field_dim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
+                               (field_dim.x, field_dim.y, field_dim.z))
         field_name = drawing_params.fieldName
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
@@ -526,15 +530,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
             print(("unsuported field type {}".format(field_type)))
             return
 
-        # fill_successful = self.field_extractor.fillConFieldData2DHex(
-        #     con_array_int_addr,
-        #     hex_cells_con_int_addr,
-        #     hex_points_con_int_addr,
-        #     field_name,
-        #     self.currentDrawingParameters.plane,
-        #     self.currentDrawingParameters.planePos
-        # )
-
         if not fill_successful:
             return
 
@@ -548,7 +543,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         min_con = range_array[0]
         max_con = range_array[1]
 
-        # Note! should really avoid doing a getSetting with each step to speed up the rendering; only update when changed in Prefs
+        # Note! should really avoid doing a getSetting with each step to speed up the rendering;
+        # only update when changed in Prefs
         if min_range_fixed:
             min_con = min_range
 
@@ -558,8 +554,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         if mdata.get('ContoursOn', default=False):
             contour_actor = actors_dict['contour_actor']
             num_contour_lines = mdata.get('NumberOfContourLines', default=3)
-            self.initialize_contours_hex([dim[0], dim[1]], con_array, [min_con, max_con],
-                                         contour_actor, num_contour_lines=num_contour_lines)
+            self.initialize_contours_pixelized([dim[0], dim[1]], con_array, [min_con, max_con],
+                                               contour_actor, num_contour_lines=num_contour_lines, hex_flag=True)
 
         hex_cells_con_poly_data.GetCellData().SetScalars(con_array)
         hex_cells_con_poly_data.SetPoints(hex_points_con)
@@ -580,33 +576,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         self.init_min_max_actor(min_max_actor=actors_dict['min_max_text_actor'], range_array=range_array)
 
-        # create a text actor
-        # txt = vtk.vtkTextActor()
-        # txt = actors_dict['min_max_text_actor']
-        # txt.SetInput("Hello World 2!")
-        # print('model txt=', txt.GetInput())
-        # txtprop = txt.GetTextProperty()
-        # txtprop.SetFontFamilyToArial()
-        # txtprop.SetFontSize(10)
-        # txtprop.SetColor(1, 1, 1)
-        # # txt.SetDisplayPosition(200, 200)
-        # txt.SetPosition(20, 20)
-        # # txt.SetPosition2(200, 200)
-
-        # actors_dict['min_max_text_actor'] = txt
-
-        # min_max_text_actor = actors_dict['min_max_text_actor']
-                # min_max_text_actor.SetPosition(20, 20)
-        #
-        # min_max_text_actor.GetTextProperty().SetFontSize(24)
-        # min_max_text_actor.GetTextProperty().SetColor(1.0, 0.0, 0.0)
-
         if actor_specs.metadata is None:
             actor_specs.metadata = {'mapper': self.con_mapper}
         else:
             actor_specs.metadata['mapper'] = self.con_mapper
 
-    def initialize_contours_hex(self, dim, con_array, min_max, contour_actor, num_contour_lines=2):
+    def initialize_contours_pixelized(self, dim, con_array, min_max, contour_actor, num_contour_lines=2,
+                                      hex_flag=False):
         """
         INitializes contour actor
         :param dim: {tuple}
@@ -614,6 +590,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :param min_max: {tuple (float, float)} concentration min, max
         :param contour_actor: {vtkActor} conrour actor
         :param num_contour_lines: {int} number of contour lines
+        :param hex_flag: {bool} indicates if we are on the hex lattice
         :return: None
         """
 
@@ -634,25 +611,28 @@ class MVCDrawModel2D(MVCDrawModelBase):
             field_image_data.SetInput(data)
 
         transform = vtk.vtkTransform()
-
-        transform.Scale(1, math.sqrt(3.0) / 2.0, 1)
-        if self.currentDrawingParameters.planePos % 3 == 0:
-            transform.Translate(0.5, 0, 0)  # z%3==0
-        elif self.currentDrawingParameters.planePos % 3 == 1:
-            transform.Translate(0, math.sqrt(3.0) / 4.0, 0)  # z%3==1
+        if hex_flag:
+            transform.Scale(1, math.sqrt(3.0) / 2.0, 1)
+            if self.currentDrawingParameters.planePos % 3 == 0:
+                transform.Translate(0.5, 0, 0)  # z%3==0
+            elif self.currentDrawingParameters.planePos % 3 == 1:
+                transform.Translate(0, math.sqrt(3.0) / 4.0, 0)  # z%3==1
+            else:
+                transform.Translate(0.0, -math.sqrt(3.0) / 4.0, 0)  # z%3==2
         else:
-            transform.Translate(0.0, -math.sqrt(3.0) / 4.0, 0)  # z%3==2
+            transform.Scale(1, 1, 1)
+            transform.Translate(0.5, 0.5, 0)
 
-        isoContour = vtk.vtkContourFilter()
+        iso_contour = vtk.vtkContourFilter()
 
-        isoContour.SetInputConnection(field_image_data.GetOutputPort())
+        iso_contour.SetInputConnection(field_image_data.GetOutputPort())
 
-        isoContour.GenerateValues(
+        iso_contour.GenerateValues(
             num_contour_lines + 2,
             min_max)
 
         tpd1 = vtk.vtkTransformPolyDataFilter()
-        tpd1.SetInputConnection(isoContour.GetOutputPort())
+        tpd1.SetInputConnection(iso_contour.GetOutputPort())
         tpd1.SetTransform(transform)
 
         # self.contourMapper.SetInputConnection(contour.GetOutputPort())
@@ -673,7 +653,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         field_name = drawing_params.fieldName
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
-
 
         con_array = vtk.vtkDoubleArray()
         con_array.SetName("concentration")
@@ -722,7 +701,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         if not fill_successful:
             return
 
-
         min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
         min_range_fixed = min_max_dict['MinRangeFixed']
         max_range_fixed = min_max_dict['MaxRangeFixed']
@@ -733,18 +711,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
         min_con = range_array[0]
         max_con = range_array[1]
 
-        # Note! should really avoid doing a getSetting with each step to speed up the rendering; only update when changed in Prefs
+        # Note! should really avoid doing a getSetting with each step to speed up the rendering;
+        # only update when changed in Prefs
         if min_range_fixed:
             min_con = min_range
 
         if max_range_fixed:
             max_con = max_range
-
-        if mdata.get('ContoursOn', default=False):
-            contour_actor = actors_dict['contour_actor']
-            num_contour_lines = mdata.get('NumberOfContourLines', default=3)
-            self.initialize_contours_hex([dim[0], dim[1]], con_array, [min_con, max_con],
-                                         contour_actor, num_contour_lines=num_contour_lines)
 
         cells_con_poly_data.GetCellData().SetScalars(con_array)
         cells_con_poly_data.SetPoints(points_con)
@@ -755,6 +728,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         else:
             self.con_mapper.SetInput(cells_con_poly_data)
 
+        if mdata.get('ContoursOn', default=False):
+            contour_actor = actors_dict['contour_actor']
+            num_contour_lines = mdata.get('NumberOfContourLines', default=3)
+            self.initialize_contours_pixelized([dim[0], dim[1]], con_array, [min_con, max_con],
+                                               contour_actor, num_contour_lines=num_contour_lines, hex_flag=False)
+
         self.con_mapper.ScalarVisibilityOn()
         self.con_mapper.SetLookupTable(self.clut)
         self.con_mapper.SetScalarRange(min_con, max_con)
@@ -764,27 +743,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         concentration_actor.SetMapper(self.con_mapper)
 
         self.init_min_max_actor(min_max_actor=actors_dict['min_max_text_actor'], range_array=range_array)
-
-        # create a text actor
-        # txt = vtk.vtkTextActor()
-        # txt = actors_dict['min_max_text_actor']
-        # txt.SetInput("Hello World 2!")
-        # print('model txt=', txt.GetInput())
-        # txtprop = txt.GetTextProperty()
-        # txtprop.SetFontFamilyToArial()
-        # txtprop.SetFontSize(10)
-        # txtprop.SetColor(1, 1, 1)
-        # # txt.SetDisplayPosition(200, 200)
-        # txt.SetPosition(20, 20)
-        # # txt.SetPosition2(200, 200)
-
-        # actors_dict['min_max_text_actor'] = txt
-
-        # min_max_text_actor = actors_dict['min_max_text_actor']
-        # min_max_text_actor.SetPosition(20, 20)
-        #
-        # min_max_text_actor.GetTextProperty().SetFontSize(24)
-        # min_max_text_actor.GetTextProperty().SetColor(1.0, 0.0, 0.0)
 
         if actor_specs.metadata is None:
             actor_specs.metadata = {'mapper': self.con_mapper}
@@ -869,9 +827,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         dim_0 = dim[0] + 1
         dim_1 = dim[1] + 1
 
-        # print 'dim_0,dim_1=',(dim_0,dim_1)
-        # dbgMsg('dim_0,dim_1=', (dim_0, dim_1))
-
         data = vtk.vtkImageData()
         data.SetDimensions(dim_0, dim_1, 1)
 
@@ -909,7 +864,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.con_mapper.ScalarVisibilityOn()
 
         self.con_mapper.SetLookupTable(self.clut)
-        # 0, self.clut.GetNumberOfColors()) # may manually set range so that type reassignment will not be scalled dynamically when one type is missing
+        # 0, self.clut.GetNumberOfColors()) # may manually set range so that
+        # type reassignment will not be scalled dynamically when one type is missing
         self.con_mapper.SetScalarRange(min_con, max_con)
 
         self.con_mapper.SetScalarModeToUsePointData()
@@ -955,7 +911,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
             iso_val += del_iso
 
         iso_contour.SetInputConnection(field_image_data.GetOutputPort())
-        #        isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, [self.minCon, self.maxCon])
+        # isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",
+        #                                                    self.currentDrawingParameters.fieldName)+2,
+        #                           [self.minCon, self.maxCon])
 
         self.contour_mapper.SetInputConnection(iso_contour.GetOutputPort())
         self.contour_mapper.SetLookupTable(self.ctlut)
@@ -995,10 +953,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
         """
 
         actors_dict = actor_specs.actors_dict
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        # field_dim = self.currentDrawingParameters.bsd.fieldDim
+        # dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
-        mdata = MetadataHandler(mdata=scene_metadata)
+        # mdata = MetadataHandler(mdata=scene_metadata)
 
         # dim = self.planeMapper(dim_order,
         #                             (field_dim.x, field_dim.y, field_dim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
@@ -1053,10 +1011,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :return: None
         """
         actors_dict = actor_specs.actors_dict
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        # field_dim = self.currentDrawingParameters.bsd.fieldDim
+        # dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
-        mdata = MetadataHandler(mdata=scene_metadata)
+        # mdata = MetadataHandler(mdata=scene_metadata)
 
         # dim = self.planeMapper(dim_order,
         #                             (field_dim.x, field_dim.y, field_dim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
@@ -1092,7 +1050,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         else:
             self.cellsMapper.SetInput(cartesian_cells_poly_data)
 
-        cell_type_lut = self.get_type_lookup_table()
+        cell_type_lut = self.get_type_lookup_table(scene_metadata=scene_metadata)
         cell_type_lut_max = cell_type_lut.GetNumberOfTableValues() - 1
 
         self.cellsMapper.ScalarVisibilityOn()
@@ -1101,66 +1059,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         cells_actor = actors_dict['cellsActor']
         cells_actor.SetMapper(self.cellsMapper)
-
-
-        #
-        #
-        # actors_dict = actor_specs.actors_dict
-        # field_dim = self.currentDrawingParameters.bsd.fieldDim
-        # dim_order = self.dimOrder(self.currentDrawingParameters.plane)
-        # scene_metadata = drawing_params.screenshot_data.metadata
-        # mdata = MetadataHandler(mdata=scene_metadata)
-        #
-        # # [fieldDim.x, fieldDim.y, fieldDim.z]
-        # dim = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))
-        #
-        # cell_type_array = vtk.vtkIntArray()
-        # cell_type_array.SetName("celltype")
-        #
-        # # cell_type_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
-        # #                                                          vtkObj=cell_type_array)
-        #
-        # cell_type_int_addr = extract_address_int_from_vtk_object(vtkObj=cell_type_array)
-        #
-        # self.field_extractor.fillCellFieldData2D(
-        #     cell_type_int_addr,
-        #     self.currentDrawingParameters.plane,
-        #     self.currentDrawingParameters.planePos
-        # )
-        #
-        # dim_new = [dim[0] + 1, dim[1] + 1, dim[2] + 1]
-        #
-        # u_grid_conc = vtk.vtkStructuredPoints()
-        # u_grid_conc.SetDimensions(dim_new[0], dim_new[1], dim_new[2])
-        #
-        # u_grid_conc.GetPointData().SetScalars(cell_type_array)
-        #
-        # cells_plane = vtk.vtkImageDataGeometryFilter()
-        #
-        #
-        # cells_plane.SetExtent(0, dim_new[0], 0, dim_new[1], 0, 0)
-        # if VTK_MAJOR_VERSION >= 6:
-        #     cells_plane.SetInputData(u_grid_conc)
-        # else:
-        #     cells_plane.SetInput(u_grid_conc)
-        #
-        # # concMapper=self.cellsMapper
-        #
-        # self.cellsMapper.SetInputConnection(cells_plane.GetOutputPort())
-        # self.cellsMapper.ScalarVisibilityOn()
-        #
-        # cell_type_lut = self.get_type_lookup_table()
-        # cell_type_lut_max = cell_type_lut.GetNumberOfTableValues() - 1
-        #
-        # self.cellsMapper.SetLookupTable(cell_type_lut)  # def'd in parent class
-        # self.cellsMapper.SetScalarRange(0, cell_type_lut_max)
-        #
-        #
-        #
-        # cells_actor = actors_dict['cellsActor']
-        # cells_actor.SetMapper(self.cellsMapper)
-        # # cells_actor.GetProperty().SetInterpolationToFlat()
-
 
     def init_cell_field_actors_cartesian(self, actor_specs, drawing_params=None):
         """
@@ -1174,16 +1072,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
-        mdata = MetadataHandler(mdata=scene_metadata)
+        # mdata = MetadataHandler(mdata=scene_metadata)
 
         # [fieldDim.x, fieldDim.y, fieldDim.z]
         dim = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))
 
         cell_type_array = vtk.vtkIntArray()
         cell_type_array.SetName("celltype")
-
-        # cell_type_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
-        #                                                          vtkObj=cell_type_array)
 
         cell_type_int_addr = extract_address_int_from_vtk_object(vtkObj=cell_type_array)
 
@@ -1202,14 +1097,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         cells_plane = vtk.vtkImageDataGeometryFilter()
 
-
         cells_plane.SetExtent(0, dim_new[0], 0, dim_new[1], 0, 0)
         if VTK_MAJOR_VERSION >= 6:
             cells_plane.SetInputData(u_grid_conc)
         else:
             cells_plane.SetInput(u_grid_conc)
-
-        # concMapper=self.cellsMapper
 
         self.cellsMapper.SetInputConnection(cells_plane.GetOutputPort())
         self.cellsMapper.ScalarVisibilityOn()
@@ -1219,8 +1111,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         self.cellsMapper.SetLookupTable(cell_type_lut)  # def'd in parent class
         self.cellsMapper.SetScalarRange(0, cell_type_lut_max)
-
-
 
         cells_actor = actors_dict['cellsActor']
         cells_actor.SetMapper(self.cellsMapper)
@@ -1234,9 +1124,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :return: None
         """
 
-        actors_dict = actor_specs.actors_dict
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        # actors_dict = actor_specs.actors_dict
+        # field_dim = self.currentDrawingParameters.bsd.fieldDim
+        # dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
 
@@ -1287,9 +1177,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :return: None
         """
 
-        actors_dict = actor_specs.actors_dict
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        # actors_dict = actor_specs.actors_dict
+        # field_dim = self.currentDrawingParameters.bsd.fieldDim
+        # dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
 
@@ -1345,172 +1235,250 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :return: None
         """
 
-        fppPlugin = CompuCell.getFocalPointPlasticityPlugin()
-        # if (fppPlugin == 0):  # bogus check
-        if not fppPlugin:  # bogus check
+        fpp_plugin = CompuCell.getFocalPointPlasticityPlugin()
+        if not fpp_plugin:  # bogus check
             print('    fppPlugin is null, returning')
             return
 
         actors_dict = actor_specs.actors_dict
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        field_dim_ordered = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))
+
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
 
-        xdim = field_dim.x
-        ydim = field_dim.y
-
         try:
-            cellField = self.currentDrawingParameters.bsd.sim.getPotts().getCellFieldG()
+            # cellField = self.currentDrawingParameters.bsd.sim.getPotts().getCellFieldG()
             inventory = self.currentDrawingParameters.bsd.sim.getPotts().getCellInventory()
         except AttributeError:
             raise AttributeError('Could not access Potts object')
 
-        cellList = CellList(inventory)
+        cell_list = CellList(inventory)
 
         points = vtk.vtkPoints()
         lines = vtk.vtkCellArray()
 
-        beginPt = 0
-        lineNum = 0
+        pt_counter = 0
 
-        for cell in cellList:
+        for cell in cell_list:
             vol = cell.volume
-            if vol < self.eps: continue
+            if vol < self.eps:
+                continue
+            mid_com = np.array(self.planeMapper(dim_order, (cell.xCOM, cell.yCOM, cell.zCOM)), dtype=float)
 
-            xmid0 = cell.xCOM
-            ymid0 = cell.yCOM
+            # points.InsertNextPoint(mid_com[0], mid_com[1], 0)
 
-            points.InsertNextPoint(xmid0, ymid0, 0)
-            endPt = beginPt + 1
+            for fppd in InternalFocalPointPlasticityDataList(fpp_plugin, cell):
+                pt_counter = self.add_link(dim_order=dim_order, field_dim_ordered=field_dim_ordered,
+                                           drawing_params=drawing_params,
+                                           fppd=fppd, mid_com=mid_com, pt_counter=pt_counter,
+                                           lines=lines, points=points)
 
-            for fppd in InternalFocalPointPlasticityDataList(fppPlugin, cell):
-                xmid = fppd.neighborAddress.xCOM
-                ymid = fppd.neighborAddress.yCOM
+            for fppd in FocalPointPlasticityDataList(fpp_plugin, cell):
+                pt_counter = self.add_link(dim_order=dim_order, field_dim_ordered=field_dim_ordered,
+                                           drawing_params=drawing_params,
+                                           fppd=fppd, mid_com=mid_com, pt_counter=pt_counter,
+                                           lines=lines, points=points)
 
-                xdiff = xmid - xmid0
-                ydiff = ymid - ymid0
-                actualDist = math.sqrt((xdiff * xdiff) + (ydiff * ydiff))
-                if actualDist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
-                    # add dangling "out" line to beginning cell
-                    if abs(xdiff) > abs(ydiff):  # wraps around in x-direction
-                        if xdiff < 0:
-                            xmid0end = xmid0 + self.stubSize
-                        else:
-                            xmid0end = xmid0 - self.stubSize
-                        ymid0end = ymid0
-                        points.InsertNextPoint(xmid0end, ymid0end, 0)
-                        lines.InsertNextCell(2)  # our line has 2 points
-                        lines.InsertCellPoint(beginPt)
-                        lines.InsertCellPoint(endPt)
+            # begin_pt_counter = end_pt_counter  # update point index
+            # # todo - outer break
+            # # break
 
-                        actualDist = xdim - actualDist  # compute (approximate) real actualDist
-                        lineNum += 1
-                        endPt += 1
-                    else:  # wraps around in y-direction
-                        xmid0end = xmid0
-                        if ydiff < 0:
-                            ymid0end = ymid0 + self.stubSize
-                        else:
-                            ymid0end = ymid0 - self.stubSize
-                        points.InsertNextPoint(xmid0end, ymid0end, 0)
-                        lines.InsertNextCell(2)  # our line has 2 points
-                        lines.InsertCellPoint(beginPt)
-                        lines.InsertCellPoint(endPt)
-
-                        actualDist = ydim - actualDist  # compute (approximate) real actualDist
-
-                        lineNum += 1
-
-                        endPt += 1
-
-                # link didn't wrap around on lattice
-                else:
-                    points.InsertNextPoint(xmid, ymid, 0)
-                    lines.InsertNextCell(2)  # our line has 2 points
-                    lines.InsertCellPoint(beginPt)
-                    lines.InsertCellPoint(endPt)
-
-                    lineNum += 1
-                    endPt += 1
-            for fppd in FocalPointPlasticityDataList(fppPlugin, cell):
-
-                xmid = fppd.neighborAddress.xCOM
-                ymid = fppd.neighborAddress.yCOM
-
-                xdiff = xmid - xmid0
-                ydiff = ymid - ymid0
-                actualDist = math.sqrt((xdiff * xdiff) + (ydiff * ydiff))
-                if actualDist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
-
-                    # add dangling "out" line to beginning cell
-                    if abs(xdiff) > abs(ydiff):  # wraps around in x-direction
-                        #                    print '>>>>>> wraparound X'
-                        if xdiff < 0:
-                            xmid0end = xmid0 + self.stubSize
-                        else:
-                            xmid0end = xmid0 - self.stubSize
-                        ymid0end = ymid0
-                        points.InsertNextPoint(xmid0end, ymid0end, 0)
-                        lines.InsertNextCell(2)  # our line has 2 points
-                        lines.InsertCellPoint(beginPt)
-                        lines.InsertCellPoint(endPt)
-
-                        # coloring the FPP links
-                        actualDist = xdim - actualDist  # compute (approximate) real actualDist
-
-                        lineNum += 1
-
-                        endPt += 1
-                    else:  # wraps around in y-direction
-                        xmid0end = xmid0
-                        if ydiff < 0:
-                            ymid0end = ymid0 + self.stubSize
-                        else:
-                            ymid0end = ymid0 - self.stubSize
-                        points.InsertNextPoint(xmid0end, ymid0end, 0)
-                        lines.InsertNextCell(2)  # our line has 2 points
-                        lines.InsertCellPoint(beginPt)
-                        lines.InsertCellPoint(endPt)
-
-                        # coloring the FPP links
-                        actualDist = ydim - actualDist  # compute (approximate) real actualDist
-
-                        lineNum += 1
-
-                        endPt += 1
-
-                # link didn't wrap around on lattice
-                else:
-                    points.InsertNextPoint(xmid, ymid, 0)
-                    lines.InsertNextCell(2)  # our line has 2 points
-                    lines.InsertCellPoint(beginPt)
-                    lines.InsertCellPoint(endPt)
-
-                    lineNum += 1
-                    endPt += 1
-            beginPt = endPt  # update point index
-
-        # -----------------------
-        if lineNum == 0:
-            return
-
-        FPPLinksPD = vtk.vtkPolyData()
-        FPPLinksPD.SetPoints(points)
-        FPPLinksPD.SetLines(lines)
+        fpp_links_pd = vtk.vtkPolyData()
+        fpp_links_pd.SetPoints(points)
+        fpp_links_pd.SetLines(lines)
 
         fpp_links_actor = actors_dict['fpp_links_actor']
 
         if VTK_MAJOR_VERSION >= 6:
-            self.FPPLinksMapper.SetInputData(FPPLinksPD)
+            self.FPPLinksMapper.SetInputData(fpp_links_pd)
         else:
-            FPPLinksPD.Update()
-            self.FPPLinksMapper.SetInput(FPPLinksPD)
+            fpp_links_pd.Update()
+            self.FPPLinksMapper.SetInput(fpp_links_pd)
 
         fpp_links_actor.SetMapper(self.FPPLinksMapper)
         fpp_links_color = to_vtk_rgb(mdata.get('FPPLinksColor', data_type='color'))
         # coloring borders
         fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
+
+    def add_link(self, dim_order, field_dim_ordered, drawing_params, fppd,
+                 mid_com, pt_counter, lines, points):
+        """
+        adds a single link to lines and points vtk structures
+        :param dim_order:
+        :param field_dim_ordered:
+        :param drawing_params:
+        :param fppd:
+        :param mid_com:
+        :param pt_counter: point counter - helps keeping track of which points form a segment
+        :param lines:
+        :param points:
+        :return:
+        """
+
+        n_cell = fppd.neighborAddress
+
+        n_mid_com = np.array(self.planeMapper(dim_order, (n_cell.xCOM, n_cell.yCOM, n_cell.zCOM)), dtype=float)
+
+        n_link_begin = np.array([n_mid_com[0], n_mid_com[1]], dtype=np.float)
+
+        link_begin_3d = mid_com
+        n_link_begin_3d = n_mid_com
+
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+
+        naive_actual_dist = np.linalg.norm(n_link_begin_3d - link_begin_3d)
+
+        inv_dist = self.invariant_distance(p1=link_begin_3d, p2=n_link_begin_3d, dim=field_dim)
+        if abs((inv_dist - naive_actual_dist)/(naive_actual_dist + epsilon)) > 10 * epsilon:
+            # if naive distance is different than invariant distance then we are dealing with link that is wrapped
+        # if naive_actual_dist > fppd.maxDistance:
+            # implies we have wraparound (via periodic BCs)
+            # inv_dist_vec = self.unconditional_invariant_distance_vector(
+            #     p1=[mid_com[0], mid_com[1], 0],
+            #     p2=[n_mid_com[0], n_mid_com[1], 0],
+            #     dim=[field_dim_ordered[0], field_dim_ordered[1], 1])
+
+            inv_dist_vec = self.invariant_distance_vector(p1=[mid_com[0], mid_com[1], 0],
+                                                          p2=[n_mid_com[0], n_mid_com[1], 0],
+                                                          dim=[field_dim_ordered[0], field_dim_ordered[1], 1])
+
+            inv_dist_vec = np.array([inv_dist_vec[0], inv_dist_vec[1]], dtype=np.float)
+            link_begin = np.array([mid_com[0], mid_com[1]], dtype=np.float)
+            link_end = link_begin + inv_dist_vec
+
+            field_dim_ord_np = np.array([field_dim_ordered[0], field_dim_ordered[1]], dtype=np.int)
+
+            vector_piece_to_add = self.compute_clipped_segment(begin=link_begin, end=link_end,
+                                                               dim=field_dim_ord_np)
+
+            # changing link end by adding first clipped segment
+            link_end = link_begin + vector_piece_to_add
+            reminder_vector = inv_dist_vec - vector_piece_to_add
+
+            n_link_end = n_link_begin - reminder_vector
+
+            n_vector_piece_to_add = self.compute_clipped_segment(begin=n_link_begin,
+                                                                 end=n_link_end,
+                                                                 dim=field_dim_ord_np)
+
+            n_link_end = n_link_begin + n_vector_piece_to_add
+
+            # our line has 2 points
+
+            if self.is_link_visible(mid_com[2], drawing_params.planePosition):
+                points.InsertNextPoint(mid_com[0], mid_com[1], 0)
+                points.InsertNextPoint(link_end[0], link_end[1], 0)
+
+                lines.InsertNextCell(2)
+
+                lines.InsertCellPoint(pt_counter)
+                lines.InsertCellPoint(pt_counter + 1)
+
+                pt_counter += 2
+
+            if self.is_link_visible(n_mid_com[2], drawing_params.planePosition):
+                points.InsertNextPoint(n_link_begin[0], n_link_begin[1], 0)
+                points.InsertNextPoint(n_link_end[0], n_link_end[1], 0)
+                lines.InsertNextCell(2)
+                lines.InsertCellPoint(pt_counter)
+                lines.InsertCellPoint(pt_counter + 1)
+                pt_counter += 2
+
+        # link didn't wrap around on lattice
+        else:
+
+            if self.is_link_visible(mid_com[2], drawing_params.planePosition):
+                points.InsertNextPoint(mid_com[0], mid_com[1], 0)
+                points.InsertNextPoint(n_mid_com[0], n_mid_com[1], 0)
+                # our line has 2 points
+                lines.InsertNextCell(2)
+                lines.InsertCellPoint(pt_counter)
+                lines.InsertCellPoint(pt_counter + 1)
+                pt_counter += 2
+
+        return pt_counter
+
+    def compute_clipped_segment(self, begin, end, dim):
+        """
+
+        :param begin: position within lattice
+        :param end: end position maybe in or out the lattice
+        :param dim: lattice dim
+        :return:
+        """
+        vec_to_add = end - begin
+        seg_info_list = []
+        for idx in range(2):
+            if not self.is_within_lattice(coord=end[idx], coord_dim=dim[idx]):
+                pos = 0 if end[idx] < 0 else dim[idx]
+                coord_idx_array = np.ones(2, dtype=int)
+                coord_idx_array[idx] = 0
+
+                seg_info = (coord_idx_array, pos)
+
+                seg_info_list.append(seg_info)
+
+                vec_to_add = self.compute_vector_piece_to_add(begin=begin, end=end, seg_info=seg_info)
+                other_intersect = self.other_intersect(begin, vec_to_add, coord_idx_array)
+                if self.is_within_lattice(coord=other_intersect, coord_dim=dim[coord_idx_array[1]]):
+                    break
+
+        return vec_to_add
+
+    @staticmethod
+    def compute_vector_piece_to_add(begin, end, seg_info):
+        coord_idx_array = seg_info[0]
+        clip_coord_idx = coord_idx_array[0]
+        other_coord_idx = coord_idx_array[1]
+        clip_pos = seg_info[1]
+        ratio = (end[clip_coord_idx] - clip_pos) / (
+                end[clip_coord_idx] - begin[clip_coord_idx])
+
+        vector_piece_to_add = np.zeros(2, dtype=np.float)
+
+        vector_piece_to_add[clip_coord_idx] = clip_pos - begin[clip_coord_idx]
+        vector_piece_to_add[other_coord_idx] = (1 - ratio) * (
+                end[other_coord_idx] - begin[other_coord_idx])
+
+        return vector_piece_to_add
+
+    @staticmethod
+    def other_intersect(begin, vec_to_add, coord_idx_array):
+        other_coord_idx = coord_idx_array[1]
+
+        lattice_edge_pos = begin + vec_to_add
+        return lattice_edge_pos[other_coord_idx]
+
+    @staticmethod
+    def is_within_lattice(coord, coord_dim, eps=0.01):
+        """
+        checks if a coordinate is within the lattice
+        :param coord:
+        :param coord_dim:
+        :param eps:
+        :return:
+        """
+        return 0 - eps <= coord <= coord_dim + eps
+
+    def compute_clip_pos(self, pt, dim, coord_idx):
+
+        clip_pos = -1
+        if not self.is_within_lattice(pt[coord_idx], dim[coord_idx]):
+            clip_pos = 0 if pt[0] < 0 else dim[0]
+        return clip_pos
+
+    @staticmethod
+    def is_link_visible(link_begin_coord, plane_pos, margin=1) -> bool:
+        """
+        returns boolean value depending if the plane intersects link box (think 3D  minimal box than contains link)
+        :param link_begin_coord:
+        :param plane_pos:
+        :param margin: margin that enlarges link box in the 3rd coord
+        :return:
+        """
+        return link_begin_coord - margin <= plane_pos < link_begin_coord + margin
 
     # Optimize code?
     def dimOrder(self, plane):

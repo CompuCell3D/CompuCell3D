@@ -2,6 +2,7 @@
 
     <XMLScript Type="XMLScript">Simulation/elasticityTest.xml</XMLScript>
     <PythonScript>Simulation/elasticityTest.py</PythonScript>
+    <Resource Type="Python">Simulation/elasticityTestSteppables.py</Resource>
     <PIFFile>Simulation/elasticityTest.piff</PIFFile>
 
 </Simulation>

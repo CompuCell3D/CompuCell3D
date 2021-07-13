@@ -1,0 +1,5 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/ChemotaxisCompartment.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/ChemotaxisCompartment.py</PythonScript>
+   <Resource Type="Python">Simulation/ChemotaxisCompartmentSteppables.py</Resource>
+</Simulation>

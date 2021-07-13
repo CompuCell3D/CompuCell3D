@@ -1,0 +1,5 @@
+<Simulation version="4.2.4">
+   <XMLScript Type="XMLScript">Simulation/CellGDerivedProperties.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/CellGDerivedProperties.py</PythonScript>
+   <Resource Type="Python">Simulation/CellGDerivedPropertiesSteppables.py</Resource>
+</Simulation>

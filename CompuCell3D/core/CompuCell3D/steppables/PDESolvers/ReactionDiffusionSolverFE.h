@@ -7,6 +7,7 @@
 #include "DiffusableVectorCommon.h"
 
 #include "DiffSecrData.h"
+#include "FluctuationCompensator.h"
 #include "BoundaryConditionSpecifier.h"
 
 #include <CompuCell3D/Serializer.h>
@@ -47,6 +48,7 @@ class BoxWatcher;
 
 class CellTypeMonitorPlugin ;
 class DiffusionData;
+class FluctuationCompensator;
 class SecretionDataFlex;
 class ReactionDiffusionSolverSerializer;
 class TestReactionDiffusionSolver; // Testing ReactionDiffusionSolverFE
@@ -96,6 +98,8 @@ class PDESOLVERS_EXPORT ReactionDiffusionSolverFE :public DiffusableVectorCommon
   // For Testing
   friend class TestReactionDiffusionSolver; // In production version you need to enclose with #ifdef #endif
 
+  FluctuationCompensator *fluctuationCompensator;
+
   public :
    typedef void (ReactionDiffusionSolverFE::*diffSecrFcnPtr_t)(void);
    typedef void (ReactionDiffusionSolverFE::*secrSingleFieldFcnPtr_t)(unsigned int);
@@ -109,6 +113,12 @@ class PDESOLVERS_EXPORT ReactionDiffusionSolverFE :public DiffusableVectorCommon
 	bool autoscaleDiffusion;
 
 	bool scaleSecretion; // this flag is set to true. If user sets it to false via XML then DiffusionSolver will behave like FlexibleDiffusion solver - i.e. secretion will be done in one step followed by multiple diffusive steps
+
+	// Interface between Python and FluctuationCompensator
+
+	// Call to update compensator for this solver before next compensation
+	// Call this after modifying field values outside of core routine
+	virtual void updateFluctuationCompensator() { if (fluctuationCompensator) fluctuationCompensator->updateTotalConcentrations(); }
 
 protected:
 
@@ -132,7 +142,9 @@ protected:
 
    std::vector<int> scalingExtraMCSVec; //TODO: check if used
    std::vector<float> maxDiffConstVec;
-   float maxStableDiffConstant;           
+   std::vector<float> maxDecayConstVec;
+   float maxStableDiffConstant;
+   float maxStableDecayConstant;
 
    std::vector<float> diffConstVec; 
    std::vector<float> decayConstVec; 
@@ -156,7 +168,7 @@ protected:
    }
   
    void prepareForwardDerivativeOffsets();
-   void Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant);
+   void Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant, std::vector<float> const &maxDecayConstVec);
    virtual void prepCellTypeField(int idx);
    virtual Dim3D getInternalDim();
    

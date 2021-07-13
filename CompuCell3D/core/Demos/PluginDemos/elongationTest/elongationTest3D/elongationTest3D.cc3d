@@ -1,5 +1,6 @@
 <Simulation version="3.6.1">
     <XMLScript Type="XMLScript">Simulation/elongationTest3D.xml</XMLScript>
     <PythonScript>Simulation/elongationTest3D.py</PythonScript>
+    <Resource Type="Python">Simulation/elongationTest3DSteppables.py</Resource>
     <PIFFile>Simulation/elongationTest3D.piff</PIFFile>
 </Simulation>

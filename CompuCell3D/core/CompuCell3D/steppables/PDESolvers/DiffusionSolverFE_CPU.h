@@ -19,6 +19,12 @@ public:
 	// // // void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData /*const*/ &diffData);
     // // // virtual void boundaryConditionInitImpl(int idx);    
     virtual void handleEventLocal(CC3DEvent & _event);
+
+	// Interface between Python and FluctuationCompensator
+
+	// Call to update compensator for this solver before next compensation
+	// Call this after modifying field values outside of core routine
+	virtual void updateFluctuationCompensator() { if (fluctuationCompensator) fluctuationCompensator->updateTotalConcentrations(); }
 		
 protected:
 	//virtual void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData &diffData);

@@ -1,22 +1,175 @@
 Release Notes
 =============
 
+Version 4.2.5
+-------------
+**2021-06-05**
+
+New features:
+- Added selection of RoadRunner integrator to API
+- Added Reciprocated algorithm to Chemotaxis plugin
+- Added log-scaled chemotaxis by cell center of mass concentration
+- Added multiple vertical axes in Player plots
+- Added python dictionary to all Link classes
+- Added support for attaching Antimony, SBML and CellML models to individual links
+- Optimization of cell shell made optional in Player
+- First rendering now occurs after start in Player
+- Added cell velocity to CellG derived properties
+- Added a cell type color map to Player
+- Added display of parameter scan iteration in Player
+- Minor updates to Twedit++ code snippets
+- AddedBoolean Network solver (MaBoSS)
+
+Bug fixes:
+- Disabled problematic plot menu items in Player
+- Fixed memory leaks assiociated with Player plot windows
+- Better handling of output folder location by parameter scans
+- Fixed static font size show concentration ranges in Player
+- Fixed automatic scaling in diffusion solver ConstantConcentration
+- Fixed eccentricity calculations in moment of inertia plugin
+- Do not check for updates if CC3D is running on nanohub
+- Fixed a bug in moveCell functionality
+
+Version 4.2.4
+-------------
+**2021-01-23**
+
+New features:
+
+- Added regression test suite
+- Major overhaul of FocalPointPlasticity Plugin including
+    - Added regular, internal and anchor link objects
+    - Revised plugin throughout on the basis of link objects
+    - Added link attributes and methods for link-specific manipulations
+    - Added link inventory management methods to SteppableBasePy
+- Added Callable CC3D renderer
+- Added DerivedProperty for read-only attributes in python calculated on-demand in C++
+- Added derived properties for cells: pressure, surface tension, 
+- Added derived properties to regular and internal links: length, tension, linked cells
+- Added derived properties to anchor links: length, tension, linked cell
+
+Bug fixes:
+
+- Minor bug fixes
+
+Version 4.2.3
+-------------
+**2020-08-21**
+
+New Features:
+
+- Added on_stop function to steppable - called if user stops the simulation
+- Added ability to open zipped project from both Player and Twedit++
+- Improved commenting / uncommenting of XML scripts
+- Added more natural syntax to refer to cell types
+- Added pre-check for cell types and fields
+- Added Add Steppable ... function to CC3D Python menu, making it easier to add steppables in Twedit
+
+Bug Fixes:
+
+- Fixed settings handling in Twedit++
+- Fixed display of line numbers in Twedit++
+- Fixed issues with 2.5D simulations where dim z=2
+- Fixed behavior of cell_list_by_cell type when using nested loops
+- Improved random seed generation (matters if two identical simulations are started within less than a second
+of each other)
+
+Version 4.2.2
+-------------
+**2020-07-24**
+
+This is a bug-fix release featuring the following improvements:
+
+Bug Fixes:
+
+- Fixed saving of windows layout - including plots and steering panel
+- Fixed screenshot color issues - as of now coloring is based on specification inside
+screenshot description file, and not on current player settings
+- Fixed handling of secretion in ReactionDiffusionSolverFE
+- Fixed "Check for New Version" functionality in the player
+- Fixed behavior of simulations that use plots but are run in gui-less mode
+- Fixed Twedit++ zoom in / zoom out issues
+- Fixed CC3D version printout issues
+
+New Features:
+
+- Added ability top open zipped .cc3d project directly from Twedit++ - no need to
+do unzipping using 3rd party tools
+- Added saving of simulation layout on simulation stop or simulation finish events
+- Added automatic zip file name fill-in in Twedit++ when zipping .cc3d project
+-Added Simulation menu action to reset global settings - as of now users can reset simulation-specific and global settings directly from Player menu
+- Added option to reset Twedit++ settings directly from Twedit++ GUI
+
+
+Version 4.2.1
+-------------
+**2020-05-18**
+
+This is mainly bug-fix release featuring the following improvements:
+
+- Added new convenience function to FieldSecretor class to compute total concentration "seen" by a cell
+as well as total amount of field in the entire lattice
+
+- Multiple bug fixes including:
+    - Fixed Replay of saved simulation snapshots
+    - Fixed simulation shutdown function call sequence to avoid crashes after last MCS was not a multiple of
+    screen update frequency
+
+
+Version 4.2.0
+-------------
+**2020-04-18**
+
+The list of new features added in this release includes the following:
+
+- Multiple bug fixes including:
+    - fixing CC3D GUI behavior with multiple monitors
+    - fixing contour lines plotting
+    - fixing display of chemical/scalar fields
+    - floating windows layout now supported on all platforms
+    - dmg-based installer for OSX 10.14+. Solves previous issues with CC3D installations on newer OSX systems
+
+- New floating layout that limits windows clutter (important for OSX users)
+
+- Added persistent bias to Bias Vector Steppable
+
+- Added Screenshot API
+
+- Added cell type name accessor to Python steppable
+
+- Added Fluctuation Compensator to DiffusionSolverFE and ReactionDiffusionSolverFE
+
+- Added effective energy data Python accessor
+
+- Added Focal Point Plasticity time tracking data
+
+- Added Focal Point Plasticity link initiator data
+
+- Added PDE test-suite
+
+- Improvements to CallableCC3D module (input passing)
+
+Known Issues:
+- GPU solvers on OSX 10.14 or higher may not work properly
+
+
 Version 4.1.1
 -------------
-**2019-11-29**
+**2020-01-18**
 
 This release adds support for Antimony (see examples in Demos/SBMLSolverExamples/SBMLSolverAntimony)
 and has also multiple bug-fixes:
 
 - Fixed parameter scan to allow runs with multiple workers. See example script - Demos/ParameterScan/pscan_loop.sh
+- Added callable API allowing CC3d to be called as a function returning values. See documentation and example in Demos/CallableCC3D.
 - Fixed restart files issue
 - fixed PIFF dumper
 - fixed hover over text in Player
-- added support for developing custom C++ steppables and plugins on OSX - see
+- Added support for developing custom C++ steppables and plugins on OSX - see
 https://compucell3ddevelopersmanual.readthedocs.io/en/latest/setting_up_compiler_on_osx.html
-- improved compilation on linux , windows and osx but adding extra conda packages that fix issues
+- Improved compilation on linux , windows and osx but adding extra conda packages that fix issues
 with incomplete packaging of vtk from conda-forge
-- expanded compilation documentation for all 3 platforms
+- Expanded compilation documentation for all 3 platforms
 
 
 Version 4.1.0
@@ -208,11 +361,7 @@ much better to write your own iterator wrapper like the one included in the CC3D
 This is a bit of the overhead but not too much and if necessary it can be further simplified
 (for the convenience of coding)
 
-
-
-
-
-Version 3.6.0
+Version 3.5.0
 -------------
 
 - Added OpenMP support

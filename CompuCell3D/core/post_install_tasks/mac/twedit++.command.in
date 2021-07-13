@@ -13,7 +13,7 @@ export PYTHON_EXEC_FILE=@PYTHON_EXEC_FILE@
 
 export QT_QPA_PLATFORM_PLUGIN_PATH=${PREFIX_CC3D}/python37/plugins
 
-export DYLD_LIBRARY_PATH=${PREFIX_CC3D}/lib:${DYLD_LIBRARY_PATH}
+export DYLD_LIBRARY_PATH=${PREFIX_CC3D}/lib/site-packages/cc3d/cpp/lib:${DYLD_LIBRARY_PATH}
 
 export TWEDIT_PYTHON_APP=${PREFIX_CC3D}/python37/twedit++.app/Contents/MacOS/python
 
@@ -37,13 +37,6 @@ echo "====> twedit++ working directory: $PREFIX_CC3D"
 export PYTHONPATH=${PREFIX_CC3D}/lib/site-packages
 
 echo "====> PYTHONPATH directory: $PYTHONPATH"
-
-
-
-export TWEDIT_MAJOR_VERSION=0
-export TWEDIT_MINOR_VERSION=9
-export TWEDIT_BUILD_VERSION=0
-
 
 ${PYTHON_EXEC} ${PREFIX_CC3D}/lib/site-packages/cc3d/twedit5/twedit_plus_plus_cc3d.py $*
 

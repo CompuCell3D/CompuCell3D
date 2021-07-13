@@ -40,6 +40,7 @@ SET (HEADER_FILES
   FlexibleDiffusionSolverADE.h
   KernelDiffusionSolver.h
   GPUSolverParams.h
+  FluctuationCompensator.h
   ${OPENCL_HDRS})
 
 # SET(CUDA_LIBS )    
@@ -191,6 +192,7 @@ ADD_COMPUCELL3D_STEPPABLE(PDESolvers
   ReactionDiffusionSolverFE.cpp
   ReactionDiffusionSolverFVM.cpp
   FlexibleReactionDiffusionSolverFE.cpp
+  FluctuationCompensator.cpp
   HW3CRT.c 
   HWSCRT.c
 #  ${CUDA_SRCS}
@@ -199,6 +201,7 @@ ADD_COMPUCELL3D_STEPPABLE(PDESolvers
 
 LINK_LIBRARIES ${STEPPABLE_DEPENDENCIES} ${OPENCL_LIBS} 
 #  ${CUDA_LIBS} 
+  PixelTrackerShared
   EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS}
 )
 

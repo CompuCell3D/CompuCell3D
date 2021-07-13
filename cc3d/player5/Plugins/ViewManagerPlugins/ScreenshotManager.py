@@ -10,6 +10,7 @@ from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
 from cc3d.core.GraphicsUtils.ScreenshotManagerCore import ScreenshotManagerCore
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
 from weakref import ref
+from cc3d.CompuCellSetup import persistent_globals
 from cc3d.core.utils import mkdir_p
 from cc3d import CompuCellSetup
 
@@ -30,8 +31,14 @@ class ScreenshotManager(ScreenshotManagerCore):
 
         self.screenshotGraphicsWidget = None
 
-        self.gd = GenericDrawer()
+        try:
+            boundary_strategy = persistent_globals.simulator.getBoundaryStrategy()
+        except AttributeError:
+            boundary_strategy = None
+
+        self.gd = GenericDrawer(boundary_strategy=boundary_strategy)
         self.gd.set_field_extractor(field_extractor=tvw.fieldExtractor)
+
 
     def cleanup(self):
         # have to do cleanup to ensure some of the memory intensive resources e.g. self.screenshotGraphicsWidget get deallocated
@@ -99,8 +106,11 @@ class ScreenshotManager(ScreenshotManagerCore):
 
         if invisible_types:
             scrData.invisible_types = list([int(x) for x in invisible_types.split(',')])
+            if 0 not in scrData.invisible_types:
+                scrData.invisible_types = [0] + scrData.invisible_types
+
         else:
-            scrData.invisible_types = []
+            scrData.invisible_types = [0]
 
     # called from GraphicsFrameWidget
     def add_2d_screenshot(self, _plotName, _plotType, _projection, _projectionPosition,
@@ -226,12 +236,15 @@ class ScreenshotManager(ScreenshotManagerCore):
         bsd = tvw.basicSimulationData
         return bsd
 
-    def output_screenshots(self, mcs: int) -> None:
+    def output_screenshots_impl(self, mcs: int, screenshot_label_list: list):
         """
-        outputs screenshots. Called from SimpleTabView:handleCompletedStep{Regular,CML*}
+        implementation function ofr taking screenshots
         :param mcs:
-        :return:
+        :param screenshot_label_list:
+        :return
         """
+        if self.output_error_flag:
+            return
 
         bsd = self.get_basic_simulation_data()
 
@@ -239,8 +252,12 @@ class ScreenshotManager(ScreenshotManagerCore):
 
         mcs_formatted_number = str(mcs).zfill(self.screenshot_number_of_digits)
 
-        for i, screenshot_name in enumerate(self.screenshotDataDict.keys()):
+        for i, screenshot_name in enumerate(screenshot_label_list):
             screenshot_data = self.screenshotDataDict[screenshot_name]
+            # we are inserting a flag into scene metadata that informs the rest
+            # of the visualization pipeline that we are dealing with actual screenshop
+            # and if so we will use e.g. colors from screenshot description file, and not from settings
+            screenshot_data.metadata['actual_screenshot'] = True
 
             if not screenshot_name:
                 screenshot_name = 'screenshot_' + str(i)
