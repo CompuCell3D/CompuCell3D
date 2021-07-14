@@ -23,7 +23,10 @@ from math import sqrt
 from cc3d.core.numerics import *
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 # To safely work with Service in various environments, import must be at this level (issues with RollbackImporter)
-from cc3d.core import simservice
+try:
+    from cc3d.core import simservice
+except ModuleNotFoundError:
+    simservice = None
 
 
 class SteppablePy:
@@ -2404,3 +2407,9 @@ class CC3DServiceSteppableBasePy(ServiceSteppableBasePy):
     @property
     def service_output(self):
         return self.sim_service.sim_output
+
+
+# Disable simservice implementations if unavailable
+if simservice is None:
+    ServiceSteppableBasePy = object
+    CC3DServiceSteppableBasePy = object
