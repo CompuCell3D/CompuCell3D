@@ -1082,7 +1082,7 @@ self.change_number_of_work_nodes(8)
 
 ----------  # @Submenu@ Shared steppable dictionary
 # This dictionary is shared by all registered steppables
-self.shared_steppable_vars
+self.shared_steppable_vars['key']
 
 ===============  # @Menu@ MaBoSS
 
