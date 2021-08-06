@@ -11,9 +11,6 @@ jobs:
       - bash: conda create --yes --quiet --name cc3d_2020 python=3.7
         displayName: Create Anaconda environment
 
-      - bash: conda create --yes --quiet --name cc3d_2020 python=3.7
-        displayName: Create Anaconda environment
-
       - bash: git clone https://github.com/CompuCell3D/cc3d_build_scripts.git
 
       - bash: |
