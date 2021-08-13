@@ -740,14 +740,23 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 
 
 	if (_xmlData->getFirstElement("Boundary_x")) {
-		ppdCC3DPtr->boundary_x = _xmlData->getFirstElement("Boundary_x")->getText();
+		if(ppdCC3DPtr->dim.x > 1) 
+			ppdCC3DPtr->boundary_x = _xmlData->getFirstElement("Boundary_x")->getText();
+		else 
+			cerr << "Ignoring X boundary condition (dim 1)" << endl;
 	}
 	if (_xmlData->getFirstElement("Boundary_y")) {
-		ppdCC3DPtr->boundary_y = _xmlData->getFirstElement("Boundary_y")->getText();
+		if(ppdCC3DPtr->dim.y > 1) 
+			ppdCC3DPtr->boundary_y = _xmlData->getFirstElement("Boundary_y")->getText();
+		else 
+			cerr << "Ignoring Y boundary condition (dim 1)" << endl;
 	}
 
 	if (_xmlData->getFirstElement("Boundary_z")) {
-		ppdCC3DPtr->boundary_z = _xmlData->getFirstElement("Boundary_z")->getText();
+		if(ppdCC3DPtr->dim.z > 1) 
+			ppdCC3DPtr->boundary_z = _xmlData->getFirstElement("Boundary_z")->getText();
+		else 
+			cerr << "Ignoring Z boundary condition (dim 1)" << endl;
 	}
 
 	//Initializing shapes - if used at all
