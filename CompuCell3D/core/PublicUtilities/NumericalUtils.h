@@ -1,6 +1,10 @@
 #ifndef NUMERICALUTILS_H
 #define NUMERICALUTILS_H
 
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+
 #include <Utils/Coordinates3D.h>
 #include <CompuCell3D/Potts3D/Cell.h>
 #include <CompuCell3D/Field3D/Point3D.h>
@@ -22,6 +26,9 @@ template <typename T> int sgn(T val) {
 }
 
 double round(double number);
+
+std::vector<double> RandomUnitVector2D(const double& _random_number);
+std::vector<double> RandomUnitVector3D(const double& _random_number1, const double& _random_number2);
 
 namespace CompuCell3D{
 
