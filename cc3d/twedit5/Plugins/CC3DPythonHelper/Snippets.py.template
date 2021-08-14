@@ -783,7 +783,7 @@ self.elasticityTrackerPlugin.addNewElasticLink(cell1, cell2, 200.0, 6.0)
 # arguments are cell1, cell2,
 self.elasticityTrackerPlugin.removeElasticityPair(cell1, cell2, 200.0, 6.0)
 
-===============  # @Menu@ Secretion / Uptake
+===============  # @Menu@ Secretion / Uptake / Field Integrals
 
 ----------  # @Submenu@ Secrete Inside Cell
 # Make sure Secretion plugin is loaded
@@ -791,6 +791,7 @@ self.elasticityTrackerPlugin.removeElasticityPair(cell1, cell2, 200.0, 6.0)
 # you may reuse secretor for many cells. Simply define it outside the loop
 secretor = self.get_field_secretor("FIELDNAME")
 secretor.secreteInsideCell(cell, 300)
+# tot_amount = secretor.secreteInsideCellTotalCount(cell, 300).tot_amount
 
 ----------  # @Submenu@ Secrete Inside Cell At Boundary
 # Make sure Secretion plugin is loaded
@@ -798,6 +799,7 @@ secretor.secreteInsideCell(cell, 300)
 # you may reuse secretor for many cells. Simply define it outside the loop
 secretor = self.get_field_secretor("FIELDNAME")
 secretor.secreteInsideCellAtBoundary(cell, 300)
+# tot_amount = secretor.secreteInsideCellAtBoundaryTotalCount(cell, 300).tot_amount
 
 ----------  # @Submenu@ Secrete Outside Cell At Boundary
 # Make sure Secretion plugin is loaded
@@ -805,6 +807,7 @@ secretor.secreteInsideCellAtBoundary(cell, 300)
 # you may reuse secretor for many cells. Simply define it outside the loop
 secretor = self.get_field_secretor("FIELDNAME")
 secretor.secreteOutsideCellAtBoundary(cell, 300)
+# tot_amount = secretor.secreteOutsideCellAtBoundaryTotalCount(cell, 300).tot_amount
 
 ----------  # @Submenu@ Secrete Inside Cell At COM
 # Make sure Secretion plugin is loaded
@@ -812,6 +815,7 @@ secretor.secreteOutsideCellAtBoundary(cell, 300)
 # you may reuse secretor for many cells. Simply define it outside the loop
 secretor = self.get_field_secretor("FIELDNAME")
 secretor.secreteInsideCellAtCOM(cell, 300)
+# tot_amount = secretor.secreteInsideCellAtCOMTotalCount(cell, 300).tot_amount
 
 ----------  # @Submenu@ Secrete Inside Cell Constant Concentration
 # Make sure Secretion plugin is loaded
@@ -819,6 +823,7 @@ secretor.secreteInsideCellAtCOM(cell, 300)
 # you may reuse secretor for many cells. Simply define it outside the loop
 secretor = self.get_field_secretor("FIELDNAME")
 secretor.secreteInsideCellConstantConcentration(cell, 300)
+# tot_amount = secretor.secreteInsideCellConstantConcentrationTotalCount(cell, 300).tot_amount
 
 ----------  # @Submenu@ Secrete Inside Cell At Boundary On Contact With
 # Make sure Secretion plugin is loaded
@@ -827,7 +832,8 @@ secretor.secreteInsideCellConstantConcentration(cell, 300)
 secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, secretion rate, a list of cell types
-secretor.secreteInsideCellConstantConcentration(cell, 300, [self.TYPE1, self.TYPE2])
+secretor.secreteInsideCellAtBoundaryOnContactWith(cell, 300, [self.TYPE1, self.TYPE2])
+# tot_amount = secretor.secreteInsideCellAtBoundaryOnContactWithTotalCount(cell, 300, [self.TYPE1, self.TYPE2]).tot_amount
 
 ----------  # @Submenu@ Secrete Outside Cell At Boundary On Contact With
 # Make sure Secretion plugin is loaded
@@ -836,7 +842,8 @@ secretor.secreteInsideCellConstantConcentration(cell, 300, [self.TYPE1, self.TYP
 secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, secretion rate, a list of cell types
-secretor.secreteOutsideCellConstantConcentration(cell, 300, [self.TYPE1, self.TYPE2])
+secretor.secreteOutsideCellAtBoundaryOnContactWith(cell, 300, [self.TYPE1, self.TYPE2])
+# tot_amount = secretor.secreteOutsideCellAtBoundaryOnContactWithTotalCount(cell, 300, [self.TYPE1, self.TYPE2]).tot_amount
 
 ----------  # @Submenu@ Uptake Inside Cell
 # Make sure Secretion plugin is loaded
@@ -846,6 +853,7 @@ secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, max uptake, relative uptake
 secretor.uptakeInsideCell(cell, 2.0, 0.2)
+# tot_amount = secretor.uptakeInsideCellTotalCount(cell, 2.0, 0.2).tot_amount
 
 ----------  # @Submenu@ Uptake Inside Cell At Boundary
 # Make sure Secretion plugin is loaded
@@ -855,6 +863,7 @@ secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, max uptake, relative uptake
 secretor.uptakeInsideCellAtBoundary(cell, 2.0, 0.2)
+# tot_amount = secretor.uptakeInsideCellAtBoundaryTotalCount(cell, 2.0, 0.2).tot_amount
 
 ----------  # @Submenu@ Uptake Outside Cell At Boundary
 # Make sure Secretion plugin is loaded
@@ -863,7 +872,8 @@ secretor.uptakeInsideCellAtBoundary(cell, 2.0, 0.2)
 secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, max uptake, relative uptake
-secretor.uptakeInsideCellAtBoundary(cell, 2.0, 0.2)
+secretor.uptakeOutsideCellAtBoundary(cell, 2.0, 0.2)
+# tot_amount = secretor.uptakeOutsideCellAtBoundaryTotalCount(cell, 2.0, 0.2).tot_amount
 
 ----------  # @Submenu@ Uptake Inside Cell At COM
 # Make sure Secretion plugin is loaded
@@ -873,6 +883,7 @@ secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, max uptake, relative uptake
 secretor.uptakeInsideCellAtCOM(cell, 2.0, 0.2)
+# tot_amount = secretor.uptakeInsideCellAtCOMTotalCount(cell, 2.0, 0.2).tot_amount
 
 ----------  # @Submenu@ Uptake Inside Cell At Boundary and On Contact With
 # Make sure Secretion plugin is loaded
@@ -882,6 +893,7 @@ secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, max uptake, relative uptake, a list of cell types
 secretor.uptakeInsideCellAtBoundaryOnContactWith(cell, 2.0, 0.2, [self.TYPE1, TYPE2])
+# tot_amount = secretor.uptakeInsideCellAtBoundaryOnContactWithTotalCount(cell, 2.0, 0.2, [self.TYPE1, TYPE2]).tot_amount
 
 ----------  # @Submenu@ Uptake Outside Cell At Boundary and On Contact With
 # Make sure Secretion plugin is loaded
@@ -891,6 +903,19 @@ secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, max uptake, relative uptake, a list of cell types
 secretor.uptakeOutsideCellAtBoundaryOnContactWith(cell, 2.0, 0.2, [self.TYPE1, TYPE2])
+# tot_amount = secretor.uptakeOutsideCellAtBoundaryOnContactWithTotalCount(cell, 2.0, 0.2, [self.TYPE1, TYPE2]).tot_amount
+
+----------  # @Submenu@ Amount Seen by Cell
+# Make sure Secretion plugin is loaded
+# make sure this field is defined in one of the PDE solvers
+secretor = self.get_field_secretor("FIELDNAME")
+amount_seen = secretor.amountSeenByCell(cell)
+
+----------  # @Submenu@ Total Amount
+# Make sure Secretion plugin is loaded
+# make sure this field is defined in one of the PDE solvers
+secretor = self.get_field_secretor("FIELDNAME")
+total_amount = secretor.totalFieldIntegral()
 
 ===============  # @Menu@ Extra Fields Automatic Tracking
 
@@ -1082,7 +1107,7 @@ self.change_number_of_work_nodes(8)
 
 ----------  # @Submenu@ Shared steppable dictionary
 # This dictionary is shared by all registered steppables
-self.shared_steppable_vars
+self.shared_steppable_vars['key']
 
 ===============  # @Menu@ MaBoSS
 
