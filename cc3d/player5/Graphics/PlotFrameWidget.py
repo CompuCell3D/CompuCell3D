@@ -7,14 +7,14 @@ except ImportError:
     warnings.warn('Could not find webcolors. Run "pip install webcolors" to fix this', RuntimeWarning)
 
 import sys
-from PyQt5 import QtCore, QtGui, QtOpenGL
+from PyQt5 import QtCore, QtWidgets
 import pyqtgraph as pg
 from pyqtgraph.graphicsItems.PlotItem import PlotItem
 
 
-class PlotFrameWidget(QtGui.QFrame):
+class PlotFrameWidget(QtWidgets.QFrame):
     def __init__(self, parent=None, **kwds):
-        QtGui.QFrame.__init__(self, parent)
+        QtWidgets.QFrame.__init__(self, parent)
 
         self.plot_params = kwds
         self.plotWidget = pg.PlotWidget()
@@ -33,12 +33,12 @@ class PlotFrameWidget(QtGui.QFrame):
             except ValueError as e:
                 print('Could not decode the color %s : Exception : %s'%(bg_color, str(e)), file=sys.stderr)
 
-        self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding))
+        self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
 
         self.plotInterface = None
 
         self.parentWidget = parent
-        layout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
+        layout = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.TopToBottom)
         layout.addWidget(self.plotWidget)
 
         self.plotWidget.setTitle(kwds['title'])
