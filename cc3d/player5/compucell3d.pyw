@@ -114,6 +114,11 @@ def main(argv):
     main_window.show()
     splash.finish(main_window)
 
+    # we are making sure here that after all windows have been restored that
+    # all actions' check state e.g. View->Console reflect what is being shown on the screen
+    # this is especially important when global settings and simulation differ in what windows they show
+    main_window.synchronizes_dock_windows_actions()
+
     main_window.raise_()
 
     error_code_local = app.exec_()
