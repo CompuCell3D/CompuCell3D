@@ -15,6 +15,7 @@ INCLUDE(UseSWIG)
 if(NOT DEFINED NUMPY_INCLUDE_DIR)
     SET(NUMPY_INCLUDE_DIR )
     # searching for numpy include dir
+message ("python executable ", ${Python_EXECUTABLE})
 EXEC_PROGRAM(${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/core/pyinterface ARGS NumpyHeader.py
     OUTPUT_VARIABLE NUMPY_INCLUDE_DIR
 )
