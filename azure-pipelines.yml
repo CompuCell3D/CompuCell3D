@@ -13,14 +13,8 @@ jobs:
 
       - bash: git clone https://github.com/CompuCell3D/cc3d_build_scripts.git
 
-      - bash: |
-          source activate cc3d_2020
-          conda install -c conda-forge numpy scipy pandas jinja2 webcolors vtk=8.2 pyqt pyqtgraph deprecated qscintilla2 jinja2 chardet cmake swig=3 requests
-          conda install -c compucell3d tbb_full_dev
-          pip install libroadrunner
-          pip install antimony
+      - bash: source activate cc3d_2020 && conda install -c conda-forge numpy scipy pandas jinja2 webcolors vtk=8.2 pyqt pyqtgraph deprecated qscintilla2 jinja2 chardet cmake swig=3 requests && conda install -c compucell3d tbb_full_dev && pip install libroadrunner && pip install antimony
         displayName: Install Anaconda packages
       - bash: |
-          source activate base
-          cd cc3d_build_scripts/linux/400/ && python build.py --prefix=~/410_auto --source-root=../ --build-dir=~/410_auto_build --version=4.1.0 --cores=2 --conda-env-name=cc3d_2020
+          source activate base && cd cc3d_build_scripts/linux/400/ && python build.py --prefix=~/410_auto --source-root=../ --build-dir=~/410_auto_build --version=4.1.0 --cores=2 --conda-env-name=cc3d_2020
         displayName: Build CC3d
