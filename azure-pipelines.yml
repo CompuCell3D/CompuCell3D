@@ -1,5 +1,5 @@
 jobs:
-  - CompuCell3D:
+  - job:
     displayName: ubuntu-20.04
     pool:
       vmImage: 'ubuntu-20.04'
