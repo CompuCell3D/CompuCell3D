@@ -15,5 +15,5 @@ jobs:
 
       - bash: source activate cc3d_2020 && conda config --set channel_priority false && conda install -c conda-forge numpy scipy pandas jinja2 webcolors vtk=8.2 pyqt pyqtgraph deprecated qscintilla2 jinja2 chardet cmake swig=3 requests -y && conda install -c compucell3d tbb_full_dev -y && pip install libroadrunner && pip install antimony
         displayName: Install Anaconda packages
-      - bash: source activate base && cd cc3d_build_scripts/linux/400/ && python build.py --prefix=~/410_auto --source-root=../ --build-dir=~/410_auto_build --version=4.1.0 --cores=2 --conda-env-name=cc3d_2020
+      - bash: source activate base && cd cc3d_build_scripts/linux/400/ && python build.py --prefix=~/410_auto --source-root=../../../ --build-dir=~/410_auto_build --version=4.1.0 --cores=2 --conda-env-name=cc3d_2020
         displayName: Build CC3d
