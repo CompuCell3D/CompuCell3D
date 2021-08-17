@@ -526,14 +526,35 @@ cell.fluctAmpl = 50
 # cell.fluctAmpl=-1
 
 ----------  # @Submenu@ Inertia Tensor
-# READ ONLY ACCESS        
+# READ ONLY ACCESS
 iXX = cell.iXX
 iYY = cell.iYY
 iZZ = cell.iZZ
 iXY = cell.iXY
 iXZ = cell.iXZ
 iYZ = cell.iYZ
+
+----------  # @Submenu@ Eccentricity
+# READ ONLY ACCESS
 eccentricity = cell.ecc
+
+----------  # @Submenu@ Minor Axes
+# READ ONLY ACCESS
+minor_x = cell.lX
+minor_y = cell.lY
+minor_z = cell.lZ
+
+----------  # @Submenu@ Pressure
+# READ ONLY ACCESS
+pressure = cell.pressure
+
+----------  # @Submenu@ Surface Tension
+# READ ONLY ACCESS
+surface_tension = cell.surfaceTension
+
+----------  # @Submenu@ Cluster Surface Tension
+# READ ONLY ACCESS
+cluster_surface_tension = cell.clusterSurfaceTension
 
 ===============  # @Menu@ Focal Point Placticity
 
