@@ -52,94 +52,125 @@ initial_conditions['SPECIES_NAME2'] = species_val2
 step_size = 0.5
 
 ----------  # @Submenu@ 2. Add SBML model to cell ids
+# Input SBML model in file 'model_file' or string 'model_string'
+# If using model_string, enclose entire model in a set of triple quotations
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 self.add_sbml_to_cell_ids(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell_ids=[1, 3, 7], step_size=step_size,
-                          initial_conditions=initial_conditions)
+                          initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add Antimony model to cell ids
-# input Antimony model in file 'model_file' or string 'model_string'
+# Input Antimony model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 # Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
 self.add_antimony_to_cell_ids(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell_ids=[1, 3, 7], step_size=step_size,
-                          initial_conditions=initial_conditions)
+                          initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add CellML model to cell ids
-# input CellML model in file 'model_file' or string 'model_string'
+# Input CellML model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 # Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
 self.add_cellml_to_cell_ids(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell_ids=[1, 3, 7], step_size=step_size,
-                          initial_conditions=initial_conditions)
+                          initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add SBML model to cell types
+# Input SBML model in file 'model_file' or string 'model_string'
+# If using model_string, enclose entire model in a set of triple quotations
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 self.add_sbml_to_cell_types(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell_types=[self.CELLTYPENAME1, self.CELLTYPENAME1],
-                        step_size=step_size, initial_conditions=initial_conditions)
+                        step_size=step_size, initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add Antimony model to cell types
-# input Antimony model in file 'model_file' or string 'model_string'
+# Input Antimony model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 # Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
 self.add_antimony_to_cell_types(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell_types=[self.CELLTYPENAME1, self.CELLTYPENAME1],
-                        step_size=step_size, initial_conditions=initial_conditions)
+                        step_size=step_size, initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add CellML model to cell types
-# input CellML model in file 'model_file' or string 'model_string'
+# Input CellML model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 # Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
 self.add_cellml_to_cell_types(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell_types=[self.CELLTYPENAME1, self.CELLTYPENAME1],
-                        step_size=step_size, initial_conditions=initial_conditions)
+                        step_size=step_size, initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add SBML model to individual cell
+# Input SBML model in file 'model_file' or string 'model_string'
+# If using model_string, enclose entire model in a set of triple quotations
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 cell_20 = self.fetch_cell_by_id(20)
 
 if cell_20:
     self.add_sbml_to_cell(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell=cell_20,step_size=step_size,
-                          initial_conditions=initial_conditions)
+                          initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add Antimony model to individual cell
-# input Antimony model in file 'model_file' or string 'model_string'
+# Input Antimony model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 # Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
 cell_20 = self.fetch_cell_by_id(20)
 
 if cell_20:
     self.add_antimony_to_cell(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell=cell_20,step_size=step_size,
-                          initial_conditions=initial_conditions)
+                          initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add CellML model to individual cell
-# input CellML model in file 'model_file' or string 'model_string'
+# Input CellML model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 # Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
 cell_20 = self.fetch_cell_by_id(20)
 
 if cell_20:
     self.add_cellml_to_cell(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell=cell_20,step_size=step_size,
-                          initial_conditions=initial_conditions)
+                          initial_conditions=initial_conditions, integrator=integrator)
 
 
 ----------  # @Submenu@ 2. Add free floating SBML model e.g. PBPK
-# input Antimony model in file 'model_file' or string 'model_string'
+# Input SBML model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
-# Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 self.add_free_floating_sbml(model_file=model_file, model_string=model_string, model_name='UNIQUE_MODEL_NAME', step_size=step_size,
-                            initial_conditions=initial_conditions)
+                            initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add free floating Antimony model
-# input CellML model in file 'model_file' or string 'model_string'
+# Input Antimony model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 # Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
 self.add_free_floating_antimony(model_file=model_file, model_string=model_string, model_name='UNIQUE_MODEL_NAME', step_size=step_size,
-                            initial_conditions=initial_conditions)
+                            initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add free floating CellML model
+# Input CellML model in file 'model_file' or string 'model_string'
+# If using model_string, enclose entire model in a set of triple quotations
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 self.add_free_floating_cellml(model_file=model_file, model_string=model_string, model_name='UNIQUE_MODEL_NAME', step_size=step_size,
-                            initial_conditions=initial_conditions)
+                            initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 3. Timestep SBML models
 self.timestep_sbml()
