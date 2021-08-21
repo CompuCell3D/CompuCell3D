@@ -34,8 +34,6 @@
 using namespace CompuCell3D;
 
 
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
 
 // // // #include <iostream>
 using namespace std;
@@ -199,7 +197,7 @@ bool MitosisPlugin::doMitosis(){
     CellG *cell = cellField->get(splitPtVec[currentWorkNodeNumber]);
     parentCell=cell;
 
-    ASSERT_OR_THROW("Cell should not be NULL at mitosis point!", cell);
+    if (!cell) throw CC3DException("Cell should not be NULL at mitosis point!");
 
     int volume = cell->volume;
     int newVol = 0;

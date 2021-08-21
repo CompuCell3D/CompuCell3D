@@ -40,7 +40,7 @@ class PIXELTRACKER_EXPORT PixelTrackerPlugin : public Plugin, public CellGChange
 
       //WatchableField3D<CellG *> *cellFieldG;
       Dim3D fieldDim;
-      BasicClassAccessor<PixelTracker> pixelTrackerAccessor;
+      ExtraMembersGroupAccessor<PixelTracker> pixelTrackerAccessor;
       Simulator *simulator;
 	  Potts3D *potts;
 	  ParallelUtilsOpenMP *pUtils;
@@ -66,7 +66,7 @@ class PIXELTRACKER_EXPORT PixelTrackerPlugin : public Plugin, public CellGChange
 		virtual std::string toString();
 		virtual void handleEvent(CC3DEvent & _event);		
 
-		BasicClassAccessor<PixelTracker> * getPixelTrackerAccessorPtr(){return & pixelTrackerAccessor;}
+		ExtraMembersGroupAccessor<PixelTracker> * getPixelTrackerAccessorPtr(){return & pixelTrackerAccessor;}
 		//had to include this function to get set itereation working properly with Python , and Player that has restart capabilities
 		PixelTrackerData * getPixelTrackerData(PixelTrackerData * _psd){return _psd;}
 

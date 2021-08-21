@@ -23,11 +23,12 @@
 #include "ConnectivityLocalFlexPlugin.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-BasicPluginProxy<Plugin, ConnectivityLocalFlexPlugin>
-connectivityLocalFlexProxy("ConnectivityLocalFlex", 
-             "Adds connectivity constraints based on local parameters",
-	     &Simulator::pluginManager);
+auto connectivityLocalFlexProxy = registerPlugin<Plugin, ConnectivityLocalFlexPlugin>(
+    "ConnectivityLocalFlex", 
+    "Adds connectivity constraints based on local parameters",
+    &Simulator::pluginManager
+);

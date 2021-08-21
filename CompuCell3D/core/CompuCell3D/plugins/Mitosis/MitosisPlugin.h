@@ -32,7 +32,6 @@
 // // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 // // // #include <CompuCell3D/Potts3D/Stepper.h>
 
-// // // #include <BasicUtils/BasicArray.h>
 // // // #include <vector>
 #include "MitosisDLLSpecifier.h"
 
@@ -67,7 +66,6 @@ namespace CompuCell3D {
 	std::vector<short> mitosisFlagVec;
 
 
-    //BasicArray<Point3D> arrays[2];
 
     unsigned int maxNeighborIndex;
     BoundaryStrategy * boundaryStrategy;

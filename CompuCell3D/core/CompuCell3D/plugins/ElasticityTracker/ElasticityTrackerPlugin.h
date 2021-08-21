@@ -7,8 +7,6 @@
 
 // // // #include <CompuCell3D/Potts3D/Cell.h>
 // // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 // // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include "ElasticityTracker.h"
 
@@ -34,7 +32,7 @@ class ELASTICITYTRACKER_EXPORT ElasticityTrackerPlugin : public Plugin, public C
       
       WatchableField3D<CellG *> *cellFieldG;
       Dim3D fieldDim;
-      BasicClassAccessor<ElasticityTracker> elasticityTrackerAccessor;
+      ExtraMembersGroupAccessor<ElasticityTracker> elasticityTrackerAccessor;
       Simulator *simulator;
       CellInventory * cellInventoryPtr;
       bool initialized;
@@ -54,7 +52,7 @@ class ELASTICITYTRACKER_EXPORT ElasticityTrackerPlugin : public Plugin, public C
       // BCGChangeWatcher interface
       virtual void field3DChange(const Point3D &pt, CellG *newCell,CellG *oldCell);
       
-      BasicClassAccessor<ElasticityTracker> * getElasticityTrackerAccessorPtr(){return & elasticityTrackerAccessor;}
+      ExtraMembersGroupAccessor<ElasticityTracker> * getElasticityTrackerAccessorPtr(){return & elasticityTrackerAccessor;}
 		//had to include this function to get set inereation working properly with Python , and Player that has restart capabilities 
       ElasticityTrackerData * getElasticityTrackerData(ElasticityTrackerData * _psd){return _psd;}
 		ElasticityTrackerData * findTrackerData(CellG * _cell1 ,CellG * _cell2);

@@ -50,9 +50,6 @@
 
 //Plugins
 
-#include <BasicUtils/BasicClassAccessor.h>
-#include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
-
 #include <CompuCell3D/Automaton/Automaton.h>
 
 #include <CompuCell3D/plugins/ConnectivityLocalFlex/ConnectivityLocalFlexData.h>

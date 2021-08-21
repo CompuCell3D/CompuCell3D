@@ -2,7 +2,7 @@
 
 #include "ImplicitMatrix.h"
 #include <sstream>
-#include <BasicUtils/BasicException.h>
+#include <CompuCell3D/CC3DExceptions.h>
 #include "OpenCLKernel.h"
 #include <cassert>
 #include <numeric>

@@ -23,11 +23,12 @@
 #include "ConnectivityGlobalPlugin.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-BasicPluginProxy<Plugin, ConnectivityGlobalPlugin>
-connectivityGlobalProxy("ConnectivityGlobal", 
-             "Adds connectivity constraints imposed globaly using breadth first traversal",
-	     &Simulator::pluginManager);
+auto connectivityGlobalProxy = registerPlugin<Plugin, ConnectivityGlobalPlugin>(
+    "ConnectivityGlobal", 
+    "Adds connectivity constraints imposed globaly using breadth first traversal",
+    &Simulator::pluginManager
+);

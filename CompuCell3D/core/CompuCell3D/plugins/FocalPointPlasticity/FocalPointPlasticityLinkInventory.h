@@ -41,7 +41,7 @@ namespace CompuCell3D {
         FPPLinkInventory():FPPLinkInventoryBase(){}
 
         FPPLinkInventory(
-                BasicClassAccessor<
+                ExtraMembersGroupAccessor<
                         FPPLinkInventoryTracker<FocalPointPlasticityLink> >* _cellLinkInventoryTrackerAccessor,
                         Potts3D* _potts): FPPLinkInventoryBase(_cellLinkInventoryTrackerAccessor, _potts){
 
@@ -77,7 +77,7 @@ namespace CompuCell3D {
         FPPInternalLinkInventory():FPPLinkInventoryBase(){}
 
         FPPInternalLinkInventory(
-                BasicClassAccessor<
+                ExtraMembersGroupAccessor<
                 FPPLinkInventoryTracker<FocalPointPlasticityInternalLink> >* _cellLinkInventoryTrackerAccessor,
         Potts3D* _potts): FPPLinkInventoryBase(_cellLinkInventoryTrackerAccessor, _potts){
 
@@ -114,7 +114,7 @@ namespace CompuCell3D {
         FPPAnchorInventory():FPPLinkInventoryBase(){}
 
         FPPAnchorInventory(
-                BasicClassAccessor<
+                ExtraMembersGroupAccessor<
                 FPPLinkInventoryTracker<FocalPointPlasticityAnchor> >* _cellLinkInventoryTrackerAccessor,
         Potts3D* _potts): FPPLinkInventoryBase(_cellLinkInventoryTrackerAccessor, _potts){
 

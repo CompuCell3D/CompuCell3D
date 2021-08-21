@@ -28,7 +28,6 @@
 
 
 // // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // //#include <BasicUtils/BasicClassGroup.h>
 
 // // // #include <string>
 // // // #include <vector>

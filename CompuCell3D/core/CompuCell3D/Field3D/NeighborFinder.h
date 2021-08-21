@@ -23,7 +23,7 @@
 #ifndef NEIGHBORFINDER_H
 #define NEIGHBORFINDER_H
 
-#include <BasicUtils/BasicArray.h>
+#include <vector>
 
 #include "Neighbor.h"
 
@@ -38,7 +38,7 @@ namespace CompuCell3D {
 	class NeighborFinder {
 		static NeighborFinder *singleton;
 		NeighborFinder() : depth(0) {}
-		BasicArray<Neighbor> neighbors;
+		std::vector<Neighbor> neighbors;
 		int depth;
 
 		public:
@@ -64,7 +64,7 @@ namespace CompuCell3D {
 			 * @return The ith Neighbor.
 			 */
 			Neighbor &getNeighbor(const unsigned int i) const {
-				while (i >= neighbors.getSize()) 
+				while (i >= neighbors.size()) 
 					((NeighborFinder *)this)->getMore();
 				return const_cast<Neighbor&>(neighbors[i]);
 			}

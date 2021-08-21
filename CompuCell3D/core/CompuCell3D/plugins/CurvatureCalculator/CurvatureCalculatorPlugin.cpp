@@ -119,7 +119,7 @@ std::map<long, float> CurvatureCalculatorPlugin::getProbabilityByNeighbor(CellG 
 	CellG  *nCell;
 	WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *) potts->getCellFieldG();
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundary_pixel_tracker_plugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundary_pixel_tracker_plugin->getBoundaryPixelTrackerAccessorPtr();
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(cell->extraAttribPtr)->pixelSet;
 
 
@@ -194,8 +194,8 @@ void CurvatureCalculatorPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
 	//PARSE XML IN THIS FUNCTION
 	//For more information on XML parser function please see CC3D code or lookup XML utils API
 	automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
-		set<unsigned char> cellTypesSet;
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
+	set<unsigned char> cellTypesSet;
 
 	CC3DXMLElement * jXMLElem = _xmlData->getFirstElement("J");
 

@@ -31,9 +31,6 @@
 // // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
 // // // #include <CompuCell3D/Plugin.h>
 
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
-
 
 #include "ConnectivityGlobalDLLSpecifier.h"
 // // // #include <vector>
@@ -51,7 +48,7 @@ namespace CompuCell3D {
     //Energy Function data
   private:
 
-    BasicClassAccessor<ConnectivityGlobalData> connectivityGlobalDataAccessor;
+    ExtraMembersGroupAccessor<ConnectivityGlobalData> connectivityGlobalDataAccessor;
   
     unsigned int maxNeighborIndex;
 	unsigned int max_neighbor_index_local_search;
@@ -75,7 +72,7 @@ namespace CompuCell3D {
 	 //Plugin interface
     virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
 
-    BasicClassAccessor<ConnectivityGlobalData> * getConnectivityGlobalDataPtr(){return & connectivityGlobalDataAccessor;}
+    ExtraMembersGroupAccessor<ConnectivityGlobalData> * getConnectivityGlobalDataPtr(){return & connectivityGlobalDataAccessor;}
 	void setConnectivityStrength(CellG * _cell, double _connectivityStrength);
 	double getConnectivityStrength(CellG * _cell);
 

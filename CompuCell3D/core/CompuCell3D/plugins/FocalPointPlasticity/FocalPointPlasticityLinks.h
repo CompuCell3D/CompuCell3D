@@ -125,7 +125,7 @@ namespace CompuCell3D {
 				if (!initiator) return initiated;
 				if (!initiated) return initiator;
 			}
-			ASSERT_OR_THROW("Cell is not a member of this link", false)
+			throw CC3DException("Cell is not a member of this link");
 		}
 		CellG* getOtherCell(const CellG* _cell) { return getOtherCell(const_cast<CellG*>(_cell)); }
 		// Pass whether this cell is the initiator
@@ -138,7 +138,7 @@ namespace CompuCell3D {
 				if (!initiator) return false;
 				if (!initiated) return true;
 			}
-			ASSERT_OR_THROW("Cell is not a member of this link", false)
+			throw CC3DException("Cell is not a member of this link");
 		}
 
 		double constitutiveLaw(float _lambda, float _length, float _targetLength);

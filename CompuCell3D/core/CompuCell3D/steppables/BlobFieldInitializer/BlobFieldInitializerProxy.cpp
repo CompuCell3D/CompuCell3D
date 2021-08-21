@@ -23,10 +23,12 @@
 #include "BlobFieldInitializer.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-BasicPluginProxy<Steppable, BlobFieldInitializer> 
-blobInitializerProxy("BlobInitializer", "Initializes lattice by constructing spherical blob of cells",
-	    &Simulator::steppableManager);
+auto blobInitializerProxy = registerPlugin<Steppable, BlobFieldInitializer>(
+	"BlobInitializer", 
+	"Initializes lattice by constructing spherical blob of cells",
+	&Simulator::steppableManager
+);

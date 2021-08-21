@@ -28,8 +28,6 @@
 
 // // // #include <CompuCell3D/Potts3D/Cell.h>
 // // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 #include "BoundaryPixelTracker.h"
 // // // #include <CompuCell3D/Field3D/AdjacentNeighbor.h>
 
@@ -51,7 +49,7 @@ class BOUNDARYPIXELTRACKER_EXPORT BoundaryPixelTrackerPlugin : public Plugin, pu
 
       //WatchableField3D<CellG *> *cellFieldG;
       Dim3D fieldDim;
-      BasicClassAccessor<BoundaryPixelTracker> boundaryPixelTrackerAccessor;
+      ExtraMembersGroupAccessor<BoundaryPixelTracker> boundaryPixelTrackerAccessor;
       Simulator *simulator;
 		Potts3D* potts;
 		unsigned int maxNeighborIndex;
@@ -85,7 +83,7 @@ class BOUNDARYPIXELTRACKER_EXPORT BoundaryPixelTrackerPlugin : public Plugin, pu
 
         std::set<BoundaryPixelTrackerData > * getPixelSetForNeighborOrderPtr( CellG *_cell, int _neighborOrder);
 
-		BasicClassAccessor<BoundaryPixelTracker> * getBoundaryPixelTrackerAccessorPtr(){return & boundaryPixelTrackerAccessor;}
+		ExtraMembersGroupAccessor<BoundaryPixelTracker> * getBoundaryPixelTrackerAccessorPtr(){return & boundaryPixelTrackerAccessor;}
 		//had to include this function to get set inereation working properly with Python , and Player that has restart capabilities
 		BoundaryPixelTrackerData * getBoundaryPixelTrackerData(BoundaryPixelTrackerData * _psd){return _psd;}
 
