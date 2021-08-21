@@ -16,14 +16,9 @@
 #include <CompuCell3D/Field3D/Field3DImpl.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/Field3D/Field3DIO.h>
-//#include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 #include <CompuCell3D/plugins/CellTypeMonitor/CellTypeMonitorPlugin.h>
 #include <CompuCell3D/plugins/BoundaryMonitor/BoundaryMonitorPlugin.h>
-
-//#include <BasicUtils/BasicString.h>
-//#include <BasicUtils/BasicException.h>
-//#include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <PublicUtilities/StringUtils.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 
