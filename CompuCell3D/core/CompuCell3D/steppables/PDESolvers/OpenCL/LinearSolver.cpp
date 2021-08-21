@@ -1,5 +1,5 @@
 #include "LinearSolver.h"
-#include <BasicUtils/BasicException.h>
+#include <CompuCell3D/CC3DExceptions.h>
 
 #include "../GPUSolverParams.h"
 #include "ImplicitMatrix.h"

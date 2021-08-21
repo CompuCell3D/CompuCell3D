@@ -44,4 +44,8 @@ namespace CompuCell3D {
 
 }
 
+
+#define THROW(msg) throw CC3DException((msg))
+#define ASSERT_OR_THROW(msg, condition) {if (!(condition)) THROW(msg);}
+
 #endif // EXCEPTIONS_H
