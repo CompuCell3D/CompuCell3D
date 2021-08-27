@@ -28,12 +28,8 @@
 
 // // // #include <CompuCell3D/Plugin.h>
 // // // //#include <CompuCell3D/Potts3D/Stepper.h>
-// // // #include <BasicUtils/BasicClassGroup.h>
 // // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 #include "ChemotaxisDictyDLLSpecifier.h"
-
-// // // template <typename T>
-// // // class BasicClassAccessor;
 
 class CC3DXMLElement;
 
@@ -62,7 +58,7 @@ namespace CompuCell3D {
 
    
     Potts3D *potts;
-    BasicClassAccessor<SimpleClock> *simpleClockAccessorPtr;
+    ExtraMembersGroupAccessor<SimpleClock> *simpleClockAccessorPtr;
     
     double lambda;
 

@@ -32,6 +32,11 @@ longDescription = """This plugin provides provides users with CC3D Python code s
 
 # End-Of-Header
 
+from PyQt5.QtWebKitWidgets import QWebView
+
+from cc3d.doc.code_ref.user.build import build as code_ref_build_user
+from cc3d.doc.code_ref.developer.build import build as code_ref_build_dev
+
 from cc3d.twedit5.Plugins.TweditPluginBase import TweditPluginBase
 from cc3d.twedit5.twedit.utils.global_imports import *
 from cc3d.twedit5.Plugins.CC3DPythonHelper.Configuration import Configuration
@@ -40,8 +45,148 @@ import shutil
 from cc3d.twedit5.Plugins.PluginUtils.SnippetMenuParser import SnippetMenuParser
 from cc3d.twedit5.Plugins.CC3DPythonHelper.sbmlloaddlg import SBMLLoadDlg
 import re
+from typing import Optional, Type
+
+html_man_filename_user = os.path.join(code_ref_build_user.man_build_dir, "html", "index.html")
+html_man_filename_dev = os.path.join(code_ref_build_dev.man_build_dir, "html", "index.html")
 
 error = ''
+
+
+class CC3DAPIDocViewerWidget(QWebView):
+    """Base API doc viewer"""
+
+    def check_build(self) -> None:
+        """Checks for built documentation and builds if necessary"""
+        if not os.path.isfile(path=self.html_man_filename_root):
+            self.build_docs()
+
+    def load_local(self):
+        """Loads from local html source"""
+        self.load(QUrl().fromLocalFile(self.html_man_filename_root))
+
+    @property
+    def html_man_filename_root(self) -> str:
+        """Absolute path to root local documentation"""
+        raise NotImplementedError
+
+    def build_docs(self) -> None:
+        """Builds html documentation"""
+        raise NotImplementedError
+
+
+class CC3DAPIDocViewerWidgetUser(CC3DAPIDocViewerWidget):
+    """User API doc viewer"""
+
+    @property
+    def html_man_filename_root(self) -> str:
+        return html_man_filename_user
+
+    def build_docs(self) -> None:
+        code_ref_build_user.build(builder="html")
+
+
+class CC3DAPIDocViewerWidgetDev(CC3DAPIDocViewerWidget):
+    """Developer API doc viewer"""
+
+    @property
+    def html_man_filename_root(self) -> str:
+        return html_man_filename_dev
+
+    def build_docs(self) -> None:
+        code_ref_build_dev.build(builder="html")
+
+
+class CC3DAPIDocDockWidget(QDockWidget):
+    """Base API doc viewer dock"""
+
+    def __init__(self, _cc3d_py_helper, _parent=None):
+        QDockWidget.__init__(self, _parent)
+        self.cc3d_py_helper: CC3DPythonHelper = _cc3d_py_helper
+        self.viewer_widget = self._viewer_widget_cls(parent=self.parent())
+        self.setWidget(self.viewer_widget)
+
+        self._loaded = False
+
+    def show(self) -> None:
+        """Handles document building and loading as necessary to perform show"""
+
+        # First-time called after initialization: load docs for viewing
+        if not self._loaded:
+            self._loaded = True
+
+            if not os.path.isfile(self.viewer_widget.html_man_filename_root):
+                # No docs found: build on-demand and load afterward
+                self.setWindowTitle(self.window_title + ' - Building docs...')
+                t = CC3DAPIDocBuilder(dock=self)
+                t.finished.connect(self.viewer_widget.load_local)
+                t.finished.connect(lambda: self.setWindowTitle(self.window_title))
+                t.start()
+
+            else:
+                # Docs found: load now
+                self.viewer_widget.load_local()
+
+        super().show()
+
+    def closeEvent(self, ev):
+        """Hides panel, rather than closes"""
+        self._hide_self()
+        ev.ignore()
+
+    def _hide_self(self):
+        """Issues call to parent to hide self"""
+        raise NotImplementedError
+
+    @property
+    def _viewer_widget_cls(self) -> Type[CC3DAPIDocViewerWidget]:
+        """Returns the viewer widget class associated with this dock"""
+        raise NotImplementedError
+
+    @property
+    def window_title(self) -> str:
+        """Returns the window title string"""
+        raise NotImplementedError
+
+
+class CC3DAPIDocDockWidgetUser(CC3DAPIDocDockWidget):
+    """User API doc viewer dock"""
+
+    def _hide_self(self):
+        self.cc3d_py_helper.show_document_panel_user(False)
+
+    @property
+    def _viewer_widget_cls(self) -> Type:
+        return CC3DAPIDocViewerWidgetUser
+
+    @property
+    def window_title(self) -> str:
+        return "CC3D User API Docs"
+
+
+class CC3DAPIDocDockWidgetDev(CC3DAPIDocDockWidget):
+    """Developer API doc viewer dock"""
+
+    def _hide_self(self):
+        self.cc3d_py_helper.show_document_panel_dev(False)
+
+    @property
+    def _viewer_widget_cls(self) -> Type:
+        return CC3DAPIDocViewerWidgetDev
+
+    @property
+    def window_title(self) -> str:
+        return "CC3D Developer API Docs"
+
+
+class CC3DAPIDocBuilder(QThread):
+
+    def __init__(self, dock: CC3DAPIDocDockWidget):
+        super().__init__(parent=dock)
+        self.build_docs = dock.viewer_widget.build_docs
+
+    def run(self):
+        self.build_docs()
 
 
 class CC3DPythonHelper(QObject, TweditPluginBase):
@@ -68,7 +213,8 @@ class CC3DPythonHelper(QObject, TweditPluginBase):
 
         self.__ui = ui
 
-        self.__ui = ui
+        self._cc3d_apidoc_dock_user: Optional[CC3DAPIDocDockWidgetUser] = None
+        self._cc3d_apidoc_dock_dev: Optional[CC3DAPIDocDockWidgetDev] = None
 
         self.configuration = Configuration(self.__ui.configuration.settings)
 
@@ -138,6 +284,8 @@ class CC3DPythonHelper(QObject, TweditPluginBase):
         self.__initMenus()
 
         self.__initActions()
+
+        self.__init_ui()
 
         return None, True
 
@@ -234,6 +382,79 @@ class CC3DPythonHelper(QObject, TweditPluginBase):
         # ---------------------------------------
 
         self.cc3dPythonMenu.addAction(self.actions["Skip Comments In Python Snippets"])
+
+        self.cc3dPythonMenu.addSeparator()
+
+        # ---------------------------------------
+
+        self.actions["Code User Reference Panel"] = QAction("Show Code User Reference Panel", self,
+                                                            shortcut="",
+                                                            statusTip="Show Code User Reference Manual Panel")
+        self.cc3dPythonMenu.addAction(self.actions["Code User Reference Panel"])
+        self.actions["Code User Reference Panel"].setCheckable(True)
+        self.actions["Code User Reference Panel"].triggered.connect(self.show_document_panel_user)
+
+        self.actions["Code Developer Reference Panel"] = QAction("Show Code Developer Reference Panel", self,
+                                                                 shortcut="",
+                                                                 statusTip="Show Code Developer Reference Manual Panel")
+        self.cc3dPythonMenu.addAction(self.actions["Code Developer Reference Panel"])
+        self.actions["Code Developer Reference Panel"].setCheckable(True)
+        self.actions["Code Developer Reference Panel"].triggered.connect(self.show_document_panel_dev)
+
+    def __init_ui(self):
+
+        self._cc3d_apidoc_dock_user, self._cc3d_apidoc_dock_dev = self.__create_dock_windows()
+
+        self.__setup_dock_window(self._cc3d_apidoc_dock_user, Qt.RightDockWidgetArea)
+        self.__setup_dock_window(self._cc3d_apidoc_dock_dev, Qt.RightDockWidgetArea)
+
+        self.show_document_panel_user(False)
+        self.show_document_panel_dev(False)
+
+    def __create_dock_windows(self) -> (CC3DAPIDocDockWidgetUser, CC3DAPIDocDockWidgetDev):
+        """
+        Creates dock windows for displaying APIs.
+
+        :return: the generated dock windows
+        :rtype: tuple of CC3DAPIDocDockWidgetUser, CC3DAPIDocDockWidgetDev
+        """
+        dock_user = CC3DAPIDocDockWidgetUser(self, self.__ui)
+        dock_dev = CC3DAPIDocDockWidgetDev(self, self.__ui)
+        dock_user.setObjectName(dock_user.window_title)
+        dock_dev.setObjectName(dock_dev.window_title)
+        return dock_user, dock_dev
+
+    def __setup_dock_window(self, dock: CC3DAPIDocDockWidget, where: int):
+        """
+        Configures the dock window created with __create_dock_window().
+
+        :param dock: dock to configure
+        :type dock: CC3DAPIDocDockWidget
+        :param where: dock widget area to place dock (e.g., Qt.RightDockWidgetArea)
+        :type where: int
+        :return: None
+        """
+        self.__ui.addDockWidget(where, dock)
+
+        dock.setWindowTitle(dock.window_title)
+
+    def show_document_panel_user(self, _flag: bool):
+        """Shows/hides user API panel"""
+        if _flag:
+            self._cc3d_apidoc_dock_user.show()
+        else:
+            self._cc3d_apidoc_dock_user.hide()
+
+        self.actions["Code User Reference Panel"].setChecked(_flag)
+
+    def show_document_panel_dev(self, _flag: bool):
+        """Shows/hides developer API panel"""
+        if _flag:
+            self._cc3d_apidoc_dock_dev.show()
+        else:
+            self._cc3d_apidoc_dock_dev.hide()
+
+        self.actions["Code Developer Reference Panel"].setChecked(_flag)
 
     def skipCommentsInPythonSnippets(self, _flag):
 

@@ -120,7 +120,6 @@ class /*DECLSPECIFIER*/ CellInventory
 		CompartmentInventory & getClusterInventory(){return compartmentInventory;}
 		void cleanInventory();
 
-      //BasicClassGroup * getPtr(cellInventoryIterator _itr){return const_cast<BasicClassGroup*>(*_itr); }
    private:
       cellInventoryContainerType inventory;
 		Potts3D *potts;

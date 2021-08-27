@@ -485,8 +485,7 @@ void OrientedContactPlugin::setOrientedContactEnergy(const string typeName1,
   int index = getIndex(type1, type2);
 
   orientedContactEnergies_t::iterator it = orientedContactEnergies.find(index);
-  ASSERT_OR_THROW(string("OrientedOrientedContact energy for ") + typeName1 + " " + typeName2 +
-		  " already set!", it == orientedContactEnergies.end());
+  if (it != orientedContactEnergies.end()) throw CC3DException(string("OrientedOrientedContact energy for ") + typeName1 + " " + typeName2 + " already set!");
 
   orientedContactEnergies[index] = energy;
 }
@@ -512,7 +511,7 @@ void OrientedContactPlugin::extraInit(Simulator *simulator){
 void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
    set<unsigned char> cellTypesSet;
 
    orientedContactEnergies.clear();

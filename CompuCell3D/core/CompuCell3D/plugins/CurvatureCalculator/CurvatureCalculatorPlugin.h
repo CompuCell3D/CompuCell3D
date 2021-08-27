@@ -40,7 +40,7 @@ namespace CompuCell3D {
 
 		WatchableField3D<CellG *> *cellFieldG;
 
-		BasicClassAccessor<NeighborTracker> * neighborTrackerAccessorPtr;
+		ExtraMembersGroupAccessor<NeighborTracker> * neighborTrackerAccessorPtr;
 
 		BoundaryPixelTrackerPlugin * boundary_pixel_tracker_plugin;
 

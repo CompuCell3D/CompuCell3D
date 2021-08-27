@@ -23,10 +23,12 @@
 #include "UniformFieldInitializer.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-BasicPluginProxy<Steppable, UniformFieldInitializer> 
-uniformInitializerProxy("UniformInitializer", "Initializes entire lattice with rectangular cells",
-	    &Simulator::steppableManager);
+auto uniformInitializerProxy = registerPlugin<Steppable, UniformFieldInitializer>(
+	"UniformInitializer", 
+	"Initializes entire lattice with rectangular cells",
+	&Simulator::steppableManager
+);

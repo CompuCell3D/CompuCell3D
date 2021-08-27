@@ -78,8 +78,6 @@ void LengthConstraintPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData
 
 	}else{
 		changeEnergyFcnPtr=&LengthConstraintPlugin::changeEnergy_3D;
-
-		//ASSERT_OR_THROW("Currently LengthConstraint plugin can only be used in 2D",0);
 	}
 
 }
@@ -167,7 +165,7 @@ void LengthConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
 		lengthEnergyParamVector.push_back(lengthEnergyParam);
 	}
 	//have to make sure that potts ptr is initilized
-	ASSERT_OR_THROW("Potts pointer is unitialized",potts);
+	if (!potts) throw CC3DException("Potts pointer is unitialized");
 	initTypeId(potts);
 }
 

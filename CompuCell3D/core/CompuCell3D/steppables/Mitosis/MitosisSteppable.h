@@ -26,8 +26,6 @@
 
 // // // #include <CompuCell3D/Steppable.h>
 #include "MitosisSteppableDLLSpecifier.h"
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
 // // // #include <vector>
 // // // #include <set>
 // // // #include <CompuCell3D/Field3D/Dim3D.h>
@@ -39,9 +37,11 @@ namespace CompuCell3D {
   class Potts3D;
   class PixelTracker;
   class PixelTrackerPlugin;
+  class Simulator;
   class CellG;
   class BoundaryStrategy;
   class PixelTrackerData;
+  class RandomNumberGenerator;
   
 
 	//class MITOSISSTEPPABLE_EXPORT LessThanComparator
@@ -86,7 +86,7 @@ namespace CompuCell3D {
 
   class MITOSISSTEPPABLE_EXPORT MitosisSteppable : public Steppable{
 
-	  BasicRandomNumberGeneratorNonStatic randGen;
+	  RandomNumberGenerator* randGen;
 	  int parentChildPositionFlag;
 	  bool tryAdjustingCompartmentCOM(Vector3 & _com, const std::set<PixelTrackerData> & _clusterPixels);
 	  double xFactor,yFactor,zFactor;
@@ -101,6 +101,7 @@ namespace CompuCell3D {
 	BoundaryStrategy * boundaryStrategy;
 	
 	int maxNeighborIndex;
+	Simulator* sim;
 	Potts3D *potts;
 
 	bool divideAlongMinorAxisFlag;
@@ -111,7 +112,7 @@ namespace CompuCell3D {
 	 void setParentChildPositionFlag(int _flag);
 	 int getParentChildPositionFlag();
 
-	 BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr;
+	 ExtraMembersGroupAccessor<PixelTracker> *pixelTrackerAccessorPtr;
 	 PixelTrackerPlugin * pixelTrackerPlugin;
 	 //comaprtment mitosis members
 	 std::vector<CompartmentMitosisData> parentBeforeMitosis;

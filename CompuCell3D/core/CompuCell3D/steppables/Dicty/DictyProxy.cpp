@@ -24,17 +24,18 @@
 #include "DictyFieldInitializer.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
+auto dictyChemotaxisSteppableProxy = registerPlugin<Steppable, DictyChemotaxisSteppable>(
+	"DictyChemotaxisSteppable", 
+	"Enables chemotexis in cells by by simple tagging",
+	&Simulator::steppableManager
+);
 
-BasicPluginProxy<Steppable, DictyChemotaxisSteppable> 
-dictyChemotaxisSteppableProxy("DictyChemotaxisSteppable", "Enables chemotexis in cells by by simple tagging",
-	    &Simulator::steppableManager);
-
-
-BasicPluginProxy<Steppable, DictyFieldInitializer> 
-dictyInitializerSteppableProxy("DictyInitializer", "Initialzies cell field for dictyostelim simulation",
-	    &Simulator::steppableManager);
-
-
+auto dictyInitializerSteppableProxy = registerPlugin<Steppable, DictyFieldInitializer>(
+	"DictyInitializer", 
+	"Initialzies cell field for dictyostelim simulation",
+	&Simulator::steppableManager
+);

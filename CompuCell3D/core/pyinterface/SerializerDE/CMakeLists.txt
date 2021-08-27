@@ -34,7 +34,6 @@ LINK_DIRECTORIES(${VTK_LIBRARY_DIRS})
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     SET(LIBS
        CompuCellLibShared
-       BasicUtilsStatic
        FieldExtractor
        ${Python_LIBRARY_RELEASE}
        ${VTK_LIBS}
@@ -46,7 +45,6 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 
     SET(LIBS
        CompuCellLibShared
-       BasicUtilsShared
        FieldExtractor
        ${PYTHON_LIBRARY_TO_LINK}
        ${VTK_LIBS}
@@ -58,7 +56,6 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     
     SET(LIBS
        CompuCellLibShared
-       BasicUtilsShared       
        FieldExtractor
        ${Python_LIBRARY_RELEASE}
        ${VTK_LIBS} 

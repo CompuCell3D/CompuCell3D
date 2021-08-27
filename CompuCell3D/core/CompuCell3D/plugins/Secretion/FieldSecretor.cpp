@@ -34,14 +34,13 @@ FieldSecretorResult FieldSecretor::_secreteInsideCellTotalCount(CellG * _cell, f
 
 	FieldSecretorResult res;
 	if (!pixelTrackerPlugin) {
-		// ASSERT_OR_THROW("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function",pixelTrackerPlugin);
 		res.success_flag = false;
 		return res;
 		
 	}
 	
 
-	BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
 	set<PixelTrackerData > & pixelSetRef = pixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
 	for (set<PixelTrackerData>::iterator sitr = pixelSetRef.begin(); sitr != pixelSetRef.end(); ++sitr) {
@@ -73,13 +72,12 @@ FieldSecretorResult FieldSecretor::_secreteInsideCellConstantConcentrationTotalC
 	FieldSecretorResult res;
 
 	if (!pixelTrackerPlugin) {
-		// ASSERT_OR_THROW("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function",pixelTrackerPlugin);
 		res.success_flag = false;
 		return res;
 	}
 
 	float total_amount = 0.0;
-	BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
 	set<PixelTrackerData > & pixelSetRef = pixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 	for (set<PixelTrackerData>::iterator sitr = pixelSetRef.begin(); sitr != pixelSetRef.end(); ++sitr) {
 
@@ -112,7 +110,7 @@ FieldSecretorResult FieldSecretor::_secreteInsideCellAtBoundaryTotalCount(CellG 
 		return res;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -150,7 +148,7 @@ FieldSecretorResult FieldSecretor::_secreteInsideCellAtBoundaryOnContactWithTota
 		return res;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -214,7 +212,7 @@ FieldSecretorResult FieldSecretor::_secreteOutsideCellAtBoundaryTotalCount(CellG
 		return res;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -276,7 +274,7 @@ FieldSecretorResult  FieldSecretor::_secreteOutsideCellAtBoundaryOnContactWithTo
 		return res;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -371,14 +369,13 @@ FieldSecretorResult FieldSecretor::_uptakeInsideCellTotalCount(CellG * _cell, fl
 	FieldSecretorResult res;
 
 	if (!pixelTrackerPlugin) {
-		// ASSERT_OR_THROW("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function",pixelTrackerPlugin);
 		res.success_flag = false;
 		return res;
 
 	}
 
 
-	BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
 	set<PixelTrackerData > & pixelSetRef = pixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
 	float currentConcentration;
@@ -424,7 +421,7 @@ FieldSecretorResult FieldSecretor::_uptakeInsideCellAtBoundaryTotalCount(CellG *
 		return res;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -480,7 +477,7 @@ FieldSecretorResult FieldSecretor::_uptakeInsideCellAtBoundaryOnContactWithTotal
 		return false;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -569,7 +566,7 @@ FieldSecretorResult FieldSecretor::_uptakeOutsideCellAtBoundaryTotalCount(CellG 
 		return res;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -651,7 +648,7 @@ FieldSecretorResult FieldSecretor::_uptakeOutsideCellAtBoundaryOnContactWithTota
 		return false;
 	}
 
-	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr = boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
 
 	std::set<BoundaryPixelTrackerData > & pixelSetRef = boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
@@ -775,14 +772,12 @@ bool FieldSecretor::uptakeInsideCellAtCOM(CellG * _cell, float _maxUptake, float
 
 float FieldSecretor::_amountSeenByCell(CellG * _cell) {
 
-    if (!pixelTrackerPlugin) {
-        // ASSERT_OR_THROW("PixelTracker Plugin has been turned off. Cannot execute _amountSeenByCell function",pixelTrackerPlugin);
-        
+    if (!pixelTrackerPlugin) { 
         return -1.0;
     }
 
     float amount_seen = 0.0;
-	BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
+	ExtraMembersGroupAccessor<PixelTracker> *pixelTrackerAccessorPtr = pixelTrackerPlugin->getPixelTrackerAccessorPtr();
 	set<PixelTrackerData > & pixelSetRef = pixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
 
 	for (set<PixelTrackerData>::iterator sitr = pixelSetRef.begin(); sitr != pixelSetRef.end(); ++sitr) {

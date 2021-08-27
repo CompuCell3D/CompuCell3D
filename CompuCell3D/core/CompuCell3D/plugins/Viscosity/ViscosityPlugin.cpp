@@ -32,8 +32,6 @@
 using namespace CompuCell3D;
 
 
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
 // #include <CompuCell3D/plugins/CellVelocity/CellVelocityPlugin.h>
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 
@@ -103,23 +101,7 @@ void ViscosityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 // }
 
 void ViscosityPlugin::extraInit(Simulator *simulator) {
-	// CellVelocityPlugin * cellVelocityPluginPtr=(CellVelocityPlugin*)(Simulator::pluginManager.get("CellInstantVelocity"));
-	// ASSERT_OR_THROW("CellVelocity plugin not initialized!", cellVelocityPluginPtr);
-	// ASSERT_OR_THROW("CellVelocityAccessorPtr  not initialized!", cellVelocityPluginPtr->getCellVelocityDataAccessorPtr());
-	// ASSERT_OR_THROW("CellVelocityData: cldeque tas too small size - size=2 or greater needed!",
-	// cellVelocityPluginPtr->getCldequeCapacity()>=2);
-
-	// viscosityEnergy->setCellVelocityDataAccessorPtr(cellVelocityPluginPtr->getCellVelocityDataAccessorPtr());
-
-	// CenterOfMassPlugin * centerOfMassPluginPtr=(CenterOfMassPlugin*)(Simulator::pluginManager.get("CenterOfMass"));
-	// ASSERT_OR_THROW("CenterOfMass plugin not initialized!", centerOfMassPluginPtr);
-
-
-	// viscosityEnergy->setCOMPtr(centerOfMassPluginPtr);
-
-	// NeighborTrackerPlugin * neighborTrackerPluginPtr=(NeighborTrackerPlugin*)(Simulator::pluginManager.get("NeighborTracker"));
-	// ASSERT_OR_THROW("NeighborTracker plugin not initialized!", neighborTrackerPluginPtr);
-	// ASSERT_OR_THROW("neighborAccessorPtr  not initialized!", neighborTrackerPluginPtr->getNeighborTrackerAccessorPtr());
+	
 	update(xmlData);
 	bool pluginAlreadyRegisteredFlag;
 	NeighborTrackerPlugin *nTrackerPlugin=(NeighborTrackerPlugin*)Simulator::pluginManager.get("NeighborTracker",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded

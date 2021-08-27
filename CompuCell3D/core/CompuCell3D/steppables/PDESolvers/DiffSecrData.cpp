@@ -1,9 +1,8 @@
 
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
 #include <PublicUtilities/StringUtils.h>
 #include <CompuCell3D/Automaton/Automaton.h>
+#include <CompuCell3D/CC3DExceptions.h>
 #include <XMLUtils/CC3DXMLElement.h>
 
 using namespace CompuCell3D;
@@ -103,17 +102,17 @@ void DiffusionData::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		useThresholds=true;
 		if(thresholdsXMLElement->findAttribute("MinConcentration")){
 			double tempMinConcentration=thresholdsXMLElement->getAttributeAsDouble("MinConcentration");
-			ASSERT_OR_THROW("MinConCentration is smaller than minimum allowed vaule",tempMinConcentration> minConcentration);
+			if (tempMinConcentration <= minConcentration) throw CC3DException("MinConCentration is smaller than minimum allowed value");
 			minConcentration=tempMinConcentration;
 		}
 
 		if(thresholdsXMLElement->findAttribute("MaxConcentration")){
 			double tempMaxConcentration=thresholdsXMLElement->getAttributeAsDouble("MaxConcentration");
-			ASSERT_OR_THROW("MaxConCentration is bigger than maximum allowed vaule",tempMaxConcentration< maxConcentration);
+			if (tempMaxConcentration >= maxConcentration) throw CC3DException("MaxConCentration is bigger than maximum allowed vaule");
 			maxConcentration=tempMaxConcentration;
 		}
 
-		ASSERT_OR_THROW("MaxConcentration has to be greater than MinCoCentration", maxConcentration>minConcentration);
+		if (maxConcentration <= minConcentration) throw CC3DException("MaxConcentration has to be greater than MinCoCentration");
 	}
 
 	if(_xmlData->findElement("ConcentrationFileName"))

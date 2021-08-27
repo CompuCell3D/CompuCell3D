@@ -44,22 +44,21 @@ void DiffusionSolverFE_CPU_Implicit::handleEventLocal(CC3DEvent & _event){
 
 template <typename SparseMatrixT>
 void CompareMatrices(SparseMatrixT const &m1, SparseMatrixT const &m2){
-	ASSERT_OR_THROW("Number of non zeros must be equal", m1.nonZeros()==m2.nonZeros());
-	ASSERT_OR_THROW("Outer sizes must be equal", m1.outerSize()==m2.outerSize());
+	if (m1.nonZeros() != m2.nonZeros()) throw CC3DException("Number of non zeros must be equal");
+	if (m1.outerSize() != m2.outerSize()) throw CC3DException("Outer sizes must be equal");
 
 	for (int k=0; k<m1.outerSize(); ++k)
 		
 		for (typename SparseMatrixT::InnerIterator it1(m1,k), it2(m2,k); it1; ++it1, ++it2)
 		{
-			ASSERT_OR_THROW("Rows sizes must be equal", it1.row()==it2.row());
+			if (it1.row() != it2.row()) throw CC3DException("Rows sizes must be equal");
 
 			if(it1.value()!=it2.value())
 				cerr<<"Columns must be equal "<<it1.row()<<" "<<it2.row()<<"\t"<<it1.col()<<" "<<it2.col()<<endl;
-			ASSERT_OR_THROW("Indices sizes must be equal", it1.index()==it2.index());
+			if (it1.index() != it2.index()) throw CC3DException("Indices sizes must be equal");
 
 			if(it1.value()!=it2.value())
 				cerr<<it1.row()<<" "<<it2.row()<<"\t"<<it1.col()<<" "<<it2.col()<<"\t"<<it1.value()<<" "<<it2.value()<<endl;
-		//	ASSERT_OR_THROW("Values must be equal", it1.value()==it2.value());
 			
 		}
 }
@@ -114,50 +113,37 @@ void DiffusionSolverFE_CPU_Implicit::Implicit(ConcentrationField_t const &concen
 		if(!is2D&&z>0){
 			int j=flatExtInd(x,y,z-1, fieldDim);
 			lastJ=j;
-			//ASSERT_OR_THROW("wrong order", j<(int)i);
-			//ASSERT_OR_THROW("wrong index", j<(int)totalSize);
 			eigenM_new.insertBack(i,j)=-currentDiffCoef;
 		}
 		if(y>0){
 			int j=flatExtInd(x,y-1,z, fieldDim);
-		//	ASSERT_OR_THROW("wrong order 1", j>lastJ);
-		//	ASSERT_OR_THROW("wrong index", j<(int)totalSize);
 			lastJ=j;
 			eigenM_new.insertBack(i,j)=-currentDiffCoef;
 		}
 
 		if(x>0){
 			int j=flatExtInd(x-1,y,z, fieldDim);
-		//	ASSERT_OR_THROW("wrong order 2", j>lastJ);
-		//	ASSERT_OR_THROW("wrong index", j<(int)totalSize);
 			lastJ=j;
 			eigenM_new.insertBack(i,j)=-currentDiffCoef;
 		}
 
-		//ASSERT_OR_THROW("wrong order 3", (int)i>lastJ);
 		lastJ=i;
 		eigenM_new.insertBack(i,i)=1+neighbours*currentDiffCoef;
 
 		if(x<fieldDim.x-1){
 			int j=flatExtInd(x+1,y,z, fieldDim);
-		//	ASSERT_OR_THROW("wrong order 4", j>lastJ);
-		//	ASSERT_OR_THROW("wrong index", j<(int)totalSize);
 			lastJ=j;
 			eigenM_new.insertBack(i,j)=-currentDiffCoef;
 		}
 
 		if(y<fieldDim.y-1){
 			int j=flatExtInd(x,y+1,z, fieldDim);
-		//	ASSERT_OR_THROW("wrong order 5", j>lastJ);
-		//	ASSERT_OR_THROW("wrong index", j<(int)totalSize);
 			lastJ=j;
 			eigenM_new.insertBack(i,j)=-currentDiffCoef;
 		}
 
 		if(!is2D&&z<fieldDim.z-1){
 			int j=flatExtInd(x,y,z+1, fieldDim);
-			//ASSERT_OR_THROW("wrong order 6", j>lastJ);
-			//ASSERT_OR_THROW("wrong index", j<(int)totalSize);
 			lastJ=j;
 			eigenM_new.insertBack(i,j)=-currentDiffCoef;
 		}

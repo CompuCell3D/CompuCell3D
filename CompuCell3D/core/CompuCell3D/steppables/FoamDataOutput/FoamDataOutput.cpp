@@ -47,7 +47,7 @@ void FoamDataOutput::init(Simulator *_simulator, CC3DXMLElement *_xmlData)
 	cellInventoryPtr = & potts->getCellInventory();
 	CC3DXMLElement *outputXMLElement=_xmlData->getFirstElement("Output");
 
-	ASSERT_OR_THROW("You need to provide Output element to FoamDataOutput Steppable with at least file name", outputXMLElement);
+	if (!outputXMLElement) throw CC3DException("You need to provide Output element to FoamDataOutput Steppable with at least file name");
 
 	if(outputXMLElement)
 	{
@@ -76,9 +76,9 @@ void FoamDataOutput::extraInit(Simulator *simulator)
 		NeighborTrackerPlugin * neighborTrackerPluginPtr=(NeighborTrackerPlugin*)(Simulator::pluginManager.get("NeighborTracker",&pluginAlreadyRegisteredFlag));
 		if (!pluginAlreadyRegisteredFlag)      
 			neighborTrackerPluginPtr->init(simulator);
-		ASSERT_OR_THROW("NeighborTracker plugin not initialized!", neighborTrackerPluginPtr);
+		if (!neighborTrackerPluginPtr) throw CC3DException("NeighborTracker plugin not initialized!");
 		neighborTrackerAccessorPtr=neighborTrackerPluginPtr->getNeighborTrackerAccessorPtr();
-		ASSERT_OR_THROW("neighborAccessorPtr  not initialized!", neighborTrackerAccessorPtr);
+		if (!neighborTrackerAccessorPtr) throw CC3DException("neighborAccessorPtr  not initialized!");
 	}
 }
 

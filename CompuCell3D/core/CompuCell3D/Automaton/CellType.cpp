@@ -34,7 +34,7 @@ using namespace CompuCell3D;
 
 unsigned char CellType::update(const Point3D& pt, CellG *cell) {
   if (cell) {
-    for (unsigned int i = 0; i < transitions.getSize(); i++) {
+    for (unsigned int i = 0; i < transitions.size(); i++) {
       if (transitions[i]->checkCondition(pt, cell)) {
         cell->type = transitions[i]->getCellType();
         break;
