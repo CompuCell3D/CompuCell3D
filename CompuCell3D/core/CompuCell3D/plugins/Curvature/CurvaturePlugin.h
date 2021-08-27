@@ -44,7 +44,7 @@ namespace CompuCell3D {
 	    ParallelUtilsOpenMP *pUtils;            
         
         
-      	BasicClassAccessor<CurvatureTracker> curvatureTrackerAccessor;
+        ExtraMembersGroupAccessor<CurvatureTracker> curvatureTrackerAccessor;
       
 		Potts3D *potts;
 

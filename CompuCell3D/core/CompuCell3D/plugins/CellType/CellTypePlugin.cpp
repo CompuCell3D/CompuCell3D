@@ -68,7 +68,7 @@ void CellTypePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
   
     typeNameMap.clear();
     nameTypeMap.clear();
-    
+
     std::map<std::string,unsigned char>::iterator name_type_mitr;
     
     vector<unsigned char> frozenTypeVec;
@@ -78,16 +78,16 @@ void CellTypePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
     unsigned char type_id;
     maxTypeId = 0;
 
-    for (auto& x : cellTypeVec) 
-      if (x->findAttribute("TypeId")) 
+    for (auto& x : cellTypeVec)
+      if (x->findAttribute("TypeId"))
         specifiedIDs.push_back(x->getAttributeAsByte("TypeId"));
 
-    // If type ID is specified then use it, otherwise generate lowest unique ID from all current and specified IDs. 
+    // If type ID is specified then use it, otherwise generate lowest unique ID from all current and specified IDs.
     for (int i = 0 ; i<cellTypeVec.size(); ++i){
       type_id = 0;
       if (cellTypeVec[i]->findAttribute("TypeId")) type_id = cellTypeVec[i]->getAttributeAsByte("TypeId");
       else {
-        for (unsigned char x = 0; x < typeNameMap.size() + specifiedIDs.size() + 1; ++x) 
+        for (unsigned char x = 0; x < typeNameMap.size() + specifiedIDs.size() + 1; ++x)
           if (std::find(specifiedIDs.begin(), specifiedIDs.end(), x) == specifiedIDs.end() && typeNameMap.find(x) == typeNameMap.end()) {
             type_id = x;
             break;
@@ -98,28 +98,28 @@ void CellTypePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
       std::string type_name = cellTypeVec[i]->getAttribute("TypeName");
 
-      ASSERT_OR_THROW("Type id: "+SSTR((int)type_id)+" has already been defined", (typeNameMap.find(type_id) == typeNameMap.end()));
-      typeNameMap[type_id] = type_name;
+	  if (typeNameMap.find(type_id) != typeNameMap.end()) throw CC3DException("Type id: "+SSTR((int)type_id)+" has already been defined");
+	  typeNameMap[type_id] = type_name;
 
       name_type_mitr = nameTypeMap.find(type_name);
 
-      ASSERT_OR_THROW("Type name "+type_name+" has already been defined",(name_type_mitr == nameTypeMap.end()));
-      nameTypeMap[type_name] = type_id;
+	  if (name_type_mitr != nameTypeMap.end()) throw CC3DException("Type name "+type_name+" has already been defined");
+	  nameTypeMap[type_name] = type_id;
 
       if(cellTypeVec[i]->findAttribute("Freeze")){
         frozenTypeVec.push_back(type_id);
       }
     }
 
-    potts->setFrozenTypeVector(frozenTypeVec);
+      potts->setFrozenTypeVector(frozenTypeVec);
 	
-    //enforcing the Medium has id =0
+      //enforcing the Medium has id =0
 	  name_type_mitr = nameTypeMap.find("Medium");
 	  if (name_type_mitr == nameTypeMap.end()) {
-		  ASSERT_OR_THROW("Medium cell type is not defined. Please define Medium cell type and make sure its type id is set to 0 ", false);
+		  throw CC3DException("Medium cell type is not defined. Please define Medium cell type and make sure its type id is set to 0 ");
 	  }
 	  else if (name_type_mitr->second!=0) {
-		  ASSERT_OR_THROW("Medium type id can only be set to 0. Please define Medium cell type and make sure its type id is set to 0.", false);
+		  throw CC3DException("Medium type id can only be set to 0. Please define Medium cell type and make sure its type id is set to 0.");
 	  }
 
 	  
@@ -144,7 +144,7 @@ string CellTypePlugin::getTypeName(const char type) const {
   if(typeNameMapItr!=typeNameMap.end()){
       return typeNameMapItr->second;
   }else{
-      THROW(string("getTypeName: Unknown cell type  ") + BasicString(type) + "!");
+      throw CC3DException(string("getTypeName: Unknown cell type  ") + type + "!");
   }
 
 
@@ -159,7 +159,7 @@ unsigned char CellTypePlugin::getTypeId(const string typeName) const {
   if(nameTypeMapItr!=nameTypeMap.end()){
       return nameTypeMapItr->second;
   }else{
-      THROW(string("getTypeName: Unknown cell type  ") + typeName + "!");
+      throw CC3DException(string("getTypeName: Unknown cell type  ") + typeName + "!");
   }
 
 }

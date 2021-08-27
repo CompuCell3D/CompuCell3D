@@ -435,12 +435,12 @@ double OrientedContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCe
       //if distance is 0 then the neighbor returned is invalid
       continue;
       }
-      
+
       nCell = fieldG->get(neighbor.pt);
       if(nCell!=oldCell){
          if(!nCell) {
             energy -= orientedContactEnergy(oldCell, nCell)*getMediumOrientation(pt,oldCell,nCell);
-               
+
          }
          else {
             energy -= orientedContactEnergy(oldCell, nCell)+getOrientation(pt,oldCell,nCell);
@@ -472,7 +472,7 @@ void OrientedContactPlugin::setOrientedContactEnergy(const string typeName1, con
                     
    unsigned char type1 = automaton->getTypeId(typeName1);
    unsigned char type2 = automaton->getTypeId(typeName2);
-      
+
    orientedContactEnergyArray[type1][type2] = energy;
    orientedContactEnergyArray[type2][type1] = energy;
 }
@@ -493,10 +493,10 @@ void OrientedContactPlugin::extraInit(Simulator *simulator){
 void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton);
-   set<unsigned char> cellTypesSet;
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
+    set<unsigned char> cellTypesSet;
 
-   orientedContactEnergyArray.clear();
+    orientedContactEnergyArray.clear();
 
 	CC3DXMLElementList energyVec=_xmlData->getElements("Energy");
 
@@ -520,7 +520,7 @@ void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
       for(auto& j : cellTypesSet){
       
          cerr<<"contact["<<to_string(i)<<"]["<<to_string(j)<<"]="<<orientedContactEnergyArray[i][j]<<endl;
-         
+
       }
    
    //Here I initialize max neighbor index for direct acces to the list of neighbors 
@@ -535,7 +535,7 @@ void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
       //cerr<<"got here will do neighbor order"<<endl;
       if(_xmlData->getFirstElement("NeighborOrder")){
 
-         maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());	
+         maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());
       }else{
          maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 

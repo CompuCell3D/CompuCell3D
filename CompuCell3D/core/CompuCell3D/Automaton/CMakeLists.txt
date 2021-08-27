@@ -15,9 +15,7 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 INSTALL_FILES(/include/CompuCell3D/CompuCell3D/Automaton .h
   Automaton
-  CellTypeDynamicClassNode
   CellType
-  CellTypeNode
   Transition
   CC3D_Automaton
   )

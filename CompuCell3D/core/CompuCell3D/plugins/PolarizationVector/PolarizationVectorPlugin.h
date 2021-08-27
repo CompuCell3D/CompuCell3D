@@ -28,8 +28,6 @@
 
 
 // // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 // // // #include <vector>
 #include "PolarizationVector.h"
 
@@ -41,14 +39,14 @@ namespace CompuCell3D {
   class CellG;
   class POLARIZATIONVECTOR_EXPORT PolarizationVectorPlugin : public Plugin{
 
-    BasicClassAccessor<PolarizationVector> polarizationVectorAccessor;
+    ExtraMembersGroupAccessor<PolarizationVector> polarizationVectorAccessor;
 
   public:
 
     PolarizationVectorPlugin();
     virtual ~PolarizationVectorPlugin();
 
-    BasicClassAccessor<PolarizationVector> * getPolarizationVectorAccessorPtr(){return &polarizationVectorAccessor;}
+    ExtraMembersGroupAccessor<PolarizationVector> * getPolarizationVectorAccessorPtr(){return &polarizationVectorAccessor;}
 
     // SimObject interface
     virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);

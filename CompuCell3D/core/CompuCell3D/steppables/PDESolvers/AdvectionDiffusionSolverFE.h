@@ -17,9 +17,6 @@
 
 #include "PDESolversDLLSpecifier.h"
 
-template<typename T>
-class BasicClassAccessor;
-
 
 namespace CompuCell3D {
 
@@ -118,7 +115,7 @@ namespace CompuCell3D {
 
 		void updateCellInventories();
 		void updateLocalCellInventory(unsigned int idx);
-		BasicClassAccessor<NeighborTracker> * neighborTrackerAccessorPtr;
+		ExtraMembersGroupAccessor<NeighborTracker> * neighborTrackerAccessorPtr;
 
 	public:
 		AdvectionDiffusionSolverFE();

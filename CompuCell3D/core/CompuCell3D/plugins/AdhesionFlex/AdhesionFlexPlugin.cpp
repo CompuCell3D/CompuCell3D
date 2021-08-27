@@ -264,11 +264,11 @@ void AdhesionFlexPlugin::setBindingParameter(const std::string moleculeName1, co
 
     if (moleculeNameIndexMap.find(moleculeName1) == moleculeNameIndexMap.end()) {
         cerr << "CANNOT FIND MOLECULE 1 in the map" << endl;
-        ASSERT_OR_THROW(string("Molecule Name=") + moleculeName1 + " was not declared in the AdhesionMolecule section", false);
+        throw CC3DException(string("Molecule Name=") + moleculeName1 + " was not declared in the AdhesionMolecule section");
     }
 
     if (moleculeNameIndexMap.find(moleculeName2) == moleculeNameIndexMap.end()) {
-        ASSERT_OR_THROW(string("Molecule Name=") + moleculeName2 + " was not declared in the AdhesionMolecule section", false);
+        throw CC3DException(string("Molecule Name=") + moleculeName2 + " was not declared in the AdhesionMolecule section");
     }
 
 
@@ -281,10 +281,9 @@ void AdhesionFlexPlugin::setBindingParameter(const std::string moleculeName1, co
 
     bindingParameters_t::iterator it = bindingParameters.find(index);
 
-    if (parsing_flag) {
-        ASSERT_OR_THROW(string("BindingParameter for ") + moleculeName1 + " " + moleculeName2 +
-            " already set!", it == bindingParameters.end());
-    }
+    if (parsing_flag)
+        if (it != bindingParameters.end())
+            throw CC3DException(string("BindingParameter for ") + moleculeName1 + " " + moleculeName2 + " already set!");
 
 
     bindingParameters[index] = parameter;
@@ -297,8 +296,10 @@ void AdhesionFlexPlugin::setBindingParameterDirect(const std::string moleculeNam
     map<std::string, int>::iterator mitr_2 = moleculeNameIndexMap.find(moleculeName2);
 
     //if molecule name does not exist ignore it
-    ASSERT_OR_THROW(string("setBindingParameterDirect: molecule name:") + moleculeName1 + string(" not found!"), mitr_1 != moleculeNameIndexMap.end());
-    ASSERT_OR_THROW(string("setBindingParameterDirect: molecule name:") + moleculeName2 + " not found!", mitr_2 != moleculeNameIndexMap.end());
+    if (mitr_1 == moleculeNameIndexMap.end()) 
+        throw CC3DException(string("setBindingParameterDirect: molecule name:") + moleculeName1 + string(" not found!"));
+    if (mitr_2 == moleculeNameIndexMap.end()) 
+        throw CC3DException(string("setBindingParameterDirect: molecule name:") + moleculeName2 + " not found!");
 
 
     bindingParameterArray[mitr_1->second][mitr_2->second] = parameter;
@@ -331,8 +332,8 @@ int AdhesionFlexPlugin::getIndex(const int type1, const int type2) const {
 void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     automaton = potts->getAutomaton();
-    ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
-        set<unsigned char> cellTypesSet;
+    if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
+    set<unsigned char> cellTypesSet;
 
 
     //scanning Adhesion Molecule names
@@ -346,7 +347,7 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     for (int i = 0; i < adhesionMoleculeNameXMLVec.size(); ++i) {
         string moleculeName = adhesionMoleculeNameXMLVec[i]->getAttribute("Molecule");
         if (!adhesionMoleculeNameSet.insert(moleculeName).second) {
-            ASSERT_OR_THROW(string("Duplicate molecule Name=") + moleculeName + " specified in AdhesionMolecule section ", false);
+            throw CC3DException(string("Duplicate molecule Name=") + moleculeName + " specified in AdhesionMolecule section ");
         }
         adhesionMoleculeNameVec.push_back(moleculeName);
         moleculeNameIndexMap.insert(make_pair(moleculeName, i));
@@ -380,7 +381,7 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         string moleculeName = adhesionMoleculeDensityXMLVec[i]->getAttribute("Molecule");
         cerr << "moleculeName=" << moleculeName << endl;
         if (moleculeNameIndexMap.find(moleculeName) == moleculeNameIndexMap.end()) {
-            ASSERT_OR_THROW(string("Molecule Name=") + moleculeName + " was not declared in the AdhesionMolecule section", false);
+            throw CC3DException(string("Molecule Name=") + moleculeName + " was not declared in the AdhesionMolecule section");
         }
         cerr << "moleculeNameIndexMap[moleculeName]=" << moleculeNameIndexMap[moleculeName] << endl;
         cerr << "adhesionMoleculeDensityXMLVec[i]->getAttributeAsDouble(Density)=" << adhesionMoleculeDensityXMLVec[i]->getAttributeAsDouble("Density") << endl;

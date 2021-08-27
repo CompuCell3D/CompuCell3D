@@ -61,9 +61,9 @@ void PIFInitializer::start() {
 
 	std::ifstream piffile(pifname.c_str(), ios::in);
 	cerr<<"opened pid file"<<endl;
-	ASSERT_OR_THROW(string("Could not open\n"+pifname+"\nMake sure it exists and is in correct directory"),piffile.good());
+	if (!piffile.good()) throw CC3DException(string("Could not open\n"+pifname+"\nMake sure it exists and is in correct directory"));
 	WatchableField3D<CellG *> * cellFieldG =(WatchableField3D<CellG *> *) potts->getCellFieldG();
-	ASSERT_OR_THROW("initField() Cell field cannot be null!", cellFieldG);
+	if (!cellFieldG) throw CC3DException("initField() Cell field cannot be null!");
 
 	Dim3D dim = cellFieldG->getDim();
 	cerr<<"THIS IS DIM FOR PIF "<<dim<<endl;
@@ -98,20 +98,20 @@ void PIFInitializer::start() {
 			//             cerr << "  Cluster Id:  " <<clusterId<< "  Spin: " << spin 
 			//                << "  Type: " <<  celltype <<"\n";
 
-			ASSERT_OR_THROW(string("PIF reader: xLow out of bounds : \n")+line, xLow >= 0 && xLow < dim.x);
+			if (!(xLow >= 0 && xLow < dim.x)) throw CC3DException(string("PIF reader: xLow out of bounds : \n")+line);
 			pif >> xHigh;
-			ASSERT_OR_THROW(string("PIF reader: xHigh out of bounds : \n") + line, xHigh >= 0 && xHigh < dim.x);
-			ASSERT_OR_THROW(string("PIF reader: xHigh is smaller than xLow : \n") + line, xHigh >= xLow); 
+			if (!(xHigh >= 0 && xHigh < dim.x)) throw CC3DException(string("PIF reader: xHigh out of bounds : \n") + line);
+			if (xHigh < xLow) throw CC3DException(string("PIF reader: xHigh is smaller than xLow : \n") + line);
 			pif >> yLow;
-			ASSERT_OR_THROW(string("PIF reader: yLow out of bounds : \n") + line, yLow >= 0 && yLow < dim.y);
+			if (!(yLow >= 0 && yLow < dim.y)) throw CC3DException(string("PIF reader: yLow out of bounds : \n") + line);
 			pif >> yHigh;   
-			ASSERT_OR_THROW(string("PIF reader: yHigh out of bounds : \n") + line, yHigh >= 0 && yHigh < dim.y);
-			ASSERT_OR_THROW(string("PIF reader: yHigh is smaller than yLow : \n") + line, yHigh >= yLow);
+			if (!(yHigh >= 0 && yHigh < dim.y)) throw CC3DException(string("PIF reader: yHigh out of bounds : \n") + line);
+			if (yHigh < yLow) throw CC3DException(string("PIF reader: yHigh is smaller than yLow : \n") + line);
 			pif >> zLow;
-			ASSERT_OR_THROW(string("PIF reader: zLow out of bounds : \n") + line, zLow >= 0 && zLow < dim.z);
+			if (!(zLow >= 0 && zLow < dim.z)) throw CC3DException(string("PIF reader: zLow out of bounds : \n") + line);
 			pif >> zHigh;
-			ASSERT_OR_THROW(string("PIF reader: zHigh out of bounds : \n") + line, zHigh >= 0 && zHigh < dim.z);
-			ASSERT_OR_THROW(string("PIF reader: zHigh is smaller than xLow : \n") + line, zHigh >= zLow);
+			if (!(zHigh >= 0 && zHigh < dim.z)) throw CC3DException(string("PIF reader: zHigh out of bounds : \n") + line);
+			if (zHigh < zLow) throw CC3DException(string("PIF reader: zHigh is smaller than xLow : \n") + line);
 			if (spinMap.count(spin) != 0) // Spin multiply listed
 			{
 				for (cellPt.z = zLow; cellPt.z <= zHigh; cellPt.z++)
@@ -173,20 +173,20 @@ void PIFInitializer::start() {
 		celltype = second;
 		//cerr << "spin: " << spin << " celltype: : " << celltype << 
 		//     " xLow: " << xLow << endl;
-		ASSERT_OR_THROW(string("PIF reader: xLow out of bounds : \n") + line, xLow >= 0 && xLow < dim.x);
+		if (!(xLow >= 0 && xLow < dim.x)) throw CC3DException(string("PIF reader: xLow out of bounds : \n") + line);
 		pif >> xHigh;
-		ASSERT_OR_THROW(string("PIF reader: xHigh out of bounds : \n")+line, xHigh >= 0 && xHigh < dim.x);
-		ASSERT_OR_THROW(string("PIF reader: xHigh is smaller than xLow : \n")+line, xHigh >= xLow); 
+		if (!(xHigh >= 0 && xHigh < dim.x)) throw CC3DException(string("PIF reader: xHigh out of bounds : \n")+line);
+		if (xHigh < xLow) throw CC3DException(string("PIF reader: xHigh is smaller than xLow : \n")+line); 
 		pif >> yLow;
-		ASSERT_OR_THROW(string("PIF reader: yLow out of bounds : \n")+line, yLow >= 0 && yLow < dim.y);
+		if (!(yLow >= 0 && yLow < dim.y)) throw CC3DException(string("PIF reader: yLow out of bounds : \n")+line);
 		pif >> yHigh;   
-		ASSERT_OR_THROW(string("PIF reader: yHigh out of bounds : \n")+line, yHigh >= 0 && yHigh < dim.y);
-		ASSERT_OR_THROW(string("PIF reader: yHigh is smaller than yLow : \n")+line, yHigh >= yLow);
+		if (!(yHigh >= 0 && yHigh < dim.y)) throw CC3DException(string("PIF reader: yHigh out of bounds : \n")+line);
+		if (yHigh < yLow) throw CC3DException(string("PIF reader: yHigh is smaller than yLow : \n")+line);
 		pif >> zLow;
-		ASSERT_OR_THROW(string("PIF reader: zLow out of bounds : \n")+line, zLow >= 0 && zLow < dim.z);
+		if (!(zLow >= 0 && zLow < dim.z)) throw CC3DException(string("PIF reader: zLow out of bounds : \n")+line);
 		pif >> zHigh;
-		ASSERT_OR_THROW(string("PIF reader: zHigh out of bounds : \n")+line, zHigh >= 0 && zHigh < dim.z);
-		ASSERT_OR_THROW(string("PIF reader: zHigh is smaller than xLow : \n")+line, zHigh >= zLow);
+		if (!(zHigh >= 0 && zHigh < dim.z)) throw CC3DException(string("PIF reader: zHigh out of bounds : \n")+line);
+		if (zHigh < zLow) throw CC3DException(string("PIF reader: zHigh is smaller than xLow : \n")+line);
 
 		if (spinMap.count(spin) != 0) // Spin multiply listed
 		{
@@ -235,20 +235,20 @@ void PIFInitializer::start() {
 			pif >> spin >> celltype >> xLow;
 			//cerr << "spin: " << spin << " celltype: : " << celltype << 
 			//     " xLow: " << xLow << endl;
-			ASSERT_OR_THROW(string("PIF reader: xLow out of bounds : \n")+line, xLow >= 0 && xLow < dim.x);
+			if (!(xLow >= 0 && xLow < dim.x)) throw CC3DException(string("PIF reader: xLow out of bounds : \n")+line);
 			pif >> xHigh;
-			ASSERT_OR_THROW(string("PIF reader: xHigh out of bounds : \n")+line, xHigh >= 0 && xHigh < dim.x);
-			ASSERT_OR_THROW(string("PIF reader: xHigh is smaller than xLow : \n")+line, xHigh >= xLow); 
+			if (!(xHigh >= 0 && xHigh < dim.x)) throw CC3DException(string("PIF reader: xHigh out of bounds : \n")+line);
+			if (xHigh < xLow) throw CC3DException(string("PIF reader: xHigh is smaller than xLow : \n")+line); 
 			pif >> yLow;
-			ASSERT_OR_THROW(string("PIF reader: yLow out of bounds : \n")+line, yLow >= 0 && yLow < dim.y);
+			if (!(yLow >= 0 && yLow < dim.y)) throw CC3DException(string("PIF reader: yLow out of bounds : \n")+line);
 			pif >> yHigh;   
-			ASSERT_OR_THROW(string("PIF reader: yHigh out of bounds : \n")+line, yHigh >= 0 && yHigh < dim.y);
-			ASSERT_OR_THROW(string("PIF reader: yHigh is smaller than yLow : \n")+line, yHigh >= yLow);
+			if (!(yHigh >= 0 && yHigh < dim.y)) throw CC3DException(string("PIF reader: yHigh out of bounds : \n")+line);
+			if (yHigh < yLow) throw CC3DException(string("PIF reader: yHigh is smaller than yLow : \n")+line);
 			pif >> zLow;
-			ASSERT_OR_THROW(string("PIF reader: zLow out of bounds : \n")+line, zLow >= 0 && zLow < dim.z);
+			if (!(zLow >= 0 && zLow < dim.z)) throw CC3DException(string("PIF reader: zLow out of bounds : \n")+line);
 			pif >> zHigh;
-			ASSERT_OR_THROW(string("PIF reader: zHigh out of bounds: \n ")+line, zHigh >= 0 && zHigh < dim.z);
-			ASSERT_OR_THROW(string("PIF reader: zHigh is smaller than xLow: \n")+line, zHigh >= zLow);
+			if (!(zHigh >= 0 && zHigh < dim.z)) throw CC3DException(string("PIF reader: zHigh out of bounds: \n ")+line);
+			if (zHigh < zLow) throw CC3DException(string("PIF reader: zHigh is smaller than xLow: \n")+line);
 
 			if (spinMap.count(spin) != 0) // Spin multiply listed
 			{

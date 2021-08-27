@@ -49,9 +49,9 @@ namespace CompuCell3D {
 
 
   private:
-    ParallelUtilsOpenMP *pUtils;    
+    ParallelUtilsOpenMP *pUtils;
     
-    BasicClassAccessor<ContactLocalProductData> contactProductDataAccessor;
+    ExtraMembersGroupAccessor<ContactLocalProductData> contactProductDataAccessor;
     Potts3D *potts;
     Simulator *sim;
     CC3DXMLElement *xmlData;
@@ -65,7 +65,7 @@ namespace CompuCell3D {
     std::string contactFunctionType;
     double depth;
 
-    BasicClassAccessor<ContactLocalProductData> * contactProductDataAccessorPtr;
+    ExtraMembersGroupAccessor<ContactLocalProductData> * contactProductDataAccessorPtr;
 
     Automaton *automaton;
     bool weightDistance;
@@ -78,7 +78,7 @@ namespace CompuCell3D {
 
     
     // std::string customExpression; //expression for cad-cad function
-    // double k1; //used to keep arguments for cad-cad function 
+    // double k1; //used to keep arguments for cad-cad function
     // double k2;//used to keep arguments for cad-cad function
     // mu::Parser p;
 
@@ -94,15 +94,15 @@ namespace CompuCell3D {
     ContactLocalProductPlugin();
     virtual ~ContactLocalProductPlugin();
     
-    BasicClassAccessor<ContactLocalProductData> * getContactProductDataAccessorPtr(){return & contactProductDataAccessor;}
+    ExtraMembersGroupAccessor<ContactLocalProductData> * getContactProductDataAccessorPtr(){return & contactProductDataAccessor;}
 
-		//EnergyFunction Interface
-		virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+	//EnergyFunction Interface
+	virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
 
-		virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
+	virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
 		
 
-		virtual void extraInit(Simulator *simulator);
+	virtual void extraInit(Simulator *simulator);
         
     virtual void handleEvent(CC3DEvent & _event);
 
@@ -131,12 +131,12 @@ namespace CompuCell3D {
     double contactEnergyLinear(const CellG *cell1, const CellG *cell2);
     double contactEnergyQuadratic(const CellG *cell1, const CellG *cell2);
     double contactEnergyMin(const CellG *cell1, const CellG *cell2);
-	  double contactEnergyCustom(const CellG *cell1, const CellG *cell2);
+	double contactEnergyCustom(const CellG *cell1, const CellG *cell2);
 
     double contactEnergyLinearMediumLocal(const CellG *cell1, const CellG *cell2);
     double contactEnergyQuadraticMediumLocal(const CellG *cell1, const CellG *cell2);
     double contactEnergyMinMediumLocal(const CellG *cell1, const CellG *cell2);
-	  double contactEnergyCustomMediumLocal(const CellG *cell1, const CellG *cell2);
+	double contactEnergyCustomMediumLocal(const CellG *cell1, const CellG *cell2);
 
 
     /**

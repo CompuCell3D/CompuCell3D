@@ -31,8 +31,6 @@
 #include "FoamDataOutputDLLSpecifier.h"
 #include <string>
 
-template <typename Y> class BasicClassAccessor;
-
 namespace CompuCell3D {
   class Potts3D;
   class CellInventory;
@@ -42,7 +40,7 @@ namespace CompuCell3D {
 	Potts3D *potts;
 	CellInventory * cellInventoryPtr;
 	Dim3D dim;
-	BasicClassAccessor<NeighborTracker> * neighborTrackerAccessorPtr;
+	ExtraMembersGroupAccessor<NeighborTracker> * neighborTrackerAccessorPtr;
 	std::string fileName;
 	bool surFlag;
 	bool volFlag;

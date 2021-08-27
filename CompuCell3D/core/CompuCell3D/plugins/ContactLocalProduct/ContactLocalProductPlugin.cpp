@@ -100,9 +100,8 @@ void ContactLocalProductPlugin::extraInit(Simulator *simulator) {
     update(xmlData, true);
 
     Automaton * cellTypePluginAutomaton = potts->getAutomaton();
-    if (cellTypePluginAutomaton) {
-        ASSERT_OR_THROW("The size of matrix of contact specificity coefficients has must equal max_cell_type_id+1. You must list specificity coefficients between all cel types",
-            contactSpecificityArray.size() == ((unsigned int)cellTypePluginAutomaton->getTypeIds().size()));
+    if (cellTypePluginAutomaton && contactSpecificityArray.size() != ((unsigned int)cellTypePluginAutomaton->getTypeIds().size())) {
+        throw CC3DException("The size of matrix of contact specificity coefficients has must equal max_cell_type_id+1. You must list specificity coefficients between all cel types");
     }
 
 }
@@ -112,8 +111,8 @@ void ContactLocalProductPlugin::extraInit(Simulator *simulator) {
 void ContactLocalProductPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     automaton = potts->getAutomaton();
-    ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
-        set<unsigned char> cellTypesSet;
+    if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
+    set<unsigned char> cellTypesSet;
     contactSpecificityArray.clear();
 
     CC3DXMLElementList energyVec = _xmlData->getElements("ContactSpecificity");
@@ -257,7 +256,7 @@ void ContactLocalProductPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
         }
 
 
-        ASSERT_OR_THROW("You need to list two variable names that will hold concentration of cadherins", variableInitializationOK);
+        if (!variableInitializationOK) throw CC3DException("You need to list two variable names that will hold concentration of cadherins");
 
         if (_xmlData->getFirstElement("CustomFunction")->findElement("Expression")) {
             customExpression = _xmlData->getFirstElement("CustomFunction")->getFirstElement("Expression")->getText();

@@ -235,7 +235,7 @@ void ContactOrientationPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
     //PARSE XML IN THIS FUNCTION
     //For more information on XML parser function please see CC3D code or lookup XML utils API
     automaton = potts->getAutomaton();
-    ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
+    if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
     angularTermDefined=false;
     
@@ -288,7 +288,7 @@ void ContactOrientationPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
     CC3DXMLElementList energyVec=_xmlData->getElements("Energy");
     
     contactEnergyArray.clear();
-    
+
     for (int i = 0 ; i<energyVec.size(); ++i){
         setContactEnergy(energyVec[i]->getAttribute("Type1"), energyVec[i]->getAttribute("Type2"), energyVec[i]->getDouble());
         //inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id

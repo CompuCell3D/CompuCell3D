@@ -69,9 +69,9 @@ void ChemotaxisPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	Plugin *plugin = Simulator::pluginManager.get("CenterOfMass", &pluginAlreadyRegisteredFlag);
 	if (!pluginAlreadyRegisteredFlag) plugin->init(simulator);
   
-  BasicClassAccessorBase * chemotaxisDataAccessorPtr=&chemotaxisDataAccessor;
+  ExtraMembersGroupAccessorBase * chemotaxisDataAccessorPtr=&chemotaxisDataAccessor;
   ///************************************************************************************************  
-  ///REMARK. HAVE TO USE THE SAME BASIC CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
+  ///REMARK. HAVE TO USE THE SAME CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
   ///************************************************************************************************  
   potts->getCellFactoryGroupPtr()->registerClass(chemotaxisDataAccessorPtr);
 
@@ -180,7 +180,6 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 				}
 				
 				if(chemotactByTypeXMlList[j]->findAttribute("ChemotactTowards")){
-					//ASSERT_OR_THROW("ChemotactTowards is deprecated now. Please replace it with ChemotactAtInterfaceWith.",chemotaxisFieldDataVec.size());
 					cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactTowards");
 				}else if (chemotactByTypeXMlList[j]->findAttribute("ChemotactAtInterfaceWith")){// both keywords are OK
 					cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactAtInterfaceWith");
@@ -217,7 +216,6 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 				}
 
 				if(chemotactByTypeXMlList[j]->findAttribute("ChemotactTowards")){
-					//ASSERT_OR_THROW("ChemotactTowards is deprecated now. Please replace it with ChemotactAtInterfaceWith.",chemotaxisFieldDataVec.size());
 					cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactTowards");
 				}else if (chemotactByTypeXMlList[j]->findAttribute("ChemotactAtInterfaceWith")){// both keywords are OK
 					cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactAtInterfaceWith");
@@ -247,7 +245,8 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	}
 	//Now after parsing XMLtree we initialize things
 
-	ASSERT_OR_THROW("You forgot to define the body of chemotaxis plugin. See manual for details",chemotaxisFieldDataVec.size());
+	if (!chemotaxisFieldDataVec.size())
+		throw CC3DException("You forgot to define the body of chemotaxis plugin. See manual for details");
 
 	automaton=potts->getAutomaton();
 
@@ -371,8 +370,8 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 					if(mitr!=nameFieldMap.end()){
 						fieldVec[i]=mitr->second;
 						fieldNameVec[i]=chemotaxisFieldDataVec[i].chemicalFieldName;
-					}else{
-						ASSERT_OR_THROW("No chemical field has been loaded!", fieldVec[i]);
+					}else if (!fieldVec[i]){
+						throw CC3DException("No chemical field has been loaded!");
 
 					}
 				}

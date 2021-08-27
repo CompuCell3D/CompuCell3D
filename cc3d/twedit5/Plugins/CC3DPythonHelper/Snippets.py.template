@@ -52,94 +52,125 @@ initial_conditions['SPECIES_NAME2'] = species_val2
 step_size = 0.5
 
 ----------  # @Submenu@ 2. Add SBML model to cell ids
+# Input SBML model in file 'model_file' or string 'model_string'
+# If using model_string, enclose entire model in a set of triple quotations
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 self.add_sbml_to_cell_ids(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell_ids=[1, 3, 7], step_size=step_size,
-                          initial_conditions=initial_conditions)
+                          initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add Antimony model to cell ids
-# input Antimony model in file 'model_file' or string 'model_string'
+# Input Antimony model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 # Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
 self.add_antimony_to_cell_ids(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell_ids=[1, 3, 7], step_size=step_size,
-                          initial_conditions=initial_conditions)
+                          initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add CellML model to cell ids
-# input CellML model in file 'model_file' or string 'model_string'
+# Input CellML model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 # Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
 self.add_cellml_to_cell_ids(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell_ids=[1, 3, 7], step_size=step_size,
-                          initial_conditions=initial_conditions)
+                          initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add SBML model to cell types
+# Input SBML model in file 'model_file' or string 'model_string'
+# If using model_string, enclose entire model in a set of triple quotations
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 self.add_sbml_to_cell_types(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell_types=[self.CELLTYPENAME1, self.CELLTYPENAME1],
-                        step_size=step_size, initial_conditions=initial_conditions)
+                        step_size=step_size, initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add Antimony model to cell types
-# input Antimony model in file 'model_file' or string 'model_string'
+# Input Antimony model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 # Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
 self.add_antimony_to_cell_types(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell_types=[self.CELLTYPENAME1, self.CELLTYPENAME1],
-                        step_size=step_size, initial_conditions=initial_conditions)
+                        step_size=step_size, initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add CellML model to cell types
-# input CellML model in file 'model_file' or string 'model_string'
+# Input CellML model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 # Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
 self.add_cellml_to_cell_types(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell_types=[self.CELLTYPENAME1, self.CELLTYPENAME1],
-                        step_size=step_size, initial_conditions=initial_conditions)
+                        step_size=step_size, initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add SBML model to individual cell
+# Input SBML model in file 'model_file' or string 'model_string'
+# If using model_string, enclose entire model in a set of triple quotations
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 cell_20 = self.fetch_cell_by_id(20)
 
 if cell_20:
     self.add_sbml_to_cell(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell=cell_20,step_size=step_size,
-                          initial_conditions=initial_conditions)
+                          initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add Antimony model to individual cell
-# input Antimony model in file 'model_file' or string 'model_string'
+# Input Antimony model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 # Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
 cell_20 = self.fetch_cell_by_id(20)
 
 if cell_20:
     self.add_antimony_to_cell(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell=cell_20,step_size=step_size,
-                          initial_conditions=initial_conditions)
+                          initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add CellML model to individual cell
-# input CellML model in file 'model_file' or string 'model_string'
+# Input CellML model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 # Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
 cell_20 = self.fetch_cell_by_id(20)
 
 if cell_20:
     self.add_cellml_to_cell(model_file=model_file, model_string=model_string, model_name='MODEL_NAME', cell=cell_20,step_size=step_size,
-                          initial_conditions=initial_conditions)
+                          initial_conditions=initial_conditions, integrator=integrator)
 
 
 ----------  # @Submenu@ 2. Add free floating SBML model e.g. PBPK
-# input Antimony model in file 'model_file' or string 'model_string'
+# Input SBML model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
-# Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 self.add_free_floating_sbml(model_file=model_file, model_string=model_string, model_name='UNIQUE_MODEL_NAME', step_size=step_size,
-                            initial_conditions=initial_conditions)
+                            initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add free floating Antimony model
-# input CellML model in file 'model_file' or string 'model_string'
+# Input Antimony model in file 'model_file' or string 'model_string'
 # If using model_string, enclose entire model in a set of triple quotations
 # Initial conditions can be declared in model or with initial_conditions; the latter takes precedence
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 # Model is translated to SBML and stored in memory; use SBML functions in subsequent operations
 self.add_free_floating_antimony(model_file=model_file, model_string=model_string, model_name='UNIQUE_MODEL_NAME', step_size=step_size,
-                            initial_conditions=initial_conditions)
+                            initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 2. Add free floating CellML model
+# Input CellML model in file 'model_file' or string 'model_string'
+# If using model_string, enclose entire model in a set of triple quotations
+# An integrator can be selected from CVODE: (default, pass nothing), Gillespie: (integrator='gillespie'),
+#   Euler: (integrator='euler'), Runge-Kutta: (integrator='rk4'), and Gillespie Direct Method: (integrator='rk45')
 self.add_free_floating_cellml(model_file=model_file, model_string=model_string, model_name='UNIQUE_MODEL_NAME', step_size=step_size,
-                            initial_conditions=initial_conditions)
+                            initial_conditions=initial_conditions, integrator=integrator)
 
 ----------  # @Submenu@ 3. Timestep SBML models
 self.timestep_sbml()
@@ -526,14 +557,35 @@ cell.fluctAmpl = 50
 # cell.fluctAmpl=-1
 
 ----------  # @Submenu@ Inertia Tensor
-# READ ONLY ACCESS        
+# READ ONLY ACCESS
 iXX = cell.iXX
 iYY = cell.iYY
 iZZ = cell.iZZ
 iXY = cell.iXY
 iXZ = cell.iXZ
 iYZ = cell.iYZ
+
+----------  # @Submenu@ Eccentricity
+# READ ONLY ACCESS
 eccentricity = cell.ecc
+
+----------  # @Submenu@ Minor Axes
+# READ ONLY ACCESS
+minor_x = cell.lX
+minor_y = cell.lY
+minor_z = cell.lZ
+
+----------  # @Submenu@ Pressure
+# READ ONLY ACCESS
+pressure = cell.pressure
+
+----------  # @Submenu@ Surface Tension
+# READ ONLY ACCESS
+surface_tension = cell.surfaceTension
+
+----------  # @Submenu@ Cluster Surface Tension
+# READ ONLY ACCESS
+cluster_surface_tension = cell.clusterSurfaceTension
 
 ===============  # @Menu@ Focal Point Placticity
 
@@ -722,8 +774,9 @@ self.adhesionFlexPlugin.setMediumAdhesionMoleculeDensityByIndex(0, 11.2)
 # defining chemotaxis properties of individual cell 'cell'
 cd = self.chemotaxisPlugin.addChemotaxisData(cell, "FIELDNAME")
 cd.setLambda(20.0)
-# cd.initializeChemotactTowardsVectorTypes("Bacterium,Medium")
-cd.assignChemotactTowardsVectorTypes([0, 1])
+# If assigning chemotaxis only towards one or more specific cell types, then use the following,
+# where the list references the cell types (shown here for type names 'type_name_1' and 'type_name_2')
+# cd.assignChemotactTowardsVectorTypes([self.cell_type.type_name_1, self.cell_type.type_name_2])
 
 ----------  # @Submenu@  By Cell Id (Modify)
 # Make sure Chemotaxis Plugin is loaded
@@ -782,7 +835,7 @@ self.elasticityTrackerPlugin.addNewElasticLink(cell1, cell2, 200.0, 6.0)
 # arguments are cell1, cell2,
 self.elasticityTrackerPlugin.removeElasticityPair(cell1, cell2, 200.0, 6.0)
 
-===============  # @Menu@ Secretion / Uptake
+===============  # @Menu@ Secretion / Uptake / Field Integrals
 
 ----------  # @Submenu@ Secrete Inside Cell
 # Make sure Secretion plugin is loaded
@@ -790,6 +843,7 @@ self.elasticityTrackerPlugin.removeElasticityPair(cell1, cell2, 200.0, 6.0)
 # you may reuse secretor for many cells. Simply define it outside the loop
 secretor = self.get_field_secretor("FIELDNAME")
 secretor.secreteInsideCell(cell, 300)
+# tot_amount = secretor.secreteInsideCellTotalCount(cell, 300).tot_amount
 
 ----------  # @Submenu@ Secrete Inside Cell At Boundary
 # Make sure Secretion plugin is loaded
@@ -797,6 +851,7 @@ secretor.secreteInsideCell(cell, 300)
 # you may reuse secretor for many cells. Simply define it outside the loop
 secretor = self.get_field_secretor("FIELDNAME")
 secretor.secreteInsideCellAtBoundary(cell, 300)
+# tot_amount = secretor.secreteInsideCellAtBoundaryTotalCount(cell, 300).tot_amount
 
 ----------  # @Submenu@ Secrete Outside Cell At Boundary
 # Make sure Secretion plugin is loaded
@@ -804,6 +859,7 @@ secretor.secreteInsideCellAtBoundary(cell, 300)
 # you may reuse secretor for many cells. Simply define it outside the loop
 secretor = self.get_field_secretor("FIELDNAME")
 secretor.secreteOutsideCellAtBoundary(cell, 300)
+# tot_amount = secretor.secreteOutsideCellAtBoundaryTotalCount(cell, 300).tot_amount
 
 ----------  # @Submenu@ Secrete Inside Cell At COM
 # Make sure Secretion plugin is loaded
@@ -811,6 +867,7 @@ secretor.secreteOutsideCellAtBoundary(cell, 300)
 # you may reuse secretor for many cells. Simply define it outside the loop
 secretor = self.get_field_secretor("FIELDNAME")
 secretor.secreteInsideCellAtCOM(cell, 300)
+# tot_amount = secretor.secreteInsideCellAtCOMTotalCount(cell, 300).tot_amount
 
 ----------  # @Submenu@ Secrete Inside Cell Constant Concentration
 # Make sure Secretion plugin is loaded
@@ -818,6 +875,7 @@ secretor.secreteInsideCellAtCOM(cell, 300)
 # you may reuse secretor for many cells. Simply define it outside the loop
 secretor = self.get_field_secretor("FIELDNAME")
 secretor.secreteInsideCellConstantConcentration(cell, 300)
+# tot_amount = secretor.secreteInsideCellConstantConcentrationTotalCount(cell, 300).tot_amount
 
 ----------  # @Submenu@ Secrete Inside Cell At Boundary On Contact With
 # Make sure Secretion plugin is loaded
@@ -826,7 +884,8 @@ secretor.secreteInsideCellConstantConcentration(cell, 300)
 secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, secretion rate, a list of cell types
-secretor.secreteInsideCellConstantConcentration(cell, 300, [self.TYPE1, self.TYPE2])
+secretor.secreteInsideCellAtBoundaryOnContactWith(cell, 300, [self.TYPE1, self.TYPE2])
+# tot_amount = secretor.secreteInsideCellAtBoundaryOnContactWithTotalCount(cell, 300, [self.TYPE1, self.TYPE2]).tot_amount
 
 ----------  # @Submenu@ Secrete Outside Cell At Boundary On Contact With
 # Make sure Secretion plugin is loaded
@@ -835,7 +894,8 @@ secretor.secreteInsideCellConstantConcentration(cell, 300, [self.TYPE1, self.TYP
 secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, secretion rate, a list of cell types
-secretor.secreteOutsideCellConstantConcentration(cell, 300, [self.TYPE1, self.TYPE2])
+secretor.secreteOutsideCellAtBoundaryOnContactWith(cell, 300, [self.TYPE1, self.TYPE2])
+# tot_amount = secretor.secreteOutsideCellAtBoundaryOnContactWithTotalCount(cell, 300, [self.TYPE1, self.TYPE2]).tot_amount
 
 ----------  # @Submenu@ Uptake Inside Cell
 # Make sure Secretion plugin is loaded
@@ -845,6 +905,7 @@ secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, max uptake, relative uptake
 secretor.uptakeInsideCell(cell, 2.0, 0.2)
+# tot_amount = secretor.uptakeInsideCellTotalCount(cell, 2.0, 0.2).tot_amount
 
 ----------  # @Submenu@ Uptake Inside Cell At Boundary
 # Make sure Secretion plugin is loaded
@@ -854,6 +915,7 @@ secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, max uptake, relative uptake
 secretor.uptakeInsideCellAtBoundary(cell, 2.0, 0.2)
+# tot_amount = secretor.uptakeInsideCellAtBoundaryTotalCount(cell, 2.0, 0.2).tot_amount
 
 ----------  # @Submenu@ Uptake Outside Cell At Boundary
 # Make sure Secretion plugin is loaded
@@ -862,7 +924,8 @@ secretor.uptakeInsideCellAtBoundary(cell, 2.0, 0.2)
 secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, max uptake, relative uptake
-secretor.uptakeInsideCellAtBoundary(cell, 2.0, 0.2)
+secretor.uptakeOutsideCellAtBoundary(cell, 2.0, 0.2)
+# tot_amount = secretor.uptakeOutsideCellAtBoundaryTotalCount(cell, 2.0, 0.2).tot_amount
 
 ----------  # @Submenu@ Uptake Inside Cell At COM
 # Make sure Secretion plugin is loaded
@@ -872,6 +935,7 @@ secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, max uptake, relative uptake
 secretor.uptakeInsideCellAtCOM(cell, 2.0, 0.2)
+# tot_amount = secretor.uptakeInsideCellAtCOMTotalCount(cell, 2.0, 0.2).tot_amount
 
 ----------  # @Submenu@ Uptake Inside Cell At Boundary and On Contact With
 # Make sure Secretion plugin is loaded
@@ -881,6 +945,7 @@ secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, max uptake, relative uptake, a list of cell types
 secretor.uptakeInsideCellAtBoundaryOnContactWith(cell, 2.0, 0.2, [self.TYPE1, TYPE2])
+# tot_amount = secretor.uptakeInsideCellAtBoundaryOnContactWithTotalCount(cell, 2.0, 0.2, [self.TYPE1, TYPE2]).tot_amount
 
 ----------  # @Submenu@ Uptake Outside Cell At Boundary and On Contact With
 # Make sure Secretion plugin is loaded
@@ -890,6 +955,19 @@ secretor = self.get_field_secretor("FIELDNAME")
 
 # arguments are: cell, max uptake, relative uptake, a list of cell types
 secretor.uptakeOutsideCellAtBoundaryOnContactWith(cell, 2.0, 0.2, [self.TYPE1, TYPE2])
+# tot_amount = secretor.uptakeOutsideCellAtBoundaryOnContactWithTotalCount(cell, 2.0, 0.2, [self.TYPE1, TYPE2]).tot_amount
+
+----------  # @Submenu@ Amount Seen by Cell
+# Make sure Secretion plugin is loaded
+# make sure this field is defined in one of the PDE solvers
+secretor = self.get_field_secretor("FIELDNAME")
+amount_seen = secretor.amountSeenByCell(cell)
+
+----------  # @Submenu@ Total Amount
+# Make sure Secretion plugin is loaded
+# make sure this field is defined in one of the PDE solvers
+secretor = self.get_field_secretor("FIELDNAME")
+total_amount = secretor.totalFieldIntegral()
 
 ===============  # @Menu@ Extra Fields Automatic Tracking
 
@@ -1081,7 +1159,7 @@ self.change_number_of_work_nodes(8)
 
 ----------  # @Submenu@ Shared steppable dictionary
 # This dictionary is shared by all registered steppables
-self.shared_steppable_vars
+self.shared_steppable_vars['key']
 
 ===============  # @Menu@ MaBoSS
 

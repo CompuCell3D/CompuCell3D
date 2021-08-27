@@ -42,7 +42,7 @@ namespace CompuCell3D {
 
 		//EneryFunction data
 		Coordinates3D<float> lambdaVec;
-		
+
 		AdjacentNeighbor  * adjNeighbor_ptr;
 		WatchableField3D<CellG *> *cellFieldG;
 		Dim3D fieldDim;

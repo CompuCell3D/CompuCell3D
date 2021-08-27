@@ -31,14 +31,13 @@
 #include "Stepper.h"
 #include "FixedStepper.h"
 #include "AttributeAdder.h"
+#include <CompuCell3D/CC3DExceptions.h>
 #include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/Potts3D/TypeTransition.h>
 #include "EnergyFunctionCalculator.h"
 #include "EnergyFunctionCalculatorStatistics.h"
 #include "EnergyFunctionCalculatorTestDataGeneration.h"
 #include <CompuCell3D/Simulator.h>
-#include <BasicUtils/BasicRandomNumberGenerator.h>
-#include <BasicUtils/BasicPluginInfo.h>
 #include <PublicUtilities/StringUtils.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include <deque>
@@ -118,6 +117,7 @@ Potts3D::~Potts3D() {
     if (typeTransition) delete typeTransition; typeTransition = 0;
     //   if (attrAdder) delete attrAdder; attrAdder=0;
     if (fluctAmplFcn) delete fluctAmplFcn;
+    uninitRandomNumberGenerators();
 }
 
 void Potts3D::createEnergyFunction(std::string _energyFunctionType) {
@@ -233,7 +233,7 @@ void Potts3D::setNeighborOrder(unsigned int _neighborOrder) {
 
 void Potts3D::createCellField(const Dim3D dim) {
 
-    ASSERT_OR_THROW("createCellField() cell field G already created!", !cellFieldG);
+    if (cellFieldG) throw CC3DException("createCellField() cell field G already created!");
     cellFieldG = new WatchableField3D<CellG *>(dim, 0); //added
 
 }
@@ -301,8 +301,7 @@ void Potts3D::setAcceptanceFunctionByName(std::string _acceptanceFunctionName) {
 }
 
 void Potts3D::registerAcceptanceFunction(AcceptanceFunction *function) {
-    ASSERT_OR_THROW("registerAcceptanceFunction() function cannot be NULL!",
-        function);
+    if (!function) throw CC3DException("registerAcceptanceFunction() function cannot be NULL!");
 
     acceptanceFunction = function;
 }
@@ -330,30 +329,31 @@ void  Potts3D::setFluctuationAmplitudeFunctionByName(std::string _fluctuationAmp
     }
 }
 
-///BasicClassChange watcher reistration
+///CellG change watcher registration
 void Potts3D::registerCellGChangeWatcher(CellGChangeWatcher *_watcher) {
-    ASSERT_OR_THROW("registerBCGChangeWatcher() _watcher cannot be NULL!", _watcher);
+    if (!_watcher) throw CC3DException("registerBCGChangeWatcher() _watcher cannot be NULL!");
 
     cellFieldG->addChangeWatcher(_watcher);
     //    sim->registerSteerableObject(_watcher);
 }
 
 
-void Potts3D::registerClassAccessor(BasicClassAccessorBase *_accessor) {
-    ASSERT_OR_THROW("registerClassAccessor() _accessor cannot be NULL!", _accessor);
+void Potts3D::registerClassAccessor(ExtraMembersGroupAccessorBase *_accessor) {
+    if (!_accessor) throw CC3DException("registerClassAccessor() _accessor cannot be NULL!");
 
     cellFactoryGroup.registerClass(_accessor);
 }
 
 
 void Potts3D::registerStepper(Stepper *stepper) {
-    ASSERT_OR_THROW("registerStepper() stepper cannot be NULL!", stepper);
+    if (!stepper) throw CC3DException("registerStepper() stepper cannot be NULL!");
 
     steppers.push_back(stepper);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Potts3D::registerFixedStepper(FixedStepper *fixedStepper, bool _front) {
-    ASSERT_OR_THROW("registerStepper() fixed stepper cannot be NULL!", fixedStepper);
+    if (!fixedStepper) throw CC3DException("registerStepper() fixed stepper cannot be NULL!");
+
     if (_front) {
         //fixedSteppers is small so using deque as temporary storage to insert at the begining of vector is OK
         deque<FixedStepper *> tmpDeque(fixedSteppers.begin(), fixedSteppers.end());
@@ -368,7 +368,8 @@ void Potts3D::registerFixedStepper(FixedStepper *fixedStepper, bool _front) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Potts3D::unregisterFixedStepper(FixedStepper *_fixedStepper) {
-    ASSERT_OR_THROW("unregisterStepper() fixed stepper cannot be NULL!", _fixedStepper);
+    if (!_fixedStepper) throw CC3DException("unregisterStepper() fixed stepper cannot be NULL!");
+
     std::vector<FixedStepper *>::iterator pos;
     pos = find(fixedSteppers.begin(), fixedSteppers.end(), _fixedStepper);
     if (pos != fixedSteppers.end()) {
@@ -379,7 +380,7 @@ void Potts3D::unregisterFixedStepper(FixedStepper *_fixedStepper) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 CellG * Potts3D::createCellG(const Point3D pt, long _clusterId) {
-    ASSERT_OR_THROW("createCell() cellFieldG Point out of range!", cellFieldG->isValid(pt));
+    if (!cellFieldG->isValid(pt)) throw CC3DException("createCell() cellFieldG Point out of range!");
 
     CellG * cell = createCell(_clusterId);
 
@@ -431,7 +432,8 @@ CellG *Potts3D::createCell(long _clusterId) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // this function should be only used from PIF Initializers or when you really understand the way CC3D assigns cell ids
 CellG * Potts3D::createCellGSpecifiedIds(const Point3D pt, long _cellId, long _clusterId) {
-    ASSERT_OR_THROW("createCell() cellFieldG Point out of range!", cellFieldG->isValid(pt));
+    if (!cellFieldG->isValid(pt)) throw CC3DException("createCell() cellFieldG Point out of range!");
+
     CellG * cell = createCellSpecifiedIds(_cellId, _clusterId);
     cellFieldG->set(pt, cell);
     return cell;
@@ -550,12 +552,13 @@ unsigned int Potts3D::metropolis(const unsigned int steps, const double temp) {
 unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp) {
     this->step_output = "";
 
-    ASSERT_OR_THROW("Potts3D: cell field G not initialized", cellFieldG);
+    if (!cellFieldG) throw CC3DException("Potts3D: cell field G not initialized");
 
     // ParallelUtilsOpenMP * pUtils=sim->getParallelUtils();
 
 
-    ASSERT_OR_THROW("MetropolisList algorithm works only in single processor mode. Please change number of processors to 1", pUtils->getNumberOfWorkNodesPotts() == 1);
+    if (pUtils->getNumberOfWorkNodesPotts() != 1)
+        throw CC3DException("MetropolisList algorithm works only in single processor mode. Please change number of processors to 1");
 
     if (customAcceptanceExpressionDefined) {
         customAcceptanceFunction.initialize(this->sim); //actual initialization will happen only once at MCS=0 all other calls will return without doing anything
@@ -563,18 +566,7 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 
     //here we will allocate Random number generators for each thread. Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of random number generator vector 
     if (!randNSVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > randNSVec.size()) { //each thread will have different random number ghenerator
-        randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), BasicRandomNumberGeneratorNonStatic());
-
-        for (unsigned int i = 0; i <randNSVec.size(); ++i) {
-            if (!sim->ppdCC3DPtr->seed) {
-                srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-                unsigned int randomSeed = (unsigned int)rand()*((std::numeric_limits<unsigned int>::max)() - 1);
-                randNSVec[i].setSeed(randomSeed);
-            }
-            else {
-                randNSVec[i].setSeed(sim->ppdCC3DPtr->seed);
-            }
-        }
+        initRandomNumberGenerators();
     }
     // Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of flipNeighborVec
     if (!flipNeighborVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > flipNeighborVec.size()) {
@@ -582,11 +574,10 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
     }
     flips = 0;
     attemptedEC = 0;
-    BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+    RandomNumberGenerator *rand = sim->getRandomNumberGeneratorInstance();
     ///Dim3D dim = cellField->getDim();
     Dim3D dim = cellFieldG->getDim();
-    ASSERT_OR_THROW("Potts3D: You must supply an acceptance function!",
-        acceptanceFunction);
+    if (!acceptanceFunction) throw CC3DException("Potts3D: You must supply an acceptance function!");
 
     //   numberOfAttempts=steps;
     numberOfAttempts = (int)(maxCoordinates.x - minCoordinates.x)*(maxCoordinates.y - minCoordinates.y)*(maxCoordinates.z - minCoordinates.z)*sim->getFlip2DimRatio()*sim->getFlip2DimRatio();
@@ -721,7 +712,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
     this->step_output = "";
 
-    ASSERT_OR_THROW("Potts3D: cell field G not initialized", cellFieldG);
+    if (!cellFieldG) throw CC3DException("Potts3D: cell field G not initialized");
     // // // ParallelUtilsOpenMP * pUtils=sim->getParallelUtils();
 
     if (customAcceptanceExpressionDefined) {
@@ -730,18 +721,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
     //here we will allocate Random number generators for each thread. Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of random number generator vector 
     if (!randNSVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > randNSVec.size()) { //each thread will have different random number ghenerator
-        randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), BasicRandomNumberGeneratorNonStatic());
-
-        for (unsigned int i = 0; i <randNSVec.size(); ++i) {
-            if (!sim->ppdCC3DPtr->seed) {
-                srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-                unsigned int randomSeed = (unsigned int)rand()*((std::numeric_limits<unsigned int>::max)() - 1);
-                randNSVec[i].setSeed(randomSeed);
-            }
-            else {
-                randNSVec[i].setSeed(sim->ppdCC3DPtr->seed);
-            }
-        }
+        initRandomNumberGenerators();
     }
 
 
@@ -776,7 +756,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
     vector<int> flipsVec(maxNumberOfThreads, 0);
 
     Dim3D dim = cellFieldG->getDim();
-    ASSERT_OR_THROW("Potts3D: You must supply an acceptance function!", acceptanceFunction);
+    if (!acceptanceFunction) throw CC3DException("Potts3D: You must supply an acceptance function!");
 
     //FOR NOW WE WILL IGNORE BOX WATCHER FOR POTTS SECTION IT WILL STILL WORK WITH PDE SOLVERS
     Dim3D fieldDim = cellFieldG->getDim();
@@ -805,7 +785,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
         unsigned int currentWorkNodeNumber = pUtils->getCurrentWorkNodeNumber();
 
-        BasicRandomNumberGeneratorNonStatic * rand = randNSVec[currentWorkNodeNumber].getInstance();
+        RandomNumberGenerator * rand = randNSVec[currentWorkNodeNumber];
         BoundaryStrategy * boundaryStrategy = BoundaryStrategy::getInstance();
 
         //iterating over subgridSections
@@ -999,7 +979,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Point3D Potts3D::randomPickBoundaryPixel(BasicRandomNumberGeneratorNonStatic * rand) {
+Point3D Potts3D::randomPickBoundaryPixel(RandomNumberGenerator * rand) {
 
     size_t vec_size = boundaryPixelVector.size();
     Point3D pt;
@@ -1030,13 +1010,54 @@ Point3D Potts3D::randomPickBoundaryPixel(BasicRandomNumberGeneratorNonStatic * r
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void Potts3D::initRandomNumberGenerators() {
+
+    uninitRandomNumberGenerators();
+
+    randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), 0);
+
+    for (unsigned int i = 0; i <randNSVec.size(); ++i) {
+        unsigned int randomSeed;
+        if (!sim->ppdCC3DPtr->seed) {
+            srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+            randomSeed = (unsigned int)rand()*((std::numeric_limits<unsigned int>::max)() - 1);
+        }
+        else {
+            randomSeed = sim->ppdCC3DPtr->seed;
+        }
+        randNSVec[i] = sim->generateRandomNumberGenerator(randomSeed);
+    }
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void Potts3D::uninitRandomNumberGenerators() {
+
+    if (randNSVec.size()) {
+
+        for (unsigned int i = 0; i <randNSVec.size(); ++i) {
+            RandomNumberGenerator* x = randNSVec[i];
+            delete x;
+            randNSVec[i] = 0;
+        }
+
+        randNSVec.clear();
+
+    }
+    
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const double temp) {
 
     this->step_output = "";
 
-    ASSERT_OR_THROW("BoundaryWalker Algorithm works only in single processor mode. Please change number of processors to 1", pUtils->getNumberOfWorkNodesPotts() == 1);
+    if (pUtils->getNumberOfWorkNodesPotts() != 1) 
+        throw CC3DException("BoundaryWalker Algorithm works only in single processor mode. Please change number of processors to 1");
 
-    ASSERT_OR_THROW("Potts3D: cell field G not initialized", cellFieldG);
+    if (!cellFieldG) throw CC3DException("Potts3D: cell field G not initialized");
 
     if (customAcceptanceExpressionDefined) {
         customAcceptanceFunction.initialize(this->sim); //actual initialization will happen only once at MCS=0 all other calls will return without doing anything
@@ -1044,18 +1065,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 
     //here we will allocate Random number generators for each thread. Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of random number generator vector 
     if (!randNSVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > randNSVec.size()) { //each thread will have different random number ghenerator
-        randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), BasicRandomNumberGeneratorNonStatic());
-
-        for (unsigned int i = 0; i <randNSVec.size(); ++i) {
-            if (!sim->ppdCC3DPtr->seed) {
-                srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-                unsigned int randomSeed = (unsigned int)rand()*((std::numeric_limits<unsigned int>::max)() - 1);
-                randNSVec[i].setSeed(randomSeed);
-            }
-            else {
-                randNSVec[i].setSeed(sim->ppdCC3DPtr->seed);
-            }
-        }
+        initRandomNumberGenerators();
     }
 
     // Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of flipNeighborVec
@@ -1090,8 +1100,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
     vector<int> flipsVec(maxNumberOfThreads, 0);
 
     Dim3D dim = cellFieldG->getDim();
-    ASSERT_OR_THROW("Potts3D: You must supply an acceptance function!",
-        acceptanceFunction);
+    if (!acceptanceFunction) throw CC3DException("Potts3D: You must supply an acceptance function!");
 
     //FOR NOW WE WILL IGNORE BOX WATCHER FOR POTTS SECTION IT WILL STILL WORK WITH PDE SOLVERS
     Dim3D fieldDim = cellFieldG->getDim();
@@ -1132,7 +1141,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 
         unsigned int currentWorkNodeNumber = pUtils->getCurrentWorkNodeNumber();
 
-        BasicRandomNumberGeneratorNonStatic * rand = randNSVec[currentWorkNodeNumber].getInstance();
+        RandomNumberGenerator * rand = randNSVec[currentWorkNodeNumber];
         BoundaryStrategy * boundaryStrategy = BoundaryStrategy::getInstance();
 
         //iterating over subgridSections
@@ -1393,7 +1402,7 @@ void Potts3D::setCellTypeMotility(const std::string& _typeName, const float& _va
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Potts3D::initializeCellTypeMotility(std::vector<CellTypeMotilityData> & _cellTypeMotilityVector) {
 
-    ASSERT_OR_THROW("AUTOMATON IS NOT INITIALIZED", automaton);
+    if (!automaton) throw CC3DException("AUTOMATON IS NOT INITIALIZED");
 
     cellTypeMotilityMap.clear();
     for (auto& x : _cellTypeMotilityVector) setCellTypeMotility(x.typeName, x.motility);
@@ -1436,7 +1445,7 @@ void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     }
 
     if (_xmlData->getFirstElement("RandomSeed")) {
-        BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+        RandomNumberGenerator *rand = sim->getRandomNumberGeneratorInstance();
         if (rand->getSeed() != _xmlData->getFirstElement("RandomSeed")->getUInt())
             rand->setSeed(_xmlData->getFirstElement("RandomSeed")->getUInt());
     }
@@ -1521,7 +1530,7 @@ void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     }
     else {
 
-        //displaying basic units
+        //displaying units
 
         CC3DXMLElement * unitsPtr = _xmlData->attachElement("Units", "");
         if (displayUnitsFlag) {
@@ -1536,7 +1545,7 @@ void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 void Potts3D::updateUnits(CC3DXMLElement * _unitsPtr) {
 
 
-    ////displaying basic units
+    ////displaying units
 
     //if (_unitsPtr->getFirstElement("MassUnit")) {
     //	_unitsPtr->getFirstElement("MassUnit")->updateElementValue(massUnit.toString());

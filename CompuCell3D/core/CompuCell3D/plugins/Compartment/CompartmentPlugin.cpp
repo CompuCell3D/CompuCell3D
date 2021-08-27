@@ -24,6 +24,7 @@
 
 using namespace CompuCell3D;
 
+
 #include "CompartmentPlugin.h"
 
 CompartmentPlugin::CompartmentPlugin() : potts(0), depth(1),weightDistance(false) {
@@ -79,7 +80,7 @@ double CompartmentPlugin::changeEnergy(const Point3D &pt,
          }
       }
   }else{
-	  
+
       for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
          neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
          if(!neighbor.distance){
@@ -153,7 +154,7 @@ void CompartmentPlugin::setInternalEnergy(const string typeName1,
 
   unsigned char type1 = automaton->getTypeId(typeName1);
   unsigned char type2 = automaton->getTypeId(typeName2);
-    
+
   internalEnergyArray[type1][type2] = energy;
   internalEnergyArray[type2][type1] = energy;
 }
@@ -168,7 +169,7 @@ void CompartmentPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	internalEnergyArray.clear();
 
 	automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton);
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
 	set<unsigned char> cellTypesSet;
 	set<unsigned char> cellInternalTypesSet;

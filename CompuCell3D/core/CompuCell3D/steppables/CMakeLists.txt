@@ -9,7 +9,7 @@ INCLUDE_DIRECTORIES (
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   SET(STEPPABLE_DEPENDENCIES CompuCellLibShared XMLUtilsShared muParserStatic)
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-  SET(STEPPABLE_DEPENDENCIES CompuCellLibShared Potts3DShared BasicUtilsShared Field3DShared muParserShared)
+  SET(STEPPABLE_DEPENDENCIES CompuCellLibShared Potts3DShared Field3DShared muParserShared)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 

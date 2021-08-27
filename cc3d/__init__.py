@@ -5,8 +5,8 @@ from pathlib import Path
 
 versionMajor = 4
 versionMinor = 2
-versionBuild = 4
-revisionNumber = "20210123"
+versionBuild = 5
+revisionNumber = "20210612"
 
 
 def get_sha_label() -> str:
@@ -96,6 +96,9 @@ if sys.platform.startswith('win'):
     pyqt_library_bin_path = python_exe_dir.joinpath('Library', 'bin')
     path_env_list = path_env.split(';')
 
+    # needed for maboss
+    mingw_bin_path = python_exe_dir.joinpath('Library', 'mingw-w64', 'bin')
+
     path_env_list = list(map(lambda pth: abspath(pth), path_env_list))
 
     cc3d_bin_path = abspath(join(cc3d_py_dir, 'cpp', 'bin'))
@@ -106,6 +109,7 @@ if sys.platform.startswith('win'):
     path_env_list.insert(0, os.environ['COMPUCELL3D_PLUGIN_PATH'])
     path_env_list.insert(0, os.environ['COMPUCELL3D_STEPPABLE_PATH'])
     path_env_list.insert(0, str(pyqt_library_bin_path))
+    path_env_list.insert(0, str(mingw_bin_path))
 
     os.environ['PATH'] = ';'.join(path_env_list)
 

@@ -22,16 +22,24 @@ if(BUILD_QT_WRAPPERS)
     SET(QtWrappersLibs StreamRedirectorsShared)
 endif(BUILD_QT_WRAPPERS)    
 
-
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+  add_definitions(-DCC3D_ISWIN)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+  add_definitions(-DCC3D_ISMAC)
+endif()
 
 
 SET(SRCS
+  PluginInfo.cpp
   PluginManager.cpp
   Simulator.cpp
   ClassRegistry.cpp
   DerivedProperty.cpp
+  RandomNumberGenerators.cpp 
   PottsParseData.cpp
-  ParserStorage.cpp
+  ParserStorage.cpp 
+  CC3DExceptions.cpp
+  ExtraMembers.cpp
   # CustomStreamBuffers.cpp
   # ${MOC_FILES}
   )
@@ -42,7 +50,6 @@ INCLUDE_DIRECTORIES (
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   ADD_SHARED_LIBRARY(CompuCellLib ${SRCS} LINK_LIBRARIES
-    BasicUtilsStatic
  #   XercesUtilsStatic
 #    XMLCerealStatic
     PublicUtilitiesStatic
@@ -79,7 +86,6 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
   ADD_SHARED_LIBRARY(CompuCellLib ${SRCS} LINK_LIBRARIES
 
-  BasicUtilsShared
  # XercesUtilsShared
  # XMLCerealShared
   PublicUtilitiesShared
@@ -90,6 +96,7 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   Potts3DShared
   XMLUtilsShared
   ${QtWrappersLibs}
+  ${CMAKE_DL_LIBS}
   # ${PYTHON_LIBRARIES} #added PYTHON LIBRARIES FOR NUMPY FIELD ARRAY INTERFACE
 #   ${QT_LIBS}
   )
@@ -99,7 +106,6 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
           ADD_EXECUTABLE(CompuCell3DCML main.cpp)
           TARGET_LINK_LIBRARIES(CompuCell3DCML
             CompuCellLibShared
-            BasicUtilsShared
            # XercesUtilsShared
             #XMLCerealShared
             PublicUtilitiesShared
@@ -118,7 +124,6 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
         #   TARGET_LINK_LIBRARIES(CompuCell3D
         #     CompuCellLibShared
-        #     BasicUtilsShared
         #    # XercesUtilsShared
         #     #XMLCerealShared
         #     PublicUtilitiesShared
@@ -146,13 +151,16 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D .h
   ClassRegistry
   CompuCellLibDLLSpecifier  
   DerivedProperty
+  ExtraMembers
   ParseData
   Parser
   ParserStorage
   Plugin
   PluginBase
+  PluginInfo
   PluginManager
   PottsParseData
+  RandomNumberGenerators
   Serializer
   SimObject
   Simulator
@@ -162,6 +170,7 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D .h
   CC3D_Main
   CC3D_STL
   CC3DEvents
+  CC3DExceptions
   
   )
 

@@ -48,8 +48,8 @@ void ContactPlugin::extraInit(Simulator *simulator) {
 
 void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     automaton = potts->getAutomaton();
-    
-    ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton);
+
+    if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
     set<unsigned char> cellTypesSet;
 
     CC3DXMLElementList energyVec = _xmlData->getElements("Energy");
@@ -64,7 +64,7 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     }
 
     for (auto& i : cellTypesSet)
-        for (auto& j : cellTypesSet) 
+        for (auto& j : cellTypesSet)
             cerr << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << contactEnergyArray[i][j] << endl;
 
     //Here I initialize max neighbor index for direct acces to the list of neighbors 
@@ -84,7 +84,7 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         if (_xmlData->getFirstElement("NeighborOrder")) {
 
             maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());
-            
+
         }
         else {
             maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);

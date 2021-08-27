@@ -3,7 +3,7 @@
 #include <CompuCell3D/Potts3D/Cell.h>
 #include <CompuCell3D/Field3D/Point3D.h>
 #include <iostream>
-
+#include <exception>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
 using namespace std;
@@ -14,6 +14,26 @@ double round(double number)
     return number < 0.0 ? ceil(number - 0.5) : floor(number + 0.5);
 }
 
+
+std::vector<double> RandomUnitVector2D(const double& _random_number) {
+    if(_random_number < 0.0 || _random_number > 1.0) throw std::exception("Random number must be in [0, 1].");
+    auto t = 2 * M_PI * _random_number;
+    auto x = cos(t);
+    auto y = sin(t);
+    return std::vector<double>{x, y};
+}
+
+std::vector<double> RandomUnitVector3D(const double& _random_number1, const double& _random_number2) {
+    if(_random_number1 < 0.0 || _random_number1 > 1.0 || _random_number2 < 0.0 || _random_number2 > 1.0) 
+        throw std::exception("Random number must be in [0, 1].");
+
+    auto t = 2 * M_PI * _random_number1;
+    auto p = acos(1 - 2 * _random_number2);
+    auto x = sin(p) * cos(t);
+    auto y = sin(p) * sin(t);
+    auto z = cos(p);
+    return std::vector<double>{x, y, z};
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

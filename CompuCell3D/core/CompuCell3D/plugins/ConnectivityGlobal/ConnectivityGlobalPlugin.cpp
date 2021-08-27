@@ -67,7 +67,7 @@ void ConnectivityGlobalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 	penaltyMap.clear();
 
 	Automaton *automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton);
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
 
 	map<unsigned char, double> typeIdConnectivityPenaltyMap;
@@ -86,9 +86,8 @@ void ConnectivityGlobalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 
 	CC3DXMLElementList connectivityOnVecXML = _xmlData->getElements("ConnectivityOn");
 
-	ASSERT_OR_THROW("You cannot use Penalty and ConnectivityOn tags together. Stick to one convention", !(connectivityOnVecXML.size() && penaltyVecXML.size()));
-
-	// previous ASSERT_OR_THROW will encure that only one of the subsequent for loops be executed 
+	if (connectivityOnVecXML.size() && penaltyVecXML.size())
+		throw CC3DException("You cannot use Penalty and ConnectivityOn tags together. Stick to one convention");
 
 	for (int i = 0; i < penaltyVecXML.size(); ++i) {
 		typeIdConnectivityPenaltyMap.insert(make_pair(automaton->getTypeId(penaltyVecXML[i]->getAttribute("Type")), penaltyVecXML[i]->getDouble()));

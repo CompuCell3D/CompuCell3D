@@ -121,7 +121,7 @@ void LengthConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
 		lengthEnergyParamMap[automaton->getTypeId(lengthEnergyParam.cellTypeName)] = lengthEnergyParam;
 	}
 	//have to make sure that potts ptr is initilized
-	ASSERT_OR_THROW("Potts pointer is unitialized",potts);
+	if (!potts) throw CC3DException("Potts pointer is unitialized");
 }
 
 

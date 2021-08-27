@@ -67,14 +67,6 @@ void CurvaturePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	simulator->getPotts()->registerEnergyFunctionWithName(this,toString());
 	simulator->registerSteerableObject(this);
 
-	///will register FocalPointBoundaryPixelTracker here
-	//BasicClassAccessorBase * cellFocalPointBoundaryPixelTrackerAccessorPtr=&CurvatureTrackerAccessor;
-	///************************************************************************************************  
-	///REMARK. HAVE TO USE THE SAME BASIC CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
-	///************************************************************************************************  
-
-
-
 	bool pluginAlreadyRegisteredFlag;
 	Plugin *plugin=Simulator::pluginManager.get("CenterOfMass",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
 	if(!pluginAlreadyRegisteredFlag)
@@ -126,7 +118,7 @@ void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	// typeSpecificCurvatureParams.clear();
 	internalTypeSpecificCurvatureParams.clear();
 
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton);
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
 	// extracting internal parameters - used with compartmental cells
 	CC3DXMLElementList internalCurvatureParamVec=_xmlData->getElements("InternalParameters");
@@ -140,8 +132,8 @@ void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		int index = getIndex(type1, type2);
         cerr << "setting curvature parameters between type1=" << (int)type1 << " and type2=" << (int)type2 << endl;
 		curvatureParams_t::iterator it = internalCurvatureParams.find(index);
-		ASSERT_OR_THROW(string("Internal curvature parameters for ") + type1 + " " + type2 +
-			" already set!", it == internalCurvatureParams.end());
+		if (it != internalCurvatureParams.end())
+			throw CC3DException(string("Internal curvature parameters for ") + type1 + " " + type2 + " already set!");
 
 		if(internalCurvatureParamVec[i]->getFirstElement("ActivationEnergy"))
 			ctd.activationEnergy=internalCurvatureParamVec[i]->getFirstElement("ActivationEnergy")->getDouble();
@@ -208,6 +200,8 @@ void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			internalCurvatureParamsArray[internalCellTypesVector[i]][internalCellTypesVector[j]] = internalCurvatureParams[index];				
 		}
 
+		//Now internal type specific parameters
+
 		//Now that we know all the types used in the simulation we will find size of the plastParams
 		vector<unsigned char> internalTypeSpecCellTypesVector(internalTypeSpecCellTypesSet.begin(),internalTypeSpecCellTypesSet.end());//coping set to the vector
 		size=0;
@@ -222,11 +216,12 @@ void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		for(int i = 0 ; i < internalTypeSpecCellTypesVector.size() ; ++i){
 
 
-			internalTypeSpecificCurvatureParamsMap[internalTypeSpecCellTypesVector[i]]=internalTypeSpecificCurvatureParams[internalTypeSpecCellTypesVector[i]];						
+			internalTypeSpecificCurvatureParamsMap[internalTypeSpecCellTypesVector[i]]=internalTypeSpecificCurvatureParams[internalTypeSpecCellTypesVector[i]];
 
 		}
 
-		ASSERT_OR_THROW("THE NUMBER TYPE NAMES IN THE INTERNAL TYPE SPECIFIC SECTION DOES NOT MATCH THE NUMBER OF CELL TYPES IN INTERNAL PARAMETERS SECTION",internalTypeSpecificCurvatureParamsMap.size()==internalCurvatureParamsArray.size());
+		if (internalTypeSpecificCurvatureParamsMap.size() != internalCurvatureParamsArray.size())
+			throw CC3DException("THE NUMBER TYPE NAMES IN THE INTERNAL TYPE SPECIFIC SECTION DOES NOT MATCH THE NUMBER OF CELL TYPES IN INTERNAL PARAMETERS SECTION");
 
 		boundaryStrategy=BoundaryStrategy::getInstance();
 }
@@ -334,7 +329,7 @@ double CurvaturePlugin::tryAddingNewJunctionWithinCluster(const Point3D &pt,cons
 
 		auto nCellInternalParam = nCellInternalParamItr->second;
 
-		if(nCellInternalParam.maxNumberOfJunctions==0){	
+		if(nCellInternalParam.maxNumberOfJunctions==0){
 
 			continue;
 		}

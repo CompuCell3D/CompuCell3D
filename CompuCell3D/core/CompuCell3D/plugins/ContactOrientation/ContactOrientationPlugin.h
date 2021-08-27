@@ -22,7 +22,7 @@ namespace CompuCell3D {
     class CONTACTORIENTATION_EXPORT  ContactOrientationPlugin : public Plugin ,public EnergyFunction  {
         
     private:    
-        BasicClassAccessor<ContactOrientationData> contactOrientationDataAccessor;                
+        ExtraMembersGroupAccessor<ContactOrientationData> contactOrientationDataAccessor;
         CC3DXMLElement *xmlData;        
         
         Potts3D *potts;
@@ -61,7 +61,7 @@ namespace CompuCell3D {
         ContactOrientationPlugin();
         virtual ~ContactOrientationPlugin();
         
-        BasicClassAccessor<ContactOrientationData> * getContactOrientationDataAccessorPtr(){return & contactOrientationDataAccessor;}                
+        ExtraMembersGroupAccessor<ContactOrientationData> * getContactOrientationDataAccessorPtr(){return & contactOrientationDataAccessor;}
 
         
         //Energy function interface

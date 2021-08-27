@@ -47,12 +47,12 @@ namespace CompuCell3D {
     typedef double (ContactMultiCadPlugin::*contactEnergyPtr_t)(const CellG *cell1, const CellG *cell2);
 
 
-  private:
-    BasicClassAccessor<ContactMultiCadData> contactMultiCadDataAccessor;
-	  CC3DXMLElement *xmlData;
+   private:
+    ExtraMembersGroupAccessor<ContactMultiCadData> contactMultiCadDataAccessor;
+	CC3DXMLElement *xmlData;
     Potts3D *potts;
     Simulator *sim;
-	  //Energy function data
+	//Energy function data
 
     typedef std::unordered_map<unsigned char, std::unordered_map<unsigned char, double> > contactEnergyArray_t;
     typedef std::vector<std::vector<double> > cadherinSpecificityArray_t;
@@ -73,7 +73,7 @@ namespace CompuCell3D {
     
     std::list<CadherinData> cadherinDataList;
 
-    BasicClassAccessor<ContactMultiCadData> * contactMultiCadDataAccessorPtr;
+    ExtraMembersGroupAccessor<ContactMultiCadData> * contactMultiCadDataAccessorPtr;
 
     Automaton *automaton;
     bool weightDistance;
@@ -92,15 +92,15 @@ namespace CompuCell3D {
     ContactMultiCadPlugin();
     virtual ~ContactMultiCadPlugin();
 
-    BasicClassAccessor<ContactMultiCadData> * getContactMultiCadDataAccessorPtr(){return & contactMultiCadDataAccessor;}
+    ExtraMembersGroupAccessor<ContactMultiCadData> * getContactMultiCadDataAccessorPtr(){return & contactMultiCadDataAccessor;}
 
 
-		virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+	virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
 
-		virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
+	virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
 		
 
-		virtual void extraInit(Simulator *simulator);
+	virtual void extraInit(Simulator *simulator);
     
 
 
@@ -117,7 +117,7 @@ namespace CompuCell3D {
      */
     double contactEnergyLinear(const CellG *cell1, const CellG *cell2);
     void setContactEnergy(const std::string typeName1,
-			  const std::string typeName2, const double energy);
+	const std::string typeName2, const double energy);
 
 
   };

@@ -139,7 +139,7 @@ void ContactInternalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 	internalEnergyArray.clear();
 
 	automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
 	set<unsigned char> cellTypesSet;
 	
@@ -156,7 +156,7 @@ void ContactInternalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 		cellTypesSet.insert(automaton->getTypeId(energyVec[i]->getAttribute("Type2")));
 
 	}
-	
+
 	for(auto& i : cellTypesSet){
 		for(auto& j : cellTypesSet){
 

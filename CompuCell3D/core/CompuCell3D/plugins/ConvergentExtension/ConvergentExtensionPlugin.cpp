@@ -59,7 +59,7 @@ void ConvergentExtensionPlugin::extraInit(Simulator *simulator){
 
 void ConvergentExtensionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton);
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
 	interactingTypes.clear();
 	alphaConvExtMap.clear();
@@ -340,7 +340,7 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 					//oldCell
 					auto oldCellalphaConvExtMapItr = alphaConvExtMap.find(oldCell->type);
 					if (oldCellalphaConvExtMapItr==alphaConvExtMap.end()) continue;
-					
+
 					double deltaOldCell=oldCellalphaConvExtMapItr->second*newEccOldCell;
 					Coordinates3D<double> oldCellCM(newXCMOldCell,newXCMOldCell,0.0);
 					Coordinates3D<double> oldCellCMPtVec=ptTransNeighbor-oldCellCM;

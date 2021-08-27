@@ -105,7 +105,7 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 	plastParamsArray.clear();
 	internalPlastParamsArray.clear();
 
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton);
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
 	CC3DXMLElementList plastParamVec = _xmlData->getElements("Parameters");
 	if (plastParamVec.size()>0) {
@@ -208,7 +208,7 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 	CC3DXMLElement * linkXMLElem = _xmlData->getFirstElement("LinkConstituentLaw");
 
 	if (linkXMLElem  && linkXMLElem->findElement("Formula")) {
-		ASSERT_OR_THROW("CC3DML Error: Please change Formula tag to Expression tag inside LinkConstituentLaw element", false);
+		throw CC3DException("CC3DML Error: Please change Formula tag to Expression tag inside LinkConstituentLaw element");
 	}
 
 	if (linkXMLElem) {
@@ -468,7 +468,7 @@ double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point
 
 	auto newCellPlastParamsItr = internalPlastParamsArray.find(newCell->type);
 
-	if (newCellPlastParamsItr == internalPlastParamsArray.end()) { //the newCell type is not listed by the user    
+	if (newCellPlastParamsItr == internalPlastParamsArray.end()) { //the newCell type is not listed by the user
 		newJunctionInitiatedFlagWithinCluster = false;
 		return 0.0;
 	}
@@ -514,7 +514,7 @@ double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point
 		if (plastParamsItr == newCellPlastParams.end()) continue;
 
 		auto plastParams = plastParamsItr->second;
-		
+
 		if (maxNumberOfJunctionsInternalTotalMap[newCell->type] == 0) {
 			continue;
 		}
