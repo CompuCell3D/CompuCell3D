@@ -27,11 +27,7 @@
 #include <CompuCell3D/Potts3D/Potts3D.h>
 #include "CellType.h"
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
 #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-#include <BasicUtils/BasicClassAccessor.h>
-#include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/plugins/CellType/CellTypeG.h>
 #include <iostream>
 

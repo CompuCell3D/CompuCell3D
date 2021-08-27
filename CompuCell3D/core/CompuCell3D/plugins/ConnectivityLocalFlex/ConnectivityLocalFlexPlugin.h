@@ -29,9 +29,6 @@
 // // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
 
 // // // #include <CompuCell3D/Plugin.h>
-
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 #include "ConnectivityLocalFlexDLLSpecifier.h"
 
 
@@ -45,7 +42,7 @@ namespace CompuCell3D {
 
   class CONNECTIVITYLOCALFLEX_EXPORT  ConnectivityLocalFlexPlugin : public Plugin,public EnergyFunction {
   
-	BasicClassAccessor<ConnectivityLocalFlexData> connectivityLocalFlexDataAccessor;
+	ExtraMembersGroupAccessor<ConnectivityLocalFlexData> connectivityLocalFlexDataAccessor;
 	 //Energy Function data
     Potts3D *potts;
 
@@ -70,7 +67,7 @@ namespace CompuCell3D {
 	//Plugin interface
     virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
 
-	BasicClassAccessor<ConnectivityLocalFlexData> * getConnectivityLocalFlexDataPtr(){return & connectivityLocalFlexDataAccessor;}
+	ExtraMembersGroupAccessor<ConnectivityLocalFlexData> * getConnectivityLocalFlexDataPtr(){return & connectivityLocalFlexDataAccessor;}
 	void setConnectivityStrength(CellG * _cell, double _connectivityStrength);
 	double getConnectivityStrength(CellG * _cell);
 	

@@ -45,9 +45,8 @@ void ContactInternalPlugin::extraInit(Simulator *simulator){
 	update(xmlData,true);
 
 	Automaton * cellTypePluginAutomaton = potts->getAutomaton();
-	if (cellTypePluginAutomaton){
-		ASSERT_OR_THROW("The size of matrix of internal contact energy coefficients has must equal max_cell_type_id+1. You must list interactions coefficients between all cel types, even though they might not be part of a compartmentalized cell", 
-		internalEnergyArray.size() == ((unsigned int)cellTypePluginAutomaton->getMaxTypeId()+1) );
+	if (cellTypePluginAutomaton && internalEnergyArray.size() != ((unsigned int)cellTypePluginAutomaton->getMaxTypeId()+1)){
+		throw CC3DException("The size of matrix of internal contact energy coefficients has must equal max_cell_type_id+1. You must list interactions coefficients between all cel types, even though they might not be part of a compartmentalized cell");
 	}
 
 }
@@ -140,8 +139,7 @@ void ContactInternalPlugin::setContactInternalEnergy(const string typeName1,
   int index = getIndex(type1, type2);
 
   contactEnergies_t::iterator it = internalEnergies.find(index); //return an iterator for the contact Energy
-  ASSERT_OR_THROW(string("Internalenergy for ") + typeName1 + " " + typeName2 +
-		  " already set!", it == internalEnergies.end());
+  if (it != internalEnergies.end()) throw CC3DException(string("Internalenergy for ") + typeName1 + " " + typeName2 + " already set!");
 
   internalEnergies[index] = energy;
 }
@@ -175,7 +173,7 @@ void ContactInternalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 	internalEnergyArray.clear();
 
 	automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
 	set<unsigned char> cellTypesSet;
 	
@@ -218,7 +216,7 @@ void ContactInternalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 
 	  if (typePairsSet.find(pair<char,char>(type1,type2))!=typePairsSet.end() ||typePairsSet.find(pair<char,char>(type2,type1))!=typePairsSet.end()){
 	
-		ASSERT_OR_THROW(string("InternalEnergy for ") + typeName1 + " " + typeName2 + " already set!", false);
+		throw CC3DException(string("InternalEnergy for ") + typeName1 + " " + typeName2 + " already set!");
 
 	  }
 

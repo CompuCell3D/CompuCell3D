@@ -30,11 +30,6 @@
 using namespace CompuCell3D;
 
 
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-
-
-
 #include "CompartmentPlugin.h"
 
 
@@ -171,8 +166,8 @@ void CompartmentPlugin::setContactCompartmentEnergy(const string typeName1,
   int index = getIndex(type1, type2);
 
   contactEnergies_t::iterator it = contactEnergies.find(index); //return an iterator for the contact Energy
-  ASSERT_OR_THROW(string("Contact energy for ") + typeName1 + " " + typeName2 +
-		  " already set!", it == contactEnergies.end());
+  if (it != contactEnergies.end())
+  	throw CC3DException(string("Contact energy for ") + typeName1 + " " + typeName2 + " already set!");
 
   contactEnergies[index] = energy;
 }
@@ -187,8 +182,8 @@ void CompartmentPlugin::setInternalEnergy(const string typeName1,
   int index = getIndex(type1, type2);
 
   contactEnergies_t::iterator it = internalEnergies.find(index); //return an iterator for the contact Energy
-  ASSERT_OR_THROW(string("Internalenergy for ") + typeName1 + " " + typeName2 +
-		  " already set!", it == internalEnergies.end());
+  if (it != internalEnergies.end())
+  	throw CC3DException(string("Internalenergy for ") + typeName1 + " " + typeName2 + " already set!");
 
   internalEnergies[index] = energy;
 }
@@ -230,9 +225,9 @@ void CompartmentPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	internalEnergyArray.clear();
 
 	automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
-		set<unsigned char> cellTypesSet;
+	set<unsigned char> cellTypesSet;
 	set<unsigned char> cellInternalTypesSet;
 
 	CC3DXMLElementList energyVec=_xmlData->getElements("Energy");
@@ -294,7 +289,7 @@ void CompartmentPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	  if (typePairsSet.find(pair<char,char>(type1,type2))!=typePairsSet.end() ||typePairsSet.find(pair<char,char>(type2,type1))!=typePairsSet.end()){
 	
-		ASSERT_OR_THROW(string("InternalEnergy for ") + typeName1 + " " + typeName2 + " already set!", false);
+		throw CC3DException(string("InternalEnergy for ") + typeName1 + " " + typeName2 + " already set!");
 
 	  }
 

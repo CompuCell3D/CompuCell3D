@@ -27,11 +27,6 @@ ADD_LIBRARY(FlexibleDiffusionSolverFE_OpenCL SHARED
 	${HEADER_FILES}
 	${KERNEL_FILES}
 	FlexibleDiffusionSolverFE_GPU_OpenCL.cpp
-
-	#I need an acces to ASSERT_OR_THROW macro
-	#I don't really like includin this source file here. It might be better to compile it against the appropriate dll
-	#However, this solver is abandoned anyway
-	${PROJECT_SOURCE_DIR}/core/BasicUtils/BasicException.cpp
 	OpenCLHelper.cpp
 )
 

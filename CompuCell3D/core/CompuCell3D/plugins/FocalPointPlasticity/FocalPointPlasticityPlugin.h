@@ -41,9 +41,9 @@ namespace CompuCell3D {
     class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityPlugin : public Plugin, public EnergyFunction, public CellGChangeWatcher {
 
 
-        BasicClassAccessor<FPPLinkInventoryTracker<FocalPointPlasticityLink> > cellLinkInventoryTracker;
-        BasicClassAccessor<FPPLinkInventoryTracker<FocalPointPlasticityInternalLink> > cellInternalLinkInventoryTracker;
-        BasicClassAccessor<FPPLinkInventoryTracker<FocalPointPlasticityAnchor> > cellAnchorInventoryTracker;
+        ExtraMembersGroupAccessor<FPPLinkInventoryTracker<FocalPointPlasticityLink> > cellLinkInventoryTracker;
+        ExtraMembersGroupAccessor<FPPLinkInventoryTracker<FocalPointPlasticityInternalLink> > cellInternalLinkInventoryTracker;
+        ExtraMembersGroupAccessor<FPPLinkInventoryTracker<FocalPointPlasticityAnchor> > cellAnchorInventoryTracker;
 
         Simulator *sim;
 

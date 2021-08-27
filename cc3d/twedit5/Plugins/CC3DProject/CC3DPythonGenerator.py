@@ -453,6 +453,7 @@ class DeathSteppable(SteppableBasePy):
         header = '''
 from cc3d.core.PySteppables import *
 
+
 '''
         file.write(header)
         # writing simple demo steppable
@@ -465,18 +466,19 @@ from cc3d.core.PySteppables import *
 
             steppable_body = '''
 
-    def __init__(self,frequency={steppable_frequency}):
+    def __init__(self, frequency={steppable_frequency}):
 
         SteppableBasePy.__init__(self,frequency)
 
     def start(self):
         """
-        any code in the start function runs before MCS=0
+        Called before MCS=0 while building the initial simulation
         """
 
-    def step(self,mcs):
+    def step(self, mcs):
         """
-        type here the code that will run every frequency MCS
+        Called every frequency MCS while executing the simulation
+        
         :param mcs: current Monte Carlo step
         """
 
@@ -486,15 +488,14 @@ from cc3d.core.PySteppables import *
 
     def finish(self):
         """
-        Finish Function is called after the last MCS
+        Called after the last MCS to wrap up the simulation
         """
 
     def on_stop(self):
-        # this gets called each time user stops simulation
-        return
-
-
-        '''.format(steppable_frequency=steppable_frequency)
+        """
+        Called if the simulation is stopped before the last MCS
+        """
+'''.format(steppable_frequency=steppable_frequency)
 
             file.write(class_definition_line)
 

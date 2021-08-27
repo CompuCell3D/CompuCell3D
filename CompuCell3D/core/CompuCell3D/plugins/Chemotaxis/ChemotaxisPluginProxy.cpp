@@ -23,10 +23,12 @@
 #include "ChemotaxisPlugin.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-BasicPluginProxy<Plugin, ChemotaxisPlugin>
-chemotaxisProxy("Chemotaxis", "Adds the chemotactic energy function.",
-	     &Simulator::pluginManager);
+auto chemotaxisProxy = registerPlugin<Plugin, ChemotaxisPlugin>(
+	"Chemotaxis", 
+	"Adds the chemotactic energy function.",
+	&Simulator::pluginManager
+);

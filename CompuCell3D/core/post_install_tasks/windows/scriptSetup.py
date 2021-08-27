@@ -1,8 +1,8 @@
 import os
 import sys
 
-PREFIX_CC3D = sys.argv[1]
-PYTHON_INSTALL_PATH = sys.argv[2]
+PREFIX_CC3D = str(sys.argv[1]).strip()
+PYTHON_INSTALL_PATH = str(sys.argv[2]).strip()
 os.chdir(PREFIX_CC3D)
 
 
@@ -12,6 +12,7 @@ def localize_script(name: str):
     tmpFile.write("%s\n" % ("@ECHO OFF"))
     tmpFile.write("%s\n" % ("@SET PREFIX_CC3D=" + PREFIX_CC3D))
     tmpFile.write("%s\n" % ("@SET PYTHON_INSTALL_PATH=" + PYTHON_INSTALL_PATH))
+    tmpFile.write("%s\n" % r"@SET PATH=%PYTHON_INSTALL_PATH%\Library\bin;%PATH%")
     tmpFile.close()
 
     # concatenate

@@ -39,6 +39,15 @@ if(BUILD_PYINTERFACE)
         PATTERN "*.bak" EXCLUDE
         PATTERN "__pycache__" EXCLUDE
         PATTERN ${cc3d_py_source_dir}/core/*)
+
+    INSTALL(DIRECTORY  ${cc3d_py_source_dir}/doc DESTINATION ${cc3d_py_dir_target}
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "*.ui" EXCLUDE
+        PATTERN "*.in" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "*.bak" EXCLUDE
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN ${cc3d_py_source_dir}/doc/*)
 endif()
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL Windows)
@@ -61,22 +70,22 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   STRING(REGEX REPLACE "/" "\\\\" COMPUCELL_INSTALL_DIR_WINDOWS_STYLE ${COMPUCELL_INSTALL_DIR_WINDOWS_STYLE})
 
   configure_file(${RUN_SCRIPT_DIR}/cc3d.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/cc3d.bat @ONLY)
-  configure_file(${RUN_SCRIPT_DIR}/run_cml_cc3d.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/run_cml_cc3d.bat @ONLY)
+  # configure_file(${RUN_SCRIPT_DIR}/run_cml_cc3d.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/run_cml_cc3d.bat @ONLY)
 
   configure_file(${RUN_SCRIPT_DIR}/runScript.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/paramScan.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat @ONLY)
-  configure_file(${RUN_SCRIPT_DIR}/optimization.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat @ONLY)
+  # configure_file(${RUN_SCRIPT_DIR}/optimization.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat @ONLY)
 
   configure_file(${RUN_SCRIPT_DIR}/paramScan.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat.in.v2 @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/runScript.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat.in.v2 @ONLY)
-  configure_file(${RUN_SCRIPT_DIR}/optimization.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat.in.v2 @ONLY)
+  # configure_file(${RUN_SCRIPT_DIR}/optimization.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat.in.v2 @ONLY)
 
   INSTALL(FILES
     ${CMAKE_BINARY_DIR}/post_install_tasks/cc3d.bat
-    ${CMAKE_BINARY_DIR}/post_install_tasks/run_cml_cc3d.bat
+    # ${CMAKE_BINARY_DIR}/post_install_tasks/run_cml_cc3d.bat
     ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat
     ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat
-    ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat
+    # ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat
 
     DESTINATION
 
@@ -95,7 +104,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
   INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
   INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
-  INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
+  # INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 
 elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
@@ -110,14 +119,14 @@ elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/runScript.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/runScript.command @ONLY)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/paramScan.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/paramScan.command @ONLY)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/optimization.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/optimization.command @ONLY)
+    # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/optimization.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/optimization.command @ONLY)
 
 
     # FILE(GLOB mac_command_files "${CMAKE_BINARY_DIR}/post_install_tasks/mac/*.command")
-    INSTALL(FILES 
-        ${CMAKE_BINARY_DIR}/post_install_tasks/mac/runScript.command 
-        ${CMAKE_BINARY_DIR}/post_install_tasks/mac/paramScan.command 
-        ${CMAKE_BINARY_DIR}/post_install_tasks/mac/optimization.command 
+    INSTALL(FILES
+        ${CMAKE_BINARY_DIR}/post_install_tasks/mac/runScript.command
+        ${CMAKE_BINARY_DIR}/post_install_tasks/mac/paramScan.command
+        ${CMAKE_BINARY_DIR}/post_install_tasks/mac/optimization.command
         DESTINATION ${CMAKE_INSTALL_PREFIX}
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE  WORLD_READ WORLD_WRITE WORLD_EXECUTE
     )
@@ -166,7 +175,7 @@ if(INSTALL_PLAYER)
     INSTALL(FILES  ${cc3d_py_source_dir}/run_script.py DESTINATION ${cc3d_py_dir_target})
     INSTALL(FILES "${CMAKE_SOURCE_DIR}/core/post_install_tasks/windows/playerScriptSetup.py" DESTINATION ${CMAKE_INSTALL_PREFIX})
 
-    INSTALL(DIRECTORY 
+    INSTALL(DIRECTORY
         ${cc3d_py_source_dir}/player5 DESTINATION ${cc3d_py_dir_target}
         PATTERN "*.svn" EXCLUDE
         PATTERN "*.ui" EXCLUDE
@@ -184,7 +193,7 @@ if(INSTALL_PLAYER)
         configure_file(${RUN_SCRIPT_DIR}/playerParamScan.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/playerParamScan.bat @ONLY)
         configure_file(${RUN_SCRIPT_DIR}/playerParamScan.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/playerParamScan.bat.in.v2 @ONLY)
         install(FILES
-            ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat 
+            ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat
             ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat.in.v2
             ${CMAKE_BINARY_DIR}/post_install_tasks/playerParamScan.bat
             ${CMAKE_BINARY_DIR}/post_install_tasks/playerParamScan.bat.in.v2
@@ -197,9 +206,9 @@ if(INSTALL_PLAYER)
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/compucell3d.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/compucell3d.command @ONLY)
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/playerParamScan.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/playerParamScan.command @ONLY)
 
-        install(FILES 
-            ${CMAKE_BINARY_DIR}/post_install_tasks/mac/compucell3d.command 
-            ${CMAKE_BINARY_DIR}/post_install_tasks/mac/playerParamScan.command 
+        install(FILES
+            ${CMAKE_BINARY_DIR}/post_install_tasks/mac/compucell3d.command
+            ${CMAKE_BINARY_DIR}/post_install_tasks/mac/playerParamScan.command
             DESTINATION ${CMAKE_INSTALL_PREFIX}
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE  WORLD_READ WORLD_WRITE WORLD_EXECUTE
         )
@@ -209,8 +218,8 @@ if(INSTALL_PLAYER)
         configure_file(${RUN_SCRIPT_DIR}/compucell3d.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh @ONLY)
         configure_file(${RUN_SCRIPT_DIR}/playerParamScan.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/playerParamScan.sh @ONLY)
         install(FILES
-            ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh 
-            ${CMAKE_BINARY_DIR}/post_install_tasks/playerParamScan.sh 
+            ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh
+            ${CMAKE_BINARY_DIR}/post_install_tasks/playerParamScan.sh
             DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                                                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                                             WORLD_READ WORLD_WRITE WORLD_EXECUTE
@@ -222,8 +231,8 @@ endif()
 
 if(INSTALL_TWEDIT)
 
-    INSTALL(DIRECTORY  
-        ${cc3d_py_source_dir}/twedit5 DESTINATION ${cc3d_py_dir_target} 
+    INSTALL(DIRECTORY
+        ${cc3d_py_source_dir}/twedit5 DESTINATION ${cc3d_py_dir_target}
         PATTERN "*.svn" EXCLUDE
         PATTERN "*.ui" EXCLUDE
         PATTERN "*.in" EXCLUDE
@@ -238,8 +247,8 @@ if(INSTALL_TWEDIT)
         configure_file(${RUN_SCRIPT_DIR}/twedit++.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat @ONLY)
         configure_file(${RUN_SCRIPT_DIR}/twedit++.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat.in.v2 @ONLY)
         install(FILES
-            ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat 
-            ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat.in.v2 
+            ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat
+            ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat.in.v2
             DESTINATION
             ${CMAKE_INSTALL_PREFIX}
         )
@@ -247,17 +256,17 @@ if(INSTALL_TWEDIT)
     elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/twedit++.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/twedit++.command @ONLY)
-        install(FILES 
-            ${CMAKE_BINARY_DIR}/post_install_tasks/mac/twedit++.command 
-            DESTINATION ${CMAKE_INSTALL_PREFIX} 
+        install(FILES
+            ${CMAKE_BINARY_DIR}/post_install_tasks/mac/twedit++.command
+            DESTINATION ${CMAKE_INSTALL_PREFIX}
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE  WORLD_READ WORLD_WRITE WORLD_EXECUTE
         )
 
     else()
 
         configure_file(${RUN_SCRIPT_DIR}/twedit++.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh @ONLY)
-        INSTALL(FILES 
-            ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh 
+        INSTALL(FILES
+            ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh
             DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                                                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                                             WORLD_READ WORLD_WRITE WORLD_EXECUTE

@@ -1,11 +1,13 @@
 #include "ReactionKernels.h"
 
-#include <BasicUtils/BasicException.h>
+
 #include <fstream>
 #include <sstream>
 #include <cassert>
+#include <CompuCell3D/CC3DExceptions.h>
 
 using namespace std;
+using namespace CompuCell3D;
 
 string getTempDir(){
 	char *res=getenv("TMP");
@@ -19,7 +21,7 @@ string getTempDir(){
 	res=getenv("TMPDIR");
 	if(res)
 		return res;
-
+    
 	ASSERT_OR_THROW("Can not detect temporary directory, check getTempDir function", false);
 }
 

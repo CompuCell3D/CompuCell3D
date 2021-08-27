@@ -172,8 +172,7 @@ void ContactLocalFlexPlugin::setContactEnergy(const string typeName1,
     int index = getIndex(type1, type2);
 
     contactEnergies_t::iterator it = contactEnergies.find(index);
-    ASSERT_OR_THROW(string("Contact energy for ") + typeName1 + " " + typeName2 +
-        " already set!", it == contactEnergies.end());
+    if (it != contactEnergies.end()) throw CC3DException(string("Contact energy for ") + typeName1 + " " + typeName2 + " already set!");
 
     contactEnergies[index] = energy;
 }
@@ -259,7 +258,7 @@ void ContactLocalFlexPlugin::updateContactEnergyData(CellG *_cell) {
     //entries
 
     NeighborTrackerPlugin *neighborTrackerPlugin = (NeighborTrackerPlugin *)Simulator::pluginManager.get("NeighborTracker");
-    BasicClassAccessor<NeighborTracker> *neighborTrackerAccessorPtr = neighborTrackerPlugin->getNeighborTrackerAccessorPtr();
+    ExtraMembersGroupAccessor<NeighborTracker> *neighborTrackerAccessorPtr = neighborTrackerPlugin->getNeighborTrackerAccessorPtr();
     unsigned int size1 = 0, size2 = 0;
     //neighborTrackerAccessor.get(newCell->extraAttribPtr)->cellNeighbors
 
@@ -334,8 +333,8 @@ void ContactLocalFlexPlugin::field3DChange(const Point3D &pt, CellG *newCell, Ce
 void ContactLocalFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     automaton = potts->getAutomaton();
-    ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
-        set<unsigned char> cellTypesSet;
+    if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
+    set<unsigned char> cellTypesSet;
     contactEnergies.clear();
 
     CC3DXMLElementList energyVec = _xmlData->getElements("Energy");

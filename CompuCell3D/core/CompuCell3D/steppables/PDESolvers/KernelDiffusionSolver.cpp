@@ -6,13 +6,9 @@
 #include <CompuCell3D/Field3D/Field3DImpl.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/Field3D/Field3DIO.h>
-#include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
-#include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <PublicUtilities/StringUtils.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include <string>
@@ -56,9 +52,9 @@ void KernelDiffusionSolverSerializer::readFromFile(){
 			solverPtr->readConcentrationField(inName.str().c_str(),solverPtr->concentrationFieldVector[i]);;
 		}
 
-	} catch (BasicException &e) {
+	} catch (CC3DException &e) {
 		cerr<<"COULD NOT FIND ONE OF THE FILES"<<endl;
-		throw BasicException("Error in reading diffusion fields from file",e);
+		throw CC3DException("Error in reading diffusion fields from file", e);
 	}
 
 }
@@ -299,7 +295,7 @@ void KernelDiffusionSolver::extraInit(Simulator *simulator){
 void KernelDiffusionSolver::handleEvent(CC3DEvent & _event){
 	//cerr<<" THIS IS EVENT HANDLE FOR FAST DIFFUSION 2D FE"<<endl;	
 	if (_event.id==LATTICE_RESIZE){
-		ASSERT_OR_THROW("KernelDiffusionSolver works only with simulations with full periodic boundary conditions and lattice resizing is not supported for such simulations",false);
+		throw CC3DException("KernelDiffusionSolver works only with simulations with full periodic boundary conditions and lattice resizing is not supported for such simulations");
 	}
 	
 }
@@ -977,8 +973,7 @@ void KernelDiffusionSolver::readConcentrationField(std::string fileName,Concentr
 
 	ifstream in(fn.c_str());
 
-	ASSERT_OR_THROW(string("Could not open chemical concentration file '") +
-		fn	 + "'!", in.is_open());
+	if (!in.is_open()) throw CC3DException(string("Could not open chemical concentration file '") + fn + "'!");
 
 
 
@@ -1129,7 +1124,7 @@ void KernelDiffusionSolver::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 	//}
 
 
-	//notice, only basic steering is enabled for PDE solvers - changing diffusion constants, do -not-diffuse to types etc...
+	//notice, limited steering is enabled for PDE solvers - changing diffusion constants, do -not-diffuse to types etc...
 	// Coupling coefficients cannot be changed and also there is no way to allocate extra fields while simulation is running
 
 	diffSecrFieldTuppleVec.clear();
@@ -1256,7 +1251,7 @@ void KernelDiffusionSolver::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 	//}
 
 	//exit(0);
-	ASSERT_OR_THROW("DIMENSIONS OF THE LATTICE ARE INCOMPATIBLE WITH COARSE GRAINING FACTOR",suitableForCoarseGrainingFlag);
+	if (!suitableForCoarseGrainingFlag) throw CC3DException("DIMENSIONS OF THE LATTICE ARE INCOMPATIBLE WITH COARSE GRAINING FACTOR");
 
 }
 

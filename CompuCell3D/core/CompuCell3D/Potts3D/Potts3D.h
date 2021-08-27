@@ -36,14 +36,6 @@
 #include "FirstOrderExpansionAcceptanceFunction.h"
 #include "CustomAcceptanceFunction.h"
 
-#include <BasicUtils/BasicUtils.h>
-// #include <BasicUtils/BasicArray.h>
-// #include <BasicUtils/BasicDynamicClassFactory.h>
-
-// #include <BasicUtils/BasicClassAccessor.h>
-// #include <BasicUtils/BasicClassGroupFactory.h>
-// #include <BasicUtils/BasicClassGroup.h>
-// #include <BasicUtils/BasicRandomNumberGenerator.h>
 #include "CellInventory.h"
 #include "Cell.h"
 #include <string>
@@ -53,13 +45,12 @@
 // #include <list>
 #include <CompuCell3D/Boundary/BoundaryTypeDefinitions.h>
 #include <CompuCell3D/SteerableObject.h>
+#include <CompuCell3D/ExtraMembers.h>
 
 #include <PublicUtilities/Units/Unit.h>
 #include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
 
 // #include <CompuCell3D/dllDeclarationSpecifier.h>
-
-class BasicRandomNumberGeneratorNonStatic;
 
 namespace CompuCell3D {
 
@@ -79,6 +70,7 @@ namespace CompuCell3D {
 	class Simulator;
 	class CellTypeMotilityData;
 	class ParallelUtilsOpenMP;
+	class RandomNumberGenerator;
 
 	template<typename T>
 	class WatchableField3D;
@@ -129,7 +121,7 @@ namespace CompuCell3D {
         std::string simulation_input_dir;
 		/// Cell class aggregator and allocator.
 
-		BasicClassGroupFactory cellFactoryGroup; 	//creates aggregate of objects associated with cell 
+		ExtraMembersGroupFactory cellFactoryGroup; 	//creates aggregate of objects associated with cell 
 														//DOES NOT creat group of cells (as a name might suggest)
 
 		/// An array of energy functions to be evaluated to determine energy costs.
@@ -147,11 +139,13 @@ namespace CompuCell3D {
 		std::unordered_set<Point3D, Point3DHasher, Point3DComparator> justInsertedBoundaryPixelSet;
 		std::unordered_set<Point3D, Point3DHasher, Point3DComparator> justDeletedBoundaryPixelSet;
 		std::vector<Point3D> boundaryPixelVector;
-		Point3D randomPickBoundaryPixel(BasicRandomNumberGeneratorNonStatic * rand);
+		Point3D randomPickBoundaryPixel(RandomNumberGenerator * rand);
 
 
 
-		std::vector<BasicRandomNumberGeneratorNonStatic> randNSVec;
+		std::vector<RandomNumberGenerator*> randNSVec;
+		void initRandomNumberGenerators();
+		void uninitRandomNumberGenerators();
 
 		TypeTransition *typeTransition; //fires up automatic tasks associated with type reassignment
 
@@ -371,8 +365,8 @@ namespace CompuCell3D {
 		virtual void registerCellGChangeWatcher(CellGChangeWatcher *_watcher);
 
 
-		/// Register accessor to a class with a cellGroupFactory. Accessor will access a class which is a mamber of a BasicClassGroup	
-		virtual void registerClassAccessor(BasicClassAccessorBase *_accessor);
+		/// Register accessor to a class with a cellGroupFactory. Accessor will access a class which is a mamber of a ExtraMembersGroup
+		virtual void registerClassAccessor(ExtraMembersGroupAccessorBase *_accessor);
 
 		/// Add a potts stepper to be called after each potts step.
 		virtual void registerStepper(Stepper *stepper);
@@ -409,18 +403,7 @@ namespace CompuCell3D {
 
 		virtual void destroyCellG(CellG * cell, bool _removeFromInventory = true);
 
-		BasicClassGroupFactory * getCellFactoryGroupPtr() { return &cellFactoryGroup; };
-
-
-		/**
-		 * Deallocate a cell.
-		 *
-		 * @param cell The cell to destroy.
-		 */
-
-		 /// dealocate a BasicClassGroup
-		 //virtual void Potts3D::destroyBasicClassGroup(BasicClassGroup *_BCG); 
-
+		ExtraMembersGroupFactory * getCellFactoryGroupPtr() { return &cellFactoryGroup; };
 
 		 /// @return The current number of cells in the field.
 		virtual unsigned int getNumCells() { return cellInventory.getCellInventorySize(); }
@@ -476,7 +459,7 @@ namespace CompuCell3D {
 		/// @return A pointer to the potts cell field.
 
 
-		/// @return A pointer to the potts field of BasicClassGroup.
+		/// @return A pointer to the potts field.
 		virtual Field3D<CellG *> *getCellFieldG() { return (Field3D<CellG *> *)cellFieldG; }
 		virtual Field3DImpl<CellG *> *getCellFieldGImpl() { return (Field3DImpl<CellG *> *)cellFieldG; }
 

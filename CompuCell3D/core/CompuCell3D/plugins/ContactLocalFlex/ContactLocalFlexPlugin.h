@@ -28,9 +28,6 @@
 #include <CompuCell3D/CC3D.h>
 
 
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
-
 // // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 // // // // #include <CompuCell3D/Potts3D/TypeChangeWatcher.h>
 // // // #include <CompuCell3D/Plugin.h>
@@ -57,7 +54,7 @@ namespace CompuCell3D {
     ParallelUtilsOpenMP *pUtils;
     ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;
       
-    BasicClassAccessor<ContactLocalFlexDataContainer> contactDataContainerAccessor;
+    ExtraMembersGroupAccessor<ContactLocalFlexDataContainer> contactDataContainerAccessor;
     Potts3D *potts;
     Simulator *sim;
     void updateContactEnergyData(CellG *_cell);  
@@ -87,7 +84,7 @@ namespace CompuCell3D {
     ContactLocalFlexPlugin();
     virtual ~ContactLocalFlexPlugin();
     
-   BasicClassAccessor<ContactLocalFlexDataContainer> * getContactDataContainerAccessorPtr(){return & contactDataContainerAccessor;}
+   ExtraMembersGroupAccessor<ContactLocalFlexDataContainer> * getContactDataContainerAccessorPtr(){return & contactDataContainerAccessor;}
    void initializeContactLocalFlexData();
 
 	//CellGCellwatcher interface

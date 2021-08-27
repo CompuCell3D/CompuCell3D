@@ -47,14 +47,12 @@ LINK_DIRECTORIES(${VTK_LIBRARY_DIRS})
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     SET(LIBS
        CompuCellLibShared
-       BasicUtilsStatic
        ${Python_LIBRARY_RELEASE}
        ${VTK_LIBS}
     )
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
     SET(LIBS
        CompuCellLibShared
-       BasicUtilsShared
        ${PYTHON_LIBRARY_TO_LINK}
        ${VTK_LIBS}
     )
@@ -62,7 +60,6 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     SET(LIBS
        CompuCellLibShared
-       BasicUtilsShared
        ${Python_LIBRARY_RELEASE}
        ${VTK_LIBS}
     )

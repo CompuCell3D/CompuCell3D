@@ -2611,7 +2611,7 @@ vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArra
 
     bool neighbor_tracker_loaded = Simulator::pluginManager.isLoaded("NeighborTracker");
     //cout << "neighbor_tracker_loaded=" << neighbor_tracker_loaded << endl;
-    BasicClassAccessor<NeighborTracker> *neighborTrackerAccessorPtr;
+    ExtraMembersGroupAccessor<NeighborTracker> *neighborTrackerAccessorPtr;
     if (neighbor_tracker_loaded) {
         bool pluginAlreadyRegisteredFlag;
         NeighborTrackerPlugin *nTrackerPlugin = (NeighborTrackerPlugin*)Simulator::pluginManager.get("NeighborTracker", &pluginAlreadyRegisteredFlag);

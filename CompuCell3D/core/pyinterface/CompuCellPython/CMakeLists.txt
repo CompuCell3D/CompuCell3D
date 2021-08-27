@@ -3,16 +3,14 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
     if(${MSVC})
         # have to add /bigobj to visual studion compilation of hte CompuCell python module
-        message ("THIS IS FLAGS ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+        SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /bigobj")
         SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /bigobj")
-        message ("AFTER THIS IS FLAGS ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
                 
     endif()
 
 SET(LIBS
     CompuCellLibShared
     Field3DStatic
-    BasicUtilsStatic
     PublicUtilitiesStatic
     UnitsStatic
     ${PYTHON_LIBRARY_TO_LINK}
@@ -31,7 +29,6 @@ endif()
 SET(LIBS
   CompuCellLibShared
   Field3DShared
-  BasicUtilsShared
   PublicUtilitiesShared
   UnitsShared
   ${PYTHON_LIBRARY_TO_LINK}
@@ -100,6 +97,17 @@ INCLUDE_DIRECTORIES(
 # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CompuCell.i.in ${CMAKE_CURRENT_SOURCE_DIR}/CompuCellOld.i)
 
 SET_SOURCE_FILES_PROPERTIES(CompuCell.i  PROPERTIES CPLUSPLUS ON)
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+
+    SET_SOURCE_FILES_PROPERTIES(CompuCell.i  PROPERTIES SWIG_FLAGS "-DCC3D_ISWIN")
+
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+
+    SET_SOURCE_FILES_PROPERTIES(CompuCell.i  PROPERTIES SWIG_FLAGS "-DCC3D_ISMAC")
+
+endif()
+
 # SET_SOURCE_FILES_PROPERTIES(CompuCellPython.i CompuCellAuxPython.i PROPERTIES SWIG_FLAGS "-includeall")
 SWIG_ADD_LIBRARY(CompuCell LANGUAGE python SOURCES CompuCell.i)
 
