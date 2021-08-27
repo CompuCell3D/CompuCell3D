@@ -895,9 +895,13 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
                 return False
 
             elif not name.isidentifier():
-                QMessageBox.warning(self, "Invalid simulation name",
-                                    "Please specify a name with no spaces that begins with a letter or '_'",
-                                    QMessageBox.Ok)
+                msg = """
+                Please specifying a name that meets with following criteria
+                
+                1. Consists only of letters, numbers and/or `_`. 
+                2. Starts with either a letter or '_'
+                """
+                QMessageBox.warning(self, "Invalid simulation name", msg, QMessageBox.Ok)
                 return False
 
             else:
