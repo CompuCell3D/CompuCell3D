@@ -6,7 +6,10 @@ from cc3d.player5.Plugins.ViewManagerPlugins import ui_screenshot_description_br
 from cc3d.player5.Plugins.ViewManagerPlugins.QJsonBrowser import QJsonModel, QJsonTreeView
 import weakref
 import cc3d
-from os.path import exists
+from cc3d import CompuCellSetup
+from typing import Optional
+from pathlib import Path
+import shutil
 
 
 class ScreenshotDescriptionBrowser(QDialog, ui_screenshot_description_browser.Ui_screenshotDescriptionDialog):
@@ -27,6 +30,27 @@ class ScreenshotDescriptionBrowser(QDialog, ui_screenshot_description_browser.Ui
 
         self.updateUi()
 
+    def updateUi(self):
+        """
+
+        :return:
+        """
+        self.clear_screenshots_PB.clicked.connect(self.clear_screenshots)
+
+    def clear_screenshots(self):
+        print('deleting your screenshots')
+        ret = QMessageBox.warning(self, 'Screenshot Configuration Removal',
+                                  'Are you sure you want to delete screenshot '
+                                  'configuration from .cc3d project folder?',
+                                  QMessageBox.No | QMessageBox.Yes)
+        if ret == QMessageBox.Yes:
+            stv: cc3d.player5.Plugins.ViewManagerPlugins.SimpleTabView.SimpleTabView = self.stv()
+            scr_desc_json_pth = self.get_screenshot_description_fname(stv=stv)
+            if scr_desc_json_pth is not None:
+                if scr_desc_json_pth.parent.is_dir():
+                    shutil.rmtree(str(scr_desc_json_pth.parent))
+                    self.load()
+
     def load(self):
         stv: cc3d.player5.Plugins.ViewManagerPlugins.SimpleTabView.SimpleTabView = self.stv()
 
@@ -34,31 +58,18 @@ class ScreenshotDescriptionBrowser(QDialog, ui_screenshot_description_browser.Ui
                                     'Make sure simulation is running (and ideally is paused) ' \
                                     'and you have generated screenshot description file - by clicking camera button'
 
-        if stv is None or stv.screenshotManager is None:
-            # When not running
-            from cc3d import CompuCellSetup
-            sim_file_name = CompuCellSetup.persistent_globals.simulation_file_name
-
-            if sim_file_name is None or sim_file_name == '':
-                self.scr_list_TE.setPlainText(scr_desc_no_found_msg_str)
-                return
-
-            from os.path import dirname, join
-            scr_desc_json_pth = join(dirname(sim_file_name), 'screenshot_data', 'screenshots.json')
-        else:
-            # When running
-            scr_desc_json_pth = stv.screenshotManager.get_screenshot_filename()
-
-
-        if not exists(scr_desc_json_pth):
+        scr_desc_json_pth = self.get_screenshot_description_fname(stv=stv)
+        if scr_desc_json_pth is None:
             self.scr_list_TE.setPlainText(scr_desc_no_found_msg_str)
+            if self.model is not None:
+                document = {}
+                self.model.load(document)
             return
 
         self.view = QJsonTreeView()
         self.model = QJsonModel()
 
         self.view.setModel(self.model)
-
 
         with open(scr_desc_json_pth, 'r') as j_in:
 
@@ -80,8 +91,22 @@ class ScreenshotDescriptionBrowser(QDialog, ui_screenshot_description_browser.Ui
         )
         self.v_layout.insertWidget(3, self.view, stretch=10)
 
-    def updateUi(self):
-        """
+    def get_screenshot_description_fname(self, stv) -> Optional[Path]:
 
-        :return:
-        """
+        scr_desc_json_pth = None
+        if stv is None or stv.screenshotManager is None:
+            # When not running
+            sim_file_name = CompuCellSetup.persistent_globals.simulation_file_name
+
+            if sim_file_name is None or sim_file_name == '':
+                return None
+
+            scr_desc_json_pth =Path(sim_file_name).parent.joinpath('screenshot_data', 'screenshots.json')
+        else:
+            # When running
+            scr_desc_json_pth = Path(stv.screenshotManager.get_screenshot_filename())
+
+        if not scr_desc_json_pth.exists():
+            return None
+
+        return scr_desc_json_pth
