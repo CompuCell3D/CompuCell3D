@@ -51,6 +51,9 @@ class ScreenshotDescriptionBrowser(QDialog, ui_screenshot_description_browser.Ui
                     shutil.rmtree(str(scr_desc_json_pth.parent))
                     self.load()
 
+    def enable_delete_screenshots(self, flag: bool) -> None:
+        self.clear_screenshots_PB.setEnabled(flag)
+
     def load(self):
         stv: cc3d.player5.Plugins.ViewManagerPlugins.SimpleTabView.SimpleTabView = self.stv()
 
@@ -59,6 +62,9 @@ class ScreenshotDescriptionBrowser(QDialog, ui_screenshot_description_browser.Ui
                                     'and you have generated screenshot description file - by clicking camera button'
 
         scr_desc_json_pth = self.get_screenshot_description_fname(stv=stv)
+
+        self.enable_delete_screenshots(False)
+
         if scr_desc_json_pth is None:
             self.scr_list_TE.setPlainText(scr_desc_no_found_msg_str)
             if self.model is not None:
@@ -89,6 +95,7 @@ class ScreenshotDescriptionBrowser(QDialog, ui_screenshot_description_browser.Ui
                 json.dumps(self.model.json(), sort_keys=True) ==
                 json.dumps(document, sort_keys=True)
         )
+        self.enable_delete_screenshots(True)
         self.v_layout.insertWidget(3, self.view, stretch=10)
 
     def get_screenshot_description_fname(self, stv) -> Optional[Path]:
@@ -101,7 +108,7 @@ class ScreenshotDescriptionBrowser(QDialog, ui_screenshot_description_browser.Ui
             if sim_file_name is None or sim_file_name == '':
                 return None
 
-            scr_desc_json_pth =Path(sim_file_name).parent.joinpath('screenshot_data', 'screenshots.json')
+            scr_desc_json_pth = Path(sim_file_name).parent.joinpath('screenshot_data', 'screenshots.json')
         else:
             # When running
             scr_desc_json_pth = Path(stv.screenshotManager.get_screenshot_filename())
