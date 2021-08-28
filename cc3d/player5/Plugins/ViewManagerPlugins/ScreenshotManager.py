@@ -115,7 +115,7 @@ class ScreenshotManager(ScreenshotManagerCore):
     def add_2d_screenshot(self, _plotName, _plotType, _projection, _projectionPosition,
                           _camera, metadata=None):
         """
-        Addd 2D screenshot configuration . Called from GraphicsFrameWidget
+        Adds 2D screenshot configuration . Called from GraphicsFrameWidget
         :param _plotName:
         :param _plotType:
         :param _projection:
@@ -134,7 +134,15 @@ class ScreenshotManager(ScreenshotManagerCore):
 
         self.update_screenshot_container(scr_data=scr_data, _camera=_camera, metadata=metadata)
 
-    def add_3d_screenshot(self, _plotName, _plotType, _camera, metadata=None):  # called from GraphicsFrameWidget
+    def add_3d_screenshot(self, _plotName, _plotType, _camera, metadata=None):
+        """
+        Adds 3D screenshot configuration . Called from GraphicsFrameWidget
+        :param _plotName:
+        :param _plotType:
+        :param _camera:
+        :param metadata:
+        :return:
+        """
         scr_data = ScreenshotData()
         scr_data.spaceDimension = "3D"
         scr_data.plotData = (_plotName, _plotType)
