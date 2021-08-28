@@ -43,12 +43,6 @@ void ContactInternalPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 
 void ContactInternalPlugin::extraInit(Simulator *simulator){
 	update(xmlData,true);
-
-	Automaton * cellTypePluginAutomaton = potts->getAutomaton();
-	if (cellTypePluginAutomaton && internalEnergyArray.size() != ((unsigned int)cellTypePluginAutomaton->getMaxTypeId()+1)){
-		throw CC3DException("The size of matrix of internal contact energy coefficients has must equal max_cell_type_id+1. You must list interactions coefficients between all cel types, even though they might not be part of a compartmentalized cell");
-	}
-
 }
 
 double ContactInternalPlugin::changeEnergy(const Point3D &pt,
@@ -133,43 +127,15 @@ double ContactInternalPlugin::internalEnergy(const CellG *cell1, const CellG *ce
 void ContactInternalPlugin::setContactInternalEnergy(const string typeName1,
 				     const string typeName2,
 				     const double energy) {
-  char type1 = automaton->getTypeId(typeName1);
-  char type2 = automaton->getTypeId(typeName2);
+  unsigned char type1 = automaton->getTypeId(typeName1);
+  unsigned char type2 = automaton->getTypeId(typeName2);
     
-  int index = getIndex(type1, type2);
-
-  contactEnergies_t::iterator it = internalEnergies.find(index); //return an iterator for the contact Energy
-  if (it != internalEnergies.end()) throw CC3DException(string("Internalenergy for ") + typeName1 + " " + typeName2 + " already set!");
-
-  internalEnergies[index] = energy;
-}
-int ContactInternalPlugin::getIndex(const int type1, const int type2) const {
-  if (type1 < type2) return ((type1 + 1) | ((type2 + 1) << 16));
-  else return ((type2 + 1) | ((type1 + 1) << 16));
+  internalEnergyArray[type1][type2] = energy;
+  internalEnergyArray[type2][type1] = energy;
 }
 
 void ContactInternalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
-	//if(potts->getDisplayUnitsFlag()){
-	//	Unit contactEnergyUnit=potts->getEnergyUnit()/powerUnit(potts->getLengthUnit(),2);
-
-
-
-
-	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-	//	if (!unitsElem){ //add Units element
-	//		unitsElem=_xmlData->attachElement("Units");
-	//	}
-
-	//	if(unitsElem->getFirstElement("EnergyUnit")){
-	//		unitsElem->getFirstElement("EnergyUnit")->updateElementValue(contactEnergyUnit.toString());
-	//	}else{
-	//		CC3DXMLElement * energyUnitElem = unitsElem->attachElement("EnergyUnit",contactEnergyUnit.toString());
-	//	}
-
-	//}
-
-	internalEnergies.clear();
 	internalEnergyArray.clear();
 
 	automaton = potts->getAutomaton();
@@ -183,7 +149,7 @@ void ContactInternalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 	//figuring out maximum cell type id used in the xml
 	for (int i = 0 ; i<energyVec.size(); ++i){
 
-		//setContactInternalEnergy(energyVec[i]->getAttribute("Type1"), energyVec[i]->getAttribute("Type2"), energyVec[i]->getDouble());
+		setContactInternalEnergy(energyVec[i]->getAttribute("Type1"), energyVec[i]->getAttribute("Type2"), energyVec[i]->getDouble());
 
 		//inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
 		cellTypesSet.insert(automaton->getTypeId(energyVec[i]->getAttribute("Type1")));
@@ -191,77 +157,13 @@ void ContactInternalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 
 	}
 
-	
+	for(auto& i : cellTypesSet){
+		for(auto& j : cellTypesSet){
 
-	
-	//Now that we know all the types used in the simulation we will find size of the contactEnergyArray
-	vector<unsigned char> cellTypesVector(cellTypesSet.begin(),cellTypesSet.end());//coping set to the vector
-	
-	
-
-	int size= * (max_element(cellTypesVector.begin(),cellTypesVector.end()));
-	size+=1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-
-	int index ;
-	internalEnergyArray.assign(size,vector<double>(size,0.0));	
-
-	//once the contact matrix has been allocated we check xml elements and put energy values into the matrix 
-	set<pair<char,char> > typePairsSet;
-	for (int i = 0 ; i<energyVec.size(); ++i){
-	  string typeName1 = energyVec[i]->getAttribute("Type1");
-	  string typeName2 = energyVec[i]->getAttribute("Type2");
-	  char type1 = automaton->getTypeId(typeName1);
-	  char type2 = automaton->getTypeId(typeName2);
-	  
-
-	  if (typePairsSet.find(pair<char,char>(type1,type2))!=typePairsSet.end() ||typePairsSet.find(pair<char,char>(type2,type1))!=typePairsSet.end()){
-	
-		throw CC3DException(string("InternalEnergy for ") + typeName1 + " " + typeName2 + " already set!");
-
-	  }
-
-	  typePairsSet.insert(pair<char,char>(type1,type2));
-	  internalEnergyArray[type1][type2] = energyVec[i]->getDouble();
-	}
-
-	//symmetrizing internal contact energy matrix
-	for(int i = 1 ; i < size ; ++i) {
-		for(int j = 1 ; j < size ; ++j){
-			if (internalEnergyArray[i][j]!=internalEnergyArray[j][i]){
-				if (internalEnergyArray[i][j]!=0.0){
-					internalEnergyArray[j][i]=internalEnergyArray[i][j];
-				}else{
-					internalEnergyArray[i][j]=internalEnergyArray[j][i];
-				}
-			}
-		}
-	}
-	
-	////End Internal vector allocation
-	//for(int i = 1 ; i < size ; ++i) {
-	//	for(int j = 1 ; j < size ; ++j){
-	//		cerr<<"i="<<i<<" j="<<j<<" i_size="<<size<<endl;
-	//		cerr<<"cellTypesVector[i-1]="<<(int)cellTypesVector[i-1]<<endl;
-	//		cerr<<"cellTypesVector[j-1]="<<(int)cellTypesVector[j-1]<<endl;
-	//		cerr<<"cellTypesVector.size()="<<cellTypesVector.size()<<endl;
-	//		index = getIndex(cellTypesVector[i-1],cellTypesVector[j-1]);
-
-	//		internalEnergyArray[i][j] = internalEnergies[index];
-
-	//	}
-	//}
-	
-	
-	for(int i = 0 ; i < size ; ++i){
-		for(int j = 0 ; j < size ; ++j){
-
-			cerr<<"internal_energy["<<i<<"]["<<j<<"]="<<internalEnergyArray[i][j]<<endl;
+			cerr<<"internal_energy["<<to_string(i)<<"]["<<to_string(j)<<"]="<<internalEnergyArray[i][j]<<endl;
 
 		}
 	}
-
-
-
    
 	//Here I initialize max neighbor index for direct acces to the list of neighbors 
    boundaryStrategy=BoundaryStrategy::getInstance();

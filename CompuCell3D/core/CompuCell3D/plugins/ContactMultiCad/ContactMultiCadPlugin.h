@@ -28,11 +28,6 @@
 
 #include "ContactMultiCadData.h"
 
-
-// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-
-// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// // // #include <CompuCell3D/Plugin.h>
 #include "ContactMultiCadDLLSpecifier.h"
 
 
@@ -48,34 +43,29 @@ namespace CompuCell3D {
 
 
   class CONTACTMULTICAD_EXPORT ContactMultiCadPlugin : public Plugin,public EnergyFunction {
-   public:
-      typedef double (ContactMultiCadPlugin::*contactEnergyPtr_t)(const CellG *cell1, const CellG *cell2);
+  public:
+    typedef double (ContactMultiCadPlugin::*contactEnergyPtr_t)(const CellG *cell1, const CellG *cell2);
 
 
    private:
     ExtraMembersGroupAccessor<ContactMultiCadData> contactMultiCadDataAccessor;
-	 CC3DXMLElement *xmlData;
+	CC3DXMLElement *xmlData;
     Potts3D *potts;
     Simulator *sim;
-	 //Energy function data
+	//Energy function data
 
-    typedef std::map<int, double> contactEnergies_t;
-    typedef std::vector<std::vector<double> > contactEnergyArray_t;
-    typedef std::vector<contactEnergyArray_t> multiSpecificityArray_t;
-
+    typedef std::unordered_map<unsigned char, std::unordered_map<unsigned char, double> > contactEnergyArray_t;
+    typedef std::vector<std::vector<double> > cadherinSpecificityArray_t;
     
     std::set<std::string> cadherinNameSet;
     std::vector<std::string> cadherinNameOrderedVector;
 
-    contactEnergies_t contactEnergies;
-
 
     contactEnergyArray_t contactEnergyArray;
 
-    contactEnergyArray_t cadherinSpecificityArray;
+    cadherinSpecificityArray_t cadherinSpecificityArray;
     std::map<std::string,unsigned int> mapCadNameToIndex;
     unsigned int numberOfCadherins;
-//     multiSpecificityArray_t multiSpecificityArray;
         
     std::string contactFunctionType;
     std::string autoName;
@@ -105,20 +95,20 @@ namespace CompuCell3D {
     ExtraMembersGroupAccessor<ContactMultiCadData> * getContactMultiCadDataAccessorPtr(){return & contactMultiCadDataAccessor;}
 
 
-		virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+	virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
 
-		virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
+	virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
 		
 
-		virtual void extraInit(Simulator *simulator);
+	virtual void extraInit(Simulator *simulator);
     
 
 
 
     //Steerrable interface
-	 virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
-	 virtual std::string steerableName();
-	 virtual std::string toString();
+    virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
+    virtual std::string steerableName();
+    virtual std::string toString();
 
 	//Energy Function fcns
   	double contactEnergy(const CellG *cell1, const CellG *cell2);
@@ -127,13 +117,7 @@ namespace CompuCell3D {
      */
     double contactEnergyLinear(const CellG *cell1, const CellG *cell2);
     void setContactEnergy(const std::string typeName1,
-			  const std::string typeName2, const double energy);
-
-  protected:
-    /**
-     * @return The index used for ordering contact energies in the map.
-     */
-    int getIndex(const int type1, const int type2) const;
+	const std::string typeName2, const double energy);
 
 
   };

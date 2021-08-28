@@ -42,6 +42,7 @@
 #include <vector>
 #include <map>
 #include <unordered_set>
+#include <unordered_map>
 // #include <list>
 #include <CompuCell3D/Boundary/BoundaryTypeDefinitions.h>
 #include <CompuCell3D/SteerableObject.h>
@@ -204,7 +205,7 @@ namespace CompuCell3D {
 		Point3D maxCoordinates;
 		unsigned int attemptedEC;
 		unsigned int flips;
-		std::vector<float> cellTypeMotilityVec;
+		std::unordered_map<unsigned char, float> cellTypeMotilityMap;
 
 		//units
 		Unit massUnit;
@@ -285,8 +286,10 @@ namespace CompuCell3D {
 
 
 		void initializeCellTypeMotility(std::vector<CellTypeMotilityData> & _cellTypeMotilityVector);
-		void setCellTypeMotilityVec(std::vector<float> & _cellTypeMotilityVec);
-		const std::vector<float> & getCellTypeMotilityVec() const { return cellTypeMotilityVec; }
+		const bool hasCellTypeMotility() const { return !cellTypeMotilityMap.empty(); }
+		const float getCellTypeMotility(const unsigned char& _typeId) const;
+		void setCellTypeMotility(const unsigned char& _typeId, const float& _val);
+		void setCellTypeMotility(const std::string& _typeName, const float& _val);
 
 		void setDebugOutputFrequency(unsigned int _freq) { debugOutputFrequency = _freq; }
 		void setSimulator(Simulator *_sim) { sim = _sim; }
@@ -471,5 +474,12 @@ namespace CompuCell3D {
 		long getRecentlyCreatedCellId() { return recentlyCreatedCellId; }
 
 	};
+
+	inline const float Potts3D::getCellTypeMotility(const unsigned char& _typeId) const {
+		auto x = cellTypeMotilityMap.find(_typeId);
+		return x == cellTypeMotilityMap.end() ? (float)getTemperature() : x->second;
+	}
+
+	inline void Potts3D::setCellTypeMotility(const unsigned char& _typeId, const float& _val) { cellTypeMotilityMap[_typeId] = _val; }
 };
 #endif

@@ -27,14 +27,8 @@
 
 #include <CompuCell3D/CC3D.h>
 
-
-// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// // // // #include <CompuCell3D/Potts3D/TypeChangeWatcher.h>
-// // // #include <CompuCell3D/Plugin.h>
-
 #include "ContactLocalFlexData.h"
-// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
+
 #include "ContactLocalFlexDLLSpecifier.h"
 
 class CC3DXMLElement;
@@ -63,10 +57,7 @@ namespace CompuCell3D {
 
     // EnergyFunction Data
 
-    typedef std::map<int, double> contactEnergies_t;
-    typedef std::vector<std::vector<double> > contactEnergyArray_t;
-    
-    contactEnergies_t contactEnergies;
+    typedef std::unordered_map<unsigned char, std::unordered_map<unsigned char, double> > contactEnergyArray_t;
 
     contactEnergyArray_t contactEnergyArray;
     
@@ -78,39 +69,37 @@ namespace CompuCell3D {
 
     unsigned int maxNeighborIndex;
     BoundaryStrategy * boundaryStrategy;
-	 CC3DXMLElement *xmlData;
+	CC3DXMLElement *xmlData;
 
   public:
     ContactLocalFlexPlugin();
     virtual ~ContactLocalFlexPlugin();
     
-   ExtraMembersGroupAccessor<ContactLocalFlexDataContainer> * getContactDataContainerAccessorPtr(){return & contactDataContainerAccessor;}
-   void initializeContactLocalFlexData();
+    ExtraMembersGroupAccessor<ContactLocalFlexDataContainer> * getContactDataContainerAccessorPtr(){return & contactDataContainerAccessor;}
+    void initializeContactLocalFlexData();
 
-	//CellGCellwatcher interface
-   virtual void field3DChange(const Point3D &pt, CellG *newCell,
-                                 CellG *oldCell);
-	//EnergyFunction interface
-    virtual double changeEnergy(const Point3D &pt, const CellG *newCell,
-                                const CellG *oldCell);
-	//Plugin interface 
-	virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
-	virtual void extraInit(Simulator *simulator);
-	virtual std::string toString();
+    //CellGCellwatcher interface
+    virtual void field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell);
+	  //EnergyFunction interface
+    virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+    //Plugin interface
+    virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
+    virtual void extraInit(Simulator *simulator);
+    virtual std::string toString();
 
     //Steerrable interface
     virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
     virtual std::string steerableName();
 
 
-	 //void initializeContactEnergy(CC3DXMLElement *_xmlData);
+	//void initializeContactEnergy(CC3DXMLElement *_xmlData);
 
     /**
      * @return The contact energy between cell1 and cell2.
      */
     double contactEnergy(const CellG *cell1, const CellG *cell2);
 
-	 double defaultContactEnergy(const CellG *cell1, const CellG *cell2);
+	double defaultContactEnergy(const CellG *cell1, const CellG *cell2);
 
     /**
      * Sets the contact energy for two cell types.  A -1 type is interpreted

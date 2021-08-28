@@ -26,15 +26,6 @@
 
 #include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Plugin.h>
-
-// // // //#include <CompuCell3D/Potts3D/CellChangeWatcher.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <CompuCell3D/plugins/CellType/CellTypeG.h>
-// // // #include <string>
-// // // #include <map>
-//#include "CellTypeParseData.h"
-//#include <CompuCell3D/dllDeclarationSpecifier.h>
 #include "CellTypeG.h"
 #include "CellTypeDLLSpecifier.h"
 
@@ -51,15 +42,9 @@ namespace CompuCell3D {
     
     std::map<unsigned char,std::string> typeNameMap;
     std::map<std::string,unsigned char> nameTypeMap;
-    
-    
-    
-//     std::map<unsigned char,std::string>::const_iterator typeNameMapItr;  
-//     std::map<std::string,unsigned char>::const_iterator nameTypeMapItr;
-
+    unsigned char maxTypeId;
     
   public:
-    //CellTypeParseData cpd;
 
     CellTypePlugin();
     virtual ~CellTypePlugin();
@@ -67,8 +52,8 @@ namespace CompuCell3D {
     ///SimObject interface
     virtual void init(Simulator *simulator, ParseData *_pd=0);
 
-	 virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
-	 virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
+    virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
+    virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
    
     std::map<unsigned char,std::string> & getTypeNameMap(){return typeNameMap;}
     
@@ -76,24 +61,27 @@ namespace CompuCell3D {
     virtual unsigned char getCellType(const CellG*) const;
     virtual std::string getTypeName(const char type) const;
     virtual unsigned char getTypeId(const std::string typeName) const;
-	virtual unsigned char getMaxTypeId() const;
+    virtual unsigned char getMaxTypeId() const;
+    virtual const std::vector<unsigned char> getTypeIds() const;
     
-
-
-    ///Begin XMLSerializable interface
-    //virtual void readXML(XMLPullParser &in);
-    //virtual void writeXML(XMLSerializer &out);
     virtual std::string toString();
-    ///End XMLSerializable interface
 
     //Steerable object interface
     virtual std::string steerableName();
     virtual void update(ParseData *_pd, bool _fullInitFlag=false);
 
-	 
-
-    
   };
+
+  inline unsigned char CellTypePlugin::getCellType(const CellG* cell) const { return cell ? cell->type : 0; };
+
+  inline unsigned char CellTypePlugin::getMaxTypeId() const { return typeNameMap.empty() ? 0 : maxTypeId; };
+
+  inline const std::vector<unsigned char> CellTypePlugin::getTypeIds() const {
+    std::vector<unsigned char> o;
+    for (auto& x : nameTypeMap) o.push_back(x.second);
+    return o;
+  }
+
 };
 #endif
 
