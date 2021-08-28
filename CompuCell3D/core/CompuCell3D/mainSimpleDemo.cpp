@@ -27,9 +27,6 @@
 #include "Simulator.h"
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicException.h>
-#include <BasicUtils/BasicSmartPointer.h>
-
 // #include <XMLCereal/XMLPullParser.h>
 
 // #include <XercesUtils/XercesStr.h>
@@ -45,7 +42,6 @@ using namespace std;
 #include <stdlib.h>
 
 //#include <config.h>
-#include <BasicUtils/BasicRandomNumberGenerator.h>
 
 //void Syntax(const string name) {
 //  cerr << "Syntax: " << name << " <config>" << endl;
@@ -59,7 +55,7 @@ using namespace std;
 //
 PluginManager<Plugin> Simulator::pluginManager;
 PluginManager<Steppable> Simulator::steppableManager;
-BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
+PluginManager<PluginBase> Simulator::pluginBaseManager;
 //
 //int main(int argc, char *argv[]) {
 //

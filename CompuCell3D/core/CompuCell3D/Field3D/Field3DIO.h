@@ -38,8 +38,7 @@
 
 
 
-#include <BasicUtils/BasicException.h>
-#include <BasicUtils/BasicString.h>
+#include <CompuCell3D/CC3DExceptions.h>
 
 namespace CompuCell3D {
 
@@ -105,8 +104,7 @@ namespace CompuCell3D {
     for (pt.z = 0; pt.z < dim.z; pt.z++)
       for (pt.y = 0; pt.y < dim.y; pt.y++)
 	for (pt.x = 0; pt.x < dim.x; pt.x++) {
-	  ASSERT_OR_THROW("Field3D<T> Error while writing field!",
-			  !stream.eof());
+    if (stream.eof()) throw CC3DException("Field3D<T> Error while writing field!");
 	  c = field.get(pt);
 	  stream.write((char *)&c, sizeof(c));
 	}
@@ -125,11 +123,8 @@ namespace CompuCell3D {
     char typeStr[3];
     stream.read(typeStr, 2);
     typeStr[2] = '\0';
-    ASSERT_OR_THROW(std::string("Field3D<T> Type string mismatch on read! ") +
-		    "Expected '" + field.typeStr + "' read '" + typeStr + "'.",
-		    (typeStr[0] == field.typeStr[0] &&
-		     typeStr[1] == field.typeStr[1]));
-
+    if (!(typeStr[0] == field.typeStr[0] && typeStr[1] == field.typeStr[1]))
+      throw CC3DException(std::string("Field3D<T> Type string mismatch on read! ") + "Expected '" + std::string(field.typeStr) + "' read '" + typeStr + "'.");
     
     char dims = 0;
     uint32_t x = 0;
@@ -142,13 +137,11 @@ namespace CompuCell3D {
     Dim3D readDim(ntohl(x), ntohl(y), ntohl(z));
     
 
-    ASSERT_OR_THROW("Field3D<T> Read wrong number of dimensions! " +
-		    BasicString((int)dims),
-		    dims == 3);
+    if (dims != 3) 
+      throw CC3DException("Field3D<T> Read wrong number of dimensions! " + std::to_string((int)dims));
 
-    ASSERT_OR_THROW(std::string("Field3D<T> Wrong dimensions on read! ") +
-		    "Expected " + field.getDim() + " got " + readDim + ".",
-		    readDim == field.getDim());
+    if (readDim != field.getDim()) 
+      throw CC3DException(std::string("Field3D<T> Wrong dimensions on read! ") + "Expected " + field.getDim() + " got " + readDim + ".");
 
     bool lByteOrder = false;
     bool sByteOrder = false;
@@ -162,8 +155,7 @@ namespace CompuCell3D {
     for (pt.z = 0; pt.z < readDim.z; pt.z++)
       for (pt.y = 0; pt.y < readDim.y; pt.y++)
 	for (pt.x = 0; pt.x < readDim.x; pt.x++) {
-	  ASSERT_OR_THROW("Field3D<T> Error reading file!",
-			  !stream.eof());
+    if (stream.eof()) throw CC3DException("Field3D<T> Error reading file!");
 
 	  if (lByteOrder) {
 	    stream.read((char *)&l, sizeof(T));

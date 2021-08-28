@@ -75,7 +75,7 @@ void PIFDumper::step( const unsigned int currentStep){
 
    //ofstream pif(fullNameStr.str().c_str());
    ofstream pif(abs_path.c_str());
-   ASSERT_OR_THROW("Could not open file: " + abs_path + " for writing", pif.is_open());
+   if (!pif.is_open()) throw CC3DException("Could not open file: " + abs_path + " for writing");
 
 
    WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();

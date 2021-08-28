@@ -21,22 +21,8 @@
 *************************************************************************/
 #include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <PublicUtilities/NumericalUtils.h>
-// // // #include <complex>
-// // // #include <algorithm>
-
 using namespace CompuCell3D;
 
-
-
-// // // #include <iostream>
 using namespace std;
 
 
@@ -78,8 +64,6 @@ void LengthConstraintPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData
 
 	}else{
 		changeEnergyFcnPtr=&LengthConstraintPlugin::changeEnergy_3D;
-
-		//ASSERT_OR_THROW("Currently LengthConstraint plugin can only be used in 2D",0);
 	}
 
 }
@@ -117,39 +101,9 @@ double LengthConstraintPlugin::getMinorTargetLength(CellG * _cell){
 
 void LengthConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
-	//if(potts->getDisplayUnitsFlag()){		
-	//	Unit lambdaLengthUnit=potts->getEnergyUnit()/(potts->getLengthUnit()*potts->getLengthUnit());
-
-	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-	//	if (!unitsElem){ //add Units element
-	//		unitsElem=_xmlData->attachElement("Units");
-	//	}
-
-	//	if(unitsElem->getFirstElement("TargetLengthUnit")){
-	//		unitsElem->getFirstElement("TargetLengthUnit")->updateElementValue(potts->getLengthUnit().toString());
-	//	}else{
-	//		unitsElem->attachElement("TargetLengthUnit",potts->getLengthUnit().toString());
-	//	}
-
-
-
-	//	if(unitsElem->getFirstElement("MinorTargetLengthUnit")){
-	//		unitsElem->getFirstElement("MinorTargetLengthUnit")->updateElementValue(potts->getLengthUnit().toString());
-	//	}else{
-	//		unitsElem->attachElement("MinorTargetLengthUnit",potts->getLengthUnit().toString());
-	//	}
-
-	//	if(unitsElem->getFirstElement("LambdaLengthUnit")){
-	//		unitsElem->getFirstElement("LambdaLengthUnit")->updateElementValue(lambdaLengthUnit.toString());
-	//	}else{
-	//		unitsElem->attachElement("LambdaLengthUnit",lambdaLengthUnit.toString());
-	//	}
-
-	//}
-
-
 	typeNameVec.clear();
-	lengthEnergyParamVector.clear();
+	lengthEnergyParamMap.clear();
+	Automaton* automaton = potts->getAutomaton();
 
 	CC3DXMLElementList lengthEnergyParamVecXML=_xmlData->getElements("LengthEnergyParameters");
 	for (int i =0 ; i < lengthEnergyParamVecXML.size() ; ++i){
@@ -164,11 +118,10 @@ void LengthConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
 		}
 
 		typeNameVec.push_back(lengthEnergyParam.cellTypeName);
-		lengthEnergyParamVector.push_back(lengthEnergyParam);
+		lengthEnergyParamMap[automaton->getTypeId(lengthEnergyParam.cellTypeName)] = lengthEnergyParam;
 	}
 	//have to make sure that potts ptr is initilized
-	ASSERT_OR_THROW("Potts pointer is unitialized",potts);
-	initTypeId(potts);
+	if (!potts) throw CC3DException("Potts pointer is unitialized");
 }
 
 
@@ -212,9 +165,10 @@ double LengthConstraintPlugin::changeEnergy_xz(const Point3D &pt,const CellG *ne
 		double targetLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->targetLength;;
 		
 		if(lambdaLength==0.0) {
-			if ( newCell->type < lengthEnergyParamVector.size() ){
-				lambdaLength=lengthEnergyParamVector[newCell->type].lambdaLength;
-				targetLength=lengthEnergyParamVector[newCell->type].targetLength;
+			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(newCell->type);
+			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
+				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
+				targetLength=lengthEnergyParamMapItr->second.targetLength;
 			}
 		}
 		//we can optimize it further in case user does not specify local paramteress (i.e. per cell id and by-type definition is not specified as well)
@@ -241,9 +195,10 @@ double LengthConstraintPlugin::changeEnergy_xz(const Point3D &pt,const CellG *ne
 		double targetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
 		
 		if(lambdaLength==0.0) {
-			if ( oldCell->type < lengthEnergyParamVector.size() ){
-				lambdaLength=lengthEnergyParamVector[oldCell->type].lambdaLength;
-				targetLength=lengthEnergyParamVector[oldCell->type].targetLength;
+			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
+			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
+				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
+				targetLength=lengthEnergyParamMapItr->second.targetLength;
 			}
 		}
 
@@ -302,9 +257,10 @@ double LengthConstraintPlugin::changeEnergy_xy(const Point3D &pt,const CellG *ne
 		double targetLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->targetLength;;
 		
 		if(lambdaLength==0.0) {
-			if ( newCell->type < lengthEnergyParamVector.size() ){
-				lambdaLength=lengthEnergyParamVector[newCell->type].lambdaLength;
-				targetLength=lengthEnergyParamVector[newCell->type].targetLength;
+			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(newCell->type);
+			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
+				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
+				targetLength=lengthEnergyParamMapItr->second.targetLength;
 			}
 		}
 
@@ -330,9 +286,10 @@ double LengthConstraintPlugin::changeEnergy_xy(const Point3D &pt,const CellG *ne
 		double targetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
 		
 		if(lambdaLength==0.0) {
-			if ( oldCell->type < lengthEnergyParamVector.size() ){
-				lambdaLength=lengthEnergyParamVector[oldCell->type].lambdaLength;
-				targetLength=lengthEnergyParamVector[oldCell->type].targetLength;
+			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
+			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
+				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
+				targetLength=lengthEnergyParamMapItr->second.targetLength;
 			}
 		}
 
@@ -392,9 +349,10 @@ double LengthConstraintPlugin::changeEnergy_yz(const Point3D &pt,const CellG *ne
 		double targetLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->targetLength;;
 		
 		if(lambdaLength==0.0 ) {
-			if ( newCell->type < lengthEnergyParamVector.size() ){
-				lambdaLength=lengthEnergyParamVector[newCell->type].lambdaLength;
-				targetLength=lengthEnergyParamVector[newCell->type].targetLength;
+			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(newCell->type);
+			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
+				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
+				targetLength=lengthEnergyParamMapItr->second.targetLength;
 			}
 		}
 
@@ -421,9 +379,10 @@ double LengthConstraintPlugin::changeEnergy_yz(const Point3D &pt,const CellG *ne
 		double targetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
 		
 		if(lambdaLength==0.0 ) {
-			if ( oldCell->type < lengthEnergyParamVector.size() ){
-				lambdaLength=lengthEnergyParamVector[oldCell->type].lambdaLength;
-				targetLength=lengthEnergyParamVector[oldCell->type].targetLength;
+			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
+			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
+				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
+				targetLength=lengthEnergyParamMapItr->second.targetLength;
 			}
 		}
 
@@ -487,10 +446,11 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		double minorTargetLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->minorTargetLength;;
 
 		if(lambdaLength==0.0 ) {
-			if ( newCell->type < lengthEnergyParamVector.size() ){
-				lambdaLength=lengthEnergyParamVector[newCell->type].lambdaLength;
-				targetLength=lengthEnergyParamVector[newCell->type].targetLength;
-				minorTargetLength=lengthEnergyParamVector[newCell->type].minorTargetLength;
+			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(newCell->type);
+			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
+				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
+				targetLength=lengthEnergyParamMapItr->second.targetLength;
+				minorTargetLength=lengthEnergyParamMapItr->second.minorTargetLength;
 			}
 		}
 
@@ -571,17 +531,8 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		//sorting semiaxes according the their lengths (shortest first)
 		sort(axesNew.begin(),axesNew.end());
 
-		// for (int i = 0 ; i < axesNew.size() ; ++i)
-		// cerr<<"axesNew["<<i<<"]="<<axesNew[i]<<endl;
-
-		// for (int i = 0 ;i<roots.size();++i){
-		// cerr<<"root["<<i<<"]="<<roots[i]<<endl;
-		// }
-		// cerr<<"newCell->volume="<<newCell->volume<<" newCell->surface="<<newCell->surface<<endl;
 		double currLength=2.0*axes[2];
 		double currMinorLength=2.0*axes[0];
-		// cerr<<" currLength="<<currLength<<" currMinorLength="<<currMinorLength<<endl;
-		// cerr<<"minorTargetLength="<<lengthEnergyParamVector[newCell->type].minorTargetLength<<endl;
 
 		double currEnergy = lambdaLength * ((currLength - targetLength)*(currLength - targetLength)+(currMinorLength - minorTargetLength)*(currMinorLength - minorTargetLength));
 
@@ -600,10 +551,11 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		double minorTargetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->minorTargetLength;;
 
 		if(lambdaLength==0.0 ) {
-			if ( oldCell->type < lengthEnergyParamVector.size() ){
-				lambdaLength=lengthEnergyParamVector[oldCell->type].lambdaLength;
-				targetLength=lengthEnergyParamVector[oldCell->type].targetLength;
-				minorTargetLength=lengthEnergyParamVector[oldCell->type].minorTargetLength;
+			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
+			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
+				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
+				targetLength=lengthEnergyParamMapItr->second.targetLength;
+				minorTargetLength=lengthEnergyParamMapItr->second.minorTargetLength;
 			}
 		}
 		double xcm = (oldCell->xCM / (float) oldCell->volume);
@@ -700,13 +652,11 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		//}
 
 		double currEnergy = lambdaLength * ((currLength - targetLength)*(currLength - targetLength)+(currMinorLength - minorTargetLength)*(currMinorLength - minorTargetLength));
-		//double currEnergy = lengthEnergyParamVector[oldCell->type].lambdaLength * (currLength - lengthEnergyParamVector[oldCell->type].targetLength)*(currLength - lengthEnergyParamVector[oldCell->type].targetLength);
 
 		double newLength = 2.0*axesNew[2];
 		double newMinorLength=2.0*axesNew[0];
 
 		double newEnergy = lambdaLength * ((newLength - targetLength)*(newLength - targetLength)+(newMinorLength - minorTargetLength)*(newMinorLength - minorTargetLength));
-		//double newEnergy = lengthEnergyParamVector[oldCell->type].lambdaLength * (newLength - lengthEnergyParamVector[oldCell->type].targetLength) * (newLength - lengthEnergyParamVector[oldCell->type].targetLength);
 
 		energy += newEnergy - currEnergy;
 		//cerr<<"lambdaLength="<<lambdaLength <<" targetLength="<<targetLength<<" minorTargetLength="<<minorTargetLength<<endl;
@@ -719,35 +669,6 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 	else
 		return energy;
 }
-
-
-void LengthConstraintPlugin::initTypeId(Potts3D * potts){
-	unsigned char maxType(0);
-	Automaton * automaton=potts->getAutomaton();
-
-	vector<unsigned char> typeIdVec(typeNameVec.size(),0);
-
-	vector<LengthEnergyParam> lepVec=lengthEnergyParamVector;//temporaty storage
-	//translate type name to type id
-	for(unsigned int i =0 ; i < typeNameVec.size() ;++i){
-		typeIdVec[i]=automaton->getTypeId(typeNameVec[i]);
-
-		if(typeIdVec[i]>maxType)
-			maxType=typeIdVec[i];
-	}
-
-	//assigning vector lambda targetVol pairs in such a wav that it will be possible to use e.g.vec[cellType].lambda statements
-	// note that some of the vector elements migh be left default initialized
-	lengthEnergyParamVector.clear();
-	lengthEnergyParamVector.assign(maxType+1,LengthEnergyParam());
-
-	for(unsigned int i =0 ; i < typeIdVec.size() ;++i){
-		lengthEnergyParamVector[typeIdVec[i]]=lepVec[i];
-	}
-
-}
-
-
 
 std::string LengthConstraintPlugin::toString(){
 	return string("LengthConstraint");

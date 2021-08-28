@@ -9,8 +9,6 @@
 
 // // // #include <CompuCell3D/Potts3D/CellInventory.h>
 // // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
 // // // #include <PublicUtilities/StringUtils.h>
 // // // #include <algorithm>
 
@@ -226,7 +224,7 @@ void CleaverMeshDumper::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	//PARSE XML IN THIS FUNCTION
 	//For more information on XML parser function please see CC3D code or lookup XML utils API
 	automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 	cellTypesSet.clear();
 
 	std::vector<std::string> typeNames;

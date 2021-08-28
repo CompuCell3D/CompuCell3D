@@ -1,6 +1,6 @@
 #include "Solver.h"
 
-#include <BasicUtils/BasicException.h>
+#include <CompuCell3D/CC3DExceptions.h>
 #include "ImplicitMatrix.h"
 #include "../GPUSolverParams.h"
 

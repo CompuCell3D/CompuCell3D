@@ -22,17 +22,13 @@
 
 
 #include "Simulator.h"
+#include "CC3DExceptions.h"
 
 
 
 
 //#include <XMLCereal/XMLPullParser.h>
 //#include <XMLCereal/XMLSerializer.h>
-
-#include <BasicUtils/BasicClassFactory.h>
-#include <BasicUtils/BasicSmartPointer.h>
-#include <BasicUtils/BasicException.h>
-#include <BasicUtils/BasicString.h>
 
 #include "ClassRegistry.h"
 
@@ -47,11 +43,9 @@ ClassRegistry::ClassRegistry(Simulator *simulator) : simulator(simulator) {
 
 
 Steppable *ClassRegistry::getStepper(string id) {
-//   BasicSmartPointer<Steppable> stepper = activeSteppersMap[id];
   Steppable* stepper = activeSteppersMap[id];
-//   ASSERT_OR_THROW(string("Stepper '") + id + "' not found!", stepper.get());
 //   cerr<<"REQUESTING STEPPER: "<<id<<endl;
-  ASSERT_OR_THROW(string("Stepper '") + id + "' not found!", stepper);
+  if (!stepper) throw CC3DException(string("Stepper '") + id + "' not found!");
 //   return stepper.get();
   return stepper;
 }

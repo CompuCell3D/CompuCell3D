@@ -41,9 +41,9 @@ namespace CompuCell3D {
     class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityPlugin : public Plugin, public EnergyFunction, public CellGChangeWatcher {
 
 
-        BasicClassAccessor<FPPLinkInventoryTracker<FocalPointPlasticityLink> > cellLinkInventoryTracker;
-        BasicClassAccessor<FPPLinkInventoryTracker<FocalPointPlasticityInternalLink> > cellInternalLinkInventoryTracker;
-        BasicClassAccessor<FPPLinkInventoryTracker<FocalPointPlasticityAnchor> > cellAnchorInventoryTracker;
+        ExtraMembersGroupAccessor<FPPLinkInventoryTracker<FocalPointPlasticityLink> > cellLinkInventoryTracker;
+        ExtraMembersGroupAccessor<FPPLinkInventoryTracker<FocalPointPlasticityInternalLink> > cellInternalLinkInventoryTracker;
+        ExtraMembersGroupAccessor<FPPLinkInventoryTracker<FocalPointPlasticityAnchor> > cellAnchorInventoryTracker;
 
         Simulator *sim;
 
@@ -107,21 +107,15 @@ namespace CompuCell3D {
         double tryAddingNewJunctionWithinCluster(const Point3D &pt, const CellG *newCell);
   
         typedef std::map<int, FocalPointPlasticityTrackerData> plastParams_t;
-
-        plastParams_t plastParams;
-        plastParams_t internalPlastParams;
-
-        plastParams_t typeSpecificPlastParams;
-        plastParams_t internalTypeSpecificPlastParams;
       
-		typedef std::vector<std::vector<FocalPointPlasticityTrackerData> > FocalPointPlasticityTrackerDataArray_t;
+		typedef std::unordered_map<unsigned char, std::unordered_map<unsigned char, FocalPointPlasticityTrackerData> > FocalPointPlasticityTrackerDataArray_t;
 		typedef std::vector<FocalPointPlasticityTrackerData> FocalPointPlasticityTrackerDataVector_t;
 
         FocalPointPlasticityTrackerDataArray_t plastParamsArray;
         FocalPointPlasticityTrackerDataArray_t internalPlastParamsArray;
 
-        std::vector<int> maxNumberOfJunctionsTotalVec;
-        std::vector<int> maxNumberOfJunctionsInternalTotalVec;
+        std::unordered_map<unsigned char, int> maxNumberOfJunctionsTotalMap;
+        std::unordered_map<unsigned char, int> maxNumberOfJunctionsInternalTotalMap;
         int neighborOrder;
 
     public:
@@ -173,8 +167,6 @@ namespace CompuCell3D {
 		virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
 		virtual std::string steerableName();
 		virtual std::string toString();
-	protected:
-		int getIndex(const int type1, const int type2) const;
 
 	};
 };

@@ -27,8 +27,6 @@
 // // // #include <CompuCell3D/Potts3D/Potts3D.h>
 // // // #include <CompuCell3D/Potts3D/Cell.h>
 
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
 // // // //#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 // // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
 // // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
@@ -52,7 +50,7 @@ namespace CompuCell3D {
     Potts3D *potts;
 	CC3DXMLElement *xmlData;
     Simulator *sim;
-    BasicClassAccessor<NeighborTracker> *neighborTrackerAccessorPtr;
+    ExtraMembersGroupAccessor<NeighborTracker> *neighborTrackerAccessorPtr;
    Point3D boundaryConditionIndicator;
    Dim3D fieldDim;
    BoundaryStrategy *boundaryStrategy;

@@ -23,9 +23,10 @@
 #ifndef POINT3D_H
 #define POINT3D_H
 
-#include <BasicUtils/BasicString.h>
+
 
 #include <iostream>
+#include <string>
 
 namespace CompuCell3D {
 
@@ -57,24 +58,24 @@ namespace CompuCell3D {
      */    
     Point3D &operator=(const Point3D pt);
 
-    /** 
+    /**
      * Add the coordinates of pt to this Point3D.
      */
     Point3D &operator+=(const Point3D pt);
 
-    /** 
+    /**
      * Subtract the coordinates of pt to this Point3D.
      */
     Point3D &operator-=(const Point3D pt);
-        
+
     /// Comparison operator
     bool operator==(const Point3D pt) const { return (x == pt.x && y == pt.y && z == pt.z); }
 
     /// Not equal operator
     bool operator!=(const Point3D pt) const { return !(*this==pt); }
-    
+
     bool operator<(const Point3D  _rhs) const;
-    
+
     friend std::ostream &operator<<(std::ostream &stream, const Point3D &pt);
   };
 
@@ -131,8 +132,8 @@ namespace CompuCell3D {
    * Overloads the operator std::string + Point3D.
    */
   inline std::string operator+(const std::string s, const Point3D pt) { 
-    return s + "(" + BasicString(pt.x) + "," + BasicString(pt.y) + "," +
-      BasicString(pt.z) + ")";
+    return s + "(" + std::to_string((int)pt.x) + "," + std::to_string((int)pt.y) + "," +
+      std::to_string((int)pt.z) + ")";
   }
 };
 #endif

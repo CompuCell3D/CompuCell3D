@@ -6,7 +6,7 @@ INCLUDE_DIRECTORIES (
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   SET(PLUGIN_DEPENDENCIES CompuCellLibShared XMLUtilsShared muParserStatic ExpressionEvaluatorShared)
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-  SET(PLUGIN_DEPENDENCIES CompuCellLibShared Potts3DShared BasicUtilsShared Field3DShared muParserShared ExpressionEvaluatorShared)
+  SET(PLUGIN_DEPENDENCIES CompuCellLibShared Potts3DShared Field3DShared muParserShared ExpressionEvaluatorShared)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 MACRO(ADD_COMPUCELL3D_PLUGIN_HEADERS plugin)

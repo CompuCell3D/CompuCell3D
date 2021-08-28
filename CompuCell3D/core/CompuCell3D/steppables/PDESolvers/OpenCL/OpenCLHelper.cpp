@@ -8,7 +8,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include <BasicUtils/BasicException.h>
+#include <CompuCell3D/CC3DExceptions.h>
 
 using namespace CompuCell3D;
 

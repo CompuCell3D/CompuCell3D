@@ -114,7 +114,7 @@ namespace CompuCell3D {
 			} catch (mu::Parser::exception_type &e)
 			{
 				cerr<<e.GetMsg()<<endl;
-				ASSERT_OR_THROW(e.GetMsg(),0);
+				throw CC3DException(e.GetMsg());
 			}
 		}	
 

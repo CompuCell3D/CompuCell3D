@@ -23,10 +23,12 @@
 #include "ViscosityPlugin.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-
-BasicPluginProxy<Plugin, ViscosityPlugin>
-viscosityProxy("Viscosity", "Viscosity contact term",&Simulator::pluginManager);
+auto viscosityProxy = registerPlugin<Plugin, ViscosityPlugin>(
+    "Viscosity", 
+    "Viscosity contact term",
+    &Simulator::pluginManager
+);

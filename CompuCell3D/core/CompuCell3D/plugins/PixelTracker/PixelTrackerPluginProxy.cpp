@@ -21,17 +21,14 @@
  *************************************************************************/
 
 #include "PixelTrackerPlugin.h"
-// #include "BoundaryPixelTrackerPlugin.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-BasicPluginProxy<Plugin, PixelTrackerPlugin>
-pixelTrackerProxy("PixelTracker", "Tracks  cell pixels and stores them in the set",
-	    &Simulator::pluginManager);
-
-// BasicPluginProxy<Plugin, BoundaryPixelTrackerPlugin>
-// boundaryPixelTrackerProxy("BoundaryPixelTracker", "Tracks  cells' boundary pixels and stores them in the set",
-	    // &Simulator::pluginManager);
+auto pixelTrackerProxy = registerPlugin<Plugin, PixelTrackerPlugin>(
+	"PixelTracker", 
+	"Tracks cell pixels and stores them in the set",
+	&Simulator::pluginManager
+);

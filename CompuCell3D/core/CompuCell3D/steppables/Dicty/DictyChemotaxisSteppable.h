@@ -29,9 +29,6 @@
 
 #include "DictyDLLSpecifier.h"
 
-template <typename T>
-class BasicClassAccessor;
-
 namespace CompuCell3D {
   class Potts3D;
   class CellInventory;
@@ -64,7 +61,7 @@ namespace CompuCell3D {
     std::string chemicalFieldName;
     
     CellInventory * cellInventoryPtr;
-    BasicClassAccessor<SimpleClock> * simpleClockAccessorPtr;
+    ExtraMembersGroupAccessor<SimpleClock> * simpleClockAccessorPtr;
     
     unsigned int clockReloadValue;
     unsigned int chemotactUntil;

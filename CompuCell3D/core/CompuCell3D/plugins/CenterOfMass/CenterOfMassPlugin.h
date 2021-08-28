@@ -56,10 +56,10 @@ namespace CompuCell3D {
     
     void getCenterOfMass(CellG *cell, float cm[3]) const
     {
-      ASSERT_OR_THROW("getCenterOfMass() Cell cannot be NULL!", cell);
+      if (!cell) throw CC3DException("getCenterOfMass() Cell cannot be NULL!");
 
       unsigned int volume = cell->volume;
-      ASSERT_OR_THROW("getCenterOfMass() Cell volume is 0!", volume);
+      if (!volume) throw CC3DException("getCenterOfMass() Cell volume is 0!");
 
       
 
@@ -71,10 +71,10 @@ namespace CompuCell3D {
 
     void getCenterOfMass(CellG *cell, float & _x, float & _y, float & _z) const
     {
-      ASSERT_OR_THROW("getCenterOfMass() Cell cannot be NULL!", cell);
+      if (!cell) throw CC3DException("getCenterOfMass() Cell cannot be NULL!");
 
       unsigned int volume = cell->volume;
-      ASSERT_OR_THROW("getCenterOfMass() Cell volume is 0!", volume);
+      if (!volume) throw CC3DException("getCenterOfMass() Cell volume is 0!");
 
       
 

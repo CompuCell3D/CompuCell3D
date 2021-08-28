@@ -56,7 +56,7 @@ namespace CompuCell3D {
 		double lambdaVolume;
 		enum FunctionType {GLOBAL=0,BYCELLTYPE=1,BYCELLID=2};
 		FunctionType functionType;
-		std::vector<VolumeEnergyParam> volumeEnergyParamVector;
+		std::unordered_map<unsigned char, VolumeEnergyParam> volumeEnergyParamMap;
 
 
 		typedef double (VolumePlugin::*changeEnergy_t)(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
