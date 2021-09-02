@@ -15,6 +15,11 @@ jobs:
         displayName: Clone the build scripts
 
       - bash: |
+          source activate base
+          conda install swig=3
+        displayName: Install swig 3
+
+      - bash: |
           apt-get remove swig -y
           source activate cc3d_2020
           conda config --set channel_priority false
@@ -29,7 +34,7 @@ jobs:
           echo "##vso[task.setvariable variable=PWD]PWD"
         displayName: Set current working directory
       - bash: |
-          source activate cc3d_2020
+          source activate base
           cd cc3d_build_scripts/linux/400/
           python build.py --prefix=~/410_auto --source-root="$PWD/../../../" --build-dir=~/410_auto_build --version=4.1.0 --cores=2 --conda-env-name=cc3d_2020
         displayName: Build CC3d
