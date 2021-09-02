@@ -760,20 +760,20 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 		if(ppdCC3DPtr->dim.x > 1) 
 			ppdCC3DPtr->boundary_x = _xmlData->getFirstElement("Boundary_x")->getText();
 		else 
-			cerr << "Ignoring X boundary condition (dim 1)" << endl;
+			throw CC3DException("Invalid input (Potts Boundary_x): lattice x-dimension must be greater than 1 for periodic boundary conditions.");
 	}
 	if (_xmlData->getFirstElement("Boundary_y")) {
 		if(ppdCC3DPtr->dim.y > 1) 
 			ppdCC3DPtr->boundary_y = _xmlData->getFirstElement("Boundary_y")->getText();
 		else 
-			cerr << "Ignoring Y boundary condition (dim 1)" << endl;
+			throw CC3DException("Invalid input (Potts Boundary_y): lattice y-dimension must be greater than 1 for periodic boundary conditions.");
 	}
 
 	if (_xmlData->getFirstElement("Boundary_z")) {
 		if(ppdCC3DPtr->dim.z > 1) 
 			ppdCC3DPtr->boundary_z = _xmlData->getFirstElement("Boundary_z")->getText();
 		else 
-			cerr << "Ignoring Z boundary condition (dim 1)" << endl;
+			throw CC3DException("Invalid input (Potts Boundary_z): lattice z-dimension must be greater than 1 for periodic boundary conditions.");
 	}
 
 	//Initializing shapes - if used at all
