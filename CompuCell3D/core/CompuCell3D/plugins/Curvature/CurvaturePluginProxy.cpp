@@ -24,11 +24,12 @@
 #include "CurvaturePlugin.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-
-BasicPluginProxy<Plugin, CurvaturePlugin>
-curvatureProxy("Curvature", "computes curvsature constraint for 2D compartmental",
-	    &Simulator::pluginManager);
+auto curvatureProxy = registerPlugin<Plugin, CurvaturePlugin>(
+	"Curvature", 
+	"computes curvsature constraint for 2D compartmental",
+	&Simulator::pluginManager
+);

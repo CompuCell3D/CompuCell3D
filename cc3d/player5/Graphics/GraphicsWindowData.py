@@ -16,26 +16,25 @@ class GraphicsWindowData:
         
     def toDict(self):
         outDict = {}
-        attribs = ['sceneName','sceneType','planeName','planePosition','is3D','winPosition','winSize', 'winType', 'cameraClippingRange' , 'cameraFocalPoint' , 'cameraPosition' , 'cameraViewUp']
+        attribs = ['sceneName', 'sceneType', 'planeName', 'planePosition', 'is3D', 'winPosition', 'winSize', 'winType',
+                   'cameraClippingRange', 'cameraFocalPoint', 'cameraPosition', 'cameraViewUp']
         for attribName in attribs:            
-            outDict[attribName] = getattr(self,attribName)
+            outDict[attribName] = getattr(self, attribName)
             
         return outDict
 
     def fromDict(self, outDict):
-        attribs = ['sceneName','sceneType','planeName','planePosition','is3D','winPosition','winSize', 'winType', 'cameraClippingRange' , 'cameraFocalPoint' , 'cameraPosition' , 'cameraViewUp']
+        attribs = ['sceneName', 'sceneType', 'planeName', 'planePosition', 'is3D', 'winPosition', 'winSize', 'winType',
+                   'cameraClippingRange', 'cameraFocalPoint', 'cameraPosition', 'cameraViewUp']
         for attribName in attribs:            
             try:
-                setattr(self,attribName,outDict[attribName]) 
+                setattr(self, attribName, outDict[attribName])
             except KeyError:
                 pass
-                         
-        
 
-        
     def __str__(self):    
     
-        out ='\n'
+        out = '\n'
         out += '3D='+str(self.is3D)+'\n'
         out += 'sceneName='+str(self.sceneName)+'\n'
         out += 'sceneType='+str(self.sceneType)+'\n'

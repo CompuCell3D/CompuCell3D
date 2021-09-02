@@ -10,7 +10,7 @@
 #endif
 
 #include <BoundaryConditionSpecifier.h>*/
-#include <BasicUtils/BasicException.h>
+#include <CompuCell3D/CC3DExceptions.h>
 #include <stdexcept>
 #include <iostream>
 #include <sstream>

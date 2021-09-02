@@ -6,8 +6,6 @@
 
 // // // #include <CompuCell3D/Plugin.h>
 #include "Polarization23Data.h"
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 
 // // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
 
@@ -17,13 +15,6 @@
 // // // #include <CompuCell3D/Potts3D/Cell.h>
 
 // // // #include <muParser/muParser.h>
-
-// // // // basic STL includes
-// // // #include <vector>
-// // // #include <list>
-// // // #include <map>
-// // // #include <set>
-// // // #include <string>
 
 #include "Polarization23DLLSpecifier.h"
 
@@ -44,7 +35,7 @@ namespace CompuCell3D {
     class POLARIZATION23_EXPORT  Polarization23Plugin : public Plugin ,public EnergyFunction  {
         
     private:    
-        BasicClassAccessor<Polarization23Data> polarization23DataAccessor;                
+        ExtraMembersGroupAccessor<Polarization23Data> polarization23DataAccessor;
         CC3DXMLElement *xmlData;        
         
         Potts3D *potts;
@@ -66,7 +57,7 @@ namespace CompuCell3D {
         Polarization23Plugin();
         virtual ~Polarization23Plugin();
         
-        BasicClassAccessor<Polarization23Data> * getPolarization23DataAccessorPtr(){return & polarization23DataAccessor;}                
+        ExtraMembersGroupAccessor<Polarization23Data> * getPolarization23DataAccessorPtr(){return & polarization23DataAccessor;}                
         
         //Energy function interface
         virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);        

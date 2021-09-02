@@ -46,7 +46,7 @@ class Unzipper:
         with ZipFile(file_name_path, 'r') as zip_file:
             zip_file.extractall(unzip_dirname)
 
-        cc3d_file_path_glob = glob(join(str(unzip_dirname), '**.cc3d'))
+        cc3d_file_path_glob = glob(join(str(unzip_dirname), '**/*.cc3d'), recursive=True)
         if len(cc3d_file_path_glob) != 1:
             QMessageBox.warning(self.__ui, 'Could not uniquely identify .cc3d project',
                                 f'Could not uniquely identify a <b>.cc3d</b> project in the unzipped folder:  '

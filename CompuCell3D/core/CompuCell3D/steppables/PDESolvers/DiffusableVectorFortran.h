@@ -1,5 +1,7 @@
 #ifndef COMPUCELL3DDIFFUSABLEVECTORFORTRAN_H
 #define COMPUCELL3DDIFFUSABLEVECTORFORTRAN_H
+
+#include <CompuCell3D/CC3DExceptions.h>
 #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Steppable.h>
 #include <vector>
@@ -126,7 +128,7 @@ namespace CompuCell3D {
 			} catch (mu::Parser::exception_type &e)
 			{
 				cerr<<e.GetMsg()<<endl;
-				ASSERT_OR_THROW(e.GetMsg(),0);
+				throw CC3DException(e.GetMsg());
 			}
 		}	
 
@@ -245,7 +247,7 @@ namespace CompuCell3D {
 			} catch (mu::Parser::exception_type &e)
 			{
 				cerr<<e.GetMsg()<<endl;
-				ASSERT_OR_THROW(e.GetMsg(),0);
+				throw CC3DException(e.GetMsg());
 			}
 		}	
 

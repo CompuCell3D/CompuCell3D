@@ -43,47 +43,18 @@ void ContactPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 }
 
 void ContactPlugin::extraInit(Simulator *simulator) {
-    //cerr << "contact enter extraInit" << endl;
     update(xmlData, true);
-    //cerr << "contact after update" << endl;
-    Automaton * cellTypePluginAutomaton = potts->getAutomaton();
-    //cerr << "contact after automaton" << endl;
-    return;
-    if (cellTypePluginAutomaton) {
-        ASSERT_OR_THROW("The size of matrix of contact energy coefficients has must equal max_cell_type_id+1. You must list interactions coefficients between all cel types",
-            contactEnergyArray.size() == ((unsigned int)cellTypePluginAutomaton->getMaxTypeId() + 1));
-    }
-
 }
 
 void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     automaton = potts->getAutomaton();
-    //cerr << "automaton=" << automaton << endl;
-    //return;
-    ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
-        set<unsigned char> cellTypesSet;
-    contactEnergies.clear();
 
-
-    //////if(potts->getDisplayUnitsFlag()){
-    //////	Unit contactEnergyUnit=potts->getEnergyUnit()/powerUnit(potts->getLengthUnit(),2);
-
-
-
-
-    //////	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-    //////	if (!unitsElem){ //add Units element
-    //////		unitsElem=_xmlData->attachElement("Units");
-    //////	}
-
-    //////	if(unitsElem->getFirstElement("EnergyUnit")){
-    //////		unitsElem->getFirstElement("EnergyUnit")->updateElementValue(contactEnergyUnit.toString());
-    //////	}else{
-    //////		CC3DXMLElement * energyUnitElem = unitsElem->attachElement("EnergyUnit",contactEnergyUnit.toString());
-    //////	}
-    //////}
+    if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
+    set<unsigned char> cellTypesSet;
 
     CC3DXMLElementList energyVec = _xmlData->getElements("Energy");
+
+    contactEnergyArray.clear();
 
     for (int i = 0; i < energyVec.size(); ++i) {
         setContactEnergy(energyVec[i]->getAttribute("Type1"), energyVec[i]->getAttribute("Type2"), energyVec[i]->getDouble());
@@ -92,31 +63,9 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         cellTypesSet.insert(automaton->getTypeId(energyVec[i]->getAttribute("Type2")));
     }
 
-    //Now that we know all the types used in the simulation we will find size of the contactEnergyArray
-    vector<unsigned char> cellTypesVector(cellTypesSet.begin(), cellTypesSet.end());//coping set to the vector
-
-    int size = *max_element(cellTypesVector.begin(), cellTypesVector.end());
-    size += 1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-
-    int index;
-    contactEnergyArray.clear();
-    contactEnergyArray.assign(size, vector<double>(size, 0.0));
-
-    for (int i = 0; i < size; ++i)
-        for (int j = 0; j < size; ++j) {
-
-            index = getIndex(cellTypesVector[i], cellTypesVector[j]);
-
-            contactEnergyArray[i][j] = contactEnergies[index];
-
-        }
-    cerr << "size=" << size << endl;
-    for (int i = 0; i < size; ++i)
-        for (int j = 0; j < size; ++j) {
-
-            cerr << "contact[" << i << "][" << j << "]=" << contactEnergyArray[i][j] << endl;
-
-        }
+    for (auto& i : cellTypesSet)
+        for (auto& j : cellTypesSet)
+            cerr << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << contactEnergyArray[i][j] << endl;
 
     //Here I initialize max neighbor index for direct acces to the list of neighbors 
     boundaryStrategy = BoundaryStrategy::getInstance();
@@ -135,7 +84,7 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         if (_xmlData->getFirstElement("NeighborOrder")) {
 
             maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());
-            // 					exit(0);
+
         }
         else {
             maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
@@ -150,9 +99,6 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
 double ContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
 
-    //cerr<<"ChangeEnergy"<<endl;
-
-
     double energy = 0;
     unsigned int token = 0;
     double distance = 0;
@@ -161,8 +107,6 @@ double ContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, cons
     CellG *nCell = 0;
     WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *) potts->getCellFieldG();
     Neighbor neighbor;
-
-
 
     if (weightDistance) {
         for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
@@ -238,41 +182,17 @@ double ContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, cons
 
     }
 
-
-
-    //cerr<<"pt="<<pt<<" energy="<<energy<<endl;
-    //cerr<<"energy="<<energy<<endl;
-
     return energy;
-}
-
-double ContactPlugin::contactEnergy(const CellG *cell1, const CellG *cell2) {
-
-    return contactEnergyArray[cell1 ? cell1->type : 0][cell2 ? cell2->type : 0];
-
-
 }
 
 void ContactPlugin::setContactEnergy(const string typeName1, const string typeName2, const double energy) {
 
-    char type1 = automaton->getTypeId(typeName1);
-    char type2 = automaton->getTypeId(typeName2);
+    unsigned char type1 = automaton->getTypeId(typeName1);
+    unsigned char type2 = automaton->getTypeId(typeName2);
 
-    int index = getIndex(type1, type2);
-
-    contactEnergies_t::iterator it = contactEnergies.find(index);
-    ASSERT_OR_THROW(string("Contact energy for ") + typeName1 + " " + typeName2 +
-        " already set!", it == contactEnergies.end());
-
-    contactEnergies[index] = energy;
-}
-
-int ContactPlugin::getIndex(const int type1, const int type2) const {
-    if (type1 < type2) return ((type1 + 1) | ((type2 + 1) << 16));
-    else return ((type2 + 1) | ((type1 + 1) << 16));
+    contactEnergyArray[type1][type2] = energy;
+    contactEnergyArray[type2][type1] = energy;
 }
 
 std::string ContactPlugin::steerableName() { return "Contact"; }
 std::string ContactPlugin::toString() { return steerableName(); }
-
-

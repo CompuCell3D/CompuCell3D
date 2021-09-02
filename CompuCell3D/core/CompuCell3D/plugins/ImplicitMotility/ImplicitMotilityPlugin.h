@@ -105,7 +105,7 @@ namespace CompuCell3D {
 		Dim3D fieldDim;
 		AdjacentNeighbor  * adjNeighbor_ptr;
 
-		std::vector<ImplicitMotilityParam> motilityParamVector;
+		std::unordered_map<unsigned char, ImplicitMotilityParam> motilityParamMap;
 		Coordinates3D<double> biasVecTmp;
 
 

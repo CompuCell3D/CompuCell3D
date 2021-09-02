@@ -29,9 +29,6 @@ using namespace CompuCell3D;
 #include <CompuCell3D/Potts3D/EnergyFunctionCalculator.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
-#include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <PublicUtilities/StringUtils.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include <string>
@@ -62,7 +59,7 @@ using namespace std;
 
 PluginManager<Plugin> Simulator::pluginManager;
 PluginManager<Steppable> Simulator::steppableManager;
-BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
+PluginManager<PluginBase> Simulator::pluginBaseManager;
 
 
 Simulator::Simulator() :
@@ -140,7 +137,7 @@ void Simulator::setOutputRedirectionTarget(ptrdiff_t  _ptr){
 	//qStreambufPtr=bufferFactory.getQTextEditBuffer();
 
 //we may also try to implement buffer switching during player runtime so that it does not require player restart
-//for now it is ok to have this basic type of switching
+//for now it is ok to have this type of switching
 #ifdef QT_WRAPPERS_AVAILABLE
 
 
@@ -225,7 +222,7 @@ void Simulator::registerSteerableObject(SteerableObject * _steerableObject){
 	mitr=steerableObjectMap.find(_steerableObject->steerableName());
 	// cerr<<"after find"<<endl;
 
-	ASSERT_OR_THROW("Steerable Object "+_steerableObject->steerableName()+" already exist!",  mitr==steerableObjectMap.end());
+	if (mitr!=steerableObjectMap.end()) throw CC3DException("Steerable Object "+_steerableObject->steerableName()+" already exist!");
 
 	steerableObjectMap[_steerableObject->steerableName()]=_steerableObject;
 }
@@ -253,13 +250,25 @@ SteerableObject * Simulator::getSteerableObject(const std::string & _objectName)
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+RandomNumberGenerator* Simulator::generateRandomNumberGenerator(const unsigned int& seed) {
+	return rngFactory.generateRandomNumberGenerator(seed);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+RandomNumberGenerator* Simulator::getRandomNumberGeneratorInstance(const unsigned int& seed) {
+	return rngFactory.getInstance(seed);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Simulator::postEvent(CC3DEvent & _ev){
 	//cerr<<"INSIDE SIMULATOR::postEvent"<<endl;
 		pUtils->handleEvent(_ev); //let parallel utils konw about all events
 
 		string pluginName;
-		BasicPluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
-		BasicPluginManager<Plugin>::infos_t::iterator it;
+		PluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
+		PluginManager<Plugin>::infos_t::iterator it;
 		//for (it = infos->begin(); it != infos->end(); it++)	{
 		//	cerr<<" THIS IS PLUGIN NAME "<<(*it)->getName()<<endl;
 		//}
@@ -274,8 +283,8 @@ void Simulator::postEvent(CC3DEvent & _ev){
 		}
 
 		string steppableName;
-		BasicPluginManager<Steppable>::infos_t *infos_step = &steppableManager.getPluginInfos();
-		BasicPluginManager<Steppable>::infos_t::iterator it_step;
+		PluginManager<Steppable>::infos_t *infos_step = &steppableManager.getPluginInfos();
+		PluginManager<Steppable>::infos_t::iterator it_step;
 		for (it_step = infos_step->begin(); it_step != infos_step->end(); it_step++){
 
 			steppableName=(*it_step)->getName();
@@ -297,8 +306,8 @@ void Simulator::start() {
 	try{
 		// Print the names of loaded plugins
 		cerr << "Simulator::start():  Plugins:";
-		BasicPluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
-		BasicPluginManager<Plugin>::infos_t::iterator it;
+		PluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
+		PluginManager<Plugin>::infos_t::iterator it;
 		for (it = infos->begin(); it != infos->end(); it++)
 			if (pluginManager.isLoaded((*it)->getName())) {
 				if (it != infos->begin()) cerr << ",";
@@ -317,7 +326,7 @@ void Simulator::start() {
 				<< endl;
 
 			simulatorIsStepping=true; //initialize flag that simulator is stepping
-	}catch (const BasicException &e) {
+	}catch (const CC3DException &e) {
 		cerr << "ERROR: " << e << endl;
 		unloadModules();
 		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
@@ -328,9 +337,9 @@ void Simulator::start() {
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::string Simulator::formatErrorMessage(const BasicException &e){
+std::string Simulator::formatErrorMessage(const CC3DException &e){
     stringstream errorMessageStream;
-    errorMessageStream<<"Exception in C++ code :"<<endl<<e.getMessage()<<endl<<"Location"<<endl<<"FILE :"<<e.getLocation().getFilename()<<endl<<"LINE :"<<e.getLocation().getLine();
+    errorMessageStream<<"Exception in C++ code :"<<endl<<e.getMessage()<<endl<<"Location"<<endl<<"FILE :"<<e.getFilename();
     recentErrorMessage=errorMessageStream.str();
     cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
     return recentErrorMessage;
@@ -342,8 +351,8 @@ std::string Simulator::formatErrorMessage(const BasicException &e){
 void Simulator::extraInit(){
 
 	try{
-		BasicPluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
-		BasicPluginManager<Plugin>::infos_t::iterator it;
+		PluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
+		PluginManager<Plugin>::infos_t::iterator it;
 
         cerr<<"begin extraInit calls for plugins"<<endl;
 		for (it = infos->begin(); it != infos->end(); it++)
@@ -359,7 +368,7 @@ void Simulator::extraInit(){
         cerr<<"finish extraInit calls for plugins"<<endl;
 		classRegistry->extraInit(this);
 
-	}catch (const BasicException &e) {
+	}catch (const CC3DException &e) {
 		cerr << "ERROR: " << e << endl;
 		unloadModules();
 		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
@@ -408,7 +417,7 @@ void Simulator::step(const unsigned int currentStep) {
             
 		}
 
-	}catch (const BasicException &e) {
+	}catch (const CC3DException &e) {
 		cerr << "ERROR: " << e << endl;
 		unloadModules();
 		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
@@ -449,7 +458,7 @@ void Simulator::finish() {
 		unloadModules();
 		//cerr<<"inside finish 3"<<endl;
 
-	}catch (const BasicException &e) {
+	}catch (const CC3DException &e) {
 		cerr << "ERROR: " << e << endl;
 		cerr<<"THIS IS recentErrorMessage="<<formatErrorMessage(e)<<endl;
 		if (!newPlayerFlag){
@@ -583,11 +592,11 @@ void Simulator::initializeCC3D(){
 			potts.initializeCellTypeMotility(ppdCC3DPtr->cellTypeMotilityVector);
 		}
 
-	}catch (const BasicException &e) {
+	}catch (const CC3DException &e) {
 		cerr << "ERROR: " << e << endl;
 		stringstream errorMessageStream;
 
-		errorMessageStream<<"Exception during initialization/parsing :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
+		errorMessageStream<<"Exception during initialization/parsing :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getFilename();
 		recentErrorMessage=errorMessageStream.str();
 		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
 		if (!newPlayerFlag){
@@ -688,7 +697,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 		ppdCC3DPtr->flip2DimRatio=_xmlData->getFirstElement("Flip2DimRatio")->getDouble();
 	}
 
-	ASSERT_OR_THROW("You must set Dimensions!", ppdCC3DPtr->dim.x!=0 || ppdCC3DPtr->dim.y!=0 || ppdCC3DPtr->dim.z!=0);
+	if (!(ppdCC3DPtr->dim.x!=0 || ppdCC3DPtr->dim.y!=0 || ppdCC3DPtr->dim.z!=0)) throw CC3DException("You must set Dimensions!");
 	potts.createCellField(ppdCC3DPtr->dim);
     potts.set_test_output_generate_flag(test_output_generate_flag);
     potts.set_test_run_flag(test_run_flag);
@@ -714,20 +723,28 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 		potts.setMetropolisAlgorithm(metropolisAlgorithmName);
 	}
 
+	RandomNumberGeneratorFactory::Type rngType = RandomNumberGeneratorFactory::DEFAULT;
+	CC3DXMLElement* rngEl = _xmlData->getFirstElement("RandomNumberGenerator");
+	if (rngEl && rngEl->findAttribute("Name")) {
+		std::string rngTypeName = rngEl->getAttribute("Name");
+		if (rngTypeName == "MersenneTwister") rngType = RandomNumberGeneratorFactory::MERSENNE_TWISTER;
+		else if (rngTypeName == "Legacy") rngType = RandomNumberGeneratorFactory::LEGACY;
+	}
+	rngFactory = RandomNumberGeneratorFactory(rngType);
+
+	cerr << "Random number generator: " << rngFactory.getName() << endl;
+
+	unsigned int randomSeed;
 	if(!_xmlData->getFirstElement("RandomSeed")){
 		srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-		unsigned int randomSeed=(unsigned int)rand()*((std::numeric_limits<unsigned int>::max)()-1);
-
-		BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
-		rand->setSeed(randomSeed);
+		randomSeed=(unsigned int)rand()*((std::numeric_limits<unsigned int>::max)()-1);
 	}else{
-		BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
-		rand->setSeed(_xmlData->getFirstElement("RandomSeed")->getUInt());
-		ppdCC3DPtr->seed=_xmlData->getFirstElement("RandomSeed")->getUInt();
+		randomSeed = _xmlData->getFirstElement("RandomSeed")->getUInt();
+		ppdCC3DPtr->seed = randomSeed;
 	}
+	RandomNumberGenerator *rand = rngFactory.getInstance(randomSeed);
 
 	cerr << " ppdCC3DPtr->seed = " << ppdCC3DPtr->seed << endl;
-
 
 	if (_xmlData->getFirstElement("Shape")) {
 		ppdCC3DPtr->shapeFlag=true;
@@ -808,15 +825,15 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 	{
 		if(ppdCC3DPtr->boundary_x=="Periodic")
 		{
-			ASSERT_OR_THROW("For hexagonal lattice and x periodic boundary conditions x dimension must be an even number",!(ppdCC3DPtr->dim.x%2));
+			if (ppdCC3DPtr->dim.x%2) throw CC3DException("For hexagonal lattice and x periodic boundary conditions x dimension must be an even number");
 		}
 		if(ppdCC3DPtr->boundary_y=="Periodic")
 		{
-			ASSERT_OR_THROW("For hexagonal lattice and y periodic boundary conditions y dimension must be an even number",!(ppdCC3DPtr->dim.y%2));
+			if (ppdCC3DPtr->dim.y%2) throw CC3DException("For hexagonal lattice and y periodic boundary conditions y dimension must be an even number");
 		}
 		if(ppdCC3DPtr->boundary_z=="Periodic")
 		{
-			ASSERT_OR_THROW("For hexagonal lattice and z periodic boundary conditions z dimension must be a number divisible by 3",!(ppdCC3DPtr->dim.z%3));
+			if (ppdCC3DPtr->dim.z%3) throw CC3DException("For hexagonal lattice and z periodic boundary conditions z dimension must be a number divisible by 3");
 		}
 
 		BoundaryStrategy::instantiate(ppdCC3DPtr->boundary_x, ppdCC3DPtr->boundary_y, ppdCC3DPtr->boundary_z, ppdCC3DPtr->shapeAlgorithm, ppdCC3DPtr->shapeIndex, ppdCC3DPtr->shapeSize, ppdCC3DPtr->shapeInputfile,HEXAGONAL_LATTICE);

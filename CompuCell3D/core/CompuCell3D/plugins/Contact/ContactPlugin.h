@@ -23,15 +23,8 @@
 #ifndef CONTACTPLUGIN_H
 #define CONTACTPLUGIN_H
 
- #include <CompuCell3D/CC3D.h>
+#include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-// // // #include <CompuCell3D/Plugin.h>
-// // // #include <map>
-// // // #include <vector>
-
-
-// #include <CompuCell3D/dllDeclarationSpecifier.h>
 #include "ContactDLLSpecifier.h"
 
 class CC3DXMLElement;
@@ -45,10 +38,7 @@ namespace CompuCell3D {
 
 		Potts3D *potts;
 
-		typedef std::map<int, double> contactEnergies_t;
-		typedef std::vector<std::vector<double> > contactEnergyArray_t;
-
-		contactEnergies_t contactEnergies;
+		typedef std::unordered_map<unsigned char, std::unordered_map<unsigned char, double> > contactEnergyArray_t;
 
 		contactEnergyArray_t contactEnergyArray;
 
@@ -64,19 +54,15 @@ namespace CompuCell3D {
 	public:
 		ContactPlugin();
 		virtual ~ContactPlugin();
+		
 		//Plugin interface
+
 		virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
 		virtual void extraInit(Simulator *simulator);
-		
-		
 
 		//EnergyFunction Interface
+		
 		virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
-
-
-
-
-
 
 		double contactEnergy(const CellG *cell1, const CellG *cell2);
 
@@ -89,15 +75,15 @@ namespace CompuCell3D {
 
 
 		//Steerable interface
+
 		virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
 		virtual std::string steerableName();
 		virtual std::string toString();
-	protected:
-		/**
-		* @return The index used for ordering contact energies in the map.
-		*/
-		int getIndex(const int type1, const int type2) const;
 
 	};
+
+	inline double ContactPlugin::contactEnergy(const CellG *cell1, const CellG *cell2) {
+		return contactEnergyArray[cell1 ? cell1->type : 0][cell2 ? cell2->type : 0];
+	}
 };
 #endif

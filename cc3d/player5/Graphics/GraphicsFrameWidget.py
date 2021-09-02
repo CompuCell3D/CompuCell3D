@@ -546,13 +546,15 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
             self.xyPlane = val
 
         elif self.currentProjection == 'xz':
-            if val > self.xzMaxPlane: val = self.xzMaxPlane
+            if val > self.xzMaxPlane:
+                val = self.xzMaxPlane
             self.proj_spin_box.setValue(val)
             self.set_plane(self.currentProjection, val)
             self.xzPlane = val
 
         elif self.currentProjection == 'yz':
-            if val > self.yzMaxPlane: val = self.yzMaxPlane
+            if val > self.yzMaxPlane:
+                val = self.yzMaxPlane
             self.proj_spin_box.setValue(val)
             self.set_plane(self.currentProjection, val)
             self.yzPlane = val
@@ -666,7 +668,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
                 break
 
-    def get_graphics_window_data(self)->GraphicsWindowData:
+    def get_graphics_window_data(self) -> GraphicsWindowData:
         """
         returns instance of GraphicsWindowData for current widget
 

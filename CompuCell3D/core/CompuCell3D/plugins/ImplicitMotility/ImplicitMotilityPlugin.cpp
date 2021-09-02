@@ -11,7 +11,6 @@ using namespace CompuCell3D;
 #include "ImplicitMotilityPlugin.h"
 
 #include <math.h>
-#include <BasicUtils/BasicRandomNumberGenerator.h>
 
 
 
@@ -189,7 +188,7 @@ double ImplicitMotilityPlugin::changeEnergyByCellType(const Point3D &pt, const C
         //Coordinates3D<double> biasVecTmp = oldCell->biasVector;
         biasVecTmp = Coordinates3D<double>(oldCell->biasVecX, oldCell->biasVecY, oldCell->biasVecZ);
 
-        energy -= motilityParamVector[oldCell->type].lambdaMotility*
+        energy -= motilityParamMap[oldCell->type].lambdaMotility*
             (distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.Y() + distVector.Z()*biasVecTmp.Z());
 
     }
@@ -219,7 +218,7 @@ double ImplicitMotilityPlugin::changeEnergyByCellType(const Point3D &pt, const C
         //Coordinates3D<double> biasVecTmp = newCell->biasVector;
         biasVecTmp = Coordinates3D<double>(newCell->biasVecX, newCell->biasVecY, newCell->biasVecZ);
 
-        energy -= motilityParamVector[newCell->type].lambdaMotility*
+        energy -= motilityParamMap[newCell->type].lambdaMotility*
             (distVector.X()*biasVecTmp.X() + distVector.Y()*biasVecTmp.Y() + distVector.Z()*biasVecTmp.Z());
     }
 
@@ -313,9 +312,9 @@ void ImplicitMotilityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
 
     automaton = potts->getAutomaton();
 
-    ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
+    if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
-        set<unsigned char> cellTypesSet;
+    set<unsigned char> cellTypesSet;
 
 
 
@@ -343,8 +342,8 @@ void ImplicitMotilityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
         break;
     case BYCELLTYPE:
     {
-        motilityParamVector.clear();
-        vector<int> typeIdVec;
+        motilityParamMap.clear();
+        vector<unsigned char> typeIdVec;
         vector<ImplicitMotilityParam> motilityParamVectorTmp;
 
         CC3DXMLElementList energyVec = _xmlData->getElements("MotilityEnergyParameters");
@@ -361,7 +360,7 @@ void ImplicitMotilityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
             motilityParamVectorTmp.push_back(motParam);
         }
 
-        vector<int>::iterator pos = max_element(typeIdVec.begin(), typeIdVec.end());
+        vector<unsigned char>::iterator pos = max_element(typeIdVec.begin(), typeIdVec.end());
 
 
         int maxTypeId = 0;
@@ -369,10 +368,9 @@ void ImplicitMotilityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
             maxTypeId = *pos;
         }
         
-        motilityParamVector.assign(maxTypeId + 1, ImplicitMotilityParam());
         for (int i = 0; i < motilityParamVectorTmp.size(); i++)
         {
-            motilityParamVector[typeIdVec[i]] = motilityParamVectorTmp[i];
+            motilityParamMap[typeIdVec[i]] = motilityParamVectorTmp[i];
         }
 
 

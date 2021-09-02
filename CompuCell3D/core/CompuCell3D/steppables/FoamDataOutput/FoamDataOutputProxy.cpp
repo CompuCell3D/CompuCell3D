@@ -23,10 +23,12 @@
 #include "FoamDataOutput.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-BasicPluginProxy<Steppable, FoamDataOutput> 
-FoamDataOutputProxy("FoamDataOutput", "Outputs basic simulation data for foam coarsening",
-	    &Simulator::steppableManager);
+auto FoamDataOutputProxy = registerPlugin<Steppable, FoamDataOutput>(
+	"FoamDataOutput", 
+	"Outputs basic simulation data for foam coarsening",
+	&Simulator::steppableManager
+);

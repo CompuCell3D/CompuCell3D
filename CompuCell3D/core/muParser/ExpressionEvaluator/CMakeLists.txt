@@ -4,9 +4,9 @@ INCLUDE_DIRECTORIES (
     )
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-    SET(LIBS BasicUtilsStatic muParserStatic XMLUtilsShared)
+    SET(LIBS muParserStatic XMLUtilsShared)
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-   SET(LIBS BasicUtilsShared muParserShared XMLUtilsShared)
+   SET(LIBS muParserShared XMLUtilsShared)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 SET(SRCS ExpressionEvaluator.cpp )

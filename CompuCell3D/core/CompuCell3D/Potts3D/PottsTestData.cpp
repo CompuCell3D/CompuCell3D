@@ -2,10 +2,11 @@
 #include <fstream> 
 #include <sstream>
 #include <iomanip>
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
 #include <limits>
 #include <cmath>
+
+#include <CompuCell3D/CC3DExceptions.h>
+#include <PublicUtilities/StringUtils.h>
 
 
 using namespace CompuCell3D;
@@ -102,30 +103,30 @@ PottsTestData PottsTestData::deserialize_single_potts_data(std::string line, Pot
     std::vector<std::string> line_values = split_string(line, ',');
     PottsTestData potts_test_data;
 
-    potts_test_data.changePixel.x = BasicString::parseUInteger(line_values[0]);
-    potts_test_data.changePixel.y = BasicString::parseUInteger(line_values[1]);
-    potts_test_data.changePixel.z = BasicString::parseUInteger(line_values[2]);
+    potts_test_data.changePixel.x = strToUInt(line_values[0]);
+    potts_test_data.changePixel.y = strToUInt(line_values[1]);
+    potts_test_data.changePixel.z = strToUInt(line_values[2]);
 
-    potts_test_data.changePixelNeighbor.x = BasicString::parseUInteger(line_values[3]);
-    potts_test_data.changePixelNeighbor.y = BasicString::parseUInteger(line_values[4]);
-    potts_test_data.changePixelNeighbor.z = BasicString::parseUInteger(line_values[5]);
+    potts_test_data.changePixelNeighbor.x = strToUInt(line_values[3]);
+    potts_test_data.changePixelNeighbor.y = strToUInt(line_values[4]);
+    potts_test_data.changePixelNeighbor.z = strToUInt(line_values[5]);
 
-    potts_test_data.motility = BasicString::parseDouble(line_values[6]);
+    potts_test_data.motility = strToDouble(line_values[6]);
 
-    potts_test_data.pixelCopyAccepted = (bool)BasicString::parseInteger(line_values[7]);
+    potts_test_data.pixelCopyAccepted = (bool)strToInt(line_values[7]);
         
-    potts_test_data.acceptanceFunctionProbability = BasicString::parseDouble(line_values[8]);
+    potts_test_data.acceptanceFunctionProbability = strToDouble(line_values[8]);
     
     size_t possible_connectivity_column_idx = potts_test_data_header_specs.columns.size() - 1;
     size_t max_col_idx = potts_test_data_header_specs.columns.size();
     if (potts_test_data_header_specs.columns[possible_connectivity_column_idx] == "Connectivity") {
         --max_col_idx;
         potts_test_data.using_connectivity = true;
-        potts_test_data.connectivity_energy = BasicString::parseDouble(line_values[possible_connectivity_column_idx]);
+        potts_test_data.connectivity_energy = strToDouble(line_values[possible_connectivity_column_idx]);
     }
 
     for (unsigned int i = potts_test_data_header_specs.energy_function_position; i < max_col_idx; ++i) {
-        potts_test_data.energyFunctionNameToValueMap[potts_test_data_header_specs.columns[i]] = BasicString::parseDouble(line_values[i]);
+        potts_test_data.energyFunctionNameToValueMap[potts_test_data_header_specs.columns[i]] = strToDouble(line_values[i]);
     }
 
     
@@ -165,11 +166,10 @@ double PottsTestData::abs_difference(double x, double y) {
 bool PottsTestData::compare_potts_data(PottsTestData & potts_data_to_compare) {
     
     double tol = 1e-6;
-    ASSERT_OR_THROW("change pixel is different ", changePixel == potts_data_to_compare.changePixel);
-    ASSERT_OR_THROW("change pixel neighbor is different ", changePixelNeighbor == potts_data_to_compare.changePixelNeighbor);    
-    ASSERT_OR_THROW("using_connectivity is different ", using_connectivity == potts_data_to_compare.using_connectivity);
-
-    ASSERT_OR_THROW("connectivity_energy is different ", connectivity_energy == potts_data_to_compare.connectivity_energy);
+    if (changePixel != potts_data_to_compare.changePixel) throw CC3DException("change pixel is different ");
+    if (changePixelNeighbor != potts_data_to_compare.changePixelNeighbor) throw CC3DException("change pixel neighbor is different ");
+    if (using_connectivity != potts_data_to_compare.using_connectivity) throw CC3DException("using_connectivity is different ");
+    if (connectivity_energy != potts_data_to_compare.connectivity_energy) throw CC3DException("connectivity_energy is different ");
     
     // cerr << "pt=" << potts_data_to_compare.changePixel << " neighbor=" << potts_data_to_compare.changePixelNeighbor << endl;
 
@@ -185,16 +185,17 @@ bool PottsTestData::compare_potts_data(PottsTestData & potts_data_to_compare) {
                 cerr << "detected a difference in " << kv.first << " recorded=" << kv.second << " computed=" << mitr_computed->second << endl;
                 cerr << "difference_value=" << difference_value << endl;
 
-                ASSERT_OR_THROW(string(kv.first) + " energy term different ", false);
+                throw CC3DException(string(kv.first) + " energy term different ");
             }
         }
         else {
-            ASSERT_OR_THROW(string(kv.first) + " energy was not found in the computed energy container", false);
+            throw CC3DException(string(kv.first) + " energy was not found in the computed energy container");
         }
     }
         
 
-    ASSERT_OR_THROW("motility is different", abs_difference(motility , potts_data_to_compare.motility) < tol);
-    ASSERT_OR_THROW("acceptanceFunctionProbability is different", abs_difference(acceptanceFunctionProbability, potts_data_to_compare.acceptanceFunctionProbability)< 1e-4);
+    if (abs_difference(motility , potts_data_to_compare.motility) >= tol) throw CC3DException("motility is different");
+    if (abs_difference(acceptanceFunctionProbability, potts_data_to_compare.acceptanceFunctionProbability) >= 1e-4) 
+        throw CC3DException("acceptanceFunctionProbability is different");
     
 }

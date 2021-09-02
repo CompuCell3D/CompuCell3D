@@ -59,7 +59,7 @@ namespace CompuCell3D {
     Simulator *simulator;
 	Potts3D *potts;
     Dim3D fieldDim;
-    BasicClassAccessor<ElasticityTracker> *elasticityTrackerAccessorPtr;
+    ExtraMembersGroupAccessor<ElasticityTracker> *elasticityTrackerAccessorPtr;
     typedef double (ElasticityPlugin::*diffEnergyFcnPtr_t)(float _deltaL,float _lBefore,const ElasticityTrackerData * _elasticityTrackerData,const CellG *_cell);
 
     diffEnergyFcnPtr_t diffEnergyFcnPtr;

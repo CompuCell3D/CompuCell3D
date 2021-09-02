@@ -91,11 +91,6 @@
 #include <PublicUtilities/NumericalUtils.h>
 #include <PublicUtilities/Vector3.h>
 
-#include <BasicUtils/BasicException.h>
-#include <BasicUtils/BasicSmartPointer.h>
-#include <BasicUtils/BasicClassFactory.h>
-#include <BasicUtils/BasicPluginManager.h>
-
 // System Libraries
 #include <iostream>
 #include <stdlib.h>
@@ -174,26 +169,6 @@ using namespace CompuCell3D;
 
 //C arrays
 //%include "carrays.i"
-
-// ******************************
-// Third Party Classes
-// ******************************
-
-%include "BasicUtils/BasicClassFactoryBase.h"
-%include "BasicUtils/BasicClassFactory.h"
-// %include <CompuCell3D/Plugin.h>
-// %include <BasicUtils/BasicPluginManager.h>
-
-// template <class T>
-// class BasicPluginManager {
-//   public:
-//     void loadLibraries(const std::string path);
-//     bool isLoaded(std::string pluginName);
-// };
-// 
-// %template(templatebasicpluginmanagersteppable) BasicPluginManager<Steppable>;
-// %template(templatebasicpluginmanagerplugin) BasicPluginManager<Plugin>;
-// 
 
 
 // ******************************
@@ -507,7 +482,7 @@ using namespace CompuCell3D;
     if _newclass: pyAttrib = property(_CompuCell.CellG_pyAttrib_get,setpyAttrib)
 
 
-    # simplifying access to cell's Python dictionary
+    # simplifying access to cell Python dictionary
     def setdict(self,_dict):
         # raise AttributeError('ASSIGNMENT cell.dict=%s is illegal. dict can only be modified but not replaced'%(_dict))
         raise AttributeError('ASSIGNMENT cell.dict=%s is illegal. Dictionary "dict" can only be modified but not replaced'%(_dict))
@@ -636,62 +611,12 @@ using namespace CompuCell3D;
 
 %include <CompuCell3D/PluginManager.h>
 
-// template <class T>
-// class PluginManager {
-//   public:
-//     void loadLibraries(const std::string path);
-//     bool isLoaded(std::string pluginName);
-// };
-
-// %template(templatebasicpluginmanagersteppable) BasicPluginManager<Steppable>;
-// %template(templatebasicpluginmanagerplugin) BasicPluginManager<Plugin>;
-
 
 // %include <CompuCell3D/Steppable.h>
 // %include <CompuCell3D/Plugin.h>
-%include <BasicUtils/BasicPluginManager.h>
-
-%template(bpmPlugin) BasicPluginManager<Plugin> ;
-%template(bpmSteppable) BasicPluginManager<Steppable> ;
 
 %template(pluginmanagertemplate) CompuCell3D::PluginManager<Plugin> ;
 %template(steppablemanagertemplate) CompuCell3D::PluginManager<Steppable> ;
-
-
-// %template(bpmStepNew) BasicPluginManager<StepNew> ;
-// %template(stepnewmanagertemplate) CompuCell3D::PluginManager<StepNew> ;
-
-// todo - plugin manager
-//////%inline %{
-//////
-//////  
-//////  BasicPluginManager<Plugin> * getPluginManagerAsBPM(){
-//////    return (BasicPluginManager<Plugin> *)&Simulator::pluginManager;
-//////  }
-//////
-//////  BasicPluginManager<Steppable> * getSteppableManagerAsBPM(){
-//////    return (BasicPluginManager<Steppable> *)&Simulator::steppableManager;
-//////  }
-//////  
-////////   CompuCell3D::PluginManager<StepNew> getStepManager(){return CompuCell3D::PluginManager<StepNew>();}
-////////   CompuCell3D::PluginManager<Steppable> getSteppableManager(){return CompuCell3D::PluginManager<Steppable>();}
-//////%}
-
-
-%inline %{
-
-  
-//  BasicPluginManager<Plugin> * getPluginManagerAsBPM(){
-//    return (BasicPluginManager<Plugin> *)&BabySim::pluginManager;
-//  }
-
-//  BasicPluginManager<Steppable> * getSteppableManagerAsBPM(){
-//    return (BasicPluginManager<Steppable> *)&BabySim::steppableManager;
-//  }
-  
-//   CompuCell3D::PluginManager<StepNew> getStepManager(){return CompuCell3D::PluginManager<StepNew>();}
-//   CompuCell3D::PluginManager<Steppable> getSteppableManager(){return CompuCell3D::PluginManager<Steppable>();}
-%}
 
 
 // macros used to generate extra functions to better manipulate fields    
@@ -1205,8 +1130,6 @@ FIELD3DEXTENDER(Field3D<int>,int)
 %include <PublicUtilities/NumericalUtils.h>
 %include <PublicUtilities/Vector3.h>
 
-%include <BasicUtils/BasicException.h>
-
 
 //%include exception.i
 
@@ -1434,11 +1357,7 @@ public:
 
   // todo - plugin manager
   void initializePlugins() {
-	  cerr << "initialize plugin fcn" << endl;
-    // Set the path and load the plugins
-	  //char * cellTypePluginPath = "d:/Program Files/cc3d_py3/lib/CompuCell3DPlugins/CC3DCellType.dll";
-	  //Simulator::pluginManager.loadLibrary(cellTypePluginPath);
-	  //Simulator::pluginManager.loadLibraries(cellTypePluginPath);
+    cerr << "initialize plugin fcn" << endl;
 
     char *steppablePath = getenv("COMPUCELL3D_STEPPABLE_PATH");
     cerr<<"steppablePath="<<steppablePath<<endl;

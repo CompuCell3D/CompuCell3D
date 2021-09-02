@@ -32,8 +32,6 @@
 // // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 
 // // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 #include "SimpleClock.h"
 
 
@@ -49,7 +47,7 @@ namespace CompuCell3D {
   //, public CellGChangeWatcher,public Stepper 
 		       {
     
-    BasicClassAccessor<SimpleClock> simpleClockAccessor;
+    ExtraMembersGroupAccessor<SimpleClock> simpleClockAccessor;
         
     
     Field3D<float> *simpleClockFieldPtr;
@@ -61,7 +59,7 @@ namespace CompuCell3D {
     SimpleClockPlugin();
     virtual ~SimpleClockPlugin();
 	 
-    BasicClassAccessor<SimpleClock> * getSimpleClockAccessorPtr(){return &simpleClockAccessor;}
+    ExtraMembersGroupAccessor<SimpleClock> * getSimpleClockAccessorPtr(){return &simpleClockAccessor;}
     // SimObject interface
     virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
 

@@ -24,10 +24,12 @@
 #include "GlobalBoundaryPixelTrackerPlugin.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-BasicPluginProxy<Plugin, GlobalBoundaryPixelTrackerPlugin>
-globalBoundaryPixelTrackerProxy("GlobalBoundaryPixelTracker", "Tracks  boundary pixels of all the cells including medium and stores them in a set",
-	    &Simulator::pluginManager);
+auto globalBoundaryPixelTrackerProxy = registerPlugin<Plugin, GlobalBoundaryPixelTrackerPlugin>(
+	"GlobalBoundaryPixelTracker", 
+	"Tracks  boundary pixels of all the cells including medium and stores them in a set",
+	&Simulator::pluginManager
+);

@@ -72,26 +72,6 @@ void ExternalPotentialPlugin::extraInit(Simulator *_simulator){
 
 void ExternalPotentialPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
-
-	//if(potts->getDisplayUnitsFlag()){
-	//	Unit extternalPotentialLambdaUnit=potts->getEnergyUnit()/potts->getLengthUnit();
-
-
-
-
-	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-	//	if (!unitsElem){ //add Units element
-	//		unitsElem=_xmlData->attachElement("Units");
-	//	}
-
-	//	if(unitsElem->getFirstElement("LambdaUnit")){
-	//		unitsElem->getFirstElement("LambdaUnit")->updateElementValue(extternalPotentialLambdaUnit.toString());
-	//	}else{
-	//		unitsElem->attachElement("LambdaUnit",extternalPotentialLambdaUnit.toString());
-	//	}
-
-	//}
-
 	bool comBasedAlgorithm=false;
 	if(_xmlData->findElement("Algorithm")){ 
 
@@ -133,9 +113,7 @@ void ExternalPotentialPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFla
 
 		case BYCELLTYPE:
 			{
-				externalPotentialParamVector.clear();
-				vector<int> typeIdVec;
-				vector<ExternalPotentialParam> externalPotentialParamVectorTmp;
+				externalPotentialParamMap.clear();
 
 				CC3DXMLElementList energyVec=_xmlData->getElements("ExternalPotentialParameters");
 
@@ -148,16 +126,9 @@ void ExternalPotentialPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFla
 
 					extPotentialParam.typeName=energyVec[i]->getAttribute("CellType");
 					//cerr<<"automaton="<<automaton<<endl;
-					typeIdVec.push_back(automaton->getTypeId(extPotentialParam.typeName));
 					participatingTypes.insert(automaton->getTypeId(extPotentialParam.typeName));
 
-					externalPotentialParamVectorTmp.push_back(extPotentialParam);				
-				}
-				vector<int>::iterator pos=max_element(typeIdVec.begin(),typeIdVec.end());
-				int maxTypeId=*pos;
-				externalPotentialParamVector.assign(maxTypeId+1,ExternalPotentialParam());
-				for (int i = 0 ; i < externalPotentialParamVectorTmp.size() ; ++i){
-					externalPotentialParamVector[typeIdVec[i]]=externalPotentialParamVectorTmp[i];
+               externalPotentialParamMap[automaton->getTypeId(extPotentialParam.typeName)] = extPotentialParam;
 				}
 
 				//set fcn ptr
@@ -261,9 +232,9 @@ double ExternalPotentialPlugin::changeEnergyByCellTypeCOMBased(const Point3D &pt
 
 		Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM/oldCell->volume, oldCell->yCM/oldCell->volume, oldCell->zCM/oldCell->volume);
 		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip ,oldCOMBeforeFlip,fieldDim);
-		energy += distVector.X()*externalPotentialParamVector[oldCell->type].lambdaVec.X() 
-				  + distVector.Y()*externalPotentialParamVector[oldCell->type].lambdaVec.Y()
-				  + distVector.Z()*externalPotentialParamVector[oldCell->type].lambdaVec.Z();
+		energy += distVector.X()*externalPotentialParamMap[oldCell->type].lambdaVec.X() 
+				  + distVector.Y()*externalPotentialParamMap[oldCell->type].lambdaVec.Y()
+				  + distVector.Z()*externalPotentialParamMap[oldCell->type].lambdaVec.Z();
 	}
 
 	if (newCell){
@@ -279,9 +250,9 @@ double ExternalPotentialPlugin::changeEnergyByCellTypeCOMBased(const Point3D &pt
 		Coordinates3D<double> newCOMBeforeFlip(newCell->xCM/newCell->volume, newCell->yCM/newCell->volume, newCell->zCM/newCell->volume);
 		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(newCOMAfterFlip ,newCOMBeforeFlip,fieldDim);
 
-		energy += distVector.X()*externalPotentialParamVector[newCell->type].lambdaVec.X() 
-			      + distVector.Y()*externalPotentialParamVector[newCell->type].lambdaVec.Y() 
-				  + distVector.Z()*externalPotentialParamVector[newCell->type].lambdaVec.Z();
+		energy += distVector.X()*externalPotentialParamMap[newCell->type].lambdaVec.X() 
+			      + distVector.Y()*externalPotentialParamMap[newCell->type].lambdaVec.Y() 
+				  + distVector.Z()*externalPotentialParamMap[newCell->type].lambdaVec.Z();
 
 	}
 
@@ -520,9 +491,9 @@ double ExternalPotentialPlugin::changeEnergyByCellType(const Point3D &pt,  const
                ( deltaCoordinate.Z()>0 ? -(deltaCoordinate.Z()+1) % (fieldDim.z-1) :-(deltaCoordinate.Z()-1) % (fieldDim.z-1) );
             }
 				
-            deltaEnergyOld+=  deltaCoordinate.X()*externalPotentialParamVector[oldCell->type].lambdaVec.X()+
-                              deltaCoordinate.Y()*externalPotentialParamVector[oldCell->type].lambdaVec.Y()+
-                              deltaCoordinate.Z()*externalPotentialParamVector[oldCell->type].lambdaVec.Z();
+            deltaEnergyOld+=  deltaCoordinate.X()*externalPotentialParamMap[oldCell->type].lambdaVec.X()+
+                              deltaCoordinate.Y()*externalPotentialParamMap[oldCell->type].lambdaVec.Y()+
+                              deltaCoordinate.Z()*externalPotentialParamMap[oldCell->type].lambdaVec.Z();
 
          }
 
@@ -549,9 +520,9 @@ double ExternalPotentialPlugin::changeEnergyByCellType(const Point3D &pt,  const
                deltaCoordinate.ZRef()=
                ( deltaCoordinate.Z()>0 ? -(deltaCoordinate.Z()+1) % (fieldDim.z-1) :-(deltaCoordinate.Z()-1) % (fieldDim.z-1) );
             }
-            deltaEnergyNew+=  deltaCoordinate.X()*externalPotentialParamVector[newCell->type].lambdaVec.X()+
-                              deltaCoordinate.Y()*externalPotentialParamVector[newCell->type].lambdaVec.Y()+
-                              deltaCoordinate.Z()*externalPotentialParamVector[newCell->type].lambdaVec.Z();
+            deltaEnergyNew+=  deltaCoordinate.X()*externalPotentialParamMap[newCell->type].lambdaVec.X()+
+                              deltaCoordinate.Y()*externalPotentialParamMap[newCell->type].lambdaVec.Y()+
+                              deltaCoordinate.Z()*externalPotentialParamMap[newCell->type].lambdaVec.Z();
             
          }
 

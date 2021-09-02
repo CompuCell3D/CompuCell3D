@@ -35,11 +35,6 @@
 // // // #include <CompuCell3D/Field3D/WatchableField3D.h>
 using namespace CompuCell3D;
 
-
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
-
 // // // #include <string>
 using namespace std;
 
@@ -71,7 +66,7 @@ void DictyFieldInitializer::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 
 	if(_xmlData->findElement("PresporeRatio")){
 		presporeRatio=_xmlData->getFirstElement("PresporeRatio")->getDouble();
-		ASSERT_OR_THROW("Ratio must belong to [0,1]!",0<=presporeRatio && presporeRatio<=1.0);
+		if (!(0<=presporeRatio && presporeRatio<=1.0)) throw CC3DException("Ratio must belong to [0,1]!");
 	}
 
 
@@ -82,11 +77,12 @@ void DictyFieldInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 
 	update(_xmlData,true);
 
+	sim = simulator;
 	potts = simulator->getPotts();
 	automaton=potts->getAutomaton();
 	cellField = (WatchableField3D<CellG*> *)potts->getCellFieldG();
-	ASSERT_OR_THROW("initField() Cell field cannot be null!", cellField);
-	ASSERT_OR_THROW("Could not find Center of Mass plugin",Simulator::pluginManager.get("CenterOfMass"));
+	if (!cellField) throw CC3DException("initField() Cell field cannot be null!");
+	if (!Simulator::pluginManager.get("CenterOfMass")) throw CC3DException("Could not find Center of Mass plugin");
 
 	dim = cellField->getDim();
 
@@ -223,7 +219,7 @@ void DictyFieldInitializer::start() {
 
 void DictyFieldInitializer::initializeCellTypes(){
 
-	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+	RandomNumberGenerator* rand = sim->getRandomNumberGeneratorInstance();
 	cellInventoryPtr=& potts->getCellInventory();
 
 	///will initialize cell type here depending on the position of the cells

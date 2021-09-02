@@ -27,7 +27,6 @@
 
 #include "MitosisPlugin.h"
 #include "MitosisDLLSpecifier.h"
-// // // #include <BasicUtils/BasicClassAccessor.h>
 // // // #include <Utils/Coordinates3D.h>
 
 namespace CompuCell3D {
@@ -66,7 +65,7 @@ namespace CompuCell3D {
 	 
      
      
-	 BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr;
+	 ExtraMembersGroupAccessor<PixelTracker> *pixelTrackerAccessorPtr;
 	 PixelTrackerPlugin * pixelTrackerPlugin;
 
      virtual void handleEvent(CC3DEvent & _event);
