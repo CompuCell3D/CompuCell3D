@@ -16,7 +16,8 @@ jobs:
 
       - bash: |
           source activate base
-          conda install swig=3
+          conda config --set channel_priority false
+          conda  -c conda-forge install swig=3
         displayName: Install swig 3
 
       - bash: |
