@@ -15,12 +15,6 @@ jobs:
         displayName: Clone the build scripts
 
       - bash: |
-          source activate base
-          conda config --set channel_priority false
-          conda install -c conda-forge swig=3
-        displayName: Install swig 3
-
-      - bash: |
           apt-get remove swig -y
           source activate cc3d_2020
           conda config --set channel_priority false
@@ -40,7 +34,7 @@ jobs:
           python build.py --prefix=~/410_auto --source-root="$PWD/../../../" --build-dir=~/410_auto_build --version=4.1.0 --cores=2 --conda-env-name=cc3d_2020
         displayName: Build CC3d
       - bash: |
-          source activate cc3d_2020
+          source activate base
           cp -rf cc3d/tests ~/410_auto/lib/site-packages/cc3d
           sed -i 's/<path to where cc3d is installed>/~\/410_auto/g'  CompuCell3D/core/Demos/CallableCC3D/environment_var_setters/cc3d_caller_env_var_set_linux.sh
           sed -i "s~<path to where python executable is. Make sure it is same python as used by cc3d>~$(which python)~g"  CompuCell3D/core/Demos/CallableCC3D/environment_var_setters/cc3d_caller_env_var_set_linux.sh
