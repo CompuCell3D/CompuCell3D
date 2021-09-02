@@ -15,6 +15,7 @@ jobs:
         displayName: Clone the build scripts
 
       - bash: |
+          apt-get remove swig -y
           source activate cc3d_2020
           conda config --set channel_priority false
           conda install -c conda-forge numpy scipy pandas jinja2 webcolors vtk=8.2 pyqt pyqtgraph deprecated qscintilla2 jinja2 chardet cmake swig=3 requests -y
