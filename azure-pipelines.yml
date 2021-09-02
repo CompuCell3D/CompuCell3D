@@ -21,6 +21,7 @@ jobs:
           conda install -c compucell3d tbb_full_dev -y
           pip install libroadrunner
           pip install antimony
+          pip install psutil
         displayName: Install Anaconda packages
       - bash: |
           PWD=`pwd`
@@ -31,3 +32,12 @@ jobs:
           cd cc3d_build_scripts/linux/400/
           python build.py --prefix=~/410_auto --source-root="$PWD/../../../" --build-dir=~/410_auto_build --version=4.1.0 --cores=2 --conda-env-name=cc3d_2020
         displayName: Build CC3d
+      - bash: |
+          source activate cc3d_2020
+          cp -rf cc3d/tests ~/410_auto/lib/site-packages/cc3d
+          sed -i 's/<path to where cc3d is installed>/~\/410_auto/g'  CompuCell3D/core/Demos/CallableCC3D/environment_var_setters/cc3d_caller_env_var_set_linux.sh
+          sed -i "s~<path to where python executable is. Make sure it is same python as used by cc3d>~$(which python)~g"  CompuCell3D/core/Demos/CallableCC3D/environment_var_setters/cc3d_caller_env_var_set_linux.sh
+          source CompuCell3D/core/Demos/CallableCC3D/environment_var_setters/cc3d_caller_env_var_set_linux.sh
+          cd CompuCell3D/core/test_suite
+          python regression_tests_runner.py --run-command=~/410_auto/runScript.sh --output-dir=~/410_auto/out/
+        displayName: Run Integration Tests
