@@ -189,9 +189,6 @@ class Array3DLinearFortranField3DAdapter:public Field3DImpl<float>{
 			}
 		//setting dim to new dim 
         dim=newDim;
-        dim.z=1;
-		
-
 
 		
 	  }

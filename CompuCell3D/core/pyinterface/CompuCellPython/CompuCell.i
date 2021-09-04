@@ -1155,7 +1155,8 @@ FIELD3DEXTENDER(Field3D<int>,int)
 	Potts3D *potts = simulator.getPotts();  
 	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim(); 
-	mitr->second->setDim(fieldDim); //set Dimensions of field
+    //set Dimensions of field    
+	mitr->second->setDim(fieldDim); 
 	return mitr->second;
       }else{
          return 0;
