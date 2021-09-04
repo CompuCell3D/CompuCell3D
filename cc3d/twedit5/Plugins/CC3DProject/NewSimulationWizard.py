@@ -894,6 +894,16 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
                                     QMessageBox.Ok)
                 return False
 
+            elif not name.isidentifier():
+                msg = """
+                Please specifying a name that meets with following criteria
+                
+                1. Consists only of letters, numbers and/or `_`. 
+                2. Starts with either a letter or '_'
+                """
+                QMessageBox.warning(self, "Invalid simulation name", msg, QMessageBox.Ok)
+                return False
+
             else:
                 if directory != "":
                     self.plugin.configuration.setSetting("RecentNewProjectDir", directory)

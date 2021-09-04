@@ -24,10 +24,6 @@
 #define ORIENTEDCONTACTPLUGIN_H
 
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-
-
-// // // #include <CompuCell3D/Plugin.h>
 
 #include "OrientedContactDLLSpecifier.h"
 
@@ -46,10 +42,7 @@ namespace CompuCell3D {
 		Potts3D *potts;
 		Simulator *sim;
 
-		typedef std::map<int, double> orientedContactEnergies_t;
-		typedef std::vector<std::vector<double> > orientedContactEnergyArray_t;
-
-		orientedContactEnergies_t orientedContactEnergies;
+		typedef std::unordered_map<unsigned char, std::unordered_map<unsigned char, double> > orientedContactEnergyArray_t;
 
 		orientedContactEnergyArray_t orientedContactEnergyArray;
 
@@ -93,14 +86,6 @@ namespace CompuCell3D {
 		*/
 		void setOrientedContactEnergy(const std::string typeName1,
 			const std::string typeName2, const double energy);
-
-	protected:
-		/**
-		* @return The index used for ordering orientedContact energies in the map.
-		*/
-		int getIndex(const int type1, const int type2) const;
-
-
 
 	};
 };

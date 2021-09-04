@@ -4,7 +4,7 @@ PROJECT(PYINTERFACE)
 
 # include(${CMAKE_CURRENT_SOURCE_DIR}/FindSWIG.cmake) # this is slightly modified FindSWIG.cmake file -  had to tune it to work with OSX
 
-FIND_PACKAGE(SWIG REQUIRED)
+FIND_PACKAGE(SWIG 3.0...3.1 REQUIRED)
 
 # INCLUDE(${SWIG_USE_FILE})
 INCLUDE(UseSWIG)
@@ -15,6 +15,7 @@ INCLUDE(UseSWIG)
 if(NOT DEFINED NUMPY_INCLUDE_DIR)
     SET(NUMPY_INCLUDE_DIR )
     # searching for numpy include dir
+message ("python executable ", ${Python_EXECUTABLE})
 EXEC_PROGRAM(${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/core/pyinterface ARGS NumpyHeader.py
     OUTPUT_VARIABLE NUMPY_INCLUDE_DIR
 )

@@ -102,15 +102,8 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 
 	automaton = potts->getAutomaton();
 
-	set<unsigned char> cellTypesSet;
-	set<unsigned char> internalCellTypesSet;
-	set<unsigned char> typeSpecCellTypesSet;
-	set<unsigned char> internalTypeSpecCellTypesSet;
-
-	plastParams.clear();
-	internalPlastParams.clear();
-	typeSpecificPlastParams.clear();
-	internalTypeSpecificPlastParams.clear();
+	plastParamsArray.clear();
+	internalPlastParamsArray.clear();
 
 	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
@@ -132,13 +125,8 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 
 		FocalPointPlasticityTrackerData fpptd;
 
-		char type1 = automaton->getTypeId(plastParamVec[i]->getAttribute("Type1"));
-		char type2 = automaton->getTypeId(plastParamVec[i]->getAttribute("Type2"));
-
-		int index = getIndex(type1, type2);
-
-		plastParams_t::iterator it = plastParams.find(index);
-		if (it != plastParams.end()) throw CC3DException(string("Plasticity parameters for ") + type1 + " " + type2 + " already set!");
+		unsigned char type1 = automaton->getTypeId(plastParamVec[i]->getAttribute("Type1"));
+		unsigned char type2 = automaton->getTypeId(plastParamVec[i]->getAttribute("Type2"));
 
 		if (plastParamVec[i]->getFirstElement("Lambda"))
 			fpptd.lambdaDistance = plastParamVec[i]->getFirstElement("Lambda")->getDouble();
@@ -158,11 +146,8 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 			fpptd.maxNumberOfJunctions = maxNumberOfJunctionsElement->getInt();
 		}
 
-		plastParams[index] = fpptd;
-
-		//inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
-		cellTypesSet.insert(type1);
-		cellTypesSet.insert(type2);
+		plastParamsArray[type1][type2] = fpptd;
+		plastParamsArray[type2][type1] = fpptd;
 	}
 
 
@@ -172,13 +157,8 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 
 		FocalPointPlasticityTrackerData fpptd;
 
-		char type1 = automaton->getTypeId(internalPlastParamVec[i]->getAttribute("Type1"));
-		char type2 = automaton->getTypeId(internalPlastParamVec[i]->getAttribute("Type2"));
-
-		int index = getIndex(type1, type2);
-
-		plastParams_t::iterator it = internalPlastParams.find(index);
-		if (it != internalPlastParams.end()) throw CC3DException(string("Internal plasticity parameters for ") + type1 + " " + type2 + " already set!");
+		unsigned char type1 = automaton->getTypeId(internalPlastParamVec[i]->getAttribute("Type1"));
+		unsigned char type2 = automaton->getTypeId(internalPlastParamVec[i]->getAttribute("Type2"));
 
 		if (internalPlastParamVec[i]->getFirstElement("Lambda"))
 			fpptd.lambdaDistance = internalPlastParamVec[i]->getFirstElement("Lambda")->getDouble();
@@ -198,71 +178,31 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 
 		}
 
-		internalPlastParams[index] = fpptd;
-
-		//inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
-		internalCellTypesSet.insert(type1);
-		internalCellTypesSet.insert(type2);
+		internalPlastParamsArray[type1][type2] = fpptd;
+		internalPlastParamsArray[type2][type1] = fpptd;
 	}
 
-	//Now that we know all the types used in the simulation we will find size of the plastParams
-	vector<unsigned char> cellTypesVector(cellTypesSet.begin(), cellTypesSet.end());//coping set to the vector
-
-
-	int size = 0;
-	int index;
-	if (cellTypesVector.size()) {
-		size = *max_element(cellTypesVector.begin(), cellTypesVector.end());
-		size += 1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-	}
-
-	plastParamsArray.clear();
-	plastParamsArray.assign(size, vector<FocalPointPlasticityTrackerData>(size, FocalPointPlasticityTrackerData()));
-
-	for (int i = 0; i < cellTypesVector.size(); ++i)
-		for (int j = 0; j < cellTypesVector.size(); ++j) {
-			index = getIndex(cellTypesVector[i], cellTypesVector[j]);
-
-			plastParamsArray[cellTypesVector[i]][cellTypesVector[j]] = plastParams[index];
-		}
-	maxNumberOfJunctionsTotalVec.assign(size, 0);
-	for (int idx = 0; idx<maxNumberOfJunctionsTotalVec.size(); ++idx) {
+	maxNumberOfJunctionsTotalMap.clear();
+	for (auto& itr : plastParamsArray) {
 		int mNJ = 0;
-		for (int j = 0; j < maxNumberOfJunctionsTotalVec.size(); ++j) {
+		for (auto& itrItr : itr.second) {
 
-			mNJ += plastParamsArray[idx][j].maxNumberOfJunctions;
+			mNJ += itrItr.second.maxNumberOfJunctions;
 		}
-		maxNumberOfJunctionsTotalVec[idx] = mNJ;
+		maxNumberOfJunctionsTotalMap[itr.first] = mNJ;
 	}
 
 	//Now internal parameters
-	//Now that we know all the types used in the simulation we will find size of the plastParams
-	vector<unsigned char> internalCellTypesVector(internalCellTypesSet.begin(), internalCellTypesSet.end());//coping set to the vector
 
-	size = 0;
-	if (internalCellTypesVector.size()) {
-		size = *max_element(internalCellTypesVector.begin(), internalCellTypesVector.end());
-		size += 1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-	}
-
-	internalPlastParamsArray.clear();
-	internalPlastParamsArray.assign(size, vector<FocalPointPlasticityTrackerData>(size, FocalPointPlasticityTrackerData()));
-
-	for (int i = 0; i < internalCellTypesVector.size(); ++i)
-		for (int j = 0; j < internalCellTypesVector.size(); ++j) {
-			index = getIndex(internalCellTypesVector[i], internalCellTypesVector[j]);
-			internalPlastParamsArray[internalCellTypesVector[i]][internalCellTypesVector[j]] = internalPlastParams[index];
-		}
-
-	//initializing maxNumberOfJunctionsInternalTotalVec based on plastParamsArray .maxNumberOfJunctionsInternalTotalVec is indexed by cell type  	
-	maxNumberOfJunctionsInternalTotalVec.assign(size, 0);
-	for (int idx = 0; idx<maxNumberOfJunctionsInternalTotalVec.size(); ++idx) {
+	//initializing maxNumberOfJunctionsInternalTotalVec based on plastParamsArray .maxNumberOfJunctionsInternalTotalVec is indexed by cell type
+	maxNumberOfJunctionsInternalTotalMap.clear();
+	for (auto& itr : internalPlastParamsArray) {
 		int mNJ = 0;
-		for (int j = 0; j < maxNumberOfJunctionsInternalTotalVec.size(); ++j) {
+		for (auto& itrItr : itr.second) {
 
-			mNJ += internalPlastParamsArray[idx][j].maxNumberOfJunctions;
+			mNJ += itrItr.second.maxNumberOfJunctions;
 		}
-		maxNumberOfJunctionsInternalTotalVec[idx] = mNJ;
+		maxNumberOfJunctionsInternalTotalMap[itr.first] = mNJ;
 	}
 
 	CC3DXMLElement * linkXMLElem = _xmlData->getFirstElement("LinkConstituentLaw");
@@ -438,13 +378,17 @@ double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt, const
 	short &  newJunctionInitiatedFlag = newJunctionInitiatedFlagVec[currentWorkNodeNumber];
 	CellG * & newNeighbor = newNeighborVec[currentWorkNodeNumber];
 
-	if (((int)plastParamsArray.size()) - 1<newCell->type) { //the newCell type is not listed by the user
+	auto newCellPlastParamsItr = plastParamsArray.find(newCell->type);
+
+	if (newCellPlastParamsItr == plastParamsArray.end()) { //the newCell type is not listed by the user
 		newJunctionInitiatedFlag = false;
 		return 0.0;
 	}
 
+	auto newCellPlastParams = newCellPlastParamsItr->second;
+
 	//check if new cell can accept new junctions
-	if (linkInv.getNumberOfJunctions(const_cast<CellG*>(newCell)) >= maxNumberOfJunctionsTotalVec[newCell->type]) {
+	if (linkInv.getNumberOfJunctions(const_cast<CellG*>(newCell)) >= maxNumberOfJunctionsTotalMap[newCell->type]) {
 		newJunctionInitiatedFlag = false;
 		return 0.0;
 
@@ -483,17 +427,19 @@ double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt, const
 		if (nCell == newCell || nCell->clusterId == newCell->clusterId)	// make sure that newCell and nCell are different and belong to different clusters
 			continue;
 
-		if (((int)plastParamsArray.size()) - 1<nCell->type || plastParamsArray[newCell->type][nCell->type].maxNumberOfJunctions == 0) {
-			continue;
-		}
+		auto plastParamsItr = newCellPlastParams.find(nCell->type);
+
+		if (plastParamsItr == newCellPlastParams.end()) continue; // check if there are parameters for this combination of cell types
+
+		auto plastParams = plastParamsItr->second;
 
 		// check if neighbor cell can accept another junction
-		if (linkInv.getNumberOfJunctionsByType(nCell, newCell->type) >= plastParamsArray[newCell->type][nCell->type].maxNumberOfJunctions) {
+		if (linkInv.getNumberOfJunctionsByType(nCell, newCell->type) >= plastParams.maxNumberOfJunctions) {
 			continue;
 		}
 
 		// check if new cell can accept another junction
-		if (linkInv.getNumberOfJunctionsByType(const_cast<CellG*>(newCell), nCell->type) >= plastParamsArray[newCell->type][nCell->type].maxNumberOfJunctions) {
+		if (linkInv.getNumberOfJunctionsByType(const_cast<CellG*>(newCell), nCell->type) >= plastParams.maxNumberOfJunctions) {
 			continue;
 		}
 
@@ -507,7 +453,7 @@ double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt, const
 	}
 
 	if (newJunctionInitiatedFlag) {
-		return plastParamsArray[newCell->type][newNeighbor->type].activationEnergy;
+		return newCellPlastParams[newNeighbor->type].activationEnergy;
 	}
 	else {
 		return 0.0;
@@ -520,13 +466,17 @@ double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point
 	short &  newJunctionInitiatedFlagWithinCluster = newJunctionInitiatedFlagWithinClusterVec[currentWorkNodeNumber];
 	CellG * & newNeighbor = newNeighborVec[currentWorkNodeNumber];
 
-	if (((int)internalPlastParamsArray.size()) - 1<newCell->type) { //the newCell type is not listed by the user    
+	auto newCellPlastParamsItr = internalPlastParamsArray.find(newCell->type);
+
+	if (newCellPlastParamsItr == internalPlastParamsArray.end()) { //the newCell type is not listed by the user
 		newJunctionInitiatedFlagWithinCluster = false;
 		return 0.0;
 	}
 
+	auto newCellPlastParams = newCellPlastParamsItr->second;
+
 	//check if new cell can accept new junctions
-	if (linkInvInternal.getNumberOfJunctions(const_cast<CellG*>(newCell)) >= maxNumberOfJunctionsInternalTotalVec[newCell->type]) {
+	if (linkInvInternal.getNumberOfJunctions(const_cast<CellG*>(newCell)) >= maxNumberOfJunctionsInternalTotalMap[newCell->type]) {
 		newJunctionInitiatedFlagWithinCluster = false;
 		return 0.0;
 	}
@@ -558,20 +508,25 @@ double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point
 		if (nCell == newCell || nCell->clusterId != newCell->clusterId)	// make sure that newCell and nCell are different and belong to the same clusters
 			continue;
 
+		auto plastParamsItr = newCellPlastParams.find(nCell->type);
+
 		//check if type of neighbor cell is listed by the user
-		if (((int)internalPlastParamsArray.size()) - 1 < nCell->type || maxNumberOfJunctionsInternalTotalVec[newCell->type] == 0) {
+		if (plastParamsItr == newCellPlastParams.end()) continue;
+
+		auto plastParams = plastParamsItr->second;
+
+		if (maxNumberOfJunctionsInternalTotalMap[newCell->type] == 0) {
 			continue;
 		}
 
-
 		// check if neighbor cell can accept another junction
 
-		if (linkInvInternal.getNumberOfJunctionsByType(nCell, newCell->type) >= internalPlastParamsArray[newCell->type][nCell->type].maxNumberOfJunctions) {
+		if (linkInvInternal.getNumberOfJunctionsByType(nCell, newCell->type) >= plastParams.maxNumberOfJunctions) {
 			continue;
 		}
 
 		// check if newCell can accept another junction
-		if (linkInvInternal.getNumberOfJunctionsByType(const_cast<CellG*>(newCell), nCell->type) >= internalPlastParamsArray[newCell->type][nCell->type].maxNumberOfJunctions) {
+		if (linkInvInternal.getNumberOfJunctionsByType(const_cast<CellG*>(newCell), nCell->type) >= plastParams.maxNumberOfJunctions) {
 			continue;
 		}
 
@@ -587,7 +542,7 @@ double FocalPointPlasticityPlugin::tryAddingNewJunctionWithinCluster(const Point
 
 
 	if (newJunctionInitiatedFlagWithinCluster) {
-		return internalPlastParamsArray[newCell->type][newNeighbor->type].activationEnergy;
+		return newCellPlastParams[newNeighbor->type].activationEnergy;
 	}
 	else {
 		return 0.0;
@@ -1171,9 +1126,3 @@ void FocalPointPlasticityPlugin::setAnchorParameters(CellG * _cell, int _anchorI
 
 std::string FocalPointPlasticityPlugin::steerableName() { return "FocalPointPlasticity"; }
 std::string FocalPointPlasticityPlugin::toString() { return steerableName(); }
-
-int FocalPointPlasticityPlugin::getIndex(const int type1, const int type2) const {
-	if (type1 < type2) return ((type1 + 1) | ((type2 + 1) << 16));
-	else return ((type2 + 1) | ((type1 + 1) << 16));
-
-}

@@ -4,19 +4,7 @@
 #include <CompuCell3D/CC3D.h>
 #include "ContactOrientationData.h"
 
-// // // #include <CompuCell3D/Plugin.h>
-
-// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-
-
-// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
-
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-
-// // // #include <muParser/muParser.h>
-
 #include "ContactOrientationDLLSpecifier.h"
-// // // #include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
 
 class CC3DXMLElement;
 
@@ -34,7 +22,7 @@ namespace CompuCell3D {
     class CONTACTORIENTATION_EXPORT  ContactOrientationPlugin : public Plugin ,public EnergyFunction  {
         
     private:    
-        ExtraMembersGroupAccessor<ContactOrientationData> contactOrientationDataAccessor;                
+        ExtraMembersGroupAccessor<ContactOrientationData> contactOrientationDataAccessor;
         CC3DXMLElement *xmlData;        
         
         Potts3D *potts;
@@ -57,10 +45,7 @@ namespace CompuCell3D {
         WatchableField3D<CellG *> *cellFieldG;
     
         //contact energy part
-        typedef std::map<int, double> contactEnergies_t;
-        typedef std::vector<std::vector<double> > contactEnergyArray_t;
-
-        contactEnergies_t contactEnergies;
+        typedef std::unordered_map<unsigned char, std::unordered_map<unsigned char, double> > contactEnergyArray_t;
 
         contactEnergyArray_t contactEnergyArray;
 
@@ -76,7 +61,7 @@ namespace CompuCell3D {
         ContactOrientationPlugin();
         virtual ~ContactOrientationPlugin();
         
-        ExtraMembersGroupAccessor<ContactOrientationData> * getContactOrientationDataAccessorPtr(){return & contactOrientationDataAccessor;}                
+        ExtraMembersGroupAccessor<ContactOrientationData> * getContactOrientationDataAccessorPtr(){return & contactOrientationDataAccessor;}
 
         
         //Energy function interface
@@ -111,7 +96,6 @@ namespace CompuCell3D {
         /**
         * @return The index used for ordering contact energies in the map.
         */
-        int getIndex(const int type1, const int type2) const; 
 		double singleTermFormula(double _alpha,double _theta);
         double angularTermFunction(double _alpha,double _theta);
         

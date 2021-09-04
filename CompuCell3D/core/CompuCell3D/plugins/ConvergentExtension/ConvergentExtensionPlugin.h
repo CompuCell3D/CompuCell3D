@@ -45,9 +45,8 @@ namespace CompuCell3D {
 		Potts3D *potts;
 
 		std::set<unsigned char> interactingTypes ;
-	   std::vector<double> alphaConvExtVec;
+	   	std::unordered_map<unsigned char, double> alphaConvExtMap;
 		std::map<std::string , double> typeNameAlphaConvExtMap;
-		unsigned char maxTypeId;
 
 		double depth;
 

@@ -25,7 +25,7 @@
 
 #include "ContactLocalFlexDLLSpecifier.h"
 #include <set>
-#include <vector>
+#include <unordered_map>
 
 
 namespace CompuCell3D {
@@ -54,7 +54,7 @@ class CONTACTLOCALFLEX_EXPORT ContactLocalFlexData{
          ~ContactLocalFlexDataContainer(){};
          std::set<ContactLocalFlexData> contactDataContainer; //stores contact energies for cell neighbors
          //add local default values
-         std::vector< std::vector<double> > localDefaultContactEnergies;
+         std::unordered_map<unsigned char, std::unordered_map<unsigned char, double> > localDefaultContactEnergies;
          
    };
 

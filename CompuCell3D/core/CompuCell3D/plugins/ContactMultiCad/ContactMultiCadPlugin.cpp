@@ -212,20 +212,11 @@ void ContactMultiCadPlugin::setContactEnergy(const string typeName1,
     const string typeName2,
     const double energy) {
 
-    char type1 = automaton->getTypeId(typeName1);
-    char type2 = automaton->getTypeId(typeName2);
+    unsigned char type1 = automaton->getTypeId(typeName1);
+    unsigned char type2 = automaton->getTypeId(typeName2);
 
-    int index = getIndex(type1, type2);
-
-    contactEnergies_t::iterator it = contactEnergies.find(index);
-    if (it != contactEnergies.end()) throw CC3DException(string("Contact energy for ") + typeName1 + " " + typeName2 + " already set!");
-
-    contactEnergies[index] = energy;
-}
-
-int ContactMultiCadPlugin::getIndex(const int type1, const int type2) const {
-    if (type1 < type2) return ((type1 + 1) | ((type2 + 1) << 16));
-    else return ((type2 + 1) | ((type1 + 1) << 16));
+    contactEnergyArray[type1][type2] = energy;
+    contactEnergyArray[type2][type1] = energy;
 }
 
 
@@ -234,7 +225,7 @@ void ContactMultiCadPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
     automaton = potts->getAutomaton();
     if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
     set<unsigned char> cellTypesSet;
-    contactEnergies.clear();
+    contactEnergyArray.clear();
 
     CC3DXMLElementList energyVec = _xmlData->getElements("Energy");
 
@@ -248,30 +239,11 @@ void ContactMultiCadPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 
     }
 
-    //Now that we know all the types used in the simulation we will find size of the contactEnergyArray
-    vector<unsigned char> cellTypesVector(cellTypesSet.begin(), cellTypesSet.end());//coping set to the vector
+    cerr << "size=" << contactEnergyArray.size() << endl;
+    for (auto& i : cellTypesSet)
+        for (auto& j : cellTypesSet) {
 
-    int size = *max_element(cellTypesVector.begin(), cellTypesVector.end());
-    size += 1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-
-
-    int index;
-    contactEnergyArray.clear();
-    contactEnergyArray.assign(size, vector<double>(size, 0.0));
-
-    for (int i = 0; i < size; ++i)
-        for (int j = 0; j < size; ++j) {
-
-            index = getIndex(cellTypesVector[i], cellTypesVector[j]);
-
-            contactEnergyArray[i][j] = contactEnergies[index];
-
-        }
-    cerr << "size=" << size << endl;
-    for (int i = 0; i < size; ++i)
-        for (int j = 0; j < size; ++j) {
-
-            cerr << "contact[" << i << "][" << j << "]=" << contactEnergyArray[i][j] << endl;
+            cerr << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << contactEnergyArray[i][j] << endl;
 
         }
 

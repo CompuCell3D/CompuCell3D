@@ -25,12 +25,6 @@
 
 #include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Plugin.h>
-
-// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-
 #include "LengthConstraintData.h"
 
 #include "LengthConstraintDLLSpecifier.h"
@@ -65,7 +59,7 @@ namespace CompuCell3D {
 
 		ExtraMembersGroupAccessor<LengthConstraintData> lengthConstraintDataAccessor;
 
-		std::vector<LengthEnergyParam> lengthEnergyParamVector;
+		std::unordered_map<unsigned char, LengthEnergyParam> lengthEnergyParamMap;
 		std::vector<std::string> typeNameVec;//temporary vector for storage type names
 		BoundaryStrategy * boundaryStrategy;
 
@@ -104,8 +98,6 @@ namespace CompuCell3D {
 		double changeEnergy_3D(const Point3D &pt,const CellG *newCell,const CellG *oldCell);
 
 		changeEnergyFcnPtr_t changeEnergyFcnPtr;
-
-		void initTypeId(Potts3D * potts);
 
 		//SteerableObject interface
 		virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);

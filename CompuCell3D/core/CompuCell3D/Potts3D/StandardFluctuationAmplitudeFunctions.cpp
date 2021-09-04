@@ -20,26 +20,24 @@ double MinFluctuationAmplitudeFunction::fluctuationAmplitude(const CellG * newCe
 	double fluctAmpl=potts->getTemperature();
 
     //first we check if users defined fluctuation by cell type
-	const std::vector<float> & cellTypeMotilityVec=potts->getCellTypeMotilityVec();		
-	
 
-	if(cellTypeMotilityVec.size()){
+	if(potts->hasCellTypeMotility()){
 		unsigned int newCellTypeId=(newCell ? (unsigned int)newCell->type :0);
 		unsigned int oldCellTypeId=(oldCell? (unsigned int)oldCell->type :0);
 		if(newCellTypeId && oldCellTypeId){
 
-			fluctAmplVec[0]=(newCell->fluctAmpl<0.0 ? cellTypeMotilityVec[newCellTypeId] : newCell->fluctAmpl);
-			fluctAmplVec[1]=(oldCell->fluctAmpl<0.0 ? cellTypeMotilityVec[oldCellTypeId] : oldCell->fluctAmpl);	
+			fluctAmplVec[0]=(newCell->fluctAmpl<0.0 ? potts->getCellTypeMotility(newCellTypeId) : newCell->fluctAmpl);
+			fluctAmplVec[1]=(oldCell->fluctAmpl<0.0 ? potts->getCellTypeMotility(oldCellTypeId) : oldCell->fluctAmpl);	
 
 		}else if(newCellTypeId){
 				
-				fluctAmplVec[0]=(newCell->fluctAmpl<0.0 ? cellTypeMotilityVec[newCellTypeId] : newCell->fluctAmpl);
-				fluctAmplVec[1]= (std::numeric_limits<double>::max)();
+			fluctAmplVec[0]=(newCell->fluctAmpl<0.0 ? potts->getCellTypeMotility(newCellTypeId) : newCell->fluctAmpl);
+			fluctAmplVec[1]= (std::numeric_limits<double>::max)();
 				
 		}else if (oldCellTypeId){
 
-				fluctAmplVec[0]=(std::numeric_limits<double>::max)();
-				fluctAmplVec[1]= (oldCell->fluctAmpl<0.0 ? cellTypeMotilityVec[oldCellTypeId] : oldCell->fluctAmpl);
+			fluctAmplVec[0]=(std::numeric_limits<double>::max)();
+			fluctAmplVec[1]= (oldCell->fluctAmpl<0.0 ? potts->getCellTypeMotility(oldCellTypeId) : oldCell->fluctAmpl);
 				
 		}
 
@@ -122,26 +120,24 @@ double MaxFluctuationAmplitudeFunction::fluctuationAmplitude(const CellG * newCe
 	double fluctAmpl=potts->getTemperature();
 
     //first we check if users defined fluctuation by cell type
-	const std::vector<float> & cellTypeMotilityVec=potts->getCellTypeMotilityVec();		
-	
 
-	if(cellTypeMotilityVec.size()){
+	if(potts->hasCellTypeMotility()){
 		unsigned int newCellTypeId=(newCell ? (unsigned int)newCell->type :0);
 		unsigned int oldCellTypeId=(oldCell? (unsigned int)oldCell->type :0);
 		if(newCellTypeId && oldCellTypeId){
 
-			fluctAmplVec[0]=(newCell->fluctAmpl<0.0 ? cellTypeMotilityVec[newCellTypeId] : newCell->fluctAmpl);
-			fluctAmplVec[1]=(oldCell->fluctAmpl<0.0 ? cellTypeMotilityVec[oldCellTypeId] : oldCell->fluctAmpl);	
+			fluctAmplVec[0]=(newCell->fluctAmpl<0.0 ? potts->getCellTypeMotility(newCellTypeId) : newCell->fluctAmpl);
+			fluctAmplVec[1]=(oldCell->fluctAmpl<0.0 ? potts->getCellTypeMotility(oldCellTypeId) : oldCell->fluctAmpl);	
 
 		}else if(newCellTypeId){
 				
-				fluctAmplVec[0]=(newCell->fluctAmpl<0.0 ? cellTypeMotilityVec[newCellTypeId] : newCell->fluctAmpl);
-				fluctAmplVec[1]= (std::numeric_limits<double>::min)();
+			fluctAmplVec[0]=(newCell->fluctAmpl<0.0 ? potts->getCellTypeMotility(newCellTypeId) : newCell->fluctAmpl);
+			fluctAmplVec[1]= (std::numeric_limits<double>::min)();
 				
 		}else if (oldCellTypeId){
 
-				fluctAmplVec[0]=(std::numeric_limits<double>::min)();
-				fluctAmplVec[1]= (oldCell->fluctAmpl<0.0 ? cellTypeMotilityVec[oldCellTypeId] : oldCell->fluctAmpl);
+			fluctAmplVec[0]=(std::numeric_limits<double>::min)();
+			fluctAmplVec[1]= (oldCell->fluctAmpl<0.0 ? potts->getCellTypeMotility(oldCellTypeId) : oldCell->fluctAmpl);
 				
 		}
 
@@ -150,7 +146,6 @@ double MaxFluctuationAmplitudeFunction::fluctuationAmplitude(const CellG * newCe
 	}
 
 	
-	//check if user modified fluctAmpl attribute
 	//check if user modified fluctAmpl attribute
 	bool globalFluctuationAmplitudeFlag=true;
 
@@ -210,25 +205,23 @@ double ArithmeticAverageFluctuationAmplitudeFunction::fluctuationAmplitude(const
 	double fluctAmpl=potts->getTemperature();
 
     //first we check if users defined fluctuation by cell type
-	const std::vector<float> & cellTypeMotilityVec=potts->getCellTypeMotilityVec();		
-	
 
-	if(cellTypeMotilityVec.size()){
+	if(potts->hasCellTypeMotility()){
 		unsigned int newCellTypeId=(newCell ? (unsigned int)newCell->type :0);
 		unsigned int oldCellTypeId=(oldCell? (unsigned int)oldCell->type :0);
 		if(newCellTypeId && oldCellTypeId){
 
-			fluctAmplVec[0]=(newCell->fluctAmpl<0.0 ? cellTypeMotilityVec[newCellTypeId] : newCell->fluctAmpl);
-			fluctAmplVec[1]=(oldCell->fluctAmpl<0.0 ? cellTypeMotilityVec[oldCellTypeId] : oldCell->fluctAmpl);	
+			fluctAmplVec[0]=(newCell->fluctAmpl<0.0 ? potts->getCellTypeMotility(newCellTypeId) : newCell->fluctAmpl);
+			fluctAmplVec[1]=(oldCell->fluctAmpl<0.0 ? potts->getCellTypeMotility(oldCellTypeId) : oldCell->fluctAmpl);	
 
 		}else if(newCellTypeId){
 				
-				fluctAmplVec[0]=(newCell->fluctAmpl<0.0 ? cellTypeMotilityVec[newCellTypeId] : newCell->fluctAmpl);
-				fluctAmplVec[1]= fluctAmplVec[0];
+			fluctAmplVec[0]=(newCell->fluctAmpl<0.0 ? potts->getCellTypeMotility(newCellTypeId) : newCell->fluctAmpl);
+			fluctAmplVec[1]= fluctAmplVec[0];
 				
 		}else if (oldCellTypeId){
 
-			fluctAmplVec[1]= (oldCell->fluctAmpl<0.0 ? cellTypeMotilityVec[oldCellTypeId] : oldCell->fluctAmpl);	
+			fluctAmplVec[1]= (oldCell->fluctAmpl<0.0 ? potts->getCellTypeMotility(oldCellTypeId) : oldCell->fluctAmpl);	
 			fluctAmplVec[0]= fluctAmplVec[1];
 				
 				
