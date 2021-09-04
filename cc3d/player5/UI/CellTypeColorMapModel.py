@@ -42,7 +42,7 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
         :return:
         """
 
-        types_invisible_str = str(Configuration.getSetting("Types3DInvisible"))
+        types_invisible_str = str(Configuration.getSetting('Types3DInvisible'))
 
         types_invisible = types_invisible_str.replace(" ", "")
         types_invisible = types_invisible.split(",")
@@ -152,6 +152,13 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
         else:
             return QVariant()
 
+    def store_invisible_types_in_settings(self):
+        invisible_types = []
+        for type_id, item_list in self.item_data.items():
+            if not item_list[self.show_in_3d_idx_in_list]:
+                invisible_types.append(str(type_id))
+        Configuration.setSetting('Types3DInvisible', ','.join(invisible_types))
+
     def setData(self, index, value, role=None):
         """
         This needs to be reimplemented if  allowing editing
@@ -170,6 +177,7 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
         item = self.item_data[index.row()]
         if index.column() == self.show_in_3d_idx and isinstance(value, int):
             item[self.show_in_3d_idx_in_list] = value
+            self.store_invisible_types_in_settings()
         else:
             print('not Implemented')
             # item.val = value
