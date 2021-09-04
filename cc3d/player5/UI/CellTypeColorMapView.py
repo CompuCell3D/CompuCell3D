@@ -3,20 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import sys
-
-# self.steering_model = SteeringPanelModel()
-# self.steering_model.update(item_data)
-# # model.update_type_conv_fcn(get_types())
-#
-# self.steering_table_view = SteeringPanelView()
-# self.steering_table_view.setModel(self.steering_model)
-#
-# delegate = SteeringEditorDelegate()
-# self.steering_table_view.setItemDelegate(delegate)
-#
-# layout.addWidget(self.steering_table_view)
-# self.steering_window.setLayout(layout)
-# self.steering_table_view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+from .checkbox_delegate import CheckBoxDelegate
 
 
 class CellTypeColorMapView(QTableView):
@@ -30,6 +17,9 @@ class CellTypeColorMapView(QTableView):
         self.horizontalHeader().setStretchLastSection(True)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.setSelectionMode(QAbstractItemView.NoSelection)
+        delegate = CheckBoxDelegate(None)
+        self.setItemDelegateForColumn(3, delegate)
+
 
         # on OSX we do not resize row height, we do it only on windows and linux
         if not sys.platform.startswith('darwin'):
@@ -43,6 +33,7 @@ class CellTypeColorMapView(QTableView):
         #self.__resizeColumns()
 
     def update_content(self):
+
         model = self.model()
         if model is None:
             return

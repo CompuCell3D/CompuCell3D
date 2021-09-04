@@ -14,17 +14,22 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
         self.item_data = None
         self.dirty_flag = False
 
+        # those indexes label where a given item is in the list that describes particular row
         self.type_name_idx_in_list = 0
         self.color_idx_in_list = 1
+        self.show_in_3d_idx_in_list = 2
+
+        # those are view column indexes
         self.type_id_idx = 0
         self.color_idx = 1
         self.type_name_idx = 2
+        self.show_in_3d_idx = 3
 
         self.header_data = [
             'Cell Type Id',
             'Color',
-            'Name'
-            # 'Type'
+            'Name',
+            'Show in 3D'
         ]
         self.item_data_attr_name = {
             0: 'val',
@@ -36,6 +41,13 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
 
         :return:
         """
+
+        types_invisible_str = str(Configuration.getSetting("Types3DInvisible"))
+
+        types_invisible = types_invisible_str.replace(" ", "")
+        types_invisible = types_invisible.split(",")
+        types_invisible_dict = {int(type_id): 1 for type_id in types_invisible}
+
         self.item_data = OrderedDict()
 
         type_color_map = Configuration.getSetting('TypeColorMap')
@@ -46,9 +58,13 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
                 color = type_color_map[type_id]
             except KeyError:
                 color = QColor('black')
+            try:
+                types_invisible_dict[type_id]
+                show_in_3d = 0
+            except KeyError:
+                show_in_3d = 1
 
-            self.item_data[type_id] = [type_name, color]
-
+            self.item_data[type_id] = [type_name, color, show_in_3d]
 
         self.update(item_data=self.item_data)
 
@@ -108,6 +124,8 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
                 return list(self.item_data.keys())[i]
             elif j == self.type_name_idx:
                 return item[self.type_name_idx_in_list]
+            if j == self.show_in_3d_idx:
+                return item[self.show_in_3d_idx_in_list]
             else:
                 return QVariant()
             # item_data_to_display = getattr(item, self.item_data_attr_name[j])
@@ -150,8 +168,13 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
             return False
 
         item = self.item_data[index.row()]
-        item.val = value
-        item.dirty_flag = True
+        if index.column() == self.show_in_3d_idx and isinstance(value, int):
+            item[self.show_in_3d_idx_in_list] = value
+        else:
+            print('not Implemented')
+            # item.val = value
+
+        # item.dirty_flag = True
         self.dirty_flag = True
         return True
 
