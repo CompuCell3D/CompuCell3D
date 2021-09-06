@@ -36,7 +36,6 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
         ]
         self.item_data_attr_name = {
             0: 'val',
-            # 1: 'item_type'
         }
         self.vm = None
 
@@ -136,24 +135,12 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
                 return item[self.show_in_3d_idx_in_list]
             else:
                 return QVariant()
-            # item_data_to_display = getattr(item, self.item_data_attr_name[j])
-            # return '{}'.format(item_data_to_display)
 
         # elif role == Qt.BackgroundRole:
-        #     i = index.row()
-        #     j = index.column()
-        #
-        #     if j == self.color_idx:
-        #         # item is a list of [type name, color]
-        #         print('model j=',j, ' row=',index.row())
-        #         item = self.item_data[i]
-        #         color = item[self.color_idx_in_list]
-        #         return color
-        #     return QVariant()
+        # background for color column is handled via delegate
 
         elif role == Qt.ToolTipRole:
             i = index.row()
-            j = index.column()
             item = self.item_data[i]
 
             return str(item[self.type_name_idx_in_list])
@@ -165,7 +152,7 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
         """
         This needs to be reimplemented if  allowing editing
         :param index:
-        :param Any:
+        :param value:
         :param role:
         :return:
         """

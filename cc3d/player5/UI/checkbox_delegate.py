@@ -3,6 +3,7 @@ from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import QStandardItemModel
 from PyQt5.QtWidgets import QApplication, QTableView
 
+
 class CheckBoxDelegate(QtWidgets.QItemDelegate):
     """
     A delegate that places a fully functioning QCheckBox cell of the column to which it's applied.
@@ -27,10 +28,16 @@ class CheckBoxDelegate(QtWidgets.QItemDelegate):
             pass
 
     def editorEvent(self, event, model, option, index):
-        '''
+        """
         Change the data in the model and the state of the checkbox
         if the user presses the left mousebutton and this cell is editable. Otherwise do nothing.
-        '''
+
+        :param event:
+        :param model:
+        :param option:
+        :param index:
+        :return:
+        """
         if not int(index.flags() & QtCore.Qt.ItemIsEditable) > 0:
             return False
 
@@ -41,149 +48,12 @@ class CheckBoxDelegate(QtWidgets.QItemDelegate):
 
         return False
 
-
-    def setModelData (self, editor, model, index):
-        '''
+    def setModelData(self, editor, model, index):
+        """
         The user wanted to change the old state in the opposite.
-        '''
+        :param editor:
+        :param model:
+        :param index:
+        :return:
+        """
         model.setData(index, 1 if int(index.data()) == 0 else 0, QtCore.Qt.EditRole)
-
-
-class ColorEditorDelegate(QtWidgets.QItemDelegate):
-    """
-    A delegate that places a fully functioning QCheckBox cell of the column to which it's applied.
-    """
-    def __init__(self, parent):
-        QtWidgets.QItemDelegate.__init__(self, parent)
-
-    def createEditor(self, parent, option, index):
-        """
-        Important, otherwise an editor is created if the user clicks in this cell.
-        """
-
-        editor = self.init_color_dialog(parent, index)
-
-        return editor
-
-    def init_color_dialog(self,parent, index):
-        dlg = QtWidgets.QColorDialog(parent)
-        current_color = self.get_color_at_index(index=index)
-        dlg.setCurrentColor(current_color)
-        return dlg
-
-    def get_color_at_index(self, index):
-        model = index.model()
-
-        row = index.row()
-        color_idx = model.color_idx_in_list
-        color_at_index = model.item_data[row][color_idx]
-
-        return color_at_index
-
-    def paint(self, painter, option, index):
-        """
-        Paint a checkbox without the label.
-        """
-        print('index', index.row(), index.column())
-
-        print('index.data = ', index.data())
-        # background = QtGui.QColor(QtCore.qrand() % 255, QtCore.qrand() % 255, QtCore.qrand() % 255);
-        # background = QtGui.QColor('green')
-        background = self.get_color_at_index(index=index)
-        # model = index.model()
-        # print
-        # row = index.row()
-        # color_idx = model.color_idx_in_list
-        # background = model.item_data[row][color_idx]
-
-        # background = QtGui.QColor(index.data(QtCore.Qt.BackgroundRole))
-
-        # QColor
-        # background2 = QColor(255, 255, 255);
-        # return
-        self.drawBackground(painter, option, index)
-        painter.fillRect(option.rect, background)
-        # return
-        # QtGui.QColor('green')
-        # QtWidgets.QItemDelegate.paint(painter, option, index)
-
-        # self.drawBackground(painter, option, index)
-        # try:
-        #     self.drawBackground(painter, option, index)
-        # except TypeError:
-        #     print('got option ', option, ' index=', index.row())
-        #     pass
-
-    def editorEvent(self, event, model, option, index):
-        '''
-        Change the data in the model and the state of the checkbox
-        if the user presses the left mousebutton and this cell is editable. Otherwise do nothing.
-        '''
-        print('editor_event')
-        if not int(index.flags() & QtCore.Qt.ItemIsEditable) > 0:
-            return False
-
-        if event.type() == QtCore.QEvent.MouseButtonRelease and event.button() == QtCore.Qt.LeftButton:
-            # Change the checkbox-state
-            # self.setModelData(None, model, index)
-            return True
-
-        return False
-
-
-    def setModelData (self, editor, model, index):
-        '''
-        The user wanted to change the old state in the opposite.
-        '''
-        print (f'set model data, {index.row()}, {index.column()}')
-        current_color = self.get_color_at_index(index = index)
-        chosen_color = editor.selectedColor()
-        if chosen_color.isValid():
-            model.setData(index, chosen_color, QtCore.Qt.EditRole)
-
-
-
-
-        # model.setData(index, 1 if int(index.data()) == 0 else 0, QtCore.Qt.EditRole)
-
-
-
-if __name__ == '__main__':
-
-    import sys
-
-    app = QApplication(sys.argv)
-
-    model = QStandardItemModel(4, 3)
-    tableView = QTableView()
-    tableView.setModel(model)
-
-    delegate = ColorEditorDelegate(None)
-    tableView.setItemDelegateForColumn(1, delegate)
-    # for row in range(4):
-    #     for column in range(3):
-    #         index = model.index(row, column, QModelIndex())
-    #         model.setData(index, 1)
-
-    tableView.setWindowTitle("Check Box Delegate")
-    tableView.show()
-    sys.exit(app.exec_())
-
-    # import sys
-    #
-    # app = QApplication(sys.argv)
-    #
-    # model = QStandardItemModel(4, 3)
-    # tableView = QTableView()
-    # tableView.setModel(model)
-    #
-    # delegate = CheckBoxDelegate(None)
-    # tableView.setItemDelegateForColumn(1, delegate)
-    # for row in range(4):
-    #     for column in range(3):
-    #         index = model.index(row, column, QModelIndex())
-    #         model.setData(index, 1)
-    #
-    # tableView.setWindowTitle("Check Box Delegate")
-    # tableView.show()
-    # sys.exit(app.exec_())
