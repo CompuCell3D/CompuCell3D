@@ -45,5 +45,5 @@ jobs:
           sed -i "s~<path to where python executable is. Make sure it is same python as used by cc3d>~$(which python)~g"  CompuCell3D/core/Demos/CallableCC3D/environment_var_setters/cc3d_caller_env_var_set_linux.sh
           source CompuCell3D/core/Demos/CallableCC3D/environment_var_setters/cc3d_caller_env_var_set_linux.sh
           cd CompuCell3D/core/test_suite
-          python regression_tests_runner.py --run-command=~/410_auto/runScript.sh --output-dir=~/410_auto/out/
+          python regression_tests_runner.py --run-command=~/410_auto/runScript.sh --output-dir=~/out/
         displayName: Run Integration Tests
