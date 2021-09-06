@@ -17,6 +17,10 @@ jobs:
         displayName: Clone the build scripts
 
       - bash: |
+          sudo apt-get purge --auto-remove swig
+          sudo apt-get install -y swig3.0
+        displayName: Install swig 4 and install swig3
+      - bash: |
           apt-get remove swig -y
           source activate cc3d_2020
           conda config --set channel_priority false
