@@ -5,6 +5,8 @@ from PyQt5.QtGui import *
 from collections import OrderedDict
 from cc3d import CompuCellSetup
 from cc3d.player5 import Configuration
+import warnings
+import weakref
 
 
 class CellTypeColorMapModel(QtCore.QAbstractTableModel):
@@ -15,6 +17,7 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
         self.dirty_flag = False
 
         # those indexes label where a given item is in the list that describes particular row
+        self.type_id_idx_in_list = -1
         self.type_name_idx_in_list = 0
         self.color_idx_in_list = 1
         self.show_in_3d_idx_in_list = 2
@@ -35,6 +38,10 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
             0: 'val',
             # 1: 'item_type'
         }
+        self.vm = None
+
+    def set_view_manager(self, vm):
+        self.vm = weakref.ref(vm)
 
     def read_cell_type_color_data(self):
         """
@@ -58,13 +65,14 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
                 color = type_color_map[type_id]
             except KeyError:
                 color = QColor('black')
+
             try:
                 types_invisible_dict[type_id]
                 show_in_3d = 0
             except KeyError:
                 show_in_3d = 1
 
-            self.item_data[type_id] = [type_name, color, show_in_3d]
+            self.item_data[type_id] = [type_name, color, show_in_3d, type_id]
 
         self.update(item_data=self.item_data)
 
@@ -131,16 +139,17 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
             # item_data_to_display = getattr(item, self.item_data_attr_name[j])
             # return '{}'.format(item_data_to_display)
 
-        elif role == Qt.BackgroundRole:
-            i = index.row()
-            j = index.column()
-
-            if j == self.color_idx:
-                # item is a list of [type name, color]
-                item = self.item_data[i]
-                color = item[self.color_idx_in_list]
-                return color
-            return QVariant()
+        # elif role == Qt.BackgroundRole:
+        #     i = index.row()
+        #     j = index.column()
+        #
+        #     if j == self.color_idx:
+        #         # item is a list of [type name, color]
+        #         print('model j=',j, ' row=',index.row())
+        #         item = self.item_data[i]
+        #         color = item[self.color_idx_in_list]
+        #         return color
+        #     return QVariant()
 
         elif role == Qt.ToolTipRole:
             i = index.row()
@@ -151,13 +160,6 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
 
         else:
             return QVariant()
-
-    def store_invisible_types_in_settings(self):
-        invisible_types = []
-        for type_id, item_list in self.item_data.items():
-            if not item_list[self.show_in_3d_idx_in_list]:
-                invisible_types.append(str(type_id))
-        Configuration.setSetting('Types3DInvisible', ','.join(invisible_types))
 
     def setData(self, index, value, role=None):
         """
@@ -174,17 +176,53 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return False
 
-        item = self.item_data[index.row()]
+        modification_made = False
+        row_item = self.item_data[index.row()]
         if index.column() == self.show_in_3d_idx and isinstance(value, int):
-            item[self.show_in_3d_idx_in_list] = value
+            row_item[self.show_in_3d_idx_in_list] = value
             self.store_invisible_types_in_settings()
+            modification_made = True
+        elif index.column() == self.color_idx:
+            row_item[self.color_idx_in_list] = value
+            self.store_updated_color_type_map_in_settings(row_item)
+            modification_made = True
         else:
             print('not Implemented')
-            # item.val = value
 
-        # item.dirty_flag = True
+        if modification_made:
+            self.vm().trigger_configs_changed()
+            self.vm().redo_completed_step()
+
         self.dirty_flag = True
         return True
+
+    def store_invisible_types_in_settings(self):
+        """
+        updates settings  - stores updated 3d invisible types
+        :return:
+        """
+        invisible_types = []
+        for type_id, item_list in self.item_data.items():
+            if not item_list[self.show_in_3d_idx_in_list]:
+                invisible_types.append(str(type_id))
+        Configuration.setSetting('Types3DInvisible', ','.join(invisible_types))
+
+    def store_updated_color_type_map_in_settings(self, row_item: list):
+        """
+        updates settings - stores updated color map
+        :param row_item: model row item - in this context this is a list of type id, color, show_in_3D_flag
+        :return:
+        """
+
+        type_color_map = Configuration.getSetting('TypeColorMap')
+        try:
+            type_id_for_row_item = row_item[self.type_id_idx_in_list]
+            color_for_row_item = row_item[self.color_idx_in_list]
+            type_color_map[type_id_for_row_item] = color_for_row_item
+        except (LookupError, IndexError) as e:
+            warnings.warn(f'Could not find entry for TypeColorMap setting {row_item} . Error: {e}')
+
+        Configuration.setSetting('TypeColorMap', type_color_map)
 
     def flags(self, index):
         if not index.isValid():
@@ -193,6 +231,7 @@ class CellTypeColorMapModel(QtCore.QAbstractTableModel):
 
         existing_flags |= QtCore.Qt.ItemIsEditable
 
+        if index.column() == self.color_idx:
+            return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
+
         return existing_flags
-
-

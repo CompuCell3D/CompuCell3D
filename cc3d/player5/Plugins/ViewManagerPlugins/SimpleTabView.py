@@ -1518,6 +1518,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.completedFirstMCS = True
             # initializes cell type data
             self.ui.cell_type_color_map_model.read_cell_type_color_data()
+            self.ui.cell_type_color_map_model.set_view_manager(vm=self)
+
             self.ui.cell_type_color_map_view.setModel(self.ui.cell_type_color_map_model)
             # update_content function gets called each time configsChanged signal gets emitted and we
             # reread entire cell type information at this point - effectively updating cell type color map display
@@ -3192,8 +3194,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # Saves changes from all configuration pages!
             #            dlg.setPreferences()
             Configuration.syncPreferences()
-            self.__configsChanged()  # Explicitly calling signal 'configsChanged'
-            self.__redoCompletedStep()
+            self.trigger_configs_changed()  # Explicitly calling signal 'configsChanged'
+            self.redo_completed_step()
 
     def __generatePIFFromCurrentSnapshot(self):
         """
@@ -3303,7 +3305,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         print('opening scr browser')
 
-    def __configsChanged(self):
+    def trigger_configs_changed(self):
         """
         Private slot to handle a change of the preferences. Called after we hit Ok builtin on configuration dialog
 
@@ -3311,7 +3313,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         """
         self.configsChanged.emit()
 
-    def __redoCompletedStep(self):
+    def redo_completed_step(self):
         """
         requests redo of the completed step
 

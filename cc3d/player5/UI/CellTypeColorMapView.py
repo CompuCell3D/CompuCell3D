@@ -3,7 +3,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import sys
-from .checkbox_delegate import CheckBoxDelegate
+from .checkbox_delegate import CheckBoxDelegate, ColorEditorDelegate
+from .qcolor_delegate import ColorDelegate
 
 
 class CellTypeColorMapView(QTableView):
@@ -12,13 +13,26 @@ class CellTypeColorMapView(QTableView):
         QTableView.__init__(self, parent)
         self.setFrameStyle(QFrame.NoFrame)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.setColumnWidth(0, 100)
+        # self.setColumnWidth(0, 30)
+        # self.setColumnWidth(1, 50)
         self.setAlternatingRowColors(True)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.horizontalHeader().setStretchLastSection(True)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.setSelectionMode(QAbstractItemView.NoSelection)
-        delegate = CheckBoxDelegate(None)
-        self.setItemDelegateForColumn(3, delegate)
+
+        self.check_box_delegate = CheckBoxDelegate(None)
+        self.setItemDelegateForColumn(3, self.check_box_delegate)
+
+        # color_delegate = ColorDelegate()
+
+        self.color_delegate = ColorEditorDelegate(None)
+        self.setItemDelegateForColumn(1, self.color_delegate)
+
+
+        # self.setColumnWidth(0, 30)
+        # self.setColumnWidth(1, 50)
+
 
 
         # on OSX we do not resize row height, we do it only on windows and linux
@@ -41,6 +55,40 @@ class CellTypeColorMapView(QTableView):
         model.beginResetModel()
         model.read_cell_type_color_data()
         model.endResetModel()
+
+
+    def mousePressEvent(self, event):
+
+        # pg = CompuCellSetup.persistent_globals
+        # if pg.steering_panel_synchronizer.locked():
+        #     return
+
+        if event.button() == Qt.LeftButton:
+            index = self.indexAt(event.pos())
+            model = index.model()
+            if index.column() == model.color_idx:
+                self.edit(index)
+            # if index.column() == model.show_in_3d_idx:
+            #     print('trying to edit show in 3d')
+            #     self.check_box_delegate.editorEvent(event=event, model=model, option=None, index=index)
+            #     # event.ignore()
+            #     # self.edit(index)
+
+
+        else:
+            super(CellTypeColorMapView, self).mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+
+        if event.button() == Qt.LeftButton:
+            index = self.indexAt(event.pos())
+            model = index.model()
+            if index.column() == model.show_in_3d_idx:
+                # somewhat hacky solution - editor event checks also for mouseRelease event so we need to
+                # reimplement mouseReleaseEvent
+                self.check_box_delegate.editorEvent(event=event, model=model, option=None, index=index)
+        else:
+            super(CellTypeColorMapView, self).mouseReleaseEvent(event)
 
 
     # def setParams(self):
