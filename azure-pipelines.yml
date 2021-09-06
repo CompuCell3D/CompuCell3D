@@ -3,9 +3,6 @@ jobs:
     displayName: CompuCell3D
     pool:
       vmImage: 'ubuntu-20.04'
-    trigger:
-      - master
-      - develop
     steps:
       - bash: echo "##vso[task.prependpath]$CONDA/bin"
         displayName: Add conda to PATH
