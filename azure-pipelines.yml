@@ -17,7 +17,7 @@ jobs:
       - bash: |
           sudo apt-get purge --auto-remove swig
           sudo apt-get install -y swig3.0
-          displayName: Install swig 4 and install swig3
+        displayName: Install swig 4 and install swig3
 
       - bash: |
           apt-get remove swig -y
