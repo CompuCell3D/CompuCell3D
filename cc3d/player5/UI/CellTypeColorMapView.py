@@ -1,22 +1,9 @@
-
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import sys
-
-# self.steering_model = SteeringPanelModel()
-# self.steering_model.update(item_data)
-# # model.update_type_conv_fcn(get_types())
-#
-# self.steering_table_view = SteeringPanelView()
-# self.steering_table_view.setModel(self.steering_model)
-#
-# delegate = SteeringEditorDelegate()
-# self.steering_table_view.setItemDelegate(delegate)
-#
-# layout.addWidget(self.steering_table_view)
-# self.steering_window.setLayout(layout)
-# self.steering_table_view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+from .checkbox_delegate import CheckBoxDelegate
+from .color_delegate import ColorDelegate
 
 
 class CellTypeColorMapView(QTableView):
@@ -25,11 +12,19 @@ class CellTypeColorMapView(QTableView):
         QTableView.__init__(self, parent)
         self.setFrameStyle(QFrame.NoFrame)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.setColumnWidth(0, 100)
         self.setAlternatingRowColors(True)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.horizontalHeader().setStretchLastSection(True)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.setSelectionMode(QAbstractItemView.NoSelection)
+
+        # note - delegates need to be member of a class to avoid them being garbage-collected. This would cause
+        # cryptic crashes
+        self.check_box_delegate = CheckBoxDelegate(None)
+        self.setItemDelegateForColumn(3, self.check_box_delegate)
+
+        self.color_delegate = ColorDelegate(None)
+        self.setItemDelegateForColumn(1, self.color_delegate)
 
         # on OSX we do not resize row height, we do it only on windows and linux
         if not sys.platform.startswith('darwin'):
@@ -38,11 +33,11 @@ class CellTypeColorMapView(QTableView):
             # verticalHeader.setResizeMode(QHeaderView.Fixed)
             # verticalHeader.setDefaultSectionSize(20)
             
-        # vm - viewmanager, instance of class TabView
+        # vm - viewmanager, instance of class SimpleTabView
         self.vm = vm
-        #self.__resizeColumns()
 
     def update_content(self):
+
         model = self.model()
         if model is None:
             return
@@ -51,24 +46,25 @@ class CellTypeColorMapView(QTableView):
         model.read_cell_type_color_data()
         model.endResetModel()
 
+    def mousePressEvent(self, event):
 
-    # def setParams(self):
-    #     """
-    #     Sets the parameters if the QTableView when the model is set
-    #     """
-    #     if self.model() is None:
-    #         return
-    #
-    #     # assert self.model().
-    #     # print self.model()
-    #     # import sys
-    #     # if not sys.platform.startswith('darwin'): # on OSX we do not resize row height
-    #         # for i in range(0, self.model().rowCount()):
-    #             # self.setRowHeight(i, 20)
-    #
-    #     self.setColumnWidth(0, 130)
-    #     #self.cplugins.setColumnWidth(1, 200)
-    #     self.setAlternatingRowColors(True)
-    #     self.horizontalHeader().setStretchLastSection(True)
+        if event.button() == Qt.LeftButton:
+            index = self.indexAt(event.pos())
+            model = index.model()
+            if index.column() == model.color_idx:
+                self.edit(index)
+        else:
+            super(CellTypeColorMapView, self).mousePressEvent(event)
 
+    def mouseReleaseEvent(self, event):
 
+        if event.button() == Qt.LeftButton:
+            index = self.indexAt(event.pos())
+            model = index.model()
+            if index.column() == model.show_in_3d_idx:
+                # somewhat hacky solution - editor event checks also for mouseRelease event so we need to
+                # reimplement mouseReleaseEvent
+                option = self.viewOptions()
+                self.check_box_delegate.editorEvent(event=event, model=model, option=option, index=index)
+        else:
+            super(CellTypeColorMapView, self).mouseReleaseEvent(event)
