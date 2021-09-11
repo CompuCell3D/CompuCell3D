@@ -12,6 +12,7 @@ from os import environ
 
 # this class runs inside Qt event loop we can use slots and signals to handle communication
 from cc3d.twedit5.Messaging import stdMsg, dbgMsg, pd, errMsg, setDebugging
+from cc3d.twedit5.Plugins import installed_player
 
 
 class Socket(QTcpSocket):
@@ -569,6 +570,9 @@ class CC3DListener(QTcpServer):
         return self.port
 
     def startCC3D(self, _simulationName=""):
+        if not installed_player:
+            print('Player not found!')
+            return
 
         from subprocess import Popen
 

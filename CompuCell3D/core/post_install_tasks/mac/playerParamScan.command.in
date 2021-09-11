@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# echo " "
+# echo " dollar-zero AKA the first argument to this .command script is: "
+# echo $0
+# echo " "
+export PYTHON_MINOR_VERSION=
+cd "${0%/*}"
+
+
+# language settings
+export LANG=en_EN
+export __CF_USER_TEXT_ENCODING=""
+
+export PREFIX_CC3D=$(pwd)
+
+export PYTHON_EXEC=${PREFIX_CC3D}/python37/bin/python
+
+
+cd $PREFIX_CC3D
+
+export PYTHONPATH=${PREFIX_CC3D}/lib/site-packages
+
+
+echo ${osx_major}-${osx_minor}
+
+
+${PYTHON_EXEC} --version
+
+
+export exit_code=0
+${PYTHON_EXEC} ${PREFIX_CC3D}/lib/site-packages/cc3d/player5/param_scan/parameter_scan_run.py $* --install-dir=${PREFIX_CC3D}
+exit_code=$?
+
+cd ${PREFIX_CC3D}
+exit ${exit_code}
+
+

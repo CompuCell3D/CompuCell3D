@@ -1,3 +1,5 @@
+# todo: abstract launch buttons to installed editors
+
 import sys
 import re
 from weakref import ref

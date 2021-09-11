@@ -1,3 +1,5 @@
+# todo: abstract current Player connectivity with Twedit
+
 # from PyQt4.QtCore import *
 # from PyQt4.QtGui import *
 # from PyQt4.QtNetwork import *

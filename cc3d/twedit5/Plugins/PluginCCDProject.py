@@ -38,6 +38,8 @@ from cc3d.twedit5.Plugins.CC3DProject.SteppableTemplates import SteppableTemplat
 from cc3d.twedit5.Plugins.CC3DProject.ParValDlg import ParValDlg
 from cc3d.twedit5.Plugins.CC3DProject.SerializerEdit import SerializerEdit
 from cc3d.twedit5.Plugins.CC3DProject.NewFileWizard import NewFileWizard
+from cc3d.twedit5.Plugins.CC3DProject.unzipper import Unzipper
+from cc3d.twedit5.Plugins import installed_player
 from cc3d.core.ParameterScanUtils import XMLHandler
 from cc3d.twedit5.Plugins.CC3DProject.ItemProperties import ItemProperties
 from cc3d.core import XMLUtils
@@ -51,7 +53,6 @@ from cc3d.core.ParameterScanEnums import *
 import cc3d.twedit5.Plugins.CC3DProject.CC3DPythonGenerator as cc3dPythonGen
 from cc3d.core.ParameterScanUtils import ParameterScanUtils
 from cc3d.core.ParameterScanEnums import PYTHON_GLOBAL
-from cc3d.gui_plugins.unzipper import Unzipper
 import contextlib
 from pathlib import Path
 
@@ -364,7 +365,8 @@ class CC3DProjectTreeWidget(QTreeWidget):
         if self.currentItem() == projItem:
             self.addActionToContextMenu(menu, self.plugin.actions["Open XML/Python In Editor"])
 
-            self.addActionToContextMenu(menu, self.plugin.actions["Open in Player"])
+            if installed_player:
+                self.addActionToContextMenu(menu, self.plugin.actions["Open in Player"])
 
             # --------------------------------------------------------------------
 
@@ -896,7 +898,8 @@ class CC3DProject(QObject, TweditPluginBase):
 
         # ---------------------------------------
 
-        self.cc3dProjectMenu.addAction(self.actions["Open in Player"])
+        if installed_player:
+            self.cc3dProjectMenu.addAction(self.actions["Open in Player"])
 
         self.cc3dProjectMenu.addSeparator()
 
@@ -1122,9 +1125,11 @@ class CC3DProject(QObject, TweditPluginBase):
                                                                           statusTip="Opens Most Recent CC3D Project ",
                                                                           triggered=self.open_most_recent_cc3d_project)
 
-        self.actions["Open in Player"] = QtWidgets.QAction(QIcon(':/icons/player5-icon.png'), "Open In Player", self,
-                                                           shortcut="", statusTip="Open simulation in Player ",
-                                                           triggered=self.__runInPlayer)
+        if installed_player:
+            self.actions["Open in Player"] = QtWidgets.QAction(QIcon(':/icons/player5-icon.png'), "Open In Player",
+                                                               self, shortcut="",
+                                                               statusTip="Open simulation in Player ",
+                                                               triggered=self.__runInPlayer)
 
         self.actions["Save CC3D Project"] = QtWidgets.QAction(QIcon(':/icons/save-project.png'), "Save CC3D Project",
                                                               self,
@@ -2000,7 +2005,7 @@ class CC3DProject(QObject, TweditPluginBase):
         except LookupError:
             QMessageBox.warning(tw, 'Could Not Find Active CC3D Project',
                                 'Please Open or activate (by clicking on the project in the left panel) '
-                                'CC3D project before trying tro modify parameter scan specifications')  
+                                'CC3D project before trying tro modify parameter scan specifications')
             return
 
         csd = pdh.cc3dSimulationData
@@ -2642,6 +2647,8 @@ class CC3DProject(QObject, TweditPluginBase):
             self.actions["Show Project Panel"].setChecked(_flag)
 
     def __runInPlayer(self):
+        if not installed_player:
+            return
 
         tw = self.treeWidget
         cur_item = tw.currentItem()

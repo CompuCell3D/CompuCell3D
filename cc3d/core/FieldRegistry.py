@@ -243,7 +243,7 @@ class FieldRegistry:
         """
         if self.simthread is not None:
             # GUI mode
-            return self.simthread.callingWidget.fieldStorage
+            return self.get_field_storage()
         else:
             # GUI-less mode
             pg = CompuCellSetup.persistent_globals

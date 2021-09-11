@@ -5,7 +5,7 @@ from cc3d.core.BasicSimulationData import BasicSimulationData
 from cc3d.core.CMLResultsReader import CMLResultReader
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawerCC3DPy
 from cc3d.core.GraphicsUtils.ScreenshotManagerCore import ScreenshotManagerCC3DPy
-from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
+from cc3d.core.GraphicsUtils.utils import extract_address_int_from_vtk_object
 
 
 LDS_SUBDIR = 'LatticeData'

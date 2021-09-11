@@ -2,9 +2,8 @@ import sys
 from cc3d.player5.compucell3d import main as main_player
 
 print('THIS IS MAIN PLAYER RUN')
-import sys
 
-print('sys.argv=',sys.argv)
+print('sys.argv=', sys.argv)
 
 main_player(sys.argv)
 

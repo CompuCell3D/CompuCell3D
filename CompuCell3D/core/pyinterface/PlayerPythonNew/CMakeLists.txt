@@ -33,17 +33,13 @@ if (${VTK_MAJOR_VERSION} EQUAL "5")
 endif()
 
 INCLUDE_DIRECTORIES(
-   ${COMPUCELL3D_SOURCE_DIR}/core/CompuCellPlayer/simthread
-   ${COMPUCELL3D_SOURCE_DIR}/core/CompuCellPlayer/src
-   ${CMAKE_CURRENT_SOURCE_DIR}
-   ${VTK_INCLUDE_DIRS}
-   ${COMPUCELL3D_SOURCE_DIR}/core
-   ${COMPUCELL3D_SOURCE_DIR}/core/Utils
-   ${COMPUCELL3D_SOURCE_DIR}/core/CompuCell3D
-   ${COMPUCELL3D_SOURCE_DIR}/core/CompuCell3D/plugins
-   ${COMPUCELL3D_SOURCE_DIR}/core/pyinterface/PyPlugin
-   # ${NUMPY_INCLUDE_DIR}
-   # ${PYINTERFACE_SRC_DIR}/PyPlugin
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${VTK_INCLUDE_DIRS}
+    ${COMPUCELL3D_SOURCE_DIR}/core
+    ${COMPUCELL3D_SOURCE_DIR}/core/Utils
+    ${COMPUCELL3D_SOURCE_DIR}/core/CompuCell3D
+    ${COMPUCELL3D_SOURCE_DIR}/core/CompuCell3D/plugins
+    ${COMPUCELL3D_SOURCE_DIR}/core/pyinterface/PyPlugin
     )
 
 LINK_DIRECTORIES(${VTK_LIBRARY_DIRS})
@@ -53,16 +49,12 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
        CompuCellLibShared
        ${Python_LIBRARY_RELEASE}
        ${VTK_LIBS}
-       # simthreadShared
-
     )
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
     SET(LIBS
        CompuCellLibShared
        ${PYTHON_LIBRARY_TO_LINK}
        ${VTK_LIBS}
-
-       # simthreadShared
     )
 
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
@@ -70,8 +62,6 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
        CompuCellLibShared
        ${Python_LIBRARY_RELEASE}
        ${VTK_LIBS}
-
-       # simthreadShared
     )
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
