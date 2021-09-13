@@ -25,13 +25,12 @@
 
 #include <vector>
 #include <CompuCell3D/DerivedProperty.h>
+#include <CompuCell3D/ExtraMembers.h>
 
 #ifndef PyObject_HEAD
 struct _object; //forward declare
 typedef _object PyObject; //type redefinition
 #endif
-
-class BasicClassGroup;
 
 namespace CompuCell3D {
 
@@ -74,7 +73,7 @@ namespace CompuCell3D {
 	  double biasVecZ;
 	  bool connectivityOn;
 	  //std::vector<double> test_biasV = std::vector<double>(3);
-      BasicClassGroup *extraAttribPtr;
+      ExtraMembersGroup *extraAttribPtr;
 
       PyObject *pyAttrib;
 

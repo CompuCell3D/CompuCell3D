@@ -1,7 +1,7 @@
 cmake_policy(SET CMP0078 NEW)
 PROJECT(PYINTERFACE)
 
-FIND_PACKAGE(SWIG REQUIRED)
+FIND_PACKAGE(SWIG 3.0...3.1 REQUIRED)
 
 INCLUDE(UseSWIG)
 
@@ -27,8 +27,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
     set(undefined_link_flags "-undefined dynamic_lookup")
 endif()
 
-set(PYTHON_DIRS_TO_INCLUDE 
-    ${Python_INCLUDE_DIRS} 
+set(PYTHON_DIRS_TO_INCLUDE
+    ${Python_INCLUDE_DIRS}
     ${Python_NumPy_INCLUDE_DIRS}
 )
 

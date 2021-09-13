@@ -24,11 +24,12 @@
 #include "FocalPointPlasticityPlugin.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-
-BasicPluginProxy<Plugin, FocalPointPlasticityPlugin>
-focalPointPlasticityProxy("FocalPointPlasticity", "allows certain number of cells (user defined) to form plasticity clusters",
-	    &Simulator::pluginManager);
+auto focalPointPlasticityProxy = registerPlugin<Plugin, FocalPointPlasticityPlugin>(
+	"FocalPointPlasticity", 
+	"allows certain number of cells (user defined) to form plasticity clusters",
+	&Simulator::pluginManager
+);

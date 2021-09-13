@@ -24,10 +24,8 @@
 //this is because you define static members in the Simulator class and witohut this macro they will be redefined here as import symbols which is not allowed
 
 #include "Simulator.h"
+#include "CC3DExceptions.h"
 using namespace CompuCell3D;
-
-#include <BasicUtils/BasicException.h>
-#include <BasicUtils/BasicSmartPointer.h>
 
 #include <iostream>
 #include <string>
@@ -35,8 +33,6 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include <stdlib.h>
-
-#include <BasicUtils/BasicRandomNumberGenerator.h>
 
 #include <XMLUtils/XMLParserExpat.h>
 
@@ -46,7 +42,7 @@ using namespace std;
 
 PluginManager<Plugin> Simulator::pluginManager;
 PluginManager<Steppable> Simulator::steppableManager;
-BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
+PluginManager<PluginBase> Simulator::pluginBaseManager;
 
 void Syntax(const string name)
 {
@@ -88,27 +84,27 @@ int main(int argc, char* argv[])
 //     Simulator::pluginManager.loadLibraries(DEFAULT_PLUGIN_PATH);
 #endif
 
-        BasicPluginManager<Steppable>::infos_t* infosG = &Simulator::steppableManager.getPluginInfos();
+        PluginManager<Steppable>::infos_t* infosG = &Simulator::steppableManager.getPluginInfos();
 
         if (!infosG->empty()) {
             cerr << "Found the following Steppables:" << endl;
-            BasicPluginManager<Steppable>::infos_t::iterator it;
+            PluginManager<Steppable>::infos_t::iterator it;
             for (it = infosG->begin(); it != infosG->end(); it++)
                 cerr << "  " << *(*it) << endl;
             cerr << endl;
         }
 
-        BasicPluginManager<Plugin>::infos_t* infos = &Simulator::pluginManager.getPluginInfos();
+        PluginManager<Plugin>::infos_t* infos = &Simulator::pluginManager.getPluginInfos();
 
         if (!infos->empty()) {
             cerr << "Found the following plugins:" << endl;
-            BasicPluginManager<Plugin>::infos_t::iterator it;
+            PluginManager<Plugin>::infos_t::iterator it;
             for (it = infos->begin(); it != infos->end(); it++)
                 cerr << "  " << *(*it) << endl;
             cerr << endl;
         }
     }
-    catch (const BasicException& e) {
+    catch (const CC3DException& e) {
         cerr << "ERROR: " << e << endl;
     }
 
@@ -139,7 +135,7 @@ int main(int argc, char* argv[])
 
     // extracting Potts section
     CC3DXMLElementList pottsDataList = xmlParser.rootElement->getElements("Potts");
-    ASSERT_OR_THROW("You must have exactly 1 definition of the Potts section", pottsDataList.size() == 1);
+    if (pottsDataList.size() != 1) throw CC3DException("You must have exactly 1 definition of the Potts section");
     sim.ps.addPottsDataCC3D(pottsDataList[0]);
 
     //    extracting Metadata section
@@ -150,7 +146,6 @@ int main(int argc, char* argv[])
     else {
         cerr << "Not using Metadata" << endl;
     }
-    //     ASSERT_OR_THROW("You must have exactly 1 definition of the Metadata section",metadataDataList.size()==1);
 
     sim.initializeCC3D();
 

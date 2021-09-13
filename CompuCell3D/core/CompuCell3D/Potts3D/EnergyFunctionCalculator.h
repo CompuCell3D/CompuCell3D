@@ -133,6 +133,13 @@ namespace CompuCell3D {
         Simulator *sim;
 
         bool lastFlipAccepted;
+        /**
+         * Validates energy function and current internal state. 
+         * Throws a CC3DException if validation fails. 
+         * 
+         * @param _function obj derived from EnergyFunction class
+         */
+        void checkEnergyFunction(EnergyFunction *_function);
 
     };
 

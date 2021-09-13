@@ -20,7 +20,7 @@
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
  *************************************************************************/
 
-
+#include <string>
 #include <CompuCell3D/CC3D.h>
 
 using namespace CompuCell3D;
@@ -57,9 +57,9 @@ void PixelTrackerPlugin::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
 
 
   ///will register PixelTracker here
-  BasicClassAccessorBase * cellPixelTrackerAccessorPtr=&pixelTrackerAccessor;
+  ExtraMembersGroupAccessorBase * cellPixelTrackerAccessorPtr=&pixelTrackerAccessor;
    ///************************************************************************************************  
-  ///REMARK. HAVE TO USE THE SAME BASIC CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
+  ///REMARK. HAVE TO USE THE SAME CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
    ///************************************************************************************************  
   potts->getCellFactoryGroupPtr()->registerClass(cellPixelTrackerAccessorPtr);
 
@@ -101,8 +101,7 @@ void PixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,CellG *
 		std::set<PixelTrackerData > & pixelSetRef = pixelTrackerAccessor.get(oldCell->extraAttribPtr)->pixelSet;
 		sitr = pixelSetRef.find(PixelTrackerData(pt));
 
-		ASSERT_OR_THROW("Could not find point:" + pt + " inside cell of id: " + BasicString(oldCell->id) + " type: " + BasicString((int)oldCell->type),
-			sitr != pixelSetRef.end());
+		if (sitr == pixelSetRef.end()) throw CC3DException("Could not find point:" + pt + " inside cell of id: " + std::to_string(oldCell->id) + " type: " + std::to_string((int)oldCell->type));
 
 		pixelSetRef.erase(sitr);
 	}
@@ -111,7 +110,7 @@ void PixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,CellG *
 		unsigned int partitionNum = getParitionNumber(pt, workNodeNum);
 		sitr = mediumPixelSet[partitionNum].find(PixelTrackerData(pt));
 
-		ASSERT_OR_THROW("Could not find point:" + pt + " in medium", sitr != mediumPixelSet[partitionNum].end());
+		if (sitr == mediumPixelSet[partitionNum].end()) throw CC3DException("Could not find point:" + pt + " in medium");
 
 		mediumPixelSet[partitionNum].erase(sitr);
 	}
@@ -231,7 +230,7 @@ unsigned int PixelTrackerPlugin::getParitionNumber(const Point3D &_pt, unsigned 
 		}
 	}
 
-	ASSERT_OR_THROW("Could not find partition for point:" + _pt, false);
+	throw CC3DException("Could not find partition for point:" + _pt);
 }
 
 // Not thread-safe

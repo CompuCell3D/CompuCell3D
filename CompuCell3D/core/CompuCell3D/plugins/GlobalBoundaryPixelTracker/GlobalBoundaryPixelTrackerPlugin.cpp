@@ -143,7 +143,7 @@ void GlobalBoundaryPixelTrackerPlugin::removePixel(Point3D & pt) {
 	//std::set<Point3D>::iterator sitr_pt = boundaryPixelSetPtr->find(pt);
 
 	std::unordered_set<Point3D, Point3DHasher, Point3DComparator>::iterator sitr_pt = boundaryPixelSetPtr->find(pt);
-	ASSERT_OR_THROW("Could not find point:" + pt + " in the set of all boundary pixels stored in Potts3D.cpp", sitr_pt != boundaryPixelSetPtr->end());
+	if (sitr_pt == boundaryPixelSetPtr->end()) throw CC3DException("Could not find point:" + pt + " in the set of all boundary pixels stored in Potts3D.cpp");
 
 	boundaryPixelSetPtr->erase(sitr_pt);
 	//boundaryPixelSetPtr->erase(pt);
@@ -215,11 +215,6 @@ void GlobalBoundaryPixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *n
 		}
 		if (!keepNeighborInBoundary) {
 			removePixel(neighbor.pt);
-			//handling global boundary pixel set					
-			//std::set<Point3D>::iterator sitr_pt=boundaryPixelSetPtr->find(neighbor.pt);
-			//ASSERT_OR_THROW("Could not find point:"+neighbor.pt+" in the set of all boundary pixels stored in Potts3D.cpp",sitr_pt!=boundaryPixelSetPtr->end());
-   //         
-			//boundaryPixelSetPtr->erase(sitr_pt);
 
 		}
 	}

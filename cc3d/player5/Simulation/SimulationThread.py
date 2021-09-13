@@ -6,9 +6,11 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import *
 from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
+from cc3d.CompuCellSetup.SimulationThread import SimulationThread as SimulationThreadBase
+from cc3d.player5.enums import PlayerType
 
 
-class SimulationThread(QtCore.QThread):
+class SimulationThread(QtCore.QThread, SimulationThreadBase):
     """
     QtThread - this is the object that is responsible for running simulation and
     communicating between PLayer code, CompuCellSetup simulation look and actual simulation
@@ -386,10 +388,19 @@ class SimulationThread(QtCore.QThread):
         print(" field_name, field_type=",( field_name, field_type))
         self.emitVisFieldCreatedSignal(field_name=field_name, field_type=field_type)
 
+    def get_field_storage(self):
+        """
+        Returns field storage
+
+        :return: field storage
+        :rtype: cc3d.cpp.PlayerPython.FieldStorage
+        """
+        return self.callingWidget.fieldStorage
+
     def run(self):
         # from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
         cc3d_sim_fname = CompuCellSetup.persistent_globals.simulation_file_name
-        CompuCellSetup.persistent_globals.simthread = self
+        self.inject()
         run_cc3d_project(cc3d_sim_fname=cc3d_sim_fname)
         return
         # print('SIMTHREAD: GOT INSIDE RUN FUNCTION')
@@ -403,3 +414,12 @@ class SimulationThread(QtCore.QThread):
         #     print('GOT INSIDE RUN FUNCTION');
         #
         #     self.runUserPythonScript(self.pythonFileName, globalDict, localDict)
+
+    @staticmethod
+    def main_loop():
+        player_type = CompuCellSetup.persistent_globals.player_type
+        from . import main_loops
+        if player_type == PlayerType.REPLAY:
+            return main_loops.main_loop_player_cml_result_replay
+        else:
+            return main_loops.main_loop_player

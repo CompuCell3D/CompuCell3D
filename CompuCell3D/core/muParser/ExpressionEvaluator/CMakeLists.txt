@@ -1,4 +1,4 @@
-SET(LIBS cc3d::BasicUtils cc3d::muParser cc3d::XMLUtils)
+SET(LIBS cc3d::muParser cc3d::XMLUtils)
 SET(SRCS ExpressionEvaluator.cpp )
 
 ADD_SHARED_LIBRARY(ExpressionEvaluator ${SRCS} LINK_LIBRARIES ${LIBS})

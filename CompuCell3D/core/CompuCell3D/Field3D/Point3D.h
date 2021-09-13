@@ -23,11 +23,10 @@
 #ifndef POINT3D_H
 #define POINT3D_H
 
-//#include <XMLCereal/XMLSerializable.h>
 
-#include <BasicUtils/BasicString.h>
 
 #include <iostream>
+#include <string>
 
 namespace CompuCell3D {
 
@@ -35,7 +34,7 @@ namespace CompuCell3D {
    * A 3D point.
    * 
    */
-  class Point3D /*: public virtual XMLSerializable*/ {
+  class Point3D {
   public:
     short x;
     short y;
@@ -57,54 +56,54 @@ namespace CompuCell3D {
     /** 
      * Assignment operator.
      */    
-    Point3D &operator=(const Point3D pt) {
-      x = pt.x;
-      y = pt.y;
-      z = pt.z;
-      return *this;
-    }
+    Point3D &operator=(const Point3D pt);
 
-    /** 
+    /**
      * Add the coordinates of pt to this Point3D.
      */
-    Point3D &operator+=(const Point3D pt) {
-      x += pt.x;
-      y += pt.y;
-      z += pt.z;
-      return *this;
-    }
+    Point3D &operator+=(const Point3D pt);
 
-    /** 
+    /**
      * Subtract the coordinates of pt to this Point3D.
      */
-    Point3D &operator-=(const Point3D pt) {
-      x -= pt.x;
-      y -= pt.y;
-      z -= pt.z;
-      return *this;
-    }
-        
+    Point3D &operator-=(const Point3D pt);
+
     /// Comparison operator
-    bool operator==(const Point3D pt) const {
-      return (x == pt.x && y == pt.y && z == pt.z);
-    }
+    bool operator==(const Point3D pt) const { return (x == pt.x && y == pt.y && z == pt.z); }
+
     /// Not equal operator
-    bool operator!=(const Point3D pt) const {
-		
-      return !(*this==pt);
-    }
-    
-   bool operator<(const Point3D  _rhs) const{
-      return x < _rhs.x || (!(_rhs.x < x)&& y < _rhs.y)
-			||(!(_rhs.x < x)&& !(_rhs.y <y )&& z < _rhs.z);
-   }
-    //// Begin XMLSerializable interface
-    //virtual void readXML(XMLPullParser &in);
-    //virtual void writeXML(XMLSerializer &out);
-    //// End XMLSerializable interface
-    
+    bool operator!=(const Point3D pt) const { return !(*this==pt); }
+
+    bool operator<(const Point3D  _rhs) const;
+
     friend std::ostream &operator<<(std::ostream &stream, const Point3D &pt);
   };
+
+  inline Point3D &Point3D::operator=(const Point3D pt) {
+    x = pt.x;
+    y = pt.y;
+    z = pt.z;
+    return *this;
+  }
+
+  inline Point3D &Point3D::operator+=(const Point3D pt) {
+    x += pt.x;
+    y += pt.y;
+    z += pt.z;
+    return *this;
+  }
+
+  inline Point3D &Point3D::operator-=(const Point3D pt) {
+    x -= pt.x;
+    y -= pt.y;
+    z -= pt.z;
+    return *this;
+  }
+
+  inline bool Point3D::operator<(const Point3D  _rhs) const {
+    return x < _rhs.x || (!(_rhs.x < x)&& y < _rhs.y)
+    ||(!(_rhs.x < x)&& !(_rhs.y <y )&& z < _rhs.z);
+  }
 
   /** 
    * Print a Point3D to a std::ostream.
@@ -133,8 +132,8 @@ namespace CompuCell3D {
    * Overloads the operator std::string + Point3D.
    */
   inline std::string operator+(const std::string s, const Point3D pt) { 
-    return s + "(" + BasicString(pt.x) + "," + BasicString(pt.y) + "," +
-      BasicString(pt.z) + ")";
+    return s + "(" + std::to_string((int)pt.x) + "," + std::to_string((int)pt.y) + "," +
+      std::to_string((int)pt.z) + ")";
   }
 };
 #endif

@@ -6,7 +6,10 @@ if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-cmake_policy(SET CMP0053 NEW)
+if (${CMAKE_VERSION} VERSION_GREATER 3.1.0)
+    # cmake_policy(SET CMP0053 OLD)
+    cmake_policy(SET CMP0053 NEW)
+endif()
 
 ##APPLE CHECK
 IF (APPLE)
@@ -21,7 +24,41 @@ set(CMAKE_CXX_STANDARD 11)
 
 FIND_PACKAGE (OpenMP)
 
+OPTION(FLEX_PYTHON_SPECS "Allow Flexible Python Path specification" OFF)
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    # FIND_PACKAGE(PythonInterpreter)
+    FIND_PACKAGE(PythonLibs)
+    FIND_PACKAGE(PythonInterp)
+    # INCLUDE(FindPythonLibs)
+
+    if (FLEX_PYTHON_SPECS)
+        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable")
+        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library")
+        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory")
+        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory")
+    else ()
+        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable" FORCE)
+        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library" FORCE)
+        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory" FORCE )
+        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory" FORCE )
+    endif()
+
+else()
+    # find_package (Python 3 COMPONENTS Interpreter Development)
+    FIND_PACKAGE(PythonLibs)
+    FIND_PACKAGE(PythonInterp)
+    # INCLUDE(FindPythonLibs)
+    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable" FORCE)
+    set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library" FORCE)
+    set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory" FORCE )
+    set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory" FORCE )
+
+
+endif()
+
 find_package(Python REQUIRED COMPONENTS Interpreter Development NumPy)
+
 
 message("Python_FOUND: ${Python_FOUND}")
 message("Python_Interpreter_FOUND: ${Python_Interpreter_FOUND}")
@@ -45,8 +82,8 @@ SET(CC3D_PYTHON_MODULE_DIR ${CMAKE_SOURCE_DIR}/../)
 
 set(COMPUCELL3D_MAJOR_VERSION 4)
 set(COMPUCELL3D_MINOR_VERSION 2)
-set(COMPUCELL3D_BUILD_VERSION 4)
-set(COMPUCELL3D_REV_NUMBER 20210123)
+set(COMPUCELL3D_BUILD_VERSION 5)
+set(COMPUCELL3D_REV_NUMBER 20210612)
 
 ## Specify a version for all libs to use
 # letters A, B, C are added to ensure nice display of version in cmake gui
@@ -140,6 +177,11 @@ INCLUDE(FindZLIB)
 OPTION(BUILD_PYINTERFACE "Build Python language wrappings" ON)
 
 OPTION(INSTALL_PLAYER "Move Player files to installation directory" ON)
+OPTION(INSTALL_TWEDIT "Move Twedit++ files to installation directory" ON)
+
+if(INSTALL_PLAYER OR INSTALL_TWEDIT)
+    set(BUILD_PYINTERFACE ON)
+endif()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     OPTION(BUNDLE_PYTHON "Builds CC3D assuming Python will be bundled with CC3D - default on Windows and OSX" ON)
@@ -192,12 +234,12 @@ if(APPLE AND NOT UNIX)
 else()
     set(RPATH_BASE $ORIGIN)
 endif()
-file(RELATIVE_PATH BinToLibRelPath 
-    ${CMAKE_INSTALL_PREFIX}/bin 
+file(RELATIVE_PATH BinToLibRelPath
+    ${CMAKE_INSTALL_PREFIX}/bin
     ${CMAKE_INSTALL_PREFIX}/lib
 )
-file(RELATIVE_PATH CPPLibToLibRelPath 
-    ${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} 
+file(RELATIVE_PATH CPPLibToLibRelPath
+    ${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR}
     ${CMAKE_INSTALL_PREFIX}/lib
 )
 set(CMAKE_INSTALL_RPATH ${RPATH_BASE} ${RPATH_BASE}/${BinToLibRelPath} ${RPATH_BASE}/${CPPLibToLibRelPath} ${RPATH_BASE}/CompuCell3DPlugins ${RPATH_BASE}/CompuCell3DSteppables)

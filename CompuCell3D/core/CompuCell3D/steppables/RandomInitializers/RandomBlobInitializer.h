@@ -28,7 +28,6 @@
 #include <CompuCell3D/CC3D.h>
 // // // #include <CompuCell3D/Steppable.h>
 // // // #include <CompuCell3D/Field3D/Dim3D.h>
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
 // // // #include <CompuCell3D/Field3D/WatchableField3D.h>
 #include <CompuCell3D/plugins/PixelTracker/PixelTracker.h>
 // // // #include <CompuCell3D/Potts3D/Cell.h>
@@ -51,8 +50,8 @@ namespace CompuCell3D {
     MitosisSteppable * mit;
     Potts3D *potts;
     Simulator *simulator;
-    BasicRandomNumberGenerator * rand;
-    BasicClassAccessor<PixelTracker> * pixelTrackerAccessorPtr;
+    RandomNumberGenerator * rand;
+    ExtraMembersGroupAccessor<PixelTracker> * pixelTrackerAccessorPtr;
     WatchableField3D<CellG *> *cellField;
     FieldBuilder * builder;
 	CellInventory * cellInventoryPtr;

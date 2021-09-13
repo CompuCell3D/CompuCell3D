@@ -69,9 +69,9 @@ void ChemotaxisPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	Plugin *plugin = Simulator::pluginManager.get("CenterOfMass", &pluginAlreadyRegisteredFlag);
 	if (!pluginAlreadyRegisteredFlag) plugin->init(simulator);
   
-  BasicClassAccessorBase * chemotaxisDataAccessorPtr=&chemotaxisDataAccessor;
+  ExtraMembersGroupAccessorBase * chemotaxisDataAccessorPtr=&chemotaxisDataAccessor;
   ///************************************************************************************************  
-  ///REMARK. HAVE TO USE THE SAME BASIC CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
+  ///REMARK. HAVE TO USE THE SAME CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
   ///************************************************************************************************  
   potts->getCellFactoryGroupPtr()->registerClass(chemotaxisDataAccessorPtr);
 
@@ -180,7 +180,6 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 				}
 				
 				if(chemotactByTypeXMlList[j]->findAttribute("ChemotactTowards")){
-					//ASSERT_OR_THROW("ChemotactTowards is deprecated now. Please replace it with ChemotactAtInterfaceWith.",chemotaxisFieldDataVec.size());
 					cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactTowards");
 				}else if (chemotactByTypeXMlList[j]->findAttribute("ChemotactAtInterfaceWith")){// both keywords are OK
 					cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactAtInterfaceWith");
@@ -217,7 +216,6 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 				}
 
 				if(chemotactByTypeXMlList[j]->findAttribute("ChemotactTowards")){
-					//ASSERT_OR_THROW("ChemotactTowards is deprecated now. Please replace it with ChemotactAtInterfaceWith.",chemotaxisFieldDataVec.size());
 					cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactTowards");
 				}else if (chemotactByTypeXMlList[j]->findAttribute("ChemotactAtInterfaceWith")){// both keywords are OK
 					cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactAtInterfaceWith");
@@ -247,7 +245,8 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	}
 	//Now after parsing XMLtree we initialize things
 
-	ASSERT_OR_THROW("You forgot to define the body of chemotaxis plugin. See manual for details",chemotaxisFieldDataVec.size());
+	if (!chemotaxisFieldDataVec.size())
+		throw CC3DException("You forgot to define the body of chemotaxis plugin. See manual for details");
 
 	automaton=potts->getAutomaton();
 
@@ -262,19 +261,11 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 				maxType = automaton->getTypeId(chemotaxisFieldDataVec[i].vecChemotaxisData[j].typeName);
 		}
 
-		//make copy vector vecVecChemotaxisData 
-		//    std::vector<std::vector<ChemotaxisData> > vecVecChemotaxisDataTmp=vecVecChemotaxisData;
-		vecVecChemotaxisData.clear();
+		vecMapChemotaxisData.clear();
 
 		cerr<<"maxType="<<(int)maxType<<endl;
-		//now will allocate vectors based on maxType - this will result in t=0 lookup time later...
-		//    cerr<<"vecVecChemotaxisDataTmp.size()="<<vecVecChemotaxisDataTmp.size()<<endl;
-		//    cerr<<"(int)maxType+1="<<(int)maxType+1<<endl;
-		vecVecChemotaxisData.assign(chemotaxisFieldDataVec.size() , vector<ChemotaxisData>((int)maxType+1,ChemotaxisData() ) );
-
-
-		/*   //now will allocate vectors based on maxType - this will result in t=0 lookup time later...
-		flexChemotaxisDataVec.assign(flexChemotaxisDataVecTmp.size(),vector<float>((int)maxType+1,0.0));*/
+		
+		vecMapChemotaxisData.assign(chemotaxisFieldDataVec.size() , unordered_map<unsigned char, ChemotaxisData>() );
 
 		vector<string> vecTypeNamesTmp;
 
@@ -293,11 +284,11 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 				vecTypeNamesTmp.clear();
 
-				int cellTypeId = automaton->getTypeId(chemotaxisFieldDataVec[i].vecChemotaxisData[j].typeName);
+				unsigned char cellTypeId = automaton->getTypeId(chemotaxisFieldDataVec[i].vecChemotaxisData[j].typeName);
 
-				vecVecChemotaxisData[i][cellTypeId]=chemotaxisFieldDataVec[i].vecChemotaxisData[j];
+				vecMapChemotaxisData[i][cellTypeId]=chemotaxisFieldDataVec[i].vecChemotaxisData[j];
 
-				ChemotaxisData &chemotaxisDataTmp=vecVecChemotaxisData[i][cellTypeId];
+				ChemotaxisData &chemotaxisDataTmp=vecMapChemotaxisData[i][cellTypeId];
 				//Mapping type names to type ids
 				if(chemotaxisDataTmp.chemotactTowardsTypesString!=""){ //non-empty string we need to parse and process it 
 
@@ -313,52 +304,52 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 				}
 
 
-				if(vecVecChemotaxisData[i][cellTypeId].formulaName=="SaturationChemotaxisFormula"){
-					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::saturationChemotaxisFormula;
+				if(vecMapChemotaxisData[i][cellTypeId].formulaName=="SaturationChemotaxisFormula"){
+					vecMapChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::saturationChemotaxisFormula;
 				}
-				else if( vecVecChemotaxisData[i][cellTypeId].formulaName=="SaturationLinearChemotaxisFormula"){
-					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::saturationLinearChemotaxisFormula;
+				else if( vecMapChemotaxisData[i][cellTypeId].formulaName=="SaturationLinearChemotaxisFormula"){
+					vecMapChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::saturationLinearChemotaxisFormula;
 
 				}
 				//jfg, more formulas
 				
 				
-				else if ( vecVecChemotaxisData[i][cellTypeId].formulaName == "PowerChemotaxisFormula" )
+				else if ( vecMapChemotaxisData[i][cellTypeId].formulaName == "PowerChemotaxisFormula" )
 				{
-					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::powerChemotaxisFormula;
+					vecMapChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::powerChemotaxisFormula;
 				} 
-				else if ( vecVecChemotaxisData[i][cellTypeId].formulaName == "SaturationDifferenceChemotaxisFormula" )
+				else if ( vecMapChemotaxisData[i][cellTypeId].formulaName == "SaturationDifferenceChemotaxisFormula" )
 				{
-					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::saturationDifferenceChemotaxisFormula;
+					vecMapChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::saturationDifferenceChemotaxisFormula;
 				}
-				else if ( vecVecChemotaxisData[i][cellTypeId].formulaName == "Log10DivisionFormula" )
+				else if ( vecMapChemotaxisData[i][cellTypeId].formulaName == "Log10DivisionFormula" )
 				{
-					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::log10DivisionFormula;
+					vecMapChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::log10DivisionFormula;
 				}
-				else if ( vecVecChemotaxisData[i][cellTypeId].formulaName == "LogNatDivisionFormula" )
+				else if ( vecMapChemotaxisData[i][cellTypeId].formulaName == "LogNatDivisionFormula" )
 				{
-					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::logNatDivisionFormula;
+					vecMapChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::logNatDivisionFormula;
 				}
-				else if ( vecVecChemotaxisData[i][cellTypeId].formulaName == "Log10DifferenceFormula" )
+				else if ( vecMapChemotaxisData[i][cellTypeId].formulaName == "Log10DifferenceFormula" )
 				{
-					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::log10DifferenceFormula;
+					vecMapChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::log10DifferenceFormula;
 				}
-				else if ( vecVecChemotaxisData[i][cellTypeId].formulaName == "LogNatDifferenceFormula" )
+				else if ( vecMapChemotaxisData[i][cellTypeId].formulaName == "LogNatDifferenceFormula" )
 				{
-					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::logNatDifferenceFormula;
+					vecMapChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::logNatDifferenceFormula;
 				}
-				else if (vecVecChemotaxisData[i][cellTypeId].formulaName == "COMLogScaledChemotaxisFormula")
+				else if (vecMapChemotaxisData[i][cellTypeId].formulaName == "COMLogScaledChemotaxisFormula")
 				{
-					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::COMLogScaledChemotaxisFormula;
+					vecMapChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::COMLogScaledChemotaxisFormula;
 				}
 				
 				// jfg, end
 				else{
-					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::simpleChemotaxisFormula;
+					vecMapChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::simpleChemotaxisFormula;
 				}
 
 				cerr<<"i="<<i<<" cellTypeId="<<cellTypeId<<endl;
-				vecVecChemotaxisData[i][cellTypeId].outScr();
+				vecMapChemotaxisData[i][cellTypeId].outScr();
 
 			}
 
@@ -379,8 +370,8 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 					if(mitr!=nameFieldMap.end()){
 						fieldVec[i]=mitr->second;
 						fieldNameVec[i]=chemotaxisFieldDataVec[i].chemicalFieldName;
-					}else{
-						ASSERT_OR_THROW("No chemical field has been loaded!", fieldVec[i]);
+					}else if (!fieldVec[i]){
+						throw CC3DException("No chemical field has been loaded!");
 
 					}
 				}
@@ -503,6 +494,7 @@ double ChemotaxisPlugin::regularChemotaxis(const Point3D &pt, const CellG *newCe
 		//       cerr<<"INSIDE NEW CELL CONDITION fieldVec.size()="<<fieldVec.size()<<endl;
 		for(unsigned int i = 0 ; i < fieldVec.size() ; ++i){
 			bool chemotaxisDone=false;
+			auto field = fieldVec[i];
 
 			//first try "locally defined" chemotaxis
 
@@ -528,45 +520,41 @@ double ChemotaxisPlugin::regularChemotaxis(const Point3D &pt, const CellG *newCe
 
 				if(formulaCurrentPtr){
 					if (formulaCurrentPtr == &ChemotaxisPlugin::COMLogScaledChemotaxisFormula)
-						chemotaxisDataPtr->concCOM = fieldVec[i]->get(Point3D(newCell->xCOM, newCell->yCOM, newCell->zCOM));
+						chemotaxisDataPtr->concCOM = field->get(Point3D(newCell->xCOM, newCell->yCOM, newCell->zCOM));
 					
-					energy+=(this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()) , fieldVec[i]->get(pt), *chemotaxisDataPtr);
+					energy+=(this->*formulaCurrentPtr)(field->get(potts->getFlipNeighbor()) , field->get(pt), *chemotaxisDataPtr);
 					chemotaxisDone=true;
 					
 				}
 			}
 
 
-			if( !chemotaxisDone && (int)newCell->type < vecVecChemotaxisData[i].size() ){
+			if( !chemotaxisDone ){
 
-				ChemotaxisData & chemotaxisDataRef = vecVecChemotaxisData[i][(int)newCell->type];
-				ChemotaxisData * chemotaxisDataPtr = & vecVecChemotaxisData[i][(int)newCell->type];
+				auto itr = vecMapChemotaxisData[i].find(newCell->type);
+
+				if (itr == vecMapChemotaxisData[i].end()) continue;
+
+				ChemotaxisData & chemotaxisDataRef = itr->second;
+				ChemotaxisData * chemotaxisDataPtr = &itr->second;
 
 				ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr=0;
 
 				formulaCurrentPtr=chemotaxisDataRef.formulaPtr;
 
 
-				if( !chemotaxisDataRef.okToChemotact(oldCell,newCell) ){ // chemotaxis id not allowed towards this type of oldCell
+				// chemotaxis id not allowed towards this type of oldCell
+				if( !chemotaxisDataRef.okToChemotact(oldCell,newCell) ){ 
 					continue;
 				}
 
-				if(chemotaxisDataRef.lambda!=0.0){ //THIS IS THE CONDITION THAT TRIGGERS CHEMOTAXIS
-					//                   if((int)newCell->type==2){
-					//                   cerr<<"pointer to formula="<<formulaCurrentPtr<<endl;
-					//                   chemotaxisDataRef.outScr();
-					// 
-					//                   
-					//                   cerr<<"concentration N="<<fieldVec[i]->get(potts->getFlipNeighbor())<<" conc="<<fieldVec[i]->get(pt)<<endl;
-					//                   cerr<<"energy="<<(this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()) , fieldVec[i]->get(pt) , chemotaxisDataRef)<<endl;
-					// //                   cerr<<"energy="<<simpleChemotaxisFormula(fieldVec[i]->get(potts->getFlipNeighbor()) , fieldVec[i]->get(pt) , chemotaxisDataRef)<<endl;
-					//                   }
-					//                  energy+=(this->*formulaPtr)(fieldVec[i]->get(potts->getFlipNeighbor()) , fieldVec[i]->get(pt) , chemotaxisDataRef);
+				//THIS IS THE CONDITION THAT TRIGGERS CHEMOTAXIS
+				if(chemotaxisDataRef.lambda!=0.0){ 
 					if(formulaCurrentPtr) {
 						if (formulaCurrentPtr == &ChemotaxisPlugin::COMLogScaledChemotaxisFormula)
-							chemotaxisDataRef.concCOM = fieldVec[i]->get(Point3D(newCell->xCOM, newCell->yCOM, newCell->zCOM));
+							chemotaxisDataRef.concCOM = field->get(Point3D(newCell->xCOM, newCell->yCOM, newCell->zCOM));
 						
-						energy+=(this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()) , fieldVec[i]->get(pt) , chemotaxisDataRef);
+						energy+=(this->*formulaCurrentPtr)(field->get(potts->getFlipNeighbor()) , field->get(pt) , chemotaxisDataRef);
 					}
 					
 
@@ -593,6 +581,8 @@ double ChemotaxisPlugin::reciprocatedChemotaxis(const Point3D &pt, const CellG *
 	std::map<std::string,ChemotaxisData>::iterator mitr;
 
 	for(unsigned int i = 0; i < fieldVec.size(); ++i){
+		auto field = fieldVec[i];
+
 		if(newCell){
 			bool chemotaxisDone = false;
 
@@ -608,20 +598,27 @@ double ChemotaxisPlugin::reciprocatedChemotaxis(const Point3D &pt, const CellG *
 				ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr = 0;
 				formulaCurrentPtr=chemotaxisDataPtr->formulaPtr;
 				if(formulaCurrentPtr){
-					energy += (this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()), fieldVec[i]->get(pt), *chemotaxisDataPtr);
+					energy += (this->*formulaCurrentPtr)(field->get(potts->getFlipNeighbor()), field->get(pt), *chemotaxisDataPtr);
 					chemotaxisDone = true;
 				}
 			}
 
-			if(!chemotaxisDone && (int)newCell->type < vecVecChemotaxisData[i].size()){
-				ChemotaxisData & chemotaxisDataRef = vecVecChemotaxisData[i][(int)newCell->type];
-				ChemotaxisData * chemotaxisDataPtr = & vecVecChemotaxisData[i][(int)newCell->type];
-				ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr = 0;
+			if(!chemotaxisDone ){
+				
+				auto itr = vecMapChemotaxisData[i].find(newCell->type);
 
-				formulaCurrentPtr = chemotaxisDataRef.formulaPtr;
+				if (itr != vecMapChemotaxisData[i].end()) {
 
-				if(chemotaxisDataRef.okToChemotact(oldCell, newCell) && chemotaxisDataRef.lambda!=0.0 && formulaCurrentPtr)
-					energy += (this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()), fieldVec[i]->get(pt), chemotaxisDataRef);
+					ChemotaxisData & chemotaxisDataRef = itr->second;
+					ChemotaxisData * chemotaxisDataPtr = & itr->second;
+					ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr = 0;
+
+					formulaCurrentPtr = chemotaxisDataRef.formulaPtr;
+
+					if(chemotaxisDataRef.okToChemotact(oldCell, newCell) && chemotaxisDataRef.lambda!=0.0 && formulaCurrentPtr)
+						energy += (this->*formulaCurrentPtr)(field->get(potts->getFlipNeighbor()), field->get(pt), chemotaxisDataRef);
+
+				}
 			}
 		}
 		if(oldCell){
@@ -639,20 +636,27 @@ double ChemotaxisPlugin::reciprocatedChemotaxis(const Point3D &pt, const CellG *
 				ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr = 0;
 				formulaCurrentPtr = chemotaxisDataPtr->formulaPtr;
 				if(formulaCurrentPtr){
-					energy += (this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()), fieldVec[i]->get(pt), *chemotaxisDataPtr);
+					energy += (this->*formulaCurrentPtr)(field->get(potts->getFlipNeighbor()), field->get(pt), *chemotaxisDataPtr);
 					chemotaxisDone = true;
 				}
 			}
 
-			if(!chemotaxisDone && (int)oldCell->type < vecVecChemotaxisData[i].size()){
-				ChemotaxisData & chemotaxisDataRef = vecVecChemotaxisData[i][(int)oldCell->type];
-				ChemotaxisData * chemotaxisDataPtr = & vecVecChemotaxisData[i][(int)oldCell->type];
-				ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr = 0;
+			if(!chemotaxisDone){
 
-				formulaCurrentPtr=chemotaxisDataRef.formulaPtr;
+				auto itr = vecMapChemotaxisData[i].find(oldCell->type);
 
-				if(chemotaxisDataRef.okToChemotact(newCell, oldCell) && chemotaxisDataRef.lambda!=0.0 && formulaCurrentPtr)
-					energy += (this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()), fieldVec[i]->get(pt), chemotaxisDataRef);
+				if (itr != vecMapChemotaxisData[i].end()) {
+
+					ChemotaxisData & chemotaxisDataRef = itr->second;
+					ChemotaxisData * chemotaxisDataPtr = & itr->second;
+					ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr = 0;
+
+					formulaCurrentPtr=chemotaxisDataRef.formulaPtr;
+
+					if(chemotaxisDataRef.okToChemotact(newCell, oldCell) && chemotaxisDataRef.lambda!=0.0 && formulaCurrentPtr)
+						energy += (this->*formulaCurrentPtr)(field->get(potts->getFlipNeighbor()), field->get(pt), chemotaxisDataRef);
+
+				}
 			}
 		}
 	}
@@ -673,6 +677,7 @@ double ChemotaxisPlugin::merksChemotaxis(const Point3D &pt, const CellG *newCell
 	//    cerr<<"fieldVec.size()="<<fieldVec.size()<<endl;
 	for(unsigned int i = 0 ; i < fieldVec.size() ; ++i){
 		bool chemotaxisDone=false;
+		auto field = fieldVec[i];
 		//first will see if newCell is chemotacting (using locally defined chemotaxis parameters) and if it chemotacts towards oldCell. If yes, then next if statements
 		// will be skipped 
 
@@ -698,36 +703,39 @@ double ChemotaxisPlugin::merksChemotaxis(const Point3D &pt, const CellG *newCell
 				formulaCurrentPtr=chemotaxisDataPtr->formulaPtr;
 				if(formulaCurrentPtr){
 					if(formulaCurrentPtr == &ChemotaxisPlugin::COMLogScaledChemotaxisFormula)
-						chemotaxisDataPtr->concCOM = fieldVec[i]->get(Point3D(newCell->xCOM, newCell->yCOM, newCell->zCOM));
+						chemotaxisDataPtr->concCOM = field->get(Point3D(newCell->xCOM, newCell->yCOM, newCell->zCOM));
 					
-					energy+=(this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()) , fieldVec[i]->get(pt), *chemotaxisDataPtr);
+					energy+=(this->*formulaCurrentPtr)(field->get(potts->getFlipNeighbor()) , field->get(pt), *chemotaxisDataPtr);
 				
 					chemotaxisDone=true;
 					//cerr<<"Energy="<<energy<< " lambda="<<chemotaxisDataPtr->lambda<<endl;
 				}
 			}
 		}
-		//first will see if newCell is chemotacting and if it chemotacts towards oldCell. If yes, then next if statement
-		// will be skipped and 
-		if(!chemotaxisDone && newCell && (int)newCell->type < vecVecChemotaxisData[i].size()){// check if newCell is potentially chemotaxing
+		//first will see if newCell is chemotacting and if it chemotacts towards oldCell. If yes, then next if statement will be skipped
+		if(!chemotaxisDone && newCell){// check if newCell is potentially chemotaxing
 
-			ChemotaxisData & chemotaxisDataRef = vecVecChemotaxisData[i][(int)newCell->type];
+			auto itr = vecMapChemotaxisData[i].find(newCell->type);
 
-
-
-			if( chemotaxisDataRef.okToChemotact(oldCell,newCell) && chemotaxisDataRef.lambda!=0.0){ 
-				// chemotaxis is allowed towards this type of oldCell and lambda is non-zero
-				//          cerr<<"BASED ON NEW pt "<<pt<<" oldCell="<<oldCell<<" newCell="<<newCell<<endl;
-				ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr=0;
-				formulaCurrentPtr=chemotaxisDataRef.formulaPtr;
-				if(formulaCurrentPtr){
-					if(formulaCurrentPtr == &ChemotaxisPlugin::COMLogScaledChemotaxisFormula)
-						chemotaxisDataRef.concCOM = fieldVec[i]->get(Point3D(newCell->xCOM, newCell->yCOM, newCell->zCOM));
+			if (itr != vecMapChemotaxisData[i].end()) {
 			
-					energy+=(this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()) , fieldVec[i]->get(pt), chemotaxisDataRef);
-			
-					chemotaxisDone=true;
+				ChemotaxisData & chemotaxisDataRef = itr->second;
+
+				if( chemotaxisDataRef.okToChemotact(oldCell,newCell) && chemotaxisDataRef.lambda!=0.0){ 
+					// chemotaxis is allowed towards this type of oldCell and lambda is non-zero
+					//          cerr<<"BASED ON NEW pt "<<pt<<" oldCell="<<oldCell<<" newCell="<<newCell<<endl;
+					ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr=0;
+					formulaCurrentPtr=chemotaxisDataRef.formulaPtr;
+					if(formulaCurrentPtr){
+						if(formulaCurrentPtr == &ChemotaxisPlugin::COMLogScaledChemotaxisFormula)
+							chemotaxisDataRef.concCOM = field->get(Point3D(newCell->xCOM, newCell->yCOM, newCell->zCOM));
+				
+						energy+=(this->*formulaCurrentPtr)(field->get(potts->getFlipNeighbor()) , field->get(pt), chemotaxisDataRef);
+				
+						chemotaxisDone=true;
+					}
 				}
+
 			}
 		}
 
@@ -751,9 +759,9 @@ double ChemotaxisPlugin::merksChemotaxis(const Point3D &pt, const CellG *newCell
 				formulaCurrentPtr=chemotaxisDataPtr->formulaPtr;
 				if(formulaCurrentPtr){
 					if(formulaCurrentPtr == &ChemotaxisPlugin::COMLogScaledChemotaxisFormula)
-						chemotaxisDataPtr->concCOM = fieldVec[i]->get(Point3D(oldCell->xCOM, oldCell->yCOM, oldCell->zCOM));
+						chemotaxisDataPtr->concCOM = field->get(Point3D(oldCell->xCOM, oldCell->yCOM, oldCell->zCOM));
 
-					energy+=(this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()) , fieldVec[i]->get(pt), *chemotaxisDataPtr);
+					energy+=(this->*formulaCurrentPtr)(field->get(potts->getFlipNeighbor()) , field->get(pt), *chemotaxisDataPtr);
 					chemotaxisDone=true;
 			
 				}
@@ -762,22 +770,29 @@ double ChemotaxisPlugin::merksChemotaxis(const Point3D &pt, const CellG *newCell
 
 		}
 
-		if(!chemotaxisDone && oldCell && (int)oldCell->type < vecVecChemotaxisData[i].size()){
-			//since chemotaxis "based on" newCell did not work we try to see it "based on" oldCell will work
-			ChemotaxisData & chemotaxisDataRef = vecVecChemotaxisData[i][(int)oldCell->type];
+		if(!chemotaxisDone && oldCell){
+			
+			auto itr = vecMapChemotaxisData[i].find(oldCell->type);
 
-			if( chemotaxisDataRef.okToChemotact(newCell,oldCell) && chemotaxisDataRef.lambda!=0.0){ 
-				// chemotaxis is allowed towards this type of oldCell and lambda is non-zero
-				//             cerr<<"BASED ON OLD pt="<<pt<<" oldCell="<<oldCell<<" newCell="<<newCell<<endl;
-				ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr=0;
-				formulaCurrentPtr=chemotaxisDataRef.formulaPtr;
-				if(formulaCurrentPtr){
-					if(formulaCurrentPtr == &ChemotaxisPlugin::COMLogScaledChemotaxisFormula)
-						chemotaxisDataRef.concCOM = fieldVec[i]->get(Point3D(oldCell->xCOM, oldCell->yCOM, oldCell->zCOM));
+			if (itr != vecMapChemotaxisData[i].end()) {
 
-					energy+=(this->*formulaCurrentPtr)(fieldVec[i]->get(potts->getFlipNeighbor()), fieldVec[i]->get(pt), chemotaxisDataRef);					
-					chemotaxisDone=true;
+				//since chemotaxis "based on" newCell did not work we try to see it "based on" oldCell will work
+				ChemotaxisData & chemotaxisDataRef = itr->second;
+
+				if( chemotaxisDataRef.okToChemotact(newCell,oldCell) && chemotaxisDataRef.lambda!=0.0){ 
+					// chemotaxis is allowed towards this type of oldCell and lambda is non-zero
+					//             cerr<<"BASED ON OLD pt="<<pt<<" oldCell="<<oldCell<<" newCell="<<newCell<<endl;
+					ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr=0;
+					formulaCurrentPtr=chemotaxisDataRef.formulaPtr;
+					if(formulaCurrentPtr){
+						if(formulaCurrentPtr == &ChemotaxisPlugin::COMLogScaledChemotaxisFormula)
+							chemotaxisDataRef.concCOM = field->get(Point3D(oldCell->xCOM, oldCell->yCOM, oldCell->zCOM));
+
+						energy+=(this->*formulaCurrentPtr)(field->get(potts->getFlipNeighbor()), field->get(pt), chemotaxisDataRef);					
+						chemotaxisDone=true;
+					}
 				}
+
 			}
 		}
 

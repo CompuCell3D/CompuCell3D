@@ -9,33 +9,47 @@ ADD_SUBDIRECTORY(steppables)
 
 SET(QtWrappersLibs )
 if(BUILD_QT_WRAPPERS)
-  ADD_DEFINITIONS(-DQT_WRAPPERS_AVAILABLE) 
+  ADD_DEFINITIONS(-DQT_WRAPPERS_AVAILABLE)
   SET(QtWrappersLibs StreamRedirectorsShared)
 endif(BUILD_QT_WRAPPERS)    
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+  add_definitions(-DCC3D_ISWIN)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+  add_definitions(-DCC3D_ISMAC)
+endif()
+
+
 SET(SRCS
+  PluginInfo.cpp
   PluginManager.cpp
   Simulator.cpp
   ClassRegistry.cpp
   DerivedProperty.cpp
+  RandomNumberGenerators.cpp
   PottsParseData.cpp
   ParserStorage.cpp
+  CC3DExceptions.cpp
+  ExtraMembers.cpp
 )
 
-SET(INCLUDE_DIRS 
+SET(INCLUDE_DIRS
     $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_INCLUDE_DIR}>
 )
 
-set(LIBS 
-    cc3d::BasicUtils 
-    cc3d::PublicUtilities 
-    cc3d::Units 
-    cc3d::Automaton 
-    cc3d::Boundary 
-    cc3d::Field3D 
+set(LIBS
+    cc3d::PublicUtilities
+    cc3d::Units
+    cc3d::Automaton
+    cc3d::Boundary
+    cc3d::Field3D
     cc3d::Potts3D
 )
+
+if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+  set(LIBS ${LIBS} ${CMAKE_DL_LIBS})
+endif()
 
 ADD_SHARED_LIBRARY(CompuCellLib ${SRCS} LINK_LIBRARIES ${LIBS} cc3d::XMLUtils ${QtWrappersLibs})
 
@@ -73,13 +87,16 @@ INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D .h
   ClassRegistry
   CompuCellLibDLLSpecifier  
   DerivedProperty
+  ExtraMembers
   ParseData
   Parser
   ParserStorage
   Plugin
   PluginBase
+  PluginInfo
   PluginManager
   PottsParseData
+  RandomNumberGenerators
   Serializer
   SimObject
   Simulator
@@ -89,5 +106,6 @@ INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D .h
   CC3D_Main
   CC3D_STL
   CC3DEvents
-  
+  CC3DExceptions
+
 )

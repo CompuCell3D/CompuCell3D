@@ -39,7 +39,7 @@
 
 #include <algorithm> //need for debian compilation
 
-#include <BasicUtils/BasicException.h>
+#include <CompuCell3D/CC3DExceptions.h>
 
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
@@ -83,7 +83,7 @@ namespace CompuCell3D {
 
     /** 
      * Set a field element. If the value was already set it will be
-     * overwritten.  If pt is out of range then a BasicException will
+     * overwritten.  If pt is out of range then a CC3DException will
      * be thrown.
      * 
      * @param pt The coordinate of the element.
@@ -92,7 +92,7 @@ namespace CompuCell3D {
     virtual void set(const Point3D &pt, const T value) = 0;
 
     /** 
-     * If pt is out of range a BasicException will be thrown.
+     * If pt is out of range a CC3DException will be thrown.
      *
      * @param pt The coordinates of the field element.
      * 
@@ -101,7 +101,7 @@ namespace CompuCell3D {
     virtual T get(const Point3D &pt) const = 0;
 
     /** 
-     * If _offset is out of range either a BasicException will be thrown
+     * If _offset is out of range either a CC3DException will be thrown
      * or a function will return default value for the field element
      * 
      *
@@ -121,19 +121,9 @@ namespace CompuCell3D {
      * @return The value of the element at _offset.
      */
     virtual void setByIndex(long _offset, const T value) {}//will have to make it abstract
-
-
-        
-    /** 
-     * If pt is out of range a BasicException will be thrown.
-     *
-     * @param pt The coordinates of the field element.
-     * 
-     * @return The value of the element at pt.
-     */
     
     /** 
-     * If pt is out of range a BasicException will be thrown.
+     * If pt is out of range a CC3DException will be thrown.
      * 
      * @param pt The coordinates of the field element.
      * 

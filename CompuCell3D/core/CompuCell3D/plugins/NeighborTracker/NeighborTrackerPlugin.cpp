@@ -74,9 +74,9 @@ void NeighborTrackerPlugin::init(Simulator *_simulator, CC3DXMLElement *_xmlData
 
 
     ///will register NeighborTracker here
-    BasicClassAccessorBase * cellBTAPtr = &neighborTrackerAccessor;
+    ExtraMembersGroupAccessorBase * cellBTAPtr = &neighborTrackerAccessor;
     ///************************************************************************************************  
-    ///REMARK. HAVE TO USE THE SAME BASIC CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
+    ///REMARK. HAVE TO USE THE SAME CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
     ///************************************************************************************************  
     potts->getCellFactoryGroupPtr()->registerClass(cellBTAPtr);
 
@@ -224,7 +224,7 @@ void NeighborTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell, Cel
                     //}
                     testLatticeSanityFull();
                     cerr << "Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ..." << endl;
-                    ASSERT_OR_THROW("Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ...", 0);
+                    throw CC3DException("Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ...");
                 }
 
 

@@ -35,9 +35,6 @@ using namespace CompuCell3D;
 
 
 
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-
 // // // #include <string>
 // // // #include <map>
 // // // #include <sstream>
@@ -144,13 +141,14 @@ void ObjInitializer::start() {
     cerr << "ppdPtr->gObjFileName=" << gObjFileName << endl;
     std::ifstream lObjFileStream(gObjFileName.c_str(), ios::in);
     cerr << "ObjInitializer::start() ----- opened pid file" << endl;
-    ASSERT_OR_THROW(string("ObjInitializer::start() ----- Could not open ["+gObjFileName+"] ....make sure it exists in the correct directory."), lObjFileStream.good());
+    if (!lObjFileStream.good()) 
+        throw CC3DException(string("ObjInitializer::start() ----- Could not open ["+gObjFileName+"] ....make sure it exists in the correct directory."));
 
     //
     // prepare a watchable field 3D as from the potts's  getCellFieldG() :
     //
     WatchableField3D<CellG *> * lCellFieldG = (WatchableField3D<CellG *> *) potts->getCellFieldG();
-    ASSERT_OR_THROW("ObjInitializer::start() ----- initField() Cell field cannot be null!", lCellFieldG);
+    if (!lCellFieldG) throw CC3DException("ObjInitializer::start() ----- initField() Cell field cannot be null!");
 
     //
     // get the x,y,z dimensions of the 3D field of cells:
@@ -215,22 +213,22 @@ void ObjInitializer::start() {
     while ( lEndReachedInObjParsing == false ) {
 
         lObjIStringStream >> xLow;
-        ASSERT_OR_THROW(string("OBJ reader: xLow out of bounds : \n") + lLineString, xLow >= 0 && xLow < lDimensions.x);
+        if (!(xLow >= 0 && xLow < lDimensions.x)) throw CC3DException(string("OBJ reader: xLow out of bounds : \n") + lLineString);
         lObjIStringStream >> xHigh;
-        ASSERT_OR_THROW(string("OBJ reader: xHigh out of bounds : \n") + lLineString, xHigh >= 0 && xHigh < lDimensions.x);
-        ASSERT_OR_THROW(string("OBJ reader: xHigh is smaller than xLow : \n") + lLineString, xHigh >= xLow); 
+        if (!(xHigh >= 0 && xHigh < lDimensions.x)) throw CC3DException(string("OBJ reader: xHigh out of bounds : \n") + lLineString);
+        if (xHigh < xLow) throw CC3DException(string("OBJ reader: xHigh is smaller than xLow : \n") + lLineString); 
         //
         lObjIStringStream >> yLow;
-        ASSERT_OR_THROW(string("OBJ reader: yLow out of bounds : \n") + lLineString, yLow >= 0 && yLow < lDimensions.y);
+        if (!(yLow >= 0 && yLow < lDimensions.y)) throw CC3DException(string("OBJ reader: yLow out of bounds : \n") + lLineString);
         lObjIStringStream >> yHigh;   
-        ASSERT_OR_THROW(string("OBJ reader: yHigh out of bounds : \n") + lLineString, yHigh >= 0 && yHigh < lDimensions.y);
-        ASSERT_OR_THROW(string("OBJ reader: yHigh is smaller than yLow : \n") + lLineString, yHigh >= yLow);
+        if (!(yHigh >= 0 && yHigh < lDimensions.y)) throw CC3DException(string("OBJ reader: yHigh out of bounds : \n") + lLineString);
+        if (yHigh < yLow) throw CC3DException(string("OBJ reader: yHigh is smaller than yLow : \n") + lLineString);
         //
         lObjIStringStream >> zLow;
-        ASSERT_OR_THROW(string("OBJ reader: zLow out of bounds : \n") + lLineString, zLow >= 0 && zLow < lDimensions.z);
+        if (!(zLow >= 0 && zLow < lDimensions.z)) throw CC3DException(string("OBJ reader: zLow out of bounds : \n") + lLineString);
         lObjIStringStream >> zHigh;
-        ASSERT_OR_THROW(string("OBJ reader: zHigh out of bounds : \n") + lLineString, zHigh >= 0 && zHigh < lDimensions.z);
-        ASSERT_OR_THROW(string("OBJ reader: zHigh is smaller than xLow : \n") + lLineString, zHigh >= zLow);
+        if (!(zHigh >= 0 && zHigh < lDimensions.z)) throw CC3DException(string("OBJ reader: zHigh out of bounds : \n") + lLineString);
+        if (zHigh < zLow) throw CC3DException(string("OBJ reader: zHigh is smaller than xLow : \n") + lLineString);
         
         if (lSpinMap.count(lSpin) != 0) // Spin (i.e. current cell ID) already listed
         {

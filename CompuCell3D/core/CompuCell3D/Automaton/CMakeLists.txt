@@ -17,9 +17,7 @@ TARGET_INCLUDE_DIRECTORIES(${AutomatonLib} PUBLIC
 
 INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D/Automaton .h
   Automaton
-  CellTypeDynamicClassNode
   CellType
-  CellTypeNode
   Transition
   CC3D_Automaton
 )

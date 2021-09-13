@@ -10,22 +10,21 @@ if (${VTK_MAJOR_VERSION} EQUAL "5")
     SET(VTK_LIBS vtkVolumeRendering vtkHybrid vtkFiltering vtkCommon)
 endif()
 
-set(INCLUDE_DIRS 
-    ${VTK_INCLUDE_DIRS} 
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> 
-    $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core/CompuCell3D/plugins> 
-    $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core/pyinterface/PyPlugin> 
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D/plugins> 
+set(INCLUDE_DIRS
+    ${VTK_INCLUDE_DIRS}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core/CompuCell3D/plugins>
+    $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core/pyinterface/PyPlugin>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D/plugins>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/pyinterface/PyPlugin>
 )
 
 LINK_DIRECTORIES(${VTK_LIBRARY_DIRS})
 
 SET(LIBS
-    cc3d::CompuCellLib 
-    cc3d::BasicUtils 
-    FieldExtractor 
-    ${PYTHON_LIBRARY_TO_LINK} 
+    cc3d::CompuCellLib
+    FieldExtractor
+    ${PYTHON_LIBRARY_TO_LINK}
     ${VTK_LIBS}
 
 )
@@ -47,7 +46,7 @@ target_link_libraries(SerializerDE ${LIBS})
 target_include_directories(SerializerDE PUBLIC ${INCLUDE_DIRS})
 
 install(TARGETS SerializerDE
-        EXPORT SerializerDE 
+        EXPORT SerializerDE
         RUNTIME DESTINATION ${COMPUCELL3D_INSTALL_BIN_DIR}
         LIBRARY DESTINATION ${COMPUCELL3D_INSTALL_LIB_DIR}
         ARCHIVE DESTINATION ${COMPUCELL3D_INSTALL_LIB_DIR}
@@ -76,9 +75,9 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 SWIG_LINK_LIBRARIES(SerializerDEPy ${LIBS_SWIG})
 
 set_target_properties(SerializerDEPy PROPERTIES LINK_FLAGS ${undefined_link_flags})
-set_property(TARGET SerializerDEPy PROPERTY SWIG_INCLUDE_DIRECTORIES 
-    ${PYTHON_INCLUDE_PATH} 
-    ${VTK_INCLUDE_DIRS} 
+set_property(TARGET SerializerDEPy PROPERTY SWIG_INCLUDE_DIRECTORIES
+    ${PYTHON_INCLUDE_PATH}
+    ${VTK_INCLUDE_DIRS}
     $<TARGET_PROPERTY:SerializerDE,INCLUDE_DIRECTORIES>
 )
 

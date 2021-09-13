@@ -23,10 +23,12 @@
 #include "CellTypePlugin.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-BasicPluginProxy<Plugin, CellTypePlugin> 
-cellTypeProxy("CellType", "Adds cell type attributes",
-	    &Simulator::pluginManager);
+auto cellTypeProxy = registerPlugin<Plugin, CellTypePlugin>(
+	"CellType", 
+	"Adds cell type attributes",
+	&Simulator::pluginManager
+);

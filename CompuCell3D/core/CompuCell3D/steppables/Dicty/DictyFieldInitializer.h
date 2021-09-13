@@ -40,6 +40,7 @@ namespace CompuCell3D {
   template <typename T> class WatchableField3D; 
 
   class DICTY_EXPORT DictyFieldInitializer : public Steppable {
+    Simulator *sim;
     Potts3D *potts;
     Automaton *automaton;
     CellInventory * cellInventoryPtr;

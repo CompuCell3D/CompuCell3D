@@ -8,10 +8,10 @@ When running automated testing f Demo suite use the following cml options:
  or for automatic starting of a particular simulation you use :
  --input=/home/m/376_dz/Demos/Models/cellsort/cellsort_2D/cellsort_2D.cc3d
 """
-import cc3d
+
 import sys
-import os
-from cc3d.core.CMLParser import CMLParser
+from cc3d import player5
+from cc3d.player5.CMLParser import CMLParser
 from cc3d.player5.UI.UserInterface import UserInterface
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -113,6 +113,11 @@ def main(argv):
 
     main_window.show()
     splash.finish(main_window)
+
+    # we are making sure here that after all windows have been restored that
+    # all actions' check state e.g. View->Console reflect what is being shown on the screen
+    # this is especially important when global settings and simulation differ in what windows they show
+    main_window.synchronizes_dock_windows_actions()
 
     main_window.raise_()
 

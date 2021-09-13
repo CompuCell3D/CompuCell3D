@@ -1,6 +1,4 @@
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
 #include <fstream>
 #include <sstream>
 
@@ -8,6 +6,7 @@
 
 
 #include "CC3DXMLElement.h"
+#include "PublicUtilities/StringUtils.h"
 using namespace std;
 
 CC3DXMLElement::CC3DXMLElement(std::string  _name, std::map<std::string,std::string> _attributes,std::string _cdata):
@@ -445,59 +444,59 @@ std::map<std::string,std::string> CC3DXMLElement::getAttributes(){
 
 double CC3DXMLElement::getAttributeAsDouble(const std::string key){
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
-	ASSERT_OR_THROW(string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end());
-	return BasicString::parseDouble(mitr->second);
+	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!";
+	return strToDouble(mitr->second);
 
 }
 unsigned int CC3DXMLElement::getAttributeAsUInt(const std::string key){
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
-	ASSERT_OR_THROW(string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end());
-	return BasicString::parseUInteger(mitr->second);
+	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end();
+	return strToUInt(mitr->second);
 
 }
 int CC3DXMLElement::getAttributeAsInt(const std::string key){
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
-	ASSERT_OR_THROW(string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end());
-	return BasicString::parseInteger(mitr->second);
+	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end();
+	return strToInt(mitr->second);
 }
 
 char CC3DXMLElement::getAttributeAsByte(const std::string key){
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
-	ASSERT_OR_THROW(string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end());
-	return BasicString::parseByte(mitr->second);
+	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end();
+	return strToByte(mitr->second);
 }
 
 unsigned char CC3DXMLElement::getAttributeAsUByte(const std::string key){
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
-	ASSERT_OR_THROW(string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end());
-	return BasicString::parseUByte(mitr->second);
+	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end();
+	return strToUByte(mitr->second);
 }
 
 
 short CC3DXMLElement::getAttributeAsShort(const std::string key){
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
-	ASSERT_OR_THROW(string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end());
-	return BasicString::parseShort(mitr->second);
+	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end();
+	return strToShort(mitr->second);
 
 }
 unsigned short CC3DXMLElement::getAttributeAsUShort(const std::string key){
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
-	ASSERT_OR_THROW(string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end());
-	return BasicString::parseUShort(mitr->second);
+	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end();
+	return strToUShort(mitr->second);
 
 }
 bool CC3DXMLElement::getAttributeAsBool(const std::string key){
 
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
-	ASSERT_OR_THROW(string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end());
-	return BasicString::parseBool(mitr->second);
+	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end();
+	return strToBool(mitr->second);
 }
 
 
 
 std::string CC3DXMLElement::getAttribute(const std::string key){
 	map<std::string,std::string>::iterator mitr=attributes.find(key);
-	ASSERT_OR_THROW(string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end());
+	if (mitr==attributes.end()) throw string("Element ") + name + "does not have attribute "+key+"!", mitr!=attributes.end();
 	return mitr->second;
 }
 
@@ -556,25 +555,29 @@ bool CC3DXMLElement::findElement(const std::string _name, std::map<std::string,s
 }
 
 unsigned int CC3DXMLElement::getUInt(){
-	return BasicString::parseUInteger(cdata);
+	return (unsigned int)getInt();
 }
 
 int CC3DXMLElement::getInt(){
-	return BasicString::parseInteger(cdata);
+	return stoi(cdata);
 }
+
 short CC3DXMLElement::getShort(){
-	return BasicString::parseShort(cdata);	
+	return (short)getInt();
 }
+
 unsigned short CC3DXMLElement::getUShort(){
-	return BasicString::parseUShort(cdata);	
+	return (unsigned short)getInt();
 }
+
 double CC3DXMLElement::getDouble(){
-	return BasicString::parseDouble(cdata);	
+	return stod(cdata);
 }
 
 bool CC3DXMLElement::getBool(){
-	return BasicString::parseBool(cdata);	
+	return strToBool(cdata);
 }
+
 std::string CC3DXMLElement::getText(){
 	return cdata;	
 }
@@ -584,9 +587,9 @@ std::string CC3DXMLElement::getName(){
 }
 
 char CC3DXMLElement::getByte(){
-	return BasicString::parseByte(cdata);	
+	return (char)getUInt();
 }
 
 unsigned char CC3DXMLElement::getUByte(){
-	return BasicString::parseUByte(cdata);	
+	return (unsigned char)getUInt();
 }

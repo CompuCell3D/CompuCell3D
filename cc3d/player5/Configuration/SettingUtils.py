@@ -10,6 +10,16 @@ from PyQt5.QtWidgets import *
 from cc3d.core.DefaultSettingsData import *
 
 
+def copy_settings(src_setting_path, dst_setting_dir):
+    from cc3d.core.Configuration import copy_settings as f
+    return f(src_setting_path, dst_setting_dir)
+
+
+def synchronizeGlobalAndDefaultSettings(default_settings, global_settings, global_settings_path):
+    from cc3d.core.Configuration import synchronize_global_and_default_settings as f
+    return f(default_settings, global_settings, global_settings_path)
+
+
 def load_settings(setting_path):
     """
     loads settings - calls _load_sql_settings
@@ -18,19 +28,6 @@ def load_settings(setting_path):
     """
     return _load_sql_settings(setting_path=setting_path)
 
-def _check_settings_sanity(settings_object):
-    """
-    Checks whether all settings listed in settings_object are accessible.
-    :param settings_object: {instance of SettingsSQL} settings object
-    :return: {list of str} list of settings that are problematic
-    """
-    problematic_settings = []
-    for setting_name in settings_object.names():
-        try:
-            settings_object.getSetting(setting_name)
-        except:
-            problematic_settings.append(setting_name)
-    return problematic_settings
 
 def _load_sql_settings(setting_path):
     """
@@ -41,6 +38,7 @@ def _load_sql_settings(setting_path):
     # from CompuCell3D.player5.Configuration.settingdict import SettingsSQL
     # from .settingdict import SettingsSQL
     from cc3d.player5.Configuration.settingdict import SettingsSQL
+    from cc3d.core.Configuration.SettingUtils import check_settings_sanity
 
     # workaround for Windows leftover DefaultSettingPath.pyc
     from os.path import splitext
@@ -52,7 +50,7 @@ def _load_sql_settings(setting_path):
     if not settings:
         return None, None
 
-    problematic_settings = _check_settings_sanity(settings_object=settings)
+    problematic_settings = check_settings_sanity(settings_object=settings)
     if len(problematic_settings):
         print('FOUND THE FOLLOWING PROBLEMATIC SETTINGS: ', problematic_settings)
 
@@ -94,25 +92,6 @@ def _global_setting_path():
         os.path.join(global_setting_dir, SETTINGS_FILE_NAME))  # abspath normalizes path
 
     return global_setting_path
-
-
-def copy_settings(src_setting_path, dst_setting_dir):
-    """
-    Copies settings file specified by src_setting_path to directory specified by dst_setting_dir
-    :param src_setting_path: {str} full path to settins file
-    :param dst_setting_dir: {str} full path to targe directory for settings
-    :return: None
-    """
-
-    try:
-        shutil.copy(src_setting_path, dst_setting_dir)
-    except:
-        exception_str = 'Configuration: ' \
-                        'Could not copy setting file: {} ' \
-                        'to {} directory. ' \
-                        'Please make sure that you have ' \
-                        'appropriate write permissions'.format(src_setting_path, dst_setting_dir)
-        raise RuntimeError(exception_str)
 
 
 def loadSettings(path):
@@ -161,25 +140,3 @@ def loadDefaultSettings():
     :return: {tuple} (settings object - SettingsSQL, abs path to settings file)
     """
     return _load_sql_settings(_default_setting_path())
-
-
-def synchronizeGlobalAndDefaultSettings(default_settings, global_settings, global_settings_path):
-    """
-    Synchronizes global settings and default settings. This function checks for
-    new settings in the default settings file
-    :param default_settings: {SettingsSQL} settings object with default settings
-    :param global_settings: {SettingsSQL} settings object with global settings
-    :param global_settings_path: {str} path to global settings file
-    :return: None
-    """
-
-    default_settings_names = default_settings.names()
-    global_settings_names = global_settings.names()
-
-    new_setting_names = set(default_settings_names) - set(global_settings_names)
-
-    for new_setting_name in new_setting_names:
-        print('new_setting_name = ', new_setting_name)
-        new_default_setting_val = default_settings.setting(new_setting_name)
-
-        global_settings.setSetting(new_setting_name, new_default_setting_val)

@@ -172,6 +172,23 @@ class UserInterface(QMainWindow):
 
         if player_sizes and player_sizes.size() > 0:
             self.restoreState(player_sizes)
+            # we are making sure here that after all windows have been restored that
+            # all actions' check state e.g. View->Console reflect what is being shown on the screen
+            # this is especially important when global settings and simulation differ in what windows they show
+            self.synchronizes_dock_windows_actions()
+
+    def synchronizes_dock_windows_actions(self):
+        """
+        Synchronizes dock window show state with dock window show action check states
+        :return:
+        """
+        self.consoleAct.triggered.disconnect(self.toggleConsole)
+        if self.consoleDock.isVisible():
+            self.consoleAct.setChecked(True)
+        else:
+            self.consoleAct.setChecked(False)
+        self.consoleAct.triggered.connect(self.toggleConsole)
+        # todo - need to do it for other -checkable actions as well
 
     def save_ui_geometry(self):
         """

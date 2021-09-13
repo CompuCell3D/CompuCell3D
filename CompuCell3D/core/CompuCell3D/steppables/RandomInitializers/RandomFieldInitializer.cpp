@@ -32,7 +32,6 @@
 #include <CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h>
 using namespace CompuCell3D;
 
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
 // // // #include <PublicUtilities/StringUtils.h>
 
 // // // #include <string>
@@ -57,13 +56,14 @@ RandomFieldInitializer::RandomFieldInitializer():
 
 RandomFieldInitializer::~RandomFieldInitializer(){
     delete builder;
+	delete rand;
 }
 
 void RandomFieldInitializer::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
 	simulator = _simulator;
 	potts = _simulator->getPotts();
 	cellField = (WatchableField3D<CellG *> *)potts->getCellFieldG();
-	ASSERT_OR_THROW("initField() Cell field G cannot be null!", cellField);
+	if (!cellField) throw CC3DException("initField() Cell field G cannot be null!");
 	dim=cellField->getDim();
 	builder = new FieldBuilder(_simulator);
 	// setParameters(_simulator,_xmlData);
@@ -80,9 +80,7 @@ void RandomFieldInitializer::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
 
 void RandomFieldInitializer::setParameters(Simulator *_simulator, CC3DXMLElement *_xmlData){
 	// initiate random generator
-	rand = BasicRandomNumberGenerator::getInstance();
-	if(_xmlData->getFirstElement("seed"))
-		rand->setSeed(_xmlData->getFirstElement("seed")->getInt());
+	rand = _simulator->generateRandomNumberGenerator();
 	builder->setRandomGenerator(rand);
 	// set builder boxes
 	Dim3D boxMin = Dim3D(0,0,0);

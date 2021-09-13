@@ -23,14 +23,11 @@
 #include "ObjInitializer.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
 
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-BasicPluginProxy<Steppable, ObjInitializer> 
-
-objInitializerProxy(
+auto objInitializerProxy = registerPlugin<Steppable, ObjInitializer>(
     "ObjInitializer",
     "Initializes lattice using user provided OBJ file",
 	&Simulator::steppableManager

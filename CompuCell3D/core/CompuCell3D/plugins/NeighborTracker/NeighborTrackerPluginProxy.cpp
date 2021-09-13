@@ -23,10 +23,12 @@
 #include "NeighborTrackerPlugin.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-BasicPluginProxy<Plugin, NeighborTrackerPlugin>
-NeighborTrackerProxy("NeighborTracker", "Tracks cell neighbors and stores them in a list",
-	    &Simulator::pluginManager);
+auto NeighborTrackerProxy = registerPlugin<Plugin, NeighborTrackerPlugin>(
+	"NeighborTracker", 
+	"Tracks cell neighbors and stores them in a list", 
+	&Simulator::pluginManager
+);

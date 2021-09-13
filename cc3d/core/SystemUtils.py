@@ -1,3 +1,4 @@
+# todo: add system utils support for additional software/extensions
 "This module contains platform specific initializations"
 
 from cc3d import cc3d_scripts_path

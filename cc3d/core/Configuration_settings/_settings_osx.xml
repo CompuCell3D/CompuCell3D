@@ -1,0 +1,116 @@
+<PlayerSettings>
+   <Settings Type="bytearray">
+      <e Name="PlayerSizes" Type="bytearray">0,0,0,255,0,0,0,0,253,0,0,0,3,0,0,0,0,0,0,1,0,0,0,1,197,252,2,0,0,0,3,251,0,0,0,22,0,77,0,111,0,100,0,101,0,108,0,69,0,100,0,105,0,116,0,111,0,114,1,0,0,0,46,0,0,1,197,0,0,0,77,0,255,255,255,251,0,0,0,30,0,76,0,97,0,116,0,116,0,105,0,99,0,101,0,68,0,97,0,116,0,97,0,68,0,111,0,99,0,107,0,0,0,0,46,0,0,2,169,0,0,0,0,0,0,0,0,251,0,0,0,32,0,71,0,114,0,97,0,112,0,104,0,105,0,110,0,99,0,115,0,32,0,87,0,105,0,110,0,100,0,111,0,119,2,0,0,0,129,0,0,0,123,0,0,1,0,0,0,1,250,0,0,0,2,0,0,4,195,0,0,0,212,252,1,0,0,0,1,251,0,0,0,22,0,76,0,97,0,116,0,116,0,105,0,99,0,101,0,68,0,97,0,116,0,97,0,0,0,0,0,255,255,255,255,0,0,0,70,0,255,255,255,0,0,0,3,0,0,3,244,0,0,0,106,252,1,0,0,0,2,251,0,0,0,14,0,67,0,111,0,110,0,115,0,111,0,108,0,101,1,0,0,0,0,0,0,3,244,0,0,0,125,0,255,255,255,252,0,0,0,0,0,0,4,188,0,0,0,0,0,255,255,255,250,0,0,0,0,2,0,0,0,1,251,0,0,0,30,0,77,0,111,0,100,0,101,0,108,0,69,0,100,0,105,0,116,0,111,0,114,0,68,0,111,0,99,0,107,3,0,0,5,85,0,0,1,89,0,0,1,0,0,0,1,190,0,0,2,238,0,0,1,197,0,0,0,1,0,0,0,4,0,0,0,8,0,0,0,8,252,0,0,0,1,0,0,0,2,0,0,0,3,0,0,0,20,0,83,0,105,0,109,0,84,0,111,0,111,0,108,0,98,0,97,0,114,1,0,0,0,0,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,22,0,70,0,105,0,108,0,101,0,84,0,111,0,111,0,108,0,98,0,97,0,114,1,0,0,0,122,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,26,0,87,0,105,0,110,0,100,0,111,0,119,0,84,0,111,0,111,0,108,0,98,0,97,0,114,1,0,0,0,217,255,255,255,255,0,0,0,0,0,0,0,0</e>
+      <e Name="PlayerSizesFloating" Type="bytearray">0,0,0,255,0,0,0,0,253,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,252,2,0,0,0,2,251,0,0,0,22,0,77,0,111,0,100,0,101,0,108,0,69,0,100,0,105,0,116,0,111,0,114,3,0,0,0,38,0,0,0,137,0,0,1,0,0,0,0,192,251,0,0,0,22,0,76,0,97,0,116,0,116,0,105,0,99,0,101,0,68,0,97,0,116,0,97,2,0,0,0,69,0,0,0,158,0,0,1,0,0,0,0,192,0,0,0,3,0,0,0,0,0,0,0,0,252,1,0,0,0,1,251,0,0,0,14,0,67,0,111,0,110,0,115,0,111,0,108,0,101,3,0,0,1,45,0,0,3,0,0,0,3,145,0,0,0,106,0,0,3,61,0,0,0,0,0,0,0,1,0,0,0,4,0,0,0,8,0,0,0,8,252,0,0,0,1,0,0,0,2,0,0,0,3,0,0,0,20,0,83,0,105,0,109,0,84,0,111,0,111,0,108,0,98,0,97,0,114,1,0,0,0,0,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,22,0,70,0,105,0,108,0,101,0,84,0,111,0,111,0,108,0,98,0,97,0,114,1,0,0,0,122,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,26,0,87,0,105,0,110,0,100,0,111,0,119,0,84,0,111,0,111,0,108,0,98,0,97,0,114,1,0,0,0,217,255,255,255,255,0,0,0,0,0,0,0,0</e>
+   </Settings>
+   <Settings Type="point">
+      <e Name="MainWindowPosition" Type="point">208,183</e>
+      <e Name="MainWindowPositionFloating" Type="point">351,34</e>
+   </Settings>
+   <Settings Type="int">
+      <e Name="CellGlyphPhiRes" Type="int">2</e>
+      <e Name="CellGlyphThetaRes" Type="int">2</e>
+      <e Name="FieldIndex" Type="int">0</e>
+      <e Name="GraphicsWinHeight" Type="int">400</e>
+      <e Name="GraphicsWinWidth" Type="int">400</e>
+      <e Name="NumberAccuracy" Type="int">2</e>
+      <e Name="NumberOfContourLines" Type="int">3</e>
+      <e Name="NumberOfLegendBoxes" Type="int">6</e>
+      <e Name="NumberOfRecentSimulations" Type="int">3</e>
+      <e Name="Projection" Type="int">0</e>
+      <e Name="SaveImageFrequency" Type="int">100</e>
+      <e Name="SaveLatticeFrequency" Type="int">100</e>
+      <e Name="ScreenUpdateFrequency" Type="int">10</e>
+      <e Name="Screenshot_X" Type="int">600</e>
+      <e Name="Screenshot_Y" Type="int">600</e>
+      <e Name="TabIndex" Type="int">2</e>
+   </Settings>
+   <Settings Type="float">
+      <e Name="ArrowLength" Type="float">1</e>
+      <e Name="CellGlyphScale" Type="float">1.0</e>
+      <e Name="MaxRange" Type="float">1.0</e>
+      <e Name="MinRange" Type="float">0.0</e>
+      <e Name="ZoomFactor" Type="float">1.0</e>
+   </Settings>
+   <Settings Type="color">
+      <e Name="ArrowColor" Type="color">#ffffff</e>
+      <e Name="BorderColor" Type="color">#ffff00</e>
+      <e Name="BoundingBoxColor" Type="color">#ffffff</e>
+      <e Name="Axes3DColor" Type="color">#ffffff</e>
+      <e Name="AxesColor" Type="color">#ffffff</e>
+      <e Name="BrushColor" Type="color">#ffffff</e>
+      <e Name="ClusterBorderColor" Type="color">#0000ff</e>
+      <e Name="ContourColor" Type="color">#ffffff</e>
+      <e Name="PenColor" Type="color">#000000</e>
+      <e Name="WindowColor" Type="color">#000000</e>
+   </Settings>
+   <Settings Type="dict">
+      <e Name="TypeColorMap" Type="dict">
+         <e Name="0" Type="color">#000000</e>
+         <e Name="1" Type="color">#00ff00</e>
+         <e Name="10" Type="color">#ffffff</e>
+         <e Name="2" Type="color">#0000ff</e>
+         <e Name="3" Type="color">#ff0000</e>
+         <e Name="4" Type="color">#808000</e>
+         <e Name="5" Type="color">#c0c0c0</e>
+         <e Name="6" Type="color">#ff00ff</e>
+         <e Name="7" Type="color">#000080</e>
+         <e Name="8" Type="color">#00ffff</e>
+         <e Name="9" Type="color">#008000</e>
+      </e>
+      <e Name="FieldParams" Type="dict"/>
+      <e Name="WindowsLayout" Type="dict"/>
+   </Settings>
+   <Settings Type="str">
+      <e Name="OutputLocation" Type="str"></e>
+      <e Name="ProjectLocation" Type="str"></e>
+      <e Name="RecentFile" Type="str"></e>
+      <e Name="ScalarIsoValues" Type="str"></e>
+      <e Name="Types3DInvisible" Type="str">0</e>
+      <e Name="LastVersionCheckDate" Type="str">20010101</e>
+   </Settings>
+   <Settings Type="bool">
+      <e Name="BoundingBoxOn" Type="bool">True</e>
+      <e Name="CC3DOutputOn" Type="bool">True</e>
+      <e Name="CellBordersOn" Type="bool">True</e>
+      <e Name="CellGlyphScaleByVolumeOn" Type="bool">False</e>
+      <e Name="CellGlyphsOn" Type="bool">False</e>
+      <e Name="CellsOn" Type="bool">True</e>
+      <e Name="ClosePlayerAfterSimulationDone" Type="bool">False</e>
+      <e Name="ClusterBordersOn" Type="bool">False</e>
+      <e Name="ConcentrationLimitsOn" Type="bool">True</e>
+      <e Name="ContoursOn" Type="bool">False</e>
+      <e Name="DebugOutputPlayer" Type="bool">False</e>
+      <e Name="DisplayConsole" Type="bool">True</e>
+      <e Name="DisplayLatticeData" Type="bool">False</e>
+      <e Name="DisplayModelEditor" Type="bool">True</e>
+      <e Name="FloatingWindows" Type="bool">True</e>
+      <e Name="FPPLinksColorOn" Type="bool">False</e>
+      <e Name="FPPLinksOn" Type="bool">False</e>
+      <e Name="FixedArrowColorOn" Type="bool">False</e>
+      <e Name="ImageOutputOn" Type="bool">False</e>
+      <e Name="LatticeOutputOn" Type="bool">False</e>
+      <e Name="LegendEnable" Type="bool">True</e>
+      <e Name="MaxRangeFixed" Type="bool">True</e>
+      <e Name="MinRangeFixed" Type="bool">False</e>
+      <e Name="OutputToProjectOn" Type="bool">False</e>
+      <e Name="OverlayVectorsOn" Type="bool">False</e>
+      <e Name="PixelizedScalarField" Type="bool">False</e>
+      <e Name="ScaleArrowsOn" Type="bool">False</e>
+      <e Name="Show3DAxes" Type="bool">True</e>
+      <e Name="ShowAxes" Type="bool">True</e>
+      <e Name="ShowHorizontalAxesLabels" Type="bool">True</e>
+      <e Name="ShowPlotAxes" Type="bool">True</e>
+      <e Name="ShowVerticalAxesLabels" Type="bool">True</e>
+      <e Name="UseInternalConsole" Type="bool">False</e>
+      <e Name="WindowColorSameAsMedium" Type="bool">True</e>
+   </Settings>
+   <Settings Type="strlist">
+      <e Name="RecentSimulations" Type="strlist">
+      </e>
+   </Settings>
+   <Settings Type="size">
+      <e Name="MainWindowSize" Type="size">1012,629</e>
+      <e Name="MainWindowSizeFloating" Type="size">829,64</e>
+   </Settings>
+</PlayerSettings>

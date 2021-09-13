@@ -24,15 +24,18 @@
 #include "MitosisSimplePlugin.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
+auto mitosisProxy = registerPlugin<Plugin, MitosisPlugin>(
+	"Mitosis", 
+	"Splits cells when the reach they doubling volume.",
+	&Simulator::pluginManager
+);
 
-BasicPluginProxy<Plugin, MitosisPlugin> 
-mitosisProxy("Mitosis", "Splits cells when the reach they doubling volume.",
-	     &Simulator::pluginManager);
-
-
-BasicPluginProxy<Plugin, MitosisSimplePlugin> 
-mitosisSimpleProxy("MitosisSimple", "Splits cells when the reach they doubling volume. This version does not register Field Watcher and is intendet to be used from Python level",
-	     &Simulator::pluginManager);
+auto mitosisSimpleProxy = registerPlugin<Plugin, MitosisSimplePlugin>(
+	"MitosisSimple", 
+	"Splits cells when the reach they doubling volume. This version does not register Field Watcher and is intendet to be used from Python level",
+	&Simulator::pluginManager
+);

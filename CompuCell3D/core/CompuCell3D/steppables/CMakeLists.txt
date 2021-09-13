@@ -5,7 +5,7 @@ message(" OPEN MP FOUND " $OPENMP_FOUND)
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   SET(STEPPABLE_DEPENDENCIES cc3d::CompuCellLib cc3d::XMLUtils cc3d::muParser)
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-  SET(STEPPABLE_DEPENDENCIES cc3d::CompuCellLib cc3d::Potts3D cc3d::BasicUtils cc3d::Field3D cc3d::muParser)
+  SET(STEPPABLE_DEPENDENCIES cc3d::CompuCellLib cc3d::Potts3D cc3d::Field3D cc3d::muParser)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 

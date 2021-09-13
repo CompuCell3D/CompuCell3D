@@ -16,8 +16,10 @@ class PersistentGlobals:
     def __init__(self):
         self.cc3d_xml_2_obj_converter = None
         self.steppable_registry = SteppableRegistry()
+        self._configuration = None
+        self._configuration_getter = None
 
-        # c++ object reference Simulator.cpp
+        #: c++ object reference :class:`cc3d.cpp.CompuCell.Simulator`
         self.simulator = None
 
         #  Simulation Thread - either from the player or from CML
@@ -33,7 +35,9 @@ class PersistentGlobals:
         # an object that stores graphics screenshots
         self.screenshot_manager = None
 
-        # variable that tells what type of player mode we have
+        # variable that tells what type of simulation mode we have
+        self.sim_type = None
+        # variable that tells what type of player mode we have; this is designated for use by external controllers
         self.player_type = None
 
         self.simulation_initialized = False
@@ -78,8 +82,37 @@ class PersistentGlobals:
         self.shared_steppable_vars = {}
 
         # input and return objects
+        #: API input object used with :class:`cc3d.CompuCellSetup.CC3DCaller.CC3DCaller`
         self.input_object = None
+        #: API return object used with :class:`cc3d.CompuCellSetup.CC3DCaller.CC3DCaller`
         self.return_object = None
+
+    def set_configuration_getter(self, _fget) -> None:
+        """
+        Hook to inject a third-party Configuration
+
+        :param _fget: configuration getter
+        :type _fget: Callable[[], Configuration]
+        :return: None
+        """
+        self._configuration_getter = _fget
+
+    @property
+    def configuration(self):
+        """
+        Configuration loaded just in time, for hooking third-party Configuration instances
+
+        :return: configuration
+        :rtype: Configuration
+        """
+        if self._configuration is None:
+            try:
+                self._configuration = self._configuration_getter()
+            except:
+                from cc3d.core.Configuration import Configuration
+                self._configuration_getter = Configuration
+                self._configuration = self._configuration_getter()
+        return self._configuration
 
     def add_steering_panel(self, panel_data: dict):
         """

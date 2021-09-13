@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_screenshotDescriptionDialog(object):
     def setupUi(self, screenshotDescriptionDialog):
         screenshotDescriptionDialog.setObjectName("screenshotDescriptionDialog")
-        screenshotDescriptionDialog.resize(567, 428)
+        screenshotDescriptionDialog.resize(541, 424)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(screenshotDescriptionDialog)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.v_layout = QtWidgets.QVBoxLayout()
@@ -32,6 +32,9 @@ class Ui_screenshotDescriptionDialog(object):
         self.v_layout.addItem(spacerItem)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
+        self.clear_screenshots_PB = QtWidgets.QPushButton(screenshotDescriptionDialog)
+        self.clear_screenshots_PB.setObjectName("clear_screenshots_PB")
+        self.horizontalLayout.addWidget(self.clear_screenshots_PB)
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem1)
         self.ok_PB = QtWidgets.QPushButton(screenshotDescriptionDialog)
@@ -49,4 +52,5 @@ class Ui_screenshotDescriptionDialog(object):
         screenshotDescriptionDialog.setWindowTitle(_translate("screenshotDescriptionDialog", "Screenshot Description Browser"))
         self.label.setText(_translate("screenshotDescriptionDialog", "Available Screenshot Labels"))
         self.label_2.setText(_translate("screenshotDescriptionDialog", "Screenshot Description "))
+        self.clear_screenshots_PB.setText(_translate("screenshotDescriptionDialog", "Clear Screenshots"))
         self.ok_PB.setText(_translate("screenshotDescriptionDialog", "OK"))

@@ -23,9 +23,9 @@
 #ifndef CELLTYPE_H
 #define CELLTYPE_H
 
+#include <vector>
 
-
-#include <BasicUtils/BasicArray.h>
+#include <CompuCell3D/CC3DExceptions.h>
 
 namespace CompuCell3D {
 
@@ -38,7 +38,7 @@ namespace CompuCell3D {
    * cell state rather than type.
    */
   class CellType {
-    BasicArray<Transition *> transitions;
+    std::vector<Transition *> transitions;
     
     
   public:
@@ -52,17 +52,21 @@ namespace CompuCell3D {
      * @return The index or id of this transition.
      */
     unsigned char addTransition(Transition *transition) {
-      return (unsigned char)transitions.put(transition);
+      transitions.push_back(transition);
+      return (unsigned char)(transitions.size() - 1);
     }
 
     /** 
-     * This function will throw a BasicException if id is out of range.
+     * This function will throw a CC3DException if id is out of range.
      *
      * @param id The Transition index or id.
      * 
      * @return A pointer to the transition.
      */
-    Transition *getTransition(unsigned char id) {return transitions[id];}
+    Transition *getTransition(unsigned char id) {
+      if (id >= transitions.size()) throw CC3DException(std::string("Index out of range."));
+      return transitions[id];
+    }
 
     /** 
      * Update cells state.

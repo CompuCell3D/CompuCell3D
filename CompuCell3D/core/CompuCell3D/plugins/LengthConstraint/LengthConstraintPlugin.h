@@ -25,14 +25,6 @@
 
 #include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Plugin.h>
-
-// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 #include "LengthConstraintData.h"
 
 #include "LengthConstraintDLLSpecifier.h"
@@ -65,9 +57,9 @@ namespace CompuCell3D {
 		Potts3D *potts;
 		//energy function parse data
 
-		BasicClassAccessor<LengthConstraintData> lengthConstraintDataAccessor;
+		ExtraMembersGroupAccessor<LengthConstraintData> lengthConstraintDataAccessor;
 
-		std::vector<LengthEnergyParam> lengthEnergyParamVector;
+		std::unordered_map<unsigned char, LengthEnergyParam> lengthEnergyParamMap;
 		std::vector<std::string> typeNameVec;//temporary vector for storage type names
 		BoundaryStrategy * boundaryStrategy;
 
@@ -84,7 +76,7 @@ namespace CompuCell3D {
 		virtual void extraInit(Simulator *simulator);
 		virtual std::string toString();
 
-		BasicClassAccessor<LengthConstraintData> * getLengthConstraintDataPtr(){return & lengthConstraintDataAccessor;}
+		ExtraMembersGroupAccessor<LengthConstraintData> * getLengthConstraintDataPtr(){return & lengthConstraintDataAccessor;}
 
 		void setLengthConstraintData(CellG * _cell, double _lambdaLength=0.0, double _targetLength=0.0 ,double _minorTargetLength=0.0);    	
 		double getLambdaLength(CellG * _cell);  
@@ -106,8 +98,6 @@ namespace CompuCell3D {
 		double changeEnergy_3D(const Point3D &pt,const CellG *newCell,const CellG *oldCell);
 
 		changeEnergyFcnPtr_t changeEnergyFcnPtr;
-
-		void initTypeId(Potts3D * potts);
 
 		//SteerableObject interface
 		virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);

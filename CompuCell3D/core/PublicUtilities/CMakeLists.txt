@@ -1,11 +1,12 @@
 add_subdirectory(Units)
 
 SET(SRCS
+  FileUtils.cpp
   NumericalUtils.cpp
   StringUtils.cpp
   Vector3.cpp
   ParallelUtilsOpenMP.cpp
-  )
+)
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
@@ -14,10 +15,10 @@ message(" PUBLIC UTILS OPEN MP FLAG" ${OpenMP_CXX_FLAGS})
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
    ADD_STATIC_LIBRARY(PublicUtilities ${SRCS} LINK_LIBRARIES cc3d::Field3D EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-   ADD_SHARED_LIBRARY(PublicUtilities ${SRCS} LINK_LIBRARIES cc3d::Field3D cc3d::Boundary gomp EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
+   ADD_SHARED_LIBRARY(PublicUtilities ${SRCS} LINK_LIBRARIES cc3d::Field3D cc3d::Boundary gomp stdc++fs EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-TARGET_INCLUDE_DIRECTORIES(${PublicUtilitiesLib} PUBLIC 
+TARGET_INCLUDE_DIRECTORIES(${PublicUtilitiesLib} PUBLIC
    $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core>
    $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core/PublicUtilities>
    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_INCLUDE_DIR}>
@@ -25,6 +26,7 @@ TARGET_INCLUDE_DIRECTORIES(${PublicUtilitiesLib} PUBLIC
 )
 
 INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/PublicUtilities .h
+  FileUtils
   NumericalUtils
   StringUtils
   Vector3

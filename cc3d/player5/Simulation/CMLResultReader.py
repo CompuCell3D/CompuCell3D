@@ -21,7 +21,6 @@ import vtk
 import os
 import os.path
 from . import SimulationThread
-from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
 # from cc3d.player5.Simulation.CMLResultReader import CMLResultReader
 import cc3d.player5.Simulation
 

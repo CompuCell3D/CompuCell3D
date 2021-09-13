@@ -28,9 +28,9 @@ endif()
 LINK_DIRECTORIES(${VTK_LIBRARY_DIRS})
 
 SET(LIBS
-    cc3d::CompuCellLib 
-    cc3d::NeighborTracker 
-    ${PYTHON_LIBRARY_TO_LINK} 
+    cc3d::CompuCellLib
+    cc3d::NeighborTracker
+    ${PYTHON_LIBRARY_TO_LINK}
     ${VTK_LIBS}
 
 )
@@ -49,16 +49,16 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-TARGET_INCLUDE_DIRECTORIES(FieldExtractor PUBLIC  
-    ${VTK_INCLUDE_DIRS} 
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> 
-    $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core/pyinterface> 
+TARGET_INCLUDE_DIRECTORIES(FieldExtractor PUBLIC
+    ${VTK_INCLUDE_DIRS}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core/pyinterface>
     $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core/pyinterface/PyPlugin>
 )
 target_link_libraries(FieldExtractor ${LIBS})
 
 install(TARGETS FieldExtractor
-        EXPORT FieldExtractor 
+        EXPORT FieldExtractor
         RUNTIME DESTINATION ${COMPUCELL3D_INSTALL_BIN_DIR}
         LIBRARY DESTINATION ${COMPUCELL3D_INSTALL_LIB_DIR}
         ARCHIVE DESTINATION ${COMPUCELL3D_INSTALL_LIB_DIR}
@@ -66,8 +66,8 @@ install(TARGETS FieldExtractor
 EXPORT_COMPONENT(FieldExtractor FieldExtractor)
 
 SET(LIBS_SWIG
-    FieldExtractor 
-    ${LIBS} 
+    FieldExtractor
+    ${LIBS}
     ${PYTHON_LIBRARY_TO_LINK}
 
 )
@@ -86,15 +86,15 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     SET_TARGET_PROPERTIES(PlayerPythonNew PROPERTIES SUFFIX ".pyd") # changes dll name to pyd sop that it is compatible with new Python standard
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-SET_TARGET_PROPERTIES(PlayerPythonNew PROPERTIES 
-    OUTPUT_NAME "PlayerPython" 
-    LINK_FLAGS ${undefined_link_flags} 
+SET_TARGET_PROPERTIES(PlayerPythonNew PROPERTIES
+    OUTPUT_NAME "PlayerPython"
+    LINK_FLAGS ${undefined_link_flags}
     SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE
 )
 
-target_include_directories(PlayerPythonNew PUBLIC 
-    ${PYTHON_DIRS_TO_INCLUDE} 
-    ${VTK_INCLUDE_DIRS} 
+target_include_directories(PlayerPythonNew PUBLIC
+    ${PYTHON_DIRS_TO_INCLUDE}
+    ${VTK_INCLUDE_DIRS}
     $<TARGET_PROPERTY:FieldExtractor,INCLUDE_DIRECTORIES>
 )
 

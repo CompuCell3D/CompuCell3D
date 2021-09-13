@@ -22,37 +22,36 @@ if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL Windows OR MINGW)
 
 endif(NOT ${CMAKE_SYSTEM_NAME} STREQUAL Windows OR MINGW)
 
-SET(LIBS 
-  ${GOMP_LIB} 
-  cc3d::Boundary 
-  cc3d::BasicUtils 
-  cc3d::Field3D 
-  cc3d::PublicUtilities 
-  cc3d::Units 
+SET(LIBS
+  ${GOMP_LIB}
+  cc3d::Boundary
+  cc3d::Field3D
+  cc3d::PublicUtilities
+  cc3d::Units
   cc3d::ExpressionEvaluator
 )
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-  ADD_STATIC_LIBRARY(Potts3D ${SRCS} 
-    LINK_LIBRARIES 
-    ${LIBS} 
-    EXTRA_COMPILER_FLAGS 
+  ADD_STATIC_LIBRARY(Potts3D ${SRCS}
+    LINK_LIBRARIES
+    ${LIBS}
+    EXTRA_COMPILER_FLAGS
     ${OpenMP_CXX_FLAGS}
   )
 
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
   ADD_SHARED_LIBRARY(Potts3D ${SRCS} 
-    LINK_LIBRARIES 
-    ${LIBS} 
-    EXTRA_COMPILER_FLAGS 
+    LINK_LIBRARIES
+    ${LIBS}
+    EXTRA_COMPILER_FLAGS
     ${OpenMP_CXX_FLAGS}
   )
 
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-TARGET_INCLUDE_DIRECTORIES(${Potts3DLib} PUBLIC 
+TARGET_INCLUDE_DIRECTORIES(${Potts3DLib} PUBLIC
   $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_INCLUDE_DIR}>
 )
