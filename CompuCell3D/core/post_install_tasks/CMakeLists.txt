@@ -185,9 +185,6 @@ INSTALL(DIRECTORY  "${CMAKE_SOURCE_DIR}/core/Demos" DESTINATION ${CMAKE_INSTALL_
 
 if(INSTALL_PLAYER)
 
-    INSTALL(FILES  ${cc3d_py_source_dir}/run_script.py DESTINATION ${COMPUCELL3D_INSTALL_PY_MODULE_DIR})
-    INSTALL(FILES "${CMAKE_SOURCE_DIR}/core/post_install_tasks/windows/playerScriptSetup.py" DESTINATION ${CMAKE_INSTALL_PREFIX})
-
     INSTALL(DIRECTORY
         ${cc3d_py_source_dir}/player5 DESTINATION ${COMPUCELL3D_INSTALL_PY_MODULE_DIR}
         PATTERN "*.svn" EXCLUDE
@@ -202,14 +199,10 @@ if(INSTALL_PLAYER)
     if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
         configure_file(${RUN_SCRIPT_DIR}/compucell3d.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat @ONLY)
-        configure_file(${RUN_SCRIPT_DIR}/compucell3d.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat.in.v2 @ONLY)
         configure_file(${RUN_SCRIPT_DIR}/playerParamScan.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/playerParamScan.bat @ONLY)
-        configure_file(${RUN_SCRIPT_DIR}/playerParamScan.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/playerParamScan.bat.in.v2 @ONLY)
         install(FILES
             ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat
-            ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat.in.v2
             ${CMAKE_BINARY_DIR}/post_install_tasks/playerParamScan.bat
-            ${CMAKE_BINARY_DIR}/post_install_tasks/playerParamScan.bat.in.v2
             DESTINATION
             ${CMAKE_INSTALL_PREFIX}
         )
@@ -258,10 +251,8 @@ if(INSTALL_TWEDIT)
     if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
         configure_file(${RUN_SCRIPT_DIR}/twedit++.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat @ONLY)
-        configure_file(${RUN_SCRIPT_DIR}/twedit++.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat.in.v2 @ONLY)
         install(FILES
             ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat
-            ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat.in.v2
             DESTINATION
             ${CMAKE_INSTALL_PREFIX}
         )

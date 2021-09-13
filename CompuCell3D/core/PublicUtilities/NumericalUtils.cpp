@@ -9,11 +9,6 @@
 using namespace std;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-double round(double number)
-{
-    return number < 0.0 ? ceil(number - 0.5) : floor(number + 0.5);
-}
-
 
 std::vector<double> RandomUnitVector2D(const double& _random_number) {
     if(_random_number < 0.0 || _random_number > 1.0) throw std::exception("Random number must be in [0, 1].");
