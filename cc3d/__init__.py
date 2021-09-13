@@ -84,8 +84,6 @@ cc3d_lib_static = abspath(join(cc3d_install_prefix, 'lib'))
 
 os.environ['COMPUCELL3D_STEPPABLE_PATH'] = cc3d_steppable_path + os.sep
 os.environ['COMPUCELL3D_PLUGIN_PATH'] = cc3d_plugin_path + os.sep
-print(os.environ['COMPUCELL3D_STEPPABLE_PATH'])
-print(os.environ['COMPUCELL3D_PLUGIN_PATH'])
 
 if sys.platform.startswith('win'):
     path_env = os.environ['PATH']
