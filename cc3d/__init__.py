@@ -93,6 +93,8 @@ if sys.platform.startswith('win'):
     path_env_list = path_env.split(';')
 
     # needed for maboss
+    python_exe = Path(sys.executable)
+    python_exe_dir = python_exe.parent
     mingw_bin_path = python_exe_dir.joinpath('Library', 'mingw-w64', 'bin')
 
     path_env_list = list(map(lambda pth: abspath(pth), path_env_list))
