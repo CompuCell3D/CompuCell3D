@@ -42,7 +42,7 @@ else(BUILD_STANDALONE)
     message("USING EXTERNAL PYTHON")
 endif(BUILD_STANDALONE)
 
-if(INSTALL_PLAYER)
+if(BUILD_PYINTERFACE)
     INSTALL(FILES  ${cc3d_py_source_dir}/__init__.py DESTINATION ${COMPUCELL3D_INSTALL_PY_MODULE_DIR})
     INSTALL(FILES  ${cc3d_py_source_dir}/run_script.py DESTINATION ${COMPUCELL3D_INSTALL_PY_MODULE_DIR})
 
@@ -74,6 +74,15 @@ if(INSTALL_PLAYER)
         PATTERN "*.bak" EXCLUDE
         PATTERN "__pycache__" EXCLUDE
         PATTERN ${cc3d_py_source_dir}/doc/*)
+
+    INSTALL(DIRECTORY  ${cc3d_py_source_dir}/tests DESTINATION ${COMPUCELL3D_INSTALL_PY_MODULE_DIR}
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "*.ui" EXCLUDE
+        PATTERN "*.in" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "*.bak" EXCLUDE
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN ${cc3d_py_source_dir}/tests/*)
 endif()
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL Windows)
@@ -173,15 +182,20 @@ set(cc3d_install_dir_full ${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_PY_MODUL
 file(RELATIVE_PATH cc3d_install_prefix_rel ${cc3d_install_dir_full} ${CMAKE_INSTALL_PREFIX})
 file(RELATIVE_PATH cc3d_scripts_path_rel ${cc3d_install_dir_full} ${COMPUCELL3D_INSTALL_SCRIPT_DIR_FULL_PATH})
 file(RELATIVE_PATH cc3d_cpp_path_rel ${cc3d_install_dir_full} ${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR})
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.py.in ${CMAKE_BINARY_DIR}/post_install_tasks/config.py @ONLY)
-INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/config.py DESTINATION ${COMPUCELL3D_INSTALL_PY_MODULE_DIR})
+if(BUILD_PYINTERFACE)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.py.in ${CMAKE_BINARY_DIR}/post_install_tasks/config.py @ONLY)
+    INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/config.py DESTINATION ${COMPUCELL3D_INSTALL_PY_MODULE_DIR})
+endif()
 
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/cmake/cc3d-config.cmake DESTINATION ${COMPUCELL3D_INSTALL_CONFIG_DIR})
 
-INSTALL(DIRECTORY  "${CMAKE_SOURCE_DIR}/core/Demos" DESTINATION ${CMAKE_INSTALL_PREFIX}
-    PATTERN "*.svn" EXCLUDE
-    PATTERN "${CMAKE_SOURCE_DIR}/core/Demos/*"
-)
+if(BUILD_STANDALONE)
+    INSTALL(DIRECTORY  "${CMAKE_SOURCE_DIR}/core/Demos" DESTINATION ${CMAKE_INSTALL_PREFIX}
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "${CMAKE_SOURCE_DIR}/core/Demos/*"
+    )
+endif()
 
 if(INSTALL_PLAYER)
 
