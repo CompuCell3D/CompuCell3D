@@ -17,7 +17,11 @@ elif sys.platform.startswith('darwin'):
     ext = '.command'
 else:
     ext = '.sh'
-run_script = os.path.join(cc3d_scripts_path, 'runScript' + ext)
+# Handle variants: if cc3d was not built as standalone, then script names are prefixed with "cc3d_"
+run_script = os.path.join(cc3d_scripts_path, 'cc3d_runScript' + ext)
+if not os.path.isfile(run_script):
+    run_script = os.path.join(cc3d_scripts_path, 'runScript' + ext)
+
 # If something goes wrong in a test, then this file is created during post-processing
 # We'll use it as a signal to signal failure
 fail_file = os.path.join(test_dir, 'cc3d_simulation_tests.txt')

@@ -29,6 +29,7 @@ if(BUILD_STANDALONE)
     else()
         SET(PYTHON_EXEC_FILE "${CMAKE_INSTALL_PREFIX}/python37/bin/python")
     endif()
+    set(NAME_INSTALL_PREFIX )
     message("USING BUNDLE")
 else(BUILD_STANDALONE)
     if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
@@ -39,6 +40,7 @@ else(BUILD_STANDALONE)
         SET(APP_INSTALL_PREFIX ${PYTHON_ENV_PREFIX}/bin)
     endif()
     SET(PYTHON_EXEC_FILE python)
+    set(NAME_INSTALL_PREFIX cc3d_)
     message("USING EXTERNAL PYTHON")
 endif(BUILD_STANDALONE)
 
@@ -108,15 +110,15 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   configure_file(${RUN_SCRIPT_DIR}/cc3d.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/cc3d.bat @ONLY)
   # configure_file(${RUN_SCRIPT_DIR}/run_cml_cc3d.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/run_cml_cc3d.bat @ONLY)
 
-  configure_file(${RUN_SCRIPT_DIR}/runScript.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat @ONLY)
-  configure_file(${RUN_SCRIPT_DIR}/paramScan.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat @ONLY)
+  configure_file(${RUN_SCRIPT_DIR}/runScript.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/${NAME_INSTALL_PREFIX}runScript.bat @ONLY)
+  configure_file(${RUN_SCRIPT_DIR}/paramScan.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/${NAME_INSTALL_PREFIX}paramScan.bat @ONLY)
   # configure_file(${RUN_SCRIPT_DIR}/optimization.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat @ONLY)
 
   INSTALL(FILES
     ${CMAKE_BINARY_DIR}/post_install_tasks/cc3d.bat
     # ${CMAKE_BINARY_DIR}/post_install_tasks/run_cml_cc3d.bat
-    ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat
-    ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat
+    ${CMAKE_BINARY_DIR}/post_install_tasks/${NAME_INSTALL_PREFIX}runScript.bat
+    ${CMAKE_BINARY_DIR}/post_install_tasks/${NAME_INSTALL_PREFIX}paramScan.bat
     # ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat
 
     DESTINATION
@@ -134,16 +136,16 @@ elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 
     set(RUN_SCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/mac)
 
-    configure_file(${RUN_SCRIPT_DIR}/runScript.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/runScript.command @ONLY)
-    configure_file(${RUN_SCRIPT_DIR}/paramScan.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/paramScan.command @ONLY)
+    configure_file(${RUN_SCRIPT_DIR}/runScript.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/${NAME_INSTALL_PREFIX}runScript.command @ONLY)
+    configure_file(${RUN_SCRIPT_DIR}/paramScan.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/${NAME_INSTALL_PREFIX}paramScan.command @ONLY)
     # configure_file(${RUN_SCRIPT_DIR}/optimization.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/optimization.command @ONLY)
 
 
     # FILE(GLOB mac_command_files "${CMAKE_BINARY_DIR}/post_install_tasks/mac/*.command")
     INSTALL(FILES
-        ${CMAKE_BINARY_DIR}/post_install_tasks/mac/runScript.command
-        ${CMAKE_BINARY_DIR}/post_install_tasks/mac/paramScan.command
-        ${CMAKE_BINARY_DIR}/post_install_tasks/mac/optimization.command
+        ${CMAKE_BINARY_DIR}/post_install_tasks/mac/${NAME_INSTALL_PREFIX}runScript.command
+        ${CMAKE_BINARY_DIR}/post_install_tasks/mac/${NAME_INSTALL_PREFIX}paramScan.command
+        # ${CMAKE_BINARY_DIR}/post_install_tasks/mac/optimization.command
         DESTINATION ${COMPUCELL3D_INSTALL_SCRIPT_DIR}
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE  WORLD_READ WORLD_WRITE WORLD_EXECUTE
     )
@@ -152,12 +154,12 @@ else()
 
   set(RUN_SCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/linux)
 
-    configure_file(${RUN_SCRIPT_DIR}/runScript.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh @ONLY)
-    configure_file(${RUN_SCRIPT_DIR}/paramScan.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.sh @ONLY)
+    configure_file(${RUN_SCRIPT_DIR}/runScript.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/${NAME_INSTALL_PREFIX}runScript.sh @ONLY)
+    configure_file(${RUN_SCRIPT_DIR}/paramScan.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/${NAME_INSTALL_PREFIX}paramScan.sh @ONLY)
 
     INSTALL(FILES
-        ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh
-        ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.sh
+        ${CMAKE_BINARY_DIR}/post_install_tasks/${NAME_INSTALL_PREFIX}runScript.sh
+        ${CMAKE_BINARY_DIR}/post_install_tasks/${NAME_INSTALL_PREFIX}paramScan.sh
         DESTINATION ${COMPUCELL3D_INSTALL_SCRIPT_DIR} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                                                                   GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                                                   WORLD_READ WORLD_WRITE WORLD_EXECUTE

@@ -275,6 +275,6 @@ if (BUILD_QT_WRAPPERS)
 endif (BUILD_QT_WRAPPERS)
 
 ADD_SUBDIRECTORY(core)
-ADD_SUBDIRECTORY(optimization)
+# ADD_SUBDIRECTORY(optimization)
 
 
