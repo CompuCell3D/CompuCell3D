@@ -5,6 +5,7 @@ package:
 about:
   home: https://compucell3d.org
   license: GPL
+  summary: Multiscale multicellular virtual tissue modeling and simulation environment
 
 extra:
   maintainers: T.J. Sego, Maciek Swat
@@ -40,14 +41,8 @@ requirements:
     - scipy
     - pandas
     - jinja2
-    - webcolors
     - deprecated
-    - chardet
-    - requests
     - psutil
-    - pyqt
-    - pyqtgraph
-    - qscintilla2
 
   run_constrained:
     - tbb=2020

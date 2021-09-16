@@ -176,13 +176,6 @@ INCLUDE(FindZLIB)
 # Should we build wrappings
 OPTION(BUILD_PYINTERFACE "Build Python language wrappings" ON)
 
-OPTION(INSTALL_PLAYER "Move Player files to installation directory" ON)
-OPTION(INSTALL_TWEDIT "Move Twedit++ files to installation directory" ON)
-
-if(INSTALL_PLAYER OR INSTALL_TWEDIT)
-    set(BUILD_PYINTERFACE ON)
-endif()
-
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     OPTION(BUNDLE_PYTHON "Builds CC3D assuming Python will be bundled with CC3D - default on Windows and OSX" ON)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
