@@ -91,11 +91,14 @@ SET(OPENCL_LIBS)
 SET(OPENCL_SRCS)
 SET(OPENCL_HDRS)
 
+
+# ${OPENCL_LIBRARIES}
 IF(NOT NO_OPENCL)
 	MESSAGE(STATUS "Looking for OpenCL...")
 	FIND_PACKAGE(OpenCL)
 	
 	IF(OPENCL_FOUND)
+        message("FOUND OPEN CL")
 #        IF(NOT WIN32)
 #                SET(CMAKE_CXX_FLAGS "-std=c++0x")
 #        ENDIF(NOT WIN32)
@@ -130,7 +133,8 @@ IF(NOT NO_OPENCL)
 			OpenCL/LinearSolver.cpp
 			OpenCL/Solver.cpp
 		)	
-		SET(OPENCL_LIBS FlexibleDiffusionSolverFE_OpenCL)
+		# SET(OPENCL_LIBS FlexibleDiffusionSolverFE_OpenCL ${OPENCL_LIBRARIES})
+        SET(OPENCL_LIBS ${OPENCL_LIBRARIES})
 		SET(HEADER_FILES
 			${HEADER_FILES}
 #			FlexibleDiffusionSolverFE_GPU_Device.h
