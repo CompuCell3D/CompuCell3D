@@ -107,7 +107,6 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   #for more info please see http://www.amk.ca/python/howto/regex/
   STRING(REGEX REPLACE "/" "\\\\" COMPUCELL_INSTALL_DIR_WINDOWS_STYLE ${COMPUCELL_INSTALL_DIR_WINDOWS_STYLE})
 
-  configure_file(${RUN_SCRIPT_DIR}/cc3d.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/cc3d.bat @ONLY)
   # configure_file(${RUN_SCRIPT_DIR}/run_cml_cc3d.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/run_cml_cc3d.bat @ONLY)
 
   configure_file(${RUN_SCRIPT_DIR}/runScript.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/${NAME_INSTALL_PREFIX}runScript.bat @ONLY)
@@ -115,7 +114,6 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   # configure_file(${RUN_SCRIPT_DIR}/optimization.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat @ONLY)
 
   INSTALL(FILES
-    ${CMAKE_BINARY_DIR}/post_install_tasks/cc3d.bat
     # ${CMAKE_BINARY_DIR}/post_install_tasks/run_cml_cc3d.bat
     ${CMAKE_BINARY_DIR}/post_install_tasks/${NAME_INSTALL_PREFIX}runScript.bat
     ${CMAKE_BINARY_DIR}/post_install_tasks/${NAME_INSTALL_PREFIX}paramScan.bat
