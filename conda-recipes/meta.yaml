@@ -1,6 +1,6 @@
 package:
   name: cc3d
-  version: 0.0.0
+  version: 4.3.0
 
 about:
   home: https://compucell3d.org
@@ -23,7 +23,7 @@ build:
 requirements:
   host:
     - python {{ python }}
-    - numpy
+    - numpy=1.18
     - vtk=8.2
     - eigen
     - tbb-devel=2020
