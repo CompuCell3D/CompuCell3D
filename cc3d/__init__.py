@@ -1,3 +1,9 @@
+try:
+    # needed to avoid import errors on some windows systems
+    import vtk
+except ImportError:
+    print('vtk not found. Ignoring for now')
+
 import os
 import sys
 from os.path import dirname, join, abspath
