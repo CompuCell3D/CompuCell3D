@@ -8,6 +8,10 @@ SET(SRCS
   ParallelUtilsOpenMP.cpp
 )
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+   set(SRCS ${SRCS} WindowsGlob.cpp)
+endif()
+
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
 message(" PUBLIC UTILS OPEN MP FLAG" ${OpenMP_CXX_FLAGS})
@@ -33,3 +37,9 @@ INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/PublicUtilities .h
   ParallelUtilsOpenMP
   CC3D_PublicUtilities
 )
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+   INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/PublicUtilities .h
+      WindowsGlob
+   )
+endif()
