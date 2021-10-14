@@ -587,8 +587,17 @@ class _FocalPointPlasticityLinkListBase:
     # Python iterator type
     inv_itr_t = None
 
-    def __init__(self, _fpp_plugin):
+    def __init__(self, _fpp_plugin, cell: CompuCell.CellG = None):
+        self.__cell = cell
         self._inv = self._get_inventory(_fpp_plugin)
+
+    @property
+    def cell(self):
+        """
+
+        :return: cell of this list, if any
+        """
+        return self.__cell
 
     def __len__(self):
         """
@@ -601,8 +610,7 @@ class _FocalPointPlasticityLinkListBase:
     def __iter__(self):
         return self.inv_itr_t(self)
 
-    @staticmethod
-    def _get_inventory(_fpp_plugin):
+    def _get_inventory(self, _fpp_plugin):
         """
         Get link inventory container
 
@@ -645,60 +653,48 @@ class FocalPointPlasticityLinkListItr(_FocalPointPlasticityDataIteratorBase):
 
     py_itr_t = CompuCell.mapFPPLinkIDFPPLinkPyItr
 
-    def __init__(self, _data_list):
-        super().__init__(_data_list)
-
 
 class FocalPointPlasticityLinkList(_FocalPointPlasticityLinkListBase):
 
     inv_itr_t = FocalPointPlasticityLinkListItr
 
-    def __init__(self, _fpp_plugin):
-        super().__init__(_fpp_plugin)
-
-    @staticmethod
-    def _get_inventory(_fpp_plugin):
-        return _fpp_plugin.getLinkInventory()
+    def _get_inventory(self, _fpp_plugin):
+        inv = _fpp_plugin.getLinkInventory()
+        if self.cell is None:
+            return inv
+        return inv.getCellLinkInventory(self.cell)
 
 
 class FocalPointPlasticityInternalLinkListItr(_FocalPointPlasticityDataIteratorBase):
 
     py_itr_t = CompuCell.mapFPPLinkIDFPPInternalLinkPyItr
 
-    def __init__(self, _data_list):
-        super().__init__(_data_list)
-
 
 class FocalPointPlasticityInternalLinkList(_FocalPointPlasticityLinkListBase):
 
     inv_itr_t = FocalPointPlasticityInternalLinkListItr
 
-    def __init__(self, _fpp_plugin):
-        super().__init__(_fpp_plugin)
-
-    @staticmethod
-    def _get_inventory(_fpp_plugin):
-        return _fpp_plugin.getInternalLinkInventory()
+    def _get_inventory(self, _fpp_plugin):
+        inv = _fpp_plugin.getInternalLinkInventory()
+        if self.cell is None:
+            return inv
+        return inv.getCellLinkInventory(self.cell)
 
 
 class FocalPointPlasticityAnchorListItr(_FocalPointPlasticityDataIteratorBase):
 
     py_itr_t = CompuCell.mapFPPLinkIDFPPAnchorPyItr
 
-    def __init__(self, _data_list):
-        super().__init__(_data_list)
-
 
 class FocalPointPlasticityAnchorList(_FocalPointPlasticityLinkListBase):
 
     inv_itr_t = FocalPointPlasticityAnchorListItr
 
-    def __init__(self, _fpp_plugin):
-        super().__init__(_fpp_plugin)
-
-    @staticmethod
-    def _get_inventory(_fpp_plugin):
-        return _fpp_plugin.getAnchorInventory()
+    def _get_inventory(self, _fpp_plugin):
+        inv = _fpp_plugin.getAnchorInventory()
+        if self.cell is None:
+            return inv
+        return inv.getCellLinkInventory(self.cell)
 
 
 class CellPixelList:

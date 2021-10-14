@@ -132,10 +132,6 @@ namespace CompuCell3D {
 			if (itr != linkInventory.end()) linkInventory.erase(linkId);
 		}
 
-		FPPInventory_t* getCellLinkInventory(CellG* _cell) { 
-			return &cellLinkInventoryTrackerAccessor->get(_cell->extraAttribPtr)->linkInv;
-		}
-
 	public:
 		FPPLinkInventoryBase() {}
 		FPPLinkInventoryBase(ExtraMembersGroupAccessor<FPPLinkInventoryTracker<LinkType> >* _cellLinkInventoryTrackerAccessor, Potts3D* _potts)
@@ -186,6 +182,9 @@ namespace CompuCell3D {
 			for (linkInventoryItr_t itr = linkInventory.begin(); itr != linkInventory.end(); ++itr)
 				fppLinkList.push_back(itr->second);
 			return fppLinkList;
+		}
+		FPPInventory_t* getCellLinkInventory(CellG* _cell) { 
+			return &cellLinkInventoryTrackerAccessor->get(_cell->extraAttribPtr)->linkInv;
 		}
 		// Get link inventory list by cell
 		FPPLinkList getCellLinkList(CellG* _cell) { return getCellLinkInventory(_cell)->getLinkList(); }
