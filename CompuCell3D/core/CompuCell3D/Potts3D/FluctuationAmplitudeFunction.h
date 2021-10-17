@@ -12,10 +12,11 @@ namespace CompuCell3D {
 	class FluctuationAmplitudeFunction {
 
 	public:
-		FluctuationAmplitudeFunction(const Potts3D * _potts):
+		explicit FluctuationAmplitudeFunction(const Potts3D * _potts):
 		  potts(_potts)
 		{}
 
+        virtual ~FluctuationAmplitudeFunction() = default;
 		/** 
 		* Calculates the fluctuationAmplitude based on source/destination cells fluctuation amplitudes
 		* Fluctuation Amplitude is "more biological" code for temperature parameter used in classical POtts 

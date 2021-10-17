@@ -67,7 +67,7 @@ namespace CompuCell3D {
 
 		virtual double changeEnergy(const Point3D &pt, const CellG *newCell,const CellG *oldCell) 
 		{
-			if(1!=1);return 0.0;
+			return 0.0;
 		}
 		virtual std::string toString()
 		{
