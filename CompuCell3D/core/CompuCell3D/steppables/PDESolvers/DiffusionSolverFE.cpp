@@ -1382,11 +1382,11 @@ std::string DiffusionSolverFE<Cruncher>::steerableName(){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //The explicit instantiation part.
 //Add new solvers here
-template class DiffusionSolverFE<DiffusionSolverFE_CPU>; 
-template class DiffusionSolverFE<DiffusionSolverFE_CPU_Implicit>; 
+template class CompuCell3D::DiffusionSolverFE<DiffusionSolverFE_CPU>;
+template class CompuCell3D::DiffusionSolverFE<DiffusionSolverFE_CPU_Implicit>;
 
 #if OPENCL_ENABLED == 1
-template class DiffusionSolverFE<DiffusionSolverFE_OpenCL>;
-//template class DiffusionSolverFE<DiffusionSolverFE_OpenCL_Implicit>;
-template class DiffusionSolverFE<ReactionDiffusionSolverFE_OpenCL_Implicit>;
+template class CompuCell3D::DiffusionSolverFE<DiffusionSolverFE_OpenCL>;
+//template class CompuCell3D::DiffusionSolverFE<DiffusionSolverFE_OpenCL_Implicit>;
+template class CompuCell3D::DiffusionSolverFE<ReactionDiffusionSolverFE_OpenCL_Implicit>;
 #endif
