@@ -1,14 +1,15 @@
 #ifndef FILEUTILS_H
 #define FILEUTILS_H
 
-#include <experimental/filesystem>
-#include <regex>
+#if defined(_WIN32) || defined(__MINGW32__)
+#include "WindowsGlob.h"
+#else
+#include <glob.h>
+#endif
+
 #include <string>
 #include <vector>
 
-template<bool recursive>
-std::vector<std::string> filesInDir(const std::experimental::filesystem::path& dirpath, const std::regex& regex_expr);
-template<bool recursive>
-std::vector<std::string> filesInDir(const std::string& dirpath, const std::string& regex_expr);
+std::vector<std::string> filesInDir(const std::string& dirpath, const std::string& glob_expr);
 
 #endif //FILEUTILS_H
