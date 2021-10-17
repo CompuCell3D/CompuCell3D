@@ -17,3 +17,6 @@ python:
 
 pin_run_as_build:
   python: x.x
+
+
+# conda install llvm-openmp - to get openmp on OSX
