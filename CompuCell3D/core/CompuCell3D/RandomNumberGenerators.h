@@ -33,6 +33,7 @@ namespace CompuCell3D {
         RandomNumberGenerator(const unsigned int& seed): bits(0) {
             setSeed(seed);
         };
+        virtual ~RandomNumberGenerator()=default;
 
         const unsigned int getSeed() const { return seed; }
         virtual void setSeed(const unsigned int& _seed) { seed = _seed; }
@@ -129,6 +130,8 @@ namespace CompuCell3D {
                     return "MersenneTwister";
                 case LEGACY:
                     return "Legacy";
+                case DEFAULT:
+                    return "MersenneTwister";
             }
 
             throw CC3DException(std::string("Unknown random number generator type."));
