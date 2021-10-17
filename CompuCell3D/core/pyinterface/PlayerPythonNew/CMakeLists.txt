@@ -59,9 +59,13 @@ target_link_libraries(FieldExtractor ${LIBS})
 
 install(TARGETS FieldExtractor
         EXPORT FieldExtractor
-        RUNTIME DESTINATION ${COMPUCELL3D_INSTALL_BIN_DIR}
-        LIBRARY DESTINATION ${COMPUCELL3D_INSTALL_LIB_DIR}
-        ARCHIVE DESTINATION ${COMPUCELL3D_INSTALL_LIB_DIR}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+
+#        RUNTIME DESTINATION ${COMPUCELL3D_INSTALL_BIN_DIR}
+#        LIBRARY DESTINATION ${COMPUCELL3D_INSTALL_LIB_DIR}
+#        ARCHIVE DESTINATION ${COMPUCELL3D_INSTALL_LIB_DIR}
 )
 EXPORT_COMPONENT(FieldExtractor FieldExtractor)
 
@@ -114,7 +118,7 @@ if (APPLE)
 
    # this is where libraries on which PlayerPythonNew.so depends on are
    # installed relative to where PlayerPythonNew.py is installed
-   SET_TARGET_PROPERTIES(PlayerPythonNew PROPERTIES INSTALL_RPATH "@loader_path/lib")
+   SET_TARGET_PROPERTIES(PlayerPythonNew PROPERTIES INSTALL_RPATH "@loader_path/lib;@loader_path/../../../")
 
 
 endif()

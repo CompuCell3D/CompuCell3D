@@ -39,7 +39,7 @@ if (APPLE)
 
    # this is where libraries on which CC3DXML.so depends on are
    # installed relative to where CC3DXML.py is installed
-   SET_TARGET_PROPERTIES(CC3DXML PROPERTIES INSTALL_RPATH "@loader_path/lib")
+   SET_TARGET_PROPERTIES(CC3DXML PROPERTIES INSTALL_RPATH "@loader_path/lib;@loader_path/../../../")
 
 
 endif()

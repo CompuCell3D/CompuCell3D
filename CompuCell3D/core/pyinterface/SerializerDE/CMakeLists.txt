@@ -47,9 +47,13 @@ target_include_directories(SerializerDE PUBLIC ${INCLUDE_DIRS})
 
 install(TARGETS SerializerDE
         EXPORT SerializerDE
-        RUNTIME DESTINATION ${COMPUCELL3D_INSTALL_BIN_DIR}
-        LIBRARY DESTINATION ${COMPUCELL3D_INSTALL_LIB_DIR}
-        ARCHIVE DESTINATION ${COMPUCELL3D_INSTALL_LIB_DIR}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+
+#        RUNTIME DESTINATION ${COMPUCELL3D_INSTALL_BIN_DIR}
+#        LIBRARY DESTINATION ${COMPUCELL3D_INSTALL_LIB_DIR}
+#        ARCHIVE DESTINATION ${COMPUCELL3D_INSTALL_LIB_DIR}
 )
 EXPORT_COMPONENT(SerializerDE SerializerDE)
 
@@ -95,7 +99,7 @@ if (APPLE)
 
    # this is where libraries on which SerializerDEPy.so depends on are
    # installed relative to where SerializerDEPy.py is installed
-   SET_TARGET_PROPERTIES(SerializerDEPy PROPERTIES INSTALL_RPATH "@loader_path/lib")
+   SET_TARGET_PROPERTIES(SerializerDEPy PROPERTIES INSTALL_RPATH "@loader_path/lib;@loader_path/../../../")
 
 
 endif()
