@@ -180,7 +180,10 @@ void ParallelUtilsOpenMP::unsetPyWrapperLock(){
 }
 
 void ParallelUtilsOpenMP::allowNestedParallelRegions(bool _flag){
-	omp_set_nested(_flag);
+//	omp_set_nested(_flag);
+    if(_flag) {
+        omp_set_max_active_levels(5);
+    }
 }
 
 void ParallelUtilsOpenMP::setNumberOfWorkNodes(unsigned int _num){
