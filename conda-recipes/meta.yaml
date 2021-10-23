@@ -27,15 +27,21 @@ requirements:
     - vtk=8.2
     - eigen
     - tbb-devel=2020
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ openmp }}
 
   build:
     - cmake>=3.14
     - swig=3
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
+    - {{ openmp }}
 
   run:
-    - python 
+    - python
+    - numpy=1.18
+    - vtk=8.2
     - {{ pin_compatible('numpy') }}
     - {{ pin_compatible('vtk') }}
     - scipy
