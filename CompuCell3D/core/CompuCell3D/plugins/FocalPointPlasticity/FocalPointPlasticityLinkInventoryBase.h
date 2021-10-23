@@ -103,9 +103,9 @@ namespace CompuCell3D {
 		typedef FPPLinkListBase<LinkType> FPPLinkList;
 		typedef FPPLinkInventoryBase<LinkType> FPPInventory_t;
 
-		typedef std::unordered_map<const FPPLinkID, LinkType*, LinkInventoryHasher> linkInventory_t;
+		typedef std::unordered_map<FPPLinkID, LinkType*, LinkInventoryHasher> linkInventory_t;
 		typedef typename linkInventory_t::iterator linkInventoryItr_t;
-		typedef std::pair<const FPPLinkID, LinkType*> linkInventoryPair_t;
+		typedef std::pair<FPPLinkID, LinkType*> linkInventoryPair_t;
 
 	protected:
 

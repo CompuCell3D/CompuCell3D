@@ -391,9 +391,9 @@ namespace swig{
 %template(FPPLinkList) CompuCell3D::FPPLinkListBase<CompuCell3D::FocalPointPlasticityLink>;
 %template(FPPInternalLinkList) CompuCell3D::FPPLinkListBase<CompuCell3D::FocalPointPlasticityInternalLink>;
 %template(FPPAnchorList) CompuCell3D::FPPLinkListBase<CompuCell3D::FocalPointPlasticityAnchor>;
-%template (mapFPPLinkIDFPPLinkPyItr) STLPyIteratorMap<std::unordered_map<const CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityLink*, CompuCell3D::LinkInventoryHasher>, CompuCell3D::FocalPointPlasticityLink*>;
-%template (mapFPPLinkIDFPPInternalLinkPyItr) STLPyIteratorMap<std::unordered_map<const CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityInternalLink*, CompuCell3D::LinkInventoryHasher>, CompuCell3D::FocalPointPlasticityInternalLink*>;
-%template (mapFPPLinkIDFPPAnchorPyItr) STLPyIteratorMap<std::unordered_map<const CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityAnchor*, CompuCell3D::LinkInventoryHasher>, CompuCell3D::FocalPointPlasticityAnchor*>;
+%template (mapFPPLinkIDFPPLinkPyItr) STLPyIteratorMap<std::unordered_map<CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityLink*, CompuCell3D::LinkInventoryHasher>, CompuCell3D::FocalPointPlasticityLink*>;
+%template (mapFPPLinkIDFPPInternalLinkPyItr) STLPyIteratorMap<std::unordered_map<CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityInternalLink*, CompuCell3D::LinkInventoryHasher>, CompuCell3D::FocalPointPlasticityInternalLink*>;
+%template (mapFPPLinkIDFPPAnchorPyItr) STLPyIteratorMap<std::unordered_map<CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityAnchor*, CompuCell3D::LinkInventoryHasher>, CompuCell3D::FocalPointPlasticityAnchor*>;
 %template (_fppInventoryBaseLink) CompuCell3D::FPPLinkInventoryBase<CompuCell3D::FocalPointPlasticityLink>;
 %template (_fppInventoryBaseInternalLink) CompuCell3D::FPPLinkInventoryBase<CompuCell3D::FocalPointPlasticityInternalLink>;
 %template (_fppInventoryBaseAnchor) CompuCell3D::FPPLinkInventoryBase<CompuCell3D::FocalPointPlasticityAnchor>;
