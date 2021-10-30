@@ -1,11 +1,18 @@
 add_subdirectory(Units)
 
+SET(WINDOWS_GLOB_SCRS )
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    SET(WINDOWS_GLOB_SCRS
+    WindowsGlob.cpp)
+endif()
+
 SET(SRCS
   FileUtils.cpp
   NumericalUtils.cpp
   StringUtils.cpp
   Vector3.cpp
   ParallelUtilsOpenMP.cpp
+  ${WINDOWS_GLOB_SCRS}
 )
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")

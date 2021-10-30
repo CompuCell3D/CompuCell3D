@@ -29,14 +29,14 @@ requirements:
     - tbb-devel=2020
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    - {{ openmp }}
+    - {{ openmp }} # [osx]
 
   build:
     - cmake>=3.14
     - swig=3
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    - {{ openmp }}
+    - {{ openmp }} # [osx]
 
   run:
     - python
@@ -53,3 +53,7 @@ requirements:
 
   run_constrained:
     - tbb=2020
+
+# on windows we can run conda
+#  build . -c conda-forge -c compucell3d to force conda to use
+#  specified channels as sources of packages
