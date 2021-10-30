@@ -33,6 +33,8 @@ def main():
     print('Generating test results data in', test_dir)
     print()
 
+    # from cc3d.cpp import CompuCell
+    sys.exit(0)
     subprocess.check_call(args=['python', simulation_tester.__file__,
                                 f'--run-command={run_script}',
                                 f'--output-dir={test_dir}'],
