@@ -15,7 +15,7 @@ source:
   path: ../
 
 build:
-  number: 0
+  number: 3
   ignore_run_exports:
     # Mitigating hard dependency on tbb by tbb-devel
     - tbb
@@ -49,6 +49,20 @@ requirements:
     - jinja2
     - deprecated
     - psutil
+    - cc3dext_maboss
+
+#  run:
+#    - python
+#    - numpy=1.18
+#    - vtk=8.2
+#    - {{ pin_compatible('numpy') }}
+#    - {{ pin_compatible('vtk') }}
+#    - scipy
+#    - pandas
+#    - jinja2=3.0.2
+#    - deprecated=1.2.12
+#    - psutil=5.8.0
+#    - cc3dext_maboss
 
   run_constrained:
     - tbb=2020
