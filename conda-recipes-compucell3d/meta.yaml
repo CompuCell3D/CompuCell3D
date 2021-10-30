@@ -23,8 +23,8 @@ build:
 requirements:
   host:
     - python=3.7
-    - cc3d {{ version }}.*
-    - cc3d-player5 {{ version }}.*
+#    - cc3d {{ version }}
+#    - cc3d-player5 {{ version }}
     - cc3d-twedit5 {{ version }}.*
 
 #  build:
@@ -35,8 +35,8 @@ requirements:
 
   run:
     - python=3.7
-    - cc3d {{ version }}.*
-    - cc3d-player5 {{ version }}.*
+#    - cc3d {{ version }}
+#    - cc3d-player5 {{ version }}
     - cc3d-twedit5 {{ version }}.*
 
 test:
