@@ -49,7 +49,6 @@ requirements:
     - jinja2
     - deprecated
     - psutil
-    - cc3dext_maboss
 
   run_constrained:
     - tbb=2020
