@@ -27,8 +27,6 @@ requirements:
     - vtk=8.2
     - eigen
     - tbb-devel=2020
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
 
   build:
