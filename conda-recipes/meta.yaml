@@ -27,8 +27,6 @@ requirements:
     - vtk=8.2
     - eigen
     - tbb-devel=2020
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
 
   build:
@@ -49,7 +47,6 @@ requirements:
     - jinja2
     - deprecated
     - psutil
-    - cc3dext_maboss
 
   run_constrained:
     - tbb=2020

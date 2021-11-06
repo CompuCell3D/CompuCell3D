@@ -100,6 +100,7 @@ set_target_properties(CompuCell PROPERTIES
     SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE
 )
 SWIG_LINK_LIBRARIES(CompuCell ${LIBS} ${LIBS_AUX})
+target_link_directories(CompuCell PUBLIC ${Python_LIBRARY_DIRS})
 
 if (APPLE)
 

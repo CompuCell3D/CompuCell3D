@@ -28,8 +28,10 @@ IF(OPENMP_FOUND)
 message ("openmp c flags " "${OpenMP_C_FLAGS}")
 message ("openmp cxx flags " "${OpenMP_CXX_FLAGS}")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} ")
-#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+IF(APPLE)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+ENDIF()
 ENDIF()
 
 
@@ -75,7 +77,6 @@ else()
 
 endif()
 
-#find_package(Python REQUIRED COMPONENTS Interpreter Development NumPy)
 find_package(Python REQUIRED COMPONENTS Interpreter Development NumPy)
 
 

@@ -103,6 +103,7 @@ target_include_directories(PlayerPythonNew PUBLIC
 )
 
 SWIG_LINK_LIBRARIES(PlayerPythonNew ${LIBS_SWIG})
+target_link_directories(PlayerPythonNew PUBLIC ${Python_LIBRARY_DIRS})
 
 if (APPLE)
 
