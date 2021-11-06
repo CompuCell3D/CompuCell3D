@@ -1540,7 +1540,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         assert self.focal_point_plasticity_plugin is not None, 'Load focal point plasticity plugin'
         return self.focal_point_plasticity_plugin.getAnchorInventory()
 
-    def get_focal_point_plasticity_link_list(self):
+    def get_focal_point_plasticity_link_list(self) -> Optional[FocalPointPlasticityLinkList]:
         """
         Returns list of all links
         :return: {list} list of all links
@@ -1549,7 +1549,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
             return None
         return FocalPointPlasticityLinkList(self.focal_point_plasticity_plugin)
 
-    def get_focal_point_plasticity_internal_link_list(self):
+    def get_focal_point_plasticity_internal_link_list(self) -> Optional[FocalPointPlasticityInternalLinkList]:
         """
         Returns list of all internal links
         :return: {list} list of all internal links
@@ -1558,7 +1558,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
             return None
         return FocalPointPlasticityInternalLinkList(self.focal_point_plasticity_plugin)
 
-    def get_focal_point_plasticity_anchor_list(self):
+    def get_focal_point_plasticity_anchor_list(self) -> Optional[FocalPointPlasticityAnchorList]:
         """
         Returns list of all anchors
         :return: {list} list of all anchors
@@ -1706,29 +1706,35 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         """
         return self.fpp_anchor_inventory.getAnchor(cell, anchor_id)
 
-    def get_fpp_links_by_cell(self, _cell: CompuCell.CellG) -> CompuCell.FPPLinkList:
+    def get_fpp_links_by_cell(self, _cell: CompuCell.CellG) -> Optional[FocalPointPlasticityLinkList]:
         """
         Get list of links by cell
         :param _cell: cell
         :return: links
         """
-        return self.fpp_link_inventory.getCellLinkList(_cell)
+        if self.focal_point_plasticity_plugin is None:
+            return None
+        return FocalPointPlasticityLinkList(self.focal_point_plasticity_plugin, _cell)
 
-    def get_fpp_internal_links_by_cell(self, _cell: CompuCell.CellG) -> CompuCell.FPPInternalLinkList:
+    def get_fpp_internal_links_by_cell(self, _cell: CompuCell.CellG) -> Optional[FocalPointPlasticityInternalLinkList]:
         """
         Get list of internal links by cell
         :param _cell: cell
         :return: internal links
         """
-        return self.fpp_internal_link_inventory.getCellLinkList(_cell)
+        if self.focal_point_plasticity_plugin is None:
+            return None
+        return FocalPointPlasticityInternalLinkList(self.focal_point_plasticity_plugin, _cell)
 
-    def get_fpp_anchors_by_cell(self, _cell: CompuCell.CellG) -> CompuCell.FPPAnchorList:
+    def get_fpp_anchors_by_cell(self, _cell: CompuCell.CellG) -> Optional[FocalPointPlasticityAnchorList]:
         """
         Get list of anchors by cell
         :param _cell: cell
         :return: anchors
         """
-        return self.fpp_anchor_inventory.getCellLinkList(_cell)
+        if self.focal_point_plasticity_plugin is None:
+            return None
+        return FocalPointPlasticityAnchorList(self.focal_point_plasticity_plugin, _cell)
 
     def get_fpp_linked_cells(self, _cell: CompuCell.CellG) -> CompuCell.mvectorCellGPtr:
         """
