@@ -67,9 +67,9 @@ void FlexibleDiffusionSolverSerializer_GPU<GPU_Solver>::readFromFile(){
 
 			solverPtr->readConcentrationField(inName.str().c_str(),solverPtr->concentrationFieldVector[i]);;
 		}
-	} catch (BasicException &e) {
+	} catch (CC3DException &e) {
 		cerr<<"COULD NOT FIND ONE OF THE FILES"<<endl;
-		throw BasicException("Error in reading diffusion fields from file",e);
+		throw CC3DException("Error in reading diffusion fields from file",e);
 	}
 }
 
@@ -309,7 +309,7 @@ void FlexibleDiffusionSolverFE_GPU<GPU_Solver>::start() {
 		try{
 			serializerPtr->readFromFile();
 
-		} catch (BasicException &e){
+		} catch (CC3DException &e){
 			cerr<<"Going to fail-safe initialization"<<endl;
 			initializeConcentration(); //if there was error, initialize using failsafe defaults
 		}

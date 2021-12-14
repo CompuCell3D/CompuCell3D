@@ -34,24 +34,19 @@ def main():
 
     current_script_dir = dirname(__file__)
 
-    run_command = ''
-    test_output_root = ''
-
-    if sys.platform.startswith('win'):
-        run_command = args.run_command
-        test_output_root = args.output_dir
+    run_command = args.run_command
+    test_output_root = args.output_dir
 
     cc3d_projects = find_file_in_dir(current_script_dir, '*.cc3d')
     cc3d_projects_common_prefix = commonprefix(cc3d_projects)
 
     rs = RunSpecs()
-    if sys.platform.startswith('win'):
-        rs.run_command = run_command
-        rs.player_interactive_flag = False
-        rs.cc3d_project = ''
-        rs.num_steps = 1000
-        rs.test_output_root = test_output_root
-        rs.test_output_dir = ''
+    rs.run_command = run_command
+    rs.player_interactive_flag = False
+    rs.cc3d_project = ''
+    rs.num_steps = 1000
+    rs.test_output_root = test_output_root
+    rs.test_output_dir = ''
 
     # clean test_output_dir
     try:

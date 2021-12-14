@@ -1,2 +1,2 @@
 
-ADD_COMPUCELL3D_PLUGIN(CurvatureCalculator LINK_LIBRARIES ${PLUGIN_DEPENDENCIES} NeighborTrackerShared BoundaryPixelTrackerShared EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
+ADD_COMPUCELL3D_PLUGIN(CurvatureCalculator LINK_LIBRARIES ${PLUGIN_DEPENDENCIES} cc3d::NeighborTracker cc3d::BoundaryPixelTracker EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})

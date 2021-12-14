@@ -25,8 +25,6 @@ template <typename T> int sgn(T val) {
     return (T(0) < val) - (val < T(0));
 }
 
-double round(double number);
-
 std::vector<double> RandomUnitVector2D(const double& _random_number);
 std::vector<double> RandomUnitVector3D(const double& _random_number1, const double& _random_number2);
 

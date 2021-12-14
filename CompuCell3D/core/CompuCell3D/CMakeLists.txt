@@ -7,19 +7,10 @@ ADD_SUBDIRECTORY(Potts3D)
 ADD_SUBDIRECTORY(plugins)
 ADD_SUBDIRECTORY(steppables)
 
-
-
-
-# FIND_PACKAGE(PythonLibs)
-# INCLUDE(FindPythonLibs)
-
-
-
-
 SET(QtWrappersLibs )
 if(BUILD_QT_WRAPPERS)
-    ADD_DEFINITIONS(-DQT_WRAPPERS_AVAILABLE)        
-    SET(QtWrappersLibs StreamRedirectorsShared)
+  ADD_DEFINITIONS(-DQT_WRAPPERS_AVAILABLE)
+  SET(QtWrappersLibs StreamRedirectorsShared)
 endif(BUILD_QT_WRAPPERS)    
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
@@ -35,119 +26,64 @@ SET(SRCS
   Simulator.cpp
   ClassRegistry.cpp
   DerivedProperty.cpp
-  RandomNumberGenerators.cpp 
+  RandomNumberGenerators.cpp
   PottsParseData.cpp
-  ParserStorage.cpp 
+  ParserStorage.cpp
   CC3DExceptions.cpp
   ExtraMembers.cpp
-  # CustomStreamBuffers.cpp
-  # ${MOC_FILES}
-  )
+)
 
-INCLUDE_DIRECTORIES ( 
-    ${COMPUCELL3D_SOURCE_DIR}/core
-    )
+SET(INCLUDE_DIRS
+    $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_INCLUDE_DIR}>
+)
+
+set(LIBS
+    cc3d::PublicUtilities
+    cc3d::Units
+    cc3d::Automaton
+    cc3d::Boundary
+    cc3d::Field3D
+    cc3d::Potts3D
+)
+
+if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+  set(LIBS ${LIBS} ${CMAKE_DL_LIBS})
+endif()
+
+ADD_SHARED_LIBRARY(CompuCellLib ${SRCS} LINK_LIBRARIES ${LIBS} cc3d::XMLUtils ${QtWrappersLibs})
+
+TARGET_INCLUDE_DIRECTORIES(${CompuCellLibLib} PUBLIC ${INCLUDE_DIRS})
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-  ADD_SHARED_LIBRARY(CompuCellLib ${SRCS} LINK_LIBRARIES
- #   XercesUtilsStatic
-#    XMLCerealStatic
-    PublicUtilitiesStatic
-    UnitsStatic
-    AutomatonStatic
-    BoundaryShared
-    Field3DStatic
-    Potts3DStatic
-    XMLUtilsShared
-    ${QtWrappersLibs}
-    # ${PYTHON_LIBRARIES} #added PYTHON LIBRARIES FOR NUMPY FIELD ARRAY INTERFACE
-    # ${QT_LIBS}
-  )
   
-    if(BUILD_CPP_ONLY_EXECUTABLE)
-          ADD_EXECUTABLE(CompuCell3DCML main.cpp)
-          TARGET_LINK_LIBRARIES(CompuCell3DCML
-            CompuCellLibShared
-            XMLParserExpatLibShared
-          )
-         INSTALL_TARGETS(/bin CompuCell3DCML)
-     else(BUILD_CPP_ONLY_EXECUTABLE)
+  if(BUILD_CPP_ONLY_EXECUTABLE)
+      ADD_EXECUTABLE(CompuCell3DCML main.cpp)
+      TARGET_INCLUDE_DIRECTORIES(CompuCell3DCML PUBLIC ${INCLUDE_DIRS})
+      TARGET_LINK_LIBRARIES(CompuCell3DCML cc3d::CompuCellLib cc3d::XMLParserExpatLib)
+      INSTALL_TARGETS(/bin CompuCell3DCML)
+  else(BUILD_CPP_ONLY_EXECUTABLE)
 
-          ADD_EXECUTABLE(mainSimpleDemo mainSimpleDemo.cpp)
-          TARGET_LINK_LIBRARIES(mainSimpleDemo
-            CompuCellLibShared            
-          )
-         INSTALL_TARGETS(/bin mainSimpleDemo)
+      ADD_EXECUTABLE(mainSimpleDemo mainSimpleDemo.cpp)
+      TARGET_INCLUDE_DIRECTORIES(mainSimpleDemo PUBLIC ${INCLUDE_DIRS})
+      TARGET_LINK_LIBRARIES(mainSimpleDemo cc3d::CompuCellLib)
+      INSTALL_TARGETS(/bin mainSimpleDemo)
 
-    endif(BUILD_CPP_ONLY_EXECUTABLE) 
-    
+  endif(BUILD_CPP_ONLY_EXECUTABLE)
 
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-
-  ADD_SHARED_LIBRARY(CompuCellLib ${SRCS} LINK_LIBRARIES
-
- # XercesUtilsShared
- # XMLCerealShared
-  PublicUtilitiesShared
-  UnitsShared
-  AutomatonShared
-  BoundaryShared
-  Field3DShared
-  Potts3DShared
-  XMLUtilsShared
-  ${QtWrappersLibs}
-  ${CMAKE_DL_LIBS}
-  # ${PYTHON_LIBRARIES} #added PYTHON LIBRARIES FOR NUMPY FIELD ARRAY INTERFACE
-#   ${QT_LIBS}
-  )
-
   
-    if(BUILD_CPP_ONLY_EXECUTABLE)
-          ADD_EXECUTABLE(CompuCell3DCML main.cpp)
-          TARGET_LINK_LIBRARIES(CompuCell3DCML
-            CompuCellLibShared
-           # XercesUtilsShared
-            #XMLCerealShared
-            PublicUtilitiesShared
-            UnitsShared
-            AutomatonShared
-            BoundaryShared
-            Field3DShared
-            Potts3DShared
-            XMLParserExpatLibShared
-          )
-         INSTALL_TARGETS(/bin CompuCell3DCML)
-         
-     else(BUILD_CPP_ONLY_EXECUTABLE)
-     
-        #   ADD_EXECUTABLE(CompuCell3D mainSimple.cpp)
+  if(BUILD_CPP_ONLY_EXECUTABLE)
+    ADD_EXECUTABLE(CompuCell3DCML main.cpp ../PublicUtilities/WindowsGlob.cpp ../PublicUtilities/WindowsGlob.h)
+    TARGET_INCLUDE_DIRECTORIES(CompuCell3DCML PUBLIC ${INCLUDE_DIRS})
+    TARGET_LINK_LIBRARIES(CompuCell3DCML cc3d::CompuCellLib ${LIBS})
+    INSTALL_TARGETS(/bin CompuCell3DCML)
 
-        #   TARGET_LINK_LIBRARIES(CompuCell3D
-        #     CompuCellLibShared
-        #    # XercesUtilsShared
-        #     #XMLCerealShared
-        #     PublicUtilitiesShared
-        #     UnitsShared
-        #     AutomatonShared
-        #     BoundaryShared
-        #     Field3DShared
-        #     Potts3DShared
-        #   )
-
-        # INSTALL_TARGETS(/bin CompuCell3D)
-
-
-    endif(BUILD_CPP_ONLY_EXECUTABLE) 
-  
-  
-
-INSTALL_TARGETS("/${COMPUCELL3D_INSTALL_LIB_DIR}"
-  # /lib
-  CompuCellLibShared)
+  endif(BUILD_CPP_ONLY_EXECUTABLE)
 
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-INSTALL_FILES(/include/CompuCell3D/CompuCell3D .h
+INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D .h
   ClassRegistry
   CompuCellLibDLLSpecifier  
   DerivedProperty
@@ -171,7 +107,5 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D .h
   CC3D_STL
   CC3DEvents
   CC3DExceptions
-  
-  )
 
-#INCLUDE_DIRECTORIES(${XERCESC_INCLUDE_DIR})
+)

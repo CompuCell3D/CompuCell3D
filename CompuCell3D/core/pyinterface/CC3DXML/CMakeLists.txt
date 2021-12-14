@@ -1,22 +1,6 @@
-
-
-# set(PYTHON_LIBRARY_TO_LINK ${PYTHON_LIBRARIES})
-# set(undefined_link_flags )
-# if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
-#     set(PYTHON_LIBRARY_TO_LINK )
-#     set(undefined_link_flags "-undefined dynamic_lookup")
-# endif()
-
 SET(LIBS
-   XMLUtilsShared
-   ${PYTHON_LIBRARY_TO_LINK}
-)
-
-INCLUDE_DIRECTORIES(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${COMPUCELL3D_SOURCE_DIR}/core
-    ${COMPUCELL3D_SOURCE_DIR}/core/CompuCell3D
-    ${COMPUCELL3D_SOURCE_DIR}/core/XMLUtils
+    cc3d::XMLUtils
+    ${PYTHON_LIBRARY_TO_LINK}
 )
 
 SET_SOURCE_FILES_PROPERTIES(CC3DXML.i PROPERTIES CPLUSPLUS ON)
@@ -27,8 +11,20 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   SET_TARGET_PROPERTIES(CC3DXML PROPERTIES SUFFIX ".pyd") # changes dll name to pyd sop that it is compatible with new Python standard
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
+target_include_directories(CC3DXML PUBLIC
+  ${PYTHON_DIRS_TO_INCLUDE}
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core>
+  $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core/CompuCell3D>
+  $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core/XMLUtils>
+  $<TARGET_PROPERTY:cc3d::XMLUtils,INCLUDE_DIRECTORIES>
+)
+set_target_properties(CC3DXML PROPERTIES
+  LINK_FLAGS ${undefined_link_flags}
+  SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE
+)
 SWIG_LINK_LIBRARIES(CC3DXML ${LIBS})
-set_target_properties(CC3DXML PROPERTIES LINK_FLAGS ${undefined_link_flags})
+target_link_directories(CC3DXML PUBLIC ${Python_LIBRARY_DIRS})
 
 if (APPLE)
 
@@ -44,14 +40,12 @@ if (APPLE)
 
    # this is where libraries on which CC3DXML.so depends on are
    # installed relative to where CC3DXML.py is installed
-   SET_TARGET_PROPERTIES(CC3DXML PROPERTIES INSTALL_RPATH "@loader_path/lib")
+   SET_TARGET_PROPERTIES(CC3DXML PROPERTIES INSTALL_RPATH "@loader_path/lib;@loader_path/../../../")
 
 
 endif()
 
-
-# install(TARGETS _CC3DXML    DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} )
-install(TARGETS CC3DXML    DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} )
+install(TARGETS CC3DXML DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} )
 
 set(python_files_path ${CMAKE_BINARY_DIR}/core/pyinterface/CC3DXML)
 

@@ -20,11 +20,6 @@
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
  *************************************************************************/
 
-#include <sstream>
-
-#define SSTR( x ) static_cast< std::ostringstream & >( \
-        ( std::ostringstream() << std::dec << x ) ).str()
-
 #include <CompuCell3D/CC3D.h>
 
 using namespace CompuCell3D;
@@ -98,7 +93,10 @@ void CellTypePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
       std::string type_name = cellTypeVec[i]->getAttribute("TypeName");
 
-	  if (typeNameMap.find(type_id) != typeNameMap.end()) throw CC3DException("Type id: "+SSTR((int)type_id)+" has already been defined");
+	  if (typeNameMap.find(type_id) != typeNameMap.end()){
+          throw CC3DException("Type id: " + to_string((int) type_id) + " has already been defined");
+      }
+
 	  typeNameMap[type_id] = type_name;
 
       name_type_mitr = nameTypeMap.find(type_name);

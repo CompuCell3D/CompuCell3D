@@ -31,7 +31,7 @@
 
 // // // #include <CompuCell3D/Potts3D/Cell.h>
 // // // // #include "CellOrientationVector.h"
-// #include <CompuCell3D/plugins/PolarizationVector/PolarizationVector.h>
+#include <CompuCell3D/plugins/PolarizationVector/PolarizationVector.h>
 
 #include "CellOrientationDLLSpecifier.h"
 

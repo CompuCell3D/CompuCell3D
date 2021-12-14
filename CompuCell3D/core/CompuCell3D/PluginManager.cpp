@@ -1,27 +1,8 @@
-/*************************************************************************
- *    CompuCell - A software framework for multimodel simulations of     *
- * biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
- *                             Indiana                                   *
- *                                                                       *
- * This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
- *  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
- *  CompuCell GNU General Public License RIDER you can redistribute it   *
- * and/or modify it under the terms of the GNU General Public License as *
- *  published by the Free Software Foundation; either version 2 of the   *
- *         License, or (at your option) any later version.               *
- *                                                                       *
- * This program is distributed in the hope that it will be useful, but   *
- *      WITHOUT ANY WARRANTY; without even the implied warranty of       *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
- *             General Public License for more details.                  *
- *                                                                       *
- *  You should have received a copy of the GNU General Public License    *
- *     along with this program; if not, write to the Free Software       *
- *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
- *************************************************************************/
+
 
 #include "PluginManager.h"
 using namespace CompuCell3D;
+using namespace std;
 
 template<typename PluginType>
 typename PluginManager<PluginType>::plugins_t & PluginManager<PluginType>::getPluginMap() { return plugins; }
@@ -124,7 +105,9 @@ void PluginManager<PluginType>::loadLibrary(const std::string& filename) {
 
 template<typename PluginType>
 void PluginManager<PluginType>::loadLibraryFromPath(const std::string& path) {
-    for (std::string f: filesInDir<false>(path, ".*(" + libExtension + ")")) loadLibrary(f);
+    for (std::string f: filesInDir(path, "*" + libExtension)){
+        loadLibrary(f);
+    }
 }
 
 template<typename PluginType>
@@ -172,9 +155,9 @@ typename PluginManager<PluginType>::PluginFactory* PluginManager<PluginType>::ge
 }
 
 
-template class PluginProxy<Plugin>;
-template class PluginProxy<Steppable>;
-template class PluginProxy<PluginBase>;
-template class PluginManager<Plugin>;
-template class PluginManager<Steppable>;
-template class PluginManager<PluginBase>;
+template class CompuCell3D::PluginProxy<Plugin>;
+template class CompuCell3D::PluginProxy<Steppable>;
+template class CompuCell3D::PluginProxy<PluginBase>;
+template class CompuCell3D::PluginManager<Plugin>;
+template class CompuCell3D::PluginManager<Steppable>;
+template class CompuCell3D::PluginManager<PluginBase>;

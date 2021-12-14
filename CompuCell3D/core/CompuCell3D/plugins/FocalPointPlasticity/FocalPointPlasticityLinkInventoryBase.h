@@ -73,7 +73,7 @@ namespace CompuCell3D {
 	template <class LinkType> class FPPLinkInventoryBase;
 
 	template <class LinkType>
-	class FOCALPOINTPLASTICITY_EXPORT FPPLinkInventoryTracker {
+	class FPPLinkInventoryTracker {
 	public:
 
 		FPPLinkInventoryTracker() {};
@@ -84,7 +84,7 @@ namespace CompuCell3D {
 
 	
 	// Hasher using Cantor pairing function
-	class FOCALPOINTPLASTICITY_EXPORT LinkInventoryHasher {
+	class LinkInventoryHasher {
 
 	public:
 
@@ -96,16 +96,16 @@ namespace CompuCell3D {
 
 
 	template <class LinkType>
-	class FOCALPOINTPLASTICITY_EXPORT FPPLinkInventoryBase {
+	class FPPLinkInventoryBase {
 
 	public:
 
 		typedef FPPLinkListBase<LinkType> FPPLinkList;
 		typedef FPPLinkInventoryBase<LinkType> FPPInventory_t;
 
-		typedef std::unordered_map<const FPPLinkID, LinkType*, LinkInventoryHasher> linkInventory_t;
+		typedef std::unordered_map<FPPLinkID, LinkType*, LinkInventoryHasher> linkInventory_t;
 		typedef typename linkInventory_t::iterator linkInventoryItr_t;
-		typedef std::pair<const FPPLinkID, LinkType*> linkInventoryPair_t;
+		typedef std::pair<FPPLinkID, LinkType*> linkInventoryPair_t;
 
 	protected:
 

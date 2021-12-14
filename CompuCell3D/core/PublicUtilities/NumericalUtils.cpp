@@ -9,14 +9,9 @@
 using namespace std;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-double round(double number)
-{
-    return number < 0.0 ? ceil(number - 0.5) : floor(number + 0.5);
-}
-
 
 std::vector<double> RandomUnitVector2D(const double& _random_number) {
-    if(_random_number < 0.0 || _random_number > 1.0) throw std::exception("Random number must be in [0, 1].");
+    if(_random_number < 0.0 || _random_number > 1.0) throw std::runtime_error("Random number must be in [0, 1].");
     auto t = 2 * M_PI * _random_number;
     auto x = cos(t);
     auto y = sin(t);
@@ -24,8 +19,8 @@ std::vector<double> RandomUnitVector2D(const double& _random_number) {
 }
 
 std::vector<double> RandomUnitVector3D(const double& _random_number1, const double& _random_number2) {
-    if(_random_number1 < 0.0 || _random_number1 > 1.0 || _random_number2 < 0.0 || _random_number2 > 1.0) 
-        throw std::exception("Random number must be in [0, 1].");
+    if(_random_number1 < 0.0 || _random_number1 > 1.0 || _random_number2 < 0.0 || _random_number2 > 1.0)
+        throw std::runtime_error("Random number must be in [0, 1].");
 
     auto t = 2 * M_PI * _random_number1;
     auto p = acos(1 - 2 * _random_number2);

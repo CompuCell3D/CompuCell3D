@@ -1,0 +1,56 @@
+package:
+  name: cc3d
+  version: 4.3.0
+
+about:
+  home: https://compucell3d.org
+  license: GPL
+  summary: Multiscale multicellular virtual tissue modeling and simulation environment
+
+extra:
+  maintainers: T.J. Sego, Maciek Swat
+
+source:
+  # url: https://github.com/CompuCell3D/CompuCell3D/archive/master.tar.gz
+  path: ../
+
+build:
+  number: 4
+  ignore_run_exports:
+    # Mitigating hard dependency on tbb by tbb-devel
+    - tbb
+
+requirements:
+  host:
+    - python {{ python }}
+    - numpy=1.18
+    - vtk=8.2
+    - eigen
+    - tbb-devel=2020
+    - {{ openmp }} # [osx]
+
+  build:
+    - cmake>=3.14
+    - swig=3
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ openmp }} # [osx]
+
+  run:
+    - python
+    - numpy=1.18
+    - vtk=8.2
+    - {{ pin_compatible('numpy') }}
+    - {{ pin_compatible('vtk') }}
+    - scipy
+    - pandas
+    - jinja2
+    - deprecated
+    - psutil
+
+  run_constrained:
+    - tbb=2020
+
+# on windows we can run conda
+#  build . -c conda-forge -c compucell3d to force conda to use
+#  specified channels as sources of packages
