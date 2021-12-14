@@ -160,8 +160,8 @@ namespace CompuCell3D {
 		void setRandomSeed(unsigned int seed) { ppdCC3DPtr->RandomSeed(seed); }
 		unsigned int getRandomSeed() { return ppdCC3DPtr->seed; }
 		// Client is responsible for deallocation. 
-		RandomNumberGenerator* generateRandomNumberGenerator(const unsigned int& seed = 1);
-		RandomNumberGenerator* getRandomNumberGeneratorInstance(const unsigned int& seed = 1);
+		virtual RandomNumberGenerator* generateRandomNumberGenerator(const unsigned int& seed = 1);
+		virtual RandomNumberGenerator* getRandomNumberGeneratorInstance(const unsigned int& seed = 1);
 		Potts3D *getPotts() {return &potts;}
 		Simulator *getSimulatorPtr(){return this;}
 		ClassRegistry *getClassRegistry() {return classRegistry;}

@@ -100,6 +100,7 @@ set_target_properties(CompuCell PROPERTIES
     SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE
 )
 SWIG_LINK_LIBRARIES(CompuCell ${LIBS} ${LIBS_AUX})
+target_link_directories(CompuCell PUBLIC ${Python_LIBRARY_DIRS})
 
 if (APPLE)
 
@@ -115,7 +116,7 @@ if (APPLE)
 
    # this is where libraries on which CompuCell.so depends on are
    # installed relative to where CompuCell.py is installed
-   SET_TARGET_PROPERTIES(CompuCell PROPERTIES INSTALL_RPATH "@loader_path/CompuCell3DPlugins;@loader_path/CompuCell3DSteppables;@loader_path/lib")
+   SET_TARGET_PROPERTIES(CompuCell PROPERTIES INSTALL_RPATH "@loader_path/CompuCell3DPlugins;@loader_path/CompuCell3DSteppables;@loader_path/lib;@loader_path/../../../")
 
 
 endif()

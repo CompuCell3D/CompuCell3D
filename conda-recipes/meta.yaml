@@ -15,7 +15,7 @@ source:
   path: ../
 
 build:
-  number: 0
+  number: 4
   ignore_run_exports:
     # Mitigating hard dependency on tbb by tbb-devel
     - tbb
@@ -27,15 +27,19 @@ requirements:
     - vtk=8.2
     - eigen
     - tbb-devel=2020
+    - {{ openmp }} # [osx]
 
   build:
     - cmake>=3.14
     - swig=3
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
+    - {{ openmp }} # [osx]
 
   run:
-    - python 
+    - python
+    - numpy=1.18
+    - vtk=8.2
     - {{ pin_compatible('numpy') }}
     - {{ pin_compatible('vtk') }}
     - scipy
@@ -46,3 +50,7 @@ requirements:
 
   run_constrained:
     - tbb=2020
+
+# on windows we can run conda
+#  build . -c conda-forge -c compucell3d to force conda to use
+#  specified channels as sources of packages

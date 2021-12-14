@@ -23,7 +23,10 @@ namespace CompuCell3D {
     class ExtraMembersCastor: public ExtraMembersFactory<B> {
     public:
         B* create() { return new T; }
-        virtual void destroy(B* em) { delete (B*)em; }
+        virtual void destroy(B* em) {
+//            delete (B*)em;
+            delete static_cast<B*>(em);
+        }
     };
 
     class ExtraMembersGroupFactory;

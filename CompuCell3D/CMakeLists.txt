@@ -22,7 +22,18 @@ ENDIF (APPLE)
 
 set(CMAKE_CXX_STANDARD 11)
 
-FIND_PACKAGE (OpenMP)
+
+FIND_PACKAGE(OpenMP)
+IF(OPENMP_FOUND)
+    message ("openmp c flags " "${OpenMP_C_FLAGS}")
+    message ("openmp cxx flags " "${OpenMP_CXX_FLAGS}")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} ")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    IF((APPLE) AND (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+    ENDIF()
+ENDIF()
+
 
 OPTION(FLEX_PYTHON_SPECS "Allow Flexible Python Path specification" OFF)
 
@@ -49,10 +60,19 @@ else()
     FIND_PACKAGE(PythonLibs)
     FIND_PACKAGE(PythonInterp)
     # INCLUDE(FindPythonLibs)
-    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable" FORCE)
-    set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library" FORCE)
-    set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory" FORCE )
-    set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory" FORCE )
+
+
+    if (FLEX_PYTHON_SPECS)
+        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable")
+        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library")
+        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory")
+        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory")
+    else ()
+        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable" FORCE)
+        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library" FORCE)
+        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory" FORCE )
+        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory" FORCE )
+    endif()
 
 
 endif()

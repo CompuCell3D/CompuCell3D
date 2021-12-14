@@ -74,7 +74,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   
   if(BUILD_CPP_ONLY_EXECUTABLE)
-    ADD_EXECUTABLE(CompuCell3DCML main.cpp)
+    ADD_EXECUTABLE(CompuCell3DCML main.cpp ../PublicUtilities/WindowsGlob.cpp ../PublicUtilities/WindowsGlob.h)
     TARGET_INCLUDE_DIRECTORIES(CompuCell3DCML PUBLIC ${INCLUDE_DIRS})
     TARGET_LINK_LIBRARIES(CompuCell3DCML cc3d::CompuCellLib ${LIBS})
     INSTALL_TARGETS(/bin CompuCell3DCML)

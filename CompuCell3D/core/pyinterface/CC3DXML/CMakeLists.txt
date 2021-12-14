@@ -24,6 +24,7 @@ set_target_properties(CC3DXML PROPERTIES
   SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE
 )
 SWIG_LINK_LIBRARIES(CC3DXML ${LIBS})
+target_link_directories(CC3DXML PUBLIC ${Python_LIBRARY_DIRS})
 
 if (APPLE)
 
@@ -39,7 +40,7 @@ if (APPLE)
 
    # this is where libraries on which CC3DXML.so depends on are
    # installed relative to where CC3DXML.py is installed
-   SET_TARGET_PROPERTIES(CC3DXML PROPERTIES INSTALL_RPATH "@loader_path/lib")
+   SET_TARGET_PROPERTIES(CC3DXML PROPERTIES INSTALL_RPATH "@loader_path/lib;@loader_path/../../../")
 
 
 endif()

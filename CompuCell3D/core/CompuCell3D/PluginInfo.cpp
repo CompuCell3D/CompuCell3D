@@ -1,8 +1,11 @@
 #include "PluginInfo.h"
+#include <iostream>
 
 using namespace CompuCell3D;
 
-PluginInfo::PluginInfo(const std::string& _name, const std::string _description) : name(_name), description(_description) {};
+PluginInfo::PluginInfo(const std::string& _name, const std::string _description) :
+name(_name), description(_description)
+{};
 
 const std::string PluginInfo::getName() const { return name; }
 const std::string PluginInfo::getDescription() const { return description; }
@@ -20,6 +23,7 @@ bool PluginInfo::dependsOn(const std::string& pluginName) {
 }
 
 std::ostream& operator<<(std::ostream& _os, PluginInfo &_info) {
-    _os << _info.getName() << std::string(": ") << _info.getDescription();
+//    _os << _info.getName() << std::string(": ") << _info.getDescription();
+    _os << _info.getName() << std::string(": ") << _info.getDescription()<< std::endl;
     return _os;
 }
