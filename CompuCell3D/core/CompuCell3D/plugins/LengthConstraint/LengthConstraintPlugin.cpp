@@ -20,6 +20,7 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 #include <CompuCell3D/CC3D.h>
+#include <limits>
 
 using namespace CompuCell3D;
 
@@ -36,8 +37,8 @@ LengthConstraintPlugin::~LengthConstraintPlugin() {}
 void LengthConstraintPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
 	xmlData=_xmlData;
-	this->simulator=simulator; 
-	potts = simulator->getPotts();  
+	this->simulator=simulator;
+	potts = simulator->getPotts();
 
 	bool pluginAlreadyRegisteredFlag;
 	Plugin *plugin=Simulator::pluginManager.get("MomentOfInertia",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
@@ -74,7 +75,7 @@ void LengthConstraintPlugin::setLengthConstraintData(CellG * _cell, double _lamb
 		lengthConstraintDataAccessor.get(_cell->extraAttribPtr)->lambdaLength=_lambdaLength;
 		lengthConstraintDataAccessor.get(_cell->extraAttribPtr)->targetLength=_targetLength;
 		lengthConstraintDataAccessor.get(_cell->extraAttribPtr)->minorTargetLength=_minorTargetLength;
-	}	
+	}
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 double LengthConstraintPlugin::getLambdaLength(CellG * _cell){
@@ -133,9 +134,10 @@ double LengthConstraintPlugin::changeEnergy(const Point3D &pt,const CellG *newCe
 
 
 	/// E = lambda * (length - targetLength) ^ 2 
+	if (oldCell == newCell) return 0.0;
+    double energy = (this->*changeEnergyFcnPtr)(pt,newCell,oldCell);
 
-	return (this->*changeEnergyFcnPtr)(pt,newCell,oldCell);
-
+    return _get_non_nan_energy(energy);
 
 }
 
@@ -145,7 +147,7 @@ double LengthConstraintPlugin::changeEnergy_xz(const Point3D &pt,const CellG *ne
 
 	// Assumption: COM and Volume has not been updated.
 
-	/// E = lambda * (length - targetLength) ^ 2 
+	/// E = lambda * (length - targetLength) ^ 2
 
 	//Center of mass, length constraints calculations are done withou checking whether cell volume reaches 0 or not
 	// when cell is about to disappear this results in Nan values of energy - because division by 0 is involved or
@@ -154,16 +156,14 @@ double LengthConstraintPlugin::changeEnergy_xz(const Point3D &pt,const CellG *ne
 
 	double energy = 0.0;
 
-	if (oldCell == newCell) return 0.0;
-
-	Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);  
-	//as in the original version 
+	Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);
+	//as in the original version
 	if (newCell){
 
 		//local definitions of length constraint have priority over by type definitions
 		double lambdaLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->lambdaLength;;
 		double targetLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->targetLength;;
-		
+
 		if(lambdaLength==0.0) {
 			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(newCell->type);
 			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
@@ -193,7 +193,7 @@ double LengthConstraintPlugin::changeEnergy_xz(const Point3D &pt,const CellG *ne
 		//local definitions of length constraint have priority over by type definitions
 		double lambdaLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->lambdaLength;;
 		double targetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
-		
+
 		if(lambdaLength==0.0) {
 			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
 			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
@@ -224,20 +224,15 @@ double LengthConstraintPlugin::changeEnergy_xz(const Point3D &pt,const CellG *ne
 		energy += newEnergy - currEnergy;
 	}
 
-
-	if(energy!=energy)
-		return 0.0;
-	else
-		return energy;
+    return energy;
 }
 
 
 double LengthConstraintPlugin::changeEnergy_xy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
 
-
 	// Assumption: COM and Volume has not been updated.
 
-	/// E = lambda * (length - targetLength) ^ 2 
+	/// E = lambda * (length - targetLength) ^ 2
 
 	//Center of mass, length constraints calculations are done withou checking whether cell volume reaches 0 or not
 	// when cell is about to disappear this results in Nan values of energy - because division by 0 is involved or
@@ -246,16 +241,14 @@ double LengthConstraintPlugin::changeEnergy_xy(const Point3D &pt,const CellG *ne
 
 	double energy = 0.0;
 
-	if (oldCell == newCell) return 0.0;
+	Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);
 
-	Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);  
-
-	//as in the original version 
+	//as in the original version
 	if (newCell){
 		//local definitions of length constraint have priority over by type definitions
 		double lambdaLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->lambdaLength;;
 		double targetLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->targetLength;;
-		
+
 		if(lambdaLength==0.0) {
 			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(newCell->type);
 			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
@@ -267,7 +260,7 @@ double LengthConstraintPlugin::changeEnergy_xy(const Point3D &pt,const CellG *ne
 		double xcm = (newCell->xCM / (float) newCell->volume);
 		double ycm = (newCell->yCM / (float) newCell->volume);
 		double newXCM = (newCell->xCM + ptTrans.x)/((float)newCell->volume + 1);
-		double newYCM = (newCell->yCM + ptTrans.y)/((float)newCell->volume + 1);	 
+		double newYCM = (newCell->yCM + ptTrans.y)/((float)newCell->volume + 1);
 
 		double newIxx=newCell->iXX+(newCell->volume )*ycm*ycm-(newCell->volume+1)*(newYCM*newYCM)+ptTrans.y*ptTrans.y;
 		double newIyy=newCell->iYY+(newCell->volume )*xcm*xcm-(newCell->volume+1)*(newXCM*newXCM)+ptTrans.x*ptTrans.x;
@@ -284,7 +277,7 @@ double LengthConstraintPlugin::changeEnergy_xy(const Point3D &pt,const CellG *ne
 		//local definitions of length constraint have priority over by type definitions
 		double lambdaLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->lambdaLength;;
 		double targetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
-		
+
 		if(lambdaLength==0.0) {
 			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
 			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
@@ -317,20 +310,15 @@ double LengthConstraintPlugin::changeEnergy_xy(const Point3D &pt,const CellG *ne
 		energy += newEnergy - currEnergy;
 	}
 
-
-	if(energy!=energy)
-		return 0.0;
-	else
-		return energy;
+    return energy;
 }
 
 
 double LengthConstraintPlugin::changeEnergy_yz(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
 
-
 	// Assumption: COM and Volume has not been updated.
 
-	/// E = lambda * (length - targetLength) ^ 2 
+	/// E = lambda * (length - targetLength) ^ 2
 
 	//Center of mass, length constraints calculations are done withou checking whether cell volume reaches 0 or not
 	// when cell is about to disappear this results in Nan values of energy - because division by 0 is involved or
@@ -339,15 +327,13 @@ double LengthConstraintPlugin::changeEnergy_yz(const Point3D &pt,const CellG *ne
 
 	double energy = 0.0;
 
-	if (oldCell == newCell) return 0.0;
-
-	Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);   
-	//as in the original version 
+	Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);
+	//as in the original version
 	if (newCell){
 		//local definitions of length constraint have priority over by type definitions
 		double lambdaLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->lambdaLength;;
 		double targetLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->targetLength;;
-		
+
 		if(lambdaLength==0.0 ) {
 			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(newCell->type);
 			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
@@ -377,7 +363,7 @@ double LengthConstraintPlugin::changeEnergy_yz(const Point3D &pt,const CellG *ne
 		//local definitions of length constraint have priority over by type definitions
 		double lambdaLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->lambdaLength;;
 		double targetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
-		
+
 		if(lambdaLength==0.0 ) {
 			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
 			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
@@ -406,18 +392,19 @@ double LengthConstraintPlugin::changeEnergy_yz(const Point3D &pt,const CellG *ne
 			newLength = 0.0;
 		}else{
 			newLength = 4.0*sqrt(((float)((0.5*(newIyy + newIzz)) + .5*sqrt((float)((newIyy - newIzz)*(newIyy - newIzz) + 4*newIyz*newIyz))))/(float)(oldCell->volume-1));
-		}    
+		}
 
 
 		double newEnergy = lambdaLength * (newLength - targetLength) * (newLength - targetLength);
 		energy += newEnergy - currEnergy;
 	}
 
-	if(energy!=energy)
-		return 0.0;
-	else
-		return energy;
+    return energy;
 
+}
+
+double  LengthConstraintPlugin::spring_energy(double lam, double x, double x0){
+    return lam *pow(x-x0, 2.0);
 }
 
 
@@ -425,20 +412,34 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 
 	// Assumption: COM and Volume has not been updated.
 
-	/// E = lambda * (length - targetLength) ^ 2 
+	/// E = lambda * (length - targetLength) ^ 2
 
 	//Center of mass, length constraints calculations are done withou checking whether cell volume reaches 0 or not
 	// when cell is about to disappear this results in Nan values of energy - because division by 0 is involved or
 	// sqrt(expression involving compoinents of inertia tensor) is NaN
 	//in all such cases we set energy to 0 i.e. if energy=Nan we set it to energy=0.0
 
-	double energy = 0.0;
 
-	if (oldCell == newCell) return 0.0;
+    double energy = 0.0;
+    double delta_en_new = 0.0;
+    double delta_en = 0.0;
 
-	Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);  
+    double xcm, ycm, zcm, newXCM, newYCM, newZCM;
 
-	//as in the original version 
+    double newIxx, newIyy, newIzz, newIxy, newIxz, newIyz;
+    double lambdaLength, targetLength, minorTargetLength;
+
+    double currEnergy = 0.0;
+    double newLength = 0.0;
+    double newMinorLength = 0.0;
+    double newEnergy = 0.0;
+    double currLength=0.0;
+    double currMinorLength=0.0;
+
+
+	Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);
+
+	//as in the original version
 	if (newCell){
 		//local definitions of length constraint have priority over by type definitions
 		double lambdaLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->lambdaLength;;
@@ -454,20 +455,20 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 			}
 		}
 
-		double xcm = (newCell->xCM / (float) newCell->volume);
-		double ycm = (newCell->yCM / (float) newCell->volume);
-		double zcm = (newCell->zCM / (float) newCell->volume);
-		double newXCM = (newCell->xCM + ptTrans.x)/((float)newCell->volume + 1);
-		double newYCM = (newCell->yCM + ptTrans.y)/((float)newCell->volume + 1);	 
-		double newZCM = (newCell->zCM + ptTrans.z)/((float)newCell->volume + 1);	 
+		xcm = (newCell->xCM / (float) newCell->volume);
+		ycm = (newCell->yCM / (float) newCell->volume);
+		zcm = (newCell->zCM / (float) newCell->volume);
+		newXCM = (newCell->xCM + ptTrans.x)/((float)newCell->volume + 1);
+		newYCM = (newCell->yCM + ptTrans.y)/((float)newCell->volume + 1);
+		newZCM = (newCell->zCM + ptTrans.z)/((float)newCell->volume + 1);
 
-		double newIxx=newCell->iXX+(newCell->volume )*(ycm*ycm+zcm*zcm)-(newCell->volume+1)*(newYCM*newYCM+newZCM*newZCM)+ptTrans.y*ptTrans.y+ptTrans.z*ptTrans.z;
-		double newIyy=newCell->iYY+(newCell->volume )*(xcm*xcm+zcm*zcm)-(newCell->volume+1)*(newXCM*newXCM+newZCM*newZCM)+ptTrans.x*ptTrans.x+ptTrans.z*ptTrans.z;
-		double newIzz=newCell->iZZ+(newCell->volume )*(xcm*xcm+ycm*ycm)-(newCell->volume+1)*(newXCM*newXCM+newYCM*newYCM)+ptTrans.x*ptTrans.x+ptTrans.y*ptTrans.y;
+		newIxx=newCell->iXX+(newCell->volume )*(ycm*ycm+zcm*zcm)-(newCell->volume+1)*(newYCM*newYCM+newZCM*newZCM)+ptTrans.y*ptTrans.y+ptTrans.z*ptTrans.z;
+		newIyy=newCell->iYY+(newCell->volume )*(xcm*xcm+zcm*zcm)-(newCell->volume+1)*(newXCM*newXCM+newZCM*newZCM)+ptTrans.x*ptTrans.x+ptTrans.z*ptTrans.z;
+		newIzz=newCell->iZZ+(newCell->volume )*(xcm*xcm+ycm*ycm)-(newCell->volume+1)*(newXCM*newXCM+newYCM*newYCM)+ptTrans.x*ptTrans.x+ptTrans.y*ptTrans.y;
 
-		double newIxy=newCell->iXY-(newCell->volume )*xcm*ycm+(newCell->volume+1)*newXCM*newYCM-ptTrans.x*ptTrans.y;
-		double newIxz=newCell->iXZ-(newCell->volume )*xcm*zcm+(newCell->volume+1)*newXCM*newZCM-ptTrans.x*ptTrans.z;
-		double newIyz=newCell->iYZ-(newCell->volume )*ycm*zcm+(newCell->volume+1)*newYCM*newZCM-ptTrans.y*ptTrans.z;
+		newIxy=newCell->iXY-(newCell->volume )*xcm*ycm+(newCell->volume+1)*newXCM*newYCM-ptTrans.x*ptTrans.y;
+		newIxz=newCell->iXZ-(newCell->volume )*xcm*zcm+(newCell->volume+1)*newXCM*newZCM-ptTrans.x*ptTrans.z;
+		newIyz=newCell->iYZ-(newCell->volume )*ycm*zcm+(newCell->volume+1)*newYCM*newZCM-ptTrans.y*ptTrans.z;
 
 		vector<double> aCoeff(4,0.0);
 		vector<double> aCoeffNew(4,0.0);
@@ -520,8 +521,6 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		//sorting semiaxes according the their lengths (shortest first)
 		sort(axes.begin(),axes.end());
 
-
-
 		vector<double> axesNew(3,0.0);
 
 		axesNew[0]=sqrt((2.5/(newCell->volume+1))*(rootsNew[1].real()+rootsNew[2].real()-rootsNew[0].real()));
@@ -531,24 +530,27 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		//sorting semiaxes according the their lengths (shortest first)
 		sort(axesNew.begin(),axesNew.end());
 
-		double currLength=2.0*axes[2];
-		double currMinorLength=2.0*axes[0];
+        currLength=2.0*axes[2];
+		currMinorLength=2.0*axes[0];
 
-		double currEnergy = lambdaLength * ((currLength - targetLength)*(currLength - targetLength)+(currMinorLength - minorTargetLength)*(currMinorLength - minorTargetLength));
+		currEnergy = lambdaLength * ((currLength - targetLength)*(currLength - targetLength)+(currMinorLength - minorTargetLength)*(currMinorLength - minorTargetLength));
 
-		double newLength = 2.0*axesNew[2];
-		double newMinorLength=2.0*axesNew[0];
+		newLength = 2.0*axesNew[2];
+		newMinorLength=2.0*axesNew[0];
 
-		double newEnergy = lambdaLength * ((newLength - targetLength)*(newLength - targetLength)+(newMinorLength - minorTargetLength)*(newMinorLength - minorTargetLength));
+		newEnergy = lambdaLength * ((newLength - targetLength)*(newLength - targetLength)+(newMinorLength - minorTargetLength)*(newMinorLength - minorTargetLength));
+
 		energy += newEnergy - currEnergy;
 
-		 //cerr<<"NEW energy="<<energy<<endl;
 	}
+
+    
+
 	if (oldCell) {
 		//cerr<<"****************OLD CELL PART***********************"<<endl;
-		double lambdaLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->lambdaLength;;
-		double targetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
-		double minorTargetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->minorTargetLength;;
+		lambdaLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->lambdaLength;;
+		targetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
+		minorTargetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->minorTargetLength;;
 
 		if(lambdaLength==0.0 ) {
 			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
@@ -558,20 +560,20 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 				minorTargetLength=lengthEnergyParamMapItr->second.minorTargetLength;
 			}
 		}
-		double xcm = (oldCell->xCM / (float) oldCell->volume);
-		double ycm = (oldCell->yCM / (float) oldCell->volume);
-		double zcm = (oldCell->zCM / (float) oldCell->volume);
-		double newXCM = (oldCell->xCM - ptTrans.x)/((float)oldCell->volume - 1);
-		double newYCM = (oldCell->yCM - ptTrans.y)/((float)oldCell->volume - 1);
-		double newZCM = (oldCell->zCM - ptTrans.z)/((float)oldCell->volume - 1);
+		xcm = (oldCell->xCM / (float) oldCell->volume);
+		ycm = (oldCell->yCM / (float) oldCell->volume);
+		zcm = (oldCell->zCM / (float) oldCell->volume);
+		newXCM = (oldCell->xCM - ptTrans.x)/((float)oldCell->volume - 1);
+		newYCM = (oldCell->yCM - ptTrans.y)/((float)oldCell->volume - 1);
+		newZCM = (oldCell->zCM - ptTrans.z)/((float)oldCell->volume - 1);
 
-		double newIxx =oldCell->iXX+(oldCell->volume )*(ycm*ycm+zcm*zcm)-(oldCell->volume-1)*(newYCM*newYCM+newZCM*newZCM) - (ptTrans.y*ptTrans.y+ptTrans.z*ptTrans.z);
-		double newIyy =oldCell->iYY+(oldCell->volume )*(xcm*xcm+zcm*zcm)-(oldCell->volume-1)*(newXCM*newXCM+newZCM*newZCM) - (ptTrans.x*ptTrans.x+ptTrans.z*ptTrans.z);
-		double newIzz =oldCell->iZZ+(oldCell->volume )*(xcm*xcm+ycm*ycm)-(oldCell->volume-1)*(newXCM*newXCM+newYCM*newYCM) - (ptTrans.x*ptTrans.x+ptTrans.y*ptTrans.y);
+		newIxx =oldCell->iXX+(oldCell->volume )*(ycm*ycm+zcm*zcm)-(oldCell->volume-1)*(newYCM*newYCM+newZCM*newZCM) - (ptTrans.y*ptTrans.y+ptTrans.z*ptTrans.z);
+		newIyy =oldCell->iYY+(oldCell->volume )*(xcm*xcm+zcm*zcm)-(oldCell->volume-1)*(newXCM*newXCM+newZCM*newZCM) - (ptTrans.x*ptTrans.x+ptTrans.z*ptTrans.z);
+		newIzz =oldCell->iZZ+(oldCell->volume )*(xcm*xcm+ycm*ycm)-(oldCell->volume-1)*(newXCM*newXCM+newYCM*newYCM) - (ptTrans.x*ptTrans.x+ptTrans.y*ptTrans.y);
 
-		double newIxy =oldCell->iXY-(oldCell->volume )*(xcm*ycm)+(oldCell->volume-1)*newXCM*newYCM+ptTrans.x*ptTrans.y;
-		double newIxz =oldCell->iXZ-(oldCell->volume )*(xcm*zcm)+(oldCell->volume-1)*newXCM*newZCM+ptTrans.x*ptTrans.z;
-		double newIyz =oldCell->iYZ-(oldCell->volume )*(ycm*zcm)+(oldCell->volume-1)*newYCM*newZCM+ptTrans.y*ptTrans.z;
+		newIxy =oldCell->iXY-(oldCell->volume )*(xcm*ycm)+(oldCell->volume-1)*newXCM*newYCM+ptTrans.x*ptTrans.y;
+		newIxz =oldCell->iXZ-(oldCell->volume )*(xcm*zcm)+(oldCell->volume-1)*newXCM*newZCM+ptTrans.x*ptTrans.z;
+		newIyz =oldCell->iYZ-(oldCell->volume )*(ycm*zcm)+(oldCell->volume-1)*newYCM*newZCM+ptTrans.y*ptTrans.z;
 
 
 		vector<double> aCoeff(4,0.0);
@@ -635,40 +637,33 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 			axesNew[2]=sqrt((2.5/(oldCell->volume-1))*(rootsNew[0].real()+rootsNew[1].real()-rootsNew[2].real()));
 		}
 		//sorting semiaxes according the their lengths (shortest first)
-		sort(axesNew.begin(),axesNew.end());	
+		sort(axesNew.begin(),axesNew.end());
 
-		double currLength = 2.0*axes[2];
-		double currMinorLength=2.0*axes[0];
+        currLength=2.0*axes[2];
+		currMinorLength=2.0*axes[0];
 
-		//cerr<<"roots[1].real()+roots[2].real()-roots[0].real()="<<roots[1].real()+roots[2].real()-roots[0].real()<<endl;
-		//cerr<<"rootsNew[1].real()+rootsNew[2].real()-rootsNew[0].real()="<<rootsNew[1].real()+rootsNew[2].real()-rootsNew[0].real()<<endl;
+		currEnergy = lambdaLength * ((currLength - targetLength)*(currLength - targetLength)+(currMinorLength - minorTargetLength)*(currMinorLength - minorTargetLength));
 
-		//for (int i =0 ; i<3 ;++i){
-		//	cerr<<"rootsNew["<<i<<"]="<<rootsNew[i]<<endl;			
-		//}
+		newLength = 2.0*axesNew[2];
+		newMinorLength = 2.0*axesNew[0];
 
-		//for (int i =0 ; i<3 ;++i){
-		//	cerr<<"axesNew["<<i<<"]="<<axesNew[i]<<endl;			
-		//}
-
-		double currEnergy = lambdaLength * ((currLength - targetLength)*(currLength - targetLength)+(currMinorLength - minorTargetLength)*(currMinorLength - minorTargetLength));
-
-		double newLength = 2.0*axesNew[2];
-		double newMinorLength=2.0*axesNew[0];
-
-		double newEnergy = lambdaLength * ((newLength - targetLength)*(newLength - targetLength)+(newMinorLength - minorTargetLength)*(newMinorLength - minorTargetLength));
+		newEnergy = lambdaLength * ((newLength - targetLength)*(newLength - targetLength)+(newMinorLength - minorTargetLength)*(newMinorLength - minorTargetLength));
 
 		energy += newEnergy - currEnergy;
-		//cerr<<"lambdaLength="<<lambdaLength <<" targetLength="<<targetLength<<" minorTargetLength="<<minorTargetLength<<endl;
-		
+
 	}
 
-	//cerr<<"energy="<<energy<<endl;
+    return energy;
+
+}
+
+double LengthConstraintPlugin::_get_non_nan_energy(double energy){
 	if(energy!=energy)
 		return 0.0;
 	else
 		return energy;
 }
+
 
 std::string LengthConstraintPlugin::toString(){
 	return string("LengthConstraint");
