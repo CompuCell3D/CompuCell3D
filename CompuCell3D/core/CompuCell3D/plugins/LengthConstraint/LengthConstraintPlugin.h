@@ -62,6 +62,8 @@ namespace CompuCell3D {
 		std::unordered_map<unsigned char, LengthEnergyParam> lengthEnergyParamMap;
 		std::vector<std::string> typeNameVec;//temporary vector for storage type names
 		BoundaryStrategy * boundaryStrategy;
+		double _get_non_nan_energy(double energy);
+		double spring_energy(double lam, double x, double x0);
 
 	public:
 
