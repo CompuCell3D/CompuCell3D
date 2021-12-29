@@ -8,8 +8,11 @@ import os
 import sys
 from os.path import dirname, join, abspath
 from pathlib import Path
+
+__version__ = "4.3.1"
+__revision__ = "4"
+
 from . import config
-from .config import versionMajor, versionMinor, versionBuild, revisionNumber
 
 
 def get_sha_label() -> str:
@@ -24,38 +27,19 @@ def get_sha_label() -> str:
             sha_tag = cc3d.commit_tag.sha_label
             return sha_tag
         except AttributeError:
-            return revisionNumber
+            return get_version_revision_str()
+            # return revisionNumber
 
     except ImportError:
-        return revisionNumber
+        return get_version_revision_str()
 
 
-def getVersionAsString():
-    return str(versionMajor) + "." + str(versionMinor) + "." + str(versionBuild)
+def get_version_revision_str():
+    return f"{__version__}.{__revision__}"
 
 
-def getVersionMajor():
-    return versionMajor
-
-
-def getVersionMinor():
-    return versionMinor
-
-
-def getVersionBuild():
-    return versionBuild
-
-
-def getSVNRevision():
-    return revisionNumber
-
-
-def getSVNRevisionAsString():
-    return str(getSVNRevision())
-
-
-__version__ = getVersionAsString()
-__revision__ = revisionNumber
+def get_version_str():
+    return f"{__version__}"
 
 
 def get_version_info():
