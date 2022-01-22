@@ -22,13 +22,17 @@
 
 #include "SimpleVolumePlugin.h"
 #include <CompuCell3D/Simulator.h>
-#include <BasicUtils/BasicPluginProxy.h>
+#include <CompuCell3D/PluginManager.h>
 using namespace CompuCell3D;
 
-BasicPluginProxy<Plugin, SimpleVolumePlugin>
-volumeProxy("SimpleVolume", "Tracks cell volumes and adds volume energy function.",
-	    &Simulator::pluginManager);
+auto volumeProxy = registerPlugin<Plugin, SimpleVolumePlugin>(
+	"SimpleVolume",
+	"Tracks cell volumes and adds volume energy function.",
+	&Simulator::pluginManager
+);
 
-BasicPluginProxy<Plugin, SimpleVolumePlugin>
-volumeEnergyProxy("SimpleVolumeEnergy", "Tracks cell volumes and adds volume energy function.",
-	    &Simulator::pluginManager);
+auto volumeEnergyProxy = registerPlugin<Plugin, SimpleVolumePlugin>(
+	"SimpleVolumeEnergy",
+	"Tracks cell volumes and adds volume energy function.",
+	&Simulator::pluginManager
+);

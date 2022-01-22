@@ -9,8 +9,8 @@ import sys
 from os.path import dirname, join, abspath
 from pathlib import Path
 
-__version__ = "4.3.1"
-__revision__ = "4"
+__version__ = "4.3.0"
+__revision__ = "15"
 
 from . import config
 

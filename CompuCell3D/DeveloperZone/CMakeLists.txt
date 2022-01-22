@@ -1,20 +1,65 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.13)
 PROJECT(DeveloperZone)
 
-FIND_PACKAGE (OpenMP)    
+
 # Should we build shared libraries
 OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 IF (APPLE)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 " CACHE STRING "flags used during compilation by C++ compiler" FORCE)
     SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 " CACHE STRING "flags used during compilation by C compiler" FORCE)
-    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "OSX deplyment target" FORCE)
+    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "OSX deployment target" FORCE)
 
     MESSAGE ("GOT APPLE")
 ENDIF (APPLE)
 
 
-set(CMAKE_CXX_STANDARD 11)
+SET(CMAKE_CXX_STANDARD 11)
+# to get openmp detected via conda - start cmake from the conda environment that contains
+# openmp installation on OSX
+
+find_library(OpenMP_LIBRARY
+    NAMES omp
+)
+
+# find_path(OpenMP_INCLUDE_DIR
+#     omp.h
+# )
+
+# mark_as_advanced(OpenMP_LIBRARY OpenMP_INCLUDE_DIR)
+#
+# include(FindPackageHandleStandardArgs)
+# find_package_handle_standard_args(OpenMP DEFAULT_MSG
+#     OpenMP_LIBRARY
+#     # OpenMP_INCLUDE_DIR
+# )
+#
+# if (OpenMP_FOUND)
+#     set(OpenMP_LIBRARIES ${OpenMP_LIBRARY})
+#     # set(OpenMP_INCLUDE_DIRS ${OpenMP_INCLUDE_DIR})
+#     set(OpenMP_COMPILE_OPTIONS -Xpreprocessor -fopenmp)
+#
+#     add_library(OpenMP::OpenMP SHARED IMPORTED)
+#     set_target_properties(OpenMP::OpenMP PROPERTIES
+#         IMPORTED_LOCATION ${OpenMP_LIBRARIES}
+#         INTERFACE_INCLUDE_DIRECTORIES "${OpenMP_INCLUDE_DIRS}"
+#         INTERFACE_COMPILE_OPTIONS "${OpenMP_COMPILE_OPTIONS}"
+#     )
+# endif()
+
+
+
+FIND_PACKAGE(OpenMP)
+IF(OPENMP_FOUND)
+    message ("openmp c flags " "${OpenMP_C_FLAGS}")
+    message ("openmp cxx flags " "${OpenMP_CXX_FLAGS}")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} ")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    IF((APPLE) AND (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+    ENDIF()
+ENDIF()
+
 
 # Specify a version for all libs to use
 # Specify a version for all libs to use
@@ -33,18 +78,36 @@ SET(COMPUCELL3D_LIBRARY_PROPERTIES ${COMPUCELL3D_LIBRARY_PROPERTIES}
 
 
 SET(COMPUCELL3D_INSTALL_PATH CACHE PATH "CompuCell3D installation path")
-SET(COMPUCELL3D_FULL_SOURCE_PATH CACHE PATH "CompuCell3D source code path ")
+SET(COMPUCELL3D_GIT_DIR CACHE PATH "CompuCell3D Git Repository path ")
 
-SET(COMPUCELL3D_INSTALL_LIB_DIR ${COMPUCELL3D_INSTALL_PATH}/lib/site-packages/cc3d/cpp/lib)
+SET(COMPUCELL3D_FULL_SOURCE_PATH ${COMPUCELL3D_GIT_DIR}/CompuCell3D/core/CompuCell3D)
+
+
+
+SET(COMPUCELL3D_FULL_SOURCE_PATH CACHE PATH "CompuCell3D source code path ")
+SET(COMPUCELL3D_SOURCE_DIR CACHE PATH "CompuCell3D source code path <CC3D_GIT_REPO>/Comp ")
+SET(COMPUCELL3D_SOURCE_DIR ${COMPUCELL3D_GIT_DIR}/CompuCell3D)
+
+# assuming cmake_install_prexif points to site packages dir we do the following:
+SET(COMPUCELL3D_INSTALL_LIB_DIR ${COMPUCELL3D_INSTALL_PATH}/cc3d/cpp/lib)
+
+# for alternative (old cc3d layout we would do this)
+#SET(COMPUCELL3D_INSTALL_LIB_DIR ${COMPUCELL3D_INSTALL_PATH}/lib/site-packages/cc3d/cpp/lib)
+
 SET(COMPUCELL3D_INCLUDE_PATH ${COMPUCELL3D_INSTALL_PATH}/include/CompuCell3D)
 SET(COMPUCELL3D_LIBRARY_PATH ${COMPUCELL3D_INSTALL_PATH}/lib)
 
-SET(COMPUCELL3D_INSTALL_PLUGIN_DIR " lib/site-packages/cc3d/cpp/CompuCell3DPlugins")
-SET(COMPUCELL3D_INSTALL_STEPPABLE_DIR " lib/site-packages/cc3d/cpp/CompuCell3DSteppables")
+# assuming cmake_install_prexif points to site packages dir we do the following:
+SET(COMPUCELL3D_INSTALL_PLUGIN_DIR " cc3d/cpp/CompuCell3DPlugins")
+SET(COMPUCELL3D_INSTALL_STEPPABLE_DIR " cc3d/cpp/CompuCell3DSteppables")
+
+# for alternative (old cc3d layout we would do this)
+# SET(COMPUCELL3D_INSTALL_PLUGIN_DIR " lib/site-packages/cc3d/cpp/CompuCell3DPlugins")
+# SET(COMPUCELL3D_INSTALL_STEPPABLE_DIR " lib/site-packages/cc3d/cpp/CompuCell3DSteppables")
 
 
 LINK_DIRECTORIES(${COMPUCELL3D_LIBRARY_PATH} ${COMPUCELL3D_INSTALL_LIB_DIR})
-SET(CC3DLibraries CC3DCompuCellLib CC3DBoundary CC3DBasicUtils CC3DField3D CC3DPublicUtilities CC3DUnits CC3DXMLUtils CC3DmuParser)
+SET(CC3DLibraries CC3DCompuCellLib CC3DBoundary CC3DField3D CC3DPublicUtilities CC3DUnits CC3DXMLUtils CC3DmuParser)
 SET(STEPPABLE_DEPENDENCIES ${CC3DLibraries})
 SET(PLUGIN_DEPENDENCIES ${CC3DLibraries})
 
@@ -68,3 +131,5 @@ ADD_SUBDIRECTORY(GrowthSteppable)
 add_subdirectory(SimpleVolume)
 add_subdirectory(VolumeMean)
 add_subdirectory(pyinterface)
+
+message("VAR COMPUCELL3D_SOURCE_DIR" ${COMPUCELL3D_SOURCE_DIR})

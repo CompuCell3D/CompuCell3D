@@ -22,7 +22,10 @@ ENDIF (APPLE)
 
 set(CMAKE_CXX_STANDARD 11)
 
-
+# to get openmp detected via conda - start cmake from the conda environment that contains
+# openmp installation on OSX . on OSX install llvm-openmp to get openmp with clang
+# When running via command line use e.g. :
+# # os.system(f'source /Users/m/miniconda3/etc/profile.d/conda.sh ; conda activate cc3d_test ; {cmd_test}')
 FIND_PACKAGE(OpenMP)
 IF(OPENMP_FOUND)
     message ("openmp c flags " "${OpenMP_C_FLAGS}")

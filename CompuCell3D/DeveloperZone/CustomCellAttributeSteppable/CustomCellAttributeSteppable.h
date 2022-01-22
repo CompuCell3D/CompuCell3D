@@ -1,5 +1,6 @@
 #ifndef CUSTOMCELLATTRIBUTESTEPPABLESTEPPABLE_H
 #define CUSTOMCELLATTRIBUTESTEPPABLESTEPPABLE_H
+
 #include <CompuCell3D/CC3D.h>
 #include "CustomCellAttributeSteppableData.h"
 #include "CustomCellAttributeSteppableDLLSpecifier.h"
@@ -11,20 +12,14 @@ namespace CompuCell3D {
   template <class T> class WatchableField3D;
 
     class Potts3D;
-
     class Automaton;
-
     class BoundaryStrategy;
-
     class CellInventory;
-
     class CellG;
-
-
 
   class CUSTOMCELLATTRIBUTESTEPPABLE_EXPORT CustomCellAttributeSteppable : public Steppable {
 
-    BasicClassAccessor<CustomCellAttributeSteppableData> customCellAttributeSteppableDataAccessor;                
+    ExtraMembersGroupAccessor<CustomCellAttributeSteppableData> customCellAttributeSteppableDataAccessor;
 
     WatchableField3D<CellG *> *cellFieldG;
 
@@ -54,7 +49,7 @@ namespace CompuCell3D {
 
     virtual void extraInit(Simulator *simulator);
 
-    BasicClassAccessor<CustomCellAttributeSteppableData> * getCustomCellAttributeSteppableDataAccessorPtr(){return & customCellAttributeSteppableDataAccessor;}
+    ExtraMembersGroupAccessor<CustomCellAttributeSteppableData> * getCustomCellAttributeSteppableDataAccessorPtr(){return & customCellAttributeSteppableDataAccessor;}
 
     CustomCellAttributeSteppableData * getCustomCellAttribute(CellG * cell);
 

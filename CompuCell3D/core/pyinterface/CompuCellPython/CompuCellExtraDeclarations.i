@@ -74,15 +74,13 @@ using namespace CompuCell3D;
 %include <PyAttributeAdder.h>
 
 
-
-
 %include "ParseData.h"
 %include "ParserStorage.h"
 
 %template (VectorParseDataPtr) std::vector<ParseData*> ;
 
 
-//have to include all  export definitions for modules which are arapped to avoid problems with interpreting by swig win32 specific c++ extensions...
+//have to include all  export definitions for modules which are wrapped to avoid problems with interpreting by swig win32 specific c++ extensions...
 #define COMPUCELLLIB_EXPORT
 #define BOUNDARYSHARED_EXPORT
 #define CHEMOTAXISSIMPLE_EXPORT
