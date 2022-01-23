@@ -10,8 +10,10 @@ from sysconfig import get_paths
 import sysconfig
 import site
 from pprint import pprint
+import stat
 
 from cc3d.core.utils import find_current_conda_env, find_conda
+import tempfile
 
 
 def get_conda_specs():
@@ -85,8 +87,17 @@ def configure_developer_zone(cc3d_git_dir: Path, build_dir: Path):
             f'-B {build_dir} ' \
 
     if sys.platform.startswith('darwin'):
-        os.system(f'source {conda_specs["conda_shell_script"]} ; '
+
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            dev_zone_config_shell_script = Path(tmpdirname).joinpath('run_dev_config_script.sh')
+            with dev_zone_config_shell_script.open('w') as out:
+                out.write(f'#!/bin/sh\nsource {conda_specs["conda_shell_script"]} ; '
                   f'conda activate {conda_specs["conda_env_name"]} ; {cmd_cmake_generate}')
+            dev_zone_config_shell_script.chmod(dev_zone_config_shell_script.stat().st_mode | stat.S_IEXEC)
+
+            result = subprocess.run(f'{dev_zone_config_shell_script}', stdout=subprocess.PIPE)
+
+        return result.stdout.decode('utf-8')
     else:
         raise RuntimeError(f'Unsupported platform {sys.platform}')
 
