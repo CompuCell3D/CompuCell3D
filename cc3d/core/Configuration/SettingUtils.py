@@ -55,10 +55,17 @@ def _load_sql_settings(setting_path):
     from cc3d.core.Configuration.settingdict import SettingsSQL
 
     # workaround for Windows leftover DefaultSettingPath.pyc
-    from os.path import splitext
+    from os.path import splitext, isdir, isfile, dirname
     setting_path_no_ext, ext = splitext(setting_path)
     if ext.lower() in ['.xml']:
         setting_path = setting_path_no_ext+'.sqlite'
+
+    # Verify existing settings file or create if necessary
+    if not isdir(dirname(setting_path)):
+        os.makedirs(dirname(setting_path), exist_ok=True)
+    if not isfile(setting_path):
+        with open(setting_path, 'w'):
+            pass
 
     settings = SettingsSQL(setting_path)
     if not settings:
