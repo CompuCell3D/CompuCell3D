@@ -1,5 +1,6 @@
 import time
 from cc3d import CompuCellSetup
+from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame import CC3DPyGraphicsFrameClient
 
 
 class CC3DPy:
@@ -104,6 +105,12 @@ class CC3DPy:
 
         return element_adapter
 
+    @staticmethod
+    def visualization():
+        frame = CC3DPyGraphicsFrameClient()
+        frame.launch()
+        return frame
+
 
 class CC3DPySim:
     """
@@ -151,3 +158,6 @@ class CC3DPySim:
 
     def run(self):
         raise NotImplementedError
+
+    def visualization(self):
+        return CC3DPy.visualization()

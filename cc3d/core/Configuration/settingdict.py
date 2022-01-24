@@ -121,7 +121,7 @@ class SerializerUtil(object):
             value_type = v[0]
             val_repr = v[1]
             deserializer_fcn = self.guess_deserializer_fcn(value_type)
-            value = deserializer_fcn(val_repr)
+            value = deserializer_fcn(val_repr) if val_repr is not None else None
 
             out_dict[k] = value
 

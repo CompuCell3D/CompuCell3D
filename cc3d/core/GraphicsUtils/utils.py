@@ -1,4 +1,5 @@
 import warnings
+from vtkmodules.vtkCommonCorePython import vtkObjectBase
 
 
 def extract_address_int_from_vtk_object(vtkObj: str) -> int:
@@ -12,6 +13,19 @@ def extract_address_int_from_vtk_object(vtkObj: str) -> int:
     addr_hex_int = int(addr_portion, 16)
 
     return addr_hex_int
+
+
+def recover_vtk_object_from_address_int(addr: int):
+    """
+    Returns the vtk object at an address
+
+    :param addr: address of object, *e.g.*, as returned by :func:`extract_address_int_from_vtk_object`
+    :type addr: int
+    :return: vtk object at the provided address
+    :rtype: vtkObjectBase
+    """
+
+    return vtkObjectBase(hex(addr))
 
 
 def qcolor_to_rgba(color: object) -> tuple:

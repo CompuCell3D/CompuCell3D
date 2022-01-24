@@ -3,13 +3,37 @@ CC3D core implementation of simservice PySimService
 """
 import os
 import time
+from typing import Any, Callable, List, Optional
 
 from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.CC3DPy import CC3DPy, CC3DPySim
+from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame import CC3DPyGraphicsFrameClient, CC3DPyGraphicsFrameClientBase
+from cc3d.core.GraphicsUtils.JupyterGraphicsFrameWidget import JupyterGraphicsFrameClient
 from cc3d.core.RollbackImporter import RollbackImporter
 
 from simservice.PySimService import PySimService, SimStatus
 from .SimulationServiceThread import SimulationServiceThread
+
+
+def _in_jupyter():
+    try:
+        get_ipython
+        return True
+    except NameError:
+        return False
+
+
+class GraphicsFrameContainer:
+    """Container for a graphics frame and associated data"""
+
+    def __init__(self,
+                 frame: CC3DPyGraphicsFrameClientBase,
+                 plot_freq: int,
+                 blocking: bool):
+
+        self.frame = frame
+        self.plot_freq = plot_freq
+        self.blocking = blocking
 
 
 class CC3DSimService(CC3DPySim, PySimService):
@@ -44,6 +68,9 @@ class CC3DSimService(CC3DPySim, PySimService):
         # This is needed to safely register steppables through multiple instantiations of CC3D
         # List elements are tuples of the steppable class and frequency
         self._steppable_queue = list()
+
+        self._graphics_frames: List[GraphicsFrameContainer] = []
+        """Graphics frames synchronized with this service"""
 
     def __del__(self):
         self.uninit_simulation()
@@ -168,6 +195,10 @@ class CC3DSimService(CC3DPySim, PySimService):
             self.status = SimStatus.SIM_FAILED
             return False
 
+        for frame_c in self._graphics_frames:
+            if self._current_step % frame_c.plot_freq == 0:
+                frame_c.frame.draw(blocking=frame_c.blocking)
+
         total_run_time_end = time.time()
         self.total_run_time += (total_run_time_end - total_run_time_begin) * 1000
 
@@ -180,6 +211,9 @@ class CC3DSimService(CC3DPySim, PySimService):
         """
         steppable_registry = CompuCellSetup.persistent_globals.steppable_registry
         steppable_registry.finish()
+        graphics_frames = [frame_c for frame_c in self._graphics_frames]
+        for frame_c in graphics_frames:
+            frame_c.frame.close()
 
     def _stop(self, terminate_sim: bool = True):
         """
@@ -216,3 +250,72 @@ class CC3DSimService(CC3DPySim, PySimService):
                 total_run_time=self.total_run_time)
         except ZeroDivisionError:
             return ""
+
+    def visualization(self):
+        return self.visualize()
+
+    def _load_viz_frame(self,
+                        frame: CC3DPyGraphicsFrameClientBase,
+                        plot_freq: int,
+                        blocking: bool,
+                        timeout: float,
+                        drawing_style: str):
+
+        def _on_frame_close():
+            for i in range(len(self._graphics_frames)):
+                if self._graphics_frames[i].frame is frame:
+                    self._graphics_frames.pop(i)
+                    return
+
+        frame.add_callback_close(_on_frame_close)
+        self._graphics_frames.append(GraphicsFrameContainer(frame=frame,
+                                                            plot_freq=plot_freq,
+                                                            blocking=blocking))
+        return_obj = frame.launch(timeout=timeout)
+
+        if drawing_style is not None:
+            frame.set_drawing_style(_style=drawing_style)
+
+        return return_obj
+
+    def visualize(self,
+                  plot_freq: int = 1,
+                  name: str = None,
+                  fps: int = 60,
+                  config_fp: str = None,
+                  blocking: bool = False,
+                  timeout: float = None,
+                  drawing_style: str = None) -> Optional[Any]:
+        """
+        Generate a synchronized graphics visualization frame.
+
+        The returned frame is operated by the service, including closing it on service finish.
+
+        :param plot_freq: frequency of plot updates
+        :type plot_freq: int
+        :param name: name of frame
+        :type name: str
+        :param fps: frames per second
+        :type fps: int
+        :param config_fp: filepath to saved frame configuration settings dictionary
+        :type config_fp: str
+        :param blocking: flag to block when updating renders; blocking makes for smoother visualization but slower sims
+        :type blocking: bool
+        :param timeout: timeout for launching the frame, in seconds
+        :type timeout: float
+        :param drawing_style: style of drawing ('2D' or '3D')
+        :type drawing_style: str
+        :return: visualization frame interface object
+        :rtype: Any or None
+        """
+
+        if _in_jupyter():
+            frame = JupyterGraphicsFrameClient(config_fp=config_fp)
+        else:
+            frame = CC3DPyGraphicsFrameClient(name=name, fps=fps, config_fp=config_fp)
+
+        return self._load_viz_frame(frame=frame,
+                                    plot_freq=plot_freq,
+                                    blocking=blocking,
+                                    timeout=timeout,
+                                    drawing_style=drawing_style)
