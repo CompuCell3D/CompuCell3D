@@ -42,12 +42,84 @@ def configure_developer_zone(cc3d_git_dir: Path, build_dir: Path):
 
     conda_specs = get_conda_specs()
 
-    developer_zone_source = cc3d_git_dir.joinpath('CompuCell3D', 'DeveloperZone')
     build_dir.mkdir(exist_ok=True, parents=True)
     build_dir_content = os.listdir(build_dir)
     if len(build_dir_content):
         raise FileExistsError(f'Build Directory: {build_dir}  must be empty before we can use '
                               f'it for DeveloperZone configuration')
+
+    if sys.platform.startswith('darwin'):
+        output = configure_developer_zone_mac(cc3d_git_dir=cc3d_git_dir, build_dir=build_dir, conda_specs=conda_specs)
+    elif sys.platform.startswith('win'):
+        output = configure_developer_zone_win(cc3d_git_dir=cc3d_git_dir, build_dir=build_dir, conda_specs=conda_specs)
+    elif sys.platform.startswith('linux'):
+        output = configure_developer_zone_linux(cc3d_git_dir=cc3d_git_dir, build_dir=build_dir, conda_specs=conda_specs)
+    else:
+        raise RuntimeError(f'Unsupported Platform: {sys.platform}')
+
+    return output
+
+
+def configure_developer_zone_win(cc3d_git_dir: Path, build_dir: Path, conda_specs: dict):
+    """
+
+    @param cc3d_git_dir:
+    @param build_dir:
+    @param conda_specs:
+    @return:
+    """
+
+    developer_zone_source = cc3d_git_dir.joinpath('CompuCell3D', 'DeveloperZone')
+
+    paths_dict = sysconfig.get_paths()
+    activate_script = conda_specs['conda_exec'].parent.joinpath('activate.bat')
+    conda_env_name = conda_specs['conda_env_name']
+    py_version_nodot = sysconfig.get_config_var('py_version_nodot')
+
+    stdlib = Path(paths_dict['stdlib'])
+    bin_dir = stdlib.parent.joinpath('Library', 'bin')
+    ld_library = stdlib.parent.joinpath('libs', f'python{py_version_nodot}.lib')
+
+    site_packages_dir = Path(paths_dict['platlib'])
+
+    install_dir = site_packages_dir
+
+    python_include_dir = paths_dict['include']
+
+    cmake_exec = bin_dir.joinpath('cmake.exe')
+
+    cmake_generator_name = 'NMake Makefiles'
+
+    cmd_cmake_generate = f'{cmake_exec} -G "{cmake_generator_name}" -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ' \
+                         f'-DCMAKE_INSTALL_PREFIX:PATH={install_dir} ' \
+                         f'-DCOMPUCELL3D_GIT_DIR:PATH={cc3d_git_dir} ' \
+                         f'-DCOMPUCELL3D_INSTALL_PATH:PATH={install_dir} ' \
+                         f'-DPYTHON_INCLUDE_DIR:PATH={python_include_dir} ' \
+                         f'-DPYTHON_LIBRARY:PATH={ld_library} ' \
+                         f'-S {developer_zone_source} ' \
+                         f'-B {build_dir} ' \
+
+    result = subprocess.run(
+        f'{activate_script} & conda activate {conda_env_name} & {cmd_cmake_generate}', stdout=subprocess.PIPE)
+    out_str = result.stdout.decode('utf-8')
+    print(out_str)
+
+    return out_str
+
+
+def configure_developer_zone_linux(cc3d_git_dir: Path, build_dir: Path, conda_specs: dict):
+    """
+
+    @param cc3d_git_dir:
+    @param build_dir:
+    @param conda_specs:
+    @return:
+    """
+    raise RuntimeError(f'Unsupported Platform: {sys.platform}')
+
+
+def configure_developer_zone_mac(cc3d_git_dir: Path, build_dir: Path, conda_specs: dict):
+    developer_zone_source = cc3d_git_dir.joinpath('CompuCell3D', 'DeveloperZone')
 
     ld_library = Path(sysconfig.get_config_var('LDLIBRARY'))
     lib_dir = Path(sysconfig.get_config_var('LIBDIR'))
@@ -56,49 +128,33 @@ def configure_developer_zone(cc3d_git_dir: Path, build_dir: Path):
     python_exec = sys.executable
     install_dir = site_packages_dir
 
-    py_include_dir= Path(sysconfig.get_config_var('INCLUDEPY'))
+    py_include_dir = Path(sysconfig.get_config_var('INCLUDEPY'))
     bin_dir = Path(sysconfig.get_config_var('BINDIR'))
 
     cmake_exec = bin_dir.joinpath('cmake')
 
-
     swig_exec = bin_dir.joinpath('swig')
 
-    if sys.platform.startswith('win'):
-        raise RuntimeError('Unsupported yet')
-    elif sys.platform.startswith('darwin'):
-        cmake_generator_name = 'Unix Makefiles'
-        cmake_c_compiler = bin_dir.joinpath('clang')
-        cmake_cxx_compiler = bin_dir.joinpath('clang++')
-    elif sys.platform.startswith('linux'):
-        cmake_generator_name = 'Unix Makefiles'
-        cmake_c_compiler = bin_dir.joinpath('gcc')
-        cmake_cxx_compiler = bin_dir.joinpath('g++')
-    else:
-        raise RuntimeError(f'Unsupported platform {sys.platform}')
+    cmake_generator_name = 'Unix Makefiles'
+    cmake_c_compiler = bin_dir.joinpath('clang')
+    cmake_cxx_compiler = bin_dir.joinpath('clang++')
 
     cmd_cmake_generate = f'{cmake_exec} -G "{cmake_generator_name}" -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ' \
-            f'-DCMAKE_INSTALL_PREFIX:PATH={install_dir} ' \
-            f'-DCMAKE_CXX_COMPILER:STRING={cmake_cxx_compiler} ' \
-            f'-DCMAKE_C_COMPILER:STRING={cmake_c_compiler} ' \
-            f'-DCOMPUCELL3D_GIT_DIR:PATH={cc3d_git_dir} ' \
-            f'-DCOMPUCELL3D_INSTALL_PATH:PATH={install_dir} ' \
-            f'-S {developer_zone_source} ' \
-            f'-B {build_dir} ' \
+                         f'-DCMAKE_INSTALL_PREFIX:PATH={install_dir} ' \
+                         f'-DCMAKE_CXX_COMPILER:STRING={cmake_cxx_compiler} ' \
+                         f'-DCMAKE_C_COMPILER:STRING={cmake_c_compiler} ' \
+                         f'-DCOMPUCELL3D_GIT_DIR:PATH={cc3d_git_dir} ' \
+                         f'-DCOMPUCELL3D_INSTALL_PATH:PATH={install_dir} ' \
+                         f'-S {developer_zone_source} ' \
+                         f'-B {build_dir} ' \
 
-    if sys.platform.startswith('darwin'):
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        dev_zone_config_shell_script = Path(tmpdirname).joinpath('run_dev_config_script.sh')
+        with dev_zone_config_shell_script.open('w') as out:
+            out.write(f'#!/bin/sh\nsource {conda_specs["conda_shell_script"]} ; '
+                      f'conda activate {conda_specs["conda_env_name"]} ; {cmd_cmake_generate}')
+        dev_zone_config_shell_script.chmod(dev_zone_config_shell_script.stat().st_mode | stat.S_IEXEC)
 
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            dev_zone_config_shell_script = Path(tmpdirname).joinpath('run_dev_config_script.sh')
-            with dev_zone_config_shell_script.open('w') as out:
-                out.write(f'#!/bin/sh\nsource {conda_specs["conda_shell_script"]} ; '
-                  f'conda activate {conda_specs["conda_env_name"]} ; {cmd_cmake_generate}')
-            dev_zone_config_shell_script.chmod(dev_zone_config_shell_script.stat().st_mode | stat.S_IEXEC)
+        result = subprocess.run(f'{dev_zone_config_shell_script}', stdout=subprocess.PIPE)
 
-            result = subprocess.run(f'{dev_zone_config_shell_script}', stdout=subprocess.PIPE)
-
-        return result.stdout.decode('utf-8')
-    else:
-        raise RuntimeError(f'Unsupported platform {sys.platform}')
-
-
+    return result.stdout.decode('utf-8')
