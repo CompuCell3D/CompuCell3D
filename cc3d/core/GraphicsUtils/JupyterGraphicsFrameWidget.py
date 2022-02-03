@@ -12,6 +12,7 @@ from cc3d.core.GraphicsUtils.GraphicsFrame import GraphicsFrame
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame import (
     CC3DPyGraphicsFrameClientBase, CC3DPyInteractorStyle, np_img_data, save_img
 )
+from cc3d.core.GraphicsUtils.JupyterControlPanel import JupyterControlPanel
 
 
 # Test for IPython
@@ -128,7 +129,7 @@ class JupyterGraphicsFrame(GraphicsFrame):
 
 
 class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
-    """Client for a Jupyter grpahics frame"""
+    """Client for a Jupyter graphics frame"""
 
     def __init__(self,
                  name: str = None,
@@ -153,6 +154,8 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
 
         self.frame = JupyterGraphicsFrame()
         self.frame.gd.get_renderer().ResetCamera()
+
+        self.create_control_panel()
 
         self._interactor_widget = ViewInteractiveWidget(self.frame.renWin)
         return self._interactor_widget
@@ -240,3 +243,65 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         """Set the plane and position"""
 
         self.frame.set_plane(plane, pos)
+
+    def create_control_panel(self):
+        """Create view controls (ipywidgets)"""
+        panel = JupyterControlPanel()
+
+        def toggle_bounding_box(value):
+            self.frame.bounding_box_on = not self.frame.bounding_box_on
+            self.draw()
+        def toggle_cell_borders(value):
+            self.frame.cell_borders_on = not self.frame.cell_borders_on
+            self.draw()
+        def toggle_cell_glyphs(value):
+            self.frame.cell_glyphs_on = not self.frame.cell_glyphs_on
+            self.draw()
+        def toggle_cells(value):
+            self.frame.cells_on = not self.frame.cells_on
+            self.draw()
+        def toggle_cluster_borders(value):
+            self.frame.cluster_borders_on = not self.frame.cluster_borders_on
+            self.draw()
+        def toggle_fpp_links(value):
+            self.frame.fpp_links_on = not self.frame.fpp_links_on
+            self.draw()
+        def toggle_lattice_axes_labels(value):
+            self.frame.lattice_axes_labels_on = not self.frame.lattice_axes_labels_on
+            self.draw()
+        def toggle_lattice_axes(value):
+            self.frame.lattice_axes_on = not self.frame.lattice_axes_on
+            self.draw()
+
+        frame_options = {
+            'bounding box': toggle_bounding_box,
+            'cell borders': toggle_cell_borders,
+            'cell glyphs': toggle_cell_glyphs,
+            'cells': toggle_cells,
+            'cluster borders': toggle_cluster_borders,
+            'fpp links': toggle_fpp_links,
+            'lattice axes labels': toggle_lattice_axes_labels,
+            'lattice axes': toggle_lattice_axes
+        }
+        for (field, func) in frame_options.items():
+            panel.add_toggle(field, callback=func, show=False)
+
+        panel.add_tab('frame options', frame_options.keys())
+
+
+        def set_drawing_style(value):
+            self.set_drawing_style(value)
+        panel.add_select('drawing style', options=['2D','3D'], callback=set_drawing_style, show=False)
+
+        def toggle_field(value):
+            self.frame.field_name = value
+            self.draw()
+        options = self.frame.fieldTypes.keys()
+        panel.add_select('view options', options=options, callback=toggle_field, show=False)
+
+        # def set_x(value):
+        #     self.set_plane('x', value)
+        #     self.draw()
+        # panel.add_int('x', 0, -100, 100, 1, set_x)
+
+        panel.add_tab('other', ['drawing style', 'view options'])
