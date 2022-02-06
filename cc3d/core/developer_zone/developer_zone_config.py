@@ -115,7 +115,46 @@ def configure_developer_zone_linux(cc3d_git_dir: Path, build_dir: Path, conda_sp
     @param conda_specs:
     @return:
     """
-    raise RuntimeError(f'Unsupported Platform: {sys.platform}')
+    developer_zone_source = cc3d_git_dir.joinpath('CompuCell3D', 'DeveloperZone')
+
+    paths_dict = sysconfig.get_paths()
+
+    conda_env_name = conda_specs['conda_env_name']
+    installed_base = Path(sysconfig.get_config_var('installed_base'))
+
+    ld_library = sysconfig.get_config_var('LDLIBRARY')
+    libdir = sysconfig.get_config_var('LIBDIR')
+    ld_library_abs_path = Path(libdir).joinpath(ld_library)
+
+    bin_dir = installed_base.joinpath('bin')
+    activate_script = bin_dir.joinpath('activate')
+
+    site_packages_dir = Path(paths_dict['platlib'])
+
+    install_dir = site_packages_dir
+
+    python_include_dir = paths_dict['include']
+
+    cmake_exec = bin_dir.joinpath('cmake')
+
+    cmake_generator_name = 'Unix Makefiles'
+
+    cmd_cmake_generate = f'{cmake_exec} -G "{cmake_generator_name}" -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ' \
+                         f'-DCMAKE_INSTALL_PREFIX:PATH={install_dir} ' \
+                         f'-DCOMPUCELL3D_GIT_DIR:PATH={cc3d_git_dir} ' \
+                         f'-DCOMPUCELL3D_INSTALL_PATH:PATH={install_dir} ' \
+                         f'-DPYTHON_INCLUDE_DIR:PATH={python_include_dir} ' \
+                         f'-DPYTHON_LIBRARY:PATH={ld_library_abs_path} ' \
+                         f'-S {developer_zone_source} ' \
+                         f'-B {build_dir} ' \
+
+    result = subprocess.check_output(
+        f'source {activate_script} ; conda activate {conda_env_name} ; {cmd_cmake_generate}', shell=True)
+
+    out_str = result.decode('utf-8')
+    print(out_str)
+
+    return out_str
 
 
 def configure_developer_zone_mac(cc3d_git_dir: Path, build_dir: Path, conda_specs: dict):

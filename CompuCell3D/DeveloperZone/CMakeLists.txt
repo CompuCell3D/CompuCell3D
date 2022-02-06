@@ -88,7 +88,7 @@ SET(COMPUCELL3D_FULL_SOURCE_PATH CACHE PATH "CompuCell3D source code path ")
 SET(COMPUCELL3D_SOURCE_DIR CACHE PATH "CompuCell3D source code path <CC3D_GIT_REPO>/Comp ")
 SET(COMPUCELL3D_SOURCE_DIR ${COMPUCELL3D_GIT_DIR}/CompuCell3D)
 
-# assuming cmake_install_prexif points to site packages dir we do the following:
+# assuming cmake_install_prefix points to site packages dir we do the following:
 SET(COMPUCELL3D_INSTALL_LIB_DIR ${COMPUCELL3D_INSTALL_PATH}/cc3d/cpp/lib)
 
 # for alternative (old cc3d layout we would do this)
@@ -102,6 +102,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     # ${COMPUCELL3D_INSTALL_PATH} points to <conda_env>/Lib/site_packages
     # and link librariers .lib are in <conda_env>/Library/lib
     SET(COMPUCELL3D_LINK_LIBRARY_PATH ${COMPUCELL3D_INSTALL_PATH}/../../Library/lib)
+elseif (UNIX)
+    SET(COMPUCELL3D_LINK_LIBRARY_PATH ${COMPUCELL3D_INSTALL_PATH}/../../)
 endif()
 
 
