@@ -7,12 +7,12 @@ except ImportError:
     warnings.warn('Could not find webcolors. Run "pip install webcolors" to fix this', RuntimeWarning)
 
 import sys
-from PyQt5 import QtCore, QtGui, QtOpenGL
+from PyQt5 import QtCore, QtGui, QtWidgets
 import pyqtgraph as pg
 from pyqtgraph.graphicsItems.PlotItem import PlotItem
 
 
-class PlotFrameWidget(QtGui.QFrame):
+class PlotFrameWidget(QtWidgets.QFrame):
     def __init__(self, parent=None, **kwds):
         QtGui.QFrame.__init__(self, parent)
 

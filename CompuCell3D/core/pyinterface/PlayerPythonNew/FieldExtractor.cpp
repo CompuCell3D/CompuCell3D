@@ -16,6 +16,7 @@
 #include <vtkType.h>
 #include <algorithm>
 #include <cmath>
+#include <chrono>
 
 #include <vtkPythonUtil.h>
 
@@ -64,7 +65,7 @@ void FieldExtractor::extractCellField(){
 }
 
 void FieldExtractor::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _plane, int _pos){
-
+  cout<<"!!CALLING fillCellFieldData2D !!"<<endl;
 	vtkIntArray *_cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
@@ -116,9 +117,13 @@ void FieldExtractor::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, 
 			_cellTypeArray->InsertValue(offset, type);
 			++offset;
 		}
+
+    cout<<"!!EXITING fillCellFieldData2D !!"<<endl;
 }
 
 void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos) {
+    cout<<"!!CALLING fillCellFieldData2DCartesian !!"<<endl;
+    auto start_time = std::chrono::high_resolution_clock::now();
 
     vtkIntArray *_cellTypeArray = (vtkIntArray *)_cellTypeArrayAddr;
     vtkPoints *_pointsArray = (vtkPoints *)_pointsArrayAddr;
@@ -148,12 +153,19 @@ void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeAr
     int type;
     long pc = 0;
 
+    int numPoints = dim[0] * dim[1];
+    cout<<"fillCellFieldData2DCartesian; " <<  "_cellsArray->GetNumberOfCells: " << _cellsArray->GetNumberOfCells() << endl;
+    // vtkIdTypeArray *_cellsArrayWritePtr = new ‘vtkIdTypeArray[numPoints*5];
+    vtkIdType *_cellsArrayWritePtr = _cellsArray->WritePointer(numPoints, (numPoints*5)+1);
+    // cout<<"fillCellFieldData2DCartesian; numPoints " << numPoints <<  "_cellsArray->GetNumberOfCells: " << _cellsArray->GetNumberOfCells() << endl;
 
+    // _cellsArray -> AllocateExact(numPoints, 4);
     //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
 
-
-    for (int j = 0; j<dim[1]; ++j)
+    for (int j = 0; j<dim[1]; ++j){
         for (int i = 0; i<dim[0]; ++i) {
+            int dataPoint = i + j*dim[1];
+
             ptVec[0] = i;
             ptVec[1] = j;
             ptVec[2] = _pos;
@@ -165,7 +177,7 @@ void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeAr
             cell = cellFieldG->get(pt);
             if (!cell) {
                 type = 0;
-                continue;
+                // continue;
             }
             else {
                 type = cell->type;
@@ -180,21 +192,47 @@ void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeAr
             }
 
             pc += 4;
-            vtkIdType cellId = _cellsArray->InsertNextCell(4);
-            _cellsArray->InsertCellPoint(pc - 4);
-            _cellsArray->InsertCellPoint(pc - 3);
-            _cellsArray->InsertCellPoint(pc - 2);
-            _cellsArray->InsertCellPoint(pc - 1);
+            int cellPos = dataPoint * 4;
+            int arrPos = dataPoint * 5;
+            // cout<< "i: " << i << " j: " << j << " pt: " << dataPoint << " cellPos:" << cellPos << endl;
+
+
+            _cellsArrayWritePtr[arrPos+0]=4;
+            _cellsArrayWritePtr[arrPos+1]=cellPos+0;
+            _cellsArrayWritePtr[arrPos+2]=cellPos+1;
+            _cellsArrayWritePtr[arrPos+3]=cellPos+2;
+            _cellsArrayWritePtr[arrPos+4]=cellPos+3;
+            // vtkIdType cellId = _cellsArray->SetData(cellPos, data);
+
+            // vtkIdType data[4];
+            // data[0] = pc - 4;
+            // data[1] = pc - 3;
+            // data[2] = pc - 2;
+            // data[3] = pc - 1;
+            // vtkIdType cellId = _cellsArray->InsertNextCell(4, data);
+
+            // vtkIdType cellId = _cellsArray->InsertNextCell(4);
+            // _cellsArray->InsertCellPoint(pc - 4);
+            // _cellsArray->InsertCellPoint(pc - 3);
+            // _cellsArray->InsertCellPoint(pc - 2);
+            // _cellsArray->InsertCellPoint(pc - 1);
 
             _cellTypeArray->InsertNextValue(type);
             ++offset;
         }
-    
+    }
 
+  // _cellsArray->SetCells(numPoints, _cellsArrayWritePtr);
+  cout<<"fillCellFieldData2DCartesian; dim size: " << dim[1] * dim[0] << " _pointsArray->GetNumberOfPoints: " << _pointsArray->GetNumberOfPoints() << " _cellTypeArray->GetNumberOfTuples: " << _cellTypeArray->GetNumberOfTuples() << " _cellsArray->GetNumberOfCells: " << _cellsArray->GetNumberOfCells() << endl;
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  // seconds_since_start = difftime( time(0), start);
+  cout<<"!!EXITING fillCellFieldData2DCartesian !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano~seconds elapsed" << endl;
 }
 
 
 void FieldExtractor::fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane ,  int _pos){
+  cout<<"!!CALLING fillCellFieldData2DHex !!"<<endl;
 	vtkIntArray *_cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
 	vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
@@ -267,6 +305,8 @@ void FieldExtractor::fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAdd
 
 			++offset;
 		}
+
+  cout<<"!!EXITING fillCellFieldData2DHex !!"<<endl;
 }
 
 void FieldExtractor::fillCellFieldData2DHex_old(vtk_obj_addr_int_t _cellTypeArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane ,  int _pos){
@@ -332,6 +372,8 @@ void FieldExtractor::fillCellFieldData2DHex_old(vtk_obj_addr_int_t _cellTypeArra
 }
 
 void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){
+  cout<<"!!CALLING fillBorderData2D !!"<<endl;
+  auto start_time = std::chrono::high_resolution_clock::now();
 
 	vtkPoints *points = (vtkPoints *)_pointArrayAddr;
 	vtkCellArray * lines=(vtkCellArray *)_linesArrayAddr; 
@@ -437,6 +479,9 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_ob
 				}
 			}
 		}
+  auto current_time = std::chrono::high_resolution_clock::now();
+  // seconds_since_start = difftime( time(0), start);
+  cout<<"!!EXITING fillBorderData2D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano~seconds elapsed" << endl;
 }
 
 void FieldExtractor::fillBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){
