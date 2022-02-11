@@ -2,7 +2,7 @@
 Defines features for interactive visualization for use with CC3D simservice applications in a Jupyter notebook
 """
 
-from typing import Optional, Union, Tuple
+from typing import Optional, Union, Tuple, List
 
 from vtkmodules.vtkRenderingCore import vtkRenderWindowInteractor, vtkRenderWindow
 
@@ -139,7 +139,7 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         super().__init__(name=name, config_fp=config_fp)
 
         self.frame: Optional[JupyterGraphicsFrame] = None
-        self._interactor_widget: Optional[ViewInteractiveWidget] = None
+        self.widget: Optional[ViewInteractiveWidget] = None
 
     def launch(self, timeout: float = None):
         """
@@ -156,11 +156,11 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         self.frame = JupyterGraphicsFrame()
         self.frame.gd.get_renderer().ResetCamera()
 
-        self.create_control_panel()
-
-        self._interactor_widget = ViewInteractiveWidget(self.frame.renWin)
-        display(self._interactor_widget)
+        self.widget = ViewInteractiveWidget(self.frame.renWin)
         return self
+
+    def show(self):
+        display(self.widget)
 
     def draw(self, blocking: bool = False):
         """
@@ -175,8 +175,8 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         """
 
         self.frame.draw()
-        self._interactor_widget: ViewInteractiveWidget
-        self._interactor_widget.update_canvas()
+        self.widget: ViewInteractiveWidget
+        self.widget.update_canvas()
 
     def close(self):
         """
@@ -271,66 +271,23 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         self.frame.reset_camera()
         self.frame.current_screenshot_data = self.frame.compute_current_screenshot_data()
         self.frame.draw()
-        self._interactor_widget.update_canvas()
+        self.widget.update_canvas()
 
-    def create_control_panel(self):
-        """Create view controls (ipywidgets)"""
-        panel = JupyterControlPanel()
+    @property
+    def field_names(self) -> Optional[List[str]]:
+        """Current available field names if available, otherwise None"""
 
-        def toggle_bounding_box(value):
-            self.frame.bounding_box_on = not self.frame.bounding_box_on
-            self.draw()
-        def toggle_cell_borders(value):
-            self.frame.cell_borders_on = not self.frame.cell_borders_on
-            self.draw()
-        def toggle_cell_glyphs(value):
-            self.frame.cell_glyphs_on = not self.frame.cell_glyphs_on
-            self.draw()
-        def toggle_cells(value):
-            self.frame.cells_on = not self.frame.cells_on
-            self.draw()
-        def toggle_cluster_borders(value):
-            self.frame.cluster_borders_on = not self.frame.cluster_borders_on
-            self.draw()
-        def toggle_fpp_links(value):
-            self.frame.fpp_links_on = not self.frame.fpp_links_on
-            self.draw()
-        def toggle_lattice_axes_labels(value):
-            self.frame.lattice_axes_labels_on = not self.frame.lattice_axes_labels_on
-            self.draw()
-        def toggle_lattice_axes(value):
-            self.frame.lattice_axes_on = not self.frame.lattice_axes_on
-            self.draw()
+        if self.frame is None or self.frame.fieldTypes is None:
+            return None
+        return list(self.frame.fieldTypes.keys())
 
-        frame_options = {
-            'bounding box': toggle_bounding_box,
-            'cell borders': toggle_cell_borders,
-            'cell glyphs': toggle_cell_glyphs,
-            'cells': toggle_cells,
-            'cluster borders': toggle_cluster_borders,
-            'fpp links': toggle_fpp_links,
-            'lattice axes labels': toggle_lattice_axes_labels,
-            'lattice axes': toggle_lattice_axes
-        }
-        for (field, func) in frame_options.items():
-            panel.add_toggle(field, callback=func, show=False)
+    def set_field_name(self, _field_name: str):
+        """Set the name of the field to render"""
 
-        panel.add_tab('frame options', frame_options.keys())
+        field_names = self.field_names
+        if _field_name not in field_names:
+            raise ValueError('Available field names are', ','.join(field_names))
 
-
-        def set_drawing_style(value):
-            self.set_drawing_style(value)
-        panel.add_select('drawing style', options=['2D','3D'], callback=set_drawing_style, show=False)
-
-        def toggle_field(value):
-            self.frame.field_name = value
-            self.draw()
-        options = self.frame.fieldTypes.keys()
-        panel.add_select('view options', options=options, callback=toggle_field, show=False)
-
-        # def set_x(value):
-        #     self.set_plane('x', value)
-        #     self.draw()
-        # panel.add_int('x', 0, -100, 100, 1, set_x)
-
-        panel.add_tab('other', ['drawing style', 'view options'])
+        super().set_field_name(_field_name)
+        self.frame.field_name = _field_name
+        self._update()
