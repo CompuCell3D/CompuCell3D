@@ -727,6 +727,12 @@ class CC3DPyGraphicsFrameClientBase:
 
         raise NotImplementedError
 
+    @property
+    def field_names(self) -> Optional[List[str]]:
+        """Current available field names if available, otherwise None"""
+
+        raise NotImplementedError
+
     def set_drawing_style(self, _style):
         """
         Function that wires-up the widget to behave according tpo the dimension of the visualization

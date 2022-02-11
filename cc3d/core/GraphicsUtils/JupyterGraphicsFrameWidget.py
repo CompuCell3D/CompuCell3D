@@ -2,7 +2,7 @@
 Defines features for interactive visualization for use with CC3D simservice applications in a Jupyter notebook
 """
 
-from typing import Optional, Union, Tuple
+from typing import Optional, Union, Tuple, List
 
 from vtkmodules.vtkRenderingCore import vtkRenderWindowInteractor, vtkRenderWindow
 
@@ -138,7 +138,7 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         super().__init__(name=name, config_fp=config_fp)
 
         self.frame: Optional[JupyterGraphicsFrame] = None
-        self._interactor_widget: Optional[ViewInteractiveWidget] = None
+        self.widget: Optional[ViewInteractiveWidget] = None
 
     def launch(self, timeout: float = None):
         """
@@ -155,9 +155,11 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         self.frame = JupyterGraphicsFrame()
         self.frame.gd.get_renderer().ResetCamera()
 
-        self._interactor_widget = ViewInteractiveWidget(self.frame.renWin)
-        display(self._interactor_widget)
+        self.widget = ViewInteractiveWidget(self.frame.renWin)
         return self
+
+    def show(self):
+        display(self.widget)
 
     def draw(self, blocking: bool = False):
         """
@@ -172,8 +174,8 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         """
 
         self.frame.draw()
-        self._interactor_widget: ViewInteractiveWidget
-        self._interactor_widget.update_canvas()
+        self.widget: ViewInteractiveWidget
+        self.widget.update_canvas()
 
     def close(self):
         """
@@ -268,4 +270,23 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         self.frame.reset_camera()
         self.frame.current_screenshot_data = self.frame.compute_current_screenshot_data()
         self.frame.draw()
-        self._interactor_widget.update_canvas()
+        self.widget.update_canvas()
+
+    @property
+    def field_names(self) -> Optional[List[str]]:
+        """Current available field names if available, otherwise None"""
+
+        if self.frame is None or self.frame.fieldTypes is None:
+            return None
+        return list(self.frame.fieldTypes.keys())
+
+    def set_field_name(self, _field_name: str):
+        """Set the name of the field to render"""
+
+        field_names = self.field_names
+        if _field_name not in field_names:
+            raise ValueError('Available field names are', ','.join(field_names))
+
+        super().set_field_name(_field_name)
+        self.frame.field_name = _field_name
+        self._update()
