@@ -20,6 +20,7 @@ try:
     get_ipython
     __has_interactive__ = True
     from ipyvtklink.viewer import ViewInteractiveWidget
+    from IPython.display import display
 except NameError:
     __has_interactive__ = False
     ViewInteractiveWidget = object
@@ -158,7 +159,8 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         self.create_control_panel()
 
         self._interactor_widget = ViewInteractiveWidget(self.frame.renWin)
-        return self._interactor_widget
+        display(self._interactor_widget)
+        return self
 
     def draw(self, blocking: bool = False):
         """
@@ -239,10 +241,37 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
 
         self.frame.set_drawing_style(_style)
 
-    def set_plane(self, plane, pos):
+        self._update()
+
+    def set_plane(self, plane, pos=0):
         """Set the plane and position"""
 
-        self.frame.set_plane(plane, pos)
+        self.frame.currentProjection = plane
+        self.frame.projection_position = pos
+
+        if self.frame.currentProjection == 'xy':
+            if pos > self.frame.xyMaxPlane:
+                pos = self.frame.xyMaxPlane
+            self.frame.xyPlane = pos
+
+        elif self.frame.currentProjection == 'xz':
+            if pos > self.frame.xzMaxPlane:
+                pos = self.frame.xzMaxPlane
+            self.frame.xzPlane = pos
+
+        elif self.frame.currentProjection == 'yz':
+            if pos > self.frame.yzMaxPlane:
+                pos = self.frame.yzMaxPlane
+            self.frame.yzPlane = pos
+
+        self.frame.set_plane(self.frame.currentProjection, pos)
+        self._update()
+
+    def _update(self):
+        self.frame.reset_camera()
+        self.frame.current_screenshot_data = self.frame.compute_current_screenshot_data()
+        self.frame.draw()
+        self._interactor_widget.update_canvas()
 
     def create_control_panel(self):
         """Create view controls (ipywidgets)"""
