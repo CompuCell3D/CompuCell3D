@@ -157,7 +157,11 @@ void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeAr
     cout<<"fillCellFieldData2DCartesian; " <<  "_cellsArray->GetNumberOfCells: " << _cellsArray->GetNumberOfCells() << endl;
     // vtkIdTypeArray *_cellsArrayWritePtr = new ‘vtkIdTypeArray[numPoints*5];
     vtkIdType *_cellsArrayWritePtr = _cellsArray->WritePointer(numPoints, (numPoints*5)+1);
-    // cout<<"fillCellFieldData2DCartesian; numPoints " << numPoints <<  "_cellsArray->GetNumberOfCells: " << _cellsArray->GetNumberOfCells() << endl;
+    _cellTypeArray->SetNumberOfValues(numPoints);
+    _pointsArray->SetNumberOfPoints(numPoints * 4);
+  cout<<"fillCellFieldData2DCartesian; dim size: " << dim[1] * dim[0] << " _pointsArray->GetNumberOfPoints: " << _pointsArray->GetNumberOfPoints() << " _cellTypeArray->GetNumberOfTuples: " << _cellTypeArray->GetNumberOfTuples() << " _cellsArray->GetNumberOfCells: " << _cellsArray->GetNumberOfCells() << endl;
+
+    cout<<"fillCellFieldData2DCartesian; numPoints " << numPoints << " _cellTypeArray->GetNumberOfComponents: " << _cellTypeArray->GetNumberOfComponents() << " _cellTypeArray->GetNumberOfTuples: " << _cellTypeArray->GetNumberOfTuples() << "_cellsArray->GetNumberOfCells: " << _cellsArray->GetNumberOfCells() << endl;
 
     // _cellsArray -> AllocateExact(numPoints, 4);
     //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
@@ -186,13 +190,15 @@ void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeAr
 
             Coordinates3D<double> coords(ptVec[0], ptVec[1], 0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
 
+            int cellPos = dataPoint * 4;
             for (int idx = 0; idx<4; ++idx) {
+                cout << "i: " << i << " j: " << j << " pt: " << cellPos << " " << idx << " _pointsArray->GetNumberOfPoints" << _pointsArray->GetNumberOfPoints() << endl;
                 Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
-                _pointsArray->InsertNextPoint(cartesianVertex.x, cartesianVertex.y, 0.0);
+                _pointsArray->SetPoint(cellPos+idx, cartesianVertex.x, cartesianVertex.y, 0.0);
+                // _pointsArray->InsertNextPoint(cartesianVertex.x, cartesianVertex.y, 0.0);
             }
 
             pc += 4;
-            int cellPos = dataPoint * 4;
             int arrPos = dataPoint * 5;
             // cout<< "i: " << i << " j: " << j << " pt: " << dataPoint << " cellPos:" << cellPos << endl;
 
@@ -217,7 +223,8 @@ void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeAr
             // _cellsArray->InsertCellPoint(pc - 2);
             // _cellsArray->InsertCellPoint(pc - 1);
 
-            _cellTypeArray->InsertNextValue(type);
+            // _cellTypeArray->InsertNextValue(type);
+            _cellTypeArray->SetValue(cellPos, type);
             ++offset;
         }
     }
