@@ -88,7 +88,7 @@ SET(COMPUCELL3D_FULL_SOURCE_PATH CACHE PATH "CompuCell3D source code path ")
 SET(COMPUCELL3D_SOURCE_DIR CACHE PATH "CompuCell3D source code path <CC3D_GIT_REPO>/Comp ")
 SET(COMPUCELL3D_SOURCE_DIR ${COMPUCELL3D_GIT_DIR}/CompuCell3D)
 
-# assuming cmake_install_prexif points to site packages dir we do the following:
+# assuming cmake_install_prefix points to site packages dir we do the following:
 SET(COMPUCELL3D_INSTALL_LIB_DIR ${COMPUCELL3D_INSTALL_PATH}/cc3d/cpp/lib)
 
 # for alternative (old cc3d layout we would do this)
@@ -96,6 +96,16 @@ SET(COMPUCELL3D_INSTALL_LIB_DIR ${COMPUCELL3D_INSTALL_PATH}/cc3d/cpp/lib)
 
 SET(COMPUCELL3D_INCLUDE_PATH ${COMPUCELL3D_INSTALL_PATH}/include/CompuCell3D)
 SET(COMPUCELL3D_LIBRARY_PATH ${COMPUCELL3D_INSTALL_PATH}/lib)
+
+SET(COMPUCELL3D_LINK_LIBRARY_PATH )
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    # ${COMPUCELL3D_INSTALL_PATH} points to <conda_env>/Lib/site_packages
+    # and link librariers .lib are in <conda_env>/Library/lib
+    SET(COMPUCELL3D_LINK_LIBRARY_PATH ${COMPUCELL3D_INSTALL_PATH}/../../Library/lib)
+elseif (UNIX)
+    SET(COMPUCELL3D_LINK_LIBRARY_PATH ${COMPUCELL3D_INSTALL_PATH}/../../)
+endif()
+
 
 # assuming cmake_install_prexif points to site packages dir we do the following:
 SET(COMPUCELL3D_INSTALL_PLUGIN_DIR " cc3d/cpp/CompuCell3DPlugins")
@@ -106,7 +116,7 @@ SET(COMPUCELL3D_INSTALL_STEPPABLE_DIR " cc3d/cpp/CompuCell3DSteppables")
 # SET(COMPUCELL3D_INSTALL_STEPPABLE_DIR " lib/site-packages/cc3d/cpp/CompuCell3DSteppables")
 
 
-LINK_DIRECTORIES(${COMPUCELL3D_LIBRARY_PATH} ${COMPUCELL3D_INSTALL_LIB_DIR})
+LINK_DIRECTORIES(${COMPUCELL3D_LIBRARY_PATH} ${COMPUCELL3D_INSTALL_LIB_DIR} ${COMPUCELL3D_LINK_LIBRARY_PATH})
 SET(CC3DLibraries CC3DCompuCellLib CC3DBoundary CC3DField3D CC3DPublicUtilities CC3DUnits CC3DXMLUtils CC3DmuParser)
 SET(STEPPABLE_DEPENDENCIES ${CC3DLibraries})
 SET(PLUGIN_DEPENDENCIES ${CC3DLibraries})
