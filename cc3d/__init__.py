@@ -10,29 +10,10 @@ from os.path import dirname, join, abspath
 from pathlib import Path
 
 __version__ = "4.3.0"
-__revision__ = "15"
+__revision__ = "16"
+__git_hash__ = ""
 
 from . import config
-
-
-def get_sha_label() -> str:
-    """
-    Fetches git sha tag - relies on the file sha_label.py . This file is NOT part of git repo but instead it is
-    written during installation scripts run. Main use case is to know exact tag based on which binaries have been built
-    :return: sha tag
-    """
-    try:
-        import cc3d.commit_tag
-        try:
-            sha_tag = cc3d.commit_tag.sha_label
-            return sha_tag
-        except AttributeError:
-            return get_version_revision_str()
-            # return revisionNumber
-
-    except ImportError:
-        return get_version_revision_str()
-
 
 def get_version_revision_str():
     return f"{__version__}.{__revision__}"
@@ -47,7 +28,7 @@ def get_version_info():
     returns CC3D version string
     :return:
     """
-    return f"CompuCell3D Version: {__version__} Revision: {__revision__} \n Commit Label: {get_sha_label()}"
+    return f"CompuCell3D Version: {__version__} Revision: {__revision__} \n Commit Label: {__git_hash__}"
 
 
 def get_formatted_version_info():
