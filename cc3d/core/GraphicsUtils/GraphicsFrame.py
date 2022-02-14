@@ -260,12 +260,11 @@ class GraphicsFrame:
 
         # metadata_dict = {}
         metadata_dict = self.get_config_metadata(field_name=field_name, field_type=field_type)
-        con_field_name = field_name
-        metadata_dict['MinRangeFixed'] = self.config.getSetting("MinRangeFixed", con_field_name)
-        metadata_dict['MaxRangeFixed'] = self.config.getSetting("MaxRangeFixed", con_field_name)
-        metadata_dict['MinRange'] = self.config.getSetting("MinRange", con_field_name)
-        metadata_dict['MaxRange'] = self.config.getSetting("MaxRange", con_field_name)
-        metadata_dict['ContoursOn'] = self.config.getSetting("ContoursOn", con_field_name)
+        metadata_dict['MinRangeFixed'] = self.config.getSetting("MinRangeFixed", field_name)
+        metadata_dict['MaxRangeFixed'] = self.config.getSetting("MaxRangeFixed", field_name)
+        metadata_dict['MinRange'] = self.config.getSetting("MinRange", field_name)
+        metadata_dict['MaxRange'] = self.config.getSetting("MaxRange", field_name)
+        metadata_dict['ContoursOn'] = self.config.getSetting("ContoursOn", field_name)
         metadata_dict['NumberOfContourLines'] = self.config.getSetting("NumberOfContourLines", field_name)
         metadata_dict['ScalarIsoValues'] = cs_string_to_typed_list(
             self.config.getSetting("ScalarIsoValues", field_name))

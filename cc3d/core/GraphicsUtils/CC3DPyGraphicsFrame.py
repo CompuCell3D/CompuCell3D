@@ -3,7 +3,6 @@ Defines features for interactive visualization for use with CC3D simservice appl
 """
 
 # todo: add CC3D logo to window title icon
-# todo: test interface to set the target field
 # todo: add target field name display
 # todo: handle settings values for individual fields (i.e., create defaults when not in pre-fetched data)
 # todo: disable built-in key commands for closing render windows
@@ -592,7 +591,7 @@ class CC3DPyGraphicsFrameControlInterface:
 class CC3DPyGraphicsFrameClientBase:
     """Base class for a CC3D Python graphics frame client"""
 
-    CONFIG_ENTRIES: List[Union[str, Tuple[Any, str]]] = [
+    CONFIG_ENTRIES: List[Union[str, Tuple[str, Any]]] = [
         'AxesColor',
         'BorderColor',
         'BoundingBoxColor',
@@ -621,6 +620,23 @@ class CC3DPyGraphicsFrameClientBase:
         ('TypeColorMap', 10),
         'WindowColor'
     ]
+
+    CONFIG_ENTRIES_FIELDS_BYNAME = [
+        'MinRangeFixed',
+        'MaxRangeFixed',
+        'MinRange',
+        'MaxRange',
+        'ContoursOn',
+        'NumberOfContourLines',
+        'ScalarIsoValues',
+        'LegendEnable'
+    ]
+    """Configuration keys with database values by field name"""
+
+    CONFIG_ENTRIES_FIELDS_UNIFORM = [
+        'DisplayMinMaxInfo'
+    ]
+    """Configuration keys with database values that are uniformly applied to all fields"""
 
     # todo: implement smarter CC3D default configuration data
 
@@ -909,6 +925,8 @@ class CC3DPyGraphicsFrameClientBase:
 
         self.config_data = {}
 
+        # Pre-load basic configuration data
+
         for entry in self.CONFIG_ENTRIES:
             if isinstance(entry, str):
                 self.config_data[entry] = CompuCellSetup.persistent_globals.configuration.getSetting(entry)
@@ -920,7 +938,24 @@ class CC3DPyGraphicsFrameClientBase:
                 except KeyError:
                     self.config_data[key] = {field_name: val[field_name]}
 
-        pass
+        # Pre-load field configuration data
+
+        config = CompuCellSetup.persistent_globals.configuration
+
+        for field_name in self.field_names:
+            for fk in CC3DPyGraphicsFrameClientBase.CONFIG_ENTRIES_FIELDS_BYNAME:
+                val = config.getSetting(fk, field_name)
+                try:
+                    self.config_data[fk][field_name] = val
+                except KeyError:
+                    self.config_data[fk] = {field_name: val}
+
+            for fk in CC3DPyGraphicsFrameClientBase.CONFIG_ENTRIES_FIELDS_UNIFORM:
+                val = config.getSetting(fk)
+                try:
+                    self.config_data[fk][field_name] = val
+                except KeyError:
+                    self.config_data[fk] = {field_name: val}
 
 
 class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFrameClientBase):
@@ -1070,6 +1105,13 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
                                         scale=scale,
                                         transparent_background=transparent_background)
 
+    @property
+    def field_names(self) -> Optional[List[str]]:
+        """Current available field names"""
+
+        field_names = CompuCellSetup.persistent_globals.simulator.getConcentrationFieldNameVector()
+        return list(field_names)
+
     def _standard_bsd(self) -> BasicSimulationData:
         bsd = BasicSimulationData()
         bsd.fieldDim = CompuCellSetup.persistent_globals.simulator.getPotts().getCellFieldG().getDim()
@@ -1093,8 +1135,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
             raise RuntimeError('Failed fetching configuration:', _key, field_name)
 
     def _service_get_concentration_field_names(self) -> List[str]:
-        field_names = CompuCellSetup.persistent_globals.simulator.getConcentrationFieldNameVector()
-        return list(field_names)
+        return self.field_names
 
     def _service_get_fields_to_create(self) -> Dict[str, str]:
         field_dict = CompuCellSetup.persistent_globals.field_registry.get_fields_to_create_dict()
