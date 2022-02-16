@@ -215,7 +215,8 @@ void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeAr
 
 
 void FieldExtractor::fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane ,  int _pos){
-  cout<<"!!CALLING fillCellFieldData2DHex !!"<<endl;
+
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkIntArray *_cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
 	vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
@@ -236,24 +237,21 @@ void FieldExtractor::fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAdd
 	dim[1]=fieldDimVec[dimOrderVec[1]];
 	dim[2]=fieldDimVec[dimOrderVec[2]];
 
-	int offset=0;
+  int numPoints = dim[0] * dim[1];
+  vtkIdType *_hexCellsArrayWritePtr = _hexCellsArray->WritePointer(numPoints, numPoints*7);
+  _cellTypeArray->SetNumberOfValues(numPoints);
+  _pointsArray->SetNumberOfPoints(numPoints * 6);
 
-	////For some reasons the points x=0 are eaten up (don't know why).
-	////So we just populate empty cellIds.
-
-	//for (int i = 0 ; i< dim[0]+1 ;++i){
-	//	_cellTypeArray->SetValue(offset, 0);
-	//	++offset;
-	//}
-
-	Point3D pt;
-	vector<int> ptVec(3,0);
-	CellG* cell;
-	int type;
-	long pc=0;
 	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1] ; ++j)
+	for(int j =0 ; j<dim[1] ; ++j) {
+    Point3D pt;
+    vector<int> ptVec(3,0);
+    CellG* cell;
+    int type;
+    long pc=0;
+
 		for(int i =0 ; i<dim[0] ; ++i){
+      int dataPoint = i + j*dim[1];
 			ptVec[0]=i;
 			ptVec[1]=j;
 			ptVec[2]=_pos;
@@ -265,31 +263,48 @@ void FieldExtractor::fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAdd
 			cell=cellFieldG->get(pt);
 			if (!cell){
 				type=0;
-				continue;
+				// continue;
 			}else{
 				type=cell->type;
 			}
 
 			Coordinates3D<double> hexCoords=HexCoordXY(pt.x,pt.y,pt.z);
+      int cellPos = dataPoint * 6;
 			for (int idx=0 ; idx<6 ; ++idx){
 			 Coordinates3D<double> hexagonVertex=hexagonVertices[idx]+hexCoords;
-			 _pointsArray->InsertNextPoint(hexagonVertex.x,hexagonVertex.y,0.0);
+       _pointsArray->SetPoint(cellPos+idx, hexagonVertex.x, hexagonVertex.y, 0.0);
+			//  _pointsArray->InsertNextPoint(hexagonVertex.x,hexagonVertex.y,0.0);
 			}
-			pc+=6;
-			vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
-			_hexCellsArray->InsertCellPoint(pc-6);
-			_hexCellsArray->InsertCellPoint(pc-5);
-			_hexCellsArray->InsertCellPoint(pc-4);
-			_hexCellsArray->InsertCellPoint(pc-3);
-			_hexCellsArray->InsertCellPoint(pc-2);
-			_hexCellsArray->InsertCellPoint(pc-1);
+			// pc+=6;
 
-			_cellTypeArray->InsertNextValue(type);
+      int arrPos = dataPoint * 6;
+      _hexCellsArrayWritePtr[arrPos+0]=6;
+      _hexCellsArrayWritePtr[arrPos+1]=cellPos+0;
+      _hexCellsArrayWritePtr[arrPos+2]=cellPos+1;
+      _hexCellsArrayWritePtr[arrPos+3]=cellPos+2;
+      _hexCellsArrayWritePtr[arrPos+4]=cellPos+3;
+      _hexCellsArrayWritePtr[arrPos+5]=cellPos+4;
+      _hexCellsArrayWritePtr[arrPos+6]=cellPos+5;
+      // TODO: can we memset this to not have to run for type==0?
+      if (type != 0) {
+        cout << dataPoint << " " << type << endl;
+      }
+      _cellTypeArray->SetValue(dataPoint, type);
 
-			++offset;
+			// vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
+			// _hexCellsArray->InsertCellPoint(pc-6);
+			// _hexCellsArray->InsertCellPoint(pc-5);
+			// _hexCellsArray->InsertCellPoint(pc-4);
+			// _hexCellsArray->InsertCellPoint(pc-3);
+			// _hexCellsArray->InsertCellPoint(pc-2);
+			// _hexCellsArray->InsertCellPoint(pc-1);
+
+			// _cellTypeArray->InsertNextValue(type);
 		}
+  }
 
-  cout<<"!!EXITING fillCellFieldData2DHex !!"<<endl;
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillCellFieldData2DHex !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
 }
 
 void FieldExtractor::fillCellFieldData2DHex_old(vtk_obj_addr_int_t _cellTypeArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane ,  int _pos){
@@ -355,7 +370,7 @@ void FieldExtractor::fillCellFieldData2DHex_old(vtk_obj_addr_int_t _cellTypeArra
 }
 
 void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){
-  cout<<"!!CALLING fillBorderData2D !!"<<endl;
+  // cout<<"!!CALLING fillBorderData2D !!"<<endl;
   auto start_time = std::chrono::high_resolution_clock::now();
 
 	vtkPoints *points = (vtkPoints *)_pointArrayAddr;
@@ -470,7 +485,7 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_ob
 
 void FieldExtractor::fillBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){
     //this function can be shortened but for now I am leaving it the way it is
-
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkPoints *points = (vtkPoints *)_pointArrayAddr;
 	vtkCellArray * lines=(vtkCellArray *)_linesArrayAddr; 
 
@@ -895,6 +910,9 @@ void FieldExtractor::fillBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr ,vtk
             
             
 		}
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillBorderData2DHex !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano~seconds elapsed" << endl;
 }
 
 void FieldExtractor::fillClusterBorderData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){
@@ -1015,6 +1033,7 @@ void FieldExtractor::fillClusterBorderData2D(vtk_obj_addr_int_t _pointArrayAddr 
 
 void FieldExtractor::fillClusterBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){
     //this function has to be redone in the same spirit as fillBorderData2DHex
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkPoints *points = (vtkPoints *)_pointArrayAddr;
 	vtkCellArray * lines = (vtkCellArray *)_linesArrayAddr;
 
@@ -1443,6 +1462,9 @@ void FieldExtractor::fillClusterBorderData2DHex(vtk_obj_addr_int_t _pointArrayAd
             
             
 		}
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillClusterBorderData2DHex !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano~seconds elapsed" << endl;
 }
 
 void FieldExtractor::fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){
