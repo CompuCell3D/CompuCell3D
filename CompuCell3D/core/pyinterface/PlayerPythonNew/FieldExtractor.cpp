@@ -7,6 +7,7 @@
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 #include <Utils/Coordinates3D.h>
+#include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include <vtkIntArray.h>
 #include <vtkLongArray.h>
 #include <vtkDoubleArray.h>
@@ -17,6 +18,7 @@
 #include <algorithm>
 #include <cmath>
 #include <chrono>
+#include <omp.h>
 
 #include <vtkPythonUtil.h>
 
@@ -37,6 +39,10 @@ FieldExtractor::~FieldExtractor(){
 void FieldExtractor::init(Simulator * _sim){
 	sim=_sim;
 	potts=sim->getPotts();
+  // TODO: remove this
+  ParallelUtilsOpenMP *pUtils = sim->getParallelUtils();
+  int nprocs = pUtils->getNumberOfProcessors() - 2;
+  pUtils->setNumberOfWorkNodes(nprocs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,7 +71,7 @@ void FieldExtractor::extractCellField(){
 }
 
 void FieldExtractor::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _plane, int _pos){
-  cout<<"!!CALLING fillCellFieldData2D !!"<<endl;
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkIntArray *_cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
@@ -84,21 +90,23 @@ void FieldExtractor::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, 
 	dim[1]=fieldDimVec[dimOrderVec[1]];
 	dim[2]=fieldDimVec[dimOrderVec[2]];
 
-	_cellTypeArray->SetNumberOfValues((dim[1]+2)*(dim[0]+1));
+  int size = (dim[1]+2)*(dim[0]+1);
+	_cellTypeArray->SetNumberOfValues(size);
 	//For some reasons the points x=0 are eaten up (don't know why).
 	//So we just populate empty cellIds.
-	int offset=0;
+#pragma omp parallel for shared(_cellTypeArray, dim)
 	for (int i = 0 ; i< dim[0]+1 ;++i){
-		_cellTypeArray->SetValue(offset, 0);
-		++offset;
+		_cellTypeArray->SetValue(i, 0);
 	}
 
-	Point3D pt;
-	vector<int> ptVec(3,0);
-	CellG* cell;
-	int type;
 	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1]+1 ; ++j)
+#pragma omp parallel for shared(pointOrderVec, dim, _cellTypeArray, cellFieldG) schedule(static,5)
+	for(int j =0 ; j<dim[1]+1 ; ++j){
+    Point3D pt;
+    vector<int> ptVec(3,0);
+    CellG* cell;
+    int type;
+
 		for(int i =0 ; i<dim[0]+1 ; ++i){
 			ptVec[0]=i;
 			ptVec[1]=j;
@@ -114,15 +122,16 @@ void FieldExtractor::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, 
 			}else{
 				type=cell->type;
 			}
-			_cellTypeArray->InsertValue(offset, type);
-			++offset;
+      int pos = i + j*(dim[1]+1) + (dim[0]+1);
+			_cellTypeArray->SetValue(pos, type);
 		}
-
-    cout<<"!!EXITING fillCellFieldData2D !!"<<endl;
+  }
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillCellFieldData2D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
 }
 
 void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos) {
-    cout<<"!!CALLING fillCellFieldData2DCartesian !!"<<endl;
+    // cout<<"!!CALLING fillCellFieldData2DCartesian !!"<<endl;
     auto start_time = std::chrono::high_resolution_clock::now();
 
     vtkIntArray *_cellTypeArray = (vtkIntArray *)_cellTypeArrayAddr;
@@ -145,31 +154,23 @@ void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeAr
     dim[1] = fieldDimVec[dimOrderVec[1]];
     dim[2] = fieldDimVec[dimOrderVec[2]];
 
-    int offset = 0;
-
-    Point3D pt;
-    vector<int> ptVec(3, 0);
-    CellG* cell;
-    int type;
-    long pc = 0;
 
     int numPoints = dim[0] * dim[1];
-    cout<<"fillCellFieldData2DCartesian; " <<  "_cellsArray->GetNumberOfCells: " << _cellsArray->GetNumberOfCells() << endl;
-    // vtkIdTypeArray *_cellsArrayWritePtr = new ‘vtkIdTypeArray[numPoints*5];
+    // cout<<"fillCellFieldData2DCartesian; " <<  "_cellsArray->GetNumberOfCells: " << _cellsArray->GetNumberOfCells() << endl;
     vtkIdType *_cellsArrayWritePtr = _cellsArray->WritePointer(numPoints, (numPoints*5)+1);
     _cellTypeArray->SetNumberOfValues(numPoints);
     _pointsArray->SetNumberOfPoints(numPoints * 4);
-  cout<<"fillCellFieldData2DCartesian; dim size: " << dim[1] * dim[0] << " _pointsArray->GetNumberOfPoints: " << _pointsArray->GetNumberOfPoints() << " _cellTypeArray->GetNumberOfTuples: " << _cellTypeArray->GetNumberOfTuples() << " _cellsArray->GetNumberOfCells: " << _cellsArray->GetNumberOfCells() << endl;
 
-    cout<<"fillCellFieldData2DCartesian; numPoints " << numPoints << " _cellTypeArray->GetNumberOfComponents: " << _cellTypeArray->GetNumberOfComponents() << " _cellTypeArray->GetNumberOfTuples: " << _cellTypeArray->GetNumberOfTuples() << "_cellsArray->GetNumberOfCells: " << _cellsArray->GetNumberOfCells() << endl;
-
-    // _cellsArray -> AllocateExact(numPoints, 4);
     //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-
+#pragma omp parallel for shared(pointOrderVec, dim, _cellsArrayWritePtr, _cellTypeArray, _pointsArray, cellFieldG) schedule(static,5)
     for (int j = 0; j<dim[1]; ++j){
+      Point3D pt;
+      vector<int> ptVec(3, 0);
+      CellG* cell;
+      int type;
+
         for (int i = 0; i<dim[0]; ++i) {
             int dataPoint = i + j*dim[1];
-
             ptVec[0] = i;
             ptVec[1] = j;
             ptVec[2] = _pos;
@@ -187,54 +188,29 @@ void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeAr
                 type = cell->type;
             }
 
-
-            Coordinates3D<double> coords(ptVec[0], ptVec[1], 0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
+            // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
+            Coordinates3D<double> coords(ptVec[0], ptVec[1], 0); 
 
             int cellPos = dataPoint * 4;
             for (int idx = 0; idx<4; ++idx) {
-                cout << "i: " << i << " j: " << j << " pt: " << cellPos << " " << idx << " _pointsArray->GetNumberOfPoints" << _pointsArray->GetNumberOfPoints() << endl;
-                Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
-                _pointsArray->SetPoint(cellPos+idx, cartesianVertex.x, cartesianVertex.y, 0.0);
-                // _pointsArray->InsertNextPoint(cartesianVertex.x, cartesianVertex.y, 0.0);
+              // TODO: can we be clever and pre-populate these to not have to run for type==0?
+              Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
+              _pointsArray->SetPoint(cellPos+idx, cartesianVertex.x, cartesianVertex.y, 0.0);
             }
 
-            pc += 4;
             int arrPos = dataPoint * 5;
-            // cout<< "i: " << i << " j: " << j << " pt: " << dataPoint << " cellPos:" << cellPos << endl;
-
-
             _cellsArrayWritePtr[arrPos+0]=4;
             _cellsArrayWritePtr[arrPos+1]=cellPos+0;
             _cellsArrayWritePtr[arrPos+2]=cellPos+1;
             _cellsArrayWritePtr[arrPos+3]=cellPos+2;
             _cellsArrayWritePtr[arrPos+4]=cellPos+3;
-            // vtkIdType cellId = _cellsArray->SetData(cellPos, data);
-
-            // vtkIdType data[4];
-            // data[0] = pc - 4;
-            // data[1] = pc - 3;
-            // data[2] = pc - 2;
-            // data[3] = pc - 1;
-            // vtkIdType cellId = _cellsArray->InsertNextCell(4, data);
-
-            // vtkIdType cellId = _cellsArray->InsertNextCell(4);
-            // _cellsArray->InsertCellPoint(pc - 4);
-            // _cellsArray->InsertCellPoint(pc - 3);
-            // _cellsArray->InsertCellPoint(pc - 2);
-            // _cellsArray->InsertCellPoint(pc - 1);
-
-            // _cellTypeArray->InsertNextValue(type);
-            _cellTypeArray->SetValue(cellPos, type);
-            ++offset;
+            // TODO: can we memset this to not have to run for type==0?
+            _cellTypeArray->SetValue(dataPoint, type);
         }
     }
 
-  // _cellsArray->SetCells(numPoints, _cellsArrayWritePtr);
-  cout<<"fillCellFieldData2DCartesian; dim size: " << dim[1] * dim[0] << " _pointsArray->GetNumberOfPoints: " << _pointsArray->GetNumberOfPoints() << " _cellTypeArray->GetNumberOfTuples: " << _cellTypeArray->GetNumberOfTuples() << " _cellsArray->GetNumberOfCells: " << _cellsArray->GetNumberOfCells() << endl;
-
   auto current_time = std::chrono::high_resolution_clock::now();
-  // seconds_since_start = difftime( time(0), start);
-  cout<<"!!EXITING fillCellFieldData2DCartesian !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano~seconds elapsed" << endl;
+  cout<<"!!EXITING fillCellFieldData2DCartesian !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
 }
 
 
@@ -488,6 +464,7 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_ob
 		}
   auto current_time = std::chrono::high_resolution_clock::now();
   // seconds_since_start = difftime( time(0), start);
+  cout << "points->GetNumberOfPoints " << points->GetNumberOfPoints() << " lines->GetNumberOfCells " << lines->GetNumberOfCells() << endl;
   cout<<"!!EXITING fillBorderData2D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano~seconds elapsed" << endl;
 }
 
