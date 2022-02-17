@@ -132,9 +132,8 @@ class FieldWriterCML:
         cellFieldG: cellfield = self.sim.getPotts().getCellFieldG()
         fieldDim = cellFieldG.getDim()
 
-        fieldMap: Dict[str, floatfield] = self.sim.getConcentrationFieldNameMap()
-        if _conFieldName in fieldMap.keys():
-            conFieldPtr = fieldMap[_conFieldName]
+        if _conFieldName in self.sim.getConcentrationFieldNameVector():
+            conFieldPtr = self.sim.getConcentrationFieldByName(_conFieldName)
         else:
             return False
 

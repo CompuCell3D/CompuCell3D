@@ -2,7 +2,7 @@
 Defines features for interactive visualization for use with CC3D simservice applications in a Jupyter notebook
 """
 
-from typing import Optional, Union, Tuple
+from typing import Optional, Union, Tuple, List
 
 from vtkmodules.vtkRenderingCore import vtkRenderWindowInteractor, vtkRenderWindow
 
@@ -20,6 +20,7 @@ try:
     get_ipython
     __has_interactive__ = True
     from ipyvtklink.viewer import ViewInteractiveWidget
+    from IPython.display import display
 except NameError:
     __has_interactive__ = False
     ViewInteractiveWidget = object
@@ -74,6 +75,7 @@ class JupyterGraphicsFrame(GraphicsFrame):
         self.init_field_types()
         self.Render()
 
+
     def get_vtk_window(self):
         """
         Get an initialized vtk window and window interactor.
@@ -98,6 +100,7 @@ class JupyterGraphicsFrame(GraphicsFrame):
 
         return renWin, interactor
 
+
     def store_gui_vis_config(self, scr_data):
         """
         Save current internal data.
@@ -113,6 +116,7 @@ class JupyterGraphicsFrame(GraphicsFrame):
         scr_data.fpp_links_on = self.fpp_links_on
         scr_data.lattice_axes_labels_on = self.lattice_axes_labels_on
         scr_data.lattice_axes_on = self.lattice_axes_on
+
 
     def set_drawing_style(self, _style):
         """
@@ -138,7 +142,8 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         super().__init__(name=name, config_fp=config_fp)
 
         self.frame: Optional[JupyterGraphicsFrame] = None
-        self._interactor_widget: Optional[ViewInteractiveWidget] = None
+        self.widget: Optional[ViewInteractiveWidget] = None
+
 
     def launch(self, timeout: float = None):
         """
@@ -157,8 +162,13 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
 
         self.create_control_panel()
 
-        self._interactor_widget = ViewInteractiveWidget(self.frame.renWin)
-        return self._interactor_widget
+        self.widget = ViewInteractiveWidget(self.frame.renWin)
+        return self
+
+
+    def show(self):
+        display(self.widget)
+
 
     def draw(self, blocking: bool = False):
         """
@@ -173,8 +183,9 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         """
 
         self.frame.draw()
-        self._interactor_widget: ViewInteractiveWidget
-        self._interactor_widget.update_canvas()
+        self.widget: ViewInteractiveWidget
+        self.widget.update_canvas()
+
 
     def close(self):
         """
@@ -185,8 +196,8 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         :return: True on success
         :rtype: bool
         """
-
         return True
+
 
     def np_img_data(self, scale: Union[int, Tuple[int, int]] = None, transparent_background: bool = False):
         """
@@ -201,8 +212,8 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         :return: image array data
         :rtype: numpy.array
         """
-
         return np_img_data(ren_win=self.frame.renWin, scale=scale, transparent_background=transparent_background)
+
 
     def save_img(self,
                  file_path: str,
@@ -223,11 +234,11 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         :type transparent_background: bool
         :return: None
         """
-
         return save_img(ren_win=self.frame.renWin,
                         file_path=file_path,
                         scale=scale,
                         transparent_background=transparent_background)
+
 
     def set_drawing_style(self, _style):
         """
@@ -236,13 +247,61 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         :param _style:{str} '2D' or '3D'
         :return: None
         """
-
         self.frame.set_drawing_style(_style)
+        self._update()
 
-    def set_plane(self, plane, pos):
+
+    def set_plane(self, plane, pos=0):
         """Set the plane and position"""
+        self.frame.currentProjection = plane
+        self.frame.projection_position = pos
 
-        self.frame.set_plane(plane, pos)
+        if self.frame.currentProjection == 'xy':
+            if pos > self.frame.xyMaxPlane:
+                pos = self.frame.xyMaxPlane
+            self.frame.xyPlane = pos
+
+        elif self.frame.currentProjection == 'xz':
+            if pos > self.frame.xzMaxPlane:
+                pos = self.frame.xzMaxPlane
+            self.frame.xzPlane = pos
+
+        elif self.frame.currentProjection == 'yz':
+            if pos > self.frame.yzMaxPlane:
+                pos = self.frame.yzMaxPlane
+            self.frame.yzPlane = pos
+
+        self.frame.set_plane(self.frame.currentProjection, pos)
+        self._update()
+
+
+    def _update(self):
+        self.frame.reset_camera()
+        self.frame.current_screenshot_data = self.frame.compute_current_screenshot_data()
+        self.frame.draw()
+        self.widget.update_canvas()
+
+
+    @property
+    def field_names(self) -> Optional[List[str]]:
+        """Current available field names if available, otherwise None"""
+
+        if self.frame is None or self.frame.fieldTypes is None:
+            return None
+        return list(self.frame.fieldTypes.keys())
+
+
+    def set_field_name(self, _field_name: str):
+        """Set the name of the field to render"""
+
+        field_names = self.field_names
+        if _field_name not in field_names:
+            raise ValueError('Available field names are', ','.join(field_names))
+
+        super().set_field_name(_field_name)
+        self.frame.field_name = _field_name
+        self._update()
+
 
     def create_control_panel(self):
         """Create view controls (ipywidgets)"""
