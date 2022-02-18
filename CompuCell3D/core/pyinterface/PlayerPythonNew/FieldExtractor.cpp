@@ -398,92 +398,94 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_ob
 
   vector<std::pair<int, int>> global_points;
 
-#pragma omp parallel for shared(pointOrderVec, dim, cellFieldG, points, lines, global_points) schedule(static, 5)
-  for (int i = 0; i < dim[0]; ++i) {
-    Point3D pt;
-    vector<int> ptVec(3, 0);
-    Point3D ptN;
-    vector<int> ptNVec(3, 0);
-
+#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, points, lines, global_points)
+  {
     vector<std::pair<int, int>> local_points;
-
-    for (int j = 0; j < dim[1]; ++j)
+#pragma omp for schedule(static, 5)
+    for (int i = 0; i < dim[0]; ++i)
     {
-      ptVec[0] = i;
-      ptVec[1] = j;
-      ptVec[2] = _pos;
+      Point3D pt;
+      vector<int> ptVec(3, 0);
+      Point3D ptN;
+      vector<int> ptNVec(3, 0);
 
-      pt.x = ptVec[pointOrderVec[0]];
-      pt.y = ptVec[pointOrderVec[1]];
-      pt.z = ptVec[pointOrderVec[2]];
-
-      if (i > 0 && j < dim[1])
+      for (int j = 0; j < dim[1]; ++j)
       {
-        ptNVec[0] = i - 1;
-        ptNVec[1] = j;
-        ptNVec[2] = _pos;
-        ptN.x = ptNVec[pointOrderVec[0]];
-        ptN.y = ptNVec[pointOrderVec[1]];
-        ptN.z = ptNVec[pointOrderVec[2]];
-        if (cellFieldG->get(pt) != cellFieldG->get(ptN))
+        ptVec[0] = i;
+        ptVec[1] = j;
+        ptVec[2] = _pos;
+
+        pt.x = ptVec[pointOrderVec[0]];
+        pt.y = ptVec[pointOrderVec[1]];
+        pt.z = ptVec[pointOrderVec[2]];
+
+        if (i > 0 && j < dim[1])
         {
-          local_points.push_back(std::pair<int, int>(i, j));
-          local_points.push_back(std::pair<int, int>(i, j + 1));
+          ptNVec[0] = i - 1;
+          ptNVec[1] = j;
+          ptNVec[2] = _pos;
+          ptN.x = ptNVec[pointOrderVec[0]];
+          ptN.y = ptNVec[pointOrderVec[1]];
+          ptN.z = ptNVec[pointOrderVec[2]];
+          if (cellFieldG->get(pt) != cellFieldG->get(ptN))
+          {
+            local_points.push_back(std::pair<int, int>(i, j));
+            local_points.push_back(std::pair<int, int>(i, j + 1));
+          }
+        }
+        if (j > 0 && i < dim[0])
+        {
+          ptNVec[0] = i;
+          ptNVec[1] = j - 1;
+          ptNVec[2] = _pos;
+          ptN.x = ptNVec[pointOrderVec[0]];
+          ptN.y = ptNVec[pointOrderVec[1]];
+          ptN.z = ptNVec[pointOrderVec[2]];
+          if (cellFieldG->get(pt) != cellFieldG->get(ptN))
+          {
+            local_points.push_back(std::pair<int, int>(i, j));
+            local_points.push_back(std::pair<int, int>(i + 1, j));
+          }
+        }
+
+        if (i < dim[0] && j < dim[1])
+        {
+          ptNVec[0] = i + 1;
+          ptNVec[1] = j;
+          ptNVec[2] = _pos;
+          ptN.x = ptNVec[pointOrderVec[0]];
+          ptN.y = ptNVec[pointOrderVec[1]];
+          ptN.z = ptNVec[pointOrderVec[2]];
+          if (cellFieldG->get(pt) != cellFieldG->get(ptN))
+          {
+            local_points.push_back(std::pair<int, int>(i + 1, j));
+            local_points.push_back(std::pair<int, int>(i + 1, j + 1));
+          }
+        }
+
+        if (i < dim[0] && j < dim[1])
+        {
+          ptNVec[0] = i;
+          ptNVec[1] = j + 1;
+          ptNVec[2] = _pos;
+          ptN.x = ptNVec[pointOrderVec[0]];
+          ptN.y = ptNVec[pointOrderVec[1]];
+          ptN.z = ptNVec[pointOrderVec[2]];
+          if (cellFieldG->get(pt) != cellFieldG->get(ptN))
+          {
+            local_points.push_back(std::pair<int, int>(i, j + 1));
+            local_points.push_back(std::pair<int, int>(i + 1, j + 1));
+          }
         }
       }
-      if (j > 0 && i < dim[0])
-      {
-        ptNVec[0] = i;
-        ptNVec[1] = j - 1;
-        ptNVec[2] = _pos;
-        ptN.x = ptNVec[pointOrderVec[0]];
-        ptN.y = ptNVec[pointOrderVec[1]];
-        ptN.z = ptNVec[pointOrderVec[2]];
-        if (cellFieldG->get(pt) != cellFieldG->get(ptN))
-        {
-          local_points.push_back(std::pair<int, int>(i, j));
-          local_points.push_back(std::pair<int, int>(i + 1, j));
-        }
-      }
-
-      if (i < dim[0] && j < dim[1])
-      {
-        ptNVec[0] = i + 1;
-        ptNVec[1] = j;
-        ptNVec[2] = _pos;
-        ptN.x = ptNVec[pointOrderVec[0]];
-        ptN.y = ptNVec[pointOrderVec[1]];
-        ptN.z = ptNVec[pointOrderVec[2]];
-        if (cellFieldG->get(pt) != cellFieldG->get(ptN))
-        {
-          local_points.push_back(std::pair<int, int>(i + 1, j));
-          local_points.push_back(std::pair<int, int>(i + 1, j + 1));
-        }
-      }
-
-      if (i < dim[0] && j < dim[1])
-      {
-        ptNVec[0] = i;
-        ptNVec[1] = j + 1;
-        ptNVec[2] = _pos;
-        ptN.x = ptNVec[pointOrderVec[0]];
-        ptN.y = ptNVec[pointOrderVec[1]];
-        ptN.z = ptNVec[pointOrderVec[2]];
-        if (cellFieldG->get(pt) != cellFieldG->get(ptN))
-        {
-          local_points.push_back(std::pair<int,int>(i, j+1));
-          local_points.push_back(std::pair<int, int>(i + 1, j + 1));
-        }
-      }
-    }
-    #pragma omp critical 
-    {
-      for (int j = 0; j < local_points.size(); j+=2) {
-        global_points.push_back(local_points[j]);
-        global_points.push_back(local_points[j+1]);
-      }
-    }
   }
+#pragma omp critical
+  {
+    // https://stackoverflow.com/a/18671256
+    // we can force these to be added in-order if we want
+    global_points.insert(global_points.end(), local_points.begin(), local_points.end());
+  }
+}
 
   int pc = 0;
   vtkIdType *linesWritePtr = lines->WritePointer(global_points.size()/2, (global_points.size()/2 * 3));
