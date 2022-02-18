@@ -3,6 +3,7 @@ Defines features for interactive visualization for use with CC3D simservice appl
 """
 
 from typing import Optional, Union, Tuple, List
+import warnings
 
 from vtkmodules.vtkRenderingCore import vtkRenderWindowInteractor, vtkRenderWindow
 
@@ -135,10 +136,10 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
                  name: str = None,
                  config_fp: str = None):
 
-        super().__init__(name=name, config_fp=config_fp)
-
         self.frame: Optional[JupyterGraphicsFrame] = None
         self.widget: Optional[ViewInteractiveWidget] = None
+
+        super().__init__(name=name, config_fp=config_fp)
 
     def launch(self, timeout: float = None):
         """
@@ -273,19 +274,26 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         self.widget.update_canvas()
 
     @property
-    def field_names(self) -> Optional[List[str]]:
-        """Current available field names if available, otherwise None"""
+    def field_names(self) -> List[str]:
+        """Current available field names"""
 
         if self.frame is None or self.frame.fieldTypes is None:
-            return None
+            return []
         return list(self.frame.fieldTypes.keys())
 
     def set_field_name(self, _field_name: str):
         """Set the name of the field to render"""
 
         field_names = self.field_names
+
+        if not field_names:
+            warnings.warn('Field names not available', RuntimeWarning)
+            return
+
         if _field_name not in field_names:
-            raise ValueError('Available field names are', ','.join(field_names))
+            warnings.warn(f'Field name not known: {_field_name}. Available field names are' + ','.join(field_names),
+                          RuntimeWarning)
+            return
 
         super().set_field_name(_field_name)
         self.frame.field_name = _field_name
