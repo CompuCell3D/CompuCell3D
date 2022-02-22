@@ -11,7 +11,7 @@ from pathlib import Path
 
 __version__ = "4.3.0"
 __revision__ = "16"
-__git_hash__ = ""
+__githash__ = ""
 
 from . import config
 
@@ -28,7 +28,7 @@ def get_version_info():
     returns CC3D version string
     :return:
     """
-    return f"CompuCell3D Version: {__version__} Revision: {__revision__} \n Commit Label: {__git_hash__}"
+    return f"CompuCell3D Version: {__version__} Revision: {__revision__} \n Commit Label: {__githash__}"
 
 
 def get_formatted_version_info():
