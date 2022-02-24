@@ -2,8 +2,8 @@
 # {% set version = "4.3.1" %}
 # {% set build_number = "1" %}
 
-#{% set version = "4.3.2" %}
-#{% set build_number = "2" %}
+#{% set version = "4.3.0" %}
+#{% set build_number = "16" %}
 
 package:
   name: cc3d
@@ -34,8 +34,9 @@ requirements:
     - vtk=8.2
     - eigen
     - tbb-devel=2020
-    - cmake=3.19
+    - cmake>=3.14
     - swig=3
+    - cc3d-network-solvers
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
@@ -60,6 +61,7 @@ requirements:
     - psutil
     - cmake=3.19
     - swig=3
+    - cc3d-network-solvers
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]

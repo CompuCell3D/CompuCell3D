@@ -26,7 +26,8 @@ set(CMAKE_CXX_STANDARD 11)
 # openmp installation on OSX . on OSX install llvm-openmp to get openmp with clang
 # When running via command line use e.g. :
 # # os.system(f'source /Users/m/miniconda3/etc/profile.d/conda.sh ; conda activate cc3d_test ; {cmd_test}')
-FIND_PACKAGE(OpenMP)
+# if you have trouble after installation clear cache and remove cmake build directory - start fresh
+FIND_PACKAGE(OpenMP REQUIRED)
 IF(OPENMP_FOUND)
     message ("openmp c flags " "${OpenMP_C_FLAGS}")
     message ("openmp cxx flags " "${OpenMP_CXX_FLAGS}")
@@ -42,8 +43,10 @@ OPTION(FLEX_PYTHON_SPECS "Allow Flexible Python Path specification" OFF)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     # FIND_PACKAGE(PythonInterpreter)
+    FIND_PACKAGE(PythonExec)
     FIND_PACKAGE(PythonLibs)
     FIND_PACKAGE(PythonInterp)
+
     # INCLUDE(FindPythonLibs)
 
     if (FLEX_PYTHON_SPECS)
