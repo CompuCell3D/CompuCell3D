@@ -3,7 +3,7 @@
 # {% set build_number = "1" %}
 
 #{% set version = "4.3.2" %}
-# {% set build_number = "2" %}
+#{% set build_number = "2" %}
 
 package:
   name: cc3d
@@ -34,7 +34,7 @@ requirements:
     - vtk=8.2
     - eigen
     - tbb-devel=2020
-    - cmake>=3.14
+    - cmake=3.19
     - swig=3
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
