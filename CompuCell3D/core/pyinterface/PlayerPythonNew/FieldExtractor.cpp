@@ -94,13 +94,16 @@ void FieldExtractor::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, 
 	_cellTypeArray->SetNumberOfValues(size);
 	//For some reasons the points x=0 are eaten up (don't know why).
 	//So we just populate empty cellIds.
-#pragma omp parallel for shared(_cellTypeArray, dim)
-	for (int i = 0 ; i< dim[0]+1 ;++i){
-		_cellTypeArray->SetValue(i, 0);
-	}
+#pragma omp parallel shared(pointOrderVec, dim, _cellTypeArray, cellFieldG)
+  {
+#pragma omp for schedule(static)
+    for (int i = 0; i < dim[0] + 1; ++i)
+    {
+      _cellTypeArray->SetValue(i, 0);
+    }
 
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-#pragma omp parallel for shared(pointOrderVec, dim, _cellTypeArray, cellFieldG) schedule(static,5)
+    // when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+#pragma omp parallel for schedule(static)
 	for(int j =0 ; j<dim[1]+1 ; ++j){
     Point3D pt;
     vector<int> ptVec(3,0);
@@ -126,6 +129,7 @@ void FieldExtractor::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, 
 			_cellTypeArray->SetValue(pos, type);
 		}
   }
+}
   auto current_time = std::chrono::high_resolution_clock::now();
   cout<<"!!EXITING fillCellFieldData2D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
 }
@@ -162,9 +166,10 @@ void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeAr
 
     vector<int> global_type_vec;
     vector<int> local_type_vec;
+    vtkIdType *_cellsArrayWritePtr;
 
-#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, global_point_vec, global_type_vec) private(local_point_vec, local_type_vec)
-{
+#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, global_point_vec, global_type_vec, _cellsArrayWritePtr) private(local_point_vec, local_type_vec)
+    {
 #pragma omp for schedule(static,5) nowait
     for (int j = 0; j<dim[1]; ++j){
       Point3D pt;
@@ -212,16 +217,27 @@ void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeAr
     global_point_vec.insert(global_point_vec.end(), local_point_vec.begin(), local_point_vec.end());
     global_type_vec.insert(global_type_vec.end(), local_type_vec.begin(), local_type_vec.end());
   }
+
+#pragma omp barrier
+  int numPoints = global_point_vec.size();
+
+#pragma omp sections
+{
+  #pragma omp section
+  {
+    _cellsArrayWritePtr = _cellsArray->WritePointer(numPoints, numPoints*5);
+  }
+  #pragma omp section
+  {
+    _cellTypeArray->SetNumberOfValues(numPoints);
+  }
+  #pragma omp section
+  {
+    _pointsArray->SetNumberOfPoints(numPoints * 4);
+  }
 }
 
-  cout << "completed computing points in fillCellFieldData2DCartesian " << global_point_vec.size() << " " << global_type_vec.size()  << endl;
-
-  int numPoints = global_point_vec.size();
-  vtkIdType *_cellsArrayWritePtr = _cellsArray->WritePointer(numPoints, numPoints*5);
-  _cellTypeArray->SetNumberOfValues(numPoints);
-  _pointsArray->SetNumberOfPoints(numPoints * 4);
-
-#pragma omp parallel for shared(_cellsArrayWritePtr, _cellTypeArray, _pointsArray) schedule(static,5)
+#pragma omp for schedule(static)
   for (int j = 0; j < numPoints; j += 4) {
     // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
     int cellPos = j;
@@ -239,6 +255,7 @@ void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeAr
     _cellsArrayWritePtr[arrPos + 4] = cellPos + 3;
     _cellTypeArray->SetValue(j/4, global_type_vec[j/4]);
   }
+}
 
   auto current_time = std::chrono::high_resolution_clock::now();
   cout<<"!!EXITING fillCellFieldData2DCartesian !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
@@ -246,7 +263,6 @@ void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeAr
 
 
 void FieldExtractor::fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane ,  int _pos){
-
   auto start_time = std::chrono::high_resolution_clock::now();
 	vtkIntArray *_cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
@@ -268,17 +284,22 @@ void FieldExtractor::fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAdd
 	dim[1]=fieldDimVec[dimOrderVec[1]];
 	dim[2]=fieldDimVec[dimOrderVec[2]];
 
-  int numPoints = dim[0] * dim[1];
-  vtkIdType *_hexCellsArrayWritePtr = _hexCellsArray->WritePointer(numPoints, numPoints*7);
-  _cellTypeArray->SetNumberOfValues(numPoints);
-  _pointsArray->SetNumberOfPoints(numPoints * 6);
+  vector<std::pair<double, double>> global_point_vec;
+  vector<std::pair<double, double>> local_point_vec;
 
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+  vector<int> global_type_vec;
+  vector<int> local_type_vec;
+  vtkIdType *_hexCellsArrayWritePtr;
+  int numPoints;
+  //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, global_point_vec, global_type_vec, _hexCellsArrayWritePtr, _cellTypeArray, _pointsArray) private(local_point_vec, local_type_vec, numPoints)
+  {
+#pragma omp for schedule(static,5) nowait
 	for(int j =0 ; j<dim[1] ; ++j) {
     Point3D pt;
     vector<int> ptVec(3,0);
     CellG* cell;
-    int type;
+    int type=0;
     long pc=0;
 
 		for(int i =0 ; i<dim[0] ; ++i){
@@ -293,46 +314,76 @@ void FieldExtractor::fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAdd
 
 			cell=cellFieldG->get(pt);
 			if (!cell){
-				type=0;
-				// continue;
+				// type=0;
+				continue;
 			}else{
 				type=cell->type;
 			}
 
 			Coordinates3D<double> hexCoords=HexCoordXY(pt.x,pt.y,pt.z);
-      int cellPos = dataPoint * 6;
-			for (int idx=0 ; idx<6 ; ++idx){
-			 Coordinates3D<double> hexagonVertex=hexagonVertices[idx]+hexCoords;
-       _pointsArray->SetPoint(cellPos+idx, hexagonVertex.x, hexagonVertex.y, 0.0);
-			//  _pointsArray->InsertNextPoint(hexagonVertex.x,hexagonVertex.y,0.0);
-			}
-			// pc+=6;
-
-      int arrPos = dataPoint * 6;
-      _hexCellsArrayWritePtr[arrPos+0]=6;
-      _hexCellsArrayWritePtr[arrPos+1]=cellPos+0;
-      _hexCellsArrayWritePtr[arrPos+2]=cellPos+1;
-      _hexCellsArrayWritePtr[arrPos+3]=cellPos+2;
-      _hexCellsArrayWritePtr[arrPos+4]=cellPos+3;
-      _hexCellsArrayWritePtr[arrPos+5]=cellPos+4;
-      _hexCellsArrayWritePtr[arrPos+6]=cellPos+5;
-      // TODO: can we memset this to not have to run for type==0?
-      if (type != 0) {
-        cout << dataPoint << " " << type << endl;
+			for (int idx = 0; idx < 6; ++idx){
+        Coordinates3D<double> hexagonVertex=hexagonVertices[idx]+hexCoords;
+        local_point_vec.push_back(std::pair<double, double>(hexagonVertex.x, hexagonVertex.y));
       }
-      _cellTypeArray->SetValue(dataPoint, type);
 
-			// vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
-			// _hexCellsArray->InsertCellPoint(pc-6);
-			// _hexCellsArray->InsertCellPoint(pc-5);
-			// _hexCellsArray->InsertCellPoint(pc-4);
-			// _hexCellsArray->InsertCellPoint(pc-3);
-			// _hexCellsArray->InsertCellPoint(pc-2);
-			// _hexCellsArray->InsertCellPoint(pc-1);
-
-			// _cellTypeArray->InsertNextValue(type);
-		}
+      local_type_vec.push_back(type);
+    }
   }
+#pragma omp critical
+  {
+    // https://stackoverflow.com/a/18671256
+    // we can force these to be added in-order if we want
+    global_point_vec.insert(global_point_vec.end(), local_point_vec.begin(), local_point_vec.end());
+    global_type_vec.insert(global_type_vec.end(), local_type_vec.begin(), local_type_vec.end());
+  }
+
+#pragma omp barrier
+  numPoints = global_type_vec.size();
+  int numHexCellsArray = numPoints * 7;
+  int numPointsCount = numPoints * 6;
+#pragma omp sections
+{
+  // cout << " allocating types " << numPoints << " hex cells " << numHexCellsArray << " points " << numPointsCount << endl;
+  #pragma omp section 
+  {
+    _hexCellsArrayWritePtr = _hexCellsArray->WritePointer(numPoints, numHexCellsArray);
+  }
+  #pragma omp section 
+  {
+    _cellTypeArray->SetNumberOfValues(numPoints);
+  }
+  #pragma omp section 
+  {
+    _pointsArray->SetNumberOfPoints(numPointsCount);
+  }
+}
+
+#pragma omp for schedule(static)
+  for (int j = 0; j < numPoints; ++j)
+  {
+    // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
+    int cellPos = j*6;
+    // cout << j << "/" << numPoints << ":";
+    for (int idx = 0; idx < 6; ++idx)
+    {
+      std::pair<double, double> pt = global_point_vec[cellPos + idx];
+      _pointsArray->SetPoint(cellPos + idx, pt.first, pt.second, 0.0);
+    }
+
+    // int arrPos = (j / 4) * 5;
+    int arrPos = j * 7;
+    // cout << cellPos << "/" << numPointsCount << ":";
+    _hexCellsArrayWritePtr[arrPos + 0] = 6;
+    _hexCellsArrayWritePtr[arrPos + 1] = cellPos + 0;
+    _hexCellsArrayWritePtr[arrPos+2]=cellPos+1;
+    _hexCellsArrayWritePtr[arrPos+3]=cellPos+2;
+    _hexCellsArrayWritePtr[arrPos+4]=cellPos+3;
+    _hexCellsArrayWritePtr[arrPos+5]=cellPos+4;
+    _hexCellsArrayWritePtr[arrPos+6]=cellPos+5;
+    // cout << arrPos << "/" << numHexCellsArray;
+    _cellTypeArray->SetValue(j, global_type_vec[j]);
+  }
+}
 
   auto current_time = std::chrono::high_resolution_clock::now();
   cout<<"!!EXITING fillCellFieldData2DHex !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
@@ -423,11 +474,11 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_ob
   dim[1] = fieldDimVec[dimOrderVec[1]];
   dim[2] = fieldDimVec[dimOrderVec[2]];
 
-  vector<std::pair<int, int>> global_points;
-
-#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, points, lines, global_points)
+  vector<std::pair<double, double>> global_points;
+  vtkIdType *linesWritePtr;
+#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, points, lines, global_points, linesWritePtr)
   {
-    vector<std::pair<int, int>> local_points;
+    vector<std::pair<double, double>> local_points;
 #pragma omp for schedule(static, 5) nowait
     for (int i = 0; i < dim[0]; ++i)
     {
@@ -456,8 +507,8 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_ob
           ptN.z = ptNVec[pointOrderVec[2]];
           if (cellFieldG->get(pt) != cellFieldG->get(ptN))
           {
-            local_points.push_back(std::pair<int, int>(i, j));
-            local_points.push_back(std::pair<int, int>(i, j + 1));
+            local_points.push_back(std::pair<double, double>(i, j));
+            local_points.push_back(std::pair<double, double>(i, j + 1));
           }
         }
         if (j > 0 && i < dim[0])
@@ -470,8 +521,8 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_ob
           ptN.z = ptNVec[pointOrderVec[2]];
           if (cellFieldG->get(pt) != cellFieldG->get(ptN))
           {
-            local_points.push_back(std::pair<int, int>(i, j));
-            local_points.push_back(std::pair<int, int>(i + 1, j));
+            local_points.push_back(std::pair<double, double>(i, j));
+            local_points.push_back(std::pair<double, double>(i + 1, j));
           }
         }
 
@@ -485,8 +536,8 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_ob
           ptN.z = ptNVec[pointOrderVec[2]];
           if (cellFieldG->get(pt) != cellFieldG->get(ptN))
           {
-            local_points.push_back(std::pair<int, int>(i + 1, j));
-            local_points.push_back(std::pair<int, int>(i + 1, j + 1));
+            local_points.push_back(std::pair<double, double>(i + 1, j));
+            local_points.push_back(std::pair<double, double>(i + 1, j + 1));
           }
         }
 
@@ -500,8 +551,8 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_ob
           ptN.z = ptNVec[pointOrderVec[2]];
           if (cellFieldG->get(pt) != cellFieldG->get(ptN))
           {
-            local_points.push_back(std::pair<int, int>(i, j + 1));
-            local_points.push_back(std::pair<int, int>(i + 1, j + 1));
+            local_points.push_back(std::pair<double, double>(i, j + 1));
+            local_points.push_back(std::pair<double, double>(i + 1, j + 1));
           }
         }
       }
@@ -512,23 +563,36 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_ob
     // we can force these to be added in-order if we want
     global_points.insert(global_points.end(), local_points.begin(), local_points.end());
   }
+
+#pragma omp barrier
+
+
+#pragma omp sections
+{
+#pragma omp section
+  {
+    linesWritePtr = lines->WritePointer(global_points.size() / 2, (global_points.size() / 2 * 3));
+  }
+#pragma omp section
+  {
+    points->SetNumberOfPoints(global_points.size());
+  }
 }
 
-  int pc = 0;
-  vtkIdType *linesWritePtr = lines->WritePointer(global_points.size()/2, (global_points.size()/2 * 3));
-  points->SetNumberOfPoints(global_points.size());
-#pragma omp parallel for shared(points, linesWritePtr, global_points) schedule(static, 5) private(pc)
+    int pc = 0;
+#pragma omp for schedule(static)
   for (int j = 0; j < global_points.size(); j += 2)
   {
-    std::pair<int, int> pt1 = global_points[j];
-    std::pair<int, int> pt2 = global_points[j + 1];
+    std::pair<double, double> pt1 = global_points[j];
+    std::pair<double, double> pt2 = global_points[j + 1];
     points->SetPoint(j, pt1.first, pt1.second, 0);
     points->SetPoint(j + 1, pt2.first, pt2.second, 0);
-    pc = (j/2)*3;
+    pc = (j / 2) * 3;
     linesWritePtr[pc] = 2;
     linesWritePtr[pc + 1] = j;
     linesWritePtr[pc + 2] = j + 1;
   }
+}
   auto current_time = std::chrono::high_resolution_clock::now();
   // cout << "points->GetNumberOfPoints " << points->GetNumberOfPoints() << " lines->GetNumberOfCells " << lines->GetNumberOfCells() << endl;
   cout << "!!EXITING fillBorderData2D OMP !! " << std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano~seconds elapsed" << endl;
@@ -1641,12 +1705,13 @@ bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_
 }
 
 bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
+  vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	vtkCellArray * _cartesianCellsArray=(vtkCellArray*)_cartesianCellsArrayAddr;
 	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
     
-    Field3D<float> *conFieldPtr=0; 
+  Field3D<float> *conFieldPtr=0; 
 	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
 	std::map<std::string,Field3D<float>*>::iterator mitr;
 	mitr=fieldMap.find(_conFieldName);
@@ -1673,20 +1738,39 @@ bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAdd
 	dim[1]=fieldDimVec[dimOrderVec[1]];
 	dim[2]=fieldDimVec[dimOrderVec[2]];
 
-    
-	int offset=0;
+  int numPoints = dim[0] * dim[1];
+  vtkIdType *_cartesianCellsArrayWritePtr;
+  // conArray->SetNumberOfValues(numPoints);
+  // _pointsArray->SetNumberOfPoints(numPoints * 4);
 
-	Point3D pt;
-	vector<int> ptVec(3,0);
-
-	double con;
-	long pc=0;
 	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-     
-     
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
+
+#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, _pointsArray, conArray, _cartesianCellsArrayWritePtr)
+{
+  #pragma omp sections 
+  {
+    #pragma omp section 
+    {
+      _cartesianCellsArrayWritePtr = _cartesianCellsArray->WritePointer(numPoints, numPoints * 5);
+    }
+#pragma omp section
+    {
+      conArray->SetNumberOfValues(numPoints);
+    }
+#pragma omp section
+    {
+      _pointsArray->SetNumberOfPoints(numPoints * 4);
+    }
+  }
+
+#pragma omp for schedule(static)
+  for(int j =0 ; j<dim[1] ; ++j) {
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+    double con;
+    for(int i =0 ; i<dim[0] ; ++i){
+      int dataPoint = i + j * dim[1];
+      ptVec[0]=i;
 			ptVec[1]=j;
 			ptVec[2]=_pos;
 
@@ -1700,30 +1784,35 @@ bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAdd
 				con = con = conFieldPtr->get(pt);
 			}
             
-            Coordinates3D<double> coords(ptVec[0],ptVec[1],0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
-            
-			for (int idx=0 ; idx<4 ; ++idx){
-			  Coordinates3D<double> cartesianVertex=cartesianVertices[idx]+coords; 
- 			 _pointsArray->InsertNextPoint(cartesianVertex.x,cartesianVertex.y,0.0);
-			}               
-            
-			pc+=4;
-			vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
-			_cartesianCellsArray->InsertCellPoint(pc-4);
-			_cartesianCellsArray->InsertCellPoint(pc-3);
-			_cartesianCellsArray->InsertCellPoint(pc-2);
-			_cartesianCellsArray->InsertCellPoint(pc-1);
+      Coordinates3D<double> coords(ptVec[0],ptVec[1],0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
+      int cellPos = dataPoint * 4;
+      for (int idx=0 ; idx<4 ; ++idx){
+			  Coordinates3D<double> cartesianVertex=cartesianVertices[idx]+coords;
+        _pointsArray->SetPoint(cellPos + idx, cartesianVertex.x, cartesianVertex.y, 0.0);
+      }
 
-			conArray->InsertNextValue( con);
-			++offset;
+      int arrPos = dataPoint * 5;
+      _cartesianCellsArrayWritePtr[arrPos + 0] = 4;
+      _cartesianCellsArrayWritePtr[arrPos + 1] = cellPos + 0;
+      _cartesianCellsArrayWritePtr[arrPos + 2] = cellPos + 1;
+      _cartesianCellsArrayWritePtr[arrPos + 3] = cellPos + 2;
+      _cartesianCellsArrayWritePtr[arrPos + 4] = cellPos + 3;
+
+      conArray->SetValue(dataPoint, con);
 		}
-        
-		return true;
+  }
+}
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout << "!!EXITING fillConFieldData2DCartesian !! " << std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano~seconds elapsed" << endl;
+
+  return true;
 }
 
 
 bool FieldExtractor::fillScalarFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
+  auto start_time = std::chrono::high_resolution_clock::now();
+  vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
 	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
 
@@ -1793,12 +1882,16 @@ bool FieldExtractor::fillScalarFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,v
 			conArray->InsertNextValue( con);
 			++offset;
 		}
-        
-		return true;
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout << "!!EXITING fillScalarFieldData2DHex !! " << std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano~seconds elapsed" << endl;
+
+  return true;
 }
 
 bool FieldExtractor::fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
+  auto start_time = std::chrono::high_resolution_clock::now();
+  vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	vtkCellArray * _cartesianCellsArray=(vtkCellArray*)_cartesianCellsArrayAddr;
 	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
 
@@ -1825,22 +1918,38 @@ bool FieldExtractor::fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArray
 	dim[1]=fieldDimVec[dimOrderVec[1]];
 	dim[2]=fieldDimVec[dimOrderVec[2]];
 
-
-          
-    
-	int offset=0;
-
-	Point3D pt;
-	vector<int> ptVec(3,0);
-
-	double con;
-	long pc=0;
+  int numPoints = dim[0] * dim[1];
+  vtkIdType *_cartesianCellsArrayWritePtr;
+  
 	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-    
-    
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
+#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, _pointsArray, conArray, _cartesianCellsArrayWritePtr)
+{
+  
+#pragma omp sections 
+{
+#pragma omp section
+{
+  _cartesianCellsArrayWritePtr = _cartesianCellsArray->WritePointer(numPoints, numPoints * 5);
+}
+#pragma omp section
+{
+  conArray->SetNumberOfValues(numPoints);
+}
+#pragma omp section
+{
+  _pointsArray->SetNumberOfPoints(numPoints * 4);
+}
+}
+
+#pragma omp for schedule(static)
+  for(int j =0 ; j<dim[1] ; ++j) {
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+
+    double con;
+    for(int i =0 ; i<dim[0] ; ++i){
+      int dataPoint = i + j * dim[1];
+      ptVec[0]=i;
 			ptVec[1]=j;
 			ptVec[2]=_pos;
 
@@ -1854,28 +1963,30 @@ bool FieldExtractor::fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArray
 				con = (*conFieldPtr)[pt.x][pt.y][pt.z];
 			}
             
-            Coordinates3D<double> coords(ptVec[0],ptVec[1],0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
-			for (int idx=0 ; idx<4 ; ++idx){
-			  Coordinates3D<double> cartesianVertex=cartesianVertices[idx]+coords; 
- 			 _pointsArray->InsertNextPoint(cartesianVertex.x,cartesianVertex.y,0.0);
-			}               
-            
-			pc+=4;
-			vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
-			_cartesianCellsArray->InsertCellPoint(pc-4);
-			_cartesianCellsArray->InsertCellPoint(pc-3);
-			_cartesianCellsArray->InsertCellPoint(pc-2);
-			_cartesianCellsArray->InsertCellPoint(pc-1);
+      Coordinates3D<double> coords(ptVec[0],ptVec[1],0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
+      int cellPos = dataPoint * 4;
+      for (int idx=0 ; idx<4 ; ++idx){
+			  Coordinates3D<double> cartesianVertex=cartesianVertices[idx]+coords;
+        _pointsArray->SetPoint(cellPos + idx, cartesianVertex.x, cartesianVertex.y, 0.0);
+      }
 
-			conArray->InsertNextValue( con);
-			++offset;
+      int arrPos = dataPoint * 5;
+      _cartesianCellsArrayWritePtr[arrPos + 0] = 4;
+      _cartesianCellsArrayWritePtr[arrPos + 1] = cellPos + 0;
+      _cartesianCellsArrayWritePtr[arrPos + 2] = cellPos + 1;
+      _cartesianCellsArrayWritePtr[arrPos + 3] = cellPos + 2;
+      _cartesianCellsArrayWritePtr[arrPos + 4] = cellPos + 3;
+
+      conArray->SetValue(dataPoint, con);
 		}
-        
-		return true;
+  }
 }
 
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout << "!!EXITING fillScalarFieldData2DCartesian !! " << std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano~seconds elapsed" << endl;
 
-
+  return true;
+}
 
 bool FieldExtractor::fillScalarFieldCellLevelData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
 	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
@@ -2049,7 +2160,8 @@ bool FieldExtractor::fillScalarFieldCellLevelData2DCartesian(vtk_obj_addr_int_t 
 
 
 bool FieldExtractor::fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
+  auto start_time = std::chrono::high_resolution_clock::now();
+  vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	Field3D<float> *conFieldPtr=0; 
 	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
 	std::map<std::string,Field3D<float>*>::iterator mitr;
@@ -2082,18 +2194,19 @@ bool FieldExtractor::fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std::st
 	conArray->SetNumberOfValues((dim[1]+2)*(dim[0]+1));
 	//For some reasons the points x=0 are eaten up (don't know why).
 	//So we just populate concentration 0.0.
-	int offset=0;
-	for (int i = 0 ; i< dim[0]+1 ;++i){
-		conArray->SetValue(offset, 0.0);
-		++offset;
+#pragma omp parallel shared(pointOrderVec, dim, conFieldPtr, conArray)
+  {
+#pragma omp for nowait schedule(static)
+  for (int i = 0 ; i< dim[0]+1 ;++i){
+		conArray->SetValue(i, 0.0);
 	}
 
 	Point3D pt;
-	vector<int> ptVec(3,0);
-
-	double con;
+  vector<int> ptVec(3, 0);
+  double con;
 	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1]+1 ; ++j)
+#pragma omp for nowait schedule(static)
+  for(int j =0 ; j<dim[1]+1 ; ++j)
 		for(int i =0 ; i<dim[0]+1 ; ++i){
 			ptVec[0]=i;
 			ptVec[1]=j;
@@ -2108,11 +2221,14 @@ bool FieldExtractor::fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std::st
 			}else{
 				con = conFieldPtr->get(pt);
 			}
-
-			conArray->SetValue(offset, con);
-			++offset;
+      int pos = i + j * (dim[1] + 1) + (dim[0] + 1);
+      conArray->SetValue(pos, con);
 		}
-		return true;
+}
+auto current_time = std::chrono::high_resolution_clock::now();
+cout << "!!EXITING fillConFieldData2D !! " << std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
+return true;
 }
 
 bool FieldExtractor::fillScalarFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
