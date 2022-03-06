@@ -1,5 +1,6 @@
 import re
 import itertools
+from contextlib import contextmanager
 from pathlib import Path
 import numpy as np
 from collections import OrderedDict
@@ -495,11 +496,12 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
     def param_scan_iteration(self):
         return CompuCellSetup.persistent_globals.parameter_scan_iteration
 
-    def open_file(self, abs_path: Union[Path, str], mode='w') -> tuple:
+    def open_file(self, abs_path: Union[Path, str], mode='w', **kwds) -> tuple:
         """
         Opens file
         :param abs_path:
         :param mode:
+        :param kwds - all other arguments of open function
         :return: tuple of (file_obj, full filepath)
         """
         output_path = Path(abs_path)
@@ -511,7 +513,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
             return None, None
         return file_handle, output_path
 
-    def open_file_in_simulation_output_folder(self, file_name: str, mode: str = 'w') -> tuple:
+    def open_file_in_simulation_output_folder(self, file_name: str, mode: str = 'w', **kwds) -> tuple:
         """
         attempts to open file in the simulation output folder
 
@@ -523,7 +525,29 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         """
         if self.output_dir is not None:
             output_path = Path(self.output_dir).joinpath(file_name)
-            return self.open_file(abs_path=output_path, mode=mode)
+            return self.open_file(abs_path=output_path, mode=mode, **kwds)
+
+    @contextmanager
+    def open_in_output_folder(self, file_name: str, mode: str = 'w', **kwds):
+        """
+        Context manager that makes it simpler to manage files in the output folder. To use it simply use the
+        following pattern:
+
+        with self.open_in_output_dir('my_files/demo.txt', mode='w') as (fh, out_path):
+            fh.write('hello')
+
+        :param str file_name: name of file
+        :param str mode: open mode, defaults to 'w'; currently disabled
+        :raises IOError: Could not open file for writing.
+        :return: tuple of (file_obj, full filepath)
+        :return:
+        """
+        file_handle, output_path = self.open_file_in_simulation_output_folder(file_name=file_name, mode=mode, **kwds)
+        try:
+            yield file_handle, output_path
+        finally:
+            if file_handle is not None:
+                file_handle.close()
 
     @staticmethod
     def request_screenshot(mcs: int, screenshot_label: str) -> None:
