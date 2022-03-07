@@ -23,6 +23,7 @@ try:
     __has_interactive__ = True
     from ipyvtklink.viewer import ViewInteractiveWidget
     from IPython.display import display
+    from ipywidgets import HBox, Layout, VBox
 except NameError:
     __has_interactive__ = False
     ViewInteractiveWidget = object
@@ -440,3 +441,63 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         super().set_field_name(_field_name)
         self.frame.field_name = _field_name
         self._update()
+
+
+class CC3DJupyterGraphicsFrameGrid:
+
+    def __init__(self, rows: int = 1, cols: int = 1):
+        if rows <= 0 or cols <= 0:
+            raise ValueError('Must have positive rows and columns')
+
+        self._items: List[List[Optional[JupyterGraphicsFrameClient]]] = []
+        for r in range(rows):
+            self._items.append([None for _ in range(cols)])
+
+        self.grid_box: Optional[VBox] = None
+
+    @property
+    def rows(self) -> int:
+        """Current number of rows"""
+
+        return len(self._items)
+
+    @property
+    def cols(self) -> int:
+        """Current number of columns"""
+
+        return len(self._items[0])
+
+    def _prep_grid(self, row: int, col: int):
+        while row >= self.rows:
+            self._items.append([None for _ in range(self.cols)])
+        if col > self.cols:
+            for c in range(self.cols, col):
+                [r.append(None) for r in self._items]
+
+    def set_frame(self, frame: JupyterGraphicsFrameClient, row: int, col: int):
+        """Set the frame at a position"""
+
+        if row < 0 or col < 0:
+            raise ValueError('Indices must be non-negative')
+
+        self._prep_grid(row, col)
+        self._items[row][col] = frame
+
+    def show(self):
+        """Show the grid"""
+
+        to_show = []
+
+        for r in range(self.rows):
+            to_show_r = [item for item in self._items[r] if item is not None]
+            if to_show_r:
+                to_show.append(to_show_r)
+
+        hboxes = []
+        for to_show_r in to_show:
+            if to_show_r:
+                hboxes.append(HBox(to_show_r))
+
+        if hboxes:
+            self.grid_box = VBox(hboxes)
+            display(self.grid_box)
