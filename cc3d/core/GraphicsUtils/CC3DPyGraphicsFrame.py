@@ -390,9 +390,17 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
     def set_field_name(self, _field_name: str):
         """Set the name of the field to render"""
 
-        if _field_name not in self.fieldTypes.keys():
-            warnings.warn('Field name not known: ' + _field_name, RuntimeWarning)
+        field_names = list(self.fieldTypes.keys())
+
+        if not field_names:
+            warnings.warn('Field names not available', RuntimeWarning)
             return
+
+        if _field_name not in field_names:
+            warnings.warn(f'Field name not known: {_field_name}. Available field names are' + ','.join(field_names),
+                          RuntimeWarning)
+            return
+
         self.field_name = _field_name
 
         self.current_screenshot_data = self.compute_current_screenshot_data()
@@ -744,7 +752,7 @@ class CC3DPyGraphicsFrameClientBase:
         raise NotImplementedError
 
     @property
-    def field_names(self) -> Optional[List[str]]:
+    def field_names(self) -> List[str]:
         """Current available field names if available, otherwise None"""
 
         raise NotImplementedError
@@ -1106,7 +1114,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
                                         transparent_background=transparent_background)
 
     @property
-    def field_names(self) -> Optional[List[str]]:
+    def field_names(self) -> List[str]:
         """Current available field names"""
 
         field_names = CompuCellSetup.persistent_globals.simulator.getConcentrationFieldNameVector()
