@@ -24,3 +24,4 @@ vtk
 *~
 CompuCell3D/Twedit++5/EditorWindow_old.py
 *.sqlite
+*.dylib
