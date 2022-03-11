@@ -16,6 +16,7 @@ from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame import (
     CC3DPyGraphicsFrameClientBase, CC3DPyInteractorStyle, np_img_data, save_img
 )
 from cc3d.core.GraphicsUtils.JupyterWidgetInterface import JupyterWidgetInterface
+from ipywidgets.widgets.widget_box import HBox, VBox
 
 
 # Test for IPython
