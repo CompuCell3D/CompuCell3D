@@ -1,6 +1,6 @@
 from IPython.display import display
 import ipywidgets as widgets
-from ipywidgets.widgets.widget_box import HBox
+from ipywidgets.widgets.widget_box import HBox, VBox
 
 class JupyterWidgetInterface():
     """
@@ -15,6 +15,48 @@ class JupyterWidgetInterface():
     def set_disabled(self, value=True):
         for w in self.widgets.values():
             w.disabled = value
+
+    
+    def update_values(self, data):
+        for key in self.values.keys():
+            if key in data:
+                if not isinstance(self.widgets[key], (VBox, HBox)):
+                    new_value = data[key]
+                    self.values[key] = new_value
+                    self.widgets[key].value = new_value
+
+
+    def add_grid(self, name, rows=1, cols=1, value=True, callback=None, show=False):
+        self.values[name] = [[value for j in range(cols)] for i in range(rows)]
+        
+        def toggle_handler(change):
+            pos = change['owner'].description.split(',')
+            row = int(pos[0])
+            col = int(pos[1])
+
+            if change['name'] == 'value':
+                self.values[name][row][col] = change['new']
+                if callback:
+                    callback(self.values[name])
+
+        hboxes = []
+        for i in range(rows):
+            buttons = []
+            for j in range(cols):
+                button = widgets.ToggleButton(value=value, description=f'{i},{j}')
+                button.observe(toggle_handler)
+                buttons.append(button)
+            hboxes.append( HBox(buttons) )
+        
+        label = widgets.Label(value=name)
+        vbox = VBox([label] + hboxes)
+        self.widgets[name] = vbox
+
+        if show:
+            display(vbox)
+        return vbox
+
+
 
 
     def add_toggle(self, name, value=False, callback=None, show=False):
