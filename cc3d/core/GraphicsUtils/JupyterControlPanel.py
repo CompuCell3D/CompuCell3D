@@ -19,6 +19,7 @@ def split_half(arr):
     half = int(math.ceil(n/2))
     return arr[0:half], arr[half:n+1]
 
+
 class JupyterControlPanel():
     """
     Create the ipywidgets menus to edit view settings for JupyterGraphicsFrameClients
@@ -30,7 +31,6 @@ class JupyterControlPanel():
         # _clients_data is data associated with each frame client in grid
         # list of lists (grid) of dicts {'client': frameclient, 'wi data': wi values, 'active': bool}
         self._clients_data = [[{} for j in range(cols)] for i in range(rows)]
-        
 
     @property
     def _active_clients(self):
@@ -41,12 +41,10 @@ class JupyterControlPanel():
                     active_clients.append(data['client'])
         return active_clients
 
-
     def set_frame(self, frameclient, row, col):
         self.grid.set_frame(frameclient, row, col)
         self._clients_data[row][col] = dict(client=frameclient, wi_data={}, active=True)
 
-    
     def show(self):
         """
         Display the widgets and each frame client
@@ -58,10 +56,8 @@ class JupyterControlPanel():
         else:
             print('No frame clients have been added. Use .set_frame(frameclient, row, col)')
 
-        
     def set_disabled(self, value=True):
         self.wi.set_disabled(value)
-
 
     def _create_control_panel(self):
         """Create view controls (ipywidgets)"""
@@ -75,7 +71,6 @@ class JupyterControlPanel():
         for i, row in enumerate(self._clients_data):
             for j in range(len(row)):
                 self._clients_data[i][j]['wi_data'] = self.wi.values.copy()
-
 
     def _callback(self, fun):
         """
@@ -91,7 +86,6 @@ class JupyterControlPanel():
                         client.draw()
             self._check_conflicting_data()
         return f
-
 
     def _make_client_select_tab(self, defaultframe):
 
@@ -112,11 +106,11 @@ class JupyterControlPanel():
 
         def toggle_field(c, value):
             c.frame.field_name = value
+
         options = defaultframe.fieldTypes.keys()
         self.wi.add_select('field', options=options, callback=self._callback(toggle_field))
 
         self.wi.make_tab('Control Panel', ['active frames'], ['field'])
-
 
     def _make_camera_tab(self, defaultframe):
 
@@ -133,10 +127,13 @@ class JupyterControlPanel():
 
         def set_depth_x(value):
             c.set_plane('x', value)
+
         def set_depth_y(value):
             c.draw()
+
         def set_depth_z(value):
             c.set_plane('z', value)
+
         self.wi.add_int('depth x', 0, -100, 100, 1, self._callback(set_depth_x))
         self.wi.add_int('depth y', 0, -100, 100, 1, self._callback(set_depth_y))
         self.wi.add_int('depth z', 0, -100, 100, 1, self._callback(set_depth_z))
@@ -146,23 +143,29 @@ class JupyterControlPanel():
         names = [ i+' '+j for i,j in product(fields, xyz)]
         self.wi.make_tab('Camera', ['drawing style', 'camera sync'], names)
 
-
     def _make_visualization_tab(self, defaultframe):
         # callback functions
         def toggle_bounding_box(c, value):
             c.frame.bounding_box_on = value
+
         def toggle_cell_borders(c, value):
             c.frame.cell_borders_on = value
+
         def toggle_cell_glyphs(c, value):
             c.frame.cell_glyphs_on = value
+
         def toggle_cells(c, value):
             c.frame.cells_on = value
+
         def toggle_cluster_borders(c, value):
             c.frame.cluster_borders_on = value
+
         def toggle_fpp_links(c, value):
             c.frame.fpp_links_on = value
+
         def toggle_lattice_axes_labels(c, value):
             c.frame.lattice_axes_labels_on = value
+
         def toggle_lattice_axes(c, value):
             c.frame.lattice_axes_on = value
 
@@ -183,7 +186,6 @@ class JupyterControlPanel():
 
         self.wi.make_tab('Visualization', options1, options2)
 
-
     def _make_colors_tab(self, defaultframe):
         # callback
         def set_color(field_name, value):
@@ -199,7 +201,6 @@ class JupyterControlPanel():
                     c.draw()
             self._check_conflicting_data()
 
-
         colorpicker_names_values = [(f'cell color {k}', str(v)) for (k,v) in defaultframe.colormap.items()]
         for (name, value) in colorpicker_names_values:
             self.wi.add_color(name, value=value, callback=set_color)
@@ -209,13 +210,11 @@ class JupyterControlPanel():
 
         self.wi.make_tab('Cell Colors', colors1, colors2)
 
-
     def _update_client_data(self, row, col):
         """
         Set internal data associated with each client
         """
         self._clients_data[row][col]['wi_data'] = self.wi.values.copy()
-
 
     def _check_conflicting_data(self):
         """
@@ -243,7 +242,7 @@ class JupyterControlPanel():
 
                 # debug
                 # if key in ['bounding box', 'cell borders']:
-                    # print('conflict', conflict, 'marked', marked, key)
+                #     print('conflict', conflict, 'marked', marked, key)
 
                 if conflict and not marked:
                     self.wi.widgets[key].description = key+'*'
@@ -251,5 +250,3 @@ class JupyterControlPanel():
                     self.wi.widgets[key].description = self.wi.widgets[key].description.replace('*', '')
         else:
             self.wi.set_disabled(True)
-
-                

@@ -2,6 +2,7 @@ from IPython.display import display
 import ipywidgets as widgets
 from ipywidgets.widgets.widget_box import HBox, VBox
 
+
 class JupyterWidgetInterface():
     """
     Helper class for creating consistent ipywidget interface
@@ -11,12 +12,10 @@ class JupyterWidgetInterface():
         self.widgets = {}
         self.tabs = None
 
-
     def set_disabled(self, value=True):
         for w in self.widgets.values():
             w.disabled = value
 
-    
     def update_values(self, data):
         for key in self.values.keys():
             if key in data:
@@ -24,7 +23,6 @@ class JupyterWidgetInterface():
                     new_value = data[key]
                     self.values[key] = new_value
                     self.widgets[key].value = new_value
-
 
     def add_grid(self, name, rows=1, cols=1, value=True, callback=None, show=False):
         self.values[name] = [[value for j in range(cols)] for i in range(rows)]
@@ -56,9 +54,6 @@ class JupyterWidgetInterface():
             display(vbox)
         return vbox
 
-
-
-
     def add_toggle(self, name, value=False, callback=None, show=False):
         self.values[name] = value
         button = widgets.Checkbox(value=value, description=name)
@@ -74,7 +69,6 @@ class JupyterWidgetInterface():
         if show:
             display(button)
         return button
-
 
     def add_int(self, name, value=0, min=0, max=100, step=1, callback=None, show=False):
         self.values[name] = value
@@ -92,7 +86,6 @@ class JupyterWidgetInterface():
             display(slider)
         return slider
 
-
     def add_select(self, name, options=[], value=None, callback=None, show=False):
         self.values[name] = value
         select = widgets.Dropdown(options=options, value=value, description=name)
@@ -108,7 +101,6 @@ class JupyterWidgetInterface():
         if show:
             display(select)
         return select
-
 
     def add_multiselect(self, name, options=[], value=None, callback=None, show=False):
         value = tuple(value)
@@ -127,7 +119,6 @@ class JupyterWidgetInterface():
             display(select)
         return select
 
-    
     def add_color(self, name, value='#ffffff', callback=None, show=False):
         self.values[name] = value
         picker = widgets.ColorPicker(value=value, description=name, concise=True)
@@ -143,7 +134,6 @@ class JupyterWidgetInterface():
         if show:
             display(picker)
         return picker
-
 
     def add_text(self, name, value=None, callback=None, show=False):
         self.values[name] = value
@@ -161,7 +151,6 @@ class JupyterWidgetInterface():
         if show:
             display(box)
         return box
-
 
     def make_tab(self, tab_name, *widget_names):
         """
@@ -188,5 +177,3 @@ class JupyterWidgetInterface():
         self.tabs.children = children
         i = len(children) - 1
         self.tabs.set_title(i, tab_name)
-
-        

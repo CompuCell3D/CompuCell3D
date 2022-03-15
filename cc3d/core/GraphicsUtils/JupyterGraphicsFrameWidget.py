@@ -31,7 +31,6 @@ except NameError:
     ViewInteractiveWidget = object
 
 
-
 class CC3DJupyterGraphicsConfig:
     """Configuration hook to request settings data between processes"""
 
@@ -114,7 +113,6 @@ class CC3DJupyterGraphicsConfig:
         ('WindowColor', [0, 0, 0])
     ]
 
-
     def __init__(self):
         self.config_data = {}
 
@@ -147,13 +145,11 @@ class CC3DJupyterGraphicsConfig:
                 except KeyError:
                     self.config_data[fk] = {field_name: val}
 
-
     @property
     def field_names(self) -> Optional[List[str]]:
         """Current available field names"""
         field_names = cc3d.CompuCellSetup.persistent_globals.simulator.getConcentrationFieldNameVector()
         return list(field_names)
-
 
     def getSetting(self, key, *args, **kwargs):
         """Get setting value from remote source"""
@@ -161,12 +157,9 @@ class CC3DJupyterGraphicsConfig:
             return self.config_data[key][args[0]]
         return self.config_data[key]
 
-
     def setSetting(self, key, value):
         """Set value"""
         self.config_data[key] = value
-
-
 
 
 class JupyterGraphicsFrame(GraphicsFrame):
