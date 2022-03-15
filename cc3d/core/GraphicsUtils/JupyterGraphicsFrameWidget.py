@@ -31,7 +31,6 @@ except NameError:
     ViewInteractiveWidget = object
 
 
-
 class CC3DJupyterGraphicsConfig:
     """Configuration hook to request settings data between processes"""
 
@@ -114,7 +113,6 @@ class CC3DJupyterGraphicsConfig:
         ('WindowColor', [0, 0, 0])
     ]
 
-
     def __init__(self):
         self.config_data = {}
 
@@ -146,14 +144,12 @@ class CC3DJupyterGraphicsConfig:
                     self.config_data[fk][field_name] = val
                 except KeyError:
                     self.config_data[fk] = {field_name: val}
-        
-    
+
     @property
     def field_names(self) -> Optional[List[str]]:
         """Current available field names"""
         field_names = cc3d.CompuCellSetup.persistent_globals.simulator.getConcentrationFieldNameVector()
         return list(field_names)
-
 
     def getSetting(self, key, *args, **kwargs):
         """Get setting value from remote source"""
@@ -161,12 +157,9 @@ class CC3DJupyterGraphicsConfig:
             return self.config_data[key][args[0]]
         return self.config_data[key]
 
-
     def setSetting(self, key, value):
         """Set value"""
         self.config_data[key] = value
-
-
 
 
 class JupyterGraphicsFrame(GraphicsFrame):
@@ -220,7 +213,6 @@ class JupyterGraphicsFrame(GraphicsFrame):
         self.init_field_types()
         self.Render()
 
-
     def get_vtk_window(self):
         """
         Get an initialized vtk window and window interactor.
@@ -245,7 +237,6 @@ class JupyterGraphicsFrame(GraphicsFrame):
 
         return renWin, interactor
 
-
     def store_gui_vis_config(self, scr_data):
         """
         Save current internal data.
@@ -263,7 +254,6 @@ class JupyterGraphicsFrame(GraphicsFrame):
 
         # colormap not exist in scr_data
         # scr_data.colormap = self.colormap
-
 
     def set_drawing_style(self, _style):
         """
@@ -385,10 +375,8 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
                                                 render_window=self.frame.renWin)
         return self
 
-
     def show(self):
         display(self.widget)
-
 
     def draw(self, blocking: bool = False):
         """
@@ -406,7 +394,6 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         self.widget: CC3DViewInteractiveWidget
         self.widget.update_canvas()
 
-
     def close(self):
         """
         Close the frame. Does nothing.
@@ -417,7 +404,6 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         :rtype: bool
         """
         return True
-
 
     def np_img_data(self, scale: Union[int, Tuple[int, int]] = None, transparent_background: bool = False):
         """
@@ -433,7 +419,6 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         :rtype: numpy.array
         """
         return np_img_data(ren_win=self.frame.renWin, scale=scale, transparent_background=transparent_background)
-
 
     def save_img(self,
                  file_path: str,
@@ -459,7 +444,6 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
                         scale=scale,
                         transparent_background=transparent_background)
 
-
     def set_drawing_style(self, _style):
         """
         Function that wires-up the widget to behave according tpo the dimension of the visualization
@@ -469,7 +453,6 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         """
         self.frame.set_drawing_style(_style)
         self._update()
-
 
     def set_plane(self, plane, pos=0):
         """Set the plane and position"""
@@ -494,13 +477,11 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         self.frame.set_plane(self.frame.currentProjection, pos)
         self._update()
 
-
     def _update(self):
         self.frame.reset_camera()
         self.frame.current_screenshot_data = self.frame.compute_current_screenshot_data()
         self.frame.draw()
         self.widget.update_canvas()
-
 
     @property
     def field_names(self) -> List[str]:
@@ -509,7 +490,6 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         if self.frame is None or self.frame.fieldTypes is None:
             return []
         return list(self.frame.fieldTypes.keys())
-
 
     def set_field_name(self, _field_name: str):
         """Set the name of the field to render"""
@@ -529,18 +509,15 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         self.frame.field_name = _field_name
         self._update()
 
-
     def sync_cameras(self, frame):
         """Synchronize all cameras"""
 
         return self.widget.sync_cameras(frame.widget)
 
-
     def unsync_camera(self):
         """Unsynchronize all cameras"""
 
         return self.widget.unsync_camera()
-
 
     @staticmethod
     def inspect_config(config_fp: str = None):
@@ -592,7 +569,6 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         wi.make_tab('Cell Colors', colorpicker_names[0:half_num_colors], colorpicker_names[half_num_colors:num_colors+1])
 
         wi.set_disabled()
-
 
 
 class CC3DJupyterGraphicsFrameGrid:
