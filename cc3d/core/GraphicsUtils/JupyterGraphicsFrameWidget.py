@@ -2,7 +2,8 @@
 Defines features for interactive visualization for use with CC3D simservice applications in a Jupyter notebook
 """
 
-from typing import Optional, Union, Tuple, List
+import math
+from typing import Optional, Union, Tuple, List, Any, Dict
 import warnings
 from weakref import ref
 
@@ -14,6 +15,8 @@ from cc3d.core.GraphicsUtils.GraphicsFrame import GraphicsFrame
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame import (
     CC3DPyGraphicsFrameClientBase, CC3DPyInteractorStyle, np_img_data, save_img
 )
+from cc3d.core.GraphicsUtils.JupyterWidgetInterface import JupyterWidgetInterface
+from ipywidgets.widgets.widget_box import HBox, VBox
 
 
 # Test for IPython
@@ -26,6 +29,144 @@ try:
 except NameError:
     __has_interactive__ = False
     ViewInteractiveWidget = object
+
+
+
+class CC3DJupyterGraphicsConfig:
+    """Configuration hook to request settings data between processes"""
+
+    CONFIG_ENTRIES: List[Union[str, Tuple[str, Any]]] = [
+        'AxesColor',
+        'BorderColor',
+        'BoundingBoxColor',
+        'BoundingBoxOn',
+        'CellBordersOn',
+        'CellGlyphsOn',
+        'CellsOn',
+        'ClusterBorderColor',
+        'ClusterBordersOn',
+        'ContourColor',
+        'FPPLinksColor',
+        'FPPLinksOn',
+        'ShowAxes',
+        'ShowHorizontalAxesLabels',
+        'ShowVerticalAxesLabels',
+        ('TypeColorMap', 0),
+        ('TypeColorMap', 1),
+        ('TypeColorMap', 2),
+        ('TypeColorMap', 3),
+        ('TypeColorMap', 4),
+        ('TypeColorMap', 5),
+        ('TypeColorMap', 6),
+        ('TypeColorMap', 7),
+        ('TypeColorMap', 8),
+        ('TypeColorMap', 9),
+        ('TypeColorMap', 10),
+        'WindowColor'
+    ]
+
+    CONFIG_ENTRIES_FIELDS_BYNAME = [
+        'MinRangeFixed',
+        'MaxRangeFixed',
+        'MinRange',
+        'MaxRange',
+        'ContoursOn',
+        'NumberOfContourLines',
+        'ScalarIsoValues',
+        'LegendEnable'
+    ]
+    """Configuration keys with database values by field name"""
+
+    CONFIG_ENTRIES_FIELDS_UNIFORM = [
+        'DisplayMinMaxInfo'
+    ]
+    """Configuration keys with database values that are uniformly applied to all fields"""
+
+    # todo: implement smarter CC3D default configuration data
+
+    CONFIG_DEFAULT_VALUES: List[Tuple[str, Union[Any, Dict[Any, Any]]]] = [
+        ('AxesColor', [255, 255, 255]),
+        ('BorderColor', [255, 255, 0]),
+        ('BoundingBoxColor', [255, 255, 255]),
+        ('BoundingBoxOn', True),
+        ('CellBordersOn', True),
+        ('CellGlyphsOn', False),
+        ('CellsOn', True),
+        ('ClusterBorderColor', [0, 0, 255]),
+        ('ClusterBordersOn', False),
+        ('ContourColor', [255, 255, 255]),
+        ('FPPLinksColor', [255, 255, 255]),
+        ('FPPLinksOn', False),
+        ('ShowAxes', True),
+        ('ShowHorizontalAxesLabels', True),
+        ('ShowVerticalAxesLabels', True),
+        ('TypeColorMap', {0: [0, 0, 0],
+                          1: [0, 255, 0],
+                          2: [0, 0, 255],
+                          3: [255, 0, 0],
+                          4: [128, 128, 0],
+                          5: [192, 192, 192],
+                          6: [255, 0, 255],
+                          7: [0, 0, 128],
+                          8: [0, 255, 255],
+                          9: [0, 128, 0],
+                          10: [255, 255, 255]}),
+        ('WindowColor', [0, 0, 0])
+    ]
+
+
+    def __init__(self):
+        self.config_data = {}
+
+        config = cc3d.CompuCellSetup.persistent_globals.configuration
+        # Pre-load basic configuration data
+        for entry in self.CONFIG_ENTRIES:
+            if isinstance(entry, str):
+                self.config_data[entry] = config.getSetting(entry)
+            else:
+                key, field_name = entry
+                val = config.getSetting(key, field_name)
+                try:
+                    self.config_data[key][field_name] = val[field_name]
+                except KeyError:
+                    self.config_data[key] = {field_name: val[field_name]}
+
+        # Pre-load field configuration data
+        for field_name in self.field_names:
+            for fk in CC3DPyGraphicsFrameClientBase.CONFIG_ENTRIES_FIELDS_BYNAME:
+                val = config.getSetting(fk, field_name)
+                try:
+                    self.config_data[fk][field_name] = val
+                except KeyError:
+                    self.config_data[fk] = {field_name: val}
+
+            for fk in CC3DPyGraphicsFrameClientBase.CONFIG_ENTRIES_FIELDS_UNIFORM:
+                val = config.getSetting(fk)
+                try:
+                    self.config_data[fk][field_name] = val
+                except KeyError:
+                    self.config_data[fk] = {field_name: val}
+        
+    
+    @property
+    def field_names(self) -> Optional[List[str]]:
+        """Current available field names"""
+        field_names = cc3d.CompuCellSetup.persistent_globals.simulator.getConcentrationFieldNameVector()
+        return list(field_names)
+
+
+    def getSetting(self, key, *args, **kwargs):
+        """Get setting value from remote source"""
+        if args and len(args) > 0:
+            return self.config_data[key][args[0]]
+        return self.config_data[key]
+
+
+    def setSetting(self, key, value):
+        """Set value"""
+        self.config_data[key] = value
+
+
 
 
 class JupyterGraphicsFrame(GraphicsFrame):
@@ -55,7 +196,7 @@ class JupyterGraphicsFrame(GraphicsFrame):
         generic_drawer.set_pixelized_cartesian_scene(pg.configuration.getSetting("PixelizedCartesianFields"))
         generic_drawer.set_field_extractor(field_extractor=field_extractor)
 
-        super().__init__(generic_drawer=generic_drawer, current_bsd=pg.screenshot_manager.bsd, *args, **kwargs)
+        super().__init__(generic_drawer=generic_drawer, current_bsd=pg.screenshot_manager.bsd, config_hook=CC3DJupyterGraphicsConfig(), *args, **kwargs)
 
         # Initialize options
         self.bounding_box_on = self.config.getSetting('BoundingBoxOn')
@@ -68,6 +209,8 @@ class JupyterGraphicsFrame(GraphicsFrame):
         self.lattice_axes_on = self.config.getSetting('ShowHorizontalAxesLabels') or self.config.getSetting(
             'ShowVerticalAxesLabels')
 
+        self.colormap = self.config.getSetting('TypeColorMap')
+
         # Initialize initial rendered state
 
         # noinspection PyUnresolvedReferences
@@ -76,6 +219,7 @@ class JupyterGraphicsFrame(GraphicsFrame):
         self.reset_camera()
         self.init_field_types()
         self.Render()
+
 
     def get_vtk_window(self):
         """
@@ -101,13 +245,13 @@ class JupyterGraphicsFrame(GraphicsFrame):
 
         return renWin, interactor
 
+
     def store_gui_vis_config(self, scr_data):
         """
         Save current internal data.
 
         Implementation of :class:`GraphicsFrame` interface.
         """
-
         scr_data.bounding_box_on = self.bounding_box_on
         scr_data.cell_borders_on = self.cell_borders_on
         scr_data.cell_glyphs_on = self.cell_glyphs_on
@@ -116,6 +260,10 @@ class JupyterGraphicsFrame(GraphicsFrame):
         scr_data.fpp_links_on = self.fpp_links_on
         scr_data.lattice_axes_labels_on = self.lattice_axes_labels_on
         scr_data.lattice_axes_on = self.lattice_axes_on
+
+        # colormap not exist in scr_data
+        # scr_data.colormap = self.colormap
+
 
     def set_drawing_style(self, _style):
         """
@@ -207,7 +355,7 @@ class CC3DViewInteractiveWidget(ViewInteractiveWidget):
 
 
 class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
-    """Client for a Jupyter grpahics frame"""
+    """Client for a Jupyter graphics frame"""
 
     def __init__(self,
                  name: str = None,
@@ -237,8 +385,10 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
                                                 render_window=self.frame.renWin)
         return self
 
+
     def show(self):
         display(self.widget)
+
 
     def draw(self, blocking: bool = False):
         """
@@ -256,6 +406,7 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         self.widget: CC3DViewInteractiveWidget
         self.widget.update_canvas()
 
+
     def close(self):
         """
         Close the frame. Does nothing.
@@ -265,8 +416,8 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         :return: True on success
         :rtype: bool
         """
-
         return True
+
 
     def np_img_data(self, scale: Union[int, Tuple[int, int]] = None, transparent_background: bool = False):
         """
@@ -281,8 +432,8 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         :return: image array data
         :rtype: numpy.array
         """
-
         return np_img_data(ren_win=self.frame.renWin, scale=scale, transparent_background=transparent_background)
+
 
     def save_img(self,
                  file_path: str,
@@ -303,11 +454,11 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         :type transparent_background: bool
         :return: None
         """
-
         return save_img(ren_win=self.frame.renWin,
                         file_path=file_path,
                         scale=scale,
                         transparent_background=transparent_background)
+
 
     def set_drawing_style(self, _style):
         """
@@ -316,14 +467,12 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         :param _style:{str} '2D' or '3D'
         :return: None
         """
-
         self.frame.set_drawing_style(_style)
-
         self._update()
+
 
     def set_plane(self, plane, pos=0):
         """Set the plane and position"""
-
         self.frame.currentProjection = plane
         self.frame.projection_position = pos
 
@@ -345,11 +494,13 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         self.frame.set_plane(self.frame.currentProjection, pos)
         self._update()
 
+
     def _update(self):
         self.frame.reset_camera()
         self.frame.current_screenshot_data = self.frame.compute_current_screenshot_data()
         self.frame.draw()
         self.widget.update_canvas()
+
 
     @property
     def field_names(self) -> List[str]:
@@ -358,6 +509,7 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         if self.frame is None or self.frame.fieldTypes is None:
             return []
         return list(self.frame.fieldTypes.keys())
+
 
     def set_field_name(self, _field_name: str):
         """Set the name of the field to render"""
@@ -377,15 +529,70 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         self.frame.field_name = _field_name
         self._update()
 
+
     def sync_cameras(self, frame):
         """Synchronize all cameras"""
 
         return self.widget.sync_cameras(frame.widget)
 
+
     def unsync_camera(self):
         """Unsynchronize all cameras"""
 
         return self.widget.unsync_camera()
+
+
+    @staticmethod
+    def inspect_config(config_fp: str = None):
+        """
+        Inspect the configuration file from path inside of Jupyter.
+        Displays a JupyterWidgetInterface.
+        """
+        if config_fp:
+            # todo: get config from fp
+            raise NotImplementedError
+        else:
+            config = cc3d.CompuCellSetup.persistent_globals.configuration
+
+        # Initialize options
+        bounding_box_on = config.getSetting('BoundingBoxOn')
+        cell_borders_on = config.getSetting('CellBordersOn')
+        cell_glyphs_on = config.getSetting('CellGlyphsOn')
+        cells_on = config.getSetting('CellsOn')
+        cluster_borders_on = config.getSetting('ClusterBordersOn')
+        fpp_links_on = config.getSetting('FPPLinksOn')
+        lattice_axes_labels_on = config.getSetting('ShowAxes')
+        lattice_axes_on = config.getSetting('ShowHorizontalAxesLabels') or self.config.getSetting(
+            'ShowVerticalAxesLabels')
+        colormap = config.getSetting('TypeColorMap')
+
+        wi = JupyterWidgetInterface()
+
+        frame_options = [
+            ('bounding box', bounding_box_on),
+            ('cell borders', cell_borders_on),
+            ('cell glyphs', cell_glyphs_on),
+            ('cells', cells_on),
+            ('cluster borders', cluster_borders_on),
+            ('fpp links', fpp_links_on),
+            ('lattice axes labels', lattice_axes_labels_on),
+            ('lattice axes', lattice_axes_on)
+        ]
+        for (field, value) in frame_options:
+            wi.add_toggle(field, value=value)
+        frame_option_widget_names = [field for (field,_) in frame_options]
+        wi.make_tab('Visualization', frame_option_widget_names)
+
+        colorpicker_names_values = [(f'cell color {k}', str(v)) for (k,v) in colormap.items()]
+        for (name, value) in colorpicker_names_values:
+            wi.add_color(name, value=value)
+        colorpicker_names = [name for (name,value) in colorpicker_names_values]
+        num_colors = len(colorpicker_names)
+        half_num_colors = int(math.ceil(num_colors/2))
+        wi.make_tab('Cell Colors', colorpicker_names[0:half_num_colors], colorpicker_names[half_num_colors:num_colors+1])
+
+        wi.set_disabled()
+
 
 
 class CC3DJupyterGraphicsFrameGrid:
