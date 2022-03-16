@@ -1,10 +1,7 @@
-from argparse import ArgumentError
 from calendar import c
-from IPython.display import display
-import ipywidgets as widgets
 import math
 
-from cc3d.core.GraphicsUtils.JupyterGraphicsFrameWidget import CC3DJupyterGraphicsFrameGrid
+# from cc3d.core.GraphicsUtils.JupyterGraphicsFrameWidget import CC3DJupyterGraphicsFrameGrid
 from cc3d.core.GraphicsUtils.JupyterWidgetInterface import JupyterWidgetInterface
 from cc3d.core.GraphicsOffScreen.primitives import Color
 from itertools import product
@@ -20,17 +17,29 @@ def split_half(arr):
     return arr[0:half], arr[half:n+1]
 
 
-class JupyterControlPanel():
+class JupyterControlPanel:
     """
     Create the ipywidgets menus to edit view settings for JupyterGraphicsFrameClients
     """
 
     def __init__(self, rows=1, cols=1):
-        self.grid = CC3DJupyterGraphicsFrameGrid(rows=rows, cols=cols)
+        # self.grid = CC3DJupyterGraphicsFrameGrid(rows=rows, cols=cols)
         self.wi = JupyterWidgetInterface()
         # _clients_data is data associated with each frame client in grid
         # list of lists (grid) of dicts {'client': frameclient, 'wi data': wi values, 'active': bool}
         self._clients_data = [[{} for j in range(cols)] for i in range(rows)]
+
+    @property
+    def rows(self) -> int:
+        """Number of client rows attached to this control panel"""
+        return len(self._clients_data)
+
+    @property
+    def cols(self) -> int:
+        """Number of client columns attached to this control panel"""
+        if self.rows == 0:
+            return 0
+        return len(self._clients_data[0])
 
     @property
     def _active_clients(self):
@@ -41,8 +50,8 @@ class JupyterControlPanel():
                     active_clients.append(data['client'])
         return active_clients
 
-    def set_frame(self, frameclient, row, col):
-        self.grid.set_frame(frameclient, row, col)
+    def set_frame(self, frameclient, row: int = 0, col: int = 0):
+        # self.grid.set_frame(frameclient, row, col)
         self._clients_data[row][col] = dict(client=frameclient, wi_data={}, active=True)
 
     def show(self):
@@ -50,9 +59,9 @@ class JupyterControlPanel():
         Display the widgets and each frame client
         """
         if len(self._active_clients) > 0:
-            self.grid.sync_cameras()
+            # self.grid.sync_cameras()
             self._create_control_panel()
-            self.grid.show()
+            # self.grid.show()
         else:
             print('No frame clients have been added. Use .set_frame(frameclient, row, col)')
 
@@ -102,7 +111,7 @@ class JupyterControlPanel():
                 self.wi.update_values(first_wi_data)
             self._check_conflicting_data()
 
-        self.wi.add_grid('active frames', rows=self.grid.rows, cols=self.grid.cols, value=True, callback=set_active_client)
+        self.wi.add_grid('active frames', rows=self.rows, cols=self.cols, value=True, callback=set_active_client)
 
         def toggle_field(c, value):
             c.frame.field_name = value
@@ -116,14 +125,22 @@ class JupyterControlPanel():
 
         def set_drawing_style(c, value):
             c.set_drawing_style(value)
-        self.wi.add_select('drawing style', options=['2D','3D'], callback=self._callback(set_drawing_style))
+        self.wi.add_select('drawing style', options=['2D', '3D'], callback=self._callback(set_drawing_style))
 
         def set_camera_sync(value):
+            active_clients = self._active_clients
+            if len(active_clients) < 2:
+                return
+
+            ac0 = active_clients[0]
             if value:
-                self.grid.sync_cameras()
+                for ac in active_clients[1:]:
+                    ac0.sync_cameras(ac)
             else:
-                self.grid.unsync_cameras()
-        self.wi.add_toggle('camera sync', callback=set_camera_sync, value=True)
+                for ac in active_clients[1:]:
+                    ac0.unsync_cameras(ac)
+
+        self.wi.add_toggle('camera sync', callback=set_camera_sync, value=False)
 
         def set_depth_x(value):
             c.set_plane('x', value)
@@ -140,7 +157,7 @@ class JupyterControlPanel():
 
         xyz = ['x', 'y', 'z']
         fields = ['depth']
-        names = [ i+' '+j for i,j in product(fields, xyz)]
+        names = [i+' '+j for i, j in product(fields, xyz)]
         self.wi.make_tab('Camera', ['drawing style', 'camera sync'], names)
 
     def _make_visualization_tab(self, defaultframe):
@@ -181,7 +198,7 @@ class JupyterControlPanel():
         ]
         for (field, func, value) in frame_options:
             self.wi.add_toggle(field, callback=self._callback(func), value=value)
-        frame_option_widget_names = [field for (field,_,_) in frame_options]
+        frame_option_widget_names = [field for (field, _, _) in frame_options]
         options1, options2 = split_half(frame_option_widget_names)
 
         self.wi.make_tab('Visualization', options1, options2)
@@ -193,19 +210,20 @@ class JupyterControlPanel():
                 for j, data in enumerate(row):
                     c = data['client']
                     ###
-                    n = int(field_name[-1]) # color number
+                    n = int(field_name[-1])  # color number
                     c.frame.colormap[n] = Color.from_str_rgb(value)
-                    c.frame.config.setSetting('TypeColorMap', c.frame.colormap[n])
+                    c.frame.config.setSetting('TypeColorMap', c.frame.colormap)
                     ###
                     self._update_client_data(i, j)
+                    c.frame.on_cell_type_color()
                     c.draw()
             self._check_conflicting_data()
 
-        colorpicker_names_values = [(f'cell color {k}', str(v)) for (k,v) in defaultframe.colormap.items()]
+        colorpicker_names_values = [(f'cell color {k}', str(v)) for (k, v) in defaultframe.colormap.items()]
         for (name, value) in colorpicker_names_values:
             self.wi.add_color(name, value=value, callback=set_color)
 
-        colorpicker_names = [name for (name,value) in colorpicker_names_values]
+        colorpicker_names = [name for (name, value) in colorpicker_names_values]
         colors1, colors2 = split_half(colorpicker_names)
 
         self.wi.make_tab('Cell Colors', colors1, colors2)
