@@ -3,7 +3,7 @@ import ipywidgets as widgets
 from ipywidgets.widgets.widget_box import HBox, VBox
 
 
-class JupyterWidgetInterface():
+class JupyterWidgetInterface:
     """
     Helper class for creating consistent ipywidget interface
     """

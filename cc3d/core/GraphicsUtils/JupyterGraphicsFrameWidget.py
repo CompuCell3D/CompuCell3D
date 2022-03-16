@@ -15,8 +15,6 @@ from cc3d.core.GraphicsUtils.GraphicsFrame import GraphicsFrame
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame import (
     CC3DPyGraphicsFrameClientBase, CC3DPyInteractorStyle, np_img_data, save_img
 )
-from cc3d.core.GraphicsUtils.JupyterWidgetInterface import JupyterWidgetInterface
-from ipywidgets.widgets.widget_box import HBox, VBox
 
 
 # Test for IPython
@@ -26,9 +24,13 @@ try:
     from ipyvtklink.viewer import ViewInteractiveWidget
     from IPython.display import display
     from ipywidgets import HBox, Layout, VBox
+    from cc3d.core.GraphicsUtils.JupyterWidgetInterface import JupyterWidgetInterface
+    from cc3d.core.GraphicsUtils.JupyterControlPanel import JupyterControlPanel
 except NameError:
     __has_interactive__ = False
     ViewInteractiveWidget = object
+    JupyterWidgetInterface = object
+    JupyterControlPanel = object
 
 
 class CC3DJupyterGraphicsConfig:
@@ -167,7 +169,7 @@ class JupyterGraphicsFrame(GraphicsFrame):
     Interactive graphics in a Jupyter notebook
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
 
         if not __has_interactive__:
             raise RuntimeError('Interactive frame launched outside of an interactive environment.')
@@ -189,7 +191,9 @@ class JupyterGraphicsFrame(GraphicsFrame):
         generic_drawer.set_pixelized_cartesian_scene(pg.configuration.getSetting("PixelizedCartesianFields"))
         generic_drawer.set_field_extractor(field_extractor=field_extractor)
 
-        super().__init__(generic_drawer=generic_drawer, current_bsd=pg.screenshot_manager.bsd, config_hook=CC3DJupyterGraphicsConfig(), *args, **kwargs)
+        super().__init__(generic_drawer=generic_drawer,
+                         current_bsd=pg.screenshot_manager.bsd,
+                         config_hook=CC3DJupyterGraphicsConfig())
 
         # Initialize options
         self.bounding_box_on = self.config.getSetting('BoundingBoxOn')
@@ -265,6 +269,74 @@ class JupyterGraphicsFrame(GraphicsFrame):
         super().set_drawing_style(_style)
 
         self.style.can_rotate = _style == '3D'
+
+    def on_cell_type_color(self):
+        """Handle when a cell type color changes"""
+
+        scene_metadata = {'TypeColorMap': self.config.getSetting('TypeColorMap')}
+        lut = self.gd.draw_model_2D.generate_cell_type_lookup_table(scene_metadata, True)
+        self.gd.draw_model_2D.celltypeLUT = lut
+
+        lut = self.gd.draw_model_3D.generate_cell_type_lookup_table(scene_metadata, True)
+        self.gd.draw_model_3D.celltypeLUT = lut
+
+    @property
+    def min_range_fixed(self) -> bool:
+        try:
+            return self.config.getSetting('MinRangeFixed')[self.field_name]
+        except KeyError:
+            return False
+
+    @min_range_fixed.setter
+    def min_range_fixed(self, _val: bool) -> None:
+        key = 'MinRangeFixed'
+
+        setting = self.config.getSetting(key)
+        if self.field_name in setting.keys():
+            setting[self.field_name] = _val
+            self.config.setSetting(key, setting)
+
+    @property
+    def min_range(self) -> Optional[float]:
+        return self.config.getSetting('MinRange').get(self.field_name)
+
+    @min_range.setter
+    def min_range(self, _val: float):
+        key = 'MinRange'
+
+        setting = self.config.getSetting(key)
+        if self.field_name in setting.keys():
+            setting[self.field_name] = _val
+            self.config.setSetting(key, setting)
+
+    @property
+    def max_range_fixed(self) -> bool:
+        try:
+            return self.config.getSetting('MaxRangeFixed')[self.field_name]
+        except KeyError:
+            return False
+
+    @max_range_fixed.setter
+    def max_range_fixed(self, _val: bool):
+        key = 'MaxRangeFixed'
+
+        setting = self.config.getSetting(key)
+        if self.field_name in setting.keys():
+            setting[self.field_name] = _val
+            self.config.setSetting(key, setting)
+
+    @property
+    def max_range(self) -> Optional[float]:
+        return self.config.getSetting('MaxRange').get(self.field_name)
+
+    @max_range.setter
+    def max_range(self, _val: float):
+        key = 'MaxRange'
+
+        setting = self.config.getSetting(key)
+        if self.field_name in setting.keys():
+            setting[self.field_name] = _val
+            self.config.setSetting(key, setting)
 
 
 class CC3DViewInteractiveWidget(ViewInteractiveWidget):
@@ -481,6 +553,36 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         self.frame.set_plane(self.frame.currentProjection, pos)
         self._update()
 
+    def get_range_fixed(self) -> Tuple[bool, bool]:
+        """Get whether both concentration limits are fixed"""
+
+        return self.frame.min_range_fixed, self.frame.max_range_fixed
+
+    def set_range_fixed(self, range_min: bool = None, range_max: bool = None):
+        """Set whether one or both concentration limits are fixed"""
+
+        if range_min is not None:
+            self.frame.min_range = range_min
+        if range_max is not None:
+            self.frame.max_range = range_max
+        self._update()
+
+    def get_range(self) -> Tuple[Optional[float], Optional[float]]:
+        """Get the concentration limits, if any."""
+
+        return self.frame.min_range, self.frame.max_range
+
+    def set_range(self, range_min: float = None, range_max: float = None):
+        """Set one or both concentration limits. When setting a range value, the range is automatically fixed."""
+
+        if range_min is not None:
+            self.frame.min_range = range_min
+            self.frame.min_range_fixed = True
+        if range_max is not None:
+            self.frame.max_range = range_max
+            self.frame.max_range_fixed = True
+        self._update()
+
     def _update(self):
         self.frame.reset_camera()
         self.frame.current_screenshot_data = self.frame.compute_current_screenshot_data()
@@ -522,6 +624,14 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         """Unsynchronize all cameras"""
 
         return self.widget.unsync_camera()
+
+    def control_panel(self) -> JupyterControlPanel:
+        """Get a control panel for the client"""
+
+        cp = JupyterControlPanel()
+        cp.set_frame(self, 0, 0)
+        cp._create_control_panel()
+        return cp
 
 
 class CC3DJupyterGraphicsFrameGrid:
@@ -604,3 +714,14 @@ class CC3DJupyterGraphicsFrameGrid:
         if hboxes:
             self.grid_box = VBox(hboxes)
             display(self.grid_box)
+
+    def control_panel(self) -> JupyterControlPanel:
+        """Get a control panel for the grid"""
+
+        cp = JupyterControlPanel(rows=self.rows, cols=self.cols)
+        for r, rw in enumerate(self._items):
+            for c, w in enumerate(rw):
+                if c is not None:
+                    cp.set_frame(w, r, c)
+        cp._create_control_panel()
+        return cp
