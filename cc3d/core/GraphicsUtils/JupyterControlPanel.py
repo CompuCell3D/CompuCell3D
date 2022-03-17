@@ -137,8 +137,8 @@ class JupyterControlPanel:
                 for ac in active_clients[1:]:
                     ac0.sync_cameras(ac)
             else:
-                for ac in active_clients[1:]:
-                    ac0.unsync_cameras(ac)
+                for ac in active_clients:
+                    ac.unsync_camera()
 
         self.wi.add_toggle('camera sync', callback=set_camera_sync, value=False)
 
