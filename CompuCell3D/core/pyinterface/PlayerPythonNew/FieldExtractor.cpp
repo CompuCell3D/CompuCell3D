@@ -966,135 +966,155 @@ void FieldExtractor::fillBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr, vtk
 }
 
 void FieldExtractor::fillClusterBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr, std::string _plane, int _pos)
-  {
+{
+  auto start_time = std::chrono::high_resolution_clock::now();
+  vtkPoints *points = (vtkPoints *)_pointArrayAddr;
+  vtkCellArray *lines = (vtkCellArray *)_linesArrayAddr;
 
-    vtkPoints *points = (vtkPoints *)_pointArrayAddr;
-    vtkCellArray *lines = (vtkCellArray *)_linesArrayAddr;
+  Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+  Dim3D fieldDim = cellFieldG->getDim();
 
-    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
-    Dim3D fieldDim = cellFieldG->getDim();
+  vector<int> fieldDimVec(3, 0);
+  fieldDimVec[0] = fieldDim.x;
+  fieldDimVec[1] = fieldDim.y;
+  fieldDimVec[2] = fieldDim.z;
 
-    vector<int> fieldDimVec(3, 0);
-    fieldDimVec[0] = fieldDim.x;
-    fieldDimVec[1] = fieldDim.y;
-    fieldDimVec[2] = fieldDim.z;
+  vector<int> pointOrderVec = pointOrder(_plane);
+  vector<int> dimOrderVec = dimOrder(_plane);
 
-    vector<int> pointOrderVec = pointOrder(_plane);
-    vector<int> dimOrderVec = dimOrder(_plane);
+  vector<int> dim(3, 0);
+  dim[0] = fieldDimVec[dimOrderVec[0]];
+  dim[1] = fieldDimVec[dimOrderVec[1]];
+  dim[2] = fieldDimVec[dimOrderVec[2]];
 
-    vector<int> dim(3, 0);
-    dim[0] = fieldDimVec[dimOrderVec[0]];
-    dim[1] = fieldDimVec[dimOrderVec[1]];
-    dim[2] = fieldDimVec[dimOrderVec[2]];
+  vector<std::pair<double, double>> global_points;
+  vtkIdType *linesWritePtr;
 
-    Point3D pt;
-    vector<int> ptVec(3, 0);
-    Point3D ptN;
-    vector<int> ptNVec(3, 0);
+  // int k = 0;
+  // int pc = 0;
+#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, points, lines, global_points, linesWritePtr)
+{
+  vector<std::pair<double,double>> local_points;
+  Point3D pt;
+  vector<int> ptVec(3, 0);
+  Point3D ptN;
+  vector<int> ptNVec(3, 0);
+#pragma omp for schedule(static, 5) nowait
+  for (int i = 0; i < dim[0]; ++i) {
+    for (int j = 0; j < dim[1]; ++j) {
+      ptVec[0] = i;
+      ptVec[1] = j;
+      ptVec[2] = _pos;
 
-    int k = 0;
-    int pc = 0;
+      pt.x = ptVec[pointOrderVec[0]];
+      pt.y = ptVec[pointOrderVec[1]];
+      pt.z = ptVec[pointOrderVec[2]];
 
-    for (int i = 0; i < dim[0]; ++i)
-    {
-      //		cout << "i ="<<i<<endl;
-      for (int j = 0; j < dim[1]; ++j)
+      if (cellFieldG->get(pt) == 0)
+        continue;
+
+      long clusterId = cellFieldG->get(pt)->clusterId;
+
+      if (i > 0 && j < dim[1])
       {
-        ptVec[0] = i;
-        ptVec[1] = j;
-        ptVec[2] = _pos;
-
-        pt.x = ptVec[pointOrderVec[0]];
-        pt.y = ptVec[pointOrderVec[1]];
-        pt.z = ptVec[pointOrderVec[2]];
-
-        if (cellFieldG->get(pt) == 0)
-          continue;
-
-        long clusterId = cellFieldG->get(pt)->clusterId;
-        //			cout << "j,clusterId=" << j<<","<<clusterId << endl;
-
-        if (i > 0 && j < dim[1])
+        ptNVec[0] = i - 1;
+        ptNVec[1] = j;
+        ptNVec[2] = _pos;
+        ptN.x = ptNVec[pointOrderVec[0]];
+        ptN.y = ptNVec[pointOrderVec[1]];
+        ptN.z = ptNVec[pointOrderVec[2]];
+        if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId)
         {
-          ptNVec[0] = i - 1;
-          ptNVec[1] = j;
-          ptNVec[2] = _pos;
-          ptN.x = ptNVec[pointOrderVec[0]];
-          ptN.y = ptNVec[pointOrderVec[1]];
-          ptN.z = ptNVec[pointOrderVec[2]];
-          if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId)
-          {
-            points->InsertNextPoint(i, j, 0);
-            points->InsertNextPoint(i, j + 1, 0);
-            pc += 2;
-            lines->InsertNextCell(2);
-            lines->InsertCellPoint(pc - 2);
-            lines->InsertCellPoint(pc - 1);
-          }
+          local_points.push_back({i,j});
+          local_points.push_back({i, j + 1});
         }
-        if (j > 0 && i < dim[0])
+      }
+      if (j > 0 && i < dim[0])
+      {
+        ptNVec[0] = i;
+        ptNVec[1] = j - 1;
+        ptNVec[2] = _pos;
+        ptN.x = ptNVec[pointOrderVec[0]];
+        ptN.y = ptNVec[pointOrderVec[1]];
+        ptN.z = ptNVec[pointOrderVec[2]];
+        if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId)
         {
-          ptNVec[0] = i;
-          ptNVec[1] = j - 1;
-          ptNVec[2] = _pos;
-          ptN.x = ptNVec[pointOrderVec[0]];
-          ptN.y = ptNVec[pointOrderVec[1]];
-          ptN.z = ptNVec[pointOrderVec[2]];
-          if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId)
-          {
-            points->InsertNextPoint(i, j, 0);
-            points->InsertNextPoint(i + 1, j, 0);
-            pc += 2;
-            lines->InsertNextCell(2);
-            lines->InsertCellPoint(pc - 2);
-            lines->InsertCellPoint(pc - 1);
-          }
+          local_points.push_back({i, j});
+          local_points.push_back({i + 1, j});
         }
+      }
 
-        if (i < dim[0] && j < dim[1])
+      if (i < dim[0] && j < dim[1])
+      {
+        ptNVec[0] = i + 1;
+        ptNVec[1] = j;
+        ptNVec[2] = _pos;
+        ptN.x = ptNVec[pointOrderVec[0]];
+        ptN.y = ptNVec[pointOrderVec[1]];
+        ptN.z = ptNVec[pointOrderVec[2]];
+        if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId)
         {
-          ptNVec[0] = i + 1;
-          ptNVec[1] = j;
-          ptNVec[2] = _pos;
-          ptN.x = ptNVec[pointOrderVec[0]];
-          ptN.y = ptNVec[pointOrderVec[1]];
-          ptN.z = ptNVec[pointOrderVec[2]];
-          if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId)
-          {
-            points->InsertNextPoint(i + 1, j, 0);
-            points->InsertNextPoint(i + 1, j + 1, 0);
-            pc += 2;
-            lines->InsertNextCell(2);
-            lines->InsertCellPoint(pc - 2);
-            lines->InsertCellPoint(pc - 1);
-          }
+          local_points.push_back({i + 1, j});
+          local_points.push_back({i + 1, j + 1});
         }
+      }
 
-        if (i < dim[0] && j < dim[1])
+      if (i < dim[0] && j < dim[1])
+      {
+        ptNVec[0] = i;
+        ptNVec[1] = j + 1;
+        ptNVec[2] = _pos;
+        ptN.x = ptNVec[pointOrderVec[0]];
+        ptN.y = ptNVec[pointOrderVec[1]];
+        ptN.z = ptNVec[pointOrderVec[2]];
+        if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId)
         {
-          ptNVec[0] = i;
-          ptNVec[1] = j + 1;
-          ptNVec[2] = _pos;
-          ptN.x = ptNVec[pointOrderVec[0]];
-          ptN.y = ptNVec[pointOrderVec[1]];
-          ptN.z = ptNVec[pointOrderVec[2]];
-          if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId)
-          {
-            points->InsertNextPoint(i, j + 1, 0);
-            points->InsertNextPoint(i + 1, j + 1, 0);
-            pc += 2;
-            lines->InsertNextCell(2);
-            lines->InsertCellPoint(pc - 2);
-            lines->InsertCellPoint(pc - 1);
-          }
+          local_points.push_back({i, j + 1});
+          local_points.push_back({i + 1, j + 1});
         }
       }
     }
   }
+#pragma omp critical
+  {
+    // https://stackoverflow.com/a/18671256
+    // we can force these to be added in-order if we want
+    global_points.insert(global_points.end(), local_points.begin(), local_points.end());
+  }
+#pragma omp barrier
+
+#pragma omp sections
+  {
+#pragma omp section
+    {
+      linesWritePtr = lines->WritePointer(global_points.size() / 2, (global_points.size() / 2) * 3);
+    }
+#pragma omp section
+    {
+      points->SetNumberOfPoints(global_points.size());
+    }
+  }
+#pragma omp for schedule(static)
+  for (int j = 0; j < global_points.size(); j += 2)
+  {
+    std::pair<double, double> pt1 = global_points[j];
+    std::pair<double, double> pt2 = global_points[j + 1];
+    points->SetPoint(j, pt1.first, pt1.second, 0);
+    points->SetPoint(j + 1, pt2.first, pt2.second, 0);
+    int pc = (j / 2) * 3;
+    linesWritePtr[pc] = 2;
+    linesWritePtr[pc + 1] = j;
+    linesWritePtr[pc + 2] = j + 1;
+  }
+}
+
+auto current_time = std::chrono::high_resolution_clock::now();
+cout << "!!EXITING fillClusterBorderData2D !! " << std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano~seconds elapsed" << endl;
+}
 
 void FieldExtractor::fillClusterBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr, std::string _plane, int _pos)
-  {
-    //this function has to be redone in the same spirit as fillBorderData2DHex
+{
+  //this function has to be redone in the same spirit as fillBorderData2DHex
   auto start_time = std::chrono::high_resolution_clock::now();
 	vtkPoints *points = (vtkPoints *)_pointArrayAddr;
 	vtkCellArray * lines = (vtkCellArray *)_linesArrayAddr;
