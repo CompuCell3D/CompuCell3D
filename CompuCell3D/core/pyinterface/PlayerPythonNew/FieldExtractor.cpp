@@ -1517,13 +1517,12 @@ void FieldExtractor::fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_
 	}
 }
 
-bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-
-    vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
-
+bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos)
+{
+  auto start_time = std::chrono::high_resolution_clock::now();
+  vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
+  vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
 	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
-
 
 	Field3D<float> *conFieldPtr=0; 
 	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
@@ -1535,7 +1534,6 @@ bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_
 
 	if(!conFieldPtr)
 		return false;
-
 
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim();
@@ -1553,18 +1551,36 @@ bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_
 	dim[1]=fieldDimVec[dimOrderVec[1]];
 	dim[2]=fieldDimVec[dimOrderVec[2]];
 
+  int numPoints = dim[0] * dim[1];
+  vtkIdType *_hexWritePtr;
 
-	int offset=0;
-
-	Point3D pt;
+#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, _pointsArray, conArray, _hexWritePtr)
+  {
+#pragma omp sections
+  {
+#pragma omp section
+    {
+      _hexWritePtr = _hexCellsArray->WritePointer(numPoints, numPoints * 7);
+    }
+#pragma omp section
+    {
+      conArray->SetNumberOfValues(numPoints);
+    }
+#pragma omp section
+    {
+      _pointsArray->SetNumberOfPoints(numPoints * 6);
+    }
+  }
+  Point3D pt;
 	vector<int> ptVec(3,0);
 
 	double con;
-	long pc=0;
 	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
+#pragma omp for schedule(static)
+  for(int j =0 ; j<dim[1] ; ++j) {
+		for(int i =0 ; i<dim[0] ; ++i) {
+      int dataPoint = i + j * dim[1];
+      ptVec[0]=i;
 			ptVec[1]=j;
 			ptVec[2]=_pos;
 
@@ -1578,22 +1594,28 @@ bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_
 				con = conFieldPtr->get(pt);
 			}
 			Coordinates3D<double> hexCoords=HexCoordXY(pt.x,pt.y,pt.z);
-			for (int idx=0 ; idx<6 ; ++idx){
-			 Coordinates3D<double> hexagonVertex=hexagonVertices[idx]+hexCoords;
-			 _pointsArray->InsertNextPoint(hexagonVertex.x,hexagonVertex.y,0.0);
-			}
-			pc+=6;
-			vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
-			_hexCellsArray->InsertCellPoint(pc-6);
-			_hexCellsArray->InsertCellPoint(pc-5);
-			_hexCellsArray->InsertCellPoint(pc-4);
-			_hexCellsArray->InsertCellPoint(pc-3);
-			_hexCellsArray->InsertCellPoint(pc-2);
-			_hexCellsArray->InsertCellPoint(pc-1);
+      int cellPos = dataPoint * 6;
+      for (int idx=0 ; idx<6 ; ++idx){
+        Coordinates3D<double> hexagonVertex=hexagonVertices[idx]+hexCoords;
+        _pointsArray->SetPoint(cellPos + idx, hexagonVertex.x, hexagonVertex.y, 0.0);
+      }
+      int arrPos = dataPoint * 7;
+      _hexWritePtr[arrPos + 0] = 6;
+      _hexWritePtr[arrPos + 1] = cellPos + 0;
+      _hexWritePtr[arrPos + 2] = cellPos + 1;
+      _hexWritePtr[arrPos + 3] = cellPos + 2;
+      _hexWritePtr[arrPos + 4] = cellPos + 3;
+      _hexWritePtr[arrPos + 5] = cellPos + 4;
+      _hexWritePtr[arrPos + 6] = cellPos + 5;
 
-			conArray->InsertNextValue( con);
-		}
-		return true;
+      conArray->SetValue(dataPoint, con);
+    }
+  }
+}
+auto current_time = std::chrono::high_resolution_clock::now();
+cout << "!!EXITING fillConFieldData2DHex !! " << std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano~seconds elapsed" << endl;
+
+return true;
 }
 
 bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
@@ -1632,8 +1654,6 @@ bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAdd
 
   int numPoints = dim[0] * dim[1];
   vtkIdType *_cartesianCellsArrayWritePtr;
-  // conArray->SetNumberOfValues(numPoints);
-  // _pointsArray->SetNumberOfPoints(numPoints * 4);
 
 	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
 
@@ -1654,12 +1674,12 @@ bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAdd
       _pointsArray->SetNumberOfPoints(numPoints * 4);
     }
   }
-
+  Point3D pt;
+  vector<int> ptVec(3, 0);
+  double con;
 #pragma omp for schedule(static)
   for(int j =0 ; j<dim[1] ; ++j) {
-    Point3D pt;
-    vector<int> ptVec(3, 0);
-    double con;
+
     for(int i =0 ; i<dim[0] ; ++i){
       int dataPoint = i + j * dim[1];
       ptVec[0]=i;
