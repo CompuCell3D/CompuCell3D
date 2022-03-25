@@ -97,14 +97,14 @@ void FieldExtractor::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, 
 	//So we just populate empty cellIds.
 #pragma omp parallel shared(pointOrderVec, dim, _cellTypeArray, cellFieldG)
   {
-#pragma omp for schedule(static)
+#pragma omp for schedule(static) nowait
     for (int i = 0; i < dim[0] + 1; ++i)
     {
       _cellTypeArray->SetValue(i, 0);
     }
 
     // when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-#pragma omp parallel for schedule(static)
+#pragma omp for schedule(static) nowait
 	for(int j =0 ; j<dim[1]+1 ; ++j){
     Point3D pt;
     vector<int> ptVec(3,0);
@@ -2818,7 +2818,7 @@ bool FieldExtractor::fillVectorFieldCellLevelData2DHex(vtk_obj_addr_int_t _point
   vector<std::tuple<long,double,double,float,float>> localPoints;
   set<long> visitedCells;
 
-#pragma omp for schedule(static)
+#pragma omp for schedule(static) nowait
 	for(int j =0 ; j<dim[1] ; ++j) {
 		for(int i =0 ; i<dim[0] ; ++i){
       int offset = i + j * dim[1];
