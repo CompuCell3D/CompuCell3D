@@ -2548,6 +2548,7 @@ bool FieldExtractor::fillVectorFieldData3D(vtk_obj_addr_int_t _pointsArrayIntAdd
   vector<std::tuple<short,short,short, float,float,float>> localPoints;
   float x,y,z;
         
+// TODO: need OpenMP 3.0 > support on Windows to allow non-integer for loop indicies, cannot parallelize this
 #pragma omp for nowait schedule(static)
 	for(pt_z = 0; pt_z<fieldDim.z ; ++pt_z)	{
     pt.z=pt.z;
@@ -2615,6 +2616,7 @@ bool FieldExtractor::fillVectorFieldData3DHex(vtk_obj_addr_int_t _pointsArrayInt
   float x, y, z;
   int pt_z;
   vector<std::tuple<double,double,double, float,float,float>> localPoints;
+// TODO: need OpenMP 3.0 > support on Windows to allow non-integer for loop indicies, cannot parallelize this
 #pragma omp for nowait schedule(static)
   for (int pt_z = 0; pt_z < fieldDim.z; ++pt_z) {
     pt.z=pt.z;
@@ -2910,7 +2912,8 @@ bool FieldExtractor::fillVectorFieldCellLevelData3D(vtk_obj_addr_int_t _pointsAr
 	Coordinates3D<float> vecTmp;
   short pt_z;
 
-  #pragma omp for nowait schedule(static)
+// TODO: need OpenMP 3.0 > support on Windows to allow non-integer for loop indicies, cannot parallelize this
+#pragma omp for nowait schedule(static)
 	for(pt_z =0 ; pt_z<fieldDim.z ; ++pt_z)	{
     pt.z = pt_z;
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y) {
@@ -2995,7 +2998,8 @@ bool FieldExtractor::fillVectorFieldCellLevelData3DHex(vtk_obj_addr_int_t _point
   CellG *cell;
   Coordinates3D<float> vecTmp;
   short pt_z;
-  #pragma omp for nowait schedule(static)
+// TODO: need OpenMP 3.0 > support on Windows to allow non-integer for loop indicies, cannot parallelize this
+#pragma omp for nowait schedule(static)
   for (pt_z = 0; pt_z < fieldDim.z; ++pt_z){
     pt.z=pt_z;
     for (pt.y = 0; pt.y < fieldDim.y; ++pt.y){
