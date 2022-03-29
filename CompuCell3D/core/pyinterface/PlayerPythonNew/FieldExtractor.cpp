@@ -40,10 +40,10 @@ void FieldExtractor::init(Simulator * _sim){
 	sim=_sim;
 	potts=sim->getPotts();
   // TODO: remove this
-  ParallelUtilsOpenMP *pUtils = sim->getParallelUtils();
-  int nprocs = pUtils->getNumberOfProcessors() - 2;
+  // ParallelUtilsOpenMP *pUtils = sim->getParallelUtils();
+  // int nprocs = pUtils->getNumberOfProcessors() - 2;
   // nprocs = 1;
-  pUtils->setNumberOfWorkNodes(nprocs);
+  // pUtils->setNumberOfWorkNodes(nprocs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
