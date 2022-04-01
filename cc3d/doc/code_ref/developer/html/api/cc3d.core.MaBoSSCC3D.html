@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>cc3d.core.MaBoSSCC3D module &#8212; CC3D_code_developer_reference_manual 4.2.5 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cc3d.core.ParameterScanEnums module" href="cc3d.core.ParameterScanEnums.html" />
+    <link rel="prev" title="cc3d.core.FieldRegistry module" href="cc3d.core.FieldRegistry.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.ParameterScanEnums.html" title="cc3d.core.ParameterScanEnums module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.FieldRegistry.html" title="cc3d.core.FieldRegistry module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.core.html" accesskey="U">cc3d.core package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.core.MaBoSSCC3D module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-cc3d.core.MaBoSSCC3D">
+<span id="cc3d-core-mabosscc3d-module"></span><h1>cc3d.core.MaBoSSCC3D module<a class="headerlink" href="#module-cc3d.core.MaBoSSCC3D" title="Permalink to this headline">¶</a></h1>
+<section id="maboss-python-integration">
+<h2>MaBoSS Python integration<a class="headerlink" href="#maboss-python-integration" title="Permalink to this headline">¶</a></h2>
+<p>Written by T.J. Sego, Ph.D.</p>
+<p>Biocomplexity Institute</p>
+<p>Indiana University</p>
+<p>Bloomington, IN, U.S.A.</p>
+</section>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>Defines helpers and steppable class features for using MaBoSS in CC3D Python</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="cc3d.core.MaBoSSCC3D.NoMaBoSSExtensionError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cc3d.core.MaBoSSCC3D.</span></span><span class="sig-name descname"><span class="pre">NoMaBoSSExtensionError</span></span><a class="headerlink" href="#cc3d.core.MaBoSSCC3D.NoMaBoSSExtensionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Simple exception to notify of missing required extension</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.MaBoSSCC3D.NoMaBoSSExtensionError.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Simple</span> <span class="pre">exception</span> <span class="pre">to</span> <span class="pre">notify</span> <span class="pre">of</span> <span class="pre">missing</span> <span class="pre">required</span> <span class="pre">extension'</span></em><a class="headerlink" href="#cc3d.core.MaBoSSCC3D.NoMaBoSSExtensionError.__doc__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.MaBoSSCC3D.NoMaBoSSExtensionError.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cc3d.core.MaBoSSCC3D'</span></em><a class="headerlink" href="#cc3d.core.MaBoSSCC3D.NoMaBoSSExtensionError.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.MaBoSSCC3D.NoMaBoSSExtensionError.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#cc3d.core.MaBoSSCC3D.NoMaBoSSExtensionError.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.core.MaBoSSCC3D.maboss_model">
+<span class="sig-prename descclassname"><span class="pre">cc3d.core.MaBoSSCC3D.</span></span><span class="sig-name descname"><span class="pre">maboss_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bnd_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bnd_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_tick</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discrete_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#cc3d.core.MaBoSSCC3D.maboss_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate a MaBoSS simulation instance from files and/or strings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bnd_file</strong> (<em>str</em>) – path to a network file (required unless bnd_str is specified)</p></li>
+<li><p><strong>bnd_str</strong> (<em>str</em>) – network multiline string (required unless bnd_file is specified)</p></li>
+<li><p><strong>cfg_file</strong> (<em>str</em>) – path to a configuration file (required unless cfg_str is specified)</p></li>
+<li><p><strong>cfg_str</strong> (<em>str</em>) – configuration multiline string (required unless cfg_file is specified)</p></li>
+<li><p><strong>time_step</strong> (<em>float</em>) – period of one simulation step (default 1.0)</p></li>
+<li><p><strong>time_tick</strong> (<em>float</em>) – period of one evaluation (default 1.0)</p></li>
+<li><p><strong>discrete_time</strong> (<em>bool</em>) – flag to use discrete time (default False)</p></li>
+<li><p><strong>seed</strong> (<em>int</em>) – random generator seed (default 0)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>MaBoSS simulation instance</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>MaBoSSCC3DPy.CC3DMaBoSSEngine</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">cc3d.core.MaBoSSCC3D module</a><ul>
+<li><a class="reference internal" href="#maboss-python-integration">MaBoSS Python integration</a></li>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="cc3d.core.FieldRegistry.html"
+                          title="previous chapter">cc3d.core.FieldRegistry module</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="cc3d.core.ParameterScanEnums.html"
+                          title="next chapter">cc3d.core.ParameterScanEnums module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/cc3d.core.MaBoSSCC3D.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.ParameterScanEnums.html" title="cc3d.core.ParameterScanEnums module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.FieldRegistry.html" title="cc3d.core.FieldRegistry module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.core.html" >cc3d.core package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.core.MaBoSSCC3D module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, T.J. Sego, Juliano F. Gianlupi, Maciej H. Swat, James A. Glazier.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>

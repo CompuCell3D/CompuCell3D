@@ -1,0 +1,428 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>cc3d.core.CC3DSimulationDataHandler module &#8212; CC3D_code_developer_reference_manual 4.2.5 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cc3d.core.CMLFieldHandler module" href="cc3d.core.CMLFieldHandler.html" />
+    <link rel="prev" title="cc3d.core.BasicSimulationData module" href="cc3d.core.BasicSimulationData.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.CMLFieldHandler.html" title="cc3d.core.CMLFieldHandler module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.BasicSimulationData.html" title="cc3d.core.BasicSimulationData module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.core.html" accesskey="U">cc3d.core package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.core.CC3DSimulationDataHandler module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-cc3d.core.CC3DSimulationDataHandler">
+<span id="cc3d-core-cc3dsimulationdatahandler-module"></span><h1>cc3d.core.CC3DSimulationDataHandler module<a class="headerlink" href="#module-cc3d.core.CC3DSimulationDataHandler" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DParameterScanResource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cc3d.core.CC3DSimulationDataHandler.</span></span><span class="sig-name descname"><span class="pre">CC3DParameterScanResource</span></span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DParameterScanResource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#cc3d.core.CC3DSimulationDataHandler.CC3DResource" title="cc3d.core.CC3DSimulationDataHandler.CC3DResource"><code class="xref py py-class docutils literal notranslate"><span class="pre">cc3d.core.CC3DSimulationDataHandler.CC3DResource</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DParameterScanResource.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DParameterScanResource.__doc__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DParameterScanResource.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DParameterScanResource.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DParameterScanResource.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cc3d.core.CC3DSimulationDataHandler'</span></em><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DParameterScanResource.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DParameterScanResource.addParameterScanData">
+<span class="sig-name descname"><span class="pre">addParameterScanData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="cc3d.core.ParameterScanUtils.html#cc3d.core.ParameterScanUtils.ParameterScanData" title="cc3d.core.ParameterScanUtils.ParameterScanData"><span class="pre">cc3d.core.ParameterScanUtils.ParameterScanData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DParameterScanResource.addParameterScanData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DParameterScanResource.readParameterScanSpecs">
+<span class="sig-name descname"><span class="pre">readParameterScanSpecs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DParameterScanResource.readParameterScanSpecs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DParameterScanResource.write_parameter_scan_specs">
+<span class="sig-name descname"><span class="pre">write_parameter_scan_specs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DParameterScanResource.write_parameter_scan_specs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DResource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cc3d.core.CC3DSimulationDataHandler.</span></span><span class="sig-name descname"><span class="pre">CC3DResource</span></span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DResource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#cc3d.core.CC3DSimulationDataHandler.GenericResource" title="cc3d.core.CC3DSimulationDataHandler.GenericResource"><code class="xref py py-class docutils literal notranslate"><span class="pre">cc3d.core.CC3DSimulationDataHandler.GenericResource</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DResource.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DResource.__doc__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DResource.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DResource.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DResource.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cc3d.core.CC3DSimulationDataHandler'</span></em><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DResource.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DResource.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DResource.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DResource.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DResource.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return str(self).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSerializerResource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cc3d.core.CC3DSimulationDataHandler.</span></span><span class="sig-name descname"><span class="pre">CC3DSerializerResource</span></span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSerializerResource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#cc3d.core.CC3DSimulationDataHandler.GenericResource" title="cc3d.core.CC3DSimulationDataHandler.GenericResource"><code class="xref py py-class docutils literal notranslate"><span class="pre">cc3d.core.CC3DSimulationDataHandler.GenericResource</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSerializerResource.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSerializerResource.__doc__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSerializerResource.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSerializerResource.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSerializerResource.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cc3d.core.CC3DSimulationDataHandler'</span></em><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSerializerResource.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSerializerResource.append_xml_stub">
+<span class="sig-name descname"><span class="pre">append_xml_stub</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSerializerResource.append_xml_stub" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSerializerResource.disable_restart">
+<span class="sig-name descname"><span class="pre">disable_restart</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSerializerResource.disable_restart" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSerializerResource.enable_restart">
+<span class="sig-name descname"><span class="pre">enable_restart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSerializerResource.enable_restart" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cc3d.core.CC3DSimulationDataHandler.</span></span><span class="sig-name descname"><span class="pre">CC3DSimulationData</span></span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.__dict__">
+<span class="sig-name descname"><span class="pre">__dict__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">mappingproxy({'__module__':</span> <span class="pre">'cc3d.core.CC3DSimulationDataHandler',</span> <span class="pre">'__init__':</span> <span class="pre">&lt;function</span> <span class="pre">CC3DSimulationData.__init__&gt;,</span> <span class="pre">'custom_settings_path':</span> <span class="pre">&lt;property</span> <span class="pre">object&gt;,</span> <span class="pre">'pythonScript':</span> <span class="pre">&lt;property</span> <span class="pre">object&gt;,</span> <span class="pre">'xmlScript':</span> <span class="pre">&lt;property</span> <span class="pre">object&gt;,</span> <span class="pre">'pifFile':</span> <span class="pre">&lt;property</span> <span class="pre">object&gt;,</span> <span class="pre">'windowScript':</span> <span class="pre">&lt;property</span> <span class="pre">object&gt;,</span> <span class="pre">'addNewParameterScanResource':</span> <span class="pre">&lt;function</span> <span class="pre">CC3DSimulationData.addNewParameterScanResource&gt;,</span> <span class="pre">'removeParameterScanResource':</span> <span class="pre">&lt;function</span> <span class="pre">CC3DSimulationData.removeParameterScanResource&gt;,</span> <span class="pre">'addNewSerializerResource':</span> <span class="pre">&lt;function</span> <span class="pre">CC3DSimulationData.addNewSerializerResource&gt;,</span> <span class="pre">'getResourcesByType':</span> <span class="pre">&lt;function</span> <span class="pre">CC3DSimulationData.getResourcesByType&gt;,</span> <span class="pre">'restartEnabled':</span> <span class="pre">&lt;function</span> <span class="pre">CC3DSimulationData.restartEnabled&gt;,</span> <span class="pre">'removeSerializerResource':</span> <span class="pre">&lt;function</span> <span class="pre">CC3DSimulationData.removeSerializerResource&gt;,</span> <span class="pre">'addNewResource':</span> <span class="pre">&lt;function</span> <span class="pre">CC3DSimulationData.addNewResource&gt;,</span> <span class="pre">'removeResource':</span> <span class="pre">&lt;function</span> <span class="pre">CC3DSimulationData.removeResource&gt;,</span> <span class="pre">'__dict__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__dict__'</span> <span class="pre">of</span> <span class="pre">'CC3DSimulationData'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__weakref__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__weakref__'</span> <span class="pre">of</span> <span class="pre">'CC3DSimulationData'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__doc__':</span> <span class="pre">None,</span> <span class="pre">'__annotations__':</span> <span class="pre">{}})</span></em><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.__doc__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cc3d.core.CC3DSimulationDataHandler'</span></em><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.addNewParameterScanResource">
+<span class="sig-name descname"><span class="pre">addNewParameterScanResource</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.addNewParameterScanResource" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.addNewResource">
+<span class="sig-name descname"><span class="pre">addNewResource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_fileName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.addNewResource" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.addNewSerializerResource">
+<span class="sig-name descname"><span class="pre">addNewSerializerResource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_outFreq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_multipleRestartDirs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'text'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_restartDir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.addNewSerializerResource" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.custom_settings_path">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">custom_settings_path</span></span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.custom_settings_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.getResourcesByType">
+<span class="sig-name descname"><span class="pre">getResourcesByType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.getResourcesByType" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.pifFile">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pifFile</span></span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.pifFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.pythonScript">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pythonScript</span></span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.pythonScript" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.removeParameterScanResource">
+<span class="sig-name descname"><span class="pre">removeParameterScanResource</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.removeParameterScanResource" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.removeResource">
+<span class="sig-name descname"><span class="pre">removeResource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_fileName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.removeResource" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.removeSerializerResource">
+<span class="sig-name descname"><span class="pre">removeSerializerResource</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.removeSerializerResource" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.restartEnabled">
+<span class="sig-name descname"><span class="pre">restartEnabled</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.restartEnabled" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.windowScript">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">windowScript</span></span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.windowScript" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.xmlScript">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">xmlScript</span></span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationData.xmlScript" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cc3d.core.CC3DSimulationDataHandler.</span></span><span class="sig-name descname"><span class="pre">CC3DSimulationDataHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_tabViewWidget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.__dict__">
+<span class="sig-name descname"><span class="pre">__dict__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">mappingproxy({'__module__':</span> <span class="pre">'cc3d.core.CC3DSimulationDataHandler',</span> <span class="pre">'__init__':</span> <span class="pre">&lt;function</span> <span class="pre">CC3DSimulationDataHandler.__init__&gt;,</span> <span class="pre">'copy_simulation_data_files':</span> <span class="pre">&lt;function</span> <span class="pre">CC3DSimulationDataHandler.copy_simulation_data_files&gt;,</span> <span class="pre">'read_cc3_d_file_format':</span> <span class="pre">&lt;function</span> <span class="pre">CC3DSimulationDataHandler.read_cc3_d_file_format&gt;,</span> <span class="pre">'format_resource_element':</span> <span class="pre">&lt;function</span> <span class="pre">CC3DSimulationDataHandler.format_resource_element&gt;,</span> <span class="pre">'write_cc3d_file_format':</span> <span class="pre">&lt;function</span> <span class="pre">CC3DSimulationDataHandler.write_cc3d_file_format&gt;,</span> <span class="pre">'__dict__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__dict__'</span> <span class="pre">of</span> <span class="pre">'CC3DSimulationDataHandler'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__weakref__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__weakref__'</span> <span class="pre">of</span> <span class="pre">'CC3DSimulationDataHandler'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__doc__':</span> <span class="pre">None,</span> <span class="pre">'__annotations__':</span> <span class="pre">{}})</span></em><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.__doc__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_tabViewWidget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cc3d.core.CC3DSimulationDataHandler'</span></em><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.copy_simulation_data_files">
+<span class="sig-name descname"><span class="pre">copy_simulation_data_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.copy_simulation_data_files" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.format_resource_element">
+<span class="sig-name descname"><span class="pre">format_resource_element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resource</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">element_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.format_resource_element" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.read_cc3_d_file_format">
+<span class="sig-name descname"><span class="pre">read_cc3_d_file_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.read_cc3_d_file_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function reads the CompuCell3D (.cc3d -XML)file. Which contains the file paths to
+all the resources in used in the project. ‘cc3dSimulationData’ object in this class holds
+all file paths and read data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_name</strong> – file path for the</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.write_cc3d_file_format">
+<span class="sig-name descname"><span class="pre">write_cc3d_file_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.CC3DSimulationDataHandler.write_cc3d_file_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.GenericResource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cc3d.core.CC3DSimulationDataHandler.</span></span><span class="sig-name descname"><span class="pre">GenericResource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resource_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.GenericResource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.GenericResource.__dict__">
+<span class="sig-name descname"><span class="pre">__dict__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">mappingproxy({'__module__':</span> <span class="pre">'cc3d.core.CC3DSimulationDataHandler',</span> <span class="pre">'__init__':</span> <span class="pre">&lt;function</span> <span class="pre">GenericResource.__init__&gt;,</span> <span class="pre">'__dict__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__dict__'</span> <span class="pre">of</span> <span class="pre">'GenericResource'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__weakref__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__weakref__'</span> <span class="pre">of</span> <span class="pre">'GenericResource'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__doc__':</span> <span class="pre">None,</span> <span class="pre">'__annotations__':</span> <span class="pre">{}})</span></em><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.GenericResource.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.GenericResource.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.GenericResource.__doc__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.GenericResource.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resource_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.GenericResource.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.GenericResource.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cc3d.core.CC3DSimulationDataHandler'</span></em><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.GenericResource.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.GenericResource.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.GenericResource.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.findRelativePathSegments">
+<span class="sig-prename descclassname"><span class="pre">cc3d.core.CC3DSimulationDataHandler.</span></span><span class="sig-name descname"><span class="pre">findRelativePathSegments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">basePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.findRelativePathSegments" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function finds relative path segments of path p with respect to base path    
+It returns list of relative path segments and flag whether operation succeeded or not</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.core.CC3DSimulationDataHandler.find_relative_path">
+<span class="sig-prename descclassname"><span class="pre">cc3d.core.CC3DSimulationDataHandler.</span></span><span class="sig-name descname"><span class="pre">find_relative_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">basePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.CC3DSimulationDataHandler.find_relative_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="cc3d.core.BasicSimulationData.html"
+                          title="previous chapter">cc3d.core.BasicSimulationData module</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="cc3d.core.CMLFieldHandler.html"
+                          title="next chapter">cc3d.core.CMLFieldHandler module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/cc3d.core.CC3DSimulationDataHandler.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.CMLFieldHandler.html" title="cc3d.core.CMLFieldHandler module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.BasicSimulationData.html" title="cc3d.core.BasicSimulationData module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.core.html" >cc3d.core package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.core.CC3DSimulationDataHandler module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, T.J. Sego, Juliano F. Gianlupi, Maciej H. Swat, James A. Glazier.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>

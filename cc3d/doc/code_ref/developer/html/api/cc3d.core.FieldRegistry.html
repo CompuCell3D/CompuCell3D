@@ -1,0 +1,315 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>cc3d.core.FieldRegistry module &#8212; CC3D_code_developer_reference_manual 4.2.5 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cc3d.core.MaBoSSCC3D module" href="cc3d.core.MaBoSSCC3D.html" />
+    <link rel="prev" title="cc3d.core.ExtraFieldAdapter module" href="cc3d.core.ExtraFieldAdapter.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.MaBoSSCC3D.html" title="cc3d.core.MaBoSSCC3D module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.ExtraFieldAdapter.html" title="cc3d.core.ExtraFieldAdapter module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.core.html" accesskey="U">cc3d.core package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.core.FieldRegistry module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-cc3d.core.FieldRegistry">
+<span id="cc3d-core-fieldregistry-module"></span><h1>cc3d.core.FieldRegistry module<a class="headerlink" href="#module-cc3d.core.FieldRegistry" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cc3d.core.FieldRegistry.</span></span><span class="sig-name descname"><span class="pre">FieldRegistry</span></span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.__dict__">
+<span class="sig-name descname"><span class="pre">__dict__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">mappingproxy({'__module__':</span> <span class="pre">'cc3d.core.FieldRegistry',</span> <span class="pre">'__init__':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.__init__&gt;,</span> <span class="pre">'create_field':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.create_field&gt;,</span> <span class="pre">'schedule_field_creation':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.schedule_field_creation&gt;,</span> <span class="pre">'fetch_field_adapter':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.fetch_field_adapter&gt;,</span> <span class="pre">'create_scalar_field':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.create_scalar_field&gt;,</span> <span class="pre">'create_scalar_field_cell_level':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.create_scalar_field_cell_level&gt;,</span> <span class="pre">'create_vector_field':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.create_vector_field&gt;,</span> <span class="pre">'create_vector_field_cell_level':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.create_vector_field_cell_level&gt;,</span> <span class="pre">'create_fields':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.create_fields&gt;,</span> <span class="pre">'get_fields_to_create_dict':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.get_fields_to_create_dict&gt;,</span> <span class="pre">'get_field_dict':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.get_field_dict&gt;,</span> <span class="pre">'addNewField':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.addNewField&gt;,</span> <span class="pre">'getFieldNames':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.getFieldNames&gt;,</span> <span class="pre">'getScalarFields':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.getScalarFields&gt;,</span> <span class="pre">'getScalarFieldsCellLevel':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.getScalarFieldsCellLevel&gt;,</span> <span class="pre">'getVectorFields':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.getVectorFields&gt;,</span> <span class="pre">'getVectorFieldsCellLevel':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.getVectorFieldsCellLevel&gt;,</span> <span class="pre">'getFieldData':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.getFieldData&gt;,</span> <span class="pre">'get_field_adapter':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.get_field_adapter&gt;,</span> <span class="pre">'get_field_storage':</span> <span class="pre">&lt;function</span> <span class="pre">FieldRegistry.get_field_storage&gt;,</span> <span class="pre">'update_field_info':</span> <span class="pre">&lt;staticmethod</span> <span class="pre">object&gt;,</span> <span class="pre">'__dict__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__dict__'</span> <span class="pre">of</span> <span class="pre">'FieldRegistry'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__weakref__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__weakref__'</span> <span class="pre">of</span> <span class="pre">'FieldRegistry'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__doc__':</span> <span class="pre">None,</span> <span class="pre">'__annotations__':</span> <span class="pre">{}})</span></em><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.__doc__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cc3d.core.FieldRegistry'</span></em><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.addNewField">
+<span class="sig-name descname"><span class="pre">addNewField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_fieldName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_fieldType</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.addNewField" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.create_field">
+<span class="sig-name descname"><span class="pre">create_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="cc3d.core.ExtraFieldAdapter.html#cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter" title="cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter"><span class="pre">cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter</span></a></span></span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.create_field" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field_name</strong> – </p></li>
+<li><p><strong>field_type</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.create_fields">
+<span class="sig-name descname"><span class="pre">create_fields</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.create_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates Fields that are scheduled to be created. Called after constructors of steppalbes has been called
+Typically fields are requested int he constructor although we will add functionality to create fields at
+any point in the simulation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.create_scalar_field">
+<span class="sig-name descname"><span class="pre">create_scalar_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.create_scalar_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates scalar field</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>field_name</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.create_scalar_field_cell_level">
+<span class="sig-name descname"><span class="pre">create_scalar_field_cell_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.create_scalar_field_cell_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates scalar field cell level</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>field_name</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.create_vector_field">
+<span class="sig-name descname"><span class="pre">create_vector_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.create_vector_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates vector field pixel-level
+:param field_name:
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.create_vector_field_cell_level">
+<span class="sig-name descname"><span class="pre">create_vector_field_cell_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.create_vector_field_cell_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates vector fiedl cell-level
+:param field_name:
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.fetch_field_adapter">
+<span class="sig-name descname"><span class="pre">fetch_field_adapter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="cc3d.core.ExtraFieldAdapter.html#cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter" title="cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter"><span class="pre">cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter</span></a></span></span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.fetch_field_adapter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience function that fetches field adapter or returns None
+:param field_name:
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.getFieldData">
+<span class="sig-name descname"><span class="pre">getFieldData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_fieldName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.getFieldData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.getFieldNames">
+<span class="sig-name descname"><span class="pre">getFieldNames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.getFieldNames" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.getScalarFields">
+<span class="sig-name descname"><span class="pre">getScalarFields</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.getScalarFields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.getScalarFieldsCellLevel">
+<span class="sig-name descname"><span class="pre">getScalarFieldsCellLevel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.getScalarFieldsCellLevel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.getVectorFields">
+<span class="sig-name descname"><span class="pre">getVectorFields</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.getVectorFields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.getVectorFieldsCellLevel">
+<span class="sig-name descname"><span class="pre">getVectorFieldsCellLevel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.getVectorFieldsCellLevel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.get_field_adapter">
+<span class="sig-name descname"><span class="pre">get_field_adapter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.get_field_adapter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.get_field_dict">
+<span class="sig-name descname"><span class="pre">get_field_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.get_field_dict" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.get_field_storage">
+<span class="sig-name descname"><span class="pre">get_field_storage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.get_field_storage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns field storage
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.get_fields_to_create_dict">
+<span class="sig-name descname"><span class="pre">get_fields_to_create_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.get_fields_to_create_dict" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.schedule_field_creation">
+<span class="sig-name descname"><span class="pre">schedule_field_creation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="cc3d.core.ExtraFieldAdapter.html#cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter" title="cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter"><span class="pre">cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter</span></a></span></span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.schedule_field_creation" title="Permalink to this definition">¶</a></dt>
+<dd><p>records which fields to create
+:param field_name:
+:param field_type:
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.FieldRegistry.FieldRegistry.update_field_info">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update_field_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.FieldRegistry.FieldRegistry.update_field_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform updates elsewhere after field creation
+:return: None</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="cc3d.core.ExtraFieldAdapter.html"
+                          title="previous chapter">cc3d.core.ExtraFieldAdapter module</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="cc3d.core.MaBoSSCC3D.html"
+                          title="next chapter">cc3d.core.MaBoSSCC3D module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/cc3d.core.FieldRegistry.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.MaBoSSCC3D.html" title="cc3d.core.MaBoSSCC3D module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.ExtraFieldAdapter.html" title="cc3d.core.ExtraFieldAdapter module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.core.html" >cc3d.core package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.core.FieldRegistry module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, T.J. Sego, Juliano F. Gianlupi, Maciej H. Swat, James A. Glazier.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>

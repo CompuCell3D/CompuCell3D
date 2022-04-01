@@ -1,0 +1,952 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>cc3d.core.SBMLSolverHelper module &#8212; CC3D_code_developer_reference_manual 4.2.5 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cc3d.core.SteeringParam module" href="cc3d.core.SteeringParam.html" />
+    <link rel="prev" title="cc3d.core.RollbackImporter module" href="cc3d.core.RollbackImporter.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.SteeringParam.html" title="cc3d.core.SteeringParam module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.RollbackImporter.html" title="cc3d.core.RollbackImporter module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.core.html" accesskey="U">cc3d.core package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.core.SBMLSolverHelper module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-cc3d.core.SBMLSolverHelper">
+<span id="cc3d-core-sbmlsolverhelper-module"></span><h1>cc3d.core.SBMLSolverHelper module<a class="headerlink" href="#module-cc3d.core.SBMLSolverHelper" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.AntimonyTranslatorError">
+<span class="sig-prename descclassname"><span class="pre">cc3d.core.SBMLSolverHelper.</span></span><span class="sig-name descname"><span class="pre">AntimonyTranslatorError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">getAntimonyMessage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwrds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.AntimonyTranslatorError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverError">
+<span class="sig-prename descclassname"><span class="pre">cc3d.core.SBMLSolverHelper.</span></span><span class="sig-name descname"><span class="pre">SBMLSolverError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwrds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cc3d.core.SBMLSolverHelper.</span></span><span class="sig-name descname"><span class="pre">SBMLSolverHelper</span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.__default_mutable_type">
+<span class="sig-name descname"><span class="pre">__default_mutable_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.__default_mutable_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>helper function  - deals with default mutable arguments of function
+:param obj: {}
+:param obj_default:
+:return:</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.__dict__">
+<span class="sig-name descname"><span class="pre">__dict__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">mappingproxy({'__module__':</span> <span class="pre">'cc3d.core.SBMLSolverHelper',</span> <span class="pre">'remove_attribute':</span> <span class="pre">&lt;classmethod</span> <span class="pre">object&gt;,</span> <span class="pre">'__init__':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.__init__&gt;,</span> <span class="pre">'_SBMLSolverHelper__default_mutable_type':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.__default_mutable_type&gt;,</span> <span class="pre">'addSBMLToCell':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c45031c20</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'add_sbml_to_cell':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.add_sbml_to_cell&gt;,</span> <span class="pre">'add_sbml_to_link':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.add_sbml_to_link&gt;,</span> <span class="pre">'add_antimony_to_cell':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.add_antimony_to_cell&gt;,</span> <span class="pre">'add_antimony_to_link':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.add_antimony_to_link&gt;,</span> <span class="pre">'add_cellml_to_cell':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.add_cellml_to_cell&gt;,</span> <span class="pre">'add_cellml_to_link':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.add_cellml_to_link&gt;,</span> <span class="pre">'getSBMLGlobalOptions':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c4502eec0</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'get_sbml_global_options':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.get_sbml_global_options&gt;,</span> <span class="pre">'setSBMLGlobalOptions':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c4502e520</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'set_sbml_global_options':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.set_sbml_global_options&gt;,</span> <span class="pre">'addSBMLToCellTypes':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c4502e8a0</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'add_sbml_to_cell_types':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.add_sbml_to_cell_types&gt;,</span> <span class="pre">'add_antimony_to_cell_types':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.add_antimony_to_cell_types&gt;,</span> <span class="pre">'add_cellml_to_cell_types':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.add_cellml_to_cell_types&gt;,</span> <span class="pre">'addSBMLToCellIds':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c4502e980</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'add_sbml_to_cell_ids':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.add_sbml_to_cell_ids&gt;,</span> <span class="pre">'add_antimony_to_cell_ids':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.add_antimony_to_cell_ids&gt;,</span> <span class="pre">'add_cellml_to_cell_ids':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.add_cellml_to_cell_ids&gt;,</span> <span class="pre">'addFreeFloatingSBML':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c4502e9f0</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'add_free_floating_sbml':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.add_free_floating_sbml&gt;,</span> <span class="pre">'add_free_floating_antimony':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.add_free_floating_antimony&gt;,</span> <span class="pre">'add_free_floating_cellml':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.add_free_floating_cellml&gt;,</span> <span class="pre">'deleteSBMLFromCellIds':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c4502efa0</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'delete_sbml_from_cell_ids':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.delete_sbml_from_cell_ids&gt;,</span> <span class="pre">'deleteSBMLFromCellTypes':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c4502e1a0</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'delete_sbml_from_cell_types':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.delete_sbml_from_cell_types&gt;,</span> <span class="pre">'deleteSBMLFromCell':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c4502e7c0</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'delete_sbml_from_cell':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.delete_sbml_from_cell&gt;,</span> <span class="pre">'delete_sbml_from_link':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.delete_sbml_from_link&gt;,</span> <span class="pre">'deleteFreeFloatingSBML':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c4502ec20</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'delete_free_floating_sbml':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.delete_free_floating_sbml&gt;,</span> <span class="pre">'timestepCellSBML':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c4502e0c0</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'timestep_cell_sbml':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.timestep_cell_sbml&gt;,</span> <span class="pre">'timestep_link_sbml':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.timestep_link_sbml&gt;,</span> <span class="pre">'setStepSizeForCell':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c4502ed00</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'set_step_size_for_cell':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.set_step_size_for_cell&gt;,</span> <span class="pre">'set_step_size_for_link':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.set_step_size_for_link&gt;,</span> <span class="pre">'setStepSizeForCellIds':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c4502e440</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'set_step_size_for_cell_ids':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.set_step_size_for_cell_ids&gt;,</span> <span class="pre">'setStepSizeForCellTypes':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c450421a0</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'set_step_size_for_cell_types':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.set_step_size_for_cell_types&gt;,</span> <span class="pre">'setStepSizeForFreeFloatingSBML':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c450422f0</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'set_step_size_for_free_floating_sbml':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.set_step_size_for_free_floating_sbml&gt;,</span> <span class="pre">'timestepFreeFloatingSBML':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c450429f0</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'timestep_free_floating_sbml':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.timestep_free_floating_sbml&gt;,</span> <span class="pre">'timestepSBML':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c45042440</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'timestep_sbml':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.timestep_sbml&gt;,</span> <span class="pre">'getSBMLSimulator':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c45042c20</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'get_sbml_simulator':</span> <span class="pre">&lt;classmethod</span> <span class="pre">object&gt;,</span> <span class="pre">'getSBMLState':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c45042d00</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'get_sbml_state':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.get_sbml_state&gt;,</span> <span class="pre">'getSBMLStateAsPythonDict':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c45042ec0</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'get_sbml_state_as_python_dict':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.get_sbml_state_as_python_dict&gt;,</span> <span class="pre">'setSBMLState':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c450420c0</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'set_sbml_state':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.set_sbml_state&gt;,</span> <span class="pre">'getSBMLValue':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c45042fa0</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'get_sbml_value':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.get_sbml_value&gt;,</span> <span class="pre">'setSBMLValue':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c45042210</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'set_sbml_value':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.set_sbml_value&gt;,</span> <span class="pre">'copySBMLs':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c450428a0</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'copy_sbml_simulators':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c45042980</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'clone_sbml_simulators':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.clone_sbml_simulators&gt;,</span> <span class="pre">'normalizePath':</span> <span class="pre">&lt;AdapterWrapper</span> <span class="pre">at</span> <span class="pre">0x2b5c45042670</span> <span class="pre">for</span> <span class="pre">function&gt;,</span> <span class="pre">'normalize_path':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.normalize_path&gt;,</span> <span class="pre">'translate_to_sbml_string':</span> <span class="pre">&lt;function</span> <span class="pre">SBMLSolverHelper.translate_to_sbml_string&gt;,</span> <span class="pre">'__dict__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__dict__'</span> <span class="pre">of</span> <span class="pre">'SBMLSolverHelper'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__weakref__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__weakref__'</span> <span class="pre">of</span> <span class="pre">'SBMLSolverHelper'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__doc__':</span> <span class="pre">None,</span> <span class="pre">'__annotations__':</span> <span class="pre">{}})</span></em><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.__doc__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cc3d.core.SBMLSolverHelper'</span></em><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.addFreeFloatingSBML">
+<span class="sig-name descname"><span class="pre">addFreeFloatingSBML</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelFile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_modelName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_stepSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_initialConditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.addFreeFloatingSBML" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.addSBMLToCell">
+<span class="sig-name descname"><span class="pre">addSBMLToCell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelFile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_modelName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_stepSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_initialConditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_coreModelName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_modelPathNormalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_currentStateSBML</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.addSBMLToCell" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.addSBMLToCellIds">
+<span class="sig-name descname"><span class="pre">addSBMLToCellIds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelFile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_modelName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_stepSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_initialConditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.addSBMLToCellIds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.addSBMLToCellTypes">
+<span class="sig-name descname"><span class="pre">addSBMLToCellTypes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelFile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_modelName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_stepSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_initialConditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.addSBMLToCellTypes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_antimony_to_cell">
+<span class="sig-name descname"><span class="pre">add_antimony_to_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_state_sbml</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_antimony_to_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as add_sbml_to_cell, but with Antimony model specification
+Note that initial conditions can be specified either in the Antimony model specification,
+or with initial_conditions. If both are specified, initial_conditions takes precedence</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_antimony_to_cell_ids">
+<span class="sig-name descname"><span class="pre">add_antimony_to_cell_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_antimony_to_cell_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as add_sbml_to_cell_ids, but with Antimony model specification
+Note that initial conditions can be specified either in the Antimony model specification,
+or with initial_conditions. If both are specified, initial_conditions takes precedence</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_antimony_to_cell_types">
+<span class="sig-name descname"><span class="pre">add_antimony_to_cell_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_antimony_to_cell_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as add_sbml_to_cell_types, but with Antimony model specification
+Note that initial conditions can be specified either in the Antimony model specification,
+or with initial_conditions. If both are specified, initial_conditions takes precedence</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_antimony_to_link">
+<span class="sig-name descname"><span class="pre">add_antimony_to_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase" title="cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase"><span class="pre">cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_state_sbml</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_antimony_to_link" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as <a class="reference internal" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_sbml_to_link" title="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_sbml_to_link"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_sbml_to_link()</span></code></a>, but with Antimony model specification
+Note that initial conditions can be specified either in the Antimony model specification,
+or with initial_conditions. If both are specified, initial_conditions takes precedence</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_cellml_to_cell">
+<span class="sig-name descname"><span class="pre">add_cellml_to_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_state_sbml</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_cellml_to_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as add_sbml_to_cell, but with CellML model specification
+Note that initial conditions can be specified either in the CellML model specification,
+or with initial_conditions. If both are specified, initial_conditions takes precedence</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_cellml_to_cell_ids">
+<span class="sig-name descname"><span class="pre">add_cellml_to_cell_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_cellml_to_cell_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as add_sbml_to_cell_ids, but with CellML model specification
+Note that initial conditions can be specified either in the CellML model specification,
+or with initial_conditions. If both are specified, initial_conditions takes precedence</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_cellml_to_cell_types">
+<span class="sig-name descname"><span class="pre">add_cellml_to_cell_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_cellml_to_cell_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as add_sbml_to_cell_types, but with CellML model specification
+Note that initial conditions can be specified either in the CellML model specification,
+or with initial_conditions. If both are specified, initial_conditions takes precedence</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_cellml_to_link">
+<span class="sig-name descname"><span class="pre">add_cellml_to_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase" title="cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase"><span class="pre">cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_state_sbml</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_cellml_to_link" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as add_sbml_to_link, but with CellML model specification
+Note that initial conditions can be specified either in the CellML model specification,
+or with initial_conditions. If both are specified, initial_conditions takes precedence</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_free_floating_antimony">
+<span class="sig-name descname"><span class="pre">add_free_floating_antimony</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_free_floating_antimony" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as add_free_floating_sbml, but with Antimony model specification
+Note that initial conditions can be specified either in the Antimony model specification,
+or with initial_conditions. If both are specified, initial_conditions takes precedence</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_free_floating_cellml">
+<span class="sig-name descname"><span class="pre">add_free_floating_cellml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_free_floating_cellml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as add_free_floating_sbml, but with CellML model specification
+Note that initial conditions can be specified either in the CellML model specification,
+or with initial_conditions. If both are specified, initial_conditions takes precedence</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_free_floating_sbml">
+<span class="sig-name descname"><span class="pre">add_free_floating_sbml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_free_floating_sbml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds free floating SBML model - not attached to any cell. The model will be identified/referenced by the _modelName</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_file</strong> – name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path</p></li>
+<li><p><strong>model_string</strong> – string of SBML file</p></li>
+<li><p><strong>model_name</strong> – name of the model - this is a label used to store mode in the cell.dict[‘SBMLSolver’] dictionary</p></li>
+<li><p><strong>step_size</strong> – time step - determines how much in “real” time units timestep() fcn advances SBML solver</p></li>
+<li><p><strong>initial_conditions</strong> – initial conditions dictionary</p></li>
+<li><p><strong>options</strong> – dictionary that currently only defines what type of ODE solver to choose.</p></li>
+</ul>
+</dd>
+</dl>
+<p>In the newer versions of RR this might be not necessary. The keys that are supported are the following:</p>
+<p>absolute - determines absolute tolerance default 1e-10
+relative - determines relative tolerance default 1e-5
+stiff - determines if using stiff solver or not default False</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>integrator</strong> – name of integrator; passed to <code class="docutils literal notranslate"><span class="pre">RoadRunner.setIntegrator()</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_sbml_to_cell">
+<span class="sig-name descname"><span class="pre">add_sbml_to_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_state_sbml</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_sbml_to_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attaches RoadRunner SBML solver to a particular cell. The sbml solver is stored as an element
+of the cell’s dictionary - cell.dict[‘SBMLSolver’][_modelName]. The function has a dual operation mode.
+When user provides current_state_sbml, cell model_name, step_size the add_sbml_to_cell function creates a clone
+of a solver whose state is described by the current_state_sbml . If current_state_sbml is None
+then the new SBML solver
+is being created,  SBML file (model_file) or string (model_string) loaded and initial conditions are applied.
+It is important to always set
+ste_size to make sure that after calling timestep() fcn the solver advances appropriate delta time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_file</strong> – name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path</p></li>
+<li><p><strong>model_string</strong> – string of SBML file</p></li>
+<li><p><strong>model_name</strong> – name of the model - this is a label used to store mode in the cell.dict[‘SBMLSolver’]</p></li>
+</ul>
+</dd>
+</dl>
+<p>dictionary</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cell</strong> – {CellG object} cc3d cell object</p></li>
+<li><p><strong>step_size</strong> – time step- determines how much in “real” time units timestep() fcn advances SBML solver</p></li>
+<li><p><strong>initial_conditions</strong> – initial conditions dictionary</p></li>
+<li><p><strong>options</strong> – dictionary that currently only defines what type of ODE solver to choose.</p></li>
+</ul>
+</dd>
+</dl>
+<p>In the newer versions of RR this might be not necessary. The keys that are supported are the following:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current_state_sbml</strong> – string representation  of the SBML representing current state of the solver.</p></li>
+<li><p><strong>integrator</strong> – name of integrator; passed to <code class="docutils literal notranslate"><span class="pre">RoadRunner.setIntegrator()</span></code>;
+only applied if <code class="docutils literal notranslate"><span class="pre">current_state_sbml</span></code> is None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_sbml_to_cell_ids">
+<span class="sig-name descname"><span class="pre">add_sbml_to_cell_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_sbml_to_cell_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds SBML Solver to all cells of given cell ids - internally it calls add_sbml_to_cell fcn.
+Used during initialization of the simulation. It is important to always set
+step_size to make sure that after calling timestep() fcn the solver advances appropriate delta time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_file</strong> – name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path</p></li>
+<li><p><strong>model_string</strong> – string of SBML file</p></li>
+<li><p><strong>model_name</strong> – name of the model - this is a label used to store mode in the
+cell.dict[‘SBMLSolver’] dictionary</p></li>
+<li><p><strong>cell_ids</strong> – list of cell ids</p></li>
+<li><p><strong>step_size</strong> – time step - determines how much in “real” time units timestep() fcn advances SBML solver</p></li>
+<li><p><strong>initial_conditions</strong> – initial conditions dictionary</p></li>
+<li><p><strong>options</strong> – dictionary that currently only defines what type of ODE solver to choose.</p></li>
+</ul>
+</dd>
+</dl>
+<p>In the newer versions of RR this might be not necessary. The keys that are supported are the following:</p>
+<p>absolute - determines absolute tolerance default 1e-10
+relative - determines relative tolerance default 1e-5
+stiff - determines if using stiff solver or not default False</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>integrator</strong> – name of integrator; passed to <code class="docutils literal notranslate"><span class="pre">RoadRunner.setIntegrator()</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_sbml_to_cell_types">
+<span class="sig-name descname"><span class="pre">add_sbml_to_cell_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_sbml_to_cell_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds SBML Solver to all cells of given cell type - internally it calls addSBMLToCell(fcn).
+Used during initialization of the simulation. It is important to always set
+_stepSize to make sure that after calling timestep() fcn the solver advances appropriate delta time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_file</strong> – name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path</p></li>
+<li><p><strong>model_string</strong> – string of SBML file</p></li>
+<li><p><strong>model_name</strong> – name of the model - this is a label used to store mode in the cell.dict[‘SBMLSolver’]</p></li>
+</ul>
+</dd>
+</dl>
+<p>dictionary</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cell_types</strong> – list of cell types</p></li>
+<li><p><strong>step_size</strong> – time step - determines how much in “real” time units timestep() fcn advances SBML solver</p></li>
+<li><p><strong>initial_conditions</strong> – initial conditions dictionary</p></li>
+<li><p><strong>options</strong> – dictionary that currently only defines what type of ODE solver to choose.</p></li>
+</ul>
+</dd>
+</dl>
+<p>In the newer versions of RR this might be not necessary. The keys that are supported are the following:</p>
+<p>absolute - determines absolute tolerance default 1e-10
+relative - determines relative tolerance default 1e-5
+stiff - determines if using stiff solver or not default False</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>integrator</strong> – name of integrator; passed to <code class="docutils literal notranslate"><span class="pre">RoadRunner.setIntegrator()</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_sbml_to_link">
+<span class="sig-name descname"><span class="pre">add_sbml_to_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase" title="cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase"><span class="pre">cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_state_sbml</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_sbml_to_link" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same functionality as <a class="reference internal" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_sbml_to_cell" title="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.add_sbml_to_cell"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_sbml_to_cell()</span></code></a>, but for a link.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_file</strong> – name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path</p></li>
+<li><p><strong>model_string</strong> – string of SBML file</p></li>
+<li><p><strong>model_name</strong> – name of the model - this is a label used to store mode in the cell.dict[‘SBMLSolver’]
+dictionary</p></li>
+<li><p><strong>link</strong> – {FocalPointPlasticityLinkBase object} link object (of any type)</p></li>
+<li><p><strong>step_size</strong> – time step- determines how much in “real” time units timestep() fcn advances SBML solver</p></li>
+<li><p><strong>initial_conditions</strong> – initial conditions dictionary</p></li>
+<li><p><strong>options</strong> – dictionary that currently only defines what type of ODE solver to choose.
+In the newer versions of RR this might be not necessary. The keys that are supported are the following:</p></li>
+<li><p><strong>current_state_sbml</strong> – string representation  of the SBML representing current state of the solver.</p></li>
+<li><p><strong>integrator</strong> – name of integrator; passed to <code class="docutils literal notranslate"><span class="pre">RoadRunner.setIntegrator()</span></code>;
+only applied if <code class="docutils literal notranslate"><span class="pre">current_state_sbml</span></code> is None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.clone_sbml_simulators">
+<span class="sig-name descname"><span class="pre">clone_sbml_simulators</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">from_obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.CellG" title="cc3d.cpp.CompuCell.CellG"><span class="pre">cc3d.cpp.CompuCell.CellG</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase" title="cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase"><span class="pre">cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.CellG" title="cc3d.cpp.CompuCell.CellG"><span class="pre">cc3d.cpp.CompuCell.CellG</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase" title="cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase"><span class="pre">cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbml_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.clone_sbml_simulators" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copies SBML solvers (with their states) - from one object to another.</p>
+<dl class="simple">
+<dt>Currently supported object types are</dt><dd><ul class="simple">
+<li><p>CompuCell.CellG</p></li>
+<li><p>CompuCell.FocalPointPlasticityLinkBase</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>from_obj</strong> – source object with the SBML solvers to be copied</p></li>
+<li><p><strong>to_obj</strong> – target object receiving the copied SBML solvers</p></li>
+<li><p><strong>sbml_names</strong> (<em>list</em><em> or </em><em>None</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.copySBMLs">
+<span class="sig-name descname"><span class="pre">copySBMLs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_fromCell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_toCell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_sbmlNames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.copySBMLs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.copy_sbml_simulators">
+<span class="sig-name descname"><span class="pre">copy_sbml_simulators</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">from_cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.CellG" title="cc3d.cpp.CompuCell.CellG"><span class="pre">cc3d.cpp.CompuCell.CellG</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.CellG" title="cc3d.cpp.CompuCell.CellG"><span class="pre">cc3d.cpp.CompuCell.CellG</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbml_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.copy_sbml_simulators" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copies SBML solvers (with their states - effectively clones the solver) from one cell to another</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>from_cell</strong> – source CellG cell</p></li>
+<li><p><strong>to_cell</strong> – target CellG cell</p></li>
+<li><p><strong>sbml_names</strong> – list of SBML model name whose solver are to be copied</p></li>
+<li><p><strong>options</strong> – <ul>
+<li><p>deprecated - list of SBML solver options</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.deleteFreeFloatingSBML">
+<span class="sig-name descname"><span class="pre">deleteFreeFloatingSBML</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.deleteFreeFloatingSBML" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.deleteSBMLFromCell">
+<span class="sig-name descname"><span class="pre">deleteSBMLFromCell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.deleteSBMLFromCell" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.deleteSBMLFromCellIds">
+<span class="sig-name descname"><span class="pre">deleteSBMLFromCellIds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.deleteSBMLFromCellIds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.deleteSBMLFromCellTypes">
+<span class="sig-name descname"><span class="pre">deleteSBMLFromCellTypes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.deleteSBMLFromCellTypes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.delete_free_floating_sbml">
+<span class="sig-name descname"><span class="pre">delete_free_floating_sbml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.delete_free_floating_sbml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes free floating SBLM model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>model_name</strong> – model name</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.delete_sbml_from_cell">
+<span class="sig-name descname"><span class="pre">delete_sbml_from_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.delete_sbml_from_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes SBML from a particular cell</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> – model name</p></li>
+<li><p><strong>cell</strong> – CellG cell obj</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.delete_sbml_from_cell_ids">
+<span class="sig-name descname"><span class="pre">delete_sbml_from_cell_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.delete_sbml_from_cell_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes  SBML model from cells whose ids match those stered int he _ids list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> – model name</p></li>
+<li><p><strong>cell_ids</strong> – list of cell ids</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.delete_sbml_from_cell_types">
+<span class="sig-name descname"><span class="pre">delete_sbml_from_cell_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.delete_sbml_from_cell_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes  SBML model from cells whose type match those stered in the cell_types list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> – model name</p></li>
+<li><p><strong>cell_types</strong> – list of cell cell types</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.delete_sbml_from_link">
+<span class="sig-name descname"><span class="pre">delete_sbml_from_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase" title="cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase"><span class="pre">cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.delete_sbml_from_link" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes SBML from a particular link</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> – model name</p></li>
+<li><p><strong>link</strong> – CellG cell obj</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.getSBMLGlobalOptions">
+<span class="sig-name descname"><span class="pre">getSBMLGlobalOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.getSBMLGlobalOptions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.getSBMLSimulator">
+<span class="sig-name descname"><span class="pre">getSBMLSimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.getSBMLSimulator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.getSBMLState">
+<span class="sig-name descname"><span class="pre">getSBMLState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.getSBMLState" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.getSBMLStateAsPythonDict">
+<span class="sig-name descname"><span class="pre">getSBMLStateAsPythonDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.getSBMLStateAsPythonDict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.getSBMLValue">
+<span class="sig-name descname"><span class="pre">getSBMLValue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_valueName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.getSBMLValue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.get_sbml_global_options">
+<span class="sig-name descname"><span class="pre">get_sbml_global_options</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.get_sbml_global_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns global options for the SBML solver - deprecated as newer version of CC3D
+:return {dict}: global SBML solver options</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.get_sbml_simulator">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_sbml_simulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.CellG" title="cc3d.cpp.CompuCell.CellG"><span class="pre">cc3d.cpp.CompuCell.CellG</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase" title="cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase"><span class="pre">cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.get_sbml_simulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a reference to RoadRunnerPy or None
+:param model_name: model name
+:param cell: CellG cell object
+:param link: link object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return {instance of RoadRunnerPy} or {None}</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.get_sbml_state">
+<span class="sig-name descname"><span class="pre">get_sbml_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.CellG" title="cc3d.cpp.CompuCell.CellG"><span class="pre">cc3d.cpp.CompuCell.CellG</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase" title="cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase"><span class="pre">cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.get_sbml_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns dictionary-like object representing state of the SBML solver - instance of the RoadRunner.model
+which behaves as a python dictionary but has many entries some of which are non-assignable /non-mutable</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> – model name</p></li>
+<li><p><strong>cell</strong> – CellG object</p></li>
+<li><p><strong>link</strong> – link object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return {instance of RoadRunner.model}</dt>
+<dd class="field-even"><p>dict-like object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.get_sbml_state_as_python_dict">
+<span class="sig-name descname"><span class="pre">get_sbml_state_as_python_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.CellG" title="cc3d.cpp.CompuCell.CellG"><span class="pre">cc3d.cpp.CompuCell.CellG</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase" title="cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase"><span class="pre">cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.get_sbml_state_as_python_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns Python dictionary representing state of the SBML solver</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> – model name</p></li>
+<li><p><strong>cell</strong> – CellG object</p></li>
+<li><p><strong>link</strong> – link object</p></li>
+</ul>
+</dd>
+</dl>
+<p>:return : dictionary representing state of the SBML Solver</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.get_sbml_value">
+<span class="sig-name descname"><span class="pre">get_sbml_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.CellG" title="cc3d.cpp.CompuCell.CellG"><span class="pre">cc3d.cpp.CompuCell.CellG</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase" title="cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase"><span class="pre">cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.get_sbml_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves value of the SBML state variable</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> – model name</p></li>
+<li><p><strong>value_name</strong> – name of the state variable</p></li>
+<li><p><strong>cell</strong> – CellG object</p></li>
+<li><p><strong>link</strong> – link object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>value of the state variable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.normalizePath">
+<span class="sig-name descname"><span class="pre">normalizePath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.normalizePath" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.normalize_path">
+<span class="sig-name descname"><span class="pre">normalize_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.normalize_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if file exists and if not it joins basepath (path to the root of the cc3d project) with path
+:param path: relative path to CC3D resource
+:return {str}: absolute path to CC3D resource</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.remove_attribute">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">remove_attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.remove_attribute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.setSBMLGlobalOptions">
+<span class="sig-name descname"><span class="pre">setSBMLGlobalOptions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_options</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.setSBMLGlobalOptions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.setSBMLState">
+<span class="sig-name descname"><span class="pre">setSBMLState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.setSBMLState" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.setSBMLValue">
+<span class="sig-name descname"><span class="pre">setSBMLValue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_valueName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.setSBMLValue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.setStepSizeForCell">
+<span class="sig-name descname"><span class="pre">setStepSizeForCell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_stepSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.setStepSizeForCell" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.setStepSizeForCellIds">
+<span class="sig-name descname"><span class="pre">setStepSizeForCellIds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_stepSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.setStepSizeForCellIds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.setStepSizeForCellTypes">
+<span class="sig-name descname"><span class="pre">setStepSizeForCellTypes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_stepSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.setStepSizeForCellTypes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.setStepSizeForFreeFloatingSBML">
+<span class="sig-name descname"><span class="pre">setStepSizeForFreeFloatingSBML</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_modelName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_stepSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.setStepSizeForFreeFloatingSBML" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_sbml_global_options">
+<span class="sig-name descname"><span class="pre">set_sbml_global_options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_sbml_global_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deprecated  - sets global SBML options
+:param options:
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_sbml_state">
+<span class="sig-name descname"><span class="pre">set_sbml_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.CellG" title="cc3d.cpp.CompuCell.CellG"><span class="pre">cc3d.cpp.CompuCell.CellG</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase" title="cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase"><span class="pre">cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_sbml_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets SBML state for the solver - only for advanced uses. Requires detailed knowledge of how underlying
+SBML solver (roadrunner) works</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> – model name</p></li>
+<li><p><strong>cell</strong> – CellG object</p></li>
+<li><p><strong>link</strong> – link object</p></li>
+</ul>
+</dd>
+</dl>
+<p>:param state : dictionary with state variables to set
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_sbml_value">
+<span class="sig-name descname"><span class="pre">set_sbml_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.CellG" title="cc3d.cpp.CompuCell.CellG"><span class="pre">cc3d.cpp.CompuCell.CellG</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase" title="cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase"><span class="pre">cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_sbml_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets SBML solver state variable</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> – model name</p></li>
+<li><p><strong>value_name</strong> – name of the stae variable</p></li>
+<li><p><strong>value</strong> – value of the state variable</p></li>
+<li><p><strong>cell</strong> – CellG object</p></li>
+<li><p><strong>link</strong> – link object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_step_size_for_cell">
+<span class="sig-name descname"><span class="pre">set_step_size_for_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_step_size_for_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets integration step size for SBML model attached to _cell</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> – model name</p></li>
+<li><p><strong>cell</strong> – CellG cell object</p></li>
+<li><p><strong>step_size</strong> – integration step size</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_step_size_for_cell_ids">
+<span class="sig-name descname"><span class="pre">set_step_size_for_cell_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_step_size_for_cell_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets integration step size for SBML model attached to cells of given ids</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>model_name</strong> – model name</p>
+</dd>
+</dl>
+<p>:param cell_ids : list of cell ids
+:param step_size : integration step size
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_step_size_for_cell_types">
+<span class="sig-name descname"><span class="pre">set_step_size_for_cell_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_step_size_for_cell_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets integration step size for SBML model attached to cells of given cell types</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> – model name</p></li>
+<li><p><strong>cell_types</strong> – list of cell types</p></li>
+<li><p><strong>step_size</strong> – integration step size</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_step_size_for_free_floating_sbml">
+<span class="sig-name descname"><span class="pre">set_step_size_for_free_floating_sbml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_step_size_for_free_floating_sbml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets integration step size for free floating SBML</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> – model name</p></li>
+<li><p><strong>step_size</strong> – integration time step</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_step_size_for_link">
+<span class="sig-name descname"><span class="pre">set_step_size_for_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="cc3d.cpp.CompuCell.html#cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase" title="cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase"><span class="pre">cc3d.cpp.CompuCell.FocalPointPlasticityLinkBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.set_step_size_for_link" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets integration step size for SBML model attached to a link</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> – model name</p></li>
+<li><p><strong>link</strong> – link object</p></li>
+<li><p><strong>step_size</strong> – integration step size</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.timestepCellSBML">
+<span class="sig-name descname"><span class="pre">timestepCellSBML</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.timestepCellSBML" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.timestepFreeFloatingSBML">
+<span class="sig-name descname"><span class="pre">timestepFreeFloatingSBML</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.timestepFreeFloatingSBML" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.timestepSBML">
+<span class="sig-name descname"><span class="pre">timestepSBML</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.timestepSBML" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.timestep_cell_sbml">
+<span class="sig-name descname"><span class="pre">timestep_cell_sbml</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.timestep_cell_sbml" title="Permalink to this definition">¶</a></dt>
+<dd><p>advances (integrats forward) models stored as attributes of cells</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.timestep_free_floating_sbml">
+<span class="sig-name descname"><span class="pre">timestep_free_floating_sbml</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.timestep_free_floating_sbml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrates forward all free floating SBML solvers</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.timestep_link_sbml">
+<span class="sig-name descname"><span class="pre">timestep_link_sbml</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.timestep_link_sbml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Advanced models stored as attributes of links</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.timestep_sbml">
+<span class="sig-name descname"><span class="pre">timestep_sbml</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.timestep_sbml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrates forward all free floating SBML solvers and all sbmlsolvers attached to cells</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.SBMLSolverHelper.SBMLSolverHelper.translate_to_sbml_string">
+<span class="sig-name descname"><span class="pre">translate_to_sbml_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.SBMLSolverHelper.SBMLSolverHelper.translate_to_sbml_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns string of SBML model specification translated from Antimony or CellML model specification file or string
+:param model_file: relative path to model specification file
+:param model_string: model specification string
+:return {str,str}: string of SBML model specification, string of main module name</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="cc3d.core.RollbackImporter.html"
+                          title="previous chapter">cc3d.core.RollbackImporter module</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="cc3d.core.SteeringParam.html"
+                          title="next chapter">cc3d.core.SteeringParam module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/cc3d.core.SBMLSolverHelper.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.SteeringParam.html" title="cc3d.core.SteeringParam module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.RollbackImporter.html" title="cc3d.core.RollbackImporter module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.core.html" >cc3d.core package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.core.SBMLSolverHelper module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, T.J. Sego, Juliano F. Gianlupi, Maciej H. Swat, James A. Glazier.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>

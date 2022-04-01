@@ -1,0 +1,316 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>cc3d.CompuCellSetup.simulation_setup module &#8212; CC3D_code_developer_reference_manual 4.2.5 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cc3d.CompuCellSetup.simulation_utils module" href="cc3d.CompuCellSetup.simulation_utils.html" />
+    <link rel="prev" title="cc3d.CompuCellSetup.simulation_player_utils module" href="cc3d.CompuCellSetup.simulation_player_utils.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.CompuCellSetup.simulation_utils.html" title="cc3d.CompuCellSetup.simulation_utils module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.CompuCellSetup.simulation_player_utils.html" title="cc3d.CompuCellSetup.simulation_player_utils module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.CompuCellSetup.html" accesskey="U">cc3d.CompuCellSetup package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.CompuCellSetup.simulation_setup module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-cc3d.CompuCellSetup.simulation_setup">
+<span id="cc3d-compucellsetup-simulation-setup-module"></span><h1>cc3d.CompuCellSetup.simulation_setup module<a class="headerlink" href="#module-cc3d.CompuCellSetup.simulation_setup" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.convert_time_interval_to_hmsm">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">convert_time_interval_to_hmsm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_interval</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.convert_time_interval_to_hmsm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts timestamp to human readable format
+:param time_interval:
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.determine_main_loop_fcn">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">determine_main_loop_fcn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.determine_main_loop_fcn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Based on persisten globals this fcn determines which mainLoop function
+CC3D shold use
+:return: {object} function to use as a mainLoop</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.extra_init_simulation_objects">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">extra_init_simulation_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simthread</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_using_restart_snapshot_enabled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.extra_init_simulation_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs extra initializations. Also checks for validity of concentration field names (those defined in C++)
+:param sim:
+:param simthread:
+:param init_using_restart_snapshot_enabled:
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.getCoreSimulationObjects">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">getCoreSimulationObjects</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.getCoreSimulationObjects" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.get_core_simulation_objects">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">get_core_simulation_objects</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.get_core_simulation_objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.incorporate_script_steering_changes">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">incorporate_script_steering_changes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">simulator</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.incorporate_script_steering_changes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over the list of modified xml elements and  schedules XML updates</p>
+<p>:return:None</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.init_lattice_snapshot_objects">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">init_lattice_snapshot_objects</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.init_lattice_snapshot_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes cml filed handler , field storage and field extractor
+This trio of objects are responsible for outputting lattice snapshots
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.init_screenshot_manager">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">init_screenshot_manager</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.init_screenshot_manager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes screenshot manager. Requires that field extractor is set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.initializeSimulationObjects">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">initializeSimulationObjects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.initializeSimulationObjects" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> – </p></li>
+<li><p><strong>kwds</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.initialize_cc3d">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">initialize_cc3d</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.initialize_cc3d" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.initialize_field_extractor_objects">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">initialize_field_extractor_objects</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.initialize_field_extractor_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialzies field storage and field extractor objects
+Stores references to them in persistent_globals.persistent_holder dictionary
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.mainLoop">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">mainLoop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.mainLoop" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> – </p></li>
+<li><p><strong>kwds</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.main_loop">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">main_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simthread</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steppable_registry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.main_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>main loop for CML simulation
+:param sim:
+:param simthread:
+:param steppable_registry:
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.main_loop_player">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">main_loop_player</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simthread</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steppable_registry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.main_loop_player" title="Permalink to this definition">¶</a></dt>
+<dd><p>main loop for GUI based simulations
+:param sim:
+:param simthread:
+:param steppable_registry:
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.main_loop_player_cml_result_replay">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">main_loop_player_cml_result_replay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simthread</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steppableRegistry</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.main_loop_player_cml_result_replay" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sim</strong> – </p></li>
+<li><p><strong>simthread</strong> – </p></li>
+<li><p><strong>steppableRegistry</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.print_profiling_report">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">print_profiling_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">py_steppable_profiler_report</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compiled_code_run_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_run_time</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.print_profiling_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>prints profiling information after simulation finishes running
+:param py_steppable_profiler_report:
+:param compiled_code_run_time:
+:param total_run_time:
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.register_steppable">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">register_steppable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">steppable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.register_steppable" title="Permalink to this definition">¶</a></dt>
+<dd><p>:param steppable:{SteppableBasePy object}
+:return: None</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.run">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.run" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.store_lattice_snapshot">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">store_lattice_snapshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cur_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.store_lattice_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stores complete lattice snapshots
+:param cur_step:
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.CompuCellSetup.simulation_setup.store_screenshots">
+<span class="sig-prename descclassname"><span class="pre">cc3d.CompuCellSetup.simulation_setup.</span></span><span class="sig-name descname"><span class="pre">store_screenshots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cur_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cc3d.CompuCellSetup.simulation_setup.store_screenshots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stores screenshots
+:param cur_step:{int} current MCS
+:return: None</p>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="cc3d.CompuCellSetup.simulation_player_utils.html"
+                          title="previous chapter">cc3d.CompuCellSetup.simulation_player_utils module</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="cc3d.CompuCellSetup.simulation_utils.html"
+                          title="next chapter">cc3d.CompuCellSetup.simulation_utils module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/cc3d.CompuCellSetup.simulation_setup.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.CompuCellSetup.simulation_utils.html" title="cc3d.CompuCellSetup.simulation_utils module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.CompuCellSetup.simulation_player_utils.html" title="cc3d.CompuCellSetup.simulation_player_utils module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.CompuCellSetup.html" >cc3d.CompuCellSetup package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.CompuCellSetup.simulation_setup module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, T.J. Sego, Juliano F. Gianlupi, Maciej H. Swat, James A. Glazier.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>

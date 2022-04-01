@@ -1,0 +1,322 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>cc3d.core.ParameterScanUtils module &#8212; CC3D_code_developer_reference_manual 4.2.5 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cc3d.core.PySteppables module" href="cc3d.core.PySteppables.html" />
+    <link rel="prev" title="cc3d.core.ParameterScanEnums module" href="cc3d.core.ParameterScanEnums.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.PySteppables.html" title="cc3d.core.PySteppables module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.ParameterScanEnums.html" title="cc3d.core.ParameterScanEnums module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.core.html" accesskey="U">cc3d.core package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.core.ParameterScanUtils module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-cc3d.core.ParameterScanUtils">
+<span id="cc3d-core-parameterscanutils-module"></span><h1>cc3d.core.ParameterScanUtils module<a class="headerlink" href="#module-cc3d.core.ParameterScanUtils" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cc3d.core.ParameterScanUtils.</span></span><span class="sig-name descname"><span class="pre">ParameterScanData</span></span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanData.__dict__">
+<span class="sig-name descname"><span class="pre">__dict__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">mappingproxy({'__module__':</span> <span class="pre">'cc3d.core.ParameterScanUtils',</span> <span class="pre">'__init__':</span> <span class="pre">&lt;function</span> <span class="pre">ParameterScanData.__init__&gt;,</span> <span class="pre">'currentValue':</span> <span class="pre">&lt;function</span> <span class="pre">ParameterScanData.currentValue&gt;,</span> <span class="pre">'accessPathToList':</span> <span class="pre">&lt;function</span> <span class="pre">ParameterScanData.accessPathToList&gt;,</span> <span class="pre">'calculateValues':</span> <span class="pre">&lt;function</span> <span class="pre">ParameterScanData.calculateValues&gt;,</span> <span class="pre">'stringHash':</span> <span class="pre">&lt;function</span> <span class="pre">ParameterScanData.stringHash&gt;,</span> <span class="pre">'fromXMLElem':</span> <span class="pre">&lt;function</span> <span class="pre">ParameterScanData.fromXMLElem&gt;,</span> <span class="pre">'toXMLElem':</span> <span class="pre">&lt;function</span> <span class="pre">ParameterScanData.toXMLElem&gt;,</span> <span class="pre">'__dict__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__dict__'</span> <span class="pre">of</span> <span class="pre">'ParameterScanData'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__weakref__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__weakref__'</span> <span class="pre">of</span> <span class="pre">'ParameterScanData'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__doc__':</span> <span class="pre">None,</span> <span class="pre">'__annotations__':</span> <span class="pre">{}})</span></em><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanData.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanData.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanData.__doc__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanData.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanData.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanData.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cc3d.core.ParameterScanUtils'</span></em><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanData.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanData.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanData.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanData.accessPathToList">
+<span class="sig-name descname"><span class="pre">accessPathToList</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanData.accessPathToList" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanData.calculateValues">
+<span class="sig-name descname"><span class="pre">calculateValues</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanData.calculateValues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanData.currentValue">
+<span class="sig-name descname"><span class="pre">currentValue</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanData.currentValue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanData.fromXMLElem">
+<span class="sig-name descname"><span class="pre">fromXMLElem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_el</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanData.fromXMLElem" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanData.stringHash">
+<span class="sig-name descname"><span class="pre">stringHash</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanData.stringHash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanData.toXMLElem">
+<span class="sig-name descname"><span class="pre">toXMLElem</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanData.toXMLElem" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanUtils">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cc3d.core.ParameterScanUtils.</span></span><span class="sig-name descname"><span class="pre">ParameterScanUtils</span></span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanUtils" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanUtils.__dict__">
+<span class="sig-name descname"><span class="pre">__dict__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">mappingproxy({'__module__':</span> <span class="pre">'cc3d.core.ParameterScanUtils',</span> <span class="pre">'__init__':</span> <span class="pre">&lt;function</span> <span class="pre">ParameterScanUtils.__init__&gt;,</span> <span class="pre">'get_parameter_scan_data_dict':</span> <span class="pre">&lt;function</span> <span class="pre">ParameterScanUtils.get_parameter_scan_data_dict&gt;,</span> <span class="pre">'remove_from_param_scan':</span> <span class="pre">&lt;function</span> <span class="pre">ParameterScanUtils.remove_from_param_scan&gt;,</span> <span class="pre">'addParameterScanData':</span> <span class="pre">&lt;function</span> <span class="pre">ParameterScanUtils.addParameterScanData&gt;,</span> <span class="pre">'refreshParamSpecsContent':</span> <span class="pre">&lt;function</span> <span class="pre">ParameterScanUtils.refreshParamSpecsContent&gt;,</span> <span class="pre">'readParameterScanSpecs':</span> <span class="pre">&lt;function</span> <span class="pre">ParameterScanUtils.readParameterScanSpecs&gt;,</span> <span class="pre">'write_parameter_scan_specs':</span> <span class="pre">&lt;function</span> <span class="pre">ParameterScanUtils.write_parameter_scan_specs&gt;,</span> <span class="pre">'__dict__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__dict__'</span> <span class="pre">of</span> <span class="pre">'ParameterScanUtils'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__weakref__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__weakref__'</span> <span class="pre">of</span> <span class="pre">'ParameterScanUtils'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__doc__':</span> <span class="pre">None,</span> <span class="pre">'__annotations__':</span> <span class="pre">{}})</span></em><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanUtils.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanUtils.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanUtils.__doc__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanUtils.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanUtils.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanUtils.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cc3d.core.ParameterScanUtils'</span></em><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanUtils.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanUtils.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanUtils.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanUtils.addParameterScanData">
+<span class="sig-name descname"><span class="pre">addParameterScanData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#cc3d.core.ParameterScanUtils.ParameterScanData" title="cc3d.core.ParameterScanUtils.ParameterScanData"><span class="pre">cc3d.core.ParameterScanUtils.ParameterScanData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanUtils.addParameterScanData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds parameter scan specification (for a single scanned parameter) to the dictionary of all  scanned parameters
+:param psd:
+:param original_value
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanUtils.get_parameter_scan_data_dict">
+<span class="sig-name descname"><span class="pre">get_parameter_scan_data_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanUtils.get_parameter_scan_data_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a dictionary corresponding to entry [‘parameter_list’][key] in  self.parameter_scan_specs
+:param key:
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanUtils.readParameterScanSpecs">
+<span class="sig-name descname"><span class="pre">readParameterScanSpecs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanUtils.readParameterScanSpecs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanUtils.refreshParamSpecsContent">
+<span class="sig-name descname"><span class="pre">refreshParamSpecsContent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_pScanFileName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanUtils.refreshParamSpecsContent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanUtils.remove_from_param_scan">
+<span class="sig-name descname"><span class="pre">remove_from_param_scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanUtils.remove_from_param_scan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes parameter scan entry from self.parameter_scan_specs
+:param key:
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.ParameterScanUtils.write_parameter_scan_specs">
+<span class="sig-name descname"><span class="pre">write_parameter_scan_specs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.ParameterScanUtils.write_parameter_scan_specs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.XMLHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cc3d.core.ParameterScanUtils.</span></span><span class="sig-name descname"><span class="pre">XMLHandler</span></span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.XMLHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.XMLHandler.__dict__">
+<span class="sig-name descname"><span class="pre">__dict__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">mappingproxy({'__module__':</span> <span class="pre">'cc3d.core.ParameterScanUtils',</span> <span class="pre">'__init__':</span> <span class="pre">&lt;function</span> <span class="pre">XMLHandler.__init__&gt;,</span> <span class="pre">'newline':</span> <span class="pre">&lt;function</span> <span class="pre">XMLHandler.newline&gt;,</span> <span class="pre">'outputXMLWithAccessPaths':</span> <span class="pre">&lt;function</span> <span class="pre">XMLHandler.outputXMLWithAccessPaths&gt;,</span> <span class="pre">'writeXMLElement':</span> <span class="pre">&lt;function</span> <span class="pre">XMLHandler.writeXMLElement&gt;,</span> <span class="pre">'__dict__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__dict__'</span> <span class="pre">of</span> <span class="pre">'XMLHandler'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__weakref__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__weakref__'</span> <span class="pre">of</span> <span class="pre">'XMLHandler'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__doc__':</span> <span class="pre">None,</span> <span class="pre">'__annotations__':</span> <span class="pre">{}})</span></em><a class="headerlink" href="#cc3d.core.ParameterScanUtils.XMLHandler.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.XMLHandler.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#cc3d.core.ParameterScanUtils.XMLHandler.__doc__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.XMLHandler.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.XMLHandler.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.XMLHandler.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cc3d.core.ParameterScanUtils'</span></em><a class="headerlink" href="#cc3d.core.ParameterScanUtils.XMLHandler.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.XMLHandler.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.XMLHandler.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.XMLHandler.newline">
+<span class="sig-name descname"><span class="pre">newline</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.XMLHandler.newline" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.XMLHandler.outputXMLWithAccessPaths">
+<span class="sig-name descname"><span class="pre">outputXMLWithAccessPaths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_xmlFilePath</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.XMLHandler.outputXMLWithAccessPaths" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.XMLHandler.writeXMLElement">
+<span class="sig-name descname"><span class="pre">writeXMLElement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_elem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_indent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.XMLHandler.writeXMLElement" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.extractListOfStrings">
+<span class="sig-prename descclassname"><span class="pre">cc3d.core.ParameterScanUtils.</span></span><span class="sig-name descname"><span class="pre">extractListOfStrings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_valueStr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.extractListOfStrings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.getParameterScanCommandLineArgList">
+<span class="sig-prename descclassname"><span class="pre">cc3d.core.ParameterScanUtils.</span></span><span class="sig-name descname"><span class="pre">getParameterScanCommandLineArgList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_simFileName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.getParameterScanCommandLineArgList" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns command line options for parameter scan WITHOUT actual run script. run script has to be fetched independently using getCC3DPlayerRunscriptPath or getCC3DPlayerRunscriptPath in SystemUtils</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.nextIterationCartProd">
+<span class="sig-prename descclassname"><span class="pre">cc3d.core.ParameterScanUtils.</span></span><span class="sig-name descname"><span class="pre">nextIterationCartProd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">currentIteration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxVals</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.nextIterationCartProd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes next iteration of cartesian product</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.core.ParameterScanUtils.removeWhiteSpaces">
+<span class="sig-prename descclassname"><span class="pre">cc3d.core.ParameterScanUtils.</span></span><span class="sig-name descname"><span class="pre">removeWhiteSpaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.ParameterScanUtils.removeWhiteSpaces" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="cc3d.core.ParameterScanEnums.html"
+                          title="previous chapter">cc3d.core.ParameterScanEnums module</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="cc3d.core.PySteppables.html"
+                          title="next chapter">cc3d.core.PySteppables module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/cc3d.core.ParameterScanUtils.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.PySteppables.html" title="cc3d.core.PySteppables module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.ParameterScanEnums.html" title="cc3d.core.ParameterScanEnums module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.core.html" >cc3d.core package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.core.ParameterScanUtils module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, T.J. Sego, Juliano F. Gianlupi, Maciej H. Swat, James A. Glazier.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,641 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>cc3d.core.RestartManager module &#8212; CC3D_code_developer_reference_manual 4.2.5 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cc3d.core.RoadRunnerPy module" href="cc3d.core.RoadRunnerPy.html" />
+    <link rel="prev" title="cc3d.core.PySteppables module" href="cc3d.core.PySteppables.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.RoadRunnerPy.html" title="cc3d.core.RoadRunnerPy module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.PySteppables.html" title="cc3d.core.PySteppables module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.core.html" accesskey="U">cc3d.core package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.core.RestartManager module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-cc3d.core.RestartManager">
+<span id="cc3d-core-restartmanager-module"></span><h1>cc3d.core.RestartManager module<a class="headerlink" href="#module-cc3d.core.RestartManager" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cc3d.core.RestartManager.</span></span><span class="sig-name descname"><span class="pre">RestartManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_sim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.__dict__">
+<span class="sig-name descname"><span class="pre">__dict__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">mappingproxy({'__module__':</span> <span class="pre">'cc3d.core.RestartManager',</span> <span class="pre">'__init__':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.__init__&gt;,</span> <span class="pre">'get_restart_step':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.get_restart_step&gt;,</span> <span class="pre">'prepare_restarter':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.prepare_restarter&gt;,</span> <span class="pre">'restart_enabled':</span> <span class="pre">&lt;staticmethod</span> <span class="pre">object&gt;,</span> <span class="pre">'append_xml_stub':</span> <span class="pre">&lt;staticmethod</span> <span class="pre">object&gt;,</span> <span class="pre">'get_restart_output_root_path':</span> <span class="pre">&lt;staticmethod</span> <span class="pre">object&gt;,</span> <span class="pre">'setup_restart_output_directory':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.setup_restart_output_directory&gt;,</span> <span class="pre">'updatePythonScript':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.updatePythonScript&gt;,</span> <span class="pre">'updateXMLScript':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.updateXMLScript&gt;,</span> <span class="pre">'read_restart_file':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.read_restart_file&gt;,</span> <span class="pre">'loadRestartFiles':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.loadRestartFiles&gt;,</span> <span class="pre">'load_cell_field':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_cell_field&gt;,</span> <span class="pre">'load_concentration_fields':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_concentration_fields&gt;,</span> <span class="pre">'load_scalar_fields':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_scalar_fields&gt;,</span> <span class="pre">'load_scalar_fields_cell_level':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_scalar_fields_cell_level&gt;,</span> <span class="pre">'load_vector_fields':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_vector_fields&gt;,</span> <span class="pre">'load_vector_fields_cell_level':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_vector_fields_cell_level&gt;,</span> <span class="pre">'load_core_cell_attributes':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_core_cell_attributes&gt;,</span> <span class="pre">'unpickle_dict':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.unpickle_dict&gt;,</span> <span class="pre">'unpickle_list':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.unpickle_list&gt;,</span> <span class="pre">'load_python_attributes':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_python_attributes&gt;,</span> <span class="pre">'load_sbml_solvers':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_sbml_solvers&gt;,</span> <span class="pre">'load_adhesion_flex':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_adhesion_flex&gt;,</span> <span class="pre">'load_chemotaxis':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_chemotaxis&gt;,</span> <span class="pre">'load_length_constraint':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_length_constraint&gt;,</span> <span class="pre">'load_connectivity_global':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_connectivity_global&gt;,</span> <span class="pre">'load_connectivity_local_flex':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_connectivity_local_flex&gt;,</span> <span class="pre">'load_focal_point_plasticity':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_focal_point_plasticity&gt;,</span> <span class="pre">'load_contact_local_product':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_contact_local_product&gt;,</span> <span class="pre">'load_cell_orientation':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_cell_orientation&gt;,</span> <span class="pre">'load_polarization_vector':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_polarization_vector&gt;,</span> <span class="pre">'load_polarization23':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_polarization23&gt;,</span> <span class="pre">'output_steering_panel':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_steering_panel&gt;,</span> <span class="pre">'serialize_steering_panel':</span> <span class="pre">&lt;staticmethod</span> <span class="pre">object&gt;,</span> <span class="pre">'load_steering_panel':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.load_steering_panel&gt;,</span> <span class="pre">'deserialize_steering_panel':</span> <span class="pre">&lt;staticmethod</span> <span class="pre">object&gt;,</span> <span class="pre">'output_restart_files':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_restart_files&gt;,</span> <span class="pre">'output_concentration_fields':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_concentration_fields&gt;,</span> <span class="pre">'output_cell_field':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_cell_field&gt;,</span> <span class="pre">'output_scalar_fields':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_scalar_fields&gt;,</span> <span class="pre">'output_scalar_fields_cell_level':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_scalar_fields_cell_level&gt;,</span> <span class="pre">'output_vector_fields':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_vector_fields&gt;,</span> <span class="pre">'output_vector_fields_cell_level':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_vector_fields_cell_level&gt;,</span> <span class="pre">'cell_core_attributes':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.cell_core_attributes&gt;,</span> <span class="pre">'set_cell_core_attributes':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.set_cell_core_attributes&gt;,</span> <span class="pre">'output_core_cell_attributes':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_core_cell_attributes&gt;,</span> <span class="pre">'pickleList':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.pickleList&gt;,</span> <span class="pre">'pickleDictionary':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.pickleDictionary&gt;,</span> <span class="pre">'output_free_floating_sbml_solvers':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_free_floating_sbml_solvers&gt;,</span> <span class="pre">'output_python_attributes':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_python_attributes&gt;,</span> <span class="pre">'output_adhesion_flex_plugin':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_adhesion_flex_plugin&gt;,</span> <span class="pre">'output_chemotaxis_plugin':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_chemotaxis_plugin&gt;,</span> <span class="pre">'output_length_constraint_plugin':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_length_constraint_plugin&gt;,</span> <span class="pre">'output_connectivity_global_plugin':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_connectivity_global_plugin&gt;,</span> <span class="pre">'output_connectivity_local_flex_plugin':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_connectivity_local_flex_plugin&gt;,</span> <span class="pre">'output_focal_point_placticity_plugin':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_focal_point_placticity_plugin&gt;,</span> <span class="pre">'output_contact_local_product_plugin':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_contact_local_product_plugin&gt;,</span> <span class="pre">'output_cell_orientation_plugin':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_cell_orientation_plugin&gt;,</span> <span class="pre">'output_polarization_vector_plugin':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_polarization_vector_plugin&gt;,</span> <span class="pre">'output_polarization23_plugin':</span> <span class="pre">&lt;function</span> <span class="pre">RestartManager.output_polarization23_plugin&gt;,</span> <span class="pre">'__dict__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__dict__'</span> <span class="pre">of</span> <span class="pre">'RestartManager'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__weakref__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__weakref__'</span> <span class="pre">of</span> <span class="pre">'RestartManager'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__doc__':</span> <span class="pre">None,</span> <span class="pre">'__annotations__':</span> <span class="pre">{}})</span></em><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.__doc__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_sim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cc3d.core.RestartManager'</span></em><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.append_xml_stub">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">append_xml_stub</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root_elem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.append_xml_stub" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal function in the restart manager - manipulatex xml file that describes the layout of
+restart files
+:param root_elem: {instance of CC3DXMLElement}
+:param sd: {object that has basic information about serialized module}
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.cell_core_attributes">
+<span class="sig-name descname"><span class="pre">cell_core_attributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_cell</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.cell_core_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>produces a dictionary containing core CellG attributes
+:param _cell:{instance of CellG object} cc3d cell
+:return: {dict}</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.deserialize_steering_panel">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deserialize_steering_panel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.deserialize_steering_panel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deserializes steering panel
+:param fname: {str} serialized steering panel filename
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.get_restart_output_root_path">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_restart_output_root_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.get_restart_output_root_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns path to the  output root directory e.g. &lt;outputFolder&gt;/restart_200
+:param restart_output_path: {str}
+:return:{str}</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.get_restart_step">
+<span class="sig-name descname"><span class="pre">get_restart_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.get_restart_step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.loadRestartFiles">
+<span class="sig-name descname"><span class="pre">loadRestartFiles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.loadRestartFiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads restart files
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_adhesion_flex">
+<span class="sig-name descname"><span class="pre">load_adhesion_flex</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_adhesion_flex" title="Permalink to this definition">¶</a></dt>
+<dd><p>restores AdhesionFlex Plugin
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_cell_field">
+<span class="sig-name descname"><span class="pre">load_cell_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_cell_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restores Cell Field
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_cell_orientation">
+<span class="sig-name descname"><span class="pre">load_cell_orientation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_cell_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>restores CellOriencation plugin
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_chemotaxis">
+<span class="sig-name descname"><span class="pre">load_chemotaxis</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_chemotaxis" title="Permalink to this definition">¶</a></dt>
+<dd><p>restores Chemotaxis
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_concentration_fields">
+<span class="sig-name descname"><span class="pre">load_concentration_fields</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_concentration_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>restores chemical fields
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_connectivity_global">
+<span class="sig-name descname"><span class="pre">load_connectivity_global</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_connectivity_global" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restores ConnectivityGlobal plugin
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_connectivity_local_flex">
+<span class="sig-name descname"><span class="pre">load_connectivity_local_flex</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_connectivity_local_flex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restores ConnectivityLocalFlex plugin
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_contact_local_product">
+<span class="sig-name descname"><span class="pre">load_contact_local_product</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_contact_local_product" title="Permalink to this definition">¶</a></dt>
+<dd><p>restores ContactLocalProduct plugin
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_core_cell_attributes">
+<span class="sig-name descname"><span class="pre">load_core_cell_attributes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_core_cell_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads core cell attributes such as lambdaVolume, targetVolume etc…
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_focal_point_plasticity">
+<span class="sig-name descname"><span class="pre">load_focal_point_plasticity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_focal_point_plasticity" title="Permalink to this definition">¶</a></dt>
+<dd><p>restores FocalPointPlasticity plugin
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_length_constraint">
+<span class="sig-name descname"><span class="pre">load_length_constraint</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_length_constraint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restores LengthConstraint
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_polarization23">
+<span class="sig-name descname"><span class="pre">load_polarization23</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_polarization23" title="Permalink to this definition">¶</a></dt>
+<dd><p>restores polarization23 plugin
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_polarization_vector">
+<span class="sig-name descname"><span class="pre">load_polarization_vector</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_polarization_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>restores polarizationVector plugin
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_python_attributes">
+<span class="sig-name descname"><span class="pre">load_python_attributes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_python_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads python attributes that user attached to cells (a list or dictionary)
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_sbml_solvers">
+<span class="sig-name descname"><span class="pre">load_sbml_solvers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_sbml_solvers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads SBML solvers
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_scalar_fields">
+<span class="sig-name descname"><span class="pre">load_scalar_fields</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_scalar_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>restores user-defined custom scalar fields (not associated with PDE solvers)
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_scalar_fields_cell_level">
+<span class="sig-name descname"><span class="pre">load_scalar_fields_cell_level</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_scalar_fields_cell_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads user-defined custom scalar fields (not associated with PDE solvers) that are defined on per-cell basis
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_steering_panel">
+<span class="sig-name descname"><span class="pre">load_steering_panel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_steering_panel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deserializes steering panel
+:return:None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_vector_fields">
+<span class="sig-name descname"><span class="pre">load_vector_fields</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_vector_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>restores user-defined custom vector fields
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.load_vector_fields_cell_level">
+<span class="sig-name descname"><span class="pre">load_vector_fields_cell_level</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.load_vector_fields_cell_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads user-defined custom vector fields that are defined on per-cell basis
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_adhesion_flex_plugin">
+<span class="sig-name descname"><span class="pre">output_adhesion_flex_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_adhesion_flex_plugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>serializes AdhesionFlex Plugin
+:param restart_output_path: {str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_cell_field">
+<span class="sig-name descname"><span class="pre">output_cell_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_cell_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serializes cell field
+:param restart_output_path:{str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_cell_orientation_plugin">
+<span class="sig-name descname"><span class="pre">output_cell_orientation_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_cell_orientation_plugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>serializes CellOrientation Plugin
+:param restart_output_path: {str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_chemotaxis_plugin">
+<span class="sig-name descname"><span class="pre">output_chemotaxis_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_chemotaxis_plugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>serializes Chemotaxis Plugin
+:param restart_output_path: {str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_concentration_fields">
+<span class="sig-name descname"><span class="pre">output_concentration_fields</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_concentration_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serializes concentration fields (associated with PDE solvers)
+:param restart_output_path:{str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_connectivity_global_plugin">
+<span class="sig-name descname"><span class="pre">output_connectivity_global_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_connectivity_global_plugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>serializes ConnectivityGlobal Plugin
+:param restart_output_path: {str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_connectivity_local_flex_plugin">
+<span class="sig-name descname"><span class="pre">output_connectivity_local_flex_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_connectivity_local_flex_plugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>serializes ConnectivityLocalFlex Plugin
+:param restart_output_path: {str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_contact_local_product_plugin">
+<span class="sig-name descname"><span class="pre">output_contact_local_product_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_contact_local_product_plugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>serializes ContactLocalProduct Plugin
+:param restart_output_path: {str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_core_cell_attributes">
+<span class="sig-name descname"><span class="pre">output_core_cell_attributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_core_cell_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serializes core clel attributes - the ones from CellG C++ object such as lambdaVolume, targetVolume, etc…
+:param restart_output_path:{str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_focal_point_placticity_plugin">
+<span class="sig-name descname"><span class="pre">output_focal_point_placticity_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_focal_point_placticity_plugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>serializes FocalPointPlacticity Plugin
+:param restart_output_path: {str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_free_floating_sbml_solvers">
+<span class="sig-name descname"><span class="pre">output_free_floating_sbml_solvers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_free_floating_sbml_solvers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outputs free-floating SBML solvers
+:param  restart_output_path: {str}
+:param _cellList: {instance of CellList} - a container representing all CC3D simulations
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_length_constraint_plugin">
+<span class="sig-name descname"><span class="pre">output_length_constraint_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_length_constraint_plugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>serializes LengthConstraint Plugin
+:param restart_output_path: {str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_polarization23_plugin">
+<span class="sig-name descname"><span class="pre">output_polarization23_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_polarization23_plugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>serializes Polarization23 Plugin
+:param restart_output_path: {str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_polarization_vector_plugin">
+<span class="sig-name descname"><span class="pre">output_polarization_vector_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_polarization_vector_plugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>serializes PolarizationVector Plugin
+:param restart_output_path: {str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_python_attributes">
+<span class="sig-name descname"><span class="pre">output_python_attributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_python_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>outputs python attributes that were attached to a cell by the user in the Python script
+:param restart_output_path: {str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_restart_files">
+<span class="sig-name descname"><span class="pre">output_restart_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_demand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_restart_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>main function that serializes simulation
+:param step: {int} current MCS
+:param on_demand: {False} flag representing whether serialization is ad-hoc or regularly scheduled one
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_scalar_fields">
+<span class="sig-name descname"><span class="pre">output_scalar_fields</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_scalar_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serializes user defined scalar fields (not associated with PDE solvers)
+:param restart_output_path:{str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_scalar_fields_cell_level">
+<span class="sig-name descname"><span class="pre">output_scalar_fields_cell_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_scalar_fields_cell_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serializes user defined scalar fields (not associated with PDE solvers) that are
+defined on the per-cell basis
+:param restart_output_path:{str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_steering_panel">
+<span class="sig-name descname"><span class="pre">output_steering_panel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_steering_panel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outputs steering panel for python parameters
+:param restartOutputPath:{str} path to restart dir
+:param rst_xml_elem: {xml elem obj}
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_vector_fields">
+<span class="sig-name descname"><span class="pre">output_vector_fields</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_vector_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serializes user defined vector fields
+:param restart_output_path:{str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.output_vector_fields_cell_level">
+<span class="sig-name descname"><span class="pre">output_vector_fields_cell_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart_output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_xml_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.output_vector_fields_cell_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serializes user defined vector fields that are defined on per-cell basis
+:param restart_output_path:{str}
+:param rst_xml_elem: {instance of CC3DXMLElement}
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.pickleDictionary">
+<span class="sig-name descname"><span class="pre">pickleDictionary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_fileName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cellList</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.pickleDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility function for pickling list of attributes attached to cells by user in the Python script
+:param _fileName: {str}
+:param _cellList: {instance of CellList} - a container representing all CC3D simulations
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.pickleList">
+<span class="sig-name descname"><span class="pre">pickleList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_fileName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cellList</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.pickleList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility function for pickling CellList object
+:param _fileName: {str}
+:param _cellList: {instance of CellList} - a container representing all CC3D simulations
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.prepare_restarter">
+<span class="sig-name descname"><span class="pre">prepare_restarter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.prepare_restarter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs basic setup before attempting a restart
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.read_restart_file">
+<span class="sig-name descname"><span class="pre">read_restart_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_fileName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.read_restart_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads XML file that holds information about restart data
+:param _fileName: {str}
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.restart_enabled">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">restart_enabled</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.restart_enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads .cc3d project file and checks if restart is enabled
+:return: {bool}</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.serialize_steering_panel">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize_steering_panel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.serialize_steering_panel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serializes steering panel
+:param fname: {str} filename - to serialize steering panel to
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.set_cell_core_attributes">
+<span class="sig-name descname"><span class="pre">set_cell_core_attributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_attrib_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.set_cell_core_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>initializes cell attributes
+:param cell: {instance of CellG object} cc3d cell
+:param core_attrib_dict: {dict} dictionry of attributes
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.setup_restart_output_directory">
+<span class="sig-name descname"><span class="pre">setup_restart_output_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.setup_restart_output_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares restart directory
+:param step: {int} Monte Carlo Step
+:return: {None}</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.unpickle_dict">
+<span class="sig-name descname"><span class="pre">unpickle_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.unpickle_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility function that unpickles dictionary representing dictionary of attributes that user
+attaches to cells at the Python level
+:param file_name: {str}
+:param cell_list: {container with all CC3D cells - equivalent of self.cellList in SteppableBasePy}
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.unpickle_list">
+<span class="sig-name descname"><span class="pre">unpickle_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.unpickle_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility function that unpickles list representing list of attributes that user
+attaches to cells at the Python level</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_name</strong> – {ste}</p></li>
+<li><p><strong>cell_list</strong> – {container with all CC3D cells - equivalent of self.cellList in SteppableBasePy}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.updatePythonScript">
+<span class="sig-name descname"><span class="pre">updatePythonScript</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_fileName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.updatePythonScript" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manipulates Python script - alters the content to make sure it is restart -ready
+:param _fileName: {str} path to Python file
+:return: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.RestartManager.updateXMLScript">
+<span class="sig-name descname"><span class="pre">updateXMLScript</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_fileName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.RestartManager.updateXMLScript" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manipulates XML script - alters the content to make sure it is restart -ready
+:param _fileName: {str} path to XML file
+:return: None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cc3d.core.RestartManager.pickle_vector3">
+<span class="sig-prename descclassname"><span class="pre">cc3d.core.RestartManager.</span></span><span class="sig-name descname"><span class="pre">pickle_vector3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_vec</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.RestartManager.pickle_vector3" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="cc3d.core.PySteppables.html"
+                          title="previous chapter">cc3d.core.PySteppables module</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="cc3d.core.RoadRunnerPy.html"
+                          title="next chapter">cc3d.core.RoadRunnerPy module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/cc3d.core.RestartManager.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.RoadRunnerPy.html" title="cc3d.core.RoadRunnerPy module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.PySteppables.html" title="cc3d.core.PySteppables module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.core.html" >cc3d.core package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.core.RestartManager module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, T.J. Sego, Juliano F. Gianlupi, Maciej H. Swat, James A. Glazier.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>

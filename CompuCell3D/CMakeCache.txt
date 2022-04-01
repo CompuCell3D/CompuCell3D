@@ -125,8 +125,8 @@ CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE
 //No help, variable specified on the command line.
 CMAKE_FIND_ROOT:STRING=/Users/saumyamehta/miniconda3/envs/cc3denv
 
-//Install path prefix, prepended onto install directories.
-CMAKE_INSTALL_PREFIX:PATH=/usr/local
+//No help, variable specified on the command line.
+CMAKE_INSTALL_PREFIX:STRING=~/cc3d_build_wdocs
 
 //Path to a program.
 CMAKE_LINKER:FILEPATH=/N/soft/rhel7/xalt/2.10.30/bin/ld

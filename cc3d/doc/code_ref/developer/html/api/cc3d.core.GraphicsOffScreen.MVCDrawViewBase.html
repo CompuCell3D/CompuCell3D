@@ -1,0 +1,589 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>cc3d.core.GraphicsOffScreen.MVCDrawViewBase module &#8212; CC3D_code_developer_reference_manual 4.2.5 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cc3d.core.GraphicsOffScreen.MetadataHandler module" href="cc3d.core.GraphicsOffScreen.MetadataHandler.html" />
+    <link rel="prev" title="cc3d.core.GraphicsOffScreen.MVCDrawView3D module" href="cc3d.core.GraphicsOffScreen.MVCDrawView3D.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.GraphicsOffScreen.MetadataHandler.html" title="cc3d.core.GraphicsOffScreen.MetadataHandler module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.GraphicsOffScreen.MVCDrawView3D.html" title="cc3d.core.GraphicsOffScreen.MVCDrawView3D module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.core.html" >cc3d.core package</a> &#187;</li>
+          <li class="nav-item nav-item-4"><a href="cc3d.core.GraphicsOffScreen.html" accesskey="U">cc3d.core.GraphicsOffScreen package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.core.GraphicsOffScreen.MVCDrawViewBase module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-cc3d.core.GraphicsOffScreen.MVCDrawViewBase">
+<span id="cc3d-core-graphicsoffscreen-mvcdrawviewbase-module"></span><h1>cc3d.core.GraphicsOffScreen.MVCDrawViewBase module<a class="headerlink" href="#module-cc3d.core.GraphicsOffScreen.MVCDrawViewBase" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cc3d.core.GraphicsOffScreen.MVCDrawViewBase.</span></span><span class="sig-name descname"><span class="pre">MVCDrawViewBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_drawModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ren</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.__dict__">
+<span class="sig-name descname"><span class="pre">__dict__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">mappingproxy({'__module__':</span> <span class="pre">'cc3d.core.GraphicsOffScreen.MVCDrawViewBase',</span> <span class="pre">'__init__':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.__init__&gt;,</span> <span class="pre">'drawModel':</span> <span class="pre">&lt;property</span> <span class="pre">object&gt;,</span> <span class="pre">'ren':</span> <span class="pre">&lt;property</span> <span class="pre">object&gt;,</span> <span class="pre">'version_identifier':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.version_identifier&gt;,</span> <span class="pre">'vtk_version_identifier':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.vtk_version_identifier&gt;,</span> <span class="pre">'setDrawingFunctionName':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.setDrawingFunctionName&gt;,</span> <span class="pre">'clear_scene':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.clear_scene&gt;,</span> <span class="pre">'setFieldTypes':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.setFieldTypes&gt;,</span> <span class="pre">'setPlotData':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.setPlotData&gt;,</span> <span class="pre">'resetAllCameras':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.resetAllCameras&gt;,</span> <span class="pre">'getActors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.getActors&gt;,</span> <span class="pre">'prepare_vector_field_actors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.prepare_vector_field_actors&gt;,</span> <span class="pre">'show_vector_field_actors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.show_vector_field_actors&gt;,</span> <span class="pre">'prepare_concentration_field_actors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.prepare_concentration_field_actors&gt;,</span> <span class="pre">'show_concentration_field_actors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.show_concentration_field_actors&gt;,</span> <span class="pre">'prepare_cell_field_actors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.prepare_cell_field_actors&gt;,</span> <span class="pre">'show_cell_actors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.show_cell_actors&gt;,</span> <span class="pre">'prepare_outline_actors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.prepare_outline_actors&gt;,</span> <span class="pre">'show_outline_actors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.show_outline_actors&gt;,</span> <span class="pre">'prepare_axes_actors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.prepare_axes_actors&gt;,</span> <span class="pre">'show_axes_actors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.show_axes_actors&gt;,</span> <span class="pre">'prepare_cluster_border_actors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.prepare_cluster_border_actors&gt;,</span> <span class="pre">'show_cluster_border_actors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.show_cluster_border_actors&gt;,</span> <span class="pre">'prepare_border_actors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.prepare_border_actors&gt;,</span> <span class="pre">'show_cell_borders':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.show_cell_borders&gt;,</span> <span class="pre">'prepare_fpp_links_actors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.prepare_fpp_links_actors&gt;,</span> <span class="pre">'show_fpp_links_actors':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.show_fpp_links_actors&gt;,</span> <span class="pre">'remove_all_actors_from_renderer':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.remove_all_actors_from_renderer&gt;,</span> <span class="pre">'add_actor_to_renderer':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.add_actor_to_renderer&gt;,</span> <span class="pre">'remove_actor_from_renderer':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.remove_actor_from_renderer&gt;,</span> <span class="pre">'getCamera':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.getCamera&gt;,</span> <span class="pre">'largestDim':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.largestDim&gt;,</span> <span class="pre">'getSim3DFlag':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.getSim3DFlag&gt;,</span> <span class="pre">'setParams':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.setParams&gt;,</span> <span class="pre">'set_custom_camera':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.set_custom_camera&gt;,</span> <span class="pre">'set_default_camera':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.set_default_camera&gt;,</span> <span class="pre">'setStatusBar':</span> <span class="pre">&lt;function</span> <span class="pre">MVCDrawViewBase.setStatusBar&gt;,</span> <span class="pre">'__dict__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__dict__'</span> <span class="pre">of</span> <span class="pre">'MVCDrawViewBase'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__weakref__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__weakref__'</span> <span class="pre">of</span> <span class="pre">'MVCDrawViewBase'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__doc__':</span> <span class="pre">None,</span> <span class="pre">'__annotations__':</span> <span class="pre">{}})</span></em><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.__doc__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_drawModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ren</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cc3d.core.GraphicsOffScreen.MVCDrawViewBase'</span></em><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.add_actor_to_renderer">
+<span class="sig-name descname"><span class="pre">add_actor_to_renderer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actor_obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.add_actor_to_renderer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience fcn that adds actor to a renderer and updates
+current actor container</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_label</strong> – {str} actor label</p></li>
+<li><p><strong>actor_obj</strong> – {vtkActor} instance of the actor</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.clear_scene">
+<span class="sig-name descname"><span class="pre">clear_scene</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.clear_scene" title="Permalink to this definition">¶</a></dt>
+<dd><p>removes all actors from the renderer
+:return: None</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.drawModel">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">drawModel</span></span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.drawModel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.getActors">
+<span class="sig-name descname"><span class="pre">getActors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_label_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.getActors" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns container with actors</p>
+<p>:param actor_label_list:{list of str} list of actors
+:return: {OrderedDict}</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.getCamera">
+<span class="sig-name descname"><span class="pre">getCamera</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.getCamera" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.getSim3DFlag">
+<span class="sig-name descname"><span class="pre">getSim3DFlag</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.getSim3DFlag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.largestDim">
+<span class="sig-name descname"><span class="pre">largestDim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.largestDim" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_axes_actors">
+<span class="sig-name descname"><span class="pre">prepare_axes_actors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_axes_actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares axes  based on actor_specs specifications</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_specs</strong> – {ActorSpecs} specification of actors to create</p></li>
+<li><p><strong>drawing_params</strong> – {DrawingParameters}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>{dict}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_border_actors">
+<span class="sig-name descname"><span class="pre">prepare_border_actors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_border_actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares border actors  based on actor_specs specifications</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_specs</strong> – {ActorSpecs} specification of actors to create</p></li>
+<li><p><strong>drawing_params</strong> – {DrawingParameters}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>{dict}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_cell_field_actors">
+<span class="sig-name descname"><span class="pre">prepare_cell_field_actors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_cell_field_actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares cell_field_actors  based on actor_specs specifications</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_specs</strong> – {ActorSpecs} specification of actors to create</p></li>
+<li><p><strong>drawing_params</strong> – {DrawingParameters}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>{dict}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_cluster_border_actors">
+<span class="sig-name descname"><span class="pre">prepare_cluster_border_actors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_cluster_border_actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares border actors  based on actor_specs specifications</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_specs</strong> – {ActorSpecs} specification of actors to create</p></li>
+<li><p><strong>drawing_params</strong> – {DrawingParameters}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>{dict}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_concentration_field_actors">
+<span class="sig-name descname"><span class="pre">prepare_concentration_field_actors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_concentration_field_actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares concentration field actors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_specs</strong> – {ActorSpecs} specification of actors to create</p></li>
+<li><p><strong>drawing_params</strong> – {DrawingParameters}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>{ActorSpecs}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_fpp_links_actors">
+<span class="sig-name descname"><span class="pre">prepare_fpp_links_actors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_fpp_links_actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares fpp links actors  based on actor_specs specifications</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>{ActorSpecs}</strong> (<em>actor_specs</em>) – specification of actors to create</p></li>
+<li><p><strong>drawing_params</strong> – {DrawingParameters}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>{dict}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_outline_actors">
+<span class="sig-name descname"><span class="pre">prepare_outline_actors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_outline_actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares bounding box actors  based on actor_specs specifications</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_specs</strong> – {ActorSpecs} specification of actors to create</p></li>
+<li><p><strong>drawing_params</strong> – {DrawingParameters}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>{dict}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_vector_field_actors">
+<span class="sig-name descname"><span class="pre">prepare_vector_field_actors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.prepare_vector_field_actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares vector field actors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_specs</strong> – {ActorSpecs} specification of actors to create</p></li>
+<li><p><strong>drawing_params</strong> – {DrawingParameters}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>{ActorSpecs}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.remove_actor_from_renderer">
+<span class="sig-name descname"><span class="pre">remove_actor_from_renderer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actor_obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.remove_actor_from_renderer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience fcn that removes actor from a renderer and updates
+current actor container</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_label</strong> – {str} actor label</p></li>
+<li><p><strong>actor_obj</strong> – {vtkActor} instance of the actor</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.remove_all_actors_from_renderer">
+<span class="sig-name descname"><span class="pre">remove_all_actors_from_renderer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.remove_all_actors_from_renderer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all actors from renderer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.ren">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ren</span></span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.ren" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.resetAllCameras">
+<span class="sig-name descname"><span class="pre">resetAllCameras</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.resetAllCameras" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.setDrawingFunctionName">
+<span class="sig-name descname"><span class="pre">setDrawingFunctionName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_fcnName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.setDrawingFunctionName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.setFieldTypes">
+<span class="sig-name descname"><span class="pre">setFieldTypes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_fieldTypes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.setFieldTypes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.setParams">
+<span class="sig-name descname"><span class="pre">setParams</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.setParams" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.setPlotData">
+<span class="sig-name descname"><span class="pre">setPlotData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_plotData</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.setPlotData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.setStatusBar">
+<span class="sig-name descname"><span class="pre">setStatusBar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">statusBar</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.setStatusBar" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.set_custom_camera">
+<span class="sig-name descname"><span class="pre">set_custom_camera</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">camera_settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.set_custom_camera" title="Permalink to this definition">¶</a></dt>
+<dd><p>adjusts camera based on camera_settings.
+camera settings can be any structure that has the following members:
+clippingRange,focalPoint, viewUp, position</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>camera_settings</strong> – {object} object conforming to above requirements</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.set_default_camera">
+<span class="sig-name descname"><span class="pre">set_default_camera</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fieldDim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.set_default_camera" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes default camera view</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fieldDim</strong> – field dimension (Dim3D C++ object)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_axes_actors">
+<span class="sig-name descname"><span class="pre">show_axes_actors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_axes_actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>shows/hides axes box</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_specs</strong> – </p></li>
+<li><p><strong>drawing_params</strong> – </p></li>
+<li><p><strong>show_flag</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_cell_actors">
+<span class="sig-name descname"><span class="pre">show_cell_actors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_cell_actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows cell_field actors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_specs</strong> – {ActorSpecs}</p></li>
+<li><p><strong>show_flag</strong> – {bool}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_cell_borders">
+<span class="sig-name descname"><span class="pre">show_cell_borders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_cell_borders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows or hides cell border actor</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_specs</strong> – {ActorSpecs}</p></li>
+<li><p><strong>drawing_params</strong> – {DrawingParameters}</p></li>
+<li><p><strong>show_flag</strong> – {bool}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_cluster_border_actors">
+<span class="sig-name descname"><span class="pre">show_cluster_border_actors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_cluster_border_actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows cluster borders actors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_specs</strong> – {ActorSpecs}</p></li>
+<li><p><strong>drawing_params</strong> – {DrawingParameters}</p></li>
+<li><p><strong>show_flag</strong> – {bool}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_concentration_field_actors">
+<span class="sig-name descname"><span class="pre">show_concentration_field_actors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_concentration_field_actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows concentration actors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_specs</strong> – {ActorSpecs}</p></li>
+<li><p><strong>drawing_params</strong> – {DrawingParameters}</p></li>
+<li><p><strong>show_flag</strong> – {bool}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_fpp_links_actors">
+<span class="sig-name descname"><span class="pre">show_fpp_links_actors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_fpp_links_actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows fpp links actors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_specs</strong> – {ActorSpecs}</p></li>
+<li><p><strong>drawing_params</strong> – {DrawingParameters}</p></li>
+<li><p><strong>show_flag</strong> – {bool}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_outline_actors">
+<span class="sig-name descname"><span class="pre">show_outline_actors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_outline_actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>shows/hides bounding box</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_specs</strong> – </p></li>
+<li><p><strong>drawing_params</strong> – </p></li>
+<li><p><strong>show_flag</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_vector_field_actors">
+<span class="sig-name descname"><span class="pre">show_vector_field_actors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.show_vector_field_actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows vector field actors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_specs</strong> – {ActorSpecs}</p></li>
+<li><p><strong>drawing_params</strong> – {DrawingParameters}</p></li>
+<li><p><strong>show_flag</strong> – {bool}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.version_identifier">
+<span class="sig-name descname"><span class="pre">version_identifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">major</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.version_identifier" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.vtk_version_identifier">
+<span class="sig-name descname"><span class="pre">vtk_version_identifier</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc3d.core.GraphicsOffScreen.MVCDrawViewBase.MVCDrawViewBase.vtk_version_identifier" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="cc3d.core.GraphicsOffScreen.MVCDrawView3D.html"
+                          title="previous chapter">cc3d.core.GraphicsOffScreen.MVCDrawView3D module</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="cc3d.core.GraphicsOffScreen.MetadataHandler.html"
+                          title="next chapter">cc3d.core.GraphicsOffScreen.MetadataHandler module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/cc3d.core.GraphicsOffScreen.MVCDrawViewBase.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.GraphicsOffScreen.MetadataHandler.html" title="cc3d.core.GraphicsOffScreen.MetadataHandler module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cc3d.core.GraphicsOffScreen.MVCDrawView3D.html" title="cc3d.core.GraphicsOffScreen.MVCDrawView3D module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CC3D_code_developer_reference_manual 4.2.5 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >cc3d</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cc3d.html" >cc3d package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="cc3d.core.html" >cc3d.core package</a> &#187;</li>
+          <li class="nav-item nav-item-4"><a href="cc3d.core.GraphicsOffScreen.html" >cc3d.core.GraphicsOffScreen package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">cc3d.core.GraphicsOffScreen.MVCDrawViewBase module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, T.J. Sego, Juliano F. Gianlupi, Maciej H. Swat, James A. Glazier.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>
