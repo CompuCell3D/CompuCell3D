@@ -19,9 +19,9 @@
 #include <fstream>
 #include <sstream>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
-#include <concurrent_vector.h>
-#include <concurrent_unordered_set.h>
-#include <ppl.h>
+// #include <concurrent_vector.h>
+// #include <concurrent_unordered_set.h>
+// #include <ppl.h>
 
 using namespace std;
 using namespace CompuCell3D;
@@ -634,7 +634,9 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	//		Auto time stepping
 	autoTimeSubStep = _xmlData->findElement("AutoTimeSubStep");
 	if (autoTimeSubStep) { cerr << "RDVFM got automatic time sub-stepping." << endl; }
-	fvMaxStableTimeSteps = new concurrency::concurrent_vector<double>;
+	// replace with vector
+	fvMaxStableTimeSteps = new std::vector<double>;
+	//fvMaxStableTimeSteps = new concurrency::concurrent_vector<double>;
 
 	//		Simple mass conservation option
 	simpleMassConservation = _xmlData->findElement("SimpleMassConservation");
@@ -680,6 +682,22 @@ void ReactionDiffusionSolverFVM::handleEvent(CC3DEvent & _event) {
 		fieldDim = ev.newDim;
 		initializeFVs(fieldDim);
 		pUtils->getNumberOfProcessors()
+		
+		
+		#pragma omp parallel shared (fvs){
+			
+			#pragma omp for 
+			for (ReactionDiffusionSolverFV *fv: fvs){
+				Point3D pt = fv->getCoords();
+				Point3D ptNew = pt;
+				ptNew.x += ev.shiftVec.x;
+				ptNew.y += ev.shiftVec.y;
+				ptNew.z += ev.shiftVec.z;
+				getFieldFV(ptNew)->setConcentrationVec(fv->getConcentrationVec());
+			}
+		}
+		//replace with openmp
+
 		// concurrency::parallel_for_each(fvs->begin(), fvs->end(), [&](ReactionDiffusionSolverFV *fv) {
 		// 	Point3D pt = fv->getCoords();
 		// 	Point3D ptNew = pt;
@@ -688,15 +706,6 @@ void ReactionDiffusionSolverFVM::handleEvent(CC3DEvent & _event) {
 		// 	ptNew.z += ev.shiftVec.z;
 		// 	getFieldFV(ptNew)->setConcentrationVec(fv->getConcentrationVec());
 		// });
-
-		concurrency::parallel_for_each(fvs->begin(), fvs->end(), [&](ReactionDiffusionSolverFV *fv) {
-			Point3D pt = fv->getCoords();
-			Point3D ptNew = pt;
-			ptNew.x += ev.shiftVec.x;
-			ptNew.y += ev.shiftVec.y;
-			ptNew.z += ev.shiftVec.z;
-			getFieldFV(ptNew)->setConcentrationVec(fv->getConcentrationVec());
-		});
 
         
 
@@ -733,15 +742,31 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 
 		cerr << "   Simple mass conservation: updating fields..." << endl;
 
-		concurrency::parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) {
-			CellG *cell = this->FVtoCellMap(fv);
-			std::vector<double> correctionFactors;
-			if (cell) { correctionFactors = this->getReactionDiffusionSolverFVMCellDataAccessorPtr()->get(cell->extraAttribPtr)->massConsCorrectionFactors; }
-			else { correctionFactors = this->massConsCorrectionFactorsMedium; }
-			// fv->setConcentrationVec(vecMult<double>()(correctionFactors, fv->getConcentrationVec()));
-			for (unsigned int fieldIndex = 0; fieldIndex < correctionFactors.size(); ++fieldIndex)
-				fv->setConcentration(fieldIndex, fv->getConcentration(fieldIndex) * correctionFactors[fieldIndex]);
-		});
+		
+		// replace with openmp
+		#pragma omp parallel shared (fvs){
+			
+			#pragma omp for 
+			for (ReactionDiffusionSolverFV *fv: fvs){
+				CellG *cell = this->FVtoCellMap(fv);
+				std::vector<double> correctionFactors;
+				if (cell) { correctionFactors = this->getReactionDiffusionSolverFVMCellDataAccessorPtr()->get(cell->extraAttribPtr)->massConsCorrectionFactors; }
+				else { correctionFactors = this->massConsCorrectionFactorsMedium; }
+				// fv->setConcentrationVec(vecMult<double>()(correctionFactors, fv->getConcentrationVec()));
+				for (unsigned int fieldIndex = 0; fieldIndex < correctionFactors.size(); ++fieldIndex)
+					fv->setConcentration(fieldIndex, fv->getConcentration(fieldIndex) * correctionFactors[fieldIndex]);
+			}
+		}
+
+		// concurrency::parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) {
+		// 	CellG *cell = this->FVtoCellMap(fv);
+		// 	std::vector<double> correctionFactors;
+		// 	if (cell) { correctionFactors = this->getReactionDiffusionSolverFVMCellDataAccessorPtr()->get(cell->extraAttribPtr)->massConsCorrectionFactors; }
+		// 	else { correctionFactors = this->massConsCorrectionFactorsMedium; }
+		// 	// fv->setConcentrationVec(vecMult<double>()(correctionFactors, fv->getConcentrationVec()));
+		// 	for (unsigned int fieldIndex = 0; fieldIndex < correctionFactors.size(); ++fieldIndex)
+		// 		fv->setConcentration(fieldIndex, fv->getConcentration(fieldIndex) * correctionFactors[fieldIndex]);
+		// });
 
 	}
 
@@ -759,10 +784,18 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 		if (autoTimeSubStep) {
 
 			cerr << "      Integrating with maximum stable time step... ";
-
-			concurrency::parallel_for(unsigned int(0), (unsigned int)(fieldDim.x*fieldDim.y*fieldDim.z), [&](unsigned int fieldIndex) {
-				fvMaxStableTimeSteps->at(fieldIndex) = this->getFieldFV(fieldIndex)->solveStable();
-			});
+			//replace with openmp
+			unsigned int ind=0;
+			#pragma omp parallel shared (_fieldDim) private (ind){
+				
+				#pragma omp for 
+				for (ind=0;ind<_fieldDim.x*_fieldDim.y*_fieldDim.z;ind++){
+					fvMaxStableTimeSteps->at(fieldIndex) = this->getFieldFV(fieldIndex)->solveStable();
+				}
+			}
+			// concurrency::parallel_for(unsigned int(0), (unsigned int)(fieldDim.x*fieldDim.y*fieldDim.z), [&](unsigned int fieldIndex) {
+			// 	fvMaxStableTimeSteps->at(fieldIndex) = this->getFieldFV(fieldIndex)->solveStable();
+			// });
 
 			cerr << "calculating maximum stable time step... ";
 
@@ -774,14 +807,29 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 			cerr << "      Integrating with fixed time step... ";
 
 			integrationTimeStep = incTime - intTime;
-			concurrency::parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->solve(); });
+			//replace with openmp
+			#pragma omp parallel shared (fvs){
+			
+			#pragma omp for 
+			for (ReactionDiffusionSolverFV *fv: fieldFVs){
+				fv->solve();
+			}
+		}
+			//concurrency::parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->solve(); });
 		}
 
 		cerr << integrationTimeStep << " s." << endl;
 
 		cerr << "      Updating... ";
-
-		concurrency::parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->update(this->getIntegrationTimeStep()); });
+		//replace with openmp
+		#pragma omp parallel shared (fvs){
+			
+			#pragma omp for 
+			for (ReactionDiffusionSolverFV *fv: fieldFVs){
+				fv->update(this->getIntegrationTimeStep());
+			}
+		}
+		//concurrency::parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->update(this->getIntegrationTimeStep()); });
 
 		intTime += integrationTimeStep;
 		physTime += integrationTimeStep;
@@ -961,7 +1009,15 @@ void ReactionDiffusionSolverFVM::loadFieldExpressions() {
 }
 
 void ReactionDiffusionSolverFVM::loadFieldExpressionMultiplier(unsigned int _fieldIndex) {
-	parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { loadFieldExpressionMultiplier(_fieldIndex, fv); });
+	//replace with openmp
+	#pragma omp parallel shared (fieldFVs){
+			
+			#pragma omp for 
+			for (ReactionDiffusionSolverFV *fv: fieldFVs){
+				loadFieldExpressionMultiplier(_fieldIndex, fv);
+			}
+		}
+	//parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { loadFieldExpressionMultiplier(_fieldIndex, fv); });
 }
 
 void ReactionDiffusionSolverFVM::loadFieldExpressionMultiplier(std::string _fieldName, std::string _expr) {
@@ -970,7 +1026,15 @@ void ReactionDiffusionSolverFVM::loadFieldExpressionMultiplier(std::string _fiel
 }
 
 void ReactionDiffusionSolverFVM::loadFieldExpressionIndependent(unsigned int _fieldIndex) {
-	parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { loadFieldExpressionIndependent(_fieldIndex, fv); });
+		//replace with openmp
+	#pragma omp parallel shared (fieldFVs){
+			
+			#pragma omp for 
+			for (ReactionDiffusionSolverFV *fv: fieldFVs){
+				 loadFieldExpressionIndependent(_fieldIndex, fv); 
+			}
+		}
+	//parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { loadFieldExpressionIndependent(_fieldIndex, fv); });
 }
 
 void ReactionDiffusionSolverFVM::loadFieldExpressionIndependent(std::string _fieldName, std::string _expr) {
@@ -1015,13 +1079,28 @@ void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
 	// 	this->setFieldFV(ind, fv);
 	// });
 
-	// cerr << "Initializing FVs..." << endl;
+	cerr << "Initializing FVs..." << endl;
 
     ///TODO: replace parallel_for_each with openmp's version for fieldFVs
 
-	// parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->initialize(); });
+    #pragma omp parallel shared (fieldFVs){
+        
+        #pragma omp for
+		for (ReactionDiffusionSolverFV *fv : fieldFVs){ 
+			fv->initialise();
+		}
+    }
+	//parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->initialize(); });
 
 	// cerr << "Setting field symbols..." << endl;
+	
+	#pragma omp parallel shared (fieldFVs){
+        
+        #pragma omp for
+		for (ReactionDiffusionSolverFV *fv : fieldFVs){ 
+			fv->registerFieldSymbol(fieldIndex, this->getFieldSymbol(fieldIndex));
+		}
+    }
 	
 	// parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { 
 	// 	for (unsigned int fieldIndex = 0; fieldIndex < fv->getConcentrationVec().size(); ++fieldIndex) {
@@ -1165,24 +1244,36 @@ std::vector<double> ReactionDiffusionSolverFVM::totalMediumConcentration() {
 
     ///TODO: replace with openmp's version
 
-	// std::vector<Point3D> pixelVec = getMediumPixelVec();
-	// concurrency::concurrent_vector<Point3D> pixelVecPar = concurrency::concurrent_vector<Point3D>(pixelVec.size());
-	// for (unsigned int pixelIndex = 0; pixelIndex < pixelVec.size(); ++pixelIndex) { pixelVecPar[pixelIndex] = pixelVec[pixelIndex]; }
+	std::vector<Point3D> pixelVec = getMediumPixelVec();
+	std::vector<Point3D> pixelVecPar std::vector<Point3D>(pixelVec.size());
+	for (unsigned int pixelIndex = 0; pixelIndex < pixelVec.size(); ++pixelIndex) { pixelVecPar[pixelIndex] = pixelVec[pixelIndex]; }
 
-	// // Calculate total concentrations on each thread
-	// concurrency::combinable<std::vector<double> > sumEl = concurrency::combinable<std::vector<double> >([&]() {return std::vector<double>(numFields, 0.0); });
+	//concurrency::concurrent_vector<Point3D> pixelVecPar = concurrency::concurrent_vector<Point3D>(pixelVec.size());
+
+	// Calculate total concentrations on each thread
+	std::vector<double>  sumEl = std::vector<double> ([&]() {return std::vector<double>(numFields, 0.0); });
+
+	//concurrency::combinable<std::vector<double> > sumEl = concurrency::combinable<std::vector<double> >([&]() {return std::vector<double>(numFields, 0.0); });
+	
+        
+        #pragma omp parallel for reduction(+ : sumEl)
+		for (Point3D pt: pixelVecPar){ 
+			 sumEl = vecPlus<double>()(sumEl,std::vector<double>(this->getFieldFV(pt)->getConcentrationVec()));
+		}
+    
 	// concurrency::parallel_for_each(pixelVecPar.begin(), pixelVecPar.end(), [&](Point3D pt) {
 	// 	sumEl.local() = vecPlus<double>()(sumEl.local(), std::vector<double>(this->getFieldFV(pt)->getConcentrationVec())); });
 
 	// Sum total concentrations over all threads
 	std::vector<double> res = std::vector<double>(numFields, 0.0);
-	sumEl.combine_each([&](std::vector<double> local) { res = vecPlus<double>()(local, res); });
+	//sumEl.combine_each([&](std::vector<double> local) { res = vecPlus<double>()(local, res); });
 
 	// Reset mass conservation correction factors
 	massConsCorrectionFactorsMedium = std::vector<double>(numFields, 1.0);
 	
 	// fin
-	return res;
+	//return res;
+	return sumEl
 }
 
 void ReactionDiffusionSolverFVM::updateTotalCellConcentrations() {
@@ -1190,25 +1281,43 @@ void ReactionDiffusionSolverFVM::updateTotalCellConcentrations() {
 
     ///TODO: replace with openmp's version
 
-	// if (numCells > 0) {
-	// 	// Load cell pointers for parallel update
-	// 	concurrency::concurrent_vector<CellG* > vecCells = concurrency::concurrent_vector<CellG* >(numCells);
-	// 	unsigned int cellIdx = 0;
-	// 	for (CellInventory::cellInventoryIterator cItr = cellInventory->cellInventoryBegin(); cItr != cellInventory->cellInventoryEnd(); ++cItr) {
-	// 		vecCells[cellIdx] = cItr->second;
-	// 		++cellIdx;
-	// 	}
+	if (numCells > 0) {
+		// Load cell pointers for parallel update
+		
+		std::vector<CellG* > vecCells = std::vector<CellG* >(numCells);
 
-	// 	// Perform parallel update
-	// 	concurrency::parallel_for_each(vecCells.begin(), vecCells.end(), [&](CellG *cell) {
-	// 		BasicClassAccessor<ReactionDiffusionSolverFVMCellData> *cellData = this->getReactionDiffusionSolverFVMCellDataAccessorPtr();
-	// 		std::vector<double> &concentrationVecCopies = cellData->get(cell->extraAttribPtr)->concentrationVecCopies;
-	// 		std::vector<double> &massConsCorrectionFactors = cellData->get(cell->extraAttribPtr)->massConsCorrectionFactors;
-	// 		concentrationVecCopies = this->totalCellConcentration(cell);
-	// 		massConsCorrectionFactors = std::vector<double>(concentrationVecCopies.size(), 1.0);
-	// 	});
+		// convert to std::vector
+		//concurrency::concurrent_vector<CellG* > vecCells = concurrency::concurrent_vector<CellG* >(numCells);
+		unsigned int cellIdx = 0;
+		for (CellInventory::cellInventoryIterator cItr = cellInventory->cellInventoryBegin(); cItr != cellInventory->cellInventoryEnd(); ++cItr) {
+			vecCells[cellIdx] = cItr->second;
+			++cellIdx;
+		}
 
-	// }
+		
+    }
+		// Perform parallel update
+
+		#pragma omp parallel shared (vecCells){
+        
+        #pragma omp for
+		for (CellG *cell: vecCells){ 
+			BasicClassAccessor<ReactionDiffusionSolverFVMCellData> *cellData = this->getReactionDiffusionSolverFVMCellDataAccessorPtr();
+			std::vector<double> &concentrationVecCopies = cellData->get(cell->extraAttribPtr)->concentrationVecCopies;
+			std::vector<double> &massConsCorrectionFactors = cellData->get(cell->extraAttribPtr)->massConsCorrectionFactors;
+			concentrationVecCopies = this->totalCellConcentration(cell);
+			massConsCorrectionFactors = std::vector<double>(concentrationVecCopies.size(), 1.0);
+		}
+
+		// concurrency::parallel_for_each(vecCells.begin(), vecCells.end(), [&](CellG *cell) {
+		// 	BasicClassAccessor<ReactionDiffusionSolverFVMCellData> *cellData = this->getReactionDiffusionSolverFVMCellDataAccessorPtr();
+		// 	std::vector<double> &concentrationVecCopies = cellData->get(cell->extraAttribPtr)->concentrationVecCopies;
+		// 	std::vector<double> &massConsCorrectionFactors = cellData->get(cell->extraAttribPtr)->massConsCorrectionFactors;
+		// 	concentrationVecCopies = this->totalCellConcentration(cell);
+		// 	massConsCorrectionFactors = std::vector<double>(concentrationVecCopies.size(), 1.0);
+		// });
+
+	}
 }
 
 void ReactionDiffusionSolverFVM::updateTotalConcentrations() {
@@ -1248,19 +1357,52 @@ Point3D ReactionDiffusionSolverFVM::getCoordsOfFV(ReactionDiffusionSolverFV *_fv
 CellG * ReactionDiffusionSolverFVM::FVtoCellMap(ReactionDiffusionSolverFV * _fv) { return potts->getCellFieldG()->get(_fv->getCoords()); }
 
 void ReactionDiffusionSolverFVM::useConstantDiffusivity(unsigned int _fieldIndex, double _diffusivityCoefficient) {
-	parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->useConstantDiffusivity(_fieldIndex, _diffusivityCoefficient); }); }
-
+		//replace with openmp
+	
+	#pragma omp parallel shared (fieldFVs){
+        
+        #pragma omp for
+		for (ReactionDiffusionSolverFV *fv: fieldFVs){ 
+			fv->useConstantDiffusivity(_fieldIndex, _diffusivityCoefficient);
+		}
+	}
+	//parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->useConstantDiffusivity(_fieldIndex, _diffusivityCoefficient); }); }
+}
 void ReactionDiffusionSolverFVM::useConstantDiffusivityByType(unsigned int _fieldIndex, double _diffusivityCoefficient) {
-	parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->useConstantDiffusivityById(_fieldIndex, _diffusivityCoefficient); }); }
-
+		//replace with openmp
+	#pragma omp parallel shared (fieldFVs){
+        
+        #pragma omp for
+		for (ReactionDiffusionSolverFV *fv: fieldFVs){ 
+			fv->useConstantDiffusivityById(_fieldIndex, _diffusivityCoefficient);
+		}
+	}
+	//parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->useConstantDiffusivityById(_fieldIndex, _diffusivityCoefficient); }); }
+}
 void ReactionDiffusionSolverFVM::useFieldDiffusivityInMedium(unsigned int _fieldIndex) {
 	initDiffusivityField(_fieldIndex);
-	parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->useFieldDiffusivityInMedium(_fieldIndex); }); }
-
+		//replace with openmp
+	#pragma omp parallel shared (fieldFVs){
+        
+        #pragma omp for
+		for (ReactionDiffusionSolverFV *fv: fieldFVs){ 
+			fv->useFieldDiffusivityInMedium(_fieldIndex);
+		}
+	}
+	//parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->useFieldDiffusivityInMedium(_fieldIndex); }); }
+}
 void ReactionDiffusionSolverFVM::useFieldDiffusivityEverywhere(unsigned int _fieldIndex) {
 	initDiffusivityField(_fieldIndex);
-	parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->useFieldDiffusivityEverywhere(_fieldIndex); });}
-
+		//replace with openmp
+	#pragma omp parallel shared (fieldFVs){
+        
+        #pragma omp for
+		for (ReactionDiffusionSolverFV *fv: fieldFVs){ 
+			fv->useFieldDiffusivityEverywhere(_fieldIndex);
+		}
+	}
+	//parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->useFieldDiffusivityEverywhere(_fieldIndex); });}
+}
 void ReactionDiffusionSolverFVM::initDiffusivityField(unsigned int _fieldIndex) {
 	if (!diffusivityFieldInitialized[_fieldIndex]) {
 		diffusivityFieldIndexToFieldMap[_fieldIndex] = new WatchableField3D<float>(fieldDim, 0.0);
@@ -1288,11 +1430,27 @@ void ReactionDiffusionSolverFVM::useFixedFVConcentration(unsigned int _fieldInde
 }
 
 void ReactionDiffusionSolverFVM::useDiffusiveSurfaces(unsigned int _fieldIndex) {
-	parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->useDiffusiveSurfaces(_fieldIndex); });
+		//replace with openmp
+	#pragma omp parallel shared (fieldFVs){
+        
+        #pragma omp for
+		for (ReactionDiffusionSolverFV *fv: fieldFVs){ 
+			fv->useDiffusiveSurfaces(_fieldIndex);
+		}
+	}
+	//parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->useDiffusiveSurfaces(_fieldIndex); });
 }
 
 void ReactionDiffusionSolverFVM::usePermeableSurfaces(unsigned int _fieldIndex, bool _activate) {
-	parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->usePermeableSurfaces(_fieldIndex, _activate); });
+		//replace with openmp
+	#pragma omp parallel shared (fieldFVs){
+        
+        #pragma omp for
+		for (ReactionDiffusionSolverFV *fv: fieldFVs){ 
+			fv->usePermeableSurfaces(_fieldIndex, _activate);
+		}
+	}
+	//parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->usePermeableSurfaces(_fieldIndex, _activate); });
 }
 
 void ReactionDiffusionSolverFVM::updateSurfaceAreas() {
@@ -1517,10 +1675,22 @@ std::map<unsigned int, ReactionDiffusionSolverFV *> ReactionDiffusionSolverFVM::
 float ReactionDiffusionSolverFVM::getMaxStableTimeStep() {
 	if (!autoTimeSubStep) { return incTime; }
 	else {
-		concurrency::concurrent_vector<float> *fvMaxStableTimeSteps = new concurrency::concurrent_vector<float>(fieldDim.x*fieldDim.y*fieldDim.z);
+// replace with vector
+		std::vector<float> *fvMaxStableTimeSteps = new std::vector<float>(fieldDim.x*fieldDim.y*fieldDim.z);
+
+		//concurrency::concurrent_vector<float> *fvMaxStableTimeSteps = new concurrency::concurrent_vector<float>(fieldDim.x*fieldDim.y*fieldDim.z);
 		fvMaxStableTimeSteps->assign(fieldDim.x*fieldDim.y*fieldDim.z, incTime);
-		concurrency::parallel_for(unsigned int(0), (unsigned int)(fieldDim.x*fieldDim.y*fieldDim.z), [=](unsigned int i) { 
-			fvMaxStableTimeSteps->at(i) = this->getFieldFV(i)->getMaxStableTimeStep(); });
+		// replace with openmp
+		unsigned int ind=0;
+		#pragma omp parallel shared (_fieldDim) private (ind){
+			
+			#pragma omp for 
+			for (ind=0;ind<_fieldDim.x*_fieldDim.y*_fieldDim.z;ind++){
+				fvMaxStableTimeSteps->at(i) = this->getFieldFV(i)->getMaxStableTimeStep();
+			}
+		}
+		// concurrency::parallel_for(unsigned int(0), (unsigned int)(fieldDim.x*fieldDim.y*fieldDim.z), [=](unsigned int i) { 
+		// 	fvMaxStableTimeSteps->at(i) = this->getFieldFV(i)->getMaxStableTimeStep(); });
 
 		return *min_element(fvMaxStableTimeSteps->begin(), fvMaxStableTimeSteps->end());
 	}

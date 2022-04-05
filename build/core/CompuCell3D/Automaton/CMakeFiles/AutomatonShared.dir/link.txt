@@ -1,0 +1,1 @@
+/N/soft/rhel7/gcc/6.3.0/bin/g++ -fPIC -g -shared -Wl,-soname,libCC3DAutomaton.so -o libCC3DAutomaton.so CMakeFiles/AutomatonShared.dir/Automaton.cpp.o CMakeFiles/AutomatonShared.dir/CellType.cpp.o CMakeFiles/AutomatonShared.dir/Transition.cpp.o 
