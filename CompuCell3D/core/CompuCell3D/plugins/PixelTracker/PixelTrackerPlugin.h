@@ -50,6 +50,9 @@ class PIXELTRACKER_EXPORT PixelTrackerPlugin : public Plugin, public CellGChange
 	  std::vector<std::vector<pair<Dim3D, Dim3D> > > sectionDimsVec;
 	  bool trackMedium;
 	  unsigned int getParitionNumber(const Point3D &_pt, unsigned int _workerNum=0);
+
+	  bool fullInitAtStart;
+	  bool fullInitState;
     
    public:
       PixelTrackerPlugin();
@@ -76,6 +79,10 @@ class PIXELTRACKER_EXPORT PixelTrackerPlugin : public Plugin, public CellGChange
 		virtual std::set<PixelTrackerData> getMediumPixelSet();
 		// Thread-safe
 		std::vector<std::set<PixelTrackerData> > getPixelWorkerSets() { return mediumPixelSet; }
+
+		void enableFullInitAtStart(bool _fullInitAtStart = true) { fullInitAtStart = _fullInitAtStart; }
+		bool fullyInitialized() { return fullInitState; }
+		void fullTrackerDataInit(Point3D _ptChange = Point3D(-1, -1, -1), CellG *oldCell = 0);
   };
 
 };

@@ -34,6 +34,8 @@ PixelTrackerPlugin::PixelTrackerPlugin():
 simulator(0),potts(0)    
 {
 	trackMedium = false;
+	fullInitAtStart = false;
+	fullInitState = false;
 }
 
 PixelTrackerPlugin::~PixelTrackerPlugin() {
@@ -67,6 +69,7 @@ void PixelTrackerPlugin::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
   
   if (_xmlData) {
 	  trackMedium = _xmlData->findElement("TrackMedium");
+	  fullInitAtStart = _xmlData->findElement("FullInitAtStart");
   }
 
 }
@@ -84,6 +87,11 @@ void PixelTrackerPlugin::extraInit(Simulator *simulator) {
 void PixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,CellG *oldCell) {
 	if (newCell==oldCell) //this may happen if you are trying to assign same cell to one pixel twice 
 		return;
+
+	if (fullInitAtStart) {
+		fullTrackerDataInit(pt, oldCell);
+		fullInitAtStart = false;
+	}
 
 	if (newCell) {
 		std::set<PixelTrackerData > & pixelSetRef = pixelTrackerAccessor.get(newCell->extraAttribPtr)->pixelSet;
@@ -176,6 +184,40 @@ void PixelTrackerPlugin::handleEvent(CC3DEvent & _event){
 
 std::string PixelTrackerPlugin::toString(){
 	return "PixelTracker";
+}
+
+void PixelTrackerPlugin::fullTrackerDataInit(Point3D ptChange, CellG *oldCell) {
+
+	pUtils->setLock(lockPtr);
+
+	CellInventory &cellInventory = potts->getCellInventory();
+	CellG *cell;
+	for (CellInventory::cellInventoryIterator cInvItr = cellInventory.cellInventoryBegin(); cInvItr != cellInventory.cellInventoryEnd(); ++cInvItr) {
+		cell = cInvItr->second;
+		pixelTrackerAccessor.get(cell->extraAttribPtr)->pixelSet.clear();
+	}
+
+	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *>*) potts->getCellFieldG();
+	Dim3D fieldDim = cellFieldG->getDim();
+
+	for (auto &mp : mediumPixelSet) 
+		mp.clear();
+
+	for (short z = 0; z < fieldDim.z; ++z)
+		for (short y = 0; y < fieldDim.y; ++y)
+			for (short x = 0; x < fieldDim.x; ++x) {
+				Point3D pt = Point3D(x, y, z);
+				if (pt == ptChange) { cell = oldCell; } else { cell = cellFieldG->get(pt); }
+				if (cell) { pixelTrackerAccessor.get(cell->extraAttribPtr)->pixelSet.insert(PixelTrackerData(pt)); }
+				else if (trackMedium) {
+					mediumPixelSet[getParitionNumber(pt)].insert(PixelTrackerData(pt));
+				}
+			}
+
+	fullInitState = true;
+
+	pUtils->unsetLock(lockPtr);
+
 }
 
 void PixelTrackerPlugin::mediumTrackerDataInit() {
