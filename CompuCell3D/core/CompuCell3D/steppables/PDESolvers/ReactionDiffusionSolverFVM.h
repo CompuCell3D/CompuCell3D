@@ -20,12 +20,12 @@
 #include <string>
 
 #include <vector>
-#include <concurrent_vector.h>
+//#include <concurrent_vector.h>
 #include <set>
 #include <map>
 #include <iostream>
 #include <muParser/muParser.h>
-#include <ppl.h>
+//#include <ppl.h>
 
 #include "PDESolversDLLSpecifier.h"
 
@@ -131,7 +131,9 @@ namespace CompuCell3D {
 		void field3DChangePreStartup(const Point3D &pt, CellG *newCell, CellG *oldCell) {}
 		void field3DChangePostStartup(const Point3D &pt, CellG *newCell, CellG *oldCell);
 
-		concurrency::concurrent_vector<ReactionDiffusionSolverFV *> * fieldFVs;
+		//replace with std::vector
+		//concurrency::concurrent_vector<ReactionDiffusionSolverFV *> * fieldFVs;
+		std::vector<ReactionDiffusionSolverFV *> * fieldFVs;
 
 		// Need to set these according to lattice type
 		std::vector<unsigned int> indexMapSurfToCoord;
@@ -202,7 +204,10 @@ namespace CompuCell3D {
 		unsigned int currentStep;
 
 		bool autoTimeSubStep;
-		concurrency::concurrent_vector<double> *fvMaxStableTimeSteps;
+
+		//replace with std::vector
+		//concurrency::concurrent_vector<double> *fvMaxStableTimeSteps;
+		std::vector<double> *fvMaxStableTimeSteps;
 
 		bool simpleMassConservation;
 		Point3D flipSourcePt;

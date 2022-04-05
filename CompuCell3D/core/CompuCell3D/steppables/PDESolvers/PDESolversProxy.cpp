@@ -92,13 +92,13 @@ flexibleReactionDiffusionSolverProxy("FlexibleReactionDiffusionSolverFE", "Solve
 	     &Simulator::steppableManager);
          
          
-BasicPluginProxy<Steppable, ReactionAdvectionDiffusionSolverFE> 
-reactionAdvectionDiffusionSolverProxy("ReactionAdvectionDiffusionSolverFE", "Solves reaction-diffusion system of equations on the lattice ",
-            &Simulator::steppableManager);
+// BasicPluginProxy<Steppable, ReactionAdvectionDiffusionSolverFE> 
+// reactionAdvectionDiffusionSolverProxy("ReactionAdvectionDiffusionSolverFE", "Solves reaction-diffusion system of equations on the lattice ",
+//             &Simulator::steppableManager);
 
-BasicPluginProxy<Steppable, ReactionAdvectionDiffusionTagsSolverFE> 
-reactionAdvectionDiffusionTagsSolverProxy("ReactionAdvectionDiffusionTagsSolverFE", "Solves reaction-diffusion system of equations on the lattice ",
-            &Simulator::steppableManager);
+// BasicPluginProxy<Steppable, ReactionAdvectionDiffusionTagsSolverFE> 
+// reactionAdvectionDiffusionTagsSolverProxy("ReactionAdvectionDiffusionTagsSolverFE", "Solves reaction-diffusion system of equations on the lattice ",
+//             &Simulator::steppableManager);
        
 BasicPluginProxy<Steppable, FastDiffusionSolver2DFE> 
 fastDiffusionSolverProxy("FastDiffusionSolver2DFE", "Solves diffusion equation on the lattice. Provides limited flexibility but is faster than FlexibleDiffusionSolver however operates only in the xy plane and is 2D only",
