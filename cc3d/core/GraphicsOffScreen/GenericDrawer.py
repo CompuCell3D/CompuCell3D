@@ -165,8 +165,10 @@ class GenericDrawer:
         cell_id.SetName("cellid")
         cell_id_int_addr = extract_address_int_from_vtk_object(cell_id)
 
-        used_cell_types_list = self.field_extractor.fillCellFieldData3D(cell_type_array_int_addr, cell_id_int_addr,
-                                                                        cell_shell_optimization)
+        # Patching a merge error here; commented code is final
+        # used_cell_types_list = self.field_extractor.fillCellFieldData3D(cell_type_array_int_addr, cell_id_int_addr,
+        #                                                                 cell_shell_optimization)
+        used_cell_types_list = self.field_extractor.fillCellFieldData3D(cell_type_array_int_addr, cell_id_int_addr)
 
         ret_val = {
             'cell_type_array': cell_type_array,
