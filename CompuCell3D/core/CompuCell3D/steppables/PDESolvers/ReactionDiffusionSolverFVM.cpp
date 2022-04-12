@@ -1085,12 +1085,15 @@ void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
 	}
 	//parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { fv->initialize(); });
 
-	// cerr << "Setting field symbols..." << endl;
+	cerr << "Setting field symbols..." << endl;
 	
 	#pragma omp parallel for shared (fieldFVs)
-	for (int fieldIndex=0;fieldIndex<fieldFVs.size();fieldIndex++){ 
-		fieldFVs[fieldIndex]->registerFieldSymbol(fieldIndex, this->getFieldSymbol(fieldIndex));
+	for (int i=0;i<fieldFVs.size();i++){
+	for (int fieldIndex=0;fieldIndex<fieldFVs[i]->getConcentrationVec().size();++fieldIndex){ 
+			fieldFVs[i]->registerFieldSymbol(fieldIndex, this->getFieldSymbol(fieldIndex));
+		}
 	}
+	
 	
 	// parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { 
 	// 	for (unsigned int fieldIndex = 0; fieldIndex < fv->getConcentrationVec().size(); ++fieldIndex) {
@@ -1259,13 +1262,24 @@ std::vector<double> ReactionDiffusionSolverFVM::totalMediumConcentration() {
 	// 					initializer(omp_priv = decltype(omp_orig)(omp_orig.size()));
 
 
-	std::vector<vector<double>> tempvec (pixelVecPar.size(),std::vector<double>(numFields,0.0));
-	#pragma omp parallel for shared(tempvec)
+	//std::vector<vector<double>> tempvec (pixelVecPar.size(),std::vector<double>(numFields,0.0));
+	std::vector<double> sumEl(numFields,0.0);
+	int n_threads = omp_get_num_threads();
+	std::vector<vector<double>> res (n_threads,std::vector<double>(numFields, 0.0));
+	
+	#pragma omp parallel for shared(pixelVecPar,res)
 	for (int i=0;i<pixelVecPar.size();i++){ 
-		std::vector<double> sumEl(numFields,0.0);
-		sumEl = vecPlus<double>()(sumEl,std::vector<double>(this->getFieldFV(pixelVecPar[i])->getConcentrationVec()));
-		tempvec[i]=sumEl;
+		int index = omp_get_thread_num();
+		res[index] = vecPlus<double>()(res[index],std::vector<double>(this->getFieldFV(pixelVecPar[i])->getConcentrationVec()));
 	}
+
+	//reduction
+	std::vector<double> res_reduced = std::vector<double>(numFields, 0.0);
+	#pragma omp critical
+	for (int i=0;i<n_threads;i++){ 
+		res_reduced = vecPlus<double>()(res[i],res_reduced);
+	}
+
 
 		// #pragma omp parallel for reduction(vec_float_plus : sumEl)
 		// for(size_t i=0; i<10; i++){
@@ -1284,7 +1298,7 @@ std::vector<double> ReactionDiffusionSolverFVM::totalMediumConcentration() {
 	
 	// fin
 	//return res;
-	return tempvec[0];
+	return res_reduced;
 }
 
 void ReactionDiffusionSolverFVM::updateTotalCellConcentrations() {
