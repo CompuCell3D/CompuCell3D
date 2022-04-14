@@ -10,7 +10,7 @@
 #endif
 
 #include <BoundaryConditionSpecifier.h>*/
-#include <BasicUtils/BasicException.h>
+#include <CompuCell3D/CC3DExceptions.h>
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
@@ -110,7 +110,7 @@ void ImplicitMatrix::prodCore(cl_mem xVct)const{
 	}
 
 	//size_t glob_size[]={f};
-	size_t glob_size[]={mh_solverParams.xDim, mh_solverParams.yDim, mh_solverParams.zDim};
+	size_t glob_size[]={(size_t)mh_solverParams.xDim, (size_t)mh_solverParams.yDim, (size_t)mh_solverParams.zDim};
 	cl_int err=m_oclHelper.EnqueueNDRangeKernel(m_prodCoreKernel->getKernel(), 3, glob_size, NULL); 
 	if(err!=CL_SUCCESS){
 		std::stringstream sstr;
@@ -133,8 +133,8 @@ void ImplicitMatrix::prodBoundaries(cl_mem xVct)const{
 	}
 
 	//size_t glob_size[]={f};
-	size_t glob_size[]={std::max(mh_solverParams.xDim, mh_solverParams.yDim), 
-		std::max(mh_solverParams.yDim, mh_solverParams.zDim)};
+	size_t glob_size[]={(size_t)std::max(mh_solverParams.xDim, mh_solverParams.yDim),
+                        (size_t)std::max(mh_solverParams.yDim, mh_solverParams.zDim)};
 	cl_int err=m_oclHelper.EnqueueNDRangeKernel(m_prodBoundariesKernel->getKernel(), 2, glob_size, NULL); 
 	if(err!=CL_SUCCESS){
 		std::stringstream sstr;
@@ -145,7 +145,7 @@ void ImplicitMatrix::prodBoundaries(cl_mem xVct)const{
 }
 
 size_t ImplicitMatrix::fieldLength()const {
-	return mh_solverParams.xDim*mh_solverParams.yDim*mh_solverParams.zDim;
+	return (size_t)mh_solverParams.xDim*mh_solverParams.yDim*mh_solverParams.zDim;
 }
 
 
@@ -159,8 +159,8 @@ void ImplicitMatrix::ApplyBCToRHS(cl_mem xVct)const{
 		ASSERT_OR_THROW(ec.what(), false);
 	}
 
-	size_t glob_size[]={std::max(mh_solverParams.xDim, mh_solverParams.yDim), 
-		std::max(mh_solverParams.yDim, mh_solverParams.zDim)};
+	size_t glob_size[]={(size_t)std::max(mh_solverParams.xDim, mh_solverParams.yDim),
+                        (size_t)std::max(mh_solverParams.yDim, mh_solverParams.zDim)};
 	cl_int err=m_oclHelper.EnqueueNDRangeKernel(m_modifyRHStoBC->getKernel(), 2, glob_size, NULL); 
 	if(err!=CL_SUCCESS){
 		std::stringstream sstr;

@@ -1,0 +1,13 @@
+"""Defines installation-specifc information"""
+
+versionMajor = @COMPUCELL3D_MAJOR_VERSION@
+versionMinor = @COMPUCELL3D_MINOR_VERSION@
+versionBuild = @COMPUCELL3D_BUILD_VERSION@
+revisionNumber = "@COMPUCELL3D_REV_NUMBER@"
+
+cc3d_install_prefix_rel = '@cc3d_install_prefix_rel@'
+"""Path to root installation directory relative to main module directory"""
+cc3d_scripts_path_rel = '@cc3d_scripts_path_rel@'
+"""Path to script directory relative to main module directory"""
+cc3d_cpp_path_rel = '@cc3d_cpp_path_rel@'
+"""Path to cc3d python library directory relative to main module directory"""

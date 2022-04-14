@@ -23,10 +23,12 @@
 #include "ContactMultiCadPlugin.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
+
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
-
-BasicPluginProxy<Plugin, ContactMultiCadPlugin>
-contactMultiCadProxy("ContactMultiCad", "Contact energy function .Energy is calculated as a matrix product of cadherins conncentrations",
-	     &Simulator::pluginManager);
+auto contactMultiCadProxy = registerPlugin<Plugin, ContactMultiCadPlugin>(
+	"ContactMultiCad", 
+	"Contact energy function. Energy is calculated as a matrix product of cadherins conncentrations",
+	&Simulator::pluginManager
+);

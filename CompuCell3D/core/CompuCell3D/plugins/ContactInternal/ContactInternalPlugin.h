@@ -24,13 +24,8 @@
 #define CONTACTINTERNALPLUGIN_H
 
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-// // // #include <CompuCell3D/Plugin.h>
-#include "ContactInternalDLLSpecifier.h"
-// // // #include <map>
-// // // #include <vector>
-// // // #include <string>
 
+#include "ContactInternalDLLSpecifier.h"
 
 class CC3DXMLElement;
 namespace CompuCell3D {
@@ -41,14 +36,11 @@ namespace CompuCell3D {
 
 
   class CONTACTINTERNAL_EXPORT ContactInternalPlugin : public Plugin, public EnergyFunction {
-	//Energy function data
+	  //Energy function data
     Potts3D *potts;
-	 CC3DXMLElement *xmlData;
+	  CC3DXMLElement *xmlData;
     typedef std::map<int, double> contactEnergies_t;
-    typedef std::vector<std::vector<double> > contactEnergyArray_t;
-    
-    
-    contactEnergies_t internalEnergies;
+    typedef std::unordered_map<unsigned char, std::unordered_map<unsigned char, double> > contactEnergyArray_t;
 
     
     contactEnergyArray_t internalEnergyArray;
@@ -68,19 +60,22 @@ namespace CompuCell3D {
     ContactInternalPlugin();
     virtual ~ContactInternalPlugin();
 
-	//EnergyFunction interface
+	  //EnergyFunction interface
+
     virtual double changeEnergy(const Point3D &pt, const CellG *newCell,
                                 const CellG *oldCell);
-	//Plugin interface 
-	virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
-	virtual void extraInit(Simulator *simulator);
-	virtual std::string toString();
+    //Plugin interface 
+
+    virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
+    virtual void extraInit(Simulator *simulator);
+    virtual std::string toString();
 
     //Steerrable interface
+    
     virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
     virtual std::string steerableName();
 
-	 //Energy Function methods
+	  //Energy Function methods
 
     /**
      * @return The contact energy between cell1 and cell2.
@@ -95,14 +90,6 @@ namespace CompuCell3D {
 
     void setContactInternalEnergy(const std::string typeName1,
 			  const std::string typeName2, const double energy);
-
-  protected:
-    /**
-     * @return The index used for ordering contact energies in the map.
-     */
-    int getIndex(const int type1, const int type2) const;
-
-
 
   };
 };

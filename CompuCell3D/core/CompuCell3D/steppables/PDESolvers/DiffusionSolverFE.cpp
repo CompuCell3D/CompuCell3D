@@ -7,14 +7,10 @@
 #include <CompuCell3D/Field3D/Field3DImpl.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/Field3D/Field3DIO.h>
-#include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 #include <CompuCell3D/plugins/CellTypeMonitor/CellTypeMonitorPlugin.h>
 #include "FluctuationCompensator.h"
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
-#include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <PublicUtilities/StringUtils.h>
 #include <PublicUtilities/Vector3.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
@@ -70,9 +66,9 @@ void DiffusionSolverSerializer<Cruncher>::readFromFile(){
 			solverPtr->readConcentrationField(inName.str().c_str(),
 				static_cast<Cruncher *>(solverPtr)->getConcentrationField(i));
 		}
-	} catch (BasicException &e) {
+	} catch (CC3DException &e) {
 		cerr<<"COULD NOT FIND ONE OF THE FILES"<<endl;
-		throw BasicException("Error in reading diffusion fields from file",e);
+		throw CC3DException("Error in reading diffusion fields from file",e);
 	}
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -683,7 +679,7 @@ void DiffusionSolverFE<Cruncher>::start() {
 		try{
 			serializerPtr->readFromFile();
 
-		} catch (BasicException &e){
+		} catch (CC3DException &e){
 			cerr<<"Going to fail-safe initialization"<<endl;
 			initializeConcentration(); //if there was error, initialize using failsafe defaults
 		}
@@ -1009,8 +1005,7 @@ void DiffusionSolverFE<Cruncher>::readConcentrationField(std::string fileName,Co
 
 	ifstream in(fn.c_str());
 
-	ASSERT_OR_THROW(string("Could not open chemical concentration file '") +
-		fn	 + "'!", in.is_open());
+	if (!in.is_open()) throw CC3DException(string("Could not open chemical concentration file '") + fn	 + "'!");
 
 	Point3D pt;
 	float c;
@@ -1032,7 +1027,7 @@ void DiffusionSolverFE<Cruncher>::readConcentrationField(std::string fileName,Co
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
-	//notice, only basic steering is enabled for PDE solvers - changing diffusion constants, do -not-diffuse to types etc...
+	//notice, limited steering is enabled for PDE solvers - changing diffusion constants, do -not-diffuse to types etc...
 	// Coupling coefficients cannot be changed and also there is no way to allocate extra fields while simulation is running
     cerr<<"\n\n\n\n\n INSIDE UPDATE XML"<<endl;
 	//if(potts->getDisplayUnitsFlag()){
@@ -1191,7 +1186,7 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
 
 
 			for(unsigned int ip = 0 ; ip < planeVec.size() ; ++ip ){
-				ASSERT_OR_THROW ("Boundary Condition specification Plane element is missing Axis attribute",planeVec[ip]->findAttribute("Axis"));
+				if (!planeVec[ip]->findAttribute("Axis")) throw CC3DException("Boundary Condition specification Plane element is missing Axis attribute");
 				string axisName=planeVec[ip]->getAttribute("Axis");
 				int index=0;
 				if (axisName=="x" ||axisName=="X" ){
@@ -1224,7 +1219,7 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
 							bcSpec.planePositions[index+1]=BoundaryConditionSpecifier::CONSTANT_VALUE;
 							bcSpec.values[index+1]=value;
 						}else{
-							ASSERT_OR_THROW("PlanePosition attribute has to be either max on min",false);
+							throw CC3DException("PlanePosition attribute has to be either max on min");
 						}
 
 					}
@@ -1241,7 +1236,7 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
 								bcSpec.planePositions[index+1]=BoundaryConditionSpecifier::CONSTANT_DERIVATIVE;
 								bcSpec.values[index+1]=value;
 							}else{
-								ASSERT_OR_THROW("PlanePosition attribute has to be either max on min",false);
+								throw CC3DException("PlanePosition attribute has to be either max on min");
 							}
 
 						}
@@ -1255,19 +1250,19 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
                 // static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType();
                 if (bcSpec.planePositions[BoundaryConditionSpecifier::MIN_Z] == BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[BoundaryConditionSpecifier::MAX_Z] == BoundaryConditionSpecifier::PERIODIC){
                     if (fieldDim.z>1 && fieldDim.z%3){
-                        ASSERT_OR_THROW("For Periodic Boundary Conditions On Hex Lattice the Z Dimension Has To Be Divisible By 3", false);
+                        throw CC3DException("For Periodic Boundary Conditions On Hex Lattice the Z Dimension Has To Be Divisible By 3");
                     }
                 }
 
                 if (bcSpec.planePositions[BoundaryConditionSpecifier::MIN_X] == BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[BoundaryConditionSpecifier::MAX_X] == BoundaryConditionSpecifier::PERIODIC){
                     if (fieldDim.x%2 ){
-                        ASSERT_OR_THROW("For Periodic Boundary Conditions On Hex Lattice the X Dimension Has To Be Divisible By 2 ", false);
+                        throw CC3DException("For Periodic Boundary Conditions On Hex Lattice the X Dimension Has To Be Divisible By 2 ");
                     }
                 }                
                 
                 if (bcSpec.planePositions[BoundaryConditionSpecifier::MIN_Y] == BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[BoundaryConditionSpecifier::MAX_Y] == BoundaryConditionSpecifier::PERIODIC){
                     if (fieldDim.y%2 ){
-                        ASSERT_OR_THROW("For Periodic Boundary Conditions On Hex Lattice the Y Dimension Has To Be Divisible By 2 ", false);
+                        throw CC3DException("For Periodic Boundary Conditions On Hex Lattice the Y Dimension Has To Be Divisible By 2 ");
                     }
                 }                
             }
@@ -1387,11 +1382,11 @@ std::string DiffusionSolverFE<Cruncher>::steerableName(){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //The explicit instantiation part.
 //Add new solvers here
-template class DiffusionSolverFE<DiffusionSolverFE_CPU>; 
-template class DiffusionSolverFE<DiffusionSolverFE_CPU_Implicit>; 
+template class CompuCell3D::DiffusionSolverFE<DiffusionSolverFE_CPU>;
+template class CompuCell3D::DiffusionSolverFE<DiffusionSolverFE_CPU_Implicit>;
 
 #if OPENCL_ENABLED == 1
-template class DiffusionSolverFE<DiffusionSolverFE_OpenCL>;
-//template class DiffusionSolverFE<DiffusionSolverFE_OpenCL_Implicit>;
-template class DiffusionSolverFE<ReactionDiffusionSolverFE_OpenCL_Implicit>;
+template class CompuCell3D::DiffusionSolverFE<DiffusionSolverFE_OpenCL>;
+//template class CompuCell3D::DiffusionSolverFE<DiffusionSolverFE_OpenCL_Implicit>;
+template class CompuCell3D::DiffusionSolverFE<ReactionDiffusionSolverFE_OpenCL_Implicit>;
 #endif

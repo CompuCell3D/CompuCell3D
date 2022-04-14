@@ -74,15 +74,13 @@ using namespace CompuCell3D;
 %include <PyAttributeAdder.h>
 
 
-
-
 %include "ParseData.h"
 %include "ParserStorage.h"
 
 %template (VectorParseDataPtr) std::vector<ParseData*> ;
 
 
-//have to include all  export definitions for modules which are arapped to avoid problems with interpreting by swig win32 specific c++ extensions...
+//have to include all  export definitions for modules which are wrapped to avoid problems with interpreting by swig win32 specific c++ extensions...
 #define COMPUCELLLIB_EXPORT
 #define BOUNDARYSHARED_EXPORT
 #define CHEMOTAXISSIMPLE_EXPORT
@@ -166,8 +164,7 @@ using namespace CompuCell3D;
 
 //Plugins
 
-%include <BasicUtils/BasicClassAccessor.h>
-%include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
+%include "ExtraMembers.h"
 
 
 %inline %{
@@ -185,20 +182,20 @@ using namespace CompuCell3D;
 //ConnectivityLocalFlex
 
 %include <CompuCell3D/plugins/ConnectivityLocalFlex/ConnectivityLocalFlexData.h>
-%template (connectivitylocalflexaccessor) BasicClassAccessor<ConnectivityLocalFlexData>; //necessary to get ConnectivityLocalFlexData accessor working
+%template (connectivitylocalflexaccessor) ExtraMembersGroupAccessor<ConnectivityLocalFlexData>; //necessary to get ConnectivityLocalFlexData accessor working
 PLUGINACCESSOR(ConnectivityLocalFlex)
 
 
 //ConnectivityGlobal
 
 %include <CompuCell3D/plugins/ConnectivityGlobal/ConnectivityGlobalData.h>
-%template (connectivityGlobalaccessor) BasicClassAccessor<ConnectivityGlobalData>; //necessary to get ConnectivityGlobalData accessor working
+%template (connectivityGlobalaccessor) ExtraMembersGroupAccessor<ConnectivityGlobalData>; //necessary to get ConnectivityGlobalData accessor working
 PLUGINACCESSOR(ConnectivityGlobal)
 
 
 // //LengthConstraintLocalFlex
 // %include <CompuCell3D/plugins/LengthConstraintLocalFlex/LengthConstraintLocalFlexData.h>
-// %template (lengthconstraintlocalflexccessor) BasicClassAccessor<LengthConstraintLocalFlexData>; //necessary to get LengthConstraintLocalFlexData accessor working
+// %template (lengthconstraintlocalflexccessor) ExtraMembersGroupAccessor<LengthConstraintLocalFlexData>; //necessary to get LengthConstraintLocalFlexData accessor working
 
 // %include <CompuCell3D/plugins/LengthConstraintLocalFlex/LengthConstraintLocalFlexPlugin.h>
 
@@ -212,7 +209,7 @@ PLUGINACCESSOR(ConnectivityGlobal)
 
 //LengthConstraint - includes local flax option
 %include <CompuCell3D/plugins/LengthConstraint/LengthConstraintData.h>
-%template (lengthconstraintccessor) BasicClassAccessor<LengthConstraintData>; //necessary to get LengthConstraintData accessor working
+%template (lengthconstraintccessor) ExtraMembersGroupAccessor<LengthConstraintData>; //necessary to get LengthConstraintData accessor working
 
 %include <CompuCell3D/plugins/LengthConstraint/LengthConstraintPlugin.h>
 
@@ -259,7 +256,7 @@ PLUGINACCESSOR(CenterOfMass)
 
 %include <CompuCell3D/plugins/NeighborTracker/NeighborTracker.h>
 
-%template (neighbortrackeraccessor) BasicClassAccessor<NeighborTracker>; //necessary to get NeighborTracker accessor working
+%template (neighbortrackeraccessor) ExtraMembersGroupAccessor<NeighborTracker>; //necessary to get NeighborTracker accessor working
 %template (nsdSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::NeighborSurfaceData> , CompuCell3D::NeighborSurfaceData>;
 // %template (nsdSetPyItr) STLPyIterator<std::set<CompuCell3D::NeighborSurfaceData> >;
 %template (neighborsurfacedataset) std::set<CompuCell3D::NeighborSurfaceData>; //necessary to get basis set functionality working
@@ -268,7 +265,7 @@ PLUGINACCESSOR(NeighborTracker)
 
 
 %include <CompuCell3D/plugins/PixelTracker/PixelTracker.h>
-%template (PixelTrackerAccessor) BasicClassAccessor<PixelTracker>; //necessary to get PixelTracker accessor working
+%template (PixelTrackerAccessor) ExtraMembersGroupAccessor<PixelTracker>; //necessary to get PixelTracker accessor working
 // #define std::set<CompuCell3D::PixelTrackerData>::value_type CompuCell3D::PixelTrackerData
 %template (PixelTrackerDataset) std::set<CompuCell3D::PixelTrackerData>; //necessary to get basis set functionality working
 %template (pixelSetPyItr) STLPyIteratorRefRetType< std::set<CompuCell3D::PixelTrackerData>,CompuCell3D::PixelTrackerData >; 
@@ -277,7 +274,7 @@ PLUGINACCESSOR(PixelTracker)
 
 
 %include <CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTracker.h>
-%template (BoundaryPixelTrackerAccessor) BasicClassAccessor<BoundaryPixelTracker>; //necessary to get BoundaryPixelTracker accessor working
+%template (BoundaryPixelTrackerAccessor) ExtraMembersGroupAccessor<BoundaryPixelTracker>; //necessary to get BoundaryPixelTracker accessor working
 %template (BoundaryPixelTrackerDataset) std::set<CompuCell3D::BoundaryPixelTrackerData>; //necessary to get basis set functionality working
 %template (IntBoundaryPixelTrackerDataSetMap) std::map<int, std::set<CompuCell3D::BoundaryPixelTrackerData> >; //necessary to get basis set functionality working
 %template (boundaryPixelSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::BoundaryPixelTrackerData> , CompuCell3D::BoundaryPixelTrackerData >;
@@ -286,7 +283,7 @@ PLUGINACCESSOR(BoundaryPixelTracker)
 
 
 %include <CompuCell3D/plugins/ContactLocalFlex/ContactLocalFlexData.h>
-%template (contactlocalflexcontainerccessor) BasicClassAccessor<ContactLocalFlexDataContainer>; //necessary to get ContactlocalFlexData accessor working
+%template (contactlocalflexcontainerccessor) ExtraMembersGroupAccessor<ContactLocalFlexDataContainer>; //necessary to get ContactlocalFlexData accessor working
 %template (clfdSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::ContactLocalFlexData> , CompuCell3D::ContactLocalFlexData >;
 // %template (clfdSetPyItr) STLPyIterator<std::set<CompuCell3D::ContactLocalFlexData> >;
 %template (contactlocalflexdataset) std::set<CompuCell3D::ContactLocalFlexData>; //necessary to get basis set functionality working
@@ -294,7 +291,7 @@ PLUGINACCESSOR(ContactLocalFlex)
 
 //ContactLocalProductPlugin
 %include <CompuCell3D/plugins/ContactLocalProduct/ContactLocalProductData.h>
-%template (contactproductflexccessor) BasicClassAccessor<ContactLocalProductData>; //necessary to get ContactLocalProductData accessor working
+%template (contactproductflexccessor) ExtraMembersGroupAccessor<ContactLocalProductData>; //necessary to get ContactLocalProductData accessor working
 %template (jVecPyItr) STLPyIteratorRefRetType<ContactLocalProductData::ContainerType_t,float>; //ContainerType_t - this is vector<float> in current implementation
 // %template (jVecPyItr) STLPyIterator<ContactLocalProductData::ContainerType_t>; //ContainerType_t - this is vector<float> in current implementation
 %template (contactproductdatacontainertype) std::vector<float>; //necessary to get basis vector functionality working
@@ -321,30 +318,30 @@ PLUGINACCESSOR(ContactLocalProduct)
 
 //ContactMultiCadPlugin
 %include <CompuCell3D/plugins/ContactMultiCad/ContactMultiCadData.h>
-%template (contactmulticaddataaccessor) BasicClassAccessor<ContactMultiCadData>; //necessary to get ContactMultiCadData accessor working
+%template (contactmulticaddataaccessor) ExtraMembersGroupAccessor<ContactMultiCadData>; //necessary to get ContactMultiCadData accessor working
 PLUGINACCESSOR(ContactMultiCad)
 
 //AdhesionFlexPlugin
 %include <CompuCell3D/plugins/AdhesionFlex/AdhesionFlexData.h>
-%template (adhesionflexdataaccessor) BasicClassAccessor<AdhesionFlexData>; //necessary to get AdhesionFlexData accessor working
+%template (adhesionflexdataaccessor) ExtraMembersGroupAccessor<AdhesionFlexData>; //necessary to get AdhesionFlexData accessor working
 PLUGINACCESSOR(AdhesionFlex)
 
 
 
 //CellOrientation Plugin
 %include <CompuCell3D/plugins/CellOrientation/CellOrientationVector.h>
-%template (cellOrientationVectorAccessor) BasicClassAccessor<CellOrientationVector>; //necessary to get CellOrientationVector accessor working
-%template (LambdaCellOrientationAccessor) BasicClassAccessor<LambdaCellOrientation>; //necessary to get LambdaCellOrientation accessor working
+%template (cellOrientationVectorAccessor) ExtraMembersGroupAccessor<CellOrientationVector>; //necessary to get CellOrientationVector accessor working
+%template (LambdaCellOrientationAccessor) ExtraMembersGroupAccessor<LambdaCellOrientation>; //necessary to get LambdaCellOrientation accessor working
 PLUGINACCESSOR(CellOrientation)
 
  ////PolarizationVectorPlugin
 %include <CompuCell3D/plugins/PolarizationVector/PolarizationVector.h>
-%template (polarizationVectorAccessor) BasicClassAccessor<PolarizationVector>; //necessary to get CellOrientationVector accessor working
+%template (polarizationVectorAccessor) ExtraMembersGroupAccessor<PolarizationVector>; //necessary to get CellOrientationVector accessor working
 PLUGINACCESSOR(PolarizationVector)
 
 //Elasticity Plugin
 %include <CompuCell3D/plugins/ElasticityTracker/ElasticityTracker.h>
-%template (elasticityTrackerAccessor) BasicClassAccessor<ElasticityTracker>; //necessary to get ElasticityTracker accessor working
+%template (elasticityTrackerAccessor) ExtraMembersGroupAccessor<ElasticityTracker>; //necessary to get ElasticityTracker accessor working
 %template (elasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::ElasticityTrackerData> , CompuCell3D::ElasticityTrackerData >;
 // %template (elasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::ElasticityTrackerData> >;
 %template (elasticityTrackerDataSet) std::set<CompuCell3D::ElasticityTrackerData>; //necessary to get basic set functionality working
@@ -353,7 +350,7 @@ PLUGINACCESSOR(ElasticityTracker)
 
 //Plasticity Plugin
 %include <CompuCell3D/plugins/PlasticityTracker/PlasticityTracker.h>
-%template (plasticityTrackerAccessor) BasicClassAccessor<PlasticityTracker>; //necessary to get PlasticityTracker accessor working
+%template (plasticityTrackerAccessor) ExtraMembersGroupAccessor<PlasticityTracker>; //necessary to get PlasticityTracker accessor working
 %template (plasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::PlasticityTrackerData> , CompuCell3D::PlasticityTrackerData >;
 // %template (plasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::PlasticityTrackerData> >;
 %template (plasticityTrackerDataSet) std::set<CompuCell3D::PlasticityTrackerData>; //necessary to get basic set functionality working
@@ -363,7 +360,7 @@ PLUGINACCESSOR(PlasticityTracker)
 //
 %ignore CompuCell3D::FocalPointPlasticityLinkTrackerData;
 %include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityTracker.h>
-%template (focalPointPlasticityTrackerAccessor) BasicClassAccessor<FocalPointPlasticityTracker>; //necessary to get PlasticityTracker accessor working
+%template (focalPointPlasticityTrackerAccessor) ExtraMembersGroupAccessor<FocalPointPlasticityTracker>; //necessary to get PlasticityTracker accessor working
 %template (focalPointPlasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::FocalPointPlasticityTrackerData> , CompuCell3D::FocalPointPlasticityTrackerData >;
 %template (focalPointPlasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::FocalPointPlasticityTrackerData> >;
 %template (focalPointPlasticityTrackerDataSet) std::set<CompuCell3D::FocalPointPlasticityTrackerData>; //necessary to get basic set functionality working
@@ -392,9 +389,9 @@ namespace swig{
 %template(FPPLinkList) CompuCell3D::FPPLinkListBase<CompuCell3D::FocalPointPlasticityLink>;
 %template(FPPInternalLinkList) CompuCell3D::FPPLinkListBase<CompuCell3D::FocalPointPlasticityInternalLink>;
 %template(FPPAnchorList) CompuCell3D::FPPLinkListBase<CompuCell3D::FocalPointPlasticityAnchor>;
-%template (mapFPPLinkIDFPPLinkPyItr) STLPyIteratorMap<std::unordered_map<const CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityLink*, CompuCell3D::LinkInventoryHasher>, CompuCell3D::FocalPointPlasticityLink*>;
-%template (mapFPPLinkIDFPPInternalLinkPyItr) STLPyIteratorMap<std::unordered_map<const CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityInternalLink*, CompuCell3D::LinkInventoryHasher>, CompuCell3D::FocalPointPlasticityInternalLink*>;
-%template (mapFPPLinkIDFPPAnchorPyItr) STLPyIteratorMap<std::unordered_map<const CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityAnchor*, CompuCell3D::LinkInventoryHasher>, CompuCell3D::FocalPointPlasticityAnchor*>;
+%template (mapFPPLinkIDFPPLinkPyItr) STLPyIteratorMap<std::unordered_map<CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityLink*, CompuCell3D::LinkInventoryHasher>, CompuCell3D::FocalPointPlasticityLink*>;
+%template (mapFPPLinkIDFPPInternalLinkPyItr) STLPyIteratorMap<std::unordered_map<CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityInternalLink*, CompuCell3D::LinkInventoryHasher>, CompuCell3D::FocalPointPlasticityInternalLink*>;
+%template (mapFPPLinkIDFPPAnchorPyItr) STLPyIteratorMap<std::unordered_map<CompuCell3D::FPPLinkID, CompuCell3D::FocalPointPlasticityAnchor*, CompuCell3D::LinkInventoryHasher>, CompuCell3D::FocalPointPlasticityAnchor*>;
 %template (_fppInventoryBaseLink) CompuCell3D::FPPLinkInventoryBase<CompuCell3D::FocalPointPlasticityLink>;
 %template (_fppInventoryBaseInternalLink) CompuCell3D::FPPLinkInventoryBase<CompuCell3D::FocalPointPlasticityInternalLink>;
 %template (_fppInventoryBaseAnchor) CompuCell3D::FPPLinkInventoryBase<CompuCell3D::FocalPointPlasticityAnchor>;
@@ -738,18 +735,18 @@ FieldSecretorResult secreteInsideCellConstantConcentrationTotalAmount(CellG * _c
 
 //OrientedGrowth_autogenerated2
 %include <CompuCell3D/plugins/OrientedGrowth/OrientedGrowthData.h>
-%template (OrientedGrowthDataAccessorTemplate) BasicClassAccessor<OrientedGrowthData>; //necessary to get OrientedGrowthData accessor working in Python
+%template (OrientedGrowthDataAccessorTemplate) ExtraMembersGroupAccessor<OrientedGrowthData>; //necessary to get OrientedGrowthData accessor working in Python
 PLUGINACCESSOR(OrientedGrowth)
 
 ////CleaverMeshDumper_autogenerated2
 
-%include <CompuCell3D/steppables/CleaverMeshDumper/CleaverMeshDumper.h>
+// %include <CompuCell3D/steppables/CleaverMeshDumper/CleaverMeshDumper.h>
 
-%inline %{
-    CleaverMeshDumper * getCleaverMeshDumper() {
-        return (CleaverMeshDumper *)Simulator::steppableManager.get("CleaverMeshDumper");
-    }
-    %}
+// %inline %{
+//     CleaverMeshDumper * getCleaverMeshDumper() {
+//         return (CleaverMeshDumper *)Simulator::steppableManager.get("CleaverMeshDumper");
+//     }
+//     %}
 
 //%}
 //// // // //CGALMeshDumper_autogenerated2
@@ -767,7 +764,7 @@ PLUGINACCESSOR(OrientedGrowth)
 //
 %include <CompuCell3D/plugins/ContactOrientation/ContactOrientationData.h>
 //necessary to get ContactOrientationData accessor working in Python
-%template (ContactOrientationDataAccessorTemplate) BasicClassAccessor<ContactOrientationData>; 
+%template (ContactOrientationDataAccessorTemplate) ExtraMembersGroupAccessor<ContactOrientationData>;
 PLUGINACCESSOR(ContactOrientation)
 
 //note that template Array3DCUDA has to use static_cast<T>(0) instead of T() to enable SWIG to properly generate wrappers for T=ubnsigned char using gcc compiler
@@ -793,7 +790,7 @@ PLUGINACCESSOR(ContactOrientation)
 //%}
 //Polarization23_autogenerated2
 %include <CompuCell3D/plugins/Polarization23/Polarization23Data.h>
-%template (Polarization23DataAccessorTemplate) BasicClassAccessor<Polarization23Data>; //necessary to get Polarization23Data accessor working in Python
+%template (Polarization23DataAccessorTemplate) ExtraMembersGroupAccessor<Polarization23Data>; //necessary to get Polarization23Data accessor working in Python
 PLUGINACCESSOR(Polarization23)
 
 

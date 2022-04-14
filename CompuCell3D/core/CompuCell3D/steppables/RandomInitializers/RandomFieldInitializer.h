@@ -29,7 +29,6 @@
 
 // // // #include <CompuCell3D/Steppable.h>
 // // // #include <CompuCell3D/Field3D/Dim3D.h>
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
 // // // #include <CompuCell3D/Field3D/WatchableField3D.h>
 // // // #include <CompuCell3D/Potts3D/Cell.h>
 
@@ -47,7 +46,7 @@ namespace CompuCell3D {
     void setParameters(Simulator *_simulator, CC3DXMLElement *_xmlData);
     Potts3D *potts;
     Simulator *simulator;
-    BasicRandomNumberGenerator * rand;
+    RandomNumberGenerator * rand;
     WatchableField3D<CellG *> *cellField;
     FieldBuilder * builder;
     Dim3D dim,boxMin,boxMax;

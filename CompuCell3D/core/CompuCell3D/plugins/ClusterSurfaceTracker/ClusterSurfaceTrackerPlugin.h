@@ -13,15 +13,6 @@
 // // // #include <CompuCell3D/Potts3D/Cell.h>
 
 // // // #include <muParser/muParser.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-
-// // // // basic STL includes
-// // // #include <vector>
-// // // #include <list>
-// // // #include <map>
-// // // #include <set>
-// // // #include <string>
-// // // #include <CompuCell3D/Boundary/BoundaryTypeDefinitions.h>
 
 #include "ClusterSurfaceTrackerDLLSpecifier.h"
 
@@ -68,7 +59,7 @@ namespace CompuCell3D {
         unsigned int maxNeighborIndex;
 
 		PixelTrackerPlugin * pixelTrackerPlugin;
-		BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr;
+		ExtraMembersGroupAccessor<PixelTracker> *pixelTrackerAccessorPtr;
         
     public:
 

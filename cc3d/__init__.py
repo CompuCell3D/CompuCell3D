@@ -1,58 +1,26 @@
+try:
+    # needed to avoid import errors on some windows systems
+    import vtk
+except ImportError:
+    print('vtk not found. Ignoring for now')
+
 import os
 import sys
 from os.path import dirname, join, abspath
 from pathlib import Path
 
-versionMajor = 4
-versionMinor = 2
-versionBuild = 5
-revisionNumber = "20210612"
+__version__ = "4.3.0"
+__revision__ = "2"
+__githash__ = "a690adaa"
+
+from . import config
+
+def get_version_revision_str():
+    return f"{__version__}.{__revision__}"
 
 
-def get_sha_label() -> str:
-    """
-    Fetches git sha tag - relies on the file sha_label.py . This file is NOT part of git repo but instead it is
-    written during installation scripts run. Main use case is to know exact tag based on which binaries have been built
-    :return: sha tag
-    """
-    try:
-        import cc3d.commit_tag
-        try:
-            sha_tag = cc3d.commit_tag.sha_label
-            return sha_tag
-        except AttributeError:
-            return revisionNumber
-
-    except ImportError:
-        return revisionNumber
-
-
-def getVersionAsString():
-    return str(versionMajor) + "." + str(versionMinor) + "." + str(versionBuild)
-
-
-def getVersionMajor():
-    return versionMajor
-
-
-def getVersionMinor():
-    return versionMinor
-
-
-def getVersionBuild():
-    return versionBuild
-
-
-def getSVNRevision():
-    return revisionNumber
-
-
-def getSVNRevisionAsString():
-    return str(getSVNRevision())
-
-
-__version__ = getVersionAsString()
-__revision__ = revisionNumber
+def get_version_str():
+    return f"{__version__}"
 
 
 def get_version_info():
@@ -60,7 +28,7 @@ def get_version_info():
     returns CC3D version string
     :return:
     """
-    return f"CompuCell3D Version: {__version__} Revision: {__revision__} \n Commit Label: {get_sha_label()}"
+    return f"CompuCell3D Version: {__version__} Revision: {__revision__} \n Commit Label: {__githash__}"
 
 
 def get_formatted_version_info():
@@ -74,41 +42,40 @@ def get_formatted_version_info():
     return formatted_version_info
 
 
-path_postfix = ''
-if sys.platform.startswith('win'):
-    path_postfix = '\\'
-else:
-    path_postfix = '/'
-
 cc3d_py_dir = dirname(__file__)
-# compucell3d_steppable_path = join(cc3d_py_dir, 'cpp', 'CompuCell3DSteppables')
+cc3d_install_prefix = abspath(join(cc3d_py_dir, config.cc3d_install_prefix_rel))
+cc3d_cpp_path = abspath(join(cc3d_py_dir, config.cc3d_cpp_path_rel))
+cc3d_steppable_path = abspath(join(cc3d_cpp_path, 'CompuCell3DSteppables'))
+cc3d_plugin_path = abspath(join(cc3d_cpp_path, 'CompuCell3DPlugins'))
+cc3d_cpp_bin_path = abspath(join(cc3d_cpp_path, 'bin'))
+cc3d_cpp_lib_path = abspath(join(cc3d_cpp_path, 'lib'))
+cc3d_scripts_path = abspath(join(cc3d_py_dir, config.cc3d_scripts_path_rel))
+cc3d_lib_shared = abspath(join(cc3d_install_prefix, 'bin'))
+cc3d_lib_static = abspath(join(cc3d_install_prefix, 'lib'))
 
-os.environ['COMPUCELL3D_STEPPABLE_PATH'] = join(cc3d_py_dir, 'cpp', 'CompuCell3DSteppables') + path_postfix
-os.environ['COMPUCELL3D_PLUGIN_PATH'] = join(cc3d_py_dir, 'cpp', 'CompuCell3DPlugins') + path_postfix
-print(os.environ['COMPUCELL3D_STEPPABLE_PATH'])
-print(os.environ['COMPUCELL3D_PLUGIN_PATH'])
+os.environ['COMPUCELL3D_STEPPABLE_PATH'] = cc3d_steppable_path + os.sep
+os.environ['COMPUCELL3D_PLUGIN_PATH'] = cc3d_plugin_path + os.sep
 
 if sys.platform.startswith('win'):
     path_env = os.environ['PATH']
-    # needed for pyqt modules installed via conda
-    python_exe = Path(sys.executable)
-    python_exe_dir = python_exe.parent
-    pyqt_library_bin_path = python_exe_dir.joinpath('Library', 'bin')
+
     path_env_list = path_env.split(';')
 
     # needed for maboss
+    python_exe = Path(sys.executable)
+    python_exe_dir = python_exe.parent
     mingw_bin_path = python_exe_dir.joinpath('Library', 'mingw-w64', 'bin')
 
     path_env_list = list(map(lambda pth: abspath(pth), path_env_list))
 
-    cc3d_bin_path = abspath(join(cc3d_py_dir, 'cpp', 'bin'))
-    if cc3d_bin_path not in path_env_list:
-        path_env_list.insert(0, cc3d_bin_path)
+    if cc3d_lib_shared not in path_env_list:
+        path_env_list.insert(0, cc3d_lib_shared)
+    if cc3d_cpp_bin_path not in path_env_list:
+        path_env_list.insert(0, cc3d_cpp_bin_path)
 
     # todo - this needs to have platform specific behavior
     path_env_list.insert(0, os.environ['COMPUCELL3D_PLUGIN_PATH'])
     path_env_list.insert(0, os.environ['COMPUCELL3D_STEPPABLE_PATH'])
-    path_env_list.insert(0, str(pyqt_library_bin_path))
     path_env_list.insert(0, str(mingw_bin_path))
 
     os.environ['PATH'] = ';'.join(path_env_list)
@@ -121,7 +88,6 @@ elif sys.platform.startswith('darwin'):
 
     dyld_env_list = dyld_library_env.split(':')
 
-    cc3d_cpp_lib_path = abspath(join(cc3d_py_dir, 'cpp', 'lib'))
     if cc3d_cpp_lib_path not in dyld_env_list:
         dyld_env_list.insert(0, cc3d_cpp_lib_path)
 
@@ -135,8 +101,9 @@ elif sys.platform.startswith('linux'):
         ld_library_env = ''
 
     ld_env_list = ld_library_env.split(':')
-    cc3d_cpp_lib_path = abspath(join(cc3d_py_dir, 'cpp', 'lib'))
     if cc3d_cpp_lib_path not in ld_env_list:
         ld_env_list.insert(0, cc3d_cpp_lib_path)
+    if cc3d_lib_static not in ld_env_list:
+        ld_env_list.insert(0, cc3d_lib_static)
 
     os.environ['LD_LIBRARY_PATH'] = ':'.join(ld_env_list)

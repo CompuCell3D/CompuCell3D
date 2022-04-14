@@ -30,8 +30,6 @@
 
 
 // // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 
 // // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 // // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
@@ -58,7 +56,7 @@ namespace CompuCell3D {
 
 
 	private:
-		BasicClassAccessor<AdhesionFlexData> adhesionFlexDataAccessor;
+		ExtraMembersGroupAccessor<AdhesionFlexData> adhesionFlexDataAccessor;
 		CC3DXMLElement *xmlData;
 		Potts3D *potts;
 		Simulator *sim;
@@ -82,7 +80,7 @@ namespace CompuCell3D {
 
 		
 
-		BasicClassAccessor<AdhesionFlexData> * adhesionFlexDataAccessorPtr;
+		ExtraMembersGroupAccessor<AdhesionFlexData> * adhesionFlexDataAccessorPtr;
 
 		Automaton *automaton;
 		bool weightDistance;
@@ -125,7 +123,7 @@ namespace CompuCell3D {
 		AdhesionFlexPlugin();
 		virtual ~AdhesionFlexPlugin();
 
-		BasicClassAccessor<AdhesionFlexData> * getAdhesionFlexDataAccessorPtr(){return & adhesionFlexDataAccessor;}
+		ExtraMembersGroupAccessor<AdhesionFlexData> * getAdhesionFlexDataAccessorPtr(){return & adhesionFlexDataAccessor;}
 
 
 		virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);

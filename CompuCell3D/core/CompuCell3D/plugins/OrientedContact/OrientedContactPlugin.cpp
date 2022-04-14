@@ -416,93 +416,74 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
         
 }
 
-double OrientedContactPlugin::changeEnergy(const Point3D &pt,
-                                  const CellG *newCell,
-                                  const CellG *oldCell) {
+double OrientedContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
 //    cerr<<"ChangeEnergy"<<endl;
    
    
-  double energy = 0;
-  unsigned int token = 0;
-  double distance = 0;
-  Point3D n;
-  
-  CellG *nCell=0;
-  WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
-  Neighbor neighbor;
-  
-     
-      for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
-         neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
-         if(!neighbor.distance){
-         //if distance is 0 then the neighbor returned is invalid
-         continue;
-         }
-         
-         nCell = fieldG->get(neighbor.pt);
-         if(nCell!=oldCell){
-            if(!nCell) {
-               energy -= orientedContactEnergy(oldCell, nCell)*getMediumOrientation(pt,oldCell,nCell);
-                
-            }
-            else {
-               energy -= orientedContactEnergy(oldCell, nCell)+getOrientation(pt,oldCell,nCell);
-            }
-//             cerr<<"!=oldCell neighbor.pt="<<neighbor.pt<<" energyTmp="<<energy<<endl;
-         }
-         if(nCell!=newCell){
-            if(!nCell) {
-					energy += orientedContactEnergy(newCell, nCell)*getMediumOrientation(pt,newCell,nCell);
-            }
-            else {
-               energy += orientedContactEnergy(newCell, nCell)+getOrientation(pt,newCell,nCell);
-            }
-         }
-      
-   
-      }
-   
-   
-   
+   double energy = 0;
+   unsigned int token = 0;
+   double distance = 0;
+   Point3D n;
 
-  return energy;
+   CellG *nCell=0;
+   WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
+   Neighbor neighbor;
+     
+   for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
+      neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
+      if(!neighbor.distance){
+      //if distance is 0 then the neighbor returned is invalid
+      continue;
+      }
+
+      nCell = fieldG->get(neighbor.pt);
+      if(nCell!=oldCell){
+         if(!nCell) {
+            energy -= orientedContactEnergy(oldCell, nCell)*getMediumOrientation(pt,oldCell,nCell);
+
+         }
+         else {
+            energy -= orientedContactEnergy(oldCell, nCell)+getOrientation(pt,oldCell,nCell);
+         }
+   //             cerr<<"!=oldCell neighbor.pt="<<neighbor.pt<<" energyTmp="<<energy<<endl;
+      }
+      if(nCell!=newCell){
+         if(!nCell) {
+            energy += orientedContactEnergy(newCell, nCell)*getMediumOrientation(pt,newCell,nCell);
+         }
+         else {
+            energy += orientedContactEnergy(newCell, nCell)+getOrientation(pt,newCell,nCell);
+         }
+      }
+
+
+   }
+   
+   return energy;
 }
 
 double OrientedContactPlugin::orientedContactEnergy(const CellG *cell1, const CellG *cell2) {
    
    return orientedContactEnergyArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0];
 
-
 }
 
-void OrientedContactPlugin::setOrientedContactEnergy(const string typeName1,
-				     const string typeName2,
-				     const double energy) {
+void OrientedContactPlugin::setOrientedContactEnergy(const string typeName1, const string typeName2, const double energy) {
                     
-  char type1 = automaton->getTypeId(typeName1);
-  char type2 = automaton->getTypeId(typeName2);
-    
-  int index = getIndex(type1, type2);
+   unsigned char type1 = automaton->getTypeId(typeName1);
+   unsigned char type2 = automaton->getTypeId(typeName2);
 
-  orientedContactEnergies_t::iterator it = orientedContactEnergies.find(index);
-  ASSERT_OR_THROW(string("OrientedOrientedContact energy for ") + typeName1 + " " + typeName2 +
-		  " already set!", it == orientedContactEnergies.end());
-
-  orientedContactEnergies[index] = energy;
-}
-
-int OrientedContactPlugin::getIndex(const int type1, const int type2) const {
-  if (type1 < type2) return ((type1 + 1) | ((type2 + 1) << 16));
-  else return ((type2 + 1) | ((type1 + 1) << 16));
+   orientedContactEnergyArray[type1][type2] = energy;
+   orientedContactEnergyArray[type2][type1] = energy;
 }
 
 
 void OrientedContactPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
-  xmlData=_xmlData;
-  potts=simulator->getPotts();
-  potts->registerEnergyFunctionWithName(this,"OrientedContact");
-  simulator->registerSteerableObject(this);
+   xmlData=_xmlData;
+   potts=simulator->getPotts();
+   potts->registerEnergyFunctionWithName(this,"OrientedContact");
+   simulator->registerSteerableObject(this);
 
 }
 void OrientedContactPlugin::extraInit(Simulator *simulator){
@@ -512,11 +493,10 @@ void OrientedContactPlugin::extraInit(Simulator *simulator){
 void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
-   set<unsigned char> cellTypesSet;
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
+    set<unsigned char> cellTypesSet;
 
-   orientedContactEnergies.clear();
-   orientedContactEnergyArray.clear();
+    orientedContactEnergyArray.clear();
 
 	CC3DXMLElementList energyVec=_xmlData->getElements("Energy");
 
@@ -534,55 +514,36 @@ void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 		alpha=_xmlData->getFirstElement("Alpha")->getDouble();
 	}
 
-  //Now that we know all the types used in the simulation we will find size of the contactEnergyArray
-  vector<unsigned char> cellTypesVector(cellTypesSet.begin(),cellTypesSet.end());//coping set to the vector
+   cerr<<"size="<<orientedContactEnergyArray.size()<<endl;
+   
+   for(auto& i : cellTypesSet)
+      for(auto& j : cellTypesSet){
+      
+         cerr<<"contact["<<to_string(i)<<"]["<<to_string(j)<<"]="<<orientedContactEnergyArray[i][j]<<endl;
 
-  int size= * max_element(cellTypesVector.begin(),cellTypesVector.end());
-  size+=1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-  
-  int index ;
-  orientedContactEnergyArray.clear();
-  orientedContactEnergyArray.assign(size,vector<double>(size,0.0));
-
-  for(int i = 0 ; i < size ; ++i)
-   for(int j = 0 ; j < size ; ++j){
-   
-      index = getIndex(cellTypesVector[i],cellTypesVector[j]);
-      
-      orientedContactEnergyArray[i][j] = orientedContactEnergies[index];
-      
-   }
-   cerr<<"size="<<size<<endl;
-   
-  for(int i = 0 ; i < size ; ++i)
-   for(int j = 0 ; j < size ; ++j){
-   
-      cerr<<"contact["<<i<<"]["<<j<<"]="<<orientedContactEnergyArray[i][j]<<endl;
-      
-   }
+      }
    
    //Here I initialize max neighbor index for direct acces to the list of neighbors 
    boundaryStrategy=BoundaryStrategy::getInstance();
    maxNeighborIndex=0;
 
 
-			if(_xmlData->getFirstElement("Depth")){
-				maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
-				//cerr<<"got here will do depth"<<endl;
-			}else{
-				//cerr<<"got here will do neighbor order"<<endl;
-				if(_xmlData->getFirstElement("NeighborOrder")){
+   if(_xmlData->getFirstElement("Depth")){
+      maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
+      //cerr<<"got here will do depth"<<endl;
+   }else{
+      //cerr<<"got here will do neighbor order"<<endl;
+      if(_xmlData->getFirstElement("NeighborOrder")){
 
-					maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());	
-				}else{
-					maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
+         maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());
+      }else{
+         maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 
-				}
+      }
 
-			}
+   }
 
-			cerr<<"Contact maxNeighborIndex="<<maxNeighborIndex<<endl;
-
+   cerr<<"Contact maxNeighborIndex="<<maxNeighborIndex<<endl;
    
 }
 

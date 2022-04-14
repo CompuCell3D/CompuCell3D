@@ -9,8 +9,6 @@
 
 #include <cmath>
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
 #include <CompuCell3D/Simulator.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include <sstream>
@@ -602,62 +600,6 @@ void EnergyFunctionCalculatorStatistics::outputResults(){
 
 }
 
-//void EnergyFunctionCalculatorStatistics::readXML(XMLPullParser &in){
-//  return;
-//  in.match(START_ELEMENT); 
-//  in.skip(TEXT);
-//  
-//  while (in.check(START_ELEMENT)) {
-//    if (in.getName() == "OutputFileName") {
-//      if(in.findAttribute("Frequency")>=0){
-//         analysisFrequency=BasicString::parseUInteger(in.getAttribute("Frequency").value);
-//      }
-//      
-//      outFileName = in.matchSimple();
-//  
-//    } else if (in.getName() == "OutputCoreFileNameSpinFlips") {
-//      
-//      if(in.findAttribute("Frequency")>=0){
-//         singleSpinFrequency=BasicString::parseUInteger(in.getAttribute("Frequency").value);
-//      }
-//
-//      if(in.findAttribute("GatherResults")>=0){
-//         gatherResultsSpinFlip=true;
-//         
-//      }
-//
-//      if(in.findAttribute("OutputAccepted")>=0){
-//         outputAcceptedSpinFlip=true;
-//         
-//      }
-//
-//      if(in.findAttribute("OutputRejected")>=0){
-//          outputRejectedSpinFlip=true;
-//      }
-//
-//      if(in.findAttribute("OutputTotal")>=0){
-//         outputTotalSpinFlip=true;
-//      }
-//      
-//
-//      outFileCoreNameSpinFlips = in.matchSimple();
-//      outputEverySpinFlip=true;
-//  
-//    } else {
-//      throw BasicException(string("Unexpected element '") + in.getName() + "'!", in.getLocation());
-//    }
-//
-//    in.skip(TEXT);
-//  }  
-//   in.match(END_ELEMENT,-TEXT);
-//
-//   out=new ofstream(outFileName.c_str());
-//   
-//   ASSERT_OR_THROW("Could not open a file to store energy statistics",out && out->good());
-//   
-//
-//}
-
 void EnergyFunctionCalculatorStatistics::init(CC3DXMLElement *_xmlData){
 	outFileName="";
 	outFileCoreNameSpinFlips="";
@@ -709,28 +651,3 @@ void EnergyFunctionCalculatorStatistics::init(CC3DXMLElement *_xmlData){
 
 
 }
-
-// void EnergyFunctionCalculatorStatistics::init(ParseData *_pd){
-//    EnergyFunctionCalculatorStatisticsParseData * efcspdPtr=(EnergyFunctionCalculatorStatisticsParseData *)_pd;
-//    outFileName=efcspdPtr->outFileName;
-//    analysisFrequency=efcspdPtr->analysisFrequency;
-//    singleSpinFrequency=efcspdPtr->singleSpinFrequency;
-//    gatherResultsSpinFlip=efcspdPtr->gatherResultsSpinFlip;
-//    outputAcceptedSpinFlip=efcspdPtr->outputAcceptedSpinFlip;
-//    outputRejectedSpinFlip=efcspdPtr->outputRejectedSpinFlip;
-//    outputTotalSpinFlip=efcspdPtr->outputTotalSpinFlip;
-//    outputEverySpinFlip=efcspdPtr->outputEverySpinFlip;
-//    outFileCoreNameSpinFlips=efcspdPtr->outFileCoreNameSpinFlips;
-// 
-//    if(outFileName!=""){
-//       if(!out){
-//          out=new ofstream(outFileName.c_str());
-//          ASSERT_OR_THROW("Could not open a file to store energy statistics",out && out->good());
-//       }
-//    }
-// 
-// 
-// }
-
-//void EnergyFunctionCalculatorStatistics::writeXML(XMLSerializer &out){}
-

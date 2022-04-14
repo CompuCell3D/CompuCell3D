@@ -14,7 +14,9 @@ from . simulation_player_utils import *
 from . persistent_globals import PersistentGlobals
 # cc3dSimulationDataHandler = ''
 
+#: :class:`cc3d.CompuCellSetup.persistent_globals` instance
 persistent_globals = PersistentGlobals()
+
 
 def resetGlobals() -> None:
     """

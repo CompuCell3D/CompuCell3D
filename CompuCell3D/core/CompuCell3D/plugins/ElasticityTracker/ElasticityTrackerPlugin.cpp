@@ -77,9 +77,9 @@ void ElasticityTrackerPlugin::init(Simulator *_simulator, CC3DXMLElement *_xmlDa
 
 
   ///will register ElasticityTracker here
-  BasicClassAccessorBase * elasticityTrackerAccessorPtr=&elasticityTrackerAccessor;
+  ExtraMembersGroupAccessorBase * elasticityTrackerAccessorPtr=&elasticityTrackerAccessor;
    ///************************************************************************************************  
-  ///REMARK. HAVE TO USE THE SAME BASIC CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
+   ///REMARK. HAVE TO USE THE SAME CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
    ///************************************************************************************************  
   potts->getCellFactoryGroupPtr()->registerClass(elasticityTrackerAccessorPtr);
 

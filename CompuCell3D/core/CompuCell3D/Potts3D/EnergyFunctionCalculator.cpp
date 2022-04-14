@@ -1,5 +1,5 @@
 #include "EnergyFunctionCalculator.h"
-#include <BasicUtils/BasicException.h>
+#include <CompuCell3D/CC3DExceptions.h>
 #include <iostream>
 #include <sstream>
 #include <algorithm>
@@ -19,11 +19,7 @@ EnergyFunctionCalculator::~EnergyFunctionCalculator(){
 
 void EnergyFunctionCalculator::registerEnergyFunction(EnergyFunction *_function){
 
-  ASSERT_OR_THROW("registerEnergyFunction() function cannot be NULL!",
-		  _function);
-
-  ASSERT_OR_THROW("Potts3D Pointer  cannot be NULL!",
-		  potts);
+  checkEnergyFunction(_function);
 
   //_function->registerPotts3D(potts);
 
@@ -41,11 +37,7 @@ void EnergyFunctionCalculator::registerEnergyFunction(EnergyFunction *_function)
 
 void EnergyFunctionCalculator::registerEnergyFunctionWithName(EnergyFunction *_function,std::string _functionName){
 
-  ASSERT_OR_THROW("registerEnergyFunction() function cannot be NULL!",
-        _function);
-
-  ASSERT_OR_THROW("Potts3D Pointer  cannot be NULL!",
-		  potts);
+  checkEnergyFunction(_function);
 
   //_function->registerPotts3D(potts);
   ostringstream automaticNameStream;
@@ -89,6 +81,11 @@ double EnergyFunctionCalculator::changeEnergy(Point3D &pt, const CellG *newCell,
   }
   return change;
 
+}
+
+void EnergyFunctionCalculator::checkEnergyFunction(EnergyFunction *_function) {
+  if (!_function) throw CC3DException("registerEnergyFunction() function cannot be NULL!");
+  if (!potts) throw CC3DException("Potts3D Pointer cannot be NULL!");
 }
 
 //

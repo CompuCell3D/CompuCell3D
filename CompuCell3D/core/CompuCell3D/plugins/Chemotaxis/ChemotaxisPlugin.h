@@ -55,7 +55,7 @@ namespace CompuCell3D {
     std::vector<Field3D<float> *> fieldVec;
 	std::vector<std::string> fieldNameVec;
 	
-   std::vector<std::vector<ChemotaxisData> > vecVecChemotaxisData;
+   std::vector<std::unordered_map<unsigned char, ChemotaxisData> > vecMapChemotaxisData;
 
    float simpleChemotaxisFormula(float _flipNeighborConc,float _conc,ChemotaxisData & _chemotaxisData);
    float saturationChemotaxisFormula(float _flipNeighborConc,float _conc,ChemotaxisData & _chemotaxisData);
@@ -71,7 +71,7 @@ namespace CompuCell3D {
    //bool okToChemotact(unsigned int fieldIdx,unsigned char cellType);
    std::string chemotaxisAlgorithm;
 
-   BasicClassAccessor< std::map<std::string,ChemotaxisData> > chemotaxisDataAccessor;
+   ExtraMembersGroupAccessor< std::map<std::string,ChemotaxisData> > chemotaxisDataAccessor;
 	 
   public:
     typedef float (ChemotaxisPlugin::*chemotaxisEnergyFormulaFcnPtr_t)(float,float,ChemotaxisData &);

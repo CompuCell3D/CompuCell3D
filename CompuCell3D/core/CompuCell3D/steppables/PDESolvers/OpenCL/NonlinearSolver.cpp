@@ -2,7 +2,7 @@
 
 #include "ImplicitMatrix.h"
 #include <sstream>
-#include <BasicUtils/BasicException.h>
+#include <CompuCell3D/CC3DExceptions.h>
 #include "OpenCLKernel.h"
 #include <cassert>
 #include <numeric>
@@ -155,7 +155,7 @@ viennacl::vector<float> const &NonlinearSolver::minusGoalFunc(viennacl::vector<f
 	}
 
 	//size_t glob_size[]={f};
-	size_t glob_size[]= {dim.x, dim.y, dim.z};
+	size_t glob_size[]= {(size_t)dim.x, (size_t)dim.y, (size_t)dim.z};
 	cl_int err=getOCLHelper().EnqueueNDRangeKernel(m_minusG->getKernel(), 3, glob_size, NULL); 
 	if(err!=CL_SUCCESS){
 		std::stringstream sstr;
@@ -205,7 +205,7 @@ viennacl::vector<float> const &NonlinearSolver::prod(viennacl::vector<float> con
 	}
 
 	//size_t glob_size[]={f};
-	size_t glob_size[]= {dim.x, dim.y, dim.z};
+	size_t glob_size[]= {(size_t)dim.x, (size_t)dim.y, (size_t)dim.z};
 	cl_int err=getOCLHelper().EnqueueNDRangeKernel(m_Jacobian->getKernel(), 3, glob_size, NULL); 
 	if(err!=CL_SUCCESS){
 		std::stringstream sstr;

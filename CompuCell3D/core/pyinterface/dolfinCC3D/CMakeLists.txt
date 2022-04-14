@@ -74,7 +74,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 SWIG_LINK_LIBRARIES(dolfinCC3D ${LIBS})
-
+target_link_directories(dolfinCC3D PUBLIC ${Python_LIBRARY_DIRS})
 
 install(TARGETS _dolfinCC3D    DESTINATION lib/python )
 

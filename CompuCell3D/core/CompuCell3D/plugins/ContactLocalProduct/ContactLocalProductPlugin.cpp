@@ -100,9 +100,8 @@ void ContactLocalProductPlugin::extraInit(Simulator *simulator) {
     update(xmlData, true);
 
     Automaton * cellTypePluginAutomaton = potts->getAutomaton();
-    if (cellTypePluginAutomaton) {
-        ASSERT_OR_THROW("The size of matrix of contact specificity coefficients has must equal max_cell_type_id+1. You must list specificity coefficients between all cel types",
-            contactSpecificityArray.size() == ((unsigned int)cellTypePluginAutomaton->getMaxTypeId() + 1));
+    if (cellTypePluginAutomaton && contactSpecificityArray.size() != ((unsigned int)cellTypePluginAutomaton->getTypeIds().size())) {
+        throw CC3DException("The size of matrix of contact specificity coefficients has must equal max_cell_type_id+1. You must list specificity coefficients between all cel types");
     }
 
 }
@@ -112,9 +111,9 @@ void ContactLocalProductPlugin::extraInit(Simulator *simulator) {
 void ContactLocalProductPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     automaton = potts->getAutomaton();
-    ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
-        set<unsigned char> cellTypesSet;
-    contactEnergies.clear();
+    if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
+    set<unsigned char> cellTypesSet;
+    contactSpecificityArray.clear();
 
     CC3DXMLElementList energyVec = _xmlData->getElements("ContactSpecificity");
 
@@ -129,30 +128,11 @@ void ContactLocalProductPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
 
     }
 
-    //Now that we know all the types used in the simulation we will find size of the contactEnergyArray
-    vector<unsigned char> cellTypesVector(cellTypesSet.begin(), cellTypesSet.end());//coping set to the vector
+    cerr << "size=" << contactSpecificityArray.size() << endl;
+    for (auto& i : cellTypesSet)
+        for (auto& j : cellTypesSet) {
 
-    int size = *max_element(cellTypesVector.begin(), cellTypesVector.end());
-    size += 1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-
-    int index;
-    contactSpecificityArray.clear();
-    contactSpecificityArray.assign(size, vector<double>(size, 0.0));
-
-
-    for (int i = 0; i < size; ++i)
-        for (int j = 0; j < size; ++j) {
-
-            index = getIndex(cellTypesVector[i], cellTypesVector[j]);
-
-            contactSpecificityArray[i][j] = contactEnergies[index];
-
-        }
-    cerr << "size=" << size << endl;
-    for (int i = 0; i < size; ++i)
-        for (int j = 0; j < size; ++j) {
-
-            cerr << "contact[" << i << "][" << j << "]=" << contactSpecificityArray[i][j] << endl;
+            cerr << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << contactSpecificityArray[i][j] << endl;
 
         }
 
@@ -276,7 +256,7 @@ void ContactLocalProductPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
         }
 
 
-        ASSERT_OR_THROW("You need to list two variable names that will hold concentration of cadherins", variableInitializationOK);
+        if (!variableInitializationOK) throw CC3DException("You need to list two variable names that will hold concentration of cadherins");
 
         if (_xmlData->getFirstElement("CustomFunction")->findElement("Expression")) {
             customExpression = _xmlData->getFirstElement("CustomFunction")->getFirstElement("Expression")->getText();
@@ -708,16 +688,11 @@ void ContactLocalProductPlugin::setContactEnergy(const string typeName1,
     const string typeName2,
     const double energy) {
 
-    char type1 = automaton->getTypeId(typeName1);
-    char type2 = automaton->getTypeId(typeName2);
+    unsigned char type1 = automaton->getTypeId(typeName1);
+    unsigned char type2 = automaton->getTypeId(typeName2);
 
-    int index = getIndex(type1, type2);
-
-    contactEnergies_t::iterator it = contactEnergies.find(index);
-    ASSERT_OR_THROW(string("Contact energy for ") + typeName1 + " " + typeName2 +
-        " already set!", it == contactEnergies.end());
-
-    contactEnergies[index] = energy;
+    contactSpecificityArray[type1][type2] = energy;
+    contactSpecificityArray[type2][type1] = energy;
 }
 
 int ContactLocalProductPlugin::getIndex(const int type1, const int type2) const {

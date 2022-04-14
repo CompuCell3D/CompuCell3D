@@ -25,7 +25,7 @@
 
 #include <math.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-#include <BasicUtils/BasicException.h>
+#include <CompuCell3D/CC3DExceptions.h>
 
 #include "Dim3D.h"
 #include "Field3D.h"
@@ -58,13 +58,11 @@ public:
     Field3DImpl(const Dim3D dim, const T &initialValue) :
       dim(dim),field(0), initialValue(initialValue) {
 
-      ASSERT_OR_THROW("Field3D cannot have a 0 dimension!!!",
-		      dim.x != 0 && dim.y != 0 && dim.z != 0);
+      if (dim.x == 0 && dim.y == 0 && dim.z == 0) throw CC3DException("Field3D cannot have a 0 dimension!!!");
 
       // Check that the dimensions are not too large.
-      ASSERT_OR_THROW("Field3D dimensions too large!!!",
-		      log((double)dim.x)/log(2.0) + log((double)dim.y)/log(2.0) + log((double)dim.z)/log(2.0) <=
-		      sizeof(int) * 8);
+      if (log((double)dim.x)/log(2.0) + log((double)dim.y)/log(2.0) + log((double)dim.z)/log(2.0) > sizeof(int) * 8)
+        throw CC3DException("Field3D dimensions too large!!!");
 
       // Allocate and initialize the field
       len = dim.x * dim.y * dim.z;
@@ -82,7 +80,7 @@ public:
     }
 
     virtual void set(const Point3D &pt, const T value) {
-      ASSERT_OR_THROW("set() point out of range!", isValid(pt));
+      if (!isValid(pt)) throw CC3DException("set() point out of range!");
       field[PT2IDX(pt)] = value;
     }
 

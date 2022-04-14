@@ -21,19 +21,58 @@ from cc3d.core.filelock import FileLockException
 def main():
     args = process_cml()
 
-    print(cc3d.get_formatted_version_info())
+    # Legacy support: if gui flag is high then try to find player installation and redirect call
+    if args.gui_flag:
+        try:
+            from cc3d.player5.param_scan.main_player_run import main as player_main
+            player_main()
+            return
+        except ImportError:
+            raise RuntimeError('Player not installed')
 
     cc3d_proj_fname = args.input
     cc3d_proj_fname = cc3d_proj_fname.replace('"', '')
     output_dir = args.output_dir
     output_dir = output_dir.replace('"', '')
-    gui_flag = args.gui
     output_frequency = args.output_frequency
     screenshot_output_frequency = args.screenshot_output_frequency
     install_dir = args.install_dir
     install_dir = install_dir.replace('"', '')
 
-    run_script = find_run_script(install_dir=install_dir, gui_flag=gui_flag)
+    run_script = find_run_script(install_dir=install_dir)
+
+    execute_scan(cc3d_proj_fname=cc3d_proj_fname,
+                 output_dir=output_dir,
+                 output_frequency=output_frequency,
+                 screenshot_output_frequency=screenshot_output_frequency,
+                 run_script=run_script)
+
+
+def execute_scan(cc3d_proj_fname: str,
+                 output_dir: str,
+                 output_frequency: int,
+                 screenshot_output_frequency: int,
+                 run_script: str,
+                 gui_flag: bool = False):
+    """
+    Executes parameter scan
+
+    :param cc3d_proj_fname: absolute path to cc3d project file
+    :type cc3d_proj_fname: str
+    :param output_dir: absolute path to output directory
+    :type output_dir: str
+    :param output_frequency: output frequency
+    :type output_frequency: int
+    :param screenshot_output_frequency: screenshot output frequency
+    :type screenshot_output_frequency: int
+    :param run_script: absolute path to single run execution script
+    :type run_script: str
+    :param gui_flag: optional flag for gui-based execution; launches will pass additional argument '--exit-when-done'
+    :type gui_flag: bool
+    :return: None
+    """
+
+    print(cc3d.get_formatted_version_info())
 
     param_scan_complete_pth = param_scan_complete_signal(output_dir=output_dir)
 
@@ -46,7 +85,7 @@ def main():
 
         print('There exists a {lock_file} that prevents param scan from running. '
               'Please remove this file and start again'.format(
-                lock_file=Path(output_dir).joinpath('param_scan_status.lock')))
+            lock_file=Path(output_dir).joinpath('param_scan_status.lock')))
 
         sys.exit(1)
 
@@ -60,7 +99,7 @@ def main():
 
             print('There exists a {lock_file} that prevents param scan from running. '
                   'Please remove this file and start again'.format(
-                    lock_file=Path(output_dir).joinpath('param_scan_status.lock')))
+                lock_file=Path(output_dir).joinpath('param_scan_status.lock')))
 
             break
 
@@ -84,29 +123,32 @@ def main():
             break
 
 
+class ParamScanArgumentParser(argparse.ArgumentParser):
+    """Argument parsers for parameter scans"""
+
+    def __init__(self):
+        super().__init__(description='param_scan_run - Parameter Scan Run Script')
+
+        self.add_argument('-i', '--input', required=True, action='store',
+                          help='path to the CC3D project file (*.cc3d)')
+        self.add_argument('-o', '--output-dir', required=True, action='store',
+                          help='path to the output folder to store parameter scan results')
+        self.add_argument('-f', '--output-frequency', required=False, action='store', default=0, type=int,
+                          help='simulation snapshot output frequency', dest='output_frequency')
+        self.add_argument('--screenshot-output-frequency', required=False, action='store', default=0, type=int,
+                          help='screenshot output frequency')
+        self.add_argument('--install-dir', required=True, type=str, help='CC3D install directory')
+        # Legacy support
+        self.add_argument('--gui', required=False, action='store_true', default=False,
+                          help='flag indicating whether to use Player or not')
+
+
 def process_cml():
-    cml_parser = argparse.ArgumentParser(description='param_scan_run - Parameter Scan Run Script')
-    cml_parser.add_argument('-i', '--input', required=True, action='store',
-                            help='path to the CC3D project file (*.cc3d)')
-    cml_parser.add_argument('-o', '--output-dir', required=True, action='store',
-                            help='path to the output folder to store parameter scan results')
-    cml_parser.add_argument('-f', '--output-frequency', required=False, action='store', default=0, type=int,
-                            help='simulation snapshot output frequency', dest='output_frequency')
-    cml_parser.add_argument('--screenshot-output-frequency', required=False, action='store', default=0, type=int,
-                            help='screenshot output frequency')
-    cml_parser.add_argument('--gui', required=False, action='store_true', default=False,
-                            help='flag indicating whether to use Player or not')
-    cml_parser.add_argument('--install-dir', required=True, type=str, help='CC3D install directory')
-
-    args = cml_parser.parse_args()
-    return args
+    return ParamScanArgumentParser().parse_args()
 
 
-def find_run_script(install_dir, gui_flag=False):
-    if gui_flag:
-        possible_scripts = ['compucell3d.bat', 'compucell3d.command', 'compucell3d.sh']
-    else:
-        possible_scripts = ['runScript.bat', 'runScript.command', 'runScript.sh']
+def find_run_script(install_dir):
+    possible_scripts = ['runScript.bat', 'runScript.command', 'runScript.sh']
 
     for script_name in possible_scripts:
         full_script_path = Path(install_dir).joinpath(script_name)

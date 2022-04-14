@@ -57,10 +57,10 @@ namespace CompuCell3D {
     
     void getMomentOfInertia(CellG *cell, float I[3]) const
     {
-      ASSERT_OR_THROW("getMomentOfInertia() Cell cannot be NULL!", cell);
+      if (!cell) throw CC3DException("getMomentOfInertia() Cell cannot be NULL!");
 
       unsigned int volume = cell->volume;
-      ASSERT_OR_THROW("getMomentOfInertia() Cell volume is 0!", volume);
+      if (!volume) throw CC3DException("getMomentOfInertia() Cell volume is 0!");
 
       I[0] = cell->iXX;
       I[1] = cell->iYY;
@@ -69,7 +69,7 @@ namespace CompuCell3D {
     }
 
     // SimObject interface
-    
+
     virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
 
     // BCGChangeWatcher interface

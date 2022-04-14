@@ -27,7 +27,7 @@ FieldBuilder::FieldBuilder(Simulator *_simulator){
 	cellField = (WatchableField3D<CellG *> *)potts->getCellFieldG();
 }
 
-void FieldBuilder::setRandomGenerator(BasicRandomNumberGenerator * _rand){
+void FieldBuilder::setRandomGenerator(RandomNumberGenerator * _rand){
 	rand = _rand;
 }
 

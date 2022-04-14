@@ -5,8 +5,6 @@
 
 // // // #include <CompuCell3D/Potts3D/Cell.h>
 // // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 #include "PlasticityTracker.h"
 // // // #include <CompuCell3D/Field3D/AdjacentNeighbor.h>
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
@@ -30,8 +28,8 @@ class PLASTICITYTRACKER_EXPORT PlasticityTrackerPlugin : public Plugin, public C
       ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;
       WatchableField3D<CellG *> *cellFieldG;
       Dim3D fieldDim;
-      BasicClassAccessor<PlasticityTracker> plasticityTrackerAccessor;
-      BasicClassAccessor<NeighborTracker> * neighborTrackerAccessorPtr;
+      ExtraMembersGroupAccessor<PlasticityTracker> plasticityTrackerAccessor;
+      ExtraMembersGroupAccessor<NeighborTracker> * neighborTrackerAccessorPtr;
       
       Simulator *simulator;
       CellInventory * cellInventoryPtr;
@@ -52,7 +50,7 @@ class PLASTICITYTRACKER_EXPORT PlasticityTrackerPlugin : public Plugin, public C
       virtual void field3DChange(const Point3D &pt, CellG *newCell,
                                  CellG *oldCell);
       
-      BasicClassAccessor<PlasticityTracker> * getPlasticityTrackerAccessorPtr(){return & plasticityTrackerAccessor;}
+      ExtraMembersGroupAccessor<PlasticityTracker> * getPlasticityTrackerAccessorPtr(){return & plasticityTrackerAccessor;}
 		//had to include this function to get set inereation working properly with Python , and Player that has restart capabilities 
       PlasticityTrackerData * getPlasticityTrackerData(PlasticityTrackerData * _psd){return _psd;}
       void initializePlasticityNeighborList();

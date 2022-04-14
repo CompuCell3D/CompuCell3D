@@ -21,10 +21,10 @@ def handle_error(exception_obj):
 
     # printing c++ error
     if isinstance(exception_obj, CC3DCPlusPlusError):
-        simthread.emitErrorFormatted('Error: ' + str(exception_obj.message))
 
-        print("CALLING UNLOAD MODULES NEW PLAYER")
         if simthread is not None:
+            print("CALLING UNLOAD MODULES NEW PLAYER")
+            simthread.emitErrorFormatted('Error: ' + str(exception_obj.message))
             simthread.sendStopSimulationRequest()
             simthread.simulationFinishedPostEvent(True)
         if steppable_registry is not None:

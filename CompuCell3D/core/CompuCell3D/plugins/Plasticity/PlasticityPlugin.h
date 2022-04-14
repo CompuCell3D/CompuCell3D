@@ -64,7 +64,7 @@ namespace CompuCell3D {
     double lambdaPlasticity;
     Simulator *simulator;
     Dim3D fieldDim;
-    BasicClassAccessor<PlasticityTracker> *plasticityTrackerAccessorPtr;
+    ExtraMembersGroupAccessor<PlasticityTracker> *plasticityTrackerAccessorPtr;
     typedef double (PlasticityPlugin::*diffEnergyFcnPtr_t)(float _deltaL,float _lBefore,const PlasticityTrackerData * _plasticityTrackerData,const CellG *_cell);
 
     diffEnergyFcnPtr_t diffEnergyFcnPtr;

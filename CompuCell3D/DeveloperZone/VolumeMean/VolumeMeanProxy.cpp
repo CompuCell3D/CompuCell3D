@@ -23,10 +23,12 @@
 #include "VolumeMean.h"
 
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/PluginManager.h>
 using namespace CompuCell3D;
 
-#include <BasicUtils/BasicPluginProxy.h>
+auto volumeMeanProxy = registerPlugin<Steppable, VolumeMean>(
+        "VolumeMean",
+        "Calculates mean volume with user defined exponent",
+	    &Simulator::steppableManager
+    );
 
-BasicPluginProxy<Steppable, VolumeMean>
-volumeMeanProxy("VolumeMean", "Calculates mean volume with user defined exponent",
-	    &Simulator::steppableManager);

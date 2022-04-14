@@ -73,7 +73,7 @@ namespace CompuCell3D {
 	template <class LinkType> class FPPLinkInventoryBase;
 
 	template <class LinkType>
-	class FOCALPOINTPLASTICITY_EXPORT FPPLinkInventoryTracker {
+	class FPPLinkInventoryTracker {
 	public:
 
 		FPPLinkInventoryTracker() {};
@@ -84,7 +84,7 @@ namespace CompuCell3D {
 
 	
 	// Hasher using Cantor pairing function
-	class FOCALPOINTPLASTICITY_EXPORT LinkInventoryHasher {
+	class LinkInventoryHasher {
 
 	public:
 
@@ -96,21 +96,21 @@ namespace CompuCell3D {
 
 
 	template <class LinkType>
-	class FOCALPOINTPLASTICITY_EXPORT FPPLinkInventoryBase {
+	class FPPLinkInventoryBase {
 
 	public:
 
 		typedef FPPLinkListBase<LinkType> FPPLinkList;
 		typedef FPPLinkInventoryBase<LinkType> FPPInventory_t;
 
-		typedef std::unordered_map<const FPPLinkID, LinkType*, LinkInventoryHasher> linkInventory_t;
+		typedef std::unordered_map<FPPLinkID, LinkType*, LinkInventoryHasher> linkInventory_t;
 		typedef typename linkInventory_t::iterator linkInventoryItr_t;
-		typedef std::pair<const FPPLinkID, LinkType*> linkInventoryPair_t;
+		typedef std::pair<FPPLinkID, LinkType*> linkInventoryPair_t;
 
 	protected:
 
 		Potts3D* potts;
-		BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* cellLinkInventoryTrackerAccessor;
+		ExtraMembersGroupAccessor<FPPLinkInventoryTracker<LinkType> >* cellLinkInventoryTrackerAccessor;
 
 		linkInventory_t linkInventory;
 
@@ -132,20 +132,16 @@ namespace CompuCell3D {
 			if (itr != linkInventory.end()) linkInventory.erase(linkId);
 		}
 
-		FPPInventory_t* getCellLinkInventory(CellG* _cell) { 
-			return &cellLinkInventoryTrackerAccessor->get(_cell->extraAttribPtr)->linkInv;
-		}
-
 	public:
 		FPPLinkInventoryBase() {}
-		FPPLinkInventoryBase(BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* _cellLinkInventoryTrackerAccessor, Potts3D* _potts)
+		FPPLinkInventoryBase(ExtraMembersGroupAccessor<FPPLinkInventoryTracker<LinkType> >* _cellLinkInventoryTrackerAccessor, Potts3D* _potts)
 		{
 			cellLinkInventoryTrackerAccessor = _cellLinkInventoryTrackerAccessor;
 			potts = _potts;
 		}
 		virtual ~FPPLinkInventoryBase() {}
 
-		BasicClassAccessor<FPPLinkInventoryTracker<LinkType> >* getFocalPointPlasticityCellLinkInventoryTrackerAccessorPtr() { return cellLinkInventoryTrackerAccessor; }
+		ExtraMembersGroupAccessor<FPPLinkInventoryTracker<LinkType> >* getFocalPointPlasticityCellLinkInventoryTrackerAccessorPtr() { return cellLinkInventoryTrackerAccessor; }
 
 		virtual std::set<FocalPointPlasticityTrackerData> getFPPTrackerDataSet(CellG* _cell)
 		{
@@ -186,6 +182,9 @@ namespace CompuCell3D {
 			for (linkInventoryItr_t itr = linkInventory.begin(); itr != linkInventory.end(); ++itr)
 				fppLinkList.push_back(itr->second);
 			return fppLinkList;
+		}
+		FPPInventory_t* getCellLinkInventory(CellG* _cell) { 
+			return &cellLinkInventoryTrackerAccessor->get(_cell->extraAttribPtr)->linkInv;
 		}
 		// Get link inventory list by cell
 		FPPLinkList getCellLinkList(CellG* _cell) { return getCellLinkInventory(_cell)->getLinkList(); }

@@ -30,10 +30,8 @@
 // // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
 
 // // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 // // // // #include "CellOrientationVector.h"
-// #include <CompuCell3D/plugins/PolarizationVector/PolarizationVector.h>
+#include <CompuCell3D/plugins/PolarizationVector/PolarizationVector.h>
 
 #include "CellOrientationDLLSpecifier.h"
 
@@ -68,7 +66,7 @@ namespace CompuCell3D {
 
     
 
-    BasicClassAccessor<LambdaCellOrientation> lambdaCellOrientationAccessor;
+    ExtraMembersGroupAccessor<LambdaCellOrientation> lambdaCellOrientationAccessor;
 
 	 //EnergyFunction data
 
@@ -76,7 +74,7 @@ namespace CompuCell3D {
     double lambdaCellOrientation;
     Simulator *simulator;
     Dim3D fieldDim;
-    BasicClassAccessor<PolarizationVector> *polarizationVectorAccessorPtr;
+    ExtraMembersGroupAccessor<PolarizationVector> *polarizationVectorAccessorPtr;
 	BoundaryStrategy *boundaryStrategy;
 
    bool lambdaFlexFlag;
@@ -103,8 +101,8 @@ namespace CompuCell3D {
 
 
 
-    BasicClassAccessor<PolarizationVector> * getPolarizationVectorAccessorPtr(){return polarizationVectorAccessorPtr;}
-    BasicClassAccessor<LambdaCellOrientation> * getLambdaCellOrientationAccessorPtr(){return &lambdaCellOrientationAccessor;}
+    ExtraMembersGroupAccessor<PolarizationVector> * getPolarizationVectorAccessorPtr(){return polarizationVectorAccessorPtr;}
+    ExtraMembersGroupAccessor<LambdaCellOrientation> * getLambdaCellOrientationAccessorPtr(){return &lambdaCellOrientationAccessor;}
     void setLambdaCellOrientation(CellG * _cell, double _lambda);
     double getLambdaCellOrientation(CellG * _cell);
 
