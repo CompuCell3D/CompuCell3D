@@ -7,7 +7,10 @@ from typing import Optional, Union, Tuple, List, Any, Dict
 import warnings
 from weakref import ref
 
-from vtkmodules.vtkRenderingCore import vtkRenderWindowInteractor, vtkRenderWindow
+from vtkmodules.vtkCommonCore import vtkPoints
+from vtkmodules.vtkCommonDataModel import vtkCellArray, vtkPolyData, vtkPolyLine
+from vtkmodules.vtkRenderingCore import vtkActor2D, vtkRenderWindowInteractor, vtkRenderWindow, vtkPolyDataMapper2D, \
+    vtkCoordinate
 
 import cc3d.CompuCellSetup
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
@@ -186,6 +189,10 @@ class JupyterGraphicsFrame(GraphicsFrame):
             raise RuntimeError('Field extractor not set')
 
         self.style: Optional[CC3DPyInteractorStyle] = None
+        self._border_actor: Optional[vtkActor2D] = None
+        self.border_color_unsel = [0.51, 0.64, 0.38]
+        self.border_color_sel = [1.0, 1.0, 0.0]
+        self._border_selected = False
 
         generic_drawer = GenericDrawer(boundary_strategy=pg.simulator.getBoundaryStrategy())
         generic_drawer.set_pixelized_cartesian_scene(pg.configuration.getSetting("PixelizedCartesianFields"))
@@ -210,12 +217,89 @@ class JupyterGraphicsFrame(GraphicsFrame):
 
         # Initialize initial rendered state
 
+        renderer = self.gd.get_renderer()
         # noinspection PyUnresolvedReferences
-        self.style.SetCurrentRenderer(self.gd.get_renderer())
+        self.style.SetCurrentRenderer(renderer)
+        renderer.AddViewProp(self.border_actor)
         self.draw()
         self.reset_camera()
         self.init_field_types()
         self.Render()
+
+    @property
+    def border_actor(self):
+        """Actor implementing the drawn frame border"""
+
+        if self._border_actor is not None:
+            return self._border_actor
+
+        border_points = vtkPoints()
+        border_points.SetNumberOfPoints(4)
+        border_points.InsertPoint(0, 0.0, 0.0, 0.0)
+        border_points.InsertPoint(1, 1.0, 0.0, 0.0)
+        border_points.InsertPoint(2, 1.0, 1.0, 0.0)
+        border_points.InsertPoint(3, 0.0, 1.0, 0.0)
+
+        border_cells = vtkCellArray()
+        border_cells.Initialize()
+        border_lines = vtkPolyLine()
+
+        border_lines.GetPointIds().SetNumberOfIds(4)
+        for i in range(4):
+            border_lines.GetPointIds().SetId(i, i)
+        border_cells.InsertNextCell(border_lines)
+
+        polydata = vtkPolyData()
+        polydata.Initialize()
+        polydata.SetPoints(border_points)
+        polydata.SetLines(border_cells)
+
+        view_coords = vtkCoordinate()
+        view_coords.SetCoordinateSystemToNormalizedViewport()
+
+        polymapper = vtkPolyDataMapper2D()
+        polymapper.SetInputData(polydata)
+        polymapper.SetTransformCoordinate(view_coords)
+
+        self._border_actor = vtkActor2D()
+        self._border_actor.SetMapper(polymapper)
+        self._border_actor.GetProperty().SetColor(self.border_color_unsel)
+        self._border_actor.GetProperty().SetLineWidth(10.0)
+        return self._border_actor
+
+    @property
+    def border_color(self) -> List[float]:
+        """Color of drawn frame border"""
+
+        return self.border_actor.GetProperty().GetColor()
+
+    @border_color.setter
+    def border_color(self, _color: List[float]):
+
+        self.border_actor.GetProperty().SetColor(_color)
+
+    @property
+    def border_width(self) -> float:
+        """Widget of drawn frame border"""
+
+        return self.border_actor.GetProperty().GetLineWidth()
+
+    @border_width.setter
+    def border_width(self, _width: float):
+
+        self.border_actor.GetProperty().SetLineWidth(_width)
+
+    @property
+    def border_selected(self) -> bool:
+        """Flag signifying whether the drawn border shows a selected state"""
+
+        return self._border_selected
+
+    @border_selected.setter
+    def border_selected(self, _border_selected: bool):
+
+        self._border_selected = _border_selected
+        self.border_color = self.border_color_sel if self._border_selected else self.border_color_unsel
 
     def get_vtk_window(self):
         """
