@@ -19,18 +19,18 @@ RandomNumberGeneratorMersenneT::RandomNumberGeneratorMersenneT() {
     valRange = double(prng.max() - minVal);
 };
 
-RandomNumberGeneratorMersenneT::RandomNumberGeneratorMersenneT(const unsigned int& seed) {
+RandomNumberGeneratorMersenneT::RandomNumberGeneratorMersenneT(const unsigned int &seed) {
     setSeed(seed);
     minVal = prng.min();
     valRange = double(prng.max() - minVal);
 }
 
-void RandomNumberGeneratorMersenneT::setSeed(const unsigned int& _seed) { 
+void RandomNumberGeneratorMersenneT::setSeed(const unsigned int &_seed) {
     std::mt19937 prng(_seed);
     seed = _seed;
 }
 
-double RandomNumberGeneratorMersenneT::getRatio() { 
+double RandomNumberGeneratorMersenneT::getRatio() {
     return double(prng() - minVal) / valRange;
 }
 
@@ -39,22 +39,21 @@ RandomNumberGeneratorLegacy::RandomNumberGeneratorLegacy() {
     setSeed(1);
 }
 
-RandomNumberGeneratorLegacy::RandomNumberGeneratorLegacy(const unsigned int& seed) {
-    idum = -(int)seed;
+RandomNumberGeneratorLegacy::RandomNumberGeneratorLegacy(const unsigned int &seed) {
+    idum = -(int) seed;
     setSeed(seed);
 }
 
-void RandomNumberGeneratorLegacy::setSeed(const unsigned int& _seed) { 
+void RandomNumberGeneratorLegacy::setSeed(const unsigned int &_seed) {
     seed = _seed;
 
     if (seed < 0) {
         struct timeb t;
         ftime(&t);
         setSeed(abs(int((t.time * t.millitm) % 655337)));
-    }
-    else {
-        idum = -(int)seed;
-        for (unsigned int i=0; i < 100; i++) getRatio();
+    } else {
+        idum = -(int) seed;
+        for (unsigned int i = 0; i < 100; i++) getRatio();
     }
 }
 
@@ -78,15 +77,15 @@ double RandomNumberGeneratorLegacy::getRatio() {
             mk = mj - mk;
             if (mk < CC3DPRNG_MZ) mk += CC3DPRNG_MBIG;
             mj = ma[j];
-        } while ( ++i <= 54 );
+        } while (++i <= 54);
         k = 1;
         do {
             i = 1;
             do {
-                ma[i] -= ma[1+(i+30) % 55];
+                ma[i] -= ma[1 + (i + 30) % 55];
                 if (ma[i] < CC3DPRNG_MZ) ma[i] += CC3DPRNG_MBIG;
-            } while ( ++i <= 55 );
-        } while ( ++k <= 4 );
+            } while (++i <= 55);
+        } while (++k <= 4);
         inext = 0;
         inextp = 31;
         idum = 1;
@@ -99,7 +98,7 @@ double RandomNumberGeneratorLegacy::getRatio() {
     return mj * CC3DPRNG_FAC;
 }
 
-RandomNumberGenerator* RandomNumberGeneratorFactory::generateRandomNumberGenerator(const unsigned int& seed) {
+RandomNumberGenerator *RandomNumberGeneratorFactory::generateRandomNumberGenerator(const unsigned int &seed) {
 
     switch (type) {
         case MERSENNE_TWISTER:
@@ -111,7 +110,7 @@ RandomNumberGenerator* RandomNumberGeneratorFactory::generateRandomNumberGenerat
 
 }
 
-RandomNumberGenerator* RandomNumberGeneratorFactory::getInstance(const unsigned int& seed) {
+RandomNumberGenerator *RandomNumberGeneratorFactory::getInstance(const unsigned int &seed) {
     if (!singleton) singleton = generateRandomNumberGenerator(seed);
     return singleton;
 }

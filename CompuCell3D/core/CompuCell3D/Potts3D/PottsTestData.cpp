@@ -1,5 +1,5 @@
 #include "PottsTestData.h"
-#include <fstream> 
+#include <fstream>
 #include <sstream>
 #include <iomanip>
 #include <limits>
@@ -27,7 +27,7 @@ bool PottsTestData::write_header(std::string file_name) {
         out << "motility,";
         out << "pixel_copy_accepted,";
         out << "acceptance_function_probability";
-        for (const auto& kv : energyFunctionNameToValueMap) {
+        for (const auto &kv: energyFunctionNameToValueMap) {
             out << "," << kv.first;
         }
         if (using_connectivity) {
@@ -40,7 +40,7 @@ bool PottsTestData::write_header(std::string file_name) {
 }
 
 bool PottsTestData::serialize(std::string file_name) {
-    
+
     ofstream out(file_name, std::ofstream::app);
     if (out) {
         out << changePixel.x << ",";
@@ -49,12 +49,12 @@ bool PottsTestData::serialize(std::string file_name) {
         out << changePixelNeighbor.x << ",";
         out << changePixelNeighbor.y << ",";
         out << changePixelNeighbor.z << ",";
-        out << std::setprecision(6)<< std::fixed << motility << ",";
-        out << pixelCopyAccepted << ",";        
-        out << std::setprecision(6)<< std::fixed << acceptanceFunctionProbability;
+        out << std::setprecision(6) << std::fixed << motility << ",";
+        out << pixelCopyAccepted << ",";
+        out << std::setprecision(6) << std::fixed << acceptanceFunctionProbability;
 
-        for (const auto& kv : energyFunctionNameToValueMap) {
-            out << "," << std::setprecision(6)<< std::fixed << kv.second;            
+        for (const auto &kv: energyFunctionNameToValueMap) {
+            out << "," << std::setprecision(6) << std::fixed << kv.second;
         }
         if (using_connectivity) {
             out << "," << connectivity_energy;
@@ -69,9 +69,9 @@ bool PottsTestData::serialize(std::string file_name) {
 }
 
 
-std::vector<std::string> PottsTestData::split_string(std::string str_to_plit, char delimiter) {
+std::vector <std::string> PottsTestData::split_string(std::string str_to_plit, char delimiter) {
 
-    std::vector<std::string> result;
+    std::vector <std::string> result;
 
     //create string stream from the string
     stringstream s_stream(str_to_plit);
@@ -80,14 +80,14 @@ std::vector<std::string> PottsTestData::split_string(std::string str_to_plit, ch
         std::string substr;
 
         //get first string delimited by comma
-        getline(s_stream, substr, delimiter); 
+        getline(s_stream, substr, delimiter);
         result.push_back(substr);
     }
 
     return result;
 }
 
-PottsTestDataHeaderSpecs PottsTestData::deserialize_header(std::ifstream & infile) {
+PottsTestDataHeaderSpecs PottsTestData::deserialize_header(std::ifstream &infile) {
     std::string line;
     std::getline(infile, line);
 
@@ -98,9 +98,10 @@ PottsTestDataHeaderSpecs PottsTestData::deserialize_header(std::ifstream & infil
 
 }
 
-PottsTestData PottsTestData::deserialize_single_potts_data(std::string line, PottsTestDataHeaderSpecs & potts_test_data_header_specs) {
+PottsTestData
+PottsTestData::deserialize_single_potts_data(std::string line, PottsTestDataHeaderSpecs &potts_test_data_header_specs) {
 
-    std::vector<std::string> line_values = split_string(line, ',');
+    std::vector <std::string> line_values = split_string(line, ',');
     PottsTestData potts_test_data;
 
     potts_test_data.changePixel.x = strToUInt(line_values[0]);
@@ -113,10 +114,10 @@ PottsTestData PottsTestData::deserialize_single_potts_data(std::string line, Pot
 
     potts_test_data.motility = strToDouble(line_values[6]);
 
-    potts_test_data.pixelCopyAccepted = (bool)strToInt(line_values[7]);
-        
+    potts_test_data.pixelCopyAccepted = (bool) strToInt(line_values[7]);
+
     potts_test_data.acceptanceFunctionProbability = strToDouble(line_values[8]);
-    
+
     size_t possible_connectivity_column_idx = potts_test_data_header_specs.columns.size() - 1;
     size_t max_col_idx = potts_test_data_header_specs.columns.size();
     if (potts_test_data_header_specs.columns[possible_connectivity_column_idx] == "Connectivity") {
@@ -126,18 +127,18 @@ PottsTestData PottsTestData::deserialize_single_potts_data(std::string line, Pot
     }
 
     for (unsigned int i = potts_test_data_header_specs.energy_function_position; i < max_col_idx; ++i) {
-        potts_test_data.energyFunctionNameToValueMap[potts_test_data_header_specs.columns[i]] = strToDouble(line_values[i]);
+        potts_test_data.energyFunctionNameToValueMap[potts_test_data_header_specs.columns[i]] = strToDouble(
+                line_values[i]);
     }
 
-    
 
     return potts_test_data;
 
 }
 
-std::vector<PottsTestData> PottsTestData::deserialize_potts_data_sequence(std::ifstream & infile) {
+std::vector <PottsTestData> PottsTestData::deserialize_potts_data_sequence(std::ifstream &infile) {
     //ifstream infile(file_name);
-    std::vector<PottsTestData> potts_test_data_vector;
+    std::vector <PottsTestData> potts_test_data_vector;
     if (infile) {
 
         PottsTestDataHeaderSpecs potts_test_data_header_specs = deserialize_header(infile);
@@ -152,9 +153,9 @@ std::vector<PottsTestData> PottsTestData::deserialize_potts_data_sequence(std::i
 }
 
 double PottsTestData::relative_difference(double x, double y) {
-    
+
     return fabs(x - y) / (x + y + numeric_limits<double>::epsilon());
-    
+
 }
 
 double PottsTestData::abs_difference(double x, double y) {
@@ -163,39 +164,42 @@ double PottsTestData::abs_difference(double x, double y) {
 
 }
 
-bool PottsTestData::compare_potts_data(PottsTestData & potts_data_to_compare) {
-    
+bool PottsTestData::compare_potts_data(PottsTestData &potts_data_to_compare) {
+
     double tol = 1e-6;
     if (changePixel != potts_data_to_compare.changePixel) throw CC3DException("change pixel is different ");
-    if (changePixelNeighbor != potts_data_to_compare.changePixelNeighbor) throw CC3DException("change pixel neighbor is different ");
-    if (using_connectivity != potts_data_to_compare.using_connectivity) throw CC3DException("using_connectivity is different ");
-    if (connectivity_energy != potts_data_to_compare.connectivity_energy) throw CC3DException("connectivity_energy is different ");
-    
+    if (changePixelNeighbor != potts_data_to_compare.changePixelNeighbor)
+        throw CC3DException("change pixel neighbor is different ");
+    if (using_connectivity != potts_data_to_compare.using_connectivity)
+        throw CC3DException("using_connectivity is different ");
+    if (connectivity_energy != potts_data_to_compare.connectivity_energy)
+        throw CC3DException("connectivity_energy is different ");
+
     // cerr << "pt=" << potts_data_to_compare.changePixel << " neighbor=" << potts_data_to_compare.changePixelNeighbor << endl;
 
-    for (const auto& kv : energyFunctionNameToValueMap) {
-        const auto & mitr_computed = potts_data_to_compare.energyFunctionNameToValueMap.find(kv.first);
+    for (const auto &kv: energyFunctionNameToValueMap) {
+        const auto &mitr_computed = potts_data_to_compare.energyFunctionNameToValueMap.find(kv.first);
         if (mitr_computed != potts_data_to_compare.energyFunctionNameToValueMap.end()) {
 
             double difference_value = abs_difference(kv.second, mitr_computed->second);
-            
+
             // cerr<<"comparison energy: "<< kv.first << " recorded=" << kv.second << " computed=" << mitr_computed->second << endl;
 
             if (difference_value > tol) {
-                cerr << "detected a difference in " << kv.first << " recorded=" << kv.second << " computed=" << mitr_computed->second << endl;
+                cerr << "detected a difference in " << kv.first << " recorded=" << kv.second << " computed="
+                     << mitr_computed->second << endl;
                 cerr << "difference_value=" << difference_value << endl;
 
                 throw CC3DException(string(kv.first) + " energy term different ");
             }
-        }
-        else {
+        } else {
             throw CC3DException(string(kv.first) + " energy was not found in the computed energy container");
         }
     }
-        
 
-    if (abs_difference(motility , potts_data_to_compare.motility) >= tol) throw CC3DException("motility is different");
-    if (abs_difference(acceptanceFunctionProbability, potts_data_to_compare.acceptanceFunctionProbability) >= 1e-4) 
+
+    if (abs_difference(motility, potts_data_to_compare.motility) >= tol) throw CC3DException("motility is different");
+    if (abs_difference(acceptanceFunctionProbability, potts_data_to_compare.acceptanceFunctionProbability) >= 1e-4)
         throw CC3DException("acceptanceFunctionProbability is different");
-    
+
 }

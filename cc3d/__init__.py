@@ -9,9 +9,9 @@ import sys
 from os.path import dirname, join, abspath
 from pathlib import Path
 
-__version__ = "4.3.0"
+__version__ = "4.3.1"
 __revision__ = "2"
-__githash__ = "a690adaa"
+__githash__ = "46210c61"
 
 from . import config
 

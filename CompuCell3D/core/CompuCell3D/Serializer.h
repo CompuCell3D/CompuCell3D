@@ -3,19 +3,22 @@
 
 #include <string>
 
-namespace CompuCell3D{
+namespace CompuCell3D {
 
-   class Serializer{
-      public:
-         Serializer(){}
-         virtual ~Serializer(){}
-         virtual void serialize(){}
-         virtual void readFromFile(){}
+    class Serializer {
+    public:
+        Serializer() {}
 
-         std::string fileName;
-         std::string auxPath;
-         std::string serializedFileExtension;
-   };
+        virtual ~Serializer() {}
+
+        virtual void serialize() {}
+
+        virtual void readFromFile() {}
+
+        std::string fileName;
+        std::string auxPath;
+        std::string serializedFileExtension;
+    };
 
 }
 
