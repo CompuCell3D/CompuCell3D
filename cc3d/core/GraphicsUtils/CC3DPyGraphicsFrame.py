@@ -18,7 +18,7 @@ import warnings
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
 from vtkmodules.vtkIOExportPython import vtkGL2PSExporter
 from vtkmodules.vtkIOImage import vtkJPEGWriter, vtkPNGWriter
-from vtkmodules.vtkRenderingCore import vtkRenderWindowInteractor, vtkRenderWindow, vtkWindowToImageFilter
+from vtkmodules.vtkRenderingCore import vtkRenderWindowInteractor, vtkRenderWindow, vtkWindowToImageFilter, vtkTextActor
 from vtkmodules.util import numpy_support
 
 from cc3d import CompuCellSetup
@@ -27,7 +27,7 @@ from cc3d.core.BasicSimulationData import BasicSimulationData
 from cc3d.core import Configuration
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
 from cc3d.core.GraphicsUtils.FieldStreamer import FieldStreamer
-from cc3d.core.GraphicsUtils.GraphicsFrame import GraphicsFrame
+from cc3d.core.GraphicsUtils.GraphicsFrame import GraphicsFrame, default_field_label
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrameIO import *
 from cc3d.core.GraphicsUtils.utils import extract_address_int_from_vtk_object
 from cc3d.cpp.CompuCell import Dim3D
@@ -237,6 +237,7 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
 
         self.metadata_data_dict: Optional[dict] = None
         self.style = None
+        self._field_label_actor: Optional[vtkTextActor] = None
 
         CC3DPyGraphicsFrameInterface.__init__(self, conn=interface_conn)
         GraphicsFrame.__init__(self,
@@ -257,8 +258,10 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
         self.metadata_fetcher_dict_copy = self.metadata_fetcher_dict.copy()
         self.metadata_fetcher_dict = {k: self.get_metadata_prefetched for k in self.metadata_fetcher_dict.keys()}
 
+        renderer = self.gd.get_renderer()
         # noinspection PyUnresolvedReferences
-        self.style.SetCurrentRenderer(self.gd.get_renderer())
+        self.style.SetCurrentRenderer(renderer)
+        renderer.AddActor(self.field_label_actor)
 
         bsd: BasicSimulationData = MsgGetBasicSimData.request(interface_conn, True)
         self.current_bsd = bsd
@@ -304,6 +307,15 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
             obj.TerminateApp()
 
         self.renWin.Render()
+
+    @property
+    def field_label_actor(self):
+        """Field label actor of the frame. Text is synchronized with field name"""
+
+        if self._field_label_actor is None:
+            self._field_label_actor = default_field_label()
+            self._field_label_actor.SetInput(self.field_name)
+        return self._field_label_actor
 
     def get_vtk_window(self):
         """
@@ -402,6 +414,7 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
             return
 
         self.field_name = _field_name
+        self.field_label_actor.SetInput(self.field_name)
 
         self.current_screenshot_data = self.compute_current_screenshot_data()
 

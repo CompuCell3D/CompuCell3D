@@ -10,11 +10,11 @@ from weakref import ref
 from vtkmodules.vtkCommonCore import vtkPoints
 from vtkmodules.vtkCommonDataModel import vtkCellArray, vtkPolyData, vtkPolyLine
 from vtkmodules.vtkRenderingCore import vtkActor2D, vtkRenderWindowInteractor, vtkRenderWindow, vtkPolyDataMapper2D, \
-    vtkCoordinate
+    vtkCoordinate, vtkTextActor
 
 import cc3d.CompuCellSetup
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
-from cc3d.core.GraphicsUtils.GraphicsFrame import GraphicsFrame
+from cc3d.core.GraphicsUtils.GraphicsFrame import GraphicsFrame, default_field_label
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame import (
     CC3DPyGraphicsFrameClientBase, CC3DPyInteractorStyle, np_img_data, save_img
 )
@@ -193,6 +193,7 @@ class JupyterGraphicsFrame(GraphicsFrame):
         self.border_color_unsel = [0.51, 0.64, 0.38]
         self.border_color_sel = [1.0, 1.0, 0.0]
         self._border_selected = False
+        self._field_label_actor: Optional[vtkTextActor] = None
 
         generic_drawer = GenericDrawer(boundary_strategy=pg.simulator.getBoundaryStrategy())
         generic_drawer.set_pixelized_cartesian_scene(pg.configuration.getSetting("PixelizedCartesianFields"))
@@ -221,10 +222,15 @@ class JupyterGraphicsFrame(GraphicsFrame):
         # noinspection PyUnresolvedReferences
         self.style.SetCurrentRenderer(renderer)
         renderer.AddViewProp(self.border_actor)
+        renderer.AddActor(self.field_label_actor)
         self.draw()
         self.reset_camera()
         self.init_field_types()
         self.Render()
+
+    def Render(self):
+        self._field_label_actor.SetInput(self.field_name)
+        super().Render()
 
     @property
     def border_actor(self):
@@ -300,6 +306,14 @@ class JupyterGraphicsFrame(GraphicsFrame):
 
         self._border_selected = _border_selected
         self.border_color = self.border_color_sel if self._border_selected else self.border_color_unsel
+
+    @property
+    def field_label_actor(self):
+        """Field label actor of the frame. Text is synchronized with field name"""
+
+        if self._field_label_actor is None:
+            self._field_label_actor = default_field_label()
+        return self._field_label_actor
 
     def get_vtk_window(self):
         """
