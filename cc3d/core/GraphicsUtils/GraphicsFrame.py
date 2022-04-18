@@ -9,6 +9,27 @@ import cc3d.CompuCellSetup
 from cc3d.core.GraphicsUtils.utils import qcolor_to_rgba, cs_string_to_typed_list
 from collections import OrderedDict
 
+from vtkmodules.vtkRenderingCore import vtkTextActor
+
+
+def default_field_label() -> vtkTextActor:
+    """Generate a default field label actor"""
+
+    field_label_actor = vtkTextActor()
+    field_label_actor.GetTextProperty().SetFontFamilyToArial()
+    field_label_actor.GetTextProperty().SetFontSize(14)
+    field_label_actor.GetTextProperty().SetColor(1, 1, 1)
+    field_label_actor.GetTextProperty().SetVerticalJustificationToTop()
+    field_label_actor.GetTextProperty().SetJustificationToRight()
+    field_label_actor.GetTextProperty().FrameOn()
+    field_label_actor.GetTextProperty().SetFrameWidth(3)
+    field_label_actor.GetTextProperty().SetBackgroundOpacity(1.0)
+    field_label_actor.SetTextScaleModeToViewport()
+    field_label_actor.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
+    field_label_actor.GetPosition2Coordinate().SetCoordinateSystemToNormalizedViewport()
+    field_label_actor.SetPosition(0.98, 0.98)
+    return field_label_actor
+
 
 class GraphicsFrame:
     """
