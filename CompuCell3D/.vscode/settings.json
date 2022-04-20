@@ -56,4 +56,5 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp"
     },
+    "C_Cpp.default.configurationProvider": "go2sh.cmake-integration",
 }

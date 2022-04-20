@@ -1256,13 +1256,7 @@ std::vector<double> ReactionDiffusionSolverFVM::totalMediumConcentration() {
 	
         
 		// Calculate total concentrations on each thread
-		//std::vector<double>  sumEl = std::vector<double>(numFields, 0.0);
-	// #pragma omp declare reduction(vec_float_plus : std::vector<double> : \
-	// 							std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<float>())) \
-	// 					initializer(omp_priv = decltype(omp_orig)(omp_orig.size()));
-
-
-	//std::vector<vector<double>> tempvec (pixelVecPar.size(),std::vector<double>(numFields,0.0));
+		
 	std::vector<double> sumEl(numFields,0.0);
 	int n_threads = omp_get_num_threads();
 	std::vector<vector<double>> res (n_threads,std::vector<double>(numFields, 0.0));
