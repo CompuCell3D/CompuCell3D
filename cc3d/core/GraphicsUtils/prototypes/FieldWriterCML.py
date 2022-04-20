@@ -1,7 +1,9 @@
 """
 This is a Python prototype of future C++ code.
 
-Permanent implementation will likely reside in CompuCell3D/core/pyinterface/PlayerPythonNew
+Permanent implementation resides in CompuCell3D/core/pyinterface/PlayerPythonNew
+
+Porting is included here to prevent requiring custom builds to be built by friends who aren't well set up to do so
 """
 
 # todo: add permanent implementation to backend
@@ -12,8 +14,15 @@ from typing import Dict, List, Optional
 from vtkmodules.vtkCommonCorePython import vtkDoubleArray, vtkCharArray, vtkLongArray
 from vtkmodules.vtkCommonDataModelPython import vtkStructuredPoints
 
+from cc3d.core.GraphicsUtils.utils import extract_address_int_from_vtk_object
 from cc3d.cpp.CompuCell import cellfield, Point3D, Simulator, floatfield
 from cc3d.cpp.PlayerPython import FieldStorage, ScalarFieldCellLevel, VectorFieldCellLevel, Coodrinates3DFloat
+
+try:
+    from cc3d.cpp import PlayerPython
+    from cc3d.cpp.PlayerPython import FieldWriterCML as FieldWriterCMLCpp
+except ImportError:
+    FieldWriterCMLCpp = None
 
 
 class FieldTypeCML(Enum):
@@ -47,7 +56,7 @@ class FieldWriterCML:
 
         self.sim = sim
         self.latticeData = vtkStructuredPoints()
-        fieldDim = self.sim.getPotts().getCellFieldG().getDim()
+        fieldDim = self.getFieldDim()
         self.latticeData.SetDimensions(fieldDim.x, fieldDim.y, fieldDim.z)
 
     def setFieldStorage(self, _fsPtr: FieldStorage):
@@ -355,3 +364,44 @@ class FieldWriterCML:
         for i in range(len(self.arrayNameVec)):
             self.latticeData.GetPointData().RemoveArray(self.arrayNameVec[i])
         self.arrayNameVec.clear()
+        self.arrayTypeVec.clear()
+
+    def numFields(self):
+        return len(self.arrayNameVec)
+
+    def getFieldName(self, i):
+        return self.arrayNameVec[i]
+
+    def getFieldType(self, i):
+        return self.arrayTypeVec[i]
+
+    def getFieldDim(self):
+
+        return self.sim.getPotts().getCellFieldG().getDim()
+
+    def getArrayAddr(self, arg):
+        field = None
+        if isinstance(arg, int):
+            field = self.latticeData.GetPointData().GetArray(self.arrayNameVec[arg])
+        elif isinstance(arg, str):
+            field = self.latticeData.GetPointData().GetArray(arg)
+        if field is not None:
+            return extract_address_int_from_vtk_object(field)
+        return 0
+
+
+if FieldWriterCMLCpp is not None:
+
+    FieldWriterCML = FieldWriterCMLCpp
+
+    class FieldTypeCMLCpp(Enum):
+        """Enums for field type in field writer"""
+
+        CellField = PlayerPython.FieldTypeCML_CellField
+        ConField = PlayerPython.FieldTypeCML_ConField
+        ScalarField = PlayerPython.FieldTypeCML_ScalarField
+        ScalarFieldCellLevel = PlayerPython.FieldTypeCML_ScalarFieldCellLevel
+        VectorField = PlayerPython.FieldTypeCML_VectorField
+        VectorFieldCellLevel = PlayerPython.FieldTypeCML_VectorFieldCellLevel
+
+    FieldTypeCML = FieldTypeCMLCpp

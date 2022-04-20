@@ -26,11 +26,9 @@ from cc3d.CompuCellSetup import simulation_utils
 from cc3d.core.BasicSimulationData import BasicSimulationData
 from cc3d.core import Configuration
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
-from cc3d.core.GraphicsUtils.FieldStreamer import FieldStreamer
+from cc3d.core.GraphicsUtils.FieldStreamer import FieldStreamer, FieldStreamerData
 from cc3d.core.GraphicsUtils.GraphicsFrame import GraphicsFrame, default_field_label
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrameIO import *
-from cc3d.core.GraphicsUtils.utils import extract_address_int_from_vtk_object
-from cc3d.cpp.CompuCell import Dim3D
 from cc3d.cpp.PlayerPython import FieldExtractorCML
 
 from .prototypes.FieldWriterCML import FieldWriterCML
@@ -192,12 +190,12 @@ class CC3DPyGraphicsDrawer(GenericDrawer):
 
     def _request_update_field_extractor(self) -> bool:
 
-        streamer: FieldStreamer = MsgGetStreamedData.request(self._conn, True)
-        if streamer is None:
+        fsd: FieldStreamerData = MsgGetStreamedData.request(self._conn, True)
+        if fsd is None:
             return False
-        self._streamed_points = FieldStreamer.loadp(streamer.data)
-        self.field_extractor.setFieldDim(Dim3D(*streamer.data.field_dim))
-        self.field_extractor.setSimulationData(extract_address_int_from_vtk_object(self._streamed_points))
+        self._streamed_points = FieldStreamer(data=fsd)
+        self.field_extractor.setFieldDim(self._streamed_points.getFieldDim())
+        self.field_extractor.setSimulationData(self._streamed_points.getPointsAddr())
         return True
 
 
@@ -1162,7 +1160,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
         field_dict = CompuCellSetup.persistent_globals.field_registry.get_fields_to_create_dict()
         return {field_name: field_adapter.field_type for field_name, field_adapter in field_dict.items()}
 
-    def _service_get_streamed_data(self) -> FieldStreamer:
+    def _service_get_streamed_data(self) -> FieldStreamerData:
         field_storage = CompuCellSetup.persistent_globals.persistent_holder['field_storage']
         field_writer = FieldWriterCML()
         field_writer.init(CompuCellSetup.persistent_globals.simulator)
@@ -1173,7 +1171,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
         if self._field_name != 'Cell_Field':
             field_writer.addFieldForOutput(self._field_name)
 
-        return FieldStreamer(field_writer=field_writer)
+        return FieldStreamer.dump(field_writer=field_writer)
 
     def _service_get_bsd(self) -> BasicSimulationData:
         return self._standard_bsd()
