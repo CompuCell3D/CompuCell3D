@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto viscosityProxy = registerPlugin<Plugin, ViscosityPlugin>(
-    "Viscosity", 
-    "Viscosity contact term",
-    &Simulator::pluginManager
+        "Viscosity",
+        "Viscosity contact term",
+        &Simulator::pluginManager
 );

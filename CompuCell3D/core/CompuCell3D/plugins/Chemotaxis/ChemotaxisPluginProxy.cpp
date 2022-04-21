@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto chemotaxisProxy = registerPlugin<Plugin, ChemotaxisPlugin>(
-	"Chemotaxis", 
-	"Adds the chemotactic energy function.",
-	&Simulator::pluginManager
+        "Chemotaxis",
+        "Adds the chemotactic energy function.",
+        &Simulator::pluginManager
 );

@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto orientedContactProxy = registerPlugin<Plugin, OrientedContactPlugin>(
-	"OrientedContact", 
-	"Adds the interaction energy function and orientation.",
-	&Simulator::pluginManager
+        "OrientedContact",
+        "Adds the interaction energy function and orientation.",
+        &Simulator::pluginManager
 );

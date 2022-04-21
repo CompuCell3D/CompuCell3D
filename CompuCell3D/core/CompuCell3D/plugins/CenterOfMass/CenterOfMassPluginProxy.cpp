@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto centerOfMassProxy = registerPlugin<Plugin, CenterOfMassPlugin>(
-    "CenterOfMass", 
-    "Tracks the center of mass for each cell.", 
-    &Simulator::pluginManager
+        "CenterOfMass",
+        "Tracks the center of mass for each cell.",
+        &Simulator::pluginManager
 );

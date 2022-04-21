@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto contactProxy = registerPlugin<Plugin, CompartmentPlugin>(
-	"ContactCompartment", 
-	"Adds the interaction energy function.",
-	&Simulator::pluginManager
+        "ContactCompartment",
+        "Adds the interaction energy function.",
+        &Simulator::pluginManager
 );

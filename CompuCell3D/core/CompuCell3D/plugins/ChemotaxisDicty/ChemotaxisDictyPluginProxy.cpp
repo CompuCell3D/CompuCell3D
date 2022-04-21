@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto chemotaxisDictyProxy = registerPlugin<Plugin, ChemotaxisDictyPlugin>(
-	"ChemotaxisDicty", 
-	"Adds the chemotactic energy function for dicty.",
-	&Simulator::pluginManager
+        "ChemotaxisDicty",
+        "Adds the chemotactic energy function for dicty.",
+        &Simulator::pluginManager
 );

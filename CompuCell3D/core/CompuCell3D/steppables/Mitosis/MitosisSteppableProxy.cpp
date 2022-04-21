@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto mitosisSteppableProxy = registerPlugin<Steppable, MitosisSteppable>(
-	"Mitosis", 
-	"Splits cells on demand with user selectable criteria. Called From Python",
-	&Simulator::steppableManager
+        "Mitosis",
+        "Splits cells on demand with user selectable criteria. Called From Python",
+        &Simulator::steppableManager
 );

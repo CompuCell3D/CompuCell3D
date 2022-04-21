@@ -9,13 +9,13 @@
 using namespace CompuCell3D;
 
 auto dictyChemotaxisSteppableProxy = registerPlugin<Steppable, DictyChemotaxisSteppable>(
-	"DictyChemotaxisSteppable", 
-	"Enables chemotexis in cells by by simple tagging",
-	&Simulator::steppableManager
+        "DictyChemotaxisSteppable",
+        "Enables chemotaxis in cells by by simple tagging",
+        &Simulator::steppableManager
 );
 
 auto dictyInitializerSteppableProxy = registerPlugin<Steppable, DictyFieldInitializer>(
-	"DictyInitializer", 
-	"Initialzies cell field for dictyostelim simulation",
-	&Simulator::steppableManager
+        "DictyInitializer",
+        "Initializes cell field for dictyostelim simulation",
+        &Simulator::steppableManager
 );

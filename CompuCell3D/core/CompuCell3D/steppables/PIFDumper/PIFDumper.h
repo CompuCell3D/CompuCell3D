@@ -5,45 +5,49 @@
 
 
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Steppable.h>
-
-// // // #include <string>
 
 
 #include "PIFDumperDLLSpecifier.h"
 
 namespace CompuCell3D {
-  class Potts3D;
-  class CellTypePlugin;
-  class PIFDUMPER_EXPORT PIFDumper : public Steppable {
-    Potts3D *potts;
+    class Potts3D;
 
-    std::string pifname;
-    int numDigits;
-    std::string pifFileExtension;
-    CellTypePlugin * typePlug;
+    class CellTypePlugin;
 
-  public:
+    class PIFDUMPER_EXPORT PIFDumper : public Steppable {
+        Potts3D *potts;
 
-    PIFDumper();
-    PIFDumper(std::string);
+        std::string pifname;
+        int numDigits;
+        std::string pifFileExtension;
+        CellTypePlugin *typePlug;
 
-    void setPotts(Potts3D *potts) {this->potts = potts;}
+    public:
 
-    // SimObject interface
-    virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
+        PIFDumper();
 
-    // Begin Steppable interface
-    virtual void start();
-    virtual void step(const unsigned int currentStep);
-    virtual void finish() {}
-    // End Steppable interface
+        PIFDumper(std::string);
+
+        void setPotts(Potts3D *potts) { this->potts = potts; }
+
+        // SimObject interface
+        virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData = 0);
+
+        // Begin Steppable interface
+        virtual void start();
+
+        virtual void step(const unsigned int currentStep);
+
+        virtual void finish() {}
+        // End Steppable interface
 
 
-    //SteerableObject interface
-    virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
-    virtual std::string steerableName();
-    virtual std::string toString();
-  };
+        //SteerableObject interface
+        virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag = false);
+
+        virtual std::string steerableName();
+
+        virtual std::string toString();
+    };
 };
 #endif

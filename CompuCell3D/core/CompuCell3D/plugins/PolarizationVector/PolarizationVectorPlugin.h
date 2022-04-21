@@ -4,11 +4,7 @@
 #define POLARIZATIONVECTORPLUGIN_H
 
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Plugin.h>
 
-
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <vector>
 #include "PolarizationVector.h"
 
 
@@ -16,24 +12,29 @@
 
 namespace CompuCell3D {
 
-  class CellG;
-  class POLARIZATIONVECTOR_EXPORT PolarizationVectorPlugin : public Plugin{
+    class CellG;
 
-    ExtraMembersGroupAccessor<PolarizationVector> polarizationVectorAccessor;
+    class POLARIZATIONVECTOR_EXPORT PolarizationVectorPlugin : public Plugin {
 
-  public:
+        ExtraMembersGroupAccessor <PolarizationVector> polarizationVectorAccessor;
 
-    PolarizationVectorPlugin();
-    virtual ~PolarizationVectorPlugin();
+    public:
 
-    ExtraMembersGroupAccessor<PolarizationVector> * getPolarizationVectorAccessorPtr(){return &polarizationVectorAccessor;}
+        PolarizationVectorPlugin();
 
-    // SimObject interface
-    virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
-    virtual void extraInit(Simulator *simulator);
+        virtual ~PolarizationVectorPlugin();
 
-    void setPolarizationVector(CellG * _cell, float _x, float _y, float _z);
-	std::vector<float> getPolarizationVector(CellG * _cell);
-  };
+        ExtraMembersGroupAccessor <PolarizationVector> *
+        getPolarizationVectorAccessorPtr() { return &polarizationVectorAccessor; }
+
+        // SimObject interface
+        virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData = 0);
+
+        virtual void extraInit(Simulator *simulator);
+
+        void setPolarizationVector(CellG *_cell, float _x, float _y, float _z);
+
+        std::vector<float> getPolarizationVector(CellG *_cell);
+    };
 };
 #endif

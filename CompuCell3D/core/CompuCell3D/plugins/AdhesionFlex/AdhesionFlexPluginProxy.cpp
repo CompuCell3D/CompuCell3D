@@ -7,7 +7,7 @@
 
 using namespace CompuCell3D;
 
-auto adhesionFlexProxy = registerPlugin<Plugin, AdhesionFlexPlugin>("AdhesionFlex", 
-	"Contact energy function .Energy is calculated as a matrix product of cadherins conncentration with custom functional forms or entirely using custom functions", 
-	&Simulator::pluginManager
+auto adhesionFlexProxy = registerPlugin<Plugin, AdhesionFlexPlugin>("AdhesionFlex",
+                                                                    "Contact energy function .Energy is calculated as a matrix product of cadherins conncentration with custom functional forms or entirely using custom functions",
+                                                                    &Simulator::pluginManager
 );

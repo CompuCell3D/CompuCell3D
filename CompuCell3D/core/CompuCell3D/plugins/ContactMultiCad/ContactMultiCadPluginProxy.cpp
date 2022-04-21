@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto contactMultiCadProxy = registerPlugin<Plugin, ContactMultiCadPlugin>(
-	"ContactMultiCad", 
-	"Contact energy function. Energy is calculated as a matrix product of cadherins conncentrations",
-	&Simulator::pluginManager
+        "ContactMultiCad",
+        "Contact energy function. Energy is calculated as a matrix product of cadherins conncentrations",
+        &Simulator::pluginManager
 );

@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto pifInitializerProxy = registerPlugin<Steppable, PIFInitializer>(
-	"PIFInitializer", 
-	"Initializes lattice using user provided PIF file",
-	&Simulator::steppableManager
+        "PIFInitializer",
+        "Initializes lattice using user provided PIF file",
+        &Simulator::steppableManager
 );

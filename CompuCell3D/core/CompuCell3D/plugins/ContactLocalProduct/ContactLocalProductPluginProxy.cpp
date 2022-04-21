@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto contactLocalProductProxy = registerPlugin<Plugin, ContactLocalProductPlugin>(
-	"ContactLocalProduct", 
-	"Contact energy function. Energy is calculated as a product of cadherins conncentrations",
-	&Simulator::pluginManager
+        "ContactLocalProduct",
+        "Contact energy function. Energy is calculated as a product of cadherins conncentrations",
+        &Simulator::pluginManager
 );

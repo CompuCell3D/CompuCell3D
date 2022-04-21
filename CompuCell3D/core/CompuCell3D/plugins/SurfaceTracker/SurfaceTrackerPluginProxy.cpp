@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto surfaceTrackerProxy = registerPlugin<Plugin, SurfaceTrackerPlugin>(
-	"SurfaceTracker", 
-	"Tracks cell surfaces ",
-	&Simulator::pluginManager
+        "SurfaceTracker",
+        "Tracks cell surfaces",
+        &Simulator::pluginManager
 );

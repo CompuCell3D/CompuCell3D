@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto pdeSolverCallerProxy = registerPlugin<Plugin, PDESolverCallerPlugin>(
-	"PDESolverCaller", 
-	"Calls PDE solvers several times during one Monte Carlo Step",
-	&Simulator::pluginManager
+        "PDESolverCaller",
+        "Calls PDE solvers several times during one Monte Carlo Step",
+        &Simulator::pluginManager
 );

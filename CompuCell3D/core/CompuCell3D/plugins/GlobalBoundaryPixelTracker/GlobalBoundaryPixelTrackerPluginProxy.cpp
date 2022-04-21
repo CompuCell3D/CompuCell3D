@@ -9,7 +9,7 @@
 using namespace CompuCell3D;
 
 auto globalBoundaryPixelTrackerProxy = registerPlugin<Plugin, GlobalBoundaryPixelTrackerPlugin>(
-	"GlobalBoundaryPixelTracker", 
-	"Tracks  boundary pixels of all the cells including medium and stores them in a set",
-	&Simulator::pluginManager
+        "GlobalBoundaryPixelTracker",
+        "Tracks  boundary pixels of all the cells including medium and stores them in a set",
+        &Simulator::pluginManager
 );

@@ -9,13 +9,13 @@
 using namespace CompuCell3D;
 
 auto RandomFieldInitializerProxy = registerPlugin<Steppable, RandomFieldInitializer>(
-	"RandomFieldInitializer", 
-	"Template Steppable for CompuCell3D Development",
-	&Simulator::steppableManager
+        "RandomFieldInitializer",
+        "Template Steppable for CompuCell3D Development",
+        &Simulator::steppableManager
 );
 
 auto RandomBlobInitializerProxy = registerPlugin<Steppable, RandomBlobInitializer>(
-	"RandomBlobInitializer", 
-	"Template Steppable for CompuCell3D Development",
-	&Simulator::steppableManager
+        "RandomBlobInitializer",
+        "Template Steppable for CompuCell3D Development",
+        &Simulator::steppableManager
 );

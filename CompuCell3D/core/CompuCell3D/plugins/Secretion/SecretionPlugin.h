@@ -1,127 +1,94 @@
-
-
-
 #ifndef SECRETIONPLUGIN_H
 #define SECRETIONPLUGIN_H
 
 #include <CompuCell3D/CC3D.h>
-
-// // // #include <CompuCell3D/Plugin.h>
-// // // #include <CompuCell3D/Potts3D/FixedStepper.h>
-// // // #include <CompuCell3D/Field3D/Dim3D.h>
-
-// // // #include <string>
-// // // #include <vector>
-
-
 #include "SecretionDataP.h"
 #include "SecretionDLLSpecifier.h"
 
 class CC3DXMLElement;
 namespace CompuCell3D {
 
-  class Potts3D;
-  class CellG;
-  class Steppable;
-  class Simulator;
-  class Automaton;
-  class BoundaryStrategy;
-  class BoxWatcher;
-  class BoundaryPixelTrackerPlugin;
-  class PixelTrackerPlugin;
-  class FieldSecretor;
+    class Potts3D;
 
-  class ParallelUtilsOpenMP;
+    class CellG;
 
-  template <typename Y> class WatchableField3D;
-    template <typename Y> class Field3DImpl;
-  //class SecretionPlugin;
-  
+    class Steppable;
 
+    class Simulator;
 
-   // class SECRETION_EXPORT SolverData{
-      // public:
-         // SolverData():extraTimesPerMC(0){}
-         // SolverData(std::string _solverName,unsigned int _extraTimesPerMC):
-         // solverName(_solverName),
-         // extraTimesPerMC(_extraTimesPerMC)
-         // {}
+    class Automaton;
 
-         // std::string solverName;
-         // unsigned int extraTimesPerMC;
+    class BoundaryStrategy;
 
-   // };
+    class BoxWatcher;
 
-  //class SECRETION_EXPORT SecretionDataPAdapter : public SecretionDataP {
-		//typedef void (SecretionPlugin::*secrSingleFieldFcnPtr_t)(unsigned int idx);
-  //};
-	//class SECRETION_EXPORT  FieldSecretor{
-	//public:
+    class BoundaryPixelTrackerPlugin;
 
-	//	FieldSecretor(){}
-	//	~FieldSecretor(){}
-	//	Field3DImpl<float> * concentrationFieldPtr;
-	//	BoundaryPixelTrackerPlugin *boundaryPixelTrackerPlugin;
-	//	PixelTrackerPlugin *pixelTrackerPlugin;
+    class PixelTrackerPlugin;
 
-	//	bool secreteInsideCell(CellG * _cell, float _amount);
+    class FieldSecretor;
 
-	//}
+    class ParallelUtilsOpenMP;
+
+    template<typename Y>
+    class WatchableField3D;
+
+    template<typename Y>
+    class Field3DImpl;
 
 
-  class SECRETION_EXPORT SecretionPlugin : public Plugin, public FixedStepper {
-    Potts3D* potts;
-    Simulator * sim;
-	 CC3DXMLElement *xmlData;
-	 
-	 // std::vector<SolverData> solverDataVec;
+    class SECRETION_EXPORT SecretionPlugin : public Plugin, public FixedStepper {
+        Potts3D *potts;
+        Simulator *sim;
+        CC3DXMLElement *xmlData;
 
-    
-    // std::vector<Steppable *> solverPtrVec;
-    std::vector<SecretionDataP>  secretionDataPVec;
-    Dim3D fieldDim;
-	WatchableField3D<CellG *> *cellFieldG;
-	Automaton *automaton;
-	BoxWatcher *boxWatcherSteppable;
-	BoundaryPixelTrackerPlugin *boundaryPixelTrackerPlugin;
-	PixelTrackerPlugin *pixelTrackerPlugin;
+        std::vector <SecretionDataP> secretionDataPVec;
+        Dim3D fieldDim;
+        WatchableField3D<CellG *> *cellFieldG;
+        Automaton *automaton;
+        BoxWatcher *boxWatcherSteppable;
+        BoundaryPixelTrackerPlugin *boundaryPixelTrackerPlugin;
+        PixelTrackerPlugin *pixelTrackerPlugin;
 
-	ParallelUtilsOpenMP *pUtils;
-	BoundaryStrategy *boundaryStrategy;
-	unsigned int maxNeighborIndex;
-	bool disablePixelTracker;
-	bool disableBoundaryPixelTracker;
+        ParallelUtilsOpenMP *pUtils;
+        BoundaryStrategy *boundaryStrategy;
+        unsigned int maxNeighborIndex;
+        bool disablePixelTracker;
+        bool disableBoundaryPixelTracker;
 
-  public:
-    SecretionPlugin();
-    virtual ~SecretionPlugin();
+    public:
+        SecretionPlugin();
 
-	typedef void (SecretionPlugin::*secrSingleFieldFcnPtr_t)(unsigned int idx);
+        virtual ~SecretionPlugin();
 
-    ///SimObject interface
-    virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
-   virtual void  extraInit(Simulator *simulator);
+        typedef void (SecretionPlugin::*secrSingleFieldFcnPtr_t)(unsigned int idx);
 
-   Field3D<float>*  getConcentrationFieldByName(std::string _fieldName);
+        ///SimObject interface
+        virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData = 0);
 
-   void secreteSingleField(unsigned int idx);
-   void secreteOnContactSingleField(unsigned int idx);
-   void secreteConstantConcentrationSingleField(unsigned int idx);
+        virtual void extraInit(Simulator *simulator);
 
-   FieldSecretor getFieldSecretor(std::string _fieldName);
+        Field3D<float> *getConcentrationFieldByName(std::string _fieldName);
 
+        void secreteSingleField(unsigned int idx);
 
-    // Stepper interface
-    virtual void step();
-    
+        void secreteOnContactSingleField(unsigned int idx);
 
-	//bool secreteInsideCell(CellG * _cell, std::string _fieldName, float _amount);
-    //SteerableObject interface
-    virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
-    virtual std::string steerableName();
-    virtual std::string toString();
-    
-  };
+        void secreteConstantConcentrationSingleField(unsigned int idx);
+
+        FieldSecretor getFieldSecretor(std::string _fieldName);
+
+        // Stepper interface
+        virtual void step();
+
+        //SteerableObject interface
+        virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag = false);
+
+        virtual std::string steerableName();
+
+        virtual std::string toString();
+
+    };
 };
 #endif
 

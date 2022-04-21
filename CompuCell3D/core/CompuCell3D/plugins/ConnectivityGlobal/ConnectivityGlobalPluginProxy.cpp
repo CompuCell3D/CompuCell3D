@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto connectivityGlobalProxy = registerPlugin<Plugin, ConnectivityGlobalPlugin>(
-    "ConnectivityGlobal", 
-    "Adds connectivity constraints imposed globaly using breadth first traversal",
-    &Simulator::pluginManager
+        "ConnectivityGlobal",
+        "Adds connectivity constraints imposed globaly using breadth first traversal",
+        &Simulator::pluginManager
 );

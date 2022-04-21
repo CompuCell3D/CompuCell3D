@@ -1,78 +1,81 @@
-
-
 #ifndef NEIGHBORTRACKERPLUGIN_H
 #define NEIGHBORTRACKERPLUGIN_H
+
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Plugin.h>
-
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include "NeighborTracker.h"
-
-// // // #include <CompuCell3D/Field3D/AdjacentNeighbor.h>
-
 #include "NeighborTrackerDLLSpecifier.h"
 
 
 class CC3DXMLElement;
 namespace CompuCell3D {
 
-  class Cell;
-  class Field3DIndex;
-  template <class T> class Field3D;
-  template <class T> class WatchableField3D;
+    class Cell;
 
-  class CellInventory;
-  class BoundaryStrategy;
-  
-class NEIGHBORTRACKER_EXPORT NeighborTrackerPlugin : public Plugin, public CellGChangeWatcher {
+    class Field3DIndex;
 
-      ParallelUtilsOpenMP *pUtils;
-      ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;
-      WatchableField3D<CellG *> *cellFieldG;
-      Dim3D fieldDim;
-      ExtraMembersGroupAccessor<NeighborTracker> neighborTrackerAccessor;
-      Simulator *simulator;
-      bool periodicX,periodicY,periodicZ;
-      CellInventory * cellInventoryPtr;
-      bool checkSanity;
-      unsigned int checkFreq;
+    template<class T>
+    class Field3D;
 
-      unsigned int maxNeighborIndex;
-      BoundaryStrategy *boundaryStrategy;
+    template<class T>
+    class WatchableField3D;
 
-    
-   public:
-      NeighborTrackerPlugin();
-      virtual ~NeighborTrackerPlugin();
-      
-      
-      // Field3DChangeWatcher interface
-      virtual void field3DChange(const Point3D &pt, CellG *newCell,
-                                 CellG *oldCell);
-      
-		//Plugin interface 
-		virtual void init(Simulator *_simulator, CC3DXMLElement *_xmlData=0);
-		virtual std::string toString();
+    class CellInventory;
+
+    class BoundaryStrategy;
+
+    class NEIGHBORTRACKER_EXPORT NeighborTrackerPlugin : public Plugin, public CellGChangeWatcher {
+
+        ParallelUtilsOpenMP *pUtils;
+        ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;
+        WatchableField3D<CellG *> *cellFieldG;
+        Dim3D fieldDim;
+        ExtraMembersGroupAccessor <NeighborTracker> neighborTrackerAccessor;
+        Simulator *simulator;
+        bool periodicX, periodicY, periodicZ;
+        CellInventory *cellInventoryPtr;
+        bool checkSanity;
+        unsigned int checkFreq;
+
+        unsigned int maxNeighborIndex;
+        BoundaryStrategy *boundaryStrategy;
 
 
+    public:
+        NeighborTrackerPlugin();
 
-		ExtraMembersGroupAccessor<NeighborTracker> * getNeighborTrackerAccessorPtr(){return & neighborTrackerAccessor;}
-      // End XMLSerializable interface
-      int returnNumber(){return 23432;}
-	  short getCommonSurfaceArea(NeighborSurfaceData * _nsd){return _nsd->commonSurfaceArea;}
-     
+        virtual ~NeighborTrackerPlugin();
 
-   protected:
-      double distance(double,double,double,double,double,double);
-      
-      virtual void testLatticeSanityFull();
-      bool isBoundaryPixel(Point3D pt);
-      bool watchingAllowed;
-      AdjacentNeighbor adjNeighbor;
-      long maxIndex; //maximum field index
-      long changeCounter;
-  };
+
+        // Field3DChangeWatcher interface
+        virtual void field3DChange(const Point3D &pt, CellG *newCell,
+                                   CellG *oldCell);
+
+        //Plugin interface
+        virtual void init(Simulator *_simulator, CC3DXMLElement *_xmlData = 0);
+
+        virtual std::string toString();
+
+
+        ExtraMembersGroupAccessor <NeighborTracker> *
+        getNeighborTrackerAccessorPtr() { return &neighborTrackerAccessor; }
+
+        // End XMLSerializable interface
+        int returnNumber() { return 23432; }
+
+        short getCommonSurfaceArea(NeighborSurfaceData *_nsd) { return _nsd->commonSurfaceArea; }
+
+
+    protected:
+        double distance(double, double, double, double, double, double);
+
+        virtual void testLatticeSanityFull();
+
+        bool isBoundaryPixel(Point3D pt);
+
+        bool watchingAllowed;
+        AdjacentNeighbor adjNeighbor;
+        long maxIndex; //maximum field index
+        long changeCounter;
+    };
 };
 #endif

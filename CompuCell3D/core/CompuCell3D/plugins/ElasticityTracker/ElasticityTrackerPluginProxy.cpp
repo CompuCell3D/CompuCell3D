@@ -6,7 +6,7 @@
 using namespace CompuCell3D;
 
 auto elasticityTrackerPluginProxy = registerPlugin<Plugin, ElasticityTrackerPlugin>(
-	"ElasticityTracker", 
-	"Initializes and Tracks Elasticity participating cells",
-	&Simulator::pluginManager
+        "ElasticityTracker",
+        "Initializes and Tracks Elasticity participating cells",
+        &Simulator::pluginManager
 );

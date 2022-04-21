@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto FoamDataOutputProxy = registerPlugin<Steppable, FoamDataOutput>(
-	"FoamDataOutput", 
-	"Outputs basic simulation data for foam coarsening",
-	&Simulator::steppableManager
+        "FoamDataOutput",
+        "Outputs basic simulation data for foam coarsening",
+        &Simulator::steppableManager
 );

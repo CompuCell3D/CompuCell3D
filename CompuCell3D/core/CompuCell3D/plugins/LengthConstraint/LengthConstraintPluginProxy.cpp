@@ -8,13 +8,13 @@
 using namespace CompuCell3D;
 
 auto lengthConstraintProxy = registerPlugin<Plugin, LengthConstraintPlugin>(
-	"LengthConstraint", 
-	"Tracks cell lengths and adds length constraints. Each cell type may have different lambda and target lengths",
-	&Simulator::pluginManager
+        "LengthConstraint",
+        "Tracks cell lengths and adds length constraints. Each cell type may have different lambda and target lengths",
+        &Simulator::pluginManager
 );
 
 auto lengthConstraintLocalFlexProxy = registerPlugin<Plugin, LengthConstraintPlugin>(
-	"LengthConstraintLocalFlex", 
-	"Tracks cell lengths and adds length constraints. Each individual cell  may have different lambda and target lengths",
-	&Simulator::pluginManager
+        "LengthConstraintLocalFlex",
+        "Tracks cell lengths and adds length constraints. Each individual cell  may have different lambda and target lengths",
+        &Simulator::pluginManager
 );

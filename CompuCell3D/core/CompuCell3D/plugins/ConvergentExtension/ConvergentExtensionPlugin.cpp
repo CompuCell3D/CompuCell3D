@@ -1,24 +1,3 @@
-/*************************************************************************
-*    CompuCell - A software framework for multimodel simulations of     *
-* biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
-*                             Indiana                                   *
-*                                                                       *
-* This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
-*  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
-*  CompuCell GNU General Public License RIDER you can redistribute it   *
-* and/or modify it under the terms of the GNU General Public License as *
-*  published by the Free Software Foundation; either version 2 of the   *
-*         License, or (at your option) any later version.               *
-*                                                                       *
-* This program is distributed in the hope that it will be useful, but   *
-*      WITHOUT ANY WARRANTY; without even the implied warranty of       *
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
-*             General Public License for more details.                  *
-*                                                                       *
-*  You should have received a copy of the GNU General Public License    *
-*     along with this program; if not, write to the Free Software       *
-*      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
-*************************************************************************/
 
 #include <CompuCell3D/CC3D.h>
 
@@ -45,7 +24,8 @@ void ConvergentExtensionPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlD
 	simulator->registerSteerableObject(this);
 
 	bool pluginAlreadyRegisteredFlag;
-	Plugin *plugin=Simulator::pluginManager.get("MomentOfInertia",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
+    //this will load VolumeTracker plugin if it is not already loaded
+	Plugin *plugin=Simulator::pluginManager.get("MomentOfInertia",&pluginAlreadyRegisteredFlag);
 	if(!pluginAlreadyRegisteredFlag)
 		plugin->init(simulator);
 }
@@ -86,9 +66,9 @@ void ConvergentExtensionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
 
 	if(_xmlData->getFirstElement("Depth")){
 		maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth((float)_xmlData->getFirstElement("Depth")->getDouble());
-		//cerr<<"got here will do depth"<<endl;
+
 	}else{
-		//cerr<<"got here will do neighbor order"<<endl;
+
 		if(_xmlData->getFirstElement("NeighborOrder")){
 
 			maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());	
@@ -105,7 +85,7 @@ void ConvergentExtensionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
 
 double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
 
-	//cerr<<"ChangeEnergy"<<endl;
+
 	// Assumption simulation is 2D in xy plane
 
 	double energy = 0;
@@ -160,18 +140,6 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 				double rSinThetaNCell=(orientationVecNCell.x*nCellCMPtVec.y-orientationVecNCell.y*nCellCMPtVec.x)/
 					sqrt(orientationVecNCell.x*orientationVecNCell.x+orientationVecNCell.y*orientationVecNCell.y);
 
-				//double NNCell=(orientationVecNCell.x*nCellCMPtVec.y-orientationVecNCell.y*nCellCMPtVec.x);
-
-				//double nsintheta=(orientationVecNCell.x*nCellCMPtVec.y-orientationVecNCell.y*nCellCMPtVec.x)/(
-				//	sqrt(orientationVecNCell.x*orientationVecNCell.x+orientationVecNCell.y*orientationVecNCell.y)*(nCellCMPtVec.x*nCellCMPtVec.x+nCellCMPtVec.y*nCellCMPtVec.y));
-				
-				
-
-				//cerr<<"nsintheta="<<nsintheta<<endl;
-				//cerr<<"deltaNCell="<<deltaNCell<<" rSinThetaNCell="<<rSinThetaNCell<<" nCell->ecc="<<nCell->ecc<<endl;
-				//double r_eccN=sqrt(nCellCMPtVec.x*nCellCMPtVec.x+nCellCMPtVec.y*nCellCMPtVec.y)*nCell->ecc;
-				//cerr<<"r_eccN="<<r_eccN<<endl;
-				
 
 				deltaNCell*=rSinThetaNCell;
 				//oldCell
@@ -193,11 +161,7 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 
 				double rSinThetaOldCell=(orientationVecOldCell.x*oldCellCMPtVec.y-orientationVecOldCell.y*oldCellCMPtVec.x)/
 					sqrt(orientationVecOldCell.x*orientationVecOldCell.x+orientationVecOldCell.y*orientationVecOldCell.y);
-				
-				//double r_eccOld=sqrt(oldCellCMPtVec.x*oldCellCMPtVec.x+oldCellCMPtVec.y*oldCellCMPtVec.y)*oldCell->ecc;
-				//cerr<<"r_eccOld="<<r_eccOld<<endl;
-				//cerr<<"deltaOldCell="<<deltaOldCell<<" rSinThetaOldCell="<<rSinThetaOldCell<<" oldCell->ecc="<<oldCell->ecc<<endl;
-				
+
 				deltaOldCell*=rSinThetaOldCell;
 
 				double energyBefore=energy;
@@ -221,14 +185,7 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 						cerr<<"OLD N CELL CONTR="<<energy<<endl;
 						exit(0);
 					}
-				//cerr<<"nCellCM="<<nCellCM<<endl;
-				//cerr<<"oldCellCM="<<oldCellCM<<endl;
-				//cerr<<"energy="<<energy<<endl;
 
-				//if(energy!=energy){
-				//	cerr<<"OLD CELL CONTR="<<energy<<endl;
-				//	exit(0);
-				//}
 
 			}
 		}
@@ -278,27 +235,14 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 				Coordinates3D<double> newCellCM(newXCM,newYCM,0.0);
 				Coordinates3D<double> newCellCMPtVec=ptTrans-newCellCM;
 
-				//cerr<<"orientationVecNew="<<orientationVecNew<<endl;
-				//cerr<<"newCellCMPtVec="<<newCellCMPtVec<<endl;
-				//cerr<<"x="<<(orientationVecNew.x*newCellCMPtVec.y-orientationVecNew.y*newCellCMPtVec.x)<<endl;
-				
+
 				double N=sqrt((orientationVecNew.x*newCellCMPtVec.y-orientationVecNew.y*newCellCMPtVec.x)*(orientationVecNew.x*newCellCMPtVec.y-orientationVecNew.y*newCellCMPtVec.x));
 				double D=sqrt(orientationVecNew.x*orientationVecNew.x+orientationVecNew.y*orientationVecNew.y);
-				//cerr<<"N="<<N<<" D="<<D<<endl;
+
 				double rSinThetaNewCell=(orientationVecNew.x*newCellCMPtVec.y-orientationVecNew.y*newCellCMPtVec.x)/
 					sqrt(orientationVecNew.x*orientationVecNew.x+orientationVecNew.y*orientationVecNew.y);
 
-				
-				//cerr<<"sqrt N="<<sqrt((orientationVecNew.x*newCellCMPtVec.y-orientationVecNew.y*newCellCMPtVec.x)*(orientationVecNew.x*newCellCMPtVec.y-orientationVecNew.y*newCellCMPtVec.x))<<endl;
-				//cerr<<"sqrt D="<<sqrt(orientationVecNew.x*orientationVecNew.x+orientationVecNew.y*orientationVecNew.y)<<endl;
-
-				//double rSinThetaNewCell=sqrt((orientationVecNew.x*newCellCMPtVec.y-orientationVecNew.y*newCellCMPtVec.x)*(orientationVecNew.y*newCellCMPtVec.y-orientationVecNew.y*newCellCMPtVec.x))/
-				//	sqrt(orientationVecNew.x*orientationVecNew.x+orientationVecNew.y*orientationVecNew.y);
-
-				//cerr<<"deltaNewCell="<<deltaNewCell<<" rSinThetaNewCell="<<rSinThetaNewCell<<" newCell->volume="<<newCell->volume<<endl;
-
 				deltaNewCell*=rSinThetaNewCell;
-				//cerr<<"deltaNewCell="<<deltaNewCell<<endl;
 
 
 				if(nCell==oldCell){
@@ -349,12 +293,8 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 					double rSinThetaOldCell=(orientationVecNewOldCell.x*oldCellCMPtVec.y-orientationVecNewOldCell.y*oldCellCMPtVec.x)/
 						sqrt(orientationVecNewOldCell.x*orientationVecNewOldCell.x+orientationVecNewOldCell.y*orientationVecNewOldCell.y);
 
-					//cerr<<"deltaOldCell="<<deltaOldCell<<" rSinThetaOldCell="<<rSinThetaOldCell<<endl;
-
 					deltaOldCell*=rSinThetaOldCell;
 
-					//cerr<<"deltaOldCell="<<deltaOldCell<<" deltaNewCell="<<deltaNewCell<<endl;
-					
 					double energyBefore=energy;
 
 					if (newCell->volume==1 || oldCell->volume<=2 ){
@@ -399,17 +339,7 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 					double rSinThetaNCell=(orientationVecNCell.x*nCellCMPtVec.y-orientationVecNCell.y*nCellCMPtVec.x)/
 						sqrt(orientationVecNCell.x*orientationVecNCell.x+orientationVecNCell.y*orientationVecNCell.y);
 
-
-
-					//double rSinThetaNCell=sqrt((nCell->lX*nCellCMPtVec.y-nCell->lY*nCellCMPtVec.x)*(nCell->lX*nCellCMPtVec.y-nCell->lY*nCellCMPtVec.x))/
-					//	sqrt(nCell->lX*nCell->lX+nCell->lY*nCell->lY);
-					//cerr<<"deltaNCell="<<deltaNCell<<" rSinThetaNCell="<<rSinThetaNCell<<endl;
-
 					deltaNCell*=rSinThetaNCell;
-
-					
-
-				
 
 					double energyBefore=energy;
 
@@ -449,7 +379,6 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 	
 
 				}
-				//energy += contactEnergy(newCell, nCell);
 
 			}
 
@@ -458,9 +387,7 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 
 	}
 
-	//cerr<<"CONVERGENT EXTENSION ENERGY="<<energy<<endl;
 	if(energy!=energy){
-		//cerr<<"CONVERGENT EXTENSION ENERGY="<<energy<<endl;
 		return 0.0;
 	}
 	else{

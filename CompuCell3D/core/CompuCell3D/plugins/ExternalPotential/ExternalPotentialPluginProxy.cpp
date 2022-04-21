@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto ExternalPotentialProxy = registerPlugin<Plugin, ExternalPotentialPlugin>(
-    "ExternalPotential", 
-    "Implements external potential energy",
-    &Simulator::pluginManager
+        "ExternalPotential",
+        "Implements external potential energy",
+        &Simulator::pluginManager
 );

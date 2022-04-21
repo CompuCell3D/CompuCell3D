@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto pixelTrackerProxy = registerPlugin<Plugin, PixelTrackerPlugin>(
-	"PixelTracker", 
-	"Tracks cell pixels and stores them in the set",
-	&Simulator::pluginManager
+        "PixelTracker",
+        "Tracks cell pixels and stores them in the set",
+        &Simulator::pluginManager
 );

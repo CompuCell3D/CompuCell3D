@@ -8,13 +8,13 @@
 using namespace CompuCell3D;
 
 auto plasticityProxy = registerPlugin<Plugin, PlasticityPlugin>(
-	"Plasticity", 
-	"Computes Change in Plasticity Energy",
-	&Simulator::pluginManager
+        "Plasticity",
+        "Computes Change in Plasticity Energy",
+        &Simulator::pluginManager
 );
 
 auto plasticityEnergyProxy = registerPlugin<Plugin, PlasticityPlugin>(
-	"PlasticityEnergy", 
-	"Computes Change in Plasticity Energy",
-	&Simulator::pluginManager
+        "PlasticityEnergy",
+        "Computes Change in Plasticity Energy",
+        &Simulator::pluginManager
 );

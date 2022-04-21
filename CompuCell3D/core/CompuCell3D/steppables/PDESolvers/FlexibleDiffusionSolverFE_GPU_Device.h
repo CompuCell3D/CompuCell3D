@@ -9,34 +9,42 @@
 
 namespace CompuCell3D {
 
-class DiffusionData;
+    class DiffusionData;
 
-class PDESOLVERSGPU_EXPORT FlexibleDiffusionSolverFE_GPU_Device
-{
-protected:
-	LatticeType latticeType;
-public:
-	virtual ~FlexibleDiffusionSolverFE_GPU_Device(){}
-	FlexibleDiffusionSolverFE_GPU_Device(){}
+    class PDESOLVERSGPU_EXPORT FlexibleDiffusionSolverFE_GPU_Device {
+    protected:
+        LatticeType latticeType;
+    public:
+        virtual ~FlexibleDiffusionSolverFE_GPU_Device() {}
 
-protected:
-	//allocate resources, prepare device
-	virtual void alloc(size_t fieldLen)=0;
-public:
-	//select the GPU device
-	virtual void init(int gpuDeviceIndex, LatticeType lt, size_t fieldLen)=0;
-	
-	
-	//filling up solver params and sending them to the GPU
-	virtual void prepareSolverParams(Dim3D fieldDim, DiffusionData const &diffData)=0;
-	virtual std::string solverName()=0;
-	virtual void fieldHostToDevice(float const *h_field)=0;
-	virtual void fieldDeviceToHost(float *h_field)const=0;
-	virtual void diffuseSingleField()=0;
-	virtual void swapScratchAndField()=0;
-	virtual void initCellTypeArray(unsigned char *arr, size_t arrLength)=0;
-	virtual void initBoundaryArray(unsigned char *arr, size_t arrLength)=0;
-};
+        FlexibleDiffusionSolverFE_GPU_Device() {}
+
+    protected:
+        //allocate resources, prepare device
+        virtual void alloc(size_t fieldLen) = 0;
+
+    public:
+        //select the GPU device
+        virtual void init(int gpuDeviceIndex, LatticeType lt, size_t fieldLen) = 0;
+
+
+        //filling up solver params and sending them to the GPU
+        virtual void prepareSolverParams(Dim3D fieldDim, DiffusionData const &diffData) = 0;
+
+        virtual std::string solverName() = 0;
+
+        virtual void fieldHostToDevice(float const *h_field) = 0;
+
+        virtual void fieldDeviceToHost(float *h_field) const = 0;
+
+        virtual void diffuseSingleField() = 0;
+
+        virtual void swapScratchAndField() = 0;
+
+        virtual void initCellTypeArray(unsigned char *arr, size_t arrLength) = 0;
+
+        virtual void initBoundaryArray(unsigned char *arr, size_t arrLength) = 0;
+    };
 
 }//namespace CompuCell3D
 

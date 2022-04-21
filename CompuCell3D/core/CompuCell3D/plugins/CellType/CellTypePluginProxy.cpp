@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto cellTypeProxy = registerPlugin<Plugin, CellTypePlugin>(
-	"CellType", 
-	"Adds cell type attributes",
-	&Simulator::pluginManager
+        "CellType",
+        "Adds cell type attributes",
+        &Simulator::pluginManager
 );

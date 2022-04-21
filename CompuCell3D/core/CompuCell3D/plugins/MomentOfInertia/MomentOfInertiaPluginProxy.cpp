@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto momentOfInertiaProxy = registerPlugin<Plugin, MomentOfInertiaPlugin>(
-    "MomentOfInertia", 
-    "Tracks the center of mass for each cell.",
-    &Simulator::pluginManager
+        "MomentOfInertia",
+        "Tracks the center of mass for each cell.",
+        &Simulator::pluginManager
 );

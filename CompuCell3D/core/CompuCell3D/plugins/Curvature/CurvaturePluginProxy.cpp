@@ -9,7 +9,7 @@
 using namespace CompuCell3D;
 
 auto curvatureProxy = registerPlugin<Plugin, CurvaturePlugin>(
-	"Curvature", 
-	"computes curvsature constraint for 2D compartmental",
-	&Simulator::pluginManager
+        "Curvature",
+        "computes curvature constraint for 2D compartmental",
+        &Simulator::pluginManager
 );

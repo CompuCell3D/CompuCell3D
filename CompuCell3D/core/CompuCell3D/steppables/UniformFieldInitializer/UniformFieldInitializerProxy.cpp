@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto uniformInitializerProxy = registerPlugin<Steppable, UniformFieldInitializer>(
-	"UniformInitializer", 
-	"Initializes entire lattice with rectangular cells",
-	&Simulator::steppableManager
+        "UniformInitializer",
+        "Initializes entire lattice with rectangular cells",
+        &Simulator::steppableManager
 );

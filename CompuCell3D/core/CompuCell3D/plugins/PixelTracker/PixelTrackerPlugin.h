@@ -18,7 +18,7 @@ namespace CompuCell3D {
   
 class PIXELTRACKER_EXPORT PixelTrackerPlugin : public Plugin, public CellGChangeWatcher {
 
-      //WatchableField3D<CellG *> *cellFieldG;
+
       Dim3D fieldDim;
       ExtraMembersGroupAccessor<PixelTracker> pixelTrackerAccessor;
       Simulator *simulator;

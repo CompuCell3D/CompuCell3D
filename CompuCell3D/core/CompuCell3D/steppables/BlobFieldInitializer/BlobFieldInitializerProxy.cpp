@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto blobInitializerProxy = registerPlugin<Steppable, BlobFieldInitializer>(
-	"BlobInitializer", 
-	"Initializes lattice by constructing spherical blob of cells",
-	&Simulator::steppableManager
+        "BlobInitializer",
+        "Initializes lattice by constructing spherical blob of cells",
+        &Simulator::steppableManager
 );

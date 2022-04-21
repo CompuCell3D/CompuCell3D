@@ -8,68 +8,82 @@
 class CC3DXMLElement;
 
 namespace CompuCell3D {
-	class Simulator;
-	class Potts3D;
-	class Automaton;	
-	class BoundaryStrategy;
-	class ParallelUtilsOpenMP;
-	class BoundaryPixelTrackerPlugin;
-	class NeighborTrackerPlugin;
-	class NeighborTracker;
+    class Simulator;
 
-	template <class T> class Field3D;
-	template <class T> class WatchableField3D;
+    class Potts3D;
 
-	class CURVATURECALCULATOR_EXPORT  CurvatureCalculatorPlugin : public Plugin, public CellGChangeWatcher {
+    class Automaton;
 
-	private:
+    class BoundaryStrategy;
 
-		CC3DXMLElement *xmlData;
+    class ParallelUtilsOpenMP;
 
-		Potts3D *potts;
+    class BoundaryPixelTrackerPlugin;
 
-		Simulator *sim;
+    class NeighborTrackerPlugin;
 
-		ParallelUtilsOpenMP *pUtils;
+    class NeighborTracker;
 
-		ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;
+    template<class T>
+    class Field3D;
 
-		Automaton *automaton;
+    template<class T>
+    class WatchableField3D;
 
-		BoundaryStrategy *boundaryStrategy;
+    class CURVATURECALCULATOR_EXPORT  CurvatureCalculatorPlugin : public Plugin, public CellGChangeWatcher {
 
-		WatchableField3D<CellG *> *cellFieldG;
+    private:
 
-		ExtraMembersGroupAccessor<NeighborTracker> * neighborTrackerAccessorPtr;
+        CC3DXMLElement *xmlData;
 
-		BoundaryPixelTrackerPlugin * boundary_pixel_tracker_plugin;
+        Potts3D *potts;
 
-		int maxNeighborIndex;
-		int neighborOrderProbCalc;
-		int maxNeighborIndexProbCalc;
+        Simulator *sim;
 
-	public:
+        ParallelUtilsOpenMP *pUtils;
 
-		CurvatureCalculatorPlugin();
-		virtual ~CurvatureCalculatorPlugin();
+        ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;
 
-		// utility functions
-		std::map<long, float> getProbabilityByNeighbor(CellG * cell, float J, float T);
-		float getGrowthProbability(const Point3D &neighborPt, CellG *neighborCell, CellG *cell, float J, float T);
+        Automaton *automaton;
 
-		// CellChangeWatcher interface
-		virtual void field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell);
+        BoundaryStrategy *boundaryStrategy;
 
-		virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData = 0);
+        WatchableField3D<CellG *> *cellFieldG;
 
-		virtual void extraInit(Simulator *simulator);
+        ExtraMembersGroupAccessor <NeighborTracker> *neighborTrackerAccessorPtr;
 
-		//Steerrable interface
-		virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag = false);
-		virtual std::string steerableName();
-		virtual std::string toString();
+        BoundaryPixelTrackerPlugin *boundary_pixel_tracker_plugin;
 
-	};
+        int maxNeighborIndex;
+        int neighborOrderProbCalc;
+        int maxNeighborIndexProbCalc;
+
+    public:
+
+        CurvatureCalculatorPlugin();
+
+        virtual ~CurvatureCalculatorPlugin();
+
+        // utility functions
+        std::map<long, float> getProbabilityByNeighbor(CellG *cell, float J, float T);
+
+        float getGrowthProbability(const Point3D &neighborPt, CellG *neighborCell, CellG *cell, float J, float T);
+
+        // CellChangeWatcher interface
+        virtual void field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell);
+
+        virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData = 0);
+
+        virtual void extraInit(Simulator *simulator);
+
+        //Steerable interface
+        virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag = false);
+
+        virtual std::string steerableName();
+
+        virtual std::string toString();
+
+    };
 };
 #endif
 

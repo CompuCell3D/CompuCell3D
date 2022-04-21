@@ -1,25 +1,3 @@
-/*************************************************************************
-*    CompuCell - A software framework for multimodel simulations of     *
-* biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
-*                             Indiana                                   *
-*                                                                       *
-* This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
-*  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
-*  CompuCell GNU General Public License RIDER you can redistribute it   *
-* and/or modify it under the terms of the GNU General Public License as *
-*  published by the Free Software Foundation; either version 2 of the   *
-*         License, or (at your option) any later version.               *
-*                                                                       *
-* This program is distributed in the hope that it will be useful, but   *
-*      WITHOUT ANY WARRANTY; without even the implied warranty of       *
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
-*             General Public License for more details.                  *
-*                                                                       *
-*  You should have received a copy of the GNU General Public License    *
-*     along with this program; if not, write to the Free Software       *
-*      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
-*************************************************************************/
-
 #ifndef FOCALPOINTPLASTICITYLINKS_H
 #define FOCALPOINTPLASTICITYLINKS_H
 
@@ -38,268 +16,332 @@ class ExpressionEvaluator;
 
 namespace CompuCell3D {
 
-	/**
-	Written by T.J. Sego, Ph.D.
-	*/
+    /**
+    Written by T.J. Sego, Ph.D.
+    */
 
-	class BoundaryStrategy;
-	class CellG;
-	class Potts3D;
+    class BoundaryStrategy;
 
-	class FocalPointPlasticityTrackerData;
-	class FocalPointPlasticityLinkTrackerData;
+    class CellG;
 
-	// Link definitions
+    class Potts3D;
 
-	enum FocalPointPlasticityLinkType { REGULAR, INTERNAL, ANCHOR };
+    class FocalPointPlasticityTrackerData;
 
-	class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityLinkBase {
+    class FocalPointPlasticityLinkTrackerData;
 
-	private:
+    // Link definitions
 
-		FocalPointPlasticityLinkType type;
+    enum FocalPointPlasticityLinkType {
+        REGULAR, INTERNAL, ANCHOR
+    };
 
-	protected:
+    class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityLinkBase {
 
-		Potts3D *potts;
+    private:
 
-		CellG *initiator;
-		CellG *initiated;
-		FocalPointPlasticityLinkTrackerData fppltd;
+        FocalPointPlasticityLinkType type;
 
-		ExpressionEvaluator ev;
-		void initializeConstitutiveLaw(std::string _localLaw);
-		bool usingLocalLaw = false;
+    protected:
 
-	public:
+        Potts3D *potts;
 
-		FocalPointPlasticityLinkBase() :
-			initiator(0), initiated(0), potts(0), fppltd(FocalPointPlasticityLinkTrackerData())
-		{
-			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(this);
-			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension(this);
-			pyAttrib = 0;
+        CellG *initiator;
+        CellG *initiated;
+        FocalPointPlasticityLinkTrackerData fppltd;
 
-		}
-		~FocalPointPlasticityLinkBase() {}
+        ExpressionEvaluator ev;
 
-		const FocalPointPlasticityLinkType getType() { return type; }
+        void initializeConstitutiveLaw(std::string _localLaw);
 
-		// Legacy support
-		FocalPointPlasticityTrackerData getFPPTrackerData(CellG* _cell) {
-			FocalPointPlasticityTrackerData fpptd = FocalPointPlasticityTrackerData(fppltd);
-			fpptd.neighborAddress = getOtherCell(_cell);
-			fpptd.isInitiator = isInitiator(_cell);
-			fpptd.maxNumberOfJunctions = getMaxNumberOfJunctions();
-			fpptd.activationEnergy = getActivationEnergy();
-			fpptd.neighborOrder = getNeighborOrder();
-			return fpptd;
-		}
+        bool usingLocalLaw = false;
 
-		// Derived properties
+    public:
 
-		// Function defining the value of derived property: length
-		float getDistance();
-		// Function defining the value of derived property: tension
-		float getTension();
+        FocalPointPlasticityLinkBase() :
+                initiator(0), initiated(0), potts(0), fppltd(FocalPointPlasticityLinkTrackerData()) {
+            DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(
+                    this);
+            DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension(
+                    this);
+            pyAttrib = 0;
 
-		// Length of link
-		DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length;
-		// Tension in link
-		DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension;
+        }
 
-		// General interface
+        ~FocalPointPlasticityLinkBase() {}
 
-		// Set the string for the constitutive law of this link
-		void setConstitutiveLaw(std::string _lawString);
-		// Return whether this link has a constitutive law
-		const bool hasLocalLaw() { return usingLocalLaw; }
+        const FocalPointPlasticityLinkType getType() { return type; }
 
-		// Pass the other cell of this link
-		CellG* getOtherCell(CellG* _cell) {
-			if (_cell) {
-				if (initiator && _cell->id == initiator->id) return initiated;
-				if (initiated && _cell->id == initiated->id) return initiator;
-			}
-			else {
-				if (!initiator) return initiated;
-				if (!initiated) return initiator;
-			}
-			throw CC3DException("Cell is not a member of this link");
-		}
-		CellG* getOtherCell(const CellG* _cell) { return getOtherCell(const_cast<CellG*>(_cell)); }
-		// Pass whether this cell is the initiator
-		bool isInitiator(CellG* _cell) {
-			if (_cell) {
-				if (initiator && _cell->id == initiator->id) return false;
-				if (initiated && _cell->id == initiated->id) return true;
-			}
-			else {
-				if (!initiator) return false;
-				if (!initiated) return true;
-			}
-			throw CC3DException("Cell is not a member of this link");
-		}
+        // Legacy support
+        FocalPointPlasticityTrackerData getFPPTrackerData(CellG *_cell) {
+            FocalPointPlasticityTrackerData fpptd = FocalPointPlasticityTrackerData(fppltd);
+            fpptd.neighborAddress = getOtherCell(_cell);
+            fpptd.isInitiator = isInitiator(_cell);
+            fpptd.maxNumberOfJunctions = getMaxNumberOfJunctions();
+            fpptd.activationEnergy = getActivationEnergy();
+            fpptd.neighborOrder = getNeighborOrder();
+            return fpptd;
+        }
 
-		double constitutiveLaw(float _lambda, float _length, float _targetLength);
+        // Derived properties
 
-		// Data interface
+        // Function defining the value of derived property: length
+        float getDistance();
 
-		// Get lambda distance
-		const float getLambdaDistance() { return fppltd.lambdaDistance; }
-		// Set lambda distance
-		void setLambdaDistance(float _lambdaDistance) { fppltd.lambdaDistance = _lambdaDistance; }
-		// Get target distance
-		const float getTargetDistance() { return fppltd.targetDistance; }
-		// Set target distance
-		void setTargetDistance(float _targetDistance) { fppltd.targetDistance = _targetDistance; }
-		// Get maximum distance
-		const float getMaxDistance() { return fppltd.maxDistance; }
-		// Set maximum distance
-		void setMaxDistance(float _maxDistance) { fppltd.maxDistance = _maxDistance; }
-		// Get maximum number of junctions
-		const int getMaxNumberOfJunctions() { return fppltd.maxNumberOfJunctions; }
-		// Set maximum number of junctions
-		void setMaxNumberOfJunctions(int _maxNumberOfJunctions) { fppltd.maxNumberOfJunctions = _maxNumberOfJunctions; }
-		// Get activation energy
-		const float getActivationEnergy() { return fppltd.activationEnergy; }
-		// Set activation energy
-		void setActivationEnergy(float _activationEnergy) { fppltd.activationEnergy = _activationEnergy; }
-		// Get neighbor order
-		const int getNeighborOrder() { return fppltd.neighborOrder; }
-		// Set neighbor order
-		void setNeighborOrder(int _neighborOrder) { fppltd.neighborOrder = _neighborOrder; }
-		// Get is anchor
-		const bool isAnchor() { return fppltd.anchor; }
-		// Get initialization step
-		const int getInitMCS() { return fppltd.initMCS; }
-		// Get first id
-		virtual const long getId0() { return long(0); };
-		// Get second id
-		virtual const long getId1() { return long(0); };
-		// Get first object
-		CellG* getObj0() { return initiator; }
-		// Get second object
-		CellG* getObj1() { return initiated; }
+        // Function defining the value of derived property: tension
+        float getTension();
 
-		// Python support
+        // Length of link
+        DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length;
+        // Tension in link
+        DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension;
 
-		PyObject *pyAttrib;
+        // General interface
 
-		PyObject *getPyAttrib() {
+        // Set the string for the constitutive law of this link
+        void setConstitutiveLaw(std::string _lawString);
+
+        // Return whether this link has a constitutive law
+        const bool hasLocalLaw() { return usingLocalLaw; }
+
+        // Pass the other cell of this link
+        CellG *getOtherCell(CellG *_cell) {
+            if (_cell) {
+                if (initiator && _cell->id == initiator->id) return initiated;
+                if (initiated && _cell->id == initiated->id) return initiator;
+            } else {
+                if (!initiator) return initiated;
+                if (!initiated) return initiator;
+            }
+            throw CC3DException("Cell is not a member of this link");
+        }
+
+        CellG *getOtherCell(const CellG *_cell) { return getOtherCell(const_cast<CellG *>(_cell)); }
+
+        // Pass whether this cell is the initiator
+        bool isInitiator(CellG *_cell) {
+            if (_cell) {
+                if (initiator && _cell->id == initiator->id) return false;
+                if (initiated && _cell->id == initiated->id) return true;
+            } else {
+                if (!initiator) return false;
+                if (!initiated) return true;
+            }
+            throw CC3DException("Cell is not a member of this link");
+        }
+
+        double constitutiveLaw(float _lambda, float _length, float _targetLength);
+
+        // Data interface
+
+        // Get lambda distance
+        const float getLambdaDistance() { return fppltd.lambdaDistance; }
+
+        // Set lambda distance
+        void setLambdaDistance(float _lambdaDistance) { fppltd.lambdaDistance = _lambdaDistance; }
+
+        // Get target distance
+        const float getTargetDistance() { return fppltd.targetDistance; }
+
+        // Set target distance
+        void setTargetDistance(float _targetDistance) { fppltd.targetDistance = _targetDistance; }
+
+        // Get maximum distance
+        const float getMaxDistance() { return fppltd.maxDistance; }
+
+        // Set maximum distance
+        void setMaxDistance(float _maxDistance) { fppltd.maxDistance = _maxDistance; }
+
+        // Get maximum number of junctions
+        const int getMaxNumberOfJunctions() { return fppltd.maxNumberOfJunctions; }
+
+        // Set maximum number of junctions
+        void setMaxNumberOfJunctions(int _maxNumberOfJunctions) { fppltd.maxNumberOfJunctions = _maxNumberOfJunctions; }
+
+        // Get activation energy
+        const float getActivationEnergy() { return fppltd.activationEnergy; }
+
+        // Set activation energy
+        void setActivationEnergy(float _activationEnergy) { fppltd.activationEnergy = _activationEnergy; }
+
+        // Get neighbor order
+        const int getNeighborOrder() { return fppltd.neighborOrder; }
+
+        // Set neighbor order
+        void setNeighborOrder(int _neighborOrder) { fppltd.neighborOrder = _neighborOrder; }
+
+        // Get is anchor
+        const bool isAnchor() { return fppltd.anchor; }
+
+        // Get initialization step
+        const int getInitMCS() { return fppltd.initMCS; }
+
+        // Get first id
+        virtual const long getId0() { return long(0); };
+
+        // Get second id
+        virtual const long getId1() { return long(0); };
+
+        // Get first object
+        CellG *getObj0() { return initiator; }
+
+        // Get second object
+        CellG *getObj1() { return initiated; }
+
+        // Python support
+
+        PyObject *pyAttrib;
+
+        PyObject *getPyAttrib() {
 #ifdef SWIGPYTHON
-		if (pyAttrib == nullptr) pyAttrib = PyDict_New();
+            if (pyAttrib == nullptr) pyAttrib = PyDict_New();
 #endif
-		return pyAttrib;
-		}
-	};
+            return pyAttrib;
+        }
+    };
 
-	class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityLink : public FocalPointPlasticityLinkBase {
+    class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityLink : public FocalPointPlasticityLinkBase {
 
-		FocalPointPlasticityLinkType type = FocalPointPlasticityLinkType::REGULAR;
+        FocalPointPlasticityLinkType type = FocalPointPlasticityLinkType::REGULAR;
 
-	public:
-		FocalPointPlasticityLink() {};
-		FocalPointPlasticityLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, FocalPointPlasticityLinkTrackerData _fppltd)
-		{
-			initiator = _initiator;
-			initiated = _initiated;
-			potts = _potts;
-			fppltd = FocalPointPlasticityLinkTrackerData(_fppltd);
-			fppltd.anchor = false;
-			pyAttrib = 0;
+    public:
+        FocalPointPlasticityLink() {};
 
-			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(this);
-			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension(this);
+        FocalPointPlasticityLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts,
+                                 FocalPointPlasticityLinkTrackerData _fppltd) {
+            initiator = _initiator;
+            initiated = _initiated;
+            potts = _potts;
+            fppltd = FocalPointPlasticityLinkTrackerData(_fppltd);
+            fppltd.anchor = false;
+            pyAttrib = 0;
 
-			DerivedProperty<FocalPointPlasticityLink, std::vector<CellG*>, &FocalPointPlasticityLink::getCellPair> cellPair;
-		}
-		FocalPointPlasticityLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) :
-			FocalPointPlasticityLink(_initiator, _initiated, _potts, FocalPointPlasticityLinkTrackerData(_fpptd)) {}
-		FocalPointPlasticityLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0) :
-			FocalPointPlasticityLink(_initiator, _initiated, _potts, FocalPointPlasticityLinkTrackerData(_lambdaDistance, _targetDistance, _maxDistance, _initMCS))
-		{}
+            DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(
+                    this);
+            DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension(
+                    this);
 
-		const long getId0() { return initiator->id; }
-		const long getId1() { return initiated->id; }
+            DerivedProperty<FocalPointPlasticityLink, std::vector<CellG *>, &FocalPointPlasticityLink::getCellPair> cellPair;
+        }
 
-		std::vector<CellG*> getCellPair();
-		DerivedProperty<FocalPointPlasticityLink, std::vector<CellG*>, &FocalPointPlasticityLink::getCellPair> cellPair;
+        FocalPointPlasticityLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts,
+                                 FocalPointPlasticityTrackerData _fpptd) :
+                FocalPointPlasticityLink(_initiator, _initiated, _potts, FocalPointPlasticityLinkTrackerData(_fpptd)) {}
 
-	};
+        FocalPointPlasticityLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, float _lambdaDistance = 0.0,
+                                 float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0) :
+                FocalPointPlasticityLink(_initiator, _initiated, _potts,
+                                         FocalPointPlasticityLinkTrackerData(_lambdaDistance, _targetDistance,
+                                                                             _maxDistance, _initMCS)) {}
 
-	class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityInternalLink : public FocalPointPlasticityLinkBase {
+        const long getId0() { return initiator->id; }
 
-		FocalPointPlasticityLinkType type = FocalPointPlasticityLinkType::INTERNAL;
+        const long getId1() { return initiated->id; }
 
-	public:
-		FocalPointPlasticityInternalLink() {};
-		FocalPointPlasticityInternalLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, FocalPointPlasticityLinkTrackerData _fppltd)
-		{
-			initiator = _initiator;
-			initiated = _initiated;
-			potts = _potts;
-			fppltd = FocalPointPlasticityLinkTrackerData(_fppltd);
-			fppltd.anchor = false;
-			pyAttrib = 0;
+        std::vector<CellG *> getCellPair();
 
-			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(this);
-			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension(this);
+        DerivedProperty<FocalPointPlasticityLink, std::vector<CellG *>, &FocalPointPlasticityLink::getCellPair> cellPair;
 
-			DerivedProperty<FocalPointPlasticityInternalLink, std::vector<CellG*>, &FocalPointPlasticityInternalLink::getCellPair> cellPair(this);
-		}
-		FocalPointPlasticityInternalLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) :
-			FocalPointPlasticityInternalLink(_initiator, _initiated, _potts, FocalPointPlasticityLinkTrackerData(_fpptd)) {}
-		FocalPointPlasticityInternalLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts, float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0) :
-			FocalPointPlasticityInternalLink(_initiator, _initiated, _potts, FocalPointPlasticityLinkTrackerData(_lambdaDistance, _targetDistance, _maxDistance, _initMCS)) {}
+    };
 
-		const long getId0() { return initiator->id; }
-		const long getId1() { return initiated->id; }
+    class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityInternalLink : public FocalPointPlasticityLinkBase {
 
-		std::vector<CellG*> getCellPair();
-		DerivedProperty<FocalPointPlasticityInternalLink, std::vector<CellG*>, &FocalPointPlasticityInternalLink::getCellPair> cellPair;
+        FocalPointPlasticityLinkType type = FocalPointPlasticityLinkType::INTERNAL;
 
-	};
+    public:
+        FocalPointPlasticityInternalLink() {};
 
-	class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityAnchor : public FocalPointPlasticityLinkBase {
+        FocalPointPlasticityInternalLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts,
+                                         FocalPointPlasticityLinkTrackerData _fppltd) {
+            initiator = _initiator;
+            initiated = _initiated;
+            potts = _potts;
+            fppltd = FocalPointPlasticityLinkTrackerData(_fppltd);
+            fppltd.anchor = false;
+            pyAttrib = 0;
 
-		FocalPointPlasticityLinkType type = FocalPointPlasticityLinkType::ANCHOR;
+            DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(
+                    this);
+            DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension(
+                    this);
 
-	public:
-		FocalPointPlasticityAnchor() {}
-		FocalPointPlasticityAnchor(CellG *_cell, Potts3D *_potts, FocalPointPlasticityLinkTrackerData _fppltd)
-		{
-			initiator = _cell;
-			initiated = (CellG*)(0);
-			potts = _potts;
-			fppltd = FocalPointPlasticityLinkTrackerData(_fppltd);
-			fppltd.anchor = true;
-			fppltd.anchorPoint = _fppltd.anchorPoint;
-			pyAttrib = 0;
+            DerivedProperty<FocalPointPlasticityInternalLink, std::vector<CellG *>, &FocalPointPlasticityInternalLink::getCellPair> cellPair(
+                    this);
+        }
 
-			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(this);
-			DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension(this);
+        FocalPointPlasticityInternalLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts,
+                                         FocalPointPlasticityTrackerData _fpptd) :
+                FocalPointPlasticityInternalLink(_initiator, _initiated, _potts,
+                                                 FocalPointPlasticityLinkTrackerData(_fpptd)) {}
 
-			DerivedProperty<FocalPointPlasticityLinkBase, CellG*, &FocalPointPlasticityLinkBase::getObj0> cell(this);
-		}
-		FocalPointPlasticityAnchor(CellG *_cell, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) :
-			FocalPointPlasticityAnchor(_cell, _potts, FocalPointPlasticityLinkTrackerData(_fpptd)) {}
-		FocalPointPlasticityAnchor(CellG *_cell, Potts3D *_potts, float _lambdaDistance = 0.0, float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0, std::vector<float> _anchorPoint = std::vector<float>(3, 0.0)) :
-			FocalPointPlasticityAnchor(_cell, _potts, FocalPointPlasticityLinkTrackerData(_lambdaDistance, _targetDistance, _maxDistance, _initMCS)) {}
+        FocalPointPlasticityInternalLink(CellG *_initiator, CellG *_initiated, Potts3D *_potts,
+                                         float _lambdaDistance = 0.0, float _targetDistance = 0.0,
+                                         float _maxDistance = 100000.0, int _initMCS = 0) :
+                FocalPointPlasticityInternalLink(_initiator, _initiated, _potts,
+                                                 FocalPointPlasticityLinkTrackerData(_lambdaDistance, _targetDistance,
+                                                                                     _maxDistance, _initMCS)) {}
 
-		const long getId0() { return initiator->id; }
-		const long getId1() { return fppltd.anchorId; }
+        const long getId0() { return initiator->id; }
 
-		// Get anchor point
-		std::vector<float> getAnchorPoint() { return fppltd.anchorPoint; }
-		// Set anchor point
-		void setAnchorPoint(std::vector<float> _anchorPoint) { fppltd.anchorPoint = _anchorPoint; }
-		// Get anchor id
-		const int getAnchorId() { return fppltd.anchorId; }
+        const long getId1() { return initiated->id; }
 
-		DerivedProperty<FocalPointPlasticityLinkBase, CellG*, &FocalPointPlasticityLinkBase::getObj0> cell;
+        std::vector<CellG *> getCellPair();
 
-	};
+        DerivedProperty<FocalPointPlasticityInternalLink, std::vector<CellG *>, &FocalPointPlasticityInternalLink::getCellPair> cellPair;
+
+    };
+
+    class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityAnchor : public FocalPointPlasticityLinkBase {
+
+        FocalPointPlasticityLinkType type = FocalPointPlasticityLinkType::ANCHOR;
+
+    public:
+        FocalPointPlasticityAnchor() {}
+
+        FocalPointPlasticityAnchor(CellG *_cell, Potts3D *_potts, FocalPointPlasticityLinkTrackerData _fppltd) {
+            initiator = _cell;
+            initiated = (CellG *) (0);
+            potts = _potts;
+            fppltd = FocalPointPlasticityLinkTrackerData(_fppltd);
+            fppltd.anchor = true;
+            fppltd.anchorPoint = _fppltd.anchorPoint;
+            pyAttrib = 0;
+
+            DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(
+                    this);
+            DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension(
+                    this);
+
+            DerivedProperty < FocalPointPlasticityLinkBase, CellG *, &FocalPointPlasticityLinkBase::getObj0 >
+                                                                     cell(this);
+        }
+
+        FocalPointPlasticityAnchor(CellG *_cell, Potts3D *_potts, FocalPointPlasticityTrackerData _fpptd) :
+                FocalPointPlasticityAnchor(_cell, _potts, FocalPointPlasticityLinkTrackerData(_fpptd)) {}
+
+        FocalPointPlasticityAnchor(CellG *_cell, Potts3D *_potts, float _lambdaDistance = 0.0,
+                                   float _targetDistance = 0.0, float _maxDistance = 100000.0, int _initMCS = 0,
+                                   std::vector<float> _anchorPoint = std::vector<float>(3, 0.0)) :
+                FocalPointPlasticityAnchor(_cell, _potts,
+                                           FocalPointPlasticityLinkTrackerData(_lambdaDistance, _targetDistance,
+                                                                               _maxDistance, _initMCS)) {}
+
+        const long getId0() { return initiator->id; }
+
+        const long getId1() { return fppltd.anchorId; }
+
+        // Get anchor point
+        std::vector<float> getAnchorPoint() { return fppltd.anchorPoint; }
+
+        // Set anchor point
+        void setAnchorPoint(std::vector<float> _anchorPoint) { fppltd.anchorPoint = _anchorPoint; }
+
+        // Get anchor id
+        const int getAnchorId() { return fppltd.anchorId; }
+
+        DerivedProperty<FocalPointPlasticityLinkBase, CellG *, &FocalPointPlasticityLinkBase::getObj0> cell;
+
+    };
 
 }
 

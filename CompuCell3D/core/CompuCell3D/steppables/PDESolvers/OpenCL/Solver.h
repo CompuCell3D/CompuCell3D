@@ -10,79 +10,92 @@ struct GPUBoundaryConditions;
 
 namespace CompuCell3D {
 
-class ImplicitMatrix;
-class OpenCLHelper;
+    class ImplicitMatrix;
 
-struct NLSParams{
-	struct Linear{
-		size_t maxIterations_;
-		float tol_;
-		bool stopIfDidNotConverge_;
-		explicit Linear(size_t maxIterations=400, float tol=1e-8f, bool stopIfDidNotConverge=false):
-			maxIterations_(maxIterations), tol_(tol),stopIfDidNotConverge_(stopIfDidNotConverge){}
-	} linear_;
-	struct Newton{
-		size_t maxIterations_;
-		float fTol_;
-		float stpTol_;
-		bool stopIfFTolGrows_;
-		explicit Newton(size_t maxIterations, float fTol, float stpTol, bool stopIfFTolGrows):
-			maxIterations_(maxIterations), fTol_(fTol), stpTol_(stpTol), stopIfFTolGrows_(stopIfFTolGrows){}
-	} newton_;
+    class OpenCLHelper;
 
-	NLSParams(Linear linear, Newton newton):linear_(linear), newton_(newton) {}
-};
+    struct NLSParams {
+        struct Linear {
+            size_t maxIterations_;
+            float tol_;
+            bool stopIfDidNotConverge_;
+
+            explicit Linear(size_t maxIterations = 400, float tol = 1e-8f, bool stopIfDidNotConverge = false) :
+                    maxIterations_(maxIterations), tol_(tol), stopIfDidNotConverge_(stopIfDidNotConverge) {}
+        } linear_;
+
+        struct Newton {
+            size_t maxIterations_;
+            float fTol_;
+            float stpTol_;
+            bool stopIfFTolGrows_;
+
+            explicit Newton(size_t maxIterations, float fTol, float stpTol, bool stopIfFTolGrows) :
+                    maxIterations_(maxIterations), fTol_(fTol), stpTol_(stpTol), stopIfFTolGrows_(stopIfFTolGrows) {}
+        } newton_;
+
+        NLSParams(Linear linear, Newton newton) : linear_(linear), newton_(newton) {}
+    };
 
 //base class for both linear and nonlinear solvers
-class Solver{
+    class Solver {
 
-	const unsigned char m_fieldsCount;
-	std::vector<ImplicitMatrix const *> m_ims;
-	viennacl::vector<float> mv_outputField;
-	OpenCLHelper const &m_oclHelper;
-	float m_dt;
+        const unsigned char m_fieldsCount;
+        std::vector<ImplicitMatrix const *> m_ims;
+        viennacl::vector<float> mv_outputField;
+        OpenCLHelper const &m_oclHelper;
+        float m_dt;
 
-	mutable float m_linearST;
+        mutable float m_linearST;
 
-	std::vector<cl_mem> m_outFieldSubBuffers;//need to store them to release later.
+        std::vector <cl_mem> m_outFieldSubBuffers;//need to store them to release later.
 
-protected:
-	void setTimeStep(float dt);
-	float getTimeStep()const{return m_dt;}
-	Dim3D getDim()const;
-	unsigned char getFieldsCount()const {return m_fieldsCount;}
-	cl_mem getOutBuffer()const{return mv_outputField.handle().opencl_handle().get();}
-	viennacl::vector<float> &getOutVector(){return mv_outputField;}
-	viennacl::vector<float> const & getOutVector()const{return mv_outputField;}
+    protected:
+        void setTimeStep(float dt);
 
-	cl_mem prodField(int i, cl_mem v)const;
+        float getTimeStep() const { return m_dt; }
 
-	void applyBCToRHSField(int i, cl_mem v)const;
+        Dim3D getDim() const;
 
-	int getFieldLength()const;
+        unsigned char getFieldsCount() const { return m_fieldsCount; }
 
-	OpenCLHelper const &getOCLHelper()const;
+        cl_mem getOutBuffer() const { return mv_outputField.handle().opencl_handle().get(); }
 
-	void addSolvingTime(float st)const{m_linearST+=st;}//kind of a stupid const limitation...
+        viennacl::vector<float> &getOutVector() { return mv_outputField; }
 
-public:
+        viennacl::vector<float> const &getOutVector() const { return mv_outputField; }
 
-	//it actually modifies rhs
-	void applyBCToRHS(viennacl::vector<float> const &rhs)const;
+        cl_mem prodField(int i, cl_mem v) const;
 
-	Solver(OpenCLHelper const &oclHelper, 
-		std::vector<UniSolverParams> const &solverParams, cl_mem const &d_cellTypes, GPUBoundaryConditions const &boundaryConditions,
-		unsigned char fieldsCount, std::string const &pathToKernels);
-	~Solver();
+        void applyBCToRHSField(int i, cl_mem v) const;
 
-	virtual viennacl::vector<float> const &NewField(float dt, viennacl::vector<float> const &oldField, NLSParams const &nlsParams)=0;
+        int getFieldLength() const;
 
-	//to use in conjunction with ViennaCL
-	virtual viennacl::vector<float> const &prod(viennacl::vector<float> const& v_update)const=0;
+        OpenCLHelper const &getOCLHelper() const;
 
-	//time spent in linear solver, ms
-	float getLinearSolvingTime()const{return m_linearST;}
-};
+        void addSolvingTime(float st) const { m_linearST += st; }//kind of a stupid const limitation...
+
+    public:
+
+        //it actually modifies rhs
+        void applyBCToRHS(viennacl::vector<float> const &rhs) const;
+
+        Solver(OpenCLHelper const &oclHelper,
+               std::vector <UniSolverParams> const &solverParams, cl_mem const &d_cellTypes,
+               GPUBoundaryConditions const &boundaryConditions,
+               unsigned char fieldsCount, std::string const &pathToKernels);
+
+        ~Solver();
+
+        virtual viennacl::vector<float> const &
+        NewField(float dt, viennacl::vector<float> const &oldField, NLSParams const &nlsParams) = 0;
+
+        //to use in conjunction with ViennaCL
+        virtual viennacl::vector<float> const &prod(viennacl::vector<float> const &v_update) const = 0;
+
+        //time spent in linear solver, ms
+        float getLinearSolvingTime() const { return m_linearST; }
+    };
 
 }
 

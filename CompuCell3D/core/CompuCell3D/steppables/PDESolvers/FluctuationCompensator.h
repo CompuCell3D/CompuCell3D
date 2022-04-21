@@ -31,131 +31,153 @@
 
 namespace CompuCell3D {
 
-	/**
-	@author T.J. Sego, Ph.D.
+    /**
+    @author T.J. Sego, Ph.D.
 
-	This PDE solver add-on performs an algorithm partially described in 
+    This PDE solver add-on performs an algorithm partially described in
 
-	"How Cells Integrate Complex Stimuli: The Effect of
-	Feedback from Phosphoinositides and Cell Shape on Cell
-	Polarization and Motility", Maree et. al., 2012
+    "How Cells Integrate Complex Stimuli: The Effect of
+    Feedback from Phosphoinositides and Cell Shape on Cell
+    Polarization and Motility", Maree et. al., 2012
 
-	The algorithm is performend on each cell subdomain and the medium, 
-	according to the following two steps: 
+    The algorithm is performend on each cell subdomain and the medium,
+    according to the following two steps:
 
-	1.	For every spin flip of a Monte Carlo step, the solver field values 
-		in the copying site are exactly copied to the site of the spin flip. 
-	2.	At the conclusion of a Monte Carlo step, a correction factor is 
-		uniformly applied such that, for each subdomain, the total mass 
-		of each species is unchanged. 
-	*/
+    1.	For every spin flip of a Monte Carlo step, the solver field values
+        in the copying site are exactly copied to the site of the spin flip.
+    2.	At the conclusion of a Monte Carlo step, a correction factor is
+        uniformly applied such that, for each subdomain, the total mass
+        of each species is unchanged.
+    */
 
-	class Potts3D;
-	class Simulator;
-	class CellG;
-	class CellInventory;
-	class PixelTrackerData;
-	class PixelTrackerPlugin;
+    class Potts3D;
 
-	template <typename Y> class Field3D;
-	template <typename Y> class Field3DImpl;
-	template <typename Y> class WatchableField3D;
+    class Simulator;
 
-	class FluctuationCompensatorCellData;
+    class CellG;
 
-	class PDESOLVERS_EXPORT FluctuationCompensator : public CellGChangeWatcher
-	{
+    class CellInventory;
 
-		ParallelUtilsOpenMP *pUtils;
+    class PixelTrackerData;
 
-		PixelTrackerPlugin *pixelTrackerPlugin;
+    class PixelTrackerPlugin;
 
-		Dim3D fieldDim;
+    template<typename Y>
+    class Field3D;
 
-		std::vector<float> concentrationVecIncSMC;
-		std::vector<float> concentrationVecCopiesMedium;
-		std::vector<std::vector<float> > concentrationVecCopiesMediumTheads;
-		std::vector<float> concentrationVecTotalMedium;
+    template<typename Y>
+    class Field3DImpl;
 
-		std::vector<Field3DImpl<float> *> diffusibleFields;
-		std::vector<std::string> diffusibleFieldNames;
-		std::vector<Field3DImpl<float> *>::iterator diffusibleFieldsItr;
-		int numFields;
+    template<typename Y>
+    class WatchableField3D;
 
-		std::map<CellG*, FluctuationCompensatorCellData *> cellCompensatorData;
-		std::map<CellG*, FluctuationCompensatorCellData *>::iterator cellCompensatorDataItr;
+    class FluctuationCompensatorCellData;
 
-		void updateTotalCellConcentrations();
-		void updateTotalMediumConcentration();
-		void resetCellConcentrations();
-		void resetMediumConcentration();
+    class PDESOLVERS_EXPORT FluctuationCompensator : public CellGChangeWatcher {
 
-		bool needsInitialized;
+        ParallelUtilsOpenMP *pUtils;
 
-		std::vector<float> totalCellConcentration(const CellG *_cell);
-		std::vector<float> totalMediumConcentration();
-		std::vector<float> totalPixelSetConcentration(std::vector<Point3D> _pixelVec);
+        PixelTrackerPlugin *pixelTrackerPlugin;
 
-		FluctuationCompensatorCellData *getFluctuationCompensatorCellData(CellG *_cell, bool _fullInit=true);
+        Dim3D fieldDim;
 
-		std::vector<float> getConcentrationVec(const Point3D &_pt);
-		void setConcentrationVec(const Point3D &_pt, std::vector<float> _vec);
+        std::vector<float> concentrationVecIncSMC;
+        std::vector<float> concentrationVecCopiesMedium;
+        std::vector <std::vector<float>> concentrationVecCopiesMediumTheads;
+        std::vector<float> concentrationVecTotalMedium;
 
-	protected:
+        std::vector<Field3DImpl<float> *> diffusibleFields;
+        std::vector <std::string> diffusibleFieldNames;
+        std::vector<Field3DImpl<float> *>::iterator diffusibleFieldsItr;
+        int numFields;
 
-		Simulator *sim;
-		Potts3D *potts;
-		Automaton *automaton;
-		CellInventory *cellInventory;
-		CellInventory::cellInventoryIterator cell_itr;
-		Field3DImpl<CellG *> *cellFieldG;
+        std::map<CellG *, FluctuationCompensatorCellData *> cellCompensatorData;
+        std::map<CellG *, FluctuationCompensatorCellData *>::iterator cellCompensatorDataItr;
 
-	public:
+        void updateTotalCellConcentrations();
 
-		FluctuationCompensator(Simulator *_sim);
+        void updateTotalMediumConcentration();
 
-		virtual ~FluctuationCompensator();
+        void resetCellConcentrations();
 
-		std::vector<Point3D> getCellPixelVec(const CellG *_cell);
-		std::vector<Point3D> getMediumPixelVec();
+        void resetMediumConcentration();
 
-		// Cell field watcher interface
+        bool needsInitialized;
 
-		void field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell) {};
-		virtual void field3DChange(const Point3D &pt, const Point3D &addPt, CellG *newCell, CellG *oldCell);
+        std::vector<float> totalCellConcentration(const CellG *_cell);
+
+        std::vector<float> totalMediumConcentration();
+
+        std::vector<float> totalPixelSetConcentration(std::vector <Point3D> _pixelVec);
+
+        FluctuationCompensatorCellData *getFluctuationCompensatorCellData(CellG *_cell, bool _fullInit = true);
+
+        std::vector<float> getConcentrationVec(const Point3D &_pt);
+
+        void setConcentrationVec(const Point3D &_pt, std::vector<float> _vec);
+
+    protected:
+
+        Simulator *sim;
+        Potts3D *potts;
+        Automaton *automaton;
+        CellInventory *cellInventory;
+        CellInventory::cellInventoryIterator cell_itr;
+        Field3DImpl<CellG *> *cellFieldG;
+
+    public:
+
+        FluctuationCompensator(Simulator *_sim);
+
+        virtual ~FluctuationCompensator();
+
+        std::vector <Point3D> getCellPixelVec(const CellG *_cell);
+
+        std::vector <Point3D> getMediumPixelVec();
+
+        // Cell field watcher interface
+
+        void field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell) {};
+
+        virtual void field3DChange(const Point3D &pt, const Point3D &addPt, CellG *newCell, CellG *oldCell);
 
 
-		// Solver interface
-		
-		void loadFieldName(std::string _fieldName);
-		virtual void loadFields();
-		// This should occur before solver integration
-		virtual void applyCorrections();
-		// This should occur after solver integration
-		virtual void resetCorrections();
-		// Updates total concentrations according to current state of all solver fields
-		virtual void updateTotalConcentrations();
+        // Solver interface
 
-	};
+        void loadFieldName(std::string _fieldName);
 
-	class PDESOLVERS_EXPORT FluctuationCompensatorCellData
-	{
+        virtual void loadFields();
 
-	public:
+        // This should occur before solver integration
+        virtual void applyCorrections();
 
-		FluctuationCompensatorCellData() {};
-		FluctuationCompensatorCellData(int _numFields) {
+        // This should occur after solver integration
+        virtual void resetCorrections();
 
-			concentrationVecCopies = std::vector<float>(_numFields, 0.0);
-			concentrationVecTotals = std::vector<float>(_numFields, 0.0);
+        // Updates total concentrations according to current state of all solver fields
+        virtual void updateTotalConcentrations();
 
-		}
-		virtual ~FluctuationCompensatorCellData() {}
+    };
 
-		std::vector<float> concentrationVecCopies;
-		std::vector<float> concentrationVecTotals;
+    class PDESOLVERS_EXPORT FluctuationCompensatorCellData {
 
-	};
+    public:
+
+        FluctuationCompensatorCellData() {};
+
+        FluctuationCompensatorCellData(int _numFields) {
+
+            concentrationVecCopies = std::vector<float>(_numFields, 0.0);
+            concentrationVecTotals = std::vector<float>(_numFields, 0.0);
+
+        }
+
+        virtual ~FluctuationCompensatorCellData() {}
+
+        std::vector<float> concentrationVecCopies;
+        std::vector<float> concentrationVecTotals;
+
+    };
 
 }
 #endif

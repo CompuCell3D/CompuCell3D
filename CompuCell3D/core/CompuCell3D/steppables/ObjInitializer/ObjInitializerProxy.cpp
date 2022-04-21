@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto objInitializerProxy = registerPlugin<Steppable, ObjInitializer>(
-    "ObjInitializer",
-    "Initializes lattice using user provided OBJ file",
-	&Simulator::steppableManager
+        "ObjInitializer",
+        "Initializes lattice using user provided OBJ file",
+        &Simulator::steppableManager
 );

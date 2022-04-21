@@ -4,9 +4,6 @@
 #define OBJINITIALIZER_H
 
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Steppable.h>
-
-// // // #include <string>
 
 #include "ObjInitializerDLLSpecifier.h"
 
@@ -16,29 +13,32 @@ namespace CompuCell3D {
 
     class OBJINITIALIZER_EXPORT ObjInitializer :
 
-    public Steppable {
-    
+            public Steppable {
+
         // don't change the name of the "potts" variable in this steppable,
         //   otherwise it can't be found by other (??? which ???) CC3D code:
         Potts3D *potts;
 
         std::string gObjFileName;
-        
-        public:
 
-            ObjInitializer();
-            ObjInitializer(std::string);
-            
-            void setPotts(Potts3D *potts) {this->potts = potts;}
-            
-            // SimObject interface
-            virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
-            
-            // Begin Steppable interface
-            virtual void start();
-            virtual void step(const unsigned int currentStep) {}
-            virtual void finish() {}
-            // End Steppable interface
+    public:
+
+        ObjInitializer();
+
+        ObjInitializer(std::string);
+
+        void setPotts(Potts3D *potts) { this->potts = potts; }
+
+        // SimObject interface
+        virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData = 0);
+
+        // Begin Steppable interface
+        virtual void start();
+
+        virtual void step(const unsigned int currentStep) {}
+
+        virtual void finish() {}
+        // End Steppable interface
 
     }; // end of public Steppable
 

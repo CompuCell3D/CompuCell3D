@@ -1,5 +1,3 @@
-
-
 #include "SurfacePlugin.h"
 
 #include <CompuCell3D/Simulator.h>
@@ -8,25 +6,25 @@
 using namespace CompuCell3D;
 
 auto surfaceProxy = registerPlugin<Plugin, SurfacePlugin>(
-	"Surface", 
-	"Tracks cell surfaces and adds surface energy function.",
-	&Simulator::pluginManager
+        "Surface",
+        "Tracks cell surfaces and adds surface energy function.",
+        &Simulator::pluginManager
 );
 
 auto surfaceFlexProxy = registerPlugin<Plugin, SurfacePlugin>(
-	"SurfaceFlex", 
-	"Tracks cell surfaces and adds surface energy function.",
-	&Simulator::pluginManager
+        "SurfaceFlex",
+        "Tracks cell surfaces and adds surface energy function.",
+        &Simulator::pluginManager
 );
 
 auto surfaceLocalFlexProxy = registerPlugin<Plugin, SurfacePlugin>(
-	"SurfaceLocalFlex", 
-	"Tracks cell surfaces and adds surface energy function.",
-	&Simulator::pluginManager
+        "SurfaceLocalFlex",
+        "Tracks cell surfaces and adds surface energy function.",
+        &Simulator::pluginManager
 );
 
 auto surfaceEnergyProxy = registerPlugin<Plugin, SurfacePlugin>(
-	"SurfaceEnergy", 
-	"Tracks cell surfaces and adds surface energy function.",
-	&Simulator::pluginManager
+        "SurfaceEnergy",
+        "Tracks cell surfaces and adds surface energy function.",
+        &Simulator::pluginManager
 );

@@ -1,5 +1,3 @@
-
-
 #include "ContactPlugin.h"
 
 #include <CompuCell3D/Simulator.h>
@@ -8,7 +6,7 @@
 using namespace CompuCell3D;
 
 auto contactProxy = registerPlugin<Plugin, ContactPlugin>(
-	"Contact", 
-	"Adds the interaction energy function.",
-	&Simulator::pluginManager
+        "Contact",
+        "Adds the interaction energy function.",
+        &Simulator::pluginManager
 );

@@ -8,25 +8,25 @@
 using namespace CompuCell3D;
 
 auto volumeProxy = registerPlugin<Plugin, VolumePlugin>(
-	"Volume", 
-	"Tracks cell volumes and adds volume energy function.",
-	&Simulator::pluginManager
+        "Volume",
+        "Tracks cell volumes and adds volume energy function.",
+        &Simulator::pluginManager
 );
 
 auto volumeFlexProxy = registerPlugin<Plugin, VolumePlugin>(
-	"VolumeFlex", 
-	"Tracks cell volumes and adds volume energy function.",
-	&Simulator::pluginManager
+        "VolumeFlex",
+        "Tracks cell volumes and adds volume energy function.",
+        &Simulator::pluginManager
 );
 
 auto volumeLocalFlexProxy = registerPlugin<Plugin, VolumePlugin>(
-	"VolumeLocalFlex", 
-	"Tracks cell volumes and adds volume energy function.",
-	&Simulator::pluginManager
+        "VolumeLocalFlex",
+        "Tracks cell volumes and adds volume energy function.",
+        &Simulator::pluginManager
 );
 
 auto volumeEnergyProxy = registerPlugin<Plugin, VolumePlugin>(
-	"VolumeEnergy", 
-	"Tracks cell volumes and adds volume energy function.",
-	&Simulator::pluginManager
+        "VolumeEnergy",
+        "Tracks cell volumes and adds volume energy function.",
+        &Simulator::pluginManager
 );

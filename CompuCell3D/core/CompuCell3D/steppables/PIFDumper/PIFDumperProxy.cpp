@@ -8,7 +8,7 @@
 using namespace CompuCell3D;
 
 auto pifDumperProxy = registerPlugin<Steppable, PIFDumper>(
-	"PIFDumper", 
-	"Stores lattice as a PIF file",
-	&Simulator::steppableManager
+        "PIFDumper",
+        "Stores lattice as a PIF file",
+        &Simulator::steppableManager
 );
