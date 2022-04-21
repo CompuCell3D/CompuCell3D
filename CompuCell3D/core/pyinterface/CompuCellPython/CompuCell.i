@@ -293,6 +293,11 @@ using namespace CompuCell3D;
     s<<(*self);
     return s.str();
   }
+
+    %pythoncode %{
+        def __reduce__(self):
+            return Dim3D, (self.x, self.y, self.z)
+    %}
 };
 
 %include <Utils/Coordinates3D.h>
