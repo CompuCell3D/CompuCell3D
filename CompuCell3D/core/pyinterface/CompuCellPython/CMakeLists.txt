@@ -55,6 +55,7 @@ SET(LIBS_AUX
     cc3d::PolarizationVector
     cc3d::Polarization23
     cc3d::OrientedGrowth
+    cc3d::OrientedGrowth2
     cc3d::ContactOrientation
     # cc3d::CleaverMeshDumper
 

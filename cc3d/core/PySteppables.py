@@ -389,6 +389,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         #: instance of :class:`cc3d.cpp.CompuCell.OrientedGrowthPlugin` if loaded
         self.oriented_growth_plugin = None
         self.orientedGrowthPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.OrientedGrowth2Plugin` if loaded
+        self.oriented_growth2_plugin = None
         #: instance of :class:`cc3d.cpp.CompuCell.SecretionPlugin` if loaded
         self.secretion_plugin = None
         self.secretionPlugin = None
@@ -418,6 +420,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
             "PlasticityTracker": ['plasticity_tracker_plugin', 'plasticityTrackerPlugin'],
             "MomentOfInertia": ['moment_of_inertia_plugin', 'momentOfInertiaPlugin'],
             "OrientedGrowth": ['oriented_growth_plugin', 'orientedGrowthPlugin'],
+            "OrientedGrowth2": ['oriented_growth2_plugin'],
             "Secretion": ["secretion_plugin", 'secretionPlugin']
 
         }
