@@ -543,6 +543,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         field_name, field_type = self.get_current_field_name_and_type()
 
         tvw.setFieldType((field_name, field_type))
+        self.qvtkWidget.field_name = self.field_combo_box.currentText()
         self.qvtkWidget.current_screenshot_data = self.qvtkWidget.compute_current_screenshot_data()
 
         tvw._drawField()
