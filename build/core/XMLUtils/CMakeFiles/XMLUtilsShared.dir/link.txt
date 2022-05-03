@@ -1,1 +1,0 @@
-/N/soft/rhel7/gcc/6.3.0/bin/g++ -fPIC -g -shared -Wl,-soname,libCC3DXMLUtils.so -o libCC3DXMLUtils.so CMakeFiles/XMLUtilsShared.dir/CC3DXMLElement.cpp.o CMakeFiles/XMLUtilsShared.dir/CC3DXMLElementWalker.cpp.o  -Wl,-rpath,/N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/build/core/BasicUtils: ../BasicUtils/libCC3DBasicUtils.so -ldl 

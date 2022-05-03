@@ -1,61 +1,92 @@
-Performing C SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
-Change Dir: /N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/build/CMakeFiles/CMakeTmp
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: /N/soft/rhel7/gcc/6.3.0/bin/g++~/CC3D_PY3_GIT/CompuCell3D/CompuCell3D 
+Build flags: 
+Id flags:  
 
-Run Build Command(s):/usr/bin/gmake cmTC_ffe75/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_ffe75.dir/build.make CMakeFiles/cmTC_ffe75.dir/build
-gmake[1]: Entering directory `/geode2/home/u060/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_ffe75.dir/src.c.o
-/N/soft/rhel7/gcc/6.3.0/bin/gcc -DCMAKE_HAVE_LIBC_PTHREAD   -o CMakeFiles/cmTC_ffe75.dir/src.c.o -c /N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/build/CMakeFiles/CMakeTmp/src.c
-Linking C executable cmTC_ffe75
-/geode2/home/u060/mehtasau/Carbonate/miniconda3/envs/cc3denv/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ffe75.dir/link.txt --verbose=1
-/N/soft/rhel7/gcc/6.3.0/bin/gcc CMakeFiles/cmTC_ffe75.dir/src.c.o -o cmTC_ffe75 
-CMakeFiles/cmTC_ffe75.dir/src.c.o: In function `main':
-src.c:(.text+0x2d): undefined reference to `pthread_create'
-src.c:(.text+0x39): undefined reference to `pthread_detach'
-src.c:(.text+0x45): undefined reference to `pthread_cancel'
-src.c:(.text+0x56): undefined reference to `pthread_join'
-src.c:(.text+0x6a): undefined reference to `pthread_atfork'
-collect2: error: ld returned 1 exit status
-gmake[1]: *** [cmTC_ffe75] Error 1
-gmake[1]: Leaving directory `/geode2/home/u060/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/build/CMakeFiles/CMakeTmp'
-gmake: *** [cmTC_ffe75/fast] Error 2
+The output was:
+No such file or directory
 
 
-Source file was:
-#include <pthread.h>
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: /N/soft/rhel7/gcc/6.3.0/bin/g++~/CC3D_PY3_GIT/CompuCell3D/CompuCell3D 
+Build flags: 
+Id flags: -c 
 
-static void* test_func(void* data)
-{
-  return data;
-}
-
-int main(void)
-{
-  pthread_t thread;
-  pthread_create(&thread, NULL, test_func, NULL);
-  pthread_detach(thread);
-  pthread_cancel(thread);
-  pthread_join(thread, NULL);
-  pthread_atfork(NULL, NULL, NULL);
-  pthread_exit(NULL);
-
-  return 0;
-}
-
-Determining if the function pthread_create exists in the pthreads failed with the following output:
-Change Dir: /N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/build/CMakeFiles/CMakeTmp
-
-Run Build Command(s):/usr/bin/gmake cmTC_17c70/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_17c70.dir/build.make CMakeFiles/cmTC_17c70.dir/build
-gmake[1]: Entering directory `/geode2/home/u060/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_17c70.dir/CheckFunctionExists.c.o
-/N/soft/rhel7/gcc/6.3.0/bin/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create -o CMakeFiles/cmTC_17c70.dir/CheckFunctionExists.c.o -c /N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/share/cmake-3.19/Modules/CheckFunctionExists.c
-Linking C executable cmTC_17c70
-/geode2/home/u060/mehtasau/Carbonate/miniconda3/envs/cc3denv/bin/cmake -E cmake_link_script CMakeFiles/cmTC_17c70.dir/link.txt --verbose=1
-/N/soft/rhel7/gcc/6.3.0/bin/gcc  -DCHECK_FUNCTION_EXISTS=pthread_create CMakeFiles/cmTC_17c70.dir/CheckFunctionExists.c.o -o cmTC_17c70  -lpthreads 
-/usr/bin/ld: cannot find -lpthreads
-collect2: error: ld returned 1 exit status
-gmake[1]: *** [cmTC_17c70] Error 1
-gmake[1]: Leaving directory `/geode2/home/u060/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/build/CMakeFiles/CMakeTmp'
-gmake: *** [cmTC_17c70/fast] Error 2
+The output was:
+No such file or directory
 
 
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: /N/soft/rhel7/gcc/6.3.0/bin/g++~/CC3D_PY3_GIT/CompuCell3D/CompuCell3D 
+Build flags: 
+Id flags: --c++ 
 
+The output was:
+No such file or directory
+
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: /N/soft/rhel7/gcc/6.3.0/bin/g++~/CC3D_PY3_GIT/CompuCell3D/CompuCell3D 
+Build flags: 
+Id flags: --ec++ 
+
+The output was:
+No such file or directory
+
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: /N/soft/rhel7/gcc/6.3.0/bin/g++~/CC3D_PY3_GIT/CompuCell3D/CompuCell3D 
+Build flags: 
+Id flags: --target=arm-arm-none-eabi;-mcpu=cortex-m3 
+
+The output was:
+No such file or directory
+
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: /N/soft/rhel7/gcc/6.3.0/bin/g++~/CC3D_PY3_GIT/CompuCell3D/CompuCell3D 
+Build flags: 
+Id flags:  
+
+The output was:
+No such file or directory
+
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: /N/soft/rhel7/gcc/6.3.0/bin/g++~/CC3D_PY3_GIT/CompuCell3D/CompuCell3D 
+Build flags: 
+Id flags: -c 
+
+The output was:
+No such file or directory
+
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: /N/soft/rhel7/gcc/6.3.0/bin/g++~/CC3D_PY3_GIT/CompuCell3D/CompuCell3D 
+Build flags: 
+Id flags: --c++ 
+
+The output was:
+No such file or directory
+
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: /N/soft/rhel7/gcc/6.3.0/bin/g++~/CC3D_PY3_GIT/CompuCell3D/CompuCell3D 
+Build flags: 
+Id flags: --ec++ 
+
+The output was:
+No such file or directory
+
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: /N/soft/rhel7/gcc/6.3.0/bin/g++~/CC3D_PY3_GIT/CompuCell3D/CompuCell3D 
+Build flags: 
+Id flags: --target=arm-arm-none-eabi;-mcpu=cortex-m3 
+
+The output was:
+No such file or directory
+
+
+Checking whether the CXX compiler is IAR using "" did not match "IAR .+ Compiler":
+Checking whether the CXX compiler is IAR using "" did not match "IAR .+ Compiler":

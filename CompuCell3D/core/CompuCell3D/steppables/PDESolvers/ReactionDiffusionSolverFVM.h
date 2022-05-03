@@ -28,14 +28,25 @@
 //#include <ppl.h>
 
 #include "PDESolversDLLSpecifier.h"
-
+/**
+ * @brief Template class to perform element wise vector addition
+ * 
+ *
+ */
 template<class T>
 struct vecPlus {
 	typedef std::vector<T> first_argument_type;
 	typedef std::vector<T> second_argument_type;
 	typedef std::vector<T> result_type;
 
-	std::vector<T> operator()(const std::vector<T>& _lhs, const std::vector<T>& _rhs) const {	// apply operator+ to operands
+	/**
+	 * @brief Performs element wise vector addition and returns resulting vector
+	 * 
+	 * @param _lhs First vector of type T
+	 * @param _rhs Second vector of type T
+	 * @return std::vector<T> contains sum of elements in _lhs and _rhs
+	 */
+	std::vector<T> operator()(const std::vector<T>& _lhs, const std::vector<T>& _rhs) const {	
 		
 		std::vector<T> _res = std::vector<T>(_lhs.size(), 0.0);
 		for (unsigned int _vecIdx = 0; _vecIdx < _lhs.size(); ++_vecIdx) { _res[_vecIdx] = _lhs[_vecIdx] + _rhs[_vecIdx]; }
@@ -44,36 +55,67 @@ struct vecPlus {
 	
 };
 
+/**
+ * @brief Template class to perform element wise vector multiplication
+ * 
+ *
+ */
 template<class T>
 struct vecMult {
 	typedef std::vector<T> first_argument_type;
 	typedef std::vector<T> second_argument_type;
 	typedef std::vector<T> result_type;
 
-	std::vector<T> operator()(const std::vector<T>& _lhs, const std::vector<T>& _rhs) const {	// apply operator+ to operands
+	/**
+	 * @brief Performs element wise vector product and returns resulting vector
+	 * 
+	 * @param _lhs First vector of type T
+	 * @param _rhs Second vector of type T
+	 * @return std::vector<T> contains product of elements in _lhs and _rhs
+	 */
+	std::vector<T> operator()(const std::vector<T>& _lhs, const std::vector<T>& _rhs) const {	
 		std::vector<T> _res = std::vector<T>(_lhs.size(), 0.0);
 		for (unsigned int _vecIdx = 0; _vecIdx < _lhs.size(); ++_vecIdx) { _res[_vecIdx] = _lhs[_vecIdx] * _rhs[_vecIdx]; }
 		return (_res);
 	}
 };
 
+/**
+ * @brief Template class to convert vector to string
+ * 
+ *
+ */
 template<class T>
 struct vecToString {
 	typedef std::vector<T> first_argument_type;
 	typedef std::string result_type;
-
-	std::string operator()(const std::vector<T>& _vec) const {	// apply operator+ to operands
+	
+	/**
+	 * @brief Converts vector to string
+	 * 
+	 * @param _vec input vector
+	 * @return std::string string containing elements of _vec separated by space
+	 */
+	std::string operator()(const std::vector<T>& _vec) const {
 		std::string _res = "";
 		for (unsigned int _vecIdx = 0; _vecIdx < _vec.size(); ++_vecIdx) { _res += to_string(_vec[_vecIdx]) + " "; }
 		return (_res);
 	}
 };
 
+/**
+ * @brief mu parser class
+ * 
+ */
 namespace mu {
 
 	class Parser; //mu parser class
 };
 
+/**
+ * @brief assign elements to namespace Compucell3D
+ * 
+ */
 namespace CompuCell3D {
 
 	/**
@@ -107,6 +149,10 @@ namespace CompuCell3D {
 
 	///////////////////////////////////////////////////////////////// Solver /////////////////////////////////////////////////////////////////
 	// Surface indices are ordered +x, -x, +y, -y, +z, -z
+	/**
+	 * @brief Reaction diffusion solver classs
+	 * 
+	 */
 	class PDESOLVERS_EXPORT ReactionDiffusionSolverFVM :public DiffusableVector<float>, public CellGChangeWatcher
 	{
 
@@ -259,6 +305,10 @@ namespace CompuCell3D {
 		std::vector<std::string> getConcentrationFieldNameVector() { return concentrationFieldNameVector; }
 
 		// Solver routines
+		/**
+		 * @brief 
+		 * 
+		 */
 		void loadCellData();
 		void loadFieldExpressions();
 		void loadFieldExpressionMultiplier(unsigned int _fieldIndex);
@@ -322,8 +372,8 @@ namespace CompuCell3D {
 		void useDiffusiveSurfaces(unsigned int _fieldIndex);
 		virtual void useDiffusiveSurfaces(std::string _fieldName) { useDiffusiveSurfaces(getFieldIndexByName(_fieldName)); }
 		void usePermeableSurfaces(unsigned int _fieldIndex) { usePermeableSurfaces(_fieldIndex, true); }
-		void usePermeableSurfaces(unsigned int _fieldIndex, bool _activate=true);
-		virtual void usePermeableSurfaces(std::string _fieldName, bool _activate = true) { usePermeableSurfaces(getFieldIndexByName(_fieldName), _activate); }
+		void usePermeableSurfaces(unsigned int _fieldIndex, bool _activate);
+		virtual void usePermeableSurfaces(std::string _fieldName, bool _activate) { usePermeableSurfaces(getFieldIndexByName(_fieldName), _activate); }
 
 		// Cell interface
 		void initializeCellData(const CellG *_cell, unsigned int _numFields);
@@ -396,6 +446,11 @@ namespace CompuCell3D {
 		Point3D ind2pt(unsigned int _ind);
 		unsigned int pt2ind(const Point3D &_pt, Dim3D _fieldDim);
 		unsigned int pt2ind(const Point3D &_pt) { return pt2ind(_pt, fieldDim); }
+		/**
+		 * @brief Get the Field Dim object
+		 * 
+		 * @return Dim3D 
+		 */
 		Dim3D getFieldDim() { return fieldDim; }
 
 		// Solver interface

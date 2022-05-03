@@ -54,7 +54,10 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "diffusionsolverfe.h": "c",
+        "reactiondiffusionsolverfvm.h": "c",
+        "diffusionsolverfe_cpu.h": "c"
     },
     "C_Cpp.default.configurationProvider": "go2sh.cmake-integration",
 }

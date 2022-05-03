@@ -14,29 +14,6 @@
 # EXTERNAL cache entries
 ########################
 
-//Build C++ only executable(requires Expat library)
-BUILD_CPP_ONLY_EXECUTABLE:BOOL=OFF
-
-//Build Python language wrappings
-BUILD_PYINTERFACE:BOOL=ON
-
-//Convenience CC3D/Player modules - e.g. redirecting text to Player
-// console (requires Qt library and headers)
-BUILD_QT_WRAPPERS:BOOL=OFF
-
-//OFF
-BUILD_SHARED_LIBS:BOOL=ON
-
-//Builds CC3D assuming Python will be bundled with CC3D - default
-// on Windows and OSX
-BUNDLE_PYTHON:BOOL=OFF
-
-//Value Computed by CMake
-CLEAVER_BINARY_DIR:STATIC=/N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/build/core/Cleaver
-
-//Value Computed by CMake
-CLEAVER_SOURCE_DIR:STATIC=/N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/core/Cleaver
-
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=/usr/bin/addr2line
 
@@ -50,33 +27,25 @@ CMAKE_BUILD_TYPE:STRING=Debug
 CMAKE_COLOR_MAKEFILE:BOOL=ON
 
 //No help, variable specified on the command line.
-CMAKE_CXX_COMPILER:FILEPATH=/N/soft/rhel7/gcc/6.3.0/bin/g++
-
-//A wrapper around 'ar' adding the appropriate '--plugin' option
-// for the GCC compiler
-CMAKE_CXX_COMPILER_AR:FILEPATH=/N/soft/rhel7/gcc/6.3.0/bin/gcc-ar
-
-//A wrapper around 'ranlib' adding the appropriate '--plugin' option
-// for the GCC compiler
-CMAKE_CXX_COMPILER_RANLIB:FILEPATH=/N/soft/rhel7/gcc/6.3.0/bin/gcc-ranlib
+CMAKE_CXX_COMPILER:FILEPATH=/N/soft/rhel7/gcc/6.3.0/bin/g++~/CC3D_PY3_GIT/CompuCell3D/CompuCell3D
 
 //Flags used by the CXX compiler during all build types.
 CMAKE_CXX_FLAGS:STRING=
 
 //Flags used by the CXX compiler during DEBUG builds.
-CMAKE_CXX_FLAGS_DEBUG:STRING=-g
+CMAKE_CXX_FLAGS_DEBUG:STRING=
 
 //Flags used by the CXX compiler during MINSIZEREL builds.
-CMAKE_CXX_FLAGS_MINSIZEREL:STRING=-Os -DNDEBUG
+CMAKE_CXX_FLAGS_MINSIZEREL:STRING=
 
 //Flags used by the CXX compiler during RELEASE builds.
-CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
+CMAKE_CXX_FLAGS_RELEASE:STRING=
 
 //Flags used by the CXX compiler during RELWITHDEBINFO builds.
-CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
+CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=
 
-//No help, variable specified on the command line.
-CMAKE_C_COMPILER:FILEPATH=/N/soft/rhel7/gcc/6.3.0/bin/gcc
+//C compiler
+CMAKE_C_COMPILER:STRING=/N/soft/rhel7/gcc/6.3.0/bin/gcc
 
 //A wrapper around 'ar' adding the appropriate '--plugin' option
 // for the GCC compiler
@@ -122,8 +91,8 @@ CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=
 //No help, variable specified on the command line.
 CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE
 
-//No help, variable specified on the command line.
-CMAKE_INSTALL_PREFIX:FILEPATH=/N/u/mehtasau/Carbonate/cc3d_build_wdocs
+//Install path prefix, prepended onto install directories.
+CMAKE_INSTALL_PREFIX:PATH=/usr/local
 
 //Path to a program.
 CMAKE_LINKER:FILEPATH=/N/soft/rhel7/xalt/2.10.30/bin/ld
@@ -231,136 +200,11 @@ CMAKE_STRIP:FILEPATH=/usr/bin/strip
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
-//Major Version
-COMPUCELL3D_A_MAJOR_VERSION:STRING=4
-
 //Value Computed by CMake
 COMPUCELL3D_BINARY_DIR:STATIC=/N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/build
 
-//Minor Version
-COMPUCELL3D_B_MINOR_VERSION:STRING=2
-
-//Build Version
-COMPUCELL3D_C_BUILD_VERSION:STRING=5
-
 //Value Computed by CMake
-COMPUCELL3D_SOURCE_DIR:STATIC=/N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D
-
-//Unit testing of CompuCell3D
-COMPUCELL3D_TEST:BOOL=OFF
-
-//Enables copying of the dependencies into installation dir
-DEPENDENCIES_COPY_FLAG:BOOL=OFF
-
-//Location of dependencies folder. This folder will be copied to
-// installation directory
-DEPENDENCIES_DIR:PATH=
-
-//Path to a file.
-EIGEN3_INCLUDE_DIR:PATH=/N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/core/Eigen
-
-//Path to a library.
-EXPAT_LIBRARY_LOCAL:FILEPATH=/usr/lib64/libexpat.so
-
-//Move Player files to installation directory
-INSTALL_PLAYER:BOOL=ON
-
-//Disable automatic OpenCL detection and building corresponding
-// modules
-NO_OPENCL:BOOL=OFF
-
-//Path to a file.
-OPENCL_INCLUDE_DIRS:PATH=OPENCL_INCLUDE_DIRS-NOTFOUND
-
-//Path to a library.
-OPENCL_LIBRARIES:FILEPATH=OPENCL_LIBRARIES-NOTFOUND
-
-//CXX compiler flags for OpenMP parallelization
-OpenMP_CXX_FLAGS:STRING=-fopenmp
-
-//CXX compiler libraries for OpenMP parallelization
-OpenMP_CXX_LIB_NAMES:STRING=gomp;pthread
-
-//C compiler flags for OpenMP parallelization
-OpenMP_C_FLAGS:STRING=-fopenmp
-
-//C compiler libraries for OpenMP parallelization
-OpenMP_C_LIB_NAMES:STRING=gomp;pthread
-
-//Path to the gomp library for OpenMP
-OpenMP_gomp_LIBRARY:FILEPATH=/N/soft/rhel7/gcc/6.3.0/lib64/libgomp.so
-
-//Path to the pthread library for OpenMP
-OpenMP_pthread_LIBRARY:FILEPATH=/lib64/libpthread.so
-
-//Value Computed by CMake
-PYINTERFACE_BINARY_DIR:STATIC=/N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/build/core/pyinterface
-
-//Value Computed by CMake
-PYINTERFACE_SOURCE_DIR:STATIC=/N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/core/pyinterface
-
-//Path to a program.
-PYTHON_EXECUTABLE:FILEPATH=/N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/bin/python3.7
-
-//Path to a file.
-PYTHON_INCLUDE_DIR:PATH=/N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/include/python3.7m
-
-//Path to a library.
-PYTHON_LIBRARY:FILEPATH=/N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/lib/libpython3.7m.so
-
-//Path to a library.
-PYTHON_LIBRARY_DEBUG:FILEPATH=PYTHON_LIBRARY_DEBUG-NOTFOUND
-
-//Python executable
-Python_EXECUTABLE:PATH=/N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/bin/python3.7
-
-//Python include directory
-Python_INCLUDE_DIRS:PATH=/N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/include/python3.7m
-
-//Python library
-Python_LIBRARIES:PATH=/N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/lib/libpython3.7m.so
-
-//Python release library directory
-Python_LIBRARY_RELEASE:PATH=/N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/lib/libpython3.7m.so
-
-//Path to a file.
-SWIG_DIR:PATH=/N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/share/swig/3.0.12
-
-//Path to a program.
-SWIG_EXECUTABLE:FILEPATH=/N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/bin/swig
-
-//Swig version
-SWIG_VERSION:STRING=3.0.12
-
-//Build modules that depend on dolfin FEM solver
-USE_DOLFIN:BOOL=OFF
-
-//Use version numbers in libraries
-USE_LIBRARY_VERSIONS:BOOL=OFF
-
-//The directory containing a CMake configuration file for VTK.
-VTK_DIR:PATH=/N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/lib/cmake/vtk-8.2
-
-//Install Windows Dependencies - directory must be specified
-WINDOWS_DEPENDENCIES_INSTALL_ENABLE:BOOL=ON
-
-//Path to a file.
-ZLIB_INCLUDE_DIR:PATH=/usr/include
-
-//Path to a library.
-ZLIB_LIBRARY_DEBUG:FILEPATH=ZLIB_LIBRARY_DEBUG-NOTFOUND
-
-//Path to a library.
-ZLIB_LIBRARY_RELEASE:FILEPATH=/usr/lib64/libz.so
-
-//Path to a file.
-_OPENCL_CPP_INCLUDE_DIRS:PATH=_OPENCL_CPP_INCLUDE_DIRS-NOTFOUND
-
-//Value Computed by CMake
-cleaverlib_BINARY_DIR:STATIC=/N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/build/core/Cleaver/lib
-
-//Value Computed by CMake
-cleaverlib_SOURCE_DIR:STATIC=/N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/core/Cleaver/lib
+COMPUCELL3D_SOURCE_DIR:STATIC=/N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/CompuCell3D
 
 //No help, variable specified on the command line.
 sudo:BOOL=TRUE
@@ -392,10 +236,6 @@ CMAKE_CPACK_COMMAND:INTERNAL=/geode2/home/u060/mehtasau/Carbonate/miniconda3/env
 CMAKE_CTEST_COMMAND:INTERNAL=/geode2/home/u060/mehtasau/Carbonate/miniconda3/envs/cc3denv/bin/ctest
 //ADVANCED property for variable: CMAKE_CXX_COMPILER
 CMAKE_CXX_COMPILER-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_CXX_COMPILER_AR
-CMAKE_CXX_COMPILER_AR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_CXX_COMPILER_RANLIB
-CMAKE_CXX_COMPILER_RANLIB-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_CXX_FLAGS
 CMAKE_CXX_FLAGS-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_CXX_FLAGS_DEBUG
@@ -448,17 +288,9 @@ CMAKE_GENERATOR_INSTANCE:INTERNAL=
 CMAKE_GENERATOR_PLATFORM:INTERNAL=
 //Name of generator toolset.
 CMAKE_GENERATOR_TOOLSET:INTERNAL=
-//Test CMAKE_HAVE_LIBC_PTHREAD
-CMAKE_HAVE_LIBC_PTHREAD:INTERNAL=
-//Have library pthreads
-CMAKE_HAVE_PTHREADS_CREATE:INTERNAL=
-//Have library pthread
-CMAKE_HAVE_PTHREAD_CREATE:INTERNAL=1
-//Have include pthread.h
-CMAKE_HAVE_PTHREAD_H:INTERNAL=1
 //Source directory with the top level CMakeLists.txt file for this
 // project
-CMAKE_HOME_DIRECTORY:INTERNAL=/N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D
+CMAKE_HOME_DIRECTORY:INTERNAL=/N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/CompuCell3D
 //Install .so files without execute permission.
 CMAKE_INSTALL_SO_NO_EXE:INTERNAL=0
 //ADVANCED property for variable: CMAKE_LINKER
@@ -478,7 +310,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=88
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -521,72 +353,4 @@ CMAKE_STRIP-ADVANCED:INTERNAL=1
 CMAKE_UNAME:INTERNAL=/usr/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: COMPUCELL3D_TEST
-COMPUCELL3D_TEST-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: EIGEN3_INCLUDE_DIR
-EIGEN3_INCLUDE_DIR-ADVANCED:INTERNAL=1
-//Details about finding Eigen3
-FIND_PACKAGE_MESSAGE_DETAILS_Eigen3:INTERNAL=[/N/u/mehtasau/Carbonate/CC3D_PY3_GIT/CompuCell3D/CompuCell3D/core/Eigen][TRUE][v(2.91.0)]
-//Details about finding OpenMP
-FIND_PACKAGE_MESSAGE_DETAILS_OpenMP:INTERNAL=[TRUE][TRUE][c ][v4.5()]
-//Details about finding OpenMP_C
-FIND_PACKAGE_MESSAGE_DETAILS_OpenMP_C:INTERNAL=[-fopenmp][/N/soft/rhel7/gcc/6.3.0/lib64/libgomp.so][/lib64/libpthread.so][/N/soft/rhel7/gcc/6.3.0/lib64/libgomp.so][/lib64/libpthread.so][v4.5()]
-//Details about finding OpenMP_CXX
-FIND_PACKAGE_MESSAGE_DETAILS_OpenMP_CXX:INTERNAL=[-fopenmp][/N/soft/rhel7/gcc/6.3.0/lib64/libgomp.so][/lib64/libpthread.so][/N/soft/rhel7/gcc/6.3.0/lib64/libgomp.so][/lib64/libpthread.so][v4.5()]
-//Details about finding PythonInterp
-FIND_PACKAGE_MESSAGE_DETAILS_PythonInterp:INTERNAL=[/N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/bin/python3.7][v3.7.12()]
-//Details about finding PythonLibs
-FIND_PACKAGE_MESSAGE_DETAILS_PythonLibs:INTERNAL=[/N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/lib/libpython3.7m.so][/N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/include/python3.7m][v3.7.12()]
-//Details about finding SWIG
-FIND_PACKAGE_MESSAGE_DETAILS_SWIG:INTERNAL=[/N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/bin/swig][/N/u/mehtasau/Carbonate/miniconda3/envs/cc3denv/share/swig/3.0.12][c ][v3.0.12()]
-//Details about finding Threads
-FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
-//Details about finding ZLIB
-FIND_PACKAGE_MESSAGE_DETAILS_ZLIB:INTERNAL=[/usr/lib64/libz.so][/usr/include][v1.2.7()]
-//ADVANCED property for variable: OPENCL_INCLUDE_DIRS
-OPENCL_INCLUDE_DIRS-ADVANCED:INTERNAL=1
-//Result of TRY_COMPILE
-OpenMP_COMPILE_RESULT_CXX_fopenmp:INTERNAL=TRUE
-//Result of TRY_COMPILE
-OpenMP_COMPILE_RESULT_C_fopenmp:INTERNAL=TRUE
-//ADVANCED property for variable: OpenMP_CXX_FLAGS
-OpenMP_CXX_FLAGS-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: OpenMP_CXX_LIB_NAMES
-OpenMP_CXX_LIB_NAMES-ADVANCED:INTERNAL=1
-//CXX compiler's OpenMP specification date
-OpenMP_CXX_SPEC_DATE:INTERNAL=201511
-//ADVANCED property for variable: OpenMP_C_FLAGS
-OpenMP_C_FLAGS-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: OpenMP_C_LIB_NAMES
-OpenMP_C_LIB_NAMES-ADVANCED:INTERNAL=1
-//C compiler's OpenMP specification date
-OpenMP_C_SPEC_DATE:INTERNAL=201511
-//Result of TRY_COMPILE
-OpenMP_SPECTEST_CXX_:INTERNAL=TRUE
-//Result of TRY_COMPILE
-OpenMP_SPECTEST_C_:INTERNAL=TRUE
-//ADVANCED property for variable: OpenMP_gomp_LIBRARY
-OpenMP_gomp_LIBRARY-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: OpenMP_pthread_LIBRARY
-OpenMP_pthread_LIBRARY-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: PYTHON_EXECUTABLE
-PYTHON_EXECUTABLE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: PYTHON_INCLUDE_DIR
-PYTHON_INCLUDE_DIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: PYTHON_LIBRARY
-PYTHON_LIBRARY-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: PYTHON_LIBRARY_DEBUG
-PYTHON_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: SWIG_DIR
-SWIG_DIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: SWIG_EXECUTABLE
-SWIG_EXECUTABLE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: SWIG_VERSION
-SWIG_VERSION-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: ZLIB_INCLUDE_DIR
-ZLIB_INCLUDE_DIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: ZLIB_LIBRARY_DEBUG
-ZLIB_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: ZLIB_LIBRARY_RELEASE
-ZLIB_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 
