@@ -1016,7 +1016,7 @@ void ReactionDiffusionSolverFVM::loadFieldExpressions() {
 
 void ReactionDiffusionSolverFVM::loadFieldExpressionMultiplier(unsigned int _fieldIndex) {
 	//replace with openmp
-	//#pragma omp parallel for shared (fieldFVs)
+	#pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i<fieldFVs.size();i++){
 		loadFieldExpressionMultiplier(_fieldIndex, fieldFVs[i]);
 	}
@@ -1030,7 +1030,7 @@ void ReactionDiffusionSolverFVM::loadFieldExpressionMultiplier(std::string _fiel
 
 void ReactionDiffusionSolverFVM::loadFieldExpressionIndependent(unsigned int _fieldIndex) {
 		//replace with openmp
-	//#pragma omp parallel for shared (fieldFVs)
+	#pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i<fieldFVs.size();i++){
 				loadFieldExpressionIndependent(_fieldIndex, fieldFVs[i]); 
 		}

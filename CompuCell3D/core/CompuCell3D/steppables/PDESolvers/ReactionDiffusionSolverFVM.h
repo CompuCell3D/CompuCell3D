@@ -306,32 +306,170 @@ namespace CompuCell3D {
 
 		// Solver routines
 		/**
-		 * @brief 
+		 * @brief Initialises cell data and sets cell diffusivity and permeability coefficients
 		 * 
 		 */
 		void loadCellData();
+		
+		/**
+		 * @brief Loads field expression multiplier and field expression independent for each field index
+		 * 
+		 */
 		void loadFieldExpressions();
+
+		/**
+		 * @brief Sets field expressions for diagonal functions based on _fieldIndex
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void loadFieldExpressionMultiplier(unsigned int _fieldIndex);
+
+		/**
+		 * @brief Sets field expressions for off-diagonal functions based on _fieldIndex
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void loadFieldExpressionIndependent(unsigned int _fieldIndex);
+
+		/**
+		 * @brief Gets _fieldIndex from _fieldName and then sets 
+		 *  field expressions for diagonal functions based on _fieldIndex
+		 * 
+		 * @param _fieldName 
+		 */
 		virtual void loadFieldExpressionMultiplier(std::string _fieldName) { loadFieldExpressionMultiplier(getFieldIndexByName(_fieldName)); }
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldName 
+		 */
 		virtual void loadFieldExpressionIndependent(std::string _fieldName) { loadFieldExpressionIndependent(getFieldIndexByName(_fieldName)); }
+		
+		/**
+		 * @brief Sets field expression multiplier using _fieldName and _expr
+		 *  and then uses _fieldName to fetch _fieldIndex which is then used
+		 * to set field expression for diagonal functions
+		 * @param _fieldName 
+		 * @param _expr 
+		 */
 		virtual void loadFieldExpressionMultiplier(std::string _fieldName, std::string _expr);
+		
+		/**
+		 * @brief Sets field expression multiplier using _fieldName and _expr
+		 *  and then uses _fieldName to fetch _fieldIndex which is then used
+		 * to set field expression for off-diagonal functions
+		 * 
+		 * @param _fieldName 
+		 * @param _expr 
+		 */
 		virtual void loadFieldExpressionIndependent(std::string _fieldName, std::string _expr);
+
+		/**
+		 * @brief calls _fv's setDiagonalFunctionExpression method and sets field expression
+		 * for diagonal functions based on _fieldIndex and expression string at that field index
+		 * 
+		 * @param _fieldIndex 
+		 * @param _fv 
+		 */
 		void loadFieldExpressionMultiplier(unsigned int _fieldIndex, ReactionDiffusionSolverFV *_fv);
+
+		/**
+		 * @brief calls _fv's setOffDiagonalFunctionExpression method and sets field expression
+		 * for off-diagonal functions based on _fieldIndex and expression string at that field index
+		 * 
+		 * @param _fieldIndex 
+		 * @param _fv 
+		 */
 		void loadFieldExpressionIndependent(unsigned int _fieldIndex, ReactionDiffusionSolverFV *_fv);
+		
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldDim 
+		 */
 		void initializeFVs(Dim3D _fieldDim);
+
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldIndex 
+		 * @param _expr 
+		 */
 		void initializeFieldUsingEquation(unsigned int _fieldIndex, std::string _expr);
+
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldName 
+		 * @param _expr 
+		 */
 		virtual void initializeFieldUsingEquation(std::string _fieldName, std::string _expr) { initializeFieldUsingEquation(getFieldIndexByName(_fieldName), _expr); }
+		
+		/**
+		 * @brief 
+		 * 
+		 * @param _cell 
+		 * @return std::vector<double> 
+		 */
 		std::vector<double> totalCellConcentration(const CellG *_cell);
+		
+		/**
+		 * @brief 
+		 * 
+		 * @return std::vector<double> 
+		 */
 		std::vector<double> totalMediumConcentration();
+		
+		/**
+		 * @brief 
+		 * 
+		 */
 		void updateTotalCellConcentrations();
+		
+		/**
+		 * @brief 
+		 * 
+		 */
 		void updateTotalConcentrations();
+		
+		/**
+		 * @brief Get the Cell Pixel Vec object
+		 * 
+		 * @param _cell 
+		 * @return std::vector<Point3D> 
+		 */
 		std::vector<Point3D> getCellPixelVec(const CellG *_cell);
+		
+		/**
+		 * @brief Get the Medium Pixel Vec object
+		 * 
+		 * @return std::vector<Point3D> 
+		 */
 		std::vector<Point3D> getMediumPixelVec();
+		
+		/**
+		 * @brief 
+		 * 
+		 * @param _pixelVec 
+		 * @return std::vector<double> 
+		 */
 		std::vector<double> totalPixelSetConcentration(std::vector<Point3D> _pixelVec);
 		
 		// FV interface
+		/**
+		 * @brief Get the Coords Of F V object
+		 * 
+		 * @param _fv 
+		 * @return Point3D 
+		 */
 		Point3D getCoordsOfFV(ReactionDiffusionSolverFV *_fv);
+		
+		/**
+		 * @brief 
+		 * 
+		 * @param _fv 
+		 * @return CellG* 
+		 */
 		CellG * FVtoCellMap(ReactionDiffusionSolverFV * _fv);
 
 		double getConstantFieldDiffusivity(unsigned int _fieldIndex) { return constantDiffusionCoefficientsVec[_fieldIndex]; }
