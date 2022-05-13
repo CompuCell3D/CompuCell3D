@@ -383,14 +383,19 @@ namespace CompuCell3D {
 		void loadFieldExpressionIndependent(unsigned int _fieldIndex, ReactionDiffusionSolverFV *_fv);
 		
 		/**
-		 * @brief 
+		 * @brief Creates a lattice with x,y,z dimensions from _fieldDim,
+		 * Initialises Finite Volumes, registers field symbols for each 
+		 * finite volume, loads field expressions and applies basic boundary conditions 
+		 * for z,y and x dimensions 
 		 * 
 		 * @param _fieldDim 
 		 */
 		void initializeFVs(Dim3D _fieldDim);
 
 		/**
-		 * @brief 
+		 * @brief uses a mu::Parser instance to parse _expr
+		 * based on x,y,z values from field dimension and 
+		 * sets the concentration at _fieldIndex based on the parsed value
 		 * 
 		 * @param _fieldIndex 
 		 * @param _expr 
@@ -398,7 +403,10 @@ namespace CompuCell3D {
 		void initializeFieldUsingEquation(unsigned int _fieldIndex, std::string _expr);
 
 		/**
-		 * @brief 
+		 * @brief gets _field Index from _field Name and then
+		 * uses a mu::Parser instance to parse _expr
+		 * based on x,y,z values from field dimension and 
+		 * sets the concentration at _fieldIndex based on the parsed value
 		 * 
 		 * @param _fieldName 
 		 * @param _expr 
@@ -406,7 +414,9 @@ namespace CompuCell3D {
 		virtual void initializeFieldUsingEquation(std::string _fieldName, std::string _expr) { initializeFieldUsingEquation(getFieldIndexByName(_fieldName), _expr); }
 		
 		/**
-		 * @brief 
+		 * @brief Returns a vector containing total cell concentration 
+		 * for each field index based on cell concentration at field finite volume 
+		 * at each pixel var index
 		 * 
 		 * @param _cell 
 		 * @return std::vector<double> 
@@ -414,20 +424,20 @@ namespace CompuCell3D {
 		std::vector<double> totalCellConcentration(const CellG *_cell);
 		
 		/**
-		 * @brief 
+		 * @brief Returns total cell concentration across all fields
 		 * 
 		 * @return std::vector<double> 
 		 */
 		std::vector<double> totalMediumConcentration();
 		
 		/**
-		 * @brief 
+		 * @brief Updates concentrationVecCopies and massConsCorrectionFactors for cells in cellInventory
 		 * 
 		 */
 		void updateTotalCellConcentrations();
 		
 		/**
-		 * @brief 
+		 * @brief Updates total mass in medium and total mass in cells
 		 * 
 		 */
 		void updateTotalConcentrations();
@@ -448,7 +458,8 @@ namespace CompuCell3D {
 		std::vector<Point3D> getMediumPixelVec();
 		
 		/**
-		 * @brief 
+		 * @brief Adds up concentrations for each index in _pixelVec for each field
+		 * and returns a vector containing total concentrations per field  
 		 * 
 		 * @param _pixelVec 
 		 * @return std::vector<double> 
@@ -465,90 +476,491 @@ namespace CompuCell3D {
 		Point3D getCoordsOfFV(ReactionDiffusionSolverFV *_fv);
 		
 		/**
-		 * @brief 
+		 * @brief returns CellG cooresponding to 3D point coodinates from _fv
 		 * 
 		 * @param _fv 
 		 * @return CellG* 
 		 */
 		CellG * FVtoCellMap(ReactionDiffusionSolverFV * _fv);
-
+		
+		/**
+		 * @brief Get the Constant Field Diffusivity object
+		 * 
+		 * @param _fieldIndex 
+		 * @return double 
+		 */
 		double getConstantFieldDiffusivity(unsigned int _fieldIndex) { return constantDiffusionCoefficientsVec[_fieldIndex]; }
 		// float getECMaterialDiffusivity(unsigned int _fieldIndex, Point3D coords) { return ecMaterialsPlugin->getLocalDiffusivity(coords, concentrationFieldNameVector[_fieldIndex]); }
+		
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldIndex 
+		 * @param coords 
+		 * @return float 
+		 */
 		float getECMaterialDiffusivity(unsigned int _fieldIndex, Point3D coords) { return 0.0; } // To be implemented with commented declaration/definition
+		/**
+		 * @brief Get the Diffusivity Field Pt Val object
+		 * 
+		 * @param _fieldIndex 
+		 * @param pt 
+		 * @return float 
+		 */
 		float getDiffusivityFieldPtVal(unsigned int _fieldIndex, const Point3D &pt) { return diffusivityFieldIndexToFieldMap[_fieldIndex]->get(pt); }
-
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void useConstantDiffusivity(unsigned int _fieldIndex) { useConstantDiffusivity(_fieldIndex, constantDiffusionCoefficientsVec[_fieldIndex]); }
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldIndex 
+		 * @param _diffusivityCoefficient 
+		 */
 		void useConstantDiffusivity(unsigned int _fieldIndex, double _diffusivityCoefficient);
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldName 
+		 * @param _diffusivityCoefficient 
+		 */
 		virtual void useConstantDiffusivity(std::string _fieldName, double _diffusivityCoefficient) { useConstantDiffusivity(getFieldIndexByName(_fieldName), _diffusivityCoefficient); }
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void useConstantDiffusivityByType(unsigned int _fieldIndex) { useConstantDiffusivityByType(_fieldIndex, constantDiffusionCoefficientsVec[_fieldIndex]); }
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldIndex 
+		 * @param _diffusivityCoefficient 
+		 */
 		void useConstantDiffusivityByType(unsigned int _fieldIndex, double _diffusivityCoefficient);
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldName 
+		 * @param _diffusivityCoefficient 
+		 */
 		virtual void useConstantDiffusivityByType(std::string _fieldName, double _diffusivityCoefficient) { useConstantDiffusivityByType(getFieldIndexByName(_fieldName), _diffusivityCoefficient); }
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void useFieldDiffusivityInMedium(unsigned int _fieldIndex);
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldName 
+		 */
 		virtual void useFieldDiffusivityInMedium(std::string _fieldName) { useFieldDiffusivityInMedium(getFieldIndexByName(_fieldName)); }
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void useFieldDiffusivityEverywhere(unsigned int _fieldIndex);
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldName 
+		 */
 		virtual void useFieldDiffusivityEverywhere(std::string _fieldName) { useFieldDiffusivityEverywhere(getFieldIndexByName(_fieldName)); }
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void initDiffusivityField(unsigned int _fieldIndex);
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldName 
+		 */
 		virtual void initDiffusivityField(std::string _fieldName) { initDiffusivityField(getFieldIndexByName(_fieldName)); }
+		/**
+		 * @brief Set the Diffusivity Field Pt Val object
+		 * 
+		 * @param _fieldIndex 
+		 * @param _pt 
+		 * @param _val 
+		 */
 		void setDiffusivityFieldPtVal(unsigned int _fieldIndex, Point3D _pt, float _val);
+		/**
+		 * @brief Set the Diffusivity Field Pt Val object
+		 * 
+		 * @param _fieldName 
+		 * @param _pt 
+		 * @param _val 
+		 */
 		virtual void setDiffusivityFieldPtVal(std::string _fieldName, Point3D _pt, float _val) { setDiffusivityFieldPtVal(getFieldIndexByName(_fieldName), _pt, _val); }
-
+		/**
+		 * @brief Get the Concentration Field Pt Val object
+		 * 
+		 * @param _fieldIndex 
+		 * @param _pt 
+		 * @return float 
+		 */
 		float getConcentrationFieldPtVal(unsigned int _fieldIndex, Point3D _pt);
+		/**
+		 * @brief Get the Concentration Field Pt Val object
+		 * 
+		 * @param _fieldName 
+		 * @param _pt 
+		 * @return float 
+		 */
 		float getConcentrationFieldPtVal(std::string _fieldName, Point3D _pt) { return getConcentrationFieldPtVal(getFieldIndexByName(_fieldName), _pt); }
+		/**
+		 * @brief Set the Concentration Field Pt Val object
+		 * 
+		 * @param _fieldIndex 
+		 * @param _pt 
+		 * @param _val 
+		 */
 		void setConcentrationFieldPtVal(unsigned int _fieldIndex, Point3D _pt, float _val);
+		/**
+		 * @brief Set the Concentration Field Pt Val object
+		 * 
+		 * @param _fieldName 
+		 * @param _pt 
+		 * @param _val 
+		 */
 		void setConcentrationFieldPtVal(std::string _fieldName, Point3D _pt, float _val) { setConcentrationFieldPtVal(getFieldIndexByName(_fieldName), _pt, _val); }
-
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldIndex 
+		 * @param _surfaceIndex 
+		 * @param _outwardFluxVal 
+		 * @param _fv 
+		 */
 		void useFixedFluxSurface(unsigned int _fieldIndex, unsigned int _surfaceIndex, float _outwardFluxVal, ReactionDiffusionSolverFV *_fv);
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldName 
+		 * @param _surfaceName 
+		 * @param _outwardFluxVal 
+		 * @param _pt 
+		 */
 		virtual void useFixedFluxSurface(std::string _fieldName, std::string _surfaceName, float _outwardFluxVal, Point3D _pt) { useFixedFluxSurface(getFieldIndexByName(_fieldName), getSurfaceIndexByName(_surfaceName), _outwardFluxVal, getFieldFV(_pt)); }
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldName 
+		 * @param _surfaceName 
+		 * @param _outwardFluxVal 
+		 * @param _physPt 
+		 */
 		virtual void useFixedFluxSurface(std::string _fieldName, std::string _surfaceName, float _outwardFluxVal, std::vector<float> _physPt) { useFixedFluxSurface(getFieldIndexByName(_fieldName), getSurfaceIndexByName(_surfaceName), _outwardFluxVal, getFieldFV(_physPt)); }
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldIndex 
+		 * @param _surfaceIndex 
+		 * @param _val 
+		 * @param _fv 
+		 */
 		void useFixedConcentration(unsigned int _fieldIndex, unsigned int _surfaceIndex, float _val, ReactionDiffusionSolverFV *_fv);
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldName 
+		 * @param _surfaceName 
+		 * @param _val 
+		 * @param _pt 
+		 */
 		virtual void useFixedConcentration(std::string _fieldName, std::string _surfaceName, float _val, Point3D _pt) { useFixedConcentration(getFieldIndexByName(_fieldName), getSurfaceIndexByName(_surfaceName), _val, getFieldFV(_pt)); }
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldName 
+		 * @param _surfaceName 
+		 * @param _val 
+		 * @param _physPt 
+		 */
 		virtual void useFixedConcentration(std::string _fieldName, std::string _surfaceName, float _val, std::vector<float> _physPt) { useFixedConcentration(getFieldIndexByName(_fieldName), getSurfaceIndexByName(_surfaceName), _val, getFieldFV(_physPt)); }
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldIndex 
+		 * @param _val 
+		 * @param _fv 
+		 */
 		void useFixedFVConcentration(unsigned int _fieldIndex, float _val, ReactionDiffusionSolverFV *_fv);
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldName 
+		 * @param _val 
+		 * @param _pt 
+		 */
 		virtual void useFixedFVConcentration(std::string _fieldName, float _val, Point3D _pt) { useFixedFVConcentration(getFieldIndexByName(_fieldName), _val, getFieldFV(_pt)); }
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldName 
+		 * @param _val 
+		 * @param _physPt 
+		 */
 		virtual void useFixedFVConcentration(std::string _fieldName, float _val, std::vector<float> _physPt) { useFixedFVConcentration(getFieldIndexByName(_fieldName), _val, getFieldFV(_physPt)); }
-
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void useDiffusiveSurfaces(unsigned int _fieldIndex);
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldName 
+		 */
 		virtual void useDiffusiveSurfaces(std::string _fieldName) { useDiffusiveSurfaces(getFieldIndexByName(_fieldName)); }
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void usePermeableSurfaces(unsigned int _fieldIndex) { usePermeableSurfaces(_fieldIndex, true); }
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldIndex 
+		 * @param _activate 
+		 */
 		void usePermeableSurfaces(unsigned int _fieldIndex, bool _activate);
+		/**
+		 * @brief 
+		 * 
+		 * @param _fieldName 
+		 * @param _activate 
+		 */
 		virtual void usePermeableSurfaces(std::string _fieldName, bool _activate) { usePermeableSurfaces(getFieldIndexByName(_fieldName), _activate); }
 
 		// Cell interface
+		/**
+		 * @brief 
+		 * 
+		 * @param _cell 
+		 * @param _numFields 
+		 */
 		void initializeCellData(const CellG *_cell, unsigned int _numFields);
+		/**
+		 * @brief 
+		 * 
+		 * @param _numFields 
+		 */
 		void initializeCellData(unsigned int _numFields);
-
+		/**
+		 * @brief Get the Cell Diffusivity Coefficient object
+		 * 
+		 * @param _cell 
+		 * @param _fieldIndex 
+		 * @return double 
+		 */
 		double getCellDiffusivityCoefficient(const CellG * _cell, unsigned int _fieldIndex);
+		/**
+		 * @brief Get the Cell Diffusivity Coefficient object
+		 * 
+		 * @param _cell 
+		 * @param _fieldName 
+		 * @return double 
+		 */
 		virtual double getCellDiffusivityCoefficient(const CellG * _cell, std::string _fieldName) { return getCellDiffusivityCoefficient(_cell, getFieldIndexByName(_fieldName)); }
+		/**
+		 * @brief Set the Cell Diffusivity Coefficient object
+		 * 
+		 * @param _cell 
+		 * @param _fieldIndex 
+		 * @param _diffusivityCoefficient 
+		 */
 		void setCellDiffusivityCoefficient(const CellG * _cell, unsigned int _fieldIndex, double _diffusivityCoefficient);
+		/**
+		 * @brief Set the Cell Diffusivity Coefficient object
+		 * 
+		 * @param _cell 
+		 * @param _fieldName 
+		 * @param _diffusivityCoefficient 
+		 */
 		virtual void setCellDiffusivityCoefficient(const CellG * _cell, std::string _fieldName, double _diffusivityCoefficient) { setCellDiffusivityCoefficient(_cell, getFieldIndexByName(_fieldName), _diffusivityCoefficient); }
+		/**
+		 * @brief Set the Cell Diffusivity Coefficient object
+		 * 
+		 * @param _cell 
+		 * @param _fieldIndex 
+		 */
 		void setCellDiffusivityCoefficient(const CellG * _cell, unsigned int _fieldIndex);
+		/**
+		 * @brief Set the Cell Diffusivity Coefficient object
+		 * 
+		 * @param _cell 
+		 * @param _fieldName 
+		 */
 		virtual void setCellDiffusivityCoefficient(const CellG * _cell, std::string _fieldName) { setCellDiffusivityCoefficient(_cell, getFieldIndexByName(_fieldName)); }
+		/**
+		 * @brief Set the Cell Diffusivity Coefficients object
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void setCellDiffusivityCoefficients(unsigned int _fieldIndex);
+		/**
+		 * @brief Set the Cell Diffusivity Coefficients object
+		 * 
+		 * @param _fieldName 
+		 */
 		virtual void setCellDiffusivityCoefficients(std::string _fieldName) { setCellDiffusivityCoefficients(getFieldIndexByName(_fieldName)); }
+		/**
+		 * @brief Set the Cell Diffusivity Coefficients object
+		 * 
+		 */
 		virtual void setCellDiffusivityCoefficients();
-
+		/**
+		 * @brief Get the Permeable Coefficients object
+		 * 
+		 * @param _cell 
+		 * @param _nCell 
+		 * @param _fieldIndex 
+		 * @return std::vector<double> 
+		 */
 		std::vector<double> getPermeableCoefficients(const CellG * _cell, const CellG * _nCell, unsigned int _fieldIndex);
+		/**
+		 * @brief Get the Permeable Coefficients object
+		 * 
+		 * @param _cell 
+		 * @param _nCell 
+		 * @param _fieldName 
+		 * @return std::vector<double> 
+		 */
 		virtual std::vector<double> getPermeableCoefficients(const CellG * _cell, const CellG * _nCell, std::string _fieldName) {
 			return getPermeableCoefficients(_cell, _nCell, getFieldIndexByName(_fieldName)); }
+		/**
+		 * @brief Set the Cell Permeation Coefficient object
+		 * 
+		 * @param _cell 
+		 * @param _nCellTypeId 
+		 * @param _fieldIndex 
+		 * @param _permeationCoefficient 
+		 */
 		void setCellPermeationCoefficient(const CellG * _cell, unsigned int _nCellTypeId, unsigned int _fieldIndex, double _permeationCoefficient);
+		/**
+		 * @brief Set the Cell Permeation Coefficient object
+		 * 
+		 * @param _cell 
+		 * @param _nCellTypeId 
+		 * @param _fieldName 
+		 * @param _permeationCoefficient 
+		 */
 		virtual void setCellPermeationCoefficient(const CellG * _cell, unsigned int _nCellTypeId, std::string _fieldName, double _permeationCoefficient) { setCellPermeationCoefficient(_cell, _nCellTypeId, getFieldIndexByName(_fieldName), _permeationCoefficient); }
+		/**
+		 * @brief Set the Cell Permeation Coefficient object
+		 * 
+		 * @param _cell 
+		 * @param _nCellTypeId 
+		 * @param _fieldIndex 
+		 */
 		void setCellPermeationCoefficient(const CellG * _cell, unsigned int _nCellTypeId, unsigned int _fieldIndex);
+		/**
+		 * @brief Set the Cell Permeation Coefficient object
+		 * 
+		 * @param _cell 
+		 * @param _nCellTypeId 
+		 * @param _fieldName 
+		 */
 		virtual void setCellPermeationCoefficient(const CellG * _cell, unsigned int _nCellTypeId, std::string _fieldName) { setCellPermeationCoefficient(_cell, _nCellTypeId, getFieldIndexByName(_fieldName)); }
+		/**
+		 * @brief Set the Cell Permeation Coefficients object
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void setCellPermeationCoefficients(unsigned int _fieldIndex);
+		/**
+		 * @brief Set the Cell Permeation Coefficients object
+		 * 
+		 * @param _fieldName 
+		 */
 		virtual void setCellPermeationCoefficients(std::string _fieldName) { setCellPermeationCoefficients(getFieldIndexByName(_fieldName)); }
+		/**
+		 * @brief Set the Cell Permeation Coefficients object
+		 * 
+		 */
 		virtual void setCellPermeationCoefficients();
-
+		/**
+		 * @brief Set the Cell Permeable Bias Coefficient object
+		 * 
+		 * @param _cell 
+		 * @param _nCellTypeId 
+		 * @param _fieldIndex 
+		 * @param _permeableBiasCoefficient 
+		 */
 		void setCellPermeableBiasCoefficient(const CellG * _cell, unsigned int _nCellTypeId, unsigned int _fieldIndex, double _permeableBiasCoefficient);
+		/**
+		 * @brief Set the Cell Permeable Bias Coefficient object
+		 * 
+		 * @param _cell 
+		 * @param _nCellTypeId 
+		 * @param _fieldName 
+		 * @param _permeableBiasCoefficient 
+		 */
 		virtual void setCellPermeableBiasCoefficient(const CellG * _cell, unsigned int _nCellTypeId, std::string _fieldName, double _permeableBiasCoefficient) { setCellPermeableBiasCoefficient(_cell, _nCellTypeId, getFieldIndexByName(_fieldName), _permeableBiasCoefficient); }
+		/**
+		 * @brief Set the Cell Permeable Bias Coefficient object
+		 * 
+		 * @param _cell 
+		 * @param _nCellTypeId 
+		 * @param _fieldIndex 
+		 */
 		void setCellPermeableBiasCoefficient(const CellG * _cell, unsigned int _nCellTypeId, unsigned int _fieldIndex);
+		/**
+		 * @brief Set the Cell Permeable Bias Coefficient object
+		 * 
+		 * @param _cell 
+		 * @param _nCellTypeId 
+		 * @param _fieldName 
+		 */
 		virtual void setCellPermeableBiasCoefficient(const CellG * _cell, unsigned int _nCellTypeId, std::string _fieldName) { setCellPermeableBiasCoefficient(_cell, _nCellTypeId, getFieldIndexByName(_fieldName)); }
+		/**
+		 * @brief Set the Cell Permeable Bias Coefficients object
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void setCellPermeableBiasCoefficients(unsigned int _fieldIndex);
+		/**
+		 * @brief Set the Cell Permeable Bias Coefficients object
+		 * 
+		 * @param _fieldName 
+		 */
 		virtual void setCellPermeableBiasCoefficients(std::string _fieldName) { setCellPermeableBiasCoefficients(getFieldIndexByName(_fieldName)); }
+		/**
+		 * @brief Set the Cell Permeable Bias Coefficients object
+		 * 
+		 */
 		virtual void setCellPermeableBiasCoefficients();
-
+		/**
+		 * @brief Set the Cell Permeable Coefficients object
+		 * 
+		 */
 		virtual void setCellPermeableCoefficients();
-
+		/**
+		 * @brief Get the Cell Outward Flux object
+		 * 
+		 * @param _cell 
+		 * @param _fieldIndex 
+		 * @return double 
+		 */
 		double getCellOutwardFlux(const CellG *_cell, unsigned int _fieldIndex);
+		/**
+		 * @brief Get the Cell Outward Flux object
+		 * 
+		 * @param _cell 
+		 * @param _fieldName 
+		 * @return double 
+		 */
 		virtual double getCellOutwardFlux(const CellG *_cell, std::string _fieldName) { return getCellOutwardFlux(_cell, getFieldIndexByName(_fieldName)); }
 		void setCellOutwardFlux(const CellG *_cell, unsigned int _fieldIndex, float _outwardFlux);
 		virtual void setCellOutwardFlux(const CellG * _cell, std::string _fieldName, float _outwardFlux) { setCellOutwardFlux(_cell, getFieldIndexByName(_fieldName), _outwardFlux); }

@@ -1051,7 +1051,7 @@ void ReactionDiffusionSolverFVM::loadFieldExpressionIndependent(unsigned int _fi
 }
 
 void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
-
+	///TODO: remove PPL code after finalizing openmp code
 	// Generate finite volumes
 
 	//fieldFVs = new concurrency::concurrent_vector<ReactionDiffusionSolverFV*>(_fieldDim.x*_fieldDim.y*_fieldDim.z);
@@ -1065,7 +1065,7 @@ void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
 	// });
 
     // replaced parallel_for from parallels to openmp's parallel for implementation
-    //#pragma omp parallel for shared (_fieldDim)
+    #pragma omp parallel for shared (_fieldDim)
 	for (int ind=0;ind<_fieldDim.x*_fieldDim.y*_fieldDim.z;ind++){
 		ReactionDiffusionSolverFV *fv = new ReactionDiffusionSolverFV(this, ind2pt(ind), (int)this->getConcentrationFieldNameVector().size());
 		this->setFieldFV(ind, fv);
@@ -1079,7 +1079,7 @@ void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
 
     ///TODO: replace parallel_for_each with openmp's version for fieldFVs
 
-    //#pragma omp parallel for shared (fieldFVs)
+    #pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i< fieldFVs.size();i++){ 
 		fieldFVs[i]->initialize();
 	}
@@ -1087,7 +1087,7 @@ void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
 
 	cerr << "Setting field symbols..." << endl;
 	
-	//#pragma omp parallel for shared (fieldFVs)
+	#pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i<fieldFVs.size();i++){
 	for (int fieldIndex=0;fieldIndex<fieldFVs[i]->getConcentrationVec().size();++fieldIndex){ 
 			fieldFVs[i]->registerFieldSymbol(fieldIndex, this->getFieldSymbol(fieldIndex));
@@ -1261,29 +1261,32 @@ std::vector<double> ReactionDiffusionSolverFVM::totalMediumConcentration() {
 	int n_threads = omp_get_num_threads();
 	std::vector<vector<double>> res (n_threads,std::vector<double>(numFields, 0.0));
 	
-	// #pragma omp parallel for shared(pixelVecPar,res)
-	// for (int i=0;i<pixelVecPar.size();i++){ 
-	// 	int index = omp_get_thread_num();
-	// 	// replace with explicit (0 to numFields) loop over all elements 
-	// 	// for ....{0 to numfields} ..
-	// 	// res[i][j] = ...
-	// 	//res[index] = vecPlus<double>()(res[index],std::vector<double>(this->getFieldFV(pixelVecPar[i])->getConcentrationVec()));
-	// }
+	#pragma omp parallel for shared(pixelVecPar,res)
+	for (int i=0;i<pixelVecPar.size();i++){ 
+		int index = omp_get_thread_num();
+		res[index] = vecPlus<double>()(res[index],std::vector<double>(this->getFieldFV(pixelVecPar[i])->getConcentrationVec()));
+	}
 
 	// //reduction
 	std::vector<double> res_reduced = std::vector<double>(numFields, 0.0);
-	// #pragma omp critical
-	// for (int i=0;i<n_threads;i++){ 
-	// 	//res_reduced = vecPlus<double>()(res[i],res_reduced);
-	// 	// res_reduced = sum(res[i][...])
+	#pragma omp critical
+	for (int i=0;i<n_threads;i++){ 
+		res_reduced = vecPlus<double>()(res[i],res_reduced);
+		res_reduced = sum(res[i][...])
+	}
+
+	// serial implementation
+
+	// for(int i=0;i<pixelVecPar.size(); i++){
+	// 	auto concentrationVec = this->getFieldFV(pixelVecPar[i])->getConcentrationVec();
+	// 	for(int j=0;j<numFields;j++){
+	// 		res_reduced[j]+=concentrationVec[j];
+	// 	}
 	// }
 
-	for(int i=0;i<pixelVecPar.size(); i++){
-		auto concentrationVec = this->getFieldFV(pixelVecPar[i])->getConcentrationVec();
-		for(int j=0;j<numFields;j++){
-			res_reduced[j]+=concentrationVec[j];
-		}
-	}
+
+
+
 		// #pragma omp parallel for reduction(vec_float_plus : sumEl)
 		// for(size_t i=0; i<10; i++){
 		// 	sumEl[...] += ...;
@@ -1307,7 +1310,7 @@ std::vector<double> ReactionDiffusionSolverFVM::totalMediumConcentration() {
 void ReactionDiffusionSolverFVM::updateTotalCellConcentrations() {
 	unsigned int numCells = (unsigned int)(cellInventory->getSize());
 
-    ///TODO: replace with openmp's version
+    ///TODO: remove PPL code
 
 	if (numCells > 0) {
 		// Load cell pointers for parallel update
@@ -1324,7 +1327,7 @@ void ReactionDiffusionSolverFVM::updateTotalCellConcentrations() {
 
 		// Perform parallel update
 
-		//#pragma omp parallel for shared (vecCells)
+		#pragma omp parallel for shared (vecCells)
 		for (int i=0;i<vecCells.size();i++){ 
 			BasicClassAccessor<ReactionDiffusionSolverFVMCellData> *cellData = this->getReactionDiffusionSolverFVMCellDataAccessorPtr();
 			std::vector<double> &concentrationVecCopies = cellData->get(vecCells[i]->extraAttribPtr)->concentrationVecCopies;
