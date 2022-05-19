@@ -510,14 +510,17 @@ namespace CompuCell3D {
 		 */
 		float getDiffusivityFieldPtVal(unsigned int _fieldIndex, const Point3D &pt) { return diffusivityFieldIndexToFieldMap[_fieldIndex]->get(pt); }
 		/**
-		 * @brief Sets pointers to getConstantDiffusivityById function at 
-		 * _fieldIndex for fieldDiffusivityFunctionPtrs vector
+		 * @brief Sets pointers to getConstantDiffusivity function
+		 * for fieldDiffusivityFunctionPtrs vector and sets constant diffusivity
+		 * derived from constantDiffusionCoefficientsVec for auxVars at _fieldIndex 
 		 * 
 		 * @param _fieldIndex 
 		 */
 		void useConstantDiffusivity(unsigned int _fieldIndex) { useConstantDiffusivity(_fieldIndex, constantDiffusionCoefficientsVec[_fieldIndex]); }
 		/**
-		 * @brief 
+		 * @brief Sets pointers to getConstantDiffusivity function
+		 * for fieldDiffusivityFunctionPtrs vector and sets constant diffusivity
+		 * using _diffusivityCoefficient for auxVars at _fieldIndex 
 		 * 
 		 * @param _fieldIndex 
 		 * @param _diffusivityCoefficient 
@@ -1447,50 +1450,268 @@ namespace CompuCell3D {
 
 	public:
 
+
 		ReactionDiffusionSolverFV() {};
 		ReactionDiffusionSolverFV(ReactionDiffusionSolverFVM *_solver, Point3D _coords, int _numFields);
 		virtual ~ReactionDiffusionSolverFV() {};
 
+		/**
+		 * @brief returns (x,y,z) coordinates 
+		 * 
+		 * @return const Point3D 
+		 */
 		const Point3D getCoords() { return coords; }
 
+		/**
+		 * @brief Initialises neighbour finite volumes, bcVals and surface flux function pointers
+		 * 
+		 */
 		void initialize();
+		/**
+		 * @brief Evaluates diagonal functions, multiplies it with old concentration and adds the result
+		 * to the result from evaluation of off diagonal functions for every element in old concentration
+		 * The final result is accumulated in concentrationVecAux
+		 * 
+		 */
 		void solve();
+		/**
+		 * @brief Evaluates diagonal functions, multiplies it with old concentration and adds the result
+		 * to the result from evaluation of off diagonal functions for every element in old concentration
+		 * and returns _incTime
+		 * The final result is accumulated in concentrationVecAux
+		 * 
+		 * @return double 
+		 */
 		double solveStable();
+		/**
+		 * @brief Updates values in old concentration vector and adds _incTime to physical time
+		 * 
+		 * @param _incTime 
+		 */
 		void update(double _incTime);
+		
+		//obsolete method
 		double getMaxStableTimeStep();
 
+		/**
+		 * @brief clears the vector of neighbour finite volumes
+		 * 
+		 */
 		void clearNeighbors() { neighborFVs.clear(); }
+
+		/**
+		 * @brief Adds a neighbour finite volume which is a pair of ReactionDiffusionSolver element and a surface index
+		 * given by _fv and _surfaceIndex respectively
+		 * 
+		 * @param _fv 
+		 * @param _surfaceIndex 
+		 */
 		void addNeighbor(ReactionDiffusionSolverFV *_fv, unsigned int _surfaceIndex) { neighborFVs.insert(make_pair(_surfaceIndex, _fv)); }
+		
+		/**
+		 * @brief returns a map of neighbour finite volumes consisting of pairs of ReactionDiffusionSolver element and a surface index
+		 * 
+		 * @return std::map<unsigned int, ReactionDiffusionSolverFV *> 
+		 */
 		std::map<unsigned int, ReactionDiffusionSolverFV *> getNeighbors() { return neighborFVs; }
 
+		/**
+		 * @brief  Sets pointers to getConstantDiffusivity function
+		 * for fieldDiffusivityFunctionPtrs vector and sets constant diffusivity
+		 * given by solver's getConstantFieldDiffusivity function for auxVars at _fieldIndex
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void useConstantDiffusivity(unsigned int _fieldIndex);
+		
+		/**
+		 * @brief  Sets pointers to getConstantDiffusivity function
+		 * for fieldDiffusivityFunctionPtrs vector and sets constant diffusivity
+		 * given by _constantDiff for auxVars at _fieldIndex
+		 * 
+		 * @param _fieldIndex 
+		 * @param _constantDiff 
+		 */
 		void useConstantDiffusivity(unsigned int _fieldIndex, double _constantDiff);
+		
+		/**
+		 * @brief  Sets pointers to getConstantDiffusivity function
+		 * for getConstantDiffusivityById vector and sets constant diffusivity
+		 * given by solver's getConstantFieldDiffusivity function for auxVars at _fieldIndex
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void useConstantDiffusivityById(unsigned int _fieldIndex);
+		
+		/**
+		 * @brief Sets pointers to getConstantDiffusivity function
+		 * for getConstantDiffusivityById vector and sets constant diffusivity
+		 * given by _constantDiff for auxVars at _fieldIndex
+		 * 
+		 * @param _fieldIndex 
+		 * @param _constantDiff 
+		 */
 		void useConstantDiffusivityById(unsigned int _fieldIndex, double _constantDiff);
+		
+		// Method not used
 		void useECMaterialDiffusivity(unsigned int _fieldIndex) { fieldDiffusivityFunctionPtrs[_fieldIndex] = &ReactionDiffusionSolverFV::getECMaterialDiffusivity; }
+		
+		/**
+		 * @brief sets fieldDiffusivityFunctionPtrs at _fieldIndex to a pointer to getFieldDiffusivityField function in ReactionDiffusionSolverFV
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void useFieldDiffusivityEverywhere(unsigned int _fieldIndex) { fieldDiffusivityFunctionPtrs[_fieldIndex] = &ReactionDiffusionSolverFV::getFieldDiffusivityField; }
+		
+		/**
+		 * @brief sets fieldDiffusivityFunctionPtrs at _fieldIndex to a pointer to getFieldDiffusivityInMedium function in ReactionDiffusionSolverFV
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void useFieldDiffusivityInMedium(unsigned int _fieldIndex) { fieldDiffusivityFunctionPtrs[_fieldIndex] = &ReactionDiffusionSolverFV::getFieldDiffusivityInMedium; }
 		
+		
+		/**
+		 * @brief calls useDiffusiveSurfaces for each fieldFV in fieldFVs which sets surfaceFluxFunctionPtrs at 
+		 * _fieldIndex using field Finite Volume pointers as pointer of ReactionDiffusionSolverFV::diffusiveSurfaceFlux
+		 * 
+		 * @param _fieldIndex 
+		 */
 		void useDiffusiveSurfaces(unsigned int _fieldIndex);
+		
+		/**
+		 * @brief calls usePermeableSurfaces for each fieldFv in fieldFVs which sets surfaceFluxFunctionPtrs
+		 * at _fieldIndex using field Finite Volume pointers as a pointer of ReactionDiffusionSolverFV::permeableSurfaceFlux
+		 * 
+		 * @param _fieldIndex 
+		 * @param _activate 
+		 */
 		void usePermeableSurfaces(unsigned int _fieldIndex, bool _activate = true);
+		
+		/**
+		 * @brief assigns _outwardFluxVal to bcVals at (_fieldIndex, _surfaceIndex) and 
+		 * assigns a pointer of ReactionDiffusionSolverFV::fixedSurfaceFlux to surfaceFluxFunctionPtrs 
+		 * at (_fieldIndex, _surfaceIndex) 
+		 * 
+		 * @param _fieldIndex 
+		 * @param _surfaceIndex 
+		 * @param _fluxVal 
+		 */
 		void useFixedFluxSurface(unsigned int _fieldIndex, unsigned int _surfaceIndex, double _fluxVal);
+		
+		/**
+		 * @brief fills bcVals at (_fieldIndex, _surfaceIndex) and assigns a pointer of 
+		 * ReactionDiffusionSolverFV::fixedConcentrationFlux to surfaceFluxFunctionPtrs 
+		 * at (_fieldIndex, _surfaceIndex) 
+		 * 
+		 * @param _fieldIndex 
+		 * @param _surfaceIndex 
+		 * @param _val 
+		 */
 		void useFixedConcentration(unsigned int _fieldIndex, unsigned int _surfaceIndex, double _val);
+		
+		/**
+		 * @brief Assigns _outwardFluxVal to bcVals at (_fieldIndex, _surfaceIndex), 
+		 * assigns a pointer of ReactionDiffusionSolverFV::fixedConcentrationFlux at (_fieldIndex, _surfaceIndex) to surfaceFluxFunctionPtrs and
+		 * assigns diagonalFunctions and offDiagonalFunctions at _fieldIndex the function zeroMuParserFunction()
+		 * _surfaceIndex ranges from 0 to length of surfaceFluxFunctionPtrs[_fieldIndex]
+		 * 
+		 * @param _fieldIndex 
+		 * @param _val 
+		 */
 		void useFixedFVConcentration(unsigned int _fieldIndex, double _val);
 
+		/**
+		 * @brief registers field symbol by calling muParser::DefineVar that takes in  _fieldSymbol and old 
+		 * concentration at _fieldIndex as input; on elements of diagonalFunctions and offDiagonalFunctions 
+		 * at each index in range(0, length of diagonalFunctions)
+		 * 
+		 * @param _fieldIndex 
+		 * @param _fieldSymbol 
+		 */
 		void registerFieldSymbol(unsigned int _fieldIndex, std::string _fieldSymbol);
+		
+		/**
+		 * @brief sets expresion in diagonalFunctions at index _fieldIndex using _expr
+		 * 
+		 * @param _fieldIndex 
+		 * @param _expr 
+		 */
 		void setDiagonalFunctionExpression(unsigned int _fieldIndex, std::string _expr);
+		
+		/**
+		 * @brief sets expresion in offDiagonalFunctions at index _fieldIndex using _expr
+		 * 
+		 * @param _fieldIndex 
+		 * @param _expr 
+		 */
 		void setOffDiagonalFunctionExpression(unsigned int _fieldIndex, std::string _expr);
 
+		/**
+		 * @brief defines an instance of  mu parser and sets it's expression as '0.0' and returns that instance
+		 * 
+		 * @return mu::Parser 
+		 */
 		mu::Parser zeroMuParserFunction();
+		
+		/**
+		 * @brief creates  a zeroMuParserFunction and defines constants x,y,z,t corresponding to x,y,z coordinates and physical time respectively
+		 * 
+		 * @return mu::Parser 
+		 */
 		mu::Parser templateParserFunction();
 		
+		/**
+		 * @brief sets old concentrations using _concentrationVec
+		 * 
+		 * @param _concentrationVec 
+		 */
 		void setConcentrationVec(std::vector<double> _concentrationVec);
+		
+		/**
+		 * @brief sets value in concentrationVecOld at _fieldIndex using _concentrationVal
+		 * 
+		 * @param _fieldIndex 
+		 * @param _concentrationVal 
+		 */
 		void setConcentration(unsigned int _fieldIndex, double _concentrationVal) { concentrationVecOld[_fieldIndex] = _concentrationVal; }
+		
+		/**
+		 * @brief Adds contents of _concentrationVecInc in concentrationVecOld and then returns max(concentrationVecOld,0.0)
+		 * 
+		 * @param _concentrationVecInc 
+		 */
 		void addConcentrationVecIncrement(std::vector<double> _concentrationVecInc);
+		
+		/**
+		 * @brief returns a vector of old concentrations
+		 * 
+		 * @return std::vector<double> 
+		 */
 		std::vector<double> getConcentrationVec() { return concentrationVecOld; }
+		
+		/**
+		 * @brief returns concentration at _fieldIndex
+		 * 
+		 * @param _fieldIndex 
+		 * @return double 
+		 */
 		double getConcentration(unsigned int _fieldIndex) { return concentrationVecOld[_fieldIndex]; }
+		
+		/**
+		 * @brief returns old concentration at _fieldIndex
+		 * 
+		 * @param _fieldIndex 
+		 * @return double 
+		 */
 		double getConcentrationOld(unsigned int _fieldIndex) { return concentrationVecOld[_fieldIndex]; }
 
+		/**
+		 * @brief returns field diffusivity at _fieldIndex
+		 * 
+		 * @param _fieldIndex 
+		 * @return double 
+		 */
 		double getFieldDiffusivity(unsigned int _fieldIndex);
 
 	};
