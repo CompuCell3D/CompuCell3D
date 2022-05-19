@@ -484,7 +484,7 @@ namespace CompuCell3D {
 		CellG * FVtoCellMap(ReactionDiffusionSolverFV * _fv);
 		
 		/**
-		 * @brief Get the Constant Field Diffusivity object
+		 * @brief Get the Constant Field Diffusivity object at _fieldIndex
 		 * 
 		 * @param _fieldIndex 
 		 * @return double 
@@ -493,7 +493,8 @@ namespace CompuCell3D {
 		// float getECMaterialDiffusivity(unsigned int _fieldIndex, Point3D coords) { return ecMaterialsPlugin->getLocalDiffusivity(coords, concentrationFieldNameVector[_fieldIndex]); }
 		
 		/**
-		 * @brief 
+		 * @brief Initialises cell diffusivity coefficients and returns diffusivity coefficient
+		 * for cell at _fieldIndex if cell is not 0 else returns 0
 		 * 
 		 * @param _fieldIndex 
 		 * @param coords 
@@ -509,7 +510,8 @@ namespace CompuCell3D {
 		 */
 		float getDiffusivityFieldPtVal(unsigned int _fieldIndex, const Point3D &pt) { return diffusivityFieldIndexToFieldMap[_fieldIndex]->get(pt); }
 		/**
-		 * @brief 
+		 * @brief Sets pointers to getConstantDiffusivityById function at 
+		 * _fieldIndex for fieldDiffusivityFunctionPtrs vector
 		 * 
 		 * @param _fieldIndex 
 		 */
@@ -522,70 +524,89 @@ namespace CompuCell3D {
 		 */
 		void useConstantDiffusivity(unsigned int _fieldIndex, double _diffusivityCoefficient);
 		/**
-		 * @brief 
-		 * 
+		 @brief Sets pointers to getConstantDiffusivityById function at 
+		 * _fieldIndex for fieldDiffusivityFunctionPtrs vector
+		 *
 		 * @param _fieldName 
 		 * @param _diffusivityCoefficient 
 		 */
 		virtual void useConstantDiffusivity(std::string _fieldName, double _diffusivityCoefficient) { useConstantDiffusivity(getFieldIndexByName(_fieldName), _diffusivityCoefficient); }
 		/**
-		 * @brief 
+		 * @brief Gets _fieldIndex from _fieldName and sets fieldDiffusivityFunctionPtrs at _fieldIndex
+		 * for each element of fieldFVS by calling useConstantDiffusivityById using fieldIndex and diffusivity constant
 		 * 
 		 * @param _fieldIndex 
 		 */
 		void useConstantDiffusivityByType(unsigned int _fieldIndex) { useConstantDiffusivityByType(_fieldIndex, constantDiffusionCoefficientsVec[_fieldIndex]); }
 		/**
-		 * @brief 
+		 * @brief sets fieldDiffusivityFunctionPtrs at _fieldIndex
+		 * for each element of fieldFVS by calling useConstantDiffusivityById using fieldIndex and diffusivity constant
 		 * 
 		 * @param _fieldIndex 
 		 * @param _diffusivityCoefficient 
 		 */
 		void useConstantDiffusivityByType(unsigned int _fieldIndex, double _diffusivityCoefficient);
 		/**
-		 * @brief 
+		 * @brief sets fieldDiffusivityFunctionPtrs at _fieldIndex
+		 * for each element of fieldFVS by calling useConstantDiffusivityById using fieldIndex and diffusivity constant
+		 * Function is overridden by derived class
 		 * 
 		 * @param _fieldName 
 		 * @param _diffusivityCoefficient 
 		 */
 		virtual void useConstantDiffusivityByType(std::string _fieldName, double _diffusivityCoefficient) { useConstantDiffusivityByType(getFieldIndexByName(_fieldName), _diffusivityCoefficient); }
 		/**
-		 * @brief 
+		 * @brief Initialises diffusivity at _fieldIndex and then calls 
+		 * useFieldDiffusivityInMedium function for all element in fieldFVS
 		 * 
 		 * @param _fieldIndex 
 		 */
 		void useFieldDiffusivityInMedium(unsigned int _fieldIndex);
 		/**
-		 * @brief 
+		 * @brief gets _fieldIndex from _fieldName and then 
+		 * initialises diffusivity at _fieldIndex and then calls 
+		 * useFieldDiffusivityInMedium function for all element in fieldFVS
+		 * The function is overridden by the derived class
 		 * 
 		 * @param _fieldName 
 		 */
 		virtual void useFieldDiffusivityInMedium(std::string _fieldName) { useFieldDiffusivityInMedium(getFieldIndexByName(_fieldName)); }
 		/**
-		 * @brief 
+		 * @brief Initialises diffusivity at _fieldIndex and then calls 
+		 * useFieldDiffusivityEverywhere function for all element in fieldFVS
 		 * 
 		 * @param _fieldIndex 
 		 */
 		void useFieldDiffusivityEverywhere(unsigned int _fieldIndex);
 		/**
-		 * @brief 
+		 * @brief gets _fieldIndex from _fieldName and then 
+		 * initialises diffusivity at _fieldIndex and then calls 
+		 * useFieldDiffusivityEverywhere function for all element in fieldFVS
+		 * The function is overridden by the derived class
 		 * 
 		 * @param _fieldName 
 		 */
 		virtual void useFieldDiffusivityEverywhere(std::string _fieldName) { useFieldDiffusivityEverywhere(getFieldIndexByName(_fieldName)); }
 		/**
-		 * @brief 
+		 * @brief Creates a watchable field at _fieldIndex which is stored in diffusivityFieldIndexToFieldMap 
+		 * and registers a concentration field based on concentration name vector at _fieldIndex,
+		 * diffusivityFieldSuffixStd and diffusivityFieldIndexToFieldMap
 		 * 
 		 * @param _fieldIndex 
 		 */
 		void initDiffusivityField(unsigned int _fieldIndex);
 		/**
-		 * @brief 
+		 * @brief Finds _fieldIndex corresponding to _fieldName and creates a watchable field at _fieldIndex 
+		 * which is stored in diffusivityFieldIndexToFieldMap and registers a concentration field 
+		 * based on concentration name vector at _fieldIndex, diffusivityFieldSuffixStd and diffusivityFieldIndexToFieldMap
+		 * The function is overridden by the derived class
 		 * 
 		 * @param _fieldName 
 		 */
 		virtual void initDiffusivityField(std::string _fieldName) { initDiffusivityField(getFieldIndexByName(_fieldName)); }
 		/**
-		 * @brief Set the Diffusivity Field Pt Val object
+		 * @brief Gets _fieldName from _fieldIndex and sets setConcentrationFieldPtVal 
+		 * at _pt using _fieldName and _val for diffusivityFieldIndexToFieldMap at _fieldIndex
 		 * 
 		 * @param _fieldIndex 
 		 * @param _pt 
@@ -593,7 +614,9 @@ namespace CompuCell3D {
 		 */
 		void setDiffusivityFieldPtVal(unsigned int _fieldIndex, Point3D _pt, float _val);
 		/**
-		 * @brief Set the Diffusivity Field Pt Val object
+		 * @brief Sets setConcentrationFieldPtVal 
+		 * at _pt using _fieldName and _val for diffusivityFieldIndexToFieldMap at _fieldIndex
+		 * The method will be overriden by the derived class
 		 * 
 		 * @param _fieldName 
 		 * @param _pt 
@@ -601,7 +624,7 @@ namespace CompuCell3D {
 		 */
 		virtual void setDiffusivityFieldPtVal(std::string _fieldName, Point3D _pt, float _val) { setDiffusivityFieldPtVal(getFieldIndexByName(_fieldName), _pt, _val); }
 		/**
-		 * @brief Get the Concentration Field Pt Val object
+		 * @brief Gets the concentration field at _pt and returns the concentration at _fieldIndex
 		 * 
 		 * @param _fieldIndex 
 		 * @param _pt 
@@ -609,7 +632,8 @@ namespace CompuCell3D {
 		 */
 		float getConcentrationFieldPtVal(unsigned int _fieldIndex, Point3D _pt);
 		/**
-		 * @brief Get the Concentration Field Pt Val object
+		 * @brief Gets _fieldName from _fieldIndex and then gets the concentration field at _pt 
+		 * and returns the concentration at _fieldIndex
 		 * 
 		 * @param _fieldName 
 		 * @param _pt 
@@ -617,7 +641,7 @@ namespace CompuCell3D {
 		 */
 		float getConcentrationFieldPtVal(std::string _fieldName, Point3D _pt) { return getConcentrationFieldPtVal(getFieldIndexByName(_fieldName), _pt); }
 		/**
-		 * @brief Set the Concentration Field Pt Val object
+		 * @brief Gets the concentration field at _pt and sets the concentration at _fieldIndex
 		 * 
 		 * @param _fieldIndex 
 		 * @param _pt 
@@ -625,7 +649,8 @@ namespace CompuCell3D {
 		 */
 		void setConcentrationFieldPtVal(unsigned int _fieldIndex, Point3D _pt, float _val);
 		/**
-		 * @brief Set the Concentration Field Pt Val object
+		 * @brief Gets the _fieldIndex from _fieldName and then gets the concentration field at _pt 
+		 * and sets the concentration at _fieldIndex
 		 * 
 		 * @param _fieldName 
 		 * @param _pt 
@@ -633,7 +658,9 @@ namespace CompuCell3D {
 		 */
 		void setConcentrationFieldPtVal(std::string _fieldName, Point3D _pt, float _val) { setConcentrationFieldPtVal(getFieldIndexByName(_fieldName), _pt, _val); }
 		/**
-		 * @brief 
+		 * @brief Calls useFixedFluxSurface for _fv which assigns _outwardFluxVal to bcVals at (_fieldIndex, _surfaceIndex) and 
+		 * assigns a pointer of ReactionDiffusionSolverFV::fixedSurfaceFlux to surfaceFluxFunctionPtrs 
+		 * at (_fieldIndex, _surfaceIndex) 
 		 * 
 		 * @param _fieldIndex 
 		 * @param _surfaceIndex 
@@ -642,7 +669,10 @@ namespace CompuCell3D {
 		 */
 		void useFixedFluxSurface(unsigned int _fieldIndex, unsigned int _surfaceIndex, float _outwardFluxVal, ReactionDiffusionSolverFV *_fv);
 		/**
-		 * @brief 
+		 * @brief Calls useFixedFluxSurface field Finite Volume at _pt which assigns _outwardFluxVal to bcVals at (_fieldIndex( obtained from _fieldName), 
+		 * _surfaceIndex( obtained from _surfaceName)) and assigns a pointer of ReactionDiffusionSolverFV::fixedSurfaceFlux 
+		 * to surfaceFluxFunctionPtrs at (_fieldIndex, _surfaceIndex). 
+		 * This  method is overloaded by the derived class 
 		 * 
 		 * @param _fieldName 
 		 * @param _surfaceName 
@@ -651,7 +681,10 @@ namespace CompuCell3D {
 		 */
 		virtual void useFixedFluxSurface(std::string _fieldName, std::string _surfaceName, float _outwardFluxVal, Point3D _pt) { useFixedFluxSurface(getFieldIndexByName(_fieldName), getSurfaceIndexByName(_surfaceName), _outwardFluxVal, getFieldFV(_pt)); }
 		/**
-		 * @brief 
+		 * @brief Calls useFixedFluxSurface field Finite Volume at _physPt which assigns _outwardFluxVal to bcVals at (_fieldIndex( obtained from _fieldName), 
+		 * _surfaceIndex( obtained from _surfaceName)) and assigns a pointer of ReactionDiffusionSolverFV::fixedSurfaceFlux 
+		 * to surfaceFluxFunctionPtrs at (_fieldIndex, _surfaceIndex). 
+		 * This  method is overloaded by the derived class 
 		 * 
 		 * @param _fieldName 
 		 * @param _surfaceName 
@@ -660,7 +693,9 @@ namespace CompuCell3D {
 		 */
 		virtual void useFixedFluxSurface(std::string _fieldName, std::string _surfaceName, float _outwardFluxVal, std::vector<float> _physPt) { useFixedFluxSurface(getFieldIndexByName(_fieldName), getSurfaceIndexByName(_surfaceName), _outwardFluxVal, getFieldFV(_physPt)); }
 		/**
-		 * @brief 
+		 * @brief Calls useFixedConcentration for _fv which fills bcVals at (_fieldIndex, _surfaceIndex) and 
+		 * assigns a pointer of ReactionDiffusionSolverFV::fixedConcentrationFlux to surfaceFluxFunctionPtrs 
+		 * at (_fieldIndex, _surfaceIndex) 
 		 * 
 		 * @param _fieldIndex 
 		 * @param _surfaceIndex 
@@ -669,7 +704,9 @@ namespace CompuCell3D {
 		 */
 		void useFixedConcentration(unsigned int _fieldIndex, unsigned int _surfaceIndex, float _val, ReactionDiffusionSolverFV *_fv);
 		/**
-		 * @brief 
+		 * @brief Calls useFixedConcentration field Finite Volume at _pt which fills bcVals at (_fieldIndex( obtained from _fieldName), 
+		 * _surfaceIndex( obtained from _surfaceName)) and assigns a pointer of ReactionDiffusionSolverFV::fixedConcentrationFlux 
+		 * to surfaceFluxFunctionPtrs at (_fieldIndex, _surfaceIndex)
 		 * 
 		 * @param _fieldName 
 		 * @param _surfaceName 
@@ -678,7 +715,9 @@ namespace CompuCell3D {
 		 */
 		virtual void useFixedConcentration(std::string _fieldName, std::string _surfaceName, float _val, Point3D _pt) { useFixedConcentration(getFieldIndexByName(_fieldName), getSurfaceIndexByName(_surfaceName), _val, getFieldFV(_pt)); }
 		/**
-		 * @brief 
+		 * @brief Calls useFixedConcentration field Finite Volume at _physPt which fills bcVals at (_fieldIndex( obtained from _fieldName), 
+		 * _surfaceIndex( obtained from _surfaceName)) and assigns a pointer of ReactionDiffusionSolverFV::fixedConcentrationFlux 
+		 * to surfaceFluxFunctionPtrs at (_fieldIndex, _surfaceIndex)
 		 * 
 		 * @param _fieldName 
 		 * @param _surfaceName 
@@ -687,7 +726,12 @@ namespace CompuCell3D {
 		 */
 		virtual void useFixedConcentration(std::string _fieldName, std::string _surfaceName, float _val, std::vector<float> _physPt) { useFixedConcentration(getFieldIndexByName(_fieldName), getSurfaceIndexByName(_surfaceName), _val, getFieldFV(_physPt)); }
 		/**
-		 * @brief 
+		 * @brief Calls useFixedConcentration for _fv which assigns _outwardFluxVal to bcVals at (_fieldIndex, _surfaceIndex), 
+		 * assigns a pointer of ReactionDiffusionSolverFV::fixedConcentrationFlux at (_fieldIndex, _surfaceIndex) to surfaceFluxFunctionPtrs and
+		 * assigns diagonalFunctions and offDiagonalFunctions at _fieldIndex the function zeroMuParserFunction()
+		 * _surfaceIndex ranges from 0 to length of surfaceFluxFunctionPtrs[_fieldIndex]
+		 * 
+		 * 
 		 * 
 		 * @param _fieldIndex 
 		 * @param _val 
@@ -695,7 +739,11 @@ namespace CompuCell3D {
 		 */
 		void useFixedFVConcentration(unsigned int _fieldIndex, float _val, ReactionDiffusionSolverFV *_fv);
 		/**
-		 * @brief 
+		 * @brief Calls useFixedConcentration for Finite Volume at _pt which assigns _outwardFluxVal to bcVals at (_fieldIndex, _surfaceIndex), 
+		 * assigns a pointer of ReactionDiffusionSolverFV::fixedConcentrationFlux at (_fieldIndex, _surfaceIndex) to surfaceFluxFunctionPtrs and
+		 * assigns diagonalFunctions and offDiagonalFunctions at _fieldIndex the function zeroMuParserFunction()
+		 * _surfaceIndex ranges from 0 to length of surfaceFluxFunctionPtrs[_fieldIndex]
+		 * _fieldIndex is derived from _fieldName
 		 * 
 		 * @param _fieldName 
 		 * @param _val 
@@ -703,7 +751,11 @@ namespace CompuCell3D {
 		 */
 		virtual void useFixedFVConcentration(std::string _fieldName, float _val, Point3D _pt) { useFixedFVConcentration(getFieldIndexByName(_fieldName), _val, getFieldFV(_pt)); }
 		/**
-		 * @brief 
+		 * @brief Calls useFixedConcentration for Finite Volume at _physPt which assigns _outwardFluxVal to bcVals at (_fieldIndex, _surfaceIndex), 
+		 * assigns a pointer of ReactionDiffusionSolverFV::fixedConcentrationFlux at (_fieldIndex, _surfaceIndex) to surfaceFluxFunctionPtrs and
+		 * assigns diagonalFunctions and offDiagonalFunctions at _fieldIndex the function zeroMuParserFunction()
+		 * _surfaceIndex ranges from 0 to length of surfaceFluxFunctionPtrs[_fieldIndex]
+		 * _fieldIndex is derived from _fieldName
 		 * 
 		 * @param _fieldName 
 		 * @param _val 
@@ -711,32 +763,39 @@ namespace CompuCell3D {
 		 */
 		virtual void useFixedFVConcentration(std::string _fieldName, float _val, std::vector<float> _physPt) { useFixedFVConcentration(getFieldIndexByName(_fieldName), _val, getFieldFV(_physPt)); }
 		/**
-		 * @brief 
+		 * @brief calls useDiffusiveSurfaces for each fieldFV in fieldFVs which sets surfaceFluxFunctionPtrs at 
+		 * _fieldIndex using field Finite Volume pointers as pointer of ReactionDiffusionSolverFV::diffusiveSurfaceFlux
 		 * 
 		 * @param _fieldIndex 
 		 */
 		void useDiffusiveSurfaces(unsigned int _fieldIndex);
 		/**
-		 * @brief 
+		 * @brief calls useDiffusiveSurfaces for each fieldFV in fieldFVs which sets surfaceFluxFunctionPtrs at 
+		 * _fieldIndex using field Finite Volume pointers as pointer of ReactionDiffusionSolverFV::diffusiveSurfaceFlux
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _fieldName 
 		 */
 		virtual void useDiffusiveSurfaces(std::string _fieldName) { useDiffusiveSurfaces(getFieldIndexByName(_fieldName)); }
 		/**
-		 * @brief 
+		 * @brief  calls usePermeableSurfaces for each fieldFv in fieldFVs which sets surfaceFluxFunctionPtrs
+		 * at _fieldIndex using field Finite Volume pointers as a pointer of ReactionDiffusionSolverFV::permeableSurfaceFlux
 		 * 
 		 * @param _fieldIndex 
 		 */
 		void usePermeableSurfaces(unsigned int _fieldIndex) { usePermeableSurfaces(_fieldIndex, true); }
 		/**
-		 * @brief 
+		 * @brief calls usePermeableSurfaces for each fieldFv in fieldFVs which sets surfaceFluxFunctionPtrs
+		 * at _fieldIndex using field Finite Volume pointers as a pointer of ReactionDiffusionSolverFV::permeableSurfaceFlux
 		 * 
 		 * @param _fieldIndex 
 		 * @param _activate 
 		 */
 		void usePermeableSurfaces(unsigned int _fieldIndex, bool _activate);
 		/**
-		 * @brief 
+		 * @brief calls usePermeableSurfaces for each fieldFv in fieldFVs which sets surfaceFluxFunctionPtrs
+		 * at _fieldIndex using field Finite Volume pointers as a pointer of ReactionDiffusionSolverFV::permeableSurfaceFlux
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _fieldName 
 		 * @param _activate 
@@ -745,14 +804,15 @@ namespace CompuCell3D {
 
 		// Cell interface
 		/**
-		 * @brief 
+		 * @brief Initialises cell data for _cell and permeationCoefficients, permeableBiasCoefficients,diffusivityCoefficients and outwardFluxValues 
+		 * If simpleMassConservation flag is true, concentrationVecCopies and massConsCorrectionFactors are also initialised
 		 * 
 		 * @param _cell 
 		 * @param _numFields 
 		 */
 		void initializeCellData(const CellG *_cell, unsigned int _numFields);
 		/**
-		 * @brief 
+		 * @brief calls initializeCellData for all cells in cellInventory
 		 * 
 		 * @param _numFields 
 		 */
@@ -962,39 +1022,220 @@ namespace CompuCell3D {
 		 * @return double 
 		 */
 		virtual double getCellOutwardFlux(const CellG *_cell, std::string _fieldName) { return getCellOutwardFlux(_cell, getFieldIndexByName(_fieldName)); }
+		/**
+		 * @brief Set the Cell Outward Flux object
+		 * 
+		 * @param _cell 
+		 * @param _fieldIndex 
+		 * @param _outwardFlux 
+		 */
 		void setCellOutwardFlux(const CellG *_cell, unsigned int _fieldIndex, float _outwardFlux);
+		/**
+		 * @brief Set the Cell Outward Flux object
+		 * 
+		 * @param _cell 
+		 * @param _fieldName 
+		 * @param _outwardFlux 
+		 */
 		virtual void setCellOutwardFlux(const CellG * _cell, std::string _fieldName, float _outwardFlux) { setCellOutwardFlux(_cell, getFieldIndexByName(_fieldName), _outwardFlux); }
 
 
 		// Solver functions
+		/**
+		 * @brief 
+		 * 
+		 * @param pt 
+		 * @return true 
+		 * @return false 
+		 */
 		bool isValid(Point3D pt) { try { pt2ind(pt); return true; } catch (BasicException) { return false; } }
+		/**
+		 * @brief Get the Lattice Point From Phys object
+		 * 
+		 * @param _physPt 
+		 * @return Point3D 
+		 */
 		virtual Point3D getLatticePointFromPhys(std::vector<float> _physPt) { return Point3D((int)(_physPt[0] / lengthX), (int)(_physPt[1] / lengthY), (int)(_physPt[2] / lengthZ)); }
+		/**
+		 * @brief Get the Surface Index By Name object
+		 * 
+		 * @param _surfaceName 
+		 * @return unsigned int 
+		 */
 		unsigned int getSurfaceIndexByName(std::string _surfaceName);
+		/**
+		 * @brief Get the Field Index By Name object
+		 * 
+		 * @param _fieldName 
+		 * @return unsigned int 
+		 */
 		unsigned int getFieldIndexByName(std::string _fieldName);
+		/**
+		 * @brief Set the Units Time object
+		 * 
+		 * @param _unitsTime 
+		 */
 		void setUnitsTime(std::string _unitsTime = "s");
+		/**
+		 * @brief Get the Units Time object
+		 * 
+		 * @return std::string 
+		 */
 		std::string getUnitsTime() { return unitsTime; }
+		/**
+		 * @brief Get the Index Surf To Coord object
+		 * 
+		 * @param _surfaceIndex 
+		 * @return unsigned int 
+		 */
 		unsigned int getIndexSurfToCoord(unsigned int _surfaceIndex) { return indexMapSurfToCoord[_surfaceIndex]; }
+		/**
+		 * @brief Get the Surface Norm Sign object
+		 * 
+		 * @param _surfaceIndex 
+		 * @return int 
+		 */
 		int getSurfaceNormSign(unsigned int _surfaceIndex) { return surfaceNormSign[_surfaceIndex]; }
+		/**
+		 * @brief Get the Length object
+		 * 
+		 * @param _dimIndex 
+		 * @return float 
+		 */
 		virtual float getLength(int _dimIndex) { return std::vector<float>{ lengthX, lengthY, lengthZ }[_dimIndex]; }
+		/**
+		 * @brief Get the Length By Surface Index object
+		 * 
+		 * @param _surfaceIndex 
+		 * @return float 
+		 */
 		virtual float getLengthBySurfaceIndex(unsigned int _surfaceIndex) { return getLength(indexMapSurfToCoord[_surfaceIndex]); }
+		/**
+		 * @brief Get the Signed Distance By Surface Index object
+		 * 
+		 * @param _surfaceIndex 
+		 * @return float 
+		 */
 		float getSignedDistanceBySurfaceIndex(unsigned int _surfaceIndex) { return signedDistanceBySurfaceIndex[_surfaceIndex]; }
+		/**
+		 * @brief Get the Lengths object
+		 * 
+		 * @return std::vector<float> 
+		 */
 		std::vector<float> getLengths() { return std::vector<float>{lengthX, lengthY, lengthZ}; }
+		/**
+		 * @brief Set the Lengths object
+		 * 
+		 * @param _length 
+		 */
 		virtual void setLengths(float _length) { setLengths(_length, _length, _length); }
+		/**
+		 * @brief Set the Lengths object
+		 * 
+		 * @param _lengthX 
+		 * @param _lengthY 
+		 * @param _lengthZ 
+		 */
 		virtual void setLengths(float _lengthX, float _lengthY, float _lengthZ);
+		/**
+		 * @brief Get the Surface Area object
+		 * 
+		 * @param _surfaceIndex 
+		 * @return float 
+		 */
 		virtual float getSurfaceArea(unsigned int _surfaceIndex) { return surfaceAreas[_surfaceIndex]; }
+		/**
+		 * @brief 
+		 * 
+		 */
 		virtual void updateSurfaceAreas();
+		/**
+		 * @brief Get the Time Step object
+		 * 
+		 * @return double 
+		 */
 		double getTimeStep() { return incTime; }
+		/**
+		 * @brief Get the Integration Time Step object
+		 * 
+		 * @return double 
+		 */
 		double getIntegrationTimeStep() { return integrationTimeStep; }
+		/**
+		 * @brief Get the Physical Time object
+		 * 
+		 * @return double 
+		 */
 		double getPhysicalTime() { return physTime; }
+		/**
+		 * @brief Get the Field F V object
+		 * 
+		 * @param _pt 
+		 * @return ReactionDiffusionSolverFV* 
+		 */
 		virtual ReactionDiffusionSolverFV * getFieldFV(const Point3D &_pt) { return getFieldFV(pt2ind(_pt)); }
+		/**
+		 * @brief Get the Field F V object
+		 * 
+		 * @param _ind 
+		 * @return ReactionDiffusionSolverFV* 
+		 */
 		virtual ReactionDiffusionSolverFV * getFieldFV(unsigned int _ind) { return fieldFVs[_ind]; }
+		/**
+		 * @brief Get the Field F V object
+		 * 
+		 * @param _physPt 
+		 * @return ReactionDiffusionSolverFV* 
+		 */
 		virtual ReactionDiffusionSolverFV * getFieldFV(std::vector<float> _physPt) { return getFieldFV(getLatticePointFromPhys(_physPt)); }
+		/**
+		 * @brief Set the Field F V object
+		 * 
+		 * @param _pt 
+		 * @param _fv 
+		 */
 		void setFieldFV(Point3D _pt, ReactionDiffusionSolverFV *_fv) { setFieldFV(pt2ind(_pt), _fv); }
+		/**
+		 * @brief Set the Field F V object
+		 * 
+		 * @param _ind 
+		 * @param _fv 
+		 */
 		void setFieldFV(unsigned int _ind, ReactionDiffusionSolverFV *_fv) { fieldFVs[_ind] = _fv; }
+		/**
+		 * @brief 
+		 * 
+		 * @param _fv 
+		 * @return std::map<unsigned int, ReactionDiffusionSolverFV *> 
+		 */
 		std::map<unsigned int, ReactionDiffusionSolverFV *> getFVNeighborFVs(ReactionDiffusionSolverFV *_fv);
+		/**
+		 * @brief Get the Max Stable Time Step object
+		 * 
+		 * @return float 
+		 */
 		float getMaxStableTimeStep();
+		/**
+		 * @brief 
+		 * 
+		 * @param _ind 
+		 * @return Point3D 
+		 */
 		Point3D ind2pt(unsigned int _ind);
+		/**
+		 * @brief 
+		 * 
+		 * @param _pt 
+		 * @param _fieldDim 
+		 * @return unsigned int 
+		 */
 		unsigned int pt2ind(const Point3D &_pt, Dim3D _fieldDim);
+		/**
+		 * @brief 
+		 * 
+		 * @param _pt 
+		 * @return unsigned int 
+		 */
 		unsigned int pt2ind(const Point3D &_pt) { return pt2ind(_pt, fieldDim); }
 		/**
 		 * @brief Get the Field Dim object
@@ -1004,11 +1245,47 @@ namespace CompuCell3D {
 		Dim3D getFieldDim() { return fieldDim; }
 
 		// Solver interface
+		/**
+		 * @brief Set the Field Expression Multiplier object
+		 * 
+		 * @param _fieldIndex 
+		 * @param _expr 
+		 */
 		void setFieldExpressionMultiplier(unsigned int _fieldIndex, std::string _expr);
+		/**
+		 * @brief Set the Field Expression Multiplier object
+		 * 
+		 * @param _fieldName 
+		 * @param _expr 
+		 */
 		virtual void setFieldExpressionMultiplier(std::string _fieldName, std::string _expr) { setFieldExpressionMultiplier(getFieldIndexByName(_fieldName), _expr); }
+		/**
+		 * @brief Set the Field Expression Independent object
+		 * 
+		 * @param _fieldIndex 
+		 * @param _expr 
+		 */
 		void setFieldExpressionIndependent(unsigned int _fieldIndex, std::string _expr);
+		/**
+		 * @brief Set the Field Expression Independent object
+		 * 
+		 * @param _fieldName 
+		 * @param _expr 
+		 */
 		virtual void setFieldExpressionIndependent(std::string _fieldName, std::string _expr) { setFieldExpressionIndependent(getFieldIndexByName(_fieldName), _expr); }
+		/**
+		 * @brief Get the Field Symbol object
+		 * 
+		 * @param _fieldIndex 
+		 * @return std::string 
+		 */
 		std::string getFieldSymbol(unsigned int _fieldIndex) { return fieldSymbolsVec[_fieldIndex]; }
+		/**
+		 * @brief Get the Field Symbol object
+		 * 
+		 * @param _fieldName 
+		 * @return std::string 
+		 */
 		virtual std::string getFieldSymbol(std::string _fieldName) { return fieldSymbolsVec[getFieldIndexByName(_fieldName)]; }
 
 	};

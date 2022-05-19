@@ -1272,7 +1272,6 @@ std::vector<double> ReactionDiffusionSolverFVM::totalMediumConcentration() {
 	#pragma omp critical
 	for (int i=0;i<n_threads;i++){ 
 		res_reduced = vecPlus<double>()(res[i],res_reduced);
-		res_reduced = sum(res[i][...])
 	}
 
 	// serial implementation
@@ -1383,10 +1382,8 @@ Point3D ReactionDiffusionSolverFVM::getCoordsOfFV(ReactionDiffusionSolverFV *_fv
 
 CellG * ReactionDiffusionSolverFVM::FVtoCellMap(ReactionDiffusionSolverFV * _fv) { return potts->getCellFieldG()->get(_fv->getCoords()); }
 
-void ReactionDiffusionSolverFVM::useConstantDiffusivity(unsigned int _fieldIndex, double _diffusivityCoefficient) {
-		//replace with openmp
-	
-	//#pragma omp parallel for shared (fieldFVs)
+void ReactionDiffusionSolverFVM::useConstantDiffusivity(unsigned int _fieldIndex, double _diffusivityCoefficient) {	
+	#pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i<fieldFVs.size();i++){ 
 		fieldFVs[i]->useConstantDiffusivity(_fieldIndex, _diffusivityCoefficient);
 	}
@@ -1394,7 +1391,7 @@ void ReactionDiffusionSolverFVM::useConstantDiffusivity(unsigned int _fieldIndex
 }
 void ReactionDiffusionSolverFVM::useConstantDiffusivityByType(unsigned int _fieldIndex, double _diffusivityCoefficient) {
 		//replace with openmp
-	//#pragma omp parallel for shared (fieldFVs)
+	#pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i<fieldFVs.size();i++){ 
 		fieldFVs[i]->useConstantDiffusivityById(_fieldIndex, _diffusivityCoefficient);
 	}
@@ -1402,8 +1399,7 @@ void ReactionDiffusionSolverFVM::useConstantDiffusivityByType(unsigned int _fiel
 }
 void ReactionDiffusionSolverFVM::useFieldDiffusivityInMedium(unsigned int _fieldIndex) {
 	initDiffusivityField(_fieldIndex);
-		//replace with openmp
-	//#pragma omp parallel for shared (fieldFVs)
+	#pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i<fieldFVs.size();i++){ 
 		fieldFVs[i]->useFieldDiffusivityInMedium(_fieldIndex);
 	}
@@ -1412,7 +1408,7 @@ void ReactionDiffusionSolverFVM::useFieldDiffusivityInMedium(unsigned int _field
 void ReactionDiffusionSolverFVM::useFieldDiffusivityEverywhere(unsigned int _fieldIndex) {
 	initDiffusivityField(_fieldIndex);
 		//replace with openmp
-	//#pragma omp parallel for shared (fieldFVs)
+	#pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i<fieldFVs.size();i++){ 
 		fieldFVs[i]->useFieldDiffusivityEverywhere(_fieldIndex);
 	}

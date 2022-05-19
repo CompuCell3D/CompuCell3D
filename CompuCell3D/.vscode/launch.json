@@ -13,7 +13,7 @@
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH":"${workspaceFolder}/..",
-                "PREFIX_CC3D":"~/cc3d_build_wdocs",
+                "PREFIX_CC3D":"~/cc3dbuildwdocs",
             },
             "args": ["${file}"],
             "justMyCode": true
