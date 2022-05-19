@@ -1687,7 +1687,7 @@ float ReactionDiffusionSolverFVM::getMaxStableTimeStep() {
 		fvMaxStableTimeSteps->assign(fieldDim.x*fieldDim.y*fieldDim.z, incTime);
 		// replace with openmp
 		unsigned int ind=0;
-		//#pragma omp parallel for shared (fieldDim) private (ind)
+		#pragma omp parallel for shared (fieldDim) private (ind)
 		for (ind=0;ind<fieldDim.x*fieldDim.y*fieldDim.z;ind++){
 			fvMaxStableTimeSteps->at(ind) = this->getFieldFV(ind)->getMaxStableTimeStep();
 		}

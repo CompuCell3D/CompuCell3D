@@ -921,7 +921,9 @@ namespace CompuCell3D {
 		virtual std::vector<double> getPermeableCoefficients(const CellG * _cell, const CellG * _nCell, std::string _fieldName) {
 			return getPermeableCoefficients(_cell, _nCell, getFieldIndexByName(_fieldName)); }
 		/**
-		 * @brief Set the Cell Permeation Coefficient object
+		 * @brief gets a vector of permeation coefficients for _cell and then sets 
+		 * the permeation coefficient corresponding to  _fieldIndex and _nCellTypeID
+		 * as _permeationCoefficient
 		 * 
 		 * @param _cell 
 		 * @param _nCellTypeId 
@@ -930,7 +932,10 @@ namespace CompuCell3D {
 		 */
 		void setCellPermeationCoefficient(const CellG * _cell, unsigned int _nCellTypeId, unsigned int _fieldIndex, double _permeationCoefficient);
 		/**
-		 * @brief Set the Cell Permeation Coefficient object
+		 * @brief gets a vector of permeation coefficients for _cell and then sets 
+		 * the permeation coefficient corresponding to  _fieldIndex and _nCellTypeID
+		 * as _permeationCoefficient
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _cell 
 		 * @param _nCellTypeId 
@@ -939,7 +944,10 @@ namespace CompuCell3D {
 		 */
 		virtual void setCellPermeationCoefficient(const CellG * _cell, unsigned int _nCellTypeId, std::string _fieldName, double _permeationCoefficient) { setCellPermeationCoefficient(_cell, _nCellTypeId, getFieldIndexByName(_fieldName), _permeationCoefficient); }
 		/**
-		 * @brief Set the Cell Permeation Coefficient object
+		 * @brief gets a vector of permeation coefficients for _cell and then sets 
+		 * the permeation coefficient corresponding to  _fieldIndex and _nCellTypeID
+		 * as the permeation coefficient correponding to the value in constantPermeationCoefficientsVecCellType
+		 * at _fieldIndex and _cell.cellType
 		 * 
 		 * @param _cell 
 		 * @param _nCellTypeId 
@@ -947,7 +955,11 @@ namespace CompuCell3D {
 		 */
 		void setCellPermeationCoefficient(const CellG * _cell, unsigned int _nCellTypeId, unsigned int _fieldIndex);
 		/**
-		 * @brief Set the Cell Permeation Coefficient object
+		 * @brief gets a vector of permeation coefficients for _cell and then sets 
+		 * the permeation coefficient corresponding to  _fieldIndex and _nCellTypeID
+		 * as the permeation coefficient correponding to the value in constantPermeationCoefficientsVecCellType
+		 * at _fieldIndex and _cell.cellType
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _cell 
 		 * @param _nCellTypeId 
@@ -955,24 +967,36 @@ namespace CompuCell3D {
 		 */
 		virtual void setCellPermeationCoefficient(const CellG * _cell, unsigned int _nCellTypeId, std::string _fieldName) { setCellPermeationCoefficient(_cell, _nCellTypeId, getFieldIndexByName(_fieldName)); }
 		/**
-		 * @brief Set the Cell Permeation Coefficients object
+		 * @brief gets a vector of permeation coefficients for each cell in cellInventory  and then sets 
+		 * the permeation coefficient corresponding to  _fieldIndex and each celltypeId in collection of celltypeIds
+		 * as the permeation coefficient correponding to the value in constantPermeationCoefficientsVecCellType 
+		 * at _fieldIndex and _cell.cellType
 		 * 
 		 * @param _fieldIndex 
 		 */
 		void setCellPermeationCoefficients(unsigned int _fieldIndex);
 		/**
-		 * @brief Set the Cell Permeation Coefficients object
+		 * @brief gets a vector of permeation coefficients for each cell in cellInventory  and then sets 
+		 * the permeation coefficient corresponding to  _fieldIndex and each celltypeId in collection of celltypeIds
+		 * as the permeation coefficient correponding to the value in constantPermeationCoefficientsVecCellType 
+		 * at _fieldIndex and _cell.cellType 
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _fieldName 
 		 */
 		virtual void setCellPermeationCoefficients(std::string _fieldName) { setCellPermeationCoefficients(getFieldIndexByName(_fieldName)); }
 		/**
-		 * @brief Set the Cell Permeation Coefficients object
+		 * @brief gets a vector of permeation coefficients for each cell in cellInventory  and then sets 
+		 * the permeation coefficient corresponding to  each _fieldIndex in range(0, numFields) and each celltypeId in collection of celltypeIds
+		 * as the permeation coefficient correponding to the value in constantPermeationCoefficientsVecCellType 
+		 * at _fieldIndex and _cell.cellType 
 		 * 
 		 */
 		virtual void setCellPermeationCoefficients();
 		/**
-		 * @brief Set the Cell Permeable Bias Coefficient object
+		 * @brief gets a vector of permeable bias coefficients for _cell and then sets 
+		 * the permeable bias coefficient corresponding to  _fieldIndex and _nCellTypeID
+		 * as _permeableBiasCoefficient 
 		 * 
 		 * @param _cell 
 		 * @param _nCellTypeId 
@@ -981,7 +1005,10 @@ namespace CompuCell3D {
 		 */
 		void setCellPermeableBiasCoefficient(const CellG * _cell, unsigned int _nCellTypeId, unsigned int _fieldIndex, double _permeableBiasCoefficient);
 		/**
-		 * @brief Set the Cell Permeable Bias Coefficient object
+		 * @brief gets a vector of permeable bias coefficients for _cell and then sets 
+		 * the permeable bias coefficient corresponding to  _fieldIndex and _nCellTypeID
+		 * as _permeableBiasCoefficient 
+		 * _fieldIndex is derived from _fieldName
 		 * 
 		 * @param _cell 
 		 * @param _nCellTypeId 
@@ -990,7 +1017,10 @@ namespace CompuCell3D {
 		 */
 		virtual void setCellPermeableBiasCoefficient(const CellG * _cell, unsigned int _nCellTypeId, std::string _fieldName, double _permeableBiasCoefficient) { setCellPermeableBiasCoefficient(_cell, _nCellTypeId, getFieldIndexByName(_fieldName), _permeableBiasCoefficient); }
 		/**
-		 * @brief Set the Cell Permeable Bias Coefficient object
+		 * @brief gets a vector of permeable bias coefficients for _cell and then sets 
+		 * the permeable bias coefficient corresponding to  _fieldIndex and _nCellTypeID
+		 * as the permeable bias coefficient correponding to the value in constPermBiasCoeffsVecCellType
+		 * at _fieldIndex and _cell.cellType
 		 * 
 		 * @param _cell 
 		 * @param _nCellTypeId 
@@ -998,7 +1028,11 @@ namespace CompuCell3D {
 		 */
 		void setCellPermeableBiasCoefficient(const CellG * _cell, unsigned int _nCellTypeId, unsigned int _fieldIndex);
 		/**
-		 * @brief Set the Cell Permeable Bias Coefficient object
+		 * @brief gets a vector of permeable bias coefficients for _cell and then sets 
+		 * the permeable bias coefficient corresponding to  _fieldIndex and _nCellTypeID
+		 * as the permeable bias coefficient correponding to the value in constPermBiasCoeffsVecCellType
+		 * at _fieldIndex and _cell.cellType
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _cell 
 		 * @param _nCellTypeId 
@@ -1006,29 +1040,39 @@ namespace CompuCell3D {
 		 */
 		virtual void setCellPermeableBiasCoefficient(const CellG * _cell, unsigned int _nCellTypeId, std::string _fieldName) { setCellPermeableBiasCoefficient(_cell, _nCellTypeId, getFieldIndexByName(_fieldName)); }
 		/**
-		 * @brief Set the Cell Permeable Bias Coefficients object
+		 * @brief gets a vector of permeable bias coefficients for each cell in cellInventory  and then sets 
+		 * the permeable bias coefficient corresponding to  _fieldIndex and each celltypeId in collection of celltypeIds
+		 * as the permeable bias coefficient correponding to the value in constPermBiasCoeffsVecCellType 
+		 * at _fieldIndex and _cell.cellType
 		 * 
 		 * @param _fieldIndex 
 		 */
 		void setCellPermeableBiasCoefficients(unsigned int _fieldIndex);
 		/**
-		 * @brief Set the Cell Permeable Bias Coefficients object
+		 * @brief gets a vector of permeable bias coefficients for each cell in cellInventory  and then sets 
+		 * the permeable bias coefficient corresponding to  _fieldIndex and each celltypeId in collection of celltypeIds
+		 * as the permeable bias coefficient correponding to the value in constPermBiasCoeffsVecCellType 
+		 * at _fieldIndex and _cell.cellType
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _fieldName 
 		 */
 		virtual void setCellPermeableBiasCoefficients(std::string _fieldName) { setCellPermeableBiasCoefficients(getFieldIndexByName(_fieldName)); }
 		/**
-		 * @brief Set the Cell Permeable Bias Coefficients object
+		 * @brief gets a vector of permeable bias coefficients for each cell in cellInventory  and then sets 
+		 * the permeable bias coefficient corresponding to  each _fieldIndex in range(0, numFields) and each celltypeId in collection of celltypeIds
+		 * as the permeable bias coefficient correponding to the value in constPermBiasCoeffsVecCellType 
+		 * at _fieldIndex and _cell.cellType 
 		 * 
 		 */
 		virtual void setCellPermeableBiasCoefficients();
 		/**
-		 * @brief Set the Cell Permeable Coefficients object
+		 * @brief Sets permeation and permeable bias coefficients
 		 * 
 		 */
 		virtual void setCellPermeableCoefficients();
 		/**
-		 * @brief Get the Cell Outward Flux object
+		 * @brief gets the outward flux value for _cell at _fieldIndex from a vector of outward flux values
 		 * 
 		 * @param _cell 
 		 * @param _fieldIndex 
@@ -1036,7 +1080,8 @@ namespace CompuCell3D {
 		 */
 		double getCellOutwardFlux(const CellG *_cell, unsigned int _fieldIndex);
 		/**
-		 * @brief Get the Cell Outward Flux object
+		 * @brief gets the outward flux value for _cell at _fieldIndex from a vector of outward flux values
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _cell 
 		 * @param _fieldName 
@@ -1044,7 +1089,8 @@ namespace CompuCell3D {
 		 */
 		virtual double getCellOutwardFlux(const CellG *_cell, std::string _fieldName) { return getCellOutwardFlux(_cell, getFieldIndexByName(_fieldName)); }
 		/**
-		 * @brief Set the Cell Outward Flux object
+		 * @brief sets the outward flux value for _cell at _fieldIndex
+		 * in a vector of outward flux values as _outwardFlux
 		 * 
 		 * @param _cell 
 		 * @param _fieldIndex 
@@ -1052,7 +1098,9 @@ namespace CompuCell3D {
 		 */
 		void setCellOutwardFlux(const CellG *_cell, unsigned int _fieldIndex, float _outwardFlux);
 		/**
-		 * @brief Set the Cell Outward Flux object
+		 * @brief sets the outward flux value for _cell at _fieldIndex
+		 * in a vector of outward flux values as _outwardFlux
+		 * _fieldIndex is derived from _fieldName
 		 * 
 		 * @param _cell 
 		 * @param _fieldName 
@@ -1063,7 +1111,7 @@ namespace CompuCell3D {
 
 		// Solver functions
 		/**
-		 * @brief 
+		 * @brief Checks if point is valid or not
 		 * 
 		 * @param pt 
 		 * @return true 
@@ -1078,80 +1126,81 @@ namespace CompuCell3D {
 		 */
 		virtual Point3D getLatticePointFromPhys(std::vector<float> _physPt) { return Point3D((int)(_physPt[0] / lengthX), (int)(_physPt[1] / lengthY), (int)(_physPt[2] / lengthZ)); }
 		/**
-		 * @brief Get the Surface Index By Name object
+		 * @brief gets surface index corresponding to _surfaceName
 		 * 
 		 * @param _surfaceName 
 		 * @return unsigned int 
 		 */
 		unsigned int getSurfaceIndexByName(std::string _surfaceName);
 		/**
-		 * @brief Get the Field Index By Name object
+		 * @brief gets field index corresponding to _fieldName
 		 * 
 		 * @param _fieldName 
 		 * @return unsigned int 
 		 */
 		unsigned int getFieldIndexByName(std::string _fieldName);
 		/**
-		 * @brief Set the Units Time object
+		 * @brief sets units time using _unitsTime
 		 * 
 		 * @param _unitsTime 
 		 */
 		void setUnitsTime(std::string _unitsTime = "s");
 		/**
-		 * @brief Get the Units Time object
+		 * @brief gets units time
 		 * 
 		 * @return std::string 
 		 */
 		std::string getUnitsTime() { return unitsTime; }
 		/**
-		 * @brief Get the Index Surf To Coord object
+		 * @brief returns dimension index corresponding to _surfaceIndex
 		 * 
 		 * @param _surfaceIndex 
 		 * @return unsigned int 
 		 */
 		unsigned int getIndexSurfToCoord(unsigned int _surfaceIndex) { return indexMapSurfToCoord[_surfaceIndex]; }
 		/**
-		 * @brief Get the Surface Norm Sign object
+		 * @brief get surfaceNormSign corresponding to _surfaceIndex
 		 * 
 		 * @param _surfaceIndex 
 		 * @return int 
 		 */
 		int getSurfaceNormSign(unsigned int _surfaceIndex) { return surfaceNormSign[_surfaceIndex]; }
 		/**
-		 * @brief Get the Length object
+		 * @brief gets length along x, y or z axis depending on the axis requested by _dimIndex
 		 * 
 		 * @param _dimIndex 
 		 * @return float 
 		 */
 		virtual float getLength(int _dimIndex) { return std::vector<float>{ lengthX, lengthY, lengthZ }[_dimIndex]; }
 		/**
-		 * @brief Get the Length By Surface Index object
+		 * @brief gets length along x, y or z axis depending on the axis requested by _dimIndex
+		 * corresponding to _surfaceIndex
 		 * 
 		 * @param _surfaceIndex 
 		 * @return float 
 		 */
 		virtual float getLengthBySurfaceIndex(unsigned int _surfaceIndex) { return getLength(indexMapSurfToCoord[_surfaceIndex]); }
 		/**
-		 * @brief Get the Signed Distance By Surface Index object
+		 * @brief gets signed distance corresponding to _surfaceIndex
 		 * 
 		 * @param _surfaceIndex 
 		 * @return float 
 		 */
 		float getSignedDistanceBySurfaceIndex(unsigned int _surfaceIndex) { return signedDistanceBySurfaceIndex[_surfaceIndex]; }
 		/**
-		 * @brief Get the Lengths object
+		 * @brief gets length of x,y and z axis
 		 * 
 		 * @return std::vector<float> 
 		 */
 		std::vector<float> getLengths() { return std::vector<float>{lengthX, lengthY, lengthZ}; }
 		/**
-		 * @brief Set the Lengths object
+		 * @brief sets length of x,y and z axis to same value using _length
 		 * 
 		 * @param _length 
 		 */
 		virtual void setLengths(float _length) { setLengths(_length, _length, _length); }
 		/**
-		 * @brief Set the Lengths object
+		 * @brief sets length of x,y and z using _lengthX, _lengthY and _lengthZ respectively
 		 * 
 		 * @param _lengthX 
 		 * @param _lengthY 
@@ -1159,14 +1208,14 @@ namespace CompuCell3D {
 		 */
 		virtual void setLengths(float _lengthX, float _lengthY, float _lengthZ);
 		/**
-		 * @brief Get the Surface Area object
+		 * @brief gets surface area corresponding to _surfaceIndex
 		 * 
 		 * @param _surfaceIndex 
 		 * @return float 
 		 */
 		virtual float getSurfaceArea(unsigned int _surfaceIndex) { return surfaceAreas[_surfaceIndex]; }
 		/**
-		 * @brief 
+		 * @brief updates surface areas for lattices
 		 * 
 		 */
 		virtual void updateSurfaceAreas();
@@ -1177,74 +1226,75 @@ namespace CompuCell3D {
 		 */
 		double getTimeStep() { return incTime; }
 		/**
-		 * @brief Get the Integration Time Step object
+		 * @brief returns integration timestamp
 		 * 
 		 * @return double 
 		 */
 		double getIntegrationTimeStep() { return integrationTimeStep; }
 		/**
-		 * @brief Get the Physical Time object
+		 * @brief returns physical time
 		 * 
 		 * @return double 
 		 */
 		double getPhysicalTime() { return physTime; }
 		/**
-		 * @brief Get the Field F V object
+		 * @brief gets the field finite volume corresponding to the index obtained from _pt
 		 * 
 		 * @param _pt 
 		 * @return ReactionDiffusionSolverFV* 
 		 */
 		virtual ReactionDiffusionSolverFV * getFieldFV(const Point3D &_pt) { return getFieldFV(pt2ind(_pt)); }
 		/**
-		 * @brief Get the Field F V object
+		 * @brief gets the field finite volume corresponding to the index _ind
 		 * 
 		 * @param _ind 
 		 * @return ReactionDiffusionSolverFV* 
 		 */
 		virtual ReactionDiffusionSolverFV * getFieldFV(unsigned int _ind) { return fieldFVs[_ind]; }
 		/**
-		 * @brief Get the Field F V object
+		 * @brief generates lattice point from _physPt and then gets field finite volume from the lattice point 
 		 * 
 		 * @param _physPt 
 		 * @return ReactionDiffusionSolverFV* 
 		 */
 		virtual ReactionDiffusionSolverFV * getFieldFV(std::vector<float> _physPt) { return getFieldFV(getLatticePointFromPhys(_physPt)); }
 		/**
-		 * @brief Set the Field F V object
+		 * @brief sets field finite volume for reaction diffusion solver _fv using index from point _pt
 		 * 
 		 * @param _pt 
 		 * @param _fv 
 		 */
 		void setFieldFV(Point3D _pt, ReactionDiffusionSolverFV *_fv) { setFieldFV(pt2ind(_pt), _fv); }
 		/**
-		 * @brief Set the Field F V object
+		 * @brief sets field finite volume for reaction diffusion solver _fv using index _ind
 		 * 
 		 * @param _ind 
 		 * @param _fv 
 		 */
 		void setFieldFV(unsigned int _ind, ReactionDiffusionSolverFV *_fv) { fieldFVs[_ind] = _fv; }
 		/**
-		 * @brief 
+		 * @brief gets neihbouring finite volumes for _fv
 		 * 
 		 * @param _fv 
 		 * @return std::map<unsigned int, ReactionDiffusionSolverFV *> 
 		 */
 		std::map<unsigned int, ReactionDiffusionSolverFV *> getFVNeighborFVs(ReactionDiffusionSolverFV *_fv);
 		/**
-		 * @brief Get the Max Stable Time Step object
+		 * @brief gets the maximum stable timestamp
 		 * 
 		 * @return float 
 		 */
 		float getMaxStableTimeStep();
 		/**
-		 * @brief 
+		 * @brief gets Point3D object corresponding to index _ind
 		 * 
 		 * @param _ind 
 		 * @return Point3D 
 		 */
 		Point3D ind2pt(unsigned int _ind);
 		/**
-		 * @brief 
+		 * @brief gets index corresponding to Point3D object _pt
+		 * _fieldDim contains length of dimensions across x, y and z axis
 		 * 
 		 * @param _pt 
 		 * @param _fieldDim 
@@ -1252,14 +1302,14 @@ namespace CompuCell3D {
 		 */
 		unsigned int pt2ind(const Point3D &_pt, Dim3D _fieldDim);
 		/**
-		 * @brief 
+		 * @brief gets index corresponding to Point3D object _pt
 		 * 
 		 * @param _pt 
 		 * @return unsigned int 
 		 */
 		unsigned int pt2ind(const Point3D &_pt) { return pt2ind(_pt, fieldDim); }
 		/**
-		 * @brief Get the Field Dim object
+		 * @brief returns field dimensions object
 		 * 
 		 * @return Dim3D 
 		 */
@@ -1267,42 +1317,45 @@ namespace CompuCell3D {
 
 		// Solver interface
 		/**
-		 * @brief Set the Field Expression Multiplier object
+		 * @brief sets fieldExpressionStringsMergedDiag at _fieldIndex as _expr
 		 * 
 		 * @param _fieldIndex 
 		 * @param _expr 
 		 */
 		void setFieldExpressionMultiplier(unsigned int _fieldIndex, std::string _expr);
 		/**
-		 * @brief Set the Field Expression Multiplier object
+		 * @brief sets fieldExpressionStringsMergedDiag at _fieldIndex as _expr
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _fieldName 
 		 * @param _expr 
 		 */
 		virtual void setFieldExpressionMultiplier(std::string _fieldName, std::string _expr) { setFieldExpressionMultiplier(getFieldIndexByName(_fieldName), _expr); }
 		/**
-		 * @brief Set the Field Expression Independent object
+		 * @brief sets fieldExpressionStringsMergedOffDiag at _fieldIndex as _expr
 		 * 
 		 * @param _fieldIndex 
 		 * @param _expr 
 		 */
 		void setFieldExpressionIndependent(unsigned int _fieldIndex, std::string _expr);
 		/**
-		 * @brief Set the Field Expression Independent object
+		 * @brief  sets fieldExpressionStringsMergedOffDiag at _fieldIndex as _expr
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _fieldName 
 		 * @param _expr 
 		 */
 		virtual void setFieldExpressionIndependent(std::string _fieldName, std::string _expr) { setFieldExpressionIndependent(getFieldIndexByName(_fieldName), _expr); }
 		/**
-		 * @brief Get the Field Symbol object
+		 * @brief gets field symbol corresponding to _fieldIndex in fieldSymbolsVec
 		 * 
 		 * @param _fieldIndex 
 		 * @return std::string 
 		 */
 		std::string getFieldSymbol(unsigned int _fieldIndex) { return fieldSymbolsVec[_fieldIndex]; }
 		/**
-		 * @brief Get the Field Symbol object
+		 * @brief gets field symbol corresponding to _fieldIndex in fieldSymbolsVec
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _fieldName 
 		 * @return std::string 
