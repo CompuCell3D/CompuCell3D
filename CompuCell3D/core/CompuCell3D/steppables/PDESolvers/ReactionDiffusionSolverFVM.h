@@ -818,7 +818,9 @@ namespace CompuCell3D {
 		 */
 		void initializeCellData(unsigned int _numFields);
 		/**
-		 * @brief Get the Cell Diffusivity Coefficient object
+		 * @brief collects diffusivity coefficients for _cell and returns the value at _fieldIndex
+		 * If the size of diffusivity coefficient vector is less than _fieldIndex, cell diffusivity
+		 * coefficients are initialised on the fly  
 		 * 
 		 * @param _cell 
 		 * @param _fieldIndex 
@@ -826,7 +828,10 @@ namespace CompuCell3D {
 		 */
 		double getCellDiffusivityCoefficient(const CellG * _cell, unsigned int _fieldIndex);
 		/**
-		 * @brief Get the Cell Diffusivity Coefficient object
+		 * @brief collects diffusivity coefficients for _cell and returns the value at _fieldIndex
+		 * If the size of diffusivity coefficient vector is less than _fieldIndex, cell diffusivity
+		 * coefficients are initialised on the fly 
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _cell 
 		 * @param _fieldName 
@@ -834,7 +839,8 @@ namespace CompuCell3D {
 		 */
 		virtual double getCellDiffusivityCoefficient(const CellG * _cell, std::string _fieldName) { return getCellDiffusivityCoefficient(_cell, getFieldIndexByName(_fieldName)); }
 		/**
-		 * @brief Set the Cell Diffusivity Coefficient object
+		 * @brief gets a vector of diffusivity coefficients for _cell and adds _diffusivityCoefficient 
+		 * at _fieldIndex in the diffusivity coefficients vector
 		 * 
 		 * @param _cell 
 		 * @param _fieldIndex 
@@ -842,7 +848,9 @@ namespace CompuCell3D {
 		 */
 		void setCellDiffusivityCoefficient(const CellG * _cell, unsigned int _fieldIndex, double _diffusivityCoefficient);
 		/**
-		 * @brief Set the Cell Diffusivity Coefficient object
+		 * @brief gets a vector of diffusivity coefficients for _cell and adds _diffusivityCoefficient 
+		 * at _fieldIndex in the diffusivity coefficients vector
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _cell 
 		 * @param _fieldName 
@@ -850,38 +858,48 @@ namespace CompuCell3D {
 		 */
 		virtual void setCellDiffusivityCoefficient(const CellG * _cell, std::string _fieldName, double _diffusivityCoefficient) { setCellDiffusivityCoefficient(_cell, getFieldIndexByName(_fieldName), _diffusivityCoefficient); }
 		/**
-		 * @brief Set the Cell Diffusivity Coefficient object
+		 * @brief gets a vector of diffusivity coefficients for _cell and adds _diffusivityCoefficient 
+		 * at _fieldIndex in the diffusivity coefficients vector
+		 * _fieldIndex is obtained from _fieldName
+		 * Gets diffusivityCoefficient from constantDiffusionCoefficientsVecCellType at (_fieldIndex, _cell->type)
 		 * 
 		 * @param _cell 
 		 * @param _fieldIndex 
 		 */
 		void setCellDiffusivityCoefficient(const CellG * _cell, unsigned int _fieldIndex);
 		/**
-		 * @brief Set the Cell Diffusivity Coefficient object
+		 * @brief gets a vector of diffusivity coefficients for _cell and adds _diffusivityCoefficient 
+		 * at _fieldIndex in the diffusivity coefficients vector
+		 * _fieldIndex is obtained from _fieldName
+		 * Gets diffusivityCoefficient from constantDiffusionCoefficientsVecCellType at (_fieldIndex, _cell->type)
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _cell 
 		 * @param _fieldName 
 		 */
 		virtual void setCellDiffusivityCoefficient(const CellG * _cell, std::string _fieldName) { setCellDiffusivityCoefficient(_cell, getFieldIndexByName(_fieldName)); }
 		/**
-		 * @brief Set the Cell Diffusivity Coefficients object
+		 * @brief Sets diffusivity coefficients for each cell in cellInventory, for each _fieldIndex
 		 * 
 		 * @param _fieldIndex 
 		 */
 		void setCellDiffusivityCoefficients(unsigned int _fieldIndex);
 		/**
-		 * @brief Set the Cell Diffusivity Coefficients object
+		 * @brief  Sets diffusivity coefficients for each cell in cellInventory, for each _fieldIndex
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _fieldName 
 		 */
 		virtual void setCellDiffusivityCoefficients(std::string _fieldName) { setCellDiffusivityCoefficients(getFieldIndexByName(_fieldName)); }
 		/**
-		 * @brief Set the Cell Diffusivity Coefficients object
+		 * @brief Sets diffusivity coefficients for each cell in cellInventory, for each _fieldIndex
 		 * 
 		 */
 		virtual void setCellDiffusivityCoefficients();
 		/**
-		 * @brief Get the Permeable Coefficients object
+		 * @brief Sets bias coefficient and nBias coefficient for _cell and _nCell respectively
+		 * Also sets permeationCoeffecient and then returns a vector containing permeationCoeffecient, 
+		 * bias coefficient and nBias coefficient
 		 * 
 		 * @param _cell 
 		 * @param _nCell 
@@ -890,7 +908,10 @@ namespace CompuCell3D {
 		 */
 		std::vector<double> getPermeableCoefficients(const CellG * _cell, const CellG * _nCell, unsigned int _fieldIndex);
 		/**
-		 * @brief Get the Permeable Coefficients object
+		 * @brief Sets bias coefficient and nBias coefficient for _cell and _nCell respectively
+		 * Also sets permeationCoeffecient and then returns a vector containing permeationCoeffecient, 
+		 * bias coefficient and nBias coefficient
+		 * _fieldIndex is obtained from _fieldName
 		 * 
 		 * @param _cell 
 		 * @param _nCell 
