@@ -19,8 +19,8 @@ import pandas as pd
 
 def process_cml():
     cml_parser = argparse.ArgumentParser(description='Simulation Tester')
-    # cml_parser.add_argument('--run-command', nargs='+', type=str, required=True,
-    #                         help='cc3d run script (either RunScript or compucell3d)')
+    cml_parser.add_argument('--run-command', nargs='+', type=str, required=True,
+                            help='cc3d run script (either RunScript or compucell3d)')
     cml_parser.add_argument('--output-dir', required=True,
                             help='test output dir')
 

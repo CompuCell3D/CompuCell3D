@@ -2956,7 +2956,8 @@ vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArra
     // this algorithm is not perfect but does significantly speed up 3D rendering
 
     bool neighbor_tracker_loaded = Simulator::pluginManager.isLoaded("NeighborTracker");
-    BasicClassAccessor<NeighborTracker> *neighborTrackerAccessorPtr;
+    //cout << "neighbor_tracker_loaded=" << neighbor_tracker_loaded << endl;
+    ExtraMembersGroupAccessor<NeighborTracker> *neighborTrackerAccessorPtr;
     if (neighbor_tracker_loaded) {
         bool pluginAlreadyRegisteredFlag;
         NeighborTrackerPlugin *nTrackerPlugin = (NeighborTrackerPlugin*)Simulator::pluginManager.get("NeighborTracker", &pluginAlreadyRegisteredFlag);

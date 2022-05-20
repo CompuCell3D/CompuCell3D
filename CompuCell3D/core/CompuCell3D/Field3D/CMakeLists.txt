@@ -1,4 +1,3 @@
-
 SET(SRCS
   AdjacentNeighbor.cpp
   Field3DChangeWatcher.cpp
@@ -8,31 +7,21 @@ SET(SRCS
   Field3D.cpp
   NeighborFinder.cpp
   WatchableField3D.cpp
-  )
-
-# FIND_PACKAGE(PythonLibs)
-
-INCLUDE_DIRECTORIES ( 
-    ${COMPUCELL3D_SOURCE_DIR}/core
-    ${Python_INCLUDE_DIRS}
-# ${PYTHON_INCLUDE_PATH}
-
 )
 
-
-
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-   ADD_STATIC_LIBRARY(Field3D ${SRCS}  LINK_LIBRARIES BasicUtilsStatic
-   # ${PYTHON_LIBRARIES}
-   )
+   ADD_STATIC_LIBRARY(Field3D ${SRCS})
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-   ADD_SHARED_LIBRARY(Field3D ${SRCS} LINK_LIBRARIES BasicUtilsShared
-   # ${PYTHON_LIBRARIES}
-   )
+   ADD_SHARED_LIBRARY(Field3D ${SRCS})
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
+TARGET_INCLUDE_DIRECTORIES(${Field3DLib} PUBLIC
+  $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_INCLUDE_DIR}>
+  ${Python_INCLUDE_DIRS}
+)
 
-INSTALL_FILES(/include/CompuCell3D/CompuCell3D/Field3D .h
+INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D/Field3D .h
   AdjacentNeighbor
   Dim3D
   Array3D

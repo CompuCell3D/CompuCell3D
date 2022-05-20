@@ -12,14 +12,10 @@ cd "${0%/*}"
 export LANG=en_EN
 export __CF_USER_TEXT_ENCODING=""
 
-export PREFIX_CC3D=$(pwd)
+export PYTHONPATH=@SITE_PACKAGES_INSTALL@
 
-export PYTHON_EXEC=${PREFIX_CC3D}/python37/bin/python
+export PYTHON_EXEC=@PYTHON_EXEC_FILE@
 
-
-cd $PREFIX_CC3D
-
-export PYTHONPATH=${PREFIX_CC3D}/lib/site-packages
 
 
 echo ${osx_major}-${osx_minor}
@@ -27,12 +23,11 @@ echo ${osx_major}-${osx_minor}
 
 ${PYTHON_EXEC} --version
 
+current_directory=$(pwd)
 
 export exit_code=0
-${PYTHON_EXEC} ${PREFIX_CC3D}/lib/site-packages/cc3d/core/param_scan/parameter_scan_run.py $* --install-dir=${PREFIX_CC3D}
+${PYTHON_EXEC} ${PYTHONPATH}/cc3d/core/param_scan/parameter_scan_run.py $*
 exit_code=$?
 
-cd ${PREFIX_CC3D}
+cd ${current_directory}
 exit ${exit_code}
-
-

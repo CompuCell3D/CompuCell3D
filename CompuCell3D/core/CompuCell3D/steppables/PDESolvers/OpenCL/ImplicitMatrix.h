@@ -27,58 +27,58 @@ struct GPUBoundaryConditions;
 namespace CompuCell3D {
 
 
-class ImplicitMatrix
-{
-	UniSolverParams const &mh_solverParams;
-	OpenCLHelper const &m_oclHelper;
-	cl_program m_clProgram;
-	OpenCLKernel const* m_prodCoreKernel, *m_prodBoundariesKernel, *m_modifyRHStoBC;
-	cl_mem const &md_cellTypes;
-	OpenCLBuffer md_solverParams;
-	//OpenCLBuffer md_outputField; //where to store the results of A*x
-	cl_mem md_outputField; //where to store the results of A*x
-	OpenCLBuffer md_boundaryConditions;
-	GPUBoundaryConditions const &mh_boundaryConditions;
-	mutable bool isTimeStepSet;
-	//float m_dt;
+    class ImplicitMatrix {
+        UniSolverParams const &mh_solverParams;
+        OpenCLHelper const &m_oclHelper;
+        cl_program m_clProgram;
+        OpenCLKernel const *m_prodCoreKernel, *m_prodBoundariesKernel, *m_modifyRHStoBC;
+        cl_mem const &md_cellTypes;
+        OpenCLBuffer md_solverParams;
+        //OpenCLBuffer md_outputField; //where to store the results of A*x
+        cl_mem md_outputField; //where to store the results of A*x
+        OpenCLBuffer md_boundaryConditions;
+        GPUBoundaryConditions const &mh_boundaryConditions;
+        mutable bool isTimeStepSet;
+        //float m_dt;
 
-private:
-	//disable copying
-	ImplicitMatrix(ImplicitMatrix const&);
-	ImplicitMatrix &operator=(ImplicitMatrix const&);
+    private:
+        //disable copying
+        ImplicitMatrix(ImplicitMatrix const &);
 
-public:
-	//initialize with OpenCLHelper, solver parameters and cell types
-	ImplicitMatrix(OpenCLHelper const &oclHelper, UniSolverParams const &solverParams, cl_mem const &d_cellTypes,  cl_mem const &d_outputfield, 
-		GPUBoundaryConditions const &boundaryConditions, std::string const &pathToKernels);
+        ImplicitMatrix &operator=(ImplicitMatrix const &);
 
-	void ApplyBCToRHS(cl_mem v)const;
+    public:
+        //initialize with OpenCLHelper, solver parameters and cell types
+        ImplicitMatrix(OpenCLHelper const &oclHelper, UniSolverParams const &solverParams, cl_mem const &d_cellTypes,
+                       cl_mem const &d_outputfield,
+                       GPUBoundaryConditions const &boundaryConditions, std::string const &pathToKernels);
 
-	//need to change the time step independently
-	void setdt(float dt)const;
+        void ApplyBCToRHS(cl_mem v) const;
 
-	~ImplicitMatrix();
+        //need to change the time step independently
+        void setdt(float dt) const;
 
-	//length of a field in elements
-	size_t fieldLength()const;
+        ~ImplicitMatrix();
 
-	//compute matrix-vector product and place it into md_outputField vector
-	//returns md_outputField so that caller has an access to the output vector
-	cl_mem prod(cl_mem v)const;
+        //length of a field in elements
+        size_t fieldLength() const;
 
-	Dim3D domainSize()const;
-private:
+        //compute matrix-vector product and place it into md_outputField vector
+        //returns md_outputField so that caller has an access to the output vector
+        cl_mem prod(cl_mem v) const;
 
-	//compute matrix-vector product for the internal part of the domain and place it into md_outputField vector
-	void prodCore(cl_mem v)const;
+        Dim3D domainSize() const;
 
-	//compute matrix-vector product for the boundary layer and place it into md_outputField vector
-	void prodBoundaries(cl_mem v)const;
-};
+    private:
+
+        //compute matrix-vector product for the internal part of the domain and place it into md_outputField vector
+        void prodCore(cl_mem v) const;
+
+        //compute matrix-vector product for the boundary layer and place it into md_outputField vector
+        void prodBoundaries(cl_mem v) const;
+    };
 
 }
-
-
 
 
 #endif
