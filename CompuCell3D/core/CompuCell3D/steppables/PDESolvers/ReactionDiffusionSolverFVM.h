@@ -20,12 +20,12 @@
 #include <string>
 
 #include <vector>
-#include <concurrent_vector.h>
+//#include <concurrent_vector.h>
 #include <set>
 #include <map>
 #include <iostream>
 #include <muParser/muParser.h>
-#include <ppl.h>
+//#include <ppl.h>
 
 #include "PDESolversDLLSpecifier.h"
 
@@ -36,10 +36,12 @@ struct vecPlus {
 	typedef std::vector<T> result_type;
 
 	std::vector<T> operator()(const std::vector<T>& _lhs, const std::vector<T>& _rhs) const {	// apply operator+ to operands
+		
 		std::vector<T> _res = std::vector<T>(_lhs.size(), 0.0);
 		for (unsigned int _vecIdx = 0; _vecIdx < _lhs.size(); ++_vecIdx) { _res[_vecIdx] = _lhs[_vecIdx] + _rhs[_vecIdx]; }
 		return (_res);
 	}
+	
 };
 
 template<class T>
@@ -131,7 +133,9 @@ namespace CompuCell3D {
 		void field3DChangePreStartup(const Point3D &pt, CellG *newCell, CellG *oldCell) {}
 		void field3DChangePostStartup(const Point3D &pt, CellG *newCell, CellG *oldCell);
 
-		concurrency::concurrent_vector<ReactionDiffusionSolverFV *> * fieldFVs;
+		//replace with std::vector
+		//concurrency::concurrent_vector<ReactionDiffusionSolverFV *> * fieldFVs;
+		std::vector<ReactionDiffusionSolverFV *>  fieldFVs;
 
 		// Need to set these according to lattice type
 		std::vector<unsigned int> indexMapSurfToCoord;
@@ -202,7 +206,10 @@ namespace CompuCell3D {
 		unsigned int currentStep;
 
 		bool autoTimeSubStep;
-		concurrency::concurrent_vector<double> *fvMaxStableTimeSteps;
+
+		//replace with std::vector
+		//concurrency::concurrent_vector<double> *fvMaxStableTimeSteps;
+		std::vector<double> *fvMaxStableTimeSteps;
 
 		bool simpleMassConservation;
 		Point3D flipSourcePt;
@@ -380,10 +387,10 @@ namespace CompuCell3D {
 		double getIntegrationTimeStep() { return integrationTimeStep; }
 		double getPhysicalTime() { return physTime; }
 		virtual ReactionDiffusionSolverFV * getFieldFV(const Point3D &_pt) { return getFieldFV(pt2ind(_pt)); }
-		virtual ReactionDiffusionSolverFV * getFieldFV(unsigned int _ind) { return fieldFVs->at(_ind); }
+		virtual ReactionDiffusionSolverFV * getFieldFV(unsigned int _ind) { return fieldFVs[_ind]; }
 		virtual ReactionDiffusionSolverFV * getFieldFV(std::vector<float> _physPt) { return getFieldFV(getLatticePointFromPhys(_physPt)); }
 		void setFieldFV(Point3D _pt, ReactionDiffusionSolverFV *_fv) { setFieldFV(pt2ind(_pt), _fv); }
-		void setFieldFV(unsigned int _ind, ReactionDiffusionSolverFV *_fv) { fieldFVs->at(_ind) = _fv; }
+		void setFieldFV(unsigned int _ind, ReactionDiffusionSolverFV *_fv) { fieldFVs[_ind] = _fv; }
 		std::map<unsigned int, ReactionDiffusionSolverFV *> getFVNeighborFVs(ReactionDiffusionSolverFV *_fv);
 		float getMaxStableTimeStep();
 		Point3D ind2pt(unsigned int _ind);
