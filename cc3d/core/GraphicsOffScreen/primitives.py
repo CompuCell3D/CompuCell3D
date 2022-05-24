@@ -45,6 +45,9 @@ class Color:
     def to_str_rgb(self) -> str:
         return self.__str__()
 
+    def to_json(self) -> str:
+        return self.to_str_rgb()
+
 
 class Point2D:
     def __init__(self, x: int = 0, y: int = 0):
