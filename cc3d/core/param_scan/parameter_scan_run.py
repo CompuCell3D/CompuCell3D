@@ -1,3 +1,10 @@
+"""
+this is a main script that facilitates parameter scan runs. It launches either command line only run script or a player
+and repeatedly runs the same simulation with different parameters. To test parameter scans it is best to work in python
+environment that has all the components - core code + player installed. Otherwise, you might get cryptic messages like
+cc3d.player5 module not found etc...
+"""
+
 import argparse
 import sys
 from pathlib import Path
@@ -21,15 +28,6 @@ from cc3d.core.filelock import FileLockException
 def main():
     args = process_cml()
 
-    # Legacy support: if gui flag is high then try to find player installation and redirect call
-    if args.gui_flag:
-        try:
-            from cc3d.player5.param_scan.main_player_run import main as player_main
-            player_main()
-            return
-        except ImportError:
-            raise RuntimeError('Player not installed')
-
     cc3d_proj_fname = args.input
     cc3d_proj_fname = cc3d_proj_fname.replace('"', '')
     output_dir = args.output_dir
@@ -39,20 +37,16 @@ def main():
     install_dir = args.install_dir
     install_dir = install_dir.replace('"', '')
 
-    run_script = find_run_script(install_dir=install_dir)
-
     execute_scan(cc3d_proj_fname=cc3d_proj_fname,
                  output_dir=output_dir,
                  output_frequency=output_frequency,
                  screenshot_output_frequency=screenshot_output_frequency,
-                 run_script=run_script)
-
+                 gui_flag=args.gui)
 
 def execute_scan(cc3d_proj_fname: str,
                  output_dir: str,
                  output_frequency: int,
                  screenshot_output_frequency: int,
-                 run_script: str,
                  gui_flag: bool = False):
     """
     Executes parameter scan
@@ -65,8 +59,8 @@ def execute_scan(cc3d_proj_fname: str,
     :type output_frequency: int
     :param screenshot_output_frequency: screenshot output frequency
     :type screenshot_output_frequency: int
-    :param run_script: absolute path to single run execution script
-    :type run_script: str
+    # :param run_script: absolute path to single run execution script
+    # :type run_script: str
     :param gui_flag: optional flag for gui-based execution; launches will pass additional argument '--exit-when-done'
     :type gui_flag: bool
     :return: None
@@ -114,9 +108,10 @@ def execute_scan(cc3d_proj_fname: str,
             f'--screenshot-output-frequency={screenshot_output_frequency}'
         ]
 
-        run_single_param_scan_simulation(cc3d_proj_fname=cc3d_proj_fname, run_script=run_script, gui_flag=gui_flag,
+        run_single_param_scan_simulation(cc3d_proj_fname=cc3d_proj_fname, gui_flag=gui_flag,
                                          current_scan_parameters=current_scan_parameters, output_dir=output_dir,
                                          arg_list=arg_list)
+
 
         if stop_scan:
             handle_param_scan_complete(output_dir)
