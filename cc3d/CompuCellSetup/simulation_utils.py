@@ -1,6 +1,7 @@
 from cc3d import CompuCellSetup
 from cc3d.core.XMLUtils import CC3DXMLListPy
 from pathlib import Path
+from typing import List
 
 
 class CC3DCPlusPlusError(Exception):
@@ -133,3 +134,27 @@ def extract_type_id_type_name_dict(cell_types_elements):
 def check_for_cpp_errors(sim):
     if sim.getRecentErrorMessage() != "":
         raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
+
+
+def str_to_int_list(s: str) -> List[str]:
+    """
+    Converts string - comma separated sequence of integers into list of integers.
+    :param s:
+    :return:
+    """
+
+    s = s.replace(" ", "")
+    s = s.split(",")
+
+    def val_check(inv_val_str):
+        try:
+            int_val = int(inv_val_str)
+        except ValueError:
+            return False
+        return True
+
+    list_int = [int(val) for val in s if val_check(val)]
+
+    return list_int
+
+
