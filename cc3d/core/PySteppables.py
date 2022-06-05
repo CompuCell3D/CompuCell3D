@@ -431,6 +431,22 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
                                          'targetClusterSurface', 'lambdaClusterSurface', 'type', 'lambdaVecX',
                                          'lambdaVecY', 'lambdaVecZ', 'fluctAmpl']
 
+    @property
+    def external_input(self):
+        """Input object passed in through the Python API when executing CC3D from Python"""
+
+        return CompuCellSetup.persistent_globals.input_object
+
+    @property
+    def external_output(self):
+        """Output object returned through the Python API when executing CC3D from Python"""
+
+        return CompuCellSetup.persistent_globals.return_object
+
+    @external_output.setter
+    def external_output(self, _external_output):
+        CompuCellSetup.persistent_globals.return_object = _external_output
+
     def merge_cells(self, source_cell, destination_cell):
         """
         Turns all voxels of source_cell into voxels of destination_cell
