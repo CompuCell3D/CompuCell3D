@@ -1,7 +1,7 @@
 // -*-c++-*-
 
 
-%module ("threads"=1) CompuCell
+%module ("threads"=1, directors="1") CompuCell
 
 // Have to replace ptrdiff_t with long long on windows. long on windows is 4 bytes
 %apply long long {ptrdiff_t}
@@ -68,6 +68,7 @@
 #include <CompuCell3D/Simulator.h>
 
 #include <CompuCell3D/PluginManager.h>
+#include <CompuCell3D/Potts3D/CellInventoryWatcher.h>
 #include <CompuCell3D/Potts3D/CellInventory.h>
 #include <CompuCell3D/Potts3D/TypeChangeWatcher.h>
 #include <CompuCell3D/Potts3D/TypeTransition.h>
@@ -573,8 +574,8 @@ using namespace CompuCell3D;
         class MaBoSSAccessor:
             def __getattr__(self, item):
                 if CellG.__maboss__ not in cell_dict.keys():
-                    raise KeyError('No registered MaBoSS models.')
-                elif item not in cell_dict[CellG.__maboss__].keys():
+                    cell_dict[CellG.__maboss__] = {}
+                if item not in cell_dict[CellG.__maboss__].keys():
                     raise KeyError(f'Could not find MaBoSS solver with name {item}.')
                 return cell_dict[CellG.__maboss__][item]
         return MaBoSSAccessor()
@@ -1110,6 +1111,7 @@ FIELD3DEXTENDER(Field3D<int>,int)
 %include "Potts3D/TypeChangeWatcher.h"
 %include "Potts3D/TypeTransition.h"
 %include "Automaton/Automaton.h"
+%include <CompuCell3D/Potts3D/CellInventoryWatcher.h>
 %include <CompuCell3D/Potts3D/CellInventory.h>
 
 %include <CompuCell3D/Potts3D/EnergyFunctionCalculator.h>
@@ -1145,6 +1147,75 @@ FIELD3DEXTENDER(Field3D<int>,int)
 // Inline Functions
 // ************************************************************
 
+%{
+struct CellInventoryWatcherForwarder : public CompuCell3D::CellInventoryWatcher {
+
+    void *director;
+    void (*directorFcnAdd)(CellG*, void*);
+    void (*directorFcnRem)(CellG*, void*);
+
+    CellInventoryWatcherForwarder(void (*_directorFcnAdd)(CellG*, void*), void (*_directorFcnRem)(CellG*, void*), void *_director) {
+        director = _director;
+        directorFcnAdd = _directorFcnAdd;
+        directorFcnRem = _directorFcnRem;
+    };
+    ~CellInventoryWatcherForwarder() {
+        if(director) {
+            director = 0;
+        }
+    }
+    void onCellAdd(CellG *cell) { directorFcnAdd(cell, director); }
+    void onCellRemove(CellG *cell) { directorFcnRem(cell, director); }
+};
+%}
+
+%feature("director") CellInventoryWatcherDir;
+
+%inline %{
+
+struct CellInventoryWatcherDir {
+    
+    CellInventoryWatcherForwarder *forwarder;
+
+    CellInventoryWatcherDir() : forwarder{NULL} {};
+
+    virtual void onCellAdd(CellG* cell) = 0;
+    virtual void onCellRemove(CellG* cell) = 0;
+    virtual ~CellInventoryWatcherDir() {
+        if(forwarder) {
+            delete forwarder;
+            forwarder = 0;
+        }
+    }
+};
+
+%}
+
+%{
+
+struct CellInventoryWatcherEvaluator {
+    CellInventoryWatcherDir *director;
+};
+
+void CellInventoryWatcherDirAdd(CellG *cell, void *_director) {
+    CellInventoryWatcherDir *director = (CellInventoryWatcherDir*)_director;
+    director->onCellAdd(cell);
+}
+void CellInventoryWatcherDirRem(CellG *cell, void *_director) {
+    CellInventoryWatcherDir *director = (CellInventoryWatcherDir*)_director;
+    director->onCellRemove(cell);
+}
+
+%}
+
+%inline %{
+
+void makeCellInventoryWatcher(CellInventoryWatcherDir *director, CellInventory *cInv) {
+    director->forwarder = new CellInventoryWatcherForwarder(&CellInventoryWatcherDirAdd, &CellInventoryWatcherDirRem, director);
+    cInv->registerWatcher(director->forwarder);
+}
+
+%}
 
 %inline %{
 

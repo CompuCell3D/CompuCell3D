@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 //NOTE: compartment inventory should be changed to cluster inventory to avoid name confusion
+#include "CellInventoryWatcher.h"
 
 
 namespace CompuCell3D {
@@ -152,10 +153,22 @@ namespace CompuCell3D {
 
         void cleanInventory();
 
+        void registerWatcher(CellInventoryWatcher *watcher) {
+            if(std::find(watchers.begin(), watchers.end(), watcher) == watchers.end()) 
+                watchers.push_back(watcher);
+        }
+
+        void unregisterWatcher(CellInventoryWatcher *watcher) {
+            auto itr = std::find(watchers.begin(), watchers.end(), watcher);
+            if(itr != watchers.end()) 
+                watchers.erase(itr);
+        }
+
     private:
         cellInventoryContainerType inventory;
         Potts3D *potts;
         CompartmentInventory compartmentInventory;
+        std::vector<CellInventoryWatcher*> watchers;
 
     };
 
