@@ -1,6 +1,6 @@
 {
     "cmake.configureOnOpen": true,
-    "cmake.installPrefix": "~/cc3d_build_wdocs",
+    "cmake.installPrefix": "~/cc3dbuildwdocs",
     "files.associations": {
         "array": "cpp",
         "atomic": "cpp",
