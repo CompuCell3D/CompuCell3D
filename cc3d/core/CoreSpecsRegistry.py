@@ -6,13 +6,13 @@ from typing import Dict, List
 
 from cc3d import CompuCellSetup
 from cc3d.core.XMLUtils import ElementCC3D, CC3DXMLElement
-from cc3d.core.PyCoreSpecs import PyCoreSpecsMaster, _PyCoreSpecsBase
+from cc3d.core.PyCoreSpecs import PyCoreSpecsRoot, _PyCoreSpecsBase
 
 
 class CoreSpecsRegistry:
     """Core specs registry"""
 
-    MASTERELEMENT = PyCoreSpecsMaster
+    MASTERELEMENT = PyCoreSpecsRoot
     """Root element of registry"""
 
     def __init__(self):

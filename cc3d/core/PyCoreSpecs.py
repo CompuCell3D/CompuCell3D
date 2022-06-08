@@ -10,10 +10,10 @@ from abc import ABC
 from contextlib import AbstractContextManager
 import itertools
 import os
-from typing import Any, Callable, Dict, Generic, Iterable, List, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, Dict, Generic, Iterable, List, Optional, Tuple, Type, TypeVar
 
 import cc3d
-from cc3d.core.XMLUtils import ElementCC3D, CC3DXMLElement, Xml2Obj
+from cc3d.core.XMLUtils import ElementCC3D, CC3DXMLElement, CC3DXMLListPy, Xml2Obj
 from cc3d.cpp.CompuCell import Point3D
 
 
@@ -219,10 +219,13 @@ class _PyCoreSpecsBase:
     check_dict: Dict[str, Tuple[Callable[[Any], bool], str]] = {}
     """
     input checks dictionary for spec properties
+    
     key corresponds to a key in instance dictionary attribute :attr:`spec_dict`
+    
     value is a tuple, where
-       the first element is a function that takes an input and raise a SpecValueError for an invalid input
-       the second element is a message string to accompany the raised SpecValueError
+       - the first element is a function that takes an input and raise a SpecValueError for an invalid input
+       - the second element is a message string to accompany the raised SpecValueError
+    
     inputs without a check are not validated, and can be omitted
     
     As a simple example, to enforce positive values for :attr:`steps`, write the following
@@ -240,7 +243,7 @@ class _PyCoreSpecsBase:
         self._el = None
         """(:class:`ElementCC3D` or None), for keeping a reference alive"""
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generates base element according to name and type
 
@@ -259,6 +262,7 @@ class _PyCoreSpecsBase:
     def check_inputs(self, **kwargs) -> None:
         """
         Validates inputs against all registered checks
+
         Checks are defined in implementation :attr:`check_dict`
 
         :param kwargs: key-value pair by registered input
@@ -294,7 +298,7 @@ class _PyCoreSpecsBase:
         :return: list of dependencies
         :rtype: list of Type
         """
-        return [PottsCoreSpecs, CellTypePluginSpecs]
+        return [PottsCore, CellTypePlugin]
 
     def validate(self, *specs) -> None:
         """
@@ -422,7 +426,7 @@ class _PyCoreXMLInterface(_PyCoreSpecsBase, ABC):
                 raise SpecImportError("Attribute name not known")
 
         el = None
-        el_list = _xml.getElements(cls.type)
+        el_list = CC3DXMLListPy(_xml.getElements(cls.type))
         for els in el_list:
             els: CC3DXMLElement
             if els.findAttribute(attr_name):
@@ -462,7 +466,7 @@ class _PyCorePluginSpecs(_PyCoreXMLInterface, ABC):
 
     type = "Plugin"
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generate and return the top :class:`ElementCC3D` instance
 
@@ -505,7 +509,7 @@ class _PyCoreSteppableSpecs(_PyCoreXMLInterface, ABC):
 
     type = "Steppable"
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generate and return the top :class:`ElementCC3D` instance
 
@@ -546,7 +550,9 @@ class _PDEDiffusionDataSpecs(_PyCoreSpecsBase, ABC):
     Diffusion Data Base Class
 
     Difussion data varies significantly by solver
+
     This base class aggregates all available options for consistent usage throughout various implementations
+
     Implementations should make options available as appropriate to a particular solver
     """
 
@@ -583,7 +589,7 @@ class _PDEDiffusionDataSpecs(_PyCoreSpecsBase, ABC):
         return ElementCC3D("DiffusionData")
 
 
-class SecretionSpecs(_PyCoreSpecsBase):
+class SecretionParameters(_PyCoreSpecsBase):
     """ Secretion Specs """
 
     def __init__(self,
@@ -643,7 +649,7 @@ class SecretionSpecs(_PyCoreSpecsBase):
         :return: list of dependencies
         :rtype: list of Type
         """
-        return [CellTypePluginSpecs]
+        return [CellTypePlugin]
 
     def validate(self, *specs) -> None:
         """
@@ -661,8 +667,8 @@ class SecretionSpecs(_PyCoreSpecsBase):
             super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 with err_ctx:
                     CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
                 if self.contact_type is not None:
@@ -673,7 +679,7 @@ class SecretionSpecs(_PyCoreSpecsBase):
             err_ctx.raise_error()
 
     @property
-    def contact_type(self) -> Union[str, None]:
+    def contact_type(self) -> Optional[str]:
         """
 
         :return: name of cell type if using secretion on contact with
@@ -682,7 +688,7 @@ class SecretionSpecs(_PyCoreSpecsBase):
         return self.spec_dict["contact_type"]
 
     @contact_type.setter
-    def contact_type(self, _name: Union[str, None]) -> None:
+    def contact_type(self, _name: Optional[str]) -> None:
         if _name is not None:
             self.constant = False
         self.spec_dict["contact_type"] = _name
@@ -709,21 +715,21 @@ class _PDESecretionDataSpecs(_PyCoreSpecsBase):
     def __init__(self, *_param_specs):
         """
 
-        :param _param_specs: variable number of SecretionSpecs instances, optional
+        :param _param_specs: variable number of SecretionParameters instances, optional
         """
         super().__init__()
 
         with _SpecValueErrorContextBlock() as err_ctx:
             for _ps in _param_specs:
                 with err_ctx.ctx:
-                    if not isinstance(_ps, SecretionSpecs):
-                        raise SpecValueError("Only SecretionSpecs instances can be passed",
+                    if not isinstance(_ps, SecretionParameters):
+                        raise SpecValueError("Only SecretionParameters instances can be passed",
                                              names=[_ps.__name__])
 
         self.spec_dict = {"param_specs": []}
-        [self.param_append(_ps) for _ps in _param_specs]
+        [self.params_append(_ps) for _ps in _param_specs]
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generate and return the top :class:`ElementCC3D` instance
 
@@ -758,21 +764,21 @@ class _PDESecretionDataSpecs(_PyCoreSpecsBase):
         # Validate parameters
         [ps.validate(*specs) for ps in self.spec_dict["param_specs"]]
 
-    def param_append(self, _ps: SecretionSpecs) -> None:
+    def params_append(self, _ps: SecretionParameters) -> None:
         """
         Append a secretion spec
 
-        :param SecretionSpecs _ps: secretion spec
+        :param SecretionParameters _ps: secretion spec
         :return: None
         """
         if _ps.contact_type is None:
             for x in self.spec_dict["param_specs"]:
-                x: SecretionSpecs
+                x: SecretionParameters
                 if x.contact_type is None and _ps.cell_type == x.cell_type:
                     raise SpecValueError(f"Duplicate specification for cell type {_ps.cell_type}")
         self.spec_dict["param_specs"].append(_ps)
 
-    def param_remove(self, _cell_type: str, contact_type: str = None):
+    def params_remove(self, _cell_type: str, contact_type: str = None):
         """
         Remove a secretion spec
 
@@ -781,17 +787,17 @@ class _PDESecretionDataSpecs(_PyCoreSpecsBase):
         :return: None
         """
         for _ps in self.spec_dict["param_specs"]:
-            _ps: SecretionSpecs
+            _ps: SecretionParameters
             if _ps.cell_type == _cell_type and contact_type == _ps.contact_type:
                 self.spec_dict["param_specs"].remove(_ps)
                 return
-        raise SpecValueError("SecretionSpecs not specified")
+        raise SpecValueError("SecretionParameters not specified")
 
-    def param_new(self,
-                  _cell_type: str,
-                  _val: float,
-                  constant: bool = False,
-                  contact_type: str = None) -> SecretionSpecs:
+    def params_new(self,
+                   _cell_type: str,
+                   _val: float,
+                   constant: bool = False,
+                   contact_type: str = None) -> SecretionParameters:
         """
         Append and return a new secretion spec
 
@@ -800,17 +806,17 @@ class _PDESecretionDataSpecs(_PyCoreSpecsBase):
         :param bool constant: flag for constant concentration, optional
         :param str contact_type: name of cell type for on-contact dependence, optional
         :return: new secretion spec
-        :rtype: SecretionSpecs
+        :rtype: SecretionParameters
         """
-        ps = SecretionSpecs(_cell_type, _val, constant=constant, contact_type=contact_type)
-        self.param_append(ps)
+        ps = SecretionParameters(_cell_type, _val, constant=constant, contact_type=contact_type)
+        self.params_append(ps)
         return ps
 
 
 BOUNDARYTYPESPDE = ["Value", "Flux", "Periodic"]
 
 
-class PDEBoundaryConditionsSpec(_PyCoreSpecsBase):
+class PDEBoundaryConditions(_PyCoreSpecsBase):
     """ PDE Solver Boundary Conditions Spec """
 
     def __init__(self,
@@ -966,7 +972,7 @@ class PDEBoundaryConditionsSpec(_PyCoreSpecsBase):
             self.spec_dict["z_min_type"] = _val
         self.spec_dict["z_max_type"] = _val
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generate and return the top :class:`ElementCC3D` instance
 
@@ -1013,7 +1019,7 @@ class PDEBoundaryConditionsSpec(_PyCoreSpecsBase):
         :return: list of dependencies
         :rtype: list of Type
         """
-        return [PottsCoreSpecs]
+        return [PottsCore]
 
     def validate(self, *specs) -> None:
         """
@@ -1031,10 +1037,10 @@ class PDEBoundaryConditionsSpec(_PyCoreSpecsBase):
                 super().validate(*specs)
 
             for s in specs:
-                # Validate against cell types defined in PottsCoreSpecs
+                # Validate against cell types defined in PottsCore
                 # Constant value and flux are compatible with no flux
                 # Perdioc is compatible with periodic
-                if isinstance(s, PottsCoreSpecs):
+                if isinstance(s, PottsCore):
                     for c in ["x", "y", "z"]:
                         with err_ctx.ctx:
                             if getattr(s, f"boundary_{c}") == BOUNDARYTYPESPOTTS[0]:
@@ -1068,7 +1074,7 @@ class _PDESolverFieldSpecs(_PyCoreSpecsBase, Generic[_DD, _SD]):
         self.spec_dict = {"field_name": field_name,
                           "diff_data": diff_data(field_name=field_name),
                           "secr_data": secr_data(),
-                          "bc_specs": PDEBoundaryConditionsSpec()}
+                          "bc_specs": PDEBoundaryConditions()}
 
     field_name: str = SpecProperty(name="field_name")
     """name of field"""
@@ -1076,10 +1082,10 @@ class _PDESolverFieldSpecs(_PyCoreSpecsBase, Generic[_DD, _SD]):
     diff_data: _DD = SpecProperty(name="diff_data")
     """diffusion data"""
 
-    bcs: PDEBoundaryConditionsSpec = SpecProperty(name="bc_specs")
+    bcs: PDEBoundaryConditions = SpecProperty(name="bc_specs")
     """boundary conditions"""
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generate and return the top :class:`ElementCC3D` instance
 
@@ -1129,7 +1135,7 @@ class _PDESolverFieldSpecs(_PyCoreSpecsBase, Generic[_DD, _SD]):
         self.spec_dict["secr_data"].validate(*specs)
         self.bcs.validate(*specs)
 
-    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> SecretionSpecs:
+    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> SecretionParameters:
         """
         Specify and return a new secretion data spec
 
@@ -1137,9 +1143,9 @@ class _PDESolverFieldSpecs(_PyCoreSpecsBase, Generic[_DD, _SD]):
         :param float _val: value
         :param kwargs:
         :return: new secretion data spec
-        :rtype: SecretionSpecs
+        :rtype: SecretionParameters
         """
-        p = self.spec_dict["secr_data"].param_new(_cell_type, _val, **kwargs)
+        p = self.spec_dict["secr_data"].params_new(_cell_type, _val, **kwargs)
         return p
 
     def secretion_data_remove(self, _cell_type: str, **kwargs) -> None:
@@ -1173,7 +1179,7 @@ class _PDESolverSpecs(_PyCoreSteppableSpecs, _PyCoreSteerableInterface, ABC, Gen
         :return: list of dependencies
         :rtype: list of Type
         """
-        return [PottsCoreSpecs]
+        return [PottsCore]
 
     def validate(self, *specs) -> None:
         """
@@ -1255,9 +1261,9 @@ class _PDESolverSpecs(_PyCoreSteppableSpecs, _PyCoreSteerableInterface, ABC, Gen
         self.spec_dict["fields"].pop(_field_name)
 
 
-class PyCoreSpecsMaster:
+class PyCoreSpecsRoot:
     """
-    Master simulation specs
+    Root simulation specs
     """
     @property
     def xml(self) -> ElementCC3D:
@@ -1281,7 +1287,7 @@ class PyCoreSpecsMaster:
         return persistent_globals.simulator
 
 
-class MetadataSpecs(_PyCoreXMLInterface):
+class Metadata(_PyCoreXMLInterface):
     """
     Metadata Specs
     """
@@ -1318,7 +1324,7 @@ class MetadataSpecs(_PyCoreXMLInterface):
     debug_output_frequency: int = SpecProperty("debug_output_frequency")
     """Debug output frequency"""
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generates base element according to name and type
 
@@ -1384,7 +1390,7 @@ FLUCAMPFCNS = ["Min", "Max", "ArithmeticAverage"]
 """Supported fluctuation amplitude function names"""
 
 
-class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
+class PottsCore(_PyCoreSteerableInterface, _PyCoreXMLInterface):
     """
     Potts specs
     """
@@ -1472,7 +1478,7 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
                           "boundary_y": boundary_y,
                           "boundary_z": boundary_z,
                           "neighbor_order": neighbor_order,
-                          "debug_output_frequency": 0,  # Legacy support; standard is to use MetadataSpecs
+                          "debug_output_frequency": 0,  # Legacy support; standard is to use Metadata
                           "random_seed": random_seed,
                           "lattice_type": lattice_type,
                           "offset": offset,
@@ -1508,7 +1514,7 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
     neighbor_order: int = SpecProperty(name="neighbor_order")
     """neighbor order of flip attempts"""
 
-    random_seed: Union[int, None] = SpecProperty(name="random_seed")
+    random_seed: Optional[int] = SpecProperty(name="random_seed")
     """random seed"""
 
     lattice_type: str = SpecProperty(name="lattice_type")
@@ -1517,7 +1523,7 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
     offset: float = SpecProperty(name="offset")
     """offset in Boltzmann acceptance function"""
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generate and return the top :class:`ElementCC3D` instance
 
@@ -1563,7 +1569,7 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
         if self.neighbor_order > 1:
             self._el.ElementCC3D("NeighborOrder", {}, str(self.neighbor_order))
 
-        # Legacy support; standard is to use MetadataSpecs
+        # Legacy support; standard is to use Metadata
         if self.spec_dict["debug_output_frequency"] > 0:
             self._el.ElementCC3D("DebugOutputFrequency", {}, str(self.spec_dict["debug_output_frequency"]))
 
@@ -1609,7 +1615,7 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
         :return: list of dependencies
         :rtype: list of Type
         """
-        return [CellTypePluginSpecs]
+        return [CellTypePlugin]
 
     def validate(self, *specs) -> None:
         """
@@ -1623,8 +1629,8 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 if isinstance(self.spec_dict["fluctuation_amplitude"], dict):
                     CoreSpecsValidator.validate_cell_type_names(
                         type_names=self.spec_dict["fluctuation_amplitude"].keys(), cell_type_spec=s)
@@ -1636,7 +1642,7 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: PottsCoreSpecs
+        :rtype: PottsCore
         """
         el: CC3DXMLElement = _xml.getFirstElement("Potts")
 
@@ -1655,7 +1661,7 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
         if el.findElement("FluctuationAmplitude"):
             amp_el: CC3DXMLElement = el.getFirstElement("FluctuationAmplitude")
             if amp_el.findElement("FluctuationAmplitudeParameters"):
-                amp_el_list = amp_el.getElements("FluctuationAmplitudeParameters")
+                amp_el_list = CC3DXMLListPy(amp_el.getElements("FluctuationAmplitudeParameters"))
                 for ampt_el in amp_el_list:
                     ampt_el: CC3DXMLElement
                     o.fluctuation_amplitude_type(ampt_el.getAttribute("CellType"),
@@ -1674,7 +1680,7 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
             o.neighbor_order = el.getFirstElement("NeighborOrder").getUInt()
 
         if el.findElement("DebugOutputFrequency"):
-            # Legacy support; standard is to use MetadataSpecs
+            # Legacy support; standard is to use Metadata
             o.spec_dict["debug_output_frequency"] = el.getFirstElement("DebugOutputFrequency").getUInt()
 
         if el.findElement("RandomSeed"):
@@ -1795,7 +1801,7 @@ class PottsCoreSpecs(_PyCoreSteerableInterface, _PyCoreXMLInterface):
             raise SpecValueError("Potts unavailable")
 
 
-class CellTypePluginSpecs(_PyCorePluginSpecs):
+class CellTypePlugin(_PyCorePluginSpecs):
     """
     CellType Plugin specs
 
@@ -1841,12 +1847,12 @@ class CellTypePluginSpecs(_PyCorePluginSpecs):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: CellTypePluginSpecs
+        :rtype: CellTypePlugin
         """
 
         o = cls()
 
-        el_list = cls.find_xml_by_attr(_xml).getElements("CellType")
+        el_list = CC3DXMLListPy(cls.find_xml_by_attr(_xml).getElements("CellType"))
 
         for tp_el in el_list:
             kwargs = {"frozen": tp_el.findAttribute("Freeze")}
@@ -1873,7 +1879,7 @@ class CellTypePluginSpecs(_PyCorePluginSpecs):
         """
         return [x[1] for x in self.spec_dict["cell_types"]]
 
-    def is_frozen(self, _name: str) -> Union[bool, None]:
+    def is_frozen(self, _name: str) -> Optional[bool]:
         """
 
         :param _name: name of cell type
@@ -2036,12 +2042,12 @@ class VolumeEnergyParameter(_PyCoreSpecsBase):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
 
 
-class VolumePluginSpecs(_PyCorePluginSpecs):
+class VolumePlugin(_PyCorePluginSpecs):
     """
     Volume Plugin
 
@@ -2049,7 +2055,7 @@ class VolumePluginSpecs(_PyCorePluginSpecs):
 
     .. code-block:: python
 
-       spec: VolumePluginSpecs
+       spec: VolumePlugin
        cell_type_name: str
        params: VolumeEnergyParameter = spec[cell_type_name]
        target_volume: float = params.target_volume
@@ -2097,8 +2103,8 @@ class VolumePluginSpecs(_PyCorePluginSpecs):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=self.cell_types, cell_type_spec=s)
 
         # Validate parameters
@@ -2111,12 +2117,12 @@ class VolumePluginSpecs(_PyCorePluginSpecs):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: VolumePluginSpecs
+        :rtype: VolumePlugin
         """
 
         o = cls()
 
-        el_list = cls.find_xml_by_attr(_xml).getElements("VolumeEnergyParameters")
+        el_list = CC3DXMLListPy(cls.find_xml_by_attr(_xml).getElements("VolumeEnergyParameters"))
 
         for p_el in el_list:
             o.param_new(p_el.getAttribute("CellType"),
@@ -2178,7 +2184,7 @@ class VolumePluginSpecs(_PyCorePluginSpecs):
 # Surface Plugin
 
 
-class SurfaceEnergyParameterSpecs(_PyCoreSpecsBase):
+class SurfaceEnergyParameter(_PyCoreSpecsBase):
     """ Surface Energy Parameter """
 
     check_dict = {"target_surface": (lambda x: x < 0, "Target surface must be non-negative")}
@@ -2232,22 +2238,22 @@ class SurfaceEnergyParameterSpecs(_PyCoreSpecsBase):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
 
 
-class SurfacePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
+class SurfacePlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     Surface Plugin
 
-    SurfaceEnergyParameterSpecs instances can be accessed as follows,
+    SurfaceEnergyParameter instances can be accessed as follows,
 
     .. code-block:: python
 
-       spec: SurfacePluginSpecs
+       spec: SurfacePlugin
        cell_type_name: str
-       params: SurfaceEnergyParameterSpecs = spec[cell_type_name]
+       params: SurfaceEnergyParameter = spec[cell_type_name]
        target_surface: float = params.target_surface
        lambda_surface: float = params.lambda_surface
 
@@ -2262,7 +2268,7 @@ class SurfacePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         with _SpecValueErrorContextBlock() as err_ctx:
             for _p in _params:
                 with err_ctx.ctx:
-                    if not isinstance(_p, SurfaceEnergyParameterSpecs):
+                    if not isinstance(_p, SurfaceEnergyParameter):
                         raise SpecValueError("Only SurfaceEnergyParameter instances can be passed",
                                              names=[_p.__name__])
 
@@ -2293,8 +2299,8 @@ class SurfacePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=self.cell_types, cell_type_spec=s)
 
         # Validate parameters
@@ -2307,12 +2313,12 @@ class SurfacePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: SurfacePluginSpecs
+        :rtype: SurfacePlugin
         """
 
         o = cls()
 
-        el_list = cls.find_xml_by_attr(_xml).getElements("SurfaceEnergyParameters")
+        el_list = CC3DXMLListPy(cls.find_xml_by_attr(_xml).getElements("SurfaceEnergyParameters"))
 
         for p_el in el_list:
             o.param_new(p_el.getAttribute("CellType"),
@@ -2334,11 +2340,11 @@ class SurfacePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         """
         return list(self.spec_dict["params"].keys())
 
-    def param_append(self, _p: SurfaceEnergyParameterSpecs):
+    def param_append(self, _p: SurfaceEnergyParameter):
         """
         Appends a surface energy parameter
         
-        :param SurfaceEnergyParameterSpecs _p: surface energy parameter 
+        :param SurfaceEnergyParameter _p: surface energy parameter
         :return: None
         """
         if _p.cell_type in self.cell_types:
@@ -2356,7 +2362,7 @@ class SurfacePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
             raise SpecValueError(f"Cell type {_cell_type} not specified")
         self.spec_dict["params"].pop(_cell_type)
 
-    def param_new(self, cell_type: str, target_surface: float, lambda_surface: float) -> SurfaceEnergyParameterSpecs:
+    def param_new(self, cell_type: str, target_surface: float, lambda_surface: float) -> SurfaceEnergyParameter:
         """
         Appends and returns a new surface energy parameter
 
@@ -2364,14 +2370,12 @@ class SurfacePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         :param float target_surface: target surface
         :param float lambda_surface: lambda value
         """
-        p = SurfaceEnergyParameterSpecs(cell_type,
-                                        target_surface=target_surface,
-                                        lambda_surface=lambda_surface)
+        p = SurfaceEnergyParameter(cell_type, target_surface=target_surface, lambda_surface=lambda_surface)
         self.param_append(p)
         return p
 
 
-class NeighborTrackerPluginSpecs(_PyCorePluginSpecs):
+class NeighborTrackerPlugin(_PyCorePluginSpecs):
     """ NeighborTracker Plugin """
 
     name = "neighbor_tracker"
@@ -2398,7 +2402,7 @@ class NeighborTrackerPluginSpecs(_PyCorePluginSpecs):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: NeighborTrackerPluginSpecs
+        :rtype: NeighborTrackerPlugin
         """
         cls.find_xml_by_attr(_xml)
         return cls()
@@ -2407,8 +2411,8 @@ class NeighborTrackerPluginSpecs(_PyCorePluginSpecs):
 # Chemotaxis Plugin
 
 
-class ChemotaxisTypeSpecs(_PyCoreSpecsBase):
-    """ Chemotaxis cell type specs """
+class ChemotaxisTypeParameters(_PyCoreSpecsBase):
+    """ Chemotaxis cell type parameter specs """
 
     check_dict = {
         "cell_type": (lambda x: not isinstance(x, str), "Cell type name must be a string"),
@@ -2447,13 +2451,13 @@ class ChemotaxisTypeSpecs(_PyCoreSpecsBase):
     lambda_chemo: float = SpecProperty(name="lambda_chemo")
     """lambda chemotaxis"""
 
-    sat_cf: Union[float, None] = SpecProperty(name="sat_cf")
+    sat_cf: Optional[float] = SpecProperty(name="sat_cf")
     """saturation coefficient, Optional, None if not set"""
 
-    linear_sat_cf: Union[float, None] = SpecProperty(name="linear_sat_cf")
+    linear_sat_cf: Optional[float] = SpecProperty(name="linear_sat_cf")
     """linear saturation coefficient, Optional, None if not set"""
 
-    towards: Union[str, None] = SpecProperty(name="towards")
+    towards: Optional[str] = SpecProperty(name="towards")
     """name of cell type if chemotaxing towards, None if not set"""
 
     @property
@@ -2487,12 +2491,12 @@ class ChemotaxisTypeSpecs(_PyCoreSpecsBase):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
 
 
-class ChemotaxisParams(_PyCoreSpecsBase):
+class ChemotaxisParameters(_PyCoreSpecsBase):
     """ Chemotaxis parameter specs"""
 
     check_dict = {
@@ -2508,15 +2512,15 @@ class ChemotaxisParams(_PyCoreSpecsBase):
 
         :param str field_name: name of field
         :param str solver_name: name of solver
-        :param _type_specs: variable number of ChemotaxisTypeSpecs instances
+        :param _type_specs: variable number of ChemotaxisTypeParameters instances
         """
         super().__init__()
 
         with _SpecValueErrorContextBlock() as err_ctx:
             for _ts in _type_specs:
                 with err_ctx.ctx:
-                    if not isinstance(_ts, ChemotaxisTypeSpecs):
-                        raise SpecValueError("Only ChemotaxisTypeSpecs instances can specify chemotaxis type data",
+                    if not isinstance(_ts, ChemotaxisTypeParameters):
+                        raise SpecValueError("Only ChemotaxisTypeParameters instances can specify chemotaxis type data",
                                              names=[_ts.__name__])
 
         self.spec_dict = {"field_name": field_name,
@@ -2529,7 +2533,7 @@ class ChemotaxisParams(_PyCoreSpecsBase):
     solver_name: str = SpecProperty(name="solver_name")
     """name of PDE solver of field"""
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generate and return the top :class:`ElementCC3D` instance
 
@@ -2565,8 +2569,8 @@ class ChemotaxisParams(_PyCoreSpecsBase):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=self.cell_types, cell_type_spec=s)
 
         # Validate field name against solvers
@@ -2589,18 +2593,18 @@ class ChemotaxisParams(_PyCoreSpecsBase):
         """
         return list(self.spec_dict["type_specs"].keys())
 
-    def param_append(self, type_spec: ChemotaxisTypeSpecs) -> None:
+    def params_append(self, type_spec: ChemotaxisTypeParameters) -> None:
         """
         Appends a chemotaxis type spec
 
-        :param ChemotaxisTypeSpecs type_spec: chemotaxis type spec
+        :param ChemotaxisTypeParameters type_spec: chemotaxis type spec
         :return: None
         """
         if type_spec.cell_type in self.cell_types:
             raise SpecValueError(f"Type name {type_spec.cell_type} already specified")
         self.spec_dict["type_specs"][type_spec.cell_type] = type_spec
 
-    def param_remove(self, _cell_type: str) -> None:
+    def params_remove(self, _cell_type: str) -> None:
         """
         Removes a chemotaxis type spec
 
@@ -2611,12 +2615,12 @@ class ChemotaxisParams(_PyCoreSpecsBase):
             raise SpecValueError(f"Type name {_cell_type} not specified")
         self.spec_dict["type_specs"].pop(_cell_type)
 
-    def param_new(self,
-                  _cell_type: str,
-                  lambda_chemo: float = 0.0,
-                  sat_cf: float = None,
-                  linear_sat_cf: float = None,
-                  towards: str = None) -> ChemotaxisTypeSpecs:
+    def params_new(self,
+                   _cell_type: str,
+                   lambda_chemo: float = 0.0,
+                   sat_cf: float = None,
+                   linear_sat_cf: float = None,
+                   towards: str = None) -> ChemotaxisTypeParameters:
         """
         Appends and returns a new chemotaxis type spec
 
@@ -2626,30 +2630,30 @@ class ChemotaxisParams(_PyCoreSpecsBase):
         :param float linear_sat_cf: linear saturation coefficient
         :param str towards: cell type name to chemotax towards, optional
         :return: new chemotaxis type spec
-        :rtype: ChemotaxisTypeSpecs
+        :rtype: ChemotaxisTypeParameters
         """
-        p = ChemotaxisTypeSpecs(_cell_type,
-                                lambda_chemo=lambda_chemo,
-                                sat_cf=sat_cf,
-                                linear_sat_cf=linear_sat_cf,
-                                towards=towards)
-        self.param_append(p)
+        p = ChemotaxisTypeParameters(_cell_type,
+                                     lambda_chemo=lambda_chemo,
+                                     sat_cf=sat_cf,
+                                     linear_sat_cf=linear_sat_cf,
+                                     towards=towards)
+        self.params_append(p)
         return p
 
 
-class ChemotaxisPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
+class ChemotaxisPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     Chemotaxis Plugin
 
-    ChemotaxisTypeSpecs instances can be accessed by field name as follows,
+    ChemotaxisTypeParameters instances can be accessed by field name as follows,
 
     .. code-block:: python
 
-       spec: ChemotaxisPluginSpecs
+       spec: ChemotaxisPlugin
        field_name: str
        cell_type_name: str
-       field_params: ChemotaxisParams = spec[field_name]
-       type_params: ChemotaxisTypeSpecs = field_params[cell_type_name]
+       field_params: ChemotaxisParameters = spec[field_name]
+       type_params: ChemotaxisTypeParameters = field_params[cell_type_name]
        lambda_chemo: float = type_params.lambda_chemo
        sat_cf: float = type_params.sat_cf
        linear_sat_cf: float = type_params.linear_sat_cf
@@ -2666,8 +2670,8 @@ class ChemotaxisPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         with _SpecValueErrorContextBlock() as err_ctx:
             for _fs in _field_specs:
                 with err_ctx.ctx:
-                    if not isinstance(_fs, ChemotaxisParams):
-                        raise SpecValueError("Can only pass ChemotaxisParams instances",
+                    if not isinstance(_fs, ChemotaxisParameters):
+                        raise SpecValueError("Can only pass ChemotaxisParameters instances",
                                              names=[_fs.__name__])
 
         self.spec_dict = {"field_specs": {_fs.field_name: _fs for _fs in _field_specs}}
@@ -2709,12 +2713,12 @@ class ChemotaxisPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: ChemotaxisPluginSpecs
+        :rtype: ChemotaxisPlugin
         """
 
         o = cls()
 
-        el_list = cls.find_xml_by_attr(_xml).getElements("ChemicalField")
+        el_list = CC3DXMLListPy(cls.find_xml_by_attr(_xml).getElements("ChemicalField"))
 
         for f_el in el_list:
             field_name = f_el.getAttribute("Name")
@@ -2722,8 +2726,8 @@ class ChemotaxisPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
             solver_name = ""
             if f_el.findAttribute("Source"):
                 solver_name = f_el.getAttribute("Source")
-            f = ChemotaxisParams(field_name=field_name, solver_name=solver_name)
-            f_el_list = f_el.getElements("ChemotaxisByType")
+            f = ChemotaxisParameters(field_name=field_name, solver_name=solver_name)
+            f_el_list = CC3DXMLListPy(f_el.getElements("ChemotaxisByType"))
 
             for p_el in f_el_list:
                 cell_type = p_el.getAttribute("Type")
@@ -2734,8 +2738,8 @@ class ChemotaxisPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
                     kwargs["linear_sat_cf"] = p_el.getAttributeAsDouble("SaturationLinearCoef")
                 if p_el.findAttribute("ChemotactTowards"):
                     kwargs["towards"] = p_el.getAttribute("ChemotactTowards")
-                p = ChemotaxisTypeSpecs(cell_type, **kwargs)
-                f.param_append(p)
+                p = ChemotaxisTypeParameters(cell_type, **kwargs)
+                f.params_append(p)
 
             o.param_append(f)
 
@@ -2750,16 +2754,16 @@ class ChemotaxisPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         """
         return [_fs.field_name for _fs in self.spec_dict["field_specs"].values()]
 
-    def __getitem__(self, item) -> ChemotaxisParams:
+    def __getitem__(self, item) -> ChemotaxisParameters:
         if item not in self.fields:
             raise SpecValueError(f"Field name {item} not specified")
         return self.spec_dict["field_specs"][item]
 
-    def param_append(self, _field_specs: ChemotaxisParams) -> None:
+    def param_append(self, _field_specs: ChemotaxisParameters) -> None:
         """
         Appends a chemotaxis parameter
 
-        :param ChemotaxisParams _field_specs: chemotaxis parameter
+        :param ChemotaxisParameters _field_specs: chemotaxis parameter
         :return: None
         """
         if _field_specs.field_name in self.fields:
@@ -2780,17 +2784,17 @@ class ChemotaxisPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     def param_new(self,
                   field_name: str,
                   solver_name: str,
-                  *_type_specs) -> ChemotaxisParams:
+                  *_type_specs) -> ChemotaxisParameters:
         """
         Appends and returns a new chemotaxis parameter
 
         :param str field_name: name of field
         :param str solver_name: name of solver
-        :param _type_specs: variable number of ChemotaxisTypeSpecs instances
+        :param _type_specs: variable number of ChemotaxisTypeParameters instances
         :return: new chemotaxis parameter
-        :rtype: ChemotaxisParams
+        :rtype: ChemotaxisParameters
         """
-        p = ChemotaxisParams(field_name=field_name, solver_name=solver_name, *_type_specs)
+        p = ChemotaxisParameters(field_name=field_name, solver_name=solver_name, *_type_specs)
         self.param_append(p)
         return p
 
@@ -2825,7 +2829,7 @@ class ExternalPotentialParameter(_PyCoreSpecsBase):
     z: float = SpecProperty(name="z")
     """z-component of external potential lambda vector"""
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generate and return the top :class:`ElementCC3D` instance
 
@@ -2858,12 +2862,12 @@ class ExternalPotentialParameter(_PyCoreSpecsBase):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
 
 
-class ExternalPotentialPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
+class ExternalPotentialPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     ExternalPotential Plugin
 
@@ -2871,7 +2875,7 @@ class ExternalPotentialPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface
 
     .. code-block:: python
 
-       spec: ExternalPotentialPluginSpecs
+       spec: ExternalPotentialPlugin
        cell_type_name: str
        params: ExternalPotentialParameter = spec.cell_type[cell_type_name]
        lambda_x: float = params.x
@@ -2947,8 +2951,8 @@ class ExternalPotentialPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=self.cell_types, cell_type_spec=s)
 
         # Validate parameters
@@ -2961,7 +2965,7 @@ class ExternalPotentialPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: ExternalPotentialPluginSpecs
+        :rtype: ExternalPotentialPlugin
         """
         el = cls.find_xml_by_attr(_xml)
 
@@ -2980,7 +2984,7 @@ class ExternalPotentialPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface
             if el.getFirstElement("Algorithm").getText().lower() == "centerofmassbased":
                 o.com_based = True
 
-        el_list = el.getElements("ExternalPotentialParameters")
+        el_list = CC3DXMLListPy(el.getElements("ExternalPotentialParameters"))
 
         for p_el in el_list:
             p_el: CC3DXMLElement
@@ -3049,7 +3053,7 @@ class ExternalPotentialPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface
         return p
 
 
-class CenterOfMassPluginSpecs(_PyCorePluginSpecs):
+class CenterOfMassPlugin(_PyCorePluginSpecs):
     """ CenterOfMass Plugin """
 
     name = "center_of_mass"
@@ -3073,7 +3077,7 @@ class CenterOfMassPluginSpecs(_PyCorePluginSpecs):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: CenterOfMassPluginSpecs
+        :rtype: CenterOfMassPlugin
         """
         cls.find_xml_by_attr(_xml)
         return cls()
@@ -3082,7 +3086,7 @@ class CenterOfMassPluginSpecs(_PyCorePluginSpecs):
 # Contact Plugin
 
 
-class ContactEnergyParam(_PyCoreSpecsBase):
+class ContactEnergyParameter(_PyCoreSpecsBase):
     """ Contact Energy Parameter """
 
     def __init__(self, type_1: str, type_2: str, energy: float):
@@ -3131,23 +3135,23 @@ class ContactEnergyParam(_PyCoreSpecsBase):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.type_1, self.type_2], cell_type_spec=s)
 
 
-class ContactPluginSpecs(_PyCorePluginSpecs):
+class ContactPlugin(_PyCorePluginSpecs):
     """
     Contact Plugin
 
-    ContactEnergyParam instances can be accessed as follows,
+    ContactEnergyParameter instances can be accessed as follows,
 
     .. code-block:: python
 
-       spec: ContactPluginSpecs
+       spec: ContactPlugin
        cell_type_1: str
        cell_type_2: str
-       params: ContactEnergyParam = spec[cell_type_1][cell_type_2]
+       params: ContactEnergyParameter = spec[cell_type_1][cell_type_2]
        energy: float = params.energy
 
     """
@@ -3161,15 +3165,15 @@ class ContactPluginSpecs(_PyCorePluginSpecs):
         """
 
         :param int neighbor_order: neighbor order
-        :param _params: variable number of ContactEnergyParam instances
+        :param _params: variable number of ContactEnergyParameter instances
         """
         super().__init__()
 
         with _SpecValueErrorContextBlock() as err_ctx:
             for _p in _params:
                 with err_ctx.ctx:
-                    if not isinstance(_p, ContactEnergyParam):
-                        raise SpecValueError("Only ContactEnergyParam instances can be passed",
+                    if not isinstance(_p, ContactEnergyParameter):
+                        raise SpecValueError("Only ContactEnergyParameter instances can be passed",
                                              names=[_p.__name__])
 
             self.check_inputs(neighbor_order=neighbor_order)
@@ -3209,8 +3213,8 @@ class ContactPluginSpecs(_PyCorePluginSpecs):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 for t1 in self.spec_dict["energies"].keys():
                     CoreSpecsValidator.validate_cell_type_names(type_names=self.types_specified(t1) + [t1],
                                                                 cell_type_spec=s)
@@ -3226,26 +3230,26 @@ class ContactPluginSpecs(_PyCorePluginSpecs):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: ContactPluginSpecs
+        :rtype: ContactPlugin
         """
         el = cls.find_xml_by_attr(_xml)
 
         o = cls()
 
-        el_list = el.getElements("Energy")
+        el_list = CC3DXMLListPy(el.getElements("Energy"))
 
         for p_el in el_list:
             p_el: CC3DXMLElement
-            o.param_append(ContactEnergyParam(type_1=p_el.getAttribute("Type1"),
-                                              type_2=p_el.getAttribute("Type2"),
-                                              energy=p_el.getDouble()))
+            o.param_append(ContactEnergyParameter(type_1=p_el.getAttribute("Type1"),
+                                                  type_2=p_el.getAttribute("Type2"),
+                                                  energy=p_el.getDouble()))
 
         if el.findElement("NeighborOrder"):
             o.neighbor_order = el.getFirstElement("NeighborOrder").getInt()
 
         return o
 
-    def __getitem__(self, item: str) -> Dict[str, ContactEnergyParam]:
+    def __getitem__(self, item: str) -> Dict[str, ContactEnergyParameter]:
         return self.spec_dict["energies"][item]
 
     def types_specified(self, _type_name: str) -> List[str]:
@@ -3264,11 +3268,11 @@ class ContactPluginSpecs(_PyCorePluginSpecs):
                     o.append(k)
         return o
 
-    def param_append(self, _p: ContactEnergyParam) -> None:
+    def param_append(self, _p: ContactEnergyParameter) -> None:
         """
         Add a contact energy parameter
 
-        :param ContactEnergyParam _p: the parameter
+        :param ContactEnergyParameter _p: the parameter
         :return: None
         """
         if _p.type_2 in self.types_specified(_p.type_1):
@@ -3295,7 +3299,7 @@ class ContactPluginSpecs(_PyCorePluginSpecs):
             key, val = type_2, type_1
         self.spec_dict["energies"][key].pop(val)
 
-    def param_new(self, type_1: str, type_2: str, energy: float) -> ContactEnergyParam:
+    def param_new(self, type_1: str, type_2: str, energy: float) -> ContactEnergyParameter:
         """
         Appends and returns a new contact energy parameter
 
@@ -3303,29 +3307,29 @@ class ContactPluginSpecs(_PyCorePluginSpecs):
         :param str type_2: second cell type name
         :param float energy: parameter value
         :return: new parameter
-        :rtype: ContactEnergyParam
+        :rtype: ContactEnergyParameter
         """
-        p = ContactEnergyParam(type_1=type_1, type_2=type_2, energy=energy)
+        p = ContactEnergyParameter(type_1=type_1, type_2=type_2, energy=energy)
         self.param_append(p)
         return p
 
 
-class ContactLocalFlexPluginSpecs(ContactPluginSpecs, _PyCoreSteerableInterface):
+class ContactLocalFlexPlugin(ContactPlugin, _PyCoreSteerableInterface):
     """
     ContactLocalFlex Plugin
 
-    A steerable version of :class:`ContactPluginSpecs`
+    A steerable version of :class:`ContactPlugin`
     """
 
     name = "contact_local_flex"
     registered_name = "ContactLocalFlex"
 
 
-class ContactInternalPluginSpecs(ContactLocalFlexPluginSpecs):
+class ContactInternalPlugin(ContactLocalFlexPlugin):
     """
     ContactInternal Plugin
 
-    Like :class:`ContactLocalFlexPluginSpecs`, but for contact between compartments
+    Like :class:`ContactLocalFlexPlugin`, but for contact between compartments
     """
 
     name = "contact_internal"
@@ -3335,7 +3339,7 @@ class ContactInternalPluginSpecs(ContactLocalFlexPluginSpecs):
 # AdhesionFlex Plugin
 
 
-class AdhesionFlexBindingFormulaSpecs(_PyCoreSpecsBase):
+class AdhesionFlexBindingFormula(_PyCoreSpecsBase):
     """
     AdhesionFlex Binding Formula
 
@@ -3343,7 +3347,7 @@ class AdhesionFlexBindingFormulaSpecs(_PyCoreSpecsBase):
 
     .. code-block:: python
 
-       spec: AdhesionFlexBindingFormulaSpecs
+       spec: AdhesionFlexBindingFormula
        molecule_1_name: str
        molecule_2_name: str
        density: float
@@ -3369,7 +3373,7 @@ class AdhesionFlexBindingFormulaSpecs(_PyCoreSpecsBase):
     formula: str = SpecProperty(name="formula")
     """formula"""
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generate and return the top :class:`ElementCC3D` instance
 
@@ -3440,8 +3444,8 @@ class AdhesionFlexBindingFormulaSpecs(_PyCoreSpecsBase):
         self.spec_dict["interactions"].pop(_mol2)
 
 
-class AdhesionMoleculeDensitySpecs(_PyCoreSpecsBase):
-    """ AdhesionMoleculeDensitySpecs """
+class AdhesionFlexMoleculeDensity(_PyCoreSpecsBase):
+    """ AdhesionFlex molecule density spec """
 
     check_dict = {"density": (lambda x: x < 0.0, "Molecule density must be non-negative")}
 
@@ -3467,7 +3471,7 @@ class AdhesionMoleculeDensitySpecs(_PyCoreSpecsBase):
     density: float = SpecProperty(name="density")
     """molecule density"""
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generate and return the top :class:`ElementCC3D` instance
 
@@ -3501,37 +3505,37 @@ class AdhesionMoleculeDensitySpecs(_PyCoreSpecsBase):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
 
 
-class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
+class AdhesionFlexPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     AdhesionFlex Plugin
 
-    AdhesionMoleculeDensitySpecs instances can be accessed by molecule and cell type as follows,
+    AdhesionFlexMoleculeDensity instances can be accessed by molecule and cell type as follows,
 
     .. code-block:: python
 
-       specs_adhesion_flex: AdhesionFlexPluginSpecs
+       specs_adhesion_flex: AdhesionFlexPlugin
        molecule_name: str
        cell_type_name: str
        x: dict = specs_adhesion_flex.density.cell_type[cell_type_name]  # keys are molecule names
        y: dict = specs_adhesion_flex.density.molecule[molecule_name]  # keys are cell type names
-       a: AdhesionMoleculeDensitySpecs = x[molecule_name]
-       b: AdhesionMoleculeDensitySpecs = y[cell_type_name]
+       a: AdhesionFlexMoleculeDensity = x[molecule_name]
+       b: AdhesionFlexMoleculeDensity = y[cell_type_name]
        a is b  # Evaluates to True
 
-    AdhesionFlexBindingFormulaSpecs instances can be accessed as follows,
+    AdhesionFlexBindingFormula instances can be accessed as follows,
 
     .. code-block:: python
 
-       specs_adhesion_flex: AdhesionFlexPluginSpecs
+       specs_adhesion_flex: AdhesionFlexPlugin
        formula_name: str
        molecule1_name: str
        molecule2_name: str
-       x: AdhesionFlexBindingFormulaSpecs = specs_adhesion_flex.formula[formula_name]
+       x: AdhesionFlexBindingFormula = specs_adhesion_flex.formula[formula_name]
        y: dict = x[molecule1_name]  # Keys are molecule names
        binding_param: float = y[molecule2_name]
 
@@ -3582,8 +3586,8 @@ class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 for param_dict in self.spec_dict["densities"].values():
                     CoreSpecsValidator.validate_cell_type_names(type_names=param_dict.keys(), cell_type_spec=s)
 
@@ -3598,34 +3602,34 @@ class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: AdhesionFlexPluginSpecs
+        :rtype: AdhesionFlexPlugin
         """
         el = cls.find_xml_by_attr(_xml)
 
         o = cls()
 
-        el_list = el.getElements("AdhesionMolecule")
+        el_list = CC3DXMLListPy(el.getElements("AdhesionMolecule"))
 
         for m_el in el_list:
             o.molecule_append(m_el.getAttribute("Molecule"))
 
-        el_list = el.getElements("AdhesionMoleculeDensity")
+        el_list = CC3DXMLListPy(el.getElements("AdhesionMoleculeDensity"))
 
         for d_el in el_list:
             d_el: CC3DXMLElement
-            o.density_append(AdhesionMoleculeDensitySpecs(molecule=d_el.getAttribute("Molecule"),
-                                                          cell_type=d_el.getAttribute("CellType"),
-                                                          density=d_el.getAttributeAsDouble("Density")))
+            o.density_append(AdhesionFlexMoleculeDensity(molecule=d_el.getAttribute("Molecule"),
+                                                         cell_type=d_el.getAttribute("CellType"),
+                                                         density=d_el.getAttributeAsDouble("Density")))
 
-        el_list = el.getElements("BindingFormula")
+        el_list = CC3DXMLListPy(el.getElements("BindingFormula"))
 
         for f_el in el_list:
             f_el: CC3DXMLElement
-            f = AdhesionFlexBindingFormulaSpecs(formula_name=f_el.getAttribute("Name"),
-                                                formula=f_el.getFirstElement("Formula").getText())
+            f = AdhesionFlexBindingFormula(formula_name=f_el.getAttribute("Name"),
+                                           formula=f_el.getFirstElement("Formula").getText())
             p_mat_el = f_el.getFirstElement("Variables").getFirstElement("AdhesionInteractionMatrix")
 
-            p_el_list = p_mat_el.getElements("BindingParameter")
+            p_el_list = CC3DXMLListPy(p_mat_el.getElements("BindingParameter"))
 
             for p_el in p_el_list:
                 p_el: CC3DXMLElement
@@ -3654,11 +3658,11 @@ class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         return [x for x in self.spec_dict["binding_formulas"].keys()]
 
     @property
-    def formula(self) -> _PyCoreParamAccessor[AdhesionFlexBindingFormulaSpecs]:
+    def formula(self) -> _PyCoreParamAccessor[AdhesionFlexBindingFormula]:
         """
 
         :return: accessor to binding formulas with formula names as keys
-        :rtype: dict of [str: AdhesionFlexBindingFormulaSpecs]
+        :rtype: dict of [str: AdhesionFlexBindingFormula]
         """
         return _PyCoreParamAccessor(self, "binding_formulas")
 
@@ -3667,9 +3671,9 @@ class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         """
 
         :return: accessor to adhesion molecule density accessor
-        :rtype: _AdhesionFlexDensityAccessor
+        :rtype: _AdhesionFlexMoleculeDensityAccessor
         """
-        return _AdhesionFlexDensityAccessor(self)
+        return _AdhesionFlexMoleculeDensityAccessor(self)
 
     def molecule_append(self, _name: str) -> None:
         """
@@ -3709,11 +3713,11 @@ class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
 
         self.spec_dict["molecules"].remove(_name)
 
-    def density_append(self, _dens: AdhesionMoleculeDensitySpecs) -> None:
+    def density_append(self, _dens: AdhesionFlexMoleculeDensity) -> None:
         """
         Appends a molecule density; molecules are automatically appended if necessary
 
-        :param AdhesionMoleculeDensitySpecs _dens: adhesion molecule density spec
+        :param AdhesionFlexMoleculeDensity _dens: adhesion molecule density spec
         :return: None
         """
         if _dens.molecule not in self.molecules:
@@ -3738,7 +3742,7 @@ class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         x: dict = self.spec_dict["densities"][molecule]
         x.pop(cell_type)
 
-    def density_new(self, molecule: str, cell_type: str, density: float) -> AdhesionMoleculeDensitySpecs:
+    def density_new(self, molecule: str, cell_type: str, density: float) -> AdhesionFlexMoleculeDensity:
         """
         Appends and returns a new adhesion molecule density spec
 
@@ -3746,17 +3750,17 @@ class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         :param str cell_type: name of cell type
         :param float density: molecule density
         :return: new adhesion molecule density spec
-        :rtype: AdhesionMoleculeDensitySpecs
+        :rtype: AdhesionFlexMoleculeDensity
         """
-        p = AdhesionMoleculeDensitySpecs(molecule=molecule, cell_type=cell_type, density=density)
+        p = AdhesionFlexMoleculeDensity(molecule=molecule, cell_type=cell_type, density=density)
         self.density_append(p)
         return p
 
-    def formula_append(self, _formula: AdhesionFlexBindingFormulaSpecs) -> None:
+    def formula_append(self, _formula: AdhesionFlexBindingFormula) -> None:
         """
         Append a binding formula spec
 
-        :param AdhesionFlexBindingFormulaSpecs _formula: binding formula spec
+        :param AdhesionFlexBindingFormula _formula: binding formula spec
         :return: None
         """
         if _formula.formula_name in self.formulas:
@@ -3774,29 +3778,29 @@ class AdhesionFlexPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
             raise SpecValueError(f"Formula with name {_formula_name} not specified")
         self.spec_dict["binding_formulas"].pop(_formula_name)
 
-    def formula_new(self, formula_name: str, formula: str) -> AdhesionFlexBindingFormulaSpecs:
+    def formula_new(self, formula_name: str, formula: str) -> AdhesionFlexBindingFormula:
         """
         Append and return a new binding formula spec
 
         :param str formula_name: name of forumla
         :param str formula: formula
         :return: new binding formula spec
-        :rtype: AdhesionFlexBindingFormulaSpecs
+        :rtype: AdhesionFlexBindingFormula
         """
-        p = AdhesionFlexBindingFormulaSpecs(formula_name=formula_name, formula=formula)
+        p = AdhesionFlexBindingFormula(formula_name=formula_name, formula=formula)
         self.formula_append(p)
         return p
 
 
-class _AdhesionFlexDensityAccessor(_PyCoreSpecsBase):
+class _AdhesionFlexMoleculeDensityAccessor(_PyCoreSpecsBase):
     """
-    AdhesionFlex density accessor
+    AdhesionFlex molecule density accessor
 
-    Container with convenience containers for :class:`AdhesionFlexPluginSpecs` to instances of
-    :class:`AdhesionMoleculeDensitySpecs`
+    Container with convenience containers for :class:`AdhesionFlexPlugin` to instances of
+    :class:`AdhesionFlexMoleculeDensity`
     """
 
-    def __init__(self, _plugin_spec: AdhesionFlexPluginSpecs):
+    def __init__(self, _plugin_spec: AdhesionFlexPlugin):
         super().__init__()
 
         self._plugin_spec = _plugin_spec
@@ -3816,20 +3820,20 @@ class _AdhesionFlexDensityAccessor(_PyCoreSpecsBase):
         raise SpecValueError("Accessor has no xml")
 
     @property
-    def cell_type(self) -> _PyCoreParamAccessor[Dict[str, AdhesionMoleculeDensitySpecs]]:
+    def cell_type(self) -> _PyCoreParamAccessor[Dict[str, AdhesionFlexMoleculeDensity]]:
         """
 
         :return: accessor to adnesion molecule densities with cell type names as keys
-        :rtype: dict of [str: dict of [str: AdhesionMoleculeDensitySpecs]]
+        :rtype: dict of [str: dict of [str: AdhesionFlexMoleculeDensity]]
         """
         return _PyCoreParamAccessor(self, "densities")
 
     @property
-    def molecule(self) -> _PyCoreParamAccessor[Dict[str, AdhesionMoleculeDensitySpecs]]:
+    def molecule(self) -> _PyCoreParamAccessor[Dict[str, AdhesionFlexMoleculeDensity]]:
         """
 
         :return: accessor to adnesion molecule densities with molecule names as keys
-        :rtype: dict of [str: dict of [str: AdhesionMoleculeDensitySpecs]]
+        :rtype: dict of [str: dict of [str: AdhesionFlexMoleculeDensity]]
         """
         return _PyCoreParamAccessor(self._plugin_spec, "densities")
 
@@ -3837,7 +3841,7 @@ class _AdhesionFlexDensityAccessor(_PyCoreSpecsBase):
 # LengthConstraint Plugin
 
 
-class LengthEnergyParametersSpecs(_PyCoreSpecsBase):
+class LengthEnergyParameters(_PyCoreSpecsBase):
     """ Length Energy Parameters """
 
     def __init__(self,
@@ -3868,10 +3872,10 @@ class LengthEnergyParametersSpecs(_PyCoreSpecsBase):
     lambda_length: float = SpecProperty(name="lambda_length")
     """lambda value"""
 
-    minor_target_length: Union[float, None] = SpecProperty(name="minor_target_length")
+    minor_target_length: Optional[float] = SpecProperty(name="minor_target_length")
     """minor target length, Optional, None if not set"""
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generate and return the top :class:`ElementCC3D` instance
 
@@ -3908,22 +3912,22 @@ class LengthEnergyParametersSpecs(_PyCoreSpecsBase):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
 
 
-class LengthConstraintPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
+class LengthConstraintPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     LengthConstraint Plugin
 
-    LengthEnergyParametersSpecs instances can be accessed as follows,
+    LengthEnergyParameters instances can be accessed as follows,
 
     .. code-block:: python
 
-       spec: LengthConstraintPluginSpecs
+       spec: LengthConstraintPlugin
        cell_type_name: str
-       params: LengthEnergyParametersSpecs = spec[cell_type_name]
+       params: LengthEnergyParameters = spec[cell_type_name]
        target_length: float = spec.target_length
        lambda_length: float = spec.lambda_length
        minor_target_length: float = spec.minor_target_length  # Optional, None if not set
@@ -3962,8 +3966,8 @@ class LengthConstraintPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface)
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=self.cell_types, cell_type_spec=s)
 
         # Validate parameters
@@ -3976,11 +3980,11 @@ class LengthConstraintPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface)
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: LengthConstraintPluginSpecs
+        :rtype: LengthConstraintPlugin
         """
         o = cls()
 
-        el_list = cls.find_xml_by_attr(_xml).getElements("LengthEnergyParameters")
+        el_list = CC3DXMLListPy(cls.find_xml_by_attr(_xml).getElements("LengthEnergyParameters"))
 
         for p_el in el_list:
             p_el: CC3DXMLElement
@@ -3988,7 +3992,7 @@ class LengthConstraintPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface)
                       "lambda_length": p_el.getAttributeAsDouble("LambdaLength")}
             if p_el.findAttribute("MinorTargetLength"):
                 kwargs["minor_target_length"] = p_el.getAttributeAsDouble("MinorTargetLength")
-            o.param_new(p_el.getAttribute("CellType"), **kwargs)
+            o.params_new(p_el.getAttribute("CellType"), **kwargs)
 
         return o
 
@@ -4006,19 +4010,19 @@ class LengthConstraintPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface)
             raise SpecValueError(f"Cell type {item} not specified")
         return self.spec_dict["param_specs"][item]
 
-    def param_append(self, param_spec: LengthEnergyParametersSpecs):
+    def params_append(self, param_spec: LengthEnergyParameters):
         """
         Appens a length energy parameters spec
 
         :param param_spec: length energy parameters spec
-        :type param_spec: LengthEnergyParametersSpecs
+        :type param_spec: LengthEnergyParameters
         :return: None
         """
         if param_spec.cell_type in self.cell_types:
             raise SpecValueError(f"Type name {param_spec.cell_type} already specified")
         self.spec_dict["param_specs"][param_spec.cell_type] = param_spec
 
-    def param_remove(self, _cell_type: str):
+    def params_remove(self, _cell_type: str):
         """
         Removes a length energy parameters spec
 
@@ -4030,11 +4034,11 @@ class LengthConstraintPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface)
             raise SpecValueError(f"Type name {_cell_type} not specified")
         self.spec_dict["param_specs"].pop(_cell_type)
 
-    def param_new(self,
-                  _cell_type: str,
-                  target_length: float,
-                  lambda_length: float,
-                  minor_target_length: float = None) -> LengthEnergyParametersSpecs:
+    def params_new(self,
+                   _cell_type: str,
+                   target_length: float,
+                   lambda_length: float,
+                   minor_target_length: float = None) -> LengthEnergyParameters:
         """
         Appends and returns a new length energy parameters spec
 
@@ -4043,17 +4047,17 @@ class LengthConstraintPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface)
         :param float lambda_length: lambda length
         :param float minor_target_length: minor target length, optional
         :return: new length energy parameters spec
-        :rtype: LengthEnergyParametersSpecs
+        :rtype: LengthEnergyParameters
         """
-        param_spec = LengthEnergyParametersSpecs(_cell_type,
-                                                 target_length=target_length,
-                                                 lambda_length=lambda_length,
-                                                 minor_target_length=minor_target_length)
-        self.param_append(param_spec=param_spec)
+        param_spec = LengthEnergyParameters(_cell_type,
+                                            target_length=target_length,
+                                            lambda_length=lambda_length,
+                                            minor_target_length=minor_target_length)
+        self.params_append(param_spec=param_spec)
         return param_spec
 
 
-class ConnectivityPluginSpecs(_PyCorePluginSpecs):
+class ConnectivityPlugin(_PyCorePluginSpecs):
     """ Connectivity Plugin """
 
     name = "connectivity"
@@ -4077,13 +4081,13 @@ class ConnectivityPluginSpecs(_PyCorePluginSpecs):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: ConnectivityPluginSpecs
+        :rtype: ConnectivityPlugin
         """
         cls.find_xml_by_attr(_xml)
         return cls()
 
 
-class ConnectivityGlobalPluginSpecs(_PyCorePluginSpecs):
+class ConnectivityGlobalPlugin(_PyCorePluginSpecs):
     """ ConnectivityGlobal Plugin """
 
     name = "connectivity_global"
@@ -4133,8 +4137,8 @@ class ConnectivityGlobalPluginSpecs(_PyCorePluginSpecs):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=self.cell_types, cell_type_spec=s)
 
     @classmethod
@@ -4144,10 +4148,10 @@ class ConnectivityGlobalPluginSpecs(_PyCorePluginSpecs):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: ConnectivityGlobalPluginSpecs
+        :rtype: ConnectivityGlobalPlugin
         """
         el = cls.find_xml_by_attr(_xml)
-        el_list = el.getElements("ConnectivityOn")
+        el_list = CC3DXMLListPy(el.getElements("ConnectivityOn"))
         o = cls(*[e.getAttribute("Type") for e in el_list])
         o.fast = el.findAttribute("FastAlgorithm")
         return o
@@ -4191,7 +4195,7 @@ class ConnectivityGlobalPluginSpecs(_PyCorePluginSpecs):
 # Secretion Plugin
 
 
-class SecretionFieldSpecs(_PyCoreSpecsBase):
+class SecretionField(_PyCoreSpecsBase):
     """ Secretion Field Specs """
 
     check_dict = {"frequency": (lambda x: x < 1, "Frequency must be positive")}
@@ -4201,21 +4205,21 @@ class SecretionFieldSpecs(_PyCoreSpecsBase):
 
         :param str field_name: name of field
         :param int frequency: frequency of calls per step
-        :param _param_specs: variable number of SecretionSpecs instances, optional
+        :param _param_specs: variable number of SecretionParameters instances, optional
         """
         super().__init__()
 
         with _SpecValueErrorContextBlock() as err_ctx:
             for _ps in _param_specs:
                 with err_ctx.ctx:
-                    if not isinstance(_ps, SecretionSpecs):
-                        raise SpecValueError("Only SecretionSpecs instances can be passed",
+                    if not isinstance(_ps, SecretionParameters):
+                        raise SpecValueError("Only SecretionParameters instances can be passed",
                                              names=[_ps.__name__])
 
         self.spec_dict = {"field_name": field_name,
                           "frequency": frequency,
                           "param_specs": []}
-        [self.param_append(_ps) for _ps in _param_specs]
+        [self.params_append(_ps) for _ps in _param_specs]
 
     field_name: str = SpecProperty(name="field_name")
     """name of field"""
@@ -4223,8 +4227,8 @@ class SecretionFieldSpecs(_PyCoreSpecsBase):
     frequency: int = SpecProperty(name="frequency")
     """frequency of calls per step"""
 
-    specs: List[SecretionSpecs] = SpecProperty(name="param_specs")
-    """secretion field specs"""
+    params: List[SecretionParameters] = SpecProperty(name="param_specs")
+    """secretion field parameters specs"""
 
     @property
     def xml(self) -> ElementCC3D:
@@ -4258,68 +4262,68 @@ class SecretionFieldSpecs(_PyCoreSpecsBase):
         # Validate parameters
         [param.validate(*specs) for param in self.spec_dict["param_specs"]]
 
-    def param_append(self, _ps: SecretionSpecs) -> None:
+    def params_append(self, _ps: SecretionParameters) -> None:
         """
-        Append a secretion spec
+        Append a secretion parameters spec
 
-        :param SecretionSpecs _ps: secretion spec
+        :param SecretionParameters _ps: secretion spec
         :return: None
         """
         if _ps.contact_type is None:
             for x in self.spec_dict["param_specs"]:
-                x: SecretionSpecs
+                x: SecretionParameters
                 if x.contact_type is None and _ps.cell_type == x.cell_type:
                     raise SpecValueError(f"Duplicate specification for cell type {_ps.cell_type}")
         self.spec_dict["param_specs"].append(_ps)
 
-    def param_remove(self, _cell_type: str, contact_type: str = None):
+    def params_remove(self, _cell_type: str, contact_type: str = None):
         """
-        Remove a secretion spec
+        Remove a secretion parameters spec
 
         :param str _cell_type: name of cell type
         :param contact_type: name of on-contact dependent cell type, optional
         :return: None
         """
         for _ps in self.spec_dict["param_specs"]:
-            _ps: SecretionSpecs
+            _ps: SecretionParameters
             if _ps.cell_type == _cell_type and contact_type == _ps.contact_type:
                 self.spec_dict["param_specs"].remove(_ps)
                 return
-        raise SpecValueError("SecretionSpecs not specified")
+        raise SpecValueError("SecretionParameters not specified")
 
-    def param_new(self,
-                  _cell_type: str,
-                  _val: float,
-                  constant: bool = False,
-                  contact_type: str = None) -> SecretionSpecs:
+    def params_new(self,
+                   _cell_type: str,
+                   _val: float,
+                   constant: bool = False,
+                   contact_type: str = None) -> SecretionParameters:
         """
-        Append and return a new secretion spec
+        Append and return a new secretion parameters spec
 
         :param str _cell_type: cell type name
         :param float _val: value of parameter
         :param bool constant: flag for constant concentration, option
         :param str contact_type: name of cell type for on-contact dependence, optional
         :return: new secretion spec
-        :rtype: SecretionSpecs
+        :rtype: SecretionParameters
         """
-        ps = SecretionSpecs(_cell_type, _val, constant=constant, contact_type=contact_type)
-        self.param_append(ps)
+        ps = SecretionParameters(_cell_type, _val, constant=constant, contact_type=contact_type)
+        self.params_append(ps)
         return ps
 
 
-class SecretionPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
+class SecretionPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     Secretion Plugin
 
-    SecretionSpecs instances can be accessed by field name and cell type name as follows,
+    SecretionParameters instances can be accessed by field name and cell type name as follows,
 
     .. code-block:: python
 
-       spec: SecretionPluginSpecs
+       spec: SecretionPlugin
        field_name: str
        cell_type_name: str
-       field_specs: SecretionFieldSpecs = spec.fields[field_name]
-       params: SecretionSpecs = field_specs.specs[cell_type_name]
+       field_specs: SecretionField = spec.fields[field_name]
+       params: SecretionParameters = field_specs.specs[cell_type_name]
 
     """
 
@@ -4332,8 +4336,8 @@ class SecretionPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         with _SpecValueErrorContextBlock() as err_ctx:
             for _fs in _field_spec:
                 with err_ctx.ctx:
-                    if not isinstance(_fs, SecretionFieldSpecs):
-                        raise SpecValueError("Only SecretionFieldSpecs instances can be passed",
+                    if not isinstance(_fs, SecretionField):
+                        raise SpecValueError("Only SecretionField instances can be passed",
                                              names=[_fs.__name__])
 
         self.spec_dict = {"pixel_tracker": pixel_tracker,
@@ -4373,9 +4377,9 @@ class SecretionPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         """
         deps = super().depends_on
         if self.pixel_tracker:
-            deps.append(PixelTrackerPluginSpecs)
+            deps.append(PixelTrackerPlugin)
         if self.boundary_pixel_tracker:
-            deps.append(BoundaryPixelTrackerPluginSpecs)
+            deps.append(BoundaryPixelTrackerPlugin)
         return deps
 
     def validate(self, *specs) -> None:
@@ -4395,11 +4399,11 @@ class SecretionPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
             for s in specs:
                 with err_ctx.ctx:
                     # Validate PixelTracker
-                    if isinstance(s, PixelTrackerPluginSpecs) and not self.pixel_tracker:
+                    if isinstance(s, PixelTrackerPlugin) and not self.pixel_tracker:
                         raise SpecValueError("Could not validated disabled PixelTracker Plugin")
 
                     # Validate disabled BoundaryPixelTracker
-                    if isinstance(s, BoundaryPixelTrackerPluginSpecs) and not self.boundary_pixel_tracker:
+                    if isinstance(s, BoundaryPixelTrackerPlugin) and not self.boundary_pixel_tracker:
                         raise SpecValueError("Could not validated disabled BoundaryPixelTracker Plugin")
 
             # Validate field name against solvers
@@ -4422,50 +4426,50 @@ class SecretionPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: SecretionPluginSpecs
+        :rtype: SecretionPlugin
         """
         el = cls.find_xml_by_attr(_xml)
 
         o = cls(pixel_tracker=not el.findElement("DisablePixelTracker"),
                 boundary_pixel_tracker=not el.findElement("DisableBoundaryPixelTracker"))
 
-        el_list = el.getElements("Field")
+        el_list = CC3DXMLListPy(el.getElements("Field"))
 
         for f_el in el_list:
             f_el: CC3DXMLElement
-            f = SecretionFieldSpecs(field_name=f_el.getAttribute("Name"))
+            f = SecretionField(field_name=f_el.getAttribute("Name"))
 
             if f_el.findAttribute("ExtraTimesPerMC"):
                 f.frequency = f_el.getAttributeAsInt("ExtraTimesPerMC")
 
-            f_el_list = f_el.getElements("Secretion")
+            f_el_list = CC3DXMLListPy(f_el.getElements("Secretion"))
 
             for p_el in f_el_list:
                 p_el: CC3DXMLElement
-                f.param_append(SecretionSpecs(p_el.getAttribute("Type"), p_el.getDouble()))
+                f.params_append(SecretionParameters(p_el.getAttribute("Type"), p_el.getDouble()))
 
-            f_el_list = f_el.getElements("ConstantConcentration")
-
-            for p_el in f_el_list:
-                f.param_append(SecretionSpecs(p_el.getAttribute("Type"), p_el.getDouble(),
-                                              constant=True))
-
-            f_el_list = f_el.getElements("SecretionOnContact")
+            f_el_list = CC3DXMLListPy(f_el.getElements("ConstantConcentration"))
 
             for p_el in f_el_list:
-                f.param_append(SecretionSpecs(p_el.getAttribute("Type"), p_el.getDouble(),
-                                              contact_type=p_el.getAttribute("SecreteOnContactWith")))
+                f.params_append(SecretionParameters(p_el.getAttribute("Type"), p_el.getDouble(),
+                                                    constant=True))
+
+            f_el_list = CC3DXMLListPy(f_el.getElements("SecretionOnContact"))
+
+            for p_el in f_el_list:
+                f.params_append(SecretionParameters(p_el.getAttribute("Type"), p_el.getDouble(),
+                                                    contact_type=p_el.getAttribute("SecreteOnContactWith")))
 
             o.field_append(f)
 
         return o
 
     @property
-    def fields(self) -> _PyCoreParamAccessor[SecretionFieldSpecs]:
+    def fields(self) -> _PyCoreParamAccessor[SecretionField]:
         """
 
         :return: accessor to secretion field specs with field names as keys
-        :rtype: dict of [str: SecretionFieldSpecs]
+        :rtype: dict of [str: SecretionField]
         """
         return _PyCoreParamAccessor(self, "field_specs")
 
@@ -4478,11 +4482,11 @@ class SecretionPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         """
         return list(self.spec_dict["field_specs"].keys())
 
-    def field_append(self, _fs: SecretionFieldSpecs) -> None:
+    def field_append(self, _fs: SecretionField) -> None:
         """
         Append a secretion field spec
 
-        :param SecretionFieldSpecs _fs: secretion field spec
+        :param SecretionField _fs: secretion field spec
         :return: None
         """
         if _fs.field_name in self.field_names:
@@ -4500,17 +4504,17 @@ class SecretionPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
             raise SpecValueError(f"Field specs for field {_field_name} not specified")
         self.spec_dict["field_specs"].pop(_field_name)
 
-    def field_new(self, field_name: str, frequency: int = 1, *_param_specs) -> SecretionFieldSpecs:
+    def field_new(self, field_name: str, frequency: int = 1, *_param_specs) -> SecretionField:
         """
         Append and return a new secretion field spec
 
         :param str field_name: name of field
         :param int frequency: frequency of calls per step
-        :param _param_specs: variable number of SecretionSpecs instances, optional
+        :param _param_specs: variable number of SecretionParameters instances, optional
         :return: new secretion field spec
-        :rtype: SecretionFieldSpecs
+        :rtype: SecretionField
         """
-        fs = SecretionFieldSpecs(field_name=field_name, frequency=frequency, *_param_specs)
+        fs = SecretionField(field_name=field_name, frequency=frequency, *_param_specs)
         self.field_append(fs)
         return fs
 
@@ -4518,14 +4522,14 @@ class SecretionPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
 # FocalPointPlasticity Plugin
 
 
-class LinkConstituentLawSpecs(_PyCoreSpecsBase):
+class LinkConstituentLaw(_PyCoreSpecsBase):
     """
     Link Constituent Law
 
     Usage is as follows
 
     .. code-block:: python
-       lcl: LinkConstituentLawSpecs
+       lcl: LinkConstituentLaw
        lcl.variable["LambdaExtra"] = 1.0
        lcl.formua = "LambdaExtra*Lambda*(Length-TargetLength)^2"
 
@@ -4567,8 +4571,8 @@ class LinkConstituentLawSpecs(_PyCoreSpecsBase):
         return _PyCoreParamAccessor(self, "variables")
 
 
-class FocalPointPlasticityParamSpec(_PyCoreSpecsBase):
-    """ FocalPointPlasticityParamSpec """
+class FocalPointPlasticityParameters(_PyCoreSpecsBase):
+    """ FocalPointPlasticityParameters """
 
     check_dict = {
         "target_distance": (lambda x: x < 0, "Target distance must be non-negative"),
@@ -4587,7 +4591,7 @@ class FocalPointPlasticityParamSpec(_PyCoreSpecsBase):
                  max_junctions: int = 1,
                  neighbor_order: int = 1,
                  internal: bool = False,
-                 law: LinkConstituentLawSpecs = None):
+                 law: LinkConstituentLaw = None):
         """
 
         :param str _type1: second type name
@@ -4599,7 +4603,7 @@ class FocalPointPlasticityParamSpec(_PyCoreSpecsBase):
         :param int max_junctions: maximum number of junctions, defaults to 1
         :param int neighbor_order: neighbor order, defaults to 1
         :param bool internal: flag for internal parameter, defaults to False
-        :param LinkConstituentLawSpecs law: link constitutive law, optional
+        :param LinkConstituentLaw law: link constitutive law, optional
         """
         super().__init__()
 
@@ -4646,7 +4650,7 @@ class FocalPointPlasticityParamSpec(_PyCoreSpecsBase):
     internal: bool = SpecProperty(name="internal")
     """internal parameter flag"""
 
-    law: Union[LinkConstituentLawSpecs, None] = SpecProperty(name="law")
+    law: Optional[LinkConstituentLaw] = SpecProperty(name="law")
     """link constitute law, Optional, None if not set"""
 
     @property
@@ -4684,23 +4688,23 @@ class FocalPointPlasticityParamSpec(_PyCoreSpecsBase):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.type1, self.type2], cell_type_spec=s)
 
 
-class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
+class FocalPointPlasticityPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     FocalPointPlasticity Plugin
 
-    FocalPointPlasticityParamSpec instances can be accessed as follows,
+    FocalPointPlasticityParameters instances can be accessed as follows,
 
     .. code-block:: python
 
-       spec: FocalPointPlasticityPluginSpecs
+       spec: FocalPointPlasticityPlugin
        cell_type_1: str
        cell_type_2: str
-       param: FocalPointPlasticityParamSpec = spec.link[cell_type_1][cell_type_2]
+       param: FocalPointPlasticityParameters = spec.link[cell_type_1][cell_type_2]
 
     """
 
@@ -4715,13 +4719,13 @@ class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterf
         with _SpecValueErrorContextBlock() as err_ctx:
             for _p in _params:
                 with err_ctx.ctx:
-                    if not isinstance(_p, FocalPointPlasticityParamSpec):
-                        raise SpecValueError("Only FocalPointPlasticityParamSpec instances can be passed",
+                    if not isinstance(_p, FocalPointPlasticityParameters):
+                        raise SpecValueError("Only FocalPointPlasticityParameters instances can be passed",
                                              names=[_p.__name__])
 
         self.spec_dict = {"neighbor_order": neighbor_order,
                           "param_specs": {}}
-        [self.param_append(_ps) for _ps in _params]
+        [self.params_append(_ps) for _ps in _params]
 
     neighbor_order: int = SpecProperty(name="neighbor_order")
     """neighbor order"""
@@ -4753,8 +4757,8 @@ class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterf
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 for t1 in self.spec_dict["param_specs"].keys():
                     CoreSpecsValidator.validate_cell_type_names(
                         type_names=[t1] + list(self.spec_dict["param_specs"][t1].keys()), cell_type_spec=s)
@@ -4770,7 +4774,7 @@ class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterf
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: FocalPointPlasticityPluginSpecs
+        :rtype: FocalPointPlasticityPlugin
         """
         el = cls.find_xml_by_attr(_xml)
 
@@ -4779,60 +4783,60 @@ class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterf
         if el.findElement("NeighborOrder"):
             o.neighbor_order = el.getFirstElement("NeighborOrder").getInt()
 
-        el_list = el.getElements("Parameters")
+        el_list = CC3DXMLListPy(el.getElements("Parameters"))
 
         for p_el in el_list:
             p_el: CC3DXMLElement
-            p = FocalPointPlasticityParamSpec(p_el.getAttribute("Type1"),
-                                              p_el.getAttribute("Type2"),
-                                              lambda_fpp=p_el.getFirstElement("Lambda").getDouble(),
-                                              activation_energy=p_el.getFirstElement("ActivationEnergy").getDouble(),
-                                              target_distance=p_el.getFirstElement("TargetDistance").getDouble(),
-                                              max_distance=p_el.getFirstElement("MaxDistance").getDouble(),
-                                              max_junctions=p_el.getFirstElement("MaxNumberOfJunctions").getInt())
+            p = FocalPointPlasticityParameters(p_el.getAttribute("Type1"),
+                                               p_el.getAttribute("Type2"),
+                                               lambda_fpp=p_el.getFirstElement("Lambda").getDouble(),
+                                               activation_energy=p_el.getFirstElement("ActivationEnergy").getDouble(),
+                                               target_distance=p_el.getFirstElement("TargetDistance").getDouble(),
+                                               max_distance=p_el.getFirstElement("MaxDistance").getDouble(),
+                                               max_junctions=p_el.getFirstElement("MaxNumberOfJunctions").getInt())
             j_el: CC3DXMLElement = p_el.getFirstElement("MaxNumberOfJunctions")
             if j_el.findAttribute("NeighborOrder"):
                 p.neighbor_order = j_el.getAttributeAsInt("NeighborOrder")
             if p_el.findElement("LinkConstituentLaw"):
                 l_el: CC3DXMLElement = p_el.getFirstElement("LinkConstituentLaw")
-                law = LinkConstituentLawSpecs(formula=l_el.getFirstElement("Formula").getText())
+                law = LinkConstituentLaw(formula=l_el.getFirstElement("Formula").getText())
 
-                l_el_list = l_el.getElements("Variable")
+                l_el_list = CC3DXMLListPy(l_el.getElements("Variable"))
 
                 for v_el in l_el_list:
                     v_el: CC3DXMLElement
                     law.variable[v_el.getAttribute("Name")] = v_el.getAttributeAsDouble("Value")
                 p.law = law
 
-            o.param_append(p)
+            o.params_append(p)
 
-        el_list = el.getElements("InternalParameters")
+        el_list = CC3DXMLListPy(el.getElements("InternalParameters"))
 
         for p_el in el_list:
             p_el: CC3DXMLElement
-            p = FocalPointPlasticityParamSpec(p_el.getAttribute("Type1"),
-                                              p_el.getAttribute("Type2"),
-                                              lambda_fpp=p_el.getFirstElement("Lambda").getDouble(),
-                                              activation_energy=p_el.getFirstElement("ActivationEnergy").getDouble(),
-                                              target_distance=p_el.getFirstElement("TargetDistance").getDouble(),
-                                              max_distance=p_el.getFirstElement("MaxDistance").getDouble(),
-                                              max_junctions=p_el.getFirstElement("MaxNumberOfJunctions").getInt(),
-                                              internal=True)
+            p = FocalPointPlasticityParameters(p_el.getAttribute("Type1"),
+                                               p_el.getAttribute("Type2"),
+                                               lambda_fpp=p_el.getFirstElement("Lambda").getDouble(),
+                                               activation_energy=p_el.getFirstElement("ActivationEnergy").getDouble(),
+                                               target_distance=p_el.getFirstElement("TargetDistance").getDouble(),
+                                               max_distance=p_el.getFirstElement("MaxDistance").getDouble(),
+                                               max_junctions=p_el.getFirstElement("MaxNumberOfJunctions").getInt(),
+                                               internal=True)
             j_el: CC3DXMLElement = p_el.getFirstElement("MaxNumberOfJunctions")
             if j_el.findAttribute("NeighborOrder"):
                 p.neighbor_order = j_el.getAttributeAsInt("NeighborOrder")
             if p_el.findElement("LinkConstituentLaw"):
                 l_el: CC3DXMLElement = p_el.getFirstElement("LinkConstituentLaw")
-                law = LinkConstituentLawSpecs(formula=l_el.getFirstElement("Formula").getText())
+                law = LinkConstituentLaw(formula=l_el.getFirstElement("Formula").getText())
 
-                l_el_list = l_el.getElements("Variable")
+                l_el_list = CC3DXMLListPy(l_el.getElements("Variable"))
 
                 for v_el in l_el_list:
                     v_el: CC3DXMLElement
                     law.variable[v_el.getAttribute("Name")] = v_el.getAttributeAsDouble("Value")
                 p.law = law
 
-            o.param_append(p)
+            o.params_append(p)
 
         return o
 
@@ -4848,19 +4852,19 @@ class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterf
                 yield vv.type1, vv.type2
 
     @property
-    def link(self) -> _PyCoreParamAccessor[Dict[str, FocalPointPlasticityParamSpec]]:
+    def link(self) -> _PyCoreParamAccessor[Dict[str, FocalPointPlasticityParameters]]:
         """
 
         :return: accessor to focal point plasticity parameters with cell types as keys
-        :rtype: dict of [str: dict of [str: FocalPointPlasticityParamSpec]]
+        :rtype: dict of [str: dict of [str: FocalPointPlasticityParameters]]
         """
         return _PyCoreParamAccessor(self, "param_specs")
 
-    def param_append(self, _ps: FocalPointPlasticityParamSpec) -> None:
+    def params_append(self, _ps: FocalPointPlasticityParameters) -> None:
         """
         Append a focal point plasticity parameter spec
 
-        :param FocalPointPlasticityParamSpec _ps: focal point plasticity parameter spec
+        :param FocalPointPlasticityParameters _ps: focal point plasticity parameter spec
         :return: None
         """
         if _ps.type1 in self.spec_dict["param_specs"].keys() \
@@ -4870,7 +4874,7 @@ class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterf
             self.spec_dict["param_specs"][_ps.type1] = dict()
         self.spec_dict["param_specs"][_ps.type1][_ps.type2] = _ps
 
-    def param_remove(self, type_1: str, type_2: str) -> None:
+    def params_remove(self, type_1: str, type_2: str) -> None:
         """
         Remove a focal point plasticity parameter spec
 
@@ -4883,17 +4887,17 @@ class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterf
             raise SpecValueError(f"Parameter not specified for types ({type_1}, {type_2})")
         self.spec_dict["param_specs"][type_1].pop(type_2)
 
-    def param_new(self,
-                  _type1: str,
-                  _type2: str,
-                  lambda_fpp: float,
-                  activation_energy: float,
-                  target_distance: float,
-                  max_distance: float,
-                  max_junctions: int = 1,
-                  neighbor_order: int = 1,
-                  internal: bool = False,
-                  law: LinkConstituentLawSpecs = None) -> FocalPointPlasticityParamSpec:
+    def params_new(self,
+                   _type1: str,
+                   _type2: str,
+                   lambda_fpp: float,
+                   activation_energy: float,
+                   target_distance: float,
+                   max_distance: float,
+                   max_junctions: int = 1,
+                   neighbor_order: int = 1,
+                   internal: bool = False,
+                   law: LinkConstituentLaw = None) -> FocalPointPlasticityParameters:
         """
         Append and return a new focal point plasticity parameter spec
 
@@ -4906,28 +4910,28 @@ class FocalPointPlasticityPluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterf
         :param int max_junctions: maximum number of junctions, defaults to 1
         :param int neighbor_order: neighbor order, defaults to 1
         :param bool internal: flag for internal parameter, defaults to False
-        :param LinkConstituentLawSpecs law: link constitutive law, optional
+        :param LinkConstituentLaw law: link constitutive law, optional
         :return: new focal point plasticity parameter spec
-        :rtype: FocalPointPlasticityParamSpec
+        :rtype: FocalPointPlasticityParameters
         """
-        p = FocalPointPlasticityParamSpec(_type1,
-                                          _type2,
-                                          lambda_fpp=lambda_fpp,
-                                          activation_energy=activation_energy,
-                                          target_distance=target_distance,
-                                          max_distance=max_distance,
-                                          max_junctions=max_junctions,
-                                          neighbor_order=neighbor_order,
-                                          internal=internal,
-                                          law=law)
-        self.param_append(p)
+        p = FocalPointPlasticityParameters(_type1,
+                                           _type2,
+                                           lambda_fpp=lambda_fpp,
+                                           activation_energy=activation_energy,
+                                           target_distance=target_distance,
+                                           max_distance=max_distance,
+                                           max_junctions=max_junctions,
+                                           neighbor_order=neighbor_order,
+                                           internal=internal,
+                                           law=law)
+        self.params_append(p)
         return p
 
 
 # Curvature Plugin
 
 
-class CurvatureInternalParamSpecs(_PyCoreSpecsBase):
+class CurvatureInternalParameters(_PyCoreSpecsBase):
     """ Curvature Internal Parameter Spec """
 
     def __init__(self,
@@ -4986,8 +4990,8 @@ class CurvatureInternalParamSpecs(_PyCoreSpecsBase):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.type1, self.type2], cell_type_spec=s)
 
 
@@ -5053,29 +5057,29 @@ class CurvatureInternalTypeParameters(_PyCoreSpecsBase):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.cell_type], cell_type_spec=s)
 
 
-class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
+class CurvaturePlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     Curvature Plugin
 
-    CurvatureInternalParamSpecs instances can be accessed as follows,
+    CurvatureInternalParameters instances can be accessed as follows,
 
     .. code-block:: python
 
-       spec: CurvaturePluginSpecs
+       spec: CurvaturePlugin
        cell_type_1: str
        cell_type_2: str
-       param: CurvatureInternalParamSpecs = spec.internal_param[cell_type_1][cell_type_2]
+       param: CurvatureInternalParameters = spec.internal_param[cell_type_1][cell_type_2]
 
     CurvatureInternalTypeParameters instances can be accessed as follows,
 
     .. code-block:: python
 
-       spec: CurvaturePluginSpecs
+       spec: CurvaturePlugin
        cell_type_name: str
        param: CurvatureInternalTypeParameters = spec.type_param[cell_type_name]
 
@@ -5118,8 +5122,8 @@ class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 for t1, p_dict in self.spec_dict["param_specs"].items():
                     CoreSpecsValidator.validate_cell_type_names(type_names=[t1] + list(p_dict.keys()),
                                                                 cell_type_spec=s)
@@ -5139,40 +5143,40 @@ class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: CurvaturePluginSpecs
+        :rtype: CurvaturePlugin
         """
         el = cls.find_xml_by_attr(_xml)
 
         o = cls()
 
-        el_list = el.getElements("InternalParameters")
+        el_list = CC3DXMLListPy(el.getElements("InternalParameters"))
 
         for p_el in el_list:
             p_el: CC3DXMLElement
-            o.param_internal_new(p_el.getAttribute("Type1"),
-                                 p_el.getAttribute("Type2"),
-                                 p_el.getFirstElement("Lambda").getDouble(),
-                                 p_el.getFirstElement("ActivationEnergy").getDouble())
+            o.params_internal_new(p_el.getAttribute("Type1"),
+                                  p_el.getAttribute("Type2"),
+                                  p_el.getFirstElement("Lambda").getDouble(),
+                                  p_el.getFirstElement("ActivationEnergy").getDouble())
 
         if el.findElement("InternalTypeSpecificParameters"):
             t_el: CC3DXMLElement = el.getFirstElement("InternalTypeSpecificParameters")
 
-            t_el_list = t_el.getElements("Parameters")
+            t_el_list = CC3DXMLListPy(t_el.getElements("Parameters"))
 
             for pt_el in t_el_list:
                 pt_el: CC3DXMLElement
-                o.param_type_new(pt_el.getAttribute("TypeName"),
-                                 pt_el.getAttributeAsInt("MaxNumberOfJunctions"),
-                                 pt_el.getAttributeAsInt("NeighborOrder"))
+                o.params_type_new(pt_el.getAttribute("TypeName"),
+                                  pt_el.getAttributeAsInt("MaxNumberOfJunctions"),
+                                  pt_el.getAttributeAsInt("NeighborOrder"))
 
         return o
 
     @property
-    def internal_param(self) -> _PyCoreParamAccessor[Dict[str, CurvatureInternalParamSpecs]]:
+    def internal_param(self) -> _PyCoreParamAccessor[Dict[str, CurvatureInternalParameters]]:
         """
 
         :return: accessor to curvature parameters with cell types as keys
-        :rtype: dict of [str: dict of [str: CurvatureInternalParamSpecs]]
+        :rtype: dict of [str: dict of [str: CurvatureInternalParameters]]
         """
         return _PyCoreParamAccessor(self, "param_specs")
 
@@ -5206,11 +5210,11 @@ class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         for x in self.spec_dict["type_spec"].values():
             yield x.cell_type
 
-    def param_internal_append(self, _ps: CurvatureInternalParamSpecs) -> None:
+    def params_internal_append(self, _ps: CurvatureInternalParameters) -> None:
         """
         Append a curvature internal parameter spec
 
-        :param CurvatureInternalParamSpecs _ps: curvature internal parameter spec
+        :param CurvatureInternalParameters _ps: curvature internal parameter spec
         :return: None
         """
         if _ps.type1 in self.spec_dict["param_specs"].keys() \
@@ -5220,7 +5224,7 @@ class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
             self.spec_dict["param_specs"][_ps.type1] = dict()
         self.spec_dict["param_specs"][_ps.type1][_ps.type2] = _ps
 
-    def param_internal_remove(self, _type1: str, _type2: str) -> None:
+    def params_internal_remove(self, _type1: str, _type2: str) -> None:
         """
         Remove a curvature internal parameter spec
 
@@ -5233,11 +5237,11 @@ class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
             raise SpecValueError(f"Parameter not specified for types ({_type1}, {_type2})")
         self.spec_dict["param_specs"][_type1].pop(_type2)
 
-    def param_internal_new(self,
-                           _type1: str,
-                           _type2: str,
-                           _lambda_curve: float,
-                           _activation_energy: float) -> CurvatureInternalParamSpecs:
+    def params_internal_new(self,
+                            _type1: str,
+                            _type2: str,
+                            _lambda_curve: float,
+                            _activation_energy: float) -> CurvatureInternalParameters:
         """
         Append and return a new curvature internal parameter spec
 
@@ -5246,15 +5250,16 @@ class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         :param float _lambda_curve: lambda value
         :param float _activation_energy: activation energy
         :return: new curvature internal parameter spec
-        :rtype: CurvatureInternalParamSpecs
+        :rtype: CurvatureInternalParameters
         """
-        p = CurvatureInternalParamSpecs(_type1, _type2, _lambda_curve, _activation_energy)
-        self.param_internal_append(p)
+        p = CurvatureInternalParameters(_type1, _type2, _lambda_curve, _activation_energy)
+        self.params_internal_append(p)
         return p
 
-    def param_type_append(self, _ps: CurvatureInternalTypeParameters) -> None:
+    def params_type_append(self, _ps: CurvatureInternalTypeParameters) -> None:
         """
         Append a curvature internal type parameters
+
         :param CurvatureInternalTypeParameters _ps: curvature internal type parameters
         :return: None
         """
@@ -5262,7 +5267,7 @@ class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
             raise SpecValueError(f"Parameter already specified for type {_ps.cell_type}")
         self.spec_dict["type_spec"][_ps.cell_type] = _ps
 
-    def param_type_remove(self, _cell_type: str) -> None:
+    def params_type_remove(self, _cell_type: str) -> None:
         """
         Remove a curvature internal type parameters
 
@@ -5273,10 +5278,10 @@ class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
             raise SpecValueError(f"Parameter not specified for type {_cell_type}")
         self.spec_dict["type_spec"].pop(_cell_type)
 
-    def param_type_new(self,
-                       _cell_type: str,
-                       _max_junctions: int,
-                       _neighbor_order: int) -> CurvatureInternalTypeParameters:
+    def params_type_new(self,
+                        _cell_type: str,
+                        _max_junctions: int,
+                        _neighbor_order: int) -> CurvatureInternalTypeParameters:
         """
         Append and return a new curvature internal type parameters
 
@@ -5287,11 +5292,11 @@ class CurvaturePluginSpecs(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         :rtype: CurvatureInternalTypeParameters
         """
         p = CurvatureInternalTypeParameters(_cell_type, _max_junctions, _neighbor_order)
-        self.param_type_append(p)
+        self.params_type_append(p)
         return p
 
 
-class BoundaryPixelTrackerPluginSpecs(_PyCorePluginSpecs):
+class BoundaryPixelTrackerPlugin(_PyCorePluginSpecs):
     """ BoundaryPixelTracker Plugin """
 
     name = "boundary_pixel_tracker"
@@ -5327,13 +5332,13 @@ class BoundaryPixelTrackerPluginSpecs(_PyCorePluginSpecs):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: BoundaryPixelTrackerPluginSpecs
+        :rtype: BoundaryPixelTrackerPlugin
         """
         cls.find_xml_by_attr(_xml)
         return cls()
 
 
-class PixelTrackerPluginSpecs(_PyCorePluginSpecs):
+class PixelTrackerPlugin(_PyCorePluginSpecs):
     """ PixelTracker Plugin """
 
     name = "pixel_tracker"
@@ -5367,13 +5372,13 @@ class PixelTrackerPluginSpecs(_PyCorePluginSpecs):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: PixelTrackerPluginSpecs
+        :rtype: PixelTrackerPlugin
         """
         cls.find_xml_by_attr(_xml)
         return cls()
 
 
-class MomentOfInertiaPluginSpecs(_PyCorePluginSpecs):
+class MomentOfInertiaPlugin(_PyCorePluginSpecs):
     """ MomentOfInertia Plugin """
 
     name = "moment_of_inertia"
@@ -5400,13 +5405,13 @@ class MomentOfInertiaPluginSpecs(_PyCorePluginSpecs):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: MomentOfInertiaPluginSpecs
+        :rtype: MomentOfInertiaPlugin
         """
         cls.find_xml_by_attr(_xml)
         return cls()
 
 
-class BoxWatcherSteppableSpecs(_PyCoreSteppableSpecs):
+class BoxWatcherSteppable(_PyCoreSteppableSpecs):
     """ BoxWatcher Steppable """
 
     name = "box_watcher"
@@ -5433,7 +5438,7 @@ class BoxWatcherSteppableSpecs(_PyCoreSteppableSpecs):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: BoxWatcherSteppableSpecs
+        :rtype: BoxWatcherSteppable
         """
         cls.find_xml_by_attr(_xml)
         return cls()
@@ -5442,7 +5447,7 @@ class BoxWatcherSteppableSpecs(_PyCoreSteppableSpecs):
 # Blob Initializer
 
 
-class BlobRegionSpecs(_PyCoreSpecsBase):
+class BlobInitializerRegion(_PyCoreSpecsBase):
     """ BlobInitializer Region """
 
     check_dict = {
@@ -5489,7 +5494,7 @@ class BlobRegionSpecs(_PyCoreSpecsBase):
     center: Point3D = SpecProperty(name="center")
     """blob center point"""
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generate and return the top :class:`ElementCC3D` instance
 
@@ -5527,19 +5532,19 @@ class BlobRegionSpecs(_PyCoreSpecsBase):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=self.spec_dict["cell_types"], cell_type_spec=s)
 
-            # Validate BlobRegionSpecs shape against Potts
-            if isinstance(s, PottsCoreSpecs):
+            # Validate BlobInitializerRegion shape against Potts
+            if isinstance(s, PottsCore):
                 for c, o in itertools.product(["x", "y", "z"], [-self.radius, self.radius]):
                     pt = Point3D(self.center)
                     setattr(pt, c, getattr(pt, c) + o)
                     CoreSpecsValidator.validate_point(pt=pt, potts_spec=s)
 
 
-class BlobInitializerSpecs(_PyCoreSteppableSpecs):
+class BlobInitializer(_PyCoreSteppableSpecs):
     """ BlobInitializer """
 
     name = "blob_initializer"
@@ -5551,8 +5556,8 @@ class BlobInitializerSpecs(_PyCoreSteppableSpecs):
         with _SpecValueErrorContextBlock() as err_ctx:
             for r in _regions:
                 with err_ctx.ctx:
-                    if not isinstance(r, BlobRegionSpecs):
-                        raise SpecValueError("Only BlobRegionSpecs instances can be passed",
+                    if not isinstance(r, BlobInitializerRegion):
+                        raise SpecValueError("Only BlobInitializerRegion instances can be passed",
                                              names=[r.__name__])
 
         self.spec_dict = {"regions": list(_regions)}
@@ -5590,12 +5595,12 @@ class BlobInitializerSpecs(_PyCoreSteppableSpecs):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: BlobInitializerSpecs
+        :rtype: BlobInitializer
         """
 
         o = cls()
 
-        el_list = cls.find_xml_by_attr(_xml).getElements("Region")
+        el_list = CC3DXMLListPy(cls.find_xml_by_attr(_xml).getElements("Region"))
 
         for r_el in el_list:
             r_el: CC3DXMLElement
@@ -5620,11 +5625,11 @@ class BlobInitializerSpecs(_PyCoreSteppableSpecs):
 
         return o
 
-    def region_append(self, _reg: BlobRegionSpecs) -> None:
+    def region_append(self, _reg: BlobInitializerRegion) -> None:
         """
         Append a region
 
-        :param BlobRegionSpecs _reg: a region
+        :param BlobInitializerRegion _reg: a region
         :return: None
         """
         self.spec_dict["regions"].append(_reg)
@@ -5643,7 +5648,7 @@ class BlobInitializerSpecs(_PyCoreSteppableSpecs):
                    width: int = 0,
                    radius: int = 0,
                    center: Point3D = Point3D(0, 0, 0),
-                   cell_types: List[str] = None) -> BlobRegionSpecs:
+                   cell_types: List[str] = None) -> BlobInitializerRegion:
         """
         Appends and returns a blob region
 
@@ -5653,9 +5658,9 @@ class BlobInitializerSpecs(_PyCoreSteppableSpecs):
         :param Point3D center: blob center point
         :param List[str] cell_types: names of cell types in blob
         :return: new blob region
-        :rtype: BlobRegionSpecs
+        :rtype: BlobInitializerRegion
         """
-        reg = BlobRegionSpecs(gap=gap, width=width, radius=radius, center=center, cell_types=cell_types)
+        reg = BlobInitializerRegion(gap=gap, width=width, radius=radius, center=center, cell_types=cell_types)
         self.region_append(reg)
         return reg
 
@@ -5663,7 +5668,7 @@ class BlobInitializerSpecs(_PyCoreSteppableSpecs):
 # Uniform Initializer
 
 
-class UniformRegionSpecs(_PyCoreSpecsBase):
+class UniformInitializerRegion(_PyCoreSpecsBase):
     """ Uniform Initializer Region Specs """
 
     check_dict = {
@@ -5708,7 +5713,7 @@ class UniformRegionSpecs(_PyCoreSpecsBase):
     width: int = SpecProperty(name="width")
     """cell width"""
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generate and return the top :class:`ElementCC3D` instance
 
@@ -5746,17 +5751,17 @@ class UniformRegionSpecs(_PyCoreSpecsBase):
         super().validate(*specs)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=self.spec_dict["cell_types"],
                                                             cell_type_spec=s)
 
-            # Validate BlobRegionSpecs shape against Potts
-            if isinstance(s, PottsCoreSpecs):
+            # Validate BlobInitializerRegion shape against Potts
+            if isinstance(s, PottsCore):
                 [CoreSpecsValidator.validate_point(pt=pt, potts_spec=s) for pt in [self.pt_min, self.pt_max]]
 
 
-class UniformInitializerSpecs(_PyCoreSteppableSpecs):
+class UniformInitializer(_PyCoreSteppableSpecs):
     """ Uniform Initializer Specs """
 
     name = "uniform_initializer"
@@ -5768,8 +5773,8 @@ class UniformInitializerSpecs(_PyCoreSteppableSpecs):
         with _SpecValueErrorContextBlock() as err_ctx:
             for r in _regions:
                 with err_ctx.ctx:
-                    if not isinstance(r, UniformRegionSpecs):
-                        raise SpecValueError("Only UniformRegionSpecs instances can be passed",
+                    if not isinstance(r, UniformInitializerRegion):
+                        raise SpecValueError("Only UniformInitializerRegion instances can be passed",
                                              names=[r.__name__])
 
         self.spec_dict = {"regions": list(_regions)}
@@ -5807,12 +5812,12 @@ class UniformInitializerSpecs(_PyCoreSteppableSpecs):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: UniformInitializerSpecs
+        :rtype: UniformInitializer
         """
 
         o = cls()
 
-        el_list = cls.find_xml_by_attr(_xml).getElements("Region")
+        el_list = CC3DXMLListPy(cls.find_xml_by_attr(_xml).getElements("Region"))
 
         for r_el in el_list:
             r_el: CC3DXMLElement
@@ -5841,11 +5846,11 @@ class UniformInitializerSpecs(_PyCoreSteppableSpecs):
 
         return o
 
-    def region_append(self, _reg: UniformRegionSpecs) -> None:
+    def region_append(self, _reg: UniformInitializerRegion) -> None:
         """
         Append a region
 
-        :param UniformRegionSpecs _reg: a region
+        :param UniformInitializerRegion _reg: a region
         :return: None
         """
         self.spec_dict["regions"].append(_reg)
@@ -5864,7 +5869,7 @@ class UniformInitializerSpecs(_PyCoreSteppableSpecs):
                    pt_max: Point3D,
                    gap: int = 0,
                    width: int = 0,
-                   cell_types: List[str] = None) -> UniformRegionSpecs:
+                   cell_types: List[str] = None) -> UniformInitializerRegion:
         """
         Appends and returns a uniform region
 
@@ -5874,14 +5879,14 @@ class UniformInitializerSpecs(_PyCoreSteppableSpecs):
         :param int width: width of cells
         :param List[str] cell_types: names of cell types in region
         :return: new blob region
-        :rtype: UniformRegionSpecs
+        :rtype: UniformInitializerRegion
         """
-        reg = UniformRegionSpecs(pt_min=pt_min, pt_max=pt_max, gap=gap, width=width, cell_types=cell_types)
+        reg = UniformInitializerRegion(pt_min=pt_min, pt_max=pt_max, gap=gap, width=width, cell_types=cell_types)
         self.region_append(reg)
         return reg
 
 
-class PIFInitializerSteppableSpecs(_PyCoreSteppableSpecs):
+class PIFInitializer(_PyCoreSteppableSpecs):
     """ PIF Initializer """
 
     name = "pif_initiazer"
@@ -5933,12 +5938,12 @@ class PIFInitializerSteppableSpecs(_PyCoreSteppableSpecs):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: PIFInitializerSteppableSpecs
+        :rtype: PIFInitializer
         """
         return cls(pif_name=cls.find_xml_by_attr(_xml).getFirstElement("PIFName").getText())
 
 
-class PIFDumperSteppableSpecs(_PyCoreSteppableSpecs):
+class PIFDumperSteppable(_PyCoreSteppableSpecs):
     """ PIFDumper Steppable """
 
     name = "pif_dumper"
@@ -5985,7 +5990,7 @@ class PIFDumperSteppableSpecs(_PyCoreSteppableSpecs):
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: PIFDumperSteppableSpecs
+        :rtype: PIFDumperSteppable
         """
         el = cls.find_xml_by_attr(_xml)
         kwargs = {"pif_name": el.getFirstElement("PIFName").getText()}
@@ -5997,7 +6002,7 @@ class PIFDumperSteppableSpecs(_PyCoreSteppableSpecs):
 # DiffusionSolverFE
 
 
-class DiffusionSolverFEDiffusionDataSpecs(_PDEDiffusionDataSpecs):
+class DiffusionSolverFEDiffusionData(_PDEDiffusionDataSpecs):
     """ Diffusion Data Specs for DiffusionSolverFE """
 
     diff_global: float = SpecProperty(name="diff_global")
@@ -6042,7 +6047,7 @@ class DiffusionSolverFEDiffusionDataSpecs(_PDEDiffusionDataSpecs):
         :return: list of dependencies
         :rtype: list of Type
         """
-        return super().depends_on + [DiffusionSolverFESpecs]
+        return super().depends_on + [DiffusionSolverFE]
 
     def validate(self, *specs) -> None:
         """
@@ -6055,14 +6060,14 @@ class DiffusionSolverFEDiffusionDataSpecs(_PDEDiffusionDataSpecs):
         """
         super().validate(*specs)
 
-        solver = DiffusionSolverFESpecs
+        solver = DiffusionSolverFE
 
         # Validate field name uniqueness
         CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=self.spec_dict["diff_types"].keys(),
                                                             cell_type_spec=s)
                 CoreSpecsValidator.validate_cell_type_names(type_names=self.spec_dict["decay_types"].keys(),
@@ -6091,7 +6096,7 @@ class DiffusionSolverFEDiffusionDataSpecs(_PDEDiffusionDataSpecs):
         return _PyCoreParamAccessor(self, "decay_types")
 
 
-class DiffusionSolverFESecretionDataSpecs(_PDESecretionDataSpecs):
+class DiffusionSolverFESecretionData(_PDESecretionDataSpecs):
     """ Secretion Data Specs for DiffusionSolverFE """
 
     @property
@@ -6102,11 +6107,10 @@ class DiffusionSolverFESecretionDataSpecs(_PDESecretionDataSpecs):
         :return: list of dependencies
         :rtype: list of Type
         """
-        return super().depends_on + [DiffusionSolverFESpecs]
+        return super().depends_on + [DiffusionSolverFE]
 
 
-class DiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[DiffusionSolverFEDiffusionDataSpecs,
-                                                       DiffusionSolverFESecretionDataSpecs]):
+class DiffusionSolverFEField(_PDESolverFieldSpecs[DiffusionSolverFEDiffusionData, DiffusionSolverFESecretionData]):
     """ DiffusionSolverFE Field Specs """
 
     @property
@@ -6117,7 +6121,7 @@ class DiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[DiffusionSolverFEDiffusio
         :return: list of dependencies
         :rtype: list of Type
         """
-        return super().depends_on + [DiffusionSolverFESpecs]
+        return super().depends_on + [DiffusionSolverFE]
 
     def validate(self, *specs) -> None:
         """
@@ -6131,7 +6135,7 @@ class DiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[DiffusionSolverFEDiffusio
         """
         super().validate(*specs)
 
-        solver = DiffusionSolverFESpecs
+        solver = DiffusionSolverFE
 
         # Validate field name uniqueness
         CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
@@ -6141,7 +6145,7 @@ class DiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[DiffusionSolverFEDiffusio
             if isinstance(s, solver):
                 CoreSpecsValidator.validate_field_name_unique(s, field_name=self.field_name)
 
-    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> SecretionSpecs:
+    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> SecretionParameters:
         """
         Specify and return a new secretion data spec
 
@@ -6149,7 +6153,7 @@ class DiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[DiffusionSolverFEDiffusio
         :param float _val: value
         :param kwargs:
         :return: new secretion data spec
-        :rtype: SecretionSpecs
+        :rtype: SecretionParameters
         """
         try:
             contact_type = kwargs["contact_type"]
@@ -6177,14 +6181,14 @@ class DiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[DiffusionSolverFEDiffusio
         _PDESolverFieldSpecs.secretion_data_remove(self, _cell_type, contact_type=contact_type)
 
 
-class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs, DiffusionSolverFESecretionDataSpecs]):
+class DiffusionSolverFE(_PDESolverSpecs[DiffusionSolverFEDiffusionData, DiffusionSolverFESecretionData]):
     """ DiffusionSolverFE """
 
     name = "diffusion_solver_fe"
 
-    _field_spec = DiffusionSolverFEFieldSpecs
-    _diff_data = DiffusionSolverFEDiffusionDataSpecs
-    _secr_data = DiffusionSolverFESecretionDataSpecs
+    _field_spec = DiffusionSolverFEField
+    _diff_data = DiffusionSolverFEDiffusionData
+    _secr_data = DiffusionSolverFESecretionData
 
     def __init__(self):
         super().__init__()
@@ -6208,7 +6212,7 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
             return "DiffusionSolverFE_OpenCL"
         return "DiffusionSolverFE"
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generate and return the top :class:`ElementCC3D` instance
 
@@ -6238,7 +6242,7 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: DiffusionSolverFESpecs
+        :rtype: DiffusionSolverFE
         """
         o = cls()
         try:
@@ -6249,7 +6253,7 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
 
         o.fluc_comp = el.findElement("FluctuationCompensator")
 
-        el_list = el.getElements("DiffusionField")
+        el_list = CC3DXMLListPy(el.getElements("DiffusionField"))
 
         for f_el in el_list:
             f_el: CC3DXMLElement
@@ -6277,12 +6281,12 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
             if dd_el.findElement("GlobalDecayConstant"):
                 f.diff_data.decay_global = dd_el.getFirstElement("GlobalDecayConstant").getDouble()
 
-            el_list = dd_el.getElements("DiffusionCoefficient")
+            el_list = CC3DXMLListPy(dd_el.getElements("DiffusionCoefficient"))
 
             for t_el in el_list:
                 f.diff_data.diff_types[t_el.getAttribute("CellType")] = t_el.getDouble()
 
-            el_list = dd_el.getElements("DecayCoefficient")
+            el_list = CC3DXMLListPy(dd_el.getElements("DecayCoefficient"))
 
             for t_el in el_list:
                 f.diff_data.decay_types[t_el.getAttribute("CellType")] = t_el.getDouble()
@@ -6295,17 +6299,17 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
                 sd_el: CC3DXMLElement = el.getFirstElement("SecretionData")
                 p_el: CC3DXMLElement
 
-                sd_el_list = sd_el.getElements("Secretion")
+                sd_el_list = CC3DXMLListPy(sd_el.getElements("Secretion"))
 
                 for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"), p_el.getDouble())
 
-                sd_el_list = sd_el.getElements("ConstantConcentration")
+                sd_el_list = CC3DXMLListPy(sd_el.getElements("ConstantConcentration"))
 
                 for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"), p_el.getDouble(), constant=True)
 
-                sd_el_list = sd_el.getElements("SecretionOnContact")
+                sd_el_list = CC3DXMLListPy(sd_el.getElements("SecretionOnContact"))
 
                 for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"),
@@ -6314,7 +6318,7 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
 
             b_el: CC3DXMLElement = f_el.getFirstElement("BoundaryConditions")
             if b_el is not None:
-                b_el_list = b_el.getElements("Plane")
+                b_el_list = CC3DXMLListPy(b_el.getElements("Plane"))
                 for p_el in b_el_list:
                     p_el: CC3DXMLElement
                     axis: str = p_el.getAttribute("Axis").lower()
@@ -6322,12 +6326,12 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
                         setattr(f.bcs, f"{axis}_min_type", BOUNDARYTYPESPDE[2])
                     else:
                         c_el: CC3DXMLElement
-                        p_el_list = p_el.getElements("ConstantValue")
+                        p_el_list = CC3DXMLListPy(p_el.getElements("ConstantValue"))
                         for c_el in p_el_list:
                             pos: str = c_el.getAttribute("PlanePosition").lower()
                             setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[0])
                             setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
-                        p_el_list = p_el.getElements("ConstantDerivative")
+                        p_el_list = CC3DXMLListPy(p_el.getElements("ConstantDerivative"))
                         for c_el in p_el_list:
                             pos: str = c_el.getAttribute("PlanePosition").lower()
                             setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[1])
@@ -6339,7 +6343,7 @@ class DiffusionSolverFESpecs(_PDESolverSpecs[DiffusionSolverFEDiffusionDataSpecs
 # KernelDiffusionSolver
 
 
-class KernelDiffusionSolverDiffusionDataSpecs(_PDEDiffusionDataSpecs):
+class KernelDiffusionSolverDiffusionData(_PDEDiffusionDataSpecs):
     """ KernelDiffusionSolver Diffusion Data Specs"""
 
     diff_global: float = SpecProperty(name="diff_global")
@@ -6348,10 +6352,10 @@ class KernelDiffusionSolverDiffusionDataSpecs(_PDEDiffusionDataSpecs):
     decay_global: float = SpecProperty(name="decay_global")
     """global decay rate"""
 
-    init_expression: Union[str, None] = SpecProperty(name="init_expression")
+    init_expression: Optional[str] = SpecProperty(name="init_expression")
     """expression of initial field distribution, Optional, None if not set"""
 
-    init_filename: Union[str, None] = SpecProperty(name="init_filename")
+    init_filename: Optional[str] = SpecProperty(name="init_filename")
     """name of file containing initial field distribution, Optional, None if not set"""
 
     @property
@@ -6380,7 +6384,7 @@ class KernelDiffusionSolverDiffusionDataSpecs(_PDEDiffusionDataSpecs):
         :return: list of dependencies
         :rtype: list of Type
         """
-        return super().depends_on + [KernelDiffusionSolverSpecs]
+        return super().depends_on + [KernelDiffusionSolver]
 
     def validate(self, *specs) -> None:
         """
@@ -6393,7 +6397,7 @@ class KernelDiffusionSolverDiffusionDataSpecs(_PDEDiffusionDataSpecs):
         """
         super().validate(*specs)
 
-        solver = KernelDiffusionSolverSpecs
+        solver = KernelDiffusionSolver
 
         # Validate field name uniqueness
         CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
@@ -6404,7 +6408,7 @@ class KernelDiffusionSolverDiffusionDataSpecs(_PDEDiffusionDataSpecs):
                 CoreSpecsValidator.validate_field_name_unique(s, field_name=self.field_name)
 
 
-class KernelDiffusionSolverSecretionDataSpecs(_PDESecretionDataSpecs):
+class KernelDiffusionSolverSecretionData(_PDESecretionDataSpecs):
     """ KernelDiffusionSolver Secretion Data Specs """
 
     @property
@@ -6415,10 +6419,10 @@ class KernelDiffusionSolverSecretionDataSpecs(_PDESecretionDataSpecs):
         :return: list of dependencies
         :rtype: list of Type
         """
-        return super().depends_on + [KernelDiffusionSolverSpecs]
+        return super().depends_on + [KernelDiffusionSolver]
 
 
-class KernelDiffusionSolverBoundaryConditionsSpecs(PDEBoundaryConditionsSpec):
+class KernelDiffusionSolverBoundaryConditions(PDEBoundaryConditions):
     """
     KernelDiffusionSolver Boundary Condition Specs
 
@@ -6474,8 +6478,8 @@ class KernelDiffusionSolverBoundaryConditionsSpecs(PDEBoundaryConditionsSpec):
     """boundary condition type along upper z-orthogonal boundary; read-only"""
 
 
-class KernelDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[KernelDiffusionSolverDiffusionDataSpecs,
-                                                           KernelDiffusionSolverSecretionDataSpecs]):
+class KernelDiffusionSolverField(_PDESolverFieldSpecs[KernelDiffusionSolverDiffusionData,
+                                                      KernelDiffusionSolverSecretionData]):
     """ KernelDiffusionSolver Field Specs """
 
     check_dict = {
@@ -6485,13 +6489,13 @@ class KernelDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[KernelDiffusionSolver
 
     def __init__(self,
                  field_name: str,
-                 diff_data=KernelDiffusionSolverDiffusionDataSpecs,
-                 secr_data=KernelDiffusionSolverSecretionDataSpecs):
+                 diff_data=KernelDiffusionSolverDiffusionData,
+                 secr_data=KernelDiffusionSolverSecretionData):
         super().__init__(field_name=field_name,
                          diff_data=diff_data,
                          secr_data=secr_data)
 
-        self.spec_dict["bc_specs"] = KernelDiffusionSolverBoundaryConditionsSpecs()
+        self.spec_dict["bc_specs"] = KernelDiffusionSolverBoundaryConditions()
         self.spec_dict["kernel"] = 1
         self.spec_dict["cgfactor"] = 1
 
@@ -6526,7 +6530,7 @@ class KernelDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[KernelDiffusionSolver
         :return: list of dependencies
         :rtype: list of Type
         """
-        return super().depends_on + [KernelDiffusionSolverSpecs]
+        return super().depends_on + [KernelDiffusionSolver]
 
     def validate(self, *specs) -> None:
         """
@@ -6540,7 +6544,7 @@ class KernelDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[KernelDiffusionSolver
         """
         super().validate(*specs)
 
-        solver = KernelDiffusionSolverSpecs
+        solver = KernelDiffusionSolver
 
         # Validate field name uniqueness
         CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
@@ -6550,7 +6554,7 @@ class KernelDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[KernelDiffusionSolver
             if isinstance(s, solver):
                 CoreSpecsValidator.validate_field_name_unique(s, field_name=self.field_name)
 
-    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> SecretionSpecs:
+    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> SecretionParameters:
         """
         Specify and return a new secretion data spec
 
@@ -6558,7 +6562,7 @@ class KernelDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[KernelDiffusionSolver
         :param float _val: value
         :param kwargs:
         :return: new secretion data spec
-        :rtype: SecretionSpecs
+        :rtype: SecretionParameters
         """
         try:
             contact_type = kwargs["contact_type"]
@@ -6586,16 +6590,15 @@ class KernelDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[KernelDiffusionSolver
         _PDESolverFieldSpecs.secretion_data_remove(self, _cell_type, contact_type=contact_type)
 
 
-class KernelDiffusionSolverSpecs(_PDESolverSpecs[KernelDiffusionSolverDiffusionDataSpecs,
-                                                 KernelDiffusionSolverSecretionDataSpecs]):
+class KernelDiffusionSolver(_PDESolverSpecs[KernelDiffusionSolverDiffusionData, KernelDiffusionSolverSecretionData]):
     """ KernelDiffusionSolver """
 
     name = "kernel_diffusion_solver"
     registered_name = "KernelDiffusionSolver"
 
-    _field_spec = KernelDiffusionSolverFieldSpecs
-    _diff_data = KernelDiffusionSolverDiffusionDataSpecs
-    _secr_data = KernelDiffusionSolverSecretionDataSpecs
+    _field_spec = KernelDiffusionSolverField
+    _diff_data = KernelDiffusionSolverDiffusionData
+    _secr_data = KernelDiffusionSolverSecretionData
 
     def __init__(self):
         super().__init__()
@@ -6621,13 +6624,13 @@ class KernelDiffusionSolverSpecs(_PDESolverSpecs[KernelDiffusionSolverDiffusionD
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: KernelDiffusionSolverSpecs
+        :rtype: KernelDiffusionSolver
         """
         el = cls.find_xml_by_attr(_xml)
 
         o = cls()
 
-        el_list = el.getElements("DiffusionField")
+        el_list = CC3DXMLListPy(el.getElements("DiffusionField"))
 
         for f_el in el_list:
             f_el: CC3DXMLElement
@@ -6663,17 +6666,17 @@ class KernelDiffusionSolverSpecs(_PDESolverSpecs[KernelDiffusionSolverDiffusionD
                 sd_el: CC3DXMLElement = el.getFirstElement("SecretionData")
                 p_el: CC3DXMLElement
 
-                sd_el_list = sd_el.getElements("Secretion")
+                sd_el_list = CC3DXMLListPy(sd_el.getElements("Secretion"))
 
                 for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"), p_el.getDouble())
 
-                sd_el_list = sd_el.getElements("ConstantConcentration")
+                sd_el_list = CC3DXMLListPy(sd_el.getElements("ConstantConcentration"))
 
                 for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"), p_el.getDouble(), constant=True)
 
-                sd_el_list = sd_el.getElements("SecretionOnContact")
+                sd_el_list = CC3DXMLListPy(sd_el.getElements("SecretionOnContact"))
 
                 for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"),
@@ -6686,7 +6689,7 @@ class KernelDiffusionSolverSpecs(_PDESolverSpecs[KernelDiffusionSolverDiffusionD
 # ReactionDiffusionSolverFE
 
 
-class ReactionDiffusionSolverFEDiffusionDataSpecs(_PDEDiffusionDataSpecs):
+class ReactionDiffusionSolverFEDiffusionData(_PDEDiffusionDataSpecs):
     """ ReactionDiffusionSolverFE Diffusion Data Specs"""
 
     diff_global: float = SpecProperty(name="diff_global")
@@ -6698,7 +6701,7 @@ class ReactionDiffusionSolverFEDiffusionDataSpecs(_PDEDiffusionDataSpecs):
     additional_term: str = SpecProperty(name="additional_term")
     """expression of additional term"""
 
-    init_filename: Union[str, None] = SpecProperty(name="init_filename")
+    init_filename: Optional[str] = SpecProperty(name="init_filename")
     """name of file containing initial field distribution, Optional, None if not set"""
 
     @property
@@ -6731,7 +6734,7 @@ class ReactionDiffusionSolverFEDiffusionDataSpecs(_PDEDiffusionDataSpecs):
         :return: list of dependencies
         :rtype: list of Type
         """
-        return super().depends_on + [ReactionDiffusionSolverFESpecs]
+        return super().depends_on + [ReactionDiffusionSolverFE]
 
     def validate(self, *specs) -> None:
         """
@@ -6744,14 +6747,14 @@ class ReactionDiffusionSolverFEDiffusionDataSpecs(_PDEDiffusionDataSpecs):
         """
         super().validate(*specs)
 
-        solver = ReactionDiffusionSolverFESpecs
+        solver = ReactionDiffusionSolverFE
 
         # Validate field name uniqueness
         CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
 
         for s in specs:
-            # Validate against cell types defined in CellTypePluginSpecs
-            if isinstance(s, CellTypePluginSpecs):
+            # Validate against cell types defined in CellTypePlugin
+            if isinstance(s, CellTypePlugin):
                 CoreSpecsValidator.validate_cell_type_names(type_names=self.spec_dict["diff_types"].keys(),
                                                             cell_type_spec=s)
                 CoreSpecsValidator.validate_cell_type_names(type_names=self.spec_dict["decay_types"].keys(),
@@ -6780,7 +6783,7 @@ class ReactionDiffusionSolverFEDiffusionDataSpecs(_PDEDiffusionDataSpecs):
         return _PyCoreParamAccessor(self, "decay_types")
 
 
-class ReactionDiffusionSolverFESecretionSpecs(_PDESecretionDataSpecs):
+class ReactionDiffusionSolverFESecretionData(_PDESecretionDataSpecs):
     """ ReactionDiffusionSolverFE Secretion Specs"""
 
     @property
@@ -6791,11 +6794,11 @@ class ReactionDiffusionSolverFESecretionSpecs(_PDESecretionDataSpecs):
         :return: list of dependencies
         :rtype: list of Type
         """
-        return super().depends_on + [ReactionDiffusionSolverFESpecs]
+        return super().depends_on + [ReactionDiffusionSolverFE]
 
 
-class ReactionDiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[ReactionDiffusionSolverFEDiffusionDataSpecs,
-                                                               ReactionDiffusionSolverFESecretionSpecs]):
+class ReactionDiffusionSolverFEField(_PDESolverFieldSpecs[ReactionDiffusionSolverFEDiffusionData,
+                                                          ReactionDiffusionSolverFESecretionData]):
     """ ReactionDiffusionSolverFE Field Specs"""
 
     @property
@@ -6806,7 +6809,7 @@ class ReactionDiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[ReactionDiffusion
         :return: list of dependencies
         :rtype: list of Type
         """
-        return super().depends_on + [ReactionDiffusionSolverFESpecs]
+        return super().depends_on + [ReactionDiffusionSolverFE]
 
     def validate(self, *specs) -> None:
         """
@@ -6820,7 +6823,7 @@ class ReactionDiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[ReactionDiffusion
         """
         super().validate(*specs)
 
-        solver = ReactionDiffusionSolverFESpecs
+        solver = ReactionDiffusionSolverFE
 
         # Validate field name uniqueness
         CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
@@ -6830,7 +6833,7 @@ class ReactionDiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[ReactionDiffusion
             if isinstance(s, solver):
                 CoreSpecsValidator.validate_field_name_unique(s, field_name=self.field_name)
 
-    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> SecretionSpecs:
+    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> SecretionParameters:
         """
         Specify and return a new secretion data spec
 
@@ -6839,7 +6842,7 @@ class ReactionDiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[ReactionDiffusion
         :param kwargs:
         :raises SpecValueError: if setting constant concentration
         :return: new secretion data spec
-        :rtype: SecretionSpecs
+        :rtype: SecretionParameters
         """
         try:
             contact_type = kwargs["contact_type"]
@@ -6864,16 +6867,16 @@ class ReactionDiffusionSolverFEFieldSpecs(_PDESolverFieldSpecs[ReactionDiffusion
         _PDESolverFieldSpecs.secretion_data_remove(self, _cell_type, contact_type=contact_type)
 
 
-class ReactionDiffusionSolverFESpecs(_PDESolverSpecs[ReactionDiffusionSolverFEDiffusionDataSpecs,
-                                                     ReactionDiffusionSolverFESecretionSpecs]):
+class ReactionDiffusionSolverFE(_PDESolverSpecs[ReactionDiffusionSolverFEDiffusionData,
+                                                ReactionDiffusionSolverFESecretionData]):
     """ ReactionDiffusionSolverFE """
 
     name = "reaction_diffusion_solver_fe"
     registered_name = "ReactionDiffusionSolverFE"
 
-    _field_spec = ReactionDiffusionSolverFEFieldSpecs
-    _diff_data = ReactionDiffusionSolverFEDiffusionDataSpecs
-    _secr_data = ReactionDiffusionSolverFESecretionSpecs
+    _field_spec = ReactionDiffusionSolverFEField
+    _diff_data = ReactionDiffusionSolverFEDiffusionData
+    _secr_data = ReactionDiffusionSolverFESecretionData
 
     def __init__(self):
         super().__init__()
@@ -6909,7 +6912,7 @@ class ReactionDiffusionSolverFESpecs(_PDESolverSpecs[ReactionDiffusionSolverFEDi
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: ReactionDiffusionSolverFESpecs
+        :rtype: ReactionDiffusionSolverFE
         """
         el = cls.find_xml_by_attr(_xml)
 
@@ -6917,7 +6920,7 @@ class ReactionDiffusionSolverFESpecs(_PDESolverSpecs[ReactionDiffusionSolverFEDi
         o.autoscale = el.findElement("AutoscaleDiffusion")
         o.fluc_comp = el.findElement("FluctuationCompensator")
 
-        el_list = el.getElements("DiffusionField")
+        el_list = CC3DXMLListPy(el.getElements("DiffusionField"))
 
         for f_el in el_list:
             f_el: CC3DXMLElement
@@ -6945,12 +6948,12 @@ class ReactionDiffusionSolverFESpecs(_PDESolverSpecs[ReactionDiffusionSolverFEDi
             if dd_el.findElement("GlobalDecayConstant"):
                 f.diff_data.decay_global = dd_el.getFirstElement("GlobalDecayConstant").getDouble()
 
-            dd_el_list = dd_el.getElements("DiffusionCoefficient")
+            dd_el_list = CC3DXMLListPy(dd_el.getElements("DiffusionCoefficient"))
 
             for t_el in dd_el_list:
                 f.diff_data.diff_types[t_el.getAttribute("CellType")] = t_el.getDouble()
 
-            dd_el_list = dd_el.getElements("DecayCoefficient")
+            dd_el_list = CC3DXMLListPy(dd_el.getElements("DecayCoefficient"))
 
             for t_el in dd_el_list:
                 f.diff_data.decay_types[t_el.getAttribute("CellType")] = t_el.getDouble()
@@ -6965,17 +6968,17 @@ class ReactionDiffusionSolverFESpecs(_PDESolverSpecs[ReactionDiffusionSolverFEDi
                 sd_el: CC3DXMLElement = el.getFirstElement("SecretionData")
                 p_el: CC3DXMLElement
 
-                sd_el_list = sd_el.getElements("Secretion")
+                sd_el_list = CC3DXMLListPy(sd_el.getElements("Secretion"))
 
                 for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"), p_el.getDouble())
 
-                sd_el_list = sd_el.getElements("ConstantConcentration")
+                sd_el_list = CC3DXMLListPy(sd_el.getElements("ConstantConcentration"))
 
                 for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"), p_el.getDouble(), constant=True)
 
-                sd_el_list = sd_el.getElements("SecretionOnContact")
+                sd_el_list = CC3DXMLListPy(sd_el.getElements("SecretionOnContact"))
 
                 for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"),
@@ -6984,7 +6987,7 @@ class ReactionDiffusionSolverFESpecs(_PDESolverSpecs[ReactionDiffusionSolverFEDi
 
             b_el: CC3DXMLElement = f_el.getFirstElement("BoundaryConditions")
             if b_el is not None:
-                b_el_list = b_el.getElements("Plane")
+                b_el_list = CC3DXMLListPy(b_el.getElements("Plane"))
                 for p_el in b_el_list:
                     p_el: CC3DXMLElement
                     axis: str = p_el.getAttribute("Axis").lower()
@@ -6992,12 +6995,12 @@ class ReactionDiffusionSolverFESpecs(_PDESolverSpecs[ReactionDiffusionSolverFEDi
                         setattr(f.bcs, f"{axis}_min_type", BOUNDARYTYPESPDE[2])
                     else:
                         c_el: CC3DXMLElement
-                        p_el_list = p_el.getElements("ConstantValue")
+                        p_el_list = CC3DXMLListPy(p_el.getElements("ConstantValue"))
                         for c_el in p_el_list:
                             pos: str = c_el.getAttribute("PlanePosition").lower()
                             setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[0])
                             setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
-                        p_el_list = p_el.getElements("ConstantDerivative")
+                        p_el_list = CC3DXMLListPy(p_el.getElements("ConstantDerivative"))
                         for c_el in p_el_list:
                             pos: str = c_el.getAttribute("PlanePosition").lower()
                             setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[1])
@@ -7008,7 +7011,7 @@ class ReactionDiffusionSolverFESpecs(_PDESolverSpecs[ReactionDiffusionSolverFEDi
 
 # SteadyStateDiffusionSolver2D + SteadyStateDiffusionSolver
 
-class SteadyStateDiffusionSolverDiffusionDataSpecs(_PDEDiffusionDataSpecs):
+class SteadyStateDiffusionSolverDiffusionData(_PDEDiffusionDataSpecs):
     """ SteadyStateDiffusionSolver Diffusion Data Specs """
 
     diff_global: float = SpecProperty(name="diff_global")
@@ -7017,10 +7020,10 @@ class SteadyStateDiffusionSolverDiffusionDataSpecs(_PDEDiffusionDataSpecs):
     decay_global: float = SpecProperty(name="decay_global")
     """global decay rate"""
 
-    init_expression: Union[str, None] = SpecProperty(name="init_expression")
+    init_expression: Optional[str] = SpecProperty(name="init_expression")
     """expression of initial field distribution, Optional, None if not set"""
 
-    init_filename: Union[str, None] = SpecProperty(name="init_filename")
+    init_filename: Optional[str] = SpecProperty(name="init_filename")
     """name of file containing initial field distribution, Optional, None if not set"""
 
     @property
@@ -7049,7 +7052,7 @@ class SteadyStateDiffusionSolverDiffusionDataSpecs(_PDEDiffusionDataSpecs):
         :return: list of dependencies
         :rtype: list of Type
         """
-        return super().depends_on + [SteadyStateDiffusionSolverSpecs]
+        return super().depends_on + [SteadyStateDiffusionSolver]
 
     def validate(self, *specs) -> None:
         """
@@ -7062,7 +7065,7 @@ class SteadyStateDiffusionSolverDiffusionDataSpecs(_PDEDiffusionDataSpecs):
         """
         super().validate(*specs)
 
-        solver = SteadyStateDiffusionSolverSpecs
+        solver = SteadyStateDiffusionSolver
 
         # Validate field name uniqueness
         CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
@@ -7073,7 +7076,7 @@ class SteadyStateDiffusionSolverDiffusionDataSpecs(_PDEDiffusionDataSpecs):
                 CoreSpecsValidator.validate_field_name_unique(s, field_name=self.field_name)
 
 
-class SteadyStateDiffusionSolverSecretionDataSpecs(_PDESecretionDataSpecs):
+class SteadyStateDiffusionSolverSecretionData(_PDESecretionDataSpecs):
     """ SteadyStateDiffusionSolver Secretion Data Specs """
 
     @property
@@ -7084,17 +7087,17 @@ class SteadyStateDiffusionSolverSecretionDataSpecs(_PDESecretionDataSpecs):
         :return: list of dependencies
         :rtype: list of Type
         """
-        return super().depends_on + [SteadyStateDiffusionSolverSpecs]
+        return super().depends_on + [SteadyStateDiffusionSolver]
 
 
-class SteadyStateDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[SteadyStateDiffusionSolverDiffusionDataSpecs,
-                                                                SteadyStateDiffusionSolverSecretionDataSpecs]):
+class SteadyStateDiffusionSolverField(_PDESolverFieldSpecs[SteadyStateDiffusionSolverDiffusionData,
+                                                           SteadyStateDiffusionSolverSecretionData]):
     """ SteadyStateDiffusionSolver Field Specs """
 
     def __init__(self,
                  field_name: str,
-                 diff_data=SteadyStateDiffusionSolverDiffusionDataSpecs,
-                 secr_data=SteadyStateDiffusionSolverSecretionDataSpecs):
+                 diff_data=SteadyStateDiffusionSolverDiffusionData,
+                 secr_data=SteadyStateDiffusionSolverSecretionData):
         super().__init__(field_name=field_name,
                          diff_data=diff_data,
                          secr_data=secr_data)
@@ -7129,7 +7132,7 @@ class SteadyStateDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[SteadyStateDiffu
         :return: list of dependencies
         :rtype: list of Type
         """
-        return super().depends_on + [SteadyStateDiffusionSolverSpecs]
+        return super().depends_on + [SteadyStateDiffusionSolver]
 
     def validate(self, *specs) -> None:
         """
@@ -7143,7 +7146,7 @@ class SteadyStateDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[SteadyStateDiffu
         """
         super().validate(*specs)
 
-        solver = SteadyStateDiffusionSolverSpecs
+        solver = SteadyStateDiffusionSolver
 
         # Validate field name uniqueness
         CoreSpecsValidator.validate_field_name_unique(*specs, field_name=self.field_name)
@@ -7153,7 +7156,7 @@ class SteadyStateDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[SteadyStateDiffu
             if isinstance(s, solver):
                 CoreSpecsValidator.validate_field_name_unique(s, field_name=self.field_name)
 
-    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> SecretionSpecs:
+    def secretion_data_new(self, _cell_type: str, _val: float, **kwargs) -> SecretionParameters:
         """
         Specify and return a new secretion data spec
 
@@ -7162,7 +7165,7 @@ class SteadyStateDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[SteadyStateDiffu
         :param kwargs:
         :raises SpecValueError: if setting constant concentration or on contact with
         :return: new secretion data spec
-        :rtype: SecretionSpecs
+        :rtype: SecretionParameters
         """
         if "contact_type" in kwargs.keys():
             raise SpecValueError("SteadyStateDiffusionSolver does not support contact-based secretion")
@@ -7183,15 +7186,15 @@ class SteadyStateDiffusionSolverFieldSpecs(_PDESolverFieldSpecs[SteadyStateDiffu
         _PDESolverFieldSpecs.secretion_data_remove(self, _cell_type)
 
 
-class SteadyStateDiffusionSolverSpecs(_PDESolverSpecs[SteadyStateDiffusionSolverDiffusionDataSpecs,
-                                                      SteadyStateDiffusionSolverSecretionDataSpecs]):
+class SteadyStateDiffusionSolver(_PDESolverSpecs[SteadyStateDiffusionSolverDiffusionData,
+                                                 SteadyStateDiffusionSolverSecretionData]):
     """ SteadyStateDiffusionSolver Specs"""
 
     name = "steady_state_diffusion_solver"
 
-    _field_spec = SteadyStateDiffusionSolverFieldSpecs
-    _diff_data = SteadyStateDiffusionSolverDiffusionDataSpecs
-    _secr_data = SteadyStateDiffusionSolverSecretionDataSpecs
+    _field_spec = SteadyStateDiffusionSolverField
+    _diff_data = SteadyStateDiffusionSolverDiffusionData
+    _secr_data = SteadyStateDiffusionSolverSecretionData
 
     def __init__(self):
         super().__init__()
@@ -7212,7 +7215,7 @@ class SteadyStateDiffusionSolverSpecs(_PDESolverSpecs[SteadyStateDiffusionSolver
             return "SteadyStateDiffusionSolver"
         return "SteadyStateDiffusionSolver2D"
 
-    def generate_header(self) -> Union[ElementCC3D, None]:
+    def generate_header(self) -> Optional[ElementCC3D]:
         """
         Generate and return the top :class:`ElementCC3D` instance
 
@@ -7240,7 +7243,7 @@ class SteadyStateDiffusionSolverSpecs(_PDESolverSpecs[SteadyStateDiffusionSolver
 
         :param CC3DXMLElement _xml: parent xml
         :return: python class instace
-        :rtype: SteadyStateDiffusionSolverSpecs
+        :rtype: SteadyStateDiffusionSolver
         """
         o = cls()
 
@@ -7250,7 +7253,7 @@ class SteadyStateDiffusionSolverSpecs(_PDESolverSpecs[SteadyStateDiffusionSolver
             o.three_d = not o.three_d
             el = o.find_xml_by_attr(_xml)
 
-        el_list = el.getElements("DiffusionField")
+        el_list = CC3DXMLListPy(el.getElements("DiffusionField"))
 
         for f_el in el_list:
             f_el: CC3DXMLElement
@@ -7287,14 +7290,14 @@ class SteadyStateDiffusionSolverSpecs(_PDESolverSpecs[SteadyStateDiffusionSolver
                 sd_el: CC3DXMLElement = el.getFirstElement("SecretionData")
                 p_el: CC3DXMLElement
 
-                sd_el_list = sd_el.getElements("Secretion")
+                sd_el_list = CC3DXMLListPy(sd_el.getElements("Secretion"))
 
                 for p_el in sd_el_list:
                     f.secretion_data_new(p_el.getAttribute("Type"), p_el.getDouble())
 
             b_el: CC3DXMLElement = f_el.getFirstElement("BoundaryConditions")
             if b_el is not None:
-                b_el_list = b_el.getElements("Plane")
+                b_el_list = CC3DXMLListPy(b_el.getElements("Plane"))
                 for p_el in b_el_list:
                     p_el: CC3DXMLElement
                     axis: str = p_el.getAttribute("Axis").lower()
@@ -7302,12 +7305,12 @@ class SteadyStateDiffusionSolverSpecs(_PDESolverSpecs[SteadyStateDiffusionSolver
                         setattr(f.bcs, f"{axis}_min_type", BOUNDARYTYPESPDE[2])
                     else:
                         c_el: CC3DXMLElement
-                        p_el_list = p_el.getElements("ConstantValue")
+                        p_el_list = CC3DXMLListPy(p_el.getElements("ConstantValue"))
                         for c_el in p_el_list:
                             pos: str = c_el.getAttribute("PlanePosition").lower()
                             setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[0])
                             setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
-                        p_el_list = p_el.getElements("ConstantDerivative")
+                        p_el_list = CC3DXMLListPy(p_el.getElements("ConstantDerivative"))
                         for c_el in p_el_list:
                             pos: str = c_el.getAttribute("PlanePosition").lower()
                             setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[1])
@@ -7317,45 +7320,45 @@ class SteadyStateDiffusionSolverSpecs(_PDESolverSpecs[SteadyStateDiffusionSolver
 
 
 PLUGINS = [
-    AdhesionFlexPluginSpecs,
-    BoundaryPixelTrackerPluginSpecs,
-    CellTypePluginSpecs,
-    CenterOfMassPluginSpecs,
-    ChemotaxisPluginSpecs,
-    ConnectivityGlobalPluginSpecs,
-    ConnectivityPluginSpecs,
-    ContactPluginSpecs,
-    CurvaturePluginSpecs,
-    ExternalPotentialPluginSpecs,
-    FocalPointPlasticityPluginSpecs,
-    LengthConstraintPluginSpecs,
-    MomentOfInertiaPluginSpecs,
-    NeighborTrackerPluginSpecs,
-    PixelTrackerPluginSpecs,
-    SecretionPluginSpecs,
-    SurfacePluginSpecs,
-    VolumePluginSpecs
+    AdhesionFlexPlugin,
+    BoundaryPixelTrackerPlugin,
+    CellTypePlugin,
+    CenterOfMassPlugin,
+    ChemotaxisPlugin,
+    ConnectivityGlobalPlugin,
+    ConnectivityPlugin,
+    ContactPlugin,
+    CurvaturePlugin,
+    ExternalPotentialPlugin,
+    FocalPointPlasticityPlugin,
+    LengthConstraintPlugin,
+    MomentOfInertiaPlugin,
+    NeighborTrackerPlugin,
+    PixelTrackerPlugin,
+    SecretionPlugin,
+    SurfacePlugin,
+    VolumePlugin
 ]
 """list of plugins that can be registered with cc3d"""
 
 STEPPABLES = [
-    BoxWatcherSteppableSpecs,
-    PIFDumperSteppableSpecs
+    BoxWatcherSteppable,
+    PIFDumperSteppable
 ]
 """list of steppables that can be registered with cc3d"""
 
 INITIALIZERS = [
-    BlobInitializerSpecs,
-    PIFInitializerSteppableSpecs,
-    UniformInitializerSpecs
+    BlobInitializer,
+    PIFInitializer,
+    UniformInitializer
 ]
 """list of initializers that can be registered with cc3d"""
 
 PDESOLVERS = [
-    DiffusionSolverFESpecs,
-    KernelDiffusionSolverSpecs,
-    ReactionDiffusionSolverFESpecs,
-    SteadyStateDiffusionSolverSpecs
+    DiffusionSolverFE,
+    KernelDiffusionSolver,
+    ReactionDiffusionSolverFE,
+    SteadyStateDiffusionSolver
 ]
 """list of PDE solvers that can be registered with cc3d"""
 
@@ -7364,15 +7367,15 @@ class CoreSpecsValidator:
     """A class containing common validation methods"""
 
     @classmethod
-    def validate_cell_type_names(cls, type_names: Iterable[str], cell_type_spec: CellTypePluginSpecs) -> None:
+    def validate_cell_type_names(cls, type_names: Iterable[str], cell_type_spec: CellTypePlugin) -> None:
         """
-        Validate a list of cell type names against a CellTypePluginSpecs instance
+        Validate a list of cell type names against a CellTypePlugin instance
 
         :param type_names: cell type names
         :type type_names: Iterable[str]
-        :param cell_type_spec: CellTypePluginSpecs instance
-        :type cell_type_spec: CellTypePluginSpecs
-        :raises SpecValueError: when a name is not registered with a CellTypePluginSpecs instance
+        :param cell_type_spec: CellTypePlugin instance
+        :type cell_type_spec: CellTypePlugin
+        :raises SpecValueError: when a name is not registered with a CellTypePlugin instance
         :return: None
         """
         names_not_found = [f for f in type_names if f not in cell_type_spec.cell_types]
@@ -7426,14 +7429,14 @@ class CoreSpecsValidator:
             raise SpecValueError("Could not validate uniqueness of field:", field_name, solvers_found)
 
     @classmethod
-    def validate_point(cls, pt: Point3D, potts_spec: PottsCoreSpecs) -> None:
+    def validate_point(cls, pt: Point3D, potts_spec: PottsCore) -> None:
         """
-        Validate a point against a PottsCoreSpecs instance
+        Validate a point against a PottsCore instance
 
         :param pt: a point
         :type pt: Point3D
         :param potts_spec: potts spec
-        :type potts_spec: PottsCoreSpecs
+        :type potts_spec: PottsCore
         :raises SpecValueError: when a point is outside of the domain defined in potts_spec
         :return: None
         """
@@ -7491,7 +7494,7 @@ def from_xml(_xml: CC3DXMLElement) -> List[_PyCoreXMLInterface]:
     """
     o = []
 
-    for s in [MetadataSpecs] + PLUGINS + STEPPABLES + INITIALIZERS + PDESOLVERS:
+    for s in [Metadata] + PLUGINS + STEPPABLES + INITIALIZERS + PDESOLVERS:
         try:
             s_inst = s.from_xml(_xml)
             o.append(s_inst)
@@ -7542,6 +7545,6 @@ def build_xml(*specs: _PyCoreSpecsBase) -> ElementCC3D:
     :return: CC3DML model specification
     :rtype: ElementCC3D
     """
-    el = PyCoreSpecsMaster().xml
+    el = PyCoreSpecsRoot().xml
     [el.add_child(s.xml) for s in specs]
     return el

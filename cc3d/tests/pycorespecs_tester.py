@@ -75,17 +75,17 @@ def _test_validation_dependencies(*dep_obj, target) -> (bool, str):
 
 def test_validation_adhesion_flex() -> (str, bool):
     """
-    Tests validation defined for AdhesionFlexPluginSpecs
+    Tests validation defined for AdhesionFlexPlugin
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, AdhesionFlexPluginSpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, AdhesionFlexPlugin
 
-    name = AdhesionFlexPluginSpecs.registered_name
+    name = AdhesionFlexPlugin.registered_name
 
-    adhesion_specs = AdhesionFlexPluginSpecs(neighbor_order=2)
-    specs = [PottsCoreSpecs(), CellTypePluginSpecs("T1"), adhesion_specs]
+    adhesion_specs = AdhesionFlexPlugin(neighbor_order=2)
+    specs = [PottsCore(), CellTypePlugin("T1"), adhesion_specs]
 
     # Validate dependencies
     res, msg = _test_validation_dependencies(*[d() for d in adhesion_specs.depends_on], target=adhesion_specs)
@@ -125,15 +125,15 @@ def test_validation_blob_initializer() -> (str, bool):
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, BlobInitializerSpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, BlobInitializer
     from cc3d.cpp.CompuCell import Point3D
 
-    name = BlobInitializerSpecs.registered_name
+    name = BlobInitializer.registered_name
 
     dim_x, dim_y, dim_z = 2, 2, 2
 
-    blob_init_specs = BlobInitializerSpecs()
-    specs = [PottsCoreSpecs(dim_x=dim_x, dim_y=dim_y, dim_z=dim_z), CellTypePluginSpecs("T1"), blob_init_specs]
+    blob_init_specs = BlobInitializer()
+    specs = [PottsCore(dim_x=dim_x, dim_y=dim_y, dim_z=dim_z), CellTypePlugin("T1"), blob_init_specs]
     reg = blob_init_specs.region_new(radius=1, center=Point3D(1, 1, 1), cell_types=["T1"])
 
     # Validate dependencies
@@ -178,24 +178,24 @@ def test_validation_blob_initializer() -> (str, bool):
 
 def test_validation_chemotaxis() -> (str, bool):
     """
-    Tests validation defined for ChemotaxisPluginSpecs
+    Tests validation defined for ChemotaxisPlugin
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, DiffusionSolverFESpecs, ChemotaxisPluginSpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, DiffusionSolverFE, ChemotaxisPlugin
 
-    name = ChemotaxisPluginSpecs.registered_name
+    name = ChemotaxisPlugin.registered_name
 
-    cell_type_specs = CellTypePluginSpecs()
-    specs = [PottsCoreSpecs(), cell_type_specs]
+    cell_type_specs = CellTypePlugin()
+    specs = [PottsCore(), cell_type_specs]
 
     # Setup: DiffusionSolverFE
-    f1_solver_specs = DiffusionSolverFESpecs()
+    f1_solver_specs = DiffusionSolverFE()
     f1_solver_specs.field_new("F1")
     specs.append(f1_solver_specs)
 
-    chemotaxis_specs = ChemotaxisPluginSpecs()
+    chemotaxis_specs = ChemotaxisPlugin()
     specs.append(chemotaxis_specs)
 
     # Validate dependencies
@@ -221,7 +221,7 @@ def test_validation_chemotaxis() -> (str, bool):
 
     # Validation error: solver not registered
     try:
-        chemotaxis_specs.validate(*[s for s in specs if not isinstance(s, DiffusionSolverFESpecs)])
+        chemotaxis_specs.validate(*[s for s in specs if not isinstance(s, DiffusionSolverFE)])
         return name, False
     except SpecValueError as e:
         print(name, str(e), str(e.names))
@@ -232,7 +232,7 @@ def test_validation_chemotaxis() -> (str, bool):
             return name, False
 
     # Validation error: cell type name not registered
-    cs.param_new("T1")
+    cs.params_new("T1")
     try:
         chemotaxis_specs.validate(*specs)
         return name, False
@@ -250,18 +250,18 @@ def test_validation_chemotaxis() -> (str, bool):
 
 def test_validation_connectivity_global() -> (str, bool):
     """
-    Tests validation defined for ContactPluginSpecs
+    Tests validation defined for ContactPlugin
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, ConnectivityGlobalPluginSpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, ConnectivityGlobalPlugin
 
-    name = ConnectivityGlobalPluginSpecs.registered_name
+    name = ConnectivityGlobalPlugin.registered_name
 
-    cell_type_specs = CellTypePluginSpecs()
-    connectivity_specs = ConnectivityGlobalPluginSpecs()
-    specs = [PottsCoreSpecs(), cell_type_specs, connectivity_specs]
+    cell_type_specs = CellTypePlugin()
+    connectivity_specs = ConnectivityGlobalPlugin()
+    specs = [PottsCore(), cell_type_specs, connectivity_specs]
 
     # Validate dependencies
     res, msg = _test_validation_dependencies(*[d() for d in connectivity_specs.depends_on], target=connectivity_specs)
@@ -289,17 +289,17 @@ def test_validation_connectivity_global() -> (str, bool):
 
 def test_validation_contact() -> (str, bool):
     """
-    Tests validation defined for ContactPluginSpecs
+    Tests validation defined for ContactPlugin
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, ContactPluginSpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, ContactPlugin
 
-    name = ContactPluginSpecs.registered_name
+    name = ContactPlugin.registered_name
 
-    contact_specs = ContactPluginSpecs(neighbor_order=2)
-    specs = [PottsCoreSpecs(), CellTypePluginSpecs("T1"), contact_specs]
+    contact_specs = ContactPlugin(neighbor_order=2)
+    specs = [PottsCore(), CellTypePlugin("T1"), contact_specs]
     param1 = contact_specs.param_new(type_1="Medium", type_2="T1", energy=1.0)
 
     # Validate dependencies
@@ -339,17 +339,17 @@ def test_validation_contact() -> (str, bool):
 
 def test_validation_contact_internal() -> (str, bool):
     """
-    Tests validation defined for ContactInternalPluginSpecs
+    Tests validation defined for ContactInternalPlugin
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, ContactInternalPluginSpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, ContactInternalPlugin
 
-    name = ContactInternalPluginSpecs.registered_name
+    name = ContactInternalPlugin.registered_name
 
-    contact_specs = ContactInternalPluginSpecs(neighbor_order=2)
-    specs = [PottsCoreSpecs(), CellTypePluginSpecs("T1"), contact_specs]
+    contact_specs = ContactInternalPlugin(neighbor_order=2)
+    specs = [PottsCore(), CellTypePlugin("T1"), contact_specs]
     param1 = contact_specs.param_new(type_1="Medium", type_2="T1", energy=1.0)
 
     # Validate dependencies
@@ -389,17 +389,17 @@ def test_validation_contact_internal() -> (str, bool):
 
 def test_validation_contact_local_flex() -> (str, bool):
     """
-    Tests validation defined for ContactLocalFlexPluginSpecs
+    Tests validation defined for ContactLocalFlexPlugin
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, ContactLocalFlexPluginSpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, ContactLocalFlexPlugin
 
-    name = ContactLocalFlexPluginSpecs.registered_name
+    name = ContactLocalFlexPlugin.registered_name
 
-    contact_specs = ContactLocalFlexPluginSpecs(neighbor_order=2)
-    specs = [PottsCoreSpecs(), CellTypePluginSpecs("T1"), contact_specs]
+    contact_specs = ContactLocalFlexPlugin(neighbor_order=2)
+    specs = [PottsCore(), CellTypePlugin("T1"), contact_specs]
     param1 = contact_specs.param_new(type_1="Medium", type_2="T1", energy=1.0)
 
     # Validate dependencies
@@ -439,18 +439,18 @@ def test_validation_contact_local_flex() -> (str, bool):
 
 def test_validation_curvature() -> (str, bool):
     """
-    Tests validation defined for CurvaturePluginSpecs
+    Tests validation defined for CurvaturePlugin
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, CurvaturePluginSpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, CurvaturePlugin
 
-    name = CurvaturePluginSpecs.registered_name
+    name = CurvaturePlugin.registered_name
 
-    cell_type_specs = CellTypePluginSpecs()
-    curvature_specs = CurvaturePluginSpecs()
-    specs = [PottsCoreSpecs(), cell_type_specs, curvature_specs]
+    cell_type_specs = CellTypePlugin()
+    curvature_specs = CurvaturePlugin()
+    specs = [PottsCore(), cell_type_specs, curvature_specs]
 
     # Validate dependencies
     res, msg = _test_validation_dependencies(*[d() for d in curvature_specs.depends_on], target=curvature_specs)
@@ -460,7 +460,7 @@ def test_validation_curvature() -> (str, bool):
         return name, False
 
     # Validation error: cell type name not registered
-    p = curvature_specs.param_type_new("T1", 1, 1)
+    p = curvature_specs.params_type_new("T1", 1, 1)
     try:
         curvature_specs.validate(*specs)
         return name, False
@@ -481,7 +481,7 @@ def test_validation_curvature() -> (str, bool):
         print(name, str(e), str(e.names))
         p.cell_type = "T1"
 
-    pt = curvature_specs.param_internal_new("T1", "T2", 1, 1)
+    pt = curvature_specs.params_internal_new("T1", "T2", 1, 1)
     try:
         curvature_specs.validate(*specs)
         return name, False
@@ -525,17 +525,17 @@ def test_validation_curvature() -> (str, bool):
 
 def test_validation_diffusion_solver_fe() -> (str, bool):
     """
-    Tests validation defined for DiffusionSolverFESpecs
+    Tests validation defined for DiffusionSolverFE
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, DiffusionSolverFESpecs
-    from cc3d.core.PyCoreSpecs import ReactionDiffusionSolverFESpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, DiffusionSolverFE
+    from cc3d.core.PyCoreSpecs import ReactionDiffusionSolverFE
 
-    cell_type_specs = CellTypePluginSpecs("T1", "T2")
-    f1_solver_specs = DiffusionSolverFESpecs()
-    specs = [PottsCoreSpecs(), cell_type_specs, f1_solver_specs]
+    cell_type_specs = CellTypePlugin("T1", "T2")
+    f1_solver_specs = DiffusionSolverFE()
+    specs = [PottsCore(), cell_type_specs, f1_solver_specs]
 
     name = f1_solver_specs.registered_name
 
@@ -550,7 +550,7 @@ def test_validation_diffusion_solver_fe() -> (str, bool):
 
     # Validation error: DiffusionData requires a solver
     try:
-        f1.diff_data.validate(*[s for s in specs if not isinstance(s, DiffusionSolverFESpecs)])
+        f1.diff_data.validate(*[s for s in specs if not isinstance(s, DiffusionSolverFE)])
         return name, False
     except SpecValueError as e:
         print(name, str(e), str(e.names))
@@ -558,7 +558,7 @@ def test_validation_diffusion_solver_fe() -> (str, bool):
 
     # Validation error: SecretionDataSpecs requires a solver
     try:
-        f1.spec_dict["secr_data"].validate(*[s for s in specs if not isinstance(s, DiffusionSolverFESpecs)])
+        f1.spec_dict["secr_data"].validate(*[s for s in specs if not isinstance(s, DiffusionSolverFE)])
         return name, False
     except SpecValueError as e:
         print(name, str(e), str(e.names))
@@ -628,7 +628,7 @@ def test_validation_diffusion_solver_fe() -> (str, bool):
         f1.field_name = "F1"
 
     # Validation error: non-unique field name
-    f2_solver_specs = ReactionDiffusionSolverFESpecs()
+    f2_solver_specs = ReactionDiffusionSolverFE()
     f2_solver_specs.field_new("F1")
     specs.append(f2_solver_specs)
     try:
@@ -643,18 +643,18 @@ def test_validation_diffusion_solver_fe() -> (str, bool):
 
 def test_validation_external_potential() -> (str, bool):
     """
-    Tests validation defined for ExternalPotentialPluginSpecs
+    Tests validation defined for ExternalPotentialPlugin
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, ExternalPotentialPluginSpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, ExternalPotentialPlugin
 
-    name = ExternalPotentialPluginSpecs.registered_name
+    name = ExternalPotentialPlugin.registered_name
 
-    cell_type_specs = CellTypePluginSpecs()
-    ext_pot_specs = ExternalPotentialPluginSpecs()
-    specs = [PottsCoreSpecs(), cell_type_specs, ext_pot_specs]
+    cell_type_specs = CellTypePlugin()
+    ext_pot_specs = ExternalPotentialPlugin()
+    specs = [PottsCore(), cell_type_specs, ext_pot_specs]
 
     # Validate dependencies
     res, msg = _test_validation_dependencies(*[d() for d in ext_pot_specs.depends_on], target=ext_pot_specs)
@@ -695,18 +695,18 @@ def test_validation_external_potential() -> (str, bool):
 
 def test_validation_focal_point_plasticity() -> (str, bool):
     """
-    Tests validation defined for FocalPointPlasticityPluginSpecs
+    Tests validation defined for FocalPointPlasticityPlugin
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, FocalPointPlasticityPluginSpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, FocalPointPlasticityPlugin
 
-    name = FocalPointPlasticityPluginSpecs.registered_name
+    name = FocalPointPlasticityPlugin.registered_name
 
-    cell_type_specs = CellTypePluginSpecs("T1")
-    fpp_specs = FocalPointPlasticityPluginSpecs()
-    specs = [PottsCoreSpecs(), cell_type_specs, fpp_specs]
+    cell_type_specs = CellTypePlugin("T1")
+    fpp_specs = FocalPointPlasticityPlugin()
+    specs = [PottsCore(), cell_type_specs, fpp_specs]
 
     # Validate dependencies
     res, msg = _test_validation_dependencies(*[d() for d in fpp_specs.depends_on], target=fpp_specs)
@@ -716,7 +716,7 @@ def test_validation_focal_point_plasticity() -> (str, bool):
         return name, False
 
     # Validation error: cell type name not registered
-    p = fpp_specs.param_new("T1", "T1", lambda_fpp=1, activation_energy=1, target_distance=1, max_distance=1)
+    p = fpp_specs.params_new("T1", "T1", lambda_fpp=1, activation_energy=1, target_distance=1, max_distance=1)
     try:
         p.type1 = "T2"
         fpp_specs.validate(*specs)
@@ -743,7 +743,7 @@ def test_validation_focal_point_plasticity() -> (str, bool):
             print(name, str(e), str(e.names))
             return name, False
 
-    fpp_specs.param_new("T1", "T4", lambda_fpp=1, activation_energy=1, target_distance=1, max_distance=1)
+    fpp_specs.params_new("T1", "T4", lambda_fpp=1, activation_energy=1, target_distance=1, max_distance=1)
     try:
         fpp_specs.validate(*specs)
         return name, False
@@ -761,17 +761,17 @@ def test_validation_focal_point_plasticity() -> (str, bool):
 
 def test_validation_kernel_diffusion_solver() -> (str, bool):
     """
-    Tests validation defined for KernelDiffusionSolverSpecs
+    Tests validation defined for KernelDiffusionSolver
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, KernelDiffusionSolverSpecs
-    from cc3d.core.PyCoreSpecs import DiffusionSolverFESpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, KernelDiffusionSolver
+    from cc3d.core.PyCoreSpecs import DiffusionSolverFE
 
-    cell_type_specs = CellTypePluginSpecs("T1", "T2")
-    f1_solver_specs = KernelDiffusionSolverSpecs()
-    specs = [PottsCoreSpecs(), cell_type_specs, f1_solver_specs]
+    cell_type_specs = CellTypePlugin("T1", "T2")
+    f1_solver_specs = KernelDiffusionSolver()
+    specs = [PottsCore(), cell_type_specs, f1_solver_specs]
 
     name = f1_solver_specs.registered_name
 
@@ -786,7 +786,7 @@ def test_validation_kernel_diffusion_solver() -> (str, bool):
 
     # Validation error: DiffusionData requires a solver
     try:
-        f1.diff_data.validate(*[s for s in specs if not isinstance(s, KernelDiffusionSolverSpecs)])
+        f1.diff_data.validate(*[s for s in specs if not isinstance(s, KernelDiffusionSolver)])
         return name, False
     except SpecValueError as e:
         print(name, str(e), str(e.names))
@@ -794,7 +794,7 @@ def test_validation_kernel_diffusion_solver() -> (str, bool):
 
     # Validation error: SecretionDataSpecs requires a solver
     try:
-        f1.spec_dict["secr_data"].validate(*[s for s in specs if not isinstance(s, KernelDiffusionSolverSpecs)])
+        f1.spec_dict["secr_data"].validate(*[s for s in specs if not isinstance(s, KernelDiffusionSolver)])
         return name, False
     except SpecValueError as e:
         print(name, str(e), str(e.names))
@@ -837,7 +837,7 @@ def test_validation_kernel_diffusion_solver() -> (str, bool):
         f1.field_name = "F1"
 
     # Validation error: non-unique field name
-    f2_solver_specs = DiffusionSolverFESpecs()
+    f2_solver_specs = DiffusionSolverFE()
     f2_solver_specs.field_new("F1")
     specs.append(f2_solver_specs)
     try:
@@ -852,18 +852,18 @@ def test_validation_kernel_diffusion_solver() -> (str, bool):
 
 def test_validation_length_constraint() -> (str, bool):
     """
-    Tests validation defined for LengthConstraintPluginSpecs
+    Tests validation defined for LengthConstraintPlugin
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, LengthConstraintPluginSpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, LengthConstraintPlugin
 
-    name = LengthConstraintPluginSpecs.registered_name
+    name = LengthConstraintPlugin.registered_name
 
-    cell_type_specs = CellTypePluginSpecs("T1")
-    length_specs = LengthConstraintPluginSpecs()
-    specs = [PottsCoreSpecs(), cell_type_specs, length_specs]
+    cell_type_specs = CellTypePlugin("T1")
+    length_specs = LengthConstraintPlugin()
+    specs = [PottsCore(), cell_type_specs, length_specs]
 
     # Validate dependencies
     res, msg = _test_validation_dependencies(*[d() for d in length_specs.depends_on], target=length_specs)
@@ -872,7 +872,7 @@ def test_validation_length_constraint() -> (str, bool):
     else:
         return name, False
 
-    param = length_specs.param_new("T1", target_length=1.0, lambda_length=1.0)
+    param = length_specs.params_new("T1", target_length=1.0, lambda_length=1.0)
 
     # Validation error: undefined cell type
     param.cell_type = "T2"
@@ -889,7 +889,7 @@ def test_validation_length_constraint() -> (str, bool):
             return name, False
 
     # Validation error: undefined cell type
-    length_specs.param_new("T3", target_length=1.0, lambda_length=1.0)
+    length_specs.params_new("T3", target_length=1.0, lambda_length=1.0)
     try:
         length_specs.validate(*specs)
         return name, False
@@ -907,17 +907,17 @@ def test_validation_length_constraint() -> (str, bool):
 
 def test_validation_pde_boundary_condition() -> (str, bool):
     """
-    Tests validation defined for PDEBoundaryConditionsSpec
+    Tests validation defined for PDEBoundaryConditions
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, PDEBoundaryConditionsSpec, BOUNDARYTYPESPOTTS, BOUNDARYTYPESPDE
+    from cc3d.core.PyCoreSpecs import PottsCore, PDEBoundaryConditions, BOUNDARYTYPESPOTTS, BOUNDARYTYPESPDE
 
     name = "PDEBoundaryConditions"
 
-    potts_specs = PottsCoreSpecs()
-    bcs = PDEBoundaryConditionsSpec()
+    potts_specs = PottsCore()
+    bcs = PDEBoundaryConditions()
     specs = [potts_specs, bcs]
 
     # Validate dependencies
@@ -989,17 +989,17 @@ def test_validation_pde_boundary_condition() -> (str, bool):
 
 def test_validation_potts() -> (str, bool):
     """
-    Tests validation defined for PottsCoreSpecs
+    Tests validation defined for PottsCore
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import CellTypePluginSpecs, PottsCoreSpecs
+    from cc3d.core.PyCoreSpecs import CellTypePlugin, PottsCore
 
-    name = PottsCoreSpecs.registered_name
+    name = PottsCore.registered_name
 
-    cell_type_specs = CellTypePluginSpecs()
-    potts_specs = PottsCoreSpecs()
+    cell_type_specs = CellTypePlugin()
+    potts_specs = PottsCore()
     specs = [cell_type_specs, potts_specs]
 
     # Validate dependencies
@@ -1029,17 +1029,17 @@ def test_validation_potts() -> (str, bool):
 
 def test_validation_reaction_diffusion_solver_fe() -> (str, bool):
     """
-    Tests validation defined for ReactionDiffusionSolverFESpecs
+    Tests validation defined for ReactionDiffusionSolverFE
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, ReactionDiffusionSolverFESpecs
-    from cc3d.core.PyCoreSpecs import DiffusionSolverFESpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, ReactionDiffusionSolverFE
+    from cc3d.core.PyCoreSpecs import DiffusionSolverFE
 
-    cell_type_specs = CellTypePluginSpecs("T1", "T2")
-    f1_solver_specs = ReactionDiffusionSolverFESpecs()
-    specs = [PottsCoreSpecs(), cell_type_specs, f1_solver_specs]
+    cell_type_specs = CellTypePlugin("T1", "T2")
+    f1_solver_specs = ReactionDiffusionSolverFE()
+    specs = [PottsCore(), cell_type_specs, f1_solver_specs]
 
     name = f1_solver_specs.registered_name
 
@@ -1054,7 +1054,7 @@ def test_validation_reaction_diffusion_solver_fe() -> (str, bool):
 
     # Validation error: DiffusionData requires a solver
     try:
-        f1.diff_data.validate(*[s for s in specs if not isinstance(s, ReactionDiffusionSolverFESpecs)])
+        f1.diff_data.validate(*[s for s in specs if not isinstance(s, ReactionDiffusionSolverFE)])
         return name, False
     except SpecValueError as e:
         print(name, str(e), str(e.names))
@@ -1062,7 +1062,7 @@ def test_validation_reaction_diffusion_solver_fe() -> (str, bool):
 
     # Validation error: SecretionDataSpecs requires a solver
     try:
-        f1.spec_dict["secr_data"].validate(*[s for s in specs if not isinstance(s, ReactionDiffusionSolverFESpecs)])
+        f1.spec_dict["secr_data"].validate(*[s for s in specs if not isinstance(s, ReactionDiffusionSolverFE)])
         return name, False
     except SpecValueError as e:
         print(name, str(e), str(e.names))
@@ -1132,7 +1132,7 @@ def test_validation_reaction_diffusion_solver_fe() -> (str, bool):
         f1.field_name = "F1"
 
     # Validation error: non-unique field name
-    f2_solver_specs = DiffusionSolverFESpecs()
+    f2_solver_specs = DiffusionSolverFE()
     f2_solver_specs.field_new("F1")
     specs.append(f2_solver_specs)
     try:
@@ -1147,21 +1147,21 @@ def test_validation_reaction_diffusion_solver_fe() -> (str, bool):
 
 def test_validation_secretion() -> (str, bool):
     """
-    Tests validation defined for SteadyStateDiffusionSolverSpecs
+    Tests validation defined for SteadyStateDiffusionSolver
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, DiffusionSolverFESpecs, SecretionPluginSpecs
-    from cc3d.core.PyCoreSpecs import BoundaryPixelTrackerPluginSpecs, PixelTrackerPluginSpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, DiffusionSolverFE, SecretionPlugin
+    from cc3d.core.PyCoreSpecs import BoundaryPixelTrackerPlugin, PixelTrackerPlugin
 
-    name = SecretionPluginSpecs.registered_name
+    name = SecretionPlugin.registered_name
 
-    cell_type_specs = CellTypePluginSpecs()
-    secretion_specs = SecretionPluginSpecs()
-    pde_solver = DiffusionSolverFESpecs()
-    specs = [PottsCoreSpecs(), cell_type_specs, secretion_specs, pde_solver,
-             PixelTrackerPluginSpecs(), BoundaryPixelTrackerPluginSpecs()]
+    cell_type_specs = CellTypePlugin()
+    secretion_specs = SecretionPlugin()
+    pde_solver = DiffusionSolverFE()
+    specs = [PottsCore(), cell_type_specs, secretion_specs, pde_solver,
+             PixelTrackerPlugin(), BoundaryPixelTrackerPlugin()]
 
     # Validate dependencies
     res, msg = _test_validation_dependencies(*[d() for d in secretion_specs.depends_on], target=secretion_specs)
@@ -1178,7 +1178,7 @@ def test_validation_secretion() -> (str, bool):
     except SpecValueError as e:
         print(name, str(e), str(e.names))
         try:
-            secretion_specs.validate(*[s for s in specs if not isinstance(s, PixelTrackerPluginSpecs)])
+            secretion_specs.validate(*[s for s in specs if not isinstance(s, PixelTrackerPlugin)])
             secretion_specs.pixel_tracker = True
         except SpecValueError as e:
             print(name, str(e), str(e.names))
@@ -1192,7 +1192,7 @@ def test_validation_secretion() -> (str, bool):
     except SpecValueError as e:
         print(name, str(e), str(e.names))
         try:
-            secretion_specs.validate(*[s for s in specs if not isinstance(s, BoundaryPixelTrackerPluginSpecs)])
+            secretion_specs.validate(*[s for s in specs if not isinstance(s, BoundaryPixelTrackerPlugin)])
             secretion_specs.boundary_pixel_tracker = True
         except SpecValueError as e:
             print(name, str(e), str(e.names))
@@ -1230,17 +1230,17 @@ def test_validation_secretion() -> (str, bool):
 
 def test_validation_steady_state_diffusion_solver() -> (str, bool):
     """
-    Tests validation defined for SteadyStateDiffusionSolverSpecs
+    Tests validation defined for SteadyStateDiffusionSolver
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, SteadyStateDiffusionSolverSpecs
-    from cc3d.core.PyCoreSpecs import DiffusionSolverFESpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, SteadyStateDiffusionSolver
+    from cc3d.core.PyCoreSpecs import DiffusionSolverFE
 
-    cell_type_specs = CellTypePluginSpecs("T1", "T2")
-    f1_solver_specs = SteadyStateDiffusionSolverSpecs()
-    specs = [PottsCoreSpecs(), cell_type_specs, f1_solver_specs]
+    cell_type_specs = CellTypePlugin("T1", "T2")
+    f1_solver_specs = SteadyStateDiffusionSolver()
+    specs = [PottsCore(), cell_type_specs, f1_solver_specs]
 
     name = f1_solver_specs.registered_name
 
@@ -1255,7 +1255,7 @@ def test_validation_steady_state_diffusion_solver() -> (str, bool):
 
     # Validation error: DiffusionData requires a solver
     try:
-        f1.diff_data.validate(*[s for s in specs if not isinstance(s, SteadyStateDiffusionSolverSpecs)])
+        f1.diff_data.validate(*[s for s in specs if not isinstance(s, SteadyStateDiffusionSolver)])
         return name, False
     except SpecValueError as e:
         print(name, str(e), str(e.names))
@@ -1263,7 +1263,7 @@ def test_validation_steady_state_diffusion_solver() -> (str, bool):
 
     # Validation error: SecretionDataSpecs requires a solver
     try:
-        f1.spec_dict["secr_data"].validate(*[s for s in specs if not isinstance(s, SteadyStateDiffusionSolverSpecs)])
+        f1.spec_dict["secr_data"].validate(*[s for s in specs if not isinstance(s, SteadyStateDiffusionSolver)])
         return name, False
     except SpecValueError as e:
         print(name, str(e), str(e.names))
@@ -1298,7 +1298,7 @@ def test_validation_steady_state_diffusion_solver() -> (str, bool):
         f1.field_name = "F1"
 
     # Validation error: non-unique field name
-    f2_solver_specs = DiffusionSolverFESpecs()
+    f2_solver_specs = DiffusionSolverFE()
     f2_solver_specs.field_new("F1")
     specs.append(f2_solver_specs)
     try:
@@ -1313,18 +1313,18 @@ def test_validation_steady_state_diffusion_solver() -> (str, bool):
 
 def test_validation_surface() -> (str, bool):
     """
-    Tests validation defined for SurfacePluginSpecs
+    Tests validation defined for SurfacePlugin
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, SurfacePluginSpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, SurfacePlugin
 
-    name = SurfacePluginSpecs.registered_name
+    name = SurfacePlugin.registered_name
 
-    cell_type_specs = CellTypePluginSpecs("T1")
-    surface_specs = SurfacePluginSpecs()
-    specs = [PottsCoreSpecs(), cell_type_specs, surface_specs]
+    cell_type_specs = CellTypePlugin("T1")
+    surface_specs = SurfacePlugin()
+    specs = [PottsCore(), cell_type_specs, surface_specs]
 
     # Validate dependencies
     res, msg = _test_validation_dependencies(*[d() for d in surface_specs.depends_on], target=surface_specs)
@@ -1368,20 +1368,20 @@ def test_validation_surface() -> (str, bool):
 
 def test_validation_uniform_initializer() -> (str, bool):
     """
-    Tests validation defined for UniformInitializerSpecs
+    Tests validation defined for UniformInitializer
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import CellTypePluginSpecs, PottsCoreSpecs, UniformInitializerSpecs
+    from cc3d.core.PyCoreSpecs import CellTypePlugin, PottsCore, UniformInitializer
     from cc3d.cpp.CompuCell import Point3D
 
-    name = UniformInitializerSpecs.registered_name
+    name = UniformInitializer.registered_name
 
     ct = ["T1", "T2", "T3"]
     dim_x, dim_y, dim_z = 1, 2, 3
-    unif_init_specs = UniformInitializerSpecs()
-    specs = [PottsCoreSpecs(dim_x=dim_x, dim_y=dim_y), CellTypePluginSpecs(*ct), unif_init_specs]
+    unif_init_specs = UniformInitializer()
+    specs = [PottsCore(dim_x=dim_x, dim_y=dim_y), CellTypePlugin(*ct), unif_init_specs]
 
     # Validate dependencies
     res, msg = _test_validation_dependencies(*[d() for d in unif_init_specs.depends_on], target=unif_init_specs)
@@ -1428,18 +1428,18 @@ def test_validation_uniform_initializer() -> (str, bool):
 
 def test_validation_volume() -> (str, bool):
     """
-    Tests validation defined for VolumePluginSpecs
+    Tests validation defined for VolumePlugin
 
     :return: registered name and test result
     :rtype: (str, bool)
     """
-    from cc3d.core.PyCoreSpecs import PottsCoreSpecs, CellTypePluginSpecs, VolumePluginSpecs
+    from cc3d.core.PyCoreSpecs import PottsCore, CellTypePlugin, VolumePlugin
 
-    name = VolumePluginSpecs.registered_name
+    name = VolumePlugin.registered_name
 
-    cell_type_specs = CellTypePluginSpecs("T1")
-    volume_specs = VolumePluginSpecs()
-    specs = [PottsCoreSpecs(), cell_type_specs, volume_specs]
+    cell_type_specs = CellTypePlugin("T1")
+    volume_specs = VolumePlugin()
+    specs = [PottsCore(), cell_type_specs, volume_specs]
 
     # Validate dependencies
     res, msg = _test_validation_dependencies(*[d() for d in volume_specs.depends_on], target=volume_specs)
@@ -1528,14 +1528,14 @@ def test_serial() -> None:
 
     :return: None
     """
-    from cc3d.core.PyCoreSpecs import PLUGINS, STEPPABLES, INITIALIZERS, MetadataSpecs
-    from cc3d.core.PyCoreSpecs import PIFDumperSteppableSpecs, PIFInitializerSteppableSpecs
+    from cc3d.core.PyCoreSpecs import PLUGINS, STEPPABLES, INITIALIZERS, Metadata
+    from cc3d.core.PyCoreSpecs import PIFDumperSteppable, PIFInitializer
     import pickle
 
-    ins = {PIFDumperSteppableSpecs: ([], {"pif_name": "dummy", "frequency": 1}),
-           PIFInitializerSteppableSpecs: ([], {"pif_name": "dummy"})}
+    ins = {PIFDumperSteppable: ([], {"pif_name": "dummy", "frequency": 1}),
+           PIFInitializer: ([], {"pif_name": "dummy"})}
 
-    for spec in PLUGINS + STEPPABLES + INITIALIZERS + [MetadataSpecs]:
+    for spec in PLUGINS + STEPPABLES + INITIALIZERS + [Metadata]:
         print("Testing serialization:", spec)
 
         try:
