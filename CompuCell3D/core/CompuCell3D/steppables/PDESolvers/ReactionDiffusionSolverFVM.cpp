@@ -982,7 +982,7 @@ void ReactionDiffusionSolverFVM::loadFieldExpressions() {
 }
 
 void ReactionDiffusionSolverFVM::loadFieldExpressionMultiplier(unsigned int _fieldIndex) {
-	//replace with openmp
+	auto &_fieldFVs = fieldFVs;
 	#pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i<fieldFVs.size();i++){
 		loadFieldExpressionMultiplier(_fieldIndex, fieldFVs[i]);
@@ -996,6 +996,7 @@ void ReactionDiffusionSolverFVM::loadFieldExpressionMultiplier(std::string _fiel
 }
 
 void ReactionDiffusionSolverFVM::loadFieldExpressionIndependent(unsigned int _fieldIndex) {
+	auto &_fieldFVs = fieldFVs;
 	#pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i<fieldFVs.size();i++){
 				loadFieldExpressionIndependent(_fieldIndex, fieldFVs[i]); 
@@ -1043,6 +1044,7 @@ void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
 
 	cerr << "Setting field symbols..." << endl;
 	
+	auto &_fieldFVs = fieldFVs;
 	#pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i<fieldFVs.size();i++){
 	for (int fieldIndex=0;fieldIndex<fieldFVs[i]->getConcentrationVec().size();++fieldIndex){ 
@@ -1289,12 +1291,14 @@ Point3D ReactionDiffusionSolverFVM::getCoordsOfFV(ReactionDiffusionSolverFV *_fv
 CellG * ReactionDiffusionSolverFVM::FVtoCellMap(ReactionDiffusionSolverFV * _fv) { return potts->getCellFieldG()->get(_fv->getCoords()); }
 
 void ReactionDiffusionSolverFVM::useConstantDiffusivity(unsigned int _fieldIndex, double _diffusivityCoefficient) {	
+	auto &_fieldFVs = fieldFVs;
 	#pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i<fieldFVs.size();i++){ 
 		fieldFVs[i]->useConstantDiffusivity(_fieldIndex, _diffusivityCoefficient);
 	}
 }
 void ReactionDiffusionSolverFVM::useConstantDiffusivityByType(unsigned int _fieldIndex, double _diffusivityCoefficient) {
+	auto &_fieldFVs = fieldFVs;
 	#pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i<fieldFVs.size();i++){ 
 		fieldFVs[i]->useConstantDiffusivityById(_fieldIndex, _diffusivityCoefficient);
@@ -1302,6 +1306,7 @@ void ReactionDiffusionSolverFVM::useConstantDiffusivityByType(unsigned int _fiel
 }
 void ReactionDiffusionSolverFVM::useFieldDiffusivityInMedium(unsigned int _fieldIndex) {
 	initDiffusivityField(_fieldIndex);
+	auto &_fieldFVs = fieldFVs;
 	#pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i<fieldFVs.size();i++){ 
 		fieldFVs[i]->useFieldDiffusivityInMedium(_fieldIndex);
@@ -1309,6 +1314,7 @@ void ReactionDiffusionSolverFVM::useFieldDiffusivityInMedium(unsigned int _field
 }
 void ReactionDiffusionSolverFVM::useFieldDiffusivityEverywhere(unsigned int _fieldIndex) {
 	initDiffusivityField(_fieldIndex);
+	auto &_fieldFVs = fieldFVs;
 	#pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i<fieldFVs.size();i++){ 
 		fieldFVs[i]->useFieldDiffusivityEverywhere(_fieldIndex);
