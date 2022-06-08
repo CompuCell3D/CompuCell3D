@@ -686,7 +686,6 @@ void ReactionDiffusionSolverFVM::handleEvent(CC3DEvent & _event) {
 
 		pUtils->setLock(lockPtr);
 
-		
 		std::vector<ReactionDiffusionSolverFV *> fvs = std::vector<ReactionDiffusionSolverFV *>((int)(fieldDim.x*fieldDim.y*fieldDim.z));
 
 		fvs = fieldFVs;
@@ -732,6 +731,8 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 	if (!cellDataLoaded) { loadCellData(); }
 
 	cerr << "RDFVM Step begin..." << endl;
+	
+	auto &_fieldFVs = fieldFVs;
 
 	if (simpleMassConservation) {
 
@@ -757,6 +758,7 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 	double intTime = 0.0;
 
 	fieldDim = potts->getCellFieldG()->getDim();
+	auto _fieldDim = fieldDim;
 
 	///TODO: Ask Dr. Sego about why grow_to_at_least was removed? Or maybe it was moved to another module?
 	// if (autoTimeSubStep) { fvMaxStableTimeSteps->grow_to_at_least(fieldDim.x*fieldDim.y*fieldDim.z); }
@@ -774,6 +776,7 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 				fvMaxStableTimeSteps->at(fieldIndex) = this->getFieldFV(fieldIndex)->solveStable();
 			}
 		
+
 			cerr << "calculating maximum stable time step... ";
 
 			// Might be more efficient using a combinable
@@ -789,6 +792,7 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 			for (int i=0;i< fieldFVs.size();i++){
 				fieldFVs[i]->solve();
 			}
+
 		}
 
 		cerr << integrationTimeStep << " s." << endl;
@@ -992,7 +996,6 @@ void ReactionDiffusionSolverFVM::loadFieldExpressionMultiplier(std::string _fiel
 }
 
 void ReactionDiffusionSolverFVM::loadFieldExpressionIndependent(unsigned int _fieldIndex) {
-		//replace with openmp
 	#pragma omp parallel for shared (fieldFVs)
 	for (int i=0;i<fieldFVs.size();i++){
 				loadFieldExpressionIndependent(_fieldIndex, fieldFVs[i]); 
@@ -1192,6 +1195,8 @@ std::vector<double> ReactionDiffusionSolverFVM::totalMediumConcentration() {
 	std::vector<Point3D> pixelVec = getMediumPixelVec();
 	std::vector<Point3D> pixelVecPar = std::vector<Point3D>(pixelVec.size());
 	for (unsigned int pixelIndex = 0; pixelIndex < pixelVec.size(); ++pixelIndex) { pixelVecPar[pixelIndex] = pixelVec[pixelIndex]; }
+
+	//concurrency::concurrent_vector<Point3D> pixelVecPar = concurrency::concurrent_vector<Point3D>(pixelVec.size());
 
 	// Calculate total concentrations on each thread
 		
