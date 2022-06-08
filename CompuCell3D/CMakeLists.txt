@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.13)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
 PROJECT(COMPUCELL3D)
 
 
@@ -22,32 +22,68 @@ ENDIF (APPLE)
 
 set(CMAKE_CXX_STANDARD 11)
 
-FIND_PACKAGE (OpenMP)
+# to get openmp detected via conda - start cmake from the conda environment that contains
+# openmp installation on OSX . on OSX install llvm-openmp to get openmp with clang
+# When running via command line use e.g. :
+# # os.system(f'source /Users/m/miniconda3/etc/profile.d/conda.sh ; conda activate cc3d_test ; {cmd_test}')
+# if you have trouble after installation clear cache and remove cmake build directory - start fresh
+FIND_PACKAGE(OpenMP REQUIRED)
+IF(OPENMP_FOUND)
+    message ("openmp c flags " "${OpenMP_C_FLAGS}")
+    message ("openmp cxx flags " "${OpenMP_CXX_FLAGS}")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} ")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    IF((APPLE) AND (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+    ENDIF()
+ENDIF()
+
+
+OPTION(FLEX_PYTHON_SPECS "Allow Flexible Python Path specification" OFF)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     # FIND_PACKAGE(PythonInterpreter)
+    FIND_PACKAGE(PythonExec)
     FIND_PACKAGE(PythonLibs)
     FIND_PACKAGE(PythonInterp)
+
     # INCLUDE(FindPythonLibs)
-    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable" FORCE)
-    set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library" FORCE)
-    set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory" FORCE )
-    set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory" FORCE )
+
+    if (FLEX_PYTHON_SPECS)
+        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable")
+        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library")
+        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory")
+        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory")
+    else ()
+        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable" FORCE)
+        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library" FORCE)
+        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory" FORCE )
+        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory" FORCE )
+    endif()
 
 else()
     # find_package (Python 3 COMPONENTS Interpreter Development)
     FIND_PACKAGE(PythonLibs)
     FIND_PACKAGE(PythonInterp)
     # INCLUDE(FindPythonLibs)
-    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable" FORCE)
-    set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library" FORCE)
-    set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory" FORCE )
-    set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory" FORCE )
+
+
+    if (FLEX_PYTHON_SPECS)
+        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable")
+        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library")
+        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory")
+        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory")
+    else ()
+        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable" FORCE)
+        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library" FORCE)
+        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory" FORCE )
+        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory" FORCE )
+    endif()
 
 
 endif()
 
-# find_package (Python 3 COMPONENTS Interpreter Development)
+find_package(Python REQUIRED COMPONENTS Interpreter Development NumPy)
 
 
 message("Python_FOUND: ${Python_FOUND}")
@@ -61,24 +97,19 @@ message("Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
 message("Python_LIBRARIES: ${Python_LIBRARIES}")
 message("Python_LIBRARY_DIRS: ${Python_LIBRARY_DIRS}")
 message("Python_RUNTIME_LIBRARY_DIRS: ${Python_RUNTIME_LIBRARY_DIRS}")
+message("Python_NumPy_INCLUDE_DIRS: ${Python_NumPy_INCLUDE_DIRS}")
 
 # Should we build shared libraries
 OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 SET(CC3D_PYTHON_MODULE_DIR ${CMAKE_SOURCE_DIR}/../)
 
-EXEC_PROGRAM(${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR} ARGS ${CC3D_PYTHON_MODULE_DIR}/cc3d/version_fetcher.py ${CC3D_PYTHON_MODULE_DIR}
-      OUTPUT_VARIABLE COMPUCELL3D_VERSION)
-
-
-message("GOT VERSION AS ${COMPUCELL3D_VERSION}")
 # setting up version
 
-
-string(REPLACE "." ";" VERSION_LIST ${COMPUCELL3D_VERSION})
-list(GET VERSION_LIST 0 COMPUCELL3D_MAJOR_VERSION)
-list(GET VERSION_LIST 1 COMPUCELL3D_MINOR_VERSION)
-list(GET VERSION_LIST 2 COMPUCELL3D_BUILD_VERSION)
+set(COMPUCELL3D_MAJOR_VERSION 4)
+set(COMPUCELL3D_MINOR_VERSION 2)
+set(COMPUCELL3D_BUILD_VERSION 5)
+set(COMPUCELL3D_REV_NUMBER 20210612)
 
 ## Specify a version for all libs to use
 # letters A, B, C are added to ensure nice display of version in cmake gui
@@ -86,31 +117,17 @@ SET (COMPUCELL3D_A_MAJOR_VERSION ${COMPUCELL3D_MAJOR_VERSION} CACHE STRING "Majo
 SET (COMPUCELL3D_B_MINOR_VERSION ${COMPUCELL3D_MINOR_VERSION} CACHE STRING "Minor Version")
 SET (COMPUCELL3D_C_BUILD_VERSION ${COMPUCELL3D_BUILD_VERSION} CACHE STRING "Build Version")
 
-
 # and here we assign them back to what they should be
 SET (COMPUCELL3D_MAJOR_VERSION ${COMPUCELL3D_A_MAJOR_VERSION})
 SET (COMPUCELL3D_MINOR_VERSION ${COMPUCELL3D_B_MINOR_VERSION})
 SET (COMPUCELL3D_BUILD_VERSION ${COMPUCELL3D_C_BUILD_VERSION})
 
-
-# # Specify a version for all libs to use
-# # letters A, B, C are added to ensure nice display of version in cmake gui
-# SET (COMPUCELL3D_A_MAJOR_VERSION "4" CACHE STRING "Major Version")
-# SET (COMPUCELL3D_B_MINOR_VERSION "0" CACHE STRING "Minor Version")
-# SET (COMPUCELL3D_C_BUILD_VERSION "0" CACHE STRING "Build Version")
-#
-#
-# # and here we assign them back to what they should be
-# SET (COMPUCELL3D_MAJOR_VERSION ${COMPUCELL3D_A_MAJOR_VERSION})
-# SET (COMPUCELL3D_MINOR_VERSION ${COMPUCELL3D_B_MINOR_VERSION})
-# SET (COMPUCELL3D_BUILD_VERSION ${COMPUCELL3D_C_BUILD_VERSION})
-
-
 message(" THIS IS COMPUCELL3D_BUILD_VERSION " ${COMPUCELL3D_BUILD_VERSION})
 message("COMPUCELL3D_C_BUILD_VERSION is " ${COMPUCELL3D_C_BUILD_VERSION})
 
-SET(COMPUCELL3D_VERSION
-  "${COMPUCELL3D_MAJOR_VERSION}.${COMPUCELL3D_MINOR_VERSION}.${COMPUCELL3D_BUILD_VERSION}")
+SET(COMPUCELL3D_VERSION "${COMPUCELL3D_MAJOR_VERSION}.${COMPUCELL3D_MINOR_VERSION}.${COMPUCELL3D_BUILD_VERSION}")
+
+message("GOT VERSION AS ${COMPUCELL3D_VERSION}")
 
 SET(USE_DOLFIN_OPTION OFF)
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
@@ -126,9 +143,6 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
     "MinSizeRel" "RelWithDebInfo")
 endif()
-
-INCLUDE_DIRECTORIES (${COMPUCELL3D_SOURCE_DIR}/core)
-
 
 OPTION(USE_LIBRARY_VERSIONS "Use version numbers in libraries" OFF)
 
@@ -159,23 +173,34 @@ SET_DIRECTORY_PROPERTIES(PROPERTIES
   INCLUDE_DIRECTORIES ${COMPUCELL3D_SOURCE_DIR})
 
 # Where to install files relative to prefix
-SET(SITE_PACKAGES_INSTALL ${CMAKE_INSTALL_PREFIX}/lib/site-packages)
+OPTION(BUILD_STANDALONE "Build stand-alone CC3D installation" ON)
 
-SET(COMPUCELL3D_INSTALL_LIB_DIR "lib/site-packages/cc3d/cpp/lib")
-SET(COMPUCELL3D_INSTALL_PLUGIN_DIR " lib/site-packages/cc3d/cpp/CompuCell3DPlugins")
-SET(COMPUCELL3D_INSTALL_STEPPABLE_DIR " lib/site-packages/cc3d/cpp/CompuCell3DSteppables")
-SET(COMPUCELL3D_INSTALL_STEPPABLE_DIR_FULL_PATH ${CMAKE_INSTALL_PREFIX}/lib/site-packages/cc3d/cpp/CompuCell3DSteppables)
-SET(COMPUCELL3D_INSTALL_INCLUDE_DIR "include/CompuCell3D")
+if(BUILD_STANDALONE)
+    set(SITE_PACKAGES_INSTALL_REL lib/site-packages)
+    set(COMPUCELL3D_INSTALL_SCRIPT_DIR_FULL_PATH ${CMAKE_INSTALL_PREFIX})
+    set(COMPUCELL3D_INSTALL_SCRIPT_DIR .)
+else()
+    file(RELATIVE_PATH SITE_PACKAGES_INSTALL_REL ${CMAKE_INSTALL_PREFIX} ${Python_SITELIB})
+    set(COMPUCELL3D_INSTALL_SCRIPT_DIR_FULL_PATH ${CMAKE_INSTALL_PREFIX}/bin)
+    file(RELATIVE_PATH COMPUCELL3D_INSTALL_SCRIPT_DIR ${CMAKE_INSTALL_PREFIX} ${COMPUCELL3D_INSTALL_SCRIPT_DIR_FULL_PATH})
+endif()
 
-SET(COMPUCELL3D_INSTALL_SWIG_MODULES_DIR "lib/site-packages/cc3d/cpp/")
+SET(SITE_PACKAGES_INSTALL ${CMAKE_INSTALL_PREFIX}/${SITE_PACKAGES_INSTALL_REL})
+SET(COMPUCELL3D_INSTALL_PY_MODULE_DIR ${SITE_PACKAGES_INSTALL_REL}/cc3d)
+SET(COMPUCELL3D_INSTALL_SWIG_MODULES_DIR ${COMPUCELL3D_INSTALL_PY_MODULE_DIR}/cpp)
+
+SET(COMPUCELL3D_INSTALL_BIN_DIR ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR}/bin)
+SET(COMPUCELL3D_INSTALL_LIB_DIR ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR}/lib)
+SET(COMPUCELL3D_INSTALL_PLUGIN_DIR ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR}/CompuCell3DPlugins)
+SET(COMPUCELL3D_INSTALL_STEPPABLE_DIR ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR}/CompuCell3DSteppables)
+SET(COMPUCELL3D_INSTALL_INCLUDE_DIR include/CompuCell3D)
+SET(COMPUCELL3D_INSTALL_CONFIG_DIR lib/cmake/CompuCell3D)
 
 # Find libz for use in the CompuCell/IO utils
 INCLUDE(FindZLIB)
 
 # Should we build wrappings
 OPTION(BUILD_PYINTERFACE "Build Python language wrappings" ON)
-
-OPTION(INSTALL_PLAYER "Move Player files to installation directory" ON)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     OPTION(BUNDLE_PYTHON "Builds CC3D assuming Python will be bundled with CC3D - default on Windows and OSX" ON)
@@ -199,7 +224,16 @@ OPTION(BUILD_QT_WRAPPERS "Convenience CC3D/Player modules - e.g. redirecting tex
 OPTION(NO_OPENCL "Disable automatic OpenCL detection and building corresponding modules" OFF )
 
 
-OPTION(WINDOWS_DEPENDENCIES_INSTALL_ENABLE "Install Windows Dependencies - directory must be specified" ON)
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    OPTION(WINDOWS_DEPENDENCIES_INSTALL_ENABLE "Install Windows Dependencies - directory must be specified" ON)
+endif()
+
+if(NOT ${BUILD_STANDALONE})
+    set(BUNDLE_PYTHON OFF)
+    set(WINDOWS_DEPENDENCIES_INSTALL_ENABLE OFF)
+    set(DEPENDENCIES_COPY_FLAG OFF)
+endif()
+
 
 if(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
 
@@ -210,8 +244,31 @@ if(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
     endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 endif(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
 
+# handle rpath
+set(CMAKE_MACOSX_RPATH TRUE)
+set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+
+if(APPLE AND NOT UNIX)
+    set(RPATH_BASE @loader_path)
+else()
+    set(RPATH_BASE $ORIGIN)
+endif()
+file(RELATIVE_PATH BinToLibRelPath
+    ${CMAKE_INSTALL_PREFIX}/bin
+    ${CMAKE_INSTALL_PREFIX}/lib
+)
+file(RELATIVE_PATH CPPLibToLibRelPath
+    ${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR}
+    ${CMAKE_INSTALL_PREFIX}/lib
+)
+set(CMAKE_INSTALL_RPATH ${RPATH_BASE} ${RPATH_BASE}/${BinToLibRelPath} ${RPATH_BASE}/${CPPLibToLibRelPath} ${RPATH_BASE}/CompuCell3DPlugins ${RPATH_BASE}/CompuCell3DSteppables)
+
 
 include(compucell3d_cmake_macros.cmake)
+
+if(MSVC)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
 
 # setting up compilation environment for XML parser based on Expat library
 if(BUILD_CPP_ONLY_EXECUTABLE)
@@ -237,6 +294,6 @@ if (BUILD_QT_WRAPPERS)
 endif (BUILD_QT_WRAPPERS)
 
 ADD_SUBDIRECTORY(core)
-ADD_SUBDIRECTORY(optimization)
+# ADD_SUBDIRECTORY(optimization)
 
 

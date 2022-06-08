@@ -1,8 +1,6 @@
 
 from cc3d.core.PySteppables import *
 
-from cc3d.CompuCellSetup import persistent_globals as pg
-
 
 class ChemotaxisRunModelSteppable(SteppableBasePy):
 
@@ -22,8 +20,8 @@ class ChemotaxisRunModelSteppable(SteppableBasePy):
         
         cd = self.chemotaxisPlugin.addChemotaxisData(self.cell_OI, "Field1")
         # Get input data from outside world if available
-        if pg.input_object is not None:
-            cd.setLambda(pg.input_object)
+        if self.external_input is not None:
+            cd.setLambda(self.external_input)
         else:
             cd.setLambda(self.man_lam)
         cd.assignChemotactTowardsVectorTypes([self.MEDIUM])
@@ -32,7 +30,4 @@ class ChemotaxisRunModelSteppable(SteppableBasePy):
         pass
 
     def finish(self):
-        pg.return_object = self.cell_OI.xCOM
-
-
-        
+        self.external_output = self.cell_OI.xCOM

@@ -12,7 +12,6 @@ from cc3d.core.CC3DSimulationDataHandler import CC3DSimulationDataHandler
 from cc3d.core.filelock import FileLock
 from cc3d.core.ParameterScanEnums import SCAN_FINISHED_OR_DIRECTORY_ISSUE
 import cc3d.core.param_scan
-import traceback
 from .template_utils import generate_simulation_files_from_template
 
 
@@ -307,33 +306,6 @@ def next_cartesian_product_from_state(curr_list: List[int], max_list: List[int])
                 break
 
 
-def run_main_player_run_script(arg_list_local: list):
-    """
-    Runs simulation via helper script cc3d.core.param_scan.main_player_run
-    Experimental function .
-    :param arg_list_local: {list} list of cml options for the player
-    :return: None
-    """
-
-    main_player_run = str(Path(cc3d.core.param_scan.__file__).parent.joinpath('main_player_run.py'))
-
-    sys.argv = arg_list_local
-
-    with open(main_player_run) as sim_fh:
-        try:
-            code = compile(sim_fh.read(), main_player_run, 'exec')
-
-        except:
-            code = None
-            traceback.print_exc(file=sys.stdout)
-
-        if code is not None:
-            try:
-                exec(code)
-            except:
-                traceback.print_exc(file=sys.stdout)
-
-
 def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_scan_parameters: dict,
                                      run_script: Union[str, Path] = '', gui_flag: bool = False,
                                      output_dir: str = None, arg_list: list = []):
@@ -352,7 +324,11 @@ def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_
 
     # make dir for the current simulation
     scan_iteration_output_dir = Path(output_dir).joinpath('scan_iteration_{}'.format(current_iteration))
-    scan_iteration_output_dir.mkdir(parents=True)
+    try:
+        scan_iteration_output_dir.mkdir(parents=True)
+    except FileExistsError:
+        raise RuntimeError(f'This particular simulation of parameter scan was already processed. '
+                           f'If you want to  proceed make sure to delete folder {str(scan_iteration_output_dir)}')
 
     # write what parameters will be applied for the current itneration fo the scan
     with open(str(scan_iteration_output_dir.joinpath('current_scan_parameters.json')), 'w') as fout:
@@ -372,8 +348,12 @@ def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_
 
     # at this point arg_list may have args from main script
     arg_list_local = deepcopy(arg_list)
-    arg_list_local += ['--input={}'.format(cc3d_proj_template),
-                       '--output-dir={}'.format(cc3d_proj_template.parent), ]
+    arg_list_local += [
+        f'--input={cc3d_proj_template}',
+        f'--output-dir={cc3d_proj_template.parent}',
+        f'--parameter-scan-iteration={current_scan_parameters["current_iteration"]}'
+    ]
+
     if gui_flag:
         arg_list_local += ['--exit-when-done']
 

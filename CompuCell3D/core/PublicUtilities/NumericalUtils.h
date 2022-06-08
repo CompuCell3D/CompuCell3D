@@ -1,6 +1,10 @@
 #ifndef NUMERICALUTILS_H
 #define NUMERICALUTILS_H
 
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+
 #include <Utils/Coordinates3D.h>
 #include <CompuCell3D/Potts3D/Cell.h>
 #include <CompuCell3D/Field3D/Point3D.h>
@@ -21,7 +25,8 @@ template <typename T> int sgn(T val) {
     return (T(0) < val) - (val < T(0));
 }
 
-double round(double number);
+std::vector<double> RandomUnitVector2D(const double& _random_number);
+std::vector<double> RandomUnitVector3D(const double& _random_number1, const double& _random_number2);
 
 namespace CompuCell3D{
 
@@ -68,7 +73,8 @@ namespace CompuCell3D{
 	typedef std::pair<Coordinates3D<float>, Coordinates3D<float> > CenterOfMassPair_t;
 	CenterOfMassPair_t precalculateAfterFlipCM(const Point3D &pt, const CellG *newCell, const CellG *oldCell,const Point3D & fieldDim, const Point3D & boundaryConditionIndicator);
 
-	
+	// Cell velocity at center of mass, in units lattice sites / step
+	Coordinates3D<double> cellVelocity(const CellG *cell, const Point3D & _fieldDim, BoundaryStrategy *boundaryStrategy = 0);
 
 
 };

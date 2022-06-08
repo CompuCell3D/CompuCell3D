@@ -1,5 +1,4 @@
 from .MVCDrawViewBase import MVCDrawViewBase
-import cc3d.player5.Configuration as Configuration
 import vtk
 from collections import OrderedDict
 from copy import deepcopy
@@ -9,8 +8,8 @@ MODULENAME = '==== MVCDrawView3D.py:  '
 
 
 class MVCDrawView3D(MVCDrawViewBase):
-    def __init__(self, _drawModel):
-        MVCDrawViewBase.__init__(self, _drawModel)
+    def __init__(self, _drawModel, ren=None):
+        MVCDrawViewBase.__init__(self, _drawModel, ren=ren)
 
         self.initArea()
         self.setParams()
@@ -229,12 +228,15 @@ class MVCDrawView3D(MVCDrawViewBase):
         Initializes a dictionary self.invisibleCellTypes of invisible cell types - reads settings "Types3DInvisible"
         :return:None
         '''
-        self.colorMap = Configuration.getSetting("TypeColorMap")
+        from cc3d.CompuCellSetup import persistent_globals
+        configuration = persistent_globals.configuration
 
-        typesInvisibleStrTmp = str(Configuration.getSetting("Types3DInvisible"))
+        self.colorMap = configuration.getSetting("TypeColorMap")
+
+        typesInvisibleStrTmp = str(configuration.getSetting("Types3DInvisible"))
         # print "GOT ",typesInvisibleStrTmp
         if typesInvisibleStrTmp != self.typesInvisibleStr:
-            self.typesInvisibleStr = str(Configuration.getSetting("Types3DInvisible"))
+            self.typesInvisibleStr = str(configuration.getSetting("Types3DInvisible"))
 
             typesInvisible = self.typesInvisibleStr.replace(" ", "")
 

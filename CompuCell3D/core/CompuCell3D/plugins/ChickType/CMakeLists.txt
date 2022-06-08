@@ -1,2 +1,0 @@
-ADD_COMPUCELL3D_PLUGIN(ChickType LINK_LIBRARIES CompuCellLibShared)
-

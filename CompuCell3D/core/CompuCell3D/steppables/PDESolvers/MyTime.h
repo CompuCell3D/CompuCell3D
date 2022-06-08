@@ -7,47 +7,48 @@
 #define NOMINMAX
 #include <windows.h>
 #else
+
 #include <sys/time.h>
+
 #endif
 
-class MyTime
-{
+class MyTime {
 public:
-	//define a type to store timestamps in
+    //define a type to store timestamps in
 #ifdef _WIN32
-	typedef LARGE_INTEGER Time_t;
+    typedef LARGE_INTEGER Time_t;
 #else
-	typedef timeval Time_t;
+    typedef timeval Time_t;
 #endif
 
 public:
 
-	//returns current time in system-dependant units
-	inline static Time_t CTime()
-	{
-		Time_t tm;
+    //returns current time in system-dependant units
+    inline static Time_t CTime() {
+        Time_t tm;
 #ifdef _WIN32
-		QueryPerformanceCounter(&tm);
+        QueryPerformanceCounter(&tm);
 #else
-		gettimeofday(&tm,NULL);
+        gettimeofday(&tm, NULL);
 #endif
-		return tm;
-	}
+        return tm;
+    }
 
-	//time between two events, ms
-	inline static float ElapsedTime(Time_t tmFirst, Time_t tmSecond)
-	{
+    //time between two events, ms
+    inline static float ElapsedTime(Time_t tmFirst, Time_t tmSecond) {
 #ifdef _WIN32
-		LARGE_INTEGER fq;
-		QueryPerformanceFrequency(&fq);
-		return (tmSecond.QuadPart-tmFirst.QuadPart)*1000.f/fq.QuadPart;
+        LARGE_INTEGER fq;
+        QueryPerformanceFrequency(&fq);
+        return (tmSecond.QuadPart-tmFirst.QuadPart)*1000.f/fq.QuadPart;
 #else
-		return ((float)(tmSecond.tv_sec - tmFirst.tv_sec)*1000000 
-			+ (tmSecond.tv_usec - tmFirst.tv_usec))/1000.f;
+        return ((float) (tmSecond.tv_sec - tmFirst.tv_sec) * 1000000
+                + (tmSecond.tv_usec - tmFirst.tv_usec)) / 1000.f;
 #endif
-	}
+    }
+
 private:
-	MyTime(void);
-	~MyTime(void);
+    MyTime(void);
+
+    ~MyTime(void);
 };
 

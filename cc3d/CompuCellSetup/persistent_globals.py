@@ -19,8 +19,10 @@ class PersistentGlobals:
         self.steppable_registry = SteppableRegistry()
         self.core_specs_registry = CoreSpecsRegistry()
         """core specification registry"""
+        self._configuration = None
+        self._configuration_getter = None
 
-        # c++ object reference Simulator.cpp
+        #: c++ object reference :class:`cc3d.cpp.CompuCell.Simulator`
         self.simulator = None
 
         #  Simulation Thread - either from the player or from CML
@@ -36,7 +38,9 @@ class PersistentGlobals:
         # an object that stores graphics screenshots
         self.screenshot_manager = None
 
-        # variable that tells what type of player mode we have
+        # variable that tells what type of simulation mode we have
+        self.sim_type = None
+        # variable that tells what type of player mode we have; this is designated for use by external controllers
         self.player_type = None
 
         self.simulation_initialized = False
@@ -47,6 +51,8 @@ class PersistentGlobals:
         self.output_file_core_name = "Step"
 
         self.__workspace_dir = None
+
+        self.__param_scan_iteration = None
 
         self.output_frequency = 0
         self.screenshot_output_frequency = 0
@@ -68,6 +74,9 @@ class PersistentGlobals:
 
         self.persistent_holder = {}
 
+        # dict of MCS at which player will pause
+        self.pause_at = {}
+
         self.global_sbml_simulator_options = None
         self.free_floating_sbml_simulators = {}
 
@@ -79,8 +88,37 @@ class PersistentGlobals:
         self.shared_steppable_vars = {}
 
         # input and return objects
+        #: API input object used with :class:`cc3d.CompuCellSetup.CC3DCaller.CC3DCaller`
         self.input_object = None
+        #: API return object used with :class:`cc3d.CompuCellSetup.CC3DCaller.CC3DCaller`
         self.return_object = None
+
+    def set_configuration_getter(self, _fget) -> None:
+        """
+        Hook to inject a third-party Configuration
+
+        :param _fget: configuration getter
+        :type _fget: Callable[[], Configuration]
+        :return: None
+        """
+        self._configuration_getter = _fget
+
+    @property
+    def configuration(self):
+        """
+        Configuration loaded just in time, for hooking third-party Configuration instances
+
+        :return: configuration
+        :rtype: Configuration
+        """
+        if self._configuration is None:
+            try:
+                self._configuration = self._configuration_getter()
+            except:
+                from cc3d.core.Configuration import Configuration
+                self._configuration_getter = Configuration
+                self._configuration = self._configuration_getter()
+        return self._configuration
 
     def add_steering_panel(self, panel_data: dict):
         """
@@ -115,6 +153,18 @@ class PersistentGlobals:
         """
 
         self.__workspace_dir = workspace_dir
+
+    @property
+    def parameter_scan_iteration(self):
+        """
+        returns current parameter scan iteration
+        :return:
+        """
+        return self.__param_scan_iteration
+
+    @parameter_scan_iteration.setter
+    def parameter_scan_iteration(self, val):
+        self.__param_scan_iteration = val
 
     @property
     def workspace_dir(self) -> str:

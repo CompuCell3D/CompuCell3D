@@ -1,24 +1,4 @@
-/*************************************************************************
-*    CompuCell - A software framework for multimodel simulations of     *
-* biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
-*                             Indiana                                   *
-*                                                                       *
-* This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
-*  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
-*  CompuCell GNU General Public License RIDER you can redistribute it   *
-* and/or modify it under the terms of the GNU General Public License as *
-*  published by the Free Software Foundation; either version 2 of the   *
-*         License, or (at your option) any later version.               *
-*                                                                       *
-* This program is distributed in the hope that it will be useful, but   *
-*      WITHOUT ANY WARRANTY; without even the implied warranty of       *
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
-*             General Public License for more details.                  *
-*                                                                       *
-*  You should have received a copy of the GNU General Public License    *
-*     along with this program; if not, write to the Free Software       *
-*      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
-*************************************************************************/
+
 #include <CompuCell3D/CC3D.h>
 using namespace CompuCell3D;
 #include "ConnectivityGlobalPlugin.h"
@@ -64,30 +44,10 @@ void ConnectivityGlobalPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlDa
 
 void ConnectivityGlobalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
-	//if (potts->getDisplayUnitsFlag()) {
-	//	Unit energyUnit = potts->getEnergyUnit();
-
-
-
-
-	//	CC3DXMLElement * unitsElem = _xmlData->getFirstElement("Units");
-	//	if (!unitsElem) { //add Units element
-	//		unitsElem = _xmlData->attachElement("Units");
-	//	}
-
-	//	if (unitsElem->getFirstElement("PenaltyUnit")) {
-	//		unitsElem->getFirstElement("PenaltyUnit")->updateElementValue(energyUnit.toString());
-	//	}
-	//	else {
-	//		CC3DXMLElement * energyElem = unitsElem->attachElement("PenaltyUnit", energyUnit.toString());
-	//	}
-	//}
-
-	penaltyVec.clear();
+	penaltyMap.clear();
 
 	Automaton *automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
-		set<unsigned char> cellTypesSet;
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
 
 	map<unsigned char, double> typeIdConnectivityPenaltyMap;
@@ -106,53 +66,25 @@ void ConnectivityGlobalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 
 	CC3DXMLElementList connectivityOnVecXML = _xmlData->getElements("ConnectivityOn");
 
-	ASSERT_OR_THROW("You cannot use Penalty and ConnectivityOn tags together. Stick to one convention", !(connectivityOnVecXML.size() && penaltyVecXML.size()));
-
-	// previous ASSERT_OR_THROW will encure that only one of the subsequent for loops be executed 
+	if (connectivityOnVecXML.size() && penaltyVecXML.size())
+		throw CC3DException("You cannot use Penalty and ConnectivityOn tags together. Stick to one convention");
 
 	for (int i = 0; i < penaltyVecXML.size(); ++i) {
 		typeIdConnectivityPenaltyMap.insert(make_pair(automaton->getTypeId(penaltyVecXML[i]->getAttribute("Type")), penaltyVecXML[i]->getDouble()));
-
-
-		//inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
-		cellTypesSet.insert(automaton->getTypeId(penaltyVecXML[i]->getAttribute("Type")));
-
 	}
-
-
 
 	for (int i = 0; i < connectivityOnVecXML.size(); ++i) {
 		typeIdConnectivityPenaltyMap.insert(make_pair(automaton->getTypeId(connectivityOnVecXML[i]->getAttribute("Type")), 1.0));
-		//inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
-		cellTypesSet.insert(automaton->getTypeId(connectivityOnVecXML[i]->getAttribute("Type")));
-
 	}
 
-
-	//Now that we know all the types used in the simulation we will find size of the penaltyVec
-	vector<unsigned char> cellTypesVector(cellTypesSet.begin(), cellTypesSet.end());//coping set to the vector
-
-	int size = 0;
-	if (cellTypesVector.size()) {
-		size = *max_element(cellTypesVector.begin(), cellTypesVector.end());
-	}
-
-	maxTypeId = size;
-
-	size += 1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-
-
-
-	int index;
-	penaltyVec.assign(size, 0.0);
 	//inserting connectivity penalty values to penaltyVec;
 	for (map<unsigned char, double>::iterator mitr = typeIdConnectivityPenaltyMap.begin(); mitr != typeIdConnectivityPenaltyMap.end(); ++mitr) {
-		penaltyVec[mitr->first] = fabs(mitr->second);
+		penaltyMap[mitr->first] = fabs(mitr->second);
 	}
 
-	cerr << "size=" << size << endl;
-	for (int i = 0; i < size; ++i) {
-		cerr << "penaltyVec[" << i << "]=" << penaltyVec[i] << endl;
+	cerr << "size=" << penaltyMap.size() << endl;
+	for (auto& itr : penaltyMap) {
+		cerr << "penaltyMap[" << to_string(itr.first) << "]=" << itr.second << endl;
 	}
 
 	//Here I initialize max neighbor index for direct acces to the list of neighbors 
@@ -248,17 +180,14 @@ bool ConnectivityGlobalPlugin::checkIfCellIsFragmented(const CellG * cell, Point
 			if (vpRef_0->find(neighbor.pt) != vpRef_0->end() || vpRef_1->find(neighbor.pt) != vpRef_1->end() || vpRef_2->find(neighbor.pt) != vpRef_2->end())
 				continue;//neighbor.pt has already been visited and added to visited points
 
-			//visitedPixels.insert(neighbor.pt);
-			//filoPointBuffer.push_back(neighbor.pt);
-
 			fpbRef_1->push_back(neighbor.pt);
 			vpRef_2->insert(neighbor.pt);
-			//cerr<<" Adding pt="<<neighbor.pt<<" to vps"<<" visitedPixCounter="<<visitedPixCounter<<endl;
+
 			++visitedPixCounter;
 
 		}
 		if (fpbRef_0->empty()) {
-			//cerr<<"Got empty fpbRef_0"<<endl;
+
 			if (!fpbRef_1->empty()) {
 
 				std::deque<Point3D> * fpbRef_tmp = fpbRef_0;
@@ -278,8 +207,9 @@ bool ConnectivityGlobalPlugin::checkIfCellIsFragmented(const CellG * cell, Point
 		}
 
 	}
-	//if(visitedPixels.size()!=(newCell->volume+1)){
-	if (visitedPixCounter != (cell->volume)) { //volume of nonfragmented cell calculated using BFT should be the same as actual volume of this cell cell->volume
+
+	if (visitedPixCounter != (cell->volume)) {
+        //volume of nonfragmented cell calculated using BFT should be the same as actual volume of this cell cell->volume
 		cellFragmented = true;
 	}
 
@@ -355,9 +285,7 @@ bool ConnectivityGlobalPlugin::check_local_connectivity(const Point3D &pt, const
 		else {
 			return false;
 		}
-		
 
-		
 		//if pt has no nearest neighbors then it means that the newCell will be fragmented and we do not allow this
 
 	}	
@@ -369,9 +297,6 @@ bool ConnectivityGlobalPlugin::check_local_connectivity(const Point3D &pt, const
 	//start BFS by picking first cell of the set
 
 	cell_pixels_set_variable = cell_pixels_set_reference; //copying reference set
-
-	//sitr_current = cell_pixels_set_reference.begin();
-	//Point3D bfs_seed = *sitr_current;
 
 	Point3D bfs_seed = *cell_pixels_set_variable.begin();
 	cell_pixels_set_variable.erase(bfs_seed);
@@ -391,13 +316,10 @@ bool ConnectivityGlobalPlugin::check_local_connectivity(const Point3D &pt, const
 
 			sitr = cell_pixels_set_reference.find(neighbor.pt);
 			if (sitr != cell_pixels_set_reference.end()) {
-				//neighbors_deque.push_back(neighbor.pt);
-				//cell_pixels_set_variable.erase(neighbor.pt);
 
 				if (visited_pixels.find(neighbor.pt) == visited_pixels.end()) {
 					neighbors_deque.push_back(neighbor.pt);
 					visited_pixels.insert(neighbor.pt);
-					//cell_pixels_set.erase(*sitr);
 					cell_pixels_set_variable.erase(neighbor.pt);
 				}
 			}
@@ -405,7 +327,7 @@ bool ConnectivityGlobalPlugin::check_local_connectivity(const Point3D &pt, const
 
 	}
 	
-	//at this point BFS should be fininshed and if cell is conneccted the cell_pixels_set should be empty 
+	//at this point BFS should be finished and if cell is connected the cell_pixels_set should be empty
 	if (cell_pixels_set_variable.empty())
 		return true;
 	return false;
@@ -420,7 +342,7 @@ double ConnectivityGlobalPlugin::changeEnergy(const Point3D &pt, const CellG *ne
 
 double ConnectivityGlobalPlugin::changeEnergyFast(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
 	
-	//extract local definitions of connectivity strangth and determine which parameters to use - local or by type
+	//extract local definitions of connectivity strength and determine which parameters to use - local or by type
 	double newCellConnectivityPenalty = 0.0;
 	bool newCellByTypeCalculations = false;
 	double oldCellConnectivityPenalty = 0.0;
@@ -428,29 +350,33 @@ double ConnectivityGlobalPlugin::changeEnergyFast(const Point3D &pt, const CellG
 
 
 	if (oldCell) {
-		//oldCellConnectivityPenalty = connectivityGlobalDataAccessor.get(oldCell->extraAttribPtr)->connectivityStrength;
 
 		if (oldCell->connectivityOn) {
 			oldCellByTypeCalculations = true;
 			oldCellConnectivityPenalty = 1.0;
 		}
-		else if (oldCell->type <= maxTypeId && penaltyVec[oldCell->type] != 0.0) {
-			oldCellByTypeCalculations = true;
-			oldCellConnectivityPenalty = 1.0;
+		else {
+			auto itr = penaltyMap.find(oldCell->type);
+			if (itr != penaltyMap.end() && itr->second != 0.0) {
+				oldCellByTypeCalculations = true;
+				oldCellConnectivityPenalty = 1.0;
 
+			}
 		}
 	}
 	if (newCell) {
-		//newCellConnectivityPenalty = connectivityGlobalDataAccessor.get(newCell->extraAttribPtr)->connectivityStrength;
 
 		if (newCell->connectivityOn) {
 			newCellByTypeCalculations = true;
 			newCellConnectivityPenalty = 1.0;
 		}
-		else if (newCell->type <= maxTypeId && penaltyVec[newCell->type] != 0.0) {
-			newCellByTypeCalculations = true;
-			newCellConnectivityPenalty = 1.0;
+		else {
+			auto itr = penaltyMap.find(newCell->type);
+			if (itr != penaltyMap.end() && itr->second != 0.0) {
+				newCellByTypeCalculations = true;
+				newCellConnectivityPenalty = 1.0;
 
+			}
 		}
 	}
 
@@ -474,12 +400,10 @@ double ConnectivityGlobalPlugin::changeEnergyFast(const Point3D &pt, const CellG
 
 }
 
-
-
 //Connectivity constraint based on breadth first traversal of cell pixels
 double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const CellG *newCell, const CellG *oldCell)
 {
-	//extract local definitions of connectivity strangth and determine which parameters to use - local or by type
+	//extract local definitions of connectivity strength and determine which parameters to use - local or by type
 	double newCellConnectivityPenalty = 0.0;
 	bool newCellByTypeCalculations = false;
 	double oldCellConnectivityPenalty = 0.0;
@@ -493,14 +417,18 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 			oldCellByTypeCalculations = true;
 			oldCellConnectivityPenalty = 1.0;
 		}
-		else if (oldCellConnectivityPenalty) { // keeping it for legacy reasons in case people still use setConnectivityStrength API
+		else if (oldCellConnectivityPenalty) {
+            // keeping it for legacy reasons in case people still use setConnectivityStrength API
 			oldCellByTypeCalculations = true;
 		}
 
-		else if (oldCell->type <= maxTypeId && penaltyVec[oldCell->type] != 0.0) {
-			oldCellByTypeCalculations = true;
-			oldCellConnectivityPenalty = 1.0;
+		else {
+			auto itr = penaltyMap.find(oldCell->type);
+			if (itr != penaltyMap.end() && itr->second != 0.0) {
+				oldCellByTypeCalculations = true;
+				oldCellConnectivityPenalty = 1.0;
 
+			}
 		}
 	}
 	if (newCell) {
@@ -509,22 +437,19 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 			newCellByTypeCalculations = true;
 			newCellConnectivityPenalty = 1.0;
 		}
-		else if (newCellConnectivityPenalty) { // keeping it for legacy reasons in case people still use setConnectivityStrength API
+		else if (newCellConnectivityPenalty) {
+            // keeping it for legacy reasons in case people still use setConnectivityStrength API
 			newCellByTypeCalculations = true;
 		}
 
-		else if (newCell->type <= maxTypeId && penaltyVec[newCell->type] != 0.0) {
-			newCellByTypeCalculations = true;
-			newCellConnectivityPenalty = 1.0;
+		else {
+			auto itr = penaltyMap.find(newCell->type);
+			if (itr != penaltyMap.end() && itr->second != 0.0) {
+				newCellByTypeCalculations = true;
+				newCellConnectivityPenalty = 1.0;
 
+			}
 		}
-
-		//newCellConnectivityPenalty = connectivityGlobalDataAccessor.get(newCell->extraAttribPtr)->connectivityStrength;
-
-		//if (newCell->type <= maxTypeId && penaltyVec[newCell->type] != 0.0) {
-		//	newCellByTypeCalculations = true;
-
-		//}
 
 	}
 
@@ -532,24 +457,21 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 	//first we will check if new or old cells which are subject to connectivity constrains are fragmented. 
 
 
-
 	//in case old or new cell is medium fragmented flag is by default set to false
 
 
 	bool oldCellFragmented = false;
 	bool newCellFragmented = false;
-	//cerr<<"doNotPrecheckConnectivity="<<doNotPrecheckConnectivity<<endl;
+
 	if (!doNotPrecheckConnectivity) {
 		if (oldCell && (oldCellByTypeCalculations || oldCellConnectivityPenalty)) {
 			oldCellFragmented = checkIfCellIsFragmented(oldCell, pt);//pt belongs to the old cell before spin flip
-			//cerr<<"type="<<(int)oldCell->type<<" oldCellFragmented ="<<oldCellFragmented<<endl;
+
 		}
 
 		if (newCell && (newCellByTypeCalculations || newCellConnectivityPenalty)) {
 			Point3D flipNeighborPixel = potts->getFlipNeighbor();
 			newCellFragmented = checkIfCellIsFragmented(newCell, flipNeighborPixel);
-			//cerr<<"type="<<(int)newCell->type<<" newCellFragmented ="<<newCellFragmented<<endl;
-
 		}
 
 	}
@@ -579,7 +501,8 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 
 
 	//assumption: volume has not been updated
-	// Remark: the algorithm in this plugin can be further optimized. It is probably not necessary to keep track of all visited points 
+	// Remark: the algorithm in this plugin can be further optimized.
+    // It is probably not necessary to keep track of all visited points
 	// which should speed up BF traversal .
 
 	double penalty = 0.0;
@@ -589,33 +512,21 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 	if (!newCellFragmented && newCell && (newCellByTypeCalculations || newCellConnectivityPenalty)) {
 
 		double newPenalty = newCellConnectivityPenalty;
-		//double newPenalty = 0.0;
-		//if (newCellConnectivityPenalty) {
-		//	newPenalty = newCellConnectivityPenalty; //locally defined connectivity strength has priority over by-type definition
-		//}
-		//else {
-		//	newPenalty = penaltyVec[newCell->type];
-		//}
 
 		//pt becomes newCell's pixel after pixel copy 
 
-
 		int visitedPixCounter = 0;
-		//filoPointBuffer.push_back(pt);
+
 		fpbRef_0->push_back(pt);
 		vpRef_1->insert(pt);
-		//cerr<<"pt="<<pt<<" visitedPixCounter="<<endl;
+
 		++visitedPixCounter;
-		//visitedPixels.insert(pt);
+
 
 		while (!fpbRef_0->empty()/*!filoPointBuffer.empty()*/) {
-			//Point3D currentPoint=filoPointBuffer.front();
-			//filoPointBuffer.pop_front();
 
 			Point3D currentPoint = fpbRef_0->front();
 			fpbRef_0->pop_front();
-
-
 
 			CellG *nCell = 0;
 			WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
@@ -633,92 +544,43 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 				if (nCell != newCell)
 					continue;
 
-				//if(visitedPixels.find(neighbor.pt)!=visitedPixels.end())
-				//	continue;//neighbor.pt has already been visited and added to visited points
-
 				if (vpRef_0->find(neighbor.pt) != vpRef_0->end() || vpRef_1->find(neighbor.pt) != vpRef_1->end() || vpRef_2->find(neighbor.pt) != vpRef_2->end())
 					continue;//neighbor.pt has already been visited and added to visited points
 
-				//visitedPixels.insert(neighbor.pt);
-				//filoPointBuffer.push_back(neighbor.pt);
-
 				fpbRef_1->push_back(neighbor.pt);
 				vpRef_2->insert(neighbor.pt);
-				//cerr<<" Adding pt="<<neighbor.pt<<" to vps"<<" visitedPixCounter="<<visitedPixCounter<<endl;
 				++visitedPixCounter;
 
 			}
 			if (fpbRef_0->empty()) {
-				//cerr<<"Got empty fpbRef_0"<<endl;
 				if (!fpbRef_1->empty()) {
-					//cerr<<"BEFORE ASSIGNMENT"<<endl;
-					//cerr<<"fpbRef_0->size()="<<fpbRef_0->size()<<endl;
-					//cerr<<"fpbRef_1->size()="<<fpbRef_1->size()<<endl;
-
 					std::deque<Point3D> * fpbRef_tmp = fpbRef_0;
 					fpbRef_0 = fpbRef_1;
-					//cerr<<"fpbRef_0.size()="<<fpbRef_0->size()<<endl;
 					fpbRef_tmp->clear();
 					fpbRef_1 = fpbRef_tmp;
 
-
-					//cerr<<"AFTER ASSIGNMENT"<<endl;
-					//cerr<<"fpbRef_0->size()="<<fpbRef_0->size()<<endl;
-					//cerr<<"fpbRef_1->size()="<<fpbRef_1->size()<<endl;
-
-
-
-					//cerr<<"VP BEFORE ASSIGNMENT"<<endl;
-					//cerr<<"vpRef_0->size()="<<vpRef_0->size()<<endl;
-					//cerr<<"vpRef_1->size()="<<vpRef_1->size()<<endl;
-					//cerr<<"vpRef_2->size()="<<vpRef_2->size()<<endl;
 					vpRef_0->clear();
 					std::set<Point3D> *vpRef_tmp = vpRef_0;
 					vpRef_0 = vpRef_1;
 					vpRef_1 = vpRef_2;
 					vpRef_2 = vpRef_tmp;
 
-					//cerr<<"VP AFTER ASSIGNMENT"<<endl;
-					//cerr<<"vpRef_0->size()="<<vpRef_0->size()<<endl;
-					//cerr<<"vpRef_1->size()="<<vpRef_1->size()<<endl;
-					//cerr<<"vpRef_2->size()="<<vpRef_2->size()<<endl;
-
 				}
 
 			}
 
 		}
-		//if(visitedPixels.size()!=(newCell->volume+1)){
+
 		if (visitedPixCounter != (newCell->volume + 1)) { //we use newCell->volume+1 because we count also the pixel pt that may become part of the new cell after spin flip
-			//cerr<<"visitedPixels.size()="<<visitedPixCounter<<" newCell->volume="<<newCell->volume<<endl;
+
 			penalty += newPenalty;
-			//cerr<<"new penalty="<<penalty<<endl;
-			//exit(0);
-		}/*else{
-		 cerr<<"visitedPixels.size()="<<visitedPixCounter<<" newCell->volume="<<newCell->volume<<endl;
-
-		 cerr<<"new penalty=0.0"<<endl;
-		 exit(0);
-
-		 }*/
-
-
-
+		}
 	}
 
 	//this reduces chances of holes in the cell but does not eliminate them completely
 	if (!oldCellFragmented && !newCell && (oldCellByTypeCalculations || oldCellConnectivityPenalty)) {
 
 		double oldPenalty = oldCellConnectivityPenalty;
-		//if(!newCell && oldCell->type<=maxTypeId && penaltyVec[oldCell->type]!=0.0){
-		//double oldPenalty = 0.0;
-		//if (oldCellConnectivityPenalty) {
-		//	oldPenalty = oldCellConnectivityPenalty;
-		//}
-		//else {
-		//	oldPenalty = penaltyVec[oldCell->type];
-		//}
-
 
 		CellG *nCell = 0;
 		WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
@@ -763,15 +625,6 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 
 		double oldPenalty = oldCellConnectivityPenalty;
 
-		//double oldPenalty = 0.0;
-		//if (oldCellConnectivityPenalty) {
-		//	oldPenalty = oldCellConnectivityPenalty;
-		//}
-		//else {
-		//	oldPenalty = penaltyVec[oldCell->type];
-		//}
-
-
 		CellG *nCell = 0;
 		WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
 		Neighbor neighbor;
@@ -795,7 +648,8 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 				vpRef_1->insert(neighbor.pt);
 				++visitedPixCounter;
 
-				// it is essential that you pick only one nearest neighbor of pt and break .If you pick more the connectivity algorithm will not work
+				// it is essential that you pick only one nearest neighbor of pt and break .
+                // If you pick more the connectivity algorithm will not work
 				// think about horseshoe shaped cell that is about to break into two pieces
 				break;
 			}
@@ -821,58 +675,27 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 				if (nCell != oldCell || neighbor.pt == pt)
 					continue;
 
-				//if(visitedPixels.find(neighbor.pt)!=visitedPixels.end())
-				//	continue;//neighbor.pt has already been visited and added to visited points
-
-				//visitedPixels.insert(neighbor.pt);
-				//filoPointBuffer.push_back(neighbor.pt);
-
 				if (vpRef_0->find(neighbor.pt) != vpRef_0->end() || vpRef_1->find(neighbor.pt) != vpRef_1->end() || vpRef_2->find(neighbor.pt) != vpRef_2->end())
 					continue;//neighbor.pt has already been visited and added to visited points
 
-				//visitedPixels.insert(neighbor.pt);
-				//filoPointBuffer.push_back(neighbor.pt);
-
 				fpbRef_1->push_back(neighbor.pt);
 				vpRef_2->insert(neighbor.pt);
-				//cerr<<" Adding pt="<<neighbor.pt<<" to vps"<<" visitedPixCounter="<<visitedPixCounter<<endl;
 				++visitedPixCounter;
 			}
 			if (fpbRef_0->empty()) {
-				//cerr<<"Got empty fpbRef_0"<<endl;
-				if (!fpbRef_1->empty()) {
-					//cerr<<"BEFORE ASSIGNMENT"<<endl;
-					//cerr<<"fpbRef_0->size()="<<fpbRef_0->size()<<endl;
-					//cerr<<"fpbRef_1->size()="<<fpbRef_1->size()<<endl;
 
+				if (!fpbRef_1->empty()) {
 					std::deque<Point3D> * fpbRef_tmp = fpbRef_0;
 					fpbRef_0 = fpbRef_1;
-					//cerr<<"fpbRef_0.size()="<<fpbRef_0->size()<<endl;
+
 					fpbRef_tmp->clear();
 					fpbRef_1 = fpbRef_tmp;
 
-
-					//cerr<<"AFTER ASSIGNMENT"<<endl;
-					//cerr<<"fpbRef_0->size()="<<fpbRef_0->size()<<endl;
-					//cerr<<"fpbRef_1->size()="<<fpbRef_1->size()<<endl;
-
-
-
-					//cerr<<"VP BEFORE ASSIGNMENT"<<endl;
-					//cerr<<"vpRef_0->size()="<<vpRef_0->size()<<endl;
-					//cerr<<"vpRef_1->size()="<<vpRef_1->size()<<endl;
-					//cerr<<"vpRef_2->size()="<<vpRef_2->size()<<endl;
 					vpRef_0->clear();
 					std::set<Point3D> *vpRef_tmp = vpRef_0;
 					vpRef_0 = vpRef_1;
 					vpRef_1 = vpRef_2;
 					vpRef_2 = vpRef_tmp;
-
-					//cerr<<"VP AFTER ASSIGNMENT"<<endl;
-					//cerr<<"vpRef_0->size()="<<vpRef_0->size()<<endl;
-					//cerr<<"vpRef_1->size()="<<vpRef_1->size()<<endl;
-					//cerr<<"vpRef_2->size()="<<vpRef_2->size()<<endl;
-
 				}
 
 			}
@@ -880,9 +703,7 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 
 
 		if (visitedPixCounter != (oldCell->volume - 1)) {// we use (oldCell->volume-1) to acount for the fact the pt may stop belonging to old cell after pixel copy
-			//cerr<<"visitedPixCounter="<<visitedPixCounter<<" oldCell->volume="<<oldCell->volume<<endl;
 			penalty += oldPenalty;
-			//cerr<<"old penalty="<<penalty<<endl;
 		}
 
 	}

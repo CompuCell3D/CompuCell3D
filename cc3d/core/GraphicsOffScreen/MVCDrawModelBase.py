@@ -1,15 +1,17 @@
 import vtk
-import cc3d.player5.Configuration as Configuration
+from cc3d.core import Configuration
 from cc3d import CompuCellSetup
-from cc3d.player5.Utilities.utils import to_vtk_rgb
+from cc3d.core.GraphicsUtils.utils import to_vtk_rgb
 import numpy as np
 from cc3d.cpp import CompuCell
+import weakref
+from math import log10, fabs
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 
 
 class MVCDrawModelBase:
-    def __init__(self, boundary_strategy):
+    def __init__(self, boundary_strategy, ren=None):
 
         (self.minCon, self.maxCon) = (0, 0)
 
@@ -26,6 +28,47 @@ class MVCDrawModelBase:
         self.lattice_type_str = None
 
         self.celltypeLUT = None
+
+        self.gd_ref = None
+        self.ren = ren
+
+    @property
+    def boundary_strategy(self):
+        try:
+            o = self._boundary_strategy()
+        except TypeError:
+            o = self._boundary_strategy
+        return o
+
+    @boundary_strategy.setter
+    def boundary_strategy(self, _i):
+        try:
+            self._boundary_strategy = weakref.ref(_i)
+        except TypeError:
+            self._boundary_strategy = _i
+
+    @property
+    def ren(self):
+        try:
+            o = self._ren()
+        except TypeError:
+            o = self._ren
+        return o
+
+    @ren.setter
+    def ren(self, _i):
+        try:
+            self._ren = weakref.ref(_i)
+        except TypeError:
+            self._ren = _i
+
+    def set_generic_drawer(self, gd):
+        """
+
+        :param gd:
+        :return:
+        """
+        self.gd_ref = weakref.ref(gd)
 
     def set_boundary_strategy(self, boundary_strategy):
         """
@@ -84,13 +127,14 @@ class MVCDrawModelBase:
         :param actual_screenshot: flag that tells if we got metadata for actual screenshot
         :return:
         """
+        configuration = CompuCellSetup.persistent_globals.configuration
         if actual_screenshot:
             if scene_metadata is None:
-                color_map = Configuration.getSetting("TypeColorMap")
+                color_map = configuration.getSetting("TypeColorMap")
             else:
                 color_map = scene_metadata["TypeColorMap"]
         else:
-            color_map = Configuration.getSetting("TypeColorMap")
+            color_map = configuration.getSetting("TypeColorMap")
 
         cell_type_color_lookup_table = vtk.vtkLookupTable()
         # You need to explicitly call Build() when constructing the LUT by hand
@@ -200,16 +244,16 @@ class MVCDrawModelBase:
         :param max_exp:
         :return:
         """
-        from math import log10, fabs
+
         if val == 0.0:
             return '0.0'
 
         try:
-            val_log = fabs(log10(val))
+            val_log = fabs(log10(fabs(val)))
             if val_log <= max_exp:
-                val_str = '{:f}'.format(val)
+                val_str = f'{val:f}'
             else:
-                val_str = '{:e}'.format(val)
+                val_str = f'{val:e}'
         except:
             val_str = 'NaN'
 
@@ -227,9 +271,16 @@ class MVCDrawModelBase:
         max_str = self.float_formatting(range_array[1])
         min_max_actor.SetInput("Min: {} Max: {}".format(min_str, max_str))
 
+        font_size = 11
+        if self.gd_ref is not None:
+            generic_drawer = self.gd_ref()
+            vertical_resolution = generic_drawer.vertical_resolution
+            if vertical_resolution is not None:
+                font_size = int(generic_drawer.vertical_resolution / 100 * 1.1)
+
         txtprop = min_max_actor.GetTextProperty()
         txtprop.SetFontFamilyToArial()
-        txtprop.SetFontSize(10)
+        txtprop.SetFontSize(font_size)
         txtprop.SetColor(1, 1, 1)
         min_max_actor.SetPosition(20, 20)
 
@@ -253,10 +304,12 @@ class MVCDrawModelBase:
             min_range = scene_metadata['MinRange']
             max_range = scene_metadata['MaxRange']
         else:
-            min_range_fixed = Configuration.getSetting("MinRangeFixed", field_name)
-            max_range_fixed = Configuration.getSetting("MaxRangeFixed", field_name)
-            min_range = Configuration.getSetting("MinRange", field_name)
-            max_range = Configuration.getSetting("MaxRange", field_name)
+            configuration = CompuCellSetup.persistent_globals.configuration
+
+            min_range_fixed = configuration.getSetting("MinRangeFixed", field_name)
+            max_range_fixed = configuration.getSetting("MaxRangeFixed", field_name)
+            min_range = configuration.getSetting("MinRange", field_name)
+            max_range = configuration.getSetting("MaxRange", field_name)
 
         out_dict['MinRangeFixed'] = min_range_fixed
         out_dict['MaxRangeFixed'] = max_range_fixed

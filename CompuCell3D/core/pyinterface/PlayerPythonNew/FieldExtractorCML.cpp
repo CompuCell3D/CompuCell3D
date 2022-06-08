@@ -1313,7 +1313,7 @@ bool FieldExtractorCML::fillVectorFieldCellLevelData3DHex(vtk_obj_addr_int_t _po
 
 
 //vector<int> FieldExtractorCML::fillCellFieldData3D(long _cellTypeArrayAddr){
-vector<int> FieldExtractorCML::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr){
+vector<int> FieldExtractorCML::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr, bool extractOuterShellOnly){
 	set<int> usedCellTypes;
 
 	vtkIntArray *cellTypeArray = (vtkIntArray *)_cellTypeArrayAddr;

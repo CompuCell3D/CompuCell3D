@@ -4,8 +4,9 @@
 #include <string>
 #include <vector>
 
-typedef std::pair<std::string, std::string> fieldNameAddTerm_t;
+typedef std::pair <std::string, std::string> fieldNameAddTerm_t;
 
-std::string genReactionKernels(std::vector<fieldNameAddTerm_t> const &fieldNameAddTerms);
+std::string genReactionKernels(std::vector < fieldNameAddTerm_t >
+const &fieldNameAddTerms);
 
 #endif

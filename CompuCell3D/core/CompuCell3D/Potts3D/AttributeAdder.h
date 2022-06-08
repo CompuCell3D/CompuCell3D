@@ -1,17 +1,21 @@
 #ifndef ATTRIBUTEADDER_H
 #define ATTRIBUTEADDER_H
-namespace CompuCell3D{
 
-class CellG;
+namespace CompuCell3D {
 
-class AttributeAdder{
+    class CellG;
+
+    class AttributeAdder {
     public:
-	AttributeAdder(){}
-	virtual ~AttributeAdder(){}
-	virtual void addAttribute(CellG *){};
-	virtual void destroyAttribute(CellG *){};
+        AttributeAdder() {}
 
-};
+        virtual ~AttributeAdder() {}
+
+        virtual void addAttribute(CellG *) {};
+
+        virtual void destroyAttribute(CellG *) {};
+
+    };
 
 };
 

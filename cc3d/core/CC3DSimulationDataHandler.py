@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-import os, sys
+import os
 import shutil
+import sys
+import contextlib
 
-# import cc3d.twedit5.twedit.editor.Configuration as Configuration
-# import cc3d.core.DefaultSettingsData as settings_data
 from cc3d.core.ParameterScanUtils import ParameterScanUtils
+from cc3d.core.ParameterScanUtils import ParameterScanData
 from cc3d.core import DefaultSettingsData as settings_data
 from cc3d.core.XMLUtils import ElementCC3D
 from cc3d.core.XMLUtils import Xml2Obj
 from cc3d.core.XMLUtils import CC3DXMLListPy
+from typing import Optional
 
 MODULENAME = '------- pythonSetupScripts/CC3DSimulationDataHandler.py: '
 
@@ -106,29 +108,20 @@ class CC3DParameterScanResource(CC3DResource):
         self.type = 'ParameterScan'
         self.basePath = ''
 
-        self.parameterScanXMLElements = {}
-        # {file name:dictionary of parameterScanData} parameterScanDataMap={hash:parameterScanData}
         self.parameterScanFileToDataMap = {}
-        self.fileTypeForEditor = 'xml'
-        self.parameterScanXMLHandler = None
+        self.fileTypeForEditor = 'json'
 
         # ParameterScanUtils is the class where all parsing and parameter scan data processing takes place
         self.psu = ParameterScanUtils()
 
-    def addParameterScanData(self, _file, _psd):
-        print('self.basePath=', self.basePath)
-        print('_file=', _file)
-
-        # relative path of the scanned simulation file w.r.t. project directory
-        relativePath = find_relative_path(self.basePath, _file)
-        print('relativePath=', relativePath)
-        self.psu.addParameterScanData(relativePath, _psd)
+    def addParameterScanData(self, psd: ParameterScanData, original_value: Optional[str] = None):
+        self.psu.addParameterScanData(psd, original_value=original_value)
 
     def readParameterScanSpecs(self):
         self.psu.readParameterScanSpecs(self.path)
 
-    def writeParameterScanSpecs(self):
-        self.psu.writeParameterScanSpecs(self.path)
+    def write_parameter_scan_specs(self):
+        self.psu.write_parameter_scan_specs(self.path)
 
 
 class CC3DSimulationData:
@@ -197,15 +190,14 @@ class CC3DSimulationData:
 
     def addNewParameterScanResource(self):
         self.parameterScanResource = CC3DParameterScanResource()
-        self.parameterScanResource.path = os.path.abspath(
-            os.path.join(self.basePath, 'Simulation/ParameterScanSpecs.xml'))
-
-        base_core_name, ext = os.path.splitext(
-            os.path.basename(self.path))  # extracting core simulation name from full cc3d project path
-
-        self.parameterScanResource.psu.setOutputDirectoryRelativePath(base_core_name + '_ParameterScan')
+        self.parameterScanResource.path = os.path.abspath(os.path.join(self.basePath,
+                                                                       'Simulation/ParameterScanSpecs.json'))
 
     def removeParameterScanResource(self):
+
+        with contextlib.suppress(FileNotFoundError, OSError):
+            os.remove(self.parameterScanResource.path)
+
         self.parameterScanResource = None
 
     def addNewSerializerResource(self, _outFreq=0, _multipleRestartDirs=False, _format='text', _restartDir=''):
@@ -456,6 +448,8 @@ class CC3DSimulationDataHandler:
             # setting same base path for parameter scan as for the project
             # - necessary to get relative paths in the parameterSpec file
             self.cc3dSimulationData.parameterScanResource.basePath = self.cc3dSimulationData.basePath
+            self.cc3dSimulationData.parameterScanResource.readParameterScanSpecs()
+
             # reading content of XML parameter scan specs
             # ------------------------------------------------------------------ IMPORTANT IMPOTRANT ----------------
             # WE HAVE TO CALL MANUALLY readParameterScanSpecs because

@@ -14,8 +14,7 @@
 
 %{
 
-#include <sstream>  
-#include <BasicUtils/BasicException.h>
+#include <sstream>
 #include <CompuCell3D/Field3D/Point3D.h>
 #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Field3D/Field3D.h>
@@ -62,9 +61,6 @@ using namespace CompuCell3D;
     SWIG_exception(SWIG_RuntimeError, e.what());
   }
 }
-
-
-%include <BasicUtils/BasicException.h>
 
 
 %include <CompuCell3D/Field3D/Point3D.h>
@@ -209,77 +205,3 @@ using namespace CompuCell3D;
 
  FIELD3DEXTENDER(CompuCell3D::Field3D<int>,int)
  FIELD3DEXTENDER(CompuCell3D::Field3DImpl<int>,int)
-
-
- 
- 
-%extend CompuCell3D::Field3DImpl<int>{    
-    
-//   std::string __str__(){
-//     std::ostringstream s;
-//     s<<"Field3DImpl<int> dim"<<self->getDim();
-//     return s.str();
-//   }
-  
-//   %pythoncode %{
-//     
-//     %}
-  
-  
-//   int __getitem__(PyObject *_indexTuple) {
-//     if (!PyTuple_Check( _indexTuple) || PyTuple_GET_SIZE(_indexTuple)!=3){
-// 	throw std::runtime_error("Wrong Syntax: please use make sure you access field like here: field[1,2,3]");
-//     }
-// 
-//     return self->get(Point3D(PyInt_AsLong(PyTuple_GetItem(_indexTuple,0)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,1)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,2))));    
-//   }
-// 
-//   void __setitem__(PyObject *_indexTuple,int _val) {
-//     if (!PyTuple_Check( _indexTuple) || PyTuple_GET_SIZE(_indexTuple)!=3){
-// 	throw std::runtime_error("Wrong Syntax: please use make sure you access field like here: field[1,2,3]=1.0");
-//     }
-// 
-//     return self->set(Point3D(PyInt_AsLong(PyTuple_GetItem(_indexTuple,0)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,1)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,2))),_val);    
-//   }
-  
-  
-//   int __getitem__(PyObject *_indexTuple) {
-// //     std::ostringstream s;
-//     cerr<<"INSIDE GETITEM"<<endl;
-//     cerr<<"PyTuple_Check( _indexTuple)="<<PyTuple_Check( _indexTuple)<<endl;
-//     cerr<<"PyTuple_GET_SIZE(_indexTuple)="<<PyTuple_GET_SIZE(_indexTuple)<<endl;
-//     if (!PyTuple_Check( _indexTuple) || PyTuple_GET_SIZE(_indexTuple)!=3){
-// 	cerr<<"THIS IS EXCEPTION HANDLING"<<endl;
-// // 	PyErr_SetString(PyExc_SyntaxError,"Wrong Syntax: please use make sure you access field like here: field[1,2,3]");
-// 	throw std::runtime_error("Wrong Syntax: please use make sure you access field like here: field[1,2,3]");
-// // 	throw BasicException("Wrong Syntax: please use make sure you access field like here: field[1,2,3]");
-// 	  
-// 	
-// // 	SWIG_exception(SWIG_SyntaxError,"Wrong Syntax: Expected different syntax e.g. field[1,2,3]");
-// // 	return "PROBLEM WITH SYNTAX";
-// // 	return NULL;
-//     }
-// //     int check=PyTuple_Check( _indexTuple);
-//     return self->get(Point3D(PyInt_AsLong(PyTuple_GetItem(_indexTuple,0)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,1)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,2))));
-// //     int x=PyInt_AsLong(PyTuple_GetItem(_indexTuple,0));
-// //     int y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
-// //     int z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
-// //     int val=self->get(Point3D(x,y,z));
-// //     s<<"THIS IS INDEX "<<_indexTuple<<" check="<<check <<" x="<<x<<" y="<<y<<" z="<<z<<" val="<<val;
-// //     // s<<"THIS IS INDEX "<<i<<" and "<<j;
-//     
-// //     return s.str();
-//     
-//   }
-};
-
-
-
-// %include <CompuCell3D/Field3D/Dim3D.h>
-
-
-// %include <CustomSubDomains.h>
-
-// %include <CustomExpressions.h>
-
-

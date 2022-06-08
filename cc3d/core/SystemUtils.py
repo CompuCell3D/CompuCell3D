@@ -1,7 +1,10 @@
+# todo: add system utils support for additional software/extensions
 "This module contains platform specific initializations"
 
+from cc3d import cc3d_scripts_path
+
+
 def setSwigPaths():
-    import sys
     from os import environ
     import string
     import sys
@@ -38,34 +41,32 @@ def setSwigPaths():
 def getCC3DPlayerRunScriptPath():        
     '''returns full path name to player run script
     '''
-    import sys,os
-    from os import environ
-    
-    cc3dPath=None
+    import sys
+    import os
+
     if sys.platform.startswith('win'):
-        cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.bat')
+        cc3dPath = os.path.join(cc3d_scripts_path, 'compucell3d.bat')
     elif sys.platform.startswith('darwin'):
-        cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.command')
-    else : # linux/unix
-        cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.sh')
+        cc3dPath = os.path.join(cc3d_scripts_path, 'compucell3d.command')
+    else: # linux/unix
+        cc3dPath = os.path.join(cc3d_scripts_path, 'compucell3d.sh')
         
-    cc3dPath=os.path.abspath(cc3dPath)
+    cc3dPath = os.path.abspath(cc3dPath)
     return cc3dPath
 
     
-def getCC3DRunScriptPath() :   
-    import sys,os
-    from os import environ
-    
-    cc3dPath=None
+def getCC3DRunScriptPath():
+    import sys
+    import os
+
     if sys.platform.startswith('win'):
-        cc3dPath=os.path.join(environ['PREFIX_CC3D'],'runScript.bat')
+        cc3dPath = os.path.join(cc3d_scripts_path, 'runScript.bat')
     elif sys.platform.startswith('darwin'):
-        cc3dPath=os.path.join(environ['PREFIX_CC3D'],'runScript.command')
-    else : # linux/unix
-        cc3dPath=os.path.join(environ['PREFIX_CC3D'],'runScript.sh')
-        
-    cc3dPath=os.path.abspath(cc3dPath)
+        cc3dPath = os.path.join(cc3d_scripts_path, 'runScript.command')
+    else:  # linux/unix
+        cc3dPath = os.path.join(cc3d_scripts_path, 'runScript.sh')
+
+    cc3dPath = os.path.abspath(cc3dPath)
     return cc3dPath
 
 def getCommandLineArgList():

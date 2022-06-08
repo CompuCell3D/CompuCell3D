@@ -10,13 +10,27 @@ from deprecated import deprecated
 
 
 class CellList:
+    """
+    Wraps current inventory of all :class:`~cc3d.cpp.CompuCell.CellG` instances in simulation
+    """
+
     def __init__(self, inventory):
         self.inventory = inventory
 
     def __iter__(self):
+        """
+
+        :return: CellListIterator instance
+        :rtype: CellListIterator
+        """
         return CellListIterator(self)
 
     def __len__(self):
+        """
+
+        :return: number of cells
+        :rtype: int
+        """
         return int(self.inventory.getSize())
 
 
@@ -29,6 +43,11 @@ class CellListIterator:
         self.invItr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: a cell
+        :rtype: cc3d.cpp.CompuCell.CellG
+        """
         if not self.invItr.isEnd():
             self.cell = self.invItr.getCurrentRef()
             self.invItr.next()
@@ -43,6 +62,9 @@ class CellListIterator:
 #########################################################################
 # iterating over inventory of cells of a given type
 class CellListByType:
+    """
+    List of all cells in current inventory of a variable number of particular types
+    """
     def __init__(self, inventory, *args):
         self.inventory = inventory
 
@@ -54,9 +76,19 @@ class CellListByType:
         self.inventory.initCellInventoryByMultiType(self.inventoryByType, self.types)
 
     def __iter__(self):
+        """
+
+        :return: CellListByTypeIterator instance
+        :rtype: CellListByTypeIterator
+        """
         return CellListByTypeIterator(self)
 
     def __len__(self):
+        """
+
+        :return: number of cells
+        :rtype: int
+        """
         return int(self.inventoryByType.size())
 
     def initTypeVec(self, _type_list):
@@ -86,6 +118,11 @@ class CellListByTypeIterator:
         self.next = self.__next__
 
     def __next__(self):
+        """
+
+        :return: a cell
+        :rtype: cc3d.cpp.CompuCell.CellG
+        """
         if not self.invItr.isEnd():
             self.cell = self.invItr.getCurrentRef()
             # print 'self.idCellPair=',self.idCellPair
@@ -100,7 +137,6 @@ class CellListByTypeIterator:
         return self
 
 
-
 #########################################################################
 # this is used to iterate more easily over clusters
 class ClusterList:
@@ -108,9 +144,19 @@ class ClusterList:
         self.inventory = _inventory.getClusterInventory().getContainer()
 
     def __iter__(self):
+        """
+
+        :return: ClusterListIterator instance
+        :rtype: ClusterListIterator
+        """
         return ClusterListIterator(self)
 
     def __len__(self):
+        """
+
+        :return: number of clusters
+        :rtype: int
+        """
         return int(self.inventory.size())
 
 
@@ -124,6 +170,11 @@ class ClusterListIterator:
         self.next = self.__next__
 
     def __next__(self):
+        """
+
+        :return: a cell
+        :rtype: cc3d.cpp.CompuCell.CellG
+        """
 
         if not self.invItr.isEnd():
             self.compartmentList = self.invItr.getCurrentRef()
@@ -141,9 +192,19 @@ class Clusters:
         self.inventory = _inventory.getClusterInventory().getContainer()
 
     def __iter__(self):
+        """
+
+        :return: ClustersIterator instance
+        :rtype: ClustersIterator
+        """
         return ClustersIterator(self)
 
     def __len__(self):
+        """
+
+        :return: number of clusters
+        :rtype: int
+        """
         return int(self.inventory.size())
 
 
@@ -160,6 +221,11 @@ class ClustersIterator:
         self.compartmentList = None
 
     def __next__(self):
+        """
+
+        :return: CompartmentList instance
+        :rtype: CompartmentList
+        """
 
         if not self.invItr.isEnd():
             self.compartmentList = self.invItr.getCurrentRef()
@@ -172,20 +238,32 @@ class ClustersIterator:
             raise StopIteration
 
 
-# this is used to iterate more easily over list of compartments , notice regular map iteration will work too but this is more abstracted out and will work with other containers too
+# this is used to iterate more easily over list of compartments,
+# notice regular map iteration will work too but this is more abstracted out and will work with other containers too
 
 class CompartmentList:
     def __init__(self, _inventory):
         self.inventory = _inventory
 
     def __iter__(self):
+        """
+
+        :return: CompartmentListIterator instance
+        :rtype: CompartmentListIterator
+        """
         return CompartmentListIterator(self)
 
     def __len__(self):
+        """
+
+        :return: number of compartments
+        :rtype: int
+        """
         return int(self.inventory.size())
 
     def clusterId(self):
         return self.__iter__().next().clusterId
+
 
 class CompartmentListIterator:
     def __init__(self, _cellList):
@@ -196,6 +274,11 @@ class CompartmentListIterator:
         self.invItr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: a cell
+        :rtype: cc3d.cpp.CompuCell.CellG
+        """
         if not self.invItr.isEnd():
             self.cell = self.invItr.getCurrentRef()
             # print 'self.idCellPair=',self.idCellPair
@@ -216,12 +299,28 @@ class ClusterCellList:
         self.inventory = _inventory
 
     def __iter__(self):
+        """
+
+        :return: ClusterCellListIterator instance
+        :rtype: ClusterCellListIterator
+        """
         return ClusterCellListIterator(self)
 
     def __getitem__(self, item):
+        """
+
+        :param int item:
+        :return: a cell
+        :rtype: cc3d.cpp.CompuCell.CellG
+        """
         return self.inventory[item]
 
     def __len__(self):
+        """
+
+        :return: number of cells
+        :rtype: int
+        """
         return int(self.inventory.size())
 
     @deprecated(version='4.0.0', reason="You should use : len()")
@@ -240,13 +339,16 @@ class ClusterCellListIterator:
         # self.invItr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: a cell
+        :rtype: cc3d.cpp.CompuCell.CellG
+        """
         # if self.invItr !=  self.inventory.end():
         if self.currentIdx < self.inventory.size():
             # print "self.invItr=",dir(self.invItr)
             # print "self.invItr.next()=",self.invItr.next()
             # self.compartmentList = self.invItr.next()
-
-
 
             self.cell = self.inventory[self.currentIdx]
             self.currentIdx += 1
@@ -273,16 +375,36 @@ class CellNeighborListFlex:
         self.neighborCountByType = self.neighbor_count_by_type
 
     def __len__(self):
+        """
+
+        :return: number of cells
+        :rtype: int
+        """
         neighborTracker = self.neighborTrackerAccessor.get(self.cell.extraAttribPtr)
         return int(neighborTracker.cellNeighbors.size())
 
     def __getitem__(self, idx):
+        """
+
+        :param int idx:
+        :raises IndexError: Out of bounds index
+        :return: neighbor, common surface area
+        :rtype: (cc3d.cpp.CompuCell.CellG, int)
+        """
         if idx > self.__len__() - 1: raise IndexError(
             "Out of bounds index: CellNeighborListAuto index = %s is out of bounds" % str(idx))
         for counter, data in enumerate(self.__iter__()):
             if idx == counter: return data
 
     def common_surface_area_with_cell_types(self, cell_type_list):
+        """
+        Returns common surface area with a variable number of cell types
+
+        :param cell_type_list: list or tuple of cell types
+        :type cell_type_list: list of int or tuple of int
+        :return: total common surface area with all given types
+        :rtype: int
+        """
         area = 0
         for neighbor, commonSurfaceArea in self.__iter__():
             cell_type = 0 if not neighbor else neighbor.type
@@ -291,6 +413,12 @@ class CellNeighborListFlex:
         return area
 
     def common_surface_area_by_type(self):
+        """
+        Returns common surface area with all cell types
+
+        :return: total common surface area by cell type
+        :rtype: collections.defaultdict of {int: int}
+        """
         from collections import defaultdict
         area_dict = defaultdict(int)
         for neighbor, commonSurfaceArea in self.__iter__():
@@ -299,6 +427,12 @@ class CellNeighborListFlex:
         return area_dict
 
     def neighbor_count_by_type(self):
+        """
+        Returns number of neighbors of all cell types
+
+        :return: number of neighbors by type
+        :rtype: collections.defaultdict of {int: int}
+        """
         from collections import defaultdict
         neighbor_counter_dict = defaultdict(int)
 
@@ -308,6 +442,11 @@ class CellNeighborListFlex:
         return neighbor_counter_dict
 
     def __iter__(self):
+        """
+
+        :return: CellNeighborIteratorFlex instance
+        :rtype: CellNeighborIteratorFlex
+        """
         return CellNeighborIteratorFlex(self)
 
 
@@ -321,6 +460,11 @@ class CellNeighborIteratorFlex:
         self.nsdItr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: neighbor, common surface area
+        :rtype: (cc3d.cpp.CompuCell.CellG, int)
+        """
         if not self.nsdItr.isEnd():
             self.neighborCell = self.nsdItr.getCurrentRef().neighborAddress
             self.currentNsdItr = self.nsdItr.current
@@ -334,137 +478,224 @@ class CellNeighborIteratorFlex:
     def __iter__(self):
         return self
 
-class FocalPointPlasticityDataList:
-    def __init__(self, _focalPointPlasticityPlugin, _cell):
-        self.focalPointPlasticityPlugin = _focalPointPlasticityPlugin
-        self.focalPointPlasticityTrackerAccessor = self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
+
+class _FocalPointPlasticityDataListBase:
+    def __init__(self, _fpp_plugin, _cell):
+        # Maintaining legacy feature: cell is attached to data list
         self.cell = _cell
 
+        self._data = self._get_inventory(_fpp_plugin).getFPPTrackerDataSet(_cell)
+
     def __len__(self):
-        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
-        return int(self.focalPointPlasticityTracker.focalPointPlasticityNeighbors.size())
+        """
+
+        :return: number of links
+        :rtype: int
+        """
+        return len(self._data)
 
     def __getitem__(self, idx):
-        if idx > self.__len__() - 1: raise IndexError(
-            "Out of bounds index: FocalPointPlasticityDataList index = %s is out of bounds" % str(idx))
-        for counter, data in enumerate(self.__iter__()):
-            if idx == counter: return data
+        """
+
+        :param idx: {int}
+        :return: {:class:`cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData`}
+        """
+        return self._data[idx]
 
     def __iter__(self):
-        return FocalPointPlasticityDataIterator(self)
+        """
+
+        :return: FocalPointPlasticityDataIterator instance
+        :rtype: FocalPointPlasticityDataIterator
+        """
+        return self._data.__iter__()
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        """
+        Get link inventory container
+
+        :param _fpp_plugin: focal point plasticity plugin
+        :return: link inventory container
+        """
+        raise NotImplementedError
 
 
-class FocalPointPlasticityDataIterator:
-    def __init__(self, _focalPointPlasticityDataList):
-        self.focalPointPlasticityTrackerAccessor = _focalPointPlasticityDataList.focalPointPlasticityTrackerAccessor
-        self.cell = _focalPointPlasticityDataList.cell
-        self.focalPointPlasticityPlugin = _focalPointPlasticityDataList.focalPointPlasticityPlugin
-        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
-        self.focalPointPlasticityDataSetItr = CompuCell.focalPointPlasticitySetPyItr()
-        self.focalPointPlasticityDataSetItr.initialize(self.focalPointPlasticityTracker.focalPointPlasticityNeighbors)
-        self.focalPointPlasticityDataSetItr.setToBegin()
+class _FocalPointPlasticityDataListIteratorBase:
+    def __init__(self, _fpp_data_list: _FocalPointPlasticityDataListBase):
+        # Maintaining legacy feature: cell is attached to data list iterator
+        self.cell = _fpp_data_list.cell
+
+        self._val = iter(_fpp_data_list._data)
 
     def __next__(self):
-        if not self.focalPointPlasticityDataSetItr.isEnd():
-            self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
-            self.focalPointPlasticityData = self.focalPointPlasticityDataSetItr.getCurrentRef()
-            self.focalPointPlasticityDataSetItr.next()
-            return self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerData(self.focalPointPlasticityData)
-        #             return self.plasticityData
-        else:
+        """
+
+        :return: FocalPointPlasticityTrackerData instance
+        :rtype: cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData
+        """
+        return self._val.__next__()
+
+    def __iter__(self):
+        return self._val
+
+
+class FocalPointPlasticityDataList(_FocalPointPlasticityDataListBase):
+    def __init__(self, _fpp_plugin, _cell):
+        super().__init__(_fpp_plugin, _cell)
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        return _fpp_plugin.getLinkInventory()
+
+
+class FocalPointPlasticityDataIterator(_FocalPointPlasticityDataListIteratorBase):
+    def __init__(self, _fpp_data_list: FocalPointPlasticityDataList):
+        super().__init__(_fpp_data_list)
+
+
+class InternalFocalPointPlasticityDataList(_FocalPointPlasticityDataListBase):
+    def __init__(self, _fpp_plugin, _cell):
+        super().__init__(_fpp_plugin, _cell)
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        return _fpp_plugin.getInternalLinkInventory()
+
+
+class InternalFocalPointPlasticityDataIterator(_FocalPointPlasticityDataListIteratorBase):
+    def __init__(self, _fpp_data_list: InternalFocalPointPlasticityDataList):
+        super().__init__(_fpp_data_list)
+
+
+class AnchorFocalPointPlasticityDataList(_FocalPointPlasticityDataListBase):
+    def __init__(self, _fpp_plugin, _cell):
+        super().__init__(_fpp_plugin, _cell)
+
+    @staticmethod
+    def _get_inventory(_fpp_plugin):
+        return _fpp_plugin.getAnchorInventory()
+
+
+class AnchorFocalPointPlasticityDataIterator(_FocalPointPlasticityDataListIteratorBase):
+    def __init__(self, _fpp_data_list: AnchorFocalPointPlasticityDataList):
+        super().__init__(_fpp_data_list)
+
+
+class _FocalPointPlasticityLinkListBase:
+
+    # Python iterator type
+    inv_itr_t = None
+
+    def __init__(self, _fpp_plugin, cell: CompuCell.CellG = None):
+        self.__cell = cell
+        self._inv = self._get_inventory(_fpp_plugin)
+
+    @property
+    def cell(self):
+        """
+
+        :return: cell of this list, if any
+        """
+        return self.__cell
+
+    def __len__(self):
+        """
+
+        :return: number of links
+        :rtype: int
+        """
+        return int(self._inv.getLinkInventorySize())
+
+    def __iter__(self):
+        return self.inv_itr_t(self)
+
+    def _get_inventory(self, _fpp_plugin):
+        """
+        Get link inventory container
+
+        :param _fpp_plugin: focal point plasticity plugin
+        :return: link inventory container
+        """
+        raise NotImplementedError
+
+
+class _FocalPointPlasticityDataIteratorBase:
+
+    # C++ iterator type
+    py_itr_t = None
+
+    def __init__(self, _link_list: _FocalPointPlasticityLinkListBase):
+        self._link_list = _link_list
+        self._inv = self._link_list._inv
+        self._itr = self.py_itr_t()
+        self._itr.initialize(self._inv.getContainer())
+        self._itr.setToBegin()
+
+    def __next__(self):
+        """
+
+        :return: FocalPointPlasticityTrackerData instance
+        :rtype: cc3d.cpp.CompuCell.FocalPointPlasticityTrackerData
+        """
+        if self._itr.isEnd():
             raise StopIteration
+        else:
+            _itr_val = self._itr.getCurrentRef()
+            self._itr.next()
+            return _itr_val
 
     def __iter__(self):
         return self
 
 
-class InternalFocalPointPlasticityDataList:
-    def __init__(self, _focalPointPlasticityPlugin, _cell):
-        self.focalPointPlasticityPlugin = _focalPointPlasticityPlugin
-        self.focalPointPlasticityTrackerAccessor = self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
-        self.cell = _cell
+class FocalPointPlasticityLinkListItr(_FocalPointPlasticityDataIteratorBase):
 
-    def __getitem__(self, idx):
-        if idx > self.__len__() - 1: raise IndexError(
-            "Out of bounds index: InternalFocalPointPlasticityDataList index = %s is out of bounds" % str(idx))
-        for counter, data in enumerate(self.__iter__()):
-            if idx == counter: return data
-
-    def __len__(self):
-        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
-        return int(self.focalPointPlasticityTracker.internalFocalPointPlasticityNeighbors.size())
-
-    def __iter__(self):
-        return InternalFocalPointPlasticityDataIterator(self)
+    py_itr_t = CompuCell.mapFPPLinkIDFPPLinkPyItr
 
 
-class InternalFocalPointPlasticityDataIterator:
-    def __init__(self, _focalPointPlasticityDataList):
-        self.focalPointPlasticityTrackerAccessor = _focalPointPlasticityDataList.focalPointPlasticityTrackerAccessor
-        self.cell = _focalPointPlasticityDataList.cell
-        self.focalPointPlasticityPlugin = _focalPointPlasticityDataList.focalPointPlasticityPlugin
-        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
-        self.focalPointPlasticityDataSetItr = CompuCell.focalPointPlasticitySetPyItr()
-        self.focalPointPlasticityDataSetItr.initialize(
-            self.focalPointPlasticityTracker.internalFocalPointPlasticityNeighbors)
-        self.focalPointPlasticityDataSetItr.setToBegin()
+class FocalPointPlasticityLinkList(_FocalPointPlasticityLinkListBase):
 
-    def __next__(self):
-        if not self.focalPointPlasticityDataSetItr.isEnd():
-            self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
-            self.focalPointPlasticityData = self.focalPointPlasticityDataSetItr.getCurrentRef()
-            self.focalPointPlasticityDataSetItr.next()
-            return self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerData(self.focalPointPlasticityData)
-        #             return self.plasticityData
-        else:
-            raise StopIteration
+    inv_itr_t = FocalPointPlasticityLinkListItr
 
-    def __iter__(self):
-        return self
+    def _get_inventory(self, _fpp_plugin):
+        inv = _fpp_plugin.getLinkInventory()
+        if self.cell is None:
+            return inv
+        return inv.getCellLinkInventory(self.cell)
 
 
-class AnchorFocalPointPlasticityDataList:
-    def __init__(self, _focalPointPlasticityPlugin, _cell):
-        self.focalPointPlasticityPlugin = _focalPointPlasticityPlugin
-        self.focalPointPlasticityTrackerAccessor = self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
-        self.cell = _cell
+class FocalPointPlasticityInternalLinkListItr(_FocalPointPlasticityDataIteratorBase):
 
-    def __getitem__(self, idx):
-        if idx > self.__len__() - 1: raise IndexError(
-            "Out of bounds index: AnchorFocalPointPlasticityDataList index = %s is out of bounds" % str(idx))
-        for counter, data in enumerate(self.__iter__()):
-            if idx == counter: return data
-
-    def __len__(self):
-        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
-        return int(self.focalPointPlasticityTracker.anchors.size())
-
-    def __iter__(self):
-        return AnchorFocalPointPlasticityDataIterator(self)
+    py_itr_t = CompuCell.mapFPPLinkIDFPPInternalLinkPyItr
 
 
-class AnchorFocalPointPlasticityDataIterator:
-    def __init__(self, _focalPointPlasticityDataList):
-        self.focalPointPlasticityTrackerAccessor = _focalPointPlasticityDataList.focalPointPlasticityTrackerAccessor
-        self.cell = _focalPointPlasticityDataList.cell
-        self.focalPointPlasticityPlugin = _focalPointPlasticityDataList.focalPointPlasticityPlugin
-        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
-        self.focalPointPlasticityDataSetItr = CompuCell.focalPointPlasticitySetPyItr()
-        self.focalPointPlasticityDataSetItr.initialize(self.focalPointPlasticityTracker.anchors)
-        self.focalPointPlasticityDataSetItr.setToBegin()
+class FocalPointPlasticityInternalLinkList(_FocalPointPlasticityLinkListBase):
 
-    def __next__(self):
-        if not self.focalPointPlasticityDataSetItr.isEnd():
-            self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
-            self.focalPointPlasticityData = self.focalPointPlasticityDataSetItr.getCurrentRef()
-            self.focalPointPlasticityDataSetItr.next()
-            return self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerData(self.focalPointPlasticityData)
-        #             return self.plasticityData
-        else:
-            raise StopIteration
+    inv_itr_t = FocalPointPlasticityInternalLinkListItr
 
-    def __iter__(self):
-        return self
+    def _get_inventory(self, _fpp_plugin):
+        inv = _fpp_plugin.getInternalLinkInventory()
+        if self.cell is None:
+            return inv
+        return inv.getCellLinkInventory(self.cell)
+
+
+class FocalPointPlasticityAnchorListItr(_FocalPointPlasticityDataIteratorBase):
+
+    py_itr_t = CompuCell.mapFPPLinkIDFPPAnchorPyItr
+
+
+class FocalPointPlasticityAnchorList(_FocalPointPlasticityLinkListBase):
+
+    inv_itr_t = FocalPointPlasticityAnchorListItr
+
+    def _get_inventory(self, _fpp_plugin):
+        inv = _fpp_plugin.getAnchorInventory()
+        if self.cell is None:
+            return inv
+        return inv.getCellLinkInventory(self.cell)
+
 
 class CellPixelList:
     def __init__(self, _pixelTrackerPlugin, _cell):
@@ -473,6 +704,11 @@ class CellPixelList:
         self.cell = _cell
 
     def __iter__(self):
+        """
+
+        :return: CellPixelIterator instance
+        :rtype: CellPixelIterator
+        """
         return CellPixelIterator(self)
 
     @deprecated(version='4.0.0', reason="You should use : number_of_pixels")
@@ -480,6 +716,11 @@ class CellPixelList:
         return self.number_of_pixels()
 
     def number_of_pixels(self):
+        """
+
+        :return: number of pixels
+        :rtype: int
+        """
         return self.pixelTrackerAccessor.get(self.cell.extraAttribPtr).pixelSet.size()
 
 
@@ -495,6 +736,11 @@ class CellPixelIterator:
         self.pixelItr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: PixelTrackerData instance
+        :rtype: cc3d.cpp.CompuCell.PixelTrackerData
+        """
         if not self.pixelItr.isEnd():
             #             self.neighborCell = self.nsdItr.getCurrentRef().neighborAddress
             #             self.currentNsdItr = self.nsdItr.current
@@ -518,6 +764,11 @@ class CellBoundaryPixelList:
         self.cell = cell
 
     def __iter__(self):
+        """
+
+        :return: CellBoundaryPixelIterator instance
+        :rtype: CellBoundaryPixelIterator
+        """
         return CellBoundaryPixelIterator(self, self.neighbor_order)
 
     @deprecated(version='4.0.0', reason="You should use : number_of_pixels")
@@ -525,6 +776,11 @@ class CellBoundaryPixelList:
         return self.number_of_pixels()
 
     def number_of_pixels(self):
+        """
+
+        :return: number of pixels
+        :rtype: int
+        """
         return self.boundary_pixel_tracker_accessor.get(self.cell.extraAttribPtr).pixelSet.size()
 
 
@@ -549,6 +805,11 @@ class CellBoundaryPixelIterator:
         self.boundary_pixel_itr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: BoundaryPixelTrackerData instance
+        :rtype: cc3d.cpp.CompuCell.BoundaryPixelTrackerData
+        """
         if not self.boundary_pixel_itr.isEnd():
             self.current_boundary_pixel_tracker_data = self.boundary_pixel_itr.getCurrentRef()
             self.boundary_pixel_itr.next()
@@ -568,6 +829,11 @@ class ElasticityDataList:
         self.cell = _cell
 
     def __iter__(self):
+        """
+
+        :return: ElasticityDataIterator instance
+        :rtype: ElasticityDataIterator
+        """
         return ElasticityDataIterator(self)
 
 
@@ -582,6 +848,11 @@ class ElasticityDataIterator:
         self.elasticity_data_set_itr.setToBegin()
 
     def __next__(self):
+        """
+
+        :return: ElasticityTrackerData instance
+        :rtype: cc3d.cpp.CompuCell.ElasticityTrackerData
+        """
         if not self.elasticity_data_set_itr.isEnd():
             self.current_elasticity_data_set_itr = self.elasticity_data_set_itr.current
             self.elasticity_data = self.elasticity_data_set_itr.getCurrentRef()
@@ -601,6 +872,11 @@ class EnergyDataList:
         self.flip_results = _potts.getCurrentFlipResults()
 
     def __iter__(self):
+        """
+
+        :return: EnergyDataListIterator instance
+        :rtype: EnergyDataListIterator
+        """
         return EnergyDataListIterator(self)
 
 
@@ -615,6 +891,11 @@ class EnergyDataListIterator:
         self.__num_flips = self.__flip_results.__len__()
 
     def __next__(self):
+        """
+
+        :return: flip result, energy change by energy function
+        :rtype: (bool, dict of {str: float})
+        """
         if self.__flip_idx < self.__num_flips:
             flip_result = self.__flip_results[self.__flip_idx]
             data_dict = {self.__function_names[idx]: self.__energy_changes[self.__flip_idx][idx]
@@ -635,6 +916,11 @@ class PlasticityDataList:
         self.cell = cell
 
     def __iter__(self):
+        """
+
+        :return: PlasticityDataIterator instance
+        :rtype: PlasticityDataIterator
+        """
         return PlasticityDataIterator(self)
 
 
@@ -649,6 +935,11 @@ class PlasticityDataIterator:
         self.plasticityDataSetItr.setToBegin()
 
     def next(self):
+        """
+
+        :return: PlasticityTrackerData instance
+        :rtype: cc3d.cpp.CompuCell.PlasticityTrackerData
+        """
         if not self.plasticityDataSetItr.isEnd():
             self.currentPlasticityDataSetItr = self.plasticityDataSetItr.current
             self.plasticityData = self.plasticityDataSetItr.getCurrentRef()

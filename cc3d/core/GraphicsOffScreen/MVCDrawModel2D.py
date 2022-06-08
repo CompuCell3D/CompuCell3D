@@ -4,7 +4,7 @@ import math
 from math import sqrt
 import numpy as np
 import string
-from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
+from cc3d.core.GraphicsUtils.utils import extract_address_int_from_vtk_object, to_vtk_rgb
 from cc3d.core.GraphicsOffScreen.MetadataHandler import MetadataHandler
 from cc3d.core.iterators import CellList, FocalPointPlasticityDataList, InternalFocalPointPlasticityDataList
 from cc3d.cpp import CompuCell
@@ -18,8 +18,8 @@ MODULENAME = '----- MVCDrawModel2D.py:  '
 
 
 class MVCDrawModel2D(MVCDrawModelBase):
-    def __init__(self, boundary_strategy=None):
-        MVCDrawModelBase.__init__(self,boundary_strategy)
+    def __init__(self, boundary_strategy=None, ren=None):
+        MVCDrawModelBase.__init__(self, boundary_strategy=boundary_strategy, ren=ren)
 
         self.cellsMapper = None
         self.hex_cells_mapper = None
@@ -118,24 +118,24 @@ class MVCDrawModel2D(MVCDrawModelBase):
         """
 
         actors_dict = actor_specs.actors_dict
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        # field_dim = self.currentDrawingParameters.bsd.fieldDim
+        # dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
 
         outlineData = vtk.vtkImageData()
 
         fieldDim = self.currentDrawingParameters.bsd.fieldDim
         dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
-        self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))
+        dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))
 
         # lattice_type_str = self.get_lattice_type_str()
         # if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
         if self.is_lattice_hex(drawing_params=drawing_params):
 
-            outlineData.SetDimensions(self.dim[0] + 1, int(self.dim[1] * math.sqrt(3.0) / 2.0) + 2, 1)
-            # print "self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1= ",(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
+            outlineData.SetDimensions(dim[0] + 1, int(dim[1] * math.sqrt(3.0) / 2.0) + 2, 1)
+            # print "dim[0]+1,int(dim[1]*math.sqrt(3.0)/2.0)+2,1= ",(dim[0]+1,int(dim[1]*math.sqrt(3.0)/2.0)+2,1)
         else:
-            outlineData.SetDimensions(self.dim[0] + 1, self.dim[1] + 1, 1)
+            outlineData.SetDimensions(dim[0] + 1, dim[1] + 1, 1)
 
         outline = vtk.vtkOutlineFilter()
 
@@ -170,7 +170,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         axes_actor = actors_dict['axes_actor']
 
-        lattice_type_str = self.get_lattice_type_str()
+        # lattice_type_str = self.get_lattice_type_str()
 
         dim_array = [field_dim.x, field_dim.y, field_dim.z]
         # if lattice_type_str.lower() == 'hexagonal':
@@ -223,7 +223,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         axes_actor.SetYTitle(vertical_label)
         # axesActor.SetFlyModeToOuterEdges()
 
-        label_prop = axes_actor.GetLabelTextProperty(0)
+        # label_prop = axes_actor.GetLabelTextProperty(0)
         # print 'label_prop=',label_prop
 
         # print 'axesActor.GetXTitle()=',axesActor.GetXTitle()
@@ -298,8 +298,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         dim_order = self.dimOrder(self.currentDrawingParameters.plane)
-        dim = self.planeMapper(dim_order,
-                               (field_dim.x, field_dim.y, field_dim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
+        # dim = self.planeMapper(dim_order,
+        #                        (field_dim.x, field_dim.y, field_dim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
         field_name = drawing_params.fieldName
         field_type = drawing_params.fieldType.lower()
         scene_metadata = drawing_params.screenshot_data.metadata
@@ -405,31 +405,31 @@ class MVCDrawModel2D(MVCDrawModelBase):
             glyphs.SetScaleModeToScaleByVector()
             # rangeSpan = maxMagnitude - minMagnitude
             dataScalingFactor = max(abs(min_magnitude), abs(max_magnitude))
-            #            print MODULENAME,"initVectorFieldCellLevelActors():  self.minMagnitude=",self.minMagnitude," self.maxMagnitude=",self.maxMagnitude
+            # print(MODULENAME, "initVectorFieldCellLevelActors():  self.minMagnitude=", self.minMagnitude,
+            #       " self.maxMagnitude=", self.maxMagnitude)
 
             if dataScalingFactor == 0.0:
-                dataScalingFactor = 1.0  # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
+                # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
+                dataScalingFactor = 1.0
             glyphs.SetScaleFactor(arrowScalingFactor / dataScalingFactor)
             # coloring arrows
             # arrow_color = to_vtk_rgb(scene_metadata['ArrowColor'])
 
             arrow_color = to_vtk_rgb(mdata.get('ArrowColor', data_type='color'))
             vector_field_actor.GetProperty().SetColor(arrow_color)
-
-
-
         else:
 
             if mdata.get('ScaleArrowsOn', data_type='bool'):
                 glyphs.SetColorModeToColorByVector()
                 glyphs.SetScaleModeToScaleByVector()
 
-                rangeSpan = max_magnitude - min_magnitude
+                # rangeSpan = max_magnitude - min_magnitude
                 dataScalingFactor = max(abs(min_magnitude), abs(max_magnitude))
-                #                print "self.minMagnitude=",self.minMagnitude," self.maxMagnitude=",self.maxMagnitude
+                # print("self.minMagnitude=",self.minMagnitude," self.maxMagnitude=",self.maxMagnitude)
 
                 if dataScalingFactor == 0.0:
-                    dataScalingFactor = 1.0  # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
+                    # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
+                    dataScalingFactor = 1.0
                 glyphs.SetScaleFactor(arrowScalingFactor / dataScalingFactor)
 
             else:
@@ -911,7 +911,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
             iso_val += del_iso
 
         iso_contour.SetInputConnection(field_image_data.GetOutputPort())
-        #        isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, [self.minCon, self.maxCon])
+        # isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",
+        #                                                    self.currentDrawingParameters.fieldName)+2,
+        #                           [self.minCon, self.maxCon])
 
         self.contour_mapper.SetInputConnection(iso_contour.GetOutputPort())
         self.contour_mapper.SetLookupTable(self.ctlut)
@@ -951,10 +953,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
         """
 
         actors_dict = actor_specs.actors_dict
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        # field_dim = self.currentDrawingParameters.bsd.fieldDim
+        # dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
-        mdata = MetadataHandler(mdata=scene_metadata)
+        # mdata = MetadataHandler(mdata=scene_metadata)
 
         # dim = self.planeMapper(dim_order,
         #                             (field_dim.x, field_dim.y, field_dim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
@@ -1009,10 +1011,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :return: None
         """
         actors_dict = actor_specs.actors_dict
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        # field_dim = self.currentDrawingParameters.bsd.fieldDim
+        # dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
-        mdata = MetadataHandler(mdata=scene_metadata)
+        # mdata = MetadataHandler(mdata=scene_metadata)
 
         # dim = self.planeMapper(dim_order,
         #                             (field_dim.x, field_dim.y, field_dim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
@@ -1070,7 +1072,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
-        mdata = MetadataHandler(mdata=scene_metadata)
+        # mdata = MetadataHandler(mdata=scene_metadata)
 
         # [fieldDim.x, fieldDim.y, fieldDim.z]
         dim = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))
@@ -1122,9 +1124,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :return: None
         """
 
-        actors_dict = actor_specs.actors_dict
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        # actors_dict = actor_specs.actors_dict
+        # field_dim = self.currentDrawingParameters.bsd.fieldDim
+        # dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
 
@@ -1175,9 +1177,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :return: None
         """
 
-        actors_dict = actor_specs.actors_dict
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        # actors_dict = actor_specs.actors_dict
+        # field_dim = self.currentDrawingParameters.bsd.fieldDim
+        # dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
 
@@ -1333,16 +1335,14 @@ class MVCDrawModel2D(MVCDrawModelBase):
             # if naive distance is different than invariant distance then we are dealing with link that is wrapped
         # if naive_actual_dist > fppd.maxDistance:
             # implies we have wraparound (via periodic BCs)
-            # inv_dist_vec = self.unconditional_invariant_distance_vector(p1=[mid_com[0], mid_com[1], 0],
-            #                                                             p2=[n_mid_com[0], n_mid_com[1], 0],
-            #                                                             dim=[field_dim_ordered[0], field_dim_ordered[1],
-            #                                                                  1])
+            # inv_dist_vec = self.unconditional_invariant_distance_vector(
+            #     p1=[mid_com[0], mid_com[1], 0],
+            #     p2=[n_mid_com[0], n_mid_com[1], 0],
+            #     dim=[field_dim_ordered[0], field_dim_ordered[1], 1])
 
             inv_dist_vec = self.invariant_distance_vector(p1=[mid_com[0], mid_com[1], 0],
-                                                                        p2=[n_mid_com[0], n_mid_com[1], 0],
-                                                                        dim=[field_dim_ordered[0], field_dim_ordered[1],
-                                                                             1])
-
+                                                          p2=[n_mid_com[0], n_mid_com[1], 0],
+                                                          dim=[field_dim_ordered[0], field_dim_ordered[1], 1])
 
             inv_dist_vec = np.array([inv_dist_vec[0], inv_dist_vec[1]], dtype=np.float)
             link_begin = np.array([mid_com[0], mid_com[1]], dtype=np.float)
