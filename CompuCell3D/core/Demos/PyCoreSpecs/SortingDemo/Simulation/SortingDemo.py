@@ -10,7 +10,6 @@ Bloomington, IN
 """
 
 from cc3d import CompuCellSetup
-from cc3d.cpp.CompuCell import Point3D
 from cc3d.core.PyCoreSpecs import Metadata, PottsCore, CellTypePlugin, VolumePlugin, ContactPlugin, BlobInitializer
 
 # Specify metadata with multithreading
@@ -39,7 +38,7 @@ CompuCellSetup.register_specs(contact_specs)
 
 # Apply an initial configuration
 blob_init_specs = BlobInitializer()
-blob_init_specs.region_new(width=5, radius=20, center=Point3D(50, 50, 0), cell_types=["Condensing", "NonCondensing"])
+blob_init_specs.region_new(width=5, radius=20, center=(50, 50, 0), cell_types=["Condensing", "NonCondensing"])
 CompuCellSetup.register_specs(blob_init_specs)
 
 # Run it!

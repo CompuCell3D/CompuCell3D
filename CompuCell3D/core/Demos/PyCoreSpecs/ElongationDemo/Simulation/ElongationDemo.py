@@ -16,7 +16,6 @@ Use the sliders to adjust chemotaxis and elongation during angiogensis
 """
 
 from cc3d import CompuCellSetup
-from cc3d.cpp.CompuCell import Point3D
 from cc3d.core.PySteppables import *
 from cc3d.core.PyCoreSpecs import Metadata, PottsCore
 from cc3d.core.PyCoreSpecs import CellTypePlugin, VolumePlugin, ContactPlugin, ChemotaxisPlugin
@@ -33,8 +32,8 @@ step_len = 30.0  # Period of a simulation step
 # Declare secretion rate
 secr_rate = 1.8E-4 * step_len
 
-# Specify empty metadata
-CompuCellSetup.register_specs(Metadata())
+# Specify metadata with multithreading
+CompuCellSetup.register_specs(Metadata(num_processors=4))
 
 # Specify Potts with basic simulation specs
 CompuCellSetup.register_specs(PottsCore(dim_x=dim_x, dim_y=dim_y, steps=100000))
@@ -58,7 +57,7 @@ CompuCellSetup.register_specs(contact_specs)
 
 # Apply an initial configuration
 unif_init_specs = UniformInitializer()
-unif_init_specs.region_new(pt_min=Point3D(7 + 5, 7 + 5, 0), pt_max=Point3D(dim_x - 7 - 5, dim_y - 7 - 5, 1),
+unif_init_specs.region_new(pt_min=(7 + 5, 7 + 5, 0), pt_max=(dim_x - 7 - 5, dim_y - 7 - 5, 1),
                            gap=10, width=7, cell_types=["T1"])
 CompuCellSetup.register_specs(unif_init_specs)
 

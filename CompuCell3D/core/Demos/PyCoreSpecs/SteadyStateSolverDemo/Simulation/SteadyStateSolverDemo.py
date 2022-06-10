@@ -10,7 +10,6 @@ Bloomington, IN
 """
 
 from cc3d import CompuCellSetup
-from cc3d.cpp.CompuCell import Point3D
 from cc3d.core.PyCoreSpecs import Metadata, PottsCore
 from cc3d.core.PyCoreSpecs import CellTypePlugin, VolumePlugin, ContactPlugin, ChemotaxisPlugin
 from cc3d.core.PyCoreSpecs import SteadyStateDiffusionSolver
@@ -19,9 +18,6 @@ from cc3d.core.PySteppables import *
 
 # Declare cell types
 cell_types = ["T1", "T2", "Wall"]
-
-# Specify empty metadata
-CompuCellSetup.register_specs(Metadata())
 
 # Specify Potts with basic simulation specs
 CompuCellSetup.register_specs(PottsCore(dim_x=100,
@@ -69,10 +65,10 @@ CompuCellSetup.register_specs(chemotaxis_specs)
 
 # Apply an initial configuration
 blob_init_specs = UniformInitializer()
-blob_init_specs.region_new(pt_min=Point3D(0, 6, 0), pt_max=Point3D(100, 15, 1), width=5, cell_types=[cell_types[0]])
-blob_init_specs.region_new(pt_min=Point3D(0, 86, 0), pt_max=Point3D(100, 95, 1), width=5, cell_types=[cell_types[1]])
-blob_init_specs.region_new(pt_min=Point3D(0, 0, 0), pt_max=Point3D(100, 5, 1), width=5, cell_types=[cell_types[2]])
-blob_init_specs.region_new(pt_min=Point3D(0, 95, 0), pt_max=Point3D(100, 100, 1), width=5, cell_types=[cell_types[2]])
+blob_init_specs.region_new(pt_min=(0, 6, 0), pt_max=(100, 15, 1), width=5, cell_types=[cell_types[0]])
+blob_init_specs.region_new(pt_min=(0, 86, 0), pt_max=(100, 95, 1), width=5, cell_types=[cell_types[1]])
+blob_init_specs.region_new(pt_min=(0, 0, 0), pt_max=(100, 5, 1), width=5, cell_types=[cell_types[2]])
+blob_init_specs.region_new(pt_min=(0, 95, 0), pt_max=(100, 100, 1), width=5, cell_types=[cell_types[2]])
 CompuCellSetup.register_specs(blob_init_specs)
 
 

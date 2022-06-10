@@ -11,7 +11,6 @@ Bloomington, IN
 """
 
 from cc3d import CompuCellSetup
-from cc3d.cpp.CompuCell import Point3D
 from cc3d.core.PyCoreSpecs import Metadata, PottsCore
 from cc3d.core.PyCoreSpecs import CellTypePlugin, VolumePlugin, ContactPlugin
 from cc3d.core.PyCoreSpecs import SurfacePlugin, SecretionPlugin, ChemotaxisPlugin
@@ -25,9 +24,6 @@ cell_types = ["T1", "T2"]
 # Declare simulation size
 dim_x = 100
 dim_y = 100
-
-# Specify empty metadata
-CompuCellSetup.register_specs(Metadata())
 
 # Specify Potts with basic simulation specs
 CompuCellSetup.register_specs(PottsCore(dim_x=dim_x,
@@ -94,7 +90,7 @@ CompuCellSetup.register_specs(surface_specs)
 
 # Apply an initial configuration
 unif_init_specs = UniformInitializer()
-unif_init_specs.region_new(pt_min=Point3D(5, 5, 0), pt_max=Point3D(dim_x-5, dim_y-5, 1),
+unif_init_specs.region_new(pt_min=(5, 5, 0), pt_max=(dim_x-5, dim_y-5, 1),
                            gap=5, width=5, cell_types=cell_types)
 CompuCellSetup.register_specs(unif_init_specs)
 

@@ -11,7 +11,6 @@ Bloomington, IN
 """
 
 from cc3d import CompuCellSetup
-from cc3d.cpp.CompuCell import Point3D
 from cc3d.core.PyCoreSpecs import Metadata, PottsCore
 from cc3d.core.PyCoreSpecs import CellTypePlugin, VolumePlugin, ContactPlugin, ChemotaxisPlugin
 from cc3d.core.PyCoreSpecs import DiffusionSolverFE, ReactionDiffusionSolverFE
@@ -24,8 +23,8 @@ cell_types = ["T1", "T2", "T3", "T4"]
 # Declare chemotaxis parameter
 lambda_chemotaxis = 5E1
 
-# Specify empty metadata
-CompuCellSetup.register_specs(Metadata())
+# Specify metadata with multithreading
+CompuCellSetup.register_specs(Metadata(num_processors=4))
 
 # Specify Potts with basic simulation specs
 CompuCellSetup.register_specs(PottsCore(dim_x=100,
@@ -52,7 +51,7 @@ CompuCellSetup.register_specs(contact_specs)
 
 # Apply an initial configuration
 blob_init_specs = BlobInitializer()
-blob_init_specs.region_new(width=5, radius=20, center=Point3D(50, 50, 0), cell_types=cell_types)
+blob_init_specs.region_new(width=5, radius=20, center=(50, 50, 0), cell_types=cell_types)
 CompuCellSetup.register_specs(blob_init_specs)
 
 # Apply a PDE field named "F1" solved by DiffusionSolverFE

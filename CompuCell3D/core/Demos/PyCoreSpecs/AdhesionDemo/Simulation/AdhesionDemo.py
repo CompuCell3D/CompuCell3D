@@ -11,7 +11,6 @@ Bloomington, IN
 """
 
 from cc3d import CompuCellSetup
-from cc3d.cpp.CompuCell import Point3D
 from cc3d.core.PyCoreSpecs import Metadata, PottsCore
 from cc3d.core.PyCoreSpecs import CellTypePlugin, VolumePlugin, ContactPlugin
 from cc3d.core.PyCoreSpecs import UniformInitializer
@@ -67,7 +66,7 @@ CompuCellSetup.register_specs(adhesion_specs)
 # Apply an initial configuration
 unif_init_specs = UniformInitializer()
 unif_init_specs.region_new(width=5,
-                           pt_min=Point3D(0, 0, 0), pt_max=Point3D(dim_x, dim_y, 1),
+                           pt_min=(0, 0, 0), pt_max=(dim_x, dim_y, 1),
                            cell_types=["T1", "T1", "T2", "T2", "T3"])
 CompuCellSetup.register_specs(unif_init_specs)
 

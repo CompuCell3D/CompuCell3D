@@ -11,7 +11,6 @@ Bloomington, IN
 """
 
 from cc3d import CompuCellSetup
-from cc3d.cpp.CompuCell import Point3D
 from cc3d.core.PyCoreSpecs import Metadata, PottsCore
 from cc3d.core.PyCoreSpecs import CellTypePlugin, VolumePlugin
 from cc3d.core.PyCoreSpecs import UniformInitializer
@@ -22,9 +21,6 @@ from cc3d.core.PySteppables import *
 # Declare simulation size
 dim_x = 105
 dim_y = 105
-
-# Specify empty metadata
-CompuCellSetup.register_specs(Metadata())
 
 # Specify Potts with basic simulation specs
 CompuCellSetup.register_specs(PottsCore(dim_x=dim_x,
@@ -69,7 +65,7 @@ CompuCellSetup.register_specs(PixelTrackerPlugin())
 
 # Apply an initial configuration
 unif_init_specs = UniformInitializer()
-unif_init_specs.region_new(gap=0, width=7, pt_min=Point3D(0, 0, 0), pt_max=Point3D(dim_x, dim_y, 1), cell_types=["C"])
+unif_init_specs.region_new(gap=0, width=7, pt_min=(0, 0, 0), pt_max=(dim_x, dim_y, 1), cell_types=["C"])
 CompuCellSetup.register_specs(unif_init_specs)
 
 # Apply links

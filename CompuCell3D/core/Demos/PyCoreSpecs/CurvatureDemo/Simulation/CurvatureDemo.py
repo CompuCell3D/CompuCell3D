@@ -19,9 +19,6 @@ from cc3d.core.PySteppables import *
 # Declare cell type names
 cell_types = ["Top", "Center", "Bottom"]
 
-# Specify empty metadata
-CompuCellSetup.register_specs(Metadata())
-
 # Specify Potts with basic simulation specs
 spec_potts = PottsCore()
 spec_potts.dim_x, spec_potts.dim_y = 100, 100
