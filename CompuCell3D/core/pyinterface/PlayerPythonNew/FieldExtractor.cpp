@@ -473,7 +473,7 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_ob
           ptN.z = ptNVec[pointOrderVec[2]];
           if (cellFieldG->get(pt) != cellFieldG->get(ptN))
           {
-            local_points.push_back(make_tuple<double, double>(i, j, i, j + 1));
+            local_points.push_back(make_tuple<double, double>((double)i, (double)j, (double)i, (double)j + 1));
             // local_points.push_back(std::pair<double, double>(i, j + 1));
           }
         }
@@ -487,7 +487,7 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_ob
           ptN.z = ptNVec[pointOrderVec[2]];
           if (cellFieldG->get(pt) != cellFieldG->get(ptN))
           {
-            local_points.push_back(make_tuple<double, double>(i, j, i + 1, j));
+            local_points.push_back(make_tuple<double, double>((double)i, (double)j, (double)i + 1, (double)j));
             // local_points.push_back(std::pair<double, double>(i + 1, j));
           }
         }
@@ -502,7 +502,7 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_ob
           ptN.z = ptNVec[pointOrderVec[2]];
           if (cellFieldG->get(pt) != cellFieldG->get(ptN))
           {
-            local_points.push_back(make_tuple<double, double>(i + 1, j, i + 1, j + 1));
+            local_points.push_back(make_tuple<double, double>((double)i + 1, (double)j, (double)i + 1, (double)j + 1));
             // local_points.push_back(std::pair<double, double>(i + 1, j + 1));
           }
         }
@@ -517,7 +517,7 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_ob
           ptN.z = ptNVec[pointOrderVec[2]];
           if (cellFieldG->get(pt) != cellFieldG->get(ptN))
           {
-            local_points.push_back(make_tuple<double, double>(i, j + 1, i + 1, j + 1));
+            local_points.push_back(make_tuple<double, double>((double)i, (double)j + 1, (double)i + 1, (double)j + 1));
             // local_points.push_back(std::pair<double, double>(i + 1, j + 1));
           }
         }
