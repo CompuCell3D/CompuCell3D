@@ -192,6 +192,7 @@ void Potts3D::resizeCellField(const Dim3D dim, Dim3D shiftVec) {
 
 void Potts3D::registerAttributeAdder(AttributeAdder *_attrAdder) {
     attrAdder = _attrAdder;
+    cellInventory.registerWatcher(attrAdder->getInventoryWatcher());
 }
 
 void Potts3D::registerAutomaton(Automaton *autom) { automaton = autom; }
@@ -361,9 +362,6 @@ CellG *Potts3D::createCell(long _clusterId) {
 
     cellInventory.addToInventory(cell);
 
-    if (attrAdder) {
-        attrAdder->addAttribute(cell);
-    }
     return cell;
 
 }
@@ -429,9 +427,7 @@ CellG *Potts3D::createCellSpecifiedIds(long _cellId, long _clusterId) {
     }
 
     cellInventory.addToInventory(cell);
-    if (attrAdder) {
-        attrAdder->addAttribute(cell);
-    }
+
     return cell;
 
 }
@@ -441,9 +437,6 @@ void Potts3D::destroyCellG(CellG *cell, bool _removeFromInventory) {
     if (cell->extraAttribPtr) {
         cellFactoryGroup.destroy(cell->extraAttribPtr);
         cell->extraAttribPtr = 0;
-    }
-    if (cell->pyAttrib && attrAdder) {
-        attrAdder->destroyAttribute(cell);
     }
     //had to introduce these two cases because in the Cell inventory destructor
     // we deallocate memory of pointers stored int the set
