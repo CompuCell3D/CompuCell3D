@@ -136,10 +136,11 @@ def check_for_cpp_errors(sim):
         raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
 
 
-def str_to_int_container(s: str, container='list') -> Union[List[str], Dict[str, str]]:
+def str_to_int_container(s: str, container: str = 'list') -> Union[List[str], Dict[str, str]]:
     """
     Converts string - comma separated sequence of integers into list of integers
     :param s:
+    :param container:
     :return:
     """
 
@@ -148,7 +149,7 @@ def str_to_int_container(s: str, container='list') -> Union[List[str], Dict[str,
 
     def val_check(inv_val_str):
         try:
-            int_val = int(inv_val_str)
+            _ = int(inv_val_str)
         except (ValueError, TypeError):
             return False
         return True
