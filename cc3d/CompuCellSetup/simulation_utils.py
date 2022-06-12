@@ -1,7 +1,7 @@
 from cc3d import CompuCellSetup
 from cc3d.core.XMLUtils import CC3DXMLListPy
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Union
 
 
 class CC3DCPlusPlusError(Exception):
@@ -136,7 +136,7 @@ def check_for_cpp_errors(sim):
         raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
 
 
-def str_to_int_container(s: str, container='list') -> List[str]:
+def str_to_int_container(s: str, container='list') -> Union[List[str], Dict[str, str]]:
     """
     Converts string - comma separated sequence of integers into list of integers
     :param s:
@@ -149,7 +149,7 @@ def str_to_int_container(s: str, container='list') -> List[str]:
     def val_check(inv_val_str):
         try:
             int_val = int(inv_val_str)
-        except:
+        except (ValueError, TypeError):
             return False
         return True
 
