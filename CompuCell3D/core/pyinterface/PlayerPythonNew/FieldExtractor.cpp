@@ -18,7 +18,7 @@
 #include <algorithm>
 #include <cmath>
 #include <omp.h>
-
+#include <unordered_set>
 #include <vtkPythonUtil.h>
 
 using namespace std;
@@ -2944,7 +2944,9 @@ bool FieldExtractor::fillVectorFieldCellLevelData3DHex(vtk_obj_addr_int_t _point
 
 
 vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr, bool extractOuterShellOnly){
-  set<int> usedCellTypes;
+
+
+
 	vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 	vtkLongArray *cellIdArray=(vtkLongArray *)_cellIdArrayAddr;
 
@@ -2989,7 +2991,13 @@ vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArra
         }
     }
 
-#pragma omp parallel shared(usedCellTypes, cellTypeArray, cellIdArray, fieldDim, outer_cell_ids_set, cellFieldG)
+    ParallelUtilsOpenMP *pUtils = sim->pUtils;
+    // todo - consider separate CPU setting for graphics
+    unsigned int num_work_nodes = pUtils->getNumberOfWorkNodes();
+    vector<unordered_set<int> > vecUsedCellTypes(num_work_nodes);
+
+
+#pragma omp parallel shared(vecUsedCellTypes, cellTypeArray, cellIdArray, fieldDim, outer_cell_ids_set, cellFieldG)
 {
 #pragma omp sections
 {
@@ -3003,6 +3011,7 @@ vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArra
   }
 }
 
+unsigned int currentWorkNodeNumber = pUtils->getCurrentWorkNodeNumber();
 	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
 #pragma omp for schedule(static)
 	for(int k =0 ; k<fieldDim.z+2 ; ++k){
@@ -3031,11 +3040,13 @@ vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArra
 					}else{
 						type = cell->type;
 						id = cell->id;
-            if (usedCellTypes.find(type) == usedCellTypes.end())
-            {
-              #pragma omp critical
-              usedCellTypes.insert(type);
-            }
+
+            vecUsedCellTypes[currentWorkNodeNumber].insert(type)      ;
+//            if (usedCellTypes.find(type) == usedCellTypes.end())
+//            {
+//              #pragma omp critical
+//              usedCellTypes.insert(type);
+//            }
           }
           if (cellShellOnlyOptimization) {
               if (outer_cell_ids_set.find(id) != outer_cell_ids_set.end()) {
@@ -3055,7 +3066,13 @@ vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArra
       }
     }
   }
-}
+} // omp_parallel
+
+  unordered_set<int> usedCellTypes;
+  for (auto s: vecUsedCellTypes){
+      usedCellTypes.insert(s.begin(), s.end());
+
+  }
   return vector<int>(usedCellTypes.begin(),usedCellTypes.end());
 }
 
