@@ -12,5 +12,5 @@ CMakeFiles/
 **/CMakeScripts
 **/compile_commands.json
 xmldocs/*
-include/**
+include/*
 GPUEnabled.h
