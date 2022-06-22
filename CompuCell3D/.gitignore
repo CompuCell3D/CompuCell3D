@@ -14,3 +14,4 @@ CMakeFiles/
 xmldocs/*
 include/*
 GPUEnabled.h
+!core/CompuCell3D/plugins/MomentOfInertia/Makefile
