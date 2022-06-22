@@ -11,3 +11,6 @@ CMakeFiles/
 **/*.cbp
 **/CMakeScripts
 **/compile_commands.json
+xmldocs/*
+include/**
+GPUEnabled.h
