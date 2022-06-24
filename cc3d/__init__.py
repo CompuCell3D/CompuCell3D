@@ -68,17 +68,28 @@ if sys.platform.startswith('win'):
 
     path_env_list = list(map(lambda pth: abspath(pth), path_env_list))
 
-    if cc3d_lib_shared not in path_env_list:
-        path_env_list.insert(0, cc3d_lib_shared)
-    if cc3d_cpp_bin_path not in path_env_list:
-        path_env_list.insert(0, cc3d_cpp_bin_path)
+    if sys.version_info >= (3, 8):
 
-    # todo - this needs to have platform specific behavior
-    path_env_list.insert(0, os.environ['COMPUCELL3D_PLUGIN_PATH'])
-    path_env_list.insert(0, os.environ['COMPUCELL3D_STEPPABLE_PATH'])
-    path_env_list.insert(0, str(mingw_bin_path))
+        if cc3d_lib_shared not in path_env_list:
+            os.add_dll_directory(cc3d_lib_shared)
+        if cc3d_cpp_bin_path not in path_env_list:
+            os.add_dll_directory(cc3d_cpp_bin_path)
 
-    os.environ['PATH'] = ';'.join(path_env_list)
+        os.add_dll_directory(os.environ['COMPUCELL3D_PLUGIN_PATH'])
+        os.add_dll_directory(os.environ['COMPUCELL3D_STEPPABLE_PATH'])
+        os.add_dll_directory(str(mingw_bin_path))
+    else:
+
+        if cc3d_lib_shared not in path_env_list:
+            path_env_list.insert(0, cc3d_lib_shared)
+        if cc3d_cpp_bin_path not in path_env_list:
+            path_env_list.insert(0, cc3d_cpp_bin_path)
+
+        path_env_list.insert(0, os.environ['COMPUCELL3D_PLUGIN_PATH'])
+        path_env_list.insert(0, os.environ['COMPUCELL3D_STEPPABLE_PATH'])
+        path_env_list.insert(0, str(mingw_bin_path))
+
+        os.environ['PATH'] = ';'.join(path_env_list)
 
 elif sys.platform.startswith('darwin'):
     try:
