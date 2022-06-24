@@ -194,6 +194,8 @@ void ParallelUtilsOpenMP::setNumberOfWorkNodes(unsigned int _num){
 	//if (_num>0 && _num<=getNumberOfProcessors()){ //this might be too restrictive
 	if (_num>0){
 		numberOfWorkNodes=_num;
+    omp_set_dynamic(0);
+    omp_set_num_threads(numberOfWorkNodes);
 		calculateFESolverPartition();
 		calculatePottsPartition();
 	}
