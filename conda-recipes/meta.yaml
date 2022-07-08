@@ -47,6 +47,7 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
+    - ninja # [win]
 
   run:
     - python
