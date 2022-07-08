@@ -71,6 +71,24 @@ def add_new_plot_window(title='', xAxisTitle='', yAxisTitle='', xScaleType='line
     return plot_window
 
 
+def add_new_message_window(title=""):
+    """
+    opens up new popup window if simulation is executed using player
+    """
+
+    view_manager = CompuCellSetup.persistent_globals.view_manager
+
+    if not view_manager:
+        # we are using PlotWindowDummy as an object that "absorbs all calls" but does nothing - when we detect we
+        # are not using player
+        pwd = PlotWindowDummy()
+        return pwd
+    specs = dict(title=title)
+    popup_window = view_manager.popup_window_manager.get_new_popup_window(specs=specs)
+
+    return popup_window
+
+
 def create_extra_field(field_name: str, field_type: int) -> ExtraFieldAdapter:
     """
     Creates field adapter. On initialization it may or may not have functional reference to the actual field
