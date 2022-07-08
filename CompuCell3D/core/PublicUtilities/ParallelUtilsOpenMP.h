@@ -51,7 +51,7 @@ namespace CompuCell3D {
 
 			unsigned int getMaxNumberOfWorkNodesFESolver();
 			unsigned int getMaxNumberOfWorkNodesPotts();
-
+			unsigned int getMaxNumberOfWorkNodes();
 
             unsigned int getNumberOfWorkNodesFESolver();
 			unsigned int getNumberOfWorkNodesFESolverWithBoxWatcher();
