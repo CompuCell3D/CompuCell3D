@@ -2994,7 +2994,7 @@ vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArra
     ParallelUtilsOpenMP *pUtils = sim->pUtils;
     // todo - consider separate CPU setting for graphics
     unsigned int num_work_nodes = pUtils->getNumberOfWorkNodes();
-    vector<unordered_set<int> > vecUsedCellTypes(num_work_nodes);
+    vector<unordered_set<int> > vecUsedCellTypes(num_work_nodes ? num_work_nodes : 1);
 
 
 #pragma omp parallel shared(vecUsedCellTypes, cellTypeArray, cellIdArray, fieldDim, outer_cell_ids_set, cellFieldG)
