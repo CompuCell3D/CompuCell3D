@@ -494,6 +494,10 @@ unsigned int ParallelUtilsOpenMP::getMaxNumberOfWorkNodesPotts(){
 	return getMaxNumberOfWorkNodesFESolver();
 }
 
+unsigned int ParallelUtilsOpenMP::getMaxNumberOfWorkNodes(){
+	return omp_get_max_threads();
+}
+
 unsigned int ParallelUtilsOpenMP::getNumberOfWorkNodesPottsWithBoxWatcher(){ //THIS HAS TO BE CORRECTED
 	return pottsPartitionVec.size();
 }
