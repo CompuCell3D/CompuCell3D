@@ -50,9 +50,9 @@ using namespace CompuCell3D;
 // // // #include <iostream>
 
 #ifdef DEBUG
-#define debugLog(x) std::cerr <<x<<std::endl
+#define CC3d_log(x) std::cerr <<x<<std::endl
 #else
-#define debugLog(x)
+#define CC3d_log(x)
 #endif
 
 using namespace std;
@@ -89,19 +89,19 @@ void BlobFieldInitializer::init(Simulator *simulator,  CC3DXMLElement * _xmlData
 
 	if(_xmlData->getFirstElement("Radius")){
 		oldStyleInitData.radius=_xmlData->getFirstElement("Radius")->getUInt();
-		debugLog("Got FE This Radius: "<<oldStyleInitData.radius);
+		CC3d_log("Got FE This Radius: "<<oldStyleInitData.radius);
 		//cerr<<"Got FE This Radius: "<<oldStyleInitData.radius<<endl;
 		ASSERT_OR_THROW("Radius has to be greater than 0 and 2*radius cannot be bigger than lattice dimension x", oldStyleInitData.radius>0 && 2*(oldStyleInitData.radius)<(dim.x-2));
 	}
 
 	if(_xmlData->getFirstElement("Width")){
 		oldStyleInitData.width=_xmlData->getFirstElement("Width")->getUInt();
-		debugLog("Got FE This Width: "<<oldStyleInitData.width<);
+		CC3d_log("Got FE This Width: "<<oldStyleInitData.width<);
 		//cerr<<"Got FE This Width: "<<oldStyleInitData.width<<endl;
 	}
 	if(_xmlData->getFirstElement("Gap")){
 		oldStyleInitData.gap=_xmlData->getFirstElement("Gap")->getUInt();
-		debugLog("Got FE This Gap: "<<oldStyleInitData.gap);
+		CC3d_log("Got FE This Gap: "<<oldStyleInitData.gap);
 		//cerr<<"Got FE This Gap: "<<oldStyleInitData.gap<<endl;
 	}
 
@@ -110,7 +110,7 @@ void BlobFieldInitializer::init(Simulator *simulator,  CC3DXMLElement * _xmlData
 	if (_xmlData->getFirstElement("CellSortInit")){
 		if(_xmlData->getFirstElement("CellSortInit")->getText()=="yes" ||_xmlData->getFirstElement("CellSortInit")->getText()=="Yes"){
 			cellSortInit=true;
-			debugLog("SET CELLSORT INIT");
+			CC3d_log("SET CELLSORT INIT");
 			//cerr<<"SET CELLSORT INIT"<<endl;
 		}
 	}
@@ -156,7 +156,7 @@ void BlobFieldInitializer::init(Simulator *simulator,  CC3DXMLElement * _xmlData
 		initData.center.y=regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("y");
 		initData.center.z=regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("z");
 
-		debugLog("radius="<<initData.radius<<" gap="<<initData.gap<<" types="<<initData.typeNamesString);
+		CC3d_log("radius="<<initData.radius<<" gap="<<initData.gap<<" types="<<initData.typeNamesString);
 		//cerr<<"radius="<<initData.radius<<" gap="<<initData.gap<<" types="<<initData.typeNamesString<<endl;
 		blobInitializerData.push_back(initData);
 	}
@@ -165,7 +165,7 @@ void BlobFieldInitializer::init(Simulator *simulator,  CC3DXMLElement * _xmlData
 
 
 
-	debugLog("GOT HERE BEFORE EXIT");
+	CC3d_log("GOT HERE BEFORE EXIT");
 	//cerr<<"GOT HERE BEFORE EXIT"<<endl;
 
 }
@@ -212,7 +212,7 @@ void BlobFieldInitializer::layOutCells(const BlobFieldInitializerData & _initDat
 
 
 	Dim3D itDim=getBlobDimensions(dim,size);
-	debugLog("itDim="<<itDim);
+	CC3d_log("itDim="<<itDim);
 	//cerr<<"itDim="<<itDim<<endl;
 
 
@@ -297,12 +297,12 @@ void BlobFieldInitializer::start() {
 
 	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
 	ASSERT_OR_THROW("initField() Cell field G cannot be null!", cellFieldG);
-	debugLog("********************BLOB INIT***********************");
+	CC3d_log("********************BLOB INIT***********************");
 	//cerr<<"********************BLOB INIT***********************"<<endl;
 	Dim3D dim = cellFieldG->getDim();
 	if(blobInitializerData.size()!=0){
 		for (int i = 0 ; i < blobInitializerData.size(); ++i){
-			debugLog("GOT HERE");
+			CC3d_log("GOT HERE");
 			cerr<<"GOT HERE"<<endl;
 			layOutCells(blobInitializerData[i]);
 			//          exit(0);
@@ -352,7 +352,7 @@ void BlobFieldInitializer::initializeEngulfment(){
 
 	topId=cellTypePluginPtr->getTypeId(enData.topType);
 	bottomId=cellTypePluginPtr->getTypeId(enData.bottomType);
-	debugLog("topId="<<(int)topId<<" bottomId="<<(int)bottomId<<" enData.engulfmentCutoff="<<enData.engulfmentCutoff<<" enData.engulfmentCoordinate="<<enData.engulfmentCoordinate);
+	CC3d_log("topId="<<(int)topId<<" bottomId="<<(int)bottomId<<" enData.engulfmentCutoff="<<enData.engulfmentCutoff<<" enData.engulfmentCoordinate="<<enData.engulfmentCoordinate);
 	//cerr<<"topId="<<(int)topId<<" bottomId="<<(int)bottomId<<" enData.engulfmentCutoff="<<enData.engulfmentCutoff<<" enData.engulfmentCoordinate="<<enData.engulfmentCoordinate<<endl;
 
 
