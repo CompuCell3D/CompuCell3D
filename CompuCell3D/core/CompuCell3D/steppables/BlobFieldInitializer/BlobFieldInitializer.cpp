@@ -4,6 +4,12 @@
 
 using namespace CompuCell3D;
 
+#ifdef DEBUG
+#define CC3d_log(x) std::cerr <<x<<std::endl
+#else
+#define CC3d_log(x)
+#endif
+
 using namespace std;
 
 
@@ -41,7 +47,7 @@ void BlobFieldInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlData) 
 
     if (_xmlData->getFirstElement("Radius")) {
         oldStyleInitData.radius = _xmlData->getFirstElement("Radius")->getUInt();
-        cerr << "Got FE This Radius: " << oldStyleInitData.radius << endl;
+        CC3d_log("Got FE This Radius: " << oldStyleInitData.radius);
         if (!(oldStyleInitData.radius > 0 && 2 * (oldStyleInitData.radius) < (dim.x - 2)))
             throw CC3DException(
                     "Radius has to be greater than 0 and 2*radius cannot be bigger than lattice dimension x");
@@ -49,11 +55,11 @@ void BlobFieldInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlData) 
 
     if (_xmlData->getFirstElement("Width")) {
         oldStyleInitData.width = _xmlData->getFirstElement("Width")->getUInt();
-        cerr << "Got FE This Width: " << oldStyleInitData.width << endl;
+        CC3d_log("Got FE This Width: " << oldStyleInitData.width);
     }
     if (_xmlData->getFirstElement("Gap")) {
         oldStyleInitData.gap = _xmlData->getFirstElement("Gap")->getUInt();
-        cerr << "Got FE This Gap: " << oldStyleInitData.gap << endl;
+        CC3d_log("Got FE This Gap: " << oldStyleInitData.gap);
     }
 
 
@@ -61,7 +67,7 @@ void BlobFieldInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlData) 
         if (_xmlData->getFirstElement("CellSortInit")->getText() == "yes" ||
             _xmlData->getFirstElement("CellSortInit")->getText() == "Yes") {
             cellSortInit = true;
-            cerr << "SET CELLSORT INIT" << endl;
+            CC3d_log("SET CELLSORT INIT");
         }
     }
 
@@ -110,13 +116,16 @@ void BlobFieldInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlData) 
         initData.center.y = regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("y");
         initData.center.z = regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("z");
 
-        cerr << "radius=" << initData.radius << " gap=" << initData.gap << " types=" << initData.typeNamesString
-             << endl;
-        blobInitializerData.push_back(initData);
-    }
+		CC3d_log("radius="<<initData.radius<<" gap="<<initData.gap<<" types="<<initData.typeNamesString);
+		blobInitializerData.push_back(initData);
+	}
 
 
-    cerr << "GOT HERE BEFORE EXIT" << endl;
+
+
+
+	CC3d_log("GOT HERE BEFORE EXIT");
+	//cerr<<"GOT HERE BEFORE EXIT"<<endl;
 
 }
 
@@ -143,8 +152,9 @@ void BlobFieldInitializer::layOutCells(const BlobFieldInitializerData &_initData
         throw CC3DException("Radius has to be greater than 0 and 2*radius cannot be bigger than lattice dimension x");
 
 
-    Dim3D itDim = getBlobDimensions(dim, size);
-    cerr << "itDim=" << itDim << endl;
+	Dim3D itDim = getBlobDimensions(dim, size);
+	CC3d_log("itDim="<<itDim);
+	//cerr<<"itDim="<<itDim<<endl;
 
 
     Point3D pt;
@@ -276,9 +286,7 @@ void BlobFieldInitializer::initializeEngulfment() {
 
     topId = cellTypePluginPtr->getTypeId(enData.topType);
     bottomId = cellTypePluginPtr->getTypeId(enData.bottomType);
-
-    cerr << "topId=" << (int) topId << " bottomId=" << (int) bottomId << " enData.engulfmentCutoff="
-         << enData.engulfmentCutoff << " enData.engulfmentCoordinate=" << enData.engulfmentCoordinate << endl;
+    CC3d_log("topId="<<(int)topId<<" bottomId="<<(int)bottomId<<" enData.engulfmentCutoff="<<enData.engulfmentCutoff<<" enData.engulfmentCoordinate="<<enData.engulfmentCoordinate);
 
 
     WatchableField3D < CellG * > *cellFieldG = (WatchableField3D < CellG * > *)
