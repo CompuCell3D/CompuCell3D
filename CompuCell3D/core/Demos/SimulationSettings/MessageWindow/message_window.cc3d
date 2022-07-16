@@ -1,0 +1,7 @@
+<Simulation version="3.5.1">
+    <XMLScript>Simulation/message_window.xml</XMLScript>
+    <PythonScript>Simulation/message_window.py</PythonScript>
+    <Resource Type="Python">Simulation/message_window_steppables.py</Resource>
+</Simulation>
+
+ 

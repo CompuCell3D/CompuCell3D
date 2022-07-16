@@ -153,16 +153,9 @@ namespace CompuCell3D {
 
         void cleanInventory();
 
-        void registerWatcher(CellInventoryWatcher *watcher) {
-            if(std::find(watchers.begin(), watchers.end(), watcher) == watchers.end()) 
-                watchers.push_back(watcher);
-        }
+        void registerWatcher(CellInventoryWatcher *watcher);
 
-        void unregisterWatcher(CellInventoryWatcher *watcher) {
-            auto itr = std::find(watchers.begin(), watchers.end(), watcher);
-            if(itr != watchers.end()) 
-                watchers.erase(itr);
-        }
+        void unregisterWatcher(CellInventoryWatcher *watcher);
 
     private:
         cellInventoryContainerType inventory;
