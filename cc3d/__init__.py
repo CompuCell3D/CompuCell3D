@@ -10,7 +10,7 @@ from os.path import dirname, join, abspath
 from pathlib import Path
 
 __version__ = "4.3.1"
-__revision__ = "2"
+__revision__ = "1"
 __githash__ = "cf4dff6d"
 
 from . import config
