@@ -13,4 +13,7 @@ class MessageWindowSteppable(SteppableBasePy):
 
     def step(self, mcs):
 
-         self.msg_win.print("step=", mcs, style=BOLD|ITALIC|UNDERLINE, color='blue')
+        self.msg_win.print("step=", mcs, style=BOLD|ITALIC|UNDERLINE, color='blue')
+
+        if not mcs % 100:
+            self.msg_win.clear()
