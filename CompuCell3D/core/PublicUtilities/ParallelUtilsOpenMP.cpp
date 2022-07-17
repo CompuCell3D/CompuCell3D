@@ -202,6 +202,21 @@ void ParallelUtilsOpenMP::setNumberOfWorkNodes(unsigned int _num){
 
 }
 
+void ParallelUtilsOpenMP::setNumberOfWorkNodesAuto(unsigned int _requested_num_work_nodes) {
+
+    if (_requested_num_work_nodes < 0) {
+        _requested_num_work_nodes = omp_get_num_threads();
+        // in case we get 0
+        _requested_num_work_nodes = (_requested_num_work_nodes ? _requested_num_work_nodes : 1);
+    }
+    
+
+        omp_set_dynamic(0);
+        omp_set_num_threads(_requested_num_work_nodes);
+
+}
+
+
 void ParallelUtilsOpenMP::setVPUs(unsigned int _numberOfVPUs,unsigned int _threadsPerVPU){
 	if(_threadsPerVPU>0)
 		threadsPerWorkNode=_threadsPerVPU;

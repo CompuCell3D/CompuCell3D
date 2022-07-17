@@ -84,6 +84,8 @@ void FieldExtractor::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, 
 	dim[1]=fieldDimVec[dimOrderVec[1]];
 	dim[2]=fieldDimVec[dimOrderVec[2]];
 
+    pUtils->setNumberOfWorkNodesAuto();
+
   int size = (dim[1]+2)*(dim[0]+1);
 	_cellTypeArray->SetNumberOfValues(size);
 	//For some reasons the points x=0 are eaten up (don't know why).
@@ -124,6 +126,7 @@ void FieldExtractor::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, 
 		}
   }
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
 }
 
 void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos) {
@@ -150,6 +153,8 @@ void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeAr
     //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
     vector<double*> global_point_vec;
     vtkIdType *_cellsArrayWritePtr;
+
+    pUtils->setNumberOfWorkNodesAuto();;
 
 #pragma omp parallel shared(pointOrderVec, dim, cellFieldG, global_point_vec, _cellsArrayWritePtr)
   {
@@ -239,6 +244,7 @@ int numPoints = global_point_vec.size();
     free(pts);
   }
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
 }
 
 
@@ -270,6 +276,7 @@ void FieldExtractor::fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAdd
   vector<int> local_type_vec;
   vtkIdType *_hexCellsArrayWritePtr;
   int numPoints;
+  pUtils->setNumberOfWorkNodesAuto();
   //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
 #pragma omp parallel shared(pointOrderVec, dim, cellFieldG, global_point_vec, global_type_vec, _hexCellsArrayWritePtr, _cellTypeArray, _pointsArray) private(local_point_vec, local_type_vec, numPoints)
   {
@@ -355,68 +362,7 @@ void FieldExtractor::fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAdd
     _cellTypeArray->SetValue(j, global_type_vec[j]);
   }
 }
-}
-
-void FieldExtractor::fillCellFieldData2DHex_old(vtk_obj_addr_int_t _cellTypeArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane ,  int _pos){
-	vtkIntArray *_cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
-	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
-
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
-
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
-
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
-
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
-
-	_cellTypeArray->SetNumberOfValues((dim[1])*(dim[0]));
-	_pointsArray->SetNumberOfPoints((dim[1])*(dim[0]));
-
-	int offset=0;
-
-	////For some reasons the points x=0 are eaten up (don't know why).
-	////So we just populate empty cellIds.
-
-	//for (int i = 0 ; i< dim[0]+1 ;++i){
-	//	_cellTypeArray->SetValue(offset, 0);
-	//	++offset;
-	//}
-
-	Point3D pt;
-	vector<int> ptVec(3,0);
-	CellG* cell;
-	int type;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
-
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
-
-			cell=cellFieldG->get(pt);
-			if (!cell){
-				type=0;
-			}else{
-				type=cell->type;
-			}
-			Coordinates3D<double> hexCoords=HexCoordXY(pt.x,pt.y,pt.z);
-			_cellTypeArray->InsertValue(offset, type);
-			_pointsArray->InsertPoint(offset, hexCoords.x,hexCoords.y,0.0);
-
-			++offset;
-		}
+  pUtils->setNumberOfWorkNodesAuto();
 }
 
 void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr, std::string _plane, int _pos)
@@ -440,6 +386,7 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_ob
   dim[1] = fieldDimVec[dimOrderVec[1]];
   dim[2] = fieldDimVec[dimOrderVec[2]];
 
+  pUtils->setNumberOfWorkNodesAuto();
   vector<std::tuple<double, double, double, double>> global_points;
   vtkIdType *linesWritePtr;
 #pragma omp parallel shared(pointOrderVec, dim, cellFieldG, points, lines, global_points, linesWritePtr)
@@ -556,6 +503,7 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_ob
       linesWritePtr[pc + 2] = pt_pos + 1;
     }
   }
+  pUtils->setNumberOfWorkNodesAuto(1);
 }
 
 void FieldExtractor::fillBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr, std::string _plane, int _pos)
@@ -582,7 +530,7 @@ void FieldExtractor::fillBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr, vtk
 
   vector<std::pair<double, double>> global_points;
   vtkIdType *linesWritePtr;
-
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(pointOrderVec, dim, cellFieldG, points, lines, global_points, linesWritePtr)
   {
 
@@ -918,6 +866,7 @@ void FieldExtractor::fillBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr, vtk
     linesWritePtr[pc + 2] = j + 1;
   }
 }
+pUtils->setNumberOfWorkNodesAuto(1);
 }
 
 void FieldExtractor::fillClusterBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr, std::string _plane, int _pos)
@@ -944,6 +893,7 @@ void FieldExtractor::fillClusterBorderData2D(vtk_obj_addr_int_t _pointArrayAddr,
   vector<std::pair<double, double>> global_points;
   vtkIdType *linesWritePtr;
 
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(pointOrderVec, dim, cellFieldG, points, lines, global_points, linesWritePtr)
 {
   vector<std::pair<double,double>> local_points;
@@ -1057,6 +1007,7 @@ void FieldExtractor::fillClusterBorderData2D(vtk_obj_addr_int_t _pointArrayAddr,
     linesWritePtr[pc + 2] = j + 1;
   }
 }
+pUtils->setNumberOfWorkNodesAuto(1);
 }
 
 void FieldExtractor::fillClusterBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr, std::string _plane, int _pos)
@@ -1083,6 +1034,7 @@ void FieldExtractor::fillClusterBorderData2DHex(vtk_obj_addr_int_t _pointArrayAd
 
   vector<std::pair<double, double>> global_points;
   vtkIdType *linesWritePtr;
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(pointOrderVec, dim, cellFieldG, points, lines, global_points, linesWritePtr)
 {
   Point3D pt;
@@ -1417,6 +1369,7 @@ void FieldExtractor::fillClusterBorderData2DHex(vtk_obj_addr_int_t _pointArrayAd
     linesWritePtr[pc + 2] = j + 1;
   }
 }
+pUtils->setNumberOfWorkNodesAuto(1);
 }
 
 void FieldExtractor::fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){
@@ -1492,6 +1445,7 @@ bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_
 
   int numPoints = dim[0] * dim[1];
   vtkIdType *_hexWritePtr;
+  pUtils->setNumberOfWorkNodesAuto();
 
 #pragma omp parallel shared(pointOrderVec, dim, cellFieldG, _pointsArray, conArray, _hexWritePtr)
   {
@@ -1551,6 +1505,7 @@ bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_
     }
   }
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
 return true;
 }
 
@@ -1588,7 +1543,7 @@ bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAdd
 
   int numPoints = dim[0] * dim[1];
   vtkIdType *_cartesianCellsArrayWritePtr;
-
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(pointOrderVec, dim, cellFieldG, _pointsArray, conArray, _cartesianCellsArrayWritePtr)
 {
   #pragma omp sections
@@ -1646,6 +1601,7 @@ bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAdd
 		}
   }
 }
+pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 
@@ -1677,7 +1633,7 @@ bool FieldExtractor::fillScalarFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,v
 	dim[2]=fieldDimVec[dimOrderVec[2]];
   vtkIdType *_hexWritePtr;
   int numPoints = dim[0] * dim[1];
-
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(pointOrderVec, dim, cellFieldG, _pointsArray, conArray, _hexWritePtr)
 {
 #pragma omp sections
@@ -1738,6 +1694,7 @@ bool FieldExtractor::fillScalarFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,v
 		}
   }
 }
+  pUtils->setNumberOfWorkNodesAuto();
   return true;
 }
 
@@ -1771,7 +1728,7 @@ bool FieldExtractor::fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArray
 
   int numPoints = dim[0] * dim[1];
   vtkIdType *_cartesianCellsArrayWritePtr;
-
+  pUtils->setNumberOfWorkNodesAuto();
 	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
 #pragma omp parallel shared(pointOrderVec, dim, cellFieldG, _pointsArray, conArray, _cartesianCellsArrayWritePtr)
 {
@@ -1832,6 +1789,7 @@ bool FieldExtractor::fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArray
 		}
   }
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 
@@ -1865,6 +1823,7 @@ bool FieldExtractor::fillScalarFieldCellLevelData2DHex(vtk_obj_addr_int_t _conAr
   int numPoints = dim[0] * dim[1];
   vtkIdType *_hexWritePtr;
 
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(pointOrderVec, dim, cellFieldG, _pointsArray, conArray, _hexWritePtr)
 {
 #pragma omp sections
@@ -1933,6 +1892,7 @@ bool FieldExtractor::fillScalarFieldCellLevelData2DHex(vtk_obj_addr_int_t _conAr
 		}
   }
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 
@@ -1966,7 +1926,7 @@ bool FieldExtractor::fillScalarFieldCellLevelData2DCartesian(vtk_obj_addr_int_t 
 	dim[2]=fieldDimVec[dimOrderVec[2]];
   int numPoints = dim[0] * dim[1];
   vtkIdType *_cartesianCellsArrayWritePtr;
-
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(pointOrderVec, dim, cellFieldG, _pointsArray, conArray, _cartesianCellsArrayWritePtr)
 {
   #pragma omp sections
@@ -2036,6 +1996,7 @@ bool FieldExtractor::fillScalarFieldCellLevelData2DCartesian(vtk_obj_addr_int_t 
 		}
   }
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 
@@ -2074,6 +2035,7 @@ bool FieldExtractor::fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std::st
 	conArray->SetNumberOfValues((dim[1]+2)*(dim[0]+1));
 	//For some reasons the points x=0 are eaten up (don't know why).
 	//So we just populate concentration 0.0.
+    pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(pointOrderVec, dim, conFieldPtr, conArray)
   {
 #pragma omp for nowait schedule(static)
@@ -2105,6 +2067,7 @@ bool FieldExtractor::fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std::st
       conArray->SetValue(pos, con);
 		}
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
 return true;
 }
 
@@ -2134,7 +2097,7 @@ bool FieldExtractor::fillScalarFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std:
 	conArray->SetNumberOfValues((dim[1]+2)*(dim[0]+1));
 	//For some reasons the points x=0 are eaten up (don't know why).
 	//So we just populate concentration 0.0.
-
+    pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(pointOrderVec, dim, conFieldPtr, conArray)
 {
   #pragma omp for nowait schedule(static)
@@ -2169,6 +2132,7 @@ bool FieldExtractor::fillScalarFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std:
 		}
   }
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 
@@ -2200,6 +2164,7 @@ bool FieldExtractor::fillScalarFieldCellLevelData2D(vtk_obj_addr_int_t _conArray
 	conArray->SetNumberOfValues((dim[1]+2)*(dim[0]+1));
 	//For some reasons the points x=0 are eaten up (don't know why).
 	//So we just populate concentration 0.0.
+    pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(pointOrderVec, dim, conFieldPtr, conArray)
 {
   #pragma omp for nowait schedule(static)
@@ -2245,6 +2210,7 @@ bool FieldExtractor::fillScalarFieldCellLevelData2D(vtk_obj_addr_int_t _conArray
 		}
   }
 }
+ pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 
@@ -2274,7 +2240,7 @@ bool FieldExtractor::fillVectorFieldData2D(vtk_obj_addr_int_t _pointsArrayIntAdd
 	dim[2]=fieldDimVec[dimOrderVec[2]];
   vector<std::tuple<short,short,float,float>> globalPoints;
 
-
+  pUtils->setNumberOfWorkNodesAuto(0);
 #pragma omp parallel shared(pointOrderVec, dim, cellFieldG, pointsArray, vectorArray)
 {
 	Point3D pt;
@@ -2334,6 +2300,7 @@ bool FieldExtractor::fillVectorFieldData2D(vtk_obj_addr_int_t _pointsArrayIntAdd
     vectorArray->SetTuple3(i,std::get<2>(point),std::get<3>(point),0.0);
   }
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 
@@ -2362,7 +2329,7 @@ bool FieldExtractor::fillVectorFieldData2DHex(vtk_obj_addr_int_t _pointsArrayInt
 	dim[1]=fieldDimVec[dimOrderVec[1]];
 	dim[2]=fieldDimVec[dimOrderVec[2]];
   vector<std::tuple<double,double,float,float>> globalPoints;
-
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(pointOrderVec, dim, vectorFieldPtr, pointsArray, vectorArray, globalPoints)
 {
 	Point3D pt;
@@ -2425,6 +2392,7 @@ bool FieldExtractor::fillVectorFieldData2DHex(vtk_obj_addr_int_t _pointsArrayInt
     vectorArray->SetTuple3(i,std::get<2>(point),std::get<3>(point),0.0);
   }
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 
@@ -2440,7 +2408,7 @@ bool FieldExtractor::fillVectorFieldData3D(vtk_obj_addr_int_t _pointsArrayIntAdd
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim();
   vector<std::tuple<short,short,short, float,float,float>> globalPoints;
-
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(vectorFieldPtr, pointsArray, vectorArray, globalPoints, fieldDim)
 {
 	Point3D pt;
@@ -2489,6 +2457,7 @@ bool FieldExtractor::fillVectorFieldData3D(vtk_obj_addr_int_t _pointsArrayIntAdd
     vectorArray->SetTuple3(i,std::get<3>(point),std::get<4>(point),std::get<5>(point));
   }
 }
+    pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 
@@ -2505,7 +2474,7 @@ bool FieldExtractor::fillVectorFieldData3DHex(vtk_obj_addr_int_t _pointsArrayInt
   Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
   Dim3D fieldDim = cellFieldG->getDim();
   vector<std::tuple<double,double,double, float,float,float>> globalPoints;
-
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(vectorFieldPtr, pointsArray, vectorArray, globalPoints, fieldDim)
 {
   Point3D pt;
@@ -2555,6 +2524,7 @@ bool FieldExtractor::fillVectorFieldData3DHex(vtk_obj_addr_int_t _pointsArrayInt
     vectorArray->SetTuple3(i,std::get<3>(point),std::get<4>(point),std::get<5>(point));
   }
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 
@@ -2587,7 +2557,7 @@ bool FieldExtractor::fillVectorFieldCellLevelData2D(vtk_obj_addr_int_t _pointsAr
   int numPoints = dim[1] * dim[0];
   vector<std::tuple<long,float,float,float,float>> globalPoints;
   set<long> globalVisitedCells;
-
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(pointOrderVec, dim, vectorFieldPtr, pointsArray, vectorArray, globalVisitedCells, globalPoints)
 {
 	set<long> visitedCells;
@@ -2663,6 +2633,7 @@ bool FieldExtractor::fillVectorFieldCellLevelData2D(vtk_obj_addr_int_t _pointsAr
     vectorArray->SetTuple3(i,std::get<3>(point),std::get<4>(point),0.0);
   }
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 
@@ -2694,7 +2665,7 @@ bool FieldExtractor::fillVectorFieldCellLevelData2DHex(vtk_obj_addr_int_t _point
 	dim[2]=fieldDimVec[dimOrderVec[2]];
   vector<std::tuple<long,double,double,float,float>> globalPoints;
   set<long> globalVisitedCells;
-
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(pointOrderVec, dim, vectorFieldPtr, pointsArray, vectorArray, globalVisitedCells, globalPoints)
 {
 	Point3D pt;
@@ -2770,6 +2741,7 @@ bool FieldExtractor::fillVectorFieldCellLevelData2DHex(vtk_obj_addr_int_t _point
     vectorArray->SetTuple3(i,std::get<3>(point),std::get<4>(point),0.0);
   }
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 
@@ -2785,7 +2757,7 @@ bool FieldExtractor::fillVectorFieldCellLevelData3D(vtk_obj_addr_int_t _pointsAr
 	Dim3D fieldDim=cellFieldG->getDim();
   set<long> globalVisitedCells;
   vector<std::tuple<long,short,short,short,float,float,float>> globalPoints;
-
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(fieldDim, vectorFieldPtr, pointsArray, vectorArray, globalVisitedCells, globalPoints) // private(pt, cell, vecTmp, pt_z)
 {
   set<long> visitedCells;
@@ -2850,6 +2822,7 @@ bool FieldExtractor::fillVectorFieldCellLevelData3D(vtk_obj_addr_int_t _pointsAr
     vectorArray->SetTuple3(i,std::get<4>(point),std::get<5>(point),std::get<6>(point));
   }
 }
+ pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 
@@ -2867,7 +2840,7 @@ bool FieldExtractor::fillVectorFieldCellLevelData3DHex(vtk_obj_addr_int_t _point
   Dim3D fieldDim = cellFieldG->getDim();
   set<long> globalVisitedCells;
   vector<std::tuple<long,double,double,double,float,float,float>> globalPoints;
-
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(fieldDim, vectorFieldPtr, pointsArray, vectorArray, globalVisitedCells, globalPoints) // private(pt, cell, vecTmp, pt_z)
 {
   set<long> visitedCells;
@@ -2939,6 +2912,7 @@ bool FieldExtractor::fillVectorFieldCellLevelData3DHex(vtk_obj_addr_int_t _point
     vectorArray->SetTuple3(i,std::get<4>(point),std::get<5>(point),std::get<6>(point));
   }
 }
+pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 
@@ -2996,7 +2970,7 @@ vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArra
     unsigned int num_work_nodes = pUtils->getMaxNumberOfWorkNodes();
     vector<unordered_set<int> > vecUsedCellTypes(num_work_nodes ? num_work_nodes : 1);
 
-
+    pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(vecUsedCellTypes, cellTypeArray, cellIdArray, fieldDim, outer_cell_ids_set, cellFieldG)
 {
 #pragma omp sections
@@ -3154,6 +3128,7 @@ bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_ob
     }
   }
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 // rwh: leave this function in until we determine we really don't want to add a boundary layer
@@ -3169,7 +3144,7 @@ bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim();
   set<int> invisibleTypeSet;
-
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(invisibleTypeSet, conArray, cellTypeArray, conFieldPtr, cellFieldG)
   {
 #pragma omp sections
@@ -3234,6 +3209,7 @@ bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk
     }
   }
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 
@@ -3308,7 +3284,7 @@ bool FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArray
   conArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
   cellTypeArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
   set<int> invisibleTypeSet;
-
+  pUtils->setNumberOfWorkNodesAuto();
 #pragma omp parallel shared(invisibleTypeSet, conArray, cellTypeArray, conFieldPtr, cellFieldG)
 {
 #pragma omp sections
@@ -3380,6 +3356,7 @@ bool FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArray
     }
   }
 }
+  pUtils->setNumberOfWorkNodesAuto(1);
   return true;
 }
 

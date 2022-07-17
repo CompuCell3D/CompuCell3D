@@ -45,6 +45,7 @@ namespace CompuCell3D {
 
 			void allowNestedParallelRegions(bool _flag=false);
             void setNumberOfWorkNodes(unsigned int _num);
+            void setNumberOfWorkNodesAuto(unsigned int _requested_num_work_nodes = -1);
 			void setVPUs(unsigned int _numberOfVPUs,unsigned int _threadsPerVPU=0);
             unsigned int getNumberOfProcessors();
             unsigned int getNumberOfWorkNodes();
