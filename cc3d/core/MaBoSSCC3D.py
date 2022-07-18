@@ -19,6 +19,7 @@ import tempfile
 from typing import Dict, Optional
 from cc3d.cpp import CompuCell
 from cc3d.core.CellInventoryWatcher import CellInventoryWatcher
+from cc3d import CompuCellSetup
 try:
     from cc3dext import MaBoSSCC3DPy
     maboss_engine_type = MaBoSSCC3DPy.CC3DMaBoSSEngine
@@ -41,9 +42,8 @@ class MaBoSSInventoryWatcher(CellInventoryWatcher):
     """
 
     def on_cell_remove(self, cell: CompuCell.CellG):
-        from cc3d.CompuCellSetup import persistent_globals as pg
-        if pg.maboss_simulators is not None:
-            pg.maboss_simulators.remCell(cell.id)
+        if CompuCellSetup.persistent_globals.maboss_simulators is not None:
+            CompuCellSetup.persistent_globals.maboss_simulators.remCell(cell.id)
 
 
 maboss_inventory_watcher: Optional[MaBoSSInventoryWatcher] = None
@@ -206,14 +206,13 @@ class MaBoSSHelper:
         if CompuCell.CellG.__maboss__ not in cell.dict.keys():
             cell.dict[CompuCell.CellG.__maboss__] = {}
 
-        from cc3d.CompuCellSetup import persistent_globals as pg
-        if pg.maboss_simulators is None:
-            pg.maboss_simulators = MaBoSSCC3DPy.CC3DMaBoSSEngineContainer()
+        if CompuCellSetup.persistent_globals.maboss_simulators is None:
+            CompuCellSetup.persistent_globals.maboss_simulators = MaBoSSCC3DPy.CC3DMaBoSSEngineContainer()
             global maboss_inventory_watcher
-            potts: CompuCell.Potts3D = pg.simulator.getPotts()
+            potts: CompuCell.Potts3D = CompuCellSetup.persistent_globals.simulator.getPotts()
             cell_inventory: CompuCell.CellInventory = potts.getCellInventory()
             maboss_inventory_watcher = MaBoSSInventoryWatcher(cell_inventory)
-        pg.maboss_simulators.addEngine(engine, cell.id, model_name)
+        CompuCellSetup.persistent_globals.maboss_simulators.addEngine(engine, cell.id, model_name)
 
         cell.dict[CompuCell.CellG.__maboss__][model_name] = engine
 
@@ -230,9 +229,8 @@ class MaBoSSHelper:
         """
         del cell.dict[CompuCell.CellG.__maboss__][model_name]
 
-        from cc3d.CompuCellSetup import persistent_globals as pg
-        if pg.maboss_simulators is not None:
-            pg.maboss_simulators.remEngine(cell.id, model_name)
+        if CompuCellSetup.persistent_globals.maboss_simulators is not None:
+            CompuCellSetup.persistent_globals.maboss_simulators.remEngine(cell.id, model_name)
 
     @staticmethod
     def maboss_model(bnd_file: str = None,
@@ -283,9 +281,8 @@ class MaBoSSHelper:
 
         :return: None
         """
-        from cc3d.CompuCellSetup import persistent_globals as pg
-        if pg.maboss_simulators is not None:
-            pg.maboss_simulators.step()
+        if CompuCellSetup.persistent_globals.maboss_simulators is not None:
+            CompuCellSetup.persistent_globals.maboss_simulators.step()
 
     def maboss_stats(self, model_name: str, node_name: str) -> dict:
         """
@@ -298,9 +295,8 @@ class MaBoSSHelper:
         :param node_name: name of node
         :return: dictionary of statistics
         """
-        from cc3d.CompuCellSetup import persistent_globals as pg
-        if pg.maboss_simulators:
-            return maboss_container_stats(pg.maboss_simulators, model_name, node_name)
+        if CompuCellSetup.persistent_globals.maboss_simulators:
+            return maboss_container_stats(CompuCellSetup.persistent_globals.maboss_simulators, model_name, node_name)
         return {}
 
 
