@@ -12,6 +12,7 @@ package:
 about:
   home: https://compucell3d.org
   license: MIT
+  license_file: ../CompuCell3D/License.txt
   summary: Multiscale multicellular virtual tissue modeling and simulation environment
 
 extra:
