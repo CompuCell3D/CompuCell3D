@@ -26,8 +26,12 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # Make dot accessible; unsure if this is necessary otherwise
-graphviz_dot = [x for x in os.listdir(os.path.join(os.path.dirname(sys.executable), "Library", "bin"))
-                if x.startswith("dot.")][0]
+graphviz_reldirs = ("Library", "bin") if sys.platform.startswith('win') else ("bin",)
+try:
+    graphviz_dot = [x for x in os.listdir(os.path.join(os.path.dirname(sys.executable), *graphviz_reldirs))
+                    if x.startswith("dot.")][0]
+except IndexError:
+    raise EnvironmentError('Graphviz not located in environment.')
 graphviz_dot = os.path.join(os.path.dirname(sys.executable), "Library", "bin", graphviz_dot)
 
 # General information about the project.

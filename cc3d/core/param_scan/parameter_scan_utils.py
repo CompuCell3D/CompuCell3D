@@ -307,7 +307,8 @@ def next_cartesian_product_from_state(curr_list: List[int], max_list: List[int])
 
 
 def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_scan_parameters: dict,
-                                     run_script: Union[str, Path] = '', gui_flag: bool = False,
+                                     # run_script: Union[str, Path] = '',
+                                     gui_flag: bool = False,
                                      output_dir: str = None, arg_list: list = []):
     """
     Given the set of scanned parameters This function creates CC3D project (by applying)
@@ -354,19 +355,25 @@ def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_
         f'--parameter-scan-iteration={current_scan_parameters["current_iteration"]}'
     ]
 
+    exe_script_list = [f'{sys.executable}', '-m', 'cc3d.run_script']
     if gui_flag:
         arg_list_local += ['--exit-when-done']
+        exe_script_list = [f'{sys.executable}', '-m', 'cc3d.player5']
 
     print('Running simulation with current_scan_parameters=', current_scan_parameters)
 
-    popen_args = [run_script] + arg_list_local
+    popen_args = exe_script_list + arg_list_local
     print('command=', popen_args)
 
     cc3d_process = Popen(popen_args)
-    cc3d_process.communicate()
-
-    # main_player(arg_list_local)
+    out, err = cc3d_process.communicate()
+    if out:
+        print("standard output of subprocess:")
+        print(out)
+    if err:
+        print("standard error of subprocess:")
+        print(err)
+    print("returncode of param scan command:")
 
     print('repeat: Running simulation with current_scan_parameters=', current_scan_parameters)
 
-    # time.sleep(5.0)

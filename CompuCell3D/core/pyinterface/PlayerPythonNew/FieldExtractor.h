@@ -33,33 +33,32 @@ namespace CompuCell3D{
 	class Potts3D;
 	class Simulator;
 	class Dim3D;
-    class NeighborTracker;
+  class NeighborTracker;
+  class ParallelUtilsOpenMP;
 
-	class FIELDEXTRACTOR_EXPORT FieldExtractor:public FieldExtractorBase{
-    private:
+  class FIELDEXTRACTOR_EXPORT FieldExtractor:public FieldExtractorBase{
+    public : 
+      Potts3D *potts;
+      Simulator *sim;
+      FieldExtractor();
+      ~FieldExtractor();
 
-        
-	public:
-		Potts3D * potts;
-		Simulator *sim;
-		FieldExtractor();
-		~FieldExtractor();
+      void setFieldStorage(FieldStorage *_fsPtr) { fsPtr = _fsPtr; }
+      FieldStorage *getFieldStorage(FieldStorage *_fsPtr) { return fsPtr; }
 
-		void setFieldStorage(FieldStorage * _fsPtr){fsPtr=_fsPtr;}
-		FieldStorage * getFieldStorage(FieldStorage * _fsPtr){return fsPtr;}
+      void extractCellField();
 
-		void extractCellField();
-
-		virtual void fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr , std::string _plane ,  int _pos);
-        virtual void fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos);
-		virtual void fillCellFieldData2DHex_old(vtk_obj_addr_int_t _cellTypeArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane ,  int _pos);
+      virtual void fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _plane, int _pos);
+      virtual void fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos);
+      
 	    virtual void fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane ,  int _pos);
 
 		virtual void fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos);
 		virtual void fillBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos);
 
-		virtual void fillClusterBorderData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos);
-		virtual void fillClusterBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos);
+
+    virtual void fillClusterBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr, std::string _plane, int _pos);
+    virtual void fillClusterBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos);
 
 		virtual void fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos);
 
@@ -102,7 +101,8 @@ namespace CompuCell3D{
 		void init(Simulator * _sim);
 	private:
 		FieldStorage * fsPtr;
-	};
+    ParallelUtilsOpenMP *pUtils;
+  };
 };
 
 #endif
