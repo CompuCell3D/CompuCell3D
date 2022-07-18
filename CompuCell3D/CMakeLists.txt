@@ -296,4 +296,8 @@ endif (BUILD_QT_WRAPPERS)
 ADD_SUBDIRECTORY(core)
 # ADD_SUBDIRECTORY(optimization)
 
-
+# install info files
+install(FILES ${CMAKE_INSTALL_PREFIX} 
+    License.txt
+    ReleaseNotes.rst 
+)
