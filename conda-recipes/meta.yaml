@@ -65,6 +65,8 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
+    - sphinx
+    - graphviz
 
   run_constrained:
     - tbb=2020
