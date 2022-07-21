@@ -297,7 +297,9 @@ ADD_SUBDIRECTORY(core)
 # ADD_SUBDIRECTORY(optimization)
 
 # install info files
-install(FILES ${CMAKE_INSTALL_PREFIX} 
+install(FILES
     License.txt
-    ReleaseNotes.rst 
+    ReleaseNotes.rst
+    DESTINATION
+    ${CMAKE_INSTALL_PREFIX}
 )
