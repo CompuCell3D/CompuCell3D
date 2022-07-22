@@ -37,7 +37,7 @@ requirements:
     - tbb-devel=2020
     - cmake>=3.14
     - swig=3
-    - cc3d-network-solvers
+    - cc3d-network-solvers>=0.0.2
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
@@ -62,7 +62,7 @@ requirements:
     - psutil
     - cmake=3.19
     - swig=3
-    - cc3d-network-solvers
+    - cc3d-network-solvers>=0.0.2
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
