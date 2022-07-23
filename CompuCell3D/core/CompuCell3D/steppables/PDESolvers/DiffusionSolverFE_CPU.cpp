@@ -469,7 +469,7 @@ void DiffusionSolverFE_CPU::getMinMaxBox(bool useBoxWatcher, int threadNumber, D
 void DiffusionSolverFE_CPU::boundaryConditionInit(int idx) {
 
     ConcentrationField_t &_array = *this->getConcentrationField(idx);
-    return;
+ 
     bool detailedBCFlag = bcSpecFlagVec[idx];
     BoundaryConditionSpecifier & bcSpec = bcSpecVec[idx];
     DiffusionData &diffData = diffSecrFieldTuppleVec[idx].diffData;
