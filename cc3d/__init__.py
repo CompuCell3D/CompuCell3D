@@ -11,7 +11,7 @@ from pathlib import Path
 
 __version__ = "4.3.1"
 __revision__ = "0"
-__githash__ = "c048ceeb"
+__githash__ = "0e6af24d"
 
 from . import config
 
