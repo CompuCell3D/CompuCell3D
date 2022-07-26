@@ -79,7 +79,7 @@
 #include<CompuCell3D/steppables/PDESolvers/ReactionDiffusionSolverFVM.h>
 #include <CompuCell3D/steppables/PDESolvers/DiffusionSolverFE_CPU.h>
 #include <CompuCell3D/steppables/PDESolvers/ReactionDiffusionSolverFE.h>
-
+#include<CompuCell3D/CC3DLogger.h>
 //#include <CompuCell3D/BabySim/BabyPottsParseData.h>
 //#include <CompuCell3D/BabySim/BabySim.h>
 
@@ -240,11 +240,17 @@ using namespace CompuCell3D;
 
 // PDE Solvers
 #define PDESOLVERS_EXPORT
+
+// Logger
+#define CAPI_EXPORT
 // %include <dolfin/mesh/Mesh.h>
 
 // we have to include files for objects that we will type-map before including definitions of corresponding typemaps
+// logger include
+%include "CompuCell3D/CC3DLogger.h"
 %include "Field3D/Point3D.h"
 %include "Field3D/Dim3D.h"
+
 
 %extend CompuCell3D::Point3D{
   std::string __str__(){
@@ -1177,7 +1183,7 @@ struct CellInventoryWatcherForwarder : public CompuCell3D::CellInventoryWatcher 
 %inline %{
 
 struct CellInventoryWatcherDir {
-    
+
     CellInventoryWatcherForwarder *forwarder;
 
     CellInventoryWatcherDir() : forwarder{NULL} {};
@@ -1231,8 +1237,8 @@ void makeCellInventoryWatcher(CellInventoryWatcherDir *director, CellInventory *
 	Potts3D *potts = simulator.getPotts();  
 	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim(); 
-    //set Dimensions of field    
-	mitr->second->setDim(fieldDim); 
+    //set Dimensions of field
+	mitr->second->setDim(fieldDim);
 	return mitr->second;
       }else{
          return 0;

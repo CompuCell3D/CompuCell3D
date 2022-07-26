@@ -1,11 +1,11 @@
 /**
- * @file CC3DLogger.cpp
+ * @file Logger.cpp
  * @author Saumya Mehta.
- * @brief Defines the logger; derived from mechanica CC3DLogger.h originally written by T.J Sego, PhD; apparently taken from libRoadRunner rrLogger
+ * @brief Defines the logger; derived from mechanica Logger.h originally written by T.J Sego, PhD; apparently taken from libRoadRunner rrLogger
  * @date 2022-07-08
  * 
  */
-#include <CC3DLogger.h>
+#include <core/CompuCell3D/CC3DLogger.h>
 #include <iostream>
 #include <algorithm>
 #include <fstream>
@@ -33,7 +33,7 @@ static std::string outputFileName;
 static std::ostream *consoleStream = NULL;
 static std::ostream *fileStream = NULL;
 
-static CC3DLoggerCallback callback = NULL;
+static CompuCell3D::LoggerCallback callback = NULL;
 
 
 
@@ -54,7 +54,7 @@ static FakeLogger& getLogger() {
     return logger;
 }
 
-CC3DLoggingBuffer::CC3DLoggingBuffer(int level, const char* func, const char *file, int line):
+CompuCell3D::LoggingBuffer::LoggingBuffer(int level, const char* func, const char *file, int line):
                 func(func), file(file), line(line)
 {
     if (level >= Message::PRIO_FATAL && level <= Message::PRIO_TRACE)
@@ -68,7 +68,7 @@ CC3DLoggingBuffer::CC3DLoggingBuffer(int level, const char* func, const char *fi
     }
 }
 
-CC3DLoggingBuffer::~CC3DLoggingBuffer()
+CompuCell3D::LoggingBuffer::~LoggingBuffer()
 {
     FakeLogger &logger = getLogger();
     switch (level)
@@ -103,12 +103,12 @@ CC3DLoggingBuffer::~CC3DLoggingBuffer()
     }
 }
 
-std::ostream& CC3DLoggingBuffer::stream()
+std::ostream& CompuCell3D::LoggingBuffer::stream()
 {
     return buffer;
 }
 
-void CC3DLogger::setLevel(int level)
+void CompuCell3D::Logger::setLevel(int level)
 {
     logLevel = level;
     
@@ -118,24 +118,24 @@ void CC3DLogger::setLevel(int level)
     }
 }
 
-int CC3DLogger::getLevel()
+int CompuCell3D::Logger::getLevel()
 {
     return logLevel;
 }
 
-void CC3DLogger::disableLogging()
+void CompuCell3D::Logger::disableLogging()
 {
     disableConsoleLogging();
     disableFileLogging();
 }
 
-void CC3DLogger::disableConsoleLogging()
+void CompuCell3D::Logger::disableConsoleLogging()
 {
     consoleStream = NULL;
     if(callback) callback(LOG_OUTPUTSTREAM_CHANGED, consoleStream);
 }
 
-void CC3DLogger::enableConsoleLogging(int level)
+void CompuCell3D::Logger::enableConsoleLogging(int level)
 {
     setLevel(level);
 
@@ -146,7 +146,7 @@ void CC3DLogger::enableConsoleLogging(int level)
     }
 }
 
-void CC3DLogger::enableFileLogging(const std::string &fileName, int level)
+void CompuCell3D::Logger::enableFileLogging(const std::string &fileName, int level)
 {
     setLevel(level);
 
@@ -163,7 +163,7 @@ void CC3DLogger::enableFileLogging(const std::string &fileName, int level)
     }
 }
 
-void CC3DLogger::disableFileLogging()
+void CompuCell3D::Logger::disableFileLogging()
 {
     if (outputFileName.size() == 0) return;
 
@@ -176,26 +176,26 @@ void CC3DLogger::disableFileLogging()
     }
 }
 
-std::string CC3DLogger::getCurrentLevelAsString()
+std::string CompuCell3D::Logger::getCurrentLevelAsString()
 {
     return levelToString(logLevel);
 }
 
-std::string CC3DLogger::getFileName()
+std::string CompuCell3D::Logger::getFileName()
 {
     return outputFileName;
 }
 
-// void CC3DLogger::setFormattingPattern(const std::string &format)
+// void Logger::setFormattingPattern(const std::string &format)
 // {
 // }
 
-// std::string CC3DLogger::getFormattingPattern()
+// std::string Logger::getFormattingPattern()
 // {
 //     return "";
 // }
 
-std::string CC3DLogger::levelToString(int level)
+std::string CompuCell3D::Logger::levelToString(int level)
 {
     switch (level)
     {
@@ -229,7 +229,7 @@ std::string CC3DLogger::levelToString(int level)
     return "LOG_CURRENT";
 }
 
-CC3DLogLevel CC3DLogger::stringToLevel(const std::string &str)
+CompuCell3D::LogLevel CompuCell3D::Logger::stringToLevel(const std::string &str)
 {
     std::string upstr = str;
     std::transform(upstr.begin(), upstr.end(), upstr.begin(), ::toupper);
@@ -272,20 +272,20 @@ CC3DLogLevel CC3DLogger::stringToLevel(const std::string &str)
     }
 }
 
-// bool CC3DLogger::getColoredOutput()
+// bool Logger::getColoredOutput()
 // {
 //     return false;
 // }
 
-// void CC3DLogger::setColoredOutput(bool bool1)
+// void Logger::setColoredOutput(bool bool1)
 // {
 // }
 
-// void CC3DLogger::setProperty(const std::string &name, const std::string &value)
+// void Logger::setProperty(const std::string &name, const std::string &value)
 // {
 // }
 
-void CC3DLogger::log(CC3DLogLevel l, const std::string &msg)
+void CompuCell3D::Logger::log(LogLevel l, const std::string &msg)
 {
     FakeLogger &logger = getLogger();
 
@@ -323,14 +323,14 @@ void CC3DLogger::log(CC3DLogLevel l, const std::string &msg)
     }
 }
 
-void CC3DLogger::setConsoleStream(std::ostream *os)
+void CompuCell3D::Logger::setConsoleStream(std::ostream *os)
 {
     consoleStream = os;
 
     if(callback) callback(LOG_OUTPUTSTREAM_CHANGED, consoleStream);
 }
 
-void CC3DLogger::setCallback(CC3DLoggerCallback cb) {
+void CompuCell3D::Logger::setCallback(LoggerCallback cb) {
     callback = cb;
     
     if(callback) {

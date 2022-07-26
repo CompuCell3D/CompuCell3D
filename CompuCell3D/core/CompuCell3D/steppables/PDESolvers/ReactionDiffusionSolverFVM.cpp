@@ -17,13 +17,14 @@
 #include <sstream>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include <omp.h>
+#include <Compucell3D/CC3DLogger.h>
 
 // macro to ensure CC3d_log is enabled only when debugging
-#ifdef DEBUG
+/* #ifdef DEBUG
 #define CC3d_log(x) std::cerr <<x<<std::endl
 #else
 #define CC3d_log(x)
-#endif
+#endif */
 
 using namespace std;
 using namespace CompuCell3D;
@@ -105,7 +106,8 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 
 	// Get static inputs
-	
+	Log(LOG_DEBUG) <<"Getting static RDFVM Solver inputs...";
+
 	CC3d_log("Getting static RDFVM Solver inputs...");
 
 	//		Cell types
@@ -125,9 +127,7 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	ASSERT_OR_THROW("Hexagonal lattices are currently not supported by FVM Solver.", boundaryStrategy->getLatticeType() != HEXAGONAL_LATTICE);
 
 	// Get solver inputs
-
-	CC3d_log("Getting solver inputs...");
-
+	Log(LOG_DEBUG)<<"Getting solver inputs...";
 	CC3DXMLElement *el;
 
 	//		Time discretization
@@ -219,7 +219,7 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		ASSERT_OR_THROW("Each diffusion field must be given a name with the DiffusionField attribute Name", el->findAttribute("Name"));
 		std::string fieldName = el->getAttribute("Name");
 
-		CC3d_log("   Got field name: " << fieldName);
+		Log(LOG_DEBUG)<<"   Got field name: " << fieldName;
 
 		// Check duplicates
 		std::vector<std::string>::iterator fieldNameVec_itr = find(concentrationFieldNameVector.begin(), concentrationFieldNameVector.end(), fieldName);
@@ -348,8 +348,7 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		if (useFieldInitialExprBool[fieldIndex]) { fieldInitialExpr[fieldIndex] = dData->getFirstElement("InitialConcentrationExpression")->getData(); }
 
 		// Reaction data
-		CC3d_log("   Getting reaction data...");
-
+		Log(LOG_DEBUG)<<"   Getting reaction data...";
 		fieldExpressionStringsDiag[fieldIndex].clear();
 		fieldExpressionStringsOffDiag[fieldIndex].clear();
 
@@ -438,7 +437,7 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	std::vector<Point3D> offsetVec = boundaryStrategy->getOffsetVec();
 	for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
 		Point3D offset = offsetVec[nIdx];
-		CC3d_log( "   Processing surface for neighbor relative offset (" << offset.x << ", " << offset.y << ", " << offset.z << ") -> ");
+		Log(LOG_DEBUG) << "   Processing surface for neighbor relative offset (" << offset.x << ", " << offset.y << ", " << offset.z << ") -> ";
 		if (offset.x > 0) {
 			CC3d_log( "+x: " << nIdx );
 
@@ -711,7 +710,7 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 		if (autoTimeSubStep) {
 
 			CC3d_log( "      Integrating with maximum stable time step... ");
-			
+
 			
 			#pragma omp parallel for shared (_fieldDim)
 			for (int fieldIndex=0;fieldIndex<_fieldDim.x*_fieldDim.y*_fieldDim.z;fieldIndex++){
@@ -891,9 +890,7 @@ void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
 	//		z boundaries
 
 	if (maxNeighborIndex > 3) {
-
-		CC3d_log("   along z-boundaries...");
-
+		Log(LOG_DEBUG) << "   along z-boundaries...";
 		bLocSpecs[0] = tuple<short, std::string>(0, "MinZ");
 		bLocSpecs[1] = tuple<short, std::string>(fieldDim.z - 1, "MaxZ");
 		for (short x = 0; x < fieldDim.x; ++x)
