@@ -10,12 +10,7 @@
 #define SRC_CC3DLOGGER_H_
 
 #include <sstream>
-
-#ifdef CC3D_POCO
-namespace Poco {
-class Logger;
-}
-#endif
+#include <core/CompuCell3D/CompuCellLibDLLSpecifier.h>
 
 
 /**
@@ -29,15 +24,17 @@ class Logger;
  * This object is returned from the rr::Logger, exposes a ostream interface, and
  * and dumps to the log when it goes out of scope.
  */
-class CAPI_EXPORT CC3DLoggingBuffer
+namespace CompuCell3D{
+    
+class COMPUCELLLIB_EXPORT LoggingBuffer
 {
 public:
-    CC3DLoggingBuffer(int level, const char* func, const char* file, int line);
+    LoggingBuffer(int level, const char* func, const char* file, int line);
 
     /**
      * dump the contents of the stringstream to the log.
      */
-    ~CC3DLoggingBuffer();
+    virtual ~LoggingBuffer();
 
     /**
      * get the stream this buffer holds.
@@ -57,7 +54,7 @@ private:
  * as Poco is usually linked statically so third parties would not need
  * to have Poco installed.
  */
-enum CC3DLogLevel
+enum LogLevel
 {
     LOG_CURRENT = 0, ///< Use the current level -- don't change the level from what it is.
     LOG_FATAL = 1,   ///< A fatal error. The application will most likely terminate. This is the highest priority.
@@ -70,21 +67,21 @@ enum CC3DLogLevel
     LOG_TRACE        ///< A tracing message. This is the lowest priority.
 };
 
-enum CC3DLogEvent
+enum LogEvent
 {
     LOG_OUTPUTSTREAM_CHANGED,
     LOG_LEVEL_CHANGED,
     LOG_CALLBACK_SET
 };
 
-typedef HRESULT (*CC3DLoggerCallback)(CC3DLogEvent, std::ostream *);
+typedef int (*LoggerCallback)(LogEvent, std::ostream *);
 
 /**
  * The Compucell3D logger.
  *
  * A set of static method for setting the logging level.
  */
-class CAPI_EXPORT CC3DLogger
+class  COMPUCELLLIB_EXPORT Logger
 {
 public:
 
@@ -158,7 +155,7 @@ public:
     /**
      * parses a string and returns a Logger::Level
      */
-    static CC3DLogLevel stringToLevel(const std::string& str);
+    static LogLevel stringToLevel(const std::string& str);
 
     /**
      * @brief logs a message to the log.
@@ -166,7 +163,7 @@ public:
      * @param level logging level
      * @param msg log message
      */
-    static void log(CC3DLogLevel level, const std::string& msg);
+    static void log(LogLevel level, const std::string& msg);
 
 
     /**
@@ -183,12 +180,14 @@ public:
     static void setConsoleStream(std::ostream *os);
 
 
-    static void setCallback(CC3DLoggerCallback);
+    static void setCallback(LoggerCallback);
 
 };
 
-#define Log(level) \
-    if (level > CC3DLogger::getLevel()) { ; } \
-    else CC3DLoggingBuffer(level, CC3D_FUNCTION, __FILE__, __LINE__).stream()
 
+#define Log(level) \
+    if (true) {  }\
+    else \
+    LoggingBuffer(level, MX_FUNCTION, __FILE__, __LINE__)
+}
 #endif /* SRC_CC3DLOGGER_H_ */

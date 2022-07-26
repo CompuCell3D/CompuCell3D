@@ -17,6 +17,7 @@
     #include <CompuCell3D/PottsParseData.h>
     #include <CompuCell3D/PluginManager.h>
     #include <CompuCell3D/Serializer.h>
+     #include <CompuCell3D/CC3DLogger.h>
 
     
 

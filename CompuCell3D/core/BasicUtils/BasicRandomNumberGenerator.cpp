@@ -24,6 +24,7 @@
 #include "BasicRandomNumberGenerator.h"
 #include <sys/timeb.h>
 #include <iostream>
+#include<core/CompuCell3D/CC3DLogger.h>
 using namespace std;
 
 //This implementation is based on Roeland Merks code TST 0.1.1
@@ -34,6 +35,8 @@ BasicRandomNumberGenerator *BasicRandomNumberGenerator::getInstance() {
   if (!singleton) singleton = new BasicRandomNumberGenerator();
   return singleton;
 }
+
+CompuCell3D::Logger logger = 
 
 void BasicRandomNumberGenerator::setSeed(const unsigned int seed) {
 //   this->seed = seed;
