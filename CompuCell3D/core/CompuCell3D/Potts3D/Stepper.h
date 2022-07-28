@@ -3,9 +3,9 @@
 
 namespace CompuCell3D {
 
-  class Stepper {
-  public:
-    virtual void step() = 0;
-  };
+    class Stepper {
+    public:
+        virtual void step() = 0;
+    };
 };
 #endif

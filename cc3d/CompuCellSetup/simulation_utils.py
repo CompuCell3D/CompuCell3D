@@ -1,6 +1,7 @@
 from cc3d import CompuCellSetup
 from cc3d.core.XMLUtils import CC3DXMLListPy
 from pathlib import Path
+from typing import List, Dict, Union
 
 
 class CC3DCPlusPlusError(Exception):
@@ -133,3 +134,33 @@ def extract_type_id_type_name_dict(cell_types_elements):
 def check_for_cpp_errors(sim):
     if sim.getRecentErrorMessage() != "":
         raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
+
+
+def str_to_int_container(s: str, container: str = 'list') -> Union[List[str], Dict[str, str]]:
+    """
+    Converts string - comma separated sequence of integers into list of integers
+    :param s:
+    :param container:
+    :return:
+    """
+
+    s = s.replace(" ", "")
+    s = s.split(",")
+
+    def val_check(inv_val_str):
+        try:
+            _ = int(inv_val_str)
+        except (ValueError, TypeError):
+            return False
+        return True
+
+    if container == 'list':
+        container_int = [int(val) for val in s if val_check(val)]
+    elif container == 'dict':
+        container_int = {int(val): int(val) for val in s if val_check(val)}
+    else:
+        raise TypeError('Container argument can only be "list" or "dict"')
+
+    return container_int
+
+

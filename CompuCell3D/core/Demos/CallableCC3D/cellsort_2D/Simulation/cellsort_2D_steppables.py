@@ -1,5 +1,4 @@
 from cc3d.core.PySteppables import *
-from cc3d import CompuCellSetup
 from random import random
 
 
@@ -8,10 +7,8 @@ class CellsortSteppable(SteppableBasePy):
         SteppableBasePy.__init__(self, frequency)
 
     def start(self):
-        pg = CompuCellSetup.persistent_globals
-        input_val = pg.input_object
+        input_val = self.external_input
 
     def step(self, mcs):
         if mcs == 100:
-            pg = CompuCellSetup.persistent_globals
-            pg.return_object = 200.0 + random()
+            self.external_output = 200.0 + random()

@@ -1,26 +1,10 @@
-
-
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-
-// // // #include <CompuCell3D/Potts3D/CellInventory.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <PublicUtilities/StringUtils.h>
-// // // #include <algorithm>
-
-
-
-
-
 
 using namespace CompuCell3D;
 
 
 #include <iostream>
+
 using namespace std;
 
 #include "CleaverMeshDumper.h"
@@ -34,90 +18,77 @@ using namespace std;
 using namespace Cleaver;
 
 
-CellFieldCleaverSimulator::CellFieldCleaverSimulator() : 
-m_bounds(vec3::zero, vec3(1,1,1)),paddingDim(2,2,2),cellField(0)
-{
-	// no allocation
-	minValue=1000000000.0;
-	maxValue=-1000000000.0;        
+CellFieldCleaverSimulator::CellFieldCleaverSimulator() :
+        m_bounds(vec3::zero, vec3(1, 1, 1)), paddingDim(2, 2, 2), cellField(0) {
+    // no allocation
+    minValue = 1000000000.0;
+    maxValue = -1000000000.0;
 }
 
-CellFieldCleaverSimulator::~CellFieldCleaverSimulator()
-{
-	// no memory cleanup
+CellFieldCleaverSimulator::~CellFieldCleaverSimulator() {
+    // no memory cleanup
 }
 
-BoundingBox CellFieldCleaverSimulator::bounds() const
-{
-	return m_bounds;
+BoundingBox CellFieldCleaverSimulator::bounds() const {
+    return m_bounds;
 }
 
-void CellFieldCleaverSimulator::setFieldDim(Dim3D _dim){
-	fieldDim=_dim;    
-	m_bounds.size=vec3(fieldDim.x,fieldDim.y,fieldDim.z);
+void CellFieldCleaverSimulator::setFieldDim(Dim3D _dim) {
+    fieldDim = _dim;
+    m_bounds.size = vec3(fieldDim.x, fieldDim.y, fieldDim.z);
 }
 
 
-
-float CellFieldCleaverSimulator::valueAt(float x, float y, float z) const
-{
+float CellFieldCleaverSimulator::valueAt(float x, float y, float z) const {
 
 
-	int dim_x = m_bounds.size.x;
-	int dim_y = m_bounds.size.y;
-	int dim_z = m_bounds.size.z;
+    int dim_x = m_bounds.size.x;
+    int dim_y = m_bounds.size.y;
+    int dim_z = m_bounds.size.z;
 
-	// Current Cleaver Limitation - Can't have material transitions on the boundary.
-	// Will fix ASAP, but for now pad data with constant boundary.
-	if(x < paddingDim.x || y < paddingDim.y || z < paddingDim.z || x > (dim_x - paddingDim.x) || y > (dim_y - paddingDim.y) || z > (dim_z - paddingDim.z))
-	{
-		return -11.0;
+    // Current Cleaver Limitation - Can't have material transitions on the boundary.
+    // Will fix ASAP, but for now pad data with constant boundary.
+    if (x < paddingDim.x || y < paddingDim.y || z < paddingDim.z || x > (dim_x - paddingDim.x) ||
+        y > (dim_y - paddingDim.y) || z > (dim_z - paddingDim.z)) {
+        return -11.0;
 
-	}
+    }
 
-	CellG * cell=cellField->get(Point3D(x,y,z));
-
-	
+    CellG *cell = cellField->get(Point3D(x, y, z));
 
 
-	if (! cell){
-		return -9.0;
-	}else if (includeCellTypesSet.find(cell->type)!=includeCellTypesSet.end()){
-		return 2.0+cell->type;
-	} else {
-		return -9.0;
-	}
+    if (!cell) {
+        return -9.0;
+    } else if (includeCellTypesSet.find(cell->type) != includeCellTypesSet.end()) {
+        return 2.0 + cell->type;
+    } else {
+        return -9.0;
+    }
 
-	//if (! cell){
-	//	return -9.0;
-	//}else if (includeCellTypesSet.find(cell->type)!=end_sitr){
-	//	return 2.0+cell->type;
-	//} else {
-	//	return -9.0;
-	//}
+    //if (! cell){
+    //	return -9.0;
+    //}else if (includeCellTypesSet.find(cell->type)!=end_sitr){
+    //	return 2.0+cell->type;
+    //} else {
+    //	return -9.0;
+    //}
 
-	//if (! cell){
-	//	return -9.0;
-	//}else if (cell->type==1){
-	//	return 2.0+cell->type;
-	//} else {
-	//	return -9.0;
-	//}
+    //if (! cell){
+    //	return -9.0;
+    //}else if (cell->type==1){
+    //	return 2.0+cell->type;
+    //} else {
+    //	return -9.0;
+    //}
 }
-
-
-
-
-
 
 
 CleaverMeshDumper::CleaverMeshDumper() :
-cellFieldG(0),sim(0),potts(0),
-xmlData(0),boundaryStrategy(0),automaton(0),cellInventoryPtr(0)
-{
-	meshOutputFormat="tetgen";
-	outputMeshSurface=false;
-	verbose=false;
+        cellFieldG(0), sim(0), potts(0),
+        xmlData(0), boundaryStrategy(0), automaton(0), cellInventoryPtr(0) {
+    meshOutputFormat = "tetgen";
+    outputMeshSurface = false;
+    verbose = false;
 
 }
 
@@ -126,155 +97,159 @@ CleaverMeshDumper::~CleaverMeshDumper() {
 
 
 void CleaverMeshDumper::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
-	xmlData=_xmlData;
+    xmlData = _xmlData;
 
-	potts = simulator->getPotts();
-	cellInventoryPtr=& potts->getCellInventory();
-	sim=simulator;
-	cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
-	fieldDim=cellFieldG->getDim();
+    potts = simulator->getPotts();
+    cellInventoryPtr = &potts->getCellInventory();
+    sim = simulator;
+    cellFieldG = (WatchableField3D < CellG * > *)
+    potts->getCellFieldG();
+    fieldDim = cellFieldG->getDim();
 
 
-	simulator->registerSteerableObject(this);
+    simulator->registerSteerableObject(this);
 
-	update(_xmlData,true);
+    update(_xmlData, true);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void CleaverMeshDumper::extraInit(Simulator *simulator){
-	//PUT YOUR CODE HERE
+void CleaverMeshDumper::extraInit(Simulator *simulator) {
+    //PUT YOUR CODE HERE
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void CleaverMeshDumper::start(){
+void CleaverMeshDumper::start() {
 
-	//PUT YOUR CODE HERE
+    //PUT YOUR CODE HERE
 
 }
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void CleaverMeshDumper::simulateCleaverMesh(){
-	CellFieldCleaverSimulator cfcs;
-	cfcs.setFieldDim(fieldDim);
-	cfcs.setCellFieldPtr(cellFieldG);
-	cfcs.setIncludeCellTypesSet(cellTypesSet);
+void CleaverMeshDumper::simulateCleaverMesh() {
+    CellFieldCleaverSimulator cfcs;
+    cfcs.setFieldDim(fieldDim);
+    cfcs.setCellFieldPtr(cellFieldG);
+    cfcs.setIncludeCellTypesSet(cellTypesSet);
 
-	//bool verbose=true;
-	//string outputFileName="cellfieldmesh";
+    //bool verbose=true;
+    //string outputFileName="cellfieldmesh";
 
-	Cleaver::InverseField inverseField = Cleaver::InverseField(&cfcs);
+    Cleaver::InverseField inverseField = Cleaver::InverseField(&cfcs);
 
-	std::vector<Cleaver::ScalarField*> fields;
+    std::vector < Cleaver::ScalarField * > fields;
 
-	fields.push_back(&cfcs);
-	fields.push_back(&inverseField);
+    fields.push_back(&cfcs);
+    fields.push_back(&inverseField);
 
-	Cleaver::Volume volume(fields);
-	Cleaver::TetMesh *mesh = Cleaver::createMeshFromVolume(volume, verbose);
+    Cleaver::Volume volume(fields);
+    Cleaver::TetMesh *mesh = Cleaver::createMeshFromVolume(volume, verbose);
 
-	//mesh->writeNodeEle(outputFileName, verbose);
-	cerr<<"outputFileName="<<outputFileName<<endl;
-	cerr<<"verbose="<<verbose<<endl;
+    //mesh->writeNodeEle(outputFileName, verbose);
+    cerr << "outputFileName=" << outputFileName << endl;
+    cerr << "verbose=" << verbose << endl;
 
 
-    if(meshOutputFormat == "tetgen")
+    if (meshOutputFormat == "tetgen")
         mesh->writeNodeEle(outputFileName, verbose);
-    else if(meshOutputFormat == "scirun")
+    else if (meshOutputFormat == "scirun")
         mesh->writePtsEle(outputFileName, verbose);
-    else if(meshOutputFormat == "matlab")
+    else if (meshOutputFormat == "matlab")
         mesh->writeMatlab(outputFileName, verbose);
 
 
-	//----------------------
-	// Write Surface Files
-	//----------------------
-	if (outputMeshSurface){
-		mesh->constructFaces();
-		mesh->writePly(outputFileName, verbose);
-	}
+    //----------------------
+    // Write Surface Files
+    //----------------------
+    if (outputMeshSurface) {
+        mesh->constructFaces();
+        mesh->writePly(outputFileName, verbose);
+    }
 
-	
-     delete mesh; 
+
+    delete mesh;
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void CleaverMeshDumper::step(const unsigned int currentStep){
-	if (! currentStep%10){
-		simulateCleaverMesh();
-	}
-	//   //REPLACE SAMPLE CODE BELOW WITH YOUR OWN
-	//CellInventory::cellInventoryIterator cInvItr;
-	//CellG * cell;
-	//   
-	//   cerr<<"currentStep="<<currentStep<<endl;
-	//for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr )
-	//{
-	//	cell=cellInventoryPtr->getCell(cInvItr);
-	//       cerr<<"cell.id="<<cell->id<<" vol="<<cell->volume<<endl;
-	//   }
+void CleaverMeshDumper::step(const unsigned int currentStep) {
+    if (!currentStep % 10) {
+        simulateCleaverMesh();
+    }
+    //   //REPLACE SAMPLE CODE BELOW WITH YOUR OWN
+    //CellInventory::cellInventoryIterator cInvItr;
+    //CellG * cell;
+    //
+    //   cerr<<"currentStep="<<currentStep<<endl;
+    //for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr )
+    //{
+    //	cell=cellInventoryPtr->getCell(cInvItr);
+    //       cerr<<"cell.id="<<cell->id<<" vol="<<cell->volume<<endl;
+    //   }
 
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void CleaverMeshDumper::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
+void CleaverMeshDumper::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
-	//PARSE XML IN THIS FUNCTION
-	//For more information on XML parser function please see CC3D code or lookup XML utils API
-	automaton = potts->getAutomaton();
-	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
-	cellTypesSet.clear();
+    //PARSE XML IN THIS FUNCTION
+    //For more information on XML parser function please see CC3D code or lookup XML utils API
+    automaton = potts->getAutomaton();
+    if (!automaton)
+        throw CC3DException(
+                "CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
+    cellTypesSet.clear();
 
-	std::vector<std::string> typeNames;
-	
-
-	CC3DXMLElement * outputXMLElem=_xmlData->getFirstElement("OutputSpecification");
-	if(outputXMLElem){
-		outputFileName=outputXMLElem->getFirstElement("OutputFileNeme")->getText();
-		if (outputXMLElem->getFirstElement("OutputMeshSurface")){
-			outputMeshSurface=true;
-		}
-
-		if (outputXMLElem->getFirstElement("Verbose")){
-			verbose=true;
-			cerr<<"verbose="<<verbose<<endl;
-		}
+    std::vector <std::string> typeNames;
 
 
-		if (outputXMLElem->getFirstElement("MeshOutputFormat")){
-			meshOutputFormat=outputXMLElem->getFirstElement("MeshOutputFormat")->getText();
-		}
+    CC3DXMLElement *outputXMLElem = _xmlData->getFirstElement("OutputSpecification");
+    if (outputXMLElem) {
+        outputFileName = outputXMLElem->getFirstElement("OutputFileNeme")->getText();
+        if (outputXMLElem->getFirstElement("OutputMeshSurface")) {
+            outputMeshSurface = true;
+        }
 
-		if (outputXMLElem->getFirstElement("IncludeCellTypes")){
-			string celTypeStr=outputXMLElem->getFirstElement("IncludeCellTypes")->getText();
-			parseStringIntoList( celTypeStr, typeNames , ",");
-			for (int i = 0 ; i < typeNames.size(); ++i){
-				cellTypesSet.insert(automaton->getTypeId(typeNames[i]));
-				
-			}
-
-
-			for (set<unsigned char>::iterator sitr = cellTypesSet.begin() ; sitr!=cellTypesSet.end() ;++sitr){
-				cerr<<"INCLUDIG CELL TYPE="<<(int)*sitr<<endl;
-			}
+        if (outputXMLElem->getFirstElement("Verbose")) {
+            verbose = true;
+            cerr << "verbose=" << verbose << endl;
+        }
 
 
-		}
-	}
+        if (outputXMLElem->getFirstElement("MeshOutputFormat")) {
+            meshOutputFormat = outputXMLElem->getFirstElement("MeshOutputFormat")->getText();
+        }
+
+        if (outputXMLElem->getFirstElement("IncludeCellTypes")) {
+            string celTypeStr = outputXMLElem->getFirstElement("IncludeCellTypes")->getText();
+            parseStringIntoList(celTypeStr, typeNames, ",");
+            for (int i = 0; i < typeNames.size(); ++i) {
+                cellTypesSet.insert(automaton->getTypeId(typeNames[i]));
+
+            }
 
 
-	//boundaryStrategy has information aobut pixel neighbors 
-	boundaryStrategy=BoundaryStrategy::getInstance();
+            for (set<unsigned char>::iterator sitr = cellTypesSet.begin(); sitr != cellTypesSet.end(); ++sitr) {
+                cerr << "INCLUDIG CELL TYPE=" << (int) *sitr << endl;
+            }
+
+
+        }
+    }
+
+
+    //boundaryStrategy has information aobut pixel neighbors
+    boundaryStrategy = BoundaryStrategy::getInstance();
 
 }
 
-std::string CleaverMeshDumper::toString(){
-	return "CleaverMeshDumper";
+std::string CleaverMeshDumper::toString() {
+    return "CleaverMeshDumper";
 }
 
-std::string CleaverMeshDumper::steerableName(){
-	return toString();
+std::string CleaverMeshDumper::steerableName() {
+    return toString();
 }
 

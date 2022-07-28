@@ -1,24 +1,4 @@
-/*************************************************************************
- *    CompuCell - A software framework for multimodel simulations of     *
- * biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
- *                             Indiana                                   *
- *                                                                       *
- * This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
- *  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
- *  CompuCell GNU General Public License RIDER you can redistribute it   *
- * and/or modify it under the terms of the GNU General Public License as *
- *  published by the Free Software Foundation; either version 2 of the   *
- *         License, or (at your option) any later version.               *
- *                                                                       *
- * This program is distributed in the hope that it will be useful, but   *
- *      WITHOUT ANY WARRANTY; without even the implied warranty of       *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
- *             General Public License for more details.                  *
- *                                                                       *
- *  You should have received a copy of the GNU General Public License    *
- *     along with this program; if not, write to the Free Software       *
- *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
- *************************************************************************/
+
 
 #include "AdvectionDiffusionSolverFE.h"
 #include "GPUEnabled.h"
@@ -54,15 +34,15 @@
 using namespace CompuCell3D;
 
 auto advectionDiffusionSolverProxy = registerPlugin<Steppable, AdvectionDiffusionSolverFE>(
-	"AdvectionDiffusionSolverFE", 
-	"Solves advection diffusion equation on the cell field",
-	&Simulator::steppableManager
+        "AdvectionDiffusionSolverFE",
+        "Solves advection diffusion equation on the cell field",
+        &Simulator::steppableManager
 );
 
 auto flexibleDiffusionSolverProxy = registerPlugin<Steppable, FlexibleDiffusionSolverFE>(
-	"FlexibleDiffusionSolverFE", 
-	"Solves diffusion equation on the lattice. Uses Forward Euler method - finite difference",
-	&Simulator::steppableManager
+        "FlexibleDiffusionSolverFE",
+        "Solves diffusion equation on the lattice. Uses Forward Euler method - finite difference",
+        &Simulator::steppableManager
 );
 
 // auto fiPySolverProxy = registerPlugin<Steppable, FiPySolver>(
@@ -72,33 +52,33 @@ auto flexibleDiffusionSolverProxy = registerPlugin<Steppable, FlexibleDiffusionS
 // );
 
 auto flexibleDiffusionSolverADEProxy = registerPlugin<Steppable, FlexibleDiffusionSolverADE>(
-	"FlexibleDiffusionSolverADE", 
-	"Solves diffusion equation on the lattice. Uses Alternate Direction Explicit method -  finite difference",
-	&Simulator::steppableManager
+        "FlexibleDiffusionSolverADE",
+        "Solves diffusion equation on the lattice. Uses Alternate Direction Explicit method -  finite difference",
+        &Simulator::steppableManager
 );
 
 auto kernelDiffusionSolverProxy = registerPlugin<Steppable, KernelDiffusionSolver>(
-	"KernelDiffusionSolver", 
-	"Solves diffusion equation on the lattice. Uses diffusion equation Green's Function to solve the equation ",
-	&Simulator::steppableManager
+        "KernelDiffusionSolver",
+        "Solves diffusion equation on the lattice. Uses diffusion equation Green's Function to solve the equation ",
+        &Simulator::steppableManager
 );
 
 auto reactionDiffusion_SavHogSolverProxy = registerPlugin<Steppable, ReactionDiffusionSolverFE_SavHog>(
-	"ReactionDiffusionSolverFE_SavHog", 
-	"Solves reaction-diffusion equation on the lattice - used in dictyostelium simulation",
-	&Simulator::steppableManager
+        "ReactionDiffusionSolverFE_SavHog",
+        "Solves reaction-diffusion equation on the lattice - used in dictyostelium simulation",
+        &Simulator::steppableManager
 );
 
 auto reactionDiffusionSolverProxy = registerPlugin<Steppable, ReactionDiffusionSolverFE>(
-	"ReactionDiffusionSolverFE", 
-	"Solves reaction-diffusion system of equations on the lattice ",
-	&Simulator::steppableManager
+        "ReactionDiffusionSolverFE",
+        "Solves reaction-diffusion system of equations on the lattice ",
+        &Simulator::steppableManager
 );
 
 auto flexibleReactionDiffusionSolverProxy = registerPlugin<Steppable, FlexibleReactionDiffusionSolverFE>(
-	"FlexibleReactionDiffusionSolverFE", 
-	"Solves reaction-diffusion system of equations on the lattice ",
-	&Simulator::steppableManager
+        "FlexibleReactionDiffusionSolverFE",
+        "Solves reaction-diffusion system of equations on the lattice ",
+        &Simulator::steppableManager
 );
 
 // auto reactionAdvectionDiffusionSolverProxy = registerPlugin<Steppable, ReactionAdvectionDiffusionSolverFE>(
@@ -112,23 +92,23 @@ auto flexibleReactionDiffusionSolverProxy = registerPlugin<Steppable, FlexibleRe
 // 	"Solves reaction-diffusion system of equations on the lattice ",
 // 	&Simulator::steppableManager
 // );
-       
+
 auto fastDiffusionSolverProxy = registerPlugin<Steppable, FastDiffusionSolver2DFE>(
-	"FastDiffusionSolver2DFE", 
-	"Solves diffusion equation on the lattice. Provides limited flexibility but is faster than FlexibleDiffusionSolver however operates only in the xy plane and is 2D only",
-	&Simulator::steppableManager
+        "FastDiffusionSolver2DFE",
+        "Solves diffusion equation on the lattice. Provides limited flexibility but is faster than FlexibleDiffusionSolver however operates only in the xy plane and is 2D only",
+        &Simulator::steppableManager
 );
 
 auto steadyStateDiffusionSolver2DProxy = registerPlugin<Steppable, SteadyStateDiffusionSolver2D>(
-	"SteadyStateDiffusionSolver2D", 
-	"Solves for steady state of diffusion equation in 2D.",
-	&Simulator::steppableManager
+        "SteadyStateDiffusionSolver2D",
+        "Solves for steady state of diffusion equation in 2D.",
+        &Simulator::steppableManager
 );
 
 auto steadyStateDiffusionSolverProxy = registerPlugin<Steppable, SteadyStateDiffusionSolver>(
-	"SteadyStateDiffusionSolver", 
-	"Solves for steady state of diffusion equation in 3D.",
-	&Simulator::steppableManager
+        "SteadyStateDiffusionSolver",
+        "Solves for steady state of diffusion equation in 3D.",
+        &Simulator::steppableManager
 );
 
 // auto scalableFlexibleDiffusionSolverProxy = registerPlugin<Steppable, ScalableFlexibleDiffusionSolverFE>(
@@ -137,34 +117,34 @@ auto steadyStateDiffusionSolverProxy = registerPlugin<Steppable, SteadyStateDiff
 // );
 
 auto diffusionSolverFEProxy = registerPlugin<Steppable, DiffusionSolverFE_CPU>(
-	"DiffusionSolverFE", 
-	"Solves diffusion equation on the lattice. Uses Forward Euler method - finite difference.  Also, uses automatic scaling.",
-	&Simulator::steppableManager
+        "DiffusionSolverFE",
+        "Solves diffusion equation on the lattice. Uses Forward Euler method - finite difference.  Also, uses automatic scaling.",
+        &Simulator::steppableManager
 );
 
 auto diffusionSolverFEImplicitProxy = registerPlugin<Steppable, DiffusionSolverFE_CPU_Implicit>(
-	"DiffusionSolverFE_Implicit", 
-	"Solves diffusion equation on the lattice. Uses Implicit method - finite difference.",
-	&Simulator::steppableManager
+        "DiffusionSolverFE_Implicit",
+        "Solves diffusion equation on the lattice. Uses Implicit method - finite difference.",
+        &Simulator::steppableManager
 );
-			
+
 #if OPENCL_ENABLED == 1
 auto diffusionSolverOpenCLProxy = registerPlugin<Steppable, DiffusionSolverFE_OpenCL>(
-	"DiffusionSolverFE_OpenCL", 
-	"Solves diffusion equation on the lattice with OpenCL. Uses Forward Euler method - finite difference.  Also, uses automatic scaling.",
-	&Simulator::steppableManager
+    "DiffusionSolverFE_OpenCL",
+    "Solves diffusion equation on the lattice with OpenCL. Uses Forward Euler method - finite difference.  Also, uses automatic scaling.",
+    &Simulator::steppableManager
 );
 
 // auto diffusionSolverOpenCLImplicitProxy = registerPlugin<Steppable, DiffusionSolverFE_OpenCL_Implicit>(
-// 	"DiffusionSolverFE_OpenCL_Implicit", 
+// 	"DiffusionSolverFE_OpenCL_Implicit",
 // 	"Solves diffusion equation on the lattice with OpenCL. Uses Implicit method - finite difference.",
 // 	&Simulator::steppableManager
 // );
 
 auto reactionDiffusionSolverOpenCLImplicitProxy = registerPlugin<Steppable, ReactionDiffusionSolverFE_OpenCL_Implicit>(
-	"ReactionDiffusionSolverFE_OpenCL_Implicit", 
-	"Solves diffusion equation on the lattice with OpenCL. Uses Implicit method - finite difference.",
-	&Simulator::steppableManager
+    "ReactionDiffusionSolverFE_OpenCL_Implicit",
+    "Solves diffusion equation on the lattice with OpenCL. Uses Implicit method - finite difference.",
+    &Simulator::steppableManager
 );
 
 #endif

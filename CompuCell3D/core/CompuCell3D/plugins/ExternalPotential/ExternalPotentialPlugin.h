@@ -7,84 +7,103 @@
 
 namespace CompuCell3D {
 
-	/**
-	@author m
-	*/
+    /**
+    @author m
+    */
 
-	class Simlator;
-	class Potts3D;
-	class AdjacentNeighbor;
-	template <class T> class Field3D;
-	class Potts3D;
-	class BoundaryStrategy;
+    class Simlator;
 
-	class EXTERNALPOTENTIAL_EXPORT ExternalPotentialParam{
-	public:
-		ExternalPotentialParam(){
-			lambdaVec.x=0.0;
-			lambdaVec.y=0.0;
-			lambdaVec.z=0.0;
-		}
-		Coordinates3D<float> lambdaVec;
-		std::string typeName;
-	};
+    class Potts3D;
 
-	class EXTERNALPOTENTIAL_EXPORT ExternalPotentialPlugin : public Plugin,public EnergyFunction
-	{
+    class AdjacentNeighbor;
 
-	private:
+    template<class T>
+    class Field3D;
 
-		Potts3D *potts;
-		AdjacentNeighbor  adjNeighbor;
-		CC3DXMLElement * xmlData;
-		Point3D boundaryConditionIndicator;
-		BoundaryStrategy *boundaryStrategy;
+    class Potts3D;
 
-		//EneryFunction data
-		Coordinates3D<float> lambdaVec;
+    class BoundaryStrategy;
 
-		AdjacentNeighbor  * adjNeighbor_ptr;
-		WatchableField3D<CellG *> *cellFieldG;
-		Dim3D fieldDim;
-		enum FunctionType {GLOBAL=0,BYCELLTYPE=1,BYCELLID=2};
-		FunctionType functionType;
-		std::unordered_map<unsigned char, ExternalPotentialParam> externalPotentialParamMap;
+    class EXTERNALPOTENTIAL_EXPORT ExternalPotentialParam {
+    public:
+        ExternalPotentialParam() {
+            lambdaVec.x = 0.0;
+            lambdaVec.y = 0.0;
+            lambdaVec.z = 0.0;
+        }
 
-		typedef double (ExternalPotentialPlugin::*changeEnergy_t)(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
+        Coordinates3D<float> lambdaVec;
+        std::string typeName;
+    };
 
-		ExternalPotentialPlugin::changeEnergy_t changeEnergyFcnPtr;
-		double changeEnergyGlobal(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
-		double changeEnergyByCellType(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
-		double changeEnergyByCellId(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
+    class EXTERNALPOTENTIAL_EXPORT ExternalPotentialPlugin : public Plugin, public EnergyFunction {
 
-		//COM based functions
-		double changeEnergyGlobalCOMBased(const Point3D &pt,  const CellG *newCell,const CellG *oldCell);
-		double changeEnergyByCellTypeCOMBased(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
-		double changeEnergyByCellIdCOMBased(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
+    private:
 
-		std::set<unsigned char> participatingTypes;
+        Potts3D *potts;
+        AdjacentNeighbor adjNeighbor;
+        CC3DXMLElement *xmlData;
+        Point3D boundaryConditionIndicator;
+        BoundaryStrategy *boundaryStrategy;
 
-	public:
-		ExternalPotentialPlugin();
+        //EnergyFunction data
+        Coordinates3D<float> lambdaVec;
 
-		~ExternalPotentialPlugin();
-		//plugin interface
-		virtual void init(Simulator *_simulator, CC3DXMLElement *_xmlData=0);
-		virtual void extraInit(Simulator *_simulator);
-		//energyFunction interface
-	  	virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+        AdjacentNeighbor *adjNeighbor_ptr;
+        WatchableField3D<CellG *> *cellFieldG;
+        Dim3D fieldDim;
+        enum FunctionType {
+            GLOBAL = 0, BYCELLTYPE = 1, BYCELLID = 2
+        };
+        FunctionType functionType;
+        std::unordered_map<unsigned char, ExternalPotentialParam> externalPotentialParamMap;
 
-		//steerable interface
-		virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
-		virtual std::string steerableName();
-		virtual std::string toString();
+        typedef double (ExternalPotentialPlugin::*changeEnergy_t)(const Point3D &pt, const CellG *newCell,
+                                                                  const CellG *oldCell);
 
-		//energyFunction mathods
+        ExternalPotentialPlugin::changeEnergy_t changeEnergyFcnPtr;
 
-		void initData();
+        double changeEnergyGlobal(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+
+        double changeEnergyByCellType(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+
+        double changeEnergyByCellId(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+
+        //COM based functions
+        double changeEnergyGlobalCOMBased(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+
+        double changeEnergyByCellTypeCOMBased(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+
+        double changeEnergyByCellIdCOMBased(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+
+        std::set<unsigned char> participatingTypes;
+
+    public:
+        ExternalPotentialPlugin();
+
+        ~ExternalPotentialPlugin();
+
+        //plugin interface
+        virtual void init(Simulator *_simulator, CC3DXMLElement *_xmlData = 0);
+
+        virtual void extraInit(Simulator *_simulator);
+
+        //energyFunction interface
+        virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+
+        //steerable interface
+        virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag = false);
+
+        virtual std::string steerableName();
+
+        virtual std::string toString();
+
+        //energyFunction methods
+
+        void initData();
 
 
-	};
+    };
 
 };
 

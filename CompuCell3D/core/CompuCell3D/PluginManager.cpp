@@ -1,32 +1,33 @@
 
 
 #include "PluginManager.h"
+
 using namespace CompuCell3D;
 using namespace std;
 
 template<typename PluginType>
-typename PluginManager<PluginType>::plugins_t & PluginManager<PluginType>::getPluginMap() { return plugins; }
+typename PluginManager<PluginType>::plugins_t &PluginManager<PluginType>::getPluginMap() { return plugins; }
 
 template<typename PluginType>
-typename PluginManager<PluginType>::infos_t& PluginManager<PluginType>::getPluginInfos() { return infos_list; }
+typename PluginManager<PluginType>::infos_t &PluginManager<PluginType>::getPluginInfos() { return infos_list; }
 
 template<typename PluginType>
-std::list<std::string> PluginManager<PluginType>::getLibraryNames() {
-    std::list<std::string> o;
-    for (auto& x: libHandles) o.push_back(x.first);
+std::list <std::string> PluginManager<PluginType>::getLibraryNames() {
+    std::list <std::string> o;
+    for (auto &x: libHandles) o.push_back(x.first);
     return o;
 }
 
 template<typename PluginType>
-PluginType* PluginManager<PluginType>::get(const std::string pluginName, bool* _alreadyRegistered) {
-    if (plugins[pluginName]){
+PluginType *PluginManager<PluginType>::get(const std::string pluginName, bool *_alreadyRegistered) {
+    if (plugins[pluginName]) {
         if (_alreadyRegistered)
             *_alreadyRegistered = true;
         return plugins[pluginName];
     }
 
     // Create the plugin
-    PluginType* plugin = getFactory(pluginName)->create();
+    PluginType *plugin = getFactory(pluginName)->create();
     init(plugin);
 
     plugins[pluginName] = plugin;
@@ -37,34 +38,37 @@ PluginType* PluginManager<PluginType>::get(const std::string pluginName, bool* _
 }
 
 template<typename PluginType>
-bool PluginManager<PluginType>::isLoaded(const std::string& pluginName) {
+bool PluginManager<PluginType>::isLoaded(const std::string &pluginName) {
     return plugins.find(pluginName) != plugins.end();
 }
 
 template<typename PluginType>
-bool PluginManager<PluginType>::isRegistered(const std::string& pluginName) {
+bool PluginManager<PluginType>::isRegistered(const std::string &pluginName) {
     return factories.find(pluginName) != factories.end();
 }
 
 template<typename PluginType>
-void PluginManager<PluginType>::registerDependency(const std::string& parentPlugin, const std::string& dependentPlugin) {
+void
+PluginManager<PluginType>::registerDependency(const std::string &parentPlugin, const std::string &dependentPlugin) {
     if (!isRegistered(parentPlugin)) throw CC3DException(std::string("Parent plugin not registered: ") + parentPlugin);
-    if (!isRegistered(dependentPlugin)) throw CC3DException(std::string("Dependent plugin not registered: ") + dependentPlugin);
+    if (!isRegistered(dependentPlugin))
+        throw CC3DException(std::string("Dependent plugin not registered: ") + dependentPlugin);
     infos[parentPlugin]->registerDependency(dependentPlugin);
 }
 
 template<typename PluginType>
-bool PluginManager<PluginType>::dependsOn(const std::string& parentPlugin, const std::string& dependentPlugin) {
+bool PluginManager<PluginType>::dependsOn(const std::string &parentPlugin, const std::string &dependentPlugin) {
     if (!isRegistered(parentPlugin)) throw CC3DException(std::string("Parent plugin not registered: ") + parentPlugin);
-    if (!isRegistered(dependentPlugin)) throw CC3DException(std::string("Dependent plugin not registered: ") + dependentPlugin);
+    if (!isRegistered(dependentPlugin))
+        throw CC3DException(std::string("Dependent plugin not registered: ") + dependentPlugin);
     return infos[parentPlugin]->dependsOn(dependentPlugin);
 }
 
 template<typename PluginType>
-void PluginManager<PluginType>::destroyPlugin(const std::string& pluginName) {
+void PluginManager<PluginType>::destroyPlugin(const std::string &pluginName) {
     if (!isLoaded(pluginName)) return;
 
-    PluginInfo* info = infos[pluginName];
+    PluginInfo *info = infos[pluginName];
 
     // Deallocate all dependencies
     for (unsigned int x = 0; x < info->getNumDeps(); x++) destroyPlugin(info->getDependency(x));
@@ -82,7 +86,7 @@ void PluginManager<PluginType>::unload() {
 }
 
 template<typename PluginType>
-void PluginManager<PluginType>::loadLibrary(const std::string& filename) {
+void PluginManager<PluginType>::loadLibrary(const std::string &filename) {
     // Get name
     auto pos = filename.find_last_of("/");
     std::string libName;
@@ -104,19 +108,19 @@ void PluginManager<PluginType>::loadLibrary(const std::string& filename) {
 }
 
 template<typename PluginType>
-void PluginManager<PluginType>::loadLibraryFromPath(const std::string& path) {
-    for (std::string f: filesInDir(path, "*" + libExtension)){
+void PluginManager<PluginType>::loadLibraryFromPath(const std::string &path) {
+    for (std::string f: filesInDir(path, "*" + libExtension)) {
         loadLibrary(f);
     }
 }
 
 template<typename PluginType>
 void PluginManager<PluginType>::loadLibraries(const std::string path) {
-    for (auto& s: splitString(path, pathDelim)) loadLibraryFromPath(s);
+    for (auto &s: splitString(path, pathDelim)) loadLibraryFromPath(s);
 }
 
 template<typename PluginType>
-void PluginManager<PluginType>::closeLibrary(const std::string& libName) {
+void PluginManager<PluginType>::closeLibrary(const std::string &libName) {
     if (!libHandles[libName]) return;
 
 #ifdef CC3D_ISWIN
@@ -135,29 +139,43 @@ void PluginManager<PluginType>::closeLibraries() {
 }
 
 template<typename PluginType>
-typename PluginManager<PluginType>::proxy_t* PluginManager<PluginType>::registerPlugin(PluginInfo* info, typename PluginManager<PluginType>::PluginFactory* factory) {
+typename PluginManager<PluginType>::proxy_t *PluginManager<PluginType>::registerPlugin(PluginInfo *info,
+                                                                                       typename PluginManager<PluginType>::PluginFactory *factory) {
     // Validate unique name
-    if (isRegistered(info->getName())) throw CC3DException(std::string("Plugin name is not unique: ") + info->getName());
+    if (isRegistered(info->getName()))
+        throw CC3DException(std::string("Plugin name is not unique: ") + info->getName());
 
     // Register
     infos[info->getName()] = info;
     infos_list.push_back(info);
     factories[info->getName()] = factory;
-    PluginManager<PluginType>::proxy_t* proxy = new PluginManager<PluginType>::proxy_t();
+    PluginManager<PluginType>::proxy_t *proxy = new PluginManager<PluginType>::proxy_t();
     proxies[info->getName()] = proxy;
     return proxy;
 }
 
 template<typename PluginType>
-typename PluginManager<PluginType>::PluginFactory* PluginManager<PluginType>::getFactory(const std::string& pluginName) {
+typename PluginManager<PluginType>::PluginFactory *
+PluginManager<PluginType>::getFactory(const std::string &pluginName) {
     if (!isRegistered(pluginName)) throw CC3DException(std::string("Plugin not registered: ") + pluginName);
     return factories[pluginName];
 }
 
 
-template class CompuCell3D::PluginProxy<Plugin>;
-template class CompuCell3D::PluginProxy<Steppable>;
-template class CompuCell3D::PluginProxy<PluginBase>;
-template class CompuCell3D::PluginManager<Plugin>;
-template class CompuCell3D::PluginManager<Steppable>;
-template class CompuCell3D::PluginManager<PluginBase>;
+template
+class CompuCell3D::PluginProxy<Plugin>;
+
+template
+class CompuCell3D::PluginProxy<Steppable>;
+
+template
+class CompuCell3D::PluginProxy<PluginBase>;
+
+template
+class CompuCell3D::PluginManager<Plugin>;
+
+template
+class CompuCell3D::PluginManager<Steppable>;
+
+template
+class CompuCell3D::PluginManager<PluginBase>;

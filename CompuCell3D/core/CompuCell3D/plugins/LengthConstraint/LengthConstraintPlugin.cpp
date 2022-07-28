@@ -1,24 +1,3 @@
-/*************************************************************************
-*    CompuCell - A software framework for multimodel simulations of     *
-* biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
-*                             Indiana                                   *
-*                                                                       *
-* This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
-*  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
-*  CompuCell GNU General Public License RIDER you can redistribute it   *
-* and/or modify it under the terms of the GNU General Public License as *
-*  published by the Free Software Foundation; either version 2 of the   *
-*         License, or (at your option) any later version.               *
-*                                                                       *
-* This program is distributed in the hope that it will be useful, but   *
-*      WITHOUT ANY WARRANTY; without even the implied warranty of       *
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
-*             General Public License for more details.                  *
-*                                                                       *
-*  You should have received a copy of the GNU General Public License    *
-*     along with this program; if not, write to the Free Software       *
-*      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
-*************************************************************************/
 #include <CompuCell3D/CC3D.h>
 #include <limits>
 
@@ -29,395 +8,434 @@ using namespace std;
 
 #include "LengthConstraintPlugin.h"
 
-LengthConstraintPlugin::LengthConstraintPlugin() : xmlData(0),potts(0),changeEnergyFcnPtr(0) 
-{}
+LengthConstraintPlugin::LengthConstraintPlugin() : xmlData(0), potts(0), changeEnergyFcnPtr(0) {}
 
 LengthConstraintPlugin::~LengthConstraintPlugin() {}
 
 void LengthConstraintPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
-	xmlData=_xmlData;
-	this->simulator=simulator;
-	potts = simulator->getPotts();
+    xmlData = _xmlData;
+    this->simulator = simulator;
+    potts = simulator->getPotts();
 
-	bool pluginAlreadyRegisteredFlag;
-	Plugin *plugin=Simulator::pluginManager.get("MomentOfInertia",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
-	if(!pluginAlreadyRegisteredFlag)
-		plugin->init(simulator);
+    bool pluginAlreadyRegisteredFlag;
+    Plugin *plugin = Simulator::pluginManager.get("MomentOfInertia",
+                                                  &pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
+    if (!pluginAlreadyRegisteredFlag)
+        plugin->init(simulator);
 
-	boundaryStrategy=BoundaryStrategy::getInstance();
+    boundaryStrategy = BoundaryStrategy::getInstance();
 
-	potts->getCellFactoryGroupPtr()->registerClass(&lengthConstraintDataAccessor);
-	potts->registerEnergyFunctionWithName(this,"LengthConstraint");
+    potts->getCellFactoryGroupPtr()->registerClass(&lengthConstraintDataAccessor);
+    potts->registerEnergyFunctionWithName(this, "LengthConstraint");
 
 
-	simulator->registerSteerableObject(this);
+    simulator->registerSteerableObject(this);
 
-	Dim3D fieldDim=potts->getCellFieldG()->getDim();
-	if(fieldDim.x==1){
-		changeEnergyFcnPtr=&LengthConstraintPlugin::changeEnergy_yz;
+    Dim3D fieldDim = potts->getCellFieldG()->getDim();
+    if (fieldDim.x == 1) {
+        changeEnergyFcnPtr = &LengthConstraintPlugin::changeEnergy_yz;
 
-	}else if(fieldDim.y==1){
-		changeEnergyFcnPtr=&LengthConstraintPlugin::changeEnergy_xz;
+    } else if (fieldDim.y == 1) {
+        changeEnergyFcnPtr = &LengthConstraintPlugin::changeEnergy_xz;
 
-	}else if (fieldDim.z==1){
-		changeEnergyFcnPtr=&LengthConstraintPlugin::changeEnergy_xy;
+    } else if (fieldDim.z == 1) {
+        changeEnergyFcnPtr = &LengthConstraintPlugin::changeEnergy_xy;
 
-	}else{
-		changeEnergyFcnPtr=&LengthConstraintPlugin::changeEnergy_3D;
-	}
+    } else {
+        changeEnergyFcnPtr = &LengthConstraintPlugin::changeEnergy_3D;
+    }
 
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void LengthConstraintPlugin::setLengthConstraintData(CellG * _cell, double _lambdaLength, double _targetLength ,double _minorTargetLength){
-	if(_cell){
-		lengthConstraintDataAccessor.get(_cell->extraAttribPtr)->lambdaLength=_lambdaLength;
-		lengthConstraintDataAccessor.get(_cell->extraAttribPtr)->targetLength=_targetLength;
-		lengthConstraintDataAccessor.get(_cell->extraAttribPtr)->minorTargetLength=_minorTargetLength;
-	}
+void LengthConstraintPlugin::setLengthConstraintData(CellG *_cell, double _lambdaLength, double _targetLength,
+                                                     double _minorTargetLength) {
+    if (_cell) {
+        lengthConstraintDataAccessor.get(_cell->extraAttribPtr)->lambdaLength = _lambdaLength;
+        lengthConstraintDataAccessor.get(_cell->extraAttribPtr)->targetLength = _targetLength;
+        lengthConstraintDataAccessor.get(_cell->extraAttribPtr)->minorTargetLength = _minorTargetLength;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+double LengthConstraintPlugin::getLambdaLength(CellG *_cell) {
+    if (_cell) {
+        return lengthConstraintDataAccessor.get(_cell->extraAttribPtr)->lambdaLength;
+    }
+    return 0.0;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+double LengthConstraintPlugin::getTargetLength(CellG *_cell) {
+    if (_cell) {
+        return lengthConstraintDataAccessor.get(_cell->extraAttribPtr)->targetLength;
+    }
+    return 0.0;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+double LengthConstraintPlugin::getMinorTargetLength(CellG *_cell) {
+    if (_cell) {
+        return lengthConstraintDataAccessor.get(_cell->extraAttribPtr)->minorTargetLength;
+    }
+    return 0.0;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-double LengthConstraintPlugin::getLambdaLength(CellG * _cell){
-	if (_cell){
-		return lengthConstraintDataAccessor.get(_cell->extraAttribPtr)->lambdaLength;
-	}
-	return 0.0;
-}
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-double LengthConstraintPlugin::getTargetLength(CellG * _cell){
-	if (_cell){
-		return lengthConstraintDataAccessor.get(_cell->extraAttribPtr)->targetLength;
-	}
-	return 0.0;
-}
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-double LengthConstraintPlugin::getMinorTargetLength(CellG * _cell){
-	if (_cell){
-		return lengthConstraintDataAccessor.get(_cell->extraAttribPtr)->minorTargetLength;
-	}
-	return 0.0;
-}
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void LengthConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
+void LengthConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
-	typeNameVec.clear();
-	lengthEnergyParamMap.clear();
-	Automaton* automaton = potts->getAutomaton();
+    typeNameVec.clear();
+    lengthEnergyParamMap.clear();
+    Automaton *automaton = potts->getAutomaton();
 
-	CC3DXMLElementList lengthEnergyParamVecXML=_xmlData->getElements("LengthEnergyParameters");
-	for (int i =0 ; i < lengthEnergyParamVecXML.size() ; ++i){
-		LengthEnergyParam lengthEnergyParam(
-			lengthEnergyParamVecXML[i]->getAttribute("CellType"),
-			lengthEnergyParamVecXML[i]->getAttributeAsDouble("TargetLength"),
-			lengthEnergyParamVecXML[i]->getAttributeAsDouble("LambdaLength")
-			);
+    CC3DXMLElementList lengthEnergyParamVecXML = _xmlData->getElements("LengthEnergyParameters");
+    for (int i = 0; i < lengthEnergyParamVecXML.size(); ++i) {
+        LengthEnergyParam lengthEnergyParam(
+                lengthEnergyParamVecXML[i]->getAttribute("CellType"),
+                lengthEnergyParamVecXML[i]->getAttributeAsDouble("TargetLength"),
+                lengthEnergyParamVecXML[i]->getAttributeAsDouble("LambdaLength")
+        );
 
-		if(lengthEnergyParamVecXML[i]->findAttribute("MinorTargetLength") ){
-			lengthEnergyParam.minorTargetLength=lengthEnergyParamVecXML[i]->getAttributeAsDouble("MinorTargetLength");
-		}
+        if (lengthEnergyParamVecXML[i]->findAttribute("MinorTargetLength")) {
+            lengthEnergyParam.minorTargetLength = lengthEnergyParamVecXML[i]->getAttributeAsDouble("MinorTargetLength");
+        }
 
-		typeNameVec.push_back(lengthEnergyParam.cellTypeName);
-		lengthEnergyParamMap[automaton->getTypeId(lengthEnergyParam.cellTypeName)] = lengthEnergyParam;
-	}
-	//have to make sure that potts ptr is initilized
-	if (!potts) throw CC3DException("Potts pointer is unitialized");
+        typeNameVec.push_back(lengthEnergyParam.cellTypeName);
+        lengthEnergyParamMap[automaton->getTypeId(lengthEnergyParam.cellTypeName)] = lengthEnergyParam;
+    }
+    //have to make sure that potts ptr is initilized
+    if (!potts) throw CC3DException("Potts pointer is unitialized");
 }
 
 
-void LengthConstraintPlugin::extraInit(Simulator *simulator){
-	update(xmlData,true);
+void LengthConstraintPlugin::extraInit(Simulator *simulator) {
+    update(xmlData, true);
 }
 
-double LengthConstraintPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
+double LengthConstraintPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
 
 
-	/// E = lambda * (length - targetLength) ^ 2 
-	if (oldCell == newCell) return 0.0;
-    double energy = (this->*changeEnergyFcnPtr)(pt,newCell,oldCell);
+    /// E = lambda * (length - targetLength) ^ 2
+    if (oldCell == newCell) return 0.0;
+    double energy = (this->*changeEnergyFcnPtr)(pt, newCell, oldCell);
 
     return _get_non_nan_energy(energy);
 
 }
 
 
-double LengthConstraintPlugin::changeEnergy_xz(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
+double LengthConstraintPlugin::changeEnergy_xz(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
 
 
-	// Assumption: COM and Volume has not been updated.
+    // Assumption: COM and Volume has not been updated.
 
-	/// E = lambda * (length - targetLength) ^ 2
+    /// E = lambda * (length - targetLength) ^ 2
 
-	//Center of mass, length constraints calculations are done withou checking whether cell volume reaches 0 or not
-	// when cell is about to disappear this results in Nan values of energy - because division by 0 is involved or
-	// sqrt(expression involving compoinents of inertia tensor) is NaN
-	//in all such cases we set energy to 0 i.e. if energy=Nan we set it to energy=0.0
+    //Center of mass, length constraints calculations are done withou checking whether cell volume reaches 0 or not
+    // when cell is about to disappear this results in Nan values of energy - because division by 0 is involved or
+    // sqrt(expression involving compoinents of inertia tensor) is NaN
+    //in all such cases we set energy to 0 i.e. if energy=Nan we set it to energy=0.0
 
-	double energy = 0.0;
+    double energy = 0.0;
 
-	Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);
-	//as in the original version
-	if (newCell){
+    Coordinates3D<double> ptTrans = boundaryStrategy->calculatePointCoordinates(pt);
+    //as in the original version
+    if (newCell) {
 
-		//local definitions of length constraint have priority over by type definitions
-		double lambdaLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->lambdaLength;;
-		double targetLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->targetLength;;
+        //local definitions of length constraint have priority over by type definitions
+        double lambdaLength = lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->lambdaLength;;
+        double targetLength = lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->targetLength;;
 
-		if(lambdaLength==0.0) {
-			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(newCell->type);
-			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
-				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
-				targetLength=lengthEnergyParamMapItr->second.targetLength;
-			}
-		}
-		//we can optimize it further in case user does not specify local paramteress (i.e. per cell id and by-type definition is not specified as well)
+        if (lambdaLength == 0.0) {
+            auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(newCell->type);
+            if (lengthEnergyParamMapItr != lengthEnergyParamMap.end()) {
+                lambdaLength = lengthEnergyParamMapItr->second.lambdaLength;
+                targetLength = lengthEnergyParamMapItr->second.targetLength;
+            }
+        }
+        //we can optimize it further in case user does not specify local paramteress (i.e. per cell id and by-type definition is not specified as well)
 
-		double xcm = (newCell->xCM / (float) newCell->volume);
-		double zcm = (newCell->zCM / (float) newCell->volume);
-		double newXCM = (newCell->xCM + ptTrans.x)/((float)newCell->volume + 1);
-		double newZCM = (newCell->zCM + ptTrans.z)/((float)newCell->volume + 1);
+        double xcm = (newCell->xCM / (float) newCell->volume);
+        double zcm = (newCell->zCM / (float) newCell->volume);
+        double newXCM = (newCell->xCM + ptTrans.x) / ((float) newCell->volume + 1);
+        double newZCM = (newCell->zCM + ptTrans.z) / ((float) newCell->volume + 1);
 
-		double newIxx=newCell->iXX+(newCell->volume )*zcm*zcm-(newCell->volume+1)*(newZCM*newZCM)+ptTrans.z*ptTrans.z;
-		double newIzz=newCell->iZZ+(newCell->volume )*xcm*xcm-(newCell->volume+1)*(newXCM*newXCM)+ptTrans.x*ptTrans.x;
-		double newIxz=newCell->iXZ-(newCell->volume )*xcm*zcm+(newCell->volume+1)*newXCM*newZCM-ptTrans.x*ptTrans.z;
+        double newIxx = newCell->iXX + (newCell->volume) * zcm * zcm - (newCell->volume + 1) * (newZCM * newZCM) +
+                        ptTrans.z * ptTrans.z;
+        double newIzz = newCell->iZZ + (newCell->volume) * xcm * xcm - (newCell->volume + 1) * (newXCM * newXCM) +
+                        ptTrans.x * ptTrans.x;
+        double newIxz = newCell->iXZ - (newCell->volume) * xcm * zcm + (newCell->volume + 1) * newXCM * newZCM -
+                        ptTrans.x * ptTrans.z;
 
-		double currLength = 4.0*sqrt(((float)((0.5*(newCell->iXX + newCell->iZZ)) + .5*sqrt((float)((newCell->iXX - newCell->iZZ)*(newCell->iXX - newCell->iZZ) + 4*(newCell->iXZ)*(newCell->iXZ)))))/(float)(newCell->volume));
+        double currLength = 4.0 * sqrt(((float) ((0.5 * (newCell->iXX + newCell->iZZ)) + .5 * sqrt((float) (
+                (newCell->iXX - newCell->iZZ) * (newCell->iXX - newCell->iZZ) +
+                4 * (newCell->iXZ) * (newCell->iXZ))))) / (float) (newCell->volume));
 
-		double currEnergy = lambdaLength * (currLength - targetLength)*(currLength - targetLength);
-		double newLength = 4.0*sqrt(((float)((0.5*(newIxx + newIzz)) + .5*sqrt((float)((newIxx - newIzz)*(newIxx - newIzz) + 4*newIxz*newIxz))))/(float)(newCell->volume+1));
-		double newEnergy = lambdaLength * (newLength - targetLength)*(newLength - targetLength);
-		energy += newEnergy - currEnergy;
-	}
-	if (oldCell) {
-		//local definitions of length constraint have priority over by type definitions
-		double lambdaLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->lambdaLength;;
-		double targetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
+        double currEnergy = lambdaLength * (currLength - targetLength) * (currLength - targetLength);
+        double newLength = 4.0 * sqrt(((float) ((0.5 * (newIxx + newIzz)) + .5 * sqrt((float) (
+                (newIxx - newIzz) * (newIxx - newIzz) + 4 * newIxz * newIxz)))) / (float) (newCell->volume + 1));
+        double newEnergy = lambdaLength * (newLength - targetLength) * (newLength - targetLength);
+        energy += newEnergy - currEnergy;
+    }
+    if (oldCell) {
+        //local definitions of length constraint have priority over by type definitions
+        double lambdaLength = lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->lambdaLength;;
+        double targetLength = lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
 
-		if(lambdaLength==0.0) {
-			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
-			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
-				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
-				targetLength=lengthEnergyParamMapItr->second.targetLength;
-			}
-		}
+        if (lambdaLength == 0.0) {
+            auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
+            if (lengthEnergyParamMapItr != lengthEnergyParamMap.end()) {
+                lambdaLength = lengthEnergyParamMapItr->second.lambdaLength;
+                targetLength = lengthEnergyParamMapItr->second.targetLength;
+            }
+        }
 
-		double xcm = (oldCell->xCM / (float) oldCell->volume);
-		double zcm = (oldCell->zCM / (float) oldCell->volume);
-		double newXCM = (oldCell->xCM - ptTrans.x)/((float)oldCell->volume - 1);
-		double newZCM = (oldCell->zCM - ptTrans.z)/((float)oldCell->volume - 1);
+        double xcm = (oldCell->xCM / (float) oldCell->volume);
+        double zcm = (oldCell->zCM / (float) oldCell->volume);
+        double newXCM = (oldCell->xCM - ptTrans.x) / ((float) oldCell->volume - 1);
+        double newZCM = (oldCell->zCM - ptTrans.z) / ((float) oldCell->volume - 1);
 
-		double newIxx =oldCell->iXX+(oldCell->volume )*(zcm*zcm)-(oldCell->volume-1)*(newZCM*newZCM)-ptTrans.z*ptTrans.z;
-		double newIzz =oldCell->iZZ+(oldCell->volume )*(xcm*xcm)-(oldCell->volume-1)*(newXCM*newXCM)-ptTrans.x*ptTrans.x;
-		double newIxz =oldCell->iXZ-(oldCell->volume )*(xcm*zcm)+(oldCell->volume-1)*newXCM*newZCM+ptTrans.x*ptTrans.z;
+        double newIxx = oldCell->iXX + (oldCell->volume) * (zcm * zcm) - (oldCell->volume - 1) * (newZCM * newZCM) -
+                        ptTrans.z * ptTrans.z;
+        double newIzz = oldCell->iZZ + (oldCell->volume) * (xcm * xcm) - (oldCell->volume - 1) * (newXCM * newXCM) -
+                        ptTrans.x * ptTrans.x;
+        double newIxz = oldCell->iXZ - (oldCell->volume) * (xcm * zcm) + (oldCell->volume - 1) * newXCM * newZCM +
+                        ptTrans.x * ptTrans.z;
 
-		double currLength = 4.0*sqrt(((float)((0.5*(oldCell->iXX + oldCell->iZZ)) + .5*sqrt((float)((oldCell->iXX - oldCell->iZZ)*(oldCell->iXX - oldCell->iZZ) + 4*(oldCell->iXZ)*(oldCell->iXZ)))))/(float)(oldCell->volume));
-		double currEnergy = lambdaLength * (currLength - targetLength)*(currLength - targetLength);
-		double newLength;
-		if(oldCell->volume<=1){
-			newLength = 0.0;
-		}else{
-			newLength = 4.0*sqrt(((float)((0.5*(newIxx + newIzz)) + .5*sqrt((float)((newIxx - newIzz)*(newIxx - newIzz) + 4*newIxz*newIxz))))/(float)(oldCell->volume-1));
-		}
+        double currLength = 4.0 * sqrt(((float) ((0.5 * (oldCell->iXX + oldCell->iZZ)) + .5 * sqrt((float) (
+                (oldCell->iXX - oldCell->iZZ) * (oldCell->iXX - oldCell->iZZ) +
+                4 * (oldCell->iXZ) * (oldCell->iXZ))))) / (float) (oldCell->volume));
+        double currEnergy = lambdaLength * (currLength - targetLength) * (currLength - targetLength);
+        double newLength;
+        if (oldCell->volume <= 1) {
+            newLength = 0.0;
+        } else {
+            newLength = 4.0 * sqrt(((float) ((0.5 * (newIxx + newIzz)) + .5 * sqrt((float) (
+                    (newIxx - newIzz) * (newIxx - newIzz) + 4 * newIxz * newIxz)))) / (float) (oldCell->volume - 1));
+        }
 
-		double newEnergy = lambdaLength * (newLength - targetLength) * (newLength - targetLength);
-		energy += newEnergy - currEnergy;
-	}
-
-    return energy;
-}
-
-
-double LengthConstraintPlugin::changeEnergy_xy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
-
-	// Assumption: COM and Volume has not been updated.
-
-	/// E = lambda * (length - targetLength) ^ 2
-
-	//Center of mass, length constraints calculations are done withou checking whether cell volume reaches 0 or not
-	// when cell is about to disappear this results in Nan values of energy - because division by 0 is involved or
-	// sqrt(expression involving compoinents of inertia tensor) is NaN
-	//in all such cases we set energy to 0 i.e. if energy=Nan we set it to energy=0.0
-
-	double energy = 0.0;
-
-	Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);
-
-	//as in the original version
-	if (newCell){
-		//local definitions of length constraint have priority over by type definitions
-		double lambdaLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->lambdaLength;;
-		double targetLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->targetLength;;
-
-		if(lambdaLength==0.0) {
-			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(newCell->type);
-			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
-				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
-				targetLength=lengthEnergyParamMapItr->second.targetLength;
-			}
-		}
-
-		double xcm = (newCell->xCM / (float) newCell->volume);
-		double ycm = (newCell->yCM / (float) newCell->volume);
-		double newXCM = (newCell->xCM + ptTrans.x)/((float)newCell->volume + 1);
-		double newYCM = (newCell->yCM + ptTrans.y)/((float)newCell->volume + 1);
-
-		double newIxx=newCell->iXX+(newCell->volume )*ycm*ycm-(newCell->volume+1)*(newYCM*newYCM)+ptTrans.y*ptTrans.y;
-		double newIyy=newCell->iYY+(newCell->volume )*xcm*xcm-(newCell->volume+1)*(newXCM*newXCM)+ptTrans.x*ptTrans.x;
-		double newIxy=newCell->iXY-(newCell->volume )*xcm*ycm+(newCell->volume+1)*newXCM*newYCM-ptTrans.x*ptTrans.y;
-
-		double currLength = 4.0*sqrt(((float)((0.5*(newCell->iXX + newCell->iYY)) + .5*sqrt((float)((newCell->iXX - newCell->iYY)*(newCell->iXX - newCell->iYY) + 4*(newCell->iXY)*(newCell->iXY)))))/(float)(newCell->volume));
-
-		double currEnergy = lambdaLength * (currLength - targetLength)*(currLength - targetLength);
-		double newLength = 4.0*sqrt(((float)((0.5*(newIxx + newIyy)) + .5*sqrt((float)((newIxx - newIyy)*(newIxx - newIyy) + 4*newIxy*newIxy))))/(float)(newCell->volume+1));
-		double newEnergy = lambdaLength * (newLength - targetLength)*(newLength - targetLength);
-		energy += newEnergy - currEnergy;
-	}
-	if (oldCell) {
-		//local definitions of length constraint have priority over by type definitions
-		double lambdaLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->lambdaLength;;
-		double targetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
-
-		if(lambdaLength==0.0) {
-			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
-			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
-				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
-				targetLength=lengthEnergyParamMapItr->second.targetLength;
-			}
-		}
-
-		double xcm = (oldCell->xCM / (float) oldCell->volume);
-		double ycm = (oldCell->yCM / (float) oldCell->volume);
-		double newXCM = (oldCell->xCM - ptTrans.x)/((float)oldCell->volume - 1);
-		double newYCM = (oldCell->yCM - ptTrans.y)/((float)oldCell->volume - 1);
-
-		double newIxx =oldCell->iXX+(oldCell->volume )*(ycm*ycm)-(oldCell->volume-1)*(newYCM*newYCM)-ptTrans.y*ptTrans.y;
-		double newIyy =oldCell->iYY+(oldCell->volume )*(xcm*xcm)-(oldCell->volume-1)*(newXCM*newXCM)-ptTrans.x*ptTrans.x;
-		double newIxy =oldCell->iXY-(oldCell->volume )*(xcm*ycm)+(oldCell->volume-1)*newXCM*newYCM+ptTrans.x*ptTrans.y;
-
-		double currLength = 4.0*sqrt(((float)((0.5*(oldCell->iXX + oldCell->iYY)) + .5*sqrt((float)((oldCell->iXX - oldCell->iYY)*(oldCell->iXX - oldCell->iYY) + 4*(oldCell->iXY)*(oldCell->iXY)))))/(float)(oldCell->volume));
-		double currEnergy = lambdaLength * (currLength - targetLength)*(currLength - targetLength);
-
-		double newLength;
-		if(oldCell->volume<=1){
-			newLength = 0.0;
-		}else{
-			newLength = 4.0*sqrt(((float)((0.5*(newIxx + newIyy)) + .5*sqrt((float)((newIxx - newIyy)*(newIxx - newIyy) + 4*newIxy*newIxy))))/(float)(oldCell->volume-1));
-		}
-
-		double newEnergy = lambdaLength * (newLength - targetLength) * (newLength - targetLength);
-
-		energy += newEnergy - currEnergy;
-	}
+        double newEnergy = lambdaLength * (newLength - targetLength) * (newLength - targetLength);
+        energy += newEnergy - currEnergy;
+    }
 
     return energy;
 }
 
 
-double LengthConstraintPlugin::changeEnergy_yz(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
+double LengthConstraintPlugin::changeEnergy_xy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
 
-	// Assumption: COM and Volume has not been updated.
+    // Assumption: COM and Volume has not been updated.
 
-	/// E = lambda * (length - targetLength) ^ 2
+    /// E = lambda * (length - targetLength) ^ 2
 
-	//Center of mass, length constraints calculations are done withou checking whether cell volume reaches 0 or not
-	// when cell is about to disappear this results in Nan values of energy - because division by 0 is involved or
-	// sqrt(expression involving compoinents of inertia tensor) is NaN
-	//in all such cases we set energy to 0 i.e. if energy=Nan we set it to energy=0.0
+    //Center of mass, length constraints calculations are done withou checking whether cell volume reaches 0 or not
+    // when cell is about to disappear this results in Nan values of energy - because division by 0 is involved or
+    // sqrt(expression involving compoinents of inertia tensor) is NaN
+    //in all such cases we set energy to 0 i.e. if energy=Nan we set it to energy=0.0
 
-	double energy = 0.0;
+    double energy = 0.0;
 
-	Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);
-	//as in the original version
-	if (newCell){
-		//local definitions of length constraint have priority over by type definitions
-		double lambdaLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->lambdaLength;;
-		double targetLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->targetLength;;
+    Coordinates3D<double> ptTrans = boundaryStrategy->calculatePointCoordinates(pt);
 
-		if(lambdaLength==0.0 ) {
-			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(newCell->type);
-			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
-				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
-				targetLength=lengthEnergyParamMapItr->second.targetLength;
-			}
-		}
+    //as in the original version
+    if (newCell) {
+        //local definitions of length constraint have priority over by type definitions
+        double lambdaLength = lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->lambdaLength;;
+        double targetLength = lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->targetLength;;
 
-		double ycm = (newCell->yCM / (float) newCell->volume);
-		double zcm = (newCell->zCM / (float) newCell->volume);
-		double newYCM = (newCell->yCM + ptTrans.y)/((float)newCell->volume + 1);
-		double newZCM = (newCell->zCM + ptTrans.z)/((float)newCell->volume + 1);
+        if (lambdaLength == 0.0) {
+            auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(newCell->type);
+            if (lengthEnergyParamMapItr != lengthEnergyParamMap.end()) {
+                lambdaLength = lengthEnergyParamMapItr->second.lambdaLength;
+                targetLength = lengthEnergyParamMapItr->second.targetLength;
+            }
+        }
 
-		double newIyy=newCell->iYY+(newCell->volume )*zcm*zcm-(newCell->volume+1)*(newZCM*newZCM)+ptTrans.z*ptTrans.z;
-		double newIzz=newCell->iZZ+(newCell->volume )*ycm*ycm-(newCell->volume+1)*(newYCM*newYCM)+ptTrans.y*ptTrans.y;
-		double newIyz=newCell->iYZ-(newCell->volume )*ycm*zcm+(newCell->volume+1)*newYCM*newZCM-ptTrans.y*ptTrans.z;
+        double xcm = (newCell->xCM / (float) newCell->volume);
+        double ycm = (newCell->yCM / (float) newCell->volume);
+        double newXCM = (newCell->xCM + ptTrans.x) / ((float) newCell->volume + 1);
+        double newYCM = (newCell->yCM + ptTrans.y) / ((float) newCell->volume + 1);
+
+        double newIxx = newCell->iXX + (newCell->volume) * ycm * ycm - (newCell->volume + 1) * (newYCM * newYCM) +
+                        ptTrans.y * ptTrans.y;
+        double newIyy = newCell->iYY + (newCell->volume) * xcm * xcm - (newCell->volume + 1) * (newXCM * newXCM) +
+                        ptTrans.x * ptTrans.x;
+        double newIxy = newCell->iXY - (newCell->volume) * xcm * ycm + (newCell->volume + 1) * newXCM * newYCM -
+                        ptTrans.x * ptTrans.y;
+
+        double currLength = 4.0 * sqrt(((float) ((0.5 * (newCell->iXX + newCell->iYY)) + .5 * sqrt((float) (
+                (newCell->iXX - newCell->iYY) * (newCell->iXX - newCell->iYY) +
+                4 * (newCell->iXY) * (newCell->iXY))))) / (float) (newCell->volume));
+
+        double currEnergy = lambdaLength * (currLength - targetLength) * (currLength - targetLength);
+        double newLength = 4.0 * sqrt(((float) ((0.5 * (newIxx + newIyy)) + .5 * sqrt((float) (
+                (newIxx - newIyy) * (newIxx - newIyy) + 4 * newIxy * newIxy)))) / (float) (newCell->volume + 1));
+        double newEnergy = lambdaLength * (newLength - targetLength) * (newLength - targetLength);
+        energy += newEnergy - currEnergy;
+    }
+    if (oldCell) {
+        //local definitions of length constraint have priority over by type definitions
+        double lambdaLength = lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->lambdaLength;;
+        double targetLength = lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
+
+        if (lambdaLength == 0.0) {
+            auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
+            if (lengthEnergyParamMapItr != lengthEnergyParamMap.end()) {
+                lambdaLength = lengthEnergyParamMapItr->second.lambdaLength;
+                targetLength = lengthEnergyParamMapItr->second.targetLength;
+            }
+        }
+
+        double xcm = (oldCell->xCM / (float) oldCell->volume);
+        double ycm = (oldCell->yCM / (float) oldCell->volume);
+        double newXCM = (oldCell->xCM - ptTrans.x) / ((float) oldCell->volume - 1);
+        double newYCM = (oldCell->yCM - ptTrans.y) / ((float) oldCell->volume - 1);
+
+        double newIxx = oldCell->iXX + (oldCell->volume) * (ycm * ycm) - (oldCell->volume - 1) * (newYCM * newYCM) -
+                        ptTrans.y * ptTrans.y;
+        double newIyy = oldCell->iYY + (oldCell->volume) * (xcm * xcm) - (oldCell->volume - 1) * (newXCM * newXCM) -
+                        ptTrans.x * ptTrans.x;
+        double newIxy = oldCell->iXY - (oldCell->volume) * (xcm * ycm) + (oldCell->volume - 1) * newXCM * newYCM +
+                        ptTrans.x * ptTrans.y;
+
+        double currLength = 4.0 * sqrt(((float) ((0.5 * (oldCell->iXX + oldCell->iYY)) + .5 * sqrt((float) (
+                (oldCell->iXX - oldCell->iYY) * (oldCell->iXX - oldCell->iYY) +
+                4 * (oldCell->iXY) * (oldCell->iXY))))) / (float) (oldCell->volume));
+        double currEnergy = lambdaLength * (currLength - targetLength) * (currLength - targetLength);
+
+        double newLength;
+        if (oldCell->volume <= 1) {
+            newLength = 0.0;
+        } else {
+            newLength = 4.0 * sqrt(((float) ((0.5 * (newIxx + newIyy)) + .5 * sqrt((float) (
+                    (newIxx - newIyy) * (newIxx - newIyy) + 4 * newIxy * newIxy)))) / (float) (oldCell->volume - 1));
+        }
+
+        double newEnergy = lambdaLength * (newLength - targetLength) * (newLength - targetLength);
+
+        energy += newEnergy - currEnergy;
+    }
+
+    return energy;
+}
 
 
-		double currLength = 4.0*sqrt(((float)((0.5*(newCell->iYY + newCell->iZZ)) + .5*sqrt((float)((newCell->iYY - newCell->iZZ)*(newCell->iYY - newCell->iZZ) + 4*(newCell->iYZ)*(newCell->iYZ)))))/(float)(newCell->volume));
+double LengthConstraintPlugin::changeEnergy_yz(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
 
-		double currEnergy = lambdaLength * (currLength - targetLength)*(currLength - targetLength);
-		double newLength = 4.0*sqrt(((float)((0.5*(newIyy + newIzz)) + .5*sqrt((float)((newIyy - newIzz)*(newIyy - newIzz) + 4*newIyz*newIyz))))/(float)(newCell->volume+1));
-		double newEnergy = lambdaLength * (newLength - targetLength)*(newLength - targetLength);
-		energy += newEnergy - currEnergy;
-	}
-	if (oldCell) {
-		//local definitions of length constraint have priority over by type definitions
-		double lambdaLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->lambdaLength;;
-		double targetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
+    // Assumption: COM and Volume has not been updated.
 
-		if(lambdaLength==0.0 ) {
-			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
-			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
-				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
-				targetLength=lengthEnergyParamMapItr->second.targetLength;
-			}
-		}
+    /// E = lambda * (length - targetLength) ^ 2
 
-		double ycm = (oldCell->yCM / (float) oldCell->volume);
-		double zcm = (oldCell->zCM / (float) oldCell->volume);
-		double newYCM = (oldCell->yCM - ptTrans.y)/((float)oldCell->volume - 1);
-		double newZCM = (oldCell->zCM - ptTrans.z)/((float)oldCell->volume - 1);
+    //Center of mass, length constraints calculations are done withou checking whether cell volume reaches 0 or not
+    // when cell is about to disappear this results in Nan values of energy - because division by 0 is involved or
+    // sqrt(expression involving compoinents of inertia tensor) is NaN
+    //in all such cases we set energy to 0 i.e. if energy=Nan we set it to energy=0.0
 
-		double newIyy =oldCell->iYY+(oldCell->volume )*(zcm*zcm)-(oldCell->volume-1)*(newZCM*newZCM)-ptTrans.z*ptTrans.z;
-		double newIzz =oldCell->iZZ+(oldCell->volume )*(ycm*ycm)-(oldCell->volume-1)*(newYCM*newYCM)-ptTrans.y*ptTrans.y;
-		double newIyz =oldCell->iYZ-(oldCell->volume )*(ycm*zcm)+(oldCell->volume-1)*newYCM*newZCM+ptTrans.y*ptTrans.z;
+    double energy = 0.0;
 
+    Coordinates3D<double> ptTrans = boundaryStrategy->calculatePointCoordinates(pt);
+    //as in the original version
+    if (newCell) {
+        //local definitions of length constraint have priority over by type definitions
+        double lambdaLength = lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->lambdaLength;;
+        double targetLength = lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->targetLength;;
 
+        if (lambdaLength == 0.0) {
+            auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(newCell->type);
+            if (lengthEnergyParamMapItr != lengthEnergyParamMap.end()) {
+                lambdaLength = lengthEnergyParamMapItr->second.lambdaLength;
+                targetLength = lengthEnergyParamMapItr->second.targetLength;
+            }
+        }
 
-		double currLength = 4.0*sqrt(((float)((0.5*(oldCell->iYY + oldCell->iZZ)) + .5*sqrt((float)((oldCell->iYY - oldCell->iZZ)*(oldCell->iYY - oldCell->iZZ) + 4*(oldCell->iYZ)*(oldCell->iYZ)))))/(float)(oldCell->volume));
+        double ycm = (newCell->yCM / (float) newCell->volume);
+        double zcm = (newCell->zCM / (float) newCell->volume);
+        double newYCM = (newCell->yCM + ptTrans.y) / ((float) newCell->volume + 1);
+        double newZCM = (newCell->zCM + ptTrans.z) / ((float) newCell->volume + 1);
 
-		double currEnergy = lambdaLength * (currLength - targetLength)*(currLength - targetLength);
-
-		double newLength;
-		if(oldCell->volume<=1){
-			newLength = 0.0;
-		}else{
-			newLength = 4.0*sqrt(((float)((0.5*(newIyy + newIzz)) + .5*sqrt((float)((newIyy - newIzz)*(newIyy - newIzz) + 4*newIyz*newIyz))))/(float)(oldCell->volume-1));
-		}
+        double newIyy = newCell->iYY + (newCell->volume) * zcm * zcm - (newCell->volume + 1) * (newZCM * newZCM) +
+                        ptTrans.z * ptTrans.z;
+        double newIzz = newCell->iZZ + (newCell->volume) * ycm * ycm - (newCell->volume + 1) * (newYCM * newYCM) +
+                        ptTrans.y * ptTrans.y;
+        double newIyz = newCell->iYZ - (newCell->volume) * ycm * zcm + (newCell->volume + 1) * newYCM * newZCM -
+                        ptTrans.y * ptTrans.z;
 
 
-		double newEnergy = lambdaLength * (newLength - targetLength) * (newLength - targetLength);
-		energy += newEnergy - currEnergy;
-	}
+        double currLength = 4.0 * sqrt(((float) ((0.5 * (newCell->iYY + newCell->iZZ)) + .5 * sqrt((float) (
+                (newCell->iYY - newCell->iZZ) * (newCell->iYY - newCell->iZZ) +
+                4 * (newCell->iYZ) * (newCell->iYZ))))) / (float) (newCell->volume));
+
+        double currEnergy = lambdaLength * (currLength - targetLength) * (currLength - targetLength);
+        double newLength = 4.0 * sqrt(((float) ((0.5 * (newIyy + newIzz)) + .5 * sqrt((float) (
+                (newIyy - newIzz) * (newIyy - newIzz) + 4 * newIyz * newIyz)))) / (float) (newCell->volume + 1));
+        double newEnergy = lambdaLength * (newLength - targetLength) * (newLength - targetLength);
+        energy += newEnergy - currEnergy;
+    }
+    if (oldCell) {
+        //local definitions of length constraint have priority over by type definitions
+        double lambdaLength = lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->lambdaLength;;
+        double targetLength = lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
+
+        if (lambdaLength == 0.0) {
+            auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
+            if (lengthEnergyParamMapItr != lengthEnergyParamMap.end()) {
+                lambdaLength = lengthEnergyParamMapItr->second.lambdaLength;
+                targetLength = lengthEnergyParamMapItr->second.targetLength;
+            }
+        }
+
+        double ycm = (oldCell->yCM / (float) oldCell->volume);
+        double zcm = (oldCell->zCM / (float) oldCell->volume);
+        double newYCM = (oldCell->yCM - ptTrans.y) / ((float) oldCell->volume - 1);
+        double newZCM = (oldCell->zCM - ptTrans.z) / ((float) oldCell->volume - 1);
+
+        double newIyy = oldCell->iYY + (oldCell->volume) * (zcm * zcm) - (oldCell->volume - 1) * (newZCM * newZCM) -
+                        ptTrans.z * ptTrans.z;
+        double newIzz = oldCell->iZZ + (oldCell->volume) * (ycm * ycm) - (oldCell->volume - 1) * (newYCM * newYCM) -
+                        ptTrans.y * ptTrans.y;
+        double newIyz = oldCell->iYZ - (oldCell->volume) * (ycm * zcm) + (oldCell->volume - 1) * newYCM * newZCM +
+                        ptTrans.y * ptTrans.z;
+
+
+        double currLength = 4.0 * sqrt(((float) ((0.5 * (oldCell->iYY + oldCell->iZZ)) + .5 * sqrt((float) (
+                (oldCell->iYY - oldCell->iZZ) * (oldCell->iYY - oldCell->iZZ) +
+                4 * (oldCell->iYZ) * (oldCell->iYZ))))) / (float) (oldCell->volume));
+
+        double currEnergy = lambdaLength * (currLength - targetLength) * (currLength - targetLength);
+
+        double newLength;
+        if (oldCell->volume <= 1) {
+            newLength = 0.0;
+        } else {
+            newLength = 4.0 * sqrt(((float) ((0.5 * (newIyy + newIzz)) + .5 * sqrt((float) (
+                    (newIyy - newIzz) * (newIyy - newIzz) + 4 * newIyz * newIyz)))) / (float) (oldCell->volume - 1));
+        }
+
+
+        double newEnergy = lambdaLength * (newLength - targetLength) * (newLength - targetLength);
+        energy += newEnergy - currEnergy;
+    }
 
     return energy;
 
 }
 
-double  LengthConstraintPlugin::spring_energy(double lam, double x, double x0){
-    return lam *pow(x-x0, 2.0);
+double LengthConstraintPlugin::spring_energy(double lam, double x, double x0) {
+    return lam * pow(x - x0, 2.0);
 }
 
 
 double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
 
-	// Assumption: COM and Volume has not been updated.
+    // Assumption: COM and Volume has not been updated.
 
-	/// E = lambda * (length - targetLength) ^ 2
+    /// E = lambda * (length - targetLength) ^ 2
 
-	//Center of mass, length constraints calculations are done withou checking whether cell volume reaches 0 or not
-	// when cell is about to disappear this results in Nan values of energy - because division by 0 is involved or
-	// sqrt(expression involving compoinents of inertia tensor) is NaN
-	//in all such cases we set energy to 0 i.e. if energy=Nan we set it to energy=0.0
+    //Center of mass, length constraints calculations are done withou checking whether cell volume reaches 0 or not
+    // when cell is about to disappear this results in Nan values of energy - because division by 0 is involved or
+    // sqrt(expression involving compoinents of inertia tensor) is NaN
+    //in all such cases we set energy to 0 i.e. if energy=Nan we set it to energy=0.0
 
 
     double energy = 0.0;
@@ -433,245 +451,272 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
     double newLength = 0.0;
     double newMinorLength = 0.0;
     double newEnergy = 0.0;
-    double currLength=0.0;
-    double currMinorLength=0.0;
+    double currLength = 0.0;
+    double currMinorLength = 0.0;
 
 
-	Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);
+    Coordinates3D<double> ptTrans = boundaryStrategy->calculatePointCoordinates(pt);
 
-	//as in the original version
-	if (newCell){
-		//local definitions of length constraint have priority over by type definitions
-		double lambdaLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->lambdaLength;;
-		double targetLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->targetLength;;
-		double minorTargetLength=lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->minorTargetLength;;
+    //as in the original version
+    if (newCell) {
+        //local definitions of length constraint have priority over by type definitions
+        double lambdaLength = lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->lambdaLength;;
+        double targetLength = lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->targetLength;;
+        double minorTargetLength = lengthConstraintDataAccessor.get(newCell->extraAttribPtr)->minorTargetLength;;
 
-		if(lambdaLength==0.0 ) {
-			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(newCell->type);
-			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
-				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
-				targetLength=lengthEnergyParamMapItr->second.targetLength;
-				minorTargetLength=lengthEnergyParamMapItr->second.minorTargetLength;
-			}
-		}
+        if (lambdaLength == 0.0) {
+            auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(newCell->type);
+            if (lengthEnergyParamMapItr != lengthEnergyParamMap.end()) {
+                lambdaLength = lengthEnergyParamMapItr->second.lambdaLength;
+                targetLength = lengthEnergyParamMapItr->second.targetLength;
+                minorTargetLength = lengthEnergyParamMapItr->second.minorTargetLength;
+            }
+        }
 
-		xcm = (newCell->xCM / (float) newCell->volume);
-		ycm = (newCell->yCM / (float) newCell->volume);
-		zcm = (newCell->zCM / (float) newCell->volume);
-		newXCM = (newCell->xCM + ptTrans.x)/((float)newCell->volume + 1);
-		newYCM = (newCell->yCM + ptTrans.y)/((float)newCell->volume + 1);
-		newZCM = (newCell->zCM + ptTrans.z)/((float)newCell->volume + 1);
+        xcm = (newCell->xCM / (float) newCell->volume);
+        ycm = (newCell->yCM / (float) newCell->volume);
+        zcm = (newCell->zCM / (float) newCell->volume);
+        newXCM = (newCell->xCM + ptTrans.x) / ((float) newCell->volume + 1);
+        newYCM = (newCell->yCM + ptTrans.y) / ((float) newCell->volume + 1);
+        newZCM = (newCell->zCM + ptTrans.z) / ((float) newCell->volume + 1);
 
-		newIxx=newCell->iXX+(newCell->volume )*(ycm*ycm+zcm*zcm)-(newCell->volume+1)*(newYCM*newYCM+newZCM*newZCM)+ptTrans.y*ptTrans.y+ptTrans.z*ptTrans.z;
-		newIyy=newCell->iYY+(newCell->volume )*(xcm*xcm+zcm*zcm)-(newCell->volume+1)*(newXCM*newXCM+newZCM*newZCM)+ptTrans.x*ptTrans.x+ptTrans.z*ptTrans.z;
-		newIzz=newCell->iZZ+(newCell->volume )*(xcm*xcm+ycm*ycm)-(newCell->volume+1)*(newXCM*newXCM+newYCM*newYCM)+ptTrans.x*ptTrans.x+ptTrans.y*ptTrans.y;
+        newIxx = newCell->iXX + (newCell->volume) * (ycm * ycm + zcm * zcm) -
+                 (newCell->volume + 1) * (newYCM * newYCM + newZCM * newZCM) + ptTrans.y * ptTrans.y +
+                 ptTrans.z * ptTrans.z;
+        newIyy = newCell->iYY + (newCell->volume) * (xcm * xcm + zcm * zcm) -
+                 (newCell->volume + 1) * (newXCM * newXCM + newZCM * newZCM) + ptTrans.x * ptTrans.x +
+                 ptTrans.z * ptTrans.z;
+        newIzz = newCell->iZZ + (newCell->volume) * (xcm * xcm + ycm * ycm) -
+                 (newCell->volume + 1) * (newXCM * newXCM + newYCM * newYCM) + ptTrans.x * ptTrans.x +
+                 ptTrans.y * ptTrans.y;
 
-		newIxy=newCell->iXY-(newCell->volume )*xcm*ycm+(newCell->volume+1)*newXCM*newYCM-ptTrans.x*ptTrans.y;
-		newIxz=newCell->iXZ-(newCell->volume )*xcm*zcm+(newCell->volume+1)*newXCM*newZCM-ptTrans.x*ptTrans.z;
-		newIyz=newCell->iYZ-(newCell->volume )*ycm*zcm+(newCell->volume+1)*newYCM*newZCM-ptTrans.y*ptTrans.z;
+        newIxy = newCell->iXY - (newCell->volume) * xcm * ycm + (newCell->volume + 1) * newXCM * newYCM -
+                 ptTrans.x * ptTrans.y;
+        newIxz = newCell->iXZ - (newCell->volume) * xcm * zcm + (newCell->volume + 1) * newXCM * newZCM -
+                 ptTrans.x * ptTrans.z;
+        newIyz = newCell->iYZ - (newCell->volume) * ycm * zcm + (newCell->volume + 1) * newYCM * newZCM -
+                 ptTrans.y * ptTrans.z;
 
-		vector<double> aCoeff(4,0.0);
-		vector<double> aCoeffNew(4,0.0);
-		vector<complex<double> > roots;
-		vector<complex<double> > rootsNew;
+        vector<double> aCoeff(4, 0.0);
+        vector<double> aCoeffNew(4, 0.0);
+        vector <complex<double>> roots;
+        vector <complex<double>> rootsNew;
 
-		//initialize coefficients of cubic eq used to find eigenvalues of inertia tensor - before pixel copy
-		aCoeff[0]=-1.0;
+        //initialize coefficients of cubic eq used to find eigenvalues of inertia tensor - before pixel copy
+        aCoeff[0] = -1.0;
 
-		aCoeff[1]=newCell->iXX + newCell->iYY + newCell->iZZ;
+        aCoeff[1] = newCell->iXX + newCell->iYY + newCell->iZZ;
 
-		aCoeff[2]=newCell->iXY*newCell->iXY + newCell->iXZ*newCell->iXZ + newCell->iYZ*newCell->iYZ
-			-newCell->iXX*newCell->iYY - newCell->iXX*newCell->iZZ - newCell->iYY*newCell->iZZ;
+        aCoeff[2] = newCell->iXY * newCell->iXY + newCell->iXZ * newCell->iXZ + newCell->iYZ * newCell->iYZ
+                    - newCell->iXX * newCell->iYY - newCell->iXX * newCell->iZZ - newCell->iYY * newCell->iZZ;
 
-		aCoeff[3]=newCell->iXX*newCell->iYY*newCell->iZZ + 2*newCell->iXY*newCell->iXZ*newCell->iYZ
-			-newCell->iXX*newCell->iYZ*newCell->iYZ
-			-newCell->iYY*newCell->iXZ*newCell->iXZ
-			-newCell->iZZ*newCell->iXY*newCell->iXY;
+        aCoeff[3] = newCell->iXX * newCell->iYY * newCell->iZZ + 2 * newCell->iXY * newCell->iXZ * newCell->iYZ
+                    - newCell->iXX * newCell->iYZ * newCell->iYZ
+                    - newCell->iYY * newCell->iXZ * newCell->iXZ
+                    - newCell->iZZ * newCell->iXY * newCell->iXY;
 
-		roots=solveCubicEquationRealCoeeficients(aCoeff);
-
-
-		//initialize coefficients of cubic eq used to find eigenvalues of inertia tensor - after pixel copy
-
-		aCoeffNew[0]=-1.0;
-
-		aCoeffNew[1]=newIxx + newIyy + newIzz;
-
-		aCoeffNew[2]=newIxy*newIxy + newIxz*newIxz + newIyz*newIyz
-			-newIxx*newIyy - newIxx*newIzz - newIyy*newIzz;
-
-		aCoeffNew[3]=newIxx*newIyy*newIzz + 2*newIxy*newIxz*newIyz
-			-newIxx*newIyz*newIyz
-			-newIyy*newIxz*newIxz
-			-newIzz*newIxy*newIxy;
-
-		rootsNew=solveCubicEquationRealCoeeficients(aCoeffNew);
+        roots = solveCubicEquationRealCoeeficients(aCoeff);
 
 
-		//finding semiaxes of the ellipsoid
-		//Ixx=m/5.0*(a_y^2+a_z^2) - andy cyclical permutations for other coordinate combinations
-		//a_x,a_y,a_z are lengths of semiaxes of the allipsoid
-		// We can invert above system of equations to get:
-		vector<double> axes(3,0.0);
+        //initialize coefficients of cubic eq used to find eigenvalues of inertia tensor - after pixel copy
 
-		axes[0]=sqrt((2.5/newCell->volume)*(roots[1].real()+roots[2].real()-roots[0].real()));
-		axes[1]=sqrt((2.5/newCell->volume)*(roots[0].real()+roots[2].real()-roots[1].real()));
-		axes[2]=sqrt((2.5/newCell->volume)*(roots[0].real()+roots[1].real()-roots[2].real()));
+        aCoeffNew[0] = -1.0;
 
-		//sorting semiaxes according the their lengths (shortest first)
-		sort(axes.begin(),axes.end());
+        aCoeffNew[1] = newIxx + newIyy + newIzz;
 
-		vector<double> axesNew(3,0.0);
+        aCoeffNew[2] = newIxy * newIxy + newIxz * newIxz + newIyz * newIyz
+                       - newIxx * newIyy - newIxx * newIzz - newIyy * newIzz;
 
-		axesNew[0]=sqrt((2.5/(newCell->volume+1))*(rootsNew[1].real()+rootsNew[2].real()-rootsNew[0].real()));
-		axesNew[1]=sqrt((2.5/(newCell->volume+1))*(rootsNew[0].real()+rootsNew[2].real()-rootsNew[1].real()));
-		axesNew[2]=sqrt((2.5/(newCell->volume+1))*(rootsNew[0].real()+rootsNew[1].real()-rootsNew[2].real()));
+        aCoeffNew[3] = newIxx * newIyy * newIzz + 2 * newIxy * newIxz * newIyz
+                       - newIxx * newIyz * newIyz
+                       - newIyy * newIxz * newIxz
+                       - newIzz * newIxy * newIxy;
 
-		//sorting semiaxes according the their lengths (shortest first)
-		sort(axesNew.begin(),axesNew.end());
-
-        currLength=2.0*axes[2];
-		currMinorLength=2.0*axes[0];
-
-		currEnergy = lambdaLength * ((currLength - targetLength)*(currLength - targetLength)+(currMinorLength - minorTargetLength)*(currMinorLength - minorTargetLength));
-
-		newLength = 2.0*axesNew[2];
-		newMinorLength=2.0*axesNew[0];
-
-		newEnergy = lambdaLength * ((newLength - targetLength)*(newLength - targetLength)+(newMinorLength - minorTargetLength)*(newMinorLength - minorTargetLength));
-
-		energy += newEnergy - currEnergy;
-
-	}
-
-    
-
-	if (oldCell) {
-		//cerr<<"****************OLD CELL PART***********************"<<endl;
-		lambdaLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->lambdaLength;;
-		targetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
-		minorTargetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->minorTargetLength;;
-
-		if(lambdaLength==0.0 ) {
-			auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
-			if ( lengthEnergyParamMapItr != lengthEnergyParamMap.end() ){
-				lambdaLength=lengthEnergyParamMapItr->second.lambdaLength;
-				targetLength=lengthEnergyParamMapItr->second.targetLength;
-				minorTargetLength=lengthEnergyParamMapItr->second.minorTargetLength;
-			}
-		}
-		xcm = (oldCell->xCM / (float) oldCell->volume);
-		ycm = (oldCell->yCM / (float) oldCell->volume);
-		zcm = (oldCell->zCM / (float) oldCell->volume);
-		newXCM = (oldCell->xCM - ptTrans.x)/((float)oldCell->volume - 1);
-		newYCM = (oldCell->yCM - ptTrans.y)/((float)oldCell->volume - 1);
-		newZCM = (oldCell->zCM - ptTrans.z)/((float)oldCell->volume - 1);
-
-		newIxx =oldCell->iXX+(oldCell->volume )*(ycm*ycm+zcm*zcm)-(oldCell->volume-1)*(newYCM*newYCM+newZCM*newZCM) - (ptTrans.y*ptTrans.y+ptTrans.z*ptTrans.z);
-		newIyy =oldCell->iYY+(oldCell->volume )*(xcm*xcm+zcm*zcm)-(oldCell->volume-1)*(newXCM*newXCM+newZCM*newZCM) - (ptTrans.x*ptTrans.x+ptTrans.z*ptTrans.z);
-		newIzz =oldCell->iZZ+(oldCell->volume )*(xcm*xcm+ycm*ycm)-(oldCell->volume-1)*(newXCM*newXCM+newYCM*newYCM) - (ptTrans.x*ptTrans.x+ptTrans.y*ptTrans.y);
-
-		newIxy =oldCell->iXY-(oldCell->volume )*(xcm*ycm)+(oldCell->volume-1)*newXCM*newYCM+ptTrans.x*ptTrans.y;
-		newIxz =oldCell->iXZ-(oldCell->volume )*(xcm*zcm)+(oldCell->volume-1)*newXCM*newZCM+ptTrans.x*ptTrans.z;
-		newIyz =oldCell->iYZ-(oldCell->volume )*(ycm*zcm)+(oldCell->volume-1)*newYCM*newZCM+ptTrans.y*ptTrans.z;
+        rootsNew = solveCubicEquationRealCoeeficients(aCoeffNew);
 
 
-		vector<double> aCoeff(4,0.0);
-		vector<double> aCoeffNew(4,0.0);
-		vector<complex<double> > roots;
-		vector<complex<double> > rootsNew;
+        //finding semiaxes of the ellipsoid
+        //Ixx=m/5.0*(a_y^2+a_z^2) - andy cyclical permutations for other coordinate combinations
+        //a_x,a_y,a_z are lengths of semiaxes of the allipsoid
+        // We can invert above system of equations to get:
+        vector<double> axes(3, 0.0);
 
-		//initialize coefficients of cubic eq used to find eigenvalues of inertia tensor - before pixel copy
-		aCoeff[0]=-1.0;
+        axes[0] = sqrt((2.5 / newCell->volume) * (roots[1].real() + roots[2].real() - roots[0].real()));
+        axes[1] = sqrt((2.5 / newCell->volume) * (roots[0].real() + roots[2].real() - roots[1].real()));
+        axes[2] = sqrt((2.5 / newCell->volume) * (roots[0].real() + roots[1].real() - roots[2].real()));
 
-		aCoeff[1]=oldCell->iXX + oldCell->iYY + oldCell->iZZ;
+        //sorting semiaxes according the their lengths (shortest first)
+        sort(axes.begin(), axes.end());
 
-		aCoeff[2]=oldCell->iXY*oldCell->iXY + oldCell->iXZ*oldCell->iXZ + oldCell->iYZ*oldCell->iYZ
-			-oldCell->iXX*oldCell->iYY - oldCell->iXX*oldCell->iZZ - oldCell->iYY*oldCell->iZZ;
+        vector<double> axesNew(3, 0.0);
 
-		aCoeff[3]=oldCell->iXX*oldCell->iYY*oldCell->iZZ + 2*oldCell->iXY*oldCell->iXZ*oldCell->iYZ
-			-oldCell->iXX*oldCell->iYZ*oldCell->iYZ
-			-oldCell->iYY*oldCell->iXZ*oldCell->iXZ
-			-oldCell->iZZ*oldCell->iXY*oldCell->iXY;
+        axesNew[0] = sqrt(
+                (2.5 / (newCell->volume + 1)) * (rootsNew[1].real() + rootsNew[2].real() - rootsNew[0].real()));
+        axesNew[1] = sqrt(
+                (2.5 / (newCell->volume + 1)) * (rootsNew[0].real() + rootsNew[2].real() - rootsNew[1].real()));
+        axesNew[2] = sqrt(
+                (2.5 / (newCell->volume + 1)) * (rootsNew[0].real() + rootsNew[1].real() - rootsNew[2].real()));
 
-		roots=solveCubicEquationRealCoeeficients(aCoeff);
+        //sorting semiaxes according the their lengths (shortest first)
+        sort(axesNew.begin(), axesNew.end());
+
+        currLength = 2.0 * axes[2];
+        currMinorLength = 2.0 * axes[0];
+
+        currEnergy = lambdaLength * ((currLength - targetLength) * (currLength - targetLength) +
+                                     (currMinorLength - minorTargetLength) * (currMinorLength - minorTargetLength));
+
+        newLength = 2.0 * axesNew[2];
+        newMinorLength = 2.0 * axesNew[0];
+
+        newEnergy = lambdaLength * ((newLength - targetLength) * (newLength - targetLength) +
+                                    (newMinorLength - minorTargetLength) * (newMinorLength - minorTargetLength));
+
+        energy += newEnergy - currEnergy;
+
+    }
 
 
-		//initialize coefficients of cubic eq used to find eigenvalues of inertia tensor - after pixel copy
+    if (oldCell) {
+        //cerr<<"****************OLD CELL PART***********************"<<endl;
+        lambdaLength = lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->lambdaLength;;
+        targetLength = lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
+        minorTargetLength = lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->minorTargetLength;;
 
-		aCoeffNew[0]=-1.0;
+        if (lambdaLength == 0.0) {
+            auto lengthEnergyParamMapItr = lengthEnergyParamMap.find(oldCell->type);
+            if (lengthEnergyParamMapItr != lengthEnergyParamMap.end()) {
+                lambdaLength = lengthEnergyParamMapItr->second.lambdaLength;
+                targetLength = lengthEnergyParamMapItr->second.targetLength;
+                minorTargetLength = lengthEnergyParamMapItr->second.minorTargetLength;
+            }
+        }
+        xcm = (oldCell->xCM / (float) oldCell->volume);
+        ycm = (oldCell->yCM / (float) oldCell->volume);
+        zcm = (oldCell->zCM / (float) oldCell->volume);
+        newXCM = (oldCell->xCM - ptTrans.x) / ((float) oldCell->volume - 1);
+        newYCM = (oldCell->yCM - ptTrans.y) / ((float) oldCell->volume - 1);
+        newZCM = (oldCell->zCM - ptTrans.z) / ((float) oldCell->volume - 1);
 
-		aCoeffNew[1]=newIxx + newIyy + newIzz;
+        newIxx = oldCell->iXX + (oldCell->volume) * (ycm * ycm + zcm * zcm) -
+                 (oldCell->volume - 1) * (newYCM * newYCM + newZCM * newZCM) -
+                 (ptTrans.y * ptTrans.y + ptTrans.z * ptTrans.z);
+        newIyy = oldCell->iYY + (oldCell->volume) * (xcm * xcm + zcm * zcm) -
+                 (oldCell->volume - 1) * (newXCM * newXCM + newZCM * newZCM) -
+                 (ptTrans.x * ptTrans.x + ptTrans.z * ptTrans.z);
+        newIzz = oldCell->iZZ + (oldCell->volume) * (xcm * xcm + ycm * ycm) -
+                 (oldCell->volume - 1) * (newXCM * newXCM + newYCM * newYCM) -
+                 (ptTrans.x * ptTrans.x + ptTrans.y * ptTrans.y);
 
-		aCoeffNew[2]=newIxy*newIxy + newIxz*newIxz + newIyz*newIyz
-			-newIxx*newIyy - newIxx*newIzz - newIyy*newIzz;
+        newIxy = oldCell->iXY - (oldCell->volume) * (xcm * ycm) + (oldCell->volume - 1) * newXCM * newYCM +
+                 ptTrans.x * ptTrans.y;
+        newIxz = oldCell->iXZ - (oldCell->volume) * (xcm * zcm) + (oldCell->volume - 1) * newXCM * newZCM +
+                 ptTrans.x * ptTrans.z;
+        newIyz = oldCell->iYZ - (oldCell->volume) * (ycm * zcm) + (oldCell->volume - 1) * newYCM * newZCM +
+                 ptTrans.y * ptTrans.z;
 
-		aCoeffNew[3]=newIxx*newIyy*newIzz + 2*newIxy*newIxz*newIyz
-			-newIxx*newIyz*newIyz
-			-newIyy*newIxz*newIxz
-			-newIzz*newIxy*newIxy;
 
-		rootsNew=solveCubicEquationRealCoeeficients(aCoeffNew);
+        vector<double> aCoeff(4, 0.0);
+        vector<double> aCoeffNew(4, 0.0);
+        vector <complex<double>> roots;
+        vector <complex<double>> rootsNew;
 
-		//finding semiaxes of the ellipsoid
-		//Ixx=m/5.0*(a_y^2+a_z^2) - and cyclical permutations for other coordinate combinations
-		//a_x,a_y,a_z are lengths of semiaxes of the allipsoid
-		// We can invert above system of equations to get:
-		vector<double> axes(3,0.0);
+        //initialize coefficients of cubic eq used to find eigenvalues of inertia tensor - before pixel copy
+        aCoeff[0] = -1.0;
 
-		axes[0]=sqrt((2.5/oldCell->volume)*(roots[1].real()+roots[2].real()-roots[0].real()));
-		axes[1]=sqrt((2.5/oldCell->volume)*(roots[0].real()+roots[2].real()-roots[1].real()));
-		axes[2]=sqrt((2.5/oldCell->volume)*(roots[0].real()+roots[1].real()-roots[2].real()));
+        aCoeff[1] = oldCell->iXX + oldCell->iYY + oldCell->iZZ;
 
-		//sorting semiaxes according the their lengths (shortest first)
-		sort(axes.begin(),axes.end());
+        aCoeff[2] = oldCell->iXY * oldCell->iXY + oldCell->iXZ * oldCell->iXZ + oldCell->iYZ * oldCell->iYZ
+                    - oldCell->iXX * oldCell->iYY - oldCell->iXX * oldCell->iZZ - oldCell->iYY * oldCell->iZZ;
 
-		vector<double> axesNew(3,0.0);
-		if (oldCell->volume<=1){
-			axesNew[0]=0.0;
-			axesNew[1]=0.0;
-			axesNew[2]=0.0;
-		}else{
-			axesNew[0]=sqrt((2.5/(oldCell->volume-1))*(rootsNew[1].real()+rootsNew[2].real()-rootsNew[0].real()));
-			axesNew[1]=sqrt((2.5/(oldCell->volume-1))*(rootsNew[0].real()+rootsNew[2].real()-rootsNew[1].real()));
-			axesNew[2]=sqrt((2.5/(oldCell->volume-1))*(rootsNew[0].real()+rootsNew[1].real()-rootsNew[2].real()));
-		}
-		//sorting semiaxes according the their lengths (shortest first)
-		sort(axesNew.begin(),axesNew.end());
+        aCoeff[3] = oldCell->iXX * oldCell->iYY * oldCell->iZZ + 2 * oldCell->iXY * oldCell->iXZ * oldCell->iYZ
+                    - oldCell->iXX * oldCell->iYZ * oldCell->iYZ
+                    - oldCell->iYY * oldCell->iXZ * oldCell->iXZ
+                    - oldCell->iZZ * oldCell->iXY * oldCell->iXY;
 
-        currLength=2.0*axes[2];
-		currMinorLength=2.0*axes[0];
+        roots = solveCubicEquationRealCoeeficients(aCoeff);
 
-		currEnergy = lambdaLength * ((currLength - targetLength)*(currLength - targetLength)+(currMinorLength - minorTargetLength)*(currMinorLength - minorTargetLength));
 
-		newLength = 2.0*axesNew[2];
-		newMinorLength = 2.0*axesNew[0];
+        //initialize coefficients of cubic eq used to find eigenvalues of inertia tensor - after pixel copy
 
-		newEnergy = lambdaLength * ((newLength - targetLength)*(newLength - targetLength)+(newMinorLength - minorTargetLength)*(newMinorLength - minorTargetLength));
+        aCoeffNew[0] = -1.0;
 
-		energy += newEnergy - currEnergy;
+        aCoeffNew[1] = newIxx + newIyy + newIzz;
 
-	}
+        aCoeffNew[2] = newIxy * newIxy + newIxz * newIxz + newIyz * newIyz
+                       - newIxx * newIyy - newIxx * newIzz - newIyy * newIzz;
+
+        aCoeffNew[3] = newIxx * newIyy * newIzz + 2 * newIxy * newIxz * newIyz
+                       - newIxx * newIyz * newIyz
+                       - newIyy * newIxz * newIxz
+                       - newIzz * newIxy * newIxy;
+
+        rootsNew = solveCubicEquationRealCoeeficients(aCoeffNew);
+
+        //finding semiaxes of the ellipsoid
+        //Ixx=m/5.0*(a_y^2+a_z^2) - and cyclical permutations for other coordinate combinations
+        //a_x,a_y,a_z are lengths of semiaxes of the allipsoid
+        // We can invert above system of equations to get:
+        vector<double> axes(3, 0.0);
+
+        axes[0] = sqrt((2.5 / oldCell->volume) * (roots[1].real() + roots[2].real() - roots[0].real()));
+        axes[1] = sqrt((2.5 / oldCell->volume) * (roots[0].real() + roots[2].real() - roots[1].real()));
+        axes[2] = sqrt((2.5 / oldCell->volume) * (roots[0].real() + roots[1].real() - roots[2].real()));
+
+        //sorting semiaxes according the their lengths (shortest first)
+        sort(axes.begin(), axes.end());
+
+        vector<double> axesNew(3, 0.0);
+        if (oldCell->volume <= 1) {
+            axesNew[0] = 0.0;
+            axesNew[1] = 0.0;
+            axesNew[2] = 0.0;
+        } else {
+            axesNew[0] = sqrt(
+                    (2.5 / (oldCell->volume - 1)) * (rootsNew[1].real() + rootsNew[2].real() - rootsNew[0].real()));
+            axesNew[1] = sqrt(
+                    (2.5 / (oldCell->volume - 1)) * (rootsNew[0].real() + rootsNew[2].real() - rootsNew[1].real()));
+            axesNew[2] = sqrt(
+                    (2.5 / (oldCell->volume - 1)) * (rootsNew[0].real() + rootsNew[1].real() - rootsNew[2].real()));
+        }
+        //sorting semiaxes according the their lengths (shortest first)
+        sort(axesNew.begin(), axesNew.end());
+
+        currLength = 2.0 * axes[2];
+        currMinorLength = 2.0 * axes[0];
+
+        currEnergy = lambdaLength * ((currLength - targetLength) * (currLength - targetLength) +
+                                     (currMinorLength - minorTargetLength) * (currMinorLength - minorTargetLength));
+
+        newLength = 2.0 * axesNew[2];
+        newMinorLength = 2.0 * axesNew[0];
+
+        newEnergy = lambdaLength * ((newLength - targetLength) * (newLength - targetLength) +
+                                    (newMinorLength - minorTargetLength) * (newMinorLength - minorTargetLength));
+
+        energy += newEnergy - currEnergy;
+
+    }
 
     return energy;
 
 }
 
-double LengthConstraintPlugin::_get_non_nan_energy(double energy){
-	if(energy!=energy)
-		return 0.0;
-	else
-		return energy;
+double LengthConstraintPlugin::_get_non_nan_energy(double energy) {
+    if (energy != energy)
+        return 0.0;
+    else
+        return energy;
 }
 
 
-std::string LengthConstraintPlugin::toString(){
-	return string("LengthConstraint");
+std::string LengthConstraintPlugin::toString() {
+    return string("LengthConstraint");
 }
 
-std::string LengthConstraintPlugin::steerableName(){
+std::string LengthConstraintPlugin::steerableName() {
 
-	return toString();
+    return toString();
 
 }
 

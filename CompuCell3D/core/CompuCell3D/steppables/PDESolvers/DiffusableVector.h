@@ -1,5 +1,6 @@
 #ifndef COMPUCELL3DDIFFUSABLEVECTOR_H
 #define COMPUCELL3DDIFFUSABLEVECTOR_H
+
 #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Steppable.h>
 #include <vector>
@@ -9,93 +10,97 @@
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
 
-
 namespace CompuCell3D {
 
-template <typename Y> class Field3DImpl;
+    template<typename Y>
+    class Field3DImpl;
 
 /**
 @author m
 */
-template <typename precision>
-class DiffusableVector:public Steppable{
-public:
-    DiffusableVector():Steppable(),concentrationFieldVector(0),maxNeighborIndex(0),boundaryStrategy(0){
-      using namespace std;
-      cerr<<"Default constructor DiffusableVector"<<endl;
-      
-   };
+    template<typename precision>
+    class DiffusableVector : public Steppable {
+    public:
+        DiffusableVector() : Steppable(), concentrationFieldVector(0), maxNeighborIndex(0), boundaryStrategy(0) {
+            using namespace std;
+            cerr << "Default constructor DiffusableVector" << endl;
 
-    virtual ~DiffusableVector(){
-	  clearAllocatedFields();		
-      //for(unsigned int i = 0 ; i< concentrationFieldVector.size() ; ++i){
-      //   if(concentrationFieldVector[i]){
-      //      delete concentrationFieldVector[i];
-      //      concentrationFieldVector[i]=0;
-      //   }
-      //}
+        };
 
-        
-    }
-    //Field3DImpl<precision> * getConcentrationField(unsigned int i){return concentrationFieldVector[i];};
-    
-    virtual Field3D<precision> * getConcentrationField(const std::string & name){
-      using namespace std;
-       cerr<<"concentrationFieldNameVector.size()="<<concentrationFieldNameVector.size()<<endl;
-       for(unsigned int i=0 ; i < concentrationFieldNameVector.size() ; ++i){
-          cerr<<"THIS IS FIELD NAME "<<concentrationFieldNameVector[i]<<endl;
-       }
-      for(unsigned int i=0 ; i < concentrationFieldNameVector.size() ; ++i){
-         if(concentrationFieldNameVector[i]==name){
-			cerr<<"returning concentrationFieldVector[i]="<<concentrationFieldVector[i]<<endl;
-            return concentrationFieldVector[i];  
-            
-         }
-      }
-	  cerr<<"returning NULL="<<endl;
-      return 0;
-    
-    };
+        virtual ~DiffusableVector() {
+            clearAllocatedFields();
+            //for(unsigned int i = 0 ; i< concentrationFieldVector.size() ; ++i){
+            //   if(concentrationFieldVector[i]){
+            //      delete concentrationFieldVector[i];
+            //      concentrationFieldVector[i]=0;
+            //   }
+            //}
 
-    virtual void allocateDiffusableFieldVector(unsigned int numberOfFields,Dim3D fieldDim)
-    {
-      boundaryStrategy=BoundaryStrategy::getInstance();
+
+        }
+        //Field3DImpl<precision> * getConcentrationField(unsigned int i){return concentrationFieldVector[i];};
+
+        virtual Field3D <precision> *getConcentrationField(const std::string &name) {
+            using namespace std;
+            cerr << "concentrationFieldNameVector.size()=" << concentrationFieldNameVector.size() << endl;
+            for (unsigned int i = 0; i < concentrationFieldNameVector.size(); ++i) {
+                cerr << "THIS IS FIELD NAME " << concentrationFieldNameVector[i] << endl;
+            }
+            for (unsigned int i = 0; i < concentrationFieldNameVector.size(); ++i) {
+                if (concentrationFieldNameVector[i] == name) {
+                    cerr << "returning concentrationFieldVector[i]=" << concentrationFieldVector[i] << endl;
+                    return concentrationFieldVector[i];
+
+                }
+            }
+            cerr << "returning NULL=" << endl;
+            return 0;
+
+        };
+
+        virtual void allocateDiffusableFieldVector(unsigned int numberOfFields, Dim3D fieldDim) {
+            boundaryStrategy = BoundaryStrategy::getInstance();
 //       maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(1.1); 
-      maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);//for nearest neighbors only
+            maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);//for nearest neighbors only
 //       const std::vector<Point3D> & offsetVecRef=BoundaryStrategy::getInstance()->getOffsetVec();
 //       for(int i = 0 ; i <= maxNeighborIndex ; ++i){
 //          offsetVec.push_back(offsetVecRef[i]);
 //       }
-	  clearAllocatedFields();
-      for(unsigned int i = 0 ; i< numberOfFields ; ++i){
-         precision val=precision();
-         concentrationFieldVector.push_back(new Array3DBordersField3DAdapter<precision>(fieldDim, val));
-      }
-      concentrationFieldNameVector.assign(numberOfFields,std::string());
-    }
-    
-    std::vector<std::string> getConcentrationFieldNameVector(){ return concentrationFieldNameVector;}
-	std::vector<Array3DBordersField3DAdapter<precision> * > getConcentrationFieldVector(){ return concentrationFieldVector;}
+            clearAllocatedFields();
+            for (unsigned int i = 0; i < numberOfFields; ++i) {
+                precision val = precision();
+                concentrationFieldVector.push_back(new Array3DBordersField3DAdapter<precision>(fieldDim, val));
+            }
+            concentrationFieldNameVector.assign(numberOfFields, std::string());
+        }
+
+        std::vector <std::string> getConcentrationFieldNameVector() { return concentrationFieldNameVector; }
+
+        std::vector<Array3DBordersField3DAdapter < precision> * >
+
+        getConcentrationFieldVector() { return concentrationFieldVector; }
 
 //     unsigned int getMaxNeighborIndex(){return maxNeighborIndex;}
-protected:
-	void clearAllocatedFields(){
-      for(unsigned int i = 0 ; i< concentrationFieldVector.size() ; ++i){
-         if(concentrationFieldVector[i]){
-            delete concentrationFieldVector[i];
-            concentrationFieldVector[i]=0;
-         }
-      }
-	  concentrationFieldVector.clear();
+    protected:
+        void clearAllocatedFields() {
+            for (unsigned int i = 0; i < concentrationFieldVector.size(); ++i) {
+                if (concentrationFieldVector[i]) {
+                    delete concentrationFieldVector[i];
+                    concentrationFieldVector[i] = 0;
+                }
+            }
+            concentrationFieldVector.clear();
 
-	}
-	std::vector<Array3DBordersField3DAdapter<precision> * > concentrationFieldVector;
-   
-   std::vector<std::string> concentrationFieldNameVector;
-   unsigned int maxNeighborIndex;
+        }
+
+        std::vector<Array3DBordersField3DAdapter < precision> * >
+        concentrationFieldVector;
+
+        std::vector <std::string> concentrationFieldNameVector;
+        unsigned int maxNeighborIndex;
 //    std::vector<Point3D> offsetVec;
-   BoundaryStrategy *boundaryStrategy;
-};
+        BoundaryStrategy *boundaryStrategy;
+    };
 
 };
 

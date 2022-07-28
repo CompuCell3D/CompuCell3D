@@ -6,7 +6,8 @@ from enum import Enum
 
 (STOP_STATE, RUN_STATE, STEP_STATE, PAUSE_STATE) = list(range(0, 4))
 
-GRAPHICS_WINDOW_LABEL, PLOT_WINDOW_LABEL, STEERING_PANEL_LABEL = ('Graphics', 'Plot', 'Steering_Panel')
+GRAPHICS_WINDOW_LABEL, PLOT_WINDOW_LABEL, STEERING_PANEL_LABEL, MESSAGE_WINDOW_LABEL = (
+    'Graphics', 'Plot', 'Steering_Panel', 'Message')
 
 FIELD_NUMBER_TO_FIELD_TYPE_MAP = {
     CELL_FIELD: "CellField",

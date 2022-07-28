@@ -1,25 +1,3 @@
-/*************************************************************************
-*    CompuCell - A software framework for multimodel simulations of     *
-* biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
-*                             Indiana                                   *
-*                                                                       *
-* This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
-*  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
-*  CompuCell GNU General Public License RIDER you can redistribute it   *
-* and/or modify it under the terms of the GNU General Public License as *
-*  published by the Free Software Foundation; either version 2 of the   *
-*         License, or (at your option) any later version.               *
-*                                                                       *
-* This program is distributed in the hope that it will be useful, but   *
-*      WITHOUT ANY WARRANTY; without even the implied warranty of       *
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
-*             General Public License for more details.                  *
-*                                                                       *
-*  You should have received a copy of the GNU General Public License    *
-*     along with this program; if not, write to the Free Software       *
-*      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
-*************************************************************************/
-
 #include <CompuCell3D/CC3D.h>
 
 #include <CompuCell3D/steppables/PDESolvers/DiffusableVector.h>
@@ -91,24 +69,6 @@ void ChemotaxisPlugin::extraInit(Simulator *simulator) {
 
 void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
-	//if(potts->getDisplayUnitsFlag()){
-	//	Unit energyUnit=potts->getEnergyUnit();
-
-
-
-
-	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-	//	if (!unitsElem){ //add Units element
-	//		unitsElem=_xmlData->attachElement("Units");
-	//	}
-
-	//	if(unitsElem->getFirstElement("LambdaUnit")){
-	//		unitsElem->getFirstElement("LambdaUnit")->updateElementValue(energyUnit.toString());
-	//	}else{
-	//		CC3DXMLElement * energyElem = unitsElem->attachElement("LambdaUnit",energyUnit.toString());
-	//	}
-	//}	
-
 	std::vector<ChemotaxisFieldData> chemotaxisFieldDataVec; 
 
 
@@ -116,23 +76,16 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		chemotaxisAlgorithm=_xmlData->getFirstElement("Algorithm")->getText();
 		changeToLower(chemotaxisAlgorithm);
 	}
-	
 
 	//Parsing ChemicalField Sections
 	CC3DXMLElementList chemicalFieldXMlList=_xmlData->getElements("ChemicalField");
 
-	//cerr<<"chemicalFieldXMlList.size()="<<chemicalFieldXMlList.size()<<endl;
-
 
 	for (int i  = 0 ; i < chemicalFieldXMlList.size() ; ++i){
-
-
-
 
 		chemotaxisFieldDataVec.push_back(ChemotaxisFieldData());
 		ChemotaxisFieldData & cfd=chemotaxisFieldDataVec[chemotaxisFieldDataVec.size()-1];
 
-		//cfd.chemicalFieldSource = chemicalFieldXMlList[i]->getAttribute("Source");// deprecated
 		cfd.chemicalFieldName =chemicalFieldXMlList[i]->getAttribute("Name");
 
 		cfd.vecChemotaxisData.clear();
@@ -146,8 +99,9 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			ChemotaxisData & cd=cfd.vecChemotaxisData[cfd.vecChemotaxisData.size()-1];
 			cd.typeName=chemotactByTypeXMlList[j]->getAttribute("Type");
 			
-			//jfg, now that there are a bunch of formulas it'd be good to have ifs to select them, instead of relying on 
-			// variable names that migh or might not be in the xml
+			//jfg, now that there are a bunch of formulas it'd be good to have ifs to select them,
+            // instead of relying on
+			// variable names that migth or might not be in the xml
 			
 			if(chemotactByTypeXMlList[j]->findAttribute("FormulaName"))
 			{
@@ -170,7 +124,7 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 					cd.formulaName == "SaturationDifferenceChemotaxisFormula" || 
 					cd.formulaName == "COMLogScaledChemotaxisFormula")
 				{
-					std::cout << "You've asked for a saturation formula but did not provide a saturation coeficient" << std::endl ;
+					std::cout << "You've asked for a saturation formula but did not provide a saturation coefficient" << std::endl ;
 					exit(0);
 				}
 				
@@ -220,9 +174,7 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 				}else if (chemotactByTypeXMlList[j]->findAttribute("ChemotactAtInterfaceWith")){// both keywords are OK
 					cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactAtInterfaceWith");
 				}
-				//cerr<<"cd.typeName="<<cd.typeName<<" cd.lambda="<<endl;
-				
-				
+
 				//jfg:
 				if( chemotactByTypeXMlList[j]->findAttribute("PowerCoef") )
 				{
@@ -252,8 +204,6 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	unsigned char maxType=0;
 	//first will find max type value
-
-//	cerr<<"chemotaxisFieldDataVec[0].vecChemotaxisData.size()="<<chemotaxisFieldDataVec[0].vecChemotaxisData.size()<<endl;
 
 	for(int i = 0 ; i < chemotaxisFieldDataVec.size() ; ++ i)
 		for(int j = 0 ; j < chemotaxisFieldDataVec[i].vecChemotaxisData.size() ; ++j){
@@ -418,7 +368,7 @@ float ChemotaxisPlugin::powerChemotaxisFormula(float _flipNeighborConc, float _c
 	float diff = _flipNeighborConc - _conc;
 
 
-	if (_chemotaxisData.powerLevel < 0 && diff == 0)//don't wan't NANs or infs going around
+	if (_chemotaxisData.powerLevel < 0 && diff == 0)//don't want NANs or infs going around
 	{
 
 		return 9E99 * _chemotaxisData.lambda;
@@ -460,7 +410,7 @@ float ChemotaxisPlugin::logNatDifferenceFormula(float _flipNeighborConc, float _
 {
 	float diff = _flipNeighborConc - _conc;
 
-	if ( diff <= 0 )//don't wan't NANs or infs going around
+	if ( diff <= 0 )//don't want NANs or infs going around
 	{
 		return -9E99 * _chemotaxisData.lambda;
 	}
@@ -478,7 +428,6 @@ float ChemotaxisPlugin::COMLogScaledChemotaxisFormula(float _flipNeighborConc, f
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 double ChemotaxisPlugin::regularChemotaxis(const Point3D &pt, const CellG *newCell,const CellG *oldCell){
 
-	//    cerr<<"This is regular chemotaxis"<<endl;
 
 	///cells move up the concentration gradient
 
@@ -491,7 +440,7 @@ double ChemotaxisPlugin::regularChemotaxis(const Point3D &pt, const CellG *newCe
 	std::map<std::string,ChemotaxisData>::iterator mitr;
 
 	if(newCell){
-		//       cerr<<"INSIDE NEW CELL CONDITION fieldVec.size()="<<fieldVec.size()<<endl;
+
 		for(unsigned int i = 0 ; i < fieldVec.size() ; ++i){
 			bool chemotaxisDone=false;
 			auto field = fieldVec[i];
@@ -500,21 +449,15 @@ double ChemotaxisPlugin::regularChemotaxis(const Point3D &pt, const CellG *newCe
 
 			std::map<std::string,ChemotaxisData> & chemotaxisDataDictRef = *chemotaxisDataAccessor.get(newCell->extraAttribPtr);
 			mitr=chemotaxisDataDictRef.find(fieldNameVec[i]);
-			//cerr<<"Looking for field="<<fieldNameVec[i]<<endl;
+
 			ChemotaxisData * chemotaxisDataPtr=0;
 			if (mitr!= chemotaxisDataDictRef.end()){
 				chemotaxisDataPtr=&mitr->second;
 
-				//newCellFieldNamesVisited.insert(fieldNameVec[i]);
 			}
-			//cerr<<"chemotaxisDataPtr="<<chemotaxisDataPtr<<endl;
-			
-			//if(chemotaxisDataPtr )
-			//	cerr<<"chemotaxisDataPtr->okToChemotact(oldCell)="<<chemotaxisDataPtr->okToChemotact(oldCell)<<endl;
 
 			if( chemotaxisDataPtr && chemotaxisDataPtr->okToChemotact(oldCell,newCell) ){ 
 				// chemotaxis is allowed towards this type of oldCell and lambda is non-zero
-				//          cerr<<"BASED ON NEW pt "<<pt<<" oldCell="<<oldCell<<" newCell="<<newCell<<endl;
 				ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr=0;
 				formulaCurrentPtr=chemotaxisDataPtr->formulaPtr;
 
@@ -542,7 +485,6 @@ double ChemotaxisPlugin::regularChemotaxis(const Point3D &pt, const CellG *newCe
 
 				formulaCurrentPtr=chemotaxisDataRef.formulaPtr;
 
-
 				// chemotaxis id not allowed towards this type of oldCell
 				if( !chemotaxisDataRef.okToChemotact(oldCell,newCell) ){ 
 					continue;
@@ -565,15 +507,15 @@ double ChemotaxisPlugin::regularChemotaxis(const Point3D &pt, const CellG *newCe
 			}
 
 		}
-		//       cerr<<"CHEMOTAXIS EN="<<energy<<endl;   
 		return energy;
 	}
-	//   cerr<<"CHEMOTAXIS EN="<<energy<<endl;
+
 	return 0;
 }
 
 double ChemotaxisPlugin::reciprocatedChemotaxis(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
-	// Equivalent to regularChemotaxis(pt, newCell, oldCell) + regularChemotaxis(pt, oldCell, newCell), but in a single loop over fields
+	// Equivalent to regularChemotaxis(pt, newCell, oldCell) +
+    // regularChemotaxis(pt, oldCell, newCell), but in a single loop over fields
 	// return regularChemotaxis(pt, newCell, oldCell) + regularChemotaxis(pt, oldCell, newCell);
 
 	double energy = 0;
@@ -667,38 +609,27 @@ double ChemotaxisPlugin::reciprocatedChemotaxis(const Point3D &pt, const CellG *
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 double ChemotaxisPlugin::merksChemotaxis(const Point3D &pt, const CellG *newCell,const CellG *oldCell){
 
-	//    cerr<<"this is merks chemotaxis"<<endl;   
 	float energy=0.0;
 	std::map<std::string,ChemotaxisData>::iterator mitr;
-	//set<string> newCellFieldNamesVisited;
-	//set<string> oldCellFieldNamesVisited;
 
-
-	//    cerr<<"fieldVec.size()="<<fieldVec.size()<<endl;
 	for(unsigned int i = 0 ; i < fieldVec.size() ; ++i){
 		bool chemotaxisDone=false;
 		auto field = fieldVec[i];
-		//first will see if newCell is chemotacting (using locally defined chemotaxis parameters) and if it chemotacts towards oldCell. If yes, then next if statements
+		//first will see if newCell is chemotacting (using locally defined chemotaxis parameters)
+        // and if it chemotacts towards oldCell. If yes, then next if statements
 		// will be skipped 
 
 		if(newCell){// check if newCell is potentially chemotaxing based on local parameters
 			std::map<std::string,ChemotaxisData> & chemotaxisDataDictRef = *chemotaxisDataAccessor.get(newCell->extraAttribPtr);
 			mitr=chemotaxisDataDictRef.find(fieldNameVec[i]);
-			//cerr<<"Looking for field="<<fieldNameVec[i]<<endl;
+
 			ChemotaxisData * chemotaxisDataPtr=0;
 			if (mitr!= chemotaxisDataDictRef.end()){
 				chemotaxisDataPtr=&mitr->second;
-
-				//newCellFieldNamesVisited.insert(fieldNameVec[i]);
 			}
-			//cerr<<"chemotaxisDataPtr="<<chemotaxisDataPtr<<endl;
-			
-			//if(chemotaxisDataPtr )
-			//	cerr<<"chemotaxisDataPtr->okToChemotact(oldCell)="<<chemotaxisDataPtr->okToChemotact(oldCell)<<endl;
 
 			if( chemotaxisDataPtr && chemotaxisDataPtr->okToChemotact(oldCell,newCell) ){ 
 				// chemotaxis is allowed towards this type of oldCell and lambda is non-zero
-				//          cerr<<"BASED ON NEW pt "<<pt<<" oldCell="<<oldCell<<" newCell="<<newCell<<endl;
 				ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr=0;
 				formulaCurrentPtr=chemotaxisDataPtr->formulaPtr;
 				if(formulaCurrentPtr){
@@ -708,11 +639,11 @@ double ChemotaxisPlugin::merksChemotaxis(const Point3D &pt, const CellG *newCell
 					energy+=(this->*formulaCurrentPtr)(field->get(potts->getFlipNeighbor()) , field->get(pt), *chemotaxisDataPtr);
 				
 					chemotaxisDone=true;
-					//cerr<<"Energy="<<energy<< " lambda="<<chemotaxisDataPtr->lambda<<endl;
 				}
 			}
 		}
-		//first will see if newCell is chemotacting and if it chemotacts towards oldCell. If yes, then next if statement will be skipped
+		//first will see if newCell is chemotacting and if it chemotacts towards oldCell.
+        // If yes, then next if statement will be skipped
 		if(!chemotaxisDone && newCell){// check if newCell is potentially chemotaxing
 
 			auto itr = vecMapChemotaxisData[i].find(newCell->type);
@@ -723,7 +654,6 @@ double ChemotaxisPlugin::merksChemotaxis(const Point3D &pt, const CellG *newCell
 
 				if( chemotaxisDataRef.okToChemotact(oldCell,newCell) && chemotaxisDataRef.lambda!=0.0){ 
 					// chemotaxis is allowed towards this type of oldCell and lambda is non-zero
-					//          cerr<<"BASED ON NEW pt "<<pt<<" oldCell="<<oldCell<<" newCell="<<newCell<<endl;
 					ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr=0;
 					formulaCurrentPtr=chemotaxisDataRef.formulaPtr;
 					if(formulaCurrentPtr){
@@ -748,13 +678,12 @@ double ChemotaxisPlugin::merksChemotaxis(const Point3D &pt, const CellG *newCell
 			ChemotaxisData * chemotaxisDataPtr=0;
 			if (mitr!= chemotaxisDataDictRef.end()){
 				chemotaxisDataPtr=&mitr->second;
-				//oldCellFieldNamesVisited.insert(fieldNameVec[i]);
 			}
 
 
 			if( chemotaxisDataPtr && chemotaxisDataPtr->okToChemotact(newCell,oldCell) ){ 
 				// chemotaxis is allowed towards this type of oldCell and lambda is non-zero
-				//          cerr<<"BASED ON NEW pt "<<pt<<" oldCell="<<oldCell<<" newCell="<<newCell<<endl;
+
 				ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr=0;
 				formulaCurrentPtr=chemotaxisDataPtr->formulaPtr;
 				if(formulaCurrentPtr){
@@ -766,8 +695,6 @@ double ChemotaxisPlugin::merksChemotaxis(const Point3D &pt, const CellG *newCell
 			
 				}
 			}
-			
-
 		}
 
 		if(!chemotaxisDone && oldCell){
@@ -798,25 +725,12 @@ double ChemotaxisPlugin::merksChemotaxis(const Point3D &pt, const CellG *newCell
 
 	}
 
-	//    cerr<<"Chemotaxis energy  - Merks alg = "<<energy<<endl;
 	return energy;
 
 
 }
 
 double ChemotaxisPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
-
-	//    cerr<<"algorithmPtr="<<algorithmPtr<<endl;
-
-
-
-	//    double energy=(this->*algorithmPtr)(pt,newCell,oldCell);
-	//    exit(0);
-	//    return 0.0;
-
-	//double energy=(this->*algorithmPtr)(pt,newCell,oldCell);
-	// cerr<<"Chemotaxis Energy="<<energy<<endl;
-	// //return energy;
 
 	return (this->*algorithmPtr)(pt,newCell,oldCell);
 

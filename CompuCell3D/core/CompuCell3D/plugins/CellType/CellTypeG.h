@@ -7,14 +7,15 @@
 
 
 namespace CompuCell3D {
-   
-   class CellTypeG{
-      public:
-         CellTypeG():type(0){}
-         unsigned char type;         
-         
-   
-   };
+
+    class CellTypeG {
+    public:
+        CellTypeG() : type(0) {}
+
+        unsigned char type;
+
+
+    };
 };
 #endif
 

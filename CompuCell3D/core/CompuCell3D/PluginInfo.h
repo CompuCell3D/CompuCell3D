@@ -18,28 +18,31 @@ namespace CompuCell3D {
         std::string name;
         std::string description;
         unsigned int nDeps;
-        std::vector<std::string> deps;
+        std::vector <std::string> deps;
 
     public:
 
-        PluginInfo(const std::string& _name, const std::string _description);
+        PluginInfo(const std::string &_name, const std::string _description);
 
         const std::string getName() const;
+
         const std::string getDescription() const;
+
         const unsigned int getNumDeps() const;
+
         const std::string getDependency(const int i) const;
 
         // Registers a plugin as a dependency of this plugin
-        void registerDependency(const std::string& pluginName);
+        void registerDependency(const std::string &pluginName);
 
         // Tests whether a plugin is a dependency
-        bool dependsOn(const std::string& pluginName);
+        bool dependsOn(const std::string &pluginName);
 
-        friend std::ostream& operator<<(std::ostream& _os, PluginInfo &_info);
+        friend std::ostream &operator<<(std::ostream &_os, PluginInfo &_info);
 
     };
 
-    std::ostream& operator<<(std::ostream& _os, PluginInfo &_info);
+    std::ostream &operator<<(std::ostream &_os, PluginInfo &_info);
 };
 
-#endif //PLUGININFO_H
+#endif

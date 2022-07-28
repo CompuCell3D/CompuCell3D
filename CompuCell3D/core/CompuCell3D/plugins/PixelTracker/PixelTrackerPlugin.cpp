@@ -1,24 +1,4 @@
-/*************************************************************************
- *    CompuCell - A software framework for multimodel simulations of     *
- * biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
- *                             Indiana                                   *
- *                                                                       *
- * This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
- *  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
- *  CompuCell GNU General Public License RIDER you can redistribute it   *
- * and/or modify it under the terms of the GNU General Public License as *
- *  published by the Free Software Foundation; either version 2 of the   *
- *         License, or (at your option) any later version.               *
- *                                                                       *
- * This program is distributed in the hope that it will be useful, but   *
- *      WITHOUT ANY WARRANTY; without even the implied warranty of       *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
- *             General Public License for more details.                  *
- *                                                                       *
- *  You should have received a copy of the GNU General Public License    *
- *     along with this program; if not, write to the Free Software       *
- *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
- *************************************************************************/
+
 
 #include <string>
 #include <CompuCell3D/CC3D.h>
@@ -30,219 +10,215 @@ using namespace std;
 #include "PixelTrackerPlugin.h"
 
 
-PixelTrackerPlugin::PixelTrackerPlugin():
-simulator(0),potts(0), pUtils(0)
-{
-	trackMedium = false;
+PixelTrackerPlugin::PixelTrackerPlugin() :
+        simulator(0), potts(0), pUtils(0) {
+    trackMedium = false;
 }
 
 PixelTrackerPlugin::~PixelTrackerPlugin() {
-	pUtils->destroyLock(lockPtr);
-	delete lockPtr;
-	lockPtr = 0;
+    pUtils->destroyLock(lockPtr);
+    delete lockPtr;
+    lockPtr = 0;
 }
-
-
 
 
 void PixelTrackerPlugin::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
 
 
-  simulator=_simulator;
-  potts = simulator->getPotts();
-  pUtils = simulator->getParallelUtils();
-  lockPtr = new ParallelUtilsOpenMP::OpenMPLock_t;
-  pUtils->initLock(lockPtr);
+    simulator = _simulator;
+    potts = simulator->getPotts();
+    pUtils = simulator->getParallelUtils();
+    lockPtr = new ParallelUtilsOpenMP::OpenMPLock_t;
+    pUtils->initLock(lockPtr);
 
 
 
-  ///will register PixelTracker here
-  ExtraMembersGroupAccessorBase * cellPixelTrackerAccessorPtr=&pixelTrackerAccessor;
-   ///************************************************************************************************  
-  ///REMARK. HAVE TO USE THE SAME CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
-   ///************************************************************************************************  
-  potts->getCellFactoryGroupPtr()->registerClass(cellPixelTrackerAccessorPtr);
+    ///will register PixelTracker here
+    ExtraMembersGroupAccessorBase *cellPixelTrackerAccessorPtr = &pixelTrackerAccessor;
+    ///************************************************************************************************
+    ///REMARK. HAVE TO USE THE SAME CLASS ACCESSOR INSTANCE THAT WAS USED TO REGISTER WITH FACTORY
+    ///************************************************************************************************
+    potts->getCellFactoryGroupPtr()->registerClass(cellPixelTrackerAccessorPtr);
 
-  potts->registerCellGChangeWatcher(this);
-  
-  if (_xmlData) {
-	  trackMedium = _xmlData->findElement("TrackMedium");
-  }
+    potts->registerCellGChangeWatcher(this);
+
+    if (_xmlData) {
+        trackMedium = _xmlData->findElement("TrackMedium");
+    }
 
 }
 
 void PixelTrackerPlugin::extraInit(Simulator *simulator) {
-	if (trackMedium) {
-		
-		mediumTrackerDataInit();
+    if (trackMedium) {
 
-	}
+        mediumTrackerDataInit();
+
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void PixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,CellG *oldCell) {
-	if (newCell==oldCell) //this may happen if you are trying to assign same cell to one pixel twice 
-		return;
+void PixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell) {
+    if (newCell == oldCell) //this may happen if you are trying to assign same cell to one pixel twice
+        return;
 
-	if (newCell) {
-		std::set<PixelTrackerData > & pixelSetRef = pixelTrackerAccessor.get(newCell->extraAttribPtr)->pixelSet;
-		std::set<PixelTrackerData >::iterator sitr = pixelSetRef.find(PixelTrackerData(pt));
-		pixelSetRef.insert(PixelTrackerData(pt));
-	}
-	else if (trackMedium) {
-		unsigned int workNodeNum = pUtils->getCurrentWorkNodeNumber();
-		unsigned int partitionNum = getParitionNumber(pt, workNodeNum);
-		mediumPixelSet[partitionNum].insert(PixelTrackerData(pt));
-	}
+    if (newCell) {
+        std::set <PixelTrackerData> &pixelSetRef = pixelTrackerAccessor.get(newCell->extraAttribPtr)->pixelSet;
+        std::set<PixelTrackerData>::iterator sitr = pixelSetRef.find(PixelTrackerData(pt));
+        pixelSetRef.insert(PixelTrackerData(pt));
+    } else if (trackMedium) {
+        unsigned int workNodeNum = pUtils->getCurrentWorkNodeNumber();
+        unsigned int partitionNum = getParitionNumber(pt, workNodeNum);
+        mediumPixelSet[partitionNum].insert(PixelTrackerData(pt));
+    }
 
-	std::set<PixelTrackerData >::iterator sitr;
-	if (oldCell) {
-		std::set<PixelTrackerData > & pixelSetRef = pixelTrackerAccessor.get(oldCell->extraAttribPtr)->pixelSet;
-		sitr = pixelSetRef.find(PixelTrackerData(pt));
+    std::set<PixelTrackerData>::iterator sitr;
+    if (oldCell) {
+        std::set <PixelTrackerData> &pixelSetRef = pixelTrackerAccessor.get(oldCell->extraAttribPtr)->pixelSet;
+        sitr = pixelSetRef.find(PixelTrackerData(pt));
 
-		if (sitr == pixelSetRef.end()) throw CC3DException("Could not find point:" + pt + " inside cell of id: " + std::to_string(oldCell->id) + " type: " + std::to_string((int)oldCell->type));
+        if (sitr == pixelSetRef.end())
+            throw CC3DException(
+                    "Could not find point:" + pt + " inside cell of id: " + std::to_string(oldCell->id) + " type: " +
+                    std::to_string((int) oldCell->type));
 
-		pixelSetRef.erase(sitr);
-	}
-	else if (trackMedium) {
-		unsigned int workNodeNum = pUtils->getCurrentWorkNodeNumber();
-		unsigned int partitionNum = getParitionNumber(pt, workNodeNum);
-		sitr = mediumPixelSet[partitionNum].find(PixelTrackerData(pt));
+        pixelSetRef.erase(sitr);
+    } else if (trackMedium) {
+        unsigned int workNodeNum = pUtils->getCurrentWorkNodeNumber();
+        unsigned int partitionNum = getParitionNumber(pt, workNodeNum);
+        sitr = mediumPixelSet[partitionNum].find(PixelTrackerData(pt));
 
-		if (sitr == mediumPixelSet[partitionNum].end()) throw CC3DException("Could not find point:" + pt + " in medium");
+        if (sitr == mediumPixelSet[partitionNum].end())
+            throw CC3DException("Could not find point:" + pt + " in medium");
 
-		mediumPixelSet[partitionNum].erase(sitr);
-	}
+        mediumPixelSet[partitionNum].erase(sitr);
+    }
 
-   
+
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void PixelTrackerPlugin::handleEvent(CC3DEvent & _event){
-	if (_event.id == CHANGE_NUMBER_OF_WORK_NODES) {
+void PixelTrackerPlugin::handleEvent(CC3DEvent &_event) {
+    if (_event.id == CHANGE_NUMBER_OF_WORK_NODES) {
 
-		mediumTrackerDataInit();
+        mediumTrackerDataInit();
 
-	}
-	else if (_event.id!=LATTICE_RESIZE){
-		return;
-	}
+    } else if (_event.id != LATTICE_RESIZE) {
+        return;
+    }
 
-	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+    CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize &>(_event);
 
-	Dim3D shiftVec=ev.shiftVec;
+    Dim3D shiftVec = ev.shiftVec;
 
     CellInventory &cellInventory = potts->getCellInventory();
     CellInventory::cellInventoryIterator cInvItr;
-    CellG * cell;
-        
-    for(cInvItr=cellInventory.cellInventoryBegin() ; cInvItr !=cellInventory.cellInventoryEnd() ;++cInvItr )
-    {
-		cell=cInvItr->second;
-		std::set<PixelTrackerData > & pixelSetRef=pixelTrackerAccessor.get(cell->extraAttribPtr)->pixelSet;
-		for (set<PixelTrackerData >::iterator sitr=pixelSetRef.begin() ; sitr != pixelSetRef.end() ; ++sitr ){
-                        Point3D & pixel=const_cast<Point3D&>(sitr->pixel);
-                        pixel.x+=shiftVec.x;
-                        pixel.y+=shiftVec.y;
-                        pixel.z+=shiftVec.z;
-                        
-// 			sitr->pixel.x+=shiftVec.x;
-// 			sitr->pixel.y+=shiftVec.y;
-// 			sitr->pixel.z+=shiftVec.z;
-		}
+    CellG *cell;
 
+    for (cInvItr = cellInventory.cellInventoryBegin(); cInvItr != cellInventory.cellInventoryEnd(); ++cInvItr) {
+        cell = cInvItr->second;
+        std::set <PixelTrackerData> &pixelSetRef = pixelTrackerAccessor.get(cell->extraAttribPtr)->pixelSet;
+        for (set<PixelTrackerData>::iterator sitr = pixelSetRef.begin(); sitr != pixelSetRef.end(); ++sitr) {
+            Point3D &pixel = const_cast<Point3D &>(sitr->pixel);
+            pixel.x += shiftVec.x;
+            pixel.y += shiftVec.y;
+            pixel.z += shiftVec.z;
+
+
+        }
 
 
     }
 
-	if (trackMedium) {
-		for (unsigned int p = 0; p < mediumPixelSet.size(); ++p) {
-			for (set<PixelTrackerData >::iterator sitr = mediumPixelSet[p].begin(); sitr != mediumPixelSet[p].end(); ++sitr) {
-				Point3D & pixel = const_cast<Point3D&>(sitr->pixel);
-				pixel.x += shiftVec.x;
-				pixel.y += shiftVec.y;
-				pixel.z += shiftVec.z;
-			}
-		}
-	}
+    if (trackMedium) {
+        for (unsigned int p = 0; p < mediumPixelSet.size(); ++p) {
+            for (set<PixelTrackerData>::iterator sitr = mediumPixelSet[p].begin();
+                 sitr != mediumPixelSet[p].end(); ++sitr) {
+                Point3D &pixel = const_cast<Point3D &>(sitr->pixel);
+                pixel.x += shiftVec.x;
+                pixel.y += shiftVec.y;
+                pixel.z += shiftVec.z;
+            }
+        }
+    }
 
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::string PixelTrackerPlugin::toString(){
-	return "PixelTracker";
+std::string PixelTrackerPlugin::toString() {
+    return "PixelTracker";
 }
 
 void PixelTrackerPlugin::mediumTrackerDataInit() {
 
-	pUtils->setLock(lockPtr);
+    pUtils->setLock(lockPtr);
 
-	Field3DImpl<CellG *> *cellFieldG = (Field3DImpl<CellG *> *)potts->getCellFieldG();
-	Dim3D fieldDim = cellFieldG->getDim();
+    Field3DImpl < CellG * > *cellFieldG = (Field3DImpl < CellG * > *)
+    potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
 
-	unsigned int numSubSecs = pUtils->getNumberOfSubgridSectionsPotts();
-	unsigned int numWorkers = pUtils->getNumberOfWorkNodesPotts();
-	
-	std::vector<pair<Dim3D, Dim3D> > sectionDimsVecShared;
-	for (unsigned int n = 0; n < numWorkers; ++n)
-		for (unsigned int s = 0; s < numSubSecs; ++s) {
-			pair<Dim3D, Dim3D> pottsSection = pUtils->getPottsSection(n, s);
-			if (pottsSection.first.x < pottsSection.second.x ||
-				pottsSection.first.y < pottsSection.second.y ||
-				pottsSection.first.z < pottsSection.second.z) {
-				sectionDimsVecShared.push_back(pottsSection);
-			}
-		}
-	sectionDimsVec.clear();
-	sectionDimsVec.assign(numWorkers, sectionDimsVecShared);
+    unsigned int numSubSecs = pUtils->getNumberOfSubgridSectionsPotts();
+    unsigned int numWorkers = pUtils->getNumberOfWorkNodesPotts();
 
-	mediumPixelSet.clear();
-	mediumPixelSet.assign(sectionDimsVecShared.size(), std::set<PixelTrackerData>());
+    std::vector <pair<Dim3D, Dim3D>> sectionDimsVecShared;
+    for (unsigned int n = 0; n < numWorkers; ++n)
+        for (unsigned int s = 0; s < numSubSecs; ++s) {
+            pair <Dim3D, Dim3D> pottsSection = pUtils->getPottsSection(n, s);
+            if (pottsSection.first.x < pottsSection.second.x ||
+                pottsSection.first.y < pottsSection.second.y ||
+                pottsSection.first.z < pottsSection.second.z) {
+                sectionDimsVecShared.push_back(pottsSection);
+            }
+        }
+    sectionDimsVec.clear();
+    sectionDimsVec.assign(numWorkers, sectionDimsVecShared);
 
-	for (short z = 0; z < fieldDim.z; ++z)
-		for (short y = 0; y < fieldDim.y; ++y)
-			for (short x = 0; x < fieldDim.x; ++x) {
-				Point3D pt = Point3D(x, y, z);
-				CellG * cell = cellFieldG->get(pt);
-				if (cell == 0) { 
-					unsigned int partitionNumber = getParitionNumber(pt);
-					mediumPixelSet[partitionNumber].insert(PixelTrackerData(pt));
-				}
-			}
+    mediumPixelSet.clear();
+    mediumPixelSet.assign(sectionDimsVecShared.size(), std::set<PixelTrackerData>());
 
-	pUtils->unsetLock(lockPtr);
+    for (short z = 0; z < fieldDim.z; ++z)
+        for (short y = 0; y < fieldDim.y; ++y)
+            for (short x = 0; x < fieldDim.x; ++x) {
+                Point3D pt = Point3D(x, y, z);
+                CellG *cell = cellFieldG->get(pt);
+                if (cell == 0) {
+                    unsigned int partitionNumber = getParitionNumber(pt);
+                    mediumPixelSet[partitionNumber].insert(PixelTrackerData(pt));
+                }
+            }
+
+    pUtils->unsetLock(lockPtr);
 
 }
 
 unsigned int PixelTrackerPlugin::getParitionNumber(const Point3D &_pt, unsigned int _workerNum) {
 
-	std::vector<pair<Dim3D, Dim3D> > workerSectionDimsVec = sectionDimsVec[_workerNum];
-	for (unsigned int p = 0; p < workerSectionDimsVec.size(); ++p) {
-		Dim3D fieldDimMin = workerSectionDimsVec[p].first;
-		Dim3D fieldDimMax = workerSectionDimsVec[p].second;
-		if ((_pt.x >= fieldDimMin.x && _pt.y >= fieldDimMin.y && _pt.z >= fieldDimMin.z) && 
-			(_pt.x < fieldDimMax.x && _pt.y < fieldDimMax.y && _pt.z < fieldDimMax.z)) {
-			return p;
-		}
-	}
+    std::vector <pair<Dim3D, Dim3D>> workerSectionDimsVec = sectionDimsVec[_workerNum];
+    for (unsigned int p = 0; p < workerSectionDimsVec.size(); ++p) {
+        Dim3D fieldDimMin = workerSectionDimsVec[p].first;
+        Dim3D fieldDimMax = workerSectionDimsVec[p].second;
+        if ((_pt.x >= fieldDimMin.x && _pt.y >= fieldDimMin.y && _pt.z >= fieldDimMin.z) &&
+            (_pt.x < fieldDimMax.x && _pt.y < fieldDimMax.y && _pt.z < fieldDimMax.z)) {
+            return p;
+        }
+    }
 
-	throw CC3DException("Could not find partition for point:" + _pt);
+    throw CC3DException("Could not find partition for point:" + _pt);
 }
 
 // Not thread-safe
-std::set<PixelTrackerData> PixelTrackerPlugin::getMediumPixelSet() {
+std::set <PixelTrackerData> PixelTrackerPlugin::getMediumPixelSet() {
 
-	std::set<PixelTrackerData> mediumPixelSetCombined;
-	for (unsigned int p = 0; p < mediumPixelSet.size(); ++p){
+    std::set <PixelTrackerData> mediumPixelSetCombined;
+    for (unsigned int p = 0; p < mediumPixelSet.size(); ++p) {
 //		for each (PixelTrackerData ptd in mediumPixelSet[p])
-        for (auto ptd: mediumPixelSet[p]){
+        for (auto ptd: mediumPixelSet[p]) {
             mediumPixelSetCombined.insert(ptd);
         }
     }
 
-	return mediumPixelSetCombined;
+    return mediumPixelSetCombined;
 }

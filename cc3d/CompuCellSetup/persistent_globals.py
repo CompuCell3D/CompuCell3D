@@ -71,8 +71,12 @@ class PersistentGlobals:
 
         self.persistent_holder = {}
 
+        # dict of MCS at which player will pause
+        self.pause_at = {}
+
         self.global_sbml_simulator_options = None
         self.free_floating_sbml_simulators = {}
+        self.maboss_simulators = None
 
         # dictionary holding steering parameter objects - used for custom steering panel
         self.steering_param_dict = OrderedDict()
