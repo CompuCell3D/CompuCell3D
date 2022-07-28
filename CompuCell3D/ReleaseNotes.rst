@@ -1,6 +1,42 @@
 Release Notes
 =============
 
+Version 4.3.1
+-------------
+**2022-07-17**
+
+New features:
+- Improved DeveloperZone
+- Faster Graphics
+- Faster 2D Solvers with better multi-cpu scalability
+- Logging of the installation steps
+- Ability to intercept cell inventory anc cell type changes (as they occur) in Python
+- Added ability to pause simulation at specified intervals
+- Added message window support for any type of user output - supports rich text formatting
+- Improve cell type color handling
+
+Bug fixes:
+- Fixed Parameter Scan
+- Fixed integration of Twedit and Player
+- Better Python Templates in Twedit+
+
+
+Version 4.3.0
+-------------
+**2022-02-26**
+
+New features:
+- Full integration with conda/anaconda ecosystem
+- One-click configuration of Developer Zone and inclusion of  prepackaged compilers
+- Ability to download new versions of CC3D directly from the player
+- Better coverage in terms of supported platforms
+- Much easier future upgrades
+- Added support for cell link inventory lists in Python
+- Added support for relocatability and builds with cc3d as a dependency
+- Split code into 3 separate packages - cc3d-core, Player, Twedit
+- cc3d core code released under MIT license
+
+
 Version 4.2.5
 -------------
 **2021-06-05**

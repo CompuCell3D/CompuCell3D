@@ -17,7 +17,7 @@ also available via conda,
 
 .. code-block:: console
 
-    conda install -c compucell3d cc3d
+    conda install -c compucell3d -c conda-forge cc3d
 
 Source
 ******

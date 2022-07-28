@@ -107,9 +107,9 @@ SET(CC3D_PYTHON_MODULE_DIR ${CMAKE_SOURCE_DIR}/../)
 # setting up version
 
 set(COMPUCELL3D_MAJOR_VERSION 4)
-set(COMPUCELL3D_MINOR_VERSION 2)
-set(COMPUCELL3D_BUILD_VERSION 5)
-set(COMPUCELL3D_REV_NUMBER 20210612)
+set(COMPUCELL3D_MINOR_VERSION 3)
+set(COMPUCELL3D_BUILD_VERSION 1)
+set(COMPUCELL3D_REV_NUMBER 20220717)
 
 ## Specify a version for all libs to use
 # letters A, B, C are added to ensure nice display of version in cmake gui
@@ -296,4 +296,10 @@ endif (BUILD_QT_WRAPPERS)
 ADD_SUBDIRECTORY(core)
 # ADD_SUBDIRECTORY(optimization)
 
-
+# install info files
+install(FILES
+    License.txt
+    ReleaseNotes.rst
+    DESTINATION
+    ${CMAKE_INSTALL_PREFIX}
+)
