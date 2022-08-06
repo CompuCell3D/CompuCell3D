@@ -47,6 +47,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <string>
+#include<core/CompuCell3D/CC3DLogger.h>
 
 using namespace std;
 
@@ -97,7 +98,7 @@ void CleaverMesher::createTetMesh(bool verbose)
     BCCLattice3DMesher mesher(m_pimpl->m_lattice);//, alpha_short, alpha_long);
     m_pimpl->m_mesh = mesher.mesh(true, verbose);
     if(!m_pimpl->m_mesh)
-        cerr << "Failed to produce an output mesh." << endl;
+        Log(LOG_DEBUG) << "Failed to produce an output mesh.";
 }
 
 TetMesh* CleaverMesher::getTetMesh() const
@@ -143,7 +144,7 @@ BCCLattice3D* constructLatticeFromVolume(const Volume &volume)
     // Verify At Least 2 Fields Are Given As Input
     //-----------------------------------------------------
     if(volume.materials() < 2){
-        std::cerr << "At least 2 indicator functions required to run Cleaving algorithm" << std::endl;
+        Log(LOG_DEBUG) << "At least 2 indicator functions required to run Cleaving algorithm";
         return NULL;
     }
 

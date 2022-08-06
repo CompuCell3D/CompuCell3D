@@ -46,7 +46,7 @@ using namespace std;
 
 //#include <config.h>
 #include <BasicUtils/BasicRandomNumberGenerator.h>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 //void Syntax(const string name) {
 //  cerr << "Syntax: " << name << " <config>" << endl;
 //  exit(1);
@@ -202,12 +202,12 @@ BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
 
 
 void Syntax(const string name) {
-  cerr << "Syntax: " << name << " <config>" << endl;
+  Log(LOG_DEBUG) << "Syntax: " << name << " <config>";
   exit(1);
 }
 
 int main(int argc, char *argv[]) {
-	cerr << "mainSimpleDemo" << endl;
+	Log(LOG_DEBUG) << "mainSimpleDemo";
 	char * pluginPath = "d:/Program Files/cc3d_py3/lib/CompuCell3DPlugins/";
 	char * cellTypePluginPath = "d:/Program Files/cc3d_py3/lib/CompuCell3DPlugins/CC3DCellType.dll";
 	Simulator::pluginManager.loadLibraries(pluginPath);

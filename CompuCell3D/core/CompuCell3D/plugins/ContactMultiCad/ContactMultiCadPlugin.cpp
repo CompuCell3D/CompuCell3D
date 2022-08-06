@@ -28,7 +28,7 @@ using namespace CompuCell3D;
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 
 #include "ContactMultiCadPlugin.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 
 

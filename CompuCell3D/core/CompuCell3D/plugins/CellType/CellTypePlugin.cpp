@@ -34,7 +34,7 @@ using namespace std;
 
 #include "CellTypePlugin.h"
 
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 std::string CellTypePlugin::toString(){
    return "CellType";
@@ -60,7 +60,7 @@ void CellTypePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
    potts->registerAutomaton(this);
    update(_xmlData);
    simulator->registerSteerableObject((SteerableObject*)this);
-   cerr << "initialized cell type plugin" << endl;
+   Log(LOG_DEBUG) << "initialized cell type plugin";
 }
 
 
@@ -159,7 +159,7 @@ unsigned char CellTypePlugin::getTypeId(const string typeName) const {
 
 
 unsigned char CellTypePlugin::getMaxTypeId() const {
-	cerr<<"typeNameMap.size()="<<typeNameMap.size()<<endl;
+  Log(LOG_DEBUG) << "typeNameMap.size()="<<typeNameMap.size();
 	if (! typeNameMap.size()){
 		return 0;
 	}else{

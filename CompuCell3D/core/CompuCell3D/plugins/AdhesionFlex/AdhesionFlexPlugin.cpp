@@ -27,7 +27,7 @@ using namespace CompuCell3D;
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 
 #include "AdhesionFlexPlugin.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 AdhesionFlexPlugin::AdhesionFlexPlugin() :
     pUtils(0),
@@ -263,7 +263,7 @@ void AdhesionFlexPlugin::setBindingParameter(const std::string moleculeName1, co
 
 
     if (moleculeNameIndexMap.find(moleculeName1) == moleculeNameIndexMap.end()) {
-        cerr << "CANNOT FIND MOLECULE 1 in the map" << endl;
+        Log(LOG_DEBUG) << "CANNOT FIND MOLECULE 1 in the map";
         ASSERT_OR_THROW(string("Molecule Name=") + moleculeName1 + " was not declared in the AdhesionMolecule section", false);
     }
 
@@ -356,7 +356,7 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     if (!sim->getRestartEnabled()) {
         adhesionMoleculeDensityVecMedium = vector<float>(numberOfAdhesionMolecules, 0.0);
     }
-    cerr << "numberOfAdhesionMolecules=" << numberOfAdhesionMolecules << endl;
+    Log(LOG_DEBUG) << "numberOfAdhesionMolecules=" << numberOfAdhesionMolecules;
 
     //scannning AdhesionMoleculeDensity section
 
@@ -366,27 +366,26 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     for (int i = 0; i < adhesionMoleculeDensityXMLVec.size(); ++i) {
         int typeId = automaton->getTypeId(adhesionMoleculeDensityXMLVec[i]->getAttribute("CellType"));
-
-        cerr << "typeId=" << typeId << endl;
+        Log(LOG_DEBUG) << "typeId=" << typeId;
 
 
         mitr = typeToAdhesionMoleculeDensityMap.find(typeId);
         if (mitr == typeToAdhesionMoleculeDensityMap.end()) {
             typeToAdhesionMoleculeDensityMap.insert(make_pair(typeId, vector<float>(numberOfAdhesionMolecules, 0.0)));
-            cerr << "typeToAdhesionMoleculeDensityMap[typeId].size()=" << typeToAdhesionMoleculeDensityMap[typeId].size() << endl;
+            Log(LOG_DEBUG) << "typeToAdhesionMoleculeDensityMap[typeId].size()=" << typeToAdhesionMoleculeDensityMap[typeId].size();
         }
 
 
         string moleculeName = adhesionMoleculeDensityXMLVec[i]->getAttribute("Molecule");
-        cerr << "moleculeName=" << moleculeName << endl;
+        Log(LOG_DEBUG) << "moleculeName=" << moleculeName;
         if (moleculeNameIndexMap.find(moleculeName) == moleculeNameIndexMap.end()) {
             ASSERT_OR_THROW(string("Molecule Name=") + moleculeName + " was not declared in the AdhesionMolecule section", false);
         }
-        cerr << "moleculeNameIndexMap[moleculeName]=" << moleculeNameIndexMap[moleculeName] << endl;
-        cerr << "adhesionMoleculeDensityXMLVec[i]->getAttributeAsDouble(Density)=" << adhesionMoleculeDensityXMLVec[i]->getAttributeAsDouble("Density") << endl;
-        cerr << "typeToAdhesionMoleculeDensityMap[typeId].size()=" << typeToAdhesionMoleculeDensityMap[typeId].size() << endl;
+        Log(LOG_DEBUG) << "moleculeNameIndexMap[moleculeName]=" << moleculeNameIndexMap[moleculeName];
+        Log(LOG_DEBUG) << "adhesionMoleculeDensityXMLVec[i]->getAttributeAsDouble(Density)=" << adhesionMoleculeDensityXMLVec[i]->getAttributeAsDouble("Density");
+        Log(LOG_DEBUG) << "typeToAdhesionMoleculeDensityMap[typeId].size()=" << typeToAdhesionMoleculeDensityMap[typeId].size();
         typeToAdhesionMoleculeDensityMap[typeId][moleculeNameIndexMap[moleculeName]] = adhesionMoleculeDensityXMLVec[i]->getAttributeAsDouble("Density");
-        cerr << "AFTER ASSIGNING DENSITY" << endl;
+        Log(LOG_DEBUG) << "AFTER ASSIGNING DENSITY";
     }
 
 
@@ -449,7 +448,7 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         if (_xmlData->getFirstElement("NeighborOrder")) {
 
             maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());
-            cerr << "maxNeighborIndex=" << maxNeighborIndex << endl;
+            Log(LOG_DEBUG) << "maxNeighborIndex=" << maxNeighborIndex;
         }
         else {
             maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
@@ -458,8 +457,7 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     }
 
-
-    cerr << "sizeBindingArray=" << moleculeNameIndexMap.size() << endl;
+    Log(LOG_DEBUG) << "sizeBindingArray=" << moleculeNameIndexMap.size();
     //initializing binding parameter array
     int sizeBindingArray = moleculeNameIndexMap.size();
 
@@ -484,8 +482,7 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     for (int i = 0; i < sizeBindingArray; ++i)
         for (int j = 0; j < sizeBindingArray; ++j) {
-
-            cerr << "bindingParameterArray[" << i << "][" << j << "]=" << bindingParameterArray[i][j] << endl;
+            Log(LOG_DEBUG) << "bindingParameterArray[" << i << "][" << j << "]=" << bindingParameterArray[i][j];
 
         }
 
@@ -671,7 +668,7 @@ vector<float> AdhesionFlexPlugin::getMediumAdhesionMoleculeDensityVector() {
 
 void AdhesionFlexPlugin::overrideInitialization() {
     adhesionDensityInitialized = true;
-    cerr << "adhesionDensityInitialized=" << adhesionDensityInitialized << endl;
+    Log(LOG_DEBUG) << "adhesionDensityInitialized=" << adhesionDensityInitialized;
 }
 
 std::string AdhesionFlexPlugin::toString() {

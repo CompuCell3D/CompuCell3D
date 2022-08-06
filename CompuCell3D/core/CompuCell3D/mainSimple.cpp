@@ -46,7 +46,7 @@ using namespace std;
 
 //#include <config.h>
 #include <BasicUtils/BasicRandomNumberGenerator.h>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 //void Syntax(const string name) {
 //  cerr << "Syntax: " << name << " <config>" << endl;
 //  exit(1);
@@ -66,7 +66,6 @@ BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
 //     // Create Simulator
 //    Simulator sim;
 //
-//	cerr<<"THIS IS COMPUCELL3D"<<endl;
 //
 //  try {
 //    // Command line
@@ -76,11 +75,9 @@ BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
 //    // Libaries in COMPUCELL3D_PLUGIN_PATH can override the
 //    // DEFAULT_PLUGIN_PATH
 ////      char *steppablePath = getenv("COMPUCELL3D_STEPPABLE_PATH");
-////      cerr<<"steppablePath="<<steppablePath<<endl;
 ////      if (steppablePath) Simulator::steppableManager.loadLibraries(steppablePath);
 ////
 //     //char *pluginPath = getenv("COMPUCELL3D_PLUGIN_PATH");
-//     //cerr<<"pluginPath="<<pluginPath<<endl;
 //     //     Simulator::pluginManager.loadLibrary(string("PluginA") + BasicPluginManager<Plugin>::libExtension);
 ////      Simulator::steppableManager.loadLibrary(string(pluginPath)+string("\\")+string("CC3DCellTypePlugin") + BasicPluginManager<Plugin>::libExtension);
 ////      Simulator::steppableManager.loadLibrary(string("CC3DCellTypePlugin") + BasicPluginManager<Plugin>::libExtension);
@@ -99,11 +96,9 @@ BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
 ////exit(0);
 //
 //      char *steppablePath = getenv("COMPUCELL3D_STEPPABLE_PATH");
-//      cerr<<"steppablePath="<<steppablePath<<endl;
 //      if (steppablePath) Simulator::steppableManager.loadLibraries(steppablePath);
 //
 //     char *pluginPath = getenv("COMPUCELL3D_PLUGIN_PATH");
-//     cerr<<"pluginPath="<<pluginPath<<endl;
 //	 if (pluginPath) Simulator::pluginManager.loadLibraries(pluginPath);
 //    
 //#ifdef DEFAULT_PLUGIN_PATH
@@ -202,7 +197,7 @@ BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
 
 
 void Syntax(const string name) {
-  cerr << "Syntax: " << name << " <config>" << endl;
+  Log(LOG_DEBUG) << "Syntax: " << name << " <config>";
   exit(1);
 }
 

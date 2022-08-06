@@ -27,7 +27,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "ContactLocalFlexPlugin.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 ContactLocalFlexPlugin::ContactLocalFlexPlugin() :
     pUtils(0),
@@ -75,7 +75,6 @@ void ContactLocalFlexPlugin::extraInit(Simulator *simulator) {
 double ContactLocalFlexPlugin::changeEnergy(const Point3D &pt,
     const CellG *newCell,
     const CellG *oldCell) {
-    //cerr<<"ChangeEnergy"<<endl;
 
 
     double energy = 0;
@@ -207,11 +206,9 @@ double ContactLocalFlexPlugin::contactEnergy(const CellG *cell1, const CellG *ce
     set<ContactLocalFlexData>::iterator sitrCD = clfdSet.find(clfdObj);
 
     if (sitrCD != clfdSet.end()) {
-        //cerr<<"\t retrieving cell->type="<<(int)cell->type<<" neighbor->type="<<(neighbor? (int)neighbor->type:0)<<" energy="<<sitrCD->J<<endl;
         return sitrCD->J;
     }
     else {
-        //       cerr<<"\t\t default energy="<<defaultContactEnergy(cell1,cell2)<<endl;
         return defaultContactEnergy(cell1, cell2);
     }
 
@@ -288,7 +285,6 @@ void ContactLocalFlexPlugin::updateContactEnergyData(CellG *_cell) {
     for (sitrND = nsdSet.begin(); sitrND != nsdSet.end(); ++sitrND) {
         clfdObj.neighborAddress = sitrND->neighborAddress;
         clfdObj.J = defaultContactEnergy(clfdObj.neighborAddress, _cell);
-        //             cerr<<"INSERTING _cell->type="<<(_cell? (int)_cell->type:0)<<" neighbor->type="<<(clfdObj.neighborAddress? (int)clfdObj.neighborAddress->type:0)<<" energy="<<clfdObj.J<<endl;
 
         clfdSet.insert(clfdObj); //the element will be inserted only if it is not there
     }
@@ -321,7 +317,6 @@ void ContactLocalFlexPlugin::field3DChange(const Point3D &pt, CellG *newCell, Ce
         pUtils->unsetLock(lockPtr);
     }
 
-    //    cerr<<"INSIDE field3DChange"<<endl
     if (newCell) {
         updateContactEnergyData(newCell);
     }
@@ -368,12 +363,10 @@ void ContactLocalFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
             contactEnergyArray[i][j] = contactEnergies[index];
 
         }
-    cerr << "size=" << size << endl;
+    Log(LOG_DEBUG) << "size=" << size;
     for (int i = 0; i < size; ++i)
         for (int j = 0; j < size; ++j) {
-
-            cerr << "contact[" << i << "][" << j << "]=" << contactEnergyArray[i][j] << endl;
-
+             Log(LOG_DEBUG) << "contact[" << i << "][" << j << "]=" << contactEnergyArray[i][j];
         }
 
     //Here I initialize max neighbor index for direct acces to the list of neighbors 
@@ -386,10 +379,8 @@ void ContactLocalFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
 
     if (_xmlData->getFirstElement("Depth")) {
         maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
-        //cerr<<"got here will do depth"<<endl;
     }
     else {
-        //cerr<<"got here will do neighbor order"<<endl;
         if (_xmlData->getFirstElement("NeighborOrder")) {
 
             maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());
@@ -400,8 +391,7 @@ void ContactLocalFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
         }
 
     }
-
-    cerr << "Contact maxNeighborIndex=" << maxNeighborIndex << endl;
+    Log(LOG_DEBUG) << "Contact maxNeighborIndex=" << maxNeighborIndex;
 
 }
 

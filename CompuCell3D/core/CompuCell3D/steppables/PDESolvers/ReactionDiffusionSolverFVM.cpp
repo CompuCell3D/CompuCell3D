@@ -20,7 +20,7 @@
 #include <sstream>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include <omp.h>
-#include<Compucell3D/CC3DLogger.h>
+#include<core/CompuCell3D/CC3DLogger.h>
 
 // macro to ensure CC3d_log is enabled only when debugging
 /* #ifdef DEBUG
@@ -386,7 +386,7 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 
 					std::string expStr = expData->getData();
 					fieldExpressionStringsDiag[fieldIndex].push_back(expStr);
-					Log(LOG_DEBUG) <<" Got multiplier reaction expression: " << expStr
+					Log(LOG_DEBUG) <<" Got multiplier reaction expression: " << expStr;
 				}
 			}
 
@@ -766,7 +766,7 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 			integrationTimeStep = min(*min_element(fvMaxStableTimeSteps->begin(), fvMaxStableTimeSteps->end()), incTime - intTime);
 		}
 		else { 
-			Log(LOG_DEBUG) << "      Integrating with fixed time step... ");
+			Log(LOG_DEBUG) << "      Integrating with fixed time step... ";
 
 			integrationTimeStep = incTime - intTime;
 
@@ -796,7 +796,7 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 		updateTotalConcentrations();
 
 	}
-	Log(LOG_DEBUG) << "RDFVM Step complete.");
+	Log(LOG_DEBUG) << "RDFVM Step complete.";
 
 	pUtils->unsetLock(lockPtr);
 

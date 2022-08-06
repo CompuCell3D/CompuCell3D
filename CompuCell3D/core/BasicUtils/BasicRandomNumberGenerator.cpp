@@ -36,16 +36,16 @@ BasicRandomNumberGenerator *BasicRandomNumberGenerator::getInstance() {
   return singleton;
 }
 
-CompuCell3D::Logger logger = 
 
 void BasicRandomNumberGenerator::setSeed(const unsigned int seed) {
 //   this->seed = seed;
 //   srand(seed);
   this->seed = seed;
   if (seed < 0) {
-	  std::cerr << "Randomizing random generator, seed is ";
+    Log(LOG_DEBUG) << "Randomizing random generator, seed is ";
     int rseed=Randomize();
-    std::cerr << rseed << "\n";
+    Log(LOG_DEBUG) << "\n";
+   
 //     return rseed;
   } else {
     int i;
@@ -150,9 +150,9 @@ void BasicRandomNumberGeneratorNonStatic::setSeed(const unsigned int seed) {
 //   srand(seed);
   this->seed = seed;
   if (seed < 0) {
-	  std::cerr << "Randomizing random generator, seed is ";
+    Log(LOG_DEBUG) << "Randomizing random generator, seed is ";
     int rseed=Randomize();
-    std::cerr << rseed << "\n";
+    Log(LOG_DEBUG) << "\n";
 //     return rseed;
   } else {
     int i;
