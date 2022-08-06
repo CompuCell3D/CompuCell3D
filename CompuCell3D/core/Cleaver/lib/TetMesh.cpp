@@ -53,6 +53,7 @@
 #include "BCCLattice3D.h"
 #include "Util.h"
 #include "Matlab.h"
+#include<core/CompuCell3D/CC3DLogger.h>
 
 using namespace std;
 
@@ -837,11 +838,11 @@ void TetMesh::writeMatlab(const std::string &filename, bool verbose)
     //-------------------------------
     std::ofstream file((filename + ".mat").c_str(), std::ios::out | std::ios::binary);
     if(verbose)
-        std::cout << "Writing mesh matlab file: " << (filename + ".mat").c_str() << std::endl;
+        Log(LOG_DEBUG) << "Writing mesh matlab file: " << (filename + ".mat").c_str();
 
     if(!file.is_open())
     {
-        std::cerr << "Failed to create file." << std::endl;
+        Log(LOG_DEBUG) << "Failed to create file.";
         return;
     }
 

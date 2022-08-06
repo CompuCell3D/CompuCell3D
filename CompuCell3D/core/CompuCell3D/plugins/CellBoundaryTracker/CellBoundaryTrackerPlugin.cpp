@@ -12,6 +12,7 @@ using namespace CompuCell3D;
 
 #include <iostream>
 #include <cmath>
+#include<core/CompuCell3D/CC3DLogger.h>
 
 using namespace std;
 
@@ -26,8 +27,7 @@ CellBoundaryTrackerPlugin::~CellBoundaryTrackerPlugin() {
 }
 
 void CellBoundaryTrackerPlugin::init(Simulator *_simulator) {
-
-    cerr << "INITIALIZING CELL BOUNDARYTRACKER PLUGIN" << endl;
+  Log(LOG_DEBUG) << "INITIALIZING CELL BOUNDARYTRACKER PLUGIN";
     simulator = _simulator;
     Potts3D *potts = simulator->getPotts();
     cellFieldG = potts->getCellFieldG();
@@ -223,9 +223,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
                             oldCellNeighborSurfaceDataSetPtr->erase(set_NSD_itr);
 
                     } else {
-                        cerr
-                                << "Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ..."
-                                << endl;
+                        Log(LOG_DEBUG) << "Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ...";
                         exit(0);
                     }
 
@@ -465,8 +463,8 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
         interval = 100000;
     }
     if (!(changeCounter % interval)) {
-        cerr << "OLD CELL ADR: " << oldCell << " NEW CELL ADR: " << newCell << endl;
-        cerr << "ChangeCounter:" << changeCounter << endl;
+        Log(LOG_DEBUG) << "OLD CELL ADR: "<<oldCell<<" NEW CELL ADR: "<<newCell;
+        Log(LOG_DEBUG) << "ChangeCounter:"<<changeCounter;
         testLatticeSanityFull();
 
     }
@@ -790,9 +788,8 @@ void CellBoundaryTrackerPlugin::testLatticeSanity() {
                     ///cerr<<"Checking cell:" << currentCellPtr <<endl;
 
                     if (set_NSD_local.size() != set_NSD_ref.size()) {
-                        cerr << "Sets have different sizes - orig:" << set_NSD_ref.size() << " local:"
-                             << set_NSD_local.size() <<
-                             " . Exining..." << endl;
+                        Log(LOG_DEBUG) << "Sets have different sizes - orig:"<<set_NSD_ref.size()<<" local:"<<set_NSD_local.size()<<
+                  " . Exining...";
                         exit(0);
 
                     }
@@ -804,15 +801,13 @@ void CellBoundaryTrackerPlugin::testLatticeSanity() {
 
 
                         if (sitr_local->neighborAddress != sitr->neighborAddress) {
-                            cerr << "Neighbor addresses - orig: " << sitr->neighborAddress << " local:"
-                                 << sitr_local->neighborAddress <<
-                                 " do not match. Exiting " << endl;
+                            Log(LOG_DEBUG) << "Neighbor addresses - orig: "<<sitr->neighborAddress<<" local:"<<sitr_local->neighborAddress<<
+                     " do not match. Exiting ";
                             exit(0);
                         }
                         if (sitr_local->commonSurfaceArea != sitr->commonSurfaceArea) {
-                            cerr << "Neighbor commonSurfaceArea - orig: " << sitr->commonSurfaceArea << " local:"
-                                 << sitr_local->commonSurfaceArea <<
-                                 " do not match. Exiting " << endl;
+                            Log(LOG_DEBUG) << "Neighbor commonSurfaceArea - orig: "<<sitr->commonSurfaceArea<<" local:"<<sitr_local->commonSurfaceArea<<
+                     " do not match. Exiting ";
                             exit(0);
                         }
                         ///cerr<<"neighbor:"<<sitr->neighborAddress<<" commonSurfaceArea:"<<sitr->commonSurfaceArea<<endl;
@@ -829,18 +824,16 @@ void CellBoundaryTrackerPlugin::testLatticeSanity() {
                     bdsitr = set_ref.find(BoundaryData(currentPtIndex));
 
                     if (bdsitr == set_ref.end()) {
-                        cerr << "Requested pixel:" << currentPtIndex
-                             << " was not found in the boundary set. Boundary corrupted. Exiting..." << endl;
-                        cerr << "Tried address " << currentCellPtr << endl;
+                        Log(LOG_DEBUG) << "Requested pixel:"<<currentPtIndex<< " was not found in the boundary set. Boundary corrupted. Exiting...";
+                        Log(LOG_DEBUG) << "Tried address "<<currentCellPtr;
                         exit(0);
                     } else if (bdsitr->numberOfForeignNeighbors != localNeighborCounter) {
-                        cerr << "Different Number of foreign neighbors - orig=" << bdsitr->numberOfForeignNeighbors
-                             << " instant init=" << localNeighborCounter << endl;
-                        cerr << "Tried address " << currentCellPtr << endl;
+                        Log(LOG_DEBUG) << "Different Number of foreign neighbors - orig="<<bdsitr->numberOfForeignNeighbors
+                  <<" instant init="<<localNeighborCounter;
+                        Log(LOG_DEBUG) << "Tried address "<<currentCellPtr;
                         exit(0);
                     } else if ((bdsitr->numberOfForeignNeighbors) > 26) {
-                        cerr << "Number of fN's is " << bdsitr->numberOfForeignNeighbors << " but allowed value is 26 "
-                             << endl;
+                        Log(LOG_DEBUG) << "Number of fN's is "<<bdsitr->numberOfForeignNeighbors<<" but allowed value is 26 ";
                         exit(0);
 
                     } else {
@@ -851,9 +844,11 @@ void CellBoundaryTrackerPlugin::testLatticeSanity() {
                 }
 
 
-            }
 
-    cerr << "LATTICE IS SANE!!!!!" << endl;
+
+
+         }
+     Log(LOG_DEBUG) << "LATTICE IS SANE!!!!!";
 
 }
 
@@ -1118,9 +1113,8 @@ void CellBoundaryTrackerPlugin::testLatticeSanityFull() {
                     ///cerr<<"Checking cell:" << currentCellPtr <<endl;
 
                     if (set_NSD_local.size() != set_NSD_ref.size()) {
-                        cerr << "Sets have different sizes - orig:" << set_NSD_ref.size() << " local:"
-                             << set_NSD_local.size() <<
-                             " . Exining..." << endl;
+                        Log(LOG_DEBUG) << "Sets have different sizes - orig:"<<set_NSD_ref.size()<<" local:"<<set_NSD_local.size()<<
+                  " . Exining...";
                         exit(0);
 
                     }
@@ -1132,15 +1126,13 @@ void CellBoundaryTrackerPlugin::testLatticeSanityFull() {
 
 
                         if (sitr_local->neighborAddress != sitr->neighborAddress) {
-                            cerr << "Neighbor addresses - orig: " << sitr->neighborAddress << " local:"
-                                 << sitr_local->neighborAddress <<
-                                 " do not match. Exiting " << endl;
+                            Log(LOG_DEBUG) << "Neighbor addresses - orig: "<<sitr->neighborAddress<<" local:"<<sitr_local->neighborAddress<<
+                     " do not match. Exiting ";
                             exit(0);
                         }
                         if (sitr_local->commonSurfaceArea != sitr->commonSurfaceArea) {
-                            cerr << "Neighbor commonSurfaceArea - orig: " << sitr->commonSurfaceArea << " local:"
-                                 << sitr_local->commonSurfaceArea <<
-                                 " do not match. Exiting " << endl;
+                            Log(LOG_DEBUG) << "Neighbor commonSurfaceArea - orig: "<<sitr->commonSurfaceArea<<" local:"<<sitr_local->commonSurfaceArea<<
+                     " do not match. Exiting ";
                             exit(0);
                         }
                         ///cerr<<"neighbor:"<<sitr->neighborAddress<<" commonSurfaceArea:"<<sitr->commonSurfaceArea<<endl;
@@ -1157,18 +1149,16 @@ void CellBoundaryTrackerPlugin::testLatticeSanityFull() {
                     bdsitr = set_ref.find(BoundaryData(currentPtIndex));
 
                     if (bdsitr == set_ref.end()) {
-                        cerr << "Requested pixel:" << currentPtIndex
-                             << " was not found in the boundary set. Boundary corrupted. Exiting..." << endl;
-                        cerr << "Tried address " << currentCellPtr << endl;
+                        Log(LOG_DEBUG) << "Requested pixel:"<<currentPtIndex<< " was not found in the boundary set. Boundary corrupted. Exiting...";
+                        Log(LOG_DEBUG) << "Tried address "<<currentCellPtr;
                         exit(0);
                     } else if (bdsitr->numberOfForeignNeighbors != localNeighborCounter) {
-                        cerr << "Different Number of foreign neighbors - orig=" << bdsitr->numberOfForeignNeighbors
-                             << " instant init=" << localNeighborCounter << endl;
-                        cerr << "Tried address " << currentCellPtr << endl;
+                        Log(LOG_DEBUG) << "Different Number of foreign neighbors - orig="<<bdsitr->numberOfForeignNeighbors
+                  <<" instant init="<<localNeighborCounter;
+                        Log(LOG_DEBUG) << "Tried address "<<currentCellPtr;
                         exit(0);
                     } else if ((bdsitr->numberOfForeignNeighbors) > 26) {
-                        cerr << "Number of fN's is " << bdsitr->numberOfForeignNeighbors << " but allowed value is 26 "
-                             << endl;
+                        Log(LOG_DEBUG) << "Number of fN's is "<<bdsitr->numberOfForeignNeighbors<<" but allowed value is 26 ";
                         exit(0);
 
                     } else {
@@ -1179,9 +1169,11 @@ void CellBoundaryTrackerPlugin::testLatticeSanityFull() {
                 }
 
 
-            }
 
-    cerr << "LATTICE IS SANE!!!!!" << endl;
+
+
+         }
+     Log(LOG_DEBUG) << "LATTICE IS SANE!!!!!";
 
 }
 

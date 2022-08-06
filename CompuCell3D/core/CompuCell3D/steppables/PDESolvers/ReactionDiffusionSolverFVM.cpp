@@ -17,7 +17,7 @@
 #include <sstream>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include <omp.h>
-#include <Compucell3D/CC3DLogger.h>
+#include <core/CompuCell3D/CC3DLogger.h>
 
 // macro to ensure CC3d_log is enabled only when debugging
 /* #ifdef DEBUG
@@ -366,7 +366,7 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 
 					std::string expStr = expData->getData();
 					fieldExpressionStringsDiag[fieldIndex].push_back(expStr);
-					CC3d_log("   Got multiplier reaction expression: " << expStr);
+					Log(LOG_DEBUG) <<" Got multiplier reaction expression: " << expStr;
 				}
 			}
 
@@ -600,7 +600,7 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	}
 
 	// Build lattice
-	
+
 	CC3d_log("Building lattice...");
 
 	initializeFVs(fieldDim);
@@ -716,7 +716,7 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 			for (int fieldIndex=0;fieldIndex<_fieldDim.x*_fieldDim.y*_fieldDim.z;fieldIndex++){
 				fvMaxStableTimeSteps->at(fieldIndex) = this->getFieldFV(fieldIndex)->solveStable();
 			}
-		
+
 			CC3d_log("calculating maximum stable time step... ");
 
 			// Might be more efficient using a combinable
@@ -724,7 +724,7 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 		}
 		else { 
 
-			CC3d_log("      Integrating with fixed time step... ");
+			CC3d_log("      Integrating with fixed time step... ";
 
 			integrationTimeStep = incTime - intTime;
 
@@ -753,7 +753,7 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 
 	if (fluctuationCompensator) fluctuationCompensator->resetCorrections();
 
-	CC3d_log("RDFVM Step complete.");
+	CC3d_log("RDFVM Step complete.";
 
 	pUtils->unsetLock(lockPtr);
 
@@ -848,7 +848,7 @@ void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
 		ReactionDiffusionSolverFV *fv = new ReactionDiffusionSolverFV(this, ind2pt(ind), (int)this->getConcentrationFieldNameVector().size());
 		this->setFieldFV(ind, fv);
 	}
-    
+
 	CC3d_log("Initializing FVs...");
 
 	auto &_fieldFVs = fieldFVs;
@@ -865,7 +865,7 @@ void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
 			_fieldFVs[i]->registerFieldSymbol(fieldIndex, this->getFieldSymbol(fieldIndex));
 		}
 	}
-	
+
 	CC3d_log("Loading field expressions...");
 
 	loadFieldExpressions();

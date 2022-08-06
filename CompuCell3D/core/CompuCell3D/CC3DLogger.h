@@ -8,7 +8,7 @@
 #pragma once
 #ifndef SRC_CC3DLOGGER_H_
 #define SRC_CC3DLOGGER_H_
-
+#define CC3D_FUNCTION __PRETTY_FUNCTION__
 #include <sstream>
 #include <core/CompuCell3D/CompuCellLibDLLSpecifier.h>
 
@@ -34,7 +34,7 @@ public:
     /**
      * dump the contents of the stringstream to the log.
      */
-    virtual ~LoggingBuffer();
+    ~LoggingBuffer();
 
     /**
      * get the stream this buffer holds.
@@ -185,9 +185,12 @@ public:
 };
 
 
+#ifndef NO_LOGGER
 #define Log(level) \
-    if (true) {  }\
-    else \
-    LoggingBuffer(level, MX_FUNCTION, __FILE__, __LINE__)
+    if (level > Logger::getLevel()) { ; } \
+    else LoggingBuffer(level, CC3D_FUNCTION, __FILE__, __LINE__).stream()
+#endif
+// #define Log(level) \
+//     LoggingBuffer(level, CC3D_FUNCTION, __FILE__, __LINE__)
 }
 #endif /* SRC_CC3DLOGGER_H_ */

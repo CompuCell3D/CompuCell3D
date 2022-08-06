@@ -19,6 +19,7 @@
 
 #include "AlgorithmFactory.h"
 #include "Algorithm.h"
+#include<core/CompuCell3D/CC3DLogger.h>
 
 #define roundf(a) ((fmod(a,1)<0.5)?floor(a):ceil(a))
 
@@ -46,9 +47,8 @@ BoundaryStrategy::BoundaryStrategy() {
     unsigned int maxHexArraySize = 6;
 
 #ifdef _DEBUG
-    cerr << "maxHexArraySize=" << maxHexArraySize << endl;
-
-    cerr << "\t\t\t\t\t\t\t CALLING DEFAULT CONSTRUCTOR FOR BOUNDARY STRATEGY" << endl;
+    Log(LOG_DEBUG) << "maxHexArraySize=" << maxHexArraySize;
+	Log(LOG_DEBUG) << "\t\t\t\t\t\t\t CALLING DEFAULT CONSTRUCTOR FOR BOUNDARY STRATEGY";
 #endif
 
 }
@@ -77,9 +77,8 @@ BoundaryStrategy::BoundaryStrategy(string boundary_x, string boundary_y,
     //unsigned int maxHexArraySize=(Y_ODD|Z_ODD|X_ODD|Y_EVEN|Z_EVEN|X_EVEN)+1;
     unsigned int maxHexArraySize = 6;
 #ifdef _DEBUG
-
-    cerr << "\t\t\t\t\t\t\t CALLING SPECILIZED CONSTRUCTOR FOR BOUNDARY STRATEGY" << endl;
-    cerr << "maxHexArraySize=" << maxHexArraySize << endl;
+	Log(LOG_DEBUG) << "\t\t\t\t\t\t\t CALLING SPECILIZED CONSTRUCTOR FOR BOUNDARY STRATEGY";
+    Log(LOG_DEBUG) << "maxHexArraySize=" << maxHexArraySize;
 
 #endif
 
@@ -87,9 +86,9 @@ BoundaryStrategy::BoundaryStrategy(string boundary_x, string boundary_y,
 
 
 BoundaryStrategy::~BoundaryStrategy() {
-    cerr << "strategy_x=" << strategy_x << endl;
-    cerr << "strategy_y=" << strategy_y << endl;
-    cerr << "strategy_z=" << strategy_z << endl;
+    Log(LOG_DEBUG) << "strategy_x=" << strategy_x;
+    Log(LOG_DEBUG) << "strategy_y=" << strategy_y;
+    Log(LOG_DEBUG) << "strategy_z=" << strategy_z;
     if (strategy_x) {
         delete strategy_x;
         strategy_x = NULL;
@@ -362,7 +361,7 @@ void BoundaryStrategy::getOffsetsAndDistances(
         offsetVecTmp.push_back(mitr->second);
     }
 #ifdef _DEBUG
-    cerr << "distanceVecTmp.size()=" << distanceVecTmp.size() << endl;
+    Log(LOG_DEBUG) << "distanceVecTmp.size()=" << distanceVecTmp.size();
 #endif
     //creating a vector indexed by neighbor order  - entries of this vector are the highest indices of offsets for a
     //given neighbor order
@@ -467,7 +466,7 @@ void BoundaryStrategy::prepareNeighborListsSquare(float _maxDistance) {
 
 #ifdef _DEBUG
     for (int i = 0; i < offsetVec.size(); ++i) {
-        cerr << " This is offset[" << i << "]=" << offsetVec[i] << " distance=" << distanceVec[i] << endl;
+        Log(LOG_DEBUG) << " This is offset[" << i << "]=" << offsetVec[i] << " distance=" << distanceVec[i];
     }
 #endif
 }
@@ -508,7 +507,7 @@ BoundaryStrategy::generateLatticeMultiplicativeFactors(LatticeType _latticeType,
 
 void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
 #ifdef _DEBUG
-    cerr << "INSIDE prepareNeighborListsHex" << endl;
+    Log(LOG_DEBUG) << "INSIDE prepareNeighborListsHex";
 #endif
     //unsigned int maxHexArraySize=(Y_ODD|Z_ODD|X_ODD|Y_EVEN|Z_EVEN|X_EVEN)+1;
 
@@ -563,7 +562,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
         ctPtTmp.y += ctPtTmp.y % 2; //make it even
         ctPtTmp.z += 3 - ctPtTmp.z % 3;// make it divisible by 3 in case it is not
 #ifdef _DEBUG
-        cerr << "ctPtTmp.y % 2 =" << ctPtTmp.y % 2 << " ctPtTmp.y % 2=" << ctPtTmp.y % 2 << endl;
+        Log(LOG_DEBUG) << "ctPtTmp.y % 2 =" << ctPtTmp.y % 2 << " ctPtTmp.y % 2=" << ctPtTmp.y % 2;
         // 		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_EVEN|Z_EVEN "<<(Y_EVEN|Z_EVEN)<<endl;
 #endif
         getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex], hexDistanceArray[indexHex],
@@ -571,7 +570,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
 
     } else {//2D case
 #ifdef _DEBUG
-        cerr << "ctPtTmp.y % 2 =" << ctPtTmp.y % 2 << endl;
+        Log(LOG_DEBUG) << "ctPtTmp.y % 2 =" << ctPtTmp.y % 2;
 #endif
         ctPtTmp.y += ctPtTmp.y % 2; //make it even
         ctPtTmp.z += 0;// make it divisible by 3 in case it is not
@@ -579,7 +578,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
 
 
 #ifdef _DEBUG
-        cerr << "even even ctPtTmp=" << ctPtTmp << endl;
+        Log(LOG_DEBUG) << "even even ctPtTmp=" << ctPtTmp;
 #endif
         getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex], hexDistanceArray[indexHex],
                                hexNeighborOrderIndexArray[indexHex]);
@@ -597,7 +596,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
         ctPtTmp.z += 3 - ctPtTmp.z % 3;// make it divisible by 3 in case it is not
 
 #ifdef _DEBUG
-        cerr << "ctPtTmp.y % 2 =" << ctPtTmp.y % 2 << " !ctPtTmp.y % 2=" << !(ctPtTmp.y % 2) << endl;
+        Log(LOG_DEBUG) << "ctPtTmp.y % 2 =" << ctPtTmp.y % 2 << " !ctPtTmp.y % 2=" << !(ctPtTmp.y % 2);
 
         // 		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_ODD|Z_EVEN)<<endl;
 #endif
@@ -606,14 +605,14 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
 
     } else {//2D case
 #ifdef _DEBUG
-        cerr << "ctPtTmp.y % 2 =" << ctPtTmp.y % 2 << " !ctPtTmp.y % 2=" << !(ctPtTmp.y % 2) << endl;
+        Log(LOG_DEBUG) << "ctPtTmp.y % 2 =" << ctPtTmp.y % 2 << " !ctPtTmp.y % 2=" << !(ctPtTmp.y % 2);
 #endif
 
         ctPtTmp.y += (ctPtTmp.y % 2 - 1); //make it odd
         ctPtTmp.z += 0;   // make it divisible by 3 in case it is not
 
 #ifdef _DEBUG
-        cerr << "odd even ctPtTmp=" << ctPtTmp << endl;
+        Log(LOG_DEBUG) << "odd even ctPtTmp=" << ctPtTmp;
 #endif
         getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex], hexDistanceArray[indexHex],
                                hexNeighborOrderIndexArray[indexHex]);
@@ -722,63 +721,59 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
 
 #ifdef _DEBUG
 
-    indexHex = 0;
-    for (indexHex = 0; indexHex<maxHexArraySize; ++indexHex) {
-
-        cerr << "INDEX HEX=" << indexHex << " hexOffsetArray[indexHex].size()=" << hexOffsetArray[indexHex].size() << endl;
+	indexHex = 0;
+	for (indexHex = 0; indexHex<maxHexArraySize; ++indexHex) {
+		Log(LOG_DEBUG) << "INDEX HEX=" << indexHex << " hexOffsetArray[indexHex].size()=" << hexOffsetArray[indexHex].size();
 
         for (int i = 0; i < hexOffsetArray[indexHex].size(); ++i) {
-            cerr << " This is offset[" << i << "]=" << hexOffsetArray[indexHex][i] << " distance=" << hexDistanceArray[indexHex][i] << endl;
+            Log(LOG_DEBUG) << " This is offset[" << i << "]=" << hexOffsetArray[indexHex][i] << " distance=" << hexDistanceArray[indexHex][i];
         }
     }
 
 
 
-    Neighbor n;
-    Point3D testPt(10, 10, 0);
-    unsigned int idx = 3;
-    n = getNeighborDirect(testPt, idx);
-
-    cerr << "Neighbor=" << n << endl;
+	Neighbor n;
+	Point3D testPt(10, 10, 0);
+	unsigned int idx = 3;
+	n = getNeighborDirect(testPt, idx);
+	Log(LOG_DEBUG) << "Neighbor=" << n;
     testPt = Point3D(10, 11, 0);
     n = getNeighborDirect(testPt, idx);
-    cerr << "Neighbor=" << n << endl;
+    Log(LOG_DEBUG) << "Neighbor=" << n;
     testPt = Point3D(11, 11, 0);
     n = getNeighborDirect(testPt, idx);
-    cerr << "Neighbor=" << n << endl;
-
-    cerr << "\n\n\n ****************************Checking Bondary " << endl;
+    Log(LOG_DEBUG) << "Neighbor=" << n;
+	Log(LOG_DEBUG) << "\n\n\n ****************************Checking Bondary ";
 
     testPt = Point3D(0, 0, 0);
-    cerr << "HexCoord(testPt)=" << HexCoord(testPt) << endl;
+    Log(LOG_DEBUG) << "HexCoord(testPt)=" << HexCoord(testPt);
     for (int i = 0; i<6; ++i) {
         n = getNeighborDirect(testPt, i);
         if (n.distance>0) {
-            cerr << "Neighbor=" << n << endl;
+            Log(LOG_DEBUG) << "Neighbor=" << n;
         }
         else {
-            cerr << "************************Not a neighbor= " << n << endl;
-        }
-    }
-
-    cerr << "\n\n\n *****************Checkup Boundary" << endl;
+            Log(LOG_DEBUG) << "************************Not a neighbor= " << n;
+		}
+	}
+	Log(LOG_DEBUG) << "\n\n\n *****************Checkup Boundary";
 
     testPt = Point3D(0, dim.y - 1, 0);
-    cerr << "HexCoord(testPt)=" << HexCoord(testPt) << endl;
+    Log(LOG_DEBUG) << "HexCoord(testPt)=" << HexCoord(testPt);
     for (int i = 0; i<6; ++i) {
         n = getNeighborDirect(testPt, i);
         if (n.distance>0) {
-            cerr << "Neighbor=" << n << endl;
+            Log(LOG_DEBUG) << "Neighbor=" << n;
         }
         else {
-            cerr << "*****************Not a neighbor= " << n << endl;
+            Log(LOG_DEBUG) << "*****************Not a neighbor= " << n;
         }
     }
 
 
     for (int i = 1; i <= 11; ++i) {
         unsigned int maxIdx = getMaxNeighborIndexFromNeighborOrder(i);
-        cerr << "NEIGHBOR ORDER =" << i << " maxIdx=" << maxIdx << endl;
+        Log(LOG_DEBUG) << "NEIGHBOR ORDER =" << i << " maxIdx=" << maxIdx;
 
     }
 
