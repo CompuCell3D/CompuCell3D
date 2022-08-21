@@ -94,11 +94,11 @@ flexibleReactionDiffusionSolverProxy("FlexibleReactionDiffusionSolverFE", "Solve
          
 // BasicPluginProxy<Steppable, ReactionAdvectionDiffusionSolverFE> 
 // reactionAdvectionDiffusionSolverProxy("ReactionAdvectionDiffusionSolverFE", "Solves reaction-diffusion system of equations on the lattice ",
-            // &Simulator::steppableManager);
+//             &Simulator::steppableManager);
 
 // BasicPluginProxy<Steppable, ReactionAdvectionDiffusionTagsSolverFE> 
 // reactionAdvectionDiffusionTagsSolverProxy("ReactionAdvectionDiffusionTagsSolverFE", "Solves reaction-diffusion system of equations on the lattice ",
-            // &Simulator::steppableManager);
+//             &Simulator::steppableManager);
        
 BasicPluginProxy<Steppable, FastDiffusionSolver2DFE> 
 fastDiffusionSolverProxy("FastDiffusionSolver2DFE", "Solves diffusion equation on the lattice. Provides limited flexibility but is faster than FlexibleDiffusionSolver however operates only in the xy plane and is 2D only",
@@ -130,9 +130,9 @@ BasicPluginProxy<Steppable, DiffusionSolverFE_OpenCL>
 diffusionSolverOpenCLProxy("DiffusionSolverFE_OpenCL", "Solves diffusion equation on the lattice with OpenCL. Uses Forward Euler method - finite difference.  Also, uses automatic scaling.",
             &Simulator::steppableManager);
 
-//BasicPluginProxy<Steppable, DiffusionSolverFE_OpenCL_Implicit> 
-//diffusionSolverOpenCLImplicitProxy("DiffusionSolverFE_OpenCL_Implicit", "Solves diffusion equation on the lattice with OpenCL. Uses Implicit method - finite difference.",
-//            &Simulator::steppableManager);
+BasicPluginProxy<Steppable, DiffusionSolverFE_OpenCL_Implicit> 
+diffusionSolverOpenCLImplicitProxy("DiffusionSolverFE_OpenCL_Implicit", "Solves diffusion equation on the lattice with OpenCL. Uses Implicit method - finite difference.",
+           &Simulator::steppableManager);
 
 BasicPluginProxy<Steppable, ReactionDiffusionSolverFE_OpenCL_Implicit>
 reactionDiffusionSolverOpenCLImplicitProxy("ReactionDiffusionSolverFE_OpenCL_Implicit", "Solves diffusion equation on the lattice with OpenCL. Uses Implicit method - finite difference.",
