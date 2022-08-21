@@ -180,18 +180,42 @@ void ParallelUtilsOpenMP::unsetPyWrapperLock(){
 }
 
 void ParallelUtilsOpenMP::allowNestedParallelRegions(bool _flag){
-	omp_set_nested(_flag);
+	
+#ifdef __clang__
+        if(_flag) {
+            omp_set_max_active_levels(5);
+        }
+#else
+    omp_set_nested(_flag);
+#endif
 }
 
 void ParallelUtilsOpenMP::setNumberOfWorkNodes(unsigned int _num){
 	//if (_num>0 && _num<=getNumberOfProcessors()){ //this might be too restrictive
 	if (_num>0){
 		numberOfWorkNodes=_num;
+    omp_set_dynamic(0);
+    omp_set_num_threads(numberOfWorkNodes);
 		calculateFESolverPartition();
 		calculatePottsPartition();
 	}
 
 }
+
+void ParallelUtilsOpenMP::setNumberOfWorkNodesAuto(unsigned int _requested_num_work_nodes) {
+
+    if (_requested_num_work_nodes < 0) {
+        _requested_num_work_nodes = omp_get_num_threads();
+        // in case we get 0
+        _requested_num_work_nodes = (_requested_num_work_nodes ? _requested_num_work_nodes : 1);
+    }
+    
+
+        omp_set_dynamic(0);
+        omp_set_num_threads(_requested_num_work_nodes);
+
+}
+
 
 void ParallelUtilsOpenMP::setVPUs(unsigned int _numberOfVPUs,unsigned int _threadsPerVPU){
 	if(_threadsPerVPU>0)
@@ -483,6 +507,10 @@ unsigned int ParallelUtilsOpenMP::getNumberOfWorkNodesPotts(){
 
 unsigned int ParallelUtilsOpenMP::getMaxNumberOfWorkNodesPotts(){
 	return getMaxNumberOfWorkNodesFESolver();
+}
+
+unsigned int ParallelUtilsOpenMP::getMaxNumberOfWorkNodes(){
+	return omp_get_max_threads();
 }
 
 unsigned int ParallelUtilsOpenMP::getNumberOfWorkNodesPottsWithBoxWatcher(){ //THIS HAS TO BE CORRECTED

@@ -1,17 +1,18 @@
 #!/bin/sh
 
+current_directory=$(pwd)
+
 # necessary to enforce standard convention for numeric values specification on non-English OS
 export LC_NUMERIC="C.UTF-8"
 
 
-export PREFIX_CC3D="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+export PYTHONPATH=@SITE_PACKAGES_INSTALL@
+
 export PYTHON_EXEC=@PYTHON_EXEC_FILE@
 
+export exit_code=0
+${PYTHON_EXEC} ${PYTHONPATH}/cc3d/twedit5/twedit_plus_plus_cc3d.py $*
+exit_code=$?
 
-export @LIBRARY_PATH_SYNTAX@=${PREFIX_CC3D}/lib/site-packages/cc3d/cpp/lib:$@LIBRARY_PATH_SYNTAX@
-export @LIBRARY_PATH_SYNTAX@=${COMPUCELL3D_PLUGIN_PATH}:$@LIBRARY_PATH_SYNTAX@
-export @LIBRARY_PATH_SYNTAX@=${COMPUCELL3D_STEPPABLE_PATH}:$@LIBRARY_PATH_SYNTAX@
-
-export PYTHONPATH=${PREFIX_CC3D}/lib/site-packages
-
-${PYTHON_EXEC} ${PREFIX_CC3D}/lib/site-packages/cc3d/twedit5/twedit_plus_plus_cc3d.py $*
+cd ${current_directory}
+exit ${exit_code}

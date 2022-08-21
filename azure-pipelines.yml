@@ -1,0 +1,49 @@
+jobs:
+  - job:
+    displayName: CompuCell3D
+    pool:
+      vmImage: 'ubuntu-20.04'
+
+    steps:
+      - bash: echo "##vso[task.prependpath]$CONDA/bin"
+        displayName: Add conda to PATH
+
+      - bash: conda create --yes --quiet --name cc3d_2020 python=3.7
+        displayName: Create Anaconda environment
+
+      - bash: git clone https://github.com/CompuCell3D/cc3d_build_scripts.git
+        displayName: Clone the build scripts
+
+      - bash: |
+          sudo apt-get purge --auto-remove swig
+          sudo apt-get install -y swig3.0
+        displayName: Install swig 4 and install swig3
+
+      - bash: |
+          apt-get remove swig -y
+          source activate cc3d_2020
+          conda config --set channel_priority false
+          conda install -c conda-forge numpy scipy pandas jinja2 webcolors vtk=8.2 pyqt pyqtgraph deprecated qscintilla2 jinja2 chardet cmake swig=3 requests -y
+          conda install -c compucell3d tbb_full_dev -y
+          pip install libroadrunner
+          pip install antimony
+          pip install psutil
+        displayName: Install Anaconda packages
+      - bash: |
+          PWD=`pwd`
+          echo "##vso[task.setvariable variable=PWD]PWD"
+        displayName: Set current working directory
+      - bash: |
+          source activate base
+          cd cc3d_build_scripts/linux/400/
+          python build.py --prefix=~/410_auto --source-root="$PWD/../../../" --build-dir=~/410_auto_build --version=4.1.0 --cores=2 --conda-env-name=cc3d_2020
+        displayName: Build CC3d
+      - bash: |
+          source activate cc3d_2020
+          cp -rf cc3d/tests ~/410_auto/lib/site-packages/cc3d
+          sed -i 's/<path to where cc3d is installed>/~\/410_auto/g'  CompuCell3D/core/Demos/CallableCC3D/environment_var_setters/cc3d_caller_env_var_set_linux.sh
+          sed -i "s~<path to where python executable is. Make sure it is same python as used by cc3d>~$(which python)~g"  CompuCell3D/core/Demos/CallableCC3D/environment_var_setters/cc3d_caller_env_var_set_linux.sh
+          source CompuCell3D/core/Demos/CallableCC3D/environment_var_setters/cc3d_caller_env_var_set_linux.sh
+          cd CompuCell3D/core/test_suite
+          python regression_tests_runner.py --run-command=~/410_auto/runScript.sh --output-dir=~/out/
+        displayName: Run Integration Tests

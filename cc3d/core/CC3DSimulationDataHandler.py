@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-import os, sys
+import os
 import shutil
+import sys
 import contextlib
 
-# import cc3d.twedit5.twedit.editor.Configuration as Configuration
-# import cc3d.core.DefaultSettingsData as settings_data
 from cc3d.core.ParameterScanUtils import ParameterScanUtils
 from cc3d.core.ParameterScanUtils import ParameterScanData
 from cc3d.core import DefaultSettingsData as settings_data

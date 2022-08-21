@@ -3,17 +3,6 @@
 
 #include <vector>
 #include <set>
-/*
-#include <python2.7/Python.h>
-
-#include <numpy/numpyconfig.h>
-#include <numpy/npy_common.h>
-#include <numpy/arrayobject.h>
-#include <numpy/arrayscalars.h>
-#include <numpy/ndarraytypes.h>
-#include <numpy/ndarrayobject.h>
-#include <numpy/old_defines.h>
-#include <numpy/npy_math.h>*/
 #include "Dim3D.h"
 #include "Field3DImpl.h"
 #include <iostream>
@@ -21,99 +10,98 @@
 
 namespace CompuCell3D {
 
-template <typename T>
-class Array3D{
-   public:
-      typedef std::vector<std::vector<std::vector<T> > > ContainerType;
-      void allocateArray(const Dim3D & _dim , T & val=T());
+    template<typename T>
+    class Array3D {
+    public:
+        typedef std::vector <std::vector<std::vector < T>> >
+        ContainerType;
+
+        void allocateArray(const Dim3D &_dim, T &val = T());
+
 //       operator Type&();
-      ContainerType & getContainer(){return array;}
-      
-   private:
-     std::vector<std::vector<std::vector<T> > >  array;
+        ContainerType &getContainer() { return array; }
 
-};
+    private:
+        std::vector <std::vector<std::vector < T>> >
+        array;
 
-template <typename T>
-void Array3D<T>::allocateArray(const Dim3D & _dim , T & val){
-   using namespace std;
-//    vector<vector<T> > vec;
-//    vec.assign(_dim.x,vector<T>(_dim.y,val));
-   array.assign(_dim.x, vector<vector< T > >(_dim.y,vector< T >(_dim.z,val)));
-}
+    };
 
-// template <typename T>
-// Array3D<T>::operator Array3D<T>::Type&(){
-//    return  array;
-// }
+    template<typename T>
+    void Array3D<T>::allocateArray(const Dim3D &_dim, T &val) {
+        using namespace std;
+        array.assign(_dim.x, vector < vector < T > > (_dim.y, vector<T>(_dim.z, val)));
+    }
 
 
+//Adapter is necessary to keep current API of the Field3D . These fields are registered in Simulator and
+    template<typename T>
+    class Array3DField3DAdapter : public Field3DImpl<T> {
+    public:
+        Array3DField3DAdapter() : Field3DImpl<T>(Dim3D(1, 1, 1), T()), array3DPtr(0), containerPtr(0) {};
 
-// template <typename T>
-// Array3D<T>::operator Array3D<T>::Type&(){
-//    return  array;
-// }
+        virtual ~Array3DField3DAdapter() {
+            if (array3DPtr)
+                delete array3DPtr;
+            array3DPtr = 0;
+        }
 
+        Array3D<T> *getArray3DPtr() { return array3DPtr; }
 
-//Adapter is necessary to keep current API of the Field3D . These fields are registered in Simulator and 
-template <typename T>
-class Array3DField3DAdapter:public Field3DImpl<T>{
-   public:
-      Array3DField3DAdapter() : Field3DImpl<T>(Dim3D(1,1,1),T()) , array3DPtr(0) , containerPtr(0){};
-      virtual ~Array3DField3DAdapter(){
-         if(array3DPtr)
-            delete array3DPtr;
-            array3DPtr=0;
-      }
-//       void setArray3DPtr(Array3D<T> * _ptr){ array3DPtr = _ptr;}
-      Array3D<T> * getArray3DPtr(){ return array3DPtr; }
-      typename Array3D<T>::ContainerType &  getContainer(){ return array3DPtr->getContainer(); }
-      virtual void setDim(const Dim3D theDim) {
-         if(!array3DPtr){
-            array3DPtr=new Array3D<T>();
-            T t;
-            t=T();
+        typename Array3D<T>::ContainerType &getContainer() { return array3DPtr->getContainer(); }
 
-            array3DPtr->allocateArray( theDim ,t);
-            containerPtr=&array3DPtr->getContainer();
-            Field3DImpl<T>::dim=theDim;
-         }else{
-            delete array3DPtr;
-            array3DPtr=new Array3D<T>();
-            T t;
-            t=T();
-            array3DPtr->allocateArray( theDim, t );
-            containerPtr=&array3DPtr->getContainer();
-            Field3DImpl<T>::dim=theDim;
-         }
-      }
-      virtual Dim3D getDim() const {return Field3DImpl<T>::dim;};
-      virtual bool isValid(const Point3D &pt) const {      
-         return (0 <= pt.x && pt.x < Field3DImpl<T>::dim.x &&
-	      0 <= pt.y && pt.y < Field3DImpl<T>::dim.y &&
-	      0 <= pt.z && pt.z < Field3DImpl<T>::dim.z);
-      }
-      virtual void set(const Point3D &pt, const T value) {
-         if(array3DPtr){
-            (*containerPtr)[pt.x][pt.y][pt.z]=value;
-         }
-      }
-      virtual T get(const Point3D &pt) const {
-         return (*containerPtr)[pt.x][pt.y][pt.z];
+        virtual void setDim(const Dim3D theDim) {
+            if (!array3DPtr) {
+                array3DPtr = new Array3D<T>();
+                T t;
+                t = T();
 
-      };
-      virtual T getByIndex(long _offset) const {
-         return T();
-      }
-      virtual void setByIndex(long _offset, const T _value) {
-         
-      }
-      
-   protected:
-      Array3D<T> * array3DPtr;
-      //Dim3D dim; //defined already in Field3DImpl<>
-      typename Array3D<T>::ContainerType * containerPtr;
-};
+                array3DPtr->allocateArray(theDim, t);
+                containerPtr = &array3DPtr->getContainer();
+                Field3DImpl<T>::dim = theDim;
+            } else {
+                delete array3DPtr;
+                array3DPtr = new Array3D<T>();
+                T t;
+                t = T();
+                array3DPtr->allocateArray(theDim, t);
+                containerPtr = &array3DPtr->getContainer();
+                Field3DImpl<T>::dim = theDim;
+            }
+        }
+
+        virtual Dim3D getDim() const { return Field3DImpl<T>::dim; };
+
+        virtual bool isValid(const Point3D &pt) const {
+            return (0 <= pt.x && pt.x < Field3DImpl<T>::dim.x &&
+                    0 <= pt.y && pt.y < Field3DImpl<T>::dim.y &&
+                    0 <= pt.z && pt.z < Field3DImpl<T>::dim.z);
+        }
+
+        virtual void set(const Point3D &pt, const T value) {
+            if (array3DPtr) {
+                (*containerPtr)[pt.x][pt.y][pt.z] = value;
+            }
+        }
+
+        virtual T get(const Point3D &pt) const {
+            return (*containerPtr)[pt.x][pt.y][pt.z];
+
+        };
+
+        virtual T getByIndex(long _offset) const {
+            return T();
+        }
+
+        virtual void setByIndex(long _offset, const T _value) {
+
+        }
+
+    protected:
+        Array3D<T> *array3DPtr;
+        //Dim3D dim; //defined already in Field3DImpl<>
+        typename Array3D<T>::ContainerType *containerPtr;
+    };
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -126,145 +114,142 @@ class Array3DField3DAdapter:public Field3DImpl<T>{
 //however since player is assuming float numbers as a return values of the Field3DImpl<T> API we need to 
 //make base class  Field3DImpl<float>
 
-class Array3DLinearFortranField3DAdapter:public Field3DImpl<float>{
-   public:
-	  //typedef float precision_t;
+    class Array3DLinearFortranField3DAdapter : public Field3DImpl<float> {
+    public:
+        //typedef float precision_t;
 
-      Array3DLinearFortranField3DAdapter() : Field3DImpl<float>(Dim3D(1,1,1),float()){};
+        Array3DLinearFortranField3DAdapter() : Field3DImpl<float>(Dim3D(1, 1, 1), float()) {};
 
-      Array3DLinearFortranField3DAdapter(Dim3D & _dim,float & _initVal):Field3DImpl<float>(Dim3D(1,1,1),float()){
-         allocateMemory(_dim,_initVal);         
-      }      
-      
-      virtual ~Array3DLinearFortranField3DAdapter(){}
-      
-      virtual void allocateMemory(const Dim3D theDim,float & _initVal) {         
-         container.clear();
-         internalDim.x=theDim.x+1;
-         internalDim.y=theDim.y+1;
-         internalDim.z=theDim.z+1;
+        Array3DLinearFortranField3DAdapter(Dim3D &_dim, float &_initVal) : Field3DImpl<float>(Dim3D(1, 1, 1), float()) {
+            allocateMemory(_dim, _initVal);
+        }
 
-         //internalDim.x=theDim.x;
-         //internalDim.y=theDim.y;
-         //internalDim.z=theDim.z;
+        virtual ~Array3DLinearFortranField3DAdapter() {}
 
-         dim=theDim;
-         
-         container.assign((internalDim.x)*(internalDim.y)*(internalDim.z),_initVal); 
-         
-         
-      }
-    virtual void setDim(const Dim3D newDim){
-		this->resizeAndShift(newDim);
-	}
+        virtual void allocateMemory(const Dim3D theDim, float &_initVal) {
+            container.clear();
+            internalDim.x = theDim.x + 1;
+            internalDim.y = theDim.y + 1;
+            internalDim.z = theDim.z + 1;
 
-	virtual void resizeAndShift(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
-		vector<double> tmpContainer=container; 
-		tmpContainer.swap(container);// swapping vector content  => copy old vec to new
+            dim = theDim;
 
-		Dim3D oldInternalDim=internalDim;
-
-		internalDim.x=newDim.x+1;
-		internalDim.y=newDim.y+1;
-		internalDim.z=newDim.z+1;
+            container.assign((internalDim.x) * (internalDim.y) * (internalDim.z), _initVal);
 
 
+        }
 
-		container.assign((internalDim.x)*(internalDim.y)*(internalDim.z),0.0) ; //resize container and initialize it
+        virtual void setDim(const Dim3D newDim) {
+            this->resizeAndShift(newDim);
+        }
 
-		//copying old array to new one - we do not copy swap values or boundary conditions these are usually set externally by the solver
-		Point3D pt;
-		Point3D ptShift;
+        virtual void resizeAndShift(const Dim3D newDim, Dim3D shiftVec = Dim3D()) {
+            vector<double> tmpContainer = container;
+            tmpContainer.swap(container);// swapping vector content  => copy old vec to new
 
-		//when lattice is growing or shrinking
-		for(pt.x=0 ; pt.x < newDim.x ; ++pt.x)
-			for(pt.y=0 ; pt.y < newDim.y ; ++pt.y)
-				for(pt.z=0 ; pt.z < newDim.z ; ++pt.z){
+            Dim3D oldInternalDim = internalDim;
 
-				ptShift=pt-shiftVec;
-				if (ptShift.x>=0 && ptShift.x<dim.x && ptShift.y>=0 && ptShift.y<dim.y && ptShift.z>=0 && ptShift.z<dim.z )
-				{
-					container[pt.x + (pt.y+ pt.z * internalDim.y) * internalDim.x]=tmpContainer[ptShift.x + (ptShift.y+ ptShift.z * oldInternalDim.y) * oldInternalDim.x];							                    
-				}
-			}
-		//setting dim to new dim 
-        dim=newDim;
-        dim.z=1;
-		
+            internalDim.x = newDim.x + 1;
+            internalDim.y = newDim.y + 1;
+            internalDim.z = newDim.z + 1;
 
 
-		
-	  }
+            container.assign((internalDim.x) * (internalDim.y) * (internalDim.z),
+                             0.0); //resize container and initialize it
+
+            //copying old array to new one - we do not copy swap values or boundary conditions these are usually
+            // set externally by the solver
+            Point3D pt;
+            Point3D ptShift;
+
+            //when lattice is growing or shrinking
+            for (pt.x = 0; pt.x < newDim.x; ++pt.x)
+                for (pt.y = 0; pt.y < newDim.y; ++pt.y)
+                    for (pt.z = 0; pt.z < newDim.z; ++pt.z) {
+
+                        ptShift = pt - shiftVec;
+                        if (ptShift.x >= 0 && ptShift.x < dim.x && ptShift.y >= 0 && ptShift.y < dim.y &&
+                            ptShift.z >= 0 && ptShift.z < dim.z) {
+                            container[pt.x + (pt.y + pt.z * internalDim.y) * internalDim.x] = tmpContainer[ptShift.x +
+                                                                                                           (ptShift.y +
+                                                                                                            ptShift.z *
+                                                                                                            oldInternalDim.y) *
+                                                                                                           oldInternalDim.x];
+                        }
+                    }
+            //setting dim to new dim
+            dim = newDim;
 
 
-	  std::vector<double> & getContainerRef(){return container;}
-	  double * getContainerArrayPtr(){return &(container[0]);}	  
+        }
 
-      inline unsigned int index(int _x,int _y,int _z ) const{
-        //return _x+1 + (_y+1+ (_z+1) * internalDim.y) * internalDim.x;
-		//return _x+1 + (_y+1+ (_z+1) * (internalDim.y)) * (internalDim.x);
-		//return _z + (_y+ _x * (internalDim.y)) * (internalDim.z);//start indexing from 0'th element but calculate index based on increased lattice dimmension
 
-		return _x + (_y+ _z * internalDim.y) * internalDim.x;//start indexing from 0'th element but calculate index based on increased lattice dimmension
-		
-		//return _x + (_y+ (_z) * internalDim.y) * internalDim.x;
-        
-       }
-       
-       
-      virtual Dim3D getDim() const {return dim;}
+        std::vector<double> &getContainerRef() { return container; }
 
-      virtual bool isValid(const Point3D &pt) const {      
-         return (0 <= pt.x && pt.x < dim.x &&
-	      0 <= pt.y && pt.y < dim.y &&
-	      0 <= pt.z && pt.z < dim.z);
-      }
+        double *getContainerArrayPtr() { return &(container[0]); }
 
-      virtual void set(const Point3D &pt, const float value) {
-            container[index(pt.x,pt.y,pt.z)]=value;            
-         
-      }
+        inline unsigned int index(int _x, int _y, int _z) const {
 
-      virtual float get(const Point3D &pt) const {
-		  //TODO: we'd better check why we cast from doubles to floats here      
-		  //Either doubles are not used, either interface is incorrect
-         return container[index(pt.x,pt.y,pt.z)];
+            //start indexing from 0'th element but calculate index based on increased lattice dimmension
+            return _x + (_y + _z * internalDim.y) * internalDim.x;
+        }
 
-      }
 
-      void setQuick(const Point3D &pt, const float value) {
-            container[index(pt.x,pt.y,pt.z)]=value;            
-         
-      }
-      float getQuick(const Point3D &pt) const {
-         return container[index(pt.x,pt.y,pt.z)];            
+        virtual Dim3D getDim() const { return dim; }
 
-      }
+        virtual bool isValid(const Point3D &pt) const {
+            return (0 <= pt.x && pt.x < dim.x &&
+                    0 <= pt.y && pt.y < dim.y &&
+                    0 <= pt.z && pt.z < dim.z);
+        }
 
-      void setQuick(int _x,int _y,int _z , float value) {
-            container[index(_x,_y,_z)]=value;            
-         
-      }
-      float getQuick(int _x,int _y,int _z ) const {
-         return container[index(_x,_y,_z)];            
+        virtual void set(const Point3D &pt, const float value) {
+            container[index(pt.x, pt.y, pt.z)] = value;
 
-      }
-      
-      
-      virtual float getByIndex(long _offset) const {
-         return float();
-      }
-      virtual void setByIndex(long _offset, const float _value) {
-         
-      }
-      
-      
-      
-   protected:      
-      std::vector<double> container;
-      //Dim3D dim; //defined already in Field3DImpl<>
-      Dim3D internalDim;      
-};
+        }
+
+        virtual float get(const Point3D &pt) const {
+            //TODO: we'd better check why we cast from doubles to floats here
+            //Either doubles are not used, either interface is incorrect
+            return container[index(pt.x, pt.y, pt.z)];
+
+        }
+
+        void setQuick(const Point3D &pt, const float value) {
+            container[index(pt.x, pt.y, pt.z)] = value;
+
+        }
+
+        float getQuick(const Point3D &pt) const {
+            return container[index(pt.x, pt.y, pt.z)];
+
+        }
+
+        void setQuick(int _x, int _y, int _z, float value) {
+            container[index(_x, _y, _z)] = value;
+
+        }
+
+        float getQuick(int _x, int _y, int _z) const {
+            return container[index(_x, _y, _z)];
+
+        }
+
+
+        virtual float getByIndex(long _offset) const {
+            return float();
+        }
+
+        virtual void setByIndex(long _offset, const float _value) {
+
+        }
+
+
+    protected:
+        std::vector<double> container;
+        //Dim3D dim; //defined already in Field3DImpl<>
+        Dim3D internalDim;
+    };
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -279,686 +264,681 @@ class Array3DLinearFortranField3DAdapter:public Field3DImpl<float>{
 //make base class  Field3DImpl<float>
 
 
+    class Array2DLinearFortranField3DAdapter : public Field3DImpl<float> {
+    public:
+        //typedef float precision_t;
+        Array2DLinearFortranField3DAdapter() : Field3DImpl<float>(Dim3D(1, 1, 1), float()) {};
+
+        Array2DLinearFortranField3DAdapter(Dim3D &_dim, float &_initVal) : Field3DImpl<float>(Dim3D(1, 1, 1), float()) {
+            allocateMemory(_dim, _initVal);
+        }
+
+        virtual ~Array2DLinearFortranField3DAdapter() {}
+
+        virtual void allocateMemory(const Dim3D theDim, float &_initVal) {
+            container.clear();
+            internalDim.x = theDim.x + 1;
+            internalDim.y = theDim.y + 1;
+            internalDim.z = 1;
+            dim = theDim;
+            dim.z = 1;
+
+            container.assign((internalDim.x) * (internalDim.y), _initVal);
+
+        }
+
+        virtual void setDim(const Dim3D newDim) {
+            this->resizeAndShift(newDim);
+        }
+
+        virtual void resizeAndShift(const Dim3D newDim, Dim3D shiftVec = Dim3D()) {
+            vector<double> tmpContainer = container;
+            tmpContainer.swap(container);// swapping vector content  => copy old vec to new
+
+            Dim3D oldInternalDim = internalDim;
+
+            internalDim.x = newDim.x + 1;
+            internalDim.y = newDim.y + 1;
+            internalDim.z = 1;
 
 
+            container.assign((internalDim.x) * (internalDim.y), 0.0); //resize container and initialize it
 
-class Array2DLinearFortranField3DAdapter:public Field3DImpl<float>{
-   public:
-	  //typedef float precision_t;
-      Array2DLinearFortranField3DAdapter() : Field3DImpl<float>(Dim3D(1,1,1),float()) {};
-      
-      Array2DLinearFortranField3DAdapter(Dim3D & _dim,float & _initVal):Field3DImpl<float>(Dim3D(1,1,1),float())
-	  {
-         allocateMemory(_dim,_initVal);         
-      }       
-      virtual ~Array2DLinearFortranField3DAdapter(){}
-      
-      virtual void allocateMemory(const Dim3D theDim,float & _initVal) {         
-         container.clear();
-         internalDim.x=theDim.x+1;
-         internalDim.y=theDim.y+1;
-         internalDim.z=1;
-         dim=theDim;
-         dim.z=1;
-         
-         container.assign((internalDim.x)*(internalDim.y),_initVal);          
-         
-      }
-	  
-		virtual void setDim(const Dim3D newDim){
-			this->resizeAndShift(newDim);
-		}
+            //copying old array to new one - we do not copy swap values or boundary conditions
+            // these are usually set externally by the solver
+            Point3D pt;
+            Point3D ptShift;
 
-	    virtual void resizeAndShift(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
-		vector<double> tmpContainer=container; 
-		tmpContainer.swap(container);// swapping vector content  => copy old vec to new
-
-		Dim3D oldInternalDim=internalDim;
-
-		internalDim.x=newDim.x+1;
-		internalDim.y=newDim.y+1;
-		internalDim.z=1;
+            //when lattice is growing or shrinking
+            for (pt.x = 0; pt.x < newDim.x; ++pt.x)
+                for (pt.y = 0; pt.y < newDim.y; ++pt.y) {
+                    ptShift = pt - shiftVec;
+                    if (ptShift.x >= 0 && ptShift.x < dim.x && ptShift.y >= 0 && ptShift.y < dim.y) {
 
 
+                        container[pt.x + (pt.y) * internalDim.x] = tmpContainer[ptShift.x +
+                                                                                (ptShift.y) * oldInternalDim.x];
 
-		container.assign((internalDim.x)*(internalDim.y),0.0) ; //resize container and initialize it
-
-			
-		    
-			//copying old array to new one - we do not copy swap values or boundary conditions these are usually set externally by the solver
-			Point3D pt;
-			Point3D ptShift;
-
-			//when lattice is growing or shrinking
-			for(pt.x=0 ; pt.x < newDim.x ; ++pt.x)
-				for(pt.y=0 ; pt.y < newDim.y ; ++pt.y){
-					ptShift=pt-shiftVec;
-					if (ptShift.x>=0 && ptShift.x<dim.x && ptShift.y>=0 && ptShift.y<dim.y )
-					{
-					
-	                    
-						container[pt.x + (pt.y) * internalDim.x]=tmpContainer[ptShift.x + (ptShift.y) * oldInternalDim.x];						
-	                    
-					}
-				}
-		//setting dim to new dim 
-        dim=newDim;
-        dim.z=1;
-		
+                    }
+                }
+            //setting dim to new dim
+            dim = newDim;
+            dim.z = 1;
 
 
-		
-	  }
-	  std::vector<double> & getContainerRef(){return container;}
-	  double * getContainerArrayPtr(){return &(container[0]);}
+        }
 
-      inline unsigned int index(int _x,int _y ) const{
-        //return _x+1 + (_y+1) * internalDim.x;
-		return _x + (_y) * internalDim.x; //start indexing from 0'th element but calculate index based on increased lattice dimmension
-        
-       }
-                 
-      virtual Dim3D getDim() const {return dim;};
-      virtual bool isValid(const Point3D &pt) const {      
-         return (0 <= pt.x && pt.x < dim.x &&
-	      0 <= pt.y && pt.y < dim.y);
-      }
-      virtual void set(const Point3D &pt, const float value) {
-            container[index(pt.x,pt.y)]=value;            
-         
-      }
-      virtual float get(const Point3D &pt) const {
-		  //return Array2DLinearFortranField3DAdapter<float>::container[Array2DLinearFortranField3DAdapter<float>::indexPt(pt)];  
-		 //return (float)indexPt(pt);
-		 //return container[0];
-   //      using namespace std;
-		 //if(pt.y==0&&pt.z==0){
-			//cerr<<"get "<<pt<<" = "<<container[Array2DLinearFortranField3DAdapter<float>::index(pt.x,pt.y)]<<endl;
-			//cerr<<" index="<<index(pt.x,pt.y)<<" internalDim.x="<<internalDim.x<<endl;
-			//}
-		 return container[Array2DLinearFortranField3DAdapter::index(pt.x,pt.y)];  
+        std::vector<double> &getContainerRef() { return container; }
 
-      };
+        double *getContainerArrayPtr() { return &(container[0]); }
 
-      void setQuick(const Point3D &pt, const float value) {
-            container[index(pt.x,pt.y)]=value;            
-         
-      }
-      virtual float getQuick(const Point3D &pt) const {
-         return container[index(pt.x,pt.y)];            
+        inline unsigned int index(int _x, int _y) const {
 
-      }
+            //start indexing from 0'th element but calculate index based on increased lattice dimmension
+            return _x + (_y) * internalDim.x;
 
-      void setQuick(int _x,int _y , float value) {
-            container[index(_x,_y)]=value;            
-         
-      }
-      virtual float getQuick(int _x,int _y ) const {
-         return container[index(_x,_y)];            
+        }
 
-      };
-      
-      
-      virtual float getByIndex(long _offset) const {
-         return float();
-      }
-      virtual void setByIndex(long _offset, const float _value) {
-         
-      }
-   protected:      
-      std::vector<double> container;
-      //Dim3D dim; //defined already in Field3DImpl<>
-      Dim3D internalDim;      
-};
+        virtual Dim3D getDim() const { return dim; };
+
+        virtual bool isValid(const Point3D &pt) const {
+            return (0 <= pt.x && pt.x < dim.x &&
+                    0 <= pt.y && pt.y < dim.y);
+        }
+
+        virtual void set(const Point3D &pt, const float value) {
+            container[index(pt.x, pt.y)] = value;
+
+        }
+
+        virtual float get(const Point3D &pt) const {
+
+            return container[Array2DLinearFortranField3DAdapter::index(pt.x, pt.y)];
+
+        };
+
+        void setQuick(const Point3D &pt, const float value) {
+            container[index(pt.x, pt.y)] = value;
+
+        }
+
+        virtual float getQuick(const Point3D &pt) const {
+            return container[index(pt.x, pt.y)];
+
+        }
+
+        void setQuick(int _x, int _y, float value) {
+            container[index(_x, _y)] = value;
+
+        }
+
+        virtual float getQuick(int _x, int _y) const {
+            return container[index(_x, _y)];
+
+        };
+
+
+        virtual float getByIndex(long _offset) const {
+            return float();
+        }
+
+        virtual void setByIndex(long _offset, const float _value) {
+
+        }
+
+    protected:
+        std::vector<double> container;
+        Dim3D internalDim;
+    };
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename T>
-class Array3DBorders{
-   public:
-      typedef T *** ContainerType;
-      Array3DBorders():array(0),borderWidth(1){
-      }
-      virtual ~Array3DBorders(){freeMemory();};
-      
-      void allocateArray(const Dim3D & _dim , T & val=T());
-//       operator Type&();
-      ContainerType & getContainer(){return array;}
-      void setBorderWidth(unsigned int _borderWidth){borderWidth=_borderWidth;}
-      unsigned int getBorderWidth(){return borderWidth;}
-      bool switchContainersQuick(Array3DBorders<T> & _array3D);
-      Dim3D getInternalDim(){return internalDim;}
-   protected:
-     ContainerType array;
-     unsigned int borderWidth;
-     Dim3D internalDim;
-   
-     void allocateMemory(const Dim3D & _dim, T & val=T());
-     void freeMemory();
+    template<typename T>
+    class Array3DBorders {
+    public:
+        typedef T ***ContainerType;
 
-};
+        Array3DBorders() : array(0), borderWidth(1) {
+        }
+
+        virtual ~Array3DBorders() { freeMemory(); };
+
+        void allocateArray(const Dim3D &_dim, T &val = T());
+
+        ContainerType &getContainer() { return array; }
+
+        void setBorderWidth(unsigned int _borderWidth) { borderWidth = _borderWidth; }
+
+        unsigned int getBorderWidth() { return borderWidth; }
+
+        bool switchContainersQuick(Array3DBorders<T> &_array3D);
+
+        Dim3D getInternalDim() { return internalDim; }
+
+    protected:
+        ContainerType array;
+        unsigned int borderWidth;
+        Dim3D internalDim;
+
+        void allocateMemory(const Dim3D &_dim, T &val = T());
+
+        void freeMemory();
+
+    };
 
 
+    template<typename T>
+    void Array3DBorders<T>::allocateArray(const Dim3D &_dim, T &val) {
 
-template <typename T>
-void Array3DBorders<T>::allocateArray(const Dim3D & _dim , T & val){
-   
-   internalDim=_dim;
-   freeMemory();
-   allocateMemory(internalDim,val);
+        internalDim = _dim;
+        freeMemory();
+        allocateMemory(internalDim, val);
 
-}
+    }
 
-template <typename T>
-void Array3DBorders<T>::allocateMemory(const Dim3D & _dim, T & val){
+    template<typename T>
+    void Array3DBorders<T>::allocateMemory(const Dim3D &_dim, T &val) {
 
-   array=new T** [_dim.x];
-   for(int i = 0  ; i < _dim.x ; ++i){
-      array[i]=new T* [_dim.y];
-   }
+        array = new T **[_dim.x];
+        for (int i = 0; i < _dim.x; ++i) {
+            array[i] = new T *[_dim.y];
+        }
 
-   for(int i = 0  ; i < _dim.x ; ++i)
-      for(int j = 0  ; j < _dim.y ; ++j){
-         array[i][j]=new T [_dim.z];
-   }
+        for (int i = 0; i < _dim.x; ++i)
+            for (int j = 0; j < _dim.y; ++j) {
+                array[i][j] = new T[_dim.z];
+            }
 
-   for(int i = 0  ; i < _dim.x ; ++i)
-      for(int j = 0  ; j < _dim.y ; ++j)
-         for(int k = 0  ; k < _dim.z ; ++k){
-            array[i][j][k]=val;
-         }
+        for (int i = 0; i < _dim.x; ++i)
+            for (int j = 0; j < _dim.y; ++j)
+                for (int k = 0; k < _dim.z; ++k) {
+                    array[i][j][k] = val;
+                }
 
-}
+    }
 
 #include <iostream>
-template <typename T>
-void Array3DBorders<T>::freeMemory(){
-using namespace std;
+template<typename T>
+void Array3DBorders<T>::freeMemory() {
+    using namespace std;
 
-   if(array){
-      
-      for(int i = 0  ; i < internalDim.x ; ++i)
-         for(int j = 0  ; j < internalDim.y ; ++j){
-      
-            delete [] array[i][j];
-            array[i][j]=0;
-         }
+    if (array) {
 
-      for(int i = 0  ; i < internalDim.x ; ++i){
-         delete [] array[i];
-         array[i]=0;
-      }
-      delete [] array;
-      array=0;
+        for (int i = 0; i < internalDim.x; ++i)
+            for (int j = 0; j < internalDim.y; ++j) {
 
-   }
+                delete[] array[i][j];
+                array[i][j] = 0;
+            }
+
+        for (int i = 0; i < internalDim.x; ++i) {
+            delete[] array[i];
+            array[i] = 0;
+        }
+        delete[] array;
+        array = 0;
+
+    }
 
 
 }
 
 
-template <typename T>
-bool  Array3DBorders<T>::switchContainersQuick(Array3DBorders<T> & _switchedArray){
-   ContainerType tmpPtr;
-   ContainerType & switchedArrayPtr=_switchedArray.getContainer();
+template<typename T>
+bool Array3DBorders<T>::switchContainersQuick(Array3DBorders<T> &_switchedArray) {
+    ContainerType tmpPtr;
+    ContainerType &switchedArrayPtr = _switchedArray.getContainer();
 
-   tmpPtr=array;
-   array=switchedArrayPtr;
-   switchedArrayPtr=tmpPtr;
-   return true;
+    tmpPtr = array;
+    array = switchedArrayPtr;
+    switchedArrayPtr = tmpPtr;
+    return true;
 }
 
 //Adapter is necessary to keep current API of the Field3D . These fields are registered in Simulator and 
-template <typename T>
-class Array3DBordersField3DAdapter:public Field3DImpl<T>, public Array3DBorders<T>{
-   public:
-      Array3DBordersField3DAdapter() : Field3DImpl<T>(Dim3D(1,1,1),T()), Array3DBorders<T>() {};
-      Array3DBordersField3DAdapter(Dim3D & _dim,T & _initVal):Field3DImpl<T>(Dim3D(1,1,1),T()), Array3DBorders<T>(){
-         this->allocateMemory(_dim,_initVal);
-         Array3DBorders<T>::internalDim=_dim;
-      }
-      virtual ~Array3DBordersField3DAdapter(){
-//          if(array3DPtr)
-//             delete array3DPtr;
-//             array3DPtr=0;
-      };
-//       void setArray3DPtr(Array3D<T> * _ptr){ array3DPtr = _ptr;}
-//       Array3DBorders<T> * getArray3DBordersPtr(){ return array3DPtr; }
-//       typename Array3DBorders<T>::ContainerType &  getContainer(){ return getContainer(); }
-      virtual void setDim(const Dim3D theDim) {
-         T t;
-         
-         this->allocateMemory(theDim,t);
-         Array3DBorders<T>::internalDim=theDim;
-//          if(!array3DPtr){
-//             array3DPtr=new Array3DBorders<T>();
-//             T t;
-//             t=T();
-// 
-//             array3DPtr->allocateArray( theDim ,t);
-//             containerPtr=&array3DPtr->getContainer();
-//             dim=theDim;
-//          
-//          }else{
-//             delete array3DPtr;
-//             array3DPtr=new Array3DBorders<T>();
-//             T t;
-//             t=T();
-//             array3DPtr->allocateArray( theDim, t );
-//             containerPtr=&array3DPtr->getContainer();
-//             dim=theDim;
-//          }
-      }
-      virtual Dim3D getDim() const {
+template<typename T>
+class Array3DBordersField3DAdapter : public Field3DImpl<T>, public Array3DBorders<T> {
+public:
+    Array3DBordersField3DAdapter() : Field3DImpl<T>(Dim3D(1, 1, 1), T()), Array3DBorders<T>() {};
 
-         return Dim3D(Array3DBorders<T>::internalDim.x-2*Array3DBorders<T>::borderWidth,
-                     Array3DBorders<T>::internalDim.y-2*Array3DBorders<T>::borderWidth,
-                     Array3DBorders<T>::internalDim.z-2*Array3DBorders<T>::borderWidth);
-      };
-      virtual bool isValid(const Point3D &pt) const {      
-         return (0 <= pt.x && pt.x < Array3DBorders<T>::internalDim.x &&
-	      0 <= pt.y && pt.y < Array3DBorders<T>::internalDim.y &&
-	      0 <= pt.z && pt.z < Array3DBorders<T>::internalDim.z);
-      }
-      virtual void set(const Point3D &pt, const T value) {
-         
-//             unsigned int borderWidth=array3DPtr->getBorderWidth();
-            Array3DBorders<T>::array
-            [pt.x+Array3DBorders<T>::borderWidth]
-            [pt.y+Array3DBorders<T>::borderWidth]
-            [pt.z+Array3DBorders<T>::borderWidth]=value;
-         
-      }
-          
-   
-      
-      virtual T get(const Point3D &pt) const {
-//          unsigned int borderWidth=array3DPtr->getBorderWidth();
-         return Array3DBorders<T>::array
-                  [pt.x+Array3DBorders<T>::borderWidth]
-                  [pt.y+Array3DBorders<T>::borderWidth]
-                  [pt.z+Array3DBorders<T>::borderWidth];
-      }
+    Array3DBordersField3DAdapter(Dim3D &_dim, T &_initVal) : Field3DImpl<T>(Dim3D(1, 1, 1), T()), Array3DBorders<T>() {
+        this->allocateMemory(_dim, _initVal);
+        Array3DBorders<T>::internalDim = _dim;
+    }
 
-      virtual T getByIndex(long _offset) const {
-         return T();
-      }
-      virtual void setByIndex(long _offset, const T _value) {
-         
-      }
-   protected:
-//       Array3DBorders<T> * array3DPtr;
-//       Dim3D dim;
-//       typename Array3DBorders<T>::ContainerType * containerPtr;
-//       unsigned int borderWidth;
+    virtual ~Array3DBordersField3DAdapter() {
+
+    };
+
+
+    virtual void setDim(const Dim3D theDim) {
+        T t;
+
+        this->allocateMemory(theDim, t);
+        Array3DBorders<T>::internalDim = theDim;
+
+    }
+
+    virtual Dim3D getDim() const {
+
+        return Dim3D(Array3DBorders<T>::internalDim.x - 2 * Array3DBorders<T>::borderWidth,
+                     Array3DBorders<T>::internalDim.y - 2 * Array3DBorders<T>::borderWidth,
+                     Array3DBorders<T>::internalDim.z - 2 * Array3DBorders<T>::borderWidth);
+    };
+
+    virtual bool isValid(const Point3D &pt) const {
+        return (0 <= pt.x && pt.x < Array3DBorders<T>::internalDim.x &&
+                0 <= pt.y && pt.y < Array3DBorders<T>::internalDim.y &&
+                0 <= pt.z && pt.z < Array3DBorders<T>::internalDim.z);
+    }
+
+    virtual void set(const Point3D &pt, const T value) {
+
+        Array3DBorders<T>::array
+        [pt.x + Array3DBorders<T>::borderWidth]
+        [pt.y + Array3DBorders<T>::borderWidth]
+        [pt.z + Array3DBorders<T>::borderWidth] = value;
+
+    }
+
+
+    virtual T get(const Point3D &pt) const {
+
+        return Array3DBorders<T>::array
+        [pt.x + Array3DBorders<T>::borderWidth]
+        [pt.y + Array3DBorders<T>::borderWidth]
+        [pt.z + Array3DBorders<T>::borderWidth];
+    }
+
+    virtual T getByIndex(long _offset) const {
+        return T();
+    }
+
+    virtual void setByIndex(long _offset, const T _value) {
+
+    }
+
+protected:
+
 };
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template <typename T>
-class Array2DBorders{
-   public:
-      typedef T ** ContainerType;
-      Array2DBorders():array(0),borderWidth(1){
-      }
-      virtual ~Array2DBorders(){freeMemory();};
-      
-      void allocateArray(const Dim3D & _dim , T & val=T());
-//       operator Type&();
-      ContainerType & getContainer(){return array;}
-      void setBorderWidth(unsigned int _borderWidth){borderWidth=_borderWidth;}
-      unsigned int getBorderWidth(){return borderWidth;}
-      bool switchContainersQuick(Array2DBorders<T> & _array2D);
-      Dim3D getInternalDim(){return internalDim;}
-   protected:
-     ContainerType array;
-     unsigned int borderWidth;
-     Dim3D internalDim;
-   
-     void allocateMemory(const Dim3D & _dim, T & val=T());
-     void freeMemory();
+template<typename T>
+class Array2DBorders {
+public:
+    typedef T **ContainerType;
+
+    Array2DBorders() : array(0), borderWidth(1) {
+    }
+
+    virtual ~Array2DBorders() { freeMemory(); };
+
+    void allocateArray(const Dim3D &_dim, T &val = T());
+
+    ContainerType &getContainer() { return array; }
+
+    void setBorderWidth(unsigned int _borderWidth) { borderWidth = _borderWidth; }
+
+    unsigned int getBorderWidth() { return borderWidth; }
+
+    bool switchContainersQuick(Array2DBorders<T> &_array2D);
+
+    Dim3D getInternalDim() { return internalDim; }
+
+protected:
+    ContainerType array;
+    unsigned int borderWidth;
+    Dim3D internalDim;
+
+    void allocateMemory(const Dim3D &_dim, T &val = T());
+
+    void freeMemory();
 
 };
 
 
+template<typename T>
+void Array2DBorders<T>::allocateArray(const Dim3D &_dim, T &val) {
 
-template <typename T>
-void Array2DBorders<T>::allocateArray(const Dim3D & _dim , T & val){
-   
-   internalDim=_dim;
-   freeMemory();
-   allocateMemory(internalDim,val);
+    internalDim = _dim;
+    freeMemory();
+    allocateMemory(internalDim, val);
 
 }
 
-template <typename T>
-void Array2DBorders<T>::allocateMemory(const Dim3D & _dim, T & val){
+template<typename T>
+void Array2DBorders<T>::allocateMemory(const Dim3D &_dim, T &val) {
 
-   array=new T* [_dim.x];
-   for(int i = 0  ; i < _dim.x ; ++i){
-      array[i]=new T [_dim.y];
-   }
+    array = new T *[_dim.x];
+    for (int i = 0; i < _dim.x; ++i) {
+        array[i] = new T[_dim.y];
+    }
 
-   for(int i = 0  ; i < _dim.x ; ++i)
-      for(int j = 0  ; j < _dim.y ; ++j)
-            array[i][j]=val;
- 
+    for (int i = 0; i < _dim.x; ++i)
+        for (int j = 0; j < _dim.y; ++j)
+            array[i][j] = val;
+
 
 }
 
 #include <iostream>
-template <typename T>
-void Array2DBorders<T>::freeMemory(){
-using namespace std;
 
-   if(array){
-      
-      for(int i = 0  ; i < internalDim.x ; ++i){
-         delete [] array[i];
-         array[i]=0;
-      }
+    template<typename T>
+    void Array2DBorders<T>::freeMemory() {
+        using namespace std;
 
-      delete [] array;
-      array=0;
+        if (array) {
 
-   }
+            for (int i = 0; i < internalDim.x; ++i) {
+                delete[] array[i];
+                array[i] = 0;
+            }
 
+            delete[] array;
+            array = 0;
 
-}
+        }
 
 
-template <typename T>
-bool  Array2DBorders<T>::switchContainersQuick(Array2DBorders<T> & _switchedArray){
-   ContainerType tmpPtr;
-   ContainerType & switchedArrayPtr=_switchedArray.getContainer();
+    }
 
-   tmpPtr=array;
-   array=switchedArrayPtr;
-   switchedArrayPtr=tmpPtr;
-   return true;
-}
+
+    template<typename T>
+    bool Array2DBorders<T>::switchContainersQuick(Array2DBorders<T> &_switchedArray) {
+        ContainerType tmpPtr;
+        ContainerType &switchedArrayPtr = _switchedArray.getContainer();
+
+        tmpPtr = array;
+        array = switchedArrayPtr;
+        switchedArrayPtr = tmpPtr;
+        return true;
+    }
 
 //Adapter is necessary to keep current API of the Field3D . These fields are registered in Simulator and 
-template <typename T>
-class Array2DBordersField3DAdapter:public Field3DImpl<T>, public Array2DBorders<T>{
-   public:
-      Array2DBordersField3DAdapter() : Field3DImpl<T>(Dim3D(1,1,1),T()), Array2DBorders<T>() {};
-      Array2DBordersField3DAdapter(Dim3D & _dim,T & _initVal):Field3DImpl<T>(Dim3D(1,1,1),T()), Array2DBorders<T>(){
-         allocateMemory(_dim,_initVal);
-         Array2DBorders<T>::internalDim=_dim;
-      }
-      virtual ~Array2DBordersField3DAdapter(){
-//          if(array3DPtr)
-//             delete array3DPtr;
-//             array3DPtr=0;
-      };
-//       void setArray3DPtr(Array3D<T> * _ptr){ array3DPtr = _ptr;}
-//       Array3DBorders<T> * getArray3DBordersPtr(){ return array3DPtr; }
-//       typename Array3DBorders<T>::ContainerType &  getContainer(){ return getContainer(); }
-      virtual void setDim(const Dim3D theDim) {
-         T t;
-         
-         allocateMemory(theDim,t);
-         Array2DBorders<T>::internalDim=theDim;
+    template<typename T>
+    class Array2DBordersField3DAdapter : public Field3DImpl<T>, public Array2DBorders<T> {
+    public:
+        Array2DBordersField3DAdapter() : Field3DImpl<T>(Dim3D(1, 1, 1), T()), Array2DBorders<T>() {};
 
-      }
-      virtual Dim3D getDim() const {
+        Array2DBordersField3DAdapter(Dim3D &_dim, T &_initVal) : Field3DImpl<T>(Dim3D(1, 1, 1), T()),
+                                                                 Array2DBorders<T>() {
+            allocateMemory(_dim, _initVal);
+            Array2DBorders<T>::internalDim = _dim;
+        }
 
-         return Dim3D(Array2DBorders<T>::internalDim.x-2*Array2DBorders<T>::borderWidth,
-                     Array2DBorders<T>::internalDim.y-2*Array2DBorders<T>::borderWidth,
-                     1);
-      };
-      virtual bool isValid(const Point3D &pt) const {      
-         return (0 <= pt.x && pt.x < Array2DBorders<T>::internalDim.x &&
-	      0 <= pt.y && pt.y < Array2DBorders<T>::internalDim.y &&
-	      0 == pt.z );
-      }
-      virtual void set(const Point3D &pt, const T value) {
-         
-//             unsigned int borderWidth=array3DPtr->getBorderWidth();
+        virtual ~Array2DBordersField3DAdapter() {
+
+        };
+
+        virtual void setDim(const Dim3D theDim) {
+            T t;
+
+            allocateMemory(theDim, t);
+            Array2DBorders<T>::internalDim = theDim;
+
+        }
+
+        virtual Dim3D getDim() const {
+
+            return Dim3D(Array2DBorders<T>::internalDim.x - 2 * Array2DBorders<T>::borderWidth,
+                         Array2DBorders<T>::internalDim.y - 2 * Array2DBorders<T>::borderWidth,
+                         1);
+        };
+
+        virtual bool isValid(const Point3D &pt) const {
+            return (0 <= pt.x && pt.x < Array2DBorders<T>::internalDim.x &&
+                    0 <= pt.y && pt.y < Array2DBorders<T>::internalDim.y &&
+                    0 == pt.z);
+        }
+
+        virtual void set(const Point3D &pt, const T value) {
             Array2DBorders<T>::array
-            [pt.x+Array2DBorders<T>::borderWidth]
-            [pt.y+Array2DBorders<T>::borderWidth]
-            =value;
-         
-      }
-      virtual T get(const Point3D &pt) const {
-//          unsigned int borderWidth=array3DPtr->getBorderWidth();
-//          using namespace std;
-//          cerr<<"this is element:"<<Array2DBorders<T>::array
-//                   [pt.x+Array2DBorders<T>::borderWidth]
-//                   [pt.y+Array2DBorders<T>::borderWidth]<<endl;
-         return Array2DBorders<T>::array
-                  [pt.x+Array2DBorders<T>::borderWidth]
-                  [pt.y+Array2DBorders<T>::borderWidth];
-      }
+            [pt.x + Array2DBorders<T>::borderWidth]
+            [pt.y + Array2DBorders<T>::borderWidth]
+                    = value;
 
-      virtual T getByIndex(long _offset) const {
-         return T();
-      }
-      virtual void setByIndex(long _offset, const T _value) {
-         
-      }
-   protected:
-//       Array3DBorders<T> * array3DPtr;
-//       Dim3D dim;
-//       typename Array3DBorders<T>::ContainerType * containerPtr;
-//       unsigned int borderWidth;
-};
+        }
+
+        virtual T get(const Point3D &pt) const {
+            return Array2DBorders<T>::array
+            [pt.x + Array2DBorders<T>::borderWidth]
+            [pt.y + Array2DBorders<T>::borderWidth];
+        }
+
+        virtual T getByIndex(long _offset) const {
+            return T();
+        }
+
+        virtual void setByIndex(long _offset, const T _value) {
+
+        }
+
+    protected:
+
+    };
 
 
 
 
-//Array3DContiguous is a special container where scratch and concentration field are stored next to each other to optimize read/write oprations. this should result in significant speed up of FE solvers
+//Array3DContiguous is a special container where scratch and concentration field
+// are stored next to each other to optimize read/write operations.
+// this should result in significant speed up of FE solvers
 
-template <typename T>
-class Array3DContiguous:public Field3DImpl<T>{
-public:
-	typedef T* ContainerType;
-	Array3DContiguous():
-		Field3DImpl<T>(Dim3D(1,1,1),T()),
-		arrayCont(0),				
-		arraySize(0),
-		shiftArray(0),
-		shiftSwap(1),
-		borderWidth(1)
-	{}
+    template<typename T>
+    class Array3DContiguous : public Field3DImpl<T> {
+    public:
+        typedef T *ContainerType;
 
-	Array3DContiguous(Dim3D & _dim,T & _initVal=T()):
-		Field3DImpl<T>(Dim3D(1,1,1),T()),
-		arrayCont(0),
-		arraySize(0),
-		shiftArray(0),
-		shiftSwap(1),
-		borderWidth(1)
-	{
-		allocateArray(_dim,_initVal);
-	}
-	~Array3DContiguous(){
-		if (arrayCont){
-			delete [] arrayCont;
-		}
-		arrayCont=0;
-	}
-    virtual void setDim(const Dim3D theDim);
-	virtual void resizeAndShift(const Dim3D theDim,  Dim3D shiftVec=Dim3D());
-    
-	void allocateArray(const Dim3D & _dim , T val=T());
-	//       operator Type&();
-	ContainerType getContainer(){return arrayCont;}
+        Array3DContiguous() :
+                Field3DImpl<T>(Dim3D(1, 1, 1), T()),
+                arrayCont(0),
+                arraySize(0),
+                shiftArray(0),
+                shiftSwap(1),
+                borderWidth(1) {}
 
-	//T & getDirect(int x,int y,int z){
-	//    return arrayCont[(x + ((y + (z * internalDim)) * internalDim))];
-	//}
-	//void setDirect(int x,int y,int z,T t){
-	//    arrayCont[(x + ((y + (z * internalDim)) * internalDim))]=t;
-	//}
-	//T & getDirectSwap(int x,int y,int z){
-	//    return arrayCont[(x + ((y + (z * internalDim)) * internalDim))];
-	//}
-	//void setQuickSwap(int x,int y,int z,T t){
-	//    arrayCont[(x + ((y + (z * internalDim)) * internalDim))]=t;
-	//}
-	T  get(int x,int y,int z) const {return getDirect(x+borderWidth,y+borderWidth,z+borderWidth);}
-	void set(int x,int y,int z, T t){return setDirect(x+borderWidth,y+borderWidth,z+borderWidth,t);}
+        Array3DContiguous(Dim3D &_dim, T &_initVal = T()) :
+                Field3DImpl<T>(Dim3D(1, 1, 1), T()),
+                arrayCont(0),
+                arraySize(0),
+                shiftArray(0),
+                shiftSwap(1),
+                borderWidth(1) {
+            allocateArray(_dim, _initVal);
+        }
+
+        ~Array3DContiguous() {
+            if (arrayCont) {
+                delete[] arrayCont;
+            }
+            arrayCont = 0;
+        }
+
+        virtual void setDim(const Dim3D theDim);
+
+        virtual void resizeAndShift(const Dim3D theDim, Dim3D shiftVec = Dim3D());
+
+        void allocateArray(const Dim3D &_dim, T val = T());
+
+        ContainerType getContainer() { return arrayCont; }
+
+        T get(int x, int y, int z) const { return getDirect(x + borderWidth, y + borderWidth, z + borderWidth); }
+
+        void set(int x, int y, int z, T t) { return setDirect(x + borderWidth, y + borderWidth, z + borderWidth, t); }
 
 
-	T  getDirect(int x,int y,int z) const{
-		return arrayCont[((x+shiftArray) + (((y+shiftArray) + ((2*z+shiftArray) * internalDim.y)) * internalDim.x))];
-	}
-	void setDirect(int x,int y,int z,T t){
-		arrayCont[((x+shiftArray) + (((y+shiftArray) + ((2*z+shiftArray) * internalDim.y)) * internalDim.x))]=t;
-	}
-	T  getDirectSwap(int x,int y,int z) const{
-		return arrayCont[((x+shiftSwap) + (((y+shiftSwap) + ((2*z+shiftSwap) * internalDim.y)) * internalDim.x))];
-	}
-	void setDirectSwap(int x,int y,int z,T t){
-		arrayCont[((x+shiftSwap) + (((y+shiftSwap) + ((2*z+shiftSwap) * internalDim.y)) * internalDim.x))]=t;
-	}
-            
-	//Field3D interface
-      virtual bool isValid(const Point3D &pt) const {      
-         return (0 <= pt.x && pt.x < internalDim.x &&
-	      0 <= pt.y && pt.y < internalDim.y &&
-	      0 <= pt.z && pt.z < internalDim.z);
-      }
-      virtual void set(const Point3D &pt, const T value) {
-         
-//             unsigned int borderWidth=array3DPtr->getBorderWidth();
-            set(pt.x,pt.y,pt.z,value);
-         
-      }
-      
-      virtual T get(const Point3D &pt) const {
-//          unsigned int borderWidth=array3DPtr->getBorderWidth();
-         return get(pt.x,pt.y,pt.z);
-	  }
+        T getDirect(int x, int y, int z) const {
+            return arrayCont[((x + shiftArray) +
+                              (((y + shiftArray) + ((2 * z + shiftArray) * internalDim.y)) * internalDim.x))];
+        }
 
-      virtual T getByIndex(long _offset) const {
-         return T();
-      }
-      virtual void setByIndex(long _offset, const T _value) {
-         
-      }
+        void setDirect(int x, int y, int z, T t) {
+            arrayCont[((x + shiftArray) +
+                       (((y + shiftArray) + ((2 * z + shiftArray) * internalDim.y)) * internalDim.x))] = t;
+        }
 
+        T getDirectSwap(int x, int y, int z) const {
+            return arrayCont[((x + shiftSwap) +
+                              (((y + shiftSwap) + ((2 * z + shiftSwap) * internalDim.y)) * internalDim.x))];
+        }
 
-	void swapArrays();
-	Dim3D getInternalDim(){return internalDim;}
-	Dim3D getDim(){return Field3DImpl<T>::dim;}
-	int getShiftArray(){return shiftArray;}
-	int getShiftSwap(){return shiftSwap;}
+        void setDirectSwap(int x, int y, int z, T t) {
+            arrayCont[((x + shiftSwap) +
+                       (((y + shiftSwap) + ((2 * z + shiftSwap) * internalDim.y)) * internalDim.x))] = t;
+        }
 
-	void swapQuick(Array3DContiguous & _switchedArray){
-		ContainerType tmpPtr;
-		ContainerType switchedArrayPtr=_switchedArray.getContainer();
+        //Field3D interface
+        virtual bool isValid(const Point3D &pt) const {
+            return (0 <= pt.x && pt.x < internalDim.x &&
+                    0 <= pt.y && pt.y < internalDim.y &&
+                    0 <= pt.z && pt.z < internalDim.z);
+        }
 
-		tmpPtr=arrayCont;
-		arrayCont=switchedArrayPtr;
-		switchedArrayPtr=tmpPtr;
+        virtual void set(const Point3D &pt, const T value) {
 
-	}
+            set(pt.x, pt.y, pt.z, value);
 
-protected:
-	T *arrayCont;
-	//Dim3D dim; //defined already in Field3DImpl<>
-	Dim3D internalDim;
-	int arraySize;
-	int shiftSwap;
-	int shiftArray;
-	int borderWidth;
+        }
 
-};
+        virtual T get(const Point3D &pt) const {
+
+            return get(pt.x, pt.y, pt.z);
+        }
+
+        virtual T getByIndex(long _offset) const {
+            return T();
+        }
+
+        virtual void setByIndex(long _offset, const T _value) {
+
+        }
 
 
-template <typename T>
-void Array3DContiguous<T>::allocateArray(const Dim3D & _dim , T  val){
+        void swapArrays();
 
-	Field3DImpl<T>::dim=_dim;
-	internalDim=Field3DImpl<T>::dim;
-	internalDim.x+=3;
-	internalDim.y+=3;
-	internalDim.z+=3;
+        Dim3D getInternalDim() { return internalDim; }
 
-	if(arrayCont){
-		delete [] arrayCont;
-		arrayCont=0;
-	}
-	arraySize=internalDim.x*internalDim.y*2*internalDim.z;
-	arrayCont=new T[arraySize];
+        Dim3D getDim() { return Field3DImpl<T>::dim; }
 
-	//initialization 
-	for (int i = 0 ;i<arraySize;++i){
-		arrayCont[i]=val;
-	}
+        int getShiftArray() { return shiftArray; }
 
-}
+        int getShiftSwap() { return shiftSwap; }
 
+        void swapQuick(Array3DContiguous &_switchedArray) {
+            ContainerType tmpPtr;
+            ContainerType switchedArrayPtr = _switchedArray.getContainer();
 
-template <typename T>
-void Array3DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec){
-    
-    Dim3D newInternalDim=newDim;
-	newInternalDim.x+=3;
-	newInternalDim.y+=3;
-	newInternalDim.z+=3;
-    
-	int newArraySize=newInternalDim.x*newInternalDim.y*2*newInternalDim.z;
-	T * newArrayCont=new T[newArraySize];
-    
-	//initialization 
-	for (int i = 0 ;i<newArraySize;++i){
-		newArrayCont[i]=T();
-	}
-    
-    //copying old array to new one - we do not copy swap values or boundary conditions these are usually set externally by the solver
-	Point3D pt;
-	Point3D ptShift;
+            tmpPtr = arrayCont;
+            arrayCont = switchedArrayPtr;
+            switchedArrayPtr = tmpPtr;
 
-	//when lattice is growing or shrinking
-	for(pt.x=0 ; pt.x < newDim.x ; ++pt.x)
-		for(pt.y=0 ; pt.y < newDim.y ; ++pt.y)
-			for(pt.z=0 ; pt.z < newDim.z ; ++pt.z){
+        }
 
-				ptShift=pt-shiftVec;
-				if (ptShift.x>=0 && ptShift.x<Field3DImpl<T>::dim.x && ptShift.y>=0 && ptShift.y<Field3DImpl<T>::dim.y && ptShift.z>=0 && ptShift.z<Field3DImpl<T>::dim.z)
-				{
-					//cerr<<"ptShift="<<ptShift<<" pt="<<pt<<endl;
-                    
-                    newArrayCont[(((pt.x+borderWidth)+shiftArray) + ((((pt.y+borderWidth)+shiftArray) + ((2*(pt.z+borderWidth)+shiftArray) *newInternalDim.y)) * newInternalDim.x))]=get(ptShift.x,ptShift.y,ptShift.z);
-                    
-				}
-			}
-    
-    //swapping array and deallocation old one
-    internalDim=newInternalDim;
-	Field3DImpl<T>::dim=newDim;
-    arraySize=newArraySize;
-    
-    delete [] arrayCont;
-    
-    arrayCont=newArrayCont;
-    
-    
-}
+    protected:
+        T *arrayCont;
+        Dim3D internalDim;
+        int arraySize;
+        int shiftSwap;
+        int shiftArray;
+        int borderWidth;
 
-template <typename T>
-void Array3DContiguous<T>::setDim(const Dim3D newDim){
-	this->resizeAndShift(newDim);
-}
+    };
+
+    template<typename T>
+    void Array3DContiguous<T>::allocateArray(const Dim3D &_dim, T val) {
+
+        Field3DImpl<T>::dim = _dim;
+        internalDim = Field3DImpl<T>::dim;
+        internalDim.x += 3;
+        internalDim.y += 3;
+        internalDim.z += 3;
+
+        if (arrayCont) {
+            delete[] arrayCont;
+            arrayCont = 0;
+        }
+        arraySize = internalDim.x * internalDim.y * 2 * internalDim.z;
+        arrayCont = new T[arraySize];
+
+        //initialization
+        for (int i = 0; i < arraySize; ++i) {
+            arrayCont[i] = val;
+        }
+
+    }
 
 
-template <typename T>
-void Array3DContiguous<T>::swapArrays(){
-	if (shiftSwap){
-		shiftSwap=0;
-		shiftArray=1;
-	}else{
-		shiftSwap=1;
-		shiftArray=0;
+    template<typename T>
+    void Array3DContiguous<T>::resizeAndShift(const Dim3D newDim, Dim3D shiftVec) {
 
-	}
-}
+        Dim3D newInternalDim = newDim;
+        newInternalDim.x += 3;
+        newInternalDim.y += 3;
+        newInternalDim.z += 3;
+
+        int newArraySize = newInternalDim.x * newInternalDim.y * 2 * newInternalDim.z;
+        T *newArrayCont = new T[newArraySize];
+
+        //initialization
+        for (int i = 0; i < newArraySize; ++i) {
+            newArrayCont[i] = T();
+        }
+
+        //copying old array to new one - we do not copy swap values or boundary conditions
+        // these are usually set externally by the solver
+        Point3D pt;
+        Point3D ptShift;
+
+        //when lattice is growing or shrinking
+        for (pt.x = 0; pt.x < newDim.x; ++pt.x)
+            for (pt.y = 0; pt.y < newDim.y; ++pt.y)
+                for (pt.z = 0; pt.z < newDim.z; ++pt.z) {
+
+                    ptShift = pt - shiftVec;
+                    if (ptShift.x >= 0 && ptShift.x < Field3DImpl<T>::dim.x && ptShift.y >= 0 &&
+                        ptShift.y < Field3DImpl<T>::dim.y && ptShift.z >= 0 && ptShift.z < Field3DImpl<T>::dim.z) {
+
+                        newArrayCont[(((pt.x + borderWidth) + shiftArray) + ((((pt.y + borderWidth) + shiftArray) +
+                                                                              ((2 * (pt.z + borderWidth) + shiftArray) *
+                                                                               newInternalDim.y)) *
+                                                                             newInternalDim.x))] = get(ptShift.x,
+                                                                                                       ptShift.y,
+                                                                                                       ptShift.z);
+
+                    }
+                }
+
+        //swapping array and deallocation old one
+        internalDim = newInternalDim;
+        Field3DImpl<T>::dim = newDim;
+        arraySize = newArraySize;
+
+        delete[] arrayCont;
+
+        arrayCont = newArrayCont;
+
+
+    }
+
+    template<typename T>
+    void Array3DContiguous<T>::setDim(const Dim3D newDim) {
+        this->resizeAndShift(newDim);
+    }
+
+
+    template<typename T>
+    void Array3DContiguous<T>::swapArrays() {
+        if (shiftSwap) {
+            shiftSwap = 0;
+            shiftArray = 1;
+        } else {
+            shiftSwap = 1;
+            shiftArray = 0;
+
+        }
+    }
 
 
 
@@ -968,625 +948,511 @@ void Array3DContiguous<T>::swapArrays(){
 
 //Array3DCUDA is a special container designed for CUDA purposes
 //had to fo static_cast<T>(0) instead of T() to ensure that it will compile on gcc in the SWIG generated wrapper file
-template <typename T>
-class Array3DCUDA:public Field3DImpl<T>{
-public:
-	typedef T* ContainerType;
-	Array3DCUDA():
-		Field3DImpl<T>(Dim3D(1,1,1),static_cast<T>(0)),
-		arrayCont(0),				
-		arraySize(0),
-		//shiftArray(0),
-		//shiftSwap(1),
-		borderWidth(1)
-	{}
+    template<typename T>
+    class Array3DCUDA : public Field3DImpl<T> {
+    public:
+        typedef T *ContainerType;
 
-	Array3DCUDA(Dim3D & _dim,T  _initVal=static_cast<T>(0)):
-		Field3DImpl<T>(Dim3D(1,1,1),static_cast<T>(0)),
-		arrayCont(0),
-		arraySize(0),
-		//shiftArray(0),
-		//shiftSwap(1),
-		borderWidth(1)
-	{
-		allocateArray(_dim,_initVal);
-	}
-	~Array3DCUDA(){
-		if (arrayCont){
-			// delete [] arrayCont;
+        Array3DCUDA() :
+                Field3DImpl<T>(Dim3D(1, 1, 1), static_cast<T>(0)),
+                arrayCont(0),
+                arraySize(0),
+                borderWidth(1) {}
+
+        Array3DCUDA(Dim3D &_dim, T _initVal = static_cast<T>(0)) :
+                Field3DImpl<T>(Dim3D(1, 1, 1), static_cast<T>(0)),
+                arrayCont(0),
+                arraySize(0),
+                borderWidth(1) {
+            allocateArray(_dim, _initVal);
+        }
+
+        ~Array3DCUDA() {
+            if (arrayCont) {
+                free(arrayCont);
+            }
+            arrayCont = 0;
+        }
+
+        void allocateArray(const Dim3D &_dim, T val = static_cast<T>(0));
+
+        ContainerType getContainer() { return arrayCont; }
+
+
+        T get(int x, int y, int z) const { return getDirect(x + borderWidth, y + borderWidth, z + borderWidth); }
+
+        void set(int x, int y, int z, T t) { return setDirect(x + borderWidth, y + borderWidth, z + borderWidth, t); }
+
+
+        T getDirect(int x, int y, int z) const {
+            return arrayCont[z * (internalDim.x) * (internalDim.y) + y * (internalDim.x) + x];
+        }
+
+        void setDirect(int x, int y, int z, T t) {
+            arrayCont[z * (internalDim.x) * (internalDim.y) + y * (internalDim.x) + x] = t;
+        }
+
+        //Field3D interface
+        virtual bool isValid(const Point3D &pt) const {
+            return (0 <= pt.x && pt.x < internalDim.x &&
+                    0 <= pt.y && pt.y < internalDim.y &&
+                    0 <= pt.z && pt.z < internalDim.z);
+        }
+
+        virtual void set(const Point3D &pt, const T value) {
+
+
+            set(pt.x, pt.y, pt.z, value);
+
+        }
+
+        virtual T get(const Point3D &pt) const {
+
+            return get(pt.x, pt.y, pt.z);
+        }
+
+        virtual T getByIndex(long _offset) const {
+            return T();
+        }
+
+        virtual void setByIndex(long _offset, const T _value) {
+
+        }
+
+
+        void swapArrays();
+
+        int getArraySize() { return arraySize; }
+
+        Dim3D getInternalDim() { return internalDim; }
+
+        Dim3D getDim() { return Field3DImpl<T>::dim; }
+
+        void swapQuick(Array3DCUDA &_switchedArray) {
+        }
+
+    protected:
+        T *arrayCont;
+        Dim3D internalDim;
+        int arraySize;
+        int borderWidth;
+
+    };
+
+
+    template<typename T>
+    void Array3DCUDA<T>::allocateArray(const Dim3D &_dim, T val) {
+
+        Field3DImpl<T>::dim = _dim;
+        internalDim = Field3DImpl<T>::dim;
+        internalDim.x += 2;
+        internalDim.y += 2;
+        internalDim.z += 2;
+
+        if (arrayCont) {
             free(arrayCont);
-		}
-		arrayCont=0;
-	}
-	void allocateArray(const Dim3D & _dim , T val=static_cast<T>(0));
-	//       operator Type&();
-	ContainerType getContainer(){return arrayCont;}
+            arrayCont = 0;
+        }
+        arraySize = internalDim.x * internalDim.y * internalDim.z;
+        arrayCont = (ContainerType) malloc(arraySize * sizeof(T));
 
+        //initialization
+        for (int i = 0; i < arraySize; ++i) {
+            arrayCont[i] = val;
+        }
 
-	T  get(int x,int y,int z) const {return getDirect(x+borderWidth,y+borderWidth,z+borderWidth);}
-	void set(int x,int y,int z, T t){return setDirect(x+borderWidth,y+borderWidth,z+borderWidth,t);}
+    }
 
+    template<typename T>
+    void Array3DCUDA<T>::swapArrays() {
 
-	T  getDirect(int x,int y,int z) const{
-		return arrayCont[z*(internalDim.x)*(internalDim.y)+y*(internalDim.x)+x];
-	}
-	void setDirect(int x,int y,int z,T t){
-		arrayCont[z*(internalDim.x)*(internalDim.y)+y*(internalDim.x)+x]=t;
-	}
-	// T  getDirectSwap(int x,int y,int z) const{
-		// return arrayCont[((x+shiftSwap) + (((y+shiftSwap) + ((2*z+shiftSwap) * internalDim.y)) * internalDim.x))];
-	// }
-	// void setDirectSwap(int x,int y,int z,T t){
-		// arrayCont[((x+shiftSwap) + (((y+shiftSwap) + ((2*z+shiftSwap) * internalDim.y)) * internalDim.x))]=t;
-	// }
-            
-	//Field3D interface
-      virtual bool isValid(const Point3D &pt) const {      
-         return (0 <= pt.x && pt.x < internalDim.x &&
-	      0 <= pt.y && pt.y < internalDim.y &&
-	      0 <= pt.z && pt.z < internalDim.z);
-      }
-      virtual void set(const Point3D &pt, const T value) {
-         
-
-            set(pt.x,pt.y,pt.z,value);
-         
-      }
-      
-      virtual T get(const Point3D &pt) const {
-
-         return get(pt.x,pt.y,pt.z);
-	  }
-
-      virtual T getByIndex(long _offset) const {
-         return T();
-      }
-      virtual void setByIndex(long _offset, const T _value) {
-         
-      }
-
-
-	void swapArrays();
-	int getArraySize(){return arraySize;}
-	Dim3D getInternalDim(){return internalDim;}
-	Dim3D getDim(){return Field3DImpl<T>::dim;}
-	// int getShiftArray(){return shiftArray;}
-	// int getShiftSwap(){return shiftSwap;}
-
-	void swapQuick(Array3DCUDA & _switchedArray){
-		// ContainerType tmpPtr;
-		// ContainerType switchedArrayPtr=_switchedArray.getContainer();
-
-		// tmpPtr=arrayCont;
-		// arrayCont=switchedArrayPtr;
-		// switchedArrayPtr=tmpPtr;
-
-	}
-
-protected:
-	T *arrayCont;
-	//Dim3D dim; //defined already in Field3DImpl<>
-	Dim3D internalDim;
-	int arraySize;
-	// int shiftSwap;
-	// int shiftArray;
-	int borderWidth;
-
-};
-
-
-template <typename T>
-void Array3DCUDA<T>::allocateArray(const Dim3D & _dim , T  val){
-
-	Field3DImpl<T>::dim=_dim;
-	internalDim=Field3DImpl<T>::dim;
-	internalDim.x+=2;
-	internalDim.y+=2;
-	internalDim.z+=2;
-
-	if(arrayCont){
-		// delete [] arrayCont;
-		// arrayCont=0;
-		free(arrayCont);
-		arrayCont=0;        
-	}
-	arraySize=internalDim.x*internalDim.y*internalDim.z;
-	// arrayCont=new T[arraySize];
-    arrayCont=(ContainerType) malloc(arraySize*sizeof(T));
-    
-	//initialization 
-	for (int i = 0 ;i<arraySize;++i){
-		arrayCont[i]=val;
-	}
-
-}
-
-template <typename T>
-void Array3DCUDA<T>::swapArrays(){
-	// if (shiftSwap){
-		// shiftSwap=0;
-		// shiftArray=1;
-	// }else{
-		// shiftSwap=1;
-		// shiftArray=0;
-
-	// }
-}
+    }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
-//Array2DContiguous is a special container where scratch and concentration field are stored next to each other to optimize read/write oprations. this should result in significant speed up of FE solvers
-template <typename T>
-class Array2DContiguous:public Field3DImpl<T>{
-public:
-	typedef T* ContainerType;
-	Array2DContiguous():
-		Field3DImpl<T>(Dim3D(1,1,1),T()),
-		arrayCont(0),				
-		arraySize(0),
-		shiftArray(0),
-		shiftSwap(1),
-		borderWidth(1)
-	{}
+    //Array2DContiguous is a special container where scratch and concentration field are stored
+    // next to each other to optimize read/write operations. this should result in significant speed up of FE solvers
+    template<typename T>
+    class Array2DContiguous : public Field3DImpl<T> {
+    public:
+        typedef T *ContainerType;
 
-	Array2DContiguous(Dim3D & _dim,T & _initVal=T()):
-		Field3DImpl<T>(Dim3D(1,1,1),T()),
-		arrayCont(0),
-		arraySize(0),
-		shiftArray(0),
-		shiftSwap(1),
-		borderWidth(1)
-	{
-		allocateArray(_dim,_initVal);
-	}
+        Array2DContiguous() :
+                Field3DImpl<T>(Dim3D(1, 1, 1), T()),
+                arrayCont(0),
+                arraySize(0),
+                shiftArray(0),
+                shiftSwap(1),
+                borderWidth(1) {}
 
-	~Array2DContiguous(){
-		if (arrayCont){
-			delete [] arrayCont;
-		}
-		arrayCont=0;
-	}
-	void allocateArray(const Dim3D & _dim , T val=T());
-	virtual void setDim(const Dim3D newDim);
-	virtual void resizeAndShift(const Dim3D newDim,  Dim3D shiftVec=Dim3D());
-	//       operator Type&();
-	ContainerType getContainer(){return arrayCont;}
+        Array2DContiguous(Dim3D &_dim, T &_initVal = T()) :
+                Field3DImpl<T>(Dim3D(1, 1, 1), T()),
+                arrayCont(0),
+                arraySize(0),
+                shiftArray(0),
+                shiftSwap(1),
+                borderWidth(1) {
+            allocateArray(_dim, _initVal);
+        }
 
+        ~Array2DContiguous() {
+            if (arrayCont) {
+                delete[] arrayCont;
+            }
+            arrayCont = 0;
+        }
 
-	T  get(int x,int y) const {return getDirect(x+borderWidth,y+borderWidth);}
-	void set(int x,int y, T t){return setDirect(x+borderWidth,y+borderWidth,t);}
+        void allocateArray(const Dim3D &_dim, T val = T());
 
+        virtual void setDim(const Dim3D newDim);
 
-	T  getDirect(int x,int y) const{
-        
-		return arrayCont[x+shiftArray + (2*y+shiftArray)* internalDim.x];
-	}
-	void setDirect(int x,int y,T t){
-		arrayCont[x+shiftArray + (2*y+shiftArray)* internalDim.x]=t;
-	}
-	T  getDirectSwap(int x,int y) const{
-		return arrayCont[x+shiftSwap + (2*y+shiftSwap)* internalDim.x];
-	}
-	void setDirectSwap(int x,int y,T t){
-		arrayCont[x+shiftSwap + (2*y+shiftSwap)* internalDim.x]=t;
-	}     
-   
-	//Field3D interface
-      virtual bool isValid(const Point3D &pt) const {      
-         return (0 <= pt.x && pt.x < internalDim.x &&
-	      0 <= pt.y && pt.y < internalDim.y );
-      }
-      virtual void set(const Point3D &pt, const T value) {
-         
-//             unsigned int borderWidth=array3DPtr->getBorderWidth();
-            set(pt.x,pt.y,value);
-         
-      }
-      virtual T get(const Point3D &pt) const {
-//          unsigned int borderWidth=array3DPtr->getBorderWidth();
-         return get(pt.x,pt.y);
-	  }
+        virtual void resizeAndShift(const Dim3D newDim, Dim3D shiftVec = Dim3D());
 
-      virtual T getByIndex(long _offset) const {
-         return T();
-      }
-      virtual void setByIndex(long _offset, const T _value) {
-         
-      }
+        ContainerType getContainer() { return arrayCont; }
 
 
-	void swapArrays();
-	Dim3D getInternalDim(){return internalDim;}
-	Dim3D getDim(){return Field3DImpl<T>::dim;}
-	int getShiftArray(){return shiftArray;}
-	int getShiftSwap(){return shiftSwap;}
+        T get(int x, int y) const { return getDirect(x + borderWidth, y + borderWidth); }
 
-	void swapQuick(Array2DContiguous & _switchedArray){
-		ContainerType tmpPtr;
-		ContainerType switchedArrayPtr=_switchedArray.getContainer();
-
-		tmpPtr=arrayCont;
-		arrayCont=switchedArrayPtr;
-		switchedArrayPtr=tmpPtr;
-
-	}
-
-protected:
-	T *arrayCont;
-	//Dim3D dim; //defined already in Field3DImpl<>
-	Dim3D internalDim;
-	int arraySize;
-	int shiftSwap;
-	int shiftArray;
-	int borderWidth;
-
-};
+        void set(int x, int y, T t) { return setDirect(x + borderWidth, y + borderWidth, t); }
 
 
-template <typename T>
-void Array2DContiguous<T>::allocateArray(const Dim3D & _dim , T  val){
+        T getDirect(int x, int y) const {
 
-	Field3DImpl<T>::dim=_dim;
-	internalDim=Field3DImpl<T>::dim;
-	internalDim.x+=3;
-	internalDim.y+=3;
-    internalDim.z=1;
-	
+            return arrayCont[x + shiftArray + (2 * y + shiftArray) * internalDim.x];
+        }
 
-	if(arrayCont){
-		delete [] arrayCont;
-		arrayCont=0;
-	}
-	arraySize=internalDim.x*2*internalDim.y;
-	arrayCont=new T[arraySize];
+        void setDirect(int x, int y, T t) {
+            arrayCont[x + shiftArray + (2 * y + shiftArray) * internalDim.x] = t;
+        }
 
-	//initialization 
-	for (int i = 0 ;i<arraySize;++i){
-		arrayCont[i]=val;
-	}
+        T getDirectSwap(int x, int y) const {
+            return arrayCont[x + shiftSwap + (2 * y + shiftSwap) * internalDim.x];
+        }
 
-}
+        void setDirectSwap(int x, int y, T t) {
+            arrayCont[x + shiftSwap + (2 * y + shiftSwap) * internalDim.x] = t;
+        }
 
-template <typename T>
-void Array2DContiguous<T>::swapArrays(){
-	if (shiftSwap){
-		shiftSwap=0;
-		shiftArray=1;
-	}else{
-		shiftSwap=1;
-		shiftArray=0;
+        //Field3D interface
+        virtual bool isValid(const Point3D &pt) const {
+            return (0 <= pt.x && pt.x < internalDim.x &&
+                    0 <= pt.y && pt.y < internalDim.y);
+        }
 
-	}
-}
+        virtual void set(const Point3D &pt, const T value) {
 
+            set(pt.x, pt.y, value);
+        }
 
-template <typename T>
-void Array2DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec){
-    
-    Dim3D newInternalDim=newDim;
-	newInternalDim.x+=3;
-	newInternalDim.y+=3;
-	newInternalDim.z=1;
-    
-	int newArraySize=newInternalDim.x*newInternalDim.y*2;
-	T * newArrayCont=new T[newArraySize];
-    
-	//initialization 
-	for (int i = 0 ;i<newArraySize;++i){
-		newArrayCont[i]=T();
-	}
-    
-    //copying old array to new one - we do not copy swap values or boundary conditions these are usually set externally by the solver
-	Point3D pt;
-	Point3D ptShift;
+        virtual T get(const Point3D &pt) const {
 
-	//when lattice is growing or shrinking
-	for(pt.x=0 ; pt.x < newDim.x ; ++pt.x)
-		for(pt.y=0 ; pt.y < newDim.y ; ++pt.y){			
-				ptShift=pt-shiftVec;
-				if (ptShift.x>=0 && ptShift.x<Field3DImpl<T>::dim.x && ptShift.y>=0 && ptShift.y<Field3DImpl<T>::dim.y )
-				{
-					//cerr<<"ptShift="<<ptShift<<" pt="<<pt<<endl;
-                    newArrayCont[(pt.x+borderWidth)+shiftArray + (2*(pt.y+borderWidth)+shiftArray)* newInternalDim.x]=arrayCont[ptShift.x+borderWidth+shiftArray + (2*(ptShift.y+borderWidth)+shiftArray)* internalDim.x];
-                    // get(ptShift.x,ptShift.y);                    
-				}
-			}
-    
-    //swapping array and deallocation old one
-    internalDim=newInternalDim;
-	Field3DImpl<T>::dim=newDim;
-    arraySize=newArraySize;
-    
-    delete [] arrayCont;
-    
-    arrayCont=newArrayCont;
-    
-    
-}
+            return get(pt.x, pt.y);
+        }
 
-template <typename T>
-void Array2DContiguous<T>::setDim(const Dim3D newDim){
-	this->resizeAndShift(newDim);
-}
+        virtual T getByIndex(long _offset) const {
+            return T();
+        }
+
+        virtual void setByIndex(long _offset, const T _value) {
+        }
+
+        void swapArrays();
+
+        Dim3D getInternalDim() { return internalDim; }
+
+        Dim3D getDim() { return Field3DImpl<T>::dim; }
+
+        int getShiftArray() { return shiftArray; }
+
+        int getShiftSwap() { return shiftSwap; }
+
+        void swapQuick(Array2DContiguous &_switchedArray) {
+            ContainerType tmpPtr;
+            ContainerType switchedArrayPtr = _switchedArray.getContainer();
+
+            tmpPtr = arrayCont;
+            arrayCont = switchedArrayPtr;
+            switchedArrayPtr = tmpPtr;
+
+        }
+
+    protected:
+        T *arrayCont;
+        Dim3D internalDim;
+        int arraySize;
+        int shiftSwap;
+        int shiftArray;
+        int borderWidth;
+
+    };
+
+    template<typename T>
+    void Array2DContiguous<T>::allocateArray(const Dim3D &_dim, T val) {
+
+        Field3DImpl<T>::dim = _dim;
+        internalDim = Field3DImpl<T>::dim;
+        internalDim.x += 3;
+        internalDim.y += 3;
+        internalDim.z = 1;
 
 
+        if (arrayCont) {
+            delete[] arrayCont;
+            arrayCont = 0;
+        }
+        arraySize = internalDim.x * 2 * internalDim.y;
+        arrayCont = new T[arraySize];
 
-template <typename T>
-class Array3DFiPy:public Field3DImpl<T>{
-public:
-	std::vector<std::vector<float> > secData;
-	std::vector<std::vector<int> > doNotDiffuseData;
-// 	std::set<std::vector<float> > secData;
-// 	std::set<std::vector<float> >::iterator secDataIT;
-	typedef T* ContainerType;
-	Array3DFiPy():
-		Field3DImpl<T>(Dim3D(1,1,1),T()),
-		arrayCont(0),				
-		arraySize(0),
-		shiftArray(0),
-		shiftSwap(1),
-		borderWidth(1)
-	{}
+        //initialization
+        for (int i = 0; i < arraySize; ++i) {
+            arrayCont[i] = val;
+        }
+    }
 
-	Array3DFiPy(Dim3D & _dim,T & _initVal=T()):
-		Field3DImpl<T>(Dim3D(1,1,1),T()),
-		arrayCont(0),
-		arraySize(0),
-		shiftArray(0),
-		shiftSwap(1),
-		borderWidth(1)
-	{
-		allocateArray(_dim,_initVal);
-	}
-	~Array3DFiPy(){
-		if (arrayCont){
-			delete [] arrayCont;
-		}
-		arrayCont=0;
-	}
-	void allocateArray(const Dim3D & _dim , T val=T());
-	
-
-	//       operator Type&();
-	ContainerType getContainer(){return arrayCont;}
-
-	T  get(int x,int y,int z) const {return getDirect(x+borderWidth,y+borderWidth,z+borderWidth);}
-	void set(int x,int y,int z, T t){return setDirect(x+borderWidth,y+borderWidth,z+borderWidth,t);}
-
-	T  getDirect(int x,int y,int z) const{
-		return arrayCont[((x+shiftArray) + (((y+shiftArray) + ((2*z+shiftArray) * internalDim.y)) * internalDim.x))];
-	}
-	void setDirect(int x,int y,int z,T t){
-		arrayCont[((x+shiftArray) + (((y+shiftArray) + ((2*z+shiftArray) * internalDim.y)) * internalDim.x))]=t;
-	}
-	T  getDirectSwap(int x,int y,int z) const{
-		return arrayCont[((x+shiftSwap) + (((y+shiftSwap) + ((2*z+shiftSwap) * internalDim.y)) * internalDim.x))];
-	}
-	void setDirectSwap(int x,int y,int z,T t){
-		arrayCont[((x+shiftSwap) + (((y+shiftSwap) + ((2*z+shiftSwap) * internalDim.y)) * internalDim.x))]=t;
-	}
-	
-	void setDoNotDiffuseData(std::vector<std::vector<int> > & _doNotDiffuseData){
-	 /* for(int i = 0; i < _doNotDiffuseData.size(); i++) {
-	    cout << "In Array 3D X: " << _doNotDiffuseData[i][0] << " Y: " << _doNotDiffuseData[i][1] << " Z: " << _doNotDiffuseData[i][2] << endl;
-	  }
-	 */ 
-	 doNotDiffuseData = _doNotDiffuseData;
-// 	  for(int i = 0; i < doNotDiffuseData.size(); i++) {
-// 	    cout << "In Pointer Array 3D X: " << doNotDiffuseData[i][0] << " Y: " << doNotDiffuseData[i][1] << " Z: " << doNotDiffuseData[i][2] << endl;
-// 	  }
-	}
-	
-	std::vector<std::vector<int> > &  getDoNotDiffuseVec() {
-	  return doNotDiffuseData;
-	}
-	
-	void storeSecData(int x,int y,int z,T t) {
-	  vector <float> fourVector(4);
-	  fourVector[0] = x;
-	  fourVector[1] = y;
-	  fourVector[2] = z;
-	  fourVector[3] = t;
-	  secData.push_back(fourVector);
-// 	  secData.insert(fourVector);
-	}
-	
-	std::vector<std::vector<float> > &  getSecretionData() {
-	  return secData;
-	}
-	
-	void clearSecData(){
-	  secData.clear();
-	}
-	
-/*	PyObject* getDoNotDiffuse(){
-	  
-	  cout << "Here 1\n";
-	  /*
-	  int length = doNotDiffuseData.size();
-	  
-	  PyObject *lst = PyList_New(length);
-	  
-	  cout << "Here 2\n";
-	  if (!lst)
-	    return NULL;
-	  for (int i = 0; i < length; i++) {
-	    PyObject *num = PyFloat_FromDouble(doNotDiffuseData[i][0]);
-	    if (!num) {
-	      Py_DECREF(lst);
-	      return NULL;    
-	    }
-	    PyList_SET_ITEM(lst, i, num);   // reference to num stolen
-	  }
-	  return lst;
-	  
-	}*/
-	
-
-      
-/*        virtual void fillSecretion(PyObject * _NumpyArray) {
-	  
-// 	  for(secDataIT = secData.begin(); secDataIT != secData.end(); secDataIT++) {
-// 	      cout << "X: " << (*secDataIT)[0] << " Y: " << (*secDataIT)[1] << " Z: " << (*secDataIT)[2] 
-// 		   << " t: " << (*secDataIT)[3] << endl;
-// 	  }
-
-	  double *dptr = (double *)PyArray_DATA(_NumpyArray);
-	  int row = getDim().x;
-	  
-	  for(int i = 0; i < secData.size(); i++) {
-// 	      cout << "X: " << secData[i][0] << " Y: " << secData[i][1] << " Z: " << secData[i][2] 
-// 		   << " t: " << secData[i][3] << " Dim.X: " << row << endl;
-	      dptr[(int)secData[i][0]*row+(int)secData[i][1]] += secData[i][3];
-	  }
-	  
-	  for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ) {
-		cell=cellInventoryPtr->getCell(cInvItr);
-		cout << "Cell Volume: " << cell->volume << endl;
-	    
-	  }
-	  
-	  secData.clear();
-	  
-      }*/
-
-      /*virtual void setPython3(PyObject * _NumpyArray) {
-
-	PyArrayObject * test;
-	
-	cout << "in Array3D.h  Contiguous" << endl;
-	cout << "NumpyArray3 is the size of: " << PyArray_DIM(_NumpyArray,0) << endl;
-	
-	if (!PyArray_ISCARRAY(_NumpyArray)) {
-		cout << "NumPy array is not 'well behaved' and writable!" << '\n';
-		return;
-	}
-	
-	cout << "Data is Float: " << PyArray_ISFLOAT(_NumpyArray) << endl;
-	cout << "Data is STRING: " << PyArray_ISSTRING(_NumpyArray) << endl;
-	cout << "Contiguous: " << PyArray_ISCONTIGUOUS(_NumpyArray) << endl;
-	cout << "Output FiPy Array\n";
-
-	test = (PyArrayObject *) _NumpyArray;
-	cout << "Item 2: " << (float)(*test->data) << endl;
-	
-	npy_intp size;
-	double *dptr;  /* could make this any variable type 
-	cout << "Output FiPy Array1\n";
-// 	size = PyArray_SIZE(test);
-	cout << "Output FiPy Array2\n";
-	dptr = (double *)PyArray_DATA(test);
-	cout << "Output FiPy Array3\n";
-	int SIZEOFARRAY = PyArray_DIM(_NumpyArray,0);	
-	
-	for(int i = 0; i < SIZEOFARRAY; i++) {
-// 	/* do something with the data at dptr 
-	  int x = i/100;
-	  int y = (i%100);
-	  int z = 0;
-	  float value = (float)(*dptr);
-	  
-// 	  cout << "X: " << x<< " Y: " << y << " Value: " << value << endl;
-	  set(x,y,z,value);
-	  dptr++;
-	}
-	
-// 	test = PyArray_ToList(_NumpyArray);
-// 	cout << "Item 2: " << PyList_GetItem(test,2) << endl;
-    // 	PyArrayIterObject *pyIter;
-// 	PyArray_INCREF(PyArrayObject* op
-// 	PyArrayIterObject* pyIter = (PyArrayIterObject*)PyArray_IterNew((PyObject*)test);
-      }*/
-      
-	//Field3D interface
-      virtual bool isValid(const Point3D &pt) const {      
-         return (0 <= pt.x && pt.x < internalDim.x &&
-	      0 <= pt.y && pt.y < internalDim.y &&
-	      0 <= pt.z && pt.z < internalDim.z);
-      }
-      virtual void set(const Point3D &pt, const T value) {
-         
-//             unsigned int borderWidth=array3DPtr->getBorderWidth();
-            set(pt.x,pt.y,pt.z,value);
-         
-      }
-      
-      virtual T get(const Point3D &pt) const {
-//          unsigned int borderWidth=array3DPtr->getBorderWidth();
-         return get(pt.x,pt.y,pt.z);
-	  }
-
-      virtual T getByIndex(long _offset) const {
-         return T();
-      }
-      virtual void setByIndex(long _offset, const T _value) {
-         
-      }
+    template<typename T>
+    void Array2DContiguous<T>::swapArrays() {
+        if (shiftSwap) {
+            shiftSwap = 0;
+            shiftArray = 1;
+        } else {
+            shiftSwap = 1;
+            shiftArray = 0;
+        }
+    }
 
 
-	void swapArrays();
-	Dim3D getInternalDim(){return internalDim;}
-	Dim3D getDim(){return Field3DImpl<T>::dim;}
-	int getShiftArray(){return shiftArray;}
-	int getShiftSwap(){return shiftSwap;}
+    template<typename T>
+    void Array2DContiguous<T>::resizeAndShift(const Dim3D newDim, Dim3D shiftVec) {
 
-	void swapQuick(Array3DFiPy & _switchedArray){
-		ContainerType tmpPtr;
-		ContainerType switchedArrayPtr=_switchedArray.getContainer();
+        Dim3D newInternalDim = newDim;
+        newInternalDim.x += 3;
+        newInternalDim.y += 3;
+        newInternalDim.z = 1;
 
-		tmpPtr=arrayCont;
-		arrayCont=switchedArrayPtr;
-		switchedArrayPtr=tmpPtr;
+        int newArraySize = newInternalDim.x * newInternalDim.y * 2;
+        T *newArrayCont = new T[newArraySize];
 
-	}
+        //initialization
+        for (int i = 0; i < newArraySize; ++i) {
+            newArrayCont[i] = T();
+        }
 
-protected:
-	T *arrayCont;
-	//Dim3D dim; //defined already in Field3DImpl<>
-	Dim3D internalDim;
-	int arraySize;
-	int shiftSwap;
-	int shiftArray;
-	int borderWidth;
+        //copying old array to new one - we do not copy swap values or
+        // boundary conditions these are usually set externally by the solver
+        Point3D pt;
+        Point3D ptShift;
 
-};
+        //when lattice is growing or shrinking
+        for (pt.x = 0; pt.x < newDim.x; ++pt.x)
+            for (pt.y = 0; pt.y < newDim.y; ++pt.y) {
+                ptShift = pt - shiftVec;
+                if (ptShift.x >= 0 && ptShift.x < Field3DImpl<T>::dim.x && ptShift.y >= 0 &&
+                    ptShift.y < Field3DImpl<T>::dim.y) {
+                    //cerr<<"ptShift="<<ptShift<<" pt="<<pt<<endl;
+                    newArrayCont[(pt.x + borderWidth) + shiftArray +
+                                 (2 * (pt.y + borderWidth) + shiftArray) * newInternalDim.x] = arrayCont[ptShift.x +
+                                                                                                         borderWidth +
+                                                                                                         shiftArray +
+                                                                                                         (2 *
+                                                                                                          (ptShift.y +
+                                                                                                           borderWidth) +
+                                                                                                          shiftArray) *
+                                                                                                         internalDim.x];
+                }
+            }
 
-template <typename T>
-void Array3DFiPy<T>::allocateArray(const Dim3D & _dim , T  val){
+        //swapping array and deallocation old one
+        internalDim = newInternalDim;
+        Field3DImpl<T>::dim = newDim;
+        arraySize = newArraySize;
 
-	Field3DImpl<T>::dim=_dim;
-	internalDim=Field3DImpl<T>::dim;
-	internalDim.x+=3;
-	internalDim.y+=3;
-	internalDim.z+=3;
+        delete[] arrayCont;
 
-	if(arrayCont){
-		delete [] arrayCont;
-		arrayCont=0;
-	}
-	arraySize=internalDim.x*internalDim.y*2*internalDim.z;
-	arrayCont=new T[arraySize];
+        arrayCont = newArrayCont;
 
-	//initialization 
-	for (int i = 0 ;i<arraySize;++i){
-		arrayCont[i]=val;
-	}
 
-}
+    }
 
-template <typename T>
-void Array3DFiPy<T>::swapArrays(){
-	if (shiftSwap){
-		shiftSwap=0;
-		shiftArray=1;
-	}else{
-		shiftSwap=1;
-		shiftArray=0;
+    template<typename T>
+    void Array2DContiguous<T>::setDim(const Dim3D newDim) {
+        this->resizeAndShift(newDim);
+    }
 
-	}
-}
 
+    template<typename T>
+    class Array3DFiPy : public Field3DImpl<T> {
+    public:
+        std::vector <std::vector<float>> secData;
+        std::vector <std::vector<int>> doNotDiffuseData;
+        typedef T *ContainerType;
+
+        Array3DFiPy() :
+                Field3DImpl<T>(Dim3D(1, 1, 1), T()),
+                arrayCont(0),
+                arraySize(0),
+                shiftArray(0),
+                shiftSwap(1),
+                borderWidth(1) {}
+
+        Array3DFiPy(Dim3D &_dim, T &_initVal = T()) :
+                Field3DImpl<T>(Dim3D(1, 1, 1), T()),
+                arrayCont(0),
+                arraySize(0),
+                shiftArray(0),
+                shiftSwap(1),
+                borderWidth(1) {
+            allocateArray(_dim, _initVal);
+        }
+
+        ~Array3DFiPy() {
+            if (arrayCont) {
+                delete[] arrayCont;
+            }
+            arrayCont = 0;
+        }
+
+        void allocateArray(const Dim3D &_dim, T val = T());
+
+        ContainerType getContainer() { return arrayCont; }
+
+        T get(int x, int y, int z) const { return getDirect(x + borderWidth, y + borderWidth, z + borderWidth); }
+
+        void set(int x, int y, int z, T t) { return setDirect(x + borderWidth, y + borderWidth, z + borderWidth, t); }
+
+        T getDirect(int x, int y, int z) const {
+            return arrayCont[((x + shiftArray) +
+                              (((y + shiftArray) + ((2 * z + shiftArray) * internalDim.y)) * internalDim.x))];
+        }
+
+        void setDirect(int x, int y, int z, T t) {
+            arrayCont[((x + shiftArray) +
+                       (((y + shiftArray) + ((2 * z + shiftArray) * internalDim.y)) * internalDim.x))] = t;
+        }
+
+        T getDirectSwap(int x, int y, int z) const {
+            return arrayCont[((x + shiftSwap) +
+                              (((y + shiftSwap) + ((2 * z + shiftSwap) * internalDim.y)) * internalDim.x))];
+        }
+
+        void setDirectSwap(int x, int y, int z, T t) {
+            arrayCont[((x + shiftSwap) +
+                       (((y + shiftSwap) + ((2 * z + shiftSwap) * internalDim.y)) * internalDim.x))] = t;
+        }
+
+        void setDoNotDiffuseData(std::vector <std::vector<int>> &_doNotDiffuseData) {
+            doNotDiffuseData = _doNotDiffuseData;
+        }
+
+        std::vector <std::vector<int>> &getDoNotDiffuseVec() {
+            return doNotDiffuseData;
+        }
+
+        void storeSecData(int x, int y, int z, T t) {
+            vector<float> fourVector(4);
+            fourVector[0] = x;
+            fourVector[1] = y;
+            fourVector[2] = z;
+            fourVector[3] = t;
+            secData.push_back(fourVector);
+        }
+
+        std::vector <std::vector<float>> &getSecretionData() {
+            return secData;
+        }
+
+        void clearSecData() {
+            secData.clear();
+        }
+
+        //Field3D interface
+        virtual bool isValid(const Point3D &pt) const {
+            return (0 <= pt.x && pt.x < internalDim.x &&
+                    0 <= pt.y && pt.y < internalDim.y &&
+                    0 <= pt.z && pt.z < internalDim.z);
+        }
+
+        virtual void set(const Point3D &pt, const T value) {
+            set(pt.x, pt.y, pt.z, value);
+
+        }
+
+        virtual T get(const Point3D &pt) const {
+            return get(pt.x, pt.y, pt.z);
+        }
+
+        virtual T getByIndex(long _offset) const {
+            return T();
+        }
+
+        virtual void setByIndex(long _offset, const T _value) {
+        }
+
+
+        void swapArrays();
+
+        Dim3D getInternalDim() { return internalDim; }
+
+        Dim3D getDim() { return Field3DImpl<T>::dim; }
+
+        int getShiftArray() { return shiftArray; }
+
+        int getShiftSwap() { return shiftSwap; }
+
+        void swapQuick(Array3DFiPy &_switchedArray) {
+            ContainerType tmpPtr;
+            ContainerType switchedArrayPtr = _switchedArray.getContainer();
+
+            tmpPtr = arrayCont;
+            arrayCont = switchedArrayPtr;
+            switchedArrayPtr = tmpPtr;
+
+        }
+
+    protected:
+        T *arrayCont;
+        Dim3D internalDim;
+        int arraySize;
+        int shiftSwap;
+        int shiftArray;
+        int borderWidth;
+
+    };
+
+    template<typename T>
+    void Array3DFiPy<T>::allocateArray(const Dim3D &_dim, T val) {
+
+        Field3DImpl<T>::dim = _dim;
+        internalDim = Field3DImpl<T>::dim;
+        internalDim.x += 3;
+        internalDim.y += 3;
+        internalDim.z += 3;
+
+        if (arrayCont) {
+            delete[] arrayCont;
+            arrayCont = 0;
+        }
+        arraySize = internalDim.x * internalDim.y * 2 * internalDim.z;
+        arrayCont = new T[arraySize];
+
+        //initialization
+        for (int i = 0; i < arraySize; ++i) {
+            arrayCont[i] = val;
+        }
+
+    }
+
+    template<typename T>
+    void Array3DFiPy<T>::swapArrays() {
+        if (shiftSwap) {
+            shiftSwap = 0;
+            shiftArray = 1;
+        } else {
+            shiftSwap = 1;
+            shiftArray = 0;
+
+        }
+    }
 
 
 };

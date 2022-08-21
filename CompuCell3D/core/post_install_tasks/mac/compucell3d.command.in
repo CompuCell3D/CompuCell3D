@@ -7,19 +7,22 @@
 export PYTHON_MINOR_VERSION=
 cd "${0%/*}"
 
+
 # language settings
 export LANG=en_EN
 export __CF_USER_TEXT_ENCODING=""
 
-export PREFIX_CC3D=$(pwd)
+export PYTHONPATH=@SITE_PACKAGES_INSTALL@
 
-export PYTHON_EXEC_FILE=${PREFIX_CC3D}/python37/bin/python
+export PYTHON_EXEC=@PYTHON_EXEC_FILE@
 
-export QT_QPA_PLATFORM_PLUGIN_PATH=${PREFIX_CC3D}/python37/plugins
+export ENV_PREFIX=@PYTHON_ENV_PREFIX@
 
-export CC3D_PYTHON_APP=${PREFIX_CC3D}/python37/compucell3d.app/Contents/MacOS/python
+export APP_PREFIX=@APP_INSTALL_PREFIX@
 
-export DYLD_LIBRARY_PATH=${PREFIX_CC3D}/lib/site-packages/cc3d/cpp/lib:${DYLD_LIBRARY_PATH}
+export QT_QPA_PLATFORM_PLUGIN_PATH=${ENV_PREFIX}/plugins
+
+export CC3D_PYTHON_APP=${APP_PREFIX}/compucell3d.app/Contents/MacOS/python
 
 if [ -e ${CC3D_PYTHON_APP} ]
 then
@@ -28,14 +31,10 @@ then
     export PYTHON_EXEC=${CC3D_PYTHON_APP}
 else
     echo "Using script"
-    ln -s ${PYTHON_EXEC_FILE} ${PREFIX_CC3D}/CompuCell3D
-    export PYTHON_EXEC=${PREFIX_CC3D}/CompuCell3D
+    ln -s ${PYTHON_EXEC_FILE} ${APP_PREFIX}/CompuCell3D
+    export PYTHON_EXEC=${APP_PREFIX}/CompuCell3D
 fi
 
-
-cd $PREFIX_CC3D
-
-export PYTHONPATH=${PREFIX_CC3D}/lib/site-packages
 
 
 echo ${osx_major}-${osx_minor}
@@ -43,10 +42,11 @@ echo ${osx_major}-${osx_minor}
 
 ${PYTHON_EXEC} --version
 
+current_directory=$(pwd)
 
 export exit_code=0
-${PYTHON_EXEC} ${PREFIX_CC3D}/lib/site-packages/cc3d/player5/compucell3d.pyw $* --currentDir=${PREFIX_CC3D}
+${PYTHON_EXEC} ${PYTHONPATH}/cc3d/player5/compucell3d.pyw $*
 exit_code=$?
 
-cd ${PREFIX_CC3D}
+cd ${current_directory}
 exit ${exit_code}

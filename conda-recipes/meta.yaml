@@ -1,0 +1,77 @@
+# when building as standalone package uncomment line below and set version and build_number to proper values
+# {% set version = "4.3.1" %}
+# {% set build_number = "3" %}
+
+#{% set version = "4.3.0" %}
+#{% set build_number = "16" %}
+
+package:
+  name: cc3d
+  version: {{ version }}
+
+about:
+  home: https://compucell3d.org
+  license: MIT
+  license_file: ../CompuCell3D/License.txt
+  summary: Multiscale multicellular virtual tissue modeling and simulation environment
+
+extra:
+  maintainers: T.J. Sego, Maciek Swat
+
+source:
+  # url: https://github.com/CompuCell3D/CompuCell3D/archive/master.tar.gz
+  path: ../
+
+build:
+  number: {{ build_number }}
+  ignore_run_exports:
+    # Mitigating hard dependency on tbb by tbb-devel
+    - tbb
+
+requirements:
+  host:
+    - python {{ python }}
+    - numpy=1.18
+    - vtk=8.2
+    - eigen
+    - tbb-devel=2020
+    - cmake>=3.14
+    - swig=3
+    - cc3d-network-solvers>=0.0.2
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ openmp }} # [osx]
+
+  build:
+    - cmake>=3.14
+    - swig=3
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ openmp }} # [osx]
+
+  run:
+    - python
+    - numpy=1.18
+    - vtk=8.2
+    - {{ pin_compatible('numpy') }}
+    - {{ pin_compatible('vtk') }}
+    - scipy
+    - pandas
+    - jinja2
+    - deprecated
+    - psutil
+    - cmake=3.19
+    - swig=3
+    - cc3d-network-solvers>=0.0.2
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ openmp }} # [osx]
+    - sphinx
+    - graphviz
+
+  run_constrained:
+    - tbb=2020
+
+# on windows we can run conda
+#  build . -c conda-forge -c compucell3d to force conda to use
+#  specified channels as sources of packages

@@ -4,19 +4,18 @@ SET(SRCS
   PeriodicBoundary.cpp
   ChengbangAlgorithm.cpp
   NoFluxBoundary.cpp
-  )
+)
 
-INCLUDE_DIRECTORIES ( 
-    ${COMPUCELL3D_SOURCE_DIR}/core
-    )
+SET(LIBS cc3d::Field3D)
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-   ADD_SHARED_LIBRARY(Boundary ${SRCS} LINK_LIBRARIES BasicUtilsStatic Field3DStatic)
-else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-   ADD_SHARED_LIBRARY(Boundary ${SRCS} LINK_LIBRARIES BasicUtilsShared Field3DShared)
-endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+ADD_SHARED_LIBRARY(Boundary ${SRCS} LINK_LIBRARIES ${LIBS})
 
-INSTALL_FILES(/include/CompuCell3D/CompuCell3D/Boundary .h
+TARGET_INCLUDE_DIRECTORIES(${BoundaryLib} PUBLIC
+   $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core>
+   $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_INCLUDE_DIR}>
+)
+
+INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D/Boundary .h
   AlgorithmFactory
   Algorithm
   BoundaryFactory
@@ -29,4 +28,4 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D/Boundary .h
   NoFluxBoundary
   PeriodicBoundary
   CC3D_Boundary
-  )
+)
