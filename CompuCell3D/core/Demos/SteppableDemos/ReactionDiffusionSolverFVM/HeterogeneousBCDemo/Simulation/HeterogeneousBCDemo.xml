@@ -1,0 +1,107 @@
+<CompuCell3D Revision="0" Version="4.3.1">
+   
+   <Metadata>
+      
+      <!-- Basic properties simulation -->
+      <NumberOfProcessors>1</NumberOfProcessors>
+      <DebugOutputFrequency>10</DebugOutputFrequency>
+      <!-- <NonParallelModule Name="Potts"/> -->
+   </Metadata>
+   
+   <Potts>
+      
+      <!-- Basic properties of CPM (GGH) algorithm -->
+      <Dimensions x="100" y="100" z="1"/>
+      <Steps>100000</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+   </Potts>
+   
+   <Plugin Name="CellType">
+      
+      <!-- Listing all cell types in the simulation -->
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="Type1"/>
+      <CellType TypeId="2" TypeName="Type2"/>
+   </Plugin>
+   
+   <Plugin Name="Volume">
+      <VolumeEnergyParameters CellType="Type1" LambdaVolume="2.0" TargetVolume="50"/>
+      <VolumeEnergyParameters CellType="Type2" LambdaVolume="2.0" TargetVolume="50"/>
+   </Plugin>
+   
+   <Plugin Name="Contact">
+      <!-- Specification of adhesion energies -->
+      <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+      <Energy Type1="Medium" Type2="Type1">10.0</Energy>
+      <Energy Type1="Medium" Type2="Type2">10.0</Energy>
+      <Energy Type1="Type1" Type2="Medium">10.0</Energy>
+      <Energy Type1="Type1" Type2="Type1">10.0</Energy>
+      <Energy Type1="Type1" Type2="Type2">10.0</Energy>
+      <Energy Type1="Type2" Type2="Medium">10.0</Energy>
+      <Energy Type1="Type2" Type2="Type1">10.0</Energy>
+      <Energy Type1="Type2" Type2="Type2">10.0</Energy>
+      <NeighborOrder>4</NeighborOrder>
+   </Plugin>
+   
+   <Plugin Name="Chemotaxis">
+      
+      <!-- You may repeat ChemicalField element for each chemical field declared in the PDE solvers -->
+      <!-- Specification of chemotaxis properties of select cell types. -->
+      <ChemicalField Name="Field1">
+         <ChemotaxisByType ChemotactTowards="Medium" Lambda="100.0" Type="Type1"/>
+      </ChemicalField>
+      <ChemicalField Name="Field2">
+         <ChemotaxisByType ChemotactTowards="Medium" Lambda="100.0" Type="Type2"/>
+      </ChemicalField>
+   </Plugin>
+   
+   <Steppable Type="ReactionDiffusionSolverFVM">
+      
+      <!-- Specification of PDE solvers -->
+      <DiffusionField Name="Field1">
+         <DiffusionData>
+            <FieldName>Field1</FieldName>
+            <DiffusionConstant>0.1</DiffusionConstant>
+         </DiffusionData>
+         <BoundaryConditions>
+            <Plane Axis="X">
+               <ConstantValue PlanePosition="Min" Value="0.0"/>
+               <ConstantValue PlanePosition="Max" Value="1.0"/>
+            </Plane>
+            <Plane Axis="Y">
+               <ConstantValue PlanePosition="Min" Value="0.0"/>
+               <ConstantValue PlanePosition="Max" Value="1.0"/>
+            </Plane>
+         </BoundaryConditions>
+      </DiffusionField>
+      <DiffusionField Name="Field2">
+         <DiffusionData>
+            <FieldName>Field2</FieldName>
+            <DiffusionConstant>0.1</DiffusionConstant>
+         </DiffusionData>
+         <BoundaryConditions>
+            <Plane Axis="X">
+               <ConstantValue PlanePosition="Min" Value="0.0"/>
+               <ConstantValue PlanePosition="Max" Value="0.0"/>
+            </Plane>
+            <Plane Axis="Y">
+               <ConstantValue PlanePosition="Min" Value="0.0"/>
+               <ConstantValue PlanePosition="Max" Value="0.0"/>
+            </Plane>
+         </BoundaryConditions>
+      </DiffusionField>
+   </Steppable>
+   
+   <Steppable Type="UniformInitializer">
+      
+      <!-- Initial layout of cells in the form of rectangular slab -->
+      <Region>
+         <BoxMin x="20" y="20" z="0"/>
+         <BoxMax x="80" y="80" z="1"/>
+         <Gap>0</Gap>
+         <Width>7</Width>
+         <Types>Type1,Type2</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>
