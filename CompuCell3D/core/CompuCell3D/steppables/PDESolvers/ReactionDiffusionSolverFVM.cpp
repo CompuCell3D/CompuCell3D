@@ -6,11 +6,8 @@
 #include <CompuCell3D/Field3D/Field3DImpl.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/Field3D/Field3DIO.h>
-#include <BasicUtils/BasicClassGroup.h>
+#include <CompuCell3D/plugins/CellType/CellTypePlugin.h>
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
-#include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <PublicUtilities/StringUtils.h>
 #include <muParser/muParser.h>
 #include <string>
@@ -20,9 +17,6 @@
 #include <sstream>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include <omp.h>
-// #include <concurrent_vector.h>
-// #include <concurrent_unordered_set.h>
-// #include <ppl.h>
 
 // macro to ensure debugLog is enabled only when debugging
 #ifdef DEBUG
@@ -46,16 +40,11 @@ ReactionDiffusionSolverFVM::ReactionDiffusionSolverFVM()
 {
 	pUtils = 0;
 	autoTimeSubStep = false;
-	simpleMassConservation = false;
-	usingECMaterials = false;
 	cellDataLoaded = false;
 	integrationTimeStep = incTime;
+	fluctuationCompensator = 0;
 
 	physTime = 0.0;
-	flipSourcePt = Point3D();
-
-	field3DAdditionalPtFcnPtr = &ReactionDiffusionSolverFVM::field3DAdditionalPtPreStartup;
-	field3DChangeFcnPtr = &ReactionDiffusionSolverFVM::field3DChangePreStartup;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,9 +69,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	debugLog("*******************************");
 	debugLog("* Begin RDFVM initialization! *");
 	debugLog("*******************************");
-	// cerr << "*******************************" << endl;
-	// cerr << "* Begin RDFVM initialization! *" << endl;
-	// cerr << "*******************************" << endl;
 
 	sim = _simulator;
 	potts = _simulator->getPotts();
@@ -93,30 +79,15 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	lockPtr = new ParallelUtilsOpenMP::OpenMPLock_t;
 	pUtils->initLock(lockPtr);
 
-	cellInventory = & potts->getCellInventory();
-
 	// Get useful plugins
 	debugLog("Getting helpful plugins...");
-	//cerr << "Getting helpful plugins..." << endl;
 
 	bool pluginAlreadyRegisteredFlag;
 
-	//		Get boundary pixel tracker plugin
-
-	debugLog( "  Boundary pixel tracker plugin...");
-	//cerr << "   Boundary pixel tracker plugin..." << endl;
-
-	boundaryTrackerPlugin = (BoundaryPixelTrackerPlugin*)Simulator::pluginManager.get("BoundaryPixelTracker", &pluginAlreadyRegisteredFlag);
-	if (!pluginAlreadyRegisteredFlag) {
-		CC3DXMLElement *BoundaryPixelTrackerXML = sim->getCC3DModuleData("Plugin", "BoundaryPixelTracker");
-		boundaryTrackerPlugin->init(sim, BoundaryPixelTrackerXML);
-	}
-
 	//		Get cell type plugin
 	debugLog("   Cell type plugin...");
-	//cerr << "   Cell type plugin..." << endl;
 
-	cellTypePlugin = (CellTypePlugin*)Simulator::pluginManager.get("CellType", &pluginAlreadyRegisteredFlag);
+	CellTypePlugin *cellTypePlugin = (CellTypePlugin*)Simulator::pluginManager.get("CellType", &pluginAlreadyRegisteredFlag);
 	ASSERT_OR_THROW("Cell type plugin must be registered for RDFVM, and in general.", pluginAlreadyRegisteredFlag);
 
 	//		Get pixel tracker plugin
@@ -136,12 +107,10 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	// Get static inputs
 	
 	debugLog("Getting static RDFVM Solver inputs...");
-	//cerr << "Getting static RDFVM Solver inputs..." << endl;
 
 	//		Cell types
 
 	debugLog("Getting cell types...");
-	//cerr << "Getting cell types..." << endl;
 
 	std::map<unsigned char, std::string> typeNameMap = cellTypePlugin->getTypeNameMap();
 	std::map<unsigned char, std::string>::iterator typeNameMap_itr;
@@ -158,7 +127,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	// Get solver inputs
 
 	debugLog("Getting solver inputs...");
-	//cerr << "Getting solver inputs..." << endl;
 
 	CC3DXMLElement *el;
 
@@ -170,7 +138,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		if (el->findAttribute("unit")) { setUnitsTime(el->getAttribute("unit")); }
 
 		debugLog("   Got time discretization: " << incTime << " " << getUnitsTime() << "/step");
-		//cerr << "   Got time discretization: " << incTime << " " << getUnitsTime() << "/step" << endl;
 
 	}
 
@@ -183,7 +150,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		DeltaX = (float)(xmlData->getFirstElement("DeltaX")->getDouble());
 
 		debugLog("   Got x-dimension discretization: " << DeltaX << " m");
-		//cerr << "   Got x-dimension discretization: " << DeltaX << " m" << endl;
 
 		ASSERT_OR_THROW("FVM spatial discretization must be greater than zero.", DeltaX > 0.0);
 		if (xmlData->findElement("DeltaY")) {
@@ -193,7 +159,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		else { DeltaY = DeltaX; }
 
 		debugLog("   Got y-dimension discretization: " << DeltaY << " m");
-		//cerr << "   Got y-dimension discretization: " << DeltaY << " m" << endl;
 
 		if (xmlData->findElement("DeltaZ")) {
 			DeltaZ = (float)(xmlData->getFirstElement("DeltaZ")->getDouble());
@@ -202,14 +167,12 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		else if (maxNeighborIndex > 3) { DeltaZ = DeltaX; }
 
 		debugLog("   Got z-dimension discretization: " << DeltaZ << " m");
-		//cerr << "   Got z-dimension discretization: " << DeltaZ << " m" << endl;
 
 	}
 
 	//		Diffusion fields
 
 	debugLog("Getting diffusion fields...")
-	//cerr << "Getting diffusion fields..." << endl;
 
 	CC3DXMLElementList fieldXMLVec = _xmlData->getElements("DiffusionField");
 
@@ -257,21 +220,18 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		std::string fieldName = el->getAttribute("Name");
 
 		debugLog("   Got field name: " << fieldName);
-		//cerr << "   Got field name: " << fieldName << endl;
 
 		// Check duplicates
 		std::vector<std::string>::iterator fieldNameVec_itr = find(concentrationFieldNameVector.begin(), concentrationFieldNameVector.end(), fieldName);
 		ASSERT_OR_THROW("Each FVM diffusion field must have a unique name", fieldNameVec_itr == concentrationFieldNameVector.end());
 
 		debugLog("   Generating field wrap...");
-		//cerr << "   Generating field wrap..." << endl;
 		
 		fieldNameToIndexMap.insert(make_pair(fieldName, fieldIndex));
 		concentrationFieldNameVector[fieldIndex] = fieldName;
 		concentrationFieldVector[fieldIndex] = new RDFVMField3DWrap<float>(this, fieldName);
 
 		debugLog("   Registering field with Simulator...");
-		//cerr << "   Registering field with Simulator..." << endl;
 
 		sim->registerConcentrationField(fieldName, concentrationFieldVector[fieldIndex]);
 
@@ -281,7 +241,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		// Diffusion data
 
 		debugLog("   Getting diffusion data...");
-		//cerr << "   Getting diffusion data..." << endl;
 
 		ASSERT_OR_THROW("A DiffusionData element must be defined per FVM diffusion field", el->findElement("DiffusionData"));
 		bool diffusionDefined = false;
@@ -294,7 +253,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 			constantDiffusionCoefficientsVec[fieldIndex] = dDataEl->getDouble();
 
 			debugLog("   Got diffusion constant: " << constantDiffusionCoefficientsVec[fieldIndex] << " m2/s");
-			//cerr << "   Got diffusion constant: " << constantDiffusionCoefficientsVec[fieldIndex] << " m2/s" << endl;
 
 			useConstantDiffusivityBool[fieldIndex] = true;
 		}
@@ -303,17 +261,14 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 			useConstantDiffusivityBool[fieldIndex] = false;
 			useConstantDiffusivityByTypeBool[fieldIndex] = true;
 			debugLog("   Got diffusivity by type.");
-			//cerr << "   Got diffusivity by type." << endl;
 		}
 		//		Load diffusivity field in medium if present
 		if (dData->findElement("DiffusivityFieldInMedium")) {
 			if (diffusionDefined) { 
 				debugLog("Warning: duplicate diffusion mode. Overwriting with DiffusivityFieldInMedium" );
-				//cerr << "Warning: duplicate diffusion mode. Overwriting with DiffusivityFieldInMedium" << endl; 
 				}
 			else { 
 				debugLog("   Got diffusivity field in medium. Diffusivity field is named: " + fieldName + diffusivityFieldSuffixStd);
-				//cerr << "   Got diffusivity field in medium. Diffusivity field is named: " + fieldName + diffusivityFieldSuffixStd << endl;
 				 }
 			diffusionDefined = true;
 			useConstantDiffusivityBool[fieldIndex] = false;
@@ -324,11 +279,9 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		if (dData->findElement("DiffusivityFieldEverywhere")) {
 			if (diffusionDefined) { 
 				debugLog("Warning: duplicate diffusion mode. Overwriting with DiffusivityFieldEverywhere");
-				//cerr << "Warning: duplicate diffusion mode. Overwriting with DiffusivityFieldEverywhere" << endl;
 				 }
 			else { 
 				debugLog("   Got diffusivity field everywhere. Diffusivity field is named: " + fieldName + diffusivityFieldSuffixStd);
-				//cerr << "   Got diffusivity field everywhere. Diffusivity field is named: " + fieldName + diffusivityFieldSuffixStd << endl; 
 				}
 			diffusionDefined = true;
 			useConstantDiffusivityBool[fieldIndex] = false;
@@ -339,7 +292,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		if (dData->findElement("InitialConcentrationExpression")) {
 			initialExpressionStrings[fieldIndex] = dData->getFirstElement("InitialConcentrationExpression")->getText();
 			debugLog("   Got initial concentration expression: " + initialExpressionStrings[fieldIndex]);
-			//cerr << "   Got initial concentration expression: " + initialExpressionStrings[fieldIndex] << endl;
 		}
 		ASSERT_OR_THROW("A diffusion mode must be defined in DiffusionData.", diffusionDefined);
 
@@ -347,7 +299,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		constantDiffusionCoefficientsVecCellType[fieldIndex] = std::vector<double>(numCellTypes, constantDiffusionCoefficientsVec[fieldIndex]);
 
 		//		Load all present cell type diffusion data, for future ref.
-		//for each (CC3DXMLElement *typeData in dData->getElements("DiffusionCoefficient")) {
 		for (CC3DXMLElement *typeData : dData->getElements("DiffusionCoefficient")) {
 
 			std::string cellTypeName = typeData->getAttribute("CellType");
@@ -356,13 +307,11 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 				double typeDiffC = typeData->getDouble();
 				constantDiffusionCoefficientsVecCellType[fieldIndex][cellTypeNameToIndexMap_itr->second] = typeDiffC;
 				debugLog("   Got cell type (" << cellTypeName << ") diffusivity: " << typeDiffC << " m2/s");
-				//cerr << "   Got cell type (" << cellTypeName << ") diffusivity: " << typeDiffC << " m2/s" << endl;
 			}
 		}
 
 		//		Load all present cell type permeability data, for future ref.
 		//			Interface permeation coefficients
-		//for each (CC3DXMLElement *typeData in dData->getElements("PermIntCoefficient")) {
 		for (CC3DXMLElement *typeData : dData->getElements("PermIntCoefficient")) {
 
 			std::string cellType1Name = typeData->getAttribute("Type1");
@@ -374,11 +323,9 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 				constantPermeationCoefficientsVecCellType[fieldIndex][cellType1NameToIndexMap_itr->second][cellType2NameToIndexMap_itr->second] = permC;
 				constantPermeationCoefficientsVecCellType[fieldIndex][cellType2NameToIndexMap_itr->second][cellType1NameToIndexMap_itr->second] = permC;
 				debugLog("   Got cell type (" << cellType1Name << ", " << cellType2Name << ") interface permeation coefficient: " << permC << " m/s");
-				//cerr << "   Got cell type (" << cellType1Name << ", " << cellType2Name << ") interface permeation coefficient: " << permC << " m/s" << endl;
 			}
 		}
 		//			Interface bias coefficients
-		//for each (CC3DXMLElement *typeData in dData->getElements("PermIntBias")) {
 		for (CC3DXMLElement *typeData : dData->getElements("PermIntBias")) {
 
 			std::string cellType1Name = typeData->getAttribute("Type1");
@@ -389,7 +336,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 				double biasC = typeData->getDouble();
 				constPermBiasCoeffsVecCellType[fieldIndex][cellType1NameToIndexMap_itr->second][cellType2NameToIndexMap_itr->second] = biasC;
 				debugLog( "   Got cell type (" << cellType1Name << ", " << cellType2Name << ") interface bias coefficient: " << biasC);
-				//cerr << "   Got cell type (" << cellType1Name << ", " << cellType2Name << ") interface bias coefficient: " << biasC << endl;
 			}
 		}
 
@@ -403,7 +349,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 
 		// Reaction data
 		debugLog("   Getting reaction data...");
-		//cerr << "   Getting reaction data..." << endl;
 
 		fieldExpressionStringsDiag[fieldIndex].clear();
 		fieldExpressionStringsOffDiag[fieldIndex].clear();
@@ -415,35 +360,29 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 			if (rDataEl) {
 				fieldSymbolsVec[fieldIndex] = rDataEl->getText();
 				debugLog( "   Got reaction expression symbol: " << fieldSymbolsVec[fieldIndex]);
-				//cerr << "   Got reaction expression symbol: " << fieldSymbolsVec[fieldIndex] << endl;
 			}
 
 			if (rData->findElement("ExpressionMult")){
-				//for each(CC3DXMLElement *expData in rData->getElements("ExpressionMult")) {
 				for (CC3DXMLElement *expData : rData->getElements("ExpressionMult")) {
 
 					std::string expStr = expData->getData();
 					fieldExpressionStringsDiag[fieldIndex].push_back(expStr);
 					debugLog("   Got multiplier reaction expression: " << expStr);
-					//cerr << "   Got multiplier reaction expression: " << expStr << endl;
 				}
 			}
 
 			if (rData->findElement("ExpressionIndep")) {
-				//for each(CC3DXMLElement *expData in rData->getElements("ExpressionIndep")) {
 				for (CC3DXMLElement *expData : rData->getElements("ExpressionIndep")) {
 
 					std::string expStr = expData->getData();
 					fieldExpressionStringsOffDiag[fieldIndex].push_back(expStr);
 					debugLog("   Got independent reaction expression: " << expStr );
-					//cerr << "   Got independent reaction expression: " << expStr << endl;
 				}
 			}
 		}
 
 		// Collect boundary conditions
 		debugLog("   Collecting boundary conditions...");
-		//cerr << "   Collecting boundary conditions..." << endl;
 
 		CC3DXMLElement *bcData = el->getFirstElement("BoundaryConditions");
 		if (bcData) { bcElementCollector.insert(make_pair(fieldName, bcData)); }
@@ -456,36 +395,29 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 			std::string fieldName = concentrationFieldNameVector[fieldIndex];
 			fieldSymbolsVec[fieldIndex] = fieldName + expressionSuffixStd;
 			debugLog( "   Assigning reaction expression symbol for " << fieldName << ": " << fieldSymbolsVec[fieldIndex]);
-			//cerr << "   Assigning reaction expression symbol for " << fieldName << ": " << fieldSymbolsVec[fieldIndex] << endl;
 		}
 	}
 
 	// Load diffusion initializers
 	debugLog( "Loading diffusion initializers..." );
-	//cerr << "Loading diffusion initializers..." << endl;
 
 	for (unsigned int fieldIndex = 0; fieldIndex < numFields; ++fieldIndex) {
 		debugLog("   " << concentrationFieldNameVector[fieldIndex] << ": ");
-		//cerr << "   " << concentrationFieldNameVector[fieldIndex] << ": ";
 
 		if (useConstantDiffusivityBool[fieldIndex]) {
 			debugLog( "constant diffusivity.");
-			//cerr << "constant diffusivity." << endl;
 			diffusivityModeInitializerPtrs[fieldIndex] = &ReactionDiffusionSolverFVM::useConstantDiffusivity;
 		}
 		else if (useConstantDiffusivityByTypeBool[fieldIndex]) {
 			debugLog("constant diffusivity by type.");
-			//cerr << "constant diffusivity by type." << endl;
 			diffusivityModeInitializerPtrs[fieldIndex] = &ReactionDiffusionSolverFVM::useConstantDiffusivityByType;
 		}
 		else if (useFieldDiffusivityInMediumBool[fieldIndex]) {
 			debugLog("diffusivity field in medium.");
-			//cerr << "diffusivity field in medium." << endl;
 			diffusivityModeInitializerPtrs[fieldIndex] = &ReactionDiffusionSolverFVM::useFieldDiffusivityInMedium;
 		}
 		else if (useFieldDiffusivityEverywhereBool[fieldIndex]) {
 			debugLog("diffusivity field everywhere.");
-			//cerr << "diffusivity field everywhere." << endl;
 			diffusivityModeInitializerPtrs[fieldIndex] = &ReactionDiffusionSolverFVM::useFieldDiffusivityEverywhere;
 		}
 	}
@@ -493,7 +425,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	// Build surface mappings
 	// Note: will need updated for hex lattices
 	debugLog("Building surface mappings..." );
-	//cerr << "Building surface mappings..." << endl;
 
 	indexMapSurfToCoord = std::vector<unsigned int>(maxNeighborIndex, 0);
 	surfaceNormSign = std::vector<int>(maxNeighborIndex, 0);
@@ -508,10 +439,8 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
 		Point3D offset = offsetVec[nIdx];
 		debugLog( "   Processing surface for neighbor relative offset (" << offset.x << ", " << offset.y << ", " << offset.z << ") -> ");
-		//cerr << "   Processing surface for neighbor relative offset (" << offset.x << ", " << offset.y << ", " << offset.z << ") -> ";
 		if (offset.x > 0) {
 			debugLog( "+x: " << nIdx );
-			//cerr << "+x: " << nIdx << endl;
 
 			indexMapSurfToCoord[nIdx] = 0;
 			surfaceNormSign[nIdx] = 1;
@@ -519,7 +448,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		}
 		else if (offset.x < 0) {
 			debugLog("-x: " << nIdx);
-			//cerr << "-x: " << nIdx << endl;
 
 			indexMapSurfToCoord[nIdx] = 0;
 			surfaceNormSign[nIdx] = -1;
@@ -527,7 +455,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		}
 		else if (offset.y > 0) {
 			debugLog("+y: " << nIdx);
-			//cerr << "+y: " << nIdx << endl;
 
 			indexMapSurfToCoord[nIdx] = 1;
 			surfaceNormSign[nIdx] = 1;
@@ -535,7 +462,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		}
 		else if (offset.y < 0) {
 			debugLog("-y: " << nIdx);
-			//cerr << "-y: " << nIdx << endl;
 
 			indexMapSurfToCoord[nIdx] = 1;
 			surfaceNormSign[nIdx] = -1;
@@ -543,7 +469,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		}
 		else if (offset.z > 0) {
 			debugLog("+z: " << nIdx);
-			//cerr << "+z: " << nIdx << endl;
 
 			indexMapSurfToCoord[nIdx] = 2;
 			surfaceNormSign[nIdx] = 1;
@@ -551,7 +476,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		}
 		else if (offset.z < 0) {
 			debugLog( "-z: " << nIdx);
-			//cerr << "-z: " << nIdx << endl;
 
 			indexMapSurfToCoord[nIdx] = 2;
 			surfaceNormSign[nIdx] = -1;
@@ -559,7 +483,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		}
 		else { // Assume an order
 			debugLog("Warning: assuming a neighbor surface map: " << nIdx);
-			//cerr << "Warning: assuming a neighbor surface map: " << nIdx << endl;
 
 			indexMapSurfToCoord[nIdx] = indexMapSurfToCoordStd[nIdx];
 			surfaceNormSign[nIdx] = surfaceNormSignStd[nIdx];
@@ -570,7 +493,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 
 	// Load boundary conditions
 	debugLog( "Loading boundary conditions...");
-	//cerr << "Loading boundary conditions..." << endl;
 
 	periodicBoundaryCheckVector = std::vector<bool>(3, false);
 	std::vector<tuple<std::string, float> > basicBCDataFieldTemplate = std::vector<tuple<std::string, float> >(6, tuple<std::string, float>("ConstantDerivative", 0.0));
@@ -579,7 +501,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	boundaryName = potts->getBoundaryXName();
 	if (boundaryName == "periodic") {
 		debugLog("   Periodic x from Potts.");
-		//cerr << "   Periodic x from Potts." << endl;
 
 		periodicBoundaryCheckVector[0] = true;
 		basicBCDataFieldTemplate[getSurfaceIndexByName("MaxX")] = tuple<std::string, float>("Periodic", 0.0);
@@ -588,7 +509,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	boundaryName = potts->getBoundaryYName();
 	if (boundaryName == "periodic") {
 		debugLog("   Periodic y from Potts.");
-		//cerr << "   Periodic y from Potts." << endl;
 
 		periodicBoundaryCheckVector[1] = true;
 		basicBCDataFieldTemplate[getSurfaceIndexByName("MaxY")] = tuple<std::string, float>("Periodic", 0.0);
@@ -598,7 +518,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		boundaryName = potts->getBoundaryZName();
 		if (boundaryName == "periodic") {
 			debugLog( "   Periodic z from Potts.");
-			//cerr << "   Periodic z from Potts." << endl;
 
 			periodicBoundaryCheckVector[2] = true;
 			basicBCDataFieldTemplate[getSurfaceIndexByName("MaxZ")] = tuple<std::string, float>("Periodic", 0.0);
@@ -611,16 +530,13 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		std::string fieldName = concentrationFieldNameVector[fieldIndex];
 		std::vector<tuple<std::string, float> > basicBCDataField = basicBCDataFieldTemplate;
 		debugLog("Loading boundary conditions for field " + fieldName);
-		//cerr << "Loading boundary conditions for field " + fieldName << endl;
 
 		bc_itr = bcElementCollector.find(fieldName);
 		if (bc_itr != bcElementCollector.end()) {
 			CC3DXMLElementList bcPlaneElementList = bc_itr->second->getElements("Plane");
-			//for each (CC3DXMLElement *bcEl in bcPlaneElementList) {
 			for (CC3DXMLElement *bcEl : bcPlaneElementList) {
 
 				std::string axisString = bcEl->getAttribute("Axis");
-				//for each (CC3DXMLElement *bcElSpec in bcEl->children) {
 				for (CC3DXMLElement *bcElSpec : bcEl->children) {
 
 					std::string posString = bcElSpec->getAttribute("PlanePosition");
@@ -632,13 +548,10 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 					std::string bcTypeName = bcElSpec->getName();
 					ASSERT_OR_THROW(std::string("Unknown boundary condition type: " + bcTypeName + ". Valid inputs are ConstantValue and ConstantDerivative"), 
 						bcTypeName == "ConstantValue" || bcTypeName == "ConstantDerivative");
-					float bcVal = (float)(bcElSpec->getAttributeAsDouble("PlanePosition"));
+					float bcVal = (float)(bcElSpec->getAttributeAsDouble("Value"));
 					debugLog("   Got boundary condition " << bcTypeName << " for " << surfaceName << " with value " << bcVal);
 					debugLog("      Loading to surface index " << surfaceIndex);
 					debugLog( " for dimension index " << dimIndex);
-					// cerr << "   Got boundary condition " << bcTypeName << " for " << surfaceName << " with value " << bcVal << endl;
-					// cerr << "      Loading to surface index " << surfaceIndex;
-					// cerr << " for dimension index " << dimIndex << endl;
 					
 					basicBCDataField[surfaceIndex] = tuple<std::string, float>(bcTypeName, bcVal);
 				}
@@ -649,14 +562,12 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 
 	// Initialize reaction expressions
 	debugLog("Initializing reaction expressions...");
-	//cerr << "Initializing reaction expressions..." << endl;
 
 	fieldExpressionStringsMergedDiag = std::vector<std::string>(numFields, "");
 	fieldExpressionStringsMergedOffDiag = std::vector<std::string>(numFields, "");
 	
 	for (unsigned int fieldIndex = 0; fieldIndex < numFields; ++fieldIndex) {
 		debugLog("Constructing reaction expressions for " + concentrationFieldNameVector[fieldIndex]);
-		//cerr << "Constructing reaction expressions for " + concentrationFieldNameVector[fieldIndex] << endl;
 
 		std::string expDiag = "";
 		std::string expOffDiag = "";
@@ -670,7 +581,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 				}
 			}
 			debugLog("   Multiplier function: " + expDiag);
-			//cerr << "   Multiplier function: " + expDiag << endl;
 		}
 
 		if (fieldExpressionStringsOffDiag[fieldIndex].size() == 0) { expOffDiag = "0.0"; }
@@ -682,7 +592,6 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 				}
 			}
 			debugLog("   Independent function: " + expOffDiag);
-			//cerr << "   Independent function: " + expOffDiag << endl;
 		}
 
 		if (expDiag.size() == 0) { expDiag = "0.0"; }
@@ -694,54 +603,44 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	// Build lattice
 	
 	debugLog("Building lattice...");
-	//cerr << "Building lattice..." << endl;
 
 	initializeFVs(fieldDim);
 
 	// Initialize concentrations
 
 	debugLog("Initializing concentrations...");
-	//cerr << "Initializing concentrations..." << endl;
 
 	for (unsigned int fieldIndex = 0; fieldIndex < numFields; ++fieldIndex)
 		if (useFieldInitialExprBool[fieldIndex]) { initializeFieldUsingEquation(fieldIndex, fieldInitialExpr[fieldIndex]); }
 
 	//		Auto time stepping
+	fvMaxStableTimeSteps = 0;
 	autoTimeSubStep = _xmlData->findElement("AutoTimeSubStep");
 	if (autoTimeSubStep) {
 		debugLog("RDVFM got automatic time sub-stepping.");
-		 //cerr << "RDVFM got automatic time sub-stepping." << endl; 
-		 }
-	// replace with vector
-	fvMaxStableTimeSteps = new std::vector<double>;
-	//fvMaxStableTimeSteps = new concurrency::concurrent_vector<double>;
-
-	//		Simple mass conservation option
-	simpleMassConservation = _xmlData->findElement("SimpleMassConservation");
-	if (simpleMassConservation) { 
-		debugLog("RDVFM got simple mass conservation.");
-		//cerr << "RDVFM got simple mass conservation." << endl;
-
-		pixelTrackerPlugin->enableMediumTracker(true);
-		pixelTrackerPlugin->enableFullInitAtStart(true);
+		fvMaxStableTimeSteps = new std::vector<double>(fieldDim.x * fieldDim.y * fieldDim.z, 0.0);
 	}
 
-	concentrationVecCopiesMedium = std::vector<double>(numFields, 0.0);
-	massConsCorrectionFactorsMedium = std::vector<double>(numFields, 1.0);
+    // 		FluctuationCompensator support
+	if (_xmlData->findElement("FluctuationCompensator")) {
+
+        fluctuationCompensator = new FluctuationCompensator(sim);
+
+        for (unsigned int i = 0; i < concentrationFieldNameVector.size(); ++i)
+            fluctuationCompensator->loadFieldName(concentrationFieldNameVector[i]);
+
+        fluctuationCompensator->loadFields();
+
+    }
 
 	debugLog("Registering RDFVM Solver...");
-	//cerr << "Registering RDFVM Solver..." << endl;
 
 	potts->getCellFactoryGroupPtr()->registerClass(&ReactionDiffusionSolverFVMCellDataAccessor);
-	potts->registerCellGChangeWatcher(this);
 	sim->registerSteerableObject(this);
 
 	debugLog("*****************************");
 	debugLog("* End RDFVM initialization! *");
 	debugLog("*****************************");
-	// cerr << "*****************************" << endl;
-	// cerr << "* End RDFVM initialization! *" << endl;
-	// cerr << "*****************************" << endl;
 
 }
 
@@ -772,14 +671,10 @@ void ReactionDiffusionSolverFVM::handleEvent(CC3DEvent & _event) {
 			ptNew.y += ev.shiftVec.y;
 			ptNew.z += ev.shiftVec.z;
 			getFieldFV(ptNew)->setConcentrationVec(fvs[i]->getConcentrationVec());
-		}		
+		}
 
-		if (simpleMassConservation) {
-			debugLog("RDFVM Initializing pixel tracker data...");
-			//cerr << "RDFVM Initializing pixel tracker data..." << endl;
-
-			pixelTrackerPlugin->enableMediumTracker(true);
-			pixelTrackerPlugin->enableFullInitAtStart(true);
+		if (fluctuationCompensator) {
+			fluctuationCompensator->resetCorrections();
 		}
 
 		pUtils->unsetLock(lockPtr);
@@ -799,57 +694,31 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 	if (!cellDataLoaded) { loadCellData(); }
 
 	debugLog("RDFVM Step begin...");
-	//cerr << "RDFVM Step begin..." << endl;
 	
 	auto &_fieldFVs = fieldFVs;
 
-	if (simpleMassConservation) {
-
-		debugLog( "   Simple mass conservation: updating fields...");
-		//cerr << "   Simple mass conservation: updating fields..." << endl;
-
-			
-		#pragma omp parallel for shared (fieldFVs)
-		for (int i=0;i<fieldFVs.size();i++){
-			CellG *cell = this->FVtoCellMap(fieldFVs[i]);
-			std::vector<double> correctionFactors;
-			if (cell) { correctionFactors = this->getReactionDiffusionSolverFVMCellDataAccessorPtr()->get(cell->extraAttribPtr)->massConsCorrectionFactors; }
-			else { correctionFactors = this->massConsCorrectionFactorsMedium; }
-			// fv->setConcentrationVec(vecMult<double>()(correctionFactors, fv->getConcentrationVec()));
-			for (unsigned int fieldIndex = 0; fieldIndex < correctionFactors.size(); ++fieldIndex)
-				fieldFVs[i]->setConcentration(fieldIndex, fieldFVs[i]->getConcentration(fieldIndex) * correctionFactors[fieldIndex]);
-		}
-		
-
-	}
+	if (fluctuationCompensator) fluctuationCompensator->applyCorrections();
 
 	debugLog("   Explicit RD integration...");
-	//cerr << "   Explicit RD integration..." << endl;
 
 	double intTime = 0.0;
 
 	fieldDim = potts->getCellFieldG()->getDim();
 	auto _fieldDim = fieldDim;
 
-	///TODO: Ask Dr. Sego about why grow_to_at_least was removed? Or maybe it was moved to another module?
-	// if (autoTimeSubStep) { fvMaxStableTimeSteps->grow_to_at_least(fieldDim.x*fieldDim.y*fieldDim.z); }
-	// else { fvMaxStableTimeSteps = 0; }
-	fvMaxStableTimeSteps = 0;
 	while (intTime < incTime) {
 
 		if (autoTimeSubStep) {
 
 			debugLog( "      Integrating with maximum stable time step... ");
-			//cerr << "      Integrating with maximum stable time step... ";
 			
 			
-			#pragma omp parallel for shared (fieldDim)
-			for (int fieldIndex=0;fieldIndex<fieldDim.x*fieldDim.y*fieldDim.z;fieldIndex++){
+			#pragma omp parallel for shared (_fieldDim)
+			for (int fieldIndex=0;fieldIndex<_fieldDim.x*_fieldDim.y*_fieldDim.z;fieldIndex++){
 				fvMaxStableTimeSteps->at(fieldIndex) = this->getFieldFV(fieldIndex)->solveStable();
 			}
 		
 			debugLog("calculating maximum stable time step... ");
-			//cerr << "calculating maximum stable time step... ";
 
 			// Might be more efficient using a combinable
 			integrationTimeStep = min(*min_element(fvMaxStableTimeSteps->begin(), fvMaxStableTimeSteps->end()), incTime - intTime);
@@ -857,47 +726,35 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 		else { 
 
 			debugLog("      Integrating with fixed time step... ");
-			//cerr << "      Integrating with fixed time step... ";
 
 			integrationTimeStep = incTime - intTime;
 
-			#pragma omp parallel for shared (fieldFVs)
-			for (int i=0;i< fieldFVs.size();i++){
-				fieldFVs[i]->solve();
+			#pragma omp parallel for shared (_fieldFVs)
+			for (int i=0;i< _fieldFVs.size();i++){
+				_fieldFVs[i]->solve();
 			}
 
 		}
 
 		debugLog(integrationTimeStep << " s." );
-		//cerr << integrationTimeStep << " s." << endl;
 
 		debugLog("      Updating... ");
-		//cerr << "      Updating... ";
 		
-		#pragma omp parallel for shared (fieldFVs)
-		for (int i=0;i<fieldFVs.size();i++){
-			fieldFVs[i]->update(this->getIntegrationTimeStep());
+		#pragma omp parallel for shared (_fieldFVs)
+		for (int i=0;i<_fieldFVs.size();i++){
+			_fieldFVs[i]->update(this->getIntegrationTimeStep());
 		}
 
 		intTime += integrationTimeStep;
 		physTime += integrationTimeStep;
 
 		debugLog("done: " << physTime / unitTimeConv << " " << getUnitsTime());
-		//cerr << "done: " << physTime / unitTimeConv << " " << getUnitsTime() << endl;
 
 	}
 
-	if (simpleMassConservation) {
-
-		debugLog("   Simple mass conservation: updating properties..." );
-		//cerr << "   Simple mass conservation: updating properties..." << endl;
-
-		updateTotalConcentrations();
-
-	}
+	if (fluctuationCompensator) fluctuationCompensator->resetCorrections();
 
 	debugLog("RDFVM Step complete.");
-	//cerr << "RDFVM Step complete." << endl;
 
 	pUtils->unsetLock(lockPtr);
 
@@ -906,45 +763,12 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 ////////////////////////////////////////////////////////// Steerable interface ///////////////////////////////////////////////////////////
 void ReactionDiffusionSolverFVM::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
-	// Get ECMaterials plugin
-	//		Requires cell type diffusion specification for each field using material-dependent diffusion
-	ASSERT_OR_THROW("ECMaterials plugin not currently supported in FVM solver.", !usingECMaterials);
-	bool pluginAlreadyRegisteredFlag = false;
-	if (usingECMaterials) {
-		// ecMaterialsPlugin = (ECMaterialsPlugin*)Simulator::pluginManager.get("ECMaterials", &pluginAlreadyRegisteredFlag);
-		ASSERT_OR_THROW("ECMaterials plugin must be registered before usage by FVM solver.", pluginAlreadyRegisteredFlag);
-	}
-
 	// Get steerable inputs
 	//		Auto time stepping
 	autoTimeSubStep = _xmlData->findElement("AutoTimeSubStep");
 	if (autoTimeSubStep) {
 		debugLog("RDVFM got automatic time sub-stepping.");
-		 //cerr << "RDVFM got automatic time sub-stepping." << endl; 
-		 }
-
-	//		Simple mass conservation option
-	bool simpleMassConservation_old = simpleMassConservation;
-	simpleMassConservation = _xmlData->findElement("SimpleMassConservation");
-	if (!simpleMassConservation_old && simpleMassConservation) {
-
-		debugLog("RDFVM enabling simple mass conservation...");
-		//cerr << "RDFVM enabling simple mass conservation..." << endl;
-
-		if (!(pixelTrackerPlugin->fullyInitialized() && pixelTrackerPlugin->trackingMedium())) {
-
-			debugLog("RDFVM Initializing pixel tracker data...");
-			//cerr << "RDFVM Initializing pixel tracker data..." << endl;
-
-			pixelTrackerPlugin->enableMediumTracker(true);
-			pixelTrackerPlugin->fullTrackerDataInit();
-
-		}
 	}
-	else if (simpleMassConservation_old && !simpleMassConservation) {
-		debugLog("RDFVM disabling simple mass conservation...");
-		 //cerr << "RDFVM disabling simple mass conservation..." << endl; 
-		 }
 
 }
 
@@ -956,103 +780,14 @@ std::string ReactionDiffusionSolverFVM::toString() {
 	return "ReactionDiffusionSolverFVM";
 }
 
-////////////////////////////////////////////////////// Cell field watcher interface //////////////////////////////////////////////////////
-void ReactionDiffusionSolverFVM::field3DAdditionalPt(const Point3D &ptAdd) { (this->*field3DAdditionalPtFcnPtr)(ptAdd); }
-
-// Prevents erroneous calls to CellGChangeWatcher during initialization routines
-void ReactionDiffusionSolverFVM::field3DAdditionalPtPreStartup(const Point3D &ptAdd) {
-	flipSourcePt = ptAdd;
-	field3DAdditionalPtFcnPtr = &ReactionDiffusionSolverFVM::field3DAdditionalPtPostStartup;
-	field3DChangeFcnPtr = &ReactionDiffusionSolverFVM::field3DChangePostStartup;
-}
-
-void ReactionDiffusionSolverFVM::field3DAdditionalPtPostStartup(const Point3D &ptAdd) { flipSourcePt = ptAdd; }
-
-void ReactionDiffusionSolverFVM::field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell) { (this->*field3DChangeFcnPtr)(pt, newCell, oldCell); }
-
-void ReactionDiffusionSolverFVM::field3DChangePostStartup(const Point3D &pt, CellG *newCell, CellG *oldCell) {
-
-	if (simpleMassConservation && newCell != oldCell) {
-
-		// Load cell data just in time if necessary
-		if (!cellDataLoaded) { loadCellData(); }
-
-		// Get concentrations at copy-associated sites
-		std::vector<double> concentrationVecOld = getFieldFV(pt)->getConcentrationVec();
-		std::vector<double> concentrationVecNew = getFieldFV(flipSourcePt)->getConcentrationVec();
-
-		if (oldCell) {
-
-			// Get cell data
-			std::vector<double> &concentrationVecCopiesOld = ReactionDiffusionSolverFVMCellDataAccessor.get(oldCell->extraAttribPtr)->concentrationVecCopies;
-			std::vector<double> &massConsCorrectionFactorsOld = ReactionDiffusionSolverFVMCellDataAccessor.get(oldCell->extraAttribPtr)->massConsCorrectionFactors;
-
-			// On-the-fly initializations
-			if (concentrationVecCopiesOld.size() < numFields) { concentrationVecCopiesOld = totalCellConcentration(oldCell); }
-			if (massConsCorrectionFactorsOld.size() < numFields) { massConsCorrectionFactorsOld = std::vector<double>(numFields, 1.0); }
-
-			// Update correction factors
-			for (unsigned int fieldIndex = 0; fieldIndex < numFields; ++fieldIndex) {
-				if (concentrationVecCopiesOld[fieldIndex] * massConsCorrectionFactorsOld[fieldIndex] > 0.0) {
-					double den = 1 / massConsCorrectionFactorsOld[fieldIndex] - concentrationVecOld[fieldIndex] / concentrationVecCopiesOld[fieldIndex];
-					if (den > 0.0) { massConsCorrectionFactorsOld[fieldIndex] = 1 / den; }
-				}
-			}
-
-		}
-		else {
-
-			// Update correction factors
-			for (unsigned int fieldIndex = 0; fieldIndex < numFields; ++fieldIndex){
-				if (concentrationVecCopiesMedium[fieldIndex] * massConsCorrectionFactorsMedium[fieldIndex] > 0.0) {
-					double den = 1 / massConsCorrectionFactorsMedium[fieldIndex] - concentrationVecOld[fieldIndex] / concentrationVecCopiesMedium[fieldIndex];
-					if (den > 0.0) { massConsCorrectionFactorsMedium[fieldIndex] = 1 / den; }
-				}
-			}
-
-		}
-
-		if (newCell) {
-
-			// Get cell data
-			std::vector<double> &concentrationVecCopiesNew = ReactionDiffusionSolverFVMCellDataAccessor.get(newCell->extraAttribPtr)->concentrationVecCopies;
-			std::vector<double> &massConsCorrectionFactorsNew = ReactionDiffusionSolverFVMCellDataAccessor.get(newCell->extraAttribPtr)->massConsCorrectionFactors;
-
-			// On-the-fly initializations
-			if (concentrationVecCopiesNew.size() < numFields) { concentrationVecCopiesNew = totalCellConcentration(newCell); }
-			if (massConsCorrectionFactorsNew.size() < numFields) { massConsCorrectionFactorsNew = std::vector<double>(numFields, 1.0); }
-
-			// Update correction factors
-			for (unsigned int fieldIndex = 0; fieldIndex < numFields; ++fieldIndex)
-				if (concentrationVecCopiesNew[fieldIndex] * massConsCorrectionFactorsNew[fieldIndex] > 0.0)
-					massConsCorrectionFactorsNew[fieldIndex] = 1 / (1 / massConsCorrectionFactorsNew[fieldIndex] + concentrationVecNew[fieldIndex] / concentrationVecCopiesNew[fieldIndex]);
-
-		}
-		else {
-
-			// Update correction factors
-			for (unsigned int fieldIndex = 0; fieldIndex < numFields; ++fieldIndex)
-				if (concentrationVecCopiesMedium[fieldIndex] * massConsCorrectionFactorsMedium[fieldIndex] > 0.0)
-					massConsCorrectionFactorsMedium[fieldIndex] = 1 / (1 / massConsCorrectionFactorsMedium[fieldIndex] + concentrationVecNew[fieldIndex] / concentrationVecCopiesMedium[fieldIndex]);
-
-		}
-
-		getFieldFV(pt)->setConcentrationVec(concentrationVecNew);
-
-	}
-}
-
 ///////////////////////////////////////////////////////////// Solver routines ////////////////////////////////////////////////////////////
 
 void ReactionDiffusionSolverFVM::loadCellData() {
 
-	cellInventory = &potts->getCellInventory();
 	debugLog("RDFVM Initializing cell data...");
-	//cerr << "RDFVM Initializing cell data..." << endl;
 
 	initializeCellData(numFields);
 	debugLog("RDFVM Loading cell data...");
-	//cerr << "RDFVM Loading cell data..." << endl;
 
 	setCellDiffusivityCoefficients();
 	setCellPermeableCoefficients();
@@ -1069,11 +804,10 @@ void ReactionDiffusionSolverFVM::loadFieldExpressions() {
 
 void ReactionDiffusionSolverFVM::loadFieldExpressionMultiplier(unsigned int _fieldIndex) {
 	auto &_fieldFVs = fieldFVs;
-	#pragma omp parallel for shared (fieldFVs)
-	for (int i=0;i<fieldFVs.size();i++){
-		loadFieldExpressionMultiplier(_fieldIndex, fieldFVs[i]);
+	#pragma omp parallel for shared (_fieldFVs)
+	for (int i=0;i<_fieldFVs.size();i++){
+		loadFieldExpressionMultiplier(_fieldIndex, _fieldFVs[i]);
 	}
-	//parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { loadFieldExpressionMultiplier(_fieldIndex, fv); });
 }
 
 void ReactionDiffusionSolverFVM::loadFieldExpressionMultiplier(std::string _fieldName, std::string _expr) {
@@ -1083,11 +817,10 @@ void ReactionDiffusionSolverFVM::loadFieldExpressionMultiplier(std::string _fiel
 
 void ReactionDiffusionSolverFVM::loadFieldExpressionIndependent(unsigned int _fieldIndex) {
 	auto &_fieldFVs = fieldFVs;
-	#pragma omp parallel for shared (fieldFVs)
-	for (int i=0;i<fieldFVs.size();i++){
-				loadFieldExpressionIndependent(_fieldIndex, fieldFVs[i]); 
+	#pragma omp parallel for shared (_fieldFVs)
+	for (int i=0;i<_fieldFVs.size();i++){
+				loadFieldExpressionIndependent(_fieldIndex, _fieldFVs[i]); 
 		}
-	//parallel_for_each(fieldFVs->begin(), fieldFVs->end(), [&](ReactionDiffusionSolverFV *fv) { loadFieldExpressionIndependent(_fieldIndex, fv); });
 }
 
 void ReactionDiffusionSolverFVM::loadFieldExpressionIndependent(std::string _fieldName, std::string _expr) {
@@ -1106,14 +839,11 @@ void ReactionDiffusionSolverFVM::loadFieldExpressionIndependent(unsigned int _fi
 void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
 	// Generate finite volumes
 
-	//fieldFVs = new concurrency::concurrent_vector<ReactionDiffusionSolverFV*>(_fieldDim.x*_fieldDim.y*_fieldDim.z);
     fieldFVs = std::vector<ReactionDiffusionSolverFV*>(_fieldDim.x*_fieldDim.y*_fieldDim.z);
 
 	debugLog("Constructing lattice with " << _fieldDim.x*_fieldDim.y*_fieldDim.z << " sites...");
-	//cerr << "Constructing lattice with " << _fieldDim.x*_fieldDim.y*_fieldDim.z << " sites..." << endl;
 
 
-    // replaced parallel_for from parallels to openmp's parallel for implementation
     #pragma omp parallel for shared (_fieldDim)
 	for (int ind=0;ind<_fieldDim.x*_fieldDim.y*_fieldDim.z;ind++){
 		ReactionDiffusionSolverFV *fv = new ReactionDiffusionSolverFV(this, ind2pt(ind), (int)this->getConcentrationFieldNameVector().size());
@@ -1121,31 +851,27 @@ void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
 	}
     
 	debugLog("Initializing FVs...");
-	//cerr << "Initializing FVs..." << endl;
 
+	auto &_fieldFVs = fieldFVs;
 
-    #pragma omp parallel for shared (fieldFVs)
-	for (int i=0;i< fieldFVs.size();i++){ 
-		fieldFVs[i]->initialize();
+    #pragma omp parallel for shared (_fieldFVs)
+	for (int i=0;i< _fieldFVs.size();i++){ 
+		_fieldFVs[i]->initialize();
 	}
 	debugLog("Setting field symbols...");
-	//cerr << "Setting field symbols..." << endl;
 	
-	auto &_fieldFVs = fieldFVs;
-	#pragma omp parallel for shared (fieldFVs)
-	for (int i=0;i<fieldFVs.size();i++){
-	for (int fieldIndex=0;fieldIndex<fieldFVs[i]->getConcentrationVec().size();++fieldIndex){ 
-			fieldFVs[i]->registerFieldSymbol(fieldIndex, this->getFieldSymbol(fieldIndex));
+	#pragma omp parallel for shared (_fieldFVs)
+	for (int i=0;i<_fieldFVs.size();i++){
+	for (int fieldIndex=0;fieldIndex<_fieldFVs[i]->getConcentrationVec().size();++fieldIndex){ 
+			_fieldFVs[i]->registerFieldSymbol(fieldIndex, this->getFieldSymbol(fieldIndex));
 		}
 	}
 	
 	debugLog("Loading field expressions...");
-	//cerr << "Loading field expressions..." << endl;
 
 	loadFieldExpressions();
 
 	debugLog("Setting initial FV diffusivity method...");
-	//cerr << "Setting initial FV diffusivity method..." << endl;
 
 	// Diffusion mode initializations
 	for (unsigned int fieldIndex = 0; fieldIndex < numFields; ++fieldIndex) { (this->*diffusivityModeInitializerPtrs[fieldIndex])(fieldIndex); }
@@ -1156,7 +882,6 @@ void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
 	// Apply basic boundary conditions
 
 	debugLog("Applying basic boundary conditions...");
-	//cerr << "Applying basic boundary conditions..." << endl;
 
 	unsigned int surfaceIndex;
 	ReactionDiffusionSolverFV *fv;
@@ -1168,18 +893,15 @@ void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
 	if (maxNeighborIndex > 3) {
 
 		debugLog("   along z-boundaries...");
-		//cerr << "   along z-boundaries..." << endl;
 
 		bLocSpecs[0] = tuple<short, std::string>(0, "MinZ");
 		bLocSpecs[1] = tuple<short, std::string>(fieldDim.z - 1, "MaxZ");
 		for (short x = 0; x < fieldDim.x; ++x)
 			for (short y = 0; y < fieldDim.y; ++y)
-				//for each (tuple<unsigned int, std::string> bLocSpec in bLocSpecs) {
 				for (const auto& bLocSpec: bLocSpecs){
 					short z = std::get<0>(bLocSpec);
 					surfaceIndex = getSurfaceIndexByName(std::get<1>(bLocSpec));
 					fv = getFieldFV(Point3D(x, y, z));
-					//for each(std::string fieldName in concentrationFieldNameVector) {
 					for(const auto& fieldName : concentrationFieldNameVector){
 						fieldIndex = getFieldIndexByName(fieldName);
 						std::string bcName = std::get<0>(basicBCData[fieldIndex][surfaceIndex]);
@@ -1193,18 +915,15 @@ void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
 	//		y boundaries
 
 	debugLog( "   along y-boundaries...");
-	//cerr << "   along y-boundaries..." << endl;
 
 	bLocSpecs[0] = tuple<short, std::string>(0, "MinY");
 	bLocSpecs[1] = tuple<short, std::string>(fieldDim.y - 1, "MaxY");
 	for (short x = 0; x < fieldDim.x; ++x)
 		for (short z = 0; z < fieldDim.z; ++z)
-			//for each (tuple<unsigned int, std::string> bLocSpec in bLocSpecs) {
 			for(const auto& bLocSpec : bLocSpecs){
 				short y = std::get<0>(bLocSpec);
 				surfaceIndex = getSurfaceIndexByName(std::get<1>(bLocSpec));
 				fv = getFieldFV(Point3D(x, y, z));
-				//for each(std::string fieldName in concentrationFieldNameVector) {
 				for(const auto& fieldName : concentrationFieldNameVector){
 					fieldIndex = getFieldIndexByName(fieldName);
 					std::string bcName = std::get<0>(basicBCData[fieldIndex][surfaceIndex]);
@@ -1217,18 +936,15 @@ void ReactionDiffusionSolverFVM::initializeFVs(Dim3D _fieldDim) {
 	//		x boundaries
 
 	debugLog("   along x-boundaries...");
-	//cerr << "   along x-boundaries..." << endl;
 
 	bLocSpecs[0] = tuple<short, std::string>(0, "MinX");
 	bLocSpecs[1] = tuple<short, std::string>(fieldDim.x - 1, "MaxX");
 	for (short y = 0; y < fieldDim.y; ++y)
 		for (short z = 0; z < fieldDim.z; ++z)
-			//for each (tuple<unsigned int, std::string> bLocSpec in bLocSpecs) {
 			for(const auto& bLocSpec : bLocSpecs){
 				short x = std::get<0>(bLocSpec);
 				surfaceIndex = getSurfaceIndexByName(std::get<1>(bLocSpec));
 				fv = getFieldFV(Point3D(x, y, z));
-				//for each(std::string fieldName in concentrationFieldNameVector) {
 				for(const auto& fieldName : concentrationFieldNameVector){
 					fieldIndex = getFieldIndexByName(fieldName);
 					std::string bcName = std::get<0>(basicBCData[fieldIndex][surfaceIndex]);
@@ -1266,114 +982,8 @@ void ReactionDiffusionSolverFVM::initializeFieldUsingEquation(unsigned int _fiel
 	}
 	catch (mu::Parser::exception_type &e) {
 		debugLog(e.GetMsg());
-		//cerr << e.GetMsg() << endl;
 		ASSERT_OR_THROW(e.GetMsg(), 0);
 	}
-}
-
-std::vector<double> ReactionDiffusionSolverFVM::totalCellConcentration(const CellG *_cell) { return totalPixelSetConcentration(getCellPixelVec(_cell)); }
-
-std::vector<Point3D> ReactionDiffusionSolverFVM::getCellPixelVec(const CellG *_cell) {
-	std::set<PixelTrackerData> &pixelSet = pixelTrackerPlugin->getPixelTrackerAccessorPtr()->get(_cell->extraAttribPtr)->pixelSet;
-	std::vector<Point3D> pixelVec = std::vector<Point3D>(pixelSet.size());
-	unsigned int ptdIndex = 0;
-	for (set<PixelTrackerData >::iterator sitr = pixelSet.begin(); sitr != pixelSet.end(); ++sitr) {
-		pixelVec[ptdIndex] = sitr->pixel;
-		++ptdIndex;
-	}
-	return pixelVec;
-}
-
-std::vector<double> ReactionDiffusionSolverFVM::totalMediumConcentration() {
-	// Load pixels for parallel sweep of medium
-
-	std::vector<Point3D> pixelVec = getMediumPixelVec();
-	std::vector<Point3D> pixelVecPar = std::vector<Point3D>(pixelVec.size());
-	for (unsigned int pixelIndex = 0; pixelIndex < pixelVec.size(); ++pixelIndex) { pixelVecPar[pixelIndex] = pixelVec[pixelIndex]; }
-
-	//concurrency::concurrent_vector<Point3D> pixelVecPar = concurrency::concurrent_vector<Point3D>(pixelVec.size());
-
-	// Calculate total concentrations on each thread
-		
-	std::vector<double> sumEl(numFields,0.0);
-	int n_threads = omp_get_num_threads();
-	std::vector<vector<double>> res (n_threads,std::vector<double>(numFields, 0.0));
-	
-	#pragma omp parallel for shared(pixelVecPar,res)
-	for (int i=0;i<pixelVecPar.size();i++){ 
-		int index = omp_get_thread_num();
-		res[index] = vecPlus<double>()(res[index],std::vector<double>(this->getFieldFV(pixelVecPar[i])->getConcentrationVec()));
-	}
-
-	// //reduction
-	std::vector<double> res_reduced = std::vector<double>(numFields, 0.0);
-	#pragma omp critical
-	for (int i=0;i<n_threads;i++){ 
-		res_reduced = vecPlus<double>()(res[i],res_reduced);
-	}
-
-
-	// Reset mass conservation correction factors
-	massConsCorrectionFactorsMedium = std::vector<double>(numFields, 1.0);
-
-	return res_reduced;
-}
-
-void ReactionDiffusionSolverFVM::updateTotalCellConcentrations() {
-	unsigned int numCells = (unsigned int)(cellInventory->getSize());
-	if (numCells > 0) {
-		// Load cell pointers for parallel update
-		
-		std::vector<CellG* > vecCells = std::vector<CellG* >(numCells);
-		unsigned int cellIdx = 0;
-
-
-		for (CellInventory::cellInventoryIterator cItr = cellInventory->cellInventoryBegin(); cItr != cellInventory->cellInventoryEnd(); ++cItr) {
-			vecCells[cellIdx] = cItr->second;
-			++cellIdx;
-		}
-
-		// Perform parallel update
-		#pragma omp parallel for shared (vecCells)
-		for (int i=0;i<vecCells.size();i++){ 
-			BasicClassAccessor<ReactionDiffusionSolverFVMCellData> *cellData = this->getReactionDiffusionSolverFVMCellDataAccessorPtr();
-			std::vector<double> &concentrationVecCopies = cellData->get(vecCells[i]->extraAttribPtr)->concentrationVecCopies;
-			std::vector<double> &massConsCorrectionFactors = cellData->get(vecCells[i]->extraAttribPtr)->massConsCorrectionFactors;
-			concentrationVecCopies = this->totalCellConcentration(vecCells[i]);
-			massConsCorrectionFactors = std::vector<double>(concentrationVecCopies.size(), 1.0);
-		}
-
-
-	}
-}
-
-void ReactionDiffusionSolverFVM::updateTotalConcentrations() {
-	if (!(pixelTrackerPlugin->fullyInitialized())) { pixelTrackerPlugin->fullTrackerDataInit(); }
-
-	// Update total mass in medium
-	concentrationVecCopiesMedium = totalMediumConcentration();
-
-	// Update total mass in cells
-	updateTotalCellConcentrations();
-}
-
-std::vector<Point3D> ReactionDiffusionSolverFVM::getMediumPixelVec() {
-	std::set<PixelTrackerData> pixelSet = pixelTrackerPlugin->getMediumPixelSet();
-	std::vector<Point3D> pixelVec = std::vector<Point3D>(pixelSet.size());
-	unsigned int ptdIndex = 0;
-	for (set<PixelTrackerData >::iterator sitr = pixelSet.begin(); sitr != pixelSet.end(); ++sitr) {
-		pixelVec[ptdIndex] = sitr->pixel;
-		++ptdIndex;
-	}
-	return pixelVec;
-}
-
-std::vector<double> ReactionDiffusionSolverFVM::totalPixelSetConcentration(std::vector<Point3D> _pixelVec) {
-	std::vector<double> sumVec = std::vector<double>(numFields, 0.0);
-	for (unsigned int pixelIndex = 0; pixelIndex < _pixelVec.size(); ++pixelIndex) {
-		for (unsigned int vecIndex = 0; vecIndex < numFields; ++vecIndex) { sumVec[vecIndex] += getFieldFV(_pixelVec[pixelIndex])->getConcentrationOld(vecIndex); }
-	}
-	return sumVec;
 }
 
 
@@ -1385,32 +995,32 @@ CellG * ReactionDiffusionSolverFVM::FVtoCellMap(ReactionDiffusionSolverFV * _fv)
 
 void ReactionDiffusionSolverFVM::useConstantDiffusivity(unsigned int _fieldIndex, double _diffusivityCoefficient) {	
 	auto &_fieldFVs = fieldFVs;
-	#pragma omp parallel for shared (fieldFVs)
-	for (int i=0;i<fieldFVs.size();i++){ 
-		fieldFVs[i]->useConstantDiffusivity(_fieldIndex, _diffusivityCoefficient);
+	#pragma omp parallel for shared (_fieldFVs)
+	for (int i=0;i<_fieldFVs.size();i++){ 
+		_fieldFVs[i]->useConstantDiffusivity(_fieldIndex, _diffusivityCoefficient);
 	}
 }
 void ReactionDiffusionSolverFVM::useConstantDiffusivityByType(unsigned int _fieldIndex, double _diffusivityCoefficient) {
 	auto &_fieldFVs = fieldFVs;
-	#pragma omp parallel for shared (fieldFVs)
-	for (int i=0;i<fieldFVs.size();i++){ 
-		fieldFVs[i]->useConstantDiffusivityById(_fieldIndex, _diffusivityCoefficient);
+	#pragma omp parallel for shared (_fieldFVs)
+	for (int i=0;i<_fieldFVs.size();i++){ 
+		_fieldFVs[i]->useConstantDiffusivityById(_fieldIndex, _diffusivityCoefficient);
 	}
 }
 void ReactionDiffusionSolverFVM::useFieldDiffusivityInMedium(unsigned int _fieldIndex) {
 	initDiffusivityField(_fieldIndex);
 	auto &_fieldFVs = fieldFVs;
-	#pragma omp parallel for shared (fieldFVs)
-	for (int i=0;i<fieldFVs.size();i++){ 
-		fieldFVs[i]->useFieldDiffusivityInMedium(_fieldIndex);
+	#pragma omp parallel for shared (_fieldFVs)
+	for (int i=0;i<_fieldFVs.size();i++){ 
+		_fieldFVs[i]->useFieldDiffusivityInMedium(_fieldIndex);
 	}
 }
 void ReactionDiffusionSolverFVM::useFieldDiffusivityEverywhere(unsigned int _fieldIndex) {
 	initDiffusivityField(_fieldIndex);
 	auto &_fieldFVs = fieldFVs;
-	#pragma omp parallel for shared (fieldFVs)
-	for (int i=0;i<fieldFVs.size();i++){ 
-		fieldFVs[i]->useFieldDiffusivityEverywhere(_fieldIndex);
+	#pragma omp parallel for shared (_fieldFVs)
+	for (int i=0;i<_fieldFVs.size();i++){ 
+		_fieldFVs[i]->useFieldDiffusivityEverywhere(_fieldIndex);
 	}
 }
 void ReactionDiffusionSolverFVM::initDiffusivityField(unsigned int _fieldIndex) {
@@ -1440,16 +1050,18 @@ void ReactionDiffusionSolverFVM::useFixedFVConcentration(unsigned int _fieldInde
 }
 
 void ReactionDiffusionSolverFVM::useDiffusiveSurfaces(unsigned int _fieldIndex) {
-	#pragma omp parallel for shared (fieldFVs)
-	for (int i=0;i<fieldFVs.size();i++){ 
-		fieldFVs[i]->useDiffusiveSurfaces(_fieldIndex);
+	auto &_fieldFVs = fieldFVs;
+	#pragma omp parallel for shared (_fieldFVs)
+	for (int i=0;i<_fieldFVs.size();i++){ 
+		_fieldFVs[i]->useDiffusiveSurfaces(_fieldIndex);
 	}
 }
 
 void ReactionDiffusionSolverFVM::usePermeableSurfaces(unsigned int _fieldIndex, bool _activate) {
-	#pragma omp parallel for shared (fieldFVs)
-	for (int i=0;i<fieldFVs.size();i++){ 
-		fieldFVs[i]->usePermeableSurfaces(_fieldIndex, _activate);
+	auto &_fieldFVs = fieldFVs;
+	#pragma omp parallel for shared (_fieldFVs)
+	for (int i=0;i<_fieldFVs.size();i++){ 
+		_fieldFVs[i]->usePermeableSurfaces(_fieldIndex, _activate);
 	}
 }
 
@@ -1473,19 +1085,15 @@ void ReactionDiffusionSolverFVM::initializeCellData(const CellG *_cell, unsigned
 	cellData->permeableBiasCoefficients = std::vector<std::vector<double> >(_numFields, std::vector<double>(numCellTypes, 1.0));
 	cellData->diffusivityCoefficients = std::vector<double>(_numFields, 0.0);
 	cellData->outwardFluxValues = std::vector<double>(_numFields, 0.0);
-	if (simpleMassConservation) { 
-		cellData->concentrationVecCopies = std::vector<double>(totalCellConcentration(_cell));
-		cellData->massConsCorrectionFactors = std::vector<double>(_numFields, 1.0);
-	}
 }
 
 void ReactionDiffusionSolverFVM::initializeCellData(unsigned int _numFields) {
 	if (!(pixelTrackerPlugin->fullyInitialized())) { pixelTrackerPlugin->fullTrackerDataInit(); }
 
-	for (cell_itr = cellInventory->cellInventoryBegin(); cell_itr != cellInventory->cellInventoryEnd(); ++cell_itr)
-		initializeCellData(cellInventory->getCell(cell_itr), _numFields);
+	CellInventory *cellInventory = &potts->getCellInventory();
 
-	if (simpleMassConservation) { concentrationVecCopiesMedium = totalMediumConcentration(); }
+	for (CellInventory::cellInventoryIterator cell_itr = cellInventory->cellInventoryBegin(); cell_itr != cellInventory->cellInventoryEnd(); ++cell_itr)
+		initializeCellData(cellInventory->getCell(cell_itr), _numFields);
 }
 
 double ReactionDiffusionSolverFVM::getCellDiffusivityCoefficient(const CellG * _cell, unsigned int _fieldIndex) {
@@ -1497,7 +1105,6 @@ double ReactionDiffusionSolverFVM::getCellDiffusivityCoefficient(const CellG * _
 	if (diffusivityCoefficients.size() < _fieldIndex) { 
 
 		debugLog("Initializing cell diffusivity coefficient on the fly...");
-		//cerr << "Initializing cell diffusivity coefficient on the fly..." << endl;
 
 		cellData->diffusivityCoefficients = std::vector<double>(numFields);
 		for (unsigned int i = 0; i < numFields; ++i) { setCellDiffusivityCoefficient(_cell, _fieldIndex); }
@@ -1515,7 +1122,9 @@ void ReactionDiffusionSolverFVM::setCellDiffusivityCoefficient(const CellG * _ce
 	setCellDiffusivityCoefficient(_cell, _fieldIndex, constantDiffusionCoefficientsVecCellType[_fieldIndex][(int)(_cell->type)]);}
 
 void ReactionDiffusionSolverFVM::setCellDiffusivityCoefficients(unsigned int _fieldIndex) {
-	for (cell_itr = cellInventory->cellInventoryBegin(); cell_itr != cellInventory->cellInventoryEnd(); ++cell_itr) {
+	CellInventory *cellInventory = &potts->getCellInventory();
+
+	for (CellInventory::cellInventoryIterator cell_itr = cellInventory->cellInventoryBegin(); cell_itr != cellInventory->cellInventoryEnd(); ++cell_itr) {
 		setCellDiffusivityCoefficient(cellInventory->getCell(cell_itr), _fieldIndex);
 	}
 }
@@ -1571,7 +1180,9 @@ void ReactionDiffusionSolverFVM::setCellPermeationCoefficient(const CellG * _cel
 	setCellPermeationCoefficient(_cell, _nCellTypeId, _fieldIndex, constantPermeationCoefficientsVecCellType[_fieldIndex][(int)(_cell->type)][_nCellTypeId]);}
 
 void ReactionDiffusionSolverFVM::setCellPermeationCoefficients(unsigned int _fieldIndex) {
-	for (cell_itr = cellInventory->cellInventoryBegin(); cell_itr != cellInventory->cellInventoryEnd(); ++cell_itr)
+	CellInventory *cellInventory = &potts->getCellInventory();
+
+	for (CellInventory::cellInventoryIterator cell_itr = cellInventory->cellInventoryBegin(); cell_itr != cellInventory->cellInventoryEnd(); ++cell_itr)
 		for (unsigned int nCellTypeId = 0; nCellTypeId < numCellTypes; ++nCellTypeId)
 			setCellPermeationCoefficient(cellInventory->getCell(cell_itr), nCellTypeId, _fieldIndex);
 }
@@ -1590,7 +1201,9 @@ void ReactionDiffusionSolverFVM::setCellPermeableBiasCoefficient(const CellG * _
 }
 
 void ReactionDiffusionSolverFVM::setCellPermeableBiasCoefficients(unsigned int _fieldIndex) {
-	for (cell_itr = cellInventory->cellInventoryBegin(); cell_itr != cellInventory->cellInventoryEnd(); ++cell_itr)
+	CellInventory *cellInventory = &potts->getCellInventory();
+
+	for (CellInventory::cellInventoryIterator cell_itr = cellInventory->cellInventoryBegin(); cell_itr != cellInventory->cellInventoryEnd(); ++cell_itr)
 		for (unsigned int nCellTypeId = 0; nCellTypeId < numCellTypes; ++nCellTypeId)
 			setCellPermeableBiasCoefficient(cellInventory->getCell(cell_itr), nCellTypeId, _fieldIndex);
 }
@@ -1672,24 +1285,6 @@ std::map<unsigned int, ReactionDiffusionSolverFV *> ReactionDiffusionSolverFVM::
 	return neighborFVs;
 }
 
-// Obsolete.
-float ReactionDiffusionSolverFVM::getMaxStableTimeStep() {
-	if (!autoTimeSubStep) { return incTime; }
-	else {
-		std::vector<float> *fvMaxStableTimeSteps = new std::vector<float>(fieldDim.x*fieldDim.y*fieldDim.z);
-
-		fvMaxStableTimeSteps->assign(fieldDim.x*fieldDim.y*fieldDim.z, incTime);
-		unsigned int ind=0;
-
-
-		#pragma omp parallel for shared (fieldDim) private (ind)
-		for (ind=0;ind<fieldDim.x*fieldDim.y*fieldDim.z;ind++){
-			fvMaxStableTimeSteps->at(ind) = this->getFieldFV(ind)->getMaxStableTimeStep();
-		}
-		return *min_element(fvMaxStableTimeSteps->begin(), fvMaxStableTimeSteps->end());
-	}
-}
-
 Point3D ReactionDiffusionSolverFVM::ind2pt(unsigned int _ind) {
 	Point3D pt;
 	pt.x = _ind % fieldDim.x;
@@ -1700,7 +1295,7 @@ Point3D ReactionDiffusionSolverFVM::ind2pt(unsigned int _ind) {
 
 unsigned int ReactionDiffusionSolverFVM::pt2ind(const Point3D &_pt, Dim3D _fieldDim) {
 	int ind = _pt.x + _fieldDim.x * (_pt.y + _fieldDim.y * _pt.z);
-	if (ind < 0 || ind > fieldDim.x*fieldDim.y*fieldDim.z) { throw BasicException("Point is not valid."); }
+	if (ind < 0 || ind > fieldDim.x*fieldDim.y*fieldDim.z) { throw CC3DException("Point is not valid."); }
 	return (unsigned int)(ind);
 }
 
@@ -1810,34 +1405,6 @@ void ReactionDiffusionSolverFV::update(double _incTime) {
 	physTime += _incTime;
 }
 
-double ReactionDiffusionSolverFV::getMaxStableTimeStep() {
-	double incTime = numeric_limits<double>::max();
-	physTime = solver->getPhysicalTime();
-
-	double den;
-
-	std::map<unsigned int, ReactionDiffusionSolverFV *>::iterator fv_itr;
-
-	for (unsigned int i = 0; i < concentrationVecOld.size(); ++i) {
-		double den1 = 0.0;
-		double den2 = 0.0;
-
-		for (fv_itr = neighborFVs.begin(); fv_itr != neighborFVs.end(); ++fv_itr) {
-			std::vector<double> fluxVals = (this->*surfaceFluxFunctionPtrs[i][fv_itr->first])(i, fv_itr->first, fv_itr->second);
-			
-			den1 += fluxVals[0];
-			if (fv_itr->second != nullptr) { den2 += abs(fluxVals[1]); }
-			
-		}
-
-		den = abs(den1 + diagonalFunctionEval(i)) + 1.001 * den2;
-
-		if (den > 0) { incTime = min(incTime, (double) 1.0 / den); }
-
-	}
-	return incTime;
-}
-
 void ReactionDiffusionSolverFV::useConstantDiffusivity(unsigned int _fieldIndex) { useConstantDiffusivity(_fieldIndex, solver->getConstantFieldDiffusivity(_fieldIndex)); }
 
 void ReactionDiffusionSolverFV::useConstantDiffusivity(unsigned int _fieldIndex, double _constantDiff) {
@@ -1898,7 +1465,6 @@ void ReactionDiffusionSolverFV::setDiagonalFunctionExpression(unsigned int _fiel
 	try { diagonalFunctions[_fieldIndex].SetExpr(_expr); }
 	catch (mu::Parser::exception_type &e) {
 		debugLog(e.GetMsg());
-		//cerr << e.GetMsg() << endl;
 		ASSERT_OR_THROW(e.GetMsg(), 0);
 	}
 }
@@ -1907,7 +1473,6 @@ void ReactionDiffusionSolverFV::setOffDiagonalFunctionExpression(unsigned int _f
 	try { offDiagonalFunctions[_fieldIndex].SetExpr(_expr); }
 	catch (mu::Parser::exception_type &e) {
 		debugLog(e.GetMsg());
-		//cerr << e.GetMsg() << endl;
 		ASSERT_OR_THROW(e.GetMsg(), 0);
 	}
 }
@@ -1949,12 +1514,6 @@ double ReactionDiffusionSolverFV::getConstantDiffusivityById(unsigned int _field
 	else { return solver->getCellDiffusivityCoefficient(cell, _fieldIndex); }
 }
 
-double ReactionDiffusionSolverFV::getECMaterialDiffusivity(unsigned int _fieldIndex) {
-	CellG *cell = solver->FVtoCellMap(this);
-	if (cell == 0) { return solver->getECMaterialDiffusivity(_fieldIndex, coords); }
-	else { return solver->getCellDiffusivityCoefficient(cell, _fieldIndex); }
-}
-
 double ReactionDiffusionSolverFV::getFieldDiffusivityField(unsigned int _fieldIndex) { return solver->getDiffusivityFieldPtVal(_fieldIndex, coords); }
 
 double ReactionDiffusionSolverFV::getFieldDiffusivityInMedium(unsigned int _fieldIndex) {
@@ -1966,7 +1525,6 @@ double ReactionDiffusionSolverFV::getFieldDiffusivityInMedium(unsigned int _fiel
 std::vector<double> ReactionDiffusionSolverFV::diffusiveSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv) {
 	if (_nFv == nullptr) {
 		debugLog("Warning: diffusive surface flux for an unconnected FV pair!" );
-		//cerr << "Warning: diffusive surface flux for an unconnected FV pair!" << endl;
 		return std::vector<double>{0.0, 0.0, 0.0};
 	}
 
@@ -1983,7 +1541,6 @@ std::vector<double> ReactionDiffusionSolverFV::diffusiveSurfaceFlux(unsigned int
 std::vector<double> ReactionDiffusionSolverFV::permeableSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv) {
 	if (_nFv == nullptr) {
 		debugLog("Warning: permeable surface flux for an unconnected FV pair!");
-		//cerr << "Warning: permeable surface flux for an unconnected FV pair!" << endl;
 		return std::vector<double>{0.0, 0.0, 0.0};
 	}
 	

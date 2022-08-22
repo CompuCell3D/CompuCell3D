@@ -1271,6 +1271,11 @@ void updateFluctuationCompensators() {
 		solver->updateFluctuationCompensator();
 	}
 
+	if(Simulator::steppableManager.isLoaded("ReactionDiffusionSolverFVM")) {
+		ReactionDiffusionSolverFVM * solver = (ReactionDiffusionSolverFVM *)Simulator::steppableManager.get("ReactionDiffusionSolverFVM");
+		solver->updateFluctuationCompensator();
+	}
+
 }
 
 %}
