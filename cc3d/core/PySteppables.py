@@ -434,6 +434,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
 
         }
 
+        #: (dict of [str: str]) map of steppables names to attribute reference names
+        self.steppable_init_dict = {
+            "ReactionDiffusionSolverFVM": ['reaction_diffusion_solver_fvm']
+        }
+
         #: list of :class:`cc3d.cpp.CompuCell.CellG` attributes to copy during cloning
         #: used by clone attributes functions
         self.clonable_attribute_names = ['lambdaVolume', 'targetVolume', 'targetSurface', 'lambdaSurface',
@@ -627,6 +632,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
                 # setattr(self, type_name.upper(), type_id)
 
         self.fetch_loaded_plugins()
+        self.fetch_loaded_steppables()
         self.shared_steppable_vars = persistent_globals.shared_steppable_vars
 
     def fetch_loaded_plugins(self) -> None:
@@ -666,6 +672,37 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
                 # in case the plugin is not loaded we initialize member variables associated with the plugin to None
                 for plugin_member_name in member_var_list:
                     setattr(self, plugin_member_name, None)
+
+    def fetch_loaded_steppables(self) -> None:
+        """
+        Processes :attr:`steppable_init_dict` and initializes member variables according to specification in
+        :attr:`steppable_init_dict_init_dict`. relies on fixed naming convention for steppable_init_dict accessor
+        functions defined in pyinterface/CompuCellPython
+
+        :return: None
+        """
+
+        for steppable_name, member_var_list in self.steppable_init_dict.items():
+            if self.simulator.steppableManager.isLoaded(steppable_name):
+                accessor_fcn_name = 'get' + steppable_name + 'Steppable'
+                try:
+                    accessor_function = getattr(CompuCell, accessor_fcn_name)
+                except AttributeError:
+                    warnings.warn('Could not locate {accessor_fcn_name} member of CompuCell python module')
+                    for steppable_member_name in member_var_list:
+                        setattr(self, steppable_member_name, None)
+
+                    continue
+
+                steppable_obj = accessor_function()
+
+                for steppable_member_name in member_var_list:
+                    setattr(self, steppable_member_name, steppable_obj)
+
+            else:
+                # in case the steppable is not loaded we initialize the associated attributes to None
+                for steppable_member_name in member_var_list:
+                    setattr(self, steppable_member_name, None)
 
     def track_cell_level_scalar_attribute(self, field_name: str, attribute_name: str, function_obj: object = None,
                                           cell_type_list: Union[list, None] = None):

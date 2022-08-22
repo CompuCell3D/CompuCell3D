@@ -1482,5 +1482,16 @@ public:
 %include "CompuCellExtraDeclarations.i"
 
 %include "DerivedProperty.i"
+
 %rename(_usePermeableSurfaces) ReactionDiffusionSolverFVM::usePermeableSurfaces(unsigned int&);
 %include "CompuCell3D/steppables/PDESolvers/ReactionDiffusionSolverFVM.h"
+
+%inline %{
+
+ ReactionDiffusionSolverFVM * getReactionDiffusionSolverFVMSteppable(){
+
+      return (ReactionDiffusionSolverFVM *)Simulator::steppableManager.get("ReactionDiffusionSolverFVM");
+
+   }
+
+%}
