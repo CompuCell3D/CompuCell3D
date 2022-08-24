@@ -8,9 +8,11 @@ using namespace std;
 #include "SecretionPlugin.h"
 #include "SecretionDataP.h"
 
+#include<core/CompuCell3D/CC3DLogger.h>
 
-std::string SecretionDataP::steerableName() {
-    return "SecretionDataP";
+
+std::string SecretionDataP::steerableName(){
+	return "SecretionDataP";
 }
 
 
@@ -116,7 +118,7 @@ void SecretionDataP::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
         secrConst = secrXMLVec[i]->getDouble();
 
-        cerr << "THIS IS secretrion type=" << secreteType << " secrConst=" << secrConst << endl;
+        Log(LOG_DEBUG) << "THIS IS secretrion type=" << secreteType << " secrConst=" << secrConst;
         typeNameSecrConstMap.insert(make_pair(secreteType, secrConst));
 
 

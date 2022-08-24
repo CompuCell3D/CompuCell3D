@@ -6,6 +6,7 @@
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include "FluctuationCompensator.h"
 #include <cfloat>
+#include<core/CompuCell3D/CC3DLogger.h>
 
 using namespace CompuCell3D;
 
@@ -91,7 +92,7 @@ void DiffusionSolverFE_CPU::secreteSingleField(unsigned int idx) {
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+        Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;
@@ -228,7 +229,7 @@ void DiffusionSolverFE_CPU::secreteOnContactSingleField(unsigned int idx) {
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+        Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;
@@ -342,7 +343,7 @@ void DiffusionSolverFE_CPU::secreteOnContactSingleField(unsigned int idx) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_CPU::secreteConstantConcentrationSingleField(unsigned int idx) {
-    // std::cerr<<"***************here secreteConstantConcentrationSingleField***************\n";
+    Log(LOG_TRACE) << "***************here secreteConstantConcentrationSingleField***************\n";
 
     SecretionData &secrData = diffSecrFieldTuppleVec[idx].secrData;
 
@@ -376,7 +377,7 @@ void DiffusionSolverFE_CPU::secreteConstantConcentrationSingleField(unsigned int
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+        Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;
@@ -469,7 +470,7 @@ void DiffusionSolverFE_CPU::getMinMaxBox(bool useBoxWatcher, int threadNumber, D
 void DiffusionSolverFE_CPU::boundaryConditionInit(int idx) {
 
     ConcentrationField_t &_array = *this->getConcentrationField(idx);
- 
+
     bool detailedBCFlag = bcSpecFlagVec[idx];
     BoundaryConditionSpecifier & bcSpec = bcSpecVec[idx];
     DiffusionData &diffData = diffSecrFieldTuppleVec[idx].diffData;
@@ -713,7 +714,7 @@ void DiffusionSolverFE_CPU::boundaryConditionInit(int idx) {
         }
         //detailed specification of boundary conditions
         // Z axis
-        if (fieldDim.z > 1) {            
+        if (fieldDim.z > 1) {
             if (bcSpec.planePositions[4] == BoundaryConditionSpecifier::PERIODIC ||
                 bcSpec.planePositions[5] == BoundaryConditionSpecifier::PERIODIC) {
                 int z = 0;
@@ -789,8 +790,7 @@ void DiffusionSolverFE_CPU::stepImpl(const unsigned int _currentStep) {
     if (fluctuationCompensator) fluctuationCompensator->applyCorrections();
 
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        //cerr<<"scalingExtraMCSVec[i]="<<scalingExtraMCSVec[i]<<endl;
-
+        Log(LOG_TRACE) << "scalingExtraMCSVec[i]="<<scalingExtraMCSVec[i];
         prepCellTypeField(i); // here we initialize celltype array  boundaries - we do it once per  MCS
 
         if (scaleSecretion) {
@@ -837,9 +837,8 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx) {
     // Using boundary strategy to get offset array it is best to hard code offsets and access them directly
     // The downside is that in such a case one woudl have to write separate diffuseSingleField functions fdor 2D, 3D and for hex and square lattices.
     // However speedups may be worth extra effort.
-    //cerr<<"shiftArray="<<concentrationField.getShiftArray()<<" shiftSwap="<<concentrationField.getShiftSwap()<<endl;
+    Log(LOG_TRACE) << "shiftArray="<<concentrationField.getShiftArray()<<" shiftSwap="<<concentrationField.getShiftSwap();
     //hard coded offsets for 3D square lattice
-
 
 
     /// 'n' denotes neighbor
@@ -1027,7 +1026,7 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx) {
 
                         //loop over nearest neighbors
                         const std::vector <Point3D> &offsetVecRef = boundaryStrategy->getOffsetVec(pt);
-                        // cerr<<"VISITING PIXEL="<<pt+Point3D(1,1,1)<<endl;
+						Log(LOG_TRACE) << "VISITING PIXEL="<<pt+Point3D(1,1,1);
                         for (register int i = 0; i <= maxNeighborIndex /*offsetVec.size()*/ ; ++i) {
 
                             const Point3D &offset = offsetVecRef[i];

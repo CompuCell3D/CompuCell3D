@@ -10,6 +10,7 @@
 #include <CompuCell3D/Field3D/Array3D.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 #include <muParser/muParser.h>
+#include<core/CompuCell3D/CC3DLogger.h>
 
 namespace mu {
 
@@ -118,7 +119,7 @@ namespace CompuCell3D {
                         }
 
             } catch (mu::Parser::exception_type &e) {
-                cerr << e.GetMsg() << endl;
+                Log(LOG_DEBUG) << e.GetMsg();
                 throw CC3DException(e.GetMsg());
             }
         }
@@ -232,7 +233,7 @@ namespace CompuCell3D {
                         }
 
             } catch (mu::Parser::exception_type &e) {
-                cerr << e.GetMsg() << endl;
+                Log(LOG_DEBUG) << e.GetMsg();
                 throw CC3DException(e.GetMsg());
             }
         }

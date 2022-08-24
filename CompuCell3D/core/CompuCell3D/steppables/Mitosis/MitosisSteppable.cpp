@@ -14,7 +14,7 @@ using namespace std;
 #include "MitosisSteppable.h"
 #include "CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h"
 #include "CompuCell3D/plugins/PixelTracker/PixelTracker.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 MitosisSteppable::MitosisSteppable() {
     parentChildPositionFlag = 0;
@@ -39,14 +39,14 @@ void MitosisSteppable::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     //this will load VolumeTracker plugin if it is not already loaded
     Plugin *plugin = Simulator::pluginManager.get("VolumeTracker",
                                                   &pluginAlreadyRegisteredFlag);
-    cerr << "GOT HERE BEFORE CALLING INIT" << endl;
+    Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
     if (!pluginAlreadyRegisteredFlag)
         plugin->init(simulator);
 
     //this will load CenterOfMass plugin if it is not already loaded
     Plugin *pluginCOM = Simulator::pluginManager.get("CenterOfMass",
                                                      &pluginAlreadyRegisteredFlag);
-    cerr << "GOT HERE BEFORE CALLING INIT" << endl;
+    Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
     if (!pluginAlreadyRegisteredFlag)
         pluginCOM->init(simulator);
 
@@ -275,12 +275,12 @@ MitosisSteppable::getOrientationVectorsMitosis2D_xz(std::set <PixelTrackerData> 
 
     for (set<PixelTrackerData>::iterator sitr = clusterPixels.begin(); sitr != clusterPixels.end(); ++sitr) {
 
-        Coordinates3D<double> pixelTrans = boundaryStrategy->calculatePointCoordinates(sitr->pixel);
-        inertiaTensor[0][0] += (pixelTrans.z - zcm) * (pixelTrans.z - zcm);
-        inertiaTensor[0][1] += -(pixelTrans.x - xcm) * (pixelTrans.z - zcm);
-        inertiaTensor[1][1] += (pixelTrans.x - xcm) * (pixelTrans.x - xcm);
-    }
-    inertiaTensor[1][0] = inertiaTensor[0][1];
+        Coordinates3D<double> pixelTrans= boundaryStrategy->calculatePointCoordinates(sitr->pixel);
+			inertiaTensor[0][0]+=(pixelTrans.z-zcm)*(pixelTrans.z-zcm);
+			inertiaTensor[0][1]+=-(pixelTrans.x-xcm)*(pixelTrans.z-zcm);
+			inertiaTensor[1][1]+=(pixelTrans.x-xcm)*(pixelTrans.x-xcm);
+		}
+		inertiaTensor[1][0]=inertiaTensor[0][1];
 
     double radical = 0.5 *
                      sqrt((inertiaTensor[0][0] - inertiaTensor[1][1]) * (inertiaTensor[0][0] - inertiaTensor[1][1]) +
@@ -325,11 +325,11 @@ MitosisSteppable::getOrientationVectorsMitosis2D_yz(std::set <PixelTrackerData> 
     for (set<PixelTrackerData>::iterator sitr = clusterPixels.begin(); sitr != clusterPixels.end(); ++sitr) {
         Coordinates3D<double> pixelTrans = boundaryStrategy->calculatePointCoordinates(sitr->pixel);
 
-        inertiaTensor[0][0] += (pixelTrans.z - zcm) * (pixelTrans.z - zcm);
-        inertiaTensor[0][1] += -(pixelTrans.y - ycm) * (pixelTrans.z - zcm);
-        inertiaTensor[1][1] += (pixelTrans.y - ycm) * (pixelTrans.y - ycm);
-    }
-    inertiaTensor[1][0] = inertiaTensor[0][1];
+        inertiaTensor[0][0]+=(pixelTrans.z-zcm)*(pixelTrans.z-zcm);
+			inertiaTensor[0][1]+=-(pixelTrans.y-ycm)*(pixelTrans.z-zcm);
+			inertiaTensor[1][1]+=(pixelTrans.y-ycm)*(pixelTrans.y-ycm);
+		}
+		inertiaTensor[1][0]=inertiaTensor[0][1];
 
     double radical = 0.5 *
                      sqrt((inertiaTensor[0][0] - inertiaTensor[1][1]) * (inertiaTensor[0][0] - inertiaTensor[1][1]) +
@@ -373,27 +373,23 @@ MitosisSteppable::getOrientationVectorsMitosis3D(std::set <PixelTrackerData> &cl
 
     for (set<PixelTrackerData>::iterator sitr = clusterPixels.begin(); sitr != clusterPixels.end(); ++sitr) {
         Coordinates3D<double> pixelTrans = boundaryStrategy->calculatePointCoordinates(sitr->pixel);
-        //cerr<<"point cell="<<sitr->pixel<<endl;
-        inertiaTensor[0][0] +=
-                (pixelTrans.y - ycm) * (pixelTrans.y - ycm) + (pixelTrans.z - zcm) * (pixelTrans.z - zcm);
-        inertiaTensor[0][1] += -(pixelTrans.x - xcm) * (pixelTrans.y - ycm);
-        inertiaTensor[0][2] += -(pixelTrans.x - xcm) * (pixelTrans.z - zcm);
-        inertiaTensor[1][1] +=
-                (pixelTrans.x - xcm) * (pixelTrans.x - xcm) + (pixelTrans.z - zcm) * (pixelTrans.z - zcm);
-        inertiaTensor[1][2] += -(pixelTrans.y - ycm) * (pixelTrans.z - zcm);
-        inertiaTensor[2][2] +=
-                (pixelTrans.x - xcm) * (pixelTrans.x - xcm) + (pixelTrans.y - ycm) * (pixelTrans.y - ycm);
-    }
-    inertiaTensor[1][0] = inertiaTensor[0][1];
-    inertiaTensor[2][0] = inertiaTensor[0][2];
-    inertiaTensor[2][1] = inertiaTensor[1][2];
-
-    //Finding eigenvalues
-    vector<double> aCoeff(4, 0.0);
-    vector <complex<double>> roots;
-
-    //initialize coefficients of cubic eq used to find eigenvalues of inertia tensor - before pixel copy
-    aCoeff[0] = -1.0;
+        inertiaTensor[0][0]+=(pixelTrans.y-ycm)*(pixelTrans.y-ycm)+(pixelTrans.z-zcm)*(pixelTrans.z-zcm);
+			inertiaTensor[0][1]+=-(pixelTrans.x-xcm)*(pixelTrans.y-ycm);
+			inertiaTensor[0][2]+=-(pixelTrans.x-xcm)*(pixelTrans.z-zcm);
+			inertiaTensor[1][1]+=(pixelTrans.x-xcm)*(pixelTrans.x-xcm)+(pixelTrans.z-zcm)*(pixelTrans.z-zcm);
+			inertiaTensor[1][2]+=-(pixelTrans.y-ycm)*(pixelTrans.z-zcm);
+			inertiaTensor[2][2]+=(pixelTrans.x-xcm)*(pixelTrans.x-xcm)+(pixelTrans.y-ycm)*(pixelTrans.y-ycm);
+		}
+		inertiaTensor[1][0]=inertiaTensor[0][1];
+		inertiaTensor[2][0]=inertiaTensor[0][2];
+		inertiaTensor[2][1]=inertiaTensor[1][2];
+		
+	 //Finding eigenvalues
+	 vector<double> aCoeff(4,0.0);
+	 vector<complex<double> > roots;
+	 
+	 //initialize coefficients of cubic eq used to find eigenvalues of inertia tensor - before pixel copy
+	 aCoeff[0]=-1.0;
 
     aCoeff[1] = inertiaTensor[0][0] + inertiaTensor[1][1] + inertiaTensor[2][2];
 
@@ -552,9 +548,8 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBased(CellG *_cell, 
     parentCell = 0;
 
 
-    CellG *cell = _cell;//cells that is being divided
-
-    //have to make a copy of pixel set before iterating over it.
+	CellG *cell = _cell;//cells that is being divided
+	//have to make a copy of pixel set before iterating over it.
     // Reason - pixel set will change when we assign pixels to another cell , hence iterators will be invalidated
     set <PixelTrackerData> cellPixels = pixelTrackerAccessorPtr->get(cell->extraAttribPtr)->pixelSet;
     Vector3 shiftVector(0., 0., 0.);
@@ -585,15 +580,14 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBased(CellG *_cell, 
 
     //first calculate and diagonalize inertia tensor
 
-    //plane/line equation is of the form (r-p)*n=0 where p is vector pointing to point through which the plane will pass (COM)
-    // n is a normal vector to the plane/line
-    // r is (x,y,z) vector
-    //nx*x+ny*y+nz*z-p*n=0
-    //or nx*x+ny*y+nz*z+d=0 where d is a scalar product -p*n
-    Coordinates3D<double> pVec(xcm, ycm, zcm);
-    double d = -(pVec * nVec);
-
-    int parentCellVolume = 0;
+	//plane/line equation is of the form (r-p)*n=0 where p is vector pointing to point through which the plane will pass (COM)
+	// n is a normal vector to the plane/line
+	// r is (x,y,z) vector
+	//nx*x+ny*y+nz*z-p*n=0 
+	//or nx*x+ny*y+nz*z+d=0 where d is a scalar product -p*n
+	Coordinates3D<double> pVec(xcm,ycm,zcm);
+	double d=-(pVec*nVec);
+	int parentCellVolume=0;
 
     set <PixelTrackerData> parentPixels;
     set <PixelTrackerData> childPixels;
@@ -612,10 +606,10 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBased(CellG *_cell, 
         Coordinates3D<double> pixelTrans = boundaryStrategy->calculatePointCoordinates(sitr->pixel);
 
 
-        //Randomizing which position of the child/parent cells
-        if (lessThanFlag) {
-
-            if (nVec.x * pixelTrans.x + nVec.y * pixelTrans.y + nVec.z * pixelTrans.z + d <= 0.0) {
+		//Randomizing which position of the child/parent cells
+		if (lessThanFlag){
+			
+			if(nVec.x*pixelTrans.x+nVec.y*pixelTrans.y + nVec.z*pixelTrans.z+d<= 0.0){
 
                 childPixels.insert(PixelTrackerData(sitr->pixel));
 
@@ -637,8 +631,7 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBased(CellG *_cell, 
 
         }
 
-    }
-
+	}
     //now we may have to shift back pixels before assigning them to parent and daughter cells again
     if (boundaryConditionIndicator.x || boundaryConditionIndicator.y || boundaryConditionIndicator.z) {
         set <PixelTrackerData> parentPixelsShifted;
@@ -653,8 +646,7 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBased(CellG *_cell, 
 
         childCell = createChildCell(childPixels);
 
-    }
-
+	}
 
     if (childCell)
         return true;
@@ -746,11 +738,10 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBasedCompartments(lo
 
     Vector3 cleavegeVector(_nx, _ny, _nz);
 
-    //have to massage the vector in case of 2D simulation - the vector coordinate corresponding to 'flat' direction is set to zero
-    cleavegeVector.fX *= fabs((double) sgn(fieldDim.x - 1));
-    cleavegeVector.fY *= fabs((double) sgn(fieldDim.y - 1));
-    cleavegeVector.fZ *= fabs((double) sgn(fieldDim.z - 1));
-
+	//have to massage the vector in case of 2D simulation - the vector coordinate corresponding to 'flat' direction is set to zero
+	cleavegeVector.fX*=fabs((double)sgn(fieldDim.x-1));
+	cleavegeVector.fY*=fabs((double)sgn(fieldDim.y-1));
+	cleavegeVector.fZ*=fabs((double)sgn(fieldDim.z-1));
 
     int numberOfClusters = compartmentsVec.size();
 
@@ -795,16 +786,15 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBasedCompartments(lo
         Vector3 com = calculateCOMPixels(shiftedPixels);
         pixelsToDividePtr = &shiftedPixels;
 
-        //have to update cluster information after the shift takes place
-        for (int i = 0; i < numberOfClusters; ++i) {
-            CellG *cell = compartmentsVec[i];
-            set <PixelTrackerData> cellPixels = pixelTrackerAccessorPtr->get(cell->extraAttribPtr)->pixelSet;
-            set <PixelTrackerData> cellPixelsShifted;
-            shiftCellPixels(cellPixels, cellPixelsShifted, shiftVector);
-            parentBeforeMitosis[i].com = calculateCOMPixels(cellPixelsShifted);
-        }
+		//have to update cluster information after the shift takes place 
+		for(int i = 0 ; i < numberOfClusters; ++i){
+			CellG *cell=compartmentsVec[i];
+			set<PixelTrackerData> cellPixels=pixelTrackerAccessorPtr->get(cell->extraAttribPtr)->pixelSet;
+			set<PixelTrackerData> cellPixelsShifted;
+			shiftCellPixels(cellPixels,cellPixelsShifted,shiftVector);
+			parentBeforeMitosis[i].com=calculateCOMPixels(cellPixelsShifted);
+		}
 
-        //////cerr<<"shiftVector="<<shiftVector <<endl;
 
     }
 
@@ -836,14 +826,14 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBasedCompartments(lo
     double norm = nVec.Mag();
     nVec *= 1.0 / norm;
 
-    double scalingFactor = 0.50;
-    Vector3 referenceVector = clusterCOMBeforeMitosis;
-    for (int i = 0; i < numberOfClusters; ++i) {
+    double scalingFactor=0.50;
+	Vector3 referenceVector=clusterCOMBeforeMitosis;
+	for(int i = 0 ; i < numberOfClusters; ++i){
 
 
-        Vector3 offsetOriginal = parentBeforeMitosis[i].com - referenceVector;
-        comOffsetsMitosis[i].com = offsetOriginal + (offsetOriginal * nVec) * nVec * (scalingFactor - 1);
-    }
+		Vector3 offsetOriginal=parentBeforeMitosis[i].com-referenceVector;
+		comOffsetsMitosis[i].com=offsetOriginal+(offsetOriginal*nVec)*nVec*(scalingFactor-1);
+	}	
 
 
     //now will calculate radii of attractions for compartments of child clusters
@@ -866,14 +856,14 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBasedCompartments(lo
     }
 
 
-    //calculate positions of the com's of cluster compartments after mitosis for parent and child clusters
-    for (int i = 0; i < numberOfClusters; ++i) {
-        parentAfterMitosis[i].com = clusterParentCOM + comOffsetsMitosis[i].com;
-        childAfterMitosis[i].com = clusterChildCOM + comOffsetsMitosis[i].com;
-    }
-    //initialize coms for parent and child cells
-    set <PixelTrackerData> parentCellKernelsSet;
-    set <PixelTrackerData> childCellKernelsSet;
+	//calculate positions of the com's of cluster compartments after mitosis for parent and child clusters 
+	for(int i = 0 ; i < numberOfClusters; ++i){
+		parentAfterMitosis[i].com=clusterParentCOM+comOffsetsMitosis[i].com;
+		childAfterMitosis[i].com=clusterChildCOM+comOffsetsMitosis[i].com;
+	}
+	//initialize coms for parent and child cells
+	set<PixelTrackerData> parentCellKernelsSet;
+	set<PixelTrackerData> childCellKernelsSet;
 
     //initialize coms for parent and child cells
     vector <CompartmentMitosisData> parentCellKernels;
@@ -917,9 +907,10 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBasedCompartments(lo
 
         parentCMD.cell = parentBeforeMitosis[i].cell;
 
-        parentCMD.pt = pt;
-        parentCellKernels.push_back(parentCMD);
-        parentCellKernelsSet.insert(PixelTrackerData(pt));
+        parentCMD.pt=pt;
+		parentCellKernels.push_back(parentCMD);
+		parentCellKernelsSet.insert(PixelTrackerData(pt));
+
 
         CompartmentMitosisData childCMD;
 
@@ -927,9 +918,8 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBasedCompartments(lo
                      childAfterMitosis[i].com.fZ * zFactor);
 
 
-        childCMD.type = parentBeforeMitosis[i].cell->type;
-
-        childCMD.pt = pt;
+		childCMD.type=parentBeforeMitosis[i].cell->type;
+		childCMD.pt=pt;
 
         childCellKernels.push_back(childCMD);
 
@@ -961,22 +951,16 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBasedCompartments(lo
     }
 
     //child
-    initializeClusters(originalCompartmentVolumeVec, clusterChild, childCellKernels, attractionRadiusChild,
-                       parentBeforeMitosis, shiftVector);
-    if (boundaryConditionIndicator.x || boundaryConditionIndicator.y || boundaryConditionIndicator.z) {
-        set <PixelTrackerData> originalSinglePixelSet;
-        set <PixelTrackerData> shiftedSinglePixelSet;
-        originalSinglePixelSet.insert(PixelTrackerData(childCellKernels[0].pt));
-        shiftCellPixels(originalSinglePixelSet, shiftedSinglePixelSet,
-                        -1.0 * shiftVector); //we are shifting back so shift Vec is multiplied by -1
-        childCell = cellField->get(
-                shiftedSinglePixelSet.begin()->pixel); //we assign parent cell to be first cell of the cluster
-
-    } else {
-        childCell = cellField->get(childCellKernels[0].pt);//we assign parent cell to be first cell of the cluster
-
-    }
-
+	initializeClusters(originalCompartmentVolumeVec, clusterChild ,childCellKernels,attractionRadiusChild,parentBeforeMitosis,shiftVector);
+	if (boundaryConditionIndicator.x || boundaryConditionIndicator.y || boundaryConditionIndicator.z){
+		set<PixelTrackerData> originalSinglePixelSet;
+		set<PixelTrackerData> shiftedSinglePixelSet;
+		originalSinglePixelSet.insert(PixelTrackerData(childCellKernels[0].pt));
+		shiftCellPixels(originalSinglePixelSet,shiftedSinglePixelSet,-1.0*shiftVector) ; //we are shifting back so shift Vec is multiplied by -1
+		childCell=cellField->get(shiftedSinglePixelSet.begin()->pixel); //we assign parent cell to be first cell of the cluster
+	}else{
+		childCell=cellField->get(childCellKernels[0].pt);//we assign parent cell to be first cell of the cluster
+	}
 
     return true;
 
@@ -1079,11 +1063,10 @@ void MitosisSteppable::initializeClusters(std::vector<int> &originalCompartmentV
             }
 
 
-            CellG *childCompartmentCell = potts->createCellG(shiftedSinglePixelSet.begin()->pixel, childClusterId);
-            kernelCellVec[i] = childCompartmentCell;
-
-            childCompartmentCell->type = parentBeforeMitosisCMDVec[i].cell->type;
-
+			CellG * childCompartmentCell = potts->createCellG(shiftedSinglePixelSet.begin()->pixel,childClusterId);
+			kernelCellVec[i]=childCompartmentCell;
+			childCompartmentCell->type=parentBeforeMitosisCMDVec[i].cell->type;
+			
             //have to use this trick to circumvent default cluster id assignment algorithm in Potts3D - > createCellG function
 
         }
@@ -1149,8 +1132,7 @@ Vector3 MitosisSteppable::calculateClusterPixelsCOM(set <PixelTrackerData> &clus
 
         Point3D pt = sitr->pixel;
 
-        Coordinates3D<double> ptTrans = boundaryStrategy->calculatePointCoordinates(pt);
-
+		Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);
 
         //if there are boundary conditions defined that we have to do some shifts to correctly calculate center of mass
         //This approach will work only for cells whose span is much smaller that lattice dimension in the "periodic "direction
@@ -1192,9 +1174,9 @@ Vector3 MitosisSteppable::calculateClusterPixelsCOM(set <PixelTrackerData> &clus
         yCM = clusterCOM.fY - shiftVec.y * (numberOfVisitedPixels - 1);
         zCM = clusterCOM.fZ - shiftVec.z * (numberOfVisitedPixels - 1);
 
-        //Now shift pt
-        shiftedPt = ptTrans;
-        shiftedPt -= shiftVec;
+		//Now shift pt
+		shiftedPt=ptTrans;
+		shiftedPt-=shiftVec;
 
 
         //making sure that shifted point is in the lattice
@@ -1203,7 +1185,7 @@ Vector3 MitosisSteppable::calculateClusterPixelsCOM(set <PixelTrackerData> &clus
         } else if (shiftedPt.x > distanceVecMax_1.x) {
 
             shiftedPt.x -= distanceVec.x;
-        }
+		}  
 
         if (shiftedPt.y < distanceVecMin.y) {
             shiftedPt.y += distanceVec.y;
@@ -1248,11 +1230,10 @@ Vector3 MitosisSteppable::calculateClusterPixelsCOM(set <PixelTrackerData> &clus
             zCM -= distanceVec.z * numberOfVisitedPixels;
         }
 
-        clusterCOM.fX = xCM;
-        clusterCOM.fY = yCM;
-        clusterCOM.fZ = zCM;
-
-    }
+		clusterCOM.fX=xCM;			
+		clusterCOM.fY=yCM;			
+		clusterCOM.fZ=zCM;			
+	}
 
     return clusterCOM * (1.0 / (float) numberOfVisitedPixels);
 
@@ -1272,8 +1253,8 @@ bool MitosisSteppable::divideClusterPixelsOrientationVectorBased(set <PixelTrack
     nVec *= 1.0 / norm;
 
     Vector3 clusterCOM = calculateClusterPixelsCOM(clusterPixels);
-    //////cerr<<"INSIDE DIVIDE CLUSTER COMPARTMENTS"<<endl;
-    //////cerr<<"clusterCOM="<<clusterCOM<<endl;
+    // Log(LOG_DEBUG) << "INSIDE DIVIDE CLUSTER COMPARTMENTS";
+    // Log(LOG_DEBUG) << "clusterCOM="<<clusterCOM;
 
     //plane/line equation is of the form (r-p)*n=0 where p is vector pointing to point through which the plane will pass (COM)
     // n is a normal vector to the plane/line

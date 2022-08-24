@@ -8,7 +8,7 @@
 #include <iostream>
 #include <CompuCell3D/Field3D/Array3D.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 namespace CompuCell3D {
 
@@ -23,7 +23,7 @@ namespace CompuCell3D {
     public:
         DiffusableVector() : Steppable(), concentrationFieldVector(0), maxNeighborIndex(0), boundaryStrategy(0) {
             using namespace std;
-            cerr << "Default constructor DiffusableVector" << endl;
+            Log(LOG_DEBUG) << "Default constructor DiffusableVector";;
 
         };
 
@@ -36,24 +36,24 @@ namespace CompuCell3D {
             //   }
             //}
 
+        
+    }
+    //Field3DImpl<precision> * getConcentrationField(unsigned int i){return concentrationFieldVector[i];};
+    
+    virtual Field3D<precision> * getConcentrationField(const std::string & name){
+      using namespace std;
+      Log(LOG_DEBUG) << "concentrationFieldNameVector.size()="<<concentrationFieldNameVector.size();
+       for(unsigned int i=0 ; i < concentrationFieldNameVector.size() ; ++i){
+         Log(LOG_DEBUG) << "THIS IS FIELD NAME "<<concentrationFieldNameVector[i];
+       }
+      for(unsigned int i=0 ; i < concentrationFieldNameVector.size() ; ++i){
+         if(concentrationFieldNameVector[i]==name){
+            Log(LOG_DEBUG) << "returning concentrationFieldVector[i]="<<concentrationFieldVector[i];
+            return concentrationFieldVector[i];
 
-        }
-        //Field3DImpl<precision> * getConcentrationField(unsigned int i){return concentrationFieldVector[i];};
-
-        virtual Field3D <precision> *getConcentrationField(const std::string &name) {
-            using namespace std;
-            cerr << "concentrationFieldNameVector.size()=" << concentrationFieldNameVector.size() << endl;
-            for (unsigned int i = 0; i < concentrationFieldNameVector.size(); ++i) {
-                cerr << "THIS IS FIELD NAME " << concentrationFieldNameVector[i] << endl;
-            }
-            for (unsigned int i = 0; i < concentrationFieldNameVector.size(); ++i) {
-                if (concentrationFieldNameVector[i] == name) {
-                    cerr << "returning concentrationFieldVector[i]=" << concentrationFieldVector[i] << endl;
-                    return concentrationFieldVector[i];
-
-                }
-            }
-            cerr << "returning NULL=" << endl;
+         }
+      }
+      Log(LOG_DEBUG) << "returning NULL=";
             return 0;
 
         };

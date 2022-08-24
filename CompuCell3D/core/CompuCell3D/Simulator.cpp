@@ -234,8 +234,8 @@ RandomNumberGenerator *Simulator::getRandomNumberGeneratorInstance(const unsigne
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Simulator::postEvent(CC3DEvent &_ev) {
-    pUtils->handleEvent(_ev); //let parallel utils konw about all events
+void Simulator::postEvent(CC3DEvent & _ev){
+		pUtils->handleEvent(_ev); //let parallel utils konw about all events
 
     string pluginName;
     PluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
@@ -401,7 +401,7 @@ void Simulator::finish() {
             step(ppdCC3DPtr->numSteps + i);
 
         classRegistry->finish();
-        unloadModules();
+		unloadModules();
 
     } catch (const CC3DException &e) {
         Log(LOG_DEBUG) << "ERROR: " << e;
@@ -715,7 +715,6 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 			ppdCC3DPtr->boundary_z = "noflux";
 		}
 	}
-	//	cerr << "" <<  << endl;
 	Log(LOG_DEBUG) << "ppdCC3DPtr->boundary_x = " << ppdCC3DPtr->boundary_x;
 	//setting boundary conditions
 	if(ppdCC3DPtr->boundary_x!=""){

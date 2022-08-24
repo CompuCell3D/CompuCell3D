@@ -20,6 +20,7 @@
 #include <fstream>
 #include <sstream>
 #include <omp.h>
+#include<core/CompuCell3D/CC3DLogger.h>
 //#define NUMBER_OF_THREADS 4
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -57,7 +58,7 @@ void FlexibleDiffusionSolverSerializer::readFromFile() {
             solverPtr->readConcentrationField(inName.str().c_str(), solverPtr->concentrationFieldVector[i]);;
         }
     } catch (CC3DException &e) {
-        cerr << "COULD NOT FIND ONE OF THE FILES" << endl;
+        Log(LOG_DEBUG) << "COULD NOT FIND ONE OF THE FILES";
         throw CC3DException("Error in reading diffusion fields from file", e);
     }
 }
@@ -103,9 +104,8 @@ void FlexibleDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
     fieldDim = cellFieldG->getDim();
 
 
-    pUtils = simulator->getParallelUtils();
-
-    cerr << "INSIDE INIT" << endl;
+	pUtils=simulator->getParallelUtils();
+	Log(LOG_DEBUG) << "INSIDE INIT";
 
     ///setting member function pointers
     diffusePtr = &FlexibleDiffusionSolverFE::diffuse;
@@ -115,17 +115,16 @@ void FlexibleDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
 
     numberOfFields = diffSecrFieldTuppleVec.size();
 
-    vector <string> concentrationFieldNameVectorTmp; //temporary vector for field names
-    ///assign vector of field names
-    concentrationFieldNameVectorTmp.assign(diffSecrFieldTuppleVec.size(), string(""));
-
-    cerr << "diffSecrFieldTuppleVec.size()=" << diffSecrFieldTuppleVec.size() << endl;
+	vector<string> concentrationFieldNameVectorTmp; //temporary vector for field names
+	///assign vector of field names
+	concentrationFieldNameVectorTmp.assign(diffSecrFieldTuppleVec.size(),string(""));
+	Log(LOG_DEBUG) << "diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size();
 
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        //       cerr<<" concentrationFieldNameVector[i]="<<diffDataVec[i].fieldName<<endl;
-        //       concentrationFieldNameVector.push_back(diffDataVec[i].fieldName);
-        concentrationFieldNameVectorTmp[i] = diffSecrFieldTuppleVec[i].diffData.fieldName;
-        cerr << " concentrationFieldNameVector[i]=" << concentrationFieldNameVectorTmp[i] << endl;
+        Log(LOG_DEBUG) << " concentrationFieldNameVector[i]="<<diffDataVec[i].fieldName<<endl;
+		//       concentrationFieldNameVector.push_back(diffDataVec[i].fieldName);
+		concentrationFieldNameVectorTmp[i] = diffSecrFieldTuppleVec[i].diffData.fieldName;
+		Log(LOG_DEBUG) << " concentrationFieldNameVector[i]="<<concentrationFieldNameVectorTmp[i];
     }
 
     //setting up couplingData - field-field interaction terms
@@ -164,13 +163,11 @@ void FlexibleDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
         }
     }
 
-
-    cerr << "FIELDS THAT I HAVE" << endl;
+	Log(LOG_DEBUG) << "FIELDS THAT I HAVE";
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        cerr << "Field " << i << " name: " << concentrationFieldNameVectorTmp[i] << endl;
-    }
-
-    cerr << "FlexibleDiffusionSolverFE: extra Init in read XML" << endl;
+        Log(LOG_DEBUG) << "Field "<<i<<" name: "<<concentrationFieldNameVectorTmp[i];
+	}
+	Log(LOG_DEBUG) << "FlexibleDiffusionSolverFE: extra Init in read XML";
 
     ///allocate fields including scrartch field
     allocateDiffusableFieldVector(diffSecrFieldTuppleVec.size(), fieldDim);
@@ -192,8 +189,7 @@ void FlexibleDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
     //register fields once they have been allocated
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
         simPtr->registerConcentrationField(concentrationFieldNameVector[i], concentrationFieldVector[i]);
-        cerr << "registring field: " << concentrationFieldNameVector[i] << " field address="
-             << concentrationFieldVector[i] << endl;
+        Log(LOG_DEBUG) << "registring field: "<<concentrationFieldNameVector[i]<<" field address="<<concentrationFieldVector[i];
     }
 
     //    exit(0);
@@ -270,7 +266,7 @@ void FlexibleDiffusionSolverFE::extraInit(Simulator *simulator) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FlexibleDiffusionSolverFE::handleEvent(CC3DEvent &_event) {
-    cerr << "\n\n\n\n FlexibleDiffusionSolverFE::handleEvent" << endl;
+    Log(LOG_DEBUG) << "\n\n\n\n FlexibleDiffusionSolverFE::handleEvent";
     if (_event.id != LATTICE_RESIZE) {
         return;
     }
@@ -292,9 +288,8 @@ void FlexibleDiffusionSolverFE::handleEvent(CC3DEvent &_event) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FlexibleDiffusionSolverFE::start() {
-    //     if(diffConst> (1.0/6.0-0.05) ){ //hard coded condtion for stability of the solutions - assume dt=1 dx=dy=dz=1
-    //
-    //       cerr<<"CANNOT SOLVE DIFFUSION EQUATION: STABILITY PROBLEM - DIFFUSION CONSTANT TOO LARGE. EXITING..."<<endl;
+	//     if(diffConst> (1.0/6.0-0.05) ){ //hard coded condtion for stability of the solutions - assume dt=1 dx=dy=dz=1
+	//	Log(LOG_TRACE) << "CANNOT SOLVE DIFFUSION EQUATION: STABILITY PROBLEM - DIFFUSION CONSTANT TOO LARGE. EXITING...";
     //       exit(0);
     //
     //    }
@@ -310,7 +305,7 @@ void FlexibleDiffusionSolverFE::start() {
             serializerPtr->readFromFile();
 
         } catch (CC3DException &) {
-            cerr << "Going to fail-safe initialization" << endl;
+            Log(LOG_DEBUG) << "Going to fail-safe initialization";
             initializeConcentration(); //if there was error, initialize using failsafe defaults
         }
 
@@ -329,7 +324,7 @@ void FlexibleDiffusionSolverFE::initializeConcentration() {
             continue;
         }
         if (diffSecrFieldTuppleVec[i].diffData.concentrationFileName.empty()) continue;
-        cerr << "fail-safe initialization " << diffSecrFieldTuppleVec[i].diffData.concentrationFileName << endl;
+        Log(LOG_DEBUG) << "fail-safe initialization " << diffSecrFieldTuppleVec[i].diffData.concentrationFileName;
         readConcentrationField(diffSecrFieldTuppleVec[i].diffData.concentrationFileName, concentrationFieldVector[i]);
     }
 }
@@ -389,7 +384,7 @@ void FlexibleDiffusionSolverFE::secreteOnContactSingleField(unsigned int idx) {
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+        Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;
@@ -567,7 +562,7 @@ void FlexibleDiffusionSolverFE::secreteSingleField(unsigned int idx) {
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+        Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;
@@ -579,9 +574,8 @@ void FlexibleDiffusionSolverFE::secreteSingleField(unsigned int idx) {
         maxDimBW = Dim3D(x_max, y_max, z_max);
         pUtils->calculateFESolverPartitionWithBoxWatcher(minDimBW, maxDimBW);
 
-    }
-
-    //cerr<<"SECRETE SINGLE FIELD"<<endl;
+	}
+	Log(LOG_TRACE) << "SECRETE SINGLE FIELD";;
 
 
     pUtils->prepareParallelRegionFESolvers(diffData.useBoxWatcher);
@@ -619,16 +613,13 @@ void FlexibleDiffusionSolverFE::secreteSingleField(unsigned int idx) {
             for (int y = minDim.y; y < maxDim.y; y++)
                 for (int x = minDim.x; x < maxDim.x; x++) {
 
-                    pt = Point3D(x - 1, y - 1, z - 1);
-                    //             cerr<<"pt="<<pt<<" is valid "<<cellFieldG->isValid(pt)<<endl;
-                    ///**
-                    currentCellPtr = cellFieldG->getQuick(pt);
-                    //             currentCellPtr=cellFieldG->get(pt);
-                    //             cerr<<"THIS IS PTR="<<currentCellPtr<<endl;
+					pt=Point3D(x-1,y-1,z-1);
+					///**
+					currentCellPtr=cellFieldG->getQuick(pt);
+					//             currentCellPtr=cellFieldG->get(pt);
 
-                    //             if(currentCellPtr)
-                    //                cerr<<"This is id="<<currentCellPtr->id<<endl;
-                    //currentConcentration = concentrationField.getDirect(x,y,z);
+					//             if(currentCellPtr)
+					//currentConcentration = concentrationField.getDirect(x,y,z);
 
                     currentConcentration = concentrationField.getDirect(x, y, z);
 
@@ -665,12 +656,12 @@ void FlexibleDiffusionSolverFE::secreteSingleField(unsigned int idx) {
                                     mitrUptake->second.maxUptake) {
                                     concentrationField.setDirect(x, y, z, concentrationField.getDirect(x, y, z) -
                                                                           mitrUptake->second.maxUptake);
-                                    //cerr<<" uptake concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<mitrUptake->second.maxUptake<<endl;
+                                    Log(LOG_TRACE) << " uptake concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<mitrUptake->second.maxUptake;
                                 } else {
                                     concentrationField.setDirect(x, y, z, concentrationField.getDirect(x, y, z) -
                                                                           currentConcentration *
                                                                           mitrUptake->second.relativeUptakeRate);
-                                    //cerr<<"concentration="<< currentConconcentrationField.getDirect(x,y,z)- currentConcentration*mitrUptake->second.relativeUptakeRate);
+                                    Log(LOG_TRACE) << "concentration="<< currentConconcentrationField.getDirect(x,y,z)- currentConcentration*mitrUptake->second.relativeUptakeRate;
                                 }
                             }
                         }
@@ -715,7 +706,7 @@ void FlexibleDiffusionSolverFE::secreteConstantConcentrationSingleField(unsigned
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+        Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;
@@ -760,16 +751,13 @@ void FlexibleDiffusionSolverFE::secreteConstantConcentrationSingleField(unsigned
             for (int y = minDim.y; y < maxDim.y; y++)
                 for (int x = minDim.x; x < maxDim.x; x++) {
 
-                    pt = Point3D(x - 1, y - 1, z - 1);
-                    //             cerr<<"pt="<<pt<<" is valid "<<cellFieldG->isValid(pt)<<endl;
-                    ///**
-                    currentCellPtr = cellFieldG->getQuick(pt);
-                    //             currentCellPtr=cellFieldG->get(pt);
-                    //             cerr<<"THIS IS PTR="<<currentCellPtr<<endl;
+					pt=Point3D(x-1,y-1,z-1);
+					///**
+					currentCellPtr=cellFieldG->getQuick(pt);
+					//             currentCellPtr=cellFieldG->get(pt);
 
-                    //             if(currentCellPtr)
-                    //                cerr<<"This is id="<<currentCellPtr->id<<endl;
-                    //currentConcentration = concentrationArray[x][y][z];
+					//             if(currentCellPtr)
+					//currentConcentration = concentrationArray[x][y][z];
 
                     if (secreteInMedium && !currentCellPtr) {
                         concentrationField.setDirect(x, y, z, secrConstMedium);
@@ -1112,7 +1100,7 @@ void FlexibleDiffusionSolverFE::diffuseSingleField(unsigned int idx) {
     // Using boundary strategy to get offset array it is best to hard code offsets and access them directly
     // The downside is that in such a case one woudl have to write separate diffuseSingleField functions fdor 2D, 3D and for hex and square lattices.
     // However speedups may be worth extra effort.
-    //cerr<<"shiftArray="<<concentrationField.getShiftArray()<<" shiftSwap="<<concentrationField.getShiftSwap()<<endl;
+    // Log(LOG_TRACE) << "shiftArray="<<concentrationField.getShiftArray()<<" shiftSwap="<<concentrationField.getShiftSwap();
     //hard coded offsets for 3D square lattice
     //Point3D offsetArray[6];
     //offsetArray[0]=Point3D(0,0,1);
@@ -1137,14 +1125,13 @@ void FlexibleDiffusionSolverFE::diffuseSingleField(unsigned int idx) {
 
 
     //HAVE TO WATCH OUT FOR SHARED/PRIVATE VARIABLES
-    //cerr<<"Diffusion step"<<endl;
+    Log(LOG_TRACE) << "Diffusion step";
     DiffusionData &diffData = diffSecrFieldTuppleVec[idx].diffData;
     float diffConst = diffData.diffConst;
     float decayConst = diffData.decayConst;
     float deltaT = diffData.deltaT;
     float deltaX = diffData.deltaX;
     float dt_dx2 = deltaT / (deltaX * deltaX);
-
 
     if (diffSecrFieldTuppleVec[idx].diffData.diffConst == 0.0 &&
         diffSecrFieldTuppleVec[idx].diffData.decayConst == 0.0) {
@@ -1186,7 +1173,7 @@ void FlexibleDiffusionSolverFE::diffuseSingleField(unsigned int idx) {
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+        Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;
@@ -1224,7 +1211,7 @@ void FlexibleDiffusionSolverFE::diffuseSingleField(unsigned int idx) {
 
         //#pragma omp critical
         //		{
-        //			cerr<<"threadNumber="<<threadNumber<<endl;
+        // 			Log(LOG_TRACE) << "threadNumber="<<threadNumber;
         //		}
 
         Dim3D minDim;
@@ -1337,13 +1324,13 @@ void FlexibleDiffusionSolverFE::diffuseSingleField(unsigned int idx) {
 
                 }
 
-        // float totConc=0.0;
-        // for (int z = minDim.z; z < maxDim.z; z++)
-        // for (int y = minDim.y; y < maxDim.y; y++)
-        // for (int x = minDim.x; x < maxDim.x; x++){
-        // totConc += concentrationField.getDirect(x,y,z);
-        // }
-        // cerr<<"TOTAL CONCENTRATION FLEXIBLE DIFFUSION SOLVER="<<totConc<<endl;
+         // float totConc=0.0;       
+		// for (int z = minDim.z; z < maxDim.z; z++)
+			// for (int y = minDim.y; y < maxDim.y; y++)
+				// for (int x = minDim.x; x < maxDim.x; x++){
+					// totConc += concentrationField.getDirect(x,y,z);
+                // }
+				// Log(LOG_DEBUG) << "TOTAL CONCENTRATION FLEXIBLE DIFFUSION SOLVER="<<totConc;
     }
     //haveCouplingTerms flag is set only when user defines coupling terms AND does not use extraTimesPerMCS - haveCouplingTerms option is kept only for legacy reasons
     //it it best to start using ReactionDiffusionSolver instead
@@ -1432,9 +1419,8 @@ void FlexibleDiffusionSolverFE::readConcentrationField(std::string fileName, Con
     for (pt.z = 0; pt.z < fieldDim.z; pt.z++)
         for (pt.y = 0; pt.y < fieldDim.y; pt.y++)
             for (pt.x = 0; pt.x < fieldDim.x; pt.x++) {
-                //cerr<<"pt="<<pt<<endl;
-                concentrationField->set(pt, 0);
-            }
+                concentrationField->set(pt,0);
+			}
 
     while (!in.eof()) {
         in >> pt.x >> pt.y >> pt.z >> c;
@@ -1691,12 +1677,12 @@ void FlexibleDiffusionSolverFE::update(CC3DXMLElement *_xmlData, bool _fullInitF
         if (_xmlData->getFirstElement("Serialize")->findAttribute("Frequency")) {
             serializeFrequency = _xmlData->getFirstElement("Serialize")->getAttributeAsUInt("Frequency");
         }
-        cerr << "serialize Flag=" << serializeFlag << endl;
+        Log(LOG_DEBUG) << "serialize Flag="<<serializeFlag;
     }
 
     if (_xmlData->findElement("ReadFromFile")) {
         readFromFileFlag = true;
-        cerr << "readFromFileFlag=" << readFromFileFlag << endl;
+        Log(LOG_DEBUG) << "readFromFileFlag="<<readFromFileFlag;
     }
 
     for (size_t i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {

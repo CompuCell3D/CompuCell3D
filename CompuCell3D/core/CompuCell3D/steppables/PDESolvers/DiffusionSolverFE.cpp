@@ -34,7 +34,7 @@
 #include <fstream>
 #include <sstream>
 #include <omp.h>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 using namespace CompuCell3D;
 using namespace std;
 
@@ -69,7 +69,7 @@ void DiffusionSolverSerializer<Cruncher>::readFromFile() {
                                               static_cast<Cruncher *>(solverPtr)->getConcentrationField(i));
         }
     } catch (CC3DException &e) {
-        cerr << "COULD NOT FIND ONE OF THE FILES" << endl;
+        Log(LOG_DEBUG) << "COULD NOT FIND ONE OF THE FILES";
         throw CC3DException("Error in reading diffusion fields from file", e);
     }
 }
@@ -296,17 +296,16 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 
     numberOfFields = diffSecrFieldTuppleVec.size();
 
-    vector <string> concentrationFieldNameVectorTmp; //temporary vector for field names
-    ///assign vector of field names
-    concentrationFieldNameVectorTmp.assign(diffSecrFieldTuppleVec.size(), string(""));
-
-    cerr << "diffSecrFieldTuppleVec.size()=" << diffSecrFieldTuppleVec.size() << endl;
+	vector<string> concentrationFieldNameVectorTmp; //temporary vector for field names
+	///assign vector of field names
+	concentrationFieldNameVectorTmp.assign(diffSecrFieldTuppleVec.size(),string(""));
+	Log(LOG_DEBUG) << "diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size();
 
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        //       cerr<<" concentrationFieldNameVector[i]="<<diffDataVec[i].fieldName<<endl;
-        //       concentrationFieldNameVector.push_back(diffDataVec[i].fieldName);
-        concentrationFieldNameVectorTmp[i] = diffSecrFieldTuppleVec[i].diffData.fieldName;
-        cerr << " concentrationFieldNameVector[i]=" << concentrationFieldNameVectorTmp[i] << endl;
+        Log(LOG_TRACE) << " concentrationFieldNameVector[i]="<<diffDataVec[i].fieldName<<endl;
+		      concentrationFieldNameVector.push_back(diffDataVec[i].fieldName);
+		concentrationFieldNameVectorTmp[i] = diffSecrFieldTuppleVec[i].diffData.fieldName;
+		Log(LOG_DEBUG) << " concentrationFieldNameVector[i]="<<concentrationFieldNameVectorTmp[i];
     }
 
     //setting up couplingData - field-field interaction terms
@@ -344,13 +343,11 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
         }
     }
 
-
-    cerr << "FIELDS THAT I HAVE" << endl;
+	Log(LOG_DEBUG) << "FIELDS THAT I HAVE";
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        cerr << "Field " << i << " name: " << concentrationFieldNameVectorTmp[i] << endl;
-    }
-
-    cerr << "DiffusionSolverFE: extra Init in read XML" << endl;
+        Log(LOG_DEBUG) << "Field "<<i<<" name: "<<concentrationFieldNameVectorTmp[i];
+	}
+	Log(LOG_DEBUG) << "DiffusionSolverFE: extra Init in read XML";
 
     ///allocate fields including scrartch field
     static_cast<Cruncher *>(this)->allocateDiffusableFieldVector(diffSecrFieldTuppleVec.size(), fieldDim);
@@ -374,9 +371,9 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
         simPtr->registerConcentrationField(
                 static_cast<Cruncher *>(this)->getConcentrationFieldName(i),
                 static_cast<Cruncher *>(this)->getConcentrationField(i));
-        cerr << "registring field: " <<
-             static_cast<Cruncher *>(this)->getConcentrationFieldName(i) << " field address=" <<
-             static_cast<Cruncher *>(this)->getConcentrationField(i) << endl;
+        Log(LOG_DEBUG) << "registring field: "<<
+			static_cast<Cruncher*>(this)->getConcentrationFieldName(i)<<" field address="<<
+			static_cast<Cruncher*>(this)->getConcentrationField(i);
     }
 
     //    exit(0);
@@ -677,9 +674,8 @@ void DiffusionSolverFE<Cruncher>::prepareForwardDerivativeOffsets() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class Cruncher>
 void DiffusionSolverFE<Cruncher>::start() {
-    //     if(diffConst> (1.0/6.0-0.05) ){ //hard coded condtion for stability of the solutions - assume dt=1 dx=dy=dz=1
-    //
-    //       cerr<<"CANNOT SOLVE DIFFUSION EQUATION: STABILITY PROBLEM - DIFFUSION CONSTANT TOO LARGE. EXITING..."<<endl;
+	//     if(diffConst> (1.0/6.0-0.05) ){ //hard coded condtion for stability of the solutions - assume dt=1 dx=dy=dz=1
+	// Log(LOG_TRACE) << "CANNOT SOLVE DIFFUSION EQUATION: STABILITY PROBLEM - DIFFUSION CONSTANT TOO LARGE. EXITING...";
     //       exit(0);
     //
     //    }
@@ -695,7 +691,7 @@ void DiffusionSolverFE<Cruncher>::start() {
             serializerPtr->readFromFile();
 
         } catch (CC3DException &e) {
-            cerr << "Going to fail-safe initialization" << endl;
+            Log(LOG_DEBUG) << "Going to fail-safe initialization";
             initializeConcentration(); //if there was error, initialize using failsafe defaults
         }
 
@@ -709,8 +705,7 @@ void DiffusionSolverFE<Cruncher>::start() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class Cruncher>
 void DiffusionSolverFE<Cruncher>::finish() {
-    cerr << m_RDTime << " ms spent in solving " << (hasAdditionalTerms() ? "reaction-" : "") << "diffusion problem"
-         << endl;
+    Log(LOG_DEBUG) << m_RDTime<<" ms spent in solving "<<(hasAdditionalTerms()?"reaction-":"")<<"diffusion problem";
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -725,7 +720,7 @@ void DiffusionSolverFE<Cruncher>::initializeConcentration() {
             continue;
         }
         if (diffSecrFieldTuppleVec[i].diffData.concentrationFileName.empty()) continue;
-        cerr << "fail-safe initialization " << diffSecrFieldTuppleVec[i].diffData.concentrationFileName << endl;
+        Log(LOG_DEBUG) << "fail-safe initialization " << diffSecrFieldTuppleVec[i].diffData.concentrationFileName;
         readConcentrationField(diffSecrFieldTuppleVec[i].diffData.concentrationFileName,
                                static_cast<Cruncher *>(this)->getConcentrationField(i));
 
@@ -1016,9 +1011,8 @@ DiffusionSolverFE<Cruncher>::readConcentrationField(std::string fileName, Concen
     for (pt.z = 0; pt.z < fieldDim.z; pt.z++)
         for (pt.y = 0; pt.y < fieldDim.y; pt.y++)
             for (pt.x = 0; pt.x < fieldDim.x; pt.x++) {
-                //cerr<<"pt="<<pt<<endl;
-                concentrationField->set(pt, 0);
-            }
+                concentrationField->set(pt,0);
+			}
 
     while (!in.eof()) {
         in >> pt.x >> pt.y >> pt.z >> c;
@@ -1032,8 +1026,8 @@ template<class Cruncher>
 void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     //notice, limited steering is enabled for PDE solvers - changing diffusion constants, do -not-diffuse to types etc...
-    // Coupling coefficients cannot be changed and also there is no way to allocate extra fields while simulation is running
-    cerr << "\n\n\n\n\n INSIDE UPDATE XML" << endl;
+	// Coupling coefficients cannot be changed and also there is no way to allocate extra fields while simulation is running
+	Log(LOG_DEBUG) << "\n\n\n\n\n INSIDE UPDATE XML";
     //if(potts->getDisplayUnitsFlag()){
     //	Unit diffConstUnit=powerUnit(potts->getLengthUnit(),2)/potts->getTimeUnit();
     //	Unit decayConstUnit=1/potts->getTimeUnit();
@@ -1321,12 +1315,12 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
         if (_xmlData->getFirstElement("Serialize")->findAttribute("Frequency")) {
             serializeFrequency = _xmlData->getFirstElement("Serialize")->getAttributeAsUInt("Frequency");
         }
-        cerr << "serialize Flag=" << serializeFlag << endl;
-    }
+        Log(LOG_DEBUG) << "serialize Flag="<<serializeFlag;
+	}
 
     if (_xmlData->findElement("ReadFromFile")) {
         readFromFileFlag = true;
-        cerr << "readFromFileFlag=" << readFromFileFlag << endl;
+        Log(LOG_DEBUG) << "readFromFileFlag="<<readFromFileFlag;
     }
 
     //variableDiffusionConstantFlagVec.assign(diffSecrFieldTuppleVec.size(),false);

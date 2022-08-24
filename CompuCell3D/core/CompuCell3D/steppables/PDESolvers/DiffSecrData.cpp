@@ -10,7 +10,7 @@ using namespace std;
 
 
 #include "DiffSecrData.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 std::string DiffusionData::steerableName() {
     return "DiffusionData";
@@ -38,12 +38,10 @@ void DiffusionData::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         CC3DXMLElementList diffCoefXMLVec = _xmlData->getElements("DiffusionCoefficient");
         for (unsigned int i = 0; i < diffCoefXMLVec.size(); ++i) {
 
-            diffCoefTypeNameMap.insert(
-                    make_pair(diffCoefXMLVec[i]->getAttribute("CellType"), diffCoefXMLVec[i]->getDouble()));
-            //cerr<<"\n\n\n\n\n\n THIS IS CELL TYPE="<<diffCoefXMLVec[i]->getAttribute("CellType")<<" diffCoef="<<diffCoefXMLVec[i]->getDouble()<<endl;
-        }
-    }
-
+			diffCoefTypeNameMap.insert(make_pair(diffCoefXMLVec[i]->getAttribute("CellType"),diffCoefXMLVec[i]->getDouble()));
+			// Log(LOG_DEBUG) << "\n\n\n\n\n\n THIS IS CELL TYPE="<<diffCoefXMLVec[i]->getAttribute("CellType")<<" diffCoef="<<diffCoefXMLVec[i]->getDouble();		}
+	}
+	
 
     if (_xmlData->findElement("DecayCoefficient")) {
         CC3DXMLElementList decayCoefXMLVec = _xmlData->getElements("DecayCoefficient");
@@ -134,23 +132,23 @@ void DiffusionData::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         additionalTerm = _xmlData->getFirstElement("AdditionalTerm")->getText();
 
 
-    if (_xmlData->findElement("CallUserFuncs"))
-        userFuncFlag = _xmlData->getFirstElement("CallUserFuncs")->getUInt();
-
-    if (_xmlData->findElement("CFunc"))
-        userFuncFlag = 1;
-
-    if (_xmlData->findElement("FuncName"))
-        funcName = _xmlData->getFirstElement("FuncName")->getText();
-
-    if (_xmlData->findElement("FieldDependencies"))
-        FieldDependenciesSTR = _xmlData->getFirstElement("FieldDependencies")->cdata;
-    parseStringIntoList(FieldDependenciesSTR, fieldDependencies, ",");
-
-    for (int i = 0; i < fieldDependencies.size(); i++) {
-        cout << "fieldDependencies: " << fieldDependencies[i] << endl;
-    }
-    cerr << *this << endl;
+	if(_xmlData->findElement("CallUserFuncs"))
+                userFuncFlag=_xmlData->getFirstElement("CallUserFuncs")->getUInt();
+        
+        if(_xmlData->findElement("CFunc"))
+                userFuncFlag=1;
+        
+        if(_xmlData->findElement("FuncName"))
+                funcName=_xmlData->getFirstElement("FuncName")->getText();
+        
+        if(_xmlData->findElement("FieldDependencies"))
+            FieldDependenciesSTR=_xmlData->getFirstElement("FieldDependencies")->cdata;
+            parseStringIntoList(FieldDependenciesSTR , fieldDependencies, ",");
+	
+        for(int i = 0; i< fieldDependencies.size(); i++) {
+            cout << "fieldDependencies: " << fieldDependencies[i] << endl;
+        }
+		Log(LOG_DEBUG) << *this;
 
 }
 
@@ -354,7 +352,7 @@ void SecretionData::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         secrConst = secrXMLVec[i]->getDouble();
 
         //          typeIdSecrConstMap.insert(make_pair(typeId,secrConst));
-        cerr << "THIS IS secretrion type=" << secreteType << " secrConst=" << secrConst << endl;
+        Log(LOG_DEBUG) << "THIS IS secretrion type="<<secreteType<<" secrConst="<<secrConst;
         typeNameSecrConstMap.insert(make_pair(secreteType, secrConst));
 
 

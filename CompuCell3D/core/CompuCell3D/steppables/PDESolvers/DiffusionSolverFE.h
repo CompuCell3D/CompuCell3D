@@ -24,7 +24,7 @@
 #include <iostream>
 
 #include "PDESolversDLLSpecifier.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 namespace CompuCell3D {
 
 /**
@@ -340,7 +340,7 @@ namespace CompuCell3D {
 #else
                     if (!finite(val)) {
 #endif
-                        cerr << "NaN at position: " << x << "x" << y << "x" << z << endl;
+                        Log(LOG_DEBUG) << "NaN at position: " << x << "x" << y << "x" << z;
                         continue;
                     }
 
@@ -351,12 +351,10 @@ namespace CompuCell3D {
             }
         }
 
-        cerr << "min: " << minVal << "; max: " << maxVal << " " << sum << endl;
+        Log(LOG_DEBUG) << "min: " << minVal << "; max: " << maxVal << " " << sum;
     }
 
 
-};//namespace CompuCell3D
+};
+}//namespace CompuCell3D
 
-
-
-#endif
