@@ -101,8 +101,6 @@ void BoxWatcher::step(const unsigned int currentStep){
   maxCoordinates=Point3D(0,0,0);
 
   adjustBox();
-  //cerr<<"minCoordinates="<<minCoordinates<<endl;
-  //cerr<<"maxCoordinates="<<maxCoordinates<<endl;
 }
 
 
@@ -153,7 +151,6 @@ void BoxWatcher::adjustBox(){
 
    potts->setMinCoordinates(minCoordinates);
    potts->setMaxCoordinates(maxCoordinates);
-	//cerr<<"SETTING minCoordinates="<<minCoordinates<<" maxCoordinates="<<maxCoordinates<<endl;
 
 }
 

@@ -23,7 +23,7 @@ using namespace std;
 
 
 #include "DictyChemotaxisSteppable.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DictyChemotaxisSteppable::DictyChemotaxisSteppable():potts(0),cellInventoryPtr(0)
@@ -96,7 +96,7 @@ void DictyChemotaxisSteppable::extraInit(Simulator *_simulator){
 	field=((DiffusableVector<float> *) steppable)->getConcentrationField(chemicalFieldName);
 
 	ASSERT_OR_THROW("No chemical field has been loaded!", field);
-	cerr<<"GOT FIELD INTO CHEMOTAXIS STEPPABLE: "<<field<<endl;
+	Log(LOG_DEBUG) << "GOT FIELD INTO CHEMOTAXIS STEPPABLE: "<<field;
 
 	fieldDim=field->getDim();
 
@@ -108,8 +108,7 @@ void DictyChemotaxisSteppable::start(){
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DictyChemotaxisSteppable::step(const unsigned int currentStep){
-
-	cerr<<"ignoreFirstSteps="<<ignoreFirstSteps<<endl;
+	Log(LOG_DEBUG) <<"ignoreFirstSteps="<<ignoreFirstSteps;
 
 	if(currentStep < ignoreFirstSteps)
 		return;
@@ -125,10 +124,7 @@ void DictyChemotaxisSteppable::step(const unsigned int currentStep){
 			for (pt.x = 0; pt.x < fieldDim.x; ++pt.x){
 
 				currentCellPtr=cellFieldG->get(pt);
-				/*cerr<<"currentCellPtr="<<currentCellPtr<<endl;*/
 				if(!currentCellPtr) continue;
-				//cerr<<"1 currentCellPtr="<<currentCellPtr<<endl;
-				//cerr<<"Type currentCellPtr="<<(int)currentCellPtr->type<<endl;
 
 				currentClockPtr = &(simpleClockAccessorPtr->get(currentCellPtr->extraAttribPtr)->clock);///to avoid costly too many costly accesses
 				clockFlagPtr = &(simpleClockAccessorPtr->get(currentCellPtr->extraAttribPtr)->flag);
@@ -138,9 +134,7 @@ void DictyChemotaxisSteppable::step(const unsigned int currentStep){
 					//simpleClockAccessorPtr->get(currentCellPtr->extraAttribPtr)->clock = clockReloadValue;
 					*currentClockPtr=clockReloadValue; ///will reload the clock if any pixel belonging to a cel has concentration > activeThreshold
 					*clockFlagPtr = 1;
-					cerr<<endl<<endl;
-					//cerr<<"\t\treloading clock and activating chemotaxis"<<endl;
-					cerr<<endl<<endl;
+					// Log(LOG_DEBUG) <<"\t\treloading clock and activating chemotaxis";
 					++chemotactingCellsCounter;
 				}
 
@@ -160,13 +154,12 @@ void DictyChemotaxisSteppable::step(const unsigned int currentStep){
 
 				if( *currentClockPtr < chemotactUntil && *clockFlagPtr){
 					*clockFlagPtr=0;
-					//cerr<<"Deactivating chemotaxis"<<endl;
+					// Log(LOG_DEBUG) <<"Deactivating chemotaxis";
 					--chemotactingCellsCounter;
 				}
 
 			}
-
-			//          cerr<<"\n\n \t\t THERE ARE "<<chemotactingCellsCounter<<" CELLS CHEMOTACTING\n"<<endl;
+			// Log(LOG_DEBUG) <<"\n\n \t\t THERE ARE "<<chemotactingCellsCounter<<" CELLS CHEMOTACTING\n";
 }
 
 std::string DictyChemotaxisSteppable::toString(){

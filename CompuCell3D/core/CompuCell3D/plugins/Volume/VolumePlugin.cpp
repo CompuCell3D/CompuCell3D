@@ -30,7 +30,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "VolumePlugin.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 // VolumePlugin::VolumePlugin() : potts(0) {}
 
@@ -44,8 +44,7 @@ void VolumePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
 
 	pUtils=simulator->getParallelUtils();
 	pluginName=_xmlData->getAttribute("Name");
-
-	cerr<<"GOT HERE BEFORE CALLING INIT"<<endl;
+	Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
 	if(!pluginAlreadyRegisteredFlag)
 		plugin->init(simulator);
 	potts->registerEnergyFunctionWithName(this,toString());
@@ -65,10 +64,10 @@ void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	//	Unit targetVolumeUnit=powerUnit(potts->getLengthUnit(),3);
 	//	Unit lambdaVolumeUnit=potts->getEnergyUnit()/(targetVolumeUnit*targetVolumeUnit);
 	//	//Unit demoUnit("10^-15*kg");
-	//	//cerr<<"demoUnit="<<demoUnit<<endl;
-	//	//cerr<<"Length Unit"<<potts->getLengthUnit()<<endl;
-	//	//cerr<<"targetVolumeUnit="<<targetVolumeUnit.toString()<<endl;
-	//	//cerr<<"lambdaVolumeUnit="<<lambdaVolumeUnit.toString()<<endl;
+	Log(LOG_DEBUG) << "demoUnit="<<demoUnit;
+	Log(LOG_DEBUG) << "Length Unit"<<potts->getLengthUnit();
+	Log(LOG_DEBUG) << "targetVolumeUnit="<<targetVolumeUnit.toString();
+	Log(LOG_DEBUG) << "lambdaVolumeUnit="<<lambdaVolumeUnit.toString();
 
 
 	//	//CC3DXMLElement * volumeUnitElem = _xmlData->attachElement("TargetVolumeUnit",targetVolumeUnit.toString());
@@ -125,7 +124,7 @@ void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			functionType=BYCELLID;
 	}
 	Automaton *automaton=potts->getAutomaton();
-	cerr<<"automaton="<<automaton<<endl;
+	Log(LOG_DEBUG) << "automaton="<<automaton;
 
 	switch(functionType){
 		case BYCELLID:
@@ -147,7 +146,7 @@ void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 					volParam.targetVolume=energyVec[i]->getAttributeAsDouble("TargetVolume");
 					volParam.lambdaVolume=energyVec[i]->getAttributeAsDouble("LambdaVolume");
 					volParam.typeName=energyVec[i]->getAttribute("CellType");
-					cerr<<"automaton="<<automaton<<endl;
+					Log(LOG_DEBUG) << "automaton="<<automaton;
 					typeIdVec.push_back(automaton->getTypeId(volParam.typeName));
 
 					volumeEnergyParamVectorTmp.push_back(volParam);				
@@ -228,14 +227,13 @@ double VolumePlugin::changeEnergyGlobal(const Point3D &pt, const CellG *newCell,
 
 		}
 
-
-		//cerr<<"energy="<<energy<<endl;
+		// Log(LOG_DEBUG) << "energy="<<energy;
 		//if (energy>300){
 		//	if (newCell){
-		//		cerr<<"newCell->volume="<<newCell->volume<<endl;
+			// Log(LOG_DEBUG) << "newCell->volume="<<newCell->volume;
 		//	}
 		//	if (oldCell){
-		//		cerr<<"oldCell->volume="<<oldCell->volume<<endl;
+			// Log(LOG_DEBUG) << "oldCell->volume="<<oldCell->volume;
 		//	}
 
 
@@ -275,9 +273,6 @@ double VolumePlugin::changeEnergyByCellType(const Point3D &pt,const CellG *newCe
 		if (oldCell)
 			energy += volumeEnergyParamVector[oldCell->type].lambdaVolume  *
 			(1 - 2 * (oldCell->volume - fabs(volumeEnergyParamVector[oldCell->type].targetVolume)));
-
-
-		//cerr<<"VOLUME CHANGE ENERGY NEW: "<<energy<<endl;
 		return energy;
 
 

@@ -31,7 +31,7 @@ using namespace std;
 #include <Cleaver/Cleaver.h>
 #include <Cleaver/InverseField.h>
 #include <Cleaver/FloatField.h>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 using namespace Cleaver;
 
@@ -177,8 +177,8 @@ void CleaverMeshDumper::simulateCleaverMesh(){
 	Cleaver::TetMesh *mesh = Cleaver::createMeshFromVolume(volume, verbose);
 
 	//mesh->writeNodeEle(outputFileName, verbose);
-	cerr<<"outputFileName="<<outputFileName<<endl;
-	cerr<<"verbose="<<verbose<<endl;
+	Log(LOG_DEBUG) << "outputFileName="<<outputFileName;
+	Log(LOG_DEBUG) << "verbose="<<verbose;
 
 
     if(meshOutputFormat == "tetgen")
@@ -210,12 +210,11 @@ void CleaverMeshDumper::step(const unsigned int currentStep){
 	//   //REPLACE SAMPLE CODE BELOW WITH YOUR OWN
 	//CellInventory::cellInventoryIterator cInvItr;
 	//CellG * cell;
-	//   
-	//   cerr<<"currentStep="<<currentStep<<endl;
+	//   Log(LOG_DEBUG) << currentStep="<<currentStep;
 	//for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr )
 	//{
 	//	cell=cellInventoryPtr->getCell(cInvItr);
-	//       cerr<<"cell.id="<<cell->id<<" vol="<<cell->volume<<endl;
+	// Log(LOG_DEBUG) << "cell.id="<<cell->id<<" vol="<<cell->volume;
 	//   }
 
 }
@@ -241,7 +240,7 @@ void CleaverMeshDumper::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 		if (outputXMLElem->getFirstElement("Verbose")){
 			verbose=true;
-			cerr<<"verbose="<<verbose<<endl;
+			Log(LOG_DEBUG) << "verbose="<<verbose;
 		}
 
 
@@ -259,7 +258,7 @@ void CleaverMeshDumper::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 
 			for (set<unsigned char>::iterator sitr = cellTypesSet.begin() ; sitr!=cellTypesSet.end() ;++sitr){
-				cerr<<"INCLUDIG CELL TYPE="<<(int)*sitr<<endl;
+				Log(LOG_DEBUG) << "INCLUDIG CELL TYPE="<<(int)*sitr;
 			}
 
 

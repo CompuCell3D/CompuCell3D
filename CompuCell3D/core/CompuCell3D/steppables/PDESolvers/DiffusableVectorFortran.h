@@ -8,6 +8,7 @@
 #include <CompuCell3D/Field3D/Array3D.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 #include <muParser/muParser.h>
+#include<core/CompuCell3D/CC3DLogger.h>
 
 namespace mu{
 
@@ -49,9 +50,8 @@ namespace CompuCell3D {
 
 		virtual Field3D<precision> * getConcentrationField(const std::string & name){
 			using namespace std;
-			//       cerr<<"concentrationFieldNameVector.size()="<<concentrationFieldNameVector.size()<<endl;
 			//       for(unsigned int i=0 ; i < concentrationFieldNameVector.size() ; ++i){
-			//          cerr<<"THIS IS FIELD NAME "<<concentrationFieldNameVector[i]<<endl;
+				// Log(LOG_TRACE) << "THIS IS FIELD NAME "<<concentrationFieldNameVector[i];
 			//       }
 			for(unsigned int i=0 ; i < concentrationFieldNameVector.size() ; ++i){
 				if(concentrationFieldNameVector[i]==name){
@@ -125,7 +125,7 @@ namespace CompuCell3D {
 
 			} catch (mu::Parser::exception_type &e)
 			{
-				cerr<<e.GetMsg()<<endl;
+				Log(LOG_DEBUG) << e.GetMsg();
 				ASSERT_OR_THROW(e.GetMsg(),0);
 			}
 		}	
@@ -169,9 +169,9 @@ namespace CompuCell3D {
 
 		virtual Field3D<precision> * getConcentrationField(const std::string & name){
 			using namespace std;
-			//       cerr<<"concentrationFieldNameVector.size()="<<concentrationFieldNameVector.size()<<endl;
+			// Log(LOG_TRACE) << "concentrationFieldNameVector.size()="<<concentrationFieldNameVector.size();
 			//       for(unsigned int i=0 ; i < concentrationFieldNameVector.size() ; ++i){
-			//          cerr<<"THIS IS FIELD NAME "<<concentrationFieldNameVector[i]<<endl;
+				// Log(LOG_TRACE) << "THIS IS FIELD NAME "<<concentrationFieldNameVector[i];
 			//       }
 			for(unsigned int i=0 ; i < concentrationFieldNameVector.size() ; ++i){
 				if(concentrationFieldNameVector[i]==name){
@@ -244,7 +244,7 @@ namespace CompuCell3D {
 
 			} catch (mu::Parser::exception_type &e)
 			{
-				cerr<<e.GetMsg()<<endl;
+				Log(LOG_DEBUG) << e.GetMsg();
 				ASSERT_OR_THROW(e.GetMsg(),0);
 			}
 		}	

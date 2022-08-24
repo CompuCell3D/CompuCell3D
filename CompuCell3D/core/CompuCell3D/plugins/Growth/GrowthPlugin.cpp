@@ -38,7 +38,7 @@
 #include <BasicUtils/BasicException.h>
 
 #include <iostream>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 #include "GrowthPlugin.h"
 
@@ -125,7 +125,7 @@ void GrowthPlugin::step()
        evolution = stepnumber;
    if ((density > dThreshold) && (!dTrigger))
    {
-      cerr << "***** GROWING *****" << endl;
+      Log(LOG_DEBUG) << "***** GROWING *****";
       grow();
       dTrigger = true;
       mitosisPlugin->turnOff();

@@ -27,7 +27,7 @@
 using namespace CompuCell3D;
 
 #include "OrientedContactPlugin.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 OrientedContactPlugin::OrientedContactPlugin() :xmlData(0),depth(1),alpha(1.0),weightDistance(false) {
 }
@@ -101,9 +101,6 @@ double OrientedContactPlugin::getOrientation(const Point3D &pt, const CellG *new
       v1x_before = newCell->iXY;
       // taking case of numerical rounding
       ecc1_before = sqrt(fabs(1.0-l1_min_before/(l1_max_before + eps)));
-        /*cerr << "  l1_min_before: " << l1_min_before <<  "  l1_max_before: " << l1_max_before<< endl;
-      cerr << "  iXX" << newCell->iXX << "  iXY" << newCell->iXY << endl;
-        */ 
       double l1_max = .5*((newIxx+newIyy)+sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
       double l1_min = .5*((newIxx+newIyy)-sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
       v1y = .5*((newIxx-newIyy)-sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
@@ -112,7 +109,6 @@ double OrientedContactPlugin::getOrientation(const Point3D &pt, const CellG *new
       r1y = pt.y-ycm;
       // taking case of numerical rounding
       ecc1 = sqrt(fabs(1.0-l1_min/(l1_max + eps)));
-//         cerr << "  l1_min: " << l1_min <<  "  l1_max: " << l1_max<< endl;
 	
 
    }
@@ -185,7 +181,6 @@ double OrientedContactPlugin::getOrientation(const Point3D &pt, const CellG *new
       r2y = pt.y-ycm;
       // taking case of numerical rounding
       ecc2 = sqrt(fabs(1.0-l2_min/(l2_max+eps)));
-//        cerr << "l2_min: " << l2_min<< "  l2_max: " << l2_max << endl;
    }
         
    else {
@@ -213,12 +208,6 @@ double OrientedContactPlugin::getOrientation(const Point3D &pt, const CellG *new
    E2 = ecc1*ecc2*s01*s01*sqrt((r1x*r1x+r1y*r1y)*(r2x*r2x+r2y*r2y));
         
    deltaE = E2-E1;
-
-  
-//         cerr << "ecc1: " << ecc1 << "  ecc2: " << ecc2 << "  ecc1_before: " << ecc1_before <<  "  ecc2_before: " << ecc2_before << endl;
-        
-       //       " r1x: " << r1x << " r1y: " << r1y << "  vx: " << v1x << "  v1y: " << v1y << endl;
-//         cerr << "Sin theta: " << s01 << "  Energy: " << deltaE << endl; 
         
    if(deltaE != deltaE) { //check for nan
       return 0;
@@ -235,7 +224,6 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
    double eps = std::numeric_limits<double>::epsilon();
 
    if (!newCell && !oldCell) {
-//       cerr << "only medium" << endl;
       return 1.0;
    }
     
@@ -300,9 +288,6 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
       // taking case of numerical rounding
 
       ecc1_before = sqrt(fabs(1.0-l1_min_before/(l1_max_before+eps)));
-        /*cerr << "  l1_min_before: " << l1_min_before <<  "  l1_max_before: " << l1_max_before<< endl;
-      cerr << "  iXX" << newCell->iXX << "  iXY" << newCell->iXY << endl;
-        */ 
       double l1_max = .5*((newIxx+newIyy)+sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
       double l1_min = .5*((newIxx+newIyy)-sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
       v1y = .5*((newIxx-newIyy)-sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
@@ -324,7 +309,6 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
       
       E2 = ecc1*alpha*cos(theta);
       E1 = ecc1_before*alpha*cos(theta_before);
-//       cerr << "NEW CELL GET:  " << theta << "\t " << alpha << endl;
       return E2-E1;
       
    }   
@@ -393,7 +377,6 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
       r2y = pt.y-ycm;
       // taking case of numerical rounding
       ecc2 = sqrt(fabs(1.0-l2_min/(l2_max+eps)));
-//        cerr << "l2_min: " << l2_min<< "  l2_max: " << l2_max << endl;
       s02 = (r2x*v2x+r2y*v2y)/(sqrt((r2x*r2x+r2y*r2y)*(v2x*v2x+v2y*v2y))+eps);
 
       // taking case of numerical rounding
@@ -406,7 +389,6 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
       
       E2 = ecc2*alpha*cos(theta);
       E1 = ecc2_before*alpha*cos(theta_before);
-//       cerr << "OLD CELL GET:  " << theta << "\t " << alpha << endl;
       return E2-E1;
       
    }
@@ -419,7 +401,6 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
 double OrientedContactPlugin::changeEnergy(const Point3D &pt,
                                   const CellG *newCell,
                                   const CellG *oldCell) {
-//    cerr<<"ChangeEnergy"<<endl;
    
    
   double energy = 0;
@@ -448,7 +429,6 @@ double OrientedContactPlugin::changeEnergy(const Point3D &pt,
             else {
                energy -= orientedContactEnergy(oldCell, nCell)+getOrientation(pt,oldCell,nCell);
             }
-//             cerr<<"!=oldCell neighbor.pt="<<neighbor.pt<<" energyTmp="<<energy<<endl;
          }
          if(nCell!=newCell){
             if(!nCell) {
@@ -552,12 +532,11 @@ void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
       orientedContactEnergyArray[i][j] = orientedContactEnergies[index];
       
    }
-   cerr<<"size="<<size<<endl;
+   Log(LOG_DEBUG) << "size="<<size;
    
   for(int i = 0 ; i < size ; ++i)
    for(int j = 0 ; j < size ; ++j){
-   
-      cerr<<"contact["<<i<<"]["<<j<<"]="<<orientedContactEnergyArray[i][j]<<endl;
+      Log(LOG_DEBUG) << "contact["<<i<<"]["<<j<<"]="<<orientedContactEnergyArray[i][j];
       
    }
    
@@ -568,9 +547,7 @@ void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 
 			if(_xmlData->getFirstElement("Depth")){
 				maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
-				//cerr<<"got here will do depth"<<endl;
 			}else{
-				//cerr<<"got here will do neighbor order"<<endl;
 				if(_xmlData->getFirstElement("NeighborOrder")){
 
 					maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());	
@@ -580,8 +557,7 @@ void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 				}
 
 			}
-
-			cerr<<"Contact maxNeighborIndex="<<maxNeighborIndex<<endl;
+         Log(LOG_DEBUG) << "Contact maxNeighborIndex="<<maxNeighborIndex;
 
    
 }

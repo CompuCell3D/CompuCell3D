@@ -40,6 +40,7 @@ using namespace std;
 
 #define EXP_STL
 #include "MolecularContactTrackerPlugin.h"
+#include<core/CompuCell3D/CC3DLogger.h>
 
 
 MolecularContactTrackerPlugin::MolecularContactTrackerPlugin() :
@@ -142,7 +143,7 @@ void MolecularContactTrackerPlugin::field3DChange(const Point3D &pt, CellG *newC
    neighborTrackerAccessorPtr=neighborTrackerPluginPtr->getNeighborTrackerAccessorPtr();
 
    if(oldCell){
-      cerr << "ID: " << oldCell->id << " Type: " << (int)oldCell->type << " Address: " << oldCell << endl;
+      Log(LOG_DEBUG) << "ID: " << oldCell->id << " Type: " << (int)oldCell->type << " Address: " << oldCell;
 //          sleep(5);
       neighborData = &(neighborTrackerAccessorPtr->get(oldCell->extraAttribPtr)->cellNeighbors);
 //          neighborTrackerAccessorPtr->get(oldCell->extraAttribPtr);
@@ -151,46 +152,38 @@ void MolecularContactTrackerPlugin::field3DChange(const Point3D &pt, CellG *newC
       set<MolecularContactTrackerData> * molecularcontactNeighborsPtr=&molecularcontactTrackerAccessor.get(oldCell->extraAttribPtr)->molecularcontactNeighbors;
       set<MolecularContactTrackerData> OGmolecularcontactNeighborsPtr=molecularcontactTrackerAccessor.get(oldCell->extraAttribPtr)->molecularcontactNeighbors;
       set<MolecularContactTrackerData> * molecularcontactNeighborsTmpPtr;
-//       cerr << "Before Size of Set: " << molecularcontactNeighborsPtr->size() << endl;
       molecularcontactNeighborsPtr->clear();
       for(sitr=neighborData->begin() ; sitr != neighborData->end() ; ++sitr){
          nCell= sitr->neighborAddress;
-         cerr << "\t NeigbhorID: " << sitr->neighborAddress    << endl;
+         Log(LOG_DEBUG) << "\t NeigbhorID: " << sitr->neighborAddress;
          if(nCell) {
             if(molecularcontactTypes.find(nCell->type)==endSitr){
-               cerr << "\t Type not inlucded in MolecularContact\n";
-               cerr << "\tID: " << nCell->id << " Type: " << (int)nCell->type << endl;
+               Log(LOG_DEBUG) << "\t Type not inlucded in MolecularContact\n";
+               Log(LOG_DEBUG) << "\tID: " << nCell->id << " Type: " << (int)nCell->type;
             }
             else{
-            cerr << "\t Inserting NeigbhorID: " << sitr->neighborAddress << " Type: " << (int)nCell->type << endl;
-            cerr << "\t Before Inserting Size of Set: " << molecularcontactNeighborsPtr->size() << endl;
+                Log(LOG_DEBUG) << "\t Inserting NeigbhorID: " << sitr->neighborAddress << " Type: " << (int)nCell->type;
+                Log(LOG_DEBUG) << "\t Before Inserting Size of Set: " << molecularcontactNeighborsPtr->size();
                molecularcontactNeighborsPtr->insert(MolecularContactTrackerData(nCell));
                molecularcontactNeighborsTmpPtr=&molecularcontactTrackerAccessor.get(nCell->extraAttribPtr)->molecularcontactNeighbors;
                molecularcontactNeighborsTmpPtr->insert(MolecularContactTrackerData(oldCell));
-               cerr << "\t After Inserting" << endl;
+                Log(LOG_DEBUG) << "\t After Inserting";
             }
          }
       }
       /*for(PlasSetitr=molecularcontactNeighborsPtr->begin() ; PlasSetitr != molecularcontactNeighborsPtr->end() ; ++PlasSetitr){
          molecularcontactNeighborsTmpPtr=&molecularcontactTrackerAccessor.get(oldCell->extraAttribPtr)->molecularcontactNeighbors;
-         cerr << "Set NeigbhorID: " << PlasSetitr->neighborAddress << " Type: " << (int)PlasSetitr->neighborAddress->type << endl;
-//             molecularcontactNeighborsTmpPtr->insert(MolecularContactTrackerData(oldCell));
       }
-//       cerr << "After Size of Set: " << molecularcontactNeighborsPtr->size() << endl;
-//       cerr << "OG Size of Set: " << OGmolecularcontactNeighborsPtr.size() << endl;
       
       for(PlasSetitr=OGmolecularcontactNeighborsPtr.begin() ; PlasSetitr != OGmolecularcontactNeighborsPtr.end() ; ++PlasSetitr){
-         cerr << "OGSet NeigbhorID: " << PlasSetitr->neighborAddress << " Type: " << (int)PlasSetitr->neighborAddress->type << " TargetLength: " << PlasSetitr->targetLength << endl;
           molecularcontactNeighborsTmpPtr=&molecularcontactTrackerAccessor.get(PlasSetitr->neighborAddress->extraAttribPtr)->molecularcontactNeighbors;
           for(tmpPlasSetitr=molecularcontactNeighborsTmpPtr->begin() ; tmpPlasSetitr != molecularcontactNeighborsTmpPtr->end() ; ++tmpPlasSetitr){
-             cerr << "\t tmp NeigbhorID: " << tmpPlasSetitr->neighborAddress << " Type: " << (int)tmpPlasSetitr->neighborAddress->type << endl;
           }
                 
 //             molecularcontactNeighborsTmpPtr->insert(MolecularContactTrackerData(oldCell));
       }*/
 //       std::set<unsigned char>::iterator typesit; 
 //       for(typesit=molecularcontactTypes.begin() ; typesit != molecularcontactTypes.end();++typesit) {
-//          cerr << "Type: " << (int)*typesit << endl;
 //       }
    }
 

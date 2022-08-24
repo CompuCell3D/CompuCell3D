@@ -36,7 +36,7 @@ using namespace CompuCell3D;
 // // // #include <BasicUtils/BasicException.h>
 // #include <CompuCell3D/plugins/CellVelocity/CellVelocityPlugin.h>
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 
 
@@ -93,7 +93,6 @@ void ViscosityPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
 void ViscosityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	lambdaViscosity=_xmlData->getFirstElement("LambdaViscosity")->getDouble();
-	//cerr<<"lambdaViscosity="<<lambdaViscosity<<endl;
 	//exit(0);
 
 }
@@ -270,9 +269,9 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 			oldCellVel = distanceVectorCoordinatesInvariant(oldCellCMBefore ,oldCellCMBeforeBefore,fieldDim);
 			nCellVel = distanceVectorCoordinatesInvariant(nCellCMBefore ,nCellCMBeforeBefore,fieldDim);
 
-			//if (pt.x>50 && pt.x<60){		
-			//	//cerr<<"oldCellCMBefore="<<oldCellCMBefore<<" oldCellCMBeforeBefore="<<oldCellCMBeforeBefore<<endl;
-			//	cerr<<"oldCellVel="<<oldCellVel<<" nCellVel="<<nCellVel<<endl;
+			//if (pt.x>50 && pt.x<60){
+				//Log(LOG_DEBUG) <<"oldCellCMBefore="<<oldCellCMBefore<<" oldCellCMBeforeBefore="<<oldCellCMBeforeBefore';
+				//Log(LOG_DEBUG) << "oldCellVel="<<oldCellVel<<" nCellVel="<<nCellVel;
 			//}
 			velocityDiffX = oldCellVel.x-nCellVel.x;
 			velocityDiffY = oldCellVel.y-nCellVel.y;
@@ -287,22 +286,22 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 
 			cellDistance=dist(x0,y0,z0);
 			//if (nCell->type==5){
-			//	cerr<<"old.id="<<oldCell->id<<" nCell->id="<<nCell->id<<endl;
-			//	cerr<<"oldCellVel="<<oldCellVel<<" nCellVel ="<<nCellVel <<endl;
-			//	cerr<<"nCellCMBefore="<<nCellCMBefore<<" nCellCMBeforeBefore="<<nCellCMBeforeBefore<<endl;
+				// Log(LOG_DEBUG) << "old.id="<<oldCell->id<<" nCell->id="<<nCell->id;
+				// Log(LOG_DEBUG) << "oldCellVel="<<oldCellVel<<" nCellVel ="<<nCellVel;
+				// Log(LOG_DEBUG) << "nCellCMBefore="<<nCellCMBefore<<" nCellCMBeforeBefore="<<nCellCMBeforeBefore;
 			//}
 			//if (pt.x>50 && pt.x<60){		
-			//	cerr<<"old.id="<<oldCell->id<<" nCell->id="<<nCell->id<<endl;
-			//	cerr<<"commonArea="<<commonArea<<endl;
-			//	cerr<<"oldCellVel="<<oldCellVel<<" nCellVel ="<<nCellVel <<endl;
-			//	cerr<<"velocityDiffX ="<<velocityDiffX <<" velocityDiffY= "<<velocityDiffY<<" velocityDiffZ="<<velocityDiffZ<<endl;  
-			//	cerr<<"cellDistance="<<cellDistance<<endl;
-			//	cerr<<" contribution="<<commonArea*(
+				// Log(LOG_DEBUG) << "old.id="<<oldCell->id<<" nCell->id="<<nCell->id;
+				// Log(LOG_DEBUG) << "commonArea="<<commonArea;
+				// Log(LOG_DEBUG) << "oldCellVel="<<oldCellVel<<" nCellVel ="<<nCellVel;
+				// Log(LOG_DEBUG) << "velocityDiffX ="<<velocityDiffX <<" velocityDiffY= "<<velocityDiffY<<" velocityDiffZ="<<velocityDiffZ;
+				// Log(LOG_DEBUG) << "cellDistance="<<cellDistance;
+				// Log(LOG_DEBUG) << " contribution="<<commonArea*(
 			//		velocityDiffX*velocityDiffX*sqrt((y0)*(y0)+(z0)*(z0))
 			//		// +velocityDiffY*velocityDiffY*sqrt((z0)*(z0)+(x0)*(x0))
 			//		// +velocityDiffZ*velocityDiffZ*sqrt((x0)*(x0)+(y0)*(y0))
 			//		)
-			//		/(cellDistance*cellDistance*cellDistance)<<endl;;
+			//		/(cellDistance*cellDistance*cellDistance);
 
 			//}
 
@@ -327,13 +326,13 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 
 		}
 		//if (pt.x>50 && pt.x<60){		
-		//	cerr<<"old before contribution="<<commonArea*(
+			//Log(LOG_DEBUG) << "old before contribution="<<commonArea*(
 		//		velocityDiffX*velocityDiffX*sqrt((y0)*(y0)+(z0)*(z0))
 		//		// +velocityDiffY*velocityDiffY*sqrt((z0)*(z0)+(x0)*(x0))
 		//		// +velocityDiffZ*velocityDiffZ*sqrt((x0)*(x0)+(y0)*(y0))
 		//		)
-		//		/(cellDistance*cellDistance*cellDistance)<<endl;;
-		//	
+		//		/(cellDistance*cellDistance*cellDistance)
+		
 		//}
 
 	}
@@ -401,27 +400,27 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 				)
 				/(cellDistance*cellDistance*cellDistance);
 			//if (pt.x>50 && pt.x<60){		
-			//	cerr<<"new.id="<<newCell->id<<" nCell->id="<<nCell->id<<endl;
-			//	cerr<<"commonArea="<<commonArea<<endl;
-			//	cerr<<"newCellVel="<<newCellVel<<" nCellVel ="<<nCellVel <<endl;
-			//	cerr<<"velocityDiffX ="<<velocityDiffX <<" velocityDiffY= "<<velocityDiffY<<" velocityDiffZ="<<velocityDiffZ<<endl;  
-			//	cerr<<"cellDistance="<<cellDistance<<endl;
-			//	cerr<<" contribution="<<commonArea*(
+				// Log(LOG_DEBUG) << "new.id="<<newCell->id<<" nCell->id="<<nCell->id;
+				// Log(LOG_DEBUG) << "commonArea="<<commonArea;
+				// Log(LOG_DEBUG) << "newCellVel="<<newCellVel<<" nCellVel ="<<nCellVel;
+				// Log(LOG_DEBUG) << "velocityDiffX ="<<velocityDiffX <<" velocityDiffY= "<<velocityDiffY<<" velocityDiffZ="<<velocityDiffZ;
+				// Log(LOG_DEBUG) <<  "cellDistance="<<cellDistance;
+				// Log(LOG_DEBUG) << " contribution="<<commonArea*(
 			//		velocityDiffX*velocityDiffX*sqrt((y0)*(y0)+(z0)*(z0))
 			//		// +velocityDiffY*velocityDiffY*sqrt((z0)*(z0)+(x0)*(x0))
 			//		// +velocityDiffZ*velocityDiffZ*sqrt((x0)*(x0)+(y0)*(y0))
 			//		)
-			//		/(cellDistance*cellDistance*cellDistance)<<endl;;
-
+			//		/(cellDistance*cellDistance*cellDistance)
+			
 			//}
 			//if (pt.x>50 && pt.x<60){		
-			//	cerr<<"new before contribution="<<commonArea*(
+				// Log(LOG_DEBUG) << "new before contribution="<<commonArea*(
 			//		velocityDiffX*velocityDiffX*sqrt((y0)*(y0)+(z0)*(z0))
 			//		// +velocityDiffY*velocityDiffY*sqrt((z0)*(z0)+(x0)*(x0))
 			//		// +velocityDiffZ*velocityDiffZ*sqrt((x0)*(x0)+(y0)*(y0))
 			//		)
-			//		/(cellDistance*cellDistance*cellDistance)<<endl;;
-			//	
+			//		/(cellDistance*cellDistance*cellDistance)
+			
 			//}
 
 		}
@@ -459,14 +458,14 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 			//                if(sitrNSDTmp != oldCellPixelNeighborSurfaceData.end()){
 			//                   ;
 			//                }else{
-			//                   cerr<<"sitrNSDTmp is poiting to end of the set PROBLEM!!! commonArea="<<sitrNSDTmp->commonSurfaceArea<<endl;
-			//                   cerr<<"OLD CELL="<<oldCell<<" NEW CELL="<<newCell<<endl;
-			//                   for(set<NeighborSurfaceData>::iterator itr=oldCellPixelNeighborSurfaceData.begin();
-			//                   itr!=oldCellPixelNeighborSurfaceData.end();
-			//                   ++itr
-			//                   ){
-			//                      cerr<<"neighborAddress="<<itr->neighborAddress<<endl;
-			//                      cerr<<"commonSurfaceArea="<<itr->commonSurfaceArea<<endl;
+						// Log(LOG_DEBUG) << "sitrNSDTmp is poiting to end of the set PROBLEM!!! commonArea="<<sitrNSDTmp->commonSurfaceArea;
+						// Log(LOG_DEBUG) << "OLD CELL="<<oldCell<<" NEW CELL="<<newCell;
+					//                   for(set<NeighborSurfaceData>::iterator itr=oldCellPixelNeighborSurfaceData.begin();
+					//                   itr!=oldCellPixelNeighborSurfaceData.end();
+					//                   ++itr
+					//                   ){
+						// Log(LOG_DEBUG) << "neighborAddress="<<itr->neighborAddress;
+						// Log(LOG_DEBUG) << "commonSurfaceArea="<<itr->commonSurfaceArea;
 			//                   }
 			//                   exit(0);
 			//                }
@@ -474,8 +473,7 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 
 			if(commonArea<0.0){ //just in case
 				commonArea=0.0;
-				cerr<<"reached below zero old after"<<endl;
-			}
+				Log(LOG_DEBUG) << "reached below zero old after";			}
 			if(nCell!=newCell){
 
 
@@ -527,20 +525,21 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 			cellDistance=dist(x0,y0,z0);
 
 
-			//if (pt.x>50 && pt.x<60){		
-			//	cerr<<"old.id="<<oldCell->id<<" nCell->id="<<nCell->id<<" newCell->id="<<newCell->id<<endl;
-			//	cerr<<"commonArea="<<commonArea<<endl;
-			//	cerr<<"oldCellCMAfter="<<oldCellCMAfter<<" oldCellCMBefore="<<oldCellCMBefore<<endl;
-			//	cerr<<"nCellCMBefore="<<nCellCMBefore<<" nCellCMBeforeBefore="<<nCellCMBeforeBefore<<endl;
-			//	cerr<<"oldCellVel="<<oldCellVel<<" nCellVel ="<<nCellVel <<endl;
-			//	cerr<<"velocityDiffX ="<<velocityDiffX <<" velocityDiffY= "<<velocityDiffY<<" velocityDiffZ="<<velocityDiffZ<<endl;  
-			//	cerr<<"cellDistance="<<cellDistance<<endl;
-			//	cerr<<" contribution="<<commonArea*(
+			//if (pt.x>50 && pt.x<60){	
+				// Log(LOG_DEBUG) << 	"old.id="<<oldCell->id<<" nCell->id="<<nCell->id<<" newCell->id="<<newCell->id;
+				// Log(LOG_DEBUG) << "commonArea="<<commonArea;
+				// Log(LOG_DEBUG) << "oldCellCMAfter="<<oldCellCMAfter<<" oldCellCMBefore="<<oldCellCMBefore;
+				// Log(LOG_DEBUG) << "nCellCMBefore="<<nCellCMBefore<<" nCellCMBeforeBefore="<<nCellCMBeforeBefore;
+				// Log(LOG_DEBUG) << "oldCellVel="<<oldCellVel<<" nCellVel ="<<nCellVel;
+				// Log(LOG_DEBUG) << "velocityDiffX ="<<velocityDiffX <<" velocityDiffY= "<<velocityDiffY<<" velocityDiffZ="<<velocityDiffZ;
+				// Log(LOG_DEBUG) << "cellDistance="<<cellDistance;
+				// Log(LOG_DEBUG) << " contribution="<<commonArea*(
 			//		velocityDiffX*velocityDiffX*sqrt((y0)*(y0)+(z0)*(z0))
 			//		// +velocityDiffY*velocityDiffY*sqrt((z0)*(z0)+(x0)*(x0))
 			//		// +velocityDiffZ*velocityDiffZ*sqrt((x0)*(x0)+(y0)*(y0))
 			//		)
-			//		/(cellDistance*cellDistance*cellDistance)<<endl;;
+			//		/(cellDistance*cellDistance*cellDistance)
+			
 
 			//}
 
@@ -595,7 +594,7 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 			}
 			if(commonArea<0.0){ //just in case
 				commonArea=0.0;
-				cerr<<"reached below zero new after"<<endl;
+				Log(LOG_DEBUG) << "reached below zero new after";
 			}
 
 
@@ -637,7 +636,7 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 				velocityDiffZ = oldCellVel.z-nCellVel.z;            
 
 				nCellCMAfter = oldCellCMAfter;
-				cerr<<"EXECUTING FORBIDDEN CODE"<<endl;
+				Log(LOG_DEBUG) << "EXECUTING FORBIDDEN CODE";
 
 
 			}
@@ -671,8 +670,8 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 	//exclusive case for new neighbors which may occur after the flip
 	// examining neighbors of the oldpixel
 
-	//if (pt.x>50 && pt.x<60){		
-	//	cerr<<" before extra lambdaViscosity="<<lambdaViscosity<<" lambdaViscosity*energy="<<lambdaViscosity*energy<<endl;
+	//if (pt.x>50 && pt.x<60){
+		Log(LOG_DEBUG) << " before extra lambdaViscosity="<<lambdaViscosity<<" lambdaViscosity*energy="<<lambdaViscosity*energy;
 	//}
 
 	//if(newCell){
@@ -739,7 +738,7 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 
 
 	//if (pt.x>50 && pt.x<60){		
-	//	cerr<<" lambdaViscosity="<<lambdaViscosity<<" lambdaViscosity*energy="<<lambdaViscosity*energy<<endl;
+		//Log(LOG_DEBUG) << " lambdaViscosity="<<lambdaViscosity<<" lambdaViscosity*energy="<<lambdaViscosity*energy;
 	//}
 	return lambdaViscosity*energy;
 

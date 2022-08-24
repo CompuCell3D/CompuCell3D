@@ -94,9 +94,6 @@ restartEnabled(false)
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Simulator::~Simulator() {
-	// cerr<<"\n\n\n********************************************************************************"<<endl;
-	// cerr<<"\n\n\n\n INSIDE SIMULATOR DELETE \n\n\n\n "<<endl;
-	// cerr<<"\n\n\n********************************************************************************"<<endl;
 
 	delete classRegistry;
 	delete pUtils;
@@ -188,7 +185,7 @@ std::vector<std::string> Simulator::getConcentrationFieldNameVector(){
 Field3D<float>* Simulator::getConcentrationFieldByName(std::string _fieldName){
 		//this function crashes CC3D when called from outside Simulator. 
       std::map<std::string,Field3D<float>*> & fieldMap=this->getConcentrationFieldNameMap();
-	  //cerr<<" mapSize="<<fieldMap.size()<<endl;
+	  Log(LOG_TRACE) << " mapSize="<<fieldMap.size();
       std::map<std::string,Field3D<float>*>::iterator mitr;
       mitr=fieldMap.find(_fieldName);
       if(mitr!=fieldMap.end()){
@@ -197,17 +194,16 @@ Field3D<float>* Simulator::getConcentrationFieldByName(std::string _fieldName){
          return 0;
       }
 
-
-	//cerr<<"LOOKING FOR FIELD "<<_fieldName<<endl;
-	//cerr<<" mapSize="<<concentrationFieldNameMap.size()<<endl;
+	Log(LOG_TRACE) << "LOOKING FOR FIELD "<<_fieldName;
+	Log(LOG_TRACE) << " mapSize="<<concentrationFieldNameMap.size();
 	//std::map<std::string,Field3DImpl<float>*>::iterator mitr=concentrationFieldNameMap.find(_fieldName);
 
 	//if(mitr!=concentrationFieldNameMap.end()){
-	//	cerr<<" GOT NON ZERO PTR="<<mitr->second<<endl;
+		// Log(LOG_TRACE) << " GOT NON ZERO PTR="<<mitr->second;
 	//	return mitr->second;
 	//}
 	//else{
-	//	cerr<<" GOT ZERO PTR"<<endl;
+		// Log(LOG_TRACE) << " GOT ZERO PTR";
 	//	return 0;
 	//}
 }
@@ -221,10 +217,10 @@ void Simulator::serialize(){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Simulator::registerSteerableObject(SteerableObject * _steerableObject){
-	// cerr<<"Dealing with _steerableObject->steerableName()="<<_steerableObject->steerableName()<<endl;
+	Log(LOG_TRACE) << "Dealing with _steerableObject->steerableName()="<<_steerableObject->steerableName();
 	std::map<std::string,SteerableObject *>::iterator mitr;
 	mitr=steerableObjectMap.find(_steerableObject->steerableName());
-	// cerr<<"after find"<<endl;
+	Log(LOG_TRACE) << "after find";
 
 	ASSERT_OR_THROW("Steerable Object "+_steerableObject->steerableName()+" already exist!",  mitr==steerableObjectMap.end());
 
@@ -255,14 +251,13 @@ SteerableObject * Simulator::getSteerableObject(const std::string & _objectName)
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Simulator::postEvent(CC3DEvent & _ev){
-	//cerr<<"INSIDE SIMULATOR::postEvent"<<endl;
 		pUtils->handleEvent(_ev); //let parallel utils konw about all events
 
 		string pluginName;
 		BasicPluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
 		BasicPluginManager<Plugin>::infos_t::iterator it;
 		//for (it = infos->begin(); it != infos->end(); it++)	{
-		//	cerr<<" THIS IS PLUGIN NAME "<<(*it)->getName()<<endl;
+			Log(LOG_TRACE) << " THIS IS PLUGIN NAME "<<(*it)->getName();
 		//}
 
 		for (it = infos->begin(); it != infos->end(); it++){
@@ -280,10 +275,9 @@ void Simulator::postEvent(CC3DEvent & _ev){
 		for (it_step = infos_step->begin(); it_step != infos_step->end(); it_step++){
 
 			steppableName=(*it_step)->getName();
-			// cerr<<"processign steppable="<<steppableName<<endl;
-
+			Log(LOG_TRACE) << "processign steppable="<<steppableName;
 			if (steppableManager.isLoaded(steppableName)) {
-				// cerr<<"SENDING EVENT TO THE STEPPABLE "<<steppableName<<endl;
+				Log(LOG_TRACE) << "SENDING EVENT TO THE STEPPABLE "<<steppableName;
 				Steppable *steppable= steppableManager.get(steppableName);
 				steppable->handleEvent(_ev);
 			}
@@ -346,10 +340,10 @@ void Simulator::extraInit(){
 		for (it = infos->begin(); it != infos->end(); it++)
 			if (pluginManager.isLoaded((*it)->getName())) {
 				//pluginManager.get((*it)->getName())->extraInit(this);
-				//if (it != infos->begin()) cerr << ",";
-//				cerr << " extraInit for: " << (*it)->getName() << endl;
+				//if (it != infos->begin()) Log(LOG_TRACE) << ",";
+				Log(LOG_TRACE) << " extraInit for: " << (*it)->getName();
 				pluginManager.get((*it)->getName())->extraInit(this);
-//				cerr << " DONE extraInit for: " << (*it)->getName() << endl;
+				Log(LOG_TRACE) << " DONE extraInit for: " << (*it)->getName();
 
 			}
 		Log(LOG_DEBUG) << "finish extraInit calls for plugins";
@@ -377,7 +371,7 @@ void Simulator::step(const unsigned int currentStep) {
 		//potts is initialized in readXML - so is most of other Steppables etc.
 
 		//    for (std::map<std::string,SteerableObject *>::iterator mitr=steerableObjectMap.begin() ; mitr!=steerableObjectMap.end() ; ++mitr){
-		//       cerr<<"Module "<<mitr->first <<" toString() "<< mitr->second->toString()<<endl;
+			// Log(LOG_TRACE) << "Module "<<mitr->first <<" toString() "<< mitr->second->toString();
 		//    }
 		// Run potts metropolis
 		Dim3D dim = potts.getCellFieldG()->getDim();
@@ -401,7 +395,7 @@ void Simulator::step(const unsigned int currentStep) {
 		if(ppdCC3DPtr->debugOutputFrequency && ! (currentStep % ppdCC3DPtr->debugOutputFrequency) ){
 			Log(LOG_DEBUG) << oss.str();
             
-		}
+		} 
 
 	}catch (const BasicException &e) {
 		Log(LOG_DEBUG) << "ERROR: " << e;
@@ -433,16 +427,12 @@ std::string Simulator::get_step_output() {
 void Simulator::finish() {
 
 	try{
-		//cerr<<"inside finish"<<endl;
 		ppdCC3DPtr->temperature = 0.0;
-		//cerr<<"inside finish 1"<<endl;
 
 		for (unsigned int i = 1; i <= ppdCC3DPtr->anneal; i++)
 			step(ppdCC3DPtr->numSteps+i);
-		//cerr<<"inside finish 2"<<endl;
 		classRegistry->finish();
 		unloadModules();
-		//cerr<<"inside finish 3"<<endl;
 
 	}catch (const BasicException &e) {
 		Log(LOG_DEBUG) << "ERROR: " << e;
@@ -571,7 +561,7 @@ void Simulator::initializeCC3D(){
 		}
 		if(ppdCC3DPtr->cellTypeMotilityVector.size()){
 			//for(int i =0 ; i < ppdCC3DPtr->cellTypeMotilityVector.size() ;++i ){
-			//	cerr<<" GOT THIS CELL TYPE FOR MOTILITY"<<	ppdCC3DPtr->cellTypeMotilityVector[i].typeName<<endl;
+				// Log(LOG_TRACE) << " GOT THIS CELL TYPE FOR MOTILITY"<<	ppdCC3DPtr->cellTypeMotilityVector[i].typeName;
 			//}
 
 			potts.initializeCellTypeMotility(ppdCC3DPtr->cellTypeMotilityVector);
@@ -686,10 +676,9 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 
     // setting path to simulation input folder
     potts.set_simulation_input_dir(basePath);
-
-	//cerr<<"DIM="<<ppdCC3DPtr->dim<<endl;
-	//cerr<<"Temp="<<_xmlData->getFirstElement("Temperature")->getDouble()<<endl;
-	//cerr<<"Flip2DimRatio="<<_xmlData->getFirstElement("Flip2DimRatio")->getDouble()<<endl;
+	Log(LOG_TRACE) << "DIM="<<ppdCC3DPtr->dim;
+	Log(LOG_TRACE) << xmlData->getFirstElement("Temperature")->getDouble();
+	Log(LOG_TRACE) << xmlData->getFirstElement("Flip2DimRatio")->getDouble();
 
 	std::string metropolisAlgorithmName="";
 	if(_xmlData->getFirstElement("MetropolisAlgorithm"))
@@ -748,7 +737,6 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 			ppdCC3DPtr->boundary_z = "noflux";
 		}
 	}
-	//	cerr << "" <<  << endl;
 	Log(LOG_DEBUG) << "ppdCC3DPtr->boundary_x = " << ppdCC3DPtr->boundary_x;
 	//setting boundary conditions
 	if(ppdCC3DPtr->boundary_x!=""){
@@ -850,7 +838,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 		ppdCC3DPtr->acceptanceFunctionName=_xmlData->getFirstElement("AcceptanceFunctionName")->getText();
 	}
 	//Setting Acceptance Function
-	//    cerr<<"ppdCC3DPtr->acceptanceFunctionName="<<ppdCC3DPtr->acceptanceFunctionName<<endl;
+	Log(LOG_TRACE) << "ppdCC3DPtr->acceptanceFunctionName="<<ppdCC3DPtr->acceptanceFunctionName;
 	potts.setAcceptanceFunctionByName(ppdCC3DPtr->acceptanceFunctionName);
 	//    exit(0);
 

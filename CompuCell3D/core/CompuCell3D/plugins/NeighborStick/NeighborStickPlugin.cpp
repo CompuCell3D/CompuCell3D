@@ -44,7 +44,7 @@ using namespace CompuCell3D;
 
 #include "NeighborStickPlugin.h"
 
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 
 NeighborStickPlugin::NeighborStickPlugin() : thresh(0),xmlData(0) {
@@ -84,22 +84,21 @@ void NeighborStickPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	thresh=_xmlData->getFirstElement("Threshold")->getDouble();
 	typeNamesString=_xmlData->getFirstElement("Types")->getText();
 	parseStringIntoList(typeNamesString , typeNames , ",");
-	cerr<<"NEIGHBOR STICK typeNamesString="<<typeNamesString<<endl;
+   Log(LOG_DEBUG) <<  "NEIGHBOR STICK typeNamesString="<<typeNamesString;
 
    std::vector<std::string> temp;
 
    
    for(int i = 0; i < typeNames.size(); i++) {
       temp.push_back(typeNames[i]); 
-		cerr<<"typeNames[i]="<<typeNames[i]<<endl;
+      Log(LOG_DEBUG) <<  "typeNames[i]="<<typeNames[i];
    }
    //typeNames.clear();
    //typeNames=temp;
    //typeNames.pop_back(); //delete empyt element
    for(int i = 0; i < typeNames.size(); i++) {
       idNames.push_back(automaton->getTypeId(typeNames[i])); 
-
-		cerr<<"adding type ID = "<<automaton->getTypeId(typeNames[i])<<endl;
+      Log(LOG_DEBUG) <<  "adding type ID = "<<automaton->getTypeId(typeNames[i]);
    }   
 
 
@@ -109,7 +108,6 @@ void NeighborStickPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 double NeighborStickPlugin::changeEnergy(const Point3D &pt,
                                   const CellG *newCell,
                                   const CellG *oldCell) {
-//    cerr<<"ChangeEnergy"<<endl;
    
    
   double energy = 0;
@@ -123,45 +121,25 @@ double NeighborStickPlugin::changeEnergy(const Point3D &pt,
   
   std::set<NeighborSurfaceData> * neighborData;
   std::set<NeighborSurfaceData >::iterator sitr;
-  
-//   cerr << "Threshold: " << thresh << endl;
-//   cerr << "  SIZE: " << typeNames.size() << endl;
-//   for(int i = 0; i < typeNames.size(); i++) {
-//      cerr << "Name: " << typeNames[i] << " ID: " << (int)automaton->getTypeId(typeNames[i]) << " and again: " << idNames[i] << endl;
-//   }
-  
-  
-  
-     
+    
 
    if(oldCell) {
       neighborData = &(neighborTrackerAccessorPtr->get(oldCell->extraAttribPtr)->cellNeighbors);
       
       for(sitr=neighborData->begin() ; sitr != neighborData->end() ; ++sitr){
-         
-          //cerr << "Type: " << (int)oldCell->type << " ID: " << oldCell->id << endl;
          nCell= sitr->neighborAddress;
          if(nCell){
             int nType = (int)nCell->type;
-//             cerr << "Neighbor Type: " << nType << endl;
             for(int i = 0; i < idNames.size() ; i++) {
-               if(nType==idNames[i]) {
-                  //cerr << "SAME TYPE step: " << i << endl;
-                  //cerr << "Common Surface Area: " << (int)sitr->commonSurfaceArea << endl;
-                  
+               if(nType==idNames[i]) {                  
                   totalArea +=(int)sitr->commonSurfaceArea;
                   break;
                }
-//               else {
-//                  continue;
-////                   cerr << "Wrong Type" << endl;
-//               }
             }
          }
       
       }
    }
-	//cerr<<"totalArea="<<totalArea<<" thresh="<<thresh<<endl;
    if((totalArea < thresh) & (totalArea != 0)){
 		return (std::numeric_limits<float>::max)()/2.0;
    }

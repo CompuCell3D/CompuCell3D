@@ -90,9 +90,6 @@ void FoamDataOutput::step(const unsigned int currentStep)
 	ostringstream str;
 	str<<fileName<<"."<<currentStep;
 	ofstream out(str.str().c_str());
-
-	//    cerr<<"cellIDFlag= " << cellIDFlag<<" numNeighborsFlag="<<numNeighborsFlag<<" volFlag="<<volFlag<<" surFlag="<<surFlag<<endl;
-
 	CellInventory::cellInventoryIterator cInvItr;
 	CellG * cell;
 	std::set<NeighborSurfaceData > * neighborData;
