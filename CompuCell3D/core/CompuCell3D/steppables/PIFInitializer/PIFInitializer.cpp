@@ -24,6 +24,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "PIFInitializer.h"
+#include<core/CompuCell3D/CC3DLogger.h>
 
 PIFInitializer::PIFInitializer() :
 potts(0),sim(0), pifname("") {}
@@ -43,7 +44,7 @@ void PIFInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	pifname=_xmlData->getFirstElement("PIFName")->getText();
 
 	std::string basePath=simulator->getBasePath();
-	cerr << "basePath=simulator->getBasePath()=" << simulator->getBasePath() << endl;
+	Log(LOG_DEBUG) << "basePath=simulator->getBasePath()=" << simulator->getBasePath();
 	if (basePath!=""){
 		pifname	= basePath+"/"+pifname;
 	}
@@ -56,17 +57,16 @@ void PIFInitializer::start() {
 	if (sim->getRestartEnabled()){
 		return ;  // we will not initialize cells if restart flag is on
 	}
-
-	cerr<<"ppdPtr->pifname="<<pifname<<endl;
+	Log(LOG_DEBUG) << "ppdPtr->pifname="<<pifname;
 
 	std::ifstream piffile(pifname.c_str(), ios::in);
-	cerr<<"opened pid file"<<endl;
+	Log(LOG_DEBUG) << "opened pid file";
 	ASSERT_OR_THROW(string("Could not open\n"+pifname+"\nMake sure it exists and is in correct directory"),piffile.good());
 	WatchableField3D<CellG *> * cellFieldG =(WatchableField3D<CellG *> *) potts->getCellFieldG();
 	ASSERT_OR_THROW("initField() Cell field cannot be null!", cellFieldG);
 
 	Dim3D dim = cellFieldG->getDim();
-	cerr<<"THIS IS DIM FOR PIF "<<dim<<endl;
+	Log(LOG_DEBUG) << "THIS IS DIM FOR PIF "<<dim;
 
 	long spin;
 	long clusterId;
@@ -83,20 +83,18 @@ void PIFInitializer::start() {
 	CellG* cell;
 
 	TypeTransition * typeTransitionPtr=potts->getTypeTransition();
-
-	cerr<<"typeTransitionPtr="<<typeTransitionPtr<<endl;
+	Log(LOG_DEBUG) << "typeTransitionPtr="<<typeTransitionPtr;
 	getline(piffile,line);
 	istringstream pif(line);
 	pif >> first >> second;
-	cerr << "First: " << first << " Second: " << second << "\n";
+	Log(LOG_DEBUG) << "First: " << first << " Second: " << second << "\n";
 	if(second == "Clusters") {
-		cerr << "Clusters Included" << "\n";
+		Log(LOG_DEBUG) << "Clusters Included" << "\n";
 		while(getline(piffile,line)) {
 			istringstream pif(line);
 			pif >> clusterId>> spin >> celltype >> xLow;
-
-			//             cerr << "  Cluster Id:  " <<clusterId<< "  Spin: " << spin 
-			//                << "  Type: " <<  celltype <<"\n";
+					Log(LOG_TRACE) << "  Cluster Id:  " <<clusterId<< "  Spin: " << spin 
+			               << "  Type: " <<  celltype <<"\n";
 
 			ASSERT_OR_THROW(string("PIF reader: xLow out of bounds : \n")+line, xLow >= 0 && xLow < dim.x);
 			pif >> xHigh;
@@ -151,13 +149,12 @@ void PIFInitializer::start() {
 						}
 
 						//         cell->type=potts->getAutomaton()->getTypeId(celltype);             
-
-						//cerr << "CELLTYPE: " << celltype << "\n";
-						//cerr << "CLUSTERID: " << clusterId << "\n";
+						Log(LOG_TRACE) << "CELLTYPE: " << celltype << "\n";
+						Log(LOG_TRACE) <<  "CLUSTERID: " << clusterId << "\n";
 						typeTransitionPtr->setType( cell,potts->getAutomaton()->getTypeId(celltype));
 						//cell->clusterId=clusterId;
-						//cerr << "1. Cell Type from cell->:  " <<(int)cell->type<< "\n";
-						//cerr << "1. ClusterID from cell->:  " <<(int)cell->clusterId<< "\n";
+						Log(LOG_TRACE) << "1. Cell Type from cell->:  " <<(int)cell->type<< "\n";
+						Log(LOG_TRACE) << "1. ClusterID from cell->:  " <<(int)cell->clusterId<< "\n";
 
 
 			}
@@ -166,13 +163,13 @@ void PIFInitializer::start() {
 		}
 	}
 	else {
-		//cerr <<"\n\n\n Only Cell Types" << "\n";
+		Log(LOG_TRACE) << "\n\n\n Only Cell Types" << "\n";
 		pif >> xLow;
 		int tmp = atoi(first.c_str());
 		spin = tmp;
 		celltype = second;
-		//cerr << "spin: " << spin << " celltype: : " << celltype << 
-		//     " xLow: " << xLow << endl;
+		Log(LOG_TRACE) << "spin: " << spin << " celltype: : " << celltype << 
+		    " xLow: " << xLow;
 		ASSERT_OR_THROW(string("PIF reader: xLow out of bounds : \n") + line, xLow >= 0 && xLow < dim.x);
 		pif >> xHigh;
 		ASSERT_OR_THROW(string("PIF reader: xHigh out of bounds : \n")+line, xHigh >= 0 && xHigh < dim.x);
@@ -225,16 +222,15 @@ void PIFInitializer::start() {
 
 
 					typeTransitionPtr->setType(cell , potts->getAutomaton()->getTypeId(celltype));
-					//cerr << "1. Cell Type from cell->:  " <<(int)cell->type<< "\n";
-					// cerr << "getline(pif,line): " << getline(pif,line) << endl;
-					//    cerr << "getline(piffline,line): " <<  getline(piffile,line) << endl;
+					Log(LOG_TRACE) << "1. Cell Type from cell->:  " <<(int)cell->type<< "\n";
+					Log(LOG_TRACE) << "getline(pif,line): " << getline(pif,line);
+					Log(LOG_TRACE) << "getline(piffline,line): " <<  getline(piffile,line);
 		}
         while(getline(piffile,line) ) {
-			//cerr << "PINGPINGPINGPINGP5Ng" << endl;
 			istringstream pif(line);
 			pif >> spin >> celltype >> xLow;
-			//cerr << "spin: " << spin << " celltype: : " << celltype << 
-			//     " xLow: " << xLow << endl;
+			Log(LOG_TRACE) << "spin: " << spin << " celltype: : " << celltype << 
+			    " xLow: " << xLow ;
 			ASSERT_OR_THROW(string("PIF reader: xLow out of bounds : \n")+line, xLow >= 0 && xLow < dim.x);
 			pif >> xHigh;
 			ASSERT_OR_THROW(string("PIF reader: xHigh out of bounds : \n")+line, xHigh >= 0 && xHigh < dim.x);
@@ -262,7 +258,7 @@ void PIFInitializer::start() {
 							//inventory unless you call steppers(VolumeTrackerPlugin) explicitely
 
 						}
-						//cerr << "2. Cell Type from cell->:  " <<(int)cell->type<< "\n";
+						Log(LOG_TRACE) << "2. Cell Type from cell->:  " <<(int)cell->type<< "\n";
 
 			}
 			else // First time for this spin, we need to create a new cell
@@ -289,7 +285,7 @@ void PIFInitializer::start() {
 
 
 						typeTransitionPtr->setType( cell,potts->getAutomaton()->getTypeId(celltype));
-						//cerr << "2. Cell Type from cell->:  " <<(int)cell->type<< "\n";
+						Log(LOG_TRACE) << "2. Cell Type from cell->:  " <<(int)cell->type<< "\n";
 
 			}
 

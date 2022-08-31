@@ -23,11 +23,6 @@
 #include<core/CompuCell3D/CC3DLogger.h>
 
 // macro to ensure CC3d_log is enabled only when debugging
-/* #ifdef DEBUG
-#define CC3d_log(x) std::cerr <<x<<std::endl
-#else
-#define CC3d_log(x)
-#endif */
 
 using namespace std;
 using namespace CompuCell3D;

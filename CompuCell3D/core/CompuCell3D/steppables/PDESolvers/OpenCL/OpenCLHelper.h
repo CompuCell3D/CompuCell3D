@@ -12,7 +12,7 @@
 
 
 #include <cassert>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 namespace CompuCell3D {
 
 class OpenCLHelper
@@ -45,7 +45,7 @@ public:
 	template <class T>
 	cl_int WriteBuffer(cl_mem buffer, T const *h_arr, size_t arrLen)const {
 		cl_int res=clEnqueueWriteBuffer(commandQueue, buffer, CL_TRUE, 0, sizeof(T)*arrLen, h_arr, 0, NULL, NULL);
-		//cerr<<"sizeof(T)="<<sizeof(T)<<",  arrLen="<<arrLen<<endl;
+		Log(LOG_DEBUG) << "sizeof(T)="<<sizeof(T)<<",  arrLen="<<arrLen;
 		assert(res==CL_SUCCESS);
 		return res;
 	}
@@ -54,7 +54,7 @@ public:
 	template <class T>
 	cl_int CopyBuffer(cl_mem src_buffer, cl_mem dst_buffer, size_t arrLen)const {
 		cl_int res=clEnqueueCopyBuffer(commandQueue, src_buffer, dst_buffer, 0, 0, sizeof(T)*arrLen, 0, NULL, NULL);
-		//cerr<<"sizeof(T)="<<sizeof(T)<<",  arrLen="<<arrLen<<endl;
+		Log(LOG_DEBUG) << "sizeof(T)="<<sizeof(T)<<",  arrLen="<<arrLen;
 		assert(res==CL_SUCCESS);
 		clEnqueueBarrier(commandQueue);//TODO: can be optimize with events probably
 		return res;

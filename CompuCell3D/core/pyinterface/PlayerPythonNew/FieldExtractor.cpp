@@ -5,6 +5,7 @@
 #include <CompuCell3D/Potts3D/Potts3D.h>
 #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Field3D/Field3D.h>
+#include<CompuCell3D/CC3DLogger.h>
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 #include <Utils/Coordinates3D.h>
 #include <vtkIntArray.h>
@@ -40,11 +41,11 @@ void FieldExtractor::init(Simulator * _sim){
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FieldExtractor::extractCellField(){
-	//cerr<<"EXTRACTING CELL FIELD"<<endl;
+	Log(LOG_TRACE) << "EXTRACTING CELL FIELD";
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim();
 	Point3D pt;
-	// cerr<< "FIeld Extractor cell field fieldDim="<<fieldDim<<endl;
+	Log(LOG_TRACE) << "FIeld Extractor cell field fieldDim="<<fieldDim;
 	CellGraphicsData gd;
 	CellG *cell;
 
@@ -1417,7 +1418,7 @@ void FieldExtractor::fillClusterBorderData2DHex(vtk_obj_addr_int_t _pointArrayAd
 }
 
 void FieldExtractor::fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){
-//	cerr << "FieldExtractor::fillCentroidData2D============    numCells="<< potts->getNumCells() <<endl;
+	Log(LOG_TRACE) << "FieldExtractor::fillCentroidData2D============    numCells="<< potts->getNumCells();
 	CellInventory *cellInventoryPtr = &potts->getCellInventory();
 	CellInventory::cellInventoryIterator cInvItr;
 	CellG * cell;
@@ -1430,11 +1431,11 @@ void FieldExtractor::fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_
 	int ptCount=0;
 	for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
 		cell = cellInventoryPtr->getCell(cInvItr);
-//		cerr << "numerator CM(x,y,z) ="<<cell->xCM<<","<<cell->yCM<<","<<cell->zCM <<"; volume="<<(float)cell->volume<<endl;
+		Log(LOG_TRACE) << "numerator CM(x,y,z) ="<<cell->xCM<<","<<cell->yCM<<","<<cell->zCM <<"; volume="<<(float)cell->volume;
 		float cellVol = (float)cell->volume;
 		if (!cell->volume) {
-//		  cerr <<"      centroid= "<<cell->xCM/cellVol<<","<<cell->yCM/cellVol<<","<<cell->zCM/cellVol <<endl;
-//		  cerr << "FieldExtractor::fillBorderData2D:  cell volume is 0 -- exit";
+			Log(LOG_TRACE) << "      centroid= "<<cell->xCM/cellVol<<","<<cell->yCM/cellVol<<","<<cell->zCM/cellVol;
+			Log(LOG_TRACE) <<  "FieldExtractor::fillBorderData2D:  cell volume is 0 -- exit";
           exit(-1);
 		}
 		float xmid = (float)cell->xCM / cell->volume;
@@ -2722,7 +2723,7 @@ bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_ob
 	set<int> invisibleTypeSet(_typesInvisibeVec->begin(),_typesInvisibeVec->end());
 
 	for (set<int>::iterator sitr=invisibleTypeSet.begin();sitr!=invisibleTypeSet.end();++sitr){
-		cerr<<"invisible type="<<*sitr<<endl;
+		Log(LOG_DEBUG) << "invisible type="<<*sitr;
 	}
 
 	Point3D pt;
@@ -2781,7 +2782,7 @@ bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk
 	set<int> invisibleTypeSet(_typesInvisibeVec->begin(),_typesInvisibeVec->end());
 
 	//for (set<int>::iterator sitr=invisibleTypeSet.begin();sitr!=invisibleTypeSet.end();++sitr){
-	//	cerr<<"invisible type="<<*sitr<<endl;
+		// Log(LOG_TRACE) << "invisible type="<<*sitr;
 	//}
 
 	Point3D pt;
@@ -2841,7 +2842,7 @@ bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk
 //	set<int> invisibleTypeSet(_typesInvisibeVec->begin(),_typesInvisibeVec->end());
 //
 //	//for (set<int>::iterator sitr=invisibleTypeSet.begin();sitr!=invisibleTypeSet.end();++sitr){
-//	//	cerr<<"invisible type="<<*sitr<<endl;
+	// Log(LOG_TRACE) << "invisible type="<<*sitr;
 //	//}
 //
 //	Point3D pt;
@@ -2895,7 +2896,7 @@ bool FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArray
 	set<int> invisibleTypeSet(_typesInvisibeVec->begin(),_typesInvisibeVec->end());
 
 	//for (set<int>::iterator sitr=invisibleTypeSet.begin();sitr!=invisibleTypeSet.end();++sitr){
-	//	cerr<<"invisible type="<<*sitr<<endl;
+		// Log(LOG_TRACE) << "invisible type="<<*sitr;
 	//}
 
 	Point3D pt;
@@ -2941,15 +2942,15 @@ bool FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArray
 
 
 void FieldExtractor::setVtkObj(void * _vtkObj){
-	cerr<<"INSIDE setVtkObj"<<endl;
+	Log(LOG_DEBUG) << "INSIDE setVtkObj";
 }
 
 void FieldExtractor::setVtkObjInt(long _vtkObjAddr){
 	void * vPtr=(void*)_vtkObjAddr;
-	cerr<<"GOT THIS VOID ADDR "<<vPtr<<endl;
+	Log(LOG_DEBUG) << "GOT THIS VOID ADDR "<<vPtr;
 	vtkIntArray * arrayPtr=(vtkIntArray *)vPtr;
 	arrayPtr->SetName("INTEGER ARRAY");
-	cerr<<"THIS IS NAME OF THE ARRAY="<<arrayPtr->GetName()<<endl;
+	Log(LOG_DEBUG) << "THIS IS NAME OF THE ARRAY="<<arrayPtr->GetName();
 }
 
 vtkIntArray * FieldExtractor::produceVtkIntArray(){

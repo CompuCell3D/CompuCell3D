@@ -94,7 +94,6 @@ public:
 
 		while (parser->check(XMLEventTypes::START_ELEMENT))
 		{
-			// cerr << "parser->getName() = " << parser->getName() << endl;
 
 			// It will not parse other elements until it parses Potts, and Plugin
 			// End elements (parser->match(XMLEventTypes::END_ELEMENT, -XMLEventTypes::TEXT)) and end document (parser->match(XMLEventTypes::END_DOCUMENT) for some reason do not work

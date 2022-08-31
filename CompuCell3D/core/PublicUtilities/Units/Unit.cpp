@@ -63,8 +63,6 @@ Unit::~Unit(){}
 //	using namespace std;
 //	std::stringstream unitString;
 //	//"%.4g*10^%d * kg^%.4g * m^%.4g * s^%.4g * A^%.4g * K^%.4g * mol^%.4g * cd^%.4g\n"
-//	//cerr<<"multiplier="<<multiplier<<endl;
-//	//cerr<<"log10(multiplier)="<<log10(multiplier)<<endl;
 //	unitString<<multiplier/pow(10,(float)((int)log10(multiplier)))<<"*10^"<<(int)log10(multiplier);
 //	if(kg)
 //		unitString<<" * kg^"<<kg/*<<" * "*/;

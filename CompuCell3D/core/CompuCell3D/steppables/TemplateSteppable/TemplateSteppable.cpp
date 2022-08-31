@@ -21,7 +21,7 @@
 *************************************************************************/
 
 #include <CompuCell3D/CC3D.h>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 // // // #include <CompuCell3D/Automaton/Automaton.h>
 // // // #include <CompuCell3D/Simulator.h>
 // // // #include <CompuCell3D/Potts3D/Cell.h>
@@ -72,7 +72,7 @@ void TemplateSteppable::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
    }
 
 	pifname=_xmlData->getFirstElement("PIFName")->getText();
-	cerr << "PIFNAME: " << pifname << endl;
+    Log(LOG_DEBUG) << "PIFNAME: " << pifname;
 	potts = simulator->getPotts();\
 	cellInventoryPtr = & potts->getCellInventory();
 
@@ -95,14 +95,14 @@ void TemplateSteppable::step(const unsigned int currentStep) {
 	for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr )
 	{
 		cell=cellInventoryPtr->getCell(cInvItr);
-		cerr << "Cell Volume: " << cell->volume << endl;
+        Log(LOG_DEBUG) << "Cell Volume: " << cell->volume;
 		neighborData = &(neighborTrackerAccessorPtr->get(cell->extraAttribPtr)->cellNeighbors);
 		      for(sitr=neighborData->begin() ; sitr != neighborData->end() ; ++sitr) {
 
 		          nCell= sitr->neighborAddress;
 		          if(nCell){
 		              int nType = (int)nCell->type;
-		              cerr << "Neighbor: " << (int)nCell->id << " Type: " << nType << endl;
+                      Log(LOG_DEBUG) << "Neighbor: " << (int)nCell->id << " Type: " << nType;
 		          }
 		      }
 	}
@@ -112,7 +112,7 @@ void TemplateSteppable::step(const unsigned int currentStep) {
    Point3D pt;
 
    int maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(2);
-   cerr << "Number of neighbors: " << maxNeighborIndex << endl;
+   Log(LOG_DEBUG) << "Number of neighbors: " << maxNeighborIndex;
    for (int x = 0 ; x < dim.x ; ++x) {
       for (int y = 0 ; y < dim.y ; ++y) {
          for (int z = 0 ; z < dim.z ; ++z){
@@ -120,13 +120,13 @@ void TemplateSteppable::step(const unsigned int currentStep) {
             pt.y=y;
             pt.z=z;
             cell=cellFieldG->get(pt);
-            cerr << "point: (" << x << ", " << y << ", " << z << ") \n";
+            Log(LOG_DEBUG) << "point: (" << x << ", " << y << ", " << z << ") \n";
             for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
                 neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
-                cerr << "neighbor point: (" << neighbor.pt.x << ", " << neighbor.pt.y << ", " << neighbor.pt.z << ") \n";
+                Log(LOG_DEBUG) << "neighbor point: (" << neighbor.pt.x << ", " << neighbor.pt.y << ", " << neighbor.pt.z << ") \n";
                 nCell = cellFieldG->get(neighbor.pt);
                 if(nCell){
-                    cerr << "Neighbor point: " << nCell->id << endl;
+                    Log(LOG_DEBUG) << "Neighbor point: " << nCell->id;
                 }
             }
          }

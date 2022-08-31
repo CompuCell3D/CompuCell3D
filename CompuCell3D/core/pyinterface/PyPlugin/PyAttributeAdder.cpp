@@ -1,5 +1,6 @@
 #include "PyAttributeAdder.h"
 #include <CompuCell3D/Potts3D/Cell.h>
+#include<CompuCell3D/CC3DLogger.h>
 #include <Python.h>
 #include <iostream>
 
@@ -13,26 +14,24 @@ void PyAttributeAdder::addAttribute(CellG * _cell){
 	PyGILState_STATE gstate;
 	gstate = PyGILState_Ensure();
 	
-
-   //cerr<<"Adding new attribute"<<endl;
-   //cerr<<"this is pyAddress="<<_cell->pyAttrib<< " cell id="<<_cell->id<<endl;
+   Log(LOG_TRACE) << "Adding new attribute";
+   Log(LOG_TRACE) << "this is pyAddress="<<_cell->pyAttrib<< " cell id="<<_cell->id;
    PyObject *obj;
    obj = PyObject_CallMethod(vecPyObject[0],"addAttribute",0);
 //    Py_INCREF(obj);
 //    Py_INCREF(obj);
    _cell->pyAttrib=obj;
-
-//    cerr<<"refChecker="<<refChecker<<endl;
+   // Log(LOG_TRACE) << "refChecker="<<refChecker;
 //    if(refChecker){
 //       long refCount;
 //       PyObject *refCountPtr;
 //       refCountPtr=PyObject_CallObject(refChecker,obj);
 //       refCount=PyInt_AsLong(refCountPtr);
-//       cerr<<"refrence Count="<<refCount<<endl;
+//       Log(LOG_TRACE) << "refrence Count="<<refCount;
 // //       Py_DECREF(refCountPtr);
 //    }
 //     _cell->pyAttrib=PyList_New(1);
-   //cerr<<" after adding extra attrib pyAddress="<<_cell->pyAttrib<<endl;
+//    Log(LOG_TRACE) << " after adding extra attrib pyAddress="<<_cell->pyAttrib;
 	PyGILState_Release(gstate);
 
 	
@@ -46,7 +45,7 @@ AttributeAdder * PyAttributeAdder::getPyAttributeAdderPtr(){
 void PyAttributeAdder::destroyAttribute(CellG * _cell){
    //for debugging purposes you may uncomment this section
    //but make sure that you register with this class getrefcount function from Python level
-//     cerr<<"Destroying attribute"<<endl;
+   //  Log(LOG_TRACE) << "Destroying attribute";
 //    if(refChecker){
 //       long refCount;
 //       PyObject *refCountPtr;
@@ -55,7 +54,7 @@ void PyAttributeAdder::destroyAttribute(CellG * _cell){
 //       refCountPtr=PyObject_CallObject(refChecker,args_tupple);
 // 
 //       refCount=PyInt_AsLong(refCountPtr);
-//       cerr<<"before destroying attribute refrence Count="<<refCount<<endl;
+//       Log(LOG_TRACE) << "before destroying attribute refrence Count="<<refCount;
 //       Py_DECREF(args_tupple);
 //       Py_DECREF(refCountPtr);
 //    }
