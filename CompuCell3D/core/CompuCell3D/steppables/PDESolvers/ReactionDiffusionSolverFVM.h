@@ -152,8 +152,6 @@ namespace CompuCell3D {
 	public:
 		typedef void(ReactionDiffusionSolverFVM::*DiffusivityModeInitializer)(unsigned int);
 		typedef void(ReactionDiffusionSolverFVM::*FluxConditionInitializer)(unsigned int);
-		typedef void(ReactionDiffusionSolverFVM::*Field3DChangeFcn)(const Point3D &, CellG *, CellG *);
-		typedef void(ReactionDiffusionSolverFVM::*Field3DAdditionalPtFcn)(const Point3D &);
 
 	private:
 		ExtraMembersGroupAccessor<ReactionDiffusionSolverFVMCellData> ReactionDiffusionSolverFVMCellDataAccessor;
