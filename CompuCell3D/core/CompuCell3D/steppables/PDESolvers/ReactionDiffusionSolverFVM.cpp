@@ -1049,12 +1049,24 @@ void ReactionDiffusionSolverFVM::useFixedFVConcentration(unsigned int _fieldInde
 	_fv->useFixedFVConcentration(_fieldIndex, _val);
 }
 
+void ReactionDiffusionSolverFVM::useDiffusiveSurface(unsigned int _fieldIndex, unsigned int _surfaceIndex, Point3D _pt) {
+	fieldFVs[pt2ind(_pt)]->useDiffusiveSurface(_fieldIndex, _surfaceIndex);
+}
+
+void ReactionDiffusionSolverFVM::useDiffusiveSurfaces(unsigned int _fieldIndex, Point3D _pt) {
+	fieldFVs[pt2ind(_pt)]->useDiffusiveSurfaces(_fieldIndex);
+}
+
 void ReactionDiffusionSolverFVM::useDiffusiveSurfaces(unsigned int _fieldIndex) {
 	auto &_fieldFVs = fieldFVs;
 	#pragma omp parallel for shared (_fieldFVs)
 	for (int i=0;i<_fieldFVs.size();i++){ 
 		_fieldFVs[i]->useDiffusiveSurfaces(_fieldIndex);
 	}
+}
+
+void ReactionDiffusionSolverFVM::usePermeableSurface(unsigned int _fieldIndex, unsigned int _surfaceIndex, Point3D _pt) {
+	fieldFVs[pt2ind(_pt)]->usePermeableSurface(_fieldIndex, _surfaceIndex);
 }
 
 void ReactionDiffusionSolverFVM::usePermeableSurfaces(unsigned int _fieldIndex, bool _activate) {
@@ -1131,6 +1143,17 @@ void ReactionDiffusionSolverFVM::setCellDiffusivityCoefficients(unsigned int _fi
 
 void ReactionDiffusionSolverFVM::setCellDiffusivityCoefficients() {
 	for (unsigned int fieldIndex = 0; fieldIndex < numFields; ++fieldIndex) { setCellDiffusivityCoefficients(fieldIndex); }
+}
+
+std::vector<double> ReactionDiffusionSolverFVM::getPermeableCoefficients(const CellG * _cell, unsigned int _nCellTypeId, unsigned int _fieldIndex) {
+
+	ReactionDiffusionSolverFVMCellData *cellData = ReactionDiffusionSolverFVMCellDataAccessor.get(_cell->extraAttribPtr);
+
+	double permeationCoeffecient = cellData->permeationCoefficients[_fieldIndex][_nCellTypeId];
+	double biasCoeff = cellData->permeableBiasCoefficients[_fieldIndex][_nCellTypeId];
+
+	return std::vector<double>{ permeationCoeffecient, biasCoeff };
+
 }
 
 std::vector<double> ReactionDiffusionSolverFVM::getPermeableCoefficients(const CellG * _cell, const CellG * _nCell, unsigned int _fieldIndex) {
@@ -1419,10 +1442,19 @@ void ReactionDiffusionSolverFV::useConstantDiffusivityById(unsigned int _fieldIn
 	fieldDiffusivityFunctionPtrs[_fieldIndex] = &ReactionDiffusionSolverFV::getConstantDiffusivityById;
 }
 
+void ReactionDiffusionSolverFV::useDiffusiveSurface(unsigned int _fieldIndex, unsigned int _surfaceIndex) {
+	surfaceFluxFunctionPtrs[_fieldIndex][_surfaceIndex] = &ReactionDiffusionSolverFV::diffusiveSurfaceFlux;
+}
+
 void ReactionDiffusionSolverFV::useDiffusiveSurfaces(unsigned int _fieldIndex) {
 	for (std::map<unsigned int, ReactionDiffusionSolverFV *>::iterator fv_itr = neighborFVs.begin(); fv_itr != neighborFVs.end(); ++fv_itr) {
 		surfaceFluxFunctionPtrs[_fieldIndex][fv_itr->first] = &ReactionDiffusionSolverFV::diffusiveSurfaceFlux;
 	}
+}
+
+void ReactionDiffusionSolverFV::usePermeableSurface(unsigned int _fieldIndex, unsigned int _surfaceIndex, bool _activate) {
+	if(_activate) { surfaceFluxFunctionPtrs[_fieldIndex][_surfaceIndex] = &ReactionDiffusionSolverFV::permeableSurfaceFlux; } 
+	else { useDiffusiveSurface(_fieldIndex, _surfaceIndex); }
 }
 
 void ReactionDiffusionSolverFV::usePermeableSurfaces(unsigned int _fieldIndex, bool _activate) {

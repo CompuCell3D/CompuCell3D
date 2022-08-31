@@ -696,6 +696,40 @@ namespace CompuCell3D {
 		virtual void useFixedFVConcentration(std::string _fieldName, float _val, std::vector<float> _physPt) { useFixedFVConcentration(getFieldIndexByName(_fieldName), _val, getFieldFV(_physPt)); }
 		
 		/**
+		 * @brief use diffusive surface in a volume element for a field
+		 * 
+		 * @param _fieldIndex 
+		 * @param _surfaceIndex
+		 * @param _pt
+		 */
+		void useDiffusiveSurface(unsigned int _fieldIndex, unsigned int _surfaceIndex, Point3D _pt);
+		
+		/**
+		 * @brief use diffusive surface in a volume element for a field
+		 * 
+		 * @param _fieldName 
+		 * @param _surfaceName
+		 * @param _pt
+		 */
+		void useDiffusiveSurface(std::string _fieldName, std::string _surfaceName, Point3D _pt) { useDiffusiveSurface(getFieldIndexByName(_fieldName), getSurfaceIndexByName(_surfaceName), _pt); }
+		
+		/**
+		 * @brief use diffusive surfaces in a volume element for a field
+		 * 
+		 * @param _fieldIndex 
+		 * @param _pt
+		 */
+		void useDiffusiveSurfaces(unsigned int _fieldIndex, Point3D _pt);
+		
+		/**
+		 * @brief use diffusive surfaces in a volume element for a field
+		 * 
+		 * @param _fieldName 
+		 * @param _pt
+		 */
+		void useDiffusiveSurfaces(std::string _fieldName, Point3D _pt) { return useDiffusiveSurfaces(getFieldIndexByName(_fieldName), _pt); }
+		
+		/**
 		 * @brief calls useDiffusiveSurfaces for each fieldFV in fieldFVs which sets surfaceFluxFunctionPtrs at 
 		 * _fieldIndex using field Finite Volume pointers as pointer of ReactionDiffusionSolverFV::diffusiveSurfaceFlux
 		 * 
@@ -711,6 +745,26 @@ namespace CompuCell3D {
 		 * @param _fieldName 
 		 */
 		virtual void useDiffusiveSurfaces(std::string _fieldName) { useDiffusiveSurfaces(getFieldIndexByName(_fieldName)); }
+		
+		/**
+		 * @brief  calls usePermeableSurface for the fieldFv at a point which sets surfaceFluxFunctionPtrs
+		 * at _fieldIndex using field Finite Volume pointers as a pointer of ReactionDiffusionSolverFV::permeableSurfaceFlux
+		 * 
+		 * @param _fieldIndex 
+		 * @param _surfaceIndex
+		 * @param _pt
+		 */
+		void usePermeableSurface(unsigned int _fieldIndex, unsigned int _surfaceIndex, Point3D _pt);
+		
+		/**
+		 * @brief  calls usePermeableSurface for the fieldFv at a point which sets surfaceFluxFunctionPtrs
+		 * at _fieldIndex using field Finite Volume pointers as a pointer of ReactionDiffusionSolverFV::permeableSurfaceFlux
+		 * 
+		 * @param _fieldName 
+		 * @param _surfaceName
+		 * @param _pt
+		 */
+		void usePermeableSurface(std::string _fieldName, std::string _surfaceName, Point3D _pt) { usePermeableSurface(getFieldIndexByName(_fieldName), getSurfaceIndexByName(_surfaceName), _pt); }
 		
 		/**
 		 * @brief  calls usePermeableSurfaces for each fieldFv in fieldFVs which sets surfaceFluxFunctionPtrs
@@ -842,6 +896,27 @@ namespace CompuCell3D {
 		 * 
 		 */
 		virtual void setCellDiffusivityCoefficients();
+		
+		/**
+		 * @brief Gets the permeation and bias coefficient of a cell for a cell type and field
+		 * 
+		 * @param _cell 
+		 * @param _nCellTypeId 
+		 * @param _fieldIndex 
+		 * @return vector of permeation coefficient and bias coefficient
+		 */
+		std::vector<double> getPermeableCoefficients(const CellG * _cell, unsigned int _nCellTypeId, unsigned int _fieldIndex);
+		
+		/**
+		 * @brief Gets the permeation and bias coefficient of a cell for a cell type and field
+		 * 
+		 * @param _cell 
+		 * @param _nCellTypeId 
+		 * @param _fieldIndex 
+		 * @return vector of permeation coefficient and bias coefficient
+		 */
+		std::vector<double> getPermeableCoefficients(const CellG * _cell, unsigned int _nCellTypeId, std::string _fieldName) {
+			return getPermeableCoefficients(_cell, _nCellTypeId, getFieldIndexByName(_fieldName)); }
 		
 		/**
 		 * @brief Sets bias coefficient and nBias coefficient for _cell and _nCell respectively
@@ -1560,12 +1635,31 @@ namespace CompuCell3D {
 		void useFieldDiffusivityInMedium(unsigned int _fieldIndex) { fieldDiffusivityFunctionPtrs[_fieldIndex] = &ReactionDiffusionSolverFV::getFieldDiffusivityInMedium; }
 		
 		/**
+		 * @brief calls useDiffusiveSurface for each fieldFV in fieldFVs which sets surfaceFluxFunctionPtrs at 
+		 * _fieldIndex using field Finite Volume pointers as pointer of ReactionDiffusionSolverFV::diffusiveSurfaceFlux
+		 * 
+		 * @param _fieldIndex 
+		 * @param _surfaceIndex
+		 */
+		void useDiffusiveSurface(unsigned int _fieldIndex, unsigned int _surfaceIndex);
+		
+		/**
 		 * @brief calls useDiffusiveSurfaces for each fieldFV in fieldFVs which sets surfaceFluxFunctionPtrs at 
 		 * _fieldIndex using field Finite Volume pointers as pointer of ReactionDiffusionSolverFV::diffusiveSurfaceFlux
 		 * 
 		 * @param _fieldIndex 
 		 */
 		void useDiffusiveSurfaces(unsigned int _fieldIndex);
+		
+		/**
+		 * @brief calls usePermeableSurface for each fieldFv in fieldFVs which sets surfaceFluxFunctionPtrs
+		 * at _fieldIndex using field Finite Volume pointers as a pointer of ReactionDiffusionSolverFV::permeableSurfaceFlux
+		 * 
+		 * @param _fieldIndex 
+		 * @param _surfaceIndex 
+		 * @param _activate 
+		 */
+		void usePermeableSurface(unsigned int _fieldIndex, unsigned int _surfaceIndex, bool _activate = true);
 		
 		/**
 		 * @brief calls usePermeableSurfaces for each fieldFv in fieldFVs which sets surfaceFluxFunctionPtrs
