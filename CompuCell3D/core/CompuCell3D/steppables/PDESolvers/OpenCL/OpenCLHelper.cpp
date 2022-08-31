@@ -9,10 +9,10 @@
 #include <stdexcept>
 
 #include <CompuCell3D/CC3DExceptions.h>
+#include<core/CompuCell3D/CC3DLogger.h>
 
 using namespace CompuCell3D;
 
-using std::cerr;
 using std::endl;
 
 OpenCLHelper::OpenCLHelper(int gpuDeviceIndex, int platformHint) {
@@ -57,21 +57,20 @@ OpenCLHelper::OpenCLHelper(int gpuDeviceIndex, int platformHint) {
 
     //create the command queue we will use to execute OpenCL commands
     commandQueue = clCreateCommandQueue(context, devices[deviceUsed], 0, &err);
-    assert(err == CL_SUCCESS);
-    char devName[256];
-    size_t len;
-    clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_NAME, 255, devName, &len);
-    cerr << "\tGPU device \"" << devName << "\" selected\n";
-    cl_ulong gpuMem;
-    clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(gpuMem), &gpuMem, &len);
-    cerr << "\tTotal GPU memory: " << gpuMem / 1024 / 1024 << "MB" << endl;
+	assert(err==CL_SUCCESS);
+	char devName[256];
+	size_t len;
+	clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_NAME,255,devName, &len);
+    Log(LOG_DEBUG) << "\tGPU device \""<<devName<<"\" selected\n";
+	cl_ulong gpuMem;
+	clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(gpuMem), &gpuMem, &len);
+    Log(LOG_DEBUG) << "\tTotal GPU memory: "<<gpuMem/1024/1024<<"MB";
 
-    clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(gpuMem), &gpuMem, &len);
-    cerr << "\tMax GPU memory chunk to allocate: " << gpuMem / 1024 / 1024 << "MB" << endl;
+	clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(gpuMem), &gpuMem, &len);
+    Log(LOG_DEBUG) << "\tMax GPU memory chunk to allocate: "<<gpuMem/1024/1024<<"MB";
 
-    clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(maxWorkGroupSize), &maxWorkGroupSize,
-                    &len);
-    cerr << "\tMax work group size: " << maxWorkGroupSize << endl;
+	clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(maxWorkGroupSize), &maxWorkGroupSize, &len);
+    Log(LOG_DEBUG) << "\tMax work group size: "<<maxWorkGroupSize;
 }
 
 
@@ -121,13 +120,12 @@ cl_program OpenCLHelper::CreateProgramWithSource(cl_uint sourcesCount,
 
 void OpenCLHelper::BuildExecutable(cl_program program) const {
     // Build the program executable
-
-    printf("building the program\n");
+    Log(LOG_DEBUG) << "building the program\n";
     // build the program
     //err = clBuildProgram(program, 0, NULL, "-cl-nv-verbose", NULL, NULL);
     cl_int buildErr = clBuildProgram(program, 1, &devices[deviceUsed], NULL, NULL, NULL);
     printf("clBuildProgram: %s\n", ErrorString(buildErr));
-    cerr << deviceUsed << " " << numDevices << endl;
+    Log(LOG_DEBUG) << deviceUsed<<" "<<numDevices;
     //if(err != CL_SUCCESS){
     cl_build_status build_status;
     cl_int err = clGetProgramBuildInfo(program, devices[deviceUsed], CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status),

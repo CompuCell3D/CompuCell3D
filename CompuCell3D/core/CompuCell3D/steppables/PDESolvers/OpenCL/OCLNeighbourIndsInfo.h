@@ -1,6 +1,6 @@
 #ifndef OCL_NEIGHBOUR_INDS_INFO_H
 #define OCL_NEIGHBOUR_INDS_INFO_H
-
+#include<core/CompuCell3D/CC3DLogger.h>
 namespace CompuCell3D {
 
     struct OCLNeighbourIndsInfo {
@@ -25,20 +25,20 @@ namespace CompuCell3D {
         OCLNeighbourIndsInfo res;
 
         if (latticeType == HEXAGONAL_LATTICE) {
-            cerr << "Hexagonal lattice used" << endl;
-            if (dim.z == 1) {
-                cerr << "setting res.m_nbhdConcLen=6" << endl;
-                res.m_nbhdConcLen = 6;
-                res.m_nbhdDiffLen = 3;
-                layers = 2;
-            } else {
-                cerr << "setting res.m_nbhdConcLen=12" << endl;
+            Log(LOG_DEBUG) << "Hexagonal lattice used";
+		if(dim.z==1){
+			Log(LOG_DEBUG) << "setting res.m_nbhdConcLen=6";
+			res.m_nbhdConcLen=6;
+			res.m_nbhdDiffLen=3;
+			layers=2;
+		}else{
+			Log(LOG_DEBUG) << "setting res.m_nbhdConcLen=12";
                 res.m_nbhdConcLen = 12;
                 res.m_nbhdDiffLen = 6;
                 layers = 6;
             }
         } else {
-            cerr << "Cartesian lattice used" << endl;
+            Log(LOG_DEBUG) << "Cartesian lattice used";
             if (dim.z == 1) {
                 res.m_nbhdConcLen = 4;
                 res.m_nbhdDiffLen = 2;
@@ -50,7 +50,7 @@ namespace CompuCell3D {
 
 
         if (latticeType == HEXAGONAL_LATTICE) {
-            cerr << "fieldDim.z=" << dim.z << endl;
+            Log(LOG_DEBUG) << "fieldDim.z=" << dim.z;
 
             res.mh_nbhdDiffShifts.resize(layers * res.m_nbhdDiffLen);
             res.mh_nbhdConcShifts.resize(layers * res.m_nbhdConcLen);
@@ -66,13 +66,12 @@ namespace CompuCell3D {
                         ASSERT_OR_THROW("wrong index 2", (unsigned int) j < hexOffsetArray[i].size());
                         cl_int4 shift = {hexOffsetArray[i][j].x, hexOffsetArray[i][j].y, hexOffsetArray[i][j].z};
 
-                        ASSERT_OR_THROW("wrong index", (offset + j < res.mh_nbhdDiffShifts.size()));
-                        res.mh_nbhdDiffShifts[offset + j] = shift;
-                    }
-                }
-
-                //cerr<<"bhoa.size()="<<bhoa.size()<<endl;
-                //cerr<<"bndMaxOffset="<<getBoundaryStrategy()->getMaxOffset()<<endl;
+					ASSERT_OR_THROW("wrong index", (offset+j<res.mh_nbhdDiffShifts.size()));
+					res.mh_nbhdDiffShifts[offset+j]=shift;
+				}
+			}
+			Log(LOG_TRACE) << "bhoa.size()="<<bhoa.size();
+                Log(LOG_TRACE) << "bndMaxOffset="<<getBoundaryStrategy()->getMaxOffset();
 
                 for (int i = 0; i < layers; ++i) {
                     int offset = res.m_nbhdConcLen * i;
@@ -93,30 +92,29 @@ namespace CompuCell3D {
             // // // 0,1,1,0,-1,-1};
             // // // int xShifts[12]={-1,0,1,1,1,0,
             // // // -1, -1, 0, 1, 0,-1};
-
-            // // // // int yShifts[12]={0,1,1,0,-1,-1,
-            // // // // 0,1,1,0,-1,-1};
-            // // // // int xShifts[12]={-1, -1, 0, 1, 0,-1,
-            // // // // -1,0,1,1,1,0};
-
-            // // // //cerr<<"qq4.1 "<<h_nbhdConcShifts.size()<<" "<<h_nbhdDiffShifts.size()<<endl;
+        
+			// // // // int yShifts[12]={0,1,1,0,-1,-1,
+				// // // // 0,1,1,0,-1,-1};
+			// // // // int xShifts[12]={-1, -1, 0, 1, 0,-1,
+				// // // // -1,0,1,1,1,0};
+			// Log(LOG_TRACE) << "qq4.1 "<<h_nbhdConcShifts.size()<<" "<<h_nbhdDiffShifts.size();
             // // // for(int i=0; i<2; ++i){
             // // // for(int j=0; j<6; ++j)
             // // // {
-            // // // //cerr<<"1 i="<<i<<"j="<<j<<endl;
+            // Log(LOG_TRACE) << <"1 i="<<i<<"j="<<j;
             // // // cl_int4 shift={xShifts[6*i+j], yShifts[6*i+j], 0, 0};
             // // // res.mh_nbhdConcShifts[6*i+j]=shift;
-            // // // //cerr<<"2 i="<<i<<"j="<<j<<endl;
-            // // // if(j<3)
-            // // // res.mh_nbhdDiffShifts[3*i+j]=shift;
-            // // // //cerr<<"3 i="<<i<<"j="<<j<<endl;
+            // Log(LOG_TRACE) << "2 i="<<i<<"j="<<j;
+					// // // if(j<3)
+						// // // res.mh_nbhdDiffShifts[3*i+j]=shift;
+						// Log(LOG_TRACE) << "3 i="<<i<<"j="<<j;
             // // // }
             // // // }
             // // // }
 
         }//if(latticeType==HEXAGONAL_LATTICE)
         else {
-            //std::cerr<<"resizing here to "<<res.m_nbhdConcLen<<std::endl;
+            Log(LOG_TRACE) << "resizing here to "<<res.m_nbhdConcLen;
             res.mh_nbhdDiffShifts.resize(res.m_nbhdDiffLen);
             res.mh_nbhdConcShifts.resize(res.m_nbhdConcLen);
 

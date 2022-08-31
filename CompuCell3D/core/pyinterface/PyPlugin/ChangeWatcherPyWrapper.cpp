@@ -1,5 +1,6 @@
 #include "ChangeWatcherPyWrapper.h"
 #include <CompuCell3D/Potts3D/Potts3D.h>
+#include<CompuCell3D/CC3DLogger.h>
 #include <iostream>
 
 using namespace std;
@@ -27,7 +28,7 @@ void ChangeWatcherPyWrapper::field3DChange(const Point3D &pt, CellG *_newCell,Ce
    
    //return;
    int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();	
-   //cerr<<"CHANGE WATCHER pt="<<pt<<" _newCell="<<_newCell<<" _oldCell="<<_oldCell<<" currentWorkNodeNumber="<<currentWorkNodeNumber<<" newCellVec.size()="<<newCellVec.size()<<endl;
+   Log(LOG_TRACE) << "CHANGE WATCHER pt="<<pt<<" _newCell="<<_newCell<<" _oldCell="<<_oldCell<<" currentWorkNodeNumber="<<currentWorkNodeNumber<<" newCellVec.size()="<<newCellVec.size();
    changePointVec[currentWorkNodeNumber]=pt;
    //Notice, we cannot be accessing flip neighbor because change watchers are called even before pixel copy begins (e.g. during initialization of cell field)
    //flipNeighborVec[currentWorkNodeNumber]=potts->getFlipNeighbor();
@@ -51,17 +52,15 @@ void ChangeWatcherPyWrapper::field3DChange(const Point3D &pt, CellG *_newCell,Ce
 	PyGILState_STATE gstate;
 	gstate = PyGILState_Ensure();
    for (int i = 0 ; i < vecPyObject.size() ; ++i){
-
-      //cerr<<"before the call"<<endl;
+	Log(LOG_TRACE) << "before the call";
       ret=PyObject_CallMethod(vecPyObject[i],"field3DChange",0);
-	  //cerr<<"ret="<<ret<<endl; 	
+	  Log(LOG_TRACE) << "ret="<<ret;
       
 
       //decrement reference here
       Py_DECREF(ret);
 
-	
-//       cerr<<"after the call"<<endl;
+	Log(LOG_TRACE) << "after the call";
    }
 	PyGILState_Release(gstate);
 

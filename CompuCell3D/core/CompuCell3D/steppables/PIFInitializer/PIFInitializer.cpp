@@ -5,6 +5,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "PIFInitializer.h"
+#include<core/CompuCell3D/CC3DLogger.h>
 
 PIFInitializer::PIFInitializer() :
         potts(0), sim(0), pifname("") {}
@@ -26,7 +27,7 @@ void PIFInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     pifname = _xmlData->getFirstElement("PIFName")->getText();
 
     std::string basePath = simulator->getBasePath();
-    cerr << "basePath=simulator->getBasePath()=" << simulator->getBasePath() << endl;
+    Log(LOG_DEBUG) << "basePath=simulator->getBasePath()=" << simulator->getBasePath();
     if (basePath != "") {
         pifname = basePath + "/" + pifname;
     }
@@ -36,14 +37,13 @@ void PIFInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 }
 
 void PIFInitializer::start() {
-    if (sim->getRestartEnabled()) {
-        return;  // we will not initialize cells if restart flag is on
-    }
-
-    cerr << "ppdPtr->pifname=" << pifname << endl;
+	if (sim->getRestartEnabled()){
+		return ;  // we will not initialize cells if restart flag is on
+	}
+	Log(LOG_DEBUG) << "ppdPtr->pifname="<<pifname;
 
     std::ifstream piffile(pifname.c_str(), ios::in);
-    cerr << "opened pid file" << endl;
+    Log(LOG_DEBUG) << "opened pid file";
     if (!piffile.good())
         throw CC3DException(string("Could not open\n" + pifname + "\nMake sure it exists and is in correct directory"));
     WatchableField3D < CellG * > *cellFieldG = (WatchableField3D < CellG * > *)
@@ -51,7 +51,7 @@ void PIFInitializer::start() {
     if (!cellFieldG) throw CC3DException("initField() Cell field cannot be null!");
 
     Dim3D dim = cellFieldG->getDim();
-    cerr << "THIS IS DIM FOR PIF " << dim << endl;
+    Log(LOG_DEBUG) << "THIS IS DIM FOR PIF "<<dim;
 
     long spin;
     long clusterId;
@@ -67,21 +67,19 @@ void PIFInitializer::start() {
     Point3D cellPt;
     CellG *cell;
 
-    TypeTransition *typeTransitionPtr = potts->getTypeTransition();
-
-    cerr << "typeTransitionPtr=" << typeTransitionPtr << endl;
+	TypeTransition * typeTransitionPtr=potts->getTypeTransition();
+	Log(LOG_DEBUG) << "typeTransitionPtr="<<typeTransitionPtr;
     getline(piffile, line);
     istringstream pif(line);
     pif >> first >> second;
-    cerr << "First: " << first << " Second: " << second << "\n";
+    Log(LOG_DEBUG) << "First: " << first << " Second: " << second << "\n";
     if (second == "Clusters") {
-        cerr << "Clusters Included" << "\n";
-        while (getline(piffile, line)) {
-            istringstream pif(line);
-            pif >> clusterId >> spin >> celltype >> xLow;
-
-            //             cerr << "  Cluster Id:  " <<clusterId<< "  Spin: " << spin
-            //                << "  Type: " <<  celltype <<"\n";
+        Log(LOG_DEBUG) << "Clusters Included" << "\n";
+		while(getline(piffile,line)) {
+			istringstream pif(line);
+			pif >> clusterId>> spin >> celltype >> xLow;
+					Log(LOG_TRACE) << "  Cluster Id:  " <<clusterId<< "  Spin: " << spin
+                           << "  Type: " <<  celltype <<"\n";
 
             if (!(xLow >= 0 && xLow < dim.x)) throw CC3DException(string("PIF reader: xLow out of bounds : \n") + line);
             pif >> xHigh;
@@ -147,13 +145,13 @@ void PIFInitializer::start() {
 
         }
     } else {
-        //cerr <<"\n\n\n Only Cell Types" << "\n";
-        pif >> xLow;
-        int tmp = atoi(first.c_str());
-        spin = tmp;
-        celltype = second;
-        //cerr << "spin: " << spin << " celltype: : " << celltype <<
-        //     " xLow: " << xLow << endl;
+        Log(LOG_TRACE) << "\n\n\n Only Cell Types" << "\n";
+		pif >> xLow;
+		int tmp = atoi(first.c_str());
+		spin = tmp;
+		celltype = second;
+		Log(LOG_TRACE) << "spin: " << spin << " celltype: : " << celltype <<
+            " xLow: " << xLow;
         if (!(xLow >= 0 && xLow < dim.x)) throw CC3DException(string("PIF reader: xLow out of bounds : \n") + line);
         pif >> xHigh;
         if (!(xHigh >= 0 && xHigh < dim.x)) throw CC3DException(string("PIF reader: xHigh out of bounds : \n") + line);
