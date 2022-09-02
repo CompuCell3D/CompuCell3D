@@ -54,7 +54,7 @@ namespace CompuCell3D {
         ///loop over all the cells in the inventory
         for (cInvItr = cellInventoryBegin(); cInvItr != cellInventoryEnd(); ++cInvItr) {
             cell = getCell(cInvItr);
-            for(auto &w : watchers) 
+            for(auto &w : watchers)
                 w->onCellRemove(cell);
             if (!potts) {
                 delete cell;
@@ -70,14 +70,14 @@ namespace CompuCell3D {
     void CellInventory::addToInventory(CellG *_cell) {
         inventory.insert(make_pair(CellIdentifier(_cell->id, _cell->clusterId), _cell));
         compartmentInventory.addToInventory(_cell);
-        for(auto &w : watchers) 
+        for(auto &w : watchers)
             w->onCellAdd(_cell);
 
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     void CellInventory::removeFromInventory(CellG *_cell) {
-        for(auto &w : watchers) 
+        for(auto &w : watchers)
             w->onCellRemove(_cell);
         inventory.erase(CellIdentifier(_cell->id, _cell->clusterId));
         compartmentInventory.removeFromInventory(_cell);

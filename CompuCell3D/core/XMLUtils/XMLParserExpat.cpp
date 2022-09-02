@@ -4,7 +4,7 @@
 
 
 #include <XMLUtils/XMLParserExpat.h>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 //#define _DEBUG
 
 using namespace std;
@@ -51,7 +51,7 @@ int XMLParserExpat::parse(){
   while(getline(inputStream,line)) {
 	
     if (XML_Parse(parser, line.c_str(), line.size(), done) == XML_STATUS_ERROR) {
-		cerr<<"ERROR in the XML file: "<<fileName<<" "<<(const char*)XML_ErrorString(XML_GetErrorCode(parser))<<" in line "<< lineNumber<<endl;;
+		Log(LOG_DEBUG) << "ERROR in the XML file: "<<fileName<<" "<<(const char*)XML_ErrorString(XML_GetErrorCode(parser))<<" in line "<< lineNumber;
 		const char * error_string=XML_ErrorString(XML_GetErrorCode(parser));
 			//<<endl;
 			//
@@ -76,13 +76,13 @@ void handleStartElement(XMLParserExpat *_xmlExpatParser,const XML_Char *name, co
 
 	_xmlExpatParser->tag=name;	
 #ifdef _DEBUG
-	cerr<<"Starting tag="<<_xmlExpatParser->tag<<endl;
+	Log(LOG_DEBUG) << "Starting tag="<<_xmlExpatParser->tag;
 #endif
 	map<string,string> atributeDictionary;
 	for (int i=0;atts[i];i+=2) {
 		atributeDictionary.insert(make_pair(string(atts[i]),string(atts[i+1])));
 #ifdef _DEBUG
-		cerr<<"attrName="<<atts[i]<<" attrValue="<<atts[i+1]<<endl;
+		Log(LOG_DEBUG) << "attrName="<<atts[i]<<" attrValue="<<atts[i+1];
 #endif
 	}
 	CC3DXMLElement element(string(name), atributeDictionary);
@@ -107,7 +107,7 @@ void handleStartElement(XMLParserExpat *_xmlExpatParser,const XML_Char *name, co
 void handleEndElement(XMLParserExpat *_xmlExpatParser,const XML_Char *name){
 	_xmlExpatParser->level--; // leaving a tag
 #ifdef _DEBUG
-	cerr<<"Ending tag: '"<<name<<"'\n";
+	Log(LOG_DEBUG) << "Ending tag: '"<<name<<"'\n";
 #endif
 
 	_xmlExpatParser->nodeStack.pop();
@@ -128,7 +128,7 @@ void handleCharacterData(XMLParserExpat *_xmlExpatParser,const XML_Char *data,in
 	string str=squeeze(string(data,len)); /*<- silly: expat will give you whitespace too */
 	if (str.size()>0u)
 #ifdef _DEBUG
-		cerr<<"Character data: '"<<str<<"'\n";
+		Log(LOG_DEBUG) << "Character data: '"<<str<<"'\n";
 #endif
 	_xmlExpatParser->nodeStack.top()->cdata=str;
 }

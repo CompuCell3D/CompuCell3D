@@ -61,7 +61,7 @@ void CC3DXMLElement::writeCC3DXMLElement(ostream &_out, int _indent){
 	if (_indent){
 		leadingSpaces.assign(_indent/*+defaultIndent*/,' ');
 	}
-	//cerr<<"element="<<this->name<<" comment.size()="<<endl;
+	Log(LOG_TRACE) << "element="<<this->name<<" comment.size()=";
 	if (comment.size()){
 		if (comment=="comel"){
 			_out<<leadingSpaces<<"<!-- ";
@@ -75,9 +75,8 @@ void CC3DXMLElement::writeCC3DXMLElement(ostream &_out, int _indent){
 		}
 
 	}
-
-	//cerr<<"processing element "<<this->name<<endl;
-	//cerr<<"cdata "<<this->cdata<<endl;
+	Log(LOG_TRACE) << "processing element "<<this->name;
+	Log(LOG_TRACE) << "cdata "<<this->cdata;
 
 	if (comment!="comel"){
 		_out<<leadingSpaces;
@@ -98,7 +97,7 @@ void CC3DXMLElement::writeCC3DXMLElement(ostream &_out, int _indent){
 			_out<<leadingSpaces<<extraSpace<<this->cdata<<endl;
 		}
 		for(int i=0 ; i < children.size() ; ++i){
-			//cerr<<"i="<<i<<" element="<<children[i]->name<<endl;
+			Log(LOG_TRACE) << "i="<<i<<" element="<<children[i]->name;
 			int childIndex=(_indent?_indent+defaultIndent:defaultIndent);
 			children[i]->writeCC3DXMLElement(_out,childIndex /*_indent+defaultIndent*/);
 		}
@@ -161,8 +160,7 @@ void CC3DXMLElement::writeCC3DXMLElementInPython(ostream &_out, string _parentEl
 	if (_indent){
 		leadingSpaces.assign(_indent/*+defaultIndent*/,' ');
 	}
-	
-	//cerr<<"element="<<this->name<<" comment.size()="<<endl;
+	Log(LOG_TRACE) << "element="<<this->name<<" comment.size()=";
 
 	bool commentElemFlag=false;
 
@@ -185,18 +183,16 @@ void CC3DXMLElement::writeCC3DXMLElementInPython(ostream &_out, string _parentEl
 		}
 
 	}
-
-	//cerr<<"_commentElemFlag="<<_commentElemFlag<<" commentElemFlag="<<commentElemFlag<<endl;
-
-	//cerr<<"processing element "<<this->name<<endl;
-	//cerr<<"cdata "<<this->cdata<<endl;
+	Log(LOG_TRACE) << "_commentElemFlag="<<_commentElemFlag<<" commentElemFlag="<<commentElemFlag;
+	Log(LOG_TRACE) << "processing element "<<this->name;
+	Log(LOG_TRACE) << "cdata "<<this->cdata;
 	string elementName;
 	if (!_parentElement.size()){
 		//new xml root element - we clear elemNameCounterDict
-		//cerr<<"clearing elemNameCounterDict"<<endl;
+		Log(LOG_TRACE) << "clearing elemNameCounterDict";
 		elemNameCounterDictPtr->clear();
 		elementName=this->name+"Elmnt";
-		//cerr<<"root elementName="<<elementName<<endl;
+		Log(LOG_TRACE) << "root elementName="<<elementName;
 
 		if (!commentElemFlag){
 			_out<<leadingSpaces;
@@ -213,9 +209,9 @@ void CC3DXMLElement::writeCC3DXMLElementInPython(ostream &_out, string _parentEl
 			//we only need to generate new element name for those elements that have children
 			map<std::string,int>::iterator mitr;
 			mitr=elemNameCounterDictPtr->find(this->name);
-			//cerr<<"searching for element "<<this->name<<endl;
+			Log(LOG_TRACE) << "searching for element "<<this->name;
 			//if (mitr==elemNameCounterDictPtr->end()){
-			//	cerr<<"element not found"<<endl;
+				// Log(LOG_TRACE) << "element not found";
 			//}
 
 			if (mitr!=elemNameCounterDictPtr->end()){
@@ -225,13 +221,13 @@ void CC3DXMLElement::writeCC3DXMLElementInPython(ostream &_out, string _parentEl
 				ostringstream outStr;
 				outStr<<mitr->second;
 				elementName=this->name+"Elmnt_"+outStr.str();
-				//cerr<<"generated elementName="<<elementName<<endl;
+				Log(LOG_TRACE) << "generated elementName="<<elementName;
 				
 			}else{
 				elementName=this->name+"Elmnt";
-				//cerr<<"new elementName="<<this->name<<endl;
+				Log(LOG_TRACE) << "new elementName="<<this->name;
 				elemNameCounterDictPtr->insert(make_pair(this->name,0));
-				//cerr<<"inserting "<<this->name<<","<<0<<endl;
+				Log(LOG_TRACE) << "inserting "<<this->name<<","<<0;
 			}			
 
 			if (!commentElemFlag){
@@ -279,9 +275,9 @@ void CC3DXMLElement::writeCC3DXMLElementInPython(ostream &_out, string _parentEl
     }		
 	
 	for(int i=0 ; i < children.size() ; ++i){
-		//cerr<<"Writing element "<<i<<" elementName="<<elementName<<endl;			
+		Log(LOG_TRACE) << "Writing element "<<i<<" elementName="<<elementName;
 		children[i]->setElemNameCounterDictPtr(elemNameCounterDictPtr);
-		//cerr<<"passing commentElemFlag="<<commentElemFlag<<endl;
+		Log(LOG_TRACE) << "passing commentElemFlag="<<commentElemFlag;
 		children[i]->writeCC3DXMLElementInPython(_out, elementName,4,commentElemFlag);
 		
 	}
@@ -290,12 +286,10 @@ void CC3DXMLElement::writeCC3DXMLElementInPython(ostream &_out, string _parentEl
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 CC3DXMLElement * CC3DXMLElement::getFirstElement(std::string  _name, std::map<std::string,std::string> * _attributes){
-
-	//cerr<<"INSIDE getFirstElement"<<endl;
+	Log(LOG_TRACE) << "INSIDE getFirstElement";
 	//if (_attributes){
-	//	cerr<<"_attributes->size()="<<_attributes->size()<<endl;
+		// Log(LOG_TRACE) << "_attributes->size()="<<_attributes->size();
 	//}
-	//cerr<<"\n\n\n\n\n\n";
 	map<string,string>::iterator pos;
 	for(int i = 0 ; i< children.size() ; ++i){
 		if(children[i]->name==_name){
@@ -305,7 +299,7 @@ CC3DXMLElement * CC3DXMLElement::getFirstElement(std::string  _name, std::map<st
 			bool attributesMatch=true;
 			if(_attributes->size() <= children[i]->attributes.size()){// check attributes when they exist
 				for(map<string,string>::iterator mitr = _attributes->begin() ;  mitr != _attributes->end() ; ++mitr){
-					//cerr<<"Looking for attribute "<<mitr->first<<endl;
+					Log(LOG_TRACE) << "Looking for attribute "<<mitr->first;
 					pos=children[i]->attributes.find(mitr->first);
 					if(pos==children[i]->attributes.end() || mitr->second!=pos->second){
 						//if there is a mismatch in any attribute (name or value) move to another child element
@@ -371,21 +365,16 @@ CC3DXMLElement * CC3DXMLElement::attachElement(const std::string  _elementName,c
 	//	return 0;
 	//}
 	CC3DXMLElement  addedElem(_elementName,std::map<std::string,std::string>(),_cdata);
-	//cerr<<" got here"<<endl;
-
 	additionalChildElements.push_back(addedElem);
-	//cerr<<" got here 1"<<endl;
 	
 	addChild(&(*(--additionalChildElements.end())));
-	//cerr<<" got here 2"<<endl;
-	
 
 	//for (int i = 0 ; i < additionalChildElements.size() ; ++i){
-	//	cerr<<"additional element "<<i<<" = "<<additionalChildElements[i].cdata<<endl;
+	//  Log(LOG_TRACE) << "additional element "<<i<<" = "<<additionalChildElements[i].cdata;
 	//}
 
 	//for (int i = 0 ; i < children.size() ; ++i){
-	//	cerr<<"additional element "<<i<<" = "<<children[i]->cdata<<endl;
+	//  Log(LOG_TRACE) << "additional element "<<i<<" = "<<children[i]->cdata;
 	//}
 
 
@@ -415,11 +404,11 @@ long CC3DXMLElement::getPointerAsLong(){
 
 void CC3DXMLElement::addChild(CC3DXMLElement * _child){
 #ifdef _DEBUG
-	cerr<<"ADDING CHILDREN of:"<<name<<" child name "<<_child->name<<endl;
+	Log(LOG_DEBUG) << "ADDING CHILDREN of:"<<name<<" child name "<<_child->name;
 #endif
 	children.push_back(_child);
 #ifdef _DEBUG
-	cerr<<"NUMBER OF CHILDREN FOR ELEMENT "<<name<<" is "<<children.size()<<endl;
+	Log(LOG_DEBUG) << "NUMBER OF CHILDREN FOR ELEMENT "<<name<<" is "<<children.size();
 #endif
 }
 
@@ -507,7 +496,7 @@ CC3DXMLElementList CC3DXMLElement::getElements(std::string _name){
 	CC3DXMLElementList elementList;
 	
 #ifdef _DEBUG
-		cerr<<"getElements for element "<<name<<endl;
+		Log(LOG_DEBUG) << "getElements for element "<<name;
 #endif //_DEBUG
 
 	if (_name!=""){
@@ -517,8 +506,8 @@ CC3DXMLElementList CC3DXMLElement::getElements(std::string _name){
 		}
 	}else{
 #ifdef _DEBUG
-		cerr<<"number of children of element "<<name<<" is "<<children.size()<<endl;
-		cerr<<"CHILDREN.SIZE()="<<children.size()<<endl;
+		Log(LOG_DEBUG) << "number of children of element "<<name<<" is "<<children.size();
+		Log(LOG_DEBUG) << "CHILDREN.SIZE()="<<children.size();
 #endif
 		for (CC3DXMLElementList::iterator litr=children.begin() ; litr!=children.end(); ++litr){
 			elementList.push_back(*litr);
@@ -526,7 +515,7 @@ CC3DXMLElementList CC3DXMLElement::getElements(std::string _name){
 	}
 
 #ifdef _DEBUG
-	cerr<<"LIST COUNT="<<elementList.size()<<endl;
+	Log(LOG_DEBUG) << "LIST COUNT="<<elementList.size();
 #endif
 
 	return elementList;

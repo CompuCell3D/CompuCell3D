@@ -6,6 +6,7 @@
 #include <CompuCell3D/Potts3D/Potts3D.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
+#include<CompuCell3D/CC3DLogger.h>
 using namespace CompuCell3D;
 
 
@@ -67,8 +68,7 @@ void VolumeMean::step(const unsigned int currentStep){
       mean/=cellCounter;
    else
       mean=0.0;
-
-   cerr<<"The mean cell volume for exponent of "<<exponent<<" is "<<mean<<endl;
+   Log(LOG_DEBUG) << "The mean cell volume for exponent of "<<exponent<<" is "<<mean;
 
 }
 
