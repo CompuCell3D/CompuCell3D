@@ -443,7 +443,7 @@ void BlobFieldInitializer::initializeCellTypesCellSort(){
 //   
 //  while (in.check(START_ELEMENT)) {
 //    if (in.getName() == "Region"){
-//      cerr<<"Inside Region Definition"<<endl;
+	// Log(LOG_TRACE) << "Inside Region Definition";
 //      in.match(START_ELEMENT);
 //      in.skip(TEXT);
 //
@@ -460,7 +460,7 @@ void BlobFieldInitializer::initializeCellTypesCellSort(){
 //            initData.typeNamesString=in.matchSimple();
 //         }else if (in.getName() == "Width"){
 //            initData.width = BasicString::parseUInteger(in.matchSimple());
-//            cerr<<"width="<<initData.width <<endl;
+// 			Log(LOG_TRACE) << "width="<<initData.width;
 //         }else if (in.getName() == "Gap"){
 //            initData.gap = BasicString::parseUInteger(in.matchSimple());
 //         }else {

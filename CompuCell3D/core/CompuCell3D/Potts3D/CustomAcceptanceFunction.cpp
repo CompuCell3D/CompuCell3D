@@ -27,20 +27,20 @@ using namespace CompuCell3D;
 using namespace std;
 
 double CustomAcceptanceFunction::accept(const double temp, const double change){
-	//cerr<<"pUtils="<<pUtils<<endl;
+	Log(LOG_TRACE) << "pUtils="<<pUtils;
 	int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();	
 	ExpressionEvaluator & ev=eed[currentWorkNodeNumber];
 	double acceptance=0.0;
-	//cerr<<"size="<<eed.size()<<endl;
-	//cerr<<"temp="<<temp<<endl;
-	//cerr<<"change="<<change<<endl;
+	Log(LOG_TRACE) << "size="<<eed.size();
+	Log(LOG_TRACE) << "temp="<<temp;
+	Log(LOG_TRACE) << "change="<<change;
 
 
 	ev[0]=temp;
 	ev[1]=change;
 	
 	acceptance=ev.eval();
-	//cerr<<"acceptance="<<acceptance<<endl;
+	Log(LOG_TRACE) << "acceptance="<<acceptance;
 
 	return acceptance;
 }

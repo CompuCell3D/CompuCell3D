@@ -1,4 +1,5 @@
 #include <CompuCell3D/CC3D.h>
+#include<CompuCell3D/CC3DLogger.h>
 using namespace CompuCell3D;
 using namespace std;
 
@@ -79,8 +80,7 @@ void GrowthSteppable::step(const unsigned int currentStep){
 }
 
 void GrowthSteppable::setGrowthRate(unsigned int cellType, double growthRate){
-
-    cerr<<"CHANGING GROWTH RATE FOR CELL TYPE "<<cellType<<" TO "<<growthRate<<endl;
+    Log(LOG_DEBUG) << "CHANGING GROWTH RATE FOR CELL TYPE "<<cellType<<" TO "<<growthRate;
     std::map<unsigned int, double>::iterator mitr;
     this->growthRateMap[cellType] = growthRate;
 }

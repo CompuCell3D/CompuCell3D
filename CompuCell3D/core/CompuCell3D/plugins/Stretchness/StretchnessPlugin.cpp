@@ -113,8 +113,7 @@ double StretchnessPlugin::changeEnergy(const Point3D &pt,
   Point3D n;
   double energy = 0;
 
-
-//    cerr<<"scaleStretchness="<<scaleStretchness<<" maxNeighborIndex="<<maxNeighborIndex<<endl;
+Log(LOG_TRACE) << "scaleStretchness="<<scaleStretchness<<" maxNeighborIndex="<<maxNeighborIndex;
 
 
   // Count surface difference
@@ -165,8 +164,7 @@ double StretchnessPlugin::changeEnergy(const Point3D &pt,
 //     energy += diffEnergy(oldCell->surface*scaleSurface, oldDiff*scaleSurface);
 //   }
    
-
-//   cerr<<"energy="<<energy<<endl;
+Log(LOG_TRACE) << "energy="<<energy;
   return energy;
 }
 

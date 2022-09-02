@@ -3,7 +3,7 @@
 
 
 #include <CompuCell3D/CC3D.h>
-
+#include<CompuCell3D/CC3DLogger.h>
 
 
 using namespace CompuCell3D;
@@ -43,8 +43,7 @@ void HeterotypicBoundaryLength::calculateHeterotypicSurface() {
     // note: unit surface is different on a hex lattice. if you are runnign 
     // this steppable on hex lattice you need to adjust it. Remember that on hex lattice unit length and unit surface have different values
     double unit_surface = 1.0; 
-
-    cerr << "Calculating HTBL for all cell type combinations" << endl;
+    Log(LOG_DEBUG) <<  "Calculating HTBL for all cell type combinations";
 
     for (unsigned int x = 0; x < fieldDim.x; ++x)
         for (unsigned int y = 0; y < fieldDim.y; ++y)

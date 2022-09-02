@@ -48,6 +48,7 @@ using namespace std;
 #include <BasicUtils/BasicRandomNumberGenerator.h>
 #include<core/CompuCell3D/CC3DLogger.h>
 //void Syntax(const string name) {
+  Log(LOG_TRACE) << 
 //  cerr << "Syntax: " << name << " <config>" << endl;
 //  exit(1);
 //}
@@ -111,11 +112,12 @@ BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
 //      &Simulator::steppableManager.getPluginInfos();
 //
 //    if (!infosG->empty()) {
+  // Log(LOG_TRACE) << 
 //      cerr << "Found the following Steppables:" << endl;
 //      BasicPluginManager<Steppable>::infos_t::iterator it; 
 //      for (it = infosG->begin(); it != infosG->end(); it++)
+// Log(LOG_TRACE) << 
 //	cerr << "  " << *(*it) << endl;
-//      cerr << endl;
 //    }
 //
 //
@@ -125,11 +127,12 @@ BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
 //      &Simulator::pluginManager.getPluginInfos();
 //
 //    if (!infos->empty()) {
+  //    Log(LOG_TRACE) << 
 //      cerr << "Found the following plugins:" << endl;
 //      BasicPluginManager<Plugin>::infos_t::iterator it; 
 //      for (it = infos->begin(); it != infos->end(); it++)
+// Log(LOG_TRACE) << 
 //	cerr << "  " << *(*it) << endl;
-//      cerr << endl;
 //    }
 //
 //
@@ -163,8 +166,10 @@ BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
 //    }
 //
 ////     BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+//       Log(LOG_TRACE) << 
 ////     cerr<<"rand->getSeed()="<<rand->getSeed()<<endl;
 ////     for(int i  = 0 ; i < 10000 ; ++i){
+  //       Log(LOG_TRACE) << 
 ////       cerr<<"randomNumber "<<i<<" = "<<rand->getRatio()<<endl;
 ////     }
 ////     exit(0);
@@ -181,9 +186,11 @@ BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
 //    return 0;
 //
 //  } catch (const XMLException &e) {
+  //  Log(LOG_TRACE) << 
 //    cerr << "ERROR: " << XercesStr(e.getMessage()) << endl;
 //
 //  } catch (const BasicException &e) {
+  //  Log(LOG_TRACE) << 
 //    cerr << "ERROR: " << e << endl;
 //  }
 //
@@ -216,10 +223,12 @@ int main(int argc, char *argv[]) {
 //    // Libaries in COMPUCELL3D_PLUGIN_PATH can override the
 //    // DEFAULT_PLUGIN_PATH
 //    char *steppablePath = getenv("COMPUCELL3D_STEPPABLE_PATH");
+//    Log(LOG_TRACE) << 
 //    cerr<<"steppablePath="<<steppablePath<<endl;
 //    if (steppablePath) Simulator::steppableManager.loadLibraries(steppablePath);
 //
 //    char *pluginPath = getenv("COMPUCELL3D_PLUGIN_PATH");
+//    Log(LOG_TRACE) << 
 //    cerr<<"pluginPath="<<pluginPath<<endl;
 //    if (pluginPath) Simulator::pluginManager.loadLibraries(pluginPath);
 //
@@ -239,11 +248,12 @@ int main(int argc, char *argv[]) {
 //      &Simulator::steppableManager.getPluginInfos();
 //
 //    if (!infosG->empty()) {
+  //    Log(LOG_TRACE) << 
 //      cerr << "Found the following Steppables:" << endl;
 //      BasicPluginManager<Steppable>::infos_t::iterator it; 
 //      for (it = infosG->begin(); it != infosG->end(); it++)
+//  Log(LOG_TRACE) << 
 //	cerr << "  " << *(*it) << endl;
-//      cerr << endl;
 //    }
 //
 //
@@ -253,11 +263,12 @@ int main(int argc, char *argv[]) {
 //      &Simulator::pluginManager.getPluginInfos();
 //
 //    if (!infos->empty()) {
+  //    Log(LOG_TRACE) << 
 //      cerr << "Found the following plugins:" << endl;
 //      BasicPluginManager<Plugin>::infos_t::iterator it; 
 //      for (it = infos->begin(); it != infos->end(); it++)
+//  Log(LOG_TRACE) << 
 //	cerr << "  " << *(*it) << endl;
-//      cerr << endl;
 //    }
 //
 //
@@ -281,12 +292,14 @@ int main(int argc, char *argv[]) {
 //      // Parse
 //      parser->assertName("CompuCell3D");
 //      parser->match(XMLEventTypes::START_ELEMENT);
+//      Log(LOG_TRACE) << 
 //      cerr<<"BEFORE READXML"<<endl;
 //      sim.readXML(*parser);
 //      parser->match(XMLEventTypes::END_ELEMENT, -XMLEventTypes::TEXT);
 //
 //      // End
 //      parser->match(XMLEventTypes::END_DOCUMENT);
+//    Log(LOG_TRACE) << 
 //		cerr<<"FINISHED INITIALIZING"<<endl;
 //      sim.initializeCC3D();
 //
@@ -296,8 +309,10 @@ int main(int argc, char *argv[]) {
 //    }
 //
 ////     BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+//       Log(LOG_TRACE) << 
 ////     cerr<<"rand->getSeed()="<<rand->getSeed()<<endl;
 ////     for(int i  = 0 ; i < 10000 ; ++i){
+  //       Log(LOG_TRACE) << 
 ////       cerr<<"randomNumber "<<i<<" = "<<rand->getRatio()<<endl;
 ////     }
 ////     exit(0);
@@ -305,19 +320,23 @@ int main(int argc, char *argv[]) {
 //    // Run simulation
 //    sim.start();
 ////     sim.getPotts()->unregisterEnergyFunction("Volume");
-//    
+//    Log(LOG_TRACE) << 
 //    cerr<<"sim.getNumSteps()="<<sim.getNumSteps()<<endl;
 //    for (unsigned int i = 1; i <= sim.getNumSteps(); i++)
 //      sim.step(i);
+//   Log(LOG_TRACE) << 
 //	 cerr<<"got here before finish"<<endl;
 //    sim.finish();
+//   Log(LOG_TRACE) << 
 //	 cerr<<"got here after finish"<<endl;
 //    return 0;
 //
 //  } catch (const XMLException &e) {
+  //  Log(LOG_TRACE) << 
 //    cerr << "ERROR: " << XercesStr(e.getMessage()) << endl;
 //
 //  } catch (const BasicException &e) {
+  //  Log(LOG_TRACE) << 
 //    cerr << "ERROR: " << e << endl;
 //  }
 //  
