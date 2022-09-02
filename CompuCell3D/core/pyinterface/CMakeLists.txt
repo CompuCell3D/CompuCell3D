@@ -8,7 +8,7 @@ INCLUDE(UseSWIG)
 SET(PYINTERFACE_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pyinterface)
 SET(CMAKE_SWIG_FLAGS "")
 
-set(PYTHON_LIBRARY_TO_LINK ${Python_LIBRARY_RELEASE})
+set(PYTHON_LIBRARY_TO_LINK ${Python_LIBRARIES})
 set(undefined_link_flags " ")
 if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
     # on osx wih conda python 3 we do not link python

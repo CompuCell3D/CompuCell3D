@@ -1,13 +1,9 @@
 #ifndef FOCALPOINTPLASTICITYLINKS_H
 #define FOCALPOINTPLASTICITYLINKS_H
 
-#ifndef PyObject_HEAD
-struct _object;
-typedef _object PyObject;
-#endif
-
 #include <CompuCell3D/CC3D.h>
 #include <CompuCell3D/DerivedProperty.h>
+#include <CompuCell3D/CC3DPyObject.h>
 
 #include "FocalPointPlasticityTracker.h"
 #include "FocalPointPlasticityDLLSpecifier.h"
@@ -36,7 +32,7 @@ namespace CompuCell3D {
         REGULAR, INTERNAL, ANCHOR
     };
 
-    class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityLinkBase {
+    class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityLinkBase : CC3DPyObject {
 
     private:
 
@@ -59,16 +55,15 @@ namespace CompuCell3D {
     public:
 
         FocalPointPlasticityLinkBase() :
-                initiator(0), initiated(0), potts(0), fppltd(FocalPointPlasticityLinkTrackerData()) {
+                CC3DPyObject(), initiator(0), initiated(0), potts(0), fppltd(FocalPointPlasticityLinkTrackerData()) {
             DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(
                     this);
             DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getTension> tension(
                     this);
-            pyAttrib = 0;
 
         }
 
-        ~FocalPointPlasticityLinkBase() {}
+        virtual ~FocalPointPlasticityLinkBase() {}
 
         const FocalPointPlasticityLinkType getType() { return type; }
 
@@ -189,15 +184,8 @@ namespace CompuCell3D {
         CellG *getObj1() { return initiated; }
 
         // Python support
-
-        PyObject *pyAttrib;
-
-        PyObject *getPyAttrib() {
-#ifdef SWIGPYTHON
-            if (pyAttrib == nullptr) pyAttrib = PyDict_New();
-#endif
-            return pyAttrib;
-        }
+        
+        PyObject *get_dict() { return CC3DPyObject::getdict(); }
     };
 
     class FOCALPOINTPLASTICITY_EXPORT FocalPointPlasticityLink : public FocalPointPlasticityLinkBase {
@@ -214,7 +202,6 @@ namespace CompuCell3D {
             potts = _potts;
             fppltd = FocalPointPlasticityLinkTrackerData(_fppltd);
             fppltd.anchor = false;
-            pyAttrib = 0;
 
             DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(
                     this);
@@ -258,7 +245,6 @@ namespace CompuCell3D {
             potts = _potts;
             fppltd = FocalPointPlasticityLinkTrackerData(_fppltd);
             fppltd.anchor = false;
-            pyAttrib = 0;
 
             DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(
                     this);
@@ -305,7 +291,6 @@ namespace CompuCell3D {
             fppltd = FocalPointPlasticityLinkTrackerData(_fppltd);
             fppltd.anchor = true;
             fppltd.anchorPoint = _fppltd.anchorPoint;
-            pyAttrib = 0;
 
             DerivedProperty<FocalPointPlasticityLinkBase, float, &FocalPointPlasticityLinkBase::getDistance> length(
                     this);

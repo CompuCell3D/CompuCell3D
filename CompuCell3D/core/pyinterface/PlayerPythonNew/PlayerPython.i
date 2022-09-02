@@ -6,6 +6,12 @@
 
 //%include "typemaps.i"
 
+%begin %{
+#ifdef _MSC_VER
+#define SWIG_PYTHON_INTERPRETER_NO_DEBUG
+#endif
+%}
+
 // *************************************************************
 // Module Includes 
 // *************************************************************

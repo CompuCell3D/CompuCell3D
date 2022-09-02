@@ -4,11 +4,7 @@
 #include <vector>
 #include <CompuCell3D/DerivedProperty.h>
 #include <CompuCell3D/ExtraMembers.h>
-
-#ifndef PyObject_HEAD
-struct _object; //forward declare
-typedef _object PyObject; //type redefinition
-#endif
+#include <CompuCell3D/CC3DPyObject.h>
 
 namespace CompuCell3D {
 
@@ -16,11 +12,12 @@ namespace CompuCell3D {
      * A Potts3D cell.
      */
 
-    class CellG {
+    class CellG : CC3DPyObject {
     public:
         typedef unsigned char CellType_t;
 
         CellG();
+        virtual ~CellG() {};
 
         long volume;
         float targetVolume;
@@ -59,6 +56,8 @@ namespace CompuCell3D {
         // Derived properties
 
     public:
+
+        PyObject *getdict() { return CC3DPyObject::getdict(); }
 
         // Function defining the value of derived property: pressure
         float getPressure();

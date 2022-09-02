@@ -5,7 +5,7 @@
 // #include <CompuCell3D/Field3D/Array3D.h>
 
 #include <vector>
-#include <Python.h>
+#include <CompuCell3D/CC3DPy.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 
 #include "FiPyInterfaceDLLSpecifier.h"
