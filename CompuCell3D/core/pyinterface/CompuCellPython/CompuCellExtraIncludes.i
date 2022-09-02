@@ -18,7 +18,7 @@
 #include <CompuCell3D/Potts3D/Potts3D.h>
 //NeighborFinderParams
 #include <NeighborFinderParams.h>
-#include <Python.h>
+#include <CompuCell3D/CC3DPy.h>
 #include <Utils/Coordinates3D.h>
 #include <CompuCell3D/Field3D/Array3D.h>
 

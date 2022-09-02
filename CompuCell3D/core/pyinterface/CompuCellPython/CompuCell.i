@@ -48,6 +48,11 @@
 
 %include <windows.i>
 
+%begin %{
+#ifdef _MSC_VER
+#define SWIG_PYTHON_INTERPRETER_NO_DEBUG
+#endif
+%}
 
 %{
 #define SWIG_FILE_WITH_INIT	
@@ -489,10 +494,6 @@ using namespace CompuCell3D;
     def setdict(self,_dict):
         # raise AttributeError('ASSIGNMENT cell.dict=%s is illegal. dict can only be modified but not replaced'%(_dict))
         raise AttributeError('ASSIGNMENT cell.dict=%s is illegal. Dictionary "dict" can only be modified but not replaced'%(_dict))
-        
-    def getdict(self):
-        dict_object = _CompuCell.getPyAttrib(self)
-        return _CompuCell.getPyAttrib(self)
         
     __swig_setmethods__["dict"] = setdict
     __swig_getmethods__["dict"] = getdict

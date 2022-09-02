@@ -10,6 +10,11 @@
 // by SWIG.  Include include files or definitions that are required
 // for the module to build correctly.
 
+%begin %{
+#ifdef _MSC_VER
+#define SWIG_PYTHON_INTERPRETER_NO_DEBUG
+#endif
+%}
 
 %{
 #include <CC3DXMLElement.h>

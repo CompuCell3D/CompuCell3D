@@ -34,11 +34,13 @@ SET(SRCS
 )
 
 SET(INCLUDE_DIRS
+    ${Python_INCLUDE_DIRS}
     $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_INCLUDE_DIR}>
 )
 
 set(LIBS
+    ${Python_LIBRARIES}
     cc3d::PublicUtilities
     cc3d::Units
     cc3d::Automaton
@@ -107,5 +109,7 @@ INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D .h
   CC3D_STL
   CC3DEvents
   CC3DExceptions
+  CC3DPy
+  CC3DPyObject
 
 )

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <CompuCell3D/Field3D/Field3D.h>
 
-#include <Python.h>
+#include <CompuCell3D/CC3DPy.h>
 #include <numpy/arrayobject.h>
 
 #include "FiPyInterface.h"

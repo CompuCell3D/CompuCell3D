@@ -70,7 +70,10 @@ class RollbackImporter:
 
         result = self.realImport(*(name, globals, locals, fromlist, level_import))
 
-        self.newModules[name] = 1
+        # Handle unloading relative imports
+        stored_name = name if '.' not in name else name.split('.')[0]
+
+        self.newModules[stored_name] = 1
         return result
 
     def uninstall(self):

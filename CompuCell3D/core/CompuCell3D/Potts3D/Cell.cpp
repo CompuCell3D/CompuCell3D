@@ -2,7 +2,8 @@
 
 using namespace CompuCell3D;
 
-CellG::CellG() :
+CellG::CellG() : 
+        CC3DPyObject(), 
         volume(0),
         targetVolume(0.0),
         lambdaVolume(0.0),
