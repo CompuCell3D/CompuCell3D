@@ -3,6 +3,8 @@ from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
 from cc3d.core.RollbackImporter import RollbackImporter
 import multiprocessing
+# Placing here as an extended usage of this module
+from cc3d.core.simservice.CC3DSimService import CC3DSimService
 
 
 class CC3DCaller:

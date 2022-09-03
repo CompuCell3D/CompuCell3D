@@ -1,0 +1,89 @@
+<CompuCell3D Revision="20200912" Version="4.2.4">
+
+   <Metadata>
+      <NumberOfProcessors>1</NumberOfProcessors>
+      <DebugOutputFrequency>0</DebugOutputFrequency>
+   </Metadata>
+
+   <Potts>
+      <Dimensions x="50" y="100" z="1"/>
+      <Steps>100000</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+      <Boundary_y>Periodic</Boundary_y>
+   </Potts>
+
+   <Plugin Name="CellType">
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="Producing"/>
+      <CellType TypeId="2" TypeName="Effector"/>
+      <CellType Freeze="" TypeId="3" TypeName="Base"/>
+   </Plugin>
+
+   <Plugin Name="Volume"/>
+
+   <Plugin Name="NeighborTracker"/>
+
+   <Plugin Name="PixelTracker"/>
+
+   <Plugin Name="Secretion"/>
+
+   <Plugin Name="CenterOfMass">
+
+      <!-- Module tracking center of mass of each cell -->
+   </Plugin>
+
+   <Plugin Name="Contact">
+      <!-- Specification of adhesion energies -->
+      <Energy Type1="Medium" Type2="Medium">15.0</Energy>
+      <Energy Type1="Medium" Type2="Producing">15.0</Energy>
+      <Energy Type1="Medium" Type2="Effector">5.0</Energy>
+      <Energy Type1="Medium" Type2="Base">10.0</Energy>
+      <Energy Type1="Producing" Type2="Producing">5.0</Energy>
+      <Energy Type1="Producing" Type2="Effector">15.0</Energy>
+      <Energy Type1="Producing" Type2="Base">0.0</Energy>
+      <Energy Type1="Effector" Type2="Effector">10.0</Energy>
+      <Energy Type1="Effector" Type2="Base">15.0</Energy>
+      <Energy Type1="Base" Type2="Base">5.0</Energy>
+      <NeighborOrder>3</NeighborOrder>
+   </Plugin>
+
+   <Plugin Name="Chemotaxis">
+      <ChemicalField Name="Signal"/>
+   </Plugin>
+
+   <Steppable Type="DiffusionSolverFE">
+
+      <!-- Specification of PDE solvers -->
+      <DiffusionField Name="Signal">
+         <DiffusionData>
+            <FieldName>Signal</FieldName>
+            <GlobalDiffusionConstant>0.1</GlobalDiffusionConstant>
+            <GlobalDecayConstant>1e-05</GlobalDecayConstant>
+            <DecayCoefficient CellType="Producing">0.01</DecayCoefficient>
+            <DecayCoefficient CellType="Effector">0.1</DecayCoefficient>
+         </DiffusionData>
+         <BoundaryConditions>
+            <Plane Axis="X">
+               <ConstantDerivative PlanePosition="Min" Value="0.0"/>
+               <ConstantDerivative PlanePosition="Max" Value="0.0"/>
+            </Plane>
+            <Plane Axis="Y">
+               <Periodic/>
+            </Plane>
+         </BoundaryConditions>
+      </DiffusionField>
+   </Steppable>
+
+   <Steppable Type="UniformInitializer">
+
+      <!-- Initial layout of cells in the form of rectangular slab -->
+      <Region>
+         <BoxMin x="0" y="0" z="0"/>
+         <BoxMax x="10" y="100" z="1"/>
+         <Gap>0</Gap>
+         <Width>5</Width>
+         <Types>Producing</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>
