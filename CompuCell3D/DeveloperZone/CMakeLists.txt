@@ -117,7 +117,18 @@ SET(COMPUCELL3D_INSTALL_STEPPABLE_DIR " cc3d/cpp/CompuCell3DSteppables")
 
 
 LINK_DIRECTORIES(${COMPUCELL3D_LIBRARY_PATH} ${COMPUCELL3D_INSTALL_LIB_DIR} ${COMPUCELL3D_LINK_LIBRARY_PATH})
-SET(CC3DLibraries CC3DCompuCellLib CC3DBoundary CC3DField3D CC3DPublicUtilities CC3DUnits CC3DXMLUtils CC3DmuParser)
+SET(CC3DLibraries
+    CC3DCompuCellLib
+    CC3DAutomaton
+    CC3DBoundary
+    CC3DField3D
+    CC3DPublicUtilities
+    CC3DUnits
+    CC3DXMLUtils
+    CC3DPotts3D
+    CC3DmuParser
+    CC3DExpressionEvaluator
+    )
 SET(STEPPABLE_DEPENDENCIES ${CC3DLibraries})
 SET(PLUGIN_DEPENDENCIES ${CC3DLibraries})
 

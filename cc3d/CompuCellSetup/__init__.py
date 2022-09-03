@@ -4,15 +4,7 @@ from . sim_runner import *
 from . readers import *
 from . simulation_setup import *
 from . simulation_player_utils import *
-# from . readers import readCC3DFile
-# from . initializers import (initializeSimulationObjects,
-#                             initialize_cc3d,
-#                             run,
-#                             register_steppable,
-#                             getCoreSimulationObjects,
-#                             mainLoop)
 from . persistent_globals import PersistentGlobals
-# cc3dSimulationDataHandler = ''
 
 #: :class:`cc3d.CompuCellSetup.persistent_globals` instance
 persistent_globals = PersistentGlobals()

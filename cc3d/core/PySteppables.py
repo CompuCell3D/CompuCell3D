@@ -26,6 +26,12 @@ from math import sqrt
 from cc3d.core.numerics import *
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 
+# text styles
+BOLD = 0b0000001
+ITALIC = 0b0000010
+UNDERLINE = 0b0000100
+STRIKE = 0b0001000
+
 
 class SteppablePy:
     """
@@ -313,6 +319,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         self.mcs = -1
         # {plot_name:plotWindow  - pW object}
         self.plot_dict = {}
+        # {message_window__name:message_window  - pW object}
+        self.msg_dict = {}
+
         #: common dictionary shared by all steppables
         self.shared_steppable_vars: dict = {}
 
@@ -448,6 +457,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
 
     @external_output.setter
     def external_output(self, _external_output):
+
         CompuCellSetup.persistent_globals.return_object = _external_output
 
     def merge_cells(self, source_cell, destination_cell):
@@ -1207,6 +1217,21 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         self.plot_dict[title] = plot_win
 
         return plot_win
+
+    def add_new_message_window(self, title=''):
+        """
+        Adds new message window to the player
+        :param title:
+        :return:
+        """
+
+        if title in self.msg_dict.keys():
+            raise RuntimeError('Message window: ' + title + ' already exists. Please choose a different name')
+
+        msg_win = CompuCellSetup.simulation_player_utils.add_new_message_window(title)
+        self.msg_dict[title] = msg_win
+
+        return msg_win
 
     @deprecated(version='4.0.0', reason="You should use : create_scalar_field_py")
     def createScalarFieldPy(self, _fieldName):

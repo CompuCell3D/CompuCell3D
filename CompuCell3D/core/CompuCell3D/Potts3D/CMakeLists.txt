@@ -62,6 +62,7 @@ INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D/Potts3D .h
   CellChangeWatcher
   CellGChangeWatcher
   Cell
+  CellInventoryWatcher
   CellInventory
   CellTypeMotilityData
   DefaultAcceptanceFunction

@@ -12,6 +12,7 @@ cc3d.core
    PyCoreSpecs
    RoadRunnerPy
    SBMLSolverHelper
+   MaBoSSCC3D
    SteeringParam
    XMLDomUtils
    XMLUtils
