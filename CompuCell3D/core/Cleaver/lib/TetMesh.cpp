@@ -74,7 +74,7 @@ Face::Face() :
 
 Face::~Face()
 {
-//     cerr<<"deleting Face"<<endl;
+    Log(LOG_TRACE) << "deleting Face";
 }
 
 Tet::Tet() : mat_label(-1)
@@ -117,23 +117,22 @@ TetMesh::TetMesh(std::vector<Vertex3D*> &verts, std::vector<Tet*> &tets) :
 }
 
 TetMesh::~TetMesh() {
-//      cerr<<"TetMesh::~TetMesh"<<endl;
-//      cerr<<"TetMesh:: =faces "<<faces<<endl;
+    Log(LOG_TRACE) << "TetMesh::~TetMesh";
+    Log(LOG_TRACE) << "TetMesh:: =faces "<<faces;
     // delete tets verts, faces, etc
     if (faces) {
         delete [] faces;
         nFaces = 0;
         faces = NULL;
     }
-
-//     cerr<<"TetMesh::~TetMesh - deleted faces"<<endl;
+        Log(LOG_TRACE) << "TetMesh::~TetMesh - deleted faces";
     
     for(unsigned int v=0; v < verts.size(); v++)
         delete verts[v];
-//     cerr<<"TetMesh::~TetMesh - deleted verts"<<endl;    
+        Log(LOG_TRACE) << "TetMesh::~TetMesh - deleted verts"; 
     for(unsigned int t=0; t < tets.size(); t++)
         delete tets[t];
-//     cerr<<"TetMesh::~TetMesh - deleted tets"<<endl;        
+        Log(LOG_TRACE) << "TetMesh::~TetMesh - deleted tets";     
     
     std::vector<Vertex3D*> *vlist = &verts;
     std::vector<Tet*> *tlist = &tets;

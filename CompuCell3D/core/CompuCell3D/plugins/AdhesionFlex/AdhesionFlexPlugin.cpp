@@ -65,7 +65,7 @@ void AdhesionFlexPlugin::handleEvent(CC3DEvent &_event) {
 
 
 double AdhesionFlexPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
-    //cerr<<"ChangeEnergy"<<endl;
+    Log(LOG_TRACE) << "ChangeEnergy";
     if (!adhesionDensityInitialized) {
         pUtils->setLock(lockPtr);
         initializeAdhesionMoleculeDensityVector();
@@ -364,7 +364,7 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     formulaString = bindingFormulaXMLElem->getFirstElement("Formula")->getText(); //formula string
 
     CC3DXMLElement *variablesSectionXMLElem = bindingFormulaXMLElem->getFirstElement("Variables");
-    //cerr<<"formulaString="<<formulaString<<endl;
+    Log(LOG_TRACE) << "formulaString="<<formulaString;
 
 
     //here we can add options depending on variables input - for now it is hard-coded

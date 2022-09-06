@@ -338,7 +338,7 @@ void BoundaryStrategy::getOffsetsAndDistances(
         }
 
         if (!checkIfOffsetAlreadyStacked(offset, offsetVecTmp) && distanceTrans < maxDistance + 0.1) {
-            //          cerr<<"distanceTrans="<<distanceTrans<<" offset="<<offset<<endl;
+            Log(LOG_TRACE) << "distanceTrans="<<distanceTrans<<" offset="<<offset;
             offsetVecTmp.push_back(offset);
             distanceVecTmp.push_back(distanceTrans);
         }
@@ -563,7 +563,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
         ctPtTmp.z += 3 - ctPtTmp.z % 3;// make it divisible by 3 in case it is not
 #ifdef _DEBUG
         Log(LOG_DEBUG) << "ctPtTmp.y % 2 =" << ctPtTmp.y % 2 << " ctPtTmp.y % 2=" << ctPtTmp.y % 2;
-        // 		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_EVEN|Z_EVEN "<<(Y_EVEN|Z_EVEN)<<endl;
+        Log(LOG_TRACE) << "  WILL USE CENTER POINT="<<ctPtTmp<<"Y_EVEN|Z_EVEN "<<(Y_EVEN|Z_EVEN);
 #endif
         getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex], hexDistanceArray[indexHex],
                                hexNeighborOrderIndexArray[indexHex]);
@@ -596,9 +596,8 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
         ctPtTmp.z += 3 - ctPtTmp.z % 3;// make it divisible by 3 in case it is not
 
 #ifdef _DEBUG
-        Log(LOG_DEBUG) << "ctPtTmp.y % 2 =" << ctPtTmp.y % 2 << " !ctPtTmp.y % 2=" << !(ctPtTmp.y % 2);
-
-        // 		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_ODD|Z_EVEN)<<endl;
+		Log(LOG_DEBUG) << "ctPtTmp.y % 2 =" << ctPtTmp.y % 2 << " !ctPtTmp.y % 2=" << !(ctPtTmp.y % 2);
+Log(LOG_TRACE) << "  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_ODD|Z_EVEN);
 #endif
         getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex], hexDistanceArray[indexHex],
                                hexNeighborOrderIndexArray[indexHex]);
