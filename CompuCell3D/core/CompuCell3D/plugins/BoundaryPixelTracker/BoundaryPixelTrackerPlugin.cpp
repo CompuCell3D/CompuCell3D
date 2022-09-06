@@ -129,11 +129,10 @@ void BoundaryPixelTrackerPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 
 		// when user specifies depth , fetching of boundary for neighbor order might not work properly - not a big deal because almost nobody is using the Depth tag
 		neighborOrder = 0;
-
-		//cerr<<"got here will do depth"<<endl;
+		Log(LOG_TRACE) << "got here will do depth";
 	}
 	else {
-		//cerr<<"got here will do neighbor order"<<endl;
+		Log(LOG_TRACE) << "got here will do neighbor order";
 		if (_xmlData->getFirstElement("NeighborOrder")) {
 
 			neighborOrder = _xmlData->getFirstElement("NeighborOrder")->getUInt();
@@ -339,8 +338,7 @@ std::set<BoundaryPixelTrackerData > * BoundaryPixelTrackerPlugin::getPixelSetFor
 	if (_neighborOrder <= 0) {
 		return 0;
 	}
-
-	// cerr<<"_neighborOrder="<<_neighborOrder<<" this->neighborOrder="<<this->neighborOrder<<endl;
+	Log(LOG_TRACE) << "_neighborOrder="<<_neighborOrder<<" this->neighborOrder="<<this->neighborOrder;
 	if (_neighborOrder == this->neighborOrder) {
 		//return coundary calculated by default
 		return &boundaryPixelTrackerAccessor.get(_cell->extraAttribPtr)->pixelSet;

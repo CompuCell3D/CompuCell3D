@@ -399,7 +399,7 @@ namespace CompuCell3D {
 	//               static BoundaryStrategy *getInstance() {
 	//                   using namespace std;
 	////                    if(!singleton) {
-	////                         cerr<<"CONSTRUCTING an instance"<<endl;
+								// Log(LOG_TRACE) <<"CONSTRUCTING an instance";
 	//                        ASSERT_OR_THROW("instantiate function has not been called yet for BoundaryStrategy. Cannot return an object ",singleton);
 	////                        singleton = new BoundaryStrategy();
 	//                  
@@ -418,11 +418,11 @@ namespace CompuCell3D {
 	//                  	if(singleton)
 	//					{
 	//						delete singleton;
-	//						cerr << "BoundaryStrategy singleton is DEAD!\n";
+						// Log(LOG_TRACE) << "BoundaryStrategy singleton is DEAD!\n";
 	//					}
 	//					else
 	//					{
-	//						cerr << "BoundaryStrategy singleton is ALIVE!\n";
+		// 					Log(LOG_TRACE) <<"BoundaryStrategy singleton is ALIVE!\n";
 	//					}
 	//
 	//               }              

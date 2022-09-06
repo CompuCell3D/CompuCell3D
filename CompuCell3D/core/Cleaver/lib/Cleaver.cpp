@@ -1148,7 +1148,7 @@ static void interpolate_cell(OTCell *cell, BCCLattice3D *lattice)
         }
     }
     if(max_count != 1)
-        cerr << "Problem!! - Dual Vertex has no clear max value" << endl;
+        Log(LOG_TRACE) << "Problem!! - Dual Vertex has no clear max value";
     */
 
     cell->vert[C]->lbls[dom] = true;
@@ -1693,7 +1693,7 @@ static void create_dual_vertex(OTCell *cell, BCCLattice3D *lattice)
         }
     }
     if(max_count != 1)
-        cerr << "Problem!! - Dual Vertex has no clear max value" << endl;
+        Log(LOG_TRACE) << "Problem!! - Dual Vertex has no clear max value";
     */
 
     cell->vert[C]->lbls[dom] = true;

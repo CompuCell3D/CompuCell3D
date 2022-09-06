@@ -1649,7 +1649,7 @@ void BCCLattice3DMesher::warp_vertex(Vertex3D *vertex)
         /*
         for(int tst=0; tst < VERTS_PER_CELL; tst++)
             if(vertex->cell->vert[tst]->pos() == vec3::zero || vertex->cell->vert[tst]->pos() != vertex->cell->vert[tst]->pos())
-                cerr << "Uncaught Exception: pos == " << (vertex->cell->vert[tst]->pos().toString()).c_str() << endl;
+            Log(LOG_TRACE) << "Uncaught Exception: pos == " << (vertex->cell->vert[tst]->pos().toString()).c_str();
         */
 
         for (unsigned int e=0; e < part_edges.size(); e++){
@@ -2093,12 +2093,12 @@ vec3 BCCLattice3DMesher::projectTriple(Face3D *face, Vertex3D *quad, Vertex3D *w
     /*
     if(intersection.x != intersection.x)
     {
-        cerr << "project triple returned NaN interesction point" << endl;        
+        Log(LOG_TRACE) << "project triple returned NaN interesction point";       
         exit(-1);
     }
     if(intersection == vec3::zero)
     {
-        cerr << "project triple returned Zero intersection point" << endl;
+        Log(LOG_TRACE) << "project triple returned Zero intersection point";
         exit(-1);
     }
     */
@@ -2444,7 +2444,7 @@ bool BCCLattice3DMesher::triangle_intersect(Vertex3D *v1, Vertex3D *v2, Vertex3D
     error = (float)L2(tri_pt - pt);
 
     //if(error != error)
-    //    cerr << "TriangleIntersect2 error = NaN" << endl;
+    // Log(LOG_TRACE) << "TriangleIntersect2 error = NaN";
 
     //----------------------------------------------
     //  If Made It This Far,  Return Success

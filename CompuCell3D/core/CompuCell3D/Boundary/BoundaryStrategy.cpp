@@ -115,11 +115,11 @@ BoundaryStrategy::BoundaryStrategy(string boundary_x, string boundary_y,
 
 
 BoundaryStrategy::~BoundaryStrategy(){
-	////cerr << "destroying boundary strategy singleton=" <<singleton<< endl;
+	Log(LOG_TRACE) << "destroying boundary strategy singleton=" <<singleton;
 	//if (singleton) {
 	//	BoundaryStrategy * tmp = singleton;
-	//	cerr << "will destroy tmp = " << tmp << endl;
-	//	cerr << "will destroy singleton = " << singleton << endl;
+	Log(LOG_TRACE) << "will destroy tmp = " << tmp;
+	Log(LOG_TRACE) << "will destroy singleton = " << singleton;
 	//	singleton = 0;
 	//	delete tmp;
 	//	//delete singleton;
@@ -153,12 +153,12 @@ BoundaryStrategy::~BoundaryStrategy(){
 	//	//delete singleton;
 
 	//}
-	//cerr << "done destroying boundary strategy" << endl;
+	Log(LOG_TRACE) << "done destroying boundary strategy";
 	//singleton = 0;
 }
 
 void BoundaryStrategy::setDim(const Dim3D theDim) {
-	//     cerr<<"calling setDim again"<<endl;
+	Log(LOG_TRACE) << "calling setDim again";
 	Dim3D oldDim(dim);
 
 	dim = theDim;
@@ -189,7 +189,7 @@ void BoundaryStrategy::setDim(const Dim3D theDim) {
 	}
 
 	//    if(!(oldDim==theDim) && generateCheckField){
-	////       cerr<<"initializeQuickCheckField fcn call"<<endl;
+		// Log(LOG_TRACE) << "initializeQuickCheckField fcn call";
 	//      initializeQuickCheckField(theDim);
 	//    }
 
@@ -408,11 +408,10 @@ void BoundaryStrategy::getOffsetsAndDistances(
 	else {
 		ctPtTrans = Coordinates3D<double>(ctPt.x, ctPt.y, ctPt.z);
 	}
-
-	// cerr<<"getOffsetsAndDistances"<<endl;
-	// cerr<<"ctPt="<<ctPt<<endl;
-	// cerr<<"dim="<<dim<<endl;
-	// cerr<<"tempField.getDim()="<<tempField.getDim()<<endl;
+	Log(LOG_TRACE) << "getOffsetsAndDistances";
+	Log(LOG_TRACE) << "ctPt="<<ctPt;
+	Log(LOG_TRACE) << "dim="<<dim;
+	Log(LOG_TRACE) << "tempField.getDim()="<<tempField.getDim();
 
 	Dim3D tmpFieldDim = tempField.getDim();
 
@@ -422,7 +421,7 @@ void BoundaryStrategy::getOffsetsAndDistances(
 		n = getNeighborCustomDim(ctPt, token, distance, tmpFieldDim, true); // notice that we cannot in general use regular getNeighbor because this fcn assumes that dimension of the thmField are same as the dimensions of simulation field
 																			// n = tempField.getNeighbor(ctPt, token, distance, false); // calling  getNeighbor via field interface changes checkBounds from false to true... 
 																			// n = getNeighbor(ctPt, token, distance, true);
-																			// cerr<<"distance="<<distance<<endl;
+																			Log(LOG_TRACE) << "distance="<<distance;
 		if (distance > maxDistance*2.0) break; //2.0 factor is to ensure you visit enough neighbors for different kind of lattices
 											   //This factor is purly heuristic and may need to be increased in certain cases
 
@@ -444,7 +443,7 @@ void BoundaryStrategy::getOffsetsAndDistances(
 		}
 
 		if (!checkIfOffsetAlreadyStacked(offset, offsetVecTmp) && distanceTrans<maxDistance + 0.1) {
-			//          cerr<<"distanceTrans="<<distanceTrans<<" offset="<<offset<<endl;
+			Log(LOG_TRACE) << "distanceTrans="<<distanceTrans<<" offset="<<offset;
 			offsetVecTmp.push_back(offset);
 			distanceVecTmp.push_back(distanceTrans);
 		}
@@ -656,7 +655,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
 
 	Field3DImpl<char> tempField(tmpFieldDim, a);
 	Point3D ctPt(tmpFieldDim.x / 2, tmpFieldDim.y / 2, tmpFieldDim.z / 2);
-	//    cerr<<"_maxDistance="<<_maxDistance<<endl;
+	Log(LOG_TRACE) << "_maxDistance="<<_maxDistance;
 
 	Point3D ctPtTmp;
 	unsigned int indexHex;
@@ -676,7 +675,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
 		ctPtTmp.z += 3 - ctPtTmp.z % 3;// make it divisible by 3 in case it is not
 #ifdef _DEBUG
 		Log(LOG_DEBUG) << "ctPtTmp.y % 2 =" << ctPtTmp.y % 2 << " ctPtTmp.y % 2=" << ctPtTmp.y % 2;
-		// 		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_EVEN|Z_EVEN "<<(Y_EVEN|Z_EVEN)<<endl;
+		Log(LOG_TRACE) << "  WILL USE CENTER POINT="<<ctPtTmp<<"Y_EVEN|Z_EVEN "<<(Y_EVEN|Z_EVEN);
 #endif
 		getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex], hexDistanceArray[indexHex], hexNeighborOrderIndexArray[indexHex]);
 
@@ -715,8 +714,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
 									   //      ctPtTmp.z+=ctPtTmp.z % 3; //make it divisible by 3
 #ifdef _DEBUG
 		Log(LOG_DEBUG) << "ctPtTmp.y % 2 =" << ctPtTmp.y % 2 << " !ctPtTmp.y % 2=" << !(ctPtTmp.y % 2);
-
-		// 		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_ODD|Z_EVEN)<<endl;
+Log(LOG_TRACE) << "  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_ODD|Z_EVEN);
 #endif
 		getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex], hexDistanceArray[indexHex], hexNeighborOrderIndexArray[indexHex]);
 
@@ -909,20 +907,16 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
 
 void BoundaryStrategy::prepareNeighborLists(float _maxDistance) {
 	maxDistance = _maxDistance;
-
-	//cerr<<"generateLatticeMultiplicativeFactors"<<endl;
+	Log(LOG_TRACE) << "generateLatticeMultiplicativeFactors";
 
 	lmf = generateLatticeMultiplicativeFactors(latticeType, dim);
-
-	//cerr<<"generateLatticeMultiplicativeFactors 1"<<endl;
+	Log(LOG_TRACE) << "generateLatticeMultiplicativeFactors 1";
 
 	if (latticeType == HEXAGONAL_LATTICE) {
-
-		//cerr<<"generateLatticeMultiplicativeFactors 2"<<endl;
+		Log(LOG_TRACE) << "generateLatticeMultiplicativeFactors 2";
 		
 		prepareNeighborListsHex(_maxDistance);
-
-		//cerr<<"generateLatticeMultiplicativeFactors 3"<<endl;
+		Log(LOG_TRACE) << "generateLatticeMultiplicativeFactors 3";
 
 	}
 	else {
@@ -966,21 +960,21 @@ unsigned int BoundaryStrategy::getMaxNeighborIndexFromNeighborOrderNoGen(unsigne
 				}
 			}
 		}
-		//       cerr<<"NO GEN LAST RETURN HEX ="<<maxNeighborIndex<<endl;
+		Log(LOG_TRACE) << "NO GEN LAST RETURN HEX ="<<maxNeighborIndex;
 		return --maxNeighborIndex;
 
 	}
 	else {
 
 		double currentDepth = distanceVec[0];
-		//       cerr<<" distanceVec.size()="<<distanceVec.size()<<" currentDepth="<<currentDepth<<endl;
+		Log(LOG_TRACE) << " distanceVec.size()="<<distanceVec.size()<<" currentDepth="<<currentDepth;
 
 		for (int i = 0; i < distanceVec.size(); ++i) {
 			++maxNeighborIndex;
 			if (distanceVec[i]>(currentDepth + 0.005)) {//0.005 is to account for possible numerical approximations in double or float numbers
 				currentDepth = distanceVec[i];
 				++orderCounter;
-				// 	    cerr<<"NO GEN currentDepth="<<currentDepth<<endl;
+				Log(LOG_TRACE) << "NO GEN currentDepth="<<currentDepth;
 				if (orderCounter>_neighborOrder) {
 					maxNeighborIndex = i - 1;
 
@@ -988,7 +982,7 @@ unsigned int BoundaryStrategy::getMaxNeighborIndexFromNeighborOrderNoGen(unsigne
 				}
 			}
 		}
-		//       cerr<<"NO GEN LAST RETURN ="<<maxNeighborIndex<<endl;
+		Log(LOG_TRACE) << "NO GEN LAST RETURN ="<<maxNeighborIndex;
 
 		return --maxNeighborIndex;
 	}
@@ -1021,23 +1015,23 @@ void BoundaryStrategy::prepareNeighborListsBasedOnNeighborOrder(unsigned int _ne
 
 	//    unsigned int maxNeighborOrder=getMaxNeighborOrder();
 	maxNeighborOrder = getMaxNeighborOrder();
-	//    cerr<<"maxNeighborOrder="<<maxNeighborOrder<<" _neighborOrder="<<_neighborOrder<<endl;
+	Log(LOG_TRACE) << "maxNeighborOrder="<<maxNeighborOrder<<" _neighborOrder="<<_neighborOrder;
 
 	while ((maxNeighborOrder - 4)<_neighborOrder) { //making sure there is enough higher order neighbors in the list
-													//       cerr<<"RECALCULATING NEIGHBOR LIST"<<endl;
+													Log(LOG_TRACE) << "RECALCULATING NEIGHBOR LIST";
 													//       prepareNeighborLists(2.0*maxDistance);
 		prepareNeighborLists(maxDistance + 2.0); // this results in faster generation of neighbors for reasonable neighbor order
 		maxNeighborOrder = getMaxNeighborOrder();
-		//       cerr<<"current maxNeighborOrder="<<maxNeighborOrder<<endl;
+		Log(LOG_TRACE) << "current maxNeighborOrder="<<maxNeighborOrder;
 	}
 	//    exit(0); 
 }
 
 
 //bool BoundaryStrategy::isValidDirect(const Point3D &pt) const{
-////    cerr<<"xsize="<<checkField.size()<<endl;
-////    cerr<<"ysize="<<checkField[0].size()<<endl;
-////    cerr<<"zsize="<<checkField[0][0].size()<<endl;
+	Log(LOG_TRACE) << "xsize="<<checkField.size();
+Log(LOG_TRACE) << "ysize="<<checkField[0].size();
+Log(LOG_TRACE) << "zsize="<<checkField[0][0].size();
 //
 //   if(!checkField[pt.x][pt.y][pt.z])
 //      return true;
@@ -1056,9 +1050,9 @@ unsigned int BoundaryStrategy::getMaxNeighborIndexFromNeighborOrder(unsigned int
 
 	//we check if existing max neighbor order is less that requested neighbor order and if so we generate more neighbor offsets 
 	if (maxNeighborOrder<_neighborOrder) {
-		//     cerr<<"BEFORE prepareNeighborListsBasedOnNeighborOrder "<<maxNeighborOrder<<endl; 
+		Log(LOG_TRACE) << "BEFORE prepareNeighborListsBasedOnNeighborOrder "<<maxNeighborOrder;
 		prepareNeighborListsBasedOnNeighborOrder(_neighborOrder);
-		//     cerr<<"AFTER prepareNeighborListsBasedOnNeighborOrder "<<maxNeighborOrder<<endl;
+		Log(LOG_TRACE) << "AFTER prepareNeighborListsBasedOnNeighborOrder "<<maxNeighborOrder;
 	}
 
 	return getMaxNeighborIndexFromNeighborOrderNoGen(_neighborOrder);
@@ -1119,17 +1113,16 @@ Coordinates3D<double> BoundaryStrategy::calculatePointCoordinates(const Point3D 
 Neighbor BoundaryStrategy::getNeighborDirect(Point3D & pt, unsigned int idx, bool checkBounds, bool calculatePtTrans)const {
 	Neighbor n;
 	//    n.pt=pt+offsetVec[idx];
-	//   cerr<<"gnd pt="<<pt<<" idx="<<idx<<" offsetVec.size()="<<offsetVec.size()<<endl;
+	Log(LOG_TRACE) << "gnd pt="<<pt<<" idx="<<idx<<" offsetVec.size()="<<offsetVec.size();
 	unsigned int indexHex;
 
 	if (latticeType == HEXAGONAL_LATTICE) {
 
 		//indexHex=((pt.z%2)<<1)|(pt.y%2);
 		indexHex = (pt.z % 3) * 2 + (pt.y % 2);
-
-		//       cerr<<"idx="<<idx<<" hexOffsetArray[indexHex][idx]="<<hexOffsetArray[indexHex][idx]<<endl;
+		Log(LOG_TRACE) << "idx="<<idx<<" hexOffsetArray[indexHex][idx]="<<hexOffsetArray[indexHex][idx];
 		n.pt = pt + hexOffsetArray[indexHex][idx];
-		//       cerr<<"point pt="<<pt<<" offset="<<hexOffsetArray[indexHex][idx]<<" indexHex="<<indexHex<<endl;
+		Log(LOG_TRACE) << "point pt="<<pt<<" offset="<<hexOffsetArray[indexHex][idx]<<" indexHex="<<indexHex;
 	}
 	else {
 		n.pt = pt + offsetVec[idx];
@@ -1282,9 +1275,8 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //   unsigned int maxHexArraySize=6;
 //
 //#ifdef _DEBUG
-//   cerr<<"maxHexArraySize="<<maxHexArraySize<<endl;
-//
-//   cerr<<"\t\t\t\t\t\t\t CALLING DEFAULT CONSTRUCTOR FOR BOUNDARY STRATEGY"<<endl;
+// Log(LOG_TRACE) << "maxHexArraySize="<<maxHexArraySize;
+//	Log(LOG_TRACE) << "\t\t\t\t\t\t\t CALLING DEFAULT CONSTRUCTOR FOR BOUNDARY STRATEGY";
 //#endif   
 //
 //}
@@ -1307,9 +1299,8 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //   //unsigned int maxHexArraySize=(Y_ODD|Z_ODD|X_ODD|Y_EVEN|Z_EVEN|X_EVEN)+1;
 //   unsigned int maxHexArraySize=6;
 //#ifdef _DEBUG
-//
-//   cerr<<"\t\t\t\t\t\t\t CALLING SPECILIZED CONSTRUCTOR FOR BOUNDARY STRATEGY"<<endl;
-//   cerr<<"maxHexArraySize="<<maxHexArraySize<<endl;
+//	Log(LOG_TRACE) << "\t\t\t\t\t\t\t CALLING SPECILIZED CONSTRUCTOR FOR BOUNDARY STRATEGY";
+// 	 Log(LOG_TRACE) << "maxHexArraySize="<<maxHexArraySize;
 //
 //#endif
 //
@@ -1426,7 +1417,7 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 // * @param dim Dim3D
 // */
 //void BoundaryStrategy::setDim(const Dim3D theDim) {
-////     cerr<<"calling setDim again"<<endl;
+	// Log(LOG_TRACE) << "calling setDim again";
 //    Dim3D oldDim(dim);
 //
 //    dim = theDim;
@@ -1456,7 +1447,7 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //	}
 //
 ////    if(!(oldDim==theDim) && generateCheckField){
-//////       cerr<<"initializeQuickCheckField fcn call"<<endl;
+	// 		 Log(LOG_TRACE) << "initializeQuickCheckField fcn call";
 ////      initializeQuickCheckField(theDim);
 ////    }
 //
@@ -1772,7 +1763,7 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //
 //void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance){
 //#ifdef _DEBUG
-//	cerr<<"INSIDE prepareNeighborListsHex"<<endl;
+// Log(LOG_TRACE) << "INSIDE prepareNeighborListsHex";
 //#endif
 //   //unsigned int maxHexArraySize=(Y_ODD|Z_ODD|X_ODD|Y_EVEN|Z_EVEN|X_EVEN)+1;
 //
@@ -1807,10 +1798,10 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //   
 //   Field3DImpl<char> tempField(tmpFieldDim,a);
 //   Point3D ctPt(tmpFieldDim.x/2 , tmpFieldDim.y/2 , tmpFieldDim.z/2);   
-////    cerr<<"_maxDistance="<<_maxDistance<<endl;
+// 		Log(LOG_TRACE) << "_maxDistance="<<_maxDistance;
 //      
 //#ifdef _DEBUG
-//   cerr<<"center point="<<ctPt<<endl;
+// 	 Log(LOG_TRACE) << "center point="<<ctPt;
 //#endif
 //   Point3D ctPtTmp;
 //   unsigned int indexHex;
@@ -1829,14 +1820,14 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //	  ctPtTmp.y+=ctPtTmp.y % 2; //make it even	
 //	  ctPtTmp.z+=3-ctPtTmp.z % 3;// make it divisible by 3 in case it is not
 //#ifdef _DEBUG
-//		cerr<<"ctPtTmp.y % 2 ="<<ctPtTmp.y % 2 << " ctPtTmp.y % 2="<<ctPtTmp.y % 2<<endl;
-//// 		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_EVEN|Z_EVEN "<<(Y_EVEN|Z_EVEN)<<endl;
+// 		Log(LOG_TRACE) << "ctPtTmp.y % 2 ="<<ctPtTmp.y % 2 << " ctPtTmp.y % 2="<<ctPtTmp.y % 2;
+// 			Log(LOG_TRACE) << "  WILL USE CENTER POINT="<<ctPtTmp<<"Y_EVEN|Z_EVEN "<<(Y_EVEN|Z_EVEN);
 //#endif
 //      getOffsetsAndDistances(ctPtTmp,_maxDistance,tempField,hexOffsetArray[indexHex],hexDistanceArray[indexHex],hexNeighborOrderIndexArray[indexHex]);
 //
 //   }else{//2D case
 //#ifdef _DEBUG
-//      cerr<<"ctPtTmp.y % 2 ="<<ctPtTmp.y % 2 <<endl;
+// 		Log(LOG_TRACE) << "ctPtTmp.y % 2 ="<<ctPtTmp.y % 2;
 //#endif
 //	  ctPtTmp.y+=ctPtTmp.y % 2; //make it even	
 //	  ctPtTmp.z+=0;// make it divisible by 3 in case it is not
@@ -1844,7 +1835,7 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //
 //
 //#ifdef _DEBUG
-//      cerr<<"even even ctPtTmp="<<ctPtTmp<<endl;
+// 		Log(LOG_TRACE) << "even even ctPtTmp="<<ctPtTmp;
 //#endif
 //      getOffsetsAndDistances(ctPtTmp,_maxDistance,tempField,hexOffsetArray[indexHex],hexDistanceArray[indexHex],hexNeighborOrderIndexArray[indexHex]);
 //      
@@ -1867,22 +1858,21 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //   //   if( ctPtTmp.z % 3 ) // is odd
 //   //      ctPtTmp.z+=ctPtTmp.z % 3; //make it divisible by 3
 //#ifdef _DEBUG
-//		cerr<<"ctPtTmp.y % 2 ="<<ctPtTmp.y % 2 << " !ctPtTmp.y % 2="<<!(ctPtTmp.y % 2)<<endl;
-//
-//// 		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_ODD|Z_EVEN)<<endl;
+// 		Log(LOG_TRACE) << "ctPtTmp.y % 2 ="<<ctPtTmp.y % 2 << " !ctPtTmp.y % 2="<<!(ctPtTmp.y % 2);
+//			Log(LOG_TRACE) << "  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_ODD|Z_EVEN);
 //#endif
 //      getOffsetsAndDistances(ctPtTmp,_maxDistance,tempField,hexOffsetArray[indexHex],hexDistanceArray[indexHex],hexNeighborOrderIndexArray[indexHex]);
 //
 //   }else{//2D case
 //#ifdef _DEBUG
-//      cerr<<"ctPtTmp.y % 2 ="<<ctPtTmp.y % 2 << " !ctPtTmp.y % 2="<<!(ctPtTmp.y % 2)<<endl;
+// 		Log(LOG_TRACE) << "ctPtTmp.y % 2 ="<<ctPtTmp.y % 2 << " !ctPtTmp.y % 2="<<!(ctPtTmp.y % 2);
 //#endif
 //
 //	  ctPtTmp.y+=(ctPtTmp.y % 2-1); //make it odd
 //	  ctPtTmp.z+=0;   // make it divisible by 3 in case it is not
 //
 //#ifdef _DEBUG
-//      cerr<<"odd even ctPtTmp="<<ctPtTmp<<endl;
+// 		Log(LOG_TRACE) << "odd even ctPtTmp="<<ctPtTmp;
 //#endif
 //      getOffsetsAndDistances(ctPtTmp,_maxDistance,tempField,hexOffsetArray[indexHex],hexDistanceArray[indexHex],hexNeighborOrderIndexArray[indexHex]);
 //      
@@ -1983,34 +1973,29 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //	   }else{
 //			maxOffset=12;
 //	   }
-//
-//	//cerr<<" *******************************INDEX 0"<<endl;
+//	Log(LOG_TRACE) << " *******************************INDEX 0";
 //	//for(int i = 0 ; i < maxOffset ; ++i){
-//	//	cerr<<"hexOffsetArray[0]["<<i<<"]="<<hexOffsetArray[0][i]<<endl;
+	// Log(LOG_TRACE) << "hexOffsetArray[0]["<<i<<"]="<<hexOffsetArray[0][i];
 //	//}
-//	//cerr<<" *******************************INDEX 1"<<endl;
+// 	Log(LOG_TRACE) << " *******************************INDEX 1";
 //	//for(int i = 0 ; i < maxOffset ; ++i){
-//	//	cerr<<"hexOffsetArray[1]["<<i<<"]="<<hexOffsetArray[1][i]<<endl;
+	// Log(LOG_TRACE) << "hexOffsetArray[1]["<<i<<"]="<<hexOffsetArray[1][i];
 //	//}
-//
-//	//cerr<<" *******************************INDEX 2"<<endl;
+//	Log(LOG_TRACE) << " *******************************INDEX 2";
 //	//for(int i = 0 ; i < maxOffset ; ++i){
-//	//	cerr<<"hexOffsetArray[2]["<<i<<"]="<<hexOffsetArray[2][i]<<endl;
+	// Log(LOG_TRACE) << "hexOffsetArray[2]["<<i<<"]="<<hexOffsetArray[2][i];
 //	//}
-//
-//	//cerr<<" *******************************INDEX 3"<<endl;
+//	Log(LOG_TRACE) << " *******************************INDEX 3";
 //	//for(int i = 0 ; i < maxOffset ; ++i){
-//	//	cerr<<"hexOffsetArray[3]["<<i<<"]="<<hexOffsetArray[3][i]<<endl;
+	// Log(LOG_TRACE) << "hexOffsetArray[3]["<<i<<"]="<<hexOffsetArray[3][i];
 //	//}
-//
-//	//cerr<<" *******************************INDEX 4"<<endl;
+//	Log(LOG_TRACE) <<" *******************************INDEX 4";
 //	//for(int i = 0 ; i < maxOffset ; ++i){
-//	//	cerr<<"hexOffsetArray[4]["<<i<<"]="<<hexOffsetArray[4][i]<<endl;
+	// Log(LOG_TRACE) <<"hexOffsetArray[4]["<<i<<"]="<<hexOffsetArray[4][i];
 //	//}
-//
-//	//cerr<<" *******************************INDEX 5"<<endl;
+//	Log(LOG_TRACE) << " *******************************INDEX 5";
 //	//for(int i = 0 ; i < maxOffset ; ++i){
-//	//	cerr<<"hexOffsetArray[5]["<<i<<"]="<<hexOffsetArray[5][i]<<endl;
+	// Log(LOG_TRACE) << "hexOffsetArray[5]["<<i<<"]="<<hexOffsetArray[5][i];
 //	//}
 //
 //
@@ -2021,11 +2006,10 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //
 //    indexHex=0;    
 //   for (indexHex=0 ; indexHex<maxHexArraySize; ++indexHex){
-//
-//      cerr<<"INDEX HEX="<<indexHex<<" hexOffsetArray[indexHex].size()="<<hexOffsetArray[indexHex].size()<<endl;   
+//		Log(LOG_TRACE) << "INDEX HEX="<<indexHex<<" hexOffsetArray[indexHex].size()="<<hexOffsetArray[indexHex].size();
 //      
 //      for( int i = 0 ; i < hexOffsetArray[indexHex].size() ; ++i){
-//      cerr<<" This is offset["<<i<<"]="<<hexOffsetArray[indexHex][i]<<" distance="<<hexDistanceArray[indexHex][i]<<endl;
+	// 	Log(LOG_TRACE) << " This is offset["<<i<<"]="<<hexOffsetArray[indexHex][i]<<" distance="<<hexDistanceArray[indexHex][i];
 //      }
 //   }
 //
@@ -2035,45 +2019,42 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //   Point3D testPt(10,10,0);
 //   unsigned int idx=3;
 //   n=getNeighborDirect(testPt,idx );
-//
-//   cerr<<"Neighbor="<<n<<endl;
+//	Log(LOG_TRACE) << "Neighbor="<<n;
 //   testPt = Point3D(10,11,0);
 //   n=getNeighborDirect(testPt,idx );
-//   cerr<<"Neighbor="<<n<<endl;
+	// Log(LOG_TRACE) << "Neighbor="<<n;
 //   testPt = Point3D(11,11,0);
 //   n=getNeighborDirect(testPt,idx );
-//   cerr<<"Neighbor="<<n<<endl;
-//
-//   cerr<<"\n\n\n ****************************Checking Bondary "<<endl;
+// 	Log(LOG_TRACE) << "Neighbor="<<n;
+//	Log(LOG_TRACE) << "\n\n\n ****************************Checking Bondary ";
 //   
 //   testPt = Point3D(0,0,0);
-//   cerr<<"HexCoord(testPt)="<<HexCoord(testPt)<<endl;
+// 	 Log(LOG_TRACE) << "HexCoord(testPt)="<<HexCoord(testPt);
 //   for (int i =0 ;i<6 ; ++i){
 //      n=getNeighborDirect(testPt,i );
 //      if(n.distance>0){
-//         cerr<<"Neighbor="<<n<<endl;
+	// 		Log(LOG_TRACE) << "Neighbor="<<n;
 //      }else{
-//         cerr<<"************************Not a neighbor= "<<n<<endl;
+	// 		Log(LOG_TRACE) << "************************Not a neighbor= "<<n;
 //      }
 //   }
-//   
-//   cerr<<"\n\n\n *****************Checkup Boundary"<<endl;
+//   Log(LOG_TRACE) << "\n\n\n *****************Checkup Boundary";
 //
 //   testPt = Point3D(0,dim.y-1,0);
-//   cerr<<"HexCoord(testPt)="<<HexCoord(testPt)<<endl;
+// 	 Log(LOG_TRACE) << "HexCoord(testPt)="<<HexCoord(testPt);
 //   for (int i =0 ;i<6 ; ++i){
 //      n=getNeighborDirect(testPt,i );
 //      if(n.distance>0){
-//         cerr<<"Neighbor="<<n<<endl;
+	// 		Log(LOG_TRACE) << "Neighbor="<<n;
 //      }else{
-//         cerr<<"*****************Not a neighbor= "<<n<<endl;
+	// 		Log(LOG_TRACE) << "*****************Not a neighbor= "<<n;
 //      }
 //   }
 //
 //
 //   for (int i =1 ; i<=11 ; ++i){
 //      unsigned int maxIdx=getMaxNeighborIndexFromNeighborOrder(i);
-//      cerr<<"NEIGHBOR ORDER ="<<i<<" maxIdx="<<maxIdx<<endl;
+// 		Log(LOG_TRACE) << "NEIGHBOR ORDER ="<<i<<" maxIdx="<<maxIdx;
 //      
 //   }
 //   
@@ -2113,11 +2094,10 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //   }else{
 //      ctPtTrans=Coordinates3D<double>(ctPt.x,ctPt.y,ctPt.z);
 //   }
-//   
-//   // cerr<<"getOffsetsAndDistances"<<endl;
-//   // cerr<<"ctPt="<<ctPt<<endl;
-//   // cerr<<"dim="<<dim<<endl;
-//   // cerr<<"tempField.getDim()="<<tempField.getDim()<<endl;
+//   Log(LOG_TRACE) << getOffsetsAndDistances";
+// 		Log(LOG_TRACE) << "ctPt="<<ctPt;
+// 		Log(LOG_TRACE) << "dim="<<dim;
+// 		Log(LOG_TRACE) << "tempField.getDim()="<<tempField.getDim();
 //
 //   Dim3D tmpFieldDim = tempField.getDim();
 //   
@@ -2127,7 +2107,7 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //      n=getNeighborCustomDim(ctPt, token, distance,tmpFieldDim, true); // notice that we cannot in general use regular getNeighbor because this fcn assumes that dimension of the thmField are same as the dimensions of simulation field
 //      // n = tempField.getNeighbor(ctPt, token, distance, false); // calling  getNeighbor via field interface changes checkBounds from false to true... 
 //      // n = getNeighbor(ctPt, token, distance, true);
-//      // cerr<<"distance="<<distance<<endl;
+// 			Log(LOG_TRACE) << "distance="<<distance;
 //      if (distance > maxDistance*2.0) break; //2.0 factor is to ensure you visit enough neighbors for different kind of lattices
 //                                             //This factor is purly heuristic and may need to be increased in certain cases
 //      
@@ -2148,7 +2128,7 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //      }
 //
 //      if ( !checkIfOffsetAlreadyStacked(offset,offsetVecTmp) && distanceTrans<maxDistance+0.1 ){
-////          cerr<<"distanceTrans="<<distanceTrans<<" offset="<<offset<<endl;
+	// 			Log(LOG_TRACE) << "distanceTrans="<<distanceTrans<<" offset="<<offset;
 //         offsetVecTmp.push_back(offset);
 //         distanceVecTmp.push_back(distanceTrans);
 //      }
@@ -2174,7 +2154,7 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //      offsetVecTmp.push_back(mitr->second);
 //   }
 //#ifdef _DEBUG
-//   cerr<<"distanceVecTmp.size()="<<distanceVecTmp.size()<<endl;
+// 	 Log(LOG_TRACE) << "distanceVecTmp.size()="<<distanceVecTmp.size();
 //#endif
 //   //creating a vector indexed by neighbor order  - entries of this vector are the highest indices of offsets for a 
 //   //given neighbor order
@@ -2193,12 +2173,12 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //}
 //
 //void BoundaryStrategy::prepareNeighborListsSquare(float _maxDistance){
-////    cerr<<"_maxDistance="<<_maxDistance<<endl;
+	// Log(LOG_TRACE) << "_maxDistance="<<_maxDistance;
 //
 //   char a='0';
 //   Field3DImpl<char> tempField(dim,a);
 //   int margin=2*fabs(_maxDistance)+1;
-////    cerr<<"margin="<<margin<<" distance="<<_maxDistance<<endl;
+// 		Log(LOG_TRACE) << "margin="<<margin<<" distance="<<_maxDistance;
 //   Point3D ctPt(dim.x/2,dim.y/2,dim.z/2);
 ////    if (margin > dim.x/2 && margin > dim.y/2 && margin > dim.z/2){
 //   if (3*_maxDistance > dim.x && 3*_maxDistance > dim.y && 3*_maxDistance> dim.z){
@@ -2214,7 +2194,7 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //
 //#ifdef _DEBUG
 //    for( int i = 0 ; i < offsetVec.size() ; ++i){
-//      cerr<<" This is offset["<<i<<"]="<<offsetVec[i]<<" distance="<<distanceVec[i]<<endl;
+	// Log(LOG_TRACE) << " This is offset["<<i<<"]="<<offsetVec[i]<<" distance="<<distanceVec[i];
 //    }
 //#endif
 //
@@ -2226,11 +2206,11 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 ////          neighbor=this->getNeighborDirect(const_cast<Point3D&>(ctPt),nIdx);
 ////          if(!neighbor.distance){
 ////             //if distance is 0 then the neighbor returned is invalid
-////             cerr<<" GOT DISTANCE SQUARE 0"<<endl;
-////             cerr<<"neighbor.pt="<<neighbor.pt<<" offset="<<offsetVec[nIdx]<<endl;
+// 				 Log(LOG_TRACE) << " GOT DISTANCE SQUARE 0";
+// 				 Log(LOG_TRACE) << "neighbor.pt="<<neighbor.pt<<" offset="<<offsetVec[nIdx];
 ////             continue;
 ////          }
-////          cerr<<"neighbor.pt="<<neighbor.pt<<" offset="<<offsetVec[nIdx]<<endl;
+// 			  Log(LOG_TRACE) << "neighbor.pt="<<neighbor.pt<<" offset="<<offsetVec[nIdx];
 ////       }
 //
 //
@@ -2244,18 +2224,15 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //
 //void BoundaryStrategy::prepareNeighborLists(float _maxDistance){
 //   maxDistance=_maxDistance;
-//
-//	//cerr<<"generateLatticeMultiplicativeFactors"<<endl;
+//	Log(LOG_TRACE) << "generateLatticeMultiplicativeFactors";
 //
 //   lmf=generateLatticeMultiplicativeFactors(latticeType,dim);
-//
-//	//cerr<<"generateLatticeMultiplicativeFactors 1"<<endl;
+//		Log(LOG_TRACE) << "generateLatticeMultiplicativeFactors 1";
 //
 //   if(latticeType==HEXAGONAL_LATTICE){
-//
-//		//cerr<<"generateLatticeMultiplicativeFactors 2"<<endl;
+//		Log(LOG_TRACE) << "generateLatticeMultiplicativeFactors 2";
 //      prepareNeighborListsHex(_maxDistance);
-//		//cerr<<"generateLatticeMultiplicativeFactors 3"<<endl;
+// 		Log(LOG_TRACE) << "generateLatticeMultiplicativeFactors 3";
 //      
 //   }else{
 //      prepareNeighborListsSquare(_maxDistance);
@@ -2295,23 +2272,22 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //
 ////    unsigned int maxNeighborOrder=getMaxNeighborOrder();
 //   maxNeighborOrder=getMaxNeighborOrder(); 
-////    cerr<<"maxNeighborOrder="<<maxNeighborOrder<<" _neighborOrder="<<_neighborOrder<<endl;
-//
+// 		Log(LOG_TRACE) << "maxNeighborOrder="<<maxNeighborOrder<<" _neighborOrder="<<_neighborOrder;
 //   while((maxNeighborOrder-4)<_neighborOrder){ //making sure there is enough higher order neighbors in the list
-////       cerr<<"RECALCULATING NEIGHBOR LIST"<<endl;
+// 			Log(LOG_TRACE) << "RECALCULATING NEIGHBOR LIST";
 ////       prepareNeighborLists(2.0*maxDistance);
 //     prepareNeighborLists(maxDistance+2.0); // this results in faster generation of neighbors for reasonable neighbor order
 //      maxNeighborOrder=getMaxNeighborOrder();
-////       cerr<<"current maxNeighborOrder="<<maxNeighborOrder<<endl;
+// 			Log(LOG_TRACE) << "current maxNeighborOrder="<<maxNeighborOrder;
 //   }
 ////    exit(0); 
 //}
 //
 //
 ////bool BoundaryStrategy::isValidDirect(const Point3D &pt) const{
-//////    cerr<<"xsize="<<checkField.size()<<endl;
-//////    cerr<<"ysize="<<checkField[0].size()<<endl;
-//////    cerr<<"zsize="<<checkField[0][0].size()<<endl;
+	//    Log(LOG_TRACE) << "xsize="<<checkField.size();
+// 		 Log(LOG_TRACE) << "ysize="<<checkField[0].size();
+// 		 Log(LOG_TRACE) << "zsize="<<checkField[0][0].size();
 ////
 ////   if(!checkField[pt.x][pt.y][pt.z])
 ////      return true;
@@ -2330,9 +2306,9 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //   
 //   //we check if existing max neighbor order is less that requested neighbor order and if so we generate more neighbor offsets 
 //   if (maxNeighborOrder<_neighborOrder){
-////     cerr<<"BEFORE prepareNeighborListsBasedOnNeighborOrder "<<maxNeighborOrder<<endl; 
+	// 	 Log(LOG_TRACE) << "BEFORE prepareNeighborListsBasedOnNeighborOrder "<<maxNeighborOrder;
 //    prepareNeighborListsBasedOnNeighborOrder(_neighborOrder);	 
-////     cerr<<"AFTER prepareNeighborListsBasedOnNeighborOrder "<<maxNeighborOrder<<endl;
+// 		 Log(LOG_TRACE) << "AFTER prepareNeighborListsBasedOnNeighborOrder "<<maxNeighborOrder;
 //   }
 //   
 //   return getMaxNeighborIndexFromNeighborOrderNoGen(_neighborOrder);
@@ -2370,21 +2346,21 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //            }
 //         }
 //      }
-////       cerr<<"NO GEN LAST RETURN HEX ="<<maxNeighborIndex<<endl;
+// 		   Log(LOG_TRACE) << "NO GEN LAST RETURN HEX ="<<maxNeighborIndex;
 //      return --maxNeighborIndex;
 //      
 //   }
 //   else{
 //
 //      double currentDepth=distanceVec[0];
-////       cerr<<" distanceVec.size()="<<distanceVec.size()<<" currentDepth="<<currentDepth<<endl;
+// 			Log(LOG_TRACE) << " distanceVec.size()="<<distanceVec.size()<<" currentDepth="<<currentDepth;
 //     
 //      for(int i = 0 ; i < distanceVec.size() ; ++i){
 //	++maxNeighborIndex;
 //         if(distanceVec[i]>(currentDepth+0.005)){//0.005 is to account for possible numerical approximations in double or float numbers
 //            currentDepth=distanceVec[i];
 //            ++orderCounter;
-//// 	    cerr<<"NO GEN currentDepth="<<currentDepth<<endl;
+// 			Log(LOG_TRACE) << "NO GEN currentDepth="<<currentDepth;
 //            if(orderCounter>_neighborOrder){
 //               maxNeighborIndex=i-1;
 //	       
@@ -2392,7 +2368,7 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //            }
 //         }
 //      }
-////       cerr<<"NO GEN LAST RETURN ="<<maxNeighborIndex<<endl;
+// 			Log(LOG_TRACE) << "NO GEN LAST RETURN ="<<maxNeighborIndex;
 //      
 //      return --maxNeighborIndex;
 //   }
@@ -2436,17 +2412,16 @@ Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)con
 //Neighbor BoundaryStrategy::getNeighborDirect(Point3D & pt,unsigned int idx, bool checkBounds,bool calculatePtTrans )const {
 //   Neighbor n;
 ////    n.pt=pt+offsetVec[idx];
-////   cerr<<"gnd pt="<<pt<<" idx="<<idx<<" offsetVec.size()="<<offsetVec.size()<<endl;
+// 		Log(LOG_TRACE) << "gnd pt="<<pt<<" idx="<<idx<<" offsetVec.size()="<<offsetVec.size();
 //   unsigned int indexHex;
 //
 //   if(latticeType==HEXAGONAL_LATTICE){
 //
 //      //indexHex=((pt.z%2)<<1)|(pt.y%2);
 //	  indexHex=(pt.z%3)*2+(pt.y%2);
-//      
-////       cerr<<"idx="<<idx<<" hexOffsetArray[indexHex][idx]="<<hexOffsetArray[indexHex][idx]<<endl;
+//      	Log(LOG_TRACE) << "idx="<<idx<<" hexOffsetArray[indexHex][idx]="<<hexOffsetArray[indexHex][idx];
 //      n.pt=pt+hexOffsetArray[indexHex][idx];
-////       cerr<<"point pt="<<pt<<" offset="<<hexOffsetArray[indexHex][idx]<<" indexHex="<<indexHex<<endl;
+// 			Log(LOG_TRACE) << "point pt="<<pt<<" offset="<<hexOffsetArray[indexHex][idx]<<" indexHex="<<indexHex;
 //   }else{
 //      n.pt=pt+offsetVec[idx];
 //   }

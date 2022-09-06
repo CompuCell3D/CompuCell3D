@@ -181,17 +181,16 @@ void BoundaryMonitorPlugin::handleEvent(CC3DEvent & _event){
 				ptShift=pt-shiftVec;
 				if (ptShift.x>=0 && ptShift.x<oldDim.x && ptShift.y>=0 && ptShift.y<oldDim.y && ptShift.z>=0 && ptShift.z<oldDim.z)
 				{
-					//cerr<<"ptShift="<<ptShift<<" pt="<<pt<<endl;
+                    Log(LOG_TRACE) << "ptShift="<<ptShift<<" pt="<<pt;
 
 					newBoundaryArray->set(pt,boundaryArray->get(ptShift));
 				}
 			}
 	//reassign boundary lattice 
 	delete boundaryArray;
-	//cerr<<"deleted boundaryArray"<<endl;
+    Log(LOG_TRACE) << "deleted boundaryArray";
 	boundaryArray=newBoundaryArray;
-
-	//cerr<<"new boundaryArray"<<endl;
+    Log(LOG_TRACE) << "new boundaryArray";
 }
 
 
@@ -207,11 +206,11 @@ void BoundaryMonitorPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 //     CC3DXMLElement * exampleXMLElem=_xmlData->getFirstElement("Example");
 //     if (exampleXMLElem){
 //         double param=exampleXMLElem->getDouble();
-//         cerr<<"param="<<param<<endl;
+//         Log(LOG_TRACE) << "param="<<param;
 //         if(exampleXMLElem->findAttribute("Type")){
 //             std::string attrib=exampleXMLElem->getAttribute("Type");
 //             // double attrib=exampleXMLElem->getAttributeAsDouble("Type"); //in case attribute is of type double
-//             cerr<<"attrib="<<attrib<<endl;
+//             Log(LOG_TRACE) << "attrib="<<attrib;
 //         }
 //     }
     

@@ -114,7 +114,9 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
    
    const vector<Point3D> & adjFace2FaceNeighborOffsetsVec_inn=adjNeighbor.getAdjFace2FaceNeighborOffsetVec(pt);
    unsigned int face2FaceNeighborSize=adjFace2FaceNeighborOffsetsVec_inn.size();
+   Log(LOG_TRACE) << 
    //cerr<<"face2FaceNeighborSize="<<face2FaceNeighborSize<<" neighborSize="<<neighborSize<<endl;
+   Log(LOG_TRACE) << 
    //cerr<<"F@F NEIGHBORS"<<endl;
    //for(int i = 0 ; i < )
    
@@ -135,7 +137,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
   Point3D ptAdj;
   CellG *nCell=0;
   
-   
+   Log(LOG_TRACE) << 
    //cerr<<"OLD CELL ADR: "<<oldCell<<" NEW CELL ADR: "<<newCell<<endl;
 
    set<BoundaryData> * oldCellBoundarySetPtr=0;
@@ -164,9 +166,11 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
    
    currentPtIndex=field3DIndex.index(pt);
    currentCellPtr=cellFieldG->getByIndex(currentPtIndex);
-
+Log(LOG_TRACE) << 
 //    cerr<<"old="<<oldCell<<" new="<<newCell<<endl;
+Log(LOG_TRACE) << 
 //    cerr<<"CHANGE POINT="<<pt<<" flipNeighbor="<<simulator->getPotts()->getFlipNeighbor()<<endl;
+Log(LOG_TRACE) << 
 //    cerr<<"currentPtIndex="<<currentPtIndex<<" flip neighborindex="<<field3DIndex.index(simulator->getPotts()->getFlipNeighbor())<<endl;
 
          
@@ -174,7 +178,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
       ///When there was a cell at this pixel we will have to update all its neighbours (update counters) and remove it from the boundary
 //       currentPtIndex=field3DIndex.index(pt);
 //       currentCellPtr=cellFieldG->getByIndex(currentPtIndex);
-
+      Log(LOG_TRACE) << 
       //cerr<<"currentPtIndex="<<currentPtIndex<<endl;
       BdSitr=oldCellBoundarySetPtr->find(BoundaryData(currentPtIndex));
 
@@ -185,14 +189,20 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
 
 ///RESTORE IT LATER! it is important
 /*         if(BdSitr->numberOfForeignNeighbors>26){
+             Log(LOG_TRACE) << 
             cerr<<"BUG, there can be no more that 26 foreign Neighbors"<<endl;
             exit(0);
          }*/
       }/*else{
+         Log(LOG_TRACE) << 
          cerr<<" PROBLEM: old cell does not belong to the boundary"<<endl;
+         Log(LOG_TRACE) << 
          cerr<<"pt="<<pt<<endl;
+         Log(LOG_TRACE) << 
          cerr<<"old="<<oldCell<<" new="<<newCell<<endl;
+         Log(LOG_TRACE) << 
          cerr<<"flipNeighbor="<<simulator->getPotts()->getFlipNeighbor();
+         Log(LOG_TRACE) << 
          cerr<<"face2FaceNeighborSize="<<face2FaceNeighborSize<<" neighborSize="<<neighborSize<<endl;
          exit(0);
       }*/
@@ -237,13 +247,18 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
          //adjFace2FaceNeighborIndex = currentPtIndex + adjFace2FaceNeighborOffsetsVec[i];
 
          //if(!(adjFace2FaceNeighborIndex<0 || adjFace2FaceNeighborIndex > maxIndex ) ){
+            Log(LOG_TRACE) << 
             //cerr<<"adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE"<<endl;
 
 //          if(!cellFieldG->isValid(ptAdj)){
+   //          Log(LOG_TRACE) << 
 //             cerr<<"ERROR - something is wrong with adjFace2FaceNeighborOffsetsVec_inn"<<endl;
 //             temp_index=field3DIndex.index(ptAdj);
+//             Log(LOG_TRACE) << 
 //             cerr<<"temp_index="<<temp_index<<" adjFace2FaceNeighborIndex="<<adjFace2FaceNeighborIndex<<endl;
+//             Log(LOG_TRACE) << 
 //             cerr<<"maxIndex="<<maxIndex<<endl;
+//             Log(LOG_TRACE) << 
 //             cerr<<"pt="<<pt<<" ptAdj="<<ptAdj<<endl;
 //             //exit(0);
 //          }
@@ -253,7 +268,9 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
                adjCellPtr=cellFieldG->get(ptAdj);
    
                if( adjCellPtr != oldCell ){ /// will decrement commSurfArea with all face 2 face neighbors
+               // Log(LOG_TRACE) << 
 /*                  cerr<<"adjCellPtr="<<adjCellPtr<<" oldCell="<<oldCell<<endl;
+                  Log(LOG_TRACE) << 
                   cerr<<"ptAdj="<<ptAdj<<" pt="<<pt<<endl;*/
                   set_NSD_itr = oldCellNeighborSurfaceDataSetPtr->find(NeighborSurfaceData(adjCellPtr));
                   if( set_NSD_itr != oldCellNeighborSurfaceDataSetPtr->end() ){
@@ -290,21 +307,24 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
       ///When there was a cell at this pixel we will have to update all its neighbours (update counters) and remove it from the boundary
 //       currentCellPtr=cellFieldG->getByIndex(currentPtIndex);      
 //       currentCellPtr=cellFieldG->getByIndex(currentPtIndex);
-/*      cerr<<"\t\t new Cell section pt="<<pt<<" newCell="<<newCell<<endl;
-      cerr<<"newCellBoundarySet size="<<newCellBoundarySetPtr->size()<<endl;*/
+      // Log(LOG_TRACE) << "\t\t new Cell section pt="<<pt<<" newCell="<<newCell;
+      // Log(LOG_TRACE) <<"newCellBoundarySet size="<<newCellBoundarySetPtr->size();
 /*      if(newCellBoundarySetPtr->size())
-         cerr<<" preinitial newCellBoundarySetPtr->begin()="<<newCellBoundarySetPtr->begin()->pixelIndex<<endl;
+         Log(LOG_TRACE) <<" preinitial newCellBoundarySetPtr->begin()="<<newCellBoundarySetPtr->begin()->pixelIndex;
       else{
-         cerr<<"\t\t SORRY EMPTY SET"<<endl;
+         Log(LOG_TRACE) <<"\t\t SORRY EMPTY SET";
       }   */
       
       BdSitrN=newCellBoundarySetPtr->find(BoundaryData(currentPtIndex));
 ///RESTORE IT LATER _ IMPORTANT SANITY TEST      
 //       if(BdSitrN!=newCellBoundarySetPtr->end()){
+            Log(LOG_TRACE)
 //          cerr<<"OOOPS trying to insert a point:"<<currentPtIndex<<" into a boundary that already is there -  in the NEW CELL BONDARY"<<endl;
+            Log(LOG_TRACE)
 //          cerr<<"This is allowed only if lattice is 1 x 1 x 1. If this is not the case notify developer about bug"<<endl;
 //          exit(0);
 //       }else{
+               Log(LOG_TRACE)
 // //          cerr<<"Could not find element BoundaryData(currentPtIndex)="<<currentPtIndex<<endl;
 //       }
 
@@ -333,6 +353,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
                   BdSitrN->decrementNumberOfForeignNeighbors(*BdSitrN);
                   if(BdSitrN->OKToRemove()){
                      newCellBoundarySetPtr->erase(BdSitrN);
+                     Log(LOG_TRACE)
 //                      cerr<<"\t\t\tafter erasing newCellBoundarySet size="<<newCellBoundarySetPtr->size()<<endl;
                   }
                }
@@ -364,6 +385,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
          //adjFace2FaceNeighborIndex = currentPtIndex + adjFace2FaceNeighborOffsetsVec[i];
 
          //if(!(adjFace2FaceNeighborIndex<0 || adjFace2FaceNeighborIndex > maxIndex ) ){
+            Log(LOG_TRACE)
             //cerr<<"adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE"<<endl;
          if(cellFieldG->isValid(ptAdj)){
 
@@ -371,6 +393,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
               adjCellPtr=cellFieldG->get(ptAdj);
 
             if( adjCellPtr != newCell ){ ///if adjCellPtr denotes foreign cell we increase common area and insert set entry if necessary
+            Log(LOG_TRACE)
 //                cerr<<"inserting adjCellPtr="<<adjCellPtr <<" ptAdj="<<ptAdj<<" into newCell="<<newCell<<" pt="<<pt<<endl;
                set_NSD_itr_OK_Pair=newCellNeighborSurfaceDataSetPtr->insert(NeighborSurfaceData(adjCellPtr));/// OK to insert even if
                ///duplicate, in such a case an iterator to existing NeighborSurfaceData(adjCellPtr) obj is returned
