@@ -33,8 +33,7 @@ namespace CompuCell3D {
 
                 if (change <= offset) return 1.0;
 
-                firstOrderTerm = 1.0 - (change - offset) / (k * temp);
-
+        firstOrderTerm=1.0-(change-offset)/(k*temp);
 
                 if (firstOrderTerm < 0.0)return 0.0;
                 else return firstOrderTerm;
