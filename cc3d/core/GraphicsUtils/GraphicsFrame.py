@@ -6,7 +6,7 @@ from cc3d.core.GraphicsUtils.ScreenshotManagerCore import ScreenshotManagerCore
 from .GraphicsWindowData import GraphicsWindowData
 from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
 import cc3d.CompuCellSetup
-from cc3d.core.GraphicsUtils.utils import qcolor_to_rgba, cs_string_to_typed_list
+from cc3d.core.GraphicsUtils.utils import color_to_rgba, cs_string_to_typed_list
 from collections import OrderedDict
 
 from vtkmodules.vtkRenderingCore import vtkTextActor
@@ -247,13 +247,13 @@ class GraphicsFrame:
         :rtype: dict
         """
 
-        metadata_dict = {'BorderColor': qcolor_to_rgba(self.config.getSetting('BorderColor')),
-                         'ClusterBorderColor': qcolor_to_rgba(self.config.getSetting('ClusterBorderColor')),
-                         'BoundingBoxColor': qcolor_to_rgba(self.config.getSetting('BoundingBoxColor')),
-                         'AxesColor': qcolor_to_rgba(self.config.getSetting('AxesColor')),
-                         'ContourColor': qcolor_to_rgba(self.config.getSetting('ContourColor')),
-                         'WindowColor': qcolor_to_rgba(self.config.getSetting('WindowColor')),
-                         'FPPLinksColor': qcolor_to_rgba(self.config.getSetting('FPPLinksColor')),
+        metadata_dict = {'BorderColor': color_to_rgba(self.config.getSetting('BorderColor')),
+                         'ClusterBorderColor': color_to_rgba(self.config.getSetting('ClusterBorderColor')),
+                         'BoundingBoxColor': color_to_rgba(self.config.getSetting('BoundingBoxColor')),
+                         'AxesColor': color_to_rgba(self.config.getSetting('AxesColor')),
+                         'ContourColor': color_to_rgba(self.config.getSetting('ContourColor')),
+                         'WindowColor': color_to_rgba(self.config.getSetting('WindowColor')),
+                         'FPPLinksColor': color_to_rgba(self.config.getSetting('FPPLinksColor')),
                          'ShowHorizontalAxesLabels': self.config.getSetting('ShowHorizontalAxesLabels'),
                          'ShowVerticalAxesLabels': self.config.getSetting('ShowVerticalAxesLabels')}
 
@@ -261,7 +261,7 @@ class GraphicsFrame:
         type_color_map_dict = OrderedDict()
         config_type_color_map = self.config.getSetting("TypeColorMap")
         for type_id, qt_color in list(config_type_color_map.items()):
-            type_color_map_dict[type_id] = qcolor_to_rgba(qt_color)
+            type_color_map_dict[type_id] = color_to_rgba(qt_color)
 
         metadata_dict['TypeColorMap'] = type_color_map_dict
 
@@ -309,7 +309,7 @@ class GraphicsFrame:
         metadata_dict = self.get_con_field_metadata(field_name=field_name, field_type=field_type)
         metadata_dict['ArrowLength'] = self.config.getSetting('ArrowLength', field_name)
         metadata_dict['FixedArrowColorOn'] = self.config.getSetting('FixedArrowColorOn', field_name)
-        metadata_dict['ArrowColor'] = qcolor_to_rgba(self.config.getSetting('ArrowColor', field_name))
+        metadata_dict['ArrowColor'] = color_to_rgba(self.config.getSetting('ArrowColor', field_name))
         metadata_dict['ScaleArrowsOn'] = self.config.getSetting('ScaleArrowsOn', field_name)
 
         return metadata_dict

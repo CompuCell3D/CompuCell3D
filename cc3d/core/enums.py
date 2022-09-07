@@ -27,3 +27,5 @@ class SimType(Enum):
     AUTOMATED = 'Auto'
     # general threaded run; this is the signal for injecting a SimulationThread into the core
     THREADED = 'Thread'
+    # service mode; special case of THREADED for future dev support
+    SERVICE = 'Service'

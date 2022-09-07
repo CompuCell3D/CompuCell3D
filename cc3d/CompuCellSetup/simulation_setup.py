@@ -1,4 +1,4 @@
-import time
+import os
 from math import floor
 from os.path import dirname, join
 from cc3d.cpp import CompuCell
@@ -84,6 +84,9 @@ def determine_main_loop_fcn():
         if sim_type == enums.SimType.THREADED:
             # SimulationThread run
             return CompuCellSetup.persistent_globals.simthread.main_loop()
+        elif sim_type == enums.SimType.SERVICE:
+            # SimulationServiceThread run
+            return CompuCellSetup.persistent_globals.simthread.main_loop()
         else:
             # Sink
             return lambda sim, simthread, steppable_register: None
@@ -137,9 +140,9 @@ def register_steppable(steppable):
     steppable_registry.registerSteppable(_steppable=steppable)
 
 
-def print_profiling_report(py_steppable_profiler_report, compiled_code_run_time, total_run_time):
+def generate_profiling_report(py_steppable_profiler_report, compiled_code_run_time, total_run_time):
     """
-    prints profiling information after simulation finishes running
+    Generates profiling information after simulation finishes running
     :param py_steppable_profiler_report:
     :param compiled_code_run_time:
     :param total_run_time:
@@ -147,34 +150,50 @@ def print_profiling_report(py_steppable_profiler_report, compiled_code_run_time,
     """
     profiling_format = '{:>32.32}: {:11.2f} ({:5.1%})'
 
-    print('\n\n')
-    print('------------------PERFORMANCE REPORT:----------------------')
-    print('-----------------------------------------------------------')
-    print("TOTAL RUNTIME ", convert_time_interval_to_hmsm(total_run_time))
-    print('-----------------------------------------------------------')
-    print('-----------------------------------------------------------')
-    print('PYTHON STEPPABLE RUNTIMES')
-    # print py_steppable_profiler_report
+    profiling_report = os.linesep + os.linesep
+    profiling_report += '------------------PERFORMANCE REPORT:----------------------' + os.linesep
+    profiling_report += '-----------------------------------------------------------' + os.linesep
+    profiling_report += "TOTAL RUNTIME " + convert_time_interval_to_hmsm(total_run_time) + os.linesep
+    profiling_report += '-----------------------------------------------------------' + os.linesep
+    profiling_report += '-----------------------------------------------------------' + os.linesep
+    profiling_report += 'PYTHON STEPPABLE RUNTIMES' + os.linesep
 
     totStepTime = 0
 
     for steppableName, steppableObjectHash, run_time_ms in py_steppable_profiler_report:
-        print(profiling_format.format(steppableName, int(run_time_ms) / 1000., int(run_time_ms) / total_run_time))
+        profiling_report += profiling_format.format(steppableName,
+                                                    int(run_time_ms) / 1000.,
+                                                    int(run_time_ms) / total_run_time) + os.linesep
 
         totStepTime += run_time_ms
 
-    print('-----------------------------------------------------------')
+    profiling_report += '-----------------------------------------------------------' + os.linesep
 
-    print(profiling_format.format('Total Steppable Time', int(totStepTime) / 1000., int(totStepTime) / total_run_time))
+    profiling_report += profiling_format.format('Total Steppable Time',
+                                                int(totStepTime) / 1000.,
+                                                int(totStepTime) / total_run_time) + os.linesep
 
-    print(profiling_format.format('Compiled Code (C++) Run Time', int(compiled_code_run_time) / 1000.,
-                                  int(compiled_code_run_time) / total_run_time))
+    profiling_report += profiling_format.format('Compiled Code (C++) Run Time',
+                                                int(compiled_code_run_time) / 1000.,
+                                                int(compiled_code_run_time) / total_run_time) + os.linesep
 
-    print(profiling_format.format('Other Time', int(total_run_time - compiled_code_run_time - totStepTime) / 1000.,
-                                  int(total_run_time - compiled_code_run_time - totStepTime) / total_run_time))
+    profiling_report += profiling_format.format('Other Time',
+                                                int(total_run_time - compiled_code_run_time - totStepTime) / 1000.,
+                                                int(total_run_time - compiled_code_run_time - totStepTime) / total_run_time) + os.linesep
 
-    print('-----------------------------------------------------------')
-    print()
+    profiling_report += '-----------------------------------------------------------' + os.linesep
+    profiling_report += os.linesep
+    return profiling_report
+
+
+def print_profiling_report(py_steppable_profiler_report, compiled_code_run_time, total_run_time):
+    """
+    Prints profiling information after simulation finishes running
+    :param py_steppable_profiler_report:
+    :param compiled_code_run_time:
+    :param total_run_time:
+    :return:
+    """
 
 
 def convert_time_interval_to_hmsm(time_interval):

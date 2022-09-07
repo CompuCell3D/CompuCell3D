@@ -2,7 +2,6 @@
 Defines features for interactive visualization for use with CC3D simservice applications in a Jupyter notebook
 """
 
-import math
 from typing import Optional, Union, Tuple, List, Any, Dict
 import warnings
 from weakref import ref
@@ -32,7 +31,7 @@ try:
 except NameError:
     __has_interactive__ = False
     ViewInteractiveWidget = object
-    JupyterWidgetInterface = object
+    JupyterSettingsPanel = object
     JupyterControlPanel = object
 
 
@@ -731,7 +730,7 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
     def settings_panel(self, config_fp: str = None) -> JupyterSettingsPanel:
         """
         Inspect the configuration file from path inside of Jupyter.
-        Displays a JupyterWidgetInterface.
+        Displays a JupyterSettingsPanel.
         """
         if config_fp:
             # todo: get config from fp
