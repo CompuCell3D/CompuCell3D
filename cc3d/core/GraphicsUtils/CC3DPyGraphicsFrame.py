@@ -26,12 +26,72 @@ from cc3d.CompuCellSetup import simulation_utils
 from cc3d.core.BasicSimulationData import BasicSimulationData
 from cc3d.core import Configuration
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
-from cc3d.core.GraphicsUtils.FieldStreamer import FieldStreamer, FieldStreamerData
+from cc3d.cpp.PlayerPython import FieldExtractorCML, FieldStreamer, FieldStreamerData, FieldWriterCML
 from cc3d.core.GraphicsUtils.GraphicsFrame import GraphicsFrame, default_field_label
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrameIO import *
-from cc3d.cpp.PlayerPython import FieldExtractorCML
+from cc3d.cpp.CompuCell import Dim3D
 
-from .prototypes.FieldWriterCML import FieldWriterCML
+
+class FieldStreamerDataPy:
+    """Simple container for serializing :class:`FieldStreamerData` instances"""
+
+    def __init__(self):
+        super().__init__()
+
+        self.cell_field_names: List[str] = []
+        self.conc_field_names: List[str] = []
+        self.scalar_field_names: List[str] = []
+        self.scalar_field_cell_level_names: List[str] = []
+        self.vector_field_names: List[str] = []
+        self.vector_field_cell_level_names: List[str] = []
+        self.field_dim = Dim3D()
+        self.data = ''
+
+    @staticmethod
+    def from_base(fsd):
+        """
+        Return a python wrap instance from a base type instance
+
+        :param fsd: base type instance
+        :type fsd: FieldStreamerData
+        :return: python wrap instance
+        :rtype: FieldStreamerDataPy
+        """
+
+        result = FieldStreamerDataPy()
+        v2l = lambda v: [v[i] for i in range(v.size())]
+        result.cell_field_names = v2l(fsd.cellFieldNames)
+        result.conc_field_names = v2l(fsd.concFieldNames)
+        result.scalar_field_names = v2l(fsd.scalarFieldNames)
+        result.scalar_field_cell_level_names = v2l(fsd.scalarFieldCellLevelNames)
+        result.vector_field_names = v2l(fsd.vectorFieldNames)
+        result.vector_field_cell_level_names = v2l(fsd.vectorFieldCellLevelNames)
+        result.field_dim = fsd.fieldDim
+        result.data = fsd.data
+        return result
+
+    @staticmethod
+    def to_base(fsd):
+        """
+        Return a base type instance from a python wrap instance
+
+        :param fsd: python wrap instance
+        :type fsd: FieldStreamerDataPy
+        :return: base type instance
+        :rtype: FieldStreamerData
+        """
+
+        result = FieldStreamerData()
+        l2v = lambda l, v: [v.push_back(s) for s in l]
+        l2v(fsd.cell_field_names, result.cellFieldNames)
+        l2v(fsd.conc_field_names, result.concFieldNames)
+        l2v(fsd.scalar_field_names, result.scalarFieldNames)
+        l2v(fsd.scalar_field_cell_level_names, result.scalarFieldCellLevelNames)
+        l2v(fsd.vector_field_names, result.vectorFieldNames)
+        l2v(fsd.vector_field_cell_level_names, result.vectorFieldCellLevelNames)
+        result.fieldDim = fsd.field_dim
+        result.data = fsd.data
+        return result
 
 
 def get_image_filter(ren_win: vtkRenderWindow,
@@ -190,10 +250,10 @@ class CC3DPyGraphicsDrawer(GenericDrawer):
 
     def _request_update_field_extractor(self) -> bool:
 
-        fsd: FieldStreamerData = MsgGetStreamedData.request(self._conn, True)
+        fsd: FieldStreamerData = FieldStreamerDataPy.to_base(MsgGetStreamedData.request(self._conn, True))
         if fsd is None:
             return False
-        self._streamed_points = FieldStreamer(data=fsd)
+        self._streamed_points = FieldStreamer(fsd)
         self.field_extractor.setFieldDim(self._streamed_points.getFieldDim())
         self.field_extractor.setSimulationData(self._streamed_points.getPointsAddr())
         return True
@@ -1160,7 +1220,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
         field_dict = CompuCellSetup.persistent_globals.field_registry.get_fields_to_create_dict()
         return {field_name: field_adapter.field_type for field_name, field_adapter in field_dict.items()}
 
-    def _service_get_streamed_data(self) -> FieldStreamerData:
+    def _service_get_streamed_data(self) -> FieldStreamerDataPy:
         field_storage = CompuCellSetup.persistent_globals.persistent_holder['field_storage']
         field_writer = FieldWriterCML()
         field_writer.init(CompuCellSetup.persistent_globals.simulator)
@@ -1171,7 +1231,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
         if self._field_name != 'Cell_Field':
             field_writer.addFieldForOutput(self._field_name)
 
-        return FieldStreamer.dump(field_writer=field_writer)
+        return FieldStreamerDataPy.from_base(FieldStreamer.dump(field_writer))
 
     def _service_get_bsd(self) -> BasicSimulationData:
         return self._standard_bsd()
