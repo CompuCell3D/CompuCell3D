@@ -239,11 +239,18 @@ def get_core_simulation_objects():
         simthread = persistent_globals.simthread
         simulator.setNewPlayerFlag(True)
 
-    simulator.setBasePath(join(dirname(persistent_globals.simulation_file_name)))
+    if persistent_globals.simulation_file_name is not None:
+        simulator.setBasePath(join(dirname(persistent_globals.simulation_file_name)))
 
-    xml_fname = CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript
+    if CompuCellSetup.cc3dSimulationDataHandler is not None:
+        xml_fname = CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript
+    else:
+        xml_fname = None
 
     if persistent_globals.cc3d_xml_2_obj_converter is None:
+        if xml_fname is None:
+            raise RuntimeError('No CC3D core specification available')
+
         # We only call parseXML if previous steps do not initialize XML tree
         # Such situation usually happen when we specify XML tree using Python API in configure_simulation function
         # that is typically called from the Python main script
@@ -354,8 +361,6 @@ def init_screenshot_manager() -> None:
 
     persistent_globals = CompuCellSetup.persistent_globals
 
-    screenshot_data_fname = join(dirname(persistent_globals.simulation_file_name), 'screenshot_data/screenshots.json')
-
     persistent_globals.screenshot_manager = ScreenshotManagerCore()
 
     try:
@@ -364,7 +369,8 @@ def init_screenshot_manager() -> None:
         initialize_field_extractor_objects()
         field_extractor = persistent_globals.persistent_holder['field_extractor']
 
-    persistent_globals.create_output_dir()
+    if persistent_globals.output_directory:
+        persistent_globals.create_output_dir()
     gd = GenericDrawer.GenericDrawer(boundary_strategy=persistent_globals.simulator.getBoundaryStrategy())
     gd.set_field_extractor(field_extractor=field_extractor)
 
@@ -377,16 +383,18 @@ def init_screenshot_manager() -> None:
     persistent_globals.screenshot_manager.bsd = bsd
     persistent_globals.screenshot_manager.screenshot_number_of_digits = len(str(bsd.numberOfSteps))
 
-    try:
-        persistent_globals.screenshot_manager.read_screenshot_description_file(screenshot_data_fname)
-    except:
-        warnings.warn('Could not parse screenshot description file {screenshot_data_fname}. '
-                      'If you want graphical screenshot output please generate '
-                      'new screenshot description file from Player by pressing camera button on '
-                      'select graphical visualizations. If you do not want screenshots'
-                      'you may delete subfolder {scr_dir} or simply ingnore this message'.format(
-            screenshot_data_fname=screenshot_data_fname, scr_dir=dirname(screenshot_data_fname)))
-        time.sleep(5)
+    if persistent_globals.simulation_file_name:
+        screenshot_data_fname = join(dirname(persistent_globals.simulation_file_name), 'screenshot_data/screenshots.json')
+
+        try:
+            persistent_globals.screenshot_manager.read_screenshot_description_file(screenshot_data_fname)
+        except:
+            warnings.warn('Could not parse screenshot description file {screenshot_data_fname}. '
+                          'If you want graphical screenshot output please generate '
+                          'new screenshot description file from Player by pressing camera button on '
+                          'select graphical visualizations. If you do not want screenshots'
+                          'you may delete subfolder {scr_dir} or simply ingnore this message'.format(
+                screenshot_data_fname=screenshot_data_fname, scr_dir=dirname(screenshot_data_fname)))
 
 
 def store_screenshots(cur_step: int) -> None:
@@ -449,7 +457,8 @@ def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_en
                                         entity_type_label='Concentration Field Label')
 
     # passing output directory to simulator object
-    sim.setOutputDirectory(CompuCellSetup.persistent_globals.output_directory)
+    if CompuCellSetup.persistent_globals.output_directory is not None:
+        sim.setOutputDirectory(CompuCellSetup.persistent_globals.output_directory)
     # simthread.preStartInit()
     # we skip calling start functions of steppables if restart is enabled and we are using restart
     # directory to restart simulation from a given MCS
