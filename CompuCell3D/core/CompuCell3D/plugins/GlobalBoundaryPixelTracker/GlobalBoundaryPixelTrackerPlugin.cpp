@@ -80,10 +80,10 @@ void GlobalBoundaryPixelTrackerPlugin::update(CC3DXMLElement *_xmlData, bool _fu
 
 	if (_xmlData->getFirstElement("Depth")) {
 		maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
-		//cerr<<"got here will do depth"<<endl;
+		Log(LOG_TRACE) << "got here will do depth";
 	}
 	else {
-		//cerr<<"got here will do neighbor order"<<endl;
+		Log(LOG_TRACE) << "got here will do neighbor order";
 		if (_xmlData->getFirstElement("NeighborOrder")) {
 
 			maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());
@@ -160,7 +160,7 @@ void GlobalBoundaryPixelTrackerPlugin::refreshContainers() {
 	double size_thresh = this->container_refresh_fraction*boundaryPixelSetPtr->size();
 	//double size_thresh = this->container_refresh_fraction;
 	if (justInsertedBoundaryPixelSetPtr->size() > size_thresh || justDeletedBoundaryPixelSetPtr->size() > size_thresh) {
-		//cerr << "refreshing containers" << endl;
+		Log(LOG_TRACE) << "refreshing containers";
 		boundaryPixelVectorPtr->assign(boundaryPixelSetPtr->begin(), boundaryPixelSetPtr->end());
 		justInsertedBoundaryPixelSetPtr->clear();
 		justDeletedBoundaryPixelSetPtr->clear();

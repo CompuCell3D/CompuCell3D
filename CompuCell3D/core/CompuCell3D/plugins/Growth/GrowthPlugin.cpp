@@ -69,7 +69,7 @@ void GrowthPlugin::init(Simulator *simulator) {
 
   //TypePlugin *typePlugin = (TypePlugin *)Simulator::pluginManager.get("Type");
 
-  //if (!typePlugin) cerr << "WARNING: NULL TYPE PLUGIN!!" << endl;
+  //if (!typePlugin) Log(LOG_TRACE) << "WARNING: NULL TYPE PLUGIN!!" << endl;
  // ClassRegistry *reg = simulator->getClassRegistry();
 
   //reg->registerRenderer("Growth",

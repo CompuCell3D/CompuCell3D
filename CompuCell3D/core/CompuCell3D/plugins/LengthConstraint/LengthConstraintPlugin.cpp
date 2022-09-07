@@ -572,16 +572,16 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		sort(axesNew.begin(),axesNew.end());
 
 		// for (int i = 0 ; i < axesNew.size() ; ++i)
-		// cerr<<"axesNew["<<i<<"]="<<axesNew[i]<<endl;
+		// Log(LOG_TRACE) << "axesNew["<<i<<"]="<<axesNew[i];
 
 		// for (int i = 0 ;i<roots.size();++i){
-		// cerr<<"root["<<i<<"]="<<roots[i]<<endl;
+			// Log(LOG_TRACE) << "root["<<i<<"]="<<roots[i];
 		// }
-		// cerr<<"newCell->volume="<<newCell->volume<<" newCell->surface="<<newCell->surface<<endl;
+		Log(LOG_TRACE) << "newCell->volume="<<newCell->volume<<" newCell->surface="<<newCell->surface;
 		double currLength=2.0*axes[2];
 		double currMinorLength=2.0*axes[0];
-		// cerr<<" currLength="<<currLength<<" currMinorLength="<<currMinorLength<<endl;
-		// cerr<<"minorTargetLength="<<lengthEnergyParamVector[newCell->type].minorTargetLength<<endl;
+		Log(LOG_TRACE) << " currLength="<<currLength<<" currMinorLength="<<currMinorLength;
+		Log(LOG_TRACE) << "minorTargetLength="<<lengthEnergyParamVector[newCell->type].minorTargetLength;
 
 		double currEnergy = lambdaLength * ((currLength - targetLength)*(currLength - targetLength)+(currMinorLength - minorTargetLength)*(currMinorLength - minorTargetLength));
 
@@ -590,11 +590,10 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 
 		double newEnergy = lambdaLength * ((newLength - targetLength)*(newLength - targetLength)+(newMinorLength - minorTargetLength)*(newMinorLength - minorTargetLength));
 		energy += newEnergy - currEnergy;
-
-		 //cerr<<"NEW energy="<<energy<<endl;
+		Log(LOG_TRACE) << <"NEW energy="<<energy;
 	}
 	if (oldCell) {
-		//cerr<<"****************OLD CELL PART***********************"<<endl;
+		Log(LOG_TRACE) << "****************OLD CELL PART***********************";
 		double lambdaLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->lambdaLength;;
 		double targetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
 		double minorTargetLength=lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->minorTargetLength;;
@@ -687,16 +686,15 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 
 		double currLength = 2.0*axes[2];
 		double currMinorLength=2.0*axes[0];
-
-		//cerr<<"roots[1].real()+roots[2].real()-roots[0].real()="<<roots[1].real()+roots[2].real()-roots[0].real()<<endl;
-		//cerr<<"rootsNew[1].real()+rootsNew[2].real()-rootsNew[0].real()="<<rootsNew[1].real()+rootsNew[2].real()-rootsNew[0].real()<<endl;
+		Log(LOG_TRACE) << "roots[1].real()+roots[2].real()-roots[0].real()="<<roots[1].real()+roots[2].real()-roots[0].real();
+		Log(LOG_TRACE) << "rootsNew[1].real()+rootsNew[2].real()-rootsNew[0].real()="<<rootsNew[1].real()+rootsNew[2].real()-rootsNew[0].real();
 
 		//for (int i =0 ; i<3 ;++i){
-		//	cerr<<"rootsNew["<<i<<"]="<<rootsNew[i]<<endl;			
+			// Log(LOG_TRACE) << "rootsNew["<<i<<"]="<<rootsNew[i];		
 		//}
 
 		//for (int i =0 ; i<3 ;++i){
-		//	cerr<<"axesNew["<<i<<"]="<<axesNew[i]<<endl;			
+			// Log(LOG_TRACE) << "axesNew["<<i<<"]="<<axesNew[i];			
 		//}
 
 		double currEnergy = lambdaLength * ((currLength - targetLength)*(currLength - targetLength)+(currMinorLength - minorTargetLength)*(currMinorLength - minorTargetLength));
@@ -709,11 +707,10 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		//double newEnergy = lengthEnergyParamVector[oldCell->type].lambdaLength * (newLength - lengthEnergyParamVector[oldCell->type].targetLength) * (newLength - lengthEnergyParamVector[oldCell->type].targetLength);
 
 		energy += newEnergy - currEnergy;
-		//cerr<<"lambdaLength="<<lambdaLength <<" targetLength="<<targetLength<<" minorTargetLength="<<minorTargetLength<<endl;
+		Log(LOG_TRACE) << "lambdaLength="<<lambdaLength <<" targetLength="<<targetLength<<" minorTargetLength="<<minorTargetLength;
 		
 	}
-
-	//cerr<<"energy="<<energy<<endl;
+	Log(LOG_TRACE) << "energy="<<energy;
 	if(energy!=energy)
 		return 0.0;
 	else

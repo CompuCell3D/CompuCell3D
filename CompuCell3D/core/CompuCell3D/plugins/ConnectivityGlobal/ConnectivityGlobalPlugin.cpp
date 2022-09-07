@@ -659,14 +659,13 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 		}
 		//if(visitedPixels.size()!=(newCell->volume+1)){
 		if (visitedPixCounter != (newCell->volume + 1)) { //we use newCell->volume+1 because we count also the pixel pt that may become part of the new cell after spin flip
-			//cerr<<"visitedPixels.size()="<<visitedPixCounter<<" newCell->volume="<<newCell->volume<<endl;
+		// 	Log(LOG_TRACE) << "visitedPixels.size()="<<visitedPixCounter<<" newCell->volume="<<newCell->volume;
 			penalty += newPenalty;
-			//cerr<<"new penalty="<<penalty<<endl;
+			// 	Log(LOG_TRACE) << "new penalty="<<penalty;
 			//exit(0);
 		}/*else{
-		 cerr<<"visitedPixels.size()="<<visitedPixCounter<<" newCell->volume="<<newCell->volume<<endl;
-
-		 cerr<<"new penalty=0.0"<<endl;
+		 Log(LOG_TRACE) << "visitedPixels.size()="<<visitedPixCounter<<" newCell->volume="<<newCell->volume;
+		 Log(LOG_TRACE) << "new penalty=0.0";
 		 exit(0);
 
 		 }*/
@@ -804,7 +803,7 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 
 				fpbRef_1->push_back(neighbor.pt);
 				vpRef_2->insert(neighbor.pt);
-				//cerr<<" Adding pt="<<neighbor.pt<<" to vps"<<" visitedPixCounter="<<visitedPixCounter<<endl;
+				// 	Log(LOG_TRACE) << " Adding pt="<<neighbor.pt<<" to vps"<<" visitedPixCounter="<<visitedPixCounter;
 				++visitedPixCounter;
 			}
 			if (fpbRef_0->empty()) {

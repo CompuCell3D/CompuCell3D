@@ -315,10 +315,10 @@ void CompartmentPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	////End Internal vector allocation
 	//for(int i = 1 ; i < i_size ; ++i) {
 	//	for(int j = 1 ; j < i_size ; ++j){
-	//		cerr<<"i="<<i<<" j="<<j<<" i_size="<<i_size<<endl;
-	//		cerr<<"cellInternalTypesVector[i-1]="<<(int)cellInternalTypesVector[i-1]<<endl;
-	//		cerr<<"cellInternalTypesVector[j-1]="<<(int)cellInternalTypesVector[j-1]<<endl;
-	//		cerr<<"cellInternalTypesVector.size()="<<cellInternalTypesVector.size()<<endl;
+		// 	Log(LOG_TRACE) << "i="<<i<<" j="<<j<<" i_size="<<i_size;
+	// 		Log(LOG_TRACE) << "cellInternalTypesVector[i-1]="<<(int)cellInternalTypesVector[i-1];
+	// 		Log(LOG_TRACE) << "cellInternalTypesVector[j-1]="<<(int)cellInternalTypesVector[j-1];
+	// 		Log(LOG_TRACE) << "cellInternalTypesVector.size()="<<cellInternalTypesVector.size();
 	//		i_index = getIndex(cellInternalTypesVector[i-1],cellInternalTypesVector[j-1]);
 
 	//		internalEnergyArray[i][j] = internalEnergies[i_index];

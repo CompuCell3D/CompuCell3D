@@ -34,7 +34,7 @@ CellTypeMonitorPlugin::~CellTypeMonitorPlugin() {
     pUtils->destroyLock(lockPtr);
     delete lockPtr;
     lockPtr=0;
-	//cerr<<"THIS IS size of the cellTypeArray "<<cellTypeArray->getDim()<<endl;
+    Log(LOG_TRACE) << "THIS IS size of the cellTypeArray "<<cellTypeArray->getDim();
     if (cellTypeArray){
         delete cellTypeArray;
         cellTypeArray=0;
@@ -57,8 +57,8 @@ void CellTypeMonitorPlugin::handleEvent(CC3DEvent & _event){
 	
     Array3DCUDA<unsigned char> * cellTypeArray_new = new Array3DCUDA<unsigned char>(ev.newDim,mediumType);
     Array3DCUDA<float> * cellIdArray_new = new Array3DCUDA<float>(ev.newDim,-1); //we assume medium cell id is -1 not zero because normally cells in older versions of CC3D we allwoed cells with id 0 
-	// cerr<<"CellTypeMonitorPlugin::handleEvent="<<endl;
-	// cerr<<"cellFieldG ->getDim()="<<cellFieldG ->getDim()<<endl;
+	Log(LOG_TRACE) << "CellTypeMonitorPlugin::handleEvent=";
+    Log(LOG_TRACE) << "cellFieldG ->getDim()="<<cellFieldG ->getDim();
 
 	for (int x = 0; x < ev.newDim.x; x++)
 	    for (int y = 0; y < ev.newDim.y; y++)

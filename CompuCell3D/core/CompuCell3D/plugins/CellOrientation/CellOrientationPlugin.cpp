@@ -187,8 +187,7 @@ double CellOrientationPlugin::changeEnergyPixelBased(const Point3D &pt,const Cel
 		energy+=-lambdaCellOrientationValue*(polarizationVecPtr->x * spinCopyVector.x + polarizationVecPtr->y * spinCopyVector.y + polarizationVecPtr->z * spinCopyVector.z);
 
 	}
-
-	//    cerr<<"energy="<<energy<<endl;
+	Log(LOG_TRACE) << "energy="<<energy;
 	
 	return energy;
 }
@@ -226,10 +225,9 @@ double CellOrientationPlugin::changeEnergyCOMBased(const Point3D &pt,const CellG
 		Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM/oldCell->volume, oldCell->yCM/oldCell->volume, oldCell->zCM/oldCell->volume);		
 		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip ,oldCOMBeforeFlip,fieldDim);
 
-
-		//cerr<<"lambdaCellOrientationValue="<<lambdaCellOrientationValue<<endl;		
-		//cerr<<"distVector="<<distVector<<endl;
-		//cerr<<"p.x="<<polarizationVecPtr->x<<" p.y="<<polarizationVecPtr->y<<" p.z="<<polarizationVecPtr->z<<endl;
+		Log(LOG_TRACE) << "lambdaCellOrientationValue="<<lambdaCellOrientationValue;
+		Log(LOG_TRACE) << 	"distVector="<<distVector;
+		Log(LOG_TRACE) << "p.x="<<polarizationVecPtr->x<<" p.y="<<polarizationVecPtr->y<<" p.z="<<polarizationVecPtr->z;
 
 		energy += -lambdaCellOrientationValue*(polarizationVecPtr->x * distVector.x + polarizationVecPtr->y * distVector.y + polarizationVecPtr->z * distVector.z);
 	}

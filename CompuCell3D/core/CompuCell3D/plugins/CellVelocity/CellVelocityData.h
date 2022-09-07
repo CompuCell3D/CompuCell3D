@@ -35,7 +35,7 @@ public:
          timePtr->assign(cldequeCapacity , 1);
 
          using namespace std;
-         //cerr<<"cldequeCapacity="<<cldequeCapacity<<" enoughDataThreshold="<<enoughDataThreshold<<endl;
+         Log(LOG_TRACE) << "cldequeCapacity="<<cldequeCapacity<<" enoughDataThreshold="<<enoughDataThreshold;
 
       }
 

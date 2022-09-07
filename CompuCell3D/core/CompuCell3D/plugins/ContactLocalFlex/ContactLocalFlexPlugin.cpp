@@ -305,7 +305,7 @@ void ContactLocalFlexPlugin::updateContactEnergyData(CellG *_cell) {
 
 
 //    if(clfdSet.size()!=nsdSet.size()){
-//       cerr<<"problem with syncing neighbors and contact energies"<<endl;
+    // Log(LOG_TRACE) << "problem with syncing neighbors and contact energies";
 //       exit(0);
 //    }
 }

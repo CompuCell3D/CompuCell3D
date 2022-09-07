@@ -240,10 +240,10 @@ void ContactInternalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 	////End Internal vector allocation
 	//for(int i = 1 ; i < size ; ++i) {
 	//	for(int j = 1 ; j < size ; ++j){
-	//		cerr<<"i="<<i<<" j="<<j<<" i_size="<<size<<endl;
-	//		cerr<<"cellTypesVector[i-1]="<<(int)cellTypesVector[i-1]<<endl;
-	//		cerr<<"cellTypesVector[j-1]="<<(int)cellTypesVector[j-1]<<endl;
-	//		cerr<<"cellTypesVector.size()="<<cellTypesVector.size()<<endl;
+		//  Log(LOG_TRACE) << "i="<<i<<" j="<<j<<" i_size="<<size;
+	// 	 	Log(LOG_TRACE) << "cellTypesVector[i-1]="<<(int)cellTypesVector[i-1];
+	//  	Log(LOG_TRACE) << "cellTypesVector[j-1]="<<(int)cellTypesVector[j-1];
+	//  	Log(LOG_TRACE) << "cellTypesVector.size()="<<cellTypesVector.size();
 	//		index = getIndex(cellTypesVector[i-1],cellTypesVector[j-1]);
 
 	//		internalEnergyArray[i][j] = internalEnergies[index];

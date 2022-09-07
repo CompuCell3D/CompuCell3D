@@ -64,7 +64,7 @@ void CellVelocityPlugin::extraInit(Simulator *_simulator){
 // void CellVelocityPlugin::field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell) {
 //    
 //    // vel = COM(t_n) - COM(t_{n-1})
-// //    cerr<<"********CELL VELOCITY FIELD CHANGE"<<endl;
+//    Log(LOG_TRACE) << "********CELL VELOCITY FIELD CHANGE";
 //    
 //    if(!simulator)
 //       return;
@@ -75,8 +75,8 @@ void CellVelocityPlugin::extraInit(Simulator *_simulator){
 //    if(oldCell){
 // 
 //        if(oldCell->volume  > 0 ){
-// //                 cerr<<"cell velocity oldCell->volume="<<oldCell->volume<<endl;
-// //          cerr<<" old x,y,z,CM="<<oldCell->xCM<<" "<<oldCell->yCM<<" "<<oldCell->zCM<<" "<<endl;
+   //                 Log(LOG_TRACE) << "cell velocity oldCell->volume="<<oldCell->volume;
+//             Log(LOG_TRACE) << " old x,y,z,CM="<<oldCell->xCM<<" "<<oldCell->yCM<<" "<<oldCell->zCM<<" ";
 // 
 //          cellVelocityDataAccessorPtr->get(oldCell->extraAttribPtr)->push_front  (
 //                                            (oldCell->xCM)/(float)(oldCell->volume) -(oldCell->xCM+pt.x)/((float)oldCell->volume+1)   ,
@@ -84,16 +84,15 @@ void CellVelocityPlugin::extraInit(Simulator *_simulator){
 //                                            (oldCell->zCM)/(float)(oldCell->volume) -(oldCell->zCM+pt.z)/((float)oldCell->volume+1)
 //                                         );
 //        }
-// /*       cerr<<" old Cell velocity="<<cellVelocityDataAccessorPtr->get(oldCell->extraAttribPtr)->getInstantenousVelocity().X()
+            // Log(LOG_TRACE) << " old Cell velocity="<<cellVelocityDataAccessorPtr->get(oldCell->extraAttribPtr)->getInstantenousVelocity().X()
 //        <<cellVelocityDataAccessorPtr->get(oldCell->extraAttribPtr)->getInstantenousVelocity().Y()
-//        <<cellVelocityDataAccessorPtr->get(oldCell->extraAttribPtr)->getInstantenousVelocity().Z()
+//        <<cellVelocityDataAccessorPtr->get(oldCell->extraAttribPtr)->getInstantenousVelocity().Z();
 //        <<endl;*/
 //     }
 //    
 //    if(newCell){
-// 
-// /*         cerr<<"cell velocity newCell->volume="<<newCell->volume<<endl;
-//          cerr<<" new x,y,z,CM="<<newCell->xCM<<" "<<newCell->yCM<<" "<<newCell->zCM<<" "<<endl;*/
+//             Log(LOG_TRACE) << "cell velocity newCell->volume="<<newCell->volume;
+//          Log(LOG_TRACE) << " new x,y,z,CM="<<newCell->xCM<<" "<<newCell->yCM<<" "<<newCell->zCM<<" ";
 //          if(newCell->volume  > 1 ){
 //             cellVelocityDataAccessorPtr->get(newCell->extraAttribPtr)->push_front  (
 //                                              (newCell->xCM)/(float)(newCell->volume) -(newCell->xCM-pt.x)/((float)newCell->volume-1)   ,
@@ -102,14 +101,12 @@ void CellVelocityPlugin::extraInit(Simulator *_simulator){
 //                                           );
 //          
 //          }
-// //          cerr<<" new Cell velocity="<<cellVelocityDataAccessorPtr->get(newCell->extraAttribPtr)->getInstantenousVelocity().X()
+               // Log(LOG_TRACE) << " new Cell velocity="<<cellVelocityDataAccessorPtr->get(newCell->extraAttribPtr)->getInstantenousVelocity().X()
 // //          <<cellVelocityDataAccessorPtr->get(newCell->extraAttribPtr)->getInstantenousVelocity().Y()
-// //          <<cellVelocityDataAccessorPtr->get(newCell->extraAttribPtr)->getInstantenousVelocity().Z()
+// //          <<cellVelocityDataAccessorPtr->get(newCell->extraAttribPtr)->getInstantenousVelocity().Z();
 // //          <<endl;
 //    }
 // 
-// 
-// //    cerr<<"********"<<endl;
 //    
 //               
 // }

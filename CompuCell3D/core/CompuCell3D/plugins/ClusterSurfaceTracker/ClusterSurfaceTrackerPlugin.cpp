@@ -110,7 +110,7 @@ void ClusterSurfaceTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCel
         }
 
    }
-	//cerr<<"NEW EVENT"<<endl;
+   Log(LOG_TRACE) << "NEW EVENT";
     if (newCell){
         CC3DCellList compartments = potts->getCellInventory().getClusterInventory().getClusterCells(newCell->clusterId);
 		//first make sure all compartments have same cluster surface - important during addition of new cluster e.g. during initialization 
@@ -122,10 +122,9 @@ void ClusterSurfaceTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCel
             compartments[i]->clusterSurface=clusterSurface; 
         }
 		//assigning new cluster surface to all members of a cluster	
-		//cerr<<"CLUSTER SURFACE NEW CELL"<<endl;
+        Log(LOG_TRACE) << "CLUSTER SURFACE NEW CELL";
         for (int i =0 ; i< compartments.size() ; ++i){
-			
-			//cerr<<"new compartments[i]->clusterSurface="<<compartments[i]->clusterSurface<<" newDiff="<<newDiff<<endl;
+			Log(LOG_TRACE) << "new compartments[i]->clusterSurface="<<compartments[i]->clusterSurface<<" newDiff="<<newDiff;
             compartments[i]->clusterSurface+=newDiff; 
         }            
     }
@@ -141,17 +140,17 @@ void ClusterSurfaceTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCel
 			}
             compartments[i]->clusterSurface=clusterSurface; 
         }
-		//cerr<<"CLUSTER SURFACE NEW CELL"<<endl;
+        Log(LOG_TRACE) << "CLUSTER SURFACE NEW CELL";
         for (int i =0 ; i< compartments.size() ; ++i){
-			//cerr<<"old compartments[i]->clusterSurface="<<compartments[i]->clusterSurface<<" oldDiff="<<oldDiff<<endl;
+            Log(LOG_TRACE) << "old compartments[i]->clusterSurface="<<compartments[i]->clusterSurface<<" oldDiff="<<oldDiff;
             compartments[i]->clusterSurface+=oldDiff;            
         }     
     }
-	////cerr<<"cluster surface after updating"<<endl;
+    Log(LOG_TRACE) << "cluster surface after updating";
 	//if (oldcell){
 	//	cc3dcelllist compartments = potts->getcellinventory().getclusterinventory().getclustercells(oldcell->clusterid);
  //       for (int i =0 ; i< compartments.size() ; ++i){
-	//		cerr<<"old clustersurface="<<compartments[i]->clustersurface<<endl;
+    //      Log(LOG_TRACE) << "old clustersurface="<<compartments[i]->clustersurface;;
  //           break;
  //       }     
 
@@ -160,15 +159,14 @@ void ClusterSurfaceTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCel
 	//if (newcell){
 	//	cc3dcelllist compartments = potts->getcellinventory().getclusterinventory().getclustercells(newcell->clusterid);
  //       for (int i =0 ; i< compartments.size() ; ++i){
-	//		cerr<<"new clustersurface="<<compartments[i]->clustersurface<<endl;
+    //      Log(LOG_TRACE) << "new clustersurface="<<compartments[i]->clustersurface;
  //           break;
  //       }     
 
 	//}
 
 
-
-	//cerr<<"END OF NEW EVENT"<<endl;
+    Log(LOG_TRACE) << "END OF NEW EVENT";;
 }
 
 void ClusterSurfaceTrackerPlugin::updateClusterSurface(long _clusterId){

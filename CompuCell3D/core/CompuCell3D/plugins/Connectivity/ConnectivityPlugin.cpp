@@ -203,15 +203,15 @@ double ConnectivityPlugin::changeEnergy(const Point3D &pt,
 //       }
 //    }
 //    //if (collisioncount == 0) {
-//    //    cerr << "COLLISION COUNT OF 0" << endl;
-//        /*cerr << potts->getCellFieldG()->get(n[0]) << endl;
-//        cerr << potts->getCellFieldG()->get(n[1]) << endl;
-//        cerr << potts->getCellFieldG()->get(n[2]) << endl;
-//        cerr << potts->getCellFieldG()->get(n[3]) << endl;
-//        cerr << potts->getCellFieldG()->get(n[4]) << endl;
-//        cerr << potts->getCellFieldG()->get(n[5]) << endl;
-//        cerr << potts->getCellFieldG()->get(n[6]) << endl;
-//        cerr << potts->getCellFieldG()->get(n[7]) << endl;
+      //    Log(LOG_TRACE) << "COLLISION COUNT OF 0";
+//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[0]);
+//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[1]);
+//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[2]);
+//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[3]);
+//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[4]);
+//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[5]);
+//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[6]);
+//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[7]);
 //        int aaa;
 //        cin >> aaa;*/
 //    //}
