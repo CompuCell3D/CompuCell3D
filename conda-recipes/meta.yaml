@@ -66,6 +66,10 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
+    - simservice
+    - notebook
+    - ipywidgets
+    - ipyvtklink
     - sphinx
     - graphviz
 
