@@ -89,7 +89,7 @@ def determine_main_loop_fcn():
             return CompuCellSetup.persistent_globals.simthread.main_loop()
         else:
             # Sink
-            return lambda sim, simthread, steppable_register: None
+            return lambda sim, simthread, steppable_registry: None
 
 
 def run():
@@ -142,7 +142,7 @@ def register_steppable(steppable):
 
 def generate_profiling_report(py_steppable_profiler_report, compiled_code_run_time, total_run_time):
     """
-    Generates profiling information after simulation finishes running
+    Generates profiling information string after simulation finishes running
     :param py_steppable_profiler_report:
     :param compiled_code_run_time:
     :param total_run_time:
@@ -194,6 +194,7 @@ def print_profiling_report(py_steppable_profiler_report, compiled_code_run_time,
     :param total_run_time:
     :return:
     """
+    print(generate_profiling_report(py_steppable_profiler_report, compiled_code_run_time, total_run_time))
 
 
 def convert_time_interval_to_hmsm(time_interval):

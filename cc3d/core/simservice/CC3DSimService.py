@@ -68,12 +68,14 @@ class CC3DSimService(CC3DPySim, PySimService):
         # This is needed to safely register steppables through multiple instantiations of CC3D
         # List elements are tuples of the steppable class and frequency
         self._steppable_queue = list()
+        self._corespecs_queue = list()
 
         self._graphics_frames: List[GraphicsFrameContainer] = []
         """Graphics frames synchronized with this service"""
 
     def __del__(self):
         self.uninit_simulation()
+        self.close_frames()
 
     def _run(self):
         """
@@ -90,10 +92,11 @@ class CC3DSimService(CC3DPySim, PySimService):
         for _ in range(len(self._steppable_queue)):
             steppable, frequency = self._steppable_queue.pop(0)
             CompuCellSetup.register_steppable(steppable=steppable(frequency=frequency))
+        for _ in range(len(self._corespecs_queue)):
+            CompuCellSetup.register_specs(self._corespecs_queue.pop(0))
 
         # Load model specs from file if specified
         if self.cc3d_sim_fname is not None:
-            assert self.cc3d_sim_fname is not None, "No simulation file set"
             assert os.path.isfile(self.cc3d_sim_fname), f"Could not find simulation file: {self.cc3d_sim_fname}"
             rollback_importer = RollbackImporter()
             CompuCellSetup.run_cc3d_project(self.cc3d_sim_fname)
@@ -140,6 +143,16 @@ class CC3DSimService(CC3DPySim, PySimService):
         :return: None
         """
         self._steppable_queue.append((steppable, frequency))
+
+    def register_specs(self, *args):
+        """
+        Register Python core spec(s) with CC3D
+        This should be performed before initializing simulation, and cannot be mixed with CC3DML
+        Core specs will be registered during call to run
+        :param args: one or more core specs
+        :return: None
+        """
+        self._corespecs_queue.extend(*args)
 
     def _check_cc3d(self):
         result, error_message = CC3DPy.check_cc3d()
@@ -211,9 +224,7 @@ class CC3DSimService(CC3DPySim, PySimService):
         """
         steppable_registry = CompuCellSetup.persistent_globals.steppable_registry
         steppable_registry.finish()
-        graphics_frames = [frame_c for frame_c in self._graphics_frames]
-        for frame_c in graphics_frames:
-            frame_c.frame.close()
+        self.close_frames()
 
     def _stop(self, terminate_sim: bool = True):
         """
@@ -319,3 +330,9 @@ class CC3DSimService(CC3DPySim, PySimService):
                                     blocking=blocking,
                                     timeout=timeout,
                                     drawing_style=drawing_style)
+
+    def close_frames(self):
+        graphics_frames = [frame_c for frame_c in self._graphics_frames]
+        for frame_c in graphics_frames:
+            frame_c.frame.close()
+        self._graphics_frames.clear()

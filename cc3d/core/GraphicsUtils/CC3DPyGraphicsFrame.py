@@ -662,7 +662,7 @@ class CC3DPyGraphicsFrameControlInterface:
                  scale: Union[int, Tuple[int, int]] = None,
                  transparent_background: bool = False):
         """Save a window to file"""
-        self._process_message(ControlMessageSaveImame(file_path=file_path,
+        self._process_message(ControlMessageSaveImage(file_path=file_path,
                                                       scale=scale,
                                                       transparent_background=transparent_background))
 
@@ -1038,7 +1038,15 @@ class CC3DPyGraphicsFrameClientBase:
 
 
 class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFrameClientBase):
-    """Client for a graphics frame"""
+    """
+    Client for a graphics frame
+
+    The actual user interface is provided by :class:`CC3DPyGraphicsFrameClientProxy`,
+    to support serialization during service executions.
+
+    A proxy is returned by :meth:`CC3DPyGraphicsFrameClientProxy.launch` that can be piped
+    to other processes. However, the proxy is not necessary for client operations in the same process.
+    """
 
     def __init__(self,
                  name: str = None,
@@ -1056,6 +1064,9 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
 
         self._frame_process = CC3DPyGraphicsFrameProcess(frame_conn=frame_conn, fps=fps, window_name=name)
         self._frame_controller = CC3DPyGraphicsFrameControlInterface(proc=self._frame_process)
+
+        self._executor: Optional[CC3DPyGraphicsFrameClientExecutor] = None
+        self._proxy: Optional[CC3DPyGraphicsFrameClientProxy] = None
 
     def launch(self, timeout: float = None):
         """
@@ -1077,7 +1088,8 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
             while not dest_conn.poll(timeout):
                 pass
 
-            return self
+            self._proxy, self._executor = CC3DPyGraphicsFrameClientProxy.start(frame_client=self)
+            return self._proxy
 
         except Exception as e:
             warnings.warn(f'Failed to launch: {str(e)}', RuntimeWarning)
@@ -1115,6 +1127,8 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
 
         try:
             [cb() for cb in self._callbacks_close]
+            self._callbacks_draw.clear()
+            self._callbacks_close.clear()
             self._frame_controller.close()
             return True
         except Exception as e:
@@ -1184,12 +1198,15 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
                                         scale=scale,
                                         transparent_background=transparent_background)
 
+    def _get_field_names(self) -> List[str]:
+        field_names = CompuCellSetup.persistent_globals.simulator.getConcentrationFieldNameVector()
+        return list(field_names)
+
     @property
     def field_names(self) -> List[str]:
         """Current available field names"""
 
-        field_names = CompuCellSetup.persistent_globals.simulator.getConcentrationFieldNameVector()
-        return list(field_names)
+        return self._get_field_names()
 
     def _standard_bsd(self) -> BasicSimulationData:
         bsd = BasicSimulationData()
@@ -1241,3 +1258,198 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
         if lattice_type_str not in list(Configuration.LATTICE_TYPES.keys()):
             lattice_type_str = 'Square'
         return lattice_type_str
+
+
+class CC3DPyGraphicsFrameClientProxyMsg:
+
+    def __init__(self, method: str, args, kwargs):
+
+        self.method = method
+        self.args = args
+        self.kwargs = kwargs
+        self.returns = False
+
+
+class CC3DPyGraphicsFrameClientExecutor(threading.Thread):
+    """
+    Executor for :class:`CC3DPyGraphicsFrameClientProxy`.
+
+    Supports serialization for server-side interface during service execution.
+    """
+
+    def __init__(self,
+                 frame_client: CC3DPyGraphicsFrameClient,
+                 proxy_conn: Connection):
+
+        super().__init__(daemon=True)
+
+        self.frame_client = frame_client
+        self._proxy_conn = proxy_conn
+
+    def run(self) -> None:
+        while not self._proxy_conn.closed:
+            if self._proxy_conn.poll():
+                msg = self._proxy_conn.recv()
+                if msg is None:
+                    self._proxy_conn.close()
+                    return
+
+                msg: CC3DPyGraphicsFrameClientProxyMsg
+                return_val = getattr(self.frame_client, msg.method)(*msg.args, **msg.kwargs)
+                if msg.returns:
+                    self._proxy_conn.send(return_val)
+
+        self._proxy_conn.close()
+
+
+class CC3DPyGraphicsFrameClientProxy:
+    """
+    Proxy for :class:`CC3DPyGraphicsFrameClient`.
+
+    Supports serialization for client-side interface during service execution.
+    """
+
+    def __init__(self, executor_conn: Connection):
+
+        self._executor_conn = executor_conn
+
+    @staticmethod
+    def start(frame_client: CC3DPyGraphicsFrameClient):
+
+        proxy_conn, executor_conn = multiprocessing.Pipe()
+        proxy = CC3DPyGraphicsFrameClientProxy(executor_conn)
+        executor = CC3DPyGraphicsFrameClientExecutor(frame_client=frame_client,
+                                                     proxy_conn=proxy_conn)
+        executor.start()
+        return proxy, executor
+
+    def _process_msg(self, msg: str, *args, **kwargs):
+        if self._executor_conn.closed:
+            warnings.warn('Frame proxy has been disconnected', RuntimeWarning)
+            return
+
+        self._executor_conn.send(CC3DPyGraphicsFrameClientProxyMsg(msg, args, kwargs))
+
+    def _process_ret_msg(self, msg: str, *args, **kwargs):
+        if self._executor_conn.closed:
+            warnings.warn('Frame proxy has been disconnected', RuntimeWarning)
+            return None
+
+        msg = CC3DPyGraphicsFrameClientProxyMsg(msg, args, kwargs)
+        msg.returns = True
+        self._executor_conn.send(msg)
+        while not self._executor_conn.poll():
+            pass
+        return self._executor_conn.recv()
+
+    def launch(self, timeout: float = None):
+        """
+        Launches the graphics frame process and blocks until startup completes.
+
+        Implementation of :class:`CC3DPyGraphicsFrameClientBase` interface.
+
+        :param timeout: permissible duration of launch attempt
+        :type timeout: float
+        :return: interface object on success, or None on failure
+        :rtype: Any or None
+        """
+
+        self._process_msg('launch', timeout=timeout)
+        return self
+
+    def draw(self, blocking: bool = False):
+        """
+        Update visualization data in rendering process.
+
+        Implementation of :class:`CC3DPyGraphicsFrameClientBase` interface.
+
+        :param blocking: flag to block until update is complete
+        :type blocking: bool
+        :return: True on success
+        :rtype: bool
+        """
+
+        return self._process_ret_msg('draw', blocking=blocking)
+
+    def close(self):
+        """
+        Close the frame.
+
+        Implementation of :class:`CC3DPyGraphicsFrameClientBase` interface.
+
+        :return: True on success
+        :rtype: bool
+        """
+
+        rval = self._process_ret_msg('close')
+        self._executor_conn.send(None)
+        return rval
+
+    def set_field_name(self, _field_name: str):
+        """Set the name of the field to render"""
+
+        return self._process_msg('set_field_name', _field_name)
+
+    def set_plane(self, plane, pos):
+        """Set the plane and position"""
+
+        return self._process_msg('set_plane', plane=plane, pos=pos)
+
+    def set_drawing_style(self, _style):
+        """
+        Function that wires-up the widget to behave according tpo the dimension of the visualization
+
+        :param _style:{str} '2D' or '3D'
+        :return: None
+        """
+
+        return self._process_msg('set_drawing_style', _style)
+
+    def np_img_data(self,
+                    scale: Union[int, Tuple[int, int]] = None,
+                    transparent_background: bool = False):
+        """
+        Get image data as numpy data.
+
+        Implementation of :class:`CC3DPyGraphicsFrameClientBase` interface.
+
+        :param scale: image scale
+        :type scale: int or (int, int) or None
+        :param transparent_background: flag to generate with a transparent background
+        :type transparent_background: bool
+        :return: image array data
+        :rtype: numpy.array
+        """
+
+        return self._process_ret_msg('np_img_data', scale=scale, transparent_background=transparent_background)
+
+    def save_img(self,
+                 file_path: str,
+                 scale: Union[int, Tuple[int, int]] = None,
+                 transparent_background: bool = False):
+        """
+        Save a window to file.
+
+        Supported image types are .eps, .jpg, .jpeg, .pdf, .png, .svg.
+
+        Implementation of :class:`CC3DPyGraphicsFrameClientBase` interface.
+
+        :param file_path: absolute path to save the image
+        :type file_path: str
+        :param scale: image scale
+        :type scale: int or (int, int) or None
+        :param transparent_background: flag to generate with a transparent background
+        :type transparent_background: bool
+        :return: None
+        """
+
+        return self._process_msg('save_img',
+                                 file_path=file_path,
+                                 scale=scale,
+                                 transparent_background=transparent_background)
+
+    @property
+    def field_names(self) -> List[str]:
+        """Current available field names"""
+
+        return self._process_ret_msg('_get_field_names')

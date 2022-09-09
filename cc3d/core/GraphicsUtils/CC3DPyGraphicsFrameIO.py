@@ -229,16 +229,6 @@ class ControlMessageShutdown(FrameControlMessage):
         """
         proc.frame.shutdown()
 
-    def control(self, control):
-        """
-        Clear the frame from the process
-
-        :param control: graphics frame process controller
-        :type control: CC3DPyGraphicsFrameControlInterface
-        :return: None
-        """
-        control.frame_proc = None
-
 
 class ControlMessageSetFieldName(FrameControlMessage):
     """Message to set the name of the rendering target field"""
@@ -341,7 +331,7 @@ class ControlMessageGetNPImageData(FrameControlMessage):
         return msg.np_data
 
 
-class ControlMessageSaveImame(FrameControlMessage):
+class ControlMessageSaveImage(FrameControlMessage):
     """Message to save to file"""
 
     def __init__(self,

@@ -22,6 +22,7 @@ FIELD_NUMBER_TO_FIELD_TYPE_MAP = {
 }
 
 
+# Simulation types
 class SimType(Enum):
     # "regular" run
     AUTOMATED = 'Auto'
