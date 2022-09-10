@@ -1,0 +1,82 @@
+<!-- Simple mass conservation demo. One should see that one field cannot diffuse
+into an aggregate, while another can (though slowly). -->
+<CompuCell3D Revision="20190906" Version="4.1.0">
+   
+   <Metadata>
+      <NumberOfProcessors>1</NumberOfProcessors>
+      <DebugOutputFrequency>10</DebugOutputFrequency>
+   </Metadata>
+   
+   <Potts>
+      <Dimensions x="50" y="50" z="1"/>
+      <Steps>100000</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+   </Potts>
+   
+   <Plugin Name="CellType">
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="Type1"/>
+   </Plugin>
+   
+   <Plugin Name="Volume">
+      <VolumeEnergyParameters CellType="Type1" LambdaVolume="2.0" TargetVolume="50"/>
+   </Plugin>
+   
+   <Plugin Name="Contact">
+      <Energy Type1="Medium" Type2="Medium">0.0</Energy>
+      <Energy Type1="Medium" Type2="Type1">16.0</Energy>
+      <Energy Type1="Type1" Type2="Type1">6.0</Energy>
+      <NeighborOrder>2</NeighborOrder>
+   </Plugin>
+   
+    <Steppable Type="ReactionDiffusionSolverFVM">
+        <DeltaT unit="s">1</DeltaT>
+        <AutoTimeSubStep/>
+        <FluctuationCompensator/>
+        <DiffusionField Name="C1">
+            <DiffusionData>
+                <DiffusionConstant>0.1</DiffusionConstant>
+                <DiffusionCoefficient CellType="Type1">0.0</DiffusionCoefficient>
+                <DiffusivityByType/>
+            </DiffusionData>
+            <BoundaryConditions>
+                <Plane Axis="X">
+                    <ConstantValue PlanePosition="Min" Value="0.0"/>
+                    <ConstantValue PlanePosition="Max" Value="1.0"/>
+                </Plane>
+                <Plane Axis="Y">
+                    <ConstantDerivative PlanePosition="Min" Value="0.0"/>
+                    <ConstantDerivative PlanePosition="Max" Value="0.0"/>
+                </Plane>
+            </BoundaryConditions>
+        </DiffusionField>
+        <DiffusionField Name="C2">
+            <DiffusionData>
+                <DiffusionConstant>0.1</DiffusionConstant>
+                <DiffusionCoefficient CellType="Type1">0.01</DiffusionCoefficient>
+                <DiffusivityByType/>
+            </DiffusionData>
+            <BoundaryConditions>
+                <Plane Axis="X">
+                    <ConstantValue PlanePosition="Min" Value="1.0"/>
+                    <ConstantValue PlanePosition="Max" Value="0.0"/>
+                </Plane>
+                <Plane Axis="Y">
+                    <ConstantDerivative PlanePosition="Min" Value="0.0"/>
+                    <ConstantDerivative PlanePosition="Max" Value="0.0"/>
+                </Plane>
+            </BoundaryConditions>
+        </DiffusionField>
+    </Steppable>
+   
+   <Steppable Type="BlobInitializer">
+      <Region>
+         <Center x="25" y="25" z="0"/>
+         <Radius>10</Radius>
+         <Gap>0</Gap>
+         <Width>7</Width>
+         <Types>Type1</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>

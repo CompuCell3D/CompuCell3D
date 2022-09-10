@@ -1,0 +1,5 @@
+<Simulation version="4.1.0">
+   <XMLScript Type="XMLScript">Simulation/SimpleMassConservationDemo.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/SimpleMassConservationDemo.py</PythonScript>
+   <Resource Type="Python">Simulation/SimpleMassConservationDemoSteppables.py</Resource>
+</Simulation>

@@ -8,6 +8,7 @@
 #include "KernelDiffusionSolver.h"
 #include "ReactionDiffusionSolverFE_SavHog.h"
 #include "ReactionDiffusionSolverFE.h"
+#include "ReactionDiffusionSolverFVM.h"
 #include "FlexibleReactionDiffusionSolverFE.h"
 #include "FastDiffusionSolver2DFE.h"
 #include "SteadyStateDiffusionSolver2D.h"
@@ -46,7 +47,7 @@ auto flexibleDiffusionSolverProxy = registerPlugin<Steppable, FlexibleDiffusionS
 );
 
 // auto fiPySolverProxy = registerPlugin<Steppable, FiPySolver>(
-// 	"FiPySolver", 
+// 	"FiPySolver",
 // 	"Solves diffusion equation on the lattice. Uses FiPy python library",
 // 	&Simulator::steppableManager
 // );
@@ -69,6 +70,12 @@ auto reactionDiffusion_SavHogSolverProxy = registerPlugin<Steppable, ReactionDif
         &Simulator::steppableManager
 );
 
+auto reactionDiffusionFVMSolverProxy = registerPlugin<Steppable, ReactionDiffusionSolverFVM>(
+        "ReactionDiffusionSolverFVM",
+        "Solves reaction-diffusion system of equations on the lattice using the finite volume method",
+        &Simulator::steppableManager
+);
+
 auto reactionDiffusionSolverProxy = registerPlugin<Steppable, ReactionDiffusionSolverFE>(
         "ReactionDiffusionSolverFE",
         "Solves reaction-diffusion system of equations on the lattice ",
@@ -82,13 +89,13 @@ auto flexibleReactionDiffusionSolverProxy = registerPlugin<Steppable, FlexibleRe
 );
 
 // auto reactionAdvectionDiffusionSolverProxy = registerPlugin<Steppable, ReactionAdvectionDiffusionSolverFE>(
-// 	"ReactionAdvectionDiffusionSolverFE", 
+// 	"ReactionAdvectionDiffusionSolverFE",
 // 	"Solves reaction-diffusion system of equations on the lattice ",
 // 	&Simulator::steppableManager
 // );
 
 // auto reactionAdvectionDiffusionTagsSolverProxy = registerPlugin<Steppable, ReactionAdvectionDiffusionTagsSolverFE>(
-// 	"ReactionAdvectionDiffusionTagsSolverFE", 
+// 	"ReactionAdvectionDiffusionTagsSolverFE",
 // 	"Solves reaction-diffusion system of equations on the lattice ",
 // 	&Simulator::steppableManager
 // );
@@ -150,7 +157,7 @@ auto reactionDiffusionSolverOpenCLImplicitProxy = registerPlugin<Steppable, Reac
 #endif
 
 // auto reactionDiffusionFileProxy = registerPlugin<Steppable, ReactionDiffusionFile>(
-// 	"ReactionDiffusionFile", 
+// 	"ReactionDiffusionFile",
 // 	"Loads from files precalculated reaction-diffusion fields",
 // 	&Simulator::steppableManager
 // );
