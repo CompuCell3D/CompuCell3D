@@ -90,7 +90,7 @@ class FrameControlMessage:
         Executed by the graphics frame process
 
         :param proc: graphics frame process
-        :type proc: CC3DPyGraphicsFrameProcess
+        :type proc: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameProcess
         :return: None
         """
 
@@ -99,7 +99,7 @@ class FrameControlMessage:
         Executed by the graphics frame process controller
 
         :param control: graphics frame process controller
-        :type control: CC3DPyGraphicsFrameControlInterface
+        :type control: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameControlInterface
         :return: evaluation return result
         :rtype: Any
         """
@@ -109,7 +109,7 @@ class FrameControlMessage:
         Instruction for control to block until it finds its image in the output queue
 
         :param control: graphics frame process controller
-        :type control: CC3DPyGraphicsFrameControlInterface
+        :type control: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameControlInterface
         :return: message
         :rtype: FrameControlMessage
         """
@@ -197,7 +197,7 @@ class ControlMessageDraw(FrameControlMessage):
         Execute draw and return self to output queue if blocking
 
         :param proc: graphics frame process
-        :type proc: CC3DPyGraphicsFrameProcess
+        :type proc: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameProcess
         :return: None
         """
         proc.frame.draw()
@@ -209,7 +209,7 @@ class ControlMessageDraw(FrameControlMessage):
         Wait for image of self to be returned in output queue if blocking
 
         :param control: graphics frame process controller
-        :type control: CC3DPyGraphicsFrameControlInterface
+        :type control: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameControlInterface
         :return: None
         """
         if self.blocking:
@@ -224,7 +224,7 @@ class ControlMessageShutdown(FrameControlMessage):
         Shut down the frame
 
         :param proc: graphics frame process
-        :type proc: CC3DPyGraphicsFrameProcess
+        :type proc: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameProcess
         :return: None
         """
         proc.frame.shutdown()
@@ -263,7 +263,7 @@ class ControlMessageSetFieldName(FrameControlMessage):
         Set the field name on the frame
 
         :param proc: graphics frame process
-        :type proc: CC3DPyGraphicsFrameProcess
+        :type proc: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameProcess
         :return: None
         """
         proc.frame.set_field_name(self.field_name)
@@ -284,7 +284,7 @@ class ControlMessageSetPlanePos(FrameControlMessage):
         Set the plane and position on the frame
 
         :param proc: graphics frame process
-        :type proc: CC3DPyGraphicsFrameProcess
+        :type proc: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameProcess
         :return: None
         """
         proc.frame.set_plane(self.plane, self.pos)
@@ -307,7 +307,7 @@ class ControlMessageSetDrawingStyle(FrameControlMessage):
         Set the drawing style on the frame
 
         :param proc: graphics frame process
-        :type proc: CC3DPyGraphicsFrameProcess
+        :type proc: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameProcess
         :return: None
         """
         proc.frame.set_drawing_style(self.style)
@@ -331,7 +331,7 @@ class ControlMessageGetNPImageData(FrameControlMessage):
         Generate and return numpy data of an image of the rendered scene in the frame
 
         :param proc: graphics frame process
-        :type proc: CC3DPyGraphicsFrameProcess
+        :type proc: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameProcess
         :return: None
         """
         self.np_data = proc.frame.np_img_data(scale=self.scale, transparent_background=self.transparent_background)
@@ -342,7 +342,7 @@ class ControlMessageGetNPImageData(FrameControlMessage):
         Issue request with blocking call to return data
 
         :param control: graphics frame process controller
-        :type control: CC3DPyGraphicsFrameControlInterface
+        :type control: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameControlInterface
         :return: numpy data
         :rtype: ndarray
         """
@@ -371,7 +371,7 @@ class ControlMessageSaveImage(FrameControlMessage):
         Save image to file
 
         :param proc: graphics frame process
-        :type proc: CC3DPyGraphicsFrameProcess
+        :type proc: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameProcess
         :return: None
         """
         proc.frame.save_img(file_path=self.file_path,
@@ -385,7 +385,7 @@ class ControlMessageSaveImage(FrameControlMessage):
         Do blocking if requested
 
         :param control: graphics frame process controller
-        :type control: CC3DPyGraphicsFrameControlInterface
+        :type control: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameControlInterface
         :return: None
         """
         if self.blocking:

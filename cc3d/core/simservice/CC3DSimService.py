@@ -3,7 +3,7 @@ CC3D core implementation of simservice PySimService
 """
 import os
 import time
-from typing import Any, Callable, List, Optional
+from typing import Any, List, Optional
 
 from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.CC3DPy import CC3DPy, CC3DPySim

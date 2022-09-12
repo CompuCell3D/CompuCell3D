@@ -298,7 +298,7 @@ class _PyCoreSpecsBase:
     @property
     def depends_on(self) -> List[Type]:
         """
-        Returns a list of depencies, each of which must be instantiated exactly once to validate
+        Returns a list of dependencies, each of which must be instantiated exactly once to validate
 
         :return: list of dependencies
         """
@@ -410,12 +410,16 @@ class _PyCoreXMLInterface(_PyCoreSpecsBase, ABC):
         return cls.from_xml(el)
 
     @classmethod
-    def find_xml_by_attr(cls, _xml: CC3DXMLElement, attr_name: str = None) -> CC3DXMLElement:
+    def find_xml_by_attr(cls,
+                         _xml: CC3DXMLElement,
+                         attr_name: str = None,
+                         registered_name: str = None) -> CC3DXMLElement:
         """
         Returns first found xml element in parent by attribute value
 
         :param _xml: parent element
         :param attr_name: attribute name, default read from class type
+        :param registered_name: registered name, default read from class type
         :raises SpecImportError: When xml element not found
         :return: first found element
         """
@@ -427,18 +431,21 @@ class _PyCoreXMLInterface(_PyCoreSpecsBase, ABC):
             else:
                 raise SpecImportError("Attribute name not known")
 
+        if registered_name is None:
+            registered_name = cls.registered_name
+
         el = None
         el_list = CC3DXMLListPy(_xml.getElements(cls.type))
         for els in el_list:
             els: CC3DXMLElement
             if els.findAttribute(attr_name):
-                registered_name = els.getAttribute(attr_name)
-                if registered_name == cls.registered_name:
+                registered_name_el = els.getAttribute(attr_name)
+                if registered_name_el == registered_name:
                     el = els
                     break
 
         if el is None:
-            raise SpecImportError(f"{cls.registered_name} not found")
+            raise SpecImportError(f"{registered_name} not found")
 
         return el
 
@@ -804,19 +811,22 @@ class _PDESecretionDataSpecs(_PyCoreSpecsBase):
         return ps
 
 
-BOUNDARYTYPESPDE = ["Value", "Flux", "Periodic"]
+PDEBOUNDARYVALUE = "Value"
+PDEBOUNDARYFLUX = "Flux"
+PDEBOUNDARYPERIODIC = "Periodic"
+BOUNDARYTYPESPDE = [PDEBOUNDARYVALUE, PDEBOUNDARYFLUX, PDEBOUNDARYPERIODIC]
 
 
 class PDEBoundaryConditions(_PyCoreSpecsBase):
     """ PDE Solver Boundary Conditions Spec """
 
     def __init__(self,
-                 x_min_type: str = BOUNDARYTYPESPDE[0], x_min_val: float = 0.0,
-                 x_max_type: str = BOUNDARYTYPESPDE[0], x_max_val: float = 0.0,
-                 y_min_type: str = BOUNDARYTYPESPDE[0], y_min_val: float = 0.0,
-                 y_max_type: str = BOUNDARYTYPESPDE[0], y_max_val: float = 0.0,
-                 z_min_type: str = BOUNDARYTYPESPDE[0], z_min_val: float = 0.0,
-                 z_max_type: str = BOUNDARYTYPESPDE[0], z_max_val: float = 0.0):
+                 x_min_type: str = PDEBOUNDARYVALUE, x_min_val: float = 0.0,
+                 x_max_type: str = PDEBOUNDARYVALUE, x_max_val: float = 0.0,
+                 y_min_type: str = PDEBOUNDARYVALUE, y_min_val: float = 0.0,
+                 y_max_type: str = PDEBOUNDARYVALUE, y_max_val: float = 0.0,
+                 z_min_type: str = PDEBOUNDARYVALUE, z_min_val: float = 0.0,
+                 z_max_type: str = PDEBOUNDARYVALUE, z_max_val: float = 0.0):
         super().__init__()
 
         self.check_inputs(x_min_type=x_min_type,
@@ -839,8 +849,8 @@ class PDEBoundaryConditions(_PyCoreSpecsBase):
                           "z_max_type": z_max_type,
                           "z_max_val": z_max_val}
 
-        self._xml_type_labels = {BOUNDARYTYPESPDE[0]: "ConstantValue",
-                                 BOUNDARYTYPESPDE[1]: "ConstantDerivative",
+        self._xml_type_labels = {PDEBOUNDARYVALUE: "ConstantValue",
+                                 PDEBOUNDARYFLUX: "ConstantDerivative",
                                  BOUNDARYTYPESPDE[2]: "Periodic"}
 
     x_min_val: float = SpecProperty(name="x_min_val")
@@ -6099,10 +6109,10 @@ class DiffusionSolverFE(_PDESolverSpecs[DiffusionSolverFEDiffusionData, Diffusio
         """
         o = cls()
         try:
-            el = o.find_xml_by_attr(_xml)
+            el = o.find_xml_by_attr(_xml, registered_name=o.registered_name)
         except SpecImportError:
             o.gpu = not o.gpu
-            el = o.find_xml_by_attr(_xml)
+            el = o.find_xml_by_attr(_xml, registered_name=o.registered_name)
 
         o.fluc_comp = el.findElement("FluctuationCompensator")
 
@@ -6182,12 +6192,12 @@ class DiffusionSolverFE(_PDESolverSpecs[DiffusionSolverFEDiffusionData, Diffusio
                         p_el_list = CC3DXMLListPy(p_el.getElements("ConstantValue"))
                         for c_el in p_el_list:
                             pos: str = c_el.getAttribute("PlanePosition").lower()
-                            setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[0])
+                            setattr(f.bcs, f"{axis}_{pos}_type", PDEBOUNDARYVALUE)
                             setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
                         p_el_list = CC3DXMLListPy(p_el.getElements("ConstantDerivative"))
                         for c_el in p_el_list:
                             pos: str = c_el.getAttribute("PlanePosition").lower()
-                            setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[1])
+                            setattr(f.bcs, f"{axis}_{pos}_type", PDEBOUNDARYFLUX)
                             setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
 
         return o
@@ -6836,12 +6846,12 @@ class ReactionDiffusionSolverFE(_PDESolverSpecs[ReactionDiffusionSolverFEDiffusi
                         p_el_list = CC3DXMLListPy(p_el.getElements("ConstantValue"))
                         for c_el in p_el_list:
                             pos: str = c_el.getAttribute("PlanePosition").lower()
-                            setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[0])
+                            setattr(f.bcs, f"{axis}_{pos}_type", PDEBOUNDARYVALUE)
                             setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
                         p_el_list = CC3DXMLListPy(p_el.getElements("ConstantDerivative"))
                         for c_el in p_el_list:
                             pos: str = c_el.getAttribute("PlanePosition").lower()
-                            setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[1])
+                            setattr(f.bcs, f"{axis}_{pos}_type", PDEBOUNDARYFLUX)
                             setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
 
         return o
@@ -7077,10 +7087,10 @@ class SteadyStateDiffusionSolver(_PDESolverSpecs[SteadyStateDiffusionSolverDiffu
         o = cls()
 
         try:
-            el = o.find_xml_by_attr(_xml)
+            el = o.find_xml_by_attr(_xml, registered_name=o.registered_name)
         except SpecImportError:
             o.three_d = not o.three_d
-            el = o.find_xml_by_attr(_xml)
+            el = o.find_xml_by_attr(_xml, registered_name=o.registered_name)
 
         el_list = CC3DXMLListPy(el.getElements("DiffusionField"))
 
@@ -7137,12 +7147,12 @@ class SteadyStateDiffusionSolver(_PDESolverSpecs[SteadyStateDiffusionSolverDiffu
                         p_el_list = CC3DXMLListPy(p_el.getElements("ConstantValue"))
                         for c_el in p_el_list:
                             pos: str = c_el.getAttribute("PlanePosition").lower()
-                            setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[0])
+                            setattr(f.bcs, f"{axis}_{pos}_type", PDEBOUNDARYVALUE)
                             setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
                         p_el_list = CC3DXMLListPy(p_el.getElements("ConstantDerivative"))
                         for c_el in p_el_list:
                             pos: str = c_el.getAttribute("PlanePosition").lower()
-                            setattr(f.bcs, f"{axis}_{pos}_type", BOUNDARYTYPESPDE[1])
+                            setattr(f.bcs, f"{axis}_{pos}_type", PDEBOUNDARYFLUX)
                             setattr(f.bcs, f"{axis}_{pos}_val", c_el.getAttributeAsDouble("Value"))
 
         return o
