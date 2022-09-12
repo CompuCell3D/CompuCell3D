@@ -3,8 +3,6 @@ Defines features for interactive visualization for use with CC3D simservice appl
 """
 
 # todo: add CC3D logo to window title icon
-# todo: add target field name display
-# todo: handle settings values for individual fields (i.e., create defaults when not in pre-fetched data)
 # todo: disable built-in key commands for closing render windows
 # todo: add support for additional plots (e.g., tracking fields)
 
@@ -1294,6 +1292,74 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
             lattice_type_str = 'Square'
         return lattice_type_str
 
+    @property
+    def field_name(self) -> str:
+        return self.get_field_name()
+
+    @field_name.setter
+    def field_name(self, _field_name):
+        self.set_field_name(_field_name)
+
+    @property
+    def min_range_fixed(self) -> bool:
+        key = 'MinRangeFixed'
+
+        try:
+            return self._service_get_config(key, field_name=self.field_name)
+        except KeyError:
+            return False
+
+    @min_range_fixed.setter
+    def min_range_fixed(self, _val: bool) -> None:
+        key = 'MinRangeFixed'
+
+        self.set_config(key=key, val=_val, field_name=self.field_name)
+
+    @property
+    def min_range(self) -> Optional[float]:
+        key = 'MinRange'
+
+        try:
+            return self._service_get_config(key, field_name=self.field_name)
+        except KeyError:
+            return None
+
+    @min_range.setter
+    def min_range(self, _val: float):
+        key = 'MinRange'
+
+        self.set_config(key=key, val=_val, field_name=self.field_name)
+
+    @property
+    def max_range_fixed(self) -> bool:
+        key = 'MaxRangeFixed'
+
+        try:
+            return self._service_get_config(key, field_name=self.field_name)
+        except KeyError:
+            return False
+
+    @max_range_fixed.setter
+    def max_range_fixed(self, _val: bool):
+        key = 'MaxRangeFixed'
+
+        self.set_config(key=key, val=_val, field_name=self.field_name)
+
+    @property
+    def max_range(self) -> Optional[float]:
+        key = 'MaxRange'
+
+        try:
+            return self._service_get_config(key, field_name=self.field_name)
+        except KeyError:
+            return None
+
+    @max_range.setter
+    def max_range(self, _val: float):
+        key = 'MaxRange'
+
+        self.set_config(key=key, val=_val, field_name=self.field_name)
+
 
 class CC3DPyGraphicsFrameClientProxyMsg:
 
@@ -1493,3 +1559,109 @@ class CC3DPyGraphicsFrameClientProxy:
         """Current available field names"""
 
         return self._process_ret_msg('_get_field_names')
+
+    def save_configs(self, fp: str):
+        """
+        Save current state of configuration to file.
+
+        :param fp: absolute path of file
+        :type fp: str
+        :return: True on success
+        :rtype: bool
+        """
+
+        return self._process_ret_msg('save_configs', fp=fp)
+
+    def load_configs(self, fp: str):
+        """
+        Load current state of configuraiton from file.
+
+        :param fp: absolute path of file
+        :type fp: str
+        :return: True on success
+        :rtype: bool
+        """
+
+        return self._process_ret_msg('load_configs', fp=fp)
+
+    def set_config(self, key: str, val: Any, field_name: Any = None, pull_metadata: bool = True):
+        """
+        Set a configuration entry value.
+
+        :param key: configuration key
+        :param val: configuration value
+        :param field_name: configuration field specifier, optional
+        :param pull_metadata: flag to tell underlying frame to pull field metadata when a field name is specified
+        :return: True on success
+        :rtype: bool
+        """
+
+        return self._process_ret_msg('set_config', key=key, val=val, field_name=field_name, pull_metadata=pull_metadata)
+
+    @property
+    def field_name(self) -> str:
+        return self._process_ret_msg('get_field_name')
+
+    @field_name.setter
+    def field_name(self, _field_name):
+        self.set_field_name(_field_name)
+
+    @property
+    def min_range_fixed(self) -> bool:
+        key = 'MinRangeFixed'
+
+        try:
+            return self._process_ret_msg('_service_get_config', key, field_name=self.field_name)
+        except KeyError:
+            return False
+
+    @min_range_fixed.setter
+    def min_range_fixed(self, _val: bool) -> None:
+        key = 'MinRangeFixed'
+
+        self.set_config(key=key, val=_val, field_name=self.field_name)
+
+    @property
+    def min_range(self) -> Optional[float]:
+        key = 'MinRange'
+
+        try:
+            return self._process_ret_msg('_service_get_config', key, field_name=self.field_name)
+        except KeyError:
+            return None
+
+    @min_range.setter
+    def min_range(self, _val: float):
+        key = 'MinRange'
+
+        self.set_config(key=key, val=_val, field_name=self.field_name)
+
+    @property
+    def max_range_fixed(self) -> bool:
+        key = 'MaxRangeFixed'
+
+        try:
+            return self._process_ret_msg('_service_get_config', key, field_name=self.field_name)
+        except KeyError:
+            return False
+
+    @max_range_fixed.setter
+    def max_range_fixed(self, _val: bool):
+        key = 'MaxRangeFixed'
+
+        self.set_config(key=key, val=_val, field_name=self.field_name)
+
+    @property
+    def max_range(self) -> Optional[float]:
+        key = 'MaxRange'
+
+        try:
+            return self._process_ret_msg('_service_get_config', key, field_name=self.field_name)
+        except KeyError:
+            return None
+
+    @max_range.setter
+    def max_range(self, _val: float):
+        key = 'MaxRange'
+
+        self.set_config(key=key, val=_val, field_name=self.field_name)
