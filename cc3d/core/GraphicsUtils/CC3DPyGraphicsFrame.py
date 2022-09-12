@@ -427,13 +427,22 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
         except (AttributeError, KeyError):
             has_prefetched = False
 
-        for field_name, field_type in self.fieldTypes.items():
-
-            self.metadata_data_dict[field_type][field_name] = self.get_metadata(field_name=field_name,
-                                                                                field_type=field_type)
+        [self.pull_metadata(field_name=field_name) for field_name in self.fieldTypes.keys()]
 
         if has_prefetched:
             self.metadata_fetcher_dict = {k: self.get_metadata_prefetched for k in self.metadata_fetcher_dict.keys()}
+
+    def pull_metadata(self, field_name: str):
+
+        field_type = self.fieldTypes[field_name]
+
+        try:
+            func = self.metadata_fetcher_dict_copy[field_type]
+        except (AttributeError, KeyError):
+            func = self.get_metadata
+
+        self.metadata_data_dict[field_type][field_name] = func(field_name=field_name,
+                                                               field_type=field_type)
 
     def get_metadata_prefetched(self, field_name, field_type):
         """
@@ -632,6 +641,10 @@ class CC3DPyGraphicsFrameControlInterface:
     def close(self):
         """Close the graphics frame process"""
         self._process_message(ControlMessageShutdown())
+
+    def pull_metadata(self, _field_name: str):
+        """Update field metadata storage on a frame for a field"""
+        self._process_message(ControlMessagePullMetadata(_field_name))
 
     def set_field_name(self, _field_name: str):
         """Set the name of the field to render"""
@@ -1135,6 +1148,28 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
             warnings.warn(f'Failed to close: {str(e)}', RuntimeWarning)
             return False
 
+    def pull_metadata(self, _field_name: str):
+        """Update field metadata storage on a frame for a field"""
+
+        self._frame_controller.pull_metadata(_field_name)
+
+    def set_config(self, key: str, val: Any, field_name: Any = None, pull_metadata: bool = True):
+        """
+        Set a configuration entry value.
+
+        :param key: configuration key
+        :param val: configuration value
+        :param field_name: configuration field specifier, optional
+        :param pull_metadata: flag to tell underlying frame to pull field metadata when a field name is specified
+        :return: True on success
+        :rtype: bool
+        """
+
+        ret_val = super().set_config(key, val, field_name)
+        if field_name is not None and pull_metadata and ret_val:
+            ret_val = ret_val and self.pull_metadata(field_name)
+        return ret_val
+
     def set_field_name(self, _field_name: str):
         """Set the name of the field to render"""
 
@@ -1384,6 +1419,11 @@ class CC3DPyGraphicsFrameClientProxy:
         rval = self._process_ret_msg('close')
         self._executor_conn.send(None)
         return rval
+
+    def pull_metadata(self, _field_name: str):
+        """Update field metadata storage on a frame for a field"""
+
+        return self._process_msg('pull_metadata', _field_name)
 
     def set_field_name(self, _field_name: str):
         """Set the name of the field to render"""

@@ -230,6 +230,25 @@ class ControlMessageShutdown(FrameControlMessage):
         proc.frame.shutdown()
 
 
+class ControlMessagePullMetadata(FrameControlMessage):
+
+    def __init__(self, field_name: str):
+
+        super().__init__()
+
+        self.field_name = field_name
+
+    def process(self, proc):
+        """
+        Update field metadata storage on a frame for a field
+
+        :param proc: graphics frame process
+        :type proc: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameProcess
+        :return: None
+        """
+        proc.frame.pull_metadata(field_name=self.field_name)
+
+
 class ControlMessageSetFieldName(FrameControlMessage):
     """Message to set the name of the rendering target field"""
 
