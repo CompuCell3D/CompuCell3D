@@ -1,8 +1,5 @@
-from IPython.display import display
-from debugpy import listen
 import ipywidgets as widgets
 from ipywidgets.widgets.widget_box import HBox, VBox
-# from cc3d.core.GraphicsUtils.JupyterCustomWidgets import DownloadButton
 
 import base64
 import hashlib
@@ -10,11 +7,9 @@ from typing import Callable
 from IPython.display import HTML, display
 
 
-
-
 class DownloadButton(widgets.Button):
     """
-	Download button with dynamic content
+    Download button with dynamic content
     The content is generated using a callback when the button is clicked.
     """
 
@@ -72,7 +67,7 @@ class JupyterWidgetInterface:
                     self.data[key]['widget'].value = new_value
 
     def add_grid(self, description, rows=1, cols=1, value=True, callback=None, name_callback=None, keyname=None, show=False):
-        if keyname == None:
+        if keyname is None:
             keyname = description
         datavalue = [[value for j in range(cols)] for i in range(rows)]
         
@@ -107,7 +102,7 @@ class JupyterWidgetInterface:
         return vbox
 
     def add_toggle(self, description, value=False, callback=None, keyname=None, show=False):
-        if keyname == None:
+        if keyname is None:
             keyname = description
         button = widgets.Checkbox(value=value, description=description)
 
@@ -123,9 +118,8 @@ class JupyterWidgetInterface:
             display(button)
         return button
 
-
     def add_button(self, description, callback=None, keyname=None, show=False):
-        if keyname == None:
+        if keyname is None:
             keyname = description
 
         button = widgets.Button(description=description)
@@ -137,9 +131,8 @@ class JupyterWidgetInterface:
             display(button)
         return button
 
-
     def add_download_button(self, description, filename, filecontents, keyname=None, show=False):
-        if keyname == None:
+        if keyname is None:
             keyname = description
 
         button = DownloadButton(filename, filecontents, description=description)
@@ -150,9 +143,8 @@ class JupyterWidgetInterface:
             display(button)
         return button
 
-
     def add_upload_button(self, description, accept='', multiple=False, callback=None, keyname=None, show=False):
-        if keyname == None:
+        if keyname is None:
             keyname = description
 
         button = widgets.FileUpload(accept=accept, multiple=multiple, description=description)
@@ -169,9 +161,8 @@ class JupyterWidgetInterface:
             display(button)
         return button
 
-
     def add_int(self, description, value=0, min=0, max=100, step=1, callback=None, keyname=None, show=False):
-        if keyname == None:
+        if keyname is None:
             keyname = description
 
         slider = widgets.IntSlider(value, min, max, step, description=description)
@@ -188,11 +179,10 @@ class JupyterWidgetInterface:
             display(slider)
         return slider
 
-
     def add_float(self, description, value=0, callback=None, keyname=None, show=False):
-        if keyname == None:
+        if keyname is None:
             keyname = description
-        if value == None:
+        if value is None:
             value = 0
 
         floattext = widgets.FloatText(value, description=description)
@@ -209,10 +199,11 @@ class JupyterWidgetInterface:
             display(floattext)
         return floattext
 
-
-    def add_range(self, description, value=[0,1], minf=0, maxf=1, step=0.01, callback=None, keyname=None, show=False):
-        if keyname == None:
+    def add_range(self, description, value=None, minf=0, maxf=1, step=0.01, callback=None, keyname=None, show=False):
+        if keyname is None:
             keyname = description
+        if value is None:
+            value = [0, 1]
 
         slider = widgets.FloatRangeSlider(value=value, min=minf, max=maxf, step=step, description=description, continuous_update=False, readout=True)
 
@@ -228,9 +219,11 @@ class JupyterWidgetInterface:
             display(slider)
         return slider
 
-    def add_select(self, description, options=[], value=None, callback=None, keyname=None, show=False):
-        if keyname == None:
+    def add_select(self, description, options=None, value=None, callback=None, keyname=None, show=False):
+        if keyname is None:
             keyname = description
+        if options is None:
+            options = []
 
         select = widgets.Dropdown(options=options, value=value, description=description)
 
@@ -246,9 +239,11 @@ class JupyterWidgetInterface:
             display(select)
         return select
 
-    def add_multiselect(self, description, options=[], value=None, callback=None, keyname=None, show=False):
-        if keyname == None:
+    def add_multiselect(self, description, options=None, value=None, callback=None, keyname=None, show=False):
+        if keyname is None:
             keyname = description
+        if options is None:
+            options = []
 
         value = tuple(value)
         select = widgets.SelectMultiple(options=options, value=value, description=description)
@@ -266,7 +261,7 @@ class JupyterWidgetInterface:
         return select
 
     def add_color(self, description, value='#ffffff', callback=None, keyname=None, show=False):
-        if keyname == None:
+        if keyname is None:
             keyname = description
         # style = {'description_width': 'initial'}
         style = {'description_width': '200px'}
@@ -286,7 +281,7 @@ class JupyterWidgetInterface:
         return picker
 
     def add_text(self, description, value=None, callback=None, keyname=None, show=False):
-        if keyname == None:
+        if keyname is None:
             keyname = description
 
         label = widgets.Label(value=description)
@@ -314,7 +309,6 @@ class JupyterWidgetInterface:
         if show:
             display(accordion)
         return accordion
-
 
     def make_tab(self, tab_name, *widget_names):
         """

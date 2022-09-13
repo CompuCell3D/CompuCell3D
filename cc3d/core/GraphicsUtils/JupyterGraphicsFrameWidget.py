@@ -307,6 +307,7 @@ class JupyterGraphicsFrame(GraphicsFrame):
         if self._field_label_actor is None:
             self._field_label_actor = default_field_label()
         return self._field_label_actor
+
     def _set_vars_from_config(self):
         self.bounding_box_on = self.config.getSetting('BoundingBoxOn')
         self.cell_borders_on = self.config.getSetting('CellBordersOn')
@@ -317,7 +318,6 @@ class JupyterGraphicsFrame(GraphicsFrame):
         self.lattice_axes_labels_on = self.config.getSetting('ShowAxes')
         self.lattice_axes_on = self.config.getSetting('ShowHorizontalAxesLabels') or self.config.getSetting(
             'ShowVerticalAxesLabels')
-
 
     def get_vtk_window(self):
         """
@@ -750,7 +750,6 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         panel = JupyterSettingsPanel(self.frame.config, import_callback)
         panel.show()
         return panel
-
 
     def control_panel(self) -> JupyterControlPanel:
         """Get a control panel for the client"""

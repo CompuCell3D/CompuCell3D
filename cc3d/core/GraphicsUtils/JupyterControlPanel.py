@@ -1,13 +1,10 @@
 import math
-import copy
 import json
 from IPython.core.display import display
 
 from ipywidgets.widgets.widget_box import HBox, VBox
 from ipywidgets import Layout
-from traitlets.traitlets import default
 
-# from cc3d.core.GraphicsUtils.JupyterGraphicsFrameWidget import CC3DJupyterGraphicsFrameGrid
 from cc3d.core.GraphicsUtils.JupyterWidgetInterface import JupyterWidgetInterface
 from cc3d.core.GraphicsOffScreen.primitives import Color
 from cc3d.CompuCellSetup.simulation_utils import extract_type_names_and_ids
@@ -99,7 +96,6 @@ class JupyterControlPanel:
         hbox = HBox([left, right])
         display(hbox)
 
-
     def _callback(self, fun):
         """
         Callback wrapper for a commonly used callback format
@@ -133,7 +129,6 @@ class JupyterControlPanel:
             self._check_conflicting_data()
 
         return self.wi.add_grid('selected frames', rows=self.rows, cols=self.cols, value=True, callback=set_active_client)
-
 
     def _make_camera_tab(self, defaultframe):
 
@@ -226,7 +221,6 @@ class JupyterControlPanel:
         options1, options2 = split_half(widget_names)
         self.wi.make_tab('Visualization', options1, options2)
 
-
     def _make_colors_tab(self, defaultframe):
         # callback
         def set_color(c, keyname, value):
@@ -244,7 +238,6 @@ class JupyterControlPanel:
         colors1, colors2 = split_half(names)
 
         self.wi.make_tab('Cell Colors', colors1, colors2)
-
 
     def _make_field_specific_options_tab(self, defaultframe):
 
@@ -282,31 +275,57 @@ class JupyterControlPanel:
             field_widgets = []
 
             settingname = 'ContoursOn'
-            w_on = self.wi.add_toggle(f'contours on', keyname=settingname+field, value=_get_default(field, settingname), callback=self._callback(_make_callback(field, settingname)))
+            w_on = self.wi.add_toggle('contours on',
+                                      keyname=settingname+field,
+                                      value=_get_default(field, settingname),
+                                      callback=self._callback(_make_callback(field, settingname)))
             settingname = 'NumberOfContourLines'
-            w = self.wi.add_int(f'contour lines', keyname=settingname+field, min=0, max=100, value=_get_default(field, settingname), callback=self._callback(_make_callback(field, settingname)))
+            w = self.wi.add_int('contour lines',
+                                keyname=settingname+field,
+                                value=_get_default(field, settingname),
+                                callback=self._callback(_make_callback(field, settingname)),
+                                min=0,
+                                max=100)
             _set_listener('ContoursOn', 'NumberOfContourLines', field, _disabled_callback)
             field_widgets.append(HBox([w_on, w]))
 
             settingname = 'LegendEnable'
-            w = self.wi.add_toggle(f'enable legend', keyname=settingname+field, value=_get_default(field, settingname), callback=self._callback(_make_callback(field, settingname)))
+            w = self.wi.add_toggle('enable legend',
+                                   keyname=settingname+field,
+                                   value=_get_default(field, settingname),
+                                   callback=self._callback(_make_callback(field, settingname)))
             field_widgets.append(w)
 
             settingname = 'DisplayMinMaxInfo'
-            w = self.wi.add_toggle(f'show min/max info', keyname=settingname+field, value=_get_default(field, settingname), callback=self._callback(_make_callback(field, settingname)))
+            w = self.wi.add_toggle('show min/max info',
+                                   keyname=settingname+field,
+                                   value=_get_default(field, settingname),
+                                   callback=self._callback(_make_callback(field, settingname)))
             field_widgets.append(w)
 
             settingname = 'MinRangeFixed'
-            w_on = self.wi.add_toggle(f'use fixed min range', keyname=settingname+field, value=_get_default(field, settingname), callback=self._callback(_make_callback(field, settingname)))
+            w_on = self.wi.add_toggle('use fixed min range',
+                                      keyname=settingname+field,
+                                      value=_get_default(field, settingname),
+                                      callback=self._callback(_make_callback(field, settingname)))
             settingname = 'MinRange'
-            w = self.wi.add_float(f'min value', keyname=settingname+field, value=_get_default(field, settingname), callback=self._callback(_make_callback(field, settingname)))
+            w = self.wi.add_float('min value',
+                                  keyname=settingname+field,
+                                  value=_get_default(field, settingname),
+                                  callback=self._callback(_make_callback(field, settingname)))
             _set_listener('MinRangeFixed', 'MinRange', field, _disabled_callback)
             field_widgets.append(HBox([w_on, w]))
 
             settingname = 'MaxRangeFixed'
-            w_on = self.wi.add_toggle(f'use fixed max range', keyname=settingname+field, value=_get_default(field, settingname), callback=self._callback(_make_callback(field, settingname)))
+            w_on = self.wi.add_toggle('use fixed max range',
+                                      keyname=settingname+field,
+                                      value=_get_default(field, settingname),
+                                      callback=self._callback(_make_callback(field, settingname)))
             settingname = 'MaxRange'
-            w = self.wi.add_float(f'max value', keyname=settingname+field, value=_get_default(field, settingname), callback=self._callback(_make_callback(field, settingname)))
+            w = self.wi.add_float('max value',
+                                  keyname=settingname+field,
+                                  value=_get_default(field, settingname),
+                                  callback=self._callback(_make_callback(field, settingname)))
             _set_listener('MaxRangeFixed', 'MaxRange', field, _disabled_callback)
             field_widgets.append(HBox([w_on, w]))
 
@@ -319,7 +338,6 @@ class JupyterControlPanel:
 
         # --- Make the widget tab
         self.wi.make_tab('Field Specific Options', ['accordion'])
-
 
     def _update_client_data(self, row, col):
         """
@@ -336,9 +354,6 @@ class JupyterControlPanel:
             for data in row:
                 if data['active']:
                     active_client_datas.append(data['wi_data'])
-            
-        # debug
-        # print('actives', len(active_client_datas))
         
         if len(active_client_datas) > 0:
             self.wi.set_all_disabled(False)
@@ -354,19 +369,12 @@ class JupyterControlPanel:
                 if w and hasattr(w, 'description'):
                     marked = '*' in w.description
 
-                    # debug
-                    # if key in ['bounding box', 'cell borders']:
-                    #     print('conflict', conflict, 'marked', marked, key)
-
                     if conflict and not marked:
                         w.description = key+'*'
                     elif not conflict and marked:
                         w.description = w.description.replace('*', '')
         else:
             self.wi.set_all_disabled(True)
-
-
-
 
 
 class JupyterSettingsPanel:
@@ -385,7 +393,6 @@ class JupyterSettingsPanel:
         """
         self._create_panel()
 
-
     def _create_panel(self):
         """Create view controls (ipywidgets)"""
         self._make_visualization_tab()
@@ -397,21 +404,36 @@ class JupyterSettingsPanel:
     def _make_visualization_tab(self):
         # callback
         frame_options = [
-            ('bounding box', self.config.getSetting('BoundingBoxOn'), lambda v : self.config.setSetting('BoundingBoxOn', v)),
-            ('cell borders', self.config.getSetting('CellBordersOn'), lambda v : self.config.setSetting('CellBordersOn', v)),
-            ('cell glyphs', self.config.getSetting('CellGlyphsOn'), lambda v : self.config.setSetting('CellGlyphsOn', v)),
-            ('cells', self.config.getSetting('CellsOn'), lambda v : self.config.setSetting('CellsOn', v)),
-            ('cluster borders', self.config.getSetting('ClusterBordersOn'), lambda v : self.config.setSetting('ClusterBordersOn', v)),
-            ('fpp links',  self.config.getSetting('FPPLinksOn'), lambda v : self.config.setSetting('FPPLinksOn', v)),
-            ('lattice axes labels', self.config.getSetting('ShowAxes'), lambda v : self.config.setSetting('ShowAxes', v)),
-            ('lattice axes', self.config.getSetting('ShowHorizontalAxesLabels') or self.config.getSetting('ShowVerticalAxesLabels'), lambda v : self.config.setSetting('ShowHorizontalAxesLabels', v))
+            ('bounding box',
+             self.config.getSetting('BoundingBoxOn'),
+             lambda v: self.config.setSetting('BoundingBoxOn', v)),
+            ('cell borders',
+             self.config.getSetting('CellBordersOn'),
+             lambda v: self.config.setSetting('CellBordersOn', v)),
+            ('cell glyphs',
+             self.config.getSetting('CellGlyphsOn'),
+             lambda v: self.config.setSetting('CellGlyphsOn', v)),
+            ('cells',
+             self.config.getSetting('CellsOn'),
+             lambda v: self.config.setSetting('CellsOn', v)),
+            ('cluster borders',
+             self.config.getSetting('ClusterBordersOn'),
+             lambda v: self.config.setSetting('ClusterBordersOn', v)),
+            ('fpp links',
+             self.config.getSetting('FPPLinksOn'),
+             lambda v: self.config.setSetting('FPPLinksOn', v)),
+            ('lattice axes labels',
+             self.config.getSetting('ShowAxes'),
+             lambda v: self.config.setSetting('ShowAxes', v)),
+            ('lattice axes',
+             self.config.getSetting('ShowHorizontalAxesLabels') or self.config.getSetting('ShowVerticalAxesLabels'),
+             lambda v: self.config.setSetting('ShowHorizontalAxesLabels', v))
         ]
         for (field, value, cb) in frame_options:
             self.wi.add_toggle(field, value=value, callback=cb)
         frame_option_widget_names = [field for (field,_,_) in frame_options]
         options1, options2 = split_half(frame_option_widget_names)
         self.wi.make_tab('Visualization', options1, options2)
-
 
     def _make_colors_tab(self):
         colormap = self.config.getSetting('TypeColorMap')
@@ -429,7 +451,6 @@ class JupyterSettingsPanel:
         colors1, colors2 = split_half(colorpicker_names)
         self.wi.make_tab('Cell Colors', colors1, colors2)
 
-
     def _make_json_tab(self):
 
         def export_callback():
@@ -445,4 +466,3 @@ class JupyterSettingsPanel:
         self.wi.add_upload_button('import json', accept='.json', callback=import_callback_wrapper)
 
         self.wi.make_tab('Import/Export', ['export as json', 'import json'])
-
