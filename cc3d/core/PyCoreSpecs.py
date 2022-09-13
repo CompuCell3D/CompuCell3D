@@ -1327,12 +1327,16 @@ class Metadata(_PyCoreXMLInterface):
         return self._el
 
     @classmethod
-    def find_xml_by_attr(cls, _xml: CC3DXMLElement, attr_name: str = None) -> CC3DXMLElement:
+    def find_xml_by_attr(cls,
+                         _xml: CC3DXMLElement,
+                         attr_name: str = None,
+                         registered_name: str = None) -> CC3DXMLElement:
         """
         Returns first found xml element in parent by attribute value
 
         :param _xml: parent element
         :param attr_name: attribute name, default read from class type
+        :param registered_name: registered name, default read from class type
         :raises SpecImportError: When xml element not found
         :return: first found element
         """
@@ -1358,13 +1362,21 @@ class Metadata(_PyCoreXMLInterface):
         return o
 
 
-LATTICETYPES = ["Cartesian", "Hexagonal"]
+LATTICETYPECAR = "Cartesian"
+LATTICETYPEHEX = "Hexagonal"
+LATTICETYPES = [LATTICETYPECAR, LATTICETYPEHEX]
 """Supported lattice types"""
 
-BOUNDARYTYPESPOTTS = ["NoFlux", "Periodic"]
+POTTSBOUNDARYNOFLUX = "NoFlux"
+POTTSBOUNDARYPERIODIC = "Periodic"
+
+BOUNDARYTYPESPOTTS = [POTTSBOUNDARYNOFLUX, POTTSBOUNDARYPERIODIC]
 """Supported boundary types"""
 
-FLUCAMPFCNS = ["Min", "Max", "ArithmeticAverage"]
+FLUCAMPFCNMIN = "Min"
+FLUCAMPFCNMAX = "Max"
+FLUCAMPFCNAVG = "ArithmeticAverage"
+FLUCAMPFCNS = [FLUCAMPFCNMIN, FLUCAMPFCNMAX, FLUCAMPFCNAVG]
 """Supported fluctuation amplitude function names"""
 
 
@@ -1403,13 +1415,13 @@ class PottsCore(_PyCoreSteerableInterface, _PyCoreXMLInterface):
                  steps: int = 0,
                  anneal: int = 0,
                  fluctuation_amplitude: float = 10.0,
-                 fluctuation_amplitude_function: str = "Min",
-                 boundary_x: str = "NoFlux",
-                 boundary_y: str = "NoFlux",
-                 boundary_z: str = "NoFlux",
+                 fluctuation_amplitude_function: str = FLUCAMPFCNMIN,
+                 boundary_x: str = POTTSBOUNDARYNOFLUX,
+                 boundary_y: str = POTTSBOUNDARYNOFLUX,
+                 boundary_z: str = POTTSBOUNDARYNOFLUX,
                  neighbor_order: int = 1,
                  random_seed: int = None,
-                 lattice_type: str = "Cartesian",
+                 lattice_type: str = LATTICETYPECAR,
                  offset: float = 0):
         """
 
@@ -3703,7 +3715,9 @@ class AdhesionFlexPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
             raise SpecValueError(f"Formula with name {_formula_name} not specified")
         self.spec_dict["binding_formulas"].pop(_formula_name)
 
-    def formula_new(self, formula_name: str, formula: str) -> AdhesionFlexBindingFormula:
+    def formula_new(self,
+                    formula_name: str = "Binary",
+                    formula: str = "min(Molecule1,Molecule2)") -> AdhesionFlexBindingFormula:
         """
         Append and return a new binding formula spec
 
