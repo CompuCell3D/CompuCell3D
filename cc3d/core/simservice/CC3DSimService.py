@@ -339,3 +339,38 @@ class CC3DSimService(CC3DPySim, PySimService):
         for frame_c in graphics_frames:
             frame_c.frame.close()
         self._graphics_frames.clear()
+
+    def jupyter_run_button(self, update_rate: float = 1E-21):
+        """
+        Get a button that toggles stepping.
+
+        :param update_rate: rate at which the service step method is called, in 1/s;
+            slows execution, but allows frame interactions during stepping
+        :return: toggle button
+        :rtype: ipywidgets.ToggleButton
+        :raise RuntimeError: when called outside of a Jupyter environment
+        """
+        if not _in_jupyter():
+            raise RuntimeError('This method is reserved for Jupyter environments')
+
+        import asyncio
+        import ipywidgets
+
+        _running = False
+
+        async def _run():
+            while True:
+                if _running:
+                    self.step()
+                await asyncio.sleep(update_rate)
+
+        asyncio.ensure_future(_run())
+
+        def _run_cb(change):
+            if change['name'] == 'value':
+                nonlocal _running
+                _running = change.new
+
+        _run_button = ipywidgets.ToggleButton(value=False, description='Run Simulation')
+        _run_button.observe(_run_cb, names='value')
+        return _run_button
