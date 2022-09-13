@@ -7,6 +7,7 @@ from typing import Any, List, Optional
 
 from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.CC3DPy import CC3DPy, CC3DPySim
+from cc3d.core.SteppablePy import SteppablePy
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame import CC3DPyGraphicsFrameClient, CC3DPyGraphicsFrameClientBase
 from cc3d.core.GraphicsUtils.JupyterGraphicsFrameWidget import JupyterGraphicsFrameClient
 from cc3d.core.RollbackImporter import RollbackImporter
@@ -91,7 +92,9 @@ class CC3DSimService(CC3DPySim, PySimService):
         # register steppables in queue
         for _ in range(len(self._steppable_queue)):
             steppable, frequency = self._steppable_queue.pop(0)
-            CompuCellSetup.register_steppable(steppable=steppable(frequency=frequency))
+            if not isinstance(steppable, SteppablePy):
+                steppable = steppable(frequency=frequency)
+            CompuCellSetup.register_steppable(steppable=steppable)
         for _ in range(len(self._corespecs_queue)):
             CompuCellSetup.register_specs(self._corespecs_queue.pop(0))
 
