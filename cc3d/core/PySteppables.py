@@ -238,7 +238,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
 
         #: free floating SBML model accessor
         self.sbml = GlobalSBMLFetcher()
-        self.specs = CoreSpecsAccessor(CompuCellSetup.persistent_globals.core_specs_registry)
+        self.specs = CoreSpecsAccessor()
         """core specification accessor"""
 
         # SBMLSolverHelper.__init__(self)

@@ -104,13 +104,11 @@ class CoreSpecsAccessor(object):
     For convenient retrieval of core specs in steppables
     All registered core specs are accessible by name as an attribute
     """
-    def __init__(self, registry: CoreSpecsRegistry):
-        """
 
-        :param CoreSpecsRegistry registry: CoreSpecsRegistry instance on PersistentGlobals instance
-        """
-        self._registry = registry
+    @property
+    def registry(self) -> CoreSpecsRegistry:
         """core specs registry"""
+        return CompuCellSetup.persistent_globals.core_specs_registry
 
     @property
     def spec_names(self) -> List[str]:
@@ -119,14 +117,14 @@ class CoreSpecsAccessor(object):
         :return: list of spec names
         :rtype: list of str
         """
-        reg = self._registry
+        reg = self.registry
         return [x.name for x in reg.core_specs.values()]
 
     def __getattr__(self, name):
         if name == "_registry":
             return super().__getattribute__(self, name)
 
-        reg = self._registry
+        reg = self.registry
         if not reg._injected:
             return None
         for x in reg.core_specs.values():
