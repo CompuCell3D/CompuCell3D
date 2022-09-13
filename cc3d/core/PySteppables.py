@@ -25,6 +25,7 @@ from copy import deepcopy
 from math import sqrt
 from cc3d.core.numerics import *
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
+from .SteppablePy import SteppablePy
 # To safely work with Service in various environments, import must be at this level (issues with RollbackImporter)
 try:
     from cc3d.core import simservice
@@ -36,58 +37,6 @@ BOLD = 0b0000001
 ITALIC = 0b0000010
 UNDERLINE = 0b0000100
 STRIKE = 0b0001000
-
-
-class SteppablePy:
-    """
-    Steppable model specification interface
-    All CC3D model specification using a steppable should be done by overriding the methods `start`, `step`, `on_stop`
-    and `finish`
-    """
-
-    def __init__(self):
-        #: flag to step before engine when equal to 1
-        self.runBeforeMCS = 0
-
-    def core_init(self):
-        """
-
-        :return:
-        """
-
-    def start(self):
-        """
-        any code in the start function runs before MCS=0
-
-        :return: None
-        """
-
-    def step(self, mcs):
-        """
-        type here the code that will run every frequency MCS
-
-        :param mcs: current Monte Carlo step
-        :return: None
-        """
-
-    def finish(self):
-        """
-        Finish Function is called after the last MCS
-
-        :return: None
-        """
-    def on_stop(self):
-        """
-        Called when simulation is stopped by user
-
-        :return: None
-        """
-
-    def cleanup(self):
-        """
-
-        :return:
-        """
 
 
 class FieldVisData:
