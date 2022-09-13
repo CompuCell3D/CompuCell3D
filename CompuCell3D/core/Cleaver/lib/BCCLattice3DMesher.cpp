@@ -50,6 +50,7 @@
 #include "GeneralizedStencilTable.h"
 #include "GeneralizedVertexTable.h"
 #include "Volume.h"
+#include<core/CompuCell3D/CC3DLogger.h>
 
 using namespace std;
 using namespace Cleaver;
@@ -187,8 +188,8 @@ void BCCLattice3DMesher::compute_all_cuts()
             Edge3D *edge = cell->edge[e];
             if(!edge)
             {
-                cerr << "Problem:  Material Transitions found on boundary." << endl;
-                cerr << "Rerun with padding" << endl;
+                Log(LOG_DEBUG) << "Problem:  Material Transitions found on boundary.";
+                Log(LOG_DEBUG) << "Rerun with padding";
                 exit(0);
             }
 
@@ -1588,14 +1589,14 @@ void BCCLattice3DMesher::warp_vertex(Vertex3D *vertex)
                 // Sanity Check for NaN
                 if(part_faces[f]->triple->pos_next() != part_faces[f]->triple->pos_next())
                 {
-                    cerr << "Fatal Error:  Triplepoint set to NaN: Failed to project triple, using InnerTet.  Cell = [" << vertex->cell->xLocCode << "," << vertex->cell->yLocCode << "," << vertex->cell->zLocCode << "]" << endl;
+                    Log(LOG_DEBUG) << "Fatal Error:  Triplepoint set to NaN: Failed to project triple, using InnerTet.  Cell = [" << vertex->cell->xLocCode << "," << vertex->cell->yLocCode << "," << vertex->cell->zLocCode << "]";
                     exit(1445);
                 }
 
                 // Sanity Check for Zero
                 if(part_faces[f]->triple->pos_next() == vec3::zero)
                 {
-                    cerr << "Fatal Error:  Triplepoint set to vec3::zero == (0,0,0)" << endl;
+                    Log(LOG_DEBUG) << "Fatal Error:  Triplepoint set to vec3::zero == (0,0,0)";
                     exit(1452);
                 }
             }
@@ -1627,7 +1628,7 @@ void BCCLattice3DMesher::warp_vertex(Vertex3D *vertex)
                 }
 
                 if(handled && part_edges[e]->cut->pos_next() == vec3::zero)
-                    cerr << "Conformed Cut Problem!" << endl;
+                    Log(LOG_DEBUG) << "Conformed Cut Problem!";
 
                 // TODO: What about conformedVertex like quadpoint?
                 // otherwise compute projection with innerTet
@@ -1636,7 +1637,7 @@ void BCCLattice3DMesher::warp_vertex(Vertex3D *vertex)
 
 
                 if(part_edges[e]->cut->pos_next() == vec3::zero)
-                    cerr << "Cut Projection Problem!" << endl;
+                    Log(LOG_DEBUG) << "Cut Projection Problem!";
             }
         }
 
@@ -1648,7 +1649,7 @@ void BCCLattice3DMesher::warp_vertex(Vertex3D *vertex)
         /*
         for(int tst=0; tst < VERTS_PER_CELL; tst++)
             if(vertex->cell->vert[tst]->pos() == vec3::zero || vertex->cell->vert[tst]->pos() != vertex->cell->vert[tst]->pos())
-                cerr << "Uncaught Exception: pos == " << (vertex->cell->vert[tst]->pos().toString()).c_str() << endl;
+            Log(LOG_TRACE) << "Uncaught Exception: pos == " << (vertex->cell->vert[tst]->pos().toString()).c_str();
         */
 
         for (unsigned int e=0; e < part_edges.size(); e++){
@@ -2029,7 +2030,7 @@ void BCCLattice3DMesher::conformQuadruple(Tet3D *tet, Vertex3D *warp_vertex, con
     }
 
     if(quad->conformedVertex != NULL){
-        cerr << "unhandled exception: quad->conformedVertex != NULL" << endl;
+        Log(LOG_DEBUG) << "unhandled exception: quad->conformedVertex != NULL";
         exit(-1);
     }
 
@@ -2092,12 +2093,12 @@ vec3 BCCLattice3DMesher::projectTriple(Face3D *face, Vertex3D *quad, Vertex3D *w
     /*
     if(intersection.x != intersection.x)
     {
-        cerr << "project triple returned NaN interesction point" << endl;        
+        Log(LOG_TRACE) << "project triple returned NaN interesction point";       
         exit(-1);
     }
     if(intersection == vec3::zero)
     {
-        cerr << "project triple returned Zero intersection point" << endl;
+        Log(LOG_TRACE) << "project triple returned Zero intersection point";
         exit(-1);
     }
     */
@@ -2230,7 +2231,7 @@ void BCCLattice3DMesher::conformTriple(Face3D *face, Vertex3D *warp_vertex, cons
 
     if(triple == vec3::zero || triple != triple)
     {
-        cerr << "Error Conforming Triple!" << endl;
+        Log(LOG_DEBUG) << "Error Conforming Triple!";
         exit(-1);
     }
 
@@ -2443,7 +2444,7 @@ bool BCCLattice3DMesher::triangle_intersect(Vertex3D *v1, Vertex3D *v2, Vertex3D
     error = (float)L2(tri_pt - pt);
 
     //if(error != error)
-    //    cerr << "TriangleIntersect2 error = NaN" << endl;
+    // Log(LOG_TRACE) << "TriangleIntersect2 error = NaN";
 
     //----------------------------------------------
     //  If Made It This Far,  Return Success
@@ -3084,7 +3085,7 @@ void BCCLattice3DMesher::warp_violating_quads()
                         }
                         default:
                         {
-                            cerr << "Fatal Error - Quad order == " << tets[t]->quad->order() << endl;
+                            Log(LOG_DEBUG) << "Fatal Error - Quad order == " << tets[t]->quad->order();
                             exit(-1);
                         }
                     }

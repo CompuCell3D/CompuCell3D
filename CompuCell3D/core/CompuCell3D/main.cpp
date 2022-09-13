@@ -39,7 +39,7 @@ using namespace std;
 #include <BasicUtils/BasicRandomNumberGenerator.h>
 
 #include <XMLUtils/XMLParserExpat.h>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 #if defined(_WIN32)
 #include <windows.h>
 #endif
@@ -50,7 +50,7 @@ BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
 
 void Syntax(const string name)
 {
-    cerr << "Syntax: " << name << " <config>" << endl;
+    Log(LOG_DEBUG) << "Syntax: " << name << " <config>";
     exit(1);
 }
 
@@ -58,7 +58,7 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-    cerr << "Welcome to CC3D command line edition" << endl;
+    Log(LOG_DEBUG) << "Welcome to CC3D command line edition";
 
     // If we'd want to redirect cerr & cerr to a file (also see at end)
     //  std::ofstream logFile("cc3d-out.txt");
@@ -74,12 +74,12 @@ int main(int argc, char* argv[])
         // Libaries in COMPUCELL3D_PLUGIN_PATH can override the
         // DEFAULT_PLUGIN_PATH
         char* steppablePath = getenv("COMPUCELL3D_STEPPABLE_PATH");
-        cerr << "steppablePath=" << steppablePath << endl;
+        Log(LOG_DEBUG) << "steppablePath=" << steppablePath;
         if (steppablePath)
             Simulator::steppableManager.loadLibraries(steppablePath);
 
         char* pluginPath = getenv("COMPUCELL3D_PLUGIN_PATH");
-        cerr << "pluginPath=" << pluginPath << endl;
+        Log(LOG_DEBUG) << "pluginPath=" << pluginPath;
         if (pluginPath)
             Simulator::pluginManager.loadLibraries(pluginPath);
 
@@ -91,30 +91,28 @@ int main(int argc, char* argv[])
         BasicPluginManager<Steppable>::infos_t* infosG = &Simulator::steppableManager.getPluginInfos();
 
         if (!infosG->empty()) {
-            cerr << "Found the following Steppables:" << endl;
+            Log(LOG_DEBUG) << "Found the following Steppables:";
             BasicPluginManager<Steppable>::infos_t::iterator it;
             for (it = infosG->begin(); it != infosG->end(); it++)
-                cerr << "  " << *(*it) << endl;
-            cerr << endl;
+                Log(LOG_DEBUG) << "  " << *(*it);
         }
 
         BasicPluginManager<Plugin>::infos_t* infos = &Simulator::pluginManager.getPluginInfos();
 
         if (!infos->empty()) {
-            cerr << "Found the following plugins:" << endl;
+            Log(LOG_DEBUG) << "Found the following plugins:";
             BasicPluginManager<Plugin>::infos_t::iterator it;
             for (it = infos->begin(); it != infos->end(); it++)
-                cerr << "  " << *(*it) << endl;
-            cerr << endl;
+                Log(LOG_DEBUG) << "  " << *(*it);
         }
     }
     catch (const BasicException& e) {
-        cerr << "ERROR: " << e << endl;
+        Log(LOG_DEBUG) <<  "ERROR: " << e;
     }
 
     XMLParserExpat xmlParser;
     if (argc < 2) {
-        cerr << "SPECIFY XML FILE" << endl;
+        Log(LOG_DEBUG) << "SPECIFY XML FILE";
         exit(0);
     }
     xmlParser.setFileName(string(argv[1]));
@@ -126,14 +124,14 @@ int main(int argc, char* argv[])
     //extracting plugin elements from the XML file
     CC3DXMLElementList pluginDataList = xmlParser.rootElement->getElements("Plugin");
     for (int i = 0; i < pluginDataList.size(); ++i) {
-        cerr << "Plugin: " << pluginDataList[i]->getAttribute("Name") << endl;
+        Log(LOG_DEBUG) << "Plugin: " << pluginDataList[i]->getAttribute("Name");
         sim.ps.addPluginDataCC3D(pluginDataList[i]);
     }
 
     //extracting steppable elements from the XML file
     CC3DXMLElementList steppableDataList = xmlParser.rootElement->getElements("Steppable");
     for (int i = 0; i < steppableDataList.size(); ++i) {
-        cerr << "Steppable: " << steppableDataList[i]->getAttribute("Type") << endl;
+        Log(LOG_DEBUG) << "Steppable: " << steppableDataList[i]->getAttribute("Type");
         sim.ps.addSteppableDataCC3D(steppableDataList[i]);
     }
 
@@ -148,7 +146,7 @@ int main(int argc, char* argv[])
         sim.ps.addMetadataDataCC3D(metadataDataList[0]);
     }
     else {
-        cerr << "Not using Metadata" << endl;
+        Log(LOG_DEBUG) << "Not using Metadata";
     }
     //     ASSERT_OR_THROW("You must have exactly 1 definition of the Metadata section",metadataDataList.size()==1);
 
@@ -170,7 +168,7 @@ int main(int argc, char* argv[])
     sim.finish();
 
 #if defined(_WIN32)
-    cerr << "SIMULATION TOOK " << GetTickCount() - dwStart << " miliseconds to complete" << endl;
+    Log(LOG_DEBUG) << "SIMULATION TOOK " << GetTickCount() - dwStart << " miliseconds to complete";
     dwStart = GetTickCount();
 #endif
 

@@ -19,7 +19,7 @@ using namespace std;
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <BasicUtils/BasicRandomNumberGenerator.h>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 BiasVectorSteppable::BiasVectorSteppable() : cellFieldG(0),sim(0),potts(0),xmlData(0),boundaryStrategy(0),automaton(0),cellInventoryPtr(0){}
 
@@ -39,7 +39,6 @@ BiasVectorSteppable::~BiasVectorSteppable() {
 
 void BiasVectorSteppable::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
-//cerr << "got into biasvec step" << endl;
 
   xmlData=_xmlData;
 
@@ -126,10 +125,6 @@ void CompuCell3D::BiasVectorSteppable::step_white_3d(const unsigned int currentS
 {
 	CellInventory::cellInventoryIterator cInvItr;
 	CellG * cell = 0;
-	
-	//cout << "in bias vector 3d step" << endl;
-
-	//cerr << "currentStep=" << currentStep << endl;
 
 	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr)
 	{
@@ -151,11 +146,6 @@ void CompuCell3D::BiasVectorSteppable::step_white_2d_x(const unsigned int curren
 {
 	CellInventory::cellInventoryIterator cInvItr;
 	CellG * cell = 0;
-
-	
-	//cout << "in bias vector step" << endl;
-
-	//cerr << "currentStep=" << currentStep << endl;
 
 	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr)
 	{
@@ -179,10 +169,6 @@ void CompuCell3D::BiasVectorSteppable::step_white_2d_y(const unsigned int curren
 	CellG * cell = 0;
 
 
-	//cout << "in bias vector step" << endl;
-
-	//cerr << "currentStep=" << currentStep << endl;
-
 	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr)
 	{
 
@@ -201,11 +187,6 @@ void CompuCell3D::BiasVectorSteppable::step_white_2d_z(const unsigned int curren
 {
 	CellInventory::cellInventoryIterator cInvItr;
 	CellG * cell = 0;
-
-
-	//cout << "in bias vector step" << endl;
-
-	//cerr << "currentStep=" << currentStep << endl;
 
 	for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr)
 	{
@@ -377,7 +358,6 @@ vector<double> BiasVectorSteppable::white_noise_3d()
 	double ty = 2 * rand->getRatio() - 1;
 
 	double dist_sqrd = (tx*tx + ty*ty);
-	/*cerr << "in the 3d step method" << endl;*/
 
 	while (dist_sqrd >= 1)
 	{
@@ -408,8 +388,6 @@ void BiasVectorSteppable::randomize_initial_bias()//(CellG *cell)//, bool rnd_in
 	{
 		CellInventory::cellInventoryIterator cInvItr;
 		CellG * cell = 0;
-
-		//cerr << "in randomize initial bias" << std::endl;
 
 		for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr)
 		{
@@ -443,7 +421,7 @@ void BiasVectorSteppable::randomize_initial_bias()//(CellG *cell)//, bool rnd_in
 				cell->biasVecY = noise[1];
 				cell->biasVecZ = noise[2];
 			}
-			//cerr << "in randomize initial bias " << cell->biasVecX << ' ' << cell->biasVecY << ' ' << cell->biasVecZ << ' ' << std::endl;
+			// Log(LOG_DEBUG) << "in randomize initial bias " << cell->biasVecX << ' ' << cell->biasVecY << ' ' << cell->biasVecZ << ' ';
 		}
 		rnd_inited = true;
 		return;
@@ -508,8 +486,7 @@ void BiasVectorSteppable::determine_noise_generator()
 	{
 		noiseType = VEC_GEN_WHITE3D;
 	}
-
-	//std::cerr << "noise type" << noiseType << std::endl;
+	// Log(LOG_DEBUG) <<  "noise type" << noiseType;
 	switch (noiseType)
 	{
 		case VEC_GEN_WHITE2D:
@@ -549,7 +526,7 @@ void BiasVectorSteppable::determine_field_type()
 	{
 		fieldType = FTYPE3D;
 	}
-	//cerr << "field type " << fieldType << std::endl;
+	// Log(LOG_DEBUG) << "field type " << fieldType;
 	return;
 }
 
@@ -604,8 +581,7 @@ void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData)
 
 		bParam.persistentAlpha = alpha;
 		bParam.typeName = type;
-
-		std::cerr << "automaton=" << automaton << std::endl;
+		Log(LOG_DEBUG) <<  "automaton=" << automaton;
 		biasPersistTemp.push_back(bParam);
 		typeIdVec.push_back(automaton->getTypeId(type));
 	}
@@ -619,46 +595,43 @@ void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData)
 	for (int i = 0; i < biasPersistTemp.size(); ++i)
 	{
 		biasPersistParamVec[typeIdVec[i]] = biasPersistTemp[i];
-		//std::cerr << " in bias persist vec assign " << i << std::endl;
+		// Log(LOG_DEBUG) << " in bias persist vec assign " << i;
 	}
 
 	switch (fieldType)
 	{
 		case CompuCell3D::BiasVectorSteppable::FTYPE3D:
-		{
-			//std::cerr << "gen fnc case pers 3d " << std::endl;
+		{	
+			// Log(LOG_DEBUG) << "gen fnc case pers 3d ";
 			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_3d;
 			break;
 		}
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DX:
 		{
-			//std::cerr << "gen fnc case pers 2dx " << std::endl;
+			// Log(LOG_DEBUG) << "gen fnc case pers 2dx ";
 			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
 			break;
 		}
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DY:
 		{
-			//std::cerr << "gen fnc case pers 2dy " << std::endl;
+			// Log(LOG_DEBUG) << "gen fnc case pers 2dy ";
 			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_y;
 			break;
 		}
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DZ:
 		{
-			//std::cerr << "gen fnc case pers 2dz " << std::endl;
+			// Log(LOG_DEBUG) << "gen fnc case pers 2dz ";
 			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_z;
 			break;
 		}
 		default:
 		{
-			//std::cerr << "gen fnc case pers def " << std::endl;
+			// Log(LOG_DEBUG) << "gen fnc case pers def ";
 			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
 			break;
 		}
 	}
-
-	//std::cerr << "before assign fcn p" << std::endl;
 	stepFcnPtr = &BiasVectorSteppable::step_persistent_bias;
-	//std::cerr << "after assign fcn p" << std::endl;
 	return;
 
 }
@@ -724,7 +697,7 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 	*/
 
 	determine_bias_type(_xmlData);
-	//std::cerr << "bias type " << biasType << std::endl;
+	// Log(LOG_DEBUG) << "bias type " << biasType ;
 	
 	boundaryStrategy = BoundaryStrategy::getInstance();
 
@@ -734,7 +707,6 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 	determine_field_type();
 
 	set_step_function(_xmlData);
-	//std:cerr << "before update return" << std::endl;
 	return;
 }
 

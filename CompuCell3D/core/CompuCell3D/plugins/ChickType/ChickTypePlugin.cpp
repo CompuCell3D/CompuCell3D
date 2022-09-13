@@ -38,6 +38,7 @@ using namespace CompuCell3D;
 #include <BasicUtils/BasicException.h>
 
 #include <iostream>
+#include<core/CompuCell3D/CC3DLogger.h>
 using namespace std;
 
 ChickTypePlugin::ChickTypePlugin() {}
@@ -83,7 +84,7 @@ unsigned char ChickTypePlugin::getTypeId(const string typeName) const {
 }
 
 void ChickTypePlugin::readXML(XMLPullParser &in) {
-  cerr << "**** IN READXML ****" << endl;
+  Log(LOG_DEBUG) << "**** IN READXML ****" ;
   in.skip(TEXT);
 
   while (in.check(START_ELEMENT)) {
@@ -102,7 +103,7 @@ void ChickTypePlugin::readXML(XMLPullParser &in) {
 
     in.skip(TEXT);
   }
-  cerr << "FIELDSOURCE IN READXML: " << fieldSource << endl;
+  Log(LOG_DEBUG) << "FIELDSOURCE IN READXML: " << fieldSource;
 }
 
 void ChickTypePlugin::writeXML(XMLSerializer &out) {

@@ -8,7 +8,6 @@ namespace CompuCell3D {
 
 CellVelocityData::CellVelocityData():enoughData(false),numberOfSamples(0)
 {
-   //cerr<<"constructing cell velocity data"<<endl;
    cellCOMPtr=new cldeque<Coordinates3D<float> >();
    
    cellCOMPtr->assign(cldequeCapacity,Coordinates3D<float>(0.,0.,0.));

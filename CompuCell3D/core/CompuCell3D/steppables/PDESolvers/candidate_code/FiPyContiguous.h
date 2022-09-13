@@ -9,7 +9,7 @@
 #include <CompuCell3D/Field3D/Array3D.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 #include <muParser/muParser.h>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 namespace mu{
 
@@ -28,7 +28,7 @@ namespace CompuCell3D {
 	public:
 		FiPyContiguous():Steppable(),concentrationFieldVector(0),maxNeighborIndex(0),boundaryStrategy(0){
 			using namespace std;
-			cerr<<"Default constructor FiPyContiguous"<<endl;
+			Log(LOG_DEBUG) << "Default constructor FiPyContiguous";
 
 		};
 
@@ -47,18 +47,18 @@ namespace CompuCell3D {
 
 		virtual Field3DImpl<precision> * getConcentrationField(const std::string & name){
 			using namespace std;
-			cerr<<"concentrationFieldNameVector.size()="<<concentrationFieldNameVector.size()<<endl;
+			Log(LOG_DEBUG) << "concentrationFieldNameVector.size()="<<concentrationFieldNameVector.size();
 			for(unsigned int i=0 ; i < concentrationFieldNameVector.size() ; ++i){
-				cerr<<"THIS IS FIELD NAME "<<concentrationFieldNameVector[i]<<endl;
+				Log(LOG_DEBUG) << "THIS IS FIELD NAME "<<concentrationFieldNameVector[i];
 			}
 			for(unsigned int i=0 ; i < concentrationFieldNameVector.size() ; ++i){
 				if(concentrationFieldNameVector[i]==name){
-					cerr<<"returning concentrationFieldVector[i]="<<concentrationFieldVector[i]<<endl;
+					Log(LOG_DEBUG) << "returning concentrationFieldVector[i]="<<concentrationFieldVector[i];
 					return concentrationFieldVector[i];  
 
 				}
 			}
-			cerr<<"returning NULL="<<endl;
+			Log(LOG_DEBUG) << "returning NULL=";
 			return 0;
 
 		};
@@ -125,7 +125,7 @@ namespace CompuCell3D {
 
 			} catch (mu::Parser::exception_type &e)
 			{
-				cerr<<e.GetMsg()<<endl;
+				Log(LOG_DEBUG) << e.GetMsg();
 				ASSERT_OR_THROW(e.GetMsg(),0);
 			}
 		}	

@@ -2,7 +2,7 @@
 #define DIFFUSABLE_VECTOR_RD_OPENCL_IMPL_H
 
 #include <memory>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 namespace CompuCell3D{
 
 template <typename T>
@@ -55,7 +55,7 @@ public:
 
 		} catch (mu::Parser::exception_type &e)
 		{
-			cerr<<e.GetMsg()<<endl;
+			Log(LOG_DEBUG) << e.GetMsg();
 			ASSERT_OR_THROW(e.GetMsg(),0);
 		}
 						
@@ -149,7 +149,7 @@ template <typename Real_t>
 void DiffusableVectorRDOpenCLImpl<Real_t>::allocateDiffusableFieldVector(unsigned int numberOfFields,Dim3D fieldDim)
 {
 	m_dim=fieldDim;
-	//std::cerr<<"***************************fieldDim************************"<<fieldDim<<std::endl;
+	Log(LOG_TRACE) << "***************************fieldDim************************"<<fieldDim;
 	std::vector<Real_t>(fieldDim.x*fieldDim.y*fieldDim.z*numberOfFields).swap(m_array);
 	m_concentrationFieldNameVector.resize(numberOfFields);
 

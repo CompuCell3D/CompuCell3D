@@ -40,6 +40,7 @@ using namespace std;
 
 
 #include "RearrangementPlugin.h"
+#include<core/CompuCell3D/CC3DLogger.h>
 
 RearrangementPlugin::RearrangementPlugin() : 
 potts(0),
@@ -142,11 +143,7 @@ double RearrangementPlugin::changeEnergy(const Point3D &pt,
 
          
 
-//          cerr<<"diff="<<diff<<endl;
 //          if(diff==-4 || diff==4){
-//             cerr<<"sitr="<<sitr->first<<" , "<<sitr->second<<endl;
-//             cerr<<" newSet.count(*sitr)="<<newSet.count(*sitr)<<" oldSet.count(*sitr)="<<oldSet.count(*sitr)<<endl;
-//             cerr<<"oldCell="<<oldCell<<" newCell="<<newCell<<endl;
 //             for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
 //                neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
 //                if(!neighbor.distance){
@@ -154,7 +151,6 @@ double RearrangementPlugin::changeEnergy(const Point3D &pt,
 //                continue;
 //                }
 //                nCell = cellFieldG->get(neighbor.pt);
-//                cerr<<"nCell="<<nCell<<endl;         
 //             }
 // 
 // 
@@ -167,19 +163,15 @@ double RearrangementPlugin::changeEnergy(const Point3D &pt,
             if(nsdSitr != nsdSetPtr->end()){
                commonSufraceContactArea=nsdSitr->commonSurfaceArea;
                percentageSurfaceLoss=-diff/float(commonSufraceContactArea);
-//                cerr<<"commonSufraceContactArea="<<commonSufraceContactArea<<" percentageSurfaceLoss="<<percentageSurfaceLoss<<endl;
 //                if(percentageSurfaceLoss>0.95){
-//                   cerr<<"LOSING CONTACT"<<endl;
-//                   cerr<<"commonSufraceContactArea="<<commonSufraceContactArea<<" percentageSurfaceLoss="<<percentageSurfaceLoss<<endl;
 
 //                }
             }else{
-               cerr<<" THIS IS THE ERROR: COULD NOT FIND REQUESTED NEIGHBOR"<<endl;
+               Log(LOG_DEBUG) << " THIS IS THE ERROR: COULD NOT FIND REQUESTED NEIGHBOR";
                exit(0);
             }            
             if (percentageSurfaceLoss>=percentageLossThreshold){
                energy+=defaultPenalty;
-//                cerr<<"Energy="<<energy<<endl;
             }else{
                energy+=exp(-percentageSurfaceLoss)*lambdaRearrangement;
             }
@@ -188,14 +180,11 @@ double RearrangementPlugin::changeEnergy(const Point3D &pt,
       }
    }
   
-//   cerr<<"energy="<<energy<<endl;
   if(newCell){
 //       energy+=newCell->surface/(float)newCell->volume*fRearrangement;
-//       cerr<<"newCell->surface/newCell->volume*fRearrangement="<<newCell->surface/(float)newCell->volume*fRearrangement<<endl;
   }
   if(oldCell){
 //       energy+=oldCell->surface/(float)oldCell->volume*fRearrangement;
-//       cerr<<"oldCell->surface/oldCell->volume*fRearrangement="<<oldCell->surface/(float)oldCell->volume*fRearrangement<<endl;
   }
 
   return energy;

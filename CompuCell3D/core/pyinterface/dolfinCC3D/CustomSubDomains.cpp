@@ -7,7 +7,6 @@
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 #include <PublicUtilities/NumericalUtils.h>
-
 #include <dolfin/common/Array.h>
 
 using namespace dolfin;
@@ -95,8 +94,6 @@ bool SubdomainFlex::inside(const Array<double>& x, bool on_boundary) const
 
   if (pt.z==fieldDim.z)
       --pt.z;
-  
-//   std::cerr<<"pt= "<<pt<<std::endl;
   
   CellG *cell=cellField->get(pt);
   

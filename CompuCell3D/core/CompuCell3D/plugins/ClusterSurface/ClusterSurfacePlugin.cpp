@@ -99,10 +99,10 @@ std::pair<double,double> ClusterSurfacePlugin::getNewOldClusterSurfaceDiffs(cons
 	if (oldCell && newCell && oldCell->clusterId==newCell->clusterId) return make_pair(0.0,0.0);	
 
 	//we calculate gain/loss of surface for clusters of oldCell and newCell - we assume here that new and old cell belong to different clusters 
-	//cerr<<"-----------------------pt="<<pt<<endl;
+    Log(LOG_TRACE) << "-----------------------pt="<<pt;
     for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
         neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
-		//cerr<<"neighbor.distance="<<neighbor.distance<<" neighbor.pt="<<neighbor.pt<<endl;
+        Log(LOG_TRACE) << "neighbor.distance="<<neighbor.distance<<" neighbor.pt="<<neighbor.pt;
         if(!neighbor.distance)
             continue;
 
@@ -115,7 +115,7 @@ std::pair<double,double> ClusterSurfacePlugin::getNewOldClusterSurfaceDiffs(cons
         else{
             newDiff+=lmf.surfaceMF;
         }
-        //cerr<<"newCell="<<newCell<<" nCell="<<nCell<<" newDiff="<<newDiff<<endl;
+        Log(LOG_TRACE) << "newCell="<<newCell<<" nCell="<<nCell<<" newDiff="<<newDiff;
 
         if (oldCell && nCell && oldCell->clusterId == nCell->clusterId){
             oldDiff+=lmf.surfaceMF;
@@ -124,8 +124,8 @@ std::pair<double,double> ClusterSurfacePlugin::getNewOldClusterSurfaceDiffs(cons
             oldDiff-=lmf.surfaceMF;
         }
 
-    }	
-	//cerr<<" FCN newDiff="<<newDiff<<" oldDiff="<<oldDiff<<endl;
+    }
+    Log(LOG_TRACE) << 	" FCN newDiff="<<newDiff<<" oldDiff="<<oldDiff;
     return make_pair(newDiff,oldDiff);
 }
 
@@ -150,8 +150,7 @@ double ClusterSurfacePlugin::changeEnergyByCellId(const Point3D &pt, const CellG
         energy += diffEnergy(oldCell->lambdaClusterSurface , oldCell->targetClusterSurface , oldCell->clusterSurface*scaleClusterSurface, newOldDiffs.second*scaleClusterSurface);
     }
     
-    
-    //       cerr<<"Surface By Id Energy="<<energy<<endl;
+    Log(LOG_TRACE) << "Surface By Id Energy="<<energy;
     return energy;
     
 }    
@@ -164,7 +163,7 @@ double ClusterSurfacePlugin::changeEnergyGlobal(const Point3D &pt, const CellG *
 	if (oldCell && newCell && oldCell->clusterId==newCell->clusterId) return 0.0;
     
     pair<double,double> newOldDiffs=getNewOldClusterSurfaceDiffs(pt,newCell,oldCell);
-	//cerr<<" newOldDiffs.first="<<newOldDiffs.first<<" newOldDiffs.second="<<newOldDiffs.second<<endl;
+    Log(LOG_TRACE) << " newOldDiffs.first="<<newOldDiffs.first<<" newOldDiffs.second="<<newOldDiffs.second;
     
     if (newCell){
         energy += diffEnergy(lambdaClusterSurface , targetClusterSurface , newCell->clusterSurface*scaleClusterSurface, newOldDiffs.first * scaleClusterSurface);
@@ -174,8 +173,7 @@ double ClusterSurfacePlugin::changeEnergyGlobal(const Point3D &pt, const CellG *
         energy += diffEnergy(lambdaClusterSurface , targetClusterSurface , oldCell->clusterSurface*scaleClusterSurface, newOldDiffs.second*scaleClusterSurface);
     }
     
-    
-           //cerr<<"Surface Global Energy="<<energy<<endl;
+        Log(LOG_TRACE) << "Surface Global Energy="<<energy;
     return energy;
 
 }
@@ -229,7 +227,7 @@ void ClusterSurfacePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
             functionType=BYCELLID;
     }
     Automaton *automaton=potts->getAutomaton();
-    cerr<<"automaton="<<automaton<<endl;
+    Log(LOG_DEBUG) << "automaton="<<automaton;
 
     switch(functionType){
         case BYCELLID:

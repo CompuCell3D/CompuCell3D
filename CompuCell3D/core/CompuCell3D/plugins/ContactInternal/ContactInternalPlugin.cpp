@@ -23,7 +23,7 @@
 #include <CompuCell3D/CC3D.h>
 using namespace CompuCell3D;
 #include "ContactInternalPlugin.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 ContactInternalPlugin::ContactInternalPlugin() : potts(0), depth(1),weightDistance(false) {
 }
@@ -55,7 +55,6 @@ void ContactInternalPlugin::extraInit(Simulator *simulator){
 double ContactInternalPlugin::changeEnergy(const Point3D &pt,
                                   const CellG *newCell,
                                   const CellG *oldCell) {
-   //cerr<<"ChangeEnergy"<<endl;
    
    
   double energy = 0;
@@ -127,7 +126,6 @@ double ContactInternalPlugin::changeEnergy(const Point3D &pt,
 
 
 double ContactInternalPlugin::internalEnergy(const CellG *cell1, const CellG *cell2) {
-//       cerr << "Internal Energy is: " << internalEnergyArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0] << endl;
    return internalEnergyArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0];
 }
 
@@ -242,10 +240,10 @@ void ContactInternalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 	////End Internal vector allocation
 	//for(int i = 1 ; i < size ; ++i) {
 	//	for(int j = 1 ; j < size ; ++j){
-	//		cerr<<"i="<<i<<" j="<<j<<" i_size="<<size<<endl;
-	//		cerr<<"cellTypesVector[i-1]="<<(int)cellTypesVector[i-1]<<endl;
-	//		cerr<<"cellTypesVector[j-1]="<<(int)cellTypesVector[j-1]<<endl;
-	//		cerr<<"cellTypesVector.size()="<<cellTypesVector.size()<<endl;
+		//  Log(LOG_TRACE) << "i="<<i<<" j="<<j<<" i_size="<<size;
+	// 	 	Log(LOG_TRACE) << "cellTypesVector[i-1]="<<(int)cellTypesVector[i-1];
+	//  	Log(LOG_TRACE) << "cellTypesVector[j-1]="<<(int)cellTypesVector[j-1];
+	//  	Log(LOG_TRACE) << "cellTypesVector.size()="<<cellTypesVector.size();
 	//		index = getIndex(cellTypesVector[i-1],cellTypesVector[j-1]);
 
 	//		internalEnergyArray[i][j] = internalEnergies[index];
@@ -256,8 +254,7 @@ void ContactInternalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 	
 	for(int i = 0 ; i < size ; ++i){
 		for(int j = 0 ; j < size ; ++j){
-
-			cerr<<"internal_energy["<<i<<"]["<<j<<"]="<<internalEnergyArray[i][j]<<endl;
+			Log(LOG_DEBUG) << "internal_energy["<<i<<"]["<<j<<"]="<<internalEnergyArray[i][j];
 
 		}
 	}
@@ -275,9 +272,7 @@ void ContactInternalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 
 	if(_xmlData->getFirstElement("Depth")){
 		maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
-		//cerr<<"got here will do depth"<<endl;
 	}else{
-		//cerr<<"got here will do neighbor order"<<endl;
 		if(_xmlData->getFirstElement("NeighborOrder")){
 
 			maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());	
@@ -287,8 +282,7 @@ void ContactInternalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 		}
 
 	}
-
-	cerr<<"Contact maxNeighborIndex="<<maxNeighborIndex<<endl;
+	Log(LOG_DEBUG) << "Contact maxNeighborIndex="<<maxNeighborIndex;
 
 }
 

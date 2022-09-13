@@ -3,7 +3,7 @@
 using namespace CompuCell3D;
 
 #include "ContactOrientationPlugin.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 ContactOrientationPlugin::ContactOrientationPlugin():
 pUtils(0),
@@ -292,9 +292,6 @@ double ContactOrientationPlugin::changeEnergy(const Point3D &pt,const CellG *new
         }
     }
 
-
-    //cerr<<"pt="<<pt<<" energy="<<energy<<endl;
-    //cerr<<"energy="<<energy<<endl;
     return energy;
 }            
 
@@ -342,9 +339,7 @@ void ContactOrientationPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
     
     if(_xmlData->getFirstElement("Depth")){
         maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
-            //cerr<<"got here will do depth"<<endl;
     }else{
-        //cerr<<"got here will do neighbor order"<<endl;
         if(_xmlData->getFirstElement("NeighborOrder")){
 
             maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());	
@@ -354,8 +349,7 @@ void ContactOrientationPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
         }
 
     }
-
-    cerr<<"Contact maxNeighborIndex="<<maxNeighborIndex<<endl;
+    Log(LOG_DEBUG) << "Contact maxNeighborIndex="<<maxNeighborIndex;
 
 
 	return ;
@@ -400,12 +394,10 @@ void ContactOrientationPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
             index = getIndex(cellTypesVector[i],cellTypesVector[j]);
             contactEnergyArray[i][j] = contactEnergies[index];
         }
-        
-    cerr<<"size="<<size<<endl;
+    Log(LOG_DEBUG) << "size="<<size;
     for(int i = 0 ; i < size ; ++i)
         for(int j = 0 ; j < size ; ++j){
-                cerr<<"contact["<<i<<"]["<<j<<"]="<<contactEnergyArray[i][j]<<endl;
-        }
+                Log(LOG_DEBUG) << "contact["<<i<<"]["<<j<<"]="<<contactEnergyArray[i][j];        }
 
     
 }

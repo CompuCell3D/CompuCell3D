@@ -147,10 +147,10 @@ void PlasticityTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
          set<PlasticityTrackerData>::iterator sitr;
          set<PlasticityTrackerData> * plasticityNeighborsPtr=&plasticityTrackerAccessor.get(oldCell->extraAttribPtr)->plasticityNeighbors;
          set<PlasticityTrackerData> * plasticityNeighborsTmpPtr;
-			//cerr<<"oldCell="<<oldCell<<" oldCell->id="<<oldCell->id<<" oldCell->type="<<(int)oldCell->type<<" oldCell->volume="<<oldCell->volume<<endl;
+         Log(LOG_TRACE) << "oldCell="<<oldCell<<" oldCell->id="<<oldCell->id<<" oldCell->type="<<(int)oldCell->type<<" oldCell->volume="<<oldCell->volume;
          for(sitr=plasticityNeighborsPtr->begin() ; sitr != plasticityNeighborsPtr->end() ; ++sitr){
             //getting set of plasticityNeighbors from the neighbor (pointed by sitr) of the oldCell
-				//cerr<<"sitr->neighborAddress->id="<<sitr->neighborAddress->id<<endl;
+            Log(LOG_TRACE) << "sitr->neighborAddress->id="<<sitr->neighborAddress->id;
             plasticityNeighborsTmpPtr=&plasticityTrackerAccessor.get(sitr->neighborAddress->extraAttribPtr)->plasticityNeighbors ;
 //             plasticityNeighborsTmpPtr->erase(PlasticityTrackerData(oldCell));
          }
@@ -165,7 +165,7 @@ void PlasticityTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
    neighborTrackerAccessorPtr=neighborTrackerPluginPtr->getNeighborTrackerAccessorPtr();
 
    if(oldCell){
-//       cerr << "ID: " << oldCell->id << " Type: " << (int)oldCell->type << " Address: " << oldCell << endl;
+      Log(LOG_TRACE) << "ID: " << oldCell->id << " Type: " << (int)oldCell->type << " Address: " << oldCell;
 //          sleep(5);
       neighborData = &(neighborTrackerAccessorPtr->get(oldCell->extraAttribPtr)->cellNeighbors);
 //          neighborTrackerAccessorPtr->get(oldCell->extraAttribPtr);
@@ -174,19 +174,19 @@ void PlasticityTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
       set<PlasticityTrackerData> * plasticityNeighborsPtr=&plasticityTrackerAccessor.get(oldCell->extraAttribPtr)->plasticityNeighbors;
       set<PlasticityTrackerData> OGplasticityNeighborsPtr=plasticityTrackerAccessor.get(oldCell->extraAttribPtr)->plasticityNeighbors;
       set<PlasticityTrackerData> * plasticityNeighborsTmpPtr;
-//       cerr << "Before Size of Set: " << plasticityNeighborsPtr->size() << endl;
+      Log(LOG_TRACE) << "Before Size of Set: " << plasticityNeighborsPtr->size();
       plasticityNeighborsPtr->clear();
       for(sitr=neighborData->begin() ; sitr != neighborData->end() ; ++sitr){
          nCell= sitr->neighborAddress;
-//          cerr << "\t NeigbhorID: " << sitr->neighborAddress    << endl;
+         Log(LOG_TRACE) << "\t NeigbhorID: " << sitr->neighborAddress;
          if(nCell) {
             if(plasticityTypes.find(nCell->type)==endSitr){
-//                cerr << "\t Type not inlucded in Plasticity\n";
-//                cerr << "\tID: " << nCell->id << " Type: " << (int)nCell->type << endl;
+                  Log(LOG_TRACE) << "\t Type not inlucded in Plasticity\n";
+                  Log(LOG_TRACE) << "\tID: " << nCell->id << " Type: " << (int)nCell->type;
             }
             else{
-//             cerr << "\t Inserting NeigbhorID: " << sitr->neighborAddress << " Type: " << (int)nCell->type << endl;
-//             cerr << "\t Before Inserting Size of Set: " << plasticityNeighborsPtr->size() << endl;
+               Log(LOG_TRACE) << "\t Inserting NeigbhorID: " << sitr->neighborAddress << " Type: " << (int)nCell->type;
+               Log(LOG_TRACE) << "\t Before Inserting Size of Set: " << plasticityNeighborsPtr->size();
                plasticityNeighborsPtr->insert(PlasticityTrackerData(nCell));
                plasticityNeighborsTmpPtr=&plasticityTrackerAccessor.get(nCell->extraAttribPtr)->plasticityNeighbors;
                plasticityNeighborsTmpPtr->insert(PlasticityTrackerData(oldCell));
@@ -195,23 +195,23 @@ void PlasticityTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
       }
       for(PlasSetitr=plasticityNeighborsPtr->begin() ; PlasSetitr != plasticityNeighborsPtr->end() ; ++PlasSetitr){
          plasticityNeighborsTmpPtr=&plasticityTrackerAccessor.get(oldCell->extraAttribPtr)->plasticityNeighbors;
-//          cerr << "Set NeigbhorID: " << PlasSetitr->neighborAddress << " Type: " << (int)PlasSetitr->neighborAddress->type << endl;
+         Log(LOG_TRACE) << "Set NeigbhorID: " << PlasSetitr->neighborAddress << " Type: " << (int)PlasSetitr->neighborAddress->type;
 //             plasticityNeighborsTmpPtr->insert(PlasticityTrackerData(oldCell));
       }
-//       cerr << "After Size of Set: " << plasticityNeighborsPtr->size() << endl;
-//       cerr << "OG Size of Set: " << OGplasticityNeighborsPtr.size() << endl;
+         Log(LOG_TRACE) << "After Size of Set: " << plasticityNeighborsPtr->size();
+         Log(LOG_TRACE) << "OG Size of Set: " << OGplasticityNeighborsPtr.size();
       for(PlasSetitr=OGplasticityNeighborsPtr.begin() ; PlasSetitr != OGplasticityNeighborsPtr.end() ; ++PlasSetitr){
-           //cerr << "OGSet NeigbhorID: " << PlasSetitr->neighborAddress << " Type: " << (int)PlasSetitr->neighborAddress->type << endl;
+            Log(LOG_TRACE) << "OGSet NeigbhorID: " << PlasSetitr->neighborAddress << " Type: " << (int)PlasSetitr->neighborAddress->type;
           plasticityNeighborsTmpPtr=&plasticityTrackerAccessor.get(PlasSetitr->neighborAddress->extraAttribPtr)->plasticityNeighbors;
           for(tmpPlasSetitr=plasticityNeighborsTmpPtr->begin() ; tmpPlasSetitr != plasticityNeighborsTmpPtr->end() ; ++tmpPlasSetitr){
-//              cerr << "\t tmp NeigbhorID: " << tmpPlasSetitr->neighborAddress << " Type: " << (int)tmpPlasSetitr->neighborAddress->type << endl;
+               Log(LOG_TRACE) << "\t tmp NeigbhorID: " << tmpPlasSetitr->neighborAddress << " Type: " << (int)tmpPlasSetitr->neighborAddress->type;
           }
                 
 //             plasticityNeighborsTmpPtr->insert(PlasticityTrackerData(oldCell));
       }
 //       std::set<unsigned char>::iterator typesit; 
 //       for(typesit=plasticityTypes.begin() ; typesit != plasticityTypes.end();++typesit) {
-//          cerr << "Type: " << (int)*typesit << endl;
+   //       Log(LOG_TRACE) << "Type: " << (int)*typesit;
 //       }
    }
 

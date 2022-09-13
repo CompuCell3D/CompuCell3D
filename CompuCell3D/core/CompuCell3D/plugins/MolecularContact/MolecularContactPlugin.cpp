@@ -49,7 +49,7 @@ using namespace std;
 #include "MolecularContactPlugin.h"
 
 #include <Python.h>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 
 MolecularContactPlugin::MolecularContactPlugin() :
@@ -103,10 +103,10 @@ void MolecularContactPlugin::initializeMolecularConcentrations(){
       MolecularContactDataContainer *dataContainer = molecularContactDataAccessor.get(cell->extraAttribPtr);
       for(iterMoleName = moleculeNameMap.begin(); iterMoleName != moleculeNameMap.end(); iterMoleName++)
       {
-         cerr << (*iterMoleName).first << " is the molecule and the value is: " << iterMoleName->second << endl;
+         Log(LOG_DEBUG) << (*iterMoleName).first << " is the molecule and the value is: " << iterMoleName->second;
          dataContainer->moleculeNameMapContainer[iterMoleName->first] = iterMoleName->second;
       }
-      cerr << " Cell id: " << cell->id << endl;
+      Log(LOG_DEBUG) << " Cell id: " << cell->id;
    }
    for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
 
@@ -114,8 +114,8 @@ void MolecularContactPlugin::initializeMolecularConcentrations(){
       MolecularContactDataContainer *dataContainer = molecularContactDataAccessor.get(cell->extraAttribPtr);
       for(iterMoleName = dataContainer->moleculeNameMapContainer.begin(); iterMoleName != dataContainer->moleculeNameMapContainer.end(); iterMoleName++)
       {
-         cerr << "From Cell: " << cell->id << endl;
-         cerr << (*iterMoleName).first << " is the molecule and the value is: " << iterMoleName->second << endl;
+         Log(LOG_DEBUG) << "From Cell: " << cell->id;
+         Log(LOG_DEBUG) << (*iterMoleName).first << " is the molecule and the value is: " << iterMoleName->second;
       }
    }
 
@@ -134,10 +134,7 @@ void MolecularContactPlugin::extraInit(Simulator *simulator) {
 }
 
 void MolecularContactPlugin::field3DChange(const Point3D &pt, CellG *newCell,CellG *oldCell){
-//    cerr << "In field3DChange Ben MolecularContactPlugin. \n";
-//    cerr << "In field3DChange Ben MolecularContactPlugin. step: " << sim->getStep() << "\n";
    if(!initialized && sim->getStep()==0){
-//       cerr << "In field3DChange Ben MolecularContactPlugin\n";
       initializeMolecularConcentrations();
       initialized=true;
 //       exit(0);
@@ -158,19 +155,16 @@ double MolecularContactPlugin::changeEnergy(const Point3D &pt,const CellG *newCe
    Neighbor neighbor;
 
    if(newCell) {
-      cerr << "newCell type: " << (int)newCell->type;
+      Log(LOG_DEBUG) <<  "newCell type: " << (int)newCell->type;
    }else{
-      cerr << "newCell type: " << "medium";
+      Log(LOG_DEBUG) << "newCell type: " << "medium";
    }
-
-   cerr << endl;
 
    if(oldCell) {
-      cerr << "oldCell type: " << (int)oldCell->type;
+      Log(LOG_DEBUG) << "oldCell type: " << (int)oldCell->type;
    }else{
-      cerr << "oldCell type: " << "medium";
+      Log(LOG_DEBUG) << "oldCell type: " << "medium";
    }
-   cerr << endl;
 
    if(weightDistance){
       for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
@@ -190,7 +184,6 @@ double MolecularContactPlugin::changeEnergy(const Point3D &pt,const CellG *newCe
 
       }
    }else{
-		//       cerr<<"maxNeighborIndex="<<maxNeighborIndex<<endl;
       for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
          neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
          if(!neighbor.distance){
@@ -201,23 +194,17 @@ double MolecularContactPlugin::changeEnergy(const Point3D &pt,const CellG *newCe
          nCell = fieldG->get(neighbor.pt);
          if(nCell!=oldCell){
             double tempEnergy = contactEnergyEqn(oldCell, nCell);
-            cerr << "EnergyBEN3: " << tempEnergy<< "\n";
-            cerr << "Before energy: " << energy << endl;
+            Log(LOG_DEBUG) <<  "EnergyBEN3: " << tempEnergy<< "\n";
+            Log(LOG_DEBUG) << "Before energy: " << energy;
             energy -= tempEnergy;
-            cerr << "After energy: " << energy << endl;
-				/*            if(pt.x==25 && pt.y==74 && pt.z==0)
-            cerr<<"!=oldCell neighbor.pt="<<neighbor.pt<<" contactEnergy(oldCell, nCell)="<<contactEnergy(oldCell, nCell)<<endl;*/
+            Log(LOG_DEBUG) << "After energy: " << energy;
          }
          if(nCell!=newCell){
             double tempEnergy = contactEnergyEqn(newCell, nCell);
-            cerr << "EnergyBEN4: " << tempEnergy << "\n";
-            cerr << "Before energy: " << energy << endl;
+            Log(LOG_DEBUG) << "EnergyBEN4: " << tempEnergy << "\n";
+            Log(LOG_DEBUG) << "Before energy: " << energy;
             energy += tempEnergy;
-			cerr << "After energy: " << energy << endl;
-				//             if(pt.x==25 && pt.y==74 && pt.z==0)
-				//             cerr<<"!=newCell neighbor.pt="<<neighbor.pt<<" contactEnergy(oldCell, nCell)="<<contactEnergy(newCell, nCell)<<endl;
-
-				//             cerr<<"!=newCell neighbor.pt="<<neighbor.pt<<" energyTmp="<<energy<<endl;
+            Log(LOG_DEBUG) << "After energy: " << energy;
          }
 
 
@@ -225,8 +212,8 @@ double MolecularContactPlugin::changeEnergy(const Point3D &pt,const CellG *newCe
 
 
    }
-   cerr<<"pt="<<pt<<" energy="<<energy<<endl;
-   cerr << "\n\n";
+   Log(LOG_DEBUG) << "pt="<<pt<<" energy="<<energy;
+   Log(LOG_DEBUG) << "\n\n";
 //    sleep(2);
    return energy;
 
@@ -245,7 +232,7 @@ void MolecularContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
 
    for(iterMoleName = moleculeNameMap.begin(); iterMoleName != moleculeNameMap.end(); iterMoleName++)
    {
-      cerr << (*iterMoleName).first << " is the molecule and the value is: " << iterMoleName->second << endl;
+      Log(LOG_DEBUG) << (*iterMoleName).first << " is the molecule and the value is: " << iterMoleName->second;
    }
 
    CC3DXMLElementList energyEqnVec=_xmlData->getElements("EneryEqn");
@@ -254,8 +241,8 @@ void MolecularContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
 
    for (int i = 0 ; i<energyEqnVec.size(); ++i){
 //       temp =
-      cerr << "Energy Equation Matrix: " << endl;
-      cerr << "Got Here Assignment Start: " << energyEqnVec.size() << " : " << i << "\n";
+      Log(LOG_DEBUG) << "Energy Equation Matrix: ";
+      Log(LOG_DEBUG) << "Got Here Assignment Start: " << energyEqnVec.size() << " : " << i << "\n";
       setContactEnergyEqn(energyEqnVec[i]->getAttribute("Type1"), energyEqnVec[i]->getAttribute("Type2"), energyEqnVec[i]->getText());
 
 //       //inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
@@ -264,10 +251,10 @@ void MolecularContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
       cellTypesSet.insert(automaton->getTypeId(energyEqnVec[i]->getAttribute("Type2")));
 
       temp = energyEqnVec[i]->getText();
-      cerr << temp << endl;
+      Log(LOG_DEBUG) << temp;
 
    }
-   cerr << "Got Here Assignment Start\n";
+   Log(LOG_DEBUG) << "Got Here Assignment Start\n";
 
    //Now that we know all the types used in the simulation we will find size of the contactEnergyEqnsArray
    vector<unsigned char> cellTypesVector(cellTypesSet.begin(),cellTypesSet.end());//coping set to the vector
@@ -287,11 +274,10 @@ void MolecularContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
       contactEnergyEqnsArray[i][j] = contactEnergyEqns[index];
 
       }
-      cerr<<"size="<<size<<endl;
+      Log(LOG_DEBUG) << "size="<<size;
       for(int i = 0 ; i < size ; ++i)
          for(int j = 0 ; j < size ; ++j){
-
-         cerr<<"contact["<<i<<"]["<<j<<"]="<<contactEnergyEqnsArray[i][j]<<endl;
+         Log(LOG_DEBUG) << "contact["<<i<<"]["<<j<<"]="<<contactEnergyEqnsArray[i][j];
 
          }
 
@@ -301,9 +287,7 @@ void MolecularContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
 
          if(_xmlData->getFirstElement("Depth")){
             maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
-				//cerr<<"got here will do depth"<<endl;
          }else{
-				//cerr<<"got here will do neighbor order"<<endl;
             if(_xmlData->getFirstElement("NeighborOrder")){
 
                maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());
@@ -313,10 +297,8 @@ void MolecularContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
             }
 
          }
-
-         cerr<<"Contact maxNeighborIndex="<<maxNeighborIndex<<endl;
-
-         cerr << "Got Here End\n";
+         Log(LOG_DEBUG) << "Contact maxNeighborIndex="<<maxNeighborIndex;
+         Log(LOG_DEBUG) << "Got Here End\n";
 }
 
 
@@ -369,23 +351,21 @@ std::string MolecularContactPlugin::toString(){
 void MolecularContactPlugin::setConcentration(CellG * _cell,std::string MoleName,float val) {
    MolecularContactDataContainer *dataContainer = molecularContactDataAccessor.get(_cell->extraAttribPtr);
 
-
-   cerr << "Before\n";
+   Log(LOG_DEBUG) << "Before\n";
 
    for(iterMoleName = dataContainer->moleculeNameMapContainer.begin(); iterMoleName != dataContainer->moleculeNameMapContainer.end(); iterMoleName++)
    {
-      cerr << "From Cell: " << _cell->id << endl;
-      cerr << (*iterMoleName).first << " is the molecule and the value is: " << iterMoleName->second << endl;
+      Log(LOG_DEBUG) << "From Cell: " << _cell->id;
+      Log(LOG_DEBUG) << (*iterMoleName).first << " is the molecule and the value is: " << iterMoleName->second;
    }
 
 
    molecularContactDataAccessor.get(_cell->extraAttribPtr)->moleculeNameMapContainer[MoleName]=val;
-
-   cerr << "After\n";
+   Log(LOG_DEBUG) << "After\n";
    for(iterMoleName = dataContainer->moleculeNameMapContainer.begin(); iterMoleName != dataContainer->moleculeNameMapContainer.end(); iterMoleName++)
    {
-      cerr << "From Cell: " << _cell->id << endl;
-      cerr << (*iterMoleName).first << " is the molecule and the value is: " << iterMoleName->second << endl;
+      Log(LOG_DEBUG) << "From Cell: " << _cell->id;
+      Log(LOG_DEBUG) << (*iterMoleName).first << " is the molecule and the value is: " << iterMoleName->second;
    }
 //    sleep(2);
 //    sleep(1);
@@ -395,16 +375,12 @@ void MolecularContactPlugin::setConcentration(CellG * _cell,std::string MoleName
 double MolecularContactPlugin::contactEnergyEqn(const CellG *cell1, const CellG *cell2) {
 
    int tempMCS = sim->getStep();
-   cerr << "Current Step: " << tempMCS<< "\n";
-   cerr << "mcsState: " << mcsState<< "\n";
-
-   cerr << " all equations\n";
+   Log(LOG_DEBUG) << "Current Step: " << tempMCS<< "\n";
+   Log(LOG_DEBUG) << "mcsState: " << mcsState<< "\n";
+   Log(LOG_DEBUG) << " all equations\n";
    int size = contactEnergyEqnsArray.size();
    for(int i = 0 ; i < size ; ++i){
       for(int j = 0 ; j < size ; ++j){
-
-         //cerr<<"contact["<<i<<"]["<<j<<"]="<<contactEnergyEqnsArray[i][j]<<endl;
-         //cerr << atof(contactEnergyEqnsArray[i][j].c_str()) << endl;
 //          contactEnergyArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0]
 
       }
@@ -412,8 +388,8 @@ double MolecularContactPlugin::contactEnergyEqn(const CellG *cell1, const CellG 
 
 //Dont' know what this is for!!!
    if ((mcsState == -1)){
-      cerr << "Here1\n";
-       cerr << "I'm sleepy Return array value: " << contactEnergyArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0] << endl;
+      Log(LOG_DEBUG) << "Here1\n";
+      Log(LOG_DEBUG) << "I'm sleepy Return array value: " << contactEnergyArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0];
        return contactEnergyArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0];
        //sleep(2);
    }
@@ -432,33 +408,25 @@ double MolecularContactPlugin::contactEnergyEqn(const CellG *cell1, const CellG 
       val = func(alpha,beta,gamma);
       return val;*/
 
-//       cerr << "In contactEnergyEqn\n";
-
-//       cerr <<"End Python\n";
-
       if(cell1){
-         cerr << "New Cell: " << cell1->id << " Type: " << (int)cell1->type << endl;
+         Log(LOG_DEBUG) <<  "New Cell: " << cell1->id << " Type: " << (int)cell1->type;
          MolecularContactDataContainer *dataContainer = molecularContactDataAccessor.get(cell1->extraAttribPtr);
          for(iterMoleName = dataContainer->moleculeNameMapContainer.begin(); iterMoleName != dataContainer->moleculeNameMapContainer.end(); iterMoleName++)
          {
-//             cerr << (*iterMoleName).first << ": " << iterMoleName->second << endl;
          }
       }
       if(cell2) {
-         cerr << "Old Cell: " << cell2->id << " Type: " << (int)cell2->type << endl;
+         Log(LOG_DEBUG) <<  "Old Cell: " << cell2->id << " Type: " << (int)cell2->type;
          MolecularContactDataContainer *dataContainer = molecularContactDataAccessor.get(cell2->extraAttribPtr);
          for(iterMoleName = dataContainer->moleculeNameMapContainer.begin(); iterMoleName != dataContainer->moleculeNameMapContainer.end(); iterMoleName++)
          {
-//             cerr << (*iterMoleName).first << ": " << iterMoleName->second << endl;
          }
       }
 
    //    return contactEnergyArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0];
-//       cerr << contactEnergyEqnsArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0] << endl;
 
       /*cell = const_cast<CellG *>(cell1);
       if(cell){
-         cerr << "ID: " << cell1->id << endl;;
          if((int)cell->id == 146) {
             string temp = "X";
 //             setConcentration(cell,temp,3.14159);
@@ -470,7 +438,6 @@ double MolecularContactPlugin::contactEnergyEqn(const CellG *cell1, const CellG 
       float fval;
       string skey;
       string eqn = contactEnergyEqnsArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0];
-//       cerr << "eqn: " << eqn << endl;
       int flag = 0;
 
       PyObject *key, *value;
@@ -480,10 +447,8 @@ double MolecularContactPlugin::contactEnergyEqn(const CellG *cell1, const CellG 
    //    PyDict_SetItemString(nameDictPY, molecule, val);
       string temp;
       if(cell1){
-//          cerr << "From Map1\n";
          MolecularContactDataContainer *dataContainer = molecularContactDataAccessor.get(cell1->extraAttribPtr);
          for(iterMoleName = dataContainer->moleculeNameMapContainer.begin(); iterMoleName != dataContainer->moleculeNameMapContainer.end(); iterMoleName++) {
-//             cerr << "\t" << (*iterMoleName).first << ": " << iterMoleName->second << endl;
             temp = (*iterMoleName).first;
             temp.append("_1");
             val = PyFloat_FromDouble(iterMoleName->second);
@@ -493,10 +458,8 @@ double MolecularContactPlugin::contactEnergyEqn(const CellG *cell1, const CellG 
       }
 
       if(cell2){
-//          cerr << "From Map2\n";
          MolecularContactDataContainer *dataContainer = molecularContactDataAccessor.get(cell2->extraAttribPtr);
          for(iterMoleName = dataContainer->moleculeNameMapContainer.begin(); iterMoleName != dataContainer->moleculeNameMapContainer.end(); iterMoleName++) {
-//             cerr << "\t" << (*iterMoleName).first << ": " << iterMoleName->second << endl;
             temp = (*iterMoleName).first;
             val = PyFloat_FromDouble(iterMoleName->second);
             temp.append("_2");
@@ -506,15 +469,12 @@ double MolecularContactPlugin::contactEnergyEqn(const CellG *cell1, const CellG 
       }
 
       pos = 0;
-//       cerr << "From Dictionary \n";
       while (PyDict_Next(nameDictPY, &pos, &key, &value)) {
-         cerr << "In dictionary\n";
+         Log(LOG_DEBUG) << "In dictionary\n";
          skey = PyString_AsString(key);
          fval = (float)PyFloat_AsDouble(value);
-          cerr << "\t" << skey << ": " << fval << endl;
+         Log(LOG_DEBUG) <<  "\t" << skey << ": " << fval;
       }
-//       cerr << "\n\n";
-//       cerr << "Hello\n";
    //    PyObject* po_main = PyImport_AddModule("__main__");
 
 
@@ -530,8 +490,6 @@ double MolecularContactPlugin::contactEnergyEqn(const CellG *cell1, const CellG 
 
       /* Release the thread. No Python API allowed beyond this point. */
 
-
-//       cerr << "Hello\n";
       PyRun_SimpleString("energy = 0.0");
 
 
@@ -549,10 +507,10 @@ double MolecularContactPlugin::contactEnergyEqn(const CellG *cell1, const CellG 
       PyRun_SimpleString("from math import *");
       code.append(eqn);
 //       code.append("\n\t\tprint 'python energy: ', energy");
-      cerr << "Eqn: " << eqn << endl;
-      cerr << "Eqn.cstr(): " << eqn.c_str() << endl;
-      cerr << "code: " << code << endl;
-      cerr << "code.cstr(): " << code.c_str() << endl;
+      Log(LOG_DEBUG) << "Eqn: " << eqn;
+      Log(LOG_DEBUG) << "Eqn.cstr(): " << eqn.c_str();
+      Log(LOG_DEBUG) << "code: " << code;
+      Log(LOG_DEBUG) << "code.cstr(): " << code.c_str();
 
       PyRun_SimpleString(code.c_str());
       //PyRun_SimpleString(eqn.c_str());
@@ -560,10 +518,10 @@ double MolecularContactPlugin::contactEnergyEqn(const CellG *cell1, const CellG 
       PyObject* po_energy = PyObject_GetAttrString(po_main, "energy");
 
       double po_evalue = PyFloat_AsDouble(po_energy);
-      cerr << "C++ Check Float " << PyFloat_Check(po_energy) << endl;
-      cerr << "C++ Check Float po_evalue" << po_evalue << endl;
+      Log(LOG_DEBUG) << "C++ Check Float " << PyFloat_Check(po_energy);
+      Log(LOG_DEBUG) << "C++ Check Float po_evalue" << po_evalue;
       PyGILState_Release(gstate);
-      cerr << "Release Gil State\n";
+      Log(LOG_DEBUG) << "Release Gil State\n";
       //    sleep(2);
       Py_XDECREF(nameDictPY);
 

@@ -46,7 +46,7 @@ using namespace std;
 
 #include "CurvaturePlugin.h"
 
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 
 CurvaturePlugin::CurvaturePlugin():
@@ -210,7 +210,7 @@ void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		char type2 = automaton->getTypeId(internalCurvatureParamVec[i]->getAttribute("Type2"));
 
 		int index = getIndex(type1, type2);
-        cerr << "setting curvature parameters between type1=" << (int)type1 << " and type2=" << (int)type2 << endl;
+		Log(LOG_DEBUG) << "setting curvature parameters between type1=" << (int)type1 << " and type2=" << (int)type2;
 		curvatureParams_t::iterator it = internalCurvatureParams.find(index);
 		ASSERT_OR_THROW(string("Internal curvature parameters for ") + type1 + " " + type2 +
 			" already set!", it == internalCurvatureParams.end());
@@ -299,15 +299,6 @@ void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	// plastParamsArray.clear();
 	// plastParamsArray.assign(size,vector<CurvatureTrackerData>(size,CurvatureTrackerData()));
-
-
-
-	// for(int i = 0 ; i < cellTypesVector.size() ; ++i)
-	// for(int j = 0 ; j < cellTypesVector.size() ; ++j){
-	// //cerr<<"cellTypesVector[i]="<<(int)cellTypesVector[i]<<endl;
-	// //cerr<<"cellTypesVector[j]="<<(int)cellTypesVector[j]<<endl;
-	// index = getIndex(cellTypesVector[i],cellTypesVector[j]);
-	// //cerr<<"index="<<index <<endl;
 
 
 	// plastParamsArray[cellTypesVector[i]][cellTypesVector[j]] = plastParams[index];
@@ -424,9 +415,6 @@ double CurvaturePlugin::diffEnergyByType(float _deltaL,float _lAfter,const Curva
 
 	// if(_cell->volume>1){
 	// double diffEnergy=_curvatureTrackerData->lambdaCurvature*_deltaL*(2*(_lAfter-_curvatureTrackerData->targetDistance)+_deltaL);
-	// //cerr<<"_curvatureTrackerData->targetDistance="<<_curvatureTrackerData->targetDistance<<endl;
-	// //cerr<<"_curvatureTrackerData->lambdaDistance="<<_curvatureTrackerData->lambdaDistance<<endl;
-	// //cerr<<"diff energy="<<diffEnergy<<endl;
 	// return diffEnergy;
 	// }else{//after spin flip oldCell will disappear so the only contribution from before spin flip i.e. -(l-l0)^2
 	// return -_curvatureTrackerData->lambdaDistance*(_lAfter-_curvatureTrackerData->targetDistance)*(_lAfter-_curvatureTrackerData->targetDistance);
@@ -436,7 +424,6 @@ double CurvaturePlugin::diffEnergyByType(float _deltaL,float _lAfter,const Curva
 
 
 // double CurvaturePlugin::tryAddingNewJunction(const Point3D &pt,const CellG *newCell) {
-// //cerr<<"typeSpecificCurvatureParamsVec.size()="<<typeSpecificCurvatureParamsVec.size()<<endl;
 
 // if (((int)typeSpecificCurvatureParamsVec.size())-1<newCell->type){ //the newCell type is not listed by the user
 // newJunctionInitiatedFlag=false;
@@ -510,7 +497,6 @@ double CurvaturePlugin::diffEnergyByType(float _deltaL,float _lAfter,const Curva
 
 
 // if(newJunctionInitiatedFlag){
-// //cerr<<"newCell->type="<<(int)newCell->type<<" newNeighbor->type="<<(int)newNeighbor->type<<" energy="<<plastParamsArray[newCell->type][newNeighbor->type].activationEnergy<<endl; 		
 // return plastParamsArray[newCell->type][newNeighbor->type].activationEnergy;
 // }	else{
 // return 0.0;
@@ -520,8 +506,6 @@ double CurvaturePlugin::diffEnergyByType(float _deltaL,float _lAfter,const Curva
 // }
 
 double CurvaturePlugin::tryAddingNewJunctionWithinCluster(const Point3D &pt,const CellG *newCell) {
-	//cerr<<"internalTypeSpecificCurvatureParamsVec.size()="<<internalTypeSpecificCurvatureParamsVec.size()<<endl;
-	//cerr<<"newCell->type="<<(int)newCell->type<<endl;
 
 	int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();	
 	short &  newJunctionInitiatedFlagWithinCluster = newJunctionInitiatedFlagWithinClusterVec[currentWorkNodeNumber];
@@ -591,7 +575,6 @@ double CurvaturePlugin::tryAddingNewJunctionWithinCluster(const Point3D &pt,cons
 			//new connection allowed
 			newJunctionInitiatedFlagWithinCluster=true;
 			newNeighbor=nCell;
-			//cerr<<"newNeighbor="<<newNeighbor<<endl;
 
 			break; 
 
@@ -602,15 +585,6 @@ double CurvaturePlugin::tryAddingNewJunctionWithinCluster(const Point3D &pt,cons
 
 
 	if(newJunctionInitiatedFlagWithinCluster){
-		//cerr<<"\t\t\t newCell="<<newCell<<" newNeighbor="<<newNeighbor<<endl;
-		//cerr<<"\t\t\t newCell->type="<<(int)newCell->type<<" newNeighbor->type="<<(int)newNeighbor->type<<" energy="<<internalCurvatureParamsArray[newCell->type][newNeighbor->type].activationEnergy<<endl; 		
-		//cerr<<"\t\t\t internal nCell->.maxNumberOfJunctions="<<internalTypeSpecificCurvatureParamsVec[nCell->type].maxNumberOfJunctions<<endl;
-		//cerr<<"\t\t\t newCell number of internal neighbors "<<CurvatureTrackerAccessor.get(newCell->extraAttribPtr)->internalCurvatureNeighbors.size()<<endl;
-		//cerr<<"\t\t\t internal newCell.maxNumberOfJunctions="<<internalTypeSpecificCurvatureParamsVec[newCell->type].maxNumberOfJunctions<<endl;
-		//cerr<<"internalCurvatureParamsArray="<<internalCurvatureParamsArray.size()<<" internalCurvatureParamsArray.size().size()="<<internalCurvatureParamsArray[0].size()<<endl;
-		//cerr<<"newCell->type="<<(int)newCell->type<<endl;
-		//cerr<<"1 newNeighbor="<<newNeighbor<<endl;
-		//cerr<<"newNeighbor->type="<<(int)newNeighbor->type<<endl;
 		return internalCurvatureParamsArray[newCell->type][newNeighbor->type].activationEnergy;
 
 	}	else{
@@ -656,12 +630,10 @@ double CurvaturePlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 	newNeighbor=0;
 
 	//check if we need to create new junctions only new cell can initiate junctions
-	//cerr<<" ENERGY="<<energy<<endl;
 	if(newCell){
 
 		double activationEnergy=tryAddingNewJunctionWithinCluster(pt,newCell);
 		if(newJunctionInitiatedFlagWithinCluster){
-			//cerr<<"GOT NEW JUNCTION"<<endl;
 
 			//exit(0);
 			energy+=activationEnergy;
@@ -674,7 +646,6 @@ double CurvaturePlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 	// if(newCell){
 	// double activationEnergy=tryAddingNewJunction(pt,newCell);		
 	// if(newJunctionInitiatedFlag){
-	// //cerr<<"GOT NEW JUNCTION"<<endl;
 
 	// //exit(0);
 	// energy+=activationEnergy;
@@ -692,7 +663,6 @@ double CurvaturePlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 
 
 
-	//    cerr<<"fieldDim="<<fieldDim<<endl;
 	if(oldCell){
 		centMassOldAfter.XRef()=oldCell->xCM/(float)oldCell->volume;
 		centMassOldAfter.YRef()=oldCell->yCM/(float)oldCell->volume;
@@ -747,9 +717,7 @@ double CurvaturePlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 	CellG *rightRightNeighborOfOldCell=0;
 	CellG *leftLeftNeighborOfOldCell=0;
 
-	//cerr<<"energy before old cell section="<<energy<<endl;
 	if(oldCell){
-		//cerr<<"energy for old cell section"<<endl;
 		oldVol=oldCell->volume;
 
 		Vector3 rightCM;
@@ -910,20 +878,12 @@ double CurvaturePlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 		double lambda;
 
 		//calculate change in curvature energy
-		//cerr<<"pt="<<pt<<endl;
 		if (midCell->volume>1){ 
 			if (leftLeftLeftCell && leftLeftCell && leftCell){                
 
 				lambda=internalCurvatureParamsArray[leftLeftLeftCell->type][leftLeftCell->type].lambdaCurvature;
 				double energyPartial=lambda*(calculateInverseCurvatureSquare(leftLeftLeftCMAfter,leftLeftCMAfter,leftCMAfter)-calculateInverseCurvatureSquare(leftLeftLeftCM,leftLeftCM,leftCM));
 				energy+=energyPartial;
-				//if (newCell && oldCell){
-				//cerr<<"lllCMAfter="<<leftLeftLeftCMAfter<<" lllBefore="<<leftLeftLeftCM<<endl;
-				//cerr<<"llCMAfter="<<leftLeftCMAfter<<" llBefore="<<leftLeftCM<<endl;
-				//cerr<<"lCMAfter="<<leftCMAfter<<" lBefore="<<leftCM<<endl;
-				//
-				//cerr<<"energy partial="<<energyPartial<<endl;
-				//}
 			}
 
 			if (leftLeftCell && leftCell && midCell){
@@ -931,12 +891,6 @@ double CurvaturePlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 
 				lambda=internalCurvatureParamsArray[leftLeftCell->type][leftCell->type].lambdaCurvature;
 				energy+=lambda*(calculateInverseCurvatureSquare(leftLeftCMAfter,leftCMAfter,midCMAfter)-calculateInverseCurvatureSquare(leftLeftCM,leftCM,midCM));
-
-
-				//cerr<<"llCMAfter="<<leftLeftCMAfter<<" llBefore="<<leftLeftCM<<endl;
-				//cerr<<"lCMAfter="<<leftCMAfter<<" lBefore="<<leftCM<<endl;
-				//cerr<<"mCMAfter="<<midCMAfter<<" mBefore="<<midCM<<endl;
-				//cerr<<"energy partial="<<energy<<endl;
 
 			}
 
@@ -946,11 +900,6 @@ double CurvaturePlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 				energy+=lambda*(calculateInverseCurvatureSquare(leftCMAfter,midCMAfter,rightCMAfter)-calculateInverseCurvatureSquare(leftCM,midCM,rightCM));
 
 
-				//cerr<<"lCMAfter="<<leftCMAfter<<" lBefore="<<leftCM<<endl;
-				//cerr<<"mCMAfter="<<midCMAfter<<" mBefore="<<midCM<<endl;
-				//cerr<<"rCMAfter="<<rightCMAfter<<" rBefore="<<rightCM<<endl;
-				//cerr<<"energy partial="<<energy<<endl;
-
 			}
 
 			if ( midCell && rightCell && rightRightCell){                
@@ -959,23 +908,12 @@ double CurvaturePlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 				energy+=lambda*(calculateInverseCurvatureSquare(midCMAfter,rightCMAfter,rightRightCMAfter)-calculateInverseCurvatureSquare(midCM,rightCM,rightRightCM));
 
 
-				//cerr<<"mCMAfter="<<midCMAfter<<" mBefore="<<midCM<<endl;
-				//cerr<<"rCMAfter="<<rightCMAfter<<" rBefore="<<rightCM<<endl;
-				//cerr<<"rrCMAfter="<<rightRightCMAfter<<" rrBefore="<<rightRightCM<<endl;
-				//cerr<<"energy partial="<<energy<<endl;
-
 			}
 			if (  rightCell && rightRightCell && rightRightRightCell){                
 
 				lambda=internalCurvatureParamsArray[rightCell->type][rightRightCell->type].lambdaCurvature;
 				double energyPartial=lambda*(calculateInverseCurvatureSquare(rightCMAfter,rightRightCMAfter,rightRightRightCMAfter)-calculateInverseCurvatureSquare(rightCM,rightRightCM,rightRightRightCM));
 				energy+=energyPartial;
-				//if (newCell && oldCell){
-				//cerr<<"rCMAfter="<<rightCMAfter<<" rBefore="<<rightCM<<endl;
-				//cerr<<"rrCMAfter="<<rightRightCMAfter<<" rrBefore="<<rightRightCM<<endl;
-				//cerr<<"rrrCMAfter="<<rightRightRightCMAfter<<" rtrBefore="<<rightRightRightCM<<endl;
-				//cerr<<"energy partial="<<energyPartial<<endl;
-				//}
 
 			}
 
@@ -1020,7 +958,6 @@ double CurvaturePlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 	}
 
 	if(newCell && !oldCell){
-		//cerr<<"energy for old cell section"<<endl;
 		newVol=newCell->volume;
 		Vector3 rightCM;
 		Vector3 rightRightCM;
@@ -1173,7 +1110,6 @@ double CurvaturePlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 
 
 	}
-	//cerr<<"DELTA E="<<energy<<endl;
 	return energy;
 
 
@@ -1230,8 +1166,7 @@ double CurvaturePlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 	//centMassNewBefore.y=newCell->yCM/(float)newCell->volume;
 	//centMassNewBefore.z=newCell->zCM/(float)newCell->volume;
 
-	//      double lambda;
-	//cerr<<"rightNeighborOfOldCell.volume="<<rightNeighborOfOldCell->volume<<" newCell->volume="<<newCell->volume<<endl;		
+	//      double lambda;		
 	//      if (rightNeighborOfOldCell==newCell && rightRightNeighborOfOldCell){
 	//          //pick an neighbor of rightRightNeighborOfOldCell which is different than newCell
 	//          CellG *rightRightRightCell=0;
@@ -1246,14 +1181,8 @@ double CurvaturePlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 	//              ++count;
 	//            }
 
-	//           cerr<<"BEFORE if rightRightRightCell="<<rightRightRightCell<<endl;
 
 	//           if(rightRightRightCell){
-	//		cerr<<"rightRightRightCell->volume="<<rightRightRightCell->volume<<endl;
-	//              Vector3 rightRightRightCMBefore(rightRightRightCell->xCM/float(rightRightRightCell->volume),rightRightRightCell->yCM/float(rightRightRightCell->volume),rightRightRightCell->zCM/float(rightRightRightCell->volume));                
-	//              Vector3 rightRightRightCMAfter(rightRightRightCMBefore); 
-	//		cerr<<"rightRightCell="<<rightRightCell<<endl;
-	//	    cerr<<" vol="<<rightRightCell->volume<<endl;
 
 	//              Vector3 rightRightCMBefore(rightRightCell->xCM/float(rightRightCell->volume),rightRightCell->yCM/float(rightRightCell->volume),rightRightCell->zCM/float(rightRightCell->volume));
 	//              Vector3 rightRightCMAfter(rightRightCMBefore);
@@ -1262,7 +1191,6 @@ double CurvaturePlugin::changeEnergy(const Point3D &pt,const CellG *newCell,cons
 	//              
 	//              // lambda=curvatureTrackerAccessor.get(rightRightRightCell->extraAttribPtr)->internalCurvatureNeighbors.begin()->lambdaCurvature;
 	//              lambda=internalCurvatureParamsArray[rightRightRightCell->type][rightRightCell->type].lambdaCurvature;
-	//		cerr<<"lambda="<<lambda<<endl;
 	//              energy+=lambda*(calculateInverseCurvatureSquare(rightRightRightCMAfter,rightRightCMAfter,rightCMAfter)-calculateInverseCurvatureSquare(rightRightRightCMBefore,rightRightCMBefore,rightCMBefore));
 	//           }
 	//}  
@@ -1322,7 +1250,6 @@ void CurvaturePlugin::field3DChange(const Point3D &pt, CellG *newCell,CellG *old
 
 		//if (curvatureTypes.size()==0||(curvatureTypes.find(newNeighbor->type)!=curvatureTypes.end() && curvatureTypes.find(newCell->type)!=curvatureTypes.end())){
 		if (functionType==BYCELLTYPE){
-			//cerr<<"adding internal junction between "<<newCell<<" and "<<newNeighbor<<endl;
 			CurvatureTrackerData ctd=internalCurvatureParamsArray[newCell->type][newNeighbor->type];
 
 			ctd.neighborAddress=newNeighbor;
@@ -1330,13 +1257,9 @@ void CurvaturePlugin::field3DChange(const Point3D &pt, CellG *newCell,CellG *old
 			curvatureTrackerAccessor.get(newCell->extraAttribPtr)->internalCurvatureNeighbors.		
 				insert(CurvatureTrackerData(ctd));
 
-			//cerr<<"newCell="<<newCell<< " FTTPDs="<<CurvatureTrackerAccessor.get(newCell->extraAttribPtr)->internalCurvatureNeighbors.size()<<endl;
-
 			ctd.neighborAddress=newCell;
 			curvatureTrackerAccessor.get(newNeighbor->extraAttribPtr)->internalCurvatureNeighbors.
 				insert(CurvatureTrackerData(ctd));
-
-			//cerr<<"newNeighbor="<<newNeighbor<<" FTTPDs="<<CurvatureTrackerAccessor.get(newNeighbor->extraAttribPtr)->internalCurvatureNeighbors.size()<<endl;
 
 		}
 
@@ -1348,8 +1271,6 @@ void CurvaturePlugin::field3DChange(const Point3D &pt, CellG *newCell,CellG *old
 
 	// oldCell is about to disappear so we need to remove all references to it from curvature neighbors
 	if(oldCell && oldCell->volume==0){
-
-		//cerr<<"oldCell.id="<<oldCell->id<<" is to be removed"<<endl;
 		set<CurvatureTrackerData>::iterator sitr;		
 		//go over compartments
 		set<CurvatureTrackerData> & internalCurvatureNeighbors=curvatureTrackerAccessor.get(oldCell->extraAttribPtr)->internalCurvatureNeighbors;
@@ -1357,7 +1278,6 @@ void CurvaturePlugin::field3DChange(const Point3D &pt, CellG *newCell,CellG *old
 		vector<pair<CellG*, CurvatureTrackerData> > oldCellNeighborVec;
 
 		for(sitr=internalCurvatureNeighbors.begin() ; sitr != internalCurvatureNeighbors.end() ; ++sitr){
-			//cerr<<" REMOVING NEIGHBOR "<<oldCell->id<<" from list of "<<sitr->neighborAddress->id<<endl;
 			std::set<CurvatureTrackerData> & curvatureNeighborsRemovedNeighbor=
 				curvatureTrackerAccessor.get(sitr->neighborAddress->extraAttribPtr)->internalCurvatureNeighbors;
 

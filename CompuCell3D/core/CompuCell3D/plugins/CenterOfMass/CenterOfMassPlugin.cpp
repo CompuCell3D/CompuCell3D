@@ -28,6 +28,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "CenterOfMassPlugin.h"
+#include<core/CompuCell3D/CC3DLogger.h>
 
 CenterOfMassPlugin::CenterOfMassPlugin():boundaryStrategy(0) {}
 
@@ -35,8 +36,7 @@ CenterOfMassPlugin::~CenterOfMassPlugin() {}
 
 void CenterOfMassPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	boundaryStrategy=BoundaryStrategy::getInstance();
-
-	cerr<<"\n\n\n  \t\t\t CenterOfMassPlugin::init() - CALLING INIT OF CENTER OF MASS PLUGIN\n\n\n"<<endl;
+	Log(LOG_DEBUG) << "\n\n\n  \t\t\t CenterOfMassPlugin::init() - CALLING INIT OF CENTER OF MASS PLUGIN\n\n\n";
 	potts = simulator->getPotts();
 	bool pluginAlreadyRegisteredFlag;
 	Plugin *plugin=Simulator::pluginManager.get("VolumeTracker",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
@@ -204,7 +204,6 @@ void CompuCell3D::CenterOfMassPlugin::field3DChange(const Point3D &pt, CellG *ne
 	distanceVecMax_1.z=boundaryStrategy->calculatePointCoordinates(Point3D(pt.x,pt.y,fieldDim.z-1)).z;
 
 	distanceVec=distanceVecMax-distanceVecMin;
-	//    cerr<<"distanceVec="<<distanceVec<<" distanceVecMin="<<distanceVecMin<<" distanceVecMax="<<distanceVecMax<<endl;
 
 	Coordinates3D<double> fieldDimTrans= boundaryStrategy->calculatePointCoordinates(Point3D(fieldDim.x-1,fieldDim.y-1,fieldDim.z-1));
 
@@ -212,7 +211,6 @@ void CompuCell3D::CenterOfMassPlugin::field3DChange(const Point3D &pt, CellG *ne
 
 	double x,y,z;
 	double xo,yo,zo;
-	//     cerr<<"CM PLUGIN"<<endl;
 
 	if (oldCell) {
 		xo=oldCell->xCM;
@@ -274,9 +272,7 @@ void CompuCell3D::CenterOfMassPlugin::field3DChange(const Point3D &pt, CellG *ne
 		}else if ( xCM/(float)oldCell->volume > allowedAreaMax.x){ //will allow to have xCM/vol slightly bigger (by 1) value than max lattice point
 			//to avoid rollovers for unsigned int from oldCell->xCM
 
-			//       cerr<<"\t\t\tShifting centroid xCM="<<xCM/(float)oldCell->volume<<endl;
 			xCM -= distanceVec.x*oldCell->volume;
-			//       cerr<<"\t\t\tShiftedxCM="<<xCM/(float)oldCell->volume<<endl;
 
 		}
 
@@ -300,10 +296,9 @@ void CompuCell3D::CenterOfMassPlugin::field3DChange(const Point3D &pt, CellG *ne
 		//}else if ( xCM/(float)oldCell->volume > distanceVecMax.x){ //will allow to have xCM/vol slightly bigger (by 1) value than max lattice point
 		//	//to avoid rollovers for unsigned int from oldCell->xCM
 
-		//	//       cerr<<"\t\t\tShifting centroid xCM="<<xCM/(float)oldCell->volume<<endl;
+	
 		//	xCM -= distanceVec.x*oldCell->volume;
-		//	//       cerr<<"\t\t\tShiftedxCM="<<xCM/(float)oldCell->volume<<endl;
-
+	
 		//}
 
 		//if( yCM/(float)oldCell->volume < distanceVecMin.y){
@@ -337,7 +332,6 @@ void CompuCell3D::CenterOfMassPlugin::field3DChange(const Point3D &pt, CellG *ne
 			oldCell->yCOMPrev= oldCell->yCM/(oldCell->volume);
 			oldCell->zCOMPrev= oldCell->zCM/(oldCell->volume);
 		}
-		//    cerr<<" oldCell->xCM="<<oldCell->xCM<<" oldCell->yCM="<<oldCell->yCM<<" oldCell->zCM="<<oldCell->zCM<<endl;
 	}
 
 	if (newCell) {
@@ -371,7 +365,6 @@ void CompuCell3D::CenterOfMassPlugin::field3DChange(const Point3D &pt, CellG *ne
 		if(shiftedPt.x < distanceVecMin.x){
 			shiftedPt.x += distanceVec.x;
 		}else if (shiftedPt.x > distanceVecMax_1.x){
-			//       cerr<<"shifted pt="<<shiftedPt<<endl;
 			shiftedPt.x -= distanceVec.x;
 		}  
 
@@ -454,8 +447,6 @@ void CompuCell3D::CenterOfMassPlugin::field3DChange(const Point3D &pt, CellG *ne
 			newCell->zCOMPrev= newCell->zCM/(newCell->volume);
 
 		}
-		//     cerr<<" newCell->xCM="<<newCell->xCM<<" newCell->yCM="<<newCell->yCM<<" newCell->zCM="<<newCell->zCM<<endl;
-		//    cerr<<"newCell->xCM="<<newCell->xCM<<" newCell->yCM="<<newCell->yCM<<" newCell->zCM="<<newCell->zCM<<endl;
 	}
 }
 
@@ -474,7 +465,6 @@ void CenterOfMassPlugin::handleEvent(CC3DEvent & _event){
     for(cInvItr=cellInventory.cellInventoryBegin() ; cInvItr !=cellInventory.cellInventoryEnd() ;++cInvItr )
     {
 		cell=cInvItr->second;
-		//cerr<<"cell->id="<<cell->id<<endl;
 		cell->xCOM+=shiftVec.x;
 		cell->yCOM+=shiftVec.y;
 		cell->zCOM+=shiftVec.z;
@@ -499,11 +489,9 @@ void CenterOfMassPlugin::handleEvent(CC3DEvent & _event){
 //    CellInventory::cellInventoryIterator cInvItr;
 //    CellG * cell;
 //    
-//    cerr<<"THIS IS UPDATE COMS"<<endl;
 //    for(cInvItr=cellInventory.cellInventoryBegin() ; cInvItr !=cellInventory.cellInventoryEnd() ;++cInvItr )
 //    {
 //		cell=cInvItr->second;
-//		//cerr<<"cell->id="<<cell->id<<endl;
 //		cell->xCOM+=_shiftVec.x;
 //		cell->yCOM+=_shiftVec.y;
 //		cell->zCOM+=_shiftVec.z;
@@ -548,7 +536,6 @@ void CenterOfMassPlugin::field3DCheck(const Point3D &pt, CellG *newCell,CellG *o
 	// 
 	//    int x,y,z;
 	//    int xo,yo,zo;
-	// //     cerr<<"CM PLUGIN"<<endl;
 	//     
 	//   if (oldCell) {
 	// 
@@ -612,9 +599,7 @@ void CenterOfMassPlugin::field3DCheck(const Point3D &pt, CellG *newCell,CellG *o
 	//     }else if ( xCM/(float)oldCell->volume > fieldDim.x){ //will allow to have xCM/vol slightly bigger (by 1) value than max lattice point
 	//                                                          //to avoid rollovers for unsigned int from oldCell->xCM
 	//                                                          
-	// //       cerr<<"\t\t\tShifting centroid xCM="<<xCM/(float)oldCell->volume<<endl;
 	//       xCM -= fieldDim.x*oldCell->volume;
-	// //       cerr<<"\t\t\tShiftedxCM="<<xCM/(float)oldCell->volume<<endl;
 	//     }
 	// 
 	//     if( yCM/(float)oldCell->volume < 0){
@@ -637,7 +622,6 @@ void CenterOfMassPlugin::field3DCheck(const Point3D &pt, CellG *newCell,CellG *o
 	//     oyCM = yCM;
 	//     ozCM = zCM;
 	// 
-	//    cerr<<" oxCM="<<oxCM<<" oyCM="<<oyCM<<" ozCM="<<ozCM<<endl;
 	//   }
 	// 
 	//   if (newCell) {
@@ -673,7 +657,6 @@ void CenterOfMassPlugin::field3DCheck(const Point3D &pt, CellG *newCell,CellG *o
 	//     if(shiftedPt.x < 0){
 	//       shiftedPt.x += fieldDim.x;
 	//     }else if (shiftedPt.x > fieldDim.x-1){
-	// //       cerr<<"shifted pt="<<shiftedPt<<endl;
 	//       shiftedPt.x -= fieldDim.x;
 	//     }  
 	// 
@@ -726,8 +709,6 @@ void CenterOfMassPlugin::field3DCheck(const Point3D &pt, CellG *newCell,CellG *o
 	//     nxCM = xCM;
 	//     nyCM = yCM;
 	//     nzCM = zCM;
-	// 
-	//     cerr<<" nxCM="<<nxCM<<" nyCM="<<nyCM<<" nzCM="<<nzCM<<endl;
 	//     
 	//   }
 }

@@ -12,7 +12,7 @@ using namespace CompuCell3D;
 
 #include <math.h>
 #include <BasicUtils/BasicRandomNumberGenerator.h>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 
 ImplicitMotilityPlugin::ImplicitMotilityPlugin() :
@@ -60,7 +60,6 @@ void ImplicitMotilityPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData
         plugin->init(simulator);
 
     //bool steppableAlreadyRegisteredFlag;
-    //cerr << "initializing the steppable" << std::endl;
     //Steppable *step = Simulator::steppableManager.get("BiasVectorSteppable",
     //    &steppableAlreadyRegisteredFlag);//this will load the bias vec steppable if it is not already
     //if (!steppableAlreadyRegisteredFlag)
@@ -70,8 +69,6 @@ void ImplicitMotilityPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData
     //    class_registry->addStepper("BiasVectorSteppable", step);
 
     //}
-
-    //cerr << "steppable initialized" << std::endl;
 
     pUtils = sim->getParallelUtils();
 
@@ -123,7 +120,7 @@ void ImplicitMotilityPlugin::extraInit(Simulator *simulator) {
     update(xmlData, true);
 
 	bool steppableAlreadyRegisteredFlag;
-	cerr << "initializing the steppable" << std::endl;
+    Log(LOG_DEBUG) << "initializing the steppable";
 	Steppable *biasVectorSteppable = Simulator::steppableManager.get("BiasVectorSteppable",
 	    &steppableAlreadyRegisteredFlag);//this will load the bias vec steppable if it is not already
 	if (!steppableAlreadyRegisteredFlag)
@@ -133,8 +130,7 @@ void ImplicitMotilityPlugin::extraInit(Simulator *simulator) {
 	    class_registry->addStepper("BiasVectorSteppable", biasVectorSteppable);
 
 	}
-
-	cerr << "steppable initialized" << std::endl;
+    Log(LOG_DEBUG) << "steppable initialized";
 
 }
 

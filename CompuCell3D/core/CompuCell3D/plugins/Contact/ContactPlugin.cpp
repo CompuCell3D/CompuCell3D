@@ -26,7 +26,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "ContactPlugin.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 ContactPlugin::ContactPlugin() :xmlData(0), weightDistance(false) {
 }
@@ -43,11 +43,8 @@ void ContactPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 }
 
 void ContactPlugin::extraInit(Simulator *simulator) {
-    //cerr << "contact enter extraInit" << endl;
     update(xmlData, true);
-    //cerr << "contact after update" << endl;
     Automaton * cellTypePluginAutomaton = potts->getAutomaton();
-    //cerr << "contact after automaton" << endl;
     return;
     if (cellTypePluginAutomaton) {
         ASSERT_OR_THROW("The size of matrix of contact energy coefficients has must equal max_cell_type_id+1. You must list interactions coefficients between all cel types",
@@ -58,7 +55,6 @@ void ContactPlugin::extraInit(Simulator *simulator) {
 
 void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     automaton = potts->getAutomaton();
-    //cerr << "automaton=" << automaton << endl;
     //return;
     ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
         set<unsigned char> cellTypesSet;
@@ -110,11 +106,10 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
             contactEnergyArray[i][j] = contactEnergies[index];
 
         }
-    cerr << "size=" << size << endl;
+    Log(LOG_DEBUG) << "size=" << size;
     for (int i = 0; i < size; ++i)
         for (int j = 0; j < size; ++j) {
-
-            cerr << "contact[" << i << "][" << j << "]=" << contactEnergyArray[i][j] << endl;
+            Log(LOG_DEBUG) <<  "contact[" << i << "][" << j << "]=" << contactEnergyArray[i][j];
 
         }
 
@@ -128,10 +123,8 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     if (_xmlData->getFirstElement("Depth")) {
         maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
-        //cerr<<"got here will do depth"<<endl;
     }
     else {
-        //cerr<<"got here will do neighbor order"<<endl;
         if (_xmlData->getFirstElement("NeighborOrder")) {
 
             maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());
@@ -143,16 +136,11 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         }
 
     }
-
-    cerr << "Contact maxNeighborIndex=" << maxNeighborIndex << endl;
+    Log(LOG_DEBUG) << "Contact maxNeighborIndex=" << maxNeighborIndex;
 
 }
 
 double ContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
-
-    //cerr<<"ChangeEnergy"<<endl;
-
-
     double energy = 0;
     unsigned int token = 0;
     double distance = 0;
@@ -237,11 +225,6 @@ double ContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, cons
 
 
     }
-
-
-
-    //cerr<<"pt="<<pt<<" energy="<<energy<<endl;
-    //cerr<<"energy="<<energy<<endl;
 
     return energy;
 }

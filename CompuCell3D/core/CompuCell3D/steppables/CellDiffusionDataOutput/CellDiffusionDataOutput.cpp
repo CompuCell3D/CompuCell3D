@@ -44,7 +44,7 @@ using namespace CompuCell3D;
 #include <plugins/CenterOfMass/CenterOfMassPlugin.h>
 #include <fstream>
 #include <sstream>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 using namespace std;
 
 
@@ -101,7 +101,7 @@ void CellDiffusionDataOutput::start() {
             cell=*cInvItr;
             cellIdsPtrs.push_back(cell);
          }else{
-            cerr<<"Could not find in the inventory cell with id="<<cellIds[i]<<" . Ignoring request"<<endl;
+            Log(LOG_DEBUG) << "Could not find in the inventory cell with id="<<cellIds[i]<<" . Ignoring request";
          }
       }
 
@@ -113,7 +113,7 @@ void CellDiffusionDataOutput::start() {
          ostringstream str;
          str<<fileName<<"_"<<cellIdsPtrs[i]->id<<".txt";
          filePtrVec[i]=new ofstream(str.str().c_str());
-         cerr<<"Creating file name="<<str.str()<<endl;
+         Log(LOG_DEBUG) << "Creating file name="<<str.str();
       }
 
    //initializing initial cell positions

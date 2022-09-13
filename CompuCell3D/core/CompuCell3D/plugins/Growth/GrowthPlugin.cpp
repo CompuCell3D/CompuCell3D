@@ -38,7 +38,7 @@
 #include <BasicUtils/BasicException.h>
 
 #include <iostream>
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 #include "GrowthPlugin.h"
 
@@ -69,7 +69,7 @@ void GrowthPlugin::init(Simulator *simulator) {
 
   //TypePlugin *typePlugin = (TypePlugin *)Simulator::pluginManager.get("Type");
 
-  //if (!typePlugin) cerr << "WARNING: NULL TYPE PLUGIN!!" << endl;
+  //if (!typePlugin) Log(LOG_TRACE) << "WARNING: NULL TYPE PLUGIN!!" << endl;
  // ClassRegistry *reg = simulator->getClassRegistry();
 
   //reg->registerRenderer("Growth",
@@ -125,7 +125,7 @@ void GrowthPlugin::step()
        evolution = stepnumber;
    if ((density > dThreshold) && (!dTrigger))
    {
-      cerr << "***** GROWING *****" << endl;
+      Log(LOG_DEBUG) << "***** GROWING *****";
       grow();
       dTrigger = true;
       mitosisPlugin->turnOff();

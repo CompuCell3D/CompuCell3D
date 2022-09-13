@@ -34,7 +34,7 @@
 #include "BasicPluginInfo.h"
 #include "BasicException.h"
 #include "BasicClassFactory.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 template <class B, class T>
 class BasicPluginProxy {
 public:
@@ -60,8 +60,7 @@ protected:
   virtual void init(BasicPluginInfo *info, BasicPluginManager<B> *manager) {
     try {
       if (!manager) {
-	std::cerr << "BasicPluginProxyBase() manager cannot be NULL!"
-		  << std::endl;
+  Log(LOG_DEBUG) <<  "BasicPluginProxyBase() manager cannot be NULL!";
 	exit(1);
       }
 

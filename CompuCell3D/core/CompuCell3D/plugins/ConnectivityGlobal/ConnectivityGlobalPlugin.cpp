@@ -22,7 +22,7 @@
 #include <CompuCell3D/CC3D.h>
 using namespace CompuCell3D;
 #include "ConnectivityGlobalPlugin.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 
 
@@ -149,10 +149,9 @@ void ConnectivityGlobalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 	for (map<unsigned char, double>::iterator mitr = typeIdConnectivityPenaltyMap.begin(); mitr != typeIdConnectivityPenaltyMap.end(); ++mitr) {
 		penaltyVec[mitr->first] = fabs(mitr->second);
 	}
-
-	cerr << "size=" << size << endl;
+	Log(LOG_DEBUG) << "size=" << size;
 	for (int i = 0; i < size; ++i) {
-		cerr << "penaltyVec[" << i << "]=" << penaltyVec[i] << endl;
+		Log(LOG_DEBUG) << "penaltyVec[" << i << "]=" << penaltyVec[i];
 	}
 
 	//Here I initialize max neighbor index for direct acces to the list of neighbors 
@@ -162,8 +161,7 @@ void ConnectivityGlobalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 
 	maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 
-
-	cerr << "ConnectivityGlobal maxNeighborIndex=" << maxNeighborIndex << endl;
+	Log(LOG_DEBUG) << "ConnectivityGlobal maxNeighborIndex=" << maxNeighborIndex;
 
 	
 	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
@@ -253,12 +251,10 @@ bool ConnectivityGlobalPlugin::checkIfCellIsFragmented(const CellG * cell, Point
 
 			fpbRef_1->push_back(neighbor.pt);
 			vpRef_2->insert(neighbor.pt);
-			//cerr<<" Adding pt="<<neighbor.pt<<" to vps"<<" visitedPixCounter="<<visitedPixCounter<<endl;
 			++visitedPixCounter;
 
 		}
 		if (fpbRef_0->empty()) {
-			//cerr<<"Got empty fpbRef_0"<<endl;
 			if (!fpbRef_1->empty()) {
 
 				std::deque<Point3D> * fpbRef_tmp = fpbRef_0;
@@ -538,17 +534,14 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 
 	bool oldCellFragmented = false;
 	bool newCellFragmented = false;
-	//cerr<<"doNotPrecheckConnectivity="<<doNotPrecheckConnectivity<<endl;
 	if (!doNotPrecheckConnectivity) {
 		if (oldCell && (oldCellByTypeCalculations || oldCellConnectivityPenalty)) {
 			oldCellFragmented = checkIfCellIsFragmented(oldCell, pt);//pt belongs to the old cell before spin flip
-			//cerr<<"type="<<(int)oldCell->type<<" oldCellFragmented ="<<oldCellFragmented<<endl;
 		}
 
 		if (newCell && (newCellByTypeCalculations || newCellConnectivityPenalty)) {
 			Point3D flipNeighborPixel = potts->getFlipNeighbor();
 			newCellFragmented = checkIfCellIsFragmented(newCell, flipNeighborPixel);
-			//cerr<<"type="<<(int)newCell->type<<" newCellFragmented ="<<newCellFragmented<<endl;
 
 		}
 
@@ -604,7 +597,6 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 		//filoPointBuffer.push_back(pt);
 		fpbRef_0->push_back(pt);
 		vpRef_1->insert(pt);
-		//cerr<<"pt="<<pt<<" visitedPixCounter="<<endl;
 		++visitedPixCounter;
 		//visitedPixels.insert(pt);
 
@@ -644,44 +636,21 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 
 				fpbRef_1->push_back(neighbor.pt);
 				vpRef_2->insert(neighbor.pt);
-				//cerr<<" Adding pt="<<neighbor.pt<<" to vps"<<" visitedPixCounter="<<visitedPixCounter<<endl;
 				++visitedPixCounter;
 
 			}
 			if (fpbRef_0->empty()) {
-				//cerr<<"Got empty fpbRef_0"<<endl;
 				if (!fpbRef_1->empty()) {
-					//cerr<<"BEFORE ASSIGNMENT"<<endl;
-					//cerr<<"fpbRef_0->size()="<<fpbRef_0->size()<<endl;
-					//cerr<<"fpbRef_1->size()="<<fpbRef_1->size()<<endl;
 
 					std::deque<Point3D> * fpbRef_tmp = fpbRef_0;
 					fpbRef_0 = fpbRef_1;
-					//cerr<<"fpbRef_0.size()="<<fpbRef_0->size()<<endl;
 					fpbRef_tmp->clear();
 					fpbRef_1 = fpbRef_tmp;
-
-
-					//cerr<<"AFTER ASSIGNMENT"<<endl;
-					//cerr<<"fpbRef_0->size()="<<fpbRef_0->size()<<endl;
-					//cerr<<"fpbRef_1->size()="<<fpbRef_1->size()<<endl;
-
-
-
-					//cerr<<"VP BEFORE ASSIGNMENT"<<endl;
-					//cerr<<"vpRef_0->size()="<<vpRef_0->size()<<endl;
-					//cerr<<"vpRef_1->size()="<<vpRef_1->size()<<endl;
-					//cerr<<"vpRef_2->size()="<<vpRef_2->size()<<endl;
 					vpRef_0->clear();
 					std::set<Point3D> *vpRef_tmp = vpRef_0;
 					vpRef_0 = vpRef_1;
 					vpRef_1 = vpRef_2;
 					vpRef_2 = vpRef_tmp;
-
-					//cerr<<"VP AFTER ASSIGNMENT"<<endl;
-					//cerr<<"vpRef_0->size()="<<vpRef_0->size()<<endl;
-					//cerr<<"vpRef_1->size()="<<vpRef_1->size()<<endl;
-					//cerr<<"vpRef_2->size()="<<vpRef_2->size()<<endl;
 
 				}
 
@@ -690,14 +659,13 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 		}
 		//if(visitedPixels.size()!=(newCell->volume+1)){
 		if (visitedPixCounter != (newCell->volume + 1)) { //we use newCell->volume+1 because we count also the pixel pt that may become part of the new cell after spin flip
-			//cerr<<"visitedPixels.size()="<<visitedPixCounter<<" newCell->volume="<<newCell->volume<<endl;
+		// 	Log(LOG_TRACE) << "visitedPixels.size()="<<visitedPixCounter<<" newCell->volume="<<newCell->volume;
 			penalty += newPenalty;
-			//cerr<<"new penalty="<<penalty<<endl;
+			// 	Log(LOG_TRACE) << "new penalty="<<penalty;
 			//exit(0);
 		}/*else{
-		 cerr<<"visitedPixels.size()="<<visitedPixCounter<<" newCell->volume="<<newCell->volume<<endl;
-
-		 cerr<<"new penalty=0.0"<<endl;
+		 Log(LOG_TRACE) << "visitedPixels.size()="<<visitedPixCounter<<" newCell->volume="<<newCell->volume;
+		 Log(LOG_TRACE) << "new penalty=0.0";
 		 exit(0);
 
 		 }*/
@@ -835,43 +803,21 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 
 				fpbRef_1->push_back(neighbor.pt);
 				vpRef_2->insert(neighbor.pt);
-				//cerr<<" Adding pt="<<neighbor.pt<<" to vps"<<" visitedPixCounter="<<visitedPixCounter<<endl;
+				// 	Log(LOG_TRACE) << " Adding pt="<<neighbor.pt<<" to vps"<<" visitedPixCounter="<<visitedPixCounter;
 				++visitedPixCounter;
 			}
 			if (fpbRef_0->empty()) {
-				//cerr<<"Got empty fpbRef_0"<<endl;
 				if (!fpbRef_1->empty()) {
-					//cerr<<"BEFORE ASSIGNMENT"<<endl;
-					//cerr<<"fpbRef_0->size()="<<fpbRef_0->size()<<endl;
-					//cerr<<"fpbRef_1->size()="<<fpbRef_1->size()<<endl;
 
 					std::deque<Point3D> * fpbRef_tmp = fpbRef_0;
 					fpbRef_0 = fpbRef_1;
-					//cerr<<"fpbRef_0.size()="<<fpbRef_0->size()<<endl;
 					fpbRef_tmp->clear();
 					fpbRef_1 = fpbRef_tmp;
-
-
-					//cerr<<"AFTER ASSIGNMENT"<<endl;
-					//cerr<<"fpbRef_0->size()="<<fpbRef_0->size()<<endl;
-					//cerr<<"fpbRef_1->size()="<<fpbRef_1->size()<<endl;
-
-
-
-					//cerr<<"VP BEFORE ASSIGNMENT"<<endl;
-					//cerr<<"vpRef_0->size()="<<vpRef_0->size()<<endl;
-					//cerr<<"vpRef_1->size()="<<vpRef_1->size()<<endl;
-					//cerr<<"vpRef_2->size()="<<vpRef_2->size()<<endl;
 					vpRef_0->clear();
 					std::set<Point3D> *vpRef_tmp = vpRef_0;
 					vpRef_0 = vpRef_1;
 					vpRef_1 = vpRef_2;
 					vpRef_2 = vpRef_tmp;
-
-					//cerr<<"VP AFTER ASSIGNMENT"<<endl;
-					//cerr<<"vpRef_0->size()="<<vpRef_0->size()<<endl;
-					//cerr<<"vpRef_1->size()="<<vpRef_1->size()<<endl;
-					//cerr<<"vpRef_2->size()="<<vpRef_2->size()<<endl;
 
 				}
 
@@ -880,9 +826,7 @@ double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const Cel
 
 
 		if (visitedPixCounter != (oldCell->volume - 1)) {// we use (oldCell->volume-1) to acount for the fact the pt may stop belonging to old cell after pixel copy
-			//cerr<<"visitedPixCounter="<<visitedPixCounter<<" oldCell->volume="<<oldCell->volume<<endl;
 			penalty += oldPenalty;
-			//cerr<<"old penalty="<<penalty<<endl;
 		}
 
 	}

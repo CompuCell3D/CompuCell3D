@@ -32,9 +32,13 @@ SET(SRCS
   DerivedProperty.cpp
   PottsParseData.cpp
   ParserStorage.cpp
+  CC3DLogger.cpp
   # CustomStreamBuffers.cpp
   # ${MOC_FILES}
   )
+SET(HEADERS
+CC3DLogger.h
+)
 
 INCLUDE_DIRECTORIES ( 
     ${COMPUCELL3D_SOURCE_DIR}/core
@@ -42,6 +46,7 @@ INCLUDE_DIRECTORIES (
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   ADD_SHARED_LIBRARY(CompuCellLib ${SRCS} LINK_LIBRARIES
+  
     BasicUtilsStatic
  #   XercesUtilsStatic
 #    XMLCerealStatic
@@ -145,6 +150,7 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 INSTALL_FILES(/include/CompuCell3D/CompuCell3D .h
   ClassRegistry
   CompuCellLibDLLSpecifier  
+  CompucellloggerDLLSpecifier
   DerivedProperty
   ParseData
   Parser
@@ -162,6 +168,7 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D .h
   CC3D_Main
   CC3D_STL
   CC3DEvents
+  CC3DLogger
   
   )
 

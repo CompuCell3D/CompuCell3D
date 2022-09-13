@@ -119,7 +119,7 @@ void ExternalPotentialPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFla
 	}
 
 	Automaton *automaton=potts->getAutomaton();
-	//cerr<<"automaton="<<automaton<<endl;
+   Log(LOG_TRACE) << "automaton="<<automaton;
 
 	switch(functionType){
 		case BYCELLID:
@@ -147,7 +147,7 @@ void ExternalPotentialPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFla
 					extPotentialParam.lambdaVec.z=energyVec[i]->getAttributeAsDouble("z");
 
 					extPotentialParam.typeName=energyVec[i]->getAttribute("CellType");
-					//cerr<<"automaton="<<automaton<<endl;
+               Log(LOG_TRACE) << "automaton="<<automaton;
 					typeIdVec.push_back(automaton->getTypeId(extPotentialParam.typeName));
 					participatingTypes.insert(automaton->getTypeId(extPotentialParam.typeName));
 
@@ -360,8 +360,7 @@ double ExternalPotentialPlugin::changeEnergyGlobal(const Point3D &pt,  const Cel
    // have to do fieldDim.z-2 because the neighbor of pt with max_z can be a pt with z=0 but they are spaced by delta z=1
    // thus you need to do deltaCoordinate % (fieldDim.z-2). Otherwise if you do not do fieldDim.z-2
    // then you may get the following (max_z-0) % max_z =0, whereas it should be 1 !
-
-//    cerr<<"******************CHANGE BEGIN**************************"<<endl;
+Log(LOG_TRACE) << "******************CHANGE BEGIN**************************";
    int counter=0;
    Point3D ptFlipNeighbor=potts->getFlipNeighbor();
    Point3D deltaFlip;
@@ -478,8 +477,7 @@ double ExternalPotentialPlugin::changeEnergyByCellType(const Point3D &pt,  const
    // have to do fieldDim.z-2 because the neighbor of pt with max_z can be a pt with z=0 but they are spaced by delta z=1
    // thus you need to do deltaCoordinate % (fieldDim.z-2). Otherwise if you do not do fieldDim.z-2
    // then you may get the following (max_z-0) % max_z =0, whereas it should be 1 !
-
-//    cerr<<"******************CHANGE BEGIN**************************"<<endl;
+   Log(LOG_TRACE) << "******************CHANGE BEGIN**************************"; 
    int counter=0;
    Point3D ptFlipNeighbor=potts->getFlipNeighbor();
    Point3D deltaFlip;
@@ -561,7 +559,7 @@ double ExternalPotentialPlugin::changeEnergyByCellType(const Point3D &pt,  const
    }
 
 	//if((deltaEnergyNew-deltaEnergyOld) != 0.0)
-		//cerr<<"\t\t\t\tExternalPOtential energy="<<deltaEnergyNew-deltaEnergyOld<<endl;
+   //    Log(LOG_TRACE) << "\t\t\t\tExternalPOtential energy="<<deltaEnergyNew-deltaEnergyOld;
 		
 
    return deltaEnergyNew-deltaEnergyOld;
@@ -597,8 +595,7 @@ double ExternalPotentialPlugin::changeEnergyByCellId(const Point3D &pt,  const C
    // have to do fieldDim.z-2 because the neighbor of pt with max_z can be a pt with z=0 but they are spaced by delta z=1
    // thus you need to do deltaCoordinate % (fieldDim.z-2). Otherwise if you do not do fieldDim.z-2
    // then you may get the following (max_z-0) % max_z =0, whereas it should be 1 !
-
-//    cerr<<"******************CHANGE BEGIN**************************"<<endl;
+Log(LOG_TRACE) << "******************CHANGE BEGIN**************************";
    int counter=0;
    Point3D ptFlipNeighbor=potts->getFlipNeighbor();
    Point3D deltaFlip;

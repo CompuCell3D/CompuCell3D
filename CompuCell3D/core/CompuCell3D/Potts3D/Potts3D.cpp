@@ -48,6 +48,7 @@
 #include "PottsTestData.h"
 
 #include "Potts3D.h"
+#include<core/CompuCell3D/CC3DLogger.h>
 
 using namespace CompuCell3D;
 using namespace std;
@@ -134,15 +135,12 @@ void Potts3D::createEnergyFunction(std::string _energyFunctionType) {
 }
 
 void Potts3D::clean_cell_field(bool reset_cell_inventory) {
-
-    //cerr << "cellFieldG=" << cellFieldG << endl;
     if (!cellFieldG) {
         return;
     }
 
     Point3D pt;
     Dim3D dim_max = cellFieldG->getDim();
-    //cerr << "dim_max=" << dim_max << endl;
 
     //cleaning cell field
     for (pt.x = 0; pt.x < dim_max.x; ++pt.x)
@@ -211,7 +209,6 @@ void Potts3D::setDepth(double _depth) {
     //    neighbors.assign(numNeighbors+1,Point3D());
 
     maxNeighborIndex = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromDepth(depth);
-    //	cerr << "\t\t\t\t\t setDepth  maxNeighborIndex=" << maxNeighborIndex << endl;
     neighbors.clear();
     neighbors.assign(maxNeighborIndex + 1, Point3D());
 
@@ -220,7 +217,6 @@ void Potts3D::setDepth(double _depth) {
 void Potts3D::setNeighborOrder(unsigned int _neighborOrder) {
     BoundaryStrategy::getInstance()->prepareNeighborListsBasedOnNeighborOrder(_neighborOrder);
     maxNeighborIndex = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(_neighborOrder);
-    //	cerr << "\t\t\t\t\t setNeighborOrder  maxNeighborIndex=" << maxNeighborIndex << endl;
     Dim3D dim = cellFieldG->getDim();
     minCoordinates = Point3D(0, 0, 0);
     maxCoordinates = Point3D(dim.x, dim.y, dim.z);
@@ -292,7 +288,7 @@ EnergyFunction * Potts3D::getConnectivityConstraint() { return connectivityConst
 void Potts3D::setAcceptanceFunctionByName(std::string _acceptanceFunctionName) {
     if (_acceptanceFunctionName == "FirstOrderExpansion") {
         acceptanceFunction = &firstOrderExpansionAcceptanceFunction;
-        //          cerr<<"setting FirstOrderExpansion"<<endl;
+        // Log(LOG_DEBUG) <<  "setting FirstOrderExpansion";
     }
     else {
         acceptanceFunction = &defaultAcceptanceFunction;
@@ -449,7 +445,7 @@ CellG *Potts3D::createCellSpecifiedIds(long _cellId, long _clusterId) {
     }
     else if (!cellInventory.attemptFetchingCellById(_cellId)) {
         // checking if cell id is available even if ids were used out of order
-        cerr << "out of order cell id  is available" << endl;
+         Log(LOG_DEBUG) << "out of order cell id  is available";
         cell->id = _cellId;
 
     }
@@ -656,7 +652,7 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
             // Calculate change in energy
 
             double change = energyCalculator->changeEnergy(changePixel, cell, cellFieldG->get(changePixel), i);
-            ///cerr<<"This is change: "<<change<<endl;	
+            //  Log(LOG_DEBUG) << "This is change: "<<change;
 
             // Acceptance based on probability
             double motility = fluctAmplFcn->fluctuationAmplitude(cell, cellFieldG->get(changePixel));
@@ -708,7 +704,7 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
         stringstream oss;
         oss << "Metropolis List" << endl;
         oss << "Number of Attempted Energy Calculations=" << attemptedEC << endl;
-        cerr << oss.str() << endl;
+         Log(LOG_DEBUG) << oss.str();
         add_step_output(oss.str());
 
 
@@ -802,7 +798,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
         oss << "Metropolis Fast" << endl;
         oss << "total number of pixel copy attempts=" << numberOfAttempts << endl;
-        cerr << oss.str() << endl;
+        Log(LOG_DEBUG) << oss.str();
         add_step_output(oss.str());
 
     }
@@ -1006,8 +1002,8 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
     } //pragma omp parallel
 
     if (debugOutputFrequency && !(currentStep % debugOutputFrequency)) {
-        cerr << "Number of Attempted Energy Calculations=" << attemptedEC << endl;
-    }
+         Log(LOG_DEBUG) << "Number of Attempted Energy Calculations=" << attemptedEC;
+             }
 
     return flips;
 
@@ -1039,7 +1035,7 @@ Point3D Potts3D::randomPickBoundaryPixel(BasicRandomNumberGeneratorNonStatic * r
         }
     }
     if (counter > 5) {
-        cerr << "had to try more than 5 times" << endl;
+         Log(LOG_DEBUG) << "had to try more than 5 times";
     }
     return pt;
 }
@@ -1133,7 +1129,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 
         oss << "Boundary Walker" << endl;
         oss << "number of pixel copy attempts=" << numberOfAttempts << endl;
-        cerr << oss.str() << endl;
+        Log(LOG_DEBUG) <<  oss.str();
         add_step_output(oss.str());
 
     }
@@ -1173,8 +1169,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
                     //IMPORTANT: fixed steppers cause really bad performance with multiple processor runs. Currently only two of them are supported 
                     // PDESolverCaller plugin and Secretion plugin. PDESolverCaller is deprecated and Secretion plugin section that mimics functionality of PDE sovler Secretion data section is depreecated as well
                     // However Secretion plugin can be used to do "per cell" secretion (using python scripting). This will not slow down multicore simulation
-
-                    //cerr<<"pUtils->getCurrentWorkNodeNumber()="<<pUtils->getCurrentWorkNodeNumber()<<" currentAttempt="<<currentAttempt<<endl;
+                    // Log(LOG_DEBUG) << "pUtils->getCurrentWorkNodeNumber()="<<pUtils->getCurrentWorkNodeNumber()<<" currentAttempt="<<currentAttempt;
                     for (unsigned int j = 0; j < fixedSteppers.size(); j++)
                         fixedSteppers[j]->step();
 
@@ -1305,7 +1300,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
     } //pragma omp parallel
 
     if (debugOutputFrequency && !(currentStep % debugOutputFrequency)) {
-        cerr << "Number of Attempted Energy Calculations=" << attemptedEC << endl;
+         Log(LOG_DEBUG) << "Number of Attempted Energy Calculations=" << attemptedEC;
     }
     return flips;
 
@@ -1414,7 +1409,7 @@ void Potts3D::initializeCellTypeMotility(std::vector<CellTypeMotilityData> & _ce
     unsigned int typeIdMax = 0;
     //finding max typeId
     for (int i = 0; i < _cellTypeMotilityVector.size(); ++i) {
-        //cerr<<"CHECKING "<<_cellTypeMotilityVector[i].typeName<<endl;
+        //  Log(LOG_DEBUG) << "CHECKING "<<_cellTypeMotilityVector[i].typeName;
         unsigned int id = automaton->getTypeId(_cellTypeMotilityVector[i].typeName);
         if (id > typeIdMax)
             typeIdMax = id;

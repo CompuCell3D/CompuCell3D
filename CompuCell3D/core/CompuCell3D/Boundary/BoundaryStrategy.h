@@ -39,6 +39,7 @@
 #include <iostream>
 #include <vector>
 #include "BoundaryTypeDefinitions.h"
+#include<core/CompuCell3D/CC3DLogger.h>
 
 using namespace std;
 
@@ -148,7 +149,7 @@ namespace CompuCell3D {
 		static BoundaryStrategy *getInstance() {
 			using namespace std;
 			if (!singleton) {
-				cerr << "CONSTRUCTING an instance" << endl;
+				Log(LOG_DEBUG) << "CONSTRUCTING an instance";
 				singleton = new BoundaryStrategy();
 			}
 
@@ -156,19 +157,18 @@ namespace CompuCell3D {
 		}
 
 		static void destroy() {
-			cerr << "destroy fcn: destroying bondary strategy" << endl;
+			Log(LOG_DEBUG) << "destroy fcn: destroying bondary strategy";
 			if (singleton)
 			{
-				cerr << "will destroy boundary strategy singleton = " << singleton << endl;
+				Log(LOG_DEBUG) << "will destroy boundary strategy singleton = " << singleton;
 
 				delete singleton;
 				singleton = 0;
-
-				cerr << "BoundaryStrategy singleton is DEAD!\n";
+				Log(LOG_DEBUG) << "BoundaryStrategy singleton is DEAD!\n";
 			}
 			else
 			{
-				cerr << "BoundaryStrategy singleton WAS NOT DeSTROYED BECAUSE IT IS DEAD!\n";
+				Log(LOG_DEBUG) << "BoundaryStrategy singleton WAS NOT DeSTROYED BECAUSE IT IS DEAD!\n";
 			}
 
 		}
@@ -399,7 +399,7 @@ namespace CompuCell3D {
 	//               static BoundaryStrategy *getInstance() {
 	//                   using namespace std;
 	////                    if(!singleton) {
-	////                         cerr<<"CONSTRUCTING an instance"<<endl;
+								// Log(LOG_TRACE) <<"CONSTRUCTING an instance";
 	//                        ASSERT_OR_THROW("instantiate function has not been called yet for BoundaryStrategy. Cannot return an object ",singleton);
 	////                        singleton = new BoundaryStrategy();
 	//                  
@@ -418,11 +418,11 @@ namespace CompuCell3D {
 	//                  	if(singleton)
 	//					{
 	//						delete singleton;
-	//						cerr << "BoundaryStrategy singleton is DEAD!\n";
+						// Log(LOG_TRACE) << "BoundaryStrategy singleton is DEAD!\n";
 	//					}
 	//					else
 	//					{
-	//						cerr << "BoundaryStrategy singleton is ALIVE!\n";
+		// 					Log(LOG_TRACE) <<"BoundaryStrategy singleton is ALIVE!\n";
 	//					}
 	//
 	//               }              

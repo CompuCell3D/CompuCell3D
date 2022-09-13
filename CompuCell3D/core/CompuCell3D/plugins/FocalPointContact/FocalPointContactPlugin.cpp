@@ -44,7 +44,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "FocalPointContactPlugin.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 
 
@@ -134,9 +134,7 @@ void FocalPointContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFla
 
 			if(_xmlData->getFirstElement("Depth")){
 				maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
-				//cerr<<"got here will do depth"<<endl;
 			}else{
-				//cerr<<"got here will do neighbor order"<<endl;
 				if(_xmlData->getFirstElement("NeighborOrder")){
 
 					maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());	
@@ -146,8 +144,7 @@ void FocalPointContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFla
 				}
 
 			}
-
-			cerr<<"Contact maxNeighborIndex="<<maxNeighborIndex<<endl;
+			Log(LOG_DEBUG) << "Contact maxNeighborIndex="<<maxNeighborIndex;
 	
 }
 
@@ -254,11 +251,9 @@ double FocalPointContactPlugin::changeEnergy(const Point3D &pt,const CellG *newC
                   fpbPixDataNewCellAfter.pt2=neighbor.pt;
                   fpbPixDataNewCellAfter.cell1=const_cast<CellG*>(newCell);
                   fpbPixDataNewCellAfter.cell2=nCell;
-						cerr<<"adding junction pt1="<<fpbPixDataNewCellAfter.pt1<<" pt2="<< fpbPixDataNewCellAfter.pt2<<endl;
-						cerr<<"fpbPixDataNewCellAfter="<<fpbPixDataNewCellAfter<<endl;
-
-
-						newJunctionInitiatedFlag=true;
+				  Log(LOG_DEBUG) << "adding junction pt1="<<fpbPixDataNewCellAfter.pt1<<" pt2="<< fpbPixDataNewCellAfter.pt2;
+				  Log(LOG_DEBUG) << "fpbPixDataNewCellAfter="<<fpbPixDataNewCellAfter;
+				  newJunctionInitiatedFlag=true;
                   break;
                }
             }
@@ -266,13 +261,12 @@ double FocalPointContactPlugin::changeEnergy(const Point3D &pt,const CellG *newC
          }
 		}
       if(newJunctionInitiatedFlag){
-         cerr<<"fpbPixDataOldCellAfter="<<fpbPixDataNewCellAfter<<endl;
+			Log(LOG_DEBUG) << "fpbPixDataOldCellAfter="<<fpbPixDataNewCellAfter;
 			double distAfter=dist(fpbPixDataNewCellAfter.pt1.x,fpbPixDataNewCellAfter.pt1.y,fpbPixDataNewCellAfter.pt1.z,fpbPixDataNewCellAfter.pt2.x,fpbPixDataNewCellAfter.pt2.y,fpbPixDataNewCellAfter.pt2.z);
-         energy+=potentialFunction(lambda,offset,targetDistance,distAfter)-0.0;
-			cerr<<"lambda="<<lambda<<" distAfter="<<distAfter<<" targetDistance="<<targetDistance<<" offset="<<offset<<endl;
-			cerr<<"ENERGY WITH NEW JUNCTION "<<energy<<endl;
-			
-         return energy;
+			energy+=potentialFunction(lambda,offset,targetDistance,distAfter)-0.0;
+			Log(LOG_DEBUG) << "lambda="<<lambda<<" distAfter="<<distAfter<<" targetDistance="<<targetDistance<<" offset="<<offset;
+			Log(LOG_DEBUG) << "ENERGY WITH NEW JUNCTION "<<energy;
+         	return energy;
       }
 
 	}
@@ -284,9 +278,9 @@ double FocalPointContactPlugin::changeEnergy(const Point3D &pt,const CellG *newC
 		list<FocalPointBoundaryPixelTrackerData >::iterator litr;
 		list<FocalPointBoundaryPixelTrackerData >::iterator nextLitr;
 		//for (litr=focalJunctionListRef.begin() ; litr!=focalJunctionListRef.end() ; ++litr){
-		cerr<<"oldCell.id="<<oldCell->id<<" number of junctions="<<focalJunctionListRef.size()<<endl;
+		Log(LOG_DEBUG) << "oldCell.id="<<oldCell->id<<" number of junctions="<<focalJunctionListRef.size();
 		litr=focalJunctionListRef.begin();
-		cerr<<"pt of change="<<pt<<endl;
+		Log(LOG_DEBUG) << "pt of change="<<pt;
 		while(litr!=focalJunctionListRef.end()){
 			if(litr->pt1==pt){//pixel containing junction gets removed - need to move junction to a neighbor
 				Point3D newJunctionPoint;
@@ -301,14 +295,14 @@ double FocalPointContactPlugin::changeEnergy(const Point3D &pt,const CellG *newC
 						continue;
 					}
                nCell=fieldG->get(neighbor.pt);
-					cerr<<"VISITING "<<neighbor.pt<<" oldCell="<<oldCell<<" nCell="<<nCell<<" minDistance="<<minDistance<<endl;
+			   Log(LOG_DEBUG) << "VISITING "<<neighbor.pt<<" oldCell="<<oldCell<<" nCell="<<nCell<<" minDistance="<<minDistance;
 					if(nCell==oldCell && (minDistance>neighbor.distance)){
                   set<Point3D> & junctionPointSetRef=focalPointBoundaryPixelTrackerAccessor.get(oldCell->extraAttribPtr)->junctionPointsSet;
 						for (set<Point3D>::iterator sitr=junctionPointSetRef.begin() ; sitr!=junctionPointSetRef.end() ; ++sitr){
-							cerr<<"GOT THIS POINT "<<*sitr<<endl;
+							Log(LOG_DEBUG) << "GOT THIS POINT "<<*sitr;
 						}
 						if(junctionPointSetRef.find(neighbor.pt)!=junctionPointSetRef.end()){
-							cerr<<"neighbor.pt "<<neighbor.pt<<" is alreadey in the set"<<endl;
+							Log(LOG_DEBUG) << "neighbor.pt "<<neighbor.pt<<" is alreadey in the set";
                      continue; //neighbor.pt is already involved in junction
                   
 						}
@@ -340,8 +334,7 @@ double FocalPointContactPlugin::changeEnergy(const Point3D &pt,const CellG *newC
 		list<FocalPointBoundaryPixelTrackerData > & focalJunctionListRef=focalPointBoundaryPixelTrackerAccessor.get(newCell->extraAttribPtr)->focalJunctionList;
 		list<FocalPointBoundaryPixelTrackerData >::iterator litr;
 		list<FocalPointBoundaryPixelTrackerData >::iterator nextLitr;
-
-		cerr<<"newCell.id="<<newCell->id<<" number of junctions="<<focalJunctionListRef.size()<<endl;
+		Log(LOG_DEBUG) << "newCell.id="<<newCell->id<<" number of junctions="<<focalJunctionListRef.size();
 		
 		//will check if pt is a point that lies closer to junction point of the partner cell
 		//first check 
@@ -413,7 +406,6 @@ double FocalPointContactPlugin::changeEnergy(const Point3D &pt,const CellG *newC
 
          
    }
-	//cerr<<"pt="<<pt<<" energy="<<energy<<endl;
 
 	energy+=changeEnergySprings(pt,newCell,oldCell);
 	return energy;
@@ -428,44 +420,39 @@ void FocalPointContactPlugin::field3DChange(const Point3D &pt, CellG *newCell,Ce
     FocalPointBoundaryPixelTrackerData & fpbPixDataOldCellAfter=fpbPixDataOldCellAfterVec[currentWorkNodeNumber];
     FocalPointBoundaryPixelTrackerData & fpbPixDataNewCellBefore=fpbPixDataNewCellBeforeVec[currentWorkNodeNumber];
     FocalPointBoundaryPixelTrackerData & fpbPixDataNewCellAfter=fpbPixDataNewCellAfterVec[currentWorkNodeNumber];
-    
-	cerr<<"pt="<<pt<<endl;
+    Log(LOG_DEBUG) << "pt="<<pt;
 	if(newJunctionInitiatedFlag){
 		
 		
 		FocalPointBoundaryPixelTrackerData fpbPixDataNCellAfter;
 		fpbPixDataNCellAfter.pt1=fpbPixDataNewCellAfter.pt2;
-      fpbPixDataNCellAfter.pt2=fpbPixDataNewCellAfter.pt1;
-      fpbPixDataNCellAfter.cell1=fpbPixDataNewCellAfter.cell2;
-      fpbPixDataNCellAfter.cell2=fpbPixDataNewCellAfter.cell1;
-
-		cerr<<"fpbPixDataNCellAfter="<<fpbPixDataNCellAfter<<endl;
-		cerr<<"fpbPixDataNewCellAfter="<<fpbPixDataNewCellAfter<<endl;
+		fpbPixDataNCellAfter.pt2=fpbPixDataNewCellAfter.pt1;
+		fpbPixDataNCellAfter.cell1=fpbPixDataNewCellAfter.cell2;
+		fpbPixDataNCellAfter.cell2=fpbPixDataNewCellAfter.cell1;
+		Log(LOG_DEBUG) << "fpbPixDataNCellAfter="<<fpbPixDataNCellAfter;
+		Log(LOG_DEBUG) << "fpbPixDataNewCellAfter="<<fpbPixDataNewCellAfter;
 
 		list<FocalPointBoundaryPixelTrackerData > & focalJunctionListNewCellRef=focalPointBoundaryPixelTrackerAccessor.get(newCell->extraAttribPtr)->focalJunctionList;
 		list<FocalPointBoundaryPixelTrackerData > & focalJunctionListNCellRef=focalPointBoundaryPixelTrackerAccessor.get(fpbPixDataNewCellAfter.cell2->extraAttribPtr)->focalJunctionList;
 		focalJunctionListNewCellRef.push_back(fpbPixDataNewCellAfter);
 		focalJunctionListNCellRef.push_back(fpbPixDataNCellAfter);
-
-		cerr<<"AFTER ADDING NEW JUNCTION TO CELL "<<newCell->id<<" numberOfJunctions="<<focalJunctionListNewCellRef.size()<<endl;
-		cerr<<"AFTER ADDING NEW JUNCTION TO CELL "<<fpbPixDataNewCellAfter.cell2->id<<" numberOfJunctions="<<focalJunctionListNCellRef.size()<<endl;
-
-		cerr<<"*************NEW CELL JUNCTIONS****************"<<endl;
-		cerr<<"CELL.ID="<<newCell->id<<endl;
+		Log(LOG_DEBUG) << "AFTER ADDING NEW JUNCTION TO CELL "<<newCell->id<<" numberOfJunctions="<<focalJunctionListNewCellRef.size();
+		Log(LOG_DEBUG) << "AFTER ADDING NEW JUNCTION TO CELL "<<fpbPixDataNewCellAfter.cell2->id<<" numberOfJunctions="<<focalJunctionListNCellRef.size();
+		Log(LOG_DEBUG) << "*************NEW CELL JUNCTIONS****************";
+		Log(LOG_DEBUG) << "CELL.ID="<<newCell->id;
 		for(list<FocalPointBoundaryPixelTrackerData >::iterator litr =focalJunctionListNewCellRef.begin() ; litr!=focalJunctionListNewCellRef.end() ; ++litr ){
-			cerr<<*litr<<endl;
+			Log(LOG_DEBUG) << *litr;
 		}
-
-		cerr<<"*************PARTNER CELL JUNCTIONS****************"<<endl;
-		cerr<<" CELL.ID="<<fpbPixDataNewCellAfter.cell2->id<<endl;
+		Log(LOG_DEBUG) << "*************PARTNER CELL JUNCTIONS****************";
+		Log(LOG_DEBUG) << " CELL.ID="<<fpbPixDataNewCellAfter.cell2->id;
 		for(list<FocalPointBoundaryPixelTrackerData >::iterator litr =focalJunctionListNCellRef.begin() ; litr!=focalJunctionListNCellRef.end() ; ++litr ){
-			cerr<<*litr<<endl;
+			Log(LOG_DEBUG) << *litr;
 		}
 
 
-						double a;
-						cerr<<" ADDED JUNCTION Input a number"<<endl;
-						cin>>a;
+		double a;
+		Log(LOG_DEBUG) << " ADDED JUNCTION Input a number";
+		cin>>a;
 
 		//updating junction pixel set 
 		focalPointBoundaryPixelTrackerAccessor.get(newCell->extraAttribPtr)->junctionPointsSet.insert(fpbPixDataNewCellAfter.pt1);
@@ -474,7 +461,6 @@ void FocalPointContactPlugin::field3DChange(const Point3D &pt, CellG *newCell,Ce
 		return;
 	}
 
-	//cerr<<" NON INITIALIZE pt="<<pt<<endl;
 	if(newCell){
 
 		if(!(fpbPixDataNewCellBefore==fpbPixDataNewCellAfter)){
@@ -508,7 +494,7 @@ void FocalPointContactPlugin::field3DChange(const Point3D &pt, CellG *newCell,Ce
 	if(oldCell){
 		
 		if(returnedJunctionToPoolFlag){
-			cerr<<"RETURNING JUNCTION TO THE POOL "<<endl;
+		Log(LOG_DEBUG) << "RETURNING JUNCTION TO THE POOL ";
 			//removing oldCell fpbPixData
 			list<FocalPointBoundaryPixelTrackerData > & focalJunctionListRef=focalPointBoundaryPixelTrackerAccessor.get(oldCell->extraAttribPtr)->focalJunctionList;
 			list<FocalPointBoundaryPixelTrackerData >::iterator litr;
@@ -516,20 +502,21 @@ void FocalPointContactPlugin::field3DChange(const Point3D &pt, CellG *newCell,Ce
 				if(litr->pt1==fpbPixDataOldCellBefore.pt1 && litr->cell1==fpbPixDataOldCellBefore.cell1){
 					
 					CellG *cellN;
-					cerr<<"Point being overwritten "<<pt<<" cell Overwriting="<<cellN<<endl;
+					Log(LOG_DEBUG) << "Point being overwritten "<<pt<<" cell Overwriting="<<cellN;
 					if(cellN){
-						cerr<<"cellN.id="<<cellN->id<<endl;
+						Log(LOG_DEBUG) << "cellN.id="<<cellN->id;
 					}
 					
 					//updating junction pixel set 
 					focalPointBoundaryPixelTrackerAccessor.get(oldCell->extraAttribPtr)->junctionPointsSet.erase(litr->pt1);
-					cerr<<"RETURNED JUNCTION="<<endl;
-					cerr<<*litr<<endl;
-					cerr<<"BEFORE focalJunctionListRef.size()="<<focalJunctionListRef.size()<<endl;
+					Log(LOG_DEBUG) << "RETURNED JUNCTION=";
+					Log(LOG_DEBUG) << *litr;
+					Log(LOG_DEBUG) << "BEFORE focalJunctionListRef.size()="<<focalJunctionListRef.size();
+								
 					focalJunctionListRef.erase(litr);
-					cerr<<"AFTER focalJunctionListRef.size()="<<focalJunctionListRef.size()<<endl;
+					Log(LOG_DEBUG) << "AFTER focalJunctionListRef.size()="<<focalJunctionListRef.size();
 					double a;
-					cerr<<"CODE:"<<endl;
+					Log(LOG_DEBUG) << "CODE:";
 					cin>>a;
 
 					break;

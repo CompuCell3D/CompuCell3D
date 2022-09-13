@@ -38,6 +38,7 @@
 
 
 #include <string>
+#include<core/CompuCell3D/CC3DLogger.h>
 using namespace CompuCell3D;
 using namespace std;
 
@@ -50,7 +51,6 @@ Steppable *ClassRegistry::getStepper(string id) {
 //   BasicSmartPointer<Steppable> stepper = activeSteppersMap[id];
   Steppable* stepper = activeSteppersMap[id];
 //   ASSERT_OR_THROW(string("Stepper '") + id + "' not found!", stepper.get());
-//   cerr<<"REQUESTING STEPPER: "<<id<<endl;
   ASSERT_OR_THROW(string("Stepper '") + id + "' not found!", stepper);
 //   return stepper.get();
   return stepper;
@@ -99,17 +99,13 @@ void ClassRegistry::initModules(Simulator *_sim){
 
 
    PluginManager<Steppable> &steppableManagerRef=Simulator::steppableManager;
-
-   cerr<<" INSIDE INIT MODULES:"<<endl;
-   //cerr<<"steppableParseDataVectorRef.size()="<<steppableParseDataVectorRef.size()<<endl;
+   Log(LOG_DEBUG) << " INSIDE INIT MODULES:";
    for (int i=0; i <steppableCC3DXMLElementVectorRef.size(); ++i){
       //string type=steppableParseDataVectorRef[i]->moduleName;
 		string type=steppableCC3DXMLElementVectorRef[i]->getAttribute("Type");
 
       Steppable *steppable = steppableManagerRef.get(type);
-
-      cerr<<"CLASS REGISTRY INITIALIZING "<<type<<endl;
-
+      Log(LOG_DEBUG) << "CLASS REGISTRY INITIALIZING "<<type;
 //       if(plugin->getParseData()){//plugin has been initialized/read through XML
 //          plugin->init(this,plugin->getParseData());
 //       }else{//plugin parse data has been initialized externally
@@ -124,7 +120,7 @@ void ClassRegistry::initModules(Simulator *_sim){
    }
 
    for (ActiveSteppers_t::iterator litr = activeSteppers.begin() ; litr != activeSteppers.end() ; ++litr){
-      cerr<<"HAVE THIS STEPPER : "<<(*litr)->getParseData()->moduleName<<endl;;
+      Log(LOG_DEBUG) << "HAVE THIS STEPPER : "<<(*litr)->getParseData()->moduleName;
    }
 
 //    for (ActiveSteppers_t::iterator litr = activeSteppers.begin() ; litr != activeSteppers.end() ; ++litr){

@@ -63,15 +63,11 @@ void PDESolverCallerPlugin::step() {
     for (int i = 0; i <solverDataVec.size(); ++i) {
         if (!solverDataVec[i].extraTimesPerMC) //when user specifies 0 extra calls per MCS we don't execute the rest of the loop 
             continue;
-        int reminder = (numberOfAttempts % (solverDataVec[i].extraTimesPerMC + 1));
-        //cerr<<"reminder="<<reminder<<" numberOfAttampts="<<numberOfAttempts<<" solverDataVec[i].extraTimesPerMC="<<solverDataVec[i].extraTimesPerMC<<" currentAttempt="<<currentAttempt<<endl;   
+        int reminder = (numberOfAttempts % (solverDataVec[i].extraTimesPerMC + 1)); 
         int ratio = (numberOfAttempts / (solverDataVec[i].extraTimesPerMC + 1));
-        //       cerr<<"pscpdPtr->solverDataVec[i].extraTimesPerMC="<<pscpdPtr->solverDataVec[i].extraTimesPerMC<<endl;
-        //cerr<<"ratio="<<ratio<<" reminder="<<reminder<<endl;
         if (!((currentAttempt - reminder) % ratio) && currentAttempt>reminder) {
             solverPtrVec[i]->step(currentStep);
             //          float a=reminder+ratio;
-            //cerr << "calling Solver" << solverDataVec[i].solverName << " currentAttempt=" << currentAttempt << " numberOfAttempts=" << numberOfAttempts << endl;
 
         }
 
@@ -89,7 +85,6 @@ void PDESolverCallerPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 
     CC3DXMLElementList pdeSolversXMLList = _xmlData->getElements("CallPDE");
     for (unsigned int i = 0; i < pdeSolversXMLList.size(); ++i) {
-        //cerr << "adding solver=" << pdeSolversXMLList[i]->getAttribute("PDESolverName") << endl;
         solverDataVec.push_back(SolverData(pdeSolversXMLList[i]->getAttribute("PDESolverName"), pdeSolversXMLList[i]->getAttributeAsUInt("ExtraTimesPerMC")));
         SolverData & sd = solverDataVec[solverDataVec.size() - 1];
 

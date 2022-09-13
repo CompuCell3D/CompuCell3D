@@ -14,6 +14,7 @@
 #include <BasicUtils/BasicClassAccessor.h>
 #include <PublicUtilities/NumericalUtils.h>
 #include <sstream>
+#include<core/CompuCell3D/CC3DLogger.h>
 
 
 using namespace std;
@@ -57,8 +58,7 @@ void CellVelocity::extraInit(Simulator *simulator){
    potts->getBoundaryXName()=="Periodic" ? boundaryConditionIndicator.x=1 : boundaryConditionIndicator.x=0 ;
    potts->getBoundaryYName()=="Periodic" ? boundaryConditionIndicator.y=1 : boundaryConditionIndicator.y=0;
    potts->getBoundaryZName()=="Periodic" ? boundaryConditionIndicator.z=1 : boundaryConditionIndicator.z=0;
-   cerr<<"boundaryConditionIndicator="<<boundaryConditionIndicator<<endl;
-   
+   Log(LOG_DEBUG) << "boundaryConditionIndicator="<<boundaryConditionIndicator;   
    
    
 }
@@ -76,7 +76,7 @@ CellInventory::cellInventoryIterator cInvItr;
 ///loop over all the cells in the inventory
 float xCom;
 float yCom;
-float zCom;
+float zCom
 
 Coordinates3D<float> oldCM,newCM,v;
 CellG * cell;
@@ -90,10 +90,10 @@ CellG * cell;
       newCM.XRef()=cell->xCM/(float)cell->volume ;
       newCM.YRef()=cell->yCM/(float)cell->volume;
       newCM.ZRef()=cell->zCM/(float)cell->volume;
-      //cerr<<"cell->xCM/(float)cell->volume="<<cell->xCM/(float)cell->volume<<" newCM.X()="<<newCM.X()<<endl;
+      // Log(LOG_DEBUG) << "cell->xCM/(float)cell->volume="<<cell->xCM/(float)cell->volume<<" newCM.X()="<<newCM.X();
 
       oldCM=cellVelocityDataAccessorPtr -> get(cell->extraAttribPtr) -> getLastCM();
-//       cerr<<"cell "<<cell<<"enough data="<<cellVelocityDataAccessorPtr -> get(cell->extraAttribPtr)->enoughData<<endl;
+      // Log(LOG_DEBUG) << "cell "<<cell<<"enough data="<<cellVelocityDataAccessorPtr -> get(cell->extraAttribPtr)->enoughData;
       if(cellVelocityDataAccessorPtr -> get(cell->extraAttribPtr)->enoughData){
          v.XRef()=findMin(newCM.X()-oldCM.X(), boundaryConditionIndicator.x ? fieldDim.x : 0 );
          v.YRef()=findMin(newCM.Y()-oldCM.Y(), boundaryConditionIndicator.y ? fieldDim.y : 0 );
@@ -105,23 +105,18 @@ CellG * cell;
          
          cellVelocityDataAccessorPtr -> get(cell->extraAttribPtr) -> push_front(newCM.X() , newCM.Y() , newCM.Z());
          cellVelocityDataAccessorPtr -> get(cell->extraAttribPtr) -> setAverageVelocity(v);
-//          cerr<<"vel="<<v<<"   oldCM="<<oldCM<<" newCM="<<newCM<<" xCM="<<cell->xCM<<endl;
+         // Log(LOG_DEBUG) << "vel="<<v<<"   oldCM="<<oldCM<<" newCM="<<newCM<<" xCM="<<cell->xCM;
       }else{
          v.XRef()=0.;
          v.YRef()=0.;
          v.ZRef()=0.;
          cellVelocityDataAccessorPtr -> get(cell->extraAttribPtr) -> push_front(newCM.X() , newCM.Y() , newCM.Z());
          cellVelocityDataAccessorPtr -> get(cell->extraAttribPtr) -> setAverageVelocity(v);
-//          cerr<<"zero velocity vel="<<v<<endl;
+         // Log(LOG_DEBUG) << "zero velocity vel="<<v;
       }
 
-/*      cerr<<"xCom="<<xCom<<" yCom="<<yCom<<" zCom="<<zCom<<endl;
-      cerr<<"cellVelocityDataAccessorPtr="<<cellVelocityDataAccessorPtr<<endl;
-      cerr<<"list ptr="<<cellVelocityDataAccessorPtr -> get(cell->extraAttribPtr)<<endl;
-      cerr<<"list size="<<cellVelocityDataAccessorPtr -> get(cell->extraAttribPtr)->size()<<endl;*/
       
-      
-      //cerr<<*(cldeque<Coordinates3D<float> > *)cellVelocityDataAccessorPtr -> get(cell->extraAttribPtr) -> cellCOMPtr;
+      // Log(LOG_DEBUG) << *(cldeque<Coordinates3D<float> > *)cellVelocityDataAccessorPtr -> get(cell->extraAttribPtr) -> cellCOMPtr;
       
    }
    
@@ -137,8 +132,7 @@ float zCom;
 
 CellG * cell;
 
-
-   cerr<<"ACCESSOR"<<cellVelocityDataAccessorPtr<<endl;
+   Log(LOG_DEBUG) << "ACCESSOR"<<cellVelocityDataAccessorPtr;
 
    for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr != cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
       

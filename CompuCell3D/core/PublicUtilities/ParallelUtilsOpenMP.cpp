@@ -1,7 +1,6 @@
 #include  "ParallelUtilsOpenMP.h"
 #include <algorithm>
-
-
+#include<core/CompuCell3D/CC3DLogger.h>
 using namespace std;
 using namespace CompuCell3D;
 
@@ -560,7 +559,7 @@ return partitionVec;
 void ParallelUtilsOpenMP::generateLatticePartition(unsigned int _numberOfProcessors,bool _quasi2DFlag,std::vector<unsigned int> _dimIndexOrderedVec){
 	
 	unsigned int numArrayElements=sizeof latticeGridPartition2D/ sizeof (unsigned int[3]);
-	cerr<<"_numberOfProcessors ="<<_numberOfProcessors <<" numArrayElements="<<numArrayElements<<endl;	
+	Log(LOG_DEBUG) << "_numberOfProcessors ="<<_numberOfProcessors <<" numArrayElements="<<numArrayElements;
 	//if (_numberOfProcessors > numArrayElements-1){ //requested more processors than we expect - using single core run
 	//	partitionLattice(1,1, 1,_dimIndexOrderedVec);
 	//	return;
@@ -583,9 +582,8 @@ void ParallelUtilsOpenMP::generateLatticePartition(unsigned int _numberOfProcess
 		}else{//requested more processors than we expect - using algorothmic partitioning
 			partitionVec=calculatePartitioning(_numberOfProcessors,_quasi2DFlag);
 		}
-
-		//cerr<<"PARTITION 2D \n\n\n"<<endl;
-		//cerr<<"("<<partitionVec[0]<<","<<partitionVec[1]<<","<<partitionVec[2]<<")"<<endl;
+		Log(LOG_TRACE) << "PARTITION 2D \n\n\n";
+		Log(LOG_TRACE) << "("<<partitionVec[0]<<","<<partitionVec[1]<<","<<partitionVec[2]<<")";
 		partitionLattice(partitionVec[0],partitionVec[1], partitionVec[2],_dimIndexOrderedVec);
 	}else{
 		vector<unsigned int> partitionVec(3,1);
@@ -596,8 +594,8 @@ void ParallelUtilsOpenMP::generateLatticePartition(unsigned int _numberOfProcess
 		}else{//requested more processors than we expect - using algorothmic partitioning
 			partitionVec=calculatePartitioning(_numberOfProcessors,_quasi2DFlag);
 		}
-		//cerr<<"PARTITION 3D\n\n\n"<<endl;
-		//cerr<<"("<<partitionVec[0]<<","<<partitionVec[1]<<","<<partitionVec[2]<<")"<<endl;
+		Log(LOG_TRACE) <<  "PARTITION 3D\n\n\n";
+		Log(LOG_TRACE) <<  "("<<partitionVec[0]<<","<<partitionVec[1]<<","<<partitionVec[2]<<")";
 
 		partitionLattice(partitionVec[0],partitionVec[1], partitionVec[2],_dimIndexOrderedVec);
 
@@ -660,8 +658,7 @@ void ParallelUtilsOpenMP::calculatePottsPartition(){
 			quasi2D=false; //"true" 3D simulation
 		}
 	}
-
-	//cerr<<"minDimCoord="<<minDimCoord<<" indexMin="<<indexMin<<" maxDimCoord="<<maxDimCoord<<" indexMax="<<indexMax<<" middleDimCoord="<<middleDimCoord<<" indexMiddle="<<indexMiddle<<endl;
+	Log(LOG_TRACE) << "minDimCoord="<<minDimCoord<<" indexMin="<<indexMin<<" maxDimCoord="<<maxDimCoord<<" indexMax="<<indexMax<<" middleDimCoord="<<middleDimCoord<<" indexMiddle="<<indexMiddle;
 
 	generateLatticePartition(optimalNumberOfThreads,quasi2D,dimIndexOrderedVec);
 
@@ -743,7 +740,7 @@ void ParallelUtilsOpenMP::calculatePottsPartition(){
 	//			Dim3D maxDim=fieldDim;		
 	//			pottsPartitionVec.assign(1,vector<pair<Dim3D,Dim3D> >(1,make_pair(minDim,maxDim)));
 	//			pottsDimensionsToDivide.clear() ; //no dimension will be divided - single core simulation
-	//			cerr<<"SINGLE PROCESSOR RUN minDim="<<minDim<<" maxDim="<<maxDim<<endl;
+	// 			Log(LOG_TRACE) << "SINGLE PROCESSOR RUN minDim="<<minDim<<" maxDim="<<maxDim;
 	//		}
 
 	//}
@@ -754,7 +751,7 @@ void ParallelUtilsOpenMP::calculatePottsPartition(){
 	//	Dim3D maxDim=fieldDim;		
 	//	pottsPartitionVec.assign(1,vector<pair<Dim3D,Dim3D> >(1,make_pair(minDim,maxDim)));
 	//	pottsDimensionsToDivide.clear() ; //no dimension will be divided - single core simulation
-	//	cerr<<"SINGLE PROCESSOR RUN minDim="<<minDim<<" maxDim="<<maxDim<<endl;
+	// Log(LOG_TRACE) << "SINGLE PROCESSOR RUN minDim="<<minDim<<" maxDim="<<maxDim;
 
 	//}else if (optimalNumberOfThreads==4){
 	//	partitionLattice(1,2, 2,dimIndexOrderedVec);
@@ -789,7 +786,7 @@ void ParallelUtilsOpenMP::partitionLattice(unsigned int minDimGridPoints,unsigne
 		Dim3D maxDim=fieldDim;		
 		pottsPartitionVec.assign(1,vector<pair<Dim3D,Dim3D> >(1,make_pair(minDim,maxDim)));
 		pottsDimensionsToDivide.clear() ; //no dimension will be divided - single core simulation
-		cerr<<"SINGLE PROCESSOR RUN minDim="<<minDim<<" maxDim="<<maxDim<<endl;
+		Log(LOG_DEBUG) << "SINGLE PROCESSOR RUN minDim="<<minDim<<" maxDim="<<maxDim;
 		return;
 	}
 
@@ -832,7 +829,7 @@ void ParallelUtilsOpenMP::partitionLattice(unsigned int minDimGridPoints,unsigne
 
 
 				pottsPartitionVec[gridId][0]=make_pair(minDim,maxDim);
-				cerr<<"gridId="<<gridId<<" minDim="<<minDim<<" maxDim="<<maxDim<<endl;
+				Log(LOG_DEBUG) << "gridId="<<gridId<<" minDim="<<minDim<<" maxDim="<<maxDim;
 
 				++gridId;
 			}
@@ -886,7 +883,7 @@ void ParallelUtilsOpenMP::partitionLattice(unsigned int minDimGridPoints,unsigne
 							}
 
 							pottsPartitionVec[gid][subgridId]=make_pair(minSubDim,maxSubDim);
-							cerr<<" GID="<<gid<<" subgridId="<<subgridId<<" minSubDim="<<minSubDim<<" maxSubDim="<<maxSubDim<<endl;
+							Log(LOG_DEBUG) << " GID="<<gid<<" subgridId="<<subgridId<<" minSubDim="<<minSubDim<<" maxSubDim="<<maxSubDim;
 							++subgridId;
 
 						}
@@ -945,8 +942,7 @@ void ParallelUtilsOpenMP::partitionLattice(unsigned int minDimGridPoints,unsigne
 //
 //
 //			pottsPartitionVec[gridId][0]=make_pair(minDim,maxDim);
-//			cerr<<"gridId="<<gridId<<" minDim="<<minDim<<" maxDim="<<maxDim<<endl;
-//
+// 			Log(LOG_TRACE) << "gridId="<<gridId<<" minDim="<<minDim<<" maxDim="<<maxDim;
 //			++gridId;
 //		}
 //		int gridIdMax=gridId;
@@ -989,7 +985,7 @@ void ParallelUtilsOpenMP::partitionLattice(unsigned int minDimGridPoints,unsigne
 //					}
 //
 //					pottsPartitionVec[gid][subgridId]=make_pair(minSubDim,maxSubDim);
-//					cerr<<" GID="<<gid<<" subgridId="<<subgridId<<" minSubDim="<<minSubDim<<" maxSubDim="<<maxSubDim<<endl;
+// 					Log(LOG_TRACE) << " GID="<<gid<<" subgridId="<<subgridId<<" minSubDim="<<minSubDim<<" maxSubDim="<<maxSubDim;
 //					++subgridId;
 //
 //				}

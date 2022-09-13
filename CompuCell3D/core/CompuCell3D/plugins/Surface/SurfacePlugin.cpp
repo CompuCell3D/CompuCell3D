@@ -28,7 +28,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "SurfacePlugin.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 // SurfacePlugin::SurfacePlugin() : potts(0) {}
 
@@ -42,7 +42,7 @@ void SurfacePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
 
 	bool pluginAlreadyRegisteredFlag;
 	SurfaceTrackerPlugin *plugin=(SurfaceTrackerPlugin*)Simulator::pluginManager.get("SurfaceTracker",&pluginAlreadyRegisteredFlag); //this will load SurfaceTracker plugin if it is not already loaded
-	cerr<<"GOT HERE BEFORE CALLING INIT"<<endl;
+	Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
 	if(!pluginAlreadyRegisteredFlag)
 		plugin->init(simulator);
 
@@ -116,7 +116,7 @@ void SurfacePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			functionType=BYCELLID;
 	}
 	Automaton *automaton=potts->getAutomaton();
-	cerr<<"automaton="<<automaton<<endl;
+	Log(LOG_DEBUG) << "automaton="<<automaton;
 
 	switch(functionType){
 		case BYCELLID:
@@ -253,8 +253,6 @@ double SurfacePlugin::changeEnergyGlobal(const Point3D &pt, const CellG *newCell
 	 energy += diffEnergy(lambdaSurface , targetSurface , oldCell->surface*scaleSurface, newOldDiffs.second*scaleSurface);
   }
    
-  
-//       cerr<<"Surface Global Energy="<<energy<<endl;
   return energy;
 
 }
@@ -279,8 +277,6 @@ double SurfacePlugin::changeEnergyByCellType(const Point3D &pt,
 	 energy += diffEnergy(surfaceEnergyParamVector[oldCell->type].lambdaSurface , surfaceEnergyParamVector[oldCell->type].targetSurface , oldCell->surface*scaleSurface, newOldDiffs.second*scaleSurface);
   }
    
-  
-//       cerr<<"Surface By Type Energy="<<energy<<endl;
   return energy;
 
 }
@@ -306,8 +302,6 @@ double SurfacePlugin::changeEnergyByCellId(const Point3D &pt,
 	 energy += diffEnergy(oldCell->lambdaSurface , oldCell->targetSurface , oldCell->surface*scaleSurface, newOldDiffs.second*scaleSurface);
   }
    
-  
-//       cerr<<"Surface By Id Energy="<<energy<<endl;
   return energy;}
 
 

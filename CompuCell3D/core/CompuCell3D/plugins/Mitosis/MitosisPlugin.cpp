@@ -42,6 +42,7 @@ using namespace std;
 
 
 #include "MitosisPlugin.h"
+#include<core/CompuCell3D/CC3DLogger.h>
 
 MitosisPlugin::MitosisPlugin() {potts=0;}
 
@@ -55,7 +56,7 @@ void MitosisPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
      bool pluginAlreadyRegisteredFlag;
    Plugin *plugin=Simulator::pluginManager.get("VolumeTracker",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
-	cerr<<"GOT HERE BEFORE CALLING INIT"<<endl;
+   Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
 	if(!pluginAlreadyRegisteredFlag)
       plugin->init(simulator);
 
@@ -79,8 +80,7 @@ void MitosisPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
    mitosisFlagVec.assign(maxNumberOfWorkNodes,false);
 
    turnOn(); //this can be called only after vectors have been allocated
-
-	cerr<<"maxNumberOfWorkNodes="<<maxNumberOfWorkNodes<<endl;
+   Log(LOG_DEBUG) << "maxNumberOfWorkNodes="<<maxNumberOfWorkNodes;
 	update(_xmlData,true);
 
 }
@@ -118,8 +118,6 @@ void MitosisPlugin::field3DChange(const Point3D &pt, CellG *newCell,
 
 
   if (newCell){
-//       cerr<<"this is the mitosis newCell "<<newCell<<endl;
-//       cerr<<" DoublingVolume="<<doublingVolume<<endl;
       if(newCell->volume>= doublingVolume){
 		 int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();
          splitVec[currentWorkNodeNumber] = true;
@@ -132,7 +130,6 @@ void MitosisPlugin::field3DChange(const Point3D &pt, CellG *newCell,
 
 void MitosisPlugin::turnOn() {
 	onVec.assign(onVec.size(),true);
-	//cerr<<"pUtils->getCurrentWorkNodeNumber()="<<pUtils->getCurrentWorkNodeNumber()<<" onVec.size()="<<onVec.size()<<endl;
 	//onVec[pUtils->getCurrentWorkNodeNumber()] = true;
 
 }
@@ -159,7 +156,6 @@ void MitosisPlugin::step() {
 }
 
 CellG * MitosisPlugin::getChildCell(){
-	//cerr<<" getting CHILD CELL WORKNODE="<<pUtils->getCurrentWorkNodeNumber()<<" cell = "<<childCellVec[pUtils->getCurrentWorkNodeNumber()]<<endl;
 	return childCellVec[pUtils->getCurrentWorkNodeNumber()];
 }
 CellG * MitosisPlugin::getParentCell(){
@@ -272,14 +268,13 @@ bool MitosisPlugin::doMitosis(){
       ary1->clear();
     }
    if(!childCell){
-      cerr<<"Fragmented Cell - mitosis aborted"<<endl;
+      Log(LOG_DEBUG) << "Fragmented Cell - mitosis aborted";
       didMitosis=false;
       return didMitosis;
    }
    
    if(childCell && fabs((float)childCell->volume-parentCell->volume)>2.0){
-      cerr<<"cell was fragmented before mitosis, volumes of parent and child cells might significantly differ"<<endl;
-//       cerr<<"C++ childCell.volume="<<childCell->volume<<" parentCell.volume="<<parentCell->volume<<endl;
+      Log(LOG_DEBUG) << "cell was fragmented before mitosis, volumes of parent and child cells might significantly differ";
       didMitosis=true;
       return didMitosis;
    }

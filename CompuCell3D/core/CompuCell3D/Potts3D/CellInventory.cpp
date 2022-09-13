@@ -83,7 +83,7 @@ namespace CompuCell3D {
 	void CellInventory::removeFromInventory(CellG * _cell){
 		inventory.erase(CellIdentifier(_cell->id,_cell->clusterId));
 		compartmentInventory.removeFromInventory(_cell);
-		//cerr<<"ERASING CELL WITH ID="<<_cell->id<<" clusterID="<<_cell->clusterId<<endl;
+		Log(LOG_TRACE) << "ERASING CELL WITH ID="<<_cell->id<<" clusterID="<<_cell->clusterId;
 		//inventory.erase(_cell);
 
 	}
@@ -96,7 +96,7 @@ namespace CompuCell3D {
 			removeFromInventory(_cell);
 			_cell->clusterId=_newClusterId;
 			addToInventory(_cell);
-			//cerr<<"inserted cell with id = "<<_cell->id<<" clusterId="<<_cell->clusterId<<endl;
+			Log(LOG_TRACE) << "inserted cell with id = "<<_cell->id<<" clusterId="<<_cell->clusterId;
 			return true;
 
 		}else{//entry with cell->id,_newClusterId exists
@@ -163,8 +163,8 @@ CellG * CellInventory::attemptFetchingCellById(long _id){
 	if (upperMitr!=inventory.begin()){
 		--upperMitr;
 	}
-	//cerr<<"trying to get id="<<_id<<endl;
-	//cerr<<"upperMitr->first.cellId="<<upperMitr->first.cellId<<endl;
+	Log(LOG_TRACE) << "trying to get id="<<_id;
+	Log(LOG_TRACE) << "upperMitr->first.cellId="<<upperMitr->first.cellId;
 
 	if (upperMitr->first.cellId==_id){
 		return upperMitr->second;

@@ -30,6 +30,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "AdvectionDiffusionSolverFE.h"
+#include<core/CompuCell3D/CC3DLogger.h>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 AdvectionDiffusionSolverFE::AdvectionDiffusionSolverFE()
@@ -97,7 +98,7 @@ void AdvectionDiffusionSolverFE::init(Simulator *simulator, CC3DXMLElement *_xml
    //register fields once they have been allocated
    for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
       simPtr->registerConcentrationField(concentrationFieldNameVector[i] , concentrationFieldVector[i]);
-      cerr<<"registring field: "<<concentrationFieldNameVector[i]<<" field address="<<concentrationFieldVector[i]<<endl;
+      Log(LOG_DEBUG) << "registring field: "<<concentrationFieldNameVector[i]<<" field address="<<concentrationFieldVector[i];
    }
 
    
@@ -119,8 +120,7 @@ void AdvectionDiffusionSolverFE::init(Simulator *simulator, CC3DXMLElement *_xml
       }
    }
    
-   
-   cerr<<"ALLOCATED ALL FIELDS"<<endl;
+   Log(LOG_DEBUG) << "ALLOCATED ALL FIELDS";
 
 
 }
@@ -198,10 +198,9 @@ void AdvectionDiffusionSolverFE::updateLocalCellInventory(unsigned int idx){
 void AdvectionDiffusionSolverFE::start() {
    
    updateCellInventories();
-   cerr<<"GOT HERE BEFORE INITIALIZE FIELD"<<endl;
+   Log(LOG_DEBUG) << "GOT HERE BEFORE INITIALIZE FIELD";
    initializeConcentration();
-   
-   cerr<<"GOT HERE AFTER INITIALIZE FIELD"<<endl;
+   Log(LOG_DEBUG) << "GOT HERE AFTER INITIALIZE FIELD";
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -337,11 +336,11 @@ void AdvectionDiffusionSolverFE::secreteSingleField(unsigned int idx){
    std::map<unsigned char,float>::iterator mitr;
    std::map<unsigned char,float>::iterator end_mitr=secrData.typeIdSecrConstMap.end();
 
-   cerr << "secrData.typeIdSecrConstMap.size()=" << secrData.typeIdSecrConstMap.size() << endl;
+   Log(LOG_DEBUG) << "secrData.typeIdSecrConstMap.size()=" << secrData.typeIdSecrConstMap.size();
    float currentConcentration;
    float secrConst;
 
-   cerr << "secretion single field" << endl;
+   Log(LOG_DEBUG) <<  "secretion single field";
 
    //the assumption is that medium has type ID 0
    mitr=secrData.typeIdSecrConstMap.find(automaton->getTypeId("Medium"));
@@ -353,7 +352,7 @@ void AdvectionDiffusionSolverFE::secreteSingleField(unsigned int idx){
    for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
       cell=cellInventoryPtr->getCell(cInvItr);   
       //cell=*cInvItr;
-	  cerr << "cell=" << cell->id << " type=" <<(int) cell->type << endl;
+     Log(LOG_DEBUG) << "cell=" << cell->id << " type=" <<(int) cell->type;
       concentrationItr = concentrationField->find(cell);
       
 
@@ -362,7 +361,7 @@ void AdvectionDiffusionSolverFE::secreteSingleField(unsigned int idx){
          if(mitr!=end_mitr){
             
             secrConst=mitr->second;
-			cerr << "secrConst=" << secrConst << endl;
+         Log(LOG_DEBUG) << "secrConst=" << secrConst;
             currentConcentration=concentrationItr->second;
             concentrationItr->second=currentConcentration+secrConst;
             
@@ -516,8 +515,7 @@ void AdvectionDiffusionSolverFE::diffuseSingleField(unsigned int idx){
       updatedConcentration =  dt_dx2*diffConst*(concentrationSum - neighborCounter*currentConcentration)
                            -deltaT*(decayConst*currentConcentration)
                            +currentConcentration;
-
-	  cerr << "updatedConcentration=" << updatedConcentration << endl;
+      Log(LOG_DEBUG) <<  "updatedConcentration=" << updatedConcentration;
 
       scratchConcentrationItr->second = updatedConcentration;
       

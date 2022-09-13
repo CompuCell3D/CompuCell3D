@@ -68,8 +68,7 @@ CellOrientationPlugin::~CellOrientationPlugin() {
 }
 
 void CellOrientationPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
-
-	cerr<<"INITIALIZE CELL ORIENTATION PLUGIN"<<endl;   
+	Log(LOG_DEBUG) << "INITIALIZE CELL ORIENTATION PLUGIN";
 	potts = simulator->getPotts();
 	//    potts->getCellFactoryGroupPtr()->registerClass(&CellOrientationVectorAccessor); //register new class with the factory
 
@@ -103,7 +102,7 @@ void CellOrientationPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 }
 
 void CellOrientationPlugin::extraInit(Simulator *simulator) {
-	cerr<<"EXTRA INITIALIZE CELL ORIENTATION PLUGIN"<<endl;   
+	Log(LOG_DEBUG) << "EXTRA INITIALIZE CELL ORIENTATION PLUGIN";
 	Potts3D *potts = simulator->getPotts();
 	cellFieldG = potts->getCellFieldG();
 }
@@ -188,8 +187,7 @@ double CellOrientationPlugin::changeEnergyPixelBased(const Point3D &pt,const Cel
 		energy+=-lambdaCellOrientationValue*(polarizationVecPtr->x * spinCopyVector.x + polarizationVecPtr->y * spinCopyVector.y + polarizationVecPtr->z * spinCopyVector.z);
 
 	}
-
-	//    cerr<<"energy="<<energy<<endl;
+	Log(LOG_TRACE) << "energy="<<energy;
 	
 	return energy;
 }
@@ -227,10 +225,9 @@ double CellOrientationPlugin::changeEnergyCOMBased(const Point3D &pt,const CellG
 		Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM/oldCell->volume, oldCell->yCM/oldCell->volume, oldCell->zCM/oldCell->volume);		
 		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip ,oldCOMBeforeFlip,fieldDim);
 
-
-		//cerr<<"lambdaCellOrientationValue="<<lambdaCellOrientationValue<<endl;		
-		//cerr<<"distVector="<<distVector<<endl;
-		//cerr<<"p.x="<<polarizationVecPtr->x<<" p.y="<<polarizationVecPtr->y<<" p.z="<<polarizationVecPtr->z<<endl;
+		Log(LOG_TRACE) << "lambdaCellOrientationValue="<<lambdaCellOrientationValue;
+		Log(LOG_TRACE) << 	"distVector="<<distVector;
+		Log(LOG_TRACE) << "p.x="<<polarizationVecPtr->x<<" p.y="<<polarizationVecPtr->y<<" p.z="<<polarizationVecPtr->z;
 
 		energy += -lambdaCellOrientationValue*(polarizationVecPtr->x * distVector.x + polarizationVecPtr->y * distVector.y + polarizationVecPtr->z * distVector.z);
 	}

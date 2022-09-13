@@ -1,6 +1,5 @@
 #include "GraphicsDataFields.h"
 #include <iostream>
-
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -84,7 +83,6 @@ void GraphicsDataFields::allocateField3D(unsigned int _sizeL, unsigned int _size
    sizeL=_sizeL;
    sizeM=_sizeM;
    sizeN=_sizeN;
-   cerr<<"sizeL="<<sizeL<<"sizeM="<<sizeM<<"sizeN="<<sizeN<<endl;
    field3DGraphicsData.assign(_sizeL,vector<vector<GraphicsData> >(_sizeM,vector<GraphicsData>(_sizeN)));
 
    field3DConcentration.assign(_sizeL,vector<vector<float> >(_sizeM,vector<float>(_sizeN)));

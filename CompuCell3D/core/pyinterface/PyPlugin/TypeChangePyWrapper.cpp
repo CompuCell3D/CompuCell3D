@@ -1,5 +1,6 @@
 #include "ChangeWatcherPyWrapper.h"
 #include <CompuCell3D/Potts3D/Potts3D.h>
+#include<CompuCell3D/CC3DLogger.h>
 #include <iostream>
 
 using namespace std;
@@ -43,15 +44,14 @@ void ChangeWatcherPyWrapper::field3DChange(const Point3D &pt, CellG *_newCell,Ce
 	PyGILState_STATE gstate;
 	gstate = PyGILState_Ensure();
    for (int i = 0 ; i < vecPyObject.size() ; ++i){
-
-//       cerr<<"before the call"<<endl;
+         Log(LOG_TRACE) << "before the call";
       ret=PyObject_CallMethod(vecPyObject[i],"field3DChange",0);
 
       
 
       //decrement reference here
       Py_DECREF(ret);
-//       cerr<<"after the call"<<endl;
+      Log(LOG_TRACE) << "after the call";
    }
 	PyGILState_Release(gstate);
 

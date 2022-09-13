@@ -373,8 +373,8 @@ class Array2DLinearFortranField3DAdapter:public Field3DImpl<float>{
 		 //return container[0];
    //      using namespace std;
 		 //if(pt.y==0&&pt.z==0){
-			//cerr<<"get "<<pt<<" = "<<container[Array2DLinearFortranField3DAdapter<float>::index(pt.x,pt.y)]<<endl;
-			//cerr<<" index="<<index(pt.x,pt.y)<<" internalDim.x="<<internalDim.x<<endl;
+			Log(LOG_TRACE) << "get "<<pt<<" = "<<container[Array2DLinearFortranField3DAdapter<float>::index(pt.x,pt.y)];
+			Log(LOG_TRACE) << " index="<<index(pt.x,pt.y)<<" internalDim.x="<<internalDim.x;
 			//}
 		 return container[Array2DLinearFortranField3DAdapter::index(pt.x,pt.y)];  
 
@@ -726,9 +726,9 @@ class Array2DBordersField3DAdapter:public Field3DImpl<T>, public Array2DBorders<
       virtual T get(const Point3D &pt) const {
 //          unsigned int borderWidth=array3DPtr->getBorderWidth();
 //          using namespace std;
-//          cerr<<"this is element:"<<Array2DBorders<T>::array
-//                   [pt.x+Array2DBorders<T>::borderWidth]
-//                   [pt.y+Array2DBorders<T>::borderWidth]<<endl;
+Log(LOG_TRACE) << "this is element:"<<Array2DBorders<T>::array
+                  [pt.x+Array2DBorders<T>::borderWidth]
+                  [pt.y+Array2DBorders<T>::borderWidth];
          return Array2DBorders<T>::array
                   [pt.x+Array2DBorders<T>::borderWidth]
                   [pt.y+Array2DBorders<T>::borderWidth];
@@ -923,7 +923,7 @@ void Array3DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec){
 				ptShift=pt-shiftVec;
 				if (ptShift.x>=0 && ptShift.x<Field3DImpl<T>::dim.x && ptShift.y>=0 && ptShift.y<Field3DImpl<T>::dim.y && ptShift.z>=0 && ptShift.z<Field3DImpl<T>::dim.z)
 				{
-					//cerr<<"ptShift="<<ptShift<<" pt="<<pt<<endl;
+					Log(LOG_TRACE) << "ptShift="<<ptShift<<" pt="<<pt;
                     
                     newArrayCont[(((pt.x+borderWidth)+shiftArray) + ((((pt.y+borderWidth)+shiftArray) + ((2*(pt.z+borderWidth)+shiftArray) *newInternalDim.y)) * newInternalDim.x))]=get(ptShift.x,ptShift.y,ptShift.z);
                     
@@ -1287,7 +1287,7 @@ void Array2DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec){
 				ptShift=pt-shiftVec;
 				if (ptShift.x>=0 && ptShift.x<Field3DImpl<T>::dim.x && ptShift.y>=0 && ptShift.y<Field3DImpl<T>::dim.y )
 				{
-					//cerr<<"ptShift="<<ptShift<<" pt="<<pt<<endl;
+					Log(LOG_TRACE) << "ptShift="<<ptShift<<" pt="<<pt;
                     newArrayCont[(pt.x+borderWidth)+shiftArray + (2*(pt.y+borderWidth)+shiftArray)* newInternalDim.x]=arrayCont[ptShift.x+borderWidth+shiftArray + (2*(ptShift.y+borderWidth)+shiftArray)* internalDim.x];
                     // get(ptShift.x,ptShift.y);                    
 				}

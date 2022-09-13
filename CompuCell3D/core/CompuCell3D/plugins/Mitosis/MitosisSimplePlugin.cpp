@@ -64,12 +64,12 @@ void MitosisSimplePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	potts = simulator->getPotts();
 	bool pluginAlreadyRegisteredFlag;
 	Plugin *plugin=Simulator::pluginManager.get("VolumeTracker",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
-	cerr<<"GOT HERE BEFORE CALLING INIT"<<endl;
+	Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";;
 	if(!pluginAlreadyRegisteredFlag)
 		plugin->init(simulator);
 
 	Plugin *pluginCOM=Simulator::pluginManager.get("CenterOfMass",&pluginAlreadyRegisteredFlag); //this will load CenterOfMass plugin if it is not already loaded
-	cerr<<"GOT HERE BEFORE CALLING INIT"<<endl;
+	Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
 	if(!pluginAlreadyRegisteredFlag)
 		pluginCOM->init(simulator);
 
@@ -112,8 +112,7 @@ void MitosisSimplePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
    mitosisFlagVec.assign(maxNumberOfWorkNodes,false);
 
    turnOn(); //this can be called only after vectors have been allocated
-
-	cerr<<"maxNumberOfWorkNodes="<<maxNumberOfWorkNodes<<endl;
+	Log(LOG_DEBUG) << "maxNumberOfWorkNodes="<<maxNumberOfWorkNodes;
 
 
 	boundaryStrategy=BoundaryStrategy::getInstance();
@@ -185,7 +184,6 @@ OrientationVectorsMitosis MitosisSimplePlugin::getOrientationVectorsMitosis2D_xy
 
 		set<PixelTrackerData> cellPixels=pixelTrackerAccessorPtr->get(cell->extraAttribPtr)->pixelSet;
 		for(set<PixelTrackerData>::iterator sitr=cellPixels.begin() ; sitr != cellPixels.end() ;++sitr){
-			//cerr<<"point cell="<<sitr->pixel<<endl;
 			Coordinates3D<double> pixelTrans= boundaryStrategy->calculatePointCoordinates(sitr->pixel);
 			inertiaTensor[0][0]+=(pixelTrans.y-ycm)*(pixelTrans.y-ycm);
 			inertiaTensor[0][1]+=-(pixelTrans.x-xcm)*(pixelTrans.y-ycm);
@@ -260,7 +258,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_xy(){
 		double b;
 		//determining coefficients of the straight line passing through
 		if(divideAlongMinorAxisFlag){
-			//cerr<<"doing minor axis division"<<endl;
 
 
 			a=orientationVec.y/orientationVec.x;
@@ -273,7 +270,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_xy(){
 		}
 
 		if(divideAlongMajorAxisFlag){
-			//cerr<<"doing major axis division"<<endl;
 			if(orientationVec.y==0.0){//then perpendicular vector (major axis) is along y axis meaning:
 				a=0.0;
 				b=0.0;
@@ -284,7 +280,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_xy(){
 			}
 		}
 
-		//cerr<<"a="<<a<<" b="<<b<<endl;
 		//now do the division
 
 		if(a==0.0 && b==0.0){//division along y axis
@@ -301,20 +296,14 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_xy(){
 			}
 
 		}else{//division will be done along axis different than y axis
-			//cerr<<"before iteration"<<endl;
-			//cerr<<"cell->volume="<<cell->volume<<endl;
 			int parentCellVolume=0;
 			for(set<PixelTrackerData>::iterator sitr=cellPixels.begin() ; sitr != cellPixels.end() ;++sitr){
 				Coordinates3D<double> pixelTrans= boundaryStrategy->calculatePointCoordinates(sitr->pixel);
-				//cerr<<"pt="<<sitr->pixel<<endl;
 				if(pixelTrans.y <= a*pixelTrans.x+b){
 					
 					if(!childCell){
-						//cerr<<" creating cell and adding pt="<<sitr->pixel<<endl;
 						childCell = potts->createCellG(sitr->pixel);
-						//cerr<<"childCell="<<childCell<<endl;
 					}else{
-						//cerr<<" adding pt="<<sitr->pixel<<endl;
 						cellField->set(sitr->pixel, childCell);
 					}
 				}else{
@@ -323,7 +312,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_xy(){
 				}
 
 			}
-			//cerr<<"parentCellVolume="<<parentCellVolume<<endl;
 		}
 
 		//if childCell was created this means mitosis was sucessful. If child cell was not created there was no mitosis
@@ -349,7 +337,6 @@ OrientationVectorsMitosis MitosisSimplePlugin::getOrientationVectorsMitosis2D_xz
 
 		set<PixelTrackerData> cellPixels=pixelTrackerAccessorPtr->get(cell->extraAttribPtr)->pixelSet;
 		for(set<PixelTrackerData>::iterator sitr=cellPixels.begin() ; sitr != cellPixels.end() ;++sitr){
-			//cerr<<"point cell="<<sitr->pixel<<endl;
 			Coordinates3D<double> pixelTrans= boundaryStrategy->calculatePointCoordinates(sitr->pixel);
 			inertiaTensor[0][0]+=(pixelTrans.z-zcm)*(pixelTrans.z-zcm);
 			inertiaTensor[0][1]+=-(pixelTrans.x-xcm)*(pixelTrans.z-zcm);
@@ -396,7 +383,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_xz(){
   CellG * & childCell = childCellVec[currentWorkNodeNumber];
   CellG * & parentCell = parentCellVec[currentWorkNodeNumber];
   Point3D & splitPt=splitPtVec[currentWorkNodeNumber];
-	//cerr<<"DOING XZ mitosis"<<endl;
 	//this implementation is valid in 2D only
 	if (split && on) {
 		split = false;
@@ -408,7 +394,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_xz(){
 
 		CellG *cell = cellField->get(splitPt);//cells that is being divided
 		parentCell=cell;
-		//cerr<<"dividing parent cell "<<cell->id<<endl;
 		double xcm=cell->xCM/(float)cell->volume;
 		double ycm=cell->yCM/(float)cell->volume;
 		double zcm=cell->zCM/(float)cell->volume;
@@ -417,14 +402,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_xz(){
 
 		OrientationVectorsMitosis orientationVectorsMitosis=getOrientationVectorsMitosis2D_xz(cell);
 		Coordinates3D<double> orientationVec=orientationVectorsMitosis.semiminorVec;
-
-
-	 //  cerr<<"orientationVec="<<orientationVec<<endl;
-		//cerr<<"inertiaTensor[0][0]="<<inertiaTensor[0][0]<<endl;
-		//cerr<<"inertiaTensor[0][1]="<<inertiaTensor[0][1]<<endl;
-		//cerr<<"inertiaTensor[1][1]="<<inertiaTensor[1][1]<<endl;
-
-		//cerr<<"xcm="<<xcm<<" zcm="<<zcm<<endl;
 
 		//once we know orientation vector corresponding to bigger eigenvalue (pointing along semiminor axis) we may divide cell 
 		//along major or minor axis
@@ -435,7 +412,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_xz(){
 		double b;
 		//determining coefficients of the straight line passing through
 		if(divideAlongMinorAxisFlag){
-			//cerr<<"doing minor axis division"<<endl;
 
 
 			a=orientationVec.z/orientationVec.x;
@@ -448,7 +424,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_xz(){
 		}
 
 		if(divideAlongMajorAxisFlag){
-			//cerr<<"doing major axis division"<<endl;
 			if(orientationVec.z==0.0){//then perpendicular vector (major axis) is along z axis meaning:
 				a=0.0;
 				b=0.0;
@@ -458,8 +433,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_xz(){
 				b=zcm-xcm*a;
 			}
 		}
-
-		//cerr<<"a="<<a<<" b="<<b<<endl;
 		//now do the division
 
 		if(a==0.0 && b==0.0){//division along y axis
@@ -476,20 +449,14 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_xz(){
 			}
 
 		}else{//division will be done along axis different than y axis
-			//cerr<<"before iteration"<<endl;
-			//cerr<<"cell->volume="<<cell->volume<<endl;
 			int parentCellVolume=0;
 			for(set<PixelTrackerData>::iterator sitr=cellPixels.begin() ; sitr != cellPixels.end() ;++sitr){
 				Coordinates3D<double> pixelTrans= boundaryStrategy->calculatePointCoordinates(sitr->pixel);
-				//cerr<<"pt="<<sitr->pixel<<endl;
 				if(pixelTrans.z <= a*pixelTrans.x+b){
 					
 					if(!childCell){
-						//cerr<<" creating cell and adding pt="<<sitr->pixel<<endl;
 						childCell = potts->createCellG(sitr->pixel);
-						//cerr<<"childCell="<<childCell<<endl;
 					}else{
-						//cerr<<" adding pt="<<sitr->pixel<<endl;
 						cellField->set(sitr->pixel, childCell);
 					}
 				}else{
@@ -498,7 +465,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_xz(){
 				}
 
 			}
-			//cerr<<"parentCellVolume="<<parentCellVolume<<endl;
 		}
 
 		//if childCell was created this means mitosis was sucessful. If child cell was not created there was no mitosis
@@ -520,7 +486,6 @@ OrientationVectorsMitosis MitosisSimplePlugin::getOrientationVectorsMitosis2D_yz
 		set<PixelTrackerData> cellPixels=pixelTrackerAccessorPtr->get(cell->extraAttribPtr)->pixelSet;
 		for(set<PixelTrackerData>::iterator sitr=cellPixels.begin() ; sitr != cellPixels.end() ;++sitr){
 			Coordinates3D<double> pixelTrans= boundaryStrategy->calculatePointCoordinates(sitr->pixel);
-			//cerr<<"point cell="<<sitr->pixel<<endl;
 			inertiaTensor[0][0]+=(pixelTrans.z-zcm)*(pixelTrans.z-zcm);
 			inertiaTensor[0][1]+=-(pixelTrans.y-ycm)*(pixelTrans.z-zcm);
 			inertiaTensor[1][1]+=(pixelTrans.y-ycm)*(pixelTrans.y-ycm);
@@ -588,14 +553,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_yz(){
 		OrientationVectorsMitosis orientationVectorsMitosis=getOrientationVectorsMitosis2D_xz(cell);
 		Coordinates3D<double> orientationVec=orientationVectorsMitosis.semiminorVec;
 
-
-	 //  cerr<<"orientationVec="<<orientationVec<<endl;
-		//cerr<<"inertiaTensor[0][0]="<<inertiaTensor[0][0]<<endl;
-		//cerr<<"inertiaTensor[0][1]="<<inertiaTensor[0][1]<<endl;
-		//cerr<<"inertiaTensor[1][1]="<<inertiaTensor[1][1]<<endl;
-
-		//cerr<<"xcm="<<xcm<<" zcm="<<zcm<<endl;
-
 		//once we know orientation vector corresponding to bigger eigenvalue (pointing along semiminor axis) we may divide cell 
 		//along major or minor axis
 
@@ -605,7 +562,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_yz(){
 		double b;
 		//determining coefficients of the straight line passing through
 		if(divideAlongMinorAxisFlag){
-			//cerr<<"doing minor axis division"<<endl;
 
 
 			a=orientationVec.z/orientationVec.y;
@@ -618,7 +574,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_yz(){
 		}
 
 		if(divideAlongMajorAxisFlag){
-			//cerr<<"doing major axis division"<<endl;
 			if(orientationVec.z==0.0){//then perpendicular vector (major axis) is along z axis meaning:
 				a=0.0;
 				b=0.0;
@@ -628,8 +583,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_yz(){
 				b=zcm-ycm*a;
 			}
 		}
-
-		//cerr<<"a="<<a<<" b="<<b<<endl;
 		//now do the division
 
 		if(a==0.0 && b==0.0){//division along y axis
@@ -646,20 +599,14 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_yz(){
 			}
 
 		}else{//division will be done along axis different than y axis
-			//cerr<<"before iteration"<<endl;
-			//cerr<<"cell->volume="<<cell->volume<<endl;
 			int parentCellVolume=0;
 			for(set<PixelTrackerData>::iterator sitr=cellPixels.begin() ; sitr != cellPixels.end() ;++sitr){
 				Coordinates3D<double> pixelTrans= boundaryStrategy->calculatePointCoordinates(sitr->pixel);
-				//cerr<<"pt="<<sitr->pixel<<endl;
 				if(pixelTrans.z <= a*pixelTrans.y+b){
 					
 					if(!childCell){
-						//cerr<<" creating cell and adding pt="<<sitr->pixel<<endl;
 						childCell = potts->createCellG(sitr->pixel);
-						//cerr<<"childCell="<<childCell<<endl;
 					}else{
-						//cerr<<" adding pt="<<sitr->pixel<<endl;
 						cellField->set(sitr->pixel, childCell);
 					}
 				}else{
@@ -668,7 +615,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis2D_yz(){
 				}
 
 			}
-			//cerr<<"parentCellVolume="<<parentCellVolume<<endl;
 		}
 
 		//if childCell was created this means mitosis was sucessful. If child cell was not created there was no mitosis
@@ -691,7 +637,6 @@ OrientationVectorsMitosis MitosisSimplePlugin::getOrientationVectorsMitosis3D(Ce
 		set<PixelTrackerData> cellPixels=pixelTrackerAccessorPtr->get(cell->extraAttribPtr)->pixelSet;
 		for(set<PixelTrackerData>::iterator sitr=cellPixels.begin() ; sitr != cellPixels.end() ;++sitr){
 			Coordinates3D<double> pixelTrans= boundaryStrategy->calculatePointCoordinates(sitr->pixel);
-			//cerr<<"point cell="<<sitr->pixel<<endl;
 			inertiaTensor[0][0]+=(pixelTrans.y-ycm)*(pixelTrans.y-ycm)+(pixelTrans.z-zcm)*(pixelTrans.z-zcm);
 			inertiaTensor[0][1]+=-(pixelTrans.x-xcm)*(pixelTrans.y-ycm);
 			inertiaTensor[0][2]+=-(pixelTrans.x-xcm)*(pixelTrans.z-zcm);
@@ -732,7 +677,6 @@ OrientationVectorsMitosis MitosisSimplePlugin::getOrientationVectorsMitosis3D(Ce
 		 eigenvectors[i].y=1.0;
 		 eigenvectors[i].z = (inertiaTensor[0][2]*eigenvectors[i].x+inertiaTensor[1][2]*eigenvectors[i].y)/
 		 (roots[i].real()-inertiaTensor[2][2]) ;
-		 //cerr<<"eigenvectors["<<i<<"]="<<eigenvectors[i]<<endl;
 		 if(eigenvectors[i].x!=eigenvectors[i].x || eigenvectors[i].y!=eigenvectors[i].y || eigenvectors[i].z!=eigenvectors[i].z){
 			OrientationVectorsMitosis orientationVectorsMitosis;
 			return orientationVectorsMitosis;//simply dont do mitosis if any of the eigenvector component is NaN
@@ -801,19 +745,10 @@ bool MitosisSimplePlugin::doDirectionalMitosis3D(){
 
 		OrientationVectorsMitosis orientationVectorsMitosis=getOrientationVectorsMitosis3D(cell);
 		
-
-		
-		//cerr<<"CHECKING eigenvectors"<<endl;
-		//cerr<<"0*1="<<eigenvectors[0]*eigenvectors[1]<<endl;
-		//cerr<<"0*2="<<eigenvectors[0]*eigenvectors[2]<<endl;
-	 //  cerr<<"1*2="<<eigenvectors[1]*eigenvectors[2]<<endl;
 		// to divide cell along semiminor axis we take eigenvector corresponging to semimajor axis and this vector is 
 		// perpendicular to the division plane
-		//cerr<<"semimajor axis eigenvector is "<<eigenvectors[sortedAxes[2].second]<<endl;
 		// to divide cell along semimajor axis we take eigenvector corresponging to semiminor axis and this vector is 
 		// perpendicular to the division plane
-		
-		//cerr<<"semiminor axis eigenvector is "<<eigenvectors[sortedAxes[0].second]<<endl;
 
 
 	//plane equation is of the form (r-p)*n=0 where p is vector pointing to point through which the plane will pass (COM)
@@ -826,32 +761,22 @@ bool MitosisSimplePlugin::doDirectionalMitosis3D(){
 	double d;
 
 	if(divideAlongMajorAxisFlag){
-		//cerr<<"doing major axis division"<<endl;
 	
 		nVec=orientationVectorsMitosis.semiminorVec;;
 		d=-(pVec*nVec);
-			//cerr<<"before iteration"<<endl;
 		
 	} else{
-		//cerr<<"doing minor axis division"<<endl;
 		nVec=orientationVectorsMitosis.semimajorVec;;
 		d=-(pVec*nVec);
 	}
-	
-
-			//cerr<<"cell->volume="<<cell->volume<<endl;
 			int parentCellVolume=0;
 			for(set<PixelTrackerData>::iterator sitr=cellPixels.begin() ; sitr != cellPixels.end() ;++sitr){
 				Coordinates3D<double> pixelTrans= boundaryStrategy->calculatePointCoordinates(sitr->pixel);
-				//cerr<<"pt="<<sitr->pixel<<endl;
 				if(nVec.x*pixelTrans.x+nVec.y*pixelTrans.y + nVec.z*pixelTrans.z+d<= 0.0){
 					
 					if(!childCell){
-						//cerr<<" creating cell and adding pt="<<sitr->pixel<<endl;
 						childCell = potts->createCellG(sitr->pixel);
-						//cerr<<"childCell="<<childCell<<endl;
 					}else{
-						//cerr<<" adding pt="<<sitr->pixel<<endl;
 						cellField->set(sitr->pixel, childCell);
 					}
 				}else{
@@ -860,7 +785,6 @@ bool MitosisSimplePlugin::doDirectionalMitosis3D(){
 				}
 
 			}
-			//cerr<<"parentCellVolume="<<parentCellVolume<<endl;
 
 		if(childCell)
 			return true;
@@ -907,7 +831,6 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 		
 		set<PixelTrackerData> cellPixels=pixelTrackerAccessorPtr->get(cell->extraAttribPtr)->pixelSet;
 		parentCell=cell;
-		//cerr<<"dividing parent cell "<<cell->id<<endl;
 		double xcm=cell->xCM/(float)cell->volume;
 		double ycm=cell->yCM/(float)cell->volume;
 		double zcm=cell->zCM/(float)cell->volume;
@@ -922,19 +845,14 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 	Coordinates3D<double> pVec(xcm,ycm,zcm);
 	double d=-(pVec*nVec);
 
-			//cerr<<"cell->volume="<<cell->volume<<endl;
 			int parentCellVolume=0;
 			for(set<PixelTrackerData>::iterator sitr=cellPixels.begin() ; sitr != cellPixels.end() ;++sitr){
 				Coordinates3D<double> pixelTrans= boundaryStrategy->calculatePointCoordinates(sitr->pixel);
-				//cerr<<"pt="<<sitr->pixel<<endl;
 				if(nVec.x*pixelTrans.x+nVec.y*pixelTrans.y + nVec.z*pixelTrans.z+d<= 0.0){
 					
 					if(!childCell){
-						//cerr<<" creating cell and adding pt="<<sitr->pixel<<endl;
 						childCell = potts->createCellG(sitr->pixel);
-						//cerr<<"childCell="<<childCell<<endl;
 					}else{
-						//cerr<<" adding pt="<<sitr->pixel<<endl;
 						cellField->set(sitr->pixel, childCell);
 					}
 				}else{
@@ -943,7 +861,6 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 				}
 
 			}
-			//cerr<<"parentCellVolume="<<parentCellVolume<<endl;
 
 		if(childCell)
 			return true;
@@ -967,7 +884,6 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 //
 //		CellG *cell = cellField->get(splitPt);//cells that is being divided
 //		parentCell=cell;
-//		//cerr<<"dividing parent cell "<<cell->id<<endl;
 //		double xcm=cell->xCM/(float)cell->volume;
 //		double ycm=cell->yCM/(float)cell->volume;
 //		double zcm=cell->zCM/(float)cell->volume;
@@ -977,7 +893,6 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 //
 //		set<PixelTrackerData> cellPixels=pixelTrackerAccessorPtr->get(cell->extraAttribPtr)->pixelSet;
 //		for(set<PixelTrackerData>::iterator sitr=cellPixels.begin() ; sitr != cellPixels.end() ;++sitr){
-//			//cerr<<"point cell="<<sitr->pixel<<endl;
 //			inertiaTensor[0][0]+=(sitr->pixel.y-ycm)*(sitr->pixel.y-ycm)+(sitr->pixel.z-zcm)*(sitr->pixel.z-zcm);
 //			inertiaTensor[0][1]+=-(sitr->pixel.x-xcm)*(sitr->pixel.y-ycm);
 //			inertiaTensor[0][2]+=-(sitr->pixel.x-xcm)*(sitr->pixel.z-zcm);
@@ -1018,7 +933,6 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 //		 eigenvectors[i].y=1.0;
 //		 eigenvectors[i].z = (inertiaTensor[0][2]*eigenvectors[i].x+inertiaTensor[1][2]*eigenvectors[i].y)/
 //		 (roots[i].real()-inertiaTensor[2][2]) ;
-//		 //cerr<<"eigenvectors["<<i<<"]="<<eigenvectors[i]<<endl;
 //		 if(eigenvectors[i].x!=eigenvectors[i].x || eigenvectors[i].y!=eigenvectors[i].y || eigenvectors[i].z!=eigenvectors[i].z){
 //			return false;//simply dont do mitosis if any of the eigenvector component is NaN
 //		 }
@@ -1046,23 +960,11 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 //	sort(sortedAxes.begin(),sortedAxes.end()); //by keeping track of original axes indices we also find which eigenvector corresponds to shortest/longest axis - that's why we use pair where first element is the length of the axis and the second one is index of the eigenvalue. 
 //															 //After sorting we can track back which eigenvector belongs to hosrtest/longest eigenvalue
 //
-//	//for(int i =0 ; i< 3 ;++i){
-//	//	cerr<<"roots["<<i<<"]="<<roots[i]<<endl;
-//	//	cerr<<"sortedAxes["<<i<<"].first="<<sortedAxes[i].first<<" original index="<<sortedAxes[i].second<<endl;
-//	//}
-//
-//		
-//		//cerr<<"CHECKING eigenvectors"<<endl;
-//		//cerr<<"0*1="<<eigenvectors[0]*eigenvectors[1]<<endl;
-//		//cerr<<"0*2="<<eigenvectors[0]*eigenvectors[2]<<endl;
-//	 //  cerr<<"1*2="<<eigenvectors[1]*eigenvectors[2]<<endl;
+
 //		// to divide cell along semiminor axis we take eigenvector corresponging to semimajor axis and this vector is 
 //		// perpendicular to the division plane
-//		//cerr<<"semimajor axis eigenvector is "<<eigenvectors[sortedAxes[2].second]<<endl;
 //		// to divide cell along semimajor axis we take eigenvector corresponging to semiminor axis and this vector is 
 //		// perpendicular to the division plane
-//		
-//		//cerr<<"semiminor axis eigenvector is "<<eigenvectors[sortedAxes[0].second]<<endl;
 //
 //
 //	//plane equation is of the form (r-p)*n=0 where p is vector pointing to point through which the plane will pass (COM)
@@ -1075,31 +977,22 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 //	double d;
 //
 //	if(divideAlongMajorAxisFlag){
-//		//cerr<<"doing major axis division"<<endl;
 //	
 //		nVec=eigenvectors[sortedAxes[0].second];
 //		d=-(pVec*nVec);
-//			//cerr<<"before iteration"<<endl;
 //		
 //	} else{
-//		//cerr<<"doing minor axis division"<<endl;
 //		nVec=eigenvectors[sortedAxes[2].second];
 //		d=-(pVec*nVec);
 //	}
 //	
-//
-//			//cerr<<"cell->volume="<<cell->volume<<endl;
 //			int parentCellVolume=0;
 //			for(set<PixelTrackerData>::iterator sitr=cellPixels.begin() ; sitr != cellPixels.end() ;++sitr){
-//				//cerr<<"pt="<<sitr->pixel<<endl;
 //				if(nVec.x*sitr->pixel.x+nVec.y*sitr->pixel.y + nVec.z*sitr->pixel.z+d<= 0.0){
 //					
 //					if(!childCell){
-//						//cerr<<" creating cell and adding pt="<<sitr->pixel<<endl;
 //						childCell = potts->createCellG(sitr->pixel);
-//						//cerr<<"childCell="<<childCell<<endl;
 //					}else{
-//						//cerr<<" adding pt="<<sitr->pixel<<endl;
 //						cellField->set(sitr->pixel, childCell);
 //					}
 //				}else{
@@ -1108,7 +1001,6 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 //				}
 //
 //			}
-//			//cerr<<"parentCellVolume="<<parentCellVolume<<endl;
 //
 //		if(childCell)
 //			return true;
@@ -1120,7 +1012,6 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 
 
 //bool MitosisSimplePlugin::doDirectionalMitosis2D_xy(){
-//	cerr<<"doDirectionalMitosis2D_xy"<<endl;
 //	//this implementation is valid in 2D only
 //	if (split && on) {
 //		split = false;
@@ -1132,7 +1023,6 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 //
 //		CellG *cell = cellField->get(splitPt);//cells that is being divided
 //		parentCell=cell;
-//		//cerr<<"dividing parent cell "<<cell->id<<endl;
 //		double xcm=cell->xCM/(float)cell->volume;
 //		double ycm=cell->yCM/(float)cell->volume;
 //		double zcm=cell->zCM/(float)cell->volume;
@@ -1142,7 +1032,6 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 //
 //		set<PixelTrackerData> cellPixels=pixelTrackerAccessorPtr->get(cell->extraAttribPtr)->pixelSet;
 //		for(set<PixelTrackerData>::iterator sitr=cellPixels.begin() ; sitr != cellPixels.end() ;++sitr){
-//			//cerr<<"point cell="<<sitr->pixel<<endl;
 //			inertiaTensor[0][0]+=(sitr->pixel.y-ycm)*(sitr->pixel.y-ycm);
 //			inertiaTensor[0][1]+=-(sitr->pixel.x-xcm)*(sitr->pixel.y-ycm);
 //			inertiaTensor[1][1]+=(sitr->pixel.x-xcm)*(sitr->pixel.x-xcm);
@@ -1169,12 +1058,6 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 //				orientationVec=Coordinates3D<double>(1.0,0.0,0.0);
 //		}
 //
-//	 //  cerr<<"orientationVec="<<orientationVec<<endl;
-//		//cerr<<"inertiaTensor[0][0]="<<inertiaTensor[0][0]<<endl;
-//		//cerr<<"inertiaTensor[0][1]="<<inertiaTensor[0][1]<<endl;
-//		//cerr<<"inertiaTensor[1][1]="<<inertiaTensor[1][1]<<endl;
-//
-//		//cerr<<"xcm="<<xcm<<" ycm="<<ycm<<endl;
 //
 //		//once we know orientation vector corresponding to bigger eigenvalue (pointing along semiminor axis) we may divide cell 
 //		//along major or minor axis
@@ -1185,7 +1068,6 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 //		double b;
 //		//determining coefficients of the straight line passing through
 //		if(divideAlongMinorAxisFlag){
-//			//cerr<<"doing minor axis division"<<endl;
 //
 //
 //			a=orientationVec.y/orientationVec.x;
@@ -1198,7 +1080,6 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 //		}
 //
 //		if(divideAlongMajorAxisFlag){
-//			//cerr<<"doing major axis division"<<endl;
 //			if(orientationVec.y==0.0){//then perpendicular vector (major axis) is along y axis meaning:
 //				a=0.0;
 //				b=0.0;
@@ -1209,7 +1090,6 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 //			}
 //		}
 //
-//		//cerr<<"a="<<a<<" b="<<b<<endl;
 //		//now do the division
 //
 //		if(a==0.0 && b==0.0){//division along y axis
@@ -1225,19 +1105,13 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 //			}
 //
 //		}else{//division will be done along axis different than y axis
-//			//cerr<<"before iteration"<<endl;
-//			//cerr<<"cell->volume="<<cell->volume<<endl;
 //			int parentCellVolume=0;
 //			for(set<PixelTrackerData>::iterator sitr=cellPixels.begin() ; sitr != cellPixels.end() ;++sitr){
-//				//cerr<<"pt="<<sitr->pixel<<endl;
 //				if(sitr->pixel.y <= a*sitr->pixel.x+b){
 //					
 //					if(!childCell){
-//						//cerr<<" creating cell and adding pt="<<sitr->pixel<<endl;
 //						childCell = potts->createCellG(sitr->pixel);
-//						//cerr<<"childCell="<<childCell<<endl;
 //					}else{
-//						//cerr<<" adding pt="<<sitr->pixel<<endl;
 //						cellField->set(sitr->pixel, childCell);
 //					}
 //				}else{
@@ -1246,7 +1120,6 @@ bool MitosisSimplePlugin::doDirectionalMitosisOrientationVectorBased(double _nx,
 //				}
 //
 //			}
-//			//cerr<<"parentCellVolume="<<parentCellVolume<<endl;
 //		}
 //
 //		//if childCell was created this means mitosis was sucessful. If child cell was not created there was no mitosis

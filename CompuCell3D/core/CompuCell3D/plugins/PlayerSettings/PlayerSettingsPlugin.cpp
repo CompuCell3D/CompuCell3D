@@ -18,7 +18,7 @@ using namespace std;
 
 #include "PlayerSettingsPlugin.h"
 using namespace CompuCell3D;
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 std::string PlayerSettingsPlugin::toString(){
   return "PlayerSettings";
@@ -44,18 +44,15 @@ void PlayerSettingsPlugin::extraInit(Simulator *simulator) {
 
    Potts3D *potts=simulator->getPotts();
    Dim3D fieldDim = potts->getCellFieldG()->getDim();
-
-     cerr<<"\n\n\\t\t\tPlayer Settings \n\n";
-      cerr<<"playerSettingsPtr->xyProjFlag="<<playerSettingsPtr->xyProjFlag<<endl;
-      cerr<<"playerSettingsPtr->xyProj="<<playerSettingsPtr->xyProj<<endl;
-      cerr<<"This is field dim="<<fieldDim<<endl;
+	Log(LOG_DEBUG) << "\n\n\\t\t\tPlayer Settings \n\n";
+	Log(LOG_DEBUG) << "playerSettingsPtr->xyProjFlag="<<playerSettingsPtr->xyProjFlag;
+	Log(LOG_DEBUG) << "playerSettingsPtr->xyProj="<<playerSettingsPtr->xyProj;
+	Log(LOG_DEBUG) << "This is field dim="<<fieldDim;
    ///Making sure that player settings are reasonable
    if(playerSettingsPtr->xyProjFlag){
-//       cerr<<"playerSettingsPtr->xyProjFlag="<<playerSettingsPtr->xyProjFlag<<endl;
       ASSERT_OR_THROW("Value of XYProj has to be within limits for z dimension of the field",
          playerSettingsPtr->xyProj>=0 && playerSettingsPtr->xyProj<fieldDim.z
       );
-//       cerr<<"playerSettingsPtr->xyProj="<<playerSettingsPtr->xyProj<<endl;
    }
 
    if(playerSettingsPtr->xzProjFlag){
@@ -87,15 +84,12 @@ void PlayerSettingsPlugin::extraInit(Simulator *simulator) {
          playerSettingsPtr->rotationZ>=-180 && playerSettingsPtr->rotationZ<=180
       );
    }
-
-//    cerr<<"\n\n\\t\t\tPlayer Settings \n\n"; 
    
       
 }
 
 void PlayerSettingsPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
-	
-	cerr<<"_xmlData="<<_xmlData<<endl;
+	Log(LOG_DEBUG) << "_xmlData="<<_xmlData;
 
 	CC3DXMLElement *proj2DElement;
 	proj2DElement=_xmlData->getFirstElement("Project2D");

@@ -49,17 +49,11 @@ using namespace CompuCell3D;
 
 // // // #include <iostream>
 
-#ifdef DEBUG
-#define debugLog(x) std::cerr <<x<<std::endl
-#else
-#define debugLog(x)
-#endif
-
 using namespace std;
 
 
 #include "BlobFieldInitializer.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 std::string BlobFieldInitializer::steerableName(){
 	return toString();
@@ -89,20 +83,17 @@ void BlobFieldInitializer::init(Simulator *simulator,  CC3DXMLElement * _xmlData
 
 	if(_xmlData->getFirstElement("Radius")){
 		oldStyleInitData.radius=_xmlData->getFirstElement("Radius")->getUInt();
-		debugLog("Got FE This Radius: "<<oldStyleInitData.radius);
-		//cerr<<"Got FE This Radius: "<<oldStyleInitData.radius<<endl;
+		Log(LOG_DEBUG) << "Got FE This Radius: "<<oldStyleInitData.radius;
 		ASSERT_OR_THROW("Radius has to be greater than 0 and 2*radius cannot be bigger than lattice dimension x", oldStyleInitData.radius>0 && 2*(oldStyleInitData.radius)<(dim.x-2));
 	}
 
 	if(_xmlData->getFirstElement("Width")){
 		oldStyleInitData.width=_xmlData->getFirstElement("Width")->getUInt();
-		debugLog("Got FE This Width: "<<oldStyleInitData.width<);
-		//cerr<<"Got FE This Width: "<<oldStyleInitData.width<<endl;
+		Log(LOG_DEBUG) << "Got FE This Width: "<<oldStyleInitData.width;
 	}
 	if(_xmlData->getFirstElement("Gap")){
 		oldStyleInitData.gap=_xmlData->getFirstElement("Gap")->getUInt();
-		debugLog("Got FE This Gap: "<<oldStyleInitData.gap);
-		//cerr<<"Got FE This Gap: "<<oldStyleInitData.gap<<endl;
+		Log(LOG_DEBUG) << "Got FE This Gap: "<<oldStyleInitData.gap;
 	}
 
 
@@ -110,8 +101,7 @@ void BlobFieldInitializer::init(Simulator *simulator,  CC3DXMLElement * _xmlData
 	if (_xmlData->getFirstElement("CellSortInit")){
 		if(_xmlData->getFirstElement("CellSortInit")->getText()=="yes" ||_xmlData->getFirstElement("CellSortInit")->getText()=="Yes"){
 			cellSortInit=true;
-			debugLog("SET CELLSORT INIT");
-			//cerr<<"SET CELLSORT INIT"<<endl;
+			Log(LOG_DEBUG) << "SET CELLSORT INIT";
 		}
 	}
 
@@ -155,18 +145,16 @@ void BlobFieldInitializer::init(Simulator *simulator,  CC3DXMLElement * _xmlData
 		initData.center.x=regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("x");
 		initData.center.y=regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("y");
 		initData.center.z=regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("z");
-
-		debugLog("radius="<<initData.radius<<" gap="<<initData.gap<<" types="<<initData.typeNamesString);
-		//cerr<<"radius="<<initData.radius<<" gap="<<initData.gap<<" types="<<initData.typeNamesString<<endl;
+		Log(LOG_DEBUG) << 
+		CC3d_log("radius="<<initData.radius<<" gap="<<initData.gap<<" types="<<initData.typeNamesString);
 		blobInitializerData.push_back(initData);
 	}
 
 
 
 
-
-	debugLog("GOT HERE BEFORE EXIT");
-	//cerr<<"GOT HERE BEFORE EXIT"<<endl;
+	Log(LOG_DEBUG) << 
+	CC3d_log("GOT HERE BEFORE EXIT");
 
 }
 
@@ -212,8 +200,7 @@ void BlobFieldInitializer::layOutCells(const BlobFieldInitializerData & _initDat
 
 
 	Dim3D itDim=getBlobDimensions(dim,size);
-	debugLog("itDim="<<itDim);
-	//cerr<<"itDim="<<itDim<<endl;
+	Log(LOG_DEBUG) << "itDim="<<itDim;
 
 
 	Point3D pt;
@@ -226,7 +213,6 @@ void BlobFieldInitializer::layOutCells(const BlobFieldInitializerData & _initDat
 				pt.x =  x * size;
 				pt.y =  y * size;
 				pt.z =  z * size;
-				//cerr<<" pt="<<pt<<endl;
 
 				if(! (distance(pt.x, pt.y, pt.z, _initData.center.x, _initData.center.y, _initData.center.z) < _initData.radius) ){
 					continue; //such cell will not be inside spherical region
@@ -297,13 +283,13 @@ void BlobFieldInitializer::start() {
 
 	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
 	ASSERT_OR_THROW("initField() Cell field G cannot be null!", cellFieldG);
-	debugLog("********************BLOB INIT***********************");
-	//cerr<<"********************BLOB INIT***********************"<<endl;
+	Log(LOG_DEBUG) << 
+	CC3d_log("********************BLOB INIT***********************");
 	Dim3D dim = cellFieldG->getDim();
 	if(blobInitializerData.size()!=0){
 		for (int i = 0 ; i < blobInitializerData.size(); ++i){
-			debugLog("GOT HERE");
-			cerr<<"GOT HERE"<<endl;
+			Log(LOG_DEBUG) << 
+			CC3d_log("GOT HERE");
 			layOutCells(blobInitializerData[i]);
 			//          exit(0);
 		}
@@ -352,8 +338,8 @@ void BlobFieldInitializer::initializeEngulfment(){
 
 	topId=cellTypePluginPtr->getTypeId(enData.topType);
 	bottomId=cellTypePluginPtr->getTypeId(enData.bottomType);
-	debugLog("topId="<<(int)topId<<" bottomId="<<(int)bottomId<<" enData.engulfmentCutoff="<<enData.engulfmentCutoff<<" enData.engulfmentCoordinate="<<enData.engulfmentCoordinate);
-	//cerr<<"topId="<<(int)topId<<" bottomId="<<(int)bottomId<<" enData.engulfmentCutoff="<<enData.engulfmentCutoff<<" enData.engulfmentCoordinate="<<enData.engulfmentCoordinate<<endl;
+	Log(LOG_DEBUG) << 
+	CC3d_log("topId="<<(int)topId<<" bottomId="<<(int)bottomId<<" enData.engulfmentCutoff="<<enData.engulfmentCutoff<<" enData.engulfmentCoordinate="<<enData.engulfmentCoordinate);
 
 
 
@@ -457,7 +443,7 @@ void BlobFieldInitializer::initializeCellTypesCellSort(){
 //   
 //  while (in.check(START_ELEMENT)) {
 //    if (in.getName() == "Region"){
-//      cerr<<"Inside Region Definition"<<endl;
+	// Log(LOG_TRACE) << "Inside Region Definition";
 //      in.match(START_ELEMENT);
 //      in.skip(TEXT);
 //
@@ -474,7 +460,7 @@ void BlobFieldInitializer::initializeCellTypesCellSort(){
 //            initData.typeNamesString=in.matchSimple();
 //         }else if (in.getName() == "Width"){
 //            initData.width = BasicString::parseUInteger(in.matchSimple());
-//            cerr<<"width="<<initData.width <<endl;
+// 			Log(LOG_TRACE) << "width="<<initData.width;
 //         }else if (in.getName() == "Gap"){
 //            initData.gap = BasicString::parseUInteger(in.matchSimple());
 //         }else {

@@ -11,7 +11,7 @@ using namespace std;
 
 
 #include "DiffSecrData.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 std::string DiffusionData::steerableName(){
 	return "DiffusionData";
@@ -40,8 +40,7 @@ void DiffusionData::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		for(unsigned int i =0 ; i < diffCoefXMLVec.size() ; ++i){			
 
 			diffCoefTypeNameMap.insert(make_pair(diffCoefXMLVec[i]->getAttribute("CellType"),diffCoefXMLVec[i]->getDouble()));
-			//cerr<<"\n\n\n\n\n\n THIS IS CELL TYPE="<<diffCoefXMLVec[i]->getAttribute("CellType")<<" diffCoef="<<diffCoefXMLVec[i]->getDouble()<<endl;
-		}
+			// Log(LOG_DEBUG) << "\n\n\n\n\n\n THIS IS CELL TYPE="<<diffCoefXMLVec[i]->getAttribute("CellType")<<" diffCoef="<<diffCoefXMLVec[i]->getDouble();		}
 	}
 	
 
@@ -145,7 +144,7 @@ void DiffusionData::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
         for(int i = 0; i< fieldDependencies.size(); i++) {
             cout << "fieldDependencies: " << fieldDependencies[i] << endl;
         }
-        cerr<<*this<<endl;
+		Log(LOG_DEBUG) << *this;
 
 }
 
@@ -342,7 +341,7 @@ void SecretionData::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			secrConst = secrXMLVec[i]->getDouble();
 
 			//          typeIdSecrConstMap.insert(make_pair(typeId,secrConst));
-			cerr<<"THIS IS secretrion type="<<secreteType<<" secrConst="<<secrConst<<endl;
+			Log(LOG_DEBUG) << "THIS IS secretrion type="<<secreteType<<" secrConst="<<secrConst;
 			typeNameSecrConstMap.insert(make_pair(secreteType,secrConst));
 
 

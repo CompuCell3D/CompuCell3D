@@ -95,8 +95,7 @@ void CurvatureCalculatorPlugin::field3DChange(const Point3D &pt, CellG *newCell,
 std::map<long, float> CurvatureCalculatorPlugin::getProbabilityByNeighbor(CellG * cell, float J, float T) {
 
 	map<long, float> id_to_prob_map;
-
-	//cerr << "GOT INSIDE getProbabilityByNeighbor" << endl;
+	Log(LOG_TRACE) << "GOT INSIDE getProbabilityByNeighbor";
 
 	if (!cell) {
 		return id_to_prob_map;
@@ -142,10 +141,9 @@ std::map<long, float> CurvatureCalculatorPlugin::getProbabilityByNeighbor(CellG 
 		}
 
 	}
-
-	//cerr << "computted" << endl;
+	Log(LOG_TRACE) << "computted";
 	//for (map<long, float>::iterator mitr = id_to_prob_map.begin(); mitr != id_to_prob_map.end(); ++mitr) {
-	//	cerr << "mitr->first=" << mitr->first << " mitr->second=" << mitr->second << endl;
+		// Log(LOG_TRACE) << "mitr->first=" << mitr->first << " mitr->second=" << mitr->second;
 	//}
 
 	return id_to_prob_map;
@@ -184,7 +182,7 @@ float CurvatureCalculatorPlugin::getGrowthProbability(const Point3D &neighborPt,
 		return 1.0;
 	}
 	else {
-		//cerr << "Ef=" << Ef << " E0=" << E0 << endl;
+		Log(LOG_TRACE) << "Ef=" << Ef << " E0=" << E0;
 		return exp(-(Ef - E0) / T);
 	}
 

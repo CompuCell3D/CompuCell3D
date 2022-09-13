@@ -24,7 +24,7 @@
 #include <iostream>
 
 #include "PDESolversDLLSpecifier.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 namespace CompuCell3D {
 
 /**
@@ -306,24 +306,21 @@ void DiffusionSolverFE<Cruncher>::CheckConcentrationField(ConcentrationField_t &
 #else
 				if(!finite(val)){
 #endif
-					cerr<<"NaN at position: "<<x<<"x"<<y<<"x"<<z<<endl;
+               Log(LOG_DEBUG) << "NaN at position: "<<x<<"x"<<y<<"x"<<z;
 					continue;
 				}
 				//if(val!=0) 
-				//	cerr<<"f("<<x<<","<<y<<","<<z<<")="<<val<<"  ";
+            //  Log(LOG_TRACE) << "f("<<x<<","<<y<<","<<z<<")="<<val<<"  ";
 				sum+=val;
 				minVal=std::min(val, minVal);
 				maxVal=std::max(val, maxVal);
 			}
 		}
 	}
-
-	cerr<<"min: "<<minVal<<"; max: "<<maxVal<<" "<<sum<<endl;
+   Log(LOG_DEBUG) << "min: "<<minVal<<"; max: "<<maxVal<<" "<<sum;
 }
 
 
-};//namespace CompuCell3D
+};
+}//namespace CompuCell3D
 
-
-
-#endif

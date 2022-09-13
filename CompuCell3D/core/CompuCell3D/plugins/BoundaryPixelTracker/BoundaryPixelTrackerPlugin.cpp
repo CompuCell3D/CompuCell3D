@@ -36,6 +36,7 @@ using namespace std;
 
 
 #include "BoundaryPixelTrackerPlugin.h"
+#include<core/CompuCell3D/CC3DLogger.h>
 
 BoundaryPixelTrackerPlugin::BoundaryPixelTrackerPlugin() :
 	simulator(0), potts(0), boundaryStrategy(0), xmlData(0), maxNeighborIndex(0), neighborOrder(1)
@@ -76,7 +77,7 @@ void BoundaryPixelTrackerPlugin::handleEvent(CC3DEvent & _event) {
 	if (_event.id != LATTICE_RESIZE) {
 		return;
 	}
-	cerr << "INSIDE BOUNDARY PIXEL TRACKER EVEN HANDLER" << endl;
+	Log(LOG_DEBUG) << "INSIDE BOUNDARY PIXEL TRACKER EVEN HANDLER";
 	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
 
 	Dim3D shiftVec = ev.shiftVec;
@@ -128,11 +129,10 @@ void BoundaryPixelTrackerPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 
 		// when user specifies depth , fetching of boundary for neighbor order might not work properly - not a big deal because almost nobody is using the Depth tag
 		neighborOrder = 0;
-
-		//cerr<<"got here will do depth"<<endl;
+		Log(LOG_TRACE) << "got here will do depth";
 	}
 	else {
-		//cerr<<"got here will do neighbor order"<<endl;
+		Log(LOG_TRACE) << "got here will do neighbor order";
 		if (_xmlData->getFirstElement("NeighborOrder")) {
 
 			neighborOrder = _xmlData->getFirstElement("NeighborOrder")->getUInt();
@@ -164,7 +164,7 @@ void BoundaryPixelTrackerPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 		}
 
 		for (unsigned int i = 0; i < extraBoundariesMaxNeighborIndex.size(); ++i) {
-			cerr << "i=" << i << " extraBoundariesMaxNeighborIndex[i]=" << extraBoundariesMaxNeighborIndex[i] << endl;
+			Log(LOG_DEBUG) << "i=" << i << " extraBoundariesMaxNeighborIndex[i]=" << extraBoundariesMaxNeighborIndex[i];
 		}
 
 	}
@@ -338,8 +338,7 @@ std::set<BoundaryPixelTrackerData > * BoundaryPixelTrackerPlugin::getPixelSetFor
 	if (_neighborOrder <= 0) {
 		return 0;
 	}
-
-	// cerr<<"_neighborOrder="<<_neighborOrder<<" this->neighborOrder="<<this->neighborOrder<<endl;
+	Log(LOG_TRACE) << "_neighborOrder="<<_neighborOrder<<" this->neighborOrder="<<this->neighborOrder;
 	if (_neighborOrder == this->neighborOrder) {
 		//return coundary calculated by default
 		return &boundaryPixelTrackerAccessor.get(_cell->extraAttribPtr)->pixelSet;

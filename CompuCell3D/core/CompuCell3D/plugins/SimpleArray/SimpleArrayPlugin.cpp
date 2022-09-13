@@ -40,6 +40,7 @@ using namespace std;
 
 
 #include "SimpleArrayPlugin.h"
+#include<core/CompuCell3D/CC3DLogger.h>
 
 SimpleArrayPlugin::SimpleArrayPlugin() : Plugin() {scpdPtr=0;}
 
@@ -64,20 +65,17 @@ void SimpleArrayPlugin::update(ParseData *_pd){
          value += next;
          i++;
          if(i == scpdPtr->test_string.size()) {
-//             cerr << "End of Array: " << value << endl;
             break;
          }
       }
       probMatrix.push_back(BasicString::parseDouble(value));
       value.resize(value.size()-1);
-//       cerr << "Hit the comma: " << value << endl;
    }
-   
-   cerr << "Values: ";
+   Log(LOG_DEBUG) << "Values: ";
    for(int i = 0; i < probMatrix.size(); i++) {
-	   cerr << probMatrix[i] << " ";
+      Log(LOG_DEBUG) << probMatrix[i] << " ";
    }
-   cerr << "\nValues Added to probMatrix\n";
+   Log(LOG_DEBUG) << "\nValues Added to probMatrix\n";
 // exit(0);
 
 
@@ -129,11 +127,11 @@ void SimpleArrayPlugin::readXML(XMLPullParser &in) {
    in.skip(TEXT);
    while (in.check(START_ELEMENT)) {
       if (in.getName() == "Values") {
-         cerr << "Probability Matrix Success" << endl;
+         Log(LOG_DEBUG) << "Probability Matrix Success";
          scpd.test_string = BasicString::toUpper(in.matchSimple());
       }
       else {
-         cerr <<"THROWING BASIC EXPECTION!!!\n";
+         Log(LOG_DEBUG) << "THROWING BASIC EXPECTION!!!\n";
          throw BasicException(string("Unexpected element '") + in.getName() +
                            "'!", in.getLocation());
       }

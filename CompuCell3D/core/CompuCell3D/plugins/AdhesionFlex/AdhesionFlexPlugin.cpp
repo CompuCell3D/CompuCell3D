@@ -27,7 +27,7 @@ using namespace CompuCell3D;
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 
 #include "AdhesionFlexPlugin.h"
-
+#include<core/CompuCell3D/CC3DLogger.h>
 
 AdhesionFlexPlugin::AdhesionFlexPlugin() :
     pUtils(0),
@@ -89,7 +89,7 @@ void AdhesionFlexPlugin::handleEvent(CC3DEvent & _event) {
 
 
 double AdhesionFlexPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
-    //cerr<<"ChangeEnergy"<<endl;
+    Log(LOG_TRACE) << "ChangeEnergy";
     if (!adhesionDensityInitialized) {
         pUtils->setLock(lockPtr);
         initializeAdhesionMoleculeDensityVector();
@@ -210,49 +210,44 @@ double AdhesionFlexPlugin::adhesionFlexEnergyCustom(const CellG *cell1, const Ce
 
         vector<float> & adhesionMoleculeDensityVecCell = adhesionFlexDataAccessor.get(cell->extraAttribPtr)->adhesionMoleculeDensityVec;
         vector<float> & adhesionMoleculeDensityVecNeighbor = adhesionFlexDataAccessor.get(neighbor->extraAttribPtr)->adhesionMoleculeDensityVec;
-        //cerr<<"adhesionMoleculeDensityVecCell="<<adhesionMoleculeDensityVecCell.size()<<endl;
-        //cerr<<"adhesionMoleculeDensityVecNeighbor="<<adhesionMoleculeDensityVecNeighbor.size()<<endl;
-
-        //cerr<<"numberOfCadherins="<<numberOfCadherins<<endl;
-        //cerr<<"cadherinSpecificityArray.size()="<<cadherinSpecificityArray.size()<<" "<<cadherinSpecificityArray[0].size()<<endl;
-        //cerr<<"cell->type="<<(int)cell->type<<" neighbor->type="<<(int)neighbor->type<<endl;
+        Log(LOG_TRACE) << "adhesionMoleculeDensityVecCell="<<adhesionMoleculeDensityVecCell.size();
+        Log(LOG_TRACE) << <<"adhesionMoleculeDensityVecNeighbor="<<adhesionMoleculeDensityVecNeighbor.size();
+        Log(LOG_TRACE) << "numberOfCadherins="<<numberOfCadherins;
+        Log(LOG_TRACE) << "cadherinSpecificityArray.size()="<<cadherinSpecificityArray.size()<<" "<<cadherinSpecificityArray[0].size();
+        Log(LOG_TRACE) << "cell->type="<<(int)cell->type<<" neighbor->type="<<(int)neighbor->type;
         for (int i = 0; i < numberOfAdhesionMolecules; ++i)
             for (int j = 0; j < numberOfAdhesionMolecules; ++j) {
 
 
-
-                //cerr<<" i="<<i<<" j="<<j<<" adhesionMoleculeDensityVecCell[i]="<<adhesionMoleculeDensityVecCell[i]<<" adhesionMoleculeDensityVecNeighbor[j]"<<adhesionMoleculeDensityVecNeighbor[j]<<" cadherinSpecificityArray[i][j]="<<bindingParameterArray[i][j]<<endl;
+                Log(LOG_TRACE) << " i="<<i<<" j="<<j<<" adhesionMoleculeDensityVecCell[i]="<<adhesionMoleculeDensityVecCell[i]<<" adhesionMoleculeDensityVecNeighbor[j]"<<adhesionMoleculeDensityVecNeighbor[j]<<" cadherinSpecificityArray[i][j]="<<bindingParameterArray[i][j];
                 molecule1 = adhesionMoleculeDensityVecCell[i];
                 molecule2 = adhesionMoleculeDensityVecNeighbor[j];
                 energy -= p.Eval()*bindingParameterArray[i][j];
 
             }
-        //cerr<<"energy after="<<energyOffset-energy<<endl;
+            Log(LOG_TRACE) << "energy after="<<energyOffset-energy;
         return energy;
 
     }
     else {
-        //cerr<<"energy after contact with medium="<<-energy<<endl;
+        Log(LOG_TRACE) << "energy after contact with medium="<<-energy;
 
         vector<float> & adhesionMoleculeDensityVecCell = adhesionFlexDataAccessor.get(cell->extraAttribPtr)->adhesionMoleculeDensityVec;
         vector<float> & adhesionMoleculeDensityVecNeighbor = adhesionMoleculeDensityVecMedium;
-
-        //cerr<<"1 adhesionMoleculeDensityVecCell="<<adhesionMoleculeDensityVecCell.size()<<endl;
-        //cerr<<"1 adhesionMoleculeDensityVecNeighbor="<<adhesionMoleculeDensityVecNeighbor.size()<<endl;
-
-        //cerr<<"cell->type="<<(int)cell->type<<" neighbor->type="<<0<<endl;	
+        Log(LOG_TRACE) << "1 adhesionMoleculeDensityVecCell="<<adhesionMoleculeDensityVecCell.size();
+        Log(LOG_TRACE) << "1 adhesionMoleculeDensityVecNeighbor="<<adhesionMoleculeDensityVecNeighbor.size();
+        Log(LOG_TRACE) << "cell->type="<<(int)cell->type<<" neighbor->type="<<0;
         for (int i = 0; i < numberOfAdhesionMolecules; ++i)
             for (int j = 0; j < numberOfAdhesionMolecules; ++j) {
-
-                //cerr<<" i="<<i<<" j="<<j<<" jVecCell[i]="<<jVecCell[i]<<" jVecNeighbor[j]"<<jVecNeighbor[j]<<" cadherinSpecificityArray[i][j]="<<cadherinSpecificityArray[i][j]<<endl;
+                Log(LOG_TRACE) << " i="<<i<<" j="<<j<<" jVecCell[i]="<<jVecCell[i]<<" jVecNeighbor[j]"<<jVecNeighbor[j]<<" cadherinSpecificityArray[i][j]="<<cadherinSpecificityArray[i][j];
                 molecule1 = adhesionMoleculeDensityVecCell[i];
                 molecule2 = adhesionMoleculeDensityVecNeighbor[j];
-                //cerr<<"p.Eval()="<<p.Eval()<<endl;
+                Log(LOG_TRACE) << "p.Eval()="<<p.Eval();
                 energy -= p.Eval()*bindingParameterArray[i][j];
 
 
             }
-        //cerr<<"energy after="<<energyOffset-energy<<endl;
+            Log(LOG_TRACE) << "energy after="<<energyOffset-energy;
         return energy;
 
     }
@@ -263,7 +258,7 @@ void AdhesionFlexPlugin::setBindingParameter(const std::string moleculeName1, co
 
 
     if (moleculeNameIndexMap.find(moleculeName1) == moleculeNameIndexMap.end()) {
-        cerr << "CANNOT FIND MOLECULE 1 in the map" << endl;
+        Log(LOG_DEBUG) << "CANNOT FIND MOLECULE 1 in the map";
         ASSERT_OR_THROW(string("Molecule Name=") + moleculeName1 + " was not declared in the AdhesionMolecule section", false);
     }
 
@@ -356,7 +351,7 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     if (!sim->getRestartEnabled()) {
         adhesionMoleculeDensityVecMedium = vector<float>(numberOfAdhesionMolecules, 0.0);
     }
-    cerr << "numberOfAdhesionMolecules=" << numberOfAdhesionMolecules << endl;
+    Log(LOG_DEBUG) << "numberOfAdhesionMolecules=" << numberOfAdhesionMolecules;
 
     //scannning AdhesionMoleculeDensity section
 
@@ -366,27 +361,26 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     for (int i = 0; i < adhesionMoleculeDensityXMLVec.size(); ++i) {
         int typeId = automaton->getTypeId(adhesionMoleculeDensityXMLVec[i]->getAttribute("CellType"));
-
-        cerr << "typeId=" << typeId << endl;
+        Log(LOG_DEBUG) << "typeId=" << typeId;
 
 
         mitr = typeToAdhesionMoleculeDensityMap.find(typeId);
         if (mitr == typeToAdhesionMoleculeDensityMap.end()) {
             typeToAdhesionMoleculeDensityMap.insert(make_pair(typeId, vector<float>(numberOfAdhesionMolecules, 0.0)));
-            cerr << "typeToAdhesionMoleculeDensityMap[typeId].size()=" << typeToAdhesionMoleculeDensityMap[typeId].size() << endl;
+            Log(LOG_DEBUG) << "typeToAdhesionMoleculeDensityMap[typeId].size()=" << typeToAdhesionMoleculeDensityMap[typeId].size();
         }
 
 
         string moleculeName = adhesionMoleculeDensityXMLVec[i]->getAttribute("Molecule");
-        cerr << "moleculeName=" << moleculeName << endl;
+        Log(LOG_DEBUG) << "moleculeName=" << moleculeName;
         if (moleculeNameIndexMap.find(moleculeName) == moleculeNameIndexMap.end()) {
             ASSERT_OR_THROW(string("Molecule Name=") + moleculeName + " was not declared in the AdhesionMolecule section", false);
         }
-        cerr << "moleculeNameIndexMap[moleculeName]=" << moleculeNameIndexMap[moleculeName] << endl;
-        cerr << "adhesionMoleculeDensityXMLVec[i]->getAttributeAsDouble(Density)=" << adhesionMoleculeDensityXMLVec[i]->getAttributeAsDouble("Density") << endl;
-        cerr << "typeToAdhesionMoleculeDensityMap[typeId].size()=" << typeToAdhesionMoleculeDensityMap[typeId].size() << endl;
+        Log(LOG_DEBUG) << "moleculeNameIndexMap[moleculeName]=" << moleculeNameIndexMap[moleculeName];
+        Log(LOG_DEBUG) << "adhesionMoleculeDensityXMLVec[i]->getAttributeAsDouble(Density)=" << adhesionMoleculeDensityXMLVec[i]->getAttributeAsDouble("Density");
+        Log(LOG_DEBUG) << "typeToAdhesionMoleculeDensityMap[typeId].size()=" << typeToAdhesionMoleculeDensityMap[typeId].size();
         typeToAdhesionMoleculeDensityMap[typeId][moleculeNameIndexMap[moleculeName]] = adhesionMoleculeDensityXMLVec[i]->getAttributeAsDouble("Density");
-        cerr << "AFTER ASSIGNING DENSITY" << endl;
+        Log(LOG_DEBUG) << "AFTER ASSIGNING DENSITY";
     }
 
 
@@ -397,7 +391,7 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     formulaString = bindingFormulaXMLElem->getFirstElement("Formula")->getText(); //formula string
 
     CC3DXMLElement * variablesSectionXMLElem = bindingFormulaXMLElem->getFirstElement("Variables");
-    //cerr<<"formulaString="<<formulaString<<endl;
+    Log(LOG_TRACE) << "formulaString="<<formulaString;
 
 
     //here we can add options depending on variables input - for now it is har-coded to accept only matrix of bindingParameters
@@ -442,14 +436,14 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     if (_xmlData->getFirstElement("Depth")) {
         maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
-        //cerr<<"got here will do depth"<<endl;
+        Log(LOG_TRACE) << "got here will do depth";
     }
     else {
-        //cerr<<"got here will do neighbor order"<<endl;
+        Log(LOG_TRACE) << "got here will do neighbor order";
         if (_xmlData->getFirstElement("NeighborOrder")) {
 
             maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());
-            cerr << "maxNeighborIndex=" << maxNeighborIndex << endl;
+            Log(LOG_DEBUG) << "maxNeighborIndex=" << maxNeighborIndex;
         }
         else {
             maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
@@ -458,8 +452,7 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     }
 
-
-    cerr << "sizeBindingArray=" << moleculeNameIndexMap.size() << endl;
+    Log(LOG_DEBUG) << "sizeBindingArray=" << moleculeNameIndexMap.size();
     //initializing binding parameter array
     int sizeBindingArray = moleculeNameIndexMap.size();
 
@@ -484,8 +477,7 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
     for (int i = 0; i < sizeBindingArray; ++i)
         for (int j = 0; j < sizeBindingArray; ++j) {
-
-            cerr << "bindingParameterArray[" << i << "][" << j << "]=" << bindingParameterArray[i][j] << endl;
+            Log(LOG_DEBUG) << "bindingParameterArray[" << i << "][" << j << "]=" << bindingParameterArray[i][j];
 
         }
 
@@ -493,7 +485,7 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
 
 void AdhesionFlexPlugin::initializeAdhesionMoleculeDensityVector() {
-    //cerr<<"initializeAdhesionMoleculeDensityVector adhesionDensityInitialized="<<adhesionDensityInitialized<<endl;
+    Log(LOG_TRACE) << "initializeAdhesionMoleculeDensityVector adhesionDensityInitialized="<<adhesionDensityInitialized;
     //exit(1);
 
     if (adhesionDensityInitialized)//we double-check this flag to makes sure this function does not get called multiple times by different threads
@@ -644,7 +636,7 @@ vector<float> AdhesionFlexPlugin::getAdhesionMoleculeDensityVector(CellG * _cell
         return vector<float>(1, errorDensity);
 
     vector<float> & adhesionMoleculeDensityVec = adhesionFlexDataAccessor.get(_cell->extraAttribPtr)->adhesionMoleculeDensityVec;
-    //cerr<<"ACCESSING adhesionMoleculeDensityVec size="<<adhesionMoleculeDensityVec.size()<<endl;
+    Log(LOG_TRACE) << "ACCESSING adhesionMoleculeDensityVec size="<<adhesionMoleculeDensityVec.size();
     return adhesionMoleculeDensityVec;
 }
 
@@ -671,7 +663,7 @@ vector<float> AdhesionFlexPlugin::getMediumAdhesionMoleculeDensityVector() {
 
 void AdhesionFlexPlugin::overrideInitialization() {
     adhesionDensityInitialized = true;
-    cerr << "adhesionDensityInitialized=" << adhesionDensityInitialized << endl;
+    Log(LOG_DEBUG) << "adhesionDensityInitialized=" << adhesionDensityInitialized;
 }
 
 std::string AdhesionFlexPlugin::toString() {

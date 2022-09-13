@@ -163,7 +163,6 @@ double PlasticityPlugin::changeEnergy(const Point3D &pt,
    Coordinates3D<float> centMassNewBefore;
 
 
-//    cerr<<"fieldDim="<<fieldDim<<endl;
    if(oldCell){
       centMassOldBefore.XRef()=oldCell->xCM/(float)oldCell->volume;
       centMassOldBefore.YRef()=oldCell->yCM/(float)oldCell->volume;
@@ -249,7 +248,6 @@ double PlasticityPlugin::changeEnergy(const Point3D &pt,
 //          }
 // 
 //          if(locEn1!=locEn2){
-//             cerr<<"locEn1="<<locEn1<<" locEn2="<<locEn2<<endl;
 //             exit(0);
 // 
 //          }
@@ -284,10 +282,8 @@ double PlasticityPlugin::changeEnergy(const Point3D &pt,
 //          locEn2=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),newCell);
 //          
 //          locEn1=lambdaPlasticity*deltaL*(2*(lBefore-targetLengthPlasticity)+deltaL);
-//             cerr<<"locEn1="<<locEn1<<" locEn1="<<locEn2<<endl;
 // 
 //          if(locEn1!=locEn2){
-//             cerr<<"locEn1="<<locEn1<<" locEn2="<<locEn2<<endl;
 //             exit(0);
 // 
 //          }
@@ -302,11 +298,6 @@ double PlasticityPlugin::changeEnergy(const Point3D &pt,
 // //        centroid=precalculateCMAfterFlip(pt, oldCell, -1,fieldDim);
 //          centroid=precalculateCentroid(pt, oldCell, -1,fieldDim);
 // 
-// //       cerr<<"int="<<precalculateCentroid(pt, oldCell, -1,fieldDim)<<endl;
-//       cerr<<"pt="<<pt<<endl;
-//       cerr<<"oldCell xCM="<<oldCell->xCM<<" xcm="<<oldCell->xCM/(float)oldCell->volume<<endl;
-//       cerr<<"Centroid "<<centroid.X()<<","<<centroid.Y()<<","<<centroid.Z()<<endl;
-//       cerr<<"Manual "<<oldCell->xCM-pt.x<<","<<oldCell->yCM-pt.y<<","<<oldCell->zCM-pt.z<<endl;
 //       if(oldCell->xCM-pt.x - centroid.X() !=0 || oldCell->yCM-pt.y - centroid.Y() !=0 || oldCell->zCM-pt.z - centroid.Z() !=0)
 //          exit(0);
 //    }
@@ -314,7 +305,6 @@ double PlasticityPlugin::changeEnergy(const Point3D &pt,
 
 //    float energy=0.0;
 
-//    cerr<<"energy="<<energy<<endl;
    return energy;
 
 

@@ -35,7 +35,7 @@ public:
          timePtr->assign(cldequeCapacity , 1);
 
          using namespace std;
-         //cerr<<"cldequeCapacity="<<cldequeCapacity<<" enoughDataThreshold="<<enoughDataThreshold<<endl;
+         Log(LOG_TRACE) << "cldequeCapacity="<<cldequeCapacity<<" enoughDataThreshold="<<enoughDataThreshold;
 
       }
 
@@ -150,7 +150,8 @@ public:
 
    cldeque<Coordinates3D<float> >::size_type size(){
       using namespace std;
-      cerr<<"cellCOMPtr="<<cellCOMPtr<<endl;
+      #include<core/CompuCell3D/CC3DLogger.h>
+      Log(LOG_DEBUG) << "cellCOMPtr="<<cellCOMPtr;
       return cellCOMPtr->size();
    }
 

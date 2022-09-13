@@ -39,6 +39,7 @@ using namespace std;
 // // // #include <PublicUtilities/StringUtils.h>
 
 #include <CompuCell3D/steppables/PDESolvers/DiffusableVector.h>
+#include<core/CompuCell3D/CC3DLogger.h>
 // // // #include <CompuCell3D/ClassRegistry.h>
 // // // #include <CompuCell3D/Field3D/Field3D.h>
 
@@ -58,9 +59,9 @@ void TemplatePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
 }
 
 void TemplatePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
-        cerr << "GoT here\n";
+        Log(LOG_DEBUG) << "GoT here\n";
         string temp =_xmlData->getFirstElement("TemplateString")->getText();
-        cerr << "TemplateString: " << temp << endl;
+        Log(LOG_DEBUG) << "TemplateString: " << temp;
 
         vector<string> TemplateStringVector;
 
@@ -69,14 +70,14 @@ void TemplatePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         temp =_xmlData->getFirstElement("TemplateStrings")->getText();
         parseStringIntoList(temp , TemplateStringVector , ",");
         for(int i = 0; i < TemplateStringVector.size(); i++) {
-            cerr<<"TemplateStringVector[i]="<<TemplateStringVector[i]<<endl;
+            Log(LOG_DEBUG) << "TemplateStringVector[i]="<<TemplateStringVector[i];
         }
 
         CC3DXMLElementList energyVec=_xmlData->getElements("TemplateEnergy");
 
         for(int i = 0; i < energyVec.size(); i++) {
-            cerr <<"Type 1: " << energyVec[i]->getAttribute("Type1") << " Type 2: " << energyVec[i]->getAttribute("Type2")
-            << " Value: " << energyVec[i]->getDouble() << endl;
+            Log(LOG_DEBUG) << "Type 1: " << energyVec[i]->getAttribute("Type1") << " Type 2: " << energyVec[i]->getAttribute("Type2")
+            << " Value: " << energyVec[i]->getDouble();
 
         }
 
@@ -86,7 +87,7 @@ void TemplatePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
         //<TemplateType TypeName="omega" TypeId="59"/>
         for(int i = 0; i < cellTypeVec.size(); i++) {
-            cerr << "TypeName: " << cellTypeVec[i]->getAttribute("TypeName") << " TypeId: " << (int)cellTypeVec[i]->getAttributeAsByte("TypeId") << endl;
+            Log(LOG_DEBUG) << "TypeName: " << cellTypeVec[i]->getAttribute("TypeName") << " TypeId: " << (int)cellTypeVec[i]->getAttributeAsByte("TypeId");
         }
 
 
@@ -95,18 +96,18 @@ void TemplatePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         for(int i= 0; i < chemicalFieldXMlList.size(); i++) {
             TemplateChemicalFieldName = chemicalFieldXMlList[i]->getAttribute("Name");
             TemplateChemicalFieldSource = chemicalFieldXMlList[i]->getAttribute("Source");
-            cerr <<"Source: " << chemicalFieldXMlList[i]->getAttribute("Source") << " Name: " << chemicalFieldXMlList[i]->getAttribute("Name") << endl;
+            Log(LOG_DEBUG) << "Source: " << chemicalFieldXMlList[i]->getAttribute("Source") << " Name: " << chemicalFieldXMlList[i]->getAttribute("Name");
 
             CC3DXMLElementList chemotactByTypeXMlList=chemicalFieldXMlList[i]->getElements("TemplateaChemotaxisByType");
             for(int j= 0; j < chemotactByTypeXMlList.size(); j++) {
-                cerr <<"Type: " << chemotactByTypeXMlList[j]->getAttribute("Type")<< " Name: " << chemicalFieldXMlList[i]->getAttribute("Name") << endl;
+                Log(LOG_DEBUG) << "Type: " << chemotactByTypeXMlList[j]->getAttribute("Type")<< " Name: " << chemicalFieldXMlList[i]->getAttribute("Name");
                 if(chemotactByTypeXMlList[j]->findAttribute("Lambda")){
-                    cerr << " Lambda: " << chemotactByTypeXMlList[j]->getAttributeAsDouble("Lambda");
+                    Log(LOG_DEBUG) <<  " Lambda: " << chemotactByTypeXMlList[j]->getAttributeAsDouble("Lambda");
                 }
                 if(chemotactByTypeXMlList[j]->findAttribute("SaturationCoef")){
-                    cerr << " SaturationCoef: " << chemotactByTypeXMlList[j]->getAttributeAsDouble("SaturationCoef");
+                    Log(LOG_DEBUG) << " SaturationCoef: " << chemotactByTypeXMlList[j]->getAttributeAsDouble("SaturationCoef");
                 }
-                cerr << "\n";
+                Log(LOG_DEBUG) << "\n";
             }
         }
 
@@ -114,7 +115,7 @@ void TemplatePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         ClassRegistry *classRegistry=sim->getClassRegistry();
         Steppable * steppable;
         fieldVec.clear();
-        cerr << "Finished Setting Up\n";
+        Log(LOG_DEBUG) << "Finished Setting Up\n";
 
 
         fieldVec.assign(1.0,0);//allocate fieldVec
@@ -150,19 +151,18 @@ void TemplatePlugin::extraInit(Simulator *simulator){
 double TemplatePlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
 
 	/// E = lambda * (volume - targetTemplate) ^ 2
-
-    cerr << "pt.x: " << pt.x << " pt.y: " << pt.y << " pt.z: " << pt.z << endl;
+    Log(LOG_DEBUG) << "pt.x: " << pt.x << " pt.y: " << pt.y << " pt.z: " << pt.z;
     if(newCell) {
-        cerr << "newCell id: " << newCell->id << endl;
+        Log(LOG_DEBUG) << "newCell id: " << newCell->id;
     }
     if(oldCell) {
-        cerr << "newCell id: " << oldCell->id << endl;
+        Log(LOG_DEBUG) << "newCell id: " << oldCell->id;
     }
 
     for(unsigned int i = 0 ; i < fieldVec.size() ; ++i){
-        cerr << "Concentration: " << fieldVec[i]->get(pt)  << endl;
+        Log(LOG_DEBUG) << "Concentration: " << fieldVec[i]->get(pt);
         if(fieldVec[i]->get(pt) > 1) {
-            cerr << "\t NON ZERO VALUE!!!\n";
+            Log(LOG_DEBUG) << "\t NON ZERO VALUE!!!\n";
         }
     }
 

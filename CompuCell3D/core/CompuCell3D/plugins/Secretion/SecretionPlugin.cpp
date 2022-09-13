@@ -168,8 +168,7 @@ FieldSecretor SecretionPlugin::getFieldSecretor(std::string _fieldName){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SecretionPlugin::step(){
-	
-	 //cerr<<"inside STEP SECRETION PLUGIN"<<endl;
+	Log(LOG_TRACE) << "inside STEP SECRETION PLUGIN";
 	unsigned int currentStep;
 	unsigned int currentAttempt;
 	unsigned int numberOfAttempts;
@@ -189,7 +188,7 @@ void SecretionPlugin::step(){
 		if( ! ((currentAttempt-reminder) % ratio ) && currentAttempt>reminder ){
 			for(unsigned int j = 0 ; j <secretionDataPVec[i].secretionFcnPtrVec.size() ; ++j){
 				(this->*secretionDataPVec[i].secretionFcnPtrVec[j])(i);
-				//cerr<<"currentStep="<<currentStep<<" currentAttempt="<<currentAttempt<<" numberOfAttempts="<<numberOfAttempts<<endl;
+				Log(LOG_TRACE) << "currentStep="<<currentStep<<" currentAttempt="<<currentAttempt<<" numberOfAttempts="<<numberOfAttempts;
 			}
 
 			//          (this->*secrDataVec[i].secretionFcnPtrVec[j])(i);
@@ -199,15 +198,15 @@ void SecretionPlugin::step(){
 
 	//   for(int i=0 ; i <solverDataVec.size() ; ++i){
 	//      int reminder= (numberOfAttempts % (solverDataVec[i].extraTimesPerMC+1));
-	//	   //cerr<<"reminder="<<reminder<<" numberOfAttampts="<<numberOfAttempts<<" solverDataVec[i].extraTimesPerMC="<<solverDataVec[i].extraTimesPerMC<<" currentAttempt="<<currentAttempt<<endl;   
+	// 		Log(LOG_TRACE) << "reminder="<<reminder<<" numberOfAttampts="<<numberOfAttempts<<" solverDataVec[i].extraTimesPerMC="<<solverDataVec[i].extraTimesPerMC<<" currentAttempt="<<currentAttempt;
 	//      int ratio=(numberOfAttempts / (solverDataVec[i].extraTimesPerMC+1));
-	////       cerr<<"pscpdPtr->solverDataVec[i].extraTimesPerMC="<<pscpdPtr->solverDataVec[i].extraTimesPerMC<<endl;
-	//       //cerr<<"ratio="<<ratio<<" reminder="<<reminder<<endl;
+	// 			Log(LOG_TRACE) << "pscpdPtr->solverDataVec[i].extraTimesPerMC="<<pscpdPtr->solverDataVec[i].extraTimesPerMC;
+	// 		Log(LOG_TRACE) << "ratio="<<ratio<<" reminder="<<reminder;
 	//      if( ! ((currentAttempt-reminder) % ratio ) && currentAttempt>reminder ){
-	////          cerr<<"before calling step"<<endl;
+		// 		Log(LOG_TRACE) << "before calling step";
 	//          solverPtrVec[i]->step(currentStep);
 	////          float a=reminder+ratio;
-	//        //cerr<<"calling Solver"<<solverDataVec[i].solverName<<" currentAttempt="<<currentAttempt<<" numberOfAttempts="<<numberOfAttempts<<endl;
+	// 			Log(LOG_TRACE) << "calling Solver"<<solverDataVec[i].solverName<<" currentAttempt="<<currentAttempt<<" numberOfAttempts="<<numberOfAttempts;
 	//
 	//      }
 	//
@@ -291,7 +290,7 @@ void SecretionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 void SecretionPlugin::secreteSingleField(unsigned int idx){
 
 	SecretionDataP & secrData=secretionDataPVec[idx];
-	//cerr<<"secrData.typeIdSecrConstMap.size()="<<secrData.typeIdSecrConstMap.size()<<endl;
+	Log(LOG_TRACE) << "secrData.typeIdSecrConstMap.size()="<<secrData.typeIdSecrConstMap.size();
 
 	float maxUptakeInMedium=0.0;
 	float relativeUptakeRateInMedium=0.0;
@@ -305,8 +304,7 @@ void SecretionPlugin::secreteSingleField(unsigned int idx){
 
 
 	Field3D<float> & concentrationField=*getConcentrationFieldByName(secrData.fieldName);	
-
-	//cerr<<"concentrationField="<<getConcentrationFieldByName(secrData.fieldName)<<endl;
+	Log(LOG_TRACE) << "concentrationField="<<getConcentrationFieldByName(secrData.fieldName);
 
 	bool doUptakeFlag=false;
 	bool uptakeInMediumFlag=false;
@@ -348,7 +346,7 @@ void SecretionPlugin::secreteSingleField(unsigned int idx){
 		Dim3D maxDimBW;
 		Point3D minCoordinates=*(boxWatcherSteppable->getMinCoordinatesPtr());
 		Point3D maxCoordinates=*(boxWatcherSteppable->getMaxCoordinatesPtr());
-		//cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+		Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
 		x_min=minCoordinates.x+1;
 		x_max=maxCoordinates.x+1;
 		y_min=minCoordinates.y+1;
@@ -362,8 +360,7 @@ void SecretionPlugin::secreteSingleField(unsigned int idx){
 
 
 	}
-
-	//cerr<<"SECRETE SINGLE FIELD"<<endl;
+	Log(LOG_TRACE) << "SECRETE SINGLE FIELD";
 
 
 	pUtils->prepareParallelRegionFESolvers(secrData.useBoxWatcher);
@@ -401,7 +398,7 @@ void SecretionPlugin::secreteSingleField(unsigned int idx){
 
 		//Dim3D minDim;		
 		//Dim3D maxDim=fieldDim;
-		//cerr<<"minDim="<<minDim<<" maxDim="<<maxDim<<endl;
+		Log(LOG_TRACE) << "minDim="<<minDim<<" maxDim="<<maxDim;
 
 
 
@@ -410,14 +407,14 @@ void SecretionPlugin::secreteSingleField(unsigned int idx){
 				for (int x = minDim.x; x < maxDim.x; x++){
 
 					pt=Point3D(x,y,z);
-					//cerr<<"pt="<<pt<<" is valid "<<cellFieldG->isValid(pt)<<endl;
+					Log(LOG_TRACE) << "pt="<<pt<<" is valid "<<cellFieldG->isValid(pt);
 					///**
 					currentCellPtr=cellFieldG->getQuick(pt);
 					//             currentCellPtr=cellFieldG->get(pt);
-					//cerr<<"THIS IS PTR="<<currentCellPtr<<endl;
+					Log(LOG_TRACE) << "THIS IS PTR="<<currentCellPtr;
 
 					//             if(currentCellPtr)
-					//                cerr<<"This is id="<<currentCellPtr->id<<endl;
+					// 					Log(LOG_TRACE) << "This is id="<<currentCellPtr->id;
 					//currentConcentration = concentrationField.getDirect(x,y,z);
 
 					currentConcentration = concentrationField.get(pt);
@@ -430,8 +427,8 @@ void SecretionPlugin::secreteSingleField(unsigned int idx){
 						mitr=secrData.typeIdSecrConstMap.find(currentCellPtr->type);
 						if(mitr!=end_mitr){
 							secrConst=mitr->second;
-							//cerr<<"secrConst="<<endl;
-							//cerr<<"secrData.typeIdSecrConstMap.size()="<<secrData.typeIdSecrConstMap.size()<<endl;
+							Log(LOG_TRACE) << "secrConst=";
+							Log(LOG_TRACE) << "secrData.typeIdSecrConstMap.size()="<<secrData.typeIdSecrConstMap.size();
 							concentrationField.set(pt,currentConcentration+secrConst);
 
 
@@ -453,10 +450,10 @@ void SecretionPlugin::secreteSingleField(unsigned int idx){
 							if(mitrUptake!=end_mitrUptake){								
 								if(currentConcentration*mitrUptake->second.relativeUptakeRate > mitrUptake->second.maxUptake){
 									concentrationField.set(pt,concentrationField.get(pt)-mitrUptake->second.maxUptake);
-									//cerr<<" uptake concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<mitrUptake->second.maxUptake<<endl;
+									Log(LOG_TRACE) << " uptake concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<mitrUptake->second.maxUptake;
 								}else{
 									concentrationField.set(pt,concentrationField.get(pt)-currentConcentration*mitrUptake->second.relativeUptakeRate);
-									//cerr<<"concentration="<< currentConconcentrationField.getDirect(x,y,z)- currentConcentration*mitrUptake->second.relativeUptakeRate);
+									Log(LOG_TRACE) << "concentration="<< currentConconcentrationField.getDirect(x,y,z)- currentConcentration*mitrUptake->second.relativeUptakeRate;
 								}
 							}
 						}
@@ -504,7 +501,7 @@ void SecretionPlugin::secreteOnContactSingleField(unsigned int idx){
 		Dim3D maxDimBW;
 		Point3D minCoordinates=*(boxWatcherSteppable->getMinCoordinatesPtr());
 		Point3D maxCoordinates=*(boxWatcherSteppable->getMaxCoordinatesPtr());
-		//cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+		Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
 		x_min=minCoordinates.x+1;
 		x_max=maxCoordinates.x+1;
 		y_min=minCoordinates.y+1;
@@ -659,7 +656,7 @@ void SecretionPlugin::secreteConstantConcentrationSingleField(unsigned int idx){
 		Dim3D maxDimBW;
 		Point3D minCoordinates=*(boxWatcherSteppable->getMinCoordinatesPtr());
 		Point3D maxCoordinates=*(boxWatcherSteppable->getMaxCoordinatesPtr());
-		//cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+		Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
 		x_min=minCoordinates.x+1;
 		x_max=maxCoordinates.x+1;
 		y_min=minCoordinates.y+1;
@@ -709,14 +706,14 @@ void SecretionPlugin::secreteConstantConcentrationSingleField(unsigned int idx){
 				for (int x = minDim.x; x < maxDim.x; x++){
 
 				pt=Point3D(x,y,z);
-				//             cerr<<"pt="<<pt<<" is valid "<<cellFieldG->isValid(pt)<<endl;
+				Log(LOG_TRACE) << "pt="<<pt<<" is valid "<<cellFieldG->isValid(pt);
 				///**
 				currentCellPtr=cellFieldG->getQuick(pt);
 				//             currentCellPtr=cellFieldG->get(pt);
-				//             cerr<<"THIS IS PTR="<<currentCellPtr<<endl;
+				Log(LOG_TRACE) << "THIS IS PTR="<<currentCellPtr;
 
 				//             if(currentCellPtr)
-				//                cerr<<"This is id="<<currentCellPtr->id<<endl;
+				//				 Log(LOG_TRACE) << "This is id="<<currentCellPtr->id;
 				//currentConcentration = concentrationArray[x][y][z];
 
 				if(secreteInMedium && ! currentCellPtr){

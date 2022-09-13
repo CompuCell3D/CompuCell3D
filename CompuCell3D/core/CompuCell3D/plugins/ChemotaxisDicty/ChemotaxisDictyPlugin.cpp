@@ -153,7 +153,7 @@ double ChemotaxisDictyPlugin::changeEnergy(const Point3D &pt,
          field=((DiffusableVector<float> *) steppable)->getConcentrationField(chemicalFieldName);
          gotChemicalField=true;
       //}
-  cerr<<"initializing concentration field "<<field<<endl;
+      Log(LOG_TRACE) << "initializing concentration field "<<field;
   
   ASSERT_OR_THROW("No chemical field has been loaded!", field);      
   } */
@@ -182,16 +182,14 @@ double ChemotaxisDictyPlugin::changeEnergy(const Point3D &pt,
 //    }else{
 //       if(pt.y==0 && potts->getFlipNeighbor().y==54){
 //       //if(pt.y==0 && potts->getFlipNeighbor().y==54){
-//          //cerr<<"pt="<<pt<<" potts->getFlipNeighbor()="<<potts->getFlipNeighbor()<<endl;
+   //       Log(LOG_TRACE) <<"pt="<<pt<<" potts->getFlipNeighbor()="<<potts->getFlipNeighbor();
 //          energy=-lambda;
-// 
-//          //cerr<<"energy="<<energy<<endl;
+//          Log(LOG_TRACE) <<"energy="<<energy;
 // 
 //       }else{
 //          energy=(potts->getFlipNeighbor().y-pt.y)*energy;
 // 
-// 
-//          //cerr<<"energy="<<energy<<endl;
+//          Log(LOG_TRACE) <<"energy="<<energy;
 //       }
 // 
 //    }
@@ -204,10 +202,10 @@ double ChemotaxisDictyPlugin::changeEnergy(const Point3D &pt,
 //       ///flag must be non-zero and clock must be counting down in order for chemotaxis to work
 //       return 0.0;
 //    }
-   //cerr<<"Chemotacting"<<endl;
+// Log(LOG_TRACE) <<"Chemotacting";
 //    if(newCell){
-//       cerr<<"Chemotacting ";
-//       cerr<<simpleClockAccessorPtr->get(newCell->extraAttribPtr)->clock<<endl;
+   //    Log(LOG_TRACE) <<"Chemotacting ";
+//       Log(LOG_TRACE) <<simpleClockAccessorPtr->get(newCell->extraAttribPtr)->clock;
 //    }
 
    
@@ -230,9 +228,8 @@ bool chemotaxisDone=false;
                return 0.0;
          }*/
 /*      if(energy!=0.0){
-         cerr<<"pt="<<pt<<" potts->getFlipNeighbor()="<<potts->getFlipNeighbor()<<endl;
-      
-         cerr<<"energy change chmotaxis="<<energy<<endl;
+         Log(LOG_TRACE) <<"pt="<<pt<<" potts->getFlipNeighbor()="<<potts->getFlipNeighbor();
+         Log(LOG_TRACE) <<"energy change chmotaxis="<<energy;
       }*/
       
    }
@@ -263,7 +260,7 @@ void ChemotaxisDictyPlugin::initializeField(){
   ASSERT_OR_THROW("No chemical field has been loaded!", field);
   
   }
-	//cerr<<"field="<<field<<" conc="<<field->get(Point3D(10,10,10))<<endl;
+  Log(LOG_TRACE) <<"field="<<field<<" conc="<<field->get(Point3D(10,10,10);
 	
 }
 

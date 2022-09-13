@@ -7,6 +7,7 @@
 #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/Automaton/Automaton.h> //to get type id to type name mapping
+#include<CompuCell3D/CC3DLogger.h>
 #include <Utils/Coordinates3D.h>
 #include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
@@ -93,7 +94,7 @@ void FieldWriter::writeFields(std::string _fileName){
         #endif
 	int dim[3];
 	latticeData->GetDimensions(dim);
-	//cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
+	Log(LOG_TRACE) << "dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2];
 	
 	latticeDataWriter->Write();
 	latticeDataWriter->Delete();
@@ -361,8 +362,8 @@ bool FieldWriter::addVectorFieldForOutput(std::string _vectorFieldName){
 // 				vecTmp=(*vecFieldPtr)[pt.x][pt.y][pt.z];
                                 x=(*vecFieldPtr)[pt.x][pt.y][pt.z][0];
                                 y=(*vecFieldPtr)[pt.x][pt.y][pt.z][1];
-                                z=(*vecFieldPtr)[pt.x][pt.y][pt.z][2];                                
-				//cerr<<"vecTmp="<<vecTmp<<endl;
+                                z=(*vecFieldPtr)[pt.x][pt.y][pt.z][2]; 
+				Log(LOG_TRACE) << "vecTmp="<<vecTmp;
 				vecArray->SetTuple3(offset,x,y,z);
 				++offset;
 			}
