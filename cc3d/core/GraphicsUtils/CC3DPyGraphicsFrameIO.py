@@ -4,7 +4,7 @@ Defines comm protocols for CC3DPyGraphicsFrame
 
 from enum import Enum
 from multiprocessing.connection import Connection
-from typing import Optional, Tuple, Union
+from typing import Any, Optional, Tuple, Union
 
 
 class CC3DPyGraphicsFrameConnectionMsgType(Enum):
@@ -228,6 +228,80 @@ class ControlMessageShutdown(FrameControlMessage):
         :return: None
         """
         proc.frame.shutdown()
+
+
+class ControlMessageGetAttr(FrameControlMessage):
+    """Message to get the value of an attribute on a frame"""
+
+    def __init__(self, attr_name: str):
+
+        super().__init__()
+
+        self.attr_name = attr_name
+        self.attr_val = None
+
+    def process(self, proc):
+        """
+        Execute attribute value retrieval and return self to output queue
+
+        :param proc: graphics frame process
+        :type proc: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameProcess
+        :return: None
+        """
+        try:
+            self.attr_val = getattr(proc.frame, self.attr_name)
+        except AttributeError:
+            pass
+        proc.queue_output.put(self)
+
+    def control(self, control):
+        """
+        Wait for image of self to be returned in output queue
+
+        :param control: graphics frame process controller
+        :type control: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameControlInterface
+        :return: Any
+        """
+        msg = self.control_self_blocking(control)
+        return msg.attr_val
+
+
+class ControlMessageSetAttr(FrameControlMessage):
+    """Message to get the value of an attribute on a frame"""
+
+    def __init__(self, attr_name: str, attr_val: Any, blocking: bool = False):
+
+        super().__init__()
+
+        self.attr_name = attr_name
+        self.attr_val = attr_val
+        self.blocking = blocking
+
+    def process(self, proc):
+        """
+        Execute attribute value retrieval and return self to output queue
+
+        :param proc: graphics frame process
+        :type proc: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameProcess
+        :return: None
+        """
+        try:
+            setattr(proc.frame, self.attr_name, self.attr_val)
+        except AttributeError:
+            pass
+        if self.blocking:
+            proc.queue_output.put(self)
+
+    def control(self, control):
+        """
+        Wait for image of self to be returned in output queue
+
+        :param control: graphics frame process controller
+        :type control: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameControlInterface
+        :return: None
+        """
+        if self.blocking:
+            self.control_self_blocking(control)
 
 
 class ControlMessagePullMetadata(FrameControlMessage):

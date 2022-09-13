@@ -669,6 +669,30 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
             self.frame.max_range = range_max
         self._update()
 
+    @property
+    def range_fixed(self) -> Tuple[bool, bool]:
+        return self.get_range_fixed()
+
+    @range_fixed.setter
+    def range_fixed(self, _range_fixed: Tuple[bool, bool]):
+        self.set_range_fixed(*_range_fixed)
+
+    @property
+    def min_range_fixed(self) -> bool:
+        return self.range_fixed[0]
+
+    @min_range_fixed.setter
+    def min_range_fixed(self, _val: bool) -> None:
+        self.set_range_fixed(range_min=_val)
+
+    @property
+    def max_range_fixed(self) -> bool:
+        return self.range_fixed[1]
+
+    @max_range_fixed.setter
+    def max_range_fixed(self, _val: bool):
+        self.set_range_fixed(range_max=_val)
+
     def get_range(self) -> Tuple[Optional[float], Optional[float]]:
         """Get the concentration limits, if any."""
 
@@ -683,6 +707,102 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         if range_max is not None:
             self.frame.max_range = range_max
             self.frame.max_range_fixed = True
+        self._update()
+
+    @property
+    def range(self) -> Tuple[float, float]:
+        return self.get_range()
+
+    @range.setter
+    def range(self, _range: Tuple[float, float]):
+        self.set_range(*_range)
+
+    @property
+    def min_range(self) -> Optional[float]:
+        return self.range[0]
+
+    @min_range.setter
+    def min_range(self, _val: float):
+        self.set_range(range_min=_val)
+
+    @property
+    def max_range(self) -> Optional[float]:
+        return self.range[1]
+
+    @max_range.setter
+    def max_range(self, _val: float):
+        self.set_range(range_max=_val)
+
+    @property
+    def bounding_box_on(self):
+        return self.frame.bounding_box_on
+
+    @bounding_box_on.setter
+    def bounding_box_on(self, _bounding_box_on):
+        self.frame.bounding_box_on = _bounding_box_on
+        self._update()
+
+    @property
+    def cell_borders_on(self):
+        return self.frame.cell_borders_on
+
+    @cell_borders_on.setter
+    def cell_borders_on(self, _cell_borders_on):
+        self.frame.cell_borders_on = _cell_borders_on
+        self._update()
+
+    @property
+    def cell_glyphs_on(self):
+        return self.frame.cell_glyphs_on
+
+    @cell_glyphs_on.setter
+    def cell_glyphs_on(self, _cell_glyphs_on):
+        self.frame.cell_glyphs_on = _cell_glyphs_on
+        self._update()
+
+    @property
+    def cells_on(self):
+        return self.frame.cells_on
+
+    @cells_on.setter
+    def cells_on(self, _cells_on):
+        self.frame.cells_on = _cells_on
+        self._update()
+
+    @property
+    def cluster_borders_on(self):
+        return self.frame.cluster_borders_on
+
+    @cluster_borders_on.setter
+    def cluster_borders_on(self, _cluster_borders_on):
+        self.frame.cluster_borders_on = _cluster_borders_on
+        self._update()
+
+    @property
+    def fpp_links_on(self):
+        return self.frame.fpp_links_on
+
+    @fpp_links_on.setter
+    def fpp_links_on(self, _fpp_links_on):
+        self.frame.fpp_links_on = _fpp_links_on
+        self._update()
+
+    @property
+    def lattice_axes_labels_on(self):
+        return self.frame.lattice_axes_labels_on
+
+    @lattice_axes_labels_on.setter
+    def lattice_axes_labels_on(self, _lattice_axes_labels_on):
+        self.frame.lattice_axes_labels_on = _lattice_axes_labels_on
+        self._update()
+
+    @property
+    def lattice_axes_on(self):
+        return self.frame.lattice_axes_on
+
+    @lattice_axes_on.setter
+    def lattice_axes_on(self, _lattice_axes_on):
+        self.frame.lattice_axes_on = _lattice_axes_on
         self._update()
 
     def _update(self):
@@ -716,6 +836,14 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         super().set_field_name(_field_name)
         self.frame.field_name = _field_name
         self._update()
+
+    @property
+    def field_name(self) -> str:
+        return self.get_field_name()
+
+    @field_name.setter
+    def field_name(self, _field_name: str):
+        self.set_field_name(_field_name)
 
     def sync_cameras(self, frame):
         """Synchronize all cameras"""

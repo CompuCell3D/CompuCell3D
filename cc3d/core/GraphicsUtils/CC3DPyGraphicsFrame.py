@@ -644,6 +644,10 @@ class CC3DPyGraphicsFrameControlInterface:
         """Update field metadata storage on a frame for a field"""
         self._process_message(ControlMessagePullMetadata(_field_name))
 
+    def get_field_name(self):
+        """Get the name of the current field"""
+        return self._process_message(ControlMessageGetAttr(attr_name='field_name'))
+
     def set_field_name(self, _field_name: str):
         """Set the name of the field to render"""
         self._process_message(ControlMessageSetFieldName(_field_name))
@@ -676,6 +680,62 @@ class CC3DPyGraphicsFrameControlInterface:
         self._process_message(ControlMessageSaveImage(file_path=file_path,
                                                       scale=scale,
                                                       transparent_background=transparent_background))
+
+    def get_bounding_box_on(self) -> bool:
+        return self._process_message(ControlMessageGetAttr(attr_name='bounding_box_on'))
+
+    def set_bounding_box_on(self, _bounding_box_on: bool):
+        self._process_message(ControlMessageSetAttr(attr_name='bounding_box_on',
+                                                    attr_val=_bounding_box_on))
+
+    def get_cell_borders_on(self) -> bool:
+        return self._process_message(ControlMessageGetAttr(attr_name='cell_borders_on'))
+
+    def set_cell_borders_on(self, _cell_borders_on: bool):
+        self._process_message(ControlMessageSetAttr(attr_name='cell_borders_on',
+                                                    attr_val=_cell_borders_on))
+
+    def get_cell_glyphs_on(self) -> bool:
+        return self._process_message(ControlMessageGetAttr(attr_name='cell_glyphs_on'))
+
+    def set_cell_glyphs_on(self, _cell_glyphs_on: bool):
+        self._process_message(ControlMessageSetAttr(attr_name='cell_glyphs_on',
+                                                    attr_val=_cell_glyphs_on))
+
+    def get_cells_on(self) -> bool:
+        return self._process_message(ControlMessageGetAttr(attr_name='cells_on'))
+
+    def set_cells_on(self, _cells_on: bool):
+        self._process_message(ControlMessageSetAttr(attr_name='cells_on',
+                                                    attr_val=_cells_on))
+
+    def get_cluster_borders_on(self) -> bool:
+        return self._process_message(ControlMessageGetAttr(attr_name='cluster_borders_on'))
+
+    def set_cluster_borders_on(self, _cluster_borders_on: bool):
+        self._process_message(ControlMessageSetAttr(attr_name='cluster_borders_on',
+                                                    attr_val=_cluster_borders_on))
+
+    def get_fpp_links_on(self) -> bool:
+        return self._process_message(ControlMessageGetAttr(attr_name='fpp_links_on'))
+
+    def set_fpp_links_on(self, _fpp_links_on: bool):
+        self._process_message(ControlMessageSetAttr(attr_name='fpp_links_on',
+                                                    attr_val=_fpp_links_on))
+
+    def get_lattice_axes_labels_on(self) -> bool:
+        return self._process_message(ControlMessageGetAttr(attr_name='lattice_axes_labels_on'))
+
+    def set_lattice_axes_labels_on(self, _lattice_axes_labels_on: bool):
+        self._process_message(ControlMessageSetAttr(attr_name='lattice_axes_labels_on',
+                                                    attr_val=_lattice_axes_labels_on))
+
+    def get_lattice_axes_on(self) -> bool:
+        return self._process_message(ControlMessageGetAttr(attr_name='lattice_axes_on'))
+
+    def set_lattice_axes_on(self, _lattice_axes_on: bool):
+        self._process_message(ControlMessageSetAttr(attr_name='lattice_axes_on',
+                                                    attr_val=_lattice_axes_on))
 
 
 class CC3DPyGraphicsFrameClientBase:
@@ -1189,6 +1249,54 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
 
         self._frame_controller.set_drawing_style(_style)
 
+    def get_bounding_box_on(self) -> Optional[bool]:
+        return self._frame_controller.get_bounding_box_on()
+
+    def set_bounding_box_on(self, _val: bool):
+        self._frame_controller.set_bounding_box_on(_val)
+
+    def get_cell_borders_on(self) -> Optional[bool]:
+        return self._frame_controller.get_cell_borders_on()
+
+    def set_cell_borders_on(self, _val: bool):
+        self._frame_controller.set_cell_borders_on(_val)
+
+    def get_cell_glyphs_on(self) -> Optional[bool]:
+        return self._frame_controller.get_cell_glyphs_on()
+
+    def set_cell_glyphs_on(self, _val: bool):
+        self._frame_controller.set_cell_glyphs_on(_val)
+
+    def get_cells_on(self) -> Optional[bool]:
+        return self._frame_controller.get_cells_on()
+
+    def set_cells_on(self, _val: bool):
+        self._frame_controller.set_cells_on(_val)
+
+    def get_cluster_borders_on(self) -> Optional[bool]:
+        return self._frame_controller.get_cluster_borders_on()
+
+    def set_cluster_borders_on(self, _val: bool):
+        self._frame_controller.set_cluster_borders_on(_val)
+
+    def get_fpp_links_on(self) -> Optional[bool]:
+        return self._frame_controller.get_fpp_links_on()
+
+    def set_fpp_links_on(self, _val: bool):
+        self._frame_controller.set_fpp_links_on(_val)
+
+    def get_lattice_axes_labels_on(self) -> Optional[bool]:
+        return self._frame_controller.get_lattice_axes_labels_on()
+
+    def set_lattice_axes_labels_on(self, _val: bool):
+        self._frame_controller.set_lattice_axes_labels_on(_val)
+
+    def get_lattice_axes_on(self) -> Optional[bool]:
+        return self._frame_controller.get_lattice_axes_on()
+
+    def set_lattice_axes_on(self, _val: bool):
+        self._frame_controller.set_lattice_axes_on(_val)
+
     def np_img_data(self,
                     scale: Union[int, Tuple[int, int]] = None,
                     transparent_background: bool = False):
@@ -1359,6 +1467,15 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
         key = 'MaxRange'
 
         self.set_config(key=key, val=_val, field_name=self.field_name)
+
+    bounding_box_on = property(fget=get_bounding_box_on, fset=set_bounding_box_on)
+    cell_borders_on = property(fget=get_cell_borders_on, fset=set_cell_borders_on)
+    cell_glyphs_on = property(fget=get_cell_glyphs_on, fset=set_cell_glyphs_on)
+    cells_on = property(fget=get_cells_on, fset=set_cells_on)
+    cluster_borders_on = property(fget=get_cluster_borders_on, fset=set_cluster_borders_on)
+    fpp_links_on = property(fget=get_fpp_links_on, fset=set_fpp_links_on)
+    lattice_axes_labels_on = property(fget=get_lattice_axes_labels_on, fset=set_lattice_axes_labels_on)
+    lattice_axes_on = property(fget=get_lattice_axes_on, fset=set_lattice_axes_on)
 
 
 class CC3DPyGraphicsFrameClientProxyMsg:
@@ -1665,3 +1782,97 @@ class CC3DPyGraphicsFrameClientProxy:
         key = 'MaxRange'
 
         self.set_config(key=key, val=_val, field_name=self.field_name)
+
+    def get_range_fixed(self) -> Tuple[bool, bool]:
+        """Get whether both concentration limits are fixed"""
+
+        return self.min_range_fixed, self.max_range_fixed
+
+    def set_range_fixed(self, range_min: bool = None, range_max: bool = None):
+        """Set whether one or both concentration limits are fixed"""
+
+        if range_min is not None:
+            self.min_range = range_min
+        if range_max is not None:
+            self.max_range = range_max
+
+    def get_range(self) -> Tuple[Optional[float], Optional[float]]:
+        """Get the concentration limits, if any."""
+
+        return self.min_range, self.max_range
+
+    def set_range(self, range_min: float = None, range_max: float = None):
+        """Set one or both concentration limits. When setting a range value, the range is automatically fixed."""
+
+        if range_min is not None:
+            self.min_range = range_min
+            self.min_range_fixed = True
+        if range_max is not None:
+            self.max_range = range_max
+            self.max_range_fixed = True
+
+    range = property(fget=get_range, fset=set_range)
+
+    @property
+    def bounding_box_on(self) -> Optional[bool]:
+        return self._process_ret_msg('get_bounding_box_on')
+
+    @bounding_box_on.setter
+    def bounding_box_on(self, _val: bool):
+        self._process_msg('set_bounding_box_on', _val)
+
+    @property
+    def cell_borders_on(self) -> Optional[bool]:
+        return self._process_ret_msg('get_cell_borders_on')
+
+    @cell_borders_on.setter
+    def cell_borders_on(self, _val: bool):
+        self._process_msg('set_cell_borders_on', _val)
+
+    @property
+    def cell_glyphs_on(self) -> Optional[bool]:
+        return self._process_ret_msg('get_cell_glyphs_on')
+
+    @cell_glyphs_on.setter
+    def cell_glyphs_on(self, _val: bool):
+        self._process_msg('set_cell_glyphs_on', _val)
+
+    @property
+    def cells_on(self) -> Optional[bool]:
+        return self._process_ret_msg('get_cells_on')
+
+    @cells_on.setter
+    def cells_on(self, _val: bool):
+        self._process_msg('set_cells_on', _val)
+
+    @property
+    def cluster_borders_on(self) -> Optional[bool]:
+        return self._process_ret_msg('get_cluster_borders_on')
+
+    @cluster_borders_on.setter
+    def cluster_borders_on(self, _val: bool):
+        self._process_msg('set_cluster_borders_on', _val)
+
+    @property
+    def fpp_links_on(self) -> Optional[bool]:
+        return self._process_ret_msg('get_fpp_links_on')
+
+    @fpp_links_on.setter
+    def fpp_links_on(self, _val: bool):
+        self._process_msg('set_fpp_links_on', _val)
+
+    @property
+    def lattice_axes_labels_on(self) -> Optional[bool]:
+        return self._process_ret_msg('get_lattice_axes_labels_on')
+
+    @lattice_axes_labels_on.setter
+    def lattice_axes_labels_on(self, _val: bool):
+        self._process_msg('set_lattice_axes_labels_on', _val)
+
+    @property
+    def lattice_axes_on(self) -> Optional[bool]:
+        return self._process_ret_msg('get_lattice_axes_on')
+
+    @lattice_axes_on.setter
+    def lattice_axes_on(self, _val: bool):
+        self._process_msg('set_lattice_axes_on', _val)
