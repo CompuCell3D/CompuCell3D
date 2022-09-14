@@ -5,7 +5,7 @@
  * @date 2022-07-08
  * 
  */
-#include <core/CompuCell3D/CC3DLogger.h>
+#include "CC3DLogger.h"
 #include <iostream>
 #include <algorithm>
 #include <fstream>

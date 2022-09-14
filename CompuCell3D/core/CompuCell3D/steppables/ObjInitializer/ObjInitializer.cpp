@@ -6,7 +6,7 @@ using namespace std;
 
 
 #include "ObjInitializer.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 // ----------------------------------------------------------------------
 // class constructor without file name parameter:
@@ -99,9 +99,9 @@ void ObjInitializer::start() {
     //
     // try to open the OBJ file pointed by gObjFileName:
     //
-    Log(LOG_DEBUG) << "ppdPtr->gObjFileName=" << gObjFileName;
+    CC3D_Log(LOG_DEBUG) << "ppdPtr->gObjFileName=" << gObjFileName;
     std::ifstream lObjFileStream(gObjFileName.c_str(), ios::in);
-    Log(LOG_DEBUG) << "ObjInitializer::start() ----- opened pid file";
+    CC3D_Log(LOG_DEBUG) << "ObjInitializer::start() ----- opened pid file";
     if (!lObjFileStream.good())
         throw CC3DException(string("ObjInitializer::start() ----- Could not open [" + gObjFileName +
                                    "] ....make sure it exists in the correct directory."));
@@ -117,13 +117,13 @@ void ObjInitializer::start() {
     // get the x,y,z dimensions of the 3D field of cells:
     //
     Dim3D lDimensions = lCellFieldG->getDim();
-    Log(LOG_DEBUG) << "ObjInitializer::start() ----- Potts Dimensions are set as: " << lDimensions;
+    CC3D_Log(LOG_DEBUG) << "ObjInitializer::start() ----- Potts Dimensions are set as: " << lDimensions;
 
     //
     // TODO: what is this TypeTransition doing here, what's its purpose?
     //
     TypeTransition *typeTransitionPtr = potts->getTypeTransition();
-    Log(LOG_DEBUG) <<"ObjInitializer::start() ----- typeTransitionPtr=" << typeTransitionPtr;
+    CC3D_Log(LOG_DEBUG) <<"ObjInitializer::start() ----- typeTransitionPtr=" << typeTransitionPtr;
 
     //
     // read one single text line from lObjFileStream into a lLineString:
@@ -141,7 +141,7 @@ void ObjInitializer::start() {
     //    n = an integer, specifying the cell ID
     //    s = a text string (no spaces), specifying the cell Type
     lObjIStringStream >> lFirstParsedString >> lSecondParsedString;
-    Log(LOG_DEBUG) << "ObjInitializer::start() ----- First: " << lFirstParsedString << " Second: " << lSecondParsedString << "\n";
+    CC3D_Log(LOG_DEBUG) << "ObjInitializer::start() ----- First: " << lFirstParsedString << " Second: " << lSecondParsedString << "\n";
 
 
     // store the cell ID integer and call it "lSpin" :
@@ -149,7 +149,7 @@ void ObjInitializer::start() {
     lSpin = tmp;
     // store the cell type string:
     lCellTypeString = lSecondParsedString;
-    // Log(LOG_DEBUG) << "lSpin: " << lSpin << " lCellTypeString: : " << lCellTypeString <<
+    // CC3D_Log(LOG_DEBUG) << "lSpin: " << lSpin << " lCellTypeString: : " << lCellTypeString <<
     //     " xLow: " << xLow;
 
     //
@@ -236,9 +236,9 @@ void ObjInitializer::start() {
                     }
     
             typeTransitionPtr->setType( lCellG, potts->getAutomaton()->getTypeId(lCellTypeString));
-            // Log(LOG_DEBUG) << "1. Cell Type from lCellG->:  " << (int)lCellG->type << "\n";
-            // Log(LOG_DEBUG) << "getline(lObjIStringStream,lLineString): " << getline(lObjIStringStream,lLineString);
-            // Log(LOG_DEBUG) << "getline(objfline,lLineString): " <<  getline(lObjFileStream,lLineString);
+            // CC3D_Log(LOG_DEBUG) << "1. Cell Type from lCellG->:  " << (int)lCellG->type << "\n";
+            // CC3D_Log(LOG_DEBUG) << "getline(lObjIStringStream,lLineString): " << getline(lObjIStringStream,lLineString);
+            // CC3D_Log(LOG_DEBUG) << "getline(objfline,lLineString): " <<  getline(lObjFileStream,lLineString);
         } // end of  if (lSpinMap.count(lSpin) != 0) // Spin (i.e. current cell ID) already listed
 
 
@@ -274,7 +274,7 @@ void ObjInitializer::start() {
 // 
 //         istringstream lObjIStringStream(lLineString);
 //         lObjIStringStream >> lSpin >> lCellTypeString >> xLow;
-// Log(LOG_DEBUG) <<  "lSpin: " << lSpin << " lCellTypeString: : " << lCellTypeString <<
+// CC3D_Log(LOG_DEBUG) <<  "lSpin: " << lSpin << " lCellTypeString: : " << lCellTypeString <<
 //         //     " xLow: " << xLow;
 //         ASSERT_OR_THROW(string("OBJ reader: xLow out of bounds : \n") + lLineString, xLow >= 0 && xLow < lDimensions.x);
 //         lObjIStringStream >> xHigh;
@@ -303,7 +303,7 @@ void ObjInitializer::start() {
 //                         //inventory unless you call steppers(VolumeTrackerPlugin) explicitely
 //                         
 //                     }
-// Log(LOG_DEBUG) << "2. Cell Type from lCellG->:  " << (int)lCellG->type << "\n";
+// CC3D_Log(LOG_DEBUG) << "2. Cell Type from lCellG->:  " << (int)lCellG->type << "\n";
 //             
 //         }
 //         else // First time for this spin, we need to create a new cell
@@ -327,7 +327,7 @@ void ObjInitializer::start() {
 //                     }
 //             
 //             typeTransitionPtr->setType( lCellG, potts->getAutomaton()->getTypeId(lCellTypeString));
-// Log(LOG_DEBUG) << "2. Cell Type from lCellG->:  " << (int)lCellG->type << "\n";
+// CC3D_Log(LOG_DEBUG) << "2. Cell Type from lCellG->:  " << (int)lCellG->type << "\n";
 //             
 //         } // end of if (lSpinMap.count(lSpin) != 0) // Spin multiply listed
 //         

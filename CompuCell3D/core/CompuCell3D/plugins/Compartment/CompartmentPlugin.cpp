@@ -7,7 +7,7 @@ using namespace CompuCell3D;
 
 #include "CompartmentPlugin.h"
 
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 
 
@@ -186,14 +186,14 @@ void CompartmentPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     for (auto &i: cellInternalTypesSet) {
         for (auto &j: cellInternalTypesSet) {
 
-            Log(LOG_DEBUG) << "internal_energy[" << to_string(i) << "][" << to_string(j) << "]=" << internalEnergyArray[i][j];
+            CC3D_Log(LOG_DEBUG) << "internal_energy[" << to_string(i) << "][" << to_string(j) << "]=" << internalEnergyArray[i][j];
 
         }
     }
 
     for (auto &i: cellTypesSet) {
         for (auto &j: cellTypesSet){
-			Log(LOG_DEBUG) << "contact["<<to_string(i) << "][" << to_string(j) << "]=" << contactEnergyArray[i][j] ;
+			CC3D_Log(LOG_DEBUG) << "contact["<<to_string(i) << "][" << to_string(j) << "]=" << contactEnergyArray[i][j] ;
 
         }
     }
@@ -215,7 +215,7 @@ void CompartmentPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         }
 
 	}
-	Log(LOG_DEBUG) << "Contact maxNeighborIndex="<<maxNeighborIndex;
+	CC3D_Log(LOG_DEBUG) << "Contact maxNeighborIndex="<<maxNeighborIndex;
 
 }
 

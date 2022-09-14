@@ -6,7 +6,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "ConvergentExtensionPlugin.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 #define sign(x) (((x>0)-(x<0)))
 
@@ -56,9 +56,9 @@ void ConvergentExtensionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
 		alphaConvExtMap[automaton->getTypeId(mitr->first)]=mitr->second;
 	}
 
-	Log(LOG_DEBUG)<<"size="<<alphaConvExtMap.size();
+	CC3D_Log(LOG_DEBUG)<<"size="<<alphaConvExtMap.size();
 	for(auto& itr : alphaConvExtMap){
-		Log(LOG_DEBUG)<<"alphaConvExt["<<to_string(itr.first)<<"]="<<itr.second;
+		CC3D_Log(LOG_DEBUG)<<"alphaConvExt["<<to_string(itr.first)<<"]="<<itr.second;
 	}
 
 	//Here I initialize max neighbor index for direct acces to the list of neighbors 
@@ -78,7 +78,7 @@ void ConvergentExtensionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
 		}
 
 	}
-	Log(LOG_DEBUG) << "ConvergentExtension maxNeighborIndex="<<maxNeighborIndex;
+	CC3D_Log(LOG_DEBUG) << "ConvergentExtension maxNeighborIndex="<<maxNeighborIndex;
 
 }
 
@@ -172,16 +172,16 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 
 
 				  if(energy!=energy){
-					Log(LOG_DEBUG) << "energyBefore="<<energyBefore;
-					Log(LOG_DEBUG) << "oldCellCMPtVec="<<oldCellCMPtVec<<" oldCell->lX="<<oldCell->lX<<" oldCell->lY="<<oldCell->lY;
-					Log(LOG_DEBUG) << "oldCell->iXX="<<oldCell->iXX<<" oldCell->iYY="<<oldCell->iYY<<" oldCell->iXY="<<oldCell->iXY;
-					Log(LOG_DEBUG) << "nCellCMPtVec="<<nCellCMPtVec<<" nCell->lX="<<nCell->lX<<" nCell->lY="<<nCell->lY;
-					Log(LOG_DEBUG) << "deltaNCell="<<deltaNCell<<" rSinThetaNCell="<<rSinThetaNCell<<" nCell->ecc="<<nCell->ecc;
-					Log(LOG_DEBUG) << "nCell->volume="<<nCell->volume;
-					Log(LOG_DEBUG) << "deltaOldCell="<<deltaOldCell<<" rSinThetaOldCell="<<rSinThetaOldCell<<" oldCell->ecc="<<oldCell->ecc;
-					Log(LOG_DEBUG) << "oldCell->volume="<<oldCell->volume;
-					Log(LOG_DEBUG) << "deltaOldCell="<<deltaOldCell<<" deltaNCell="<<deltaNCell;
-					Log(LOG_DEBUG) << "OLD N CELL CONTR="<<energy;
+					CC3D_Log(LOG_DEBUG) << "energyBefore="<<energyBefore;
+					CC3D_Log(LOG_DEBUG) << "oldCellCMPtVec="<<oldCellCMPtVec<<" oldCell->lX="<<oldCell->lX<<" oldCell->lY="<<oldCell->lY;
+					CC3D_Log(LOG_DEBUG) << "oldCell->iXX="<<oldCell->iXX<<" oldCell->iYY="<<oldCell->iYY<<" oldCell->iXY="<<oldCell->iXY;
+					CC3D_Log(LOG_DEBUG) << "nCellCMPtVec="<<nCellCMPtVec<<" nCell->lX="<<nCell->lX<<" nCell->lY="<<nCell->lY;
+					CC3D_Log(LOG_DEBUG) << "deltaNCell="<<deltaNCell<<" rSinThetaNCell="<<rSinThetaNCell<<" nCell->ecc="<<nCell->ecc;
+					CC3D_Log(LOG_DEBUG) << "nCell->volume="<<nCell->volume;
+					CC3D_Log(LOG_DEBUG) << "deltaOldCell="<<deltaOldCell<<" rSinThetaOldCell="<<rSinThetaOldCell<<" oldCell->ecc="<<oldCell->ecc;
+					CC3D_Log(LOG_DEBUG) << "oldCell->volume="<<oldCell->volume;
+					CC3D_Log(LOG_DEBUG) << "deltaOldCell="<<deltaOldCell<<" deltaNCell="<<deltaNCell;
+					CC3D_Log(LOG_DEBUG) << "OLD N CELL CONTR="<<energy;
 					exit(0);
 					}
 
@@ -303,13 +303,13 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 				  }
 
 				  if(energy!=energy){
-					Log(LOG_DEBUG) << "energyBefore="<<energyBefore;
-					Log(LOG_DEBUG) << "oldCell->volume="<<oldCell->volume;
-					Log(LOG_DEBUG) << "oldCell->iXX="<<oldCell->iXX<<" oldCell->iYY="<<oldCell->iYY<<" oldCell->iXY="<<oldCell->iXY;
-					Log(LOG_DEBUG) << "newIxxOldCell="<<newIxxOldCell<<" newIyyOldCell="<<newIyyOldCell<<" newIxyOldCell="<<newIxyOldCell;
-					Log(LOG_DEBUG) << "orientationVecNewOldCell="<<orientationVecNewOldCell;
-					Log(LOG_DEBUG) << "deltaOldCell="<<deltaOldCell<<" deltaNewCell="<<deltaNewCell;
-					Log(LOG_DEBUG) << "NEW OLD CELL CONTR="<<energy;
+					CC3D_Log(LOG_DEBUG) << "energyBefore="<<energyBefore;
+					CC3D_Log(LOG_DEBUG) << "oldCell->volume="<<oldCell->volume;
+					CC3D_Log(LOG_DEBUG) << "oldCell->iXX="<<oldCell->iXX<<" oldCell->iYY="<<oldCell->iYY<<" oldCell->iXY="<<oldCell->iXY;
+					CC3D_Log(LOG_DEBUG) << "newIxxOldCell="<<newIxxOldCell<<" newIyyOldCell="<<newIyyOldCell<<" newIxyOldCell="<<newIxyOldCell;
+					CC3D_Log(LOG_DEBUG) << "orientationVecNewOldCell="<<orientationVecNewOldCell;
+					CC3D_Log(LOG_DEBUG) << "deltaOldCell="<<deltaOldCell<<" deltaNewCell="<<deltaNewCell;
+					CC3D_Log(LOG_DEBUG) << "NEW OLD CELL CONTR="<<energy;
 					exit(0);
 					}
 
@@ -349,22 +349,22 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 					}
 
 					if(energy!=energy){
-						Log(LOG_DEBUG) << "deltaNCell="<<deltaNCell<<" rSinThetaNCell="<<rSinThetaNCell;
-						Log(LOG_DEBUG) << "deltaNewCell="<<deltaNewCell<<" rSinThetaNewCell="<<rSinThetaNewCell<<" newCell->volume="<<newCell->volume;
-						Log(LOG_DEBUG) << "N="<<N<<" D="<<D;
-						Log(LOG_DEBUG) << "orientationVecNew="<<orientationVecNew;
-						Log(LOG_DEBUG) << "newCellCMPtVec="<<newCellCMPtVec;
-						Log(LOG_DEBUG) << "newIxx="<<newIxx;
-						Log(LOG_DEBUG) << "newIyy="<<newIyy;
-						Log(LOG_DEBUG) << "newIxy="<<newIxy;
-						Log(LOG_DEBUG) << "xcm="<<xcm<<" ycm="<<ycm<<" newXCM="<<newXCM<<" newYCM="<<newYCM;
-						Log(LOG_DEBUG) << "radicalNew="<<radicalNew;
-						Log(LOG_DEBUG) << "lMinNew="<<lMinNew;
-						Log(LOG_DEBUG) << "lMaxNew="<<lMaxNew;
-						Log(LOG_DEBUG) << "newEcc="<<newEcc;
-						Log(LOG_DEBUG) << "energyBefore="<<energyBefore;
-						Log(LOG_DEBUG) << "deltaNewCell="<<deltaNewCell<<" deltaNCell="<<deltaNCell;
-						Log(LOG_DEBUG) << "NEW N CELL CONTR="<<energy;
+						CC3D_Log(LOG_DEBUG) << "deltaNCell="<<deltaNCell<<" rSinThetaNCell="<<rSinThetaNCell;
+						CC3D_Log(LOG_DEBUG) << "deltaNewCell="<<deltaNewCell<<" rSinThetaNewCell="<<rSinThetaNewCell<<" newCell->volume="<<newCell->volume;
+						CC3D_Log(LOG_DEBUG) << "N="<<N<<" D="<<D;
+						CC3D_Log(LOG_DEBUG) << "orientationVecNew="<<orientationVecNew;
+						CC3D_Log(LOG_DEBUG) << "newCellCMPtVec="<<newCellCMPtVec;
+						CC3D_Log(LOG_DEBUG) << "newIxx="<<newIxx;
+						CC3D_Log(LOG_DEBUG) << "newIyy="<<newIyy;
+						CC3D_Log(LOG_DEBUG) << "newIxy="<<newIxy;
+						CC3D_Log(LOG_DEBUG) << "xcm="<<xcm<<" ycm="<<ycm<<" newXCM="<<newXCM<<" newYCM="<<newYCM;
+						CC3D_Log(LOG_DEBUG) << "radicalNew="<<radicalNew;
+						CC3D_Log(LOG_DEBUG) << "lMinNew="<<lMinNew;
+						CC3D_Log(LOG_DEBUG) << "lMaxNew="<<lMaxNew;
+						CC3D_Log(LOG_DEBUG) << "newEcc="<<newEcc;
+						CC3D_Log(LOG_DEBUG) << "energyBefore="<<energyBefore;
+						CC3D_Log(LOG_DEBUG) << "deltaNewCell="<<deltaNewCell<<" deltaNCell="<<deltaNCell;
+						CC3D_Log(LOG_DEBUG) << "NEW N CELL CONTR="<<energy;
 						exit(0);
 					}
 

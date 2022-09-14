@@ -3,7 +3,7 @@
 using namespace CompuCell3D;
 
 #include "ContactInternalPlugin.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 ContactInternalPlugin::ContactInternalPlugin() : potts(0), depth(1), weightDistance(false) {
 }
@@ -142,8 +142,7 @@ void ContactInternalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
     for (auto &i: cellTypesSet) {
         for (auto &j: cellTypesSet) {
 
-            cerr << "internal_energy[" << to_string(i) << "][" << to_string(j) << "]=" << internalEnergyArray[i][j]
-                 << endl;
+            CC3D_Log(LOG_DEBUG) << "internal_energy[" << to_string(i) << "][" << to_string(j) << "]=" << internalEnergyArray[i][j];
 
         }
     }
@@ -169,7 +168,7 @@ void ContactInternalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
         }
 
 	}
-	Log(LOG_DEBUG) << "Contact maxNeighborIndex="<<maxNeighborIndex;
+	CC3D_Log(LOG_DEBUG) << "Contact maxNeighborIndex="<<maxNeighborIndex;
 
 }
 

@@ -163,7 +163,6 @@ ElasticityPlugin::diffEnergyLocal(float _deltaL, float _lBefore, const Elasticit
         if (_lBefore < maxLengthElasticityLocal) {
             return lambdaLocal * _deltaL * (2 * (_lBefore - targetLengthLocal) + _deltaL);
         } else {
-            //cerr<<"returning energy local = 0.0"<<endl;
             return 0.0;
         }
 

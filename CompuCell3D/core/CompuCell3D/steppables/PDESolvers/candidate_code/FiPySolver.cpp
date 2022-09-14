@@ -21,7 +21,7 @@
 #include <fstream>
 #include <sstream>
 #include <omp.h>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 //#define NUMBER_OF_THREADS 4
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -35,7 +35,7 @@ using namespace std;
 
 
 #include "FiPySolver.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FiPySolverSerializer::serialize() {
@@ -60,7 +60,7 @@ void FiPySolverSerializer::readFromFile() {
             solverPtr->readConcentrationField(inName.str().c_str(), solverPtr->concentrationFieldVector[i]);;
         }
     } catch (BasicException &e) {
-        Log(LOG_DEBUG) << "COULD NOT FIND ONE OF THE FILES";
+        CC3D_Log(LOG_DEBUG) << "COULD NOT FIND ONE OF THE FILES";
         throw BasicException("Error in reading diffusion fields from file", e);
     }
 }
@@ -104,7 +104,7 @@ void FiPySolver::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
     fieldDim = cellFieldG->getDim();
 
 	pUtils=simulator->getParallelUtils();
-	Log(LOG_DEBUG) << "INSIDE INIT";
+	CC3D_Log(LOG_DEBUG) << "INSIDE INIT";
 
     ///setting member function pointers
     secretePtr = &FiPySolver::secrete;
@@ -116,13 +116,13 @@ void FiPySolver::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
 	vector<string> concentrationFieldNameVectorTmp; //temporary vector for field names
 	///assign vector of field names
 	concentrationFieldNameVectorTmp.assign(diffSecrFieldTuppleVec.size(),string(""));
-	Log(LOG_DEBUG) << "diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size();
+	CC3D_Log(LOG_DEBUG) << "diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size();
 
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        Log(LOG_TRACE) << " concentrationFieldNameVector[i]="<<diffDataVec[i].fieldName;
+        CC3D_Log(LOG_TRACE) << " concentrationFieldNameVector[i]="<<diffDataVec[i].fieldName;
         //       concentrationFieldNameVector.push_back(diffDataVec[i].fieldName);
         concentrationFieldNameVectorTmp[i] = diffSecrFieldTuppleVec[i].diffData.fieldName;
-        Log(LOG_DEBUG) << " concentrationFieldNameVector[i]="<<concentrationFieldNameVectorTmp[i];
+        CC3D_Log(LOG_DEBUG) << " concentrationFieldNameVector[i]="<<concentrationFieldNameVectorTmp[i];
     }
 
     //setting up couplingData - field-field interaction terms
@@ -148,11 +148,11 @@ void FiPySolver::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
 			++pos;
 		}
 	}
-	Log(LOG_DEBUG) << "FIELDS THAT I HAVE";
+	CC3D_Log(LOG_DEBUG) << "FIELDS THAT I HAVE";
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        Log(LOG_DEBUG) << "Field "<<i<<" name: "<<concentrationFieldNameVectorTmp[i];
+        CC3D_Log(LOG_DEBUG) << "Field "<<i<<" name: "<<concentrationFieldNameVectorTmp[i];
 	}
-	Log(LOG_DEBUG) << "FiPySolver: extra Init in read XML";
+	CC3D_Log(LOG_DEBUG) << "FiPySolver: extra Init in read XML";
 
 
     ///allocate fields including scrartch field
@@ -175,7 +175,7 @@ void FiPySolver::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
     //register fields once they have been allocated
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
         simPtr->registerConcentrationField(concentrationFieldNameVector[i], concentrationFieldVector[i]);
-        Log(LOG_DEBUG) << "registring field: "<<concentrationFieldNameVector[i]<<" field address="<<concentrationFieldVector[i];
+        CC3D_Log(LOG_DEBUG) << "registring field: "<<concentrationFieldNameVector[i]<<" field address="<<concentrationFieldVector[i];
     }
 
     //    exit(0);
@@ -240,7 +240,7 @@ void FiPySolver::start() {
             serializerPtr->readFromFile();
 
         } catch (BasicException &e) {
-            Log(LOG_DEBUG) << "Going to fail-safe initialization";
+            CC3D_Log(LOG_DEBUG) << "Going to fail-safe initialization";
             initializeConcentration(); //if there was error, initialize using failsafe defaults
         }
 
@@ -259,7 +259,7 @@ void FiPySolver::initializeConcentration() {
             continue;
         }
         if (diffSecrFieldTuppleVec[i].diffData.concentrationFileName.empty()) continue;
-        Log(LOG_DEBUG) << "fail-safe initialization " << diffSecrFieldTuppleVec[i].diffData.concentrationFileName;
+        CC3D_Log(LOG_DEBUG) << "fail-safe initialization " << diffSecrFieldTuppleVec[i].diffData.concentrationFileName;
         readConcentrationField(diffSecrFieldTuppleVec[i].diffData.concentrationFileName, concentrationFieldVector[i]);
     }
 }
@@ -350,7 +350,7 @@ void FiPySolver::secreteOnContactSingleField(unsigned int idx) {
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;\
+        CC3D_Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;\
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;
@@ -535,7 +535,7 @@ void FiPySolver::secreteSingleField(unsigned int idx) {
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
+        CC3D_Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;
@@ -548,7 +548,7 @@ void FiPySolver::secreteSingleField(unsigned int idx) {
         pUtils->calculateFESolverPartitionWithBoxWatcher(minDimBW, maxDimBW);
 
 	}
-	Log(LOG_TRACE) << <"SECRETE SINGLE FIELD";
+	CC3D_Log(LOG_TRACE) << <"SECRETE SINGLE FIELD";
 
 
     pUtils->prepareParallelRegionFESolvers(diffData.useBoxWatcher);
@@ -587,14 +587,14 @@ void FiPySolver::secreteSingleField(unsigned int idx) {
                 for (int x = minDim.x; x < maxDim.x; x++) {
 
                     pt = Point3D(x - 1, y - 1, z - 1);
-                    Log(LOG_TRACE) << "pt="<<pt<<" is valid "<<cellFieldG->isValid(pt);
+                    CC3D_Log(LOG_TRACE) << "pt="<<pt<<" is valid "<<cellFieldG->isValid(pt);
                     ///**
                     currentCellPtr = cellFieldG->getQuick(pt);
                     //             currentCellPtr=cellFieldG->get(pt);
-                    Log(LOG_TRACE) << "THIS IS PTR="<<currentCellPtr;
+                    CC3D_Log(LOG_TRACE) << "THIS IS PTR="<<currentCellPtr;
 
                     //             if(currentCellPtr)
-                    // Log(LOG_TRACE) << "This is id="<<currentCellPtr->id;
+                    // CC3D_Log(LOG_TRACE) << "This is id="<<currentCellPtr->id;
                     //currentConcentration = concentrationField.getDirect(x,y,z);
 
                     currentConcentration = concentrationField.getDirect(x, y, z);
@@ -632,12 +632,12 @@ void FiPySolver::secreteSingleField(unsigned int idx) {
                                     mitrUptake->second.maxUptake) {
                                     concentrationField.setDirect(x, y, z, concentrationField.getDirect(x, y, z) -
                                                                           mitrUptake->second.maxUptake);
-                                    Log(LOG_TRACE) << " uptake concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<mitrUptake->second.maxUptake;
+                                    CC3D_Log(LOG_TRACE) << " uptake concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<mitrUptake->second.maxUptake;
                                 } else {
                                     concentrationField.setDirect(x, y, z, concentrationField.getDirect(x, y, z) -
                                                                           currentConcentration *
                                                                           mitrUptake->second.relativeUptakeRate);
-                                    Log(LOG_TRACE) << "concentration="<< currentConconcentrationField.getDirect(x,y,z)- currentConcentration*mitrUptake->second.relativeUptakeRate;
+                                    CC3D_Log(LOG_TRACE) << "concentration="<< currentConconcentrationField.getDirect(x,y,z)- currentConcentration*mitrUptake->second.relativeUptakeRate;
                                 }
                             }
                         }
@@ -682,7 +682,7 @@ void FiPySolver::secreteConstantConcentrationSingleField(unsigned int idx) {
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
+        CC3D_Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;
@@ -728,14 +728,14 @@ void FiPySolver::secreteConstantConcentrationSingleField(unsigned int idx) {
                 for (int x = minDim.x; x < maxDim.x; x++) {
 
                     pt = Point3D(x - 1, y - 1, z - 1);
-                    Log(LOG_TRACE) << "pt="<<pt<<" is valid "<<cellFieldG->isValid(pt);
+                    CC3D_Log(LOG_TRACE) << "pt="<<pt<<" is valid "<<cellFieldG->isValid(pt);
                     ///**
                     currentCellPtr = cellFieldG->getQuick(pt);
                     //             currentCellPtr=cellFieldG->get(pt);
-                    Log(LOG_TRACE) << "THIS IS PTR="<<currentCellPtr;
+                    CC3D_Log(LOG_TRACE) << "THIS IS PTR="<<currentCellPtr;
 
                     //             if(currentCellPtr)
-                    // Log(LOG_TRACE) << "This is id="<<currentCellPtr->id;
+                    // CC3D_Log(LOG_TRACE) << "This is id="<<currentCellPtr->id;
                     //currentConcentration = concentrationArray[x][y][z];
 
                     if (secreteInMedium && !currentCellPtr) {
@@ -1096,7 +1096,7 @@ void FiPySolver::readConcentrationField(std::string fileName, ConcentrationField
     for (pt.z = 0; pt.z < fieldDim.z; pt.z++)
         for (pt.y = 0; pt.y < fieldDim.y; pt.y++)
             for (pt.x = 0; pt.x < fieldDim.x; pt.x++) {
-                Log(LOG_TRACE) << "pt="<<pt;
+                CC3D_Log(LOG_TRACE) << "pt="<<pt;
                 concentrationField->set(pt, 0);
             }
 
@@ -1351,12 +1351,12 @@ void FiPySolver::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         if (_xmlData->getFirstElement("Serialize")->findAttribute("Frequency")) {
             serializeFrequency = _xmlData->getFirstElement("Serialize")->getAttributeAsUInt("Frequency");
         }
-        Log(LOG_DEBUG) << "serialize Flag="<<serializeFlag;
+        CC3D_Log(LOG_DEBUG) << "serialize Flag="<<serializeFlag;
     }
 
     if (_xmlData->findElement("ReadFromFile")) {
         readFromFileFlag = true;
-        Log(LOG_DEBUG) << "readFromFileFlag="<<readFromFileFlag;
+        CC3D_Log(LOG_DEBUG) << "readFromFileFlag="<<readFromFileFlag;
     }
 
     for (int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {

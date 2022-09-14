@@ -21,6 +21,6 @@
 #include <CompuCell3D/PluginManager.h>
 #include <CompuCell3D/Serializer.h>
 #include <CompuCell3D/ExtraMembers.h>
-#include <CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 #endif

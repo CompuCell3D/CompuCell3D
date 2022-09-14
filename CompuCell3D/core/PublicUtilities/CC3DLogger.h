@@ -16,7 +16,6 @@
 #endif
 
 #include <sstream>
-#include <core/CompuCell3D/CompuCellLibDLLSpecifier.h>
 
 
 /**
@@ -31,8 +30,8 @@
  * and dumps to the log when it goes out of scope.
  */
 namespace CompuCell3D{
-    
-class COMPUCELLLIB_EXPORT LoggingBuffer
+
+class LoggingBuffer
 {
 public:
     LoggingBuffer(int level, const char* func, const char* file, int line);
@@ -87,7 +86,7 @@ typedef int (*LoggerCallback)(LogEvent, std::ostream *);
  *
  * A set of static method for setting the logging level.
  */
-class  COMPUCELLLIB_EXPORT Logger
+class Logger
 {
 public:
 
@@ -190,13 +189,10 @@ public:
 
 };
 
-
-#ifndef NO_LOGGER
-#define Log(level) \
-    if (level > Logger::getLevel()) { ; } \
-    else LoggingBuffer(level, CC3D_FUNCTION, __FILE__, __LINE__).stream()
-#endif
-// #define Log(level) \
-//     LoggingBuffer(level, CC3D_FUNCTION, __FILE__, __LINE__)
 }
+
+#define CC3D_Log(level) \
+    if (level > CompuCell3D::Logger::getLevel()) { ; } \
+    else CompuCell3D::LoggingBuffer(level, CC3D_FUNCTION, __FILE__, __LINE__).stream()
+
 #endif /* SRC_CC3DLOGGER_H_ */

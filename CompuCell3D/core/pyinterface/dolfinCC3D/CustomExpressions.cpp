@@ -10,7 +10,7 @@
 
 #include <dolfin/common/Array.h>
 #include <iostream>
-#include<CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 using namespace dolfin;
 using namespace std;
 
@@ -31,7 +31,7 @@ void StepFunctionExpressionFlex::setCellField(void * _cellField){
       cellField=reinterpret_cast<CompuCell3D::WatchableField3D<CompuCell3D::CellG *> *>(_cellField);
       fieldDim=cellField->getDim();
   }
-  Log(LOG_TRACE) << "cell field is "<<cellField;
+  CC3D_Log(LOG_TRACE) << "cell field is "<<cellField;
   
 }
 
@@ -43,14 +43,14 @@ void StepFunctionExpressionFlex::setStepFunctionValues(const std::map<unsigned c
     defaultExpressionValue = _defaultExpressionValue;
     
 //     //debug output
-//  Log(LOG_TRACE) << "cell type definitions ";
+//  CC3D_Log(LOG_TRACE) << "cell type definitions ";
 //     for(std::map<unsigned char,double>::const_iterator mitr=cellTypeToValueMap.begin() ; mitr != cellTypeToValueMap.end() ; ++mitr){
-  //      Log(LOG_TRACE) << "type="<<mitr->first<<" value="<<mitr->second;
+  //      CC3D_Log(LOG_TRACE) << "type="<<mitr->first<<" value="<<mitr->second;
 //     }
 // 
-//      Log(LOG_TRACE) << <"cell ids definitions ";
+//      CC3D_Log(LOG_TRACE) << <"cell ids definitions ";
 //     for(std::map<long,double>::const_iterator mitr=cellIdsToValueMap.begin() ; mitr != cellIdsToValueMap.end() ; ++mitr){
-  //      Log(LOG_TRACE) << "type="<<mitr->first<<" value="<<mitr->second;
+  //      CC3D_Log(LOG_TRACE) << "type="<<mitr->first<<" value="<<mitr->second;
 //     }
     
     
@@ -60,7 +60,7 @@ void StepFunctionExpressionFlex::setStepFunctionValues(const std::map<unsigned c
 void StepFunctionExpressionFlex::eval(Array<double>& values, const Array<double>& x) const{
   using namespace CompuCell3D;
   Point3D pt(short(round(x[0])),short(round(x[1])),short(round(x[2])));
-  Log(LOG_TRACE) << "EVALUATING POINT "<<pt;
+  CC3D_Log(LOG_TRACE) << "EVALUATING POINT "<<pt;
   //keeping rounded point in the lattice
   if (pt.x==fieldDim.x)
       --pt.x;

@@ -14,7 +14,7 @@ using namespace std;
 #include "MitosisSteppable.h"
 #include "CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h"
 #include "CompuCell3D/plugins/PixelTracker/PixelTracker.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 MitosisSteppable::MitosisSteppable() {
     parentChildPositionFlag = 0;
@@ -39,14 +39,14 @@ void MitosisSteppable::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     //this will load VolumeTracker plugin if it is not already loaded
     Plugin *plugin = Simulator::pluginManager.get("VolumeTracker",
                                                   &pluginAlreadyRegisteredFlag);
-    Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
+    CC3D_Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
     if (!pluginAlreadyRegisteredFlag)
         plugin->init(simulator);
 
     //this will load CenterOfMass plugin if it is not already loaded
     Plugin *pluginCOM = Simulator::pluginManager.get("CenterOfMass",
                                                      &pluginAlreadyRegisteredFlag);
-    Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
+    CC3D_Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
     if (!pluginAlreadyRegisteredFlag)
         pluginCOM->init(simulator);
 
@@ -1253,8 +1253,8 @@ bool MitosisSteppable::divideClusterPixelsOrientationVectorBased(set <PixelTrack
     nVec *= 1.0 / norm;
 
     Vector3 clusterCOM = calculateClusterPixelsCOM(clusterPixels);
-    // Log(LOG_DEBUG) << "INSIDE DIVIDE CLUSTER COMPARTMENTS";
-    // Log(LOG_DEBUG) << "clusterCOM="<<clusterCOM;
+    // CC3D_Log(LOG_DEBUG) << "INSIDE DIVIDE CLUSTER COMPARTMENTS";
+    // CC3D_Log(LOG_DEBUG) << "clusterCOM="<<clusterCOM;
 
     //plane/line equation is of the form (r-p)*n=0 where p is vector pointing to point through which the plane will pass (COM)
     // n is a normal vector to the plane/line

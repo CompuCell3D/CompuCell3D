@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include "CC3DLogger.h"
 
 static int glob_compare(const void *arg1, const void *arg2)
 {
@@ -43,10 +44,10 @@ int glob(const   char  *pattern, int  flags, void * unused, glob_t* glob)
     using namespace std;
 
     ff_handle = _findfirst((char *)pattern, &ff);
-    cerr << "ff_handle=" << ff_handle << endl;
+    CC3D_Log(CompuCell3D::LOG_DEBUG) << "ff_handle=" << ff_handle;
 
 
-    cerr << "MAX_PATH=" << MAX_PATH << endl;
+    CC3D_Log(CompuCell3D::LOG_DEBUG) << "MAX_PATH=" << MAX_PATH;
 
 
     while (ff_handle != -1) {
@@ -57,25 +58,25 @@ int glob(const   char  *pattern, int  flags, void * unused, glob_t* glob)
                 return (GLOB_NOSPACE);
             }
             glob->gl_pathv = new_pathv;
-            cerr << "glob->gl_pathv=" << glob->gl_pathv << endl;
-            cerr << "path=" << path << endl;
-            cerr << "pattern=" << pattern << endl;
+            CC3D_Log(CompuCell3D::LOG_DEBUG) << "glob->gl_pathv=" << glob->gl_pathv;
+            CC3D_Log(CompuCell3D::LOG_DEBUG) << "path=" << path;
+            CC3D_Log(CompuCell3D::LOG_DEBUG) << "pattern=" << pattern;
 
 
             /* build the full pathname */
             //SAFECOPY(path,pattern);
             strcpy(path, pattern);
-            cerr << "path=" << path << endl;
+            CC3D_Log(CompuCell3D::LOG_DEBUG) << "path=" << path;
             p = getfname(path);
             *p = 0;
             strcat(path, ff.name);
-            cerr << "path=" << path << " ff.name=" << ff.name << endl;
+            CC3D_Log(CompuCell3D::LOG_DEBUG) << "path=" << path << " ff.name=" << ff.name;
 
             if ((glob->gl_pathv[glob->gl_pathc] = (char *)malloc(strlen(path) + 2)) == NULL) {
                 globfree(glob);
                 return (GLOB_NOSPACE);
             }
-            cerr << "glob->gl_pathc=" << glob->gl_pathc << endl;
+            CC3D_Log(CompuCell3D::LOG_DEBUG) << "glob->gl_pathc=" << glob->gl_pathc;
 
             strcpy(glob->gl_pathv[glob->gl_pathc], path);
 
@@ -84,17 +85,16 @@ int glob(const   char  *pattern, int  flags, void * unused, glob_t* glob)
 
             glob->gl_pathc++;
             found++;
-            cerr << "found=" << found << endl;
+            CC3D_Log(CompuCell3D::LOG_DEBUG) << "found=" << found;
         }
-        cerr << "outside if" << endl;
-        cerr << "ff_handle=" << ff_handle << endl;
-        //cerr << "ff=" << ff << endl;
+        CC3D_Log(CompuCell3D::LOG_DEBUG) << "outside if";
+        CC3D_Log(CompuCell3D::LOG_DEBUG) << "ff_handle=" << ff_handle;
         if (_findnext(ff_handle, &ff) != 0) {
-            cerr << "inside if findnexr" << endl;
+            CC3D_Log(CompuCell3D::LOG_DEBUG) << "inside if findnexr";
             _findclose(ff_handle);
             ff_handle = -1;
         }
-        cerr << "after _findclose" << endl;
+        CC3D_Log(CompuCell3D::LOG_DEBUG) << "after _findclose";
     }
 
 

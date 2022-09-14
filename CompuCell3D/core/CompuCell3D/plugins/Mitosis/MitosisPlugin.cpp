@@ -5,7 +5,7 @@ using namespace std;
 
 
 #include "MitosisPlugin.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 MitosisPlugin::MitosisPlugin() { potts = 0; }
 
@@ -21,7 +21,7 @@ void MitosisPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     //this will load VolumeTracker plugin if it is not already loaded
     Plugin *plugin = Simulator::pluginManager.get("VolumeTracker",
                                                   &pluginAlreadyRegisteredFlag);
-   Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
+   CC3D_Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
     if (!pluginAlreadyRegisteredFlag)
         plugin->init(simulator);
 
@@ -44,7 +44,7 @@ void MitosisPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     mitosisFlagVec.assign(maxNumberOfWorkNodes, false);
 
    turnOn(); //this can be called only after vectors have been allocated
-   Log(LOG_DEBUG) << "maxNumberOfWorkNodes="<<maxNumberOfWorkNodes;
+   CC3D_Log(LOG_DEBUG) << "maxNumberOfWorkNodes="<<maxNumberOfWorkNodes;
     update(_xmlData, true);
 
 }
@@ -227,13 +227,13 @@ bool MitosisPlugin::doMitosis() {
             ary1->clear();
         }
         if (!childCell) {
-            Log(LOG_DEBUG) << "Fragmented Cell - mitosis aborted";
+            CC3D_Log(LOG_DEBUG) << "Fragmented Cell - mitosis aborted";
             didMitosis = false;
             return didMitosis;
         }
 
         if (childCell && fabs((float) childCell->volume - parentCell->volume) > 2.0) {
-            Log(LOG_DEBUG) << "cell was fragmented before mitosis, volumes of parent and child cells might significantly differ";
+            CC3D_Log(LOG_DEBUG) << "cell was fragmented before mitosis, volumes of parent and child cells might significantly differ";
             didMitosis = true;
             return didMitosis;
         }

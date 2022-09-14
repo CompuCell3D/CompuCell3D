@@ -95,7 +95,7 @@ void ClusterSurfaceTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCel
         }
 
    }
-   Log(LOG_TRACE) << "NEW EVENT";
+   CC3D_Log(LOG_TRACE) << "NEW EVENT";
     if (newCell) {
         CC3DCellList compartments = potts->getCellInventory().getClusterInventory().getClusterCells(newCell->clusterId);
         //first make sure all compartments have same cluster surface - important during addition of new cluster e.g. during initialization

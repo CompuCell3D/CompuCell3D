@@ -6,7 +6,7 @@ using namespace std;
 
 #include "CurvaturePlugin.h"
 
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 
 CurvaturePlugin::CurvaturePlugin():
@@ -107,7 +107,7 @@ void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         char type2 = automaton->getTypeId(internalCurvatureParamVec[i]->getAttribute("Type2"));
 
         int index = getIndex(type1, type2);
-		Log(LOG_DEBUG) << "setting curvature parameters between type1=" << (int) type1 << " and type2=" << (int) type2;
+		CC3D_Log(LOG_DEBUG) << "setting curvature parameters between type1=" << (int) type1 << " and type2=" << (int) type2;
         curvatureParams_t::iterator it = internalCurvatureParams.find(index);
         if (it != internalCurvatureParams.end())
             throw CC3DException(string("Internal curvature parameters for ") + type1 + " " + type2 + " already set!");

@@ -47,7 +47,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <string>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 using namespace std;
 
@@ -98,7 +98,7 @@ void CleaverMesher::createTetMesh(bool verbose)
     BCCLattice3DMesher mesher(m_pimpl->m_lattice);//, alpha_short, alpha_long);
     m_pimpl->m_mesh = mesher.mesh(true, verbose);
     if(!m_pimpl->m_mesh)
-        Log(LOG_DEBUG) << "Failed to produce an output mesh.";
+        CC3D_Log(LOG_DEBUG) << "Failed to produce an output mesh.";
 }
 
 TetMesh* CleaverMesher::getTetMesh() const
@@ -144,7 +144,7 @@ BCCLattice3D* constructLatticeFromVolume(const Volume &volume)
     // Verify At Least 2 Fields Are Given As Input
     //-----------------------------------------------------
     if(volume.materials() < 2){
-        Log(LOG_DEBUG) << "At least 2 indicator functions required to run Cleaving algorithm";
+        CC3D_Log(LOG_DEBUG) << "At least 2 indicator functions required to run Cleaving algorithm";
         return NULL;
     }
 
@@ -1148,7 +1148,7 @@ static void interpolate_cell(OTCell *cell, BCCLattice3D *lattice)
         }
     }
     if(max_count != 1)
-        Log(LOG_TRACE) << "Problem!! - Dual Vertex has no clear max value";
+        CC3D_Log(LOG_TRACE) << "Problem!! - Dual Vertex has no clear max value";
     */
 
     cell->vert[C]->lbls[dom] = true;
@@ -1693,7 +1693,7 @@ static void create_dual_vertex(OTCell *cell, BCCLattice3D *lattice)
         }
     }
     if(max_count != 1)
-        Log(LOG_TRACE) << "Problem!! - Dual Vertex has no clear max value";
+        CC3D_Log(LOG_TRACE) << "Problem!! - Dual Vertex has no clear max value";
     */
 
     cell->vert[C]->lbls[dom] = true;

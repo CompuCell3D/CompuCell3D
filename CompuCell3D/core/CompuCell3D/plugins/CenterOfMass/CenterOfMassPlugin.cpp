@@ -7,7 +7,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "CenterOfMassPlugin.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 CenterOfMassPlugin::CenterOfMassPlugin() : boundaryStrategy(0) {}
 
@@ -15,7 +15,7 @@ CenterOfMassPlugin::~CenterOfMassPlugin() {}
 
 void CenterOfMassPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	boundaryStrategy=BoundaryStrategy::getInstance();
-	Log(LOG_DEBUG) << "\n\n\n  \t\t\t CenterOfMassPlugin::init() - CALLING INIT OF CENTER OF MASS PLUGIN\n\n\n";
+	CC3D_Log(LOG_DEBUG) << std::endl << std::endl << std::endl << "  \t\t\t CenterOfMassPlugin::init() - CALLING INIT OF CENTER OF MASS PLUGIN" << std::endl << std::endl << std::endl;
     potts = simulator->getPotts();
     bool pluginAlreadyRegisteredFlag;
     Plugin *plugin = Simulator::pluginManager.get("VolumeTracker",

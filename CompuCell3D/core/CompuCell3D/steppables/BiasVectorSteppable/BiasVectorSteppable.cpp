@@ -15,7 +15,7 @@ using namespace std;
 #define _USE_MATH_DEFINES
 
 #include <math.h>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 
 BiasVectorSteppable::BiasVectorSteppable() : cellFieldG(0), sim(0), potts(0), xmlData(0), boundaryStrategy(0),
@@ -368,7 +368,7 @@ void BiasVectorSteppable::randomize_initial_bias()//(CellG *cell)//, bool rnd_in
 				cell->biasVecY = noise[1];
 				cell->biasVecZ = noise[2];
 			}
-			// Log(LOG_DEBUG) << "in randomize initial bias " << cell->biasVecX << ' ' << cell->biasVecY << ' ' << cell->biasVecZ << ' ';
+			// CC3D_Log(LOG_DEBUG) << "in randomize initial bias " << cell->biasVecX << ' ' << cell->biasVecY << ' ' << cell->biasVecZ << ' ';
         }
         rnd_inited = true;
         return;
@@ -417,7 +417,7 @@ void BiasVectorSteppable::determine_noise_generator() {
 	{
 		noiseType = VEC_GEN_WHITE3D;
 	}
-	// Log(LOG_DEBUG) <<  "noise type" << noiseType;
+	// CC3D_Log(LOG_DEBUG) <<  "noise type" << noiseType;
     switch (noiseType) {
         case VEC_GEN_WHITE2D: {
             noiseFcnPtr = &BiasVectorSteppable::white_noise_2d;
@@ -445,7 +445,7 @@ void BiasVectorSteppable::determine_field_type() {
     } else {
         fieldType = FTYPE3D;
     }
-    // Log(LOG_DEBUG) << "field type " << fieldType;
+    // CC3D_Log(LOG_DEBUG) << "field type " << fieldType;
     return;
 }
 
@@ -494,7 +494,7 @@ void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData) 
         bParam.persistentAlpha = alpha;
         bParam.typeName = type;
 
-        Log(LOG_DEBUG) << "automaton=" << automaton;
+        CC3D_Log(LOG_DEBUG) << "automaton=" << automaton;
         typeIdVec.push_back(automaton->getTypeId(type));
         biasPersistParamMap[automaton->getTypeId(type)] = bParam;
     }
@@ -502,31 +502,31 @@ void BiasVectorSteppable::set_persitent_step_function(CC3DXMLElement *_xmlData) 
     switch (fieldType) {
         case CompuCell3D::BiasVectorSteppable::FTYPE3D: {
 
-			// Log(LOG_DEBUG) << "gen fnc case pers 3d ";
+			// CC3D_Log(LOG_DEBUG) << "gen fnc case pers 3d ";
 			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_3d;
 			break;
 		}
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DX:
 		{
-			// Log(LOG_DEBUG) << "gen fnc case pers 2dx ";
+			// CC3D_Log(LOG_DEBUG) << "gen fnc case pers 2dx ";
 			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
 			break;
 		}
 		case CompuCell3D::BiasVectorSteppable::FTYPE2DY:
 		{
-			// Log(LOG_DEBUG) << "gen fnc case pers 2dy ";
+			// CC3D_Log(LOG_DEBUG) << "gen fnc case pers 2dy ";
             perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_y;
             break;
         }
         case CompuCell3D::BiasVectorSteppable::FTYPE2DZ: {
 
-			// Log(LOG_DEBUG) << "gen fnc case pers 2dz ";
+			// CC3D_Log(LOG_DEBUG) << "gen fnc case pers 2dz ";
 			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_z;
 			break;
 		}
 		default:
 		{
-			// Log(LOG_DEBUG) << "gen fnc case pers def ";
+			// CC3D_Log(LOG_DEBUG) << "gen fnc case pers def ";
 			perGenFcnPtr = &BiasVectorSteppable::gen_persistent_bias_2d_x;
 			break;
 		}
@@ -590,7 +590,7 @@ void BiasVectorSteppable::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     */
 
     determine_bias_type(_xmlData);
-    // Log(LOG_DEBUG) << "bias type " << biasType ;
+    // CC3D_Log(LOG_DEBUG) << "bias type " << biasType ;
 
     boundaryStrategy = BoundaryStrategy::getInstance();
 

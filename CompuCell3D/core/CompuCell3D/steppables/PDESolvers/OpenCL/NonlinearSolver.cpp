@@ -9,7 +9,7 @@
 #include <limits>
 #include "../GPUSolverParams.h"
 #include <viennacl/linalg/norm_2.hpp>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 //Theoretically, we need to use Biconjugate Stabilized Gradients method here,
 //as the matrix is not symmetric.
@@ -33,7 +33,7 @@ Solver(oclHelper, solverParams, d_cellTypes, boundaryConditions, fieldsCount_, p
 mv_newField(fieldLength(&solverParams[0])*fieldsCount_),
     m_linearIterationsMade(0)
 {
-	Log(LOG_DEBUG) << "NonlinearSolver::ctor\n";
+	CC3D_Log(LOG_DEBUG) << "NonlinearSolver::ctor";
 	assert(fieldsCount_==fnats.size());
 	assert(solverParams.size()==fnats.size());
 
@@ -43,9 +43,9 @@ mv_newField(fieldLength(&solverParams[0])*fieldsCount_),
 	//loading OpenCL program
 	std::string commonFN=pathToKernels+"common.cl";
 	const char *programPaths[]={commonFN.c_str(), m_tmpReactionKernelsFN.c_str()};//TODO: find size of an array automatically
-	Log(LOG_DEBUG) << "OpenCL kernel names for NonlinearSolver:"
+	CC3D_Log(LOG_DEBUG) << "OpenCL kernel names for NonlinearSolver:"
     for (int i = 0; i < 2; ++i) {
-        Log(LOG_DEBUG) << "\t"<<programPaths[i];
+        CC3D_Log(LOG_DEBUG) << "\t"<<programPaths[i];
     }
 
     if (!oclHelper.LoadProgram(programPaths, 2, m_clProgram)) {
@@ -213,8 +213,6 @@ viennacl::vector<float> const &NonlinearSolver::prod(viennacl::vector<float> con
         ASSERT_OR_THROW(sstr.str().c_str(), false);
     }
 
-    //analyze("\nJacobianProd: \n", mv_outputField, dim, m_fieldsCount);
-
     ++m_linearIterationsMade;
 
     return getOutVector();
@@ -261,13 +259,13 @@ NonlinearSolver::NewField(float dt, viennacl::vector<float> const &v_oldField, N
 
         if (mguNorm2 >= prevMguNorm2) {
             if (goalFNGrowCount == 0)
-                Log(LOG_DEBUG) << "Warning: second norm for goal function grows.";
+                CC3D_Log(LOG_DEBUG) << "Warning: second norm for goal function grows.";
 			if(nlsParams.newton_.stopIfFTolGrows_){
-				Log(LOG_DEBUG) << <" Exit requested.\n";
+				CC3D_Log(LOG_DEBUG) << <" Exit requested.";
 				return mv_newField;
 			}else{
 				if(goalFNGrowCount==0)
-					Log(LOG_DEBUG) << " Continue solving.\n";
+					CC3D_Log(LOG_DEBUG) << " Continue solving.";
 			}
 			++goalFNGrowCount;
 		}
@@ -291,12 +289,12 @@ NonlinearSolver::NewField(float dt, viennacl::vector<float> const &v_oldField, N
         //std::cout<<"; second norm: "<<shNorm2<<std::endl;
 
         if (solver_tag.max_iterations() == solver_tag.iters()) {
-            Log(LOG_DEBUG) << "\nWarning: Linear solver didn't converge in "<<solver_tag.max_iterations()<<" iterations.";
+            CC3D_Log(LOG_DEBUG) << "Warning: Linear solver didn't converge in "<<solver_tag.max_iterations()<<" iterations.";
 			if(nlsParams.linear_.stopIfDidNotConverge_){
-				Log(LOG_DEBUG) << " Exit requested.\n";
+				CC3D_Log(LOG_DEBUG) << " Exit requested.";
 				return mv_newField;
 			}else{
-				Log(LOG_DEBUG) << " Continue solving.\n";
+				CC3D_Log(LOG_DEBUG) << " Continue solving.";
 			}
 		}
 
@@ -309,13 +307,13 @@ NonlinearSolver::NewField(float dt, viennacl::vector<float> const &v_oldField, N
 
         if (shNorm2 >= prevShNorm2) {
             if (shNorm2GrowCount == 0)
-                Log(LOG_DEBUG) << "\nWarning: second norm for update vector grows.";
+                CC3D_Log(LOG_DEBUG) << "Warning: second norm for update vector grows.";
 			if(nlsParams.newton_.stopIfFTolGrows_){
-				Log(LOG_DEBUG) << " Exit requested.\n";
+				CC3D_Log(LOG_DEBUG) << " Exit requested.";
 				return mv_newField;
 			}else{
 				if(shNorm2GrowCount==0)
-					Log(LOG_DEBUG) << " Continue solving.\n";
+					CC3D_Log(LOG_DEBUG) << " Continue solving.";
 			}
 			++shNorm2GrowCount;
 		}

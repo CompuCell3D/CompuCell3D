@@ -5,7 +5,7 @@
 #include <CompuCell3D/Potts3D/Potts3D.h>
 #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Field3D/Field3D.h>
-#include<CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 #include <Utils/Coordinates3D.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
@@ -43,11 +43,11 @@ void FieldExtractor::init(Simulator * _sim){
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FieldExtractor::extractCellField(){
-	Log(LOG_TRACE) << "EXTRACTING CELL FIELD";
+	CC3D_Log(LOG_TRACE) << "EXTRACTING CELL FIELD";
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim();
 	Point3D pt;
-	Log(LOG_TRACE) << "FIeld Extractor cell field fieldDim="<<fieldDim;
+	CC3D_Log(LOG_TRACE) << "FIeld Extractor cell field fieldDim="<<fieldDim;
 	CellGraphicsData gd;
 	CellG *cell;
 
@@ -3234,7 +3234,7 @@ bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk
 //	set<int> invisibleTypeSet(_typesInvisibeVec->begin(),_typesInvisibeVec->end());
 //
 //	//for (set<int>::iterator sitr=invisibleTypeSet.begin();sitr!=invisibleTypeSet.end();++sitr){
-	// Log(LOG_TRACE) << "invisible type="<<*sitr;
+	// CC3D_Log(LOG_TRACE) << "invisible type="<<*sitr;
 //	//}
 //
 //	Point3D pt;
@@ -3363,16 +3363,16 @@ bool FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArray
 
 void FieldExtractor::setVtkObj(void *_vtkObj)
 {
-  Log(LOG_DEBUG) << "INSIDE setVtkObj";
+  CC3D_Log(LOG_DEBUG) << "INSIDE setVtkObj";
 }
 
 void FieldExtractor::setVtkObjInt(long _vtkObjAddr)
 {
   void *vPtr = (void *)_vtkObjAddr;
-  Log(LOG_DEBUG) << "GOT THIS VOID ADDR "<<vPtr;
+  CC3D_Log(LOG_DEBUG) << "GOT THIS VOID ADDR "<<vPtr;
   vtkIntArray *arrayPtr = (vtkIntArray *)vPtr;
   arrayPtr->SetName("INTEGER ARRAY");
-  Log(LOG_DEBUG) << "THIS IS NAME OF THE ARRAY="<<arrayPtr->GetName();
+  CC3D_Log(LOG_DEBUG) << "THIS IS NAME OF THE ARRAY="<<arrayPtr->GetName();
 }
 
 vtkIntArray *FieldExtractor::produceVtkIntArray()

@@ -5,7 +5,7 @@
 #include <algorithm>
 
 #include "EnergyFunction.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 using namespace CompuCell3D;
 using namespace std;
 
@@ -62,7 +62,7 @@ void EnergyFunctionCalculator::unregisterEnergyFunction(std::string _functionNam
     mitr = nameToEnergyFunctionMap.find(_functionName);
 
   if(mitr==nameToEnergyFunctionMap.end()){
-    Log(LOG_DEBUG) << "Sorry, Could not find "<<_functionName<<" energy Function";
+    CC3D_Log(LOG_DEBUG) << "Sorry, Could not find "<<_functionName<<" energy Function";
         return; //plugin name not found
     }
     energyFunctions.erase(remove(energyFunctions.begin(), energyFunctions.end(), mitr->second), energyFunctions.end());

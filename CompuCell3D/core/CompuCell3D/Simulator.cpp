@@ -18,7 +18,7 @@ using namespace CompuCell3D;
 #include <chrono>
 
 #include <XMLUtils/CC3DXMLElement.h>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 #ifdef QT_WRAPPERS_AVAILABLE
 #include <QtWrappers/StreamRedirectors/CustomStreamBuffers.h>
@@ -73,7 +73,7 @@ Simulator::~Simulator() {
     delete classRegistry;
     delete pUtils;
     delete pUtilsSingle;
-	Log(LOG_DEBUG) << "Simulator: extra destroy for boundary strategy";
+	CC3D_Log(LOG_DEBUG) << "Simulator: extra destroy for boundary strategy";
     BoundaryStrategy::destroy();
 
 #ifdef QT_WRAPPERS_AVAILABLE
@@ -206,7 +206,7 @@ void Simulator::unregisterSteerableObject(const std::string &_objectName) {
     if (mitr != steerableObjectMap.end()) {
         steerableObjectMap.erase(mitr);
     } else {
-        Log(LOG_DEBUG) << "Could not find steerable object called ";
+        CC3D_Log(LOG_DEBUG) << "Could not find steerable object called ";
     }
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -271,28 +271,28 @@ void Simulator::start() {
 
     try {
         // Print the names of loaded plugins
-        Log(LOG_DEBUG) << "Simulator::start():  Plugins:";
+        CC3D_Log(LOG_DEBUG) << "Simulator::start():  Plugins:";
         PluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
         PluginManager<Plugin>::infos_t::iterator it;
         for (it = infos->begin(); it != infos->end(); it++)
             if (pluginManager.isLoaded((*it)->getName())) {
-                if (it != infos->begin()) Log(LOG_DEBUG) << ",";
-                Log(LOG_DEBUG) << " " << (*it)->getName();
+                if (it != infos->begin()) CC3D_Log(LOG_DEBUG) << ",";
+                CC3D_Log(LOG_DEBUG) << " " << (*it)->getName();
 			}
 
         classRegistry->start();
 
         currstep = 0;
         // Output statistics
-        Log(LOG_DEBUG) << "Step " << 0 << " ";
-			Log(LOG_DEBUG) <<"Energy " << potts.getEnergy() << " ";
-			Log(LOG_DEBUG) << "Cells " << potts.getNumCells();
+        CC3D_Log(LOG_DEBUG) << "Step " << 0 << " ";
+			CC3D_Log(LOG_DEBUG) <<"Energy " << potts.getEnergy() << " ";
+			CC3D_Log(LOG_DEBUG) << "Cells " << potts.getNumCells();
 
         simulatorIsStepping = true; //initialize flag that simulator is stepping
     } catch (const CC3DException &e) {
-        Log(LOG_DEBUG) << "ERROR: " << e;
+        CC3D_Log(LOG_DEBUG) << "ERROR: " << e;
         unloadModules();
-        Log(LOG_DEBUG) << "THIS IS recentErrorMessage="<<formatErrorMessage(e);
+        CC3D_Log(LOG_DEBUG) << "THIS IS recentErrorMessage="<<formatErrorMessage(e);
         if (!newPlayerFlag) {
             throw e;
         }
@@ -306,7 +306,7 @@ std::string Simulator::formatErrorMessage(const CC3DException &e) {
     errorMessageStream << "Exception in C++ code :" << endl << e.getMessage() << endl << "Location" << endl << "FILE :"
                        << e.getFilename();
     recentErrorMessage=errorMessageStream.str();
-	Log(LOG_DEBUG) << "THIS IS recentErrorMessage="<<recentErrorMessage;
+	CC3D_Log(LOG_DEBUG) << "THIS IS recentErrorMessage="<<recentErrorMessage;
     return recentErrorMessage;
 
 }
@@ -317,19 +317,19 @@ void Simulator::extraInit() {
     try {
         PluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
         PluginManager<Plugin>::infos_t::iterator it;
-		Log(LOG_DEBUG) << "begin extraInit calls for plugins";
+		CC3D_Log(LOG_DEBUG) << "begin extraInit calls for plugins";
         for (it = infos->begin(); it != infos->end(); it++)
             if (pluginManager.isLoaded((*it)->getName())) {
                 pluginManager.get((*it)->getName())->extraInit(this);
 
 			}
-		Log(LOG_DEBUG) << "finish extraInit calls for plugins";
+		CC3D_Log(LOG_DEBUG) << "finish extraInit calls for plugins";
         classRegistry->extraInit(this);
 
     } catch (const CC3DException &e) {
-        Log(LOG_DEBUG) << "ERROR: " << e;
+        CC3D_Log(LOG_DEBUG) << "ERROR: " << e;
         unloadModules();
-        Log(LOG_DEBUG) << "THIS IS recentErrorMessage="<<formatErrorMessage(e);
+        CC3D_Log(LOG_DEBUG) << "THIS IS recentErrorMessage="<<formatErrorMessage(e);
 
         if (!newPlayerFlag) {
             throw e;
@@ -366,14 +366,14 @@ void Simulator::step(const unsigned int currentStep) {
         this->add_step_output(oss.str());
         // Output statistics
 		if(ppdCC3DPtr->debugOutputFrequency && ! (currentStep % ppdCC3DPtr->debugOutputFrequency) ){
-			Log(LOG_DEBUG) << oss.str();
+			CC3D_Log(LOG_DEBUG) << oss.str();
 
         }
 
     } catch (const CC3DException &e) {
-        Log(LOG_DEBUG) << "ERROR: " << e;
+        CC3D_Log(LOG_DEBUG) << "ERROR: " << e;
         unloadModules();
-        Log(LOG_DEBUG) << "THIS IS recentErrorMessage="<<formatErrorMessage(e);
+        CC3D_Log(LOG_DEBUG) << "THIS IS recentErrorMessage="<<formatErrorMessage(e);
 
         if (!newPlayerFlag) {
             throw e;
@@ -404,8 +404,8 @@ void Simulator::finish() {
 		unloadModules();
 
     } catch (const CC3DException &e) {
-        Log(LOG_DEBUG) << "ERROR: " << e;
-        Log(LOG_DEBUG) << "THIS IS recentErrorMessage="<<formatErrorMessage(e);
+        CC3D_Log(LOG_DEBUG) << "ERROR: " << e;
+        CC3D_Log(LOG_DEBUG) << "THIS IS recentErrorMessage="<<formatErrorMessage(e);
         if (!newPlayerFlag) {
             throw e;
         }
@@ -445,7 +445,7 @@ void Simulator::processMetadataCC3D(CC3DXMLElement *_xmlData) {
         if (_xmlData->getFirstElement("VirtualProcessingUnits")->findAttribute("ThreadsPerVPU")) {
             threadsPerVPU = _xmlData->getFirstElement("VirtualProcessingUnits")->getAttributeAsUInt("ThreadsPerVPU");
         }
-        Log(LOG_DEBUG) << "updating VPU's numberOfVPUs="<<numberOfVPUs<<" threadsPerVPU="<<threadsPerVPU;
+        CC3D_Log(LOG_DEBUG) << "updating VPU's numberOfVPUs="<<numberOfVPUs<<" threadsPerVPU="<<threadsPerVPU;
         pUtils->setVPUs(numberOfVPUs, threadsPerVPU);
 
         CC3DEventChangeNumberOfWorkNodes workNodeChangeEvent;
@@ -479,7 +479,7 @@ void Simulator::initializeCC3D() {
 
 
     try {
-        Log(LOG_DEBUG) << "BEFORE initializePotts";
+        CC3D_Log(LOG_DEBUG) << "BEFORE initializePotts";
         //initializePotts(ps.pottsParseData);
         initializePottsCC3D(ps.pottsCC3DXMLElement);
 
@@ -493,7 +493,7 @@ void Simulator::initializeCC3D() {
         //after pUtils have been initialized we process metadata -  in this function potts may get pUtils limiting it to use single thread
         processMetadataCC3D(ps.metadataCC3DXMLElement);
 
-		Log(LOG_DEBUG) << "AFTER initializePotts";
+		CC3D_Log(LOG_DEBUG) << "AFTER initializePotts";
         std::set <std::string> initializedPlugins;
         std::set <std::string> initializedSteppables;
 
@@ -504,7 +504,7 @@ void Simulator::initializeCC3D() {
             Plugin *plugin = pluginManager.get(pluginName, &pluginAlreadyRegisteredFlag);
             if (!pluginAlreadyRegisteredFlag) {
                 //Will only process first occurence of a given plugin
-                Log(LOG_DEBUG) << "INITIALIZING "<<pluginName;
+                CC3D_Log(LOG_DEBUG) << "INITIALIZING "<<pluginName;
                 plugin->init(this, ps.pluginCC3DXMLElementVector[i]);
             }
         }
@@ -516,7 +516,7 @@ void Simulator::initializeCC3D() {
 
             if (!steppableAlreadyRegisteredFlag) {
                 //Will only process first occurence of a given steppable
-                Log(LOG_DEBUG) << "INITIALIZING "<<steppableName;
+                CC3D_Log(LOG_DEBUG) << "INITIALIZING "<<steppableName;
                 if (ps.steppableCC3DXMLElementVector[i]->findAttribute("Frequency"))
                     steppable->frequency = ps.steppableCC3DXMLElementVector[i]->getAttributeAsUInt("Frequency");
 
@@ -531,13 +531,13 @@ void Simulator::initializeCC3D() {
         }
 
     } catch (const CC3DException &e) {
-        Log(LOG_DEBUG) << "ERROR: " << e;
+        CC3D_Log(LOG_DEBUG) << "ERROR: " << e;
         stringstream errorMessageStream;
 
-        errorMessageStream << "Exception during initialization/parsing :\n" << e.getMessage() << "\n" << "Location \n"
+        errorMessageStream << "Exception during initialization/parsing :" << std::endl << e.getMessage() << std::endl << "Location " << std::endl
                            << "FILE :" << e.getFilename();
         recentErrorMessage = errorMessageStream.str();
-        Log(LOG_DEBUG) << "THIS IS recentErrorMessage="<<recentErrorMessage;
+        CC3D_Log(LOG_DEBUG) << "THIS IS recentErrorMessage="<<recentErrorMessage;
         if (!newPlayerFlag) {
             throw e;
         }
@@ -549,7 +549,7 @@ void Simulator::initializeCC3D() {
 
 
 void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
-	Log(LOG_DEBUG) << "INSIDE initializePottsCC3D=";
+	CC3D_Log(LOG_DEBUG) << "INSIDE initializePottsCC3D=";
     //registering Potts as SteerableObject
     registerSteerableObject(&potts);
 
@@ -559,10 +559,10 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
     }
 
 	ppdCC3DPtr= new PottsParseData();
-	Log(LOG_DEBUG) << "ppdCC3DPtr="<<ppdCC3DPtr<<"ppdCC3DPtr->dim="<<ppdCC3DPtr->dim;
-	Log(LOG_DEBUG) << "_xmlData->getFirstElement(Dimensions)->getAttributeAsUInt(x)="<<_xmlData->getFirstElement("Dimensions")->getAttributeAsUInt("x");
-    Log(LOG_DEBUG) << "_xmlData->getFirstElement(Dimensions)->getAttributeAsUInt(y)="<<_xmlData->getFirstElement("Dimensions")->getAttributeAsUInt("y");
-    Log(LOG_DEBUG) << "_xmlData->getFirstElement(Dimensions)->getAttributeAsUInt(z)="<<_xmlData->getFirstElement("Dimensions")->getAttributeAsUInt("z");
+	CC3D_Log(LOG_DEBUG) << "ppdCC3DPtr="<<ppdCC3DPtr<<"ppdCC3DPtr->dim="<<ppdCC3DPtr->dim;
+	CC3D_Log(LOG_DEBUG) << "_xmlData->getFirstElement(Dimensions)->getAttributeAsUInt(x)="<<_xmlData->getFirstElement("Dimensions")->getAttributeAsUInt("x");
+    CC3D_Log(LOG_DEBUG) << "_xmlData->getFirstElement(Dimensions)->getAttributeAsUInt(y)="<<_xmlData->getFirstElement("Dimensions")->getAttributeAsUInt("y");
+    CC3D_Log(LOG_DEBUG) << "_xmlData->getFirstElement(Dimensions)->getAttributeAsUInt(z)="<<_xmlData->getFirstElement("Dimensions")->getAttributeAsUInt("z");
 
     ppdCC3DPtr->dim.x = _xmlData->getFirstElement("Dimensions")->getAttributeAsUInt("x");
     ppdCC3DPtr->dim.y = _xmlData->getFirstElement("Dimensions")->getAttributeAsUInt("y");
@@ -642,7 +642,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
     if (_xmlData->getFirstElement("MetropolisAlgorithm"))
         metropolisAlgorithmName = _xmlData->getFirstElement("MetropolisAlgorithm")->getText();
 
-    Log(LOG_DEBUG) << "_ppdCC3DPtr->algorithmName = " << metropolisAlgorithmName;
+    CC3D_Log(LOG_DEBUG) << "_ppdCC3DPtr->algorithmName = " << metropolisAlgorithmName;
 
     if (test_run_flag) {
         metropolisAlgorithmName = "testrun";
@@ -672,7 +672,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
         ppdCC3DPtr->seed = randomSeed;
     }
     RandomNumberGenerator *rand = rngFactory.getInstance(randomSeed);
-	Log(LOG_DEBUG) << " ppdCC3DPtr->seed = " << ppdCC3DPtr->seed;
+	CC3D_Log(LOG_DEBUG) << " ppdCC3DPtr->seed = " << ppdCC3DPtr->seed;
 
     if (_xmlData->getFirstElement("Shape")) {
         ppdCC3DPtr->shapeFlag = true;
@@ -715,16 +715,16 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 			ppdCC3DPtr->boundary_z = "noflux";
 		}
 	}
-	Log(LOG_DEBUG) << "ppdCC3DPtr->boundary_x = " << ppdCC3DPtr->boundary_x;
+	CC3D_Log(LOG_DEBUG) << "ppdCC3DPtr->boundary_x = " << ppdCC3DPtr->boundary_x;
 	//setting boundary conditions
 	if(ppdCC3DPtr->boundary_x!=""){
 		potts.setBoundaryXName(ppdCC3DPtr->boundary_x);
 	}
-	Log(LOG_DEBUG) << "_ppdCC3DPtr->boundary_y = " << ppdCC3DPtr->boundary_y;
+	CC3D_Log(LOG_DEBUG) << "_ppdCC3DPtr->boundary_y = " << ppdCC3DPtr->boundary_y;
 	if(ppdCC3DPtr->boundary_y!=""){
 		potts.setBoundaryYName(ppdCC3DPtr->boundary_y);
 	}
-	Log(LOG_DEBUG) << "ppdCC3DPtr->boundary_z = " << ppdCC3DPtr->boundary_z;
+	CC3D_Log(LOG_DEBUG) << "ppdCC3DPtr->boundary_z = " << ppdCC3DPtr->boundary_z;
     if (ppdCC3DPtr->boundary_z != "") {
         potts.setBoundaryZName(ppdCC3DPtr->boundary_z);
     }
@@ -732,7 +732,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 	if (_xmlData->getFirstElement("LatticeType")) {
 		ppdCC3DPtr->latticeType = _xmlData->getFirstElement("LatticeType")->getText();
 	}
-	Log(LOG_DEBUG) << "ppdCC3DPtr->latticeType = " << ppdCC3DPtr->latticeType;
+	CC3D_Log(LOG_DEBUG) << "ppdCC3DPtr->latticeType = " << ppdCC3DPtr->latticeType;
 
 
     changeToLower(ppdCC3DPtr->latticeType);
@@ -765,15 +765,14 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
         BoundaryStrategy::instantiate(ppdCC3DPtr->boundary_x, ppdCC3DPtr->boundary_y, ppdCC3DPtr->boundary_z,
                                       ppdCC3DPtr->shapeAlgorithm, ppdCC3DPtr->shapeIndex, ppdCC3DPtr->shapeSize,
                                       ppdCC3DPtr->shapeInputfile, HEXAGONAL_LATTICE);
-        Log(LOG_DEBUG) << "initialized hex lattice";
+        CC3D_Log(LOG_DEBUG) << "initialized hex lattice";
     } else {
         BoundaryStrategy::instantiate(ppdCC3DPtr->boundary_x, ppdCC3DPtr->boundary_y, ppdCC3DPtr->boundary_z,
                                       ppdCC3DPtr->shapeAlgorithm, ppdCC3DPtr->shapeIndex, ppdCC3DPtr->shapeSize,
                                       ppdCC3DPtr->shapeInputfile, SQUARE_LATTICE);
-        Log(LOG_DEBUG) << "initialized square lattice";
+        CC3D_Log(LOG_DEBUG) << "initialized square lattice";
 	}
-    Log(LOG_DEBUG) << "potts.getLatticeType()
-         ="<< potts.getLatticeType();
+    CC3D_Log(LOG_DEBUG) << "potts.getLatticeType() = "<< potts.getLatticeType();
 
     //    exit(0);
     BoundaryStrategy::getInstance()->setDim(ppdCC3DPtr->dim);
@@ -798,13 +797,13 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 	{
 		potts.setNeighborOrder(ppdCC3DPtr->neighborOrder);
 	}
-	Log(LOG_DEBUG) << "ppdCC3DPtr->depthFlag = " << ppdCC3DPtr->depthFlag;
+	CC3D_Log(LOG_DEBUG) << "ppdCC3DPtr->depthFlag = " << ppdCC3DPtr->depthFlag;
 
     if (_xmlData->getFirstElement("DebugOutputFrequency")) {
         ppdCC3DPtr->debugOutputFrequency = _xmlData->getFirstElement("DebugOutputFrequency")->getUInt();
     }
 
-	Log(LOG_DEBUG) << "ppdCC3DPtr->debugOutputFrequency = " << ppdCC3DPtr->debugOutputFrequency;
+	CC3D_Log(LOG_DEBUG) << "ppdCC3DPtr->debugOutputFrequency = " << ppdCC3DPtr->debugOutputFrequency;
     if (ppdCC3DPtr->debugOutputFrequency <= 0) {
         ppdCC3DPtr->debugOutputFrequency = 0;
         potts.setDebugOutputFrequency(0);
@@ -895,7 +894,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 
     //this might reinitialize some of the POtts members but it also makes sure that units are initialized too.
     potts.update(_xmlData);
-    Log(LOG_DEBUG) << "before return 1";
+    CC3D_Log(LOG_DEBUG) << "before return 1";
 
     return;
 }

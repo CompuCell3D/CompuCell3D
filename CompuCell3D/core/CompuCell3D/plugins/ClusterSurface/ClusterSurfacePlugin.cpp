@@ -227,7 +227,7 @@ void ClusterSurfacePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) 
             functionType = BYCELLID;
     }
     Automaton *automaton = potts->getAutomaton();
-    Log(LOG_DEBUG) << "automaton="<<automaton;
+    CC3D_Log(LOG_DEBUG) << "automaton="<<automaton;
 
     switch (functionType) {
         case BYCELLID:

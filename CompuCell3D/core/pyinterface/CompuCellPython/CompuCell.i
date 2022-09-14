@@ -79,7 +79,7 @@
 #include<CompuCell3D/steppables/PDESolvers/ReactionDiffusionSolverFVM.h>
 #include <CompuCell3D/steppables/PDESolvers/DiffusionSolverFE_CPU.h>
 #include <CompuCell3D/steppables/PDESolvers/ReactionDiffusionSolverFE.h>
-#include<CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 //#include <CompuCell3D/BabySim/BabyPottsParseData.h>
 //#include <CompuCell3D/BabySim/BabySim.h>
 
@@ -247,7 +247,7 @@ using namespace CompuCell3D;
 
 // we have to include files for objects that we will type-map before including definitions of corresponding typemaps
 // logger include
-%include "CompuCell3D/CC3DLogger.h"
+%include "PublicUtilities/CC3DLogger.h"
 %include "Field3D/Point3D.h"
 %include "Field3D/Dim3D.h"
 
@@ -1445,21 +1445,19 @@ public:
 
   // todo - plugin manager
   void initializePlugins() {
-    cerr << "initialize plugin fcn" << endl;
+    CC3D_Log(LOG_DEBUG) << "initialize plugin fcn";
 
     char *steppablePath = getenv("COMPUCELL3D_STEPPABLE_PATH");
-    cerr<<"steppablePath="<<steppablePath<<endl;
+    CC3D_Log(LOG_DEBUG) << "steppablePath=" << steppablePath;
     if (steppablePath) Simulator::steppableManager.loadLibraries(steppablePath);
 	  
     char *pluginPath = getenv("COMPUCELL3D_PLUGIN_PATH");
-    cerr<<"pluginPath="<<pluginPath<<endl;
-    cerr<<"THIS IS JUST BEFORE LOADING LIBRARIES"<<endl;
+    CC3D_Log(LOG_DEBUG) << "pluginPath=" << pluginPath;
+    CC3D_Log(LOG_DEBUG) << "THIS IS JUST BEFORE LOADING LIBRARIES";
       
    
     if (pluginPath) Simulator::pluginManager.loadLibraries(pluginPath);
 
-    //cerr<<" AFTER LOAD LIBRARIES"<<endl;
-    // Display the plugins that were loaded
   }
 
 
@@ -1478,7 +1476,7 @@ public:
    }
 
    void printModuleName(ParseData * source){
-      cerr<<"ModuleName="<<source->moduleName<<endl;
+      CC3D_Log(LOG_DEBUG) << "ModuleName=" << source->moduleName;
    }
 
 %}

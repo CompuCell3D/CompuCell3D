@@ -6,7 +6,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "UniformFieldInitializer.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 UniformFieldInitializer::UniformFieldInitializer() :
         potts(0), sim(0) {}
 
@@ -76,7 +76,7 @@ void UniformFieldInitializer::layOutCells(const UniformFieldInitializerData &_in
 
     Dim3D dim = cellField->getDim();
     Point3D boxDim = _initData.boxMax - _initData.boxMin;
-    Log(LOG_DEBUG) << " _initData.boxMin " << _initData.boxMin << " _initData.boxMax=" << _initData.boxMax << " dim=" << dim;
+    CC3D_Log(LOG_DEBUG) << " _initData.boxMin " << _initData.boxMin << " _initData.boxMax=" << _initData.boxMax << " dim=" << dim;
 
     if (!(_initData.boxMin.x >= 0 && _initData.boxMin.y >= 0 && _initData.boxMin.z >= 0
           && _initData.boxMax.x <= dim.x
@@ -92,7 +92,7 @@ void UniformFieldInitializer::layOutCells(const UniformFieldInitializerData &_in
 	if (boxDim.y % size) itDim.y += 1;
 	itDim.z = boxDim.z / size;
 	if (boxDim.z % size) itDim.z += 1;
-	Log(LOG_DEBUG) << "itDim=" << itDim;
+	CC3D_Log(LOG_DEBUG) << "itDim=" << itDim;
     Point3D pt;
     Point3D cellPt;
     CellG *cell;
@@ -104,7 +104,7 @@ void UniformFieldInitializer::layOutCells(const UniformFieldInitializerData &_in
                 pt.x = _initData.boxMin.x + x * size;
                 pt.y = _initData.boxMin.y + y * size;
                 pt.z = _initData.boxMin.z + z * size;
-                Log(LOG_TRACE) << " pt="<<pt;
+                CC3D_Log(LOG_TRACE) << " pt="<<pt;
 
                 if (BoundaryStrategy::getInstance()->isValid(pt)) {
                     cell = potts->createCellG(pt);
@@ -156,7 +156,7 @@ void UniformFieldInitializer::start() {
     if (sim->getRestartEnabled()) {
         return;  // we will not initialize cells if restart flag is on
     }
-    Log(LOG_DEBUG) << "INSIDE START";
+    CC3D_Log(LOG_DEBUG) << "INSIDE START";
 
     WatchableField3D < CellG * > *cellField = (WatchableField3D < CellG * > *)
     potts->getCellFieldG();

@@ -5,7 +5,7 @@
 #include "CUDAUtilsHeader.h"
 #include "../GPUSolverBasicData.h"
 #include <iostream>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 # define BLOCK_SIZE_FRAME (BLOCK_SIZE+2)
 
 using std::endl;
@@ -50,7 +50,7 @@ namespace CompuCell3D {
 	//not the most efficient code...
 	//refactoring needed (separate device selection from user messages)
 	if(gpuDeviceIndex==-1){//select the fastest GPU device
-        Log(LOG_DEBUG) << "Selecting the fastest GPU device...\n";
+        CC3D_Log(LOG_DEBUG) << "Selecting the fastest GPU device...";
 		int num_devices, device;
 		cudaGetDeviceCount(&num_devices);
 		if (num_devices > 1) {
@@ -65,25 +65,25 @@ namespace CompuCell3D {
 			  }
 			  cudaDeviceProp properties;
 			  cudaGetDeviceProperties(&properties, max_device);
-              Log(LOG_DEBUG) << "GPU device "<<max_device<<" selected; GPU device name: "<<properties.name;
+              CC3D_Log(LOG_DEBUG) << "GPU device "<<max_device<<" selected; GPU device name: "<<properties.name;
 			  cudaSetDevice(max_device);
 			  gpuDeviceIndex=max_device;
 		}else{
-            Log(LOG_DEBUG) << "Only one GPU device available, will use it (#0)\n";
+            CC3D_Log(LOG_DEBUG) << "Only one GPU device available, will use it (#0)";
 			cudaDeviceProp properties;
 			cudaGetDeviceProperties(&properties, 0);
-            Log(LOG_DEBUG) << "GPU device name: "<<properties.name;
+            CC3D_Log(LOG_DEBUG) << "GPU device name: "<<properties.name;
 		}
 	}else{
 		cudaError_t err=cudaSetDevice(gpuDeviceIndex);
 		if(err!=cudaSuccess){
-            Log(LOG_DEBUG) << "Can't use the GPU device # "<<gpuDeviceIndex<<" (error code: "<<err<<", err message: "<<cudaGetErrorString(err)<<")"<<"\n";
+            CC3D_Log(LOG_DEBUG) << "Can't use the GPU device # "<<gpuDeviceIndex<<" (error code: "<<err<<", err message: "<<cudaGetErrorString(err)<<")";
 			exit(-1);
 		}
 
 		cudaDeviceProp properties;
 		cudaGetDeviceProperties(&properties, gpuDeviceIndex);
-        Log(LOG_DEBUG) << "GPU device name: "<<properties.name;
+        CC3D_Log(LOG_DEBUG) << "GPU device name: "<<properties.name;
         }
 
         alloc(fieldLen);
@@ -92,7 +92,7 @@ namespace CompuCell3D {
 void FlexibleDiffusionSolverFE_GPU_CUDA::alloc(size_t fieldLen){
 	unsigned int flags = cudaHostAllocMapped;
     checkCudaErrors(cudaHostAlloc((void **)&h_solverParamPtr, sizeof(SolverParams_t), flags));
-    Log(LOG_DEBUG) << "h_solverParamPtr-"<<h_solverParamPtr;
+    CC3D_Log(LOG_DEBUG) << "h_solverParamPtr-"<<h_solverParamPtr;
 
 
         // allocate device memory
@@ -127,12 +127,12 @@ void FlexibleDiffusionSolverFE_GPU_CUDA::alloc(size_t fieldLen){
 	for (int i=0 ; i<UCHAR_MAX+1 ; ++i){
 		h_solverParam.diffCoef[i]=diffData.diffCoef[i];
 		h_solverParam.decayCoef[i]=diffData.decayCoef[i];
-        Log(LOG_TRACE) << "h_solverParam.diffCoef["<<i<<"]="<<h_solverParam.diffCoef[i];
+        CC3D_Log(LOG_TRACE) << "h_solverParam.diffCoef["<<i<<"]="<<h_solverParam.diffCoef[i];
         }
     }
 
 string FlexibleDiffusionSolverFE_GPU_CUDA::solverName(){
-    Log(LOG_DEBUG) << "Calling FlexibleDiffusionSolverFE_GPU_CUDA::solverName";
+    CC3D_Log(LOG_DEBUG) << "Calling FlexibleDiffusionSolverFE_GPU_CUDA::solverName";
         return "FlexibleDiffusionSolverFE_CUDA";
     }
 
@@ -150,7 +150,7 @@ string FlexibleDiffusionSolverFE_GPU_CUDA::solverName(){
     }
 
 void FlexibleDiffusionSolverFE_GPU_CUDA::initCellTypeArray(unsigned char *arr, size_t arrLength){
-    Log(LOG_TRACE) << "h_celltype_field->getArraySize()="<<arrLength<<" mem_size_celltype_field="<<mem_size_celltype_field;
+    CC3D_Log(LOG_TRACE) << "h_celltype_field->getArraySize()="<<arrLength<<" mem_size_celltype_field="<<mem_size_celltype_field;
         ////h_celltype_field=cellTypeMonitorPlugin->getCellTypeArray();
         checkCudaErrors(
                 cudaMemcpy(d_celltype_field, arr, arrLength * sizeof(*d_celltype_field), cudaMemcpyHostToDevice));

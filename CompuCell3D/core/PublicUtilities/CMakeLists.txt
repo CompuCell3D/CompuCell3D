@@ -11,6 +11,7 @@ SET(SRCS
   StringUtils.cpp
   Vector3.cpp
   ParallelUtilsOpenMP.cpp
+  CC3DLogger.cpp
   ${WINDOWS_GLOB_SCRS}
 )
 
@@ -42,4 +43,5 @@ INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/PublicUtilities .h
   Vector3
   ParallelUtilsOpenMP
   CC3D_PublicUtilities
+  CC3DLogger
 )

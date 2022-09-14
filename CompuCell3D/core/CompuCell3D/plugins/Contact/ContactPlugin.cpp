@@ -5,7 +5,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "ContactPlugin.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 ContactPlugin::ContactPlugin() : xmlData(0), weightDistance(false) {
 }
@@ -46,8 +46,9 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     }
 
     for (auto &i: cellTypesSet)
-        for (auto &j: cellTypesSet)
-            Log(LOG_DEBUG) << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << contactEnergyArray[i][j];
+        for (auto &j: cellTypesSet) {
+            CC3D_Log(LOG_DEBUG) << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << contactEnergyArray[i][j];
+        }
 
     //Here I initialize max neighbor index for direct access to the list of neighbors
     boundaryStrategy = BoundaryStrategy::getInstance();
@@ -74,7 +75,7 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         }
 
     }
-    Log(LOG_DEBUG) << "Contact maxNeighborIndex=" << maxNeighborIndex;
+    CC3D_Log(LOG_DEBUG) << "Contact maxNeighborIndex=" << maxNeighborIndex;
 
 }
 

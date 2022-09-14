@@ -578,7 +578,7 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 
 
     if (oldCell) {
-        //cerr<<"****************OLD CELL PART***********************"<<endl;
+        
         lambdaLength = lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->lambdaLength;;
         targetLength = lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->targetLength;;
         minorTargetLength = lengthConstraintDataAccessor.get(oldCell->extraAttribPtr)->minorTargetLength;;

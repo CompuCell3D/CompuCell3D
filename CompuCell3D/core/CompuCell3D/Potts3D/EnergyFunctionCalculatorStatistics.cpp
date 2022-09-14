@@ -10,7 +10,7 @@
 #include <sstream>
 #include <CompuCell3D/PottsParseData.h>
 #include <XMLUtils/CC3DXMLElement.h>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 using namespace CompuCell3D;
 using namespace std;
@@ -126,7 +126,7 @@ double EnergyFunctionCalculatorStatistics::changeEnergy(Point3D &pt, const CellG
     } else {
         for (unsigned int i = 0; i < energyFunctions.size(); i++) {
             change += energyFunctions[i]->changeEnergy(pt, newCell, oldCell);
-            Log(LOG_DEBUG) << "CHANGE FROM ACCEPTANCE FUNCTION"<<change<<" FCNNAME="<<energyFunctionsNameVec[i];
+            CC3D_Log(LOG_DEBUG) << "CHANGE FROM ACCEPTANCE FUNCTION"<<change<<" FCNNAME="<<energyFunctionsNameVec[i];
         }
 
     }
@@ -171,7 +171,7 @@ void EnergyFunctionCalculatorStatistics::get_current_mcs_prob_npy_array(double *
 }
 
 void EnergyFunctionCalculatorStatistics::get_current_mcs_flip_attempt_points_npy_array(short *shortvec, int n) {
-    Log(LOG_DEBUG) << "get_current_mcs_flip_attempt_points_npy_array n=" << n;
+    CC3D_Log(LOG_DEBUG) << "get_current_mcs_flip_attempt_points_npy_array n=" << n;
 	std::list<Point3D>::iterator pixel_copy_litr = pixel_copy_attempt_points_list.begin();
 	for (long i = 0; i < n;  i+=3) {
 		Point3D & pt = *pixel_copy_litr;
@@ -554,17 +554,17 @@ void EnergyFunctionCalculatorStatistics::outputResultsSingleSpinFlip() {
 
 
 void EnergyFunctionCalculatorStatistics::outputResults() {
-    Log(LOG_DEBUG) << "-------------ENERGY CALCULATOR STATISTICS-------------";
-    Log(LOG_DEBUG) << "Accepted Energy:";
+    CC3D_Log(LOG_DEBUG) << "-------------ENERGY CALCULATOR STATISTICS-------------";
+    CC3D_Log(LOG_DEBUG) << "Accepted Energy:";
     double totAccEnergyChange = 0;
 
 
     calculateStatData(); //this actually calculates stat data and allocates all necessary vectors
 
     for (int i = 0; i < energyFunctions.size(); ++i) {
-        Log(LOG_DEBUG) << "TOT "<<energyFunctionsNameVec[i]<<" "<<avgEnergyVectorTot[i]*NTot<<" avg: "<<avgEnergyVectorTot[i]<<" stdDev: "<<stdDevEnergyVectorTot[i];
-        Log(LOG_DEBUG) << "ACC "<<energyFunctionsNameVec[i]<<" "<<avgEnergyVectorAcc[i]*NAcc<<" avg: "<<avgEnergyVectorAcc[i]<<" stdDev: "<<stdDevEnergyVectorAcc[i];
-        Log(LOG_DEBUG) << "REJ "<<energyFunctionsNameVec[i]<<" "<<avgEnergyVectorRej[i]*NRej<<" avg: "<<avgEnergyVectorRej[i]<<" stdDev: "<<stdDevEnergyVectorRej[i];
+        CC3D_Log(LOG_DEBUG) << "TOT "<<energyFunctionsNameVec[i]<<" "<<avgEnergyVectorTot[i]*NTot<<" avg: "<<avgEnergyVectorTot[i]<<" stdDev: "<<stdDevEnergyVectorTot[i];
+        CC3D_Log(LOG_DEBUG) << "ACC "<<energyFunctionsNameVec[i]<<" "<<avgEnergyVectorAcc[i]*NAcc<<" avg: "<<avgEnergyVectorAcc[i]<<" stdDev: "<<stdDevEnergyVectorAcc[i];
+        CC3D_Log(LOG_DEBUG) << "REJ "<<energyFunctionsNameVec[i]<<" "<<avgEnergyVectorRej[i]*NRej<<" avg: "<<avgEnergyVectorRej[i]<<" stdDev: "<<stdDevEnergyVectorRej[i];
 
         totAccEnergyChange += avgEnergyVectorAcc[i] * NAcc;
     }
@@ -584,9 +584,9 @@ void EnergyFunctionCalculatorStatistics::outputResults() {
         (*out) << endl;
 
 	}
-	Log(LOG_DEBUG) << "TOTAL ACC ENERGY CHANGE="<<totAccEnergyChange;
-    Log(LOG_DEBUG) << "-------------End of ENERGY CALCULATOR STATISTICS-------------";
-    Log(LOG_DEBUG) << "Output File name = "<<outFileName;
+	CC3D_Log(LOG_DEBUG) << "TOTAL ACC ENERGY CHANGE="<<totAccEnergyChange;
+    CC3D_Log(LOG_DEBUG) << "-------------End of ENERGY CALCULATOR STATISTICS-------------";
+    CC3D_Log(LOG_DEBUG) << "Output File name = "<<outFileName;
 
 }
 
@@ -627,15 +627,15 @@ void EnergyFunctionCalculatorStatistics::init(CC3DXMLElement *_xmlData) {
             outputTotalSpinFlip = true;
 
 	}
-	Log(LOG_DEBUG) << "outFileName="<<outFileName;
-    Log(LOG_DEBUG) << "outFileCoreNameSpinFlips="<<outFileCoreNameSpinFlips;
-    Log(LOG_DEBUG) << "outputEverySpinFlip="<<outputEverySpinFlip;
-    Log(LOG_DEBUG) << "gatherResultsSpinFlip="<<gatherResultsSpinFlip;
-    Log(LOG_DEBUG) << "outputAcceptedSpinFlip="<<outputAcceptedSpinFlip;
-    Log(LOG_DEBUG) << "outputRejectedSpinFlip="<<outputRejectedSpinFlip;
-    Log(LOG_DEBUG) << "outputTotalSpinFlip="<<outputTotalSpinFlip;
-    Log(LOG_DEBUG) << "analysisFrequency="<<analysisFrequency;
-    Log(LOG_DEBUG) << "singleSpinFrequency="<<singleSpinFrequency;
+	CC3D_Log(LOG_DEBUG) << "outFileName="<<outFileName;
+    CC3D_Log(LOG_DEBUG) << "outFileCoreNameSpinFlips="<<outFileCoreNameSpinFlips;
+    CC3D_Log(LOG_DEBUG) << "outputEverySpinFlip="<<outputEverySpinFlip;
+    CC3D_Log(LOG_DEBUG) << "gatherResultsSpinFlip="<<gatherResultsSpinFlip;
+    CC3D_Log(LOG_DEBUG) << "outputAcceptedSpinFlip="<<outputAcceptedSpinFlip;
+    CC3D_Log(LOG_DEBUG) << "outputRejectedSpinFlip="<<outputRejectedSpinFlip;
+    CC3D_Log(LOG_DEBUG) << "outputTotalSpinFlip="<<outputTotalSpinFlip;
+    CC3D_Log(LOG_DEBUG) << "analysisFrequency="<<analysisFrequency;
+    CC3D_Log(LOG_DEBUG) << "singleSpinFrequency="<<singleSpinFrequency;
 
 
 }

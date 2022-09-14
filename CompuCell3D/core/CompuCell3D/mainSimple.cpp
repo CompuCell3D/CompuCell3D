@@ -19,7 +19,7 @@ using namespace std;
 
 #include <stdlib.h>
 
-#include <core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 ////the reason to declare BoundaryStrategy* BoundaryStrategy::singleton; here is because 
 ////Simulator.h includes Potts.h which includes WatchableField3D.h which includes Field3Dimpl.h which includes BoundaryStrategy.h
 ////BoundaryStrategy* BoundaryStrategy::singleton;
@@ -30,7 +30,7 @@ PluginManager<Steppable> Simulator::steppableManager;
 PluginManager<PluginBase> Simulator::pluginBaseManager;
 
 void Syntax(const string name) {
-    Log(LOG_DEBUG) << "Syntax: " << name << " <config>";
+    CC3D_Log(LOG_DEBUG) << "Syntax: " << name << " <config>";
     exit(1);
 }
 

@@ -7,7 +7,7 @@
 using namespace CompuCell3D;
 
 #include "OrientedContactPlugin.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 OrientedContactPlugin::OrientedContactPlugin() : xmlData(0), depth(1), alpha(1.0), weightDistance(false) {
 }
@@ -496,13 +496,12 @@ void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
         alpha = _xmlData->getFirstElement("Alpha")->getDouble();
     }
 
-    cerr << "size=" << orientedContactEnergyArray.size() << endl;
+    CC3D_Log(LOG_DEBUG) << "size=" << orientedContactEnergyArray.size();
 
     for (auto &i: cellTypesSet)
         for (auto &j: cellTypesSet) {
 
-            cerr << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << orientedContactEnergyArray[i][j]
-                 << endl;
+            CC3D_Log(LOG_DEBUG) << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << orientedContactEnergyArray[i][j];
 
         }
 
@@ -524,7 +523,7 @@ void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
         }
 
 			}
-         Log(LOG_DEBUG) << "Contact maxNeighborIndex="<<maxNeighborIndex;
+         CC3D_Log(LOG_DEBUG) << "Contact maxNeighborIndex="<<maxNeighborIndex;
 
 }
 

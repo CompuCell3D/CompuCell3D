@@ -36,13 +36,13 @@ void MitosisSimplePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     bool pluginAlreadyRegisteredFlag;
     Plugin *plugin = Simulator::pluginManager.get("VolumeTracker",
                                                   &pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
-    Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";;
+    CC3D_Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";;
     if (!pluginAlreadyRegisteredFlag)
         plugin->init(simulator);
 
     Plugin *pluginCOM = Simulator::pluginManager.get("CenterOfMass",
                                                      &pluginAlreadyRegisteredFlag); //this will load CenterOfMass plugin if it is not already loaded
-    Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
+    CC3D_Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
     if (!pluginAlreadyRegisteredFlag)
         pluginCOM->init(simulator);
 
@@ -84,7 +84,7 @@ void MitosisSimplePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     mitosisFlagVec.assign(maxNumberOfWorkNodes, false);
 
    turnOn(); //this can be called only after vectors have been allocated
-	Log(LOG_DEBUG) << "maxNumberOfWorkNodes="<<maxNumberOfWorkNodes;
+	CC3D_Log(LOG_DEBUG) << "maxNumberOfWorkNodes="<<maxNumberOfWorkNodes;
 
 
     boundaryStrategy = BoundaryStrategy::getInstance();

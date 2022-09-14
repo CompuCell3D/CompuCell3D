@@ -3,7 +3,7 @@
 using namespace CompuCell3D;
 
 #include "ContactOrientationPlugin.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 ContactOrientationPlugin::ContactOrientationPlugin() :
         pUtils(0),
@@ -264,7 +264,7 @@ void ContactOrientationPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
         }
 
     }
-    Log(LOG_DEBUG) << "Contact maxNeighborIndex="<<maxNeighborIndex;
+    CC3D_Log(LOG_DEBUG) << "Contact maxNeighborIndex="<<maxNeighborIndex;
 
 
     return;
@@ -286,8 +286,9 @@ void ContactOrientationPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
     vector<unsigned char> cellTypesVector(cellTypesSet.begin(), cellTypesSet.end());//coping set to the vector
 
     for (auto &i: cellTypesSet)
-        for (auto &j: cellTypesSet)
-            Log(LOG_DEBUG) << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << contactEnergyArray[i][j];
+        for (auto &j: cellTypesSet) {
+            CC3D_Log(LOG_DEBUG) << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << contactEnergyArray[i][j];
+        }
 
 
 }

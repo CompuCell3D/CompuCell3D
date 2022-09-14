@@ -166,15 +166,15 @@ double ConnectivityPlugin::changeEnergy(const Point3D &pt,
 //       }
 //    }
 //    //if (collisioncount == 0) {
-      //    Log(LOG_TRACE) << "COLLISION COUNT OF 0";
-//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[0]);
-//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[1]);
-//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[2]);
-//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[3]);
-//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[4]);
-//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[5]);
-//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[6]);
-//          Log(LOG_TRACE) << potts->getCellFieldG()->get(n[7]);
+      //    CC3D_Log(LOG_TRACE) << "COLLISION COUNT OF 0";
+//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[0]);
+//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[1]);
+//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[2]);
+//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[3]);
+//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[4]);
+//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[5]);
+//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[6]);
+//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[7]);
 //        int aaa;
 //        cin >> aaa;*/
 //    //}

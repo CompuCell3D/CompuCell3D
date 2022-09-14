@@ -10,7 +10,7 @@
 #include <CompuCell3D/Field3D/Array3D.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 #include <muParser/muParser.h>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 namespace mu {
 
@@ -30,7 +30,7 @@ namespace CompuCell3D {
     public:
         FiPyContiguous() : Steppable(), concentrationFieldVector(0), maxNeighborIndex(0), boundaryStrategy(0) {
             using namespace std;
-            Log(LOG_DEBUG) << "Default constructor FiPyContiguous";
+            CC3D_Log(LOG_DEBUG) << "Default constructor FiPyContiguous";
 
         };
 
@@ -49,18 +49,18 @@ namespace CompuCell3D {
 
         virtual Field3DImpl<precision> *getConcentrationField(const std::string &name) {
             using namespace std;
-            Log(LOG_DEBUG) << "concentrationFieldNameVector.size()="<<concentrationFieldNameVector.size();
+            CC3D_Log(LOG_DEBUG) << "concentrationFieldNameVector.size()="<<concentrationFieldNameVector.size();
             for (unsigned int i = 0; i < concentrationFieldNameVector.size(); ++i) {
-                Log(LOG_DEBUG) << "THIS IS FIELD NAME "<<concentrationFieldNameVector[i];
+                CC3D_Log(LOG_DEBUG) << "THIS IS FIELD NAME "<<concentrationFieldNameVector[i];
             }
             for (unsigned int i = 0; i < concentrationFieldNameVector.size(); ++i) {
                 if (concentrationFieldNameVector[i] == name) {
-                    Log(LOG_DEBUG) << "returning concentrationFieldVector[i]="<<concentrationFieldVector[i];
+                    CC3D_Log(LOG_DEBUG) << "returning concentrationFieldVector[i]="<<concentrationFieldVector[i];
                     return concentrationFieldVector[i];
 
                 }
             }
-            Log(LOG_DEBUG) << "returning NULL=";
+            CC3D_Log(LOG_DEBUG) << "returning NULL=";
             return 0;
 
         };
@@ -128,7 +128,7 @@ namespace CompuCell3D {
                         }
 
             } catch (mu::Parser::exception_type &e) {
-                Log(LOG_DEBUG) << e.GetMsg();
+                CC3D_Log(LOG_DEBUG) << e.GetMsg();
                 ASSERT_OR_THROW(e.GetMsg(), 0);
             }
         }

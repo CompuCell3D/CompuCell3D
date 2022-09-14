@@ -7,7 +7,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "SurfacePlugin.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 SurfacePlugin::~SurfacePlugin() {}
 
@@ -21,7 +21,7 @@ void SurfacePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     //this will load SurfaceTracker plugin if it is not already loaded
     SurfaceTrackerPlugin *plugin = (SurfaceTrackerPlugin *) Simulator::pluginManager.get("SurfaceTracker",
                                                                                          &pluginAlreadyRegisteredFlag);
-    Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
+    CC3D_Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
     if (!pluginAlreadyRegisteredFlag)
         plugin->init(simulator);
 
@@ -71,7 +71,7 @@ void SurfacePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
             functionType = BYCELLID;
     }
     Automaton *automaton = potts->getAutomaton();
-    Log(LOG_DEBUG) << "automaton="<<automaton;
+    CC3D_Log(LOG_DEBUG) << "automaton="<<automaton;
 
     switch (functionType) {
         case BYCELLID:

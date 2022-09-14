@@ -7,7 +7,7 @@
 
 #include <CompuCell3D/CC3DExceptions.h>
 #include <PublicUtilities/StringUtils.h>
-#include <core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 
 using namespace CompuCell3D;
@@ -176,19 +176,16 @@ bool PottsTestData::compare_potts_data(PottsTestData &potts_data_to_compare) {
     if (connectivity_energy != potts_data_to_compare.connectivity_energy)
         throw CC3DException("connectivity_energy is different ");
 
-    // cerr << "pt=" << potts_data_to_compare.changePixel << " neighbor=" << potts_data_to_compare.changePixelNeighbor << endl;
-
     for (const auto &kv: energyFunctionNameToValueMap) {
         const auto &mitr_computed = potts_data_to_compare.energyFunctionNameToValueMap.find(kv.first);
         if (mitr_computed != potts_data_to_compare.energyFunctionNameToValueMap.end()) {
 
             double difference_value = abs_difference(kv.second, mitr_computed->second);
-            // Log(LOG_DEBUG) << "comparison energy: "<< kv.first << " recorded=" << kv.second << " computed=" << mitr_computed->second;
 
             if (difference_value > tol) {
-                Log(LOG_DEBUG) <<  "detected a difference in " << kv.first << " recorded=" << kv.second << " computed="
+                CC3D_Log(LOG_DEBUG) <<  "detected a difference in " << kv.first << " recorded=" << kv.second << " computed="
                      << mitr_computed->second;
-                Log(LOG_DEBUG) << "difference_value=" << difference_value;
+                CC3D_Log(LOG_DEBUG) << "difference_value=" << difference_value;
 
                 throw CC3DException(string(kv.first) + " energy term different ");
             }

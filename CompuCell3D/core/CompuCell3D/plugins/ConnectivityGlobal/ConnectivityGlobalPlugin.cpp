@@ -2,7 +2,7 @@
 #include <CompuCell3D/CC3D.h>
 using namespace CompuCell3D;
 #include "ConnectivityGlobalPlugin.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 
 
@@ -82,9 +82,9 @@ void ConnectivityGlobalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 		penaltyMap[mitr->first] = fabs(mitr->second);
 	}
 
-	Log(LOG_DEBUG) << "size=" << penaltyMap.size();
+	CC3D_Log(LOG_DEBUG) << "size=" << penaltyMap.size();
 	for (auto& itr : penaltyMap) {
-		Log(LOG_DEBUG) << "penaltyMap[" << to_string(itr.first) << "]=" << itr.second;
+		CC3D_Log(LOG_DEBUG) << "penaltyMap[" << to_string(itr.first) << "]=" << itr.second;
 	}
 
 	//Here I initialize max neighbor index for direct acces to the list of neighbors 
@@ -94,7 +94,7 @@ void ConnectivityGlobalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 
 	maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 
-	Log(LOG_DEBUG) << "ConnectivityGlobal maxNeighborIndex=" << maxNeighborIndex;
+	CC3D_Log(LOG_DEBUG) << "ConnectivityGlobal maxNeighborIndex=" << maxNeighborIndex;
 
 	
 	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();

@@ -9,7 +9,7 @@
 #include <stdexcept>
 
 #include <CompuCell3D/CC3DExceptions.h>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 using namespace CompuCell3D;
 
@@ -61,16 +61,16 @@ OpenCLHelper::OpenCLHelper(int gpuDeviceIndex, int platformHint) {
 	char devName[256];
 	size_t len;
 	clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_NAME,255,devName, &len);
-    Log(LOG_DEBUG) << "\tGPU device \""<<devName<<"\" selected\n";
+    CC3D_Log(LOG_DEBUG) << "\tGPU device \""<<devName<<"\" selected";
 	cl_ulong gpuMem;
 	clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(gpuMem), &gpuMem, &len);
-    Log(LOG_DEBUG) << "\tTotal GPU memory: "<<gpuMem/1024/1024<<"MB";
+    CC3D_Log(LOG_DEBUG) << "\tTotal GPU memory: "<<gpuMem/1024/1024<<"MB";
 
 	clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(gpuMem), &gpuMem, &len);
-    Log(LOG_DEBUG) << "\tMax GPU memory chunk to allocate: "<<gpuMem/1024/1024<<"MB";
+    CC3D_Log(LOG_DEBUG) << "\tMax GPU memory chunk to allocate: "<<gpuMem/1024/1024<<"MB";
 
 	clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(maxWorkGroupSize), &maxWorkGroupSize, &len);
-    Log(LOG_DEBUG) << "\tMax work group size: "<<maxWorkGroupSize;
+    CC3D_Log(LOG_DEBUG) << "\tMax work group size: "<<maxWorkGroupSize;
 }
 
 
@@ -120,12 +120,12 @@ cl_program OpenCLHelper::CreateProgramWithSource(cl_uint sourcesCount,
 
 void OpenCLHelper::BuildExecutable(cl_program program) const {
     // Build the program executable
-    Log(LOG_DEBUG) << "building the program\n";
+    CC3D_Log(LOG_DEBUG) << "building the program";
     // build the program
     //err = clBuildProgram(program, 0, NULL, "-cl-nv-verbose", NULL, NULL);
     cl_int buildErr = clBuildProgram(program, 1, &devices[deviceUsed], NULL, NULL, NULL);
-    printf("clBuildProgram: %s\n", ErrorString(buildErr));
-    Log(LOG_DEBUG) << deviceUsed<<" "<<numDevices;
+    CC3D_Log(LOG_DEBUG) << "clBuildProgram: " << ErrorString(buildErr);
+    CC3D_Log(LOG_DEBUG) << deviceUsed<<" "<<numDevices;
     //if(err != CL_SUCCESS){
     cl_build_status build_status;
     cl_int err = clGetProgramBuildInfo(program, devices[deviceUsed], CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status),
@@ -138,14 +138,14 @@ void OpenCLHelper::BuildExecutable(cl_program program) const {
     err = clGetProgramBuildInfo(program, devices[deviceUsed], CL_PROGRAM_BUILD_LOG, ret_val_size, build_log, NULL);
 
     build_log[ret_val_size] = '\0';
-    printf("BUILD LOG: \n %s", build_log);
+    CC3D_Log(LOG_DEBUG) << "BUILD LOG: " << std::endl << build_log;
     delete build_log;
 
     //}
     //if(buildErr != CL_SUCCESS)
     //	throw(std::runtime_error("error"));
     ASSERT_OR_THROW("Can not build the GPU program", buildErr == CL_SUCCESS);
-    printf("program built\n");
+    CC3D_Log(LOG_DEBUG) << "program built";
 }
 
 
@@ -154,7 +154,7 @@ char *OpenCLHelper::FileContents(const char *filename, int *length) {
     void *buffer;
 
     if (!f) {
-        fprintf(stderr, "Unable to open %s for reading\n", filename);
+        CC3D_Log(LOG_ERROR) <<  "Unable to open " << filedname << " for reading";
         return NULL;
     }
 
@@ -194,7 +194,7 @@ bool OpenCLHelper::LoadProgram(const char *filePath[], size_t sourcesCount, cl_p
     program = CreateProgramWithSource(sourcesCount,
                                       &kernel_source[0], &err);
 
-    printf("clCreateProgramWithSource: %s\n", ErrorString(err));
+    CC3D_Log(LOG_DEBUG) << "clCreateProgramWithSource: " << ErrorString(err);
 
     if (err != CL_SUCCESS)
         return false;
@@ -239,29 +239,29 @@ cl_int OpenCLHelper::GetPlatformID(cl_platform_id &clSelectedPlatformID, int &pl
     cl_int ciErrNum = clGetPlatformIDs(0, NULL, &num_platforms);
     if (ciErrNum != CL_SUCCESS) {
         //shrLog(" Error %i in clGetPlatformIDs Call !!!\n\n", ciErrNum);
-        printf(" Error %i in clGetPlatformIDs Call !!!\n\n", ciErrNum);
+        CC3D_Log(LOG_ERROR) << " Error " << ciErrNum << " in clGetPlatformIDs Call !!!";
         return -1000;
     } else {
         if (num_platforms == 0) {
             //shrLog("No OpenCL platform found!\n\n");
-            printf("No OpenCL platform found!\n\n");
+            CC3D_Log(LOG_ERROR) << "No OpenCL platform found!";
             return -2000;
         } else {
             // if there's a platform or more, make space for ID's
             if ((clPlatformIDs = (cl_platform_id *) malloc(num_platforms * sizeof(cl_platform_id))) == NULL) {
-                printf("Failed to allocate memory for cl_platform ID's!\n\n");
+                CC3D_Log(LOG_ERROR) << "Failed to allocate memory for cl_platform ID's!";
                 return -3000;
             }
 
             // get platform info for each platform and trap the NVIDIA platform if found
             ciErrNum = clGetPlatformIDs(num_platforms, clPlatformIDs, NULL);
-            printf("Available platforms:\n");
+            CC3D_Log(LOG_DEBUG) << "Available platforms:";
             for (i = 0; i < num_platforms; ++i) {
                 ciErrNum = clGetPlatformInfo(clPlatformIDs[i], CL_PLATFORM_NAME, 1024, &chBuffer, NULL);
                 if (ciErrNum == CL_SUCCESS) {
-                    printf("platform %d: %s\n", i, chBuffer);
+                    CC3D_Log(LOG_DEBUG) << "platform " << i << ": " << chBuffer;
                     if (platfrormHint == -1 && strstr(chBuffer, "NVIDIA") != NULL) {
-                        printf("selected default NVIDIA platform (%d)\n", i);
+                        CC3D_Log(LOG_DEBUG) << "selected default NVIDIA platform (" << i << ")";
                         clSelectedPlatformID = clPlatformIDs[i];
                         platformInd = i;
                         break;
@@ -270,7 +270,7 @@ cl_int OpenCLHelper::GetPlatformID(cl_platform_id &clSelectedPlatformID, int &pl
             }
 
             if (platfrormHint != -1 && platfrormHint < (int) num_platforms) {
-                printf("Platform %d selection requested\n", platfrormHint);
+                CC3D_Log(LOG_DEBUG) << "Platform " << platfrormHint << " selection requested";
                 clSelectedPlatformID = clPlatformIDs[platfrormHint];
                 platformInd = platfrormHint;
             }
@@ -278,7 +278,7 @@ cl_int OpenCLHelper::GetPlatformID(cl_platform_id &clSelectedPlatformID, int &pl
             // default to zeroeth platform if NVIDIA not found
             if (clSelectedPlatformID == NULL) {
                 //shrLog("WARNING: NVIDIA OpenCL platform not found - defaulting to first platform!\n\n");
-                printf("WARNING: NVIDIA OpenCL platform not found - defaulting to first platform!\n\n");
+                CC3D_Log(LOG_WARNING) << "WARNING: NVIDIA OpenCL platform not found - defaulting to first platform!");
                 clSelectedPlatformID = clPlatformIDs[0];
                 platformInd = 0;
             }

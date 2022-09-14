@@ -2,7 +2,7 @@
 
 using namespace CompuCell3D;
 using namespace std;
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 #include "NeighborTrackerPlugin.h"
 
@@ -34,7 +34,7 @@ void NeighborTrackerPlugin::init(Simulator *_simulator, CC3DXMLElement *_xmlData
         checkSanity = true;
         checkFreq = _xmlData->getFirstElement("CheckLatticeSanityFrequency")->getUInt();
     }
-    Log(LOG_DEBUG) << "INITIALIZING CELL BOUNDARYTRACKER PLUGIN";
+    CC3D_Log(LOG_DEBUG) << "INITIALIZING CELL BOUNDARYTRACKER PLUGIN";
     simulator = _simulator;
     Potts3D *potts = simulator->getPotts();
     cellFieldG = (WatchableField3D < CellG * > *)
@@ -151,7 +151,7 @@ void NeighborTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell, Cel
                 }
                 else {
                     testLatticeSanityFull();
-                    Log(LOG_DEBUG) << "Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ...";
+                    CC3D_Log(LOG_DEBUG) << "Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ...";
                     throw CC3DException(
                             "Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ...");
                 }
@@ -298,7 +298,7 @@ void NeighborTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell, Cel
         ++changeCounter;
 
         if (!(changeCounter % checkFreq)) {
-            Log(LOG_DEBUG) << "ChangeCounter:" << changeCounter;
+            CC3D_Log(LOG_DEBUG) << "ChangeCounter:" << changeCounter;
             testLatticeSanityFull();
 
         }
@@ -403,7 +403,7 @@ void NeighborTrackerPlugin::testLatticeSanityFull() {
 
     //Now do lattice sanity checks
     if (mapCellNeighborSurfaceData.size() != cellInventoryPtr->getCellInventorySize()) {
-        Log(LOG_DEBUG) << "Number of cells in the mapCellNeighborSurfaceData = " << mapCellNeighborSurfaceData.size()
+        CC3D_Log(LOG_DEBUG) << "Number of cells in the mapCellNeighborSurfaceData = " << mapCellNeighborSurfaceData.size()
              << " is different than in cell inventory:  " << cellInventoryPtr->getCellInventorySize();
 
         exit(0);
@@ -417,22 +417,22 @@ void NeighborTrackerPlugin::testLatticeSanityFull() {
 
         mitr = mapCellNeighborSurfaceData.find(cell);
         if (mitr == mapCellNeighborSurfaceData.end()) {
-            Log(LOG_DEBUG) << "Cell " << cell << " does not appear in the just initialized mapCellNeighborSurfaceData";
+            CC3D_Log(LOG_DEBUG) << "Cell " << cell << " does not appear in the just initialized mapCellNeighborSurfaceData";
             exit(0);
 
         }
         set_NSD_ptr = &(mitr->second);
 
         if (!(*set_NSD_ptr == neighborTrackerAccessor.get(cell->extraAttribPtr)->cellNeighbors)) {
-            Log(LOG_DEBUG) << "Have checked " << counter << " cells";
-            Log(LOG_DEBUG) << "set of NeighborSurfaceData do not match for cell: " << cell;
-            Log(LOG_DEBUG) << "cell->id=" << cell->id << " cell->type=" << (int) cell->type;
+            CC3D_Log(LOG_DEBUG) << "Have checked " << counter << " cells";
+            CC3D_Log(LOG_DEBUG) << "set of NeighborSurfaceData do not match for cell: " << cell;
+            CC3D_Log(LOG_DEBUG) << "cell->id=" << cell->id << " cell->type=" << (int) cell->type;
             exit(0);
         }
 
         ++counter;
     }
-    Log(LOG_DEBUG) << "FULL TEST: LATTICE IS SANE!!!!!";
+    CC3D_Log(LOG_DEBUG) << "FULL TEST: LATTICE IS SANE!!!!!";
 
 }
 

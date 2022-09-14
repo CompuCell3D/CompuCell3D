@@ -34,7 +34,7 @@
 #include <fstream>
 #include <sstream>
 #include <omp.h>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 using namespace CompuCell3D;
 using namespace std;
 
@@ -69,7 +69,7 @@ void DiffusionSolverSerializer<Cruncher>::readFromFile() {
                                               static_cast<Cruncher *>(solverPtr)->getConcentrationField(i));
         }
     } catch (CC3DException &e) {
-        Log(LOG_DEBUG) << "COULD NOT FIND ONE OF THE FILES";
+        CC3D_Log(LOG_DEBUG) << "COULD NOT FIND ONE OF THE FILES";
         throw CC3DException("Error in reading diffusion fields from file", e);
     }
 }
@@ -299,13 +299,11 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 	vector<string> concentrationFieldNameVectorTmp; //temporary vector for field names
 	///assign vector of field names
 	concentrationFieldNameVectorTmp.assign(diffSecrFieldTuppleVec.size(),string(""));
-	Log(LOG_DEBUG) << "diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size();
+	CC3D_Log(LOG_DEBUG) << "diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size();
 
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        Log(LOG_TRACE) << " concentrationFieldNameVector[i]="<<diffDataVec[i].fieldName<<endl;
-		      concentrationFieldNameVector.push_back(diffDataVec[i].fieldName);
 		concentrationFieldNameVectorTmp[i] = diffSecrFieldTuppleVec[i].diffData.fieldName;
-		Log(LOG_DEBUG) << " concentrationFieldNameVector[i]="<<concentrationFieldNameVectorTmp[i];
+		CC3D_Log(LOG_DEBUG) << " concentrationFieldNameVector[i]="<<concentrationFieldNameVectorTmp[i];
     }
 
     //setting up couplingData - field-field interaction terms
@@ -329,7 +327,6 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
                 //this means that required interacting field name has not been found
                 if (idx == concentrationFieldNameVectorTmp.size() - 1) {
                     //remove this interacting term
-                    //                pos=&(diffDataVec[i].degradationDataVec[j]);
                     diffSecrFieldTuppleVec[i].diffData.couplingDataVec.erase(pos);
                 }
             }
@@ -337,30 +334,20 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
         }
 
         for (int currentCellType = 0; currentCellType < UCHAR_MAX + 1; currentCellType++) {
-            //                 cout << "diffCoef[currentCellType]: " << diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType] << endl;
             maxDiffConstVec[i] = (maxDiffConstVec[i] < diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType])
                                  ? diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType] : maxDiffConstVec[i];
         }
     }
 
-	Log(LOG_DEBUG) << "FIELDS THAT I HAVE";
+	CC3D_Log(LOG_DEBUG) << "FIELDS THAT I HAVE";
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        Log(LOG_DEBUG) << "Field "<<i<<" name: "<<concentrationFieldNameVectorTmp[i];
+        CC3D_Log(LOG_DEBUG) << "Field "<<i<<" name: "<<concentrationFieldNameVectorTmp[i];
 	}
-	Log(LOG_DEBUG) << "DiffusionSolverFE: extra Init in read XML";
+	CC3D_Log(LOG_DEBUG) << "DiffusionSolverFE: extra Init in read XML";
 
     ///allocate fields including scrartch field
     static_cast<Cruncher *>(this)->allocateDiffusableFieldVector(diffSecrFieldTuppleVec.size(), fieldDim);
     workFieldDim = static_cast<Cruncher *>(this)->getConcentrationField(0)->getInternalDim();
-
-    //if(!haveCouplingTerms){
-    //	allocateDiffusableFieldVector(diffSecrFieldTuppleVec.size()+1,workFieldDim); //+1 is for additional scratch field
-    //}else{
-    //	allocateDiffusableFieldVector(2*diffSecrFieldTuppleVec.size(),workFieldDim); //with coupling terms every field need to have its own scratch field
-    //}
-
-    //here I need to copy field names from concentrationFieldNameVectorTmp to concentrationFieldNameVector
-    //because concentrationFieldNameVector is reallocated with default values once I call allocateDiffusableFieldVector
 
     for (unsigned int i = 0; i < concentrationFieldNameVectorTmp.size(); ++i) {
         static_cast<Cruncher *>(this)->setConcentrationFieldName(i, concentrationFieldNameVectorTmp[i]);
@@ -371,15 +358,10 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
         simPtr->registerConcentrationField(
                 static_cast<Cruncher *>(this)->getConcentrationFieldName(i),
                 static_cast<Cruncher *>(this)->getConcentrationField(i));
-        Log(LOG_DEBUG) << "registring field: "<<
+        CC3D_Log(LOG_DEBUG) << "registring field: "<<
 			static_cast<Cruncher*>(this)->getConcentrationFieldName(i)<<" field address="<<
 			static_cast<Cruncher*>(this)->getConcentrationField(i);
     }
-
-    //    exit(0);
-
-
-
 
     float extraCheck;
 
@@ -674,11 +656,6 @@ void DiffusionSolverFE<Cruncher>::prepareForwardDerivativeOffsets() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class Cruncher>
 void DiffusionSolverFE<Cruncher>::start() {
-	//     if(diffConst> (1.0/6.0-0.05) ){ //hard coded condtion for stability of the solutions - assume dt=1 dx=dy=dz=1
-	// Log(LOG_TRACE) << "CANNOT SOLVE DIFFUSION EQUATION: STABILITY PROBLEM - DIFFUSION CONSTANT TOO LARGE. EXITING...";
-    //       exit(0);
-    //
-    //    }
 
     dt_dx2 = deltaT / (deltaX * deltaX);
 
@@ -691,7 +668,7 @@ void DiffusionSolverFE<Cruncher>::start() {
             serializerPtr->readFromFile();
 
         } catch (CC3DException &e) {
-            Log(LOG_DEBUG) << "Going to fail-safe initialization";
+            CC3D_Log(LOG_DEBUG) << "Going to fail-safe initialization";
             initializeConcentration(); //if there was error, initialize using failsafe defaults
         }
 
@@ -705,7 +682,7 @@ void DiffusionSolverFE<Cruncher>::start() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class Cruncher>
 void DiffusionSolverFE<Cruncher>::finish() {
-    Log(LOG_DEBUG) << m_RDTime<<" ms spent in solving "<<(hasAdditionalTerms()?"reaction-":"")<<"diffusion problem";
+    CC3D_Log(LOG_DEBUG) << m_RDTime<<" ms spent in solving "<<(hasAdditionalTerms()?"reaction-":"")<<"diffusion problem";
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -720,7 +697,7 @@ void DiffusionSolverFE<Cruncher>::initializeConcentration() {
             continue;
         }
         if (diffSecrFieldTuppleVec[i].diffData.concentrationFileName.empty()) continue;
-        Log(LOG_DEBUG) << "fail-safe initialization " << diffSecrFieldTuppleVec[i].diffData.concentrationFileName;
+        CC3D_Log(LOG_DEBUG) << "fail-safe initialization " << diffSecrFieldTuppleVec[i].diffData.concentrationFileName;
         readConcentrationField(diffSecrFieldTuppleVec[i].diffData.concentrationFileName,
                                static_cast<Cruncher *>(this)->getConcentrationField(i));
 
@@ -1027,122 +1004,7 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
 
     //notice, limited steering is enabled for PDE solvers - changing diffusion constants, do -not-diffuse to types etc...
 	// Coupling coefficients cannot be changed and also there is no way to allocate extra fields while simulation is running
-	Log(LOG_DEBUG) << "\n\n\n\n\n INSIDE UPDATE XML";
-    //if(potts->getDisplayUnitsFlag()){
-    //	Unit diffConstUnit=powerUnit(potts->getLengthUnit(),2)/potts->getTimeUnit();
-    //	Unit decayConstUnit=1/potts->getTimeUnit();
-    //	Unit secretionConstUnit=1/potts->getTimeUnit();
-
-    //	if (_xmlData->getFirstElement("AutoscaleDiffusion")){
-    //		autoscaleDiffusion=true;
-    //	}
-    //
-    //       if (_xmlData->getFirstElement("DoNotScaleSecretion")){//If user sets it to false via XML then DiffusionSolver will behave like FlexibleDiffusion solver - i.e. secretion will be done in one step followed by multiple diffusive steps
-    //
-    //           scaleSecretion=false;
-    //
-    //       }
-    //
-    //	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units");
-    //	if (!unitsElem){ //add Units element
-    //		unitsElem=_xmlData->attachElement("Units");
-    //	}
-
-    //	if(unitsElem->getFirstElement("DiffusionConstantUnit")){
-    //		unitsElem->getFirstElement("DiffusionConstantUnit")->updateElementValue(diffConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("DiffusionConstantUnit",diffConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DecayConstantUnit")){
-    //		unitsElem->getFirstElement("DecayConstantUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("DecayConstantUnit",decayConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DeltaXUnit")){
-    //		unitsElem->getFirstElement("DeltaXUnit")->updateElementValue(potts->getLengthUnit().toString());
-    //	}else{
-    //		unitsElem->attachElement("DeltaXUnit",potts->getLengthUnit().toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DeltaTUnit")){
-    //		unitsElem->getFirstElement("DeltaTUnit")->updateElementValue(potts->getTimeUnit().toString());
-    //	}else{
-    //		unitsElem->attachElement("DeltaTUnit",potts->getTimeUnit().toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("CouplingCoefficientUnit")){
-    //		unitsElem->getFirstElement("CouplingCoefficientUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("CouplingCoefficientUnit",decayConstUnit.toString());
-    //	}
-
-
-
-    //	if(unitsElem->getFirstElement("SecretionUnit")){
-    //		unitsElem->getFirstElement("SecretionUnit")->updateElementValue(secretionConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("SecretionUnit",secretionConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("SecretionOnContactUnit")){
-    //		unitsElem->getFirstElement("SecretionOnContactUnit")->updateElementValue(secretionConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("SecretionOnContactUnit",secretionConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("ConstantConcentrationUnit")){
-    //		unitsElem->getFirstElement("ConstantConcentrationUnit")->updateElementValue(secretionConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("ConstantConcentrationUnit",secretionConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DecayConstantUnit")){
-    //		unitsElem->getFirstElement("DecayConstantUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("DecayConstantUnit",decayConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DeltaXUnit")){
-    //		unitsElem->getFirstElement("DeltaXUnit")->updateElementValue(potts->getLengthUnit().toString());
-    //	}else{
-    //		unitsElem->attachElement("DeltaXUnit",potts->getLengthUnit().toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DeltaTUnit")){
-    //		unitsElem->getFirstElement("DeltaTUnit")->updateElementValue(potts->getTimeUnit().toString());
-    //	}else{
-    //		unitsElem->attachElement("DeltaTUnit",potts->getTimeUnit().toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("CouplingCoefficientUnit")){
-    //		unitsElem->getFirstElement("CouplingCoefficientUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("CouplingCoefficientUnit",decayConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("UptakeUnit")){
-    //		unitsElem->getFirstElement("UptakeUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("UptakeUnit",decayConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("RelativeUptakeUnit")){
-    //		unitsElem->getFirstElement("RelativeUptakeUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("RelativeUptakeUnit",decayConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("MaxUptakeUnit")){
-    //		unitsElem->getFirstElement("MaxUptakeUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("MaxUptakeUnit",decayConstUnit.toString());
-    //	}
-
-
-
-    //}
+	CC3D_Log(LOG_DEBUG) << "INSIDE UPDATE XML";
 
     solverSpecific(_xmlData);
     diffSecrFieldTuppleVec.clear();
@@ -1315,15 +1177,13 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
         if (_xmlData->getFirstElement("Serialize")->findAttribute("Frequency")) {
             serializeFrequency = _xmlData->getFirstElement("Serialize")->getAttributeAsUInt("Frequency");
         }
-        Log(LOG_DEBUG) << "serialize Flag="<<serializeFlag;
+        CC3D_Log(LOG_DEBUG) << "serialize Flag="<<serializeFlag;
 	}
 
     if (_xmlData->findElement("ReadFromFile")) {
         readFromFileFlag = true;
-        Log(LOG_DEBUG) << "readFromFileFlag="<<readFromFileFlag;
+        CC3D_Log(LOG_DEBUG) << "readFromFileFlag="<<readFromFileFlag;
     }
-
-    //variableDiffusionConstantFlagVec.assign(diffSecrFieldTuppleVec.size(),false);
 
     for (size_t i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
         diffSecrFieldTuppleVec[i].diffData.setAutomaton(automaton);
@@ -1362,7 +1222,6 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
     //finding maximum diffusion coefficients for each field
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
         for (int currentCellType = 0; currentCellType < UCHAR_MAX + 1; currentCellType++) {
-            //                 cout << "diffCoef[currentCellType]: " << diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType] << endl;
             maxDiffConstVec[i] = (maxDiffConstVec[i] < diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType])
                                  ? diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType] : maxDiffConstVec[i];
             maxDecayConstVec[i] = (maxDecayConstVec[i] < diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType])

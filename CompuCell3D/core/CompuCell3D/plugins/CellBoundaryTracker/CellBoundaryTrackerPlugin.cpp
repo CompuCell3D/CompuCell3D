@@ -12,7 +12,7 @@ using namespace CompuCell3D;
 
 #include <iostream>
 #include <cmath>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 using namespace std;
 
@@ -27,7 +27,7 @@ CellBoundaryTrackerPlugin::~CellBoundaryTrackerPlugin() {
 }
 
 void CellBoundaryTrackerPlugin::init(Simulator *_simulator) {
-  Log(LOG_DEBUG) << "INITIALIZING CELL BOUNDARYTRACKER PLUGIN";
+  CC3D_Log(LOG_DEBUG) << "INITIALIZING CELL BOUNDARYTRACKER PLUGIN";
     simulator = _simulator;
     Potts3D *potts = simulator->getPotts();
     cellFieldG = potts->getCellFieldG();
@@ -133,7 +133,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
         ///When there was a cell at this pixel we will have to update all its neighbours (update counters) and remove it from the boundary
 //       currentPtIndex=field3DIndex.index(pt);
 //       currentCellPtr=cellFieldG->getByIndex(currentPtIndex);
-      Log(LOG_TRACE) << "currentPtIndex="<<currentPtIndex;
+      CC3D_Log(LOG_TRACE) << "currentPtIndex="<<currentPtIndex;
         BdSitr = oldCellBoundarySetPtr->find(BoundaryData(currentPtIndex));
 
         if (BdSitr != oldCellBoundarySetPtr->end()) {
@@ -143,15 +143,15 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
 
 ///RESTORE IT LATER! it is important
 /*         if(BdSitr->numberOfForeignNeighbors>26){
-             Log(LOG_TRACE) << "BUG, there can be no more that 26 foreign Neighbors";
+             CC3D_Log(LOG_TRACE) << "BUG, there can be no more that 26 foreign Neighbors";
             exit(0);
          }*/
       }/*else{
-         Log(LOG_TRACE) << " PROBLEM: old cell does not belong to the boundary";
-         Log(LOG_TRACE) << "pt="<<pt;
-         Log(LOG_TRACE) << "old="<<oldCell<<" new="<<newCell;
-         Log(LOG_TRACE) << "flipNeighbor="<<simulator->getPotts()->getFlipNeighbor();
-         Log(LOG_TRACE) << "face2FaceNeighborSize="<<face2FaceNeighborSize<<" neighborSize="<<neighborSize;
+         CC3D_Log(LOG_TRACE) << " PROBLEM: old cell does not belong to the boundary";
+         CC3D_Log(LOG_TRACE) << "pt="<<pt;
+         CC3D_Log(LOG_TRACE) << "old="<<oldCell<<" new="<<newCell;
+         CC3D_Log(LOG_TRACE) << "flipNeighbor="<<simulator->getPotts()->getFlipNeighbor();
+         CC3D_Log(LOG_TRACE) << "face2FaceNeighborSize="<<face2FaceNeighborSize<<" neighborSize="<<neighborSize;
          exit(0);
       }*/
 
@@ -197,14 +197,14 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
             //adjFace2FaceNeighborIndex = currentPtIndex + adjFace2FaceNeighborOffsetsVec[i];
 
          //if(!(adjFace2FaceNeighborIndex<0 || adjFace2FaceNeighborIndex > maxIndex ) ){
-            Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
+            CC3D_Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
 
 //          if(!cellFieldG->isValid(ptAdj)){
-   //          Log(LOG_TRACE) << "ERROR - something is wrong with adjFace2FaceNeighborOffsetsVec_inn";
+   //          CC3D_Log(LOG_TRACE) << "ERROR - something is wrong with adjFace2FaceNeighborOffsetsVec_inn";
 //             temp_index=field3DIndex.index(ptAdj);
-//             Log(LOG_TRACE) << "temp_index="<<temp_index<<" adjFace2FaceNeighborIndex="<<adjFace2FaceNeighborIndex;
-//             Log(LOG_TRACE) << "maxIndex="<<maxIndex;
-//             Log(LOG_TRACE) << "pt="<<pt<<" ptAdj="<<ptAdj;
+//             CC3D_Log(LOG_TRACE) << "temp_index="<<temp_index<<" adjFace2FaceNeighborIndex="<<adjFace2FaceNeighborIndex;
+//             CC3D_Log(LOG_TRACE) << "maxIndex="<<maxIndex;
+//             CC3D_Log(LOG_TRACE) << "pt="<<pt<<" ptAdj="<<ptAdj;
 //             //exit(0);
 //          }
             if (cellFieldG->isValid(ptAdj)) {
@@ -213,8 +213,8 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
                adjCellPtr=cellFieldG->get(ptAdj);
    
                if( adjCellPtr != oldCell ){ /// will decrement commSurfArea with all face 2 face neighbors
-               // Log(LOG_TRACE) << "adjCellPtr="<<adjCellPtr<<" oldCell="<<oldCell;
-                  Log(LOG_TRACE) << "ptAdj="<<ptAdj<<" pt="<<pt;
+               // CC3D_Log(LOG_TRACE) << "adjCellPtr="<<adjCellPtr<<" oldCell="<<oldCell;
+                  CC3D_Log(LOG_TRACE) << "ptAdj="<<ptAdj<<" pt="<<pt;
                     set_NSD_itr = oldCellNeighborSurfaceDataSetPtr->find(NeighborSurfaceData(adjCellPtr));
                     if (set_NSD_itr != oldCellNeighborSurfaceDataSetPtr->end()) {
                         set_NSD_itr->decrementCommonSurfaceArea(*set_NSD_itr); ///decrement commonSurfArea with adj cell
@@ -222,7 +222,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
                             oldCellNeighborSurfaceDataSetPtr->erase(set_NSD_itr);
 
                     } else {
-                        Log(LOG_DEBUG) << "Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ...";
+                        CC3D_Log(LOG_DEBUG) << "Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ...";
                         exit(0);
                     }
 
@@ -251,22 +251,22 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
         ///When there was a cell at this pixel we will have to update all its neighbours (update counters) and remove it from the boundary
 //       currentCellPtr=cellFieldG->getByIndex(currentPtIndex);      
 //       currentCellPtr=cellFieldG->getByIndex(currentPtIndex);
-      // Log(LOG_TRACE) << "\t\t new Cell section pt="<<pt<<" newCell="<<newCell;
-      // Log(LOG_TRACE) <<"newCellBoundarySet size="<<newCellBoundarySetPtr->size();
+      // CC3D_Log(LOG_TRACE) << "\t\t new Cell section pt="<<pt<<" newCell="<<newCell;
+      // CC3D_Log(LOG_TRACE) <<"newCellBoundarySet size="<<newCellBoundarySetPtr->size();
 /*      if(newCellBoundarySetPtr->size())
-         Log(LOG_TRACE) <<" preinitial newCellBoundarySetPtr->begin()="<<newCellBoundarySetPtr->begin()->pixelIndex;
+         CC3D_Log(LOG_TRACE) <<" preinitial newCellBoundarySetPtr->begin()="<<newCellBoundarySetPtr->begin()->pixelIndex;
       else{
-         Log(LOG_TRACE) <<"\t\t SORRY EMPTY SET";
+         CC3D_Log(LOG_TRACE) <<"\t\t SORRY EMPTY SET";
       }   */
 
         BdSitrN = newCellBoundarySetPtr->find(BoundaryData(currentPtIndex));
 ///RESTORE IT LATER _ IMPORTANT SANITY TEST      
 //       if(BdSitrN!=newCellBoundarySetPtr->end()){
-            Log(LOG_TRACE)<< "OOOPS trying to insert a point:"<<currentPtIndex<<" into a boundary that already is there -  in the NEW CELL BONDARY";
-            Log(LOG_TRACE)<<"This is allowed only if lattice is 1 x 1 x 1. If this is not the case notify developer about bug";
+            CC3D_Log(LOG_TRACE)<< "OOOPS trying to insert a point:"<<currentPtIndex<<" into a boundary that already is there -  in the NEW CELL BONDARY";
+            CC3D_Log(LOG_TRACE)<<"This is allowed only if lattice is 1 x 1 x 1. If this is not the case notify developer about bug";
 //          exit(0);
 //       }else{
-               Log(LOG_TRACE)<<"Could not find element BoundaryData(currentPtIndex)="<<currentPtIndex;
+               CC3D_Log(LOG_TRACE)<<"Could not find element BoundaryData(currentPtIndex)="<<currentPtIndex;
 //       }
 
 
@@ -296,7 +296,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
                         BdSitrN->decrementNumberOfForeignNeighbors(*BdSitrN);
                         if (BdSitrN->OKToRemove()) {
                             newCellBoundarySetPtr->erase(BdSitrN);
-                     Log(LOG_TRACE)<<"\t\t\tafter erasing newCellBoundarySet size="<<newCellBoundarySetPtr->size();
+                     CC3D_Log(LOG_TRACE)<<"\t\t\tafter erasing newCellBoundarySet size="<<newCellBoundarySetPtr->size();
                         }
                     }
 
@@ -327,7 +327,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
             //adjFace2FaceNeighborIndex = currentPtIndex + adjFace2FaceNeighborOffsetsVec[i];
 
             //if(!(adjFace2FaceNeighborIndex<0 || adjFace2FaceNeighborIndex > maxIndex ) ){
-            Log(LOG_TRACE) <<"adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
+            CC3D_Log(LOG_TRACE) <<"adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
             if (cellFieldG->isValid(ptAdj)) {
 
                 //adjCellPtr=cellFieldG->getByIndex(adjFace2FaceNeighborIndex);
@@ -335,7 +335,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
 
                 if (adjCellPtr !=
                     newCell) { ///if adjCellPtr denotes foreign cell we increase common area and insert set entry if necessary
-            Log(LOG_TRACE) << "inserting adjCellPtr="<<adjCellPtr <<" ptAdj="<<ptAdj<<" into newCell="<<newCell<<" pt="<<pt;
+            CC3D_Log(LOG_TRACE) << "inserting adjCellPtr="<<adjCellPtr <<" ptAdj="<<ptAdj<<" into newCell="<<newCell<<" pt="<<pt;
                     set_NSD_itr_OK_Pair = newCellNeighborSurfaceDataSetPtr->insert(
                             NeighborSurfaceData(adjCellPtr));/// OK to insert even if
                     ///duplicate, in such a case an iterator to existing NeighborSurfaceData(adjCellPtr) obj is returned
@@ -374,7 +374,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
             //adjFace2FaceNeighborIndex = currentPtIndex + adjFace2FaceNeighborOffsetsVec[i];
 
             //if(!(adjFace2FaceNeighborIndex<0 || adjFace2FaceNeighborIndex > maxIndex ) ){
-            Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
+            CC3D_Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
             if (cellFieldG->isValid(ptAdj)) {
 
                 //adjCellPtr=cellFieldG->getByIndex(adjFace2FaceNeighborIndex);
@@ -382,7 +382,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
 
                 if (adjCellPtr != oldCell &&
                     !(ptAdj == pt)) { /// will decrement commSurfArea with all face 2 face neighbors
-            Log(LOG_TRACE) << "!old cell section  adjCellPtr="<<adjCellPtr <<" ptAdj="<<ptAdj<<"  oldCell="<<oldCell<<" pt="<<pt;
+            CC3D_Log(LOG_TRACE) << "!old cell section  adjCellPtr="<<adjCellPtr <<" ptAdj="<<ptAdj<<"  oldCell="<<oldCell<<" pt="<<pt;
                     if (adjCellPtr) { ///now process common area for adj cell provided it is not the oldCell
                         set <NeighborSurfaceData> &set_NSD_ref = cellBoundaryTrackerAccessor.get(
                                 adjCellPtr->extraAttribPtr)->cellNeighbors;
@@ -392,7 +392,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
                             sitr->decrementCommonSurfaceArea(*sitr); ///decrement common area
                             if (sitr->OKToRemove()) { ///if commSurfArea reaches 0 I remove this entry from cell neighbor set
                                 set_NSD_ref.erase(sitr);
-                        Log(LOG_TRACE) << "removing from boundary";
+                        CC3D_Log(LOG_TRACE) << "removing from boundary";
 
                             }
 
@@ -416,7 +416,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
             //adjFace2FaceNeighborIndex = currentPtIndex + adjFace2FaceNeighborOffsetsVec[i];
 
             //if(!(adjFace2FaceNeighborIndex<0 || adjFace2FaceNeighborIndex > maxIndex ) ){
-            Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
+            CC3D_Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
             if (cellFieldG->isValid(ptAdj)) {
 
 
@@ -445,9 +445,9 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
     }
 
 //       if(newCellBoundarySetPtr->size())
-//          Log(LOG_TRACE) << " final newCellBoundarySetPtr->begin()="<<newCellBoundarySetPtr->begin()->pixelIndex;
+//          CC3D_Log(LOG_TRACE) << " final newCellBoundarySetPtr->begin()="<<newCellBoundarySetPtr->begin()->pixelIndex;
 //       else
-//          Log(LOG_TRACE) << "SORRY THE SET IN EMPTY";
+//          CC3D_Log(LOG_TRACE) << "SORRY THE SET IN EMPTY";
 
 
     ///temporarily for testing purposes I set
@@ -461,8 +461,8 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
         interval = 100000;
     }
     if (!(changeCounter % interval)) {
-        Log(LOG_DEBUG) << "OLD CELL ADR: "<<oldCell<<" NEW CELL ADR: "<<newCell;
-        Log(LOG_DEBUG) << "ChangeCounter:"<<changeCounter;
+        CC3D_Log(LOG_DEBUG) << "OLD CELL ADR: "<<oldCell<<" NEW CELL ADR: "<<newCell;
+        CC3D_Log(LOG_DEBUG) << "ChangeCounter:"<<changeCounter;
         testLatticeSanityFull();
 
     }
@@ -474,7 +474,7 @@ void CellBoundaryTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void CellBoundaryTrackerPlugin::initializeBoundaries() {
-   Log(LOG_TRACE) << "****************************** INITIALIZE BOUNDARIES NOW *****************************";
+   CC3D_Log(LOG_TRACE) << "****************************** INITIALIZE BOUNDARIES NOW *****************************";
 // 
 //    Dim3D fieldDim=cellFieldG->getDim();
 //    //AdjacentNeighbor adjNeighbor(fieldDim);
@@ -518,8 +518,8 @@ void CellBoundaryTrackerPlugin::initializeBoundaries() {
 //    maxIndexDim.y-=1;
 //    maxIndexDim.z-=1;
 //    long maxIndex=field3DIndex.index(maxIndexDim);*/
-      Log(LOG_TRACE) << " MAX INDEX CALCULATED = "<<maxIndex;
-      Log(LOG_TRACE) << " FIELD SIZE CALCULATED MANUALLY : "<<fieldDim.x*fieldDim.y*fieldDim.z;
+      CC3D_Log(LOG_TRACE) << " MAX INDEX CALCULATED = "<<maxIndex;
+      CC3D_Log(LOG_TRACE) << " FIELD SIZE CALCULATED MANUALLY : "<<fieldDim.x*fieldDim.y*fieldDim.z;
 // 
 // 
 //    ///Now will have to get access to the pointers stored in cellFieldG from Potts3D
@@ -566,7 +566,7 @@ void CellBoundaryTrackerPlugin::initializeBoundaries() {
 //                //adjNeighborIndex=currentPtIndex+adjNeighborOffsetsVec[i];
 // 
 //                //if(!(adjNeighborIndex<0 || adjNeighborIndex > maxIndex ) ){
-   //                Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
+   //                CC3D_Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
 //                if(cellFieldG->isValid(ptAdj)){
 // 
 //                   //adjCellPtr=cellFieldG->getByIndex(adjNeighborIndex);
@@ -590,7 +590,7 @@ void CellBoundaryTrackerPlugin::initializeBoundaries() {
 //                //adjFace2FaceNeighborIndex=currentPtIndex+adjFace2FaceNeighborOffsetsVec[i];
 // 
 //                //if(!(adjFace2FaceNeighborIndex<0 || adjFace2FaceNeighborIndex > maxIndex ) ){
-   //                Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
+   //                CC3D_Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
 //                if(cellFieldG->isValid(ptAdj)){
 // 
 //                   adjCellPtr=cellFieldG->get(ptAdj);
@@ -614,7 +614,7 @@ void CellBoundaryTrackerPlugin::initializeBoundaries() {
 // 
 //          ///Now will test boundary sanity
 //          testLatticeSanityFull();
-//          Log(LOG_TRACE) << "SANITY TEST PASSED";
+//          CC3D_Log(LOG_TRACE) << "SANITY TEST PASSED";
 // 
 // 
 //          ///After Initialization was done turnon the flag that it is OK to start using field3DChange function
@@ -708,7 +708,7 @@ void CellBoundaryTrackerPlugin::testLatticeSanity() {
 
                     //if(!(adjNeighborIndex<0 || adjNeighborIndex > maxIndex ) ){
                     if (cellFieldG->isValid(ptAdj)) {
-                        Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
+                        CC3D_Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
 
 
                         //adjCellPtr=cellFieldG->getByIndex(adjNeighborIndex);
@@ -760,7 +760,7 @@ void CellBoundaryTrackerPlugin::testLatticeSanity() {
                             //adjFace2FaceNeighborIndex=indexBoundary+adjFace2FaceNeighborOffsetsVec[i];
 
                             //if(!(adjFace2FaceNeighborIndex<0 || adjFace2FaceNeighborIndex > maxIndex ) ){
-                            // Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
+                            // CC3D_Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
                             if (cellFieldG->isValid(ptAdj)) {
 
                                 //adjCellPtr=cellFieldG->getByIndex(adjFace2FaceNeighborIndex);
@@ -782,10 +782,10 @@ void CellBoundaryTrackerPlugin::testLatticeSanity() {
 
 
                }
-               // Log(LOG_TRACE) << "Checking cell:" << currentCellPtr;
+               // CC3D_Log(LOG_TRACE) << "Checking cell:" << currentCellPtr;
 
                     if (set_NSD_local.size() != set_NSD_ref.size()) {
-                        Log(LOG_DEBUG) << "Sets have different sizes - orig:"<<set_NSD_ref.size()<<" local:"<<set_NSD_local.size()<<
+                        CC3D_Log(LOG_DEBUG) << "Sets have different sizes - orig:"<<set_NSD_ref.size()<<" local:"<<set_NSD_local.size()<<
                   " . Exining...";
                         exit(0);
 
@@ -798,16 +798,16 @@ void CellBoundaryTrackerPlugin::testLatticeSanity() {
 
 
                         if (sitr_local->neighborAddress != sitr->neighborAddress) {
-                            Log(LOG_DEBUG) << "Neighbor addresses - orig: "<<sitr->neighborAddress<<" local:"<<sitr_local->neighborAddress<<
+                            CC3D_Log(LOG_DEBUG) << "Neighbor addresses - orig: "<<sitr->neighborAddress<<" local:"<<sitr_local->neighborAddress<<
                      " do not match. Exiting ";
                             exit(0);
                         }
                         if (sitr_local->commonSurfaceArea != sitr->commonSurfaceArea) {
-                            Log(LOG_DEBUG) << "Neighbor commonSurfaceArea - orig: "<<sitr->commonSurfaceArea<<" local:"<<sitr_local->commonSurfaceArea<<
+                            CC3D_Log(LOG_DEBUG) << "Neighbor commonSurfaceArea - orig: "<<sitr->commonSurfaceArea<<" local:"<<sitr_local->commonSurfaceArea<<
                      " do not match. Exiting ";
                             exit(0);
                         }
-                        Log(LOG_TRACE) << "neighbor:"<<sitr->neighborAddress<<" commonSurfaceArea:"<<sitr->commonSurfaceArea;
+                        CC3D_Log(LOG_TRACE) << "neighbor:"<<sitr->neighborAddress<<" commonSurfaceArea:"<<sitr->commonSurfaceArea;
 
                         ++sitr_local;
                     }
@@ -821,20 +821,20 @@ void CellBoundaryTrackerPlugin::testLatticeSanity() {
                     bdsitr = set_ref.find(BoundaryData(currentPtIndex));
 
                     if (bdsitr == set_ref.end()) {
-                        Log(LOG_DEBUG) << "Requested pixel:"<<currentPtIndex<< " was not found in the boundary set. Boundary corrupted. Exiting...";
-                        Log(LOG_DEBUG) << "Tried address "<<currentCellPtr;
+                        CC3D_Log(LOG_DEBUG) << "Requested pixel:"<<currentPtIndex<< " was not found in the boundary set. Boundary corrupted. Exiting...";
+                        CC3D_Log(LOG_DEBUG) << "Tried address "<<currentCellPtr;
                         exit(0);
                     } else if (bdsitr->numberOfForeignNeighbors != localNeighborCounter) {
-                        Log(LOG_DEBUG) << "Different Number of foreign neighbors - orig="<<bdsitr->numberOfForeignNeighbors
+                        CC3D_Log(LOG_DEBUG) << "Different Number of foreign neighbors - orig="<<bdsitr->numberOfForeignNeighbors
                   <<" instant init="<<localNeighborCounter;
-                        Log(LOG_DEBUG) << "Tried address "<<currentCellPtr;
+                        CC3D_Log(LOG_DEBUG) << "Tried address "<<currentCellPtr;
                         exit(0);
                     } else if ((bdsitr->numberOfForeignNeighbors) > 26) {
-                        Log(LOG_DEBUG) << "Number of fN's is "<<bdsitr->numberOfForeignNeighbors<<" but allowed value is 26 ";
+                        CC3D_Log(LOG_DEBUG) << "Number of fN's is "<<bdsitr->numberOfForeignNeighbors<<" but allowed value is 26 ";
                         exit(0);
 
                     } else {
-                  Log(LOG_TRACE) << "OK,pixel:"<<currentPtIndex<<" number of foreign neighbors - orig="<<bdsitr->numberOfForeignNeighbors
+                  CC3D_Log(LOG_TRACE) << "OK,pixel:"<<currentPtIndex<<" number of foreign neighbors - orig="<<bdsitr->numberOfForeignNeighbors
                   <<" instant init="<<localNeighborCounter;
 
                     }
@@ -845,7 +845,7 @@ void CellBoundaryTrackerPlugin::testLatticeSanity() {
 
 
          }
-     Log(LOG_DEBUG) << "LATTICE IS SANE!!!!!";
+     CC3D_Log(LOG_DEBUG) << "LATTICE IS SANE!!!!!";
 
 }
 
@@ -954,24 +954,24 @@ void CellBoundaryTrackerPlugin::testLatticeSanityFull() {
       set<BoundaryData> & cellSetBoundaryData = cellBoundaryTrackerAccessor.get(tmpCellPtr->extraAttribPtr)->boundary ;
 
       if(tmpSetBoundaryData != cellSetBoundaryData){
-         Log(LOG_TRACE) << " Cell Address: "<<tmpCellPtr;
-         Log(LOG_TRACE) << " Cell volume: "<<tmpCellPtr->volume;
-         Log(LOG_TRACE) << " Cell surface: "<<tmpCellPtr->surface;
-         Log(LOG_TRACE) << " Cell COM: "
+         CC3D_Log(LOG_TRACE) << " Cell Address: "<<tmpCellPtr;
+         CC3D_Log(LOG_TRACE) << " Cell volume: "<<tmpCellPtr->volume;
+         CC3D_Log(LOG_TRACE) << " Cell surface: "<<tmpCellPtr->surface;
+         CC3D_Log(LOG_TRACE) << " Cell COM: "
          <<tmpCellPtr->xCM/(float)tmpCellPtr->volume<<" "
          <<tmpCellPtr->yCM/(float)tmpCellPtr->volume<<" "
          <<tmpCellPtr->zCM/(float)tmpCellPtr->volume;
-         Log(LOG_TRACE) << "Boundary sets do not match";
-         Log(LOG_TRACE) << " original set size="<<cellSetBoundaryData.size();
-         Log(LOG_TRACE) << " check set size="<<tmpSetBoundaryData.size();
-         Log(LOG_TRACE) << "checked "<<cellsChecked<<" cells";
-         Log(LOG_TRACE) << "ORIG:************************";
+         CC3D_Log(LOG_TRACE) << "Boundary sets do not match";
+         CC3D_Log(LOG_TRACE) << " original set size="<<cellSetBoundaryData.size();
+         CC3D_Log(LOG_TRACE) << " check set size="<<tmpSetBoundaryData.size();
+         CC3D_Log(LOG_TRACE) << "checked "<<cellsChecked<<" cells";
+         CC3D_Log(LOG_TRACE) << "ORIG:************************";
          for(set<BoundaryData>::iterator itr = cellSetBoundaryData.begin() ; itr != cellSetBoundaryData.end() ; ++itr){
-            Log(LOG_TRACE) << "neighbor index="<<itr->pixelIndex<<" number of pix neighbors="<<itr->numberOfForeignNeighbors;
+            CC3D_Log(LOG_TRACE) << "neighbor index="<<itr->pixelIndex<<" number of pix neighbors="<<itr->numberOfForeignNeighbors;
          }
-         Log(LOG_TRACE) << "CHECK:************************";
+         CC3D_Log(LOG_TRACE) << "CHECK:************************";
          for(set<BoundaryData>::iterator itr = tmpSetBoundaryData.begin() ; itr != tmpSetBoundaryData.end() ; ++itr){
-            Log(LOG_TRACE) << "neighbor index="<<itr->pixelIndex<<" number of pix neighbors="<<itr->numberOfForeignNeighbors;
+            CC3D_Log(LOG_TRACE) << "neighbor index="<<itr->pixelIndex<<" number of pix neighbors="<<itr->numberOfForeignNeighbors;
          }
 
          exit(0);
@@ -1022,7 +1022,7 @@ void CellBoundaryTrackerPlugin::testLatticeSanityFull() {
 
                     //if(!(adjNeighborIndex<0 || adjNeighborIndex > maxIndex ) ){
                     if (cellFieldG->isValid(ptAdj)) {
-                        Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
+                        CC3D_Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
 
 
                         //adjCellPtr=cellFieldG->getByIndex(adjNeighborIndex);
@@ -1081,7 +1081,7 @@ void CellBoundaryTrackerPlugin::testLatticeSanityFull() {
                             //adjFace2FaceNeighborIndex=indexBoundary+adjFace2FaceNeighborOffsetsVec[i];
 
                             //if(!(adjFace2FaceNeighborIndex<0 || adjFace2FaceNeighborIndex > maxIndex ) ){
-                            // Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
+                            // CC3D_Log(LOG_TRACE) << "adjNeighborIndex="<<adjNeighborIndex<<" OUT OF THE LATTICE";
                             if (cellFieldG->isValid(ptAdj)) {
 
                                 //adjCellPtr=cellFieldG->getByIndex(adjFace2FaceNeighborIndex);
@@ -1103,10 +1103,10 @@ void CellBoundaryTrackerPlugin::testLatticeSanityFull() {
 
 
                }
-               Log(LOG_TRACE) << "Checking cell:" << currentCellPtr;
+               CC3D_Log(LOG_TRACE) << "Checking cell:" << currentCellPtr;
 
                     if (set_NSD_local.size() != set_NSD_ref.size()) {
-                        Log(LOG_DEBUG) << "Sets have different sizes - orig:"<<set_NSD_ref.size()<<" local:"<<set_NSD_local.size()<<
+                        CC3D_Log(LOG_DEBUG) << "Sets have different sizes - orig:"<<set_NSD_ref.size()<<" local:"<<set_NSD_local.size()<<
                   " . Exining...";
                         exit(0);
 
@@ -1119,16 +1119,16 @@ void CellBoundaryTrackerPlugin::testLatticeSanityFull() {
 
 
                         if (sitr_local->neighborAddress != sitr->neighborAddress) {
-                            Log(LOG_DEBUG) << "Neighbor addresses - orig: "<<sitr->neighborAddress<<" local:"<<sitr_local->neighborAddress<<
+                            CC3D_Log(LOG_DEBUG) << "Neighbor addresses - orig: "<<sitr->neighborAddress<<" local:"<<sitr_local->neighborAddress<<
                      " do not match. Exiting ";
                             exit(0);
                         }
                         if (sitr_local->commonSurfaceArea != sitr->commonSurfaceArea) {
-                            Log(LOG_DEBUG) << "Neighbor commonSurfaceArea - orig: "<<sitr->commonSurfaceArea<<" local:"<<sitr_local->commonSurfaceArea<<
+                            CC3D_Log(LOG_DEBUG) << "Neighbor commonSurfaceArea - orig: "<<sitr->commonSurfaceArea<<" local:"<<sitr_local->commonSurfaceArea<<
                      " do not match. Exiting ";
                             exit(0);
                         }
-                        Log(LOG_TRACE) << "neighbor:"<<sitr->neighborAddress<<" commonSurfaceArea:"<<sitr->commonSurfaceArea;
+                        CC3D_Log(LOG_TRACE) << "neighbor:"<<sitr->neighborAddress<<" commonSurfaceArea:"<<sitr->commonSurfaceArea;
 
                         ++sitr_local;
                     }
@@ -1142,20 +1142,20 @@ void CellBoundaryTrackerPlugin::testLatticeSanityFull() {
                     bdsitr = set_ref.find(BoundaryData(currentPtIndex));
 
                     if (bdsitr == set_ref.end()) {
-                        Log(LOG_DEBUG) << "Requested pixel:"<<currentPtIndex<< " was not found in the boundary set. Boundary corrupted. Exiting...";
-                        Log(LOG_DEBUG) << "Tried address "<<currentCellPtr;
+                        CC3D_Log(LOG_DEBUG) << "Requested pixel:"<<currentPtIndex<< " was not found in the boundary set. Boundary corrupted. Exiting...";
+                        CC3D_Log(LOG_DEBUG) << "Tried address "<<currentCellPtr;
                         exit(0);
                     } else if (bdsitr->numberOfForeignNeighbors != localNeighborCounter) {
-                        Log(LOG_DEBUG) << "Different Number of foreign neighbors - orig="<<bdsitr->numberOfForeignNeighbors
+                        CC3D_Log(LOG_DEBUG) << "Different Number of foreign neighbors - orig="<<bdsitr->numberOfForeignNeighbors
                   <<" instant init="<<localNeighborCounter;
-                        Log(LOG_DEBUG) << "Tried address "<<currentCellPtr;
+                        CC3D_Log(LOG_DEBUG) << "Tried address "<<currentCellPtr;
                         exit(0);
                     } else if ((bdsitr->numberOfForeignNeighbors) > 26) {
-                        Log(LOG_DEBUG) << "Number of fN's is "<<bdsitr->numberOfForeignNeighbors<<" but allowed value is 26 ";
+                        CC3D_Log(LOG_DEBUG) << "Number of fN's is "<<bdsitr->numberOfForeignNeighbors<<" but allowed value is 26 ";
                         exit(0);
 
                     } else {
-                  Log(LOG_TRACE) << "OK,pixel:"<<currentPtIndex<<" number of foreign neighbors - orig="<<bdsitr->numberOfForeignNeighbors
+                  CC3D_Log(LOG_TRACE) << "OK,pixel:"<<currentPtIndex<<" number of foreign neighbors - orig="<<bdsitr->numberOfForeignNeighbors
                   <<" instant init="<<localNeighborCounter;
 
                     }
@@ -1166,7 +1166,7 @@ void CellBoundaryTrackerPlugin::testLatticeSanityFull() {
 
 
          }
-     Log(LOG_DEBUG) << "LATTICE IS SANE!!!!!";
+     CC3D_Log(LOG_DEBUG) << "LATTICE IS SANE!!!!!";
 
 }
 
@@ -1188,13 +1188,13 @@ bool CellBoundaryTrackerPlugin::isBoundaryPixel(Point3D pt) {
             adjCellPtr = cellFieldG->get(ptAdj);
 
             if (adjCellPtr != currentCellPtr) {
-            Log(LOG_TRACE) << "pt="<<pt<<" ON";
-            Log(LOG_TRACE) << "ptAdj="<<ptAdj<<" adr="<<adjCellPtr;
+            CC3D_Log(LOG_TRACE) << "pt="<<pt<<" ON";
+            CC3D_Log(LOG_TRACE) << "ptAdj="<<ptAdj<<" adr="<<adjCellPtr;
                 return true;
             }
         } else {//means pixel is at lattice border - thus belongs to cell boundary
-      Log(LOG_TRACE) << "pt="<<pt<<" ON not in the field";
-Log(LOG_TRACE) << "not in the field ptAdj";
+      CC3D_Log(LOG_TRACE) << "pt="<<pt<<" ON not in the field";
+CC3D_Log(LOG_TRACE) << "not in the field ptAdj";
             return true;
             if (isTouchingLatticeBoundary(pt, ptAdj))
                 return true;
@@ -1203,7 +1203,7 @@ Log(LOG_TRACE) << "not in the field ptAdj";
             //return true;
         }
     }
-    Log(LOG_TRACE) << "pt="<<pt<<" OFF";
+    CC3D_Log(LOG_TRACE) << "pt="<<pt<<" OFF";
     return false;
 }
 

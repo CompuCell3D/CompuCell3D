@@ -25,7 +25,7 @@
 using namespace std;
 using namespace CompuCell3D;
 
-#include<CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 #include "FieldExtractorCML.h"
 
 
@@ -67,30 +67,20 @@ void FieldExtractorCML::fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr ,v
 }
 
 void FieldExtractorCML::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _plane, int _pos){
-	Log(LOG_TRACE) << " \n\n\n THIS IS fillCellFieldData2D\n\n\n\n";
+	CC3D_Log(LOG_TRACE) << "THIS IS fillCellFieldData2D";
 	vtkIntArray *_cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 
 	// get cell type array from vtk structured points
-	Log(LOG_TRACE) << "lds="<<lds;
-	Log(LOG_TRACE) << lds->GetPointData()->GetArray("CellType");
-	Log(LOG_TRACE) << "STRUCTURED DATA POINTS="<<lds;
+	CC3D_Log(LOG_TRACE) << "lds="<<lds;
+	CC3D_Log(LOG_TRACE) << lds->GetPointData()->GetArray("CellType");
+	CC3D_Log(LOG_TRACE) << "STRUCTURED DATA POINTS="<<lds;
 	
-	//lds->Print(cerr);
-
-	//vtkPointData * pointDataPtr=lds->GetPointData();
-	Log(LOG_TRACE) << "pointDataPtr="<<pointDataPtr;
-	//vtkDataArray * dataArrayPtr=lds->GetPointData()->GetArray("CellType");
-	Log(LOG_TRACE) << "dataArrayPtr="<<dataArrayPtr;
 	vtkCharArray *typeArrayRead=(vtkCharArray *)lds->GetPointData()->GetArray("CellType");
-	Log(LOG_TRACE) << "typeArrayRead="<<typeArrayRead;;
+	CC3D_Log(LOG_TRACE) << "typeArrayRead="<<typeArrayRead;;
 
-
-	//typeArrayRead->Print(cerr);
-
-	//->GetArray("CellType");
-	Log(LOG_TRACE) << "fieldDim.x="<<fieldDim.x;
-	Log(LOG_TRACE) << "fieldDim.y="<<fieldDim.y;
-	Log(LOG_TRACE) << "fieldDim.z="<<fieldDim.z;
+	CC3D_Log(LOG_TRACE) << "fieldDim.x="<<fieldDim.x;
+	CC3D_Log(LOG_TRACE) << "fieldDim.y="<<fieldDim.y;
+	CC3D_Log(LOG_TRACE) << "fieldDim.z="<<fieldDim.z;
 
 	vector<int> fieldDimVec(3,0);
 	fieldDimVec[0]=fieldDim.x;
@@ -147,9 +137,6 @@ void FieldExtractorCML::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTyp
     vtkCellArray * _cellsArray = (vtkCellArray*)_cellsArrayAddr;
     vtkCharArray *typeArrayRead = (vtkCharArray *)lds->GetPointData()->GetArray("CellType");
 
-    //Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
-    //Dim3D fieldDim = cellFieldG->getDim();
-
     vector<int> fieldDimVec(3, 0);
     fieldDimVec[0] = fieldDim.x;
     fieldDimVec[1] = fieldDim.y;
@@ -167,8 +154,6 @@ void FieldExtractorCML::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTyp
 
     Point3D pt;
     vector<int> ptVec(3, 0);
-    //CellG* cell;
-    //int type;
     long pc = 0;
 
     char cellType;
@@ -186,16 +171,7 @@ void FieldExtractorCML::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTyp
             pt.y = ptVec[pointOrderVec[1]];
             pt.z = ptVec[pointOrderVec[2]];
 
-            //cell = cellFieldG->get(pt);
             cellType = typeArrayRead->GetValue(indexPoint3D(pt));
-            //if (!cell) {
-            //    type = 0;
-            //    continue;
-            //}
-            //else {
-            //    type = cell->type;
-            //}
-
 
             Coordinates3D<double> coords(ptVec[0], ptVec[1], 0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
 
@@ -242,14 +218,6 @@ void FieldExtractorCML::fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArray
 
 	int offset=0;
 
-	////For some reasons the points x=0 are eaten up (don't know why).
-	////So we just populate empty cellIds.
-
-	//for (int i = 0 ; i< dim[0]+1 ;++i){
-	//	_cellTypeArray->SetValue(offset, 0);
-	//	++offset;
-	//}
-
 	Point3D pt;
 	vector<int> ptVec(3,0);
 
@@ -290,7 +258,6 @@ void FieldExtractorCML::fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArray
 }
 void FieldExtractorCML::fillBorder2D(const char* arrayName, vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){
 
-//	vtkLongArray *idArray=(vtkLongArray *)lds->GetPointData()->GetArray("CellId");
 	vtkLongArray *idArray=(vtkLongArray *)lds->GetPointData()->GetArray(arrayName);
 
 	vtkPoints *points = (vtkPoints *)_pointArrayAddr;
@@ -415,7 +382,6 @@ void FieldExtractorCML::fillBorder2DHex(const char* arrayName, vtk_obj_addr_int_
 	vtkPoints *points = (vtkPoints *)_pointArrayAddr;
 	vtkCellArray * lines=(vtkCellArray *)_linesArrayAddr; 
 
-//	vtkLongArray *idArray=(vtkLongArray *)lds->GetPointData()->GetArray("CellId");
 	vtkLongArray *idArray=(vtkLongArray *)lds->GetPointData()->GetArray(arrayName);
 
 	vector<int> fieldDimVec(3,0);
@@ -1371,10 +1337,6 @@ bool FieldExtractorCML::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk
 	cellTypeArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
 
 	set<int> invisibleTypeSet(_typesInvisibeVec->begin(),_typesInvisibeVec->end());
-
-	//for (set<int>::iterator sitr=invisibleTypeSet.begin();sitr!=invisibleTypeSet.end();++sitr){
-		// Log(LOG_TRACE) << "invisible type="<<*sitr;
-	//}
 
 	Point3D pt;
 	long idxPt;

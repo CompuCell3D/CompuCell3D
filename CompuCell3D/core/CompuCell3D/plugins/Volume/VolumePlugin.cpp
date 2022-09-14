@@ -5,7 +5,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "VolumePlugin.h"
-#include <core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 VolumePlugin::~VolumePlugin() {}
 
@@ -19,7 +19,7 @@ void VolumePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
 	pUtils=simulator->getParallelUtils();
 	pluginName=_xmlData->getAttribute("Name");
-	Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
+	CC3D_Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
     if (!pluginAlreadyRegisteredFlag)
         plugin->init(simulator);
     potts->registerEnergyFunctionWithName(this, toString());
@@ -64,7 +64,7 @@ void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
             functionType = BYCELLID;
     }
     Automaton *automaton = potts->getAutomaton();
-    Log(LOG_DEBUG) << "automaton="<<automaton;
+    CC3D_Log(LOG_DEBUG) << "automaton="<<automaton;
 
     switch (functionType) {
         case BYCELLID:

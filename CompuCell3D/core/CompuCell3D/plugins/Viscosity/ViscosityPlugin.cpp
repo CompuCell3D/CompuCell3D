@@ -5,7 +5,7 @@
 using namespace CompuCell3D;
 
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 ViscosityPlugin::ViscosityPlugin() : potts(0), sim(0), neighborTrackerAccessorPtr(0), lambdaViscosity(0),
                                      maxNeighborIndex(0) {
@@ -341,7 +341,7 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, co
 
             if (commonArea < 0.0) { //just in case
                 commonArea = 0.0;
-                Log(LOG_DEBUG) << "reached below zero old after";			}
+                CC3D_Log(LOG_DEBUG) << "reached below zero old after";			}
 			if(nCell!=newCell){
 
 
@@ -443,7 +443,7 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, co
             }
             if (commonArea < 0.0) { //just in case
                 commonArea = 0.0;
-                Log(LOG_DEBUG) << "reached below zero new after";
+                CC3D_Log(LOG_DEBUG) << "reached below zero new after";
             }
 
 
@@ -486,7 +486,7 @@ double ViscosityPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, co
                 velocityDiffZ = oldCellVel.z - nCellVel.z;
 
                 nCellCMAfter = oldCellCMAfter;
-                Log(LOG_DEBUG) << "EXECUTING FORBIDDEN CODE";
+                CC3D_Log(LOG_DEBUG) << "EXECUTING FORBIDDEN CODE";
 
 
             }

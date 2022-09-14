@@ -5,7 +5,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "VolumeTrackerPlugin.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 VolumeTrackerPlugin::VolumeTrackerPlugin() : pUtils(0), lockPtr(0), potts(0), deadCellG(0) {
 }
 
@@ -16,11 +16,11 @@ VolumeTrackerPlugin::~VolumeTrackerPlugin() {
 }
 
 void VolumeTrackerPlugin::initVec(const vector<int> &_vec) {
-    Log(LOG_DEBUG) << " THIS IS VEC.size="<<_vec.size();
+    CC3D_Log(LOG_DEBUG) << " THIS IS VEC.size="<<_vec.size();
 }
 
 void VolumeTrackerPlugin::initVec(const Dim3D &_dim) {
-    Log(LOG_DEBUG) << " THIS IS A COMPUCELL3D DIM3D"<<_dim;
+    CC3D_Log(LOG_DEBUG) << " THIS IS A COMPUCELL3D DIM3D"<<_dim;
 }
 
 bool VolumeTrackerPlugin::checkIfOKToResize(Dim3D _newSize, Dim3D _shiftVec) {
@@ -70,7 +70,7 @@ void VolumeTrackerPlugin::handleEvent(CC3DEvent & _event){
 	if (_event.id==CHANGE_NUMBER_OF_WORK_NODES){
 		CC3DEventChangeNumberOfWorkNodes ev = static_cast<CC3DEventChangeNumberOfWorkNodes&>(_event);
 		deadCellVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), (CellG*)0);
-		Log(LOG_DEBUG) << "VolumeTrackerPlugin::handleEvent=";
+		CC3D_Log(LOG_DEBUG) << "VolumeTrackerPlugin::handleEvent=";
     }
 }
 

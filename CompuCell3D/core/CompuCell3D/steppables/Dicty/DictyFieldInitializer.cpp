@@ -8,7 +8,7 @@ using namespace std;
 
 
 #include "DictyFieldInitializer.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 DictyFieldInitializer::DictyFieldInitializer() :
         potts(0), gotAmoebaeFieldBorder(false), presporeRatio(0.5), gap(1), width(2), amoebaeFieldBorder(10) {}
@@ -164,14 +164,14 @@ void DictyFieldInitializer::start() {
 
     if(!cellField->get(cellPt)){///check if medium
     if( ! initializedWater){ ///put water
-    // Log(LOG_DEBUG) << CREATING WATER CELL "<<cellPt;
+    // CC3D_Log(LOG_DEBUG) << CREATING WATER CELL "<<cellPt;
     cell=potts->createCellG(pt);
     cell->type=automaton->getTypeId("Water");
     cellField->set(cellPt,cell);
     initializedWater=true;
 
     }else{///put water
-    // Log(LOG_DEBUG) << "SETTING WATER CELL "<<cellPt;
+    // CC3D_Log(LOG_DEBUG) << "SETTING WATER CELL "<<cellPt;
     cellField->set(cellPt,cell);
     }
     }
@@ -210,10 +210,10 @@ void DictyFieldInitializer::initializeCellTypes() {
 			com.x=cell->xCM/ cell->volume ;
 			com.y=cell->yCM/ cell->volume;
 			com.z=cell->zCM/ cell->volume;
-			Log(LOG_DEBUG) << "belongToZone(com)="<<belongToZone(com)<<" com="<<com;
+			CC3D_Log(LOG_DEBUG) << "belongToZone(com)="<<belongToZone(com)<<" com="<<com;
             if (belongToZone(com)) {
                 cell->type = automaton->getTypeId("Autocycling");
-                Log(LOG_DEBUG) << "setting autocycling type="<<(int)cell->type;
+                CC3D_Log(LOG_DEBUG) << "setting autocycling type="<<(int)cell->type;
             } else {
                 if (rand->getRatio() < presporeRatio) {
                     cell->type = automaton->getTypeId("Prespore");

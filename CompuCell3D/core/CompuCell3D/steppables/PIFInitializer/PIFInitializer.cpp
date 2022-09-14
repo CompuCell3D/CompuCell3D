@@ -5,7 +5,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "PIFInitializer.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 PIFInitializer::PIFInitializer() :
         potts(0), sim(0), pifname("") {}
@@ -27,7 +27,7 @@ void PIFInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     pifname = _xmlData->getFirstElement("PIFName")->getText();
 
     std::string basePath = simulator->getBasePath();
-    Log(LOG_DEBUG) << "basePath=simulator->getBasePath()=" << simulator->getBasePath();
+    CC3D_Log(LOG_DEBUG) << "basePath=simulator->getBasePath()=" << simulator->getBasePath();
     if (basePath != "") {
         pifname = basePath + "/" + pifname;
     }
@@ -40,10 +40,10 @@ void PIFInitializer::start() {
 	if (sim->getRestartEnabled()){
 		return ;  // we will not initialize cells if restart flag is on
 	}
-	Log(LOG_DEBUG) << "ppdPtr->pifname="<<pifname;
+	CC3D_Log(LOG_DEBUG) << "ppdPtr->pifname="<<pifname;
 
     std::ifstream piffile(pifname.c_str(), ios::in);
-    Log(LOG_DEBUG) << "opened pid file";
+    CC3D_Log(LOG_DEBUG) << "opened pid file";
     if (!piffile.good())
         throw CC3DException(string("Could not open\n" + pifname + "\nMake sure it exists and is in correct directory"));
     WatchableField3D < CellG * > *cellFieldG = (WatchableField3D < CellG * > *)
@@ -51,7 +51,7 @@ void PIFInitializer::start() {
     if (!cellFieldG) throw CC3DException("initField() Cell field cannot be null!");
 
     Dim3D dim = cellFieldG->getDim();
-    Log(LOG_DEBUG) << "THIS IS DIM FOR PIF "<<dim;
+    CC3D_Log(LOG_DEBUG) << "THIS IS DIM FOR PIF "<<dim;
 
     long spin;
     long clusterId;
@@ -68,18 +68,18 @@ void PIFInitializer::start() {
     CellG *cell;
 
 	TypeTransition * typeTransitionPtr=potts->getTypeTransition();
-	Log(LOG_DEBUG) << "typeTransitionPtr="<<typeTransitionPtr;
+	CC3D_Log(LOG_DEBUG) << "typeTransitionPtr="<<typeTransitionPtr;
     getline(piffile, line);
     istringstream pif(line);
     pif >> first >> second;
-    Log(LOG_DEBUG) << "First: " << first << " Second: " << second << "\n";
+    CC3D_Log(LOG_DEBUG) << "First: " << first << " Second: " << second;
     if (second == "Clusters") {
-        Log(LOG_DEBUG) << "Clusters Included" << "\n";
+        CC3D_Log(LOG_DEBUG) << "Clusters Included";
 		while(getline(piffile,line)) {
 			istringstream pif(line);
 			pif >> clusterId>> spin >> celltype >> xLow;
-					Log(LOG_TRACE) << "  Cluster Id:  " <<clusterId<< "  Spin: " << spin
-                           << "  Type: " <<  celltype <<"\n";
+					CC3D_Log(LOG_TRACE) << "  Cluster Id:  " <<clusterId<< "  Spin: " << spin
+                           << "  Type: " <<  celltype;
 
             if (!(xLow >= 0 && xLow < dim.x)) throw CC3DException(string("PIF reader: xLow out of bounds : \n") + line);
             pif >> xHigh;
@@ -145,12 +145,12 @@ void PIFInitializer::start() {
 
         }
     } else {
-        Log(LOG_TRACE) << "\n\n\n Only Cell Types" << "\n";
+        CC3D_Log(LOG_TRACE) << "Only Cell Types";
 		pif >> xLow;
 		int tmp = atoi(first.c_str());
 		spin = tmp;
 		celltype = second;
-		Log(LOG_TRACE) << "spin: " << spin << " celltype: : " << celltype <<
+		CC3D_Log(LOG_TRACE) << "spin: " << spin << " celltype: : " << celltype <<
             " xLow: " << xLow;
         if (!(xLow >= 0 && xLow < dim.x)) throw CC3DException(string("PIF reader: xLow out of bounds : \n") + line);
         pif >> xHigh;

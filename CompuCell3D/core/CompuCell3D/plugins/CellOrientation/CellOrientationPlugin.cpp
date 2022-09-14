@@ -34,7 +34,7 @@ CellOrientationPlugin::~CellOrientationPlugin() {
 }
 
 void CellOrientationPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
-	Log(LOG_DEBUG) << "INITIALIZE CELL ORIENTATION PLUGIN";
+	CC3D_Log(LOG_DEBUG) << "INITIALIZE CELL ORIENTATION PLUGIN";
 	potts = simulator->getPotts();
 	//    potts->getCellFactoryGroupPtr()->registerClass(&CellOrientationVectorAccessor); //register new class with the factory
 
@@ -72,7 +72,7 @@ void CellOrientationPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 }
 
 void CellOrientationPlugin::extraInit(Simulator *simulator) {
-    Log(LOG_DEBUG) << "EXTRA INITIALIZE CELL ORIENTATION PLUGIN";
+    CC3D_Log(LOG_DEBUG) << "EXTRA INITIALIZE CELL ORIENTATION PLUGIN";
 	Potts3D *potts = simulator->getPotts();
 	cellFieldG = potts->getCellFieldG();
 }

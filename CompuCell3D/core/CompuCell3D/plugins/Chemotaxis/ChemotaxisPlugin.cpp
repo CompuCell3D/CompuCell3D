@@ -91,7 +91,7 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		cfd.vecChemotaxisData.clear();
 		//Parsing Chemotaxis by type elements
 		CC3DXMLElementList chemotactByTypeXMlList=chemicalFieldXMlList[i]->getElements("ChemotaxisByType");
-		Log(LOG_TRACE) << "chemotactByTypeXMlList.size()="<<chemotactByTypeXMlList.size();
+		CC3D_Log(LOG_TRACE) << "chemotactByTypeXMlList.size()="<<chemotactByTypeXMlList.size();
 
 		for (int j = 0 ; j < chemotactByTypeXMlList.size() ; ++j){
 			cfd.vecChemotaxisData.push_back(ChemotaxisData());
@@ -123,7 +123,7 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 					cd.formulaName == "SaturationDifferenceChemotaxisFormula" || 
 					cd.formulaName == "COMLogScaledChemotaxisFormula")
 				{
-					std::cout << "You've asked for a saturation formula but did not provide a saturation coefficient" << std::endl ;
+					CC3D_Log(LOG_WARNING) << "You've asked for a saturation formula but did not provide a saturation coefficient" ;
 					exit(0);
 				}
 				
@@ -212,7 +212,7 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 		vecMapChemotaxisData.clear();
 
-		cerr<<"maxType="<<(int)maxType<<endl;
+		CC3D_Log(LOG_DEBUG) << "maxType=" << (int)maxType;
 
 		vecMapChemotaxisData.assign(chemotaxisFieldDataVec.size() , unordered_map<unsigned char, ChemotaxisData>() );
 
@@ -296,13 +296,13 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 				else{
 					vecMapChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::simpleChemotaxisFormula;
 				}
-				Log(LOG_DEBUG) << "i="<<i<<" cellTypeId="<<cellTypeId;
+				CC3D_Log(LOG_DEBUG) << "i="<<i<<" cellTypeId="<<cellTypeId;
 				vecMapChemotaxisData[i][cellTypeId].outScr();
 
 			}
 
 			//Now need to initialize field pointers
-			Log(LOG_DEBUG) << "chemicalFieldSourceVec.size()="<<chemotaxisFieldDataVec.size();
+			CC3D_Log(LOG_DEBUG) << "chemicalFieldSourceVec.size()="<<chemotaxisFieldDataVec.size();
 			fieldVec.clear();
 			fieldVec.assign(chemotaxisFieldDataVec.size(),0);//allocate fieldVec
 
@@ -706,7 +706,7 @@ double ChemotaxisPlugin::merksChemotaxis(const Point3D &pt, const CellG *newCell
 
 				if( chemotaxisDataRef.okToChemotact(newCell,oldCell) && chemotaxisDataRef.lambda!=0.0){
 					// chemotaxis is allowed towards this type of oldCell and lambda is non-zero
-					Log(LOG_TRACE) << "BASED ON OLD pt="<<pt<<" oldCell="<<oldCell<<" newCell="<<newCell;
+					CC3D_Log(LOG_TRACE) << "BASED ON OLD pt="<<pt<<" oldCell="<<oldCell<<" newCell="<<newCell;
 					ChemotaxisPlugin::chemotaxisEnergyFormulaFcnPtr_t formulaCurrentPtr=0;
 					formulaCurrentPtr=chemotaxisDataRef.formulaPtr;
 					if(formulaCurrentPtr){

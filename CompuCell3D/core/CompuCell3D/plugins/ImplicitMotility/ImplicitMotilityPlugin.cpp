@@ -10,7 +10,7 @@ using namespace CompuCell3D;
 #include "ImplicitMotilityPlugin.h"
 
 #include <math.h>
-#include <core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 
 ImplicitMotilityPlugin::ImplicitMotilityPlugin() :
@@ -99,7 +99,7 @@ void ImplicitMotilityPlugin::extraInit(Simulator *simulator) {
     update(xmlData, true);
 
 	bool steppableAlreadyRegisteredFlag;
-    Log(LOG_DEBUG) << "initializing the steppable";
+    CC3D_Log(LOG_DEBUG) << "initializing the steppable";
     //this will load the bias vec steppable if it is not already
     Steppable *biasVectorSteppable = Simulator::steppableManager.get("BiasVectorSteppable",
                                                                      &steppableAlreadyRegisteredFlag);
@@ -109,7 +109,7 @@ void ImplicitMotilityPlugin::extraInit(Simulator *simulator) {
         class_registry->addStepper("BiasVectorSteppable", biasVectorSteppable);
 
 	}
-    Log(LOG_DEBUG) << "steppable initialized";
+    CC3D_Log(LOG_DEBUG) << "steppable initialized";
 
 }
 

@@ -24,7 +24,7 @@ Stepper* StepperPyWrapper::getStepperPyWrapperPtr()
 
 void StepperPyWrapper::step()
 {
-   Log(LOG_TRACE) << "STEPPER ";
+   CC3D_Log(LOG_TRACE) << "STEPPER ";
    
    PyObject *ret;
    //Using OpenMp lock here - single thread will anly execute this code fragment - gives much better performance than using GIL only 
@@ -37,14 +37,14 @@ void StepperPyWrapper::step()
 	PyGILState_STATE gstate;
 	gstate = PyGILState_Ensure();
    for (int i = 0 ; i < vecPyObject.size() ; ++i){
-         Log(LOG_TRACE) << "before the call";
+         CC3D_Log(LOG_TRACE) << "before the call";
       ret=PyObject_CallMethod(vecPyObject[i],"step",0);
 
       
 
       //decrement reference here
       Py_DECREF(ret);
-      Log(LOG_TRACE) << "after the call";
+      CC3D_Log(LOG_TRACE) << "after the call";
    }
 	PyGILState_Release(gstate);
 

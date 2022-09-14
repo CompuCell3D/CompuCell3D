@@ -3,7 +3,7 @@
 
 #include <CompuCell3D/CC3D.h>
 #include "ChemotaxisDLLSpecifier.h"
-#include <core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 
 namespace CompuCell3D {
@@ -110,15 +110,15 @@ namespace CompuCell3D {
 
         void outScr() {
             using namespace std;
-            Log(LOG_DEBUG) << "**************ChemotaxisData**************";
-            Log(LOG_DEBUG) << "formulaPtr="<<formulaPtr;
-            Log(LOG_DEBUG) << "lambda="<<lambda<<" saturationCoef="<<saturationCoef<<" typaName="<<typeName;
-            Log(LOG_DEBUG) << "chemotactTowards="<<chemotactTowardsTypesString;
-            Log(LOG_DEBUG) << "chemotactTowards="<<chemotactTowardsTypesString;
+            CC3D_Log(LOG_DEBUG) << "**************ChemotaxisData**************";
+            CC3D_Log(LOG_DEBUG) << "formulaPtr="<<formulaPtr;
+            CC3D_Log(LOG_DEBUG) << "lambda="<<lambda<<" saturationCoef="<<saturationCoef<<" typaName="<<typeName;
+            CC3D_Log(LOG_DEBUG) << "chemotactTowards="<<chemotactTowardsTypesString;
+            CC3D_Log(LOG_DEBUG) << "chemotactTowards="<<chemotactTowardsTypesString;
             for (int i = 0; i < chemotactTowardsTypesVec.size(); ++i) {
-                Log(LOG_DEBUG) << "chemotact Towards type id="<<(int)chemotactTowardsTypesVec[i];
+                CC3D_Log(LOG_DEBUG) << "chemotact Towards type id="<<(int)chemotactTowardsTypesVec[i];
             }
-            Log(LOG_DEBUG) << "**************ChemotaxisData END**************";
+            CC3D_Log(LOG_DEBUG) << "**************ChemotaxisData END**************";
         }
 
         bool okToChemotact(const CellG *_oldCell, const CellG *_newCell) {

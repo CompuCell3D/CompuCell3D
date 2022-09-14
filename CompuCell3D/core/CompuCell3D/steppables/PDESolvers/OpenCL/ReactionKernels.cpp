@@ -69,8 +69,7 @@ const &fieldNameAddTerms){
 
 string tmpKernelFileName = getTempFileName();
 
-std::cout<<"Temporary file generated for reaction term kernels: \n\t"<<tmpKernelFileName<<
-std::endl;
+CC3D_Log(LOG_DEBUG) << "Temporary file generated for reaction term kernels: " << std::endl << "\t" << tmpKernelFileName;
 std::ofstream f(tmpKernelFileName.c_str());
 ASSERT_OR_THROW("Can not open generated file for writing", f.
 

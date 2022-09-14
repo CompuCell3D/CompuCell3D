@@ -25,7 +25,6 @@ SET(SRCS
   ParserStorage.cpp
   CC3DExceptions.cpp
   ExtraMembers.cpp
-  CC3DLogger.cpp
 )
 
 SET(INCLUDE_DIRS
@@ -81,7 +80,6 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D .h
   ClassRegistry
   CompuCellLibDLLSpecifier  
-  CompucellloggerDLLSpecifier
   DerivedProperty
   ExtraMembers
   ParseData
@@ -103,6 +101,5 @@ INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D .h
   CC3D_STL
   CC3DEvents
   CC3DExceptions
-  CC3DLogger
 
 )

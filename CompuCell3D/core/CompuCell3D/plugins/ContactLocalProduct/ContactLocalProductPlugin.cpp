@@ -5,7 +5,7 @@ using namespace CompuCell3D;
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 
 #include "ContactLocalProductPlugin.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 ContactLocalProductPlugin::ContactLocalProductPlugin() :
         pUtils(0),
@@ -106,11 +106,11 @@ void ContactLocalProductPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
 
     }
 
-    Log(LOG_DEBUG) << "size=" << contactSpecificityArray.size();
+    CC3D_Log(LOG_DEBUG) << "size=" << contactSpecificityArray.size();
     for (auto &i: cellTypesSet)
         for (auto &j: cellTypesSet) {
 
-            Log(LOG_DEBUG) << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << contactSpecificityArray[i][j];
+            CC3D_Log(LOG_DEBUG) << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << contactSpecificityArray[i][j];
 
         }
 
@@ -192,14 +192,14 @@ void ContactLocalProductPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
             variableNameVector.push_back(variableVec[i]->getText());
 
             if (variableCount == 0) {
-                Log(LOG_DEBUG) << "ADDING VARIABLE " << variableVec[i]->getText();
+                CC3D_Log(LOG_DEBUG) << "ADDING VARIABLE " << variableVec[i]->getText();
 
                 for (int idx = 0; idx < maxNumberOfWorkNodes; ++idx) {
                     pVec[idx].DefineVar(variableVec[i]->getText(), &k1Vec[idx]);
                 }
 
             } else {
-                Log(LOG_DEBUG) << "ADDING VARIABLE " << variableVec[i]->getText();
+                CC3D_Log(LOG_DEBUG) << "ADDING VARIABLE " << variableVec[i]->getText();
                 for (int idx = 0; idx < maxNumberOfWorkNodes; ++idx) {
                     pVec[idx].DefineVar(variableVec[i]->getText(), &k2Vec[idx]);
                 }
@@ -221,7 +221,7 @@ void ContactLocalProductPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
 
         if (_xmlData->getFirstElement("CustomFunction")->findElement("Expression")) {
             customExpression = _xmlData->getFirstElement("CustomFunction")->getFirstElement("Expression")->getText();
-            Log(LOG_DEBUG) << "THIS IS THE EXPRESSION=" << customExpression;
+            CC3D_Log(LOG_DEBUG) << "THIS IS THE EXPRESSION=" << customExpression;
             // p.SetExpr(customExpression);
             for (int idx = 0; idx < maxNumberOfWorkNodes; ++idx) {
                 pVec[idx].SetExpr(customExpression);
@@ -235,7 +235,7 @@ void ContactLocalProductPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
             }
         }
     }
-    Log(LOG_DEBUG) << "Contact maxNeighborIndex=" << maxNeighborIndex;
+    CC3D_Log(LOG_DEBUG) << "Contact maxNeighborIndex=" << maxNeighborIndex;
 
 }
 
@@ -254,14 +254,14 @@ void ContactLocalProductPlugin::handleEvent(CC3DEvent &_event) {
 
 
             if (variableCount == 0) {
-                Log(LOG_DEBUG) << "ADDING VARIABLE " << variableNameVector[i];
+                CC3D_Log(LOG_DEBUG) << "ADDING VARIABLE " << variableNameVector[i];
 
                 for (int idx = 0; idx < maxNumberOfWorkNodes; ++idx) {
                     pVec[idx].DefineVar(variableNameVector[i], &k1Vec[idx]);
                 }
 
             } else {
-                Log(LOG_DEBUG) << "ADDING VARIABLE " << variableNameVector[i] ;
+                CC3D_Log(LOG_DEBUG) << "ADDING VARIABLE " << variableNameVector[i] ;
                 for (int idx = 0; idx < maxNumberOfWorkNodes; ++idx) {
                     pVec[idx].DefineVar(variableNameVector[i], &k2Vec[idx]);
                 }

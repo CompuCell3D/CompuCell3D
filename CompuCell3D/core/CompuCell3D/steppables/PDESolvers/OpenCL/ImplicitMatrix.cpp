@@ -15,7 +15,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 using namespace CompuCell3D;
 static const char *programPath = "ImplicitMatrix.cl";
 
@@ -41,9 +41,9 @@ ImplicitMatrix::ImplicitMatrix(OpenCLHelper const &oclHelper, UniSolverParams co
 		fns[1].c_str(),
 		fns[2].c_str(),
 		fns[3].c_str()};
-	Log(LOG_DEBUG) << "OpenCL kernel names for ImplicitMatrix:";
+	CC3D_Log(LOG_DEBUG) << "OpenCL kernel names for ImplicitMatrix:";
     for (int i = 0; i < 4; ++i) {
-        Log(LOG_DEBUG) <<"\t"<<programPaths[i];
+        CC3D_Log(LOG_DEBUG) <<"\t"<<programPaths[i];
     }
 
     if (!oclHelper.LoadProgram(programPaths, 4, m_clProgram)) {

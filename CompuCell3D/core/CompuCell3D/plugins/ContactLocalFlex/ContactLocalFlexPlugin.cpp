@@ -7,7 +7,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "ContactLocalFlexPlugin.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 ContactLocalFlexPlugin::ContactLocalFlexPlugin() :
         pUtils(0),
@@ -306,11 +306,11 @@ void ContactLocalFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
 
     }
 
-    cerr << "size=" << contactEnergyArray.size() << endl;
+    CC3D_Log(LOG_DEBUG) << "size=" << contactEnergyArray.size();
     for (auto &i: cellTypesSet)
         for (auto &j: cellTypesSet) {
 
-            Log(LOG_DEBUG) << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << contactEnergyArray[i][j] << endl;
+            CC3D_Log(LOG_DEBUG) << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << contactEnergyArray[i][j];
 
         }
 
@@ -336,7 +336,7 @@ void ContactLocalFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
         }
 
     }
-    Log(LOG_DEBUG) << "Contact maxNeighborIndex=" << maxNeighborIndex;
+    CC3D_Log(LOG_DEBUG) << "Contact maxNeighborIndex=" << maxNeighborIndex;
 
 }
 
