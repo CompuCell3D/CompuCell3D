@@ -8,7 +8,13 @@
 #pragma once
 #ifndef SRC_CC3DLOGGER_H_
 #define SRC_CC3DLOGGER_H_
-#define CC3D_FUNCTION __PRETTY_FUNCTION__
+
+#ifdef CC3D_ISWIN
+#   define CC3D_FUNCTION __func__
+#else
+#   define CC3D_FUNCTION __PRETTY_FUNCTION__
+#endif
+
 #include <sstream>
 #include <core/CompuCell3D/CompuCellLibDLLSpecifier.h>
 
