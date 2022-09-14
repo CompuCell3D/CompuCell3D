@@ -1,24 +1,4 @@
-/*************************************************************************
- *    CompuCell - A software framework for multimodel simulations of     *
- * biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
- *                             Indiana                                   *
- *                                                                       *
- * This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
- *  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
- *  CompuCell GNU General Public License RIDER you can redistribute it   *
- * and/or modify it under the terms of the GNU General Public License as *
- *  published by the Free Software Foundation; either version 2 of the   *
- *         License, or (at your option) any later version.               *
- *                                                                       *
- * This program is distributed in the hope that it will be useful, but   *
- *      WITHOUT ANY WARRANTY; without even the implied warranty of       *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
- *             General Public License for more details.                  *
- *                                                                       *
- *  You should have received a copy of the GNU General Public License    *
- *     along with this program; if not, write to the Free Software       *
- *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
- *************************************************************************/
+
 
 #include <CompuCell3D/plugins/Plasticity/PlasticityTrackerPlugin.h>
 
@@ -31,7 +11,7 @@
 #include <BasicUtils/BasicClassAccessor.h>
 #include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-#include<CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
@@ -161,7 +141,7 @@ double PlasticityPlugin::changeEnergy(const Point3D &pt,
    Coordinates3D<float> centMassOldBefore;
    Coordinates3D<float> centMassNewBefore;
 
-   Log(LOG_TRACE) << "fieldDim="<<fieldDim;
+   CC3D_Log(LOG_TRACE) << "fieldDim="<<fieldDim;
    if(oldCell){
       centMassOldBefore.XRef()=oldCell->xCM/(float)oldCell->volume;
       centMassOldBefore.YRef()=oldCell->yCM/(float)oldCell->volume;
@@ -247,7 +227,7 @@ double PlasticityPlugin::changeEnergy(const Point3D &pt,
 //          }
 // 
 //          if(locEn1!=locEn2){
-   //          Log(LOG_TRACE) <<"locEn1="<<locEn1<<" locEn2="<<locEn2;
+   //          CC3D_Log(LOG_TRACE) <<"locEn1="<<locEn1<<" locEn2="<<locEn2;
 //             exit(0);
 // 
 //          }
@@ -282,10 +262,10 @@ double PlasticityPlugin::changeEnergy(const Point3D &pt,
 //          locEn2=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),newCell);
 //          
 //          locEn1=lambdaPlasticity*deltaL*(2*(lBefore-targetLengthPlasticity)+deltaL);
-//             Log(LOG_TRACE) <<"locEn1="<<locEn1<<" locEn1="<<locEn2;
+//             CC3D_Log(LOG_TRACE) <<"locEn1="<<locEn1<<" locEn1="<<locEn2;
 // 
 //          if(locEn1!=locEn2){
-   //          Log(LOG_TRACE) <<"locEn1="<<locEn1<<" locEn2="<<locEn2;
+   //          CC3D_Log(LOG_TRACE) <<"locEn1="<<locEn1<<" locEn2="<<locEn2;
 //             exit(0);
 // 
 //          }
@@ -299,18 +279,18 @@ double PlasticityPlugin::changeEnergy(const Point3D &pt,
 //    if(oldCell){
 // //        centroid=precalculateCMAfterFlip(pt, oldCell, -1,fieldDim);
 //          centroid=precalculateCentroid(pt, oldCell, -1,fieldDim);
-//          Log(LOG_TRACE) <<"int="<<precalculateCentroid(pt, oldCell, -1,fieldDim);
-//       Log(LOG_TRACE) <<"pt="<<pt;
-//       Log(LOG_TRACE) <<"oldCell xCM="<<oldCell->xCM<<" xcm="<<oldCell->xCM/(float)oldCell->volume;
-//       Log(LOG_TRACE) <<"Centroid "<<centroid.X()<<","<<centroid.Y()<<","<<centroid.Z();
-//       Log(LOG_TRACE) <<"Manual "<<oldCell->xCM-pt.x<<","<<oldCell->yCM-pt.y<<","<<oldCell->zCM-pt.z;
+//          CC3D_Log(LOG_TRACE) <<"int="<<precalculateCentroid(pt, oldCell, -1,fieldDim);
+//       CC3D_Log(LOG_TRACE) <<"pt="<<pt;
+//       CC3D_Log(LOG_TRACE) <<"oldCell xCM="<<oldCell->xCM<<" xcm="<<oldCell->xCM/(float)oldCell->volume;
+//       CC3D_Log(LOG_TRACE) <<"Centroid "<<centroid.X()<<","<<centroid.Y()<<","<<centroid.Z();
+//       CC3D_Log(LOG_TRACE) <<"Manual "<<oldCell->xCM-pt.x<<","<<oldCell->yCM-pt.y<<","<<oldCell->zCM-pt.z;
 //       if(oldCell->xCM-pt.x - centroid.X() !=0 || oldCell->yCM-pt.y - centroid.Y() !=0 || oldCell->zCM-pt.z - centroid.Z() !=0)
 //          exit(0);
 //    }
 
 
 //    float energy=0.0;
-      Log(LOG_TRACE) <<"energy="<<energy;
+      CC3D_Log(LOG_TRACE) <<"energy="<<energy;
    return energy;
 
 

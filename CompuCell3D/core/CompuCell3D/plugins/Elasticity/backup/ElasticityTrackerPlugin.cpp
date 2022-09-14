@@ -1,24 +1,4 @@
-/*************************************************************************
- *    CompuCell - A software framework for multimodel simulations of     *
- * biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
- *                             Indiana                                   *
- *                                                                       *
- * This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
- *  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
- *  CompuCell GNU General Public License RIDER you can redistribute it   *
- * and/or modify it under the terms of the GNU General Public License as *
- *  published by the Free Software Foundation; either version 2 of the   *
- *         License, or (at your option) any later version.               *
- *                                                                       *
- * This program is distributed in the hope that it will be useful, but   *
- *      WITHOUT ANY WARRANTY; without even the implied warranty of       *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
- *             General Public License for more details.                  *
- *                                                                       *
- *  You should have received a copy of the GNU General Public License    *
- *     along with this program; if not, write to the Free Software       *
- *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
- *************************************************************************/
+
 
 
 #include <CompuCell3D/Automaton/Automaton.h>
@@ -148,10 +128,10 @@ void ElasticityTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
          set<ElasticityTrackerData>::iterator sitr;
          set<ElasticityTrackerData> * elasticityNeighborsPtr=&elasticityTrackerAccessor.get(oldCell->extraAttribPtr)->elasticityNeighbors;
          set<ElasticityTrackerData> * elasticityNeighborsTmpPtr;
-         Log(LOG_TRACE) << "oldCell="<<oldCell<<" oldCell->id="<<oldCell->id<<" oldCell->type="<<(int)oldCell->type<<" oldCell->volume="<<oldCell->volume;
+         CC3D_Log(LOG_TRACE) << "oldCell="<<oldCell<<" oldCell->id="<<oldCell->id<<" oldCell->type="<<(int)oldCell->type<<" oldCell->volume="<<oldCell->volume;
          for(sitr=elasticityNeighborsPtr->begin() ; sitr != elasticityNeighborsPtr->end() ; ++sitr){
             //getting set of elasticityNeighbors from the neighbor (pointed by sitr) of the oldCell
-            Log(LOG_TRACE) << "sitr->neighborAddress->id="<<sitr->neighborAddress->id;
+            CC3D_Log(LOG_TRACE) << "sitr->neighborAddress->id="<<sitr->neighborAddress->id;
             elasticityNeighborsTmpPtr=&elasticityTrackerAccessor.get(sitr->neighborAddress->extraAttribPtr)->elasticityNeighbors ;
             //removing oldCell from the set
             elasticityNeighborsTmpPtr->erase(ElasticityTrackerData(oldCell));
@@ -211,7 +191,7 @@ void ElasticityTrackerPlugin::initializeElasticityNeighborList(){
 //          
 //       cell=*cInvItr;
 //       elasticityNeighborsTmpPtr=&elasticityTrackerAccessor.get(cell->extraAttribPtr)->elasticityNeighbors;
-//       Log(LOG_TRACE) << "cell.ID "<<cell->id<<" has "<<elasticityNeighborsTmpPtr->size()<<" Elasticity neighbors";
+//       CC3D_Log(LOG_TRACE) << "cell.ID "<<cell->id<<" has "<<elasticityNeighborsTmpPtr->size()<<" Elasticity neighbors";
 // 
 //    }
 // 

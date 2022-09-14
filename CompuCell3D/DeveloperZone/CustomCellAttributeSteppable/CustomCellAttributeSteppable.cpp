@@ -1,5 +1,5 @@
 #include <CompuCell3D/CC3D.h>
-#include<CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 using namespace CompuCell3D;
 using namespace std;
 
@@ -119,10 +119,10 @@ void CustomCellAttributeSteppable::step(const unsigned int currentStep) {
     for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr) {
         cell = cellInventoryPtr->getCell(cInvItr);
         CustomCellAttributeSteppableData * customCellAttrData = customCellAttributeSteppableDataAccessor.get(cell->extraAttribPtr);
-        Log(LOG_DEBUG) << "cell->id=" << cell->id << " mcs = " << currentStep << " attached x variable = " << customCellAttrData->x;
-        Log(LOG_DEBUG) << "----------- up to last 5 xCOM positions ----- for cell->id " << cell->id;
+        CC3D_Log(LOG_DEBUG) << "cell->id=" << cell->id << " mcs = " << currentStep << " attached x variable = " << customCellAttrData->x;
+        CC3D_Log(LOG_DEBUG) << "----------- up to last 5 xCOM positions ----- for cell->id " << cell->id;
         for (int i = 0; i < customCellAttrData->array.size(); ++i) {
-            Log(LOG_DEBUG) << "x_com_pos[" << i << "]=" << customCellAttrData->array[i];
+            CC3D_Log(LOG_DEBUG) << "x_com_pos[" << i << "]=" << customCellAttrData->array[i];
         }
     }
 

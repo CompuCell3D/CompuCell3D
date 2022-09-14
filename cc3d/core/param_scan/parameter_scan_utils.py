@@ -12,7 +12,6 @@ from cc3d.core.CC3DSimulationDataHandler import CC3DSimulationDataHandler
 from cc3d.core.filelock import FileLock
 from cc3d.core.ParameterScanEnums import SCAN_FINISHED_OR_DIRECTORY_ISSUE
 import cc3d.core.param_scan
-import traceback
 from .template_utils import generate_simulation_files_from_template
 
 
@@ -307,35 +306,9 @@ def next_cartesian_product_from_state(curr_list: List[int], max_list: List[int])
                 break
 
 
-def run_main_player_run_script(arg_list_local: list):
-    """
-    Runs simulation via helper script cc3d.core.param_scan.main_player_run
-    Experimental function .
-    :param arg_list_local: {list} list of cml options for the player
-    :return: None
-    """
-
-    main_player_run = str(Path(cc3d.core.param_scan.__file__).parent.joinpath('main_player_run.py'))
-
-    sys.argv = arg_list_local
-
-    with open(main_player_run) as sim_fh:
-        try:
-            code = compile(sim_fh.read(), main_player_run, 'exec')
-
-        except:
-            code = None
-            traceback.print_exc(file=sys.stdout)
-
-        if code is not None:
-            try:
-                exec(code)
-            except:
-                traceback.print_exc(file=sys.stdout)
-
-
 def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_scan_parameters: dict,
-                                     run_script: Union[str, Path] = '', gui_flag: bool = False,
+                                     # run_script: Union[str, Path] = '',
+                                     gui_flag: bool = False,
                                      output_dir: str = None, arg_list: list = []):
     """
     Given the set of scanned parameters This function creates CC3D project (by applying)
@@ -382,19 +355,25 @@ def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_
         f'--parameter-scan-iteration={current_scan_parameters["current_iteration"]}'
     ]
 
+    exe_script_list = [f'{sys.executable}', '-m', 'cc3d.run_script']
     if gui_flag:
         arg_list_local += ['--exit-when-done']
+        exe_script_list = [f'{sys.executable}', '-m', 'cc3d.player5']
 
     print('Running simulation with current_scan_parameters=', current_scan_parameters)
 
-    popen_args = [run_script] + arg_list_local
+    popen_args = exe_script_list + arg_list_local
     print('command=', popen_args)
 
     cc3d_process = Popen(popen_args)
-    cc3d_process.communicate()
-
-    # main_player(arg_list_local)
+    out, err = cc3d_process.communicate()
+    if out:
+        print("standard output of subprocess:")
+        print(out)
+    if err:
+        print("standard error of subprocess:")
+        print(err)
+    print("returncode of param scan command:")
 
     print('repeat: Running simulation with current_scan_parameters=', current_scan_parameters)
 
-    # time.sleep(5.0)

@@ -4,7 +4,7 @@
 # include <PublicUtilities/Units/unit_calculator.h>
 # include <iostream>
 #include <cmath>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 class Unit{
 	//:public unit_t{
@@ -106,7 +106,7 @@ public:
 //	//std::string rhsString=_rhs.toString();
 //	//std::string parseExpression;
 //	//parseExpression="("+lhsString+")*("+rhsString+")\n";
-// 	Log(LOG_TRACE) << "parseExpression="<<parseExpression;
+// 	CC3D_Log(LOG_TRACE) << "parseExpression="<<parseExpression;
 //	//struct unit_t unit=parseUnit(const_cast<char *> (parseExpression.c_str()));
 //
 //
@@ -133,7 +133,7 @@ public:
 //	//std::string rhsString=_rhs.toString();
 //	//std::string parseExpression;
 //	//parseExpression="("+lhsString+")/("+rhsString+")\n";
-// 	Log(LOG_TRACE) <<"parseExpression="<<parseExpression;
+// 	CC3D_Log(LOG_TRACE) <<"parseExpression="<<parseExpression;
 //	//struct unit_t unit=parseUnit(const_cast<char *> (parseExpression.c_str()));
 //	//Unit returnUnit(unit);
 //	//return returnUnit;

@@ -1,4 +1,3 @@
-#include "cppunit/TestCase.h"
 #include "cppunit/TestSuite.h"
 #include "cppunit/ui/text/TestRunner.h"
 #include "cppunit/TestCaller.h"
@@ -20,64 +19,57 @@ XERCES_CPP_NAMESPACE_USE;
 
 using namespace std;
 
-namespace CompuCell3D
-{
+namespace CompuCell3D {
 
-class TestFlexibleDiffusionSolver : public CppUnit::TestFixture
-{
-private:
-	 FlexibleDiffusionSolverFE *fds;
-	 string fileName;
-	 string consentrationFile;
+    class TestFlexibleDiffusionSolver : public CppUnit::TestFixture {
+    private:
+        FlexibleDiffusionSolverFE *fds;
+        string fileName;
+        string consentrationFile;
 
-public:
+    public:
 
-   void setUp()
-   {
-	   fds 			= new FlexibleDiffusionSolverFE();
-	   fileName 	= "diffusion_2D.xml";
-	   consentrationFile = "diffusion_2D.pulse.txt";
+        void setUp() {
+            fds = new FlexibleDiffusionSolverFE();
+            fileName = "diffusion_2D.xml";
+            consentrationFile = "diffusion_2D.pulse.txt";
 
-	   //FlexibleDiffusionSolverFEParseData *pd 	= new FlexibleDiffusionSolverFEParseData();
+            //FlexibleDiffusionSolverFEParseData *pd 	= new FlexibleDiffusionSolverFEParseData();
 
-	   Dim3D dim(57, 57, 3);
-	   // Dim3D here for concentrationField specifies the size of the array
-	   // (including border width Array3DBorders<T>::borderWidth which equals 2 in this case)
-	   //dim.x=55; dim.y=55; dim.z=1;
+            Dim3D dim(57, 57, 3);
+            // Dim3D here for concentrationField specifies the size of the array
+            // (including border width Array3DBorders<T>::borderWidth which equals 2 in this case)
+            //dim.x=55; dim.y=55; dim.z=1;
 
-	   float val = 0.0;
+            float val = 0.0;
 
-	   fds->fieldDim.x = 55;
-	   fds->fieldDim.y = 55;
-	   fds->fieldDim.z = 1;
-	   fds->concentrationFieldVector.push_back( new Array3DBordersField3DAdapter<float>(dim, val) );
-   }
+            fds->fieldDim.x = 55;
+            fds->fieldDim.y = 55;
+            fds->fieldDim.z = 1;
+            fds->concentrationFieldVector.push_back(new Array3DBordersField3DAdapter<float>(dim, val));
+        }
 
-   void tearDown()
-   {
-      delete fds;
-   }
+        void tearDown() {
+            delete fds;
+        }
 
-   void test_readConcentrationField()
-   {
-	   fds->readConcentrationField(consentrationFile, fds->concentrationFieldVector[0]);
+        void test_readConcentrationField() {
+            fds->readConcentrationField(consentrationFile, fds->concentrationFieldVector[0]);
 
-	   CPPUNIT_ASSERT( 2000 == fds->concentrationFieldVector[0]->get(Point3D(0,0,0)) );
-   }
+            CPPUNIT_ASSERT(2000 == fds->concentrationFieldVector[0]->get(Point3D(0, 0, 0)));
+        }
 
-   void test_initializeConcentration()
-   {
-		//readXMLSteppable(); // initialize fds->fdspd
-		//fds->fdspdPtr = &fds->fdspd;
-		//fds->initializeConcentration();
+        void test_initializeConcentration() {
+            //readXMLSteppable(); // initialize fds->fdspd
+            //fds->fdspdPtr = &fds->fdspd;
+            //fds->initializeConcentration();
 
-		//CPPUNIT_ASSERT( 2000 == fds->concentrationFieldVector[0]->get(Point3D(0,0,0)) );
-   }
+            //CPPUNIT_ASSERT( 2000 == fds->concentrationFieldVector[0]->get(Point3D(0,0,0)) );
+        }
 
-   // From FlexibleDiffusionSolverFE
+        // From FlexibleDiffusionSolverFE
 
-   void readXMLSteppable()
-   {
+        void readXMLSteppable() {
 /*
 	    XMLPlatformUtils::Initialize();
 
@@ -109,29 +101,29 @@ public:
 
 		}
 */
-   }
+        }
 
-   CPPUNIT_TEST_SUITE( TestFlexibleDiffusionSolver );
-   CPPUNIT_TEST( test_readConcentrationField );
-   CPPUNIT_TEST( test_initializeConcentration );
-   CPPUNIT_TEST_SUITE_END();
+        CPPUNIT_TEST_SUITE( TestFlexibleDiffusionSolver );
+        CPPUNIT_TEST( test_readConcentrationField );
+        CPPUNIT_TEST( test_initializeConcentration );
 
-};
+        CPPUNIT_TEST_SUITE_END();
+
+    };
 
 }
 
-int runTestFlexibleDiffusionSolver()
-{
+int runTestFlexibleDiffusionSolver() {
 
-   CPPUNIT_TEST_SUITE_REGISTRATION( CompuCell3D::TestFlexibleDiffusionSolver );
+    CPPUNIT_TEST_SUITE_REGISTRATION(CompuCell3D::TestFlexibleDiffusionSolver);
 
-   CppUnit::TextUi::TestRunner runner;
-   CppUnit::TestFactoryRegistry &registry = CppUnit::TestFactoryRegistry::getRegistry();
-   runner.addTest( registry.makeTest() );
-   if ( runner.run() )
-      return 0;
-   else
-      return 1;
+    CppUnit::TextUi::TestRunner runner;
+    CppUnit::TestFactoryRegistry &registry = CppUnit::TestFactoryRegistry::getRegistry();
+    runner.addTest(registry.makeTest());
+    if (runner.run())
+        return 0;
+    else
+        return 1;
 
 };
 

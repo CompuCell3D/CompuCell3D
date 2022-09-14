@@ -1,24 +1,4 @@
-/*************************************************************************
- *    CompuCell - A software framework for multimodel simulations of     *
- * biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
- *                             Indiana                                   *
- *                                                                       *
- * This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
- *  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
- *  CompuCell GNU General Public License RIDER you can redistribute it   *
- * and/or modify it under the terms of the GNU General Public License as *
- *  published by the Free Software Foundation; either version 2 of the   *
- *         License, or (at your option) any later version.               *
- *                                                                       *
- * This program is distributed in the hope that it will be useful, but   *
- *      WITHOUT ANY WARRANTY; without even the implied warranty of       *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
- *             General Public License for more details.                  *
- *                                                                       *
- *  You should have received a copy of the GNU General Public License    *
- *     along with this program; if not, write to the Free Software       *
- *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
- *************************************************************************/
+
 
 #ifndef PIXELTRACKERPLUGIN_H
 #define PIXELTRACKERPLUGIN_H
@@ -38,9 +18,9 @@ namespace CompuCell3D {
   
 class PIXELTRACKER_EXPORT PixelTrackerPlugin : public Plugin, public CellGChangeWatcher {
 
-      //WatchableField3D<CellG *> *cellFieldG;
+
       Dim3D fieldDim;
-      BasicClassAccessor<PixelTracker> pixelTrackerAccessor;
+      ExtraMembersGroupAccessor<PixelTracker> pixelTrackerAccessor;
       Simulator *simulator;
 	  Potts3D *potts;
 	  ParallelUtilsOpenMP *pUtils;
@@ -69,7 +49,7 @@ class PIXELTRACKER_EXPORT PixelTrackerPlugin : public Plugin, public CellGChange
 		virtual std::string toString();
 		virtual void handleEvent(CC3DEvent & _event);		
 
-		BasicClassAccessor<PixelTracker> * getPixelTrackerAccessorPtr(){return & pixelTrackerAccessor;}
+		ExtraMembersGroupAccessor<PixelTracker> * getPixelTrackerAccessorPtr(){return & pixelTrackerAccessor;}
 		//had to include this function to get set itereation working properly with Python , and Player that has restart capabilities
 		PixelTrackerData * getPixelTrackerData(PixelTrackerData * _psd){return _psd;}
 

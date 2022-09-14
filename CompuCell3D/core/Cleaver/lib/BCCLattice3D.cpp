@@ -46,7 +46,7 @@
 #include "TetMesh.h"
 #include "Volume.h"
 #include "ScalarField.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 using namespace std;
 using namespace Cleaver;
@@ -2010,7 +2010,7 @@ void BCCLattice3D::getRightHandedVertexList(const Tet3D *tet, Vertex3D *verts[15
         }
         default:
         {
-            Log(LOG_DEBUG) << "Fatal Error: InvalidTet Index!!";
+            CC3D_Log(LOG_DEBUG) << "Fatal Error: InvalidTet Index!!";
             exit(51);
         }
     }
@@ -2456,7 +2456,7 @@ Tet3D* BCCLattice3D::getInnerTet(const Face3D *face, const Vertex3D *warp_vertex
 
 
     // if neither hit, we have a problem
-    Log(LOG_DEBUG) << "Fatal Error:  Failed to find Inner Tet for Face";
+    CC3D_Log(LOG_DEBUG) << "Fatal Error:  Failed to find Inner Tet for Face";
     exit(-1);
     return NULL;
 }
@@ -2524,7 +2524,7 @@ Tet3D* BCCLattice3D::getInnerTet(const Edge3D *edge, const Vertex3D *warp_vertex
     }
 
     // if STILL none hit, we have a problem
-    Log(LOG_DEBUG) << "Fatal Error: Failed to find Inner Tet for Edge";
+    CC3D_Log(LOG_DEBUG) << "Fatal Error: Failed to find Inner Tet for Edge";
     exit(-1);
 
     return NULL;

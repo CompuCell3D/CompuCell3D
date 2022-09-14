@@ -1,24 +1,4 @@
-/*************************************************************************
- *    CompuCell - A software framework for multimodel simulations of     *
- * biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
- *                             Indiana                                   *
- *                                                                       *
- * This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
- *  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
- *  CompuCell GNU General Public License RIDER you can redistribute it   *
- * and/or modify it under the terms of the GNU General Public License as *
- *  published by the Free Software Foundation; either version 2 of the   *
- *         License, or (at your option) any later version.               *
- *                                                                       *
- * This program is distributed in the hope that it will be useful, but   *
- *      WITHOUT ANY WARRANTY; without even the implied warranty of       *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
- *             General Public License for more details.                  *
- *                                                                       *
- *  You should have received a copy of the GNU General Public License    *
- *     along with this program; if not, write to the Free Software       *
- *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
- *************************************************************************/
+
 
 
 #include <CompuCell3D/Automaton/Automaton.h>
@@ -149,10 +129,10 @@ void PlasticityTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
          set<PlasticityTrackerData>::iterator sitr;
          set<PlasticityTrackerData> * plasticityNeighborsPtr=&plasticityTrackerAccessor.get(oldCell->extraAttribPtr)->plasticityNeighbors;
          set<PlasticityTrackerData> * plasticityNeighborsTmpPtr;
-         Log(LOG_TRACE) << "oldCell="<<oldCell<<" oldCell->id="<<oldCell->id<<" oldCell->type="<<(int)oldCell->type<<" oldCell->volume="<<oldCell->volume;
+         CC3D_Log(LOG_TRACE) << "oldCell="<<oldCell<<" oldCell->id="<<oldCell->id<<" oldCell->type="<<(int)oldCell->type<<" oldCell->volume="<<oldCell->volume;
          for(sitr=plasticityNeighborsPtr->begin() ; sitr != plasticityNeighborsPtr->end() ; ++sitr){
             //getting set of plasticityNeighbors from the neighbor (pointed by sitr) of the oldCell
-            Log(LOG_TRACE) << "sitr->neighborAddress->id="<<sitr->neighborAddress->id;
+            CC3D_Log(LOG_TRACE) << "sitr->neighborAddress->id="<<sitr->neighborAddress->id;
             plasticityNeighborsTmpPtr=&plasticityTrackerAccessor.get(sitr->neighborAddress->extraAttribPtr)->plasticityNeighbors ;
 //             plasticityNeighborsTmpPtr->erase(PlasticityTrackerData(oldCell));
          }
@@ -167,7 +147,7 @@ void PlasticityTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
    neighborTrackerAccessorPtr=neighborTrackerPluginPtr->getNeighborTrackerAccessorPtr();
 
    if(oldCell){
-      Log(LOG_TRACE) << "ID: " << oldCell->id << " Type: " << (int)oldCell->type << " Address: " << oldCell;
+      CC3D_Log(LOG_TRACE) << "ID: " << oldCell->id << " Type: " << (int)oldCell->type << " Address: " << oldCell;
 //          sleep(5);
       neighborData = &(neighborTrackerAccessorPtr->get(oldCell->extraAttribPtr)->cellNeighbors);
 //          neighborTrackerAccessorPtr->get(oldCell->extraAttribPtr);
@@ -176,19 +156,19 @@ void PlasticityTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
       set<PlasticityTrackerData> * plasticityNeighborsPtr=&plasticityTrackerAccessor.get(oldCell->extraAttribPtr)->plasticityNeighbors;
       set<PlasticityTrackerData> OGplasticityNeighborsPtr=plasticityTrackerAccessor.get(oldCell->extraAttribPtr)->plasticityNeighbors;
       set<PlasticityTrackerData> * plasticityNeighborsTmpPtr;
-      Log(LOG_TRACE) <<  "Before Size of Set: " << plasticityNeighborsPtr->size();
+      CC3D_Log(LOG_TRACE) <<  "Before Size of Set: " << plasticityNeighborsPtr->size();
       plasticityNeighborsPtr->clear();
       for(sitr=neighborData->begin() ; sitr != neighborData->end() ; ++sitr){
          nCell= sitr->neighborAddress;
-         Log(LOG_TRACE) << "\t NeigbhorID: " << sitr->neighborAddress;
+         CC3D_Log(LOG_TRACE) << "\t NeigbhorID: " << sitr->neighborAddress;
          if(nCell) {
             if(plasticityTypes.find(nCell->type)==endSitr){
-                  Log(LOG_TRACE) << "\t Type not inlucded in Plasticity\n";
-                  Log(LOG_TRACE) << "\tID: " << nCell->id << " Type: " << (int)nCell->type;
+                  CC3D_Log(LOG_TRACE) << "\t Type not inlucded in Plasticity" << std::endl;
+                  CC3D_Log(LOG_TRACE) << "\tID: " << nCell->id << " Type: " << (int)nCell->type;
             }
             else{
-               Log(LOG_TRACE) << "\t Inserting NeigbhorID: " << sitr->neighborAddress << " Type: " << (int)nCell->type;
-               Log(LOG_TRACE) << "\t Before Inserting Size of Set: " << plasticityNeighborsPtr->size();
+               CC3D_Log(LOG_TRACE) << "\t Inserting NeigbhorID: " << sitr->neighborAddress << " Type: " << (int)nCell->type;
+               CC3D_Log(LOG_TRACE) << "\t Before Inserting Size of Set: " << plasticityNeighborsPtr->size();
                plasticityNeighborsPtr->insert(PlasticityTrackerData(nCell));
                plasticityNeighborsTmpPtr=&plasticityTrackerAccessor.get(nCell->extraAttribPtr)->plasticityNeighbors;
                plasticityNeighborsTmpPtr->insert(PlasticityTrackerData(oldCell));
@@ -197,23 +177,23 @@ void PlasticityTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
       }
       for(PlasSetitr=plasticityNeighborsPtr->begin() ; PlasSetitr != plasticityNeighborsPtr->end() ; ++PlasSetitr){
          plasticityNeighborsTmpPtr=&plasticityTrackerAccessor.get(oldCell->extraAttribPtr)->plasticityNeighbors;
-         Log(LOG_TRACE) << "Set NeigbhorID: " << PlasSetitr->neighborAddress << " Type: " << (int)PlasSetitr->neighborAddress->type << endl;
+         CC3D_Log(LOG_TRACE) << "Set NeigbhorID: " << PlasSetitr->neighborAddress << " Type: " << (int)PlasSetitr->neighborAddress->type << endl;
 //             plasticityNeighborsTmpPtr->insert(PlasticityTrackerData(oldCell));
       }
-         Log(LOG_TRACE) << "After Size of Set: " << plasticityNeighborsPtr->size();
-         Log(LOG_TRACE) << "OG Size of Set: " << OGplasticityNeighborsPtr.size();
+         CC3D_Log(LOG_TRACE) << "After Size of Set: " << plasticityNeighborsPtr->size();
+         CC3D_Log(LOG_TRACE) << "OG Size of Set: " << OGplasticityNeighborsPtr.size();
       for(PlasSetitr=OGplasticityNeighborsPtr.begin() ; PlasSetitr != OGplasticityNeighborsPtr.end() ; ++PlasSetitr){
-            Log(LOG_TRACE) << "OGSet NeigbhorID: " << PlasSetitr->neighborAddress << " Type: " << (int)PlasSetitr->neighborAddress->type;
+            CC3D_Log(LOG_TRACE) << "OGSet NeigbhorID: " << PlasSetitr->neighborAddress << " Type: " << (int)PlasSetitr->neighborAddress->type;
           plasticityNeighborsTmpPtr=&plasticityTrackerAccessor.get(PlasSetitr->neighborAddress->extraAttribPtr)->plasticityNeighbors;
           for(tmpPlasSetitr=plasticityNeighborsTmpPtr->begin() ; tmpPlasSetitr != plasticityNeighborsTmpPtr->end() ; ++tmpPlasSetitr){
-               Log(LOG_TRACE) << "\t tmp NeigbhorID: " << tmpPlasSetitr->neighborAddress << " Type: " << (int)tmpPlasSetitr->neighborAddress->type;
+               CC3D_Log(LOG_TRACE) << "\t tmp NeigbhorID: " << tmpPlasSetitr->neighborAddress << " Type: " << (int)tmpPlasSetitr->neighborAddress->type;
           }
                 
 //             plasticityNeighborsTmpPtr->insert(PlasticityTrackerData(oldCell));
       }
 //       std::set<unsigned char>::iterator typesit; 
 //       for(typesit=plasticityTypes.begin() ; typesit != plasticityTypes.end();++typesit) {
-         // Log(LOG_TRACE) << "Type: " << (int)*typesit;
+         // CC3D_Log(LOG_TRACE) << "Type: " << (int)*typesit;
 //       }
    }
 

@@ -1,46 +1,12 @@
-/*************************************************************************
-*    CompuCell - A software framework for multimodel simulations of     *
-* biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
-*                             Indiana                                   *
-*                                                                       *
-* This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
-*  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
-*  CompuCell GNU General Public License RIDER you can redistribute it   *
-* and/or modify it under the terms of the GNU General Public License as *
-*  published by the Free Software Foundation; either version 2 of the   *
-*         License, or (at your option) any later version.               *
-*                                                                       *
-* This program is distributed in the hope that it will be useful, but   *
-*      WITHOUT ANY WARRANTY; without even the implied warranty of       *
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
-*             General Public License for more details.                  *
-*                                                                       *
-*  You should have received a copy of the GNU General Public License    *
-*     along with this program; if not, write to the Free Software       *
-*      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
-*************************************************************************/
 
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
 
-
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
 using namespace CompuCell3D;
-
-
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-// // // #include <iostream>
-// // // #include <algorithm>
 
 using namespace std;
 
 #include "ConvergentExtensionPlugin.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 #define sign(x) (((x>0)-(x<0)))
 
@@ -59,7 +25,8 @@ void ConvergentExtensionPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlD
 	simulator->registerSteerableObject(this);
 
 	bool pluginAlreadyRegisteredFlag;
-	Plugin *plugin=Simulator::pluginManager.get("MomentOfInertia",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
+    //this will load VolumeTracker plugin if it is not already loaded
+	Plugin *plugin=Simulator::pluginManager.get("MomentOfInertia",&pluginAlreadyRegisteredFlag);
 	if(!pluginAlreadyRegisteredFlag)
 		plugin->init(simulator);
 }
@@ -73,49 +40,35 @@ void ConvergentExtensionPlugin::extraInit(Simulator *simulator){
 
 void ConvergentExtensionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	automaton = potts->getAutomaton();
-	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
-		set<unsigned char> cellTypesSet;
+	if (!automaton) throw CC3DException("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
 	interactingTypes.clear();
-	alphaConvExtVec.clear();
+	alphaConvExtMap.clear();
 	typeNameAlphaConvExtMap.clear();
 	CC3DXMLElementList alphaVec=_xmlData->getElements("Alpha");
 
 	for (int i = 0 ; i<alphaVec.size(); ++i){
 		typeNameAlphaConvExtMap.insert(make_pair(alphaVec[i]->getAttribute("Type"),alphaVec[i]->getDouble()));
-
-
-		//inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
-		cellTypesSet.insert(automaton->getTypeId(alphaVec[i]->getAttribute("Type")));
-
-
 	}
 
-	//Now that we know all the types used in the simulation we will find size of the contactEnergyArray
-	vector<unsigned char> cellTypesVector(cellTypesSet.begin(),cellTypesSet.end());//coping set to the vector
-
-	int size= * max_element(cellTypesVector.begin(),cellTypesVector.end());
-	maxTypeId=size;
-	size+=1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
-
-	int index ;
-	alphaConvExtVec.assign(size,0.0);
-	//inserting alpha values to alphaConvExtVec;
+	//inserting alpha values to alphaConvExtMap;
 	for(map<std::string , double>::iterator mitr=typeNameAlphaConvExtMap.begin() ; mitr!=typeNameAlphaConvExtMap.end(); ++mitr){
-		alphaConvExtVec[automaton->getTypeId(mitr->first)]=mitr->second;
+		alphaConvExtMap[automaton->getTypeId(mitr->first)]=mitr->second;
 	}
-	Log(LOG_DEBUG) << "size="<<size;
-	for(int i = 0 ; i < size ; ++i){
-		Log(LOG_DEBUG) << "alphaConvExt["<<i<<"]="<<alphaConvExtVec[i];
-			}
+
+	CC3D_Log(LOG_DEBUG)<<"size="<<alphaConvExtMap.size();
+	for(auto& itr : alphaConvExtMap){
+		CC3D_Log(LOG_DEBUG)<<"alphaConvExt["<<to_string(itr.first)<<"]="<<itr.second;
+	}
 
 	//Here I initialize max neighbor index for direct acces to the list of neighbors 
 	boundaryStrategy=BoundaryStrategy::getInstance();
 	maxNeighborIndex=0;
 
 	if(_xmlData->getFirstElement("Depth")){
-		maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
+		maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth((float)_xmlData->getFirstElement("Depth")->getDouble());
 	}else{
+
 		if(_xmlData->getFirstElement("NeighborOrder")){
 
 			maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());	
@@ -125,18 +78,18 @@ void ConvergentExtensionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
 		}
 
 	}
-	Log(LOG_DEBUG) << "ConvergentExtension maxNeighborIndex="<<maxNeighborIndex;
+	CC3D_Log(LOG_DEBUG) << "ConvergentExtension maxNeighborIndex="<<maxNeighborIndex;
 
 }
 
 double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
+
 
 	// Assumption simulation is 2D in xy plane
 
 	double energy = 0;
 	unsigned int token = 0;
 	double distance = 0;
-	double nCellAlpha,cellAlpha;
 	Point3D n;
 
 	CellG *nCell=0;
@@ -152,14 +105,20 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 		}
 
 		nCell = fieldG->get(neighbor.pt);
+		if(!nCell) continue;
+
+		auto nCellalphaConvExtMapItr = alphaConvExtMap.find(nCell->type);
+		if(nCellalphaConvExtMapItr == alphaConvExtMap.end()) continue;
+
 		Coordinates3D<double> ptTransNeighbor=boundaryStrategy->calculatePointCoordinates(neighbor.pt);
 
-		if(nCell!=oldCell){
-			if( !nCell || !oldCell || nCell->type>maxTypeId || oldCell->type>maxTypeId || !alphaConvExtVec[oldCell->type] || !alphaConvExtVec[nCell->type]){
-				; //convergent extention contribution from this pair of cells is zero
-			}else{
+		if(nCell!=oldCell && oldCell){
+
+			auto oldCellalphaConvExtMapItr = alphaConvExtMap.find(oldCell->type);
+
+			if(oldCellalphaConvExtMapItr != alphaConvExtMap.end()){
 				//nCell
-				double deltaNCell=alphaConvExtVec[nCell->type]*nCell->ecc;
+				double deltaNCell=nCellalphaConvExtMapItr->second*nCell->ecc;
 
 				Coordinates3D<double> nCellCM((nCell->xCM / (float) nCell->volume),(nCell->yCM / (float) nCell->volume),(nCell->zCM / (float) nCell->volume));
 				Coordinates3D<double> nCellCMPtVec=ptTransNeighbor-nCellCM;
@@ -180,17 +139,10 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 				double rSinThetaNCell=(orientationVecNCell.x*nCellCMPtVec.y-orientationVecNCell.y*nCellCMPtVec.x)/
 					sqrt(orientationVecNCell.x*orientationVecNCell.x+orientationVecNCell.y*orientationVecNCell.y);
 
-				//double NNCell=(orientationVecNCell.x*nCellCMPtVec.y-orientationVecNCell.y*nCellCMPtVec.x);
-
-				//double nsintheta=(orientationVecNCell.x*nCellCMPtVec.y-orientationVecNCell.y*nCellCMPtVec.x)/(
-				//	sqrt(orientationVecNCell.x*orientationVecNCell.x+orientationVecNCell.y*orientationVecNCell.y)*(nCellCMPtVec.x*nCellCMPtVec.x+nCellCMPtVec.y*nCellCMPtVec.y));
-				
-				//double r_eccN=sqrt(nCellCMPtVec.x*nCellCMPtVec.x+nCellCMPtVec.y*nCellCMPtVec.y)*nCell->ecc;
-				
 
 				deltaNCell*=rSinThetaNCell;
 				//oldCell
-				double deltaOldCell=alphaConvExtVec[oldCell->type]*oldCell->ecc;
+				double deltaOldCell=oldCellalphaConvExtMapItr->second*oldCell->ecc;
 				Coordinates3D<double> oldCellCM((oldCell->xCM / (float) oldCell->volume),(oldCell->yCM / (float) oldCell->volume),(oldCell->zCM / (float) oldCell->volume));
 				Coordinates3D<double> oldCellCMPtVec=ptTrans-oldCellCM;
 
@@ -208,9 +160,7 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 
 				double rSinThetaOldCell=(orientationVecOldCell.x*oldCellCMPtVec.y-orientationVecOldCell.y*oldCellCMPtVec.x)/
 					sqrt(orientationVecOldCell.x*orientationVecOldCell.x+orientationVecOldCell.y*orientationVecOldCell.y);
-				
-				//double r_eccOld=sqrt(oldCellCMPtVec.x*oldCellCMPtVec.x+oldCellCMPtVec.y*oldCellCMPtVec.y)*oldCell->ecc;
-				
+
 				deltaOldCell*=rSinThetaOldCell;
 
 				double energyBefore=energy;
@@ -222,25 +172,27 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 
 
 				  if(energy!=energy){
-					Log(LOG_DEBUG) << "energyBefore="<<energyBefore;
-					Log(LOG_DEBUG) << "oldCellCMPtVec="<<oldCellCMPtVec<<" oldCell->lX="<<oldCell->lX<<" oldCell->lY="<<oldCell->lY;
-					Log(LOG_DEBUG) << "oldCell->iXX="<<oldCell->iXX<<" oldCell->iYY="<<oldCell->iYY<<" oldCell->iXY="<<oldCell->iXY;
-					Log(LOG_DEBUG) << "nCellCMPtVec="<<nCellCMPtVec<<" nCell->lX="<<nCell->lX<<" nCell->lY="<<nCell->lY;
-					Log(LOG_DEBUG) << "deltaNCell="<<deltaNCell<<" rSinThetaNCell="<<rSinThetaNCell<<" nCell->ecc="<<nCell->ecc;
-					Log(LOG_DEBUG) << "nCell->volume="<<nCell->volume;
-					Log(LOG_DEBUG) << "deltaOldCell="<<deltaOldCell<<" rSinThetaOldCell="<<rSinThetaOldCell<<" oldCell->ecc="<<oldCell->ecc;
-					Log(LOG_DEBUG) << "oldCell->volume="<<oldCell->volume;
-					Log(LOG_DEBUG) << "deltaOldCell="<<deltaOldCell<<" deltaNCell="<<deltaNCell;
-					Log(LOG_DEBUG) << "OLD N CELL CONTR="<<energy;
+					CC3D_Log(LOG_DEBUG) << "energyBefore="<<energyBefore;
+					CC3D_Log(LOG_DEBUG) << "oldCellCMPtVec="<<oldCellCMPtVec<<" oldCell->lX="<<oldCell->lX<<" oldCell->lY="<<oldCell->lY;
+					CC3D_Log(LOG_DEBUG) << "oldCell->iXX="<<oldCell->iXX<<" oldCell->iYY="<<oldCell->iYY<<" oldCell->iXY="<<oldCell->iXY;
+					CC3D_Log(LOG_DEBUG) << "nCellCMPtVec="<<nCellCMPtVec<<" nCell->lX="<<nCell->lX<<" nCell->lY="<<nCell->lY;
+					CC3D_Log(LOG_DEBUG) << "deltaNCell="<<deltaNCell<<" rSinThetaNCell="<<rSinThetaNCell<<" nCell->ecc="<<nCell->ecc;
+					CC3D_Log(LOG_DEBUG) << "nCell->volume="<<nCell->volume;
+					CC3D_Log(LOG_DEBUG) << "deltaOldCell="<<deltaOldCell<<" rSinThetaOldCell="<<rSinThetaOldCell<<" oldCell->ecc="<<oldCell->ecc;
+					CC3D_Log(LOG_DEBUG) << "oldCell->volume="<<oldCell->volume;
+					CC3D_Log(LOG_DEBUG) << "deltaOldCell="<<deltaOldCell<<" deltaNCell="<<deltaNCell;
+					CC3D_Log(LOG_DEBUG) << "OLD N CELL CONTR="<<energy;
 					exit(0);
 					}
 
+
 			}
 		}
-		if(nCell!=newCell){
-			if( !nCell || !newCell || nCell->type>maxTypeId || newCell->type>maxTypeId || !alphaConvExtVec[newCell->type] || !alphaConvExtVec[nCell->type]){
-				; //convergent extention contribution from this pair of cells is zero
-			}else{
+		if(nCell!=newCell && newCell){
+
+			auto newCellalphaConvExtMapItr = alphaConvExtMap.find(newCell->type);
+
+			if(newCellalphaConvExtMapItr != alphaConvExtMap.end()){
 				//calculating quantities needed for delta computations for newCell after pixel copy
 
 				double xcm;
@@ -277,18 +229,16 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 						orientationVecNew=Coordinates3D<double>(sqrt(newIyy),0.0,0.0);
 				}
 
-				double deltaNewCell=alphaConvExtVec[newCell->type]*newEcc;
+				double deltaNewCell=newCellalphaConvExtMapItr->second*newEcc;
 
 				Coordinates3D<double> newCellCM(newXCM,newYCM,0.0);
 				Coordinates3D<double> newCellCMPtVec=ptTrans-newCellCM;
-				
+
 				double N=sqrt((orientationVecNew.x*newCellCMPtVec.y-orientationVecNew.y*newCellCMPtVec.x)*(orientationVecNew.x*newCellCMPtVec.y-orientationVecNew.y*newCellCMPtVec.x));
 				double D=sqrt(orientationVecNew.x*orientationVecNew.x+orientationVecNew.y*orientationVecNew.y);
+
 				double rSinThetaNewCell=(orientationVecNew.x*newCellCMPtVec.y-orientationVecNew.y*newCellCMPtVec.x)/
 					sqrt(orientationVecNew.x*orientationVecNew.x+orientationVecNew.y*orientationVecNew.y);
-
-				//double rSinThetaNewCell=sqrt((orientationVecNew.x*newCellCMPtVec.y-orientationVecNew.y*newCellCMPtVec.x)*(orientationVecNew.y*newCellCMPtVec.y-orientationVecNew.y*newCellCMPtVec.x))/
-				//	sqrt(orientationVecNew.x*orientationVecNew.x+orientationVecNew.y*orientationVecNew.y);
 
 				deltaNewCell*=rSinThetaNewCell;
 
@@ -330,7 +280,10 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 
 
 					//oldCell
-					double deltaOldCell=alphaConvExtVec[oldCell->type]*newEccOldCell;
+					auto oldCellalphaConvExtMapItr = alphaConvExtMap.find(oldCell->type);
+					if (oldCellalphaConvExtMapItr==alphaConvExtMap.end()) continue;
+
+					double deltaOldCell=oldCellalphaConvExtMapItr->second*newEccOldCell;
 					Coordinates3D<double> oldCellCM(newXCMOldCell,newXCMOldCell,0.0);
 					Coordinates3D<double> oldCellCMPtVec=ptTransNeighbor-oldCellCM;
 
@@ -338,9 +291,8 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 					double rSinThetaOldCell=(orientationVecNewOldCell.x*oldCellCMPtVec.y-orientationVecNewOldCell.y*oldCellCMPtVec.x)/
 						sqrt(orientationVecNewOldCell.x*orientationVecNewOldCell.x+orientationVecNewOldCell.y*orientationVecNewOldCell.y);
 
-
 					deltaOldCell*=rSinThetaOldCell;
-					
+
 					double energyBefore=energy;
 
 					if (newCell->volume==1 || oldCell->volume<=2 ){
@@ -351,20 +303,20 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 				  }
 
 				  if(energy!=energy){
-					Log(LOG_DEBUG) << "energyBefore="<<energyBefore;
-					Log(LOG_DEBUG) << "oldCell->volume="<<oldCell->volume;
-					Log(LOG_DEBUG) << "oldCell->iXX="<<oldCell->iXX<<" oldCell->iYY="<<oldCell->iYY<<" oldCell->iXY="<<oldCell->iXY;
-					Log(LOG_DEBUG) << "newIxxOldCell="<<newIxxOldCell<<" newIyyOldCell="<<newIyyOldCell<<" newIxyOldCell="<<newIxyOldCell;
-					Log(LOG_DEBUG) << "orientationVecNewOldCell="<<orientationVecNewOldCell;
-					Log(LOG_DEBUG) << "deltaOldCell="<<deltaOldCell<<" deltaNewCell="<<deltaNewCell;
-					Log(LOG_DEBUG) << "NEW OLD CELL CONTR="<<energy;
+					CC3D_Log(LOG_DEBUG) << "energyBefore="<<energyBefore;
+					CC3D_Log(LOG_DEBUG) << "oldCell->volume="<<oldCell->volume;
+					CC3D_Log(LOG_DEBUG) << "oldCell->iXX="<<oldCell->iXX<<" oldCell->iYY="<<oldCell->iYY<<" oldCell->iXY="<<oldCell->iXY;
+					CC3D_Log(LOG_DEBUG) << "newIxxOldCell="<<newIxxOldCell<<" newIyyOldCell="<<newIyyOldCell<<" newIxyOldCell="<<newIxyOldCell;
+					CC3D_Log(LOG_DEBUG) << "orientationVecNewOldCell="<<orientationVecNewOldCell;
+					CC3D_Log(LOG_DEBUG) << "deltaOldCell="<<deltaOldCell<<" deltaNewCell="<<deltaNewCell;
+					CC3D_Log(LOG_DEBUG) << "NEW OLD CELL CONTR="<<energy;
 					exit(0);
 					}
 
 				}else{
 
 					//nCell
-					double deltaNCell=alphaConvExtVec[nCell->type]*nCell->ecc;
+					double deltaNCell=nCellalphaConvExtMapItr->second*nCell->ecc;
 
 					Coordinates3D<double> nCellCM((nCell->xCM / (float) nCell->volume),(nCell->yCM / (float) nCell->volume),(nCell->zCM / (float) nCell->volume));
 					Coordinates3D<double> nCellCMPtVec=ptTransNeighbor-nCellCM;
@@ -385,16 +337,7 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 					double rSinThetaNCell=(orientationVecNCell.x*nCellCMPtVec.y-orientationVecNCell.y*nCellCMPtVec.x)/
 						sqrt(orientationVecNCell.x*orientationVecNCell.x+orientationVecNCell.y*orientationVecNCell.y);
 
-
-
-					//double rSinThetaNCell=sqrt((nCell->lX*nCellCMPtVec.y-nCell->lY*nCellCMPtVec.x)*(nCell->lX*nCellCMPtVec.y-nCell->lY*nCellCMPtVec.x))/
-					//	sqrt(nCell->lX*nCell->lX+nCell->lY*nCell->lY);
-
 					deltaNCell*=rSinThetaNCell;
-
-					
-
-				
 
 					double energyBefore=energy;
 
@@ -406,22 +349,22 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 					}
 
 					if(energy!=energy){
-						Log(LOG_DEBUG) << "deltaNCell="<<deltaNCell<<" rSinThetaNCell="<<rSinThetaNCell;
-						Log(LOG_DEBUG) << "deltaNewCell="<<deltaNewCell<<" rSinThetaNewCell="<<rSinThetaNewCell<<" newCell->volume="<<newCell->volume;
-						Log(LOG_DEBUG) << "N="<<N<<" D="<<D;
-						Log(LOG_DEBUG) << "orientationVecNew="<<orientationVecNew;
-						Log(LOG_DEBUG) << "newCellCMPtVec="<<newCellCMPtVec;
-						Log(LOG_DEBUG) << "newIxx="<<newIxx;
-						Log(LOG_DEBUG) << "newIyy="<<newIyy;
-						Log(LOG_DEBUG) << "newIxy="<<newIxy;
-						Log(LOG_DEBUG) << "xcm="<<xcm<<" ycm="<<ycm<<" newXCM="<<newXCM<<" newYCM="<<newYCM;
-						Log(LOG_DEBUG) << "radicalNew="<<radicalNew;
-						Log(LOG_DEBUG) << "lMinNew="<<lMinNew;
-						Log(LOG_DEBUG) << "lMaxNew="<<lMaxNew;
-						Log(LOG_DEBUG) << "newEcc="<<newEcc;						
-						Log(LOG_DEBUG) << "energyBefore="<<energyBefore;
-						Log(LOG_DEBUG) << "deltaNewCell="<<deltaNewCell<<" deltaNCell="<<deltaNCell;
-						Log(LOG_DEBUG) << "NEW N CELL CONTR="<<energy;
+						CC3D_Log(LOG_DEBUG) << "deltaNCell="<<deltaNCell<<" rSinThetaNCell="<<rSinThetaNCell;
+						CC3D_Log(LOG_DEBUG) << "deltaNewCell="<<deltaNewCell<<" rSinThetaNewCell="<<rSinThetaNewCell<<" newCell->volume="<<newCell->volume;
+						CC3D_Log(LOG_DEBUG) << "N="<<N<<" D="<<D;
+						CC3D_Log(LOG_DEBUG) << "orientationVecNew="<<orientationVecNew;
+						CC3D_Log(LOG_DEBUG) << "newCellCMPtVec="<<newCellCMPtVec;
+						CC3D_Log(LOG_DEBUG) << "newIxx="<<newIxx;
+						CC3D_Log(LOG_DEBUG) << "newIyy="<<newIyy;
+						CC3D_Log(LOG_DEBUG) << "newIxy="<<newIxy;
+						CC3D_Log(LOG_DEBUG) << "xcm="<<xcm<<" ycm="<<ycm<<" newXCM="<<newXCM<<" newYCM="<<newYCM;
+						CC3D_Log(LOG_DEBUG) << "radicalNew="<<radicalNew;
+						CC3D_Log(LOG_DEBUG) << "lMinNew="<<lMinNew;
+						CC3D_Log(LOG_DEBUG) << "lMaxNew="<<lMaxNew;
+						CC3D_Log(LOG_DEBUG) << "newEcc="<<newEcc;
+						CC3D_Log(LOG_DEBUG) << "energyBefore="<<energyBefore;
+						CC3D_Log(LOG_DEBUG) << "deltaNewCell="<<deltaNewCell<<" deltaNCell="<<deltaNCell;
+						CC3D_Log(LOG_DEBUG) << "NEW N CELL CONTR="<<energy;
 						exit(0);
 					}
 
@@ -429,7 +372,6 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 	
 
 				}
-				//energy += contactEnergy(newCell, nCell);
 
 			}
 
@@ -437,6 +379,7 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 
 
 	}
+
 	if(energy!=energy){
 		return 0.0;
 	}

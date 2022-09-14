@@ -23,7 +23,7 @@
 # 3. Edit ScreenshotManagerCore - readScreenshotData fcn and write screenshot fct data
 # 4. Edit Graphics widget function that geenrate sceen metadata to have this new setting be reflected in sscene metadata
 
-import cc3d.player5.Configuration as Configuration
+from cc3d.core import Configuration
 import vtk
 from os.path import splitext
 from cc3d.core.enums import *
@@ -34,7 +34,7 @@ from .MVCDrawView3D import MVCDrawView3D
 from .MVCDrawModel3D import MVCDrawModel3D
 from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
 from .Specs import ActorSpecs
-from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
+from cc3d.core.GraphicsUtils.utils import extract_address_int_from_vtk_object
 from .DrawingParameters import DrawingParameters
 
 MODULENAME = '---- GraphicsFrameWidget.py: '
@@ -165,10 +165,8 @@ class GenericDrawer:
         cell_id.SetName("cellid")
         cell_id_int_addr = extract_address_int_from_vtk_object(cell_id)
 
-        # Patching a merge error here; commented code is final
-        # used_cell_types_list = self.field_extractor.fillCellFieldData3D(cell_type_array_int_addr, cell_id_int_addr,
-        #                                                                 cell_shell_optimization)
-        used_cell_types_list = self.field_extractor.fillCellFieldData3D(cell_type_array_int_addr, cell_id_int_addr)
+        used_cell_types_list = self.field_extractor.fillCellFieldData3D(cell_type_array_int_addr, cell_id_int_addr,
+                                                                        cell_shell_optimization)
 
         ret_val = {
             'cell_type_array': cell_type_array,

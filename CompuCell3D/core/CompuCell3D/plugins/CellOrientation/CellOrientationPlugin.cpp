@@ -1,65 +1,31 @@
-/*************************************************************************
-*    CompuCell - A software framework for multimodel simulations of     *
-* biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
-*                             Indiana                                   *
-*                                                                       *
-* This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
-*  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
-*  CompuCell GNU General Public License RIDER you can redistribute it   *
-* and/or modify it under the terms of the GNU General Public License as *
-*  published by the Free Software Foundation; either version 2 of the   *
-*         License, or (at your option) any later version.               *
-*                                                                       *
-* This program is distributed in the hope that it will be useful, but   *
-*      WITHOUT ANY WARRANTY; without even the implied warranty of       *
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
-*             General Public License for more details.                  *
-*                                                                       *
-*  You should have received a copy of the GNU General Public License    *
-*     along with this program; if not, write to the Free Software       *
-*      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
-*************************************************************************/
-
- #include <CompuCell3D/CC3D.h>
-
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/Point3D.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <PublicUtilities/NumericalUtils.h>
-// // // #include <Utils/Coordinates3D.h>
-// // // #include <PublicUtilities/StringUtils.h>
-// // // #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/CC3D.h>
 #include <CompuCell3D/plugins/PolarizationVector/PolarizationVector.h>
 #include <CompuCell3D/plugins/PolarizationVector/PolarizationVectorPlugin.h>
 
 using namespace CompuCell3D;
 
-
-// // // #include <iostream>
 using namespace std;
 
 
 #include "CellOrientationPlugin.h"
 
 
-
-
-CellOrientationPlugin::CellOrientationPlugin() :  potts(0),
-		simulator(0),
-		cellFieldG(0),
-		polarizationVectorAccessorPtr(0),
-		lambdaCellOrientation(0.0),
-		changeEnergyFcnPtr(&CellOrientationPlugin::changeEnergyPixelBased),
-		boundaryStrategy(0),
-		lambdaFlexFlag(false)
-{
+CellOrientationPlugin::CellOrientationPlugin() : potts(0),
+                                                 simulator(0),
+                                                 cellFieldG(0),
+                                                 polarizationVectorAccessorPtr(0),
+                                                 lambdaCellOrientation(0.0),
+                                                 changeEnergyFcnPtr(&CellOrientationPlugin::changeEnergyPixelBased),
+                                                 boundaryStrategy(0),
+                                                 lambdaFlexFlag(false) {
 }
 
-void CellOrientationPlugin::setLambdaCellOrientation(CellG * _cell, double _lambda){
-	lambdaCellOrientationAccessor.get(_cell->extraAttribPtr)->lambdaVal=_lambda;
+void CellOrientationPlugin::setLambdaCellOrientation(CellG *_cell, double _lambda) {
+    lambdaCellOrientationAccessor.get(_cell->extraAttribPtr)->lambdaVal = _lambda;
 }
-double CellOrientationPlugin::getLambdaCellOrientation(CellG * _cell){
-	return lambdaCellOrientationAccessor.get(_cell->extraAttribPtr)->lambdaVal;
+
+double CellOrientationPlugin::getLambdaCellOrientation(CellG *_cell) {
+    return lambdaCellOrientationAccessor.get(_cell->extraAttribPtr)->lambdaVal;
 }
 
 
@@ -68,206 +34,211 @@ CellOrientationPlugin::~CellOrientationPlugin() {
 }
 
 void CellOrientationPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
-	Log(LOG_DEBUG) << "INITIALIZE CELL ORIENTATION PLUGIN";
+	CC3D_Log(LOG_DEBUG) << "INITIALIZE CELL ORIENTATION PLUGIN";
 	potts = simulator->getPotts();
 	//    potts->getCellFactoryGroupPtr()->registerClass(&CellOrientationVectorAccessor); //register new class with the factory
 
-	bool pluginAlreadyRegisteredFlag;
-	PolarizationVectorPlugin * polVectorPlugin = (PolarizationVectorPlugin*) Simulator::pluginManager.get("PolarizationVector",&pluginAlreadyRegisteredFlag);
-	if(!pluginAlreadyRegisteredFlag)
-		polVectorPlugin->init(simulator);
+    bool pluginAlreadyRegisteredFlag;
+    PolarizationVectorPlugin *polVectorPlugin = (PolarizationVectorPlugin *) Simulator::pluginManager.get(
+            "PolarizationVector", &pluginAlreadyRegisteredFlag);
+    if (!pluginAlreadyRegisteredFlag)
+        polVectorPlugin->init(simulator);
 
-	bool comPluginAlreadyRegisteredFlag;
-	Plugin *comPlugin=Simulator::pluginManager.get("CenterOfMass",&comPluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
-	if(!comPluginAlreadyRegisteredFlag)
-		comPlugin->init(simulator);
+    bool comPluginAlreadyRegisteredFlag;
 
-	polarizationVectorAccessorPtr=polVectorPlugin->getPolarizationVectorAccessorPtr();
+    //this will load VolumeTracker plugin if it is not already loaded
+    Plugin *comPlugin = Simulator::pluginManager.get("CenterOfMass",
+                                                     &comPluginAlreadyRegisteredFlag);
+    if (!comPluginAlreadyRegisteredFlag)
+        comPlugin->init(simulator);
 
-	cellFieldG = potts->getCellFieldG();
+    polarizationVectorAccessorPtr = polVectorPlugin->getPolarizationVectorAccessorPtr();
 
-	fieldDim=cellFieldG->getDim();
+    cellFieldG = potts->getCellFieldG();
 
-	boundaryStrategy=BoundaryStrategy::getInstance();
+    fieldDim = cellFieldG->getDim();
 
-	potts->registerEnergyFunctionWithName(this,"CellOrientationEnergy");
+    boundaryStrategy = BoundaryStrategy::getInstance();
 
-	potts->getCellFactoryGroupPtr()->registerClass(&lambdaCellOrientationAccessor);
+    potts->registerEnergyFunctionWithName(this, "CellOrientationEnergy");
+
+    potts->getCellFactoryGroupPtr()->registerClass(&lambdaCellOrientationAccessor);
 
 
-	simulator->registerSteerableObject(this);
-	update(_xmlData,true);
+    simulator->registerSteerableObject(this);
+    update(_xmlData, true);
 
 
 }
 
 void CellOrientationPlugin::extraInit(Simulator *simulator) {
-	Log(LOG_DEBUG) << "EXTRA INITIALIZE CELL ORIENTATION PLUGIN";
+    CC3D_Log(LOG_DEBUG) << "EXTRA INITIALIZE CELL ORIENTATION PLUGIN";
 	Potts3D *potts = simulator->getPotts();
 	cellFieldG = potts->getCellFieldG();
 }
 
 
+void CellOrientationPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
+    if (!_xmlData->getNumberOfChildren()) { //using cell id - based lambdaCellOrientation
+        lambdaFlexFlag = true;
+        return;
+    }
 
-void CellOrientationPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
+    if (_xmlData->findElement("LambdaCellOrientation")) {
+        lambdaCellOrientation = _xmlData->getFirstElement("LambdaCellOrientation")->getDouble();
+    }
 
-	if (!_xmlData->getNumberOfChildren()){ //using cell id - based lambdaCellOrientation
-		lambdaFlexFlag=true;
-		return;
-	}
+    if (_xmlData->findElement("LambdaFlex"))
+        lambdaFlexFlag = true;
+    else
+        lambdaFlexFlag = false;
 
-	if(_xmlData->findElement("LambdaCellOrientation")){
-		lambdaCellOrientation=_xmlData->getFirstElement("LambdaCellOrientation")->getDouble();
-	}
+    bool comBasedAlgorithm = false;
+    if (_xmlData->findElement("Algorithm")) {
 
-	if(_xmlData->findElement("LambdaFlex"))
-		lambdaFlexFlag=true;
-	else
-		lambdaFlexFlag=false;
+        string algorithm = _xmlData->getFirstElement("Algorithm")->getText();
 
-	bool comBasedAlgorithm=false;
-	if(_xmlData->findElement("Algorithm")){ 
+        changeToLower(algorithm);
 
-		string algorithm=_xmlData->getFirstElement("Algorithm")->getText();
-
-		changeToLower(algorithm);
-
-		if(algorithm=="centerofmassbased"){
-			comBasedAlgorithm=true;
-			changeEnergyFcnPtr = &CellOrientationPlugin::changeEnergyCOMBased;
-		}
-	}
+        if (algorithm == "centerofmassbased") {
+            comBasedAlgorithm = true;
+            changeEnergyFcnPtr = &CellOrientationPlugin::changeEnergyCOMBased;
+        }
+    }
 
 }
 
-double CellOrientationPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
-	return 0.0;
-// 	(this->*changeEnergyFcnPtr)(pt,newCell,oldCell);
+double CellOrientationPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
+    return 0.0;
 }
 
-double CellOrientationPlugin::changeEnergyPixelBased(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
+double CellOrientationPlugin::changeEnergyPixelBased(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
 
-	float energy=0.0;
-	PolarizationVector * polarizationVecPtr;
-	Point3D spinCopyVector;
+    float energy = 0.0;
+    PolarizationVector *polarizationVecPtr;
+    Point3D spinCopyVector;
 
-	//spin change takes place at pt  and spin from potts->getFlipNeighbor() is copied to pt. We define spinCopyVector as:
-	//    spinCopyVector=pt-potts->getFlipNeighbor();
-
-	//this will return distance vector which will properly account for different boundary conditions   
-	spinCopyVector=distanceVectorInvariant(pt,potts->getFlipNeighbor(),fieldDim);
+    //this will return distance vector which will properly account for different boundary conditions
+    spinCopyVector = distanceVectorInvariant(pt, potts->getFlipNeighbor(), fieldDim);
 
 
-	double lambdaCellOrientationValue=0.0;
+    double lambdaCellOrientationValue = 0.0;
 
-	if(oldCell){
+    if (oldCell) {
 
-		if(!lambdaFlexFlag){
-			lambdaCellOrientationValue=lambdaCellOrientation;
-		}else{
-			lambdaCellOrientationValue=lambdaCellOrientationAccessor.get(oldCell->extraAttribPtr)->lambdaVal;
-		}
+        if (!lambdaFlexFlag) {
+            lambdaCellOrientationValue = lambdaCellOrientation;
+        } else {
+            lambdaCellOrientationValue = lambdaCellOrientationAccessor.get(oldCell->extraAttribPtr)->lambdaVal;
+        }
 
-		polarizationVecPtr = polarizationVectorAccessorPtr->get(oldCell->extraAttribPtr);
-		energy+=-lambdaCellOrientationValue*(polarizationVecPtr->x * spinCopyVector.x + polarizationVecPtr->y * spinCopyVector.y + polarizationVecPtr->z * spinCopyVector.z);
+        polarizationVecPtr = polarizationVectorAccessorPtr->get(oldCell->extraAttribPtr);
+        energy += -lambdaCellOrientationValue *
+                  (polarizationVecPtr->x * spinCopyVector.x + polarizationVecPtr->y * spinCopyVector.y +
+                   polarizationVecPtr->z * spinCopyVector.z);
 
-	}
-
-
-	if(newCell){
-
-		if(!lambdaFlexFlag){
-			lambdaCellOrientationValue=lambdaCellOrientation;
-		}else{
-			lambdaCellOrientationValue=lambdaCellOrientationAccessor.get(newCell->extraAttribPtr)->lambdaVal;
-		}
-
-		polarizationVecPtr = polarizationVectorAccessorPtr->get(newCell->extraAttribPtr);	  
-		energy+=-lambdaCellOrientationValue*(polarizationVecPtr->x * spinCopyVector.x + polarizationVecPtr->y * spinCopyVector.y + polarizationVecPtr->z * spinCopyVector.z);
-
-	}
-	Log(LOG_TRACE) << "energy="<<energy;
-	
-	return energy;
-}
+    }
 
 
-double CellOrientationPlugin::changeEnergyCOMBased(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
+    if (newCell) {
 
-	double energy=0.0;	
-	PolarizationVector * polarizationVecPtr;
-	double lambdaCellOrientationValue=0.0;
+        if (!lambdaFlexFlag) {
+            lambdaCellOrientationValue = lambdaCellOrientation;
+        } else {
+            lambdaCellOrientationValue = lambdaCellOrientationAccessor.get(newCell->extraAttribPtr)->lambdaVal;
+        }
 
+        polarizationVecPtr = polarizationVectorAccessorPtr->get(newCell->extraAttribPtr);
+        energy += -lambdaCellOrientationValue *
+                  (polarizationVecPtr->x * spinCopyVector.x + polarizationVecPtr->y * spinCopyVector.y +
+                   polarizationVecPtr->z * spinCopyVector.z);
 
-	if (oldCell){
-		Coordinates3D<double> oldCOMAfterFlip=precalculateCentroid(pt, oldCell, -1,fieldDim, boundaryStrategy);
+    }
 
-		if(oldCell->volume>1){
-			oldCOMAfterFlip.XRef()=oldCOMAfterFlip.X()/(float)(oldCell->volume-1);
-			oldCOMAfterFlip.YRef()=oldCOMAfterFlip.Y()/(float)(oldCell->volume-1);
-			oldCOMAfterFlip.ZRef()=oldCOMAfterFlip.Z()/(float)(oldCell->volume-1);
-		}else{
-
-			oldCOMAfterFlip=Coordinates3D<double>(oldCell->xCM/oldCell->volume,oldCell->zCM/oldCell->volume,oldCell->zCM/oldCell->volume);
-
-		}
-
-		if(!lambdaFlexFlag){
-			lambdaCellOrientationValue=lambdaCellOrientation;
-		}else{
-			lambdaCellOrientationValue=lambdaCellOrientationAccessor.get(oldCell->extraAttribPtr)->lambdaVal;
-		}
-
-		polarizationVecPtr = polarizationVectorAccessorPtr->get(oldCell->extraAttribPtr);
-		
-
-		Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM/oldCell->volume, oldCell->yCM/oldCell->volume, oldCell->zCM/oldCell->volume);		
-		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip ,oldCOMBeforeFlip,fieldDim);
-
-		Log(LOG_TRACE) << "lambdaCellOrientationValue="<<lambdaCellOrientationValue;
-		Log(LOG_TRACE) << 	"distVector="<<distVector;
-		Log(LOG_TRACE) << "p.x="<<polarizationVecPtr->x<<" p.y="<<polarizationVecPtr->y<<" p.z="<<polarizationVecPtr->z;
-
-		energy += -lambdaCellOrientationValue*(polarizationVecPtr->x * distVector.x + polarizationVecPtr->y * distVector.y + polarizationVecPtr->z * distVector.z);
-	}
-
-	
-	if (newCell){
-
-		Coordinates3D<double> newCOMAfterFlip=precalculateCentroid(pt, newCell, 1,fieldDim, boundaryStrategy);
-
-
-		newCOMAfterFlip.XRef()=newCOMAfterFlip.X()/(float)(newCell->volume+1);
-		newCOMAfterFlip.YRef()=newCOMAfterFlip.Y()/(float)(newCell->volume+1);
-		newCOMAfterFlip.ZRef()=newCOMAfterFlip.Z()/(float)(newCell->volume+1);
-
-		if(!lambdaFlexFlag){
-			lambdaCellOrientationValue=lambdaCellOrientation;
-		}else{
-			lambdaCellOrientationValue=lambdaCellOrientationAccessor.get(newCell->extraAttribPtr)->lambdaVal;
-		}
-
-		polarizationVecPtr = polarizationVectorAccessorPtr->get(newCell->extraAttribPtr);	
-
-		Coordinates3D<double> newCOMBeforeFlip(newCell->xCM/newCell->volume, newCell->yCM/newCell->volume, newCell->zCM/newCell->volume);
-		Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(newCOMAfterFlip ,newCOMBeforeFlip,fieldDim);
-
-		energy += -lambdaCellOrientationValue*(polarizationVecPtr->x * distVector.x + polarizationVecPtr->y * distVector.y + polarizationVecPtr->z * distVector.z);
-
-	}
-	
-	return energy;
+    return energy;
 }
 
 
+double CellOrientationPlugin::changeEnergyCOMBased(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
 
-std::string CellOrientationPlugin::toString(){
-	return "CellOrientation";
+    double energy = 0.0;
+    PolarizationVector *polarizationVecPtr;
+    double lambdaCellOrientationValue = 0.0;
+
+
+    if (oldCell) {
+        Coordinates3D<double> oldCOMAfterFlip = precalculateCentroid(pt, oldCell, -1, fieldDim, boundaryStrategy);
+
+        if (oldCell->volume > 1) {
+            oldCOMAfterFlip.XRef() = oldCOMAfterFlip.X() / (float) (oldCell->volume - 1);
+            oldCOMAfterFlip.YRef() = oldCOMAfterFlip.Y() / (float) (oldCell->volume - 1);
+            oldCOMAfterFlip.ZRef() = oldCOMAfterFlip.Z() / (float) (oldCell->volume - 1);
+        } else {
+
+            oldCOMAfterFlip = Coordinates3D<double>(oldCell->xCM / oldCell->volume, oldCell->zCM / oldCell->volume,
+                                                    oldCell->zCM / oldCell->volume);
+
+        }
+
+        if (!lambdaFlexFlag) {
+            lambdaCellOrientationValue = lambdaCellOrientation;
+        } else {
+            lambdaCellOrientationValue = lambdaCellOrientationAccessor.get(oldCell->extraAttribPtr)->lambdaVal;
+        }
+
+        polarizationVecPtr = polarizationVectorAccessorPtr->get(oldCell->extraAttribPtr);
+
+
+        Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM / oldCell->volume, oldCell->yCM / oldCell->volume,
+                                               oldCell->zCM / oldCell->volume);
+        Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip, oldCOMBeforeFlip,
+                                                                              fieldDim);
+
+        energy += -lambdaCellOrientationValue *
+                  (polarizationVecPtr->x * distVector.x + polarizationVecPtr->y * distVector.y +
+                   polarizationVecPtr->z * distVector.z);
+    }
+
+
+    if (newCell) {
+
+        Coordinates3D<double> newCOMAfterFlip = precalculateCentroid(pt, newCell, 1, fieldDim, boundaryStrategy);
+
+
+        newCOMAfterFlip.XRef() = newCOMAfterFlip.X() / (float) (newCell->volume + 1);
+        newCOMAfterFlip.YRef() = newCOMAfterFlip.Y() / (float) (newCell->volume + 1);
+        newCOMAfterFlip.ZRef() = newCOMAfterFlip.Z() / (float) (newCell->volume + 1);
+
+        if (!lambdaFlexFlag) {
+            lambdaCellOrientationValue = lambdaCellOrientation;
+        } else {
+            lambdaCellOrientationValue = lambdaCellOrientationAccessor.get(newCell->extraAttribPtr)->lambdaVal;
+        }
+
+        polarizationVecPtr = polarizationVectorAccessorPtr->get(newCell->extraAttribPtr);
+
+        Coordinates3D<double> newCOMBeforeFlip(newCell->xCM / newCell->volume, newCell->yCM / newCell->volume,
+                                               newCell->zCM / newCell->volume);
+        Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(newCOMAfterFlip, newCOMBeforeFlip,
+                                                                              fieldDim);
+
+        energy += -lambdaCellOrientationValue *
+                  (polarizationVecPtr->x * distVector.x + polarizationVecPtr->y * distVector.y +
+                   polarizationVecPtr->z * distVector.z);
+
+    }
+
+    return energy;
 }
 
 
-std::string CellOrientationPlugin::steerableName(){
-	return toString();
+std::string CellOrientationPlugin::toString() {
+    return "CellOrientation";
+}
+
+
+std::string CellOrientationPlugin::steerableName() {
+    return toString();
 }
 

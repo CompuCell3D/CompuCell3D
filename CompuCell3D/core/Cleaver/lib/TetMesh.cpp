@@ -53,7 +53,7 @@
 #include "BCCLattice3D.h"
 #include "Util.h"
 #include "Matlab.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 using namespace std;
 
@@ -74,7 +74,7 @@ Face::Face() :
 
 Face::~Face()
 {
-    Log(LOG_TRACE) << "deleting Face";
+    CC3D_Log(LOG_TRACE) << "deleting Face";
 }
 
 Tet::Tet() : mat_label(-1)
@@ -117,22 +117,22 @@ TetMesh::TetMesh(std::vector<Vertex3D*> &verts, std::vector<Tet*> &tets) :
 }
 
 TetMesh::~TetMesh() {
-    Log(LOG_TRACE) << "TetMesh::~TetMesh";
-    Log(LOG_TRACE) << "TetMesh:: =faces "<<faces;
+    CC3D_Log(LOG_TRACE) << "TetMesh::~TetMesh";
+    CC3D_Log(LOG_TRACE) << "TetMesh:: =faces "<<faces;
     // delete tets verts, faces, etc
     if (faces) {
         delete [] faces;
         nFaces = 0;
         faces = NULL;
     }
-        Log(LOG_TRACE) << "TetMesh::~TetMesh - deleted faces";
+        CC3D_Log(LOG_TRACE) << "TetMesh::~TetMesh - deleted faces";
     
     for(unsigned int v=0; v < verts.size(); v++)
         delete verts[v];
-        Log(LOG_TRACE) << "TetMesh::~TetMesh - deleted verts"; 
+        CC3D_Log(LOG_TRACE) << "TetMesh::~TetMesh - deleted verts"; 
     for(unsigned int t=0; t < tets.size(); t++)
         delete tets[t];
-        Log(LOG_TRACE) << "TetMesh::~TetMesh - deleted tets";     
+        CC3D_Log(LOG_TRACE) << "TetMesh::~TetMesh - deleted tets";     
     
     std::vector<Vertex3D*> *vlist = &verts;
     std::vector<Tet*> *tlist = &tets;
@@ -837,11 +837,11 @@ void TetMesh::writeMatlab(const std::string &filename, bool verbose)
     //-------------------------------
     std::ofstream file((filename + ".mat").c_str(), std::ios::out | std::ios::binary);
     if(verbose)
-        Log(LOG_DEBUG) << "Writing mesh matlab file: " << (filename + ".mat").c_str();
+        CC3D_Log(LOG_DEBUG) << "Writing mesh matlab file: " << (filename + ".mat").c_str();
 
     if(!file.is_open())
     {
-        Log(LOG_DEBUG) << "Failed to create file.";
+        CC3D_Log(LOG_DEBUG) << "Failed to create file.";
         return;
     }
 

@@ -6,7 +6,7 @@ export LC_NUMERIC="C.UTF-8"
 
 # export PREFIX_CC3D=@COMPUCELL_INSTALL_DIR@
 export PREFIX_CC3D="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-export PYTHON_EXEC=@PYTHON_EXEC@
+export PYTHON_EXEC=@PYTHON_EXEC_FILE@
 
 export CC3D_RUN_SCRIPT=${PREFIX_CC3D}/runScript.sh
 export OPTIMIZATIION_PYTHON_SCRIPT=${PREFIX_CC3D}/optimization/optimization.py

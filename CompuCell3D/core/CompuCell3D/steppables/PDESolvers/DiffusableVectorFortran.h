@@ -1,5 +1,7 @@
 #ifndef COMPUCELL3DDIFFUSABLEVECTORFORTRAN_H
 #define COMPUCELL3DDIFFUSABLEVECTORFORTRAN_H
+
+#include <CompuCell3D/CC3DExceptions.h>
 #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Steppable.h>
 #include <vector>
@@ -8,256 +10,243 @@
 #include <CompuCell3D/Field3D/Array3D.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 #include <muParser/muParser.h>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
-namespace mu{
+namespace mu {
 
-	class Parser; //mu parser class
+    class Parser; //mu parser class
 };
 
 namespace CompuCell3D {
 
-	template <typename Y> class Field3DImpl;
+    template<typename Y>
+    class Field3DImpl;
 
-	/**
-	@author m
-	*/
-	template <typename containerType>
-	class DiffusableVectorFortran :public Steppable{
-	public:
-		typedef float precision;  //you have to use typename becaue otherwise C++ will assume precision_t is an object or function
-		//typedef typename containerType::precision_t precision;  //you have to use typename becaue otherwise C++ will assume precision_t is an object or function
+    /**
+    @author m
+    */
+    template<typename containerType>
+    class DiffusableVectorFortran : public Steppable {
+    public:
+        typedef float precision;  //you have to use typename because otherwise C++ will assume precision_t is an object or function
+        //typedef typename containerType::precision_t precision;  //you have to use typename because otherwise C++ will assume precision_t is an object or function
 
-		DiffusableVectorFortran():Steppable(),concentrationFieldVector(0),maxNeighborIndex(0),boundaryStrategy(0){
+        DiffusableVectorFortran() : Steppable(), concentrationFieldVector(0), maxNeighborIndex(0), boundaryStrategy(0) {
 
-		};
+        };
 
-		virtual ~DiffusableVectorFortran(){
-			clearAllocatedFields();
-			//for(unsigned int i = 0 ; i< concentrationFieldVector.size() ; ++i){
-			//   if(concentrationFieldVector[i]){
-			//      delete concentrationFieldVector[i];
-			//      concentrationFieldVector[i]=0;
-			//   }
-			//}
+        virtual ~DiffusableVectorFortran() {
+            clearAllocatedFields();
 
+        }
 
-		}
-		//Field3DImpl<precision> * getConcentrationField(unsigned int i){return concentrationFieldVector[i];};
-		virtual void start() {};
-		virtual void step(const unsigned int currentStep) {};
-		virtual void finish() {};    
+        virtual void start() {};
 
-		virtual Field3D<precision> * getConcentrationField(const std::string & name){
-			using namespace std;
-			//       for(unsigned int i=0 ; i < concentrationFieldNameVector.size() ; ++i){
-				// Log(LOG_TRACE) << "THIS IS FIELD NAME "<<concentrationFieldNameVector[i];
-			//       }
-			for(unsigned int i=0 ; i < concentrationFieldNameVector.size() ; ++i){
-				if(concentrationFieldNameVector[i]==name){
-					return concentrationFieldVector[i];  
+        virtual void step(const unsigned int currentStep) {};
 
-				}
-			}
-			return 0;
+        virtual void finish() {};
 
-		};
-		virtual void allocateDiffusableFieldVector(unsigned int numberOfFields,Dim3D fieldDim)
-		{
-			fieldDimLocal=fieldDim;
+        virtual Field3D <precision> *getConcentrationField(const std::string &name) {
+            using namespace std;
+            for (unsigned int i = 0; i < concentrationFieldNameVector.size(); ++i) {
+                if (concentrationFieldNameVector[i] == name) {
+                    return concentrationFieldVector[i];
 
-			boundaryStrategy=BoundaryStrategy::getInstance();
-			//       maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(1.1); //for nearest neighbors only
-			maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);//for nearest neighbors only
-			const std::vector<Point3D> & offsetVecRef=BoundaryStrategy::getInstance()->getOffsetVec();
-			offsetVec.clear();	
-			for(unsigned int i = 0 ; i <= maxNeighborIndex ; ++i){
-				offsetVec.push_back(offsetVecRef[i]);
-			}
+                }
+            }
+            return 0;
 
-			clearAllocatedFields();
-			for(unsigned int i = 0 ; i< numberOfFields ; ++i){
-				precision val=precision();
-				//concentrationFieldVector.push_back(new Array3DLinearFortranField3DAdapter<precision>(fieldDim, val));
-				concentrationFieldVector.push_back(new containerType(fieldDim, val));
+        };
 
-			}
-			concentrationFieldNameVector.assign(numberOfFields,std::string());
-		}
+        virtual void allocateDiffusableFieldVector(unsigned int numberOfFields, Dim3D fieldDim) {
+            fieldDimLocal = fieldDim;
 
-		//     unsigned int getMaxNeighborIndex(){return maxNeighborIndex;}
-	protected:
-		void clearAllocatedFields(){
-			for(unsigned int i = 0 ; i< concentrationFieldVector.size() ; ++i){
-				if(concentrationFieldVector[i]){
-					delete concentrationFieldVector[i];
-					concentrationFieldVector[i]=0;
-				}
-			}
-			concentrationFieldVector.clear();
+            boundaryStrategy = BoundaryStrategy::getInstance();
 
-		}
+            maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);//for nearest neighbors only
+            const std::vector <Point3D> &offsetVecRef = BoundaryStrategy::getInstance()->getOffsetVec();
+            offsetVec.clear();
+            for (unsigned int i = 0; i <= maxNeighborIndex; ++i) {
+                offsetVec.push_back(offsetVecRef[i]);
+            }
 
-		void initializeFieldUsingEquation(Field3D<precision> * _field, std::string _expression){
-			Point3D pt;		
-			mu::Parser parser;   
-			double xVar,yVar,zVar; //variables used by parser
-			try{
-				parser.DefineVar("x", &xVar);
-				parser.DefineVar("y", &yVar);
-				parser.DefineVar("z", &zVar);
+            clearAllocatedFields();
+            for (unsigned int i = 0; i < numberOfFields; ++i) {
+                precision val = precision();
 
-				parser.SetExpr(_expression);
+                concentrationFieldVector.push_back(new containerType(fieldDim, val));
+
+            }
+            concentrationFieldNameVector.assign(numberOfFields, std::string());
+        }
 
 
-				for (unsigned int x=0  ; x < (unsigned int)fieldDimLocal.x ; ++x)
-					for (unsigned int y=0  ; y < (unsigned int)fieldDimLocal.y ; ++y)
-						for (unsigned int z=0  ; z < (unsigned int)fieldDimLocal.z ; ++z){
-							pt.x=x;
-							pt.y=y;
-							pt.z=z;
-							//setting parser variables
-							xVar=x;						
-							yVar=y;
-							zVar=z;
-							_field->set(pt,static_cast<float>(parser.Eval()));							
-						}
+    protected:
+        void clearAllocatedFields() {
+            for (unsigned int i = 0; i < concentrationFieldVector.size(); ++i) {
+                if (concentrationFieldVector[i]) {
+                    delete concentrationFieldVector[i];
+                    concentrationFieldVector[i] = 0;
+                }
+            }
+            concentrationFieldVector.clear();
 
-			} catch (mu::Parser::exception_type &e)
-			{
-				Log(LOG_DEBUG) << e.GetMsg();
-				ASSERT_OR_THROW(e.GetMsg(),0);
-			}
-		}	
+        }
 
-		//std::vector<Array3DLinearFortranField3DAdapter<precision>* > concentrationFieldVector;
-		std::vector<containerType* > concentrationFieldVector;
-		std::vector<std::string> concentrationFieldNameVector;
-		unsigned int maxNeighborIndex;
-		std::vector<Point3D> offsetVec;
-		BoundaryStrategy *boundaryStrategy;
+        void initializeFieldUsingEquation(Field3D <precision> *_field, std::string _expression) {
+            Point3D pt;
+            mu::Parser parser;
+            double xVar, yVar, zVar; //variables used by parser
+            try {
+                parser.DefineVar("x", &xVar);
+                parser.DefineVar("y", &yVar);
+                parser.DefineVar("z", &zVar);
 
-		Dim3D fieldDimLocal;
+                parser.SetExpr(_expression);
 
-	};
+
+                for (unsigned int x = 0; x < (unsigned int) fieldDimLocal.x; ++x)
+                    for (unsigned int y = 0; y < (unsigned int) fieldDimLocal.y; ++y)
+                        for (unsigned int z = 0; z < (unsigned int) fieldDimLocal.z; ++z) {
+                            pt.x = x;
+                            pt.y = y;
+                            pt.z = z;
+                            //setting parser variables
+                            xVar = x;
+                            yVar = y;
+                            zVar = z;
+                            _field->set(pt, static_cast<float>(parser.Eval()));
+                        }
+
+            } catch (mu::Parser::exception_type &e) {
+                CC3D_Log(LOG_DEBUG) << e.GetMsg();
+                throw CC3DException(e.GetMsg());
+            }
+        }
+
+
+        std::vector<containerType *> concentrationFieldVector;
+        std::vector <std::string> concentrationFieldNameVector;
+        unsigned int maxNeighborIndex;
+        std::vector <Point3D> offsetVec;
+        BoundaryStrategy *boundaryStrategy;
+
+        Dim3D fieldDimLocal;
+
+    };
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	template <typename containerType>
-	class DiffusableVectorFortranDouble :public Steppable{
-	public:
-		typedef typename containerType::precision_t precision;  //you have to use typename becaue otherwise C++ will assume precision_t is an object or function
+    template<typename containerType>
+    class DiffusableVectorFortranDouble : public Steppable {
+    public:
+        typedef typename containerType::precision_t precision;  //you have to use typename becaue otherwise C++ will assume precision_t is an object or function
 
 
-		DiffusableVectorFortranDouble():Steppable(),concentrationFieldVector(0),maxNeighborIndex(0),boundaryStrategy(0){
+        DiffusableVectorFortranDouble()
+                : Steppable(), concentrationFieldVector(0), maxNeighborIndex(0), boundaryStrategy(0) {
 
-		};
+        };
 
-		virtual ~DiffusableVectorFortranDouble(){
-			clearAllocatedFields();
-			//for(unsigned int i = 0 ; i< concentrationFieldVector.size() ; ++i){
-			//   if(concentrationFieldVector[i]){
-			//      delete concentrationFieldVector[i];
-			//      concentrationFieldVector[i]=0;
-			//   }
-			//}
+        virtual ~DiffusableVectorFortranDouble() {
+            clearAllocatedFields();
 
 
-		}
-		//Field3DImpl<precision> * getConcentrationField(unsigned int i){return concentrationFieldVector[i];};
-		virtual void start() {};
-		virtual void step(const unsigned int currentStep) {};
-		virtual void finish() {};    
-
-		virtual Field3D<precision> * getConcentrationField(const std::string & name){
-			using namespace std;
-			// Log(LOG_TRACE) << "concentrationFieldNameVector.size()="<<concentrationFieldNameVector.size();
-			//       for(unsigned int i=0 ; i < concentrationFieldNameVector.size() ; ++i){
-				// Log(LOG_TRACE) << "THIS IS FIELD NAME "<<concentrationFieldNameVector[i];
-			//       }
-			for(unsigned int i=0 ; i < concentrationFieldNameVector.size() ; ++i){
-				if(concentrationFieldNameVector[i]==name){
-					return concentrationFieldVector[i];  
-
-				}
-			}
-			return 0;
-
-		};
-		virtual void allocateDiffusableFieldVector(unsigned int numberOfFields,Dim3D fieldDim)
-		{
-			fieldDimLocal=fieldDim;
-			boundaryStrategy=BoundaryStrategy::getInstance();
-			//       maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(1.1); //for nearest neighbors only
-			maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);//for nearest neighbors only
-			const std::vector<Point3D> & offsetVecRef=BoundaryStrategy::getInstance()->getOffsetVec();
-			offsetVec.clear();	
-			for(int i = 0 ; i <= maxNeighborIndex ; ++i){
-				offsetVec.push_back(offsetVecRef[i]);
-			}
-
-			clearAllocatedFields();
-			for(unsigned int i = 0 ; i< numberOfFields ; ++i){
-				precision val=precision();
-				//concentrationFieldVector.push_back(new Array3DLinearFortranField3DAdapter<precision>(fieldDim, val));
-				concentrationFieldVector.push_back(new containerType(fieldDim, val));
-
-			}
-			concentrationFieldNameVector.assign(numberOfFields,std::string());
-		}
-
-		//     unsigned int getMaxNeighborIndex(){return maxNeighborIndex;}
-	protected:
-		void clearAllocatedFields(){
-			for(unsigned int i = 0 ; i< concentrationFieldVector.size() ; ++i){
-				if(concentrationFieldVector[i]){
-					delete concentrationFieldVector[i];
-					concentrationFieldVector[i]=0;
-				}
-			}
-			concentrationFieldVector.clear();
-
-		}
-
-		void initializeFieldUsingEquation(Field3D<precision> * _field, std::string _expression){
-			Point3D pt;		
-			mu::Parser parser;   
-			double xVar,yVar,zVar; //variables used by parser
-			try{
-				parser.DefineVar("x", &xVar);
-				parser.DefineVar("y", &yVar);
-				parser.DefineVar("z", &zVar);
-
-				parser.SetExpr(_expression);
+        }
 
 
-				for (unsigned int x=0  ; x < fieldDimLocal.x ; ++x)
-					for (unsigned int y=0  ; y < fieldDimLocal.y ; ++y)
-						for (unsigned int z=0  ; z < fieldDimLocal.z ; ++z){
-							pt.x=x;
-							pt.y=y;
-							pt.z=z;
-							//setting parser variables
-							xVar=x;						
-							yVar=y;
-							zVar=z;
-							_field->set(pt,parser.Eval());							
-						}
+        virtual void start() {};
 
-			} catch (mu::Parser::exception_type &e)
-			{
-				Log(LOG_DEBUG) << e.GetMsg();
-				ASSERT_OR_THROW(e.GetMsg(),0);
-			}
-		}	
+        virtual void step(const unsigned int currentStep) {};
 
-		//std::vector<Array3DLinearFortranField3DAdapter<precision>* > concentrationFieldVector;
-		std::vector<containerType* > concentrationFieldVector;
-		std::vector<std::string> concentrationFieldNameVector;
-		unsigned int maxNeighborIndex;
-		std::vector<Point3D> offsetVec;
-		BoundaryStrategy *boundaryStrategy;
+        virtual void finish() {};
 
-		Dim3D fieldDimLocal;
-	};
+        virtual Field3D <precision> *getConcentrationField(const std::string &name) {
+            using namespace std;
+
+            for (unsigned int i = 0; i < concentrationFieldNameVector.size(); ++i) {
+                if (concentrationFieldNameVector[i] == name) {
+                    return concentrationFieldVector[i];
+
+                }
+            }
+            return 0;
+
+        };
+
+        virtual void allocateDiffusableFieldVector(unsigned int numberOfFields, Dim3D fieldDim) {
+            fieldDimLocal = fieldDim;
+            boundaryStrategy = BoundaryStrategy::getInstance();
+
+            maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);//for nearest neighbors only
+            const std::vector <Point3D> &offsetVecRef = BoundaryStrategy::getInstance()->getOffsetVec();
+            offsetVec.clear();
+            for (int i = 0; i <= maxNeighborIndex; ++i) {
+                offsetVec.push_back(offsetVecRef[i]);
+            }
+
+            clearAllocatedFields();
+            for (unsigned int i = 0; i < numberOfFields; ++i) {
+                precision val = precision();
+
+                concentrationFieldVector.push_back(new containerType(fieldDim, val));
+
+            }
+            concentrationFieldNameVector.assign(numberOfFields, std::string());
+        }
+
+
+    protected:
+        void clearAllocatedFields() {
+            for (unsigned int i = 0; i < concentrationFieldVector.size(); ++i) {
+                if (concentrationFieldVector[i]) {
+                    delete concentrationFieldVector[i];
+                    concentrationFieldVector[i] = 0;
+                }
+            }
+            concentrationFieldVector.clear();
+
+        }
+
+        void initializeFieldUsingEquation(Field3D <precision> *_field, std::string _expression) {
+            Point3D pt;
+            mu::Parser parser;
+            double xVar, yVar, zVar; //variables used by parser
+            try {
+                parser.DefineVar("x", &xVar);
+                parser.DefineVar("y", &yVar);
+                parser.DefineVar("z", &zVar);
+
+                parser.SetExpr(_expression);
+
+
+                for (unsigned int x = 0; x < fieldDimLocal.x; ++x)
+                    for (unsigned int y = 0; y < fieldDimLocal.y; ++y)
+                        for (unsigned int z = 0; z < fieldDimLocal.z; ++z) {
+                            pt.x = x;
+                            pt.y = y;
+                            pt.z = z;
+                            //setting parser variables
+                            xVar = x;
+                            yVar = y;
+                            zVar = z;
+                            _field->set(pt, parser.Eval());
+                        }
+
+            } catch (mu::Parser::exception_type &e) {
+                CC3D_Log(LOG_DEBUG) << e.GetMsg();
+                throw CC3DException(e.GetMsg());
+            }
+        }
+
+
+        std::vector<containerType *> concentrationFieldVector;
+        std::vector <std::string> concentrationFieldNameVector;
+        unsigned int maxNeighborIndex;
+        std::vector <Point3D> offsetVec;
+        BoundaryStrategy *boundaryStrategy;
+
+        Dim3D fieldDimLocal;
+    };
 
 
 };

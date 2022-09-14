@@ -1,0 +1,48 @@
+# when building as standalone package uncomment line below and set version and build_number to proper values
+# {% set version = "4.3.1" %}
+# {% set build_number = "1" %}
+#{% set version = "4.3.2" %}
+#{% set build_number = "2" %}
+
+package:
+  name: compucell3d
+  version: {{ version }}
+
+about:
+  home: https://compucell3d.org
+  license: GPL
+  summary: Multiscale multicellular virtual tissue modeling and simulation environment
+
+extra:
+  maintainers: T.J. Sego, Maciek Swat
+
+source:
+  # url: https://github.com/CompuCell3D/CompuCell3D/archive/master.tar.gz
+  path: ../
+
+build:
+  number: {{ build_number }}
+
+requirements:
+  host:
+    - python=3.7
+#    - cc3d {{ version }}
+#    - cc3d-player5 {{ version }}
+    - cc3d-twedit5 {{ version }}.*
+
+#  build:
+#    - cc3d {{ version }}
+#    - cc3d-player5 {{ version }}
+#    - cc3d-twedit5 {{ version }}
+
+
+  run:
+    - python=3.7
+#    - cc3d {{ version }}
+#    - cc3d-player5 {{ version }}
+    - cc3d-twedit5 {{ version }}.*
+
+test:
+  imports:
+    - sys
+    - cc3d

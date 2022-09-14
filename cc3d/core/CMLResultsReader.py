@@ -18,7 +18,7 @@ import cc3d.CompuCellSetup as CompuCellSetup
 import vtk
 import os
 import os.path
-from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
+from cc3d.core.GraphicsUtils.utils import extract_address_int_from_vtk_object
 
 
 def generate_pif_from_vtk(_vtkFileName: str, _pifFileName: str, _lds_file_name: str) -> None:

@@ -6,7 +6,7 @@
 #include <string>
 #include <exception>
 #include <stdexcept>
-#include <BasicUtils/BasicException.h>
+#include <CompuCell3D/CC3DExceptions.h>
 //#include <unit_calculator_main_lib.h> //declares parseUnit
 
 using namespace std;
@@ -37,7 +37,7 @@ Unit::Unit(const string & _unitStr)
 		//unit_t unit=parseUnit(const_cast<char *> (_unitStr.c_str()));
 		(*this)=parseUnit(const_cast<char *> (std::string(_unitStr+"\n").c_str()));
 	}catch (logic_error & e){
-		ASSERT_OR_THROW(string(e.what()),false);
+		throw CompuCell3D::CC3DException(string(e.what()));
 	}
 	//printUnit(this);
 }

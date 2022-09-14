@@ -1,7 +1,6 @@
 #include "EnergyFunctionCalculatorTestDataGeneration.h"
 #include "EnergyFunction.h"
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
+#include <CompuCell3D/CC3DExceptions.h>
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/PottsParseData.h>
 #include "PottsTestData.h"
@@ -70,11 +69,11 @@ void EnergyFunctionCalculatorTestDataGeneration::log_output(PottsTestData &potts
 
     if (!header_written) {
         header_written = potts_test_data.write_header(file_name);
-        ASSERT_OR_THROW(" Could not write header to " + file_name, header_written);
+        if (!header_written) throw CC3DException(" Could not write header to " + file_name);
     }
 
     bool write_ok = potts_test_data.serialize(file_name);
-    ASSERT_OR_THROW(" Could not write data to " + file_name, write_ok);
+    if (!write_ok) throw CC3DException(" Could not write data to " + file_name);
 
 }
 

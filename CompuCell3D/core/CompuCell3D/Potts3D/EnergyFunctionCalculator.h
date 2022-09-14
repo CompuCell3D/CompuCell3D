@@ -52,7 +52,7 @@ namespace CompuCell3D {
         */
         virtual void unregisterEnergyFunction(std::string _functionName);
 
-        virtual void configureEnergyCalculator(std::vector<std::string> &_configVector) {}
+        virtual void configureEnergyCalculator(std::vector <std::string> &_configVector) {}
 
         virtual long get_number_energy_fcn_calculations() { return 0; }
 
@@ -99,14 +99,14 @@ namespace CompuCell3D {
          * Returns Energy Function names
          * @return vector of energy function names
          */
-        std::vector<std::string> getEnergyFunctionNames() { return energyFunctionsNameVec; }
+        std::vector <std::string> getEnergyFunctionNames() { return energyFunctionsNameVec; }
 
         /**
          * returns vector of energy changes for current pixel copy attempt
          * @return
          */
-        virtual std::vector<std::vector<double> >
-        getCurrentEnergyChanges() { return std::vector<std::vector<double> >(); }
+        virtual std::vector <std::vector<double>>
+        getCurrentEnergyChanges() { return std::vector < std::vector < double > > (); }
 
         virtual std::vector<bool> getCurrentFlipResults() { return std::vector<bool>(); }
 
@@ -125,7 +125,7 @@ namespace CompuCell3D {
 
     protected:
         std::vector<EnergyFunction *> energyFunctions;
-        std::vector<std::string> energyFunctionsNameVec;
+        std::vector <std::string> energyFunctionsNameVec;
 
         std::map<std::string, EnergyFunction *> nameToEnergyFunctionMap;
         std::map<std::string, double> energyFunctionNameToValueMap;
@@ -133,6 +133,14 @@ namespace CompuCell3D {
         Simulator *sim;
 
         bool lastFlipAccepted;
+
+        /**
+         * Validates energy function and current internal state. 
+         * Throws a CC3DException if validation fails. 
+         * 
+         * @param _function obj derived from EnergyFunction class
+         */
+        void checkEnergyFunction(EnergyFunction *_function);
 
     };
 

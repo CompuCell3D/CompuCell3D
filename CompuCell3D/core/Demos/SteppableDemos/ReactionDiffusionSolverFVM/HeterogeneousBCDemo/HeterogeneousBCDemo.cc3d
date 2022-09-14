@@ -1,0 +1,5 @@
+<Simulation version="4.3.1">
+   <XMLScript Type="XMLScript">Simulation/HeterogeneousBCDemo.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/HeterogeneousBCDemo.py</PythonScript>
+   <Resource Type="Python">Simulation/HeterogeneousBCDemoSteppables.py</Resource>
+</Simulation>

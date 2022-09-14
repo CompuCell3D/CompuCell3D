@@ -1,26 +1,3 @@
-/*************************************************************************
- *    CompuCell - A software framework for multimodel simulations of     *
- * biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
- *                             Indiana                                   *
- *                                                                       *
- * This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
- *  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
- *  CompuCell GNU General Public License RIDER you can redistribute it   *
- * and/or modify it under the terms of the GNU General Public License as *
- *  published by the Free Software Foundation; either version 2 of the   *
- *         License, or (at your option) any later version.               *
- *                                                                       *
- * This program is distributed in the hope that it will be useful, but   *
- *      WITHOUT ANY WARRANTY; without even the implied warranty of       *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
- *             General Public License for more details.                  *
- *                                                                       *
- *  You should have received a copy of the GNU General Public License    *
- *     along with this program; if not, write to the Free Software       *
- *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
- *************************************************************************/
-
-
 #include "Algorithm.h"
 #include "ChengbangAlgorithm.h"
 #include <iostream>
@@ -29,24 +6,21 @@
 #include <vector>
 #include <set>
 #include <cstdlib>
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
-using namespace CompuCell3D; 
-
-
-
+using namespace CompuCell3D;
 
 /*
  * Read the input file and populate
  *
  * @ return void
- */ 
-void ChengbangAlgorithm::readFile(const char* inputfile) {
+ */
+void ChengbangAlgorithm::readFile(const char *inputfile) {
     ifstream in(inputfile, ios::in);
 
     // Make sure the file is open
-    if(!in.is_open()) {
-        Log(LOG_DEBUG) << "Error opening file" << inputfile;
+    if (!in.is_open()) {
+        CC3D_Log(LOG_DEBUG) << "Error opening file" << inputfile;
         exit(1);
     }
 
@@ -54,7 +28,7 @@ void ChengbangAlgorithm::readFile(const char* inputfile) {
     int x, y, z;
     float temp;
     string s;
-    getline(in,s);
+    getline(in, s);
     istringstream is(s);
     is >> x;
     is >> y;
@@ -63,34 +37,30 @@ void ChengbangAlgorithm::readFile(const char* inputfile) {
     //Initialize the datastructure
     // vector< vector< vector<int> > > ds (x, vector< vector<int> > (y,vector<int>(1)));
     dataStructure.resize(x);
-    for(int k=0; k<x; k++) {
+    for (int k = 0; k < x; k++) {
         dataStructure[k].resize(y);
     }
 
 
     // Populate the data structure
-    for(int i=0; i<y; i++) { // y axis
-        for(int j=0; j<x; j++) { // x axis
-            getline(in,s);
+    for (int i = 0; i < y; i++) { // y axis
+        for (int j = 0; j < x; j++) { // x axis
+            getline(in, s);
             std::string::size_type pos = s.find_last_not_of(" \t\n\r\0");
 
-            if(pos < s.size()) {
-                s.erase(pos+1, s.size());
+            if (pos < s.size()) {
+                s.erase(pos + 1, s.size());
             }
 
             istringstream ss(s);
 
-            while(!ss.eof()) {
+            while (!ss.eof()) {
                 ss >> temp;
                 dataStructure[j][i].push_back(temp);
             }
         }
     }
 }
-
-
-
-
 
 
 /*
@@ -105,15 +75,15 @@ inputfile) {
     string num;
     string currentfile;
 
-    if(i <= size){ 
-     char ch[60];
-     stringstream ss;
-     ss << i;
-     ss >> num;
-     currentfile = inputfile + num + ".dat";
-     sprintf(ch,currentfile.c_str(),i);
-     readFile(ch);
-     filetoread = inputfile;
+    if (i <= size) {
+        char ch[60];
+        stringstream ss;
+        ss << i;
+        ss >> num;
+        currentfile = inputfile + num + ".dat";
+        sprintf(ch, currentfile.c_str(), i);
+        readFile(ch);
+        filetoread = inputfile;
     }
     i++;
 }
@@ -123,67 +93,67 @@ inputfile) {
  * Return 'true' if the passed point is in the grid.
  *
  */
-bool ChengbangAlgorithm::inGrid(const Point3D& pt) {
+bool ChengbangAlgorithm::inGrid(const Point3D &pt) {
     bool inside = false;
 
 
     // if current step is less than 100 use first shape only
     if (currentStep != evolution) {
-    evolution = currentStep;
-    if (currentStep % 50 == 0) {   
-         
-        readFile(i,s,filetoread);
+        evolution = currentStep;
+        if (currentStep % 50 == 0) {
+
+            readFile(i, s, filetoread);
+        }
     }
+    //Determine the length of the vector
+    int length = dataStructure[pt.x][pt.y].size();
+    //Determine if the vector is empty
+    if (dataStructure[pt.x][pt.y][0] == -1) {
+        inside = false;
+        return inside;
     }
-        //Determine the length of the vector
-        int length = dataStructure[pt.x][pt.y].size();
-        //Determine if the vector is empty
-        if(dataStructure[pt.x][pt.y][0] == -1) {
-            inside = false;
+    //Determine the position of the point
+    int position = 0;
+
+    for (int i = 0; i < length; i++) {
+
+        if (dataStructure[pt.x][pt.y][i] == pt.z) {
+            //boundary point
+            inside = true;
             return inside;
         }
-        //Determine the position of the point
-        int position = 0;
 
-        for(int i=0; i<length; i++) {
+        if (dataStructure[pt.x][pt.y][i] > pt.z) {
+            break;
+        }
 
-            if(dataStructure[pt.x][pt.y][i] == pt.z) {
-                //boundary point
-                inside = true;
-                return inside;
-            }
+        position++;
+    }  //  end for
 
-            if(dataStructure[pt.x][pt.y][i] > pt.z) {
-                break;
-            }
+    if (position == 0 || position == length) {
 
-            position++;
-        }  //  end for
+        // point lies outside the boundary
+        inside = false;
+        return inside;
 
-        if (position == 0 || position == length) {
+    } else {
 
-            // point lies outside the boundary
+        //Determine if the elements on either side are even or odd
+        int pre = position % 2;
+        int post = (length - (position + 1)) % 2;
+
+        if (pre == 0 && post == 0) {
+            //Point lies outside
             inside = false;
             return inside;
 
         } else {
-
-            //Determine if the elements on either side are even or odd
-            int pre = position % 2; 
-            int post = (length - (position+1)) % 2;
-
-            if(pre==0 && post==0) {
-                //Point lies outside
-                inside = false;
-                return inside;
-
-            } else {
-                //Point lies inside
-                inside = true;
-
-            }
+            //Point lies inside
+            inside = true;
 
         }
+
+    }
     return inside;
 }
 
@@ -201,47 +171,45 @@ int ChengbangAlgorithm::getNumPixels(int x, int y, int z) {
 
     float num = 0.0;
 
-    for (int i=0; i<x; i++) {
+    for (int i = 0; i < x; i++) {
 
-        for (int j=0; j<z; j++) {  // Changed from y to z  TMC
-            
+        for (int j = 0; j < z; j++) {  // Changed from y to z  TMC
+
             set<float, less<float> > s;
-            for(unsigned int l=0; l<dataStructure[i][j].size();l++) 
+            for (unsigned int l = 0; l < dataStructure[i][j].size(); l++)
                 s.insert(dataStructure[i][j][l]);
-           /* for(unsigned int m=0; m<dataStructure2[i][j].size(); m++)
-                s.insert(dataStructure2[i][j][m]);*/
+            /* for(unsigned int m=0; m<dataStructure2[i][j].size(); m++)
+                 s.insert(dataStructure2[i][j][m]);*/
 
-            set<float, less<float> >::iterator p;
+            set < float, less < float > > ::iterator
+            p;
             vector<float> dataStructure;
-            for(p=s.begin(); p!=s.end(); p++){
-                  if(*p > -1) dataStructure.push_back(*p);
+            for (p = s.begin(); p != s.end(); p++) {
+                if (*p > -1) dataStructure.push_back(*p);
             }
-              
 
-            
-            for(unsigned int k=0; k< dataStructure.size(); k+=2) {
+
+            for (unsigned int k = 0; k < dataStructure.size(); k += 2) {
 
 
                 //check to see if the vector is empty
-                if(dataStructure[0] == -1) break;
+                if (dataStructure[0] == -1) break;
 
                 //calculate the number of pixels
                 float y1 = dataStructure[k];
-                float y2 = dataStructure[k+1];
+                float y2 = dataStructure[k + 1];
 
                 // case 1: z1 >= z
-                if(y1 >= y) break;
+                if (y1 >= y) break;
 
 
                 // case 2: z2 >= z
-                if ( y2 >= y) {
-                    num +=  y - y1;
+                if (y2 >= y) {
+                    num += y - y1;
                     break;
                 }
 
                 num += y2 - y1 + 1;
-
-
 
 
             }
@@ -250,9 +218,6 @@ int ChengbangAlgorithm::getNumPixels(int x, int y, int z) {
 
     }
 
-
-
-
-    return (int)num;
+    return (int) num;
 
 }

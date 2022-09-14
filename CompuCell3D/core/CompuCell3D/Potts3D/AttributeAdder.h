@@ -1,17 +1,49 @@
 #ifndef ATTRIBUTEADDER_H
 #define ATTRIBUTEADDER_H
-namespace CompuCell3D{
 
-class CellG;
+#include "CellInventoryWatcher.h"
 
-class AttributeAdder{
+namespace CompuCell3D {
+
+    class CellG;
+    class AttributeAdderWatcher;
+
+    class AttributeAdder {
+
+        AttributeAdderWatcher *cInvWatcher;
+
     public:
-	AttributeAdder(){}
-	virtual ~AttributeAdder(){}
-	virtual void addAttribute(CellG *){};
-	virtual void destroyAttribute(CellG *){};
+        AttributeAdder() : cInvWatcher{0} {}
 
-};
+        virtual ~AttributeAdder();
+
+        AttributeAdderWatcher *getInventoryWatcher();
+
+        virtual void addAttribute(CellG *) {};
+
+        virtual void destroyAttribute(CellG *) {};
+
+    };
+
+    class AttributeAdderWatcher : public CellInventoryWatcher {
+
+        AttributeAdder *attrAdder;
+
+    public:
+
+        AttributeAdderWatcher(AttributeAdder *_attrAdder) : attrAdder{_attrAdder} {};
+
+        void onCellAdd(CellG *cell) {
+            if(attrAdder) 
+                attrAdder->addAttribute(cell);
+        }
+
+        void onCellRemove(CellG *cell) {
+            if(attrAdder) 
+                attrAdder->destroyAttribute(cell);
+        }
+
+    };
 
 };
 

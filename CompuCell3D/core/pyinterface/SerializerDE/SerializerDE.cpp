@@ -3,7 +3,7 @@
 #include <CompuCell3D/Potts3D/Potts3D.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <pyinterface/PlayerPythonNew/FieldStorage.h>
-#include <CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 #include <CompuCell3D/Automaton/Automaton.h> //to get type id to type name mapping
 #include <Utils/Coordinates3D.h>
 #include <vtkIntArray.h>
@@ -50,8 +50,8 @@ void SerializerDE::init(Simulator * _sim){
 bool SerializerDE::serializeCellField(SerializeData &_sd){
 	vtkStructuredPoints *fieldData=vtkStructuredPoints::New();
 	fieldData->SetDimensions(fieldDim.x,fieldDim.y,fieldDim.z);
-	Log(LOG_DEBUG) << "fieldDim="<<fieldDim;
-	Log(LOG_DEBUG) << "potts="<<potts;
+	CC3D_Log(LOG_DEBUG) << "fieldDim="<<fieldDim;
+	CC3D_Log(LOG_DEBUG) << "potts="<<potts;
 
 	vtkCharArray *typeArray=vtkCharArray::New();
 	typeArray->SetName("CellType");
@@ -114,10 +114,6 @@ bool SerializerDE::serializeCellField(SerializeData &_sd){
         #else
             fieldDataWriter->SetInput(fieldData);
         #endif 
-        
-	//int dim[3];
-	//latticeData->GetDimensions(dim);
-	Log(LOG_TRACE) << "dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2];
 	
 	fieldDataWriter->Write();
 	fieldDataWriter->Delete();
@@ -262,10 +258,6 @@ bool SerializerDE::serializeConcentrationField(SerializeData &_sd){
         #else
             fieldDataWriter->SetInput(fieldData);
         #endif
-        
-	//int dim[3];
-	//latticeData->GetDimensions(dim);
-	Log(LOG_TRACE) << "dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2];
 	
 	fieldDataWriter->Write();
 	fieldDataWriter->Delete();
@@ -372,9 +364,6 @@ bool SerializerDE::serializeScalarField(SerializeData &_sd){
         #else
             fieldDataWriter->SetInput(fieldData);
         #endif
-	//int dim[3];
-	//latticeData->GetDimensions(dim);
-	Log(LOG_TRACE) << "dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2];
 	
 	fieldDataWriter->Write();
 	fieldDataWriter->Delete();
@@ -492,10 +481,6 @@ bool SerializerDE::serializeScalarFieldCellLevel(SerializeData &_sd){
         #else
             fieldDataWriter->SetInput(fieldData);
         #endif
-        
-	//int dim[3];
-	//latticeData->GetDimensions(dim);
-	Log(LOG_TRACE) << "dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2];
 	
 	fieldDataWriter->Write();
 	fieldDataWriter->Delete();
@@ -591,7 +576,7 @@ bool SerializerDE::serializeVectorField(SerializeData &_sd){
                                 y=(*fieldPtr)[pt.x][pt.y][pt.z][1];
                                 z=(*fieldPtr)[pt.x][pt.y][pt.z][2];
                                 fieldArray->SetTuple3(offset,x,y,z);
-								Log(LOG_TRACE) << "vecTmp="<<vecTmp;
+								CC3D_Log(LOG_TRACE) << "vec=" << x << ", " << y << ", " << z;
 // 				fieldArray->SetTuple3(offset,vecTmp.x,vecTmp.y,vecTmp.z);
 				++offset;
 
@@ -616,10 +601,6 @@ bool SerializerDE::serializeVectorField(SerializeData &_sd){
         #else
             fieldDataWriter->SetInput(fieldData);
         #endif
-        
-	//int dim[3];
-	//latticeData->GetDimensions(dim);
-	Log(LOG_TRACE) << "dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2];
 	
 	fieldDataWriter->Write();
 	fieldDataWriter->Delete();
@@ -741,9 +722,6 @@ bool SerializerDE::serializeVectorFieldCellLevel(SerializeData &_sd){
         #else
             fieldDataWriter->SetInput(fieldData);
         #endif
-	//int dim[3];
-	//latticeData->GetDimensions(dim);
-	Log(LOG_TRACE) << "dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2];
 	
 	fieldDataWriter->Write();
 	fieldDataWriter->Delete();
@@ -794,7 +772,7 @@ bool SerializerDE::loadVectorFieldCellLevel(SerializeData &_sd){
 						;
 					}else{
 						fieldArray->GetTypedTuple(offset,tuple);
-						Log(LOG_DEBUG) << "inserting "<<Coordinates3D<float>(tuple[0],tuple[1],tuple[2]);
+						CC3D_Log(LOG_DEBUG) << "inserting "<<Coordinates3D<float>(tuple[0],tuple[1],tuple[2]);
 						fieldPtr->insert(make_pair(cell,Coordinates3D<float>(tuple[0],tuple[1],tuple[2])));
 						
 					}

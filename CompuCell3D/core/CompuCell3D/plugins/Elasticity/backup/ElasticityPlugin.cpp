@@ -1,24 +1,4 @@
-/*************************************************************************
- *    CompuCell - A software framework for multimodel simulations of     *
- * biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
- *                             Indiana                                   *
- *                                                                       *
- * This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
- *  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
- *  CompuCell GNU General Public License RIDER you can redistribute it   *
- * and/or modify it under the terms of the GNU General Public License as *
- *  published by the Free Software Foundation; either version 2 of the   *
- *         License, or (at your option) any later version.               *
- *                                                                       *
- * This program is distributed in the hope that it will be useful, but   *
- *      WITHOUT ANY WARRANTY; without even the implied warranty of       *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
- *             General Public License for more details.                  *
- *                                                                       *
- *  You should have received a copy of the GNU General Public License    *
- *     along with this program; if not, write to the Free Software       *
- *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
- *************************************************************************/
+
 
 #include <CompuCell3D/plugins/Elasticity/ElasticityTrackerPlugin.h>
 
@@ -149,7 +129,7 @@ void ElasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 
 double ElasticityPlugin::diffEnergyGlobal(float _deltaL,float _lBefore,const ElasticityTrackerData * _elasticityTrackerData,const CellG *_cell){
-	//cerr<<"USING ENERGY GLOBAL lambda="<<lambdaElasticity<<endl;
+	
    if(_cell->volume>1){
 		if(_lBefore<maxLengthElasticity){
 			return lambdaElasticity*_deltaL*(2*(_lBefore-targetLengthElasticity)+_deltaL);
@@ -174,25 +154,15 @@ double ElasticityPlugin::diffEnergyLocal(float _deltaL,float _lBefore,const Elas
    
    if(_cell->volume>1){
       if(_lBefore<maxLengthElasticityLocal){	
-		//cerr<<"lambdaLocal="<<lambdaLocal<<endl;
-	 //   cerr<<"targetLengthLocal="<<targetLengthLocal<<endl;
-		//cerr<<"maxLengthElasticityLocal="<<maxLengthElasticityLocal<<endl;
-		//cerr<<"returning energy local = "<<lambdaLocal*_deltaL*(2*(_lBefore-targetLengthLocal)+_deltaL)<<endl;
         return lambdaLocal*_deltaL*(2*(_lBefore-targetLengthLocal)+_deltaL);
       }else{
-		//cerr<<"returning energy local = 0.0"<<endl;
         return 0.0;
       }
       
    }else{//after spin flip oldCell will disappear so the only contribution from before spin flip i.e. -(l-l0)^2
       if(_lBefore<maxLengthElasticityLocal){
-		//cerr<<"1 lambdaLocal="<<lambdaLocal<<endl;
-		//cerr<<"1 targetLengthLocal="<<targetLengthLocal<<endl;
-		//cerr<<"1 maxLengthElasticityLocal="<<maxLengthElasticityLocal<<endl;
-	 //   cerr<<"1 returning energy local = "<<-lambdaLocal*(_lBefore-targetLengthLocal)*(_lBefore-targetLengthLocal)<<endl;
         return -lambdaLocal*(_lBefore-targetLengthLocal)*(_lBefore-targetLengthLocal);
       }else{
-		//cerr<<"returning energy local = 0.0"<<endl;
         return 0.0;
       }
    }
@@ -216,8 +186,6 @@ double ElasticityPlugin::changeEnergy(const Point3D &pt,
    Coordinates3D<float> centMassOldBefore;
    Coordinates3D<float> centMassNewBefore;
 
-
-//    cerr<<"fieldDim="<<fieldDim<<endl;
    if(oldCell){
       centMassOldBefore.XRef()=oldCell->xCM/(float)oldCell->volume;
       centMassOldBefore.YRef()=oldCell->yCM/(float)oldCell->volume;
@@ -288,26 +256,6 @@ double ElasticityPlugin::changeEnergy(const Point3D &pt,
          }
          energy+=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),oldCell);
 
-//          if(oldCell->volume>1){
-//             energy+=lambdaElasticity*deltaL*(2*(lBefore-targetLengthElasticity)+deltaL);
-//          }else{//after spin flip oldCell will disappear so the only contribution from before spin flip i.e. -(l-l0)^2
-//             energy-=lambdaElasticity*(lBefore-targetLengthElasticity)*(lBefore-targetLengthElasticity);
-//          }
-//          double locEn1;
-//          double locEn2;
-//          locEn2=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),oldCell);
-//          if(oldCell->volume>1){
-//             locEn1=lambdaElasticity*deltaL*(2*(lBefore-targetLengthElasticity)+deltaL);
-//          }else{//after spin flip oldCell will disappear so the only contribution from before spin flip i.e. -(l-l0)^2
-//             locEn1=-lambdaElasticity*(lBefore-targetLengthElasticity)*(lBefore-targetLengthElasticity);
-//          }
-// 
-//          if(locEn1!=locEn2){
-//             cerr<<"locEn1="<<locEn1<<" locEn2="<<locEn2<<endl;
-//             exit(0);
-// 
-//          }
-
       }
    }
 
@@ -324,51 +272,13 @@ double ElasticityPlugin::changeEnergy(const Point3D &pt,
             distInvariantCM(centMassNewAfter.X(),centMassNewAfter.Y(),centMassNewAfter.Z(),nCell->xCM/nCellVol,nCell->yCM/nCellVol,nCell->zCM/nCellVol,fieldDim,boundaryStrategy)
             -lBefore;
          }else{// this was already taken into account in the oldCell secion - we need to avoid double counting
-//             lBefore=distInvariantCM(centMassNewBefore.X(),centMassNewBefore.Y(),centMassNewBefore.Z(),centMassOldBefore.X(),centMassOldBefore.Y(),centMassOldBefore.Z(),fieldDim);
-//             deltaL=
-//             distInvariantCM(centMassNewAfter.X(),centMassNewAfter.Y(),centMassNewAfter.Z(),centMassOldAfter.X(),centMassOldAfter.Y(),centMassOldAfter.Z(),fieldDim)
-//             -lBefore;
 
          }
          energy+=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),newCell);
-//          energy+=lambdaElasticity*deltaL*(2*(lBefore-targetLengthElasticity)+deltaL);
-
-//          double locEn1;
-//          double locEn2;
-//          locEn2=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),newCell);
-//          
-//          locEn1=lambdaElasticity*deltaL*(2*(lBefore-targetLengthElasticity)+deltaL);
-//             cerr<<"locEn1="<<locEn1<<" locEn1="<<locEn2<<endl;
-// 
-//          if(locEn1!=locEn2){
-//             cerr<<"locEn1="<<locEn1<<" locEn2="<<locEn2<<endl;
-//             exit(0);
-// 
-//          }
 
       }
    }
 
-
-
-   Coordinates3D<int> centroid;
-//    if(oldCell){
-// //        centroid=precalculateCMAfterFlip(pt, oldCell, -1,fieldDim);
-//          centroid=precalculateCentroid(pt, oldCell, -1,fieldDim);
-// 
-// //       cerr<<"int="<<precalculateCentroid(pt, oldCell, -1,fieldDim)<<endl;
-//       cerr<<"pt="<<pt<<endl;
-//       cerr<<"oldCell xCM="<<oldCell->xCM<<" xcm="<<oldCell->xCM/(float)oldCell->volume<<endl;
-//       cerr<<"Centroid "<<centroid.X()<<","<<centroid.Y()<<","<<centroid.Z()<<endl;
-//       cerr<<"Manual "<<oldCell->xCM-pt.x<<","<<oldCell->yCM-pt.y<<","<<oldCell->zCM-pt.z<<endl;
-//       if(oldCell->xCM-pt.x - centroid.X() !=0 || oldCell->yCM-pt.y - centroid.Y() !=0 || oldCell->zCM-pt.z - centroid.Z() !=0)
-//          exit(0);
-//    }
-
-
-//    float energy=0.0;
-
-//    cerr<<"energy="<<energy<<endl;
    return energy;
 
 

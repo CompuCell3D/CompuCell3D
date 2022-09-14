@@ -33,7 +33,7 @@ into an aggregate, while another can (though slowly). -->
     <Steppable Type="ReactionDiffusionSolverFVM">
         <DeltaT unit="s">1</DeltaT>
         <AutoTimeSubStep/>
-        <SimpleMassConservation/>
+        <FluctuationCompensator/>
         <DiffusionField Name="C1">
             <DiffusionData>
                 <DiffusionConstant>0.1</DiffusionConstant>

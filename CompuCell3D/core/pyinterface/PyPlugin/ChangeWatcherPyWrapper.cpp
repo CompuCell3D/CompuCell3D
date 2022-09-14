@@ -1,6 +1,6 @@
 #include "ChangeWatcherPyWrapper.h"
 #include <CompuCell3D/Potts3D/Potts3D.h>
-#include<CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 #include <iostream>
 
 using namespace std;
@@ -28,7 +28,7 @@ void ChangeWatcherPyWrapper::field3DChange(const Point3D &pt, CellG *_newCell,Ce
    
    //return;
    int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();	
-   Log(LOG_TRACE) << "CHANGE WATCHER pt="<<pt<<" _newCell="<<_newCell<<" _oldCell="<<_oldCell<<" currentWorkNodeNumber="<<currentWorkNodeNumber<<" newCellVec.size()="<<newCellVec.size();
+   CC3D_Log(LOG_TRACE) << "CHANGE WATCHER pt="<<pt<<" _newCell="<<_newCell<<" _oldCell="<<_oldCell<<" currentWorkNodeNumber="<<currentWorkNodeNumber<<" newCellVec.size()="<<newCellVec.size();
    changePointVec[currentWorkNodeNumber]=pt;
    //Notice, we cannot be accessing flip neighbor because change watchers are called even before pixel copy begins (e.g. during initialization of cell field)
    //flipNeighborVec[currentWorkNodeNumber]=potts->getFlipNeighbor();
@@ -52,57 +52,21 @@ void ChangeWatcherPyWrapper::field3DChange(const Point3D &pt, CellG *_newCell,Ce
 	PyGILState_STATE gstate;
 	gstate = PyGILState_Ensure();
    for (int i = 0 ; i < vecPyObject.size() ; ++i){
-	Log(LOG_TRACE) << "before the call";
+	CC3D_Log(LOG_TRACE) << "before the call";
       ret=PyObject_CallMethod(vecPyObject[i],"field3DChange",0);
-	  Log(LOG_TRACE) << "ret="<<ret;
+	  CC3D_Log(LOG_TRACE) << "ret="<<ret;
       
 
       //decrement reference here
       Py_DECREF(ret);
 
-	Log(LOG_TRACE) << "after the call";
+	CC3D_Log(LOG_TRACE) << "after the call";
    }
 	PyGILState_Release(gstate);
 
 	pUtils->unsetLock(lockPtr);
 }
 
-void ChangeWatcherPyWrapper::field3DAdditionalPt(const Point3D &ptAdd)
-{
-
-	//return;
-	int currentWorkNodeNumber = pUtils->getCurrentWorkNodeNumber();
-	Log(LOG_TRACE) << "CHANGE WATCHER pt="<<pt<<" _newCell="<<_newCell<<" _oldCell="<<_oldCell<<" currentWorkNodeNumber="<<currentWorkNodeNumber<<" newCellVec.size()="<<newCellVec.size();
-
-	PyObject *ret;
-
-	//Using OpenMp lock here - single thread will anly execute this code fragment - gives much better performance than using GIL only 
-	//Maybe IronPython could be the solution... will have to explore it - looks like it is much better for multi-core applications.
-
-	pUtils->setLock(lockPtr);
-
-	// since we are using threads (swig generated modules are fully "threaded") and and use C/API we better make sure that before doing anything in python
-	//we aquire GIL and then release it once we are done
-
-
-
-	PyGILState_STATE gstate;
-	gstate = PyGILState_Ensure();
-	for (int i = 0; i < vecPyObject.size(); ++i) {
-		Log(LOG_TRACE) << "before the call";
-		ret = PyObject_CallMethod(vecPyObject[i], "field3DAdditionalPt", 0);
-		Log(LOG_TRACE) << "ret="<<ret;
-
-
-		//decrement reference here
-		Py_DECREF(ret);
-
-		Log(LOG_TRACE) << "after the call";
-	}
-	PyGILState_Release(gstate);
-
-	pUtils->unsetLock(lockPtr);
-}
 
 
 

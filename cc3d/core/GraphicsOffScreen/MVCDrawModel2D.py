@@ -4,7 +4,7 @@ import math
 from math import sqrt
 import numpy as np
 import string
-from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
+from cc3d.core.GraphicsUtils.utils import extract_address_int_from_vtk_object, to_vtk_rgb
 from cc3d.core.GraphicsOffScreen.MetadataHandler import MetadataHandler
 from cc3d.core.iterators import CellList, FocalPointPlasticityDataList, InternalFocalPointPlasticityDataList
 from cc3d.cpp import CompuCell

@@ -1,25 +1,3 @@
-/*************************************************************************
-*    CompuCell - A software framework for multimodel simulations of     *
-* biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
-*                             Indiana                                   *
-*                                                                       *
-* This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
-*  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
-*  CompuCell GNU General Public License RIDER you can redistribute it   *
-* and/or modify it under the terms of the GNU General Public License as *
-*  published by the Free Software Foundation; either version 2 of the   *
-*         License, or (at your option) any later version.               *
-*                                                                       *
-* This program is distributed in the hope that it will be useful, but   *
-*      WITHOUT ANY WARRANTY; without even the implied warranty of       *
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
-*             General Public License for more details.                  *
-*                                                                       *
-*  You should have received a copy of the GNU General Public License    *
-*     along with this program; if not, write to the Free Software       *
-*      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
-*************************************************************************/
-
 #include "CellMomentOfInertia.h"
 
 #include <CompuCell3D/CC3D.h>
@@ -27,7 +5,7 @@
 using namespace CompuCell3D;
 
 #include "MomentOfInertiaPlugin.h"
-#include<core/CompuCell3D/CC3DLogger.h>
+#include <PublicUtilities/CC3DLogger.h>
 
 using namespace std;
 
@@ -47,7 +25,8 @@ std::vector<double> CompuCell3D::cellOrientation_12(const double& i11, const dou
 }
 
 vector<double> CompuCell3D::getSemiaxes12(const double& i11, const double& i22, const double& i12, const double& volume) {
-	//in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M where a is semimajor axis
+	//in the case of an ellipse larger moment of inertia is w.r.t. semiminor axis and is equal 1/4*a**2*M
+    // where a is semimajor axis
 	auto lComps = CompuCell3D::minMaxComps(i11, i22, i12);
 	auto lMin = fabs(lComps[0])<0.000001 ? 0.0 : lComps[0]; //to deal with round off errors
 	return vector<double>{2*sqrt(lMin/volume), 2*sqrt(lComps[1]/volume)}; // semimajor axis, semimajor axis
@@ -58,11 +37,12 @@ MomentOfInertiaPlugin::MomentOfInertiaPlugin():potts(0),simulator(0),boundaryStr
 MomentOfInertiaPlugin::~MomentOfInertiaPlugin() {}
 
 void MomentOfInertiaPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
-	Log(LOG_DEBUG) << "\n\n\n  \t\t\t CALLING INIT OF MOMENT OF INERTIA PLUGIN\n\n\n";
+	CC3D_Log(LOG_DEBUG) << std::endl << std::endl << std::endl << "  \t\t\t CALLING INIT OF MOMENT OF INERTIA PLUGIN" << std::endl << std::endl << std::endl;
 	this->simulator=simulator;
 	potts = simulator->getPotts();
 	bool pluginAlreadyRegisteredFlag;
-	Plugin *plugin=Simulator::pluginManager.get("CenterOfMass",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
+    //this will load VolumeTracker plugin if it is not already loaded
+	Plugin *plugin=Simulator::pluginManager.get("CenterOfMass",&pluginAlreadyRegisteredFlag);
 	if(!pluginAlreadyRegisteredFlag)
 		plugin->init(simulator);
 
@@ -98,7 +78,8 @@ void MomentOfInertiaPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 
 void CompuCell3D::MomentOfInertiaPlugin::field3DChange(const Point3D &pt, CellG *newCell,CellG * oldCell) {
 
-	//to calculate CM for the case with periodic boundary conditions we need to do some translations rather than naively calculate centroids
+	//to calculate CM for the case with periodic boundary conditions we need
+    // to do some translations rather than naively calculate centroids
 	//naive calculations work in the case of no flux boundary conditions but periodic b.c. may cause troubles
 
 	if (newCell==oldCell) //this may happen if you are trying to assign same cell to one pixel twice 
@@ -111,7 +92,7 @@ void CompuCell3D::MomentOfInertiaPlugin::field3DChange(const Point3D &pt, CellG 
 	if( !(currentStep %100)	&& lastMCSPrintedWarning < currentStep){
 		lastMCSPrintedWarning = currentStep;
 		if ( boundaryConditionIndicator.x || boundaryConditionIndicator.y || boundaryConditionIndicator.z ){
-			Log(LOG_DEBUG) << "MomentOfInertia plugin may not work properly with periodic boundary conditions.Pleas see manual when it is OK to use this plugin with periodic boundary conditions";
+			CC3D_Log(LOG_DEBUG) << "MomentOfInertia plugin may not work properly with periodic boundary conditions.Pleas see manual when it is OK to use this plugin with periodic boundary conditions";
 		}
 	}
 	double xcm, ycm, zcm;
@@ -169,7 +150,7 @@ void CompuCell3D::MomentOfInertiaPlugin::field3DChange(const Point3D &pt, CellG 
 		oldCell->iYZ =oldCell->iYZ-(oldCell->volume + 1)*ycmOld*zcmOld+(oldCell->volume)*ycm*zcm+ptTrans.y*ptTrans.z;	
 
 	}
-	//calculating cell orientation parameters eccentricity,orienation vector
+	//calculating cell orientation parameters eccentricity,orientation vector
 	if(cellOrientationFcnPtr){ //this will call cell orientation calculations only when simulation is 2D
 		(this->*cellOrientationFcnPtr)(pt,newCell,oldCell);
 	}
@@ -178,7 +159,8 @@ void CompuCell3D::MomentOfInertiaPlugin::field3DChange(const Point3D &pt, CellG 
 
 	//if there are boundary conditions defined that we have to do some shifts to correctly calculate center of mass
 	//This approach will work only for cells whose span is much smaller that lattice dimension in the "periodic "direction
-	//e.g. cell that is very long and "wraps lattice" will have miscalculated CM using this algorithm. On the other hand, you do not real expect
+	//e.g. cell that is very long and "wraps lattice" will have miscalculated CM using this algorithm.
+    // On the other hand, you do not real expect
 	//cells to have dimensions comparable to lattice...
 
 	//THIS IS NOT IMPLEMENTED YET. WE WILL DO IT IN THE ONE OF THE COMING RELEASES

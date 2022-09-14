@@ -16,6 +16,7 @@
         <CellType TypeName="Bacterium" TypeId="2" Freeze=""/>
     </Plugin>
 
+    <Plugin Name="Volume"/>
 
     <Steppable Type="FlexibleDiffusionSolverFE">
         <DiffusionField>
