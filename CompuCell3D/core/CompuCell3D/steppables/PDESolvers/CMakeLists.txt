@@ -216,6 +216,7 @@ ADD_COMPUCELL3D_STEPPABLE(PDESolvers
   cc3d::PixelTracker 
   cc3d::NeighborTracker 
   cc3d::BoxWatcher 
+  cc3d::CellType 
 
   EXTRA_COMPILER_FLAGS 
   ${OpenMP_CXX_FLAGS}
