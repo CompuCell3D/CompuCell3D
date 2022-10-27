@@ -43,6 +43,7 @@ ReactionDiffusionSolverFVM::ReactionDiffusionSolverFVM()
 	cellDataLoaded = false;
 	integrationTimeStep = incTime;
 	fluctuationCompensator = 0;
+	fvMaxStableTimeSteps = 0;
 
 	physTime = 0.0;
 }
@@ -54,8 +55,10 @@ ReactionDiffusionSolverFVM::~ReactionDiffusionSolverFVM()
 	delete lockPtr;
 	lockPtr = 0;
 
-	delete fvMaxStableTimeSteps;
-	fvMaxStableTimeSteps = 0;
+	if(fvMaxStableTimeSteps) {
+		delete fvMaxStableTimeSteps;
+		fvMaxStableTimeSteps = 0;
+	}
 
 	for (unsigned int fieldIndex = 0; fieldIndex < numFields; ++fieldIndex) { 
 		delete concentrationFieldVector[fieldIndex];
@@ -98,6 +101,13 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		pixelTrackerPlugin->init(sim, pixelTrackerXML);
 	}
 	
+	// 		Get neighbor tracker plugin
+	neighborTrackerPlugin = (NeighborTrackerPlugin*)Simulator::pluginManager.get("NeighborTracker", &pluginAlreadyRegisteredFlag);
+	if (!pluginAlreadyRegisteredFlag) {
+		CC3DXMLElement *neighborTrackerXML = sim->getCC3DModuleData("Plugin", "NeighborTracker");
+		neighborTrackerPlugin->init(sim, neighborTrackerXML);
+	}
+
 	fieldDim = potts->getCellFieldG()->getDim();
 
 	boundaryStrategy = BoundaryStrategy::getInstance();
@@ -213,6 +223,8 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 
 	std::vector<std::string> fieldInitialExpr = std::vector<std::string>(numFields, "");
 	std::vector<bool> useFieldInitialExprBool = std::vector<bool>(numFields, false);
+	secrFieldVec.clear();
+	secrFieldVec.reserve(numFields);
 
 	for (unsigned int fieldIndex = 0; fieldIndex < numFields; ++fieldIndex) {
 		el = fieldXMLVec[fieldIndex];
@@ -380,6 +392,15 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 				}
 			}
 		}
+
+		// Secretion data
+
+		SecretionData secrData;
+		if(el->findElement("SecretionData")) {
+			secrData.update(el->getFirstElement("SecretionData"));
+			secrData.initialize(automaton);
+		}
+		secrFieldVec.push_back(secrData);
 
 		// Collect boundary conditions
 		debugLog("   Collecting boundary conditions...");
@@ -705,13 +726,17 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 
 	fieldDim = potts->getCellFieldG()->getDim();
 	auto _fieldDim = fieldDim;
+	auto _secrFieldVec = this->secrFieldVec;
 
 	while (intTime < incTime) {
 
 		if (autoTimeSubStep) {
 
 			debugLog( "      Integrating with maximum stable time step... ");
-			
+
+			#pragma omp parallel for shared (_fieldFVs, _secrFieldVec) 
+			for(int i = 0; i < _fieldFVs.size(); i++) 
+				_fieldFVs[i]->secrete(_secrFieldVec);
 			
 			#pragma omp parallel for shared (_fieldDim)
 			for (int fieldIndex=0;fieldIndex<_fieldDim.x*_fieldDim.y*_fieldDim.z;fieldIndex++){
@@ -726,6 +751,10 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 		else { 
 
 			debugLog("      Integrating with fixed time step... ");
+
+			#pragma omp parallel for shared (_fieldFVs, _secrFieldVec) 
+			for(int i = 0; i < _fieldFVs.size(); i++) 
+				_fieldFVs[i]->secrete(_secrFieldVec);
 
 			integrationTimeStep = incTime - intTime;
 
@@ -1254,6 +1283,26 @@ void ReactionDiffusionSolverFVM::setCellOutwardFlux(const CellG *_cell, unsigned
 
 //////////////////////////////////////////////////////////// Solver functions ////////////////////////////////////////////////////////////
 
+bool ReactionDiffusionSolverFVM::inContact(CellG *cell, const unsigned char &typeIndex) {
+	NeighborTracker *nt = neighborTrackerPlugin->getNeighborTrackerAccessorPtr()->get(cell->extraAttribPtr);
+	for(auto &ntd : nt->cellNeighbors) {
+		const unsigned char nTypeIndex = ntd.neighborAddress ? ntd.neighborAddress->type : 0;
+		if(typeIndex == nTypeIndex) 
+			return true;
+	}
+	return false;
+}
+
+std::set<unsigned char> ReactionDiffusionSolverFVM::getNeighbors(CellG *cell) {
+	std::set<unsigned char> result;
+
+	NeighborTracker *nt = neighborTrackerPlugin->getNeighborTrackerAccessorPtr()->get(cell->extraAttribPtr);
+	for(auto &ntd : nt->cellNeighbors) 
+		result.insert(ntd.neighborAddress ? ntd.neighborAddress->type : 0);
+
+	return result;
+}
+
 unsigned int ReactionDiffusionSolverFVM::getSurfaceIndexByName(std::string _surfaceName) {
 	std::map<std::string, unsigned int>::iterator m_itr = surfaceMapNameToIndex.find(_surfaceName);
 	if (m_itr != surfaceMapNameToIndex.end()) { return m_itr->second; }
@@ -1353,6 +1402,7 @@ bool RDFVMField3DWrap<T>::isValid(const Point3D &pt) const { return solver->isVa
 ReactionDiffusionSolverFV::ReactionDiffusionSolverFV(ReactionDiffusionSolverFVM *_solver, Point3D _coords, int _numFields) : solver(_solver), coords(_coords) {
 	concentrationVecAux = std::vector<double>(_numFields, 0.0);
 	concentrationVecOld = std::vector<double>(_numFields, 0.0);
+	secrRateStorage = std::vector<double>(_numFields, 0.0);
 	auxVars = std::vector<std::vector<double> >(_numFields, std::vector<double>(1, 0.0));
 	physTime = 0.0;
 	stabilityMode = false;
@@ -1371,6 +1421,25 @@ void ReactionDiffusionSolverFV::initialize() {
 	surfaceFluxFunctionPtrs = std::vector<std::vector<FluxFunction> >(
 		concentrationVecOld.size(), 
 		std::vector<FluxFunction>(neighborFVs.size(), &ReactionDiffusionSolverFV::returnZero));
+}
+
+void ReactionDiffusionSolverFV::secrete(const std::vector<SecretionData> &secrFieldVec) {
+	CellG *cell = solver->FVtoCellMap(this);
+	const unsigned char cellTypeId = cell ? cell->type : 0;
+
+	for(unsigned int i = 0; i < secrRateStorage.size(); i++) {
+		SecretionData secrData = secrFieldVec[i];
+		double secrRate = 0.0;
+
+		if(secrData.secretionTypeIds.find(cellTypeId) != secrData.secretionTypeIds.end()) 
+			secrRate = secreteSingleField(i, cellTypeId, secrData);
+		else if(secrData.secretionOnContactTypeIds.find(cellTypeId) != secrData.secretionOnContactTypeIds.end()) 
+			secrRate = secreteOnContactSingleField(i, cellTypeId, secrData);
+		else if(secrData.constantConcentrationTypeIds.find(cellTypeId) != secrData.constantConcentrationTypeIds.end()) 
+			secrRate = secreteConstantConcentrationSingleField(i, cellTypeId, secrData);
+
+		secrRateStorage[i] += secrRate;
+	}
 }
 
 void ReactionDiffusionSolverFV::solve() {
@@ -1397,7 +1466,6 @@ double ReactionDiffusionSolverFV::solveStable() {
 	for (unsigned int i = 0; i < concentrationVecOld.size(); ++i) {
 		double den1 = 0.0;
 		double den2 = 0.0;
-		concentrationVecAux[i] = 0.0;
 
 		for (fv_itr = neighborFVs.begin(); fv_itr != neighborFVs.end(); ++fv_itr) {
 			std::vector<double> fluxVals = (this->*surfaceFluxFunctionPtrs[i][fv_itr->first])(i, fv_itr->first, fv_itr->second);
@@ -1423,8 +1491,11 @@ double ReactionDiffusionSolverFV::solveStable() {
 }
 
 void ReactionDiffusionSolverFV::update(double _incTime) {
-	for (unsigned int fieldIndex = 0; fieldIndex < concentrationVecOld.size(); ++fieldIndex)
-		concentrationVecOld[fieldIndex] = max(concentrationVecOld[fieldIndex] + concentrationVecAux[fieldIndex] * _incTime, 0.0);
+	for (unsigned int fieldIndex = 0; fieldIndex < concentrationVecOld.size(); ++fieldIndex) {
+		concentrationVecOld[fieldIndex] = max(concentrationVecOld[fieldIndex] + (concentrationVecAux[fieldIndex] + secrRateStorage[fieldIndex]) * _incTime, 0.0);
+		concentrationVecAux[fieldIndex] = 0.0;
+		secrRateStorage[fieldIndex] = 0.0;
+	}
 	physTime += _incTime;
 }
 
@@ -1606,6 +1677,48 @@ std::vector<double> ReactionDiffusionSolverFV::fixedFVConcentrationFlux(unsigned
 	concentrationVecOld[_fieldIndex] = bcVals[_fieldIndex][0];
 	return std::vector<double>{0.0, 0.0, 0.0};
 }
+
+double ReactionDiffusionSolverFV::secreteSingleField(const unsigned int &fieldIndex, const unsigned char &typeIndex, const SecretionData &secrData) {
+	double result = 0.0;
+	auto itr_SecrConstMap = secrData.typeIdSecrConstMap.find(typeIndex);
+	result += itr_SecrConstMap == secrData.typeIdSecrConstMap.end() ? 0.0 : itr_SecrConstMap->second;
+
+	auto itr_UptakeDataMap = secrData.typeIdUptakeDataMap.find(typeIndex);
+	if(itr_UptakeDataMap != secrData.typeIdUptakeDataMap.end()) 
+		result -= std::min<double>(itr_UptakeDataMap->second.maxUptake, concentrationVecOld[fieldIndex] * itr_UptakeDataMap->second.relativeUptakeRate);
+
+	return result;
+}
+
+double ReactionDiffusionSolverFV::secreteOnContactSingleField(const unsigned int &fieldIndex, const unsigned char &typeIndex, const SecretionData &secrData) {
+	double result = 0.0;
+
+	CellG* cell = solver->FVtoCellMap(this);
+	if(!cell) 
+		return result;
+	
+	auto itr = secrData.typeIdSecrOnContactDataMap.find(typeIndex);
+	if(itr == secrData.typeIdSecrOnContactDataMap.end()) 
+		return result;
+
+	auto contactCellMapPtr = itr->second.contactCellMap;
+	auto neighborTypeIds = solver->getNeighbors(cell);
+	for(auto &nTypeId : neighborTypeIds) {
+		auto contactCellMapPtr_itr = contactCellMapPtr.find(nTypeId);
+		if(contactCellMapPtr_itr != contactCellMapPtr.end()) 
+			result += contactCellMapPtr_itr->second;;
+	}
+
+	return result;
+}
+
+double ReactionDiffusionSolverFV::secreteConstantConcentrationSingleField(const unsigned int &fieldIndex, const unsigned char &typeIndex, const SecretionData &secrData) {
+	auto itr = secrData.typeIdSecrConstConstantConcentrationMap.find(typeIndex);
+	if(itr != secrData.typeIdSecrConstConstantConcentrationMap.end()) 
+		concentrationVecOld[fieldIndex] = itr->second;
+	return 0.0;
+}
+
 
 double ReactionDiffusionSolverFV::getFieldDiffusivity(unsigned int _fieldIndex) { return (this->*fieldDiffusivityFunctionPtrs[_fieldIndex])(_fieldIndex); }
 
