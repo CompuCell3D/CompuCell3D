@@ -1492,6 +1492,7 @@ namespace CompuCell3D {
 
 		double physTime;
 		bool stabilityMode;
+		bool usingCellInterfaceFlux;
 
 		// Dim 1: field
 		// Dim 2: diffusion coefficient, ...
@@ -1520,7 +1521,8 @@ namespace CompuCell3D {
 		double getFieldDiffusivityField(unsigned int _fieldIndex);
 		double getFieldDiffusivityInMedium(unsigned int _fieldIndex);
 
-		
+		double cellInterfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, CellG *cell, CellG *nCell);
+		double cellInterfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
 		std::vector<double> diffusiveSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
 		std::vector<double> permeableSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
 		std::vector<double> fixedSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
@@ -1727,6 +1729,11 @@ namespace CompuCell3D {
 		void useFixedFVConcentration(unsigned int _fieldIndex, double _val);
 
 		/**
+		 * @brief Set flag for whether to use cell interface fluxes
+		 */
+		void useCellInterfaceFlux(const bool &_usingCellInterfaceFlux) { usingCellInterfaceFlux = _usingCellInterfaceFlux; }
+
+		/**
 		 * @brief registers field symbol by calling muParser::DefineVar that takes in  _fieldSymbol and old 
 		 * concentration at _fieldIndex as input; on elements of diagonalFunctions and offDiagonalFunctions 
 		 * at each index in range(0, length of diagonalFunctions)
@@ -1818,6 +1825,19 @@ namespace CompuCell3D {
 		 * @return double 
 		 */
 		double getFieldDiffusivity(unsigned int _fieldIndex);
+
+		/**
+		 * @brief gets the cell-dependent outward flux value for a field
+		 * 
+		 * @param _fieldIndex 
+		 */
+		double getCellOutwardFlux(unsigned int _fieldIndex);
+
+		/**
+		 * @brief gets the cell-dependent outward flux values for all field
+		 * 
+		 */
+		std::vector<double> getCellOutwardFluxes();
 
 	};
 
