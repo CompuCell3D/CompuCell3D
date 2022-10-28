@@ -92,7 +92,7 @@ void FlexibleDiffusionSolverFE_GPU_OpenCL::init(int gpuDeviceIndex, LatticeType 
     if(latticeType==HEXAGONAL_LATTICE) {
         CC3D_Log(LOG_DEBUG) << "Using hexagonal lattice"; }
     else {
-        CC3D_Log(LOG_DEBUG) << "Using square lattice"
+        CC3D_Log(LOG_DEBUG) << "Using square lattice";
     };
     
 	oclHelper=new OpenCLHelper(gpuDeviceIndex);
@@ -138,7 +138,7 @@ void FlexibleDiffusionSolverFE_GPU_OpenCL::init(int gpuDeviceIndex, LatticeType 
         if (!d_solverParam) {
             CC3D_Log(LOG_DEBUG) << "Can't allocate memory for d_solverParam: "; exit(1);
 	}
-	CC3D_Log(LOG_DEBUG) << "building OpenCL program";<< endl;
+	CC3D_Log(LOG_DEBUG) << "building OpenCL program";
 
         const char *kernelSource[] = {"lib/CompuCell3DSteppables/OpenCL/GPUSolverParams.h",
                                       "lib/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl"};
@@ -165,7 +165,7 @@ void FlexibleDiffusionSolverFE_GPU_OpenCL::init(int gpuDeviceIndex, LatticeType 
         for (int i = 0; i < UCHAR_MAX + 1; ++i) {
             h_solverParam.diffCoef[i] = diffData.diffCoef[i];
             h_solverParam.decayCoef[i] = diffData.decayCoef[i];
-            CC3D_Log(LOG_TRACE) << "h_solverParam.diffCoef["<<i<<"]="<<h_solverParam.diffCoef[i];<<endl;
+            CC3D_Log(LOG_TRACE) << "h_solverParam.diffCoef["<<i<<"]="<<h_solverParam.diffCoef[i];
         }
 
         oclHelper->WriteBuffer(d_solverParam, h_solverParamPtr, 1);
@@ -180,7 +180,7 @@ void FlexibleDiffusionSolverFE_GPU_OpenCL::init(int gpuDeviceIndex, LatticeType 
         static int i = 0;//just to avoid output polluting
         if (i == 0) {
             ++i;
-            CC3D_Log(LOG_DEBUG) << "Block size is: "<<localWorkSize[0]<<"x"<<localWorkSize[1]<<"x"<<localWorkSize[2];<< endl;
+            CC3D_Log(LOG_DEBUG) << "Block size is: "<<localWorkSize[0]<<"x"<<localWorkSize[1]<<"x"<<localWorkSize[2];
         }
     }
 
@@ -196,11 +196,11 @@ void FlexibleDiffusionSolverFE_GPU_OpenCL::init(int gpuDeviceIndex, LatticeType 
 //for debugging
     void CheckConcentrationField(SolverParams const *h_solverParamPtr, float const *h_field) {
         //size_t lim=(h_solverParamPtr->dimx+2)*(h_solverParamPtr->dimy+2)*(h_solverParamPtr->dimz+2);
-        CC3D_Log(LOG_TRACE) << field_len<<" "<<lim;<<endl;
+
         //for(size_t i=0; i<lim; ++i){
         //	h_field[i]=2.f;
         //}
-        CC3D_Log(LOG_TRACE) << h_field[800];<<endl;
+        CC3D_Log(LOG_TRACE) << h_field[800];
 	double sum=0.f;
 	float minVal=numeric_limits<float>::max();
 	float maxVal=-numeric_limits<float>::max();
@@ -214,7 +214,7 @@ void FlexibleDiffusionSolverFE_GPU_OpenCL::init(int gpuDeviceIndex, LatticeType 
 			}
 		}
 	}
-	CC3D_Log(LOG_DEBUG) << "min: "<<minVal<<"; max: "<<maxVal<<" "<<sum;<< endl;
+	CC3D_Log(LOG_DEBUG) << "min: "<<minVal<<"; max: "<<maxVal<<" "<<sum;
     }
 
     void FlexibleDiffusionSolverFE_GPU_OpenCL::fieldDeviceToHost(float *h_field) const {
@@ -252,8 +252,8 @@ void FlexibleDiffusionSolverFE_GPU_OpenCL::init(int gpuDeviceIndex, LatticeType 
         if (latticeType == SQUARE_LATTICE) {
             const size_t globalWorkSize[] = {h_solverParamPtr->dimx, h_solverParamPtr->dimy, h_solverParamPtr->dimz};
             CC3D_Log(LOG_TRACE) << "Block size is: "<<localWorkSize[0]<<"x"<<localWorkSize[1]<<"x"<<localWorkSize[2]<<
-			"; globalWorkSize is: "<<globalWorkSize[0]<<"x"<<globalWorkSize[1]<<"x"<<globalWorkSize[2]<<
-            	" "<<maxWorkGroupSize;
+			"; globalWorkSize is: "<<globalWorkSize[0]<<"x"<<globalWorkSize[1]<<"x"<<globalWorkSize[2];
+//            	" "<<maxWorkGroupSize;
             //execute the kernel
             err = oclHelper->EnqueueNDRangeKernel(kernel, 3, globalWorkSize, localWorkSize);
         } else {

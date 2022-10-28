@@ -154,7 +154,7 @@ char *OpenCLHelper::FileContents(const char *filename, int *length) {
     void *buffer;
 
     if (!f) {
-        CC3D_Log(LOG_ERROR) <<  "Unable to open " << filedname << " for reading";
+        CC3D_Log(LOG_ERROR) <<  "Unable to open " << filename << " for reading";
         return NULL;
     }
 
@@ -278,7 +278,7 @@ cl_int OpenCLHelper::GetPlatformID(cl_platform_id &clSelectedPlatformID, int &pl
             // default to zeroeth platform if NVIDIA not found
             if (clSelectedPlatformID == NULL) {
                 //shrLog("WARNING: NVIDIA OpenCL platform not found - defaulting to first platform!\n\n");
-                CC3D_Log(LOG_WARNING) << "WARNING: NVIDIA OpenCL platform not found - defaulting to first platform!");
+                CC3D_Log(LOG_WARNING) << "WARNING: NVIDIA OpenCL platform not found - defaulting to first platform!";
                 clSelectedPlatformID = clPlatformIDs[0];
                 platformInd = 0;
             }
