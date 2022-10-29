@@ -60,9 +60,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         self.typeExtractors = {}  # vtkDiscreteMarchingCubes
         self.typeExtractorMappers = {}  # vtkPolyDataMapper
 
-    # def setDim(self, fieldDim):
-    #     # self.dim = [fieldDim.x+1 , fieldDim.y+1 , fieldDim.z]
-    #     self.dim = [fieldDim.x , fieldDim.y , fieldDim.z]
 
     def is_lattice_hex(self, drawing_params):
         """
@@ -239,8 +236,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         actors_dict = actor_specs.actors_dict
 
         field_dim = self.currentDrawingParameters.bsd.fieldDim
-        # dim_order = self.dimOrder(self.currentDrawingParameters.plane)
-        # dim = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]
         dim = [field_dim.x, field_dim.y, field_dim.z]
         field_name = drawing_params.fieldName
         scene_metadata = drawing_params.screenshot_data.metadata
@@ -254,10 +249,16 @@ class MVCDrawModel3D(MVCDrawModelBase):
             isovalues = []
 
         try:
-            numIsos = mdata.get('NumberOfContourLines', default=3)
+            num_isos = mdata.get('NumberOfContourLines', default=3)
         except:
             print('could not process NumberOfContourLines setting')
-            numIsos = 0
+            num_isos = 0
+
+        try:
+            show_contours = mdata.get('ContoursOn', default=False)
+        except:
+            print('could not process ContoursOn setting')
+            show_contours = False
 
         hex_flag = False
         lattice_type_str = self.get_lattice_type_str()
@@ -283,16 +284,23 @@ class MVCDrawModel3D(MVCDrawModelBase):
         cell_type_con_int_addr = extract_address_int_from_vtk_object(vtkObj=cell_type_con)
 
         field_type = drawing_params.fieldType.lower()
+        # cell_type thresholding will return 0-1 array 0 for medium and 1 for all other visible types
+        use_cell_type_thresholding = not show_contours
+
+        fill_successful = False
         if field_type == 'confield':
             fill_successful = self.field_extractor.fillConFieldData3D(con_array_int_addr, cell_type_con_int_addr,
-                                                                      field_name, types_invisible, True)
+                                                                      field_name, types_invisible,
+                                                                      use_cell_type_thresholding)
         elif field_type == 'scalarfield':
             fill_successful = self.field_extractor.fillScalarFieldData3D(con_array_int_addr, cell_type_con_int_addr,
-                                                                         field_name, types_invisible, True)
+                                                                         field_name, types_invisible,
+                                                                         use_cell_type_thresholding)
         elif field_type == 'scalarfieldcelllevel':
             fill_successful = self.field_extractor.fillScalarFieldCellLevelData3D(con_array_int_addr,
                                                                                   cell_type_con_int_addr, field_name,
-                                                                                  types_invisible, True)
+                                                                                  types_invisible,
+                                                                                  use_cell_type_thresholding)
 
         if not fill_successful:
             return
@@ -300,7 +308,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         range_array = con_array.GetRange()
         min_con = range_array[0]
         max_con = range_array[1]
-        field_max = range_array[1]        
+        # field_max = range_array[1]
 
         min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
         min_range_fixed = min_max_dict['MinRangeFixed']
@@ -315,22 +323,63 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         if max_range_fixed:
             max_con = max_range
-            
+
+        if show_contours:
+            self.init_concentration_contours(dim=dim, con_array=con_array, isovalues=isovalues,
+                                             min_con=min_con, max_con=max_con, numIsos=num_isos)
+        else:
+            self.init_concentration_outer_shell(dim=dim, con_array=con_array, cell_type_con=cell_type_con,
+                                                isovalues=isovalues, min_con=min_con, max_con=max_con,
+                                                numIsos=num_isos)
+
+
+        concentration_actor = actors_dict['concentration_actor']
+
+        concentration_actor.SetMapper(self.conMapper)
+
+        self.init_min_max_actor(min_max_actor=actors_dict['min_max_text_actor'], range_array=range_array)
+
+        if hex_flag:
+            concentration_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
+
+        if actor_specs.metadata is None:
+            actor_specs.metadata = {'mapper': self.conMapper}
+        else:
+            actor_specs.metadata['mapper'] = self.conMapper
+
+        if mdata.get('LegendEnable', default=False):
+            self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
+
+    def init_concentration_outer_shell(self, **kwds):
+        """
+        Extracts outer shell of visible cell types and colors the shell based on the value of
+        concentration field
+        """
+        dim = kwds['dim']
+        con_array = kwds['con_array']
+        cell_type_con = kwds['cell_type_con']
+        min_con = kwds['min_con']
+        max_con = kwds['max_con']
+
+
         vtk_shape_data = vtk.vtkImageData()
         # only add 2 if we're filling in an extra boundary (rf. FieldExtractor.cpp)
-        vtk_shape_data.SetDimensions(dim[0] + 2, dim[1] + 2, dim[2] + 2)  
+        vtk_shape_data.SetDimensions(dim[0] + 2, dim[1] + 2, dim[2] + 2)
         vtk_shape_data.GetPointData().SetScalars(cell_type_con)
 
         vtk_con_data = vtk.vtkImageData()
         # only add 2 if we're filling in an extra boundary (rf. FieldExtractor.cpp)
-        vtk_con_data.SetDimensions(dim[0] + 2, dim[1] + 2, dim[2] + 2)  
+        vtk_con_data.SetDimensions(dim[0] + 2, dim[1] + 2, dim[2] + 2)
         vtk_con_data.GetPointData().SetScalars(con_array)
 
         mc = vtk.vtkMarchingCubes()
+        # vtkFlyingEdges are a good alternative to marching cudes
+        # mc = vtk.vtkFlyingEdges3D()
         mc.SetInputData(vtk_shape_data)
         # mc.ComputeNormalsOn()
         # mc.ComputeGradientsOn()
-        mc.SetValue(0, 1)  # second value acts as threshold
+        # second value acts as threshold
+        mc.SetValue(0, 1)
 
         probe = vtk.vtkProbeFilter()
         probe.SetInputConnection(mc.GetOutputPort())
@@ -346,103 +395,64 @@ class MVCDrawModel3D(MVCDrawModelBase):
         self.conMapper.SetInputConnection(normals.GetOutputPort())
         self.conMapper.SetScalarRange(min_con, max_con)
 
-        concentration_actor = actors_dict['concentration_actor']
+    def init_concentration_contours(self, **kwds):
+        """initializes contour visualization of concentration field in 3D
+        """
+        dim = kwds['dim']
+        con_array = kwds['con_array']
+        isovalues = kwds['isovalues']
+        min_con = kwds['min_con']
+        max_con = kwds['max_con']
+        num_isos = kwds['num_isos']
 
-        concentration_actor.SetMapper(self.conMapper)
 
+        uGrid = vtk.vtkStructuredPoints()
+        # only add 2 if we're filling in an extra boundary (rf. FieldExtractor.cpp)
+        uGrid.SetDimensions(dim[0] + 2, dim[1] + 2, dim[2] + 2)
 
+        uGrid.GetPointData().SetScalars(con_array)
 
-        # uGrid = vtk.vtkStructuredPoints()
-        # uGrid.SetDimensions(dim[0] + 2, dim[1] + 2, dim[
-        #     2] + 2)  # only add 2 if we're filling in an extra boundary (rf. FieldExtractor.cpp)
-        # #        uGrid.SetDimensions(self.dim[0],self.dim[1],self.dim[2])
-        # #        uGrid.GetPointData().SetScalars(self.cellTypeCon)   # cellType scalar field
-        # uGrid.GetPointData().SetScalars(con_array)
-        # #        uGrid.GetPointData().AddArray(self.conArray)        # additional scalar field
-        # 
-        # voi = vtk.vtkExtractVOI()
-        # ##        voi.SetInputConnection(uGrid.GetOutputPort())
-        # #        voi.SetInput(uGrid.GetOutput())
-        # 
-        # if VTK_MAJOR_VERSION >= 6:
-        #     voi.SetInputData(uGrid)
-        # else:
-        #     voi.SetInput(uGrid)
-        # 
-        # voi.SetVOI(1, dim[0] - 1, 1, dim[1] - 1, 1,
-        #            dim[2] - 1)  # crop out the artificial boundary layer that we created
-        # 
-        # isoContour = vtk.vtkContourFilter()
-        # # skinExtractorColor = vtk.vtkDiscreteMarchingCubes()
-        # # skinExtractorColor = vtk.vtkMarchingCubes()
-        # #        isoContour.SetInput(uGrid)
-        # isoContour.SetInputConnection(voi.GetOutputPort())
-        # 
-        # isoNum = 0
-        # for isoNum, isoVal in enumerate(isovalues):
-        #     try:
-        #         isoContour.SetValue(isoNum, isoVal)
-        #     except:
-        #         print(MODULENAME, '  initScalarFieldDataActors(): cannot convert to float: ', self.isovalStr[idx])
-        # 
-        # if isoNum > 0:
-        #     isoNum += 1
-        # 
-        # delIso = (max_con - min_con) / (numIsos + 1)  # exclude the min,max for isovalues
-        # isoVal = min_con + delIso
-        # for idx in range(numIsos):
-        #     isoContour.SetValue(isoNum, isoVal)
-        #     isoNum += 1
-        #     isoVal += delIso
-        # 
-        # # UGLY hack to NOT display anything since our attempt to RemoveActor (below) don't seem to work
-        # if isoNum == 0:
-        #     isoVal = field_max + 1.0  # go just outside valid range
-        #     isoContour.SetValue(isoNum, isoVal)
-        # 
-        # #        concLut = vtk.vtkLookupTable()
-        # # concLut.SetTableRange(conc_vol.GetScalarRange())
-        # #        concLut.SetTableRange([self.minCon,self.maxCon])
-        # self.scalarLUT.SetTableRange([min_con, max_con])
-        # #        concLut.SetNumberOfColors(256)
-        # #        concLut.Build()
-        # # concLut.SetTableValue(39,0,0,0,0)
-        # 
-        # #        skinColorMapper = vtk.vtkPolyDataMapper()
-        # # skinColorMapper.SetInputConnection(skinNormals.GetOutputPort())
-        # #        self.conMapper.SetInputConnection(skinExtractorColor.GetOutputPort())
-        # self.conMapper.SetInputConnection(isoContour.GetOutputPort())
-        # self.conMapper.ScalarVisibilityOn()
-        # self.conMapper.SetLookupTable(self.scalarLUT)
-        # # # # print " this is conc_vol.GetScalarRange()=",conc_vol.GetScalarRange()
-        # # self.conMapper.SetScalarRange(conc_vol.GetScalarRange())
-        # self.conMapper.SetScalarRange([min_con, max_con])
-        # # self.conMapper.SetScalarRange(0,1500)
-        # 
-        # # rwh - what does this do?
-        # #        self.conMapper.SetScalarModeToUsePointFieldData()
-        # #        self.conMapper.ColorByArrayComponent("concentration",0)
-        # 
-        # #        print MODULENAME,"initScalarFieldDataActors():  Plotting 3D Scalar field"
-        # # self.conMapper      = vtk.vtkPolyDataMapper()
-        # # self.conActor       = vtk.vtkActor()
-        # 
-        # concentration_actor = actors_dict['concentration_actor']
-        # 
-        # concentration_actor.SetMapper(self.conMapper)
+        voi = vtk.vtkExtractVOI()
 
-        self.init_min_max_actor(min_max_actor=actors_dict['min_max_text_actor'], range_array=range_array)
-
-        if hex_flag:
-            concentration_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
-
-        if actor_specs.metadata is None:
-            actor_specs.metadata = {'mapper': self.conMapper}
+        if VTK_MAJOR_VERSION >= 6:
+            voi.SetInputData(uGrid)
         else:
-            actor_specs.metadata['mapper'] = self.conMapper
+            voi.SetInput(uGrid)
 
-        if mdata.get('LegendEnable', default=False):
-            self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
+        # crop out the artificial boundary layer that we created
+        voi.SetVOI(1, dim[0] - 1, 1, dim[1] - 1, 1, dim[2] - 1)
+
+        iso_contour = vtk.vtkContourFilter()
+        iso_contour.SetInputConnection(voi.GetOutputPort())
+
+        iso_num = 0
+        for iso_num, iso_val in enumerate(isovalues):
+            try:
+                iso_contour.SetValue(iso_num, iso_val)
+            except:
+                print(MODULENAME, ' initScalarFieldDataActors(): cannot convert to float')
+
+        if iso_num > 0:
+            iso_num += 1
+
+        # exclude the min,max for isovalues
+        del_iso = (max_con - min_con) / (num_isos + 1)
+        iso_val = min_con + del_iso
+        for idx in range(num_isos):
+            iso_contour.SetValue(iso_num, iso_val)
+            iso_num += 1
+            iso_val += del_iso
+
+        # UGLY hack to NOT display anything since our attempt to RemoveActor (below) don't seem to work
+        if iso_num == 0:
+            iso_val = max_con + 1.0  # go just outside valid range
+            iso_contour.SetValue(iso_num, iso_val)
+
+        self.scalarLUT.SetTableRange([min_con, max_con])
+        self.conMapper.SetInputConnection(iso_contour.GetOutputPort())
+        self.conMapper.ScalarVisibilityOn()
+        self.conMapper.SetLookupTable(self.scalarLUT)
+        self.conMapper.SetScalarRange([min_con, max_con])
 
     def init_vector_field_actors(self, actor_specs, drawing_params=None):
         """
