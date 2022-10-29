@@ -15,13 +15,21 @@
 #include "FieldExtractorDLLSpecifier.h"
 
 class FieldStorage;
+
 class vtkIntArray;
+
 class vtkDoubleArray;
+
 class vtkFloatArray;
+
 class vtkPoints;
+
 class vtkCellArray;
+
 class vtkStructuredPoints;
+
 class vtkStructuredPointsReader;
+
 class vtkObject;
 
 
@@ -29,82 +37,162 @@ class vtkObject;
 //Notice one can speed up filling up of the Hex lattice data by allocating e.g. hexPOints ot cellType arrays
 //instead of inserting values. Inserting causes reallocations and this slows down the task completion
 
-namespace CompuCell3D{
+namespace CompuCell3D {
 
-	//have to declare here all the classes that will be passed to this class from Python
-	//class Potts3D;
-	//class Simulator;
-	/*class Dim3D;*/
+    //have to declare here all the classes that will be passed to this class from Python
+    //class Potts3D;
+    //class Simulator;
+    /*class Dim3D;*/
 
-	class FIELDEXTRACTOR_EXPORT FieldExtractorCML:public FieldExtractorBase{
-	public:
+    class FIELDEXTRACTOR_EXPORT FieldExtractorCML : public FieldExtractorBase {
+    public:
 
-		FieldExtractorCML();
-		~FieldExtractorCML();
+        FieldExtractorCML();
+
+        ~FieldExtractorCML();
 
 
-		virtual void fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr , std::string _plane ,  int _pos);
-	    virtual void fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane ,  int _pos);
-        virtual void fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos);
+        virtual void fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _plane, int _pos);
 
-	    virtual void fillBorder2D(const char* arrayName, vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos);
-	    virtual void fillBorder2DHex(const char* arrayName, vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos);
+        virtual void
+        fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr,
+                               vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos);
 
-		virtual void fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos);
-		virtual void fillBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos);
+        virtual void
+        fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellsArrayAddr,
+                                     vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos);
 
-		virtual void fillClusterBorderData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos);
-		virtual void fillClusterBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos);
+        virtual void
+        fillBorder2D(const char *arrayName, vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr,
+                     std::string _plane, int _pos);
 
-		virtual void fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos);
+        virtual void
+        fillBorder2DHex(const char *arrayName, vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr,
+                        std::string _plane, int _pos);
 
-		virtual bool fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos);
-		virtual bool fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos);
-        virtual bool fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos);
+        virtual void
+        fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr, std::string _plane,
+                         int _pos);
 
-	    virtual bool fillScalarFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos);
-	    virtual bool fillScalarFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos);
-        virtual bool fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos);        
+        virtual void
+        fillBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr, std::string _plane,
+                            int _pos);
 
-		virtual bool fillScalarFieldCellLevelData2D(vtk_obj_addr_int_t _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos);
-		virtual bool fillScalarFieldCellLevelData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos);
-        virtual bool fillScalarFieldCellLevelData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos);
+        virtual void fillClusterBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr,
+                                             std::string _plane, int _pos);
 
-		virtual bool fillVectorFieldData2D(vtk_obj_addr_int_t _pointsArrayIntAddr,vtk_obj_addr_int_t _vectorArrayIntAddr,std::string _fieldName, std::string _plane ,  int _pos);
-		virtual bool fillVectorFieldData2DHex(vtk_obj_addr_int_t _pointsArrayIntAddr,vtk_obj_addr_int_t _vectorArrayIntAddr,std::string _fieldName, std::string _plane ,  int _pos);
+        virtual void fillClusterBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr,
+                                                std::string _plane, int _pos);
 
-		virtual bool fillVectorFieldData3D(vtk_obj_addr_int_t _pointsArrayIntAddr,vtk_obj_addr_int_t _vectorArrayIntAddr,std::string _fieldName);
-        virtual bool fillVectorFieldData3DHex(vtk_obj_addr_int_t _pointsArrayIntAddr, vtk_obj_addr_int_t _vectorArrayIntAddr, std::string _fieldName);
+        virtual void
+        fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr, std::string _plane,
+                           int _pos);
 
-		virtual bool fillVectorFieldCellLevelData2D(vtk_obj_addr_int_t _pointsArrayIntAddr,vtk_obj_addr_int_t _vectorArrayIntAddr,std::string _fieldName, std::string _plane ,  int _pos);
-		virtual bool fillVectorFieldCellLevelData2DHex(vtk_obj_addr_int_t _pointsArrayIntAddr,vtk_obj_addr_int_t _vectorArrayIntAddr,std::string _fieldName, std::string _plane ,  int _pos);
-        
+        virtual bool
+        fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr, std::string _conFieldName, std::string _plane, int _pos);
 
-		virtual bool fillVectorFieldCellLevelData3D(vtk_obj_addr_int_t _pointsArrayIntAddr,vtk_obj_addr_int_t _vectorArrayIntAddr,std::string _fieldName);
-        virtual bool fillVectorFieldCellLevelData3DHex(vtk_obj_addr_int_t _pointsArrayIntAddr, vtk_obj_addr_int_t _vectorArrayIntAddr, std::string _fieldName);
+        virtual bool fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr,
+                                           vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
+                                           std::string _plane, int _pos);
 
-	    virtual bool fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec);
+        virtual bool
+        fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+                                    vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName, std::string _plane,
+                                    int _pos);
 
-		virtual bool fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec);
+        virtual bool
+        fillScalarFieldData2D(vtk_obj_addr_int_t _conArrayAddr, std::string _conFieldName, std::string _plane,
+                              int _pos);
 
-		virtual std::vector<int> fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr, bool extractOuterShellOnly = false);
-		virtual bool fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec);
+        virtual bool fillScalarFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr,
+                                              vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
+                                              std::string _plane, int _pos);
+
+        virtual bool
+        fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+                                       vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
+                                       std::string _plane, int _pos);
+
+        virtual bool
+        fillScalarFieldCellLevelData2D(vtk_obj_addr_int_t _conArrayAddr, std::string _conFieldName, std::string _plane,
+                                       int _pos);
+
+        virtual bool
+        fillScalarFieldCellLevelData2DHex(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr,
+                                          vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
+                                          std::string _plane, int _pos);
+
+        virtual bool fillScalarFieldCellLevelData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,
+                                                             vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+                                                             vtk_obj_addr_int_t _pointsArrayAddr,
+                                                             std::string _conFieldName, std::string _plane, int _pos);
+
+        virtual bool
+        fillVectorFieldData2D(vtk_obj_addr_int_t _pointsArrayIntAddr, vtk_obj_addr_int_t _vectorArrayIntAddr,
+                              std::string _fieldName, std::string _plane, int _pos);
+
+        virtual bool
+        fillVectorFieldData2DHex(vtk_obj_addr_int_t _pointsArrayIntAddr, vtk_obj_addr_int_t _vectorArrayIntAddr,
+                                 std::string _fieldName, std::string _plane, int _pos);
+
+        virtual bool
+        fillVectorFieldData3D(vtk_obj_addr_int_t _pointsArrayIntAddr, vtk_obj_addr_int_t _vectorArrayIntAddr,
+                              std::string _fieldName);
+
+        virtual bool
+        fillVectorFieldData3DHex(vtk_obj_addr_int_t _pointsArrayIntAddr, vtk_obj_addr_int_t _vectorArrayIntAddr,
+                                 std::string _fieldName);
+
+        virtual bool
+        fillVectorFieldCellLevelData2D(vtk_obj_addr_int_t _pointsArrayIntAddr, vtk_obj_addr_int_t _vectorArrayIntAddr,
+                                       std::string _fieldName, std::string _plane, int _pos);
+
+        virtual bool fillVectorFieldCellLevelData2DHex(vtk_obj_addr_int_t _pointsArrayIntAddr,
+                                                       vtk_obj_addr_int_t _vectorArrayIntAddr, std::string _fieldName,
+                                                       std::string _plane, int _pos);
+
+
+        virtual bool
+        fillVectorFieldCellLevelData3D(vtk_obj_addr_int_t _pointsArrayIntAddr, vtk_obj_addr_int_t _vectorArrayIntAddr,
+                                       std::string _fieldName);
+
+        virtual bool fillVectorFieldCellLevelData3DHex(vtk_obj_addr_int_t _pointsArrayIntAddr,
+                                                       vtk_obj_addr_int_t _vectorArrayIntAddr, std::string _fieldName);
+
+        virtual bool fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
+                                           std::string _conFieldName, std::vector<int> *_typesInvisibeVec);
+
+        virtual bool
+        fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
+                                       std::string _conFieldName, std::vector<int> *_typesInvisibeVec);
+
+        virtual std::vector<int>
+        fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr,
+                            bool extractOuterShellOnly = false);
+
+        virtual bool fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
+                                        std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
+                                        bool type_indicator_only = false);
 
         virtual bool readVtkStructuredPointsData(vtk_obj_addr_int_t _structuredPointsReaderAddr);
-        
-		void setFieldDim(Dim3D _dim);
-		Dim3D getFieldDim();
-		void setSimulationData(vtk_obj_addr_int_t _structuredPointsAddr);
-		long pointIndex(short _x,short _y,short _z);
-		long indexPoint3D(Point3D pt);
-	private:
-		Dim3D fieldDim;
-		int zDimFactor,yDimFactor;
-		vtkStructuredPoints * lds;
-	};
+
+        void setFieldDim(Dim3D _dim);
+
+        Dim3D getFieldDim();
+
+        void setSimulationData(vtk_obj_addr_int_t _structuredPointsAddr);
+
+        long pointIndex(short _x, short _y, short _z);
+
+        long indexPoint3D(Point3D pt);
+
+    private:
+        Dim3D fieldDim;
+        int zDimFactor, yDimFactor;
+        vtkStructuredPoints *lds;
+    };
 
 };
-
 
 
 #endif
