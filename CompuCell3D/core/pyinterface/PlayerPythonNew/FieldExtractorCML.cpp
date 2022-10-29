@@ -1417,7 +1417,8 @@ FieldExtractorCML::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vt
 
 bool FieldExtractorCML::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
                                            std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
-                                           bool type_indicator_only) {
+                                           bool type_indicator_only
+                                           ) {
     vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
     vtkIntArray *cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
 
@@ -1428,11 +1429,10 @@ bool FieldExtractorCML::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk
     if (!conArrayRead)
         return false;
 
-    type_fcn_ptr = &FieldExtractorBase::type_value;
+    type_fcn_ptr = &FieldExtractorCML::type_value;
     if (type_indicator_only){
-        type_fcn_ptr = &FieldExtractorBase::type_indicator;
+        type_fcn_ptr = &FieldExtractorCML::type_indicator;
     }
-
 
     conArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
     cellTypeArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
@@ -1481,16 +1481,18 @@ bool FieldExtractorCML::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk
 }
 
 bool FieldExtractorCML::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-                                              std::string _conFieldName, std::vector<int> *_typesInvisibeVec) {
+                                              std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
+                                              bool type_indicator_only) {
 
-    return fillConFieldData3D(_conArrayAddr, _cellTypeArrayAddr, _conFieldName, _typesInvisibeVec);
+    return fillConFieldData3D(_conArrayAddr, _cellTypeArrayAddr, _conFieldName, _typesInvisibeVec,type_indicator_only);
 }
 
 bool FieldExtractorCML::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr,
                                                        vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,
-                                                       std::vector<int> *_typesInvisibeVec) {
+                                                       std::vector<int> *_typesInvisibeVec,
+                                                       bool type_indicator_only) {
 
-    return fillConFieldData3D(_conArrayAddr, _cellTypeArrayAddr, _conFieldName, _typesInvisibeVec);
+    return fillConFieldData3D(_conArrayAddr, _cellTypeArrayAddr, _conFieldName, _typesInvisibeVec, type_indicator_only);
 }
 
 

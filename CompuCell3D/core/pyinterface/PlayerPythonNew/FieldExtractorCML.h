@@ -160,11 +160,13 @@ namespace CompuCell3D {
                                                        vtk_obj_addr_int_t _vectorArrayIntAddr, std::string _fieldName);
 
         virtual bool fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-                                           std::string _conFieldName, std::vector<int> *_typesInvisibeVec);
+                                           std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
+                                           bool type_indicator_only);
 
         virtual bool
         fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-                                       std::string _conFieldName, std::vector<int> *_typesInvisibeVec);
+                                       std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
+                                       bool type_indicator_only);
 
         virtual std::vector<int>
         fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr,
@@ -172,7 +174,8 @@ namespace CompuCell3D {
 
         virtual bool fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
                                         std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
-                                        bool type_indicator_only = false);
+                                        bool type_indicator_only
+                                                );
 
         virtual bool readVtkStructuredPointsData(vtk_obj_addr_int_t _structuredPointsReaderAddr);
 
@@ -190,6 +193,9 @@ namespace CompuCell3D {
         Dim3D fieldDim;
         int zDimFactor, yDimFactor;
         vtkStructuredPoints *lds;
+        typedef int (FieldExtractorCML::*type_fcn_ptr_t)(int type);
+        FieldExtractorCML::type_fcn_ptr_t type_fcn_ptr;
+
     };
 
 };

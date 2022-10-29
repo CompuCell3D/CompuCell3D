@@ -3072,14 +3072,15 @@ FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_o
 
 bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
                                         std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
-                                        bool type_indicator_only) {
+                                        bool type_indicator_only
+                                        ) {
     vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
     vtkIntArray *cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
 
 
-    type_fcn_ptr = &FieldExtractorBase::type_value;
+    type_fcn_ptr = &FieldExtractor::type_value;
     if (type_indicator_only){
-        type_fcn_ptr = &FieldExtractorBase::type_indicator;
+        type_fcn_ptr = &FieldExtractor::type_indicator;
     }
 
     Field3D<float> *conFieldPtr = 0;
@@ -3162,7 +3163,9 @@ bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_ob
 
 // rwh: leave this function in until we determine we really don't want to add a boundary layer
 bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-                                           std::string _conFieldName, std::vector<int> *_typesInvisibeVec) {
+                                           std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
+                                           bool type_indicator_only
+                                           ) {
     vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
     vtkIntArray *cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
     FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(_conFieldName);
@@ -3170,6 +3173,10 @@ bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk
     if (!conFieldPtr)
         return false;
 
+    type_fcn_ptr = &FieldExtractor::type_value;
+    if (type_indicator_only){
+        type_fcn_ptr = &FieldExtractor::type_indicator;
+    }
 
     Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
     Dim3D fieldDim = cellFieldG->getDim();
@@ -3220,7 +3227,8 @@ bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk
                             if (invisibleTypeSet.find(cell->type) != invisibleTypeSet.end()) {
                                 type = 0;
                             } else {
-                                type = cell->type;
+//                                type = cell->type;
+                                type = (this->*type_fcn_ptr)(cell->type);
                             }
                         else {
                             type = 0;
@@ -3236,63 +3244,11 @@ bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk
     return true;
 }
 
-// rwh: leave this (new) function in until we determine if we want to NOT add boundary layer
-// bool FieldExtractor::fillScalarFieldData3D(long _conArrayAddr ,long _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec){
-//
-//	vtkDoubleArray *conArray = (vtkDoubleArray *)_conArrayAddr;
-//	vtkIntArray *cellTypeArray = (vtkIntArray *)_cellTypeArrayAddr;
-//	FieldStorage::floatField3D_t * conFieldPtr = fsPtr->getScalarFieldByName(_conFieldName);
-//
-//	if(!conFieldPtr)
-//		return false;
-//
-//
-//	Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
-//	Dim3D fieldDim = cellFieldG->getDim();
-//
-//	conArray->SetNumberOfValues((fieldDim.x)*(fieldDim.y)*(fieldDim.z));
-//	cellTypeArray->SetNumberOfValues((fieldDim.x)*(fieldDim.y)*(fieldDim.z));
-//
-//	set<int> invisibleTypeSet(_typesInvisibeVec->begin(),_typesInvisibeVec->end());
-//
-//	//for (set<int>::iterator sitr=invisibleTypeSet.begin();sitr!=invisibleTypeSet.end();++sitr){
-//	//	cerr<<"invisible type="<<*sitr<<endl;
-//	//}
-//
-//	Point3D pt;
-//	CellG *cell;
-//	double con;
-//	int type;
-//	int offset=0;
-//	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-//	for(int k =0 ; k<fieldDim.z ; ++k)
-//		for(int j =0 ; j<fieldDim.y ; ++j)
-//			for(int i =0 ; i<fieldDim.x ; ++i){
-//					pt.x=i;
-//					pt.y=j;
-//					pt.z=k;
-//					con=(*conFieldPtr)[pt.x][pt.y][pt.z];
-//					cell=cellFieldG->get(pt);
-//					if(cell)
-//						if(invisibleTypeSet.find(cell->type)!=invisibleTypeSet.end()){
-//							type=0;
-//						}
-//						else{
-//							type=cell->type;
-//						}
-//					else{
-//						type=0;
-//					}
-//					conArray->InsertValue(offset, con);
-//					cellTypeArray->InsertValue(offset, type);
-//					++offset;
-//			}
-//			return true;
-//}
 
 bool
 FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-                                               std::string _conFieldName, std::vector<int> *_typesInvisibeVec) {
+                                               std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
+                                               bool type_indicator_only) {
     vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
     vtkIntArray *cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
     FieldStorage::scalarFieldCellLevel_t *conFieldPtr = fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
@@ -3301,6 +3257,11 @@ FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr,
 
     if (!conFieldPtr)
         return false;
+
+    type_fcn_ptr = &FieldExtractor::type_value;
+    if (type_indicator_only){
+        type_fcn_ptr = &FieldExtractor::type_indicator;
+    }
 
     Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
     Dim3D fieldDim = cellFieldG->getDim();
@@ -3354,10 +3315,12 @@ FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr,
                         if (cell) {
                             mitr = conFieldPtr->find(cell);
                             if (mitr != conFieldPtr->end()) {
-                                type = cell->type;
+//                                type = cell->type;
+                                type = (this->*type_fcn_ptr)(cell->type);
                                 con = mitr->second;
                             } else {
-                                type = cell->type;
+//                                type = cell->type;
+                                type = (this->*type_fcn_ptr)(cell->type);
                                 con = 0.0;
                             }
                         } else {

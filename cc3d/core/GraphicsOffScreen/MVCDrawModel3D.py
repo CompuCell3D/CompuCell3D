@@ -285,14 +285,14 @@ class MVCDrawModel3D(MVCDrawModelBase):
         field_type = drawing_params.fieldType.lower()
         if field_type == 'confield':
             fill_successful = self.field_extractor.fillConFieldData3D(con_array_int_addr, cell_type_con_int_addr,
-                                                                      field_name, types_invisible)
+                                                                      field_name, types_invisible, True)
         elif field_type == 'scalarfield':
             fill_successful = self.field_extractor.fillScalarFieldData3D(con_array_int_addr, cell_type_con_int_addr,
-                                                                         field_name, types_invisible)
+                                                                         field_name, types_invisible, True)
         elif field_type == 'scalarfieldcelllevel':
             fill_successful = self.field_extractor.fillScalarFieldCellLevelData3D(con_array_int_addr,
                                                                                   cell_type_con_int_addr, field_name,
-                                                                                  types_invisible)
+                                                                                  types_invisible, True)
 
         if not fill_successful:
             return
@@ -300,8 +300,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         range_array = con_array.GetRange()
         min_con = range_array[0]
         max_con = range_array[1]
-        field_max = range_array[1]
-        #        print MODULENAME, '  initScalarFieldDataActors(): min,maxCon=',self.minCon,self.maxCon
+        field_max = range_array[1]        
 
         min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
         min_range_fixed = min_max_dict['MinRangeFixed']
@@ -316,85 +315,121 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         if max_range_fixed:
             max_con = max_range
+            
+        vtk_shape_data = vtk.vtkImageData()
+        # only add 2 if we're filling in an extra boundary (rf. FieldExtractor.cpp)
+        vtk_shape_data.SetDimensions(dim[0] + 2, dim[1] + 2, dim[2] + 2)  
+        vtk_shape_data.GetPointData().SetScalars(cell_type_con)
 
-        uGrid = vtk.vtkStructuredPoints()
-        uGrid.SetDimensions(dim[0] + 2, dim[1] + 2, dim[
-            2] + 2)  # only add 2 if we're filling in an extra boundary (rf. FieldExtractor.cpp)
-        #        uGrid.SetDimensions(self.dim[0],self.dim[1],self.dim[2])
-        #        uGrid.GetPointData().SetScalars(self.cellTypeCon)   # cellType scalar field
-        uGrid.GetPointData().SetScalars(con_array)
-        #        uGrid.GetPointData().AddArray(self.conArray)        # additional scalar field
+        vtk_con_data = vtk.vtkImageData()
+        # only add 2 if we're filling in an extra boundary (rf. FieldExtractor.cpp)
+        vtk_con_data.SetDimensions(dim[0] + 2, dim[1] + 2, dim[2] + 2)  
+        vtk_con_data.GetPointData().SetScalars(con_array)
 
-        voi = vtk.vtkExtractVOI()
-        ##        voi.SetInputConnection(uGrid.GetOutputPort())
-        #        voi.SetInput(uGrid.GetOutput())
+        mc = vtk.vtkMarchingCubes()
+        mc.SetInputData(vtk_shape_data)
+        # mc.ComputeNormalsOn()
+        # mc.ComputeGradientsOn()
+        mc.SetValue(0, 1)  # second value acts as threshold
 
-        if VTK_MAJOR_VERSION >= 6:
-            voi.SetInputData(uGrid)
-        else:
-            voi.SetInput(uGrid)
+        probe = vtk.vtkProbeFilter()
+        probe.SetInputConnection(mc.GetOutputPort())
+        probe.SetSourceData(vtk_con_data)
+        probe.Update()
 
-        voi.SetVOI(1, dim[0] - 1, 1, dim[1] - 1, 1,
-                   dim[2] - 1)  # crop out the artificial boundary layer that we created
+        normals = vtk.vtkPolyDataNormals()
+        normals.SetInputConnection(probe.GetOutputPort())
 
-        isoContour = vtk.vtkContourFilter()
-        # skinExtractorColor = vtk.vtkDiscreteMarchingCubes()
-        # skinExtractorColor = vtk.vtkMarchingCubes()
-        #        isoContour.SetInput(uGrid)
-        isoContour.SetInputConnection(voi.GetOutputPort())
-
-        isoNum = 0
-        for isoNum, isoVal in enumerate(isovalues):
-            try:
-                isoContour.SetValue(isoNum, isoVal)
-            except:
-                print(MODULENAME, '  initScalarFieldDataActors(): cannot convert to float: ', self.isovalStr[idx])
-
-        if isoNum > 0:
-            isoNum += 1
-
-        delIso = (max_con - min_con) / (numIsos + 1)  # exclude the min,max for isovalues
-        isoVal = min_con + delIso
-        for idx in range(numIsos):
-            isoContour.SetValue(isoNum, isoVal)
-            isoNum += 1
-            isoVal += delIso
-
-        # UGLY hack to NOT display anything since our attempt to RemoveActor (below) don't seem to work
-        if isoNum == 0:
-            isoVal = field_max + 1.0  # go just outside valid range
-            isoContour.SetValue(isoNum, isoVal)
-
-        #        concLut = vtk.vtkLookupTable()
-        # concLut.SetTableRange(conc_vol.GetScalarRange())
-        #        concLut.SetTableRange([self.minCon,self.maxCon])
-        self.scalarLUT.SetTableRange([min_con, max_con])
-        #        concLut.SetNumberOfColors(256)
-        #        concLut.Build()
-        # concLut.SetTableValue(39,0,0,0,0)
-
-        #        skinColorMapper = vtk.vtkPolyDataMapper()
-        # skinColorMapper.SetInputConnection(skinNormals.GetOutputPort())
-        #        self.conMapper.SetInputConnection(skinExtractorColor.GetOutputPort())
-        self.conMapper.SetInputConnection(isoContour.GetOutputPort())
+        self.conMapper = vtk.vtkPolyDataMapper()
         self.conMapper.ScalarVisibilityOn()
         self.conMapper.SetLookupTable(self.scalarLUT)
-        # # # print " this is conc_vol.GetScalarRange()=",conc_vol.GetScalarRange()
-        # self.conMapper.SetScalarRange(conc_vol.GetScalarRange())
-        self.conMapper.SetScalarRange([min_con, max_con])
-        # self.conMapper.SetScalarRange(0,1500)
-
-        # rwh - what does this do?
-        #        self.conMapper.SetScalarModeToUsePointFieldData()
-        #        self.conMapper.ColorByArrayComponent("concentration",0)
-
-        #        print MODULENAME,"initScalarFieldDataActors():  Plotting 3D Scalar field"
-        # self.conMapper      = vtk.vtkPolyDataMapper()
-        # self.conActor       = vtk.vtkActor()
+        self.conMapper.SetInputConnection(normals.GetOutputPort())
+        self.conMapper.SetScalarRange(min_con, max_con)
 
         concentration_actor = actors_dict['concentration_actor']
 
         concentration_actor.SetMapper(self.conMapper)
+
+
+
+        # uGrid = vtk.vtkStructuredPoints()
+        # uGrid.SetDimensions(dim[0] + 2, dim[1] + 2, dim[
+        #     2] + 2)  # only add 2 if we're filling in an extra boundary (rf. FieldExtractor.cpp)
+        # #        uGrid.SetDimensions(self.dim[0],self.dim[1],self.dim[2])
+        # #        uGrid.GetPointData().SetScalars(self.cellTypeCon)   # cellType scalar field
+        # uGrid.GetPointData().SetScalars(con_array)
+        # #        uGrid.GetPointData().AddArray(self.conArray)        # additional scalar field
+        # 
+        # voi = vtk.vtkExtractVOI()
+        # ##        voi.SetInputConnection(uGrid.GetOutputPort())
+        # #        voi.SetInput(uGrid.GetOutput())
+        # 
+        # if VTK_MAJOR_VERSION >= 6:
+        #     voi.SetInputData(uGrid)
+        # else:
+        #     voi.SetInput(uGrid)
+        # 
+        # voi.SetVOI(1, dim[0] - 1, 1, dim[1] - 1, 1,
+        #            dim[2] - 1)  # crop out the artificial boundary layer that we created
+        # 
+        # isoContour = vtk.vtkContourFilter()
+        # # skinExtractorColor = vtk.vtkDiscreteMarchingCubes()
+        # # skinExtractorColor = vtk.vtkMarchingCubes()
+        # #        isoContour.SetInput(uGrid)
+        # isoContour.SetInputConnection(voi.GetOutputPort())
+        # 
+        # isoNum = 0
+        # for isoNum, isoVal in enumerate(isovalues):
+        #     try:
+        #         isoContour.SetValue(isoNum, isoVal)
+        #     except:
+        #         print(MODULENAME, '  initScalarFieldDataActors(): cannot convert to float: ', self.isovalStr[idx])
+        # 
+        # if isoNum > 0:
+        #     isoNum += 1
+        # 
+        # delIso = (max_con - min_con) / (numIsos + 1)  # exclude the min,max for isovalues
+        # isoVal = min_con + delIso
+        # for idx in range(numIsos):
+        #     isoContour.SetValue(isoNum, isoVal)
+        #     isoNum += 1
+        #     isoVal += delIso
+        # 
+        # # UGLY hack to NOT display anything since our attempt to RemoveActor (below) don't seem to work
+        # if isoNum == 0:
+        #     isoVal = field_max + 1.0  # go just outside valid range
+        #     isoContour.SetValue(isoNum, isoVal)
+        # 
+        # #        concLut = vtk.vtkLookupTable()
+        # # concLut.SetTableRange(conc_vol.GetScalarRange())
+        # #        concLut.SetTableRange([self.minCon,self.maxCon])
+        # self.scalarLUT.SetTableRange([min_con, max_con])
+        # #        concLut.SetNumberOfColors(256)
+        # #        concLut.Build()
+        # # concLut.SetTableValue(39,0,0,0,0)
+        # 
+        # #        skinColorMapper = vtk.vtkPolyDataMapper()
+        # # skinColorMapper.SetInputConnection(skinNormals.GetOutputPort())
+        # #        self.conMapper.SetInputConnection(skinExtractorColor.GetOutputPort())
+        # self.conMapper.SetInputConnection(isoContour.GetOutputPort())
+        # self.conMapper.ScalarVisibilityOn()
+        # self.conMapper.SetLookupTable(self.scalarLUT)
+        # # # # print " this is conc_vol.GetScalarRange()=",conc_vol.GetScalarRange()
+        # # self.conMapper.SetScalarRange(conc_vol.GetScalarRange())
+        # self.conMapper.SetScalarRange([min_con, max_con])
+        # # self.conMapper.SetScalarRange(0,1500)
+        # 
+        # # rwh - what does this do?
+        # #        self.conMapper.SetScalarModeToUsePointFieldData()
+        # #        self.conMapper.ColorByArrayComponent("concentration",0)
+        # 
+        # #        print MODULENAME,"initScalarFieldDataActors():  Plotting 3D Scalar field"
+        # # self.conMapper      = vtk.vtkPolyDataMapper()
+        # # self.conActor       = vtk.vtkActor()
+        # 
+        # concentration_actor = actors_dict['concentration_actor']
+        # 
+        # concentration_actor.SetMapper(self.conMapper)
 
         self.init_min_max_actor(min_max_actor=actors_dict['min_max_text_actor'], range_array=range_array)
 

@@ -17,6 +17,9 @@ namespace CompuCell3D {
     class FIELDEXTRACTOR_EXPORT  FieldExtractorBase {
     public:
 
+//        typedef int (FieldExtractorBase::*type_fcn_ptr_t)(int type);
+//        FieldExtractorBase::type_fcn_ptr_t type_fcn_ptr;
+
         FieldExtractorBase();
 
         virtual ~FieldExtractorBase();
@@ -117,18 +120,21 @@ namespace CompuCell3D {
 
         virtual bool fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
                                            std::string _conFieldName,
-                                           std::vector<int> *_typesInvisibeVec) { return false; }
+                                           std::vector<int> *_typesInvisibeVec,
+                                           bool type_indicator_only = false) { return false; }
 
         virtual bool
         fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-                                       std::string _conFieldName, std::vector<int> *_typesInvisibeVec) { return false; }
+                                       std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
+                                       bool type_indicator_only = false) { return false; }
 
         virtual std::vector<int>
         fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr,
                             bool extractOuterShellOnly = false) { return std::vector<int>(); }
         virtual bool fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
                                         std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
-                                        bool type_indicator_only = false) { return false; }
+                                        bool type_indicator_only = false
+                                                ) { return false; }
 
 
         /**
@@ -146,8 +152,6 @@ namespace CompuCell3D {
          */
         int type_value(int type){return type;}
 
-        typedef int (FieldExtractorBase::*type_fcn_ptr_t)(int type);
-        FieldExtractorBase::type_fcn_ptr_t type_fcn_ptr;
 
 
     protected:
