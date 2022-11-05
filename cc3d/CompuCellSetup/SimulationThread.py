@@ -29,7 +29,7 @@ class SimulationThread:
         """
         Sequence to control what occurs during a run of a simulation
 
-        If this is not overloadeded, then CC3D will function out-of-the-box
+        If this is not overloaded, then CC3D will function out-of-the-box
 
         If CC3D detects this in persistent_globals.simthread, then it will use what's returned by this function to
             perform the simulation

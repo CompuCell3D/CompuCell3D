@@ -4,6 +4,7 @@ from collections import OrderedDict
 from os.path import join, exists, basename
 from typing import Union
 from cc3d.core.SteppableRegistry import SteppableRegistry
+from cc3d.core.CoreSpecsRegistry import CoreSpecsRegistry
 from cc3d.core.FieldRegistry import FieldRegistry
 import copy
 from cc3d.core.utils import mkdir_p
@@ -16,6 +17,8 @@ class PersistentGlobals:
     def __init__(self):
         self.cc3d_xml_2_obj_converter = None
         self.steppable_registry = SteppableRegistry()
+        self.core_specs_registry = CoreSpecsRegistry()
+        """core specification registry"""
         self._configuration = None
         self._configuration_getter = None
 
