@@ -1,0 +1,8 @@
+<Simulation version="3.6.1">
+
+    <PythonScript>Simulation/CurvatureDemo.py</PythonScript>
+    <Resource Type="Python">Simulation/CurvatureDemoSteppables.py</Resource>
+    <Resource Type="Python">Simulation/CurvatureDemoCoreSpecs.py</Resource>
+    <PIFFile>Simulation/curvature.piff</PIFFile>
+
+</Simulation>

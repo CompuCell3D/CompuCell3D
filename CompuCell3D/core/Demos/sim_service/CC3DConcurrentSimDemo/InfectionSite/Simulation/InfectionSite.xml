@@ -1,0 +1,82 @@
+<CompuCell3D Revision="20200912" Version="4.2.4">
+
+   <Metadata>
+      <NumberOfProcessors>1</NumberOfProcessors>
+      <DebugOutputFrequency>0</DebugOutputFrequency>
+   </Metadata>
+
+   <Potts>
+      <Dimensions x="200" y="200" z="1"/>
+      <Steps>10000</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+   </Potts>
+
+   <Plugin Name="CellType">
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="Signaling"/>
+      <CellType TypeId="2" TypeName="Infecting"/>
+      <CellType TypeId="3" TypeName="Effector"/>
+   </Plugin>
+
+   <Plugin Name="Volume">
+      <VolumeEnergyParameters CellType="Infecting" LambdaVolume="2.0" TargetVolume="50"/>
+      <VolumeEnergyParameters CellType="Signaling" LambdaVolume="2.0" TargetVolume="50"/>
+      <VolumeEnergyParameters CellType="Effector" LambdaVolume="2.0" TargetVolume="50"/>
+   </Plugin>
+
+   <Plugin Name="NeighborTracker"/>
+
+   <Plugin Name="Contact">
+      <Energy Type1="Medium" Type2="Medium">15.0</Energy>
+      <Energy Type1="Medium" Type2="Infecting">15.0</Energy>
+      <Energy Type1="Medium" Type2="Signaling">15.0</Energy>
+      <Energy Type1="Medium" Type2="Effector">10.0</Energy>
+      <Energy Type1="Infecting" Type2="Infecting">10.0</Energy>
+      <Energy Type1="Infecting" Type2="Signaling">5.0</Energy>
+      <Energy Type1="Infecting" Type2="Effector">5.0</Energy>
+      <Energy Type1="Signaling" Type2="Signaling">10.0</Energy>
+      <Energy Type1="Signaling" Type2="Effector">10.0</Energy>
+      <Energy Type1="Effector" Type2="Effector">25.0</Energy>
+      <NeighborOrder>3</NeighborOrder>
+   </Plugin>
+
+   <Plugin Name="Chemotaxis">
+      <ChemicalField Name="SiteSignal"/>
+   </Plugin>
+
+   <Plugin Name="Secretion"/>
+
+   <Steppable Type="DiffusionSolverFE">
+      <DiffusionField Name="SiteSignal">
+         <DiffusionData>
+            <FieldName>SiteSignal</FieldName>
+            <GlobalDiffusionConstant>0.25</GlobalDiffusionConstant>
+            <GlobalDecayConstant>1e-04</GlobalDecayConstant>
+         </DiffusionData>
+         <SecretionData>
+            <SecretionOnContact Type="Signaling" SecreteOnContactWith="Infecting">1e-03</SecretionOnContact>
+         </SecretionData>
+         <BoundaryConditions>
+            <Plane Axis="X">
+               <ConstantDerivative PlanePosition="Min" Value="0.0"/>
+               <ConstantDerivative PlanePosition="Max" Value="0.0"/>
+            </Plane>
+            <Plane Axis="Y">
+               <ConstantDerivative PlanePosition="Min" Value="0.0"/>
+               <ConstantDerivative PlanePosition="Max" Value="0.0"/>
+            </Plane>
+         </BoundaryConditions>
+      </DiffusionField>
+   </Steppable>
+
+   <Steppable Type="BlobInitializer">
+      <Region>
+         <Center x="100" y="100" z="0"/>
+         <Radius>50</Radius>
+         <Gap>0</Gap>
+         <Width>7</Width>
+         <Types>Signaling</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>

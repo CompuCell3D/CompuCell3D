@@ -64,7 +64,8 @@ class RestartManager:
         pg = CompuCellSetup.persistent_globals
 
         self.cc3d_simulation_data_handler = CC3DSimulationDataHandler()
-        self.cc3d_simulation_data_handler.read_cc3_d_file_format(pg.simulation_file_name)
+        if pg.simulation_file_name:
+            self.cc3d_simulation_data_handler.read_cc3_d_file_format(pg.simulation_file_name)
 
     @staticmethod
     def restart_enabled():
@@ -72,9 +73,9 @@ class RestartManager:
         reads .cc3d project file and checks if restart is enabled
         :return: {bool}
         """
-        pg = CompuCellSetup.persistent_globals
+        sim_file_name = CompuCellSetup.persistent_globals.simulation_file_name
 
-        return Path(pg.simulation_file_name).parent.joinpath('restart').exists()
+        return sim_file_name is not None and Path(sim_file_name).parent.joinpath('restart').exists()
 
     @staticmethod
     def append_xml_stub(root_elem, sd):

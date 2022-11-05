@@ -35,6 +35,10 @@ class ElementCC3D:
     def getCC3DXMLElementString(self):
         return self.CC3DXMLElement.getCC3DXMLElementString()
 
+    def add_child(self, _child: ElementCC3D) -> None:
+        self.childrenList.append(_child)
+        self.CC3DXMLElement.addChild(self.childrenList[-1].CC3DXMLElement)
+
 
 class CC3DXMLListPy:
     def __init__(self, _list):

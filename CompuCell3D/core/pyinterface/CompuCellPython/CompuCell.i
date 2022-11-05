@@ -282,8 +282,9 @@ using namespace CompuCell3D;
     def to_tuple(self):
         return self.x, self.y, self.z
 
+    def __reduce__(self):
+        return Dim3D, (self.x, self.y, self.z)
 %}
-
 };
 
 %include <Utils/Coordinates3D.h>
@@ -571,7 +572,7 @@ using namespace CompuCell3D;
     if _newclass : sbml = property(getsbml, setsbml)
 
     __maboss__ = '__maboss__'
-    
+
     def _get_maboss(self):
         cell_dict = self.dict
         class MaBoSSAccessor:
@@ -1177,7 +1178,7 @@ struct CellInventoryWatcherForwarder : public CompuCell3D::CellInventoryWatcher 
 %inline %{
 
 struct CellInventoryWatcherDir {
-    
+
     CellInventoryWatcherForwarder *forwarder;
 
     CellInventoryWatcherDir() : forwarder{NULL} {};
@@ -1231,8 +1232,8 @@ void makeCellInventoryWatcher(CellInventoryWatcherDir *director, CellInventory *
 	Potts3D *potts = simulator.getPotts();  
 	WatchableField3D<CellG *> *cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim(); 
-    //set Dimensions of field    
-	mitr->second->setDim(fieldDim); 
+    //set Dimensions of field
+	mitr->second->setDim(fieldDim);
 	return mitr->second;
       }else{
          return 0;
@@ -1249,7 +1250,7 @@ void makeCellInventoryWatcher(CellInventoryWatcherDir *director, CellInventory *
         std::map<std::string, Field3D<float>*>::iterator mitr;
         std::vector<std::string> field_names;
         for (mitr = fieldMap.begin(); mitr != fieldMap.end(); ++mitr)
-            field_names.push_back(mitr->first);         
+            field_names.push_back(mitr->first);
 
         return field_names;
     }

@@ -1,0 +1,5 @@
+<Simulation version="4.2.4">
+   <XMLScript Type="XMLScript">Simulation/InfectionSite.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/InfectionSite.py</PythonScript>
+   <Resource Type="Python">Simulation/InfectionSiteSteppables.py</Resource>
+</Simulation>

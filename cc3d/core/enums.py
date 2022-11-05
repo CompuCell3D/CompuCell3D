@@ -22,8 +22,11 @@ FIELD_NUMBER_TO_FIELD_TYPE_MAP = {
 }
 
 
+# Simulation types
 class SimType(Enum):
     # "regular" run
     AUTOMATED = 'Auto'
     # general threaded run; this is the signal for injecting a SimulationThread into the core
     THREADED = 'Thread'
+    # service mode; special case of THREADED for future dev support
+    SERVICE = 'Service'
