@@ -6,7 +6,7 @@ SET(SRCS
   NoFluxBoundary.cpp
 )
 
-SET(LIBS cc3d::Field3D cc3d::PublicUtilities)
+SET(LIBS cc3d::Field3D)
 
 ADD_SHARED_LIBRARY(Boundary ${SRCS} LINK_LIBRARIES ${LIBS})
 

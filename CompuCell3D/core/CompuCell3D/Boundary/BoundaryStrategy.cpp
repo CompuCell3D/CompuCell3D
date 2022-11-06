@@ -19,7 +19,7 @@
 
 #include "AlgorithmFactory.h"
 #include "Algorithm.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 #define roundf(a) ((fmod(a,1)<0.5)?floor(a):ceil(a))
 

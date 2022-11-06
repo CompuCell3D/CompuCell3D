@@ -6,7 +6,7 @@ using namespace std;
 
 #include "CurvaturePlugin.h"
 
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 
 CurvaturePlugin::CurvaturePlugin():

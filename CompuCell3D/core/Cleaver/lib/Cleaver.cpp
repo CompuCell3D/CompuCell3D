@@ -47,7 +47,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <string>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 using namespace std;
 

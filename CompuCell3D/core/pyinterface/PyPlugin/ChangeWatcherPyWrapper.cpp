@@ -1,6 +1,6 @@
 #include "ChangeWatcherPyWrapper.h"
 #include <CompuCell3D/Potts3D/Potts3D.h>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 #include <iostream>
 
 using namespace std;

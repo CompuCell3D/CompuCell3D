@@ -6,7 +6,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "UniformFieldInitializer.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 UniformFieldInitializer::UniformFieldInitializer() :
         potts(0), sim(0) {}
 

@@ -5,7 +5,7 @@ using namespace CompuCell3D;
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 
 #include "ContactLocalProductPlugin.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 ContactLocalProductPlugin::ContactLocalProductPlugin() :
         pUtils(0),

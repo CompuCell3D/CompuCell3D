@@ -6,7 +6,7 @@
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include "FluctuationCompensator.h"
 #include <cfloat>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 using namespace CompuCell3D;
 

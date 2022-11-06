@@ -53,7 +53,7 @@
 #include "BCCLattice3D.h"
 #include "Util.h"
 #include "Matlab.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 using namespace std;
 

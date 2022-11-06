@@ -7,7 +7,7 @@
 using namespace CompuCell3D;
 
 #include "OrientedContactPlugin.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 OrientedContactPlugin::OrientedContactPlugin() : xmlData(0), depth(1), alpha(1.0), weightDistance(false) {
 }

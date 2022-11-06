@@ -3,7 +3,7 @@
 using namespace CompuCell3D;
 
 #include "ContactInternalPlugin.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 ContactInternalPlugin::ContactInternalPlugin() : potts(0), depth(1), weightDistance(false) {
 }

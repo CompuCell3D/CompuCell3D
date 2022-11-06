@@ -21,7 +21,7 @@
 
 
 #include "KernelDiffusionSolver.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 using namespace CompuCell3D;
 using namespace std;

@@ -11,7 +11,7 @@ using namespace std;
 
 
 #include "DictyChemotaxisSteppable.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DictyChemotaxisSteppable::DictyChemotaxisSteppable() : potts(0), cellInventoryPtr(0) {

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "CC3DLogger.h"
+#include <Logger/CC3DLogger.h>
 
 static int glob_compare(const void *arg1, const void *arg2)
 {

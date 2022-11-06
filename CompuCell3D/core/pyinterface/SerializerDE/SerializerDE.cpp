@@ -3,7 +3,7 @@
 #include <CompuCell3D/Potts3D/Potts3D.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <pyinterface/PlayerPythonNew/FieldStorage.h>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 #include <CompuCell3D/Automaton/Automaton.h> //to get type id to type name mapping
 #include <Utils/Coordinates3D.h>
 #include <vtkIntArray.h>

@@ -17,7 +17,7 @@ using namespace std;
 
 #include <stdlib.h>
 
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 ////the reason to declare BoundaryStrategy* BoundaryStrategy::singleton; here is because 
 ////Simulator.h includes Potts.h which includes WatchableField3D.h which includes Field3Dimpl.h which includes BoundaryStrategy.h
 ////BoundaryStrategy* BoundaryStrategy::singleton;

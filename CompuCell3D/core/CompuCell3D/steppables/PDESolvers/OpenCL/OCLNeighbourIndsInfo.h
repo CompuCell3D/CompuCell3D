@@ -1,6 +1,6 @@
 #ifndef OCL_NEIGHBOUR_INDS_INFO_H
 #define OCL_NEIGHBOUR_INDS_INFO_H
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 namespace CompuCell3D {
 
     struct OCLNeighbourIndsInfo {
@@ -71,7 +71,7 @@ namespace CompuCell3D {
 				}
 			}
 			CC3D_Log(LOG_TRACE) << "bhoa.size()="<<bhoa.size();
-                CC3D_Log(LOG_TRACE) << "bndMaxOffset="<<getBoundaryStrategy()->getMaxOffset();
+//                CC3D_Log(LOG_TRACE) << "bndMaxOffset="<<getBoundaryStrategy()->getMaxOffset();
 
                 for (int i = 0; i < layers; ++i) {
                     int offset = res.m_nbhdConcLen * i;

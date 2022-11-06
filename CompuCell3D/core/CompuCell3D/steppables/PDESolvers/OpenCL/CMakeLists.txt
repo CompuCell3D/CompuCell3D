@@ -31,7 +31,7 @@ ADD_LIBRARY(FlexibleDiffusionSolverFE_OpenCL SHARED
 )
 
 TARGET_LINK_LIBRARIES(FlexibleDiffusionSolverFE_OpenCL
-	${OPENCL_LIBRARIES})
+	${OPENCL_LIBRARIES} cc3d::Logger)
 
 
 install(TARGETS FlexibleDiffusionSolverFE_OpenCL

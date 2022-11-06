@@ -5,7 +5,7 @@
 #include "CUDAUtilsHeader.h"
 #include "../GPUSolverBasicData.h"
 #include <iostream>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 # define BLOCK_SIZE_FRAME (BLOCK_SIZE+2)
 
 using std::endl;

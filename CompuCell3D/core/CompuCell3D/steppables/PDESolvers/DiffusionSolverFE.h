@@ -24,7 +24,7 @@
 #include <iostream>
 
 #include "PDESolversDLLSpecifier.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 namespace CompuCell3D {
 

@@ -6,7 +6,7 @@ using namespace std;
 
 
 #include "BoundaryPixelTrackerPlugin.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 BoundaryPixelTrackerPlugin::BoundaryPixelTrackerPlugin() :
         simulator(0), potts(0), boundaryStrategy(0), xmlData(0), maxNeighborIndex(0), neighborOrder(1) {}

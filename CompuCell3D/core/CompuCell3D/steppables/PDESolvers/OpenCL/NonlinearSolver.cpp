@@ -9,7 +9,7 @@
 #include <limits>
 #include "../GPUSolverParams.h"
 #include <viennacl/linalg/norm_2.hpp>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 //Theoretically, we need to use Biconjugate Stabilized Gradients method here,
 //as the matrix is not symmetric.
@@ -43,7 +43,7 @@ mv_newField(fieldLength(&solverParams[0])*fieldsCount_),
 	//loading OpenCL program
 	std::string commonFN=pathToKernels+"common.cl";
 	const char *programPaths[]={commonFN.c_str(), m_tmpReactionKernelsFN.c_str()};//TODO: find size of an array automatically
-	CC3D_Log(LOG_DEBUG) << "OpenCL kernel names for NonlinearSolver:"
+	CC3D_Log(LOG_DEBUG) << "OpenCL kernel names for NonlinearSolver:";
     for (int i = 0; i < 2; ++i) {
         CC3D_Log(LOG_DEBUG) << "\t"<<programPaths[i];
     }
@@ -261,7 +261,7 @@ NonlinearSolver::NewField(float dt, viennacl::vector<float> const &v_oldField, N
             if (goalFNGrowCount == 0)
                 CC3D_Log(LOG_DEBUG) << "Warning: second norm for goal function grows.";
 			if(nlsParams.newton_.stopIfFTolGrows_){
-				CC3D_Log(LOG_DEBUG) << <" Exit requested.";
+				CC3D_Log(LOG_DEBUG) <<" Exit requested.";
 				return mv_newField;
 			}else{
 				if(goalFNGrowCount==0)

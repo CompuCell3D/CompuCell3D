@@ -9,7 +9,7 @@
 #include <CompuCell3D/Field3D/Array3D.h>
 #include <muParser/muParser.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 namespace mu {
 

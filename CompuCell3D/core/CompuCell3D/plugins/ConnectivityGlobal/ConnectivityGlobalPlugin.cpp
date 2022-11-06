@@ -2,7 +2,7 @@
 #include <CompuCell3D/CC3D.h>
 using namespace CompuCell3D;
 #include "ConnectivityGlobalPlugin.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 
 

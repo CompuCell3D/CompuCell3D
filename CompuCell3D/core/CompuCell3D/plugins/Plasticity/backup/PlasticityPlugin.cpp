@@ -11,7 +11,7 @@
 #include <BasicUtils/BasicClassAccessor.h>
 #include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>

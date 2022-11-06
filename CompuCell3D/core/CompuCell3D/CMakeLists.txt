@@ -33,6 +33,7 @@ SET(INCLUDE_DIRS
 )
 
 set(LIBS
+    cc3d::Logger
     cc3d::PublicUtilities
     cc3d::Units
     cc3d::Automaton

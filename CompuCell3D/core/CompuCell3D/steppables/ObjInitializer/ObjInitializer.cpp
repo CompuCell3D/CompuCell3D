@@ -6,7 +6,7 @@ using namespace std;
 
 
 #include "ObjInitializer.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 // ----------------------------------------------------------------------
 // class constructor without file name parameter:

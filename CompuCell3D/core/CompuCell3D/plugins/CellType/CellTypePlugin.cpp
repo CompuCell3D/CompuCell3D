@@ -9,7 +9,7 @@ using namespace std;
 
 #include "CellTypePlugin.h"
 
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 std::string CellTypePlugin::toString(){
    return "CellType";

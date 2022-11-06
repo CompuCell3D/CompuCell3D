@@ -25,7 +25,7 @@
 using namespace std;
 using namespace CompuCell3D;
 
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 #include "FieldExtractorCML.h"
 
 

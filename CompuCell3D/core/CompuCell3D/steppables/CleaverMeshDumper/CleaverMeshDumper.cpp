@@ -13,7 +13,7 @@ using namespace std;
 #include <Cleaver/Cleaver.h>
 #include <Cleaver/InverseField.h>
 #include <Cleaver/FloatField.h>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 using namespace Cleaver;
 

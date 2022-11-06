@@ -5,7 +5,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "VolumePlugin.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 VolumePlugin::~VolumePlugin() {}
 

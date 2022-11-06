@@ -5,7 +5,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "VolumeTrackerPlugin.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 VolumeTrackerPlugin::VolumeTrackerPlugin() : pUtils(0), lockPtr(0), potts(0), deadCellG(0) {
 }
 

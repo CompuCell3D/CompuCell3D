@@ -8,7 +8,7 @@ using namespace std;
 
 
 #include "DictyFieldInitializer.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 DictyFieldInitializer::DictyFieldInitializer() :
         potts(0), gotAmoebaeFieldBorder(false), presporeRatio(0.5), gap(1), width(2), amoebaeFieldBorder(10) {}

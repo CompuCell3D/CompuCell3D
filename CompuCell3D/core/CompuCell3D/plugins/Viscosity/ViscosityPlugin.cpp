@@ -5,7 +5,7 @@
 using namespace CompuCell3D;
 
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 ViscosityPlugin::ViscosityPlugin() : potts(0), sim(0), neighborTrackerAccessorPtr(0), lambdaViscosity(0),
                                      maxNeighborIndex(0) {

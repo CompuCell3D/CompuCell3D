@@ -18,7 +18,7 @@
 #include <fstream>
 #include <sstream>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // std::ostream & operator<<(std::ostream & out,CompuCell3D::DiffusionData & diffData){

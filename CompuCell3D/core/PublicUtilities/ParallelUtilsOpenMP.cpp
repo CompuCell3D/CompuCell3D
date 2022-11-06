@@ -1,6 +1,6 @@
 #include  "ParallelUtilsOpenMP.h"
 #include <algorithm>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 using namespace std;
 using namespace CompuCell3D;
 

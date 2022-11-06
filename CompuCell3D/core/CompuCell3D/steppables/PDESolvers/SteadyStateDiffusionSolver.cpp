@@ -23,7 +23,7 @@
 
 #include "SteadyStateDiffusionSolver.h"
 #include "hpppdesolvers.h"//have to put this header last to avoid STL header clash on linux
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // std::ostream & operator<<(std::ostream & out,CompuCell3D::DiffusionData & diffData){

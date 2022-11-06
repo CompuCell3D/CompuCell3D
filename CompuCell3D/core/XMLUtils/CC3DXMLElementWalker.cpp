@@ -1,6 +1,6 @@
 #include <iostream>
 #include "CC3DXMLElement.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 #include "CC3DXMLElementWalker.h"
 

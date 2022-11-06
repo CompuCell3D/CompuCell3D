@@ -7,7 +7,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "ContactLocalFlexPlugin.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 ContactLocalFlexPlugin::ContactLocalFlexPlugin() :
         pUtils(0),

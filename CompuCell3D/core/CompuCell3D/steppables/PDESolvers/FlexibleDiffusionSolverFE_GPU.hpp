@@ -30,7 +30,7 @@
 #include <fstream>
 #include <sstream>
 #include <omp.h>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 //#define NUMBER_OF_THREADS 4
 
 
@@ -141,7 +141,7 @@ namespace CompuCell3D {
 	CC3D_Log(LOG_DEBUG) << "diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size();
 
         for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-            CC3D_Log(LOG_TRACE) << " concentrationFieldNameVector[i]="<<diffDataVec[i].fieldName;
+//            CC3D_Log(LOG_TRACE) << " concentrationFieldNameVector[i]="<<diffDataVec[i].fieldName;
             //       concentrationFieldNameVector.push_back(diffDataVec[i].fieldName);
             concentrationFieldNameVectorTmp[i] = diffSecrFieldTuppleVec[i].diffData.fieldName;
             CC3D_Log(LOG_DEBUG) << " concentrationFieldNameVector[i]="<<concentrationFieldNameVectorTmp[i];
@@ -674,7 +674,7 @@ void FlexibleDiffusionSolverFE_GPU<GPU_Solver>::start() {
                                         concentrationField.setDirect(x, y, z, concentrationField.getDirect(x, y, z) -
                                                                               currentConcentration *
                                                                               mitrUptake->second.relativeUptakeRate);
-                                        CC3D_Log(LOG_DEBUG) << "concentration="<< currentConconcentrationField.getDirect(x,y,z)- currentConcentration*mitrUptake->second.relativeUptakeRate;
+//                                        CC3D_Log(LOG_DEBUG) << "concentration="<< currentConconcentrationField.getDirect(x,y,z)- currentConcentration*mitrUptake->second.relativeUptakeRate;
                                     }
                                 }
                             }

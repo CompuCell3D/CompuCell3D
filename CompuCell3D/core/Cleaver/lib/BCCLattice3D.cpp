@@ -46,7 +46,7 @@
 #include "TetMesh.h"
 #include "Volume.h"
 #include "ScalarField.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 using namespace std;
 using namespace Cleaver;

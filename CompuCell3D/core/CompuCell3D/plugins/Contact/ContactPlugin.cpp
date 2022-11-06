@@ -5,7 +5,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "ContactPlugin.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 ContactPlugin::ContactPlugin() : xmlData(0), weightDistance(false) {
 }

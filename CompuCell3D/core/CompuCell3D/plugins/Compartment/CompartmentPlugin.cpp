@@ -7,7 +7,7 @@ using namespace CompuCell3D;
 
 #include "CompartmentPlugin.h"
 
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 
 

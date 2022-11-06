@@ -30,7 +30,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "CGALMeshDumper.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 CGALMeshDumper::CGALMeshDumper() : cellFieldG(0), sim(0), potts(0), xmlData(0), boundaryStrategy(0), automaton(0),
                                    cellInventoryPtr(0) {}

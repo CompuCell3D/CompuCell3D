@@ -19,7 +19,7 @@ using namespace std;
 #include <stdlib.h>
 
 #include <XMLUtils/XMLParserExpat.h>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 #if defined(_WIN32)
 #include <windows.h>
 #endif

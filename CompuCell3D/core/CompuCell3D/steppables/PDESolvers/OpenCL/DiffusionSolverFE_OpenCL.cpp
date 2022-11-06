@@ -12,7 +12,7 @@
 #include <XMLUtils/CC3DXMLElement.h>
 #include <algorithm>
 #include "OCLNeighbourIndsInfo.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 #if defined(_WIN32)
 #undef max
@@ -367,8 +367,8 @@ void DiffusionSolverFE_OpenCL::boundaryConditionGPUSetup(int idx) {
 
 
     // for (int i = 0 ; i < 6 ; ++i){
-    CC3D_Log(LOG_TRACE) << "planePositions["<<i<<"]="<<bcSpecifier.planePositions[i];
-    CC3D_Log(LOG_TRACE) << "values["<<i<<"]="<<bcSpecifier.values[i];
+//    CC3D_Log(LOG_TRACE) << "planePositions["<<i<<"]="<<bcSpecifier.planePositions[i];
+//    CC3D_Log(LOG_TRACE) << "values["<<i<<"]="<<bcSpecifier.values[i];
     // }        
 
     cl_int err = oclHelper->WriteBuffer(d_bcSpecifier, &bcSpecifier, 1);
@@ -857,7 +857,7 @@ void DiffusionSolverFE_OpenCL::CreateKernel() {
 
 
     kernelBoundaryConditionInit = clCreateKernel(program, "boundaryConditionInitKernel", &err);
-    CC3D_Log(LOG_DEBUG) << "clCreateKernel for kernel boundaryConditionInitKernel: " << oclHelper->ErrorString(err));
+    CC3D_Log(LOG_DEBUG) << "clCreateKernel for kernel boundaryConditionInitKernel: " << oclHelper->ErrorString(err);
     ASSERT_OR_THROW("Can not create a boundaryConditionInitKernel", err == CL_SUCCESS);
 
     kernelBoundaryConditionInitLatticeCorners = clCreateKernel(program, "boundaryConditionInitLatticeCornersKernel",
@@ -874,7 +874,7 @@ void DiffusionSolverFE_OpenCL::CreateKernel() {
     secreteConstantConcentrationSingleFieldKernel = clCreateKernel(program,
                                                                    "secreteConstantConcentrationSingleFieldKernel",
                                                                    &err);
-    CC3D_Log(LOG_DEBUG) << "clCreateKernel for kernel secreteConstantConcentrationSingleFieldKernel: " << oclHelper->ErrorString(err));
+    CC3D_Log(LOG_DEBUG) << "clCreateKernel for kernel secreteConstantConcentrationSingleFieldKernel: " << oclHelper->ErrorString(err);
     ASSERT_OR_THROW("Can not create secreteConstantConcentrationSingleFieldKernel", err == CL_SUCCESS);
 
 

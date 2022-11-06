@@ -5,7 +5,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "PIFInitializer.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 PIFInitializer::PIFInitializer() :
         potts(0), sim(0), pifname("") {}

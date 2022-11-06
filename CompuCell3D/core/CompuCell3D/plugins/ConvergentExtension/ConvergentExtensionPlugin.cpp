@@ -6,7 +6,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "ConvergentExtensionPlugin.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 #define sign(x) (((x>0)-(x<0)))
 

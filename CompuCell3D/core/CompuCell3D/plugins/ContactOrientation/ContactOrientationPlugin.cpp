@@ -3,7 +3,7 @@
 using namespace CompuCell3D;
 
 #include "ContactOrientationPlugin.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 ContactOrientationPlugin::ContactOrientationPlugin() :
         pUtils(0),

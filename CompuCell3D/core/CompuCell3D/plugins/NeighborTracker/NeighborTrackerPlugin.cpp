@@ -2,7 +2,7 @@
 
 using namespace CompuCell3D;
 using namespace std;
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 #include "NeighborTrackerPlugin.h"
 

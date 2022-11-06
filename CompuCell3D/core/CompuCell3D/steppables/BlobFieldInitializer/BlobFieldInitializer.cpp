@@ -8,7 +8,7 @@ using namespace std;
 
 
 #include "BlobFieldInitializer.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 std::string BlobFieldInitializer::steerableName() {
     return toString();

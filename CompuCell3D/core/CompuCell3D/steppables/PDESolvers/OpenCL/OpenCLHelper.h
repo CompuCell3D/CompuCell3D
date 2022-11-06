@@ -14,7 +14,7 @@
 
 
 #include <cassert>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 namespace CompuCell3D {
 
     class OpenCLHelper {

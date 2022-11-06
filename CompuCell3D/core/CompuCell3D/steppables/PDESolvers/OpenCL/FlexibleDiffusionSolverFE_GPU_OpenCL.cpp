@@ -10,7 +10,7 @@
 #include <cstring>
 #include <algorithm>
 #include "OpenCLHelper.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 //#include <algorithm>//TODO: remove
 //#include <functional>//TODO: remove
 //#include <limits>//TODO: remove

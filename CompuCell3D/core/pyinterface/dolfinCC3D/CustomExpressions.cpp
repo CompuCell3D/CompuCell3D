@@ -10,7 +10,7 @@
 
 #include <dolfin/common/Array.h>
 #include <iostream>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 using namespace dolfin;
 using namespace std;
 

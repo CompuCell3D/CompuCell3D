@@ -79,7 +79,7 @@
 #include<CompuCell3D/steppables/PDESolvers/ReactionDiffusionSolverFVM.h>
 #include <CompuCell3D/steppables/PDESolvers/DiffusionSolverFE_CPU.h>
 #include <CompuCell3D/steppables/PDESolvers/ReactionDiffusionSolverFE.h>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 //#include <CompuCell3D/BabySim/BabyPottsParseData.h>
 //#include <CompuCell3D/BabySim/BabySim.h>
 
@@ -247,7 +247,7 @@ using namespace CompuCell3D;
 
 // we have to include files for objects that we will type-map before including definitions of corresponding typemaps
 // logger include
-%include "PublicUtilities/CC3DLogger.h"
+%include "Logger/CC3DLogger.h"
 %include "Field3D/Point3D.h"
 %include "Field3D/Dim3D.h"
 

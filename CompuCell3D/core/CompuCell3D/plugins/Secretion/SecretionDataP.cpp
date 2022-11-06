@@ -8,7 +8,7 @@ using namespace std;
 #include "SecretionPlugin.h"
 #include "SecretionDataP.h"
 
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 
 std::string SecretionDataP::steerableName(){

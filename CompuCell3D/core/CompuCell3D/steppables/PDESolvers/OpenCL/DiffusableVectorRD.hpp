@@ -2,7 +2,7 @@
 #define DIFFUSABLE_VECTOR_RD_OPENCL_IMPL_H
 
 #include <memory>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 namespace CompuCell3D {
 
     template<typename T>

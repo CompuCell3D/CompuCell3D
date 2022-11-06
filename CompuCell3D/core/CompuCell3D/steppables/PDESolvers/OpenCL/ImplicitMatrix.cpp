@@ -15,7 +15,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 using namespace CompuCell3D;
 static const char *programPath = "ImplicitMatrix.cl";
 

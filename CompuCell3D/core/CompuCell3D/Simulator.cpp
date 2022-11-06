@@ -18,7 +18,7 @@ using namespace CompuCell3D;
 #include <chrono>
 
 #include <XMLUtils/CC3DXMLElement.h>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 #ifdef QT_WRAPPERS_AVAILABLE
 #include <QtWrappers/StreamRedirectors/CustomStreamBuffers.h>

@@ -6,7 +6,7 @@
 #include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 #if defined(_WIN32)
 #undef max

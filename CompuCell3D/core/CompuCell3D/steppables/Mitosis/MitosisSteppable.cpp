@@ -14,7 +14,7 @@ using namespace std;
 #include "MitosisSteppable.h"
 #include "CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h"
 #include "CompuCell3D/plugins/PixelTracker/PixelTracker.h"
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 
 MitosisSteppable::MitosisSteppable() {
     parentChildPositionFlag = 0;

@@ -1,6 +1,6 @@
 #include "PyAttributeAdder.h"
 #include <CompuCell3D/Potts3D/Cell.h>
-#include <PublicUtilities/CC3DLogger.h>
+#include <Logger/CC3DLogger.h>
 #include <Python.h>
 #include <iostream>
 
