@@ -21,6 +21,7 @@ from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 from cc3d.CompuCellSetup.cluster_utils import check_nanohub_and_count
 
 CompuCell.Logger.enableConsoleLogging(CompuCell.LOG_DEBUG)
+# CompuCell.Logger.disableConsoleLogging(CompuCell.LOG_DEBUG)
 
 # -------------------- legacy API emulation ----------------------------------------
 def getCoreSimulationObjects():
