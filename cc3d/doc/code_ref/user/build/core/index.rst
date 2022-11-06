@@ -9,6 +9,7 @@ cc3d.core
    ExtraFieldAdapter
    iterators
    PySteppables
+   PyCoreSpecs
    RoadRunnerPy
    SBMLSolverHelper
    MaBoSSCC3D

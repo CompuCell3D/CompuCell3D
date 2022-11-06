@@ -8,6 +8,7 @@
 
 #include <CompuCell3D/plugins/PixelTracker/PixelTracker.h>
 #include <CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h>
+#include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 
 #include "DiffSecrData.h"
 #include "BoundaryConditionSpecifier.h"
@@ -157,6 +158,7 @@ namespace CompuCell3D {
 		ExtraMembersGroupAccessor<ReactionDiffusionSolverFVMCellData> ReactionDiffusionSolverFVMCellDataAccessor;
 
 		PixelTrackerPlugin *pixelTrackerPlugin;
+		NeighborTrackerPlugin *neighborTrackerPlugin;
 
 		FluctuationCompensator *fluctuationCompensator;
 
@@ -183,6 +185,7 @@ namespace CompuCell3D {
 		std::vector<double> constantDiffusionCoefficientsVec;
 		std::vector<Field3D<float> *> diffusivityFieldIndexToFieldMap;
 		std::vector<bool> diffusivityFieldInitialized;
+		std::vector<SecretionData> secrFieldVec;
 
 		std::vector<FluxConditionInitializer> fluxConditionInitializerPtrs;
 
@@ -1159,6 +1162,16 @@ namespace CompuCell3D {
 		 * @return false 
 		 */
 		bool isValid(Point3D pt) { try { pt2ind(pt); return true; } catch (CC3DException) { return false; } }
+
+		/**
+		 * @brief Test whether a cell is in contact with a cell type
+		 * 
+		 * @param cell cell to test
+		 * @param typeIndex cell type to test
+		 */
+		bool inContact(CellG *cell, const unsigned char &typeIndex);
+
+		std::set<unsigned char> getNeighbors(CellG *cell);
 		
 		/**
 		 * @brief Get the Lattice Point From Phys object
@@ -1474,10 +1487,12 @@ namespace CompuCell3D {
 		Point3D coords;
 		std::vector<double> concentrationVecAux;
 		std::vector<double> concentrationVecOld;
+		std::vector<double> secrRateStorage;
 		std::map<unsigned int, ReactionDiffusionSolverFV *> neighborFVs;
 
 		double physTime;
 		bool stabilityMode;
+		bool usingCellInterfaceFlux;
 
 		// Dim 1: field
 		// Dim 2: diffusion coefficient, ...
@@ -1506,17 +1521,22 @@ namespace CompuCell3D {
 		double getFieldDiffusivityField(unsigned int _fieldIndex);
 		double getFieldDiffusivityInMedium(unsigned int _fieldIndex);
 
-		
+		double cellInterfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, CellG *cell, CellG *nCell);
+		double cellInterfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
 		std::vector<double> diffusiveSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
 		std::vector<double> permeableSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
 		std::vector<double> fixedSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
 		std::vector<double> fixedConcentrationFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
 		std::vector<double> fixedFVConcentrationFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
+		
+		double secreteSingleField(const unsigned int &fieldIndex, const unsigned char &typeIndex, const SecretionData &secrData);
+		double secreteOnContactSingleField(const unsigned int &fieldIndex, const unsigned char &typeIndex, const SecretionData &secrData);
+		double secreteConstantConcentrationSingleField(const unsigned int &fieldIndex, const unsigned char &typeIndex, const SecretionData &secrData);
 
 	public:
 
 
-		ReactionDiffusionSolverFV() {};
+		ReactionDiffusionSolverFV() : usingCellInterfaceFlux{false} {};
 		ReactionDiffusionSolverFV(ReactionDiffusionSolverFVM *_solver, Point3D _coords, int _numFields);
 		virtual ~ReactionDiffusionSolverFV() {};
 
@@ -1532,6 +1552,13 @@ namespace CompuCell3D {
 		 * 
 		 */
 		void initialize();
+
+		/**
+		 * @brief Performs secretion and stores results internally for subsequent call to update method
+		 * 
+		 * @param secrFieldVec vector of secretion data, ordered by field
+		 */
+		void secrete(const std::vector<SecretionData> &secrFieldVec);
 		
 		/**
 		 * @brief Evaluates diagonal functions, multiplies it with old concentration and adds the result
@@ -1702,6 +1729,11 @@ namespace CompuCell3D {
 		void useFixedFVConcentration(unsigned int _fieldIndex, double _val);
 
 		/**
+		 * @brief Set flag for whether to use cell interface fluxes
+		 */
+		void useCellInterfaceFlux(const bool &_usingCellInterfaceFlux) { usingCellInterfaceFlux = _usingCellInterfaceFlux; }
+
+		/**
 		 * @brief registers field symbol by calling muParser::DefineVar that takes in  _fieldSymbol and old 
 		 * concentration at _fieldIndex as input; on elements of diagonalFunctions and offDiagonalFunctions 
 		 * at each index in range(0, length of diagonalFunctions)
@@ -1793,6 +1825,19 @@ namespace CompuCell3D {
 		 * @return double 
 		 */
 		double getFieldDiffusivity(unsigned int _fieldIndex);
+
+		/**
+		 * @brief gets the cell-dependent outward flux value for a field
+		 * 
+		 * @param _fieldIndex 
+		 */
+		double getCellOutwardFlux(unsigned int _fieldIndex);
+
+		/**
+		 * @brief gets the cell-dependent outward flux values for all field
+		 * 
+		 */
+		std::vector<double> getCellOutwardFluxes();
 
 	};
 

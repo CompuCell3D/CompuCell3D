@@ -57,9 +57,11 @@ class CMLFieldHandler:
         self.out_file_number_of_digits = len(str(persistent_globals.simulator.getNumSteps()))
         self.get_info_about_fields()
 
-        self.create_storage_dir()
+        if cc3d.CompuCellSetup.persistent_globals.output_directory:
 
-        self.write_xml_description_file()
+            self.create_storage_dir()
+
+            self.write_xml_description_file()
 
     def write_fields(self, mcs: int) -> None:
         """
@@ -67,6 +69,9 @@ class CMLFieldHandler:
         :param mcs: MCS
         :return: None
         """
+
+        if not self.output_dir_name:
+            return
 
         for field_name in self.field_types.keys():
             if self.field_types[field_name] == self.FIELD_TYPES[0]:
@@ -103,6 +108,9 @@ class CMLFieldHandler:
         persistent_globals = cc3d.CompuCellSetup.persistent_globals
         simulator = persistent_globals.simulator
 
+        if not file_name and not self.output_dir_name:
+            return
+
         lattice_type_str = extract_lattice_type()
 
         if lattice_type_str == '':
@@ -134,7 +142,7 @@ class CMLFieldHandler:
         # writing XML description to the disk
         if file_name != "":
             lattice_data_xml_element.CC3DXMLElement.saveXML(str(file_name))
-        else:
+        elif self.output_dir_name:
             lattice_data_file_name = join(self.output_dir_name, self.output_file_core_name + "LDF.dml")
             lattice_data_xml_element.CC3DXMLElement.saveXML(str(lattice_data_file_name))
 

@@ -6,6 +6,8 @@ SET(SRCS
    FieldExtractor.cpp
    FieldExtractorCML.cpp
    FieldWriter.cpp
+   FieldWriterCML.cpp
+   FieldStreamer.cpp
 )
 
 if (${VTK_MAJOR_VERSION} EQUAL "6")

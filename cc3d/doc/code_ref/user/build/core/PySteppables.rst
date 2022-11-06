@@ -1,5 +1,14 @@
 .. PySteppables
 
+cc3d.core.SteppablePy
+======================
+
+
+.. autoclass:: cc3d.core.PySteppables.SteppablePy
+   :members:
+   :exclude-members: cleanup, core_init
+
+
 cc3d.core.PySteppables
 ======================
 
@@ -16,11 +25,6 @@ cc3d.core.PySteppables
 
 .. autoclass:: cc3d.core.PySteppables.GlobalSBMLFetcher
    :members:
-
-
-.. autoclass:: cc3d.core.PySteppables.SteppablePy
-   :members:
-   :exclude-members: cleanup, core_init
 
 
 .. autoclass:: cc3d.core.PySteppables.SteppableBasePy
