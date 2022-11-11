@@ -50,6 +50,9 @@ class PersistentGlobals:
         self.__output_dir = None
         self.output_file_core_name = "Step"
 
+        self.log_level = ''
+        self.log_to_file = False
+
         self.__workspace_dir = None
 
         self.__param_scan_iteration = None
