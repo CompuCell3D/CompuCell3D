@@ -284,9 +284,9 @@ void Simulator::start() {
 
         currstep = 0;
         // Output statistics
-        CC3D_Log(LOG_DEBUG) << "Step " << 0 << " ";
-			CC3D_Log(LOG_DEBUG) <<"Energy " << potts.getEnergy() << " ";
-			CC3D_Log(LOG_DEBUG) << "Cells " << potts.getNumCells();
+        CC3D_Log(LOG_INFORMATION) << "Step " << 0 << " ";
+			CC3D_Log(LOG_INFORMATION) <<"Energy " << potts.getEnergy() << " ";
+			CC3D_Log(LOG_INFORMATION) << "Cells " << potts.getNumCells();
 
         simulatorIsStepping = true; //initialize flag that simulator is stepping
     } catch (const CC3DException &e) {
@@ -362,11 +362,13 @@ void Simulator::step(const unsigned int currentStep) {
             << "Energy " << potts.getEnergy() << " "
             << "Cells " << potts.getNumCells() << " Inventory=" << potts.getCellInventory().getCellInventorySize()
             << endl;
+
+
         oss << potts.get_step_output() << endl;
         this->add_step_output(oss.str());
         // Output statistics
 		if(ppdCC3DPtr->debugOutputFrequency && ! (currentStep % ppdCC3DPtr->debugOutputFrequency) ){
-			CC3D_Log(LOG_DEBUG) << oss.str();
+			CC3D_Log(LOG_INFORMATION) << oss.str();
 
         }
 

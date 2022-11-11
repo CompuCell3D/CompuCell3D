@@ -634,9 +634,10 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
     if (debugOutputFrequency && !(currentStep % debugOutputFrequency)) {
         stringstream oss;
         oss << "Metropolis List" << endl;
-        oss << "Number of Attempted Energy Calculations=" << attemptedEC << endl;
-         CC3D_Log(LOG_DEBUG) << oss.str();
-        add_step_output(oss.str());
+        oss << "Number of Attempted Energy Calculations=" << attemptedEC;
+        string step_output = oss.str();
+         CC3D_Log(LOG_DEBUG) << step_output;
+        add_step_output(step_output);
 
 
     }
@@ -652,9 +653,7 @@ void Potts3D::add_step_output(const std::string &s) {
 }
 
 std::string Potts3D::get_step_output() {
-    stringstream oss;
-    oss << this->step_output << endl;
-    return oss.str();
+    return this->step_output;
 }
 
 
@@ -722,9 +721,10 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
         stringstream oss;
 
         oss << "Metropolis Fast" << endl;
-        oss << "total number of pixel copy attempts=" << numberOfAttempts << endl;
-        CC3D_Log(LOG_DEBUG) << oss.str();
-        add_step_output(oss.str());
+        oss << "total number of pixel copy attempts=" << numberOfAttempts;
+        string step_output = oss.str();
+        CC3D_Log(LOG_DEBUG) << step_output;
+        add_step_output(step_output);
 
     }
 
@@ -1093,9 +1093,10 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
         stringstream oss;
 
         oss << "Boundary Walker" << endl;
-        oss << "number of pixel copy attempts=" << numberOfAttempts << endl;
-        CC3D_Log(LOG_DEBUG) <<  oss.str();
-        add_step_output(oss.str());
+        oss << "number of pixel copy attempts=" << numberOfAttempts;
+        string step_output = oss.str();
+        CC3D_Log(LOG_DEBUG) <<  step_output;
+        add_step_output(step_output);
 
     }
 
