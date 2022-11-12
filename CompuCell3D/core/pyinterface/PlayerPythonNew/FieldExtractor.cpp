@@ -1,5 +1,6 @@
 
 #include "CellGraphicsData.h"
+#include <Logger/CC3DLogger.h>
 #include <iostream>
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
@@ -43,11 +44,11 @@ void FieldExtractor::init(Simulator *_sim) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FieldExtractor::extractCellField() {
-    //cerr<<"EXTRACTING CELL FIELD"<<endl;
+
     Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
     Dim3D fieldDim = cellFieldG->getDim();
     Point3D pt;
-    // cerr<< "FIeld Extractor cell field fieldDim="<<fieldDim<<endl;
+
     CellGraphicsData gd;
     CellG *cell;
 
@@ -3339,15 +3340,15 @@ FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr,
 }
 
 void FieldExtractor::setVtkObj(void *_vtkObj) {
-    cerr << "INSIDE setVtkObj" << endl;
+    CC3D_Log(LOG_DEBUG) << "INSIDE setVtkObj" << endl;
 }
 
 void FieldExtractor::setVtkObjInt(long _vtkObjAddr) {
     void *vPtr = (void *) _vtkObjAddr;
-    cerr << "GOT THIS VOID ADDR " << vPtr << endl;
+    CC3D_Log(LOG_DEBUG) << "GOT THIS VOID ADDR " << vPtr << endl;
     vtkIntArray *arrayPtr = (vtkIntArray *) vPtr;
     arrayPtr->SetName("INTEGER ARRAY");
-    cerr << "THIS IS NAME OF THE ARRAY=" << arrayPtr->GetName() << endl;
+    CC3D_Log(LOG_DEBUG) << "THIS IS NAME OF THE ARRAY=" << arrayPtr->GetName() << endl;
 }
 
 vtkIntArray *FieldExtractor::produceVtkIntArray() {
