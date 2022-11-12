@@ -7,10 +7,10 @@ namespace CompuCell3D {
 
     CellVelocityData::CellVelocityData() : enoughData(false), numberOfSamples(0) {
 
-        cellCOMPtr = new cldeque<Coordinates3D < float> > ();
-
-        cellCOMPtr->assign(cldequeCapacity, Coordinates3D<float>(0., 0., 0.));
-        velocity = Coordinates3D<float>(0., 0., 0.);
+        cellCOMPtr=new cldeque<Coordinates3D<float> >();
+   
+   cellCOMPtr->assign(cldequeCapacity,Coordinates3D<float>(0.,0.,0.));
+   velocity=Coordinates3D<float>(0.,0.,0.);
 
     }
 

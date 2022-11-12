@@ -3,7 +3,6 @@
 #include <CompuCell3D/CC3DExceptions.h>
 #include "ImplicitMatrix.h"
 #include "../GPUSolverParams.h"
-
 using namespace CompuCell3D;
 
 Dim3D Solver::getDim() const {
@@ -11,15 +10,12 @@ Dim3D Solver::getDim() const {
     return m_ims.front()->domainSize();
 }
 
-Solver::Solver(OpenCLHelper const &oclHelper,
-               std::vector <UniSolverParams> const &solverParams, cl_mem const &d_cellTypes,
-               GPUBoundaryConditions const &boundaryConditions,
-               unsigned char fieldsCount, std::string const &pathToKernels) :
-        m_fieldsCount(fieldsCount), mv_outputField(fieldLength(&solverParams[0]) * fieldsCount), m_oclHelper(oclHelper),
-        m_linearST(0) {
-//	std::cerr<<"Solver::ctor\n";
-    ASSERT_OR_THROW("These two OpenCL contexts must be equal",
-                    m_oclHelper.getContext() == viennacl::ocl::current_context().handle().get());
+Solver::Solver(OpenCLHelper const &oclHelper, 
+		std::vector<UniSolverParams> const &solverParams, cl_mem const &d_cellTypes, GPUBoundaryConditions const &boundaryConditions,
+		unsigned char fieldsCount, std::string const &pathToKernels):
+m_fieldsCount(fieldsCount), mv_outputField(fieldLength(&solverParams[0])*fieldsCount),m_oclHelper(oclHelper), m_linearST(0)
+{
+	ASSERT_OR_THROW("These two OpenCL contexts must be equal", m_oclHelper.getContext()==viennacl::ocl::current_context().handle().get());
 
     int fl = fieldLength(&solverParams[0]);//length of field, in elements
 

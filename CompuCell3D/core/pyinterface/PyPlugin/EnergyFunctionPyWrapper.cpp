@@ -1,5 +1,6 @@
 #include "EnergyFunctionPyWrapper.h"
 #include <CompuCell3D/Potts3D/Potts3D.h>
+#include <Logger/CC3DLogger.h>
 #include <iostream>
 
 using namespace std;
@@ -43,8 +44,7 @@ double EnergyFunctionPyWrapper::changeEnergy(const Point3D &pt, const CellG *_ne
    //Maybe IronPython could be the solution... will have to explore it - looks like it is much better for multi-core applications.
    pUtils->setLock(lockPtr);
 
-
-   //cerr<<"currentWorkNodeNumber="<<currentWorkNodeNumber<<endl;
+   CC3D_Log(LOG_TRACE) << "currentWorkNodeNumber="<<currentWorkNodeNumber;
 	// since we are using threads (swig generated modules are fully "threaded") and and use C/API we better make sure that before doing anything in python
 	//we aquire GIL and then release it once we are done
 	PyGILState_STATE gstate;
@@ -56,7 +56,7 @@ double EnergyFunctionPyWrapper::changeEnergy(const Point3D &pt, const CellG *_ne
          energy+=PyFloat_AsDouble(ret);
          Py_DECREF(ret);
          //will need to decrement reference here
-//       cerr<<"ENERGY FROM INSIDE WRAPPER="<<energy<<endl;
+         CC3D_Log(LOG_TRACE) << "ENERGY FROM INSIDE WRAPPER=" << energy;
    }
 
    PyGILState_Release(gstate);
@@ -64,7 +64,6 @@ double EnergyFunctionPyWrapper::changeEnergy(const Point3D &pt, const CellG *_ne
    pUtils->unsetLock(lockPtr);
 
    return energy;   
-//     cerr<<"WRAPPER FUNCTION"<<endl;
 //     return 10.0;
 }
 

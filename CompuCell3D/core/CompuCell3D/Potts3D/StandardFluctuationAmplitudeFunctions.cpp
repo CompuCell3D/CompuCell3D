@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <Logger/CC3DLogger.h>
 
 using namespace CompuCell3D;
 using namespace std;
@@ -89,7 +90,7 @@ double MinFluctuationAmplitudeFunction::fluctuationAmplitude(const CellG *newCel
         return *min_element(fluctAmplVec.begin(), fluctAmplVec.end());
     }
 
-    cerr << "MIN FLUCT AMPL: RETURNING TEMP=" << potts->getTemperature() << endl;
+    CC3D_Log(LOG_DEBUG) << "MIN FLUCT AMPL: RETURNING TEMP=" << potts->getTemperature();
     return potts->getTemperature(); //should never get here
 }
 
@@ -173,8 +174,7 @@ double MaxFluctuationAmplitudeFunction::fluctuationAmplitude(const CellG *newCel
         return *max_element(fluctAmplVec.begin(), fluctAmplVec.end());
     }
 
-
-    cerr << "MAX FLUCT AMPL : RETURNING TEMP=" << potts->getTemperature() << endl;
+	CC3D_Log(LOG_DEBUG) << "MAX FLUCT AMPL : RETURNING TEMP="<<potts->getTemperature();
     return potts->getTemperature(); //should never get here
 }
 
@@ -265,6 +265,6 @@ double ArithmeticAverageFluctuationAmplitudeFunction::fluctuationAmplitude(const
         return (fluctAmplVec[0] + fluctAmplVec[1]) / 2.0;
     }
 
-    cerr << "ARITHMETIC AVERAGE FLUCT AMPL : RETURNING TEMP=" << potts->getTemperature() << endl;
+    CC3D_Log(LOG_DEBUG) << "ARITHMETIC AVERAGE FLUCT AMPL : RETURNING TEMP=" << potts->getTemperature();
     return potts->getTemperature(); //should never get here
 }

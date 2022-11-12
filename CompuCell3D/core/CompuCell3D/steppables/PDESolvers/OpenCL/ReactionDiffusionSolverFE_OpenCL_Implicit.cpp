@@ -11,13 +11,11 @@
 #include <XMLUtils/CC3DXMLElement.h>
 
 using namespace CompuCell3D;
-using std::cout;
-using std::endl;
 
 OpenCLHelper const *ReactionDiffusionSolverFE_OpenCL_Implicit::m_oclHelper;
 
 ReactionDiffusionSolverFE_OpenCL_Implicit::ReactionDiffusionSolverFE_OpenCL_Implicit(void) {
-    std::cerr << "Starting ReactionDiffusionSolverFE_OpenCL_Implicit ctor\n";
+    CC3D_Log(LOG_DEBUG) << "Starting ReactionDiffusionSolverFE_OpenCL_Implicit ctor";
 
     if (!m_oclHelper) {
         m_oclHelper = new OpenCLHelper(0);//TODO: add gpu selector
@@ -48,7 +46,7 @@ bool ReactionDiffusionSolverFE_OpenCL_Implicit::hasExtraLayer() const {
 
 
 void ReactionDiffusionSolverFE_OpenCL_Implicit::initImpl(void) {
-    //std::cerr<<"ReactionDiffusionSolverFE_OpenCL_Implicit::initImpl, not implemented!!!\n";
+    CC3D_Log(LOG_TRACE) << "ReactionDiffusionSolverFE_OpenCL_Implicit::initImpl, not implemented!!!";
 
     m_solvingTime = 0;
     for (int i = 0; i < getFieldsCount(); ++i) {
@@ -81,8 +79,8 @@ void ReactionDiffusionSolverFE_OpenCL_Implicit::initImpl(void) {
 
 void ReactionDiffusionSolverFE_OpenCL_Implicit::finish() {
     DiffusionSolverFE::finish();
-    cerr << m_solvingTime << " ms spent for solving only" << endl;
-    cerr << m_solver->getLinearSolvingTime() << " ms spent on solving linear systems" << endl;
+    CC3D_Log(LOG_DEBUG) << m_solvingTime<<" ms spent for solving only";
+    CC3D_Log(LOG_DEBUG) << m_solver->getLinearSolvingTime()<<" ms spent on solving linear systems";
 }
 
 std::ostream &operator<<(std::ostream &os, cl_int4 const &val) {
@@ -109,15 +107,15 @@ Solver *ReactionDiffusionSolverFE_OpenCL_Implicit::makeSolver() const {
                 addTerm = "return " + addTerm + ";";
             }
             fnats[i] = make_pair(name, addTerm);
-            cerr << "Additional term: " << fnats[i].first << "/" << fnats[i].second << endl;
+            CC3D_Log(LOG_DEBUG) << "Additional term: "<<fnats[i].first<<"/"<<fnats[i].second;
         }
 
-        cout << "Making Nonlinear Solver" << endl;
+        CC3D_Log(LOG_DEBUG) << "Making Nonlinear Solver";
         return new NonlinearSolver(*m_oclHelper, fnats, mh_solverParams, md_cellTypes->buffer(), m_GPUbc, fieldsCount(),
                                    "lib/CompuCell3DSteppables/OpenCL/");
     } else {
 
-        cout << "No additional terms found; making Linear Solver" << endl;
+        CC3D_Log(LOG_DEBUG) << "No additional terms found; making Linear Solver";
         return new LinearSolver(*m_oclHelper, mh_solverParams, md_cellTypes->buffer(), m_GPUbc, fieldsCount(),
                                 "lib/CompuCell3DSteppables/OpenCL/");
     }
@@ -125,8 +123,8 @@ Solver *ReactionDiffusionSolverFE_OpenCL_Implicit::makeSolver() const {
 }
 
 void ReactionDiffusionSolverFE_OpenCL_Implicit::extraInitImpl(void) {
-    //std::cerr<<"ReactionDiffusionSolverFE_OpenCL_Implicit::extraInitImpl, not implemented!!!\n";
-
+    CC3D_Log(LOG_TRACE) << "ReactionDiffusionSolverFE_OpenCL_Implicit::extraInitImpl, not implemented!!!";
+	
 
     try {
 
@@ -143,35 +141,33 @@ void ReactionDiffusionSolverFE_OpenCL_Implicit::extraInitImpl(void) {
 
             DiffusionData &diffData = diffSecrFieldTuppleVec[i].diffData;
 
-            /*if(i==0){
-                other_dt=diffData.deltaT;
-            }else{
-                ASSERT_OR_THROW("All fields must have the same time step", other_dt==diffData.deltaT);
-            }*/
-            for (int j = 0; j < UCHAR_MAX; ++j) {
-                mh_solverParams[i].diffCoef[j] = diffData.diffCoef[j];
-                mh_solverParams[i].decayCoef[j] = diffData.decayCoef[j];
-            }
-            mh_solverParams[i].dx = deltaX;
-            mh_solverParams[i].hexLattice = (latticeType == HEXAGONAL_LATTICE);
-            mh_solverParams[i].nbhdConcLen = onii.m_nbhdConcLen;
-            mh_solverParams[i].nbhdDiffLen = onii.m_nbhdDiffLen;
-
-            mh_solverParams[i].xDim = fieldDim.x;
-            mh_solverParams[i].yDim = fieldDim.y;
-            mh_solverParams[i].zDim = fieldDim.z;
-
-            std::cerr << "Current size: " << onii.mh_nbhdConcShifts.size() << std::endl;
+			/*if(i==0){
+				other_dt=diffData.deltaT;
+			}else{
+				ASSERT_OR_THROW("All fields must have the same time step", other_dt==diffData.deltaT);
+			}*/
+			for( int j=0; j<UCHAR_MAX; ++j){
+				mh_solverParams[i].diffCoef[j]=diffData.diffCoef[j];
+				mh_solverParams[i].decayCoef[j]=diffData.decayCoef[j];
+			}
+			mh_solverParams[i].dx=deltaX;
+			mh_solverParams[i].hexLattice=(latticeType==HEXAGONAL_LATTICE);
+			mh_solverParams[i].nbhdConcLen=onii.m_nbhdConcLen;
+			mh_solverParams[i].nbhdDiffLen=onii.m_nbhdDiffLen;
+		
+			mh_solverParams[i].xDim=fieldDim.x;
+			mh_solverParams[i].yDim=fieldDim.y;
+			mh_solverParams[i].zDim=fieldDim.z;
+			CC3D_Log(LOG_DEBUG) << "Current size: "<<onii.mh_nbhdConcShifts.size();
             ASSERT_OR_THROW("Must be less or equal than 6 so far", onii.mh_nbhdConcShifts.size() <= 6);
             for (size_t j = 0; j < onii.mh_nbhdConcShifts.size(); ++j) {
-                //std::cerr<<"Current shift: "<<onii.mh_nbhdConcShifts[j]<<std::endl;
-                mh_solverParams[i].nbhdShifts[j] = onii.mh_nbhdConcShifts[j];
-            }
-        }
+                CC3D_Log(LOG_TRACE)<<"Current shift: "<<onii.mh_nbhdConcShifts[j];
+				mh_solverParams[i].nbhdShifts[j]=onii.mh_nbhdConcShifts[j];
+			}
+		}
 
-        m_dt = deltaT;
-
-        std::cerr << "Time step " << m_dt << " requested" << std::endl;
+		m_dt=deltaT;
+		CC3D_Log(LOG_DEBUG) << "Time step "<<m_dt<<" requested";
 
         Dim3D dim = getDim();
 
@@ -186,17 +182,15 @@ void ReactionDiffusionSolverFE_OpenCL_Implicit::extraInitImpl(void) {
         {
             BoundaryConditionSpecifier &bcSpec = bcSpecVec[i];
 
-            for (int j = 0; j < 6; ++j) {
-                m_GPUbc.planePositions[j] = static_cast<BCType>(bcSpec.planePositions[j]);
-                m_GPUbc.values[j] = static_cast<float>(bcSpec.values[j]);
-            }
-        }
-
-        cerr << "start initializing\n";
+			for(int j=0; j<6; ++j){
+				m_GPUbc.planePositions[j]=static_cast<BCType>(bcSpec.planePositions[j]);
+				m_GPUbc.values[j]=static_cast<float>(bcSpec.values[j]);
+			}
+		}
+		CC3D_Log(LOG_DEBUG) << "start initializing";
 
         m_solver = makeSolver();
-        cerr << "extraInitImpl finished; m_nbhdConcLen=" << onii.m_nbhdConcLen << "; m_nbhdDiffLen="
-             << onii.m_nbhdDiffLen << "\n";
+        CC3D_Log(LOG_DEBUG) << "extraInitImpl finished; m_nbhdConcLen="<<onii.m_nbhdConcLen<<"; m_nbhdDiffLen="<<onii.m_nbhdDiffLen;
 
     } catch (std::exception &ec) {
         ASSERT_OR_THROW(ec.what(), false);
@@ -210,7 +204,7 @@ void ReactionDiffusionSolverFE_OpenCL_Implicit::stepImpl(const unsigned int _cur
 
         initCellTypesAndBoundariesImpl();
 
-        std::cout << "ReactionDiffusionSolverFE_OpenCL_Implicit::stepImpl: step #" << _currentStep << endl;
+        CC3D_Log(LOG_DEBUG) << "ReactionDiffusionSolverFE_OpenCL_Implicit::stepImpl: step #" << _currentStep;
         Dim3D dim = getDim();
 
         m_oclHelper->WriteBuffer(mv_inputField->handle().opencl_handle().get(), getPtr(), mv_inputField->size());
@@ -232,7 +226,7 @@ void ReactionDiffusionSolverFE_OpenCL_Implicit::initCellTypesAndBoundariesImpl(v
 }
 
 void ReactionDiffusionSolverFE_OpenCL_Implicit::solverSpecific(CC3DXMLElement *_xmlData) {
-    std::cout << "ReactionDiffusionSolverFE_OpenCL_Implicit::solverSpecific\n";
+    CC3D_Log(LOG_DEBUG) << "ReactionDiffusionSolverFE_OpenCL_Implicit::solverSpecific";
     //ASSERT_OR_THROW("not implemented", false);
 
     if (_xmlData->findElement("DeltaX"))
@@ -240,7 +234,7 @@ void ReactionDiffusionSolverFE_OpenCL_Implicit::solverSpecific(CC3DXMLElement *_
 
     if (_xmlData->findElement("DeltaT")) {
         deltaT = static_cast<float>(_xmlData->getFirstElement("DeltaT")->getDouble());
-        //std::cerr<<"************* another time step requested: "<<deltaT<<std::endl;
+        CC3D_Log(LOG_TRACE) << "************* another time step requested: "<<deltaT;
     }
 
     m_nlsParams = new NLSParams(NLSParams::Linear(), NLSParams::Newton(100, 1e-6f, 1e-6f, false));

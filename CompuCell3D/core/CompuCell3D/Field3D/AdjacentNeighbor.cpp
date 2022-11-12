@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <iostream>
 #include <cmath>
+#include <Logger/CC3DLogger.h>
 
 using namespace CompuCell3D;
 using namespace std;
@@ -160,7 +161,7 @@ void AdjacentNeighbor::setPeriodicZ() {
             }
 
         }
-    cerr << "adjNeighborOffsetsBoundary.size()=" << adjNeighborOffsetsBoundary.size() << endl;
+    CC3D_Log(LOG_DEBUG) << "adjNeighborOffsetsBoundary.size()="<<adjNeighborOffsetsBoundary.size();
     Point3D ptPlus(0, 0, maxZPlus);
     Point3D ptMinus(0, 0, maxZMinus);
     adjFace2FaceNeighborOffsetsBoundary.push_back(ptPlus);

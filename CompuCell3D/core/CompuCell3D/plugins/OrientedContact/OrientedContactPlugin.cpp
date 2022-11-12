@@ -7,7 +7,7 @@
 using namespace CompuCell3D;
 
 #include "OrientedContactPlugin.h"
-
+#include <Logger/CC3DLogger.h>
 
 OrientedContactPlugin::OrientedContactPlugin() : xmlData(0), depth(1), alpha(1.0), weightDistance(false) {
 }
@@ -24,76 +24,72 @@ double OrientedContactPlugin::getOrientation(const Point3D &pt, const CellG *new
     double eps = std::numeric_limits<double>::epsilon();
 
     if (newCell != 0) {
-        // Assumption: COM and Volume has not been updated.
 
-        double xPtSum = newCell->xCM;
-        double yPtSum = newCell->yCM;
-        double zPtSum = newCell->zCM;
+       // Assumption: COM and Volume has not been updated.
 
-        double xcm = (newCell->xCM / (float) newCell->volume);
-        double ycm = (newCell->yCM / (float) newCell->volume);
-        double zcm = (newCell->zCM / (float) newCell->volume);
+      double xPtSum = newCell->xCM;
+      double yPtSum = newCell->yCM;
+      double zPtSum = newCell->zCM;
 
-        double eq1 = newCell->iYY + newCell->volume * zcm * zcm + newCell->volume * xcm * xcm;
-        double eq2 = newCell->iXX + newCell->volume * zcm * zcm + newCell->volume * ycm * ycm;
-        double eq3 = newCell->iZZ + newCell->volume * ycm * ycm + newCell->volume * xcm * xcm;
+      double xcm = (newCell->xCM / (float) newCell->volume);
+      double ycm = (newCell->yCM / (float) newCell->volume);
+      double zcm = (newCell->zCM / (float) newCell->volume);
 
-        double xPtSumSQ = (eq1 + eq3 - eq2) / 2.0;
-        double zPtSumSQ = (eq1 + eq2 - eq3) / 2.0;
-        double yPtSumSQ = (eq2 + eq3 - eq1) / 2.0;
+      double eq1 = newCell->iYY + newCell->volume*zcm*zcm + newCell->volume*xcm*xcm;
+      double eq2 = newCell->iXX + newCell->volume*zcm*zcm + newCell->volume*ycm*ycm;
+      double eq3 = newCell->iZZ + newCell->volume*ycm*ycm + newCell->volume*xcm*xcm;
 
-        double yzSum = (newCell->iYZ - ycm * zPtSum - zcm * yPtSum + newCell->volume * ycm * zcm) / -1.0;
-        double xzSum = (newCell->iXZ - xcm * zPtSum - zcm * xPtSum + newCell->volume * xcm * zcm) / -1.0;
-        double xySum = (newCell->iXY - xcm * yPtSum - xcm * yPtSum + newCell->volume * xcm * ycm) / -1.0;
+      double xPtSumSQ = (eq1+eq3-eq2)/2.0;
+      double zPtSumSQ = (eq1+eq2-eq3)/2.0;
+      double yPtSumSQ = (eq2+eq3-eq1)/2.0;
 
-
-        double newXCM = (newCell->xCM + pt.x) / ((float) newCell->volume + 1);
-        double newYCM = (newCell->yCM + pt.y) / ((float) newCell->volume + 1);
-        double newZCM = (newCell->zCM + pt.z) / ((float) newCell->volume + 1);
-
-        xPtSum += pt.x;
-        yPtSum += pt.y;
-        zPtSum += pt.z;
+      double yzSum = (newCell->iYZ - ycm*zPtSum - zcm*yPtSum + newCell->volume*ycm*zcm) / -1.0;
+      double xzSum = (newCell->iXZ - xcm*zPtSum - zcm*xPtSum + newCell->volume*xcm*zcm) / -1.0;
+      double xySum = (newCell->iXY - xcm*yPtSum - xcm*yPtSum + newCell->volume*xcm*ycm) / -1.0;
 
 
-        xPtSumSQ += pt.x * pt.x;
-        yPtSumSQ += pt.y * pt.y;
-        zPtSumSQ += pt.z * pt.z;
 
-        yzSum += pt.y * pt.z;
-        xzSum += pt.x * pt.z;
-        xySum += pt.x * pt.y;
+      double newXCM = (newCell->xCM + pt.x)/((float)newCell->volume + 1);
+      double newYCM = (newCell->yCM + pt.y)/((float)newCell->volume + 1);
+      double newZCM = (newCell->zCM + pt.z)/((float)newCell->volume + 1);
 
-        double newIxx = zPtSumSQ + yPtSumSQ - (newZCM * zPtSum + newYCM * yPtSum);
-        double newIyy = zPtSumSQ + xPtSumSQ - (newZCM * zPtSum + newXCM * xPtSum);
-        double newIzz = yPtSumSQ + xPtSumSQ - (newYCM * yPtSum + newXCM * xPtSum);
-
-        double newIyz = -yzSum + newYCM * zPtSum + newZCM * yPtSum - (newCell->volume + 1) * newYCM * newZCM;
-        double newIxz = -xzSum + newXCM * zPtSum + newZCM * xPtSum - (newCell->volume + 1) * newXCM * newZCM;
-        double newIxy = -xySum + newYCM * xPtSum + newXCM * yPtSum - (newCell->volume + 1) * newXCM * newYCM;
+      xPtSum += pt.x;
+      yPtSum += pt.y;
+      zPtSum += pt.z;
 
 
-        double l1_max_before = .5 * ((newCell->iXX + newCell->iYY) +
-                                     sqrt((newCell->iXX - newCell->iYY) * (newCell->iXX - newCell->iYY) +
-                                          4.0 * newCell->iXY * newCell->iXY));
-        double l1_min_before = .5 * ((newCell->iXX + newCell->iYY) -
-                                     sqrt((newCell->iXX - newCell->iYY) * (newCell->iXX - newCell->iYY) +
-                                          4.0 * newCell->iXY * newCell->iXY));
-        v1y_before = .5 * ((newCell->iXX - newCell->iYY) -
-                           sqrt((newCell->iXX - newCell->iYY) * (newCell->iXX - newCell->iYY) +
-                                4.0 * newCell->iXY * newCell->iXY));
-        v1x_before = newCell->iXY;
-        // taking case of numerical rounding
-        ecc1_before = sqrt(fabs(1.0 - l1_min_before / (l1_max_before + eps)));
-        double l1_max = .5 * ((newIxx + newIyy) + sqrt((newIxx - newIyy) * (newIxx - newIyy) + 4.0 * newIxy * newIxy));
-        double l1_min = .5 * ((newIxx + newIyy) - sqrt((newIxx - newIyy) * (newIxx - newIyy) + 4.0 * newIxy * newIxy));
-        v1y = .5 * ((newIxx - newIyy) - sqrt((newIxx - newIyy) * (newIxx - newIyy) + 4.0 * newIxy * newIxy));
-        v1x = newIxy;
-        r1x = pt.x - xcm;
-        r1y = pt.y - ycm;
-        // taking case of numerical rounding
-        ecc1 = sqrt(fabs(1.0 - l1_min / (l1_max + eps)));
+      xPtSumSQ += pt.x*pt.x;
+      yPtSumSQ += pt.y*pt.y;
+      zPtSumSQ += pt.z*pt.z;
 
+      yzSum += pt.y*pt.z;
+      xzSum += pt.x*pt.z;
+      xySum += pt.x*pt.y;
+
+      double newIxx = zPtSumSQ + yPtSumSQ - (newZCM*zPtSum+newYCM*yPtSum);
+      double newIyy = zPtSumSQ + xPtSumSQ - (newZCM*zPtSum+newXCM*xPtSum);
+      double newIzz = yPtSumSQ + xPtSumSQ - (newYCM*yPtSum + newXCM*xPtSum);
+
+      double newIyz = -yzSum + newYCM*zPtSum + newZCM*yPtSum - (newCell->volume+1)*newYCM*newZCM;
+      double newIxz = -xzSum + newXCM*zPtSum + newZCM*xPtSum - (newCell->volume+1)*newXCM*newZCM;
+      double newIxy = -xySum + newYCM*xPtSum + newXCM*yPtSum - (newCell->volume+1)*newXCM*newYCM;
+
+
+      double l1_max_before = .5*((newCell->iXX+newCell->iYY)+sqrt((newCell->iXX-newCell->iYY)*(newCell->iXX-newCell->iYY)+4.0*newCell->iXY*newCell->iXY));
+      double l1_min_before = .5*((newCell->iXX+newCell->iYY)-sqrt((newCell->iXX-newCell->iYY)*(newCell->iXX-newCell->iYY)+4.0*newCell->iXY*newCell->iXY));
+      v1y_before = .5*((newCell->iXX-newCell->iYY)-sqrt((newCell->iXX-newCell->iYY)*(newCell->iXX-newCell->iYY)+4.0*newCell->iXY*newCell->iXY));
+      v1x_before = newCell->iXY;
+      // taking case of numerical rounding
+      ecc1_before = sqrt(fabs(1.0-l1_min_before/(l1_max_before + eps)));
+      double l1_max = .5*((newIxx+newIyy)+sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
+      double l1_min = .5*((newIxx+newIyy)-sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
+      v1y = .5*((newIxx-newIyy)-sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
+      v1x = newIxy;
+      r1x = pt.x-xcm;
+      r1y = pt.y-ycm;
+      // taking case of numerical rounding
+      ecc1 = sqrt(fabs(1.0-l1_min/(l1_max + eps)));
+	
 
     } else {
         ecc1 = 0;
@@ -192,13 +188,14 @@ double OrientedContactPlugin::getOrientation(const Point3D &pt, const CellG *new
     s02_before = sqrt(fabs(1.0 - s02_before * s02_before));
 
 
-    E1 = ecc1_before * ecc2_before * s01_before * s01_before * sqrt((r1x * r1x + r1y * r1y) * (r2x * r2x + r2y * r2y));
-    E2 = ecc1 * ecc2 * s01 * s01 * sqrt((r1x * r1x + r1y * r1y) * (r2x * r2x + r2y * r2y));
+   E1 = ecc1_before*ecc2_before*s01_before*s01_before*sqrt((r1x*r1x+r1y*r1y)*(r2x*r2x+r2y*r2y));
+   E2 = ecc1*ecc2*s01*s01*sqrt((r1x*r1x+r1y*r1y)*(r2x*r2x+r2y*r2y));
+        
+   deltaE = E2-E1;
 
-    deltaE = E2 - E1;
+   if(deltaE != deltaE) { //check for nan
+      return 0;
 
-    if (deltaE != deltaE) { //check for nan
-        return 0;
     } else {
         return deltaE;
     }
@@ -213,6 +210,7 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
     if (!newCell && !oldCell) {
 
         return 1.0;
+
     }
 
     if (newCell != 0) {
@@ -278,30 +276,28 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
 
         // taking case of numerical rounding
 
-        ecc1_before = sqrt(fabs(1.0 - l1_min_before / (l1_max_before + eps)));
-        double l1_max = .5 * ((newIxx + newIyy) + sqrt((newIxx - newIyy) * (newIxx - newIyy) + 4.0 * newIxy * newIxy));
-        double l1_min = .5 * ((newIxx + newIyy) - sqrt((newIxx - newIyy) * (newIxx - newIyy) + 4.0 * newIxy * newIxy));
-        v1y = .5 * ((newIxx - newIyy) - sqrt((newIxx - newIyy) * (newIxx - newIyy) + 4.0 * newIxy * newIxy));
-        v1x = newIxy;
-        r1x = pt.x - xcm;
-        r1y = pt.y - ycm;
-        ecc1 = sqrt(1.0 - l1_min / (l1_max + eps));
+      ecc1_before = sqrt(fabs(1.0-l1_min_before/(l1_max_before+eps)));
+      double l1_max = .5*((newIxx+newIyy)+sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
+      double l1_min = .5*((newIxx+newIyy)-sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
+      v1y = .5*((newIxx-newIyy)-sqrt((newIxx-newIyy)*(newIxx-newIyy)+4.0*newIxy*newIxy));
+      v1x = newIxy;
+      r1x = pt.x-xcm;
+      r1y = pt.y-ycm;
+      ecc1 = sqrt(1.0-l1_min/(l1_max+eps));
 
-        s01 = (r1x * v1x + r1y * v1y) / sqrt((r1x * r1x + r1y * r1y) * (v1x * v1x + v1y * v1y));
-        // taking case of numerical rounding
-        s01 = sqrt(fabs(1.0 - s01 * s01));
+      s01 = (r1x*v1x+r1y*v1y)/sqrt((r1x*r1x+r1y*r1y)*(v1x*v1x+v1y*v1y));
+      // taking case of numerical rounding
+      s01 = sqrt(fabs(1.0-s01*s01));
 
-        s01_before = (r1x * v1x_before + r1y * v1y_before) /
-                     (sqrt((r1x * r1x + r1y * r1y) * (v1x_before * v1x_before + v1y_before * v1y_before)) + eps);
-        // taking case of numerical rounding
-        s01_before = sqrt(fabs(1.0 - s01_before * s01_before));
+      s01_before = (r1x*v1x_before+r1y*v1y_before)/(sqrt((r1x*r1x+r1y*r1y)*(v1x_before*v1x_before+v1y_before*v1y_before))+eps);
+      // taking case of numerical rounding
+      s01_before = sqrt(fabs(1.0-s01_before*s01_before));
 
-        double theta = asin(s01);
-        double theta_before = asin(s01_before);
+      double theta = asin(s01);
+      double theta_before = asin(s01_before);
 
-        E2 = ecc1 * alpha * cos(theta);
-        E1 = ecc1_before * alpha * cos(theta_before);
-
+      E2 = ecc1*alpha*cos(theta);
+      E1 = ecc1_before*alpha*cos(theta_before);
         return E2 - E1;
 
     }
@@ -375,8 +371,7 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
         r2y = pt.y - ycm;
         // taking case of numerical rounding
         ecc2 = sqrt(fabs(1.0 - l2_min / (l2_max + eps)));
-//        cerr << "l2_min: " << l2_min<< "  l2_max: " << l2_max << endl;
-        s02 = (r2x * v2x + r2y * v2y) / (sqrt((r2x * r2x + r2y * r2y) * (v2x * v2x + v2y * v2y)) + eps);
+      s02 = (r2x*v2x+r2y*v2y)/(sqrt((r2x*r2x+r2y*r2y)*(v2x*v2x+v2y*v2y))+eps);
 
         // taking case of numerical rounding
         s02 = sqrt(fabs(1.0 - s02 * s02));
@@ -390,45 +385,49 @@ double OrientedContactPlugin::getMediumOrientation(const Point3D &pt, const Cell
         E2 = ecc2 * alpha * cos(theta);
         E1 = ecc2_before * alpha * cos(theta_before);
 
-        return E2 - E1;
-
-    }
+        return E2-E1;
+      
+   }
 
 
 }
 
-double OrientedContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
+double OrientedContactPlugin::changeEnergy(const Point3D &pt,
+                                  const CellG *newCell,
+                                  const CellG *oldCell) {
 
-    double energy = 0;
-    unsigned int token = 0;
-    double distance = 0;
-    Point3D n;
 
-    CellG *nCell = 0;
-    WatchableField3D < CellG * > *fieldG = (WatchableField3D < CellG * > *)
-    potts->getCellFieldG();
-    Neighbor neighbor;
+  double energy = 0;
+  unsigned int token = 0;
+  double distance = 0;
+  Point3D n;
 
-    for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
-        neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D &>(pt), nIdx);
-        if (!neighbor.distance) {
-            //if distance is 0 then the neighbor returned is invalid
-            continue;
-        }
+  CellG *nCell=0;
+  WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
+  Neighbor neighbor;
 
-        nCell = fieldG->get(neighbor.pt);
-        if (nCell != oldCell) {
-            if (!nCell) {
-                energy -= orientedContactEnergy(oldCell, nCell) * getMediumOrientation(pt, oldCell, nCell);
+
+      for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
+         neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
+         if(!neighbor.distance){
+         //if distance is 0 then the neighbor returned is invalid
+         continue;
+         }
+
+         nCell = fieldG->get(neighbor.pt);
+         if(nCell!=oldCell){
+            if(!nCell) {
+               energy -= orientedContactEnergy(oldCell, nCell)*getMediumOrientation(pt,oldCell,nCell);
+
 
             } else {
                 energy -= orientedContactEnergy(oldCell, nCell) + getOrientation(pt, oldCell, nCell);
             }
+         }
+         if(nCell!=newCell){
+            if(!nCell) {
+					energy += orientedContactEnergy(newCell, nCell)*getMediumOrientation(pt,newCell,nCell);
 
-        }
-        if (nCell != newCell) {
-            if (!nCell) {
-                energy += orientedContactEnergy(newCell, nCell) * getMediumOrientation(pt, newCell, nCell);
             } else {
                 energy += orientedContactEnergy(newCell, nCell) + getOrientation(pt, newCell, nCell);
             }
@@ -497,13 +496,12 @@ void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
         alpha = _xmlData->getFirstElement("Alpha")->getDouble();
     }
 
-    cerr << "size=" << orientedContactEnergyArray.size() << endl;
+    CC3D_Log(LOG_DEBUG) << "size=" << orientedContactEnergyArray.size();
 
     for (auto &i: cellTypesSet)
         for (auto &j: cellTypesSet) {
 
-            cerr << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << orientedContactEnergyArray[i][j]
-                 << endl;
+            CC3D_Log(LOG_DEBUG) << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << orientedContactEnergyArray[i][j];
 
         }
 
@@ -512,12 +510,9 @@ void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
     maxNeighborIndex = 0;
 
 
-    if (_xmlData->getFirstElement("Depth")) {
-        maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromDepth(
-                _xmlData->getFirstElement("Depth")->getDouble());
-
-    } else {
-
+			if(_xmlData->getFirstElement("Depth")){
+				maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
+			}else{
         if (_xmlData->getFirstElement("NeighborOrder")) {
 
             maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(
@@ -527,9 +522,8 @@ void OrientedContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 
         }
 
-    }
-
-    cerr << "Contact maxNeighborIndex=" << maxNeighborIndex << endl;
+			}
+         CC3D_Log(LOG_DEBUG) << "Contact maxNeighborIndex="<<maxNeighborIndex;
 
 }
 

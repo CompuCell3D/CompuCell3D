@@ -5,7 +5,7 @@ using namespace CompuCell3D;
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 
 #include "ContactMultiCadPlugin.h"
-
+#include <Logger/CC3DLogger.h>
 
 ContactMultiCadPlugin::ContactMultiCadPlugin() :
         xmlData(0),
@@ -33,8 +33,8 @@ void ContactMultiCadPlugin::extraInit(Simulator *simulator) {
 
 
 double ContactMultiCadPlugin::changeEnergy(const Point3D &pt,
-                                           const CellG *newCell,
-                                           const CellG *oldCell) {
+    const CellG *newCell,
+    const CellG *oldCell) {
 
     double energy = 0;
     unsigned int token = 0;
@@ -45,7 +45,6 @@ double ContactMultiCadPlugin::changeEnergy(const Point3D &pt,
     CellG *nCell = 0;
     WatchableField3D < CellG * > *fieldG = (WatchableField3D < CellG * > *)
     potts->getCellFieldG();
-
     if (weightDistance) {
         for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
             neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D &>(pt), nIdx);
@@ -139,7 +138,6 @@ double ContactMultiCadPlugin::contactEnergyLinear(const CellG *cell1, const Cell
     energy = energyOffset + contactEnergy(cell,
                                           neighbor);
     //thus when using energyOffset-energy expression we need to compensate for extra minus sign
-
     if (neighbor) {
 
         vector<float> &jVecCell = contactMultiCadDataAccessor.get(cell->extraAttribPtr)->jVec;
@@ -154,8 +152,8 @@ double ContactMultiCadPlugin::contactEnergyLinear(const CellG *cell1, const Cell
 
         return energy;
 
-    } else {
-
+    }
+    else {
         return energy;
 
     }
@@ -201,11 +199,11 @@ void ContactMultiCadPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 
     }
 
-    cerr << "size=" << contactEnergyArray.size() << endl;
+    CC3D_Log(LOG_DEBUG) << "size=" << contactEnergyArray.size();
     for (auto &i: cellTypesSet)
         for (auto &j: cellTypesSet) {
 
-            cerr << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << contactEnergyArray[i][j] << endl;
+            CC3D_Log(LOG_DEBUG) << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << contactEnergyArray[i][j];
 
         }
 
@@ -245,7 +243,7 @@ void ContactMultiCadPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
         }
 
     }
-    cerr << "Contact maxNeighborIndex=" << maxNeighborIndex << endl;
+    CC3D_Log(LOG_DEBUG) << "Contact maxNeighborIndex=" << maxNeighborIndex;
 
 
     unsigned int cadIndex = 0;
@@ -263,17 +261,16 @@ void ContactMultiCadPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
         CC3DXMLElementList specCadVec = _xmlData->getElements("SpecificityCadherin");
         for (int i = 0; i < specCadVec.size(); ++i) {
             ContactMultiCadSpecificityCadherin cmcsc;
-
-            cerr << "BEFORE GETTING LIST OF SPECIFICITY" << endl;
+            CC3D_Log(LOG_DEBUG) << "BEFORE GETTING LIST OF SPECIFICITY";
             CC3DXMLElementList specVec = specCadVec[i]->getElements("Specificity");
-            cerr << "specVec.size()=" << specVec.size() << endl;
+            CC3D_Log(LOG_DEBUG) << "specVec.size()=" << specVec.size();
 
             for (int j = 0; j < specVec.size(); ++j) {
                 cmcsc.Specificity(specVec[j]->getAttribute("Cadherin1"), specVec[j]->getAttribute("Cadherin2"),
                                   specVec[j]->getDouble());
-                cerr << "cmcsc.cadherinNameLocalSet.size()=" << cmcsc.cadherinNameLocalSet.size() << endl;
-                cerr << "Cadherin1=" << specVec[j]->getAttribute("Cadherin1") << " Cadherin2"
-                     << specVec[j]->getAttribute("Cadherin1") << " spec=" << specVec[j]->getDouble() << endl;
+                CC3D_Log(LOG_DEBUG) << "cmcsc.cadherinNameLocalSet.size()=" << cmcsc.cadherinNameLocalSet.size();
+                CC3D_Log(LOG_DEBUG) << "Cadherin1=" << specVec[j]->getAttribute("Cadherin1") << " Cadherin2"
+                     << specVec[j]->getAttribute("Cadherin1") << " spec=" << specVec[j]->getDouble();
             }
 
             vecMultCadSpecCad.push_back(cmcsc);
@@ -283,7 +280,7 @@ void ContactMultiCadPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
         //copy all set elements to a master set - cadherinNameSet, defined in ContactMultiCadEnergy class
         for (int i = 0; i < vecMultCadSpecCad.size(); ++i) {
             std::set <std::string> &cadherinNameLocalSetRef = vecMultCadSpecCad[i].cadherinNameLocalSet;
-            cerr << "cadherinNameLocalSetRef.size()=" << cadherinNameLocalSetRef.size() << endl;
+            CC3D_Log(LOG_DEBUG) << "cadherinNameLocalSetRef.size()=" << cadherinNameLocalSetRef.size();
 
             cadherinNameSet.insert(cadherinNameLocalSetRef.begin(), cadherinNameLocalSetRef.end());
         }
@@ -298,7 +295,7 @@ void ContactMultiCadPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 
 
         numberOfCadherins = cadherinNameOrderedVector.size();
-        cerr << "numberOfCadherins=" << numberOfCadherins << endl;
+        CC3D_Log(LOG_DEBUG) << "numberOfCadherins=" << numberOfCadherins;
         //allocate and initialize cadherinSpecificityArray 
 
         cadherinSpecificityArray.assign(numberOfCadherins, vector<double>(numberOfCadherins, 0.));
@@ -328,11 +325,11 @@ void ContactMultiCadPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 
         for (int i = 0; i < numberOfCadherins; ++i)
             for (int j = 0; j < numberOfCadherins; ++j) {
-                cerr << "specificity[" << i << "][" << j << "]=" << cadherinSpecificityArray[i][j] << endl;
+                CC3D_Log(LOG_DEBUG) <<  "specificity[" << i << "][" << j << "]=" << cadherinSpecificityArray[i][j];
             }
 
     }
-    cerr << "GOT HERE INSIDE UPDATE" << endl;
+    CC3D_Log(LOG_DEBUG) << "GOT HERE INSIDE UPDATE";
 
 
 }

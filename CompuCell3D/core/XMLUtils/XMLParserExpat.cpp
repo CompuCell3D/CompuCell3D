@@ -4,8 +4,7 @@
 
 
 #include <XMLUtils/XMLParserExpat.h>
-
-//#define _DEBUG
+#include <Logger/CC3DLogger.h>
 
 using namespace std;
 
@@ -13,12 +12,7 @@ XMLParserExpat::XMLParserExpat():
 level(0),rootElement(0)
 {}
 
-XMLParserExpat::~XMLParserExpat(){
-	//if(p){
-	//	delete p;
-	//	p=0;
-	//}
-}
+XMLParserExpat::~XMLParserExpat(){}
 
 void XMLParserExpat::setFileName(const std::string &_fileName){
 	fileName=_fileName;
@@ -27,11 +21,6 @@ void XMLParserExpat::setFileName(const std::string &_fileName){
 
 
 int XMLParserExpat::parse(){
-	//delete  previous parser
-	//if(p){
-	//	delete p;
-	//	p=0;
-	//}
 
 	//XML_Parser parserObject=XML_ParserCreate(NULL);
 	XML_Parser parser=XML_ParserCreate(NULL);
@@ -51,23 +40,14 @@ int XMLParserExpat::parse(){
   while(getline(inputStream,line)) {
 	
     if (XML_Parse(parser, line.c_str(), line.size(), done) == XML_STATUS_ERROR) {
-		cerr<<"ERROR in the XML file: "<<fileName<<" "<<(const char*)XML_ErrorString(XML_GetErrorCode(parser))<<" in line "<< lineNumber<<endl;;
+		CC3D_Log(LOG_DEBUG) << "ERROR in the XML file: "<<fileName<<" "<<(const char*)XML_ErrorString(XML_GetErrorCode(parser))<<" in line "<< lineNumber;
 		const char * error_string=XML_ErrorString(XML_GetErrorCode(parser));
-			//<<endl;
-			//
-      //fprintf(stderr,
-      //        "%s at line %" XML_FMT_INT_MOD "u\n",
-      //        XML_ErrorString(XML_GetErrorCode(parser)),
-      //        XML_GetCurrentLineNumber(parser));
-      return 1;
+      	return 1;
     }
 	++lineNumber;
   }
 
-
-
   XML_ParserFree(parser);
-
 
 }
 
@@ -76,13 +56,13 @@ void handleStartElement(XMLParserExpat *_xmlExpatParser,const XML_Char *name, co
 
 	_xmlExpatParser->tag=name;	
 #ifdef _DEBUG
-	cerr<<"Starting tag="<<_xmlExpatParser->tag<<endl;
+	CC3D_Log(LOG_DEBUG) << "Starting tag="<<_xmlExpatParser->tag;
 #endif
 	map<string,string> atributeDictionary;
 	for (int i=0;atts[i];i+=2) {
 		atributeDictionary.insert(make_pair(string(atts[i]),string(atts[i+1])));
 #ifdef _DEBUG
-		cerr<<"attrName="<<atts[i]<<" attrValue="<<atts[i+1]<<endl;
+		CC3D_Log(LOG_DEBUG) << "attrName="<<atts[i]<<" attrValue="<<atts[i+1];
 #endif
 	}
 	CC3DXMLElement element(string(name), atributeDictionary);
@@ -97,9 +77,6 @@ void handleStartElement(XMLParserExpat *_xmlExpatParser,const XML_Char *name, co
 		
 	}
 	_xmlExpatParser->nodeStack.push(elementPtr);
-	
-        
-
 
 	_xmlExpatParser->level++; /* entering a new tag */
 }
@@ -107,7 +84,7 @@ void handleStartElement(XMLParserExpat *_xmlExpatParser,const XML_Char *name, co
 void handleEndElement(XMLParserExpat *_xmlExpatParser,const XML_Char *name){
 	_xmlExpatParser->level--; // leaving a tag
 #ifdef _DEBUG
-	cerr<<"Ending tag: '"<<name<<"'\n";
+	CC3D_Log(LOG_DEBUG) << "Ending tag: '" << name;
 #endif
 
 	_xmlExpatParser->nodeStack.pop();
@@ -128,7 +105,7 @@ void handleCharacterData(XMLParserExpat *_xmlExpatParser,const XML_Char *data,in
 	string str=squeeze(string(data,len)); /*<- silly: expat will give you whitespace too */
 	if (str.size()>0u)
 #ifdef _DEBUG
-		cerr<<"Character data: '"<<str<<"'\n";
+		CC3D_Log(LOG_DEBUG) << "Character data: '" << str;
 #endif
 	_xmlExpatParser->nodeStack.top()->cdata=str;
 }

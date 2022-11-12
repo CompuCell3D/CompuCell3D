@@ -1,4 +1,5 @@
 #include "TypeChangeWatcherPyWrapper.h"
+#include <Logger/CC3DLogger.h>
 #include <iostream>
 
 using namespace std;
@@ -38,15 +39,14 @@ void TypeChangeWatcherPyWrapper::typeChange(CellG* _cell,CellG::CellType_t _newT
 	PyGILState_STATE gstate;
 	gstate = PyGILState_Ensure();
    for (int i = 0 ; i < vecPyObject.size() ; ++i){
-
-//       cerr<<"before the call"<<endl;
+         CC3D_Log(LOG_TRACE) <<  "before the call";
       ret=PyObject_CallMethod(vecPyObject[i],"typeChange",0);
 
       
 
       //decrement reference here
       Py_DECREF(ret);
-//       cerr<<"after the call"<<endl;
+      CC3D_Log(LOG_TRACE) << "after the call";
    }
 	PyGILState_Release(gstate);
 

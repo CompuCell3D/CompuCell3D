@@ -39,8 +39,6 @@ void parseStringIntoList(std::string &str,std::vector<std::string> &strVec,std::
          break;
 
       strVec.push_back(string().assign(str,beginPos,endPos-beginPos));
-/*      cerr<<*(--strVec.end())<<endl;
-      cerr<<string().assign(str,endPos,strSize-endPos)<<endl;*/
       endPos+=separator.size();
       //exit(0);
    }

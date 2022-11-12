@@ -142,9 +142,8 @@ FieldSecretor SecretionPlugin::getFieldSecretor(std::string _fieldName) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void SecretionPlugin::step() {
-
-    //cerr<<"inside STEP SECRETION PLUGIN"<<endl;
+void SecretionPlugin::step(){
+	CC3D_Log(LOG_TRACE) << "inside STEP SECRETION PLUGIN";
     unsigned int currentStep;
     unsigned int currentAttempt;
     unsigned int numberOfAttempts;
@@ -268,7 +267,7 @@ void SecretionPlugin::secreteSingleField(unsigned int idx) {
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+        CC3D_Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;

@@ -8,6 +8,7 @@ using namespace std;
 
 
 #include "DictyFieldInitializer.h"
+#include <Logger/CC3DLogger.h>
 
 DictyFieldInitializer::DictyFieldInitializer() :
         potts(0), gotAmoebaeFieldBorder(false), presporeRatio(0.5), gap(1), width(2), amoebaeFieldBorder(10) {}
@@ -113,9 +114,8 @@ void DictyFieldInitializer::start() {
                         (int) fabs(1.0 * cellPt.y - dim.y) % dim.y <= 1.0 ||
                         (int) fabs(1.0 * cellPt.x - dim.x) % dim.x <= 1.0
                         ) {
-                    //cerr<<"wall at pt="<<cellPt<<endl;
                     cellField->set(cellPt, cell);
-                }
+				}
 
                 /*         if(cellPt.z<width)///additionally thick wall at the bottom to prevent the diffusion into too large area
                 cellField->set(cellPt, cell);*/
@@ -164,14 +164,14 @@ void DictyFieldInitializer::start() {
 
     if(!cellField->get(cellPt)){///check if medium
     if( ! initializedWater){ ///put water
-    //cerr<<"CREATING WATER CELL "<<cellPt<<endl;
+    // CC3D_Log(LOG_DEBUG) << CREATING WATER CELL "<<cellPt;
     cell=potts->createCellG(pt);
     cell->type=automaton->getTypeId("Water");
     cellField->set(cellPt,cell);
     initializedWater=true;
 
     }else{///put water
-    //cerr<<"SETTING WATER CELL "<<cellPt<<endl;
+    // CC3D_Log(LOG_DEBUG) << "SETTING WATER CELL "<<cellPt;
     cellField->set(cellPt,cell);
     }
     }
@@ -207,14 +207,13 @@ void DictyFieldInitializer::initializeCellTypes() {
             cell->type = automaton->getTypeId("Wall");
         } else {
 
-            com.x = cell->xCM / cell->volume;
-            com.y = cell->yCM / cell->volume;
-            com.z = cell->zCM / cell->volume;
-
-            cerr << "belongToZone(com)=" << belongToZone(com) << " com=" << com << endl;
+			com.x=cell->xCM/ cell->volume ;
+			com.y=cell->yCM/ cell->volume;
+			com.z=cell->zCM/ cell->volume;
+			CC3D_Log(LOG_DEBUG) << "belongToZone(com)="<<belongToZone(com)<<" com="<<com;
             if (belongToZone(com)) {
                 cell->type = automaton->getTypeId("Autocycling");
-                cerr << "setting autocycling type=" << (int) cell->type << endl;
+                CC3D_Log(LOG_DEBUG) << "setting autocycling type="<<(int)cell->type;
             } else {
                 if (rand->getRatio() < presporeRatio) {
                     cell->type = automaton->getTypeId("Prespore");

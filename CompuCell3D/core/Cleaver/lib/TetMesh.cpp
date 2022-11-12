@@ -53,6 +53,7 @@
 #include "BCCLattice3D.h"
 #include "Util.h"
 #include "Matlab.h"
+#include <Logger/CC3DLogger.h>
 
 using namespace std;
 
@@ -73,7 +74,7 @@ Face::Face() :
 
 Face::~Face()
 {
-//     cerr<<"deleting Face"<<endl;
+    CC3D_Log(LOG_TRACE) << "deleting Face";
 }
 
 Tet::Tet() : mat_label(-1)
@@ -116,23 +117,22 @@ TetMesh::TetMesh(std::vector<Vertex3D*> &verts, std::vector<Tet*> &tets) :
 }
 
 TetMesh::~TetMesh() {
-//      cerr<<"TetMesh::~TetMesh"<<endl;
-//      cerr<<"TetMesh:: =faces "<<faces<<endl;
+    CC3D_Log(LOG_TRACE) << "TetMesh::~TetMesh";
+    CC3D_Log(LOG_TRACE) << "TetMesh:: =faces "<<faces;
     // delete tets verts, faces, etc
     if (faces) {
         delete [] faces;
         nFaces = 0;
         faces = NULL;
     }
-
-//     cerr<<"TetMesh::~TetMesh - deleted faces"<<endl;
+        CC3D_Log(LOG_TRACE) << "TetMesh::~TetMesh - deleted faces";
     
     for(unsigned int v=0; v < verts.size(); v++)
         delete verts[v];
-//     cerr<<"TetMesh::~TetMesh - deleted verts"<<endl;    
+        CC3D_Log(LOG_TRACE) << "TetMesh::~TetMesh - deleted verts"; 
     for(unsigned int t=0; t < tets.size(); t++)
         delete tets[t];
-//     cerr<<"TetMesh::~TetMesh - deleted tets"<<endl;        
+        CC3D_Log(LOG_TRACE) << "TetMesh::~TetMesh - deleted tets";     
     
     std::vector<Vertex3D*> *vlist = &verts;
     std::vector<Tet*> *tlist = &tets;
@@ -837,11 +837,11 @@ void TetMesh::writeMatlab(const std::string &filename, bool verbose)
     //-------------------------------
     std::ofstream file((filename + ".mat").c_str(), std::ios::out | std::ios::binary);
     if(verbose)
-        std::cout << "Writing mesh matlab file: " << (filename + ".mat").c_str() << std::endl;
+        CC3D_Log(LOG_DEBUG) << "Writing mesh matlab file: " << (filename + ".mat").c_str();
 
     if(!file.is_open())
     {
-        std::cerr << "Failed to create file." << std::endl;
+        CC3D_Log(LOG_DEBUG) << "Failed to create file.";
         return;
     }
 

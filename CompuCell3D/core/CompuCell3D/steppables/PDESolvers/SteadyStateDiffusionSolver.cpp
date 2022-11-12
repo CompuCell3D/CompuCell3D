@@ -23,6 +23,7 @@
 
 #include "SteadyStateDiffusionSolver.h"
 #include "hpppdesolvers.h"//have to put this header last to avoid STL header clash on linux
+#include <Logger/CC3DLogger.h>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // std::ostream & operator<<(std::ostream & out,CompuCell3D::DiffusionData & diffData){
@@ -61,7 +62,7 @@ void SteadyStateDiffusionSolverSerializer::readFromFile() {
         }
 
     } catch (CC3DException &e) {
-        cerr << "COULD NOT FIND ONE OF THE FILES" << endl;
+        CC3D_Log(LOG_DEBUG) << "COULD NOT FIND ONE OF THE FILES";
         throw CC3DException("Error in reading diffusion fields from file", e);
     }
 
@@ -117,27 +118,25 @@ void SteadyStateDiffusionSolver::init(Simulator *simulator, CC3DXMLElement *_xml
     numberOfFields = diffSecrFieldTuppleVec.size();
 
 
-    vector <string> concentrationFieldNameVectorTmp; //temporary vector for field names
-    ///assign vector of field names
-    concentrationFieldNameVectorTmp.assign(diffSecrFieldTuppleVec.size(), string(""));
-
-    cerr << "diffSecrFieldTuppleVec.size()=" << diffSecrFieldTuppleVec.size() << endl;
+	vector<string> concentrationFieldNameVectorTmp; //temporary vector for field names
+	///assign vector of field names
+	concentrationFieldNameVectorTmp.assign(diffSecrFieldTuppleVec.size(),string(""));
+	CC3D_Log(LOG_DEBUG) << "diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size();
 
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        //       cerr<<" concentrationFieldNameVector[i]="<<diffDataVec[i].fieldName<<endl;
         //       concentrationFieldNameVector.push_back(diffDataVec[i].fieldName);
-        concentrationFieldNameVectorTmp[i] = diffSecrFieldTuppleVec[i].diffData.fieldName;
-        cerr << " concentrationFieldNameVector[i]=" << concentrationFieldNameVectorTmp[i] << endl;
+		concentrationFieldNameVectorTmp[i] = diffSecrFieldTuppleVec[i].diffData.fieldName;
+		CC3D_Log(LOG_DEBUG) << " concentrationFieldNameVector[i]="<<concentrationFieldNameVectorTmp[i];
     }
 
 
-    cerr << "FIELDS THAT I HAVE" << endl;
-    for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        cerr << "Field " << i << " name: " << concentrationFieldNameVectorTmp[i] << endl;
-    }
+	CC3D_Log(LOG_DEBUG) << "FIELDS THAT I HAVE";
+	for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
+		CC3D_Log(LOG_DEBUG) << "Field "<<i<<" name: "<<concentrationFieldNameVectorTmp[i];	}
 
 
-    cerr << "FlexibleDiffusionSolverFE: extra Init in read XML" << endl;
+
+	CC3D_Log(LOG_DEBUG) << "FlexibleDiffusionSolverFE: extra Init in read XML";
 
     workFieldDim = Dim3D(fieldDim.x + 1, fieldDim.y + 1, fieldDim.z + 1);
     ///allocate fields including scrartch field
@@ -150,16 +149,14 @@ void SteadyStateDiffusionSolver::init(Simulator *simulator, CC3DXMLElement *_xml
         maxLMN = fieldDim.z + 1;
 
 
-    scratchVec.assign(30 + fieldDim.x + 1 + 1 + fieldDim.y + 1 + 1 + 5 * (fieldDim.z + 1) + maxLMN +
-                      7 * ((int) (fieldDim.x + 1 + 1) + (int) (fieldDim.y + 1 + 1)), 0.0);
-    scratch = &(scratchVec[0]);
-
-    cerr << "fieldDim=" << fieldDim << endl;
-    //vectors used to specify boundary conditions
-    bdaVec.assign((fieldDim.y + 1) * (fieldDim.z + 1), 0.0);
-    bdbVec.assign((fieldDim.y + 1) * (fieldDim.z + 1), 0.0);
-    bdcVec.assign((fieldDim.x + 1) * (fieldDim.z + 1), 0.0);
-    bddVec.assign((fieldDim.x + 1) * (fieldDim.z + 1), 0.0);
+	scratchVec.assign(30 + fieldDim.x+1+1 + fieldDim.y+1+1 + 5*(fieldDim.z+1)+maxLMN+7*((int)(fieldDim.x+1+1)+(int)(fieldDim.y+1+1)),0.0);
+	scratch=&(scratchVec[0]);
+	CC3D_Log(LOG_DEBUG) << "fieldDim="<<fieldDim;
+	//vectors used to specify boundary conditions
+	bdaVec.assign((fieldDim.y+1)*(fieldDim.z+1),0.0);
+	bdbVec.assign((fieldDim.y+1)*(fieldDim.z+1),0.0);
+	bdcVec.assign((fieldDim.x+1)*(fieldDim.z+1),0.0);
+	bddVec.assign((fieldDim.x+1)*(fieldDim.z+1),0.0);
 
     bdeVec.assign((fieldDim.x + 1) * (fieldDim.y + 1), 0.0);
     bdfVec.assign((fieldDim.x + 1) * (fieldDim.y + 1), 0.0);
@@ -183,8 +180,7 @@ void SteadyStateDiffusionSolver::init(Simulator *simulator, CC3DXMLElement *_xml
     //register fields once they have been allocated
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
         simPtr->registerConcentrationField(concentrationFieldNameVector[i], concentrationFieldVector[i]);
-        cerr << "registring field: " << concentrationFieldNameVector[i] << " field address="
-             << concentrationFieldVector[i] << endl;
+        CC3D_Log(LOG_DEBUG) << "registring field: "<<concentrationFieldNameVector[i]<<" field address="<<concentrationFieldVector[i];
     }
 
 
@@ -289,9 +285,8 @@ void SteadyStateDiffusionSolver::handleEvent(CC3DEvent &_event) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SteadyStateDiffusionSolver::start() {
-    //     if(diffConst> (1.0/6.0-0.05) ){ //hard coded condtion for stability of the solutions - assume dt=1 dx=dy=dz=1
-    //
-    //       cerr<<"CANNOT SOLVE DIFFUSION EQUATION: STABILITY PROBLEM - DIFFUSION CONSTANT TOO LARGE. EXITING..."<<endl;
+	//     if(diffConst> (1.0/6.0-0.05) ){ //hard coded condtion for stability of the solutions - assume dt=1 dx=dy=dz=1
+	// 		CC3D_Log(LOG_TRACE) << "CANNOT SOLVE DIFFUSION EQUATION: STABILITY PROBLEM - DIFFUSION CONSTANT TOO LARGE. EXITING...";
     //       exit(0);
     //
     //    }
@@ -307,7 +302,7 @@ void SteadyStateDiffusionSolver::start() {
             //          serializerPtr->readFromFile();
 
         } catch (CC3DException &e) {
-            cerr << "Going to fail-safe initialization" << endl;
+            CC3D_Log(LOG_DEBUG) << "Going to fail-safe initialization";
             initializeConcentration(); //if there was error, initialize using failsafe defaults
         }
 
@@ -329,7 +324,7 @@ void SteadyStateDiffusionSolver::initializeConcentration() {
             continue;
         }
         if (diffSecrFieldTuppleVec[i].diffData.concentrationFileName.empty()) continue;
-        cerr << "fail-safe initialization " << diffSecrFieldTuppleVec[i].diffData.concentrationFileName << endl;
+        CC3D_Log(LOG_DEBUG) << "fail-safe initialization "<<diffSecrFieldTuppleVec[i].diffData.concentrationFileName;
         readConcentrationField(diffSecrFieldTuppleVec[i].diffData.concentrationFileName, concentrationFieldVector[i]);
     }
 
@@ -381,7 +376,7 @@ void SteadyStateDiffusionSolver::secreteOxygenSingleField(unsigned int idx) {
 
     //std::map<unsigned char,float>::iterator mitr;
     //std::map<unsigned char,float>::iterator end_mitr=secrData.typeIdSecrConstMap.end();
-    //cerr<<"INSIDE OXYGEN SECRETION\n\n\n\n"<<endl;
+    CC3D_Log(LOG_TRACE) << "INSIDE OXYGEN SECRETION";
     double currentConcentration;
     double newConcentration;
     for (int x = 0; x < fieldDim.x; x++)
@@ -396,20 +391,17 @@ void SteadyStateDiffusionSolver::secreteOxygenSingleField(unsigned int idx) {
                     if (cell->type < oxygenSecretionData.size() && oxygenSecretionData[cell->type].dataInitialized) {
                         OxygenSecretionParameters &params = oxygenSecretionData[cell->type];
 
-                        currentConcentration = concentrationFieldPtr->get(pt);
-                        newConcentration = params.bf / 60.0 *
-                                           (
-                                                   (params.pblood - params.beta * currentConcentration)
-                                                   + (
-                                                             pow(params.pblood, params.n) /
-                                                             (pow(params.pblood, params.n)
-                                                              + pow(params.Khem, params.n))
-                                                             - pow(currentConcentration * params.beta, params.n) /
-                                                               (pow(currentConcentration * params.beta, params.n) +
-                                                                pow(params.Khem, params.n))
-                                                     ) * params.Hb * params.delta / params.alpha
-                                           );
-                        //cerr<<"pt="<<pt<<" newConcentraion="<<newConcentration<<" current concentration="<<currentConcentration<<endl;
+						currentConcentration=concentrationFieldPtr->get(pt);
+						newConcentration=params.bf/60.0*
+							(   
+							(params.pblood-params.beta*currentConcentration)
+							+ (   
+							pow(params.pblood,params.n)/(pow(params.pblood,params.n)
+							+pow(params.Khem,params.n))
+							-  pow(currentConcentration*params.beta,params.n)/(pow(currentConcentration*params.beta,params.n)+pow(params.Khem,params.n))      
+							)*params.Hb*params.delta/params.alpha    															
+							);
+							CC3D_Log(LOG_TRACE) << "pt="<<pt<<" newConcentraion="<<newConcentration<<" current concentration="<<currentConcentration;
                         concentrationFieldPtr->set(pt,
                                                    -newConcentration);        //minus sign is added because of the convention implied by pde solving fcn - deltaT scaling is done in diffuseSingleField function
 
@@ -496,7 +488,7 @@ void SteadyStateDiffusionSolver::secreteSingleField(unsigned int idx) {
                 pt.x = x;
                 pt.y = y;
                 pt.z = z;
-                //cerr<<"pt="<<pt<<"index="<<concentrationFieldPtr->index(x,y)<<endl;
+                CC3D_Log(LOG_TRACE) << "pt="<<pt<<"index="<<concentrationFieldPtr->index(x,y,0);
                 bool pixelUntouched = true;
 
                 cell = cellFieldG->get(pt);
@@ -555,7 +547,7 @@ void SteadyStateDiffusionSolver::secreteSingleField(unsigned int idx) {
                                     concentrationFieldPtr->set(pt, currentConcentration *
                                                                    mitrUptake->second.relativeUptakeRate);//positive value here means uptake
                                     pixelUntouched = false;
-                                    //cerr<<"concentration="<< currentConconcentrationField.getDirect(x,y,z)- currentConcentration*mitrUptake->second.relativeUptakeRate);
+                                    CC3D_Log(LOG_TRACE) << "concentration="<< concentrationFieldPtr->getQuick(x,y,z)- currentConcentration*mitrUptake->second.relativeUptakeRate;
                                 }
                             } else {//doing  MichaelisMenten coef-based type of uptake
                                 concentrationFieldPtr->set(pt, mitrUptake->second.maxUptake * (currentConcentration /
@@ -584,7 +576,7 @@ void SteadyStateDiffusionSolver::secrete() {
             //do nothing here we do all manipulation in Python
         } else {
             //handle Oxygen Secretion
-            //cerr<<"diffSecrFieldTuppleVec[i].oxygenSecretionData.size()="<<diffSecrFieldTuppleVec[i].oxygenSecretionData.size()<<endl;
+			CC3D_Log(LOG_TRACE) << "diffSecrFieldTuppleVec[i].oxygenSecretionData.size()="<<diffSecrFieldTuppleVec[i].oxygenSecretionData.size();
             if (diffSecrFieldTuppleVec[i].oxygenSecretionData.size()) { //if there is any oxygen secretion data specified for this field use oxygen secretion mode
                 secreteOxygenSingleField(i);
                 continue; //ignore other secretion modes
@@ -932,7 +924,7 @@ void SteadyStateDiffusionSolver::diffuseSingleField(unsigned int idx) {
 
 
     if (ierror) {
-        cerr << "solution has a problem. Error code: " << ierror << endl;
+        CC3D_Log(LOG_DEBUG) << "solution has a problem. Error code: "<<ierror;
     }
 
 
@@ -1297,13 +1289,13 @@ void SteadyStateDiffusionSolver::update(CC3DXMLElement *_xmlData, bool _fullInit
         if (_xmlData->getFirstElement("Serialize")->findAttribute("Frequency")) {
             serializeFrequency = _xmlData->getFirstElement("Serialize")->getAttributeAsUInt("Frequency");
         }
-        cerr << "serialize Flag=" << serializeFlag << endl;
+        CC3D_Log(LOG_DEBUG) << "serialize Flag="<<serializeFlag;
 
     }
 
     if (_xmlData->findElement("ReadFromFile")) {
         readFromFileFlag = true;
-        cerr << "readFromFileFlag=" << readFromFileFlag << endl;
+        CC3D_Log(LOG_DEBUG) << "readFromFileFlag="<<readFromFileFlag;
     }
 
 

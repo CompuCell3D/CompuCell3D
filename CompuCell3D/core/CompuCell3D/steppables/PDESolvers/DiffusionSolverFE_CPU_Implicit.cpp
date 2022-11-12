@@ -6,6 +6,7 @@
 #include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
+#include <Logger/CC3DLogger.h>
 
 #if defined(_WIN32)
 #undef max
@@ -51,13 +52,11 @@ void CompareMatrices(SparseMatrixT const &m1, SparseMatrixT const &m2) {
             if (it1.row() != it2.row()) throw CC3DException("Rows sizes must be equal");
 
             if (it1.value() != it2.value())
-                cerr << "Columns must be equal " << it1.row() << " " << it2.row() << "\t" << it1.col() << " "
-                     << it2.col() << endl;
+                CC3D_Log(LOG_DEBUG) << "Columns must be equal "<<it1.row()<<" "<<it2.row()<<"\t"<<it1.col()<<" "<<it2.col();
             if (it1.index() != it2.index()) throw CC3DException("Indices sizes must be equal");
 
             if (it1.value() != it2.value())
-                cerr << it1.row() << " " << it2.row() << "\t" << it1.col() << " " << it2.col() << "\t" << it1.value()
-                     << " " << it2.value() << endl;
+                CC3D_Log(LOG_DEBUG) << it1.row()<<" "<<it2.row()<<"\t"<<it1.col()<<" "<<it2.col()<<"\t"<<it1.value()<<" "<<it2.value();
 
         }
 }
@@ -68,13 +67,11 @@ namespace {
     }
 }
 
-void
-DiffusionSolverFE_CPU_Implicit::Implicit(ConcentrationField_t const &concentrationField, DiffusionData const &diffData,
-                                         EigenRealVector const &b, EigenRealVector &x) {
-    size_t totalSize = (fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2);
-    size_t totalExtSize = h_celltype_field->getArraySize();
-
-    cerr << "Field size: " << totalSize << "; total size: " << totalExtSize << endl;
+void DiffusionSolverFE_CPU_Implicit::Implicit(ConcentrationField_t const &concentrationField, DiffusionData const &diffData, 
+	EigenRealVector const &b, EigenRealVector &x){
+	size_t totalSize=(fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2);
+	size_t totalExtSize=h_celltype_field->getArraySize();
+	CC3D_Log(LOG_DEBUG) << "Field size: "<<totalSize<<"; total size: "<<totalExtSize;
 
 
     //SparseMatrix<float, RowMajor> eigenM(totalSize,totalSize);
@@ -90,7 +87,7 @@ DiffusionSolverFE_CPU_Implicit::Implicit(ConcentrationField_t const &concentrati
     EigenSparseMatrix eigenM_new(totalSize, totalSize);
     //QueryPerformanceCounter(&tb);
     eigenM_new.reserve(totalSize * is2D ? 5 : 7);
-    cout << "Assembling matrix... ";
+    CC3D_Log(LOG_DEBUG) << "Assembling matrix... ";
     int prevZ = -1;
 
     //TODO: unify this with OpenCL matrix assembling...
@@ -150,14 +147,14 @@ DiffusionSolverFE_CPU_Implicit::Implicit(ConcentrationField_t const &concentrati
 
     }
 
-    cout << "done" << endl;
+    CC3D_Log(LOG_DEBUG) << "done";
     eigenM_new.finalize();
     eigenM_new.makeCompressed();
 //	QueryPerformanceCounter(&te);
-    //cout<<"completelly done"<<endl;
+    //CC3D_Log(LOG_DEBUG)<<"completelly done";
 
 //	double time=(double)(te.QuadPart-tb.QuadPart)/(double)fq.QuadPart;
-//	std::cerr<<"It took "<<time<<" s to assemble a matrix with new algorithm\n";
+	CC3D_Log(LOG_TRACE) << "It took "<<time<<" s to assemble a matrix with new algorithm" << std::endl;
 
 //	CompareMatrices(eigenM, eigenM_new);
 
@@ -166,25 +163,24 @@ DiffusionSolverFE_CPU_Implicit::Implicit(ConcentrationField_t const &concentrati
 
     ConjugateGradient <EigenSparseMatrix> cg;
 
-    cout << "Preparing system... ";
+    CC3D_Log(LOG_DEBUG) << "Preparing system... ";
 //	QueryPerformanceCounter(&tb);
     cg.compute(eigenM_new);
 //	QueryPerformanceCounter(&te);
-    cout << "done" << endl;
+    CC3D_Log(LOG_DEBUG) << "done";
 
 //	double timePrep=(double)(te.QuadPart-tb.QuadPart)/(double)fq.QuadPart;
 
-    cout << "Solving system... ";
+    CC3D_Log(LOG_DEBUG) << "Solving system... ";
 //	QueryPerformanceCounter(&tb);
     x = cg.solve(b);
     //QueryPerformanceCounter(&te);
-    cout << "done" << endl;
+    CC3D_Log(LOG_DEBUG) << "done";
 
     //time=(double)(te.QuadPart-tb.QuadPart)/(double)fq.QuadPart;
-    //std::cerr<<"It took "<<time<<" s to find the solution with explicit solver and "<<timePrep<<" for preparing the system\n";
 
-    std::cout << "#iterations:     " << cg.iterations() << std::endl;
-    std::cout << "estimated error: " << cg.error() << std::endl;
+    CC3D_Log(LOG_DEBUG) << "#iterations:     " << cg.iterations();
+    CC3D_Log(LOG_DEBUG) << "estimated error: " << cg.error();
 }
 
 
@@ -193,7 +189,7 @@ void DiffusionSolverFE_CPU_Implicit::step(const unsigned int _currentStep) {
     currentStep = _currentStep;
 
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        //cerr<<"scalingExtraMCSVec[i]="<<scalingExtraMCSVec[i]<<endl;
+        CC3D_Log(LOG_TRACE) << "scalingExtraMCSVec[i]="<<scalingExtraMCSVec[i];
 
         diffuseSingleField(i);
 
@@ -217,7 +213,7 @@ void DiffusionSolverFE_CPU_Implicit::diffuseSingleFieldImpl(ConcentrationField_t
     // Using boundary strategy to get offset array it is best to hard code offsets and access them directly
     // The downside is that in such a case one woudl have to write separate diffuseSingleField functions fdor 2D, 3D and for hex and square lattices.
     // However speedups may be worth extra effort.
-    //cerr<<"shiftArray="<<concentrationField.getShiftArray()<<" shiftSwap="<<concentrationField.getShiftSwap()<<endl;
+    CC3D_Log(LOG_TRACE) << "shiftArray="<<concentrationField.getShiftArray()<<" shiftSwap="<<concentrationField.getShiftSwap();
     //hard coded offsets for 3D square lattice
     //Point3D offsetArray[6];
     //offsetArray[0]=Point3D(0,0,1);
@@ -242,7 +238,7 @@ void DiffusionSolverFE_CPU_Implicit::diffuseSingleFieldImpl(ConcentrationField_t
 
 
     //HAVE TO WATCH OUT FOR SHARED/PRIVATE VARIABLES
-    //cerr<<"Diffusion step"<<endl;
+    CC3D_Log(LOG_TRACE) << "Diffusion step";
     //DiffusionData & diffData = diffSecrFieldTuppleVec[idx].diffData;
     //float diffConst=diffConstVec[idx];
     //float decayConst=decayConstVec[idx];
@@ -281,7 +277,7 @@ void DiffusionSolverFE_CPU_Implicit::diffuseSingleFieldImpl(ConcentrationField_t
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+        CC3D_Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;

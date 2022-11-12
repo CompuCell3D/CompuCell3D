@@ -5,6 +5,7 @@
 using namespace CompuCell3D;
 
 #include "MomentOfInertiaPlugin.h"
+#include <Logger/CC3DLogger.h>
 
 using namespace std;
 
@@ -36,7 +37,7 @@ MomentOfInertiaPlugin::MomentOfInertiaPlugin():potts(0),simulator(0),boundaryStr
 MomentOfInertiaPlugin::~MomentOfInertiaPlugin() {}
 
 void MomentOfInertiaPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
-	cerr<<"\n\n\n  \t\t\t CALLING INIT OF MOMENT OF INERTIA PLUGIN\n\n\n"<<endl;
+	CC3D_Log(LOG_DEBUG) << std::endl << std::endl << std::endl << "  \t\t\t CALLING INIT OF MOMENT OF INERTIA PLUGIN" << std::endl << std::endl << std::endl;
 	this->simulator=simulator;
 	potts = simulator->getPotts();
 	bool pluginAlreadyRegisteredFlag;
@@ -91,7 +92,7 @@ void CompuCell3D::MomentOfInertiaPlugin::field3DChange(const Point3D &pt, CellG 
 	if( !(currentStep %100)	&& lastMCSPrintedWarning < currentStep){
 		lastMCSPrintedWarning = currentStep;
 		if ( boundaryConditionIndicator.x || boundaryConditionIndicator.y || boundaryConditionIndicator.z ){
-			cerr<<"MomentOfInertia plugin may not work properly with periodic boundary conditions.Pleas see manual when it is OK to use this plugin with periodic boundary conditions"<<endl;
+			CC3D_Log(LOG_DEBUG) << "MomentOfInertia plugin may not work properly with periodic boundary conditions.Pleas see manual when it is OK to use this plugin with periodic boundary conditions";
 		}
 	}
 	double xcm, ycm, zcm;

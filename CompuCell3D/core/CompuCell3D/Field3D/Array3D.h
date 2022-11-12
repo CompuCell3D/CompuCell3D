@@ -1249,7 +1249,6 @@ void Array2DBorders<T>::allocateMemory(const Dim3D &_dim, T &val) {
                 ptShift = pt - shiftVec;
                 if (ptShift.x >= 0 && ptShift.x < Field3DImpl<T>::dim.x && ptShift.y >= 0 &&
                     ptShift.y < Field3DImpl<T>::dim.y) {
-                    //cerr<<"ptShift="<<ptShift<<" pt="<<pt<<endl;
                     newArrayCont[(pt.x + borderWidth) + shiftArray +
                                  (2 * (pt.y + borderWidth) + shiftArray) * newInternalDim.x] = arrayCont[ptShift.x +
                                                                                                          borderWidth +

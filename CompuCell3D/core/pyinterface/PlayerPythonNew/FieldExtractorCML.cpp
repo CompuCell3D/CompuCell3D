@@ -70,31 +70,9 @@ void FieldExtractorCML::fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr, v
 
 void FieldExtractorCML::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _plane, int _pos) {
 
-    //cerr<<" \n\n\n THIS IS fillCellFieldData2D\n\n\n\n"<<endl;
+
     vtkIntArray *_cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
-
-    // get cell type array from vtk structured points
-    //cerr<<"lds="<<lds<<endl;
-    //cerr<<lds->GetPointData()->GetArray("CellType")<<endl;
-    //cerr<<"STRUCTURED DATA POINTS="<<lds<<endl;
-
-    //lds->Print(cerr);
-
-    //vtkPointData * pointDataPtr=lds->GetPointData();
-    //cerr<<"pointDataPtr="<<pointDataPtr<<endl;
-    //vtkDataArray * dataArrayPtr=lds->GetPointData()->GetArray("CellType");
-    //cerr<<"dataArrayPtr="<<dataArrayPtr<<endl;
     vtkCharArray *typeArrayRead = (vtkCharArray *) lds->GetPointData()->GetArray("CellType");
-    //cerr<<"typeArrayRead="<<typeArrayRead<<endl;
-
-
-    //typeArrayRead->Print(cerr);
-
-    //->GetArray("CellType");
-
-    //cerr<<"fieldDim.x="<<fieldDim.x<<endl;
-    //cerr<<"fieldDim.y="<<fieldDim.y<<endl;
-    //cerr<<"fieldDim.z="<<fieldDim.z<<endl;
 
     vector<int> fieldDimVec(3, 0);
     fieldDimVec[0] = fieldDim.x;
@@ -1438,10 +1416,6 @@ bool FieldExtractorCML::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk
     cellTypeArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
 
     set<int> invisibleTypeSet(_typesInvisibeVec->begin(), _typesInvisibeVec->end());
-
-    //for (set<int>::iterator sitr=invisibleTypeSet.begin();sitr!=invisibleTypeSet.end();++sitr){
-    //	cerr<<"invisible type="<<*sitr<<endl;
-    //}
 
     Point3D pt;
     long idxPt;

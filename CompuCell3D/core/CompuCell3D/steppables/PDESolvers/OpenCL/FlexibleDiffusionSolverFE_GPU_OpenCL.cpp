@@ -10,6 +10,7 @@
 #include <cstring>
 #include <algorithm>
 #include "OpenCLHelper.h"
+#include <Logger/CC3DLogger.h>
 //#include <algorithm>//TODO: remove
 //#include <functional>//TODO: remove
 //#include <limits>//TODO: remove
@@ -18,7 +19,6 @@
 
 # define BLOCK_SIZE_FRAME (BLOCK_SIZE+2)
 
-using std::cerr;
 using std::endl;
 using std::vector;
 using std::string;
@@ -42,8 +42,8 @@ namespace CompuCell3D {
 
     FlexibleDiffusionSolverFE_GPU_OpenCL::~FlexibleDiffusionSolverFE_GPU_OpenCL() {
         //TODO: should wait here for the end of the GPU operations somehow...
-        cerr << "FlexibleDiffusionSolverFE_GPU_OpenCL: destroying GPU objects...\n";
-        oclHelper->Finish();
+        CC3D_Log(LOG_DEBUG) << "FlexibleDiffusionSolverFE_GPU_OpenCL: destroying GPU objects...";
+	oclHelper->Finish();
 
         cl_int res;
 
@@ -79,23 +79,23 @@ namespace CompuCell3D {
 
         delete h_solverParamPtr;
 
-        delete oclHelper;
+	delete oclHelper;
+	CC3D_Log(LOG_DEBUG) << "FlexibleDiffusionSolverFE_GPU_OpenCL: destroying GPU objects... finished";
+	
+}
 
-        cerr << "FlexibleDiffusionSolverFE_GPU_OpenCL: destroying GPU objects... finished\n";
+void FlexibleDiffusionSolverFE_GPU_OpenCL::init(int gpuDeviceIndex, LatticeType lt, size_t fieldLen) {
+    CC3D_Log(LOG_DEBUG) << "Initialize OpenCL object and context";
+    //setup devices and context
 
-    }
-
-    void FlexibleDiffusionSolverFE_GPU_OpenCL::init(int gpuDeviceIndex, LatticeType lt, size_t fieldLen) {
-        std::cout << "Initialize OpenCL object and context\n";
-        //setup devices and context
-
-        latticeType = lt;
-        if (latticeType == HEXAGONAL_LATTICE)
-            cerr << "Using hexagonal lattice\n";
-        else
-            cerr << "Using square lattice\n";
-
-        oclHelper = new OpenCLHelper(gpuDeviceIndex);
+    latticeType=lt;
+    if(latticeType==HEXAGONAL_LATTICE) {
+        CC3D_Log(LOG_DEBUG) << "Using hexagonal lattice"; }
+    else {
+        CC3D_Log(LOG_DEBUG) << "Using square lattice";
+    };
+    
+	oclHelper=new OpenCLHelper(gpuDeviceIndex);
 
         alloc(fieldLen);
 
@@ -105,52 +105,48 @@ namespace CompuCell3D {
 
         h_solverParamPtr = new SolverParams_t();
 
-        // allocate device memory
-        field_len = fieldLen;
-        size_t mem_size_field = fieldLen * sizeof(float);
-        size_t mem_size_celltype_field = fieldLen * sizeof(unsigned char);
-
-        cerr << "Initializing GPU memory" << endl;
+	// allocate device memory
+	field_len=fieldLen;
+    size_t mem_size_field=fieldLen*sizeof(float);
+	size_t mem_size_celltype_field=fieldLen*sizeof(unsigned char);
+	CC3D_Log(LOG_DEBUG) << "Initializing GPU memory";
         d_field = oclHelper->CreateBuffer(CL_MEM_READ_ONLY, mem_size_field);
         if (!d_field) {
-            cerr << "Can't allocate memory for d_field" << endl;
+            CC3D_Log(LOG_DEBUG) << "Can't allocate memory for d_field";
             exit(1);
         }
 
         d_scratch = oclHelper->CreateBuffer(CL_MEM_WRITE_ONLY, mem_size_field);
         if (!d_scratch) {
-            cerr << "Can't allocate memory for d_scratch: " << endl;
+            CC3D_Log(LOG_DEBUG) << "Can't allocate memory for d_scratch: ";
             exit(1);
         }
 
         d_celltype_field = oclHelper->CreateBuffer(CL_MEM_READ_ONLY, mem_size_celltype_field);
         if (!d_celltype_field) {
-            cerr << "Can't allocate memory for d_celltype_field" << endl;
-            exit(1);
-        }
+            CC3D_Log(LOG_DEBUG) << "Can't allocate memory for d_celltype_field";
+		exit(1);
+	}
 
         d_boundary_field = oclHelper->CreateBuffer(CL_MEM_READ_ONLY, mem_size_celltype_field);
         if (!d_boundary_field) {
-            cerr << "Can't allocate memory for d_boundary_field" << endl;
+            CC3D_Log(LOG_DEBUG) << "Can't allocate memory for d_boundary_field";
             exit(1);
         }
 
         d_solverParam = oclHelper->CreateBuffer(CL_MEM_READ_ONLY, sizeof(SolverParams));
         if (!d_solverParam) {
-            cerr << "Can't allocate memory for d_solverParam: " << endl;
-            exit(1);
-        }
-
-        cerr << "building OpenCL program" << endl;
+            CC3D_Log(LOG_DEBUG) << "Can't allocate memory for d_solverParam: "; exit(1);
+	}
+	CC3D_Log(LOG_DEBUG) << "building OpenCL program";
 
         const char *kernelSource[] = {"lib/CompuCell3DSteppables/OpenCL/GPUSolverParams.h",
                                       "lib/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl"};
 
         if (!oclHelper->LoadProgram(kernelSource, 2, program)) {
             //ASSERT_OR_THROW("Can't load the OpenCL kernel", false);
-            cerr << "Can't load the OpenCL kernel\n";
-            exit(-1);
-        }
+            CC3D_Log(LOG_DEBUG) << "Can't load the OpenCL kernel";exit(-1);
+	}
 
         CreateKernel();
 
@@ -169,7 +165,7 @@ namespace CompuCell3D {
         for (int i = 0; i < UCHAR_MAX + 1; ++i) {
             h_solverParam.diffCoef[i] = diffData.diffCoef[i];
             h_solverParam.decayCoef[i] = diffData.decayCoef[i];
-            //cerr<<"h_solverParam.diffCoef["<<i<<"]="<<h_solverParam.diffCoef[i]<<endl;
+            CC3D_Log(LOG_TRACE) << "h_solverParam.diffCoef["<<i<<"]="<<h_solverParam.diffCoef[i];
         }
 
         oclHelper->WriteBuffer(d_solverParam, h_solverParamPtr, 1);
@@ -184,7 +180,7 @@ namespace CompuCell3D {
         static int i = 0;//just to avoid output polluting
         if (i == 0) {
             ++i;
-            cerr << "Block size is: " << localWorkSize[0] << "x" << localWorkSize[1] << "x" << localWorkSize[2] << endl;
+            CC3D_Log(LOG_DEBUG) << "Block size is: "<<localWorkSize[0]<<"x"<<localWorkSize[1]<<"x"<<localWorkSize[2];
         }
     }
 
@@ -200,35 +196,32 @@ namespace CompuCell3D {
 //for debugging
     void CheckConcentrationField(SolverParams const *h_solverParamPtr, float const *h_field) {
         //size_t lim=(h_solverParamPtr->dimx+2)*(h_solverParamPtr->dimy+2)*(h_solverParamPtr->dimz+2);
-        //cerr<<field_len<<" "<<lim<<endl;
+
         //for(size_t i=0; i<lim; ++i){
         //	h_field[i]=2.f;
         //}
-        //cerr<<h_field[800]<<endl;
-        double sum = 0.f;
-        float minVal = numeric_limits<float>::max();
-        float maxVal = -numeric_limits<float>::max();
-        for (unsigned int z = 1; z <= h_solverParamPtr->dimz; ++z) {
-            for (unsigned int y = 1; y <= h_solverParamPtr->dimy; ++y) {
-                for (unsigned int x = 1; x <= h_solverParamPtr->dimx; ++x) {
-                    float val = h_field[z * (h_solverParamPtr->dimx + 2) * (h_solverParamPtr->dimy + 2) +
-                                        y * (h_solverParamPtr->dimx + 2) + x];
-                    sum += val;
-                    minVal = std::min(val, minVal);
-                    maxVal = std::max(val, maxVal);
-                }
-            }
-        }
-
-        cerr << "min: " << minVal << "; max: " << maxVal << " " << sum << endl;
+        CC3D_Log(LOG_TRACE) << h_field[800];
+	double sum=0.f;
+	float minVal=numeric_limits<float>::max();
+	float maxVal=-numeric_limits<float>::max();
+	for(unsigned int z=1; z<=h_solverParamPtr->dimz; ++z){
+		for(unsigned int y=1; y<=h_solverParamPtr->dimy; ++y){
+			for(unsigned int x=1; x<=h_solverParamPtr->dimx; ++x){
+				float val=h_field[z*(h_solverParamPtr->dimx+2)*(h_solverParamPtr->dimy+2)+y*(h_solverParamPtr->dimx+2)+x];
+				sum+=val;
+				minVal=std::min(val, minVal);
+				maxVal=std::max(val, maxVal);
+			}
+		}
+	}
+	CC3D_Log(LOG_DEBUG) << "min: "<<minVal<<"; max: "<<maxVal<<" "<<sum;
     }
 
     void FlexibleDiffusionSolverFE_GPU_OpenCL::fieldDeviceToHost(float *h_field) const {
         assert(oclHelper);
         if (oclHelper->ReadBuffer(d_scratch, h_field, field_len) != CL_SUCCESS) {
-            cerr << "Error on reading\n";
-            exit(-1);
-        }
+            CC3D_Log(LOG_DEBUG) << "Error on reading"; exit(-1);
+	}
 
         //TODO: disable code
         //CheckConcentrationField(h_solverParamPtr, h_field);
@@ -258,22 +251,21 @@ namespace CompuCell3D {
         cl_int err;
         if (latticeType == SQUARE_LATTICE) {
             const size_t globalWorkSize[] = {h_solverParamPtr->dimx, h_solverParamPtr->dimy, h_solverParamPtr->dimz};
-            //cerr<<"Block size is: "<<localWorkSize[0]<<"x"<<localWorkSize[1]<<"x"<<localWorkSize[2]<<
-            //	"; globalWorkSize is: "<<globalWorkSize[0]<<"x"<<globalWorkSize[1]<<"x"<<globalWorkSize[2]<<
-            //	" "<<maxWorkGroupSize<<endl;
+            CC3D_Log(LOG_TRACE) << "Block size is: "<<localWorkSize[0]<<"x"<<localWorkSize[1]<<"x"<<localWorkSize[2]<<
+			"; globalWorkSize is: "<<globalWorkSize[0]<<"x"<<globalWorkSize[1]<<"x"<<globalWorkSize[2];
+//            	" "<<maxWorkGroupSize;
             //execute the kernel
             err = oclHelper->EnqueueNDRangeKernel(kernel, 3, globalWorkSize, localWorkSize);
         } else {
-            //cerr<<"Running the hex kernel\n";
-            const size_t globalWorkSize[] = {h_solverParamPtr->dimx, h_solverParamPtr->dimy};
-
-            //cerr<<"Block size is: "<<localWorkSize[0]<<"x"<<localWorkSize[1]<<
-            //	"; globalWorkSize is: "<<globalWorkSize[0]<<"x"<<globalWorkSize[1]<<endl;
+            CC3D_Log(LOG_TRACE) << "Running the hex kernel";
+		const size_t globalWorkSize[]={h_solverParamPtr->dimx, h_solverParamPtr->dimy};
+		CC3D_Log(LOG_TRACE) << "Block size is: "<<localWorkSize[0]<<"x"<<localWorkSize[1]<<
+			"; globalWorkSize is: "<<globalWorkSize[0]<<"x"<<globalWorkSize[1];
             //execute the kernel
             err = oclHelper->EnqueueNDRangeKernel(kernel, 2, globalWorkSize, localWorkSize);
         }
         if (err != CL_SUCCESS) {
-            printf("clEnqueueNDRangeKernel: %s\n", oclHelper->ErrorString(err));
+            CC3D_Log(LOG_DEBUG) << "clEnqueueNDRangeKernel: " << oclHelper->ErrorString(err);
             throw std::runtime_error("OpenCL kernel run failed");
         }
     }
@@ -294,7 +286,7 @@ namespace CompuCell3D {
             kernelName = "diff2DHex";
         }
         kernel = clCreateKernel(program, kernelName.c_str(), &err);
-        printf("clCreateKernel for kernel %s: %s\n", kernelName.c_str(), oclHelper->ErrorString(err));
+        CC3D_Log(LOG_DEBUG) << "clCreateKernel for kernel " << kernelName.c_str() << ": " << oclHelper->ErrorString(err);
     }
 
 
@@ -303,13 +295,9 @@ namespace CompuCell3D {
         if (latticeType == SQUARE_LATTICE) {
             //set the arguements of our kernel
             err = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *) &d_field);
-            // printf("clSetKernelArg, first argument: %s\n", ErrorString(err));
             err = err | clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *) &d_celltype_field);
-            //printf("clSetKernelArg, second argument: %s\n", ErrorString(err));
             err = err | clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *) &d_scratch);
-            //printf("clSetKernelArg, third argument: %s\n", ErrorString(err));
             err = err | clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *) &d_solverParam);
-            //printf("clSetKernelArg, fourth argument: %s\n", ErrorString(err));
             //local (shared) memory arrays
             err = err | clSetKernelArg(kernel, 4, sizeof(float) * (localWorkSize[0] + 2) * (localWorkSize[1] + 2) *
                                                   (localWorkSize[2] + 2), NULL);
@@ -335,18 +323,10 @@ namespace CompuCell3D {
 
 
         if (err != CL_SUCCESS) {
-            printf("FlexibleDiffusionSolverFE_GPU_OpenCL::PrepareKernelParams: %s\n", oclHelper->ErrorString(err));
+            CC3D_Log(LOG_DEBUG) << "FlexibleDiffusionSolverFE_GPU_OpenCL::PrepareKernelParams: " << oclHelper->ErrorString(err);
             throw std::runtime_error("Kernel preparing error");
         }
-
-
-        //that's for "foo" kernel
-        /*cl_int err  = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *) &d_scratch);
-        //printf("clSetKernelArg, third argument: %s\n", ErrorString(err));
-        err  = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *) &d_solverParam);*/
-
-        //Wait for the command queue to finish these commands before proceeding
-        // clFinish(commandQueue);
+        
     }
 
 

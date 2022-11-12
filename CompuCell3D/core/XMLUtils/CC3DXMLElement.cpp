@@ -7,6 +7,8 @@
 
 #include "CC3DXMLElement.h"
 #include "PublicUtilities/StringUtils.h"
+#include <Logger/CC3DLogger.h>
+
 using namespace std;
 
 CC3DXMLElement::CC3DXMLElement(std::string  _name, std::map<std::string,std::string> _attributes,std::string _cdata):
@@ -61,7 +63,7 @@ void CC3DXMLElement::writeCC3DXMLElement(ostream &_out, int _indent){
 	if (_indent){
 		leadingSpaces.assign(_indent/*+defaultIndent*/,' ');
 	}
-	//cerr<<"element="<<this->name<<" comment.size()="<<endl;
+	CC3D_Log(CompuCell3D::LOG_TRACE) << "element="<<this->name<<" comment.size()=";
 	if (comment.size()){
 		if (comment=="comel"){
 			_out<<leadingSpaces<<"<!-- ";
@@ -75,9 +77,8 @@ void CC3DXMLElement::writeCC3DXMLElement(ostream &_out, int _indent){
 		}
 
 	}
-
-	//cerr<<"processing element "<<this->name<<endl;
-	//cerr<<"cdata "<<this->cdata<<endl;
+	CC3D_Log(CompuCell3D::LOG_TRACE) << "processing element "<<this->name;
+	CC3D_Log(CompuCell3D::LOG_TRACE) << "cdata "<<this->cdata;
 
 	if (comment!="comel"){
 		_out<<leadingSpaces;
@@ -98,7 +99,7 @@ void CC3DXMLElement::writeCC3DXMLElement(ostream &_out, int _indent){
 			_out<<leadingSpaces<<extraSpace<<this->cdata<<endl;
 		}
 		for(int i=0 ; i < children.size() ; ++i){
-			//cerr<<"i="<<i<<" element="<<children[i]->name<<endl;
+			CC3D_Log(CompuCell3D::LOG_TRACE) << "i="<<i<<" element="<<children[i]->name;
 			int childIndex=(_indent?_indent+defaultIndent:defaultIndent);
 			children[i]->writeCC3DXMLElement(_out,childIndex /*_indent+defaultIndent*/);
 		}
@@ -161,8 +162,7 @@ void CC3DXMLElement::writeCC3DXMLElementInPython(ostream &_out, string _parentEl
 	if (_indent){
 		leadingSpaces.assign(_indent/*+defaultIndent*/,' ');
 	}
-	
-	//cerr<<"element="<<this->name<<" comment.size()="<<endl;
+	CC3D_Log(CompuCell3D::LOG_TRACE) << "element="<<this->name<<" comment.size()=";
 
 	bool commentElemFlag=false;
 
@@ -185,18 +185,16 @@ void CC3DXMLElement::writeCC3DXMLElementInPython(ostream &_out, string _parentEl
 		}
 
 	}
-
-	//cerr<<"_commentElemFlag="<<_commentElemFlag<<" commentElemFlag="<<commentElemFlag<<endl;
-
-	//cerr<<"processing element "<<this->name<<endl;
-	//cerr<<"cdata "<<this->cdata<<endl;
+	CC3D_Log(CompuCell3D::LOG_TRACE) << "_commentElemFlag="<<_commentElemFlag<<" commentElemFlag="<<commentElemFlag;
+	CC3D_Log(CompuCell3D::LOG_TRACE) << "processing element "<<this->name;
+	CC3D_Log(CompuCell3D::LOG_TRACE) << "cdata "<<this->cdata;
 	string elementName;
 	if (!_parentElement.size()){
 		//new xml root element - we clear elemNameCounterDict
-		//cerr<<"clearing elemNameCounterDict"<<endl;
+		CC3D_Log(CompuCell3D::LOG_TRACE) << "clearing elemNameCounterDict";
 		elemNameCounterDictPtr->clear();
 		elementName=this->name+"Elmnt";
-		//cerr<<"root elementName="<<elementName<<endl;
+		CC3D_Log(CompuCell3D::LOG_TRACE) << "root elementName="<<elementName;
 
 		if (!commentElemFlag){
 			_out<<leadingSpaces;
@@ -213,25 +211,21 @@ void CC3DXMLElement::writeCC3DXMLElementInPython(ostream &_out, string _parentEl
 			//we only need to generate new element name for those elements that have children
 			map<std::string,int>::iterator mitr;
 			mitr=elemNameCounterDictPtr->find(this->name);
-			//cerr<<"searching for element "<<this->name<<endl;
-			//if (mitr==elemNameCounterDictPtr->end()){
-			//	cerr<<"element not found"<<endl;
-			//}
+			CC3D_Log(CompuCell3D::LOG_TRACE) << "searching for element "<<this->name;
 
 			if (mitr!=elemNameCounterDictPtr->end()){
 				
 				(*elemNameCounterDictPtr)[this->name]+=1;
-				//mitr->second+=1;
 				ostringstream outStr;
 				outStr<<mitr->second;
 				elementName=this->name+"Elmnt_"+outStr.str();
-				//cerr<<"generated elementName="<<elementName<<endl;
+				CC3D_Log(CompuCell3D::LOG_TRACE) << "generated elementName="<<elementName;
 				
 			}else{
 				elementName=this->name+"Elmnt";
-				//cerr<<"new elementName="<<this->name<<endl;
+				CC3D_Log(CompuCell3D::LOG_TRACE) << "new elementName="<<this->name;
 				elemNameCounterDictPtr->insert(make_pair(this->name,0));
-				//cerr<<"inserting "<<this->name<<","<<0<<endl;
+				CC3D_Log(CompuCell3D::LOG_TRACE) << "inserting "<<this->name<<","<<0;
 			}			
 
 			if (!commentElemFlag){
@@ -268,8 +262,6 @@ void CC3DXMLElement::writeCC3DXMLElementInPython(ostream &_out, string _parentEl
         if(!attributes.size()){
             _out<<",{}";
         }
-        // _out<<">"/*<<endl*/;	
-        // string extraSpace(defaultIndent,' ');
         _out<<",\""<</*leadingSpaces<<extraSpace<<*/this->cdata<<"\""/*<<endl*/;
         _out<<")";
         _out<<endl;
@@ -279,9 +271,9 @@ void CC3DXMLElement::writeCC3DXMLElementInPython(ostream &_out, string _parentEl
     }		
 	
 	for(int i=0 ; i < children.size() ; ++i){
-		//cerr<<"Writing element "<<i<<" elementName="<<elementName<<endl;			
+		CC3D_Log(CompuCell3D::LOG_TRACE) << "Writing element "<<i<<" elementName="<<elementName;
 		children[i]->setElemNameCounterDictPtr(elemNameCounterDictPtr);
-		//cerr<<"passing commentElemFlag="<<commentElemFlag<<endl;
+		CC3D_Log(CompuCell3D::LOG_TRACE) << "passing commentElemFlag="<<commentElemFlag;
 		children[i]->writeCC3DXMLElementInPython(_out, elementName,4,commentElemFlag);
 		
 	}
@@ -290,12 +282,7 @@ void CC3DXMLElement::writeCC3DXMLElementInPython(ostream &_out, string _parentEl
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 CC3DXMLElement * CC3DXMLElement::getFirstElement(std::string  _name, std::map<std::string,std::string> * _attributes){
-
-	//cerr<<"INSIDE getFirstElement"<<endl;
-	//if (_attributes){
-	//	cerr<<"_attributes->size()="<<_attributes->size()<<endl;
-	//}
-	//cerr<<"\n\n\n\n\n\n";
+	CC3D_Log(CompuCell3D::LOG_TRACE) << "INSIDE getFirstElement";
 	map<string,string>::iterator pos;
 	for(int i = 0 ; i< children.size() ; ++i){
 		if(children[i]->name==_name){
@@ -305,7 +292,7 @@ CC3DXMLElement * CC3DXMLElement::getFirstElement(std::string  _name, std::map<st
 			bool attributesMatch=true;
 			if(_attributes->size() <= children[i]->attributes.size()){// check attributes when they exist
 				for(map<string,string>::iterator mitr = _attributes->begin() ;  mitr != _attributes->end() ; ++mitr){
-					//cerr<<"Looking for attribute "<<mitr->first<<endl;
+					CC3D_Log(CompuCell3D::LOG_TRACE) << "Looking for attribute "<<mitr->first;
 					pos=children[i]->attributes.find(mitr->first);
 					if(pos==children[i]->attributes.end() || mitr->second!=pos->second){
 						//if there is a mismatch in any attribute (name or value) move to another child element
@@ -315,8 +302,6 @@ CC3DXMLElement * CC3DXMLElement::getFirstElement(std::string  _name, std::map<st
 				}
 				if(attributesMatch)
 					return children[i];
-				//else
-				//	return 0;
 			}
 		}
 	}
@@ -367,32 +352,12 @@ void CC3DXMLElement::updateElementValue(std::string _cdata){
 CC3DXMLElement * CC3DXMLElement::attachElement(const std::string  _elementName,const std::string  _cdata){
 	//client code should check if given element exists and if so take appropriate action/ We can have many elements with same name at same "level" in the XML
 
-	//if (findElement(_elementName)){ //such element already exist
-	//	return 0;
-	//}
 	CC3DXMLElement  addedElem(_elementName,std::map<std::string,std::string>(),_cdata);
-	//cerr<<" got here"<<endl;
-
 	additionalChildElements.push_back(addedElem);
-	//cerr<<" got here 1"<<endl;
 	
 	addChild(&(*(--additionalChildElements.end())));
-	//cerr<<" got here 2"<<endl;
-	
-
-	//for (int i = 0 ; i < additionalChildElements.size() ; ++i){
-	//	cerr<<"additional element "<<i<<" = "<<additionalChildElements[i].cdata<<endl;
-	//}
-
-	//for (int i = 0 ; i < children.size() ; ++i){
-	//	cerr<<"additional element "<<i<<" = "<<children[i]->cdata<<endl;
-	//}
-
 
 	return &(*(--additionalChildElements.end()));
-	
-	//CC3DXMLElement & addedElemRef=*(additionalChildElements.end()-1);
-	//addedElemRef.cdata=_cdata;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -415,11 +380,11 @@ long CC3DXMLElement::getPointerAsLong(){
 
 void CC3DXMLElement::addChild(CC3DXMLElement * _child){
 #ifdef _DEBUG
-	cerr<<"ADDING CHILDREN of:"<<name<<" child name "<<_child->name<<endl;
+	CC3D_Log(CompuCell3D::LOG_DEBUG) << "ADDING CHILDREN of:"<<name<<" child name "<<_child->name;
 #endif
 	children.push_back(_child);
 #ifdef _DEBUG
-	cerr<<"NUMBER OF CHILDREN FOR ELEMENT "<<name<<" is "<<children.size()<<endl;
+	CC3D_Log(CompuCell3D::LOG_DEBUG) << "NUMBER OF CHILDREN FOR ELEMENT "<<name<<" is "<<children.size();
 #endif
 }
 
@@ -507,7 +472,7 @@ CC3DXMLElementList CC3DXMLElement::getElements(std::string _name){
 	CC3DXMLElementList elementList;
 	
 #ifdef _DEBUG
-		cerr<<"getElements for element "<<name<<endl;
+		CC3D_Log(CompuCell3D::LOG_DEBUG) << "getElements for element "<<name;
 #endif //_DEBUG
 
 	if (_name!=""){
@@ -517,8 +482,8 @@ CC3DXMLElementList CC3DXMLElement::getElements(std::string _name){
 		}
 	}else{
 #ifdef _DEBUG
-		cerr<<"number of children of element "<<name<<" is "<<children.size()<<endl;
-		cerr<<"CHILDREN.SIZE()="<<children.size()<<endl;
+		CC3D_Log(CompuCell3D::LOG_DEBUG) << "number of children of element "<<name<<" is "<<children.size();
+		CC3D_Log(CompuCell3D::LOG_DEBUG) << "CHILDREN.SIZE()="<<children.size();
 #endif
 		for (CC3DXMLElementList::iterator litr=children.begin() ; litr!=children.end(); ++litr){
 			elementList.push_back(*litr);
@@ -526,32 +491,14 @@ CC3DXMLElementList CC3DXMLElement::getElements(std::string _name){
 	}
 
 #ifdef _DEBUG
-	cerr<<"LIST COUNT="<<elementList.size()<<endl;
+	CC3D_Log(CompuCell3D::LOG_DEBUG) << "LIST COUNT="<<elementList.size();
 #endif
 
 	return elementList;
 }
 
-//CC3DXMLElement* CC3DXMLElement::getFirstElement(std::string _name){
-//
-//	for (CC3DXMLElementList::iterator litr=children.begin() ; litr!=children.end(); ++litr){
-//		if((*litr)->name==_name)
-//			return *litr;
-//	}
-//	return 0;
-//}
-
 bool CC3DXMLElement::findElement(const std::string _name, std::map<std::string,std::string> * _attributes){
-
 	return (bool)getFirstElement(_name,_attributes);
-	//CC3DXMLElementList elementList=getElements();
-
-	//for (CC3DXMLElementList::iterator litr=children.begin() ; litr!=children.end(); ++litr){
-	//	if((*litr)->name==_name)
-	//		return true;
-	//}
-	//return false;
-
 }
 
 unsigned int CC3DXMLElement::getUInt(){

@@ -2,7 +2,7 @@ import os
 from math import floor
 from os.path import dirname, join
 from cc3d.cpp import CompuCell
-
+from pathlib import Path
 from cc3d.core.XMLDomUtils import XMLIdLocator
 from cc3d.CompuCellSetup import init_modules, parseXML
 from cc3d.core import enums
@@ -19,7 +19,10 @@ from cc3d.core import RestartManager
 from cc3d.CompuCellSetup.simulation_utils import check_for_cpp_errors
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 from cc3d.CompuCellSetup.cluster_utils import check_nanohub_and_count
+import warnings
 
+# default setting
+CompuCell.Logger.enableConsoleLogging(CompuCell.LOG_INFORMATION)
 
 # -------------------- legacy API emulation ----------------------------------------
 def getCoreSimulationObjects():
@@ -51,6 +54,31 @@ def mainLoop(*args, **kwds):
 
 # -------------------- enf of legacy API emulation ----------------------------------------
 
+def setup_logging():
+    """
+    Function called during initialization of simulation run via CLI.
+    """
+    pg = CompuCellSetup.persistent_globals
+    log_level = pg.log_level.strip()
+    if log_level:
+        try:
+            log_level_val = getattr(CompuCell, log_level)
+        except AttributeError:
+            warnings.warn(f"unsupported log level name: {log_level}. "
+                          f"Run command line with --help arg to see what are allowed log level names")
+            return
+        CompuCell.Logger.enableConsoleLogging(log_level_val)
+        if pg.log_to_file:
+            if pg.output_directory is not None:
+                if not Path(pg.output_directory).exists():
+                    pg.create_output_dir()
+                CompuCell.Logger.enableFileLogging(str(
+                    Path(pg.output_directory).joinpath("simulation.log")), log_level_val)
+        else:
+            if pg.output_directory is not None:
+                CompuCell.Logger.disableFileLogging()
+
+
 def initialize_cc3d():
     """
 
@@ -58,6 +86,9 @@ def initialize_cc3d():
     """
     CompuCellSetup.persistent_globals.simulator, \
     CompuCellSetup.persistent_globals.simthread = get_core_simulation_objects()
+
+    # this is mainly used by command line interface. Player has separate setup_logging function
+    setup_logging()
 
     check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 

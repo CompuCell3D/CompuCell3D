@@ -28,7 +28,7 @@ RandomBlobInitializer::~RandomBlobInitializer() {
 }
 
 void RandomBlobInitializer::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
-    cout << "START randomblob\n";
+    CC3D_Log(LOG_DEBUG) << "START randomblob";
     simulator = _simulator;
     potts = _simulator->getPotts();
     cellField = (WatchableField3D < CellG * > *)
@@ -63,10 +63,8 @@ void RandomBlobInitializer::setParameters(Simulator *_simulator, CC3DXMLElement 
     }
     builder->setBoxes(boxMin, boxMax);
     int order = 1;
-//	cout << "read order\n";
     if (_xmlData->getFirstElement("order"))
         order = _xmlData->getFirstElement("order")->getInt();
-//	cout << "order = " << order << endl;
     if (order == 2) { builder->setNeighborListSO(); }
     else { builder->setNeighborListFO(); }
     // read types and set bias
@@ -118,7 +116,6 @@ void RandomBlobInitializer::setParameters(Simulator *_simulator, CC3DXMLElement 
 }
 
 void RandomBlobInitializer::extraInit(Simulator *simulator) {
-//	cout << "EXTRA INIT BLOBINITIALIZER\n";
     bool pluginAlreadyRegisteredFlag;
     mit = (MitosisSteppable * )(Simulator::steppableManager.get("Mitosis", &pluginAlreadyRegisteredFlag));
     if (!pluginAlreadyRegisteredFlag) {
@@ -166,7 +163,7 @@ void RandomBlobInitializer::divide() {
             if (mit->childCell)
                 builder->setType(mit->childCell);
         }
-    } else { cout << "cells are too small, not dividing\n"; }
+    } else { CC3D_Log(LOG_DEBUG) << "cells are too small, not dividing"; }
 }
 
 std::string RandomBlobInitializer::toString() {

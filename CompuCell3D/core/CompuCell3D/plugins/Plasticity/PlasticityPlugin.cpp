@@ -128,11 +128,10 @@ double PlasticityPlugin::changeEnergy(const Point3D &pt,
     Coordinates3D<float> centMassNewBefore;
 
 
-//    cerr<<"fieldDim="<<fieldDim<<endl;
-    if (oldCell) {
-        centMassOldBefore.XRef() = oldCell->xCM / (float) oldCell->volume;
-        centMassOldBefore.YRef() = oldCell->yCM / (float) oldCell->volume;
-        centMassOldBefore.ZRef() = oldCell->zCM / (float) oldCell->volume;
+   if(oldCell){
+      centMassOldBefore.XRef()=oldCell->xCM/(float)oldCell->volume;
+      centMassOldBefore.YRef()=oldCell->yCM/(float)oldCell->volume;
+      centMassOldBefore.ZRef()=oldCell->zCM/(float)oldCell->volume;
 
         if (oldCell->volume > 1) {
             centroidOldAfter = precalculateCentroid(pt, oldCell, -1, fieldDim, boundaryStrategy);

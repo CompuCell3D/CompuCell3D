@@ -47,6 +47,18 @@ def process_cml():
                             help='optional argument that specifies parameter scan iteration - used to enable steppables'
                                  'to access current param scan iteration number')
 
+    cml_parser.add_argument('--log-level', required=False, type=str, default='',
+                            choices=['', 'LOG_FATAL', 'LOG_CRITICAL', 'LOG_ERROR',
+                                     'LOG_WARNING', 'LOG_NOTICE', 'LOG_INFORMATION',
+                                     'LOG_DEBUG', 'LOG_TRACE'],
+                            help='optional argument that specifies log level: allowed values are:'
+                                 'LOG_FATAL, LOG_CRITICAL, LOG_ERROR, LOG_WARNING, '
+                                 'LOG_NOTICE, LOG_INFORMATION, LOG_DEBUG, LOG_TRACE')
+
+    cml_parser.add_argument('--log-to-file', required=False, action='store_true', default=False,
+                            help='optional argument that specifies if log should be saved to a file')
+
+
     return cml_parser.parse_args()
 
 
@@ -100,6 +112,8 @@ if __name__ == '__main__':
     persistent_globals.restart_snapshot_frequency = restart_snapshot_frequency
     persistent_globals.restart_multiple_snapshots = restart_multiple_snapshots
     persistent_globals.parameter_scan_iteration = args.parameter_scan_iteration
+    persistent_globals.log_level = args.log_level
+    persistent_globals.log_to_file = args.log_to_file
 
     run_cc3d_project(cc3d_sim_fname=cc3d_sim_fname_abs)
 

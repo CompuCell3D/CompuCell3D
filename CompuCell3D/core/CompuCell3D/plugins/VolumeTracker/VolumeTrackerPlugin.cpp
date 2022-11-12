@@ -5,7 +5,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "VolumeTrackerPlugin.h"
-
+#include <Logger/CC3DLogger.h>
 VolumeTrackerPlugin::VolumeTrackerPlugin() : pUtils(0), lockPtr(0), potts(0), deadCellG(0) {
 }
 
@@ -16,11 +16,11 @@ VolumeTrackerPlugin::~VolumeTrackerPlugin() {
 }
 
 void VolumeTrackerPlugin::initVec(const vector<int> &_vec) {
-    cerr << " THIS IS VEC.size=" << _vec.size() << endl;
+    CC3D_Log(LOG_DEBUG) << " THIS IS VEC.size="<<_vec.size();
 }
 
 void VolumeTrackerPlugin::initVec(const Dim3D &_dim) {
-    cerr << " THIS IS A COMPUCELL3D DIM3D" << _dim << endl;
+    CC3D_Log(LOG_DEBUG) << " THIS IS A COMPUCELL3D DIM3D"<<_dim;
 }
 
 bool VolumeTrackerPlugin::checkIfOKToResize(Dim3D _newSize, Dim3D _shiftVec) {
@@ -33,12 +33,12 @@ bool VolumeTrackerPlugin::checkIfOKToResize(Dim3D _newSize, Dim3D _shiftVec) {
     Point3D shiftedPt;
     CellG *cell;
 
-    for (pt.x = 0; pt.x < fieldDim.x; ++pt.x)
-        for (pt.y = 0; pt.y < fieldDim.y; ++pt.y)
-            for (pt.z = 0; pt.z < fieldDim.z; ++pt.z) {
-                cell = cellField->get(pt);
-                if (cell) {
-                    shiftedPt = pt + shiftVec;
+    for (pt.x=0 ; pt.x<fieldDim.x ; ++pt.x)
+		for (pt.y=0 ; pt.y<fieldDim.y ; ++pt.y)
+			for (pt.z=0 ; pt.z<fieldDim.z ; ++pt.z){
+				cell=cellField->get(pt);
+				if(cell){
+					shiftedPt=pt+shiftVec;
 
                     if (shiftedPt.x < 0 || shiftedPt.x >= _newSize.x || shiftedPt.y < 0 || shiftedPt.y >= _newSize.y ||
                         shiftedPt.z < 0 || shiftedPt.z >= _newSize.z) {
@@ -66,11 +66,11 @@ void VolumeTrackerPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 }
 
 
-void VolumeTrackerPlugin::handleEvent(CC3DEvent &_event) {
-    if (_event.id == CHANGE_NUMBER_OF_WORK_NODES) {
-        CC3DEventChangeNumberOfWorkNodes ev = static_cast<CC3DEventChangeNumberOfWorkNodes &>(_event);
-        deadCellVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), (CellG *) 0);
-        cerr << "VolumeTrackerPlugin::handleEvent=" << endl;
+void VolumeTrackerPlugin::handleEvent(CC3DEvent & _event){
+	if (_event.id==CHANGE_NUMBER_OF_WORK_NODES){
+		CC3DEventChangeNumberOfWorkNodes ev = static_cast<CC3DEventChangeNumberOfWorkNodes&>(_event);
+		deadCellVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), (CellG*)0);
+		CC3D_Log(LOG_DEBUG) << "VolumeTrackerPlugin::handleEvent=";
     }
 }
 

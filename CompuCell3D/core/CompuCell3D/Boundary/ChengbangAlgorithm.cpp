@@ -6,6 +6,7 @@
 #include <vector>
 #include <set>
 #include <cstdlib>
+#include <Logger/CC3DLogger.h>
 
 using namespace CompuCell3D;
 
@@ -19,7 +20,7 @@ void ChengbangAlgorithm::readFile(const char *inputfile) {
 
     // Make sure the file is open
     if (!in.is_open()) {
-        cerr << "Error opening file" << inputfile << endl;
+        CC3D_Log(LOG_DEBUG) << "Error opening file" << inputfile;
         exit(1);
     }
 
