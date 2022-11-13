@@ -152,6 +152,283 @@ class MVCDrawModel3D(MVCDrawModelBase):
                     # actor.GetProperty().SetOpacity(0.5)
 
     def init_cell_field_glyphs_actors(self, actor_specs, drawing_params=None):
+        # using just one actor
+
+        from cc3d.core.PySteppables import CellList
+        inventory = self.currentDrawingParameters.bsd.sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
+
+        centroids = vtk.vtkPoints()
+        volume_scaling_factors = vtk.vtkFloatArray()
+        volume_scaling_factors.SetName("volume_scaling_factors")
+
+        cell_types = vtk.vtkIntArray()
+        cell_types.SetName("cell_types")
+
+        mapper = vtk.vtkPolyDataMapper()
+
+        # polydata has to be initialized/created AFTER all arrays have been filled in
+        # If you construct polydata form unfilled arrays thing might not workas expected
+        centroid_polydata = vtk.vtkPolyData()
+        centroid_polydata.SetPoints(centroids)
+        centroid_polydata.GetPointData().AddArray(volume_scaling_factors)
+        centroid_polydata.GetPointData().AddArray(cell_types)
+
+
+        used_cell_types_dict = { cell_type:0 for cell_type in self.used_cell_types_list}
+
+        for cell in cell_list:
+            cell_type = cell.type
+            used_type = used_cell_types_dict.get(cell_type, None)
+            if used_type is None:
+                continue
+
+            centroids.InsertNextPoint(cell.xCOM, cell.yCOM, cell.zCOM)
+            # (3/(4*math.pi))**0.333 = 0.62
+            volume_scaling_factors.InsertNextValue(0.62*cell.volume ** 0.333)
+            cell_types.InsertNextValue(cell_type)
+            print(f'inserting cell type {cell.xCOM} {cell.yCOM} type= {cell_type}')
+
+
+        # # polydata has to be initialized/created AFTER all arrays have been filled in
+        # # If you construct polydata form unfilled arrays thing might not workas expected
+        # centroid_polydata = vtk.vtkPolyData()
+        # centroid_polydata.SetPoints(centroids)
+        # centroid_polydata.GetPointData().AddArray(volume_scaling_factors)
+        # centroid_polydata.GetPointData().AddArray(cell_types)
+
+
+        # centroids = vtk.vtkPoints()
+        # centroids.InsertNextPoint(10, 10, 10)
+        # centroids.InsertNextPoint(20, 20, 20)
+        #
+        # volume_scaling_factors = vtk.vtkFloatArray()
+        # volume_scaling_factors.SetName('volume_scaling_factors')
+        # volume_scaling_factors.InsertNextValue(15)
+        # volume_scaling_factors.InsertNextValue(15)
+        #
+        # color_scalars = vtk.vtkIntArray()
+        # color_scalars.SetName('color_scalars')
+        # color_scalars.InsertNextValue(1)
+        # color_scalars.InsertNextValue(2)
+        #
+        # centroid_polydata.SetPoints(centroids)
+        # centroid_polydata.GetPointData().AddArray(volume_scaling_factors)
+        # centroid_polydata.GetPointData().AddArray(color_scalars)
+
+        glyph = vtk.vtkGlyph3D()
+        glyph.SetInputData(centroid_polydata)
+
+        sphere = vtk.vtkSphereSource()
+        sphere.SetRadius(1)
+
+        # Here is where we build the glyph table
+        # that will be indexed into according to the IndexMode
+        glyph.SetSourceConnection(0, sphere.GetOutputPort())
+        # glyph.SetSourceConnection(1, cs.GetOutputPort())
+        # glyph.SetSourceConnection(2, cs2.GetOutputPort())
+
+        glyph.ScalingOn()
+        glyph.SetScaleModeToScaleByScalar()
+        # glyph.SetVectorModeToUseVector()
+        glyph.SetColorModeToColorByScalar()
+        # glyph.OrientOn()
+        glyph.SetScaleFactor(1)  # Overall scaling factor
+        # glyph.SetRange(0, 1)  # Default is (0,1)
+
+        # Tell it to index into the glyph table according to scalars
+        # glyph.SetIndexModeToScalar()
+
+        # Tell glyph which attribute arrays to use for what
+        glyph.SetInputArrayToProcess(0, 0, 0, 0, 'volume_scaling_factors')  # 0 - scalars for scaling
+        glyph.SetInputArrayToProcess(3, 0, 0, 0, 'cell_types')  # 3 - colors
+        # glyph.SetInputArrayToProcess(1, 0, 0, 0, 'RTDataGradient')  # vectors
+
+        lut = vtk.vtkLookupTable()
+        lut.SetNumberOfColors(12)
+        lut.SetTableRange((0, 12))
+        lut.SetHueRange(0, 1)
+        lut.SetRange((0, 12))
+        lut.Build()
+
+        # coloring_by = 'volume_scaling_factors'
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(glyph.GetOutputPort())
+        mapper.SelectColorArray('color_scalars')
+        mapper.SetLookupTable(lut)
+        mapper.ScalarVisibilityOn()
+        mapper.SetScalarRange(0, 12)
+        # mapper.SetScalarModeToUsePointFieldData()
+        mapper.SetColorModeToMapScalars()
+
+        try:
+            actor = list(actor_specs.actors_dict.values())[0]
+        except IndexError:
+            print("Could not find any actor for listed cell types")
+            return
+
+        actor.SetMapper(mapper)
+        return
+        # centroidsPD = vtk.vtkPolyData()
+        # centroidsPD.SetPoints(centroidPoints)
+        # centroidsPD.GetPointData().SetScalars(cellTypes)
+        #
+        # #        if self.scaleGlyphsByVolume:
+        # centroidsPD.GetPointData().AddArray(cellScalars)
+
+        centroid_polydata_dict = {}
+        centroid_dict = {}
+        volume_scaling_factors_dict = {}
+        mapper_dict = {}
+
+
+        # for actor_counter, cell_type in enumerate(self.used_cell_types_list):
+        #
+        #     centroid_dict[cell_type] = vtk.vtkPoints()
+        #     # centroid_dict[cell_type].SetName("centroids")
+        #     volume_scaling_factors_dict[cell_type] = vtk.vtkFloatArray()
+        #     volume_scaling_factors_dict[cell_type].SetName("volume_scaling_factors")
+        #     mapper_dict[cell_type] = vtk.vtkPolyDataMapper()
+
+        # for cell in cell_list:
+        #     cell_type = cell.type
+        #     centroids = centroid_dict.get(cell_type, None)
+        #     if centroids is None:
+        #         continue
+        #     volume_scaling_factors = volume_scaling_factors_dict[cell_type]
+        #
+        #     centroids.InsertNextPoint(cell.xCOM, cell.yCOM, cell.zCOM)
+        #     # (3/(4*math.pi))**0.333 = 0.62
+        #     volume_scaling_factors.InsertNextValue(0.62*cell.volume ** 0.333)
+
+        sphere = vtk.vtkSphereSource()
+        sphere.SetRadius(1)
+        # sphere.SetThetaResolution(2)  # increase these values for a higher-res sphere glyph
+        # sphere.SetPhiResolution(2)
+
+        try:
+            actor = list(actor_specs.actors_dict.values())[0]
+        except IndexError:
+            print("Could not find any actor for listed cell types")
+            return
+
+        glyphs = vtk.vtkGlyph3D()
+
+        glyphs.SetInputData(centroid_polydata)
+        glyphs.SetSourceConnection(0, sphere.GetOutputPort())
+
+        glyphs.ScalingOn()
+        glyphs.SetScaleModeToScaleByScalar()
+        glyphs.SetColorModeToColorByScalar()
+
+        # glyph.SetVectorModeToUseVector()
+        # glyph.OrientOn()
+        glyphs.SetScaleFactor(1)  # Overall scaling factor
+        # glyphs.SetRange(0, 3)  # Default is (0,1)
+
+        # Tell it to index into the glyph table according to scalars
+        # glyphs.SetIndexModeToScalar()
+
+        # Tell glyph which attribute arrays to use for what
+        glyphs.SetInputArrayToProcess(0, 0, 0, 0, 'volume_scaling_factors')  # scalars
+        glyphs.SetInputArrayToProcess(3, 0, 0, 0, 'cell_type')  # color
+        # # Tell glyph which attribute arrays to use for what
+        # glyphs.SetInputArrayToProcess(0, 0, 0, 0, 'volume_scaling_factors')
+        # glyphs.SetIndexModeToScalar()
+        # # overall magnification - scales all spheres in a given glyph3D
+        # glyphs.SetScaleFactor(1.0)
+        #
+        #
+        # glyphs.SetScaleModeToScaleByScalar()
+
+        lut = vtk.vtkLookupTable()
+        lut.SetNumberOfColors(12)
+        lut.SetTableRange((0, 12))
+        lut.SetHueRange(0, 1)
+        lut.SetRange((0, 12))
+        lut.Build()
+
+        # cell_type_lut = self.get_type_lookup_table()
+        mapper.SetInputConnection(glyphs.GetOutputPort())
+        mapper.SetLookupTable(lut)
+        mapper.ScalarVisibilityOn()
+        mapper.SetScalarRange(0, 12)
+        # mapper.SetScalarModeToUsePointFieldData()
+        mapper.SetColorModeToMapScalars()
+
+        # # mapper.SetScalarRange(0, cell_type_lut.GetNumberOfTableValues() - 1 )
+        # mapper.SetScalarRange((0, 12))
+        # mapper.SetLookupTable(lut)
+        # # mapper.SetLookupTable(cell_type_lut)
+        # # call to SetScalarModeToUsePointFieldData() is essential
+        # # if we want to color actors individually using  actor.GetProperty().SetDiffuseColor(...)
+        #
+        # # mapper.SetScalarModeToUsePointFieldData()
+        #
+        # mapper.SetColorModeToMapScalars()
+        # mapper.ScalarVisibilityOn()
+        # mapper.SelectColorArray('cell_type')
+        # # actor = actor_specs.actors_dict.get(cell_type, None)
+        # # if actor is None:
+        # #     continue
+        actor.SetMapper(mapper)
+
+        # cell_type_lut = self.get_type_lookup_table()
+
+        # actor.GetProperty().SetDiffuseColor(cell_type_lut.GetTableValue(3)[0:3])
+
+        # for actor_counter, cell_type in enumerate(self.used_cell_types_list):
+        #     actor = actor_specs.actors_dict.get(cell_type, None)
+        #     centroids = centroid_dict[cell_type]
+        #     volume_scaling_factors = volume_scaling_factors_dict[cell_type]
+        #
+        #     centroid_polydata = vtk.vtkPolyData()
+        #     centroid_polydata.SetPoints(centroids)
+        #     centroid_polydata.GetPointData().AddArray(volume_scaling_factors)
+        #
+        #     glyphs_dict[cell_type] = vtk.vtkGlyph3D()
+        #     glyphs = glyphs_dict[cell_type]
+        #
+        #     glyphs.SetInputData(centroid_polydata)
+        #     glyphs.SetSourceConnection(sphere.GetOutputPort())
+        #
+        #     glyphs.ScalingOn()
+        #     glyphs.SetScaleModeToScaleByScalar()
+        #     # glyph.SetVectorModeToUseVector()
+        #     # glyph.OrientOn()
+        #     glyphs.SetScaleFactor(1)  # Overall scaling factor
+        #
+        #     # Tell glyph which attribute arrays to use for what
+        #     glyphs.SetInputArrayToProcess(0, 0, 0, 0, 'volume_scaling_factors')  # scalars
+        #     # # Tell glyph which attribute arrays to use for what
+        #     # glyphs.SetInputArrayToProcess(0, 0, 0, 0, 'volume_scaling_factors')
+        #     # glyphs.SetIndexModeToScalar()
+        #     # # overall magnification - scales all spheres in a given glyph3D
+        #     # glyphs.SetScaleFactor(1.0)
+        #     #
+        #     #
+        #     # glyphs.SetScaleModeToScaleByScalar()
+        #
+        #     mapper = mapper_dict[cell_type]
+        #     mapper.SetInputConnection(glyphs.GetOutputPort())
+        #     # call to SetScalarModeToUsePointFieldData() is essential
+        #     # if we want to color actors individually using  actor.GetProperty().SetDiffuseColor(...)
+        #
+        #     mapper.SetScalarModeToUsePointFieldData()
+        #
+        #     actor = actor_specs.actors_dict.get(cell_type, None)
+        #     if actor is None:
+        #         continue
+        #     actor.SetMapper(mapper)
+        #
+        #     cell_type_lut = self.get_type_lookup_table()
+        #
+        #     actor.GetProperty().SetDiffuseColor(cell_type_lut.GetTableValue(cell_type)[0:3])
+        #     # actor.GetProperty().SetDiffuseColor([1.0, 0, 0])
+        #
+
+
+    def init_cell_field_glyphs_actors_ok(self, actor_specs, drawing_params=None):
 
         # ss = vtk.vtkSphereSource()
         # ss.SetRadius(1.0)
@@ -244,8 +521,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
             centroids.InsertNextPoint(cell.xCOM, cell.yCOM, cell.zCOM)
             # (3/(4*math.pi))**0.333 = 0.62
             volume_scaling_factors.InsertNextValue(0.62*cell.volume ** 0.333)
-            print('centroids=',centroids)
-            print('volume_scaling_factors=',volume_scaling_factors)
 
         sphere = vtk.vtkSphereSource()
         sphere.SetRadius(1)
