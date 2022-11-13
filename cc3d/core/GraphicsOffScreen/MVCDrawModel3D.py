@@ -151,6 +151,158 @@ class MVCDrawModel3D(MVCDrawModelBase):
                     actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
                     # actor.GetProperty().SetOpacity(0.5)
 
+    def init_cell_field_glyphs_actors(self, actor_specs, drawing_params=None):
+
+        # ss = vtk.vtkSphereSource()
+        # ss.SetRadius(1.0)
+        # # ss.SetThetaResolution(2)  # increase these values for a higher-res sphere glyph
+        # # ss.SetPhiResolution(2)
+        #
+        #
+        # centroid_polydata = vtk.vtkPolyData()
+        #
+        # centroids = vtk.vtkPoints()
+        # centroids.InsertNextPoint(10, 10, 10)
+        # centroids.InsertNextPoint(20, 20, 20)
+        #
+        # volume_scaling_factors = vtk.vtkFloatArray()
+        # volume_scaling_factors.SetName('volume_scaling_factors')
+        # volume_scaling_factors.InsertNextValue(5)
+        # volume_scaling_factors.InsertNextValue(5)
+        #
+        # centroid_polydata.SetPoints(centroids)
+        # centroid_polydata.GetPointData().AddArray(volume_scaling_factors)
+        #
+        # # Set up the glyph filter
+        #
+        # glyph = vtk.vtkGlyph3D()
+        # # glyph.SetInputConnection(elev.GetOutputPort())
+        # glyph.SetInputData(centroid_polydata)
+        #
+        # # Here is where we build the glyph table
+        # # that will be indexed into according to the IndexMode
+        # glyph.SetSourceConnection(0, ss.GetOutputPort())
+        # # glyph.SetSourceConnection(0, ss.GetOutputPort())
+        # # glyph.SetSourceConnection(1, cs.GetOutputPort())
+        # # # glyph.SetSourceConnection(1, ss.GetOutputPort())
+        # # glyph.SetSourceConnection(2, cs2.GetOutputPort())
+        #
+        # glyph.ScalingOn()
+        # glyph.SetScaleModeToScaleByScalar()
+        # # glyph.SetVectorModeToUseVector()
+        # # glyph.OrientOn()
+        # glyph.SetScaleFactor(1)  # Overall scaling factor
+        # # glyph.SetRange(0, 1)  # Default is (0,1)
+        #
+        # # Tell it to index into the glyph table according to scalars
+        # # glyph.SetIndexModeToScalar()
+        #
+        # # Tell glyph which attribute arrays to use for what
+        # glyph.SetInputArrayToProcess(0, 0, 0, 0, 'volume_scaling_factors')  # scalars
+        # # glyph.SetInputArrayToProcess(1, 0, 0, 0, 'RTDataGradient')  # vectors
+        #
+        # coloring_by = 'Elevation'
+        # mapper = vtk.vtkPolyDataMapper()
+        # mapper.SetInputConnection(glyph.GetOutputPort())
+        # mapper.SetScalarModeToUsePointFieldData()
+        # # mapper.SetColorModeToMapScalars()
+        # # mapper.ScalarVisibilityOn()
+        # actor_specs.actors_dict[1].SetMapper(mapper)
+        # return
+
+        from cc3d.core.PySteppables import CellList
+        inventory = self.currentDrawingParameters.bsd.sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
+
+        # centroidsPD = vtk.vtkPolyData()
+        # centroidsPD.SetPoints(centroidPoints)
+        # centroidsPD.GetPointData().SetScalars(cellTypes)
+        #
+        # #        if self.scaleGlyphsByVolume:
+        # centroidsPD.GetPointData().AddArray(cellScalars)
+
+        centroid_polydata_dict = {}
+        centroid_dict = {}
+        volume_scaling_factors_dict = {}
+        mapper_dict = {}
+
+        for actor_counter, cell_type in enumerate(self.used_cell_types_list):
+
+            centroid_dict[cell_type] = vtk.vtkPoints()
+            # centroid_dict[cell_type].SetName("centroids")
+            volume_scaling_factors_dict[cell_type] = vtk.vtkFloatArray()
+            volume_scaling_factors_dict[cell_type].SetName("volume_scaling_factors")
+            mapper_dict[cell_type] = vtk.vtkPolyDataMapper()
+
+        for cell in cell_list:
+            cell_type = cell.type
+            centroids = centroid_dict.get(cell_type, None)
+            if centroids is None:
+                continue
+            volume_scaling_factors = volume_scaling_factors_dict[cell_type]
+
+            centroids.InsertNextPoint(cell.xCOM, cell.yCOM, cell.zCOM)
+            # (3/(4*math.pi))**0.333 = 0.62
+            volume_scaling_factors.InsertNextValue(0.62*cell.volume ** 0.333)
+            print('centroids=',centroids)
+            print('volume_scaling_factors=',volume_scaling_factors)
+
+        sphere = vtk.vtkSphereSource()
+        sphere.SetRadius(1)
+        # sphere.SetThetaResolution(2)  # increase these values for a higher-res sphere glyph
+        # sphere.SetPhiResolution(2)
+
+        glyphs_dict = {}
+        centroid_polydata = {}
+        for actor_counter, cell_type in enumerate(self.used_cell_types_list):
+            centroids = centroid_dict[cell_type]
+            volume_scaling_factors = volume_scaling_factors_dict[cell_type]
+
+            centroid_polydata = vtk.vtkPolyData()
+            centroid_polydata.SetPoints(centroids)
+            centroid_polydata.GetPointData().AddArray(volume_scaling_factors)
+
+            glyphs_dict[cell_type] = vtk.vtkGlyph3D()
+            glyphs = glyphs_dict[cell_type]
+
+            glyphs.SetInputData(centroid_polydata)
+            glyphs.SetSourceConnection(sphere.GetOutputPort())
+
+            glyphs.ScalingOn()
+            glyphs.SetScaleModeToScaleByScalar()
+            # glyph.SetVectorModeToUseVector()
+            # glyph.OrientOn()
+            glyphs.SetScaleFactor(1)  # Overall scaling factor
+
+            # Tell glyph which attribute arrays to use for what
+            glyphs.SetInputArrayToProcess(0, 0, 0, 0, 'volume_scaling_factors')  # scalars
+            # # Tell glyph which attribute arrays to use for what
+            # glyphs.SetInputArrayToProcess(0, 0, 0, 0, 'volume_scaling_factors')
+            # glyphs.SetIndexModeToScalar()
+            # # overall magnification - scales all spheres in a given glyph3D
+            # glyphs.SetScaleFactor(1.0)
+            #
+            #
+            # glyphs.SetScaleModeToScaleByScalar()
+
+            mapper = mapper_dict[cell_type]
+            mapper.SetInputConnection(glyphs.GetOutputPort())
+            # call to SetScalarModeToUsePointFieldData() is essential
+            # if we want to color actors individually using  actor.GetProperty().SetDiffuseColor(...)
+
+            mapper.SetScalarModeToUsePointFieldData()
+
+            actor = actor_specs.actors_dict.get(cell_type, None)
+            if actor is None:
+                continue
+            actor.SetMapper(mapper)
+
+            cell_type_lut = self.get_type_lookup_table()
+
+            actor.GetProperty().SetDiffuseColor(cell_type_lut.GetTableValue(cell_type)[0:3])
+            # actor.GetProperty().SetDiffuseColor([1.0, 0, 0])
+
+
     def init_cell_field_borders_actors(self, actor_specs, drawing_params=None):
         """
         initializes cell field actors where each cell is rendered individually as a separate spatial domain
@@ -159,6 +311,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
         :return: None
         """
 
+        self.init_cell_field_glyphs_actors(actor_specs=actor_specs,drawing_params=drawing_params)
+        return
         field_dim = self.currentDrawingParameters.bsd.fieldDim
 
         hex_flag = self.is_lattice_hex(drawing_params=drawing_params)
