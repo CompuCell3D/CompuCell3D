@@ -2932,273 +2932,196 @@ FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_o
     return vector<int>(usedCellTypes.begin(), usedCellTypes.end());
 }
 
-bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-                                        std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
-                                        bool type_indicator_only
-                                        ) {
-    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
-    vtkIntArray *cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
+bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec){
+    vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
+    vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 
-
-    type_fcn_ptr = &FieldExtractor::type_value;
-    if (type_indicator_only){
-        type_fcn_ptr = &FieldExtractor::type_indicator;
+    Field3D<float> *conFieldPtr=0;
+    std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
+    std::map<std::string,Field3D<float>*>::iterator mitr;
+    mitr=fieldMap.find(_conFieldName);
+    if(mitr!=fieldMap.end()){
+        conFieldPtr=mitr->second;
     }
 
-    Field3D<float> *conFieldPtr = 0;
-    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
-    std::map<std::string, Field3D<float> *>::iterator mitr;
-    mitr = fieldMap.find(_conFieldName);
-    if (mitr != fieldMap.end()) {
-        conFieldPtr = mitr->second;
-    }
-
-    if (!conFieldPtr)
+    if(!conFieldPtr)
         return false;
 
-    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
-    Dim3D fieldDim = cellFieldG->getDim();
-    set<int> invisibleTypeSet;
+    Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
+    Dim3D fieldDim=cellFieldG->getDim();
 
-#pragma omp parallel shared(invisibleTypeSet, conArray, cellTypeArray, conFieldPtr, cellFieldG)
-    {
-#pragma omp sections
-        {
-#pragma omp section
-            {
-                conArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
-            }
-#pragma omp section
-            {
-                cellTypeArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
-            }
-#pragma omp section
-            {
-                for (std::vector<int>::iterator it = _typesInvisibeVec->begin(); it != _typesInvisibeVec->end(); ++it) {
-                    invisibleTypeSet.insert(*it);
-                }
-            }
-        }
+    conArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
+    cellTypeArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
 
-        Point3D pt;
-        CellG *cell;
-        double con;
-        int type;
-        //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-#pragma omp for schedule(static)
-        for (int k = 0; k < fieldDim.z + 2; ++k) {
-            int k_offset = k * (fieldDim.y + 2) * (fieldDim.x + 2);
-            for (int j = 0; j < fieldDim.y + 2; ++j) {
-                int j_offset = j * (fieldDim.x + 2);
-                for (int i = 0; i < fieldDim.x + 2; ++i) {
-                    int offset = k_offset + j_offset + i;
-                    if (i == 0 || i == fieldDim.x + 1 || j == 0 || j == fieldDim.y + 1 || k == 0 ||
-                        k == fieldDim.z + 1) {
-                        conArray->SetValue(offset, 0.0);
-                        cellTypeArray->SetValue(offset, 0);
-                    } else {
-                        pt.x = i - 1;
-                        pt.y = j - 1;
-                        pt.z = k - 1;
-                        con = conFieldPtr->get(pt);
-                        cell = cellFieldG->get(pt);
-                        if (cell)
-                            if (invisibleTypeSet.find(cell->type) != invisibleTypeSet.end()) {
-                                type = 0;
-                            } else {
-//                                type = cell->type;
-                                type = (this->*type_fcn_ptr)(cell->type);
-                            }
-                        else {
-                            type = 0;
-                        }
-                        conArray->SetValue(offset, con);
-                        cellTypeArray->SetValue(offset, type);
-                    }
-                }
-            }
-        }
+    set<int> invisibleTypeSet(_typesInvisibeVec->begin(),_typesInvisibeVec->end());
+
+    for (set<int>::iterator sitr=invisibleTypeSet.begin();sitr!=invisibleTypeSet.end();++sitr){
+        cerr<<"invisible type="<<*sitr<<endl;
     }
-    pUtils->setNumberOfWorkNodesAuto(1);
+
+    Point3D pt;
+    CellG *cell;
+    double con;
+    int type;
+    int offset=0;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    for(int k =0 ; k<fieldDim.z+2 ; ++k)
+        for(int j =0 ; j<fieldDim.y+2 ; ++j)
+            for(int i =0 ; i<fieldDim.x+2 ; ++i){
+                if(i==0 || i==fieldDim.x+1 ||j==0 || j==fieldDim.y+1 || k==0 || k==fieldDim.z+1){
+                    conArray->InsertValue(offset, 0.0);
+                    cellTypeArray->InsertValue(offset, 0);
+                    ++offset;
+                }else{
+                    pt.x=i-1;
+                    pt.y=j-1;
+                    pt.z=k-1;
+                    con=conFieldPtr->get(pt);
+                    cell=cellFieldG->get(pt);
+                    if(cell)
+                        if(invisibleTypeSet.find(cell->type)!=invisibleTypeSet.end()){
+                            type=0;
+                        }
+                        else{
+                            type=cell->type;
+                        }
+                    else{
+                        type=0;
+                    }
+                    conArray->InsertValue(offset, con);
+                    cellTypeArray->InsertValue(offset, type);
+                    ++offset;
+                }
+            }
     return true;
 }
 
 // rwh: leave this function in until we determine we really don't want to add a boundary layer
-bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-                                           std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
-                                           bool type_indicator_only
-                                           ) {
-    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
-    vtkIntArray *cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
-    FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(_conFieldName);
+bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec){
 
-    if (!conFieldPtr)
+    vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
+    vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
+    FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_conFieldName);
+
+    if(!conFieldPtr)
         return false;
 
-    type_fcn_ptr = &FieldExtractor::type_value;
-    if (type_indicator_only){
-        type_fcn_ptr = &FieldExtractor::type_indicator;
-    }
 
-    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
-    Dim3D fieldDim = cellFieldG->getDim();
-    set<int> invisibleTypeSet;
-    pUtils->setNumberOfWorkNodesAuto();
-#pragma omp parallel shared(invisibleTypeSet, conArray, cellTypeArray, conFieldPtr, cellFieldG)
-    {
-#pragma omp sections
-        {
-#pragma omp section
-            {
-                conArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
-            }
-#pragma omp section
-            {
-                cellTypeArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
-            }
-#pragma omp section
-            {
-                for (std::vector<int>::iterator it = _typesInvisibeVec->begin(); it != _typesInvisibeVec->end(); ++it) {
-                    invisibleTypeSet.insert(*it);
-                }
-            }
-        }
-        Point3D pt;
-        CellG *cell;
-        double con;
-        int type;
-        // when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-#pragma omp for schedule(static)
-        for (int k = 0; k < fieldDim.z + 2; ++k) {
-            int k_offset = k * (fieldDim.y + 2) * (fieldDim.x + 2);
-            for (int j = 0; j < fieldDim.y + 2; ++j) {
-                int j_offset = j * (fieldDim.x + 2);
-                for (int i = 0; i < fieldDim.x + 2; ++i) {
-                    int offset = k_offset + j_offset + i;
-                    if (i == 0 || i == fieldDim.x + 1 || j == 0 || j == fieldDim.y + 1 || k == 0 ||
-                        k == fieldDim.z + 1) {
-                        conArray->SetValue(offset, 0.0);
-                        cellTypeArray->SetValue(offset, 0);
-                    } else {
-                        pt.x = i - 1;
-                        pt.y = j - 1;
-                        pt.z = k - 1;
-                        con = (*conFieldPtr)[pt.x][pt.y][pt.z];
-                        cell = cellFieldG->get(pt);
-                        if (cell)
-                            if (invisibleTypeSet.find(cell->type) != invisibleTypeSet.end()) {
-                                type = 0;
-                            } else {
-//                                type = cell->type;
-                                type = (this->*type_fcn_ptr)(cell->type);
-                            }
-                        else {
-                            type = 0;
+    Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
+    Dim3D fieldDim=cellFieldG->getDim();
+
+    conArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
+    cellTypeArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
+
+    set<int> invisibleTypeSet(_typesInvisibeVec->begin(),_typesInvisibeVec->end());
+
+    //for (set<int>::iterator sitr=invisibleTypeSet.begin();sitr!=invisibleTypeSet.end();++sitr){
+    //	cerr<<"invisible type="<<*sitr<<endl;
+    //}
+
+    Point3D pt;
+    CellG *cell;
+    double con;
+    int type;
+    int offset=0;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    for(int k =0 ; k<fieldDim.z+2 ; ++k)
+        for(int j =0 ; j<fieldDim.y+2 ; ++j)
+            for(int i =0 ; i<fieldDim.x+2 ; ++i){
+                if(i==0 || i==fieldDim.x+1 ||j==0 || j==fieldDim.y+1 || k==0 || k==fieldDim.z+1){
+                    conArray->InsertValue(offset, 0.0);
+                    cellTypeArray->InsertValue(offset, 0);
+                    ++offset;
+                }else{
+                    pt.x=i-1;
+                    pt.y=j-1;
+                    pt.z=k-1;
+                    con=(*conFieldPtr)[pt.x][pt.y][pt.z];
+                    cell=cellFieldG->get(pt);
+                    if(cell)
+                        if(invisibleTypeSet.find(cell->type)!=invisibleTypeSet.end()){
+                            type=0;
                         }
-                        conArray->SetValue(offset, con);
-                        cellTypeArray->SetValue(offset, type);
+                        else{
+                            type=cell->type;
+                        }
+                    else{
+                        type=0;
                     }
+                    conArray->InsertValue(offset, con);
+                    cellTypeArray->InsertValue(offset, type);
+                    ++offset;
                 }
             }
-        }
-    }
-    pUtils->setNumberOfWorkNodesAuto(1);
     return true;
 }
 
 
-bool
-FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-                                               std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
-                                               bool type_indicator_only) {
-    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
-    vtkIntArray *cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
-    FieldStorage::scalarFieldCellLevel_t *conFieldPtr = fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
+
+bool FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec){
+
+    vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
+    vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
+    FieldStorage::scalarFieldCellLevel_t * conFieldPtr=fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
 
     FieldStorage::scalarFieldCellLevel_t::iterator mitr;
 
-    if (!conFieldPtr)
+    if(!conFieldPtr)
         return false;
 
-    type_fcn_ptr = &FieldExtractor::type_value;
-    if (type_indicator_only){
-        type_fcn_ptr = &FieldExtractor::type_indicator;
-    }
+    Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
+    Dim3D fieldDim=cellFieldG->getDim();
 
-    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
-    Dim3D fieldDim = cellFieldG->getDim();
+    conArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
+    cellTypeArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
 
-    conArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
-    cellTypeArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
-    set<int> invisibleTypeSet;
-    pUtils->setNumberOfWorkNodesAuto();
-#pragma omp parallel shared(invisibleTypeSet, conArray, cellTypeArray, conFieldPtr, cellFieldG)
-    {
-#pragma omp sections
-        {
-#pragma omp section
-            {
-                conArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
-            }
-#pragma omp section
-            {
-                cellTypeArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
-            }
-#pragma omp section
-            {
-                for (std::vector<int>::iterator it = _typesInvisibeVec->begin(); it != _typesInvisibeVec->end(); ++it) {
-                    invisibleTypeSet.insert(*it);
-                }
-            }
-        }
-        Point3D pt;
-        CellG *cell;
-        double con;
-        int type;
-        // when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-#pragma omp for schedule(static)
-        for (int k = 0; k < fieldDim.z + 2; ++k) {
-            int k_offset = k * (fieldDim.y + 2) * (fieldDim.x + 2);
-            for (int j = 0; j < fieldDim.y + 2; ++j) {
-                int j_offset = j * (fieldDim.x + 2);
-                for (int i = 0; i < fieldDim.x + 2; ++i) {
-                    int offset = k_offset + j_offset + i;
-                    if (i == 0 || i == fieldDim.x + 1 || j == 0 || j == fieldDim.y + 1 || k == 0 ||
-                        k == fieldDim.z + 1) {
-                        conArray->SetValue(offset, 0.0);
-                        cellTypeArray->SetValue(offset, 0);
-                    } else {
-                        pt.x = i - 1;
-                        pt.y = j - 1;
-                        pt.z = k - 1;
+    set<int> invisibleTypeSet(_typesInvisibeVec->begin(),_typesInvisibeVec->end());
 
-                        cell = cellFieldG->get(pt);
+    //for (set<int>::iterator sitr=invisibleTypeSet.begin();sitr!=invisibleTypeSet.end();++sitr){
+    //	cerr<<"invisible type="<<*sitr<<endl;
+    //}
 
-                        if (cell) {
-                            mitr = conFieldPtr->find(cell);
-                            if (mitr != conFieldPtr->end()) {
-//                                type = cell->type;
-                                type = (this->*type_fcn_ptr)(cell->type);
-                                con = mitr->second;
-                            } else {
-//                                type = cell->type;
-                                type = (this->*type_fcn_ptr)(cell->type);
-                                con = 0.0;
-                            }
-                        } else {
-                            type = 0;
-                            con = 0.0;
+    Point3D pt;
+    CellG *cell;
+    double con;
+    int type;
+    int offset=0;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    for(int k =0 ; k<fieldDim.z+2 ; ++k)
+        for(int j =0 ; j<fieldDim.y+2 ; ++j)
+            for(int i =0 ; i<fieldDim.x+2 ; ++i){
+                if(i==0 || i==fieldDim.x+1 ||j==0 || j==fieldDim.y+1 || k==0 || k==fieldDim.z+1){
+                    conArray->InsertValue(offset, 0.0);
+                    cellTypeArray->InsertValue(offset, 0);
+                    ++offset;
+                }else{
+                    pt.x=i-1;
+                    pt.y=j-1;
+                    pt.z=k-1;
+
+                    cell=cellFieldG->get(pt);
+
+                    if(cell){
+                        mitr=conFieldPtr->find(cell);
+                        if(mitr!=conFieldPtr->end()){
+                            type=cell->type;
+                            con=mitr->second;
+                        }else{
+                            type=cell->type;
+                            con=0.0;
                         }
-                        conArray->SetValue(offset, con);
-                        cellTypeArray->SetValue(offset, type);
+                    }else{
+                        type=0;
+                        con=0.0;
                     }
+                    conArray->InsertValue(offset, con);
+                    cellTypeArray->InsertValue(offset, type);
+                    ++offset;
                 }
             }
-        }
-    }
-    pUtils->setNumberOfWorkNodesAuto(1);
     return true;
 }
+
 
 void FieldExtractor::setVtkObj(void *_vtkObj) {
     cerr << "INSIDE setVtkObj" << endl;
