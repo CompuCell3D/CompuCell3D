@@ -394,6 +394,24 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
     initImpl();
 }
 
+template<class Cruncher>
+void DiffusionSolverFE<Cruncher>::init_cell_type_and_id_arrays() {
+    Point3D pt;
+    for (pt.z = 0; pt.z < fieldDim.z; ++pt.z)
+        for (pt.y = 0; pt.y < fieldDim.y; ++pt.y)
+            for (pt.x = 0; pt.x < fieldDim.x; ++pt.x) {
+                CellG * cell = cellFieldG->getQuick(pt);
+                if (cell) {
+                    h_celltype_field->set(pt, cell->type);
+                    h_cellid_field->set(pt, cell->id);
+                } else {
+                    h_celltype_field->set(pt, 0);
+                    h_cellid_field->set(pt, 0);
+                }
+            }
+
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class Cruncher>
 void DiffusionSolverFE<Cruncher>::boundaryConditionIndicatorInit() {
@@ -717,6 +735,8 @@ void DiffusionSolverFE<Cruncher>::step(const unsigned int _currentStep) {
     currentStep = _currentStep;
 
     MyTime::Time_t stepBT = MyTime::CTime();
+    // updating cell type and  cell id arrays
+    init_cell_type_and_id_arrays();
     stepImpl(_currentStep);
     m_RDTime += MyTime::ElapsedTime(stepBT, MyTime::CTime());
 

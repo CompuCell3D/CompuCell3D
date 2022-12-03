@@ -178,7 +178,7 @@ namespace CompuCell3D {
         virtual void
         boundaryConditionIndicatorInit(); // this function initializes indicator only not the actual boundary conditions used on non-cartesian lattices
         virtual void boundaryConditionInit(int idx);
-
+        void init_cell_type_and_id_arrays();
         bool isBoudaryRegion(int x, int y, int z, Dim3D dim);
 
         unsigned int numberOfFields;
