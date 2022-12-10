@@ -1392,692 +1392,711 @@ void FieldExtractor::fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_
         lines->InsertCellPoint(ptCount - 4);
     }
 }
-bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 
-    vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
+bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr,
+                                           vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
+                                           std::string _plane, int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
 
-	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
+    vtkCellArray *_hexCellsArray = (vtkCellArray *) _hexCellsArrayAddr;
 
-
-	Field3D<float> *conFieldPtr=0;
-	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-	std::map<std::string,Field3D<float>*>::iterator mitr;
-	mitr=fieldMap.find(_conFieldName);
-	if(mitr!=fieldMap.end()){
-		conFieldPtr=mitr->second;
-	}
-
-	if(!conFieldPtr)
-		return false;
+    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
 
 
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
+    Field3D<float> *conFieldPtr = 0;
+    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
+    std::map<std::string, Field3D<float> *>::iterator mitr;
+    mitr = fieldMap.find(_conFieldName);
+    if (mitr != fieldMap.end()) {
+        conFieldPtr = mitr->second;
+    }
 
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
-
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
-
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
+    if (!conFieldPtr)
+        return false;
 
 
-	int offset=0;
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
 
-	Point3D pt;
-	vector<int> ptVec(3,0);
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
 
-	double con;
-	long pc=0;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
 
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
 
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				con = conFieldPtr->get(pt);
-			}
-			Coordinates3D<double> hexCoords=HexCoordXY(pt.x,pt.y,pt.z);
-			for (int idx=0 ; idx<6 ; ++idx){
-			 Coordinates3D<double> hexagonVertex=hexagonVertices[idx]+hexCoords;
-			 _pointsArray->InsertNextPoint(hexagonVertex.x,hexagonVertex.y,0.0);
-			}
-			pc+=6;
-			vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
-			_hexCellsArray->InsertCellPoint(pc-6);
-			_hexCellsArray->InsertCellPoint(pc-5);
-			_hexCellsArray->InsertCellPoint(pc-4);
-			_hexCellsArray->InsertCellPoint(pc-3);
-			_hexCellsArray->InsertCellPoint(pc-2);
-			_hexCellsArray->InsertCellPoint(pc-1);
 
-			conArray->InsertNextValue( con);
-		}
-		return true;
-    
+    int offset = 0;
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+
+    double con;
+    long pc = 0;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    for (int j = 0; j < dim[1]; ++j)
+        for (int i = 0; i < dim[0]; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                con = conFieldPtr->get(pt);
+            }
+            Coordinates3D<double> hexCoords = HexCoordXY(pt.x, pt.y, pt.z);
+            for (int idx = 0; idx < 6; ++idx) {
+                Coordinates3D<double> hexagonVertex = hexagonVertices[idx] + hexCoords;
+                _pointsArray->InsertNextPoint(hexagonVertex.x, hexagonVertex.y, 0.0);
+            }
+            pc += 6;
+            vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
+            _hexCellsArray->InsertCellPoint(pc - 6);
+            _hexCellsArray->InsertCellPoint(pc - 5);
+            _hexCellsArray->InsertCellPoint(pc - 4);
+            _hexCellsArray->InsertCellPoint(pc - 3);
+            _hexCellsArray->InsertCellPoint(pc - 2);
+            _hexCellsArray->InsertCellPoint(pc - 1);
+
+            conArray->InsertNextValue(con);
+        }
+    return true;
+
 }
 
-bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
+bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,
+                                                 vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+                                                 vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
+                                                 std::string _plane, int _pos) {
 
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	vtkCellArray * _cartesianCellsArray=(vtkCellArray*)_cartesianCellsArrayAddr;
-	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    vtkCellArray *_cartesianCellsArray = (vtkCellArray *) _cartesianCellsArrayAddr;
+    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
 
-    Field3D<float> *conFieldPtr=0;
-	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-	std::map<std::string,Field3D<float>*>::iterator mitr;
-	mitr=fieldMap.find(_conFieldName);
-	if(mitr!=fieldMap.end()){
-		conFieldPtr=mitr->second;
-	}
+    Field3D<float> *conFieldPtr = 0;
+    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
+    std::map<std::string, Field3D<float> *>::iterator mitr;
+    mitr = fieldMap.find(_conFieldName);
+    if (mitr != fieldMap.end()) {
+        conFieldPtr = mitr->second;
+    }
 
-	if(!conFieldPtr)
-		return false;
+    if (!conFieldPtr)
+        return false;
 
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
 
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
 
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
 
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
-
-
-	int offset=0;
-
-	Point3D pt;
-	vector<int> ptVec(3,0);
-
-	double con;
-	long pc=0;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
 
 
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
+    int offset = 0;
 
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
+    Point3D pt;
+    vector<int> ptVec(3, 0);
 
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				con = con = conFieldPtr->get(pt);
-			}
-
-            Coordinates3D<double> coords(ptVec[0],ptVec[1],0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
-
-			for (int idx=0 ; idx<4 ; ++idx){
-			  Coordinates3D<double> cartesianVertex=cartesianVertices[idx]+coords;
- 			 _pointsArray->InsertNextPoint(cartesianVertex.x,cartesianVertex.y,0.0);
-			}
-
-			pc+=4;
-			vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
-			_cartesianCellsArray->InsertCellPoint(pc-4);
-			_cartesianCellsArray->InsertCellPoint(pc-3);
-			_cartesianCellsArray->InsertCellPoint(pc-2);
-			_cartesianCellsArray->InsertCellPoint(pc-1);
-
-			conArray->InsertNextValue( con);
-			++offset;
-		}
-
-		return true;
-}
+    double con;
+    long pc = 0;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
 
 
-bool FieldExtractor::fillScalarFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
-	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
+    for (int j = 0; j < dim[1]; ++j)
+        for (int i = 0; i < dim[0]; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
 
-	FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_conFieldName);
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
 
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                con = con = conFieldPtr->get(pt);
+            }
 
-	if(!conFieldPtr)
-		return false;
+            Coordinates3D<double> coords(ptVec[0], ptVec[1],
+                                         0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
 
+            for (int idx = 0; idx < 4; ++idx) {
+                Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
+                _pointsArray->InsertNextPoint(cartesianVertex.x, cartesianVertex.y, 0.0);
+            }
 
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
+            pc += 4;
+            vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
+            _cartesianCellsArray->InsertCellPoint(pc - 4);
+            _cartesianCellsArray->InsertCellPoint(pc - 3);
+            _cartesianCellsArray->InsertCellPoint(pc - 2);
+            _cartesianCellsArray->InsertCellPoint(pc - 1);
 
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
+            conArray->InsertNextValue(con);
+            ++offset;
+        }
 
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
-
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
-
-
-	int offset=0;
-
-	Point3D pt;
-	vector<int> ptVec(3,0);
-
-	double con;
-	long pc=0;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
-
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
-
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				con = (*conFieldPtr)[pt.x][pt.y][pt.z];
-			}
-
-			Coordinates3D<double> hexCoords=HexCoordXY(pt.x,pt.y,pt.z);
-
-			for (int idx=0 ; idx<6 ; ++idx){
-			 Coordinates3D<double> hexagonVertex=hexagonVertices[idx]+hexCoords;
- 			 _pointsArray->InsertNextPoint(hexagonVertex.x,hexagonVertex.y,0.0);
-			}
-			pc+=6;
-			vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
-			_hexCellsArray->InsertCellPoint(pc-6);
-			_hexCellsArray->InsertCellPoint(pc-5);
-			_hexCellsArray->InsertCellPoint(pc-4);
-			_hexCellsArray->InsertCellPoint(pc-3);
-			_hexCellsArray->InsertCellPoint(pc-2);
-			_hexCellsArray->InsertCellPoint(pc-1);
-
-			conArray->InsertNextValue( con);
-			++offset;
-		}
-
-		return true;
-}
-
-bool FieldExtractor::fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	vtkCellArray * _cartesianCellsArray=(vtkCellArray*)_cartesianCellsArrayAddr;
-	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
-
-	FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_conFieldName);
-
-
-	if(!conFieldPtr)
-		return false;
-
-
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
-
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
-
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
-
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
-
-
-
-
-	int offset=0;
-
-	Point3D pt;
-	vector<int> ptVec(3,0);
-
-	double con;
-	long pc=0;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-
-
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
-
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
-
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				con = (*conFieldPtr)[pt.x][pt.y][pt.z];
-			}
-
-            Coordinates3D<double> coords(ptVec[0],ptVec[1],0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
-			for (int idx=0 ; idx<4 ; ++idx){
-			  Coordinates3D<double> cartesianVertex=cartesianVertices[idx]+coords;
- 			 _pointsArray->InsertNextPoint(cartesianVertex.x,cartesianVertex.y,0.0);
-			}
-
-			pc+=4;
-			vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
-			_cartesianCellsArray->InsertCellPoint(pc-4);
-			_cartesianCellsArray->InsertCellPoint(pc-3);
-			_cartesianCellsArray->InsertCellPoint(pc-2);
-			_cartesianCellsArray->InsertCellPoint(pc-1);
-
-			conArray->InsertNextValue( con);
-			++offset;
-		}
-
-		return true;
+    return true;
 }
 
 
+bool FieldExtractor::fillScalarFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr,
+                                              vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
+                                              std::string _plane, int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    vtkCellArray *_hexCellsArray = (vtkCellArray *) _hexCellsArrayAddr;
+    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
+
+    FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(_conFieldName);
 
 
-bool FieldExtractor::fillScalarFieldCellLevelData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
-	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
+    if (!conFieldPtr)
+        return false;
 
-	FieldStorage::scalarFieldCellLevel_t * conFieldPtr=fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
 
-	if(!conFieldPtr)
-		return false;
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
 
-	FieldStorage::scalarFieldCellLevel_t::iterator mitr;
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
 
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
 
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
 
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
 
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
+    int offset = 0;
 
-	int offset=0;
+    Point3D pt;
+    vector<int> ptVec(3, 0);
 
-	Point3D pt;
-	vector<int> ptVec(3,0);
+    double con;
+    long pc = 0;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    for (int j = 0; j < dim[1]; ++j)
+        for (int i = 0; i < dim[0]; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
 
-	CellG *cell;
-	double con;
-	long pc=0;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
 
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                con = (*conFieldPtr)[pt.x][pt.y][pt.z];
+            }
 
-			cell=cellFieldG->get(pt);
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				if(cell){
-					mitr=conFieldPtr->find(cell);
-					if(mitr!=conFieldPtr->end()){
-						con=mitr->second;
-					}else{
-						con=0.0;
-					}
-				}else{
-					con=0.0;
-				}
-			}
-			Coordinates3D<double> hexCoords=HexCoordXY(pt.x,pt.y,pt.z);
-			for (int idx=0 ; idx<6 ; ++idx){
-			 Coordinates3D<double> hexagonVertex=hexagonVertices[idx]+hexCoords;
- 			 _pointsArray->InsertNextPoint(hexagonVertex.x,hexagonVertex.y,0.0);
-			}
-			pc+=6;
-			vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
-			_hexCellsArray->InsertCellPoint(pc-6);
-			_hexCellsArray->InsertCellPoint(pc-5);
-			_hexCellsArray->InsertCellPoint(pc-4);
-			_hexCellsArray->InsertCellPoint(pc-3);
-			_hexCellsArray->InsertCellPoint(pc-2);
-			_hexCellsArray->InsertCellPoint(pc-1);
+            Coordinates3D<double> hexCoords = HexCoordXY(pt.x, pt.y, pt.z);
 
-			conArray->InsertNextValue( con);
+            for (int idx = 0; idx < 6; ++idx) {
+                Coordinates3D<double> hexagonVertex = hexagonVertices[idx] + hexCoords;
+                _pointsArray->InsertNextPoint(hexagonVertex.x, hexagonVertex.y, 0.0);
+            }
+            pc += 6;
+            vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
+            _hexCellsArray->InsertCellPoint(pc - 6);
+            _hexCellsArray->InsertCellPoint(pc - 5);
+            _hexCellsArray->InsertCellPoint(pc - 4);
+            _hexCellsArray->InsertCellPoint(pc - 3);
+            _hexCellsArray->InsertCellPoint(pc - 2);
+            _hexCellsArray->InsertCellPoint(pc - 1);
 
-			++offset;
-		}
-		return true;
+            conArray->InsertNextValue(con);
+            ++offset;
+        }
+
+    return true;
+}
+
+bool FieldExtractor::fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,
+                                                    vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+                                                    vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
+                                                    std::string _plane, int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    vtkCellArray *_cartesianCellsArray = (vtkCellArray *) _cartesianCellsArrayAddr;
+    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
+
+    FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(_conFieldName);
+
+
+    if (!conFieldPtr)
+        return false;
+
+
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
+
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
+
+
+    int offset = 0;
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+
+    double con;
+    long pc = 0;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+
+
+    for (int j = 0; j < dim[1]; ++j)
+        for (int i = 0; i < dim[0]; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                con = (*conFieldPtr)[pt.x][pt.y][pt.z];
+            }
+
+            Coordinates3D<double> coords(ptVec[0], ptVec[1],
+                                         0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
+            for (int idx = 0; idx < 4; ++idx) {
+                Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
+                _pointsArray->InsertNextPoint(cartesianVertex.x, cartesianVertex.y, 0.0);
+            }
+
+            pc += 4;
+            vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
+            _cartesianCellsArray->InsertCellPoint(pc - 4);
+            _cartesianCellsArray->InsertCellPoint(pc - 3);
+            _cartesianCellsArray->InsertCellPoint(pc - 2);
+            _cartesianCellsArray->InsertCellPoint(pc - 1);
+
+            conArray->InsertNextValue(con);
+            ++offset;
+        }
+
+    return true;
 }
 
 
-bool FieldExtractor::fillScalarFieldCellLevelData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	vtkCellArray * _cartesianCellsArray=(vtkCellArray*)_cartesianCellsArrayAddr;
-	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
+bool FieldExtractor::fillScalarFieldCellLevelData2DHex(vtk_obj_addr_int_t _conArrayAddr,
+                                                       vtk_obj_addr_int_t _hexCellsArrayAddr,
+                                                       vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
+                                                       std::string _plane, int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    vtkCellArray *_hexCellsArray = (vtkCellArray *) _hexCellsArrayAddr;
+    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
 
-	FieldStorage::scalarFieldCellLevel_t * conFieldPtr=fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
+    FieldStorage::scalarFieldCellLevel_t *conFieldPtr = fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
 
-	if(!conFieldPtr)
-		return false;
+    if (!conFieldPtr)
+        return false;
 
-	FieldStorage::scalarFieldCellLevel_t::iterator mitr;
+    FieldStorage::scalarFieldCellLevel_t::iterator mitr;
 
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
 
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
 
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
 
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
 
+    int offset = 0;
 
+    Point3D pt;
+    vector<int> ptVec(3, 0);
 
-	int offset=0;
+    CellG *cell;
+    double con;
+    long pc = 0;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    for (int j = 0; j < dim[1]; ++j)
+        for (int i = 0; i < dim[0]; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
 
-	Point3D pt;
-	vector<int> ptVec(3,0);
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
 
-	CellG *cell;
-	double con;
-	long pc=0;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+            cell = cellFieldG->get(pt);
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                if (cell) {
+                    mitr = conFieldPtr->find(cell);
+                    if (mitr != conFieldPtr->end()) {
+                        con = mitr->second;
+                    } else {
+                        con = 0.0;
+                    }
+                } else {
+                    con = 0.0;
+                }
+            }
+            Coordinates3D<double> hexCoords = HexCoordXY(pt.x, pt.y, pt.z);
+            for (int idx = 0; idx < 6; ++idx) {
+                Coordinates3D<double> hexagonVertex = hexagonVertices[idx] + hexCoords;
+                _pointsArray->InsertNextPoint(hexagonVertex.x, hexagonVertex.y, 0.0);
+            }
+            pc += 6;
+            vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
+            _hexCellsArray->InsertCellPoint(pc - 6);
+            _hexCellsArray->InsertCellPoint(pc - 5);
+            _hexCellsArray->InsertCellPoint(pc - 4);
+            _hexCellsArray->InsertCellPoint(pc - 3);
+            _hexCellsArray->InsertCellPoint(pc - 2);
+            _hexCellsArray->InsertCellPoint(pc - 1);
 
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
+            conArray->InsertNextValue(con);
 
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
-
-			cell=cellFieldG->get(pt);
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				if(cell){
-					mitr=conFieldPtr->find(cell);
-					if(mitr!=conFieldPtr->end()){
-						con=mitr->second;
-					}else{
-						con=0.0;
-					}
-				}else{
-					con=0.0;
-				}
-			}
-
-
-            Coordinates3D<double> coords(ptVec[0],ptVec[1],0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
-			for (int idx=0 ; idx<4 ; ++idx){
-			  Coordinates3D<double> cartesianVertex=cartesianVertices[idx]+coords;
- 			 _pointsArray->InsertNextPoint(cartesianVertex.x,cartesianVertex.y,0.0);
-			}
-
-			pc+=4;
-			vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
-			_cartesianCellsArray->InsertCellPoint(pc-4);
-			_cartesianCellsArray->InsertCellPoint(pc-3);
-			_cartesianCellsArray->InsertCellPoint(pc-2);
-			_cartesianCellsArray->InsertCellPoint(pc-1);
-
-			conArray->InsertNextValue( con);
-			++offset;
-		}
-		return true;
+            ++offset;
+        }
+    return true;
 }
 
 
-bool FieldExtractor::fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	Field3D<float> *conFieldPtr=0;
-	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-	std::map<std::string,Field3D<float>*>::iterator mitr;
-	mitr=fieldMap.find(_conFieldName);
-	if(mitr!=fieldMap.end()){
-		conFieldPtr=mitr->second;
-	}
+bool FieldExtractor::fillScalarFieldCellLevelData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,
+                                                             vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+                                                             vtk_obj_addr_int_t _pointsArrayAddr,
+                                                             std::string _conFieldName, std::string _plane, int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    vtkCellArray *_cartesianCellsArray = (vtkCellArray *) _cartesianCellsArrayAddr;
+    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
 
-	if(!conFieldPtr)
-		return false;
+    FieldStorage::scalarFieldCellLevel_t *conFieldPtr = fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
+
+    if (!conFieldPtr)
+        return false;
+
+    FieldStorage::scalarFieldCellLevel_t::iterator mitr;
+
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
+
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
 
 
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
+    int offset = 0;
 
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
+    Point3D pt;
+    vector<int> ptVec(3, 0);
 
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
+    CellG *cell;
+    double con;
+    long pc = 0;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
 
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
+    for (int j = 0; j < dim[1]; ++j)
+        for (int i = 0; i < dim[0]; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            cell = cellFieldG->get(pt);
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                if (cell) {
+                    mitr = conFieldPtr->find(cell);
+                    if (mitr != conFieldPtr->end()) {
+                        con = mitr->second;
+                    } else {
+                        con = 0.0;
+                    }
+                } else {
+                    con = 0.0;
+                }
+            }
 
 
-	conArray->SetNumberOfValues((dim[1]+2)*(dim[0]+1));
-	//For some reasons the points x=0 are eaten up (don't know why).
-	//So we just populate concentration 0.0.
-	int offset=0;
-	for (int i = 0 ; i< dim[0]+1 ;++i){
-		conArray->SetValue(offset, 0.0);
-		++offset;
-	}
+            Coordinates3D<double> coords(ptVec[0], ptVec[1],
+                                         0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
+            for (int idx = 0; idx < 4; ++idx) {
+                Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
+                _pointsArray->InsertNextPoint(cartesianVertex.x, cartesianVertex.y, 0.0);
+            }
 
-	Point3D pt;
-	vector<int> ptVec(3,0);
+            pc += 4;
+            vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
+            _cartesianCellsArray->InsertCellPoint(pc - 4);
+            _cartesianCellsArray->InsertCellPoint(pc - 3);
+            _cartesianCellsArray->InsertCellPoint(pc - 2);
+            _cartesianCellsArray->InsertCellPoint(pc - 1);
 
-	double con;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1]+1 ; ++j)
-		for(int i =0 ; i<dim[0]+1 ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
-
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
-
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				con = conFieldPtr->get(pt);
-			}
-
-			conArray->SetValue(offset, con);
-			++offset;
-		}
-		return true;
+            conArray->InsertNextValue(con);
+            ++offset;
+        }
+    return true;
 }
 
 
-bool FieldExtractor::fillScalarFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_conFieldName);
+bool FieldExtractor::fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr, std::string _conFieldName, std::string _plane,
+                                        int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    Field3D<float> *conFieldPtr = 0;
+    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
+    std::map<std::string, Field3D<float> *>::iterator mitr;
+    mitr = fieldMap.find(_conFieldName);
+    if (mitr != fieldMap.end()) {
+        conFieldPtr = mitr->second;
+    }
 
-	if(!conFieldPtr)
-		return false;
-
-
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
-
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
-
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
-
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
+    if (!conFieldPtr)
+        return false;
 
 
-	conArray->SetNumberOfValues((dim[1]+2)*(dim[0]+1));
-	//For some reasons the points x=0 are eaten up (don't know why).
-	//So we just populate concentration 0.0.
-	int offset=0;
-	for (int i = 0 ; i< dim[0]+1 ;++i){
-		conArray->SetValue(offset, 0.0);
-		++offset;
-	}
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
 
-	Point3D pt;
-	vector<int> ptVec(3,0);
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
 
-	double con;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1]+1 ; ++j)
-		for(int i =0 ; i<dim[0]+1 ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
 
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
 
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				con = (*conFieldPtr)[pt.x][pt.y][pt.z];
-			}
-			conArray->SetValue(offset, con);
-			++offset;
-		}
-		return true;
+
+    conArray->SetNumberOfValues((dim[1] + 2) * (dim[0] + 1));
+    //For some reasons the points x=0 are eaten up (don't know why).
+    //So we just populate concentration 0.0.
+    int offset = 0;
+    for (int i = 0; i < dim[0] + 1; ++i) {
+        conArray->SetValue(offset, 0.0);
+        ++offset;
+    }
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+
+    double con;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    for (int j = 0; j < dim[1] + 1; ++j)
+        for (int i = 0; i < dim[0] + 1; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                con = conFieldPtr->get(pt);
+            }
+
+            conArray->SetValue(offset, con);
+            ++offset;
+        }
+    return true;
 }
 
-bool FieldExtractor::fillScalarFieldCellLevelData2D(vtk_obj_addr_int_t _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	FieldStorage::scalarFieldCellLevel_t * conFieldPtr=fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
 
-	if(!conFieldPtr)
-		return false;
+bool
+FieldExtractor::fillScalarFieldData2D(vtk_obj_addr_int_t _conArrayAddr, std::string _conFieldName, std::string _plane,
+                                      int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(_conFieldName);
 
-	FieldStorage::scalarFieldCellLevel_t::iterator mitr;
+    if (!conFieldPtr)
+        return false;
 
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
 
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
 
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
 
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
 
-	conArray->SetNumberOfValues((dim[1]+2)*(dim[0]+1));
-	//For some reasons the points x=0 are eaten up (don't know why).
-	//So we just populate concentration 0.0.
-	int offset=0;
-	for (int i = 0 ; i< dim[0]+1 ;++i){
-		conArray->SetValue(offset, 0.0);
-		++offset;
-	}
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
 
-	Point3D pt;
-	vector<int> ptVec(3,0);
-	CellG* cell;
 
-	double con;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1]+1 ; ++j)
-		for(int i =0 ; i<dim[0]+1 ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
+    conArray->SetNumberOfValues((dim[1] + 2) * (dim[0] + 1));
+    //For some reasons the points x=0 are eaten up (don't know why).
+    //So we just populate concentration 0.0.
+    int offset = 0;
+    for (int i = 0; i < dim[0] + 1; ++i) {
+        conArray->SetValue(offset, 0.0);
+        ++offset;
+    }
 
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
+    Point3D pt;
+    vector<int> ptVec(3, 0);
 
-			cell=cellFieldG->get(pt);
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
+    double con;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    for (int j = 0; j < dim[1] + 1; ++j)
+        for (int i = 0; i < dim[0] + 1; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
 
-				if(cell){
-					mitr=conFieldPtr->find(cell);
-					if(mitr!=conFieldPtr->end()){
-						con=mitr->second;
-					}else{
-						con=0.0;
-					}
-				}else{
-					con=0.0;
-				}
-			}
-			conArray->SetValue(offset, con);
-			++offset;
-		}
-		return true;
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                con = (*conFieldPtr)[pt.x][pt.y][pt.z];
+            }
+            conArray->SetValue(offset, con);
+            ++offset;
+        }
+    return true;
+}
+
+bool FieldExtractor::fillScalarFieldCellLevelData2D(vtk_obj_addr_int_t _conArrayAddr, std::string _conFieldName,
+                                                    std::string _plane, int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    FieldStorage::scalarFieldCellLevel_t *conFieldPtr = fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
+
+    if (!conFieldPtr)
+        return false;
+
+    FieldStorage::scalarFieldCellLevel_t::iterator mitr;
+
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
+
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
+
+    conArray->SetNumberOfValues((dim[1] + 2) * (dim[0] + 1));
+    //For some reasons the points x=0 are eaten up (don't know why).
+    //So we just populate concentration 0.0.
+    int offset = 0;
+    for (int i = 0; i < dim[0] + 1; ++i) {
+        conArray->SetValue(offset, 0.0);
+        ++offset;
+    }
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+    CellG *cell;
+
+    double con;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    for (int j = 0; j < dim[1] + 1; ++j)
+        for (int i = 0; i < dim[0] + 1; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            cell = cellFieldG->get(pt);
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+
+                if (cell) {
+                    mitr = conFieldPtr->find(cell);
+                    if (mitr != conFieldPtr->end()) {
+                        con = mitr->second;
+                    } else {
+                        con = 0.0;
+                    }
+                } else {
+                    con = 0.0;
+                }
+            }
+            conArray->SetValue(offset, con);
+            ++offset;
+        }
+    return true;
 }
 
 
@@ -2933,16 +2952,50 @@ FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_o
     return vector<int>(usedCellTypes.begin(), usedCellTypes.end());
 }
 
+std::vector<int> FieldExtractor::fillCellFieldGlyphs3D(vtk_obj_addr_int_t centroids_array_addr,
+                                                       vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                       vtk_obj_addr_int_t cell_type_array_addr,
+                                                       std::vector<int> *_types_invisibe_vec,
+                                                       bool extractOuterShellOnly) {
+
+    vtkPoints *centroids_array = (vtkPoints *) centroids_array_addr;
+    vtkIntArray *cell_type_array = (vtkIntArray *) cell_type_array_addr;
+    vtkFloatArray *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+
+    unordered_set<int> invisible_types(_types_invisibe_vec->begin(), _types_invisibe_vec->end());
+
+    unordered_set<int> used_cell_types;
+    CellInventory &cellInventory = potts->getCellInventory();
+    CellInventory::cellInventoryIterator cInvItr;
+    CellG *cell;
+    for (cInvItr = cellInventory.cellInventoryBegin(); cInvItr != cellInventory.cellInventoryEnd(); ++cInvItr) {
+        cell = cellInventory.getCell(cInvItr);
+
+        if (invisible_types.find((int)cell->type) != invisible_types.end()) continue;
+
+        centroids_array->InsertNextPoint(cell->xCOM, cell->yCOM, cell->zCOM);
+        cell_type_array->InsertNextValue(cell->type);
+        used_cell_types.insert((int)cell->type);
+
+//         v = 4/3*pi*r**3 => r = (3/(4*math.pi))**3 * v**0.333 => scaling factor (3/(4*math.pi))**0.333 = 0.62
+        vol_scaling_factors_array->InsertNextValue(0.62*pow(cell->volume, 0.333));
+
+    }
+
+    return std::vector<int>(used_cell_types.begin(), used_cell_types.end());
+}
+
+
 bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
                                         std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
                                         bool type_indicator_only
-                                        ) {
+) {
     vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
     vtkIntArray *cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
 
 
     type_fcn_ptr = &FieldExtractor::type_value;
-    if (type_indicator_only){
+    if (type_indicator_only) {
         type_fcn_ptr = &FieldExtractor::type_indicator;
     }
 
@@ -3028,7 +3081,7 @@ bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_ob
 bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
                                            std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
                                            bool type_indicator_only
-                                           ) {
+) {
     vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
     vtkIntArray *cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
     FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(_conFieldName);
@@ -3037,7 +3090,7 @@ bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk
         return false;
 
     type_fcn_ptr = &FieldExtractor::type_value;
-    if (type_indicator_only){
+    if (type_indicator_only) {
         type_fcn_ptr = &FieldExtractor::type_indicator;
     }
 
@@ -3122,7 +3175,7 @@ FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr,
         return false;
 
     type_fcn_ptr = &FieldExtractor::type_value;
-    if (type_indicator_only){
+    if (type_indicator_only) {
         type_fcn_ptr = &FieldExtractor::type_indicator;
     }
 

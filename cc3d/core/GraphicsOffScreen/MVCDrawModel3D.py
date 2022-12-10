@@ -154,6 +154,75 @@ class MVCDrawModel3D(MVCDrawModelBase):
     def init_cell_field_glyphs_actors(self, actor_specs, drawing_params=None):
         # using just one actor
 
+        centroids = vtk.vtkPoints()
+        volume_scaling_factors = vtk.vtkFloatArray()
+        volume_scaling_factors.SetName("volume_scaling_factors")
+
+        cell_types = vtk.vtkIntArray()
+        cell_types.SetName("cell_types")
+        centroids_addr = extract_address_int_from_vtk_object(vtkObj=centroids)
+        cell_types_addr = extract_address_int_from_vtk_object(vtkObj=cell_types)
+        volume_scaling_factors_addr = extract_address_int_from_vtk_object(vtkObj=volume_scaling_factors)
+
+        types_invisible = PlayerPython.vectorint()
+        for type_label in drawing_params.screenshot_data.invisible_types:
+            types_invisible.append(int(type_label))
+
+        used_types = self.field_extractor.fillCellFieldGlyphs3D(centroids_addr,
+                                                       volume_scaling_factors_addr,
+                                                       cell_types_addr,
+                                                       types_invisible
+                                                       )
+        mapper = vtk.vtkPolyDataMapper()
+
+        # polydata should be initialized/created AFTER all arrays have been filled in
+        centroid_polydata = vtk.vtkPolyData()
+        centroid_polydata.SetPoints(centroids)
+        centroid_polydata.GetPointData().AddArray(volume_scaling_factors)
+        centroid_polydata.GetPointData().AddArray(cell_types)
+
+        sphere = vtk.vtkSphereSource()
+        sphere.SetRadius(1)
+
+        try:
+            actor = list(actor_specs.actors_dict.values())[0]
+        except IndexError:
+            print("Could not find any actor for listed cell types")
+            return
+
+        glyphs = vtk.vtkGlyph3D()
+
+        glyphs.SetInputData(centroid_polydata)
+        glyphs.SetSourceConnection(0, sphere.GetOutputPort())
+
+        glyphs.ScalingOn()
+        glyphs.SetScaleModeToScaleByScalar()
+        glyphs.SetColorModeToColorByScalar()
+
+        glyphs.SetScaleFactor(1)  # Overall scaling factor
+
+        # Tell it to index into the glyph table according to scalars
+        glyphs.SetIndexModeToScalar()
+
+        # Tell glyph which attribute arrays to use for what
+        # see also https://stackoverflow.com/questions/29768049/
+        # python-vtk-glyphs-with-independent-position-orientation-color-and-height
+        glyphs.SetInputArrayToProcess(0, 0, 0, 0, 'volume_scaling_factors')  # 0 - scalars for scaling
+        glyphs.SetInputArrayToProcess(3, 0, 0, 0, 'cell_types')  # 3 - color
+
+        cell_type_lut = self.get_type_lookup_table()
+        mapper.SetInputConnection(glyphs.GetOutputPort())
+        mapper.SetLookupTable(cell_type_lut)
+        mapper.ScalarVisibilityOn()
+        mapper.SetScalarRange(0, cell_type_lut.GetNumberOfTableValues() - 1)
+        mapper.SetColorModeToMapScalars()
+        # TODO add hex actor scaling
+        actor.SetMapper(mapper)
+
+
+    def init_cell_field_glyphs_actors_py(self, actor_specs, drawing_params=None):
+        # using just one actor
+
         from cc3d.core.PySteppables import CellList
         inventory = self.currentDrawingParameters.bsd.sim.getPotts().getCellInventory()
         cell_list = CellList(inventory)
@@ -224,7 +293,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         mapper.ScalarVisibilityOn()
         mapper.SetScalarRange(0, cell_type_lut.GetNumberOfTableValues() - 1)
         mapper.SetColorModeToMapScalars()
-
+        # TODO add hex actor scaling
         actor.SetMapper(mapper)
 
     def init_cell_field_glyphs_actors_ok(self, actor_specs, drawing_params=None):
@@ -449,9 +518,120 @@ class MVCDrawModel3D(MVCDrawModelBase):
     def init_cell_field_actors(self, actor_specs, drawing_params=None):
 
         if drawing_params.screenshot_data.cell_borders_on:
-            self.init_cell_field_borders_actors(actor_specs=actor_specs)
+            self.init_cell_field_borders_actors(actor_specs=actor_specs, drawing_params=drawing_params)
         else:
-            self.init_cell_field_actors_borderless(actor_specs=actor_specs)
+            self.init_cell_field_actors_borderless(actor_specs=actor_specs, drawing_params=drawing_params)
+
+
+    def init_concentration_field_glyphs_actors(self, actor_specs, drawing_params=None):
+
+        from cc3d.core.PySteppables import CellList
+        inventory = self.currentDrawingParameters.bsd.sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
+
+        centroids = vtk.vtkPoints()
+        volume_scaling_factors = vtk.vtkFloatArray()
+        volume_scaling_factors.SetName("volume_scaling_factors")
+
+        cell_types = vtk.vtkIntArray()
+        cell_types.SetName("cell_types")
+
+        scalar_value_at_com_array = vtk.vtkFloatArray()
+        scalar_value_at_com_array.SetName("scalar_value_at_com")
+
+
+
+        mapper = vtk.vtkPolyDataMapper()
+
+        used_cell_types_dict = { cell_type:0 for cell_type in self.used_cell_types_list}
+
+        # polydata should be initialized/created AFTER all arrays have been filled in
+        centroid_polydata = vtk.vtkPolyData()
+        centroid_polydata.SetPoints(centroids)
+        centroid_polydata.GetPointData().AddArray(volume_scaling_factors)
+        # centroid_polydata.GetPointData().AddArray(cell_types)
+        centroid_polydata.GetPointData().AddArray(scalar_value_at_com_array)
+
+        for idx, cell in enumerate(cell_list):
+            cell_type = cell.type
+            used_type = used_cell_types_dict.get(cell_type, None)
+            if used_type is None:
+                continue
+
+            centroids.InsertNextPoint(cell.xCOM, cell.yCOM, cell.zCOM)
+            # (3/(4*math.pi))**0.333 = 0.62
+            volume_scaling_factors.InsertNextValue(0.62*cell.volume ** 0.333)
+            cell_types.InsertNextValue(cell_type)
+            scalar_value_at_com_array.InsertNextValue(idx)
+            print(f'inserting cell type {cell.xCOM} {cell.yCOM} type= {cell_type}')
+
+        sphere = vtk.vtkSphereSource()
+        sphere.SetRadius(1)
+        # sphere.SetThetaResolution(2)  # increase these values for a higher-res sphere glyph
+        # sphere.SetPhiResolution(2)
+
+        try:
+            actor = list(actor_specs.actors_dict.values())[0]
+        except IndexError:
+            print("Could not find any actor for listed cell types")
+            return
+
+        glyphs = vtk.vtkGlyph3D()
+
+        glyphs.SetInputData(centroid_polydata)
+        glyphs.SetSourceConnection(0, sphere.GetOutputPort())
+
+        glyphs.ScalingOn()
+        glyphs.SetScaleModeToScaleByScalar()
+        glyphs.SetColorModeToColorByScalar()
+
+        glyphs.SetScaleFactor(1)  # Overall scaling factor
+
+        # Tell it to index into the glyph table according to scalars
+        glyphs.SetIndexModeToScalar()
+
+        # Tell glyph which attribute arrays to use for what
+        # see also https://stackoverflow.com/questions/29768049/
+        # python-vtk-glyphs-with-independent-position-orientation-color-and-height
+        glyphs.SetInputArrayToProcess(0, 0, 0, 0, 'volume_scaling_factors')  # 0 - scalars for scaling
+        # glyphs.SetInputArrayToProcess(3, 0, 0, 0, 'cell_types')  # 3 - color
+        glyphs.SetInputArrayToProcess(3, 0, 0, 0, 'scalar_value_at_com')  # 3 - color
+
+        field_name = drawing_params.fieldName
+        scene_metadata = drawing_params.screenshot_data.metadata
+
+        range_array = scalar_value_at_com_array.GetRange()
+        min_con = range_array[0]
+        max_con = range_array[1]
+
+
+        min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
+        min_range_fixed = min_max_dict['MinRangeFixed']
+        max_range_fixed = min_max_dict['MaxRangeFixed']
+        min_range = min_max_dict['MinRange']
+        max_range = min_max_dict['MaxRange']
+
+        # Note! should really avoid doing a getSetting with each step to speed up the rendering;
+        # only update when changed in Prefs
+        if min_range_fixed:
+            min_con = min_range
+
+        if max_range_fixed:
+            max_con = max_range
+
+        # cell_type_lut = self.get_type_lookup_table()
+        lut = self.scalarLUT
+        # self.conMapper.SetScalarRange(min_con, max_con)
+
+        mapper.SetInputConnection(glyphs.GetOutputPort())
+        # mapper.SetLookupTable(cell_type_lut)
+        mapper.SetLookupTable(lut)
+        mapper.ScalarVisibilityOn()
+        mapper.SetScalarRange(min_con, max_con)
+        # mapper.SetScalarRange(0, cell_type_lut.GetNumberOfTableValues() - 1)
+        mapper.SetColorModeToMapScalars()
+        # TODO add hex actor scaling
+        actor.SetMapper(mapper)
 
     def init_concentration_field_actors(self, actor_specs, drawing_params=None):
         """
@@ -460,6 +640,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
         :param drawing_params:
         :return: None
         """
+        self.init_concentration_field_glyphs_actors(actor_specs=actor_specs, drawing_params=drawing_params)
+        return
 
         actors_dict = actor_specs.actors_dict
 

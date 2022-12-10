@@ -926,6 +926,102 @@ class MVCDrawModel2D(MVCDrawModelBase):
         color = to_vtk_rgb(mdata.get('ContourColor', data_type='color'))
         contour_actor.GetProperty().SetColor(color)
 
+
+    def init_cell_field_glyphs_actors(self, actor_specs, drawing_params=None):
+        # using just one actor
+
+        from cc3d.core.PySteppables import CellList
+        inventory = self.currentDrawingParameters.bsd.sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
+
+        centroids = vtk.vtkPoints()
+        volume_scaling_factors = vtk.vtkFloatArray()
+        volume_scaling_factors.SetName("volume_scaling_factors")
+
+        cell_types = vtk.vtkIntArray()
+        cell_types.SetName("cell_types")
+
+        mapper = vtk.vtkPolyDataMapper()
+
+        used_cell_types_dict = { cell_type:0 for cell_type in self.used_cell_types_list}
+
+        # polydata should be initialized/created AFTER all arrays have been filled in
+        centroid_polydata = vtk.vtkPolyData()
+        centroid_polydata.SetPoints(centroids)
+        centroid_polydata.GetPointData().AddArray(volume_scaling_factors)
+        centroid_polydata.GetPointData().AddArray(cell_types)
+
+        for cell in cell_list:
+            cell_type = cell.type
+            used_type = used_cell_types_dict.get(cell_type, None)
+            if used_type is None:
+                continue
+
+            centroids.InsertNextPoint(cell.xCOM, cell.yCOM, cell.zCOM)
+            # in 2D we assume cell-glyph is a sphere
+            # so : vol = math.pi*r**2 => r = sqrt(1/math.pi)*sqrt(vol) = 0.564*sqrt(vol)
+            # (3/(4*math.pi))**0.333 = 0.62
+            volume_scaling_factors.InsertNextValue(0.564*cell.volume ** 0.5)
+            cell_types.InsertNextValue(cell_type)
+            print(f'inserting cell type {cell.xCOM} {cell.yCOM} type= {cell_type}')
+
+        # sphere = vtk.vtkSphereSource()
+        # sphere.SetRadius(1)
+        circle = self.get_vtk_circle_source(radius=1.0)
+
+
+        # sphere.SetThetaResolution(2)  # increase these values for a higher-res sphere glyph
+        # sphere.SetPhiResolution(2)
+
+        try:
+            actor = list(actor_specs.actors_dict.values())[0]
+        except IndexError:
+            print("Could not find any actor for listed cell types")
+            return
+
+        glyphs = vtk.vtkGlyph3D()
+
+        glyphs.SetInputData(centroid_polydata)
+        glyphs.SetSourceConnection(0, circle.GetOutputPort())
+
+        glyphs.ScalingOn()
+        glyphs.SetScaleModeToScaleByScalar()
+        glyphs.SetColorModeToColorByScalar()
+
+        glyphs.SetScaleFactor(1)  # Overall scaling factor
+
+        # Tell it to index into the glyph table according to scalars
+        glyphs.SetIndexModeToScalar()
+
+        # Tell glyph which attribute arrays to use for what
+        # see also https://stackoverflow.com/questions/29768049/
+        # python-vtk-glyphs-with-independent-position-orientation-color-and-height
+        glyphs.SetInputArrayToProcess(0, 0, 0, 0, 'volume_scaling_factors')  # 0 - scalars for scaling
+        glyphs.SetInputArrayToProcess(3, 0, 0, 0, 'cell_types')  # 3 - color
+
+        cell_type_lut = self.get_type_lookup_table()
+        mapper.SetInputConnection(glyphs.GetOutputPort())
+        mapper.SetLookupTable(cell_type_lut)
+        mapper.ScalarVisibilityOn()
+        mapper.SetScalarRange(0, cell_type_lut.GetNumberOfTableValues() - 1)
+        mapper.SetColorModeToMapScalars()
+        # TODO add hex actor scaling
+        actor.SetMapper(mapper)
+
+    def get_vtk_circle_source(self, radius=1.0, num_sides=50):
+        """
+        generates equivalent of vtkCircleSource using vtk.vtkRegularPolygonSource()
+        vtk does not have vtkCircleSource so we need to emulate it
+        """
+        polygon_source = vtk.vtkRegularPolygonSource()
+        # Comment this line to generate a disk instead of a circle.
+        # polygonSource.GeneratePolygonOff()
+        polygon_source.SetNumberOfSides(num_sides)
+        polygon_source.SetRadius(radius)
+        polygon_source.SetCenter(0.0, 0.0, 0.0)
+        return polygon_source
+
+
     def init_cell_field_actors(self, actor_specs, drawing_params=None):
         """
         Initializes cell field actors
@@ -933,7 +1029,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :param drawing_params: {DrawingParameters}
         :return: None
         """
-
+        self.init_cell_field_glyphs_actors(actor_specs=actor_specs,drawing_params=drawing_params)
+        return
         # lattice_type_str = self.get_lattice_type_str()
         # if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
         if self.is_lattice_hex(drawing_params=drawing_params):

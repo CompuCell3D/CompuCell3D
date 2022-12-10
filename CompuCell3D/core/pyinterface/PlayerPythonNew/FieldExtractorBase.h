@@ -131,10 +131,17 @@ namespace CompuCell3D {
         virtual std::vector<int>
         fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr,
                             bool extractOuterShellOnly = false) { return std::vector<int>(); }
+
         virtual bool fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
                                         std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
                                         bool type_indicator_only = false
-                                                ) { return false; }
+        ) { return false; }
+
+        virtual std::vector<int> fillCellFieldGlyphs3D(vtk_obj_addr_int_t centroids_array_addr,
+                                                       vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                       vtk_obj_addr_int_t cell_type_array_addr,
+                                                       std::vector<int> *_types_invisibe_vec,
+                                                       bool extractOuterShellOnly = false) { return std::vector<int>(); }
 
 
         /**
@@ -142,7 +149,7 @@ namespace CompuCell3D {
          * @param type - cell type_id
          * @return
          */
-        int type_indicator(int type){return std::min(1, type);}
+        int type_indicator(int type) { return std::min(1, type); }
 
 
         /**
@@ -150,8 +157,7 @@ namespace CompuCell3D {
          * @param type - cell type_id
          * @return
          */
-        int type_value(int type){return type;}
-
+        int type_value(int type) { return type; }
 
 
     protected:
