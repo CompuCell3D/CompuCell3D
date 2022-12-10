@@ -178,7 +178,13 @@ namespace CompuCell3D {
         virtual bool fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
                                         std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
                                         bool type_indicator_only
-                                                );
+        );
+
+        virtual std::vector<int> fillCellFieldGlyphs3D(vtk_obj_addr_int_t centroids_array_addr,
+                                                       vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                       vtk_obj_addr_int_t cell_type_array_addr,
+                                                       std::vector<int> *_types_invisibe_vec,
+                                                       bool extractOuterShellOnly = false);
 
         void setVtkObj(void *_vtkObj);
 
@@ -194,7 +200,9 @@ namespace CompuCell3D {
     private:
         FieldStorage *fsPtr;
         ParallelUtilsOpenMP *pUtils;
+
         typedef int (FieldExtractor::*type_fcn_ptr_t)(int type);
+
         FieldExtractor::type_fcn_ptr_t type_fcn_ptr;
 
     };
