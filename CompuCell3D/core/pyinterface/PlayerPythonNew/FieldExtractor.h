@@ -185,6 +185,11 @@ namespace CompuCell3D {
                                                        vtk_obj_addr_int_t cell_type_array_addr,
                                                        std::vector<int> *_types_invisibe_vec,
                                                        bool extractOuterShellOnly = false);
+        virtual void fillCellFieldGlyphs2D(
+                vtk_obj_addr_int_t centroids_array_addr,
+                vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                vtk_obj_addr_int_t cell_type_array_addr,
+                std::string plane, int pos);
 
         void setVtkObj(void *_vtkObj);
 

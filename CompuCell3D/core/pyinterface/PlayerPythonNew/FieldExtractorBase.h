@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <list>
 #include <algorithm>
 #include <string>
 #include <Utils/Coordinates3D.h>
@@ -143,6 +144,19 @@ namespace CompuCell3D {
                                                        std::vector<int> *_types_invisibe_vec,
                                                        bool extractOuterShellOnly = false) { return std::vector<int>(); }
 
+        /**
+         * fills glyph data for cell field in 2D projection
+         * @param centroids_array_addr
+         * @param vol_scaling_factors_array_addr
+         * @param cell_type_array_addr
+         * @param plane
+         * @param pos
+         */
+        virtual void fillCellFieldGlyphs2D(
+                vtk_obj_addr_int_t centroids_array_addr,
+                vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                vtk_obj_addr_int_t cell_type_array_addr,
+                 std::string plane, int _pos){}
 
         /**
          * returns 0 for medium and 1 for all non medium types
@@ -159,6 +173,13 @@ namespace CompuCell3D {
          */
         int type_value(int type) { return type; }
 
+        /**
+         * fiven list of points - corresponding to a given coordinate (x,y, or z) this fcn
+         * computes centroid for this list of coordinate
+         * @param point_list
+         * @return
+         */
+        double centroid(const std::list<int> & point_list);
 
     protected:
         std::vector<Coordinates3D<double> > hexagonVertices;

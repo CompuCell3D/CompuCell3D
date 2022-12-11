@@ -2952,6 +2952,86 @@ FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_o
     return vector<int>(usedCellTypes.begin(), usedCellTypes.end());
 }
 
+void FieldExtractor::fillCellFieldGlyphs2D(
+        vtk_obj_addr_int_t centroids_array_addr,
+        vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+        vtk_obj_addr_int_t cell_type_array_addr,
+        std::string plane, int pos){
+
+    // cell_id to cell type map
+    unordered_map<long, int> cell_id_to_cell_type;
+
+    unordered_map<long, list<int> > cell_id_to_coords_0;
+    unordered_map<long, list<int> > cell_id_to_coords_1;
+
+
+    vtkPoints *centroids_array = (vtkPoints *) centroids_array_addr;
+    vtkIntArray *cell_type_array = (vtkIntArray *) cell_type_array_addr;
+    vtkFloatArray *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+    vector<int> pointOrderVec = pointOrder(plane);
+    vector<int> dimOrderVec = dimOrder(plane);
+
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+    CellG *cell;
+    int type;
+
+    for (int j = 0; j < dim[1] + 1; ++j)
+        for (int i = 0; i < dim[0] + 1; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            cell = cellFieldG->get(pt);
+            if (!cell) {
+                continue;
+            } else {
+                type = cell->type;
+            }
+            cell_id_to_cell_type[cell->id] = cell->type;
+            cell_id_to_coords_0[cell->id].push_back(i);
+            cell_id_to_coords_1[cell->id].push_back(j);
+        }
+
+    for(const auto& cell_id_type_pair: cell_id_to_cell_type){
+        long cell_id = cell_id_type_pair.first;
+        int cell_type = cell_id_type_pair.second;
+        const auto & coords_0 = cell_id_to_coords_0[cell_id];
+        const auto & coords_1 = cell_id_to_coords_1[cell_id];
+        auto vol = coords_0.size()*1.0;
+        // in 2D we assume cell-glyph is a sphere
+        // so : vol = math.pi*r**2 => r = sqrt(1/math.pi)*sqrt(vol) = 0.564*sqrt(vol)
+
+        vol_scaling_factors_array->InsertNextValue(0.564*pow(vol,0.5));
+        cell_type_array->InsertNextValue(cell_type);
+        centroids_array->InsertNextPoint(centroid(coords_0), centroid(coords_1), 0.0);
+
+
+
+    }
+
+}
+
+
+
 std::vector<int> FieldExtractor::fillCellFieldGlyphs3D(vtk_obj_addr_int_t centroids_array_addr,
                                                        vtk_obj_addr_int_t vol_scaling_factors_array_addr,
                                                        vtk_obj_addr_int_t cell_type_array_addr,
