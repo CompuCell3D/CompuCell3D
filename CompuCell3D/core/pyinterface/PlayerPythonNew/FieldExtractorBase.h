@@ -156,7 +156,58 @@ namespace CompuCell3D {
                 vtk_obj_addr_int_t centroids_array_addr,
                 vtk_obj_addr_int_t vol_scaling_factors_array_addr,
                 vtk_obj_addr_int_t cell_type_array_addr,
-                 std::string plane, int _pos){}
+                 std::string plane, int pos){}
+
+        /**
+         * Fills scalar field glyphs by assigning cells' COM scalar field values to glyph actor
+         * @param con_field_name
+         * @param centroids_array_addr
+         * @param vol_scaling_factors_array_addr
+         * @param scalar_value_at_com_addr
+         * @param _types_invisibe_vec
+         * @param extractOuterShellOnly
+         * @return
+         */
+        virtual std::vector<int> fillScalarFieldGlyphs3D(std::string con_field_name,
+                                             vtk_obj_addr_int_t centroids_array_addr,
+                                             vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                             vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                             std::vector<int> *_types_invisibe_vec,
+                                             bool extractOuterShellOnly = false){return {};}
+        /**
+         * Fills scalar field glyphs by assigning cells' COM scalar field cell-level values to glyph actor
+         * @param con_field_name
+         * @param centroids_array_addr
+         * @param vol_scaling_factors_array_addr
+         * @param scalar_value_at_com_addr
+         * @param _types_invisibe_vec
+         * @param extractOuterShellOnly
+         * @return
+         */
+        virtual std::vector<int> fillScalarFieldCellLevelGlyphs3D(std::string con_field_name,
+                                                         vtk_obj_addr_int_t centroids_array_addr,
+                                                         vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                         vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                                         std::vector<int> *types_invisibe_vec,
+                                                         bool extractOuterShellOnly = false){return {};}
+
+        /**
+         * Fills concentration field glyphs by assigning cells' COM scalar field values to glyph actor
+         * @param _conFieldName
+         * @param centroids_array_addr
+         * @param vol_scaling_factors_array_addr
+         * @param scalar_value_at_com_addr
+         * @param _types_invisibe_vec
+         * @param extractOuterShellOnly
+         * @return
+         */
+        virtual std::vector<int> fillConFieldGlyphs3D(std::string con_field_name,
+                                                                  vtk_obj_addr_int_t centroids_array_addr,
+                                                                  vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                                  vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                                                  std::vector<int> *types_invisibe_vec,
+                                                                  bool extractOuterShellOnly = false){return {};}
+
 
         /**
          * returns 0 for medium and 1 for all non medium types

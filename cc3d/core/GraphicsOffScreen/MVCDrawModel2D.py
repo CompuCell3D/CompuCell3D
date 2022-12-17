@@ -1024,6 +1024,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # TODO add hex actor scaling - only for the xy plane for other projections we use cartesian
         # display so no scaling
         actor.SetMapper(mapper)
+        if self.is_lattice_hex(drawing_params=drawing_params):
+            actor.SetScale(self.xScaleHex, self.yScaleHex, 1.0)
+
 
     # def init_cell_field_glyphs_actors_py(self, actor_specs, drawing_params=None):
     #     # using just one actor

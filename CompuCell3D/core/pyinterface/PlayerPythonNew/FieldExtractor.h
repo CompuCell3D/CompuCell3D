@@ -183,13 +183,34 @@ namespace CompuCell3D {
         virtual std::vector<int> fillCellFieldGlyphs3D(vtk_obj_addr_int_t centroids_array_addr,
                                                        vtk_obj_addr_int_t vol_scaling_factors_array_addr,
                                                        vtk_obj_addr_int_t cell_type_array_addr,
-                                                       std::vector<int> *_types_invisibe_vec,
+                                                       std::vector<int> *types_invisibe_vec,
                                                        bool extractOuterShellOnly = false);
         virtual void fillCellFieldGlyphs2D(
                 vtk_obj_addr_int_t centroids_array_addr,
                 vtk_obj_addr_int_t vol_scaling_factors_array_addr,
                 vtk_obj_addr_int_t cell_type_array_addr,
                 std::string plane, int pos);
+
+        virtual std::vector<int> fillScalarFieldGlyphs3D(std::string con_field_name,
+                                                         vtk_obj_addr_int_t centroids_array_addr,
+                                                         vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                         vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                                         std::vector<int> *types_invisibe_vec,
+                                                         bool extractOuterShellOnly = false);
+
+        virtual std::vector<int> fillScalarFieldCellLevelGlyphs3D(std::string con_field_name,
+                                                                  vtk_obj_addr_int_t centroids_array_addr,
+                                                                  vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                                  vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                                                  std::vector<int> *types_invisibe_vec,
+                                                                  bool extractOuterShellOnly = false);
+
+        virtual std::vector<int> fillConFieldGlyphs3D(std::string con_field_name,
+                                                      vtk_obj_addr_int_t centroids_array_addr,
+                                                      vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                      vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                                      std::vector<int> *types_invisibe_vec,
+                                                      bool extractOuterShellOnly = false);
 
         void setVtkObj(void *_vtkObj);
 

@@ -3035,14 +3035,14 @@ void FieldExtractor::fillCellFieldGlyphs2D(
 std::vector<int> FieldExtractor::fillCellFieldGlyphs3D(vtk_obj_addr_int_t centroids_array_addr,
                                                        vtk_obj_addr_int_t vol_scaling_factors_array_addr,
                                                        vtk_obj_addr_int_t cell_type_array_addr,
-                                                       std::vector<int> *_types_invisibe_vec,
+                                                       std::vector<int> *types_invisibe_vec,
                                                        bool extractOuterShellOnly) {
 
     vtkPoints *centroids_array = (vtkPoints *) centroids_array_addr;
     vtkIntArray *cell_type_array = (vtkIntArray *) cell_type_array_addr;
     vtkFloatArray *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
 
-    unordered_set<int> invisible_types(_types_invisibe_vec->begin(), _types_invisibe_vec->end());
+    unordered_set<int> invisible_types(types_invisibe_vec->begin(), types_invisibe_vec->end());
 
     unordered_set<int> used_cell_types;
     CellInventory &cellInventory = potts->getCellInventory();
@@ -3333,6 +3333,168 @@ FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr,
     pUtils->setNumberOfWorkNodesAuto(1);
     return true;
 }
+
+std::vector<int> FieldExtractor::fillScalarFieldGlyphs3D(std::string con_field_name,
+                                     vtk_obj_addr_int_t centroids_array_addr,
+                                     vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                     vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                     std::vector<int> *types_invisibe_vec,
+                                     bool extractOuterShellOnly){
+
+    FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(con_field_name);
+
+    if (!conFieldPtr)
+        return {};
+
+
+    auto *centroids_array = (vtkPoints *) centroids_array_addr;
+    auto *scalar_value_at_com_array = (vtkFloatArray *) scalar_value_at_com_addr;
+    auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+
+    unordered_set<int> invisible_types(types_invisibe_vec->begin(), types_invisibe_vec->end());
+
+    unordered_set<int> used_cell_types;
+    CellInventory &cellInventory = potts->getCellInventory();
+    CellInventory::cellInventoryIterator cInvItr;
+    CellG *cell;
+    double con;
+    for (cInvItr = cellInventory.cellInventoryBegin(); cInvItr != cellInventory.cellInventoryEnd(); ++cInvItr) {
+        cell = cellInventory.getCell(cInvItr);
+
+        if (invisible_types.find((int)cell->type) != invisible_types.end()) continue;
+
+        centroids_array->InsertNextPoint(cell->xCOM, cell->yCOM, cell->zCOM);
+
+        con = (*conFieldPtr)[(int)round(cell->xCOM)][(int)round(cell->yCOM)][(int)round(cell->zCOM)];
+        scalar_value_at_com_array->InsertNextValue(con);
+        used_cell_types.insert((int)cell->type);
+
+//         v = 4/3*pi*r**3 => r = (3/(4*math.pi))**3 * v**0.333 => scaling factor (3/(4*math.pi))**0.333 = 0.62
+        vol_scaling_factors_array->InsertNextValue(0.62*pow(cell->volume, 0.333));
+
+    }
+
+    return {used_cell_types.begin(), used_cell_types.end()};
+
+}
+
+std::vector<int> FieldExtractor::fillScalarFieldCellLevelGlyphs3D(std::string con_field_name,
+                                                          vtk_obj_addr_int_t centroids_array_addr,
+                                                          vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                          vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                                          std::vector<int> *types_invisibe_vec,
+                                                          bool extractOuterShellOnly){
+
+
+    FieldStorage::scalarFieldCellLevel_t *conFieldPtr = fsPtr->getScalarFieldCellLevelFieldByName(con_field_name);
+
+    FieldStorage::scalarFieldCellLevel_t::iterator mitr;
+
+    if (!conFieldPtr)
+        return {};
+
+    auto *centroids_array = (vtkPoints *) centroids_array_addr;
+    auto *scalar_value_at_com_array = (vtkFloatArray *) scalar_value_at_com_addr;
+    auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+
+
+    unordered_set<int> invisible_types(types_invisibe_vec->begin(), types_invisibe_vec->end());
+
+    unordered_set<int> used_cell_types;
+    CellInventory &cellInventory = potts->getCellInventory();
+    CellInventory::cellInventoryIterator cInvItr;
+    CellG *cell;
+    double con;
+
+
+    for (cInvItr = cellInventory.cellInventoryBegin(); cInvItr != cellInventory.cellInventoryEnd(); ++cInvItr) {
+        cell = cellInventory.getCell(cInvItr);
+
+        if (invisible_types.find((int)cell->type) != invisible_types.end()) continue;
+
+        centroids_array->InsertNextPoint(cell->xCOM, cell->yCOM, cell->zCOM);
+
+
+        mitr = conFieldPtr->find(cell);
+        if (mitr != conFieldPtr->end()) {
+            con = mitr->second;
+        } else {
+            con = 0.0;
+        }
+
+
+        scalar_value_at_com_array->InsertNextValue(con);
+
+        used_cell_types.insert((int)cell->type);
+
+//         v = 4/3*pi*r**3 => r = (3/(4*math.pi))**3 * v**0.333 => scaling factor (3/(4*math.pi))**0.333 = 0.62
+        vol_scaling_factors_array->InsertNextValue(0.62*pow(cell->volume, 0.333));
+
+    }
+
+    return {used_cell_types.begin(), used_cell_types.end()};
+
+}
+
+std::vector<int> FieldExtractor::fillConFieldGlyphs3D(std::string con_field_name,
+                                              vtk_obj_addr_int_t centroids_array_addr,
+                                              vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                              vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                              std::vector<int> *types_invisibe_vec,
+                                              bool extractOuterShellOnly){
+
+    Field3D<float> *conFieldPtr = nullptr;
+    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
+    std::map<std::string, Field3D<float> *>::iterator mitr;
+    mitr = fieldMap.find(con_field_name);
+    if (mitr != fieldMap.end()) {
+        conFieldPtr = mitr->second;
+    }
+
+    if (!conFieldPtr)
+        return {};
+
+    auto *centroids_array = (vtkPoints *) centroids_array_addr;
+    auto *scalar_value_at_com_array = (vtkFloatArray *) scalar_value_at_com_addr;
+    auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+
+    unordered_set<int> invisible_types(types_invisibe_vec->begin(), types_invisibe_vec->end());
+
+    unordered_set<int> used_cell_types;
+    CellInventory &cellInventory = potts->getCellInventory();
+    CellInventory::cellInventoryIterator cInvItr;
+    CellG *cell;
+    double con;
+    Point3D pt;
+
+
+    for (cInvItr = cellInventory.cellInventoryBegin(); cInvItr != cellInventory.cellInventoryEnd(); ++cInvItr) {
+        cell = cellInventory.getCell(cInvItr);
+
+        if (invisible_types.find((int)cell->type) != invisible_types.end()) continue;
+
+        centroids_array->InsertNextPoint(cell->xCOM, cell->yCOM, cell->zCOM);
+
+        pt.x = (short)round(cell->xCOM);
+        pt.y = (short)round(cell->yCOM);
+        pt.z = (short)round(cell->zCOM);
+
+        con = conFieldPtr->get(pt);
+
+
+        scalar_value_at_com_array->InsertNextValue((float)con);
+
+        used_cell_types.insert((int)cell->type);
+
+//         v = 4/3*pi*r**3 => r = (3/(4*math.pi))**3 * v**0.333 => scaling factor (3/(4*math.pi))**0.333 = 0.62
+        vol_scaling_factors_array->InsertNextValue(0.62*pow(cell->volume, 0.333));
+
+    }
+
+    return {used_cell_types.begin(), used_cell_types.end()};
+
+}
+
 
 void FieldExtractor::setVtkObj(void *_vtkObj) {
     CC3D_Log(LOG_DEBUG) << "INSIDE setVtkObj" << endl;
