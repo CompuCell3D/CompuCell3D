@@ -332,6 +332,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         field_name = drawing_params.fieldName
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
+        actors_dict = actor_specs.actors_dict
 
         types_invisible = PlayerPython.vectorint()
         for type_label in drawing_params.screenshot_data.invisible_types:
@@ -418,6 +419,16 @@ class MVCDrawModel3D(MVCDrawModelBase):
         actor.SetMapper(mapper)
 
         # No need to scale 3D actors because they are being initialized in the hex coordinates in C++ code
+
+        self.init_min_max_actor(min_max_actor=actors_dict["min_max_text_actor"], range_array=range_array)
+        if actor_specs.metadata is None:
+            actor_specs.metadata = {"mapper": mapper}
+        else:
+            actor_specs.metadata["mapper"] = mapper
+
+        if mdata.get("LegendEnable", default=False):
+            self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
+
 
     def init_concentration_field_actors(self, actor_specs, drawing_params=None):
         """
