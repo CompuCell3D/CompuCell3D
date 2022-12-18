@@ -287,64 +287,6 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.remove_actor_from_renderer(actor_label="fpp_links_actor", actor_obj=self.FPPLinksActor)
 
-    def setPlane(self, plane, pos):
-        (self.plane, self.planePos) = (str(plane).upper(), pos)
-
-    #        print MODULENAME,"  got this plane ",(self.plane, self.planePos)
-    #        print (self.plane, self.planePos)
-
-    def getPlane(self):
-        return (self.plane, self.planePos)
-
-    def set_default_camera(self, fieldDim=None):
-        """
-        Initializes default camera view for 2D scene
-        :param fieldDim:field dimension (Dim3D C++ object)
-        :return: None
-        """
-
-        camera = self.ren.GetActiveCamera()
-
-        self.setDim(fieldDim)
-        # Should I specify these parameters explicitly?
-        # What if I change dimensions in XML file?
-        # The parameters should be set based on the configuration parameters!
-        # Should it set depending on projection? (e.g. xy, xz, yz)
-
-        distance = self.largestDim(self.dim) * 2  # 200 #273.205 #
-
-        # FIXME: Hardcoded numbers
-        camera.SetPosition(self.dim[0] / 2, self.dim[1] / 2, distance)
-        camera.SetFocalPoint(self.dim[0] / 2, self.dim[1] / 2, 0)
-        camera.SetClippingRange(distance - 1, distance + 1)
-        self.ren.ResetCameraClippingRange()
-        self.__initDist = distance  # camera.GetDistance()
-
-    def setCamera(self, fieldDim=None):
-        camera = self.ren.GetActiveCamera()
-
-        self.setDim(fieldDim)
-        # Should I specify these parameters explicitly?
-        # What if I change dimensions in XML file?
-        # The parameters should be set based on the configuration parameters!
-        # Should it set depending on projection? (e.g. xy, xz, yz)
-
-        distance = self.largestDim(self.dim) * 2  # 200 #273.205 #
-
-        # FIXME: Hardcoded numbers
-
-        camera.SetPosition(self.dim[0] / 2, self.dim[1] / 2, distance)
-        camera.SetFocalPoint(self.dim[0] / 2, self.dim[1] / 2, 0)
-        camera.SetClippingRange(distance - 1, distance + 1)
-        # self.qvtkWidget.ren.ResetCameraClippingRange()
-        self.ren.ResetCameraClippingRange()
-        self.__initDist = distance  # camera.GetDistance()
-        # self.Render()
-        # self.qvtkWidget().repaint()
-
-    def setDim(self, fieldDim):
-        self.dim = [fieldDim.x, fieldDim.y, fieldDim.z]
-
     def show_cell_actors(self, actor_specs, show_flag=True):
         """
         shows/hides cells
@@ -436,6 +378,65 @@ class MVCDrawView2D(MVCDrawViewBase):
             if "Axes" in self.currentActors:
                 del self.currentActors["Axes"]
                 self.ren.RemoveActor(self.axesActor)
+
+    def setPlane(self, plane, pos):
+        (self.plane, self.planePos) = (str(plane).upper(), pos)
+
+    #        print MODULENAME,"  got this plane ",(self.plane, self.planePos)
+    #        print (self.plane, self.planePos)
+
+    def getPlane(self):
+        return (self.plane, self.planePos)
+
+    def set_default_camera(self, fieldDim=None):
+        """
+        Initializes default camera view for 2D scene
+        :param fieldDim:field dimension (Dim3D C++ object)
+        :return: None
+        """
+
+        camera = self.ren.GetActiveCamera()
+
+        self.setDim(fieldDim)
+        # Should I specify these parameters explicitly?
+        # What if I change dimensions in XML file?
+        # The parameters should be set based on the configuration parameters!
+        # Should it set depending on projection? (e.g. xy, xz, yz)
+
+        distance = self.largestDim(self.dim) * 2  # 200 #273.205 #
+
+        # FIXME: Hardcoded numbers
+        camera.SetPosition(self.dim[0] / 2, self.dim[1] / 2, distance)
+        camera.SetFocalPoint(self.dim[0] / 2, self.dim[1] / 2, 0)
+        camera.SetClippingRange(distance - 1, distance + 1)
+        self.ren.ResetCameraClippingRange()
+        self.__initDist = distance  # camera.GetDistance()
+
+    def setCamera(self, fieldDim=None):
+        camera = self.ren.GetActiveCamera()
+
+        self.setDim(fieldDim)
+        # Should I specify these parameters explicitly?
+        # What if I change dimensions in XML file?
+        # The parameters should be set based on the configuration parameters!
+        # Should it set depending on projection? (e.g. xy, xz, yz)
+
+        distance = self.largestDim(self.dim) * 2  # 200 #273.205 #
+
+        # FIXME: Hardcoded numbers
+
+        camera.SetPosition(self.dim[0] / 2, self.dim[1] / 2, distance)
+        camera.SetFocalPoint(self.dim[0] / 2, self.dim[1] / 2, 0)
+        camera.SetClippingRange(distance - 1, distance + 1)
+        # self.qvtkWidget.ren.ResetCameraClippingRange()
+        self.ren.ResetCameraClippingRange()
+        self.__initDist = distance  # camera.GetDistance()
+        # self.Render()
+        # self.qvtkWidget().repaint()
+
+    def setDim(self, fieldDim):
+        self.dim = [fieldDim.x, fieldDim.y, fieldDim.z]
+
 
     # Optimize code?
     def dimOrder(self, plane):

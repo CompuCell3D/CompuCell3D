@@ -96,8 +96,13 @@ class MVCDrawView3D(MVCDrawViewBase):
         invisible_types = metadata['invisible_types']
         all_types = metadata['all_types']
 
+        # todo - optimize creation of actors when using glyphs - we only need one actor when using glyphs
+        # scr_data = drawing_params.screenshot_data
+        # if scr_data.cell_glyphs_on:
+        #     actor_specs_copy.actors_dict[0] = vtk.vtkActor()
+        # else:
+
         for actorNumber in all_types:
-            actorName = "CellType_" + str(actorNumber)
             if not actorNumber in invisible_types:
                 actor_specs_copy.actors_dict[actorNumber] = vtk.vtkActor()
 
@@ -123,6 +128,11 @@ class MVCDrawView3D(MVCDrawViewBase):
 
         actor_specs_copy = deepcopy(actor_specs)
         actor_specs_copy.actors_dict = OrderedDict()
+        self.conActor = vtk.vtkActor()
+        self.contourActor = vtk.vtkActor()
+        self.legendActor = vtk.vtkScalarBarActor()
+        self.min_max_text_actor = vtk.vtkTextActor()
+
         actor_specs_copy.actors_dict['concentration_actor'] = self.conActor
         actor_specs_copy.actors_dict['legend_actor'] = self.legendActor
         actor_specs_copy.actors_dict['min_max_text_actor'] = self.min_max_text_actor
@@ -217,6 +227,108 @@ class MVCDrawView3D(MVCDrawViewBase):
         else:
             self.remove_actor_from_renderer(actor_label='fpp_links_actor', actor_obj=self.FPPLinksActor)
 
+
+    def show_cell_actors(self, actor_specs, drawing_params=None, show_flag=True):
+        """
+        shows/hides cells
+        :param show_flag:
+        :return:
+        """
+        invisible_types = actor_specs.metadata['invisible_types']
+        all_types = actor_specs.metadata['all_types']
+
+        if show_flag:
+
+            for actor_number in all_types:
+                actor_name = "CellType_" + str(actor_number)
+                if actor_number not in invisible_types:
+                    self.currentActors[actor_name] = actor_specs.actors_dict[actor_number]
+                    self.ren.AddActor(self.currentActors[actor_name])
+
+        else:
+            for actor_number in all_types:
+                actor_name = "CellType_" + str(actor_number)
+                if actor_name in self.currentActors:
+                    actor_to_remove = self.currentActors[actor_name]
+                    del self.currentActors[actor_name]
+                    self.ren.RemoveActor(actor_to_remove)
+
+    def prepare_outline_actors(self, actor_specs, drawing_params=None):
+        """
+        Prepares cell_field_actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {dict}
+        """
+
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        self.outlineActor = vtk.vtkActor()
+        actor_specs_copy.actors_dict['outline_actor'] = self.outlineActor
+
+        return actor_specs_copy
+
+    def show_outline_actors(self, actor_specs, drawing_params=None, show_flag=True):
+        """
+        shows/hides bounding box
+        :param actor_specs:
+        :param drawing_params:
+        :param show_flag:
+        :return::
+        """
+        if show_flag:
+            if "Outline" not in self.currentActors:
+                self.currentActors["Outline"] = self.outlineActor
+                self.ren.AddActor(self.outlineActor)
+            else:
+                self.ren.RemoveActor(self.outlineActor)
+
+                self.ren.AddActor(self.outlineActor)
+        else:
+            if "Outline" in self.currentActors:
+                del self.currentActors["Outline"]
+                self.ren.RemoveActor(self.outlineActor)
+
+    def prepare_axes_actors(self, actor_specs, drawing_params=None):
+        """
+        Prepares cell_field_actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {dict}
+        """
+
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        self.axesActor = vtk.vtkCubeAxesActor2D()
+        actor_specs_copy.actors_dict['axes_actor'] = self.axesActor
+
+        return actor_specs_copy
+
+    def show_axes_actors(self, actor_specs, drawing_params=None, show_flag=True):
+        """
+        shows/hides axes box
+        :param actor_specs:
+        :param drawing_params:
+        :param show_flag:
+        :return:
+        """
+        camera = actor_specs.metadata['camera']
+        if show_flag:
+            if "Axes" not in self.currentActors:
+                self.currentActors["Axes"] = self.axesActor
+                # setting camera for the actor is very important to get axes working properly
+                self.axesActor.SetCamera(camera)
+                self.ren.AddActor(self.axesActor)
+            else:
+                self.ren.RemoveActor(self.axesActor)
+                # setting camera for the actor is very important to get axes working properly
+                self.axesActor.SetCamera(camera)
+                self.ren.AddActor(self.axesActor)
+        else:
+            if "Axes" in self.currentActors:
+                del self.currentActors["Axes"]
+                self.ren.RemoveActor(self.axesActor)
+
     def getPlane(self):
         return ("3D", 0)
 
@@ -290,101 +402,3 @@ class MVCDrawView3D(MVCDrawViewBase):
         # self.dim = [fieldDim.x+1 , fieldDim.y+1 , fieldDim.z]
         self.dim = [fieldDim.x, fieldDim.y, fieldDim.z]
 
-    def show_cell_actors(self, actor_specs, drawing_params=None, show_flag=True):
-        """
-        shows/hides cells
-        :param show_flag:
-        :return:
-        """
-        invisible_types = actor_specs.metadata['invisible_types']
-        all_types = actor_specs.metadata['all_types']
-
-        if show_flag:
-
-            for actor_number in all_types:
-                actor_name = "CellType_" + str(actor_number)
-                if actor_number not in invisible_types:
-                    self.currentActors[actor_name] = actor_specs.actors_dict[actor_number]
-                    self.ren.AddActor(self.currentActors[actor_name])
-
-        else:
-            for actor_number in all_types:
-                actor_name = "CellType_" + str(actor_number)
-                if actor_name in self.currentActors:
-                    actor_to_remove = self.currentActors[actor_name]
-                    del self.currentActors[actor_name]
-                    self.ren.RemoveActor(actor_to_remove)
-
-    def prepare_outline_actors(self, actor_specs, drawing_params=None):
-        """
-        Prepares cell_field_actors  based on actor_specs specifications
-        :param actor_specs {ActorSpecs}: specification of actors to create
-        :param drawing_params: {DrawingParameters}
-        :return: {dict}
-        """
-
-        actor_specs_copy = deepcopy(actor_specs)
-        actor_specs_copy.actors_dict = OrderedDict()
-        actor_specs_copy.actors_dict['outline_actor'] = self.outlineActor
-
-        return actor_specs_copy
-
-    def show_outline_actors(self, actor_specs, drawing_params=None, show_flag=True):
-        """
-        shows/hides bounding box
-        :param actor_specs:
-        :param drawing_params:
-        :param show_flag:
-        :return::
-        """
-        if show_flag:
-            if "Outline" not in self.currentActors:
-                self.currentActors["Outline"] = self.outlineActor
-                self.ren.AddActor(self.outlineActor)
-            else:
-                self.ren.RemoveActor(self.outlineActor)
-
-                self.ren.AddActor(self.outlineActor)
-        else:
-            if "Outline" in self.currentActors:
-                del self.currentActors["Outline"]
-                self.ren.RemoveActor(self.outlineActor)
-
-    def prepare_axes_actors(self, actor_specs, drawing_params=None):
-        """
-        Prepares cell_field_actors  based on actor_specs specifications
-        :param actor_specs {ActorSpecs}: specification of actors to create
-        :param drawing_params: {DrawingParameters}
-        :return: {dict}
-        """
-
-        actor_specs_copy = deepcopy(actor_specs)
-        actor_specs_copy.actors_dict = OrderedDict()
-        actor_specs_copy.actors_dict['axes_actor'] = self.axesActor
-
-        return actor_specs_copy
-
-    def show_axes_actors(self, actor_specs, drawing_params=None, show_flag=True):
-        """
-        shows/hides axes box
-        :param actor_specs:
-        :param drawing_params:
-        :param show_flag:
-        :return:
-        """
-        camera = actor_specs.metadata['camera']
-        if show_flag:
-            if "Axes" not in self.currentActors:
-                self.currentActors["Axes"] = self.axesActor
-                # setting camera for the actor is very important to get axes working properly
-                self.axesActor.SetCamera(camera)
-                self.ren.AddActor(self.axesActor)
-            else:
-                self.ren.RemoveActor(self.axesActor)
-                # setting camera for the actor is very important to get axes working properly
-                self.axesActor.SetCamera(camera)
-                self.ren.AddActor(self.axesActor)
-        else:
-            if "Axes" in self.currentActors:
-                del self.currentActors["Axes"]
-                self.ren.RemoveActor(self.axesActor)
