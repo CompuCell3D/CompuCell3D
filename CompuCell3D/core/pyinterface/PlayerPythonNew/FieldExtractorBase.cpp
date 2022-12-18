@@ -103,6 +103,40 @@ std::vector<int> FieldExtractorBase::dimOrder(std::string _plane) {
     return order;
 }
 
+std::vector<int> FieldExtractorBase::permuted_order_to_xyz(std::string _plane) {
+    for (int i = 0; i < _plane.size(); ++i) {
+        _plane[i] = tolower(_plane[i]);
+    }
+
+    // [0, 1, 2][0, 1,2] = [0, 1, 2] - xy projection
+    // [0, 2, 1][0, 2, 1] = [0, 1,2] - xz projection
+    // [1, 2, 0][2, 0, 1] = [0, 1,2 ] - yz projection
+
+    std::vector<int> order(3, 0);
+    order[0] = 0;
+    order[1] = 1;
+    order[2] = 2;
+    if (_plane == "xy") {
+        order[0] = 0;
+        order[1] = 1;
+        order[2] = 2;
+    } else if (_plane == "xz") {
+        order[0] = 0;
+        order[1] = 2;
+        order[2] = 1;
+
+
+    } else if (_plane == "yz") {
+        order[0] = 2;
+        order[1] = 0;
+        order[2] = 1;
+
+
+    }
+    return order;
+}
+
+
 Coordinates3D<double> FieldExtractorBase::HexCoordXY(unsigned int x, unsigned int y, unsigned int z) {
     //coppied from BoundaryStrategy.cpp HexCoord fcn
     if ((z % 3) == 1) {//odd z e.g. z=1

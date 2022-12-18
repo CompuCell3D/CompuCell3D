@@ -3066,6 +3066,12 @@ std::vector<int> FieldExtractor::fillCellFieldGlyphs3D(vtk_obj_addr_int_t centro
 }
 
 
+
+
+
+
+
+
 bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
                                         std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
                                         bool type_indicator_only
@@ -3412,17 +3418,14 @@ std::vector<int> FieldExtractor::fillScalarFieldCellLevelGlyphs3D(std::string co
 
         if (invisible_types.find((int)cell->type) != invisible_types.end()) continue;
 
-        centroids_array->InsertNextPoint(cell->xCOM, cell->yCOM, cell->zCOM);
-
-
         mitr = conFieldPtr->find(cell);
         if (mitr != conFieldPtr->end()) {
             con = mitr->second;
         } else {
-            con = 0.0;
+            continue;
         }
 
-
+        centroids_array->InsertNextPoint(cell->xCOM, cell->yCOM, cell->zCOM);
         scalar_value_at_com_array->InsertNextValue(con);
 
         used_cell_types.insert((int)cell->type);
@@ -3492,6 +3495,322 @@ std::vector<int> FieldExtractor::fillConFieldGlyphs3D(std::string con_field_name
     }
 
     return {used_cell_types.begin(), used_cell_types.end()};
+
+}
+
+void FieldExtractor::fillConFieldGlyphs2D(
+        std::string con_field_name,
+        vtk_obj_addr_int_t centroids_array_addr,
+        vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+        vtk_obj_addr_int_t scalar_value_at_com_addr,
+        std::string plane, int pos){
+
+    Field3D<float> *conFieldPtr = nullptr;
+    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
+    std::map<std::string, Field3D<float> *>::iterator mitr;
+    mitr = fieldMap.find(con_field_name);
+    if (mitr != fieldMap.end()) {
+        conFieldPtr = mitr->second;
+    }
+
+    if (!conFieldPtr)
+        return ;
+
+    auto *centroids_array = (vtkPoints *) centroids_array_addr;
+    auto *scalar_value_at_com_array = (vtkFloatArray *) scalar_value_at_com_addr;
+    auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+
+
+    // computing centroids of cells in a 2D projection
+    // cell_id to cell type map
+    unordered_map<long, int> cell_id_to_cell_type;
+    unordered_map<long, list<int> > cell_id_to_coords_0;
+    unordered_map<long, list<int> > cell_id_to_coords_1;
+
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+    vector<int> pointOrderVec = pointOrder(plane);
+    vector<int> dimOrderVec = dimOrder(plane);
+
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+    CellG *cell;
+    int type;
+
+    for (int j = 0; j < dim[1] + 1; ++j)
+        for (int i = 0; i < dim[0] + 1; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            cell = cellFieldG->get(pt);
+            if (!cell) {
+                continue;
+            } else {
+                type = cell->type;
+            }
+            cell_id_to_cell_type[cell->id] = cell->type;
+            cell_id_to_coords_0[cell->id].push_back(i);
+            cell_id_to_coords_1[cell->id].push_back(j);
+        }
+
+    // holds com coordinates in the order that corresponds to a given 2D projection
+    vector<int> com(3);
+    auto to_xyz_order = permuted_order_to_xyz(plane);
+    double con;
+    for(const auto& cell_id_type_pair: cell_id_to_cell_type){
+        long cell_id = cell_id_type_pair.first;
+        int cell_type = cell_id_type_pair.second;
+        const auto & coords_0 = cell_id_to_coords_0[cell_id];
+        const auto & coords_1 = cell_id_to_coords_1[cell_id];
+        auto vol = coords_0.size()*1.0;
+        // in 2D we assume cell-glyph is a sphere
+        // so : vol = math.pi*r**2 => r = sqrt(1/math.pi)*sqrt(vol) = 0.564*sqrt(vol)
+
+        auto c0 = centroid(coords_0);
+        auto c1 = centroid(coords_1);
+        double c2 = pos;
+
+        com[0] =  round(c0);
+        com[1] =  round(c1);
+        com[2] =  round(c2);
+
+        pt.x = (short)com[to_xyz_order[0]];
+        pt.y = (short)com[to_xyz_order[1]];
+        pt.z = (short)com[to_xyz_order[2]];
+
+        con = conFieldPtr->get(pt);
+        vol_scaling_factors_array->InsertNextValue(0.564*pow(vol,0.5));
+        centroids_array->InsertNextPoint(c0, c1, 0.0);
+        scalar_value_at_com_array->InsertNextValue(con);
+
+    }
+
+
+}
+
+void FieldExtractor::fillScalarFieldGlyphs2D(
+        std::string con_field_name,
+        vtk_obj_addr_int_t centroids_array_addr,
+        vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+        vtk_obj_addr_int_t scalar_value_at_com_addr,
+        std::string plane, int pos){
+
+    FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(con_field_name);
+
+    if (!conFieldPtr)
+        return;
+
+
+    auto *centroids_array = (vtkPoints *) centroids_array_addr;
+    auto *scalar_value_at_com_array = (vtkFloatArray *) scalar_value_at_com_addr;
+    auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+
+
+    // computing centroids of cells in a 2D projection
+    // cell_id to cell type map
+    unordered_map<long, int> cell_id_to_cell_type;
+    unordered_map<long, list<int> > cell_id_to_coords_0;
+    unordered_map<long, list<int> > cell_id_to_coords_1;
+
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+    vector<int> pointOrderVec = pointOrder(plane);
+    vector<int> dimOrderVec = dimOrder(plane);
+
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+    CellG *cell;
+    int type;
+
+    for (int j = 0; j < dim[1] + 1; ++j)
+        for (int i = 0; i < dim[0] + 1; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            cell = cellFieldG->get(pt);
+            if (!cell) {
+                continue;
+            } else {
+                type = cell->type;
+            }
+            cell_id_to_cell_type[cell->id] = cell->type;
+            cell_id_to_coords_0[cell->id].push_back(i);
+            cell_id_to_coords_1[cell->id].push_back(j);
+        }
+
+    // holds com coordinates in the order that corresponds to a given 2D projection
+    vector<int> com(3);
+    auto to_xyz_order = permuted_order_to_xyz(plane);
+    double con;
+    for(const auto& cell_id_type_pair: cell_id_to_cell_type){
+        long cell_id = cell_id_type_pair.first;
+        int cell_type = cell_id_type_pair.second;
+        const auto & coords_0 = cell_id_to_coords_0[cell_id];
+        const auto & coords_1 = cell_id_to_coords_1[cell_id];
+        auto vol = coords_0.size()*1.0;
+        // in 2D we assume cell-glyph is a sphere
+        // so : vol = math.pi*r**2 => r = sqrt(1/math.pi)*sqrt(vol) = 0.564*sqrt(vol)
+
+        auto c0 = centroid(coords_0);
+        auto c1 = centroid(coords_1);
+        double c2 = pos;
+
+        com[0] =  round(c0);
+        com[1] =  round(c1);
+        com[2] =  round(c2);
+
+        pt.x = (short)com[to_xyz_order[0]];
+        pt.y = (short)com[to_xyz_order[1]];
+        pt.z = (short)com[to_xyz_order[2]];
+
+        con = (*conFieldPtr)[pt.x][pt.y][pt.z];
+        vol_scaling_factors_array->InsertNextValue(0.564*pow(vol,0.5));
+        centroids_array->InsertNextPoint(c0, c1, 0.0);
+        scalar_value_at_com_array->InsertNextValue(con);
+
+    }
+
+}
+
+void FieldExtractor::fillScalarFieldCellLevelGlyphs2D(
+        std::string con_field_name,
+        vtk_obj_addr_int_t centroids_array_addr,
+        vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+        vtk_obj_addr_int_t scalar_value_at_com_addr,
+        std::string plane, int pos){
+
+    FieldStorage::scalarFieldCellLevel_t *conFieldPtr = fsPtr->getScalarFieldCellLevelFieldByName(con_field_name);
+
+    FieldStorage::scalarFieldCellLevel_t::iterator mitr;
+
+    if (!conFieldPtr)
+        return;
+
+    auto *centroids_array = (vtkPoints *) centroids_array_addr;
+    auto *scalar_value_at_com_array = (vtkFloatArray *) scalar_value_at_com_addr;
+    auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+
+
+    // computing centroids of cells in a 2D projection
+    // cell_id to cell type map
+    unordered_map<long, int> cell_id_to_cell_type;
+    unordered_map<long, list<int> > cell_id_to_coords_0;
+    unordered_map<long, list<int> > cell_id_to_coords_1;
+
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+    vector<int> pointOrderVec = pointOrder(plane);
+    vector<int> dimOrderVec = dimOrder(plane);
+
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+    CellG *cell;
+    int type;
+
+    for (int j = 0; j < dim[1] + 1; ++j)
+        for (int i = 0; i < dim[0] + 1; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            cell = cellFieldG->get(pt);
+            if (!cell) {
+                continue;
+            } else {
+                type = cell->type;
+            }
+            cell_id_to_cell_type[cell->id] = cell->type;
+            cell_id_to_coords_0[cell->id].push_back(i);
+            cell_id_to_coords_1[cell->id].push_back(j);
+        }
+
+    // holds com coordinates in the order that corresponds to a given 2D projection
+    vector<int> com(3);
+    auto to_xyz_order = permuted_order_to_xyz(plane);
+    double con;
+    for(const auto& cell_id_type_pair: cell_id_to_cell_type){
+        long cell_id = cell_id_type_pair.first;
+        int cell_type = cell_id_type_pair.second;
+        const auto & coords_0 = cell_id_to_coords_0[cell_id];
+        const auto & coords_1 = cell_id_to_coords_1[cell_id];
+        auto vol = coords_0.size()*1.0;
+        // in 2D we assume cell-glyph is a sphere
+        // so : vol = math.pi*r**2 => r = sqrt(1/math.pi)*sqrt(vol) = 0.564*sqrt(vol)
+
+        auto c0 = centroid(coords_0);
+        auto c1 = centroid(coords_1);
+        double c2 = pos;
+
+        com[0] =  round(c0);
+        com[1] =  round(c1);
+        com[2] =  round(c2);
+
+        pt.x = (short)com[to_xyz_order[0]];
+        pt.y = (short)com[to_xyz_order[1]];
+        pt.z = (short)com[to_xyz_order[2]];
+
+        auto cell_at_2d_com = cellFieldG->get(pt);
+        if (cell_at_2d_com == nullptr) continue;
+
+        mitr = conFieldPtr->find(cell_at_2d_com);
+        if (mitr != conFieldPtr->end()) {
+            con = mitr->second;
+        } else {
+            continue;
+        }
+
+        vol_scaling_factors_array->InsertNextValue(0.564*pow(vol,0.5));
+        centroids_array->InsertNextPoint(c0, c1, 0.0);
+        scalar_value_at_com_array->InsertNextValue(con);
+
+    }
 
 }
 

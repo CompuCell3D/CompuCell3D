@@ -524,10 +524,10 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
     def init_concentration_field_glyphs_actors(self, actor_specs, drawing_params=None):
 
-        from cc3d.core.PySteppables import CellList
-
-        inventory = self.currentDrawingParameters.bsd.sim.getPotts().getCellInventory()
-        cell_list = CellList(inventory)
+        # from cc3d.core.PySteppables import CellList
+        #
+        # inventory = self.currentDrawingParameters.bsd.sim.getPotts().getCellInventory()
+        # cell_list = CellList(inventory)
 
         centroids = vtk.vtkPoints()
         volume_scaling_factors = vtk.vtkFloatArray()
