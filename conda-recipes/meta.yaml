@@ -1,4 +1,4 @@
-# add better version handling
+# add better version handling to meta.yaml
 # when building as standalone package uncomment line below and set version and build_number to proper values
 # {% set version = "4.3.1" %}
 # {% set build_number = "3" %}
