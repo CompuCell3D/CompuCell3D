@@ -71,6 +71,11 @@ def run_cc3d_project(cc3d_sim_fname):
             traceback.print_exc(file=sys.stdout)
             handle_error()
 
+        output_directory = CompuCellSetup.persistent_globals.output_directory
+        # if self.singleSimulation:
+        if cc3dSimulationDataHandler and output_directory is not None:
+            cc3dSimulationDataHandler.copy_simulation_data_files(output_directory)
+
         # exec(code)
         if code is not None:
             try:
