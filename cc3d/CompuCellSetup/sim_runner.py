@@ -1,5 +1,4 @@
 import traceback
-import cc3d
 import sys
 from os.path import *
 from cc3d import CompuCellSetup
@@ -53,30 +52,28 @@ def run_cc3d_project(cc3d_sim_fname):
     """
 
     try:
-        cc3dSimulationDataHandler = readCC3DFile(fileName=cc3d_sim_fname)
+        cc3d_simulation_data_handler = readCC3DFile(fileName=cc3d_sim_fname)
     except FileNotFoundError:
         print('Could not find cc3d_sim_fname')
         return
 
-    CompuCellSetup.cc3dSimulationDataHandler = cc3dSimulationDataHandler
+    CompuCellSetup.cc3dSimulationDataHandler = cc3d_simulation_data_handler
     # todo - need to find a better solution ot append and remove pythonpath of the simulation object
     sys.path.insert(0, join(dirname(cc3d_sim_fname), 'Simulation'))
 
-    # execfile(CompuCellSetup.simulationPaths.simulationPythonScriptName)
-    with open(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript) as sim_fh:
+    with open(cc3d_simulation_data_handler.cc3dSimulationData.pythonScript) as sim_fh:
         try:
-            code = compile(sim_fh.read(), cc3dSimulationDataHandler.cc3dSimulationData.pythonScript, 'exec')
-        except:
+            code = compile(sim_fh.read(), cc3d_simulation_data_handler.cc3dSimulationData.pythonScript, 'exec')
+        except Exception as e:
             code = None
             traceback.print_exc(file=sys.stdout)
-            handle_error()
+            handle_error(e)
 
         output_directory = CompuCellSetup.persistent_globals.output_directory
-        # if self.singleSimulation:
-        if cc3dSimulationDataHandler and output_directory is not None:
-            cc3dSimulationDataHandler.copy_simulation_data_files(output_directory)
 
-        # exec(code)
+        if cc3d_simulation_data_handler and output_directory is not None:
+            cc3d_simulation_data_handler.copy_simulation_data_files(output_directory)
+
         if code is not None:
             try:
                 exec(code, globals(), locals())
