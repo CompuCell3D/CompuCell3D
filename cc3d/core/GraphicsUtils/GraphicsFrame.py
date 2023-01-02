@@ -90,7 +90,7 @@ class GraphicsFrame:
         if self.current_bsd is not None:
             self.set_initial_cross_section(self.current_bsd)
 
-        self.init_field_types()
+            self.init_field_types()
 
     def get_vtk_window(self):
         """Get an initialized vtk window and window interactor"""
@@ -173,16 +173,17 @@ class GraphicsFrame:
 
         :return: None
         """
+        if cc3d.CompuCellSetup.persistent_globals.simulator is not None:
 
-        self.fieldTypes["Cell_Field"] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[CELL_FIELD]
+            self.fieldTypes["Cell_Field"] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[CELL_FIELD]
 
-        # get concentration fields from simulator
-        for fieldName in self.get_concentration_field_names():
-            self.fieldTypes[fieldName] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[CON_FIELD]
+            # get concentration fields from simulator
+            for fieldName in self.get_concentration_field_names():
+                self.fieldTypes[fieldName] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[CON_FIELD]
 
-        # inserting extra scalar fields managed from Python script
-        for field_name, field_type in self.get_fields_to_create().items():
-            self.fieldTypes[field_name] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[field_type]
+            # inserting extra scalar fields managed from Python script
+            for field_name, field_type in self.get_fields_to_create().items():
+                self.fieldTypes[field_name] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[field_type]
 
     def copy_camera(self, src, dst):
         """
