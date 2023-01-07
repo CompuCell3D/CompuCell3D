@@ -177,6 +177,33 @@ namespace CompuCell3D {
                                         bool type_indicator_only
                                                 );
 
+        virtual void fillCellFieldGlyphs2D(
+                vtk_obj_addr_int_t centroids_array_addr,
+                vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                vtk_obj_addr_int_t cell_type_array_addr,
+                std::string plane, int pos);
+
+        virtual void fillConFieldGlyphs2D(
+                std::string con_field_name,
+                vtk_obj_addr_int_t centroids_array_addr,
+                vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                vtk_obj_addr_int_t scalar_value_at_com_addr,
+                std::string plane, int pos);
+
+        virtual void fillScalarFieldGlyphs2D(
+                std::string con_field_name,
+                vtk_obj_addr_int_t centroids_array_addr,
+                vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                vtk_obj_addr_int_t scalar_value_at_com_addr,
+                std::string plane, int pos);
+
+        virtual void fillScalarFieldCellLevelGlyphs2D(
+                std::string con_field_name,
+                vtk_obj_addr_int_t centroids_array_addr,
+                vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                vtk_obj_addr_int_t scalar_value_at_com_addr,
+                std::string plane, int pos);
+
         virtual bool readVtkStructuredPointsData(vtk_obj_addr_int_t _structuredPointsReaderAddr);
 
         void setFieldDim(Dim3D _dim);

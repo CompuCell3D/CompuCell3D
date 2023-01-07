@@ -2,6 +2,7 @@
 // Module Name
 %module("threads"=1) PlayerPython
 
+
 %include "windows.i"
 
 //%include "typemaps.i"
@@ -16,7 +17,9 @@ namespace CompuCell3D{
  typedef CellG * cellGPtr_t;
 }
 
-// in SWIG tydefs have to be explicitely redeclared in the interface (.i) file. Also note that SWIG struggles with proper handling of 
+
+
+// in SWIG tydefs have to be explicitly redeclared in the interface (.i) file. Also note that SWIG struggles with proper handling of
 // preprocessor _WIN32 macros so it is best to add -DSWIGWIN option to the actual swig command and look for this Macro together with _WIN32
 
 %inline %{
