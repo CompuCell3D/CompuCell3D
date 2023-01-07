@@ -1881,14 +1881,8 @@ void FieldExtractorCML::fillConFieldGlyphs2D(
         pt.y = (short)com[to_xyz_order[1]];
         pt.z = (short)com[to_xyz_order[2]];
 
-//        if (i == dim[0] || j == dim[1]) {
-//            con = 0.0;
-//        } else {
-//            con = conArrayRead->GetValue(indexPoint3D(pt));
-//        }
         con = conArrayRead->GetValue(indexPoint3D(pt));
 
-//        con = conFieldPtr->get(pt);
         vol_scaling_factors_array->InsertNextValue(0.564*pow(vol,0.5));
         centroids_array->InsertNextPoint(c0, c1, 0.0);
         scalar_value_at_com_array->InsertNextValue(con);
