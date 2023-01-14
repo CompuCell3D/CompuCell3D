@@ -283,16 +283,19 @@ namespace CompuCell3D {
         int type_value(int type) { return type; }
 
         /**
-         * fiven list of points - corresponding to a given coordinate (x,y, or z) this fcn
+         * given list of points - corresponding to a given coordinate (x,y, or z) this fcn
          * computes centroid for this list of coordinate
          * @param point_list
          * @return
          */
         double centroid(const std::list<int> & point_list);
 
+        void setLatticeType(std::string latticeType){this->latticeType=latticeType;}
+
     protected:
         std::vector<Coordinates3D<double> > hexagonVertices;
         std::vector<Coordinates3D<double> > cartesianVertices;
+        std::string latticeType;
 
     };
 };

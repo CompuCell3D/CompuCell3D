@@ -22,6 +22,7 @@
 
 #include <vtkPythonUtil.h>
 #include <unordered_map>
+#include <unordered_set>
 
 using namespace std;
 using namespace CompuCell3D;
@@ -1700,14 +1701,6 @@ void FieldExtractorCML::fillCellFieldGlyphs2D(
     vtkCharArray *typeArrayRead = (vtkCharArray *) lds->GetPointData()->GetArray("CellType");
     vtkLongArray *idArray = (vtkLongArray *) lds->GetPointData()->GetArray("CellId");
 
-//    vtkIntArray *_cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
-//    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
-//    vtkCellArray *_cellsArray = (vtkCellArray *) _cellsArrayAddr;
-//    vtkCharArray *typeArrayRead = (vtkCharArray *) lds->GetPointData()->GetArray("CellType");
-
-    //Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
-    //Dim3D fieldDim = cellFieldG->getDim();
-
     vector<int> fieldDimVec(3, 0);
     fieldDimVec[0] = fieldDim.x;
     fieldDimVec[1] = fieldDim.y;
@@ -1916,4 +1909,261 @@ void FieldExtractorCML::fillScalarFieldCellLevelGlyphs2D(
     fillConFieldGlyphs2D(con_field_name,
                          centroids_array_addr, vol_scaling_factors_array_addr, scalar_value_at_com_addr,
                          plane, pos);
+}
+
+
+std::vector<int> FieldExtractorCML::fillCellFieldGlyphs3D(vtk_obj_addr_int_t centroids_array_addr,
+                                                       vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                       vtk_obj_addr_int_t cell_type_array_addr,
+                                                       std::vector<int> *types_invisibe_vec,
+                                                       bool extractOuterShellOnly){
+
+
+    // cell_id to cell type map
+    unordered_map<long, int> cell_id_to_cell_type;
+
+    unordered_map<long, list<int> > cell_id_to_coords_0;
+    unordered_map<long, list<int> > cell_id_to_coords_1;
+    unordered_map<long, list<int> > cell_id_to_coords_2;
+
+    unordered_set<int> invisible_types(types_invisibe_vec->begin(), types_invisibe_vec->end());
+
+    unordered_set<int> used_cell_types;
+
+    vtkPoints *centroids_array = (vtkPoints *) centroids_array_addr;
+    vtkIntArray *cell_type_array = (vtkIntArray *) cell_type_array_addr;
+    vtkFloatArray *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+    vtkCharArray *typeArrayRead = (vtkCharArray *) lds->GetPointData()->GetArray("CellType");
+    vtkLongArray *idArray = (vtkLongArray *) lds->GetPointData()->GetArray("CellId");
+
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+
+    int offset = 0;
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+    //CellG* cell;
+    //int type;
+    long pc = 0;
+    long idxPt;
+    long cell_id;
+    char cellType;
+
+
+
+    for (int k = 0; k < fieldDim.z + 2; ++k)
+        for (int j = 0; j < fieldDim.y + 2; ++j)
+            for (int i = 0; i < fieldDim.x + 2; ++i) {
+                if (i == 0 || i == fieldDim.x + 1 || j == 0 || j == fieldDim.y + 1 || k == 0 || k == fieldDim.z + 1) {
+                    continue;
+                } else {
+                    pt.x = i - 1;
+                    pt.y = j - 1;
+                    pt.z = k - 1;
+                    idxPt = indexPoint3D(pt);
+
+                    cellType = typeArrayRead->GetValue(idxPt);
+                    if (!cellType)
+                        continue;
+
+                    if (invisible_types.find((int)cellType) != invisible_types.end()) continue;
+
+                    idxPt = indexPoint3D(pt);
+                    cell_id = idArray->GetValue(idxPt);
+                    used_cell_types.insert((int)cellType);
+
+                    cell_id_to_cell_type[cell_id] = (int)cellType;
+                    cell_id_to_coords_0[cell_id].push_back(i);
+                    cell_id_to_coords_1[cell_id].push_back(j);
+                    cell_id_to_coords_2[cell_id].push_back(k);
+
+
+                }
+            }
+
+    vector<double>scaling_factors = {1.0, 1.0, 1.0};
+
+    if (latticeType=="Hexagonal"){
+        scaling_factors[0] = 1.0;
+        scaling_factors[1] = 0.866;
+        scaling_factors[2] = 0.816;
+    }
+    for(const auto& cell_id_type_pair: cell_id_to_cell_type){
+        long cell_id = cell_id_type_pair.first;
+        int cell_type = cell_id_type_pair.second;
+        const auto & coords_0 = cell_id_to_coords_0[cell_id];
+        const auto & coords_1 = cell_id_to_coords_1[cell_id];
+        const auto & coords_2 = cell_id_to_coords_2[cell_id];
+        auto vol = coords_0.size()*1.0;
+        // in 2D we assume cell-glyph is a sphere
+        // so : vol = math.pi*r**2 => r = sqrt(1/math.pi)*sqrt(vol) = 0.564*sqrt(vol)
+
+        vol_scaling_factors_array->InsertNextValue(0.62*pow(vol, 0.333));
+        cell_type_array->InsertNextValue(cell_type);
+        centroids_array->InsertNextPoint(
+                scaling_factors[0] * centroid(coords_0),
+                scaling_factors[1] * centroid(coords_1),
+                scaling_factors[2] * centroid(coords_2));
+
+    }
+
+
+    return {used_cell_types.begin(), used_cell_types.end()};
+
+}
+
+std::vector<int> FieldExtractorCML::fillConFieldGlyphs3D(std::string con_field_name,
+                                      vtk_obj_addr_int_t centroids_array_addr,
+                                      vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                      vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                      std::vector<int> *types_invisibe_vec,
+                                      bool extractOuterShellOnly){
+
+    // cell_id to cell type map
+    unordered_map<long, int> cell_id_to_cell_type;
+
+    unordered_map<long, list<int> > cell_id_to_coords_0;
+    unordered_map<long, list<int> > cell_id_to_coords_1;
+    unordered_map<long, list<int> > cell_id_to_coords_2;
+
+    auto *conArrayRead = (vtkDoubleArray *) lds->GetPointData()->GetArray(con_field_name.c_str());
+
+    if (!conArrayRead)
+        return {};
+
+
+    auto *centroids_array = (vtkPoints *) centroids_array_addr;
+    auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+    auto *typeArrayRead = (vtkCharArray *) lds->GetPointData()->GetArray("CellType");
+    auto *idArray = (vtkLongArray *) lds->GetPointData()->GetArray("CellId");
+    auto *scalar_value_at_com_array = (vtkFloatArray *) scalar_value_at_com_addr;
+
+    unordered_set<int> invisible_types(types_invisibe_vec->begin(), types_invisibe_vec->end());
+
+    unordered_set<int> used_cell_types;
+
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+
+    int offset = 0;
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+    //CellG* cell;
+    //int type;
+    long pc = 0;
+    long idxPt;
+    long cell_id;
+    char cellType;
+
+
+
+    for (int k = 0; k < fieldDim.z + 2; ++k)
+        for (int j = 0; j < fieldDim.y + 2; ++j)
+            for (int i = 0; i < fieldDim.x + 2; ++i) {
+                if (i == 0 || i == fieldDim.x + 1 || j == 0 || j == fieldDim.y + 1 || k == 0 || k == fieldDim.z + 1) {
+                    continue;
+                } else {
+                    pt.x = i - 1;
+                    pt.y = j - 1;
+                    pt.z = k - 1;
+                    idxPt = indexPoint3D(pt);
+
+                    cellType = typeArrayRead->GetValue(idxPt);
+                    if (!cellType)
+                        continue;
+
+                    if (invisible_types.find((int)cellType) != invisible_types.end()) continue;
+
+                    idxPt = indexPoint3D(pt);
+                    cell_id = idArray->GetValue(idxPt);
+                    used_cell_types.insert((int)cellType);
+
+                    cell_id_to_cell_type[cell_id] = (int)cellType;
+                    cell_id_to_coords_0[cell_id].push_back(i);
+                    cell_id_to_coords_1[cell_id].push_back(j);
+                    cell_id_to_coords_2[cell_id].push_back(k);
+
+
+                }
+            }
+
+    vector<double>scaling_factors = {1.0, 1.0, 1.0};
+
+    if (latticeType=="Hexagonal"){
+        scaling_factors[0] = 1.0;
+        scaling_factors[1] = 0.866;
+        scaling_factors[2] = 0.816;
+    }
+
+    double con;
+    for(const auto& cell_id_type_pair: cell_id_to_cell_type){
+        long cell_id = cell_id_type_pair.first;
+        int cell_type = cell_id_type_pair.second;
+        const auto & coords_0 = cell_id_to_coords_0[cell_id];
+        const auto & coords_1 = cell_id_to_coords_1[cell_id];
+        const auto & coords_2 = cell_id_to_coords_2[cell_id];
+        auto vol = coords_0.size()*1.0;
+        // in 2D we assume cell-glyph is a sphere
+        // so : vol = math.pi*r**2 => r = sqrt(1/math.pi)*sqrt(vol) = 0.564*sqrt(vol)
+
+        vol_scaling_factors_array->InsertNextValue(0.62*pow(vol, 0.333));
+        auto c0 = centroid(coords_0);
+        auto c1 = centroid(coords_1);
+        auto c2 = centroid(coords_2);
+
+
+        pt.x = (short)round(c0);
+        pt.y = (short)round(c1);
+        pt.z = (short)round(c2);
+
+        con = conArrayRead->GetValue(indexPoint3D(pt));
+
+        scalar_value_at_com_array->InsertNextValue(con);
+        centroids_array->InsertNextPoint(
+                scaling_factors[0] * centroid(coords_0),
+                scaling_factors[1] * centroid(coords_1),
+                scaling_factors[2] * centroid(coords_2));
+
+    }
+
+
+    return {used_cell_types.begin(), used_cell_types.end()};
+
+
+}
+
+std::vector<int> FieldExtractorCML::fillScalarFieldGlyphs3D(std::string con_field_name,
+                                         vtk_obj_addr_int_t centroids_array_addr,
+                                         vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                         vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                         std::vector<int> *types_invisibe_vec,
+                                         bool extractOuterShellOnly){
+    return fillConFieldGlyphs3D(con_field_name,
+            centroids_array_addr,
+            vol_scaling_factors_array_addr,
+            scalar_value_at_com_addr,
+            types_invisibe_vec,
+            extractOuterShellOnly);
+}
+
+std::vector<int> FieldExtractorCML::fillScalarFieldCellLevelGlyphs3D(std::string con_field_name,
+                                                            vtk_obj_addr_int_t centroids_array_addr,
+                                                            vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                            vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                                            std::vector<int> *types_invisibe_vec,
+                                                            bool extractOuterShellOnly){
+    return fillConFieldGlyphs3D(con_field_name,
+                                centroids_array_addr,
+                                vol_scaling_factors_array_addr,
+                                scalar_value_at_com_addr,
+                                types_invisibe_vec,
+                                extractOuterShellOnly);
 }
