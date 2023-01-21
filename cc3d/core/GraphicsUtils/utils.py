@@ -1,5 +1,6 @@
 import warnings
-from vtkmodules.vtkCommonCorePython import vtkObjectBase
+# from vtkmodules.vtkCommonCorePython import vtkObjectBase
+from vtk import vtkObjectBase
 
 
 def extract_address_int_from_vtk_object(vtkObj) -> int:

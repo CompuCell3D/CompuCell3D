@@ -1,6 +1,6 @@
 # when building as standalone package uncomment line below and set version and build_number to proper values
-# {% set version = "4.3.1" %}
-# {% set build_number = "3" %}
+{% set version = "4.5.0" %}
+{% set build_number = "0" %}
 
 #{% set version = "4.3.0" %}
 #{% set build_number = "16" %}
@@ -31,13 +31,15 @@ build:
 requirements:
   host:
     - python {{ python }}
-    - numpy=1.18
-    - vtk=8.2
+    - numpy=1.21
+    - vtk=9.2
     - eigen
-    - tbb-devel=2020
+    - tbb-devel=2021
+    - boost=1.78
     - cmake>=3.14
     - swig=3
-    - cc3d-network-solvers>=0.0.2
+    - psutil
+    - deprecated
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
@@ -50,31 +52,23 @@ requirements:
     - {{ openmp }} # [osx]
 
   run:
-    - python
-    - numpy=1.18
-    - vtk=8.2
-    - {{ pin_compatible('numpy') }}
-    - {{ pin_compatible('vtk') }}
-    - scipy
-    - pandas
-    - jinja2
-    - deprecated
-    - psutil
-    - cmake=3.19
+    - python {{ python }}
+    - numpy=1.21
+    - vtk=9.2
+    - eigen
+    - tbb-devel=2021
+    - boost=1.78
+    - cmake>=3.14
     - swig=3
-    - cc3d-network-solvers>=0.0.2
+    - psutil
+    - deprecated
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
-    - simservice
-    - notebook
-    - ipywidgets
-    - ipyvtklink
-    - sphinx
-    - graphviz
+
 
   run_constrained:
-    - tbb=2020
+    - tbb=2021
 
 # on windows we can run conda
 #  build . -c conda-forge -c compucell3d to force conda to use

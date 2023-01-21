@@ -7,6 +7,7 @@
 
 #include <CompuCell3D/CC3DExceptions.h>
 
+
 namespace CompuCell3D {
 
     class Transition;

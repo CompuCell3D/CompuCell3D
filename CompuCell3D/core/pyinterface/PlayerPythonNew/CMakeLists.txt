@@ -23,6 +23,15 @@ if (${VTK_MAJOR_VERSION} EQUAL "8")
     SET(VTK_LIBS vtkRenderingVolume vtkInteractionStyle  vtkIOLegacy)
 endif()
 
+if (${VTK_MAJOR_VERSION} EQUAL "9")
+#    SET(VTK_LIBS vtkRenderingVolume vtkInteractionStyle  vtkIOLegacy)
+    find_package(VTK COMPONENTS
+            vtkRenderingVolume vtkInteractionStyle  vtkIOLegacy
+            )
+    include(${VTK_USE_FILE})
+    SET(VTK_LIBS ${VTK_LIBRARIES})
+endif()
+
 if (${VTK_MAJOR_VERSION} EQUAL "5")
     SET(VTK_LIBS vtkVolumeRendering vtkHybrid vtkFiltering vtkCommon)
 endif()

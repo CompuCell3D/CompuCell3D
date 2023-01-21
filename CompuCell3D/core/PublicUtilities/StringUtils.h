@@ -6,6 +6,9 @@
 #include <locale>
 #include <cctype>
 #include <functional>
+#include <iostream>
+
+
 
 void parseStringIntoList(std::string &str,std::vector<std::string> &strVec,std::string separator);
 /**
@@ -23,7 +26,9 @@ class isWhiteSpaceFunctor: public std::unary_function<char,bool>{
    
    public:
       bool operator()(char c)const{
-         return isspace(c,loc);
+
+//         return std::isspace(c,loc);
+          return std::isspace(c);
 
       }
 
@@ -33,7 +38,10 @@ class isWhiteSpaceFunctor: public std::unary_function<char,bool>{
 struct ToLower
 {
    ToLower(std::locale const& l) : loc(l) {;}
-   char operator() (char c) const  { return std::tolower(c,loc); }
+   char operator() (char c) const  {
+//       return std::tolower(c,loc);
+       return std::tolower(c);
+   }
    private:
       std::locale const& loc;
 };
@@ -42,7 +50,10 @@ struct ToLower
 struct ToUpper
 {
       ToUpper(std::locale const& l) : loc(l) {;}
-      char operator() (char c) const  { return std::toupper(c,loc); }
+      char operator() (char c) const  {
+//          return std::toupper(c,loc);
+          return std::toupper(c);
+      }
 private:
       std::locale const& loc;
 };

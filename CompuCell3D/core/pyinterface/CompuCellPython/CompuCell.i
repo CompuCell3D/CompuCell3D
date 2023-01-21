@@ -1,6 +1,5 @@
 // -*-c++-*-
 
-
 %module ("threads"=1, directors="1") CompuCell
 
 // Have to replace ptrdiff_t with long long on windows. long on windows is 4 bytes
@@ -1446,18 +1445,26 @@ public:
 
   // todo - plugin manager
   void initializePlugins() {
+    cerr<< "initialize plugin fcn"<<endl;
     CC3D_Log(LOG_DEBUG) << "initialize plugin fcn";
 
     char *steppablePath = getenv("COMPUCELL3D_STEPPABLE_PATH");
+
+    cerr<<"steppablePath=" << steppablePath<<endl;
+
     CC3D_Log(LOG_DEBUG) << "steppablePath=" << steppablePath;
-    if (steppablePath) Simulator::steppableManager.loadLibraries(steppablePath);
-	  
+
+    if (steppablePath)
+        Simulator::steppableManager.loadLibraries(steppablePath);
+	cerr<<"after Simulator::steppableManager.loadLibraries(steppablePath)"<<endl;
     char *pluginPath = getenv("COMPUCELL3D_PLUGIN_PATH");
     CC3D_Log(LOG_DEBUG) << "pluginPath=" << pluginPath;
+    cerr << "pluginPath=" << pluginPath<<endl;
     CC3D_Log(LOG_DEBUG) << "THIS IS JUST BEFORE LOADING LIBRARIES";
       
    
-    if (pluginPath) Simulator::pluginManager.loadLibraries(pluginPath);
+    if (pluginPath)
+        Simulator::pluginManager.loadLibraries(pluginPath);
 
   }
 

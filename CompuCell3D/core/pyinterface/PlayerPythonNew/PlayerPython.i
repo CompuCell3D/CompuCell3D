@@ -123,6 +123,8 @@ class CellG;
 %template(vectorstring) std::vector<std::string>;
 
 
+
+
 %include <ndarray_adapter.h>
 
 %template(NdarrayAdapterDouble3) NdarrayAdapter<float,3>; //for storing scalar fieldas

@@ -51,6 +51,10 @@ IF(SWIG_FOUND)
         add_definitions(-DVTK6)
     endif()
 
+    if (${VTK_MAJOR_VERSION} EQUAL "9")
+        add_definitions(-DVTK9)
+    endif()
+
     add_subdirectory(PlayerPythonNew)
     add_subdirectory(SerializerDE)
     add_subdirectory(PyPlugin)
