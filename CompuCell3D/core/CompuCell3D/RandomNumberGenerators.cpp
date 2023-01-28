@@ -1,6 +1,8 @@
 #include "RandomNumberGenerators.h"
+#include <iostream>
 
 using namespace CompuCell3D;
+using namespace std;
 
 bool RandomNumberGenerator::getBool() {
     if (!bits) {
@@ -25,8 +27,9 @@ RandomNumberGeneratorMersenneT::RandomNumberGeneratorMersenneT(const unsigned in
     valRange = double(prng.max() - minVal);
 }
 
+
 void RandomNumberGeneratorMersenneT::setSeed(const unsigned int &_seed) {
-    std::mt19937 prng(_seed);
+    this->prng = std::mt19937(_seed);
     seed = _seed;
 }
 
