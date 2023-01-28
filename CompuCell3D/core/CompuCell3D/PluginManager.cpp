@@ -102,7 +102,7 @@ void PluginManager<PluginType>::loadLibrary(const std::string &filename) {
 #else
     libHandle_t handle = dlopen(filename.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 #endif
-    cerr<<"handle="<<handle<<endl;
+//    cerr<<"handle="<<handle<<endl;
     if (!handle) throw CC3DException(std::string("Load library error: ") + filename);
 
     libHandles[libName] = handle;
@@ -111,7 +111,7 @@ void PluginManager<PluginType>::loadLibrary(const std::string &filename) {
 template<typename PluginType>
 void PluginManager<PluginType>::loadLibraryFromPath(const std::string &path) {
     for (std::string f: filesInDir(path, "*" + libExtension)) {
-        cerr<<"loading "<<f<<endl;
+//        cerr<<"loading "<<f<<endl;
         loadLibrary(f);
     }
 }
@@ -119,10 +119,11 @@ void PluginManager<PluginType>::loadLibraryFromPath(const std::string &path) {
 template<typename PluginType>
 void PluginManager<PluginType>::loadLibraries(const std::string path) {
     for (auto &s: splitString(path, pathDelim)){
-        cerr<<"module path "<<path<<endl;
+//        cerr<<"module path "<<path<<endl;
         try {
             loadLibraryFromPath(s);
         }catch (std::exception & e){
+            cerr<<"Error loading module: "<<path<<endl;
             cerr<<"exception "<<e.what()<<endl;
         }
     }
