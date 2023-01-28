@@ -178,7 +178,60 @@ namespace CompuCell3D {
         virtual bool fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
                                         std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
                                         bool type_indicator_only
-                                                );
+        );
+
+        virtual std::vector<int> fillCellFieldGlyphs3D(vtk_obj_addr_int_t centroids_array_addr,
+                                                       vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                       vtk_obj_addr_int_t cell_type_array_addr,
+                                                       std::vector<int> *types_invisibe_vec,
+                                                       bool extractOuterShellOnly = false);
+        virtual void fillCellFieldGlyphs2D(
+                vtk_obj_addr_int_t centroids_array_addr,
+                vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                vtk_obj_addr_int_t cell_type_array_addr,
+                std::string plane, int pos);
+
+        virtual void fillConFieldGlyphs2D(
+                std::string con_field_name,
+                vtk_obj_addr_int_t centroids_array_addr,
+                vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                vtk_obj_addr_int_t scalar_value_at_com_addr,
+                std::string plane, int pos);
+
+        virtual void fillScalarFieldGlyphs2D(
+                std::string con_field_name,
+                vtk_obj_addr_int_t centroids_array_addr,
+                vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                vtk_obj_addr_int_t scalar_value_at_com_addr,
+                std::string plane, int pos);
+
+        virtual void fillScalarFieldCellLevelGlyphs2D(
+                std::string con_field_name,
+                vtk_obj_addr_int_t centroids_array_addr,
+                vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                vtk_obj_addr_int_t scalar_value_at_com_addr,
+                std::string plane, int pos);
+
+        virtual std::vector<int> fillScalarFieldGlyphs3D(std::string con_field_name,
+                                                         vtk_obj_addr_int_t centroids_array_addr,
+                                                         vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                         vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                                         std::vector<int> *types_invisibe_vec,
+                                                         bool extractOuterShellOnly = false);
+
+        virtual std::vector<int> fillScalarFieldCellLevelGlyphs3D(std::string con_field_name,
+                                                                  vtk_obj_addr_int_t centroids_array_addr,
+                                                                  vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                                  vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                                                  std::vector<int> *types_invisibe_vec,
+                                                                  bool extractOuterShellOnly = false);
+
+        virtual std::vector<int> fillConFieldGlyphs3D(std::string con_field_name,
+                                                      vtk_obj_addr_int_t centroids_array_addr,
+                                                      vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                      vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                                      std::vector<int> *types_invisibe_vec,
+                                                      bool extractOuterShellOnly = false);
 
         void setVtkObj(void *_vtkObj);
 
@@ -194,7 +247,9 @@ namespace CompuCell3D {
     private:
         FieldStorage *fsPtr;
         ParallelUtilsOpenMP *pUtils;
+
         typedef int (FieldExtractor::*type_fcn_ptr_t)(int type);
+
         FieldExtractor::type_fcn_ptr_t type_fcn_ptr;
 
     };

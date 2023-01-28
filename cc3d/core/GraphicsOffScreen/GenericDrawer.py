@@ -243,7 +243,7 @@ class GenericDrawer:
             'all_types': list(range(max_cell_type_used + 1))
         }
 
-        actor_specs_final = view.prepare_cell_field_actors(actor_specs)
+        actor_specs_final = view.prepare_cell_field_actors(actor_specs, drawing_params=drawing_params)
         model.init_cell_field_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
         view.show_cell_actors(actor_specs=actor_specs_final)
 

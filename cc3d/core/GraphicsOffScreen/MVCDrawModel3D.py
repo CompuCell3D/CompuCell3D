@@ -12,7 +12,7 @@ import sys
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 epsilon = sys.float_info.epsilon
-MODULENAME = '------  MVCDrawModel3D.py'
+MODULENAME = "------  MVCDrawModel3D.py"
 
 
 class MVCDrawModel3D(MVCDrawModelBase):
@@ -24,7 +24,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         self.usedDraw3DFlag = False
 
-    # Sets up the VTK simulation area 
+    # Sets up the VTK simulation area
     def initArea(self):
         # Zoom items
         self.zitems = []
@@ -60,7 +60,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         self.typeExtractors = {}  # vtkDiscreteMarchingCubes
         self.typeExtractorMappers = {}  # vtkPolyDataMapper
 
-
     def is_lattice_hex(self, drawing_params):
         """
         returns if flag that states if the lattice is hex or not. Notice
@@ -68,7 +67,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         :return: {bool}
         """
         lattice_type_str = self.get_lattice_type_str()
-        if lattice_type_str.lower() == 'hexagonal':
+        if lattice_type_str.lower() == "hexagonal":
             return True
         else:
             return False
@@ -77,7 +76,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         hex_flag = False
         lattice_type_str = self.get_lattice_type_str()
-        if lattice_type_str.lower() == 'hexagonal':
+        if lattice_type_str.lower() == "hexagonal":
             hex_flag = True
 
         # todo 5 - check if this should be called earlier
@@ -86,8 +85,9 @@ class MVCDrawModel3D(MVCDrawModelBase):
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         cell_type_image_data = vtk.vtkImageData()
 
-        cell_type_image_data.SetDimensions(field_dim.x + 2, field_dim.y + 2,
-                                           field_dim.z + 2)  # adding 1 pixel border around the lattice to make rendering smooth at lattice borders
+        cell_type_image_data.SetDimensions(
+            field_dim.x + 2, field_dim.y + 2, field_dim.z + 2
+        )  # adding 1 pixel border around the lattice to make rendering smooth at lattice borders
         cell_type_image_data.GetPointData().SetScalars(self.cell_type_array)
         voi = vtk.vtkExtractVOI()
 
@@ -142,7 +142,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
                 actor.SetMapper(mapperList[actorCounter])
 
                 actor.GetProperty().SetDiffuseColor(
-                    cell_type_lut.GetTableValue(self.used_cell_types_list[actorCounter])[0:3])
+                    cell_type_lut.GetTableValue(self.used_cell_types_list[actorCounter])[0:3]
+                )
 
                 # actor.GetProperty().SetDiffuseColor(
                 #     # self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
@@ -150,6 +151,77 @@ class MVCDrawModel3D(MVCDrawModelBase):
                 if hex_flag:
                     actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
                     # actor.GetProperty().SetOpacity(0.5)
+
+    def init_cell_field_glyphs_actors(self, actor_specs, drawing_params=None):
+        """Initializes glyph-based cell field visualization - cells are approximated as spheres
+        """
+
+        centroids = vtk.vtkPoints()
+        volume_scaling_factors = vtk.vtkFloatArray()
+        volume_scaling_factors.SetName("volume_scaling_factors")
+
+        cell_types = vtk.vtkIntArray()
+        cell_types.SetName("cell_types")
+        centroids_addr = extract_address_int_from_vtk_object(vtkObj=centroids)
+        cell_types_addr = extract_address_int_from_vtk_object(vtkObj=cell_types)
+        volume_scaling_factors_addr = extract_address_int_from_vtk_object(vtkObj=volume_scaling_factors)
+
+        types_invisible = PlayerPython.vectorint()
+        for type_label in drawing_params.screenshot_data.invisible_types:
+            types_invisible.append(int(type_label))
+
+        used_types = self.field_extractor.fillCellFieldGlyphs3D(
+            centroids_addr, volume_scaling_factors_addr, cell_types_addr, types_invisible
+        )
+
+        mapper = vtk.vtkPolyDataMapper()
+
+        # polydata should be initialized/created AFTER all arrays have been filled in
+        centroid_polydata = vtk.vtkPolyData()
+        centroid_polydata.SetPoints(centroids)
+        centroid_polydata.GetPointData().AddArray(volume_scaling_factors)
+        centroid_polydata.GetPointData().AddArray(cell_types)
+
+        sphere = vtk.vtkSphereSource()
+        sphere.SetRadius(1)
+
+        # even though
+        try:
+            cell_field_glyph_actor = list(actor_specs.actors_dict.values())[0]
+        except IndexError:
+            print("Could not find any actor for listed cell types")
+            return
+
+        glyphs = vtk.vtkGlyph3D()
+
+        glyphs.SetInputData(centroid_polydata)
+        glyphs.SetSourceConnection(0, sphere.GetOutputPort())
+
+        glyphs.ScalingOn()
+        glyphs.SetScaleModeToScaleByScalar()
+        glyphs.SetColorModeToColorByScalar()
+
+        glyphs.SetScaleFactor(1)  # Overall scaling factor
+
+        # Tell it to index into the glyph table according to scalars
+        glyphs.SetIndexModeToScalar()
+
+        # Tell glyph which attribute arrays to use for what
+        # see also https://stackoverflow.com/questions/29768049/
+        # python-vtk-glyphs-with-independent-position-orientation-color-and-height
+        glyphs.SetInputArrayToProcess(0, 0, 0, 0, "volume_scaling_factors")  # 0 - scalars for scaling
+        glyphs.SetInputArrayToProcess(3, 0, 0, 0, "cell_types")  # 3 - color
+
+        cell_type_lut = self.get_type_lookup_table()
+        mapper.SetInputConnection(glyphs.GetOutputPort())
+        mapper.SetLookupTable(cell_type_lut)
+        mapper.ScalarVisibilityOn()
+        mapper.SetScalarRange(0, cell_type_lut.GetNumberOfTableValues() - 1)
+        mapper.SetColorModeToMapScalars()
+
+        cell_field_glyph_actor.SetMapper(mapper)
+
+        # No need to scale 3D actors because they are being initialized in the hex coordinates in C++ code
 
     def init_cell_field_borders_actors(self, actor_specs, drawing_params=None):
         """
@@ -219,13 +291,157 @@ class MVCDrawModel3D(MVCDrawModelBase):
     # original rendering technique (and still used if Vis->Cell Borders not checked) - vkDiscreteMarchingCubes
     # on celltype
     def init_cell_field_actors(self, actor_specs, drawing_params=None):
-
-        if drawing_params.screenshot_data.cell_borders_on:
-            self.init_cell_field_borders_actors(actor_specs=actor_specs)
+        scr_data = drawing_params.screenshot_data
+        if scr_data.cell_glyphs_on:
+            self.init_cell_field_glyphs_actors(actor_specs=actor_specs, drawing_params=drawing_params)
         else:
-            self.init_cell_field_actors_borderless(actor_specs=actor_specs)
+            if drawing_params.screenshot_data.cell_borders_on:
+                self.init_cell_field_borders_actors(actor_specs=actor_specs, drawing_params=drawing_params)
+            else:
+                self.init_cell_field_actors_borderless(actor_specs=actor_specs, drawing_params=drawing_params)
+
+    def init_concentration_field_glyphs_actors(self, actor_specs, drawing_params=None):
+        """
+        colors cells - being represented as spheres based on the
+        concentration at the COM of the sphere approximating cell
+        """
+
+        centroids = vtk.vtkPoints()
+        volume_scaling_factors = vtk.vtkFloatArray()
+        volume_scaling_factors.SetName("volume_scaling_factors")
+
+        scalar_value_at_com_array = vtk.vtkFloatArray()
+        scalar_value_at_com_array.SetName("scalar_value_at_com")
+
+        centroids_addr = extract_address_int_from_vtk_object(vtkObj=centroids)
+        scalar_value_at_com_addr = extract_address_int_from_vtk_object(vtkObj=scalar_value_at_com_array)
+        volume_scaling_factors_addr = extract_address_int_from_vtk_object(vtkObj=volume_scaling_factors)
+
+        mapper = vtk.vtkPolyDataMapper()
+
+
+
+        # polydata should be initialized/created AFTER all arrays have been filled in
+        centroid_polydata = vtk.vtkPolyData()
+        centroid_polydata.SetPoints(centroids)
+        centroid_polydata.GetPointData().AddArray(volume_scaling_factors)
+
+        centroid_polydata.GetPointData().AddArray(scalar_value_at_com_array)
+
+        field_type = drawing_params.fieldType.lower()
+        field_name = drawing_params.fieldName
+        scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
+        actors_dict = actor_specs.actors_dict
+
+        types_invisible = PlayerPython.vectorint()
+        for type_label in drawing_params.screenshot_data.invisible_types:
+            types_invisible.append(int(type_label))
+
+        used_cell_types = []
+        if field_type == "confield":
+            used_cell_types = self.field_extractor.fillConFieldGlyphs3D(
+                field_name, centroids_addr, volume_scaling_factors_addr, scalar_value_at_com_addr, types_invisible
+            )
+        elif field_type == "scalarfield":
+            used_cell_types = self.field_extractor.fillScalarFieldGlyphs3D(
+                field_name, centroids_addr, volume_scaling_factors_addr, scalar_value_at_com_addr, types_invisible
+            )
+        elif field_type == "scalarfieldcelllevel":
+            used_cell_types = self.field_extractor.fillScalarFieldCellLevelGlyphs3D(
+                field_name, centroids_addr, volume_scaling_factors_addr, scalar_value_at_com_addr, types_invisible
+            )
+
+        if not len(used_cell_types):
+            return
+
+        sphere = vtk.vtkSphereSource()
+        sphere.SetRadius(1)
+
+        try:
+            actor = list(actor_specs.actors_dict.values())[0]
+        except IndexError:
+            print("Could not find any actor for listed cell types")
+            return
+
+        glyphs = vtk.vtkGlyph3D()
+
+        glyphs.SetInputData(centroid_polydata)
+        glyphs.SetSourceConnection(0, sphere.GetOutputPort())
+
+        glyphs.ScalingOn()
+        glyphs.SetScaleModeToScaleByScalar()
+        glyphs.SetColorModeToColorByScalar()
+
+        glyphs.SetScaleFactor(1)  # Overall scaling factor
+
+        # Tell it to index into the glyph table according to scalars
+        glyphs.SetIndexModeToScalar()
+
+        # Tell glyph which attribute arrays to use for what
+        # see also https://stackoverflow.com/questions/29768049/
+        # python-vtk-glyphs-with-independent-position-orientation-color-and-height
+        glyphs.SetInputArrayToProcess(0, 0, 0, 0, "volume_scaling_factors")  # 0 - scalars for scaling
+        # glyphs.SetInputArrayToProcess(3, 0, 0, 0, 'cell_types')  # 3 - color
+        glyphs.SetInputArrayToProcess(3, 0, 0, 0, "scalar_value_at_com")  # 3 - color
+
+        field_name = drawing_params.fieldName
+        scene_metadata = drawing_params.screenshot_data.metadata
+
+        range_array = scalar_value_at_com_array.GetRange()
+        min_con = range_array[0]
+        max_con = range_array[1]
+
+        min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
+        min_range_fixed = min_max_dict["MinRangeFixed"]
+        max_range_fixed = min_max_dict["MaxRangeFixed"]
+        min_range = min_max_dict["MinRange"]
+        max_range = min_max_dict["MaxRange"]
+
+        # Note! should really avoid doing a getSetting with each step to speed up the rendering;
+        # only update when changed in Prefs
+        if min_range_fixed:
+            min_con = min_range
+
+        if max_range_fixed:
+            max_con = max_range
+
+        lut = self.scalarLUT
+
+        mapper.SetInputConnection(glyphs.GetOutputPort())
+        # mapper.SetLookupTable(cell_type_lut)
+        mapper.SetLookupTable(lut)
+        mapper.ScalarVisibilityOn()
+        mapper.SetScalarRange(min_con, max_con)
+        # mapper.SetScalarRange(0, cell_type_lut.GetNumberOfTableValues() - 1)
+        mapper.SetColorModeToMapScalars()
+
+        actor.SetMapper(mapper)
+
+        # No need to scale 3D actors because they are being initialized in the hex coordinates in C++ code
+
+        self.init_min_max_actor(min_max_actor=actors_dict["min_max_text_actor"], range_array=range_array)
+        if actor_specs.metadata is None:
+            actor_specs.metadata = {"mapper": mapper}
+        else:
+            actor_specs.metadata["mapper"] = mapper
+
+        if mdata.get("LegendEnable", default=False):
+            self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
+
 
     def init_concentration_field_actors(self, actor_specs, drawing_params=None):
+        """
+        switches between glyph and non-glyph visualizations
+        """
+        scr_data = drawing_params.screenshot_data
+        if scr_data.cell_glyphs_on:
+            self.init_concentration_field_glyphs_actors(actor_specs=actor_specs, drawing_params=drawing_params)
+        else:
+            self.init_concentration_field_non_glyph_actors(actor_specs=actor_specs, drawing_params=drawing_params)
+
+
+    def init_concentration_field_non_glyph_actors(self, actor_specs, drawing_params=None):
         """
         initializes concentration field actors
         :param actor_specs:
@@ -242,27 +458,27 @@ class MVCDrawModel3D(MVCDrawModelBase):
         mdata = MetadataHandler(mdata=scene_metadata)
 
         try:
-            isovalues = mdata.get('ScalarIsoValues', default=[])
+            isovalues = mdata.get("ScalarIsoValues", default=[])
             isovalues = list([float(x) for x in isovalues])
         except:
-            print('Could not process isovalue list ')
+            print("Could not process isovalue list ")
             isovalues = []
 
         try:
-            num_isos = mdata.get('NumberOfContourLines', default=3)
+            num_isos = mdata.get("NumberOfContourLines", default=3)
         except:
-            print('could not process NumberOfContourLines setting')
+            print("could not process NumberOfContourLines setting")
             num_isos = 0
 
         try:
-            show_contours = mdata.get('ContoursOn', default=False)
+            show_contours = mdata.get("ContoursOn", default=False)
         except:
-            print('could not process ContoursOn setting')
+            print("could not process ContoursOn setting")
             show_contours = False
 
         hex_flag = False
         lattice_type_str = self.get_lattice_type_str()
-        if lattice_type_str.lower() == 'hexagonal':
+        if lattice_type_str.lower() == "hexagonal":
             hex_flag = True
 
         types_invisible = PlayerPython.vectorint()
@@ -288,19 +504,18 @@ class MVCDrawModel3D(MVCDrawModelBase):
         use_cell_type_thresholding = not show_contours
 
         fill_successful = False
-        if field_type == 'confield':
-            fill_successful = self.field_extractor.fillConFieldData3D(con_array_int_addr, cell_type_con_int_addr,
-                                                                      field_name, types_invisible,
-                                                                      use_cell_type_thresholding)
-        elif field_type == 'scalarfield':
-            fill_successful = self.field_extractor.fillScalarFieldData3D(con_array_int_addr, cell_type_con_int_addr,
-                                                                         field_name, types_invisible,
-                                                                         use_cell_type_thresholding)
-        elif field_type == 'scalarfieldcelllevel':
-            fill_successful = self.field_extractor.fillScalarFieldCellLevelData3D(con_array_int_addr,
-                                                                                  cell_type_con_int_addr, field_name,
-                                                                                  types_invisible,
-                                                                                  use_cell_type_thresholding)
+        if field_type == "confield":
+            fill_successful = self.field_extractor.fillConFieldData3D(
+                con_array_int_addr, cell_type_con_int_addr, field_name, types_invisible, use_cell_type_thresholding
+            )
+        elif field_type == "scalarfield":
+            fill_successful = self.field_extractor.fillScalarFieldData3D(
+                con_array_int_addr, cell_type_con_int_addr, field_name, types_invisible, use_cell_type_thresholding
+            )
+        elif field_type == "scalarfieldcelllevel":
+            fill_successful = self.field_extractor.fillScalarFieldCellLevelData3D(
+                con_array_int_addr, cell_type_con_int_addr, field_name, types_invisible, use_cell_type_thresholding
+            )
 
         if not fill_successful:
             return
@@ -311,10 +526,10 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # field_max = range_array[1]
 
         min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
-        min_range_fixed = min_max_dict['MinRangeFixed']
-        max_range_fixed = min_max_dict['MaxRangeFixed']
-        min_range = min_max_dict['MinRange']
-        max_range = min_max_dict['MaxRange']
+        min_range_fixed = min_max_dict["MinRangeFixed"]
+        max_range_fixed = min_max_dict["MaxRangeFixed"]
+        min_range = min_max_dict["MinRange"]
+        max_range = min_max_dict["MaxRange"]
 
         # Note! should really avoid doing a getSetting with each step to speed up the rendering;
         # only update when changed in Prefs
@@ -325,29 +540,35 @@ class MVCDrawModel3D(MVCDrawModelBase):
             max_con = max_range
 
         if show_contours:
-            self.init_concentration_contours(dim=dim, con_array=con_array, isovalues=isovalues,
-                                             min_con=min_con, max_con=max_con, numIsos=num_isos)
+            self.init_concentration_contours(
+                dim=dim, con_array=con_array, isovalues=isovalues, min_con=min_con, max_con=max_con, numIsos=num_isos
+            )
         else:
-            self.init_concentration_outer_shell(dim=dim, con_array=con_array, cell_type_con=cell_type_con,
-                                                isovalues=isovalues, min_con=min_con, max_con=max_con,
-                                                numIsos=num_isos)
+            self.init_concentration_outer_shell(
+                dim=dim,
+                con_array=con_array,
+                cell_type_con=cell_type_con,
+                isovalues=isovalues,
+                min_con=min_con,
+                max_con=max_con,
+                numIsos=num_isos,
+            )
 
-
-        concentration_actor = actors_dict['concentration_actor']
+        concentration_actor = actors_dict["concentration_actor"]
 
         concentration_actor.SetMapper(self.conMapper)
 
-        self.init_min_max_actor(min_max_actor=actors_dict['min_max_text_actor'], range_array=range_array)
+        self.init_min_max_actor(min_max_actor=actors_dict["min_max_text_actor"], range_array=range_array)
 
         if hex_flag:
             concentration_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
 
         if actor_specs.metadata is None:
-            actor_specs.metadata = {'mapper': self.conMapper}
+            actor_specs.metadata = {"mapper": self.conMapper}
         else:
-            actor_specs.metadata['mapper'] = self.conMapper
+            actor_specs.metadata["mapper"] = self.conMapper
 
-        if mdata.get('LegendEnable', default=False):
+        if mdata.get("LegendEnable", default=False):
             self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
     def init_concentration_outer_shell(self, **kwds):
@@ -355,12 +576,11 @@ class MVCDrawModel3D(MVCDrawModelBase):
         Extracts outer shell of visible cell types and colors the shell based on the value of
         concentration field
         """
-        dim = kwds['dim']
-        con_array = kwds['con_array']
-        cell_type_con = kwds['cell_type_con']
-        min_con = kwds['min_con']
-        max_con = kwds['max_con']
-
+        dim = kwds["dim"]
+        con_array = kwds["con_array"]
+        cell_type_con = kwds["cell_type_con"]
+        min_con = kwds["min_con"]
+        max_con = kwds["max_con"]
 
         vtk_shape_data = vtk.vtkImageData()
         # only add 2 if we're filling in an extra boundary (rf. FieldExtractor.cpp)
@@ -396,15 +616,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
         self.conMapper.SetScalarRange(min_con, max_con)
 
     def init_concentration_contours(self, **kwds):
-        """initializes contour visualization of concentration field in 3D
-        """
-        dim = kwds['dim']
-        con_array = kwds['con_array']
-        isovalues = kwds['isovalues']
-        min_con = kwds['min_con']
-        max_con = kwds['max_con']
-        num_isos = kwds['num_isos']
-
+        """initializes contour visualization of concentration field in 3D"""
+        dim = kwds["dim"]
+        con_array = kwds["con_array"]
+        isovalues = kwds["isovalues"]
+        min_con = kwds["min_con"]
+        max_con = kwds["max_con"]
+        num_isos = kwds["num_isos"]
 
         uGrid = vtk.vtkStructuredPoints()
         # only add 2 if we're filling in an extra boundary (rf. FieldExtractor.cpp)
@@ -430,7 +648,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
             try:
                 iso_contour.SetValue(iso_num, iso_val)
             except:
-                print(MODULENAME, ' initScalarFieldDataActors(): cannot convert to float')
+                print(MODULENAME, " initScalarFieldDataActors(): cannot convert to float")
 
         if iso_num > 0:
             iso_num += 1
@@ -487,26 +705,22 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         if self.is_lattice_hex(drawing_params=drawing_params):
             hex_flag = True
-            if field_type == 'vectorfield':
+            if field_type == "vectorfield":
                 fill_successful = self.field_extractor.fillVectorFieldData3DHex(
-                    points_int_addr,
-                    vectors_int_addr,
-                    field_name
+                    points_int_addr, vectors_int_addr, field_name
                 )
-            elif field_type == 'vectorfieldcelllevel':
+            elif field_type == "vectorfieldcelllevel":
                 fill_successful = self.field_extractor.fillVectorFieldCellLevelData3DHex(
-                    points_int_addr,
-                    vectors_int_addr,
-                    field_name
+                    points_int_addr, vectors_int_addr, field_name
                 )
         else:
-            if field_type == 'vectorfield':
+            if field_type == "vectorfield":
                 fill_successful = self.field_extractor.fillVectorFieldData3D(
                     points_int_addr,
                     vectors_int_addr,
                     field_name,
                 )
-            elif field_type == 'vectorfieldcelllevel':
+            elif field_type == "vectorfieldcelllevel":
                 fill_successful = self.field_extractor.fillVectorFieldCellLevelData3D(
                     points_int_addr,
                     vectors_int_addr,
@@ -531,10 +745,10 @@ class MVCDrawModel3D(MVCDrawModelBase):
         max_magnitude = range_array[1]
 
         min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
-        min_range_fixed = min_max_dict['MinRangeFixed']
-        max_range_fixed = min_max_dict['MaxRangeFixed']
-        min_range = min_max_dict['MinRange']
-        max_range = min_max_dict['MaxRange']
+        min_range_fixed = min_max_dict["MinRangeFixed"]
+        max_range_fixed = min_max_dict["MaxRangeFixed"]
+        min_range = min_max_dict["MinRange"]
+        max_range = min_max_dict["MaxRange"]
 
         # Note! should really avoid doing a getSetting with each step to speed up the rendering;
         # only update when changed in Prefs
@@ -558,12 +772,12 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # scaling arrows here ArrowLength indicates scaling factor not actual length
         # glyphs.SetScaleFactor(Configuration.getSetting("ArrowLength"))
 
-        vector_field_actor = actors_dict['vector_field_actor']
+        vector_field_actor = actors_dict["vector_field_actor"]
 
         # scaling factor for an arrow - ArrowLength indicates scaling factor not actual length
-        arrowScalingFactor = mdata.get('ArrowLength', default=1.0)
+        arrowScalingFactor = mdata.get("ArrowLength", default=1.0)
 
-        if mdata.get('FixedArrowColorOn', default=False):
+        if mdata.get("FixedArrowColorOn", default=False):
             glyphs.SetScaleModeToScaleByVector()
 
             dataScalingFactor = max(abs(min_magnitude), abs(max_magnitude))
@@ -575,7 +789,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
             glyphs.SetScaleFactor(arrowScalingFactor / dataScalingFactor)
 
             # coloring arrows
-            arrow_color = to_vtk_rgb(mdata.get('ArrowColor', data_type='color'))
+            arrow_color = to_vtk_rgb(mdata.get("ArrowColor", data_type="color"))
             vector_field_actor.GetProperty().SetColor(arrow_color)
 
         else:
@@ -589,7 +803,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         vector_field_actor.SetMapper(self.glyphsMapper)
 
-        self.init_min_max_actor(min_max_actor=actors_dict['min_max_text_actor'], range_array=range_array)
+        self.init_min_max_actor(min_max_actor=actors_dict["min_max_text_actor"], range_array=range_array)
 
         if hex_flag:
             vector_field_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
@@ -620,7 +834,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         outline_mapper = vtk.vtkPolyDataMapper()
         outline_mapper.SetInputConnection(outline.GetOutputPort())
 
-        outline_actor = actors_dict['outline_actor']
+        outline_actor = actors_dict["outline_actor"]
 
         outline_actor.SetMapper(outline_mapper)
 
@@ -629,7 +843,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if self.is_lattice_hex(drawing_params=drawing_params):
             outline_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
 
-        outline_color = to_vtk_rgb(mdata.get('BoundingBoxColor', data_type='color'))
+        outline_color = to_vtk_rgb(mdata.get("BoundingBoxColor", data_type="color"))
         outline_actor.GetProperty().SetColor(*outline_color)
 
     def init_axes_actors(self, actor_specs, drawing_params=None):
@@ -644,8 +858,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
 
-        axes_actor = actors_dict['axes_actor']
-        axes_color = to_vtk_rgb(mdata.get('AxesColor', data_type='color'))
+        axes_actor = actors_dict["axes_actor"]
+        axes_color = to_vtk_rgb(mdata.get("AxesColor", data_type="color"))
 
         tprop = vtk.vtkTextProperty()
         tprop.SetColor(axes_color)
@@ -656,8 +870,9 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # lattice_type_str = self.get_lattice_type_str()
         # if lattice_type_str.lower() == 'hexagonal':
         if self.is_lattice_hex(drawing_params=drawing_params):
-            axes_actor.SetBounds(0, field_dim.x, 0, field_dim.y * math.sqrt(3.0) / 2.0, 0,
-                                 field_dim.z * math.sqrt(6.0) / 3.0)
+            axes_actor.SetBounds(
+                0, field_dim.x, 0, field_dim.y * math.sqrt(3.0) / 2.0, 0, field_dim.z * math.sqrt(6.0) / 3.0
+            )
         else:
             axes_actor.SetBounds(0, field_dim.x, 0, field_dim.y, 0, field_dim.z)
 
@@ -685,7 +900,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         fpp_plugin = CompuCell.getFocalPointPlasticityPlugin()
         if not fpp_plugin:
-            print('    fppPlugin is null, returning')
+            print("    fppPlugin is null, returning")
             return
 
         actors_dict = actor_specs.actors_dict
@@ -696,7 +911,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         try:
             inventory = self.currentDrawingParameters.bsd.sim.getPotts().getCellInventory()
         except AttributeError:
-            raise AttributeError('Could not access Potts object')
+            raise AttributeError("Could not access Potts object")
 
         cell_list = CellList(inventory)
 
@@ -713,20 +928,20 @@ class MVCDrawModel3D(MVCDrawModelBase):
             mid_com = np.array([cell.xCOM, cell.yCOM, cell.zCOM], dtype=float)
 
             for fppd in InternalFocalPointPlasticityDataList(fpp_plugin, cell):
-                pt_counter = self.add_link(field_dim=field_dim,
-                                           fppd=fppd, mid_com=mid_com, pt_counter=pt_counter,
-                                           lines=lines, points=points)
+                pt_counter = self.add_link(
+                    field_dim=field_dim, fppd=fppd, mid_com=mid_com, pt_counter=pt_counter, lines=lines, points=points
+                )
 
             for fppd in FocalPointPlasticityDataList(fpp_plugin, cell):
-                pt_counter = self.add_link(field_dim=field_dim,
-                                           fppd=fppd, mid_com=mid_com, pt_counter=pt_counter, lines=lines,
-                                           points=points)
+                pt_counter = self.add_link(
+                    field_dim=field_dim, fppd=fppd, mid_com=mid_com, pt_counter=pt_counter, lines=lines, points=points
+                )
 
         fpp_links_pd = vtk.vtkPolyData()
         fpp_links_pd.SetPoints(points)
         fpp_links_pd.SetLines(lines)
 
-        fpp_links_actor = actors_dict['fpp_links_actor']
+        fpp_links_actor = actors_dict["fpp_links_actor"]
 
         if VTK_MAJOR_VERSION >= 6:
             self.FPPLinksMapper.SetInputData(fpp_links_pd)
@@ -735,7 +950,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
             self.FPPLinksMapper.SetInput(fpp_links_pd)
 
         fpp_links_actor.SetMapper(self.FPPLinksMapper)
-        fpp_links_color = to_vtk_rgb(mdata.get('FPPLinksColor', data_type='color'))
+        fpp_links_color = to_vtk_rgb(mdata.get("FPPLinksColor", data_type="color"))
 
         # coloring borders
         fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
@@ -763,9 +978,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
             # if naive distance is different than invariant distance then we are dealing with link that is wrapped
             # if naive_actual_dist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
             # we are drawing links that currently stick out of the lattice.
-            inv_dist_vec = self.invariant_distance_vector(p1=mid_com,
-                                                          p2=n_mid_com,
-                                                          dim=field_dim)
+            inv_dist_vec = self.invariant_distance_vector(p1=mid_com, p2=n_mid_com, dim=field_dim)
 
             # inv_dist_vec = self.unconditional_invariant_distance_vector(p1=mid_com,
             #                                                             p2=n_mid_com,
