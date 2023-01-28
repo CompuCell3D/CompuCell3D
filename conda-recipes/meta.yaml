@@ -41,6 +41,7 @@ requirements:
     - swig=3
     - psutil
     - deprecated
+    - cc3d-network-solvers>=0.0.2
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
@@ -59,13 +60,25 @@ requirements:
     - eigen
     - tbb-devel=2021
     - boost=1.78
-    - cmake>=3.14
-    - swig=3
+    - swig=4
     - psutil
     - deprecated
+    - scipy
+    - pandas
+    - jinja2
+    - deprecated
+    - psutil
+    - cmake=3.19
+    - cc3d-network-solvers>=0.0.2
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
+    - simservice
+    - notebook
+    - ipywidgets
+    - ipyvtklink
+    - sphinx
+    - graphviz
 
 
   run_constrained:

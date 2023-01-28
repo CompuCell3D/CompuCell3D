@@ -199,9 +199,9 @@ class CC3DBatchRenderer:
 
         # Validate inputs
         assert len(lds_files) == len(output_dirs)
-        assert any([not os.path.isfile(f) for f in lds_files])
-        assert any([not os.path.isfile(f) for f in screenshot_spec])
-        assert any([not os.path.isdir(d) for d in output_dirs])
+        assert not any([not os.path.isfile(f) for f in lds_files])
+        assert not any([not os.path.isfile(f) for f in screenshot_spec])
+        assert not any([not os.path.isdir(d) for d in output_dirs])
 
         self.lds_files = lds_files
         self.output_dirs = output_dirs
@@ -235,7 +235,7 @@ class CC3DBatchRenderer:
             self._put_with_wait(tasks, _RenderDataJob(self.lds_files[r],
                                                       self.screenshot_spec[r],
                                                       self.output_dirs[r],
-                                                      self.manipulators[r]))
+                                                      self.manipulators[r] if self.manipulators is not None else None))
 
         # Add a stop task for each of worker
         [self._put_with_wait(tasks, None) for _ in workers]
@@ -245,7 +245,7 @@ class CC3DBatchRenderer:
 
 class _RenderDataJob:
     def __init__(self, _lds_file: str, _screenshot_spec: str, _output_dir: str, _manipulator):
-        assert any([not os.path.isfile(x) for x in [_lds_file, _screenshot_spec]])
+        assert not any([not os.path.isfile(x) for x in [_lds_file, _screenshot_spec]])
         assert os.path.isdir(_output_dir)
 
         self._lds_file = _lds_file

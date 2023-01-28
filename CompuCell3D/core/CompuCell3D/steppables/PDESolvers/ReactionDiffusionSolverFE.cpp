@@ -338,6 +338,25 @@ void ReactionDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ReactionDiffusionSolverFE::init_cell_type_and_id_arrays() {
+    Point3D pt;
+    for (pt.z = 0; pt.z < fieldDim.z; ++pt.z)
+        for (pt.y = 0; pt.y < fieldDim.y; ++pt.y)
+            for (pt.x = 0; pt.x < fieldDim.x; ++pt.x) {
+                CellG * cell = cellFieldG->getQuick(pt);
+                if (cell) {
+                    h_celltype_field->set(pt, cell->type);
+                    h_cellid_field->set(pt, cell->id);
+                } else {
+                    h_celltype_field->set(pt, 0);
+                    h_cellid_field->set(pt, 0);
+                }
+            }
+
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ReactionDiffusionSolverFE::boundaryConditionIndicatorInit() {
 
     // bool detailedBCFlag=bcSpecFlagVec[idx];
@@ -726,6 +745,8 @@ void ReactionDiffusionSolverFE::prepCellTypeField(int idx) {
 void ReactionDiffusionSolverFE::step(const unsigned int _currentStep) {
 
     if (fluctuationCompensator) fluctuationCompensator->applyCorrections();
+
+    init_cell_type_and_id_arrays();
 
     if (scaleSecretion) {
         for (int callIdx = 0; callIdx < maxNumberOfDiffusionCalls; ++callIdx) {
