@@ -412,17 +412,15 @@ namespace swig{
     %pythoncode %{
         def get_dict(self):
             return getLinkPyAttrib(self)
-        
+
         def set_dict(self, _dict):
             raise AttributeError('ASSIGNMENT link.dict=%s is illegal. Dictionary "dict" can only be modified but not replaced'%(_dict))
-        
-        __swig_setmethods__["dict"] = set_dict
-        __swig_getmethods__["dict"] = get_dict
-        if _newclass: dict = property(get_dict, set_dict)
+
+        dict = property(get_dict, set_dict)
 
         __sbml__ = '__sbml__'
 
-        def setsbml(self, sbml) :		
+        def setsbml(self, sbml) :
             raise AttributeError('ASSIGNMENT link.sbml = %s is illegal. '
                                 '"sbml" attribute can only be modified but not replaced' % (sbml))
 
@@ -437,9 +435,7 @@ namespace swig{
                     return link_dict[FocalPointPlasticityLinkBase.__sbml__][item]
             return LinkSBMLFetcher()
 
-        __swig_getmethods__["sbml"] = getsbml
-        __swig_setmethods__["sbml"] = setsbml
-        if _newclass : sbml = property(getsbml, setsbml)
+        sbml = property(getsbml, setsbml)
     %}
 }
 
