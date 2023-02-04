@@ -80,11 +80,22 @@ SWIG_LINK_LIBRARIES(SerializerDEPy ${LIBS_SWIG})
 target_link_directories(SerializerDEPy PUBLIC ${Python_LIBRARY_DIRS})
 
 set_target_properties(SerializerDEPy PROPERTIES LINK_FLAGS ${undefined_link_flags})
-set_property(TARGET SerializerDEPy PROPERTY SWIG_INCLUDE_DIRECTORIES
-    ${PYTHON_INCLUDE_PATH}
+# set_property(TARGET SerializerDEPy PROPERTY SWIG_INCLUDE_DIRECTORIES
+#     # ${PYTHON_INCLUDE_PATH}
+#     ${PYTHON_DIRS_TO_INCLUDE}
+#     ${VTK_INCLUDE_DIRS}
+#     $<TARGET_PROPERTY:SerializerDE,INCLUDE_DIRECTORIES>
+# )
+
+target_include_directories(SerializerDEPy PUBLIC
+    ${PYTHON_DIRS_TO_INCLUDE}
     ${VTK_INCLUDE_DIRS}
     $<TARGET_PROPERTY:SerializerDE,INCLUDE_DIRECTORIES>
 )
+
+#message("ppy include path ",  ${PYTHON_INCLUDE_PATH})
+
+#message("ppy include path ",  ${PYTHON_DIRS_TO_INCLUDE})
 
 if (APPLE)
 
