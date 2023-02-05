@@ -26,9 +26,9 @@ endif()
 if (${VTK_MAJOR_VERSION} EQUAL "9")
 #    SET(VTK_LIBS vtkRenderingVolume vtkInteractionStyle  vtkIOLegacy)
     find_package(VTK COMPONENTS
-            vtkRenderingVolume vtkInteractionStyle  vtkIOLegacy
+            RenderingVolume InteractionStyle  IOLegacy
             )
-    include(${VTK_USE_FILE})
+    #include(${VTK_USE_FILE})
     SET(VTK_LIBS ${VTK_LIBRARIES})
 endif()
 
@@ -115,7 +115,7 @@ target_include_directories(PlayerPythonNew PUBLIC
 )
 
 SWIG_LINK_LIBRARIES(PlayerPythonNew ${LIBS_SWIG})
-target_link_directories(PlayerPythonNew PUBLIC ${Python_LIBRARY_DIRS})
+target_link_directories(PlayerPythonNew PUBLIC ${Python3_LIBRARY_DIRS})
 
 if (APPLE)
 

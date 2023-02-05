@@ -84,21 +84,22 @@ OPTION(FLEX_PYTHON_SPECS "Allow Flexible Python Path specification" OFF)
 #
 #endif()
 
-find_package(Python REQUIRED COMPONENTS Interpreter Development NumPy)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development NumPy)
 
 
-message("Python_FOUND: ${Python_FOUND}")
-message("Python_Interpreter_FOUND: ${Python_Interpreter_FOUND}")
-message("Python_VERSION: ${Python_VERSION}")
-message("Python_Development_FOUND: ${Python_Development_FOUND}")
-message("Python_EXECUTABLE: ${Python_EXECUTABLE}")
+message("Python3_FOUND: ${Python3_FOUND}")
+message("Python3_Interpreter_FOUND: ${Python3_Interpreter_FOUND}")
+message("Python3_VERSION: ${Python3_VERSION}")
+message("Python3_Development_FOUND: ${Python3_Development_FOUND}")
+message("Python3_EXECUTABLE: ${Python3_EXECUTABLE}")
 
-message("Python_Development_FOUND: ${Python_Development_FOUND}")
-message("Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
-message("Python_LIBRARIES: ${Python_LIBRARIES}")
-message("Python_LIBRARY_DIRS: ${Python_LIBRARY_DIRS}")
-message("Python_RUNTIME_LIBRARY_DIRS: ${Python_RUNTIME_LIBRARY_DIRS}")
-message("Python_NumPy_INCLUDE_DIRS: ${Python_NumPy_INCLUDE_DIRS}")
+message("Python3_Development_FOUND: ${Python3_Development_FOUND}")
+message("Python3_INCLUDE_DIRS: ${Python3_INCLUDE_DIRS}")
+message("Python3_LIBRARIES: ${Python3_LIBRARIES}")
+message("Python3_LIBRARY_RELEASE: ${Python3_LIBRARY_RELEASE}")
+message("Python3_LIBRARY_DIRS: ${Python3_LIBRARY_DIRS}")
+message("Python3_RUNTIME_LIBRARY_DIRS: ${Python3_RUNTIME_LIBRARY_DIRS}")
+message("Python3_NumPy_INCLUDE_DIRS: ${Python3_NumPy_INCLUDE_DIRS}")
 
 # Should we build shared libraries
 OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
@@ -108,8 +109,8 @@ SET(CC3D_PYTHON_MODULE_DIR ${CMAKE_SOURCE_DIR}/../)
 # setting up version
 
 set(COMPUCELL3D_MAJOR_VERSION 4)
-set(COMPUCELL3D_MINOR_VERSION 3)
-set(COMPUCELL3D_BUILD_VERSION 2)
+set(COMPUCELL3D_MINOR_VERSION 4)
+set(COMPUCELL3D_BUILD_VERSION 0)
 set(COMPUCELL3D_REV_NUMBER 20220717)
 
 ## Specify a version for all libs to use
@@ -188,7 +189,7 @@ if(BUILD_STANDALONE)
     set(COMPUCELL3D_INSTALL_SCRIPT_DIR_FULL_PATH ${CMAKE_INSTALL_PREFIX})
     set(COMPUCELL3D_INSTALL_SCRIPT_DIR .)
 else()
-    file(RELATIVE_PATH SITE_PACKAGES_INSTALL_REL ${CMAKE_INSTALL_PREFIX} ${Python_SITELIB})
+    file(RELATIVE_PATH SITE_PACKAGES_INSTALL_REL ${CMAKE_INSTALL_PREFIX} ${Python3_SITELIB})
     set(COMPUCELL3D_INSTALL_SCRIPT_DIR_FULL_PATH ${CMAKE_INSTALL_PREFIX}/bin)
     file(RELATIVE_PATH COMPUCELL3D_INSTALL_SCRIPT_DIR ${CMAKE_INSTALL_PREFIX} ${COMPUCELL3D_INSTALL_SCRIPT_DIR_FULL_PATH})
 endif()

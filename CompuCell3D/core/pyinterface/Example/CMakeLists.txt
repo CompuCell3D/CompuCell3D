@@ -4,10 +4,10 @@ SET(SRCS
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     ADD_LIBRARY(ExampleClass ${SRCS})
-    target_link_libraries(ExampleClass  ${PYTHON_LIBRARIES})
+    target_link_libraries(ExampleClass  ${Python3_LIBRARIES})
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     ADD_LIBRARY(ExampleClass ${SRCS})
-    target_link_libraries(ExampleClass  ${PYTHON_LIBRARIES})
+    target_link_libraries(ExampleClass  ${Python3_LIBRARIES})
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 INSTALL_TARGETS(/lib
@@ -17,7 +17,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 SET(LIBS
    ExampleClass
-   ${PYTHON_LIBRARIES}
+   ${Python3_LIBRARIES}
 
 )
 
@@ -25,7 +25,7 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 SET(LIBS
    ExampleClass
-   ${PYTHON_LIBRARIES}
+   ${Python3_LIBRARIES}
 
 )
 
@@ -34,7 +34,7 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 INCLUDE_DIRECTORIES(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${PYINTERFACE_SRC_DIR}/Example
-   ${PYTHON_INCLUDE_PATH}
+   ${Python3_INCLUDE_PATH}
 )
 
 SET_SOURCE_FILES_PROPERTIES(Example.i PROPERTIES CPLUSPLUS ON)
