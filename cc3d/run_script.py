@@ -13,7 +13,7 @@ from cc3d.core.RollbackImporter import RollbackImporter
 -i d:\CC3DProjects\bac_mac_restart_100\bacterium_macrophage_2D_steering.cc3d -f 10 -fr 100 --restart-multiple-snapshots
 """
 
-def process_cml():
+def process_cml(known_args=None):
     """
 
     :return:
@@ -59,7 +59,7 @@ def process_cml():
                             help='optional argument that specifies if log should be saved to a file')
 
 
-    return cml_parser.parse_args()
+    return cml_parser.parse_args(args=known_args)
 
 
 def handle_error():
@@ -82,9 +82,9 @@ def handle_error():
         # simthread.emitErrorOccured('Python Error', tb)
         simthread.emitErrorFormatted(traceback_text)
 
-
-if __name__ == '__main__':
-    args = process_cml()
+def main(args:argparse.Namespace=None):
+    if not args:
+        args = process_cml()
 
     print(cc3d.get_formatted_version_info())
 
@@ -118,3 +118,7 @@ if __name__ == '__main__':
     run_cc3d_project(cc3d_sim_fname=cc3d_sim_fname_abs)
 
     rollbackImporter.uninstall()
+
+
+if __name__ == '__main__':
+    main()
