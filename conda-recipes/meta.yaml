@@ -2,7 +2,8 @@
 # when building as standalone package uncomment line below and set version and build_number to proper values
 {% set version = "4.5.0" %}
 {% set build_number = "0" %}
-
+{% set numpy_version = "1.21" %}
+{% set cc3d_network_solvers_version = "0.3.0" %}
 #{% set version = "4.3.0" %}
 #{% set build_number = "16" %}
 
@@ -32,16 +33,16 @@ build:
 requirements:
   host:
     - python {{ python }}
-    - numpy=1.21
+    - numpy={{ numpy_version }}
     - vtk=9.2
     - eigen
     - tbb-devel=2021
     - boost=1.78
     - cmake>=3.14
-    - swig=3
+    - swig>=4
     - psutil
     - deprecated
-    - cc3d-network-solvers>=0.0.2
+    - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
@@ -55,12 +56,12 @@ requirements:
 
   run:
     - python {{ python }}
-    - numpy=1.21
+    - numpy={{ numpy_version }}
     - vtk=9.2
     - eigen
     - tbb-devel=2021
     - boost=1.78
-    - swig=4
+    - swig>=4
     - psutil
     - deprecated
     - scipy
@@ -69,7 +70,7 @@ requirements:
     - deprecated
     - psutil
     - cmake=3.19
-    - cc3d-network-solvers>=0.0.2
+    - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
