@@ -24,7 +24,14 @@ if not os.path.isfile(run_script):
 
 # If something goes wrong in a test, then this file is created during post-processing
 # We'll use it as a signal to signal failure
-fail_file = os.path.join(test_dir, 'cc3d_simulation_tests.txt')
+# cc3d_simulation_tests.txt - reports non-zero exit code but ignores regression errors
+# we will need to address non-zero exit codes as well but for now lets focus on regression errors
+# fail_file = os.path.join(test_dir, 'cc3d_simulation_tests.txt')
+
+# test_regression_errors.csv - reports actual regression testing errors
+fail_file = os.path.join(test_dir, 'test_regression_errors.csv')
+
+
 
 
 def main():
