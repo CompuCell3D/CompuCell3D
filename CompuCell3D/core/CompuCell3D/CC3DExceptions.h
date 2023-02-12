@@ -15,7 +15,7 @@ namespace CompuCell3D {
 
         std::string message;
         std::string filename;
-        CC3DException *cause;
+        CC3DException *cause=nullptr;
 
     public:
 
@@ -38,7 +38,12 @@ namespace CompuCell3D {
         CC3DException(const CC3DException &other) : message(other.message), filename(other.filename),
                                                     cause(other.cause) {}
 
-        virtual ~CC3DException() {}
+        virtual ~CC3DException() {
+            if (this->cause){
+                delete this->cause;
+                this->cause = nullptr;
+            }
+        }
 
         const std::string getMessage() const { return message; }
 
