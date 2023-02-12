@@ -142,7 +142,7 @@ namespace CompuCell3D {
 
         BoundaryStrategy *getBoundaryStrategy();
 
-        void registerSteerableObject(SteerableObject *);
+        void registerSteerableObject(SteerableObject *) throw(CC3DException);
 
         void unregisterSteerableObject(const std::string &);
 
@@ -196,12 +196,12 @@ namespace CompuCell3D {
         virtual void serialize();
 
         // Begin Steppable interface
-        virtual void start();
+        virtual void start() throw(CC3DException);
 
-        virtual void extraInit();///initialize plugins after all steppables have been initialized
-        virtual void step(const unsigned int currentStep);
+        virtual void extraInit() throw(CC3DException);///initialize plugins after all steppables have been initialized
+		virtual void step(const unsigned int currentStep) throw(CC3DException);
 
-        virtual void finish();
+        virtual void finish() throw(CC3DException);
         // End Steppable interface
 
         //these two functions are necessary to implement proper cleanup after the simulation
@@ -213,11 +213,11 @@ namespace CompuCell3D {
         void unloadModules();
 
 
-        void initializePottsCC3D(CC3DXMLElement *_xmlData);
+        void initializePottsCC3D(CC3DXMLElement *_xmlData) throw(CC3DException);
 
         void processMetadataCC3D(CC3DXMLElement *_xmlData);
 
-        void initializeCC3D();
+        void initializeCC3D() throw(CC3DException);
 
         void setPottsParseData(PottsParseData *_ppdPtr) { ppdPtr = _ppdPtr; }
 
