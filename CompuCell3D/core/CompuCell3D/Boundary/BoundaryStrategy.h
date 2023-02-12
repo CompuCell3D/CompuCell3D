@@ -137,7 +137,7 @@ namespace CompuCell3D {
         }
 
         static void destroy() {
-			CC3D_Log(LOG_DEBUG) << "destroy fcn: destroying bondary strategy";
+			CC3D_Log(LOG_DEBUG) << "destroy fcn: destroying boundary strategy";
             if (singleton)
 			{
 				CC3D_Log(LOG_DEBUG) << "will destroy boundary strategy singleton = " << singleton;
@@ -148,7 +148,7 @@ namespace CompuCell3D {
             }
             else
             {
-                CC3D_Log(LOG_DEBUG) << "BoundaryStrategy singleton WAS NOT DeSTROYED BECAUSE IT IS DEAD!";
+                CC3D_Log(LOG_DEBUG) << "BoundaryStrategy singleton WAS NOT DESTROYED BECAUSE IT IS DEAD!";
             }
 
         }
