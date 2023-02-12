@@ -22,7 +22,9 @@ from cc3d.CompuCellSetup.cluster_utils import check_nanohub_and_count
 import warnings
 
 # default setting
-CompuCell.Logger.enableConsoleLogging(CompuCell.LOG_INFORMATION)
+logger = CompuCell.CC3DLogger.get()
+logger.enableConsoleLogging(CompuCell.LOG_INFORMATION)
+
 
 # -------------------- legacy API emulation ----------------------------------------
 def getCoreSimulationObjects():
@@ -67,16 +69,18 @@ def setup_logging():
             warnings.warn(f"unsupported log level name: {log_level}. "
                           f"Run command line with --help arg to see what are allowed log level names")
             return
-        CompuCell.Logger.enableConsoleLogging(log_level_val)
+        logger = CompuCell.CC3DLogger.get()
+        logger.enableConsoleLogging(log_level_val)
         if pg.log_to_file:
             if pg.output_directory is not None:
                 if not Path(pg.output_directory).exists():
                     pg.create_output_dir()
-                CompuCell.Logger.enableFileLogging(str(
+                logger.enableFileLogging(str(
                     Path(pg.output_directory).joinpath("simulation.log")), log_level_val)
+
         else:
             if pg.output_directory is not None:
-                CompuCell.Logger.disableFileLogging()
+                logger.disableFileLogging()
 
 
 def initialize_cc3d():
