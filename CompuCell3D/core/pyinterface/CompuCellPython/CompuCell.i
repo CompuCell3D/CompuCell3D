@@ -66,6 +66,7 @@
 #include <CompuCell3D/ClassRegistry.h>
 #include <CompuCell3D/CC3DEvents.h>
 #include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/CC3DExceptions.h>
 
 #include <CompuCell3D/PluginManager.h>
 #include <CompuCell3D/Potts3D/CellInventoryWatcher.h>
@@ -150,8 +151,19 @@ using namespace CompuCell3D;
   try {
     $action
   } catch (const std::exception& e) {
-    SWIG_exception(SWIG_RuntimeError, e.what());
+      SWIG_exception(SWIG_RuntimeError, e.what());
   }
+  catch (const CompuCell3D::CC3DException& e){
+      std::string msg = "CC3DException in " + e.getFilename() + ": " + e.getMessage();
+      PyErr_SetString(PyExc_RuntimeError, msg.c_str());
+      SWIG_fail;
+
+//      cerr<<"CAUGHT CC3DEXCEPTION"<<msg<<endl;
+//      SWIG_exception(SWIG_RuntimeError, msg.c_str());
+  }
+//  catch (...){
+//      SWIG_exception(SWIG_RuntimeError, "Unknown exception in C++ code");
+//  }
 }
 ////todo - numpy
 %include "swig_includes/numpy.i"
@@ -180,7 +192,7 @@ using namespace CompuCell3D;
 
 //have to include all  export definitions for modules which are arapped to avoid problems with interpreting by swig win32 specific c++ extensions...
 #define COMPUCELLLIB_EXPORT
-
+#define LOGGER_EXPORT
 //#define BABYSIMLIB_EXPORT
 
 #define BOUNDARYSHARED_EXPORT
@@ -250,7 +262,7 @@ using namespace CompuCell3D;
 %include "Logger/CC3DLogger.h"
 %include "Field3D/Point3D.h"
 %include "Field3D/Dim3D.h"
-
+%include "CompuCell3D/CC3DExceptions.h"
 
 %extend CompuCell3D::Point3D{
   std::string __str__(){
