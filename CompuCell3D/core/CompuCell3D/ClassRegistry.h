@@ -11,6 +11,7 @@
 
 namespace CompuCell3D {
     class Simulator;
+	class CC3DException;
 
 
     class COMPUCELLLIB_EXPORT ClassRegistry
@@ -36,7 +37,7 @@ namespace CompuCell3D {
 
     ClassRegistry() {}
 
-    Steppable *getStepper(std::string id);
+    Steppable *getStepper(std::string id) throw(CC3DException);
 
     void addStepper(std::string _type, Steppable *_steppable);
 
