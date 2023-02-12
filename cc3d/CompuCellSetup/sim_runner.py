@@ -3,8 +3,8 @@ import sys
 from os.path import *
 from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.readers import readCC3DFile
-from cc3d.CompuCellSetup.simulation_utils import CC3DCPlusPlusError
-
+from cc3d.CompuCellSetup.simulation_utils import CC3DCPlusPlusError, check_for_cpp_errors
+from cc3d.cpp.CompuCell import CC3DException
 
 def handle_error(exception_obj):
     """
@@ -77,12 +77,23 @@ def run_cc3d_project(cc3d_sim_fname):
         if code is not None:
             try:
                 exec(code, globals(), locals())
-                # exec(sim_fh.read())
-                # exec(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
 
             except CC3DCPlusPlusError as e:
                 # handling C++ error
                 handle_error(e)
+            except CC3DException as e:
+                print(f"ERROR in C++ code - {e.getFilename()} : {e.getMessage()}")
+                handle_error(e)
+
+                # we will exit with code 1 only in the non-player mode
+                if not CompuCellSetup.persistent_globals.player_type:
+                    sys.exit(1)
             except Exception as e:
+                if str(e).startswith("Unknown exception"):
+                    print("Likely exception from C++ function that was not marked to throw an exception")
                 traceback.print_exc(file=sys.stdout)
                 handle_error(e)
+
+                # we will exit with code 1 only in the non-player mode
+                if not CompuCellSetup.persistent_globals.player_type:
+                    sys.exit(1)
