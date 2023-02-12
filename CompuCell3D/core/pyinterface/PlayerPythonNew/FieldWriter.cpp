@@ -34,14 +34,13 @@ FieldWriter::FieldWriter():fsPtr(0),potts(0),sim(0),latticeData(0)
 }
 ////////////////////////////////////////////////////////////////////////////////
 FieldWriter::~FieldWriter(){
-    cerr<<"CALLING FieldWriter::~FieldWriter()"<<endl;
 	if (latticeData){
 		latticeData->Delete();
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////
 void FieldWriter::init(Simulator * _sim){
-    cerr<<"init field writer"<<endl;
+
 	sim=_sim;
 	if (!sim) {
 		cout << "FieldWriter::init():  sim is null" << endl;
@@ -53,7 +52,6 @@ void FieldWriter::init(Simulator * _sim){
 		exit(-1);
 	}
     latticeData=vtkStructuredPoints::New();
-    cerr<<"after latticeData=vtkStructuredPoints::New()"<<endl;
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim();
 
