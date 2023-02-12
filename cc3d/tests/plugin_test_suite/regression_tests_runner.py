@@ -90,7 +90,7 @@ def main():
     os.environ['CC3D_TEST_OUTPUT_DIR'] = rs.test_output_root
     os.environ['CC3D_TEST_OUTPUT_SUMMARY'] = join(rs.test_output_root, 'test_summary.csv')
 
-    cc3d_simulation_tests_output_summary = Path(rs.test_output_root).joinpath('cc3d_simulation_tests.csv')
+    errors_summary_path = Path(rs.test_output_root).joinpath('regression_test_errors.csv')
 
     for i, cc3d_project in enumerate(simulations_to_run):
 
@@ -111,14 +111,12 @@ def main():
             )
 
             cc3d_simulation_tests_output_summary_df = pd.DataFrame()
-            if cc3d_simulation_tests_output_summary.exists():
-                cc3d_simulation_tests_output_summary_df = pd.read_csv(cc3d_simulation_tests_output_summary)
+            if errors_summary_path.exists():
+                cc3d_simulation_tests_output_summary_df = pd.read_csv(errors_summary_path)
 
             cc3d_simulation_tests_output_summary_df = cc3d_simulation_tests_output_summary_df.append(error_df)
-            cc3d_simulation_tests_output_summary_df.to_csv(cc3d_simulation_tests_output_summary, index=False)
+            cc3d_simulation_tests_output_summary_df.to_csv(errors_summary_path, index=False)
 
-            # with open(cc3d_simulation_tests_output_summary, 'a') as fout:
-            #     fout.write('{}\n'.format(error_tuple))
 
     if not len(error_runs):
         print('\n-----------------ALL SIMULATIONS RUN SUCCESSFULLY----------------------\n')
