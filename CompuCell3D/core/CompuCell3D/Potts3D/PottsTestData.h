@@ -9,6 +9,7 @@
 
 namespace CompuCell3D {
 
+	class CC3DException;
     class PottsTestDataHeaderSpecs {
     public:
         std::vector <std::string> columns;
@@ -46,7 +47,7 @@ namespace CompuCell3D {
 
         std::vector <std::string> split_string(std::string str_to_plit, char delimiter);
 
-        bool compare_potts_data(PottsTestData &potts_data_to_compare);
+        bool compare_potts_data(PottsTestData &potts_data_to_compare) throw(CC3DException);
 
         double relative_difference(double x, double y);
 
