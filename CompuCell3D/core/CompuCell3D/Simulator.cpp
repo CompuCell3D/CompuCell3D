@@ -75,6 +75,7 @@ Simulator::~Simulator() {
     delete pUtilsSingle;
 	CC3D_Log(LOG_DEBUG) << "Simulator: extra destroy for boundary strategy";
     BoundaryStrategy::destroy();
+	CC3DLogger::destroy();
 
 #ifdef QT_WRAPPERS_AVAILABLE
     //restoring original cerr stream buffer
@@ -407,7 +408,7 @@ void Simulator::finish() {
 
     } catch (const CC3DException &e) {
         CC3D_Log(LOG_DEBUG) << "ERROR: " << e;
-        CC3D_Log(LOG_DEBUG) << "THIS IS recentErrorMessage="<<formatErrorMessage(e);
+        CC3D_Log(LOG_DEBUG) << "Recent Error Message="<<formatErrorMessage(e);
         if (!newPlayerFlag) {
             throw e;
         }
