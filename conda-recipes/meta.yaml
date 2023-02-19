@@ -1,11 +1,40 @@
 # add better version handling to meta.yaml
 # when building as standalone package uncomment line below and set version and build_number to proper values
-{% set version = "4.5.0" %}
-{% set build_number = "0" %}
-{% set numpy_version = "1.21" %}
-{% set cc3d_network_solvers_version = "0.3.0" %}
-#{% set version = "4.3.0" %}
-#{% set build_number = "16" %}
+#{% set data = load_file_data('versions.yaml') %}
+
+{% set version = environ.get('version') %}
+{% set build_number = environ.get('build_number',0) %}
+{% set numpy_version = environ.get('numpy_version') %}
+{% set cc3d_network_solvers_version = environ.get('cc3d_network_solvers_version') %}
+{% set cmake_version = environ.get('cmake_version') %}
+{% set vtk_version = environ.get('vtk_version') %}
+{% set swig_version = environ.get('swig_version') %}
+{% set boost_version = environ.get('boost_version') %}
+{% set tbb_devel_version = environ.get('tbb_devel_version') %}
+
+#{% set version = data.get('version') %}
+#{% set build_number = data.get('build_number',0) %}
+#{% set numpy_version = data.get('numpy_version') %}
+#{% set cc3d_network_solvers_version = data.get('cc3d_network_solvers_version') %}
+#{% set cmake_version = data.get('cmake_version') %}
+#{% set vtk_version = data.get('vtk_version') %}
+#{% set swig_version = data.get('swig_version') %}
+#{% set boost_version = data.get('boost_version') %}
+#{% set tbb_devel_version = data.get('tbb_devel_version') %}
+
+
+#{% set version =  environ.get('VERSION', '4.1.1') %}
+##{% set version = "4.5.0" %}
+#{% set build_number = 0 %}
+#{% set numpy_version = "1.21" %}
+#{% set cc3d_network_solvers_version = "0.3.0" %}
+#{% set cmake_version = "3.21" %}
+#{% set vtk_version = "9.2" %}
+#{% set swig_version = "4" %}
+#{% set boost_version = "1.78" %}
+#{% set tbb_devel_version = "2021" %}
+##{% set version = "4.3.0" %}
+##{% set build_number = "16" %}
 
 package:
   name: cc3d
@@ -34,12 +63,12 @@ requirements:
   host:
     - python {{ python }}
     - numpy={{ numpy_version }}
-    - vtk=9.2
+    - vtk={{ vtk_version }}
     - eigen
-    - tbb-devel=2021
-    - boost=1.78
-    - cmake>=3.14
-    - swig>=4
+    - tbb-devel={{ tbb_devel_version }}
+    - boost={{ boost_version }}
+    - cmake>={{ cmake_version }}
+    - swig>={{ swig_version }}
     - psutil
     - deprecated
     - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
@@ -48,8 +77,8 @@ requirements:
     - {{ openmp }} # [osx]
 
   build:
-    - cmake>=3.14
-    - swig=3
+    - cmake>={{ cmake_version }}
+    - swig>={{ swig_version }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
@@ -57,11 +86,11 @@ requirements:
   run:
     - python {{ python }}
     - numpy={{ numpy_version }}
-    - vtk=9.2
+    - vtk={{ vtk_version }}
     - eigen
-    - tbb-devel=2021
-    - boost=1.78
-    - swig>=4
+    - tbb-devel={{ tbb_devel_version }}
+    - boost={{ boost_version }}
+    - swig>={{ swig_version }}
     - psutil
     - deprecated
     - scipy
@@ -69,7 +98,7 @@ requirements:
     - jinja2
     - deprecated
     - psutil
-    - cmake=3.19
+    - cmake>={{ cmake_version }}
     - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
@@ -83,7 +112,7 @@ requirements:
 
 
   run_constrained:
-    - tbb=2021
+    - tbb={{ tbb_devel_version }}
 
 # on windows we can run conda
 #  build . -c conda-forge -c compucell3d to force conda to use
