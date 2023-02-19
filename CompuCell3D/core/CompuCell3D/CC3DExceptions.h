@@ -38,6 +38,11 @@ namespace CompuCell3D {
         CC3DException(const CC3DException &other) : message(other.message), filename(other.filename),
                                                     cause(other.cause) {}
 
+        // adding std::exception interface implementation
+        virtual const char* what() const noexcept {
+            return message.c_str();
+        }
+
         virtual ~CC3DException() {
             if (this->cause){
                 delete this->cause;

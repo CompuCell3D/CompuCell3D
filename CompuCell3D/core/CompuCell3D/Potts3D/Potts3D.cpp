@@ -177,7 +177,7 @@ void Potts3D::setNeighborOrder(unsigned int _neighborOrder) {
 }
 
 
-void Potts3D::createCellField(const Dim3D dim) {
+void Potts3D::createCellField(const Dim3D dim) throw(CompuCell3D::CC3DException){
 
     if (cellFieldG) throw CC3DException("createCellField() cell field G already created!");
     cellFieldG = new WatchableField3D<CellG *>(dim, 0); //added
@@ -319,7 +319,7 @@ void Potts3D::unregisterFixedStepper(FixedStepper *_fixedStepper) {
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-CellG *Potts3D::createCellG(const Point3D pt, long _clusterId) {
+CellG *Potts3D::createCellG(const Point3D pt, long _clusterId) throw(CompuCell3D::CC3DException){
     if (!cellFieldG->isValid(pt)) throw CC3DException("createCell() cellFieldG Point out of range!");
 
     CellG *cell = createCell(_clusterId);

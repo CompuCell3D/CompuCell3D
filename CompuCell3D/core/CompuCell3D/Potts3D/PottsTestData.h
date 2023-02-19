@@ -2,6 +2,7 @@
 #define POTTSTESTDATA_H
 
 #include <CompuCell3D/Field3D/Point3D.h>
+#include <CompuCell3D/CC3DExceptions.h>
 #include <string>
 #include <map>
 #include <vector>

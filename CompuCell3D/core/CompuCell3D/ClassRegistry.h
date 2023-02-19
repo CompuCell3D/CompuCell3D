@@ -2,6 +2,7 @@
 #define CLASSREGISTRY_H
 
 #include <CompuCell3D/CompuCellLibDLLSpecifier.h>
+#include <CompuCell3D/CC3DExceptions.h>
 #include "Steppable.h"
 
 #include <map>
@@ -11,7 +12,7 @@
 
 namespace CompuCell3D {
     class Simulator;
-	class CC3DException;
+
 
 
     class COMPUCELLLIB_EXPORT ClassRegistry
