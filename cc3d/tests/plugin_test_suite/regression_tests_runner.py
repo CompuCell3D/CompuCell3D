@@ -19,7 +19,7 @@ import pandas as pd
 
 def process_cml():
     cml_parser = argparse.ArgumentParser(description='Simulation Tester')
-    cml_parser.add_argument('--run-command', nargs='+', type=str, required=True,
+    cml_parser.add_argument('--run-command', nargs='+', type=str, required=False,
                             help='cc3d run script (either RunScript or compucell3d)')
     cml_parser.add_argument('--output-dir', required=True,
                             help='test output dir')
@@ -93,7 +93,7 @@ def main():
     errors_summary_path = Path(rs.test_output_root).joinpath('regression_test_errors.csv')
 
     for i, cc3d_project in enumerate(simulations_to_run):
-
+        print("rs.cc3d_project =", rs.cc3d_project )
         rs.cc3d_project = cc3d_project
         rs.test_output_dir = relpath(cc3d_project, cc3d_projects_common_prefix)
         run_executor = RunExecutor(run_specs=rs)
