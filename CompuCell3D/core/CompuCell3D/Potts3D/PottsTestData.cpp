@@ -138,29 +138,14 @@ PottsTestData::deserialize_single_potts_data(std::string line, PottsTestDataHead
 }
 
 std::vector <PottsTestData> PottsTestData::deserialize_potts_data_sequence(std::ifstream &infile) {
-    //ifstream infile(file_name);
     std::vector <PottsTestData> potts_test_data_vector;
     if (infile) {
 
         PottsTestDataHeaderSpecs potts_test_data_header_specs = deserialize_header(infile);
         std::string line;
-//        int i = 0;
         while (std::getline(infile, line)) {
             PottsTestData potts_test_data = deserialize_single_potts_data(line, potts_test_data_header_specs);
             potts_test_data_vector.push_back(potts_test_data);
-
-//            cerr<<"potts_test_data.energyFunctionNameToValueMap.size()="<<potts_test_data.energyFunctionNameToValueMap.size()<<endl;
-//
-//            cerr<<"potts_test_data.energyFunctionNameToValueMap[potts_test_data_header_specs.columns[9]]="<<potts_test_data.energyFunctionNameToValueMap[potts_test_data_header_specs.columns[9]]<<endl;
-//            cerr<<"potts_test_data.energyFunctionNameToValueMap[potts_test_data_header_specs.columns[10]]="<<potts_test_data.energyFunctionNameToValueMap[potts_test_data_header_specs.columns[10]]<<endl;
-//            for (const auto &kv: potts_test_data.energyFunctionNameToValueMap){
-//                cerr<<"deserialize"<<endl;
-//                cerr<<"kv.first="<<kv.first<<" kv.second="<<kv.second<<endl;
-//            }
-//            i++;
-//            if (i >10){
-//                break;
-//            }
         }
 
     }
@@ -218,127 +203,3 @@ bool PottsTestData::compare_potts_data(PottsTestData &potts_data_to_compare) thr
 }
 
 
-//bool PottsTestData::compare_potts_data(PottsTestData &potts_data_to_compare) throw(CompuCell3D::CC3DException){
-//
-//    double tol = 1e-6;
-//    if (changePixel != potts_data_to_compare.changePixel) throw CC3DException("change pixel is different ");
-//    if (changePixelNeighbor != potts_data_to_compare.changePixelNeighbor)
-//        throw CC3DException("change pixel neighbor is different ");
-//    if (using_connectivity != potts_data_to_compare.using_connectivity)
-//        throw CC3DException("using_connectivity is different ");
-//    if (connectivity_energy != potts_data_to_compare.connectivity_energy)
-//        throw CC3DException("connectivity_energy is different ");
-////    cerr<<"FRESH COMPARE"<<endl;
-////    cerr<<" potts_data_to_compare.energyFunctionNameToValueMap.size()"<< potts_data_to_compare.energyFunctionNameToValueMap.size()<<endl;
-////    cerr<<"energyFunctionNameToValueMap.size()="<<energyFunctionNameToValueMap.size()<<endl;
-//
-//
-//////    for (const auto &kv: energyFunctionNameToValueMap)
-////    map<int, int> my_map;
-////    my_map[0] = 0;
-////    my_map[1] = 1;
-////    cerr<<"my_map.size()="<<my_map.size()<<endl;
-////    int j = 0;
-////    for (const auto &kv: my_map){
-////        cerr<<"j="<<j<<endl;
-////        ++j;
-////
-////        cerr<<"f="<<kv.first<<" v="<<kv.second<<endl;
-////    }
-//    int i = 0;
-//    for (auto & mitr : energyFunctionNameToValueMap){
-////        cerr<<"i="<<i<<endl;
-////        ++i;
-//        const auto &mitr_computed = potts_data_to_compare.energyFunctionNameToValueMap.find(mitr.first);
-//        if (mitr_computed != potts_data_to_compare.energyFunctionNameToValueMap.end()){
-////            cerr<<"found mitr"<<endl;
-//            double difference_value = abs_difference(mitr.second, mitr_computed->second);
-////            cerr<<"difference_value="<<difference_value<<endl;
-//            if (difference_value > tol) {
-//                CC3D_Log(LOG_DEBUG) <<  "detected a difference in " << mitr.first << " recorded=" << mitr.second << " computed="
-//                                    << mitr_computed->second;
-//                CC3D_Log(LOG_DEBUG) << "difference_value=" << difference_value;
-//                throw CC3DException(string(mitr.first) + " energy term different ");
-//            }
-//        }else{
-////            cerr<<"DID NOT FIND MITR"<<endl;
-//            throw CC3DException(string(mitr.first) + " energy was not found in the computed energy container");
-//        }
-//    }
-//
-//    if (abs_difference(motility, potts_data_to_compare.motility) >= tol) {
-//        throw CC3DException("motility is different");
-//    }
-//
-//    if (abs_difference(acceptanceFunctionProbability, acceptanceFunctionProbability) >= 1e-4){
-//            throw CC3DException("acceptanceFunctionProbability is different");
-//    }
-//    return true;
-//
-//    for (auto & mitr : energyFunctionNameToValueMap)
-//    {
-//        cerr<<"i="<<i<<endl;
-//        ++i;
-//        if (i>energyFunctionNameToValueMap.size()) continue;
-//        cerr<<"FIRST check kv.first="<<mitr.first<<" kv.second="<<mitr.second<<endl;
-//        cerr<<"energyFunctionNameToValueMap.size()="<<energyFunctionNameToValueMap.size()<<endl;
-////        const auto &mitr_computed = potts_data_to_compare.energyFunctionNameToValueMap.find(mitr->first);
-////        if (mitr_computed != potts_data_to_compare.energyFunctionNameToValueMap.end()){
-////            cerr<<"first found"<<endl;
-////            double difference_value = abs_difference(mitr->second, mitr_computed->second);
-////            cerr<<"difference_value="<<difference_value<<endl;
-//////            if (difference_value > tol) {
-////////                CC3D_Log(LOG_DEBUG) <<  "detected a difference in " << kv.first << " recorded=" << kv.second << " computed="
-////////                                    << mitr_computed->second;
-////////                CC3D_Log(LOG_DEBUG) << "difference_value=" << difference_value;
-//////
-//////                throw CC3DException(string(kv.first) + " energy term different ");
-//////            }
-////        }else{
-////            cerr<<"first NOT found"<<endl;
-////        }
-//    }
-//
-////    for (const auto &kv: energyFunctionNameToValueMap) {
-////        const auto &mitr_computed = potts_data_to_compare.energyFunctionNameToValueMap.find(kv.first);
-//////        for (const auto &kv1: energyFunctionNameToValueMap){
-//////            cerr<<"kv1.first="<<kv1.first<<" kv1.second="<<kv1.second<<endl;
-//////        }
-////
-////        cerr<<"kv.first="<<kv.first<<" kv.second="<<kv.second<<endl;
-////        if (mitr_computed != potts_data_to_compare.energyFunctionNameToValueMap.end()) {
-////
-////            double difference_value = abs_difference(kv.second, mitr_computed->second);
-////
-////            if (difference_value > tol) {
-////                CC3D_Log(LOG_DEBUG) <<  "detected a difference in " << kv.first << " recorded=" << kv.second << " computed="
-////                     << mitr_computed->second;
-////                CC3D_Log(LOG_DEBUG) << "difference_value=" << difference_value;
-////
-////                throw CC3DException(string(kv.first) + " energy term different ");
-////            }
-////        } else {
-////            throw CC3DException(string(kv.first) + " energy was not found in the computed energy container");
-////        }
-////    }
-//
-////
-////    if (abs_difference(motility, potts_data_to_compare.motility) >= tol) {
-////        throw CC3DException("motility is different");
-////    }
-////
-////    if (abs_difference(acceptanceFunctionProbability, acceptanceFunctionProbability) >= 1e-4){
-////        cerr<<"computted acceptanceFunctionProbability="<<acceptanceFunctionProbability<<" potts_data_to_compare.acceptanceFunctionProbability="<<potts_data_to_compare.acceptanceFunctionProbability<<endl;
-////        cerr<<"difference="<<abs_difference(acceptanceFunctionProbability, potts_data_to_compare.acceptanceFunctionProbability)<<endl;
-////        cerr<<"difference check "<<(abs_difference(acceptanceFunctionProbability, potts_data_to_compare.acceptanceFunctionProbability) >= 1e-4)<<endl;
-////        if ((abs_difference(acceptanceFunctionProbability, potts_data_to_compare.acceptanceFunctionProbability) >= 1e-4)){
-////            cerr<<"DIFFERENCE IS GREATER that tolerance"<<endl;
-////            cerr<<"Another check acceptanceFunctionProbability="<<acceptanceFunctionProbability<<" potts_data_to_compare.acceptanceFunctionProbability="<<potts_data_to_compare.acceptanceFunctionProbability<<endl;
-////            cerr<<"another difference check "<<(abs_difference(acceptanceFunctionProbability, potts_data_to_compare.acceptanceFunctionProbability) >= 1e-4)<<endl;
-////            throw CC3DException("acceptanceFunctionProbability is different");
-////        }
-////
-////    }
-//
-//
-//}
