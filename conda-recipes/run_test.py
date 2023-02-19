@@ -50,7 +50,7 @@ def main():
     # sys.exit(0)
     # run pde solvers regression suite
     subprocess.check_call(args=['python', simulation_tester.__file__,
-                                f'--run-command={run_script}',
+                                # f'--run-command={run_script}',
                                 f'--output-dir={test_dir}'],
                           cwd=exec_dir)
     if os.path.isfile(fail_file):
@@ -58,7 +58,7 @@ def main():
 
     # run plugin regression suite
     subprocess.check_call(args=['python', regression_tests_runner.__file__,
-                                f'--run-command={run_script}',
+                                # f'--run-command={run_script}',
                                 f'--output-dir={test_plugin_dir}'],
                           cwd=exec_dir)
 
