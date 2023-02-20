@@ -4,6 +4,10 @@
 #{% set version = "4.3.2" %}
 #{% set build_number = "2" %}
 
+{% set version = environ.get('version') %}
+{% set build_number = environ.get('build_number',0) %}
+{% set numpy_version = environ.get('numpy_version') %}
+
 package:
   name: compucell3d
   version: {{ version }}
@@ -25,7 +29,7 @@ build:
 
 requirements:
   host:
-    - python=3.7
+    - python={{ python }}
 #    - cc3d {{ version }}
 #    - cc3d-player5 {{ version }}
     - cc3d-twedit5 {{ version }}.*
@@ -37,7 +41,7 @@ requirements:
 
 
   run:
-    - python=3.7
+    - python={{ python }}
 #    - cc3d {{ version }}
 #    - cc3d-player5 {{ version }}
     - cc3d-twedit5 {{ version }}.*

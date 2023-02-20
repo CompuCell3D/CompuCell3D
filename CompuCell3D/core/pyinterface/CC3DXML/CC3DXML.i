@@ -152,20 +152,7 @@ public:
 		return *(_list.begin());
 	}
 	
-	class Try{
-		public:
-			int a;
-			std::list<std::string> listString;
-	};
 
-	Try getTry(){
-		Try t;
-		t.a=10;
-		t.listString.push_back("trtrtrtrtrtr1");
-		t.listString.push_back("trtrtrtrtrtr2");
-		t.listString.push_back("trtrtrtrtrtr3");
-		return t;
-	}
 
 
 %}
