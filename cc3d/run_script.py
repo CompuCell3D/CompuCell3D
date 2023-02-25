@@ -1,10 +1,7 @@
 import argparse
 import traceback
 import cc3d
-import sys
 from os.path import *
-
-# import cc3d.CompuCellSetup as CompuCellSetup
 from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
 from cc3d.core.RollbackImporter import RollbackImporter
