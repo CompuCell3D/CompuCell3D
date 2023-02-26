@@ -207,7 +207,7 @@ namespace CompuCell3D {
          *
          * @param dim The field dimensions.
          */
-        void createCellField(const Dim3D dim) throw(CC3DException);
+        void createCellField(const Dim3D dim) ;
 
         void resizeCellField(const Dim3D dim, Dim3D shiftVec = Dim3D());
         //void resizeCellField(const std::vector<int> & dim, const std::vector<int> & shiftVec);
@@ -418,8 +418,8 @@ namespace CompuCell3D {
          */
 
 
-        virtual CellG *createCellG(const Point3D pt, long _clusterId = -1) throw(CC3DException);
-
+//        virtual CellG *createCellG(const Point3D pt, long _clusterId = -1) ;
+        virtual CellG *createCellG(const Point3D pt, long _clusterId = -1);
         virtual CellG *createCellGSpecifiedIds(const Point3D pt, long _cellId, long _clusterId = -1);
 
         virtual CellG *createCell(long _clusterId = -1);

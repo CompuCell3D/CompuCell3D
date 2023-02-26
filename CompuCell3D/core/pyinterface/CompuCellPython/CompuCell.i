@@ -147,20 +147,24 @@ using namespace CompuCell3D;
 //enables better handling of STL exceptions
 %include "exception.i"
 
+%include "CompuCell3D/CC3DExceptions.h"
+
 %exception {
   try {
     $action
-  } catch (const std::exception& e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-  }
-  catch (const CompuCell3D::CC3DException& e){
-      std::string msg = "CC3DException in " + e.getFilename() + ": " + e.getMessage();
+  } catch (const CompuCell3D::CC3DException& e){
+      std::string msg = "C++ CC3DException in " + e.getFilename() + ": " + e.getMessage();
       PyErr_SetString(PyExc_RuntimeError, msg.c_str());
       SWIG_fail;
+      return nullptr;
 
 //      cerr<<"CAUGHT CC3DEXCEPTION"<<msg<<endl;
 //      SWIG_exception(SWIG_RuntimeError, msg.c_str());
-  }
+  } catch (const std::exception& e) {
+    SWIG_exception(SWIG_RuntimeError, e.what());
+    SWIG_fail;
+    return nullptr;
+    }
 //  catch (...){
 //      SWIG_exception(SWIG_RuntimeError, "Unknown exception in C++ code");
 //  }
@@ -262,7 +266,7 @@ using namespace CompuCell3D;
 %include "Logger/CC3DLogger.h"
 %include "Field3D/Point3D.h"
 %include "Field3D/Dim3D.h"
-%include "CompuCell3D/CC3DExceptions.h"
+
 
 %extend CompuCell3D::Point3D{
   std::string __str__(){

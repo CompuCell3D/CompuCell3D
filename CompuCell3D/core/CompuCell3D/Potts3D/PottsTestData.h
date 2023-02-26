@@ -48,7 +48,7 @@ namespace CompuCell3D {
 
         std::vector <std::string> split_string(std::string str_to_plit, char delimiter);
 
-        bool compare_potts_data(PottsTestData &potts_data_to_compare) throw(CC3DException);
+        bool compare_potts_data(PottsTestData &potts_data_to_compare) ;
 
         double relative_difference(double x, double y);
 
