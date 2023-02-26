@@ -189,7 +189,7 @@ void Simulator::serialize() {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Simulator::registerSteerableObject(SteerableObject *_steerableObject) throw(CompuCell3D::CC3DException){
+void Simulator::registerSteerableObject(SteerableObject *_steerableObject) {
 
     std::map<std::string, SteerableObject *>::iterator mitr;
     mitr = steerableObjectMap.find(_steerableObject->steerableName());
@@ -268,7 +268,9 @@ void Simulator::postEvent(CC3DEvent & _ev){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Simulator::start() throw(CompuCell3D::CC3DException){
+void Simulator::start()
+//
+{
 
     try {
         // Print the names of loaded plugins
@@ -313,7 +315,7 @@ std::string Simulator::formatErrorMessage(const CC3DException &e) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Simulator::extraInit() throw(CompuCell3D::CC3DException){
+void Simulator::extraInit() {
 
     try {
         PluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
@@ -339,7 +341,7 @@ void Simulator::extraInit() throw(CompuCell3D::CC3DException){
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Simulator::step(const unsigned int currentStep) throw(CompuCell3D::CC3DException){
+void Simulator::step(const unsigned int currentStep) {
     // clearing up step_output
     this->step_output = "";
 
@@ -395,7 +397,7 @@ std::string Simulator::get_step_output() {
     return this->step_output;
 }
 
-void Simulator::finish() throw(CompuCell3D::CC3DException){
+void Simulator::finish() {
 
     try {
         ppdCC3DPtr->temperature = 0.0;
@@ -478,7 +480,7 @@ void Simulator::processMetadataCC3D(CC3DXMLElement *_xmlData) {
 
 }
 
-void Simulator::initializeCC3D() throw(CompuCell3D::CC3DException){
+void Simulator::initializeCC3D() {
 
 
     try {
@@ -551,7 +553,7 @@ void Simulator::initializeCC3D() throw(CompuCell3D::CC3DException){
 
 
 
-void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData) throw(CompuCell3D::CC3DException){
+void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData) {
 	CC3D_Log(LOG_DEBUG) << "INSIDE initializePottsCC3D=";
     //registering Potts as SteerableObject
     registerSteerableObject(&potts);

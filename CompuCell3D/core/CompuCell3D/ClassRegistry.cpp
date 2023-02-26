@@ -11,7 +11,7 @@ ClassRegistry::ClassRegistry(Simulator *simulator) : simulator(simulator) {
 }
 
 
-Steppable *ClassRegistry::getStepper(string id) throw(CC3DException){
+Steppable *ClassRegistry::getStepper(string id) {
     Steppable *stepper = activeSteppersMap[id];
     if (!stepper) throw CC3DException(string("Stepper '") + id + "' not found!");
     return stepper;
