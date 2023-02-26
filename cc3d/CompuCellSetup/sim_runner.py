@@ -3,7 +3,7 @@ import sys
 from os.path import *
 from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.readers import readCC3DFile
-from cc3d.CompuCellSetup.simulation_utils import CC3DCPlusPlusError, check_for_cpp_errors
+from cc3d.CompuCellSetup.simulation_utils import CC3DCPlusPlusError
 from cc3d.cpp.CompuCell import CC3DException
 
 def handle_error(exception_obj):
