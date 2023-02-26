@@ -109,7 +109,12 @@ def main(args:argparse.Namespace=None):
     persistent_globals.restart_snapshot_frequency = restart_snapshot_frequency
     persistent_globals.restart_multiple_snapshots = restart_multiple_snapshots
     persistent_globals.parameter_scan_iteration = args.parameter_scan_iteration
-    persistent_globals.log_level = "LOG_" + args.log_level
+
+    if args.log_level:
+        persistent_globals.log_level = "LOG_" + args.log_level
+    else:
+        persistent_globals.log_level = "LOG_CURRENT"
+
     persistent_globals.log_to_file = args.log_to_file
 
     run_cc3d_project(cc3d_sim_fname=cc3d_sim_fname_abs)
