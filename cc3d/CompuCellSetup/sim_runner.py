@@ -78,16 +78,15 @@ def run_cc3d_project(cc3d_sim_fname):
             try:
                 exec(code, globals(), locals())
 
-            except CC3DCPlusPlusError as e:
-                # handling C++ error
-                handle_error(e)
-            except CC3DException as e:
-                print(f"ERROR in C++ code - {e.getFilename()} : {e.getMessage()}")
+            except RuntimeError as e:
+                # note, we have fixture in SWIG that Converts CC3DException into RuntimeError
+                traceback.print_exc(file=sys.stderr)
                 handle_error(e)
 
                 # we will exit with code 1 only in the non-player mode
                 if not CompuCellSetup.persistent_globals.player_type:
                     sys.exit(1)
+
             except Exception as e:
                 if str(e).startswith("Unknown exception"):
                     print("Likely exception from C++ function that was not marked to throw an exception")
