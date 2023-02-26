@@ -2,39 +2,18 @@
 # when building as standalone package uncomment line below and set version and build_number to proper values
 #{% set data = load_file_data('versions.yaml') %}
 
-{% set version = environ.get('version') %}
-{% set build_number = environ.get('build_number',0) %}
-{% set numpy_version = environ.get('numpy_version') %}
-{% set cc3d_network_solvers_version = environ.get('cc3d_network_solvers_version') %}
-{% set cmake_version = environ.get('cmake_version') %}
-{% set vtk_version = environ.get('vtk_version') %}
-{% set swig_version = environ.get('swig_version') %}
-{% set boost_version = environ.get('boost_version') %}
-{% set tbb_devel_version = environ.get('tbb_devel_version') %}
+{% set versions = load_file_data('versions.yaml', from_recipe_dir=True) %}
 
-#{% set version = data.get('version') %}
-#{% set build_number = data.get('build_number',0) %}
-#{% set numpy_version = data.get('numpy_version') %}
-#{% set cc3d_network_solvers_version = data.get('cc3d_network_solvers_version') %}
-#{% set cmake_version = data.get('cmake_version') %}
-#{% set vtk_version = data.get('vtk_version') %}
-#{% set swig_version = data.get('swig_version') %}
-#{% set boost_version = data.get('boost_version') %}
-#{% set tbb_devel_version = data.get('tbb_devel_version') %}
+{% set version = versions.get('version') %}
+{% set build_number = versions.get('build_number',0) %}
+{% set numpy_version = versions.get('numpy_version') %}
+{% set cc3d_network_solvers_version = versions.get('cc3d_network_solvers_version') %}
+{% set cmake_version = versions.get('cmake_version') %}
+{% set vtk_version = versions.get('vtk_version') %}
+{% set swig_version = versions.get('swig_version') %}
+{% set boost_version = versions.get('boost_version') %}
+{% set tbb_devel_version = versions.get('tbb_devel_version') %}
 
-
-#{% set version =  environ.get('VERSION', '4.1.1') %}
-##{% set version = "4.5.0" %}
-#{% set build_number = 0 %}
-#{% set numpy_version = "1.21" %}
-#{% set cc3d_network_solvers_version = "0.3.0" %}
-#{% set cmake_version = "3.21" %}
-#{% set vtk_version = "9.2" %}
-#{% set swig_version = "4" %}
-#{% set boost_version = "1.78" %}
-#{% set tbb_devel_version = "2021" %}
-##{% set version = "4.3.0" %}
-##{% set build_number = "16" %}
 
 package:
   name: cc3d
