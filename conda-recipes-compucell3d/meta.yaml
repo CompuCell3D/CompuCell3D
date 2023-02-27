@@ -1,12 +1,14 @@
 # when building as standalone package uncomment line below and set version and build_number to proper values
 # {% set version = "4.3.1" %}
 # {% set build_number = "1" %}
-#{% set version = "4.3.2" %}
-#{% set build_number = "2" %}
 
-{% set version = environ.get('version') %}
-{% set build_number = environ.get('build_number',0) %}
-{% set numpy_version = environ.get('numpy_version') %}
+
+{% set versions = load_file_data('versions.yaml', from_recipe_dir=True) %}
+
+{% set version = versions.get('version') %}
+{% set build_number = versions.get('build_number',0) %}
+{% set numpy_version = versions.get('numpy_version') %}
+
 
 package:
   name: compucell3d
