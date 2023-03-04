@@ -1,6 +1,8 @@
 # add better version handling to meta.yaml
 # when building as standalone package uncomment line below and set version and build_number to proper values
 #{% set data = load_file_data('versions.yaml') %}
+# note you also need to create links to  libGLso and libGLX.so  in /usr/lib because cmake is unable to find them elsewhere
+
 
 {% set versions = load_file_data('versions.yaml', from_recipe_dir=True) %}
 
