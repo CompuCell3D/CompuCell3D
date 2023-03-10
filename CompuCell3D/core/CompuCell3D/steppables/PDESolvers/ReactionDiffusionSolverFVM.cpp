@@ -39,7 +39,6 @@ ReactionDiffusionSolverFVM::ReactionDiffusionSolverFVM()
 	cellDataLoaded = false;
 	integrationTimeStep = incTime;
 	fluctuationCompensator = 0;
-	fvMaxStableTimeSteps = 0;
 
 	physTime = 0.0;
 }
@@ -51,15 +50,6 @@ ReactionDiffusionSolverFVM::~ReactionDiffusionSolverFVM()
 	delete lockPtr;
 	lockPtr = 0;
 
-	if(fvMaxStableTimeSteps) {
-		delete fvMaxStableTimeSteps;
-		fvMaxStableTimeSteps = 0;
-	}
-
-	for (unsigned int fieldIndex = 0; fieldIndex < numFields; ++fieldIndex) { 
-		delete concentrationFieldVector[fieldIndex];
-		concentrationFieldVector[fieldIndex] = 0;
-	}
 }
 
 void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
@@ -183,7 +173,7 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 
 	fieldNameToIndexMap.clear();
 	concentrationFieldNameVector = std::vector<std::string>(numFields, "");
-	concentrationFieldVector = std::vector<RDFVMField3DWrap<float> *>(numFields, 0);
+	concentrationFieldVector.reserve(numFields);
 
 	fieldSymbolsVec = std::vector<std::string>(numFields, "");
 	fieldExpressionStringsDiag = std::vector<std::vector<std::string> >(numFields, std::vector<std::string>(0, ""));
@@ -191,7 +181,7 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 	std::vector<std::string> initialExpressionStrings = std::vector<std::string>(numFields, "");
 
 	constantDiffusionCoefficientsVec = std::vector<double>(numFields, 0);
-	diffusivityFieldIndexToFieldMap = std::vector<Field3D<float> *>(numFields, 0);
+	diffusivityFieldIndexToFieldMap = std::vector<std::shared_ptr<WatchableField3D<float> > >(numFields, std::make_shared<WatchableField3D<float> >(Dim3D(1, 1, 1), 0.0));
 	diffusivityFieldInitialized = std::vector<bool>(numFields, false);
 	constantDiffusionCoefficientsVecCellType = std::vector<std::vector<double> >(numFields, std::vector<double>(numCellTypes, 0.0));
 	diffusivityModeInitializerPtrs = std::vector<DiffusivityModeInitializer>(numFields, DiffusivityModeInitializer(nullptr));
@@ -234,11 +224,11 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		
 		fieldNameToIndexMap.insert(make_pair(fieldName, fieldIndex));
 		concentrationFieldNameVector[fieldIndex] = fieldName;
-		concentrationFieldVector[fieldIndex] = new RDFVMField3DWrap<float>(this, fieldName);
+		concentrationFieldVector.emplace_back(this, fieldName);
 
 		CC3D_Log(LOG_DEBUG) << "   Registering field with Simulator...";
 
-		sim->registerConcentrationField(fieldName, concentrationFieldVector[fieldIndex]);
+		sim->registerConcentrationField(fieldName, &concentrationFieldVector[fieldIndex]);
 
 		CC3DXMLElement *dData;
 		CC3DXMLElement *dDataEl;
@@ -627,11 +617,10 @@ void ReactionDiffusionSolverFVM::init(Simulator *_simulator, CC3DXMLElement *_xm
 		if (useFieldInitialExprBool[fieldIndex]) { initializeFieldUsingEquation(fieldIndex, fieldInitialExpr[fieldIndex]); }
 
 	//		Auto time stepping
-	fvMaxStableTimeSteps = 0;
 	autoTimeSubStep = _xmlData->findElement("AutoTimeSubStep");
 	if (autoTimeSubStep) {
 		CC3D_Log(LOG_DEBUG) << "RDVFM got automatic time sub-stepping.";
-		fvMaxStableTimeSteps = new std::vector<double>(fieldDim.x * fieldDim.y * fieldDim.z, 0.0);
+		fvMaxStableTimeSteps = std::vector<double>(fieldDim.x * fieldDim.y * fieldDim.z, 0.0);
 	}
 
     // 		FluctuationCompensator support
@@ -734,13 +723,13 @@ void ReactionDiffusionSolverFVM::step(const unsigned int _currentStep) {
 
 			#pragma omp parallel for shared (_fieldDim)
 			for (int fieldIndex=0;fieldIndex<_fieldDim.x*_fieldDim.y*_fieldDim.z;fieldIndex++){
-				fvMaxStableTimeSteps->at(fieldIndex) = this->getFieldFV(fieldIndex)->solveStable();
+				fvMaxStableTimeSteps.at(fieldIndex) = this->getFieldFV(fieldIndex)->solveStable();
 			}
 
 			CC3D_Log(LOG_DEBUG) << "calculating maximum stable time step... ";
 
 			// Might be more efficient using a combinable
-			integrationTimeStep = min(*min_element(fvMaxStableTimeSteps->begin(), fvMaxStableTimeSteps->end()), incTime - intTime);
+			integrationTimeStep = min(*min_element(fvMaxStableTimeSteps.begin(), fvMaxStableTimeSteps.end()), incTime - intTime);
 		}
 		else { 
 
@@ -1046,8 +1035,8 @@ void ReactionDiffusionSolverFVM::useFieldDiffusivityEverywhere(unsigned int _fie
 }
 void ReactionDiffusionSolverFVM::initDiffusivityField(unsigned int _fieldIndex) {
 	if (!diffusivityFieldInitialized[_fieldIndex]) {
-		diffusivityFieldIndexToFieldMap[_fieldIndex] = new WatchableField3D<float>(fieldDim, 0.0);
-		sim->registerConcentrationField(concentrationFieldNameVector[_fieldIndex] + diffusivityFieldSuffixStd, diffusivityFieldIndexToFieldMap[_fieldIndex]);
+		diffusivityFieldIndexToFieldMap[_fieldIndex] = std::make_shared<WatchableField3D<float> >(fieldDim, 0.0);
+		sim->registerConcentrationField(concentrationFieldNameVector[_fieldIndex] + diffusivityFieldSuffixStd, diffusivityFieldIndexToFieldMap[_fieldIndex].get());
 		diffusivityFieldInitialized[_fieldIndex] = true;
 	}
 }
@@ -1475,7 +1464,7 @@ void ReactionDiffusionSolverFV::solve() {
 	std::map<unsigned int, ReactionDiffusionSolverFV *>::iterator fv_itr;
 	for (unsigned int i = 0; i < concentrationVecOld.size(); ++i) {
 		for (fv_itr = neighborFVs.begin(); fv_itr != neighborFVs.end(); ++fv_itr) {
-			std::vector<double> fluxVals = (this->*surfaceFluxFunctionPtrs[i][fv_itr->first])(i, fv_itr->first, fv_itr->second);
+			std::vector<double> fluxVals = (this->*surfaceFluxFunctionPtrs[i][fv_itr->first])(i, fv_itr->first, *fv_itr->second);
 			concentrationVecAux[i] += fluxVals[0] * concentrationVecOld[i] + fluxVals[2];
 			if (fv_itr->second != nullptr) {
 				concentrationVecAux[i] += fluxVals[1] * fv_itr->second->getConcentrationOld(i);
@@ -1513,7 +1502,7 @@ double ReactionDiffusionSolverFV::solveStable() {
 		double den2 = 0.0;
 
 		for (fv_itr = neighborFVs.begin(); fv_itr != neighborFVs.end(); ++fv_itr) {
-			std::vector<double> fluxVals = (this->*surfaceFluxFunctionPtrs[i][fv_itr->first])(i, fv_itr->first, fv_itr->second);
+			std::vector<double> fluxVals = (this->*surfaceFluxFunctionPtrs[i][fv_itr->first])(i, fv_itr->first, *fv_itr->second);
 
 			den1 += fluxVals[0];
 			concentrationVecAux[i] += fluxVals[2];
@@ -1522,7 +1511,7 @@ double ReactionDiffusionSolverFV::solveStable() {
 				den2 += abs(fluxVals[1]);
 				concentrationVecAux[i] += fluxVals[1] * fv_itr->second->getConcentrationOld(i);
 				if(usingCellInterfaceFlux)
-					concentrationVecAux[i] += cellInterfaceFlux(i, fv_itr->first, fv_itr->second);
+					concentrationVecAux[i] += cellInterfaceFlux(i, fv_itr->first, *fv_itr->second);
 			}
 		}
 
@@ -1684,24 +1673,19 @@ double ReactionDiffusionSolverFV::cellInterfaceFlux(unsigned int _fieldIndex, un
 	return -diffC * outwardFluxVal / length;
 }
 
-double ReactionDiffusionSolverFV::cellInterfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv) {
+double ReactionDiffusionSolverFV::cellInterfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV &_nFv) {
 	CellG *cell = solver->FVtoCellMap(this);
 	if(!cell) return 0.0;
 
-	CellG *nCell = solver->FVtoCellMap(_nFv);
+	CellG *nCell = solver->FVtoCellMap(&_nFv);
 	if(nCell == cell) return 0.0;
 
 	return cellInterfaceFlux(_fieldIndex, _surfaceIndex, cell, nCell);
 }
 
-std::vector<double> ReactionDiffusionSolverFV::diffusiveSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv) {
-	if (_nFv == nullptr) {
-		CC3D_Log(LOG_DEBUG) << "Warning: diffusive surface flux for an unconnected FV pair!" ;
-		return std::vector<double>{0.0, 0.0, 0.0};
-	}
-
+std::vector<double> ReactionDiffusionSolverFV::diffusiveSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV &_nFv) {
 	double diffC = getFieldDiffusivity(_fieldIndex);
-	double nDiffC = _nFv->getFieldDiffusivity(_fieldIndex);
+	double nDiffC = _nFv.getFieldDiffusivity(_fieldIndex);
 	double surfaceDiffC;
 	if (diffC * nDiffC == 0) { return std::vector<double>{0.0, 0.0, 0.0}; }
 	else { surfaceDiffC = 2 * diffC * nDiffC / (diffC + nDiffC); }
@@ -1710,14 +1694,9 @@ std::vector<double> ReactionDiffusionSolverFV::diffusiveSurfaceFlux(unsigned int
 	return std::vector<double>{-outVal, outVal, 0.0};
 }
 
-std::vector<double> ReactionDiffusionSolverFV::permeableSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv) {
-	if (_nFv == nullptr) {
-		CC3D_Log(LOG_DEBUG) << "Warning: permeable surface flux for an unconnected FV pair!";
-		return std::vector<double>{0.0, 0.0, 0.0};
-	}
-	
+std::vector<double> ReactionDiffusionSolverFV::permeableSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV &_nFv) {
 	CellG *cell = solver->FVtoCellMap(this);
-	CellG *nCell = solver->FVtoCellMap(_nFv);
+	CellG *nCell = solver->FVtoCellMap(&_nFv);
 
 	if (cell == nCell) { return diffusiveSurfaceFlux(_fieldIndex, _surfaceIndex, _nFv); }
 
@@ -1727,14 +1706,14 @@ std::vector<double> ReactionDiffusionSolverFV::permeableSurfaceFlux(unsigned int
 	return std::vector<double>{-permeableCoefficients[1] * outVal, permeableCoefficients[2] * outVal, 0.0};
 }
 
-std::vector<double> ReactionDiffusionSolverFV::fixedSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv) {
+std::vector<double> ReactionDiffusionSolverFV::fixedSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV &_nFv) {
 	double diffC = getFieldDiffusivity(_fieldIndex);
 	double outwardFluxVal = bcVals[_fieldIndex][_surfaceIndex];
 	double length = (double)(solver->getLengthBySurfaceIndex(_surfaceIndex));
 	return std::vector<double>{0.0, 0.0, -diffC * outwardFluxVal / length};
 }
 
-std::vector<double> ReactionDiffusionSolverFV::fixedConcentrationFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv) {
+std::vector<double> ReactionDiffusionSolverFV::fixedConcentrationFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV &_nFv) {
 	double diffC = getFieldDiffusivity(_fieldIndex);
 	double fixedVal = bcVals[_fieldIndex][_surfaceIndex];
 	double length = (double)(solver->getLengthBySurfaceIndex(_surfaceIndex));
@@ -1742,7 +1721,7 @@ std::vector<double> ReactionDiffusionSolverFV::fixedConcentrationFlux(unsigned i
 	return std::vector<double>{-outVal, 0.0, outVal * fixedVal};
 }
 
-std::vector<double> ReactionDiffusionSolverFV::fixedFVConcentrationFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv) {
+std::vector<double> ReactionDiffusionSolverFV::fixedFVConcentrationFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV &_nFv) {
 	concentrationVecOld[_fieldIndex] = bcVals[_fieldIndex][0];
 	return std::vector<double>{0.0, 0.0, 0.0};
 }

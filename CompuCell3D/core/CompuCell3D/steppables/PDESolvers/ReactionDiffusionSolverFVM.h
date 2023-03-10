@@ -16,7 +16,7 @@
 #include <CompuCell3D/CC3DEvents.h>
 
 #include <string>
-
+#include <memory>
 #include <vector>
 #include <set>
 #include <map>
@@ -176,14 +176,14 @@ namespace CompuCell3D {
 
 		unsigned int numFields;
 		std::map<std::string, unsigned int> fieldNameToIndexMap;
-		std::vector<RDFVMField3DWrap<float> *> concentrationFieldVector;
+		std::vector<RDFVMField3DWrap<float> > concentrationFieldVector;
 		std::vector<std::string> fieldSymbolsVec;
 		std::vector<std::vector<std::string> > fieldExpressionStringsDiag;
 		std::vector<std::string> fieldExpressionStringsMergedDiag;
 		std::vector<std::vector<std::string> > fieldExpressionStringsOffDiag;
 		std::vector<std::string> fieldExpressionStringsMergedOffDiag;
 		std::vector<double> constantDiffusionCoefficientsVec;
-		std::vector<Field3D<float> *> diffusivityFieldIndexToFieldMap;
+		std::vector<std::shared_ptr<WatchableField3D<float> > > diffusivityFieldIndexToFieldMap;
 		std::vector<bool> diffusivityFieldInitialized;
 		std::vector<SecretionData> secrFieldVec;
 
@@ -229,7 +229,7 @@ namespace CompuCell3D {
 
 		bool autoTimeSubStep;
 
-		std::vector<double> *fvMaxStableTimeSteps;
+		std::vector<double> fvMaxStableTimeSteps;
 
 		Dim3D fieldDim;
 
@@ -255,7 +255,7 @@ namespace CompuCell3D {
 		virtual std::string toString();
 
 		// Diffusable Vector interface
-		Array3DBordersField3DAdapter<float> * getConcentrationField(const std::string & name) { return (Array3DBordersField3DAdapter<float> *) concentrationFieldVector[getFieldIndexByName(name)]; }
+		Array3DBordersField3DAdapter<float> * getConcentrationField(const std::string & name) { return (Array3DBordersField3DAdapter<float> *) &concentrationFieldVector[getFieldIndexByName(name)]; }
 		void allocateDiffusableFieldVector(unsigned int numberOfFields, Dim3D fieldDim) { 
 			boundaryStrategy = BoundaryStrategy::getInstance();
 			maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
@@ -1479,7 +1479,7 @@ namespace CompuCell3D {
 	// ReactionDiffusionSolverFVM Finite volume class
 	class PDESOLVERS_EXPORT ReactionDiffusionSolverFV
 	{
-		typedef std::vector<double>(ReactionDiffusionSolverFV::*FluxFunction)(unsigned int, unsigned int, ReactionDiffusionSolverFV *);
+		typedef std::vector<double>(ReactionDiffusionSolverFV::*FluxFunction)(unsigned int, unsigned int, ReactionDiffusionSolverFV &);
 		typedef double(ReactionDiffusionSolverFV::*DiffusivityFunction)(unsigned int);
 
 	private:
@@ -1513,7 +1513,7 @@ namespace CompuCell3D {
 
 		double returnZero() { return 0.0; }
 		double returnZero(unsigned int _fieldIndex) { return 0.0; }
-		std::vector<double> returnZero(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv) { return std::vector<double>{0.0, 0.0, 0.0}; }
+		std::vector<double> returnZero(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV &_nFv) { return std::vector<double>{0.0, 0.0, 0.0}; }
 
 		void setFieldDiffusivityFunction(unsigned int _fieldIndex, DiffusivityFunction _fcn) { fieldDiffusivityFunctionPtrs[_fieldIndex] = _fcn; }
 		double getConstantDiffusivity(unsigned int _fieldIndex) { return auxVars[_fieldIndex][0]; }
@@ -1522,12 +1522,12 @@ namespace CompuCell3D {
 		double getFieldDiffusivityInMedium(unsigned int _fieldIndex);
 
 		double cellInterfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, CellG *cell, CellG *nCell);
-		double cellInterfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
-		std::vector<double> diffusiveSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
-		std::vector<double> permeableSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
-		std::vector<double> fixedSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
-		std::vector<double> fixedConcentrationFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
-		std::vector<double> fixedFVConcentrationFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV *_nFv);
+		double cellInterfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV &_nFv);
+		std::vector<double> diffusiveSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV &_nFv);
+		std::vector<double> permeableSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV &_nFv);
+		std::vector<double> fixedSurfaceFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV &_nFv);
+		std::vector<double> fixedConcentrationFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV &_nFv);
+		std::vector<double> fixedFVConcentrationFlux(unsigned int _fieldIndex, unsigned int _surfaceIndex, ReactionDiffusionSolverFV &_nFv);
 		
 		double secreteSingleField(const unsigned int &fieldIndex, const unsigned char &typeIndex, const SecretionData &secrData);
 		double secreteOnContactSingleField(const unsigned int &fieldIndex, const unsigned char &typeIndex, const SecretionData &secrData);
