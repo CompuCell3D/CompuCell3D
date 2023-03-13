@@ -233,6 +233,15 @@ namespace CompuCell3D {
                                                       std::vector<int> *types_invisibe_vec,
                                                       bool extractOuterShellOnly = false);
 
+        virtual bool fillLinksField2D(vtk_obj_addr_int_t points_array_addr, 
+                                      vtk_obj_addr_int_t lines_array_addr, 
+                                      const std::string &plane, 
+                                      const int &pos,
+                                      const int &margin=1) override;
+
+        virtual bool fillLinksField3D(vtk_obj_addr_int_t points_array_addr, 
+                                      vtk_obj_addr_int_t lines_array_addr) override;
+
         void setVtkObj(void *_vtkObj);
 
         void setVtkObjInt(long _vtkObjAddr);

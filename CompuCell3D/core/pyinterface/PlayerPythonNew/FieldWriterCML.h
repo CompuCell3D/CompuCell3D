@@ -30,7 +30,10 @@ namespace CompuCell3D {
         FieldTypeCML_ScalarField, 
         FieldTypeCML_ScalarFieldCellLevel, 
         FieldTypeCML_VectorField, 
-        FieldTypeCML_VectorFieldCellLevel
+        FieldTypeCML_VectorFieldCellLevel,
+        FieldTypeCML_Links,
+        FieldTypeCML_LinksInternal,
+        FieldTypeCML_Anchors
     };
 
     class FIELDEXTRACTOR_EXPORT FieldWriterCML {
@@ -46,6 +49,9 @@ namespace CompuCell3D {
         static const std::string CellTypeName;
         static const std::string CellIdName;
         static const std::string ClusterIdName;
+        static const std::string LinksName;
+        static const std::string LinksInternalName;
+        static const std::string AnchorsName;
 
 		FieldWriterCML();
 		~FieldWriterCML();

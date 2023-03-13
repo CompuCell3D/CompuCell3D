@@ -266,6 +266,15 @@ namespace CompuCell3D {
                                                                   std::vector<int> *types_invisibe_vec,
                                                                   bool extractOuterShellOnly = false){return {};}
 
+        virtual bool fillLinksField2D(vtk_obj_addr_int_t points_array_addr, 
+                                      vtk_obj_addr_int_t lines_array_addr, 
+                                      const std::string &plane,
+                                      const int &pos, 
+                                      const int &margin=1) { return false; }
+
+        virtual bool fillLinksField3D(vtk_obj_addr_int_t points_array_addr, 
+                                      vtk_obj_addr_int_t lines_array_addr) { return false; }
+
 
         /**
          * returns 0 for medium and 1 for all non medium types
@@ -296,6 +305,71 @@ namespace CompuCell3D {
         std::vector<Coordinates3D<double> > hexagonVertices;
         std::vector<Coordinates3D<double> > cartesianVertices;
         std::string latticeType;
+
+        bool isVisible2D(const double &planeCoord, const double &planePos, const double &margin=1.0);
+
+        bool isWithinLattice(double coord, int coordDim, const double &eps=0.01);
+
+        void computeVectorPieceToAdd2D(
+                double pt0[2], 
+                double pt1[2], 
+                const int &clip_coord_idx, 
+                const int &other_coord_idx, 
+                const int &clip_pos, 
+                double (&vector_piece_to_add)[2]
+        );
+
+        double otherIntersect2D(
+                double pt[2], 
+                double vecToAdd[2], 
+                int coord_idx_array[2]
+        );
+
+        void computeClippedSegment2D(double pt0[2], double pt1[2], int fieldDimOrdered[3], double (&vecToAdd)[2]);
+
+        void computeClippedSegment3D(double pt0[3], double pt1[3], int fieldDim[3], double (&vecToAdd)[3]);
+
+        bool linksPos2D(
+                double pt0[3], 
+                double pt1[3], 
+                int fieldDimOrdered[3], 
+                int dimOrder[3],
+                double (&link0_begin)[2], 
+                double (&link0_end)[2], 
+                double (&link1_begin)[2], 
+                double (&link1_end)[2]
+        );
+
+        bool linksPos3D(
+                double pt0[3], 
+                double pt1[3], 
+                int fieldDim[3], 
+                double (&link0_begin)[3], 
+                double (&link0_end)[3], 
+                double (&link1_begin)[3], 
+                double (&link1_end)[3]
+        );
+
+        void vizLinks2D(
+                double pt0[3], 
+                double pt1[3], 
+                vtk_obj_addr_int_t points_addr, 
+                vtk_obj_addr_int_t lines_addr, 
+                int fieldDimOrdered[3], 
+                int dimOrder[3], 
+                const double &planePos, 
+                const double &margin, 
+                int &ptCounter
+        );
+
+        void vizLinks3D(
+                double pt0[3], 
+                double pt1[3], 
+                vtk_obj_addr_int_t points_addr, 
+                vtk_obj_addr_int_t lines_addr, 
+                int fieldDim[3], 
+                int &ptCounter
+        );
 
     };
 };

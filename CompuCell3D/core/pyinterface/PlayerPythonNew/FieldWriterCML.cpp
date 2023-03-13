@@ -12,6 +12,7 @@
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
 #include <CompuCell3D/Field3D/Dim3D.h>
+#include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityPlugin.h>
 
 #include <vtkDataArray.h>
 #include <vtkCharArray.h>
@@ -27,6 +28,9 @@ using namespace CompuCell3D;
 const std::string FieldWriterCML::CellTypeName = "CellType";
 const std::string FieldWriterCML::CellIdName = "CellId";
 const std::string FieldWriterCML::ClusterIdName = "ClusterId";
+const std::string FieldWriterCML::LinksName = "Links";
+const std::string FieldWriterCML::LinksInternalName = "LinksInternal";
+const std::string FieldWriterCML::AnchorsName = "Anchors";
 
 FieldWriterCML::FieldWriterCML() : 
     sim(NULL), 
@@ -153,6 +157,64 @@ bool FieldWriterCML::addCellFieldForOutput() {
     typeArray->Delete();
     idArray->Delete();
     clusterIdArray->Delete();
+
+    FocalPointPlasticityPlugin *fppPlugin;
+    if(sim->pluginManager.isLoaded("FocalPointPlasticity")) {
+        fppPlugin = (FocalPointPlasticityPlugin*)sim->pluginManager.get("FocalPointPlasticity");
+
+        auto listLinks = fppPlugin->getLinkInventory()->getLinkList();
+        auto listLinksInternal = fppPlugin->getInternalLinkInventory()->getLinkList();
+        auto listAnchors = fppPlugin->getAnchorInventory()->getLinkList();
+
+        vtkLongArray *linksArray = vtkLongArray::New();
+        linksArray->SetName(FieldWriterCML::LinksName.c_str());
+        arrayNameVec.push_back(FieldWriterCML::LinksName);
+        arrayTypeVec.push_back(FieldTypeCML::FieldTypeCML_Links);
+        
+        linksArray->SetNumberOfComponents(2);
+        linksArray->SetNumberOfTuples(listLinks.size());
+
+        for(int i = 0; i < listLinks.size(); i++) {
+            FocalPointPlasticityLink *link = listLinks[i];
+            linksArray->SetTuple2(i, link->getId0(), link->getId1());
+        }
+
+        latticeData->GetPointData()->AddArray(linksArray);
+        linksArray->Delete();
+
+        vtkLongArray *linksInternalArray = vtkLongArray::New();
+        linksInternalArray->SetName(FieldWriterCML::LinksInternalName.c_str());
+        arrayNameVec.push_back(FieldWriterCML::LinksInternalName);
+        arrayTypeVec.push_back(FieldTypeCML::FieldTypeCML_LinksInternal);
+
+        linksInternalArray->SetNumberOfComponents(2);
+        linksInternalArray->SetNumberOfTuples(listLinksInternal.size());
+
+        for(int i = 0; i < listLinksInternal.size(); i++) {
+            FocalPointPlasticityInternalLink *link = listLinksInternal[i];
+            linksInternalArray->SetTuple2(i, link->getId0(), link->getId1());
+        }
+
+        latticeData->GetPointData()->AddArray(linksInternalArray);
+        linksInternalArray->Delete();
+
+        vtkDoubleArray *anchorsArray = vtkDoubleArray::New();
+        anchorsArray->SetName(FieldWriterCML::AnchorsName.c_str());
+        arrayNameVec.push_back(FieldWriterCML::AnchorsName);
+        arrayTypeVec.push_back(FieldTypeCML::FieldTypeCML_Anchors);
+
+        anchorsArray->SetNumberOfComponents(4);
+        anchorsArray->SetNumberOfTuples(listAnchors.size());
+
+        for(int i = 0; i < listAnchors.size(); i++) {
+            FocalPointPlasticityAnchor *link = listAnchors[i];
+            auto pt = link->getAnchorPoint();
+            anchorsArray->SetTuple4(i, link->getId0(), pt[0], pt[1], pt[2]);
+        }
+
+        latticeData->GetPointData()->AddArray(anchorsArray);
+        anchorsArray->Delete();
+    }
     
     return true;
 }

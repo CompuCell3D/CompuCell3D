@@ -897,51 +897,22 @@ class MVCDrawModel3D(MVCDrawModelBase):
         :param drawing_params:
         :return: None
         """
+        _drawing_params = self.currentDrawingParameters if drawing_params is None else drawing_params
 
-        fpp_plugin = CompuCell.getFocalPointPlasticityPlugin()
-        if not fpp_plugin:
-            print("    fppPlugin is null, returning")
-            return
-
-        actors_dict = actor_specs.actors_dict
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-        scene_metadata = drawing_params.screenshot_data.metadata
-        mdata = MetadataHandler(mdata=scene_metadata)
-
-        try:
-            inventory = self.currentDrawingParameters.bsd.sim.getPotts().getCellInventory()
-        except AttributeError:
-            raise AttributeError("Could not access Potts object")
-
-        cell_list = CellList(inventory)
+        mdata = MetadataHandler(mdata=_drawing_params.screenshot_data.metadata)
 
         points = vtk.vtkPoints()
         lines = vtk.vtkCellArray()
+        points_ad = extract_address_int_from_vtk_object(vtkObj=points)
+        lines_ad = extract_address_int_from_vtk_object(vtkObj=lines)
 
-        pt_counter = 0
-
-        for cell in cell_list:
-            vol = cell.volume
-            if vol < self.eps:
-                continue
-
-            mid_com = np.array([cell.xCOM, cell.yCOM, cell.zCOM], dtype=float)
-
-            for fppd in InternalFocalPointPlasticityDataList(fpp_plugin, cell):
-                pt_counter = self.add_link(
-                    field_dim=field_dim, fppd=fppd, mid_com=mid_com, pt_counter=pt_counter, lines=lines, points=points
-                )
-
-            for fppd in FocalPointPlasticityDataList(fpp_plugin, cell):
-                pt_counter = self.add_link(
-                    field_dim=field_dim, fppd=fppd, mid_com=mid_com, pt_counter=pt_counter, lines=lines, points=points
-                )
+        self.field_extractor.fillLinksField3D(points_ad, lines_ad)
 
         fpp_links_pd = vtk.vtkPolyData()
         fpp_links_pd.SetPoints(points)
         fpp_links_pd.SetLines(lines)
 
-        fpp_links_actor = actors_dict["fpp_links_actor"]
+        fpp_links_actor = actor_specs.actors_dict["fpp_links_actor"]
 
         if VTK_MAJOR_VERSION >= 6:
             self.FPPLinksMapper.SetInputData(fpp_links_pd)
@@ -950,59 +921,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
             self.FPPLinksMapper.SetInput(fpp_links_pd)
 
         fpp_links_actor.SetMapper(self.FPPLinksMapper)
-        fpp_links_color = to_vtk_rgb(mdata.get("FPPLinksColor", data_type="color"))
 
         # coloring borders
-        fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
-
-    def add_link(self, field_dim, fppd, mid_com, pt_counter, lines, points) -> int:
-        """
-        Draws single link in 3D. Returns updated point counter
-
-        :param field_dim:
-        :param fppd:
-        :param mid_com: link begin
-        :param pt_counter: point counter
-        :param lines: vtk lines structure that holds line specification
-        :param points: vtk points sstructure
-        :return: end point counter
-        """
-
-        n_cell = fppd.neighborAddress
-
-        n_mid_com = np.array([n_cell.xCOM, n_cell.yCOM, n_cell.zCOM], dtype=float)
-
-        naive_actual_dist = np.linalg.norm(mid_com - n_mid_com)
-        inv_dist = self.invariant_distance(p1=mid_com, p2=n_mid_com, dim=field_dim)
-        if abs((inv_dist - naive_actual_dist) / (naive_actual_dist + epsilon)) > 10 * epsilon:
-            # if naive distance is different than invariant distance then we are dealing with link that is wrapped
-            # if naive_actual_dist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
-            # we are drawing links that currently stick out of the lattice.
-            inv_dist_vec = self.invariant_distance_vector(p1=mid_com, p2=n_mid_com, dim=field_dim)
-
-            # inv_dist_vec = self.unconditional_invariant_distance_vector(p1=mid_com,
-            #                                                             p2=n_mid_com,
-            #                                                             dim=field_dim)
-            link_begin = mid_com
-            link_end = link_begin + inv_dist_vec
-
-            points.InsertNextPoint(mid_com[0], mid_com[1], mid_com[2])
-            points.InsertNextPoint(link_end[0], link_end[1], link_end[2])
-            # our line has 2 points
-            lines.InsertNextCell(2)
-            lines.InsertCellPoint(pt_counter)
-            lines.InsertCellPoint(pt_counter + 1)
-            pt_counter += 2
-
-        # link didn't wrap around on lattice
-        else:
-            points.InsertNextPoint(mid_com[0], mid_com[1], mid_com[2])
-            points.InsertNextPoint(n_mid_com[0], n_mid_com[1], n_mid_com[2])
-            # our line has 2 points
-            lines.InsertNextCell(2)
-            lines.InsertCellPoint(pt_counter)
-            lines.InsertCellPoint(pt_counter + 1)
-
-            pt_counter += 2
-
-        return pt_counter
+        fpp_links_actor.GetProperty().SetColor(*to_vtk_rgb(mdata.get("FPPLinksColor", data_type="color")))
