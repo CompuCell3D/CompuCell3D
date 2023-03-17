@@ -47,10 +47,10 @@ def process_cml(known_args=None):
     cml_parser.add_argument('--log-level', required=False, type=str, default='',
                             choices=['', 'FATAL', 'CRITICAL', 'ERROR',
                                      'WARNING', 'NOTICE', 'INFORMATION',
-                                     'DEBUG', 'TRACE'],
+                                     'DEBUG', 'TRACE', 'CURRENT'],
                             help='optional argument that specifies log level: allowed values are:'
                                  'FATAL, CRITICAL, ERROR, WARNING, '
-                                 'NOTICE, INFORMATION, DEBUG, TRACE')
+                                 'NOTICE, INFORMATION, DEBUG, TRACE CURRENT')
 
     cml_parser.add_argument('--log-to-file', required=False, action='store_true', default=False,
                             help='optional argument that specifies if log should be saved to a file')
