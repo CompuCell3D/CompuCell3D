@@ -9,6 +9,7 @@ from cc3d.cpp import PlayerPython
 from cc3d.core.iterators import CellList, FocalPointPlasticityDataList, InternalFocalPointPlasticityDataList
 from cc3d.cpp import CompuCell
 import sys
+from cc3d.core.enums import *
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 epsilon = sys.float_info.epsilon
@@ -705,22 +706,22 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         if self.is_lattice_hex(drawing_params=drawing_params):
             hex_flag = True
-            if field_type == "vectorfield":
+            if field_type == FIELD_NUMBER_TO_FIELD_TYPE_MAP[VECTOR_FIELD].lower():
                 fill_successful = self.field_extractor.fillVectorFieldData3DHex(
                     points_int_addr, vectors_int_addr, field_name
                 )
-            elif field_type == "vectorfieldcelllevel":
+            elif field_type == FIELD_NUMBER_TO_FIELD_TYPE_MAP[VECTOR_FIELD_CELL_LEVEL].lower():
                 fill_successful = self.field_extractor.fillVectorFieldCellLevelData3DHex(
                     points_int_addr, vectors_int_addr, field_name
                 )
         else:
-            if field_type == "vectorfield":
+            if field_type == FIELD_NUMBER_TO_FIELD_TYPE_MAP[VECTOR_FIELD].lower():
                 fill_successful = self.field_extractor.fillVectorFieldData3D(
                     points_int_addr,
                     vectors_int_addr,
                     field_name,
                 )
-            elif field_type == "vectorfieldcelllevel":
+            elif field_type == FIELD_NUMBER_TO_FIELD_TYPE_MAP[VECTOR_FIELD_CELL_LEVEL].lower():
                 fill_successful = self.field_extractor.fillVectorFieldCellLevelData3D(
                     points_int_addr,
                     vectors_int_addr,
