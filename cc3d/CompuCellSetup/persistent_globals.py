@@ -208,10 +208,10 @@ class PersistentGlobals:
         Retuns screenshot directory - if possible to construct one otherwise returns None
         :return:
         """
-        if self.simulation_file_name is None:
-            return None
-        elif self.__output_dir is not None:
+        if self.__output_dir is not None:
             return self.__output_dir
+        elif self.simulation_file_name is None:
+            return None
         else:
             sim_base_name = basename(self.simulation_file_name)
             sim_base_name = sim_base_name.replace('.', '_')
