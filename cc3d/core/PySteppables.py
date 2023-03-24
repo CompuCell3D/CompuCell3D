@@ -403,6 +403,16 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
                                          'lambdaVecY', 'lambdaVecZ', 'fluctAmpl']
 
     @property
+    def shared_steppable_dict(self):
+        """Alias for self.shared_steppable_vars"""
+        return self.shared_steppable_vars
+
+    @property
+    def dict(self):
+        """Alias for self.shared_steppable_vars"""
+        return self.shared_steppable_vars
+
+    @property
     def external_input(self):
         """Input object passed in through the Python API when executing CC3D from Python"""
 
