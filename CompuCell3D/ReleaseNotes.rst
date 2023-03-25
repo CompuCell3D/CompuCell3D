@@ -1,9 +1,9 @@
 Release Notes
 =============
 
-Version 4.3.1
+Version 4.4.0
 -------------
-**2023-03-14**
+**2023-03-26**
 
 New features:
 - Added all-Python frontend
@@ -22,6 +22,7 @@ Bug fixes:
   - Fixed python-based rendering
   - Fixed random number generator
   - Fixed glyphs rendering
+  - Fixed randomization of cleavage plane during random orientation mitosis
 
 Version 4.3.2
 -------------
