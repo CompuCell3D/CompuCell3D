@@ -11,12 +11,41 @@
 
 using namespace std;
 
+CC3DXMLElementPtrT::CC3DXMLElementPtrT(CC3DXMLElement* pValue) : pData(pValue)
+{
+}
+CC3DXMLElementPtrT::~CC3DXMLElementPtrT()
+    {
+        cerr<<"dummy destructor"<<endl;
+        // pointer no longer requried
+//        delete pData;
+    }
+
+    CC3DXMLElement& CC3DXMLElementPtrT::operator* ()
+    {
+        return *pData;
+    }
+
+    CC3DXMLElement* CC3DXMLElementPtrT::operator-> ()
+    {
+        return pData;
+    }
+
+
+
+
+
 CC3DXMLElement::CC3DXMLElement(std::string  _name, std::map<std::string,std::string> _attributes,std::string _cdata):
 name(_name),attributes(_attributes),cdata(_cdata),defaultIndent(3),elemNameCounterDictPtr(0)
-{}	
+{}
+
+CC3DXMLElement::~CC3DXMLElement(){
+}
 
 
-CC3DXMLElementList::~CC3DXMLElementList(){}
+CC3DXMLElementList::~CC3DXMLElementList(){
+
+}
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void CC3DXMLElement::setElemNameCounterDictPtr(map<std::string,int> * _ptr){	
 	elemNameCounterDictPtr=_ptr;

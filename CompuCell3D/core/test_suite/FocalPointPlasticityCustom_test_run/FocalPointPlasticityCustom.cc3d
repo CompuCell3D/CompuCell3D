@@ -1,7 +1,0 @@
-<Simulation version="3.6.2">
-    <XMLScript>Simulation/FocalPointPlasticityCustom.xml</XMLScript>    
-    <PythonScript>Simulation/FocalPointPlasticityCustom.py</PythonScript>
-    <PIFFile>Simulation/FocalPointPlasticityCustom.piff</PIFFile>        
-</Simulation>
-
- 

@@ -319,7 +319,9 @@ void Potts3D::unregisterFixedStepper(FixedStepper *_fixedStepper) {
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-CellG *Potts3D::createCellG(const Point3D pt, long _clusterId) {
+CellG *Potts3D::createCellG(const Point3D pt, long _clusterId)
+//
+{
     if (!cellFieldG->isValid(pt)) throw CC3DException("createCell() cellFieldG Point out of range!");
 
     CellG *cell = createCell(_clusterId);

@@ -191,6 +191,7 @@ class CMLResultReader:
             assert file_name.endswith('.dml'), 'file_name must specify a .dml file'
             self.field_extractor = PlayerPython.FieldExtractorCML()
             self.field_extractor.setFieldDim(LatticeDataSummaryReader.extract_lattice_dim_from_file_name(file_name))
+            self.field_extractor.setLatticeType(LatticeDataSummaryReader.extract_lattice_type_from_file_name(file_name))
 
         # data extracted from LDS file *.dml
         self.fieldDim = None

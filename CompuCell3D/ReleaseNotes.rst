@@ -1,6 +1,37 @@
 Release Notes
 =============
 
+Version 4.4.0
+-------------
+**2023-03-14**
+
+New features:
+- Added all-Python frontend
+- Implemented interactive execution and visualization in pure Python
+- Added support for Jupyter Notebook
+- Added select Jupyter Notebook widgets for interactive execution and visualization
+- Added finite volume reaction diffusion solver
+- Added backend logging
+- Upgraded VTK to 9.x
+- Upgraded SWIG to 4.x
+- Improved conda builds
+
+Bug fixes:
+  - Fixed 3D concentration visualization
+  - Fixed ordering of cell type ID generation
+  - Fixed python-based rendering
+  - Fixed random number generator
+  - Fixed glyphs rendering
+
+Version 4.3.2
+-------------
+**2022-11-22**
+
+New Features:
+
+Bug fixes:
+ - Fixed code crash when visualizing non-square projections of the lattice
+
 Version 4.3.1
 -------------
 **2022-07-17**

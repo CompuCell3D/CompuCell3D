@@ -1,10 +1,7 @@
 import argparse
 import traceback
 import cc3d
-import sys
 from os.path import *
-
-# import cc3d.CompuCellSetup as CompuCellSetup
 from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
 from cc3d.core.RollbackImporter import RollbackImporter
@@ -13,7 +10,7 @@ from cc3d.core.RollbackImporter import RollbackImporter
 -i d:\CC3DProjects\bac_mac_restart_100\bacterium_macrophage_2D_steering.cc3d -f 10 -fr 100 --restart-multiple-snapshots
 """
 
-def process_cml():
+def process_cml(known_args=None):
     """
 
     :return:
@@ -48,18 +45,18 @@ def process_cml():
                                  'to access current param scan iteration number')
 
     cml_parser.add_argument('--log-level', required=False, type=str, default='',
-                            choices=['', 'LOG_FATAL', 'LOG_CRITICAL', 'LOG_ERROR',
-                                     'LOG_WARNING', 'LOG_NOTICE', 'LOG_INFORMATION',
-                                     'LOG_DEBUG', 'LOG_TRACE'],
+                            choices=['', 'FATAL', 'CRITICAL', 'ERROR',
+                                     'WARNING', 'NOTICE', 'INFORMATION',
+                                     'DEBUG', 'TRACE', 'CURRENT'],
                             help='optional argument that specifies log level: allowed values are:'
-                                 'LOG_FATAL, LOG_CRITICAL, LOG_ERROR, LOG_WARNING, '
-                                 'LOG_NOTICE, LOG_INFORMATION, LOG_DEBUG, LOG_TRACE')
+                                 'FATAL, CRITICAL, ERROR, WARNING, '
+                                 'NOTICE, INFORMATION, DEBUG, TRACE CURRENT')
 
     cml_parser.add_argument('--log-to-file', required=False, action='store_true', default=False,
                             help='optional argument that specifies if log should be saved to a file')
 
 
-    return cml_parser.parse_args()
+    return cml_parser.parse_args(args=known_args)
 
 
 def handle_error():
@@ -82,9 +79,9 @@ def handle_error():
         # simthread.emitErrorOccured('Python Error', tb)
         simthread.emitErrorFormatted(traceback_text)
 
-
-if __name__ == '__main__':
-    args = process_cml()
+def main(args:argparse.Namespace=None):
+    if not args:
+        args = process_cml()
 
     print(cc3d.get_formatted_version_info())
 
@@ -112,9 +109,18 @@ if __name__ == '__main__':
     persistent_globals.restart_snapshot_frequency = restart_snapshot_frequency
     persistent_globals.restart_multiple_snapshots = restart_multiple_snapshots
     persistent_globals.parameter_scan_iteration = args.parameter_scan_iteration
-    persistent_globals.log_level = args.log_level
+
+    if args.log_level:
+        persistent_globals.log_level = "LOG_" + args.log_level
+    else:
+        persistent_globals.log_level = "LOG_CURRENT"
+
     persistent_globals.log_to_file = args.log_to_file
 
     run_cc3d_project(cc3d_sim_fname=cc3d_sim_fname_abs)
 
     rollbackImporter.uninstall()
+
+
+if __name__ == '__main__':
+    main()

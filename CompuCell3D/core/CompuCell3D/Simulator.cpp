@@ -75,6 +75,7 @@ Simulator::~Simulator() {
     delete pUtilsSingle;
 	CC3D_Log(LOG_DEBUG) << "Simulator: extra destroy for boundary strategy";
     BoundaryStrategy::destroy();
+	CC3DLogger::destroy();
 
 #ifdef QT_WRAPPERS_AVAILABLE
     //restoring original cerr stream buffer
@@ -267,7 +268,9 @@ void Simulator::postEvent(CC3DEvent & _ev){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Simulator::start() {
+void Simulator::start()
+//
+{
 
     try {
         // Print the names of loaded plugins
@@ -407,7 +410,7 @@ void Simulator::finish() {
 
     } catch (const CC3DException &e) {
         CC3D_Log(LOG_DEBUG) << "ERROR: " << e;
-        CC3D_Log(LOG_DEBUG) << "THIS IS recentErrorMessage="<<formatErrorMessage(e);
+        CC3D_Log(LOG_DEBUG) << "Recent Error Message="<<formatErrorMessage(e);
         if (!newPlayerFlag) {
             throw e;
         }
@@ -550,7 +553,7 @@ void Simulator::initializeCC3D() {
 
 
 
-void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
+void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData) {
 	CC3D_Log(LOG_DEBUG) << "INSIDE initializePottsCC3D=";
     //registering Potts as SteerableObject
     registerSteerableObject(&potts);

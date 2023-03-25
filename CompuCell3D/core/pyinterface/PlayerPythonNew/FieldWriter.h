@@ -13,12 +13,12 @@
 #include "FieldExtractorDLLSpecifier.h"
 
 class FieldStorage;
-class vtkIntArray;
-class vtkDoubleArray;
-class vtkFloatArray;
-class vtkPoints;
-class vtkCellArray;
-class vtkObject;
+//class vtkIntArray;
+//class vtkDoubleArray;
+//class vtkFloatArray;
+//class vtkPoints;
+//class vtkCellArray;
+//class vtkObject;
 class vtkStructuredPoints;
 
 

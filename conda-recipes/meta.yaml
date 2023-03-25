@@ -1,9 +1,21 @@
+# add better version handling to meta.yaml
 # when building as standalone package uncomment line below and set version and build_number to proper values
-# {% set version = "4.3.2" %}
-# {% set build_number = "2" %}
+#{% set data = load_file_data('versions.yaml') %}
+# note you also need to create links to  libGLso and libGLX.so  in /usr/lib because cmake is unable to find them elsewhere
 
-#{% set version = "4.3.0" %}
-#{% set build_number = "16" %}
+
+{% set versions = load_file_data('versions.yaml', from_recipe_dir=True) %}
+
+{% set version = versions.get('version') %}
+{% set build_number = versions.get('build_number',0) %}
+{% set numpy_version = versions.get('numpy_version') %}
+{% set cc3d_network_solvers_version = versions.get('cc3d_network_solvers_version') %}
+{% set cmake_version = versions.get('cmake_version') %}
+{% set vtk_version = versions.get('vtk_version') %}
+{% set swig_version = versions.get('swig_version') %}
+{% set boost_version = versions.get('boost_version') %}
+{% set tbb_devel_version = versions.get('tbb_devel_version') %}
+
 
 package:
   name: cc3d
@@ -31,38 +43,44 @@ build:
 requirements:
   host:
     - python {{ python }}
-    - numpy=1.18
-    - vtk=8.2
+    - numpy={{ numpy_version }}
+    - vtk={{ vtk_version }}
     - eigen
-    - tbb-devel=2020
-    - cmake>=3.14
-    - swig=3
-    - cc3d-network-solvers>=0.0.2
+    - tbb-devel={{ tbb_devel_version }}
+    - boost={{ boost_version }}
+    - cmake={{ cmake_version }}
+    - swig>={{ swig_version }}
+    - psutil
+    - deprecated
+    - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
 
   build:
-    - cmake>=3.14
-    - swig=3
+    - cmake={{ cmake_version }}
+    - swig>={{ swig_version }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
 
   run:
-    - python
-    - numpy=1.18
-    - vtk=8.2
-    - {{ pin_compatible('numpy') }}
-    - {{ pin_compatible('vtk') }}
+    - python {{ python }}
+    - numpy={{ numpy_version }}
+    - vtk={{ vtk_version }}
+    - eigen
+    - tbb-devel={{ tbb_devel_version }}
+    - boost={{ boost_version }}
+    - swig>={{ swig_version }}
+    - psutil
+    - deprecated
     - scipy
     - pandas
     - jinja2
     - deprecated
     - psutil
-    - cmake=3.19
-    - swig=3
-    - cc3d-network-solvers>=0.0.2
+    - cmake={{ cmake_version }}
+    - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
@@ -73,8 +91,9 @@ requirements:
     - sphinx
     - graphviz
 
+
   run_constrained:
-    - tbb=2020
+    - tbb={{ tbb_devel_version }}
 
 # on windows we can run conda
 #  build . -c conda-forge -c compucell3d to force conda to use

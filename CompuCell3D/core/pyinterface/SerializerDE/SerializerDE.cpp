@@ -109,11 +109,13 @@ bool SerializerDE::serializeCellField(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-        #ifdef VTK6
-            fieldDataWriter->SetInputData(fieldData);
-        #else
-            fieldDataWriter->SetInput(fieldData);
-        #endif 
+
+#if defined(VTK6) || defined(VTK9)
+    fieldDataWriter->SetInputData(fieldData);
+#endif
+#if !defined(VTK6) && !defined(VTK9)
+    fieldDataWriter->SetInput(fieldData);
+#endif
 	
 	fieldDataWriter->Write();
 	fieldDataWriter->Delete();
@@ -253,13 +255,15 @@ bool SerializerDE::serializeConcentrationField(SerializeData &_sd){
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
         
-        #ifdef VTK6
-            fieldDataWriter->SetInputData(fieldData);
-        #else
-            fieldDataWriter->SetInput(fieldData);
-        #endif
-	
-	fieldDataWriter->Write();
+#if defined(VTK6) || defined(VTK9)
+    fieldDataWriter->SetInputData(fieldData);
+#endif
+#if !defined(VTK6) && !defined(VTK9)
+    fieldDataWriter->SetInput(fieldData);
+#endif
+
+
+    fieldDataWriter->Write();
 	fieldDataWriter->Delete();
 
 	return true;
@@ -359,13 +363,15 @@ bool SerializerDE::serializeScalarField(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-        #ifdef VTK6
-            fieldDataWriter->SetInputData(fieldData);
-        #else
-            fieldDataWriter->SetInput(fieldData);
-        #endif
-	
-	fieldDataWriter->Write();
+#if defined(VTK6) || defined(VTK9)
+    fieldDataWriter->SetInputData(fieldData);
+#endif
+#if !defined(VTK6) && !defined(VTK9)
+    fieldDataWriter->SetInput(fieldData);
+#endif
+
+
+    fieldDataWriter->Write();
 	fieldDataWriter->Delete();
 
 	return true;
@@ -476,13 +482,15 @@ bool SerializerDE::serializeScalarFieldCellLevel(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-        #ifdef VTK6
-            fieldDataWriter->SetInputData(fieldData);
-        #else
-            fieldDataWriter->SetInput(fieldData);
-        #endif
-	
-	fieldDataWriter->Write();
+#if defined(VTK6) || defined(VTK9)
+    fieldDataWriter->SetInputData(fieldData);
+#endif
+#if !defined(VTK6) && !defined(VTK9)
+    fieldDataWriter->SetInput(fieldData);
+#endif
+
+
+    fieldDataWriter->Write();
 	fieldDataWriter->Delete();
 
 	return true;
@@ -595,14 +603,16 @@ bool SerializerDE::serializeVectorField(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-        
-        #ifdef VTK6
-            fieldDataWriter->SetInputData(fieldData);
-        #else
-            fieldDataWriter->SetInput(fieldData);
-        #endif
-	
-	fieldDataWriter->Write();
+
+#if defined(VTK6) || defined(VTK9)
+    fieldDataWriter->SetInputData(fieldData);
+#endif
+#if !defined(VTK6) && !defined(VTK9)
+    fieldDataWriter->SetInput(fieldData);
+#endif
+
+
+    fieldDataWriter->Write();
 	fieldDataWriter->Delete();
 
 	return true;
@@ -717,13 +727,15 @@ bool SerializerDE::serializeVectorFieldCellLevel(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-        #ifdef VTK6
-            fieldDataWriter->SetInputData(fieldData);
-        #else
-            fieldDataWriter->SetInput(fieldData);
-        #endif
-	
-	fieldDataWriter->Write();
+#if defined(VTK6) || defined(VTK9)
+    fieldDataWriter->SetInputData(fieldData);
+#endif
+#if !defined(VTK6) && !defined(VTK9)
+    fieldDataWriter->SetInput(fieldData);
+#endif
+
+
+    fieldDataWriter->Write();
 	fieldDataWriter->Delete();
 
 	return true;

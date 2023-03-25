@@ -1,11 +1,10 @@
 import traceback
-import cc3d
 import sys
 from os.path import *
 from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.readers import readCC3DFile
 from cc3d.CompuCellSetup.simulation_utils import CC3DCPlusPlusError
-
+from cc3d.cpp.CompuCell import CC3DException
 
 def handle_error(exception_obj):
     """
@@ -53,34 +52,47 @@ def run_cc3d_project(cc3d_sim_fname):
     """
 
     try:
-        cc3dSimulationDataHandler = readCC3DFile(fileName=cc3d_sim_fname)
+        cc3d_simulation_data_handler = readCC3DFile(fileName=cc3d_sim_fname)
     except FileNotFoundError:
         print('Could not find cc3d_sim_fname')
         return
 
-    CompuCellSetup.cc3dSimulationDataHandler = cc3dSimulationDataHandler
+    CompuCellSetup.cc3dSimulationDataHandler = cc3d_simulation_data_handler
     # todo - need to find a better solution ot append and remove pythonpath of the simulation object
     sys.path.insert(0, join(dirname(cc3d_sim_fname), 'Simulation'))
 
-    # execfile(CompuCellSetup.simulationPaths.simulationPythonScriptName)
-    with open(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript) as sim_fh:
+    with open(cc3d_simulation_data_handler.cc3dSimulationData.pythonScript) as sim_fh:
         try:
-            code = compile(sim_fh.read(), cc3dSimulationDataHandler.cc3dSimulationData.pythonScript, 'exec')
-        except:
+            code = compile(sim_fh.read(), cc3d_simulation_data_handler.cc3dSimulationData.pythonScript, 'exec')
+        except Exception as e:
             code = None
             traceback.print_exc(file=sys.stdout)
-            handle_error()
+            handle_error(e)
 
-        # exec(code)
+        output_directory = CompuCellSetup.persistent_globals.output_directory
+
+        if cc3d_simulation_data_handler and output_directory is not None:
+            cc3d_simulation_data_handler.copy_simulation_data_files(output_directory)
+
         if code is not None:
             try:
                 exec(code, globals(), locals())
-                # exec(sim_fh.read())
-                # exec(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
 
-            except CC3DCPlusPlusError as e:
-                # handling C++ error
+            except RuntimeError as e:
+                # note, we have fixture in SWIG that Converts CC3DException into RuntimeError
+                traceback.print_exc(file=sys.stderr)
                 handle_error(e)
+
+                # we will exit with code 1 only in the non-player mode
+                if not CompuCellSetup.persistent_globals.player_type:
+                    sys.exit(1)
+
             except Exception as e:
+                if str(e).startswith("Unknown exception"):
+                    print("Likely exception from C++ function that was not marked to throw an exception")
                 traceback.print_exc(file=sys.stdout)
                 handle_error(e)
+
+                # we will exit with code 1 only in the non-player mode
+                if not CompuCellSetup.persistent_globals.player_type:
+                    sys.exit(1)

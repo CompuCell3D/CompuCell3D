@@ -1,3 +1,6 @@
+# importing maboss here to avoid crashes on exit on windows... happens with latest maboss with 3.7 and swig 4
+from cc3d.core.MaBoSSCC3D import MaBoSSHelper
+
 from .utils import *
 from . simulation_utils import *
 from . sim_runner import *

@@ -2,6 +2,7 @@
 #define POTTSTESTDATA_H
 
 #include <CompuCell3D/Field3D/Point3D.h>
+#include <CompuCell3D/CC3DExceptions.h>
 #include <string>
 #include <map>
 #include <vector>
@@ -9,6 +10,7 @@
 
 namespace CompuCell3D {
 
+	class CC3DException;
     class PottsTestDataHeaderSpecs {
     public:
         std::vector <std::string> columns;
@@ -46,7 +48,7 @@ namespace CompuCell3D {
 
         std::vector <std::string> split_string(std::string str_to_plit, char delimiter);
 
-        bool compare_potts_data(PottsTestData &potts_data_to_compare);
+        bool compare_potts_data(PottsTestData &potts_data_to_compare) ;
 
         double relative_difference(double x, double y);
 

@@ -14,7 +14,12 @@ import threading
 from typing import Any, Callable, Dict, List
 import warnings
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
-from vtkmodules.vtkIOExportPython import vtkGL2PSExporter
+try:
+    # vtk 8
+    from vtkmodules.vtkIOExportPython import vtkGL2PSExporter
+except ModuleNotFoundError:
+    # vtk 9
+    from vtkmodules.vtkIOExportGL2PS import vtkGL2PSExporter
 from vtkmodules.vtkIOImage import vtkJPEGWriter, vtkPNGWriter
 from vtkmodules.vtkRenderingCore import vtkRenderWindowInteractor, vtkRenderWindow, vtkWindowToImageFilter, vtkTextActor
 from vtkmodules.util import numpy_support

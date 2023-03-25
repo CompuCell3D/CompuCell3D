@@ -8,33 +8,11 @@
 #include "CC3DLogger.h"
 #include <iostream>
 #include <algorithm>
-#include <fstream>
 
-class Message {
-public:
-    enum Priority
-    {
-        PRIO_FATAL       = 1,
-        PRIO_CRITICAL,
-        PRIO_ERROR,
-        PRIO_WARNING,
-        PRIO_NOTICE,
-        PRIO_INFORMATION,
-        PRIO_DEBUG,
-        PRIO_TRACE,
-    };
-};
+using namespace std;
+using namespace CompuCell3D;
 
-static int logLevel = Message::PRIO_NOTICE;
-
-static std::ofstream outputFile;
-static std::string outputFileName;
-
-static std::ostream *consoleStream = NULL;
-static std::ostream *fileStream = NULL;
-
-static CompuCell3D::LoggerCallback callback = NULL;
-
+CC3DLogger *CC3DLogger::singleton;
 
 
 class FakeLogger {
@@ -54,7 +32,7 @@ static FakeLogger& getLogger() {
     return logger;
 }
 
-CompuCell3D::LoggingBuffer::LoggingBuffer(int level, const char* func, const char *file, int line):
+LoggingBuffer::LoggingBuffer(int level, const char* func, const char *file, int line):
                 func(func), file(file), line(line)
 {
     if (level >= Message::PRIO_FATAL && level <= Message::PRIO_TRACE)
@@ -68,7 +46,7 @@ CompuCell3D::LoggingBuffer::LoggingBuffer(int level, const char* func, const cha
     }
 }
 
-CompuCell3D::LoggingBuffer::~LoggingBuffer()
+LoggingBuffer::~LoggingBuffer()
 {
     FakeLogger &logger = getLogger();
     switch (level)
@@ -103,39 +81,60 @@ CompuCell3D::LoggingBuffer::~LoggingBuffer()
     }
 }
 
-std::ostream& CompuCell3D::LoggingBuffer::stream()
+std::ostream& LoggingBuffer::stream()
 {
     return buffer;
 }
 
-void CompuCell3D::Logger::setLevel(int level)
+
+CC3DLogger* CC3DLogger::get() {
+    using namespace std;
+    if (!singleton) {
+
+        singleton = new CC3DLogger();
+    }
+
+    return singleton;
+}
+
+void CC3DLogger::destroy() {
+
+    if (singleton) {
+
+        delete singleton;
+        singleton = 0;
+    }
+}
+
+
+void CC3DLogger::setLevel(int level)
 {
     logLevel = level;
-    
+
     if(callback) {
         if (consoleStream) callback(LOG_LEVEL_CHANGED, consoleStream);
         if (fileStream) callback(LOG_LEVEL_CHANGED, fileStream);
     }
 }
 
-int CompuCell3D::Logger::getLevel()
+int CC3DLogger::getLevel()
 {
     return logLevel;
 }
 
-void CompuCell3D::Logger::disableLogging()
+void CC3DLogger::disableLogging()
 {
     disableConsoleLogging();
     disableFileLogging();
 }
 
-void CompuCell3D::Logger::disableConsoleLogging()
+void CC3DLogger::disableConsoleLogging()
 {
     consoleStream = NULL;
     if(callback) callback(LOG_OUTPUTSTREAM_CHANGED, consoleStream);
 }
 
-void CompuCell3D::Logger::enableConsoleLogging(int level)
+void CC3DLogger::enableConsoleLogging(int level)
 {
     setLevel(level);
 
@@ -146,7 +145,7 @@ void CompuCell3D::Logger::enableConsoleLogging(int level)
     }
 }
 
-void CompuCell3D::Logger::enableFileLogging(const std::string &fileName, int level)
+void CC3DLogger::enableFileLogging(const std::string &fileName, int level)
 {
     setLevel(level);
 
@@ -163,73 +162,67 @@ void CompuCell3D::Logger::enableFileLogging(const std::string &fileName, int lev
     }
 }
 
-void CompuCell3D::Logger::disableFileLogging()
+
+void CC3DLogger::disableFileLogging()
 {
     if (outputFileName.size() == 0) return;
 
     outputFile.close();
     outputFileName = "";
-    fileStream = NULL;
+    fileStream = nullptr;
 
     if(callback) {
         callback(LOG_OUTPUTSTREAM_CHANGED, fileStream);
     }
 }
 
-std::string CompuCell3D::Logger::getCurrentLevelAsString()
+std::string CC3DLogger::getCurrentLevelAsString()
 {
     return levelToString(logLevel);
 }
 
-std::string CompuCell3D::Logger::getFileName()
+std::string CC3DLogger::getFileName()
 {
     return outputFileName;
 }
 
-// void Logger::setFormattingPattern(const std::string &format)
-// {
-// }
 
-// std::string Logger::getFormattingPattern()
-// {
-//     return "";
-// }
 
-std::string CompuCell3D::Logger::levelToString(int level)
+std::string CC3DLogger::levelToString(int level)
 {
     switch (level)
     {
-    case Message::PRIO_FATAL:
-        return "LOG_FATAL";
-        break;
-    case Message::PRIO_CRITICAL:
-        return "LOG_CRITICAL";
-        break;
-    case Message::PRIO_ERROR:
-        return "LOG_ERROR";
-        break;
-    case Message::PRIO_WARNING:
-        return "LOG_WARNING";
-        break;
-    case Message::PRIO_NOTICE:
-        return "LOG_NOTICE";
-        break;
-    case Message::PRIO_INFORMATION:
-        return "LOG_INFORMATION";
-        break;
-    case Message::PRIO_DEBUG:
-        return "LOG_DEBUG";
-        break;
-    case Message::PRIO_TRACE:
-        return "LOG_TRACE";
-        break;
-    default:
-        return "LOG_CURRENT";
+        case Message::PRIO_FATAL:
+            return "LOG_FATAL";
+            break;
+        case Message::PRIO_CRITICAL:
+            return "LOG_CRITICAL";
+            break;
+        case Message::PRIO_ERROR:
+            return "LOG_ERROR";
+            break;
+        case Message::PRIO_WARNING:
+            return "LOG_WARNING";
+            break;
+        case Message::PRIO_NOTICE:
+            return "LOG_NOTICE";
+            break;
+        case Message::PRIO_INFORMATION:
+            return "LOG_INFORMATION";
+            break;
+        case Message::PRIO_DEBUG:
+            return "LOG_DEBUG";
+            break;
+        case Message::PRIO_TRACE:
+            return "LOG_TRACE";
+            break;
+        default:
+            return "LOG_CURRENT";
     }
     return "LOG_CURRENT";
 }
 
-CompuCell3D::LogLevel CompuCell3D::Logger::stringToLevel(const std::string &str)
+LogLevel CC3DLogger::stringToLevel(const std::string &str)
 {
     std::string upstr = str;
     std::transform(upstr.begin(), upstr.end(), upstr.begin(), ::toupper);
@@ -272,6 +265,233 @@ CompuCell3D::LogLevel CompuCell3D::Logger::stringToLevel(const std::string &str)
     }
 }
 
+void CC3DLogger::log(LogLevel l, const std::string &msg)
+{
+    FakeLogger &logger = getLogger();
+
+    Message::Priority level = (Message::Priority)(l);
+
+    switch (level)
+    {
+        case Message::PRIO_FATAL:
+            logger.fatal(msg, "", "", 0);
+            break;
+        case Message::PRIO_CRITICAL:
+            logger.critical(msg, "", "", 0);
+            break;
+        case Message::PRIO_ERROR:
+            logger.error(msg, "", "", 0);
+            break;
+        case Message::PRIO_WARNING:
+            logger.warning(msg, "", "", 0);
+            break;
+        case Message::PRIO_NOTICE:
+            logger.notice(msg, "", "", 0);
+            break;
+        case Message::PRIO_INFORMATION:
+            logger.information(msg, "", "", 0);
+            break;
+        case Message::PRIO_DEBUG:
+            logger.debug(msg, "", "", 0);
+            break;
+        case Message::PRIO_TRACE:
+            logger.trace(msg, "", "", 0);
+            break;
+        default:
+            logger.error(msg, "", "", 0);
+            break;
+    }
+}
+
+void CC3DLogger::setConsoleStream(std::ostream *os)
+{
+    consoleStream = os;
+
+    if(callback) callback(LOG_OUTPUTSTREAM_CHANGED, consoleStream);
+}
+
+std::ostream * CC3DLogger::getConsoleStream(){
+    return consoleStream;
+}
+
+
+std::ostream * CC3DLogger::getFileStream(){
+    return fileStream;
+}
+
+void CC3DLogger::setCallback(LoggerCallback cb) {
+    callback = cb;
+
+    if(callback) {
+        if(consoleStream) callback(LOG_CALLBACK_SET, consoleStream);
+        if(fileStream) callback(LOG_CALLBACK_SET, fileStream);
+    }
+}
+
+//void Logger::setLevel(int level)
+//{
+//    logLevel = level;
+//
+//    if(callback) {
+//        if (consoleStream) callback(LOG_LEVEL_CHANGED, consoleStream);
+//        if (fileStream) callback(LOG_LEVEL_CHANGED, fileStream);
+//    }
+//}
+
+//int Logger::getLevel()
+//{
+//    return logLevel;
+//}
+
+//void Logger::disableLogging()
+//{
+//    disableConsoleLogging();
+//    disableFileLogging();
+//}
+
+//void Logger::disableConsoleLogging()
+//{
+//    consoleStream = NULL;
+//    if(callback) callback(LOG_OUTPUTSTREAM_CHANGED, consoleStream);
+//}
+
+//void Logger::enableConsoleLogging(int level)
+//{
+//    setLevel(level);
+//
+//    consoleStream = &std::cout;
+//
+//    if(callback) {
+//        callback(LOG_OUTPUTSTREAM_CHANGED, consoleStream);
+//    }
+//}
+
+//void Logger::enableFileLogging(const std::string &fileName, int level)
+//{
+//    setLevel(level);
+//
+//    disableFileLogging();
+//
+//    outputFileName = fileName;
+//    outputFile.open(fileName, std::ios_base::out|std::ios_base::ate);
+//    if(outputFile.is_open()) {
+//        fileStream = &outputFile;
+//    }
+//
+//    if(callback) {
+//        callback(LOG_OUTPUTSTREAM_CHANGED, fileStream);
+//    }
+//}
+
+//void Logger::disableFileLogging()
+//{
+//    if (outputFileName.size() == 0) return;
+//
+//    outputFile.close();
+//    outputFileName = "";
+//    fileStream = NULL;
+//
+//    if(callback) {
+//        callback(LOG_OUTPUTSTREAM_CHANGED, fileStream);
+//    }
+//}
+
+//std::string Logger::getCurrentLevelAsString()
+//{
+//    return levelToString(logLevel);
+//}
+
+//std::string Logger::getFileName()
+//{
+//    return outputFileName;
+//}
+
+// void Logger::setFormattingPattern(const std::string &format)
+// {
+// }
+
+// std::string Logger::getFormattingPattern()
+// {
+//     return "";
+// }
+//
+//std::string Logger::levelToString(int level)
+//{
+//    switch (level)
+//    {
+//    case Message::PRIO_FATAL:
+//        return "LOG_FATAL";
+//        break;
+//    case Message::PRIO_CRITICAL:
+//        return "LOG_CRITICAL";
+//        break;
+//    case Message::PRIO_ERROR:
+//        return "LOG_ERROR";
+//        break;
+//    case Message::PRIO_WARNING:
+//        return "LOG_WARNING";
+//        break;
+//    case Message::PRIO_NOTICE:
+//        return "LOG_NOTICE";
+//        break;
+//    case Message::PRIO_INFORMATION:
+//        return "LOG_INFORMATION";
+//        break;
+//    case Message::PRIO_DEBUG:
+//        return "LOG_DEBUG";
+//        break;
+//    case Message::PRIO_TRACE:
+//        return "LOG_TRACE";
+//        break;
+//    default:
+//        return "LOG_CURRENT";
+//    }
+//    return "LOG_CURRENT";
+//}
+//
+//LogLevel Logger::stringToLevel(const std::string &str)
+//{
+//    std::string upstr = str;
+//    std::transform(upstr.begin(), upstr.end(), upstr.begin(), ::toupper);
+//
+//    if (upstr == "LOG_FATAL")
+//    {
+//        return LOG_FATAL;
+//    }
+//    else if(upstr == "LOG_CRITICAL")
+//    {
+//        return LOG_CRITICAL;
+//    }
+//    else if(upstr == "LOG_ERROR" || upstr == "ERROR")
+//    {
+//        return LOG_ERROR;
+//    }
+//    else if(upstr == "LOG_WARNING" || upstr == "WARNING")
+//    {
+//        return LOG_WARNING;
+//    }
+//    else if(upstr == "LOG_NOTICE")
+//    {
+//        return LOG_NOTICE;
+//    }
+//    else if(upstr == "LOG_INFORMATION" || upstr == "INFO")
+//    {
+//        return LOG_INFORMATION;
+//    }
+//    else if(upstr == "LOG_DEBUG" || upstr == "DEBUG")
+//    {
+//        return LOG_DEBUG;
+//    }
+//    else if(upstr == "LOG_TRACE" || upstr == "TRACE")
+//    {
+//        return LOG_TRACE;
+//    }
+//    else
+//    {
+//        return LOG_CURRENT;
+//    }
+//}
+
 // bool Logger::getColoredOutput()
 // {
 //     return false;
@@ -285,61 +505,61 @@ CompuCell3D::LogLevel CompuCell3D::Logger::stringToLevel(const std::string &str)
 // {
 // }
 
-void CompuCell3D::Logger::log(LogLevel l, const std::string &msg)
-{
-    FakeLogger &logger = getLogger();
+//void Logger::log(LogLevel l, const std::string &msg)
+//{
+//    FakeLogger &logger = getLogger();
+//
+//    Message::Priority level = (Message::Priority)(l);
+//
+//    switch (level)
+//    {
+//    case Message::PRIO_FATAL:
+//            logger.fatal(msg, "", "", 0);
+//        break;
+//    case Message::PRIO_CRITICAL:
+//            logger.critical(msg, "", "", 0);
+//        break;
+//    case Message::PRIO_ERROR:
+//            logger.error(msg, "", "", 0);
+//        break;
+//    case Message::PRIO_WARNING:
+//            logger.warning(msg, "", "", 0);
+//        break;
+//    case Message::PRIO_NOTICE:
+//            logger.notice(msg, "", "", 0);
+//        break;
+//    case Message::PRIO_INFORMATION:
+//            logger.information(msg, "", "", 0);
+//        break;
+//    case Message::PRIO_DEBUG:
+//            logger.debug(msg, "", "", 0);
+//        break;
+//    case Message::PRIO_TRACE:
+//            logger.trace(msg, "", "", 0);
+//        break;
+//    default:
+//            logger.error(msg, "", "", 0);
+//        break;
+//    }
+//}
+//
+//void Logger::setConsoleStream(std::ostream *os)
+//{
+//    consoleStream = os;
+//
+//    if(callback) callback(LOG_OUTPUTSTREAM_CHANGED, consoleStream);
+//}
+//
+//void Logger::setCallback(LoggerCallback cb) {
+//    callback = cb;
+//
+//    if(callback) {
+//        if(consoleStream) callback(LOG_CALLBACK_SET, consoleStream);
+//        if(fileStream) callback(LOG_CALLBACK_SET, fileStream);
+//    }
+//}
 
-    Message::Priority level = (Message::Priority)(l);
-
-    switch (level)
-    {
-    case Message::PRIO_FATAL:
-            logger.fatal(msg, "", "", 0);
-        break;
-    case Message::PRIO_CRITICAL:
-            logger.critical(msg, "", "", 0);
-        break;
-    case Message::PRIO_ERROR:
-            logger.error(msg, "", "", 0);
-        break;
-    case Message::PRIO_WARNING:
-            logger.warning(msg, "", "", 0);
-        break;
-    case Message::PRIO_NOTICE:
-            logger.notice(msg, "", "", 0);
-        break;
-    case Message::PRIO_INFORMATION:
-            logger.information(msg, "", "", 0);
-        break;
-    case Message::PRIO_DEBUG:
-            logger.debug(msg, "", "", 0);
-        break;
-    case Message::PRIO_TRACE:
-            logger.trace(msg, "", "", 0);
-        break;
-    default:
-            logger.error(msg, "", "", 0);
-        break;
-    }
-}
-
-void CompuCell3D::Logger::setConsoleStream(std::ostream *os)
-{
-    consoleStream = os;
-
-    if(callback) callback(LOG_OUTPUTSTREAM_CHANGED, consoleStream);
-}
-
-void CompuCell3D::Logger::setCallback(LoggerCallback cb) {
-    callback = cb;
-    
-    if(callback) {
-        if(consoleStream) callback(LOG_CALLBACK_SET, consoleStream);
-        if(fileStream) callback(LOG_CALLBACK_SET, fileStream);
-    }
-}
-
-static void write_log(const char* kind, const std::string &fmt, const char* func, const char *file, const int line, std::ostream *os) {
+void write_log(const char* kind, const std::string &fmt, const char* func, const char *file, const int line, std::ostream *os) {
     
     *os << kind << ": " << fmt;
     if(func) { *os << ", func: " << func;}
@@ -348,8 +568,9 @@ static void write_log(const char* kind, const std::string &fmt, const char* func
     *os << std::endl;
 }
 
-static void write_log(const char* kind, const std::string &fmt, const char* func, const char *file, const int line) {
-    
+void write_log(const char* kind, const std::string &fmt, const char* func, const char *file, const int line) {
+    std::ostream *consoleStream = CC3DLogger::get()->getConsoleStream();
+    std::ostream *fileStream =  CC3DLogger::get()->getFileStream();
     if(consoleStream) write_log(kind, fmt, func, file, line, consoleStream);
     if(fileStream) write_log(kind, fmt, func, file, line, fileStream);
 }

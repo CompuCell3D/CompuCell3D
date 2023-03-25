@@ -1,7 +1,7 @@
 SET(SRCS CC3DLogger.cpp )
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-   ADD_STATIC_LIBRARY(Logger ${SRCS} )
+   ADD_SHARED_LIBRARY(Logger ${SRCS} )
 else()
    ADD_SHARED_LIBRARY(Logger ${SRCS} )
 endif()

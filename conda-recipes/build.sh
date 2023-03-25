@@ -11,10 +11,16 @@ CMAKE_CONFIG_ARGS+=(-DCMAKE_INSTALL_RPATH:PATH=${PREFIX}/lib)
 CMAKE_CONFIG_ARGS+=(-DBUILD_SHARED_LIBS:BOOL=ON)
 CMAKE_CONFIG_ARGS+=(-DNO_OPENCL:BOOLEAN=ON)
 CMAKE_CONFIG_ARGS+=(-DBUILD_STANDALONE:BOOLEAN=OFF)
-CMAKE_CONFIG_ARGS+=(-DPython_EXECUTABLE:PATH=${PYTHON})
+CMAKE_CONFIG_ARGS+=(-DPython3_EXECUTABLE:PATH=${PYTHON})
 if [[ $(uname) == Darwin ]]; then
     CMAKE_CONFIG_ARGS+=(-DCMAKE_OSX_SYSROOT=${CONDA_BUILD_SYSROOT})
 fi
+if [[ $(uname) == Linux ]]; then
+    # works with ubuntu builds only on RHEL you need to change those or hope that cmake figures out how to properly detect GL it is not that hard...
+    CMAKE_CONFIG_ARGS+=(-DOPENGL_gl_LIBRARY=/usr/lib/x86_64-linux-gnu/libGL.so)
+    CMAKE_CONFIG_ARGS+=(-DOPENGL_glx_LIBRARY=/usr/lib/x86_64-linux-gnu/libGLX.so)
+fi
+ 
 
 mkdir build
 cd build

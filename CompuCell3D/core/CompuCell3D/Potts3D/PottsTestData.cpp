@@ -138,7 +138,6 @@ PottsTestData::deserialize_single_potts_data(std::string line, PottsTestDataHead
 }
 
 std::vector <PottsTestData> PottsTestData::deserialize_potts_data_sequence(std::ifstream &infile) {
-    //ifstream infile(file_name);
     std::vector <PottsTestData> potts_test_data_vector;
     if (infile) {
 
@@ -165,6 +164,7 @@ double PottsTestData::abs_difference(double x, double y) {
 
 }
 
+
 bool PottsTestData::compare_potts_data(PottsTestData &potts_data_to_compare) {
 
     double tol = 1e-6;
@@ -184,7 +184,7 @@ bool PottsTestData::compare_potts_data(PottsTestData &potts_data_to_compare) {
 
             if (difference_value > tol) {
                 CC3D_Log(LOG_DEBUG) <<  "detected a difference in " << kv.first << " recorded=" << kv.second << " computed="
-                     << mitr_computed->second;
+                                    << mitr_computed->second;
                 CC3D_Log(LOG_DEBUG) << "difference_value=" << difference_value;
 
                 throw CC3DException(string(kv.first) + " energy term different ");
@@ -199,4 +199,7 @@ bool PottsTestData::compare_potts_data(PottsTestData &potts_data_to_compare) {
     if (abs_difference(acceptanceFunctionProbability, potts_data_to_compare.acceptanceFunctionProbability) >= 1e-4)
         throw CC3DException("acceptanceFunctionProbability is different");
 
+    return true;
 }
+
+

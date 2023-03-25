@@ -11,7 +11,6 @@
 #include <Utils/Coordinates3D.h>
 #include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
-//#include <vtkFloatArray.h>
 #include <vtkCharArray.h>
 #include <vtkLongArray.h>
 #include <vtkPoints.h>
@@ -41,6 +40,7 @@ FieldWriter::~FieldWriter(){
 }
 ////////////////////////////////////////////////////////////////////////////////
 void FieldWriter::init(Simulator * _sim){
+
 	sim=_sim;
 	if (!sim) {
 		cout << "FieldWriter::init():  sim is null" << endl;
@@ -52,16 +52,15 @@ void FieldWriter::init(Simulator * _sim){
 		exit(-1);
 	}
     latticeData=vtkStructuredPoints::New();
-    
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim();
-    
+
     latticeData->SetDimensions(fieldDim.x,fieldDim.y,fieldDim.z);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void FieldWriter::clear(){
 	for (int i =0 ; i < arrayNameVec.size() ;++i){
-		latticeData->GetPointData()->RemoveArray(arrayNameVec[i].c_str());	
+		latticeData->GetPointData()->RemoveArray(arrayNameVec[i].c_str());
 	}
 	arrayNameVec.clear();
 }
@@ -71,7 +70,7 @@ void FieldWriter::setFileTypeToBinary(bool flag){
 }
 ////////////////////////////////////////////////////////////////////////////////
 void FieldWriter::writeFields(std::string _fileName){
-	
+
 	//latticeData->Print(cerr);
 	vtkStructuredPointsWriter * latticeDataWriter=vtkStructuredPointsWriter::New();
 	latticeDataWriter->SetFileName(_fileName.c_str());
@@ -79,7 +78,7 @@ void FieldWriter::writeFields(std::string _fileName){
 	//get new field dim before each write event - in case simulation dimensions have changed
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim();
-    
+
     latticeData->SetDimensions(fieldDim.x,fieldDim.y,fieldDim.z);
 
 
@@ -87,15 +86,16 @@ void FieldWriter::writeFields(std::string _fileName){
 //	    latticeDataWriter->SetFileTypeToBinary();
 //	else
 //	    latticeDataWriter->SetFileTypeToASCII();
-        #ifdef VTK6
+        #if defined(VTK6) || defined(VTK9)
             latticeDataWriter->SetInputData(latticeData);
-        #else
+        #endif
+        #if !defined(VTK6) && !defined(VTK9)
             latticeDataWriter->SetInput(latticeData);
         #endif
 	int dim[3];
 	latticeData->GetDimensions(dim);
 	CC3D_Log(LOG_TRACE) << "dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2];
-	
+
 	latticeDataWriter->Write();
 	latticeDataWriter->Delete();
 }
@@ -106,27 +106,27 @@ void FieldWriter::generatePIFFileFromVTKOutput(std::string _vtkFileName,std::str
 	latticeDataReader->SetFileName(_vtkFileName.c_str());
 	latticeDataReader->Update();
 	vtkStructuredPoints * lds=latticeDataReader->GetOutput();
-	
+
 	vtkCharArray *typeArrayRead=(vtkCharArray *)lds->GetPointData()->GetArray("CellType");
 	vtkLongArray *idArrayRead=(vtkLongArray *)lds->GetPointData()->GetArray("CellId");
 	vtkLongArray *clusterIdArrayRead=(vtkLongArray *)lds->GetPointData()->GetArray("ClusterId");
-	
+
 	ofstream outFile(_pifFileName.c_str());
 	outFile<<"Include Clusters"<<endl;
 	long offset=0;
 	long id=0,clusterId=0;
 	int type=0;
 
-	for (int z=0 ; z<_dimZ ; ++z)	
+	for (int z=0 ; z<_dimZ ; ++z)
 		for (int y=0 ; y<_dimY ; ++y)
-			for (int x=0 ; x<_dimX ; ++x){		
+			for (int x=0 ; x<_dimX ; ++x){
 				type=typeArrayRead->GetValue(offset);
 				if(!type){
 
 				}else{
 					clusterId=clusterIdArrayRead->GetValue(offset);
 					id=idArrayRead->GetValue(offset);
-					
+
 					outFile<<clusterId<<"\t"<<id<<"\t"<<typeIdTypeNameMap[type]<<"\t"
 					<<x<<"\t"<<x<<"\t"
 					<<y<<"\t"<<y<<"\t"
@@ -142,7 +142,7 @@ void FieldWriter::generatePIFFileFromCurrentStateOfSimulation(std::string _pifFi
 
 	ofstream outFile(_pifFileName.c_str());
 	outFile<<"Include Clusters"<<endl;
-	
+
 	long id=0,clusterId=0;
 	char type=0;
 
@@ -153,7 +153,7 @@ void FieldWriter::generatePIFFileFromCurrentStateOfSimulation(std::string _pifFi
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim();
 
-	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
+	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
 				cell=cellFieldG->get(pt);
@@ -168,7 +168,7 @@ void FieldWriter::generatePIFFileFromCurrentStateOfSimulation(std::string _pifFi
 					<<pt.z<<"    "<<pt.z
 					<<endl;
 				}
-			
+
 			}
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -179,7 +179,7 @@ void FieldWriter::addCellFieldForOutput(){
 	vtkCharArray *typeArray=vtkCharArray::New();
 	typeArray->SetName("CellType");
 	arrayNameVec.push_back("CellType");
-	
+
 	vtkLongArray *idArray=vtkLongArray::New();
 	idArray->SetName("CellId");
 	arrayNameVec.push_back("CellId");
@@ -195,10 +195,10 @@ void FieldWriter::addCellFieldForOutput(){
 	clusterIdArray->SetNumberOfValues(numberOfValues);
 
 	Point3D pt;
-	
+
 	long offset=0;
 	CellG* cell;
-	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
+	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
 				cell=cellFieldG->get(pt);
@@ -209,13 +209,13 @@ void FieldWriter::addCellFieldForOutput(){
 				}else{
 					typeArray->SetValue(offset,0);
 					idArray->SetValue(offset,0);
-					clusterIdArray->SetValue(offset,0);					
+					clusterIdArray->SetValue(offset,0);
 				}
 				++offset;
 			}
 			latticeData->GetPointData()->AddArray(typeArray);
-			latticeData->GetPointData()->AddArray(idArray);			
-			latticeData->GetPointData()->AddArray(clusterIdArray);			
+			latticeData->GetPointData()->AddArray(idArray);
+			latticeData->GetPointData()->AddArray(clusterIdArray);
 
 			typeArray->Delete();
 			idArray->Delete();
@@ -226,7 +226,7 @@ bool FieldWriter::addConFieldForOutput(std::string _conFieldName){
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim();
 
-	Field3D<float> *conFieldPtr=0; 
+	Field3D<float> *conFieldPtr=0;
 	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
 	std::map<std::string,Field3D<float>*>::iterator mitr;
 	mitr=fieldMap.find(_conFieldName);
@@ -239,7 +239,7 @@ bool FieldWriter::addConFieldForOutput(std::string _conFieldName){
 
 	vtkDoubleArray *conArray=vtkDoubleArray::New();
 	conArray->SetName(_conFieldName.c_str());
-	arrayNameVec.push_back(_conFieldName);	
+	arrayNameVec.push_back(_conFieldName);
 
 	long numberOfValues=fieldDim.x*fieldDim.y*fieldDim.z;
 
@@ -247,7 +247,7 @@ bool FieldWriter::addConFieldForOutput(std::string _conFieldName){
 	long offset=0;
 	Point3D pt;
 
-	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
+	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
 				conArray->SetValue(offset,conFieldPtr->get(pt));
@@ -262,14 +262,14 @@ bool FieldWriter::addScalarFieldForOutput(std::string _scalarFieldName){
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim();
 
-	FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_scalarFieldName); 
+	FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_scalarFieldName);
 
 	if(!conFieldPtr)
 		return false;
 
 	vtkDoubleArray *conArray=vtkDoubleArray::New();
 	conArray->SetName(_scalarFieldName.c_str());
-	arrayNameVec.push_back(_scalarFieldName);	
+	arrayNameVec.push_back(_scalarFieldName);
 
 	long numberOfValues=fieldDim.x*fieldDim.y*fieldDim.z;
 
@@ -277,7 +277,7 @@ bool FieldWriter::addScalarFieldForOutput(std::string _scalarFieldName){
 	long offset=0;
 	Point3D pt;
 
-	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
+	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
 				conArray->SetValue(offset,(*conFieldPtr)[pt.x][pt.y][pt.z]);
@@ -301,7 +301,7 @@ bool FieldWriter::addScalarFieldCellLevelForOutput(std::string _scalarFieldCellL
 
 	vtkDoubleArray *conArray=vtkDoubleArray::New();
 	conArray->SetName(_scalarFieldCellLevelName.c_str());
-	arrayNameVec.push_back(_scalarFieldCellLevelName);	
+	arrayNameVec.push_back(_scalarFieldCellLevelName);
 
 	long numberOfValues=fieldDim.x*fieldDim.y*fieldDim.z;
 
@@ -311,7 +311,7 @@ bool FieldWriter::addScalarFieldCellLevelForOutput(std::string _scalarFieldCellL
 	CellG * cell;
 	float con;
 
-	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
+	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
 				cell=cellFieldG->get(pt);
@@ -346,7 +346,7 @@ bool FieldWriter::addVectorFieldForOutput(std::string _vectorFieldName){
 	vtkDoubleArray *vecArray=vtkDoubleArray::New();
 	vecArray->SetNumberOfComponents(3); // we will store here 3 component vectors, not scalars
 	vecArray->SetName(_vectorFieldName.c_str());
-	arrayNameVec.push_back(_vectorFieldName);	
+	arrayNameVec.push_back(_vectorFieldName);
 
 	long numberOfValues=fieldDim.x*fieldDim.y*fieldDim.z;
 
@@ -356,13 +356,13 @@ bool FieldWriter::addVectorFieldForOutput(std::string _vectorFieldName){
 	float x,y,z;
 	Coordinates3D<float> vecTmp;
 
-	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
+	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
 // 				vecTmp=(*vecFieldPtr)[pt.x][pt.y][pt.z];
                                 x=(*vecFieldPtr)[pt.x][pt.y][pt.z][0];
                                 y=(*vecFieldPtr)[pt.x][pt.y][pt.z][1];
-                                z=(*vecFieldPtr)[pt.x][pt.y][pt.z][2]; 
+                                z=(*vecFieldPtr)[pt.x][pt.y][pt.z][2];
 				CC3D_Log(LOG_TRACE) << "vecTmp="<<vecTmp;
 				vecArray->SetTuple3(offset,x,y,z);
 				++offset;
@@ -385,20 +385,20 @@ bool FieldWriter::addVectorFieldCellLevelForOutput(std::string _vectorFieldCellL
 	vtkDoubleArray *vecArray=vtkDoubleArray::New();
 	vecArray->SetNumberOfComponents(3); // we will store here 3 component vectors, not scalars
 	vecArray->SetName(_vectorFieldCellLevelName.c_str());
-	arrayNameVec.push_back(_vectorFieldCellLevelName);	
+	arrayNameVec.push_back(_vectorFieldCellLevelName);
 
 	long numberOfValues=fieldDim.x*fieldDim.y*fieldDim.z;
 
 	vecArray->SetNumberOfTuples(numberOfValues);
 	long offset=0;
 	Point3D pt;
-	
+
 	Coordinates3D<float> vecTmp;
 	FieldStorage::vectorFieldCellLevelItr_t mitr;
 
 	CellG * cell;
 
-	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
+	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
 				cell=cellFieldG->get(pt);
@@ -408,7 +408,7 @@ bool FieldWriter::addVectorFieldCellLevelForOutput(std::string _vectorFieldCellL
 						vecTmp=mitr->second;
 					}else{
 						vecTmp=Coordinates3D<float>();
-						
+
 					}
 				}else{
 					vecTmp=Coordinates3D<float>();
