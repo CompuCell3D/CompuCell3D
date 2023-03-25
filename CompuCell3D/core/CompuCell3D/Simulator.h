@@ -96,6 +96,11 @@ namespace CompuCell3D {
          */
         std::string getOutputDirectory();
 
+        /**
+         * returns rng seed provided by the user or generates purely random RNG seed
+         * @return rng seed - unsignewd int
+         */
+        virtual unsigned int getRNGSeed();
 
         void setOutputRedirectionTarget(ptrdiff_t _ptr);
 

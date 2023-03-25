@@ -17,26 +17,38 @@ RandomBlobInitializer::RandomBlobInitializer() :
         pixelTrackerAccessorPtr(0),
         builder(0),
         cellInventoryPtr(0) {
+
     ndiv, growsteps = 0;
     borderTypeID = -1;
     showStats = false;
+
+
 }
 
 RandomBlobInitializer::~RandomBlobInitializer() {
     delete builder;
-    delete rand;
+    if (rand) {
+
+        delete rand;
+        rand = nullptr;
+    }
+
 }
 
 void RandomBlobInitializer::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
     CC3D_Log(LOG_DEBUG) << "START randomblob";
     simulator = _simulator;
     potts = _simulator->getPotts();
-    cellField = (WatchableField3D < CellG * > *)
-    potts->getCellFieldG();
+    cellField = (WatchableField3D<CellG *> *)
+            potts->getCellFieldG();
     if (!cellField) throw CC3DException("initField() Cell field G cannot be null!");
     dim = cellField->getDim();
     cellInventoryPtr = &potts->getCellInventory();
     builder = new FieldBuilder(_simulator);
+
+    auto randomSeed = simulator->getRNGSeed();
+    rand = simulator->generateRandomNumberGenerator(randomSeed);
+
 
     update(_xmlData, true);
 
@@ -48,8 +60,7 @@ void RandomBlobInitializer::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 }
 
 void RandomBlobInitializer::setParameters(Simulator *_simulator, CC3DXMLElement *_xmlData) {
-    // initiate random generator
-    rand = _simulator->generateRandomNumberGenerator();
+
     builder->setRandomGenerator(rand);
     // set builder boxes
     Dim3D boxMin = Dim3D(0, 0, 0);
@@ -68,8 +79,8 @@ void RandomBlobInitializer::setParameters(Simulator *_simulator, CC3DXMLElement 
     if (order == 2) { builder->setNeighborListSO(); }
     else { builder->setNeighborListFO(); }
     // read types and set bias
-    vector <string> typeNames;
-    vector <string> biasVec;
+    vector<string> typeNames;
+    vector<string> biasVec;
     // read number of divisions
     if (_xmlData->getFirstElement("ndiv"))
         ndiv = _xmlData->getFirstElement("ndiv")->getInt();
@@ -117,7 +128,7 @@ void RandomBlobInitializer::setParameters(Simulator *_simulator, CC3DXMLElement 
 
 void RandomBlobInitializer::extraInit(Simulator *simulator) {
     bool pluginAlreadyRegisteredFlag;
-    mit = (MitosisSteppable * )(Simulator::steppableManager.get("Mitosis", &pluginAlreadyRegisteredFlag));
+    mit = (MitosisSteppable *) (Simulator::steppableManager.get("Mitosis", &pluginAlreadyRegisteredFlag));
     if (!pluginAlreadyRegisteredFlag) {
         mit->init(simulator);
     }
@@ -151,7 +162,7 @@ void RandomBlobInitializer::divide() {
     PixelTracker *pixelTracker;
     set<PixelTrackerData>::iterator pixelItr;
     Point3D pt;
-    vector < CellG * > cells;
+    vector<CellG *> cells;
     for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr) {
         if (cellInventoryPtr->getCell(cInvItr)->volume > 2)
             cells.push_back(cellInventoryPtr->getCell(cInvItr));

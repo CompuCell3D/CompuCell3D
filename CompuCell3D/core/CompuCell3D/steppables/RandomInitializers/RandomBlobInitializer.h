@@ -33,6 +33,7 @@ namespace CompuCell3D {
         bool showStats;
         int ndiv, growsteps, borderTypeID;
 
+
     public:
         RandomBlobInitializer();
 
