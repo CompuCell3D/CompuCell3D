@@ -981,13 +981,7 @@ void Potts3D::initRandomNumberGenerators() {
     randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), 0);
 
     for (unsigned int i = 0; i < randNSVec.size(); ++i) {
-        unsigned int randomSeed;
-        if (!sim->ppdCC3DPtr->seed) {
-            srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-            randomSeed = (unsigned int) rand() * ((std::numeric_limits<unsigned int>::max)() - 1);
-        } else {
-            randomSeed = sim->ppdCC3DPtr->seed;
-        }
+        unsigned int randomSeed= sim->getRNGSeed();
         randNSVec[i] = sim->generateRandomNumberGenerator(randomSeed);
     }
 

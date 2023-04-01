@@ -41,48 +41,6 @@ ENDIF()
 
 OPTION(FLEX_PYTHON_SPECS "Allow Flexible Python Path specification" OFF)
 
-#if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-#    # FIND_PACKAGE(PythonInterpreter)
-#    FIND_PACKAGE(PythonExec)
-#    FIND_PACKAGE(PythonLibs)
-#    FIND_PACKAGE(PythonInterp)
-##    FIND_PACKAGE(NumPy)
-#    # INCLUDE(FindPythonLibs)
-#
-#    if (FLEX_PYTHON_SPECS)
-#        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable")
-#        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library")
-#        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory")
-#        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory")
-#    else ()
-#        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable" FORCE)
-#        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library" FORCE)
-#        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory" FORCE )
-#        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory" FORCE )
-#    endif()
-#
-#else()
-#    # find_package (Python 3 COMPONENTS Interpreter Development)
-#    FIND_PACKAGE(PythonLibs)
-#    FIND_PACKAGE(PythonInterp)
-##    FIND_PACKAGE(NumPy)
-#    # INCLUDE(FindPythonLibs)
-#
-#
-#    if (FLEX_PYTHON_SPECS)
-#        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable")
-#        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library")
-#        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory")
-#        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory")
-#    else ()
-#        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable" FORCE)
-#        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library" FORCE)
-#        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory" FORCE )
-#        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory" FORCE )
-#    endif()
-#
-#
-#endif()
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development NumPy)
 
@@ -111,7 +69,7 @@ SET(CC3D_PYTHON_MODULE_DIR ${CMAKE_SOURCE_DIR}/../)
 set(COMPUCELL3D_MAJOR_VERSION 4)
 set(COMPUCELL3D_MINOR_VERSION 4)
 set(COMPUCELL3D_BUILD_VERSION 0)
-set(COMPUCELL3D_REV_NUMBER 20220717)
+set(COMPUCELL3D_REV_NUMBER 20230326)
 
 ## Specify a version for all libs to use
 # letters A, B, C are added to ensure nice display of version in cmake gui

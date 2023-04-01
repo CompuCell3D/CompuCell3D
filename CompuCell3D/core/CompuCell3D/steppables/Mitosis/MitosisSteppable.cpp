@@ -27,7 +27,7 @@ MitosisSteppable::MitosisSteppable() {
 MitosisSteppable::~MitosisSteppable() {
     if (randGen) {
         delete randGen;
-        randGen = 0;
+        randGen = nullptr;
     }
 }
 
@@ -93,8 +93,8 @@ void MitosisSteppable::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
         yFactor = 2.0 / sqrt(3.0);
         zFactor = 3.0 / sqrt(6.0);
     }
-
-    randGen = simulator->generateRandomNumberGenerator();
+    auto randomSeed = sim->getRNGSeed();
+    randGen = simulator->generateRandomNumberGenerator(randomSeed);
 
 }
 
@@ -478,10 +478,10 @@ bool MitosisSteppable::doDirectionalMitosisAlongMinorAxis(CellG *_cell) {
 
 
 bool MitosisSteppable::doDirectionalMitosisRandomOrientation(CellG *_cell) {
-    RandomNumberGenerator *rand = sim->generateRandomNumberGenerator();
-    double cos_theta = -1.0 + rand->getRatio() * 2.0;
+
+    double cos_theta = -1.0 + this->randGen->getRatio() * 2.0;
     double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
-    double sin_phi = -1.0 + rand->getRatio() * 2.0;
+    double sin_phi = -1.0 + this->randGen->getRatio() * 2.0;
     double cos_phi = sqrt(1.0 - sin_phi * sin_phi);
     bool out;
     if (cos_theta == 1.0 || cos_theta == 0.0)
@@ -489,7 +489,7 @@ bool MitosisSteppable::doDirectionalMitosisRandomOrientation(CellG *_cell) {
     else
         out = doDirectionalMitosisOrientationVectorBased(_cell, sin_theta * cos_phi, sin_theta * sin_phi, cos_theta);
 
-    delete rand;
+
     return out;
 }
 
@@ -676,13 +676,12 @@ bool MitosisSteppable::doDirectionalMitosisAlongMinorAxisCompartments(long _clus
 
 bool MitosisSteppable::doDirectionalMitosisRandomOrientationCompartments(long _clusterId) {
 
-    RandomNumberGenerator *rand = sim->generateRandomNumberGenerator();
-    double cos_theta = -1.0 + rand->getRatio() * 2.0;
+    double cos_theta = -1.0 + this->randGen->getRatio() * 2.0;
     double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
-    double sin_phi = -1.0 + rand->getRatio() * 2.0;
+    double sin_phi = -1.0 + this->randGen->getRatio() * 2.0;
     double cos_phi = sqrt(1.0 - sin_phi * sin_phi);
 
-    delete rand;
+
     return doDirectionalMitosisOrientationVectorBasedCompartments(_clusterId, sin_theta * cos_phi, sin_theta * sin_phi,
                                                                   cos_theta);
 }
