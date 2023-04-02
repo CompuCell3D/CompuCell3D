@@ -35,7 +35,8 @@ Unit::Unit(const string & _unitStr)
 {
 	try{
 		//unit_t unit=parseUnit(const_cast<char *> (_unitStr.c_str()));
-		(*this)=parseUnit(const_cast<char *> (std::string(_unitStr+"\n").c_str()));
+//		(*this)=parseUnit(const_cast<char *> (std::string(_unitStr+"\n").c_str()));
+		;
 	}catch (logic_error & e){
 		throw CompuCell3D::CC3DException(string(e.what()));
 	}

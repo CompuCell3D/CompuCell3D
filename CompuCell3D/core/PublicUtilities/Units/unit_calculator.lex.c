@@ -817,7 +817,10 @@ YY_RULE_SETUP
 case 37:
 YY_RULE_SETUP
 #line 112 "D:/flex_bison_projects/unit_calculator/unit_calculator.l"
-{ yyerror("Mystery character %c\n", *yytext);throwParserException("Scanning Error"); }
+{
+/*yyerror("Mystery character %c\n", *yytext);*/
+throwParserException("Scanning Error");
+}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP

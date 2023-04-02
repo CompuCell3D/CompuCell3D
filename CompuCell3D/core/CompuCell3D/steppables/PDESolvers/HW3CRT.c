@@ -2460,90 +2460,7 @@ L106:
     return 0;
 } /* costi_ */
 
-/* Subroutine */ int rfftb_(integer *n, doublereal *r__, doublereal *wsave)
-{
-//     extern /* Subroutine */ int rfftb1_(integer *, doublereal *, doublereal *, doublereal *, 
-// 	    doublereal *);
-
-/* ***BEGIN PROLOGUE  RFFTB */
-/* ***DATE WRITTEN   790601   (YYMMDD) */
-/* ***REVISION DATE  830401   (YYMMDD) */
-/* ***REVISION HISTORY  (YYMMDD) */
-/*   000330  Modified array declarations.  (JEC) */
-
-/* ***CATEGORY NO.  J1A1 */
-/* ***KEYWORDS  FOURIER TRANSFORM */
-/* ***AUTHOR  SWARZTRAUBER, P. N., (NCAR) */
-/* ***PURPOSE  Backward transform of a doublereal coefficient array. */
-/* ***DESCRIPTION */
-
-/*  Subroutine RFFTB computes the doublereal perodic sequence from its */
-/*  Fourier coefficients (Fourier synthesis).  The transform is defined */
-/*  below at output parameter R. */
-
-/*  Input Parameters */
-
-/*  N       the length of the array R to be transformed.  The method */
-/*          is most efficient when N is a product of small primes. */
-/*          N may change so long as different work arrays are provided. */
-
-/*  R       a doublereal array of length N which contains the sequence */
-/*          to be transformed */
-
-/*  WSAVE   a work array which must be dimensioned at least 2*N+15 */
-/*          in the program that calls RFFTB.  The WSAVE array must be */
-/*          initialized by calling subroutine RFFTI(N,WSAVE), and a */
-/*          different WSAVE array must be used for each different */
-/*          value of N.  This initialization does not have to be */
-/*          repeated so long as N remains unchanged.  Thus subsequent */
-/*          transforms can be obtained faster than the first. */
-/*          The same WSAVE array can be used by RFFTF and RFFTB. */
-
-
-/*  Output Parameters */
-
-/*  R       For N even and For I = 1,...,N */
-
-/*               R(I) = R(1)+(-1)**(I-1)*R(N) */
-
-/*                    plus the sum from K=2 to K=N/2 of */
-
-/*                     2.*R(2*K-2)*COS((K-1)*(I-1)*2*PI/N) */
-
-/*                    -2.*R(2*K-1)*SIN((K-1)*(I-1)*2*PI/N) */
-
-/*          For N odd and For I = 1,...,N */
-
-/*               R(I) = R(1) plus the sum from K=2 to K=(N+1)/2 of */
-
-/*                    2.*R(2*K-2)*COS((K-1)*(I-1)*2*PI/N) */
-
-/*                   -2.*R(2*K-1)*SIN((K-1)*(I-1)*2*PI/N) */
-
-/*   *****  Note: */
-/*               This transform is unnormalized since a call of RFFTF */
-/*               followed by a call of RFFTB will multiply the input */
-/*               sequence by N. */
-
-/*  WSAVE   contains results which must not be destroyed between */
-/*          calls of RFFTB or RFFTF. */
-/* ***REFERENCES  (NONE) */
-/* ***ROUTINES CALLED  RFFTB1 */
-/* ***END PROLOGUE  RFFTB */
-/* ***FIRST EXECUTABLE STATEMENT  RFFTB */
-    /* Parameter adjustments */
-    --wsave;
-    --r__;
-
-    /* Function Body */
-    if (*n == 1) {
-	return 0;
-    }
-    rfftb1_(n, &r__[1], &wsave[1], &wsave[*n + 1], &wsave[(*n << 1) + 1]);
-    return 0;
-} /* rfftb_ */
-
-/* Subroutine */ int rfftb1_(integer *n, doublereal *c__, doublereal *ch, doublereal *wa, 
+/* Subroutine */ int rfftb1_(integer *n, doublereal *c__, doublereal *ch, doublereal *wa,
 	integer *ifac)
 {
     /* System generated locals */
@@ -2551,12 +2468,12 @@ L106:
 
     /* Local variables */
     static integer i__, k1, l1, l2, na, nf, ip, iw, ix2, ix3, ix4, ido, idl1;
-    extern /* Subroutine */ int radb2_(integer *, integer *, doublereal *, doublereal *, 
-	    doublereal *), radb3_(integer *, integer *, doublereal *, doublereal *, doublereal *, 
-	    doublereal *), radb4_(integer *, integer *, doublereal *, doublereal *, doublereal *, 
-	    doublereal *, doublereal *), radb5_(integer *, integer *, doublereal *, doublereal *, 
-	    doublereal *, doublereal *, doublereal *, doublereal *), radbg_(integer *, integer *, 
-	    integer *, integer *, doublereal *, doublereal *, doublereal *, doublereal *, doublereal *, 
+    extern /* Subroutine */ int radb2_(integer *, integer *, doublereal *, doublereal *,
+	    doublereal *), radb3_(integer *, integer *, doublereal *, doublereal *, doublereal *,
+	    doublereal *), radb4_(integer *, integer *, doublereal *, doublereal *, doublereal *,
+	    doublereal *, doublereal *), radb5_(integer *, integer *, doublereal *, doublereal *,
+	    doublereal *, doublereal *, doublereal *, doublereal *), radbg_(integer *, integer *,
+	    integer *, integer *, doublereal *, doublereal *, doublereal *, doublereal *, doublereal *,
 	    doublereal *);
 
 /* ***BEGIN PROLOGUE  RFFTB1 */
@@ -2677,12 +2594,12 @@ L115:
     return 0;
 } /* rfftb1_ */
 
-/* Subroutine */ int rfftf_(integer *n, doublereal *r__, doublereal *wsave)
+/* Subroutine */ int rfftb_(integer *n, doublereal *r__, doublereal *wsave)
 {
-//     extern /* Subroutine */ int rfftf1_(integer *, doublereal *, doublereal *, doublereal *, 
+//     extern /* Subroutine */ int rfftb1_(integer *, doublereal *, doublereal *, doublereal *, 
 // 	    doublereal *);
 
-/* ***BEGIN PROLOGUE  RFFTF */
+/* ***BEGIN PROLOGUE  RFFTB */
 /* ***DATE WRITTEN   790601   (YYMMDD) */
 /* ***REVISION DATE  830401   (YYMMDD) */
 /* ***REVISION HISTORY  (YYMMDD) */
@@ -2691,53 +2608,51 @@ L115:
 /* ***CATEGORY NO.  J1A1 */
 /* ***KEYWORDS  FOURIER TRANSFORM */
 /* ***AUTHOR  SWARZTRAUBER, P. N., (NCAR) */
-/* ***PURPOSE  Forward transform of a doublereal, periodic sequence. */
+/* ***PURPOSE  Backward transform of a doublereal coefficient array. */
 /* ***DESCRIPTION */
 
-/*  Subroutine RFFTF computes the Fourier coefficients of a doublereal */
-/*  perodic sequence (Fourier analysis).  The transform is defined */
+/*  Subroutine RFFTB computes the doublereal perodic sequence from its */
+/*  Fourier coefficients (Fourier synthesis).  The transform is defined */
 /*  below at output parameter R. */
 
 /*  Input Parameters */
 
 /*  N       the length of the array R to be transformed.  The method */
 /*          is most efficient when N is a product of small primes. */
-/*          N may change so long as different work arrays are provided */
+/*          N may change so long as different work arrays are provided. */
 
 /*  R       a doublereal array of length N which contains the sequence */
 /*          to be transformed */
 
 /*  WSAVE   a work array which must be dimensioned at least 2*N+15 */
-/*          in the program that calls RFFTF.  The WSAVE array must be */
+/*          in the program that calls RFFTB.  The WSAVE array must be */
 /*          initialized by calling subroutine RFFTI(N,WSAVE), and a */
 /*          different WSAVE array must be used for each different */
 /*          value of N.  This initialization does not have to be */
 /*          repeated so long as N remains unchanged.  Thus subsequent */
 /*          transforms can be obtained faster than the first. */
-/*          the same WSAVE array can be used by RFFTF and RFFTB. */
+/*          The same WSAVE array can be used by RFFTF and RFFTB. */
 
 
 /*  Output Parameters */
 
-/*  R       R(1) = the sum from I=1 to I=N of R(I) */
+/*  R       For N even and For I = 1,...,N */
 
-/*          If N is even set L = N/2; if N is odd set L = (N+1)/2 */
+/*               R(I) = R(1)+(-1)**(I-1)*R(N) */
 
-/*            then for K = 2,...,L */
+/*                    plus the sum from K=2 to K=N/2 of */
 
-/*               R(2*K-2) = the sum from I = 1 to I = N of */
+/*                     2.*R(2*K-2)*COS((K-1)*(I-1)*2*PI/N) */
 
-/*                    R(I)*COS((K-1)*(I-1)*2*PI/N) */
+/*                    -2.*R(2*K-1)*SIN((K-1)*(I-1)*2*PI/N) */
 
-/*               R(2*K-1) = the sum from I = 1 to I = N of */
+/*          For N odd and For I = 1,...,N */
 
-/*                   -R(I)*SIN((K-1)*(I-1)*2*PI/N) */
+/*               R(I) = R(1) plus the sum from K=2 to K=(N+1)/2 of */
 
-/*          If N is even */
+/*                    2.*R(2*K-2)*COS((K-1)*(I-1)*2*PI/N) */
 
-/*               R(N) = the sum from I = 1 to I = N of */
-
-/*                    (-1)**(I-1)*R(I) */
+/*                   -2.*R(2*K-1)*SIN((K-1)*(I-1)*2*PI/N) */
 
 /*   *****  Note: */
 /*               This transform is unnormalized since a call of RFFTF */
@@ -2745,11 +2660,11 @@ L115:
 /*               sequence by N. */
 
 /*  WSAVE   contains results which must not be destroyed between */
-/*          calls of RFFTF or RFFTB. */
+/*          calls of RFFTB or RFFTF. */
 /* ***REFERENCES  (NONE) */
-/* ***ROUTINES CALLED  RFFTF1 */
-/* ***END PROLOGUE  RFFTF */
-/* ***FIRST EXECUTABLE STATEMENT  RFFTF */
+/* ***ROUTINES CALLED  RFFTB1 */
+/* ***END PROLOGUE  RFFTB */
+/* ***FIRST EXECUTABLE STATEMENT  RFFTB */
     /* Parameter adjustments */
     --wsave;
     --r__;
@@ -2758,25 +2673,26 @@ L115:
     if (*n == 1) {
 	return 0;
     }
-    rfftf1_(n, &r__[1], &wsave[1], &wsave[*n + 1], &wsave[(*n << 1) + 1]);
+    rfftb1_(n, &r__[1], &wsave[1], &wsave[*n + 1], &wsave[(*n << 1) + 1]);
     return 0;
-} /* rfftf_ */
+} /* rfftb_ */
 
-/* Subroutine */ int rfftf1_(integer *n, doublereal *c__, doublereal *ch, doublereal *wa, 
+
+/* Subroutine */ int rfftf1_(integer *n, doublereal *c__, doublereal *ch, doublereal *wa,
 	integer *ifac)
 {
     /* System generated locals */
     integer i__1;
 
     /* Local variables */
-    static integer i__, k1, l1, l2, na, kh, nf, ip, iw, ix2, ix3, ix4, ido, 
+    static integer i__, k1, l1, l2, na, kh, nf, ip, iw, ix2, ix3, ix4, ido,
 	    idl1;
-    extern /* Subroutine */ int radf2_(integer *, integer *, doublereal *, doublereal *, 
-	    doublereal *), radf3_(integer *, integer *, doublereal *, doublereal *, doublereal *, 
-	    doublereal *), radf4_(integer *, integer *, doublereal *, doublereal *, doublereal *, 
-	    doublereal *, doublereal *), radf5_(integer *, integer *, doublereal *, doublereal *, 
-	    doublereal *, doublereal *, doublereal *, doublereal *), radfg_(integer *, integer *, 
-	    integer *, integer *, doublereal *, doublereal *, doublereal *, doublereal *, doublereal *, 
+    extern /* Subroutine */ int radf2_(integer *, integer *, doublereal *, doublereal *,
+	    doublereal *), radf3_(integer *, integer *, doublereal *, doublereal *, doublereal *,
+	    doublereal *), radf4_(integer *, integer *, doublereal *, doublereal *, doublereal *,
+	    doublereal *, doublereal *), radf5_(integer *, integer *, doublereal *, doublereal *,
+	    doublereal *, doublereal *, doublereal *, doublereal *), radfg_(integer *, integer *,
+	    integer *, integer *, doublereal *, doublereal *, doublereal *, doublereal *, doublereal *,
 	    doublereal *);
 
 /* ***BEGIN PROLOGUE  RFFTF1 */
@@ -2892,51 +2808,91 @@ L110:
     return 0;
 } /* rfftf1_ */
 
-/* Subroutine */ int rffti_(integer *n, doublereal *wsave)
+/* Subroutine */ int rfftf_(integer *n, doublereal *r__, doublereal *wsave)
 {
-//     extern /* Subroutine */ int rffti1_(integer *, doublereal *, doublereal *);
+//     extern /* Subroutine */ int rfftf1_(integer *, doublereal *, doublereal *, doublereal *, 
+// 	    doublereal *);
 
-/* ***BEGIN PROLOGUE  RFFTI */
+/* ***BEGIN PROLOGUE  RFFTF */
 /* ***DATE WRITTEN   790601   (YYMMDD) */
 /* ***REVISION DATE  830401   (YYMMDD) */
 /* ***REVISION HISTORY  (YYMMDD) */
 /*   000330  Modified array declarations.  (JEC) */
+
 /* ***CATEGORY NO.  J1A1 */
 /* ***KEYWORDS  FOURIER TRANSFORM */
 /* ***AUTHOR  SWARZTRAUBER, P. N., (NCAR) */
-/* ***PURPOSE  Initialize for RFFTF and RFFTB. */
+/* ***PURPOSE  Forward transform of a doublereal, periodic sequence. */
 /* ***DESCRIPTION */
 
-/*  Subroutine RFFTI initializes the array WSAVE which is used in */
-/*  both RFFTF and RFFTB.  The prime factorization of N together with */
-/*  a tabulation of the trigonometric functions are computed and */
-/*  stored in WSAVE. */
+/*  Subroutine RFFTF computes the Fourier coefficients of a doublereal */
+/*  perodic sequence (Fourier analysis).  The transform is defined */
+/*  below at output parameter R. */
 
-/*  Input Parameter */
+/*  Input Parameters */
 
-/*  N       the length of the sequence to be transformed. */
+/*  N       the length of the array R to be transformed.  The method */
+/*          is most efficient when N is a product of small primes. */
+/*          N may change so long as different work arrays are provided */
 
-/*  Output Parameter */
+/*  R       a doublereal array of length N which contains the sequence */
+/*          to be transformed */
 
-/*  WSAVE   a work array which must be dimensioned at least 2*N+15. */
-/*          The same work array can be used for both RFFTF and RFFTB */
-/*          as long as N remains unchanged.  Different WSAVE arrays */
-/*          are required for different values of N.  The contents of */
-/*          WSAVE must not be changed between calls of RFFTF or RFFTB. */
+/*  WSAVE   a work array which must be dimensioned at least 2*N+15 */
+/*          in the program that calls RFFTF.  The WSAVE array must be */
+/*          initialized by calling subroutine RFFTI(N,WSAVE), and a */
+/*          different WSAVE array must be used for each different */
+/*          value of N.  This initialization does not have to be */
+/*          repeated so long as N remains unchanged.  Thus subsequent */
+/*          transforms can be obtained faster than the first. */
+/*          the same WSAVE array can be used by RFFTF and RFFTB. */
+
+
+/*  Output Parameters */
+
+/*  R       R(1) = the sum from I=1 to I=N of R(I) */
+
+/*          If N is even set L = N/2; if N is odd set L = (N+1)/2 */
+
+/*            then for K = 2,...,L */
+
+/*               R(2*K-2) = the sum from I = 1 to I = N of */
+
+/*                    R(I)*COS((K-1)*(I-1)*2*PI/N) */
+
+/*               R(2*K-1) = the sum from I = 1 to I = N of */
+
+/*                   -R(I)*SIN((K-1)*(I-1)*2*PI/N) */
+
+/*          If N is even */
+
+/*               R(N) = the sum from I = 1 to I = N of */
+
+/*                    (-1)**(I-1)*R(I) */
+
+/*   *****  Note: */
+/*               This transform is unnormalized since a call of RFFTF */
+/*               followed by a call of RFFTB will multiply the input */
+/*               sequence by N. */
+
+/*  WSAVE   contains results which must not be destroyed between */
+/*          calls of RFFTF or RFFTB. */
 /* ***REFERENCES  (NONE) */
-/* ***ROUTINES CALLED  RFFTI1 */
-/* ***END PROLOGUE  RFFTI */
-/* ***FIRST EXECUTABLE STATEMENT  RFFTI */
+/* ***ROUTINES CALLED  RFFTF1 */
+/* ***END PROLOGUE  RFFTF */
+/* ***FIRST EXECUTABLE STATEMENT  RFFTF */
     /* Parameter adjustments */
     --wsave;
+    --r__;
 
     /* Function Body */
     if (*n == 1) {
 	return 0;
     }
-    rffti1_(n, &wsave[*n + 1], &wsave[(*n << 1) + 1]);
+    rfftf1_(n, &r__[1], &wsave[1], &wsave[*n + 1], &wsave[(*n << 1) + 1]);
     return 0;
-} /* rffti_ */
+} /* rfftf_ */
+
 
 /* Subroutine */ int rffti1_(integer *n, doublereal *wa, integer *ifac)
 {
@@ -3059,6 +3015,54 @@ L107:
     }
     return 0;
 } /* rffti1_ */
+
+/* Subroutine */ int rffti_(integer *n, doublereal *wsave)
+{
+//     extern /* Subroutine */ int rffti1_(integer *, doublereal *, doublereal *);
+
+/* ***BEGIN PROLOGUE  RFFTI */
+/* ***DATE WRITTEN   790601   (YYMMDD) */
+/* ***REVISION DATE  830401   (YYMMDD) */
+/* ***REVISION HISTORY  (YYMMDD) */
+/*   000330  Modified array declarations.  (JEC) */
+/* ***CATEGORY NO.  J1A1 */
+/* ***KEYWORDS  FOURIER TRANSFORM */
+/* ***AUTHOR  SWARZTRAUBER, P. N., (NCAR) */
+/* ***PURPOSE  Initialize for RFFTF and RFFTB. */
+/* ***DESCRIPTION */
+
+/*  Subroutine RFFTI initializes the array WSAVE which is used in */
+/*  both RFFTF and RFFTB.  The prime factorization of N together with */
+/*  a tabulation of the trigonometric functions are computed and */
+/*  stored in WSAVE. */
+
+/*  Input Parameter */
+
+/*  N       the length of the sequence to be transformed. */
+
+/*  Output Parameter */
+
+/*  WSAVE   a work array which must be dimensioned at least 2*N+15. */
+/*          The same work array can be used for both RFFTF and RFFTB */
+/*          as long as N remains unchanged.  Different WSAVE arrays */
+/*          are required for different values of N.  The contents of */
+/*          WSAVE must not be changed between calls of RFFTF or RFFTB. */
+/* ***REFERENCES  (NONE) */
+/* ***ROUTINES CALLED  RFFTI1 */
+/* ***END PROLOGUE  RFFTI */
+/* ***FIRST EXECUTABLE STATEMENT  RFFTI */
+    /* Parameter adjustments */
+    --wsave;
+
+    /* Function Body */
+    if (*n == 1) {
+	return 0;
+    }
+    rffti1_(n, &wsave[*n + 1], &wsave[(*n << 1) + 1]);
+    return 0;
+} /* rffti_ */
+
+
 
 /* Subroutine */ int sinqb_(integer *n, doublereal *x, doublereal *wsave)
 {
