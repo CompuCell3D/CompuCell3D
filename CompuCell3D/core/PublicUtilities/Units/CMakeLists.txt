@@ -1,7 +1,7 @@
 SET(SRCS
-  unit_calculator.c  
-  unit_calculator.lex.c  
-  unit_calculator.tab.c  
+  unit_calculator.c
+  unit_calculator.lex.c
+  unit_calculator.tab.c
   unitParserException.cpp
   Unit.cpp
 )

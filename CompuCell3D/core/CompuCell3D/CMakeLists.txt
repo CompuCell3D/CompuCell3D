@@ -13,12 +13,6 @@ if(BUILD_QT_WRAPPERS)
   SET(QtWrappersLibs StreamRedirectorsShared)
 endif(BUILD_QT_WRAPPERS)    
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-  add_definitions(-DCC3D_ISWIN)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
-  add_definitions(-DCC3D_ISMAC)
-endif()
-
 
 SET(SRCS
   PluginInfo.cpp
@@ -39,6 +33,7 @@ SET(INCLUDE_DIRS
 )
 
 set(LIBS
+    cc3d::Logger
     cc3d::PublicUtilities
     cc3d::Units
     cc3d::Automaton

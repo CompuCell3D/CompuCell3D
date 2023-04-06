@@ -30,6 +30,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "CGALMeshDumper.h"
+#include <Logger/CC3DLogger.h>
 
 CGALMeshDumper::CGALMeshDumper() : cellFieldG(0), sim(0), potts(0), xmlData(0), boundaryStrategy(0), automaton(0),
                                    cellInventoryPtr(0) {}
@@ -74,13 +75,12 @@ void CGALMeshDumper::start() {
 
 void CGALMeshDumper::step(const unsigned int currentStep) {
     //REPLACE SAMPLE CODE BELOW WITH YOUR OWN
-    CellInventory::cellInventoryIterator cInvItr;
-    CellG *cell;
-
-    cerr << "currentStep=" << currentStep << endl;
+	CellInventory::cellInventoryIterator cInvItr;
+	CellG * cell;
+    CC3D_Log(LOG_DEBUG) << "currentStep="<<currentStep;
     for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr) {
         cell = cellInventoryPtr->getCell(cInvItr);
-        cerr << "cell.id=" << cell->id << " vol=" << cell->volume << endl;
+        CC3D_Log(LOG_DEBUG) << "cell.id="<<cell->id<<" vol="<<cell->volume;
     }
 
 }
@@ -99,11 +99,11 @@ void CGALMeshDumper::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     CC3DXMLElement *exampleXMLElem = _xmlData->getFirstElement("Example");
     if (exampleXMLElem) {
         double param = exampleXMLElem->getDouble();
-        cerr << "param=" << param << endl;
+        CC3D_Log(LOG_DEBUG) << "param="<<param;
         if (exampleXMLElem->findAttribute("Type")) {
             std::string attrib = exampleXMLElem->getAttribute("Type");
             // double attrib=exampleXMLElem->getAttributeAsDouble("Type"); //in case attribute is of type double
-            cerr << "attrib=" << attrib << endl;
+            CC3D_Log(LOG_DEBUG) << "attrib="<<attrib;
         }
     }
 

@@ -5,6 +5,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "VolumePlugin.h"
+#include <Logger/CC3DLogger.h>
 
 VolumePlugin::~VolumePlugin() {}
 
@@ -16,10 +17,9 @@ void VolumePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
                                                   &pluginAlreadyRegisteredFlag);
 
 
-    pUtils = simulator->getParallelUtils();
-    pluginName = _xmlData->getAttribute("Name");
-
-    cerr << "GOT HERE BEFORE CALLING INIT" << endl;
+	pUtils=simulator->getParallelUtils();
+	pluginName=_xmlData->getAttribute("Name");
+	CC3D_Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
     if (!pluginAlreadyRegisteredFlag)
         plugin->init(simulator);
     potts->registerEnergyFunctionWithName(this, toString());
@@ -64,7 +64,7 @@ void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
             functionType = BYCELLID;
     }
     Automaton *automaton = potts->getAutomaton();
-    cerr << "automaton=" << automaton << endl;
+    CC3D_Log(LOG_DEBUG) << "automaton="<<automaton;
 
     switch (functionType) {
         case BYCELLID:
@@ -192,10 +192,7 @@ double VolumePlugin::changeEnergyByCellType(const Point3D &pt, const CellG *newC
         if (oldCell)
             energy += volumeEnergyParamMap[oldCell->type].lambdaVolume *
                       (1 - 2 * (oldCell->volume - fabs(volumeEnergyParamMap[oldCell->type].targetVolume)));
-
-
-
-        return energy;
+		return energy;
 
 
     } else {

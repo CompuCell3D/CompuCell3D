@@ -30,6 +30,7 @@
 #include <fstream>
 #include <sstream>
 #include <omp.h>
+#include <Logger/CC3DLogger.h>
 //#define NUMBER_OF_THREADS 4
 
 
@@ -70,7 +71,7 @@ namespace CompuCell3D {
                 solverPtr->readConcentrationField(inName.str().c_str(), solverPtr->concentrationFieldVector[i]);;
             }
         } catch (CC3DException &e) {
-            cerr << "COULD NOT FIND ONE OF THE FILES" << endl;
+            CC3D_Log(LOG_DEBUG) << "COULD NOT FIND ONE OF THE FILES";
             throw CC3DException("Error in reading diffusion fields from file", e);
         }
     }
@@ -123,9 +124,8 @@ namespace CompuCell3D {
         potts->getCellFieldG();
         fieldDim = cellFieldG->getDim();
 
-        pUtils = simulator->getParallelUtils();
-
-        cerr << "INSIDE INIT" << endl;
+	pUtils=simulator->getParallelUtils();
+	CC3D_Log(LOG_DEBUG) << "INSIDE INIT";
 
         ///setting member function pointers
         diffusePtr = &FlexibleDiffusionSolverFE_GPU::diffuse;
@@ -135,17 +135,16 @@ namespace CompuCell3D {
 
         numberOfFields = diffSecrFieldTuppleVec.size();
 
-        vector <string> concentrationFieldNameVectorTmp; //temporary vector for field names
-        ///assign vector of field names
-        concentrationFieldNameVectorTmp.assign(diffSecrFieldTuppleVec.size(), string(""));
-
-        cerr << "diffSecrFieldTuppleVec.size()=" << diffSecrFieldTuppleVec.size() << endl;
+	vector<string> concentrationFieldNameVectorTmp; //temporary vector for field names
+	///assign vector of field names
+	concentrationFieldNameVectorTmp.assign(diffSecrFieldTuppleVec.size(),string(""));
+	CC3D_Log(LOG_DEBUG) << "diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size();
 
         for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-            //       cerr<<" concentrationFieldNameVector[i]="<<diffDataVec[i].fieldName<<endl;
+//            CC3D_Log(LOG_TRACE) << " concentrationFieldNameVector[i]="<<diffDataVec[i].fieldName;
             //       concentrationFieldNameVector.push_back(diffDataVec[i].fieldName);
             concentrationFieldNameVectorTmp[i] = diffSecrFieldTuppleVec[i].diffData.fieldName;
-            cerr << " concentrationFieldNameVector[i]=" << concentrationFieldNameVectorTmp[i] << endl;
+            CC3D_Log(LOG_DEBUG) << " concentrationFieldNameVector[i]="<<concentrationFieldNameVectorTmp[i];
         }
 
         //setting up couplingData - field-field interaction terms
@@ -184,13 +183,11 @@ namespace CompuCell3D {
             }
         }
 
-
-        cerr << "FIELDS THAT I HAVE" << endl;
+	CC3D_Log(LOG_DEBUG) << "FIELDS THAT I HAVE";
         for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-            cerr << "Field " << i << " name: " << concentrationFieldNameVectorTmp[i] << endl;
-        }
-
-        cerr << "FlexibleDiffusionSolverFE_GPU: extra Init in read XML" << endl;
+            CC3D_Log(LOG_DEBUG) << "Field "<<i<<" name: "<<concentrationFieldNameVectorTmp[i];
+	}
+	CC3D_Log(LOG_DEBUG) << "FlexibleDiffusionSolverFE_GPU: extra Init in read XML";
 
         ///allocate fields including scrartch field
         allocateDiffusableFieldVector(diffSecrFieldTuppleVec.size(), fieldDim);
@@ -212,8 +209,7 @@ namespace CompuCell3D {
         //register fields once they have been allocated
         for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
             simPtr->registerConcentrationField(concentrationFieldNameVector[i], concentrationFieldVector[i]);
-            cerr << "registring field: " << concentrationFieldNameVector[i] << " field address="
-                 << concentrationFieldVector[i] << endl;
+            CC3D_Log(LOG_DEBUG) << "registring field: "<<concentrationFieldNameVector[i]<<" field address="<<concentrationFieldVector[i];
         }
 
         //    exit(0);
@@ -297,11 +293,10 @@ namespace CompuCell3D {
     }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    template<typename GPU_Solver>
-    void FlexibleDiffusionSolverFE_GPU<GPU_Solver>::start() {
-        //     if(diffConst> (1.0/6.0-0.05) ){ //hard coded condtion for stability of the solutions - assume dt=1 dx=dy=dz=1
-        //
-        //       cerr<<"CANNOT SOLVE DIFFUSION EQUATION: STABILITY PROBLEM - DIFFUSION CONSTANT TOO LARGE. EXITING..."<<endl;
+template <typename GPU_Solver>
+void FlexibleDiffusionSolverFE_GPU<GPU_Solver>::start() {
+	//     if(diffConst> (1.0/6.0-0.05) ){ //hard coded condtion for stability of the solutions - assume dt=1 dx=dy=dz=1
+	//		CC3D_Log(LOG_TRACE) << "CANNOT SOLVE DIFFUSION EQUATION: STABILITY PROBLEM - DIFFUSION CONSTANT TOO LARGE. EXITING...";
         //       exit(0);
         //
         //    }
@@ -317,7 +312,7 @@ namespace CompuCell3D {
                 serializerPtr->readFromFile();
 
             } catch (CC3DException &e) {
-                cerr << "Going to fail-safe initialization" << endl;
+                CC3D_Log(LOG_DEBUG) << "Going to fail-safe initialization";
                 initializeConcentration(); //if there was error, initialize using failsafe defaults
             }
 
@@ -330,14 +325,14 @@ namespace CompuCell3D {
     template<typename GPU_Solver>
     void FlexibleDiffusionSolverFE_GPU<GPU_Solver>::initializeConcentration() {
         for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-            //cerr<<"EXPRESSION TO EVALUATE "<<diffSecrFieldTuppleVec[i].diffData.initialConcentrationExpression<<endl;
+            CC3D_Log(LOG_DEBUG) << "EXPRESSION TO EVALUATE " << diffSecrFieldTuppleVec[i].diffData.initialConcentrationExpression;
             if (!diffSecrFieldTuppleVec[i].diffData.initialConcentrationExpression.empty()) {
                 initializeFieldUsingEquation(concentrationFieldVector[i],
                                              diffSecrFieldTuppleVec[i].diffData.initialConcentrationExpression);
                 continue;
             }
             if (diffSecrFieldTuppleVec[i].diffData.concentrationFileName.empty()) continue;
-            cerr << "fail-safe initialization " << diffSecrFieldTuppleVec[i].diffData.concentrationFileName << endl;
+            CC3D_Log(LOG_DEBUG) << "fail-safe initialization " << diffSecrFieldTuppleVec[i].diffData.concentrationFileName;
             readConcentrationField(diffSecrFieldTuppleVec[i].diffData.concentrationFileName,
                                    concentrationFieldVector[i]);
         }
@@ -400,7 +395,7 @@ namespace CompuCell3D {
             Dim3D maxDimBW;
             Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
             Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-            //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+            CC3D_Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
             x_min = minCoordinates.x + 1;
             x_max = maxCoordinates.x + 1;
             y_min = minCoordinates.y + 1;
@@ -579,7 +574,7 @@ namespace CompuCell3D {
             Dim3D maxDimBW;
             Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
             Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-            //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+            CC3D_Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
             x_min = minCoordinates.x + 1;
             x_max = maxCoordinates.x + 1;
             y_min = minCoordinates.y + 1;
@@ -593,7 +588,7 @@ namespace CompuCell3D {
 
         }
 
-        //cerr<<"SECRETE SINGLE FIELD"<<endl;
+        CC3D_Log(LOG_DEBUG) << "SECRETE SINGLE FIELD";
 
 
         pUtils->prepareParallelRegionFESolvers(diffData.useBoxWatcher);
@@ -631,16 +626,13 @@ namespace CompuCell3D {
                 for (int y = minDim.y; y < maxDim.y; y++)
                     for (int x = minDim.x; x < maxDim.x; x++) {
 
-                        pt = Point3D(x - 1, y - 1, z - 1);
-                        //             cerr<<"pt="<<pt<<" is valid "<<cellFieldG->isValid(pt)<<endl;
-                        ///**
-                        currentCellPtr = cellFieldG->getQuick(pt);
-                        //             currentCellPtr=cellFieldG->get(pt);
-                        //             cerr<<"THIS IS PTR="<<currentCellPtr<<endl;
+					pt=Point3D(x-1,y-1,z-1);
+					///**
+					currentCellPtr=cellFieldG->getQuick(pt);
+					//             currentCellPtr=cellFieldG->get(pt);
 
-                        //             if(currentCellPtr)
-                        //                cerr<<"This is id="<<currentCellPtr->id<<endl;
-                        //currentConcentration = concentrationField.getDirect(x,y,z);
+					//             if(currentCellPtr)
+					//currentConcentration = concentrationField.getDirect(x,y,z);
 
                         currentConcentration = concentrationField.getDirect(x, y, z);
 
@@ -677,12 +669,12 @@ namespace CompuCell3D {
                                         mitrUptake->second.maxUptake) {
                                         concentrationField.setDirect(x, y, z, concentrationField.getDirect(x, y, z) -
                                                                               mitrUptake->second.maxUptake);
-                                        //cerr<<" uptake concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<mitrUptake->second.maxUptake<<endl;
+                                        CC3D_Log(LOG_DEBUG) << " uptake concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<mitrUptake->second.maxUptake;
                                     } else {
                                         concentrationField.setDirect(x, y, z, concentrationField.getDirect(x, y, z) -
                                                                               currentConcentration *
                                                                               mitrUptake->second.relativeUptakeRate);
-                                        //cerr<<"concentration="<< currentConconcentrationField.getDirect(x,y,z)- currentConcentration*mitrUptake->second.relativeUptakeRate);
+//                                        CC3D_Log(LOG_DEBUG) << "concentration="<< currentConconcentrationField.getDirect(x,y,z)- currentConcentration*mitrUptake->second.relativeUptakeRate;
                                     }
                                 }
                             }
@@ -690,7 +682,6 @@ namespace CompuCell3D {
                     }
         }
     }
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<typename GPU_Solver>
     void FlexibleDiffusionSolverFE_GPU<GPU_Solver>::secreteConstantConcentrationSingleField(unsigned int idx) {
@@ -728,7 +719,7 @@ namespace CompuCell3D {
             Dim3D maxDimBW;
             Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
             Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-            //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+            CC3D_Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
             x_min = minCoordinates.x + 1;
             x_max = maxCoordinates.x + 1;
             y_min = minCoordinates.y + 1;
@@ -773,16 +764,13 @@ namespace CompuCell3D {
                 for (int y = minDim.y; y < maxDim.y; y++)
                     for (int x = minDim.x; x < maxDim.x; x++) {
 
-                        pt = Point3D(x - 1, y - 1, z - 1);
-                        //             cerr<<"pt="<<pt<<" is valid "<<cellFieldG->isValid(pt)<<endl;
-                        ///**
-                        currentCellPtr = cellFieldG->getQuick(pt);
-                        //             currentCellPtr=cellFieldG->get(pt);
-                        //             cerr<<"THIS IS PTR="<<currentCellPtr<<endl;
+					pt=Point3D(x-1,y-1,z-1);
+					///**
+					currentCellPtr=cellFieldG->getQuick(pt);
+					//             currentCellPtr=cellFieldG->get(pt);
 
-                        //             if(currentCellPtr)
-                        //                cerr<<"This is id="<<currentCellPtr->id<<endl;
-                        //currentConcentration = concentrationArray[x][y][z];
+					//             if(currentCellPtr)
+					//currentConcentration = concentrationArray[x][y][z];
 
                         if (secreteInMedium && !currentCellPtr) {
                             concentrationField.setDirect(x, y, z, secrConstMedium);
@@ -1194,7 +1182,7 @@ namespace CompuCell3D {
     void FlexibleDiffusionSolverFE_GPU<GPU_Solver>::diffuseSingleField(unsigned int idx) {
 
         //HAVE TO WATCH OUT FOR SHARED/PRIVATE VARIABLES
-        //cerr<<"Diffusion step"<<endl;
+        CC3D_Log(LOG_TRACE) << "Diffusion step";
         DiffusionData &diffData = diffSecrFieldTuppleVec[idx].diffData;
         //float diffConst=diffData.diffConst;
         //float decayConst=diffData.decayConst;
@@ -1204,7 +1192,6 @@ namespace CompuCell3D {
 
         //CUDA PART
         gpuDevice->prepareSolverParams(fieldDim, diffData);
-
 
         Automaton *automaton = potts->getAutomaton();
 
@@ -1324,9 +1311,8 @@ namespace CompuCell3D {
         for (pt.z = 0; pt.z < fieldDim.z; pt.z++)
             for (pt.y = 0; pt.y < fieldDim.y; pt.y++)
                 for (pt.x = 0; pt.x < fieldDim.x; pt.x++) {
-                    //cerr<<"pt="<<pt<<endl;
-                    concentrationField->set(pt, 0);
-                }
+                    concentrationField->set(pt,0);
+			}
 
         while (!in.eof()) {
             in >> pt.x >> pt.y >> pt.z >> c;
@@ -1455,10 +1441,10 @@ namespace CompuCell3D {
         //getting requested GPU device index
         if (_xmlData->findElement("GPUDeviceIndex")) {
             gpuDeviceIndex = _xmlData->getFirstElement("GPUDeviceIndex")->getInt();
-            cerr << "GPU device #" << gpuDeviceIndex << " requested\n";
-        } else {
-            cerr << "No specific GPU requested, it will be selected automatically\n";
-        }
+            CC3D_Log(LOG_DEBUG) << "GPU device #"<<gpuDeviceIndex<<" requested" << std::endl;
+	}else{
+		CC3D_Log(LOG_DEBUG) << "No specific GPU requested, it will be selected automatically" << std::endl;
+	}
 
         CC3DXMLElementList diffFieldXMLVec = _xmlData->getElements("DiffusionField");
         for (unsigned int i = 0; i < diffFieldXMLVec.size(); ++i) {
@@ -1596,12 +1582,12 @@ namespace CompuCell3D {
             if (_xmlData->getFirstElement("Serialize")->findAttribute("Frequency")) {
                 serializeFrequency = _xmlData->getFirstElement("Serialize")->getAttributeAsUInt("Frequency");
             }
-            cerr << "serialize Flag=" << serializeFlag << endl;
+            CC3D_Log(LOG_DEBUG) << "serialize Flag="<<serializeFlag;
         }
 
         if (_xmlData->findElement("ReadFromFile")) {
             readFromFileFlag = true;
-            cerr << "readFromFileFlag=" << readFromFileFlag << endl;
+            CC3D_Log(LOG_DEBUG) << "readFromFileFlag="<<readFromFileFlag;
         }
 
         for (size_t i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {

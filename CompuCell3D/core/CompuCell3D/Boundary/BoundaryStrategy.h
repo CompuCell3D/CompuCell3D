@@ -13,6 +13,7 @@
 #include <iostream>
 #include <vector>
 #include "BoundaryTypeDefinitions.h"
+#include <Logger/CC3DLogger.h>
 
 using namespace std;
 
@@ -128,6 +129,7 @@ namespace CompuCell3D {
         static BoundaryStrategy *getInstance() {
             using namespace std;
             if (!singleton) {
+				CC3D_Log(LOG_DEBUG) << "CONSTRUCTING an instance";
                 singleton = new BoundaryStrategy();
             }
 
@@ -135,14 +137,18 @@ namespace CompuCell3D {
         }
 
         static void destroy() {
+			CC3D_Log(LOG_DEBUG) << "destroy fcn: destroying boundary strategy";
+            if (singleton)
+			{
+				CC3D_Log(LOG_DEBUG) << "will destroy boundary strategy singleton = " << singleton;
 
-            if (singleton) {
-
-                delete singleton;
+				delete singleton;
                 singleton = 0;
-
-            } else {
-                cerr << "BoundaryStrategy singleton WAS NOT DESTROYED BECAUSE IT IS DEAD!\n";
+				CC3D_Log(LOG_DEBUG) << "BoundaryStrategy singleton is DEAD!";
+            }
+            else
+            {
+                CC3D_Log(LOG_DEBUG) << "BoundaryStrategy singleton WAS NOT DESTROYED BECAUSE IT IS DEAD!";
             }
 
         }

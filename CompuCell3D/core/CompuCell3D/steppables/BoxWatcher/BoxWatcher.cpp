@@ -107,9 +107,8 @@ void BoxWatcher::adjustBox() {
     maxCoordinates.y = (maxCoordinates.y + yMargin >= fieldDim.y - 1 ? fieldDim.y : maxCoordinates.y + yMargin + 1);
     maxCoordinates.z = (maxCoordinates.z + zMargin >= fieldDim.z - 1 ? fieldDim.z : maxCoordinates.z + zMargin + 1);
 
-    potts->setMinCoordinates(minCoordinates);
-    potts->setMaxCoordinates(maxCoordinates);
-    //cerr<<"SETTING minCoordinates="<<minCoordinates<<" maxCoordinates="<<maxCoordinates<<endl;
+   potts->setMinCoordinates(minCoordinates);
+   potts->setMaxCoordinates(maxCoordinates);
 
 }
 

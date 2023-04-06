@@ -29,7 +29,7 @@ namespace CompuCell3D {
 
         Potts3D *potts;
 
-        CC3DXMLElement *xmlData;
+        CC3DXMLElement *xmlData{};
         ParallelUtilsOpenMP *pUtils;
         ExpressionEvaluatorDepot eed;
         bool energyExpressionDefined;
@@ -38,9 +38,9 @@ namespace CompuCell3D {
         std::string pluginName;
 
         BoundaryStrategy *boundaryStrategy;
-        unsigned int maxNeighborIndex;
+        unsigned int maxNeighborIndex{};
         LatticeMultiplicativeFactors lmf;
-        WatchableField3D<CellG *> *cellFieldG;
+        WatchableField3D<CellG *> *cellFieldG{};
 
 
         enum FunctionType {
@@ -48,8 +48,8 @@ namespace CompuCell3D {
         };
         FunctionType functionType;
 
-        double targetSurface;
-        double lambdaSurface;
+        double targetSurface{};
+        double lambdaSurface{};
 
         double scaleSurface;
 
@@ -58,7 +58,7 @@ namespace CompuCell3D {
 
         typedef double (SurfacePlugin::*changeEnergy_t)(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
 
-        SurfacePlugin::changeEnergy_t changeEnergyFcnPtr;
+        SurfacePlugin::changeEnergy_t changeEnergyFcnPtr{};
 
         double changeEnergyGlobal(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
 

@@ -1,0 +1,11 @@
+SET(SRCS CC3DLogger.cpp )
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+   ADD_SHARED_LIBRARY(Logger ${SRCS} )
+else()
+   ADD_SHARED_LIBRARY(Logger ${SRCS} )
+endif()
+
+INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/Logger .h
+   CC3DLogger
+)

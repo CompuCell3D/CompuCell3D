@@ -1,0 +1,101 @@
+<!-- Demo type-specific permeable membrane modeling.
+    One should see a diffusion field that warps due to differences
+    in membrane permeativity. One should also see how membrane 
+    biasing affects an initially uniform distribution. -->
+<CompuCell3D Revision="20190906" Version="4.1.0">
+   
+   <Metadata>
+      <NumberOfProcessors>1</NumberOfProcessors>
+      <DebugOutputFrequency>10</DebugOutputFrequency>
+   </Metadata>
+   
+   <Potts>
+      <Dimensions x="100" y="100" z="1"/>
+      <Steps>100000</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+   </Potts>
+   
+   <Plugin Name="CellType">
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="Type1"/>
+      <CellType TypeId="2" TypeName="Type2"/>
+   </Plugin>
+   
+   <Plugin Name="Volume">
+      <VolumeEnergyParameters CellType="Type1" LambdaVolume="2.0" TargetVolume="50"/>
+      <VolumeEnergyParameters CellType="Type2" LambdaVolume="2.0" TargetVolume="50"/>
+   </Plugin>
+   
+   <Plugin Name="Contact">
+      <Energy Type1="Medium" Type2="Medium">0.0</Energy>
+      <Energy Type1="Medium" Type2="Type1">16.0</Energy>
+      <Energy Type1="Medium" Type2="Type2">16.0</Energy>
+      <Energy Type1="Type1" Type2="Type1">6.0</Energy>
+      <Energy Type1="Type1" Type2="Type2">10.0</Energy>
+      <Energy Type1="Type2" Type2="Type2">6.0</Energy>
+      <NeighborOrder>2</NeighborOrder>
+   </Plugin>
+   
+    <Steppable Type="ReactionDiffusionSolverFVM">
+        <DeltaT unit="s">1</DeltaT>
+<!--         <AutoTimeSubStep/> -->
+        <SimpleMassConservation/>
+        <DiffusionField Name="C1">
+            <DiffusionData>
+                <DiffusionConstant>0.2</DiffusionConstant>
+                <PermIntCoefficient Type1="Type1" Type2="Medium">0.2</PermIntCoefficient>
+                <PermIntCoefficient Type1="Type2" Type2="Medium">0.0</PermIntCoefficient>
+                <PermIntCoefficient Type1="Type1" Type2="Type1">0.2</PermIntCoefficient>
+                <PermIntCoefficient Type1="Type1" Type2="Type2">0.02</PermIntCoefficient>
+                <PermIntCoefficient Type1="Type2" Type2="Type2">0.01</PermIntCoefficient>
+                <SimplePermInt/>
+            </DiffusionData>
+            <BoundaryConditions>
+                <Plane Axis="X">
+                    <ConstantValue PlanePosition="Min" Value="0.0"/>
+                    <ConstantValue PlanePosition="Max" Value="1.0"/>
+                </Plane>
+                <Plane Axis="Y">
+                    <ConstantDerivative PlanePosition="Min" Value="0.0"/>
+                    <ConstantDerivative PlanePosition="Max" Value="0.0"/>
+                </Plane>
+            </BoundaryConditions>
+        </DiffusionField>
+        <DiffusionField Name="C2">
+            <DiffusionData>
+                <DiffusionConstant>0.2</DiffusionConstant>
+                <PermIntCoefficient Type1="Type1" Type2="Medium">0.2</PermIntCoefficient>
+                <PermIntCoefficient Type1="Type2" Type2="Medium">0.2</PermIntCoefficient>
+                <PermIntCoefficient Type1="Type1" Type2="Type1">0.2</PermIntCoefficient>
+                <PermIntCoefficient Type1="Type1" Type2="Type2">0.2</PermIntCoefficient>
+                <PermIntCoefficient Type1="Type2" Type2="Type2">0.2</PermIntCoefficient>
+                <PermIntBias Type1="Type1" Type2="Medium">0.25</PermIntBias>
+                <PermIntBias Type1="Type2" Type2="Type1">0.25</PermIntBias>
+                <PermIntBias Type1="Medium" Type2="Type2">0.25</PermIntBias>
+                <SimplePermInt/>
+                <InitialConcentrationExpression>0.5</InitialConcentrationExpression>
+            </DiffusionData>
+            <BoundaryConditions>
+                <Plane Axis="X">
+                    <ConstantDerivative PlanePosition="Min" Value="0.0"/>
+                    <ConstantDerivative PlanePosition="Max" Value="0.0"/>
+                </Plane>
+                <Plane Axis="Y">
+                    <ConstantDerivative PlanePosition="Min" Value="0.0"/>
+                    <ConstantDerivative PlanePosition="Max" Value="0.0"/>
+                </Plane>
+            </BoundaryConditions>
+        </DiffusionField>
+    </Steppable>
+   
+   <Steppable Type="BlobInitializer">
+      <Region>
+         <Center x="50" y="50" z="0"/>
+         <Radius>25</Radius>
+         <Gap>0</Gap>
+         <Width>7</Width>
+         <Types>Type1, Type2</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>

@@ -2,7 +2,7 @@
 
 using namespace CompuCell3D;
 using namespace std;
-
+#include <Logger/CC3DLogger.h>
 
 #include "NeighborTrackerPlugin.h"
 
@@ -34,7 +34,7 @@ void NeighborTrackerPlugin::init(Simulator *_simulator, CC3DXMLElement *_xmlData
         checkSanity = true;
         checkFreq = _xmlData->getFirstElement("CheckLatticeSanityFrequency")->getUInt();
     }
-    cerr << "INITIALIZING CELL BOUNDARYTRACKER PLUGIN" << endl;
+    CC3D_Log(LOG_DEBUG) << "INITIALIZING CELL BOUNDARYTRACKER PLUGIN";
     simulator = _simulator;
     Potts3D *potts = simulator->getPotts();
     cellFieldG = (WatchableField3D < CellG * > *)
@@ -90,7 +90,6 @@ void NeighborTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell, Cel
         oldCell) {//happens during multiple calls to se fcn on the same pixel woth current cell - should be avoided
         return;
     }
-    //cerr<<"RUNNING NEIGHBOR TRACKER"<<endl;
     const Field3DIndex &field3DIndex = adjNeighbor.getField3DIndex();
 
     long currentPtIndex = 0;
@@ -143,21 +142,16 @@ void NeighborTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell, Cel
             adjCellPtr = cellFieldG->get(neighbor.pt);
 
             if (adjCellPtr != oldCell) { /// will decrement commSurfArea with all face 2 face neighbors
-                /*                  cerr<<"adjCellPtr="<<adjCellPtr<<" oldCell="<<oldCell<<endl;
-                cerr<<"ptAdj="<<ptAdj<<" pt="<<pt<<endl;*/
                 set_NSD_itr = oldCellNeighborSurfaceDataSetPtr->find(NeighborSurfaceData(adjCellPtr));
                 if (set_NSD_itr != oldCellNeighborSurfaceDataSetPtr->end()) {
                     set_NSD_itr->decrementCommonSurfaceArea(*set_NSD_itr); ///decrement commonSurfArea with adj cell
                     if (set_NSD_itr->OKToRemove()) ///if commSurfArea reaches 0 I remove this entry from cell neighbor set
                         oldCellNeighborSurfaceDataSetPtr->erase(set_NSD_itr);
-                    //cerr<<"erasing "<<adjCellPtr<<" from "<< oldCell<<endl;
 
-                } else {
-
+                }
+                else {
                     testLatticeSanityFull();
-                    cerr
-                            << "Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ..."
-                            << endl;
+                    CC3D_Log(LOG_DEBUG) << "Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ...";
                     throw CC3DException(
                             "Could not find cell address in the boundary - set of cellNeighbors is corrupted. Exiting ...");
                 }
@@ -304,7 +298,7 @@ void NeighborTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell, Cel
         ++changeCounter;
 
         if (!(changeCounter % checkFreq)) {
-            cerr << "ChangeCounter:" << changeCounter << endl;
+            CC3D_Log(LOG_DEBUG) << "ChangeCounter:" << changeCounter;
             testLatticeSanityFull();
 
         }
@@ -409,8 +403,8 @@ void NeighborTrackerPlugin::testLatticeSanityFull() {
 
     //Now do lattice sanity checks
     if (mapCellNeighborSurfaceData.size() != cellInventoryPtr->getCellInventorySize()) {
-        cerr << "Number of cells in the mapCellNeighborSurfaceData = " << mapCellNeighborSurfaceData.size()
-             << " is different than in cell inventory:  " << cellInventoryPtr->getCellInventorySize() << endl;
+        CC3D_Log(LOG_DEBUG) << "Number of cells in the mapCellNeighborSurfaceData = " << mapCellNeighborSurfaceData.size()
+             << " is different than in cell inventory:  " << cellInventoryPtr->getCellInventorySize();
 
         exit(0);
     }
@@ -423,23 +417,22 @@ void NeighborTrackerPlugin::testLatticeSanityFull() {
 
         mitr = mapCellNeighborSurfaceData.find(cell);
         if (mitr == mapCellNeighborSurfaceData.end()) {
-            cerr << "Cell " << cell << " does not appear in the just initialized mapCellNeighborSurfaceData" << endl;
+            CC3D_Log(LOG_DEBUG) << "Cell " << cell << " does not appear in the just initialized mapCellNeighborSurfaceData";
             exit(0);
 
         }
         set_NSD_ptr = &(mitr->second);
 
         if (!(*set_NSD_ptr == neighborTrackerAccessor.get(cell->extraAttribPtr)->cellNeighbors)) {
-            cerr << "Have checked " << counter << " cells" << endl;
-            cerr << "set of NeighborSurfaceData do not match for cell: " << cell << endl;
-            cerr << "cell->id=" << cell->id << " cell->type=" << (int) cell->type << endl;
+            CC3D_Log(LOG_DEBUG) << "Have checked " << counter << " cells";
+            CC3D_Log(LOG_DEBUG) << "set of NeighborSurfaceData do not match for cell: " << cell;
+            CC3D_Log(LOG_DEBUG) << "cell->id=" << cell->id << " cell->type=" << (int) cell->type;
             exit(0);
         }
 
         ++counter;
     }
-
-    cerr << "FULL TEST: LATTICE IS SANE!!!!!" << endl;
+    CC3D_Log(LOG_DEBUG) << "FULL TEST: LATTICE IS SANE!!!!!";
 
 }
 

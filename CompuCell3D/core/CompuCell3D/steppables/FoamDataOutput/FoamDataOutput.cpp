@@ -61,14 +61,13 @@ void FoamDataOutput::extraInit(Simulator *simulator) {
 void FoamDataOutput::start() {}
 
 void FoamDataOutput::step(const unsigned int currentStep) {
-    ostringstream str;
-    str << fileName << "." << currentStep;
-    ofstream out(str.str().c_str());
 
-
-    CellInventory::cellInventoryIterator cInvItr;
-    CellG *cell;
-    std::set <NeighborSurfaceData> *neighborData;
+	ostringstream str;
+	str<<fileName<<"."<<currentStep;
+	ofstream out(str.str().c_str());
+	CellInventory::cellInventoryIterator cInvItr;
+	CellG * cell;
+	std::set<NeighborSurfaceData > * neighborData;
 
     for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr) {
         cell = cellInventoryPtr->getCell(cInvItr);

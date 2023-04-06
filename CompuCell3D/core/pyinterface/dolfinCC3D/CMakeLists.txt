@@ -29,10 +29,10 @@ ADD_DEFINITIONS(-I/usr/include -I/usr/include/vtk-5.8 -I/usr/include/qt4 -I/usr/
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     ADD_LIBRARY(dolfinUtils ${SRCS})
-    target_link_libraries(dolfinCC3D  ${PYTHON_LIBRARIES} ${EXTRA_LIBS})
+    target_link_libraries(dolfinCC3D  ${Python3_LIBRARIES} ${EXTRA_LIBS})
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     ADD_LIBRARY(dolfinUtils ${SRCS})
-    target_link_libraries(dolfinUtils  ${PYTHON_LIBRARIES} ${EXTRA_LIBS})
+    target_link_libraries(dolfinUtils  ${Python3_LIBRARIES} ${EXTRA_LIBS})
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 INSTALL_TARGETS(/lib
@@ -42,7 +42,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 SET(LIBS
    dolfinUtils
-   ${PYTHON_LIBRARIES}
+   ${Python3_LIBRARIES}
    ${EXTRA_LIBS}
 
 )
@@ -51,7 +51,7 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 SET(LIBS
    dolfinUtils
-   ${PYTHON_LIBRARIES}
+   ${Python3_LIBRARIES}
    ${EXTRA_LIBS}
 )
 
@@ -60,7 +60,7 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 INCLUDE_DIRECTORIES(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${PYINTERFACE_SRC_DIR}/dolfinCC3D
-   ${PYTHON_INCLUDE_PATH}
+   ${Python3_INCLUDE_PATH}
    ${DOLFIN_INCLUDE_DIRS}
 #    ${Boost_INCLUDE_DIRS}
 )
@@ -74,7 +74,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 SWIG_LINK_LIBRARIES(dolfinCC3D ${LIBS})
-target_link_directories(dolfinCC3D PUBLIC ${Python_LIBRARY_DIRS})
+target_link_directories(dolfinCC3D PUBLIC ${Python3_LIBRARY_DIRS})
 
 install(TARGETS _dolfinCC3D    DESTINATION lib/python )
 

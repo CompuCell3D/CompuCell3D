@@ -23,18 +23,25 @@ RandomFieldInitializer::RandomFieldInitializer() :
 
 RandomFieldInitializer::~RandomFieldInitializer() {
     delete builder;
-    delete rand;
+    if (rand) {
+
+        delete rand;
+        rand = nullptr;
+    }
 }
 
 void RandomFieldInitializer::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
     simulator = _simulator;
     potts = _simulator->getPotts();
-    cellField = (WatchableField3D < CellG * > *)
-    potts->getCellFieldG();
+    cellField = (WatchableField3D<CellG *> *)
+            potts->getCellFieldG();
     if (!cellField) throw CC3DException("initField() Cell field G cannot be null!");
     dim = cellField->getDim();
     builder = new FieldBuilder(_simulator);
     // setParameters(_simulator,_xmlData);
+    auto randomSeed = simulator->getRNGSeed();
+    rand = simulator->generateRandomNumberGenerator(randomSeed);
+
     update(_xmlData, true);
 }
 
@@ -65,12 +72,12 @@ void RandomFieldInitializer::setParameters(Simulator *_simulator, CC3DXMLElement
     int order = 1;
     if (_xmlData->getFirstElement("order"))
         order = _xmlData->getFirstElement("order")->getInt();
-    cout << "order = " << order << endl;
+    CC3D_Log(LOG_DEBUG) << "order = " << order << endl;
     if (order == 2) { builder->setNeighborListSO(); }
     else { builder->setNeighborListFO(); }
     // read types and set bias
-    vector <string> typeNames;
-    vector <string> biasVec;
+    vector<string> typeNames;
+    vector<string> biasVec;
     if (_xmlData->getFirstElement("types")) {
         string typeNamesString = _xmlData->getFirstElement("types")->getText();
         parseStringIntoList(typeNamesString, typeNames, ",");
@@ -95,10 +102,10 @@ void RandomFieldInitializer::setParameters(Simulator *_simulator, CC3DXMLElement
     if (ncells > (boxMax.x * boxMax.y * boxMax.z)) {
         ncells = boxMax.x * boxMax.y * boxMax.z;
         growsteps = 1;
-        cout << "#########################\n";
-        cout << "Too much cells!\nncells is set to " << ncells << endl;
-        cout << "growsteps is set to 0\n";
-        cout << "#########################\n";
+        CC3D_Log(LOG_DEBUG) << "#########################";
+        CC3D_Log(LOG_DEBUG) << "Too much cells!" << endl << "ncells is set to " << ncells;
+        CC3D_Log(LOG_DEBUG) << "growsteps is set to 0";
+        CC3D_Log(LOG_DEBUG) << "#########################";
     }
     // get border type
     Automaton *automaton = potts->getAutomaton();

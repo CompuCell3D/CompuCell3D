@@ -66,9 +66,7 @@ void BoundaryPixelTrackerPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 
 	if(_xmlData->getFirstElement("Depth")){
 		maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
-		//cerr<<"got here will do depth"<<endl;
 	}else{
-		//cerr<<"got here will do neighbor order"<<endl;
 		if(_xmlData->getFirstElement("NeighborOrder")){
 
 			maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());	

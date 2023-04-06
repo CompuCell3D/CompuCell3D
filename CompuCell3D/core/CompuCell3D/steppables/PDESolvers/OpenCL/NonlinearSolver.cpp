@@ -9,7 +9,7 @@
 #include <limits>
 #include "../GPUSolverParams.h"
 #include <viennacl/linalg/norm_2.hpp>
-
+#include <Logger/CC3DLogger.h>
 
 //Theoretically, we need to use Biconjugate Stabilized Gradients method here,
 //as the matrix is not symmetric.
@@ -26,30 +26,26 @@
 
 using namespace CompuCell3D;
 
-NonlinearSolver::NonlinearSolver(OpenCLHelper const &oclHelper, /*ImplicitMatrix &im,*/
-                                 std::vector <fieldNameAddTerm_t> const &fnats,
-                                 std::vector <UniSolverParams> const &solverParams, cl_mem const &d_cellTypes,
-                                 GPUBoundaryConditions const &boundaryConditions,
-                                 unsigned char fieldsCount_, std::string const &pathToKernels) :
-        Solver(oclHelper, solverParams, d_cellTypes, boundaryConditions, fieldsCount_, pathToKernels),
-        mv_newField(fieldLength(&solverParams[0]) * fieldsCount_),
-        m_linearIterationsMade(0) {
-
-    std::cerr << "NonlinearSolver::ctor\n";
-    assert(fieldsCount_ == fnats.size());
-    assert(solverParams.size() == fnats.size());
+NonlinearSolver::NonlinearSolver(OpenCLHelper const &oclHelper, /*ImplicitMatrix &im,*/ std::vector<fieldNameAddTerm_t> const &fnats,  
+	std::vector<UniSolverParams> const &solverParams, cl_mem const &d_cellTypes, GPUBoundaryConditions const &boundaryConditions,
+	unsigned char fieldsCount_, std::string const &pathToKernels):
+Solver(oclHelper, solverParams, d_cellTypes, boundaryConditions, fieldsCount_, pathToKernels),
+mv_newField(fieldLength(&solverParams[0])*fieldsCount_),
+    m_linearIterationsMade(0)
+{
+	CC3D_Log(LOG_DEBUG) << "NonlinearSolver::ctor";
+	assert(fieldsCount_==fnats.size());
+	assert(solverParams.size()==fnats.size());
 
     m_tmpReactionKernelsFN = genReactionKernels(fnats);
     std::cout << "reaction kernels created at file " << m_tmpReactionKernelsFN << std::endl;
 
-    //loading OpenCL program
-    std::string commonFN = pathToKernels + "common.cl";
-    const char *programPaths[] = {commonFN.c_str(),
-                                  m_tmpReactionKernelsFN.c_str()};//TODO: find size of an array automatically
-
-    std::cerr << "OpenCL kernel names for NonlinearSolver:" << std::endl;
+	//loading OpenCL program
+	std::string commonFN=pathToKernels+"common.cl";
+	const char *programPaths[]={commonFN.c_str(), m_tmpReactionKernelsFN.c_str()};//TODO: find size of an array automatically
+	CC3D_Log(LOG_DEBUG) << "OpenCL kernel names for NonlinearSolver:";
     for (int i = 0; i < 2; ++i) {
-        std::cerr << "\t" << programPaths[i] << std::endl;
+        CC3D_Log(LOG_DEBUG) << "\t"<<programPaths[i];
     }
 
     if (!oclHelper.LoadProgram(programPaths, 2, m_clProgram)) {
@@ -217,8 +213,6 @@ viennacl::vector<float> const &NonlinearSolver::prod(viennacl::vector<float> con
         ASSERT_OR_THROW(sstr.str().c_str(), false);
     }
 
-    //analyze("\nJacobianProd: \n", mv_outputField, dim, m_fieldsCount);
-
     ++m_linearIterationsMade;
 
     return getOutVector();
@@ -265,17 +259,17 @@ NonlinearSolver::NewField(float dt, viennacl::vector<float> const &v_oldField, N
 
         if (mguNorm2 >= prevMguNorm2) {
             if (goalFNGrowCount == 0)
-                std::cerr << "Warning: second norm for goal function grows.";
-            if (nlsParams.newton_.stopIfFTolGrows_) {
-                std::cerr << " Exit requested.\n";
-                return mv_newField;
-            } else {
-                if (goalFNGrowCount == 0)
-                    std::cerr << " Continue solving.\n";
-            }
-            ++goalFNGrowCount;
-        }
-        prevMguNorm2 = mguNorm2;
+                CC3D_Log(LOG_DEBUG) << "Warning: second norm for goal function grows.";
+			if(nlsParams.newton_.stopIfFTolGrows_){
+				CC3D_Log(LOG_DEBUG) <<" Exit requested.";
+				return mv_newField;
+			}else{
+				if(goalFNGrowCount==0)
+					CC3D_Log(LOG_DEBUG) << " Continue solving.";
+			}
+			++goalFNGrowCount;
+		}
+		prevMguNorm2=mguNorm2;
 
         applyBCToRHS(mGU);
 
@@ -295,15 +289,14 @@ NonlinearSolver::NewField(float dt, viennacl::vector<float> const &v_oldField, N
         //std::cout<<"; second norm: "<<shNorm2<<std::endl;
 
         if (solver_tag.max_iterations() == solver_tag.iters()) {
-            std::cerr << "\nWarning: Linear solver didn't converge in " << solver_tag.max_iterations()
-                      << " iterations.";
-            if (nlsParams.linear_.stopIfDidNotConverge_) {
-                std::cerr << " Exit requested.\n";
-                return mv_newField;
-            } else {
-                std::cerr << " Continue solving.\n";
-            }
-        }
+            CC3D_Log(LOG_DEBUG) << "Warning: Linear solver didn't converge in "<<solver_tag.max_iterations()<<" iterations.";
+			if(nlsParams.linear_.stopIfDidNotConverge_){
+				CC3D_Log(LOG_DEBUG) << " Exit requested.";
+				return mv_newField;
+			}else{
+				CC3D_Log(LOG_DEBUG) << " Continue solving.";
+			}
+		}
 
         if (shNorm2 <= nlsParams.newton_.stpTol_ * xNorm2) {
             //std::cout<<"requested tolerance achieved (2), norm_2(G)="<<viennacl::linalg::norm_2(minusGoalFunc(v_oldField))<<"\n";
@@ -314,22 +307,21 @@ NonlinearSolver::NewField(float dt, viennacl::vector<float> const &v_oldField, N
 
         if (shNorm2 >= prevShNorm2) {
             if (shNorm2GrowCount == 0)
-                std::cerr << "\nWarning: second norm for update vector grows.";
-
-            if (nlsParams.newton_.stopIfFTolGrows_) {
-                std::cerr << " Exit requested.\n";
-                return mv_newField;
-            } else {
-                if (shNorm2GrowCount == 0)
-                    std::cerr << " Continue solving.\n";
-            }
-            ++shNorm2GrowCount;
-        }
-
-        mv_newField += outputField;
-        //analyze("New field:\n", mv_newField, dim3d, getFieldsCount());
-        //std::cout<<std::endl<<std::endl;
-    }
+                CC3D_Log(LOG_DEBUG) << "Warning: second norm for update vector grows.";
+			if(nlsParams.newton_.stopIfFTolGrows_){
+				CC3D_Log(LOG_DEBUG) << " Exit requested.";
+				return mv_newField;
+			}else{
+				if(shNorm2GrowCount==0)
+					CC3D_Log(LOG_DEBUG) << " Continue solving.";
+			}
+			++shNorm2GrowCount;
+		}
+		
+		mv_newField+=outputField;
+		//analyze("New field:\n", mv_newField, dim3d, getFieldsCount());
+		//std::cout<<std::endl<<std::endl;
+	}
 
     ASSERT_OR_THROW("Can't solve nonlinear system, all iterations used", true);
     return mv_newField;

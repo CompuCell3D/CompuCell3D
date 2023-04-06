@@ -1,8 +1,8 @@
-import time
+import os
 from math import floor
 from os.path import dirname, join
 from cc3d.cpp import CompuCell
-
+from pathlib import Path
 from cc3d.core.XMLDomUtils import XMLIdLocator
 from cc3d.CompuCellSetup import init_modules, parseXML
 from cc3d.core import enums
@@ -19,6 +19,11 @@ from cc3d.core import RestartManager
 from cc3d.CompuCellSetup.simulation_utils import check_for_cpp_errors
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 from cc3d.CompuCellSetup.cluster_utils import check_nanohub_and_count
+import warnings
+
+# default setting
+logger = CompuCell.CC3DLogger.get()
+logger.enableConsoleLogging(CompuCell.LOG_CURRENT)
 
 
 # -------------------- legacy API emulation ----------------------------------------
@@ -51,6 +56,33 @@ def mainLoop(*args, **kwds):
 
 # -------------------- enf of legacy API emulation ----------------------------------------
 
+def setup_logging():
+    """
+    Function called during initialization of simulation run via CLI.
+    """
+    pg = CompuCellSetup.persistent_globals
+    log_level = pg.log_level.strip()
+    if log_level:
+        try:
+            log_level_val = getattr(CompuCell, log_level)
+        except AttributeError:
+            warnings.warn(f"unsupported log level name: {log_level}. "
+                          f"Run command line with --help arg to see what are allowed log level names")
+            return
+        logger = CompuCell.CC3DLogger.get()
+        logger.enableConsoleLogging(log_level_val)
+        if pg.log_to_file:
+            if pg.output_directory is not None:
+                if not Path(pg.output_directory).exists():
+                    pg.create_output_dir()
+                logger.enableFileLogging(str(
+                    Path(pg.output_directory).joinpath("simulation.log")), log_level_val)
+
+        else:
+            if pg.output_directory is not None:
+                logger.disableFileLogging()
+
+
 def initialize_cc3d():
     """
 
@@ -58,6 +90,9 @@ def initialize_cc3d():
     """
     CompuCellSetup.persistent_globals.simulator, \
     CompuCellSetup.persistent_globals.simthread = get_core_simulation_objects()
+
+    # this is mainly used by command line interface. Player has separate setup_logging function
+    setup_logging()
 
     check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
@@ -84,9 +119,12 @@ def determine_main_loop_fcn():
         if sim_type == enums.SimType.THREADED:
             # SimulationThread run
             return CompuCellSetup.persistent_globals.simthread.main_loop()
+        elif sim_type == enums.SimType.SERVICE:
+            # SimulationServiceThread run
+            return CompuCellSetup.persistent_globals.simthread.main_loop()
         else:
             # Sink
-            return lambda sim, simthread, steppable_register: None
+            return lambda sim, simthread, steppable_registry: None
 
 
 def run():
@@ -137,9 +175,9 @@ def register_steppable(steppable):
     steppable_registry.registerSteppable(_steppable=steppable)
 
 
-def print_profiling_report(py_steppable_profiler_report, compiled_code_run_time, total_run_time):
+def generate_profiling_report(py_steppable_profiler_report, compiled_code_run_time, total_run_time):
     """
-    prints profiling information after simulation finishes running
+    Generates profiling information string after simulation finishes running
     :param py_steppable_profiler_report:
     :param compiled_code_run_time:
     :param total_run_time:
@@ -147,34 +185,51 @@ def print_profiling_report(py_steppable_profiler_report, compiled_code_run_time,
     """
     profiling_format = '{:>32.32}: {:11.2f} ({:5.1%})'
 
-    print('\n\n')
-    print('------------------PERFORMANCE REPORT:----------------------')
-    print('-----------------------------------------------------------')
-    print("TOTAL RUNTIME ", convert_time_interval_to_hmsm(total_run_time))
-    print('-----------------------------------------------------------')
-    print('-----------------------------------------------------------')
-    print('PYTHON STEPPABLE RUNTIMES')
-    # print py_steppable_profiler_report
+    profiling_report = os.linesep + os.linesep
+    profiling_report += '------------------PERFORMANCE REPORT:----------------------' + os.linesep
+    profiling_report += '-----------------------------------------------------------' + os.linesep
+    profiling_report += "TOTAL RUNTIME " + convert_time_interval_to_hmsm(total_run_time) + os.linesep
+    profiling_report += '-----------------------------------------------------------' + os.linesep
+    profiling_report += '-----------------------------------------------------------' + os.linesep
+    profiling_report += 'PYTHON STEPPABLE RUNTIMES' + os.linesep
 
     totStepTime = 0
 
     for steppableName, steppableObjectHash, run_time_ms in py_steppable_profiler_report:
-        print(profiling_format.format(steppableName, int(run_time_ms) / 1000., int(run_time_ms) / total_run_time))
+        profiling_report += profiling_format.format(steppableName,
+                                                    int(run_time_ms) / 1000.,
+                                                    int(run_time_ms) / total_run_time) + os.linesep
 
         totStepTime += run_time_ms
 
-    print('-----------------------------------------------------------')
+    profiling_report += '-----------------------------------------------------------' + os.linesep
 
-    print(profiling_format.format('Total Steppable Time', int(totStepTime) / 1000., int(totStepTime) / total_run_time))
+    profiling_report += profiling_format.format('Total Steppable Time',
+                                                int(totStepTime) / 1000.,
+                                                int(totStepTime) / total_run_time) + os.linesep
 
-    print(profiling_format.format('Compiled Code (C++) Run Time', int(compiled_code_run_time) / 1000.,
-                                  int(compiled_code_run_time) / total_run_time))
+    profiling_report += profiling_format.format('Compiled Code (C++) Run Time',
+                                                int(compiled_code_run_time) / 1000.,
+                                                int(compiled_code_run_time) / total_run_time) + os.linesep
 
-    print(profiling_format.format('Other Time', int(total_run_time - compiled_code_run_time - totStepTime) / 1000.,
-                                  int(total_run_time - compiled_code_run_time - totStepTime) / total_run_time))
+    profiling_report += profiling_format.format('Other Time',
+                                                int(total_run_time - compiled_code_run_time - totStepTime) / 1000.,
+                                                int(total_run_time - compiled_code_run_time - totStepTime) / total_run_time) + os.linesep
 
-    print('-----------------------------------------------------------')
-    print()
+    profiling_report += '-----------------------------------------------------------' + os.linesep
+    profiling_report += os.linesep
+    return profiling_report
+
+
+def print_profiling_report(py_steppable_profiler_report, compiled_code_run_time, total_run_time):
+    """
+    Prints profiling information after simulation finishes running
+    :param py_steppable_profiler_report:
+    :param compiled_code_run_time:
+    :param total_run_time:
+    :return:
+    """
+    print(generate_profiling_report(py_steppable_profiler_report, compiled_code_run_time, total_run_time))
 
 
 def convert_time_interval_to_hmsm(time_interval):
@@ -220,11 +275,18 @@ def get_core_simulation_objects():
         simthread = persistent_globals.simthread
         simulator.setNewPlayerFlag(True)
 
-    simulator.setBasePath(join(dirname(persistent_globals.simulation_file_name)))
+    if persistent_globals.simulation_file_name is not None:
+        simulator.setBasePath(join(dirname(persistent_globals.simulation_file_name)))
 
-    xml_fname = CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript
+    if CompuCellSetup.cc3dSimulationDataHandler is not None:
+        xml_fname = CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript
+    else:
+        xml_fname = None
 
     if persistent_globals.cc3d_xml_2_obj_converter is None:
+        if xml_fname is None:
+            raise RuntimeError('No CC3D core specification available')
+
         # We only call parseXML if previous steps do not initialize XML tree
         # Such situation usually happen when we specify XML tree using Python API in configure_simulation function
         # that is typically called from the Python main script
@@ -335,8 +397,6 @@ def init_screenshot_manager() -> None:
 
     persistent_globals = CompuCellSetup.persistent_globals
 
-    screenshot_data_fname = join(dirname(persistent_globals.simulation_file_name), 'screenshot_data/screenshots.json')
-
     persistent_globals.screenshot_manager = ScreenshotManagerCore()
 
     try:
@@ -345,7 +405,8 @@ def init_screenshot_manager() -> None:
         initialize_field_extractor_objects()
         field_extractor = persistent_globals.persistent_holder['field_extractor']
 
-    persistent_globals.create_output_dir()
+    if persistent_globals.output_directory:
+        persistent_globals.create_output_dir()
     gd = GenericDrawer.GenericDrawer(boundary_strategy=persistent_globals.simulator.getBoundaryStrategy())
     gd.set_field_extractor(field_extractor=field_extractor)
 
@@ -358,16 +419,18 @@ def init_screenshot_manager() -> None:
     persistent_globals.screenshot_manager.bsd = bsd
     persistent_globals.screenshot_manager.screenshot_number_of_digits = len(str(bsd.numberOfSteps))
 
-    try:
-        persistent_globals.screenshot_manager.read_screenshot_description_file(screenshot_data_fname)
-    except:
-        warnings.warn('Could not parse screenshot description file {screenshot_data_fname}. '
-                      'If you want graphical screenshot output please generate '
-                      'new screenshot description file from Player by pressing camera button on '
-                      'select graphical visualizations. If you do not want screenshots'
-                      'you may delete subfolder {scr_dir} or simply ingnore this message'.format(
-            screenshot_data_fname=screenshot_data_fname, scr_dir=dirname(screenshot_data_fname)))
-        time.sleep(5)
+    if persistent_globals.simulation_file_name:
+        screenshot_data_fname = join(dirname(persistent_globals.simulation_file_name), 'screenshot_data/screenshots.json')
+
+        try:
+            persistent_globals.screenshot_manager.read_screenshot_description_file(screenshot_data_fname)
+        except:
+            warnings.warn('Could not parse screenshot description file {screenshot_data_fname}. '
+                          'If you want graphical screenshot output please generate '
+                          'new screenshot description file from Player by pressing camera button on '
+                          'select graphical visualizations. If you do not want screenshots'
+                          'you may delete subfolder {scr_dir} or simply ingnore this message'.format(
+                screenshot_data_fname=screenshot_data_fname, scr_dir=dirname(screenshot_data_fname)))
 
 
 def store_screenshots(cur_step: int) -> None:
@@ -430,7 +493,8 @@ def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_en
                                         entity_type_label='Concentration Field Label')
 
     # passing output directory to simulator object
-    sim.setOutputDirectory(CompuCellSetup.persistent_globals.output_directory)
+    if CompuCellSetup.persistent_globals.output_directory is not None:
+        sim.setOutputDirectory(CompuCellSetup.persistent_globals.output_directory)
     # simthread.preStartInit()
     # we skip calling start functions of steppables if restart is enabled and we are using restart
     # directory to restart simulation from a given MCS

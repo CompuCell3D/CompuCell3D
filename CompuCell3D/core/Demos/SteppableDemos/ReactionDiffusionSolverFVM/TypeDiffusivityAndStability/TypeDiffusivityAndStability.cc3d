@@ -1,0 +1,5 @@
+<Simulation version="4.1.0">
+   <XMLScript Type="XMLScript">Simulation/TypeDiffusivityAndStability.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/TypeDiffusivityAndStability.py</PythonScript>
+   <Resource Type="Python">Simulation/TypeDiffusivityAndStabilitySteppables.py</Resource>
+</Simulation>

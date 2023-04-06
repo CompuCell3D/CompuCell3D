@@ -24,6 +24,7 @@
 #include "PottsTestData.h"
 
 #include "Potts3D.h"
+#include <Logger/CC3DLogger.h>
 
 using namespace CompuCell3D;
 using namespace std;
@@ -318,7 +319,9 @@ void Potts3D::unregisterFixedStepper(FixedStepper *_fixedStepper) {
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-CellG *Potts3D::createCellG(const Point3D pt, long _clusterId) {
+CellG *Potts3D::createCellG(const Point3D pt, long _clusterId)
+//
+{
     if (!cellFieldG->isValid(pt)) throw CC3DException("createCell() cellFieldG Point out of range!");
 
     CellG *cell = createCell(_clusterId);
@@ -388,7 +391,7 @@ CellG *Potts3D::createCellSpecifiedIds(long _cellId, long _clusterId) {
         cell->id = recentlyCreatedCellId;
     } else if (!cellInventory.attemptFetchingCellById(_cellId)) {
         // checking if cell id is available even if ids were used out of order
-        cerr << "out of order cell id  is available" << endl;
+         CC3D_Log(LOG_DEBUG) << "out of order cell id  is available";
         cell->id = _cellId;
 
     } else {
@@ -633,9 +636,10 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
     if (debugOutputFrequency && !(currentStep % debugOutputFrequency)) {
         stringstream oss;
         oss << "Metropolis List" << endl;
-        oss << "Number of Attempted Energy Calculations=" << attemptedEC << endl;
-        cerr << oss.str() << endl;
-        add_step_output(oss.str());
+        oss << "Number of Attempted Energy Calculations=" << attemptedEC;
+        string step_output = oss.str();
+         CC3D_Log(LOG_DEBUG) << step_output;
+        add_step_output(step_output);
 
 
     }
@@ -651,9 +655,7 @@ void Potts3D::add_step_output(const std::string &s) {
 }
 
 std::string Potts3D::get_step_output() {
-    stringstream oss;
-    oss << this->step_output << endl;
-    return oss.str();
+    return this->step_output;
 }
 
 
@@ -721,9 +723,10 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
         stringstream oss;
 
         oss << "Metropolis Fast" << endl;
-        oss << "total number of pixel copy attempts=" << numberOfAttempts << endl;
-        cerr << oss.str() << endl;
-        add_step_output(oss.str());
+        oss << "total number of pixel copy attempts=" << numberOfAttempts;
+        string step_output = oss.str();
+        CC3D_Log(LOG_DEBUG) << step_output;
+        add_step_output(step_output);
 
     }
 
@@ -933,8 +936,8 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
     } //pragma omp parallel
 
     if (debugOutputFrequency && !(currentStep % debugOutputFrequency)) {
-        cerr << "Number of Attempted Energy Calculations=" << attemptedEC << endl;
-    }
+         CC3D_Log(LOG_DEBUG) << "Number of Attempted Energy Calculations=" << attemptedEC;
+             }
 
     return flips;
 
@@ -964,7 +967,7 @@ Point3D Potts3D::randomPickBoundaryPixel(RandomNumberGenerator *rand) {
         }
     }
     if (counter > 5) {
-        cerr << "had to try more than 5 times" << endl;
+         CC3D_Log(LOG_DEBUG) << "had to try more than 5 times";
     }
     return pt;
 }
@@ -978,13 +981,7 @@ void Potts3D::initRandomNumberGenerators() {
     randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), 0);
 
     for (unsigned int i = 0; i < randNSVec.size(); ++i) {
-        unsigned int randomSeed;
-        if (!sim->ppdCC3DPtr->seed) {
-            srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-            randomSeed = (unsigned int) rand() * ((std::numeric_limits<unsigned int>::max)() - 1);
-        } else {
-            randomSeed = sim->ppdCC3DPtr->seed;
-        }
+        unsigned int randomSeed= sim->getRNGSeed();
         randNSVec[i] = sim->generateRandomNumberGenerator(randomSeed);
     }
 
@@ -1092,9 +1089,10 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
         stringstream oss;
 
         oss << "Boundary Walker" << endl;
-        oss << "number of pixel copy attempts=" << numberOfAttempts << endl;
-        cerr << oss.str() << endl;
-        add_step_output(oss.str());
+        oss << "number of pixel copy attempts=" << numberOfAttempts;
+        string step_output = oss.str();
+        CC3D_Log(LOG_DEBUG) <<  step_output;
+        add_step_output(step_output);
 
     }
 
@@ -1250,7 +1248,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
     } //pragma omp parallel
 
     if (debugOutputFrequency && !(currentStep % debugOutputFrequency)) {
-        cerr << "Number of Attempted Energy Calculations=" << attemptedEC << endl;
+         CC3D_Log(LOG_DEBUG) << "Number of Attempted Energy Calculations=" << attemptedEC;
     }
     return flips;
 

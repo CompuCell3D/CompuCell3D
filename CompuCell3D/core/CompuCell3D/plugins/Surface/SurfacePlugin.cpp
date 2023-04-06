@@ -7,7 +7,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "SurfacePlugin.h"
-
+#include <Logger/CC3DLogger.h>
 
 SurfacePlugin::~SurfacePlugin() {}
 
@@ -21,7 +21,8 @@ void SurfacePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     //this will load SurfaceTracker plugin if it is not already loaded
     SurfaceTrackerPlugin *plugin = (SurfaceTrackerPlugin *) Simulator::pluginManager.get("SurfaceTracker",
                                                                                          &pluginAlreadyRegisteredFlag);
-    cerr << "GOT HERE BEFORE CALLING INIT" << endl;
+
+    CC3D_Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
     if (!pluginAlreadyRegisteredFlag)
         plugin->init(simulator);
 
@@ -41,6 +42,7 @@ void SurfacePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     simulator->registerSteerableObject(this);
 
 }
+
 
 void SurfacePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
@@ -71,7 +73,7 @@ void SurfacePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
             functionType = BYCELLID;
     }
     Automaton *automaton = potts->getAutomaton();
-    cerr << "automaton=" << automaton << endl;
+    CC3D_Log(LOG_DEBUG) << "automaton="<<automaton;
 
     switch (functionType) {
         case BYCELLID:
@@ -194,13 +196,12 @@ double SurfacePlugin::changeEnergyGlobal(const Point3D &pt, const CellG *newCell
         energy += diffEnergy(lambdaSurface, targetSurface, newCell->surface * scaleSurface,
                              newOldDiffs.first * scaleSurface);
 
-    }
-    if (oldCell) {
-        energy += diffEnergy(lambdaSurface, targetSurface, oldCell->surface * scaleSurface,
-                             newOldDiffs.second * scaleSurface);
-    }
+   }
+  if (oldCell){
+	 energy += diffEnergy(lambdaSurface , targetSurface , oldCell->surface*scaleSurface, newOldDiffs.second*scaleSurface);
+  }
 
-    return energy;
+  return energy;
 
 }
 
@@ -224,11 +225,10 @@ double SurfacePlugin::changeEnergyByCellType(const Point3D &pt,
     }
     if (oldCell) {
         energy += diffEnergy(surfaceEnergyParamMap[oldCell->type].lambdaSurface,
-                             surfaceEnergyParamMap[oldCell->type].targetSurface, oldCell->surface * scaleSurface,
-                             newOldDiffs.second * scaleSurface);
-    }
+                             surfaceEnergyParamMap[oldCell->type].targetSurface , oldCell->surface*scaleSurface, newOldDiffs.second*scaleSurface);
+  }
 
-    return energy;
+  return energy;
 
 }
 
@@ -237,7 +237,7 @@ double SurfacePlugin::changeEnergyByCellId(const Point3D &pt,
                                            const CellG *newCell,
                                            const CellG *oldCell) {
 
-    /// E = lambda * (surface - targetSurface) ^ 2
+//    /// E = lambda * (surface - targetSurface) ^ 2
 
     double energy = 0.0;
 

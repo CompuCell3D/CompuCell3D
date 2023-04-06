@@ -39,7 +39,7 @@ void FieldBuilder::addCell(Dim3D pos) {
 }
 
 void FieldBuilder::addCell() {
-//	cout << "add cell\n";
+	CC3D_Log(LOG_TRACE) << "add cell";
     Point3D pt, pn;
     bool placed = false;
     bool hasNeighbor;
@@ -52,7 +52,6 @@ void FieldBuilder::addCell() {
         pt.z = rand->getInteger(boxMin.z, boxMax.z - 1);
         n = 0;
         hasNeighbor = false;
-        //~ cout << pt.x << "\t" << pt.y << "\t" << pt.z << endl;
         if ((!cellField->get(pt)) && (!hasNeighbor)) {
             placed = true;
             cell = potts->createCellG(pt);
@@ -64,7 +63,7 @@ void FieldBuilder::addCell() {
 }
 
 void FieldBuilder::setNeighborListSO() {
-//	cout << "build second order neighbor list\n";
+	CC3D_Log(LOG_TRACE) << "build second order neighbor list";
     vector<int> subX;
     vector<int> subY;
     vector<int> subZ;
@@ -209,19 +208,18 @@ void FieldBuilder::showCellStats(int borderID) {
         }
     }
     map<int, int>::iterator it;
-    cout << "##### INITIAL CONFIGURATION #####\n";
-    cout << "type\t#\n";
+    CC3D_Log(LOG_DEBUG) << "##### INITIAL CONFIGURATION #####";
+    CC3D_Log(LOG_DEBUG) << "type\t#";
     for (it = cellmap.begin(); it != cellmap.end(); it++) {
-        cout << automaton->getTypeName((*it).first) << "\t" << (*it).second << endl;
+        CC3D_Log(LOG_DEBUG) << automaton->getTypeName((*it).first) << "\t" << (*it).second << endl;
     }
 
-    cout << "average volume:\t" << (sumvol / ((float) n)) << endl;
-    cout << "#################################\n";
+    CC3D_Log(LOG_DEBUG) << "average volume:\t" << (sumvol / ((float) n)) << endl;
+    CC3D_Log(LOG_DEBUG) << "#################################";
 }
 
 void FieldBuilder::setType(CellG *cell) {
     int r = rand->getInteger(0, typeVec.size() - 1);
-//	cout << typeVec.size() << "\t" << r << "\t" << typeVec[r] << endl;
     cell->type = typeVec[r];
     typeVec.erase(typeVec.begin() + r);
 }

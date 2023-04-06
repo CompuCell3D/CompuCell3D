@@ -23,6 +23,7 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "AdvectionDiffusionSolverFE.h"
+#include <Logger/CC3DLogger.h>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 AdvectionDiffusionSolverFE::AdvectionDiffusionSolverFE()
@@ -90,8 +91,7 @@ void AdvectionDiffusionSolverFE::init(Simulator *simulator, CC3DXMLElement *_xml
     //register fields once they have been allocated
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
         simPtr->registerConcentrationField(concentrationFieldNameVector[i], concentrationFieldVector[i]);
-        cerr << "registring field: " << concentrationFieldNameVector[i] << " field address="
-             << concentrationFieldVector[i] << endl;
+        CC3D_Log(LOG_DEBUG) << "registring field: "<<concentrationFieldNameVector[i]<<" field address="<<concentrationFieldVector[i];
     }
 
 
@@ -107,15 +107,14 @@ void AdvectionDiffusionSolverFE::init(Simulator *simulator, CC3DXMLElement *_xml
             if ((*sitr) == "Secretion") {
                 diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j] = &AdvectionDiffusionSolverFE::secreteSingleField;
                 ++j;
-            } else if ((*sitr) == "SecretionOnContact") {
-                diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j] = &AdvectionDiffusionSolverFE::secreteOnContactSingleField;
-                ++j;
-            }
-        }
-    }
+            }else if((*sitr)=="SecretionOnContact"){
+             diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j]=&AdvectionDiffusionSolverFE::secreteOnContactSingleField;
+            ++j;
+         }
+      }
+   }
 
-
-    cerr << "ALLOCATED ALL FIELDS" << endl;
+   CC3D_Log(LOG_DEBUG) << "ALLOCATED ALL FIELDS";
 
 
 }
@@ -196,10 +195,9 @@ void AdvectionDiffusionSolverFE::updateLocalCellInventory(unsigned int idx) {
 void AdvectionDiffusionSolverFE::start() {
 
     updateCellInventories();
-    cerr << "GOT HERE BEFORE INITIALIZE FIELD" << endl;
-    initializeConcentration();
-
-    cerr << "GOT HERE AFTER INITIALIZE FIELD" << endl;
+    CC3D_Log(LOG_DEBUG) << "GOT HERE BEFORE INITIALIZE FIELD";
+   initializeConcentration();
+   CC3D_Log(LOG_DEBUG) << "GOT HERE AFTER INITIALIZE FIELD";
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -333,31 +331,31 @@ void AdvectionDiffusionSolverFE::secreteSingleField(unsigned int idx) {
     std::map<unsigned char, float>::iterator mitr;
     std::map<unsigned char, float>::iterator end_mitr = secrData.typeIdSecrConstMap.end();
 
-    cerr << "secrData.typeIdSecrConstMap.size()=" << secrData.typeIdSecrConstMap.size() << endl;
+    CC3D_Log(LOG_DEBUG) << "secrData.typeIdSecrConstMap.size()=" << secrData.typeIdSecrConstMap.size();
     float currentConcentration;
     float secrConst;
 
-    cerr << "secretion single field" << endl;
+    CC3D_Log(LOG_DEBUG) <<  "secretion single field";
 
     //the assumption is that medium has type ID 0
     mitr = secrData.typeIdSecrConstMap.find(automaton->getTypeId("Medium"));
 
 
-    CellG *cell;
-    CellInventory::cellInventoryIterator cInvItr;
-
-    for (cInvItr = cellInventoryPtr->cellInventoryBegin(); cInvItr != cellInventoryPtr->cellInventoryEnd(); ++cInvItr) {
-        cell = cellInventoryPtr->getCell(cInvItr);
-        //cell=*cInvItr;
-        cerr << "cell=" << cell->id << " type=" << (int) cell->type << endl;
+   CellG *cell;
+   CellInventory::cellInventoryIterator cInvItr;
+   
+   for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
+      cell=cellInventoryPtr->getCell(cInvItr);   
+      //cell=*cInvItr;
+     CC3D_Log(LOG_DEBUG) << "cell=" << cell->id << " type=" <<(int) cell->type;
         concentrationItr = concentrationField->find(cell);
 
-
-        mitr = secrData.typeIdSecrConstMap.find(cell->type);
-        if (mitr != end_mitr) {
-
-            secrConst = mitr->second;
-            cerr << "secrConst=" << secrConst << endl;
+         
+         mitr=secrData.typeIdSecrConstMap.find(cell->type);
+         if(mitr!=end_mitr){
+            
+            secrConst=mitr->second;
+         CC3D_Log(LOG_DEBUG) << "secrConst=" << secrConst;
             currentConcentration = concentrationItr->second;
             concentrationItr->second = currentConcentration + secrConst;
 
@@ -502,17 +500,16 @@ void AdvectionDiffusionSolverFE::diffuseSingleField(unsigned int idx) {
                 continue;
             }
 
-            nConcentrationItr = concentrationField->find(nCellPtr);
-            if (nConcentrationItr != concentrationEndItr) {
-                concentrationSum += nConcentrationItr->second;
-                ++neighborCounter;
-            }
-        }
-        updatedConcentration = dt_dx2 * diffConst * (concentrationSum - neighborCounter * currentConcentration)
-                               - deltaT * (decayConst * currentConcentration)
-                               + currentConcentration;
-
-        cerr << "updatedConcentration=" << updatedConcentration << endl;
+         nConcentrationItr=concentrationField->find(nCellPtr);
+         if(nConcentrationItr != concentrationEndItr){
+            concentrationSum += nConcentrationItr->second;
+            ++neighborCounter;
+         }
+      }
+      updatedConcentration =  dt_dx2*diffConst*(concentrationSum - neighborCounter*currentConcentration)
+                           -deltaT*(decayConst*currentConcentration)
+                           +currentConcentration;
+      CC3D_Log(LOG_DEBUG) <<  "updatedConcentration=" << updatedConcentration;
 
         scratchConcentrationItr->second = updatedConcentration;
 

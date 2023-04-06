@@ -9,9 +9,10 @@ using namespace std;
 
 #include "CellTypePlugin.h"
 
+#include <Logger/CC3DLogger.h>
 
-std::string CellTypePlugin::toString() {
-    return "CellType";
+std::string CellTypePlugin::toString(){
+   return "CellType";
 }
 
 std::string CellTypePlugin::steerableName() {
@@ -35,7 +36,7 @@ void CellTypePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     update(_xmlData);
     simulator->registerSteerableObject((SteerableObject * )
     this);
-    cerr << "initialized cell type plugin" << endl;
+    CC3D_Log(LOG_DEBUG) << "initialized cell type plugin";
 }
 
 

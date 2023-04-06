@@ -13,9 +13,11 @@ endif()
 
 ##APPLE CHECK
 IF (APPLE)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 " CACHE STRING "flags used during compilation by C++ compiler" FORCE)
-    SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 " CACHE STRING "flags used during compilation by C compiler" FORCE)
-    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "OSX deplyment target" FORCE)
+    # note: added -Wno-implicit-function-declaration -Wno-implicit-int to handle implicit function declarations in flex/bison generated code
+    # this is stop gap measure and we need to either fix Units module or remove it since it is not used almost at all
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 -Wno-implicit-function-declaration -Wno-implicit-int" CACHE STRING "flags used during compilation by C++ compiler" FORCE)
+    SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 -Wno-implicit-function-declaration -Wno-implicit-int" CACHE STRING "flags used during compilation by C compiler" FORCE)
+    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "OSX deployment target" FORCE)
 
     MESSAGE ("GOT APPLE")
 ENDIF (APPLE)
@@ -41,63 +43,23 @@ ENDIF()
 
 OPTION(FLEX_PYTHON_SPECS "Allow Flexible Python Path specification" OFF)
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-    # FIND_PACKAGE(PythonInterpreter)
-    FIND_PACKAGE(PythonExec)
-    FIND_PACKAGE(PythonLibs)
-    FIND_PACKAGE(PythonInterp)
 
-    # INCLUDE(FindPythonLibs)
-
-    if (FLEX_PYTHON_SPECS)
-        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable")
-        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library")
-        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory")
-        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory")
-    else ()
-        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable" FORCE)
-        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library" FORCE)
-        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory" FORCE )
-        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory" FORCE )
-    endif()
-
-else()
-    # find_package (Python 3 COMPONENTS Interpreter Development)
-    FIND_PACKAGE(PythonLibs)
-    FIND_PACKAGE(PythonInterp)
-    # INCLUDE(FindPythonLibs)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development NumPy)
 
 
-    if (FLEX_PYTHON_SPECS)
-        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable")
-        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library")
-        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory")
-        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory")
-    else ()
-        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable" FORCE)
-        set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library" FORCE)
-        set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory" FORCE )
-        set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory" FORCE )
-    endif()
+message("Python3_FOUND: ${Python3_FOUND}")
+message("Python3_Interpreter_FOUND: ${Python3_Interpreter_FOUND}")
+message("Python3_VERSION: ${Python3_VERSION}")
+message("Python3_Development_FOUND: ${Python3_Development_FOUND}")
+message("Python3_EXECUTABLE: ${Python3_EXECUTABLE}")
 
-
-endif()
-
-find_package(Python REQUIRED COMPONENTS Interpreter Development NumPy)
-
-
-message("Python_FOUND: ${Python_FOUND}")
-message("Python_Interpreter_FOUND: ${Python_Interpreter_FOUND}")
-message("Python_VERSION: ${Python_VERSION}")
-message("Python_Development_FOUND: ${Python_Development_FOUND}")
-message("Python_EXECUTABLE: ${Python_EXECUTABLE}")
-
-message("Python_Development_FOUND: ${Python_Development_FOUND}")
-message("Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
-message("Python_LIBRARIES: ${Python_LIBRARIES}")
-message("Python_LIBRARY_DIRS: ${Python_LIBRARY_DIRS}")
-message("Python_RUNTIME_LIBRARY_DIRS: ${Python_RUNTIME_LIBRARY_DIRS}")
-message("Python_NumPy_INCLUDE_DIRS: ${Python_NumPy_INCLUDE_DIRS}")
+message("Python3_Development_FOUND: ${Python3_Development_FOUND}")
+message("Python3_INCLUDE_DIRS: ${Python3_INCLUDE_DIRS}")
+message("Python3_LIBRARIES: ${Python3_LIBRARIES}")
+message("Python3_LIBRARY_RELEASE: ${Python3_LIBRARY_RELEASE}")
+message("Python3_LIBRARY_DIRS: ${Python3_LIBRARY_DIRS}")
+message("Python3_RUNTIME_LIBRARY_DIRS: ${Python3_RUNTIME_LIBRARY_DIRS}")
+message("Python3_NumPy_INCLUDE_DIRS: ${Python3_NumPy_INCLUDE_DIRS}")
 
 # Should we build shared libraries
 OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
@@ -107,9 +69,9 @@ SET(CC3D_PYTHON_MODULE_DIR ${CMAKE_SOURCE_DIR}/../)
 # setting up version
 
 set(COMPUCELL3D_MAJOR_VERSION 4)
-set(COMPUCELL3D_MINOR_VERSION 3)
-set(COMPUCELL3D_BUILD_VERSION 2)
-set(COMPUCELL3D_REV_NUMBER 20220717)
+set(COMPUCELL3D_MINOR_VERSION 4)
+set(COMPUCELL3D_BUILD_VERSION 0)
+set(COMPUCELL3D_REV_NUMBER 20230326)
 
 ## Specify a version for all libs to use
 # letters A, B, C are added to ensure nice display of version in cmake gui
@@ -128,6 +90,13 @@ message("COMPUCELL3D_C_BUILD_VERSION is " ${COMPUCELL3D_C_BUILD_VERSION})
 SET(COMPUCELL3D_VERSION "${COMPUCELL3D_MAJOR_VERSION}.${COMPUCELL3D_MINOR_VERSION}.${COMPUCELL3D_BUILD_VERSION}")
 
 message("GOT VERSION AS ${COMPUCELL3D_VERSION}")
+
+# Set internal platform def
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    add_definitions(-DCC3D_ISWIN)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+    add_definitions(-DCC3D_ISMAC)
+endif()
 
 SET(USE_DOLFIN_OPTION OFF)
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
@@ -180,7 +149,7 @@ if(BUILD_STANDALONE)
     set(COMPUCELL3D_INSTALL_SCRIPT_DIR_FULL_PATH ${CMAKE_INSTALL_PREFIX})
     set(COMPUCELL3D_INSTALL_SCRIPT_DIR .)
 else()
-    file(RELATIVE_PATH SITE_PACKAGES_INSTALL_REL ${CMAKE_INSTALL_PREFIX} ${Python_SITELIB})
+    file(RELATIVE_PATH SITE_PACKAGES_INSTALL_REL ${CMAKE_INSTALL_PREFIX} ${Python3_SITELIB})
     set(COMPUCELL3D_INSTALL_SCRIPT_DIR_FULL_PATH ${CMAKE_INSTALL_PREFIX}/bin)
     file(RELATIVE_PATH COMPUCELL3D_INSTALL_SCRIPT_DIR ${CMAKE_INSTALL_PREFIX} ${COMPUCELL3D_INSTALL_SCRIPT_DIR_FULL_PATH})
 endif()

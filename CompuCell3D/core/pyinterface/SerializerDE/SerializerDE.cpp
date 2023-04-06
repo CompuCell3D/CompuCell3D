@@ -3,7 +3,7 @@
 #include <CompuCell3D/Potts3D/Potts3D.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <pyinterface/PlayerPythonNew/FieldStorage.h>
-
+#include <Logger/CC3DLogger.h>
 #include <CompuCell3D/Automaton/Automaton.h> //to get type id to type name mapping
 #include <Utils/Coordinates3D.h>
 #include <vtkIntArray.h>
@@ -50,8 +50,8 @@ void SerializerDE::init(Simulator * _sim){
 bool SerializerDE::serializeCellField(SerializeData &_sd){
 	vtkStructuredPoints *fieldData=vtkStructuredPoints::New();
 	fieldData->SetDimensions(fieldDim.x,fieldDim.y,fieldDim.z);
-	cerr<<"fieldDim="<<fieldDim<<endl;
-	cerr<<"potts="<<potts<<endl;
+	CC3D_Log(LOG_DEBUG) << "fieldDim="<<fieldDim;
+	CC3D_Log(LOG_DEBUG) << "potts="<<potts;
 
 	vtkCharArray *typeArray=vtkCharArray::New();
 	typeArray->SetName("CellType");
@@ -109,15 +109,13 @@ bool SerializerDE::serializeCellField(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-        #ifdef VTK6
-            fieldDataWriter->SetInputData(fieldData);
-        #else
-            fieldDataWriter->SetInput(fieldData);
-        #endif 
-        
-	//int dim[3];
-	//latticeData->GetDimensions(dim);
-	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
+
+#if defined(VTK6) || defined(VTK9)
+    fieldDataWriter->SetInputData(fieldData);
+#endif
+#if !defined(VTK6) && !defined(VTK9)
+    fieldDataWriter->SetInput(fieldData);
+#endif
 	
 	fieldDataWriter->Write();
 	fieldDataWriter->Delete();
@@ -257,17 +255,15 @@ bool SerializerDE::serializeConcentrationField(SerializeData &_sd){
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
         
-        #ifdef VTK6
-            fieldDataWriter->SetInputData(fieldData);
-        #else
-            fieldDataWriter->SetInput(fieldData);
-        #endif
-        
-	//int dim[3];
-	//latticeData->GetDimensions(dim);
-	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
-	
-	fieldDataWriter->Write();
+#if defined(VTK6) || defined(VTK9)
+    fieldDataWriter->SetInputData(fieldData);
+#endif
+#if !defined(VTK6) && !defined(VTK9)
+    fieldDataWriter->SetInput(fieldData);
+#endif
+
+
+    fieldDataWriter->Write();
 	fieldDataWriter->Delete();
 
 	return true;
@@ -367,16 +363,15 @@ bool SerializerDE::serializeScalarField(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-        #ifdef VTK6
-            fieldDataWriter->SetInputData(fieldData);
-        #else
-            fieldDataWriter->SetInput(fieldData);
-        #endif
-	//int dim[3];
-	//latticeData->GetDimensions(dim);
-	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
-	
-	fieldDataWriter->Write();
+#if defined(VTK6) || defined(VTK9)
+    fieldDataWriter->SetInputData(fieldData);
+#endif
+#if !defined(VTK6) && !defined(VTK9)
+    fieldDataWriter->SetInput(fieldData);
+#endif
+
+
+    fieldDataWriter->Write();
 	fieldDataWriter->Delete();
 
 	return true;
@@ -487,17 +482,15 @@ bool SerializerDE::serializeScalarFieldCellLevel(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-        #ifdef VTK6
-            fieldDataWriter->SetInputData(fieldData);
-        #else
-            fieldDataWriter->SetInput(fieldData);
-        #endif
-        
-	//int dim[3];
-	//latticeData->GetDimensions(dim);
-	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
-	
-	fieldDataWriter->Write();
+#if defined(VTK6) || defined(VTK9)
+    fieldDataWriter->SetInputData(fieldData);
+#endif
+#if !defined(VTK6) && !defined(VTK9)
+    fieldDataWriter->SetInput(fieldData);
+#endif
+
+
+    fieldDataWriter->Write();
 	fieldDataWriter->Delete();
 
 	return true;
@@ -591,7 +584,7 @@ bool SerializerDE::serializeVectorField(SerializeData &_sd){
                                 y=(*fieldPtr)[pt.x][pt.y][pt.z][1];
                                 z=(*fieldPtr)[pt.x][pt.y][pt.z][2];
                                 fieldArray->SetTuple3(offset,x,y,z);
-				//cerr<<"vecTmp="<<vecTmp<<endl;
+								CC3D_Log(LOG_TRACE) << "vec=" << x << ", " << y << ", " << z;
 // 				fieldArray->SetTuple3(offset,vecTmp.x,vecTmp.y,vecTmp.z);
 				++offset;
 
@@ -610,18 +603,16 @@ bool SerializerDE::serializeVectorField(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-        
-        #ifdef VTK6
-            fieldDataWriter->SetInputData(fieldData);
-        #else
-            fieldDataWriter->SetInput(fieldData);
-        #endif
-        
-	//int dim[3];
-	//latticeData->GetDimensions(dim);
-	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
-	
-	fieldDataWriter->Write();
+
+#if defined(VTK6) || defined(VTK9)
+    fieldDataWriter->SetInputData(fieldData);
+#endif
+#if !defined(VTK6) && !defined(VTK9)
+    fieldDataWriter->SetInput(fieldData);
+#endif
+
+
+    fieldDataWriter->Write();
 	fieldDataWriter->Delete();
 
 	return true;
@@ -736,16 +727,15 @@ bool SerializerDE::serializeVectorFieldCellLevel(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-        #ifdef VTK6
-            fieldDataWriter->SetInputData(fieldData);
-        #else
-            fieldDataWriter->SetInput(fieldData);
-        #endif
-	//int dim[3];
-	//latticeData->GetDimensions(dim);
-	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
-	
-	fieldDataWriter->Write();
+#if defined(VTK6) || defined(VTK9)
+    fieldDataWriter->SetInputData(fieldData);
+#endif
+#if !defined(VTK6) && !defined(VTK9)
+    fieldDataWriter->SetInput(fieldData);
+#endif
+
+
+    fieldDataWriter->Write();
 	fieldDataWriter->Delete();
 
 	return true;
@@ -794,7 +784,7 @@ bool SerializerDE::loadVectorFieldCellLevel(SerializeData &_sd){
 						;
 					}else{
 						fieldArray->GetTypedTuple(offset,tuple);
-						cerr<<"inserting "<<Coordinates3D<float>(tuple[0],tuple[1],tuple[2])<<endl;
+						CC3D_Log(LOG_DEBUG) << "inserting "<<Coordinates3D<float>(tuple[0],tuple[1],tuple[2]);
 						fieldPtr->insert(make_pair(cell,Coordinates3D<float>(tuple[0],tuple[1],tuple[2])));
 						
 					}

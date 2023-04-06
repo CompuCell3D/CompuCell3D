@@ -43,6 +43,18 @@ class UnittestSteppablePdeSolver(SteppableBasePy):
         return test_output_summary
 
     @staticmethod
+    def get_regression_error_summary():
+
+        try:
+            regression_errors_summary = Path(
+                os.environ['CC3D_TEST_OUTPUT_SUMMARY']).parent.joinpath('test_regression_errors.csv')
+        except KeyError:
+            regression_errors_summary = join(UnittestSteppablePdeSolver.get_test_output_dir(), 'test_regression_errors.csv')
+
+        return regression_errors_summary
+
+
+    @staticmethod
     def get_linenumber_fname():
         cf = currentframe()
         return f'line: {cf.f_back.f_lineno} in {getframeinfo(cf).filename} '
@@ -50,6 +62,7 @@ class UnittestSteppablePdeSolver(SteppableBasePy):
     def run_pde_solver_regression_tests(self):
 
         for field_to_store in self.fields_to_store:
+            found_regression_error = False
             reference_field_csv = f'{self.model_output_core}.{field_to_store}.csv'
             in_df = pd.read_csv(reference_field_csv)
 
@@ -85,6 +98,7 @@ class UnittestSteppablePdeSolver(SteppableBasePy):
                   f'field: {field_to_store} : simulation: {self.model_path} \n'
             if test_log.strip():
                 msg += f'error log: {test_log} \n'
+                found_regression_error = True
             else:
                 msg += f'OK\n'
             msg += f'---------------------------------------\n'
@@ -95,7 +109,13 @@ class UnittestSteppablePdeSolver(SteppableBasePy):
                     out_file.write(msg)
             except FileNotFoundError:
                 print(msg)
+            if found_regression_error:
 
+                try:
+                    with open(self.get_regression_error_summary(), 'a') as out_file:
+                        out_file.write(msg)
+                except FileNotFoundError:
+                    print(msg)
     def generate_pde_solver_reference_output(self, field_to_store):
 
         field = CompuCell.getConcentrationField(self.simulator, field_to_store)

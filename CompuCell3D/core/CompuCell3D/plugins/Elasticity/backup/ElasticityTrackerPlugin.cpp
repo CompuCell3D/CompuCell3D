@@ -128,10 +128,10 @@ void ElasticityTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
          set<ElasticityTrackerData>::iterator sitr;
          set<ElasticityTrackerData> * elasticityNeighborsPtr=&elasticityTrackerAccessor.get(oldCell->extraAttribPtr)->elasticityNeighbors;
          set<ElasticityTrackerData> * elasticityNeighborsTmpPtr;
-			//cerr<<"oldCell="<<oldCell<<" oldCell->id="<<oldCell->id<<" oldCell->type="<<(int)oldCell->type<<" oldCell->volume="<<oldCell->volume<<endl;
+         CC3D_Log(LOG_TRACE) << "oldCell="<<oldCell<<" oldCell->id="<<oldCell->id<<" oldCell->type="<<(int)oldCell->type<<" oldCell->volume="<<oldCell->volume;
          for(sitr=elasticityNeighborsPtr->begin() ; sitr != elasticityNeighborsPtr->end() ; ++sitr){
             //getting set of elasticityNeighbors from the neighbor (pointed by sitr) of the oldCell
-				//cerr<<"sitr->neighborAddress->id="<<sitr->neighborAddress->id<<endl;
+            CC3D_Log(LOG_TRACE) << "sitr->neighborAddress->id="<<sitr->neighborAddress->id;
             elasticityNeighborsTmpPtr=&elasticityTrackerAccessor.get(sitr->neighborAddress->extraAttribPtr)->elasticityNeighbors ;
             //removing oldCell from the set
             elasticityNeighborsTmpPtr->erase(ElasticityTrackerData(oldCell));
@@ -191,7 +191,7 @@ void ElasticityTrackerPlugin::initializeElasticityNeighborList(){
 //          
 //       cell=*cInvItr;
 //       elasticityNeighborsTmpPtr=&elasticityTrackerAccessor.get(cell->extraAttribPtr)->elasticityNeighbors;
-//       cerr<<"cell.ID "<<cell->id<<" has "<<elasticityNeighborsTmpPtr->size()<<" Elasticity neighbors"<<endl;
+//       CC3D_Log(LOG_TRACE) << "cell.ID "<<cell->id<<" has "<<elasticityNeighborsTmpPtr->size()<<" Elasticity neighbors";
 // 
 //    }
 // 

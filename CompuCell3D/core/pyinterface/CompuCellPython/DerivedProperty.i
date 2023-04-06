@@ -6,19 +6,15 @@
 %define DERIVEDPROPERTYEXTENSORPY(className, propertyName, accessorName)
 %extend className {
 	%pythoncode %{
-		def derived_property_get ## propertyName(self):
-			return self. ## accessorName()
+    def derived_property_get ## propertyName(self):
+        return self. ## accessorName()
 
-		__swig_getmethods__["propertyName"] = derived_property_get ## propertyName
+    def derived_property_set ## propertyName(self, _val):
+        raise AttributeError('Assignment of derived property propertyName is illegal.')
 
-		def derived_property_set ## propertyName(self, _val):
-			raise AttributeError('Assignment of derived property propertyName is illegal.')
+    propertyName = property(derived_property_get ## propertyName, derived_property_set ## propertyName)
 
-		__swig_setmethods__["propertyName"] = derived_property_set ## propertyName
-
-		if _newclass : propertyName = property(derived_property_get ## propertyName, derived_property_set ## propertyName)
-
-	%}
+    %}
 }
 %enddef
 

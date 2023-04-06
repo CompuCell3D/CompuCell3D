@@ -6,6 +6,7 @@ using namespace std;
 
 
 #include "BoundaryPixelTrackerPlugin.h"
+#include <Logger/CC3DLogger.h>
 
 BoundaryPixelTrackerPlugin::BoundaryPixelTrackerPlugin() :
         simulator(0), potts(0), boundaryStrategy(0), xmlData(0), maxNeighborIndex(0), neighborOrder(1) {}
@@ -45,7 +46,7 @@ void BoundaryPixelTrackerPlugin::handleEvent(CC3DEvent &_event) {
     if (_event.id != LATTICE_RESIZE) {
         return;
     }
-    cerr << "INSIDE BOUNDARY PIXEL TRACKER EVEN HANDLER" << endl;
+    CC3D_Log(LOG_DEBUG) << "INSIDE BOUNDARY PIXEL TRACKER EVEN HANDLER";
     CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize &>(_event);
 
     Dim3D shiftVec = ev.shiftVec;
@@ -127,7 +128,7 @@ void BoundaryPixelTrackerPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
         }
 
         for (unsigned int i = 0; i < extraBoundariesMaxNeighborIndex.size(); ++i) {
-            cerr << "i=" << i << " extraBoundariesMaxNeighborIndex[i]=" << extraBoundariesMaxNeighborIndex[i] << endl;
+            CC3D_Log(LOG_DEBUG) << "i=" << i << " extraBoundariesMaxNeighborIndex[i]=" << extraBoundariesMaxNeighborIndex[i];
         }
 
     }

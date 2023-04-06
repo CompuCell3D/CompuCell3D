@@ -249,6 +249,7 @@ namespace CompuCell3D {
 
         void boundaryConditionInit(int idx);
 
+        void init_cell_type_and_id_arrays();
         //void boundaryConditionInit(ConcentrationField_t *concentrationField);
         bool isBoudaryRegion(int x, int y, int z, Dim3D dim);
 

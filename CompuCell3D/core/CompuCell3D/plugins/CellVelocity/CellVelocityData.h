@@ -177,7 +177,8 @@ namespace CompuCell3D {
 
         ::size_type size() {
             using namespace std;
-            cerr << "cellCOMPtr=" << cellCOMPtr << endl;
+            #include <Logger/CC3DLogger.h>
+      CC3D_Log(LOG_DEBUG) << "cellCOMPtr="<<cellCOMPtr;
             return cellCOMPtr->size();
         }
 

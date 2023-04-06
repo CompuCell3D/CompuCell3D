@@ -5,7 +5,7 @@
 #include <iostream>
 #include <exception>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-
+#include <Logger/CC3DLogger.h>
 using namespace std;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -69,7 +69,7 @@ std::vector<std::complex<double> > solveCubicEquationRealCoeeficients(std::vecto
         //setting coefficients so that aVec[0]=1.0
         for (int i = aVec.size() - 1; i >= 0; --i) {
             aVec[i] /= aVec[0];
-            //cerr<<"coeff["<<i<<"]="<<aVec[i]<<endl;
+            CC3D_Log(CompuCell3D::LOG_TRACE) << "coeff["<<i<<"]="<<aVec[i];
         }
     }
     else {
@@ -87,8 +87,8 @@ std::vector<std::complex<double> > solveCubicEquationRealCoeeficients(std::vecto
     complex<double> aComplex(a, 0.0);
 
     double PI = acos(-1.0);
-    //cerr<<"a="<<a<<endl;
-    //cerr<<"b="<<b<<endl;
+    CC3D_Log(CompuCell3D::LOG_TRACE) << "a="<<a;
+    CC3D_Log(CompuCell3D::LOG_TRACE) << "b="<<b;
     if (a == 0.0) {
 
         complex<double> bComplex(-b, 0.0);
@@ -103,9 +103,8 @@ std::vector<std::complex<double> > solveCubicEquationRealCoeeficients(std::vecto
     else {
         complex<double> lambda = sqrt(-aComplex / 3.0);
         complex<double> beta = pow(lambda, -3.0)*b;
-
-        //cerr<<"lambda="<<lambda<<endl;
-        //cerr<<"beta="<<beta<<endl;
+        CC3D_Log(CompuCell3D::LOG_TRACE) << "lambda="<<lambda;
+        CC3D_Log(CompuCell3D::LOG_TRACE) << "beta="<<beta;
 
         //now solve for roots of p^6+beta*p^3+1=0
         complex<double> p1 = (-beta - sqrt(beta*beta - complex<double>(4.0, 0))) / (2.0);
@@ -115,18 +114,14 @@ std::vector<std::complex<double> > solveCubicEquationRealCoeeficients(std::vecto
 
         double p1Abs = abs(p1);
         double p1Arg = arg(p1);
-        //cerr<<"p1="<<p1<<endl;
-     //  cerr<<"p2="<<p2<<endl;
-        //cerr<<"gamma1="<<polar(pow(p1Abs,1/3.0),p1Arg/3.0)<<endl;
+        CC3D_Log(CompuCell3D::LOG_TRACE) << "p1="<<p1;
+        CC3D_Log(CompuCell3D::LOG_TRACE) << "p2="<<p2;
+        CC3D_Log(CompuCell3D::LOG_TRACE) << "gamma1="<<polar(pow(p1Abs,1/3.0),p1Arg/3.0);
 
         complex<double> q0 = polar(pow(p1Abs, 1 / 3.0), p1Arg / 3.0) + 1.0 / polar(pow(p1Abs, 1 / 3.0), p1Arg / 3.0);
         complex<double> q1 = polar(pow(p1Abs, 1 / 3.0), p1Arg / 3.0 + 2 * PI / 3) + 1.0 / polar(pow(p1Abs, 1 / 3.0), p1Arg / 3.0 + 2 * PI / 3);
         complex<double> q2 = polar(pow(p1Abs, 1 / 3.0), p1Arg / 3.0 + 4 * PI / 3) + 1.0 / polar(pow(p1Abs, 1 / 3.0), p1Arg / 3.0 + 4 * PI / 3);
-        //cerr<<"q1="<<q1<<endl;
-        //complex<double> w1=lambda*q1;
-        //cerr<<"w1="<<w1<<endl;
-        //complex<double> root1=w1+d;
-        //cerr<<"root1="<<root1<<endl;
+        CC3D_Log(CompuCell3D::LOG_TRACE) <<   "q1="<<q1;
         roots[0] = lambda*q0 + d;
         roots[1] = lambda*q1 + d;
         roots[2] = lambda*q2 + d;
@@ -148,11 +143,10 @@ namespace CompuCell3D {
 
     Coordinates3D<double> precalculateCentroid(const Point3D & pt, const CellG *_cell, int _volumeIncrement, const Point3D & fieldDim, BoundaryStrategy *boundaryStrategy)
     {
-
-        //cerr<<"pt="<<pt<<endl;
-        //cerr<<"boundaryStrategy="<<boundaryStrategy<<endl;
+        CC3D_Log(CompuCell3D::LOG_TRACE) << "pt="<<pt;
+        CC3D_Log(CompuCell3D::LOG_TRACE) << "boundaryStrategy="<<boundaryStrategy;
         Coordinates3D<double> ptTrans = boundaryStrategy->calculatePointCoordinates(pt);
-        //cerr<<"ptTrans="<<ptTrans<<endl;
+        CC3D_Log(CompuCell3D::LOG_TRACE) << "ptTrans="<<ptTrans;
         Coordinates3D<double> fieldDimTrans = boundaryStrategy->calculatePointCoordinates(Point3D(fieldDim.x - 1, fieldDim.y - 1, fieldDim.z - 1));
 
         Coordinates3D<double> shiftVec;
@@ -183,16 +177,13 @@ namespace CompuCell3D {
         distanceVec = distanceVecMax - distanceVecMin;
 
         double xCM, yCM, zCM;
-        //    if(pt.x==0 || pt.x==_fieldDim.x-1)
-        //       cerr<<"_cell->xCM="<<_cell->xCM<<" volumeIncr="<<_volumeIncrement<<" pt="<<pt<<endl;
 
-           //shift is defined to be zero vector for non-periodic b.c. - everything reduces to naive calculations then   
-
+        //shift is defined to be zero vector for non-periodic b.c. - everything reduces to naive calculations then   
         shiftVec.x = (_cell->xCM / _cell->volume - ((int)fieldDimTrans.x) / 2);
         shiftVec.y = (_cell->yCM / _cell->volume - ((int)fieldDimTrans.y) / 2);
         shiftVec.z = (_cell->zCM / _cell->volume - ((int)fieldDimTrans.z) / 2);
-        //cerr<<"fieldDimTrans="<<fieldDimTrans<<endl;
-        //cerr<<"_cell->xCM/_cell->volume="<<_cell->xCM/_cell->volume<<" ((int)fieldDimTrans.x)/2="<<((int)fieldDimTrans.x)/2<<endl;
+        CC3D_Log(CompuCell3D::LOG_TRACE) << "fieldDimTrans="<<fieldDimTrans;
+        CC3D_Log(CompuCell3D::LOG_TRACE) << "_cell->xCM/_cell->volume="<<_cell->xCM/_cell->volume<<" ((int)fieldDimTrans.x)/2="<<((int)fieldDimTrans.x)/2;
 
         //shift CM to approximately center of lattice, new centroids are:
         xCM = _cell->xCM - shiftVec.x*(_cell->volume);
@@ -201,13 +192,10 @@ namespace CompuCell3D {
 
         //Now shift pt
         shiftedPt = ptTrans;
-        //cerr<<"ptTrans="<<ptTrans<<" shiftVec.x="<<shiftVec.x<<endl;
+        CC3D_Log(CompuCell3D::LOG_TRACE) << "ptTrans="<<ptTrans<<" shiftVec.x="<<shiftVec.x;
         shiftedPt -= shiftVec;
-        //     if(pt.x==0 || pt.x==_fieldDim.x-1)
-              //cerr<<"EARLY shiftedPt.x="<<shiftedPt.x<<" xCM="<<xCM<<" xcm="<<xCM/(float)_cell->volume<<endl;
 
-
-            //making sure that shifted point is in the lattice
+        //making sure that shifted point is in the lattice
         if (shiftedPt.x < distanceVecMin.x) {
             shiftedPt.x += distanceVec.x;
         }
@@ -239,81 +227,7 @@ namespace CompuCell3D {
         yCM += shiftVec.y * (_cell->volume + _volumeIncrement);
         zCM += shiftVec.z * (_cell->volume + _volumeIncrement);
 
-        //     if(pt.x==0 || pt.x==_fieldDim.x-1)
-        //       cerr<<"shiftedPt.x="<<shiftedPt.x<<" xCM="<<xCM<<endl;
-
         return Coordinates3D<double>(xCM, yCM, zCM);
-
-
-        //    Point3D shiftVec;
-        //    Point3D shiftedPt;
-        //    int xCM,yCM,zCM;
-        // //    if(pt.x==0 || pt.x==_fieldDim.x-1)
-        // //       cerr<<"_cell->xCM="<<_cell->xCM<<" volumeIncr="<<_volumeIncrement<<" pt="<<pt<<endl;
-        // 
-        //    //shift is defined to be zero vector for non-periodic b.c. - everything reduces to naive calculations then   
-        //    shiftVec.x= (short)((_cell->xCM/(float)(_cell->volume)-fieldDim.x/2));
-        //    shiftVec.y= (short)((_cell->yCM/(float)(_cell->volume)-fieldDim.y/2));
-        //    shiftVec.z= (short)((_cell->zCM/(float)(_cell->volume)-fieldDim.z/2));
-        // 
-        //     //shift CM to approximately center of lattice, new centroids are:
-        //     xCM = _cell->xCM - shiftVec.x*(_cell->volume);
-        //     yCM = _cell->yCM - shiftVec.y*(_cell->volume);
-        //     zCM = _cell->zCM - shiftVec.z*(_cell->volume);
-        // 
-        //     //Now shift pt
-        //     shiftedPt=pt;
-        //     shiftedPt-=shiftVec;
-        //     cerr<<"pt="<<pt<<endl;
-        //     if(pt.x==0 || pt.x==fieldDim.x-1){
-        //       cerr<<"shiftVec="<<shiftVec<<" _cell->volume="<<_cell->volume <<endl;
-        //       cerr<<"EARLY shiftedPt.x="<<shiftedPt.x<<" cell->xCM="<<_cell->xCM<<" xCM="<<xCM<<" xcm="<<xCM/(float)_cell->volume<<endl;
-        //     }
-        // 
-        //     if(pt.y==0 || pt.y==fieldDim.y-1){
-        //       cerr<<"shiftVec="<<shiftVec<<" _cell->volume="<<_cell->volume <<endl;
-        //       cerr<<"EARLY shiftedPt.y="<<shiftedPt.y<<" cell->yCM="<<_cell->yCM<<" yCM="<<yCM<<" ycm="<<yCM/(float)_cell->volume<<endl;
-        //     }
-        //     //making sure that shifted point is in the lattice
-        //     if(shiftedPt.x < 0){
-        //       shiftedPt.x += fieldDim.x;
-        // //       if(pt.x==0 || pt.x==_fieldDim.x-1)
-        // //          cerr<<"SHIFTTING shiftedPt.x="<<shiftedPt.x<<" _fieldDim.x="<<_fieldDim.x<<endl;
-        //     }else if (shiftedPt.x > fieldDim.x-1){
-        //       shiftedPt.x -= fieldDim.x;
-        //     }  
-        // 
-        //     if(shiftedPt.y < 0){
-        //       shiftedPt.y += fieldDim.y;
-        //     }else if (shiftedPt.y > fieldDim.y-1){
-        //       shiftedPt.y -= fieldDim.y;
-        //     }  
-        // 
-        //     if(shiftedPt.z < 0){
-        //       shiftedPt.z += fieldDim.z;
-        //     }else if (shiftedPt.z > fieldDim.z-1){
-        //       shiftedPt.z -= fieldDim.z;
-        //     }
-        //     //update shifted centroids
-        //     xCM += shiftedPt.x*(_volumeIncrement>0?1:-1);
-        //     yCM += shiftedPt.y*(_volumeIncrement>0?1:-1);
-        //     zCM += shiftedPt.z*(_volumeIncrement>0?1:-1);
-        //     
-        //     //shift back centroids
-        //     xCM += shiftVec.x * (_cell->volume+_volumeIncrement);
-        //     yCM += shiftVec.y * (_cell->volume+_volumeIncrement);
-        //     zCM += shiftVec.z * (_cell->volume+_volumeIncrement);
-        //    
-        //     if(pt.y==0 || pt.y==fieldDim.y-1){
-        //       cerr<<"\t\t\tshiftedPt.y="<<shiftedPt.y<<" yCM="<<yCM<<endl;
-        // //       exit(0);
-        //     }
-        //     if(pt.x==0 || pt.x==fieldDim.x-1){
-        //       cerr<<"\t\t\tshiftedPt.x="<<shiftedPt.x<<" xCM="<<xCM<<endl;
-        // //       exit(0);
-        //     }
-        // 
-        //    return Coordinates3D<int>(xCM,yCM,zCM);
     }
 
 
@@ -498,7 +412,6 @@ namespace CompuCell3D {
 
         int x, y, z;
         int xo, yo, zo;
-        //     cerr<<"CM PLUGIN"<<endl;
 
         if (oldCell) {
 
@@ -643,7 +556,7 @@ namespace CompuCell3D {
                 shiftedPt.x += fieldDim.x;
             }
             else if (shiftedPt.x > fieldDim.x - 1) {
-                //       cerr<<"shifted pt="<<shiftedPt<<endl;
+                CC3D_Log(CompuCell3D::LOG_TRACE) << "shifted pt="<<shiftedPt;
                 shiftedPt.x -= fieldDim.x;
             }
 

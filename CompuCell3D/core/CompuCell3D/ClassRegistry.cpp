@@ -2,6 +2,7 @@
 #include "CC3DExceptions.h"
 #include "ClassRegistry.h"
 #include <string>
+#include <Logger/CC3DLogger.h>
 
 using namespace CompuCell3D;
 using namespace std;
@@ -57,23 +58,21 @@ void ClassRegistry::initModules(Simulator *_sim) {
 
     PluginManager<Steppable> &steppableManagerRef = Simulator::steppableManager;
 
-    cerr << " INSIDE INIT MODULES:" << endl;
+    CC3D_Log(LOG_DEBUG) << " INSIDE INIT MODULES:" << endl;
 
     for (int i = 0; i < steppableCC3DXMLElementVectorRef.size(); ++i) {
 
         string type = steppableCC3DXMLElementVectorRef[i]->getAttribute("Type");
 
-        Steppable *steppable = steppableManagerRef.get(type);
-
-        cerr << "CLASS REGISTRY INITIALIZING " << type << endl;
-
-        steppable->init(_sim, steppableCC3DXMLElementVectorRef[i]);
+      Steppable *steppable = steppableManagerRef.get(type);
+      CC3D_Log(LOG_DEBUG) << "CLASS REGISTRY INITIALIZING "<<type;
+steppable->init(_sim, steppableCC3DXMLElementVectorRef[i]);
         addStepper(type, steppable);
 
     }
 
     for (ActiveSteppers_t::iterator litr = activeSteppers.begin(); litr != activeSteppers.end(); ++litr) {
-        cerr << "HAVE THIS STEPPER : " << (*litr)->getParseData()->moduleName << endl;;
+        CC3D_Log(LOG_DEBUG) << "HAVE THIS STEPPER : "<<(*litr)->getParseData()->moduleName;
     }
 
 }

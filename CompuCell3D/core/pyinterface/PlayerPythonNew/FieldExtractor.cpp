@@ -1,5 +1,6 @@
 
 #include "CellGraphicsData.h"
+#include <Logger/CC3DLogger.h>
 #include <iostream>
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
@@ -132,11 +133,11 @@ void FieldExtractor::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, 
 void
 FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellsArrayAddr,
                                              vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos) {
-    vtkIntArray *_cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
-    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
-    vtkCellArray *_cellsArray = (vtkCellArray *) _cellsArrayAddr;
+    vtkIntArray *_cellTypeArray = (vtkIntArray *)_cellTypeArrayAddr;
+    vtkPoints *_pointsArray = (vtkPoints *)_pointsArrayAddr;
+    vtkCellArray * _cellsArray = (vtkCellArray*)_cellsArrayAddr;
 
-    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
     Dim3D fieldDim = cellFieldG->getDim();
 
     vector<int> fieldDimVec(3, 0);
@@ -152,1201 +153,1223 @@ FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeArrayAd
     dim[1] = fieldDimVec[dimOrderVec[1]];
     dim[2] = fieldDimVec[dimOrderVec[2]];
 
+    int offset = 0;
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+    CellG* cell;
+    int type;
+    long pc = 0;
+
+
     //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-    vector<double *> global_point_vec;
-    vtkIdType *_cellsArrayWritePtr;
 
-    pUtils->setNumberOfWorkNodesAuto();;
 
-#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, global_point_vec, _cellsArrayWritePtr)
-    {
-        vector<double *> local_point_vec;
-        Point3D pt;
-        vector<int> ptVec(3, 0);
-        CellG *cell;
-        int type;
+    for (int j = 0; j<dim[1]; ++j)
+        for (int i = 0; i<dim[0]; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
 
-#pragma omp for schedule(static, 5) nowait
-        for (int j = 0; j < dim[1]; ++j) {
-            for (int i = 0; i < dim[0]; ++i) {
-                ptVec[0] = i;
-                ptVec[1] = j;
-                ptVec[2] = _pos;
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
 
-                pt.x = ptVec[pointOrderVec[0]];
-                pt.y = ptVec[pointOrderVec[1]];
-                pt.z = ptVec[pointOrderVec[2]];
-
-                cell = cellFieldG->get(pt);
-                if (!cell) {
-                    type = 0;
-                    continue;
-                } else {
-                    type = (int) cell->type;
-                }
-
-                // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
-                Coordinates3D<double> coords(ptVec[0], ptVec[1], 0);
-                double *data = new double[9];
-                for (int idx = 0; idx < 4; ++idx) {
-                    Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
-                    data[idx * 2] = cartesianVertex.x;
-                    data[(idx * 2) + 1] = cartesianVertex.y;
-                }
-                data[8] = type;
-                local_point_vec.push_back(data);
+            cell = cellFieldG->get(pt);
+            if (!cell) {
+                type = 0;
+                continue;
             }
-        }
-#pragma omp critical
-        {
-            // https://stackoverflow.com/a/18671256
-            // we can force these to be added in-order if we want
-            global_point_vec.insert(global_point_vec.end(), local_point_vec.begin(), local_point_vec.end());
+            else {
+                type = cell->type;
+            }
+
+
+            Coordinates3D<double> coords(ptVec[0], ptVec[1], 0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
+
+            for (int idx = 0; idx<4; ++idx) {
+                Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
+                _pointsArray->InsertNextPoint(cartesianVertex.x, cartesianVertex.y, 0.0);
+            }
+
+            pc += 4;
+            vtkIdType cellId = _cellsArray->InsertNextCell(4);
+            _cellsArray->InsertCellPoint(pc - 4);
+            _cellsArray->InsertCellPoint(pc - 3);
+            _cellsArray->InsertCellPoint(pc - 2);
+            _cellsArray->InsertCellPoint(pc - 1);
+
+            _cellTypeArray->InsertNextValue(type);
+            ++offset;
         }
 
-#pragma omp barrier
-        int numPoints = global_point_vec.size();
 
-#pragma omp sections
-        {
-#pragma omp section
-            {
-                _cellsArrayWritePtr = _cellsArray->WritePointer(numPoints, numPoints * 5);
-            }
-#pragma omp section
-            {
-                _cellTypeArray->SetNumberOfValues(numPoints);
-            }
-#pragma omp section
-            {
-                _pointsArray->SetNumberOfPoints(global_point_vec.size() * 4);
-            }
-        }
-
-#pragma omp for schedule(static)
-        for (int j = 0; j < numPoints; ++j) {
-            int cellPos = j * 4;
-            auto pts = global_point_vec[j];
-            for (int idx = 0; idx < 4; ++idx) {
-                _pointsArray->SetPoint(cellPos + idx, pts[idx * 2], pts[(idx * 2) + 1], 0.0);
-            }
-
-            int arrPos = j * 5;
-            _cellsArrayWritePtr[arrPos + 0] = 4;
-            _cellsArrayWritePtr[arrPos + 1] = cellPos + 0;
-            _cellsArrayWritePtr[arrPos + 2] = cellPos + 1;
-            _cellsArrayWritePtr[arrPos + 3] = cellPos + 2;
-            _cellsArrayWritePtr[arrPos + 4] = cellPos + 3;
-            _cellTypeArray->SetValue(j, pts[8]);
-            free(pts);
-        }
-    }
-    pUtils->setNumberOfWorkNodesAuto(1);
 }
 
 
 void
 FieldExtractor::fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr,
                                        vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos) {
-    vtkIntArray *_cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
-    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
-    vtkCellArray *_hexCellsArray = (vtkCellArray *) _hexCellsArrayAddr;
+    vtkIntArray *_cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
+    vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
+    vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
 
-    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
-    Dim3D fieldDim = cellFieldG->getDim();
+    Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
+    Dim3D fieldDim=cellFieldG->getDim();
 
-    vector<int> fieldDimVec(3, 0);
-    fieldDimVec[0] = fieldDim.x;
-    fieldDimVec[1] = fieldDim.y;
-    fieldDimVec[2] = fieldDim.z;
+    vector<int> fieldDimVec(3,0);
+    fieldDimVec[0]=fieldDim.x;
+    fieldDimVec[1]=fieldDim.y;
+    fieldDimVec[2]=fieldDim.z;
 
-    vector<int> pointOrderVec = pointOrder(_plane);
-    vector<int> dimOrderVec = dimOrder(_plane);
+    vector<int> pointOrderVec=pointOrder(_plane);
+    vector<int> dimOrderVec=dimOrder(_plane);
 
-    vector<int> dim(3, 0);
-    dim[0] = fieldDimVec[dimOrderVec[0]];
-    dim[1] = fieldDimVec[dimOrderVec[1]];
-    dim[2] = fieldDimVec[dimOrderVec[2]];
+    vector<int> dim(3,0);
+    dim[0]=fieldDimVec[dimOrderVec[0]];
+    dim[1]=fieldDimVec[dimOrderVec[1]];
+    dim[2]=fieldDimVec[dimOrderVec[2]];
 
-    vector<std::pair<double, double>> global_point_vec;
-    vector<std::pair<double, double>> local_point_vec;
+    int offset=0;
 
-    vector<int> global_type_vec;
-    vector<int> local_type_vec;
-    vtkIdType *_hexCellsArrayWritePtr;
-    int numPoints;
-    pUtils->setNumberOfWorkNodesAuto();
+    ////For some reasons the points x=0 are eaten up (don't know why).
+    ////So we just populate empty cellIds.
+
+    //for (int i = 0 ; i< dim[0]+1 ;++i){
+    //	_cellTypeArray->SetValue(offset, 0);
+    //	++offset;
+    //}
+
+    Point3D pt;
+    vector<int> ptVec(3,0);
+    CellG* cell;
+    int type;
+    long pc=0;
     //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, global_point_vec, global_type_vec, _hexCellsArrayWritePtr, _cellTypeArray, _pointsArray) private(local_point_vec, local_type_vec, numPoints)
-    {
-#pragma omp for schedule(static, 5) nowait
-        for (int j = 0; j < dim[1]; ++j) {
-            Point3D pt;
-            vector<int> ptVec(3, 0);
-            CellG *cell;
-            int type = 0;
-            long pc = 0;
+    for(int j =0 ; j<dim[1] ; ++j)
+        for(int i =0 ; i<dim[0] ; ++i){
+            ptVec[0]=i;
+            ptVec[1]=j;
+            ptVec[2]=_pos;
 
-            for (int i = 0; i < dim[0]; ++i) {
-                int dataPoint = i + j * dim[1];
-                ptVec[0] = i;
-                ptVec[1] = j;
-                ptVec[2] = _pos;
+            pt.x=ptVec[pointOrderVec[0]];
+            pt.y=ptVec[pointOrderVec[1]];
+            pt.z=ptVec[pointOrderVec[2]];
 
-                pt.x = ptVec[pointOrderVec[0]];
-                pt.y = ptVec[pointOrderVec[1]];
-                pt.z = ptVec[pointOrderVec[2]];
-
-                cell = cellFieldG->get(pt);
-                if (!cell) {
-                    continue;
-                } else {
-                    type = cell->type;
-                }
-
-                Coordinates3D<double> hexCoords = HexCoordXY(pt.x, pt.y, pt.z);
-                for (int idx = 0; idx < 6; ++idx) {
-                    Coordinates3D<double> hexagonVertex = hexagonVertices[idx] + hexCoords;
-                    local_point_vec.push_back(std::pair<double, double>(hexagonVertex.x, hexagonVertex.y));
-                }
-
-                local_type_vec.push_back(type);
+            cell=cellFieldG->get(pt);
+            if (!cell){
+                type=0;
+                continue;
+            }else{
+                type=cell->type;
             }
+
+            Coordinates3D<double> hexCoords=HexCoordXY(pt.x,pt.y,pt.z);
+            for (int idx=0 ; idx<6 ; ++idx){
+                Coordinates3D<double> hexagonVertex=hexagonVertices[idx]+hexCoords;
+                _pointsArray->InsertNextPoint(hexagonVertex.x,hexagonVertex.y,0.0);
+            }
+            pc+=6;
+            vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
+            _hexCellsArray->InsertCellPoint(pc-6);
+            _hexCellsArray->InsertCellPoint(pc-5);
+            _hexCellsArray->InsertCellPoint(pc-4);
+            _hexCellsArray->InsertCellPoint(pc-3);
+            _hexCellsArray->InsertCellPoint(pc-2);
+            _hexCellsArray->InsertCellPoint(pc-1);
+
+            _cellTypeArray->InsertNextValue(type);
+
+            ++offset;
         }
-#pragma omp critical
-        {
-            global_point_vec.insert(global_point_vec.end(), local_point_vec.begin(), local_point_vec.end());
-            global_type_vec.insert(global_type_vec.end(), local_type_vec.begin(), local_type_vec.end());
-        }
-
-#pragma omp barrier
-        numPoints = global_type_vec.size();
-        int numHexCellsArray = numPoints * 7;
-        int numPointsCount = numPoints * 6;
-#pragma omp sections
-        {
-#pragma omp section
-            {
-                _hexCellsArrayWritePtr = _hexCellsArray->WritePointer(numPoints, numHexCellsArray);
-            }
-#pragma omp section
-            {
-                _cellTypeArray->SetNumberOfValues(numPoints);
-            }
-#pragma omp section
-            {
-                _pointsArray->SetNumberOfPoints(numPointsCount);
-            }
-        }
-
-#pragma omp for schedule(static)
-        for (int j = 0; j < numPoints; ++j) {
-            // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
-            int cellPos = j * 6;
-            for (int idx = 0; idx < 6; ++idx) {
-                std::pair<double, double> pt = global_point_vec[cellPos + idx];
-                _pointsArray->SetPoint(cellPos + idx, pt.first, pt.second, 0.0);
-            }
-
-            int arrPos = j * 7;
-            _hexCellsArrayWritePtr[arrPos + 0] = 6;
-            _hexCellsArrayWritePtr[arrPos + 1] = cellPos + 0;
-            _hexCellsArrayWritePtr[arrPos + 2] = cellPos + 1;
-            _hexCellsArrayWritePtr[arrPos + 3] = cellPos + 2;
-            _hexCellsArrayWritePtr[arrPos + 4] = cellPos + 3;
-            _hexCellsArrayWritePtr[arrPos + 5] = cellPos + 4;
-            _hexCellsArrayWritePtr[arrPos + 6] = cellPos + 5;
-            _cellTypeArray->SetValue(j, global_type_vec[j]);
-        }
-    }
-    pUtils->setNumberOfWorkNodesAuto();
 }
 
 void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr,
                                       std::string _plane, int _pos) {
-    vtkPoints *points = (vtkPoints *) _pointArrayAddr;
-    vtkCellArray *lines = (vtkCellArray *) _linesArrayAddr;
 
-    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
-    Dim3D fieldDim = cellFieldG->getDim();
+    vtkPoints *points = (vtkPoints *)_pointArrayAddr;
+    vtkCellArray * lines=(vtkCellArray *)_linesArrayAddr;
 
-    vector<int> fieldDimVec(3, 0);
-    fieldDimVec[0] = fieldDim.x;
-    fieldDimVec[1] = fieldDim.y;
-    fieldDimVec[2] = fieldDim.z;
+    Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
+    Dim3D fieldDim=cellFieldG->getDim();
 
-    vector<int> pointOrderVec = pointOrder(_plane);
-    vector<int> dimOrderVec = dimOrder(_plane);
+    vector<int> fieldDimVec(3,0);
+    fieldDimVec[0]=fieldDim.x;
+    fieldDimVec[1]=fieldDim.y;
+    fieldDimVec[2]=fieldDim.z;
 
-    vector<int> dim(3, 0);
-    dim[0] = fieldDimVec[dimOrderVec[0]];
-    dim[1] = fieldDimVec[dimOrderVec[1]];
-    dim[2] = fieldDimVec[dimOrderVec[2]];
+    vector<int> pointOrderVec=pointOrder(_plane);
+    vector<int> dimOrderVec=dimOrder(_plane);
 
-    pUtils->setNumberOfWorkNodesAuto();
-    vector<std::tuple<double, double, double, double>> global_points;
-    vtkIdType *linesWritePtr;
-#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, points, lines, global_points, linesWritePtr)
-    {
-        vector<std::tuple<double, double, double, double>> local_points;
-#pragma omp for schedule(static) nowait
-        for (int i = 0; i < dim[0]; ++i) {
-            Point3D pt;
-            vector<int> ptVec(3, 0);
-            Point3D ptN;
-            vector<int> ptNVec(3, 0);
+    vector<int> dim(3,0);
+    dim[0]=fieldDimVec[dimOrderVec[0]];
+    dim[1]=fieldDimVec[dimOrderVec[1]];
+    dim[2]=fieldDimVec[dimOrderVec[2]];
 
-            for (int j = 0; j < dim[1]; ++j) {
-                ptVec[0] = i;
-                ptVec[1] = j;
-                ptVec[2] = _pos;
+    Point3D pt;
+    vector<int> ptVec(3,0);
+    Point3D ptN;
+    vector<int> ptNVec(3,0);
 
-                pt.x = ptVec[pointOrderVec[0]];
-                pt.y = ptVec[pointOrderVec[1]];
-                pt.z = ptVec[pointOrderVec[2]];
+    int k=0;
+    int pc=0;
 
-                if (i > 0 && j < dim[1]) {
-                    ptNVec[0] = i - 1;
-                    ptNVec[1] = j;
-                    ptNVec[2] = _pos;
-                    ptN.x = ptNVec[pointOrderVec[0]];
-                    ptN.y = ptNVec[pointOrderVec[1]];
-                    ptN.z = ptNVec[pointOrderVec[2]];
-                    if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                        local_points.push_back(
-                                make_tuple<double, double>((double) i, (double) j, (double) i, (double) j + 1));
-                        // local_points.push_back(std::pair<double, double>(i, j + 1));
-                    }
+    for(int i=0; i <dim[0]; ++i)
+        for(int j=0; j <dim[1]; ++j){
+            ptVec[0]=i;
+            ptVec[1]=j;
+            ptVec[2]=_pos;
+
+            pt.x=ptVec[pointOrderVec[0]];
+            pt.y=ptVec[pointOrderVec[1]];
+            pt.z=ptVec[pointOrderVec[2]];
+
+            if(i > 0 && j < dim[1] ){
+                ptNVec[0]=i-1;
+                ptNVec[1]=j;
+                ptNVec[2]=_pos;
+                ptN.x=ptNVec[pointOrderVec[0]];
+                ptN.y=ptNVec[pointOrderVec[1]];
+                ptN.z=ptNVec[pointOrderVec[2]];
+                if (cellFieldG->get(pt) != cellFieldG->get(ptN) ){
+                    points->InsertNextPoint(i,j,0);
+                    points->InsertNextPoint(i,j+1,0);
+                    pc+=2;
+                    lines->InsertNextCell(2);
+                    lines->InsertCellPoint(pc-2);
+                    lines->InsertCellPoint(pc-1);
                 }
-                if (j > 0 && i < dim[0]) {
-                    ptNVec[0] = i;
-                    ptNVec[1] = j - 1;
-                    ptNVec[2] = _pos;
-                    ptN.x = ptNVec[pointOrderVec[0]];
-                    ptN.y = ptNVec[pointOrderVec[1]];
-                    ptN.z = ptNVec[pointOrderVec[2]];
-                    if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                        local_points.push_back(
-                                make_tuple<double, double>((double) i, (double) j, (double) i + 1, (double) j));
-                        // local_points.push_back(std::pair<double, double>(i + 1, j));
-                    }
+            }
+            if(j > 0 && i < dim[0] ){
+                ptNVec[0]=i;
+                ptNVec[1]=j-1;
+                ptNVec[2]=_pos;
+                ptN.x=ptNVec[pointOrderVec[0]];
+                ptN.y=ptNVec[pointOrderVec[1]];
+                ptN.z=ptNVec[pointOrderVec[2]];
+                if (cellFieldG->get(pt) != cellFieldG->get(ptN) ){
+                    points->InsertNextPoint(i,j,0);
+                    points->InsertNextPoint(i+1,j,0);
+                    pc+=2;
+                    lines->InsertNextCell(2);
+                    lines->InsertCellPoint(pc-2);
+                    lines->InsertCellPoint(pc-1);
                 }
+            }
 
-                if (i < dim[0] && j < dim[1]) {
-                    ptNVec[0] = i + 1;
-                    ptNVec[1] = j;
-                    ptNVec[2] = _pos;
-                    ptN.x = ptNVec[pointOrderVec[0]];
-                    ptN.y = ptNVec[pointOrderVec[1]];
-                    ptN.z = ptNVec[pointOrderVec[2]];
-                    if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                        local_points.push_back(
-                                make_tuple<double, double>((double) i + 1, (double) j, (double) i + 1, (double) j + 1));
-                        // local_points.push_back(std::pair<double, double>(i + 1, j + 1));
-                    }
+            if( i < dim[0] && j < dim[1]  ){
+                ptNVec[0]=i+1;
+                ptNVec[1]=j;
+                ptNVec[2]=_pos;
+                ptN.x=ptNVec[pointOrderVec[0]];
+                ptN.y=ptNVec[pointOrderVec[1]];
+                ptN.z=ptNVec[pointOrderVec[2]];
+                if (cellFieldG->get(pt) != cellFieldG->get(ptN) ){
+                    points->InsertNextPoint(i+1,j,0);
+                    points->InsertNextPoint(i+1,j+1,0);
+                    pc+=2;
+                    lines->InsertNextCell(2);
+                    lines->InsertCellPoint(pc-2);
+                    lines->InsertCellPoint(pc-1);
                 }
+            }
 
-                if (i < dim[0] && j < dim[1]) {
-                    ptNVec[0] = i;
-                    ptNVec[1] = j + 1;
-                    ptNVec[2] = _pos;
-                    ptN.x = ptNVec[pointOrderVec[0]];
-                    ptN.y = ptNVec[pointOrderVec[1]];
-                    ptN.z = ptNVec[pointOrderVec[2]];
-                    if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                        local_points.push_back(
-                                make_tuple<double, double>((double) i, (double) j + 1, (double) i + 1, (double) j + 1));
-                        // local_points.push_back(std::pair<double, double>(i + 1, j + 1));
-                    }
+            if( i < dim[0] && j < dim[1]  ){
+                ptNVec[0]=i;
+                ptNVec[1]=j+1;
+                ptNVec[2]=_pos;
+                ptN.x=ptNVec[pointOrderVec[0]];
+                ptN.y=ptNVec[pointOrderVec[1]];
+                ptN.z=ptNVec[pointOrderVec[2]];
+                if (cellFieldG->get(pt) != cellFieldG->get(ptN) ){
+                    points->InsertNextPoint(i,j+1,0);
+                    points->InsertNextPoint(i+1,j+1,0);
+                    pc+=2;
+                    lines->InsertNextCell(2);
+                    lines->InsertCellPoint(pc-2);
+                    lines->InsertCellPoint(pc-1);
                 }
             }
         }
-#pragma omp critical
-        {
-            global_points.insert(global_points.end(), local_points.begin(), local_points.end());
-        }
-
-#pragma omp barrier
-
-#pragma omp sections
-        {
-#pragma omp section
-            {
-                linesWritePtr = lines->WritePointer(global_points.size(), global_points.size() * 3);
-            }
-#pragma omp section
-            {
-                points->SetNumberOfPoints(global_points.size() * 2);
-            }
-        }
-
-        int pc, pt_pos = 0;
-#pragma omp for schedule(static)
-        for (int j = 0; j < global_points.size(); ++j) {
-            std::tuple<double, double, double, double> pt = global_points[j];
-            pt_pos = j * 2;
-            points->SetPoint(pt_pos, std::get<0>(pt), std::get<1>(pt), 0);
-            points->SetPoint(pt_pos + 1, std::get<2>(pt), std::get<3>(pt), 0);
-            pc = j * 3;
-            linesWritePtr[pc] = 2;
-            linesWritePtr[pc + 1] = pt_pos;
-            linesWritePtr[pc + 2] = pt_pos + 1;
-        }
-    }
-    pUtils->setNumberOfWorkNodesAuto(1);
 }
 
 void FieldExtractor::fillBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr,
                                          std::string _plane, int _pos) {
-    //this function can be shortened but for now I am leaving it the way it is
-    vtkPoints *points = (vtkPoints *) _pointArrayAddr;
-    vtkCellArray *lines = (vtkCellArray *) _linesArrayAddr;
 
-    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
-    Dim3D fieldDim = cellFieldG->getDim();
+    vtkPoints *points = (vtkPoints *)_pointArrayAddr;
+    vtkCellArray * lines=(vtkCellArray *)_linesArrayAddr;
 
-    vector<int> fieldDimVec(3, 0);
-    fieldDimVec[0] = fieldDim.x;
-    fieldDimVec[1] = fieldDim.y;
-    fieldDimVec[2] = fieldDim.z;
+    Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
+    Dim3D fieldDim=cellFieldG->getDim();
 
-    vector<int> pointOrderVec = pointOrder(_plane);
-    vector<int> dimOrderVec = dimOrder(_plane);
+    vector<int> fieldDimVec(3,0);
+    fieldDimVec[0]=fieldDim.x;
+    fieldDimVec[1]=fieldDim.y;
+    fieldDimVec[2]=fieldDim.z;
 
-    vector<int> dim(3, 0);
-    dim[0] = fieldDimVec[dimOrderVec[0]];
-    dim[1] = fieldDimVec[dimOrderVec[1]];
-    dim[2] = fieldDimVec[dimOrderVec[2]];
+    vector<int> pointOrderVec=pointOrder(_plane);
+    vector<int> dimOrderVec=dimOrder(_plane);
 
-    vector<std::pair<double, double>> global_points;
-    vtkIdType *linesWritePtr;
-    pUtils->setNumberOfWorkNodesAuto();
-#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, points, lines, global_points, linesWritePtr)
-    {
+    vector<int> dim(3,0);
+    dim[0]=fieldDimVec[dimOrderVec[0]];
+    dim[1]=fieldDimVec[dimOrderVec[1]];
+    dim[2]=fieldDimVec[dimOrderVec[2]];
 
-        vector<std::pair<double, double>> local_points;
-        Point3D pt;
-        vector<int> ptVec(3, 0);
-        Point3D ptN;
-        vector<int> ptNVec(3, 0);
-#pragma omp for schedule(static, 5) nowait
-        for (int i = 0; i < dim[0]; ++i) {
-            for (int j = 0; j < dim[1]; ++j) {
-                ptVec[0] = i;
-                ptVec[1] = j;
-                ptVec[2] = _pos;
+    Point3D pt;
+    vector<int> ptVec(3,0);
+    Point3D ptN;
+    vector<int> ptNVec(3,0);
 
-                pt.x = ptVec[pointOrderVec[0]];
-                pt.y = ptVec[pointOrderVec[1]];
-                pt.z = ptVec[pointOrderVec[2]];
-                Coordinates3D<double> hexCoords = HexCoordXY(pt.x, pt.y, pt.z);
-                if (pt.z % 3 == 0) { // z divisible by 3
-                    if (pt.y % 2) { //y_odd
-                        if (pt.x - 1 >= 0) {
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[4] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[5] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x - 1 >= 0 && pt.y + 1 < dim[1]) {
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y + 1;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[5] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[0] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.y + 1 < dim[1]) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y + 1;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[0] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[1] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x + 1 < dim[0]) {
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[1] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[2] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.y - 1 >= 0) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y - 1;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[2] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[3] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x - 1 >= 0 && pt.y - 1 >= 0) {
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y - 1;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[3] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[4] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
+    int k=0;
+    int pc=0;
 
-                    } else {//y_even
-                        if (pt.x - 1 >= 0) {
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[4] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[5] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.y + 1 < dim[1]) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y + 1;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[5] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[0] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x + 1 < dim[0] && pt.y + 1 < dim[1]) {
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y + 1;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[0] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[1] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x + 1 < dim[0]) {
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[1] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[2] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x + 1 < dim[0] && pt.y - 1 >= 0) {
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y - 1;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[2] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[3] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.y - 1 >= 0) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y - 1;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[3] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[4] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
+    for(int i=0; i <dim[0]; ++i)
+        for(int j=0; j <dim[1]; ++j){
+            ptVec[0]=i;
+            ptVec[1]=j;
+            ptVec[2]=_pos;
+
+            pt.x=ptVec[pointOrderVec[0]];
+            pt.y=ptVec[pointOrderVec[1]];
+            pt.z=ptVec[pointOrderVec[2]];
+            Coordinates3D<double> hexCoords=HexCoordXY(pt.x,pt.y,pt.z);
+            if (pt.z%3==0){ // z divisible by 3
+                if(pt.y%2){ //y_odd
+                    if(pt.x-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[4]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[5]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
                         }
                     }
-                } else { //apparently for  pt.z%3==1 and pt.z%3==2 xy hex shifts are the same so one code serves them both
-                    if (pt.y % 2) { //y_odd
-                        if (pt.x - 1 >= 0) {
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[4] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[5] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
+                    if(pt.x-1>=0 && pt.y+1<dim[1]){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[5]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[0]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
                         }
-                        if (pt.x - 1 >= 0 && pt.y + 1 < dim[1]) {
-                            // ptN.x=pt.x-1;
-                            // ptN.y=pt.y+1;
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y - 1;
+                    }
+                    if( pt.y+1<dim[1]){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[0]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[1]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.x+1<dim[0]){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[1]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[2]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y-1>=0){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[2]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[3]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[3]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[4]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
 
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[2] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[3] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.y + 1 < dim[1]) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y + 1;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[5] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[0] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x + 1 < dim[0]) {
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[1] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[2] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.y - 1 >= 0) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y - 1;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[3] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[4] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x - 1 >= 0 && pt.y - 1 >= 0) {
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y + 1;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[0] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[1] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
+                }else{//y_even
 
-                    } else {//y_even
-                        if (pt.x - 1 >= 0) {
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[4] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[5] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
+                    if(pt.x-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[4]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[5]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
                         }
-                        if (pt.x - 1 >= 0 && pt.y + 1 < dim[1]) {
-                            // ptN.x=pt.x-1;
-                            // ptN.y=pt.y+1;
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y + 1;
-
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[5] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[0] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
+                    }
+                    if( pt.y+1<dim[1]){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[5]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[0]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
                         }
-                        if (pt.y + 1 < dim[1]) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y + 1;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[0] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[1] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
+                    }
+                    if(pt.x+1<dim[0] && pt.y+1<dim[1]){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[0]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[1]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
                         }
-                        if (pt.x + 1 < dim[0]) {
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[1] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[2] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
+                    }
+                    if(pt.x+1<dim[0] ){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[1]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[2]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
                         }
-                        if (pt.y - 1 >= 0) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y - 1;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[2] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[3] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
+                    }
+                    if(pt.x+1<dim[0] && pt.y-1>=0 ){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[2]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[3]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
                         }
-                        if (pt.x - 1 >= 0 && pt.y - 1 >= 0) {
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y - 1;
-                            ptN.z = pt.z;
-                            if (cellFieldG->get(pt) != cellFieldG->get(ptN)) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[3] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[4] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
+                    }
+                    if( pt.y-1>=0 ){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[3]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[4]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
                         }
                     }
                 }
             }
-        }
-#pragma omp critical
-        {
-            global_points.insert(global_points.end(), local_points.begin(), local_points.end());
-        }
 
-#pragma omp barrier
+            else { //apparently for  pt.z%3==1 and pt.z%3==2 xy hex shifts are the same so one code serves them both
+                if(pt.y%2){ //y_odd
+                    if(pt.x-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[4]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[5]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y+1<dim[1]){
+                        // ptN.x=pt.x-1;
+                        // ptN.y=pt.y+1;
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y-1;
 
-#pragma omp sections
-        {
-#pragma omp section
-            {
-                linesWritePtr = lines->WritePointer(global_points.size() / 2, (global_points.size() / 2) * 3);
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[2]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[3]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y+1<dim[1]){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[5]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[0]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.x+1<dim[0]){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[1]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[2]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y-1>=0){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[3]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[4]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y-1>=0){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[0]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[1]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+
+                }else{//y_even
+                    if(pt.x-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[4]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[5]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y+1<dim[1]){
+                        // ptN.x=pt.x-1;
+                        // ptN.y=pt.y+1;
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y+1;
+
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[5]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[0]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y+1<dim[1]){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[0]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[1]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.x+1<dim[0]){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[1]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[2]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y-1>=0){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[2]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[3]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if(cellFieldG->get(pt) != cellFieldG->get(ptN)){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[3]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[4]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+
+
+
+                }
+
             }
-#pragma omp section
-            {
-                points->SetNumberOfPoints(global_points.size());
-            }
+
+
         }
-#pragma omp for schedule(static)
-        for (int j = 0; j < global_points.size(); j += 2) {
-            std::pair<double, double> pt1 = global_points[j];
-            std::pair<double, double> pt2 = global_points[j + 1];
-            points->SetPoint(j, pt1.first, pt1.second, 0);
-            points->SetPoint(j + 1, pt2.first, pt2.second, 0);
-            int pc = (j / 2) * 3;
-            linesWritePtr[pc] = 2;
-            linesWritePtr[pc + 1] = j;
-            linesWritePtr[pc + 2] = j + 1;
-        }
-    }
-    pUtils->setNumberOfWorkNodesAuto(1);
 }
 
 void FieldExtractor::fillClusterBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr,
                                              std::string _plane, int _pos) {
-    vtkPoints *points = (vtkPoints *) _pointArrayAddr;
-    vtkCellArray *lines = (vtkCellArray *) _linesArrayAddr;
 
-    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+
+    vtkPoints *points = (vtkPoints *)_pointArrayAddr;
+    vtkCellArray * lines=(vtkCellArray *)_linesArrayAddr;
+
+    Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
     Dim3D fieldDim = cellFieldG->getDim();
 
-    vector<int> fieldDimVec(3, 0);
-    fieldDimVec[0] = fieldDim.x;
-    fieldDimVec[1] = fieldDim.y;
-    fieldDimVec[2] = fieldDim.z;
+    vector<int> fieldDimVec(3,0);
+    fieldDimVec[0]=fieldDim.x;
+    fieldDimVec[1]=fieldDim.y;
+    fieldDimVec[2]=fieldDim.z;
 
-    vector<int> pointOrderVec = pointOrder(_plane);
-    vector<int> dimOrderVec = dimOrder(_plane);
+    vector<int> pointOrderVec=pointOrder(_plane);
+    vector<int> dimOrderVec=dimOrder(_plane);
 
-    vector<int> dim(3, 0);
-    dim[0] = fieldDimVec[dimOrderVec[0]];
-    dim[1] = fieldDimVec[dimOrderVec[1]];
-    dim[2] = fieldDimVec[dimOrderVec[2]];
+    vector<int> dim(3,0);
+    dim[0]=fieldDimVec[dimOrderVec[0]];
+    dim[1]=fieldDimVec[dimOrderVec[1]];
+    dim[2]=fieldDimVec[dimOrderVec[2]];
 
-    vector<std::pair<double, double>> global_points;
-    vtkIdType *linesWritePtr;
+    Point3D pt;
+    vector<int> ptVec(3,0);
+    Point3D ptN;
+    vector<int> ptNVec(3,0);
 
-    pUtils->setNumberOfWorkNodesAuto();
-#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, points, lines, global_points, linesWritePtr)
-    {
-        vector<std::pair<double, double>> local_points;
-        Point3D pt;
-        vector<int> ptVec(3, 0);
-        Point3D ptN;
-        vector<int> ptNVec(3, 0);
-#pragma omp for schedule(static, 5) nowait
-        for (int i = 0; i < dim[0]; ++i) {
-            for (int j = 0; j < dim[1]; ++j) {
-                ptVec[0] = i;
-                ptVec[1] = j;
-                ptVec[2] = _pos;
+    int k=0;
+    int pc=0;
 
-                pt.x = ptVec[pointOrderVec[0]];
-                pt.y = ptVec[pointOrderVec[1]];
-                pt.z = ptVec[pointOrderVec[2]];
+    for(int i=0; i <dim[0]; ++i) {
+//		cout << "i ="<<i<<endl;
+        for(int j=0; j <dim[1]; ++j){
+            ptVec[0]=i;
+            ptVec[1]=j;
+            ptVec[2]=_pos;
 
-                if (cellFieldG->get(pt) == 0)
-                    continue;
+            pt.x=ptVec[pointOrderVec[0]];
+            pt.y=ptVec[pointOrderVec[1]];
+            pt.z=ptVec[pointOrderVec[2]];
 
-                long clusterId = cellFieldG->get(pt)->clusterId;
+            if (cellFieldG->get(pt) == 0) continue;
 
-                if (i > 0 && j < dim[1]) {
-                    ptNVec[0] = i - 1;
-                    ptNVec[1] = j;
-                    ptNVec[2] = _pos;
-                    ptN.x = ptNVec[pointOrderVec[0]];
-                    ptN.y = ptNVec[pointOrderVec[1]];
-                    ptN.z = ptNVec[pointOrderVec[2]];
-                    if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                        local_points.push_back({i, j});
-                        local_points.push_back({i, j + 1});
-                    }
-                }
-                if (j > 0 && i < dim[0]) {
-                    ptNVec[0] = i;
-                    ptNVec[1] = j - 1;
-                    ptNVec[2] = _pos;
-                    ptN.x = ptNVec[pointOrderVec[0]];
-                    ptN.y = ptNVec[pointOrderVec[1]];
-                    ptN.z = ptNVec[pointOrderVec[2]];
-                    if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                        local_points.push_back({i, j});
-                        local_points.push_back({i + 1, j});
-                    }
-                }
+            long clusterId = cellFieldG->get(pt)->clusterId;
+//			cout << "j,clusterId=" << j<<","<<clusterId << endl;
 
-                if (i < dim[0] && j < dim[1]) {
-                    ptNVec[0] = i + 1;
-                    ptNVec[1] = j;
-                    ptNVec[2] = _pos;
-                    ptN.x = ptNVec[pointOrderVec[0]];
-                    ptN.y = ptNVec[pointOrderVec[1]];
-                    ptN.z = ptNVec[pointOrderVec[2]];
-                    if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                        local_points.push_back({i + 1, j});
-                        local_points.push_back({i + 1, j + 1});
-                    }
-                }
-
-                if (i < dim[0] && j < dim[1]) {
-                    ptNVec[0] = i;
-                    ptNVec[1] = j + 1;
-                    ptNVec[2] = _pos;
-                    ptN.x = ptNVec[pointOrderVec[0]];
-                    ptN.y = ptNVec[pointOrderVec[1]];
-                    ptN.z = ptNVec[pointOrderVec[2]];
-                    if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                        local_points.push_back({i, j + 1});
-                        local_points.push_back({i + 1, j + 1});
-                    }
+            if(i > 0 && j < dim[1] ){
+                ptNVec[0]=i-1;
+                ptNVec[1]=j;
+                ptNVec[2]=_pos;
+                ptN.x=ptNVec[pointOrderVec[0]];
+                ptN.y=ptNVec[pointOrderVec[1]];
+                ptN.z=ptNVec[pointOrderVec[2]];
+                if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                    points->InsertNextPoint(i,j,0);
+                    points->InsertNextPoint(i,j+1,0);
+                    pc+=2;
+                    lines->InsertNextCell(2);
+                    lines->InsertCellPoint(pc-2);
+                    lines->InsertCellPoint(pc-1);
                 }
             }
-        }
-#pragma omp critical
-        {
-            global_points.insert(global_points.end(), local_points.begin(), local_points.end());
-        }
-#pragma omp barrier
+            if(j > 0 && i < dim[0] ){
+                ptNVec[0]=i;
+                ptNVec[1]=j-1;
+                ptNVec[2]=_pos;
+                ptN.x=ptNVec[pointOrderVec[0]];
+                ptN.y=ptNVec[pointOrderVec[1]];
+                ptN.z=ptNVec[pointOrderVec[2]];
+                if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                    points->InsertNextPoint(i,j,0);
+                    points->InsertNextPoint(i+1,j,0);
+                    pc+=2;
+                    lines->InsertNextCell(2);
+                    lines->InsertCellPoint(pc-2);
+                    lines->InsertCellPoint(pc-1);
+                }
+            }
 
-#pragma omp sections
-        {
-#pragma omp section
-            {
-                linesWritePtr = lines->WritePointer(global_points.size() / 2, (global_points.size() / 2) * 3);
+            if( i < dim[0] && j < dim[1]  ){
+                ptNVec[0]=i+1;
+                ptNVec[1]=j;
+                ptNVec[2]=_pos;
+                ptN.x=ptNVec[pointOrderVec[0]];
+                ptN.y=ptNVec[pointOrderVec[1]];
+                ptN.z=ptNVec[pointOrderVec[2]];
+                if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                    points->InsertNextPoint(i+1,j,0);
+                    points->InsertNextPoint(i+1,j+1,0);
+                    pc+=2;
+                    lines->InsertNextCell(2);
+                    lines->InsertCellPoint(pc-2);
+                    lines->InsertCellPoint(pc-1);
+                }
             }
-#pragma omp section
-            {
-                points->SetNumberOfPoints(global_points.size());
+
+            if( i < dim[0] && j < dim[1]  ){
+                ptNVec[0]=i;
+                ptNVec[1]=j+1;
+                ptNVec[2]=_pos;
+                ptN.x=ptNVec[pointOrderVec[0]];
+                ptN.y=ptNVec[pointOrderVec[1]];
+                ptN.z=ptNVec[pointOrderVec[2]];
+                if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                    points->InsertNextPoint(i,j+1,0);
+                    points->InsertNextPoint(i+1,j+1,0);
+                    pc+=2;
+                    lines->InsertNextCell(2);
+                    lines->InsertCellPoint(pc-2);
+                    lines->InsertCellPoint(pc-1);
+                }
             }
-        }
-#pragma omp for schedule(static)
-        for (int j = 0; j < global_points.size(); j += 2) {
-            std::pair<double, double> pt1 = global_points[j];
-            std::pair<double, double> pt2 = global_points[j + 1];
-            points->SetPoint(j, pt1.first, pt1.second, 0);
-            points->SetPoint(j + 1, pt2.first, pt2.second, 0);
-            int pc = (j / 2) * 3;
-            linesWritePtr[pc] = 2;
-            linesWritePtr[pc + 1] = j;
-            linesWritePtr[pc + 2] = j + 1;
         }
     }
-    pUtils->setNumberOfWorkNodesAuto(1);
 }
 
 void FieldExtractor::fillClusterBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr,
                                                 std::string _plane, int _pos) {
     //this function has to be redone in the same spirit as fillBorderData2DHex
-    vtkPoints *points = (vtkPoints *) _pointArrayAddr;
-    vtkCellArray *lines = (vtkCellArray *) _linesArrayAddr;
+    vtkPoints *points = (vtkPoints *)_pointArrayAddr;
+    vtkCellArray * lines = (vtkCellArray *)_linesArrayAddr;
 
-    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Field3D<CellG*> * cellFieldG = potts->getCellFieldG();
     Dim3D fieldDim = cellFieldG->getDim();
 
-    vector<int> fieldDimVec(3, 0);
-    fieldDimVec[0] = fieldDim.x;
-    fieldDimVec[1] = fieldDim.y;
-    fieldDimVec[2] = fieldDim.z;
+    vector<int> fieldDimVec(3,0);
+    fieldDimVec[0]=fieldDim.x;
+    fieldDimVec[1]=fieldDim.y;
+    fieldDimVec[2]=fieldDim.z;
 
-    vector<int> pointOrderVec = pointOrder(_plane);
-    vector<int> dimOrderVec = dimOrder(_plane);
+    vector<int> pointOrderVec=pointOrder(_plane);
+    vector<int> dimOrderVec=dimOrder(_plane);
 
-    vector<int> dim(3, 0);
-    dim[0] = fieldDimVec[dimOrderVec[0]];
-    dim[1] = fieldDimVec[dimOrderVec[1]];
-    dim[2] = fieldDimVec[dimOrderVec[2]];
+    vector<int> dim(3,0);
+    dim[0]=fieldDimVec[dimOrderVec[0]];
+    dim[1]=fieldDimVec[dimOrderVec[1]];
+    dim[2]=fieldDimVec[dimOrderVec[2]];
 
-    vector<std::pair<double, double>> global_points;
-    vtkIdType *linesWritePtr;
-    pUtils->setNumberOfWorkNodesAuto();
-#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, points, lines, global_points, linesWritePtr)
-    {
-        Point3D pt;
-        vector<int> ptVec(3, 0);
-        Point3D ptN;
-        vector<int> ptNVec(3, 0);
-        vector<std::pair<double, double>> local_points;
+    Point3D pt;
+    vector<int> ptVec(3,0);
+    Point3D ptN;
+    vector<int> ptNVec(3,0);
 
-#pragma omp for schedule(static, 5) nowait
-        for (int i = 0; i < dim[0]; ++i) {
-            for (int j = 0; j < dim[1]; ++j) {
-                ptVec[0] = i;
-                ptVec[1] = j;
-                ptVec[2] = _pos;
+    int k=0;
+    int pc=0;
 
-                pt.x = ptVec[pointOrderVec[0]];
-                pt.y = ptVec[pointOrderVec[1]];
-                pt.z = ptVec[pointOrderVec[2]];
-                Coordinates3D<double> hexCoords = HexCoordXY(pt.x, pt.y, pt.z);
+    for(int i=0; i <dim[0]; ++i)
+        for(int j=0; j <dim[1]; ++j){
+            ptVec[0]=i;
+            ptVec[1]=j;
+            ptVec[2]=_pos;
 
-                if (cellFieldG->get(pt) == 0) continue;
-                long clusterId = cellFieldG->get(pt)->clusterId;
-                if (pt.z % 3 == 0) { // z divisible by 3
-                    if (pt.y % 2) { //y_odd
-                        if (pt.x - 1 >= 0) {
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[4] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[5] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x - 1 >= 0 && pt.y + 1 < dim[1]) {
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y + 1;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[5] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[0] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.y + 1 < dim[1]) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y + 1;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[0] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[1] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x + 1 < dim[0]) {
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[1] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[2] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.y - 1 >= 0) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y - 1;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[2] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[3] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
+            pt.x=ptVec[pointOrderVec[0]];
+            pt.y=ptVec[pointOrderVec[1]];
+            pt.z=ptVec[pointOrderVec[2]];
+            Coordinates3D<double> hexCoords=HexCoordXY(pt.x,pt.y,pt.z);
 
-                            }
-                        }
-                        if (pt.x - 1 >= 0 && pt.y - 1 >= 0) {
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y - 1;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[3] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[4] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                    } else {//y_even
-                        if (pt.x - 1 >= 0) {
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[4] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[5] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.y + 1 < dim[1]) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y + 1;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[5] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[0] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x + 1 < dim[0] && pt.y + 1 < dim[1]) {
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y + 1;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[0] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[1] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x + 1 < dim[0]) {
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[1] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[2] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x + 1 < dim[0] && pt.y - 1 >= 0) {
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y - 1;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[2] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[3] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.y - 1 >= 0) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y - 1;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[3] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[4] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
+            if (cellFieldG->get(pt) == 0) continue;
+            long clusterId = cellFieldG->get(pt)->clusterId;
+            if (pt.z%3==0){ // z divisible by 3
+                if(pt.y%2){ //y_odd
+                    if(pt.x-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[4]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[5]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
                         }
                     }
-                } else {//apparently for  pt.z%3==1 and pt.z%3==2 xy hex shifts are the same so one code serves them both
-                    if (pt.y % 2) { //y_odd
-                        if (pt.x - 1 >= 0) {
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
+                    if(pt.x-1>=0 && pt.y+1<dim[1]){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[5]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[0]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y+1<dim[1]){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[0]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[1]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.x+1<dim[0]){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[1]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[2]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y-1>=0){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[2]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[3]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[3]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[4]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
 
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[4] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[5] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x - 1 >= 0 && pt.y + 1 < dim[1]) {
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y - 1;
+                }else{//y_even
 
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[2] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[3] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-
-                            }
+                    if(pt.x-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[4]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[5]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
                         }
-                        if (pt.y + 1 < dim[1]) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y + 1;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[5] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[0] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
+                    }
+                    if( pt.y+1<dim[1]){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[5]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[0]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
                         }
-                        if (pt.x + 1 < dim[0]) {
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[1] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[2] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
+                    }
+                    if(pt.x+1<dim[0] && pt.y+1<dim[1]){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[0]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[1]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
                         }
-                        if (pt.y - 1 >= 0) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y - 1;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[3] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[4] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-
-                            }
+                    }
+                    if(pt.x+1<dim[0] ){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[1]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[2]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
                         }
-                        if (pt.x - 1 >= 0 && pt.y - 1 >= 0) {
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y + 1;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[0] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[1] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
+                    }
+                    if(pt.x+1<dim[0] && pt.y-1>=0 ){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[2]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[3]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
                         }
-                    } else { //yeven
-                        if (pt.x - 1 >= 0) {
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[4] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[5] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x - 1 >= 0 && pt.y + 1 < dim[1]) {
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y + 1;
-
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[5] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[0] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.y + 1 < dim[1]) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y + 1;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[0] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[1] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x + 1 < dim[0]) {
-                            ptN.x = pt.x + 1;
-                            ptN.y = pt.y;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[1] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[2] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.y - 1 >= 0) {
-                            ptN.x = pt.x;
-                            ptN.y = pt.y - 1;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[2] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[3] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
-                        }
-                        if (pt.x - 1 >= 0 && pt.y - 1 >= 0) {
-                            ptN.x = pt.x - 1;
-                            ptN.y = pt.y - 1;
-                            ptN.z = pt.z;
-                            if ((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId) {
-                                Coordinates3D<double> hexCoordsP1 = hexagonVertices[3] + hexCoords;
-                                Coordinates3D<double> hexCoordsP2 = hexagonVertices[4] + hexCoords;
-                                local_points.push_back(std::pair<double, double>(hexCoordsP1.x, hexCoordsP1.y));
-                                local_points.push_back(std::pair<double, double>(hexCoordsP2.x, hexCoordsP2.y));
-                            }
+                    }
+                    if( pt.y-1>=0 ){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[3]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[4]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
                         }
                     }
                 }
-            }
-        }
-#pragma omp critical
-        {
-            global_points.insert(global_points.end(), local_points.begin(), local_points.end());
-        }
+            }else{//apparently for  pt.z%3==1 and pt.z%3==2 xy hex shifts are the same so one code serves them both
+                if(pt.y%2){ //y_odd
+                    if(pt.x-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
 
-#pragma omp barrier
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[4]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[5]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y+1<dim[1]){
+                        // ptN.x=pt.x-1;
+                        // ptN.y=pt.y+1;
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y-1;
 
-#pragma omp sections
-        {
-#pragma omp section
-            {
-                linesWritePtr = lines->WritePointer(global_points.size() / 2, (global_points.size() / 2) * 3);
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[2]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[3]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y+1<dim[1]){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[5]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[0]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.x+1<dim[0]){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[1]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[2]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y-1>=0){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[3]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[4]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y-1>=0){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[0]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[1]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+
+                }else{ //yeven
+
+                    if(pt.x-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[4]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[5]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y+1<dim[1]){
+                        // ptN.x=pt.x-1;
+                        // ptN.y=pt.y+1;
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y+1;
+
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[5]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[0]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y+1<dim[1]){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[0]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[1]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.x+1<dim[0]){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[1]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[2]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y-1>=0){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[2]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[3]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[3]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[4]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+
+
+
+                }
+
+
             }
-#pragma omp section
-            {
-                points->SetNumberOfPoints(global_points.size());
-            }
+
+
         }
-#pragma omp for schedule(static)
-        for (int j = 0; j < global_points.size(); j += 2) {
-            std::pair<double, double> pt1 = global_points[j];
-            std::pair<double, double> pt2 = global_points[j + 1];
-            points->SetPoint(j, pt1.first, pt1.second, 0);
-            points->SetPoint(j + 1, pt2.first, pt2.second, 0);
-            int pc = (j / 2) * 3;
-            linesWritePtr[pc] = 2;
-            linesWritePtr[pc + 1] = j;
-            linesWritePtr[pc + 2] = j + 1;
-        }
-    }
-    pUtils->setNumberOfWorkNodesAuto(1);
 }
 
 void FieldExtractor::fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr,
@@ -1391,692 +1414,711 @@ void FieldExtractor::fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_
         lines->InsertCellPoint(ptCount - 4);
     }
 }
-bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 
-    vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
+bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr,
+                                           vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
+                                           std::string _plane, int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
 
-	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
+    vtkCellArray *_hexCellsArray = (vtkCellArray *) _hexCellsArrayAddr;
 
-
-	Field3D<float> *conFieldPtr=0;
-	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-	std::map<std::string,Field3D<float>*>::iterator mitr;
-	mitr=fieldMap.find(_conFieldName);
-	if(mitr!=fieldMap.end()){
-		conFieldPtr=mitr->second;
-	}
-
-	if(!conFieldPtr)
-		return false;
+    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
 
 
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
+    Field3D<float> *conFieldPtr = 0;
+    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
+    std::map<std::string, Field3D<float> *>::iterator mitr;
+    mitr = fieldMap.find(_conFieldName);
+    if (mitr != fieldMap.end()) {
+        conFieldPtr = mitr->second;
+    }
 
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
-
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
-
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
+    if (!conFieldPtr)
+        return false;
 
 
-	int offset=0;
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
 
-	Point3D pt;
-	vector<int> ptVec(3,0);
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
 
-	double con;
-	long pc=0;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
 
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
 
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				con = conFieldPtr->get(pt);
-			}
-			Coordinates3D<double> hexCoords=HexCoordXY(pt.x,pt.y,pt.z);
-			for (int idx=0 ; idx<6 ; ++idx){
-			 Coordinates3D<double> hexagonVertex=hexagonVertices[idx]+hexCoords;
-			 _pointsArray->InsertNextPoint(hexagonVertex.x,hexagonVertex.y,0.0);
-			}
-			pc+=6;
-			vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
-			_hexCellsArray->InsertCellPoint(pc-6);
-			_hexCellsArray->InsertCellPoint(pc-5);
-			_hexCellsArray->InsertCellPoint(pc-4);
-			_hexCellsArray->InsertCellPoint(pc-3);
-			_hexCellsArray->InsertCellPoint(pc-2);
-			_hexCellsArray->InsertCellPoint(pc-1);
 
-			conArray->InsertNextValue( con);
-		}
-		return true;
-    
+    int offset = 0;
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+
+    double con;
+    long pc = 0;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    for (int j = 0; j < dim[1]; ++j)
+        for (int i = 0; i < dim[0]; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                con = conFieldPtr->get(pt);
+            }
+            Coordinates3D<double> hexCoords = HexCoordXY(pt.x, pt.y, pt.z);
+            for (int idx = 0; idx < 6; ++idx) {
+                Coordinates3D<double> hexagonVertex = hexagonVertices[idx] + hexCoords;
+                _pointsArray->InsertNextPoint(hexagonVertex.x, hexagonVertex.y, 0.0);
+            }
+            pc += 6;
+            vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
+            _hexCellsArray->InsertCellPoint(pc - 6);
+            _hexCellsArray->InsertCellPoint(pc - 5);
+            _hexCellsArray->InsertCellPoint(pc - 4);
+            _hexCellsArray->InsertCellPoint(pc - 3);
+            _hexCellsArray->InsertCellPoint(pc - 2);
+            _hexCellsArray->InsertCellPoint(pc - 1);
+
+            conArray->InsertNextValue(con);
+        }
+    return true;
+
 }
 
-bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
+bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,
+                                                 vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+                                                 vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
+                                                 std::string _plane, int _pos) {
 
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	vtkCellArray * _cartesianCellsArray=(vtkCellArray*)_cartesianCellsArrayAddr;
-	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    vtkCellArray *_cartesianCellsArray = (vtkCellArray *) _cartesianCellsArrayAddr;
+    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
 
-    Field3D<float> *conFieldPtr=0;
-	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-	std::map<std::string,Field3D<float>*>::iterator mitr;
-	mitr=fieldMap.find(_conFieldName);
-	if(mitr!=fieldMap.end()){
-		conFieldPtr=mitr->second;
-	}
+    Field3D<float> *conFieldPtr = 0;
+    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
+    std::map<std::string, Field3D<float> *>::iterator mitr;
+    mitr = fieldMap.find(_conFieldName);
+    if (mitr != fieldMap.end()) {
+        conFieldPtr = mitr->second;
+    }
 
-	if(!conFieldPtr)
-		return false;
+    if (!conFieldPtr)
+        return false;
 
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
 
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
 
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
 
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
-
-
-	int offset=0;
-
-	Point3D pt;
-	vector<int> ptVec(3,0);
-
-	double con;
-	long pc=0;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
 
 
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
+    int offset = 0;
 
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
+    Point3D pt;
+    vector<int> ptVec(3, 0);
 
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				con = con = conFieldPtr->get(pt);
-			}
-
-            Coordinates3D<double> coords(ptVec[0],ptVec[1],0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
-
-			for (int idx=0 ; idx<4 ; ++idx){
-			  Coordinates3D<double> cartesianVertex=cartesianVertices[idx]+coords;
- 			 _pointsArray->InsertNextPoint(cartesianVertex.x,cartesianVertex.y,0.0);
-			}
-
-			pc+=4;
-			vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
-			_cartesianCellsArray->InsertCellPoint(pc-4);
-			_cartesianCellsArray->InsertCellPoint(pc-3);
-			_cartesianCellsArray->InsertCellPoint(pc-2);
-			_cartesianCellsArray->InsertCellPoint(pc-1);
-
-			conArray->InsertNextValue( con);
-			++offset;
-		}
-
-		return true;
-}
+    double con;
+    long pc = 0;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
 
 
-bool FieldExtractor::fillScalarFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
-	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
+    for (int j = 0; j < dim[1]; ++j)
+        for (int i = 0; i < dim[0]; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
 
-	FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_conFieldName);
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
 
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                con = con = conFieldPtr->get(pt);
+            }
 
-	if(!conFieldPtr)
-		return false;
+            Coordinates3D<double> coords(ptVec[0], ptVec[1],
+                                         0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
 
+            for (int idx = 0; idx < 4; ++idx) {
+                Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
+                _pointsArray->InsertNextPoint(cartesianVertex.x, cartesianVertex.y, 0.0);
+            }
 
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
+            pc += 4;
+            vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
+            _cartesianCellsArray->InsertCellPoint(pc - 4);
+            _cartesianCellsArray->InsertCellPoint(pc - 3);
+            _cartesianCellsArray->InsertCellPoint(pc - 2);
+            _cartesianCellsArray->InsertCellPoint(pc - 1);
 
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
+            conArray->InsertNextValue(con);
+            ++offset;
+        }
 
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
-
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
-
-
-	int offset=0;
-
-	Point3D pt;
-	vector<int> ptVec(3,0);
-
-	double con;
-	long pc=0;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
-
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
-
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				con = (*conFieldPtr)[pt.x][pt.y][pt.z];
-			}
-
-			Coordinates3D<double> hexCoords=HexCoordXY(pt.x,pt.y,pt.z);
-
-			for (int idx=0 ; idx<6 ; ++idx){
-			 Coordinates3D<double> hexagonVertex=hexagonVertices[idx]+hexCoords;
- 			 _pointsArray->InsertNextPoint(hexagonVertex.x,hexagonVertex.y,0.0);
-			}
-			pc+=6;
-			vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
-			_hexCellsArray->InsertCellPoint(pc-6);
-			_hexCellsArray->InsertCellPoint(pc-5);
-			_hexCellsArray->InsertCellPoint(pc-4);
-			_hexCellsArray->InsertCellPoint(pc-3);
-			_hexCellsArray->InsertCellPoint(pc-2);
-			_hexCellsArray->InsertCellPoint(pc-1);
-
-			conArray->InsertNextValue( con);
-			++offset;
-		}
-
-		return true;
-}
-
-bool FieldExtractor::fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	vtkCellArray * _cartesianCellsArray=(vtkCellArray*)_cartesianCellsArrayAddr;
-	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
-
-	FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_conFieldName);
-
-
-	if(!conFieldPtr)
-		return false;
-
-
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
-
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
-
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
-
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
-
-
-
-
-	int offset=0;
-
-	Point3D pt;
-	vector<int> ptVec(3,0);
-
-	double con;
-	long pc=0;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-
-
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
-
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
-
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				con = (*conFieldPtr)[pt.x][pt.y][pt.z];
-			}
-
-            Coordinates3D<double> coords(ptVec[0],ptVec[1],0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
-			for (int idx=0 ; idx<4 ; ++idx){
-			  Coordinates3D<double> cartesianVertex=cartesianVertices[idx]+coords;
- 			 _pointsArray->InsertNextPoint(cartesianVertex.x,cartesianVertex.y,0.0);
-			}
-
-			pc+=4;
-			vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
-			_cartesianCellsArray->InsertCellPoint(pc-4);
-			_cartesianCellsArray->InsertCellPoint(pc-3);
-			_cartesianCellsArray->InsertCellPoint(pc-2);
-			_cartesianCellsArray->InsertCellPoint(pc-1);
-
-			conArray->InsertNextValue( con);
-			++offset;
-		}
-
-		return true;
+    return true;
 }
 
 
+bool FieldExtractor::fillScalarFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr,
+                                              vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
+                                              std::string _plane, int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    vtkCellArray *_hexCellsArray = (vtkCellArray *) _hexCellsArrayAddr;
+    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
+
+    FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(_conFieldName);
 
 
-bool FieldExtractor::fillScalarFieldCellLevelData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
-	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
+    if (!conFieldPtr)
+        return false;
 
-	FieldStorage::scalarFieldCellLevel_t * conFieldPtr=fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
 
-	if(!conFieldPtr)
-		return false;
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
 
-	FieldStorage::scalarFieldCellLevel_t::iterator mitr;
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
 
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
 
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
 
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
 
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
+    int offset = 0;
 
-	int offset=0;
+    Point3D pt;
+    vector<int> ptVec(3, 0);
 
-	Point3D pt;
-	vector<int> ptVec(3,0);
+    double con;
+    long pc = 0;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    for (int j = 0; j < dim[1]; ++j)
+        for (int i = 0; i < dim[0]; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
 
-	CellG *cell;
-	double con;
-	long pc=0;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
 
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                con = (*conFieldPtr)[pt.x][pt.y][pt.z];
+            }
 
-			cell=cellFieldG->get(pt);
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				if(cell){
-					mitr=conFieldPtr->find(cell);
-					if(mitr!=conFieldPtr->end()){
-						con=mitr->second;
-					}else{
-						con=0.0;
-					}
-				}else{
-					con=0.0;
-				}
-			}
-			Coordinates3D<double> hexCoords=HexCoordXY(pt.x,pt.y,pt.z);
-			for (int idx=0 ; idx<6 ; ++idx){
-			 Coordinates3D<double> hexagonVertex=hexagonVertices[idx]+hexCoords;
- 			 _pointsArray->InsertNextPoint(hexagonVertex.x,hexagonVertex.y,0.0);
-			}
-			pc+=6;
-			vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
-			_hexCellsArray->InsertCellPoint(pc-6);
-			_hexCellsArray->InsertCellPoint(pc-5);
-			_hexCellsArray->InsertCellPoint(pc-4);
-			_hexCellsArray->InsertCellPoint(pc-3);
-			_hexCellsArray->InsertCellPoint(pc-2);
-			_hexCellsArray->InsertCellPoint(pc-1);
+            Coordinates3D<double> hexCoords = HexCoordXY(pt.x, pt.y, pt.z);
 
-			conArray->InsertNextValue( con);
+            for (int idx = 0; idx < 6; ++idx) {
+                Coordinates3D<double> hexagonVertex = hexagonVertices[idx] + hexCoords;
+                _pointsArray->InsertNextPoint(hexagonVertex.x, hexagonVertex.y, 0.0);
+            }
+            pc += 6;
+            vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
+            _hexCellsArray->InsertCellPoint(pc - 6);
+            _hexCellsArray->InsertCellPoint(pc - 5);
+            _hexCellsArray->InsertCellPoint(pc - 4);
+            _hexCellsArray->InsertCellPoint(pc - 3);
+            _hexCellsArray->InsertCellPoint(pc - 2);
+            _hexCellsArray->InsertCellPoint(pc - 1);
 
-			++offset;
-		}
-		return true;
+            conArray->InsertNextValue(con);
+            ++offset;
+        }
+
+    return true;
+}
+
+bool FieldExtractor::fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,
+                                                    vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+                                                    vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
+                                                    std::string _plane, int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    vtkCellArray *_cartesianCellsArray = (vtkCellArray *) _cartesianCellsArrayAddr;
+    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
+
+    FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(_conFieldName);
+
+
+    if (!conFieldPtr)
+        return false;
+
+
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
+
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
+
+
+    int offset = 0;
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+
+    double con;
+    long pc = 0;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+
+
+    for (int j = 0; j < dim[1]; ++j)
+        for (int i = 0; i < dim[0]; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                con = (*conFieldPtr)[pt.x][pt.y][pt.z];
+            }
+
+            Coordinates3D<double> coords(ptVec[0], ptVec[1],
+                                         0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
+            for (int idx = 0; idx < 4; ++idx) {
+                Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
+                _pointsArray->InsertNextPoint(cartesianVertex.x, cartesianVertex.y, 0.0);
+            }
+
+            pc += 4;
+            vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
+            _cartesianCellsArray->InsertCellPoint(pc - 4);
+            _cartesianCellsArray->InsertCellPoint(pc - 3);
+            _cartesianCellsArray->InsertCellPoint(pc - 2);
+            _cartesianCellsArray->InsertCellPoint(pc - 1);
+
+            conArray->InsertNextValue(con);
+            ++offset;
+        }
+
+    return true;
 }
 
 
-bool FieldExtractor::fillScalarFieldCellLevelData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	vtkCellArray * _cartesianCellsArray=(vtkCellArray*)_cartesianCellsArrayAddr;
-	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
+bool FieldExtractor::fillScalarFieldCellLevelData2DHex(vtk_obj_addr_int_t _conArrayAddr,
+                                                       vtk_obj_addr_int_t _hexCellsArrayAddr,
+                                                       vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
+                                                       std::string _plane, int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    vtkCellArray *_hexCellsArray = (vtkCellArray *) _hexCellsArrayAddr;
+    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
 
-	FieldStorage::scalarFieldCellLevel_t * conFieldPtr=fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
+    FieldStorage::scalarFieldCellLevel_t *conFieldPtr = fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
 
-	if(!conFieldPtr)
-		return false;
+    if (!conFieldPtr)
+        return false;
 
-	FieldStorage::scalarFieldCellLevel_t::iterator mitr;
+    FieldStorage::scalarFieldCellLevel_t::iterator mitr;
 
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
 
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
 
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
 
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
 
+    int offset = 0;
 
+    Point3D pt;
+    vector<int> ptVec(3, 0);
 
-	int offset=0;
+    CellG *cell;
+    double con;
+    long pc = 0;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    for (int j = 0; j < dim[1]; ++j)
+        for (int i = 0; i < dim[0]; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
 
-	Point3D pt;
-	vector<int> ptVec(3,0);
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
 
-	CellG *cell;
-	double con;
-	long pc=0;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+            cell = cellFieldG->get(pt);
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                if (cell) {
+                    mitr = conFieldPtr->find(cell);
+                    if (mitr != conFieldPtr->end()) {
+                        con = mitr->second;
+                    } else {
+                        con = 0.0;
+                    }
+                } else {
+                    con = 0.0;
+                }
+            }
+            Coordinates3D<double> hexCoords = HexCoordXY(pt.x, pt.y, pt.z);
+            for (int idx = 0; idx < 6; ++idx) {
+                Coordinates3D<double> hexagonVertex = hexagonVertices[idx] + hexCoords;
+                _pointsArray->InsertNextPoint(hexagonVertex.x, hexagonVertex.y, 0.0);
+            }
+            pc += 6;
+            vtkIdType cellId = _hexCellsArray->InsertNextCell(6);
+            _hexCellsArray->InsertCellPoint(pc - 6);
+            _hexCellsArray->InsertCellPoint(pc - 5);
+            _hexCellsArray->InsertCellPoint(pc - 4);
+            _hexCellsArray->InsertCellPoint(pc - 3);
+            _hexCellsArray->InsertCellPoint(pc - 2);
+            _hexCellsArray->InsertCellPoint(pc - 1);
 
-	for(int j =0 ; j<dim[1] ; ++j)
-		for(int i =0 ; i<dim[0] ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
+            conArray->InsertNextValue(con);
 
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
-
-			cell=cellFieldG->get(pt);
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				if(cell){
-					mitr=conFieldPtr->find(cell);
-					if(mitr!=conFieldPtr->end()){
-						con=mitr->second;
-					}else{
-						con=0.0;
-					}
-				}else{
-					con=0.0;
-				}
-			}
-
-
-            Coordinates3D<double> coords(ptVec[0],ptVec[1],0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
-			for (int idx=0 ; idx<4 ; ++idx){
-			  Coordinates3D<double> cartesianVertex=cartesianVertices[idx]+coords;
- 			 _pointsArray->InsertNextPoint(cartesianVertex.x,cartesianVertex.y,0.0);
-			}
-
-			pc+=4;
-			vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
-			_cartesianCellsArray->InsertCellPoint(pc-4);
-			_cartesianCellsArray->InsertCellPoint(pc-3);
-			_cartesianCellsArray->InsertCellPoint(pc-2);
-			_cartesianCellsArray->InsertCellPoint(pc-1);
-
-			conArray->InsertNextValue( con);
-			++offset;
-		}
-		return true;
+            ++offset;
+        }
+    return true;
 }
 
 
-bool FieldExtractor::fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	Field3D<float> *conFieldPtr=0;
-	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-	std::map<std::string,Field3D<float>*>::iterator mitr;
-	mitr=fieldMap.find(_conFieldName);
-	if(mitr!=fieldMap.end()){
-		conFieldPtr=mitr->second;
-	}
+bool FieldExtractor::fillScalarFieldCellLevelData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,
+                                                             vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+                                                             vtk_obj_addr_int_t _pointsArrayAddr,
+                                                             std::string _conFieldName, std::string _plane, int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    vtkCellArray *_cartesianCellsArray = (vtkCellArray *) _cartesianCellsArrayAddr;
+    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
 
-	if(!conFieldPtr)
-		return false;
+    FieldStorage::scalarFieldCellLevel_t *conFieldPtr = fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
+
+    if (!conFieldPtr)
+        return false;
+
+    FieldStorage::scalarFieldCellLevel_t::iterator mitr;
+
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
+
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
 
 
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
+    int offset = 0;
 
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
+    Point3D pt;
+    vector<int> ptVec(3, 0);
 
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
+    CellG *cell;
+    double con;
+    long pc = 0;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
 
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
+    for (int j = 0; j < dim[1]; ++j)
+        for (int i = 0; i < dim[0]; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            cell = cellFieldG->get(pt);
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                if (cell) {
+                    mitr = conFieldPtr->find(cell);
+                    if (mitr != conFieldPtr->end()) {
+                        con = mitr->second;
+                    } else {
+                        con = 0.0;
+                    }
+                } else {
+                    con = 0.0;
+                }
+            }
 
 
-	conArray->SetNumberOfValues((dim[1]+2)*(dim[0]+1));
-	//For some reasons the points x=0 are eaten up (don't know why).
-	//So we just populate concentration 0.0.
-	int offset=0;
-	for (int i = 0 ; i< dim[0]+1 ;++i){
-		conArray->SetValue(offset, 0.0);
-		++offset;
-	}
+            Coordinates3D<double> coords(ptVec[0], ptVec[1],
+                                         0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
+            for (int idx = 0; idx < 4; ++idx) {
+                Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
+                _pointsArray->InsertNextPoint(cartesianVertex.x, cartesianVertex.y, 0.0);
+            }
 
-	Point3D pt;
-	vector<int> ptVec(3,0);
+            pc += 4;
+            vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
+            _cartesianCellsArray->InsertCellPoint(pc - 4);
+            _cartesianCellsArray->InsertCellPoint(pc - 3);
+            _cartesianCellsArray->InsertCellPoint(pc - 2);
+            _cartesianCellsArray->InsertCellPoint(pc - 1);
 
-	double con;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1]+1 ; ++j)
-		for(int i =0 ; i<dim[0]+1 ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
-
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
-
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				con = conFieldPtr->get(pt);
-			}
-
-			conArray->SetValue(offset, con);
-			++offset;
-		}
-		return true;
+            conArray->InsertNextValue(con);
+            ++offset;
+        }
+    return true;
 }
 
 
-bool FieldExtractor::fillScalarFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_conFieldName);
+bool FieldExtractor::fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr, std::string _conFieldName, std::string _plane,
+                                        int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    Field3D<float> *conFieldPtr = 0;
+    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
+    std::map<std::string, Field3D<float> *>::iterator mitr;
+    mitr = fieldMap.find(_conFieldName);
+    if (mitr != fieldMap.end()) {
+        conFieldPtr = mitr->second;
+    }
 
-	if(!conFieldPtr)
-		return false;
-
-
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
-
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
-
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
-
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
+    if (!conFieldPtr)
+        return false;
 
 
-	conArray->SetNumberOfValues((dim[1]+2)*(dim[0]+1));
-	//For some reasons the points x=0 are eaten up (don't know why).
-	//So we just populate concentration 0.0.
-	int offset=0;
-	for (int i = 0 ; i< dim[0]+1 ;++i){
-		conArray->SetValue(offset, 0.0);
-		++offset;
-	}
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
 
-	Point3D pt;
-	vector<int> ptVec(3,0);
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
 
-	double con;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1]+1 ; ++j)
-		for(int i =0 ; i<dim[0]+1 ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
 
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
 
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
-				con = (*conFieldPtr)[pt.x][pt.y][pt.z];
-			}
-			conArray->SetValue(offset, con);
-			++offset;
-		}
-		return true;
+
+    conArray->SetNumberOfValues((dim[1] + 2) * (dim[0] + 1));
+    //For some reasons the points x=0 are eaten up (don't know why).
+    //So we just populate concentration 0.0.
+    int offset = 0;
+    for (int i = 0; i < dim[0] + 1; ++i) {
+        conArray->SetValue(offset, 0.0);
+        ++offset;
+    }
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+
+    double con;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    for (int j = 0; j < dim[1] + 1; ++j)
+        for (int i = 0; i < dim[0] + 1; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                con = conFieldPtr->get(pt);
+            }
+
+            conArray->SetValue(offset, con);
+            ++offset;
+        }
+    return true;
 }
 
-bool FieldExtractor::fillScalarFieldCellLevelData2D(vtk_obj_addr_int_t _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	FieldStorage::scalarFieldCellLevel_t * conFieldPtr=fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
 
-	if(!conFieldPtr)
-		return false;
+bool
+FieldExtractor::fillScalarFieldData2D(vtk_obj_addr_int_t _conArrayAddr, std::string _conFieldName, std::string _plane,
+                                      int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(_conFieldName);
 
-	FieldStorage::scalarFieldCellLevel_t::iterator mitr;
+    if (!conFieldPtr)
+        return false;
 
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
 
-	vector<int> fieldDimVec(3,0);
-	fieldDimVec[0]=fieldDim.x;
-	fieldDimVec[1]=fieldDim.y;
-	fieldDimVec[2]=fieldDim.z;
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
 
-	vector<int> pointOrderVec=pointOrder(_plane);
-	vector<int> dimOrderVec=dimOrder(_plane);
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
 
-	vector<int> dim(3,0);
-	dim[0]=fieldDimVec[dimOrderVec[0]];
-	dim[1]=fieldDimVec[dimOrderVec[1]];
-	dim[2]=fieldDimVec[dimOrderVec[2]];
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
 
-	conArray->SetNumberOfValues((dim[1]+2)*(dim[0]+1));
-	//For some reasons the points x=0 are eaten up (don't know why).
-	//So we just populate concentration 0.0.
-	int offset=0;
-	for (int i = 0 ; i< dim[0]+1 ;++i){
-		conArray->SetValue(offset, 0.0);
-		++offset;
-	}
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
 
-	Point3D pt;
-	vector<int> ptVec(3,0);
-	CellG* cell;
 
-	double con;
-	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-	for(int j =0 ; j<dim[1]+1 ; ++j)
-		for(int i =0 ; i<dim[0]+1 ; ++i){
-			ptVec[0]=i;
-			ptVec[1]=j;
-			ptVec[2]=_pos;
+    conArray->SetNumberOfValues((dim[1] + 2) * (dim[0] + 1));
+    //For some reasons the points x=0 are eaten up (don't know why).
+    //So we just populate concentration 0.0.
+    int offset = 0;
+    for (int i = 0; i < dim[0] + 1; ++i) {
+        conArray->SetValue(offset, 0.0);
+        ++offset;
+    }
 
-			pt.x=ptVec[pointOrderVec[0]];
-			pt.y=ptVec[pointOrderVec[1]];
-			pt.z=ptVec[pointOrderVec[2]];
+    Point3D pt;
+    vector<int> ptVec(3, 0);
 
-			cell=cellFieldG->get(pt);
-			if (i==dim[0] || j==dim[1]){
-				con=0.0;
-			}else{
+    double con;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    for (int j = 0; j < dim[1] + 1; ++j)
+        for (int i = 0; i < dim[0] + 1; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
 
-				if(cell){
-					mitr=conFieldPtr->find(cell);
-					if(mitr!=conFieldPtr->end()){
-						con=mitr->second;
-					}else{
-						con=0.0;
-					}
-				}else{
-					con=0.0;
-				}
-			}
-			conArray->SetValue(offset, con);
-			++offset;
-		}
-		return true;
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+                con = (*conFieldPtr)[pt.x][pt.y][pt.z];
+            }
+            conArray->SetValue(offset, con);
+            ++offset;
+        }
+    return true;
+}
+
+bool FieldExtractor::fillScalarFieldCellLevelData2D(vtk_obj_addr_int_t _conArrayAddr, std::string _conFieldName,
+                                                    std::string _plane, int _pos) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    FieldStorage::scalarFieldCellLevel_t *conFieldPtr = fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
+
+    if (!conFieldPtr)
+        return false;
+
+    FieldStorage::scalarFieldCellLevel_t::iterator mitr;
+
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+    vector<int> pointOrderVec = pointOrder(_plane);
+    vector<int> dimOrderVec = dimOrder(_plane);
+
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
+
+    conArray->SetNumberOfValues((dim[1] + 2) * (dim[0] + 1));
+    //For some reasons the points x=0 are eaten up (don't know why).
+    //So we just populate concentration 0.0.
+    int offset = 0;
+    for (int i = 0; i < dim[0] + 1; ++i) {
+        conArray->SetValue(offset, 0.0);
+        ++offset;
+    }
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+    CellG *cell;
+
+    double con;
+    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    for (int j = 0; j < dim[1] + 1; ++j)
+        for (int i = 0; i < dim[0] + 1; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            cell = cellFieldG->get(pt);
+            if (i == dim[0] || j == dim[1]) {
+                con = 0.0;
+            } else {
+
+                if (cell) {
+                    mitr = conFieldPtr->find(cell);
+                    if (mitr != conFieldPtr->end()) {
+                        con = mitr->second;
+                    } else {
+                        con = 0.0;
+                    }
+                } else {
+                    con = 0.0;
+                }
+            }
+            conArray->SetValue(offset, con);
+            ++offset;
+        }
+    return true;
 }
 
 
@@ -2932,207 +2974,879 @@ FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_o
     return vector<int>(usedCellTypes.begin(), usedCellTypes.end());
 }
 
-bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec){
-    vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-    vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
+void FieldExtractor::fillCellFieldGlyphs2D(
+        vtk_obj_addr_int_t centroids_array_addr,
+        vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+        vtk_obj_addr_int_t cell_type_array_addr,
+        std::string plane, int pos){
 
-    Field3D<float> *conFieldPtr=0;
-    std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-    std::map<std::string,Field3D<float>*>::iterator mitr;
-    mitr=fieldMap.find(_conFieldName);
-    if(mitr!=fieldMap.end()){
-        conFieldPtr=mitr->second;
-    }
+    // cell_id to cell type map
+    unordered_map<long, int> cell_id_to_cell_type;
 
-    if(!conFieldPtr)
-        return false;
+    unordered_map<long, list<int> > cell_id_to_coords_0;
+    unordered_map<long, list<int> > cell_id_to_coords_1;
 
-    Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-    Dim3D fieldDim=cellFieldG->getDim();
 
-    conArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
-    cellTypeArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
+    vtkPoints *centroids_array = (vtkPoints *) centroids_array_addr;
+    vtkIntArray *cell_type_array = (vtkIntArray *) cell_type_array_addr;
+    vtkFloatArray *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
 
-    set<int> invisibleTypeSet(_typesInvisibeVec->begin(),_typesInvisibeVec->end());
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
 
-    for (set<int>::iterator sitr=invisibleTypeSet.begin();sitr!=invisibleTypeSet.end();++sitr){
-        cerr<<"invisible type="<<*sitr<<endl;
-    }
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+    vector<int> pointOrderVec = pointOrder(plane);
+    vector<int> dimOrderVec = dimOrder(plane);
+
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
 
     Point3D pt;
+    vector<int> ptVec(3, 0);
     CellG *cell;
-    double con;
     int type;
-    int offset=0;
-    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-    for(int k =0 ; k<fieldDim.z+2 ; ++k)
-        for(int j =0 ; j<fieldDim.y+2 ; ++j)
-            for(int i =0 ; i<fieldDim.x+2 ; ++i){
-                if(i==0 || i==fieldDim.x+1 ||j==0 || j==fieldDim.y+1 || k==0 || k==fieldDim.z+1){
-                    conArray->InsertValue(offset, 0.0);
-                    cellTypeArray->InsertValue(offset, 0);
-                    ++offset;
-                }else{
-                    pt.x=i-1;
-                    pt.y=j-1;
-                    pt.z=k-1;
-                    con=conFieldPtr->get(pt);
-                    cell=cellFieldG->get(pt);
-                    if(cell)
-                        if(invisibleTypeSet.find(cell->type)!=invisibleTypeSet.end()){
-                            type=0;
-                        }
-                        else{
-                            type=cell->type;
-                        }
-                    else{
-                        type=0;
-                    }
-                    conArray->InsertValue(offset, con);
-                    cellTypeArray->InsertValue(offset, type);
-                    ++offset;
+
+    for (int j = 0; j < dim[1] + 1; ++j)
+        for (int i = 0; i < dim[0] + 1; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            cell = cellFieldG->get(pt);
+            if (!cell) {
+                continue;
+            } else {
+                type = cell->type;
+            }
+            cell_id_to_cell_type[cell->id] = cell->type;
+            cell_id_to_coords_0[cell->id].push_back(i);
+            cell_id_to_coords_1[cell->id].push_back(j);
+        }
+
+    for(const auto& cell_id_type_pair: cell_id_to_cell_type){
+        long cell_id = cell_id_type_pair.first;
+        int cell_type = cell_id_type_pair.second;
+        const auto & coords_0 = cell_id_to_coords_0[cell_id];
+        const auto & coords_1 = cell_id_to_coords_1[cell_id];
+        auto vol = coords_0.size()*1.0;
+        // in 2D we assume cell-glyph is a sphere
+        // so : vol = math.pi*r**2 => r = sqrt(1/math.pi)*sqrt(vol) = 0.564*sqrt(vol)
+
+        vol_scaling_factors_array->InsertNextValue(0.564*pow(vol,0.5));
+        cell_type_array->InsertNextValue(cell_type);
+        centroids_array->InsertNextPoint(centroid(coords_0), centroid(coords_1), 0.0);
+
+
+
+    }
+
+}
+
+
+
+std::vector<int> FieldExtractor::fillCellFieldGlyphs3D(vtk_obj_addr_int_t centroids_array_addr,
+                                                       vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                       vtk_obj_addr_int_t cell_type_array_addr,
+                                                       std::vector<int> *types_invisibe_vec,
+                                                       bool extractOuterShellOnly) {
+
+    vtkPoints *centroids_array = (vtkPoints *) centroids_array_addr;
+    vtkIntArray *cell_type_array = (vtkIntArray *) cell_type_array_addr;
+    vtkFloatArray *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+
+    unordered_set<int> invisible_types(types_invisibe_vec->begin(), types_invisibe_vec->end());
+
+    unordered_set<int> used_cell_types;
+    CellInventory &cellInventory = potts->getCellInventory();
+    CellInventory::cellInventoryIterator cInvItr;
+    CellG *cell;
+    for (cInvItr = cellInventory.cellInventoryBegin(); cInvItr != cellInventory.cellInventoryEnd(); ++cInvItr) {
+        cell = cellInventory.getCell(cInvItr);
+
+        if (invisible_types.find((int)cell->type) != invisible_types.end()) continue;
+
+        centroids_array->InsertNextPoint(cell->xCOM, cell->yCOM, cell->zCOM);
+        cell_type_array->InsertNextValue(cell->type);
+        used_cell_types.insert((int)cell->type);
+
+//         v = 4/3*pi*r**3 => r = (3/(4*math.pi))**3 * v**0.333 => scaling factor (3/(4*math.pi))**0.333 = 0.62
+        vol_scaling_factors_array->InsertNextValue(0.62*pow(cell->volume, 0.333));
+
+    }
+
+    return std::vector<int>(used_cell_types.begin(), used_cell_types.end());
+}
+
+
+
+
+
+
+
+
+bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
+                                        std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
+                                        bool type_indicator_only
+) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    vtkIntArray *cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
+
+
+    type_fcn_ptr = &FieldExtractor::type_value;
+    if (type_indicator_only) {
+        type_fcn_ptr = &FieldExtractor::type_indicator;
+    }
+
+    Field3D<float> *conFieldPtr = 0;
+    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
+    std::map<std::string, Field3D<float> *>::iterator mitr;
+    mitr = fieldMap.find(_conFieldName);
+    if (mitr != fieldMap.end()) {
+        conFieldPtr = mitr->second;
+    }
+
+    if (!conFieldPtr)
+        return false;
+
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+    set<int> invisibleTypeSet;
+
+#pragma omp parallel shared(invisibleTypeSet, conArray, cellTypeArray, conFieldPtr, cellFieldG)
+    {
+#pragma omp sections
+        {
+#pragma omp section
+            {
+                conArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
+            }
+#pragma omp section
+            {
+                cellTypeArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
+            }
+#pragma omp section
+            {
+                for (std::vector<int>::iterator it = _typesInvisibeVec->begin(); it != _typesInvisibeVec->end(); ++it) {
+                    invisibleTypeSet.insert(*it);
                 }
             }
+        }
+
+        Point3D pt;
+        CellG *cell;
+        double con;
+        int type;
+        //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+#pragma omp for schedule(static)
+        for (int k = 0; k < fieldDim.z + 2; ++k) {
+            int k_offset = k * (fieldDim.y + 2) * (fieldDim.x + 2);
+            for (int j = 0; j < fieldDim.y + 2; ++j) {
+                int j_offset = j * (fieldDim.x + 2);
+                for (int i = 0; i < fieldDim.x + 2; ++i) {
+                    int offset = k_offset + j_offset + i;
+                    if (i == 0 || i == fieldDim.x + 1 || j == 0 || j == fieldDim.y + 1 || k == 0 ||
+                        k == fieldDim.z + 1) {
+                        conArray->SetValue(offset, 0.0);
+                        cellTypeArray->SetValue(offset, 0);
+                    } else {
+                        pt.x = i - 1;
+                        pt.y = j - 1;
+                        pt.z = k - 1;
+                        con = conFieldPtr->get(pt);
+                        cell = cellFieldG->get(pt);
+                        if (cell)
+                            if (invisibleTypeSet.find(cell->type) != invisibleTypeSet.end()) {
+                                type = 0;
+                            } else {
+//                                type = cell->type;
+                                type = (this->*type_fcn_ptr)(cell->type);
+                            }
+                        else {
+                            type = 0;
+                        }
+                        conArray->SetValue(offset, con);
+                        cellTypeArray->SetValue(offset, type);
+                    }
+                }
+            }
+        }
+    }
+    pUtils->setNumberOfWorkNodesAuto(1);
     return true;
 }
 
 // rwh: leave this function in until we determine we really don't want to add a boundary layer
-bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec){
+bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
+                                           std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
+                                           bool type_indicator_only
+) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    vtkIntArray *cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
+    FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(_conFieldName);
 
-    vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-    vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
-    FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_conFieldName);
-
-    if(!conFieldPtr)
+    if (!conFieldPtr)
         return false;
 
+    type_fcn_ptr = &FieldExtractor::type_value;
+    if (type_indicator_only) {
+        type_fcn_ptr = &FieldExtractor::type_indicator;
+    }
 
-    Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-    Dim3D fieldDim=cellFieldG->getDim();
-
-    conArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
-    cellTypeArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
-
-    set<int> invisibleTypeSet(_typesInvisibeVec->begin(),_typesInvisibeVec->end());
-
-    //for (set<int>::iterator sitr=invisibleTypeSet.begin();sitr!=invisibleTypeSet.end();++sitr){
-    //	cerr<<"invisible type="<<*sitr<<endl;
-    //}
-
-    Point3D pt;
-    CellG *cell;
-    double con;
-    int type;
-    int offset=0;
-    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-    for(int k =0 ; k<fieldDim.z+2 ; ++k)
-        for(int j =0 ; j<fieldDim.y+2 ; ++j)
-            for(int i =0 ; i<fieldDim.x+2 ; ++i){
-                if(i==0 || i==fieldDim.x+1 ||j==0 || j==fieldDim.y+1 || k==0 || k==fieldDim.z+1){
-                    conArray->InsertValue(offset, 0.0);
-                    cellTypeArray->InsertValue(offset, 0);
-                    ++offset;
-                }else{
-                    pt.x=i-1;
-                    pt.y=j-1;
-                    pt.z=k-1;
-                    con=(*conFieldPtr)[pt.x][pt.y][pt.z];
-                    cell=cellFieldG->get(pt);
-                    if(cell)
-                        if(invisibleTypeSet.find(cell->type)!=invisibleTypeSet.end()){
-                            type=0;
-                        }
-                        else{
-                            type=cell->type;
-                        }
-                    else{
-                        type=0;
-                    }
-                    conArray->InsertValue(offset, con);
-                    cellTypeArray->InsertValue(offset, type);
-                    ++offset;
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+    set<int> invisibleTypeSet;
+    pUtils->setNumberOfWorkNodesAuto();
+#pragma omp parallel shared(invisibleTypeSet, conArray, cellTypeArray, conFieldPtr, cellFieldG)
+    {
+#pragma omp sections
+        {
+#pragma omp section
+            {
+                conArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
+            }
+#pragma omp section
+            {
+                cellTypeArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
+            }
+#pragma omp section
+            {
+                for (std::vector<int>::iterator it = _typesInvisibeVec->begin(); it != _typesInvisibeVec->end(); ++it) {
+                    invisibleTypeSet.insert(*it);
                 }
             }
+        }
+        Point3D pt;
+        CellG *cell;
+        double con;
+        int type;
+        // when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+#pragma omp for schedule(static)
+        for (int k = 0; k < fieldDim.z + 2; ++k) {
+            int k_offset = k * (fieldDim.y + 2) * (fieldDim.x + 2);
+            for (int j = 0; j < fieldDim.y + 2; ++j) {
+                int j_offset = j * (fieldDim.x + 2);
+                for (int i = 0; i < fieldDim.x + 2; ++i) {
+                    int offset = k_offset + j_offset + i;
+                    if (i == 0 || i == fieldDim.x + 1 || j == 0 || j == fieldDim.y + 1 || k == 0 ||
+                        k == fieldDim.z + 1) {
+                        conArray->SetValue(offset, 0.0);
+                        cellTypeArray->SetValue(offset, 0);
+                    } else {
+                        pt.x = i - 1;
+                        pt.y = j - 1;
+                        pt.z = k - 1;
+                        con = (*conFieldPtr)[pt.x][pt.y][pt.z];
+                        cell = cellFieldG->get(pt);
+                        if (cell)
+                            if (invisibleTypeSet.find(cell->type) != invisibleTypeSet.end()) {
+                                type = 0;
+                            } else {
+//                                type = cell->type;
+                                type = (this->*type_fcn_ptr)(cell->type);
+                            }
+                        else {
+                            type = 0;
+                        }
+                        conArray->SetValue(offset, con);
+                        cellTypeArray->SetValue(offset, type);
+                    }
+                }
+            }
+        }
+    }
+    pUtils->setNumberOfWorkNodesAuto(1);
     return true;
 }
 
 
-
-bool FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec){
-
-    vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-    vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
-    FieldStorage::scalarFieldCellLevel_t * conFieldPtr=fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
+bool
+FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
+                                               std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
+                                               bool type_indicator_only) {
+    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
+    vtkIntArray *cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
+    FieldStorage::scalarFieldCellLevel_t *conFieldPtr = fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName);
 
     FieldStorage::scalarFieldCellLevel_t::iterator mitr;
 
-    if(!conFieldPtr)
+    if (!conFieldPtr)
         return false;
 
-    Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-    Dim3D fieldDim=cellFieldG->getDim();
+    type_fcn_ptr = &FieldExtractor::type_value;
+    if (type_indicator_only) {
+        type_fcn_ptr = &FieldExtractor::type_indicator;
+    }
 
-    conArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
-    cellTypeArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
 
-    set<int> invisibleTypeSet(_typesInvisibeVec->begin(),_typesInvisibeVec->end());
-
-    //for (set<int>::iterator sitr=invisibleTypeSet.begin();sitr!=invisibleTypeSet.end();++sitr){
-    //	cerr<<"invisible type="<<*sitr<<endl;
-    //}
-
-    Point3D pt;
-    CellG *cell;
-    double con;
-    int type;
-    int offset=0;
-    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-    for(int k =0 ; k<fieldDim.z+2 ; ++k)
-        for(int j =0 ; j<fieldDim.y+2 ; ++j)
-            for(int i =0 ; i<fieldDim.x+2 ; ++i){
-                if(i==0 || i==fieldDim.x+1 ||j==0 || j==fieldDim.y+1 || k==0 || k==fieldDim.z+1){
-                    conArray->InsertValue(offset, 0.0);
-                    cellTypeArray->InsertValue(offset, 0);
-                    ++offset;
-                }else{
-                    pt.x=i-1;
-                    pt.y=j-1;
-                    pt.z=k-1;
-
-                    cell=cellFieldG->get(pt);
-
-                    if(cell){
-                        mitr=conFieldPtr->find(cell);
-                        if(mitr!=conFieldPtr->end()){
-                            type=cell->type;
-                            con=mitr->second;
-                        }else{
-                            type=cell->type;
-                            con=0.0;
-                        }
-                    }else{
-                        type=0;
-                        con=0.0;
-                    }
-                    conArray->InsertValue(offset, con);
-                    cellTypeArray->InsertValue(offset, type);
-                    ++offset;
+    conArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
+    cellTypeArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
+    set<int> invisibleTypeSet;
+    pUtils->setNumberOfWorkNodesAuto();
+#pragma omp parallel shared(invisibleTypeSet, conArray, cellTypeArray, conFieldPtr, cellFieldG)
+    {
+#pragma omp sections
+        {
+#pragma omp section
+            {
+                conArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
+            }
+#pragma omp section
+            {
+                cellTypeArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
+            }
+#pragma omp section
+            {
+                for (std::vector<int>::iterator it = _typesInvisibeVec->begin(); it != _typesInvisibeVec->end(); ++it) {
+                    invisibleTypeSet.insert(*it);
                 }
             }
+        }
+        Point3D pt;
+        CellG *cell;
+        double con;
+        int type;
+        // when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+#pragma omp for schedule(static)
+        for (int k = 0; k < fieldDim.z + 2; ++k) {
+            int k_offset = k * (fieldDim.y + 2) * (fieldDim.x + 2);
+            for (int j = 0; j < fieldDim.y + 2; ++j) {
+                int j_offset = j * (fieldDim.x + 2);
+                for (int i = 0; i < fieldDim.x + 2; ++i) {
+                    int offset = k_offset + j_offset + i;
+                    if (i == 0 || i == fieldDim.x + 1 || j == 0 || j == fieldDim.y + 1 || k == 0 ||
+                        k == fieldDim.z + 1) {
+                        conArray->SetValue(offset, 0.0);
+                        cellTypeArray->SetValue(offset, 0);
+                    } else {
+                        pt.x = i - 1;
+                        pt.y = j - 1;
+                        pt.z = k - 1;
+
+                        cell = cellFieldG->get(pt);
+
+                        if (cell) {
+                            mitr = conFieldPtr->find(cell);
+                            if (mitr != conFieldPtr->end()) {
+//                                type = cell->type;
+                                type = (this->*type_fcn_ptr)(cell->type);
+                                con = mitr->second;
+                            } else {
+//                                type = cell->type;
+                                type = (this->*type_fcn_ptr)(cell->type);
+                                con = 0.0;
+                            }
+                        } else {
+                            type = 0;
+                            con = 0.0;
+                        }
+                        conArray->SetValue(offset, con);
+                        cellTypeArray->SetValue(offset, type);
+                    }
+                }
+            }
+        }
+    }
+    pUtils->setNumberOfWorkNodesAuto(1);
     return true;
+}
+
+std::vector<int> FieldExtractor::fillScalarFieldGlyphs3D(std::string con_field_name,
+                                     vtk_obj_addr_int_t centroids_array_addr,
+                                     vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                     vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                     std::vector<int> *types_invisibe_vec,
+                                     bool extractOuterShellOnly){
+
+    FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(con_field_name);
+
+    if (!conFieldPtr)
+        return {};
+
+
+    auto *centroids_array = (vtkPoints *) centroids_array_addr;
+    auto *scalar_value_at_com_array = (vtkFloatArray *) scalar_value_at_com_addr;
+    auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+
+    unordered_set<int> invisible_types(types_invisibe_vec->begin(), types_invisibe_vec->end());
+
+    unordered_set<int> used_cell_types;
+    CellInventory &cellInventory = potts->getCellInventory();
+    CellInventory::cellInventoryIterator cInvItr;
+    CellG *cell;
+    double con;
+    for (cInvItr = cellInventory.cellInventoryBegin(); cInvItr != cellInventory.cellInventoryEnd(); ++cInvItr) {
+        cell = cellInventory.getCell(cInvItr);
+
+        if (invisible_types.find((int)cell->type) != invisible_types.end()) continue;
+
+        centroids_array->InsertNextPoint(cell->xCOM, cell->yCOM, cell->zCOM);
+
+        con = (*conFieldPtr)[(int)round(cell->xCOM)][(int)round(cell->yCOM)][(int)round(cell->zCOM)];
+        scalar_value_at_com_array->InsertNextValue(con);
+        used_cell_types.insert((int)cell->type);
+
+//         v = 4/3*pi*r**3 => r = (3/(4*math.pi))**3 * v**0.333 => scaling factor (3/(4*math.pi))**0.333 = 0.62
+        vol_scaling_factors_array->InsertNextValue(0.62*pow(cell->volume, 0.333));
+
+    }
+
+    return {used_cell_types.begin(), used_cell_types.end()};
+
+}
+
+std::vector<int> FieldExtractor::fillScalarFieldCellLevelGlyphs3D(std::string con_field_name,
+                                                          vtk_obj_addr_int_t centroids_array_addr,
+                                                          vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                          vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                                          std::vector<int> *types_invisibe_vec,
+                                                          bool extractOuterShellOnly){
+
+
+    FieldStorage::scalarFieldCellLevel_t *conFieldPtr = fsPtr->getScalarFieldCellLevelFieldByName(con_field_name);
+
+    FieldStorage::scalarFieldCellLevel_t::iterator mitr;
+
+    if (!conFieldPtr)
+        return {};
+
+    auto *centroids_array = (vtkPoints *) centroids_array_addr;
+    auto *scalar_value_at_com_array = (vtkFloatArray *) scalar_value_at_com_addr;
+    auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+
+
+    unordered_set<int> invisible_types(types_invisibe_vec->begin(), types_invisibe_vec->end());
+
+    unordered_set<int> used_cell_types;
+    CellInventory &cellInventory = potts->getCellInventory();
+    CellInventory::cellInventoryIterator cInvItr;
+    CellG *cell;
+    double con;
+
+
+    for (cInvItr = cellInventory.cellInventoryBegin(); cInvItr != cellInventory.cellInventoryEnd(); ++cInvItr) {
+        cell = cellInventory.getCell(cInvItr);
+
+        if (invisible_types.find((int)cell->type) != invisible_types.end()) continue;
+
+        mitr = conFieldPtr->find(cell);
+        if (mitr != conFieldPtr->end()) {
+            con = mitr->second;
+        } else {
+            continue;
+        }
+
+        centroids_array->InsertNextPoint(cell->xCOM, cell->yCOM, cell->zCOM);
+        scalar_value_at_com_array->InsertNextValue(con);
+
+        used_cell_types.insert((int)cell->type);
+
+//         v = 4/3*pi*r**3 => r = (3/(4*math.pi))**3 * v**0.333 => scaling factor (3/(4*math.pi))**0.333 = 0.62
+        vol_scaling_factors_array->InsertNextValue(0.62*pow(cell->volume, 0.333));
+
+    }
+
+    return {used_cell_types.begin(), used_cell_types.end()};
+
+}
+
+std::vector<int> FieldExtractor::fillConFieldGlyphs3D(std::string con_field_name,
+                                              vtk_obj_addr_int_t centroids_array_addr,
+                                              vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                              vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                              std::vector<int> *types_invisibe_vec,
+                                              bool extractOuterShellOnly){
+
+    Field3D<float> *conFieldPtr = nullptr;
+    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
+    std::map<std::string, Field3D<float> *>::iterator mitr;
+    mitr = fieldMap.find(con_field_name);
+    if (mitr != fieldMap.end()) {
+        conFieldPtr = mitr->second;
+    }
+
+    if (!conFieldPtr)
+        return {};
+
+    auto *centroids_array = (vtkPoints *) centroids_array_addr;
+    auto *scalar_value_at_com_array = (vtkFloatArray *) scalar_value_at_com_addr;
+    auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+
+    unordered_set<int> invisible_types(types_invisibe_vec->begin(), types_invisibe_vec->end());
+
+    unordered_set<int> used_cell_types;
+    CellInventory &cellInventory = potts->getCellInventory();
+    CellInventory::cellInventoryIterator cInvItr;
+    CellG *cell;
+    double con;
+    Point3D pt;
+
+
+    for (cInvItr = cellInventory.cellInventoryBegin(); cInvItr != cellInventory.cellInventoryEnd(); ++cInvItr) {
+        cell = cellInventory.getCell(cInvItr);
+
+        if (invisible_types.find((int)cell->type) != invisible_types.end()) continue;
+
+        centroids_array->InsertNextPoint(cell->xCOM, cell->yCOM, cell->zCOM);
+
+        pt.x = (short)round(cell->xCOM);
+        pt.y = (short)round(cell->yCOM);
+        pt.z = (short)round(cell->zCOM);
+
+        con = conFieldPtr->get(pt);
+
+
+        scalar_value_at_com_array->InsertNextValue((float)con);
+
+        used_cell_types.insert((int)cell->type);
+
+//         v = 4/3*pi*r**3 => r = (3/(4*math.pi))**3 * v**0.333 => scaling factor (3/(4*math.pi))**0.333 = 0.62
+        vol_scaling_factors_array->InsertNextValue(0.62*pow(cell->volume, 0.333));
+
+    }
+
+    return {used_cell_types.begin(), used_cell_types.end()};
+
+}
+
+void FieldExtractor::fillConFieldGlyphs2D(
+        std::string con_field_name,
+        vtk_obj_addr_int_t centroids_array_addr,
+        vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+        vtk_obj_addr_int_t scalar_value_at_com_addr,
+        std::string plane, int pos){
+
+    Field3D<float> *conFieldPtr = nullptr;
+    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
+    std::map<std::string, Field3D<float> *>::iterator mitr;
+    mitr = fieldMap.find(con_field_name);
+    if (mitr != fieldMap.end()) {
+        conFieldPtr = mitr->second;
+    }
+
+    if (!conFieldPtr)
+        return ;
+
+    auto *centroids_array = (vtkPoints *) centroids_array_addr;
+    auto *scalar_value_at_com_array = (vtkFloatArray *) scalar_value_at_com_addr;
+    auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+
+
+    // computing centroids of cells in a 2D projection
+    // cell_id to cell type map
+    unordered_map<long, int> cell_id_to_cell_type;
+    unordered_map<long, list<int> > cell_id_to_coords_0;
+    unordered_map<long, list<int> > cell_id_to_coords_1;
+
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+    vector<int> pointOrderVec = pointOrder(plane);
+    vector<int> dimOrderVec = dimOrder(plane);
+
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+    CellG *cell;
+    int type;
+
+    for (int j = 0; j < dim[1] + 1; ++j)
+        for (int i = 0; i < dim[0] + 1; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            cell = cellFieldG->get(pt);
+            if (!cell) {
+                continue;
+            } else {
+                type = cell->type;
+            }
+            cell_id_to_cell_type[cell->id] = cell->type;
+            cell_id_to_coords_0[cell->id].push_back(i);
+            cell_id_to_coords_1[cell->id].push_back(j);
+        }
+
+    // holds com coordinates in the order that corresponds to a given 2D projection
+    vector<int> com(3);
+    auto to_xyz_order = permuted_order_to_xyz(plane);
+    double con;
+    for(const auto& cell_id_type_pair: cell_id_to_cell_type){
+        long cell_id = cell_id_type_pair.first;
+        int cell_type = cell_id_type_pair.second;
+        const auto & coords_0 = cell_id_to_coords_0[cell_id];
+        const auto & coords_1 = cell_id_to_coords_1[cell_id];
+        auto vol = coords_0.size()*1.0;
+        // in 2D we assume cell-glyph is a sphere
+        // so : vol = math.pi*r**2 => r = sqrt(1/math.pi)*sqrt(vol) = 0.564*sqrt(vol)
+
+        auto c0 = centroid(coords_0);
+        auto c1 = centroid(coords_1);
+        double c2 = pos;
+
+        com[0] =  round(c0);
+        com[1] =  round(c1);
+        com[2] =  round(c2);
+
+        pt.x = (short)com[to_xyz_order[0]];
+        pt.y = (short)com[to_xyz_order[1]];
+        pt.z = (short)com[to_xyz_order[2]];
+
+        con = conFieldPtr->get(pt);
+        vol_scaling_factors_array->InsertNextValue(0.564*pow(vol,0.5));
+        centroids_array->InsertNextPoint(c0, c1, 0.0);
+        scalar_value_at_com_array->InsertNextValue(con);
+
+    }
+
+
+}
+
+void FieldExtractor::fillScalarFieldGlyphs2D(
+        std::string con_field_name,
+        vtk_obj_addr_int_t centroids_array_addr,
+        vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+        vtk_obj_addr_int_t scalar_value_at_com_addr,
+        std::string plane, int pos){
+
+    FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(con_field_name);
+
+    if (!conFieldPtr)
+        return;
+
+
+    auto *centroids_array = (vtkPoints *) centroids_array_addr;
+    auto *scalar_value_at_com_array = (vtkFloatArray *) scalar_value_at_com_addr;
+    auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+
+
+    // computing centroids of cells in a 2D projection
+    // cell_id to cell type map
+    unordered_map<long, int> cell_id_to_cell_type;
+    unordered_map<long, list<int> > cell_id_to_coords_0;
+    unordered_map<long, list<int> > cell_id_to_coords_1;
+
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+    vector<int> pointOrderVec = pointOrder(plane);
+    vector<int> dimOrderVec = dimOrder(plane);
+
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+    CellG *cell;
+    int type;
+
+    for (int j = 0; j < dim[1] + 1; ++j)
+        for (int i = 0; i < dim[0] + 1; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            cell = cellFieldG->get(pt);
+            if (!cell) {
+                continue;
+            } else {
+                type = cell->type;
+            }
+            cell_id_to_cell_type[cell->id] = cell->type;
+            cell_id_to_coords_0[cell->id].push_back(i);
+            cell_id_to_coords_1[cell->id].push_back(j);
+        }
+
+    // holds com coordinates in the order that corresponds to a given 2D projection
+    vector<int> com(3);
+    auto to_xyz_order = permuted_order_to_xyz(plane);
+    double con;
+    for(const auto& cell_id_type_pair: cell_id_to_cell_type){
+        long cell_id = cell_id_type_pair.first;
+        int cell_type = cell_id_type_pair.second;
+        const auto & coords_0 = cell_id_to_coords_0[cell_id];
+        const auto & coords_1 = cell_id_to_coords_1[cell_id];
+        auto vol = coords_0.size()*1.0;
+        // in 2D we assume cell-glyph is a sphere
+        // so : vol = math.pi*r**2 => r = sqrt(1/math.pi)*sqrt(vol) = 0.564*sqrt(vol)
+
+        auto c0 = centroid(coords_0);
+        auto c1 = centroid(coords_1);
+        double c2 = pos;
+
+        com[0] =  round(c0);
+        com[1] =  round(c1);
+        com[2] =  round(c2);
+
+        pt.x = (short)com[to_xyz_order[0]];
+        pt.y = (short)com[to_xyz_order[1]];
+        pt.z = (short)com[to_xyz_order[2]];
+
+        con = (*conFieldPtr)[pt.x][pt.y][pt.z];
+        vol_scaling_factors_array->InsertNextValue(0.564*pow(vol,0.5));
+        centroids_array->InsertNextPoint(c0, c1, 0.0);
+        scalar_value_at_com_array->InsertNextValue(con);
+
+    }
+
+}
+
+void FieldExtractor::fillScalarFieldCellLevelGlyphs2D(
+        std::string con_field_name,
+        vtk_obj_addr_int_t centroids_array_addr,
+        vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+        vtk_obj_addr_int_t scalar_value_at_com_addr,
+        std::string plane, int pos){
+
+    FieldStorage::scalarFieldCellLevel_t *conFieldPtr = fsPtr->getScalarFieldCellLevelFieldByName(con_field_name);
+
+    FieldStorage::scalarFieldCellLevel_t::iterator mitr;
+
+    if (!conFieldPtr)
+        return;
+
+    auto *centroids_array = (vtkPoints *) centroids_array_addr;
+    auto *scalar_value_at_com_array = (vtkFloatArray *) scalar_value_at_com_addr;
+    auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
+
+
+    // computing centroids of cells in a 2D projection
+    // cell_id to cell type map
+    unordered_map<long, int> cell_id_to_cell_type;
+    unordered_map<long, list<int> > cell_id_to_coords_0;
+    unordered_map<long, list<int> > cell_id_to_coords_1;
+
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+
+    vector<int> fieldDimVec(3, 0);
+    fieldDimVec[0] = fieldDim.x;
+    fieldDimVec[1] = fieldDim.y;
+    fieldDimVec[2] = fieldDim.z;
+
+    vector<int> pointOrderVec = pointOrder(plane);
+    vector<int> dimOrderVec = dimOrder(plane);
+
+    vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
+
+    Point3D pt;
+    vector<int> ptVec(3, 0);
+    CellG *cell;
+    int type;
+
+    for (int j = 0; j < dim[1] + 1; ++j)
+        for (int i = 0; i < dim[0] + 1; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            cell = cellFieldG->get(pt);
+            if (!cell) {
+                continue;
+            } else {
+                type = cell->type;
+            }
+            cell_id_to_cell_type[cell->id] = cell->type;
+            cell_id_to_coords_0[cell->id].push_back(i);
+            cell_id_to_coords_1[cell->id].push_back(j);
+        }
+
+    // holds com coordinates in the order that corresponds to a given 2D projection
+    vector<int> com(3);
+    auto to_xyz_order = permuted_order_to_xyz(plane);
+    double con;
+    for(const auto& cell_id_type_pair: cell_id_to_cell_type){
+        long cell_id = cell_id_type_pair.first;
+        int cell_type = cell_id_type_pair.second;
+        const auto & coords_0 = cell_id_to_coords_0[cell_id];
+        const auto & coords_1 = cell_id_to_coords_1[cell_id];
+        auto vol = coords_0.size()*1.0;
+        // in 2D we assume cell-glyph is a sphere
+        // so : vol = math.pi*r**2 => r = sqrt(1/math.pi)*sqrt(vol) = 0.564*sqrt(vol)
+
+        auto c0 = centroid(coords_0);
+        auto c1 = centroid(coords_1);
+        double c2 = pos;
+
+        com[0] =  round(c0);
+        com[1] =  round(c1);
+        com[2] =  round(c2);
+
+        pt.x = (short)com[to_xyz_order[0]];
+        pt.y = (short)com[to_xyz_order[1]];
+        pt.z = (short)com[to_xyz_order[2]];
+
+        auto cell_at_2d_com = cellFieldG->get(pt);
+        if (cell_at_2d_com == nullptr) continue;
+
+        mitr = conFieldPtr->find(cell_at_2d_com);
+        if (mitr != conFieldPtr->end()) {
+            con = mitr->second;
+        } else {
+            continue;
+        }
+
+        vol_scaling_factors_array->InsertNextValue(0.564*pow(vol,0.5));
+        centroids_array->InsertNextPoint(c0, c1, 0.0);
+        scalar_value_at_com_array->InsertNextValue(con);
+
+    }
+
 }
 
 
 void FieldExtractor::setVtkObj(void *_vtkObj) {
-    cerr << "INSIDE setVtkObj" << endl;
+    CC3D_Log(LOG_DEBUG) << "INSIDE setVtkObj" << endl;
 }
 
 void FieldExtractor::setVtkObjInt(long _vtkObjAddr) {
     void *vPtr = (void *) _vtkObjAddr;
-    cerr << "GOT THIS VOID ADDR " << vPtr << endl;
+    CC3D_Log(LOG_DEBUG) << "GOT THIS VOID ADDR " << vPtr << endl;
     vtkIntArray *arrayPtr = (vtkIntArray *) vPtr;
     arrayPtr->SetName("INTEGER ARRAY");
-    cerr << "THIS IS NAME OF THE ARRAY=" << arrayPtr->GetName() << endl;
+    CC3D_Log(LOG_DEBUG) << "THIS IS NAME OF THE ARRAY=" << arrayPtr->GetName() << endl;
 }
 
 vtkIntArray *FieldExtractor::produceVtkIntArray() {

@@ -96,6 +96,11 @@ namespace CompuCell3D {
          */
         std::string getOutputDirectory();
 
+        /**
+         * returns rng seed provided by the user or generates purely random RNG seed
+         * @return rng seed - unsignewd int
+         */
+        virtual unsigned int getRNGSeed();
 
         void setOutputRedirectionTarget(ptrdiff_t _ptr);
 
@@ -142,7 +147,7 @@ namespace CompuCell3D {
 
         BoundaryStrategy *getBoundaryStrategy();
 
-        void registerSteerableObject(SteerableObject *);
+        void registerSteerableObject(SteerableObject *) ;
 
         void unregisterSteerableObject(const std::string &);
 
@@ -196,12 +201,13 @@ namespace CompuCell3D {
         virtual void serialize();
 
         // Begin Steppable interface
+//        virtual void start() ;
         virtual void start();
 
-        virtual void extraInit();///initialize plugins after all steppables have been initialized
-        virtual void step(const unsigned int currentStep);
+        virtual void extraInit() ;///initialize plugins after all steppables have been initialized
+		virtual void step(const unsigned int currentStep) ;
 
-        virtual void finish();
+        virtual void finish() ;
         // End Steppable interface
 
         //these two functions are necessary to implement proper cleanup after the simulation
@@ -213,11 +219,11 @@ namespace CompuCell3D {
         void unloadModules();
 
 
-        void initializePottsCC3D(CC3DXMLElement *_xmlData);
+        void initializePottsCC3D(CC3DXMLElement *_xmlData) ;
 
         void processMetadataCC3D(CC3DXMLElement *_xmlData);
 
-        void initializeCC3D();
+        void initializeCC3D() ;
 
         void setPottsParseData(PottsParseData *_ppdPtr) { ppdPtr = _ppdPtr; }
 

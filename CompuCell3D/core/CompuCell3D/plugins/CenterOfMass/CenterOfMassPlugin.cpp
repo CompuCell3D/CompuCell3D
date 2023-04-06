@@ -7,15 +7,15 @@ using namespace CompuCell3D;
 using namespace std;
 
 #include "CenterOfMassPlugin.h"
+#include <Logger/CC3DLogger.h>
 
 CenterOfMassPlugin::CenterOfMassPlugin() : boundaryStrategy(0) {}
 
 CenterOfMassPlugin::~CenterOfMassPlugin() {}
 
 void CenterOfMassPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
-    boundaryStrategy = BoundaryStrategy::getInstance();
-
-    cerr << "\n\n\n  \t\t\t CenterOfMassPlugin::init() - CALLING INIT OF CENTER OF MASS PLUGIN\n\n\n" << endl;
+	boundaryStrategy=BoundaryStrategy::getInstance();
+	CC3D_Log(LOG_DEBUG) << std::endl << std::endl << std::endl << "  \t\t\t CenterOfMassPlugin::init() - CALLING INIT OF CENTER OF MASS PLUGIN" << std::endl << std::endl << std::endl;
     potts = simulator->getPotts();
     bool pluginAlreadyRegisteredFlag;
     Plugin *plugin = Simulator::pluginManager.get("VolumeTracker",
@@ -260,7 +260,7 @@ void CompuCell3D::CenterOfMassPlugin::field3DChange(const Point3D &pt, CellG *ne
                    allowedAreaMax.x) { //will allow to have xCM/vol slightly bigger (by 1) value than max lattice point
             //to avoid rollovers for unsigned int from oldCell->xCM
 
-            xCM -= distanceVec.x * oldCell->volume;
+            xCM -= distanceVec.x*oldCell->volume;
 
         }
 
@@ -290,12 +290,12 @@ void CompuCell3D::CenterOfMassPlugin::field3DChange(const Point3D &pt, CellG *ne
             oldCell->zCOM = 0.0;
         }
 
-        if (potts->checkIfFrozen(oldCell->type)) {
-            oldCell->xCOMPrev = oldCell->xCM / (oldCell->volume);
-            oldCell->yCOMPrev = oldCell->yCM / (oldCell->volume);
-            oldCell->zCOMPrev = oldCell->zCM / (oldCell->volume);
-        }
-    }
+		if(potts->checkIfFrozen(oldCell->type)){
+			oldCell->xCOMPrev= oldCell->xCM/(oldCell->volume);
+			oldCell->yCOMPrev= oldCell->yCM/(oldCell->volume);
+			oldCell->zCOMPrev= oldCell->zCM/(oldCell->volume);
+		}
+	}
 
     if (newCell) {
         xo = newCell->xCM;
@@ -332,7 +332,7 @@ void CompuCell3D::CenterOfMassPlugin::field3DChange(const Point3D &pt, CellG *ne
             shiftedPt.x += distanceVec.x;
         } else if (shiftedPt.x > distanceVecMax_1.x) {
             shiftedPt.x -= distanceVec.x;
-        }
+		}  
 
         if (shiftedPt.y < distanceVecMin.y) {
             shiftedPt.y += distanceVec.y;
@@ -392,9 +392,8 @@ void CompuCell3D::CenterOfMassPlugin::field3DChange(const Point3D &pt, CellG *ne
             newCell->yCOMPrev = newCell->yCM / (newCell->volume);
             newCell->zCOMPrev = newCell->zCM / (newCell->volume);
 
-        }
-
-    }
+		}
+	}
 }
 
 void CenterOfMassPlugin::handleEvent(CC3DEvent &_event) {
@@ -412,9 +411,9 @@ void CenterOfMassPlugin::handleEvent(CC3DEvent &_event) {
     for (cInvItr = cellInventory.cellInventoryBegin(); cInvItr != cellInventory.cellInventoryEnd(); ++cInvItr) {
         cell = cInvItr->second;
 
-        cell->xCOM += shiftVec.x;
-        cell->yCOM += shiftVec.y;
-        cell->zCOM += shiftVec.z;
+        cell->xCOM+=shiftVec.x;
+		cell->yCOM+=shiftVec.y;
+		cell->zCOM+=shiftVec.z;
 
         cell->xCOMPrev += shiftVec.x;
         cell->yCOMPrev += shiftVec.y;

@@ -345,8 +345,7 @@ namespace CompuCell3D {
         // with z=0 but they are spaced by delta z=1
         // thus you need to do deltaCoordinate % (fieldDim.z-2). Otherwise if you do not do fieldDim.z-2
         // then you may get the following (max_z-0) % max_z =0, whereas it should be 1 !
-
-//    cerr<<"******************CHANGE BEGIN**************************"<<endl;
+CC3D_Log(LOG_TRACE) << "******************CHANGE BEGIN**************************";
         int counter = 0;
         Point3D ptFlipNeighbor = potts->getFlipNeighbor();
         Point3D deltaFlip;

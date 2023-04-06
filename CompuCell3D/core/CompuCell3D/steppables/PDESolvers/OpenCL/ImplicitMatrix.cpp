@@ -15,7 +15,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
-
+#include <Logger/CC3DLogger.h>
 using namespace CompuCell3D;
 static const char *programPath = "ImplicitMatrix.cl";
 
@@ -30,21 +30,20 @@ ImplicitMatrix::ImplicitMatrix(OpenCLHelper const &oclHelper, UniSolverParams co
         md_boundaryConditions(oclHelper, CL_MEM_READ_ONLY, sizeof(GPUBoundaryConditions) * 1, &boundaryConditions),
         mh_boundaryConditions(boundaryConditions) {
 
-    //loading OpenCL program
-    std::string fns[] = {
-            pathToKernels + "GPUSolverParams.h",
-            pathToKernels + "GPUBoundaryConditions.h",
-            pathToKernels + "common.cl",
-            pathToKernels + "ImplicitMatrix.cl"
-    };
-    const char *programPaths[] = {fns[0].c_str(), //TODO: find size of an array automatically
-                                  fns[1].c_str(),
-                                  fns[2].c_str(),
-                                  fns[3].c_str()};
-
-    std::cerr << "OpenCL kernel names for ImplicitMatrix:" << std::endl;
+	//loading OpenCL program
+	std::string fns[]={
+		pathToKernels+"GPUSolverParams.h",
+		pathToKernels+"GPUBoundaryConditions.h",
+		pathToKernels+"common.cl",
+		pathToKernels+"ImplicitMatrix.cl"
+	};
+	const char *programPaths[]={fns[0].c_str(), //TODO: find size of an array automatically
+		fns[1].c_str(),
+		fns[2].c_str(),
+		fns[3].c_str()};
+	CC3D_Log(LOG_DEBUG) << "OpenCL kernel names for ImplicitMatrix:";
     for (int i = 0; i < 4; ++i) {
-        std::cerr << "\t" << programPaths[i] << std::endl;
+        CC3D_Log(LOG_DEBUG) <<"\t"<<programPaths[i];
     }
 
     if (!oclHelper.LoadProgram(programPaths, 4, m_clProgram)) {

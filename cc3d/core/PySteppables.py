@@ -10,6 +10,7 @@ from cc3d.core.ExtraFieldAdapter import ExtraFieldAdapter
 # from cc3d.CompuCellSetup.simulation_utils import stop_simulation
 from cc3d.CompuCellSetup.simulation_utils import extract_type_names_and_ids
 from cc3d import CompuCellSetup
+from cc3d.core.CoreSpecsRegistry import CoreSpecsAccessor
 from cc3d.core.XMLUtils import dictionaryToMapStrStr as d2mss
 from cc3d.core.XMLDomUtils import XMLElemAdapter
 from typing import Optional, TextIO, Union
@@ -24,64 +25,18 @@ from copy import deepcopy
 from math import sqrt
 from cc3d.core.numerics import *
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
+from .SteppablePy import SteppablePy
+# To safely work with Service in various environments, import must be at this level (issues with RollbackImporter)
+try:
+    from cc3d.core import simservice
+except ModuleNotFoundError:
+    simservice = None
 
 # text styles
 BOLD = 0b0000001
 ITALIC = 0b0000010
 UNDERLINE = 0b0000100
 STRIKE = 0b0001000
-
-
-class SteppablePy:
-    """
-    Steppable model specification interface
-    All CC3D model specification using a steppable should be done by overriding the methods `start`, `step`, `on_stop`
-    and `finish`
-    """
-
-    def __init__(self):
-        #: flag to step before engine when equal to 1
-        self.runBeforeMCS = 0
-
-    def core_init(self):
-        """
-
-        :return:
-        """
-
-    def start(self):
-        """
-        any code in the start function runs before MCS=0
-
-        :return: None
-        """
-
-    def step(self, mcs):
-        """
-        type here the code that will run every frequency MCS
-
-        :param mcs: current Monte Carlo step
-        :return: None
-        """
-
-    def finish(self):
-        """
-        Finish Function is called after the last MCS
-
-        :return: None
-        """
-    def on_stop(self):
-        """
-        Called when simulation is stopped by user
-
-        :return: None
-        """
-
-    def cleanup(self):
-        """
-
-        :return:
-        """
 
 
 class FieldVisData:
@@ -283,6 +238,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
 
         #: free floating SBML model accessor
         self.sbml = GlobalSBMLFetcher()
+        self.specs = CoreSpecsAccessor()
+        """core specification accessor"""
 
         # SBMLSolverHelper.__init__(self)
         #: frequency at which `step` is called
@@ -434,11 +391,38 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
 
         }
 
+        #: (dict of [str: str]) map of steppables names to attribute reference names
+        self.steppable_init_dict = {
+            "ReactionDiffusionSolverFVM": ['reaction_diffusion_solver_fvm']
+        }
+
         #: list of :class:`cc3d.cpp.CompuCell.CellG` attributes to copy during cloning
         #: used by clone attributes functions
         self.clonable_attribute_names = ['lambdaVolume', 'targetVolume', 'targetSurface', 'lambdaSurface',
                                          'targetClusterSurface', 'lambdaClusterSurface', 'type', 'lambdaVecX',
                                          'lambdaVecY', 'lambdaVecZ', 'fluctAmpl']
+
+    @property
+    def shared_steppable_dict(self):
+        """Alias for self.shared_steppable_vars"""
+        return self.shared_steppable_vars
+
+    @property
+    def external_input(self):
+        """Input object passed in through the Python API when executing CC3D from Python"""
+
+        return CompuCellSetup.persistent_globals.input_object
+
+    @property
+    def external_output(self):
+        """Output object returned through the Python API when executing CC3D from Python"""
+
+        return CompuCellSetup.persistent_globals.return_object
+
+    @external_output.setter
+    def external_output(self, _external_output):
+
+        CompuCellSetup.persistent_globals.return_object = _external_output
 
     def merge_cells(self, source_cell, destination_cell):
         """
@@ -610,6 +594,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
                 # setattr(self, type_name.upper(), type_id)
 
         self.fetch_loaded_plugins()
+        self.fetch_loaded_steppables()
         self.shared_steppable_vars = persistent_globals.shared_steppable_vars
 
     def fetch_loaded_plugins(self) -> None:
@@ -649,6 +634,37 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
                 # in case the plugin is not loaded we initialize member variables associated with the plugin to None
                 for plugin_member_name in member_var_list:
                     setattr(self, plugin_member_name, None)
+
+    def fetch_loaded_steppables(self) -> None:
+        """
+        Processes :attr:`steppable_init_dict` and initializes member variables according to specification in
+        :attr:`steppable_init_dict_init_dict`. relies on fixed naming convention for steppable_init_dict accessor
+        functions defined in pyinterface/CompuCellPython
+
+        :return: None
+        """
+
+        for steppable_name, member_var_list in self.steppable_init_dict.items():
+            if self.simulator.steppableManager.isLoaded(steppable_name):
+                accessor_fcn_name = 'get' + steppable_name + 'Steppable'
+                try:
+                    accessor_function = getattr(CompuCell, accessor_fcn_name)
+                except AttributeError:
+                    warnings.warn('Could not locate {accessor_fcn_name} member of CompuCell python module')
+                    for steppable_member_name in member_var_list:
+                        setattr(self, steppable_member_name, None)
+
+                    continue
+
+                steppable_obj = accessor_function()
+
+                for steppable_member_name in member_var_list:
+                    setattr(self, steppable_member_name, steppable_obj)
+
+            else:
+                # in case the steppable is not loaded we initialize the associated attributes to None
+                for steppable_member_name in member_var_list:
+                    setattr(self, steppable_member_name, None)
 
     def track_cell_level_scalar_attribute(self, field_name: str, attribute_name: str, function_obj: object = None,
                                           cell_type_list: Union[list, None] = None):
@@ -3250,3 +3266,114 @@ class SecretionBasePy(SteppableBasePy):
     def __init__(self, frequency=1):
         SteppableBasePy.__init__(self, frequency)
         self.runBeforeMCS = 1
+
+
+class ServiceSteppableBasePy(SteppablePy):
+    """
+    Steppable wrap of the service interface defined in simservice.PySimService.PySimService
+    """
+
+    service_name = ""
+
+    def __init__(self, frequency):
+        super().__init__()
+
+        self.frequency = frequency
+        self.shared_steppable_vars = {}
+
+        self.sim_service = None
+
+    def service_constructor(self):
+        """
+        Service constructor and initializer; service process should be running by the end of this call
+        :return: None
+        """
+        raise NotImplementedError
+
+    @property
+    def output_dir(self):
+        return CompuCellSetup.persistent_globals.output_directory
+
+    def core_init(self):
+        self.service_constructor()
+
+        print(f"Initialized embedded service {type(self).service_name}: {self.sim_service}")
+
+        persistent_globals = CompuCellSetup.persistent_globals
+        self.shared_steppable_vars = persistent_globals.shared_steppable_vars
+
+    def init(self, _simulator):
+        self.sim_service.init()
+
+    def start(self):
+        self.sim_service.start()
+
+    def step(self, mcs):
+        self.sim_service.step()
+
+    def finish(self):
+        self.sim_service.finish()
+
+    def on_stop(self):
+        self.sim_service.stop()
+
+    def add_steering_panel(self):
+        pass
+
+    def process_steering_panel_data_wrapper(self):
+        pass
+
+    def set_steering_param_dirty(self, flag):
+        pass
+
+
+class CC3DServiceSteppableBasePy(ServiceSteppableBasePy):
+
+    service_name = "CC3D"
+
+    def __init__(self, frequency):
+        super().__init__(frequency)
+
+        self.cc3d_sim_fname = None
+        self.cc3d_sim_output_frequency = 0
+        self.cc3d_sim_screenshot_output_frequency = 0
+        self.cc3d_sim_restart_snapshot_frequency = 0
+        self.cc3d_sim_restart_multiple_snapshots = False
+        self.cc3d_sim_output_dir = None
+        self.cc3d_sim_output_file_core_name = None
+        self.cc3d_sim_input = None
+
+    def service_constructor(self):
+
+        self.sim_service = simservice.service_cc3d(
+            cc3d_sim_fname=self.cc3d_sim_fname,
+            output_frequency=self.cc3d_sim_output_frequency,
+            screenshot_output_frequency=self.cc3d_sim_screenshot_output_frequency,
+            restart_snapshot_frequency=self.cc3d_sim_restart_snapshot_frequency,
+            restart_multiple_snapshots=self.cc3d_sim_restart_multiple_snapshots,
+            output_dir=self.cc3d_sim_output_dir,
+            output_file_core_name=self.cc3d_sim_output_file_core_name,
+            sim_input=self.cc3d_sim_input)
+        self.sim_service.run()
+
+    def finish(self):
+        print(self.sim_service.profiler_report)
+        super().finish()
+
+    def on_stop(self):
+        print(self.sim_service.profiler_report)
+        super().on_stop()
+
+    @property
+    def service_input(self):
+        return self.sim_service.sim_input
+
+    @property
+    def service_output(self):
+        return self.sim_service.sim_output
+
+
+# Disable simservice implementations if unavailable
+if simservice is None:
+    ServiceSteppableBasePy = object
+    CC3DServiceSteppableBasePy = object

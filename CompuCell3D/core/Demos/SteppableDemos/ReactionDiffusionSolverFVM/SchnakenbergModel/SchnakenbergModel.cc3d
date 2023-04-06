@@ -1,0 +1,5 @@
+<Simulation version="4.1.0">
+   <XMLScript Type="XMLScript">Simulation/SchnakenbergModel.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/SchnakenbergModel.py</PythonScript>
+   <Resource Type="Python">Simulation/SchnakenbergModelSteppables.py</Resource>
+</Simulation>

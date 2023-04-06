@@ -60,7 +60,7 @@ void ReactionDiffusionSolverSerializer::readFromFile() {
 
     }
     catch (CC3DException &e) {
-        cerr << "COULD NOT FIND ONE OF THE FILES" << endl;
+       CC3D_Log(LOG_DEBUG) << "COULD NOT FIND ONE OF THE FILES";
         throw CC3DException("Error in reading diffusion fields from file", e);
     }
 
@@ -189,8 +189,7 @@ void ReactionDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
 
 
     pUtils = simulator->getParallelUtils();
-
-    cerr << "INSIDE INIT" << endl;
+   CC3D_Log(LOG_DEBUG) << "INSIDE INIT";
 
     ///setting member function pointers
     diffusePtr = &ReactionDiffusionSolverFE::diffuse;
@@ -269,20 +268,18 @@ void ReactionDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
     vector <string> concentrationFieldNameVectorTmp; //temporary vector for field names
     ///assign vector of field names
     concentrationFieldNameVectorTmp.assign(diffSecrFieldTuppleVec.size(), string(""));
-
-    cerr << "diffSecrFieldTuppleVec.size()=" << diffSecrFieldTuppleVec.size() << endl;
+   CC3D_Log(LOG_DEBUG) << "diffSecrFieldTuppleVec.size()=" << diffSecrFieldTuppleVec.size();
 
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        //       cerr<<" concentrationFieldNameVector[i]="<<diffDataVec[i].fieldName<<endl;
-        //       concentrationFieldNameVector.push_back(diffDataVec[i].fieldName);
         concentrationFieldNameVectorTmp[i] = diffSecrFieldTuppleVec[i].diffData.fieldName;
-        cerr << " concentrationFieldNameVector[i]=" << concentrationFieldNameVectorTmp[i] << endl;
+       CC3D_Log(LOG_DEBUG) << " concentrationFieldNameVector[i]=" << concentrationFieldNameVectorTmp[i];
     }
 
 
-    cerr << "FIELDS THAT I HAVE" << endl;
+
+   CC3D_Log(LOG_DEBUG) << "FIELDS THAT I HAVE";
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        cerr << "Field " << i << " name: " << concentrationFieldNameVectorTmp[i] << endl;
+       CC3D_Log(LOG_DEBUG) << "Field " << i << " name: " << concentrationFieldNameVectorTmp[i];
     }
 
 
@@ -305,18 +302,9 @@ void ReactionDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
     //register fields once they have been allocated
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
         simPtr->registerConcentrationField(concentrationFieldNameVector[i], concentrationFieldVector[i]);
-        cerr << "registring field: " << concentrationFieldNameVector[i] << " field address="
-             << concentrationFieldVector[i] << endl;
+       CC3D_Log(LOG_DEBUG) << "registring field: " << concentrationFieldNameVector[i] << " field address="
+             << concentrationFieldVector[i];
     }
-
-
-
-
-
-    //    exit(0);
-
-
-
 
     //we only autoscale diffusion when user requests it explicitely
     if (!autoscaleDiffusion) {
@@ -348,6 +336,25 @@ void ReactionDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
     simulator->registerSteerableObject(this);
 
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ReactionDiffusionSolverFE::init_cell_type_and_id_arrays() {
+    Point3D pt;
+    for (pt.z = 0; pt.z < fieldDim.z; ++pt.z)
+        for (pt.y = 0; pt.y < fieldDim.y; ++pt.y)
+            for (pt.x = 0; pt.x < fieldDim.x; ++pt.x) {
+                CellG * cell = cellFieldG->getQuick(pt);
+                if (cell) {
+                    h_celltype_field->set(pt, cell->type);
+                    h_cellid_field->set(pt, cell->id);
+                } else {
+                    h_celltype_field->set(pt, 0);
+                    h_cellid_field->set(pt, 0);
+                }
+            }
+
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ReactionDiffusionSolverFE::boundaryConditionIndicatorInit() {
@@ -599,7 +606,7 @@ void ReactionDiffusionSolverFE::start() {
 
         }
         catch (CC3DException &e) {
-            cerr << "Going to fail-safe initialization" << endl;
+           CC3D_Log(LOG_DEBUG) << "Going to fail-safe initialization";
             initializeConcentration(); //if there was error, initialize using failsafe defaults
         }
 
@@ -613,7 +620,7 @@ void ReactionDiffusionSolverFE::start() {
 void ReactionDiffusionSolverFE::initializeConcentration() {
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
         if (diffSecrFieldTuppleVec[i].diffData.concentrationFileName.empty()) continue;
-        cerr << "fail-safe initialization " << diffSecrFieldTuppleVec[i].diffData.concentrationFileName << endl;
+       CC3D_Log(LOG_DEBUG) << "fail-safe initialization " << diffSecrFieldTuppleVec[i].diffData.concentrationFileName;
         readConcentrationField(diffSecrFieldTuppleVec[i].diffData.concentrationFileName, concentrationFieldVector[i]);
     }
 }
@@ -630,14 +637,6 @@ void ReactionDiffusionSolverFE::prepCellTypeField(int idx) {
     Array3DCUDA<unsigned char> &cellTypeArray = *h_celltype_field;
     BoundaryConditionSpecifier & bcSpec = bcSpecVec[idx];
     int numberOfIters = 1;
-
-    // for (int i = 0 ; i < 6 ; ++i){
-    // cerr<<"PREP planePositions["<<i<<"]="<<bcSpec.planePositions[i] <<endl;
-    // cerr<<"PREP values["<<i<<"]="<<bcSpec.values[i] <<endl;
-
-    // }  
-    // cerr<<"PREP workFieldDim="<<workFieldDim<<endl;
-    // cerr<<"PREP fieldDim="<<fieldDim<<endl;
 
     if (boundaryStrategy->getLatticeType() ==
         HEXAGONAL_LATTICE) { //for hex lattice we need two passes to correctly initialize lattice corners
@@ -739,21 +738,6 @@ void ReactionDiffusionSolverFE::prepCellTypeField(int idx) {
         }
     }
 
-
-
-    // for (int z = 1; z < fieldDim.z+2; z++)
-    // for (int y = 1; y < fieldDim.y+2; y++)
-    // for (int x = 1; x < fieldDim.x+2; x++){
-    // // if (concentrationField.getDirect(x,y,z) !=0.0){
-    // // if (x>54 && z >10 && y >8){
-    // if (cellTypeArray.getDirect(x,y,z)){
-    // // cerr<<"("<<x<<","<<y<<","<<z<<")="<<concentrationField.getDirect(x,y,z)<<endl;
-    // cerr<<"PREP cellType("<<x<<","<<y<<","<<z<<")="<<(int)cellTypeArray.getDirect(x,y,z)<<endl;
-    // }
-
-    // }
-
-
 }
 
 
@@ -761,6 +745,8 @@ void ReactionDiffusionSolverFE::prepCellTypeField(int idx) {
 void ReactionDiffusionSolverFE::step(const unsigned int _currentStep) {
 
     if (fluctuationCompensator) fluctuationCompensator->applyCorrections();
+
+    init_cell_type_and_id_arrays();
 
     if (scaleSecretion) {
         for (int callIdx = 0; callIdx < maxNumberOfDiffusionCalls; ++callIdx) {
@@ -867,7 +853,7 @@ void ReactionDiffusionSolverFE::secreteOnContactSingleField(unsigned int idx) {
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+        // CC3D_Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;
@@ -1044,7 +1030,7 @@ void ReactionDiffusionSolverFE::secreteSingleField(unsigned int idx) {
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+       CC3D_Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;
@@ -1091,15 +1077,7 @@ void ReactionDiffusionSolverFE::secreteSingleField(unsigned int idx) {
                 for (int x = minDim.x; x < maxDim.x; x++) {
 
                     pt = Point3D(x - 1, y - 1, z - 1);
-                    //             cerr<<"pt="<<pt<<" is valid "<<cellFieldG->isValid(pt)<<endl;
-                    ///**
                     currentCellPtr = cellFieldG->getQuick(pt);
-                    //             currentCellPtr=cellFieldG->get(pt);
-                    //             cerr<<"THIS IS PTR="<<currentCellPtr<<endl;
-
-                    //             if(currentCellPtr)
-                    //                cerr<<"This is id="<<currentCellPtr->id<<endl;
-                    //currentConcentration = concentrationField.getDirect(x,y,z);
 
                     currentConcentration = concentrationField.getDirect(x, y, z);
 
@@ -1134,9 +1112,9 @@ void ReactionDiffusionSolverFE::secreteSingleField(unsigned int idx) {
                                     mitrUptake->second.maxUptake) {
                                     concentrationField.setDirect(x, y, z, concentrationField.getDirect(x, y, z) -
                                                                           mitrUptake->second.maxUptake);
-                                    //cerr<<" uptake concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<mitrUptake->second.maxUptake<<endl;
+                                    CC3D_Log(LOG_TRACE) << " uptake concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<mitrUptake->second.maxUptake;
                                 } else {
-                                    //cerr<<"concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<currentConcentration*mitrUptake->second.relativeUptakeRate<<endl;
+                                    CC3D_Log(LOG_TRACE) << "concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<currentConcentration*mitrUptake->second.relativeUptakeRate;
                                     concentrationField.setDirect(x, y, z, concentrationField.getDirect(x, y, z) -
                                                                           currentConcentration *
                                                                           mitrUptake->second.relativeUptakeRate);
@@ -1188,7 +1166,7 @@ void ReactionDiffusionSolverFE::secreteConstantConcentrationSingleField(unsigned
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+        CC3D_Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;
@@ -1233,14 +1211,14 @@ void ReactionDiffusionSolverFE::secreteConstantConcentrationSingleField(unsigned
                 for (int x = minDim.x; x < maxDim.x; x++) {
 
                     pt = Point3D(x - 1, y - 1, z - 1);
-                    //             cerr<<"pt="<<pt<<" is valid "<<cellFieldG->isValid(pt)<<endl;
+                    CC3D_Log(LOG_TRACE) << "pt="<<pt<<" is valid "<<cellFieldG->isValid(pt);
                     ///**
                     currentCellPtr = cellFieldG->getQuick(pt);
                     //             currentCellPtr=cellFieldG->get(pt);
-                    //             cerr<<"THIS IS PTR="<<currentCellPtr<<endl;
+                    CC3D_Log(LOG_TRACE) << "THIS IS PTR="<<currentCellPtr;
 
                     //             if(currentCellPtr)
-                    //                cerr<<"This is id="<<currentCellPtr->id<<endl;
+                    // CC3D_Log(LOG_TRACE) << "This is id="<<currentCellPtr->id;
                     //currentConcentration = concentrationArray[x][y][z];
 
                     if (secreteInMedium && !currentCellPtr) {
@@ -1294,7 +1272,7 @@ void ReactionDiffusionSolverFE::boundaryConditionInit(int idx) {
         //dealing with periodic boundary condition in x direction
         //have to use internalDim-1 in the for loop as max index because otherwise with extra shitf if we used internalDim we run outside the lattice
         if (fieldDim.x > 1) {
-            if (periodicBoundaryCheckVector[0]) {//periodic boundary conditions were set in x direction	
+            if (periodicBoundaryCheckVector[0]) {//periodic boundary conditions were set in x direction
                 //x - periodic
                 int x = 0;
                 for (int y = 0; y < workFieldDim.y - 1; ++y)
@@ -1658,7 +1636,7 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
         Dim3D maxDimBW;
         Point3D minCoordinates = *(boxWatcherSteppable->getMinCoordinatesPtr());
         Point3D maxCoordinates = *(boxWatcherSteppable->getMaxCoordinatesPtr());
-        //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
+        CC3D_Log(LOG_TRACE) << "FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates;
         x_min = minCoordinates.x + 1;
         x_max = maxCoordinates.x + 1;
         y_min = minCoordinates.y + 1;
@@ -1777,10 +1755,6 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
 
                                 concentrationSum *= currentDiffCoef;
 
-                                //                                         cout << " diffCoef[currentCellType]: " << diffCoef[currentCellType] << endl;    
-
-
-
                                 //using forward first derivatives - cartesian lattice 3D
                                 if (variableDiffusionCoefficientFlag && diffusiveSite) {
                                     concentrationSum /= 2.0;
@@ -1867,10 +1841,6 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
 
                                 if (variableDiffusionCoefficientFlag && diffusiveSite) {
                                     concentrationSum /= 2.0;
-                                    // if (x>=0 &&x <6 && y>=0 &&y<=6){
-                                    // cerr<<endl;
-                                    // cerr<<"VISITING PIXEL="<<pt+Point3D(1,1,1)<<" variableDiffusionCoefficientFlag "<<endl;
-                                    // }
 
                                     const std::vector <Point3D> &offsetVecRef = boundaryStrategy->getOffsetVec(pt);
 
@@ -1889,19 +1859,16 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                                             } else if (bcSpec.planePositions[nBcIndicator] ==
                                                        BoundaryConditionSpecifier::CONSTANT_VALUE) {
                                                 c_offset = bcSpec.values[nBcIndicator];
-                                            } else if (bcSpec.planePositions[nBcIndicator] ==
-                                                       BoundaryConditionSpecifier::CONSTANT_DERIVATIVE) {
-                                                if (nBcIndicator == BoundaryConditionSpecifier::MIN_X ||
-                                                    nBcIndicator == BoundaryConditionSpecifier::MIN_Y || nBcIndicator ==
-                                                                                                         BoundaryConditionSpecifier::MIN_Z) { // for "left hand side" edges of the lattice the sign of the derivative expression is '-'
-                                                    // cerr<<" x,y,z =" <<x+offset.x<<","<<y+offset.y<<","<<z+offset.z<<" c="<<concentrationField.getDirect(x+offset.x,y+offset.y,z+offset.z)<<" bcSpec.values[nBcIndicator]="<<bcSpec.values[nBcIndicator]<<" nBcIndicator="<<(int)nBcIndicator<<endl;
-                                                    // cerr<<" MIN (x,y,z)="<<x<<","<<y<<","<<z<<" c="<<concentrationField.getDirect(x,y,z)<<" nnBcIndicator="<<(int)nBcIndicator<<" bcSpec.values[nBcIndicator]="<<bcSpec.values[nBcIndicator]<<" concentrationField.getDirect(x,y,z)-bcSpec.values[nBcIndicator]*deltaX="<<concentrationField.getDirect(x,y,z)-bcSpec.values[nBcIndicator]*deltaX<<endl;
-                                                    c_offset = currentConcentration - bcSpec.values[nBcIndicator] *
-                                                                                      deltaX; // notice we use values of the field of the central pixel not of the neiighbor. The neighbor is outside of the lattice and for non cartesian lattice with non periodic BC cannot be trusted to hold appropriate value
-                                                } else { // for "left hand side" edges of the lattice the sign of  the derivative expression is '+'
-                                                    // cerr<<" MAX (x,y,z)="<<x<<","<<y<<","<<z<<" c="<<concentrationField.getDirect(x,y,z)<<" nnBcIndicator="<<(int)nBcIndicator<<" bcSpec.values[nBcIndicator]="<<bcSpec.values[nBcIndicator]<<" concentrationField.getDirect(x,y,z)-bcSpec.values[nBcIndicator]*deltaX="<<concentrationField.getDirect(x,y,z)+bcSpec.values[nBcIndicator]*deltaX<<endl;
-                                                    c_offset = currentConcentration + bcSpec.values[nBcIndicator] *
-                                                                                      deltaX;// notice we use values of the field of the central pixel not of the neiighbor. The neighbor is outside of the lattice and for non cartesian lattice with non periodic BC cannot be trusted to hold appropriate value
+                                            }
+                                            else if (bcSpec.planePositions[nBcIndicator] == BoundaryConditionSpecifier::CONSTANT_DERIVATIVE) {
+                                                if (nBcIndicator == BoundaryConditionSpecifier::MIN_X || nBcIndicator == BoundaryConditionSpecifier::MIN_Y || nBcIndicator == BoundaryConditionSpecifier::MIN_Z) { // for "left hand side" edges of the lattice the sign of the derivative expression is '-'
+                                                        CC3D_Log(LOG_TRACE) << " x,y,z =" <<x+offset.x<<","<<y+offset.y<<","<<z+offset.z<<" c="<<concentrationField.getDirect(x+offset.x,y+offset.y,z+offset.z)<<" bcSpec.values[nBcIndicator]="<<bcSpec.values[nBcIndicator]<<" nBcIndicator="<<(int)nBcIndicator;
+                                                        CC3D_Log(LOG_TRACE) << " MIN (x,y,z)="<<x<<","<<y<<","<<z<<" c="<<concentrationField.getDirect(x,y,z)<<" nnBcIndicator="<<(int)nBcIndicator<<" bcSpec.values[nBcIndicator]="<<bcSpec.values[nBcIndicator]<<" concentrationField.getDirect(x,y,z)-bcSpec.values[nBcIndicator]*deltaX="<<concentrationField.getDirect(x,y,z)-bcSpec.values[nBcIndicator]*deltaX;
+                                                    c_offset = currentConcentration - bcSpec.values[nBcIndicator] * deltaX; // notice we use values of the field of the central pixel not of the neiighbor. The neighbor is outside of the lattice and for non cartesian lattice with non periodic BC cannot be trusted to hold appropriate value
+                                                }
+                                                else { // for "left hand side" edges of the lattice the sign of  the derivative expression is '+'
+                                                CC3D_Log(LOG_TRACE) << " MAX (x,y,z)="<<x<<","<<y<<","<<z<<" c="<<concentrationField.getDirect(x,y,z)<<" nnBcIndicator="<<(int)nBcIndicator<<" bcSpec.values[nBcIndicator]="<<bcSpec.values[nBcIndicator]<<" concentrationField.getDirect(x,y,z)-bcSpec.values[nBcIndicator]*deltaX="<<concentrationField.getDirect(x,y,z)+bcSpec.values[nBcIndicator]*deltaX;
+                                                    c_offset = currentConcentration + bcSpec.values[nBcIndicator] * deltaX;// notice we use values of the field of the central pixel not of the neiighbor. The neighbor is outside of the lattice and for non cartesian lattice with non periodic BC cannot be trusted to hold appropriate value
                                                 }
                                             }
                                         }
@@ -1922,8 +1889,8 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                             updatedConcentration = (concentrationSum + varDiffSumTerm) +
                                                    (1 - decayCoef[currentCellType]) * currentConcentration;
 
-                            updatedConcentration += dt *
-                                                    ev.eval(); //reaction terms are scaled here all other constants e.g. diffusion or secretion constants are scaled in the Scale function
+                            //reaction terms are scaled here all other constants e.g. diffusion or secretion constants are scaled in the Scale function
+                            updatedConcentration += dt * ev.eval();
                             concentrationField.setDirectSwap(x, y, z, updatedConcentration);//updating scratch
 
 
@@ -1986,10 +1953,6 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                                 concentrationSum *= currentDiffCoef;
                             }
 
-                            //                                         cout << " diffCoef[currentCellType]: " << diffCoef[currentCellType] << endl;    
-
-
-
                             //using forward first derivatives - cartesian lattice 3D
                             if (variableDiffusionCoefficientFlag && diffusiveSite) {
                                 concentrationSum /= 2.0;
@@ -2011,8 +1974,8 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
                             updatedConcentration = (concentrationSum + varDiffSumTerm) +
                                                    (1 - decayCoef[currentCellType]) * currentConcentration;
 
-                            updatedConcentration += dt *
-                                                    ev.eval(); //reaction terms are scaled here all other constants e.g. diffusion or secretion constants are scaled in the Scale function
+                            //reaction terms are scaled here all other constants e.g. diffusion or secretion constants are scaled in the Scale function
+                            updatedConcentration += dt * ev.eval();
                             concentrationField.setDirectSwap(x, y, z,
                                                              updatedConcentration);//updating scratch
 
@@ -2024,7 +1987,7 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx) {
 
         }
         catch (mu::Parser::exception_type &e) {
-            cerr << e.GetMsg() << endl;
+           CC3D_Log(LOG_DEBUG) << e.GetMsg();
             throw CC3DException(e.GetMsg());
         }
     }
@@ -2104,124 +2067,8 @@ void ReactionDiffusionSolverFE::readConcentrationField(std::string fileName, Con
 
 void ReactionDiffusionSolverFE::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
-    //if(potts->getDisplayUnitsFlag()){
-    //	Unit diffConstUnit=powerUnit(potts->getLengthUnit(),2)/potts->getTimeUnit();
-    //	Unit decayConstUnit=1/potts->getTimeUnit();
-    //	Unit secretionConstUnit=1/potts->getTimeUnit();
-
-    //	if (_xmlData->getFirstElement("DoNotScaleSecretion")){//If user sets it to false via XML then DiffusionSolver will behave like FlexibleDiffusion solver - i.e. secretion will be done in one step followed by multiple diffusive steps        
-    //		scaleSecretion=false;            
-    //	}
-
-    //	if (_xmlData->getFirstElement("AutoscaleDiffusion")){
-    //		autoscaleDiffusion=true;
-    //	}
-
-    //	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-    //	if (!unitsElem){ //add Units element
-    //		unitsElem=_xmlData->attachElement("Units");
-    //	}
-
-    //	if(unitsElem->getFirstElement("DiffusionConstantUnit")){
-    //		unitsElem->getFirstElement("DiffusionConstantUnit")->updateElementValue(diffConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("DiffusionConstantUnit",diffConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DecayConstantUnit")){
-    //		unitsElem->getFirstElement("DecayConstantUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("DecayConstantUnit",decayConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DeltaXUnit")){
-    //		unitsElem->getFirstElement("DeltaXUnit")->updateElementValue(potts->getLengthUnit().toString());
-    //	}else{
-    //		unitsElem->attachElement("DeltaXUnit",potts->getLengthUnit().toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DeltaTUnit")){
-    //		unitsElem->getFirstElement("DeltaTUnit")->updateElementValue(potts->getTimeUnit().toString());
-    //	}else{
-    //		unitsElem->attachElement("DeltaTUnit",potts->getTimeUnit().toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("CouplingCoefficientUnit")){
-    //		unitsElem->getFirstElement("CouplingCoefficientUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("CouplingCoefficientUnit",decayConstUnit.toString());
-    //	}
-
-
-
-    //	if(unitsElem->getFirstElement("SecretionUnit")){
-    //		unitsElem->getFirstElement("SecretionUnit")->updateElementValue(secretionConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("SecretionUnit",secretionConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("SecretionOnContactUnit")){
-    //		unitsElem->getFirstElement("SecretionOnContactUnit")->updateElementValue(secretionConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("SecretionOnContactUnit",secretionConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("ConstantConcentrationUnit")){
-    //		unitsElem->getFirstElement("ConstantConcentrationUnit")->updateElementValue(secretionConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("ConstantConcentrationUnit",secretionConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DecayConstantUnit")){
-    //		unitsElem->getFirstElement("DecayConstantUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("DecayConstantUnit",decayConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DeltaXUnit")){
-    //		unitsElem->getFirstElement("DeltaXUnit")->updateElementValue(potts->getLengthUnit().toString());
-    //	}else{
-    //		unitsElem->attachElement("DeltaXUnit",potts->getLengthUnit().toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DeltaTUnit")){
-    //		unitsElem->getFirstElement("DeltaTUnit")->updateElementValue(potts->getTimeUnit().toString());
-    //	}else{
-    //		unitsElem->attachElement("DeltaTUnit",potts->getTimeUnit().toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("CouplingCoefficientUnit")){
-    //		unitsElem->getFirstElement("CouplingCoefficientUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("CouplingCoefficientUnit",decayConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("UptakeUnit")){
-    //		unitsElem->getFirstElement("UptakeUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("UptakeUnit",decayConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("RelativeUptakeUnit")){
-    //		unitsElem->getFirstElement("RelativeUptakeUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("RelativeUptakeUnit",decayConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("MaxUptakeUnit")){
-    //		unitsElem->getFirstElement("MaxUptakeUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("MaxUptakeUnit",decayConstUnit.toString());
-    //	}
-
-
-
-    //}
-
     //notice, limited steering is enabled for PDE solvers - changing diffusion constants, do -not-diffuse to types etc...
     // Coupling coefficients cannot be changed and also there is no way to allocate extra fields while simulation is running
-
-
 
     diffSecrFieldTuppleVec.clear();
     bcSpecVec.clear();
@@ -2409,13 +2256,13 @@ void ReactionDiffusionSolverFE::update(CC3DXMLElement *_xmlData, bool _fullInitF
         if (_xmlData->getFirstElement("Serialize")->findAttribute("Frequency")) {
             serializeFrequency = _xmlData->getFirstElement("Serialize")->getAttributeAsUInt("Frequency");
         }
-        cerr << "serialize Flag=" << serializeFlag << endl;
+        CC3D_Log(LOG_DEBUG) << "serialize Flag=" << serializeFlag;
 
     }
 
     if (_xmlData->findElement("ReadFromFile")) {
         readFromFileFlag = true;
-        cerr << "readFromFileFlag=" << readFromFileFlag << endl;
+        CC3D_Log(LOG_DEBUG) << "readFromFileFlag=" << readFromFileFlag;
     }
 
 
@@ -2478,7 +2325,7 @@ void ReactionDiffusionSolverFE::update(CC3DXMLElement *_xmlData, bool _fullInitF
 
     }
     catch (mu::Parser::exception_type &e) {
-        cerr << e.GetMsg() << endl;
+       CC3D_Log(LOG_DEBUG) << e.GetMsg();
         throw CC3DException(e.GetMsg());
     }
 

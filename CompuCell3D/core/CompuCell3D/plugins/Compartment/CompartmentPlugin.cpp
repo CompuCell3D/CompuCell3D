@@ -7,7 +7,11 @@ using namespace CompuCell3D;
 
 #include "CompartmentPlugin.h"
 
-CompartmentPlugin::CompartmentPlugin() : potts(0), depth(1), weightDistance(false) {
+#include <Logger/CC3DLogger.h>
+
+
+
+CompartmentPlugin::CompartmentPlugin() : potts(0), depth(1),weightDistance(false) {
 }
 
 CompartmentPlugin::~CompartmentPlugin() {
@@ -28,18 +32,18 @@ void CompartmentPlugin::extraInit(Simulator *simulator) {
 }
 
 double CompartmentPlugin::changeEnergy(const Point3D &pt,
-                                       const CellG *newCell,
-                                       const CellG *oldCell) {
+                                  const CellG *newCell,
+                                  const CellG *oldCell) {
 
-    double energy = 0;
-    unsigned int token = 0;
-    double distance = 0;
-    Point3D n;
-    Neighbor neighbor;
-
-    CellG *nCell = 0;
-    WatchableField3D < CellG * > *fieldG = (WatchableField3D < CellG * > *)
-    potts->getCellFieldG();
+   
+  double energy = 0;
+  unsigned int token = 0;
+  double distance = 0;
+  Point3D n;
+  Neighbor neighbor;
+  
+  CellG *nCell=0;
+  WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG*>*)potts->getCellFieldG();
 
     if (weightDistance) {
 
@@ -104,12 +108,12 @@ double CompartmentPlugin::changeEnergy(const Point3D &pt,
 
 double CompartmentPlugin::contactEnergy(const CellG *cell1, const CellG *cell2) {
 
-    return contactEnergyArray[cell1 ? cell1->type : 0][cell2 ? cell2->type : 0];
+    return contactEnergyArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0];
 }
 
 double CompartmentPlugin::internalEnergy(const CellG *cell1, const CellG *cell2) {
 
-    return internalEnergyArray[cell1 ? cell1->type : 0][cell2 ? cell2->type : 0];
+    return internalEnergyArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0];
 }
 
 void CompartmentPlugin::setContactCompartmentEnergy(const string typeName1,
@@ -182,16 +186,14 @@ void CompartmentPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     for (auto &i: cellInternalTypesSet) {
         for (auto &j: cellInternalTypesSet) {
 
-            cerr << "internal_energy[" << to_string(i) << "][" << to_string(j) << "]=" << internalEnergyArray[i][j]
-                 << endl;
+            CC3D_Log(LOG_DEBUG) << "internal_energy[" << to_string(i) << "][" << to_string(j) << "]=" << internalEnergyArray[i][j];
 
         }
     }
 
     for (auto &i: cellTypesSet) {
-        for (auto &j: cellTypesSet) {
-
-            cerr << "contact[" << to_string(i) << "][" << to_string(j) << "]=" << contactEnergyArray[i][j] << endl;
+        for (auto &j: cellTypesSet){
+			CC3D_Log(LOG_DEBUG) << "contact["<<to_string(i) << "][" << to_string(j) << "]=" << contactEnergyArray[i][j] ;
 
         }
     }
@@ -200,12 +202,9 @@ void CompartmentPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     boundaryStrategy = BoundaryStrategy::getInstance();
     maxNeighborIndex = 0;
 
-    if (_xmlData->getFirstElement("Depth")) {
-        maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromDepth(
-                _xmlData->getFirstElement("Depth")->getDouble());
-
-    } else {
-
+	if(_xmlData->getFirstElement("Depth")){
+		maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
+	}else{
         if (_xmlData->getFirstElement("NeighborOrder")) {
 
             maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(
@@ -215,9 +214,8 @@ void CompartmentPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
         }
 
-    }
-
-    cerr << "Contact maxNeighborIndex=" << maxNeighborIndex << endl;
+	}
+	CC3D_Log(LOG_DEBUG) << "Contact maxNeighborIndex="<<maxNeighborIndex;
 
 }
 

@@ -20,6 +20,7 @@ SET (HEADER_FILES
   DiffusableGraph.h
   ReactionDiffusionSolverFE_SavHog.h
   ReactionDiffusionSolverFE.h
+  ReactionDiffusionSolverFVM.h
   FlexibleReactionDiffusionSolverFE.h
   AdvectionDiffusionSolverFE.h
   Diffusable.h
@@ -199,6 +200,7 @@ ADD_COMPUCELL3D_STEPPABLE(PDESolvers
   KernelDiffusionSolver.cpp
   ReactionDiffusionSolverFE_SavHog.cpp
   ReactionDiffusionSolverFE.cpp
+  ReactionDiffusionSolverFVM.cpp
   FlexibleReactionDiffusionSolverFE.cpp
   FluctuationCompensator.cpp
   HW3CRT.c 
@@ -214,6 +216,7 @@ ADD_COMPUCELL3D_STEPPABLE(PDESolvers
   cc3d::PixelTracker 
   cc3d::NeighborTracker 
   cc3d::BoxWatcher 
+  cc3d::CellType 
 
   EXTRA_COMPILER_FLAGS 
   ${OpenMP_CXX_FLAGS}

@@ -1,0 +1,5 @@
+<Simulation version="4.1.0">
+   <XMLScript Type="XMLScript">Simulation/DiffusivityFieldDemo.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/DiffusivityFieldDemo.py</PythonScript>
+   <Resource Type="Python">Simulation/DiffusivityFieldDemoSteppables.py</Resource>
+</Simulation>

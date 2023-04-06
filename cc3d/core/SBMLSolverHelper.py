@@ -56,7 +56,6 @@ class SBMLSolverHelper(object):
 
     @classmethod
     def remove_attribute(cls, name):
-        print('cls=', cls)
         return delattr(cls, name)
 
     def __init__(self):

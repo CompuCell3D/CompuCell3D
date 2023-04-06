@@ -11,8 +11,8 @@ cxx_compiler:
   - gxx # [linux]
   - clangxx # [osx]
 
-python:
-  - 3.7
+#python:
+#  - 3.7
   # - 3.8
 
 openmp:

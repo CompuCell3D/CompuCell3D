@@ -12,6 +12,7 @@
 #include <XMLUtils/CC3DXMLElement.h>
 #include <algorithm>
 #include "OCLNeighbourIndsInfo.h"
+#include <Logger/CC3DLogger.h>
 
 #if defined(_WIN32)
 #undef max
@@ -102,8 +103,7 @@ DiffusionSolverFE_OpenCL::~DiffusionSolverFE_OpenCL(void) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void DiffusionSolverFE_OpenCL::secreteSingleField(unsigned int idx) {
-    // cerr<<"CALLING SECRETE SINGLE FIELD KERNEL"<<endl;
-
+    CC3D_Log(LOG_TRACE) << "CALLING SECRETE SINGLE FIELD KERNEL";
     //notice concDevPtr is set elsewhere - no need to set it here
     cl_int errArg = clSetKernelArg(secreteSingleFieldKernel, 0, sizeof(cl_mem), concDevPtr);
     ASSERT_OR_THROW("Can not set secreteSingleFieldKernel  arguments\n", errArg == CL_SUCCESS);
@@ -311,8 +311,7 @@ void DiffusionSolverFE_OpenCL::secreteConstantConcentrationSingleField(unsigned 
 //initializes and transfers to GPU BCSpecifier structure - nothing else. Actual BC initialization is done inside boundaryConditionInitKernel on GPU
 void DiffusionSolverFE_OpenCL::boundaryConditionGPUSetup(int idx) {
     // in the GPU Solver we initialize boundary conditions in the kernel
-    // cerr<<"INITIALIZING BC IN THE GPU CODE OVERLOADED FCN"<<endl;
-
+    CC3D_Log(LOG_TRACE) << "INITIALIZING BC IN THE GPU CODE OVERLOADED FCN";
 
     //***************** BC INIT
     bool detailedBCFlag = bcSpecFlagVec[idx];
@@ -324,7 +323,7 @@ void DiffusionSolverFE_OpenCL::boundaryConditionGPUSetup(int idx) {
         bcSpecifier.planePositions[i] = PERIODIC;
         bcSpecifier.values[i] = 0.0;
     }
-    // cerr<<"detailedBCFlag="<<detailedBCFlag<<endl;
+    CC3D_Log(LOG_TRACE) << "detailedBCFlag="<<detailedBCFlag;
     if (detailedBCFlag) {
         for (int i = 0; i < 6; ++i) {
             bcSpecifier.planePositions[i] = bcSpec.planePositions[i];
@@ -368,9 +367,8 @@ void DiffusionSolverFE_OpenCL::boundaryConditionGPUSetup(int idx) {
 
 
     // for (int i = 0 ; i < 6 ; ++i){
-    // cerr<<"planePositions["<<i<<"]="<<bcSpecifier.planePositions[i] <<endl;
-    // cerr<<"values["<<i<<"]="<<bcSpecifier.values[i] <<endl;
-
+//    CC3D_Log(LOG_TRACE) << "planePositions["<<i<<"]="<<bcSpecifier.planePositions[i];
+//    CC3D_Log(LOG_TRACE) << "values["<<i<<"]="<<bcSpecifier.values[i];
     // }        
 
     cl_int err = oclHelper->WriteBuffer(d_bcSpecifier, &bcSpecifier, 1);
@@ -415,8 +413,7 @@ void DiffusionSolverFE_OpenCL::stepImpl(const unsigned int _currentStep) {
         ///////////
 
         // boundaryConditionInit(i);
-
-        // cerr<<"diffuseSingleFieldImpl: THIS IS EXTRA TIMES PER MCS="<<diffData.extraTimesPerMCS<<endl;
+        CC3D_Log(LOG_TRACE) << "diffuseSingleFieldImpl: THIS IS EXTRA TIMES PER MCS="<<diffData.extraTimesPerMCS;
 
         SetSolverParams(diffData,
                         secrData); //transfer diffusion data and other useful parameters describing PDE to device
@@ -428,7 +425,7 @@ void DiffusionSolverFE_OpenCL::stepImpl(const unsigned int _currentStep) {
         iterationNumber = 0; // this variable is important because other routines can sense if this is first or subsequent call to diffuse or secrete functions. Some work in this functions has to be done during initial call and skipped in others
 
         if (scaleSecretion) {
-            // cerr<<"DIFFUSION SOLVER REGULAR NON_FLEXIBLE"<<endl;
+            CC3D_Log(LOG_TRACE) << "DIFFUSION SOLVER REGULAR NON_FLEXIBLE";
             if (!scalingExtraMCSVec[i]) { //we do not call diffusion step but call secretion - this happens when diffusion const is 0 but we still want to have secretion
                 for (unsigned int j = 0; j < diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size(); ++j) {
                     (this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
@@ -459,35 +456,6 @@ void DiffusionSolverFE_OpenCL::stepImpl(const unsigned int _currentStep) {
         oclHelper->Finish();
         fieldDeviceToHost(h_Field); //transfer conc field to back to host memory
 
-        // ofstream out ("data_opencl.out");
-        // float totConc=0.0;        
-        // for (int z = 1; z < fieldDim.z+1; z++)
-        // for (int y = 1; y < fieldDim.y+1; y++)
-        // for (int x = 1; x < fieldDim.x+1; x++){
-        // if (concentrationField.getDirect(x,y,z) !=0.0){
-        // // cerr<<"("<<x<<","<<y<<","<<z<<")="<<concentrationField.getDirect(x,y,z)<<endl;
-        // out<<"("<<x<<","<<y<<","<<z<<")="<<concentrationField.getDirect(x,y,z)<<endl;
-        // }
-        // totConc+=concentrationField.getDirect(x,y,z);
-        // }
-        // cerr<<"\n\n\n TOTAL CONCENTRATION="<<totConc<<endl;
-
-        // float totConc=0.0;
-        // Array3DCUDA<unsigned char> & cellTypeArray= *h_celltype_field;
-        // for (int z = 1; z < fieldDim.z+2; z++)
-        // for (int y = 1; y < fieldDim.y+2; y++)
-        // for (int x = 1; x < fieldDim.x+2; x++){
-        // // if (concentrationField.getDirect(x,y,z) !=0.0){
-        // if (x>54 && z >10 && y >8){
-
-        // // cerr<<"("<<x<<","<<y<<","<<z<<")="<<concentrationField.getDirect(x,y,z)<<endl;
-        // cerr<<"cellType("<<x<<","<<y<<","<<z<<")="<<(int)cellTypeArray.getDirect(x,y,z)<<endl;
-        // }
-        // totConc+=concentrationField.getDirect(x,y,z);
-        // }
-        // cerr<<"\n\n\n TOTAL CONCENTRATION="<<totConc<<endl;
-
-
     }
 
 }
@@ -503,13 +471,11 @@ void DiffusionSolverFE_OpenCL::diffuseSingleField(unsigned int idx) {
     // //initialize boundary conditions
     errArgBCI = clSetKernelArg(kernelBoundaryConditionInit, 0, sizeof(cl_mem), concDevPtr);
     ASSERT_OR_THROW("Can not set boundaryConditionInitKernel  arguments\n", errArgBCI == CL_SUCCESS);
-
-    // cerr<<"globalWorkSize=["<<globalWorkSize[0]<<","<<globalWorkSize[1]<<","<<globalWorkSize[2]<<"']"<<endl;
-    // cerr<<"localWorkSize=["<<localWorkSize[0]<<","<<localWorkSize[1]<<","<<localWorkSize[2]<<"']"<<endl;
+    CC3D_Log(LOG_TRACE) << "globalWorkSize=["<<globalWorkSize[0]<<","<<globalWorkSize[1]<<","<<globalWorkSize[2]<<"']";
+    CC3D_Log(LOG_TRACE) << "localWorkSize=["<<localWorkSize[0]<<","<<localWorkSize[1]<<","<<localWorkSize[2]<<"']";
 
     errBCI = oclHelper->EnqueueNDRangeKernel(kernelBoundaryConditionInit, 3, globalWorkSize, localWorkSize);
     ASSERT_OR_THROW("kernelBoundaryConditionInit failed", errBCI == CL_SUCCESS);
-
 
     if (latticeType != SQUARE_LATTICE) {
         //initialize boundary conditions Lattice Corners - necessary only for hex lattice
@@ -534,7 +500,7 @@ void DiffusionSolverFE_OpenCL::diffuseSingleField(unsigned int idx) {
 
     cl_int err = oclHelper->EnqueueNDRangeKernel(kernelUniDiff, 3, globalWorkSize, localWorkSize);
     if (err != CL_SUCCESS)
-        cerr << oclHelper->ErrorString(err) << endl;
+        CC3D_Log(LOG_DEBUG) << oclHelper->ErrorString(err);
     ASSERT_OR_THROW("Diffusion Kernel failed", err == CL_SUCCESS);
 
 
@@ -680,15 +646,13 @@ void DiffusionSolverFE_OpenCL::SetSolverParams(DiffusionData &diffData, Secretio
 
 //	h_solverParams.dt=diffData.deltaT;
 
-    h_solverParams.extraTimesPerMCS = diffData.extraTimesPerMCS;
-    h_solverParams.dx = diffData.deltaX;
-    h_solverParams.dt = diffData.deltaT;
-    h_solverParams.hexLattice = (latticeType == HEXAGONAL_LATTICE);
-    h_solverParams.nbhdConcLen = nbhdConcLen;
-    h_solverParams.nbhdDiffLen = nbhdDiffLen;
-
-    cerr << "h_solverParams.nbhdConcLen=" << h_solverParams.nbhdConcLen << " h_solverParams.nbhdDiffLen="
-         << h_solverParams.nbhdDiffLen << endl;
+    h_solverParams.extraTimesPerMCS=diffData.extraTimesPerMCS;    
+	h_solverParams.dx=diffData.deltaX;
+    h_solverParams.dt=diffData.deltaT;
+	h_solverParams.hexLattice=(latticeType==HEXAGONAL_LATTICE);
+	h_solverParams.nbhdConcLen=nbhdConcLen;
+	h_solverParams.nbhdDiffLen=nbhdDiffLen;
+    CC3D_Log(LOG_DEBUG) << "h_solverParams.nbhdConcLen="<<h_solverParams.nbhdConcLen<<" h_solverParams.nbhdDiffLen="<<h_solverParams.nbhdDiffLen;
 
 
     h_solverParams.xDim = fieldDim.x;
@@ -702,15 +666,15 @@ void DiffusionSolverFE_OpenCL::SetSolverParams(DiffusionData &diffData, Secretio
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void DiffusionSolverFE_OpenCL::solverSpecific(CC3DXMLElement *_xmlData) {
-    //getting requested GPU device index
-    if (_xmlData->findElement("GPUDeviceIndex")) {
-        gpuDeviceIndex = _xmlData->getFirstElement("GPUDeviceIndex")->getInt();
-        cerr << "GPU device #" << gpuDeviceIndex << " requested\n";
-    } else {
-        cerr << "No specific GPU requested, it will be selected automatically\n";
-        gpuDeviceIndex = -1;
-    }
+void DiffusionSolverFE_OpenCL::solverSpecific(CC3DXMLElement *_xmlData){
+	//getting requested GPU device index
+	if(_xmlData->findElement("GPUDeviceIndex")){
+		gpuDeviceIndex=_xmlData->getFirstElement("GPUDeviceIndex")->getInt();
+        CC3D_Log(LOG_DEBUG) << "GPU device #"<<gpuDeviceIndex<<" requested";
+	}else{
+        CC3D_Log(LOG_DEBUG) << "No specific GPU requested, it will be selected automatically";
+		gpuDeviceIndex=-1;
+	}
 
 }
 
@@ -720,8 +684,7 @@ void DiffusionSolverFE_OpenCL::initImpl() {
     if (gpuDeviceIndex == -1)
 
         gpuDeviceIndex = 0;
-
-    //cerr<<"Requested GPU device index is "<<gpuDeviceIndex<<endl;
+    CC3D_Log(LOG_TRACE) << "Requested GPU device index is "<<gpuDeviceIndex;
 
     oclHelper = new OpenCLHelper(gpuDeviceIndex);
 
@@ -771,8 +734,7 @@ void DiffusionSolverFE_OpenCL::initImpl() {
     field_len = h_celltype_field->getArraySize();
 
     gpuAlloc(field_len);
-
-    cerr << "building OpenCL program" << endl;
+    CC3D_Log(LOG_DEBUG) << "building OpenCL program";
 
     //const char *kernelSource[] = { "lib/CompuCell3DSteppables/OpenCL/GPUSolverParams.h",
 
@@ -793,9 +755,9 @@ void DiffusionSolverFE_OpenCL::initImpl() {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void DiffusionSolverFE_OpenCL::gpuAlloc(size_t fieldLen) {
-    cerr << "Allocating GPU memory for the field of length " << fieldLen << "\n";
-    cerr << "Field dimensions are: " << fieldDim.x << " " << fieldDim.y << " " << fieldDim.z << "\n";
+void DiffusionSolverFE_OpenCL::gpuAlloc(size_t fieldLen){
+    CC3D_Log(LOG_DEBUG) << "Allocating GPU memory for the field of length "<<fieldLen;
+    CC3D_Log(LOG_DEBUG) << "Field dimensions are: "<<fieldDim.x<<" "<<fieldDim.y<<" "<<fieldDim.z;
 
     size_t mem_size_field = fieldLen * sizeof(float);
     size_t mem_size_celltype_field = fieldLen * sizeof(unsigned char);
@@ -841,27 +803,8 @@ void DiffusionSolverFE_OpenCL::extraInitImpl() {
         cl_int err = oclHelper->WriteBuffer(d_nbhdDiffShifts, &onii.mh_nbhdDiffShifts[0],
                                             onii.mh_nbhdDiffShifts.size());
 
-        err = err | oclHelper->WriteBuffer(d_nbhdConcShifts, &onii.mh_nbhdConcShifts[0], onii.mh_nbhdConcShifts.size());
-        ASSERT_OR_THROW("Can not initialize shifts", err == CL_SUCCESS);
-
-        // // // cerr<<"\n\n\n\n\n\n\n\n\n HEX SOLVE SHIFTS"<<endl;
-        // // // Point3D pt (21,21,0);
-        // // // for(int i=0; i<nbhdConcLen; ++i){
-
-
-        // // // int row=(pt.z%3)*2+pt.y%2;
-
-
-
-        // // // cl_int4 shift=onii.mh_nbhdConcShifts[row*nbhdConcLen+i];
-        // // // cerr<<"i="<<i<<" row="<<row<<" shift=["<<shift.s[0]<<","<<shift.s[1]<<","<<shift.s[2]<<"]"<<endl;
-        // // // // return nbhdConcEff[row*offsetLen+ind];
-
-        // // // // int4 shift=getShift(g_ind+(int4)(-1,-1,-1,0), i, solverParams->hexLattice, nbhdConcShifts, solverParams->nbhdConcLen);
-        // // // // int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
-        // // // // concentrationSum+=l_field[lInd];
-        // // // }
-
+		err = err | oclHelper->WriteBuffer(d_nbhdConcShifts, &onii.mh_nbhdConcShifts[0], onii.mh_nbhdConcShifts.size());
+		ASSERT_OR_THROW("Can not initialize shifts", err==CL_SUCCESS);
 
         //set the arguements of our kernel
         SetConstKernelArguments();
@@ -869,16 +812,13 @@ void DiffusionSolverFE_OpenCL::extraInitImpl() {
         ASSERT_OR_THROW("exception caught", false);
     }
 
-
-    cerr << "extraInitImpl finished\n";
-
+    CC3D_Log(LOG_DEBUG) << "extraInitImpl finished";
+	
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void DiffusionSolverFE_OpenCL::fieldHostToDevice(float const *h_field) {
-
-    //cerr<<"before: ";
-    //CheckConcentrationField(h_field);
+void DiffusionSolverFE_OpenCL::fieldHostToDevice(float const *h_field){
+	//CheckConcentrationField(h_field);
 
     ASSERT_OR_THROW("oclHelper object must be initialized", oclHelper);
 //	LARGE_INTEGER tb, te;
@@ -898,7 +838,7 @@ void DiffusionSolverFE_OpenCL::fieldHostToDevice(float const *h_field) {
 
 void DiffusionSolverFE_OpenCL::fieldDeviceToHost(float *h_field) const {
     ASSERT_OR_THROW("oclHelper object must be initialized", oclHelper);
-    // cerr<<"BUFFER LENGTH="<<field_len<<" "<<h_celltype_field->getArraySize()<<endl;
+    CC3D_Log(LOG_TRACE) << "BUFFER LENGTH="<<field_len<<" "<<h_celltype_field->getArraySize();
     if (oclHelper->ReadBuffer(*concDevPtr, h_field, field_len) != CL_SUCCESS) {
         ASSERT_OR_THROW("Can not read from device buffer", false);
     }
@@ -912,36 +852,34 @@ void DiffusionSolverFE_OpenCL::CreateKernel() {
     cl_int err;
 
     kernelUniDiff = clCreateKernel(program, "uniDiff", &err);
-    printf("clCreateKernel for kernelUniDiff %s: %s\n", "uniDiff", oclHelper->ErrorString(err));
+    CC3D_Log(LOG_DEBUG) << "clCreateKernel for kernelUniDiff uniDiff: " << oclHelper->ErrorString(err);
     ASSERT_OR_THROW("Can not create a kernelUniDiff", err == CL_SUCCESS);
 
 
     kernelBoundaryConditionInit = clCreateKernel(program, "boundaryConditionInitKernel", &err);
-    printf("clCreateKernel for kernel %s: %s\n", "boundaryConditionInitKernel", oclHelper->ErrorString(err));
+    CC3D_Log(LOG_DEBUG) << "clCreateKernel for kernel boundaryConditionInitKernel: " << oclHelper->ErrorString(err);
     ASSERT_OR_THROW("Can not create a boundaryConditionInitKernel", err == CL_SUCCESS);
 
     kernelBoundaryConditionInitLatticeCorners = clCreateKernel(program, "boundaryConditionInitLatticeCornersKernel",
                                                                &err);
-    printf("clCreateKernel for kernel %s: %s\n", "boundaryConditionInitLatticeCornersKernel",
-           oclHelper->ErrorString(err));
+    CC3D_Log(LOG_DEBUG) << "clCreateKernel for kernel boundaryConditionInitLatticeCornersKernel: " << oclHelper->ErrorString(err);
     ASSERT_OR_THROW("Can not create a boundaryConditionInitLatticeCornersKernel", err == CL_SUCCESS);
 
 
     secreteSingleFieldKernel = clCreateKernel(program, "secreteSingleFieldKernel", &err);
-    printf("clCreateKernel for kernel %s: %s\n", "secreteSingleFieldKernel", oclHelper->ErrorString(err));
+    CC3D_Log(LOG_DEBUG) << "clCreateKernel for kernel secreteSingleFieldKernel: " << oclHelper->ErrorString(err);
     ASSERT_OR_THROW("Can not create secreteSingleFieldKernel", err == CL_SUCCESS);
 
 
     secreteConstantConcentrationSingleFieldKernel = clCreateKernel(program,
                                                                    "secreteConstantConcentrationSingleFieldKernel",
                                                                    &err);
-    printf("clCreateKernel for kernel %s: %s\n", "secreteConstantConcentrationSingleFieldKernel",
-           oclHelper->ErrorString(err));
+    CC3D_Log(LOG_DEBUG) << "clCreateKernel for kernel secreteConstantConcentrationSingleFieldKernel: " << oclHelper->ErrorString(err);
     ASSERT_OR_THROW("Can not create secreteConstantConcentrationSingleFieldKernel", err == CL_SUCCESS);
 
 
     secreteOnContactSingleFieldKernel = clCreateKernel(program, "secreteOnContactSingleFieldKernel", &err);
-    printf("clCreateKernel for kernel %s: %s\n", "secreteOnContactSingleFieldKernel", oclHelper->ErrorString(err));
+    CC3D_Log(LOG_DEBUG) << "clCreateKernel for kernel secreteOnContactSingleFieldKernel: " <<  oclHelper->ErrorString(err);
     ASSERT_OR_THROW("Can not create secreteOnContactSingleFieldKernel", err == CL_SUCCESS);
 
 

@@ -1,0 +1,21 @@
+from cc3d import CompuCellSetup
+
+from EffectorProductionSiteSteppables import CellInitializerSteppable
+CompuCellSetup.register_steppable(steppable=CellInitializerSteppable(frequency=1))
+
+from EffectorProductionSiteSteppables import GrowthSteppable
+CompuCellSetup.register_steppable(steppable=GrowthSteppable(frequency=1))
+
+from EffectorProductionSiteSteppables import MitosisSteppable
+CompuCellSetup.register_steppable(steppable=MitosisSteppable(frequency=1))
+
+from EffectorProductionSiteSteppables import ChemotaxisSteppable
+CompuCellSetup.register_steppable(steppable=ChemotaxisSteppable(frequency=1))
+
+from EffectorProductionSiteSteppables import SignalHandlerSteppable
+CompuCellSetup.register_steppable(steppable=SignalHandlerSteppable(frequency=1))
+
+from EffectorProductionSiteSteppables import EffectorMigrationSignalSteppable
+CompuCellSetup.register_steppable(steppable=EffectorMigrationSignalSteppable(frequency=1))
+
+CompuCellSetup.run()

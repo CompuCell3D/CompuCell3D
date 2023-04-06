@@ -1,5 +1,5 @@
 # SET(NUMPY_INCLUDE_DIR )
-# EXEC_PROGRAM(${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/core/pyinterface/PlayerPythonNew ARGS NumpyHeader.py
+# EXEC_PROGRAM(${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/core/pyinterface/PlayerPythonNew ARGS NumpyHeader.py
       # OUTPUT_VARIABLE NUMPY_INCLUDE_DIR)
 
 
@@ -21,7 +21,7 @@ SET(LIBS
    UnitsStatic
    # XMLCerealStatic
    # ${XERCESC_LIBRARY}
-   ${PYTHON_LIBRARIES}
+   ${Python3_LIBRARIES}
 
 )
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
@@ -48,7 +48,7 @@ SET(LIBS
    UnitsShared
    # XMLCerealShared
    # ${XERCESC_LIBRARY}
-   ${PYTHON_LIBRARIES}
+   ${Python3_LIBRARIES}
    ${DOLFIN_LIBS}
 
 )
@@ -104,7 +104,7 @@ set(python_files_path ${CMAKE_BINARY_DIR}/core/pyinterface/Fields)
 #THIS IS EXAMPLE OF WORKING COMMAND 
 # ADD_CUSTOM_COMMAND(
 #     OUTPUT CompuCell.py.mod
-#     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/core/pyinterface/swigmodifier.py ${python_files_path}/CompuCell.py   
+#     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/core/pyinterface/swigmodifier.py ${python_files_path}/CompuCell.py
 #     DEPENDS _CompuCell
 # )
 # 

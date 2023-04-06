@@ -21,7 +21,7 @@
 
 
 #include "KernelDiffusionSolver.h"
-
+#include <Logger/CC3DLogger.h>
 
 using namespace CompuCell3D;
 using namespace std;
@@ -53,7 +53,7 @@ void KernelDiffusionSolverSerializer::readFromFile() {
         }
 
     } catch (CC3DException &e) {
-        cerr << "COULD NOT FIND ONE OF THE FILES" << endl;
+        CC3D_Log(LOG_DEBUG) << "COULD NOT FIND ONE OF THE FILES";
         throw CC3DException("Error in reading diffusion fields from file", e);
     }
 
@@ -99,42 +99,29 @@ void KernelDiffusionSolver::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 
     update(_xmlData, true);
 
-
-    //std::vector<DiffusionSecretionKernelFieldTupple> & diffSecrFieldTuppleVec=diffSecrFieldTuppleVec;
-
     numberOfFields = diffSecrFieldTuppleVec.size();
-    cerr << "Number of Fields: " << numberOfFields << endl;
+    CC3D_Log(LOG_DEBUG) << "Number of Fields: " << numberOfFields;
 
     for (int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        cerr << "Field Name: " << diffSecrFieldTuppleVec[i].getDiffusionData()->fieldName << endl;
+        CC3D_Log(LOG_DEBUG) << "Field Name: " << diffSecrFieldTuppleVec[i].getDiffusionData()->fieldName;
     }
 
-    vector <string> concentrationFieldNameVectorTmp; //temporary vector for field names
-    ///assign vector of field names
-    concentrationFieldNameVectorTmp.assign(diffSecrFieldTuppleVec.size(), string(""));
-
-    cerr << "diffSecrFieldTuppleVec.size()=" << diffSecrFieldTuppleVec.size() << endl;
+	vector<string> concentrationFieldNameVectorTmp; //temporary vector for field names
+	///assign vector of field names
+	concentrationFieldNameVectorTmp.assign(diffSecrFieldTuppleVec.size(),string(""));
+	CC3D_Log(LOG_DEBUG) << "diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size();
 
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
         concentrationFieldNameVectorTmp[i] = diffSecrFieldTuppleVec[i].diffData.fieldName;
-        cerr << " concentrationFieldNameVector[i]=" << concentrationFieldNameVectorTmp[i] << endl;
+        CC3D_Log(LOG_DEBUG) << " concentrationFieldNameVector[i]="<<concentrationFieldNameVectorTmp[i];
     }
 
 
-    cerr << "fieldDim.x: " << fieldDim.x << "  fieldDim.y: " << fieldDim.y << "  fieldDim.z: " << fieldDim.z << "\n";
+	CC3D_Log(LOG_DEBUG) << "fieldDim.x: " << fieldDim.x << "  fieldDim.y: " << fieldDim.y << "  fieldDim.z: " << fieldDim.z;
 
     ///allocate fields including scrartch field
     allocateDiffusableFieldVector(diffSecrFieldTuppleVec.size(), fieldDim);
     workFieldDim = concentrationFieldVector[0]->getInternalDim();
-
-    //workFieldDim=Dim3D(fieldDim.x+2,fieldDim.y+2,fieldDim.z+2);
-    /////allocate fields including scrartch field
-    //if(!haveCouplingTerms){
-    //	cerr << "Allocate Fields!!!!!!!!!!!!!!!1\n";
-    //	allocateDiffusableFieldVector(diffSecrFieldTuppleVec.size()+1,workFieldDim); //+1 is for additional scratch field
-    //}else{
-    //	allocateDiffusableFieldVector(2*diffSecrFieldTuppleVec.size(),workFieldDim); //with coupling terms every field need to have its own scratch field
-    //}
 
     //here I need to copy field names from concentrationFieldNameVectorTmp to concentrationFieldNameVector
     //because concentrationFieldNameVector is reallocated with default values once I call allocateDiffusableFieldVector
@@ -147,8 +134,7 @@ void KernelDiffusionSolver::init(Simulator *simulator, CC3DXMLElement *_xmlData)
     //register fields once they have been allocated
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
         simPtr->registerConcentrationField(concentrationFieldNameVector[i], concentrationFieldVector[i]);
-        cerr << "registring field: " << concentrationFieldNameVector[i] << " field address="
-             << concentrationFieldVector[i] << endl;
+        CC3D_Log(LOG_DEBUG) << "registring field: "<<concentrationFieldNameVector[i]<<" field address="<<concentrationFieldVector[i];
     }
 
 
@@ -170,14 +156,11 @@ void KernelDiffusionSolver::init(Simulator *simulator, CC3DXMLElement *_xmlData)
                 BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(kernel[q]));
     }
     for (int q = 0; q < tempmaxNeighborIndex.size(); q++) {
-        cerr << tempmaxNeighborIndex[q] << endl;
-    }
-
-    cerr << "Kernel: " << max_kernel << endl;
+        CC3D_Log(LOG_DEBUG) << tempmaxNeighborIndex[q];
+	}
+	CC3D_Log(LOG_DEBUG) << "Kernel: " << max_kernel;
     BoundaryStrategy::getInstance()->prepareNeighborListsBasedOnNeighborOrder(max_kernel);
     maxNeighborIndex = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(max_kernel);
-    //   boundaryStrategy=BoundaryStrategy::getInstance();
-    //   maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(kernel);
     Neighbor neighbor;
     Point3D pt;
     pt.x = 0;
@@ -203,7 +186,7 @@ void KernelDiffusionSolver::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 
 void KernelDiffusionSolver::initializeKernel(Simulator *simulator) {
     numberOfFields = diffSecrFieldTuppleVec.size();
-    cerr << "Number of Fields: " << numberOfFields << endl;
+    CC3D_Log(LOG_DEBUG) << "Number of Fields: " << numberOfFields;
     float diffConst;
     Point3D pt;
     pt.x = (fieldDim.x > 1 ? fieldDim.x / 2 : 0);
@@ -213,23 +196,16 @@ void KernelDiffusionSolver::initializeKernel(Simulator *simulator) {
     cellFieldG = (WatchableField3D<CellG *> *) potts->getCellFieldG();
     fieldDim = cellFieldG->getDim();
     boundaryStrategy = BoundaryStrategy::getInstance();
-    //    maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(kernel);
     Neighbor neighbor;
-    //    vector<int> vecMaxNeighborIndex;
-    //    for(int q = 0; q < kernel.size(); q++) {
-    //       BoundaryStrategy::getInstance()->prepareNeighborListsBasedOnNeighborOrder(kernel[q]);
-    //       vecMaxNeighborIndex.push_back(BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(kernel[q]));
-    //    }
-    //
+    
     vector<float> Ker;
     Ker.assign(maxNeighborIndex + 2, 0.0);
-    NKer.assign(numberOfFields, vector<float>(maxNeighborIndex + 3,
-                                              0.0));  //extra point for offset, extra point for <= issue, extra point for neighborhood offset
+    NKer.assign(numberOfFields, vector<float>(maxNeighborIndex + 3, 0.0));  //extra point for offset, extra point for <= issue, extra point for neighborhood offset
     int dimension = 0;
     dimension += (fieldDim.x > 1 ? 1 : 0);
     dimension += (fieldDim.y > 1 ? 1 : 0);
     dimension += (fieldDim.z > 1 ? 1 : 0);
-    cerr << "pt=" << pt << endl;
+    CC3D_Log(LOG_DEBUG) << "pt="<<pt;
     //new BEN
     for (int m = 0; m < numberOfFields; m++) {
         float sum = 0;
@@ -238,13 +214,13 @@ void KernelDiffusionSolver::initializeKernel(Simulator *simulator) {
         diffConst = diffSecrFieldTuppleVec[m].diffData.diffConst;
         decayConst = diffSecrFieldTuppleVec[m].diffData.decayConst;
         float ld = sqrt(diffConst);
-        cerr << "Diffusion Constant: " << diffConst << endl;
-        cerr << "Decay Constant: " << decayConst << endl;
-        cerr << "Kernel: " << kernel[m] << endl;
+        CC3D_Log(LOG_DEBUG) <<  "Diffusion Constant: " << diffConst;
+        CC3D_Log(LOG_DEBUG) << "Decay Constant: " << decayConst;
+        CC3D_Log(LOG_DEBUG) << "Kernel: " << kernel[m];
         //       neighborIter;
         for (unsigned int nIdx = 0; nIdx <= tempmaxNeighborIndex[m]; ++nIdx) {
             neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D &>(pt), nIdx);
-            cerr << "n.pt=" << neighbor.pt << " distance=" << neighbor.distance << endl;
+            CC3D_Log(LOG_DEBUG) << "n.pt="<<neighbor.pt<<" distance="<<neighbor.distance;
             float temp = exp(-1.0 * pow(neighbor.distance * coarseGrainFactorVec[m], 2) / (4.0 * ld * ld));
             sum += temp;
             Ker[nIdx + 1] = temp;
@@ -259,23 +235,21 @@ void KernelDiffusionSolver::initializeKernel(Simulator *simulator) {
             NKer[m][i] = (Ker[i] / sum);
         }
 
-        if (decayConst > 0) {
-
-            cerr << "Decay Const=" << exp(-decayConst) << endl;
-            for (int i = 0; i < Ker.size(); i++) {
-                NKer[m][i] = NKer[m][i] * exp(-decayConst);
-            }
-        }
-        NKer[m][Ker.size()] = NKer[m][Ker.size() - 1];
-
-        cerr << "maxNeighborIndex: " << maxNeighborIndex << endl;
-        cerr << "Ker.size(): " << Ker.size() << endl;
+		if (decayConst > 0) {
+			CC3D_Log(LOG_DEBUG) << "Decay Const="<< exp(-decayConst);
+			for(int i = 0; i < Ker.size(); i++) {
+				NKer[m][i] = NKer[m][i]*exp(-decayConst);
+			}
+		}
+		NKer[m][Ker.size()] = NKer[m][Ker.size()-1];
+		CC3D_Log(LOG_DEBUG) << "maxNeighborIndex: " << maxNeighborIndex;
+        CC3D_Log(LOG_DEBUG) << "Ker.size(): " << Ker.size();
 
         for (int i = 0; i < Ker.size(); i++) {
-            cerr << "NKer: " << NKer[m][i] << "  i: " << i << endl;
+            CC3D_Log(LOG_DEBUG) << "NKer: " << NKer[m][i] << "  i: " << i;
         }
     }
-    cerr << "fieldDim.x: " << fieldDim.x << "  fieldDim.y: " << fieldDim.y << "  fieldDim.z: " << fieldDim.z << "\n";
+    CC3D_Log(LOG_DEBUG) << "fieldDim.x: " << fieldDim.x << "  fieldDim.y: " << fieldDim.y << "  fieldDim.z: " << fieldDim.z;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -292,22 +266,20 @@ void KernelDiffusionSolver::extraInit(Simulator *simulator) {
 }
 
 void KernelDiffusionSolver::handleEvent(CC3DEvent &_event) {
-    //cerr<<" THIS IS EVENT HANDLE FOR FAST DIFFUSION 2D FE"<<endl;
-    if (_event.id == LATTICE_RESIZE) {
-        throw CC3DException(
+    CC3D_Log(LOG_TRACE) << " THIS IS EVENT HANDLE FOR FAST DIFFUSION 2D FE";
+	if (_event.id==LATTICE_RESIZE){
+		throw CC3DException(
                 "KernelDiffusionSolver works only with simulations with full periodic boundary conditions and lattice resizing is not supported for such simulations");
     }
-
 }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void KernelDiffusionSolver::start() {
-    if (simPtr->getRestartEnabled()) {
-        return;  // we will not initialize cells if restart flag is on
-    }
-
-    cerr << "initialzieConcentration\n";
+	if (simPtr->getRestartEnabled()){
+		return ;  // we will not initialize cells if restart flag is on
+	}
+	CC3D_Log(LOG_DEBUG) << "initialzieConcentration";
     initializeConcentration();
 }
 
@@ -322,15 +294,12 @@ void KernelDiffusionSolver::initializeConcentration() {
             continue;
         }
         if (diffSecrFieldTuppleVec[i].diffData.concentrationFileName.empty()) continue;
-        cerr << "fail-safe initialization " << diffSecrFieldTuppleVec[i].diffData.concentrationFileName << endl;
-        //cerr << "Hello00000000" << endl;
+        CC3D_Log(LOG_DEBUG) << "fail-safe initialization "<<diffSecrFieldTuppleVec[i].diffData.concentrationFileName;
         readConcentrationField(diffSecrFieldTuppleVec[i].diffData.concentrationFileName, concentrationFieldVector[i]);
     }
 
     // diffSecrFieldTuppleVec.size() = 1; concentrationFieldVector.size() = 2
-    cerr << "numberOfFields = " << numberOfFields << "\tdiffSecrFieldTuppleVec.size() = "
-         << diffSecrFieldTuppleVec.size() << "\tconcentrationFieldVector.size() = " << concentrationFieldVector.size()
-         << endl;
+    CC3D_Log(LOG_DEBUG) << "numberOfFields = " << numberOfFields << "\tdiffSecrFieldTuppleVec.size() = " << diffSecrFieldTuppleVec.size() << "\tconcentrationFieldVector.size() = " << concentrationFieldVector.size();
 }
 
 
@@ -545,14 +514,14 @@ void KernelDiffusionSolver::secreteSingleField(unsigned int idx) {
                 for (int x = minDim.x; x < maxDim.x; x++) {
 
                     pt = Point3D(x - 1, y - 1, z - 1);
-                    //             cerr<<"pt="<<pt<<" is valid "<<cellFieldG->isValid(pt)<<endl;
+                    CC3D_Log(LOG_TRACE) << "pt="<<pt<<" is valid "<<cellFieldG->isValid(pt);
                     ///**
                     currentCellPtr = cellFieldG->getQuick(pt);
                     //             currentCellPtr=cellFieldG->get(pt);
-                    //             cerr<<"THIS IS PTR="<<currentCellPtr<<endl;
+                    CC3D_Log(LOG_TRACE) << "THIS IS PTR="<<currentCellPtr;
 
-                    //             if(currentCellPtr)
-                    //                cerr<<"This is id="<<currentCellPtr->id<<endl;
+					//             if(currentCellPtr)
+									// CC3D_Log(LOG_TRACE) << "This is id="<<currentCellPtr->id;
                     //currentConcentration = concentrationField.getDirect(x,y,z);
 
                     currentConcentration = concentrationField.getDirect(x, y, z);
@@ -588,9 +557,8 @@ void KernelDiffusionSolver::secreteSingleField(unsigned int idx) {
                                     mitrUptake->second.maxUptake) {
                                     concentrationField.setDirect(x, y, z, concentrationField.getDirect(x, y, z) -
                                                                           mitrUptake->second.maxUptake);
-                                    //cerr<<" uptake concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<mitrUptake->second.maxUptake<<endl;
-                                } else {
-                                    //cerr<<"concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<currentConcentration*mitrUptake->second.relativeUptakeRate<<endl;
+                                    CC3D_Log(LOG_TRACE) << " uptake concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<mitrUptake->second.maxUptake;								}else{
+									CC3D_Log(LOG_TRACE) << "concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<currentConcentration*mitrUptake->second.relativeUptakeRate;
                                     concentrationField.setDirect(x, y, z, concentrationField.getDirect(x, y, z) -
                                                                           currentConcentration *
                                                                           mitrUptake->second.relativeUptakeRate);
@@ -659,14 +627,14 @@ void KernelDiffusionSolver::secreteConstantConcentrationSingleField(unsigned int
                 for (int x = minDim.x; x < maxDim.x; x++) {
 
                     pt = Point3D(x - 1, y - 1, z - 1);
-                    //             cerr<<"pt="<<pt<<" is valid "<<cellFieldG->isValid(pt)<<endl;
+                    CC3D_Log(LOG_TRACE) << "pt="<<pt<<" is valid "<<cellFieldG->isValid(pt);
                     ///**
                     currentCellPtr = cellFieldG->getQuick(pt);
                     //             currentCellPtr=cellFieldG->get(pt);
-                    //             cerr<<"THIS IS PTR="<<currentCellPtr<<endl;
+                    CC3D_Log(LOG_TRACE) << "THIS IS PTR="<<currentCellPtr;
 
                     //             if(currentCellPtr)
-                    //                cerr<<"This is id="<<currentCellPtr->id<<endl;
+                    // 				  CC3D_Log(LOG_TRACE) << "This is id="<<currentCellPtr->id;
                     //currentConcentration = concentrationArray[x][y][z];
 
                     if (secreteInMedium && !currentCellPtr) {
@@ -689,9 +657,9 @@ void KernelDiffusionSolver::secreteConstantConcentrationSingleField(unsigned int
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void KernelDiffusionSolver::secrete() {
-    //cerr<<"secreting "<<endl;
+    CC3D_Log(LOG_TRACE) << "secreting ";
     for (unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); ++i) {
-        //cerr<<"secreting field= "<<" i="<<i<<endl;
+        CC3D_Log(LOG_TRACE) << "secreting field= "<<" i="<<i;
         for (unsigned int j = 0; j < diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size(); ++j) {
             (this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
 
@@ -703,114 +671,6 @@ void KernelDiffusionSolver::secrete() {
 
 
 }
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//void KernelDiffusionSolver::step(const unsigned int _currentStep) {
-//
-//
-//
-//
-//	currentStep=_currentStep;
-//	cerr << "Current Step: " << currentStep << endl;
-//	cellFieldG=(WatchableField3D<CellG *> *)potts->getCellFieldG();
-//	fieldDim = cellFieldG->getDim();
-//	Point3D pt;
-//	Point3D ptCoarseGrained;
-//
-//	boundaryStrategy=BoundaryStrategy::getInstance();
-//	//     maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(kernel);
-//	Neighbor neighbor;
-//
-//	CellG *currentCellPtr;   
-//	float secrConst;
-//	//     workFieldDim=Dim3D(fieldDim.x,fieldDim.y,fieldDim.z);
-//
-//	secrete();
-//
-//
-//	for(int i=0; i < numberOfFields; i++) {
-//		//        cerr << "NumberOfFields: " << numberOfFields << endl;
-//		//        cerr << "Number of ConcentrationFields: " << concentrationFieldVector.size() << endl;
-//		//SecretionData & secrData=diffSecrFieldTuppleVec[i].secrData;
-//		//std::map<unsigned char,float>::iterator mitr;
-//		//std::map<unsigned char,float>::iterator end_mitr=secrData.typeIdSecrConstMap.end();
-//
-//		if(diffSecrFieldTuppleVec[i].diffData.diffConst==0.0 && diffSecrFieldTuppleVec[i].diffData.decayConst==0.0){
-//			continue; //skip solving of the equation if diffusion and decay constants are 0
-//		}
-//
-//		//Here we temporarily set Dim in BoundaryStrategy to reduced size we have to reset it back to the original size once we are done the field
-//		unsigned int coarseGrainFactor= coarseGrainFactorVec[i];
-//
-//		Dim3D originalDim = fieldDim;
-//		Dim3D workFieldDimTmp;
-//		workFieldDimTmp.x=(fieldDim.x/coarseGrainFactor>0?fieldDim.x/coarseGrainFactor:1);
-//		workFieldDimTmp.y=(fieldDim.y/coarseGrainFactor>0?fieldDim.y/coarseGrainFactor:1);
-//		workFieldDimTmp.z=(fieldDim.z/coarseGrainFactor>0?fieldDim.z/coarseGrainFactor:1);
-//
-//
-//		boundaryStrategy->setDim(workFieldDimTmp);
-//
-//
-//		ConcentrationField_t & concentrationField = *concentrationFieldVector[i];
-//		ConcentrationField_t * concentrationFieldPtr = concentrationFieldVector[i];
-//		//ConcentrationField_t * scratchFieldPtr;
-//		//scratchFieldPtr=concentrationFieldVector[diffSecrFieldTuppleVec.size()];
-//		//Array3D_t & scratchArray = scratchFieldPtr->getContainer();
-//		//        sleep(2);
-//
-//		for (unsigned int z = 0; z < workFieldDimTmp.z; z++) {
-//			for (unsigned int y = 0; y < workFieldDimTmp.y; y++){
-//				for (unsigned int x = 0; x < workFieldDimTmp.x; x++){
-//
-//					float value = 0.0;
-//					float zero_val = 0.0;
-//					pt=Point3D(x*coarseGrainFactor , y*coarseGrainFactor , z*coarseGrainFactor);
-//					ptCoarseGrained=Point3D(x,y,z);
-//					//                 currentCellPtr=cellFieldG->get(pt);
-//
-//					value += concentrationField.getDirect(pt.x+1,pt.y+1,pt.z+1)*NKer[i][0];
-//					//cerr<<"pt="<<pt<<endl;
-//
-//					//                 cerr << "pt.x: " << pt.x+1 << " pt.y: " << pt.y+1 << " value: " << concentrationArray[pt.x+1][pt.y+1] << endl; 
-//					//                 cerr << "pt.x: " << pt.x+1 << " pt.y: " << pt.y+1 << endl;
-//
-//					for(unsigned int nIdx=0 ; nIdx < tempmaxNeighborIndex[i]+1; ++nIdx ){
-//						neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(ptCoarseGrained),nIdx);
-//						//                    cerr << "neighbor.pt.x: " << neighbor.pt.x << " neighbor.pt.y: " << neighbor.pt.y << endl; 
-//
-//						if(!neighbor.distance){
-//							//                       cerr << "//if distance is 0 then the neighbor returned is invalid \n";
-//							//if distance is 0 then the neighbor returned is invalid
-//							continue;
-//						}
-//
-//						//                    cerr << "neighbor.pt.x: " << neighbor.pt.x+1 << " neighbor.pt.y: " << neighbor.pt.y+1 << " value: " << 
-//						//                          concentrationArray[neighbor.pt.x+1][neighbor.pt.y+1][neighbor.pt.z+1] << " NKer[i][nIdx]: " << NKer[i][nIdx+1] << "\n";
-//						//                    cerr << "Distance: " << neighbor.distance << " Adjusted Distance: " << neighborDistance[ceil(neighbor.distance*1000)] << endl;
-//						//cerr<<" neighbor="<<neighbor.pt<<" neighbor.x="<<neighbor.pt.x*coarseGrainFactor<<" neighbor.y="<<neighbor.pt.y*coarseGrainFactor<<endl;   
-//						value += concentrationField.getDirect(neighbor.pt.x*coarseGrainFactor+1,neighbor.pt.y*coarseGrainFactor+1,neighbor.pt.z*coarseGrainFactor+1)*NKer[i][nIdx+1];
-//
-//					}
-//					concentrationField.setDirectSwap(pt.x+1,pt.y+1,pt.z+1,value+zero_val);					
-//					//                 if(coarseGrainFactor>1)
-//					writePixelValue(Point3D(pt.x,pt.y,pt.z),concentrationField.getDirectSwap(pt.x+1,pt.y+1,pt.z+1),  coarseGrainFactor,concentrationField);               
-//				}
-//			}
-//		}
-//		//scrarch2Concentration(scratchFieldPtr,concentrationFieldPtr);
-//		concentrationField.swapArrays();
-//		//have to reset Dim in boundary Strategy to original value otherwise you will buggy simulation
-//		boundaryStrategy->setDim(originalDim);
-//	}
-//
-//	if(serializeFrequency>0 && serializeFlag && !(_currentStep % serializeFrequency)){
-//		serializerPtr->setCurrentStep(currentStep);
-//		serializerPtr->serialize();
-//	}
-//}
 
 
 void KernelDiffusionSolver::step(const unsigned int _currentStep) {
@@ -974,7 +834,7 @@ void KernelDiffusionSolver::readConcentrationField(std::string fileName, Concent
     pt.y = 0;
     pt.x = 0;
     concentrationField->set(pt, 0);
-    cerr << "In ReadConcentration:  " << "concentrationField: " << concentrationField << "\n";
+    CC3D_Log(LOG_DEBUG) << "In ReadConcentration:  " << "concentrationField: " << concentrationField;
 
     std::string basePath = simulator->getBasePath();
     std::string fn = fileName;
@@ -994,19 +854,19 @@ void KernelDiffusionSolver::readConcentrationField(std::string fileName, Concent
     for (pt.z = 0; pt.z < fieldDim.z; pt.z++) {
         for (pt.y = 0; pt.y < fieldDim.y; pt.y++) {
             for (pt.x = 0; pt.x < fieldDim.x; pt.x++) {
-                //          cerr << "pt.x: " << pt.x << "  pt.y: " << pt.y << "  pt.z: " << pt.z << "\n";
+                CC3D_Log(LOG_TRACE) << "pt.x: " << pt.x << "  pt.y: " << pt.y << "  pt.z: " << pt.z;
                 concentrationField->set(pt, 0);
-                //          cerr << "pt.x: " << pt.x << "  pt.y: " << pt.y << "  pt.z: " << pt.z << "\n";
+                CC3D_Log(LOG_TRACE) << "pt.x: " << pt.x << "  pt.y: " << pt.y << "  pt.z: " << pt.z;
             }
         }
     }
-    cerr << "Begin Filling Concentration Field\n";
+    CC3D_Log(LOG_DEBUG) << "Begin Filling Concentration Field";
     while (!in.eof()) {
         in >> pt.x >> pt.y >> pt.z >> c;
         if (!in.fail())
             concentrationField->set(pt, c);
     }
-    cerr << "Exiting ReadConcentration\n";
+    CC3D_Log(LOG_DEBUG) << "Exiting ReadConcentration";
 
 }
 
@@ -1030,113 +890,6 @@ void KernelDiffusionSolver::scrarch2Concentration(ConcentrationField_t *scratchF
 
 
 void KernelDiffusionSolver::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
-
-    //if(potts->getDisplayUnitsFlag()){
-    //	Unit diffConstUnit=powerUnit(potts->getLengthUnit(),2)/potts->getTimeUnit();
-    //	Unit decayConstUnit=1/potts->getTimeUnit();
-    //    Unit secretionConstUnit=1/potts->getTimeUnit();
-
-    //	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units");
-    //	if (!unitsElem){ //add Units element
-    //		unitsElem=_xmlData->attachElement("Units");
-    //	}
-
-    //	if(unitsElem->getFirstElement("DiffusionConstantUnit")){
-    //		unitsElem->getFirstElement("DiffusionConstantUnit")->updateElementValue(diffConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("DiffusionConstantUnit",diffConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DecayConstantUnit")){
-    //		unitsElem->getFirstElement("DecayConstantUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("DecayConstantUnit",decayConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DeltaXUnit")){
-    //		unitsElem->getFirstElement("DeltaXUnit")->updateElementValue(potts->getLengthUnit().toString());
-    //	}else{
-    //		unitsElem->attachElement("DeltaXUnit",potts->getLengthUnit().toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DeltaTUnit")){
-    //		unitsElem->getFirstElement("DeltaTUnit")->updateElementValue(potts->getTimeUnit().toString());
-    //	}else{
-    //		unitsElem->attachElement("DeltaTUnit",potts->getTimeUnit().toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("CouplingCoefficientUnit")){
-    //		unitsElem->getFirstElement("CouplingCoefficientUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("CouplingCoefficientUnit",decayConstUnit.toString());
-    //	}
-
-
-
-    //	if(unitsElem->getFirstElement("SecretionUnit")){
-    //		unitsElem->getFirstElement("SecretionUnit")->updateElementValue(secretionConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("SecretionUnit",secretionConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("SecretionOnContactUnit")){
-    //		unitsElem->getFirstElement("SecretionOnContactUnit")->updateElementValue(secretionConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("SecretionOnContactUnit",secretionConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("ConstantConcentrationUnit")){
-    //		unitsElem->getFirstElement("ConstantConcentrationUnit")->updateElementValue(secretionConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("ConstantConcentrationUnit",secretionConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DecayConstantUnit")){
-    //		unitsElem->getFirstElement("DecayConstantUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("DecayConstantUnit",decayConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DeltaXUnit")){
-    //		unitsElem->getFirstElement("DeltaXUnit")->updateElementValue(potts->getLengthUnit().toString());
-    //	}else{
-    //		unitsElem->attachElement("DeltaXUnit",potts->getLengthUnit().toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("DeltaTUnit")){
-    //		unitsElem->getFirstElement("DeltaTUnit")->updateElementValue(potts->getTimeUnit().toString());
-    //	}else{
-    //		unitsElem->attachElement("DeltaTUnit",potts->getTimeUnit().toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("CouplingCoefficientUnit")){
-    //		unitsElem->getFirstElement("CouplingCoefficientUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("CouplingCoefficientUnit",decayConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("UptakeUnit")){
-    //		unitsElem->getFirstElement("UptakeUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("UptakeUnit",decayConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("RelativeUptakeUnit")){
-    //		unitsElem->getFirstElement("RelativeUptakeUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("RelativeUptakeUnit",decayConstUnit.toString());
-    //	}
-
-    //	if(unitsElem->getFirstElement("MaxUptakeUnit")){
-    //		unitsElem->getFirstElement("MaxUptakeUnit")->updateElementValue(decayConstUnit.toString());
-    //	}else{
-    //		unitsElem->attachElement("MaxUptakeUnit",decayConstUnit.toString());
-    //	}
-
-
-
-    //}
-
 
     //notice, limited steering is enabled for PDE solvers - changing diffusion constants, do -not-diffuse to types etc...
     // Coupling coefficients cannot be changed and also there is no way to allocate extra fields while simulation is running
@@ -1183,14 +936,14 @@ void KernelDiffusionSolver::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
         if (_xmlData->getFirstElement("Serialize")->findAttribute("Frequency")) {
             serializeFrequency = _xmlData->getFirstElement("Serialize")->getAttributeAsUInt("Frequency");
         }
-        cerr << "serialize Flag=" << serializeFlag << endl;
+        CC3D_Log(LOG_DEBUG) << "serialize Flag="<<serializeFlag;
 
     }
 
 
     if (_xmlData->findElement("ReadFromFile")) {
         readFromFileFlag = true;
-        cerr << "readFromFileFlag=" << readFromFileFlag << endl;
+        CC3D_Log(LOG_DEBUG) << "readFromFileFlag="<<readFromFileFlag;
     }
 
 
@@ -1259,11 +1012,6 @@ void KernelDiffusionSolver::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
         }
     }
 
-    //for (unsigned int i=0 ; i < coarseGrainMultiplicativeFactorVec.size() ;++i){
-    //	cerr<<"i="<<i<<" coarseGrainMultiplicativeFactorVec[i]="<<coarseGrainMultiplicativeFactorVec[i]<<endl;
-    //}
-
-    //exit(0);
     if (!suitableForCoarseGrainingFlag)
         throw CC3DException("DIMENSIONS OF THE LATTICE ARE INCOMPATIBLE WITH COARSE GRAINING FACTOR");
 

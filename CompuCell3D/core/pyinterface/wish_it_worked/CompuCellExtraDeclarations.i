@@ -174,6 +174,7 @@ namespace CompuCell3D {
 
 //have to include all  export definitions for modules which are arapped to avoid problems with interpreting by swig win32 specific c++ extensions...
 #define COMPUCELLLIB_EXPORT
+#define LOGGER_EXPORT
 #define BOUNDARYSHARED_EXPORT
 #define CHEMOTAXISSIMPLE_EXPORT
 #define CHEMOTAXIS_EXPORT

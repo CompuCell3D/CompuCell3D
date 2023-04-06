@@ -9,7 +9,7 @@ IF (APPLE)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 " CACHE STRING "flags used during compilation by C++ compiler" FORCE)
     SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 " CACHE STRING "flags used during compilation by C compiler" FORCE)
     SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "OSX deployment target" FORCE)
-
+    SET(CMAKE_OSX_SYSROOT /opt/MacOSX10.10.sdk)
     MESSAGE ("GOT APPLE")
 ENDIF (APPLE)
 
@@ -118,6 +118,7 @@ SET(COMPUCELL3D_INSTALL_STEPPABLE_DIR " cc3d/cpp/CompuCell3DSteppables")
 
 LINK_DIRECTORIES(${COMPUCELL3D_LIBRARY_PATH} ${COMPUCELL3D_INSTALL_LIB_DIR} ${COMPUCELL3D_LINK_LIBRARY_PATH})
 SET(CC3DLibraries
+    CC3DLogger
     CC3DCompuCellLib
     CC3DAutomaton
     CC3DBoundary
@@ -128,6 +129,7 @@ SET(CC3DLibraries
     CC3DPotts3D
     CC3DmuParser
     CC3DExpressionEvaluator
+
     )
 SET(STEPPABLE_DEPENDENCIES ${CC3DLibraries})
 SET(PLUGIN_DEPENDENCIES ${CC3DLibraries})

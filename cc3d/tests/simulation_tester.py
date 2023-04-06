@@ -11,12 +11,14 @@ from os.path import *
 import os
 import shutil
 import sys
+from cc3d import run_script
+from pathlib import Path
 
 
 def process_cml():
     cml_parser = argparse.ArgumentParser(description='Simulation Tester')
-    cml_parser.add_argument('--run-command', required=True,
-                            help='cc3d run script (either RunScript or compucell3d)')
+    cml_parser.add_argument('--run-command', required=False,
+                            help='cc3d run script (either RunScript or compucell3d)', default="")
     cml_parser.add_argument('--output-dir', required=True,
                             help='test output dir')
 
@@ -34,14 +36,17 @@ def main():
 
     current_script_dir = dirname(__file__)
 
-    run_command = args.run_command
+    # run_command = args.run_command
+    run_command_list = [sys.executable, run_script.__file__]
     test_output_root = args.output_dir
 
-    cc3d_projects = find_file_in_dir(current_script_dir, '*.cc3d')
+    # testing only PDE_solvers for now
+    cc3d_projects = find_file_in_dir(Path(current_script_dir).joinpath("pde_solvers"), '*.cc3d')
     cc3d_projects_common_prefix = commonprefix(cc3d_projects)
 
     rs = RunSpecs()
-    rs.run_command = run_command
+    # rs.run_command = run_command
+    rs.run_command = run_command_list
     rs.player_interactive_flag = False
     rs.cc3d_project = ''
     rs.num_steps = 1000
