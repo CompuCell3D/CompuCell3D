@@ -1,6 +1,15 @@
 Release Notes
 =============
 
+
+Version 4.4.0-py-version-fix
+-------------
+**2023-04-22**
+
+Bug fixes:
+  - Fixed cc3d.__init__ to run with python versions ? 3.7
+
+
 Version 4.4.0
 -------------
 **2023-03-26**
