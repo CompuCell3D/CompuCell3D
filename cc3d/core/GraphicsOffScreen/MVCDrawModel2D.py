@@ -1502,7 +1502,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         n_mid_com = np.array(self.planeMapper(dim_order, (n_cell.xCOM, n_cell.yCOM, n_cell.zCOM)), dtype=float)
 
-        n_link_begin = np.array([n_mid_com[0], n_mid_com[1]], dtype=np.float)
+        n_link_begin = np.array([n_mid_com[0], n_mid_com[1]], dtype=float)
 
         link_begin_3d = mid_com
         n_link_begin_3d = n_mid_com
@@ -1527,8 +1527,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 dim=[field_dim_ordered[0], field_dim_ordered[1], 1],
             )
 
-            inv_dist_vec = np.array([inv_dist_vec[0], inv_dist_vec[1]], dtype=np.float)
-            link_begin = np.array([mid_com[0], mid_com[1]], dtype=np.float)
+            inv_dist_vec = np.array([inv_dist_vec[0], inv_dist_vec[1]], dtype=float)
+            link_begin = np.array([mid_com[0], mid_com[1]], dtype=float)
             link_end = link_begin + inv_dist_vec
 
             field_dim_ord_np = np.array([field_dim_ordered[0], field_dim_ordered[1]], dtype=np.int)
@@ -1617,7 +1617,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         clip_pos = seg_info[1]
         ratio = (end[clip_coord_idx] - clip_pos) / (end[clip_coord_idx] - begin[clip_coord_idx])
 
-        vector_piece_to_add = np.zeros(2, dtype=np.float)
+        vector_piece_to_add = np.zeros(2, dtype=float)
 
         vector_piece_to_add[clip_coord_idx] = clip_pos - begin[clip_coord_idx]
         vector_piece_to_add[other_coord_idx] = (1 - ratio) * (end[other_coord_idx] - begin[other_coord_idx])

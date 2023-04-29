@@ -5,7 +5,7 @@ x_size = 100
 
 def step(c, d):
 
-    c_t_1 = np.zeros(x_size, dtype=np.float)
+    c_t_1 = np.zeros(x_size, dtype=float)
 
     for x in range(1, x_size-1, 1):
 
@@ -40,11 +40,11 @@ def balance_check(c):
 
 if __name__ == '__main__':
 
-    c = np.zeros(x_size, dtype=np.float)
+    c = np.zeros(x_size, dtype=float)
 
     c[50] = 2000.0
 
-    d = np.zeros(x_size, dtype=np.float)
+    d = np.zeros(x_size, dtype=float)
     d[:53] = 0.3
 
     num_step = 40
