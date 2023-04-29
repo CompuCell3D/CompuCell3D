@@ -29,6 +29,7 @@ using namespace CompuCell3D;
 
 
 #include "FieldExtractorCML.h"
+#include "FieldWriterCML.h"
 
 
 FieldExtractorCML::FieldExtractorCML() : lds(0), zDimFactor(0), yDimFactor(0) {
@@ -2166,4 +2167,181 @@ std::vector<int> FieldExtractorCML::fillScalarFieldCellLevelGlyphs3D(std::string
                                 scalar_value_at_com_addr,
                                 types_invisibe_vec,
                                 extractOuterShellOnly);
+}
+
+bool FieldExtractorCML::fillLinksField2D(
+    vtk_obj_addr_int_t points_array_addr, 
+    vtk_obj_addr_int_t lines_array_addr, 
+    const std::string &plane,
+    const int &pos,
+    const int &margin
+) {
+    vector<int> dimOrderVec = dimOrder(plane);
+    int dimOrder[] = {dimOrderVec[0], dimOrderVec[1], dimOrderVec[2]};
+
+    Dim3D fieldDim = getFieldDim();
+    int fieldDimVec[] = {fieldDim.x, fieldDim.y, fieldDim.z};
+    int dim[] = {fieldDimVec[dimOrder[0]], fieldDimVec[dimOrder[1]], fieldDimVec[dimOrder[2]]};
+
+    vtkLongArray *idArray = (vtkLongArray *) lds->GetPointData()->GetArray(FieldWriterCML::CellIdName.c_str());
+    vtkLongArray *linksArray = (vtkLongArray *) lds->GetPointData()->GetArray(FieldWriterCML::LinksName.c_str());
+    vtkLongArray *linksInternalArray = (vtkLongArray *) lds->GetPointData()->GetArray(FieldWriterCML::LinksInternalName.c_str());
+    vtkDoubleArray *anchorsArray = (vtkDoubleArray *) lds->GetPointData()->GetArray(FieldWriterCML::AnchorsName.c_str());
+
+    if(!linksArray || !linksInternalArray || !anchorsArray) 
+        return false;
+    if(linksArray->GetSize() + linksInternalArray->GetSize() + linksInternalArray->GetSize() == 0) 
+        return false;
+
+    int ptCounter = 0;
+    vtkPoints *points = (vtkPoints*)points_array_addr;
+    vtkCellArray *lines = (vtkCellArray*)lines_array_addr;
+
+    std::unordered_map<long, std::list<int> > coordsx, coordsy, coordsz;
+    std::unordered_set<long> coordsids;
+    Point3D pt;
+    for(int k = 0; k < fieldDim.z + 2; ++k)
+        for(int j = 0; j < fieldDim.y + 2; ++j)
+            for(int i = 0; i < fieldDim.x + 2; ++i) {
+                if(i == 0 || i == fieldDim.x + 1 || j == 0 || j == fieldDim.y + 1 || k == 0 || k == fieldDim.z + 1) 
+                    continue;
+                else {
+                    pt.x = i - 1;
+                    pt.y = j - 1;
+                    pt.z = k - 1;
+
+                    long cell_id = idArray->GetValue(indexPoint3D(pt));
+                    if(!cell_id)
+                        continue;
+
+                    coordsids.insert(cell_id);
+                    coordsx[cell_id].push_back(i);
+                    coordsy[cell_id].push_back(j);
+                    coordsz[cell_id].push_back(k);
+                }
+            }
+
+    std::unordered_map<long, Coordinates3D<double> > centroids;
+    for(auto &cell_id : coordsids) 
+        centroids[cell_id] = {centroid(coordsx[cell_id]), centroid(coordsy[cell_id]), centroid(coordsz[cell_id])};
+
+    for(int i = 0; i < linksArray->GetSize(); i += 2) {
+        long id0 = linksArray->GetValue(i);
+        long id1 = linksArray->GetValue(i + 1);
+
+        Coordinates3D<double> _pt0 = centroids[id0];
+        Coordinates3D<double> _pt1 = centroids[id1];
+        double pt0[] = {_pt0.x, _pt0.y, _pt0.z};
+        double pt1[] = {_pt1.x, _pt1.y, _pt1.z};
+
+        vizLinks2D(pt0, pt1, (vtk_obj_addr_int_t)points, (vtk_obj_addr_int_t)lines, dim, dimOrder, pos, margin, ptCounter);
+    }
+    for(int i = 0; i < linksInternalArray->GetSize(); i += 2) {
+        long id0 = linksInternalArray->GetValue(i);
+        long id1 = linksInternalArray->GetValue(i + 1);
+
+        Coordinates3D<double> _pt0 = centroids[id0];
+        Coordinates3D<double> _pt1 = centroids[id1];
+        double pt0[] = {_pt0.x, _pt0.y, _pt0.z};
+        double pt1[] = {_pt1.x, _pt1.y, _pt1.z};
+
+        vizLinks2D(pt0, pt1, (vtk_obj_addr_int_t)points, (vtk_obj_addr_int_t)lines, dim, dimOrder, pos, margin, ptCounter);
+    }
+    for(int i = 0; i < anchorsArray->GetSize(); i++) {
+        double *vi = anchorsArray->GetTuple4(i);
+        long id0 = (long)vi[0];
+
+        Coordinates3D<double> _pt0 = centroids[id0];
+        double pt0[] = {_pt0.x, _pt0.y, _pt0.z};
+        double pt1[] = {vi[1], vi[2], vi[3]};
+
+        vizLinks2D(pt0, pt1, (vtk_obj_addr_int_t)points, (vtk_obj_addr_int_t)lines, dim, dimOrder, pos, margin, ptCounter);
+    }
+
+    return true;
+}
+
+bool FieldExtractorCML::fillLinksField3D(
+    vtk_obj_addr_int_t points_array_addr, 
+    vtk_obj_addr_int_t lines_array_addr
+) {
+    Dim3D fieldDim = getFieldDim();
+    int fieldDimVec[] = {fieldDim.x, fieldDim.y, fieldDim.z};
+
+    vtkLongArray *idArray = (vtkLongArray *) lds->GetPointData()->GetArray(FieldWriterCML::CellIdName.c_str());
+    vtkLongArray *linksArray = (vtkLongArray *) lds->GetPointData()->GetArray(FieldWriterCML::LinksName.c_str());
+    vtkLongArray *linksInternalArray = (vtkLongArray *) lds->GetPointData()->GetArray(FieldWriterCML::LinksInternalName.c_str());
+    vtkDoubleArray *anchorsArray = (vtkDoubleArray *) lds->GetPointData()->GetArray(FieldWriterCML::AnchorsName.c_str());
+
+    if(!linksArray || !linksInternalArray || !anchorsArray) 
+        return false;
+    if(linksArray->GetSize() + linksInternalArray->GetSize() + linksInternalArray->GetSize() == 0) 
+        return false;
+
+    int ptCounter = 0;
+    vtkPoints *points = (vtkPoints*)points_array_addr;
+    vtkCellArray *lines = (vtkCellArray*)lines_array_addr;
+
+    std::unordered_map<long, std::list<int> > coordsx, coordsy, coordsz;
+    std::unordered_set<long> coordsids;
+    Point3D pt;
+    for(int k = 0; k < fieldDim.z + 2; ++k)
+        for(int j = 0; j < fieldDim.y + 2; ++j)
+            for(int i = 0; i < fieldDim.x + 2; ++i) {
+                if(i == 0 || i == fieldDim.x + 1 || j == 0 || j == fieldDim.y + 1 || k == 0 || k == fieldDim.z + 1) 
+                    continue;
+                else {
+                    pt.x = i - 1;
+                    pt.y = j - 1;
+                    pt.z = k - 1;
+
+                    long cell_id = idArray->GetValue(indexPoint3D(pt));
+                    if(!cell_id)
+                        continue;
+
+                    coordsids.insert(cell_id);
+                    coordsx[cell_id].push_back(i);
+                    coordsy[cell_id].push_back(j);
+                    coordsz[cell_id].push_back(k);
+                }
+            }
+
+    std::unordered_map<long, Coordinates3D<double> > centroids;
+    for(auto &cell_id : coordsids) 
+        centroids[cell_id] = {centroid(coordsx[cell_id]), centroid(coordsy[cell_id]), centroid(coordsz[cell_id])};
+
+    for(int i = 0; i < linksArray->GetSize(); i += 2) {
+        long id0 = linksArray->GetValue(i);
+        long id1 = linksArray->GetValue(i + 1);
+
+        Coordinates3D<double> _pt0 = centroids[id0];
+        Coordinates3D<double> _pt1 = centroids[id1];
+        double pt0[] = {_pt0.x, _pt0.y, _pt0.z};
+        double pt1[] = {_pt1.x, _pt1.y, _pt1.z};
+
+        vizLinks3D(pt0, pt1, (vtk_obj_addr_int_t)points, (vtk_obj_addr_int_t)lines, fieldDimVec, ptCounter);
+    }
+    for(int i = 0; i < linksInternalArray->GetSize(); i += 2) {
+        long id0 = linksInternalArray->GetValue(i);
+        long id1 = linksInternalArray->GetValue(i + 1);
+
+        Coordinates3D<double> _pt0 = centroids[id0];
+        Coordinates3D<double> _pt1 = centroids[id1];
+        double pt0[] = {_pt0.x, _pt0.y, _pt0.z};
+        double pt1[] = {_pt1.x, _pt1.y, _pt1.z};
+
+        vizLinks3D(pt0, pt1, (vtk_obj_addr_int_t)points, (vtk_obj_addr_int_t)lines, fieldDimVec, ptCounter);
+    }
+    for(int i = 0; i < anchorsArray->GetSize(); i++) {
+        double *vi = anchorsArray->GetTuple4(i);
+        long id0 = (long)vi[0];
+
+        Coordinates3D<double> _pt0 = centroids[id0];
+        double pt0[] = {_pt0.x, _pt0.y, _pt0.z};
+        double pt1[] = {vi[1], vi[2], vi[3]};
+
+        vizLinks3D(pt0, pt1, (vtk_obj_addr_int_t)points, (vtk_obj_addr_int_t)lines, fieldDimVec, ptCounter);
+    }
+
+    return true;
 }

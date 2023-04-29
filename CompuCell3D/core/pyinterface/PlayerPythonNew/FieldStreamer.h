@@ -26,6 +26,9 @@ namespace CompuCell3D {
         std::vector<std::string> scalarFieldCellLevelNames;
         std::vector<std::string> vectorFieldNames;
         std::vector<std::string> vectorFieldCellLevelNames;
+        std::vector<std::string> linksNames;
+        std::vector<std::string> linksInternalNames;
+        std::vector<std::string> anchorsNames;
         Dim3D fieldDim;
         std::string data;
 
