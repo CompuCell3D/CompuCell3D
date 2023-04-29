@@ -253,7 +253,7 @@ bool FieldExtractorBase::linksPos2D(
     Coordinates3D<double> invDistCoords = distanceVectorCoordinatesInvariant(
         {link1_begin[0], link1_begin[1], 0}, 
         {link0_begin[0], link0_begin[1], 0}, 
-        {fieldDimOrdered[0], fieldDimOrdered[1], 1}
+        {static_cast<short>(fieldDimOrdered[0]), static_cast<short>(fieldDimOrdered[1]), 1}
     );
 
     link0_end[0] = link0_begin[0] + invDistCoords.x;
@@ -297,7 +297,7 @@ bool FieldExtractorBase::linksPos3D(
     Coordinates3D<double> invDistCoords = distanceVectorCoordinatesInvariant(
         {link1_begin[0], link1_begin[1], link1_begin[2]}, 
         {link0_begin[0], link0_begin[1], link0_begin[2]}, 
-        {fieldDim[0], fieldDim[1], fieldDim[2]}
+        {static_cast<short>(fieldDim[0]), static_cast<short>(fieldDim[1]), static_cast<short>(fieldDim[2])}
     );
 
     link0_end[0] = link0_begin[0] + invDistCoords.x;
