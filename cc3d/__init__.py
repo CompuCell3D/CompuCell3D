@@ -9,7 +9,7 @@ import sys
 from os.path import dirname, join, abspath
 from pathlib import Path
 
-__version__ = "4.4.0"
+__version__ = "4.5.0"
 __revision__ = "0"
 __githash__ = "6ab5a20"
 

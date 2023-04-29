@@ -1,4 +1,4 @@
-version: 4.4.0
+version: 4.5.0
 build_number: 0
 numpy_version : 1.21
 cc3d_network_solvers_version: 0.3.0
