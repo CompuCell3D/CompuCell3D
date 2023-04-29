@@ -41,6 +41,12 @@ std::vector<std::string> FieldStreamerData::getFieldNames() {
         result.push_back(s);
     for(auto &s : vectorFieldCellLevelNames) 
         result.push_back(s);
+    for(auto &s : linksNames) 
+        result.push_back(s);
+    for(auto &s : linksInternalNames) 
+        result.push_back(s);
+    for(auto &s : anchorsNames) 
+        result.push_back(s);
     return result;
 }
 
@@ -71,6 +77,9 @@ void FieldStreamer::loadData(const FieldStreamerData &_data) {
     data.scalarFieldCellLevelNames = _data.scalarFieldCellLevelNames;
     data.vectorFieldNames = _data.vectorFieldNames;
     data.vectorFieldCellLevelNames = _data.vectorFieldCellLevelNames;
+    data.linksNames = _data.linksNames;
+    data.linksInternalNames = _data.linksInternalNames;
+    data.anchorsNames = _data.anchorsNames;
     data.fieldDim = _data.fieldDim;
 
     vtkStructuredPointsReader *reader = vtkStructuredPointsReader::New();
@@ -111,6 +120,15 @@ FieldStreamerData FieldStreamer::dump(FieldWriterCML *fieldWriter) {
             break;
         case FieldTypeCML::FieldTypeCML_VectorFieldCellLevel:
             fsd.vectorFieldCellLevelNames.push_back(fieldName);
+            break;
+        case FieldTypeCML::FieldTypeCML_Links:
+            fsd.linksNames.push_back(fieldName);
+            break;
+        case FieldTypeCML::FieldTypeCML_LinksInternal:
+            fsd.linksInternalNames.push_back(fieldName);
+            break;
+        case FieldTypeCML::FieldTypeCML_Anchors:
+            fsd.anchorsNames.push_back(fieldName);
             break;
         default:
             break;

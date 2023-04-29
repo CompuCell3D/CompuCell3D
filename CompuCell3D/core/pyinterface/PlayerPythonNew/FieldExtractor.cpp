@@ -7,6 +7,7 @@
 #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
+#include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityPlugin.h>
 #include <Utils/Coordinates3D.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include <vtkIntArray.h>
@@ -3836,6 +3837,119 @@ void FieldExtractor::fillScalarFieldCellLevelGlyphs2D(
 
 }
 
+bool FieldExtractor::fillLinksField2D(
+    vtk_obj_addr_int_t points_array_addr, 
+    vtk_obj_addr_int_t lines_array_addr, 
+    const std::string &plane,
+    const int &pos,
+    const int &margin
+) {
+    if(!sim->pluginManager.isLoaded("FocalPointPlasticity")) 
+        return false;
+    FocalPointPlasticityPlugin *fppPlugin = (FocalPointPlasticityPlugin*)sim->pluginManager.get("FocalPointPlasticity");
+
+    vector<int> pointOrderVec = pointOrder(plane);
+    vector<int> dimOrderVec = dimOrder(plane);
+    int dimOrder[] = {dimOrderVec[0], dimOrderVec[1], dimOrderVec[2]};
+
+    Dim3D fieldDim = potts->getCellFieldG()->getDim();
+    int fieldDimVec[] = {fieldDim.x, fieldDim.y, fieldDim.z};
+    int dim[] = {fieldDimVec[dimOrder[0]], fieldDimVec[dimOrder[1]], fieldDimVec[dimOrder[2]]};
+
+    auto listLinks = fppPlugin->getLinkInventory()->getLinkList();
+    auto listLinksInternal = fppPlugin->getInternalLinkInventory()->getLinkList();
+    auto listAnchors = fppPlugin->getAnchorInventory()->getLinkList();
+
+    if(listLinks.size() + listLinksInternal.size() + listAnchors.size() == 0) 
+        return false;
+
+    int ptCounter = 0;
+    vtkPoints *points = (vtkPoints*)points_array_addr;
+    vtkCellArray *lines = (vtkCellArray*)lines_array_addr;
+
+    for(auto &link : listLinks) {
+        CellG *cell0 = link->getObj0();
+        CellG *cell1 = link->getObj1();
+
+        double pt0[] = {cell0->xCOM, cell0->yCOM, cell0->zCOM};
+        double pt1[] = {cell1->xCOM, cell1->yCOM, cell1->zCOM};
+
+        vizLinks2D(pt0, pt1, (vtk_obj_addr_int_t)points, (vtk_obj_addr_int_t)lines, dim, dimOrder, pos, margin, ptCounter);
+    }
+    for(auto &link : listLinksInternal) {
+        CellG *cell0 = link->getObj0();
+        CellG *cell1 = link->getObj1();
+
+        double pt0[] = {cell0->xCOM, cell0->yCOM, cell0->zCOM};
+        double pt1[] = {cell1->xCOM, cell1->yCOM, cell1->zCOM};
+
+        vizLinks2D(pt0, pt1, (vtk_obj_addr_int_t)points, (vtk_obj_addr_int_t)lines, dim, dimOrder, pos, margin, ptCounter);
+    }
+    for(auto &link : listAnchors) {
+        CellG *cell = link->getObj0();
+        auto apt = link->getAnchorPoint();
+
+        double pt0[] = {cell->xCOM, cell->yCOM, cell->zCOM};
+        double pt1[] = {apt[0], apt[1], apt[2]};
+
+        vizLinks2D(pt0, pt1, (vtk_obj_addr_int_t)points, (vtk_obj_addr_int_t)lines, dim, dimOrder, pos, margin, ptCounter);
+    }
+
+    return true;
+}
+
+bool FieldExtractor::fillLinksField3D(
+    vtk_obj_addr_int_t points_array_addr, 
+    vtk_obj_addr_int_t lines_array_addr
+) {
+    if(!sim->pluginManager.isLoaded("FocalPointPlasticity")) 
+        return false;
+    FocalPointPlasticityPlugin *fppPlugin = (FocalPointPlasticityPlugin*)sim->pluginManager.get("FocalPointPlasticity");
+
+    Dim3D fieldDim = potts->getCellFieldG()->getDim();
+    int fieldDimVec[] = {fieldDim.x, fieldDim.y, fieldDim.z};
+
+    auto listLinks = fppPlugin->getLinkInventory()->getLinkList();
+    auto listLinksInternal = fppPlugin->getInternalLinkInventory()->getLinkList();
+    auto listAnchors = fppPlugin->getAnchorInventory()->getLinkList();
+
+    if(listLinks.size() + listLinksInternal.size() + listAnchors.size() == 0) 
+        return false;
+
+    int ptCounter = 0;
+    vtkPoints *points = (vtkPoints*)points_array_addr;
+    vtkCellArray *lines = (vtkCellArray*)lines_array_addr;
+
+    for(auto &link : listLinks) {
+        CellG *cell0 = link->getObj0();
+        CellG *cell1 = link->getObj1();
+
+        double pt0[] = {cell0->xCOM, cell0->yCOM, cell0->zCOM};
+        double pt1[] = {cell1->xCOM, cell1->yCOM, cell1->zCOM};
+
+        vizLinks3D(pt0, pt1, (vtk_obj_addr_int_t)points, (vtk_obj_addr_int_t)lines, fieldDimVec, ptCounter);
+    }
+    for(auto &link : listLinksInternal) {
+        CellG *cell0 = link->getObj0();
+        CellG *cell1 = link->getObj1();
+
+        double pt0[] = {cell0->xCOM, cell0->yCOM, cell0->zCOM};
+        double pt1[] = {cell1->xCOM, cell1->yCOM, cell1->zCOM};
+
+        vizLinks3D(pt0, pt1, (vtk_obj_addr_int_t)points, (vtk_obj_addr_int_t)lines, fieldDimVec, ptCounter);
+    }
+    for(auto &link : listAnchors) {
+        CellG *cell = link->getObj0();
+        auto apt = link->getAnchorPoint();
+
+        double pt0[] = {cell->xCOM, cell->yCOM, cell->zCOM};
+        double pt1[] = {apt[0], apt[1], apt[2]};
+
+        vizLinks3D(pt0, pt1, (vtk_obj_addr_int_t)points, (vtk_obj_addr_int_t)lines, fieldDimVec, ptCounter);
+    }
+
+    return true;
+}
 
 void FieldExtractor::setVtkObj(void *_vtkObj) {
     CC3D_Log(LOG_DEBUG) << "INSIDE setVtkObj" << endl;

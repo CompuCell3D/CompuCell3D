@@ -1401,77 +1401,25 @@ class MVCDrawModel2D(MVCDrawModelBase):
         """
         initializes fpp links actors
         :param actor_specs:
-        :param drawing_params:
+        :param drawing_params
         :return: None
         """
+        _drawing_params = self.currentDrawingParameters if drawing_params is None else drawing_params
 
-        fpp_plugin = CompuCell.getFocalPointPlasticityPlugin()
-        if not fpp_plugin:  # bogus check
-            print("    fppPlugin is null, returning")
-            return
-
-        actors_dict = actor_specs.actors_dict
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
-        field_dim_ordered = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))
-
-        scene_metadata = drawing_params.screenshot_data.metadata
-        mdata = MetadataHandler(mdata=scene_metadata)
-
-        try:
-            # cellField = self.currentDrawingParameters.bsd.sim.getPotts().getCellFieldG()
-            inventory = self.currentDrawingParameters.bsd.sim.getPotts().getCellInventory()
-        except AttributeError:
-            raise AttributeError("Could not access Potts object")
-
-        cell_list = CellList(inventory)
+        mdata = MetadataHandler(mdata=_drawing_params.screenshot_data.metadata)
 
         points = vtk.vtkPoints()
         lines = vtk.vtkCellArray()
+        points_ad = extract_address_int_from_vtk_object(vtkObj=points)
+        lines_ad = extract_address_int_from_vtk_object(vtkObj=lines)
 
-        pt_counter = 0
-
-        for cell in cell_list:
-            vol = cell.volume
-            if vol < self.eps:
-                continue
-            mid_com = np.array(self.planeMapper(dim_order, (cell.xCOM, cell.yCOM, cell.zCOM)), dtype=float)
-
-            # points.InsertNextPoint(mid_com[0], mid_com[1], 0)
-
-            for fppd in InternalFocalPointPlasticityDataList(fpp_plugin, cell):
-                pt_counter = self.add_link(
-                    dim_order=dim_order,
-                    field_dim_ordered=field_dim_ordered,
-                    drawing_params=drawing_params,
-                    fppd=fppd,
-                    mid_com=mid_com,
-                    pt_counter=pt_counter,
-                    lines=lines,
-                    points=points,
-                )
-
-            for fppd in FocalPointPlasticityDataList(fpp_plugin, cell):
-                pt_counter = self.add_link(
-                    dim_order=dim_order,
-                    field_dim_ordered=field_dim_ordered,
-                    drawing_params=drawing_params,
-                    fppd=fppd,
-                    mid_com=mid_com,
-                    pt_counter=pt_counter,
-                    lines=lines,
-                    points=points,
-                )
-
-            # begin_pt_counter = end_pt_counter  # update point index
-            # # todo - outer break
-            # # break
+        self.field_extractor.fillLinksField2D(points_ad, lines_ad, _drawing_params.plane, _drawing_params.planePosition)
 
         fpp_links_pd = vtk.vtkPolyData()
         fpp_links_pd.SetPoints(points)
         fpp_links_pd.SetLines(lines)
 
-        fpp_links_actor = actors_dict["fpp_links_actor"]
+        fpp_links_actor = actor_specs.actors_dict["fpp_links_actor"]
 
         if VTK_MAJOR_VERSION >= 6:
             self.FPPLinksMapper.SetInputData(fpp_links_pd)
@@ -1480,156 +1428,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
             self.FPPLinksMapper.SetInput(fpp_links_pd)
 
         fpp_links_actor.SetMapper(self.FPPLinksMapper)
-        fpp_links_color = to_vtk_rgb(mdata.get("FPPLinksColor", data_type="color"))
         # coloring borders
-        fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
-
-    def add_link(self, dim_order, field_dim_ordered, drawing_params, fppd, mid_com, pt_counter, lines, points):
-        """
-        adds a single link to lines and points vtk structures
-        :param dim_order:
-        :param field_dim_ordered:
-        :param drawing_params:
-        :param fppd:
-        :param mid_com:
-        :param pt_counter: point counter - helps keeping track of which points form a segment
-        :param lines:
-        :param points:
-        :return:
-        """
-
-        n_cell = fppd.neighborAddress
-
-        n_mid_com = np.array(self.planeMapper(dim_order, (n_cell.xCOM, n_cell.yCOM, n_cell.zCOM)), dtype=float)
-
-        n_link_begin = np.array([n_mid_com[0], n_mid_com[1]], dtype=float)
-
-        link_begin_3d = mid_com
-        n_link_begin_3d = n_mid_com
-
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-
-        naive_actual_dist = np.linalg.norm(n_link_begin_3d - link_begin_3d)
-
-        inv_dist = self.invariant_distance(p1=link_begin_3d, p2=n_link_begin_3d, dim=field_dim)
-        if abs((inv_dist - naive_actual_dist) / (naive_actual_dist + epsilon)) > 10 * epsilon:
-            # if naive distance is different than invariant distance then we are dealing with link that is wrapped
-            # if naive_actual_dist > fppd.maxDistance:
-            # implies we have wraparound (via periodic BCs)
-            # inv_dist_vec = self.unconditional_invariant_distance_vector(
-            #     p1=[mid_com[0], mid_com[1], 0],
-            #     p2=[n_mid_com[0], n_mid_com[1], 0],
-            #     dim=[field_dim_ordered[0], field_dim_ordered[1], 1])
-
-            inv_dist_vec = self.invariant_distance_vector(
-                p1=[mid_com[0], mid_com[1], 0],
-                p2=[n_mid_com[0], n_mid_com[1], 0],
-                dim=[field_dim_ordered[0], field_dim_ordered[1], 1],
-            )
-
-            inv_dist_vec = np.array([inv_dist_vec[0], inv_dist_vec[1]], dtype=float)
-            link_begin = np.array([mid_com[0], mid_com[1]], dtype=float)
-            link_end = link_begin + inv_dist_vec
-
-            field_dim_ord_np = np.array([field_dim_ordered[0], field_dim_ordered[1]], dtype=np.int)
-
-            vector_piece_to_add = self.compute_clipped_segment(begin=link_begin, end=link_end, dim=field_dim_ord_np)
-
-            # changing link end by adding first clipped segment
-            link_end = link_begin + vector_piece_to_add
-            reminder_vector = inv_dist_vec - vector_piece_to_add
-
-            n_link_end = n_link_begin - reminder_vector
-
-            n_vector_piece_to_add = self.compute_clipped_segment(
-                begin=n_link_begin, end=n_link_end, dim=field_dim_ord_np
-            )
-
-            n_link_end = n_link_begin + n_vector_piece_to_add
-
-            # our line has 2 points
-
-            if self.is_link_visible(mid_com[2], drawing_params.planePosition):
-                points.InsertNextPoint(mid_com[0], mid_com[1], 0)
-                points.InsertNextPoint(link_end[0], link_end[1], 0)
-
-                lines.InsertNextCell(2)
-
-                lines.InsertCellPoint(pt_counter)
-                lines.InsertCellPoint(pt_counter + 1)
-
-                pt_counter += 2
-
-            if self.is_link_visible(n_mid_com[2], drawing_params.planePosition):
-                points.InsertNextPoint(n_link_begin[0], n_link_begin[1], 0)
-                points.InsertNextPoint(n_link_end[0], n_link_end[1], 0)
-                lines.InsertNextCell(2)
-                lines.InsertCellPoint(pt_counter)
-                lines.InsertCellPoint(pt_counter + 1)
-                pt_counter += 2
-
-        # link didn't wrap around on lattice
-        else:
-
-            if self.is_link_visible(mid_com[2], drawing_params.planePosition):
-                points.InsertNextPoint(mid_com[0], mid_com[1], 0)
-                points.InsertNextPoint(n_mid_com[0], n_mid_com[1], 0)
-                # our line has 2 points
-                lines.InsertNextCell(2)
-                lines.InsertCellPoint(pt_counter)
-                lines.InsertCellPoint(pt_counter + 1)
-                pt_counter += 2
-
-        return pt_counter
-
-    def compute_clipped_segment(self, begin, end, dim):
-        """
-
-        :param begin: position within lattice
-        :param end: end position maybe in or out the lattice
-        :param dim: lattice dim
-        :return:
-        """
-        vec_to_add = end - begin
-        seg_info_list = []
-        for idx in range(2):
-            if not self.is_within_lattice(coord=end[idx], coord_dim=dim[idx]):
-                pos = 0 if end[idx] < 0 else dim[idx]
-                coord_idx_array = np.ones(2, dtype=int)
-                coord_idx_array[idx] = 0
-
-                seg_info = (coord_idx_array, pos)
-
-                seg_info_list.append(seg_info)
-
-                vec_to_add = self.compute_vector_piece_to_add(begin=begin, end=end, seg_info=seg_info)
-                other_intersect = self.other_intersect(begin, vec_to_add, coord_idx_array)
-                if self.is_within_lattice(coord=other_intersect, coord_dim=dim[coord_idx_array[1]]):
-                    break
-
-        return vec_to_add
-
-    @staticmethod
-    def compute_vector_piece_to_add(begin, end, seg_info):
-        coord_idx_array = seg_info[0]
-        clip_coord_idx = coord_idx_array[0]
-        other_coord_idx = coord_idx_array[1]
-        clip_pos = seg_info[1]
-        ratio = (end[clip_coord_idx] - clip_pos) / (end[clip_coord_idx] - begin[clip_coord_idx])
-
-        vector_piece_to_add = np.zeros(2, dtype=float)
-
-        vector_piece_to_add[clip_coord_idx] = clip_pos - begin[clip_coord_idx]
-        vector_piece_to_add[other_coord_idx] = (1 - ratio) * (end[other_coord_idx] - begin[other_coord_idx])
-
-        return vector_piece_to_add
-
-    @staticmethod
-    def other_intersect(begin, vec_to_add, coord_idx_array):
-        other_coord_idx = coord_idx_array[1]
-
-        lattice_edge_pos = begin + vec_to_add
-        return lattice_edge_pos[other_coord_idx]
+        fpp_links_actor.GetProperty().SetColor(*to_vtk_rgb(mdata.get("FPPLinksColor", data_type="color")))
 
     @staticmethod
     def is_within_lattice(coord, coord_dim, eps=0.01):
@@ -1641,24 +1441,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :return:
         """
         return 0 - eps <= coord <= coord_dim + eps
-
-    def compute_clip_pos(self, pt, dim, coord_idx):
-
-        clip_pos = -1
-        if not self.is_within_lattice(pt[coord_idx], dim[coord_idx]):
-            clip_pos = 0 if pt[0] < 0 else dim[0]
-        return clip_pos
-
-    @staticmethod
-    def is_link_visible(link_begin_coord, plane_pos, margin=1) -> bool:
-        """
-        returns boolean value depending if the plane intersects link box (think 3D  minimal box than contains link)
-        :param link_begin_coord:
-        :param plane_pos:
-        :param margin: margin that enlarges link box in the 3rd coord
-        :return:
-        """
-        return link_begin_coord - margin <= plane_pos < link_begin_coord + margin
 
     # Optimize code?
     def dimOrder(self, plane):
