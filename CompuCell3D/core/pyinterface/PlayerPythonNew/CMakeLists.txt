@@ -41,6 +41,7 @@ LINK_DIRECTORIES(${VTK_LIBRARY_DIRS})
 SET(LIBS
     cc3d::CompuCellLib
     cc3d::NeighborTracker
+    cc3d::FocalPointPlasticity
     cc3d::PublicUtilities
     ${PYTHON_LIBRARY_TO_LINK}
     ${VTK_LIBS}
