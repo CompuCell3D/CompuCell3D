@@ -222,16 +222,20 @@ class CellG;
   }
   
   float __getitem__(CompuCell3D::CellG * _cell) {
-      return (*($self))[_cell]; //this has side efect that if the _cell is not in the map it will be inserted with  matching value 0.0
+      //this has side effect that if the _cell is not in the map it will be inserted with  matching value 0.0
+      return (*($self))[_cell];
       
   }
 
   
 };
 
+// needed in numpy 1.22 and higher to get PyArray_SimpleNew. any function
+// using PyArray_SimpleNew cannot release GIL
+// see https://stackoverflow.com/questions/74861186/access-vaiolation-in-pyarray-simplenew
+%nothread CompuCell3D::VectorFieldCellLevel::__getitem__;
 
 %extend CompuCell3D::VectorFieldCellLevel{    
-
 
   void __setitem__(CompuCell3D::CellG * _cell,PyObject *_numpyArrayObj) {
       
@@ -270,16 +274,18 @@ class CellG;
   
   PyObject* __getitem__(CompuCell3D::CellG * _cell) {
       Coordinates3D<float> &vec=(*($self))[_cell];
-//     cerr<<"x,y,z="<<vec.x<<","<<vec.y<<","<<vec.z<<endl;  
-    npy_intp dim=3;
-    
-    PyObject* numpyArray= PyArray_SimpleNew(1,&dim,NPY_FLOAT32);
-    
+//      cerr<<"x,y,z="<<vec.x<<","<<vec.y<<","<<vec.z<<endl;
+     int size=3;
+    npy_intp dims[] = {size};
+
+
+    PyObject* numpyArray= PyArray_SimpleNew(1,dims,NPY_FLOAT);
+
     float *data =static_cast<float*>(PyArray_DATA(numpyArray));
     data[0]=vec.x;
     data[1]=vec.y;
     data[2]=vec.z;
-    
+
     return numpyArray;
   }
 };
