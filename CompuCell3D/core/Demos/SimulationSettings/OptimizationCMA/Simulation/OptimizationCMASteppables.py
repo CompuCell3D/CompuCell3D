@@ -126,7 +126,7 @@ class OptimizationCMASteppable(CMAOptimizationSteppable):
         """
 
         max_type_id = 2
-        intertype_boundary = np.zeros((max_type_id + 1, max_type_id + 1), dtype=np.float)
+        intertype_boundary = np.zeros((max_type_id + 1, max_type_id + 1), dtype=float)
 
         for cell in self.cellList:
             for neighbor, commonSurfaceArea in self.getCellNeighborDataList(cell):
