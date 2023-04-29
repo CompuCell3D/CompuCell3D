@@ -23,7 +23,7 @@ import warnings
 
 # default setting
 logger = CompuCell.CC3DLogger.get()
-logger.enableConsoleLogging(CompuCell.LOG_INFORMATION)
+logger.enableConsoleLogging(CompuCell.LOG_CURRENT)
 
 
 # -------------------- legacy API emulation ----------------------------------------

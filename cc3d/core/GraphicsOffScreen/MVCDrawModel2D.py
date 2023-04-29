@@ -10,6 +10,7 @@ from cc3d.core.iterators import CellList, FocalPointPlasticityDataList, Internal
 from cc3d.cpp import CompuCell
 from cc3d.cpp import PlayerPython
 import sys
+from cc3d.core.enums import *
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 
@@ -261,7 +262,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         fill_successful = False
         if self.is_lattice_hex(drawing_params=drawing_params):
-            if field_type == "vectorfield":
+            if field_type == FIELD_NUMBER_TO_FIELD_TYPE_MAP[VECTOR_FIELD].lower():
                 fill_successful = self.field_extractor.fillVectorFieldData2DHex(
                     points_int_addr,
                     vectors_int_addr,
@@ -269,7 +270,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
                     self.currentDrawingParameters.plane,
                     self.currentDrawingParameters.planePos,
                 )
-            elif field_type == "vectorfieldcelllevel":
+            elif field_type == FIELD_NUMBER_TO_FIELD_TYPE_MAP[VECTOR_FIELD_CELL_LEVEL].lower():
                 fill_successful = self.field_extractor.fillVectorFieldCellLevelData2DHex(
                     points_int_addr,
                     vectors_int_addr,
@@ -278,7 +279,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
                     self.currentDrawingParameters.planePos,
                 )
         else:
-            if field_type == "vectorfield":
+            if field_type == FIELD_NUMBER_TO_FIELD_TYPE_MAP[VECTOR_FIELD].lower():
                 fill_successful = self.field_extractor.fillVectorFieldData2D(
                     points_int_addr,
                     vectors_int_addr,
@@ -286,7 +287,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
                     self.currentDrawingParameters.plane,
                     self.currentDrawingParameters.planePos,
                 )
-            elif field_type == "vectorfieldcelllevel":
+            elif field_type == FIELD_NUMBER_TO_FIELD_TYPE_MAP[VECTOR_FIELD_CELL_LEVEL].lower():
                 fill_successful = self.field_extractor.fillVectorFieldCellLevelData2D(
                     points_int_addr,
                     vectors_int_addr,
@@ -345,8 +346,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
             glyphs.SetScaleModeToScaleByVector()
             # rangeSpan = maxMagnitude - minMagnitude
             data_scaling_factor = max(abs(min_magnitude), abs(max_magnitude))
-            # print(MODULENAME, "initVectorFieldCellLevelActors():  self.minMagnitude=", self.minMagnitude,
-            #       " self.maxMagnitude=", self.maxMagnitude)
 
             if data_scaling_factor == 0.0:
                 # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1

@@ -416,7 +416,7 @@ class ScreenshotManagerCore(object):
 
             self.gd.clear_display()
             self.gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)
-            self.gd.output_screenshot(screenshot_fname=screenshot_fname)
+            self.gd.output_screenshot(screenshot_fname=screenshot_fname, screenshot_data=screenshot_data)
 
     def output_screenshots(self, mcs: int) -> None:
         """

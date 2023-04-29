@@ -23,18 +23,25 @@ RandomFieldInitializer::RandomFieldInitializer() :
 
 RandomFieldInitializer::~RandomFieldInitializer() {
     delete builder;
-    delete rand;
+    if (rand) {
+
+        delete rand;
+        rand = nullptr;
+    }
 }
 
 void RandomFieldInitializer::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
     simulator = _simulator;
     potts = _simulator->getPotts();
-    cellField = (WatchableField3D < CellG * > *)
-    potts->getCellFieldG();
+    cellField = (WatchableField3D<CellG *> *)
+            potts->getCellFieldG();
     if (!cellField) throw CC3DException("initField() Cell field G cannot be null!");
     dim = cellField->getDim();
     builder = new FieldBuilder(_simulator);
     // setParameters(_simulator,_xmlData);
+    auto randomSeed = simulator->getRNGSeed();
+    rand = simulator->generateRandomNumberGenerator(randomSeed);
+
     update(_xmlData, true);
 }
 
@@ -69,8 +76,8 @@ void RandomFieldInitializer::setParameters(Simulator *_simulator, CC3DXMLElement
     if (order == 2) { builder->setNeighborListSO(); }
     else { builder->setNeighborListFO(); }
     // read types and set bias
-    vector <string> typeNames;
-    vector <string> biasVec;
+    vector<string> typeNames;
+    vector<string> biasVec;
     if (_xmlData->getFirstElement("types")) {
         string typeNamesString = _xmlData->getFirstElement("types")->getText();
         parseStringIntoList(typeNamesString, typeNames, ",");

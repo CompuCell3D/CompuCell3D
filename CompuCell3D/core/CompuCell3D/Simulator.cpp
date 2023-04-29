@@ -16,6 +16,7 @@ using namespace CompuCell3D;
 #include <limits>
 #include <sstream>
 #include <chrono>
+#include <random>
 
 #include <XMLUtils/CC3DXMLElement.h>
 #include <Logger/CC3DLogger.h>
@@ -222,6 +223,26 @@ SteerableObject *Simulator::getSteerableObject(const std::string &_objectName) {
     }
 
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+unsigned int Simulator::getRNGSeed() {
+    unsigned int randomSeed=0;
+    if (!ppdCC3DPtr){
+        return randomSeed;
+    }
+
+    if (!this->ppdCC3DPtr->seed) {
+        srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+        // we want number to be between 1 and max. 0 value of random seed is used as a sentinel so we dont allow it here
+        randomSeed = (unsigned int) std::rand() * ((std::numeric_limits<unsigned int>::max)() - 2)+1;
+    } else {
+        randomSeed = this->ppdCC3DPtr->seed;
+    }
+
+    return randomSeed;
+}
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 RandomNumberGenerator *Simulator::generateRandomNumberGenerator(const unsigned int &seed) {
@@ -670,8 +691,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData) {
 
     unsigned int randomSeed;
     if (!_xmlData->getFirstElement("RandomSeed")) {
-        srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-        randomSeed = (unsigned int) rand() * ((std::numeric_limits<unsigned int>::max)() - 1);
+        randomSeed = getRNGSeed();
     } else {
         randomSeed = _xmlData->getFirstElement("RandomSeed")->getUInt();
         ppdCC3DPtr->seed = randomSeed;
