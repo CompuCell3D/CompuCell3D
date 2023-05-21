@@ -114,7 +114,7 @@ void ExpressionEvaluatorDepot::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 
 	CC3DXMLElementList builtinVariableVecXML=_xmlData->getElements("BuiltinVariable");
 	for (int i =0 ; i < builtinVariableVecXML.size() ; ++i){
-		builtinVariableAliasPairVec.push_back(make_pair(builtinVariableVecXML[i]->getAttribute("builtinName"),builtinVariableVecXML[i]->getAttribute("Alias")));
+		builtinVariableAliasPairVec.emplace_back(builtinVariableVecXML[i]->getAttribute("builtinName"),builtinVariableVecXML[i]->getAttribute("Alias"));
 	}
 
 

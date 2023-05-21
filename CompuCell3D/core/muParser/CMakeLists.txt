@@ -33,7 +33,6 @@ INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/muParser .h
   muParserError
   muParserFixes
   muParserInt
-  muParserStack
   muParserTest
   muParserTemplateMagic
   muParserToken
