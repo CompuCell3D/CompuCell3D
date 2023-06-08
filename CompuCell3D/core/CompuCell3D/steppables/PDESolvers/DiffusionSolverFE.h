@@ -336,11 +336,7 @@ namespace CompuCell3D {
                 for (int x = 1; x <= fieldDim.x; ++x) {
                     //float val=h_field[z*(fieldDim.x+2)*(fieldDim.y+2)+y*(fieldDim.x+2)+x];
                     float val = concentrationField.getDirect(x, y, z);
-#ifdef _WIN32
-                    if(!_finite(val)){
-#else
-                    if (!finite(val)) {
-#endif
+                    if (!isfinite(val)) {
                         CC3D_Log(LOG_DEBUG) << "NaN at position: " << x << "x" << y << "x" << z;
                         continue;
                     }

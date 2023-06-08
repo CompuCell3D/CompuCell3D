@@ -16,7 +16,6 @@
 #include <CompuCell3D/Boundary/BoundaryTypeDefinitions.h>
 #include <CompuCell3D/SteerableObject.h>
 #include <CompuCell3D/ExtraMembers.h>
-#include <PublicUtilities/Units/Unit.h>
 #include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
 
 namespace CompuCell3D {
@@ -185,12 +184,6 @@ namespace CompuCell3D {
         unsigned int flips;
         std::unordered_map<unsigned char, float> cellTypeMotilityMap;
 
-        //units
-        Unit massUnit;
-        Unit lengthUnit;
-        Unit timeUnit;
-        Unit energyUnit;
-        bool displayUnitsFlag;
         double temperature;
         ParallelUtilsOpenMP *pUtils;
 
@@ -287,26 +280,6 @@ namespace CompuCell3D {
         void setFrozenTypeVector(std::vector<unsigned char> &_frozenTypeVec);
 
         const std::vector<unsigned char> &getFrozenTypeVector() { return frozenTypeVec; }
-
-        void setMassUnit(const Unit &_unit) { massUnit = _unit; }
-
-        void setLengthUnit(const Unit &_unit) { lengthUnit = _unit; }
-
-        void setTimeUnit(const Unit &_unit) { timeUnit = _unit; }
-
-        void setEnergyUnit(const Unit &_unit) { energyUnit = _unit; }
-
-        Unit getMassUnit() { return massUnit; }
-
-        Unit getLengthUnit() { return lengthUnit; }
-
-        Unit getTimeUnit() { return timeUnit; }
-
-        Unit getEnergyUnit() { return energyUnit; }
-
-        bool getDisplayUnitsFlag() { return displayUnitsFlag; }
-
-        void updateUnits(CC3DXMLElement *);
 
         Point3D getFlipNeighbor();
 
