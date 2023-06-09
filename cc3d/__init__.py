@@ -72,8 +72,6 @@ if sys.platform.startswith('win'):
 
         if cc3d_lib_shared not in path_env_list:
             os.add_dll_directory(cc3d_lib_shared)
-        if cc3d_cpp_bin_path not in path_env_list:
-            os.add_dll_directory(cc3d_cpp_bin_path)
 
         os.add_dll_directory(os.environ['COMPUCELL3D_PLUGIN_PATH'])
         os.add_dll_directory(os.environ['COMPUCELL3D_STEPPABLE_PATH'])
@@ -82,8 +80,6 @@ if sys.platform.startswith('win'):
 
         if cc3d_lib_shared not in path_env_list:
             path_env_list.insert(0, cc3d_lib_shared)
-        if cc3d_cpp_bin_path not in path_env_list:
-            path_env_list.insert(0, cc3d_cpp_bin_path)
 
         path_env_list.insert(0, os.environ['COMPUCELL3D_PLUGIN_PATH'])
         path_env_list.insert(0, os.environ['COMPUCELL3D_STEPPABLE_PATH'])
