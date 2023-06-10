@@ -11,7 +11,7 @@ from pathlib import Path
 
 __version__ = "4.4.1"
 __revision__ = "0"
-__githash__ = "6ab5a20"
+__githash__ = "f5c3009"
 
 # from . import config
 from cc3d import config
