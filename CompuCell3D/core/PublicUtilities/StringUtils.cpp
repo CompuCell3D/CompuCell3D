@@ -1,6 +1,7 @@
 #include "StringUtils.h"
 #include <iostream>
 #include <algorithm>
+#include <string>
 
 using namespace std;
 void parseStringIntoList(std::string &str,std::vector<std::string> &strVec,std::string separator){
