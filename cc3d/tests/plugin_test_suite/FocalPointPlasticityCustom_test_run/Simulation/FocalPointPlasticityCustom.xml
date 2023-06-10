@@ -51,7 +51,7 @@
         </Parameters>
 
         <LinkConstituentLaw>
-            <!-- The following variables lare defined by default: Lambda,Length,TargetLength  -->
+            <!-- The following variables are defined by default: Lambda,Length,TargetLength  -->
             <Variable Name="LambdaExtra" Value="1.0"/>
             <Expression>LambdaExtra*Lambda*(Length-TargetLength)^2</Expression>
         </LinkConstituentLaw>
