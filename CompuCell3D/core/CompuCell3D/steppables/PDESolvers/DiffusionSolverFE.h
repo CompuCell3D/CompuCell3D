@@ -1,7 +1,7 @@
 #ifndef DIFFUSIONSOLVERFE_H
 #define DIFFUSIONSOLVERFE_H
 
-
+#include <cmath>
 #include <CompuCell3D/Steppable.h>
 #include <CompuCell3D/Potts3D/Cell.h>
 #include <CompuCell3D/Boundary/BoundaryTypeDefinitions.h>
@@ -339,7 +339,7 @@ namespace CompuCell3D {
 #ifdef _WIN32
                     if(!_finite(val)){
 #else
-                    if (!finite(val)) {
+                    if (!isfinite(val)) {
 #endif
                         CC3D_Log(LOG_DEBUG) << "NaN at position: " << x << "x" << y << "x" << z;
                         continue;
