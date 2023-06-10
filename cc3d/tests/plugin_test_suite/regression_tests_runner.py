@@ -3,6 +3,7 @@ This script facilitates unit/integration testing. Example command looks as follo
 
 python regression_tests_runner.py --run-command=c:/CompuCell3D-py3-64bit/runScript.bat --output-dir=c:/CompuCell3D_test_output
 """
+
 from cc3d.tests.test_utils.RunSpecs import RunSpecs
 from cc3d.tests.test_utils.RunExecutor import RunExecutor
 from cc3d import run_script
@@ -93,7 +94,11 @@ def main():
     errors_summary_path = Path(rs.test_output_root).joinpath("regression_test_errors.csv")
 
     for i, cc3d_project in enumerate(simulations_to_run):
-        print("rs.cc3d_project =", rs.cc3d_project)
+        # if Path(cc3d_project).name != "connectivity_elongation_fast.cc3d":
+        #     continue
+        # if Path(cc3d_project).name != "FocalPointPlasticityCustom.cc3d":
+        #     continue
+
         rs.cc3d_project = cc3d_project
         rs.test_output_dir = relpath(cc3d_project, cc3d_projects_common_prefix)
         run_executor = RunExecutor(run_specs=rs)
