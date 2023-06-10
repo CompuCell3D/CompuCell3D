@@ -1,7 +1,7 @@
 #ifndef DIFFUSIONSOLVERFE_H
 #define DIFFUSIONSOLVERFE_H
 
-#include <cmath>
+
 #include <CompuCell3D/Steppable.h>
 #include <CompuCell3D/Potts3D/Cell.h>
 #include <CompuCell3D/Boundary/BoundaryTypeDefinitions.h>
@@ -336,11 +336,7 @@ namespace CompuCell3D {
                 for (int x = 1; x <= fieldDim.x; ++x) {
                     //float val=h_field[z*(fieldDim.x+2)*(fieldDim.y+2)+y*(fieldDim.x+2)+x];
                     float val = concentrationField.getDirect(x, y, z);
-#ifdef _WIN32
-                    if(!_finite(val)){
-#else
                     if (!isfinite(val)) {
-#endif
                         CC3D_Log(LOG_DEBUG) << "NaN at position: " << x << "x" << y << "x" << z;
                         continue;
                     }
