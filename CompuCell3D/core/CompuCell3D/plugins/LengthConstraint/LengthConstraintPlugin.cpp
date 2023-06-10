@@ -8,9 +8,9 @@ using namespace std;
 
 #include "LengthConstraintPlugin.h"
 
-LengthConstraintPlugin::LengthConstraintPlugin() : xmlData(0), potts(0), changeEnergyFcnPtr(0) {}
+LengthConstraintPlugin::LengthConstraintPlugin() : xmlData(nullptr), potts(nullptr), changeEnergyFcnPtr(nullptr) {}
 
-LengthConstraintPlugin::~LengthConstraintPlugin() {}
+LengthConstraintPlugin::~LengthConstraintPlugin() = default;
 
 void LengthConstraintPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
@@ -23,6 +23,7 @@ void LengthConstraintPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData
                                                   &pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
     if (!pluginAlreadyRegisteredFlag)
         plugin->init(simulator);
+
 
     boundaryStrategy = BoundaryStrategy::getInstance();
 
@@ -156,10 +157,10 @@ double LengthConstraintPlugin::changeEnergy_xz(const Point3D &pt, const CellG *n
         }
         //we can optimize it further in case user does not specify local paramteress (i.e. per cell id and by-type definition is not specified as well)
 
-        double xcm = (newCell->xCM / (float) newCell->volume);
-        double zcm = (newCell->zCM / (float) newCell->volume);
-        double newXCM = (newCell->xCM + ptTrans.x) / ((float) newCell->volume + 1);
-        double newZCM = (newCell->zCM + ptTrans.z) / ((float) newCell->volume + 1);
+        double xcm = (newCell->xCM / (double) newCell->volume);
+        double zcm = (newCell->zCM / (double) newCell->volume);
+        double newXCM = (newCell->xCM + ptTrans.x) / ((double) newCell->volume + 1);
+        double newZCM = (newCell->zCM + ptTrans.z) / ((double) newCell->volume + 1);
 
         double newIxx = newCell->iXX + (newCell->volume) * zcm * zcm - (newCell->volume + 1) * (newZCM * newZCM) +
                         ptTrans.z * ptTrans.z;
@@ -168,13 +169,13 @@ double LengthConstraintPlugin::changeEnergy_xz(const Point3D &pt, const CellG *n
         double newIxz = newCell->iXZ - (newCell->volume) * xcm * zcm + (newCell->volume + 1) * newXCM * newZCM -
                         ptTrans.x * ptTrans.z;
 
-        double currLength = 4.0 * sqrt(((float) ((0.5 * (newCell->iXX + newCell->iZZ)) + .5 * sqrt((float) (
+        double currLength = 4.0 * sqrt(((double) ((0.5 * (newCell->iXX + newCell->iZZ)) + .5 * sqrt((double) (
                 (newCell->iXX - newCell->iZZ) * (newCell->iXX - newCell->iZZ) +
-                4 * (newCell->iXZ) * (newCell->iXZ))))) / (float) (newCell->volume));
+                4 * (newCell->iXZ) * (newCell->iXZ))))) / (double) (newCell->volume));
 
         double currEnergy = lambdaLength * (currLength - targetLength) * (currLength - targetLength);
-        double newLength = 4.0 * sqrt(((float) ((0.5 * (newIxx + newIzz)) + .5 * sqrt((float) (
-                (newIxx - newIzz) * (newIxx - newIzz) + 4 * newIxz * newIxz)))) / (float) (newCell->volume + 1));
+        double newLength = 4.0 * sqrt(((double) ((0.5 * (newIxx + newIzz)) + .5 * sqrt((double) (
+                (newIxx - newIzz) * (newIxx - newIzz) + 4 * newIxz * newIxz)))) / (double) (newCell->volume + 1));
         double newEnergy = lambdaLength * (newLength - targetLength) * (newLength - targetLength);
         energy += newEnergy - currEnergy;
     }
@@ -191,10 +192,10 @@ double LengthConstraintPlugin::changeEnergy_xz(const Point3D &pt, const CellG *n
             }
         }
 
-        double xcm = (oldCell->xCM / (float) oldCell->volume);
-        double zcm = (oldCell->zCM / (float) oldCell->volume);
-        double newXCM = (oldCell->xCM - ptTrans.x) / ((float) oldCell->volume - 1);
-        double newZCM = (oldCell->zCM - ptTrans.z) / ((float) oldCell->volume - 1);
+        double xcm = (oldCell->xCM / (double) oldCell->volume);
+        double zcm = (oldCell->zCM / (double) oldCell->volume);
+        double newXCM = (oldCell->xCM - ptTrans.x) / ((double) oldCell->volume - 1);
+        double newZCM = (oldCell->zCM - ptTrans.z) / ((double) oldCell->volume - 1);
 
         double newIxx = oldCell->iXX + (oldCell->volume) * (zcm * zcm) - (oldCell->volume - 1) * (newZCM * newZCM) -
                         ptTrans.z * ptTrans.z;
@@ -203,22 +204,21 @@ double LengthConstraintPlugin::changeEnergy_xz(const Point3D &pt, const CellG *n
         double newIxz = oldCell->iXZ - (oldCell->volume) * (xcm * zcm) + (oldCell->volume - 1) * newXCM * newZCM +
                         ptTrans.x * ptTrans.z;
 
-        double currLength = 4.0 * sqrt(((float) ((0.5 * (oldCell->iXX + oldCell->iZZ)) + .5 * sqrt((float) (
+        double currLength = 4.0 * sqrt(((double) ((0.5 * (oldCell->iXX + oldCell->iZZ)) + .5 * sqrt((double) (
                 (oldCell->iXX - oldCell->iZZ) * (oldCell->iXX - oldCell->iZZ) +
-                4 * (oldCell->iXZ) * (oldCell->iXZ))))) / (float) (oldCell->volume));
+                4 * (oldCell->iXZ) * (oldCell->iXZ))))) / (double) (oldCell->volume));
         double currEnergy = lambdaLength * (currLength - targetLength) * (currLength - targetLength);
         double newLength;
         if (oldCell->volume <= 1) {
             newLength = 0.0;
         } else {
-            newLength = 4.0 * sqrt(((float) ((0.5 * (newIxx + newIzz)) + .5 * sqrt((float) (
-                    (newIxx - newIzz) * (newIxx - newIzz) + 4 * newIxz * newIxz)))) / (float) (oldCell->volume - 1));
+            newLength = 4.0 * sqrt(((double) ((0.5 * (newIxx + newIzz)) + .5 * sqrt((double) (
+                    (newIxx - newIzz) * (newIxx - newIzz) + 4 * newIxz * newIxz)))) / (double) (oldCell->volume - 1));
         }
 
         double newEnergy = lambdaLength * (newLength - targetLength) * (newLength - targetLength);
         energy += newEnergy - currEnergy;
     }
-
     return energy;
 }
 
@@ -252,10 +252,10 @@ double LengthConstraintPlugin::changeEnergy_xy(const Point3D &pt, const CellG *n
             }
         }
 
-        double xcm = (newCell->xCM / (float) newCell->volume);
-        double ycm = (newCell->yCM / (float) newCell->volume);
-        double newXCM = (newCell->xCM + ptTrans.x) / ((float) newCell->volume + 1);
-        double newYCM = (newCell->yCM + ptTrans.y) / ((float) newCell->volume + 1);
+        double xcm = (newCell->xCM / (double) newCell->volume);
+        double ycm = (newCell->yCM / (double) newCell->volume);
+        double newXCM = (newCell->xCM + ptTrans.x) / ((double) newCell->volume + 1);
+        double newYCM = (newCell->yCM + ptTrans.y) / ((double) newCell->volume + 1);
 
         double newIxx = newCell->iXX + (newCell->volume) * ycm * ycm - (newCell->volume + 1) * (newYCM * newYCM) +
                         ptTrans.y * ptTrans.y;
@@ -264,13 +264,13 @@ double LengthConstraintPlugin::changeEnergy_xy(const Point3D &pt, const CellG *n
         double newIxy = newCell->iXY - (newCell->volume) * xcm * ycm + (newCell->volume + 1) * newXCM * newYCM -
                         ptTrans.x * ptTrans.y;
 
-        double currLength = 4.0 * sqrt(((float) ((0.5 * (newCell->iXX + newCell->iYY)) + .5 * sqrt((float) (
+        double currLength = 4.0 * sqrt(((double) ((0.5 * (newCell->iXX + newCell->iYY)) + .5 * sqrt((double) (
                 (newCell->iXX - newCell->iYY) * (newCell->iXX - newCell->iYY) +
-                4 * (newCell->iXY) * (newCell->iXY))))) / (float) (newCell->volume));
+                4 * (newCell->iXY) * (newCell->iXY))))) / (double) (newCell->volume));
 
         double currEnergy = lambdaLength * (currLength - targetLength) * (currLength - targetLength);
-        double newLength = 4.0 * sqrt(((float) ((0.5 * (newIxx + newIyy)) + .5 * sqrt((float) (
-                (newIxx - newIyy) * (newIxx - newIyy) + 4 * newIxy * newIxy)))) / (float) (newCell->volume + 1));
+        double newLength = 4.0 * sqrt(((double) ((0.5 * (newIxx + newIyy)) + .5 * sqrt((double) (
+                (newIxx - newIyy) * (newIxx - newIyy) + 4 * newIxy * newIxy)))) / (double) (newCell->volume + 1));
         double newEnergy = lambdaLength * (newLength - targetLength) * (newLength - targetLength);
         energy += newEnergy - currEnergy;
     }
@@ -287,10 +287,10 @@ double LengthConstraintPlugin::changeEnergy_xy(const Point3D &pt, const CellG *n
             }
         }
 
-        double xcm = (oldCell->xCM / (float) oldCell->volume);
-        double ycm = (oldCell->yCM / (float) oldCell->volume);
-        double newXCM = (oldCell->xCM - ptTrans.x) / ((float) oldCell->volume - 1);
-        double newYCM = (oldCell->yCM - ptTrans.y) / ((float) oldCell->volume - 1);
+        double xcm = (oldCell->xCM / (double) oldCell->volume);
+        double ycm = (oldCell->yCM / (double) oldCell->volume);
+        double newXCM = (oldCell->xCM - ptTrans.x) / ((double) oldCell->volume - 1);
+        double newYCM = (oldCell->yCM - ptTrans.y) / ((double) oldCell->volume - 1);
 
         double newIxx = oldCell->iXX + (oldCell->volume) * (ycm * ycm) - (oldCell->volume - 1) * (newYCM * newYCM) -
                         ptTrans.y * ptTrans.y;
@@ -299,17 +299,17 @@ double LengthConstraintPlugin::changeEnergy_xy(const Point3D &pt, const CellG *n
         double newIxy = oldCell->iXY - (oldCell->volume) * (xcm * ycm) + (oldCell->volume - 1) * newXCM * newYCM +
                         ptTrans.x * ptTrans.y;
 
-        double currLength = 4.0 * sqrt(((float) ((0.5 * (oldCell->iXX + oldCell->iYY)) + .5 * sqrt((float) (
+        double currLength = 4.0 * sqrt(((double) ((0.5 * (oldCell->iXX + oldCell->iYY)) + .5 * sqrt((double) (
                 (oldCell->iXX - oldCell->iYY) * (oldCell->iXX - oldCell->iYY) +
-                4 * (oldCell->iXY) * (oldCell->iXY))))) / (float) (oldCell->volume));
+                4 * (oldCell->iXY) * (oldCell->iXY))))) / (double) (oldCell->volume));
         double currEnergy = lambdaLength * (currLength - targetLength) * (currLength - targetLength);
 
         double newLength;
         if (oldCell->volume <= 1) {
             newLength = 0.0;
         } else {
-            newLength = 4.0 * sqrt(((float) ((0.5 * (newIxx + newIyy)) + .5 * sqrt((float) (
-                    (newIxx - newIyy) * (newIxx - newIyy) + 4 * newIxy * newIxy)))) / (float) (oldCell->volume - 1));
+            newLength = 4.0 * sqrt(((double) ((0.5 * (newIxx + newIyy)) + .5 * sqrt((double) (
+                    (newIxx - newIyy) * (newIxx - newIyy) + 4 * newIxy * newIxy)))) / (double) (oldCell->volume - 1));
         }
 
         double newEnergy = lambdaLength * (newLength - targetLength) * (newLength - targetLength);
@@ -349,10 +349,10 @@ double LengthConstraintPlugin::changeEnergy_yz(const Point3D &pt, const CellG *n
             }
         }
 
-        double ycm = (newCell->yCM / (float) newCell->volume);
-        double zcm = (newCell->zCM / (float) newCell->volume);
-        double newYCM = (newCell->yCM + ptTrans.y) / ((float) newCell->volume + 1);
-        double newZCM = (newCell->zCM + ptTrans.z) / ((float) newCell->volume + 1);
+        double ycm = (newCell->yCM / (double) newCell->volume);
+        double zcm = (newCell->zCM / (double) newCell->volume);
+        double newYCM = (newCell->yCM + ptTrans.y) / ((double) newCell->volume + 1);
+        double newZCM = (newCell->zCM + ptTrans.z) / ((double) newCell->volume + 1);
 
         double newIyy = newCell->iYY + (newCell->volume) * zcm * zcm - (newCell->volume + 1) * (newZCM * newZCM) +
                         ptTrans.z * ptTrans.z;
@@ -362,13 +362,13 @@ double LengthConstraintPlugin::changeEnergy_yz(const Point3D &pt, const CellG *n
                         ptTrans.y * ptTrans.z;
 
 
-        double currLength = 4.0 * sqrt(((float) ((0.5 * (newCell->iYY + newCell->iZZ)) + .5 * sqrt((float) (
+        double currLength = 4.0 * sqrt(((double) ((0.5 * (newCell->iYY + newCell->iZZ)) + .5 * sqrt((double) (
                 (newCell->iYY - newCell->iZZ) * (newCell->iYY - newCell->iZZ) +
-                4 * (newCell->iYZ) * (newCell->iYZ))))) / (float) (newCell->volume));
+                4 * (newCell->iYZ) * (newCell->iYZ))))) / (double) (newCell->volume));
 
         double currEnergy = lambdaLength * (currLength - targetLength) * (currLength - targetLength);
-        double newLength = 4.0 * sqrt(((float) ((0.5 * (newIyy + newIzz)) + .5 * sqrt((float) (
-                (newIyy - newIzz) * (newIyy - newIzz) + 4 * newIyz * newIyz)))) / (float) (newCell->volume + 1));
+        double newLength = 4.0 * sqrt(((double) ((0.5 * (newIyy + newIzz)) + .5 * sqrt((double) (
+                (newIyy - newIzz) * (newIyy - newIzz) + 4 * newIyz * newIyz)))) / (double) (newCell->volume + 1));
         double newEnergy = lambdaLength * (newLength - targetLength) * (newLength - targetLength);
         energy += newEnergy - currEnergy;
     }
@@ -385,10 +385,10 @@ double LengthConstraintPlugin::changeEnergy_yz(const Point3D &pt, const CellG *n
             }
         }
 
-        double ycm = (oldCell->yCM / (float) oldCell->volume);
-        double zcm = (oldCell->zCM / (float) oldCell->volume);
-        double newYCM = (oldCell->yCM - ptTrans.y) / ((float) oldCell->volume - 1);
-        double newZCM = (oldCell->zCM - ptTrans.z) / ((float) oldCell->volume - 1);
+        double ycm = (oldCell->yCM / (double) oldCell->volume);
+        double zcm = (oldCell->zCM / (double) oldCell->volume);
+        double newYCM = (oldCell->yCM - ptTrans.y) / ((double) oldCell->volume - 1);
+        double newZCM = (oldCell->zCM - ptTrans.z) / ((double) oldCell->volume - 1);
 
         double newIyy = oldCell->iYY + (oldCell->volume) * (zcm * zcm) - (oldCell->volume - 1) * (newZCM * newZCM) -
                         ptTrans.z * ptTrans.z;
@@ -398,9 +398,9 @@ double LengthConstraintPlugin::changeEnergy_yz(const Point3D &pt, const CellG *n
                         ptTrans.y * ptTrans.z;
 
 
-        double currLength = 4.0 * sqrt(((float) ((0.5 * (oldCell->iYY + oldCell->iZZ)) + .5 * sqrt((float) (
+        double currLength = 4.0 * sqrt(((double) ((0.5 * (oldCell->iYY + oldCell->iZZ)) + .5 * sqrt((double) (
                 (oldCell->iYY - oldCell->iZZ) * (oldCell->iYY - oldCell->iZZ) +
-                4 * (oldCell->iYZ) * (oldCell->iYZ))))) / (float) (oldCell->volume));
+                4 * (oldCell->iYZ) * (oldCell->iYZ))))) / (double) (oldCell->volume));
 
         double currEnergy = lambdaLength * (currLength - targetLength) * (currLength - targetLength);
 
@@ -408,8 +408,8 @@ double LengthConstraintPlugin::changeEnergy_yz(const Point3D &pt, const CellG *n
         if (oldCell->volume <= 1) {
             newLength = 0.0;
         } else {
-            newLength = 4.0 * sqrt(((float) ((0.5 * (newIyy + newIzz)) + .5 * sqrt((float) (
-                    (newIyy - newIzz) * (newIyy - newIzz) + 4 * newIyz * newIyz)))) / (float) (oldCell->volume - 1));
+            newLength = 4.0 * sqrt(((double) ((0.5 * (newIyy + newIzz)) + .5 * sqrt((double) (
+                    (newIyy - newIzz) * (newIyy - newIzz) + 4 * newIyz * newIyz)))) / (double) (oldCell->volume - 1));
         }
 
 
