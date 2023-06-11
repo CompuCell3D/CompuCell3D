@@ -234,6 +234,7 @@ class CellG;
 // using PyArray_SimpleNew cannot release GIL
 // see https://stackoverflow.com/questions/74861186/access-vaiolation-in-pyarray-simplenew
 %nothread CompuCell3D::VectorFieldCellLevel::__getitem__;
+%nothread CompuCell3D::VectorFieldCellLevel::__setitem__;
 
 %extend CompuCell3D::VectorFieldCellLevel{    
 
