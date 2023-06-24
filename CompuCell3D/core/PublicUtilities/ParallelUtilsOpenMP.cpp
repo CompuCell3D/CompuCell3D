@@ -180,7 +180,7 @@ void ParallelUtilsOpenMP::unsetPyWrapperLock(){
 
 void ParallelUtilsOpenMP::allowNestedParallelRegions(bool _flag){
 	
-#ifdef __clang__
+#if (defined(__GNUC__) && (__GNUC__>=9)) || defined(__clang__)
         if(_flag) {
             omp_set_max_active_levels(5);
         }
