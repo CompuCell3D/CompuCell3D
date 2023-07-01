@@ -2,12 +2,18 @@ Release Notes
 =============
 
 
-Version 4.4.0-py-version-fix
+Version 4.4.1-py-version-fix
 -------------
-**2023-04-22**
+**2023-07-01**
+
+New features:
+- Added better build scripts that work with boa builder (uses mamba internally)
+
 
 Bug fixes:
-  - Fixed cc3d.__init__ to run with python versions ? 3.7
+  - Fixed cc3d.__init__ to run with python versions > 3.7
+  - Fixed python bindings and python scripts to behave properly when working with python > 3.7 and newer versions of numpy
+
 
 
 Version 4.4.0
