@@ -7,12 +7,16 @@ Version 4.4.1-py-version-fix
 **2023-07-01**
 
 New features:
-- Added better build scripts that work with boa builder (uses mamba internally)
+ - Added better build scripts that work with boa builder (uses mamba internally)
+ - Improved test suite messaging
+ - Updated muParser to the latest version
+
 
 
 Bug fixes:
-  - Fixed cc3d.__init__ to run with python versions > 3.7
-  - Fixed python bindings and python scripts to behave properly when working with python > 3.7 and newer versions of numpy
+ - Fixed cc3d.__init__ to run with python versions > 3.7
+ - Fixed python bindings and python scripts to behave properly when working with python > 3.7 and newer versions of numpy
+ - Minor fixes to C++ code to compile properly with latest versions of C++ compilers and use newer version of OpenMP on linux/OSX
 
 
 
