@@ -132,7 +132,7 @@ def extract_type_id_type_name_dict(cell_types_elements):
 
 
 def check_for_cpp_errors(sim):
-    if sim.getRecentErrorMessage() != "":
+    if sim and sim.getRecentErrorMessage() != "":
         raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
 
 
