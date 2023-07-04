@@ -27,7 +27,6 @@ SET(LIBS
   cc3d::Boundary
   cc3d::Field3D
   cc3d::PublicUtilities
-  cc3d::Units
   cc3d::ExpressionEvaluator
 )
 

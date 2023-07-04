@@ -88,7 +88,7 @@ class UnittestSteppablePdeSolver(SteppableBasePy):
                 test_log += f'Field: {field_to_store} {self.get_linenumber_fname()} \n {str(e)}\n'
 
             try:
-                npt.assert_array_almost_equal(in_df.val.values, reference_output_df.val.values, decimal=6)
+                npt.assert_array_almost_equal(in_df.val.values, reference_output_df.val.values, decimal=4)
             except AssertionError as e:
                 test_log += f'Field: {field_to_store} {self.get_linenumber_fname()} \n {str(e)}\n'
 

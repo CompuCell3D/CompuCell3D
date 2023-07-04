@@ -1,5 +1,11 @@
-CONDA_BUILD_SYSROOT:
-  - /opt/MacOSX10.10.sdk # [osx]
+# note CONDA_BUILD_SYSROOT is defined in  conda_build_config_arm64 or conda_build_config_x86
+# run_conda_build.sh determines if conda we are using to build package is x86 conda or arm64 and then passes those
+# either conda_build_config_arm64 or conda_build_config_x86 to conda build command:
+# conda mambabuild -c conda-forge -c compucell3d . --python="$PYTHON_VERSION" -e "$config_yaml"  -
+# see run_conda_build.sh for details
+#CONDA_BUILD_SYSROOT:
+#  - /opt/MacOSX10.10.sdk # [osx]
+
 
 c_compiler: 
   - vs2015 # [win]

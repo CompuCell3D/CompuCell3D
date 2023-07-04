@@ -172,6 +172,12 @@ class MsgGetLatticeTypeStr(MsgWithReturn):
     method = '_service_get_lattice_type_str'
 
 
+class MsgInitFieldTypesFrameInterface(MsgWithReturn):
+    """Message to request field names and types as a dictionary"""
+
+    method = '_service_init_field_types'
+
+
 class MsgShutdownFrameInterface(MsgNoReturn):
     """Message to request that a graphics frame interface shutdown"""
 

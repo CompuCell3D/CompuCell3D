@@ -81,7 +81,7 @@ class OptimizationParameterManager(object):
         self.parameters = None
         self._params_names = []
         self._std_dev = 0.5
-        self._default_bounds = np.array([0., 1.], dtype=np.float)
+        self._default_bounds = np.array([0., 1.], dtype=float)
 
     def parse(self, fname):
         """
@@ -97,7 +97,7 @@ class OptimizationParameterManager(object):
         except:
             print 'Could not find "std_dev" in %s. Will use default value of %f ' % (fname, self.std_dev)
 
-        self.params_bounds = np.zeros((len(self._params_names), 2), dtype=np.float)
+        self.params_bounds = np.zeros((len(self._params_names), 2), dtype=float)
 
         for i, name in enumerate(self._params_names):
             self.params_bounds[i, :] = self.parameters[name]
@@ -119,7 +119,7 @@ class OptimizationParameterManager(object):
         Returns starting point for the optimization run by picking "center" fo the parameter hyperspace
         :return: {ndarray} vector describing the "center" of the parameter hyperspace
         """
-        return 0.5 * np.ones(len(self._params_names), dtype=np.float)
+        return 0.5 * np.ones(len(self._params_names), dtype=float)
 
     def params_from_0_1(self, param_vec_0_1):
         """
@@ -334,7 +334,7 @@ class Optimizer(object):
         # producing vector of return values - have to ensure that the order of values in the vector
         # is the same as the order of parameter vectors in the param_set
 
-        return_value_vec = np.zeros((num_params,), dtype=np.float)
+        return_value_vec = np.zeros((num_params,), dtype=float)
 
         for idx, worker_tag in enumerate(param_set_dict.keys()):
             return_value_vec[idx] = return_data_dict[worker_tag]

@@ -28,6 +28,7 @@ from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup import simulation_utils
 from cc3d.core.BasicSimulationData import BasicSimulationData
 from cc3d.core import Configuration
+from cc3d.core.enums import *
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
 from cc3d.cpp.PlayerPython import FieldExtractorCML, FieldStreamer, FieldStreamerData, FieldWriterCML
 from cc3d.core.GraphicsUtils.GraphicsFrame import GraphicsFrame, default_field_label
@@ -421,6 +422,9 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
         """Initialize field types using current internal data when available"""
 
         super().init_field_types()
+
+        if not self.fieldTypes:
+            self.fieldTypes = MsgInitFieldTypesFrameInterface.request(self.conn, True)
 
         self.metadata_data_dict = {k: {} for k in self.metadata_fetcher_dict.keys()}
 
@@ -1404,6 +1408,25 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
         if lattice_type_str not in list(Configuration.LATTICE_TYPES.keys()):
             lattice_type_str = 'Square'
         return lattice_type_str
+
+    def _service_init_field_types(self):
+
+        field_types = {}
+        if CompuCellSetup.persistent_globals.simulator is not None:
+
+            field_types["Cell_Field"] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[CELL_FIELD]
+
+            # get concentration fields from simulator
+            for fieldName in CompuCellSetup.persistent_globals.simulator.getConcentrationFieldNameVector():
+                field_types[fieldName] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[CON_FIELD]
+
+            # inserting extra scalar fields managed from Python script
+            field_dict = CompuCellSetup.persistent_globals.field_registry.get_fields_to_create_dict()
+            names_types = {field_name: field_adapter.field_type for field_name, field_adapter in field_dict.items()}
+            for field_name, field_type in names_types.items():
+                field_types[field_name] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[field_type]
+
+        return field_types
 
     @property
     def field_name(self) -> str:

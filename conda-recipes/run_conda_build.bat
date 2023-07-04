@@ -4,5 +4,5 @@ IF "%1"=="" (
     SET PYTHON_VERSION=%1
 )
 
-conda build -c conda-forge -c compucell3d . --python=%PYTHON_VERSION%
+conda mambabuild -c conda-forge -c compucell3d . --python=%PYTHON_VERSION%
 rem conda render . --python=%PYTHON_VERSION%

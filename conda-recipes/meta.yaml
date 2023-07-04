@@ -60,6 +60,7 @@ requirements:
   build:
     - cmake={{ cmake_version }}
     - swig>={{ swig_version }}
+    - numpy={{ numpy_version }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]

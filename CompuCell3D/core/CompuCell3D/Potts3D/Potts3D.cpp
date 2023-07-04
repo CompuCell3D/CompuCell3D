@@ -37,7 +37,6 @@ Potts3D::Potts3D() :
         customAcceptanceExpressionDefined(false),
         energy(0),
         depth(1.0),
-        displayUnitsFlag(true),
         recentlyCreatedCellId(0),
         recentlyCreatedClusterId(0),
         debugOutputFrequency(10),
@@ -64,7 +63,6 @@ Potts3D::Potts3D(const Dim3D dim) :
         energy(0),
         customAcceptanceExpressionDefined(false),
         depth(1.0),
-        displayUnitsFlag(true),
         recentlyCreatedCellId(1),
         recentlyCreatedClusterId(1),
         debugOutputFrequency(10),
@@ -1456,95 +1454,8 @@ void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
         registerAcceptanceFunction(&customAcceptanceFunction);
     }
 
-
-
-    //Units
-    if (_xmlData->getFirstElement("Units")) {
-        if (_xmlData->getFirstElement("Units")->findAttribute("DoNotDisplayUnits")) {
-            displayUnitsFlag = false;
-        }
-        CC3DXMLElement *unitElemPtr;
-        CC3DXMLElement *unitsPtr = _xmlData->getFirstElement("Units");
-        unitElemPtr = unitsPtr->getFirstElement("MassUnit");
-        if (unitElemPtr) {
-            massUnit = Unit(unitElemPtr->getText());
-        }
-        unitElemPtr = unitsPtr->getFirstElement("LengthUnit");
-        if (unitElemPtr) {
-            lengthUnit = Unit(unitElemPtr->getText());
-        }
-        unitElemPtr = unitsPtr->getFirstElement("TimeUnit");
-        if (unitElemPtr) {
-            timeUnit = Unit(unitElemPtr->getText());
-        }
-
-        if (displayUnitsFlag) {
-            updateUnits(unitsPtr);
-        }
-
-    } else {
-
-        //displaying units
-
-        CC3DXMLElement *unitsPtr = _xmlData->attachElement("Units", "");
-        if (displayUnitsFlag) {
-            updateUnits(unitsPtr);
-        }
-
-    }
-
 }
 
-
-void Potts3D::updateUnits(CC3DXMLElement *_unitsPtr) {
-
-
-    ////displaying units
-
-    //if (_unitsPtr->getFirstElement("MassUnit")) {
-    //	_unitsPtr->getFirstElement("MassUnit")->updateElementValue(massUnit.toString());
-    //}
-    //else {
-    //	_unitsPtr->attachElement("MassUnit", massUnit.toString());
-    //}
-
-    //if (_unitsPtr->getFirstElement("LengthUnit")) {
-    //	_unitsPtr->getFirstElement("LengthUnit")->updateElementValue(lengthUnit.toString());
-    //}
-    //else {
-    //	_unitsPtr->attachElement("LengthUnit", lengthUnit.toString());
-    //}
-
-    //if (_unitsPtr->getFirstElement("TimeUnit")) {
-    //	_unitsPtr->getFirstElement("TimeUnit")->updateElementValue(timeUnit.toString());
-    //}
-    //else {
-    //	_unitsPtr->attachElement("TimeUnit", timeUnit.toString());
-    //}
-
-    //if (_unitsPtr->getFirstElement("VolumeUnit")) {
-    //	_unitsPtr->getFirstElement("VolumeUnit")->updateElementValue(powerUnit(lengthUnit, 3).toString());
-    //}
-    //else {
-    //	_unitsPtr->attachElement("VolumeUnit", powerUnit(lengthUnit, 3).toString());
-    //}
-
-    //if (_unitsPtr->getFirstElement("SurfaceUnit")) {
-    //	_unitsPtr->getFirstElement("SurfaceUnit")->updateElementValue(powerUnit(lengthUnit, 2).toString());
-    //}
-    //else {
-    //	_unitsPtr->attachElement("SurfaceUnit", powerUnit(lengthUnit, 2).toString());
-    //}
-
-    //energyUnit = massUnit*lengthUnit*lengthUnit / (timeUnit*timeUnit);
-
-    //if (_unitsPtr->getFirstElement("EnergyUnit")) {
-    //	_unitsPtr->getFirstElement("EnergyUnit")->updateElementValue(energyUnit.toString());
-    //}
-    //else {
-    //	_unitsPtr->attachElement("EnergyUnit", energyUnit.toString());
-    //}
-}
 
 std::string Potts3D::steerableName() {
     return "Potts";

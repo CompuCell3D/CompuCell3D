@@ -75,7 +75,7 @@ def main():
     os.environ['CC3D_TEST_OUTPUT_SUMMARY'] = join(rs.test_output_root, 'test_summary.csv')
 
     for i, cc3d_project in enumerate(cc3d_projects):
-
+        print(f"cc3d_project={cc3d_project}")
         rs.cc3d_project = cc3d_project
         rs.test_output_dir = relpath(cc3d_project, cc3d_projects_common_prefix)
         run_executor = RunExecutor(run_specs=rs)

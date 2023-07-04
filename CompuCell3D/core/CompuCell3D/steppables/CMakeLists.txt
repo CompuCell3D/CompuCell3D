@@ -1,7 +1,3 @@
-Find_Package(OpenMP)
-
-message(" OPEN MP FOUND " $OPENMP_FOUND)
-
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   SET(STEPPABLE_DEPENDENCIES cc3d::CompuCellLib cc3d::XMLUtils cc3d::muParser)
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)

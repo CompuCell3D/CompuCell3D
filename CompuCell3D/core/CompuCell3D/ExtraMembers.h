@@ -27,7 +27,7 @@ namespace CompuCell3D {
 
         virtual void destroy(B *em) {
 //            delete (B*)em;
-            delete static_cast<B *>(em);
+            delete static_cast<T *>(em);
         }
     };
 
@@ -48,8 +48,8 @@ namespace CompuCell3D {
 
         void destroy() {
             for (unsigned int i = 0; i < members.size(); i++) {
-                delete members[i];
-                members[i] = 0;
+                delete (members[i]);
+                members[i] = nullptr;
             }
         }
     };
@@ -63,7 +63,7 @@ namespace CompuCell3D {
 
         virtual ExtraMembersFactory<void> *createFactory() = 0;
 
-        void *getMember(ExtraMembersGroup *g) { return g->getMember(memberIdx); }
+        void *getMember(ExtraMembersGroup *g) const { return g->getMember(memberIdx); }
 
         friend ExtraMembersGroupFactory;
 

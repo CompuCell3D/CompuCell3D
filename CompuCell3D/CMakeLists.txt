@@ -17,7 +17,7 @@ IF (APPLE)
     # this is stop gap measure and we need to either fix Units module or remove it since it is not used almost at all
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 -Wno-implicit-function-declaration -Wno-implicit-int" CACHE STRING "flags used during compilation by C++ compiler" FORCE)
     SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 -Wno-implicit-function-declaration -Wno-implicit-int" CACHE STRING "flags used during compilation by C compiler" FORCE)
-    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "OSX deployment target" FORCE)
+    # SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "OSX deployment target" FORCE)
 
     MESSAGE ("GOT APPLE")
 ENDIF (APPLE)
@@ -70,8 +70,8 @@ SET(CC3D_PYTHON_MODULE_DIR ${CMAKE_SOURCE_DIR}/../)
 
 set(COMPUCELL3D_MAJOR_VERSION 4)
 set(COMPUCELL3D_MINOR_VERSION 4)
-set(COMPUCELL3D_BUILD_VERSION 0)
-set(COMPUCELL3D_REV_NUMBER 20230326)
+set(COMPUCELL3D_BUILD_VERSION 1)
+set(COMPUCELL3D_REV_NUMBER 20230701)
 
 ## Specify a version for all libs to use
 # letters A, B, C are added to ensure nice display of version in cmake gui
@@ -217,7 +217,7 @@ endif(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
 set(CMAKE_MACOSX_RPATH TRUE)
 set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
 
-if(APPLE AND NOT UNIX)
+if(APPLE)
     set(RPATH_BASE @loader_path)
 else()
     set(RPATH_BASE $ORIGIN)
