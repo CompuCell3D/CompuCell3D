@@ -9,6 +9,7 @@ Version 4.4.1-py-version-fix
 New features:
  - Added better build scripts that work with boa builder (uses mamba internally)
  - Improved test suite messaging
+ - Added support for all Python versions >= 3.7
  - Updated muParser to the latest version
 
 
