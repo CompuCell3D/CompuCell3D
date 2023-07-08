@@ -1,6 +1,6 @@
-version: 4.4.0
+version: 4.4.1
 build_number: 0
-numpy_version : 1.21
+numpy_version : 1.24
 cc3d_network_solvers_version: 0.3.0
 cmake_version: 3.21 
 vtk_version: 9.2 

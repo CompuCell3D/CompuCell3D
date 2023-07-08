@@ -200,7 +200,7 @@ void ExpressionEvaluator::addVariable(std::string _name){
         //after adding new variable we have to reinitialize variable locations that pparser has . in practice it means creating new parser and reinitializing it using varNameToIndexMap        
         p=Parser();
         for (mitr=varNameToIndexMap.begin() ; mitr!=varNameToIndexMap.end();++mitr){
-			cerr<<"associating "<<mitr->first<<" with index "<<mitr->second<<endl;			
+//			cerr<<"associating "<<mitr->first<<" with index "<<mitr->second<<endl;
             p.DefineVar(mitr->first, &varVec[mitr->second]);
         }
         if (expressionString.size()){

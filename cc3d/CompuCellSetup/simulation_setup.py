@@ -321,6 +321,8 @@ def incorporate_script_steering_changes(simulator) -> None:
 
     persistent_globals = CompuCellSetup.persistent_globals
     xml_id_locator = persistent_globals.xml_id_locator
+    if not xml_id_locator:
+        return
 
     # passing information about modules that need to be updated to C++ code
     # super_parent means XML element of the CC3D module  e.g. Plugin, Steppable or Potts

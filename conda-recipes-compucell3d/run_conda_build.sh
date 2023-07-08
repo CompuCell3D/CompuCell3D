@@ -6,6 +6,26 @@ else
     PYTHON_VERSION="$1"
 fi
 
+check_boa() {
+  if command -v boa >/dev/null 2>&1; then
+    return 1
+  else
+    return 0
+  fi
+}
 
-conda build -c local -c conda-forge -c compucell3d . --python="$PYTHON_VERSION"
-#conda render .
+# Call the function
+check_boa
+
+# Store the exit code in a variable
+exit_code=$?
+
+if [ $exit_code -eq 1 ]; then
+  echo "boa is available in PATH"
+  conda mambabuild -c local -c conda-forge -c compucell3d . --python="$PYTHON_VERSION"
+else
+  echo "boa is not available in PATH"
+  conda mambabuild -c local -c conda-forge -c compucell3d . --python="$PYTHON_VERSION"
+
+fi
+# conda render .

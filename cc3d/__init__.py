@@ -9,11 +9,12 @@ import sys
 from os.path import dirname, join, abspath
 from pathlib import Path
 
-__version__ = "4.4.0"
+__version__ = "4.4.1"
 __revision__ = "0"
-__githash__ = "6ab5a20"
+__githash__ = "002f7dd"
 
-from . import config
+# from . import config
+from cc3d import config
 
 def get_version_revision_str():
     return f"{__version__}.{__revision__}"
@@ -53,6 +54,8 @@ cc3d_scripts_path = abspath(join(cc3d_py_dir, config.cc3d_scripts_path_rel))
 cc3d_lib_shared = abspath(join(cc3d_install_prefix, 'bin'))
 cc3d_lib_static = abspath(join(cc3d_install_prefix, 'lib'))
 
+cc3d_cpp_bin_path_pathlib = Path(cc3d_cpp_bin_path)
+
 os.environ['COMPUCELL3D_STEPPABLE_PATH'] = cc3d_steppable_path + os.sep
 os.environ['COMPUCELL3D_PLUGIN_PATH'] = cc3d_plugin_path + os.sep
 
@@ -72,8 +75,6 @@ if sys.platform.startswith('win'):
 
         if cc3d_lib_shared not in path_env_list:
             os.add_dll_directory(cc3d_lib_shared)
-        if cc3d_cpp_bin_path not in path_env_list:
-            os.add_dll_directory(cc3d_cpp_bin_path)
 
         os.add_dll_directory(os.environ['COMPUCELL3D_PLUGIN_PATH'])
         os.add_dll_directory(os.environ['COMPUCELL3D_STEPPABLE_PATH'])
@@ -82,8 +83,6 @@ if sys.platform.startswith('win'):
 
         if cc3d_lib_shared not in path_env_list:
             path_env_list.insert(0, cc3d_lib_shared)
-        if cc3d_cpp_bin_path not in path_env_list:
-            path_env_list.insert(0, cc3d_cpp_bin_path)
 
         path_env_list.insert(0, os.environ['COMPUCELL3D_PLUGIN_PATH'])
         path_env_list.insert(0, os.environ['COMPUCELL3D_STEPPABLE_PATH'])

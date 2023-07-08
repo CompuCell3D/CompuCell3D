@@ -66,7 +66,7 @@ void ConvergentExtensionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
 	maxNeighborIndex=0;
 
 	if(_xmlData->getFirstElement("Depth")){
-		maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth((float)_xmlData->getFirstElement("Depth")->getDouble());
+		maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth((double)_xmlData->getFirstElement("Depth")->getDouble());
 	}else{
 
 		if(_xmlData->getFirstElement("NeighborOrder")){
@@ -120,7 +120,7 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 				//nCell
 				double deltaNCell=nCellalphaConvExtMapItr->second*nCell->ecc;
 
-				Coordinates3D<double> nCellCM((nCell->xCM / (float) nCell->volume),(nCell->yCM / (float) nCell->volume),(nCell->zCM / (float) nCell->volume));
+				Coordinates3D<double> nCellCM((nCell->xCM / (double) nCell->volume),(nCell->yCM / (double) nCell->volume),(nCell->zCM / (double) nCell->volume));
 				Coordinates3D<double> nCellCMPtVec=ptTransNeighbor-nCellCM;
 
 				Coordinates3D<double> orientationVecNCell;
@@ -143,7 +143,7 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 				deltaNCell*=rSinThetaNCell;
 				//oldCell
 				double deltaOldCell=oldCellalphaConvExtMapItr->second*oldCell->ecc;
-				Coordinates3D<double> oldCellCM((oldCell->xCM / (float) oldCell->volume),(oldCell->yCM / (float) oldCell->volume),(oldCell->zCM / (float) oldCell->volume));
+				Coordinates3D<double> oldCellCM((oldCell->xCM / (double) oldCell->volume),(oldCell->yCM / (double) oldCell->volume),(oldCell->zCM / (double) oldCell->volume));
 				Coordinates3D<double> oldCellCMPtVec=ptTrans-oldCellCM;
 
 				Coordinates3D<double> orientationVecOldCell;
@@ -202,12 +202,12 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 					ycm = 0.0;
 
 				}else{
-					xcm = (newCell->xCM / (float) newCell->volume);
-					ycm = (newCell->yCM / (float) newCell->volume);
+					xcm = (newCell->xCM / (double) newCell->volume);
+					ycm = (newCell->yCM / (double) newCell->volume);
 
 				}
-				double newXCM = (newCell->xCM + ptTrans.x)/((float)newCell->volume + 1);
-				double newYCM = (newCell->yCM + ptTrans.y)/((float)newCell->volume + 1);	 
+				double newXCM = (newCell->xCM + ptTrans.x)/((double)newCell->volume + 1);
+				double newYCM = (newCell->yCM + ptTrans.y)/((double)newCell->volume + 1);	 
 
 				double newIxx=newCell->iXX+(newCell->volume )*ycm*ycm-(newCell->volume+1)*(newYCM*newYCM)+ptTrans.y*ptTrans.y;
 				double newIyy=newCell->iYY+(newCell->volume )*xcm*xcm-(newCell->volume+1)*(newXCM*newXCM)+ptTrans.x*ptTrans.x;
@@ -246,8 +246,8 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 				if(nCell==oldCell){
 					//special case - need to calculate delta for oldCell after pixel copy
 					//oldCell						
-					double xcmOldCell = (oldCell->xCM / (float) oldCell->volume);
-					double ycmOldCell = (oldCell->yCM / (float) oldCell->volume);
+					double xcmOldCell = (oldCell->xCM / (double) oldCell->volume);
+					double ycmOldCell = (oldCell->yCM / (double) oldCell->volume);
 					double newXCMOldCell;
 					double newYCMOldCell;
 
@@ -255,8 +255,8 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 						newXCMOldCell = 0.0;
 						newYCMOldCell = 0.0;	 
 					}else{
-						newXCMOldCell = (oldCell->xCM - ptTrans.x)/((float)oldCell->volume - 1);
-						newYCMOldCell = (oldCell->yCM - ptTrans.y)/((float)oldCell->volume - 1);	 		
+						newXCMOldCell = (oldCell->xCM - ptTrans.x)/((double)oldCell->volume - 1);
+						newYCMOldCell = (oldCell->yCM - ptTrans.y)/((double)oldCell->volume - 1);	 		
 					}
 
 					double newIxxOldCell =oldCell->iXX+(oldCell->volume )*(ycmOldCell*ycmOldCell)-(oldCell->volume-1)*(newYCMOldCell*newYCMOldCell)-ptTrans.y*ptTrans.y;
@@ -318,7 +318,7 @@ double ConvergentExtensionPlugin::changeEnergy(const Point3D &pt,const CellG *ne
 					//nCell
 					double deltaNCell=nCellalphaConvExtMapItr->second*nCell->ecc;
 
-					Coordinates3D<double> nCellCM((nCell->xCM / (float) nCell->volume),(nCell->yCM / (float) nCell->volume),(nCell->zCM / (float) nCell->volume));
+					Coordinates3D<double> nCellCM((nCell->xCM / (double) nCell->volume),(nCell->yCM / (double) nCell->volume),(nCell->zCM / (double) nCell->volume));
 					Coordinates3D<double> nCellCMPtVec=ptTransNeighbor-nCellCM;
 
 					Coordinates3D<double> orientationVecNCell;

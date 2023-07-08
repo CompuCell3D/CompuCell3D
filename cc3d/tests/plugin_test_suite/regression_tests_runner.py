@@ -3,6 +3,7 @@ This script facilitates unit/integration testing. Example command looks as follo
 
 python regression_tests_runner.py --run-command=c:/CompuCell3D-py3-64bit/runScript.bat --output-dir=c:/CompuCell3D_test_output
 """
+
 from cc3d.tests.test_utils.RunSpecs import RunSpecs
 from cc3d.tests.test_utils.RunExecutor import RunExecutor
 from cc3d import run_script
@@ -18,11 +19,11 @@ import pandas as pd
 
 
 def process_cml():
-    cml_parser = argparse.ArgumentParser(description='Simulation Tester')
-    cml_parser.add_argument('--run-command', nargs='+', type=str, required=False,
-                            help='cc3d run script (either RunScript or compucell3d)')
-    cml_parser.add_argument('--output-dir', required=True,
-                            help='test output dir')
+    cml_parser = argparse.ArgumentParser(description="Simulation Tester")
+    cml_parser.add_argument(
+        "--run-command", nargs="+", type=str, required=False, help="cc3d run script (either RunScript or compucell3d)"
+    )
+    cml_parser.add_argument("--output-dir", required=True, help="test output dir")
 
     args = cml_parser.parse_args()
 
@@ -56,10 +57,10 @@ def main():
     rs = RunSpecs()
     rs.run_command = run_command_list
     rs.player_interactive_flag = False
-    rs.cc3d_project = ''
+    rs.cc3d_project = ""
     rs.num_steps = 1000
     rs.test_output_root = args.output_dir
-    rs.test_output_dir = ''
+    rs.test_output_dir = ""
 
     # if sys.platform.startswith('win'):
     #     rs.run_command = run_command
@@ -81,19 +82,23 @@ def main():
         pass
 
     # writing to the file list of files to be tested
-    with open(join(rs.test_output_root, 'cc3d_simulation_test_plan.txt'), 'a') as fout:
+    with open(join(rs.test_output_root, "cc3d_simulation_test_plan.txt"), "a") as fout:
         for i, cc3d_project in enumerate(simulations_to_run):
-            fout.write('{}\n'.format(abspath(cc3d_project)))
+            fout.write("{}\n".format(abspath(cc3d_project)))
 
     error_runs = []
 
-    os.environ['CC3D_TEST_OUTPUT_DIR'] = rs.test_output_root
-    os.environ['CC3D_TEST_OUTPUT_SUMMARY'] = join(rs.test_output_root, 'test_summary.csv')
+    os.environ["CC3D_TEST_OUTPUT_DIR"] = rs.test_output_root
+    os.environ["CC3D_TEST_OUTPUT_SUMMARY"] = join(rs.test_output_root, "test_summary.csv")
 
-    errors_summary_path = Path(rs.test_output_root).joinpath('regression_test_errors.csv')
+    errors_summary_path = Path(rs.test_output_root).joinpath("regression_test_errors.csv")
 
     for i, cc3d_project in enumerate(simulations_to_run):
-        print("rs.cc3d_project =", rs.cc3d_project )
+        # if Path(cc3d_project).name != "connectivity_elongation_fast.cc3d":
+        #     continue
+        # if Path(cc3d_project).name != "FocalPointPlasticityCustom.cc3d":
+        #     continue
+
         rs.cc3d_project = cc3d_project
         rs.test_output_dir = relpath(cc3d_project, cc3d_projects_common_prefix)
         run_executor = RunExecutor(run_specs=rs)
@@ -103,26 +108,23 @@ def main():
             error_tuple = (rs.cc3d_project, run_status)
             error_runs.append(error_tuple)
 
-            error_df = pd.DataFrame(
-                {
-                    'file_name': [rs.cc3d_project],
-                    'status': [run_status]
-                }
-            )
+            error_df = pd.DataFrame({"file_name": [rs.cc3d_project], "status": [run_status]})
 
             cc3d_simulation_tests_output_summary_df = pd.DataFrame()
             if errors_summary_path.exists():
                 cc3d_simulation_tests_output_summary_df = pd.read_csv(errors_summary_path)
 
-            cc3d_simulation_tests_output_summary_df = cc3d_simulation_tests_output_summary_df.append(error_df)
+            cc3d_simulation_tests_output_summary_df = pd.concat(
+                [cc3d_simulation_tests_output_summary_df, error_df], ignore_index=True
+            )
+
             cc3d_simulation_tests_output_summary_df.to_csv(errors_summary_path, index=False)
 
-
     if not len(error_runs):
-        print('\n-----------------ALL SIMULATIONS RUN SUCCESSFULLY----------------------\n')
+        print("\n-----------------ALL SIMULATIONS RUN SUCCESSFULLY----------------------\n")
 
     else:
-        print('\n-----------------THERE WERE ERRORS IN THE SIMULATIONS----------------------\n')
+        print("\n-----------------THERE WERE ERRORS IN THE SIMULATIONS----------------------\n")
 
         for error_run in error_runs:
             print(error_run)
@@ -134,18 +136,18 @@ def find_test_run_simulations():
     :return:
     """
 
-    test_run_dirs_to_process = [x[0] for x in os.walk(Path(__file__).parent) if x[0].endswith('_test_run')]
+    test_run_dirs_to_process = [x[0] for x in os.walk(Path(__file__).parent) if x[0].endswith("_test_run")]
     test_run_simulations = []
     for test_run_dir in test_run_dirs_to_process:
-        simulation_match = glob(str(Path(test_run_dir).joinpath('*.cc3d')))
+        simulation_match = glob(str(Path(test_run_dir).joinpath("*.cc3d")))
         try:
             test_run_simulations.append(simulation_match[0])
         except IndexError:
-            print(f'Could not locate valid *.cc3d file in {test_run_dir}')
+            print(f"Could not locate valid *.cc3d file in {test_run_dir}")
             continue
 
     return test_run_simulations
 
-if __name__ == '__main__':
-    main()
 
+if __name__ == "__main__":
+    main()

@@ -1,5 +1,3 @@
-add_subdirectory(Units)
-
 SET(WINDOWS_GLOB_SCRS )
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     SET(WINDOWS_GLOB_SCRS WindowsGlob.cpp)
@@ -23,10 +21,10 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
    ADD_STATIC_LIBRARY(PublicUtilities ${SRCS} LINK_LIBRARIES cc3d::Field3D cc3d::Logger EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
 elseif(APPLE)
 
-   ADD_SHARED_LIBRARY(PublicUtilities ${SRCS} LINK_LIBRARIES cc3d::Field3D cc3d::Boundary ${OpenMP_omp_LIBRARY} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
+   ADD_SHARED_LIBRARY(PublicUtilities ${SRCS} LINK_LIBRARIES cc3d::Field3D cc3d::Boundary OpenMP::OpenMP_CXX EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 #   ADD_SHARED_LIBRARY(PublicUtilities ${SRCS} LINK_LIBRARIES cc3d::Field3D cc3d::Boundary gomp stdc++fs EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
-   ADD_SHARED_LIBRARY(PublicUtilities ${SRCS} LINK_LIBRARIES cc3d::Field3D cc3d::Boundary ${OpenMP_omp_LIBRARY} stdc++fs EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
+   ADD_SHARED_LIBRARY(PublicUtilities ${SRCS} LINK_LIBRARIES cc3d::Field3D cc3d::Boundary OpenMP::OpenMP_CXX stdc++fs EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 TARGET_INCLUDE_DIRECTORIES(${PublicUtilitiesLib} PUBLIC

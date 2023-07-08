@@ -114,7 +114,7 @@ void ExpressionEvaluatorDepot::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 
 	CC3DXMLElementList builtinVariableVecXML=_xmlData->getElements("BuiltinVariable");
 	for (int i =0 ; i < builtinVariableVecXML.size() ; ++i){
-		builtinVariableAliasPairVec.push_back(make_pair(builtinVariableVecXML[i]->getAttribute("builtinName"),builtinVariableVecXML[i]->getAttribute("Alias")));
+		builtinVariableAliasPairVec.emplace_back(builtinVariableVecXML[i]->getAttribute("builtinName"),builtinVariableVecXML[i]->getAttribute("Alias"));
 	}
 
 
@@ -198,7 +198,7 @@ void ExpressionEvaluator::addVariable(std::string _name){
         //after adding new variable we have to reinitialize variable locations that pparser has . in practice it means creating new parser and reinitializing it using varNameToIndexMap        
         p=Parser();
         for (mitr=varNameToIndexMap.begin() ; mitr!=varNameToIndexMap.end();++mitr){
-			cerr<<"associating "<<mitr->first<<" with index "<<mitr->second<<endl;			
+//			cerr<<"associating "<<mitr->first<<" with index "<<mitr->second<<endl;
             p.DefineVar(mitr->first, &varVec[mitr->second]);
         }
         if (expressionString.size()){

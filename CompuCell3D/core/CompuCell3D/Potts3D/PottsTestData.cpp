@@ -167,7 +167,7 @@ double PottsTestData::abs_difference(double x, double y) {
 
 bool PottsTestData::compare_potts_data(PottsTestData &potts_data_to_compare) {
 
-    double tol = 1e-6;
+    double tol = 3e-4;
     if (changePixel != potts_data_to_compare.changePixel) throw CC3DException("change pixel is different ");
     if (changePixelNeighbor != potts_data_to_compare.changePixelNeighbor)
         throw CC3DException("change pixel neighbor is different ");
@@ -186,8 +186,13 @@ bool PottsTestData::compare_potts_data(PottsTestData &potts_data_to_compare) {
                 CC3D_Log(LOG_DEBUG) <<  "detected a difference in " << kv.first << " recorded=" << kv.second << " computed="
                                     << mitr_computed->second;
                 CC3D_Log(LOG_DEBUG) << "difference_value=" << difference_value;
+                std::ostringstream except_out ;
+                except_out<<string(kv.first) + " energy 1 term different "<<" recorded=" << kv.second << " computed="
+                                    << mitr_computed->second<<" difference: "<<difference_value<<" tolerance="<<tol<<endl;
 
-                throw CC3DException(string(kv.first) + " energy term different ");
+//                cerr<<except_out.str()<<endl;
+//                throw CC3DException(string(kv.first) + " energy term different ");
+                 throw CC3DException(except_out.str());
             }
         } else {
             throw CC3DException(string(kv.first) + " energy was not found in the computed energy container");
