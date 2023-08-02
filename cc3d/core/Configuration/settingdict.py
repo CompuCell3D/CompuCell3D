@@ -27,7 +27,7 @@ class SerializerUtil(object):
             'bool': lambda val: ('bool', int(val)),
             'Size2D': lambda val: ('size', str(val)),
             'Point2D': lambda val: ('point', str(val)),
-            'bytearray': lambda val: ('bytearray', val.decode(encoding=_enc)),
+            'bytearray': lambda val: ('bytearray', bytes(val)),
             'dict': self.dict_2_sql,
             'list': self.list_2_sql,
             'tuple': self.tuple_2_sql
@@ -45,7 +45,7 @@ class SerializerUtil(object):
             'bool': lambda val: False if int(val) == 0 else True,
             'size': self.sql_2_size,
             'point': self.sql_2_point,
-            'bytearray': lambda val: str(val, encoding=_enc),
+            'bytearray': lambda val: bytes(val),
             'dict': self.sql_2_dict,
             'list': self.sql_2_list,
             'tuple': self.sql_2_tuple,
