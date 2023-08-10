@@ -124,7 +124,6 @@ SET(CC3DLibraries
     CC3DBoundary
     CC3DField3D
     CC3DPublicUtilities
-    CC3DUnits
     CC3DXMLUtils
     CC3DPotts3D
     CC3DmuParser
