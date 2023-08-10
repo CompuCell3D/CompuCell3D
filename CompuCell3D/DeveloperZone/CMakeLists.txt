@@ -9,7 +9,13 @@ IF (APPLE)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 " CACHE STRING "flags used during compilation by C++ compiler" FORCE)
     SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 " CACHE STRING "flags used during compilation by C compiler" FORCE)
     SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "OSX deployment target" FORCE)
-    SET(CMAKE_OSX_SYSROOT /opt/MacOSX10.10.sdk)
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
+        # M1, arm64 processor
+        SET(CMAKE_OSX_SYSROOT /opt/MacOSX11.3.sdk)
+    else()
+        #x86 Intel machines
+        SET(CMAKE_OSX_SYSROOT /opt/MacOSX10.10.sdk)
+    endif()
     MESSAGE ("GOT APPLE")
 ENDIF (APPLE)
 
