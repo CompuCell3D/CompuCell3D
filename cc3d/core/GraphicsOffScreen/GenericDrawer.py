@@ -459,13 +459,13 @@ class GenericDrawer:
         if self.ren_win is None:
             self.ren_win = vtk.vtkRenderWindow()
             self.ren_win.SetOffScreenRendering(1)
+            self.ren_win.AddRenderer(ren)
 
         ren_win = self.ren_win
 
         if screenshot_data is not None:
             ren_win.SetSize(screenshot_data.win_width, screenshot_data.win_height)
 
-        ren_win.AddRenderer(ren)
         ren_win.Render()
 
         window_to_image_filter = vtk.vtkWindowToImageFilter()
