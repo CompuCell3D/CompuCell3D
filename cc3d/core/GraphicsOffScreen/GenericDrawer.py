@@ -42,7 +42,8 @@ MODULENAME = '---- GraphicsFrameWidget.py: '
 
 class GenericDrawer:
     def __init__(self, boundary_strategy=None):
-
+        # we will do a lazy initialization of the self.ren_win - inside output_screenshot method
+        self.ren_win = None
         self.plane = None
         self.planePos = None
         self.field_extractor = None
@@ -455,8 +456,11 @@ class GenericDrawer:
         """
 
         ren = self.get_renderer()
-        ren_win = vtk.vtkRenderWindow()
-        ren_win.SetOffScreenRendering(1)
+        if self.ren_win is None:
+            self.ren_win = vtk.vtkRenderWindow()
+            self.ren_win.SetOffScreenRendering(1)
+
+        ren_win = self.ren_win
 
         if screenshot_data is not None:
             ren_win.SetSize(screenshot_data.win_width, screenshot_data.win_height)
