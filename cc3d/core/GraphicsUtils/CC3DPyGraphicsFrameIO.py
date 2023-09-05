@@ -470,3 +470,37 @@ class ControlMessageSaveImage(FrameControlMessage):
         """
         if self.blocking:
             self.control_self_blocking(control)
+
+
+class ControlMessageResetCamera(FrameControlMessage):
+    """Message to reset the camera"""
+
+    def __init__(self,
+                 blocking: bool = False):
+
+        super().__init__()
+
+        self.blocking = blocking
+
+    def process(self, proc):
+        """
+        Save image to file
+
+        :param proc: graphics frame process
+        :type proc: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameProcess
+        :return: None
+        """
+        proc.frame.gd.get_renderer().ResetCamera()
+        if self.blocking:
+            proc.queue_output.put(self)
+
+    def control(self, control):
+        """
+        Do blocking if requested
+
+        :param control: graphics frame process controller
+        :type control: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameControlInterface
+        :return: None
+        """
+        if self.blocking:
+            self.control_self_blocking(control)

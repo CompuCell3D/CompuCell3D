@@ -691,6 +691,10 @@ class CC3DPyGraphicsFrameControlInterface:
                                                       scale=scale,
                                                       transparent_background=transparent_background))
 
+    def reset_camera(self, blocking=False):
+        """Reset the current camera"""
+        self._process_message(ControlMessageResetCamera(blocking))
+
     def get_bounding_box_on(self) -> bool:
         return self._process_message(ControlMessageGetAttr(attr_name='bounding_box_on'))
 
@@ -1382,6 +1386,10 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
                                         scale=scale,
                                         transparent_background=transparent_background)
 
+    def reset_camera(self, blocking=False):
+        """Reset the current camera"""
+        self._frame_controller.reset_camera(blocking)
+
     def _get_field_names(self) -> List[str]:
         field_names = CompuCellSetup.persistent_globals.simulator.getConcentrationFieldNameVector()
         return list(field_names)
@@ -1732,6 +1740,13 @@ class CC3DPyGraphicsFrameClientProxy:
                                  file_path=file_path,
                                  scale=scale,
                                  transparent_background=transparent_background)
+
+    def reset_camera(self, blocking=False):
+        """Reset the current camera"""
+        if blocking:
+            self._process_ret_msg('reset_camera', blocking=blocking)
+        else:
+            self._process_msg('reset_camera', blocking=blocking)
 
     @property
     def field_names(self) -> List[str]:
