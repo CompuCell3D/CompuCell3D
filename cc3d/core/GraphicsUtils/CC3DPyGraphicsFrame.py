@@ -30,6 +30,7 @@ from cc3d.core.BasicSimulationData import BasicSimulationData
 from cc3d.core import Configuration
 from cc3d.core.enums import *
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
+from cc3d.core.GraphicsOffScreen.primitives import Color
 from cc3d.cpp.PlayerPython import FieldExtractorCML, FieldStreamer, FieldStreamerData, FieldWriterCML
 from cc3d.core.GraphicsUtils.GraphicsFrame import GraphicsFrame, default_field_label
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrameIO import *
@@ -780,6 +781,27 @@ class CC3DPyGraphicsFrameClientBase:
         'WindowColor'
     ]
 
+    CONFIG_COLOR_ENTRIES: List[Union[str, Tuple[str, Any]]] = [
+        'AxesColor',
+        'BorderColor',
+        'BoundingBoxColor',
+        'ClusterBorderColor',
+        'ContourColor',
+        'FPPLinksColor',
+        ('TypeColorMap', 0),
+        ('TypeColorMap', 1),
+        ('TypeColorMap', 2),
+        ('TypeColorMap', 3),
+        ('TypeColorMap', 4),
+        ('TypeColorMap', 5),
+        ('TypeColorMap', 6),
+        ('TypeColorMap', 7),
+        ('TypeColorMap', 8),
+        ('TypeColorMap', 9),
+        ('TypeColorMap', 10),
+        'WindowColor'
+    ]
+
     CONFIG_ENTRIES_FIELDS_BYNAME = [
         'MinRangeFixed',
         'MaxRangeFixed',
@@ -1018,8 +1040,15 @@ class CC3DPyGraphicsFrameClientBase:
         :rtype: bool
         """
 
+        config_data = {k: v for k, v in self.config_data.items()}
+        for ce in CC3DPyGraphicsFrameClientBase.CONFIG_COLOR_ENTRIES:
+            if isinstance(ce, str):
+                config_data[ce] = str(config_data[ce])
+            else:
+                config_data[ce[0]][ce[1]] = str(config_data[ce[0]][ce[1]])
+
         with open(fp, 'w') as f:
-            json.dump(self.config_data, f, indent=4)
+            json.dump(config_data, f, indent=4)
 
         return True
 
@@ -1039,7 +1068,12 @@ class CC3DPyGraphicsFrameClientBase:
 
         with open(fp, 'r') as f:
             config_data = json.load(f)
-        for k, v in config_data:
+        for ce in CC3DPyGraphicsFrameClientBase.CONFIG_COLOR_ENTRIES:
+            if isinstance(ce, str):
+                config_data[ce] = Color(str(config_data[ce]))
+            else:
+                config_data[ce[0]][ce[1]] = Color(config_data[str(ce[0])][str(ce[1])])
+        for k, v in config_data.items():
             if k in self.config_data:
                 self.config_data[k] = v
         return True
