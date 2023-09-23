@@ -1765,11 +1765,11 @@ class RestartManager:
                 chd_dict['saturationCoef'] = chd.saturationCoef
                 chd_dict['formulaName'] = chd.formulaName
                 chemotactTowardsVec = chd.getChemotactTowardsVectorTypes()
-                print('chemotactTowardsVec=', chemotactTowardsVec)
+                # print('chemotactTowardsVec=', chemotactTowardsVec)
                 chd_dict['chemotactTowardsTypesVec'] = chd.getChemotactTowardsVectorTypes()
 
                 pickle.dump(chd_dict, pf)
-            print('field_names=', field_names)
+            # print('field_names=', field_names)
             # cPickle.dump(cellAdhesionVector,pf)        
 
         pf.close()
