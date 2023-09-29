@@ -79,9 +79,17 @@ namespace CompuCell3D {
         virtual void step(const unsigned int currentStep) {}
 
         virtual void finish() {}
-
         // End Steppable interface
+
         Dim3D getPolygonDimensions(const Dim3D &dim, int size);
+
+        bool onLine(Point3D lineStart, Point3D lineEnd, Point3D pt);
+
+        int direction(Point3D a, Point3D b, Point3D c);
+
+        bool isIntersect(Point3D src1, Point3D dst1, Point3D src2, Point3D dst2);
+
+        bool checkInside(Point3D pt, std::vector <Point3D> srcPoints, std::vector <Point3D> dstPoints);
 
         void initializeCellTypesCellSort();
 
