@@ -348,6 +348,9 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
     def start(self, auto_shutdown: bool = True):
         """Start the event loop"""
 
+        self.draw()
+        self.reset_camera()
+
         self.vtkWidget.Start()
 
         if auto_shutdown:
