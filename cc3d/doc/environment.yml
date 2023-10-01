@@ -1,0 +1,14 @@
+name: cc3d-docs
+channels:
+  - compucell3d
+  - conda-forge
+dependencies:
+  - cc3d
+  - ipython
+  - notebook
+  - ipywidgets
+  - ipyevents
+  - sphinx
+  - sphinx_rtd_theme
+  - sphinxcontrib-bibtex
+  - graphviz
