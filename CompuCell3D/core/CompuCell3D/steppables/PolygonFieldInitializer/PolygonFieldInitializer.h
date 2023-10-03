@@ -7,13 +7,19 @@
 #include "PolygonFieldInitializerDLLSpecifier.h"
 
 namespace CompuCell3D {
+    struct DoublePoint {
+        double x;
+        double y;
+        double z;
+    };
+
     class Potts3D;
 
     class Simulator;
 
     // class Dim3D;
 
-    class Point3D;
+    class DoublePoint;
 
     class POLYGONFIELDINITIALIZER_EXPORT PolygonFieldInitializerData {
     public:
@@ -21,8 +27,8 @@ namespace CompuCell3D {
                 width(1), gap(0), randomize(false) {}
 
         //Here, every ith point srcPoints connects to the ith point of dstPoints to form an edge
-        std::vector <Point3D> srcPoints; //source points
-        std::vector <Point3D> dstPoints; //destination points
+        std::vector <DoublePoint> srcPoints; //source points
+        std::vector <DoublePoint> dstPoints; //destination points
         
         std::vector <std::string> typeNames;
         std::string typeNamesString;
@@ -30,13 +36,16 @@ namespace CompuCell3D {
         int gap;
         bool randomize;
 
+        int zMin;
+        int zMax;
+
         void Gap(int _gap) { gap = _gap; }
 
         void Width(int _width) { width = _width; }
 
-        void SrcPoints(std::vector <Point3D> _srcPoints) { srcPoints = _srcPoints; }
+        void SrcPoints(std::vector <DoublePoint> _srcPoints) { srcPoints = _srcPoints; }
 
-        void DstPoints(std::vector <Point3D> _dstPoints) { dstPoints = _dstPoints; }
+        void DstPoints(std::vector <DoublePoint> _dstPoints) { dstPoints = _dstPoints; }
 
         void Types(std::string _type) {
             typeNames.push_back(_type);
@@ -83,13 +92,13 @@ namespace CompuCell3D {
 
         Dim3D getPolygonDimensions(const Dim3D &dim, int size);
 
-        bool onLine(Point3D lineStart, Point3D lineEnd, Point3D pt);
+        bool onLine(DoublePoint lineStart, DoublePoint lineEnd, DoublePoint pt);
 
-        int direction(Point3D a, Point3D b, Point3D c);
+        int direction(DoublePoint a, DoublePoint b, DoublePoint c);
 
-        bool isIntersect(Point3D src1, Point3D dst1, Point3D src2, Point3D dst2);
+        bool isIntersect(DoublePoint src1, DoublePoint dst1, DoublePoint src2, DoublePoint dst2);
 
-        bool checkInside(Point3D pt, std::vector <Point3D> srcPoints, std::vector <Point3D> dstPoints);
+        bool checkInside(DoublePoint pt, std::vector <DoublePoint> srcPoints, std::vector <DoublePoint> dstPoints);
 
         void initializeCellTypesCellSort();
 

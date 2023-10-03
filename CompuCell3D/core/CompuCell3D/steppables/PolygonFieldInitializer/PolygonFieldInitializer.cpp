@@ -50,24 +50,21 @@ void PolygonFieldInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlDat
 
             //Parsing Edges groups
             CC3DXMLElementList edgesGroupsXMlList = regionVec[i]->getElements("EdgeList");
-            for (int i = 0; i < edgesGroupsXMlList.size(); i++) { 
-                cerr << "Found Edges Group" << endl;
+            for (int i = 0; i < edgesGroupsXMlList.size(); i++) {
                 //Parsing Edge elements
                 CC3DXMLElementList edgesXMlList = edgesGroupsXMlList[i]->getElements("Edge");
                 for (int j = 0; j < edgesXMlList.size(); j++) { 
                     CC3DXMLElement * edge = edgesXMlList[j];
                     
                     if (edge->findElement("From") && edge->findElement("To")) {
-                        cerr << "Found FromTo Edge" << endl;
-
                         CC3DXMLElement * srcPointXML = edge->getFirstElement("From");
-                        Point3D src = Point3D();
+                        DoublePoint src = DoublePoint();
                         src.x = srcPointXML->getAttributeAsUInt("x");
                         src.y = srcPointXML->getAttributeAsUInt("y");
                         initData.srcPoints.push_back(src);
 
                         CC3DXMLElement * dstPointXML = edge->getFirstElement("To");
-                        Point3D dst = Point3D();
+                        DoublePoint dst = DoublePoint();
                         dst.x = dstPointXML->getAttributeAsUInt("x");
                         dst.y = dstPointXML->getAttributeAsUInt("y");
                         initData.dstPoints.push_back(dst);
@@ -86,6 +83,22 @@ void PolygonFieldInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlDat
                     'From' and 'To' points.");
             }
 
+            if (regionVec[i]->findElement("Extrude")) {
+                CC3DXMLElement * extrudeXML = regionVec[i]->getFirstElement("Extrude");
+                initData.zMin = extrudeXML->getAttributeAsUInt("zMin");
+                initData.zMax = extrudeXML->getAttributeAsUInt("zMax");
+            }
+            else {
+                //Set default value of extrusion so that the entire field is covered
+                WatchableField3D < CellG * > *cellField = (WatchableField3D < CellG * > *)
+                potts->getCellFieldG();
+                if (!cellField) throw CC3DException("initField() Cell field cannot be null!");
+                Dim3D dim = cellField->getDim();
+
+                initData.zMin = 0;
+                initData.zMax = dim.z;
+            }
+            
             initDataVec.push_back(initData);
         }
     }
@@ -113,7 +126,7 @@ Dim3D PolygonFieldInitializer::getPolygonDimensions(const Dim3D &dim, int size) 
 
 }
 
-bool PolygonFieldInitializer::onLine(Point3D lineStart, Point3D lineEnd, Point3D pt) {
+bool PolygonFieldInitializer::onLine(DoublePoint lineStart, DoublePoint lineEnd, DoublePoint pt) {
     //Check whether p is on the line or not
     if (pt.x <= max(lineStart.x, lineEnd.x)
         && pt.x >= min(lineStart.x, lineEnd.x)
@@ -123,8 +136,9 @@ bool PolygonFieldInitializer::onLine(Point3D lineStart, Point3D lineEnd, Point3D
     return false;
 }
 
-int PolygonFieldInitializer::direction(Point3D a, Point3D b, Point3D c) {
-    int val = (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y);
+int PolygonFieldInitializer::direction(DoublePoint a, DoublePoint b, DoublePoint c) {
+    double val = (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y);
+    // cerr << "val:" << val << endl;
     if (val == 0)
         //Collinear
         return 0;
@@ -136,7 +150,7 @@ int PolygonFieldInitializer::direction(Point3D a, Point3D b, Point3D c) {
 }
 
 
-bool PolygonFieldInitializer::isIntersect(Point3D src1, Point3D dst1, Point3D src2, Point3D dst2) {
+bool PolygonFieldInitializer::isIntersect(DoublePoint src1, DoublePoint dst1, DoublePoint src2, DoublePoint dst2) {
     //Four direction for two lines and points of other line
     int dir1 = direction(src1, dst1, src2);
     int dir2 = direction(src1, dst1, dst2);
@@ -166,16 +180,37 @@ bool PolygonFieldInitializer::isIntersect(Point3D src1, Point3D dst1, Point3D sr
     return false;
 }
 
-bool PolygonFieldInitializer::checkInside(Point3D pt, std::vector <Point3D> srcPoints, std::vector <Point3D> dstPoints) {
+bool PolygonFieldInitializer::checkInside(DoublePoint pt, std::vector <DoublePoint> srcPoints, std::vector <DoublePoint> dstPoints) {
     int n = srcPoints.size();
- 
-    //Create a point at x "infinity", y is same as point p
+
+    //The below loop fixes a bug where 
+    //isIntersect() would consider the imaginary line to cross through two edges
+    //just because it is hitting a vertex.
+    for (int i = 0; i < srcPoints.size(); i++) { 
+        if (srcPoints[i].y == pt.y || dstPoints[i].y == pt.y) {
+            // cerr << "Adjusted pt.y from "<< pt.y << endl;
+            pt.y += 0.0001;
+            // cerr << "to "<<pt.y << endl;
+        }
+    }
+    
+    //Algorithm:
+    //pt will connect to an imaginary point at (x="infinity", y=pt.y), forming a line.
+    //If the line intersects the polygon once, then the point pt must be inside the polygon.
+    //Special case: If the polygon is a U-shape and pt is on the left, then the line would cross through multiple edges.
+    //Thus, we are looking for an ODD number of intersections with the polygon.
+    
+    double MAX_DOUBLE = 9999.99; //(std::numeric_limits<float>::max)();
+    DoublePoint ptInfinity = DoublePoint();
+    ptInfinity.x = MAX_DOUBLE;
+    ptInfinity.y = pt.y;
+    ptInfinity.z = pt.z;
+
     int count = 0;
     int i = 0;
-    int MAX_INT = (std::numeric_limits<int>::max)();
     while (i < n) {
         //Check "line i", which connects a point from srcPoints to dstPoints
-        if (isIntersect(srcPoints[i], dstPoints[i], pt, Point3D(MAX_INT, pt.y, pt.z))) {
+        if (isIntersect(srcPoints[i], dstPoints[i], pt, ptInfinity)) {
             //If this line is intersects line i
             if (direction(srcPoints[i], pt, dstPoints[i]) == 0) {
                 return onLine(srcPoints[i], dstPoints[i], pt);
@@ -193,9 +228,10 @@ bool PolygonFieldInitializer::checkInside(Point3D pt, std::vector <Point3D> srcP
 
 
 void PolygonFieldInitializer::layOutCells(const PolygonFieldInitializerData &_initData) { 
+    std::vector <DoublePoint> srcPoints  = _initData.srcPoints;
+    std::vector <DoublePoint> dstPoints  = _initData.dstPoints;
+
     //TEMP: print edges
-    std::vector <Point3D> srcPoints  = _initData.srcPoints;
-    std::vector <Point3D> dstPoints  = _initData.dstPoints;
     for (int i = 0; i < srcPoints.size(); i++) { 
         cerr << "Edge i=" << to_string(i) << endl;
         cerr << "From (" << srcPoints[i].x << ", " << srcPoints[i].y << ", "  << srcPoints[i].z << ") ";
@@ -218,19 +254,25 @@ void PolygonFieldInitializer::layOutCells(const PolygonFieldInitializerData &_in
     cerr << "itDim:" << itDim.x << ", " << itDim.y << ", "  << itDim.z << endl;
 	CC3D_Log(LOG_DEBUG) << "itDim="<<itDim;
 
-
     Point3D pt;
     Point3D cellPt;
     CellG *cell;
 
-    for (int z = 0; z < itDim.z; z++)
+    cerr << "_initData.zMin, _initData.zMax " << _initData.zMin <<", "<< _initData.zMax<<endl;
+    cerr << "size " << size <<endl;
+    //Only Z is dependent on the Extrude parameter
+    for (int z = _initData.zMin / size; z < _initData.zMax / size; z++)
         for (int y = 0; y < itDim.y; y++)
             for (int x = 0; x < itDim.x; x++) {
                 pt.x = x * size;
                 pt.y = y * size;
                 pt.z = z * size;
-
-                if (!checkInside(pt, srcPoints, dstPoints)) {
+                
+                DoublePoint doublePoint = DoublePoint();
+                doublePoint.x = (double) pt.x;
+                doublePoint.y = (double) pt.y;
+                doublePoint.z = (double) pt.z;
+                if (!checkInside(doublePoint, srcPoints, dstPoints)) {
                     continue;
                 }
 
