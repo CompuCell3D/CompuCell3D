@@ -1,4 +1,11 @@
-
+/**
+The checkInside algorithm is from: https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
+Related functions adapted from GeeksForGeeks:
+    - checkInside
+    - onLine
+    - direction
+    - isIntersect
+*/
 
 #include <CompuCell3D/CC3D.h>
 
@@ -138,12 +145,11 @@ bool PolygonFieldInitializer::onLine(DoublePoint lineStart, DoublePoint lineEnd,
 
 int PolygonFieldInitializer::direction(DoublePoint a, DoublePoint b, DoublePoint c) {
     double val = (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y);
-    // cerr << "val:" << val << endl;
     if (val == 0)
         //Collinear
         return 0;
     else if (val < 0)
-        //Anti-clockwise direction
+        //Counter-clockwise direction
         return 2;
     //Clockwise direction
     return 1;
@@ -186,13 +192,13 @@ bool PolygonFieldInitializer::checkInside(DoublePoint pt, std::vector <DoublePoi
     //The below loop fixes a bug where 
     //isIntersect() would consider the imaginary line to cross through two edges
     //just because it is hitting a vertex.
+    int numPointsAtSameLevelOf = 0; 
     for (int i = 0; i < srcPoints.size(); i++) { 
         if (srcPoints[i].y == pt.y || dstPoints[i].y == pt.y) {
-            // cerr << "Adjusted pt.y from "<< pt.y << endl;
-            pt.y += 0.0001;
-            // cerr << "to "<<pt.y << endl;
+            pt.y += 0.00001;
         }
     }
+    
     
     //Algorithm:
     //pt will connect to an imaginary point at (x="infinity", y=pt.y), forming a line.
@@ -200,7 +206,7 @@ bool PolygonFieldInitializer::checkInside(DoublePoint pt, std::vector <DoublePoi
     //Special case: If the polygon is a U-shape and pt is on the left, then the line would cross through multiple edges.
     //Thus, we are looking for an ODD number of intersections with the polygon.
     
-    double MAX_DOUBLE = 9999.99; //(std::numeric_limits<float>::max)();
+    double MAX_DOUBLE = (std::numeric_limits<float>::max)();
     DoublePoint ptInfinity = DoublePoint();
     ptInfinity.x = MAX_DOUBLE;
     ptInfinity.y = pt.y;
@@ -223,22 +229,12 @@ bool PolygonFieldInitializer::checkInside(DoublePoint pt, std::vector <DoublePoi
     
     //When count is odd
     return count & 1;
-
 }
 
 
 void PolygonFieldInitializer::layOutCells(const PolygonFieldInitializerData &_initData) { 
     std::vector <DoublePoint> srcPoints  = _initData.srcPoints;
     std::vector <DoublePoint> dstPoints  = _initData.dstPoints;
-
-    //TEMP: print edges
-    for (int i = 0; i < srcPoints.size(); i++) { 
-        cerr << "Edge i=" << to_string(i) << endl;
-        cerr << "From (" << srcPoints[i].x << ", " << srcPoints[i].y << ", "  << srcPoints[i].z << ") ";
-        cerr << "To (" << dstPoints[i].x  << ", " << dstPoints[i].y << ", "  << dstPoints[i].z << ") " << endl;
-    }
-
-
 
     int size = _initData.gap + _initData.width;
     int cellWidth = _initData.width;
@@ -248,18 +244,15 @@ void PolygonFieldInitializer::layOutCells(const PolygonFieldInitializerData &_in
     if (!cellField) throw CC3DException("initField() Cell field cannot be null!");
 
     Dim3D dim = cellField->getDim();
-
-    cerr << "dim:" << dim.x << ", " << dim.y << ", "  << dim.z << endl; 
+ 
 	Dim3D itDim = getPolygonDimensions(dim, size);
-    cerr << "itDim:" << itDim.x << ", " << itDim.y << ", "  << itDim.z << endl;
 	CC3D_Log(LOG_DEBUG) << "itDim="<<itDim;
 
     Point3D pt;
     Point3D cellPt;
     CellG *cell;
+    DoublePoint doublePoint = DoublePoint();
 
-    cerr << "_initData.zMin, _initData.zMax " << _initData.zMin <<", "<< _initData.zMax<<endl;
-    cerr << "size " << size <<endl;
     //Only Z is dependent on the Extrude parameter
     for (int z = _initData.zMin / size; z < _initData.zMax / size; z++)
         for (int y = 0; y < itDim.y; y++)
@@ -268,7 +261,6 @@ void PolygonFieldInitializer::layOutCells(const PolygonFieldInitializerData &_in
                 pt.y = y * size;
                 pt.z = z * size;
                 
-                DoublePoint doublePoint = DoublePoint();
                 doublePoint.x = (double) pt.x;
                 doublePoint.y = (double) pt.y;
                 doublePoint.z = (double) pt.z;
@@ -335,7 +327,6 @@ void PolygonFieldInitializer::start() {
     if (!cellField) throw CC3DException("initField() Cell field cannot be null!");
     Dim3D dim = cellField->getDim();
 
-    cerr << "initDataVec.size() = " << initDataVec.size() << endl;
     if (initDataVec.size() != 0) {
         for (int i = 0; i < initDataVec.size(); ++i) {
             layOutCells(initDataVec[i]);
