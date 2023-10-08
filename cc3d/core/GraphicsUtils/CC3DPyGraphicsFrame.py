@@ -542,6 +542,18 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
 
         save_img(ren_win=self.renWin, file_path=file_path, scale=scale, transparent_background=transparent_background)
 
+    @property
+    def window_size(self) -> Tuple[int, int]:
+        """Get the window size"""
+
+        return self.renWin.GetSize()
+
+    @window_size.setter
+    def window_size(self, _size: Tuple[int, int]):
+        """Set the window size"""
+
+        self.renWin.SetSize(_size)
+
 
 class CC3DPyGraphicsFrameProcess(multiprocessing.Process):
     """Process running the graphics frame."""
@@ -745,6 +757,13 @@ class CC3DPyGraphicsFrameControlInterface:
     def set_lattice_axes_on(self, _lattice_axes_on: bool):
         self._process_message(ControlMessageSetAttr(attr_name='lattice_axes_on',
                                                     attr_val=_lattice_axes_on))
+
+    def get_window_size(self) -> Tuple[int, int]:
+        return self._process_message(ControlMessageGetAttr(attr_name='window_size'))
+
+    def set_window_size(self, _window_size: Tuple[int, int]):
+        self._process_message(ControlMessageSetAttr(attr_name='window_size',
+                                                    attr_val=_window_size))
 
 
 class CC3DPyGraphicsFrameClientBase:
@@ -1306,6 +1325,12 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
     def set_lattice_axes_on(self, _val: bool):
         self._frame_controller.set_lattice_axes_on(_val)
 
+    def get_window_size(self) -> Tuple[int, int]:
+        return self._frame_controller.get_window_size()
+
+    def set_window_size(self, _window_size: Tuple[int, int]):
+        self._frame_controller.set_window_size(_window_size)
+
     def np_img_data(self,
                     scale: Union[int, Tuple[int, int]] = None,
                     transparent_background: bool = False):
@@ -1504,6 +1529,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
     fpp_links_on = property(fget=get_fpp_links_on, fset=set_fpp_links_on)
     lattice_axes_labels_on = property(fget=get_lattice_axes_labels_on, fset=set_lattice_axes_labels_on)
     lattice_axes_on = property(fget=get_lattice_axes_on, fset=set_lattice_axes_on)
+    window_size = property(fget=get_window_size, fset=set_window_size)
 
 
 class CC3DPyGraphicsFrameClientProxyMsg:
@@ -1904,3 +1930,11 @@ class CC3DPyGraphicsFrameClientProxy:
     @lattice_axes_on.setter
     def lattice_axes_on(self, _val: bool):
         self._process_msg('set_lattice_axes_on', _val)
+
+    @property
+    def window_size(self) -> Optional[Tuple[int, int]]:
+        return self._process_ret_msg('get_window_size')
+
+    @window_size.setter
+    def window_size(self, _val: Tuple[int, int]):
+        self._process_ret_msg('set_window_size', _val)

@@ -5,6 +5,8 @@ import cc3d
 from cc3d import CompuCellSetup
 from cc3d.cpp import CompuCell
 
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+
 # -- General configuration ------------------------------------------------
 
 # Sphinx extension module names (e.g., 'sphinx.ext.*')
@@ -33,14 +35,14 @@ try:
                     if x.startswith("dot.")][0]
 except IndexError:
     raise EnvironmentError('Graphviz not located in environment.')
-graphviz_dot = os.path.join(os.path.dirname(sys.executable), "Library", "bin", graphviz_dot)
+graphviz_dot = os.path.join(os.path.dirname(sys.executable), *graphviz_reldirs, graphviz_dot)
 
 
 # General information about the project.
-project = u'CC3D_code_developer_reference_manual'
-copyright = u'2020, T.J. Sego, Juliano F. Gianlupi, Maciej H. Swat, James A. Glazier'
+project = u'CC3D_python_api_docs_dev'
+copyright = u'2023, T.J. Sego, Juliano F. Gianlupi, Maciej H. Swat, James A. Glazier'
 author = u'T.J. Sego, Juliano F. Gianlupi, Maciej H. Swat, James A. Glazier'
-project_title = u'CC3D Code Developer Reference Manual'
+project_title = u'CC3D Python Developer API Documentation'
 
 # The version info
 #   Short X.Y version.
@@ -110,16 +112,12 @@ def setup(app):
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'basic'
-# html_theme = 'alabaster'
-# html_theme = 'sphinx_rtd_theme'
-
-# on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-#
-# if not on_rtd:  # only import and set the theme if we're building docs locally
-#     import sphinx_rtd_theme
-#     html_theme = 'sphinx_rtd_theme'
-#     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+if on_rtd:
+    import sphinx_rtd_theme
+    html_theme = 'sphinx_rtd_theme'
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+else:
+    html_theme = 'basic'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

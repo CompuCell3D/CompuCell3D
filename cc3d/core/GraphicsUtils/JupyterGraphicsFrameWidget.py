@@ -805,6 +805,16 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         self.frame.lattice_axes_on = _lattice_axes_on
         self._update()
 
+    @property
+    def window_width_percent(self) -> float:
+        """Percent of cell width occupied by the window"""
+
+        return float(self.widget.layout.width.replace('%', '')) / 100
+
+    @window_width_percent.setter
+    def window_width_percent(self, _window_width_percent: float):
+        self.widget.layout.width = f'{int(_window_width_percent * 100)}%'
+
     def _update(self):
         self.frame.reset_camera()
         self.frame.current_screenshot_data = self.frame.compute_current_screenshot_data()
