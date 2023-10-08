@@ -193,9 +193,14 @@ namespace CompuCell3D {
         PyObject *pyAttrib;
 
         PyObject *getPyAttrib() {
-#ifdef SWIGPYTHON
-            if (pyAttrib == nullptr) pyAttrib = PyDict_New();
-#endif
+//#ifdef SWIG
+//            if (pyAttrib == nullptr){
+//                PyGILState_STATE gstate;
+//                gstate = PyGILState_Ensure();
+//                pyAttrib = PyDict_New();
+//                PyGILState_Release(gstate);
+//            }
+//#endif
             return pyAttrib;
         }
     };
