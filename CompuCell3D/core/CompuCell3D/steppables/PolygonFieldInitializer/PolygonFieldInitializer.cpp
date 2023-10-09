@@ -66,14 +66,14 @@ void PolygonFieldInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlDat
                     if (edge->findElement("From") && edge->findElement("To")) {
                         CC3DXMLElement * srcPointXML = edge->getFirstElement("From");
                         DoublePoint src = DoublePoint();
-                        src.x = srcPointXML->getAttributeAsUInt("x");
-                        src.y = srcPointXML->getAttributeAsUInt("y");
+                        src.x = srcPointXML->getAttributeAsDouble("x");
+                        src.y = srcPointXML->getAttributeAsDouble("y");
                         initData.srcPoints.push_back(src);
 
                         CC3DXMLElement * dstPointXML = edge->getFirstElement("To");
                         DoublePoint dst = DoublePoint();
-                        dst.x = dstPointXML->getAttributeAsUInt("x");
-                        dst.y = dstPointXML->getAttributeAsUInt("y");
+                        dst.x = dstPointXML->getAttributeAsDouble("x");
+                        dst.y = dstPointXML->getAttributeAsDouble("y");
                         initData.dstPoints.push_back(dst);
                     }
                     else {
