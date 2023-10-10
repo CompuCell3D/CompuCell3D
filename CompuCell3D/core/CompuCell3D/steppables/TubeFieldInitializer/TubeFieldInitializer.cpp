@@ -1,4 +1,12 @@
-//https://www.geeksforgeeks.org/shortest-distance-between-a-line-and-a-point-in-a-3-d-plane/
+/**
+Full credit for the following functions to https://www.geeksforgeeks.org/shortest-distance-between-a-line-and-a-point-in-a-3-d-plane/
+- distanceToLine
+- subtractPoints
+- dotProduct
+- crossProduct
+- magnitude
+*/
+
 
 #include <CompuCell3D/CC3D.h>
 
@@ -110,8 +118,8 @@ double TubeFieldInitializer::distance(double ax, double ay, double az, double bx
 
 
 
-//Subtract 2 points
-Point3D TubeFieldInitializer::subtract(Point3D p1, Point3D p2) {
+
+Point3D TubeFieldInitializer::subtractPoints(Point3D p1, Point3D p2) {
     int x1 = p1.x - p2.x;
     int y1 = p1.y - p2.y;
     int z1 = p1.z - p2.z;
@@ -119,7 +127,6 @@ Point3D TubeFieldInitializer::subtract(Point3D p1, Point3D p2) {
     return Point3D(x1, y1, z1);
 }
 
-//Dot product of 2 points
 int TubeFieldInitializer::dotProduct(Point3D p1, Point3D p2) {
     int x1 = p1.x * p2.x;
     int y1 = p1.y * p2.y;
@@ -128,7 +135,6 @@ int TubeFieldInitializer::dotProduct(Point3D p1, Point3D p2) {
     return x1 + y1 + z1;
 }
 
-//Cross product of 2 points
 Point3D TubeFieldInitializer::crossProduct(Point3D p1, Point3D p2) {
     int x1 = p1.y * p2.z - p1.z * p2.y;
     int y1 = p1.z * p2.x - p1.x * p2.z;
@@ -142,14 +148,23 @@ float TubeFieldInitializer::magnitude(Point3D p) {
 }
 
 /**
-Calculates the shortest distance from a point to a line in 3D.
+Calculates the perpendicular distance from a point to a line.
 */
-float TubeFieldInitializer::shortDistance(Point3D line_point1,
+float TubeFieldInitializer::distanceToLine(Point3D line_point1,
                                     Point3D line_point2,
                                     Point3D point)
 {
-    Point3D AB = subtract(line_point2, line_point1);
-    Point3D AC = subtract(point, line_point1);
+    //AB: the length of the given line.
+    //CD: the imaginary perpendicular line segment between `point` and the line.
+    //AC: the imaginary segment connecting `line_point1` to `point`
+
+    //The goal is to treat the points as a parallelogram which has an
+    //area of Base * Height = AB * CD.
+    //This gives CD = |ABxAC| / |AB|
+    //where |ABxAC| serves as Base*Height and the `area` below.
+
+    Point3D AB = subtractPoints(line_point2, line_point1);
+    Point3D AC = subtractPoints(point, line_point1);
     float area = magnitude( (crossProduct(AB, AC)) );
     float CD = area / magnitude(AB);
     return CD;
@@ -159,11 +174,6 @@ float TubeFieldInitializer::shortDistance(Point3D line_point1,
 
 
 void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData) { 
-
-    //TEMP
-    cerr << "FromPt: " << _initData.fromPoint.x << ", " << _initData.fromPoint.y << ", " << _initData.fromPoint.z << endl;
-    cerr << "ToPt: " << _initData.toPoint.x << ", " << _initData.toPoint.y << ", " << _initData.toPoint.z << endl;
-
 
     int size = _initData.gap + _initData.width;
     int cellWidth = _initData.width;
@@ -185,6 +195,7 @@ void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData
 
     double tubeLength = distance(_initData.fromPoint.x, _initData.fromPoint.y, _initData.fromPoint.z,
             _initData.toPoint.x, _initData.toPoint.y, _initData.toPoint.z);
+    double hypotenuse = sqrt( pow(_initData.outerRadius, 2) + pow(tubeLength, 2) );
 
     for (int z = 0; z < itDim.z; z++)
         for (int y = 0; y < itDim.y; y++)
@@ -193,18 +204,23 @@ void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData
                 pt.y = y * size;
                 pt.z = z * size;
 
-                double dist = shortDistance(_initData.fromPoint, _initData.toPoint, pt);
-                if (dist > _initData.outerRadius) {
+                //Step 1: Is the point close/far enough to the center axis of the tube?
+                double dist = distanceToLine(_initData.fromPoint, _initData.toPoint, pt);
+                if (dist > _initData.outerRadius || dist < _initData.innerRadius) {
                     continue;
                 }
 
-                double p1Dist = distance(_initData.fromPoint.x, _initData.fromPoint.y, _initData.fromPoint.z,
+                //Step 2: Is the point too far from the face of the tube/cylinder? (Pythagorean Thm.)
+                //This trims the tube to its desired length.
+                //1. Choose the face that's farther away from the point pt.
+                double fromDist = distance(_initData.fromPoint.x, _initData.fromPoint.y, _initData.fromPoint.z,
                         pt.x, pt.y, pt.z);
-                double p2Dist = distance(_initData.toPoint.x, _initData.toPoint.y, _initData.toPoint.z,
+                double toDist = distance(_initData.toPoint.x, _initData.toPoint.y, _initData.toPoint.z,
                         pt.x, pt.y, pt.z);
-
-                double hypotenuse = sqrt( pow(_initData.outerRadius, 2) + pow(tubeLength, 2) );
-                double distanceFromFace = max(p1Dist, p2Dist);
+                double distanceFromFace = max(fromDist, toDist);
+                //2. Check the distance from `pt` to the farther face against hypotenuse.
+                //Ex: If they are equal, the point would be at the bottom edge of the tube.
+                //Ex: If the dist is too great, the point is beyond the tube's length. 
                 if (distanceFromFace > hypotenuse) {
                     continue;
                 }

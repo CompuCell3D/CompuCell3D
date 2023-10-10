@@ -74,7 +74,7 @@ namespace CompuCell3D {
 
 
 
-        Point3D subtract(Point3D p1, Point3D p2);
+        Point3D subtractPoints(Point3D p1, Point3D p2);
 
         int dotProduct(Point3D p1, Point3D p2);
 
@@ -82,7 +82,7 @@ namespace CompuCell3D {
 
         float magnitude(Point3D p);
 
-        float shortDistance(Point3D line_point1, Point3D line_point2, Point3D point);
+        float distanceToLine(Point3D line_point1, Point3D line_point2, Point3D point);
 
 
 
