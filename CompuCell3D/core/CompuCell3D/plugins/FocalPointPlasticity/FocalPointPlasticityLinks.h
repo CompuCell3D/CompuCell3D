@@ -193,9 +193,6 @@ namespace CompuCell3D {
         PyObject *pyAttrib;
 
         PyObject *getPyAttrib() {
-#ifdef SWIGPYTHON
-            if (pyAttrib == nullptr) pyAttrib = PyDict_New();
-#endif
             return pyAttrib;
         }
     };
