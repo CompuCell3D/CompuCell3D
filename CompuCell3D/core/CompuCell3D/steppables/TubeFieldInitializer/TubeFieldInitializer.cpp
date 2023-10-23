@@ -143,14 +143,14 @@ Point3D TubeFieldInitializer::crossProduct(Point3D p1, Point3D p2) {
     return Point3D(x1, y1, z1);
 }
 
-float TubeFieldInitializer::magnitude(Point3D p) {
-    return (float) sqrt(pow(p.x, 2) + pow(p.y, 2) + pow(p.z, 2));
+double TubeFieldInitializer::magnitude(Point3D p) {
+    return (double) sqrt(pow(p.x, 2) + pow(p.y, 2) + pow(p.z, 2));
 }
 
 /**
 Calculates the perpendicular distance from a point to a line.
 */
-float TubeFieldInitializer::distanceToLine(Point3D line_point1,
+double TubeFieldInitializer::distanceToLine(Point3D line_point1,
                                     Point3D line_point2,
                                     Point3D point)
 {
@@ -165,8 +165,8 @@ float TubeFieldInitializer::distanceToLine(Point3D line_point1,
 
     Point3D AB = subtractPoints(line_point2, line_point1);
     Point3D AC = subtractPoints(point, line_point1);
-    float area = magnitude( (crossProduct(AB, AC)) );
-    float CD = area / magnitude(AB);
+    double area = magnitude( (crossProduct(AB, AC)) );
+    double CD = area / magnitude(AB);
     return CD;
 }
 
@@ -274,7 +274,7 @@ std::vector<double> TubeFieldInitializer::crossProductVec(const std::vector<doub
 
 void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData) { 
 
-    for (int offset = 0; offset < 2; offset++) {
+//TODO check for division by 0
     int size = _initData.gap + _initData.width;
     int cellWidth = _initData.width;
 
@@ -297,95 +297,88 @@ void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData
     directionVec.y /= tubeLength;
     directionVec.z /= tubeLength;
 
+    const int NUM_RING_POINTS = 60;
+
+    //Do a linear interpolation between fromPoint and toPoint
+    // short numPoints = tubeLength / max(short(_initData.gap), 1) + 1;
+    // short dx = (_initData.toPoint.x - _initData.fromPoint.x) / (numPoints - 1);
+    // short dy = (_initData.toPoint.y - _initData.fromPoint.y) / (numPoints - 1);
+    // short dz = (_initData.toPoint.z - _initData.fromPoint.z) / (numPoints - 1);
     Point3D center = Point3D();
-    center.x = _initData.fromPoint.x;
-    center.y = _initData.fromPoint.y;
-    center.z = offset;
+    // center.x = 10;
+    // center.y = 25;
+    // center.z = 1;
+    // short centerX = _initData.fromPoint.x;
+    // short centerY = _initData.fromPoint.y;
+    // short centerZ = _initData.fromPoint.z;
+    for (short k = 0; k < 10; k++) {
+        // short testing123 = _initData.fromPoint.x + k * dx;
+        // centerX = _initData.fromPoint.x;// + k * dx;
+        // centerY = _initData.fromPoint.y;// + k * dy;
+        // centerZ += k;// + k * dz;
 
-    for (double radius = 8.0; radius < 11.0; radius += 0.5) {
-        int num_points = 60;
-        double axisMagnitude = sqrt(directionVec.x * directionVec.x + directionVec.y * directionVec.y + directionVec.z * directionVec.z);
+        // int spacing = k * _initData.gap;
+        // center.x = _initData.fromPoint.x + spacing * ((_initData.toPoint.x - _initData.fromPoint.x) / (numPoints - 1));
+        // center.y = _initData.fromPoint.y + spacing * ((_initData.toPoint.y - _initData.fromPoint.y) / (numPoints - 1));
+        // center.z = _initData.fromPoint.z + spacing * ((_initData.toPoint.z - _initData.fromPoint.z) / (numPoints - 1));
+       
 
-        // Calculate unit vector c
-        std::vector<float> c(3);
-        // for (int i = 0; i < 3; i++) {
-        //     c[i] = directionVec[i] / axisMagnitude;
-        // }
+        center.x = _initData.toPoint.x;
+        center.y = _initData.toPoint.y;
+        center.z = k; //offset; //TODO point interpolation
 
-        c[0] = directionVec.x / axisMagnitude;
-        c[1] = directionVec.y / axisMagnitude;
-        c[2] = directionVec.z / axisMagnitude;
+        // cerr << "Center at " << centerX << ","  << centerY << "," << centerZ <<endl;
 
-        // Point3D c;
-        // c.x = directionVec.x / axisMagnitude;
-        // c.y = directionVec.y / axisMagnitude;
-        // c.z = directionVec.z / axisMagnitude;
+        for (double radius = 8.0; radius < 11.0; radius += 0.5) {
+            double axisMagnitude = sqrt(directionVec.x * directionVec.x + directionVec.y * directionVec.y + directionVec.z * directionVec.z);
 
+            // Calculate the normalized direction vector
+            std::vector<double> normalizedDir(3);
+            normalizedDir[0] = directionVec.x / axisMagnitude;
+            normalizedDir[1] = directionVec.y / axisMagnitude;
+            normalizedDir[2] = directionVec.z / axisMagnitude;
 
-        // Define a vector a
-        std::vector<float> a(3);
-        // Point3D a;
+            //Create an orthonormal basis around the axis
+            std::vector<double> a = crossProductVec(normalizedDir, {1.0, 0.0, 0.0});
 
-        //Create an orthonormal basis around the axis
-        a = crossProductVec(c, {1.0, 0.0, 0.0});
-        // a = crossProduct(c, Point3D(1.0, 0.0, 0.0));
-
-        // Check if a is a zero vector
-        if (a[0] == 0 && a[1] == 0 && a[2] == 0) {
-            a = crossProductVec(c, {0.0, 1.0, 0.0});
-        }
-
-        // Calculate the magnitude of vector a
-        float aMagnitude = sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
-
-        // Normalize vector a
-        // for (int i = 0; i < 3; i++) {
-        //     a[i] /= aMagnitude;
-        // }
-        a[0] /= aMagnitude;
-        a[1] /= aMagnitude;
-        a[2] /= aMagnitude;
-
-        // Calculate vector b
-        std::vector<double> b = crossProductVec(c, a);
-        // Point3D b = crossProduct(c, a);
-
-
-
-        // angle_alt = 0
-        // color2 = np.array([0, 0.4, 0.9])
-        // color1 = np.array([0.9, 0, 0])
-        // curr_color = color1
-        // if alt_color:
-        //     curr_color = color2
-
-        //Calculate the ring coordinates
-        for (int i = 0; i < num_points; i++) {
-            double angle = 2 * M_PI * i / num_points;
-            int x_coord = round(center.x + radius * cos(angle) * a[0] + radius * sin(angle) * b[0]);
-            int y_coord = round(center.y + radius * cos(angle) * a[1] + radius * sin(angle) * b[1]);
-            int z_coord = round(center.z + radius * cos(angle) * a[2] + radius * sin(angle) * b[2]);
-
-            if (x_coord < dim.x && y_coord < dim.y && z_coord < dim.z && x_coord >= 0 && y_coord >= 0 && z_coord >= 0) {
-                
-                pt.x = x_coord;
-                pt.y = y_coord;
-                pt.z = z_coord;
-                if (BoundaryStrategy::getInstance()->isValid(pt))
-                    cellField->set(pt, cell);
-
-                // grid[x_coord][y_coord][z_coord] = 1
-                // if angle_alt >= 5:
-                //     if id(curr_color) == id(color1): #same memory address?
-                //         curr_color = color2
-                //     else:
-                //         curr_color = color1
-                //     angle_alt = 0
-                // colors[x_coord][y_coord][z_coord] = curr_color
+            // Check if a is a zero vector
+            if (a[0] == 0 && a[1] == 0 && a[2] == 0) {
+                a = crossProductVec(normalizedDir, {0.0, 1.0, 0.0});
             }
-            // angle_alt += 1
+
+            // Calculate the magnitude of vector a
+            double aMagnitude = sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
+
+            // Normalize vector a
+            a[0] /= aMagnitude;
+            a[1] /= aMagnitude;
+            a[2] /= aMagnitude;
+
+            // Calculate vector b
+            std::vector<double> b = crossProductVec(normalizedDir, a);
+
+            //Calculate the ring coordinates
+            for (int i = 0; i < NUM_RING_POINTS; i++) {
+                double angle = 2 * M_PI * i / NUM_RING_POINTS;
+//TODO remove underscores
+                pt.x = short(round(center.x + radius * cos(angle) * a[0] + radius * sin(angle) * b[0]));
+                pt.y = short(round(center.y + radius * cos(angle) * a[1] + radius * sin(angle) * b[1]));
+                pt.z = short(round(center.z + radius * cos(angle) * a[2] + radius * sin(angle) * b[2]));
+
+        // cerr << "10" <<endl;
+        // cerr << "Pixel " << pt.x << ","  << pt.y << "," << pt.z <<endl;
+                if (pt.x < dim.x && pt.y < dim.y && pt.z < dim.z && pt.x >= 0 && pt.y >= 0 && pt.z >= 0) {
+                    
+        // cerr << "10.1" <<endl;
+                    if (BoundaryStrategy::getInstance()->isValid(pt)) {
+        // cerr << "10.2" <<endl;
+                        cellField->set(pt, cell);
+                    }
+                }
+        // cerr << "11" <<endl;
+            }
         }
-    }
+        cerr << "Done" <<endl;
     }
 }
 
