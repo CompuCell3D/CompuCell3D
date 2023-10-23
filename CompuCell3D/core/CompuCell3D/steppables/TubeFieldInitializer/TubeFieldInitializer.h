@@ -80,6 +80,8 @@ namespace CompuCell3D {
 
         Point3D crossProduct(Point3D p1, Point3D p2);
 
+        std::vector<double> crossProductVec(const std::vector<double>& v1, const std::vector<double>& v2);
+
         float magnitude(Point3D p);
 
         float distanceToLine(Point3D line_point1, Point3D line_point2, Point3D point);
