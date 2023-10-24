@@ -285,7 +285,7 @@ void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData
     Dim3D dim = cellField->getDim();
     cerr << "dim:" << dim.x << ", " << dim.y << ", "  << dim.z << endl;
 
-    Point3D pt;
+    Point3D pt = Point3D();
     CellG *cell;
 
     double tubeLength = distance(_initData.fromPoint.x, _initData.fromPoint.y, _initData.fromPoint.z,
@@ -300,35 +300,23 @@ void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData
     const int NUM_RING_POINTS = 60;
 
     //Do a linear interpolation between fromPoint and toPoint
-    // short numPoints = tubeLength / max(short(_initData.gap), 1) + 1;
-    // short dx = (_initData.toPoint.x - _initData.fromPoint.x) / (numPoints - 1);
-    // short dy = (_initData.toPoint.y - _initData.fromPoint.y) / (numPoints - 1);
-    // short dz = (_initData.toPoint.z - _initData.fromPoint.z) / (numPoints - 1);
+    short numPoints = tubeLength / max(short(_initData.gap), 1) + 1;
+    double dx = (_initData.toPoint.x - _initData.fromPoint.x) / max(numPoints - 1, 1);
+    double dy = (_initData.toPoint.y - _initData.fromPoint.y) / max(numPoints - 1, 1);
+    double dz = (_initData.toPoint.z - _initData.fromPoint.z) / max(numPoints - 1, 1);
+    short centerX, centerY, centerZ;
     Point3D center = Point3D();
-    // center.x = 10;
-    // center.y = 25;
-    // center.z = 1;
-    // short centerX = _initData.fromPoint.x;
-    // short centerY = _initData.fromPoint.y;
-    // short centerZ = _initData.fromPoint.z;
-    for (short k = 0; k < 10; k++) {
-        // short testing123 = _initData.fromPoint.x + k * dx;
-        // centerX = _initData.fromPoint.x;// + k * dx;
-        // centerY = _initData.fromPoint.y;// + k * dy;
-        // centerZ += k;// + k * dz;
+    for (short k = 0; k < numPoints; k++) {
+
+        centerX = short(_initData.fromPoint.x + _initData.gap + k * dx);
+        centerY = short(_initData.fromPoint.y + _initData.gap + k * dy);
+        centerZ = short(_initData.fromPoint.y + _initData.gap + k * dy);
 
         // int spacing = k * _initData.gap;
-        // center.x = _initData.fromPoint.x + spacing * ((_initData.toPoint.x - _initData.fromPoint.x) / (numPoints - 1));
-        // center.y = _initData.fromPoint.y + spacing * ((_initData.toPoint.y - _initData.fromPoint.y) / (numPoints - 1));
-        // center.z = _initData.fromPoint.z + spacing * ((_initData.toPoint.z - _initData.fromPoint.z) / (numPoints - 1));
+        // centerX = _initData.fromPoint.x + spacing * ((_initData.toPoint.x - _initData.fromPoint.x) / (numPoints - 1));
+        // centerY = _initData.fromPoint.y + spacing * ((_initData.toPoint.y - _initData.fromPoint.y) / (numPoints - 1));
+        // centerZ = _initData.fromPoint.z + spacing * ((_initData.toPoint.z - _initData.fromPoint.z) / (numPoints - 1));
        
-
-        center.x = _initData.toPoint.x;
-        center.y = _initData.toPoint.y;
-        center.z = k; //offset; //TODO point interpolation
-
-        // cerr << "Center at " << centerX << ","  << centerY << "," << centerZ <<endl;
-
         for (double radius = 8.0; radius < 11.0; radius += 0.5) {
             double axisMagnitude = sqrt(directionVec.x * directionVec.x + directionVec.y * directionVec.y + directionVec.z * directionVec.z);
 
@@ -338,7 +326,7 @@ void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData
             normalizedDir[1] = directionVec.y / axisMagnitude;
             normalizedDir[2] = directionVec.z / axisMagnitude;
 
-            //Create an orthonormal basis around the axis
+            //Create an orthonormal basis around the x-axis
             std::vector<double> a = crossProductVec(normalizedDir, {1.0, 0.0, 0.0});
 
             // Check if a is a zero vector
@@ -360,25 +348,33 @@ void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData
             //Calculate the ring coordinates
             for (int i = 0; i < NUM_RING_POINTS; i++) {
                 double angle = 2 * M_PI * i / NUM_RING_POINTS;
-//TODO remove underscores
-                pt.x = short(round(center.x + radius * cos(angle) * a[0] + radius * sin(angle) * b[0]));
-                pt.y = short(round(center.y + radius * cos(angle) * a[1] + radius * sin(angle) * b[1]));
-                pt.z = short(round(center.z + radius * cos(angle) * a[2] + radius * sin(angle) * b[2]));
+                pt.x = short(round(centerX + radius * cos(angle) * a[0] + radius * sin(angle) * b[0]));
+                pt.y = short(round(centerY + radius * cos(angle) * a[1] + radius * sin(angle) * b[1]));
+                pt.z = short(round(centerZ + radius * cos(angle) * a[2] + radius * sin(angle) * b[2]));
 
-        // cerr << "10" <<endl;
-        // cerr << "Pixel " << pt.x << ","  << pt.y << "," << pt.z <<endl;
+                if (BoundaryStrategy::getInstance()->isValid(pt)) {
+                    cell = potts->createCellG(pt);
+                    cell->type = initCellType(_initData);
+                    potts->runSteppers(); //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
+                    //It is necessary to do it this way because steppers are called only when we are performing pixel copies
+                    // but if we initialize steppers are not called thus is you overwrite a cell here it will not get removed from
+                    //inventory unless you call steppers(VolumeTrackerPlugin) explicitly
+                } else {
+                    continue;
+                }
+
                 if (pt.x < dim.x && pt.y < dim.y && pt.z < dim.z && pt.x >= 0 && pt.y >= 0 && pt.z >= 0) {
-                    
-        // cerr << "10.1" <<endl;
                     if (BoundaryStrategy::getInstance()->isValid(pt)) {
-        // cerr << "10.2" <<endl;
                         cellField->set(pt, cell);
                     }
                 }
-        // cerr << "11" <<endl;
             }
         }
-        cerr << "Done" <<endl;
+
+        potts->runSteppers(); //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
+                //It is necessary to do it this way because steppers are called only when we are performing pixel copies
+                // but if we initialize steppers are not called thus is you overwrite a cell here it will not get removed from
+                //inventory unless you call steppers(VolumeTrackerPlugin) explicitly
     }
 }
 
