@@ -274,6 +274,7 @@ std::vector<double> TubeFieldInitializer::crossProductVec(const std::vector<doub
 
 void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData) { 
 
+    // int size = _initData.gap + _initData.width;
     int cellWidth = _initData.width;
 
     WatchableField3D < CellG * > *cellField = (WatchableField3D < CellG * > *)
@@ -289,34 +290,38 @@ void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData
     double tubeLength = distance(_initData.fromPoint.x, _initData.fromPoint.y, _initData.fromPoint.z,
             _initData.toPoint.x, _initData.toPoint.y, _initData.toPoint.z);
 
-    Point3D directionVec = _initData.fromPoint - _initData.toPoint;
+    std::vector<double> directionVec(3);
+    directionVec[0] = _initData.fromPoint.x - _initData.toPoint.x;
+    directionVec[1] = _initData.fromPoint.y - _initData.toPoint.y;
+    directionVec[2] = _initData.fromPoint.z - _initData.toPoint.z;
     //Normalize the direction vector
-    directionVec.x /= tubeLength;
-    directionVec.y /= tubeLength;
-    directionVec.z /= tubeLength;
+    for (int i = 0; i < 3; i++) {
+        directionVec[i] /= tubeLength;
+    }
+    cerr << "directionVec " << to_string(directionVec[0]) << ", " << to_string(directionVec[1]) << ", " << to_string(directionVec[2]) << endl;
 
     const int NUM_RING_POINTS = 60; //arbitrary
     //TODO does it work with extra-large tubes?
 
     //Do a linear interpolation between fromPoint and toPoint
     short numAxisPoints = tubeLength / max(short(_initData.gap), 1) + 1;
-    // if (_initData.gap != 0) //TODO delete?
+    // if (_initData.gap != 0)
     //     numAxisPoints /= 
     // numAxisPoints 
     // max(short(_initData.gap), 1) + 1
-    double dx = (_initData.toPoint.x - _initData.fromPoint.x) / max(numAxisPoints - 1, 1);
-    double dy = (_initData.toPoint.y - _initData.fromPoint.y) / max(numAxisPoints - 1, 1);
-    double dz = (_initData.toPoint.z - _initData.fromPoint.z) / max(numAxisPoints - 1, 1);
+    double dx = double(_initData.toPoint.x - _initData.fromPoint.x) / max(numAxisPoints - 1, 1);
+    double dy = double(_initData.toPoint.y - _initData.fromPoint.y) / max(numAxisPoints - 1, 1);
+    double dz = double(_initData.toPoint.z - _initData.fromPoint.z) / max(numAxisPoints - 1, 1);
+    cerr << "dxyz" << to_string(dx) << ", " << to_string(dy) << ", " << to_string(dz) << endl;
     short centerX, centerY, centerZ;
-    Point3D center = Point3D();
 
-    double axisMagnitude = sqrt(directionVec.x * directionVec.x + directionVec.y * directionVec.y + directionVec.z * directionVec.z);
+    double axisMagnitude = sqrt(directionVec[0] * directionVec[0] + directionVec[1] * directionVec[1] + directionVec[2] * directionVec[2]);
 
     //Calculate the normalized direction vector
     std::vector<double> normalizedDir(3);
-    normalizedDir[0] = directionVec.x / axisMagnitude;
-    normalizedDir[1] = directionVec.y / axisMagnitude;
-    normalizedDir[2] = directionVec.z / axisMagnitude;
+    normalizedDir[0] = directionVec[0] / axisMagnitude;
+    normalizedDir[1] = directionVec[1] / axisMagnitude;
+    normalizedDir[2] = directionVec[2] / axisMagnitude;
 
     //Create an orthonormal basis around the x-axis
     std::vector<double> a = crossProductVec(normalizedDir, {1.0, 0.0, 0.0});
@@ -333,75 +338,59 @@ void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData
     a[2] /= aMagnitude;
 
     std::vector<double> b = crossProductVec(normalizedDir, a);
-
+        
     bool justFormedCell = false;
-    if (cell == NULL && BoundaryStrategy::getInstance()->isValid(pt)) {
-        // cerr << "new cell at angle "<<to_string(angle)<<endl;
-        cell = potts->createCellG(pt);
-        cell->type = initCellType(_initData);
-        potts->runSteppers(); //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
-        //It is necessary to do it this way because steppers are called only when we are performing pixel copies
-        // but if we initialize steppers are not called thus is you overwrite a cell here it will not get removed from
-        //inventory unless you call steppers(VolumeTrackerPlugin) explicitly
-        justFormedCell = true;
-    }                    
     
     
-    for (short superAxisIter = 0; superAxisIter < short(tubeLength); superAxisIter += short(cellWidth + _initData.gap)) {
-        if (!justFormedCell) {
-            // cerr << "new cell at angle "<<to_string(angle)<<endl;
-            cell = potts->createCellG(pt);
-            cell->type = initCellType(_initData);
-            potts->runSteppers(); //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
-            //It is necessary to do it this way because steppers are called only when we are performing pixel copies
-            // but if we initialize steppers are not called thus is you overwrite a cell here it will not get removed from
-            //inventory unless you call steppers(VolumeTrackerPlugin) explicitly
-            justFormedCell = true;
-        }
-        
-        
-        double approxRadius = (_initData.outerRadius - _initData.innerRadius) / 2 + _initData.innerRadius;
-        // double cellWidthDegrees = (cellWidth / approxRadius);// * (180.0 / M_PI); //TODO delete?
+    for (short superK = 0; superK < short(tubeLength); superK += short(cellWidth + _initData.gap)) {
+
+        // double approxRadius = (_initData.outerRadius - _initData.innerRadius) / 2 + _initData.innerRadius;
+        // double cellWidthDegrees = (cellWidth / approxRadius);// * (180.0 / M_PI); //TODO use arc length instead of cellWidth(?)
         // cerr << "cellWidthDegrees " << to_string(cellWidthDegrees) << endl;
-        double cellWidthDegrees =  2.0*M_PI / 8.0;
+        double cellWidthDegrees =  2*M_PI / 8;
         double gapDegrees = 0;//(_initData.gap / radius) * (180.0 / M_PI);
 
         for (double superAngle = 0.0; superAngle < 2*M_PI; superAngle += cellWidthDegrees) {
-            for (double angle = superAngle; angle < superAngle + cellWidthDegrees; angle += M_PI/180.0)                 
-                //Increment radius 0.5 rather than 1.0 just to avoid having empty pixels in the rings
+            for (double angle = superAngle; angle < superAngle + cellWidthDegrees; angle += M_PI/180.0) {
+                //Increment by at least 0.5 just to avoid having empty pixels in the rings.
                 for (double radius = _initData.innerRadius; radius < _initData.outerRadius; radius += 0.5 + _initData.gap) {
 
                     // double angle = 2 * M_PI * i / NUM_RING_POINTS;
                     // angle += double(_initData.gap) / 60;// FIXME //the gap is a small amount of arc length
                     
-                    for (short axisIter = superAxisIter; axisIter < superAxisIter + cellWidth; axisIter++) {
-                        centerX = short(_initData.fromPoint.x + _initData.gap + axisIter * dx);
-                        centerY = short(_initData.fromPoint.y + _initData.gap + axisIter * dy);
-                        centerZ = short(_initData.fromPoint.z + _initData.gap + axisIter * dz);
+                    for (short k = superK; k < superK + cellWidth; k++) {
+
+                        centerX = short(_initData.fromPoint.x + _initData.gap + k * dx);
+                        centerY = short(_initData.fromPoint.y + _initData.gap + k * dy);
+                        centerZ = short(_initData.fromPoint.z + _initData.gap + k * dz);
+
+                        // cerr << centerZ << "..";
 
                         pt.x = short(round(centerX + radius * cos(angle) * a[0] + radius * sin(angle) * b[0]));
                         pt.y = short(round(centerY + radius * cos(angle) * a[1] + radius * sin(angle) * b[1]));
                         pt.z = short(round(centerZ + radius * cos(angle) * a[2] + radius * sin(angle) * b[2]));
+                        // cerr << "Pt at " << to_string(pt.x) << ", " << to_string(pt.y) << ", " << to_string(pt.z) << endl;
 
-                        if (pt.x < dim.x && pt.y < dim.y && pt.z < dim.z && pt.x >= 0 && pt.y >= 0 && pt.z >= 0) {
-                            if (BoundaryStrategy::getInstance()->isValid(pt)) {
-                                cellField->set(pt, cell);
-                            }
+                        if (!BoundaryStrategy::getInstance()->isValid(pt))
+                            continue;
+
+                        if (!justFormedCell) {
+                            // cerr << "new cell at angle "<<to_string(angle)<<endl;
+                            cell = potts->createCellG(pt);
+                            cell->type = initCellType(_initData);
+                            potts->runSteppers(); //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
+                            //It is necessary to do it this way because steppers are called only when we are performing pixel copies
+                            // but if we initialize steppers are not called thus is you overwrite a cell here it will not get removed from
+                            //inventory unless you call steppers(VolumeTrackerPlugin) explicitly
+                            justFormedCell = true;
                         }
+
+                        // if (cellField->get(pt) != NULL && cellField->get(pt) != nullptr)
+                            cellField->set(pt, cell);
                     }
-                    justFormedCell = false;
                 }
             }
-
-            if (BoundaryStrategy::getInstance()->isValid(pt)) {
-                cell = potts->createCellG(pt);
-                cell->type = initCellType(_initData);
-                potts->runSteppers(); //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
-                //It is necessary to do it this way because steppers are called only when we are performing pixel copies
-                // but if we initialize steppers are not called thus is you overwrite a cell here it will not get removed from
-                //inventory unless you call steppers(VolumeTrackerPlugin) explicitly
-                justFormedCell = true;
-            }
+            justFormedCell = false;
 
             //TODO move?
             potts->runSteppers(); //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
