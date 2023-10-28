@@ -304,7 +304,7 @@ void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData
     //TODO does it work with extra-large tubes?
 
     //Do a linear interpolation between fromPoint and toPoint
-    short numAxisPoints = tubeLength / max(short(_initData.gap), 1) + 1;
+    short numAxisPoints = tubeLength / max(int(_initData.gap), 1) + 1;
     // if (_initData.gap != 0)
     //     numAxisPoints /= 
     // numAxisPoints 
