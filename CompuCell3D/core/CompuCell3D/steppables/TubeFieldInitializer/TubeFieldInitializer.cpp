@@ -52,12 +52,18 @@ void TubeFieldInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlData) 
                 if (initData.numSlices < 1)
                     initData.numSlices = DEFAULT_NUM_SLICES;
             }
-            else {
-                initData.numSlices = DEFAULT_NUM_SLICES;
-            }
 
             if (regionVec[i]->findElement("Width"))
                 initData.width = regionVec[i]->getFirstElement("Width")->getUInt();
+
+            if (regionVec[i]->findElement("CellShape")) {
+                std::string cellShapeStr = regionVec[i]->getFirstElement("CellShape")->getText();
+                changeToLower(cellShapeStr);
+                if (cellShapeStr == "cube")
+                    initData.cellShape = CUBE;
+                else
+                    initData.cellShape = WEDGE;
+            }
 
             if (!regionVec[i]->getFirstElement("Types"))
                 throw CC3DException(
@@ -183,92 +189,93 @@ double TubeFieldInitializer::distanceToLine(Point3D line_point1,
 
 
 
-// void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData) { 
+void TubeFieldInitializer::layOutCellsCube(const TubeFieldInitializerData &_initData) { 
 
-//     int size = _initData.gap + _initData.width;
-//     int cellWidth = _initData.width;
+    int size = _initData.gap + _initData.width;
+    int cellWidth = _initData.width;
 
-//     WatchableField3D < CellG * > *cellField = (WatchableField3D < CellG * > *)
-//     potts->getCellFieldG();
-//     if (!cellField) throw CC3DException("initField() Cell field cannot be null!");
+    WatchableField3D < CellG * > *cellField = (WatchableField3D < CellG * > *)
+    potts->getCellFieldG();
+    if (!cellField) throw CC3DException("initField() Cell field cannot be null!");
 
-//     Dim3D dim = cellField->getDim();
+    Dim3D dim = cellField->getDim();
 
-//     cerr << "dim:" << dim.x << ", " << dim.y << ", "  << dim.z << endl; 
-// 	Dim3D itDim = getTubeDimensions(dim, size);
-//     cerr << "itDim:" << itDim.x << ", " << itDim.y << ", "  << itDim.z << endl;
-// 	CC3D_Log(LOG_DEBUG) << "itDim="<<itDim;
+    cerr << "dim:" << dim.x << ", " << dim.y << ", "  << dim.z << endl; 
+	Dim3D itDim = getTubeDimensions(dim, size);
+    cerr << "itDim:" << itDim.x << ", " << itDim.y << ", "  << itDim.z << endl;
+	CC3D_Log(LOG_DEBUG) << "itDim="<<itDim;
 
-//     Point3D pt;
-//     Point3D cellPt;
-//     CellG *cell;
+    Point3D pt;
+    Point3D cellPt;
+    CellG *cell;
 
-//     double tubeLength = distance(_initData.fromPoint.x, _initData.fromPoint.y, _initData.fromPoint.z,
-//             _initData.toPoint.x, _initData.toPoint.y, _initData.toPoint.z);
-//     double hypotenuse = sqrt( pow(_initData.outerRadius, 2) + pow(tubeLength, 2) );
+    double tubeLength = distance(_initData.fromPoint.x, _initData.fromPoint.y, _initData.fromPoint.z,
+            _initData.toPoint.x, _initData.toPoint.y, _initData.toPoint.z);
+    double hypotenuse = sqrt( pow(_initData.outerRadius, 2) + pow(tubeLength, 2) );
 
-//     for (int z = 0; z < itDim.z; z++)
-//         for (int y = 0; y < itDim.y; y++)
-//             for (int x = 0; x < itDim.x; x++) {
-//                 pt.x = x * size;
-//                 pt.y = y * size;
-//                 pt.z = z * size;
+    for (int z = 0; z < itDim.z; z++)
+        for (int y = 0; y < itDim.y; y++)
+            for (int x = 0; x < itDim.x; x++) {
+                pt.x = x * size;
+                pt.y = y * size;
+                pt.z = z * size;
 
-//                 //Step 1: Is the point close/far enough to the center axis of the tube?
-//                 double dist = distanceToLine(_initData.fromPoint, _initData.toPoint, pt);
-//                 if (dist > _initData.outerRadius || dist < _initData.innerRadius) {
-//                     continue;
-//                 }
+                //Step 1: Is the point close/far enough to the center axis of the tube?
+                double dist = distanceToLine(_initData.fromPoint, _initData.toPoint, pt);
+                if (dist > _initData.outerRadius || dist < _initData.innerRadius) {
+                    continue;
+                }
 
-//                 //Step 2: Is the point too far from the face of the tube/cylinder? (Pythagorean Thm.)
-//                 //This trims the tube to its desired length.
-//                 //1. Choose the face that's farther away from the point pt.
-//                 double fromDist = distance(_initData.fromPoint.x, _initData.fromPoint.y, _initData.fromPoint.z,
-//                         pt.x, pt.y, pt.z);
-//                 double toDist = distance(_initData.toPoint.x, _initData.toPoint.y, _initData.toPoint.z,
-//                         pt.x, pt.y, pt.z);
-//                 double distanceFromFace = max(fromDist, toDist);
-//                 //2. Check the distance from `pt` to the farther face against hypotenuse.
-//                 //Ex: If they are equal, the point would be at the bottom edge of the tube.
-//                 //Ex: If the dist is too great, the point is beyond the tube's length. 
-//                 if (distanceFromFace > hypotenuse) {
-//                     continue;
-//                 }
-
-
-//                 if (BoundaryStrategy::getInstance()->isValid(pt)) {
-//                     cell = potts->createCellG(pt);
-//                     cell->type = initCellType(_initData);
-//                     potts->runSteppers(); //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
-//                     //It is necessary to do it this way because steppers are called only when we are performing pixel copies
-//                     // but if we initialize steppers are not called thus is you overwrite a cell here it will not get removed from
-//                     //inventory unless you call steppers(VolumeTrackerPlugin) explicitly
+                //Step 2: Is the point too far from the face of the tube/cylinder? (Pythagorean Thm.)
+                //This trims the tube to its desired length.
+                //1. Choose the face that's farther away from the point pt.
+                double fromDist = distance(_initData.fromPoint.x, _initData.fromPoint.y, _initData.fromPoint.z,
+                        pt.x, pt.y, pt.z);
+                double toDist = distance(_initData.toPoint.x, _initData.toPoint.y, _initData.toPoint.z,
+                        pt.x, pt.y, pt.z);
+                double distanceFromFace = max(fromDist, toDist);
+                //2. Check the distance from `pt` to the farther face against hypotenuse.
+                //Ex: If they are equal, the point would be at the bottom edge of the tube.
+                //Ex: If the dist is too great, the point is beyond the tube's length. 
+                if (distanceFromFace > hypotenuse) {
+                    continue;
+                }
 
 
-//                 } else {
-//                     continue;
-//                 }
-
-//                 for (cellPt.z = pt.z; cellPt.z < pt.z + cellWidth &&
-//                                       cellPt.z < dim.z; cellPt.z++)
-//                     for (cellPt.y = pt.y; cellPt.y < pt.y + cellWidth &&
-//                                           cellPt.y < dim.y; cellPt.y++)
-//                         for (cellPt.x = pt.x; cellPt.x < pt.x + cellWidth &&
-//                                               cellPt.x < dim.x; cellPt.x++) {
-
-//                             if (BoundaryStrategy::getInstance()->isValid(pt))
-//                                 cellField->set(cellPt, cell);
-
-//                         }
-//                 potts->runSteppers(); //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
-//                 //It is necessary to do it this way because steppers are called only when we are performing pixel copies
-//                 // but if we initialize steppers are not called thus is you overwrite a cell here it will not get removed from
-//                 //inventory unless you call steppers(VolumeTrackerPlugin) explicitly
-
-//             }
+                if (BoundaryStrategy::getInstance()->isValid(pt)) {
+                    cell = potts->createCellG(pt);
+                    cell->type = initCellType(_initData);
+                    potts->runSteppers(); //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
+                    //It is necessary to do it this way because steppers are called only when we are performing pixel copies
+                    // but if we initialize steppers are not called thus is you overwrite a cell here it will not get removed from
+                    //inventory unless you call steppers(VolumeTrackerPlugin) explicitly
 
 
-// }
+                } else {
+                    continue;
+                }
+
+                for (cellPt.z = pt.z; cellPt.z < pt.z + cellWidth &&
+                                      cellPt.z < dim.z; cellPt.z++)
+                    for (cellPt.y = pt.y; cellPt.y < pt.y + cellWidth &&
+                                          cellPt.y < dim.y; cellPt.y++)
+                        for (cellPt.x = pt.x; cellPt.x < pt.x + cellWidth &&
+                                              cellPt.x < dim.x; cellPt.x++) {
+
+                            if (BoundaryStrategy::getInstance()->isValid(pt))
+                                cellField->set(cellPt, cell);
+
+                        }
+                potts->runSteppers(); //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
+                //It is necessary to do it this way because steppers are called only when we are performing pixel copies
+                // but if we initialize steppers are not called thus is you overwrite a cell here it will not get removed from
+                //inventory unless you call steppers(VolumeTrackerPlugin) explicitly
+
+            }
+
+
+}
+
 
 // Define a function to calculate the cross product of two vectors
 std::vector<double> TubeFieldInitializer::crossProductVec(const std::vector<double>& v1, const std::vector<double>& v2) {
@@ -282,9 +289,15 @@ std::vector<double> TubeFieldInitializer::crossProductVec(const std::vector<doub
 
 
 
-void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData) { 
 
-    // int size = _initData.gap + _initData.width;
+void TubeFieldInitializer::layOutCellsWedge(const TubeFieldInitializerData &_initData) { 
+    /**
+    This algorithm creates the tube one ring at a time using superAxisIter.
+    The rings are placed along a direction vector that places the points along any user-defined line.
+    Each time a ring is generated, the algorithm tries to place all the pixels of a cell
+    before moving on to create the next cell. 
+    */
+
     int cellWidth = _initData.width;
 
     WatchableField3D < CellG * > *cellField = (WatchableField3D < CellG * > *)
@@ -349,7 +362,7 @@ void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData
 
     std::vector<double> b = crossProductVec(normalizedDir, a);
         
-    bool justFormedCell = false;
+    bool justFormedCell = false; //This is false only when all of the pixels of the current cell are placed.
     
     
     for (short superAxisIter = 0; superAxisIter < short(tubeLength); superAxisIter += short(cellWidth)) {
@@ -363,6 +376,7 @@ void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData
             for (double angle = superAngle; angle < superAngle + cellWidthDegrees; angle += M_PI/180.0) {
                 //Increment by at least 0.5 just to avoid having empty pixels in the rings.
                 for (double radius = _initData.innerRadius; radius < _initData.outerRadius; radius += 0.5) {
+                    //Give the cell some thickness along the direction vector
                     for (short axisIter = superAxisIter; axisIter < superAxisIter + cellWidth; axisIter++) {
 
                         centerX = short(_initData.fromPoint.x + axisIter * dx);
@@ -429,7 +443,12 @@ void TubeFieldInitializer::start() {
     cerr << "initDataVec.size() = " << initDataVec.size() << endl;
     if (initDataVec.size() != 0) {
         for (int i = 0; i < initDataVec.size(); ++i) {
-            layOutCells(initDataVec[i]);
+            if (initDataVec[i].cellShape == CUBE) {
+                layOutCellsCube(initDataVec[i]);
+            }
+            else {
+                layOutCellsWedge(initDataVec[i]);
+            }            
         }
     }
 

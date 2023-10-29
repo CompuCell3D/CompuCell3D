@@ -16,11 +16,16 @@ namespace CompuCell3D {
     class Point3D;
 
     const int DEFAULT_NUM_SLICES = 8; //arbitrary
+    
+    enum CellShape {
+        CUBE = 0, 
+        WEDGE = 1
+    };
 
     class TUBEFIELDINITIALIZER_EXPORT TubeFieldInitializerData {
     public:
         TubeFieldInitializerData() :
-                width(1), gap(0), numSlices(DEFAULT_NUM_SLICES), innerRadius(0), outerRadius(0), randomize(false) {}
+                width(1), gap(0), numSlices(DEFAULT_NUM_SLICES), innerRadius(0), outerRadius(0), cellShape(WEDGE), randomize(false) {}
         
         Point3D fromPoint;
         Point3D toPoint;
@@ -32,6 +37,8 @@ namespace CompuCell3D {
         int innerRadius;
         int outerRadius;
         bool randomize;
+        CellShape cellShape;
+
 
         void Gap(int _gap) { gap = _gap; }
 
@@ -47,6 +54,8 @@ namespace CompuCell3D {
 
         void OuterRadius(int _outerRadius) { outerRadius = _outerRadius; }
 
+        void CellShape(CellShape _cellShape) { cellShape = _cellShape; }
+
         void Types(std::string _type) {
             typeNames.push_back(_type);
         }
@@ -61,7 +70,9 @@ namespace CompuCell3D {
         // bool cellSortInit;
         std::vector <TubeFieldInitializerData> initDataVec;
 
-        void layOutCells(const TubeFieldInitializerData &_initData);
+        void layOutCellsCube(const TubeFieldInitializerData &_initData);
+        
+        void layOutCellsWedge(const TubeFieldInitializerData &_initData);
 
         unsigned char initCellType(const TubeFieldInitializerData &_initData);
 
