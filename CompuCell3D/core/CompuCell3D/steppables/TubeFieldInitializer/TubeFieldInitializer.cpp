@@ -46,6 +46,16 @@ void TubeFieldInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlData) 
 
             if (regionVec[i]->findElement("Gap"))
                 initData.gap = regionVec[i]->getFirstElement("Gap")->getUInt();
+
+            if (regionVec[i]->findElement("NumSlices")) {
+                initData.numSlices = regionVec[i]->getFirstElement("NumSlices")->getUInt();
+                if (initData.numSlices < 1)
+                    initData.numSlices = DEFAULT_NUM_SLICES;
+            }
+            else {
+                initData.numSlices = DEFAULT_NUM_SLICES;
+            }
+
             if (regionVec[i]->findElement("Width"))
                 initData.width = regionVec[i]->getFirstElement("Width")->getUInt();
 
@@ -291,28 +301,28 @@ void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData
             _initData.toPoint.x, _initData.toPoint.y, _initData.toPoint.z);
 
     std::vector<double> directionVec(3);
-    directionVec[0] = _initData.fromPoint.x - _initData.toPoint.x;
-    directionVec[1] = _initData.fromPoint.y - _initData.toPoint.y;
-    directionVec[2] = _initData.fromPoint.z - _initData.toPoint.z;
+    directionVec[0] = double(_initData.fromPoint.x) - double(_initData.toPoint.x);
+    directionVec[1] = double(_initData.fromPoint.y) - double(_initData.toPoint.y);
+    directionVec[2] = double(_initData.fromPoint.z) - double(_initData.toPoint.z);
     //Normalize the direction vector
     for (int i = 0; i < 3; i++) {
         directionVec[i] /= tubeLength;
     }
-    cerr << "directionVec " << to_string(directionVec[0]) << ", " << to_string(directionVec[1]) << ", " << to_string(directionVec[2]) << endl;
 
     const int NUM_RING_POINTS = 60; //arbitrary
-    //TODO does it work with extra-large tubes?
 
     //Do a linear interpolation between fromPoint and toPoint
-    short numAxisPoints = tubeLength / max(short(_initData.gap), 1) + 1;
-    // if (_initData.gap != 0)
-    //     numAxisPoints /= 
-    // numAxisPoints 
-    // max(short(_initData.gap), 1) + 1
+    short numAxisPoints = tubeLength;
     double dx = double(_initData.toPoint.x - _initData.fromPoint.x) / max(numAxisPoints - 1, 1);
     double dy = double(_initData.toPoint.y - _initData.fromPoint.y) / max(numAxisPoints - 1, 1);
     double dz = double(_initData.toPoint.z - _initData.fromPoint.z) / max(numAxisPoints - 1, 1);
-    cerr << "dxyz" << to_string(dx) << ", " << to_string(dy) << ", " << to_string(dz) << endl;
+    //Add gap along the axis
+    if (dx != 0.0)
+        dx += (dx/dx) * _initData.gap;
+    if (dy != 0.0)
+        dy += (dy/dy) * _initData.gap;
+    if (dz != 0.0)
+        dz += (dz/dz) * _initData.gap;
     short centerX, centerY, centerZ;
 
     double axisMagnitude = sqrt(directionVec[0] * directionVec[0] + directionVec[1] * directionVec[1] + directionVec[2] * directionVec[2]);
@@ -342,40 +352,31 @@ void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData
     bool justFormedCell = false;
     
     
-    for (short superK = 0; superK < short(tubeLength); superK += short(cellWidth + _initData.gap)) {
+    for (short superAxisIter = 0; superAxisIter < short(tubeLength); superAxisIter += short(cellWidth)) {
 
-        // double approxRadius = (_initData.outerRadius - _initData.innerRadius) / 2 + _initData.innerRadius;
-        // double cellWidthDegrees = (cellWidth / approxRadius);// * (180.0 / M_PI); //TODO use arc length instead of cellWidth(?)
-        // cerr << "cellWidthDegrees " << to_string(cellWidthDegrees) << endl;
-        double cellWidthDegrees =  2*M_PI / 8;
-        double gapDegrees = 0;//(_initData.gap / radius) * (180.0 / M_PI);
+        //Convert the 'gap' into arc length measured in degrees
+        double approxRadius = (_initData.outerRadius - _initData.innerRadius) / 2 + _initData.innerRadius;
+        double cellWidthDegrees =  2*M_PI / _initData.numSlices;
+        double gapDegrees = (_initData.gap * approxRadius) * (M_PI / 180.0);
 
-        for (double superAngle = 0.0; superAngle < 2*M_PI; superAngle += cellWidthDegrees) {
+        for (double superAngle = 0.0; superAngle < 2*M_PI - gapDegrees; superAngle += cellWidthDegrees + gapDegrees) {
             for (double angle = superAngle; angle < superAngle + cellWidthDegrees; angle += M_PI/180.0) {
                 //Increment by at least 0.5 just to avoid having empty pixels in the rings.
-                for (double radius = _initData.innerRadius; radius < _initData.outerRadius; radius += 0.5 + _initData.gap) {
+                for (double radius = _initData.innerRadius; radius < _initData.outerRadius; radius += 0.5) {
+                    for (short axisIter = superAxisIter; axisIter < superAxisIter + cellWidth; axisIter++) {
 
-                    // double angle = 2 * M_PI * i / NUM_RING_POINTS;
-                    // angle += double(_initData.gap) / 60;// FIXME //the gap is a small amount of arc length
-                    
-                    for (short k = superK; k < superK + cellWidth; k++) {
-
-                        centerX = short(_initData.fromPoint.x + _initData.gap + k * dx);
-                        centerY = short(_initData.fromPoint.y + _initData.gap + k * dy);
-                        centerZ = short(_initData.fromPoint.z + _initData.gap + k * dz);
-
-                        // cerr << centerZ << "..";
+                        centerX = short(_initData.fromPoint.x + axisIter * dx);
+                        centerY = short(_initData.fromPoint.y + axisIter * dy);
+                        centerZ = short(_initData.fromPoint.z + axisIter * dz);
 
                         pt.x = short(round(centerX + radius * cos(angle) * a[0] + radius * sin(angle) * b[0]));
                         pt.y = short(round(centerY + radius * cos(angle) * a[1] + radius * sin(angle) * b[1]));
                         pt.z = short(round(centerZ + radius * cos(angle) * a[2] + radius * sin(angle) * b[2]));
-                        // cerr << "Pt at " << to_string(pt.x) << ", " << to_string(pt.y) << ", " << to_string(pt.z) << endl;
-
+                        
                         if (!BoundaryStrategy::getInstance()->isValid(pt))
                             continue;
 
                         if (!justFormedCell) {
-                            // cerr << "new cell at angle "<<to_string(angle)<<endl;
                             cell = potts->createCellG(pt);
                             cell->type = initCellType(_initData);
                             potts->runSteppers(); //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
@@ -386,13 +387,12 @@ void TubeFieldInitializer::layOutCells(const TubeFieldInitializerData &_initData
                         }
 
                         // if (cellField->get(pt) != NULL && cellField->get(pt) != nullptr)
-                            cellField->set(pt, cell);
+                        cellField->set(pt, cell);
                     }
                 }
             }
             justFormedCell = false;
 
-            //TODO move?
             potts->runSteppers(); //used to ensure that VolumeTracker Plugin step fcn gets called every time we do something to the fields
                     //It is necessary to do it this way because steppers are called only when we are performing pixel copies
                     // but if we initialize steppers are not called thus is you overwrite a cell here it will not get removed from

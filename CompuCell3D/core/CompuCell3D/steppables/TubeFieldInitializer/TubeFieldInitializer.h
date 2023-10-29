@@ -15,10 +15,12 @@ namespace CompuCell3D {
 
     class Point3D;
 
+    const int DEFAULT_NUM_SLICES = 8; //arbitrary
+
     class TUBEFIELDINITIALIZER_EXPORT TubeFieldInitializerData {
     public:
         TubeFieldInitializerData() :
-                width(1), gap(0), innerRadius(0), outerRadius(0), randomize(false) {}
+                width(1), gap(0), numSlices(DEFAULT_NUM_SLICES), innerRadius(0), outerRadius(0), randomize(false) {}
         
         Point3D fromPoint;
         Point3D toPoint;
@@ -26,6 +28,7 @@ namespace CompuCell3D {
         std::string typeNamesString;
         int width;
         int gap;
+        int numSlices;
         int innerRadius;
         int outerRadius;
         bool randomize;
@@ -33,6 +36,8 @@ namespace CompuCell3D {
         void Gap(int _gap) { gap = _gap; }
 
         void Width(int _width) { width = _width; }
+
+        void NumSlices(int _numSlices) { numSlices = _numSlices; }
 
         void FromPoint(Point3D _fromPoint) { fromPoint = _fromPoint; }
 
