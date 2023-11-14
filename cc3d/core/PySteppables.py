@@ -17,6 +17,7 @@ from typing import Optional, TextIO, Union
 from cc3d.cpp import CompuCell
 from cc3d.core.SBMLSolverHelper import SBMLSolverHelper
 from cc3d.core.MaBoSSCC3D import MaBoSSHelper
+from cc3d.core.GraphicsUtils.MovieCreator import makeMovie
 import types
 import warnings
 from deprecated import deprecated
@@ -557,6 +558,26 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         pg = CompuCellSetup.persistent_globals
         screenshot_manager = pg.screenshot_manager
         screenshot_manager.add_ad_hoc_screenshot(mcs=mcs, screenshot_label=screenshot_label)
+
+    @staticmethod
+    def request_movie(frameRate: int, quality: int):
+        """
+        Requests on-demand movie. Requires screenshots to exist
+        for the current simulation. One movie will be created
+        for every visualization.
+
+        :param simulationPath: a path to a directory with a .cc3d file and screenshot directories
+        :param frameRate: an int >= 1
+        :param quality: an int 1-10 (inclusive)
+        :return: the number of movies created
+        """
+        assert frameRate >= 1 and frameRate <= 10
+        assert quality >= 1 and quality <= 10
+
+        pg = CompuCellSetup.persistent_globals
+        simulationPath = pg.output_directory
+
+        return makeMovie(simulationPath, frameRate, quality)
 
     def core_init(self, reinitialize_cell_types=True):
         """

@@ -163,6 +163,8 @@ class Configuration:
         paramsDict["ScalarIsoValues"] = self.get_setting("ScalarIsoValues")
         paramsDict["ContoursOn"] = self.get_setting("ContoursOn")
 
+        paramsDict["AutomaticMovie"] = self.get_setting("AutomaticMovie")
+
         return paramsDict
 
     def getDefaultFieldParams(self):
