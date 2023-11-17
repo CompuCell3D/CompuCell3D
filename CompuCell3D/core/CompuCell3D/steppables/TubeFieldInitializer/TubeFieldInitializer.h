@@ -86,13 +86,7 @@ namespace CompuCell3D {
 
         void setPotts(Potts3D *potts) { this->potts = potts; }
 
-        double distance(double, double, double, double, double, double);
 
-
-
-        Point3D subtractPoints(Point3D p1, Point3D p2);
-
-        int dotProduct(Point3D p1, Point3D p2);
 
         Point3D crossProduct(Point3D p1, Point3D p2);
 
@@ -103,8 +97,6 @@ namespace CompuCell3D {
         double distanceToLine(Point3D line_point1, Point3D line_point2, Point3D point);
 
 
-
-        // Dim3D getTubeDim() { return tubeDim; }
 
         // SimObject interface
         virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData = 0);

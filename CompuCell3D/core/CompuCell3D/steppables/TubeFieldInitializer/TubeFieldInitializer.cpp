@@ -1,8 +1,6 @@
 /**
 Full credit for the following functions to https://www.geeksforgeeks.org/shortest-distance-between-a-line-and-a-point-in-a-3-d-plane/
 - distanceToLine
-- subtractPoints
-- dotProduct
 - crossProduct
 - magnitude
 */
@@ -16,6 +14,8 @@ using namespace std;
 #include "TubeFieldInitializer.h"
 #include <Logger/CC3DLogger.h>
 #include <limits>
+#include <PublicUtilities/NumericalUtils.h>
+
 TubeFieldInitializer::TubeFieldInitializer() :
         potts(0), sim(0) {}
 
@@ -106,6 +106,7 @@ void TubeFieldInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlData) 
     }
 }
 
+//TODO; it's same for blob, tube, poly
 Dim3D TubeFieldInitializer::getTubeDimensions(const Dim3D &dim, int size) {
     Dim3D itDim;
 
@@ -125,31 +126,6 @@ Dim3D TubeFieldInitializer::getTubeDimensions(const Dim3D &dim, int size) {
 
 }
 
-double TubeFieldInitializer::distance(double ax, double ay, double az, double bx, double by, double bz) {
-    return sqrt((double) (ax - bx) * (ax - bx) +
-                (double) (ay - by) * (ay - by) +
-                (double) (az - bz) * (az - bz));
-}
-
-
-
-
-
-Point3D TubeFieldInitializer::subtractPoints(Point3D p1, Point3D p2) {
-    int x1 = p1.x - p2.x;
-    int y1 = p1.y - p2.y;
-    int z1 = p1.z - p2.z;
-
-    return Point3D(x1, y1, z1);
-}
-
-int TubeFieldInitializer::dotProduct(Point3D p1, Point3D p2) {
-    int x1 = p1.x * p2.x;
-    int y1 = p1.y * p2.y;
-    int z1 = p1.z * p2.z;
-
-    return x1 + y1 + z1;
-}
 
 Point3D TubeFieldInitializer::crossProduct(Point3D p1, Point3D p2) {
     int x1 = p1.y * p2.z - p1.z * p2.y;
@@ -179,8 +155,8 @@ double TubeFieldInitializer::distanceToLine(Point3D line_point1,
     //This gives CD = |ABxAC| / |AB|
     //where |ABxAC| serves as Base*Height and the `area` below.
 
-    Point3D AB = subtractPoints(line_point2, line_point1);
-    Point3D AC = subtractPoints(point, line_point1);
+    Point3D AB = line_point2 - line_point1;
+    Point3D AC = point - line_point1;
     double area = magnitude( (crossProduct(AB, AC)) );
     double CD = area / magnitude(AB);
     return CD;
@@ -209,7 +185,7 @@ void TubeFieldInitializer::layOutCellsCube(const TubeFieldInitializerData &_init
     Point3D cellPt;
     CellG *cell;
 
-    double tubeLength = distance(_initData.fromPoint.x, _initData.fromPoint.y, _initData.fromPoint.z,
+    double tubeLength = dist(_initData.fromPoint.x, _initData.fromPoint.y, _initData.fromPoint.z,
             _initData.toPoint.x, _initData.toPoint.y, _initData.toPoint.z);
     double hypotenuse = sqrt( pow(_initData.outerRadius, 2) + pow(tubeLength, 2) );
 
@@ -221,22 +197,22 @@ void TubeFieldInitializer::layOutCellsCube(const TubeFieldInitializerData &_init
                 pt.z = z * size;
 
                 //Step 1: Is the point close/far enough to the center axis of the tube?
-                double dist = distanceToLine(_initData.fromPoint, _initData.toPoint, pt);
-                if (dist > _initData.outerRadius || dist < _initData.innerRadius) {
+                double lineDist = distanceToLine(_initData.fromPoint, _initData.toPoint, pt);
+                if (lineDist > _initData.outerRadius || lineDist < _initData.innerRadius) {
                     continue;
                 }
 
                 //Step 2: Is the point too far from the face of the tube/cylinder? (Pythagorean Thm.)
                 //This trims the tube to its desired length.
                 //1. Choose the face that's farther away from the point pt.
-                double fromDist = distance(_initData.fromPoint.x, _initData.fromPoint.y, _initData.fromPoint.z,
+                double fromDist = dist(_initData.fromPoint.x, _initData.fromPoint.y, _initData.fromPoint.z,
                         pt.x, pt.y, pt.z);
-                double toDist = distance(_initData.toPoint.x, _initData.toPoint.y, _initData.toPoint.z,
+                double toDist = dist(_initData.toPoint.x, _initData.toPoint.y, _initData.toPoint.z,
                         pt.x, pt.y, pt.z);
                 double distanceFromFace = max(fromDist, toDist);
                 //2. Check the distance from `pt` to the farther face against hypotenuse.
                 //Ex: If they are equal, the point would be at the bottom edge of the tube.
-                //Ex: If the dist is too great, the point is beyond the tube's length. 
+                //Ex: If the lineDist is too great, the point is beyond the tube's length. 
                 if (distanceFromFace > hypotenuse) {
                     continue;
                 }
@@ -310,7 +286,7 @@ void TubeFieldInitializer::layOutCellsWedge(const TubeFieldInitializerData &_ini
     Point3D pt = Point3D();
     CellG *cell;
 
-    double tubeLength = distance(_initData.fromPoint.x, _initData.fromPoint.y, _initData.fromPoint.z,
+    double tubeLength = dist(_initData.fromPoint.x, _initData.fromPoint.y, _initData.fromPoint.z,
             _initData.toPoint.x, _initData.toPoint.y, _initData.toPoint.z);
 
     std::vector<double> directionVec(3);
