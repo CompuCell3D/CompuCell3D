@@ -1,0 +1,209 @@
+<!--See the documentation for more details: https://compucell3dreferencemanual.readthedocs.io/en/latest/polygon_initializer.html -->
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="100" y="100" z="100"/>
+        <Anneal>10</Anneal>
+        <Steps>10000</Steps>
+        <Temperature>10</Temperature>
+        <Flip2DimRatio>1</Flip2DimRatio>
+        <NeighborOrder>2</NeighborOrder>
+    </Potts>
+
+    <Plugin Name="Volume">
+        <TargetVolume>25</TargetVolume>
+        <LambdaVolume>2.0</LambdaVolume>
+    </Plugin>
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Condensing" TypeId="1"/>
+        <CellType TypeName="NonCondensing" TypeId="2"/>
+    </Plugin>
+
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="NonCondensing" Type2="NonCondensing">16</Energy>
+        <Energy Type1="Condensing" Type2="Condensing">2</Energy>
+        <Energy Type1="NonCondensing" Type2="Condensing">11</Energy>
+        <Energy Type1="NonCondensing" Type2="Medium">16</Energy>
+        <Energy Type1="Condensing" Type2="Medium">16</Energy>
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+
+	<!-- Case 1: Square -->
+	<!--Steppable Type="PolygonInitializer">
+      <Region>
+         <Gap>0</Gap>
+         <Width>7</Width>
+         <Types>Condensing,NonCondensing</Types>
+		 <ExtrusionDepth>27</ExtrusionDepth>
+		 <EdgeList>
+			<Edge>
+			   <From x="10" y="20" z="0" />
+			   <To x="40" y="20" z="0" />
+			</Edge>
+			<Edge>
+			   <From x="40" y="20" z="0" />
+			   <To x="40" y="60" z="0" />
+			</Edge>
+			<Edge>
+			   <From x="40" y="60"/>
+			   <To x="10" y="60" />
+			</Edge>
+			<Edge>
+			   <From x="10" y="60"/>
+			   <To x="10" y="20" />
+			</Edge>
+		 </EdgeList>
+      </Region>
+    </Steppable-->
+
+	<!-- Case 2: Right Triangle -->
+	<!--Steppable Type="PolygonInitializer">
+      <Region>
+         <Gap>0</Gap>
+         <Width>7</Width>
+         <Types>Condensing,NonCondensing</Types>
+		 <ExtrusionDepth>27</ExtrusionDepth>
+		 <EdgeList>
+			<Edge>
+			   <From x="10" y="20" />
+			   <To x="40" y="60" />
+			</Edge>
+			<Edge>
+			   <From x="40" y="60" />
+			   <To x="10" y="60" />
+			</Edge>
+			<Edge>
+			   <From x="10" y="60" />
+			   <To x="10" y="20" />
+			</Edge>
+		 </EdgeList>
+      </Region>
+    </Steppable-->
+
+   <!-- Case 3: Equilateral Triangle -->
+   <!--Steppable Type="PolygonInitializer">
+      <Region>
+         <Gap>0</Gap>
+         <Width>4</Width>
+         <Types>Condensing,NonCondensing</Types>
+		 <EdgeList>
+			<Edge>
+			   <From x="50" y="60" />
+			   <To x="20" y="10" />
+			</Edge>
+			<Edge>
+			   <From x="20" y="10" />
+			   <To x="80" y="10" />
+			</Edge>
+			<Edge>
+			   <From x="80" y="10" />
+			   <To x="50" y="60" />
+			</Edge>
+		 </EdgeList>
+		 <Extrude zMin="25" zMax="65" />
+      </Region>
+   </Steppable-->
+
+   <!-- Case 4: Small Hexagon -->
+   <!--Steppable Type="PolygonInitializer">
+      <Region>
+         <Gap>0</Gap>
+         <Width>4</Width>
+         <Types>Condensing,NonCondensing</Types>
+		 <Extrude zMin="10" zMax="35" />
+		 <EdgeList>
+			<Edge>
+			   <From x="20" y="37.5" />
+			   <To x="37.32" y="31.25" />
+			</Edge>
+			<Edge>
+			   <From x="37.32" y="31.25" />
+			   <To x="37.32" y="15" />
+			</Edge>
+			<Edge>
+			   <From x="37.32" y="15" />
+			   <To x="20" y="10" />
+			</Edge>
+			<Edge>
+			   <From x="20" y="10" />
+			   <To x="2.68" y="15" />
+			</Edge>
+			<Edge>
+			   <From x="2.68" y="15" />
+			   <To x="2.68" y="31.25" />
+			</Edge>
+			<Edge>
+			   <From x="2.68" y="31.25" />
+			   <To x="20" y="37.5" />
+			</Edge>
+		 </EdgeList>
+      </Region>
+   </Steppable-->
+
+   <!-- Case 5: Rhombus -->
+   <!--Steppable Type="PolygonInitializer">
+      <Region>
+         <Gap>0</Gap>
+         <Width>5</Width>
+         <Types>Condensing,NonCondensing</Types>
+		 <Extrude zMin="10" zMax="35" />
+		 <EdgeList>
+			<Edge>
+			   <From x="20" y="40" />
+			   <To x="38" y="25" />
+			</Edge>
+			<Edge>
+			   <From x="38" y="25" />
+			   <To x="20" y="10" />
+			</Edge>
+			<Edge>
+			   <From x="20" y="10" />
+			   <To x="2" y="25" />
+			</Edge>
+			<Edge>
+			   <From x="2" y="25" />
+			   <To x="20" y="40" />
+			</Edge>
+		 </EdgeList>
+      </Region>
+   </Steppable-->
+
+   <!-- Case 6: Larger Hexagon -->
+   <Steppable Type="PolygonInitializer">
+      <Region>
+         <Gap>0</Gap>
+         <Width>4</Width>
+         <Types>Condensing,NonCondensing</Types>
+		 <Extrude zMin="10" zMax="35" />
+		 <EdgeList>
+			<Edge>
+			   <From x="70" y="50" />
+			   <To x="60" y="67.32" />
+			</Edge>
+			<Edge>
+			   <From x="60" y="67.32" />
+			   <To x="40" y="67.32" />
+			</Edge>
+			<Edge>
+			   <From x="40" y="67.32" />
+			   <To x="30" y="50" />
+			</Edge>
+			<Edge>
+			   <From x="30" y="50" />
+			   <To x="40" y="32.68" />
+			</Edge>
+			<Edge>
+			   <From x="40" y="32.68" />
+			   <To x="60" y="32.68" />
+			</Edge>
+			<Edge>
+			   <From x="60" y="32.68" />
+			   <To x="70" y="50" />
+			</Edge>
+		 </EdgeList>
+      </Region>
+   </Steppable>
+
+</CompuCell3D>

@@ -1,0 +1,6 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/tube_initializer.xml</XMLScript>
+    <PythonScript>Simulation/tube_initializer.py</PythonScript>
+
+</Simulation>
