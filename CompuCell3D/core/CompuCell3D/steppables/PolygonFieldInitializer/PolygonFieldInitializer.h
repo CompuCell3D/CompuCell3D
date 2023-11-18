@@ -5,11 +5,10 @@
 template<typename T>
 class Coordinates3D;
 
-
 #include "PolygonFieldInitializerDLLSpecifier.h"
 
 namespace CompuCell3D {
-    
+
     class Potts3D;
 
     class Simulator;

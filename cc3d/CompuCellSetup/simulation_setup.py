@@ -465,15 +465,18 @@ def initialize_cc3d_sim(sim, simthread):
     init_using_restart_snapshot_enabled = restart_manager.restart_enabled()
     sim.setRestartEnabled(init_using_restart_snapshot_enabled)
 
+    extra_init_simulation_objects(sim, simthread,
+                                  init_using_restart_snapshot_enabled=init_using_restart_snapshot_enabled)
+
+    check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+
+
     if init_using_restart_snapshot_enabled:
         print('WILL RESTART SIMULATION')
         restart_manager.loadRestartFiles()
         check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
     else:
         print('WILL RUN SIMULATION FROM BEGINNING')
-
-    extra_init_simulation_objects(sim, simthread,
-                                  init_using_restart_snapshot_enabled=init_using_restart_snapshot_enabled)
 
     check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
