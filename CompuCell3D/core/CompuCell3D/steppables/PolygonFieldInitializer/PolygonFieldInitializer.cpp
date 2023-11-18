@@ -15,6 +15,8 @@ using namespace std;
 #include "PolygonFieldInitializer.h"
 #include <Logger/CC3DLogger.h>
 #include <limits>
+#include <Utils/Coordinates3D.h>
+
 PolygonFieldInitializer::PolygonFieldInitializer() :
         potts(0), sim(0) {}
 
@@ -65,13 +67,13 @@ void PolygonFieldInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlDat
                     
                     if (edge->findElement("From") && edge->findElement("To")) {
                         CC3DXMLElement * srcPointXML = edge->getFirstElement("From");
-                        DoublePoint src = DoublePoint();
+                        Coordinates3D<double> src = Coordinates3D<double>();
                         src.x = srcPointXML->getAttributeAsDouble("x");
                         src.y = srcPointXML->getAttributeAsDouble("y");
                         initData.srcPoints.push_back(src);
 
                         CC3DXMLElement * dstPointXML = edge->getFirstElement("To");
-                        DoublePoint dst = DoublePoint();
+                        Coordinates3D<double> dst = Coordinates3D<double>();
                         dst.x = dstPointXML->getAttributeAsDouble("x");
                         dst.y = dstPointXML->getAttributeAsDouble("y");
                         initData.dstPoints.push_back(dst);
@@ -133,7 +135,7 @@ Dim3D PolygonFieldInitializer::getPolygonDimensions(const Dim3D &dim, int size) 
 
 }
 
-bool PolygonFieldInitializer::onLine(DoublePoint lineStart, DoublePoint lineEnd, DoublePoint pt) {
+bool PolygonFieldInitializer::onLine(Coordinates3D<double> lineStart, Coordinates3D<double> lineEnd, Coordinates3D<double> pt) {
     //Check whether p is on the line or not
     if (pt.x <= max(lineStart.x, lineEnd.x)
         && pt.x >= min(lineStart.x, lineEnd.x)
@@ -143,7 +145,7 @@ bool PolygonFieldInitializer::onLine(DoublePoint lineStart, DoublePoint lineEnd,
     return false;
 }
 
-int PolygonFieldInitializer::direction(DoublePoint a, DoublePoint b, DoublePoint c) {
+int PolygonFieldInitializer::direction(Coordinates3D<double> a, Coordinates3D<double> b, Coordinates3D<double> c) {
     double val = (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y);
     if (val == 0)
         //Collinear
@@ -156,7 +158,7 @@ int PolygonFieldInitializer::direction(DoublePoint a, DoublePoint b, DoublePoint
 }
 
 
-bool PolygonFieldInitializer::isIntersect(DoublePoint src1, DoublePoint dst1, DoublePoint src2, DoublePoint dst2) {
+bool PolygonFieldInitializer::isIntersect(Coordinates3D<double> src1, Coordinates3D<double> dst1, Coordinates3D<double> src2, Coordinates3D<double> dst2) {
     //Four direction for two lines and points of other line
     int dir1 = direction(src1, dst1, src2);
     int dir2 = direction(src1, dst1, dst2);
@@ -186,7 +188,7 @@ bool PolygonFieldInitializer::isIntersect(DoublePoint src1, DoublePoint dst1, Do
     return false;
 }
 
-bool PolygonFieldInitializer::checkInside(DoublePoint pt, std::vector <DoublePoint> srcPoints, std::vector <DoublePoint> dstPoints) {
+bool PolygonFieldInitializer::checkInside(Coordinates3D<double> pt, std::vector <Coordinates3D<double>> srcPoints, std::vector <Coordinates3D<double>> dstPoints) {
     int n = srcPoints.size();
 
     //The below loop fixes a bug where 
@@ -207,7 +209,7 @@ bool PolygonFieldInitializer::checkInside(DoublePoint pt, std::vector <DoublePoi
     //Thus, we are looking for an ODD number of intersections with the polygon.
     
     double MAX_DOUBLE = (std::numeric_limits<float>::max)();
-    DoublePoint ptInfinity = DoublePoint();
+    Coordinates3D<double> ptInfinity = Coordinates3D<double>();
     ptInfinity.x = MAX_DOUBLE;
     ptInfinity.y = pt.y;
     ptInfinity.z = pt.z;
@@ -233,8 +235,8 @@ bool PolygonFieldInitializer::checkInside(DoublePoint pt, std::vector <DoublePoi
 
 
 void PolygonFieldInitializer::layOutCells(const PolygonFieldInitializerData &_initData) { 
-    std::vector <DoublePoint> srcPoints  = _initData.srcPoints;
-    std::vector <DoublePoint> dstPoints  = _initData.dstPoints;
+    std::vector <Coordinates3D<double>> srcPoints  = _initData.srcPoints;
+    std::vector <Coordinates3D<double>> dstPoints  = _initData.dstPoints;
 
     int size = _initData.gap + _initData.width;
     int cellWidth = _initData.width;
@@ -251,7 +253,7 @@ void PolygonFieldInitializer::layOutCells(const PolygonFieldInitializerData &_in
     Point3D pt;
     Point3D cellPt;
     CellG *cell;
-    DoublePoint doublePoint = DoublePoint();
+    Coordinates3D<double> doublePoint = Coordinates3D<double>();
 
     //Only Z is dependent on the Extrude parameter
     for (int z = _initData.zMin / size; z < _initData.zMax / size; z++)
