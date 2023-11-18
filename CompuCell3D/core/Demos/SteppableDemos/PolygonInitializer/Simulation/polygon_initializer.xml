@@ -1,3 +1,4 @@
+<!--See the documentation for more details: https://compucell3dreferencemanual.readthedocs.io/en/latest/polygon_initializer.html -->
 <CompuCell3D>
     <Potts>
         <Dimensions x="100" y="100" z="100"/>
@@ -168,7 +169,7 @@
 		 </EdgeList>
       </Region>
    </Steppable-->
-git fetch fork
+
    <!-- Case 6: Larger Hexagon -->
    <Steppable Type="PolygonInitializer">
       <Region>
