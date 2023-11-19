@@ -36,10 +36,16 @@ def makeMovie(simulationPath, frameRate, quality):
                 and write the text to draw to textOverlayFile.
                 """
                 frameCount = 0
+                duration = 1 / max(frameRate, 1)
                 for fileNameExt in os.listdir(inputPath):
                     fileName, fileExtension = os.path.splitext(fileNameExt)
                     if fileExtension.lower() == ".png":
                         tempFile.write(f"file '{fileNameExt}'\n")
+
+                        # Note: frameRate is excluded in the FFMPEG command.
+                        # Instead, we use `duration` inside the input file.
+                        # This fixes a bug where the last frame appears at the beginning.
+                        tempFile.write(f"duration {duration}\n")
 
                         # Try to use the MCS listed in the screenshot name
                         mcs = 0
@@ -71,7 +77,6 @@ def makeMovie(simulationPath, frameRate, quality):
                     subprocess.run([
                         "ffmpeg",
                         "-n",  # never overwrite a file
-                        "-r", str(frameRate),  # output frame rate
                         "-f", "concat",
                         "-safe", "0",
                         "-i", tempFile.name,
@@ -88,7 +93,7 @@ def makeMovie(simulationPath, frameRate, quality):
                 os.remove(textOverlayFile.name)
             os.remove(tempFile.name)
 
-    print(f"Created {movieCount} movies inside `{simulationPath}`")
+    print(f"Created {movieCount} movies inside `{simulationPath}` with frame rate {frameRate} and quality {quality}/51.")
     return movieCount
 
 
