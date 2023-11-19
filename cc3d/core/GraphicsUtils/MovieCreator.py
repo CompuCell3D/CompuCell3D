@@ -4,11 +4,13 @@ import subprocess
 import tempfile
 
 
-def makeMovie(simulationPath, frameRate, quality):
+def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True):
     """
     :param simulationPath: a string path to a directory with a .cc3d file and screenshot directories
     :param frameRate: an int >= 1
     :param quality: an int 1-10 (inclusive)
+    :param enableDrawingMCS: when set to true, draws the MCS of each frame onto the video
+                             (recommended, but makes movie creation slower)
     :return: the number of movies created
     """
     # Credit to https://stackoverflow.com/q/49581846/16519580 user 'Makes' for the text overlay FFMPEG command.
@@ -41,23 +43,25 @@ def makeMovie(simulationPath, frameRate, quality):
                     if fileExtension.lower() == ".png":
                         tempFile.write(f"file '{fileNameExt}'\n")
 
-                        # Note: frameRate is excluded in the FFMPEG command.
+                        # Note: frameRate has to be excluded in the FFMPEG command.
                         # Instead, we use `duration` inside the input file.
                         # This fixes a bug where the last frame appears at the beginning.
                         tempFile.write(f"duration {duration}\n")
 
-                        # Try to use the MCS listed in the screenshot name
-                        mcs = 0
-                        try:
-                            parts = fileName.split("_")
-                            if len(parts) >= 2:
-                                mcs = int(parts[-1])
-                        except:
-                            mcs = frameCount
+                        if enableDrawingMCS:
+                            # Try to use the MCS listed in the screenshot name
+                            mcs = 0
+                            try:
+                                parts = fileName.split("_")
+                                if len(parts) >= 2:
+                                    mcs = int(parts[-1])
+                            except:
+                                mcs = frameCount
 
-                        # Center the text
-                        textOverlayFile.write(f"{frameCount} drawtext reinit 'text=MCS {mcs}':x=(w-text_w)/2:y=0;\n")
+                            # Center the text
+                            textOverlayFile.write(f"{frameCount} drawtext reinit 'text=MCS {mcs}':x=(w-text_w)/2:y=0;\n")
                         frameCount += 1
+
                 tempFile.close()
                 textOverlayFile.close()
 
@@ -73,7 +77,7 @@ def makeMovie(simulationPath, frameRate, quality):
                         fileNumber += 1
                     outputPath = os.path.join(outputPath, f"{visualizationName}_{fileNumber}.mp4")
 
-                    subprocess.run([
+                    commandArgs = [
                         "ffmpeg",
                         "-n",  # never overwrite a file
                         "-f", "concat",
@@ -82,9 +86,14 @@ def makeMovie(simulationPath, frameRate, quality):
                         "-crf", str(quality),  # set quality (constant rate factor, crf): 51=worst, 0=best
                         "-c:v", "libx264",  # video codec: H.264
                         "-pix_fmt", "yuv420p",
-                        "-filter_complex", f"[0:v]sendcmd=f={os.path.basename(textOverlayFile.name)},drawtext=fontfile=PF.ttf:text='':fontcolor=white:fontsize=20",
-                        outputPath
-                    ], cwd=inputPath)
+                    ]
+
+                    if enableDrawingMCS:
+                        commandArgs.append("-filter_complex")
+                        commandArgs.append(f"[0:v]sendcmd=f={os.path.basename(textOverlayFile.name)},drawtext=fontfile=PF.ttf:text='':fontcolor=white:fontsize=20")
+
+                    commandArgs.append(outputPath)
+                    subprocess.run(commandArgs, cwd=inputPath)
 
                     if os.path.exists(outputPath):
                         movieCount += 1
