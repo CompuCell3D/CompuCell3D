@@ -2,7 +2,6 @@
 import os
 import subprocess
 import tempfile
-import shutil
 
 
 def makeMovie(simulationPath, frameRate, quality):
@@ -95,23 +94,3 @@ def makeMovie(simulationPath, frameRate, quality):
 
     print(f"Created {movieCount} movies inside `{simulationPath}` with frame rate {frameRate} and quality {quality}/51.")
     return movieCount
-
-
-def makeMovieWithSettings():
-    import cc3d.player5.Configuration as Configuration
-
-    # Choose the most recently modified subdir of the project dir
-    projectPathRoot = Configuration.getSetting("OutputLocation")
-    maxLastModifiedTime = 0
-    simulationPath = None
-    for dirName in os.listdir(projectPathRoot):
-        dirPath = os.path.join(projectPathRoot, dirName)
-        if os.path.isdir(dirPath):
-            if os.path.getmtime(dirPath) > maxLastModifiedTime:
-                maxLastModifiedTime = os.path.getmtime(dirPath)
-                simulationPath = dirPath
-
-    frameRate = Configuration.getSetting("FrameRate")
-    quality = Configuration.getSetting("Quality")
-
-    return makeMovie(simulationPath, frameRate, quality)
