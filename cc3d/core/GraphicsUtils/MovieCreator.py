@@ -11,7 +11,8 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True):
     :param quality: an int 1-10 (inclusive)
     :param enableDrawingMCS: when set to true, draws the MCS of each frame onto the video
                              (recommended, but makes movie creation slower)
-    :return: the number of movies created
+    :return: a tuple with: 1) the number of movies created and 2) the path to the dir where movies
+                             were generated.
     """
     # Credit to https://stackoverflow.com/q/49581846/16519580 user 'Makes' for the text overlay FFMPEG command.
     # Credit to https://superuser.com/a/939386 uer 'llogan' for the text positioning in the FFMPEG command.
@@ -102,4 +103,4 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True):
             os.remove(tempFile.name)
 
     print(f"Created {movieCount} movies inside `{simulationPath}` with frame rate {frameRate} and quality {quality}/51.")
-    return movieCount
+    return movieCount, outputPath
