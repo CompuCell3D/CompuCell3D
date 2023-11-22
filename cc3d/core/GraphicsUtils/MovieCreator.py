@@ -59,8 +59,8 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True):
                             except:
                                 mcs = frameCount
 
-                            # Center the text
-                            textOverlayFile.write(f"{frameCount} drawtext reinit 'text=MCS {mcs}':x=(w-text_w)/2:y=0;\n")
+                            # Text will go in top right
+                            textOverlayFile.write(f"{frameCount} drawtext reinit 'text=MCS {mcs}':x=w-tw-10:y=10;\n")
                         frameCount += 1
 
                 tempFile.close()
