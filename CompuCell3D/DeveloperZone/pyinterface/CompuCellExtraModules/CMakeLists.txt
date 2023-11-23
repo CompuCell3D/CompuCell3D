@@ -21,10 +21,12 @@ endif()
 
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+# note on windows some cmake setups report python library variable as ${PYTHON_LIBRARY}
 SET(LIBS
   CC3DCompuCellLib
    CC3DXMLUtils
    ${Python3_LIBRARIES}
+   ${PYTHON_LIBRARY}
 
 )
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)

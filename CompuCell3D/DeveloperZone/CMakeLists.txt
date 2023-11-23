@@ -19,6 +19,12 @@ IF (APPLE)
     MESSAGE ("GOT APPLE")
 ENDIF (APPLE)
 
+# Set internal platform def
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    add_definitions(-DCC3D_ISWIN)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+    add_definitions(-DCC3D_ISMAC)
+endif()
 
 SET(CMAKE_CXX_STANDARD 11)
 # to get openmp detected via conda - start cmake from the conda environment that contains
@@ -52,6 +58,7 @@ find_library(OpenMP_LIBRARY
 #         INTERFACE_COMPILE_OPTIONS "${OpenMP_COMPILE_OPTIONS}"
 #     )
 # endif()
+
 
 
 
