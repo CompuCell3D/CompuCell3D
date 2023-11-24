@@ -39,7 +39,7 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True):
                 """
                 frameCount = 0
                 duration = 1 / max(frameRate, 1)
-                for fileNameExt in os.listdir(inputPath):
+                for fileNameExt in sorted(os.listdir(inputPath)):
                     fileName, fileExtension = os.path.splitext(fileNameExt)
                     if fileExtension.lower() == ".png":
                         tempFile.write(f"file '{fileNameExt}'\n")
