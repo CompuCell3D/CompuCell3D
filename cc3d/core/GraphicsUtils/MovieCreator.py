@@ -24,7 +24,7 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True):
     print("Making movie inside `", simulationPath, "`")
     movieCount = 0
 
-    for visualizationName in os.listdir(simulationPath):
+    for visualizationName in sorted(os.listdir(simulationPath)):
         inputPath = os.path.join(simulationPath, visualizationName)
         if not os.path.isdir(inputPath):
             continue
@@ -39,7 +39,7 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True):
                 """
                 frameCount = 0
                 duration = 1 / max(frameRate, 1)
-                for fileNameExt in os.listdir(inputPath):
+                for fileNameExt in sorted(os.listdir(inputPath)):
                     fileName, fileExtension = os.path.splitext(fileNameExt)
                     if fileExtension.lower() == ".png":
                         tempFile.write(f"file '{fileNameExt}'\n")
