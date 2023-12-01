@@ -23,6 +23,7 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True):
 
     print("Making movie inside `", simulationPath, "`")
     movieCount = 0
+    outputPath = None
 
     for visualizationName in sorted(os.listdir(simulationPath)):
         inputPath = os.path.join(simulationPath, visualizationName)
