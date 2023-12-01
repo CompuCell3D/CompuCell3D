@@ -252,6 +252,15 @@ class CC3DSimService(CC3DPySim, PySimService):
             self._error_message = cc3d_cpp_err.message
             return False
 
+    def store_lattice_snapshot(self, output_dir_name: str = None, output_file_core_name: str = None):
+        """
+        Store a lattice snapshot on demand
+        :param output_dir_name: override output directory
+        :param output_file_core_name: override output file core name
+        :return: True on success
+        """
+        return CC3DPy.store_lattice_snapshot(self.current_step, output_dir_name, output_file_core_name)
+
     @property
     def profiler_report(self) -> str:
         steppable_registry = CompuCellSetup.persistent_globals.steppable_registry
