@@ -133,7 +133,7 @@ class CC3DPySim:
         self.restart_multiple_snapshots = restart_multiple_snapshots
         self.output_dir = output_dir
         self.output_file_core_name = output_file_core_name
-        self.sim_input = sim_input
+        self.simulation_input = sim_input
 
     def init_simulation(self):
         """
@@ -147,7 +147,7 @@ class CC3DPySim:
                                restart_multiple_snapshots=self.restart_multiple_snapshots,
                                output_dir=self.output_dir,
                                output_file_core_name=self.output_file_core_name,
-                               sim_input=self.sim_input)
+                               sim_input=self.simulation_input)
 
     def uninit_simulation(self):
         """
