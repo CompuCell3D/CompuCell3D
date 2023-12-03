@@ -221,6 +221,13 @@ class PersistentGlobals:
 
             return self.__output_dir
 
+    @property
+    def output_dir(self) -> Union[str, None]:
+        """
+        Raw value of output directory
+        """
+        return self.__output_dir
+
     def create_output_dir(self):
         """
 
