@@ -2,6 +2,26 @@ Release Notes
 =============
 
 
+Version 4.5.0
+-------------
+**2023-12-09**
+
+New features:
+ - Added Polygon Initializer with extensions to 3D
+ - Added Tube Initializer 3D
+ - Added support for generating simulation movies
+ - Added on-demand snapshots to Python API
+
+Changes:
+
+Bug fixes:
+    - Fixed DeveloperZone on Windows
+    - Fixing issue with attaching Python dictionary to Link objects
+    - Fixed restart capability
+    - Multiple minor bug fixes
+
+
+
 Version 4.4.1-py-version-fix
 -------------
 **2023-07-01**
