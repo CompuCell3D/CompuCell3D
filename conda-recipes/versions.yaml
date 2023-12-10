@@ -1,5 +1,5 @@
-version: 4.4.1
-build_number: 6
+version: 4.5.0
+build_number: 0
 numpy_version : 1.24
 cc3d_network_solvers_version: 0.3.0
 cmake_version: 3.21 
