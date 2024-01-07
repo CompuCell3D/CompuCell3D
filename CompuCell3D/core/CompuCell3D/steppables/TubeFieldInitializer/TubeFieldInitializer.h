@@ -17,7 +17,7 @@ namespace CompuCell3D {
 
     const int DEFAULT_NUM_SLICES = 8; //arbitrary
     
-    enum CellShape {
+    enum CellShapeEnum {
         CUBE = 0, 
         WEDGE = 1
     };
@@ -37,7 +37,7 @@ namespace CompuCell3D {
         int innerRadius;
         int outerRadius;
         bool randomize;
-        CellShape cellShape;
+        CellShapeEnum cellShape;
 
 
         void Gap(int _gap) { gap = _gap; }
@@ -54,7 +54,7 @@ namespace CompuCell3D {
 
         void OuterRadius(int _outerRadius) { outerRadius = _outerRadius; }
 
-        void CellShape(CellShape _cellShape) { cellShape = _cellShape; }
+        void CellShape(CellShapeEnum _cellShape) { cellShape = _cellShape; }
 
         void Types(std::string _type) {
             typeNames.push_back(_type);
