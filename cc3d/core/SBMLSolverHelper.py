@@ -135,7 +135,6 @@ class SBMLSolverHelper(object):
         except AttributeError:
             return int(2e9)
 
-
     def set_integrator_seed(self, integrator_name: str, rr: RoadRunnerPy):
         max_seed = self.get_gillespie_integrator_max_seed()
         if integrator_name.lower().strip() == "gillespie":
@@ -144,11 +143,7 @@ class SBMLSolverHelper(object):
                 rr.integrator.seed = seed
             else:
                 # unless user requests fixed seed we are randomizing the seed of the gillespie integrators
-                # print(rr.integrator.seed)
-                # rr.integrator.seed = 20
                 rr.integrator.seed = randint(0, int(max_seed))
-                print(rr.integrator.seed)
-
 
     @deprecated(version='4.0.0', reason="You should use : add_sbml_to_cell")
     def addSBMLToCell(self, _modelFile='', _modelName='', _cell=None, _stepSize=1.0, _initialConditions={},
