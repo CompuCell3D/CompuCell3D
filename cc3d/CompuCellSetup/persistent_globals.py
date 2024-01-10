@@ -97,6 +97,9 @@ class PersistentGlobals:
         #: API return object used with :class:`cc3d.CompuCellSetup.CC3DCaller.CC3DCaller`
         self.return_object = None
 
+        self.gillespie_integrator_seed = None
+        self.gillespie_integrator_max_seed = int(2e9)
+
     def set_configuration_getter(self, _fget) -> None:
         """
         Hook to inject a third-party Configuration

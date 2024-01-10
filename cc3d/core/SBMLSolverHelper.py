@@ -5,6 +5,9 @@ import types
 from cc3d.cpp import CompuCell
 from cc3d import CompuCellSetup
 from deprecated import deprecated
+from random import randint
+
+
 
 # Test for Antimony installation
 try:
@@ -62,6 +65,7 @@ class SBMLSolverHelper(object):
 
         # in case user passes simulate options we set the here
         # this dictionary translates old options valid for earlier rr versions to new ones
+
         self.option_name_dict = {
             'relative': 'relative_tolerance',
             'absolute': 'absolute_tolerance',
@@ -110,6 +114,36 @@ class SBMLSolverHelper(object):
             return obj_default
         else:
             return obj
+
+    def set_gillespie_integrator_seed(self, seed):
+        if seed > self.get_gillespie_integrator_max_seed():
+            raise ValueError(
+                f"Seed is greater than max allowed value for the seed : {self.get_gillespie_integrator_max_seed()}")
+        CompuCellSetup.persistent_globals.gillespie_integrator_seed = seed
+
+    def get_gillespie_integrator_seed(self) -> Union[int, None]:
+
+        try:
+            return CompuCellSetup.persistent_globals.gillespie_integrator_seed
+        except AttributeError:
+            return None
+
+    def get_gillespie_integrator_max_seed(self) -> int:
+
+        try:
+            return CompuCellSetup.persistent_globals.gillespie_integrator_max_seed
+        except AttributeError:
+            return int(2e9)
+
+    def set_integrator_seed(self, integrator_name: str, rr: RoadRunnerPy):
+        max_seed = self.get_gillespie_integrator_max_seed()
+        if integrator_name.lower().strip() == "gillespie":
+            seed = self.get_gillespie_integrator_seed()
+            if seed is not None:
+                rr.integrator.seed = seed
+            else:
+                # unless user requests fixed seed we are randomizing the seed of the gillespie integrators
+                rr.integrator.seed = randint(0, int(max_seed))
 
     @deprecated(version='4.0.0', reason="You should use : add_sbml_to_cell")
     def addSBMLToCell(self, _modelFile='', _modelName='', _cell=None, _stepSize=1.0, _initialConditions={},
@@ -196,6 +230,7 @@ class SBMLSolverHelper(object):
             rr.loadSBML(_externalPath=model_path_normalized, _modelString=model_string)
             if integrator is not None:
                 rr.setIntegrator(name=integrator)
+                self.set_integrator_seed(integrator_name=integrator, rr=rr)
 
         else:
             rr = RoadRunnerPy(sbml=current_state_sbml)
@@ -307,6 +342,7 @@ class SBMLSolverHelper(object):
             rr.loadSBML(_externalPath=model_path_normalized, _modelString=model_string)
             if integrator is not None:
                 rr.setIntegrator(name=integrator)
+                self.set_integrator_seed(integrator_name=integrator, rr=rr)
 
         else:
             rr = RoadRunnerPy(sbml=current_state_sbml)
@@ -743,6 +779,7 @@ class SBMLSolverHelper(object):
         rr.stepSize = step_size
         if integrator is not None:
             rr.setIntegrator(name=integrator)
+            self.set_integrator_seed(integrator_name=integrator, rr=rr)
 
         # storing
         pg = CompuCellSetup.persistent_globals
