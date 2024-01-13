@@ -1,0 +1,5 @@
+<Simulation version="4.4.1">
+   <XMLScript Type="XMLScript">Simulation/Gillespie_random_number.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/Gillespie_random_number.py</PythonScript>
+   <Resource Type="Python">Simulation/Gillespie_random_numberSteppables.py</Resource>
+</Simulation>
