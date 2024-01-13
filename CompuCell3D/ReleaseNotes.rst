@@ -13,6 +13,8 @@ New features:
  - Added on-demand snapshots to Python API
 
 Changes:
+ - All Gillespie solvers are now initialized with random seed. You can still fix the seed using self.set_gillespie_integrator_seed
+
 
 Bug fixes:
     - Fixed DeveloperZone on Windows
