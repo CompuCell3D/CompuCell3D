@@ -57,20 +57,30 @@ class CMLFieldHandler:
         self.out_file_number_of_digits = len(str(persistent_globals.simulator.getNumSteps()))
         self.get_info_about_fields()
 
-        if cc3d.CompuCellSetup.persistent_globals.output_directory:
+        if cc3d.CompuCellSetup.persistent_globals.output_dir:
 
             self.create_storage_dir()
 
             self.write_xml_description_file()
 
-    def write_fields(self, mcs: int) -> None:
+    def write_fields(self,
+                     mcs: int,
+                     output_dir_name: str = None,
+                     output_file_core_name: str = None) -> None:
         """
         stores simulation fields to the disk
         :param mcs: MCS
+        :param output_dir_name: override output directory
+        :param output_file_core_name: override output file core name
         :return: None
         """
 
-        if not self.output_dir_name:
+        if output_dir_name is None:
+            output_dir_name = self.output_dir_name
+        if output_file_core_name is None:
+            output_file_core_name = self.output_file_core_name
+
+        if not output_dir_name:
             return
 
         for field_name in self.field_types.keys():
@@ -90,8 +100,8 @@ class CMLFieldHandler:
         mcs_formatted_number = str(mcs).zfill(self.out_file_number_of_digits)
 
         # e.g. /path/Step_01.vtk
-        lattice_data_file_name = join(self.output_dir_name,
-                                      self.output_file_core_name + "_" + mcs_formatted_number + ".vtk")
+        lattice_data_file_name = join(output_dir_name,
+                                      output_file_core_name + "_" + mcs_formatted_number + ".vtk")
 
         self.field_writer.writeFields(lattice_data_file_name)
         self.field_writer.clear()
@@ -151,7 +161,14 @@ class CMLFieldHandler:
         Creates storage dir for fields. Initializes self.output_dir_name
         :return:
         """
-        screenshot_directory = cc3d.CompuCellSetup.persistent_globals.output_directory
+        if cc3d.CompuCellSetup.persistent_globals.simulation_file_name:
+            # When a simulation file is present, use PersistentGlobals property that does some fancy work
+            screenshot_directory = cc3d.CompuCellSetup.persistent_globals.output_directory
+        else:
+            # When a simulation file is not present, just use PersistentGlobals property that returns the raw directory
+            screenshot_directory = cc3d.CompuCellSetup.persistent_globals.output_dir
+            if screenshot_directory is None:
+                return
         self.output_dir_name = join(screenshot_directory, 'LatticeData')
 
         mkdir_p(self.output_dir_name)

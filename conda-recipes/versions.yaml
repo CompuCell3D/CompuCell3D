@@ -1,10 +1,10 @@
-version: 4.4.1
-build_number: 6
+version: 4.5.0
+build_number: 2
 numpy_version : 1.24
 cc3d_network_solvers_version: 0.3.0
 cmake_version: 3.21 
-vtk_version: 9.2
+vtk_version: 9.2 
 swig_version: 4 
-boost_version: 1.82
+boost_version: 1.84
 tbb_devel_version: 2021 
 

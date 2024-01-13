@@ -79,6 +79,22 @@ class CC3DPy:
         CompuCellSetup.store_screenshots(cur_step=current_step)
 
     @staticmethod
+    def store_lattice_snapshot(mcs: int, output_dir_name: str = None, output_file_core_name: str = None) -> bool:
+        """
+        Store a lattice snapshot on demand
+
+        :param mcs: current step
+        :param output_dir_name: override output directory
+        :param output_file_core_name: override output file core name
+        :return: True on success
+        """
+        cml_field_handler = CompuCellSetup.persistent_globals.cml_field_handler
+        if cml_field_handler:
+            cml_field_handler.write_fields(mcs, output_dir_name, output_file_core_name)
+            return True
+        return False
+
+    @staticmethod
     def check_cc3d():
         try:
             CompuCellSetup.check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
@@ -133,7 +149,7 @@ class CC3DPySim:
         self.restart_multiple_snapshots = restart_multiple_snapshots
         self.output_dir = output_dir
         self.output_file_core_name = output_file_core_name
-        self.sim_input = sim_input
+        self.simulation_input = sim_input
 
     def init_simulation(self):
         """
@@ -147,7 +163,7 @@ class CC3DPySim:
                                restart_multiple_snapshots=self.restart_multiple_snapshots,
                                output_dir=self.output_dir,
                                output_file_core_name=self.output_file_core_name,
-                               sim_input=self.sim_input)
+                               sim_input=self.simulation_input)
 
     def uninit_simulation(self):
         """

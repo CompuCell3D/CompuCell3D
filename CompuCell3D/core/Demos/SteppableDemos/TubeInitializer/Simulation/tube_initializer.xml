@@ -1,0 +1,143 @@
+<!--See the documentation for more details: https://compucell3dreferencemanual.readthedocs.io/en/latest/tube_initializer.html -->
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="50" y="50" z="50"/>
+        <Anneal>10</Anneal>
+        <Steps>10000</Steps>
+        <Temperature>10</Temperature>
+        <Flip2DimRatio>1</Flip2DimRatio>
+        <NeighborOrder>2</NeighborOrder>
+    </Potts>
+
+
+    <Plugin Name="Volume">
+        <TargetVolume>125</TargetVolume>
+        <LambdaVolume>3.0</LambdaVolume>
+    </Plugin>
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Condensing" TypeId="1" Freeze=""/>
+        <CellType TypeName="NonCondensing" TypeId="2" Freeze=""/>
+    </Plugin>
+
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="NonCondensing" Type2="NonCondensing">16</Energy>
+        <Energy Type1="Condensing" Type2="Condensing">2</Energy>
+        <Energy Type1="NonCondensing" Type2="Condensing">11</Energy>
+        <Energy Type1="NonCondensing" Type2="Medium">16</Energy>
+        <Energy Type1="Condensing" Type2="Medium">16</Energy>
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+
+
+    <!--Example 1: Thick two-layer tube-->
+   <Steppable Type="TubeInitializer">
+      <Region>
+        <InnerRadius>8</InnerRadius>
+        <OuterRadius>14</OuterRadius>
+        <Gap>0</Gap>
+        <Width>2</Width>
+        <Types>NonCondensing</Types>
+        <NumSlices>8</NumSlices>
+        <Extrude>
+          <From x="15" y="45" z="25" />
+          <To x="15" y="10" z="25" />
+        </Extrude>
+      </Region>
+      <Region>
+        <InnerRadius>3</InnerRadius>
+        <OuterRadius>8</OuterRadius>
+        <Gap>0</Gap>
+        <Width>2</Width>
+        <Types>Condensing</Types>
+        <NumSlices>6</NumSlices>
+        <Extrude>
+          <From x="15" y="45" z="25" />
+          <To x="15" y="10" z="25" />
+        </Extrude>
+      </Region>
+   </Steppable>
+
+   <!--Example 2: Thin two-layer tube-->
+   <!--Steppable Type="TubeInitializer">
+      <Region>
+        <InnerRadius>8</InnerRadius>
+        <OuterRadius>10</OuterRadius>
+        <Gap>0</Gap>
+        <Width>2</Width>
+        <Types>NonCondensing</Types>
+        <NumSlices>10</NumSlices>
+        <Extrude>
+          <From x="15" y="45" z="25" />
+          <To x="15" y="10" z="25" />
+        </Extrude>
+      </Region>
+      <Region>
+        <InnerRadius>6</InnerRadius>
+        <OuterRadius>8</OuterRadius>
+        <Gap>0</Gap>
+        <Width>2</Width>
+        <Types>Condensing</Types>
+        <Extrude>
+          <From x="15" y="45" z="25" />
+          <To x="15" y="10" z="25" />
+        </Extrude>
+      </Region>
+   </Steppable-->
+
+   <!--Exampel 3: Blood vessel with solid blood -->
+   <!--Steppable Type="TubeInitializer">
+      <Region>
+        <InnerRadius>8</InnerRadius>
+        <OuterRadius>11</OuterRadius>
+        <Gap>0</Gap>
+        <Width>2</Width>
+        <Types>Condensing</Types>
+        <Extrude>
+          <From x="15" y="45" z="25" />
+          <To x="15" y="10" z="25" />
+        </Extrude>
+      </Region>
+      <Region>
+        <InnerRadius>0</InnerRadius>
+        <OuterRadius>7</OuterRadius>
+        <Gap>0</Gap>
+        <Width>2</Width>
+        <Types>NonCondensing</Types>
+        <Extrude>
+          <From x="15" y="45" z="25" />
+          <To x="15" y="10" z="25" />
+        </Extrude>
+      </Region>
+   </Steppable-->
+
+   <!--Example 4: Blood vessel with "realistic" blood -->
+<!--   <Steppable Type="TubeInitializer">-->
+<!--      <Region>-->
+<!--	 	 <InnerRadius>8</InnerRadius>-->
+<!--	 	 <OuterRadius>11</OuterRadius>-->
+<!--         <Gap>0</Gap>-->
+<!--         <Width>2</Width>-->
+<!--         <Types>Condensing</Types>-->
+<!--		 <Extrude>-->
+<!--		   <From x="15" y="45" z="25" />-->
+<!--		   <To x="15" y="10" z="25" />-->
+<!--		 </Extrude>-->
+<!--      </Region>-->
+<!--      <Region>-->
+<!--	 	 <InnerRadius>0</InnerRadius>-->
+<!--	 	 <OuterRadius>7</OuterRadius>-->
+<!--         <Gap>1</Gap>-->
+<!--         <Width>2</Width>-->
+<!--         <Types>NonCondensing</Types>-->
+<!--		 <Extrude>-->
+<!--		   <From x="15" y="45" z="25" />-->
+<!--		   <To x="15" y="10" z="25" />-->
+<!--		 </Extrude>-->
+<!--      </Region>-->
+<!--   </Steppable>-->
+
+
+</CompuCell3D>

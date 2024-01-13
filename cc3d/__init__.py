@@ -9,9 +9,9 @@ import sys
 from os.path import dirname, join, abspath
 from pathlib import Path
 
-__version__ = "4.4.1"
-__revision__ = "4"
-__githash__ = "c4121fe"
+__version__ = "4.5.0"
+__revision__ = "2"
+__githash__ = "f8ddda9"
 
 # from . import config
 from cc3d import config
@@ -73,8 +73,8 @@ if sys.platform.startswith('win'):
 
     if sys.version_info >= (3, 8):
 
-        if cc3d_lib_shared not in path_env_list:
-            os.add_dll_directory(cc3d_lib_shared)
+        # if cc3d_lib_shared not in path_env_list:
+        #     os.add_dll_directory(cc3d_lib_shared)
 
         os.add_dll_directory(os.environ['COMPUCELL3D_PLUGIN_PATH'])
         os.add_dll_directory(os.environ['COMPUCELL3D_STEPPABLE_PATH'])

@@ -15,10 +15,17 @@ namespace CompuCell3D {
 
     class Point3D;
 
+    const int DEFAULT_NUM_SLICES = 8; //arbitrary
+    
+    enum CellShapeEnum {
+        CUBE = 0, 
+        WEDGE = 1
+    };
+
     class TUBEFIELDINITIALIZER_EXPORT TubeFieldInitializerData {
     public:
         TubeFieldInitializerData() :
-                width(1), gap(0), innerRadius(0), outerRadius(0), randomize(false) {}
+                width(1), gap(0), numSlices(DEFAULT_NUM_SLICES), innerRadius(0), outerRadius(0), cellShape(WEDGE), randomize(false) {}
         
         Point3D fromPoint;
         Point3D toPoint;
@@ -26,13 +33,18 @@ namespace CompuCell3D {
         std::string typeNamesString;
         int width;
         int gap;
+        int numSlices;
         int innerRadius;
         int outerRadius;
         bool randomize;
+        CellShapeEnum cellShape;
+
 
         void Gap(int _gap) { gap = _gap; }
 
         void Width(int _width) { width = _width; }
+
+        void NumSlices(int _numSlices) { numSlices = _numSlices; }
 
         void FromPoint(Point3D _fromPoint) { fromPoint = _fromPoint; }
 
@@ -41,6 +53,8 @@ namespace CompuCell3D {
         void InnerRadius(int _innerRadius) { innerRadius = _innerRadius; }
 
         void OuterRadius(int _outerRadius) { outerRadius = _outerRadius; }
+
+        void CellShape(CellShapeEnum _cellShape) { cellShape = _cellShape; }
 
         void Types(std::string _type) {
             typeNames.push_back(_type);
@@ -56,7 +70,9 @@ namespace CompuCell3D {
         // bool cellSortInit;
         std::vector <TubeFieldInitializerData> initDataVec;
 
-        void layOutCells(const TubeFieldInitializerData &_initData);
+        void layOutCellsCube(const TubeFieldInitializerData &_initData);
+        
+        void layOutCellsWedge(const TubeFieldInitializerData &_initData);
 
         unsigned char initCellType(const TubeFieldInitializerData &_initData);
 
@@ -70,13 +86,7 @@ namespace CompuCell3D {
 
         void setPotts(Potts3D *potts) { this->potts = potts; }
 
-        double distance(double, double, double, double, double, double);
 
-
-
-        Point3D subtractPoints(Point3D p1, Point3D p2);
-
-        int dotProduct(Point3D p1, Point3D p2);
 
         Point3D crossProduct(Point3D p1, Point3D p2);
 
@@ -87,8 +97,6 @@ namespace CompuCell3D {
         double distanceToLine(Point3D line_point1, Point3D line_point2, Point3D point);
 
 
-
-        // Dim3D getTubeDim() { return tubeDim; }
 
         // SimObject interface
         virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData = 0);

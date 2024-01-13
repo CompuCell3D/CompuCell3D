@@ -403,6 +403,13 @@ namespace swig{
 
 %inline %{
    PyObject* getLinkPyAttrib(CompuCell3D::FocalPointPlasticityLinkBase* _link){
+            if (_link->pyAttrib == nullptr){
+                PyGILState_STATE gstate;
+                gstate = PyGILState_Ensure();
+                _link->pyAttrib = PyDict_New();
+                PyGILState_Release(gstate);
+            }
+
         PyObject* pyAttrib = _link->getPyAttrib();
         Py_INCREF(pyAttrib);
         return pyAttrib;

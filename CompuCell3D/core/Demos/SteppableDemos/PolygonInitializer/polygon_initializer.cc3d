@@ -1,0 +1,7 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/polygon_initializer.xml</XMLScript>
+    <PythonScript>Simulation/polygon_initializer.py</PythonScript>
+
+
+</Simulation>

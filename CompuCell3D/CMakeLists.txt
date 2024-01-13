@@ -71,7 +71,7 @@ SET(CC3D_PYTHON_MODULE_DIR ${CMAKE_SOURCE_DIR}/../)
 set(COMPUCELL3D_MAJOR_VERSION 4)
 set(COMPUCELL3D_MINOR_VERSION 4)
 set(COMPUCELL3D_BUILD_VERSION 1)
-set(COMPUCELL3D_REV_NUMBER 20230701)
+set(COMPUCELL3D_REV_NUMBER 20240109)
 
 ## Specify a version for all libs to use
 # letters A, B, C are added to ensure nice display of version in cmake gui
