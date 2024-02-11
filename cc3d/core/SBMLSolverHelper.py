@@ -14,7 +14,7 @@ try:
     import antimony
 
     antimony_available = True
-except ImportError:
+except (ImportError, OSError) :
     antimony_available = False
 
 try:
