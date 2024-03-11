@@ -3,6 +3,7 @@ from cc3d import CompuCellSetup
 import numpy as np
 from .ExtraFieldAdapter import ExtraFieldAdapter
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
+from cc3d.cpp import CompuCell
 
 
 class FieldRegistry:
@@ -85,6 +86,7 @@ class FieldRegistry:
 
         field_adapter = self.fetch_field_adapter(field_name=field_name)
         if field_adapter is None:
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f'field adapter not found ({field_name})')
             return
 
         fieldNP = np.zeros(shape=(self.dim.x, self.dim.y, self.dim.z), dtype=np.float32)
@@ -106,6 +108,7 @@ class FieldRegistry:
 
         field_adapter = self.fetch_field_adapter(field_name=field_name)
         if field_adapter is None:
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f'field adapter not found ({field_name})')
             return
 
         field_ref = self.get_field_storage().createScalarFieldCellLevelPy(field_name)
@@ -121,6 +124,7 @@ class FieldRegistry:
 
         field_adapter = self.fetch_field_adapter(field_name=field_name)
         if field_adapter is None:
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f'field adapter not found ({field_name})')
             return
 
         field_np = np.zeros(shape=(self.dim.x, self.dim.y, self.dim.z, 3), dtype=np.float32)
@@ -141,6 +145,7 @@ class FieldRegistry:
 
         field_adapter = self.fetch_field_adapter(field_name=field_name)
         if field_adapter is None:
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f'field adapter not found ({field_name})')
             return
 
         field_ref = self.get_field_storage().createVectorFieldCellLevelPy(field_name)
@@ -161,7 +166,10 @@ class FieldRegistry:
             try:
                 field_creating_fcn = self.field_creating_fcns[field_adapter.field_type]
             except KeyError:
-                print('Could not create field. Could not locate field creating functions for ', field_name)
+                CompuCell.CC3DLogger.get().log(
+                    CompuCell.LOG_DEBUG,
+                    f'Could not create field. Could not locate field creating functions for ({field_name})'
+                )
                 continue
 
             # we are creating fields only when internal field reference is None

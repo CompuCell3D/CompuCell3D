@@ -430,7 +430,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if mdata.get("LegendEnable", default=False):
             self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
-
     def init_concentration_field_actors(self, actor_specs, drawing_params=None):
         """
         switches between glyph and non-glyph visualizations
@@ -441,6 +440,10 @@ class MVCDrawModel3D(MVCDrawModelBase):
         else:
             self.init_concentration_field_non_glyph_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
+        # Handle if something previously prevented initialization of metadata,
+        # of which we notify in subsequent calls
+        if actor_specs.metadata is None:
+            actor_specs.metadata = {}
 
     def init_concentration_field_non_glyph_actors(self, actor_specs, drawing_params=None):
         """
