@@ -1,5 +1,6 @@
 import os
 import time
+import uuid
 from collections import OrderedDict
 from os.path import join, exists, basename
 from typing import Union
@@ -197,11 +198,9 @@ class PersistentGlobals:
         """
 
         current_time = time.localtime()
-        str_f_time = time.strftime
-        timestamp_str = "_" + str_f_time("%m", current_time) + "_" + str_f_time("%d", current_time) + "_" + str_f_time(
-            "%Y", current_time) + "_" + str_f_time("%H", current_time) + "_" + str_f_time("%M",
-                                                                                          current_time) + "_" + str_f_time(
-            "%S", current_time)
+        str_f_time = time.strftime        
+        timestamp_str = f"_{str_f_time('%m', current_time)}_{str_f_time('%d', current_time)}_{str_f_time('%Y', current_time)}_{str_f_time('%H', current_time)}_{str_f_time('%M', current_time)}_{str_f_time('%S', current_time)}_{uuid.uuid4().hex[:6]}"
+        
 
         return timestamp_str
 
