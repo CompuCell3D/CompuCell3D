@@ -8,7 +8,6 @@
 
 
 
-
 %include "typemaps.i"
 
 // ************************************************************
@@ -336,6 +335,7 @@ using namespace CompuCell3D;
 %include <CompuCell3D/Field3D/Neighbor.h>
 %include <CompuCell3D/Boundary/BoundaryStrategy.h>
 %include "Potts3D/Cell.h"
+
 
     
     

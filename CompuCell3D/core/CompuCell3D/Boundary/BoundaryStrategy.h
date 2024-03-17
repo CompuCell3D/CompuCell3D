@@ -40,24 +40,58 @@ namespace CompuCell3D {
         static BoundaryStrategy *singleton;
         LatticeMultiplicativeFactors lmf;
         Dim3D dim;
-        int currentStep;
+//        int currentStep;
         bool regular;
         Boundary *strategy_x;
         Boundary *strategy_y;
         Boundary *strategy_z;
 
-        bool isValid(const int coordinate, const int max_value) const;
+        bool isValid(int coordinate, const int max_value) const;
 
         std::vector <Point3D> offsetVec;
         std::vector<float> distanceVec;
         std::vector<unsigned int> neighborOrderIndexVec;
 
+        std::vector <std::vector<Point3D>> hexOffsetArray;
+        std::vector <std::vector<float>> hexDistanceArray;
+        std::vector <std::vector<unsigned int>> hexNeighborOrderIndexArray;
+
+
+        // those are vectors that are used only in Potts3D during voxel copy We need them to implement 2.5D simulations
+        // where pixel copy offsets vector is different from the one that is used in energy computations
+        std::vector <Point3D> offsetVecVoxelCopy;
+        std::vector<float> distanceVecVoxelCopy;
+        std::vector<unsigned int> neighborOrderIndexVecVoxelCopy;
+
+        std::vector <std::vector<Point3D>> hexOffsetArrayVoxelCopy;
+        std::vector <std::vector<float>> hexDistanceArrayVoxelCopy;
+        std::vector <std::vector<unsigned int>> hexNeighborOrderIndexArrayVoxelCopy;
+
+
+
         bool checkIfOffsetAlreadyStacked(Point3D &, std::vector <Point3D> &) const;
 
         bool checkEuclidianDistance(Coordinates3D<double> &, Coordinates3D<double> &, float) const;
 
+        // method that prepares 2.5D neighbors - used in voxel copying only
+        void prepare_2_5_d_voxel_copy_neighbors(std::vector <Point3D> & offsetVecTemplate,
+                                                std::vector<float> & distanceVecTemplate,
+                                                std::vector<unsigned int> & neighborOrderIndexVecTemplate);
+
+        unsigned int getMaxNeighborIndexFromNeighborOrderNoGenImpl(
+                unsigned int _neighborOrder,
+                const std::vector<float>& distanceVecRef,
+                const std::vector <std::vector<float>> & hexDistanceArrayRef) const;
+
+        unsigned int getMaxNeighborIndexFromDepthImpl(
+                float depth,
+                const std::vector<float> &distanceVecRef,
+                const std::vector<std::vector<float>> &hexDistanceArrayRef
+        ) const;
+
+
         //void initializeQuickCheckField(Dim3D);
-        float maxDistance;
+        float maxDistance = 0.;
         bool neighborListsInitializedFlag;
 
         void getOffsetsAndDistances(
@@ -70,9 +104,6 @@ namespace CompuCell3D {
         ) const;
 
 
-        std::vector <std::vector<Point3D>> hexOffsetArray;
-        std::vector <std::vector<float>> hexDistanceArray;
-        std::vector <std::vector<unsigned int>> hexNeighborOrderIndexArray;
 
         // determines actual size of the lattice in x,y,z directions
         // the dimensions are different for hex and square lattice
@@ -82,14 +113,15 @@ namespace CompuCell3D {
         Coordinates3D<double> latticeSpanVector;
 
         LatticeType latticeType;
-        int maxOffset;
+        DimensionType dimensionType;
+        int maxOffset = 0;
 
         Algorithm *algorithm;
         unsigned int maxNeighborOrder;
 
-        BoundaryStrategy(string boundary_x, string boundary_y,
-                         string boundary_z, string alg, int index, int size, string inputfile,
-                         LatticeType latticeType = SQUARE_LATTICE);
+        BoundaryStrategy(const string& boundary_x, const string& boundary_y,
+                         const string& boundary_z, string alg, int index, int size, string inputfile,
+                         LatticeType latticeType = SQUARE_LATTICE, DimensionType dimensionType=DIM_DEFAULT);
 
         BoundaryStrategy();
 
@@ -115,13 +147,14 @@ namespace CompuCell3D {
 
         static void instantiate(string boundary_x, string boundary_y,
                                 string boundary_z, string alg,
-                                int index, int size, string inputfile, LatticeType latticeType = SQUARE_LATTICE) {
+                                int index, int size, string inputfile,
+                                LatticeType latticeType = SQUARE_LATTICE,DimensionType dimensionType=DIM_DEFAULT) {
 
 
             if (!singleton) {
 
                 singleton = new BoundaryStrategy(boundary_x, boundary_y,
-                                                 boundary_z, alg, index, size, inputfile, latticeType);
+                                                 boundary_z, alg, index, size, inputfile, latticeType, dimensionType);
 
             }
         }
@@ -181,6 +214,7 @@ namespace CompuCell3D {
         void prepareNeighborLists(float _maxDistance = 4.0);
 
         unsigned int getMaxNeighborIndexFromNeighborOrderNoGen(unsigned int _neighborOrder) const;
+        unsigned int getMaxNeighborIndexFromNeighborOrderNoGenVoxelCopy(unsigned int _neighborOrder) const;
 
         unsigned int getMaxNeighborOrder();
 
@@ -188,7 +222,8 @@ namespace CompuCell3D {
 
         unsigned int getMaxNeighborIndexFromNeighborOrder(unsigned int _neighborOrder);
 
-        unsigned int getMaxNeighborIndexFromDepth(float depth);
+        unsigned int getMaxNeighborIndexFromDepth(float depth) const;
+        unsigned int getMaxNeighborIndexFromDepthVoxelCopy(float depth) const;
 
         Neighbor
         getNeighborDirect(Point3D &pt, unsigned int idx, bool checkBounds = true, bool calculatePtTrans = false) const;
