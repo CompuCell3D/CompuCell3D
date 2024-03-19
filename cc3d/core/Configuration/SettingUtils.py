@@ -108,9 +108,9 @@ def _default_setting_path_xml() -> str:
     Returns the path to the default settings xml data
     """
     if sys.platform.startswith('darwin'):
-        return os.path.join(_default_setting_dir(), '_settings_osx.xml')
+        return os.path.join(_default_setting_dir(), SETTINGS_XML_OSX_FILE_NAME)
     else:
-        return os.path.join(_default_setting_dir(), '_settings.xml')
+        return os.path.join(_default_setting_dir(), SETTINGS_XML_FILE_NAME)
 
 
 def _global_settings_dir():
