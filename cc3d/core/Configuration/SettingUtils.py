@@ -244,6 +244,10 @@ def _handle_settings_value_xml(_val: str):
     return _val
 
 
+def _warn_setting_not_set(_el):
+    warnings.warn(f'Setting not set: {_el.attrib["Name"]}')
+
+
 def default_settings_dict_xml() -> Dict[str, Any]:
     """
     Returns default data dictionary
@@ -261,6 +265,7 @@ def default_settings_dict_xml() -> Dict[str, Any]:
         _type_fcn = sz_util.type_2_deserializer_dict[_el.attrib['Type']]
         return _el.attrib['Name'], _type_fcn(_val_text)
 
+    # "e" is the XML tag of interest for settings
     result = {}
     for el in data_root.findall('Settings'):
         for el_e in el.findall('e'):
@@ -270,12 +275,12 @@ def default_settings_dict_xml() -> Dict[str, Any]:
                     try:
                         result_e.__setitem__(*_import_data(el_e_e))
                     except (KeyError, TypeError):
-                        pass
+                        _warn_setting_not_set(el_e_e)
                 result[el_e.attrib['Name']] = result_e
             else:
                 try:
                     result.__setitem__(*_import_data(el_e))
                 except (KeyError, TypeError):
-                    pass
+                    _warn_setting_not_set(el_e)
 
     return result
