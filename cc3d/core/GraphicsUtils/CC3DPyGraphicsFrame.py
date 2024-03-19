@@ -36,6 +36,13 @@ from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrameIO import *
 from cc3d.cpp.CompuCell import Dim3D
 
 
+# Get default data and do some minor cleanup
+CONFIG_DEFAULT_SETTINGS = Configuration.default_settings_dict_xml()
+if 'TypeColorMap' in CONFIG_DEFAULT_SETTINGS.keys():
+    for k, v in list(CONFIG_DEFAULT_SETTINGS['TypeColorMap'].items()):
+        CONFIG_DEFAULT_SETTINGS['TypeColorMap'][int(k)] = CONFIG_DEFAULT_SETTINGS['TypeColorMap'].pop(k)
+
+
 class FieldStreamerDataPy:
     """Simple container for serializing :class:`FieldStreamerData` instances"""
 
@@ -819,38 +826,6 @@ class CC3DPyGraphicsFrameClientBase:
     ]
     """Configuration keys with database values that are uniformly applied to all fields"""
 
-    # todo: implement smarter CC3D default configuration data
-
-    CONFIG_DEFAULT_VALUES: List[Tuple[str, Union[Any, Dict[Any, Any]]]] = [
-        ('AxesColor', [255, 255, 255]),
-        ('BorderColor', [255, 255, 0]),
-        ('BoundingBoxColor', [255, 255, 255]),
-        ('BoundingBoxOn', True),
-        ('CellBordersOn', True),
-        ('CellGlyphsOn', False),
-        ('CellsOn', True),
-        ('ClusterBorderColor', [0, 0, 255]),
-        ('ClusterBordersOn', False),
-        ('ContourColor', [255, 255, 255]),
-        ('FPPLinksColor', [255, 255, 255]),
-        ('FPPLinksOn', False),
-        ('ShowAxes', True),
-        ('ShowHorizontalAxesLabels', True),
-        ('ShowVerticalAxesLabels', True),
-        ('TypeColorMap', {0: [0, 0, 0],
-                          1: [0, 255, 0],
-                          2: [0, 0, 255],
-                          3: [255, 0, 0],
-                          4: [128, 128, 0],
-                          5: [192, 192, 192],
-                          6: [255, 0, 255],
-                          7: [0, 0, 128],
-                          8: [0, 255, 255],
-                          9: [0, 128, 0],
-                          10: [255, 255, 255]}),
-        ('WindowColor', [0, 0, 0])
-    ]
-
     def __init__(self,
                  name: str = None,
                  config_fp: str = None):
@@ -1402,9 +1377,19 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
 
         try:
             if field_name is None:
-                return self.config_data[_key]
+                try:
+                    return self.config_data[_key]
+                except KeyError:
+                    self.config_data[_key] = CONFIG_DEFAULT_SETTINGS[_key]
+                    return self.config_data[_key]
             else:
-                return self.config_data[_key][field_name]
+                if _key not in self.config_data.keys():
+                    self.config_data[_key] = {field_name: CONFIG_DEFAULT_SETTINGS[_key]}
+                try:
+                    return self.config_data[_key][field_name]
+                except KeyError:
+                    self.config_data[_key][field_name] = CONFIG_DEFAULT_SETTINGS[_key]
+                    return self.config_data[_key][field_name]
         except KeyError:
             raise RuntimeError('Failed fetching configuration:', _key, field_name)
 
