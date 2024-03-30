@@ -542,7 +542,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         if show_contours:
             self.init_concentration_contours(
-                dim=dim, con_array=con_array, isovalues=isovalues, min_con=min_con, max_con=max_con, numIsos=num_isos
+                dim=dim, con_array=con_array, isovalues=isovalues, min_con=min_con, max_con=max_con, num_isos=num_isos
             )
         else:
             self.init_concentration_outer_shell(
@@ -552,7 +552,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
                 isovalues=isovalues,
                 min_con=min_con,
                 max_con=max_con,
-                numIsos=num_isos,
+                num_isos=num_isos,
             )
 
         concentration_actor = actors_dict["concentration_actor"]

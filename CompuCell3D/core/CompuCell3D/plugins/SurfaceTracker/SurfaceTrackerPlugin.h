@@ -40,6 +40,7 @@ namespace CompuCell3D {
         const LatticeMultiplicativeFactors &getLatticeMultiplicativeFactors() const { return lmf; }
 
         unsigned int getMaxNeighborIndex() { return maxNeighborIndex; }
+        virtual void setNeighborOrder(unsigned int);
 
         virtual void field3DChange(const Point3D &pt, CellG *newCell,
                                    CellG *oldCell);

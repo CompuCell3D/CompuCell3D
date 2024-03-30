@@ -9,6 +9,7 @@ using namespace std;
 #include "SurfacePlugin.h"
 #include <Logger/CC3DLogger.h>
 
+
 SurfacePlugin::~SurfacePlugin() {}
 
 void SurfacePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
@@ -23,9 +24,13 @@ void SurfacePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
                                                                                          &pluginAlreadyRegisteredFlag);
 
     CC3D_Log(LOG_DEBUG) << "GOT HERE BEFORE CALLING INIT";
-    if (!pluginAlreadyRegisteredFlag)
+    if (!pluginAlreadyRegisteredFlag) {
         plugin->init(simulator);
 
+        if (_xmlData->getFirstElement("NeighborOrder")){
+            plugin->setNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());
+        }
+    }
     pUtils = simulator->getParallelUtils();
 
     pluginName = _xmlData->getAttribute("Name");
