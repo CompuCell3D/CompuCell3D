@@ -140,8 +140,7 @@ class LatticeDataSummaryReader:
         type_id_type_name_cpp_map = CC3DXML.MapIntStr(
             {int(type_id):type_id_type_name_dict[type_id] for type_id in list(type_id_type_name_dict.keys()) }
         )
-        # for type_id in list(type_id_type_name_dict.keys()):
-        #     type_id_type_name_cpp_map[int(type_id)] = type_id_type_name_dict[type_id]
+
         return type_id_type_name_cpp_map
 
     @staticmethod
