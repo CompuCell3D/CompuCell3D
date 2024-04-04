@@ -67,7 +67,10 @@ namespace CompuCell3D {
         std::vector <std::vector<float>> hexDistanceArrayVoxelCopy;
         std::vector <std::vector<unsigned int>> hexNeighborOrderIndexArrayVoxelCopy;
 
-
+//        std::vector <Point3D> *offsetVecPtr= nullptr;
+//        std::vector<float> * distanceVecPtr= nullptr;
+//        std::vector <std::vector<Point3D> > *hexOffsetArrayPtr = nullptr;
+//        std::vector <std::vector<float> > *hexDistanceArrayPtr = nullptr;
 
         bool checkIfOffsetAlreadyStacked(Point3D &, std::vector <Point3D> &) const;
 
@@ -227,6 +230,18 @@ namespace CompuCell3D {
 
         Neighbor
         getNeighborDirect(Point3D &pt, unsigned int idx, bool checkBounds = true, bool calculatePtTrans = false) const;
+
+        Neighbor
+        getNeighborDirectVoxelCopy(Point3D &pt, unsigned int idx, bool checkBounds = true, bool calculatePtTrans = false) const;
+
+
+        Neighbor
+        getNeighborDirectImpl(
+                Point3D &pt, unsigned int idx, bool checkBounds, bool calculatePtTrans,
+                const std::vector <Point3D> & offsetVec,
+                const std::vector<float> &distanceVec,
+                const std::vector <std::vector<Point3D>> & hexOffsetArray,
+                const std::vector <std::vector<float>> & hexDistanceArray) const;
 
         Coordinates3D<double> calculatePointCoordinates(const Point3D &_pt) const;
 

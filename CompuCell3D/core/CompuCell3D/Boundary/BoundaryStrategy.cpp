@@ -32,8 +32,6 @@ BoundaryStrategy *BoundaryStrategy::singleton;
 
 BoundaryStrategy::BoundaryStrategy() {
     boundaryConditionIndicator.assign(3, 0);
-
-
     strategy_x = BoundaryFactory::createBoundary(BoundaryFactory::no_flux);
     strategy_y = BoundaryFactory::createBoundary(BoundaryFactory::no_flux);
     strategy_z = BoundaryFactory::createBoundary(BoundaryFactory::no_flux);
@@ -46,6 +44,14 @@ BoundaryStrategy::BoundaryStrategy() {
     maxNeighborOrder = 0;
 
     unsigned int maxHexArraySize = 6;
+
+//    offsetVecPtr= & this->offsetVec;;
+//    distanceVecPtr= & this->distanceVec;
+//
+//    hexOffsetArrayPtr = & this->hexOffsetArray;
+//    hexDistanceArrayPtr = & this->hexDistanceArray;
+
+
 
 #ifdef _DEBUG
     CC3D_Log(LOG_DEBUG) << "maxHexArraySize=" << maxHexArraySize;
@@ -78,6 +84,14 @@ BoundaryStrategy::BoundaryStrategy(const string &boundary_x, const string &bound
     maxNeighborOrder = 0;
     //unsigned int maxHexArraySize=(Y_ODD|Z_ODD|X_ODD|Y_EVEN|Z_EVEN|X_EVEN)+1;
     unsigned int maxHexArraySize = 6;
+
+//    offsetVecPtr= & this->offsetVec;;
+//    distanceVecPtr= & this->distanceVec;
+//
+//    hexOffsetArrayPtr = & this->hexOffsetArray;
+//    hexDistanceArrayPtr = & this->hexDistanceArray;
+
+
 #ifdef _DEBUG
     CC3D_Log(LOG_DEBUG) << "\t\t\t\t\t\t\t CALLING SPECILIZED CONSTRUCTOR FOR BOUNDARY STRATEGY";
     CC3D_Log(LOG_DEBUG) << "maxHexArraySize=" << maxHexArraySize;
@@ -472,6 +486,11 @@ void BoundaryStrategy::prepareNeighborListsSquare(float _maxDistance) {
     this->distanceVecVoxelCopy = distanceVec;
     this->neighborOrderIndexVecVoxelCopy = neighborOrderIndexVec;
 
+    for (size_t i = 0; i < offsetVec.size(); ++i) {
+        cerr<<"i="<<i<<" offsetVec="<<offsetVec[i]<<" distanceVec="<<distanceVec[i]<<" neighborOrderIndexVec="<<neighborOrderIndexVec[i]<<endl;
+    }
+
+
     // removing offsets where z != 0
     if (this->dimensionType == DIM_2_5) {
         this->prepare_2_5_d_voxel_copy_neighbors(this->offsetVecVoxelCopy, this->distanceVecVoxelCopy,
@@ -491,18 +510,52 @@ void BoundaryStrategy::prepare_2_5_d_voxel_copy_neighbors(std::vector<Point3D> &
                                                           std::vector<float> &distanceVecTemplate,
                                                           std::vector<unsigned int> &neighborOrderIndexVecTemplate) {
     // Check dimensions and remove elements accordingly
-    for (size_t i = 0; i < offsetVecTemplate.size(); ++i) {
-        if (offsetVecTemplate[i].z != 0) {
+    cerr<<"prepare_2_5_d_voxel_copy_neighbors"<<endl;
+    std::vector<Point3D> offsetVecNew;
+    std::vector<float> distanceVecNew;
+    std::vector<unsigned int> neighborOrderIndexVecNew;
 
-            offsetVecTemplate.erase(offsetVecTemplate.begin() + i);
-            distanceVecTemplate.erase(distanceVecTemplate.begin() + i);
-            neighborOrderIndexVecTemplate.erase(neighborOrderIndexVecTemplate.begin() + i);
-            // Adjust index as we erased an element
-            --i;
-        }
+
+    for (size_t i = 0; i < offsetVecTemplate.size(); ++i) {
+        cerr<<"i="<<i<<" offsetVecTemplate="<<offsetVecTemplate[i]<<" distanceVecTemplate="<<distanceVecTemplate[i]<<" neighborOrderIndexVecTemplate="<<neighborOrderIndexVecTemplate[i]<<endl;
     }
 
+
+    for (size_t i = 0; i < offsetVecTemplate.size(); ++i) {
+        if (offsetVecTemplate[i].z == 0){
+            offsetVecNew.push_back(offsetVecTemplate[i]);
+            distanceVecNew.push_back(distanceVecTemplate[i]);
+            neighborOrderIndexVecNew.push_back(neighborOrderIndexVecTemplate[i]);
+        }
+
+//        if (offsetVecTemplate[i].z != 0) {
+//
+//            offsetVecTemplate.erase(offsetVecTemplate.begin() + i);
+//            distanceVecTemplate.erase(distanceVecTemplate.begin() + i);
+//            neighborOrderIndexVecTemplate.erase(neighborOrderIndexVecTemplate.begin() + i);
+//            // Adjust index as we erased an element
+//            --i;
+//        }
+    }
+    offsetVecTemplate.assign(offsetVecNew.begin(), offsetVecNew.end());
+    distanceVecTemplate.assign(distanceVecNew.begin(), distanceVecNew.end());
+    neighborOrderIndexVecTemplate.assign(neighborOrderIndexVecNew.begin(), neighborOrderIndexVecNew.end());
+    cerr<<"prepare_2_5_d_voxel_copy_neighbors DONE"<<endl;
+
+
+    for (size_t i = 0; i < offsetVecTemplate.size(); ++i) {
+        cerr<<"i="<<i<<" offsetVecTemplate="<<offsetVecTemplate[i]<<" distanceVecTemplate="<<distanceVecTemplate[i]<<" neighborOrderIndexVecTemplate="<<neighborOrderIndexVecTemplate[i]<<endl;
+    }
+
+//    offsetVecPtr= & this->offsetVec;;
+//    distanceVecPtr= & this->distanceVec;
+//
+//    hexOffsetArrayPtr = & this->hexOffsetArray;
+//    hexDistanceArrayPtr = & this->hexDistanceArray;
+
+
 }
+
 
 LatticeMultiplicativeFactors BoundaryStrategy::getLatticeMultiplicativeFactors() const {
     return lmf;
@@ -1119,14 +1172,114 @@ Coordinates3D<double> BoundaryStrategy::calculatePointCoordinates(const Point3D 
 
 Neighbor
 BoundaryStrategy::getNeighborDirect(Point3D &pt, unsigned int idx, bool checkBounds, bool calculatePtTrans) const {
+    return getNeighborDirectImpl(pt, idx,checkBounds, calculatePtTrans,
+                                 offsetVec, distanceVec,
+                                 hexOffsetArray, hexDistanceArray);
+
+//    Neighbor n;
+//    unsigned int indexHex;
+//
+//    if (latticeType == HEXAGONAL_LATTICE) {
+//        indexHex = (pt.z % 3) * 2 + (pt.y % 2);
+//        // todo - add handling of dimension type
+//        n.pt = pt + hexOffsetArray[indexHex][idx];
+//
+//    } else {
+//        n.pt = pt + offsetVec[idx];
+//    }
+//
+//    //Here I will add condition  if (flagField[pt] ) ...
+//
+//    if (!checkBounds || isValid(n.pt)) {
+//
+//        // Valid Neighbor
+//        n.ptTrans = calculatePointCoordinates(n.pt);
+//        if (latticeType == HEXAGONAL_LATTICE) {
+//            n.distance = hexDistanceArray[indexHex][idx];
+//            if (calculatePtTrans)
+//                n.ptTrans = HexCoord(n.pt);
+//
+//        } else {
+//            n.distance = distanceVec[idx] * lmf.lengthMF;
+//            if (calculatePtTrans)
+//                n.ptTrans = Coordinates3D<double>(pt.x, pt.y, pt.z);
+//        }
+//
+//        return n;
+//
+//    } else {
+//
+//        if (regular) {
+//            bool x_bool;
+//            bool y_bool;
+//            bool z_bool;
+//            int x = n.pt.x;
+//            int y = n.pt.y;
+//            int z = n.pt.z;
+//
+//            // For each coordinate, if it is not valid, apply condition
+//            x_bool = (isValid(x, dim.x) ? true : strategy_x->applyCondition(x, dim.x));
+//            y_bool = (isValid(y, dim.y) ? true : strategy_y->applyCondition(y, dim.y));
+//            z_bool = (isValid(z, dim.z) ? true : strategy_z->applyCondition(z, dim.z));
+//
+//            // If all the coordinates of the neighbor are valid then return the
+//            // neighbor
+//            if (x_bool && y_bool && z_bool) {
+//                n.pt.x = x;
+//                n.pt.y = y;
+//                n.pt.z = z;
+//                n.ptTrans = calculatePointCoordinates(n.pt);
+//                if (latticeType == HEXAGONAL_LATTICE) {
+//                    n.distance = hexDistanceArray[indexHex][idx];
+//                    //                   n.ptTrans=HexCoord(n.pt);
+//                } else {
+//                    n.distance = distanceVec[idx] * lmf.lengthMF;
+//                    //                   n.ptTrans=Coordinates3D<double>(pt.x,pt.y,pt.z);
+//                }
+//                return n;
+//
+//            } else {
+//                //requesed neighbor does not belong to the lattice
+//                n.distance = 0.0;
+//                return n;
+//            }
+//
+//        }
+//
+//    }
+
+}
+
+Neighbor
+BoundaryStrategy::getNeighborDirectVoxelCopy(Point3D &pt, unsigned int idx, bool checkBounds , bool calculatePtTrans ) const{
+
+    Neighbor n = getNeighborDirectImpl(pt, idx,checkBounds, calculatePtTrans,
+                                       offsetVecVoxelCopy, distanceVecVoxelCopy,
+                                       hexOffsetArrayVoxelCopy, hexDistanceArrayVoxelCopy);
+    if (pt.z-n.pt.z) {
+        cerr << "pt=" << pt << "n=" << n.pt << " delta z " << pt.z - n.pt.z << endl;
+    }
+    return n;
+}
+
+
+Neighbor
+BoundaryStrategy::getNeighborDirectImpl(
+        Point3D &pt, unsigned int idx, bool checkBounds, bool calculatePtTrans,
+        const std::vector <Point3D> & offsetVec,
+        const std::vector<float> &distanceVec,
+                                        const std::vector <std::vector<Point3D>> & hexOffsetArray,
+                                        const std::vector <std::vector<float>> & hexDistanceArray) const {
     Neighbor n;
     unsigned int indexHex;
 
     if (latticeType == HEXAGONAL_LATTICE) {
         indexHex = (pt.z % 3) * 2 + (pt.y % 2);
+        // todo - add handling of dimension type
         n.pt = pt + hexOffsetArray[indexHex][idx];
 
     } else {
+
         n.pt = pt + offsetVec[idx];
     }
 
@@ -1191,6 +1344,8 @@ BoundaryStrategy::getNeighborDirect(Point3D &pt, unsigned int idx, bool checkBou
     }
 
 }
+
+
 
 Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> &_coord) const {
     //this transformation takes coordinates of a point on ahex lattice and returns integer coordinates of cartesian pixel that is nearest given point on hex lattice 
