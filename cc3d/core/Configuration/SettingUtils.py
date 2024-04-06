@@ -1,8 +1,12 @@
 import os
 import shutil
 import sys
+from typing import Any, Dict
+import warnings
+from xml.etree import ElementTree
 
 from cc3d.core.DefaultSettingsData import *
+from .settingdict import SerializerUtil
 
 
 def load_settings(setting_path):
@@ -78,20 +82,35 @@ def _load_sql_settings(setting_path):
     return settings, setting_path
 
 
+def _default_setting_dir() -> str:
+    """
+    Returns path to default settings directory
+    """
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Configuration_settings')
+
+
 def _default_setting_path():
     """
     Returns path to default settings
 
     :return: {str} path
     """
-    dirn = os.path.dirname
-
     if sys.platform.startswith('darwin'):
         return os.path.abspath(
-            os.path.join(dirn(dirn(__file__)), 'Configuration_settings', 'osx', SETTINGS_FILE_NAME))
+            os.path.join(_default_setting_dir(), 'osx', SETTINGS_FILE_NAME))
     else:
         return os.path.abspath(
-            os.path.join(dirn(dirn(__file__)), 'Configuration_settings', SETTINGS_FILE_NAME))
+            os.path.join(_default_setting_dir(), SETTINGS_FILE_NAME))
+
+
+def _default_setting_path_xml() -> str:
+    """
+    Returns the path to the default settings xml data
+    """
+    if sys.platform.startswith('darwin'):
+        return os.path.join(_default_setting_dir(), SETTINGS_XML_OSX_FILE_NAME)
+    else:
+        return os.path.join(_default_setting_dir(), SETTINGS_XML_FILE_NAME)
 
 
 def _global_settings_dir():
@@ -212,3 +231,56 @@ def synchronize_global_and_default_settings(default_settings, global_settings, g
 
 def synchronizeGlobalAndDefaultSettings(default_settings, global_settings, global_settings_path):
     return synchronize_global_and_default_settings(default_settings, global_settings, global_settings_path)
+
+
+def _handle_settings_value_xml(_val: str):
+    """
+    Handles data intended for sqlite but used in python types
+    """
+    if _val == 'True':
+        return '1'
+    elif _val == 'False':
+        return '0'
+    return _val
+
+
+def _warn_setting_not_set(_el):
+    warnings.warn(f'Setting not set: {_el.attrib["Name"]}')
+
+
+def default_settings_dict_xml() -> Dict[str, Any]:
+    """
+    Returns default data dictionary
+    """
+    fp = _default_setting_path_xml()
+    if not os.path.isfile(fp):
+        warnings.warn(f'Could not located default settings data ({fp})')
+        return {}
+
+    data_root = ElementTree.parse(fp).getroot()
+    sz_util = SerializerUtil()
+
+    def _import_data(_el):
+        _val_text = _handle_settings_value_xml(_el.text)
+        _type_fcn = sz_util.type_2_deserializer_dict[_el.attrib['Type']]
+        return _el.attrib['Name'], _type_fcn(_val_text)
+
+    # "e" is the XML tag of interest for settings
+    result = {}
+    for el in data_root.findall('Settings'):
+        for el_e in el.findall('e'):
+            if el_e.attrib['Type'] == 'dict':
+                result_e = {}
+                for el_e_e in el_e.findall('e'):
+                    try:
+                        result_e.__setitem__(*_import_data(el_e_e))
+                    except (KeyError, TypeError):
+                        _warn_setting_not_set(el_e_e)
+                result[el_e.attrib['Name']] = result_e
+            else:
+                try:
+                    result.__setitem__(*_import_data(el_e))
+                except (KeyError, TypeError):
+                    _warn_setting_not_set(el_e)
+
+    return result
