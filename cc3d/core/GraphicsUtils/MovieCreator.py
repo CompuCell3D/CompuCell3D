@@ -1,33 +1,33 @@
 # -*- coding: utf-8 -*-
-import os
 import subprocess
 import tempfile
+from pathlib import Path
 
 
-def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True):
+def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True) -> tuple[int, Path]:
     """
     :param simulationPath: a string path to a directory with a .cc3d file and screenshot directories
     :param frameRate: an int >= 1
     :param quality: an int 1-10 (inclusive)
     :param enableDrawingMCS: when set to true, draws the MCS of each frame onto the video
                              (recommended, but makes movie creation slower)
-    :return: a tuple with: 1) the number of movies created and 2) the path to the dir where movies
+    :return: a tuple with: 1) the number of movies created and 2) the Path to the dir where movies
                              were generated.
     """
     # Credit to https://stackoverflow.com/q/49581846/16519580 user 'Makes' for the text overlay FFMPEG command.
     # Credit to https://superuser.com/a/939386 uer 'llogan' for the text positioning in the FFMPEG command.
 
-    if not os.path.exists(simulationPath):
-        print(f"Error: Could not make movie inside unknown directory `{simulationPath}`")
+    simulationPath = Path(simulationPath)
+    if not simulationPath.exists():
+        print(f"Error: Could not make movie inside unknown directory `{simulationPath.absolute()}`")
         return 0
 
-    print("Making movie inside `", simulationPath, "`")
+    print("Making movie inside `", simulationPath.absolute(), "`")
     movieCount = 0
     outputPath = None
 
-    for visualizationName in sorted(os.listdir(simulationPath)):
-        inputPath = os.path.join(simulationPath, visualizationName)
-        if not os.path.isdir(inputPath):
+    for inputPath in sorted(simulationPath.glob('*')):
+        if not inputPath.is_dir():
             continue
 
         # 'delete=True' removes the temporary file when it is closed.
@@ -40,10 +40,10 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True):
                 """
                 frameCount = 0
                 duration = 1 / max(frameRate, 1)
-                for fileNameExt in sorted(os.listdir(inputPath)):
-                    fileName, fileExtension = os.path.splitext(fileNameExt)
+                for p in sorted(inputPath.glob('*')):
+                    fileName, fileExtension = p.stem, p.suffix
                     if fileExtension.lower() == ".png":
-                        tempFile.write(f"file '{fileNameExt}'\n")
+                        tempFile.write(f"file '{p.name}'\n")
 
                         # Note: frameRate has to be excluded in the FFMPEG command.
                         # Instead, we use `duration` inside the input file.
@@ -70,14 +70,13 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True):
                 if frameCount > 0:
                     # Number the file name so that it does not overwrite another movie
                     fileNumber = 0
-                    outputPath = os.path.join(simulationPath, "movies")
-                    subprocess.run([
-                        "mkdir", outputPath
-                    ])
+                    outputPath = Path(simulationPath).joinpath("movies")
+                    outputPath.mkdir(parents=True, exist_ok=True)
 
-                    while os.path.exists(os.path.join(outputPath, f"{visualizationName}_{fileNumber}.mp4")):
+                    visualizationName = inputPath.name
+                    while outputPath.joinpath(f"{visualizationName}_v{fileNumber}.mp4").exists():
                         fileNumber += 1
-                    outputPath = os.path.join(outputPath, f"{visualizationName}_{fileNumber}.mp4")
+                    outputPath = outputPath.joinpath(f"{visualizationName}_v{fileNumber}.mp4")
 
                     commandArgs = [
                         "ffmpeg",
@@ -92,16 +91,16 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True):
 
                     if enableDrawingMCS:
                         commandArgs.append("-filter_complex")
-                        commandArgs.append(f"[0:v]sendcmd=f={os.path.basename(textOverlayFile.name)},drawtext=fontfile=PF.ttf:text='':fontcolor=white:fontsize=20")
+                        commandArgs.append(f"[0:v]sendcmd=f={Path(textOverlayFile.name).name},drawtext=fontfile=PF.ttf:text='':fontcolor=white:fontsize=20")
 
-                    commandArgs.append(outputPath)
+                    commandArgs.append(str(outputPath.resolve()))
                     subprocess.run(commandArgs, cwd=inputPath)
 
-                    if os.path.exists(outputPath):
+                    if outputPath.exists():
                         movieCount += 1
 
-                os.remove(textOverlayFile.name)
-            os.remove(tempFile.name)
+                Path(textOverlayFile.name).unlink()
+            Path(tempFile.name).unlink()
 
     print(f"Created {movieCount} movies inside `{simulationPath}` with frame rate {frameRate} and quality {quality}/51.")
     return movieCount, outputPath
