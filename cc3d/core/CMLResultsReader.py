@@ -137,9 +137,10 @@ class LatticeDataSummaryReader:
     def extract_cell_type_cpp_info_from_file_name(_lds_file: str) -> CC3DXML.MapIntStr:
         _lds_file = LatticeDataSummaryReader.lds_file_check(_lds_file)
         type_id_type_name_dict = LatticeDataSummaryReader.extract_cell_type_info_from_file_name(_lds_file)
-        type_id_type_name_cpp_map = CC3DXML.MapIntStr()
-        for type_id in list(type_id_type_name_dict.keys()):
-            type_id_type_name_cpp_map[int(type_id)] = type_id_type_name_dict[type_id]
+        type_id_type_name_cpp_map = CC3DXML.MapIntStr(
+            {int(type_id):type_id_type_name_dict[type_id] for type_id in list(type_id_type_name_dict.keys()) }
+        )
+
         return type_id_type_name_cpp_map
 
     @staticmethod
