@@ -764,7 +764,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData) {
 
 	CC3D_Log(LOG_DEBUG) << "ppdCC3DPtr->latticeType = " << ppdCC3DPtr->latticeType;
     CC3D_Log(LOG_DEBUG) << "ppdCC3DPtr->dimensionType = " << ppdCC3DPtr->dimensionType;
-    cerr<<"ppdCC3DPtr->dimensionType = " << ppdCC3DPtr->dimensionType;
+
 
 
     changeToLower(ppdCC3DPtr->latticeType);

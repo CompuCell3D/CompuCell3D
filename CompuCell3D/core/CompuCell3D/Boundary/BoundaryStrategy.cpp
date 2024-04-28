@@ -486,10 +486,11 @@ void BoundaryStrategy::prepareNeighborListsSquare(float _maxDistance) {
     this->distanceVecVoxelCopy = distanceVec;
     this->neighborOrderIndexVecVoxelCopy = neighborOrderIndexVec;
 
+#ifdef _DEBUG
     for (size_t i = 0; i < offsetVec.size(); ++i) {
         cerr<<"i="<<i<<" offsetVec="<<offsetVec[i]<<" distanceVec="<<distanceVec[i]<<" neighborOrderIndexVec="<<neighborOrderIndexVec[i]<<endl;
     }
-
+#endif
 
     // removing offsets where z != 0
     if (this->dimensionType == DIM_2_5) {
@@ -510,16 +511,19 @@ void BoundaryStrategy::prepare_2_5_d_voxel_copy_neighbors(std::vector<Point3D> &
                                                           std::vector<float> &distanceVecTemplate,
                                                           std::vector<unsigned int> &neighborOrderIndexVecTemplate) {
     // Check dimensions and remove elements accordingly
-    cerr<<"prepare_2_5_d_voxel_copy_neighbors"<<endl;
+#ifdef _DEBUG
+    cerr<<"INSIDE prepare_2_5_d_voxel_copy_neighbors"<<endl;
+#endif
+
     std::vector<Point3D> offsetVecNew;
     std::vector<float> distanceVecNew;
     std::vector<unsigned int> neighborOrderIndexVecNew;
 
-
+#ifdef _DEBUG
     for (size_t i = 0; i < offsetVecTemplate.size(); ++i) {
         cerr<<"i="<<i<<" offsetVecTemplate="<<offsetVecTemplate[i]<<" distanceVecTemplate="<<distanceVecTemplate[i]<<" neighborOrderIndexVecTemplate="<<neighborOrderIndexVecTemplate[i]<<endl;
     }
-
+#endif
 
     for (size_t i = 0; i < offsetVecTemplate.size(); ++i) {
         if (offsetVecTemplate[i].z == 0){
@@ -540,6 +544,7 @@ void BoundaryStrategy::prepare_2_5_d_voxel_copy_neighbors(std::vector<Point3D> &
     offsetVecTemplate.assign(offsetVecNew.begin(), offsetVecNew.end());
     distanceVecTemplate.assign(distanceVecNew.begin(), distanceVecNew.end());
     neighborOrderIndexVecTemplate.assign(neighborOrderIndexVecNew.begin(), neighborOrderIndexVecNew.end());
+#ifdef _DEBUG
     cerr<<"prepare_2_5_d_voxel_copy_neighbors DONE"<<endl;
 
 
@@ -547,6 +552,7 @@ void BoundaryStrategy::prepare_2_5_d_voxel_copy_neighbors(std::vector<Point3D> &
         cerr<<"i="<<i<<" offsetVecTemplate="<<offsetVecTemplate[i]<<" distanceVecTemplate="<<distanceVecTemplate[i]<<" neighborOrderIndexVecTemplate="<<neighborOrderIndexVecTemplate[i]<<endl;
     }
 
+#endif
 //    offsetVecPtr= & this->offsetVec;;
 //    distanceVecPtr= & this->distanceVec;
 //
@@ -807,10 +813,11 @@ CC3D_Log(LOG_TRACE) << "  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_
     hexOffsetArrayVoxelCopy = hexOffsetArray;
     hexDistanceArrayVoxelCopy = hexDistanceArray;
     hexNeighborOrderIndexArrayVoxelCopy = hexNeighborOrderIndexArray;
-
-    for (size_t i = 0; i < hexOffsetArrayVoxelCopy.size(); ++i) {
-        prepare_2_5_d_voxel_copy_neighbors(hexOffsetArrayVoxelCopy[i], hexDistanceArrayVoxelCopy[i],
-                                           hexNeighborOrderIndexArrayVoxelCopy[i]);
+    if (this->dimensionType == DIM_2_5) {
+        for (size_t i = 0; i < hexOffsetArrayVoxelCopy.size(); ++i) {
+            prepare_2_5_d_voxel_copy_neighbors(hexOffsetArrayVoxelCopy[i], hexDistanceArrayVoxelCopy[i],
+                                               hexNeighborOrderIndexArrayVoxelCopy[i]);
+        }
     }
 
 
@@ -1256,9 +1263,11 @@ BoundaryStrategy::getNeighborDirectVoxelCopy(Point3D &pt, unsigned int idx, bool
     Neighbor n = getNeighborDirectImpl(pt, idx,checkBounds, calculatePtTrans,
                                        offsetVecVoxelCopy, distanceVecVoxelCopy,
                                        hexOffsetArrayVoxelCopy, hexDistanceArrayVoxelCopy);
+#ifdef _DEBUG
     if (pt.z-n.pt.z) {
         cerr << "pt=" << pt << "n=" << n.pt << " delta z " << pt.z - n.pt.z << endl;
     }
+#endif
     return n;
 }
 
