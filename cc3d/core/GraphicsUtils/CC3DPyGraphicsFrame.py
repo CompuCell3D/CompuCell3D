@@ -5,6 +5,7 @@ Defines features for interactive visualization for use with CC3D simservice appl
 # todo: add CC3D logo to window title icon
 # todo: disable built-in key commands for closing render windows
 # todo: add support for additional plots (e.g., tracking fields)
+# todo: improve synchronization to allow asynchronous execution and visualization while handling race conditions
 
 import json
 import multiprocessing
@@ -1409,7 +1410,8 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
         field_writer.addCellFieldForOutput()
 
         if self._field_name != 'Cell_Field':
-            field_writer.addFieldForOutput(self._field_name)
+            if not field_writer.addFieldForOutput(self._field_name):
+                warnings.warn(f'Failed to add field for output: {self._field_name}', RuntimeWarning)
 
         return FieldStreamerDataPy.from_base(FieldStreamer.dump(field_writer))
 
