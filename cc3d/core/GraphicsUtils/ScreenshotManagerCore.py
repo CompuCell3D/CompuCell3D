@@ -81,6 +81,36 @@ class ScreenshotManagerCore(object):
             screenshot_name = screenshot_core_name + "_" + _scrData.spaceDimension + "_" + str(self.screenshotCounter3D)
         return (screenshot_name, screenshot_core_name)
 
+    @staticmethod
+    def starting_screenshot_description_data():
+        """Generates the start of screenshot description data"""
+
+        root_elem = OrderedDict()
+        root_elem['Version'] = cc3d.__version__
+        root_elem['ScreenshotData'] = OrderedDict()
+        return root_elem
+
+    @staticmethod
+    def append_screenshot_description_data(root_elem: dict, data_elem: dict):
+        """
+        Append a screenshot data element
+
+        :param root_elem: screenshot data
+        :param data_elem: data element for a field
+        """
+
+        root_elem['ScreenshotData'][data_elem['Plot']['PlotName']] = data_elem
+
+    def generate_screenshot_description_data(self):
+        """Generates screenshot description data"""
+
+        root_elem = self.starting_screenshot_description_data()
+
+        for name in self.screenshotDataDict:
+            self.append_screenshot_description_data(root_elem, self.screenshotDataDict[name].to_json())
+
+        return root_elem
+
     def write_screenshot_description_file_json(self, filename):
         """
         Writes JSON format of screenshot description file
@@ -88,73 +118,8 @@ class ScreenshotManagerCore(object):
         :return: None
         """
 
-        root_elem = OrderedDict()
-        root_elem['Version'] = cc3d.__version__
-        root_elem['ScreenshotData'] = OrderedDict()
-
-        scr_container_elem = root_elem['ScreenshotData']
-
-        for name in self.screenshotDataDict:
-            scr_data = self.screenshotDataDict[name]
-            scr_container_elem[name] = OrderedDict()
-            scr_elem = scr_container_elem[name]
-            scr_elem['Plot'] = {'PlotType': str(scr_data.plotData[1]), 'PlotName': str(scr_data.plotData[0])}
-
-            if scr_data.spaceDimension == '2D':
-                scr_elem['Dimension'] = '2D'
-
-                scr_elem['Projection'] = {'ProjectionPlane': scr_data.projection,
-                                          'ProjectionPosition': int(scr_data.projectionPosition)}
-
-            if scr_data.spaceDimension == '3D':
-                scr_elem['Dimension'] = '3D'
-                scr_elem['Projection'] = {'ProjectionPlane': None, 'ProjectionPosition': None}
-
-            scr_elem['CameraClippingRange'] = {
-                'Min': str(scr_data.clippingRange[0]),
-                'Max': str(scr_data.clippingRange[1])
-            }
-
-            scr_elem['CameraFocalPoint'] = {
-                'x': str(scr_data.focalPoint[0]),
-                'y': str(scr_data.focalPoint[1]),
-                'z': str(scr_data.focalPoint[2])
-            }
-
-            scr_elem['CameraPosition'] = {
-                'x': str(scr_data.position[0]),
-                'y': str(scr_data.position[1]),
-                'z': str(scr_data.position[2])
-            }
-
-            scr_elem['CameraViewUp'] = {
-                'x': str(scr_data.viewUp[0]),
-                'y': str(scr_data.viewUp[1]),
-                'z': str(scr_data.viewUp[2])
-            }
-
-            scr_elem['Size'] = {
-                'Width': int(scr_data.win_width),
-                'Height': int(scr_data.win_height)
-            }
-
-            scr_elem['CellBorders'] = bool(scr_data.cell_borders_on)
-            scr_elem['Cells'] = bool(scr_data.cells_on)
-            scr_elem['ClusterBorders'] = bool(scr_data.cluster_borders_on)
-            scr_elem['CellGlyphs'] = bool(scr_data.cell_glyphs_on)
-            scr_elem['FPPLinks'] = bool(scr_data.fpp_links_on)
-            scr_elem['BoundingBox'] = bool(scr_data.bounding_box_on)
-            scr_elem['LatticeAxes'] = bool(scr_data.lattice_axes_on)
-            scr_elem['LatticeAxesLabels'] = bool(scr_data.lattice_axes_labels_on)
-
-            if scr_data.invisible_types is None:
-                scr_data.invisible_types = []
-            scr_elem['TypesInvisible'] = scr_data.invisible_types
-
-            scr_elem['metadata'] = scr_data.metadata
-
         with open(str(filename), 'w') as f_out:
-            f_out.write(json.dumps(root_elem, indent=4))
+            f_out.write(json.dumps(self.generate_screenshot_description_data(), indent=4))
 
     def write_screenshot_description_file(self, filename):
         """
@@ -165,20 +130,12 @@ class ScreenshotManagerCore(object):
 
         self.write_screenshot_description_file_json(filename=filename)
 
-    def read_screenshot_description_file_json(self, filename):
+    def read_screenshot_description_data(self, root_elem):
         """
-        parses screenshot description JSON file and stores instances ScreenshotData in appropriate
-        container
-        :param filename: {str} json file name
+        parses screenshot description data and stores instances ScreenshotData in appropriate container
+        :param root_elem: data
         :return: None
         """
-
-        with open(filename, 'r') as f_in:
-            root_elem = json.load(f_in)
-
-        if root_elem is None:
-            print(('Could not read screenshot description file {}'.format(filename)))
-            return
 
         version = root_elem['Version']
         scr_data_container = root_elem['ScreenshotData']
@@ -195,10 +152,22 @@ class ScreenshotManagerCore(object):
 
         screenshot_file_parser_fcn(scr_data_container)
 
-        # if version == '3.7.9':
-        #     self.readScreenshotDescriptionFile_JSON_379(scr_data_container)
-        # else:
-        #     raise RuntimeError('Unknown version of screenshot description: {}'.format(version))
+    def read_screenshot_description_file_json(self, filename):
+        """
+        parses screenshot description JSON file and stores instances ScreenshotData in appropriate
+        container
+        :param filename: {str} json file name
+        :return: None
+        """
+
+        with open(filename, 'r') as f_in:
+            root_elem = json.load(f_in)
+
+        if root_elem is None:
+            print(('Could not read screenshot description file {}'.format(filename)))
+            return
+
+        self.read_screenshot_description_data(root_elem)
 
     def read_screenshot_description_file_json_379(self, scr_data_container):
         """
@@ -208,73 +177,7 @@ class ScreenshotManagerCore(object):
         :return: None
         """
         for scr_name, scr_data_elem in list(scr_data_container.items()):
-            scr_data = ScreenshotData()
-            scr_data.screenshotName = scr_name
-
-            scr_data.plotData = tuple(
-                [str(x) for x in (scr_data_elem['Plot']['PlotName'], scr_data_elem['Plot']['PlotType'])])
-            scr_data.spaceDimension = str(scr_data_elem['Dimension'])
-            try:
-                scr_data.projection = str(scr_data_elem['Projection']['ProjectionPlane'])
-                scr_data.projectionPosition = scr_data_elem['Projection']['ProjectionPosition']
-            except KeyError:
-                pass
-            scr_data.win_width = scr_data_elem['Size']['Width']
-            scr_data.win_height = scr_data_elem['Size']['Height']
-
-            scr_data.cell_borders_on = scr_data_elem['CellBorders']
-            scr_data.cells_on = scr_data_elem['Cells']
-            scr_data.cluster_borders_on = scr_data_elem['ClusterBorders']
-            scr_data.cell_glyphs_on = scr_data_elem['CellGlyphs']
-            scr_data.fpp_links_on = scr_data_elem['FPPLinks']
-            scr_data.bounding_box_on = scr_data_elem['BoundingBox']
-            scr_data.lattice_axes_on = scr_data_elem['LatticeAxes']
-            scr_data.lattice_axes_labels_on = scr_data_elem['LatticeAxesLabels']
-            scr_data.invisible_types = scr_data_elem['TypesInvisible']
-
-            cam_settings = []
-
-            clipping_range_element = scr_data_elem['CameraClippingRange']
-            cam_settings.append(float(clipping_range_element['Min']))
-            cam_settings.append(float(clipping_range_element['Max']))
-
-            focal_point_element = scr_data_elem['CameraFocalPoint']
-            cam_settings.append(float(focal_point_element['x']))
-            cam_settings.append(float(focal_point_element['y']))
-            cam_settings.append(float(focal_point_element['z']))
-
-            position_element = scr_data_elem['CameraPosition']
-            cam_settings.append(float(position_element['x']))
-            cam_settings.append(float(position_element['y']))
-            cam_settings.append(float(position_element['z']))
-
-            view_up_element = scr_data_elem['CameraViewUp']
-            cam_settings.append(float(view_up_element['x']))
-            cam_settings.append(float(view_up_element['y']))
-            cam_settings.append(float(view_up_element['z']))
-
-            scr_data.extractCameraInfoFromList(cam_settings)
-
-            # getting rid of unicode in the keys
-            metadata_dict = {}
-            for k, v in list(scr_data_elem['metadata'].items()):
-                metadata_dict[str(k)] = v
-
-            scr_data.metadata = metadata_dict
-
-            # checking for extra metadata entries added
-            # you may reset this list after bumping up the version of json file
-            # todo fix - we will be permissive as far as DisplayMinMaxInfo
-            # extra_metadata_keys = ['DisplayMinMaxInfo']
-            extra_metadata_keys = []
-
-            for key in extra_metadata_keys:
-                if key not in list(metadata_dict.keys()):
-                    raise KeyError('Missing key in the metadata: {}'.format(key))
-
-            # scr_data.screenshotGraphicsWidget = self.screenshotGraphicsWidget
-
-            self.screenshotDataDict[scr_data.screenshotName] = scr_data
+            self.screenshotDataDict[scr_name] = ScreenshotData.from_json(scr_data_elem, scr_name)
 
     @staticmethod
     def get_screenshot_filename() -> Union[str, None]:

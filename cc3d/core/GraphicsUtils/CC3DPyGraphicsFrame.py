@@ -6,6 +6,7 @@ Defines features for interactive visualization for use with CC3D simservice appl
 # todo: disable built-in key commands for closing render windows
 # todo: add support for additional plots (e.g., tracking fields)
 # todo: improve synchronization to allow asynchronous execution and visualization while handling race conditions
+# todo: implement setting a frame by provided screenshot data
 
 import json
 import multiprocessing
@@ -476,6 +477,19 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
 
         return self.metadata_data_dict[field_type][field_name]
 
+    def get_screenshot_data(self):
+        """
+        Computes/populates Screenshot Description data based on the current GUI configuration
+        for the current window
+
+        :return: computed screenshot data
+        :rtype: ScreenshotData
+        """
+
+        ss_data = self.compute_current_screenshot_data()
+        ss_data.extractCameraInfo(self.get_active_camera())
+        return ss_data
+
     def get_concentration_field_names(self) -> List[str]:
         """Get concentration field names from remote source"""
         return MsgGetConcFieldNames.request(self.conn, True)
@@ -671,6 +685,10 @@ class CC3DPyGraphicsFrameControlInterface:
     def close(self):
         """Close the graphics frame process"""
         self._process_message(ControlMessageShutdown())
+
+    def get_screenshot_data(self):
+        """Get screenshot data using the current frame configuration"""
+        return self._process_message(ControlMessageGetScreenshotData())
 
     def pull_metadata(self, _field_name: str):
         """Update field metadata storage on a frame for a field"""
@@ -1213,6 +1231,11 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
             warnings.warn(f'Failed to close: {str(e)}', RuntimeWarning)
             return False
 
+    def get_screenshot_data(self):
+        """Get screenshot data using the current frame configuration"""
+
+        return self._frame_controller.get_screenshot_data()
+
     def pull_metadata(self, _field_name: str):
         """Update field metadata storage on a frame for a field"""
 
@@ -1646,6 +1669,11 @@ class CC3DPyGraphicsFrameClientProxy:
         rval = self._process_ret_msg('close')
         self._executor_conn.send(None)
         return rval
+
+    def get_screenshot_data(self):
+        """Get screenshot data using the current frame configuration"""
+
+        return self._process_ret_msg('get_screenshot_data')
 
     def pull_metadata(self, _field_name: str):
         """Update field metadata storage on a frame for a field"""
