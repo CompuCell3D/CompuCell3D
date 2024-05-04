@@ -43,20 +43,6 @@ BoundaryStrategy::BoundaryStrategy() {
     dimensionType = DIM_DEFAULT;
     maxNeighborOrder = 0;
 
-    unsigned int maxHexArraySize = 6;
-
-//    offsetVecPtr= & this->offsetVec;;
-//    distanceVecPtr= & this->distanceVec;
-//
-//    hexOffsetArrayPtr = & this->hexOffsetArray;
-//    hexDistanceArrayPtr = & this->hexDistanceArray;
-
-
-
-#ifdef _DEBUG
-    CC3D_Log(LOG_DEBUG) << "maxHexArraySize=" << maxHexArraySize;
-    CC3D_Log(LOG_DEBUG) << "\t\t\t\t\t\t\t CALLING DEFAULT CONSTRUCTOR FOR BOUNDARY STRATEGY";
-#endif
 
 }
 
@@ -82,21 +68,6 @@ BoundaryStrategy::BoundaryStrategy(const string &boundary_x, const string &bound
     this->latticeType = latticeType;
     this->dimensionType = dimensionType;
     maxNeighborOrder = 0;
-    //unsigned int maxHexArraySize=(Y_ODD|Z_ODD|X_ODD|Y_EVEN|Z_EVEN|X_EVEN)+1;
-    unsigned int maxHexArraySize = 6;
-
-//    offsetVecPtr= & this->offsetVec;;
-//    distanceVecPtr= & this->distanceVec;
-//
-//    hexOffsetArrayPtr = & this->hexOffsetArray;
-//    hexDistanceArrayPtr = & this->hexDistanceArray;
-
-
-#ifdef _DEBUG
-    CC3D_Log(LOG_DEBUG) << "\t\t\t\t\t\t\t CALLING SPECILIZED CONSTRUCTOR FOR BOUNDARY STRATEGY";
-    CC3D_Log(LOG_DEBUG) << "maxHexArraySize=" << maxHexArraySize;
-
-#endif
 
 }
 
@@ -457,7 +428,8 @@ void BoundaryStrategy::prepareNeighborListsSquare(float _maxDistance) {
         // we are dealing with 2D case 
         dim_test_field = dim;
     } else {
-        // we are dealing with 3D case but we want to make sure that if we set one dimension to 2 we get center point that is truly in the middle of the lattice therefore minimum
+        // we are dealing with 3D case but we want to make sure that if we set one dimension to 2 we
+        // get center point that is truly in the middle of the lattice therefore minimum
         // dimension in 3D for a test field is set to 3
         dim_test_field.x = std::max((short) 3, dim.x);
         dim_test_field.y = std::max((short) 3, dim.y);
@@ -526,20 +498,13 @@ void BoundaryStrategy::prepare_2_5_d_voxel_copy_neighbors(std::vector<Point3D> &
 #endif
 
     for (size_t i = 0; i < offsetVecTemplate.size(); ++i) {
-        if (offsetVecTemplate[i].z == 0){
+        if (offsetVecTemplate[i].z == 0) {
             offsetVecNew.push_back(offsetVecTemplate[i]);
             distanceVecNew.push_back(distanceVecTemplate[i]);
             neighborOrderIndexVecNew.push_back(neighborOrderIndexVecTemplate[i]);
         }
 
-//        if (offsetVecTemplate[i].z != 0) {
-//
-//            offsetVecTemplate.erase(offsetVecTemplate.begin() + i);
-//            distanceVecTemplate.erase(distanceVecTemplate.begin() + i);
-//            neighborOrderIndexVecTemplate.erase(neighborOrderIndexVecTemplate.begin() + i);
-//            // Adjust index as we erased an element
-//            --i;
-//        }
+
     }
     offsetVecTemplate.assign(offsetVecNew.begin(), offsetVecNew.end());
     distanceVecTemplate.assign(distanceVecNew.begin(), distanceVecNew.end());
@@ -553,11 +518,6 @@ void BoundaryStrategy::prepare_2_5_d_voxel_copy_neighbors(std::vector<Point3D> &
     }
 
 #endif
-//    offsetVecPtr= & this->offsetVec;;
-//    distanceVecPtr= & this->distanceVec;
-//
-//    hexOffsetArrayPtr = & this->hexOffsetArray;
-//    hexDistanceArrayPtr = & this->hexDistanceArray;
 
 
 }
@@ -582,7 +542,7 @@ BoundaryStrategy::generateLatticeMultiplicativeFactors(LatticeType _latticeType,
         } else {//3D case for hex lattice
             //Volume of rhombic dodecahedron = 16/9 *sqrt(3)*b^3
             //Surface of rhombic dodecahedron = 9*sqrt(2)*b^2
-            //b - rhomb edge length
+            //b - rhombus edge length
             lFactors.volumeMF = 1.0;
             lFactors.surfaceMF = 8.0 / 12.0 * sqrt(2.0) * pow(9.0 / (16.0 * sqrt(3.0)), 1.0 / 3.0) *
                                  pow(9.0 / (16.0 * sqrt(3.0)), 1.0 / 3.0);
@@ -601,7 +561,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
 #ifdef _DEBUG
     CC3D_Log(LOG_DEBUG) << "INSIDE prepareNeighborListsHex";
 #endif
-    //unsigned int maxHexArraySize=(Y_ODD|Z_ODD|X_ODD|Y_EVEN|Z_EVEN|X_EVEN)+1;
+
 
     unsigned int maxHexArraySize = 6;
 
@@ -657,7 +617,8 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
         CC3D_Log(LOG_DEBUG) << "ctPtTmp.y % 2 =" << ctPtTmp.y % 2 << " ctPtTmp.y % 2=" << ctPtTmp.y % 2;
         CC3D_Log(LOG_TRACE) << "  WILL USE CENTER POINT="<<ctPtTmp<<"Y_EVEN|Z_EVEN "<<(Y_EVEN|Z_EVEN);
 #endif
-        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex], hexDistanceArray[indexHex],
+        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex],
+                               hexDistanceArray[indexHex],
                                hexNeighborOrderIndexArray[indexHex]);
 
     } else {//2D case
@@ -672,7 +633,8 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
 #ifdef _DEBUG
         CC3D_Log(LOG_DEBUG) << "even even ctPtTmp=" << ctPtTmp;
 #endif
-        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex], hexDistanceArray[indexHex],
+        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex],
+                               hexDistanceArray[indexHex],
                                hexNeighborOrderIndexArray[indexHex]);
 
     }
@@ -691,7 +653,8 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance) {
         CC3D_Log(LOG_DEBUG) << "ctPtTmp.y % 2 =" << ctPtTmp.y % 2 << " !ctPtTmp.y % 2=" << !(ctPtTmp.y % 2);
 CC3D_Log(LOG_TRACE) << "  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_ODD|Z_EVEN);
 #endif
-        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex], hexDistanceArray[indexHex],
+        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex],
+                               hexDistanceArray[indexHex],
                                hexNeighborOrderIndexArray[indexHex]);
 
     } else {//2D case
@@ -705,7 +668,8 @@ CC3D_Log(LOG_TRACE) << "  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_
 #ifdef _DEBUG
         CC3D_Log(LOG_DEBUG) << "odd even ctPtTmp=" << ctPtTmp;
 #endif
-        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex], hexDistanceArray[indexHex],
+        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex],
+                               hexDistanceArray[indexHex],
                                hexNeighborOrderIndexArray[indexHex]);
 
     }
@@ -721,7 +685,8 @@ CC3D_Log(LOG_TRACE) << "  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_
 
         ctPtTmp.z += 3 - ctPtTmp.z % 3 - 2;// make it divisible by 3 with z%3=1 in case it is not
 
-        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex], hexDistanceArray[indexHex],
+        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex],
+                               hexDistanceArray[indexHex],
                                hexNeighborOrderIndexArray[indexHex]);
 
     } else {//2D case
@@ -740,7 +705,8 @@ CC3D_Log(LOG_TRACE) << "  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_
         ctPtTmp.z += 3 - ctPtTmp.z % 3 - 2;// make it divisible by 3 with z%3=1 in case it is not
 
 
-        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex], hexDistanceArray[indexHex],
+        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex],
+                               hexDistanceArray[indexHex],
                                hexNeighborOrderIndexArray[indexHex]);
 
     } else {//2D case
@@ -759,7 +725,8 @@ CC3D_Log(LOG_TRACE) << "  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_
         ctPtTmp.z += 3 - ctPtTmp.z % 3 - 1;// make it divisible by 3 with z%3=2 in case it is not
 
 
-        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex], hexDistanceArray[indexHex],
+        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex],
+                               hexDistanceArray[indexHex],
                                hexNeighborOrderIndexArray[indexHex]);
 
     } else {//2D case
@@ -775,7 +742,8 @@ CC3D_Log(LOG_TRACE) << "  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_
         ctPtTmp.y += (ctPtTmp.y % 2 - 1); //make it odd
         ctPtTmp.z += 3 - ctPtTmp.z % 3 - 1;// make it divisible by 3 with z%3=2 in case it is not
 
-        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex], hexDistanceArray[indexHex],
+        getOffsetsAndDistances(ctPtTmp, _maxDistance, tempField, hexOffsetArray[indexHex],
+                               hexDistanceArray[indexHex],
                                hexNeighborOrderIndexArray[indexHex]);
 
     } else {//2D case
@@ -897,67 +865,17 @@ void BoundaryStrategy::prepareNeighborLists(float _maxDistance) {
         prepareNeighborListsSquare(_maxDistance);
     }
 
-    return;
 
 }
 
 unsigned int BoundaryStrategy::getMaxNeighborIndexFromNeighborOrderNoGen(unsigned int _neighborOrder) const {
+    //this function returns whatever maxNeighborIndex exist for a given neighbororder. If neighborOrder is higher that maxNeighborOrder
+    //this function DOES NOT generate extra offsets so the maxNeighborOrder may correspond to a smaller neighbor order than in the requested _neighborOrder
 
     return getMaxNeighborIndexFromNeighborOrderNoGenImpl(_neighborOrder,
                                                          distanceVec,
                                                          hexDistanceArray);
 
-//    //this function returns whatever maxNeighborIndex exist for a given neighbororder. If neighborOrder is higher that maxNeighborOrder
-//    //this function DOES NOT generate extra offsets so the maxNeighborOrder may correspond to a smaller neighbor order than in the requested _neighborOrder
-//
-//    //Now determine max neighbor index from a list of neighbor offsets
-//    unsigned int maxNeighborIndex = 0;
-//    unsigned int orderCounter = 1;
-//
-//
-//    if (latticeType == HEXAGONAL_LATTICE) {
-//        //unsigned int indexHex=Y_EVEN|Z_EVEN;
-//        unsigned int indexHex = 0;
-//        double currentDepth = hexDistanceArray[indexHex][0];
-//
-//
-//        for (int i = 0; i < hexDistanceArray[indexHex].size(); ++i) {
-//
-//            ++maxNeighborIndex;
-//            if (hexDistanceArray[indexHex][i] > (currentDepth +
-//                                                 0.005)) {//0.005 is to account for possible numerical approximations in double or float numbers
-//                currentDepth = hexDistanceArray[indexHex][i];
-//                ++orderCounter;
-//                if (orderCounter > _neighborOrder) {
-//                    maxNeighborIndex = i - 1;
-//                    return maxNeighborIndex;
-//                }
-//            }
-//        }
-//
-//        return --maxNeighborIndex;
-//
-//    } else {
-//
-//        double currentDepth = distanceVec[0];
-//
-//        for (int i = 0; i < distanceVec.size(); ++i) {
-//            ++maxNeighborIndex;
-//            if (distanceVec[i] > (currentDepth + 0.005)) {
-//                //0.005 is to account for possible numerical approximations in double or float numbers
-//                currentDepth = distanceVec[i];
-//                ++orderCounter;
-//
-//                if (orderCounter > _neighborOrder) {
-//                    maxNeighborIndex = i - 1;
-//
-//                    return maxNeighborIndex;
-//                }
-//            }
-//        }
-//
-//        return --maxNeighborIndex;
-//    }
 }
 
 
@@ -1068,7 +986,8 @@ void BoundaryStrategy::prepareNeighborListsBasedOnNeighborOrder(unsigned int _ne
 }
 
 unsigned int BoundaryStrategy::getMaxNeighborIndexFromNeighborOrder(unsigned int _neighborOrder) {
-    //this function first checks if there is  enough offsets generated and if not it generates extra offsets and then returns correct neighbor order
+    //this function first checks if there is  enough offsets generated
+    // and if not it generates extra offsets and then returns correct neighbor order
 
 
     //Now determine max neighbor index from a list of neighbor offsets
@@ -1092,37 +1011,9 @@ unsigned int BoundaryStrategy::getMaxNeighborIndexFromDepth(float depth) const {
             distanceVec,
             hexDistanceArray
     );
-//    //Now determine max neighbor index from a list of neighbor offsets
-//
-//    unsigned int maxNeighborIndex = 0;
-//
-//    if (latticeType == HEXAGONAL_LATTICE) {
-//        //unsigned int indexHex=Y_EVEN|Z_EVEN;
-//        unsigned int indexHex = 0;
-//
-//        for (int i = 0; i < hexDistanceArray[indexHex].size(); ++i) {
-//            maxNeighborIndex = i;
-//            if (hexDistanceArray[indexHex][i] > depth) {
-//                maxNeighborIndex = i - 1;
-//                break;
-//            }
-//        }
-//        return maxNeighborIndex;
-//
-//    } else {
-//
-//        for (int i = 0; i < distanceVec.size(); ++i) {
-//            maxNeighborIndex = i;
-//            if (distanceVec[i] > depth) {
-//                maxNeighborIndex = i - 1;
-//                break;
-//            }
-//        }
-//        return maxNeighborIndex;
-//    }
 }
 
-unsigned int BoundaryStrategy::getMaxNeighborIndexFromDepthVoxelCopy(float depth) const{
+unsigned int BoundaryStrategy::getMaxNeighborIndexFromDepthVoxelCopy(float depth) const {
     return getMaxNeighborIndexFromDepthImpl(
             depth,
             distanceVecVoxelCopy,
@@ -1179,88 +1070,16 @@ Coordinates3D<double> BoundaryStrategy::calculatePointCoordinates(const Point3D 
 
 Neighbor
 BoundaryStrategy::getNeighborDirect(Point3D &pt, unsigned int idx, bool checkBounds, bool calculatePtTrans) const {
-    return getNeighborDirectImpl(pt, idx,checkBounds, calculatePtTrans,
+    return getNeighborDirectImpl(pt, idx, checkBounds, calculatePtTrans,
                                  offsetVec, distanceVec,
                                  hexOffsetArray, hexDistanceArray);
-
-//    Neighbor n;
-//    unsigned int indexHex;
-//
-//    if (latticeType == HEXAGONAL_LATTICE) {
-//        indexHex = (pt.z % 3) * 2 + (pt.y % 2);
-//        // todo - add handling of dimension type
-//        n.pt = pt + hexOffsetArray[indexHex][idx];
-//
-//    } else {
-//        n.pt = pt + offsetVec[idx];
-//    }
-//
-//    //Here I will add condition  if (flagField[pt] ) ...
-//
-//    if (!checkBounds || isValid(n.pt)) {
-//
-//        // Valid Neighbor
-//        n.ptTrans = calculatePointCoordinates(n.pt);
-//        if (latticeType == HEXAGONAL_LATTICE) {
-//            n.distance = hexDistanceArray[indexHex][idx];
-//            if (calculatePtTrans)
-//                n.ptTrans = HexCoord(n.pt);
-//
-//        } else {
-//            n.distance = distanceVec[idx] * lmf.lengthMF;
-//            if (calculatePtTrans)
-//                n.ptTrans = Coordinates3D<double>(pt.x, pt.y, pt.z);
-//        }
-//
-//        return n;
-//
-//    } else {
-//
-//        if (regular) {
-//            bool x_bool;
-//            bool y_bool;
-//            bool z_bool;
-//            int x = n.pt.x;
-//            int y = n.pt.y;
-//            int z = n.pt.z;
-//
-//            // For each coordinate, if it is not valid, apply condition
-//            x_bool = (isValid(x, dim.x) ? true : strategy_x->applyCondition(x, dim.x));
-//            y_bool = (isValid(y, dim.y) ? true : strategy_y->applyCondition(y, dim.y));
-//            z_bool = (isValid(z, dim.z) ? true : strategy_z->applyCondition(z, dim.z));
-//
-//            // If all the coordinates of the neighbor are valid then return the
-//            // neighbor
-//            if (x_bool && y_bool && z_bool) {
-//                n.pt.x = x;
-//                n.pt.y = y;
-//                n.pt.z = z;
-//                n.ptTrans = calculatePointCoordinates(n.pt);
-//                if (latticeType == HEXAGONAL_LATTICE) {
-//                    n.distance = hexDistanceArray[indexHex][idx];
-//                    //                   n.ptTrans=HexCoord(n.pt);
-//                } else {
-//                    n.distance = distanceVec[idx] * lmf.lengthMF;
-//                    //                   n.ptTrans=Coordinates3D<double>(pt.x,pt.y,pt.z);
-//                }
-//                return n;
-//
-//            } else {
-//                //requesed neighbor does not belong to the lattice
-//                n.distance = 0.0;
-//                return n;
-//            }
-//
-//        }
-//
-//    }
-
 }
 
 Neighbor
-BoundaryStrategy::getNeighborDirectVoxelCopy(Point3D &pt, unsigned int idx, bool checkBounds , bool calculatePtTrans ) const{
+BoundaryStrategy::getNeighborDirectVoxelCopy(Point3D &pt, unsigned int idx, bool checkBounds,
+                                             bool calculatePtTrans) const {
 
-    Neighbor n = getNeighborDirectImpl(pt, idx,checkBounds, calculatePtTrans,
+    Neighbor n = getNeighborDirectImpl(pt, idx, checkBounds, calculatePtTrans,
                                        offsetVecVoxelCopy, distanceVecVoxelCopy,
                                        hexOffsetArrayVoxelCopy, hexDistanceArrayVoxelCopy);
 #ifdef _DEBUG
@@ -1275,10 +1094,10 @@ BoundaryStrategy::getNeighborDirectVoxelCopy(Point3D &pt, unsigned int idx, bool
 Neighbor
 BoundaryStrategy::getNeighborDirectImpl(
         Point3D &pt, unsigned int idx, bool checkBounds, bool calculatePtTrans,
-        const std::vector <Point3D> & offsetVec,
+        const std::vector<Point3D> &offsetVec,
         const std::vector<float> &distanceVec,
-                                        const std::vector <std::vector<Point3D>> & hexOffsetArray,
-                                        const std::vector <std::vector<float>> & hexDistanceArray) const {
+        const std::vector<std::vector<Point3D>> &hexOffsetArray,
+        const std::vector<std::vector<float>> &hexDistanceArray) const {
     Neighbor n;
     unsigned int indexHex;
 
@@ -1355,9 +1174,9 @@ BoundaryStrategy::getNeighborDirectImpl(
 }
 
 
-
 Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> &_coord) const {
-    //this transformation takes coordinates of a point on ahex lattice and returns integer coordinates of cartesian pixel that is nearest given point on hex lattice 
+    //this transformation takes coordinates of a point on the hex lattice
+    // and returns integer coordinates of cartesian pixel that is the nearest given point on hex lattice
     //It is the inverse transformation of the one coded in HexCoord 
     int z_segments = (int) roundf(_coord.z / (sqrt(6.0) / 3.0));
 

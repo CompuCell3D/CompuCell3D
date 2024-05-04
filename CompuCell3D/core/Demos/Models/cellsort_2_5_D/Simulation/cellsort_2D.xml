@@ -1,6 +1,8 @@
 <!--This demo shows how to use 2.5D setting. With 2.D enabled (<DimensionType>2.5D</DimensionType>) -->
 <!--the pixel copies are only in the xy plane. -->
 <!--If you comment this setting out you will see pixels scattering all over the lattice -->
+<!--To see the effects of the 2.5D switch to xz view and observe that no pixel copies happen along the z-axis when the 2.5D-->
+<!--setting is on. If you turn it off you will see that cells (voxels) will scatter along the z-axis-->
 
 
 <CompuCell3D>
