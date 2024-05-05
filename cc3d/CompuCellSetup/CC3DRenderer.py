@@ -1,5 +1,6 @@
 import os
 import time
+from typing import Union
 
 from cc3d.core.BasicSimulationData import BasicSimulationData
 from cc3d.core.CMLResultsReader import CMLResultReader
@@ -37,11 +38,11 @@ def standard_screenshot_file(_simulation_dir: str) -> str:
 
 
 class CC3DRenderer:
-    def __init__(self, lds_file: str, screenshot_spec: str = None, output_dir: str = None):
+    def __init__(self, lds_file: str, screenshot_spec: Union[dict, str] = None, output_dir: str = None):
         """
         Renders CC3D spatial data from Python
         :param lds_file: absolute path to lattice data summary file
-        :param screenshot_spec: absolute path to screenshot specification json file
+        :param screenshot_spec: absolute path to screenshot specification json file or screenshot data
         :param output_dir: absolute path to output directory containing simulation data
         """
         lds_file = os.path.abspath(lds_file)
@@ -64,8 +65,8 @@ class CC3DRenderer:
         self.screenshot_spec = screenshot_spec
         if self.screenshot_spec is None:
             self.screenshot_spec = os.path.join(self.lds_dir, SCREENSHOT_SUBDIR, SCREENSHOT_SPEC)
-        if not os.path.isfile(self.screenshot_spec):
-            print(f'Warning: no current screenshot specification file found ({self.screenshot_spec})')
+        if not isinstance(self.screenshot_spec, dict) and not os.path.isfile(self.screenshot_spec):
+            print(f'Warning: no current screenshot specification')
 
         # Minimal peripheral initializations
 
@@ -92,21 +93,28 @@ class CC3DRenderer:
         self.screenshot_manager.bsd.fieldDim = self.cml_results_reader.fieldDim
         self.screenshot_manager.bsd.numberOfSteps = self.cml_results_reader.numberOfSteps
         if self.screenshot_spec is not None:
-            self.screenshot_manager.read_screenshot_description_file(self.screenshot_spec)
+            if isinstance(self.screenshot_spec, str):
+                self.screenshot_manager.read_screenshot_description_file(self.screenshot_spec)
+            else:
+                self.screenshot_manager.read_screenshot_description_data(self.screenshot_spec)
 
-    def set_screenshot_spec(self, _screenshot_spec: str):
+    def set_screenshot_spec(self, _screenshot_spec: Union[dict, str]):
         """
         Sets current json screenshot specification
         All subsequent rendering will be done according to these specifications
-        :param _screenshot_spec: path to json screenshot specification (can be generated in Player)
+        :param _screenshot_spec: path to json screenshot specification (can be generated in Player) or screenshot data
         :return: None
         """
-        _screenshot_spec = os.path.abspath(_screenshot_spec)
-        if os.path.isfile(_screenshot_spec):
-            self.screenshot_spec = _screenshot_spec
+        if isinstance(_screenshot_spec, str):
+            _screenshot_spec = os.path.abspath(_screenshot_spec)
+            if os.path.isfile(_screenshot_spec):
+                self.screenshot_spec = _screenshot_spec
+            else:
+                raise FileExistsError(f'File not found: {_screenshot_spec}')
+            self.screenshot_manager.read_screenshot_description_file(self.screenshot_spec)
         else:
-            raise FileExistsError(f'File not found: {_screenshot_spec}')
-        self.screenshot_manager.read_screenshot_description_file(self.screenshot_spec)
+            self.screenshot_spec = _screenshot_spec
+            self.screenshot_manager.read_screenshot_description_data(self.screenshot_spec)
 
     def set_render_manipulator(self, manipulator):
         """
@@ -190,7 +198,7 @@ class CC3DBatchRenderer:
         :param manipulators: rendering manipulator; can be per lds_files, or uniformly applied
         """
         # Apply uniform inputs
-        if isinstance(screenshot_spec, str):
+        if isinstance(screenshot_spec, str) or isinstance(screenshot_spec, dict):
             screenshot_spec = [screenshot_spec] * len(lds_files)
 
         self.manipulators = manipulators
@@ -200,7 +208,8 @@ class CC3DBatchRenderer:
         # Validate inputs
         assert len(lds_files) == len(output_dirs)
         assert not any([not os.path.isfile(f) for f in lds_files])
-        assert not any([not os.path.isfile(f) for f in screenshot_spec])
+        if isinstance(screenshot_spec[0], str):
+            assert not any([not os.path.isfile(f) for f in screenshot_spec])
         assert not any([not os.path.isdir(d) for d in output_dirs])
 
         self.lds_files = lds_files
@@ -244,8 +253,10 @@ class CC3DBatchRenderer:
 
 
 class _RenderDataJob:
-    def __init__(self, _lds_file: str, _screenshot_spec: str, _output_dir: str, _manipulator):
-        assert not any([not os.path.isfile(x) for x in [_lds_file, _screenshot_spec]])
+    def __init__(self, _lds_file: str, _screenshot_spec: Union[dict, str], _output_dir: str, _manipulator):
+        assert os.path.isfile(_lds_file)
+        if isinstance(_screenshot_spec, str):
+            assert os.path.isfile(_screenshot_spec)
         assert os.path.isdir(_output_dir)
 
         self._lds_file = _lds_file
