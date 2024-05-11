@@ -687,6 +687,44 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
                 for steppable_member_name in member_var_list:
                     setattr(self, steppable_member_name, None)
 
+    @staticmethod
+    def get_screenshot_data() -> dict:
+        """Gets a copy of the current screenshot data"""
+
+        from cc3d.CompuCellSetup.CC3DPy import CC3DPy
+        return CC3DPy.get_screenshot_data()
+
+    @staticmethod
+    def set_screenshot_data(_data: dict):
+        """Sets the current screenshot data"""
+
+        from cc3d.CompuCellSetup.CC3DPy import CC3DPy
+        return CC3DPy.set_screenshot_data(_data)
+
+    @staticmethod
+    def save_screenshot_data(_fp: str) -> str:
+        """
+        Saves screenshot data if available
+
+        :param _fp: absolute file path of saved data; default is standard location if available
+        :return: file path if saved, otherwise None
+        """
+
+        from cc3d.CompuCellSetup.CC3DPy import CC3DPy
+        return CC3DPy.save_screenshot_data(_fp)
+
+    @staticmethod
+    def load_screenshot_data(_fp: str):
+        """
+        Loads screenshot data from file
+
+        :param _fp: absolute path of saved data
+        :return: true is loaded
+        """
+
+        from cc3d.CompuCellSetup.CC3DPy import CC3DPy
+        return CC3DPy.load_screenshot_data(_fp)
+
     def track_cell_level_scalar_attribute(self, field_name: str, attribute_name: str, function_obj: object = None,
                                           cell_type_list: Union[list, None] = None):
         """
