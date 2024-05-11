@@ -142,6 +142,7 @@ class ScreenshotData(object):
         if self.invisible_types is None:
             self.invisible_types = []
         scr_elem['TypesInvisible'] = self.invisible_types
+        scr_elem["CellShellOptimization"] = self.cell_shell_optimization
 
         scr_elem['metadata'] = self.metadata
 
@@ -174,6 +175,7 @@ class ScreenshotData(object):
         scr_data.lattice_axes_on = _data['LatticeAxes']
         scr_data.lattice_axes_labels_on = _data['LatticeAxesLabels']
         scr_data.invisible_types = _data['TypesInvisible']
+        scr_data.cell_shell_optimization = _data.get('CellShellOptimization', False)
 
         cam_settings = []
 
