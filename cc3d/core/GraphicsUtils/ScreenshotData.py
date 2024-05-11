@@ -34,7 +34,7 @@ class ScreenshotData(object):
         self.invisible_types = None
         self.win_width = 299
         self.win_height = 299
-        self.cell_shell_optimization = True
+        self.cell_shell_optimization = None
 
         self.metadata = {}
 

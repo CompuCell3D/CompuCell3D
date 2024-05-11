@@ -150,6 +150,7 @@ class ScreenshotManagerCore(object):
             if scr_data.invisible_types is None:
                 scr_data.invisible_types = []
             scr_elem['TypesInvisible'] = scr_data.invisible_types
+            scr_elem['CellShellOptimization'] = scr_data.cell_shell_optimization
 
             scr_elem['metadata'] = scr_data.metadata
 
@@ -231,6 +232,7 @@ class ScreenshotManagerCore(object):
             scr_data.lattice_axes_on = scr_data_elem['LatticeAxes']
             scr_data.lattice_axes_labels_on = scr_data_elem['LatticeAxesLabels']
             scr_data.invisible_types = scr_data_elem['TypesInvisible']
+            scr_data.cell_shell_optimization = scr_data_elem.get('CellShellOptimization', False)
 
             cam_settings = []
 
