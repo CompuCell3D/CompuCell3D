@@ -363,7 +363,7 @@ class GenericDrawer:
         if self.current_step is None:
             self.current_step = bsd.current_step
 
-        # current_cell_shell_optimization = screenshot_data.cell_borders_on
+
         current_cell_shell_optimization = screenshot_data.cell_shell_optimization
         # if self.cell_shell_optimization is None:
         #     self.cell_shell_optimization = current_cell_shell_optimization
