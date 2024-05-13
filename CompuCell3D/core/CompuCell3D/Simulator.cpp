@@ -77,6 +77,9 @@ Simulator::~Simulator() {
 	CC3D_Log(LOG_DEBUG) << "Simulator: extra destroy for boundary strategy";
     BoundaryStrategy::destroy();
 	CC3DLogger::destroy();
+    pluginManager.unload();
+    steppableManager.unload();
+    pluginBaseManager.unload();
 
 #ifdef QT_WRAPPERS_AVAILABLE
     //restoring original cerr stream buffer
