@@ -29,7 +29,7 @@ python cc3d_call_single_cpu.py
 
 """
 
-from os.path import dirname, join, expanduser
+from os.path import dirname, join, expanduser, abspath
 from cc3d.CompuCellSetup.CC3DCaller import CC3DCaller
 
 
@@ -38,7 +38,7 @@ def main():
 
     # You may put a direct path to a simulation of your choice here and comment out simulation_fname line below
     # simulation_fname = <direct path your simulation>
-    simulation_fname = join(dirname(dirname(__file__)), 'cellsort_2D', 'cellsort_2D.cc3d')
+    simulation_fname = join(dirname(dirname(abspath(__file__))), 'cellsort_2D', 'cellsort_2D.cc3d')
     root_output_folder = join(expanduser('~'), 'CC3DCallerOutput')
 
     # this creates a list of simulation file names where simulation_fname is repeated number_of_runs times
