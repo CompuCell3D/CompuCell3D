@@ -74,11 +74,14 @@ if sys.platform.startswith('win'):
     if sys.version_info >= (3, 8):
 
         if cc3d_lib_shared not in path_env_list:
-            os.add_dll_directory(cc3d_lib_shared)
+            if Path(cc3d_lib_shared).exists() and Path(cc3d_lib_shared).is_dir():
+                os.add_dll_directory(cc3d_lib_shared)
 
         os.add_dll_directory(os.environ['COMPUCELL3D_PLUGIN_PATH'])
         os.add_dll_directory(os.environ['COMPUCELL3D_STEPPABLE_PATH'])
         os.add_dll_directory(str(mingw_bin_path))
+
+
     else:
 
         if cc3d_lib_shared not in path_env_list:
