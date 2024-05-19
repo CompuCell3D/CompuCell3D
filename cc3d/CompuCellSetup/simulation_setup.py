@@ -148,6 +148,8 @@ def run():
         dim = cell_field.getDim()
         field_registry.dim = dim
         field_registry.simthread = persistent_globals.simthread
+        if persistent_globals.simthread is None:
+            initialize_field_extractor_objects()
 
         field_registry.create_fields()
 
@@ -341,6 +343,14 @@ def initialize_field_extractor_objects():
     """
 
     persistent_globals = CompuCellSetup.persistent_globals
+
+    try:
+        # do not reinitialize storage and extractor if they already exist
+        _ = persistent_globals.persistent_holder['field_storage']
+        return
+    except KeyError:
+        pass
+
     sim = persistent_globals.simulator
     dim = sim.getPotts().getCellFieldG().getDim()
 
