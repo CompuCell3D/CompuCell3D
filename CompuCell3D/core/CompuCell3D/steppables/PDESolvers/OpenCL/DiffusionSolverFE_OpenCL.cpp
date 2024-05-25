@@ -740,9 +740,23 @@ void DiffusionSolverFE_OpenCL::initImpl() {
 
     //    "lib/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl" };
 
+//    const char *kernelSource[] = {
+//            (string("lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/GPUSolverParams.h")).c_str(),
+//            (string("lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl")).c_str()};
+//
+
+    string cc3d_open_cl_solvers_dir = string(getenv("CC3D_OPENCL_SOLVERS_DIR"));
+
+//    const char *kernelSource[] = {
+//            (string("c:/miniconda3/envs/cc3d_460_310_develop/Lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/GPUSolverParams.h")).c_str(),
+//            (string("c:/miniconda3/envs/cc3d_460_310_develop/Lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl")).c_str()
+//            };
+
     const char *kernelSource[] = {
-            (string("lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/GPUSolverParams.h")).c_str(),
-            (string("lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl")).c_str()};
+            (cc3d_open_cl_solvers_dir+string("/GPUSolverParams.h")).c_str(),
+            (cc3d_open_cl_solvers_dir+string("/DiffusionKernel.cl")).c_str()
+            };
+
 
     if (!oclHelper->LoadProgram(kernelSource, 2, program)) {
 

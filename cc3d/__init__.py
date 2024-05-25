@@ -58,6 +58,7 @@ cc3d_cpp_bin_path_pathlib = Path(cc3d_cpp_bin_path)
 
 os.environ['COMPUCELL3D_STEPPABLE_PATH'] = cc3d_steppable_path + os.sep
 os.environ['COMPUCELL3D_PLUGIN_PATH'] = cc3d_plugin_path + os.sep
+os.environ['CC3D_OPENCL_SOLVERS_DIR'] = cc3d_steppable_path + os.sep + "OpenCL" + os.sep
 
 if sys.platform.startswith('win'):
     path_env = os.environ['PATH']
