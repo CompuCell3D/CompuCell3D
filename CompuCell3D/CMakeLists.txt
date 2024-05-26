@@ -66,11 +66,11 @@ message("Python3_LIBRARY_DIRS: ${Python3_LIBRARY_DIRS}")
 message("Python3_RUNTIME_LIBRARY_DIRS: ${Python3_RUNTIME_LIBRARY_DIRS}")
 message("Python3_NumPy_INCLUDE_DIRS: ${Python3_NumPy_INCLUDE_DIRS}")
 
-message("Python3_LIBRARY_DIRS", ${Python3_LIBRARY_DIRS})
-message("Python3_SABI_LIBRARY_DIRS", ${Python3_SABI_LIBRARY_DIRS})
-message("Python3_SITEARCH", ${Python3_SITEARCH})
+message("Python3_LIBRARY_DIRS ${Python3_LIBRARY_DIRS}")
+message("Python3_SABI_LIBRARY_DIRS ${Python3_SABI_LIBRARY_DIRS}")
+message("Python3_SITEARCH ${Python3_SITEARCH}")
 
-message("PYTHON_BASE_DIR",${PYTHON_BASE_DIR})
+message("PYTHON_BASE_DIR${PYTHON_BASE_DIR}")
 
 # Should we build shared libraries
 OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
