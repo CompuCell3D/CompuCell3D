@@ -42,6 +42,7 @@ ENDIF()
 
 
 OPTION(FLEX_PYTHON_SPECS "Allow Flexible Python Path specification" OFF)
+OPTION(ANACONDA_PYTHON_LAYOUT "Assume Python Distribution has similar directory layout as Python distribution in Anaconda" ON)
 
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development NumPy)
@@ -167,17 +168,29 @@ else()
     set(COMPUCELL3D_INSTALL_SCRIPT_DIR_FULL_PATH ${CMAKE_INSTALL_PREFIX}/bin)
     file(RELATIVE_PATH COMPUCELL3D_INSTALL_SCRIPT_DIR ${CMAKE_INSTALL_PREFIX} ${COMPUCELL3D_INSTALL_SCRIPT_DIR_FULL_PATH})
 
-    # note this only works with same layouts as used in miniconda. For example if Python is scattered all over the place this might not work properly
-    if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-        SET(COMPUCELL3D_RUNTIME_DESTINATION ${PYTHON_BASE_DIR}/Library/bin)
-        SET(COMPUCELL3D_LIBRARY_DESTINATION ${PYTHON_BASE_DIR}/Library/bin)
-        SET(COMPUCELL3D_ARCHIVE_DESTINATION ${PYTHON_BASE_DIR}/Library/bin)
-    else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-        SET(COMPUCELL3D_RUNTIME_DESTINATION ${PYTHON_BASE_DIR}/lib)
-        SET(COMPUCELL3D_LIBRARY_DESTINATION ${PYTHON_BASE_DIR}/lib)
-        SET(COMPUCELL3D_ARCHIVE_DESTINATION ${PYTHON_BASE_DIR}/lib)
+
+    if(ANACONDA_PYTHON_LAYOUT)
+        # note this only works with same layouts as used in Anaconda.
+        # if this is not the case set -DANACONDA_PYTHON_LAYOUT:BOOLEAN=OFF when calling cmake
+        if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+            # If Python has  we install core shared libraries ((e.g. libCC3DBoundary) into appropriate location for shared library inside python distribution that was used to build CC3D
+            SET(COMPUCELL3D_RUNTIME_DESTINATION ${PYTHON_BASE_DIR}/Library/bin)
+            SET(COMPUCELL3D_LIBRARY_DESTINATION ${PYTHON_BASE_DIR}/Library/bin)
+            SET(COMPUCELL3D_ARCHIVE_DESTINATION ${PYTHON_BASE_DIR}/Library/bin)
+        else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+            # If Python is scattered all over the place we install core shared libraries (e.g. libCC3DBoundary) into CMAKE_INSTALL_PREFIX/bin
+            SET(COMPUCELL3D_RUNTIME_DESTINATION ${PYTHON_BASE_DIR}/lib)
+            SET(COMPUCELL3D_LIBRARY_DESTINATION ${PYTHON_BASE_DIR}/lib)
+            SET(COMPUCELL3D_ARCHIVE_DESTINATION ${PYTHON_BASE_DIR}/lib)
+
+        endif()
+    else(ANACONDA_PYTHON_LAYOUT)
+        SET(COMPUCELL3D_RUNTIME_DESTINATION bin)
+        SET(COMPUCELL3D_LIBRARY_DESTINATION lib)
+        SET(COMPUCELL3D_ARCHIVE_DESTINATION lib)
 
     endif()
+
 
 endif()
 
