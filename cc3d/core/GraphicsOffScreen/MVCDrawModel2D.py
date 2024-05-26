@@ -297,6 +297,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 )
 
         if not fill_successful:
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_ERROR,
+                                           f'fill unsuccessful for field type {field_type} ({field_name})')
             return
 
         vector_grid.SetPoints(points)
@@ -409,6 +411,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
                     self.init_concentration_field_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
 
+        # Handle if something previously prevented initialization of metadata,
+        # of which we notify in subsequent calls
+        if actor_specs.metadata is None:
+            actor_specs.metadata = {}
+
         if mdata.get("LegendEnable", default=True):
             self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
@@ -470,9 +477,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
             )
         else:
             print(("unsuported field type {}".format(field_type)))
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_WARNING,
+                                           f'unsupported field type {field_type} ({field_name})')
             return
 
         if not fill_successful:
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_ERROR,
+                                           f'fill unsuccessful for field type {field_type} ({field_name})')
             return
 
         min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
@@ -643,9 +654,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         else:
             print(("unsuported field type {}".format(field_type)))
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_WARNING,
+                                           f'unsupported field type {field_type} ({field_name})')
             return
 
         if not fill_successful:
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_ERROR,
+                                           f'fill unsuccessful for field type {field_type} ({field_name})')
             return
 
         min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
@@ -751,9 +766,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         else:
             print(("unsuported field type {}".format(field_type)))
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_WARNING,
+                                           f'unsupported field type {field_type} ({field_name})')
             return
 
         if not fill_successful:
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_ERROR,
+                                           f'fill unsuccessful for field type {field_type} ({field_name})')
             return
 
         # # todo 5 - revisit later

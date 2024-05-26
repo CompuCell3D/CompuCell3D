@@ -1,5 +1,6 @@
 SET(SRCS
   BoundaryStrategy.cpp
+  Boundary.cpp
   DefaultAlgorithm.cpp
   PeriodicBoundary.cpp
   ChengbangAlgorithm.cpp
