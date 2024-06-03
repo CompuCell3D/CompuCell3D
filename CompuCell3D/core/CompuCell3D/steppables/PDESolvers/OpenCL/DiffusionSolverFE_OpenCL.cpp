@@ -752,9 +752,11 @@ void DiffusionSolverFE_OpenCL::initImpl() {
 //            (string("c:/miniconda3/envs/cc3d_460_310_develop/Lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl")).c_str()
 //            };
 
+    string solver_params = cc3d_open_cl_solvers_dir+string("/GPUSolverParams.h");
+    string diffusion_kernel = cc3d_open_cl_solvers_dir+string("/DiffusionKernel.cl");
     const char *kernelSource[] = {
-            (cc3d_open_cl_solvers_dir+string("/GPUSolverParams.h")).c_str(),
-            (cc3d_open_cl_solvers_dir+string("/DiffusionKernel.cl")).c_str()
+            solver_params.c_str(),
+            diffusion_kernel.c_str()
             };
 
 
