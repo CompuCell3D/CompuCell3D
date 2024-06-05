@@ -47,10 +47,10 @@ OPTION(ANACONDA_PYTHON_LAYOUT "Assume Python Distribution has similar directory 
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development NumPy)
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-    get_filename_component(PYTHON_BASE_DIR ${Python3_EXECUTABLE} DIRECTORY)
+    get_filename_component(PYTHON_BASE_DIR "${Python3_EXECUTABLE}" DIRECTORY)
 else()
-    get_filename_component(PYTHON_BASE_DIR ${Python3_EXECUTABLE} DIRECTORY)
-    get_filename_component(PYTHON_BASE_DIR ${PYTHON_BASE_DIR} DIRECTORY)
+    get_filename_component(PYTHON_BASE_DIR "${Python3_EXECUTABLE}" DIRECTORY)
+    get_filename_component(PYTHON_BASE_DIR "${PYTHON_BASE_DIR}" DIRECTORY)
 endif()
 
 message("Python3_FOUND: ${Python3_FOUND}")
