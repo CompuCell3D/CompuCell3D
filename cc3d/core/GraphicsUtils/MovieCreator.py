@@ -2,9 +2,10 @@
 import subprocess
 import tempfile
 from pathlib import Path
+from typing import Tuple
 
 
-def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True) -> tuple[int, Path]:
+def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True) -> Tuple[int, Path]:
     """
     :param simulationPath: a string path to a directory with a .cc3d file and screenshot directories
     :param frameRate: an int >= 1
@@ -20,6 +21,7 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True) -> tupl
     simulationPath = Path(simulationPath)
     if not simulationPath.exists():
         print(f"Error: Could not make movie inside unknown directory `{simulationPath.absolute()}`")
+        # todo: make return type consistent with signature annotations
         return 0
 
     print("Making movie inside `", simulationPath.absolute(), "`")
