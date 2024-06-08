@@ -11,9 +11,9 @@ from pathlib import Path
 
 __version__ = "4.6.0"
 __revision__ = "0"
-__githash__ = "c0b6774"
+__githash__ = "240bc65"
 
-# from . import config
+
 from cc3d import config
 
 def get_version_revision_str():
