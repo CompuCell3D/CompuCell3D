@@ -231,7 +231,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         :param drawing_params: {DrawingParameters}
         :return: None
         """
-
+        print(drawing_params.screenshot_data)
         field_dim = self.currentDrawingParameters.bsd.fieldDim
 
         hex_flag = self.is_lattice_hex(drawing_params=drawing_params)
@@ -281,8 +281,12 @@ class MVCDrawModel3D(MVCDrawModelBase):
             if actor_number in list(actors_dict.keys()):
                 actor = actors_dict[actor_number]
                 actor.SetMapper(mapper_list[actor_counter])
-
-                cell_type_lut = self.get_type_lookup_table()
+                if drawing_params.screenshot_data.screenshotName:
+                    scene_metadata = {"actual_screenshot": True,
+                                      "TypeColorMap": drawing_params.screenshot_data.metadata["TypeColorMap"]}
+                    cell_type_lut = self.get_type_lookup_table(scene_metadata=scene_metadata)
+                else:
+                    cell_type_lut = self.get_type_lookup_table()
 
                 actor.GetProperty().SetDiffuseColor(cell_type_lut.GetTableValue(actor_number)[0:3])
 

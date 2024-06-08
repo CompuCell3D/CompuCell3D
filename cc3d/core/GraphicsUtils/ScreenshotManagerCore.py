@@ -7,6 +7,7 @@ from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
 import json
 import cc3d
 from cc3d import CompuCellSetup
+from typing import Optional
 
 MODULENAME = '---- ScreenshotManager.py: '
 
@@ -31,6 +32,9 @@ class ScreenshotManagerCore(object):
 
         self.ad_hoc_screenshot_dict = {}
         self.output_error_flag = False
+        self.padding = 4
+        self.screenshot_config_counter = 0
+        self.screenshot_config_counter_separator = "___"
 
     def fetch_screenshot_description_file_parser_fcn(self, screenshot_file_version: str):
         """
@@ -91,7 +95,7 @@ class ScreenshotManagerCore(object):
         return root_elem
 
     @staticmethod
-    def append_screenshot_description_data(root_elem: dict, data_elem: dict):
+    def append_screenshot_description_data(root_elem: dict, data_elem: dict, screenshot_uid: Optional[str]=None):
         """
         Append a screenshot data element
 
@@ -99,15 +103,16 @@ class ScreenshotManagerCore(object):
         :param data_elem: data element for a field
         """
 
-        root_elem['ScreenshotData'][data_elem['Plot']['PlotName']] = data_elem
+        key = data_elem['Plot']['PlotName'] if screenshot_uid is None else screenshot_uid
+        root_elem['ScreenshotData'][key] = data_elem
 
     def generate_screenshot_description_data(self):
         """Generates screenshot description data"""
 
         root_elem = self.starting_screenshot_description_data()
 
-        for name in self.screenshotDataDict:
-            self.append_screenshot_description_data(root_elem, self.screenshotDataDict[name].to_json())
+        for screenshot_uid in self.screenshotDataDict:
+            self.append_screenshot_description_data(root_elem, self.screenshotDataDict[screenshot_uid].to_json(), screenshot_uid)
 
         return root_elem
 
@@ -151,6 +156,7 @@ class ScreenshotManagerCore(object):
                                'for this version of CompuCell3D'.format(version))
 
         screenshot_file_parser_fcn(scr_data_container)
+        self.find_highest_screenshot_config_counter()
 
     def read_screenshot_description_file_json(self, filename):
         """
@@ -178,6 +184,21 @@ class ScreenshotManagerCore(object):
         """
         for scr_name, scr_data_elem in list(scr_data_container.items()):
             self.screenshotDataDict[scr_name] = ScreenshotData.from_json(scr_data_elem, scr_name)
+
+    def find_highest_screenshot_config_counter(self):
+        for screenshot_uid in self.screenshotDataDict.keys():
+
+            counter_str = screenshot_uid.split(self.screenshot_config_counter_separator)[-1]
+            try:
+                val = int(counter_str)
+                if val > self.screenshot_config_counter:
+                    self.screenshot_config_counter = val
+            except ValueError:
+                pass
+
+
+
+
 
     @staticmethod
     def get_screenshot_filename() -> Union[str, None]:
