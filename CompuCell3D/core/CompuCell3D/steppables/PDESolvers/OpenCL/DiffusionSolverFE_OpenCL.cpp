@@ -740,9 +740,29 @@ void DiffusionSolverFE_OpenCL::initImpl() {
 
     //    "lib/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl" };
 
+//    const char *kernelSource[] = {
+//            (string("lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/GPUSolverParams.h")).c_str(),
+//            (string("lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl")).c_str()};
+//
+
+    char *cc3d_opencl_solvers_dir = getenv("CC3D_OPENCL_SOLVERS_DIR");
+    ASSERT_OR_THROW("CC3D_OPENCL_SOLVERS_DIR environment variable is not set. Cannot run DiffusionSolverFE_OpenCL without it. Please set this environment variable to so that it points to the directory containing GPUSolverParams.h and DiffusionKernel.cl", cc3d_opencl_solvers_dir)
+    string cc3d_open_cl_solvers_dir = string(cc3d_opencl_solvers_dir);
+
+
+
+//    const char *kernelSource[] = {
+//            (string("c:/miniconda3/envs/cc3d_460_310_develop/Lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/GPUSolverParams.h")).c_str(),
+//            (string("c:/miniconda3/envs/cc3d_460_310_develop/Lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl")).c_str()
+//            };
+
+    string solver_params = cc3d_open_cl_solvers_dir+string("/GPUSolverParams.h");
+    string diffusion_kernel = cc3d_open_cl_solvers_dir+string("/DiffusionKernel.cl");
     const char *kernelSource[] = {
-            (string("lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/GPUSolverParams.h")).c_str(),
-            (string("lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl")).c_str()};
+            solver_params.c_str(),
+            diffusion_kernel.c_str()
+            };
+
 
     if (!oclHelper->LoadProgram(kernelSource, 2, program)) {
 
