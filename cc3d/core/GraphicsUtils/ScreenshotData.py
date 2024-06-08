@@ -16,6 +16,7 @@ class ScreenshotData(object):
         # and the second one is plot type (e.g. CellField, Confield, Vector Field)
         self.plotData = ("Cell_Field",
                          "CellField")
+        # self.out_dir_core_name = ""
         self.projectionPosition = 0
         self.screenshotGraphicsWidget = None
         # self.originalCameraObj=None

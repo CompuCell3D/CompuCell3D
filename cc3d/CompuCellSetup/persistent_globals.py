@@ -14,6 +14,7 @@ from pathlib import Path
 from threading import Lock
 
 
+
 class PersistentGlobals:
     def __init__(self):
         self.cc3d_xml_2_obj_converter = None
@@ -182,11 +183,16 @@ class PersistentGlobals:
         """
 
         if self.__workspace_dir is None:
-            workspace_dir = os.path.join(os.path.expanduser('~'), 'CC3DWorkspace')
-            if not exists(workspace_dir):
-                Path(workspace_dir).mkdir(parents=True, exist_ok=True)
 
-            return workspace_dir
+            try:
+                workspace_dir = Path(str(self.configuration.getSetting('OutputLocation')))
+            except:
+                workspace_dir = Path.home().joinpath('CC3DWorkspace')
+
+            if not exists(workspace_dir):
+                workspace_dir.mkdir(parents=True, exist_ok=True)
+
+            return str(workspace_dir)
         else:
             return self.__workspace_dir
 

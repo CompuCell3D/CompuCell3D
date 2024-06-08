@@ -2,6 +2,7 @@ import os
 import time
 from cc3d import CompuCellSetup
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame import CC3DPyGraphicsFrameClient
+from typing import Optional
 
 
 class CC3DPy:
@@ -195,7 +196,7 @@ class CC3DPy:
         return ScreenshotManagerCore.starting_screenshot_description_data()
 
     @staticmethod
-    def append_screenshot_description_data(root_elem: dict, data_elem: dict):
+    def append_screenshot_description_data(root_elem: dict, data_elem: dict, screenshot_uid: Optional[str]=None):
         """
         Append a screenshot data element
 
@@ -205,7 +206,7 @@ class CC3DPy:
         """
 
         from cc3d.core.GraphicsUtils.ScreenshotManagerCore import ScreenshotManagerCore
-        return ScreenshotManagerCore.append_screenshot_description_data(root_elem, data_elem)
+        return ScreenshotManagerCore.append_screenshot_description_data(root_elem, data_elem, screenshot_uid)
 
 
 class CC3DPySim:

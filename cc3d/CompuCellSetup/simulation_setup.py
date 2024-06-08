@@ -344,12 +344,15 @@ def initialize_field_extractor_objects():
 
     persistent_globals = CompuCellSetup.persistent_globals
 
-    try:
-        # do not reinitialize storage and extractor if they already exist
-        _ = persistent_globals.persistent_holder['field_storage']
+    if 'field_storage' in persistent_globals.persistent_holder.keys():
         return
-    except KeyError:
-        pass
+    # try:
+    #     # do not reinitialize storage and extractor if they already exist
+    #     _ = persistent_globals.persistent_holder['field_storage']
+    #     return
+    # except KeyError:
+    #     pass
+
 
     sim = persistent_globals.simulator
     dim = sim.getPotts().getCellFieldG().getDim()
