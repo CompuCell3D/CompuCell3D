@@ -135,7 +135,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
             actors_dict = actor_specs.actors_dict
 
-            cell_type_lut = self.get_type_lookup_table()
+            if drawing_params.screenshot_data.screenshotName:
+                scene_metadata = {"actual_screenshot": True,
+                                  "TypeColorMap": drawing_params.screenshot_data.metadata["TypeColorMap"]}
+                cell_type_lut = self.get_type_lookup_table(scene_metadata=scene_metadata)
+            else:
+                cell_type_lut = self.get_type_lookup_table()
+
             cell_type_lut_max = cell_type_lut.GetNumberOfTableValues() - 1
 
             if actor_number in list(actors_dict.keys()):
@@ -213,7 +219,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
         glyphs.SetInputArrayToProcess(0, 0, 0, 0, "volume_scaling_factors")  # 0 - scalars for scaling
         glyphs.SetInputArrayToProcess(3, 0, 0, 0, "cell_types")  # 3 - color
 
-        cell_type_lut = self.get_type_lookup_table()
+        if drawing_params.screenshot_data.screenshotName:
+            scene_metadata = {"actual_screenshot": True,
+                              "TypeColorMap": drawing_params.screenshot_data.metadata["TypeColorMap"]}
+            cell_type_lut = self.get_type_lookup_table(scene_metadata=scene_metadata)
+        else:
+            cell_type_lut = self.get_type_lookup_table()
+
         mapper.SetInputConnection(glyphs.GetOutputPort())
         mapper.SetLookupTable(cell_type_lut)
         mapper.ScalarVisibilityOn()
@@ -231,7 +243,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         :param drawing_params: {DrawingParameters}
         :return: None
         """
-        print(drawing_params.screenshot_data)
+
         field_dim = self.currentDrawingParameters.bsd.fieldDim
 
         hex_flag = self.is_lattice_hex(drawing_params=drawing_params)
