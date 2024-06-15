@@ -1,7 +1,7 @@
 """
 Class that specifies drawing scene properties/settings
 """
-
+import json
 from collections import OrderedDict
 
 
@@ -146,8 +146,18 @@ class ScreenshotData(object):
         scr_elem["CellShellOptimization"] = self.cell_shell_optimization
 
         scr_elem['metadata'] = self.metadata
+        scr_elem['screenshotName'] = self.screenshotName
 
         return scr_elem
+
+    def to_json_simulate_file_readout(self):
+        """
+        Generates a JSON-compatible data structure by first writing json dict to string then loading it. This ensures
+        that keys are strings and not floats, integers, etc...
+
+        :return:
+        """
+        return json.loads(json.dumps(self.to_json()))
 
     @classmethod
     def from_json(cls, _data, scr_name: str = None):
