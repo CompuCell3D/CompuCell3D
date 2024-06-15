@@ -10,8 +10,8 @@ from os.path import dirname, join, abspath
 from pathlib import Path
 
 __version__ = "4.6.0"
-__revision__ = "0"
-__githash__ = "240bc65"
+__revision__ = "1"
+__githash__ = "a990885"
 
 
 from cc3d import config
