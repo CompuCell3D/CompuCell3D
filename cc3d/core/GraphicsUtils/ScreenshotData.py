@@ -152,8 +152,8 @@ class ScreenshotData(object):
 
     def to_json_simulate_file_readout(self):
         """
-        Generates a JSON-compatible data structure by first writing json dict to string then loading it. This ensures
-        that keys are strings and not floats, integers, etc...
+        Generates a JSON-compatible data structure by first writing json dict to string then loading it.
+        This ensures that keys are strings and not floats, integers, etc...
 
         :return:
         """
