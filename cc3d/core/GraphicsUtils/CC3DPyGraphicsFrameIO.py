@@ -470,3 +470,30 @@ class ControlMessageSaveImage(FrameControlMessage):
         """
         if self.blocking:
             self.control_self_blocking(control)
+
+
+class ControlMessageGetScreenshotData(FrameControlMessage):
+    """Message to get serialized screenshot data"""
+
+    def __init__(self):
+
+        super().__init__()
+
+        self.screenshot_data = None
+
+    def process(self, proc):
+        """Get screenshot data"""
+        self.screenshot_data = proc.frame.get_screenshot_data().to_json()
+        proc.queue_output.put(self)
+
+    def control(self, control):
+        """
+        Issue request with blocking call to return data
+
+        :param control: graphics frame process controller
+        :type control: cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame.CC3DPyGraphicsFrameControlInterface
+        :return: screenshot data
+        :rtype: dict
+        """
+        msg: ControlMessageGetScreenshotData = self.control_self_blocking(control)
+        return msg.screenshot_data

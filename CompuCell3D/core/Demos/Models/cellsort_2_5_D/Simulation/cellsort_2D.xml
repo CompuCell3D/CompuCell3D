@@ -1,0 +1,72 @@
+<!--This demo shows how to use 2.5D setting. With 2.D enabled (<DimensionType>2.5D</DimensionType>) -->
+<!--the pixel copies are only in the xy plane. -->
+<!--If you comment this setting out you will see pixels scattering all over the lattice -->
+<!--To see the effects of the 2.5D switch to xz view and observe that no pixel copies happen along the z-axis when the 2.5D-->
+<!--setting is on. If you turn it off you will see that cells (voxels) will scatter along the z-axis-->
+
+
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="100" y="100" z="20"/>
+        <Anneal>10</Anneal>
+        <Steps>10000</Steps>
+        <Temperature>1000</Temperature>
+        <Flip2DimRatio>0.1</Flip2DimRatio>
+        <NeighborOrder>1</NeighborOrder>
+<!--        <MetropolisAlgorithm>BoundaryWalker</MetropolisAlgorithm>-->
+        <DimensionType>2.5D</DimensionType>
+<!--        <LatticeType>Hexagonal</LatticeType>-->
+    </Potts>
+
+
+    <Plugin Name="Volume">
+        <TargetVolume>125</TargetVolume>
+        <LambdaVolume>2.0</LambdaVolume>
+    </Plugin>
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Condensing" TypeId="1"/>
+        <CellType TypeName="NonCondensing" TypeId="2"/>
+    </Plugin>
+
+  <Plugin Name="GlobalBoundaryPixelTracker">
+    <NeighborOrder>1</NeighborOrder>
+  </Plugin>
+
+
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="NonCondensing" Type2="NonCondensing">16</Energy>
+        <Energy Type1="Condensing" Type2="Condensing">16</Energy>
+        <Energy Type1="NonCondensing" Type2="Condensing">16</Energy>
+        <Energy Type1="NonCondensing" Type2="Medium">1</Energy>
+        <Energy Type1="Condensing" Type2="Medium">1</Energy>
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+
+<!--    <Steppable Type="BlobInitializer">-->
+
+<!--        <Region>-->
+<!--            <Center x="50" y="50" z="10"/>-->
+<!--            <Radius>40</Radius>-->
+<!--            <Gap>0</Gap>-->
+<!--            <Width>5</Width>-->
+<!--            <Types>Condensing,NonCondensing</Types>-->
+<!--        </Region>-->
+<!--    </Steppable>-->
+<!--    -->
+
+
+        <Steppable Type="UniformInitializer">
+        <Region>
+            <BoxMin x="20" y="20" z="10"/>
+            <BoxMax x="80" y="80" z="15"/>
+            <Gap>0</Gap>
+            <Width>5</Width>
+            <Types>Condensing,NonCondensing</Types>
+        </Region>
+    </Steppable>
+
+
+</CompuCell3D>

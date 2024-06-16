@@ -21,3 +21,8 @@ class SimulationServiceThread(SimulationThread):
             initialize_cc3d_sim(sim, simthread)
 
         return main_loop_service
+
+    def get_field_storage(self):
+        from cc3d.CompuCellSetup import persistent_globals as pg
+
+        return pg.persistent_holder['field_storage']

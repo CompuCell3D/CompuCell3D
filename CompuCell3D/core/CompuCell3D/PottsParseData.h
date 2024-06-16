@@ -96,6 +96,7 @@ PottsParseData() :
     seed = 0;
     debugOutputFrequency = 1;
     latticeType = "square";
+    dimensionType = "default";
     shapeFlag = false;
     shapeAlgorithm = "Default";
     acceptanceFunctionName = "Default";
@@ -147,6 +148,7 @@ std::string boundary_y;
 std::string boundary_z;
 std::string algorithmName;
 std::string latticeType;
+std::string dimensionType;
 std::string acceptanceFunctionName;
 std::string fluctuationAmplitudeFunctionName;
 bool shapeFlag;

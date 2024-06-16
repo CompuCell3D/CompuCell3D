@@ -1,0 +1,9 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/amoebae_2D.xml</XMLScript>
+    <PythonScript Type="Python">Simulation/amoeba_2D.py</PythonScript>
+    <Resource Type="Python">Simulation/amoeba_2DSteppables.py</Resource>
+    <PIFFile>Simulation/amoebae_2D.piff</PIFFile>
+    <Resource Type="Field" Copy="No">Simulation/amoebaConcentrationField_2D.txt</Resource>
+
+</Simulation>

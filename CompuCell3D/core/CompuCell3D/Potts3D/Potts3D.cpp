@@ -142,7 +142,7 @@ LatticeType Potts3D::getLatticeType() {
 }
 
 void Potts3D::setDepth(double _depth) {
-    //this function has to be called after initializing bondary strategy and after creating cellFieldG
+    //this function has to be called after initializing boundary strategy and after creating cellFieldG
     //By default Boundary Strategy will precalculate neighbors up to certain depth (4.0). However if user requests more
     //depth additional calculations will be requested here
     depth = _depth;
@@ -155,7 +155,7 @@ void Potts3D::setDepth(double _depth) {
     minCoordinates = Point3D(0, 0, 0);
     maxCoordinates = Point3D(dim.x, dim.y, dim.z);
 
-    maxNeighborIndex = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromDepth(depth);
+    maxNeighborIndex = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromDepthVoxelCopy(depth);
 
     neighbors.clear();
     neighbors.assign(maxNeighborIndex + 1, Point3D());
@@ -164,7 +164,7 @@ void Potts3D::setDepth(double _depth) {
 
 void Potts3D::setNeighborOrder(unsigned int _neighborOrder) {
     BoundaryStrategy::getInstance()->prepareNeighborListsBasedOnNeighborOrder(_neighborOrder);
-    maxNeighborIndex = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(_neighborOrder);
+    maxNeighborIndex = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrderNoGenVoxelCopy(_neighborOrder);
     Dim3D dim = cellFieldG->getDim();
     minCoordinates = Point3D(0, 0, 0);
     maxCoordinates = Point3D(dim.x, dim.y, dim.z);
@@ -799,7 +799,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
                 unsigned int directIdx = rand->getInteger(0, maxNeighborIndex);
 
 
-                Neighbor n = boundaryStrategy->getNeighborDirect(pt, directIdx);
+                Neighbor n = boundaryStrategy->getNeighborDirectVoxelCopy(pt, directIdx);
 
                 if (!n.distance) {
                     //if distance is 0 then the neighbor returned is invalid
@@ -1156,7 +1156,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 
                 unsigned int directIdx = rand->getInteger(0, maxNeighborIndex);
 
-                Neighbor n = boundaryStrategy->getNeighborDirect(pt, directIdx);
+                Neighbor n = boundaryStrategy->getNeighborDirectVoxelCopy(pt, directIdx);
 
                 if (!n.distance) {
                     //if distance is 0 then the neighbor returned is invalid

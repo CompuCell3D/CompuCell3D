@@ -135,7 +135,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
             actors_dict = actor_specs.actors_dict
 
-            cell_type_lut = self.get_type_lookup_table()
+            if drawing_params.screenshot_data.screenshotName:
+                scene_metadata = {"actual_screenshot": True,
+                                  "TypeColorMap": drawing_params.screenshot_data.metadata["TypeColorMap"]}
+                cell_type_lut = self.get_type_lookup_table(scene_metadata=scene_metadata)
+            else:
+                cell_type_lut = self.get_type_lookup_table()
+
             cell_type_lut_max = cell_type_lut.GetNumberOfTableValues() - 1
 
             if actor_number in list(actors_dict.keys()):
@@ -213,7 +219,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
         glyphs.SetInputArrayToProcess(0, 0, 0, 0, "volume_scaling_factors")  # 0 - scalars for scaling
         glyphs.SetInputArrayToProcess(3, 0, 0, 0, "cell_types")  # 3 - color
 
-        cell_type_lut = self.get_type_lookup_table()
+        if drawing_params.screenshot_data.screenshotName:
+            scene_metadata = {"actual_screenshot": True,
+                              "TypeColorMap": drawing_params.screenshot_data.metadata["TypeColorMap"]}
+            cell_type_lut = self.get_type_lookup_table(scene_metadata=scene_metadata)
+        else:
+            cell_type_lut = self.get_type_lookup_table()
+
         mapper.SetInputConnection(glyphs.GetOutputPort())
         mapper.SetLookupTable(cell_type_lut)
         mapper.ScalarVisibilityOn()
@@ -281,8 +293,12 @@ class MVCDrawModel3D(MVCDrawModelBase):
             if actor_number in list(actors_dict.keys()):
                 actor = actors_dict[actor_number]
                 actor.SetMapper(mapper_list[actor_counter])
-
-                cell_type_lut = self.get_type_lookup_table()
+                if drawing_params.screenshot_data.screenshotName:
+                    scene_metadata = {"actual_screenshot": True,
+                                      "TypeColorMap": drawing_params.screenshot_data.metadata["TypeColorMap"]}
+                    cell_type_lut = self.get_type_lookup_table(scene_metadata=scene_metadata)
+                else:
+                    cell_type_lut = self.get_type_lookup_table()
 
                 actor.GetProperty().SetDiffuseColor(cell_type_lut.GetTableValue(actor_number)[0:3])
 
@@ -430,7 +446,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if mdata.get("LegendEnable", default=False):
             self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
-
     def init_concentration_field_actors(self, actor_specs, drawing_params=None):
         """
         switches between glyph and non-glyph visualizations
@@ -441,6 +456,10 @@ class MVCDrawModel3D(MVCDrawModelBase):
         else:
             self.init_concentration_field_non_glyph_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
+        # Handle if something previously prevented initialization of metadata,
+        # of which we notify in subsequent calls
+        if actor_specs.metadata is None:
+            actor_specs.metadata = {}
 
     def init_concentration_field_non_glyph_actors(self, actor_specs, drawing_params=None):
         """

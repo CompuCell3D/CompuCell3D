@@ -36,7 +36,7 @@ OpenCLHelper::OpenCLHelper(int gpuDeviceIndex, int platformHint) {
         std::cout << "clGetDeviceIDs (get number of devices): " << ErrorString(err) << std::endl;
     ASSERT_OR_THROW("OpenCLHelper::ctor Can't use the requested device: there is no device with this index",
                     gpuDeviceIndex < (int) numDevices);
-    std::cout << "\t" << numDevices << " device(s) avalable in platform #" << selectedPlatformInd << endl;
+    std::cout << "\t" << numDevices << " device(s) available in platform #" << selectedPlatformInd << endl;
 
     /*if((size_t)gpuDeviceIndex>=numDevices){
         throw std::runtime_error("OpenCLHelper::ctor Can't use the requested device: there is no device with this index");
@@ -121,7 +121,7 @@ cl_program OpenCLHelper::CreateProgramWithSource(cl_uint sourcesCount,
 void OpenCLHelper::BuildExecutable(cl_program program) const {
     // Build the program executable
     CC3D_Log(LOG_DEBUG) << "building the program";
-    // build the program
+    // build the programming
     //err = clBuildProgram(program, 0, NULL, "-cl-nv-verbose", NULL, NULL);
     cl_int buildErr = clBuildProgram(program, 1, &devices[deviceUsed], NULL, NULL, NULL);
     CC3D_Log(LOG_DEBUG) << "clBuildProgram: " << ErrorString(buildErr);

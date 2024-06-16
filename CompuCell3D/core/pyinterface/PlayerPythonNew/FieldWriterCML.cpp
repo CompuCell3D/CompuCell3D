@@ -424,7 +424,7 @@ bool FieldWriterCML::addFieldForOutput(const std::string &_fieldName) {
     for(auto &s : sim->getConcentrationFieldNameVector()) 
         if(_fieldName == s) 
             return addConFieldForOutput(_fieldName);
-    for(auto &s : fsPtr->getScalarFieldCellLevelNameVector()) 
+    for(auto &s : fsPtr->getScalarFieldNameVector()) 
         if(_fieldName == s) 
             return addScalarFieldForOutput(_fieldName);
     for(auto &s : fsPtr->getScalarFieldCellLevelNameVector()) 

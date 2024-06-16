@@ -306,7 +306,7 @@ class CC3DSimService(CC3DPySim, PySimService):
                   name: str = None,
                   fps: int = 60,
                   config_fp: str = None,
-                  blocking: bool = False,
+                  blocking: bool = True,
                   timeout: float = None,
                   drawing_style: str = None) -> Optional[Any]:
         """
@@ -322,7 +322,7 @@ class CC3DSimService(CC3DPySim, PySimService):
         :type fps: int
         :param config_fp: filepath to saved frame configuration settings dictionary
         :type config_fp: str
-        :param blocking: flag to block when updating renders; blocking makes for smoother visualization but slower sims
+        :param blocking: flag to block when updating renders; should only be disabled when data will not change
         :type blocking: bool
         :param timeout: timeout for launching the frame, in seconds
         :type timeout: float

@@ -47,7 +47,7 @@ requirements:
     - vtk={{ vtk_version }}
     - eigen
     - tbb-devel={{ tbb_devel_version }}
-    - boost={{ boost_version }}
+    - boost>={{ boost_version }}
     - cmake={{ cmake_version }}
     - swig>={{ swig_version }}
     - psutil

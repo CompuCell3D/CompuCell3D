@@ -1,5 +1,6 @@
 import os
 import time
+import uuid
 from collections import OrderedDict
 from os.path import join, exists, basename
 from typing import Union
@@ -11,6 +12,7 @@ from cc3d.core.utils import mkdir_p
 from cc3d.cpp.CompuCell import PyAttributeAdder
 from pathlib import Path
 from threading import Lock
+
 
 
 class PersistentGlobals:
@@ -181,11 +183,16 @@ class PersistentGlobals:
         """
 
         if self.__workspace_dir is None:
-            workspace_dir = os.path.join(os.path.expanduser('~'), 'CC3DWorkspace')
-            if not exists(workspace_dir):
-                Path(workspace_dir).mkdir(parents=True, exist_ok=True)
 
-            return workspace_dir
+            try:
+                workspace_dir = Path(str(self.configuration.getSetting('OutputLocation')))
+            except:
+                workspace_dir = Path.home().joinpath('CC3DWorkspace')
+
+            if not exists(workspace_dir):
+                workspace_dir.mkdir(parents=True, exist_ok=True)
+
+            return str(workspace_dir)
         else:
             return self.__workspace_dir
 
@@ -197,11 +204,9 @@ class PersistentGlobals:
         """
 
         current_time = time.localtime()
-        str_f_time = time.strftime
-        timestamp_str = "_" + str_f_time("%m", current_time) + "_" + str_f_time("%d", current_time) + "_" + str_f_time(
-            "%Y", current_time) + "_" + str_f_time("%H", current_time) + "_" + str_f_time("%M",
-                                                                                          current_time) + "_" + str_f_time(
-            "%S", current_time)
+        str_f_time = time.strftime        
+        timestamp_str = f"_{str_f_time('%m', current_time)}_{str_f_time('%d', current_time)}_{str_f_time('%Y', current_time)}_{str_f_time('%H', current_time)}_{str_f_time('%M', current_time)}_{str_f_time('%S', current_time)}_{uuid.uuid4().hex[:6]}"
+        
 
         return timestamp_str
 
