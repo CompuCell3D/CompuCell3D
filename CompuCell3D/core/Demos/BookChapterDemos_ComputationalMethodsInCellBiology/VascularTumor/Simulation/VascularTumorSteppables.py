@@ -3,7 +3,7 @@ from cc3d.core.PySteppables import *
 
 def ir(x):
     """
-    Rounds floating point to thew nearest integer ans returns integer
+    Rounds floating point to the nearest integer and returns integer
     :param x: {float} num to round
     :return:
     """

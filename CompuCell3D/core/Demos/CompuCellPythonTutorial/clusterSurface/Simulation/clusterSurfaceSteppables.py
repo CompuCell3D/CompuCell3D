@@ -32,6 +32,7 @@ class MitosisSteppableClusters(MitosisSteppableClustersBase):
             for cell_local in cluster_cell_list:
                 print("CLUSTER CELL ID=", cell_local.id, " type=", cell_local.type)
                 print('cluster_surface=', cell_local.clusterSurface)
+                print("clusterSurfaceTension=", cell_local.clusterSurfaceTension)
 
         for compartments in self.clusters:
             cluster_id = -1
