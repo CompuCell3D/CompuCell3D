@@ -10,10 +10,10 @@ from os.path import dirname, join, abspath
 from pathlib import Path
 
 __version__ = "4.6.0"
-__revision__ = "0"
-__githash__ = "c0b6774"
+__revision__ = "1"
+__githash__ = "a990885"
 
-# from . import config
+
 from cc3d import config
 
 def get_version_revision_str():
