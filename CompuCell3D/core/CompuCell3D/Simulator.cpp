@@ -77,6 +77,9 @@ Simulator::~Simulator() {
 	CC3D_Log(LOG_DEBUG) << "Simulator: extra destroy for boundary strategy";
     BoundaryStrategy::destroy();
 	CC3DLogger::destroy();
+    pluginManager.unload();
+    steppableManager.unload();
+    pluginBaseManager.unload();
 
 #ifdef QT_WRAPPERS_AVAILABLE
     //restoring original cerr stream buffer
@@ -757,16 +760,26 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData) {
 	if (_xmlData->getFirstElement("LatticeType")) {
 		ppdCC3DPtr->latticeType = _xmlData->getFirstElement("LatticeType")->getText();
 	}
+    if (_xmlData->getFirstElement("DimensionType")) {
+        ppdCC3DPtr->dimensionType = _xmlData->getFirstElement("DimensionType")->getText();
+    }
+
+
 	CC3D_Log(LOG_DEBUG) << "ppdCC3DPtr->latticeType = " << ppdCC3DPtr->latticeType;
+    CC3D_Log(LOG_DEBUG) << "ppdCC3DPtr->dimensionType = " << ppdCC3DPtr->dimensionType;
+
 
 
     changeToLower(ppdCC3DPtr->latticeType);
-
+    changeToLower(ppdCC3DPtr->dimensionType);
 
     BoundaryStrategy::destroy(); // TEMP, se what happens: It hangs after second selection of the file.
 
 
-
+    DimensionType dimensionType = DIM_DEFAULT;
+    if (ppdCC3DPtr->dimensionType == "2.5d"){
+        dimensionType = DIM_2_5;
+    }
 
 
     // This is the ONLY place where the BoundaryStrategy singleton is instantiated!!!
@@ -789,12 +802,12 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData) {
 
         BoundaryStrategy::instantiate(ppdCC3DPtr->boundary_x, ppdCC3DPtr->boundary_y, ppdCC3DPtr->boundary_z,
                                       ppdCC3DPtr->shapeAlgorithm, ppdCC3DPtr->shapeIndex, ppdCC3DPtr->shapeSize,
-                                      ppdCC3DPtr->shapeInputfile, HEXAGONAL_LATTICE);
+                                      ppdCC3DPtr->shapeInputfile, HEXAGONAL_LATTICE, dimensionType);
         CC3D_Log(LOG_DEBUG) << "initialized hex lattice";
     } else {
         BoundaryStrategy::instantiate(ppdCC3DPtr->boundary_x, ppdCC3DPtr->boundary_y, ppdCC3DPtr->boundary_z,
                                       ppdCC3DPtr->shapeAlgorithm, ppdCC3DPtr->shapeIndex, ppdCC3DPtr->shapeSize,
-                                      ppdCC3DPtr->shapeInputfile, SQUARE_LATTICE);
+                                      ppdCC3DPtr->shapeInputfile, SQUARE_LATTICE, dimensionType);
         CC3D_Log(LOG_DEBUG) << "initialized square lattice";
 	}
     CC3D_Log(LOG_DEBUG) << "potts.getLatticeType() = "<< potts.getLatticeType();

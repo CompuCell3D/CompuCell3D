@@ -5,6 +5,8 @@ Defines features for interactive visualization for use with CC3D simservice appl
 # todo: add CC3D logo to window title icon
 # todo: disable built-in key commands for closing render windows
 # todo: add support for additional plots (e.g., tracking fields)
+# todo: improve synchronization to allow asynchronous execution and visualization while handling race conditions
+# todo: implement setting a frame by provided screenshot data
 
 import json
 import multiprocessing
@@ -34,6 +36,13 @@ from cc3d.cpp.PlayerPython import FieldExtractorCML, FieldStreamer, FieldStreame
 from cc3d.core.GraphicsUtils.GraphicsFrame import GraphicsFrame, default_field_label
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrameIO import *
 from cc3d.cpp.CompuCell import Dim3D
+
+
+# Get default data and do some minor cleanup
+CONFIG_DEFAULT_SETTINGS = Configuration.default_settings_dict_xml()
+if 'TypeColorMap' in CONFIG_DEFAULT_SETTINGS.keys():
+    for k, v in list(CONFIG_DEFAULT_SETTINGS['TypeColorMap'].items()):
+        CONFIG_DEFAULT_SETTINGS['TypeColorMap'][int(k)] = CONFIG_DEFAULT_SETTINGS['TypeColorMap'].pop(k)
 
 
 class FieldStreamerDataPy:
@@ -468,6 +477,19 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
 
         return self.metadata_data_dict[field_type][field_name]
 
+    def get_screenshot_data(self):
+        """
+        Computes/populates Screenshot Description data based on the current GUI configuration
+        for the current window
+
+        :return: computed screenshot data
+        :rtype: ScreenshotData
+        """
+
+        ss_data = self.compute_current_screenshot_data()
+        ss_data.extractCameraInfo(self.get_active_camera())
+        return ss_data
+
     def get_concentration_field_names(self) -> List[str]:
         """Get concentration field names from remote source"""
         return MsgGetConcFieldNames.request(self.conn, True)
@@ -664,6 +686,10 @@ class CC3DPyGraphicsFrameControlInterface:
         """Close the graphics frame process"""
         self._process_message(ControlMessageShutdown())
 
+    def get_screenshot_data(self):
+        """Get screenshot data using the current frame configuration"""
+        return self._process_message(ControlMessageGetScreenshotData())
+
     def pull_metadata(self, _field_name: str):
         """Update field metadata storage on a frame for a field"""
         self._process_message(ControlMessagePullMetadata(_field_name))
@@ -818,38 +844,6 @@ class CC3DPyGraphicsFrameClientBase:
         'DisplayMinMaxInfo'
     ]
     """Configuration keys with database values that are uniformly applied to all fields"""
-
-    # todo: implement smarter CC3D default configuration data
-
-    CONFIG_DEFAULT_VALUES: List[Tuple[str, Union[Any, Dict[Any, Any]]]] = [
-        ('AxesColor', [255, 255, 255]),
-        ('BorderColor', [255, 255, 0]),
-        ('BoundingBoxColor', [255, 255, 255]),
-        ('BoundingBoxOn', True),
-        ('CellBordersOn', True),
-        ('CellGlyphsOn', False),
-        ('CellsOn', True),
-        ('ClusterBorderColor', [0, 0, 255]),
-        ('ClusterBordersOn', False),
-        ('ContourColor', [255, 255, 255]),
-        ('FPPLinksColor', [255, 255, 255]),
-        ('FPPLinksOn', False),
-        ('ShowAxes', True),
-        ('ShowHorizontalAxesLabels', True),
-        ('ShowVerticalAxesLabels', True),
-        ('TypeColorMap', {0: [0, 0, 0],
-                          1: [0, 255, 0],
-                          2: [0, 0, 255],
-                          3: [255, 0, 0],
-                          4: [128, 128, 0],
-                          5: [192, 192, 192],
-                          6: [255, 0, 255],
-                          7: [0, 0, 128],
-                          8: [0, 255, 255],
-                          9: [0, 128, 0],
-                          10: [255, 255, 255]}),
-        ('WindowColor', [0, 0, 0])
-    ]
 
     def __init__(self,
                  name: str = None,
@@ -1237,6 +1231,11 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
             warnings.warn(f'Failed to close: {str(e)}', RuntimeWarning)
             return False
 
+    def get_screenshot_data(self):
+        """Get screenshot data using the current frame configuration"""
+
+        return self._frame_controller.get_screenshot_data()
+
     def pull_metadata(self, _field_name: str):
         """Update field metadata storage on a frame for a field"""
 
@@ -1402,9 +1401,19 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
 
         try:
             if field_name is None:
-                return self.config_data[_key]
+                try:
+                    return self.config_data[_key]
+                except KeyError:
+                    self.config_data[_key] = CONFIG_DEFAULT_SETTINGS[_key]
+                    return self.config_data[_key]
             else:
-                return self.config_data[_key][field_name]
+                if _key not in self.config_data.keys():
+                    self.config_data[_key] = {field_name: CONFIG_DEFAULT_SETTINGS[_key]}
+                try:
+                    return self.config_data[_key][field_name]
+                except KeyError:
+                    self.config_data[_key][field_name] = CONFIG_DEFAULT_SETTINGS[_key]
+                    return self.config_data[_key][field_name]
         except KeyError:
             raise RuntimeError('Failed fetching configuration:', _key, field_name)
 
@@ -1424,7 +1433,8 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
         field_writer.addCellFieldForOutput()
 
         if self._field_name != 'Cell_Field':
-            field_writer.addFieldForOutput(self._field_name)
+            if not field_writer.addFieldForOutput(self._field_name):
+                warnings.warn(f'Failed to add field for output: {self._field_name}', RuntimeWarning)
 
         return FieldStreamerDataPy.from_base(FieldStreamer.dump(field_writer))
 
@@ -1659,6 +1669,11 @@ class CC3DPyGraphicsFrameClientProxy:
         rval = self._process_ret_msg('close')
         self._executor_conn.send(None)
         return rval
+
+    def get_screenshot_data(self):
+        """Get screenshot data using the current frame configuration"""
+
+        return self._process_ret_msg('get_screenshot_data')
 
     def pull_metadata(self, _field_name: str):
         """Update field metadata storage on a frame for a field"""

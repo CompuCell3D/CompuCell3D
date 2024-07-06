@@ -66,17 +66,25 @@ void SurfaceTrackerPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) 
     if (!_xmlData) {
         maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(
                 1); //use first nearest neighbors for surface calculations as default
-    } else if (_xmlData->getFirstElement("MaxNeighborOrder")) {
-        maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(
-                _xmlData->getFirstElement("MaxNeighborOrder")->getUInt());
+    } else if (_xmlData->getFirstElement("NeighborOrder")) {
+        setNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());
+    }
+    else if (_xmlData->getFirstElement("MaxNeighborOrder")) {
+        setNeighborOrder(_xmlData->getFirstElement("MaxNeighborOrder")->getUInt());
     } else if (_xmlData->getFirstElement("MaxNeighborDistance")) {
         maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromDepth(
                 _xmlData->getFirstElement("MaxNeighborDistance")->getDouble());//depth=1.1 - means 1st nearest neighbor
     } else {
-        maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(
-                1); //use first nearest neighbors for surface calculations as default
+        setNeighborOrder(1);
     }
     lmf = boundaryStrategy->getLatticeMultiplicativeFactors();
+}
+
+void SurfaceTrackerPlugin::setNeighborOrder(unsigned int neighbor_order){
+    ASSERT_OR_THROW("boundaryStrategy not initializer", boundaryStrategy);
+
+    maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(neighbor_order);
+
 }
 
 std::string SurfaceTrackerPlugin::steerableName() { return toString(); }

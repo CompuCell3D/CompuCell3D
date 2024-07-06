@@ -1,6 +1,8 @@
+import os
 import time
 from cc3d import CompuCellSetup
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame import CC3DPyGraphicsFrameClient
+from typing import Optional
 
 
 class CC3DPy:
@@ -127,6 +129,85 @@ class CC3DPy:
         frame.launch()
         return frame
 
+    @staticmethod
+    def get_screenshot_data() -> dict:
+        """Gets a copy of the current screenshot data"""
+
+        sm = CompuCellSetup.persistent_globals.screenshot_manager
+        if sm is None:
+            raise RuntimeError('Screenshot manager not available at this time')
+
+        return sm.generate_screenshot_description_data()
+
+    @staticmethod
+    def set_screenshot_data(_data: dict):
+        """Sets current screenshot data"""
+        sm = CompuCellSetup.persistent_globals.screenshot_manager
+        if sm is None:
+            raise RuntimeError('Screenshot manager not available at this time')
+
+        sm.read_screenshot_description_data(_data)
+
+    @staticmethod
+    def save_screenshot_data(_fp: str = None) -> str:
+        """
+        Saves screenshot data if available
+
+        :param _fp: absolute file path of saved data; default is standard location if available
+        :return: file path if saved, otherwise None
+        """
+
+        sm = CompuCellSetup.persistent_globals.screenshot_manager
+        if sm is None:
+            raise RuntimeError('Screenshot manager not available at this time')
+
+        if _fp is None:
+            _fp = sm.get_screenshot_filename()
+        if _fp is None:
+            raise RuntimeError('Screenshot file name could not be deduced')
+
+        sm.write_screenshot_description_file(_fp)
+        return _fp
+
+    @staticmethod
+    def load_screenshot_data(_fp: str):
+        """
+        Loads screenshot data from file
+
+        :param _fp: absolute path of saved data
+        :return: true is loaded
+        """
+
+        if not os.path.isfile(_fp):
+            raise FileNotFoundError('Screenshot data file does not exist at path', _fp)
+
+        sm = CompuCellSetup.persistent_globals.screenshot_manager
+        if sm is None:
+            raise RuntimeError('Screenshot manager not available at this time')
+
+        sm.read_screenshot_description_file(_fp)
+        return True
+
+    @staticmethod
+    def starting_screenshot_description_data():
+        """Generates the start of screenshot description data"""
+
+        from cc3d.core.GraphicsUtils.ScreenshotManagerCore import ScreenshotManagerCore
+        return ScreenshotManagerCore.starting_screenshot_description_data()
+
+    @staticmethod
+    def append_screenshot_description_data(root_elem: dict, data_elem: dict, screenshot_uid: Optional[str]=None):
+        """
+        Append a screenshot data element
+
+        :param root_elem: screenshot data
+        :param data_elem: data element for a field
+        :return: updated dictionary
+        """
+
+        from cc3d.core.GraphicsUtils.ScreenshotManagerCore import ScreenshotManagerCore
+        return ScreenshotManagerCore.append_screenshot_description_data(root_elem, data_elem, screenshot_uid)
+
 
 class CC3DPySim:
     """
@@ -177,3 +258,51 @@ class CC3DPySim:
 
     def visualization(self):
         return CC3DPy.visualization()
+
+    @staticmethod
+    def get_screenshot_data() -> dict:
+        """Gets a copy of the current screenshot data, if any"""
+        return CC3DPy.get_screenshot_data()
+
+    @staticmethod
+    def set_screenshot_data(_data: dict):
+        """Sets current screenshot data"""
+        return CC3DPy.set_screenshot_data(_data)
+
+    @staticmethod
+    def save_screenshot_data(_fp: str = None) -> str:
+        """
+        Saves screenshot data if available
+
+        :param _fp: absolute file path of saved data; default is standard location if available
+        :return: file path if saved, otherwise None
+        """
+        return CC3DPy.save_screenshot_data(_fp)
+
+    @staticmethod
+    def load_screenshot_data(_fp: str):
+        """
+        Loads screenshot data from file
+
+        :param _fp: absolute path of saved data
+        :return: true is loaded
+        """
+        return CC3DPy.load_screenshot_data(_fp)
+
+    @staticmethod
+    def starting_screenshot_description_data():
+        """Generates the start of screenshot description data"""
+        return CC3DPy.starting_screenshot_description_data()
+
+    @staticmethod
+    def append_screenshot_description_data(root_elem: dict, data_elem: dict) -> dict:
+        """
+        Append a screenshot data element
+
+        :param root_elem: screenshot data
+        :param data_elem: data element for a field
+        :return: updated dictionary
+        """
+        CC3DPy.append_screenshot_description_data(root_elem, data_elem)
+        # Returning redundant result for service interface
+        return root_elem

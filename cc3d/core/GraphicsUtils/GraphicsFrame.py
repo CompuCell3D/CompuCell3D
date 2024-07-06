@@ -382,7 +382,13 @@ class GraphicsFrame:
 
         self.gd.clear_display()
 
+        pg = cc3d.CompuCellSetup.persistent_globals
+
         self.current_screenshot_data = self.compute_current_screenshot_data()
+        try:
+            self.current_screenshot_data.cell_shell_optimization = pg.configuration.getSetting('CellShellOptimization')
+        except KeyError:
+            print("Could not extract CellShellOptimization setting using default")
 
         self.gd.draw(screenshot_data=self.current_screenshot_data, bsd=basic_simulation_data, screenshot_name='')
 

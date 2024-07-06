@@ -2,6 +2,30 @@ Release Notes
 =============
 
 
+Version 4.6.0
+-------------
+**2024-06-08**
+
+New features:
+ - Quasi-2D simulation in 3D mode
+ - Improved handling of screenshots
+ - New Demos Browser
+ - Restored support for GPU (OpenCL) solvers - requires custom compilation
+ - Improved developers' documentation - (explains how to compile GPU solvers)
+ - Added explicit setting to turn on/off cell-shell rendering optimization in 3D.
+ - Implemented direct way to restore default settings directly from the Player
+ - Added NeighborOrder option in Surface Plugin. Eliminates the need to specify it in the SurfaceTracker plugin
+
+
+Changes:
+
+Bug fixes:
+    - Fixing screenshots settings handling
+    - Fixed restoration of graphics windows on Windows OS
+    - Multiple minor bug fixes
+
+
+
 Version 4.5.0
 -------------
 **2023-12-09**

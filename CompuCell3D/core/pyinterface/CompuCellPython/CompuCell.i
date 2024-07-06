@@ -337,6 +337,7 @@ using namespace CompuCell3D;
 %include <CompuCell3D/Boundary/BoundaryStrategy.h>
 %include "Potts3D/Cell.h"
 
+
     
     
 using namespace CompuCell3D;
