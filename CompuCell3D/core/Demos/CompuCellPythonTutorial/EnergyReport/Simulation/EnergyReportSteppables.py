@@ -29,14 +29,14 @@ class EnergyReportSteppable(SteppableBasePy):
 
         self.plot_win3 = self.add_new_plot_window(
             title='Accepted Effective Energy Changes',
-            x_axis_title='Monte Carlo Step (MCS)',
-            y_axis_title='Effective Energy Change',
+            x_axis_title='Effective Energy Change',
+            y_axis_title='Count',
             grid=True)
 
         self.plot_win4 = self.add_new_plot_window(
             title='Rejected Effective Energy Changes',
-            x_axis_title='Monte Carlo Step (MCS)',
-            y_axis_title='Effective Energy Change',
+            x_axis_title='Effective Energy Change',
+            y_axis_title='Count',
             grid=True)
 
         self.plot_win1.add_plot("AverageVol", style='Dots', color='red', size=5)
