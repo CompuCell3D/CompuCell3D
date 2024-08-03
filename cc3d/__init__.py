@@ -9,11 +9,11 @@ import sys
 from os.path import dirname, join, abspath
 from pathlib import Path
 
-__version__ = "4.5.0"
-__revision__ = "6"
-__githash__ = "8190091"
+__version__ = "4.6.0"
+__revision__ = "2"
+__githash__ = "397f8b1"
 
-# from . import config
+
 from cc3d import config
 
 def get_version_revision_str():
@@ -59,6 +59,13 @@ cc3d_cpp_bin_path_pathlib = Path(cc3d_cpp_bin_path)
 os.environ['COMPUCELL3D_STEPPABLE_PATH'] = cc3d_steppable_path + os.sep
 os.environ['COMPUCELL3D_PLUGIN_PATH'] = cc3d_plugin_path + os.sep
 
+if 'CC3D_OPENCL_SOLVERS_DIR' not in os.environ:
+    os.environ['CC3D_OPENCL_SOLVERS_DIR'] = cc3d_steppable_path + os.sep + "OpenCL" + os.sep
+else:
+    print("Detected CC3D_OPENCL_SOLVERS_DIR:", os.environ['CC3D_OPENCL_SOLVERS_DIR'])
+
+
+
 if sys.platform.startswith('win'):
     path_env = os.environ['PATH']
 
@@ -74,11 +81,14 @@ if sys.platform.startswith('win'):
     if sys.version_info >= (3, 8):
 
         if cc3d_lib_shared not in path_env_list:
-            os.add_dll_directory(cc3d_lib_shared)
+            if Path(cc3d_lib_shared).exists() and Path(cc3d_lib_shared).is_dir():
+                os.add_dll_directory(cc3d_lib_shared)
 
         os.add_dll_directory(os.environ['COMPUCELL3D_PLUGIN_PATH'])
         os.add_dll_directory(os.environ['COMPUCELL3D_STEPPABLE_PATH'])
         os.add_dll_directory(str(mingw_bin_path))
+
+
     else:
 
         if cc3d_lib_shared not in path_env_list:

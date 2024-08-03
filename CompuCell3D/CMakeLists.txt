@@ -42,10 +42,16 @@ ENDIF()
 
 
 OPTION(FLEX_PYTHON_SPECS "Allow Flexible Python Path specification" OFF)
+OPTION(ANACONDA_PYTHON_LAYOUT "Assume Python Distribution has similar directory layout as Python distribution in Anaconda" ON)
 
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development NumPy)
-
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    get_filename_component(PYTHON_BASE_DIR "${Python3_EXECUTABLE}" DIRECTORY)
+else()
+    get_filename_component(PYTHON_BASE_DIR "${Python3_EXECUTABLE}" DIRECTORY)
+    get_filename_component(PYTHON_BASE_DIR "${PYTHON_BASE_DIR}" DIRECTORY)
+endif()
 
 message("Python3_FOUND: ${Python3_FOUND}")
 message("Python3_Interpreter_FOUND: ${Python3_Interpreter_FOUND}")
@@ -61,6 +67,12 @@ message("Python3_LIBRARY_DIRS: ${Python3_LIBRARY_DIRS}")
 message("Python3_RUNTIME_LIBRARY_DIRS: ${Python3_RUNTIME_LIBRARY_DIRS}")
 message("Python3_NumPy_INCLUDE_DIRS: ${Python3_NumPy_INCLUDE_DIRS}")
 
+message("Python3_LIBRARY_DIRS ${Python3_LIBRARY_DIRS}")
+message("Python3_SABI_LIBRARY_DIRS ${Python3_SABI_LIBRARY_DIRS}")
+message("Python3_SITEARCH ${Python3_SITEARCH}")
+
+message("PYTHON_BASE_DIR${PYTHON_BASE_DIR}")
+
 # Should we build shared libraries
 OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
@@ -69,9 +81,9 @@ SET(CC3D_PYTHON_MODULE_DIR ${CMAKE_SOURCE_DIR}/../)
 # setting up version
 
 set(COMPUCELL3D_MAJOR_VERSION 4)
-set(COMPUCELL3D_MINOR_VERSION 4)
-set(COMPUCELL3D_BUILD_VERSION 1)
-set(COMPUCELL3D_REV_NUMBER 20240109)
+set(COMPUCELL3D_MINOR_VERSION 6)
+set(COMPUCELL3D_BUILD_VERSION 0)
+set(COMPUCELL3D_REV_NUMBER 20240525)
 
 ## Specify a version for all libs to use
 # letters A, B, C are added to ensure nice display of version in cmake gui
@@ -148,10 +160,38 @@ if(BUILD_STANDALONE)
     set(SITE_PACKAGES_INSTALL_REL lib/site-packages)
     set(COMPUCELL3D_INSTALL_SCRIPT_DIR_FULL_PATH ${CMAKE_INSTALL_PREFIX})
     set(COMPUCELL3D_INSTALL_SCRIPT_DIR .)
+    SET(COMPUCELL3D_RUNTIME_DESTINATION bin)
+    SET(COMPUCELL3D_LIBRARY_DESTINATION lib)
+    SET(COMPUCELL3D_ARCHIVE_DESTINATION lib)
 else()
     file(RELATIVE_PATH SITE_PACKAGES_INSTALL_REL ${CMAKE_INSTALL_PREFIX} ${Python3_SITELIB})
     set(COMPUCELL3D_INSTALL_SCRIPT_DIR_FULL_PATH ${CMAKE_INSTALL_PREFIX}/bin)
     file(RELATIVE_PATH COMPUCELL3D_INSTALL_SCRIPT_DIR ${CMAKE_INSTALL_PREFIX} ${COMPUCELL3D_INSTALL_SCRIPT_DIR_FULL_PATH})
+
+
+    if(ANACONDA_PYTHON_LAYOUT)
+        # note this only works with same layouts as used in Anaconda.
+        # if this is not the case set -DANACONDA_PYTHON_LAYOUT:BOOLEAN=OFF when calling cmake
+        if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+            # If Python has  we install core shared libraries ((e.g. libCC3DBoundary) into appropriate location for shared library inside python distribution that was used to build CC3D
+            SET(COMPUCELL3D_RUNTIME_DESTINATION ${PYTHON_BASE_DIR}/Library/bin)
+            SET(COMPUCELL3D_LIBRARY_DESTINATION ${PYTHON_BASE_DIR}/Library/bin)
+            SET(COMPUCELL3D_ARCHIVE_DESTINATION ${PYTHON_BASE_DIR}/Library/bin)
+        else()
+            # If Python is scattered all over the place we install core shared libraries (e.g. libCC3DBoundary) into CMAKE_INSTALL_PREFIX/bin
+            SET(COMPUCELL3D_RUNTIME_DESTINATION ${PYTHON_BASE_DIR}/lib)
+            SET(COMPUCELL3D_LIBRARY_DESTINATION ${PYTHON_BASE_DIR}/lib)
+            SET(COMPUCELL3D_ARCHIVE_DESTINATION ${PYTHON_BASE_DIR}/lib)
+
+        endif()
+    else()
+        SET(COMPUCELL3D_RUNTIME_DESTINATION bin)
+        SET(COMPUCELL3D_LIBRARY_DESTINATION lib)
+        SET(COMPUCELL3D_ARCHIVE_DESTINATION lib)
+
+    endif()
+
+
 endif()
 
 SET(SITE_PACKAGES_INSTALL ${CMAKE_INSTALL_PREFIX}/${SITE_PACKAGES_INSTALL_REL})

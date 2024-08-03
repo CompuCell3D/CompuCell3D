@@ -1,7 +1,7 @@
 """
 Class that specifies drawing scene properties/settings
 """
-
+import json
 from collections import OrderedDict
 
 
@@ -16,6 +16,7 @@ class ScreenshotData(object):
         # and the second one is plot type (e.g. CellField, Confield, Vector Field)
         self.plotData = ("Cell_Field",
                          "CellField")
+        # self.out_dir_core_name = ""
         self.projectionPosition = 0
         self.screenshotGraphicsWidget = None
         # self.originalCameraObj=None
@@ -36,6 +37,7 @@ class ScreenshotData(object):
         self.invisible_types = None
         self.win_width = 299
         self.win_height = 299
+        self.cell_shell_optimization = None
 
         self.metadata = {}
 
@@ -141,10 +143,21 @@ class ScreenshotData(object):
         if self.invisible_types is None:
             self.invisible_types = []
         scr_elem['TypesInvisible'] = self.invisible_types
+        scr_elem["CellShellOptimization"] = self.cell_shell_optimization
 
         scr_elem['metadata'] = self.metadata
+        scr_elem['screenshotName'] = self.screenshotName
 
         return scr_elem
+
+    def to_json_simulate_file_readout(self):
+        """
+        Generates a JSON-compatible data structure by first writing json dict to string then loading it.
+        This ensures that keys are strings and not floats, integers, etc...
+
+        :return:
+        """
+        return json.loads(json.dumps(self.to_json()))
 
     @classmethod
     def from_json(cls, _data, scr_name: str = None):
@@ -173,6 +186,7 @@ class ScreenshotData(object):
         scr_data.lattice_axes_on = _data['LatticeAxes']
         scr_data.lattice_axes_labels_on = _data['LatticeAxesLabels']
         scr_data.invisible_types = _data['TypesInvisible']
+        scr_data.cell_shell_optimization = _data.get('CellShellOptimization', False)
 
         cam_settings = []
 

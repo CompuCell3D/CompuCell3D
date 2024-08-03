@@ -1,4 +1,4 @@
-INCLUDE_DIRECTORIES(${OPENCL_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${OpenCL_INCLUDE_DIRS})
 
 IF(MSVC)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251")
@@ -31,7 +31,7 @@ ADD_LIBRARY(FlexibleDiffusionSolverFE_OpenCL SHARED
 )
 
 TARGET_LINK_LIBRARIES(FlexibleDiffusionSolverFE_OpenCL
-	${OPENCL_LIBRARIES} cc3d::Logger)
+	${OpenCL_LIBRARIES} cc3d::Logger)
 
 
 install(TARGETS FlexibleDiffusionSolverFE_OpenCL
