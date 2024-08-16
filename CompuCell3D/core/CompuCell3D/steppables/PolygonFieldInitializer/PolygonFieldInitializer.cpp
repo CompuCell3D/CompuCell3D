@@ -99,14 +99,14 @@ void PolygonFieldInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlDat
 
                 //Try to help user render 1 layer of cells if they set Extrude incorrectly.
                 if (initData.zMax <= initData.zMin) {
-                    cout << "Warning: PolygonInitializer requires that zMax > zMin in the Extrude parameter.\n";
+                    CC3DLogger::get()->log(LOG_WARNING, "Warning: PolygonInitializer requires that zMax > zMin in the Extrude parameter.\n");
                     int tmp = initData.zMin;
                     initData.zMin = initData.zMax;
                     initData.zMax = tmp;
                 }
                 if (initData.zMax - initData.zMin < initData.width) {
-                    cout << "Warning: PolygonInitializer requires a larger value for zMax in the Extrude parameter "
-                         << "in order to render at least one cell layer. We've fixed it for you.\n";
+                    CC3DLogger::get()->log(LOG_WARNING, "Warning: PolygonInitializer requires a larger value for zMax in the Extrude parameter \
+                        in order to render at least one cell layer. We've fixed it for you.\n");
                     initData.zMax = initData.zMin + initData.width;
                 }
             }
@@ -267,7 +267,7 @@ void PolygonFieldInitializer::layOutCells(const PolygonFieldInitializerData &_in
     int zStart = _initData.zMin / size;
     int zEnd = _initData.zMax / size;
     if (zEnd - zStart > itDim.z) {
-        cout << "Treating this as a 2D polygon.\n";
+        CC3DLogger::get()->log(LOG_INFORMATION, "Treating this as a 2D polygon.\n");
         zStart = 0;
         zEnd = itDim.z;
     }
