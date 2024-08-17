@@ -1,5 +1,5 @@
 name: All Other Issue
-description: Issues that are different from feature requests or bug reports. If this doesn't look right, [choose a different type](https://github.com/CompuCell3D/CompuCell3D/issues/new/choose).
+description: Issues that are different from feature requests or bug reports. 
 body:
   - type: markdown
     attributes:
