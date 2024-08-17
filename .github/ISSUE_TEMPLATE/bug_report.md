@@ -33,10 +33,10 @@ If applicable, add screenshots to help explain your problem.
  - Version [e.g. 22]
 
 **Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
+ - Device: [e.g. Lenovo Yoga 14 with AMD processor and Nvidia GPU]
+ - OS: [e.g. Windows 11]
  - CompuCell3D Version and commit tag : [e.g. 4.6.0, 397f8b1]
-- How did you install the code : [e.g. binary installer, directly via conda, compiled from source]
+ - How did you install the code : [e.g. binary installer, directly via conda, compiled from source]
  
 
 **Additional context**
