@@ -80,6 +80,15 @@ body:
       multiple: true
       options:
         - 'Not sure'
-        - 'binaries'
-        - 'via conda package'
-        - 'compilation from source'
+        - 'user interface'
+        - 'Twedit++'
+        - 'Player'
+        - 'Documentation'
+        - 'Fonts'
+        - 'graphics'
+        - 'Navigation'
+        - 'Output (export/standalone)'
+        - 'Performance'
+        - 'Runtime'
+        - 'Scripting'
+        - 'XML'
