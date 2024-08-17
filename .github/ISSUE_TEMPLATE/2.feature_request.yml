@@ -35,4 +35,4 @@ body:
       placeholder: |
         I noticed that CompuCell3d does ... and I would like to propose the following feature as a solution to this problem
     validations:
-      required: false
+      required: true
