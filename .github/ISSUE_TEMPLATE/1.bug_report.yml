@@ -73,24 +73,13 @@ body:
         - 'binaries'
         - 'via conda package'
         - 'compilation from source'
+
   - type: dropdown
     attributes:
       label: Which area(s) are affected? (Select all that apply)
       multiple: true
       options:
         - 'Not sure'
-        - 'user interface'
-        - 'Twedit++'
-        - 'Player'
-        - 'Documentation'
-        - 'Fonts'
-        - 'graphics'
-        - 'Navigation'
-        - 'Output (export/standalone)'
-        - 'Performance'
-        - 'Runtime'
-        - 'Scripting 
-        - 'XML'
-
-    validations:
-      required: true
+        - 'binaries'
+        - 'via conda package'
+        - 'compilation from source'
