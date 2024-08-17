@@ -1,0 +1,97 @@
+name: Report an issue
+description: Report a Next.js issue.
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to report CompuCell3D issue
+        
+        Feature requests should be opened in [discussions](https://github.com/CompuCell3D/CompuCell3D/discussions), or in 
+        [feature requests](https://github.com/CompuCell3D/CompuCell3D/issues/new?assignees=&labels=&projects=&template=feature_request.md&title=)
+        
+        Documentation requests should also be opened in [discussions](https://github.com/CompuCell3D/CompuCell3D/discussions).
+
+        Before opening a new issue, please do a [search](https://github.com/CompuCell3D/CompuCell3D/issues) of existing issues and :+1: upvote the existing issue instead. This will result in a quicker resolution.
+
+        If you need help or would like to discuss CompuCell3D-related ideas, projects etc please use one of the following:
+        - Start a discussion in the ["Help"](https://github.com/vercel/next.js/discussions/categories/help) section.
+        - Ask a question in [Vercel Community](https://vercel.community/tags/c/help/9/nextjs).
+
+  - type: textarea
+    attributes:
+      label: Steps To Reproduce
+      description: A step-by-step description of how to reproduce the issue, based on the linked reproduction. Screenshots can be provided in the issue body below. If using code blocks, make sure that [syntax highlighting is correct](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks#syntax-highlighting) and double check that the rendered preview is not broken.
+      placeholder: |
+        Steps to reproduce the behavior:
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Current vs. Expected behavior
+      description: A clear and concise description of what the bug is, and what you expected to happen.
+      placeholder: 'Following the steps from the previous section, I expected A to happen, but I observed B instead'
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Provide environment information
+      description: Please run `next info` in the root directory of your project and paste the results. You might need to use `npx --no-install next info` if next is not in the current PATH.
+      render: bash
+      placeholder: |
+        Operating System:
+          Platform: darwin
+          Arch: arm64
+          Version: Darwin Kernel Version 22.5.0
+        CompuCell3D:
+          version: 4.6.0
+          commit tag: 24b1e73
+          File name of the installer used to install CC3D:  CompuCell3D-setup-4.6.0.0.exe                 
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Installation Method
+      multiple: true
+      options:
+        - 'Not sure'
+        - 'binaries'
+        - 'via conda package'
+        - 'compilation from source'
+
+  - type: dropdown
+    attributes:
+      label: Which area(s) are affected? (Select all that apply)
+      multiple: true
+      options:
+        - 'Not sure'
+        - 'user interface'
+        - 'Twedit++'
+        - 'Player'
+        - 'Documentation'
+        - 'Fonts'
+        - 'graphics'
+        - 'Navigation'
+        - 'Output (export/standalone)'
+        - 'Performance'
+        - 'Runtime'
+        - 'Scripting 
+        - 'XML'
+
+    validations:
+      required: true
+
+    attributes:
+      label: Additional context
+      description: |
+        Any extra information that might help us investigate. For example, where are you deploying your application (Vercel, Docker, other platform)? Is it only reproducible on that platform, or locally too? Is the issue only happening in a specific browser? etc.
+      placeholder: |
+        I tested my reproduction against different canary releases, and the first one that introduced the bug was "13.4.20-canary.13", since reverting to "13.4.20-canary.12" works.
+
+        or
+
+        I am hosting via Docker with the recommended `output: "standalone"` option", and if I remove that option or try a different hosting option, I cannot reproduce the same issue.
