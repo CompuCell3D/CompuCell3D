@@ -40,7 +40,7 @@ body:
   - type: textarea
     attributes:
       label: Provide environment information
-      description: Please run `next info` in the root directory of your project and paste the results. You might need to use `npx --no-install next info` if next is not in the current PATH.
+      description: Please provide details about your operating system, CompuCell3D version etc.... The more details you share the easier ti will be for the development team to diagnose and fix the reported issue. If you had highly customized version of CompuCell3D installation e.g. cluster deployment, just say so in the text field below and we will talkt to you individually
       render: bash
       placeholder: |
         Operating System:
@@ -53,6 +53,19 @@ body:
           File name of the installer used to install CC3D:  CompuCell3D-setup-4.6.0.0.exe                 
     validations:
       required: true
+
+  - type: textarea
+    attributes:
+      label: Provide Simulation file and ascreenshots
+      description: Ideally we would like to to ask you to attach minimal version of the simulation that reproduces the bug - please use zip format Twedit++ can zip your project for you. 
+      Important, the simulation code you attach can be seen by everybody so make sure you share only the code that you are comfortable sharing. If you want to discuss the issue with members of our team please reach ot to us directly or say that the bug you are reporting can only be reproduced in your production code. We will work with you individually. 
+      render: bash
+      placeholder: |
+        Use Attach button (in the text box tool bar) to attach simulation and screenshots
+    validations:
+      required: true
+
+
   - type: dropdown
     attributes:
       label: Installation Method
