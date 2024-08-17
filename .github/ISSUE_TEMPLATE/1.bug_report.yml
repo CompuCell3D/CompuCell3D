@@ -57,8 +57,7 @@ body:
   - type: textarea
     attributes:
       label: Provide Simulation file and ascreenshots
-      description: Ideally we would like to to ask you to attach minimal version of the simulation that reproduces the bug - please use zip format Twedit++ can zip your project for you. 
-      Important, the simulation code you attach can be seen by everybody so make sure you share only the code that you are comfortable sharing. If you want to discuss the issue with members of our team please reach ot to us directly or say that the bug you are reporting can only be reproduced in your production code. We will work with you individually. 
+      description: Ideally we would like to to ask you to attach minimal version of the simulation that reproduces the bug - please use zip format Twedit++ can zip your project for you. **Important:**, the simulation code you attach can be seen by everybody so make sure you share only the code that you are comfortable sharing. If you want to discuss the issue with members of our team please reach ot to us directly or say that the bug you are reporting can only be reproduced in your production code. We will work with you individually. 
       render: bash
       placeholder: |
         Use Attach button (in the text box tool bar) to attach simulation and screenshots
