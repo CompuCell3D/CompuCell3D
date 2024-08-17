@@ -1,5 +1,5 @@
 name: Report an issue
-description: Report a Next.js issue.
+description: Report a CompuCell3D issue.
 labels: ['bug']
 body:
   - type: markdown
@@ -15,8 +15,8 @@ body:
         Before opening a new issue, please do a [search](https://github.com/CompuCell3D/CompuCell3D/issues) of existing issues and :+1: upvote the existing issue instead. This will result in a quicker resolution.
 
         If you need help or would like to discuss CompuCell3D-related ideas, projects etc please use one of the following:
-        - Start a discussion in the ["Help"](https://github.com/vercel/next.js/discussions/categories/help) section.
-        - Ask a question in [Vercel Community](https://vercel.community/tags/c/help/9/nextjs).
+        - Start a discussion in the ["Help"](https://github.com/CompuCell3D/CompuCell3D/discussions) section.
+        - Ask a question in [CompuCell3D Reddit Community](https://www.reddit.com/r/CompuCell3D/).
 
   - type: textarea
     attributes:
