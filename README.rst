@@ -25,7 +25,7 @@ Once installation completes, you may run Player (CompuCell3D GUI) as follows:
 
     python -m cc3d.player5
 
-To run Model editor (Twedit++)  you woudl type:
+To run Model editor (Twedit++)  you would type:
 
 .. code-block:: console
 
