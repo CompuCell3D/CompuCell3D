@@ -55,6 +55,17 @@ body:
         - 'via conda package'
         - 'compilation from source'
 
+  - type: textarea
+    attributes:
+      label: Installation Method Details
+      description: If you use non-standard installation please give us more details so that wee can reproduce your bug
+      placeholder: |
+        Provide more details about installation
+    validations:
+      required: false
+
+
+
   - type: dropdown
     attributes:
       label: Which area(s) are affected? (Select all that apply)
