@@ -19,6 +19,28 @@ also available via conda,
 
     conda install -c compucell3d -c conda-forge cc3d
 
+Once installation completes, you may run Player (CompuCell3D GUI) as follows:
+
+.. code-block:: console
+
+    python -m cc3d.player5
+
+To run Model editor (Twedit++)  you woudl type:
+
+.. code-block:: console
+
+    python -m cc3d.twedit5
+
+
+Finalyy, if you want to run simulation in a GUI-less mode you run:
+
+.. code-block:: console
+
+    python -m cc3d.run_script -i <full path to .cc3d file>
+
+
+
+
 Source
 ******
 
