@@ -58,7 +58,6 @@ body:
     attributes:
       label: Provide Simulation file and ascreenshots
       description: Ideally we would like to to ask you to attach minimal version of the simulation that reproduces the bug - please use zip format Twedit++ can zip your project for you. **Important:**, the simulation code you attach can be seen by everybody so make sure you share only the code that you are comfortable sharing. If you want to discuss the issue with members of our team please reach ot to us directly or say that the bug you are reporting can only be reproduced in your production code. We will work with you individually. 
-      render: bash
       placeholder: |
         Use Attach button (in the text box tool bar) to attach simulation and screenshots
     validations:
@@ -74,3 +73,35 @@ body:
         - 'binaries'
         - 'via conda package'
         - 'compilation from source'
+  - type: dropdown
+    attributes:
+      label: Which area(s) are affected? (Select all that apply)
+      multiple: true
+      options:
+        - 'Not sure'
+        - 'user interface'
+        - 'Twedit++'
+        - 'Player'
+        - 'Documentation'
+        - 'Fonts'
+        - 'graphics'
+        - 'Navigation'
+        - 'Output (export/standalone)'
+        - 'Performance'
+        - 'Runtime'
+        - 'Scripting 
+        - 'XML'
+
+    validations:
+      required: true
+
+    attributes:
+      label: Additional context
+      description: |
+        Any extra information that might help us investigate. For example, where are you deploying your application (Vercel, Docker, other platform)? Is it only reproducible on that platform, or locally too? Is the issue only happening in a specific browser? etc.
+      placeholder: |
+        I tested my reproduction against different canary releases, and the first one that introduced the bug was "13.4.20-canary.13", since reverting to "13.4.20-canary.12" works.
+
+        or
+
+        I am hosting via Docker with the recommended `output: "standalone"` option", and if I remove that option or try a different hosting option, I cannot reproduce the same issue.
