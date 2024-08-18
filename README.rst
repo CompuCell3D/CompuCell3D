@@ -5,6 +5,11 @@ CompuCell3D is a multiscale multicellular virtual tissue modeling and simulation
 CompuCell3D is written in C++ and provides Python bindings for model and simulation development
 in Python. CompuCell3D is supported on Windows, Mac and Linux.
 
+CompuCell3D GitHub Community
+----------------------------
+
+For bug reports, feature, requests and COmpuCel3D discussions we encourage you to visit [CompuCell3D Community Guide](https://github.com/CompuCell3D/CompuCell3D/blob/master/README_CompuCell3D_Community.md) to start participating in CompuCell3D Community
+
 Installation
 ------------
 
