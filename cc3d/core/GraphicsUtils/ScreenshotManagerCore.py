@@ -7,6 +7,7 @@ from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
 import json
 import cc3d
 from cc3d import CompuCellSetup
+from cc3d.CompuCellSetup.utils import standard_screenshot_file
 from typing import Optional
 
 MODULENAME = '---- ScreenshotManager.py: '
@@ -211,7 +212,7 @@ class ScreenshotManagerCore(object):
             print('Unknown simulation file name . Cannot locate screenshot_data folder')
             return None
 
-        guessed_screenshot_name = join(dirname(sim_file_name), 'screenshot_data', 'screenshots.json')
+        guessed_screenshot_name = standard_screenshot_file(dirname(sim_file_name), must_exist=False)
 
         return guessed_screenshot_name
 

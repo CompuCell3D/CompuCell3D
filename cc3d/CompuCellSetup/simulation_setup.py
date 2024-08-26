@@ -19,6 +19,7 @@ from cc3d.CompuCellSetup.simulation_utils import check_for_cpp_errors
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 from cc3d.CompuCellSetup.cluster_utils import check_nanohub_and_count
 import warnings
+from cc3d.CompuCellSetup.utils import standard_screenshot_file
 
 # default setting
 logger = CompuCell.CC3DLogger.get()
@@ -434,7 +435,8 @@ def init_screenshot_manager() -> None:
     persistent_globals.screenshot_manager.screenshot_number_of_digits = len(str(bsd.numberOfSteps))
 
     if persistent_globals.simulation_file_name:
-        screenshot_data_fname = join(dirname(persistent_globals.simulation_file_name), 'screenshot_data/screenshots.json')
+        screenshot_data_fname = standard_screenshot_file(dirname(persistent_globals.simulation_file_name),
+                                                         must_exist=False)
 
         try:
             persistent_globals.screenshot_manager.read_screenshot_description_file(screenshot_data_fname)
