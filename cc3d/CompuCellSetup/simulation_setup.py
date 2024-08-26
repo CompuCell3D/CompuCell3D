@@ -11,7 +11,6 @@ from cc3d.core.GraphicsUtils.ScreenshotManagerCore import ScreenshotManagerCore
 from cc3d.cpp import PlayerPython
 from cc3d.core.GraphicsOffScreen import GenericDrawer
 from cc3d.core.BasicSimulationData import BasicSimulationData
-import warnings
 import time
 import weakref
 from cc3d import CompuCellSetup
@@ -485,11 +484,11 @@ def initialize_cc3d_sim(sim, simthread):
 
 
     if init_using_restart_snapshot_enabled:
-        print('WILL RESTART SIMULATION')
+        logger.log(CompuCell.LOG_INFORMATION, 'WILL RESTART SIMULATION')
         restart_manager.loadRestartFiles()
         check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
     else:
-        print('WILL RUN SIMULATION FROM BEGINNING')
+        logger.log(CompuCell.LOG_INFORMATION, 'WILL RUN SIMULATION FROM BEGINNING')
 
     check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
@@ -598,11 +597,13 @@ def main_loop(sim, simthread, steppable_registry=None):
         cur_step += 1
 
     if run_finish_flag:
-        print("CALLING FINISH")
+        logger.log(CompuCell.LOG_DEBUG, "CALLING FINISH")
         steppable_registry.finish()
     else:
         steppable_registry.on_stop()
 
     t2 = time.time()
-    print_profiling_report(py_steppable_profiler_report=steppable_registry.get_profiler_report(),
-                           compiled_code_run_time=compiled_code_run_time, total_run_time=(t2 - t1) * 1000.0)
+    logger.log(CompuCell.LOG_INFORMATION,
+               generate_profiling_report(py_steppable_profiler_report=steppable_registry.get_profiler_report(),
+                                         compiled_code_run_time=compiled_code_run_time,
+                                         total_run_time=(t2 - t1) * 1000.0))

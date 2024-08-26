@@ -2,6 +2,7 @@ import os
 import time
 from typing import Union
 
+from cc3d.cpp import CompuCell
 from cc3d.core.BasicSimulationData import BasicSimulationData
 from cc3d.core.CMLResultsReader import CMLResultReader
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawerCC3DPy
@@ -66,7 +67,7 @@ class CC3DRenderer:
         if self.screenshot_spec is None:
             self.screenshot_spec = os.path.join(self.lds_dir, SCREENSHOT_SUBDIR, SCREENSHOT_SPEC)
         if not isinstance(self.screenshot_spec, dict) and not os.path.isfile(self.screenshot_spec):
-            print(f'Warning: no current screenshot specification')
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f'Warning: no current screenshot specification')
 
         # Minimal peripheral initializations
 
@@ -84,7 +85,7 @@ class CC3DRenderer:
         Sets up peripherals
         :return: None
         """
-        print(f'Initiailizing from {self.lds_file}')
+        CompuCell.CC3DLogger.get().log(CompuCell.LOG_INFORMATION, f'Initializing from {self.lds_file}')
 
         self.generic_drawer.set_field_extractor(self.cml_results_reader.field_extractor)
 
@@ -142,7 +143,7 @@ class CC3DRenderer:
         :return: {bool} True if rendering succeeded
         """
         if mcs not in self.available_mcs:
-            print(f'Step {mcs} not available')
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f'Step {mcs} not available')
             return False
 
         file_number = self.available_mcs.index(mcs)
