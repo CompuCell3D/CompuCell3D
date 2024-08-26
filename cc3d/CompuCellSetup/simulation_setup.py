@@ -3,6 +3,7 @@ from math import floor
 from os.path import dirname, join
 from cc3d.cpp import CompuCell
 from pathlib import Path
+from cc3d.core.logging import LoggedContext, get_logger, log_py
 from cc3d.core.XMLDomUtils import XMLIdLocator
 from cc3d.CompuCellSetup import init_modules, parseXML
 from cc3d.core import enums
@@ -18,12 +19,11 @@ from cc3d.core import RestartManager
 from cc3d.CompuCellSetup.simulation_utils import check_for_cpp_errors
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 from cc3d.CompuCellSetup.cluster_utils import check_nanohub_and_count
-import warnings
 from cc3d.CompuCellSetup.utils import standard_screenshot_file
 
 # default setting
-logger = CompuCell.CC3DLogger.get()
-logger.enableConsoleLogging(CompuCell.LOG_CURRENT)
+logger = get_logger()
+logger.enableConsoleLogging(CompuCell.LOG_INFORMATION)
 
 
 # -------------------- legacy API emulation ----------------------------------------
@@ -66,21 +66,22 @@ def setup_logging():
         try:
             log_level_val = getattr(CompuCell, log_level)
         except AttributeError:
-            warnings.warn(f"unsupported log level name: {log_level}. "
-                          f"Run command line with --help arg to see what are allowed log level names")
+            log_py(CompuCell.LOG_WARNING,
+                   f"unsupported log level name: {log_level}. "
+                   "Run command line with --help arg to see what are allowed log level names")
             return
-        logger = CompuCell.CC3DLogger.get()
-        logger.enableConsoleLogging(log_level_val)
+        _logger = CompuCell.CC3DLogger.get()
+        _logger.enableConsoleLogging(log_level_val)
         if pg.log_to_file:
             if pg.output_directory is not None:
                 if not Path(pg.output_directory).exists():
                     pg.create_output_dir()
-                logger.enableFileLogging(str(
+                _logger.enableFileLogging(str(
                     Path(pg.output_directory).joinpath("simulation.log")), log_level_val)
 
         else:
             if pg.output_directory is not None:
-                logger.disableFileLogging()
+                _logger.disableFileLogging()
 
 
 def initialize_cc3d():
@@ -88,8 +89,8 @@ def initialize_cc3d():
 
     :return:
     """
-    CompuCellSetup.persistent_globals.simulator, \
-    CompuCellSetup.persistent_globals.simthread = get_core_simulation_objects()
+    (CompuCellSetup.persistent_globals.simulator,
+     CompuCellSetup.persistent_globals.simthread) = get_core_simulation_objects()
 
     # this is mainly used by command line interface. Player has separate setup_logging function
     setup_logging()
@@ -98,7 +99,6 @@ def initialize_cc3d():
 
     simulator = CompuCellSetup.persistent_globals.simulator
 
-    # CompuCellSetup.persistent_globals.steppable_registry.simulator = simulator
     CompuCellSetup.persistent_globals.steppable_registry.simulator = weakref.ref(simulator)
 
     CompuCellSetup.persistent_globals.simulation_initialized = True
@@ -111,20 +111,30 @@ def determine_main_loop_fcn():
     :return: {object} function to use as a mainLoop
     """
 
-    sim_type = CompuCellSetup.persistent_globals.sim_type
-    if CompuCellSetup.persistent_globals.simthread is None:
-        # CML run: simthread is not set
-        return main_loop
-    else:
-        if sim_type == enums.SimType.THREADED:
-            # SimulationThread run
-            return CompuCellSetup.persistent_globals.simthread.main_loop()
-        elif sim_type == enums.SimType.SERVICE:
-            # SimulationServiceThread run
-            return CompuCellSetup.persistent_globals.simthread.main_loop()
+    with LoggedContext() as lc:
+
+        sim_type = CompuCellSetup.persistent_globals.sim_type
+        if CompuCellSetup.persistent_globals.simthread is None:
+            # CML run: simthread is not set
+            lc.log()
+
+            return main_loop
         else:
-            # Sink
-            return lambda sim, simthread, steppable_registry: None
+            if sim_type == enums.SimType.THREADED:
+                # SimulationThread run
+                lc.log()
+
+                return CompuCellSetup.persistent_globals.simthread.main_loop()
+            elif sim_type == enums.SimType.SERVICE:
+                # SimulationServiceThread run
+                lc.log()
+
+                return CompuCellSetup.persistent_globals.simthread.main_loop()
+            else:
+                # Sink
+                lc.log()
+
+                return lambda sim, simthread, steppable_registry: None
 
 
 def run():
@@ -134,24 +144,31 @@ def run():
     """
     persistent_globals = CompuCellSetup.persistent_globals
     simulation_initialized = persistent_globals.simulation_initialized
-    if not simulation_initialized:
-        initialize_cc3d()
-        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
-        persistent_globals.steppable_registry.core_init()
-        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+    with LoggedContext() as lc:
 
-        # initializing extra visualization fields
-        field_registry = persistent_globals.field_registry
-        potts = persistent_globals.simulator.getPotts()
-        cell_field = potts.getCellFieldG()
-        dim = cell_field.getDim()
-        field_registry.dim = dim
-        field_registry.simthread = persistent_globals.simthread
-        if persistent_globals.simthread is None:
-            initialize_field_extractor_objects()
+        if not simulation_initialized:
+            lc.log()
 
-        field_registry.create_fields()
+            initialize_cc3d()
+            check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+
+            persistent_globals.steppable_registry.core_init()
+            check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+
+            # initializing extra visualization fields
+            field_registry = persistent_globals.field_registry
+            potts = persistent_globals.simulator.getPotts()
+            cell_field = potts.getCellFieldG()
+            dim = cell_field.getDim()
+            field_registry.dim = dim
+            field_registry.simthread = persistent_globals.simthread
+            if persistent_globals.simthread is None:
+                lc.log()
+
+                initialize_field_extractor_objects()
+
+            field_registry.create_fields()
 
     simulator = CompuCellSetup.persistent_globals.simulator
     simthread = CompuCellSetup.persistent_globals.simthread
@@ -169,11 +186,6 @@ def register_steppable(steppable):
     :return: None
     """
     steppable_registry = CompuCellSetup.persistent_globals.steppable_registry
-
-    # # initializing steppables with the sim object
-    # steppable.simulator = steppable_registry.simulator
-    # steppable.core_init()
-
     steppable_registry.registerSteppable(_steppable=steppable)
 
 
@@ -195,28 +207,29 @@ def generate_profiling_report(py_steppable_profiler_report, compiled_code_run_ti
     profiling_report += '-----------------------------------------------------------' + os.linesep
     profiling_report += 'PYTHON STEPPABLE RUNTIMES' + os.linesep
 
-    totStepTime = 0
+    tot_step_time = 0
 
     for steppableName, steppableObjectHash, run_time_ms in py_steppable_profiler_report:
         profiling_report += profiling_format.format(steppableName,
                                                     int(run_time_ms) / 1000.,
                                                     int(run_time_ms) / total_run_time) + os.linesep
 
-        totStepTime += run_time_ms
+        tot_step_time += run_time_ms
 
     profiling_report += '-----------------------------------------------------------' + os.linesep
 
     profiling_report += profiling_format.format('Total Steppable Time',
-                                                int(totStepTime) / 1000.,
-                                                int(totStepTime) / total_run_time) + os.linesep
+                                                int(tot_step_time) / 1000.,
+                                                int(tot_step_time) / total_run_time) + os.linesep
 
     profiling_report += profiling_format.format('Compiled Code (C++) Run Time',
                                                 int(compiled_code_run_time) / 1000.,
                                                 int(compiled_code_run_time) / total_run_time) + os.linesep
 
-    profiling_report += profiling_format.format('Other Time',
-                                                int(total_run_time - compiled_code_run_time - totStepTime) / 1000.,
-                                                int(total_run_time - compiled_code_run_time - totStepTime) / total_run_time) + os.linesep
+    profiling_report += profiling_format.format(
+        'Other Time',
+        int(total_run_time - compiled_code_run_time - tot_step_time) / 1000.,
+        int(total_run_time - compiled_code_run_time - tot_step_time) / total_run_time) + os.linesep
 
     profiling_report += '-----------------------------------------------------------' + os.linesep
     profiling_report += os.linesep
@@ -273,30 +286,48 @@ def get_core_simulation_objects():
     simulator = CompuCell.Simulator()
     simthread = None
     # todo 5 - fix logic regarding simthread initialization
-    if persistent_globals.simthread is not None:
-        simthread = persistent_globals.simthread
-        simulator.setNewPlayerFlag(True)
+    with LoggedContext() as lc:
 
-    if persistent_globals.simulation_file_name is not None:
-        simulator.setBasePath(join(dirname(persistent_globals.simulation_file_name)))
+        if persistent_globals.simthread is not None:
+            lc.log()
 
-    if CompuCellSetup.cc3dSimulationDataHandler is not None:
-        xml_fname = CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript
-    else:
-        xml_fname = None
+            simthread = persistent_globals.simthread
+            simulator.setNewPlayerFlag(True)
 
-    if persistent_globals.cc3d_xml_2_obj_converter is None:
-        if xml_fname is None:
-            raise RuntimeError('No CC3D core specification available')
+    with LoggedContext() as lc:
 
-        # We only call parseXML if previous steps do not initialize XML tree
-        # Such situation usually happen when we specify XML tree using Python API in configure_simulation function
-        # that is typically called from the Python main script
+        if persistent_globals.simulation_file_name is not None:
+            lc.log(msg=f'Got simulation file: {persistent_globals.simulation_file_name}')
 
-        cc3d_xml2_obj_converter = parseXML(xml_fname=xml_fname)
-        #  cc3d_xml2_obj_converter cannot be garbage colected hence goes to persisten storage
-        #  declared at the global level in CompuCellSetup
-        persistent_globals.cc3d_xml_2_obj_converter = cc3d_xml2_obj_converter
+            simulator.setBasePath(join(dirname(persistent_globals.simulation_file_name)))
+
+    with LoggedContext() as lc:
+
+        if CompuCellSetup.cc3dSimulationDataHandler is not None:
+            xml_fname = CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript
+
+            lc.log(msg=f'Got XML file: {xml_fname}')
+        else:
+            xml_fname = None
+
+    with LoggedContext() as lc:
+
+        if persistent_globals.cc3d_xml_2_obj_converter is None:
+            lc.log()
+
+            if xml_fname is None:
+                lc.log(CompuCell.LOG_ERROR, 'No CC3D core specification available')
+
+                raise RuntimeError('No CC3D core specification available')
+
+            # We only call parseXML if previous steps do not initialize XML tree
+            # Such situation usually happen when we specify XML tree using Python API in configure_simulation function
+            # that is typically called from the Python main script
+
+            cc3d_xml2_obj_converter = parseXML(xml_fname=xml_fname)
+            #  cc3d_xml2_obj_converter cannot be garbage collected hence goes to persistent storage
+            #  declared at the global level in CompuCellSetup
+            persistent_globals.cc3d_xml_2_obj_converter = cc3d_xml2_obj_converter
 
     # locating all XML elements with attribute id - presumably to be used for programmatic steering
     persistent_globals.xml_id_locator = XMLIdLocator(root_elem=persistent_globals.cc3d_xml_2_obj_converter.root)
@@ -304,27 +335,29 @@ def get_core_simulation_objects():
 
     init_modules(simulator, persistent_globals.cc3d_xml_2_obj_converter)
 
-    # # this loads all plugins/steppables - need to recode it to make loading on-demand only
+    # this loads all plugins/steppables - need to recode it to make loading on-demand only
     CompuCell.initializePlugins()
 
     simulator.initializeCC3D()
 
-    # sim.extraInit()
-
     return simulator, simthread
 
 
+@LoggedContext()
 def incorporate_script_steering_changes(simulator) -> None:
     """
     Iterates over the list of modified xml elements and  schedules XML updates
 
     :return:None
     """
-
     persistent_globals = CompuCellSetup.persistent_globals
     xml_id_locator = persistent_globals.xml_id_locator
-    if not xml_id_locator:
-        return
+
+    with LoggedContext() as lc:
+        if not xml_id_locator:
+            lc.log()
+
+            return
 
     # passing information about modules that need to be updated to C++ code
     # super_parent means XML element of the CC3D module  e.g. Plugin, Steppable or Potts
@@ -344,15 +377,12 @@ def initialize_field_extractor_objects():
 
     persistent_globals = CompuCellSetup.persistent_globals
 
-    if 'field_storage' in persistent_globals.persistent_holder.keys():
-        return
-    # try:
-    #     # do not reinitialize storage and extractor if they already exist
-    #     _ = persistent_globals.persistent_holder['field_storage']
-    #     return
-    # except KeyError:
-    #     pass
+    with LoggedContext() as lc:
 
+        if 'field_storage' in persistent_globals.persistent_holder.keys():
+            lc.log(msg='Field storage already initialized')
+
+            return
 
     sim = persistent_globals.simulator
     dim = sim.getPotts().getCellFieldG().getDim()
@@ -399,8 +429,12 @@ def store_lattice_snapshot(cur_step: int) -> None:
 
     cml_field_handler = persistent_globals.cml_field_handler
 
-    if output_frequency and cml_field_handler and (not cur_step % output_frequency):
-        cml_field_handler.write_fields(cur_step)
+    with LoggedContext() as lc:
+
+        if output_frequency and cml_field_handler and (not cur_step % output_frequency):
+            lc.log()
+
+            cml_field_handler.write_fields(cur_step)
 
 
 def init_screenshot_manager() -> None:
@@ -414,14 +448,23 @@ def init_screenshot_manager() -> None:
 
     persistent_globals.screenshot_manager = ScreenshotManagerCore()
 
-    try:
-        field_extractor = persistent_globals.persistent_holder['field_extractor']
-    except KeyError:
-        initialize_field_extractor_objects()
-        field_extractor = persistent_globals.persistent_holder['field_extractor']
+    with LoggedContext() as lc:
 
-    if persistent_globals.output_directory:
-        persistent_globals.create_output_dir()
+        try:
+            field_extractor = persistent_globals.persistent_holder['field_extractor']
+        except KeyError:
+            lc.log(msg='Initializing field extractor')
+
+            initialize_field_extractor_objects()
+            field_extractor = persistent_globals.persistent_holder['field_extractor']
+
+    with LoggedContext() as lc:
+
+        if persistent_globals.output_directory:
+            lc.log(msg='Got output directory: ' + persistent_globals.output_directory)
+
+            persistent_globals.create_output_dir()
+
     gd = GenericDrawer.GenericDrawer(boundary_strategy=persistent_globals.simulator.getBoundaryStrategy())
     gd.set_field_extractor(field_extractor=field_extractor)
 
@@ -434,19 +477,24 @@ def init_screenshot_manager() -> None:
     persistent_globals.screenshot_manager.bsd = bsd
     persistent_globals.screenshot_manager.screenshot_number_of_digits = len(str(bsd.numberOfSteps))
 
-    if persistent_globals.simulation_file_name:
-        screenshot_data_fname = standard_screenshot_file(dirname(persistent_globals.simulation_file_name),
-                                                         must_exist=False)
+    with LoggedContext() as lc:
 
-        try:
-            persistent_globals.screenshot_manager.read_screenshot_description_file(screenshot_data_fname)
-        except:
-            warnings.warn('Could not parse screenshot description file {screenshot_data_fname}. '
-                          'If you want graphical screenshot output please generate '
-                          'new screenshot description file from Player by pressing camera button on '
-                          'select graphical visualizations. If you do not want screenshots'
-                          'you may delete subfolder {scr_dir} or simply ingnore this message'.format(
-                screenshot_data_fname=screenshot_data_fname, scr_dir=dirname(screenshot_data_fname)))
+        if persistent_globals.simulation_file_name:
+            lc.log()
+
+            screenshot_data_fname = standard_screenshot_file(dirname(persistent_globals.simulation_file_name),
+                                                             must_exist=False)
+
+            try:
+                persistent_globals.screenshot_manager.read_screenshot_description_file(screenshot_data_fname)
+            except:
+                lc.log(CompuCell.LOG_WARNING,
+                       f'Could not parse screenshot description file {screenshot_data_fname}. '
+                       'If you want graphical screenshot output please generate a '
+                       'new screenshot description file from Player by pressing camera button on '
+                       'select graphical visualizations, or from Python using ScreenshotManagerCore. '
+                       'If you do not want screenshots '
+                       f'you may delete subfolder {dirname(screenshot_data_fname)} or simply ingnore this message.')
 
 
 def store_screenshots(cur_step: int) -> None:
@@ -461,11 +509,17 @@ def store_screenshots(cur_step: int) -> None:
     screenshot_output_frequency = persistent_globals.screenshot_output_frequency
     screenshot_manager = persistent_globals.screenshot_manager
 
-    if screenshot_manager.has_ad_hoc_screenshots():
-        screenshot_manager.output_screenshots(mcs=cur_step)
+    with LoggedContext(msg=str(cur_step)) as lc:
 
-    if screenshot_output_frequency and screenshot_manager and (not cur_step % screenshot_output_frequency):
-        screenshot_manager.output_screenshots(mcs=cur_step)
+        if screenshot_manager.has_ad_hoc_screenshots():
+            lc.log()
+
+            screenshot_manager.output_screenshots(mcs=cur_step)
+
+        if screenshot_output_frequency and screenshot_manager and (not cur_step % screenshot_output_frequency):
+            lc.log()
+
+            screenshot_manager.output_screenshots(mcs=cur_step)
 
 
 def initialize_cc3d_sim(sim, simthread):
@@ -484,13 +538,15 @@ def initialize_cc3d_sim(sim, simthread):
 
     check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
+    with LoggedContext() as lc:
 
-    if init_using_restart_snapshot_enabled:
-        logger.log(CompuCell.LOG_INFORMATION, 'WILL RESTART SIMULATION')
-        restart_manager.loadRestartFiles()
-        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
-    else:
-        logger.log(CompuCell.LOG_INFORMATION, 'WILL RUN SIMULATION FROM BEGINNING')
+        if init_using_restart_snapshot_enabled:
+            lc.log(CompuCell.LOG_INFORMATION, 'WILL RESTART SIMULATION')
+
+            restart_manager.loadRestartFiles()
+            check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+        else:
+            lc.log(CompuCell.LOG_INFORMATION, 'WILL RUN SIMULATION FROM BEGINNING')
 
     check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
@@ -507,25 +563,38 @@ def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_en
     # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
     sim.extraInit()
     concentration_field_names = CompuCell.getConcentrationFieldNames(sim)
-    for conc_field_name in concentration_field_names:
-        validate_cc3d_entity_identifier(entity_identifier=conc_field_name,
-                                        entity_type_label='Concentration Field Label')
+
+    with LoggedContext() as lc:
+        for conc_field_name in concentration_field_names:
+            lc.log(msg=f'Validating {conc_field_name}')
+
+            validate_cc3d_entity_identifier(entity_identifier=conc_field_name,
+                                            entity_type_label='Concentration Field Label')
 
     # passing output directory to simulator object
-    if CompuCellSetup.persistent_globals.output_directory is not None:
-        sim.setOutputDirectory(CompuCellSetup.persistent_globals.output_directory)
-    # simthread.preStartInit()
-    # we skip calling start functions of steppables if restart is enabled and we are using restart
-    # directory to restart simulation from a given MCS
-    if not init_using_restart_snapshot_enabled:
-        sim.start()
+    with LoggedContext() as lc:
+        if CompuCellSetup.persistent_globals.output_directory is not None:
+            lc.log(CompuCell.LOG_DEBUG, f'Got output directory: {CompuCellSetup.persistent_globals.output_directory}')
 
-    if simthread is not None:
-        # sends signal to player  to prepare for the upcoming simulation
-        simthread.postStartInit()
+            sim.setOutputDirectory(CompuCellSetup.persistent_globals.output_directory)
 
-        # waits for player  to complete initialization
-        simthread.waitForPlayerTaskToFinish()
+    with LoggedContext() as lc:
+
+        if not init_using_restart_snapshot_enabled:
+            lc.log()
+
+            sim.start()
+
+    with LoggedContext() as lc:
+
+        if simthread is not None:
+            lc.log()
+
+            # sends signal to player to prepare for the upcoming simulation
+            simthread.postStartInit()
+
+            # waits for player  to complete initialization
+            simthread.waitForPlayerTaskToFinish()
 
 
 def main_loop(sim, simthread, steppable_registry=None):
@@ -547,14 +616,22 @@ def main_loop(sim, simthread, steppable_registry=None):
     restart_manager = pg.restart_manager
     init_using_restart_snapshot_enabled = restart_manager.restart_enabled()
 
-    if steppable_registry is not None:
-        steppable_registry.init(sim)
+    with LoggedContext() as lc:
+
+        if steppable_registry is not None:
+            lc.log()
+
+            steppable_registry.init(sim)
 
     init_lattice_snapshot_objects()
     init_screenshot_manager()
 
-    if steppable_registry is not None and not init_using_restart_snapshot_enabled:
-        steppable_registry.start()
+    with LoggedContext() as lc:
+
+        if steppable_registry is not None and not init_using_restart_snapshot_enabled:
+            lc.log()
+
+            steppable_registry.start()
 
     run_finish_flag = True
 
@@ -563,46 +640,62 @@ def main_loop(sim, simthread, steppable_registry=None):
 
     cur_step = beginning_step
 
-    while cur_step < sim.getNumSteps():
-        if CompuCellSetup.persistent_globals.user_stop_simulation_flag:
-            run_finish_flag = False
-            break
+    with LoggedContext() as lc:
 
-        if steppable_registry is not None:
-            steppable_registry.stepRunBeforeMCSSteppables(cur_step)
+        while cur_step < sim.getNumSteps():
+            lc.log(msg=f'Step {cur_step}')
 
-        compiled_code_begin = time.time()
+            if CompuCellSetup.persistent_globals.user_stop_simulation_flag:
+                lc.log()
 
-        sim.step(cur_step)  # steering using steppables
-        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+                run_finish_flag = False
+                break
 
-        compiled_code_end = time.time()
+            if steppable_registry is not None:
+                lc.log()
 
-        compiled_code_run_time += (compiled_code_end - compiled_code_begin) * 1000
+                steppable_registry.stepRunBeforeMCSSteppables(cur_step)
 
-        if steppable_registry is not None:
-            steppable_registry.step(cur_step)
+            compiled_code_begin = time.time()
 
-        # restart manager will decide whether to output files or not based on its settings
-        restart_manager.output_restart_files(cur_step)
+            sim.step(cur_step)  # steering using steppables
+            check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
-        store_lattice_snapshot(cur_step=cur_step)
-        store_screenshots(cur_step=cur_step)
+            compiled_code_end = time.time()
 
-        # passing Python-script-made changes in XML to C++ code
-        incorporate_script_steering_changes(simulator=sim)
+            compiled_code_run_time += (compiled_code_end - compiled_code_begin) * 1000
 
-        # steer application will only update modules that uses requested using updateCC3DModule function from simulator
-        sim.steer()
-        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+            if steppable_registry is not None:
+                lc.log()
 
-        cur_step += 1
+                steppable_registry.step(cur_step)
 
-    if run_finish_flag:
-        logger.log(CompuCell.LOG_DEBUG, "CALLING FINISH")
-        steppable_registry.finish()
-    else:
-        steppable_registry.on_stop()
+            # restart manager will decide whether to output files or not based on its settings
+            restart_manager.output_restart_files(cur_step)
+
+            store_lattice_snapshot(cur_step=cur_step)
+            store_screenshots(cur_step=cur_step)
+
+            # passing Python-script-made changes in XML to C++ code
+            incorporate_script_steering_changes(simulator=sim)
+
+            # steer application will only update modules that uses requested using
+            # updateCC3DModule function from simulator
+            sim.steer()
+            check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+
+            cur_step += 1
+
+    with LoggedContext() as lc:
+
+        if run_finish_flag:
+            lc.log(CompuCell.LOG_INFORMATION, "CALLING FINISH")
+
+            steppable_registry.finish()
+        else:
+            lc.log(CompuCell.LOG_INFORMATION, "CALLING STOP")
+
+            steppable_registry.on_stop()
 
     t2 = time.time()
     logger.log(CompuCell.LOG_INFORMATION,
