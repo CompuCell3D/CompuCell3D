@@ -1,3 +1,5 @@
+# todo: Implement worker logging
+
 import cc3d
 from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.sim_runner import run_cc3d_project

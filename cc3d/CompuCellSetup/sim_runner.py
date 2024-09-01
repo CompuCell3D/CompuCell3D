@@ -4,7 +4,8 @@ from os.path import *
 from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.readers import readCC3DFile
 from cc3d.CompuCellSetup.simulation_utils import CC3DCPlusPlusError
-from cc3d.cpp.CompuCell import CC3DException
+from cc3d.cpp import CompuCell
+
 
 def handle_error(exception_obj):
     """
@@ -22,7 +23,7 @@ def handle_error(exception_obj):
     if isinstance(exception_obj, CC3DCPlusPlusError):
 
         if simthread is not None:
-            print("CALLING UNLOAD MODULES NEW PLAYER")
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, "CALLING UNLOAD MODULES NEW PLAYER")
             simthread.emitErrorFormatted('Error: ' + str(exception_obj.message))
             simthread.sendStopSimulationRequest()
             simthread.simulationFinishedPostEvent(True)
@@ -54,7 +55,7 @@ def run_cc3d_project(cc3d_sim_fname):
     try:
         cc3d_simulation_data_handler = readCC3DFile(fileName=cc3d_sim_fname)
     except FileNotFoundError:
-        print('Could not find cc3d_sim_fname')
+        CompuCell.CC3DLogger.get().log(CompuCell.LOG_ERROR, 'Could not find cc3d_sim_fname')
         return
 
     CompuCellSetup.cc3dSimulationDataHandler = cc3d_simulation_data_handler
@@ -89,7 +90,10 @@ def run_cc3d_project(cc3d_sim_fname):
 
             except Exception as e:
                 if str(e).startswith("Unknown exception"):
-                    print("Likely exception from C++ function that was not marked to throw an exception")
+                    CompuCell.CC3DLogger.get().log(
+                        CompuCell.LOG_ERROR,
+                        "Likely exception from C++ function that was not marked to throw an exception"
+                    )
                 traceback.print_exc(file=sys.stdout)
                 handle_error(e)
 

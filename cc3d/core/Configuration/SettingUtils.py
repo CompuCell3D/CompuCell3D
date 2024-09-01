@@ -2,10 +2,11 @@ import os
 import shutil
 import sys
 from typing import Any, Dict
-import warnings
 from xml.etree import ElementTree
 
 from cc3d.core.DefaultSettingsData import *
+from cc3d.core.logging import log_py
+from cc3d.cpp import CompuCell
 from .settingdict import SerializerUtil
 
 
@@ -245,7 +246,7 @@ def _handle_settings_value_xml(_val: str):
 
 
 def _warn_setting_not_set(_el):
-    warnings.warn(f'Setting not set: {_el.attrib["Name"]}')
+    log_py(CompuCell.LOG_WARNING, f'Setting not set: {_el.attrib["Name"]}')
 
 
 def default_settings_dict_xml() -> Dict[str, Any]:
@@ -254,7 +255,7 @@ def default_settings_dict_xml() -> Dict[str, Any]:
     """
     fp = _default_setting_path_xml()
     if not os.path.isfile(fp):
-        warnings.warn(f'Could not located default settings data ({fp})')
+        log_py(CompuCell.LOG_WARNING, f'Could not located default settings data ({fp})')
         return {}
 
     data_root = ElementTree.parse(fp).getroot()

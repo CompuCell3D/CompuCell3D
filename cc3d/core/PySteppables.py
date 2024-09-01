@@ -18,8 +18,8 @@ from cc3d.cpp import CompuCell
 from cc3d.core.SBMLSolverHelper import SBMLSolverHelper
 from cc3d.core.MaBoSSCC3D import MaBoSSHelper
 from cc3d.core.GraphicsUtils.MovieCreator import makeMovie
+from cc3d.core.logging import log_py
 import types
-import warnings
 from deprecated import deprecated
 from cc3d.core.SteeringParam import SteeringParam
 from copy import deepcopy
@@ -640,7 +640,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
                 try:
                     accessor_function = getattr(CompuCell, accessor_fcn_name)
                 except AttributeError:
-                    warnings.warn('Could not locate {accessor_fcn_name} member of CompuCell python module')
+                    log_py(CompuCell.LOG_WARNING,
+                           f'Could not locate {accessor_fcn_name} member of CompuCell python module')
                     for plugin_member_name in member_var_list:
                         setattr(self, plugin_member_name, None)
 
@@ -671,7 +672,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
                 try:
                     accessor_function = getattr(CompuCell, accessor_fcn_name)
                 except AttributeError:
-                    warnings.warn('Could not locate {accessor_fcn_name} member of CompuCell python module')
+                    log_py(CompuCell.LOG_WARNING,
+                           f'Could not locate {accessor_fcn_name} member of CompuCell python module')
                     for steppable_member_name in member_var_list:
                         setattr(self, steppable_member_name, None)
 
@@ -2064,8 +2066,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
                                                                                shift_vec[2]))
         print('ok_flag=', ok_flag)
         if not ok_flag:
-            warnings.warn('WARNING: Lattice Resize Denied. '
-                          'The proposed lattice resizing/shift would lead to disappearance of cells.', Warning)
+            log_py(CompuCell.LOG_WARNING,
+                   'WARNING: Lattice Resize Denied. '
+                   'The proposed lattice resizing/shift would lead to disappearance of cells.')
             return
 
         old_geometry_dimensionality = 2
@@ -3000,9 +3003,10 @@ class MitosisSteppableBase(SteppableBasePy):
                 legacy_update_attributes_fcn = None
 
             if legacy_update_attributes_fcn is not None:
-                warnings.warn('"updateAttribute function" is deprecated since 4.0.0. '
-                              'Please use "update_attributes" in your'
-                              ' mitosis subclass', DeprecationWarning)
+                log_py(CompuCell.LOG_WARNING,
+                       '"updateAttribute function" is deprecated since 4.0.0. '
+                       'Please use "update_attributes" in your'
+                       ' mitosis subclass')
                 legacy_update_attributes_fcn()
             else:
                 self.update_attributes()
@@ -3220,9 +3224,10 @@ class MitosisSteppableClustersBase(SteppableBasePy):
                 legacy_update_attributes_fcn = None
 
             if legacy_update_attributes_fcn is not None:
-                warnings.warn('"updateAttribute function" is deprecated since 4.0.0. '
-                              'Please use "update_attributes" in your'
-                              ' mitosis subclass', DeprecationWarning)
+                log_py(CompuCell.LOG_WARNING,
+                       '"updateAttribute function" is deprecated since 4.0.0. '
+                       'Please use "update_attributes" in your'
+                       ' mitosis subclass')
                 legacy_update_attributes_fcn()
             else:
                 self.update_attributes()

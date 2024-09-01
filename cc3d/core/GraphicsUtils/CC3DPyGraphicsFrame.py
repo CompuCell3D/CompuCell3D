@@ -13,8 +13,7 @@ import multiprocessing
 import numpy
 import os
 import threading
-from typing import Any, Callable, Dict, List
-import warnings
+from typing import Callable, Dict, List
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
 try:
     # vtk 8
@@ -32,6 +31,8 @@ from cc3d.core.BasicSimulationData import BasicSimulationData
 from cc3d.core import Configuration
 from cc3d.core.enums import *
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
+from cc3d.core.logging import log_py
+from cc3d.cpp import CompuCell
 from cc3d.cpp.PlayerPython import FieldExtractorCML, FieldStreamer, FieldStreamerData, FieldWriterCML
 from cc3d.core.GraphicsUtils.GraphicsFrame import GraphicsFrame, default_field_label
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrameIO import *
@@ -257,7 +258,7 @@ class CC3DPyGraphicsDrawer(GenericDrawer):
         """Draw scene from remote data"""
 
         if not self._request_update_field_extractor():
-            warnings.warn('Field extractor update failed', RuntimeWarning)
+            log_py(CompuCell.LOG_WARNING, 'Field extractor update failed')
             return
         super().draw(*args, **kwargs)
 
@@ -504,12 +505,12 @@ class CC3DPyGraphicsFrame(GraphicsFrame, CC3DPyGraphicsFrameInterface):
         field_names = list(self.fieldTypes.keys())
 
         if not field_names:
-            warnings.warn('Field names not available', RuntimeWarning)
+            log_py(CompuCell.LOG_WARNING, 'Field names not available')
             return
 
         if _field_name not in field_names:
-            warnings.warn(f'Field name not known: {_field_name}. Available field names are' + ','.join(field_names),
-                          RuntimeWarning)
+            log_py(CompuCell.LOG_WARNING,
+                   f'Field name not known: {_field_name}. Available field names are' + ','.join(field_names))
             return
 
         self.field_name = _field_name
@@ -1050,7 +1051,7 @@ class CC3DPyGraphicsFrameClientBase:
         """
 
         if not os.path.isfile(fp):
-            warnings.warn('Configuration file not found', ResourceWarning)
+            log_py(CompuCell.LOG_WARNING, 'Configuration file not found')
             return False
 
         with open(fp, 'r') as f:
@@ -1075,19 +1076,19 @@ class CC3DPyGraphicsFrameClientBase:
         """
 
         if key not in self.config_data.keys():
-            warnings.warn('Configuration key not found: ' + key, RuntimeWarning)
+            log_py(CompuCell.LOG_WARNING, 'Configuration key not found: ' + key)
             return False
         entry = self.config_data[key]
 
         if field_name is not None:
             if not isinstance(entry, dict):
-                warnings.warn('Configuration key has no fields: ' + key, RuntimeWarning)
+                log_py(CompuCell.LOG_WARNING, 'Configuration key has no fields: ' + key)
                 return False
 
             try:
                 entry[field_name] = type(entry[field_name])(val)
             except (KeyError, TypeError):
-                warnings.warn(f'Could not configure: {key}, {str(field_name)}', RuntimeWarning)
+                log_py(CompuCell.LOG_WARNING, f'Could not configure: {key}, {str(field_name)}')
                 return False
 
         else:
@@ -1188,7 +1189,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
             return self._proxy
 
         except Exception as e:
-            warnings.warn(f'Failed to launch: {str(e)}', RuntimeWarning)
+            log_py(CompuCell.LOG_WARNING, f'Failed to launch: {str(e)}')
             return None
 
     def draw(self, blocking: bool = False):
@@ -1208,7 +1209,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
             self._frame_controller.draw(blocking)
             return True
         except Exception as e:
-            warnings.warn(f'Failed to draw: {str(e)}', RuntimeWarning)
+            log_py(CompuCell.LOG_WARNING, f'Failed to draw: {str(e)}')
             return False
 
     def close(self):
@@ -1228,7 +1229,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
             self._frame_controller.close()
             return True
         except Exception as e:
-            warnings.warn(f'Failed to close: {str(e)}', RuntimeWarning)
+            log_py(CompuCell.LOG_WARNING, f'Failed to close: {str(e)}')
             return False
 
     def get_screenshot_data(self):
@@ -1434,7 +1435,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
 
         if self._field_name != 'Cell_Field':
             if not field_writer.addFieldForOutput(self._field_name):
-                warnings.warn(f'Failed to add field for output: {self._field_name}', RuntimeWarning)
+                log_py(CompuCell.LOG_WARNING, f'Failed to add field for output: {self._field_name}')
 
         return FieldStreamerDataPy.from_base(FieldStreamer.dump(field_writer))
 
@@ -1610,14 +1611,14 @@ class CC3DPyGraphicsFrameClientProxy:
 
     def _process_msg(self, msg: str, *args, **kwargs):
         if self._executor_conn.closed:
-            warnings.warn('Frame proxy has been disconnected', RuntimeWarning)
+            log_py(CompuCell.LOG_WARNING, 'Frame proxy has been disconnected')
             return
 
         self._executor_conn.send(CC3DPyGraphicsFrameClientProxyMsg(msg, args, kwargs))
 
     def _process_ret_msg(self, msg: str, *args, **kwargs):
         if self._executor_conn.closed:
-            warnings.warn('Frame proxy has been disconnected', RuntimeWarning)
+            log_py(CompuCell.LOG_WARNING, 'Frame proxy has been disconnected')
             return None
 
         msg = CC3DPyGraphicsFrameClientProxyMsg(msg, args, kwargs)
