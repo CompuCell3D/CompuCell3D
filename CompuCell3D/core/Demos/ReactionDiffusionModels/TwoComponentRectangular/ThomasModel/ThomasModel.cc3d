@@ -1,0 +1,5 @@
+<Simulation version="4.2.5">
+   <XMLScript Type="XMLScript">Simulation/ThomasCC3Dv4.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/ThomasCC3Dv4.py</PythonScript>
+   <Resource Type="Python">Simulation/ThomasCC3Dv4Steppables.py</Resource>
+</Simulation>
