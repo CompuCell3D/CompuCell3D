@@ -1,0 +1,43 @@
+<CompuCell3D version="3.6.2">
+
+   <Potts>
+      <Dimensions x="100" y="100" z="1"/>
+      <Steps>110</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>2</NeighborOrder>
+      <RandomSeed>{{random_seed}}</RandomSeed>
+   </Potts>
+   
+   <Plugin Name="CellType">
+
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="Light"/>
+      <CellType TypeId="2" TypeName="Dark"/>
+   </Plugin>
+   
+   <Plugin Name="Volume">
+      <VolumeEnergyParameters CellType="Light" LambdaVolume="2.0" TargetVolume="25"/>
+      <VolumeEnergyParameters CellType="Dark" LambdaVolume="2.0" TargetVolume="25"/>
+   </Plugin>
+   
+   <Plugin Name="Contact">
+      <Energy Type1="Medium" Type2="Medium">0.0</Energy>
+      <Energy Type1="Medium" Type2="Light">16.0</Energy>
+      <Energy Type1="Medium" Type2="Dark">16.0</Energy>
+      <Energy Type1="Light" Type2="Light">15.0</Energy>
+      <Energy Type1="Light" Type2="Dark">10.0</Energy>
+      <Energy Type1="Dark" Type2="Dark">2.0</Energy>
+      <NeighborOrder>2</NeighborOrder>
+   </Plugin>
+
+
+   <Steppable Type="UniformInitializer">
+      <Region>
+         <BoxMin x="20" y="20" z="0"/>
+         <BoxMax x="50" y="50" z="1"/>
+         <Gap>0</Gap>
+         <Width>5</Width>
+         <Types>Light,Dark</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>
