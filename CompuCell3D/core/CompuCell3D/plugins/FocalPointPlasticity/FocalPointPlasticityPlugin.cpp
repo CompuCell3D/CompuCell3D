@@ -90,6 +90,27 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
         throw CC3DException(
                 "CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
+    CC3DXMLElementList maxTotalNumberOfLinksOverrideVec = _xmlData->getElements("MaxTotalNumberOfLinks");
+    CC3DXMLElementList maxTotalNumberOfLinksInternalOverrideVec = _xmlData->getElements("MaxTotalNumberOfLinksInternal");
+
+    // parsing entries fo the type: <MaxTotalNumberOfLinks CellType="Condensing">2</MaxTotalNumberOfLinks>
+    maxTotalNumberOfLinksOverrideMap.clear();
+    for (auto & xmlElem : maxTotalNumberOfLinksOverrideVec) {
+        unsigned char cellType = automaton->getTypeId(xmlElem->getAttribute("CellType"));
+        int maxTotalLinks = xmlElem->getInt();
+        maxTotalNumberOfLinksOverrideMap[cellType] = maxTotalLinks;
+
+    }
+
+    // parsing entries fo the type: <MaxTotalNumberOfLinksInternal CellType="Condensing">2</MaxTotalNumberOfLinksInternal>
+    maxTotalNumberOfLinksInternalOverrideMap.clear();
+    for (auto & xmlElem : maxTotalNumberOfLinksInternalOverrideVec) {
+        unsigned char cellType = automaton->getTypeId(xmlElem->getAttribute("CellType"));
+        int maxTotalLinks = xmlElem->getInt();
+        maxTotalNumberOfLinksInternalOverrideMap[cellType] = maxTotalLinks;
+    }
+
+
     CC3DXMLElementList plastParamVec = _xmlData->getElements("Parameters");
     if (plastParamVec.size() > 0) {
         functionType = BYCELLTYPE;
@@ -104,28 +125,28 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
         neighborOrder = _xmlData->getFirstElement("NeighborOrder")->getInt();
     }
 
-    for (int i = 0; i < plastParamVec.size(); ++i) {
+    for (auto & xmlElem : plastParamVec) {
 
         FocalPointPlasticityTrackerData fpptd;
 
-        unsigned char type1 = automaton->getTypeId(plastParamVec[i]->getAttribute("Type1"));
-        unsigned char type2 = automaton->getTypeId(plastParamVec[i]->getAttribute("Type2"));
+        unsigned char type1 = automaton->getTypeId(xmlElem->getAttribute("Type1"));
+        unsigned char type2 = automaton->getTypeId(xmlElem->getAttribute("Type2"));
 
-        if (plastParamVec[i]->getFirstElement("Lambda"))
-            fpptd.lambdaDistance = plastParamVec[i]->getFirstElement("Lambda")->getDouble();
+        if (xmlElem->getFirstElement("Lambda"))
+            fpptd.lambdaDistance = xmlElem->getFirstElement("Lambda")->getDouble();
 
-        if (plastParamVec[i]->getFirstElement("TargetDistance"))
-            fpptd.targetDistance = plastParamVec[i]->getFirstElement("TargetDistance")->getDouble();
+        if (xmlElem->getFirstElement("TargetDistance"))
+            fpptd.targetDistance = xmlElem->getFirstElement("TargetDistance")->getDouble();
 
-        if (plastParamVec[i]->getFirstElement("ActivationEnergy")) {
-            fpptd.activationEnergy = plastParamVec[i]->getFirstElement("ActivationEnergy")->getDouble();
+        if (xmlElem->getFirstElement("ActivationEnergy")) {
+            fpptd.activationEnergy = xmlElem->getFirstElement("ActivationEnergy")->getDouble();
         }
 
-        if (plastParamVec[i]->getFirstElement("MaxDistance"))
-            fpptd.maxDistance = plastParamVec[i]->getFirstElement("MaxDistance")->getDouble();
+        if (xmlElem->getFirstElement("MaxDistance"))
+            fpptd.maxDistance = xmlElem->getFirstElement("MaxDistance")->getDouble();
 
-        if (plastParamVec[i]->getFirstElement("MaxNumberOfJunctions")) {
-            CC3DXMLElement *maxNumberOfJunctionsElement = plastParamVec[i]->getFirstElement("MaxNumberOfJunctions");
+        if (xmlElem->getFirstElement("MaxNumberOfJunctions")) {
+            CC3DXMLElement *maxNumberOfJunctionsElement = xmlElem->getFirstElement("MaxNumberOfJunctions");
             fpptd.maxNumberOfJunctions = maxNumberOfJunctionsElement->getInt();
         }
 
@@ -176,6 +197,14 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
         maxNumberOfJunctionsTotalMap[itr.first] = mNJ;
     }
 
+    // applying override for total links from elements of the type:
+    // <MaxTotalNumberOfLinks CellType="Condensing">2</MaxTotalNumberOfLinks>
+    for (auto &itr: maxTotalNumberOfLinksOverrideMap){
+        maxNumberOfJunctionsTotalMap[itr.first] = itr.second;
+    }
+
+    //Note: Junctions and links have the same meaning in the code
+
     //Now internal parameters
 
     //initializing maxNumberOfJunctionsInternalTotalVec based on plastParamsArray .
@@ -189,6 +218,12 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
         }
         maxNumberOfJunctionsInternalTotalMap[itr.first] = mNJ;
     }
+    // applying override for total internal links from elements of the type
+    // <MaxTotalNumberOfLinksInternal CellType="Condensing">2</MaxTotalNumberOfLinksInternal>
+    for (auto &itr: maxTotalNumberOfLinksInternalOverrideMap){
+        maxNumberOfJunctionsInternalTotalMap[itr.first] = itr.second;
+    }
+
 
     CC3DXMLElement *linkXMLElem = _xmlData->getFirstElement("LinkConstituentLaw");
 
