@@ -117,7 +117,7 @@ namespace CompuCell3D {
 
         // those containers keep track of additional override that users my impose
         // using <MaxTotalNumberOfLinks CellType="Condensing">2</MaxTotalNumberOfLinks>
-        // or <MaxTotalNumberOfLinksInternal CellType="Condensing">2</MaxTotalNumberOfLinksInternal>
+        // or <InternalMaxTotalNumberOfLinks CellType="Condensing">2</InternalMaxTotalNumberOfLinks>
         std::unordered_map<unsigned char, int> maxTotalNumberOfLinksOverrideMap;
         std::unordered_map<unsigned char, int> maxTotalNumberOfLinksInternalOverrideMap;
 
