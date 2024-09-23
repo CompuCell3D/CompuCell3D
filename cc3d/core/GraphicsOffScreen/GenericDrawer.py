@@ -37,6 +37,8 @@ from .Specs import ActorSpecs
 from cc3d.core.GraphicsUtils.utils import extract_address_int_from_vtk_object
 from .DrawingParameters import DrawingParameters
 
+from typing import Optional
+
 MODULENAME = '---- GraphicsFrameWidget.py: '
 
 
@@ -152,12 +154,15 @@ class GenericDrawer:
         self.draw_view_2D.remove_all_actors_from_renderer()
         self.draw_view_3D.remove_all_actors_from_renderer()
 
-    def extract_cell_field_data(self, cell_shell_optimization=False):
+    def extract_cell_field_data(self, cell_shell_optimization: Optional[bool] = False):
         """
         Extracts basic information about cell field
 
         :return:
         """
+        if cell_shell_optimization is None:
+            cell_shell_optimization = False
+
         cell_type_array = vtk.vtkIntArray()
         cell_type_array.SetName("celltype")
         cell_type_array_int_addr = extract_address_int_from_vtk_object(cell_type_array)
