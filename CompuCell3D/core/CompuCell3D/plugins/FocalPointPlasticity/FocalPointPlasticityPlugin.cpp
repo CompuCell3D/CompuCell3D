@@ -91,12 +91,13 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
                 "CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET");
 
     CC3DXMLElementList maxTotalNumberOfLinksOverrideVec = _xmlData->getElements("MaxTotalNumberOfLinks");
-    CC3DXMLElementList maxTotalNumberOfLinksInternalOverrideVec = _xmlData->getElements("InternalMaxTotalNumberOfLinks");
+    CC3DXMLElementList internalMaxTotalNumberOfLinksOverrideVec = _xmlData->getElements("InternalMaxTotalNumberOfLinks");
 
     // parsing entries fo the type: <MaxTotalNumberOfLinks CellType="Condensing">2</MaxTotalNumberOfLinks>
     maxTotalNumberOfLinksOverrideMap.clear();
     for (auto & xmlElem : maxTotalNumberOfLinksOverrideVec) {
         unsigned char cellType = automaton->getTypeId(xmlElem->getAttribute("CellType"));
+
         int maxTotalLinks = xmlElem->getInt();
         maxTotalNumberOfLinksOverrideMap[cellType] = maxTotalLinks;
 
@@ -104,7 +105,7 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 
     // parsing entries fo the type: <InternalMaxTotalNumberOfLinks CellType="Condensing">2</InternalMaxTotalNumberOfLinks>
     maxTotalNumberOfLinksInternalOverrideMap.clear();
-    for (auto & xmlElem : maxTotalNumberOfLinksInternalOverrideVec) {
+    for (auto & xmlElem : internalMaxTotalNumberOfLinksOverrideVec) {
         unsigned char cellType = automaton->getTypeId(xmlElem->getAttribute("CellType"));
         int maxTotalLinks = xmlElem->getInt();
         maxTotalNumberOfLinksInternalOverrideMap[cellType] = maxTotalLinks;
