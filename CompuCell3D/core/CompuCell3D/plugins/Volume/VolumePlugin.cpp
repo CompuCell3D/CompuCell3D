@@ -35,9 +35,13 @@ void VolumePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
 void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
     //if there are no child elements for this plugin it means will use changeEnergyByCellId
+    // clearing mapts that store Volume energy parameters in Potts#D
+    potts->clearVolumeEnergyParameters();
 
     if (_xmlData->findElement("VolumeEnergyExpression")) {
         unsigned int maxNumberOfWorkNodes = pUtils->getMaxNumberOfWorkNodesPotts();
+        // TODO - pressureLocal computations apply only to canonical case where volume constraint has a form lambda*(V-V_target) ^2
+        // currently we do no support pressureLocal calculations for arbitrary expression for volume energy
         eed.allocateSize(maxNumberOfWorkNodes);
         vector <string> variableNames;
         variableNames.push_back("LambdaVolume");
@@ -79,11 +83,18 @@ void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
             for (int i = 0; i < energyVec.size(); ++i) {
                 VolumeEnergyParam volParam;
-
+                unsigned char cellTypeId;
                 volParam.targetVolume = energyVec[i]->getAttributeAsDouble("TargetVolume");
                 volParam.lambdaVolume = energyVec[i]->getAttributeAsDouble("LambdaVolume");
                 volParam.typeName = energyVec[i]->getAttribute("CellType");
-                volumeEnergyParamMap[automaton->getTypeId(volParam.typeName)] = volParam;
+
+                cellTypeId = automaton->getTypeId(volParam.typeName);
+
+                volumeEnergyParamMap[cellTypeId] = volParam;
+
+                // setting vol params for centralized storage in Potts - needed for pressureLocal calculations
+                potts->setTargetVolume(cellTypeId, volParam.targetVolume);
+                potts->setLambdaVolume(cellTypeId, volParam.lambdaVolume);
             }
 
             //set fcn ptr
@@ -95,6 +106,16 @@ void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
             //using Global Volume Energy Parameters
             targetVolume = _xmlData->getFirstElement("TargetVolume")->getDouble();
             lambdaVolume = _xmlData->getFirstElement("LambdaVolume")->getDouble();
+
+            // setting vol params for centralized storage in POtts - needed for pressureLocal calculations
+            for (auto cellTypeId : automaton->getTypeIds()) {
+                // setting vol params for centralized storage in Potts - needed for pressureLocal calculations
+                potts->setTargetVolume(cellTypeId, targetVolume);
+                potts->setLambdaVolume(cellTypeId, lambdaVolume);
+            }
+
+
+
             //set fcn ptr
             changeEnergyFcnPtr = &VolumePlugin::changeEnergyGlobal;
             break;

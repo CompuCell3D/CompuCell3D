@@ -20,7 +20,7 @@
 
 // CellG DerivedProperties
 
-DERIVEDPROPERTYEXTENSORPY(CompuCell3D::CellG, pressure, getPressure)
+DERIVEDPROPERTYEXTENSORPY(CompuCell3D::CellG, pressureLocal, getPressureLocal0)
 DERIVEDPROPERTYEXTENSORPY(CompuCell3D::CellG, surfaceTension, getSurfaceTension)
 DERIVEDPROPERTYEXTENSORPY(CompuCell3D::CellG, clusterSurfaceTension, getClusterSurfaceTension)
 
