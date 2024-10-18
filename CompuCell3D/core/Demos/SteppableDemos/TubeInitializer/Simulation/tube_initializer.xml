@@ -33,7 +33,7 @@
 
 
     <!--Example 1: Thick two-layer tube-->
-   <Steppable Type="TubeInitializer">
+    <Steppable Type="TubeInitializer">
       <Region>
         <InnerRadius>8</InnerRadius>
         <OuterRadius>14</OuterRadius>
@@ -42,7 +42,7 @@
         <Types>NonCondensing</Types>
         <NumSlices>8</NumSlices>
         <Extrude>
-          <From x="15" y="45" z="25" />
+          <From x="15" y="44" z="25" />
           <To x="15" y="10" z="25" />
         </Extrude>
       </Region>
@@ -54,7 +54,7 @@
         <Types>Condensing</Types>
         <NumSlices>6</NumSlices>
         <Extrude>
-          <From x="15" y="45" z="25" />
+          <From x="15" y="44" z="25" />
           <To x="15" y="10" z="25" />
         </Extrude>
       </Region>
@@ -114,30 +114,60 @@
    </Steppable-->
 
    <!--Example 4: Blood vessel with "realistic" blood -->
-<!--   <Steppable Type="TubeInitializer">-->
-<!--      <Region>-->
-<!--	 	 <InnerRadius>8</InnerRadius>-->
-<!--	 	 <OuterRadius>11</OuterRadius>-->
-<!--         <Gap>0</Gap>-->
-<!--         <Width>2</Width>-->
-<!--         <Types>Condensing</Types>-->
-<!--		 <Extrude>-->
-<!--		   <From x="15" y="45" z="25" />-->
-<!--		   <To x="15" y="10" z="25" />-->
-<!--		 </Extrude>-->
-<!--      </Region>-->
-<!--      <Region>-->
-<!--	 	 <InnerRadius>0</InnerRadius>-->
-<!--	 	 <OuterRadius>7</OuterRadius>-->
-<!--         <Gap>1</Gap>-->
-<!--         <Width>2</Width>-->
-<!--         <Types>NonCondensing</Types>-->
-<!--		 <Extrude>-->
-<!--		   <From x="15" y="45" z="25" />-->
-<!--		   <To x="15" y="10" z="25" />-->
-<!--		 </Extrude>-->
-<!--      </Region>-->
-<!--   </Steppable>-->
+   <!--The red blood cells are spaced out according to <Gap> -->
+   <!-- <Steppable Type="TubeInitializer">
+      <Region>
+	 	 <InnerRadius>8</InnerRadius>
+	 	 <OuterRadius>11</OuterRadius>
+         <Gap>0</Gap>
+         <Width>2</Width>
+         <Types>Condensing</Types>
+		 <Extrude>
+		   <From x="15" y="45" z="25" />
+		   <To x="15" y="10" z="25" />
+		 </Extrude>
+      </Region>
+      <Region>
+	 	 <InnerRadius>0</InnerRadius>
+	 	 <OuterRadius>7</OuterRadius>
+         <Gap>1</Gap>
+         <Width>2</Width>
+         <Types>NonCondensing</Types>
+		 <Extrude>
+		   <From x="15" y="45" z="25" />
+		   <To x="15" y="10" z="25" />
+		 </Extrude>
+      </Region>
+   </Steppable> -->
+
+   <!--Example 5: Concentric 2D Circles -->
+   <!--This is the only example intended to be used in 2D-->
+  <!-- <Steppable Type="TubeInitializer">
+      <Region>
+        <InnerRadius>3</InnerRadius>
+        <OuterRadius>8</OuterRadius>
+        <Gap>0</Gap>
+        <Width>1</Width>
+        <Types>Condensing</Types>
+        <NumSlices>6</NumSlices>
+        <Extrude>
+          <From x="25" y="25" z="0" />
+          <To x="25" y="25" z="1" />
+        </Extrude>
+      </Region>
+      <Region>
+        <InnerRadius>8</InnerRadius>
+        <OuterRadius>13</OuterRadius>
+        <Gap>0</Gap>
+        <Width>1</Width>
+        <Types>Condensing</Types>
+        <NumSlices>6</NumSlices>
+        <Extrude>
+          <From x="25" y="25" z="0" />
+          <To x="25" y="25" z="1" />
+        </Extrude>
+      </Region>
+   </Steppable> -->
 
 
 </CompuCell3D>
