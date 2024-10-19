@@ -7,6 +7,7 @@ SET(SRCS
   Field3D.cpp
   NeighborFinder.cpp
   WatchableField3D.cpp
+  NumpyArrayWrapper.cpp
 )
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
@@ -35,4 +36,6 @@ INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D/Field3D .h
   Point3D
   WatchableField3D
   CC3D_Field3D
+  NumpyArrayWrapper
+
 )
