@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <initializer_list>
+#include <functional>  // For std::function
 
 
 namespace CompuCell3D {
@@ -16,16 +17,13 @@ namespace CompuCell3D {
 
     class NumpyArrayWrapper {
 
-    public:
-//        typedef std::vector<double>::size_type array_size_t;
+
     private:
 
         std::vector<array_size_t> dimensions;
+        std::vector<array_size_t> strides;
         std::vector<double> array;
 
-
-        array_size_t dim_x;
-        array_size_t dim_y;
 
     public:
         /**
@@ -33,31 +31,39 @@ namespace CompuCell3D {
          * @param initialValue The initial value of all data elements in the field.
          */
 
-        NumpyArrayWrapper(array_size_t dim_x,array_size_t dim_y);
 
-//        // Variadic template function to take variable number of dimensions
-//        template<typename... Args>
-//        void setDimensions(Args... args) {
-//            dimensions = {args...};  // Initialize the vector with the provided arguments
-//
-//        }
-        void setDimensions(const std::vector<array_size_t>& _dimensions){
+        NumpyArrayWrapper(const std::vector<array_size_t> &dims);
+
+
+        void setDimensions(const std::vector<array_size_t> &_dimensions) {
             this->dimensions = _dimensions;
         }
+        std::vector<array_size_t> computeStrides(const std::vector<array_size_t>& dims);
 
-//        const std::vector<unsigned int>& getDimensions() const {
-//            return dimensions;
-//        }
 
-        array_size_t getSize(){
+        void iterateOverAxes(const std::vector<array_size_t> &dims,
+                             std::function<void(const std::vector<array_size_t> &)> functor);
+
+        void printArrayValue(const std::vector<array_size_t> &indices);
+
+        array_size_t index(const std::vector<array_size_t>& indices) const {
+            array_size_t index = 0;
+            for (size_t i = 0; i < indices.size(); ++i) {
+                index += indices[i] * strides[i];
+            }
+            return index;
+        }
+
+        array_size_t getSize() {
             return array.size();
 
         }
+
         double *getPtr() {
             return array.size() ? &array[0] : nullptr;
         }
 
-        void printArray();
+        void printAllArrayValues();
 
         virtual ~NumpyArrayWrapper() {}
 
