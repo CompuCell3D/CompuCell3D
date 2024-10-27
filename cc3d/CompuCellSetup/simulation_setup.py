@@ -163,6 +163,7 @@ def run():
             dim = cell_field.getDim()
             field_registry.dim = dim
             field_registry.simthread = persistent_globals.simthread
+            field_registry.simulator = persistent_globals.simulator
             if persistent_globals.simthread is None:
                 lc.log()
 

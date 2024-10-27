@@ -4,6 +4,7 @@ import numpy as np
 from .ExtraFieldAdapter import ExtraFieldAdapter
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 from cc3d.cpp import CompuCell
+from cc3d.core.shared_numpy_arrays import get_shared_numpy_array_as_cc3d_field
 
 
 class FieldRegistry:
@@ -15,8 +16,11 @@ class FieldRegistry:
         # format {field_name:field_type}
         self.__fields_to_create = {}
 
+        self.shared_scalar_numpy_fields = {}
+
         self.dim = None
         self.simthread = None
+        self.simulator = None
 
         self.enable_ad_hoc_field_creation = False
 
@@ -26,6 +30,7 @@ class FieldRegistry:
             SCALAR_FIELD_CELL_LEVEL: self.create_scalar_field_cell_level,
             VECTOR_FIELD_NPY: self.create_vector_field,
             VECTOR_FIELD_CELL_LEVEL: self.create_vector_field_cell_level,
+            SHARED_SCALAR_NUMPY_FIELD: self.create_shared_scalar_numpy_field
 
         }
 
@@ -97,6 +102,42 @@ class FieldRegistry:
         self.addNewField(fieldNP, field_name + '_npy', SCALAR_FIELD_NPY)
 
         field_adapter.set_ref(fieldNP)
+
+    def create_shared_scalar_numpy_field(self, field_name: str) -> None:
+
+        """
+
+        Creates shared scalar numpy field that is accessible both from C++ sider of CC3D code and from python as
+        a native numpy array
+
+        :param field_name:
+        :return:
+        """
+
+        field_adapter = self.fetch_field_adapter(field_name=field_name)
+        if field_adapter is None:
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f'field adapter not found ({field_name})')
+            return
+
+        array, field = get_shared_numpy_array_as_cc3d_field(shape=(self.dim.x, self.dim.y, self.dim.z),
+                                                            dtype=np.float32)
+
+        self.shared_scalar_numpy_fields[field_name] = [array, field]
+        self.simulator.registerConcentrationField(field_name, field)
+        field_adapter.set_ref(array)
+
+        # fieldNP = np.zeros(shape=(self.dim.x, self.dim.y, self.dim.z), dtype=np.float32)
+        # ndarrayAdapter = self.get_field_storage().createFloatFieldPy(self.dim, field_name)
+        # # initializing  numpyAdapter using numpy array (copy dims and data ptr)
+        # ndarrayAdapter.initFromNumpy(fieldNP)
+
+        # self.addNewField(field, field_name, SHARED_SCALAR_NUMPY_FIELD)
+
+
+        # self.addNewField(fieldNP, field_name + '_npy', SCALAR_FIELD_NPY)
+        #
+        # field_adapter.set_ref(fieldNP)
+
 
     def create_scalar_field_cell_level(self, field_name: str) -> None:
         """
