@@ -2,23 +2,67 @@ from cc3d.cpp import CompuCell
 from cc3d.cpp import CC3DAuxFields
 import numpy as np
 import ctypes
+from typing import Tuple
+
+
+def get_shared_numpy_array(shape:Tuple, dtype=np.float64):
+    if dtype in (np.float64,):
+        field = CC3DAuxFields.NumpyArrayWrapperImplDouble(shape)
+        size = field.getSize()
+
+        ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes.c_double))
+        buffer = (ctypes.c_double * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
+
+        # array = np.frombuffer(ptr, dtype=np.float64, count=200)
+        array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(shape)
+        return array, field
+    elif dtype in (np.float32,):
+        field = CC3DAuxFields.NumpyArrayWrapperImplFloat(shape)
+        size = field.getSize()
+
+        ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes.c_float))
+        buffer = (ctypes.c_float * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
+
+        # array = np.frombuffer(ptr, dtype=np.float64, count=200)
+        array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(shape)
+        return array, field
+    else:
+        raise ValueError(f'Unsupported dtype={dtype}')
 
 
 def main():
     print("aux fields")
     dim_x = 4
     dim_y = 6
+    dim_z = 5
+    shape = (dim_x, dim_y, dim_z)
+    # shape = (dim_x, dim_y)
+    # shape = (30, )
 
-    aux_field = CC3DAuxFields.NumpyArrayWrapper(dim_x, dim_y)
+    array, aux_field_double = get_shared_numpy_array(shape=shape, dtype=np.float64)
+    array[1, 2, 0] = 12
+    array[3, 0, 0] = 30
+    array[0, 3, 0] = 3
+
+    array[1, 2, 3] = 120
+    array[3, 0, 2] = 300
+    array[2, 3, 4] = 311
+    aux_field_double.printAllArrayValues()
+
+    # aux_field_double = CC3DAuxFields.NumpyArrayWrapperImplDouble(shape)
+    # aux_field_double.printAllArrayValues()
+
+
+    aux_field = CC3DAuxFields.NumpyArrayWrapper(shape)
+    # aux_field.printAllArrayValues()
+
+    # aux_field.iterateOverAxes((2,3,2))
+
     size = aux_field.getSize()
     print("size=", aux_field.getSize())
 
-    aux_field.setDimensions((10,20,30,40))
+    # aux_field.setDimensions((10, 20, 30, 40))
     # print("dimensions=", aux_field.getDimensions())
-
-    return
-
-
 
 
     ptr = aux_field.getPtr()
@@ -29,16 +73,33 @@ def main():
     # ptr_as_ctypes = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_double))
     print("ptr_as_ctypes=", ptr_as_ctypes)
     buffer = (ctypes.c_double * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
+
     # array = np.frombuffer(ptr, dtype=np.float64, count=200)
-    array = np.frombuffer(buffer, dtype=np.float64, count=size).reshape((dim_x, dim_y))
+    array = np.frombuffer(buffer, dtype=np.float64, count=size).reshape(shape)
 
     # print(array[:10])
-    array[1,2] = 12
-    array[3, 0] = 30
-    array[0, 3] = 3
 
-    aux_field.printArray()
+    # array[10] = 12
+    # array[21] = 30
+    # array[28] = 3
+
+    # array[1, 2] = 12
+    # array[3, 0] = 30
+    # array[0, 3] = 3
+
+    array[1, 2, 0] = 12
+    array[3, 0, 0] = 30
+    array[0, 3, 0] = 3
+
+    array[1, 2, 3] = 120
+    array[3, 0, 2] = 300
+    array[2, 3, 4] = 311
+
+    aux_field.printAllArrayValues()
+    # aux_field.printArray()
 
 
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     main()

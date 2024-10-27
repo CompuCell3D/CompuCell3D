@@ -37,5 +37,7 @@ INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D/Field3D .h
   WatchableField3D
   CC3D_Field3D
   NumpyArrayWrapper
+  NumpyArrayWrapperImpl
+  NumpyArrayWrapper3DImpl
 
 )

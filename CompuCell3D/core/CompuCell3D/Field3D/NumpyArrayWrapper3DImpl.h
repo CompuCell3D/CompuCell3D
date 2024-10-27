@@ -2,34 +2,38 @@
 // Created by m on 10/5/24.
 //
 
-#ifndef COMPUCELL3D_NUMPYARRAYWRAPPER_H
-#define COMPUCELL3D_NUMPYARRAYWRAPPER_H
+#ifndef COMPUCELL3D_NUMPYARRAYWRAPPER3DIMPL_H
+#define COMPUCELL3D_NUMPYARRAYWRAPPER3DIMPL_H
 
 #include <vector>
 #include <initializer_list>
 #include <functional>  // For std::function
 
 
-
 #include <vector>
 #include <initializer_list>
 #include <functional>  // For std::function
+#include <numeric>  // For std::accumulate
+#include <algorithm> // For std::copy
+#include <iostream>
+
+#include <math.h>
+#include <CompuCell3D/Boundary/BoundaryStrategy.h>
+#include <CompuCell3D/CC3DExceptions.h>
+#include "NumpyArrayWrapperImpl.h"
+#include "Dim3D.h"
+#include "Field3D.h"
 
 
 namespace CompuCell3D {
 
 
-    typedef std::vector<size_t>::size_type array_size_t;
+    typedef std::vector<double>::size_type array_size_t;
 
-    class NumpyArrayWrapper {
-
-
-    private:
-
-        std::vector<array_size_t> dimensions;
-        std::vector<array_size_t> strides;
-        std::vector<double> array;
-
+    template<typename T>
+    class NumpyArrayWrapper3DImpl : public Field3D<T>, public NumpyArrayWrapperImpl<T> {
+    protected:
+        Dim3D dim;
 
     public:
         /**
@@ -37,43 +41,37 @@ namespace CompuCell3D {
          * @param initialValue The initial value of all data elements in the field.
          */
 
-
-        NumpyArrayWrapper(const std::vector<array_size_t> &dims);
-
-
-        void setDimensions(const std::vector<array_size_t> &_dimensions) {
-            this->dimensions = _dimensions;
-        }
-        std::vector<array_size_t> computeStrides(const std::vector<array_size_t>& dims);
-
-
-        void iterateOverAxes(const std::vector<array_size_t> &dims,
-                             std::function<void(const std::vector<array_size_t> &)> functor);
-
-        void printArrayValue(const std::vector<array_size_t> &indices);
-
-        array_size_t index(const std::vector<array_size_t>& indices) const {
-            array_size_t index = 0;
-            for (size_t i = 0; i < indices.size(); ++i) {
-                index += indices[i] * strides[i];
+        NumpyArrayWrapper3DImpl(const std::vector<array_size_t> &dims) :
+                NumpyArrayWrapperImpl<T>(dims) {
+            if (dims.size() != 3) {
+                throw CC3DException("NumpyArrayWrapperImpl3D must have exactly 3 dimensions!!!");
             }
-            return index;
+            if (dims[0] == 0 && dims[1] == 0 && dims[2] == 0)
+                throw CC3DException("NumpyArrayWrapperImpl3D cannot have a 0 dimension!!!");
+            dim.x = this->dimensions[0];
+            dim.y = this->dimensions[1];
+            dim.z = this->dimensions[2];
         }
 
-        array_size_t getSize() {
-            return array.size();
+        virtual ~NumpyArrayWrapper3DImpl() = default;
 
+        //Field 3D interface
+        virtual void set(const Point3D &pt, const T value) {
+            this->array[this->index({static_cast<size_t>(pt.x), static_cast<size_t>(pt.y), static_cast<size_t>(pt.z)})] = value;
+        };
+
+        virtual T get(const Point3D &pt) const {
+            return this->array[this->index({static_cast<size_t>(pt.x), static_cast<size_t>(pt.y), static_cast<size_t>(pt.z)})];
+
+        };
+
+        virtual bool isValid(const Point3D &pt) const {
+            return (0 <= pt.x && pt.x < this->dimensions[0] &&
+                    0 <= pt.y && pt.y < this->dimensions[1] &&
+                    0 <= pt.z && pt.z < this->dimensions[2]);
         }
 
-        double *getPtr() {
-            return array.size() ? &array[0] : nullptr;
-        }
-
-        void printAllArrayValues();
-
-        virtual ~NumpyArrayWrapper() {}
-
-
+        virtual Dim3D getDim() const { return dim ;}
     };
 };
 
