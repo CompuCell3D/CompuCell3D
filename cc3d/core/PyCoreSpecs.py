@@ -2241,7 +2241,19 @@ class SurfacePlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     name = "surface"
     registered_name = "Surface"
 
-    def __init__(self, *_params):
+    check_dict = {"neighbor_order": (lambda x: x is not None and x < 1, "Neighbor order must be positive"),
+                  "scale_surface": (lambda x: x is not None and x < 0, "Surface scaling must be non-negative")}
+
+    def __init__(self,
+                 neighbor_order: int = None,
+                 scale_surface: float = None,
+                 *_params):
+        """
+
+        :param neighbor_order: optional neighbor order; if SurfacePlugin is specified, its order overrides this
+        :param scale_surface: surface scaling coefficient
+        :param _params: variable number of ContactEnergyParameter instances
+        """
         super().__init__()
 
         with _SpecValueErrorContextBlock() as err_ctx:
@@ -2251,7 +2263,18 @@ class SurfacePlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
                         raise SpecValueError("Only SurfaceEnergyParameter instances can be passed",
                                              names=[_p.__name__])
 
-        self.spec_dict = {"params": {_p.cell_type: _p for _p in _params}}
+            self.check_inputs(neighbor_order=neighbor_order,
+                              scale_surface=scale_surface)
+
+        self.spec_dict = {"params": {_p.cell_type: _p for _p in _params},
+                          "neighbor_order": neighbor_order,
+                          "scale_surface": scale_surface}
+
+    neighbor_order: Optional[int] = SpecProperty(name="neighbor_order")
+    """neighbor order"""
+
+    scale_surface: Optional[float] = SpecProperty(name="scale_surface")
+    """surface scaling coefficient"""
 
     @property
     def xml(self) -> ElementCC3D:
@@ -2263,6 +2286,13 @@ class SurfacePlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         self._el = self.generate_header()
         for _p in self.spec_dict["params"].values():
             self._el.add_child(_p.xml)
+
+        if self.neighbor_order is not None:
+            self._el.ElementCC3D("NeighborOrder", {}, str(self.neighbor_order))
+
+        if self.scale_surface is not None:
+            self._el.ElementCC3D("ScaleSurface", {}, str(self.scale_surface))
+
         return self._el
 
     def validate(self, *specs) -> None:
@@ -2294,14 +2324,22 @@ class SurfacePlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         :rtype: SurfacePlugin
         """
 
+        el = cls.find_xml_by_attr(_xml)
         o = cls()
 
-        el_list = CC3DXMLListPy(cls.find_xml_by_attr(_xml).getElements("SurfaceEnergyParameters"))
+        el_list = CC3DXMLListPy(el.getElements("SurfaceEnergyParameters"))
 
         for p_el in el_list:
             o.param_new(p_el.getAttribute("CellType"),
                         target_surface=p_el.getAttributeAsDouble("TargetSurface"),
                         lambda_surface=p_el.getAttributeAsDouble("LambdaSurface"))
+
+        if el.findElement("NeighborOrder"):
+            o.neighbor_order = el.getFirstElement("NeighborOrder").getInt()
+
+        if el.findElement("ScaleSurface"):
+            o.scale_surface = el.getFirstElement("ScaleSurface").getDouble()
+
         return o
 
     def __getitem__(self, item):
@@ -3119,12 +3157,19 @@ class ContactPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     name = "contact"
     registered_name = "Contact"
 
-    check_dict = {"neighbor_order": (lambda x: x < 1, "Neighbor order must be positive")}
+    check_dict = {"neighbor_order": (lambda x: x is not None and x < 1, "Neighbor order must be positive"),
+                  "depth": (lambda x: x is not None and x < 1, "Depth must be positive")}
 
-    def __init__(self, neighbor_order: int = 1, *_params):
+    def __init__(self,
+                 neighbor_order: Optional[int] = 1,
+                 depth: Optional[float] = None,
+                 weight_energy_by_distance: bool = False,
+                 *_params):
         """
 
         :param neighbor_order: neighbor order
+        :param depth": neighbor depth
+        :param weight_energy_by_distance: flag to weight energy by distance
         :param _params: variable number of ContactEnergyParameter instances
         """
         super().__init__()
@@ -3136,14 +3181,23 @@ class ContactPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
                         raise SpecValueError("Only ContactEnergyParameter instances can be passed",
                                              names=[_p.__name__])
 
-            self.check_inputs(neighbor_order=neighbor_order)
+            self.check_inputs(neighbor_order=neighbor_order,
+                              depth=depth)
 
         self.spec_dict = {"energies": {},
-                          "neighbor_order": neighbor_order}
+                          "neighbor_order": neighbor_order,
+                          "depth": depth,
+                          "weight_energy_by_distance": weight_energy_by_distance}
         [self.param_append(_p) for _p in _params]
 
-    neighbor_order: int = SpecProperty(name="neighbor_order")
+    neighbor_order: Optional[int] = SpecProperty(name="neighbor_order")
     """neighbor order"""
+
+    depth: Optional[float] = SpecProperty(name="depth")
+    """neighbor depth"""
+
+    weight_energy_by_distance: bool = SpecProperty(name="weight_energy_by_distance")
+    """flag to weight energy by distance"""
 
     @property
     def xml(self) -> ElementCC3D:
@@ -3156,7 +3210,15 @@ class ContactPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         for _pdict in self.spec_dict["energies"].values():
             for _p in _pdict.values():
                 self._el.add_child(_p.xml)
-        self._el.ElementCC3D("NeighborOrder", {}, str(self.neighbor_order))
+
+        if self.weight_energy_by_distance:
+            self._el.ElementCC3D("WeightEnergyByDistance")
+
+        if self.depth is not None:
+            self._el.ElementCC3D("Depth", {}, str(self.depth))
+        elif self.neighbor_order is not None:
+            self._el.ElementCC3D("NeighborOrder", {}, str(self.neighbor_order))
+
         return self._el
 
     def validate(self, *specs) -> None:
@@ -3203,7 +3265,12 @@ class ContactPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
                                                   type_2=p_el.getAttribute("Type2"),
                                                   energy=p_el.getDouble()))
 
-        if el.findElement("NeighborOrder"):
+        if el.findElement("WeightEnergyByDistance"):
+            o.weight_energy_by_distance = True
+
+        if el.findElement("Depth"):
+            o.depth = el.getFirstElement("Depth").getDouble()
+        elif el.findElement("NeighborOrder"):
             o.neighbor_order = el.getFirstElement("NeighborOrder").getInt()
 
         return o
