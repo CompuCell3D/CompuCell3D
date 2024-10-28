@@ -1543,7 +1543,7 @@ class PottsCore(_PyCoreSteerableInterface, _PyCoreXMLInterface):
                 fa_el.ElementCC3D("FluctuationAmplitudeParameters", {"CellType": _type,
                                                                      "FluctuationAmplitude": str(_fa)})
         else:
-            self._el.ElementCC3D("FluctuationAmplitude", {}, str(self.spec_dict["fluctuation_amplitude"]))
+            self._el.ElementCC3D("Temperature", {}, str(self.spec_dict["fluctuation_amplitude"]))
 
         if self.fluctuation_amplitude_function != FLUCAMPFCNS[0]:
             self._el.ElementCC3D("FluctuationAmplitudeFunctionName",
@@ -1658,6 +1658,9 @@ class PottsCore(_PyCoreSteerableInterface, _PyCoreXMLInterface):
 
         if el.findElement("FluctuationAmplitudeFunctionName"):
             o.fluctuation_amplitude_function = el.getFirstElement("FluctuationAmplitudeFunctionName").getText()
+
+        if el.findElement("Temperature"):
+            o.fluctuation_amplitude_const(el.getFirstElement("Temperature").getDouble())
 
         for c in ["x", "y", "z"]:
             if el.findElement(f"Boundary_{c}"):
