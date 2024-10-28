@@ -3100,7 +3100,7 @@ class ContactEnergyParameter(_PyCoreSpecsBase):
                 CoreSpecsValidator.validate_cell_type_names(type_names=[self.type_1, self.type_2], cell_type_spec=s)
 
 
-class ContactPlugin(_PyCorePluginSpecs):
+class ContactPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     Contact Plugin
 
