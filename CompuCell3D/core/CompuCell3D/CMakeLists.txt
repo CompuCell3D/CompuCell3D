@@ -56,12 +56,6 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
       TARGET_INCLUDE_DIRECTORIES(CompuCell3DCML PUBLIC ${INCLUDE_DIRS})
       TARGET_LINK_LIBRARIES(CompuCell3DCML cc3d::CompuCellLib cc3d::XMLParserExpatLib)
       INSTALL_TARGETS(/bin CompuCell3DCML)
-  else(BUILD_CPP_ONLY_EXECUTABLE)
-
-      ADD_EXECUTABLE(mainSimpleDemo mainSimpleDemo.cpp)
-      TARGET_INCLUDE_DIRECTORIES(mainSimpleDemo PUBLIC ${INCLUDE_DIRS})
-      TARGET_LINK_LIBRARIES(mainSimpleDemo cc3d::CompuCellLib)
-      INSTALL_TARGETS(/bin mainSimpleDemo)
 
   endif(BUILD_CPP_ONLY_EXECUTABLE)
 
