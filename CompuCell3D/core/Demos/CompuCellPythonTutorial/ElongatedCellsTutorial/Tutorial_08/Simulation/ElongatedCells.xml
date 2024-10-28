@@ -1,0 +1,89 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="100" y="100" z="1"/>
+        <Steps>100000</Steps>
+        <Temperature>10</Temperature>
+        <Flip2DimRatio>1</Flip2DimRatio>
+        <NeighborOrder>2</NeighborOrder>
+    </Potts>
+
+
+    <Plugin Name="Volume">
+        <TargetVolume>25</TargetVolume>
+        <LambdaVolume>4.0</LambdaVolume>
+    </Plugin>
+
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Top" TypeId="1"/>
+        <CellType TypeName="Center" TypeId="2"/>
+    </Plugin>
+
+
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="Top" Type2="Top">30</Energy>
+        <Energy Type1="Top" Type2="Medium">15</Energy>
+        <Energy Type1="Center" Type2="Center">30</Energy>
+        <Energy Type1="Center" Type2="Top">30</Energy>
+        <Energy Type1="Center" Type2="Medium">15</Energy>
+
+        <NeighborOrder>4</NeighborOrder>
+    </Plugin>
+
+    <Plugin Name="ContactInternal">
+
+        <Energy Type1="Top" Type2="Top">30</Energy>
+        <Energy Type1="Center" Type2="Center">30</Energy>
+        <Energy Type1="Center" Type2="Top">30</Energy>
+
+
+        <NeighborOrder>4</NeighborOrder>
+    </Plugin>
+
+
+    <Plugin Name="FocalPointPlasticity">
+
+        <InternalParameters Type1="Top" Type2="Center">
+            <Lambda>100.0</Lambda>
+            <ActivationEnergy>-50.0</ActivationEnergy>
+            <TargetDistance>5</TargetDistance>
+            <MaxDistance>20.0</MaxDistance>
+            <MaxNumberOfJunctions>1</MaxNumberOfJunctions>
+        </InternalParameters>
+
+        <InternalParameters Type1="Center" Type2="Center">
+            <Lambda>100.0</Lambda>
+            <ActivationEnergy>-50.0</ActivationEnergy>
+            <TargetDistance>5</TargetDistance>
+            <MaxDistance>20.0</MaxDistance>
+            <MaxNumberOfJunctions>2</MaxNumberOfJunctions>
+        </InternalParameters>
+
+   </Plugin>
+
+
+
+    <Plugin Name="Curvature">
+
+        <InternalParameters Type1="Top" Type2="Center">
+            <Lambda>1000.0</Lambda>
+            <ActivationEnergy>-50.0</ActivationEnergy>
+        </InternalParameters>
+
+        <InternalParameters Type1="Center" Type2="Center">
+            <Lambda>1000.0</Lambda>
+            <ActivationEnergy>-50.0</ActivationEnergy>
+        </InternalParameters>
+
+
+        <InternalTypeSpecificParameters>
+            <Parameters TypeName="Top" MaxNumberOfJunctions="1" NeighborOrder="1"/>
+            <Parameters TypeName="Center" MaxNumberOfJunctions="2" NeighborOrder="1"/>
+        </InternalTypeSpecificParameters>
+
+    </Plugin>
+
+
+</CompuCell3D>
