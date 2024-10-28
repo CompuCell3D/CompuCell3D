@@ -5379,6 +5379,114 @@ class MomentOfInertiaPlugin(_PyCorePluginSpecs):
         return cls()
 
 
+class SurfaceTrackerPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
+    """ SurfaceTracker Plugin """
+
+    name = "surface_tracker"
+    registered_name = "SurfaceTracker"
+
+    def __init__(self,
+                 neighbor_order: int = None,
+                 max_neighbor_order: int = None,
+                 max_neighbor_distance: float = None):
+
+        super().__init__()
+
+        self.max_neighbor_distance = max_neighbor_distance
+        self.max_neighbor_order = max_neighbor_order
+        self.neighbor_order = neighbor_order
+
+    @property
+    def xml(self) -> ElementCC3D:
+        """
+        CC3DXML element; generated from specification dictionary
+
+        :return: CC3DML XML element
+        """
+        self._el = self.generate_header()
+        if self.neighbor_order is not None:
+            self._el.ElementCC3D('NeighborOrder', {}, str(self.neighbor_order))
+        elif self.max_neighbor_order is not None:
+            self._el.ElementCC3D('MaxNeighborOrder', {}, str(self.max_neighbor_order))
+        elif self.max_neighbor_distance is not None:
+            self._el.ElementCC3D('MaxNeighborDistance', {}, str(self.max_neighbor_distance))
+        return self._el
+
+    @classmethod
+    def from_xml(cls, _xml: CC3DXMLElement):
+        """
+        Instantiate an instance from a CC3DXMLElement parent instance
+
+        :param _xml: parent xml
+        :return: python class instace
+        :rtype: MomentOfInertiaPlugin
+        """
+        el = cls.find_xml_by_attr(_xml)
+
+        neighbor_order = None
+        max_neighbor_order = None
+        max_neighbor_distance = None
+        if el.findElement('NeighborOrder'):
+            neighbor_order = el.getFirstElement('NeighborOrder').getUInt()
+        elif el.findElement('MaxNeighborOrder'):
+            max_neighbor_order = el.getFirstElement('MaxNeighborOrder').getUInt()
+        elif el.findElement('MaxNeighborDistance'):
+            max_neighbor_distance = el.getFirstElement('MaxNeighborDistance').getDouble()
+
+        return cls(neighbor_order, max_neighbor_order, max_neighbor_distance)
+
+    @property
+    def neighbor_order(self) -> Optional[int]:
+        return self.spec_dict['neighbor_order']
+
+    @neighbor_order.setter
+    def neighbor_order(self, _val: Optional[int]):
+        if _val is None:
+            val = _val
+        else:
+            val = int(_val)
+            if val <= 0:
+                raise ValueError('Value must be positive')
+            self.max_neighbor_order = None
+            self.max_neighbor_distance = None
+
+        self.spec_dict['neighbor_order'] = val
+
+    @property
+    def max_neighbor_order(self) -> Optional[int]:
+        return self.spec_dict['max_neighbor_order']
+
+    @max_neighbor_order.setter
+    def max_neighbor_order(self, _val: Optional[int]):
+        if _val is None:
+            val = _val
+        else:
+            val = int(_val)
+            if val <= 0:
+                raise ValueError('Value must be positive')
+            self.neighbor_order = None
+            self.max_neighbor_distance = None
+
+        self.spec_dict['max_neighbor_order'] = val
+
+    @property
+    def max_neighbor_distance(self) -> Optional[float]:
+        return self.spec_dict['max_neighbor_distance']
+
+    @max_neighbor_distance.setter
+    def max_neighbor_distance(self, _val: Optional[float]):
+        if _val is None:
+            val = _val
+        else:
+            val = float(_val)
+            if val <= 0:
+                raise ValueError('Value must be positive')
+            self.neighbor_order = None
+            self.max_neighbor_order = None
+
+        self.spec_dict['max_neighbor_distance'] = val
+
+
 class BoxWatcherSteppable(_PyCoreSteppableSpecs):
     """ BoxWatcher Steppable """
 
