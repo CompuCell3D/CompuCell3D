@@ -53,7 +53,11 @@ def main():
     # aux_field_double.printAllArrayValues()
 
 
+
+
     aux_field = CC3DAuxFields.NumpyArrayWrapper(shape)
+
+
     # aux_field.printAllArrayValues()
 
     # aux_field.iterateOverAxes((2,3,2))
@@ -98,8 +102,29 @@ def main():
     aux_field.printAllArrayValues()
     # aux_field.printArray()
 
+def main_vector():
+    print("aux fields")
+    dim_x = 4
+    dim_y = 6
+    dim_z = 5
+    shape = (dim_x, dim_y, dim_z, 3)
+    # shape = (dim_x, dim_y)
+    # shape = (30, )
+
+    array = CC3DAuxFields.NumpyArrayWrapper(shape)
+
+    # array, aux_field_double = get_shared_numpy_array(shape=shape, dtype=np.float64)
+    # array[1, 2, 0] = 12
+    # array[3, 0, 0] = 30
+    # array[0, 3, 0] = 3
+    #
+    # array[1, 2, 3] = 120
+    # array[3, 0, 2] = 300
+    # array[2, 3, 4] = 311
+    # aux_field_double.printAllArrayValues()
 
 
 
 if __name__ == "__main__":
+    # main_vector()
     main()
