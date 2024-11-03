@@ -39,5 +39,7 @@ INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D/Field3D .h
   NumpyArrayWrapper
   NumpyArrayWrapperImpl
   NumpyArrayWrapper3DImpl
+  VectorField3D
+  VectorNumpyArrayWrapper3DImpl
 
 )
