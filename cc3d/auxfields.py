@@ -1,5 +1,6 @@
 from cc3d.cpp import CompuCell
 from cc3d.cpp import CC3DAuxFields
+from cc3d.cpp import PlayerPython
 import numpy as np
 import ctypes
 from typing import Tuple
@@ -104,6 +105,9 @@ def main():
 def main_vector():
     print("aux vector fields")
 
+    field_storage = PlayerPython.FieldStorage()
+
+
     dim_x = 4
     dim_y = 6
     dim_z = 5
@@ -111,13 +115,11 @@ def main_vector():
     # shape = (dim_x, dim_y)
     # shape = (30, )
 
-    pt = CompuCell.Point3D(2,3,4)
+    pt = CompuCell.Point3D(2, 3, 4)
 
     dtype = np.float32
     # scalar field - just to check if swig wrapper works
     wrapper = CC3DAuxFields.NumpyArrayWrapper3DImplFloat(shape)
-
-
 
     vec_shape = (dim_x, dim_y, dim_z, 3)
     cc3d_cpp_vec_field = CC3DAuxFields.VectorNumpyArrayWrapper3DImplFloat(vec_shape)
@@ -130,7 +132,6 @@ def main_vector():
 
     # array = np.frombuffer(ptr, dtype=np.float64, count=200)
     vec_array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(vec_shape)
-
 
     vec_array[1, 2, 3, ...] = [20, 30, 40]
 
@@ -149,7 +150,12 @@ def main_vector():
     for x in range(dim_x):
         for y in range(dim_y):
             for z in range(dim_z):
-                print(f"{x}, {y}, {z}=", vec_array[x,y,z])
+                print(f"{x}, {y}, {z}=", vec_array[x, y, z])
+
+    field_storage.registerVectorField("vector_numpy", cc3d_cpp_vec_field)
+
+    ndarray_adapter_vector_field = cc3d_cpp_vec_field.getNdarrayAdapter()
+    print(ndarray_adapter_vector_field)
 
 
 

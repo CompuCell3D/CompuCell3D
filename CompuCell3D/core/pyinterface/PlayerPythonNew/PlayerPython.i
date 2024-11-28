@@ -33,6 +33,7 @@ namespace CompuCell3D{
 
 
 
+
 %}
 
 
@@ -42,7 +43,8 @@ namespace CompuCell3D{
 #include <Utils/Coordinates3D.h>
 #include <FieldStorage.h>
 
-#include <ndarray_adapter.h>
+#include "CompuCell3D/Field3D/ndarray_adapter.h"
+#include "CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h"
 
 #include <FieldExtractorTypes.h>
 
@@ -126,8 +128,7 @@ class CellG;
 
 
 
-
-%include <ndarray_adapter.h>
+%include "CompuCell3D/Field3D/ndarray_adapter.h"
 
 %template(NdarrayAdapterDouble3) NdarrayAdapter<float,3>; //for storing scalar fieldas
 %template(NdarrayAdapterDouble4) NdarrayAdapter<float,4>; //for storing vector fieldas
@@ -200,8 +201,12 @@ class CellG;
   }
   
   
-      
+
 };
+
+%include "CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h"
+%template(VectorNumpyArrayWrapper3DImplFloat) CompuCell3D::VectorNumpyArrayWrapper3DImpl<float>;
+%template(VectorNumpyArrayWrapper3DImplDouble) CompuCell3D::VectorNumpyArrayWrapper3DImpl<double>;
 
 %include <FieldExtractorTypes.h>
 %include <FieldStorage.h>

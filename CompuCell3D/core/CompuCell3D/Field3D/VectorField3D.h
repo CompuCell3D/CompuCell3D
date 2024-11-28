@@ -24,6 +24,9 @@
 template<typename T>
 class Coordinates3D;
 
+template<typename T, int ndim>
+class NdarrayAdapter;
+
 namespace CompuCell3D {
 //    // Forward declaration
 //    template<class T>
@@ -32,6 +35,9 @@ namespace CompuCell3D {
     // Forward declare class
     template<class T>
     class VectorField3D;
+
+
+
 
 //    // Forward declare friend functions
 //    template<class T>
@@ -85,6 +91,8 @@ namespace CompuCell3D {
          * @return The value of the element at pt.
          */
         virtual Coordinates3D<T> get(const Point3D &pt) const = 0;
+
+        virtual NdarrayAdapter<T, 4>* getNdarrayAdapter() {return nullptr;}
 
         /**
          * If _offset is out of range either a CC3DException will be thrown

@@ -20,6 +20,8 @@
 #include <CompuCell3D/Field3D/Field3DImpl.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 
+#include <CompuCell3D/Field3D/ndarray_adapter.h>
+
 
 #include <core/Utils/Coordinates3D.h>
 
@@ -60,6 +62,7 @@ using namespace CompuCell3D;
 %include "Field3D/Field3D.h"
 %include "Field3D/Field3DImpl.h"
 %include "Field3D/WatchableField3D.h"
+%include "Field3D/ndarray_adapter.h"
 
 
 %include <core/Utils/Coordinates3D.h>
@@ -70,7 +73,6 @@ using namespace CompuCell3D;
 %include <NumpyArrayWrapperImpl.h>
 %include <NumpyArrayWrapper3DImpl.h>
 
-
 %include <VectorNumpyArrayWrapper3DImpl.h>
 
 //using namespace CompuCell3D; // use either this or use fully qualified class name (including namespace - as below)
@@ -78,6 +80,9 @@ using namespace CompuCell3D;
 %ignore CompuCell3D::Field3D<float>::typeStr;
 %template(doublefieldaux) CompuCell3D::Field3D<double>;
 %ignore CompuCell3D::Field3D<double>::typeStr;
+
+%template(vector_ndarray_adapter_float) NdarrayAdapter<float, 4>;
+%template(vector_ndarray_adapter_double) NdarrayAdapter<double, 4>;
 
 %template(float_vector_field_3_impl_daux) CompuCell3D::VectorField3D<float>;
 
@@ -100,6 +105,7 @@ using namespace CompuCell3D;
 //
 //
 //
+
 %template (NumpyArrayWrapperImplDouble) CompuCell3D::NumpyArrayWrapperImpl<double>;
 %template (NumpyArrayWrapperImplFloat) CompuCell3D::NumpyArrayWrapperImpl<float>;
 
@@ -109,3 +115,4 @@ using namespace CompuCell3D;
 
 
 %template (VectorNumpyArrayWrapper3DImplFloat) CompuCell3D::VectorNumpyArrayWrapper3DImpl<float>;
+%template (VectorNumpyArrayWrapper3DImplDouble) CompuCell3D::VectorNumpyArrayWrapper3DImpl<double>;

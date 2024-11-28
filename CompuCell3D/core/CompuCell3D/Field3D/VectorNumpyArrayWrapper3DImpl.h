@@ -24,6 +24,9 @@
 #include "Dim3D.h"
 #include "VectorField3D.h"
 
+# include "ndarray_adapter.h"
+
+
 template<typename T>
 class Coordinates3D;
 
@@ -37,6 +40,7 @@ namespace CompuCell3D {
     class VectorNumpyArrayWrapper3DImpl : public VectorField3D<T>, public NumpyArrayWrapperImpl<T> {
     protected:
         Dim3D dim;
+        NdarrayAdapter<T, 4> ndarrayAdapter;
 
     public:
         /**
@@ -59,6 +63,25 @@ namespace CompuCell3D {
             dim.x = this->dimensions[0];
             dim.y = this->dimensions[1];
             dim.z = this->dimensions[2];
+
+//          initializing ndarrayAdapter
+            ndarrayAdapter.setData( &(this->array[0]));
+
+            // Convert each element from array_size_t to long explicitly
+            std::vector<long> long_vector_dimensions(this->dimensions.size());
+            std::transform(this->dimensions.begin(), this->dimensions.end(), long_vector_dimensions.begin(),
+                           [](array_size_t val) { return static_cast<long>(val); });
+            ndarrayAdapter.setShape(long_vector_dimensions);
+
+
+
+            std::vector<long> long_vector_strides(this->dimensions.size());
+            std::transform(this->strides.begin(), this->strides.end(), long_vector_strides.begin(),
+                           [](array_size_t val) { return static_cast<long>(val); });
+
+            ndarrayAdapter.setStrides(long_vector_strides);
+
+
         }
 
         virtual ~VectorNumpyArrayWrapper3DImpl() = default;
@@ -100,6 +123,10 @@ namespace CompuCell3D {
 
         };
 
+        virtual NdarrayAdapter<T, 4>* getNdarrayAdapter() {
+            return &ndarrayAdapter;
+        }
+
         virtual bool isValid(const Point3D &pt) const {
             return (0 <= pt.x && pt.x < this->dimensions[0] &&
                     0 <= pt.y && pt.y < this->dimensions[1] &&
@@ -110,66 +137,6 @@ namespace CompuCell3D {
     };
 };
 
-//namespace CompuCell3D {
-//
-//
-//    typedef std::vector<size_t>::size_type array_size_t;
-//
-//    class NumpyArrayWrapper {
-//
-//
-//    private:
-//
-//        std::vector<array_size_t> dimensions;
-//        std::vector<array_size_t> strides;
-//        std::vector<double> array;
-//
-//
-//    public:
-//        /**
-//         * @param dim The field dimensions
-//         * @param initialValue The initial value of all data elements in the field.
-//         */
-//
-//
-//        NumpyArrayWrapper(const std::vector<array_size_t> &dims);
-//
-//
-//        void setDimensions(const std::vector<array_size_t> &_dimensions) {
-//            this->dimensions = _dimensions;
-//        }
-//        std::vector<array_size_t> computeStrides(const std::vector<array_size_t>& dims);
-//
-//
-//        void iterateOverAxes(const std::vector<array_size_t> &dims,
-//                             std::function<void(const std::vector<array_size_t> &)> functor);
-//
-//        void printArrayValue(const std::vector<array_size_t> &indices);
-//
-//        array_size_t index(const std::vector<array_size_t>& indices) const {
-//            array_size_t index = 0;
-//            for (size_t i = 0; i < indices.size(); ++i) {
-//                index += indices[i] * strides[i];
-//            }
-//            return index;
-//        }
-//
-//        array_size_t getSize() {
-//            return array.size();
-//
-//        }
-//
-//        double *getPtr() {
-//            return array.size() ? &array[0] : nullptr;
-//        }
-//
-//        void printAllArrayValues();
-//
-//        virtual ~NumpyArrayWrapper() {}
-//
-//
-//    };
-//};
 
 
 #endif
