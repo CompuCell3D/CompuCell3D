@@ -1318,7 +1318,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,
                                                                          field_type=SHARED_SCALAR_NUMPY_FIELD)
 
-
     @deprecated(version='4.0.0', reason="You should use : create_scalar_field_cell_level_py")
     def createScalarFieldCellLevelPy(self, _fieldName):
         return self.create_scalar_field_cell_level_py(field_name=_fieldName)
@@ -1349,6 +1348,19 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
 
         return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=field_name,
                                                                          field_type=VECTOR_FIELD_NPY)
+
+
+    def create_shared_vector_numpy_field(self, field_name: str) -> ExtraFieldAdapter:
+        """
+        Creates extra visualization vector field (voxel-based)
+
+        :param str field_name: name of field
+        :return: Extra visualization vector field (voxel-based)
+        :rtype: cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter
+        """
+
+        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=field_name,
+                                                                         field_type=SHARED_VECTOR_NUMPY_FIELD)
 
     @deprecated(version='4.0.0', reason="You should use : create_vector_field_cell_level_py")
     def createVectorFieldCellLevelPy(self, _fieldName):

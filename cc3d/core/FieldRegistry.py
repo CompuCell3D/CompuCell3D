@@ -4,7 +4,10 @@ import numpy as np
 from .ExtraFieldAdapter import ExtraFieldAdapter
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 from cc3d.cpp import CompuCell
-from cc3d.core.shared_numpy_arrays import get_shared_numpy_array_as_cc3d_field
+from cc3d.core.shared_numpy_arrays import (
+    get_shared_numpy_array_as_cc3d_scalar_field,
+    get_shared_numpy_array_as_cc3d_vector_field,
+)
 
 
 class FieldRegistry:
@@ -17,6 +20,7 @@ class FieldRegistry:
         self.__fields_to_create = {}
 
         self.shared_scalar_numpy_fields = {}
+        self.shared_vector_numpy_fields = {}
 
         self.dim = None
         self.simthread = None
@@ -30,8 +34,8 @@ class FieldRegistry:
             SCALAR_FIELD_CELL_LEVEL: self.create_scalar_field_cell_level,
             VECTOR_FIELD_NPY: self.create_vector_field,
             VECTOR_FIELD_CELL_LEVEL: self.create_vector_field_cell_level,
-            SHARED_SCALAR_NUMPY_FIELD: self.create_shared_scalar_numpy_field
-
+            SHARED_SCALAR_NUMPY_FIELD: self.create_shared_scalar_numpy_field,
+            SHARED_VECTOR_NUMPY_FIELD: self.create_shared_vector_numpy_field,
         }
 
     def create_field(self, field_name: str, field_type: int) -> ExtraFieldAdapter:
@@ -42,7 +46,7 @@ class FieldRegistry:
         :return:
         """
         # todo - need to add mechanism to inform player about new field
-        validate_cc3d_entity_identifier(entity_identifier=field_name, entity_type_label='visualization field')
+        validate_cc3d_entity_identifier(entity_identifier=field_name, entity_type_label="visualization field")
         field_adapter = self.schedule_field_creation(field_name=field_name, field_type=field_type)
 
         if self.enable_ad_hoc_field_creation:
@@ -61,7 +65,7 @@ class FieldRegistry:
         field_adapter = ExtraFieldAdapter(name=field_name, field_type=field_type)
 
         if field_name in self.__fields_to_create.keys():
-            raise RuntimeError('Field {} already exits. Choose different field name'.format(field_name))
+            raise RuntimeError("Field {} already exits. Choose different field name".format(field_name))
 
         self.__fields_to_create[field_name] = field_adapter
 
@@ -77,7 +81,7 @@ class FieldRegistry:
         try:
             return self.__fields_to_create[field_name]
         except KeyError:
-            print('Could not create field ', field_name)
+            print("Could not create field ", field_name)
 
     def create_scalar_field(self, field_name: str) -> None:
 
@@ -91,7 +95,7 @@ class FieldRegistry:
 
         field_adapter = self.fetch_field_adapter(field_name=field_name)
         if field_adapter is None:
-            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f'field adapter not found ({field_name})')
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f"field adapter not found ({field_name})")
             return
 
         fieldNP = np.zeros(shape=(self.dim.x, self.dim.y, self.dim.z), dtype=np.float32)
@@ -99,7 +103,7 @@ class FieldRegistry:
         # initializing  numpyAdapter using numpy array (copy dims and data ptr)
         ndarrayAdapter.initFromNumpy(fieldNP)
         self.addNewField(ndarrayAdapter, field_name, SCALAR_FIELD)
-        self.addNewField(fieldNP, field_name + '_npy', SCALAR_FIELD_NPY)
+        self.addNewField(fieldNP, field_name + "_npy", SCALAR_FIELD_NPY)
 
         field_adapter.set_ref(fieldNP)
 
@@ -116,11 +120,12 @@ class FieldRegistry:
 
         field_adapter = self.fetch_field_adapter(field_name=field_name)
         if field_adapter is None:
-            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f'field adapter not found ({field_name})')
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f"field adapter not found ({field_name})")
             return
 
-        array, field = get_shared_numpy_array_as_cc3d_field(shape=(self.dim.x, self.dim.y, self.dim.z),
-                                                            dtype=np.float32)
+        array, field = get_shared_numpy_array_as_cc3d_scalar_field(
+            shape=(self.dim.x, self.dim.y, self.dim.z), dtype=np.float32
+        )
 
         self.shared_scalar_numpy_fields[field_name] = [array, field]
         self.simulator.registerConcentrationField(field_name, field)
@@ -133,11 +138,9 @@ class FieldRegistry:
 
         # self.addNewField(field, field_name, SHARED_SCALAR_NUMPY_FIELD)
 
-
         # self.addNewField(fieldNP, field_name + '_npy', SCALAR_FIELD_NPY)
         #
         # field_adapter.set_ref(fieldNP)
-
 
     def create_scalar_field_cell_level(self, field_name: str) -> None:
         """
@@ -149,7 +152,7 @@ class FieldRegistry:
 
         field_adapter = self.fetch_field_adapter(field_name=field_name)
         if field_adapter is None:
-            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f'field adapter not found ({field_name})')
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f"field adapter not found ({field_name})")
             return
 
         field_ref = self.get_field_storage().createScalarFieldCellLevelPy(field_name)
@@ -165,7 +168,7 @@ class FieldRegistry:
 
         field_adapter = self.fetch_field_adapter(field_name=field_name)
         if field_adapter is None:
-            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f'field adapter not found ({field_name})')
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f"field adapter not found ({field_name})")
             return
 
         field_np = np.zeros(shape=(self.dim.x, self.dim.y, self.dim.z, 3), dtype=np.float32)
@@ -173,9 +176,45 @@ class FieldRegistry:
         # initializing  numpyAdapter using numpy array (copy dims and data ptr)
         ndarray_adapter.initFromNumpy(field_np)
         self.addNewField(ndarray_adapter, field_name, VECTOR_FIELD)
-        self.addNewField(field_np, field_name + '_npy', VECTOR_FIELD_NPY)
+        self.addNewField(field_np, field_name + "_npy", VECTOR_FIELD_NPY)
 
         field_adapter.set_ref(field_np)
+
+    def create_shared_vector_numpy_field(self, field_name: str) -> None:
+
+        """
+
+        Creates shared vector numpy field that is accessible both from C++ sider of CC3D code and from python as
+        a native numpy array
+
+        :param field_name:
+        :return:
+        """
+
+        field_adapter = self.fetch_field_adapter(field_name=field_name)
+        if field_adapter is None:
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f"field adapter not found ({field_name})")
+            return
+
+        array, field = get_shared_numpy_array_as_cc3d_vector_field(
+            shape=(self.dim.x, self.dim.y, self.dim.z, 3), dtype=np.float32
+        )
+
+        self.shared_vector_numpy_fields[field_name] = [array, field]
+        # self.simulator.registerVectorField(field_name, field)
+        self.get_field_storage().registerVectorField(field_name, field)
+        field_adapter.set_ref(array)
+
+        # fieldNP = np.zeros(shape=(self.dim.x, self.dim.y, self.dim.z), dtype=np.float32)
+        # ndarrayAdapter = self.get_field_storage().createFloatFieldPy(self.dim, field_name)
+        # # initializing  numpyAdapter using numpy array (copy dims and data ptr)
+        # ndarrayAdapter.initFromNumpy(fieldNP)
+
+        # self.addNewField(field, field_name, SHARED_SCALAR_NUMPY_FIELD)
+
+        # self.addNewField(fieldNP, field_name + '_npy', SCALAR_FIELD_NPY)
+        #
+        # field_adapter.set_ref(fieldNP)
 
     def create_vector_field_cell_level(self, field_name: str) -> None:
         """
@@ -186,7 +225,7 @@ class FieldRegistry:
 
         field_adapter = self.fetch_field_adapter(field_name=field_name)
         if field_adapter is None:
-            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f'field adapter not found ({field_name})')
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f"field adapter not found ({field_name})")
             return
 
         field_ref = self.get_field_storage().createVectorFieldCellLevelPy(field_name)
@@ -209,7 +248,7 @@ class FieldRegistry:
             except KeyError:
                 CompuCell.CC3DLogger.get().log(
                     CompuCell.LOG_DEBUG,
-                    f'Could not create field. Could not locate field creating functions for ({field_name})'
+                    f"Could not create field. Could not locate field creating functions for ({field_name})",
                 )
                 continue
 
@@ -296,7 +335,7 @@ class FieldRegistry:
         else:
             # GUI-less mode
             pg = CompuCellSetup.persistent_globals
-            return pg.persistent_holder['field_storage']
+            return pg.persistent_holder["field_storage"]
 
     @staticmethod
     def update_field_info():
