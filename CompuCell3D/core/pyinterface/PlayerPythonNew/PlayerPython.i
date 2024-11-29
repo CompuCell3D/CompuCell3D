@@ -200,7 +200,6 @@ class CellG;
       return (*($self))[_coord[0]][_coord[1]][_coord[2]][_coord[3]];
   }
   
-  
 
 };
 

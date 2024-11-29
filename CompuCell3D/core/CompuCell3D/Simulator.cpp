@@ -83,6 +83,13 @@ Simulator::~Simulator() {
     steppableManager.unload();
     pluginBaseManager.unload();
 
+    // deallocating memory for vector fields that are managed by C++ code
+    for (const auto& pair : vectorFieldNameMapInternal) {
+        delete pair.second;
+    }
+
+
+
 #ifdef QT_WRAPPERS_AVAILABLE
     //restoring original cerr stream buffer
     if (cerrStreamBufOrig)
@@ -156,15 +163,14 @@ BoundaryStrategy *Simulator::getBoundaryStrategy() {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Simulator::registerConcentrationField(std::string _name, Field3D<float> *_fieldPtr) {
+void Simulator::registerConcentrationField(const std::string& _name, Field3D<float> *_fieldPtr) {
     concentrationFieldNameMap.insert(std::make_pair(_name, _fieldPtr));
 }
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::vector <std::string> Simulator::getConcentrationFieldNameVector() {
     vector <string> fieldNameVec;
     std::map < std::string, Field3D < float > * > ::iterator
-    mitr;
+            mitr;
     for (mitr = concentrationFieldNameMap.begin(); mitr != concentrationFieldNameMap.end(); ++mitr) {
         fieldNameVec.push_back(mitr->first);
     }
@@ -184,6 +190,51 @@ Field3D<float> *Simulator::getConcentrationFieldByName(std::string _fieldName) {
         return 0;
     }
 
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Simulator::registerVectorField(const std::string& _name, Simulator::vectorField3DNumpyImpl_t *_fieldPtr){
+    vectorFieldNameMap.insert(std::make_pair(_name, _fieldPtr));
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::vector <std::string> Simulator::getVectorFieldNameVector() {
+    std::vector<string> keys;
+
+    for (const auto& pair : vectorFieldNameMap) {
+        keys.push_back(pair.first);
+    }
+
+    return keys;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Simulator::vectorField3DNumpyImpl_t * Simulator::getVectorFieldByName(const std::string& fieldName){
+    auto it = vectorFieldNameMap.find(fieldName);
+    if (it != vectorFieldNameMap.end()) {
+        return it->second;
+    } 
+    return nullptr;
+
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Simulator::vectorField3DNumpyImpl_t * Simulator::createVectorField(const std::string& fieldName){
+    auto it = vectorFieldNameMap.find(fieldName);
+
+    ASSERT_OR_THROW("Field " + fieldName + " already exists" , it != vectorFieldNameMap.end() );
+    Dim3D dim = potts.getCellFieldG()->getDim();
+    auto * fieldPtr = new vectorField3DNumpyImpl_t({
+        static_cast<array_size_t>(dim.x),
+        static_cast<array_size_t>(dim.y),
+        static_cast<array_size_t>(dim.z),
+        3
+    });
+
+    registerVectorField(fieldName, fieldPtr);
+    vectorFieldNameMapInternal.insert(std::make_pair(fieldName, fieldPtr));
+
+    return fieldPtr;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

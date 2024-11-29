@@ -9,6 +9,7 @@
 #include "PluginBase.h"
 #include "RandomNumberGenerators.h"
 #include "Steppable.h"
+#include "CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h"
 #include <map>
 #include <vector>
 #include <string>
@@ -42,6 +43,9 @@ namespace CompuCell3D {
 
     class COMPUCELLLIB_EXPORT Simulator : public Steppable {
 
+    public:
+        typedef VectorNumpyArrayWrapper3DImpl<float> vectorField3DNumpyImpl_t;
+    private:
         ClassRegistry *classRegistry;
 
         Potts3D potts;
@@ -50,8 +54,15 @@ namespace CompuCell3D {
 
         bool simulatorIsStepping;
         bool readPottsSectionFromXML;
-        std::map<std::string, Field3D < float>*>
-        concentrationFieldNameMap;
+        // registry of concentration fields
+        std::map<std::string, Field3D <float>* > concentrationFieldNameMap;
+
+        // registry of vector fields
+        std::map<std::string, vectorField3DNumpyImpl_t* > vectorFieldNameMap;
+        // used to store  pointers to vector fields that are managed by C++ -
+        // in which case we need to deallocate memory
+        std::map<std::string, vectorField3DNumpyImpl_t* > vectorFieldNameMapInternal;
+
         //map of steerable objects
         std::map<std::string, SteerableObject *> steerableObjectMap;
 
@@ -182,10 +193,20 @@ namespace CompuCell3D {
 
         std::string formatErrorMessage(const CC3DException &e);
 
-        void registerConcentrationField(std::string _name, Field3D<float> *_fieldPtr);
+        //vector fields
+        void registerVectorField(const std::string& _name, vectorField3DNumpyImpl_t *_fieldPtr);
+        std::vector <std::string> getVectorFieldNameVector();
+        std::map<std::string , vectorField3DNumpyImpl_t *> getVectorFieldMap(){
+            return vectorFieldNameMap;
+        }
+        vectorField3DNumpyImpl_t * createVectorField(const std::string& fieldName);
+        vectorField3DNumpyImpl_t * getVectorFieldByName(const std::string& fieldName);
+
+
+        //concentration fields
+        void registerConcentrationField(const std::string& _name, Field3D<float> *_fieldPtr);
 
         std::map<std::string, Field3D < float>*> &
-
         getConcentrationFieldNameMap() {
             return concentrationFieldNameMap;
         }

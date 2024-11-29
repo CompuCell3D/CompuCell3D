@@ -115,6 +115,11 @@
 //todo - numpy
 #include <numpy/arrayobject.h>
 
+#include <CompuCell3D/Field3D/ndarray_adapter.h>
+#include <CompuCell3D/Field3D/VectorField3D.h>
+#include <CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h>
+
+
 // Namespaces
 using namespace std;
 using namespace CompuCell3D;
@@ -337,6 +342,11 @@ using namespace CompuCell3D;
 %include <CompuCell3D/Boundary/BoundaryStrategy.h>
 %include "Potts3D/Cell.h"
 
+
+%include <CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h>
+
+%template (VectorNumpyArrayWrapper3DImplFloatCC3D) CompuCell3D::VectorNumpyArrayWrapper3DImpl<float>;
+%template (VectorNumpyArrayWrapper3DImplDoubleCC3D) CompuCell3D::VectorNumpyArrayWrapper3DImpl<double>;
 
     
     
@@ -1067,6 +1077,7 @@ void makeCellInventoryWatcher(CellInventoryWatcherDir *director, CellInventory *
 }
 
 %}
+
 
 %inline %{
 
