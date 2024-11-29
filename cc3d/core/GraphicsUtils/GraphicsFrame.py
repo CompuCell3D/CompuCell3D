@@ -154,6 +154,20 @@ class GraphicsFrame:
 
         return cc3d.CompuCellSetup.persistent_globals.simulator.getConcentrationFieldNameVector()
 
+
+    def get_vector_field_names(self) -> List[str]:
+        """
+        Get the current list of concentration field names.
+
+        Subclasses should override this when avoiding persistent globals.
+
+        :return: list of concentration field names
+        :rtype: List[str]
+        """
+
+        return cc3d.CompuCellSetup.persistent_globals.simulator.getVectorFieldNameVector()
+
+
     def get_fields_to_create(self) -> Dict[str, str]:
         """
         Get the current names and types of fields to create.

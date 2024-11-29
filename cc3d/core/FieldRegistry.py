@@ -5,8 +5,8 @@ from .ExtraFieldAdapter import ExtraFieldAdapter
 from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 from cc3d.cpp import CompuCell
 from cc3d.core.shared_numpy_arrays import (
-    get_shared_numpy_array_as_cc3d_scalar_field,
-    get_shared_numpy_array_as_cc3d_vector_field,
+    create_shared_numpy_array_as_cc3d_scalar_field,
+    create_shared_numpy_array_as_cc3d_vector_field,
 )
 
 
@@ -123,7 +123,7 @@ class FieldRegistry:
             CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f"field adapter not found ({field_name})")
             return
 
-        array, field = get_shared_numpy_array_as_cc3d_scalar_field(
+        array, field = create_shared_numpy_array_as_cc3d_scalar_field(
             shape=(self.dim.x, self.dim.y, self.dim.z), dtype=np.float32
         )
 
@@ -131,16 +131,6 @@ class FieldRegistry:
         self.simulator.registerConcentrationField(field_name, field)
         field_adapter.set_ref(array)
 
-        # fieldNP = np.zeros(shape=(self.dim.x, self.dim.y, self.dim.z), dtype=np.float32)
-        # ndarrayAdapter = self.get_field_storage().createFloatFieldPy(self.dim, field_name)
-        # # initializing  numpyAdapter using numpy array (copy dims and data ptr)
-        # ndarrayAdapter.initFromNumpy(fieldNP)
-
-        # self.addNewField(field, field_name, SHARED_SCALAR_NUMPY_FIELD)
-
-        # self.addNewField(fieldNP, field_name + '_npy', SCALAR_FIELD_NPY)
-        #
-        # field_adapter.set_ref(fieldNP)
 
     def create_scalar_field_cell_level(self, field_name: str) -> None:
         """
@@ -196,12 +186,12 @@ class FieldRegistry:
             CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f"field adapter not found ({field_name})")
             return
 
-        array, field = get_shared_numpy_array_as_cc3d_vector_field(
+        array, field = create_shared_numpy_array_as_cc3d_vector_field(
             shape=(self.dim.x, self.dim.y, self.dim.z, 3), dtype=np.float32
         )
 
         self.shared_vector_numpy_fields[field_name] = [array, field]
-        # self.simulator.registerVectorField(field_name, field)
+        self.simulator.registerVectorField(field_name, field)
         self.get_field_storage().registerVectorField(field_name, field)
         field_adapter.set_ref(array)
 
