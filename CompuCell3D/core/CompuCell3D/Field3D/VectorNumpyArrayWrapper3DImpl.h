@@ -17,7 +17,7 @@
 #include <algorithm> // For std::copy
 #include <iostream>
 
-#include <math.h>
+#include <cmath>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 #include <CompuCell3D/CC3DExceptions.h>
 #include "NumpyArrayWrapperImpl.h"
@@ -36,11 +36,13 @@ namespace CompuCell3D {
 
     typedef std::vector<double>::size_type array_size_t;
 
+
     template<typename T>
     class VectorNumpyArrayWrapper3DImpl : public VectorField3D<T>, public NumpyArrayWrapperImpl<T> {
     protected:
         Dim3D dim;
         NdarrayAdapter<T, 4> ndarrayAdapter;
+        std::string elementType;
 
     public:
         /**
@@ -86,8 +88,20 @@ namespace CompuCell3D {
 
         virtual ~VectorNumpyArrayWrapper3DImpl() = default;
 
+        std::string getElementType() const {
+            if (std::is_same<T, float>::value) {
+                return "float";
+            } else if (std::is_same<T, double>::value) {
+                return "double";
+            } else if (std::is_same<T, int>::value) {
+                return "int";
+            } else {
+                return "unknown";
+            }
+        }
+
         //Field 3D interface
-        virtual void set(const Point3D &pt, const Coordinates3D<T> value) {
+        virtual void set(const Point3D &pt, const Coordinates3D<T>& value) {
 
             this->array[this->index({static_cast<size_t>(pt.x), static_cast<size_t>(pt.y), static_cast<size_t>(pt.z),
                                      0})] = value.x;
@@ -96,7 +110,7 @@ namespace CompuCell3D {
             this->array[this->index({static_cast<size_t>(pt.x), static_cast<size_t>(pt.y), static_cast<size_t>(pt.z), 2})] = value.z;
         };
 
-        virtual void set(const Point3D &pt, const std::vector <T> value) {
+        virtual void set(const Point3D &pt, const std::vector <T>& value) {
 
             this->array[this->index({static_cast<size_t>(pt.x), static_cast<size_t>(pt.y), static_cast<size_t>(pt.z),
                                      0})] = value[0];

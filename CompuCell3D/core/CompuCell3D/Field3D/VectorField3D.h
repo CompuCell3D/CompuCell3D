@@ -79,9 +79,9 @@ namespace CompuCell3D {
          * @param pt The coordinate of the element.
          * @param value The new value.
          */
-        virtual void set(const Point3D &pt, const Coordinates3D<T> value) = 0;
+        virtual void set(const Point3D &pt, const Coordinates3D<T> & value) = 0;
 
-        virtual void set(const Point3D &pt, const std::vector<T> value) = 0;
+        virtual void set(const Point3D &pt, const std::vector<T>& value) = 0;
 
         /**
          * If pt is out of range a CC3DException will be thrown.

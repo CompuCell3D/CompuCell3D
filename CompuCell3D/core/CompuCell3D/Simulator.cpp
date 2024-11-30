@@ -208,6 +208,16 @@ std::vector <std::string> Simulator::getVectorFieldNameVector() {
     return keys;
 }
 
+std::vector <std::string> Simulator::getVectorFieldNameVectorEngineOwned(){
+    std::vector<string> keys;
+
+    for (const auto& pair : vectorFieldNameMapInternal) {
+        keys.push_back(pair.first);
+    }
+
+    return keys;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Simulator::vectorField3DNumpyImpl_t * Simulator::getVectorFieldByName(const std::string& fieldName){
     auto it = vectorFieldNameMap.find(fieldName);
@@ -222,7 +232,7 @@ Simulator::vectorField3DNumpyImpl_t * Simulator::getVectorFieldByName(const std:
 Simulator::vectorField3DNumpyImpl_t * Simulator::createVectorField(const std::string& fieldName){
     auto it = vectorFieldNameMap.find(fieldName);
 
-    ASSERT_OR_THROW("Field " + fieldName + " already exists" , it != vectorFieldNameMap.end() );
+    ASSERT_OR_THROW("Field " + fieldName + " already exists" , it == vectorFieldNameMap.end() );
     Dim3D dim = potts.getCellFieldG()->getDim();
     auto * fieldPtr = new vectorField3DNumpyImpl_t({
         static_cast<array_size_t>(dim.x),

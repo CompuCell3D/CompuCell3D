@@ -24,6 +24,7 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 SET(LIBS_AUX
     PyPlugin
+    cc3d::VectorFieldPolarization
     cc3d::BiasVectorSteppable
     cc3d::ImplicitMotility
     cc3d::Chemotaxis

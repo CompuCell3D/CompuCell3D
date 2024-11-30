@@ -196,6 +196,7 @@ namespace CompuCell3D {
         //vector fields
         void registerVectorField(const std::string& _name, vectorField3DNumpyImpl_t *_fieldPtr);
         std::vector <std::string> getVectorFieldNameVector();
+        std::vector <std::string> getVectorFieldNameVectorEngineOwned();
         std::map<std::string , vectorField3DNumpyImpl_t *> getVectorFieldMap(){
             return vectorFieldNameMap;
         }

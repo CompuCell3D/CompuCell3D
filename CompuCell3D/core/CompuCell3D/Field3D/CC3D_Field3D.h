@@ -10,5 +10,7 @@
 #include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
 #include <CompuCell3D/Field3D/Neighbor.h>
 #include <CompuCell3D/Field3D/AdjacentNeighbor.h>
+#include <CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h>
+#include <CompuCell3D/Field3D/NumpyArrayWrapper3DImpl.h>
 
 #endif

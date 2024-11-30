@@ -17,6 +17,7 @@
 #include <NumpyArrayWrapperImpl.h>
 #include <NumpyArrayWrapper3DImpl.h>
 #include <CompuCell3D/Field3D/Field3D.h>
+#include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Field3D/Field3DImpl.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 
@@ -57,8 +58,10 @@ using namespace CompuCell3D;
 //typedef std::vector<size_t>::size_type array_size_t;
 
 
+
 //%include <CompuCell3D/Field3D/Field3D.h>
 %include "Field3D/Point3D.h"
+%include "Field3D/Dim3D.h"
 %include "Field3D/Field3D.h"
 %include "Field3D/Field3DImpl.h"
 %include "Field3D/WatchableField3D.h"
