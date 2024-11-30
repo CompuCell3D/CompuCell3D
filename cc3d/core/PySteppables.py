@@ -159,8 +159,10 @@ class FieldFetcher:
             field = CompuCell.getConcentrationField(pg.simulator, item)
             if field is not None:
                 return field
-            else:
-                raise KeyError(' The requested field {} does not exist'.format(item))
+            # note, shared vector numpy fields should be all handled by field registry e.g. check
+            # engine_vector_field_to_field_adapter and create_shared_vector_numpy_field methods of FieldRegistry class
+
+            raise KeyError(' The requested field {} does not exist'.format(item))
 
 
 class GlobalSBMLFetcher:

@@ -6,7 +6,7 @@ from cc3d.core.Validation.sanity_checkers import validate_cc3d_entity_identifier
 from cc3d.cpp import CompuCell
 from cc3d.core.shared_numpy_arrays import (
     create_shared_numpy_array_as_cc3d_scalar_field,
-    create_shared_numpy_array_as_cc3d_vector_field,
+    create_shared_numpy_array_as_cc3d_vector_field, create_field_and_array_from_cc3d_vector_field,
 )
 
 
@@ -195,16 +195,24 @@ class FieldRegistry:
         self.get_field_storage().registerVectorField(field_name, field)
         field_adapter.set_ref(array)
 
-        # fieldNP = np.zeros(shape=(self.dim.x, self.dim.y, self.dim.z), dtype=np.float32)
-        # ndarrayAdapter = self.get_field_storage().createFloatFieldPy(self.dim, field_name)
-        # # initializing  numpyAdapter using numpy array (copy dims and data ptr)
-        # ndarrayAdapter.initFromNumpy(fieldNP)
+    def engine_vector_field_to_field_adapter(self, field_name: str) -> None:
+        # initialize cpp vector field as a shared numpy array and register it
+        field_adapter = ExtraFieldAdapter(name=field_name, field_type=SHARED_VECTOR_NUMPY_FIELD)
+        if field_adapter is None:
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f"field adapter not found ({field_name})")
+            return
 
-        # self.addNewField(field, field_name, SHARED_SCALAR_NUMPY_FIELD)
+        field = self.simulator.getVectorFieldByName(field_name)
+        array, field = create_field_and_array_from_cc3d_vector_field(field)
+        self.shared_vector_numpy_fields[field_name] = [array, field]
+        self.get_field_storage().registerVectorField(field_name, field)
+        field_adapter.set_ref(array)
 
-        # self.addNewField(fieldNP, field_name + '_npy', SCALAR_FIELD_NPY)
-        #
-        # field_adapter.set_ref(fieldNP)
+        self.__fields_to_create[field_name] = field_adapter
+
+        if self.simthread is not None:
+            self.simthread.add_visualization_field(field_name, field_adapter.field_type)
+        self.update_field_info()
 
     def create_vector_field_cell_level(self, field_name: str) -> None:
         """
@@ -221,6 +229,8 @@ class FieldRegistry:
         field_ref = self.get_field_storage().createVectorFieldCellLevelPy(field_name)
         self.addNewField(field_ref, field_name, VECTOR_FIELD_CELL_LEVEL)
         field_adapter.set_ref(field_ref)
+
+
 
     def create_fields(self) -> None:
         """
