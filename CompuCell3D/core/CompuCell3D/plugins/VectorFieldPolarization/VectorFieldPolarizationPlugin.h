@@ -37,6 +37,8 @@ namespace CompuCell3D {
 
         std::string vectorFieldName = "VectorFieldCpp";
         Simulator::vectorField3DNumpyImpl_t * vectorFieldPtr;
+        Dim3D fieldDim;
+        double polarizationLambda = 0.0;
 
     public:
         VectorFieldPolarizationPlugin();

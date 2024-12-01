@@ -47,8 +47,10 @@ class Coordinates3D{
          z=a.Z();
          return *this;
       }
-      
 
+    bool operator==(const Coordinates3D<T> &a) const {
+        return x == a.X() && y == a.Y() && z == a.Z();
+    }
    
       T x;
       T y;

@@ -31,6 +31,7 @@ void VectorFieldPolarizationPlugin::init(Simulator *simulator, CC3DXMLElement *_
     sim=simulator;
     potts=simulator->getPotts();
     cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
+    fieldDim = cellFieldG->getDim();
 
     pUtils=sim->getParallelUtils();
 
@@ -46,10 +47,6 @@ void VectorFieldPolarizationPlugin::init(Simulator *simulator, CC3DXMLElement *_
     
 
     potts->registerEnergyFunctionWithName(this,"VectorFieldPolarization");
-
-        
-
-    
 
     simulator->registerSteerableObject(this);
 
@@ -67,28 +64,39 @@ void VectorFieldPolarizationPlugin::extraInit(Simulator *simulator){
 }
 
 
-
-
-
-
-
-
-
 double VectorFieldPolarizationPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {	
+    // the energy term adds (negative) term to overall energy that enhances chances of accepting piuxel copy if
+    // the displacement of the COM is along vector stored in the vector field
 
 
     double energy = 0;
+
+    auto new_old_distance_vec_pair = proposedInvariantCOMShiftDueToPixelCopy(pt, newCell, oldCell, fieldDim, boundaryStrategy);
+
+
     if (oldCell){
-        //PUT YOUR CODE HERE
-    }else{
-        //PUT YOUR CODE HERE
+        Point3D comPt((int) round(oldCell->xCM / oldCell->volume), (int) round(oldCell->yCM / oldCell->volume),
+                      (int) round(oldCell->zCM / oldCell->volume));
+        Coordinates3D<float> fiberVec = vectorFieldPtr->get(comPt);
+        Coordinates3D<double> fiberVecDouble(fiberVec.X(), fiberVec.Y(), fiberVec.Z());
+        Coordinates3D<double> & displacementVecOldCell = new_old_distance_vec_pair.second.coordinates3D;
+
+        energy +=  -std::abs(polarizationLambda * (fiberVecDouble * displacementVecOldCell) );
+
     }
 
+
     if(newCell){
-        //PUT YOUR CODE HERE
-    }else{
-        //PUT YOUR CODE HERE
+        Point3D comPt((int) round(newCell->xCM / newCell->volume), (int) round(newCell->yCM / newCell->volume),
+                      (int) round(newCell->zCM / newCell->volume));
+        Coordinates3D<float> fiberVec = vectorFieldPtr->get(comPt);
+        Coordinates3D<double> fiberVecDouble(fiberVec.X(), fiberVec.Y(), fiberVec.Z());
+        Coordinates3D<double> & displacementVecNewCell = new_old_distance_vec_pair.first.coordinates3D;
+
+        energy +=  -std::abs(polarizationLambda * (fiberVecDouble * displacementVecNewCell) );
+
     }
+
 
     return energy;    
 }            
@@ -120,6 +128,11 @@ void VectorFieldPolarizationPlugin::update(CC3DXMLElement *_xmlData, bool _fullI
         }
 
     }
+
+    CC3DXMLElement * polarizationLambdaXMLElem = _xmlData->getFirstElement("PolarizationLambda");
+
+    ASSERT_OR_THROW("You need to provide PolarizationLambda for VectorFieldPolarization", polarizationLambdaXMLElem)
+    polarizationLambda = polarizationLambdaXMLElem->getDouble();
 
     //boundaryStrategy has information about pixel neighbors
     boundaryStrategy=BoundaryStrategy::getInstance();

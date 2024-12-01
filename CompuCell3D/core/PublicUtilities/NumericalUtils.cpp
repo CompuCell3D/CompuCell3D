@@ -701,5 +701,57 @@ namespace CompuCell3D {
 		return distanceVectorCoordinatesInvariant(pt1, pt0, _fieldDim, boundaryStrategy);
 	}
 
+    Coordinates3DPairWithIndicator_t proposedInvariantCOMShiftDueToPixelCopy(const Point3D &pt, const CellG *newCell,
+                                                                             const CellG *oldCell, const Point3D & fieldDim,
+                                                                             BoundaryStrategy *boundaryStrategy) {
+
+        Coordinates3DWithIndicator<double> oldCellDisplacement;
+        Coordinates3DWithIndicator<double> newCellDisplacement;
+
+        if (oldCell) {
+            Coordinates3D<double> oldCOMAfterFlip = precalculateCentroid(pt, oldCell, -1, fieldDim, boundaryStrategy);
+
+            if (oldCell->volume > 1) {
+                oldCOMAfterFlip.XRef() = oldCOMAfterFlip.X() / (float) (oldCell->volume - 1);
+                oldCOMAfterFlip.YRef() = oldCOMAfterFlip.Y() / (float) (oldCell->volume - 1);
+                oldCOMAfterFlip.ZRef() = oldCOMAfterFlip.Z() / (float) (oldCell->volume - 1);
+            } else {
+
+                oldCOMAfterFlip = Coordinates3D<double>(oldCell->xCM / oldCell->volume, oldCell->zCM / oldCell->volume,
+                                                        oldCell->zCM / oldCell->volume);
+
+            }
+
+            Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM / oldCell->volume, oldCell->yCM / oldCell->volume,
+                                                   oldCell->zCM / oldCell->volume);
+            Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip, oldCOMBeforeFlip,
+                                                                                  fieldDim);
+
+            oldCellDisplacement.coordinates3D = distVector;
+            oldCellDisplacement.valid = true;
+        }
+
+        if (newCell) {
+
+            Coordinates3D<double> newCOMAfterFlip = precalculateCentroid(pt, newCell, 1, fieldDim, boundaryStrategy);
+
+
+            newCOMAfterFlip.XRef() = newCOMAfterFlip.X() / (float) (newCell->volume + 1);
+            newCOMAfterFlip.YRef() = newCOMAfterFlip.Y() / (float) (newCell->volume + 1);
+            newCOMAfterFlip.ZRef() = newCOMAfterFlip.Z() / (float) (newCell->volume + 1);
+
+
+            Coordinates3D<double> newCOMBeforeFlip(newCell->xCM / newCell->volume, newCell->yCM / newCell->volume,
+                                                   newCell->zCM / newCell->volume);
+            Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(newCOMAfterFlip, newCOMBeforeFlip,
+                                                                                  fieldDim);
+
+            newCellDisplacement.coordinates3D = distVector;
+            newCellDisplacement.valid = true;
+        }
+
+        return make_pair(newCellDisplacement, oldCellDisplacement);
+    }
+
 
 };
