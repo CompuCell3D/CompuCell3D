@@ -34,6 +34,7 @@ namespace CompuCell3D {
     class NumpyArrayWrapper3DImpl : public Field3D<T>, public NumpyArrayWrapperImpl<T> {
     protected:
         Dim3D dim;
+        array_size_t padding;
 
     public:
         /**
@@ -41,8 +42,10 @@ namespace CompuCell3D {
          * @param initialValue The initial value of all data elements in the field.
          */
 
-        NumpyArrayWrapper3DImpl(const std::vector<array_size_t> &dims) :
-                NumpyArrayWrapperImpl<T>(dims) {
+        NumpyArrayWrapper3DImpl(const std::vector<array_size_t> &dims, array_size_t padding=0) :
+                NumpyArrayWrapperImpl<T>(dims, padding),
+                        padding(padding)
+            {
             if (dims.size() != 3) {
                 throw CC3DException("NumpyArrayWrapperImpl3D must have exactly 3 dimensions!!!");
             }
@@ -57,11 +60,11 @@ namespace CompuCell3D {
 
         //Field 3D interface
         virtual void set(const Point3D &pt, const T value) {
-            this->array[this->index({static_cast<size_t>(pt.x), static_cast<size_t>(pt.y), static_cast<size_t>(pt.z)})] = value;
+            this->array[this->index({static_cast<size_t>(pt.x+padding), static_cast<size_t>(pt.y+padding), static_cast<size_t>(pt.z+padding)})] = value;
         };
 
         virtual T get(const Point3D &pt) const {
-            return this->array[this->index({static_cast<size_t>(pt.x), static_cast<size_t>(pt.y), static_cast<size_t>(pt.z)})];
+            return this->array[this->index({static_cast<size_t>(pt.x+padding), static_cast<size_t>(pt.y+padding), static_cast<size_t>(pt.z+padding)})];
 
         };
 

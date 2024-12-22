@@ -35,26 +35,27 @@ def get_shared_numpy_array(shape: Tuple, dtype=np.float64):
         raise ValueError(f"Unsupported dtype={dtype}")
 
 
-def create_shared_numpy_array_as_cc3d_scalar_field(shape: Tuple, dtype=np.float32):
+def create_shared_numpy_array_as_cc3d_scalar_field(shape: Tuple, padding=0, dtype=np.float32):
     if dtype in (np.float64,):
-        field = CC3DAuxFields.NumpyArrayWrapper3DImplDouble(shape)
+        field = CC3DAuxFields.NumpyArrayWrapper3DImplDouble(shape, padding=padding)
         size = field.getSize()
 
         ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes.c_double))
         buffer = (ctypes.c_double * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
 
         # array = np.frombuffer(ptr, dtype=np.float64, count=200)
-        array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(shape)
+        padded_shape = tuple(np.array(shape) + 2*padding)
+        array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(padded_shape)
         return array, field
     elif dtype in (np.float32,):
-        field = CC3DAuxFields.NumpyArrayWrapper3DImplFloat(shape)
+        field = CC3DAuxFields.NumpyArrayWrapper3DImplFloat(shape, padding=padding)
         size = field.getSize()
 
         ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes.c_float))
         buffer = (ctypes.c_float * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
-
+        padded_shape = tuple(np.array(shape) + 2*padding)
         # array = np.frombuffer(ptr, dtype=np.float64, count=200)
-        array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(shape)
+        array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(padded_shape)
         return array, field
     else:
         raise ValueError(f"Unsupported dtype={dtype}")

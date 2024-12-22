@@ -283,6 +283,8 @@ using namespace CompuCell3D;
   
 
 
+
+
 %pythoncode %{
     def __getstate__(self):
         return (self.x,self.y,self.z)

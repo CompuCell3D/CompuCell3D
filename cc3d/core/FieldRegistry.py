@@ -38,7 +38,7 @@ class FieldRegistry:
             SHARED_VECTOR_NUMPY_FIELD: self.create_shared_vector_numpy_field,
         }
 
-    def create_field(self, field_name: str, field_type: int) -> ExtraFieldAdapter:
+    def create_field(self, field_name: str, field_type: int, **kwds) -> ExtraFieldAdapter:
         """
 
         :param field_name:
@@ -47,14 +47,14 @@ class FieldRegistry:
         """
         # todo - need to add mechanism to inform player about new field
         validate_cc3d_entity_identifier(entity_identifier=field_name, entity_type_label="visualization field")
-        field_adapter = self.schedule_field_creation(field_name=field_name, field_type=field_type)
+        field_adapter = self.schedule_field_creation(field_name=field_name, field_type=field_type, **kwds)
 
         if self.enable_ad_hoc_field_creation:
             self.create_fields()
 
         return field_adapter
 
-    def schedule_field_creation(self, field_name: str, field_type: int) -> ExtraFieldAdapter:
+    def schedule_field_creation(self, field_name: str, field_type: int, **kwds) -> ExtraFieldAdapter:
         """
         records which fields to create
         :param field_name:
@@ -62,7 +62,7 @@ class FieldRegistry:
         :return:
         """
 
-        field_adapter = ExtraFieldAdapter(name=field_name, field_type=field_type)
+        field_adapter = ExtraFieldAdapter(name=field_name, field_type=field_type, **kwds)
 
         if field_name in self.__fields_to_create.keys():
             raise RuntimeError("Field {} already exits. Choose different field name".format(field_name))
@@ -123,8 +123,10 @@ class FieldRegistry:
             CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f"field adapter not found ({field_name})")
             return
 
+        padding = field_adapter.kwds.get("padding", 0)
         array, field = create_shared_numpy_array_as_cc3d_scalar_field(
-            shape=(self.dim.x, self.dim.y, self.dim.z), dtype=np.float32
+            shape=(self.dim.x, self.dim.y, self.dim.z), padding = padding, dtype=np.float32
+
         )
 
         self.shared_scalar_numpy_fields[field_name] = [array, field]
@@ -132,7 +134,7 @@ class FieldRegistry:
         field_adapter.set_ref(array)
 
 
-    def create_scalar_field_cell_level(self, field_name: str) -> None:
+    def create_scalar_field_cell_level(self, field_name: str,**kwds) -> None:
         """
         Creates scalar field cell level
 
@@ -149,7 +151,7 @@ class FieldRegistry:
         self.addNewField(field_ref, field_name, SCALAR_FIELD_CELL_LEVEL)
         field_adapter.set_ref(field_ref)
 
-    def create_vector_field(self, field_name: str) -> None:
+    def create_vector_field(self, field_name: str,**kwds) -> None:
         """
         Creates vector field pixel-level
         :param field_name:
@@ -170,7 +172,7 @@ class FieldRegistry:
 
         field_adapter.set_ref(field_np)
 
-    def create_shared_vector_numpy_field(self, field_name: str) -> None:
+    def create_shared_vector_numpy_field(self, field_name: str,**kwds) -> None:
 
         """
 
@@ -195,7 +197,7 @@ class FieldRegistry:
         self.get_field_storage().registerVectorField(field_name, field)
         field_adapter.set_ref(array)
 
-    def engine_vector_field_to_field_adapter(self, field_name: str) -> None:
+    def engine_vector_field_to_field_adapter(self, field_name: str,**kwds) -> None:
         # initialize cpp vector field as a shared numpy array and register it
         field_adapter = ExtraFieldAdapter(name=field_name, field_type=SHARED_VECTOR_NUMPY_FIELD)
         if field_adapter is None:
@@ -214,7 +216,7 @@ class FieldRegistry:
             self.simthread.add_visualization_field(field_name, field_adapter.field_type)
         self.update_field_info()
 
-    def create_vector_field_cell_level(self, field_name: str) -> None:
+    def create_vector_field_cell_level(self, field_name: str,**kwds) -> None:
         """
         Creates vector fiedl cell-level
         :param field_name:
