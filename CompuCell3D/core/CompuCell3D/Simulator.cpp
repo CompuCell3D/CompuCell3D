@@ -89,6 +89,12 @@ Simulator::~Simulator() {
     }
 
 
+    // deallocating memory for shared numpy scalar fields that are managed by C++ code
+    for (const auto& pair : sharedNumpyConcentrationFieldNameMapInternal) {
+        delete pair.second;
+    }
+
+
 
 #ifdef QT_WRAPPERS_AVAILABLE
     //restoring original cerr stream buffer
@@ -193,6 +199,57 @@ Field3D<float> *Simulator::getConcentrationFieldByName(std::string _fieldName) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Simulator::numpyArrayWrapper3DImpl_t * Simulator::createSharedNumpyConcentrationField(const std::string& fieldName){
+    auto it = concentrationFieldNameMap.find(fieldName);
+
+    ASSERT_OR_THROW("Field " + fieldName + " already exists" , it == concentrationFieldNameMap.end() );
+    Dim3D dim = potts.getCellFieldG()->getDim();
+    auto * fieldPtr = new numpyArrayWrapper3DImpl_t({
+                                                           static_cast<array_size_t>(dim.x),
+                                                           static_cast<array_size_t>(dim.y),
+                                                           static_cast<array_size_t>(dim.z),
+                                                   },
+                                                    1
+                                                   );
+
+    registerConcentrationField(fieldName, fieldPtr);
+    sharedNumpyConcentrationFieldNameMapInternal.insert(std::make_pair(fieldName, fieldPtr));
+
+//    registerVectorField(fieldName, fieldPtr);
+//    vectorFieldNameMapInternal.insert(std::make_pair(fieldName, fieldPtr));
+
+    return fieldPtr;
+}
+
+Simulator::numpyArrayWrapper3DImpl_t * Simulator::getSharedNumpyConcentrationFieldName(const std::string& fieldName){
+    auto it = sharedNumpyConcentrationFieldNameMapInternal.find(fieldName);
+    if (it != sharedNumpyConcentrationFieldNameMapInternal.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Simulator::registerSharedNumpyConcentrationField(const std::string& _name, Simulator::numpyArrayWrapper3DImpl_t* _fieldPtr){
+
+    sharedNumpyConcentrationFieldNameMapInternal.insert(std::make_pair(_name, _fieldPtr));
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+std::vector <std::string> Simulator::getConcentrationSharedNumpyFieldNameVectorEngineOwned(){
+    std::vector<string> keys;
+
+    for (const auto& pair : sharedNumpyConcentrationFieldNameMapInternal) {
+        keys.push_back(pair.first);
+    }
+
+    return keys;
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Simulator::registerVectorField(const std::string& _name, Simulator::vectorField3DNumpyImpl_t *_fieldPtr){
     vectorFieldNameMap.insert(std::make_pair(_name, _fieldPtr));
 }
@@ -207,7 +264,7 @@ std::vector <std::string> Simulator::getVectorFieldNameVector() {
 
     return keys;
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::vector <std::string> Simulator::getVectorFieldNameVectorEngineOwned(){
     std::vector<string> keys;
 

@@ -117,7 +117,9 @@
 
 #include <CompuCell3D/Field3D/ndarray_adapter.h>
 #include <CompuCell3D/Field3D/VectorField3D.h>
+#include <CompuCell3D/Field3D/NumpyArrayWrapper3DImpl.h>
 #include <CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h>
+
 
 
 // Namespaces
@@ -283,8 +285,6 @@ using namespace CompuCell3D;
   
 
 
-
-
 %pythoncode %{
     def __getstate__(self):
         return (self.x,self.y,self.z)
@@ -346,6 +346,10 @@ using namespace CompuCell3D;
 %include <CompuCell3D/Field3D/Neighbor.h>
 %include <CompuCell3D/Boundary/BoundaryStrategy.h>
 %include "Potts3D/Cell.h"
+
+%include <CompuCell3D/Field3D/NumpyArrayWrapper3DImpl.h>
+%template (NumpyArrayWrapper3DImplFloatCC3D) CompuCell3D::NumpyArrayWrapper3DImpl<float>;
+%template (NumpyArrayWrapper3DImplDoubleCC3D) CompuCell3D::NumpyArrayWrapper3DImpl<double>;
 
 
 %include <CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h>

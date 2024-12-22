@@ -204,6 +204,7 @@ class CellG;
 };
 
 
+
 %include "CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h"
 %template(VectorNumpyArrayWrapper3DImplFloat) CompuCell3D::VectorNumpyArrayWrapper3DImpl<float>;
 %template(VectorNumpyArrayWrapper3DImplDouble) CompuCell3D::VectorNumpyArrayWrapper3DImpl<double>;
@@ -216,6 +217,8 @@ class CellG;
 %include <FieldWriter.h>
 %include <FieldWriterCML.h>
 %include <FieldStreamer.h>
+
+
 
 
 %extend CompuCell3D::ScalarFieldCellLevel{    

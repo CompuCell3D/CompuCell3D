@@ -43,7 +43,7 @@ def create_shared_numpy_array_as_cc3d_scalar_field(shape: Tuple, padding=0, dtyp
         ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes.c_double))
         buffer = (ctypes.c_double * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
 
-        # array = np.frombuffer(ptr, dtype=np.float64, count=200)
+
         padded_shape = tuple(np.array(shape) + 2*padding)
         array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(padded_shape)
         return array, field
@@ -54,11 +54,42 @@ def create_shared_numpy_array_as_cc3d_scalar_field(shape: Tuple, padding=0, dtyp
         ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes.c_float))
         buffer = (ctypes.c_float * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
         padded_shape = tuple(np.array(shape) + 2*padding)
-        # array = np.frombuffer(ptr, dtype=np.float64, count=200)
         array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(padded_shape)
         return array, field
     else:
         raise ValueError(f"Unsupported dtype={dtype}")
+
+def create_field_and_array_from_cc3d_shared_numpy_scalar_field(field):
+    element_type = field.getElementType()
+    # padding = field.getPadding()
+
+    dtype = cpp_type_to_npy_dtype.get(element_type, None)
+    if dtype is None:
+        raise ValueError(f"shared numpy scalar field element type: '{element_type}' is not supported")
+
+    dim = field.getDim()
+    shape = [dim.x, dim.y, dim.z]
+    size = field.getSize()
+
+    if dtype in (np.float64,):
+        ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes.c_double))
+        buffer = (ctypes.c_double * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
+
+
+        padded_shape = tuple(np.array(shape))
+        array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(padded_shape)
+        return array, field
+    elif dtype in (np.float32,):
+
+        ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes.c_float))
+        buffer = (ctypes.c_float * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
+        padded_shape = tuple(np.array(shape))
+        array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(padded_shape)
+        return array, field
+    else:
+        raise ValueError(f"Unsupported dtype={dtype}")
+
+
 
 
 def create_shared_numpy_array_as_cc3d_vector_field(shape: Tuple, dtype=np.float32):
@@ -85,7 +116,7 @@ def create_shared_numpy_array_as_cc3d_vector_field(shape: Tuple, dtype=np.float3
     else:
         raise ValueError(f"Unsupported dtype={dtype}")
 
-def create_field_and_array_from_cc3d_vector_field(field: CC3DAuxFields.VectorNumpyArrayWrapper3DImplDouble):
+def create_field_and_array_from_cc3d_vector_field(field):
     element_type = field.getElementType()
 
     dtype = cpp_type_to_npy_dtype.get(element_type, None)

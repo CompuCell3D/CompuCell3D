@@ -45,6 +45,8 @@ namespace CompuCell3D {
 
     public:
         typedef VectorNumpyArrayWrapper3DImpl<float> vectorField3DNumpyImpl_t;
+        // scalar shared numpy field
+        typedef  NumpyArrayWrapper3DImpl<float>  numpyArrayWrapper3DImpl_t;
     private:
         ClassRegistry *classRegistry;
 
@@ -62,6 +64,13 @@ namespace CompuCell3D {
         // used to store  pointers to vector fields that are managed by C++ -
         // in which case we need to deallocate memory
         std::map<std::string, vectorField3DNumpyImpl_t* > vectorFieldNameMapInternal;
+
+
+        // used to store  pointers to shared scalar numpy fields that are managed by C++ -
+        // in which case we need to deallocate memory
+        std::map<std::string, numpyArrayWrapper3DImpl_t* > sharedNumpyConcentrationFieldNameMapInternal;
+        void registerSharedNumpyConcentrationField(const std::string& _name, numpyArrayWrapper3DImpl_t* fieldPtr);
+
 
         //map of steerable objects
         std::map<std::string, SteerableObject *> steerableObjectMap;
@@ -202,6 +211,12 @@ namespace CompuCell3D {
         }
         vectorField3DNumpyImpl_t * createVectorField(const std::string& fieldName);
         vectorField3DNumpyImpl_t * getVectorFieldByName(const std::string& fieldName);
+
+
+        // shared numpy concentration fields
+        numpyArrayWrapper3DImpl_t * createSharedNumpyConcentrationField(const std::string& fieldName);
+        std::vector <std::string> getConcentrationSharedNumpyFieldNameVectorEngineOwned();
+        numpyArrayWrapper3DImpl_t * getSharedNumpyConcentrationFieldName(const std::string& fieldName);
 
 
         //concentration fields

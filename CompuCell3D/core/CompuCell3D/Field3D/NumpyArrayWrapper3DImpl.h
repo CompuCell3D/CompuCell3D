@@ -58,6 +58,20 @@ namespace CompuCell3D {
 
         virtual ~NumpyArrayWrapper3DImpl() = default;
 
+        virtual array_size_t getPadding(){return padding;}
+
+        std::string getElementType() const {
+            if (std::is_same<T, float>::value) {
+                return "float";
+            } else if (std::is_same<T, double>::value) {
+                return "double";
+            } else if (std::is_same<T, int>::value) {
+                return "int";
+            } else {
+                return "unknown";
+            }
+        }
+
         //Field 3D interface
         virtual void set(const Point3D &pt, const T value) {
             this->array[this->index({static_cast<size_t>(pt.x+padding), static_cast<size_t>(pt.y+padding), static_cast<size_t>(pt.z+padding)})] = value;

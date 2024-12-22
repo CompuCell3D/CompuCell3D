@@ -7,6 +7,7 @@ from cc3d.cpp import CompuCell
 from cc3d.core.shared_numpy_arrays import (
     create_shared_numpy_array_as_cc3d_scalar_field,
     create_shared_numpy_array_as_cc3d_vector_field, create_field_and_array_from_cc3d_vector_field,
+    create_field_and_array_from_cc3d_shared_numpy_scalar_field,
 )
 
 
@@ -132,6 +133,29 @@ class FieldRegistry:
         self.shared_scalar_numpy_fields[field_name] = [array, field]
         self.simulator.registerConcentrationField(field_name, field)
         field_adapter.set_ref(array)
+
+    def engine_scalar_field_to_field_adapter(self, field_name: str,**kwds) -> None:
+        # initialize cpp vector field as a shared numpy array and register it
+        field = self.simulator.getSharedNumpyConcentrationFieldName(field_name)
+        field_adapter = ExtraFieldAdapter(name=field_name, field_type=SHARED_SCALAR_NUMPY_FIELD,
+                                          padding=field.getPadding())
+        if field_adapter is None:
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f"field adapter not found ({field_name})")
+            return
+
+        field = self.simulator.getSharedNumpyConcentrationFieldName(field_name)
+        array, field = create_field_and_array_from_cc3d_shared_numpy_scalar_field(field)
+
+        self.shared_scalar_numpy_fields[field_name] = [array, field]
+        # self.get_field_storage().registerConcentrationField(field_name, field)
+        field_adapter.set_ref(array)
+
+        self.__fields_to_create[field_name] = field_adapter
+
+        if self.simthread is not None:
+            self.simthread.add_visualization_field(field_name, field_adapter.field_type)
+        self.update_field_info()
+
 
 
     def create_scalar_field_cell_level(self, field_name: str,**kwds) -> None:

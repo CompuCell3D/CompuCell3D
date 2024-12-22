@@ -44,6 +44,8 @@ void VectorFieldPolarizationPlugin::init(Simulator *simulator, CC3DXMLElement *_
     update(xmlData,true);
     // needs to be called after update method so  that we know the name of the field
     vectorFieldPtr = sim->createVectorField(vectorFieldName);
+    // TODO - remove after testing
+    sim->createSharedNumpyConcentrationField("cpp_numpy");
     
 
     potts->registerEnergyFunctionWithName(this,"VectorFieldPolarization");

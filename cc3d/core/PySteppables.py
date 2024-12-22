@@ -153,9 +153,19 @@ class FieldFetcher:
             return pg.simulator.getPotts().getCellFieldG()
 
         try:
+            field_adapter = field_registry.get_field_adapter(field_name=item)
+
+            if field_adapter.field_type == SHARED_SCALAR_NUMPY_FIELD:
+                pad = field_adapter.kwds.get("padding", 0)
+                if pad > 0:
+                    return field_adapter[pad:-pad, pad:-pad, pad:-pad]
+                else:
+                    return field_adapter
+
             return field_registry.get_field_adapter(field_name=item)
         except KeyError:
-            # trying C++ concentration fields - e.g. diffusion solvers
+            # trying C++ concentration fields - e.g. diffusion solvers but not shared numpy concentration fields
+            # - those are managed byfield_registry
             field = CompuCell.getConcentrationField(pg.simulator, item)
             if field is not None:
                 return field

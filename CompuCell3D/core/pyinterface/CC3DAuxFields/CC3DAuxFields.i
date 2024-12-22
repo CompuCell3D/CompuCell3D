@@ -77,6 +77,7 @@ using namespace CompuCell3D;
 %include "Field3D/VectorField3D.h"
 
 
+
 %include <NumpyArrayWrapper.h>
 %include <NumpyArrayWrapperImpl.h>
 %include <NumpyArrayWrapper3DImpl.h>
