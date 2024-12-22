@@ -142,7 +142,8 @@ class FieldFetcher:
 
     """
 
-    def __init__(self):
+    def __init__(self, use_raw_fields=False):
+        self.use_raw_fields = use_raw_fields
         pass
 
     def __getattr__(self, item):
@@ -155,6 +156,11 @@ class FieldFetcher:
         try:
             field_adapter = field_registry.get_field_adapter(field_name=item)
 
+            if self.use_raw_fields:
+                # returning raw field
+                return field_adapter
+
+            # normally we may do some conditioning on the field prior to returning it to the user:
             if field_adapter.field_type == SHARED_SCALAR_NUMPY_FIELD:
                 pad = field_adapter.kwds.get("padding", 0)
                 if pad > 0:
@@ -262,6 +268,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
 
         #: field accessor
         self.field = FieldFetcher()
+        # field accessor that returns raw fields, i.e. it will not "strip" padding or condition field prior to
+        # returning. Instead, it returns a raw object. This fetches i useful for developing PDE solvers where we need
+        # full arrays with padding not just "user view" arrays
+        self.raw_field = FieldFetcher(use_raw_fields=True)
 
         self._simulator = None
 
