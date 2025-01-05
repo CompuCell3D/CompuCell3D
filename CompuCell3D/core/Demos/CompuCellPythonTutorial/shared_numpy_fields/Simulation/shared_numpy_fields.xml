@@ -36,6 +36,10 @@
         <PolarizationLambda>2.0</PolarizationLambda>
     </Plugin>
 
+    <Steppable Type="FieldManager">
+        <Field Name="fibers_field_manager" Type="vector"/>
+        <Field Name="numpy_field_manager" Type="scalar"/>
+    </Steppable>
 
 
     <Steppable Type="DiffusionSolverFE">

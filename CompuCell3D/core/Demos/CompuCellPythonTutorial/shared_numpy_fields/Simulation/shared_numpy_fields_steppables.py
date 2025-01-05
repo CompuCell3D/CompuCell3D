@@ -34,7 +34,7 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
         vec_field_array[30, 40, 0] = [30, 40, 0]
         vec_field_array[20, 30, 0] = [20, 30, 0]
 
-
+        # self.field accesses array in coordinates that exclude padded region
         array = self.field.numpy1
 
 
@@ -48,10 +48,40 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
         array[20, 30, 0] = 311
         array[99, 99, 0] = 1000
 
+        # accessing scalar field created in C++
+        # self.raw_field access "raw array" i.e. in coordinates wher you can modify padded region
         cpp_array = self.raw_field.cpp_numpy
         cpp_array[0, 0, 0] = 1000
         cpp_array[99, 99, 0] = 1000
 
+        # accessing scalar field created in C++ using FieldManager
+        np_fm_array = self.field.numpy_field_manager
+
+        np_fm_array[0, 0, 0] = 1020
+        np_fm_array[15, 25, 0] = 1200
+        np_fm_array[30, 10, 0] = 3000
+        np_fm_array[10, 32, 0] = 30
+
+        np_fm_array[10, 20, 0] = 1205
+        np_fm_array[30, 40, 0] = 3005
+        np_fm_array[20, 30, 0] = 31
+        np_fm_array[99, 99, 0] = 100
+
+        # self.raw_field access "raw array" i.e. in coordinates wher you can modify padded region
+        np_fm_raw = self.raw_field.numpy_field_manager
+        np_fm_raw[0, 0, 0] = 1010
+        np_fm_raw[99, 99, 0] = 1010
+
+
+        # accessing vector field created in C++ using FieldManager
+        fibers_fm = self.field.fibers_field_manager
+        fibers_fm[0, 0, 0,...] = [1020, 1020, 0]
+        fibers_fm[15, 25, 0,...] = [120, 120, 0]
+        fibers_fm[30, 10, 0,...] = [3000, 400,0]
+        fibers_fm[10, 32, 0,...] = [30,-30,0]
+
+
+        fibers_fm
 
     def step(self, mcs):
         pg = CompuCellSetup.persistent_globals
