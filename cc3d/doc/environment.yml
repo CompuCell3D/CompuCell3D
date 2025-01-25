@@ -12,4 +12,5 @@ dependencies:
   - sphinx_rtd_theme
   - sphinxcontrib-bibtex
   - graphviz
+  - libfreetype
   - ffmpeg
