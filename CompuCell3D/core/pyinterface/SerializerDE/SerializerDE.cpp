@@ -8,7 +8,7 @@
 #include <Utils/Coordinates3D.h>
 #include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
-//#include <vtkFloatArray.h>
+#include <vtkFloatArray.h>
 #include <vtkCharArray.h>
 #include <vtkLongArray.h>
 #include <vtkStructuredPoints.h>
@@ -211,7 +211,7 @@ bool SerializerDE::serializeConcentrationField(SerializeData &_sd){
 	fieldData->SetDimensions(fieldDim.x,fieldDim.y,fieldDim.z);
 	
 
-	Field3D<float> *fieldPtr=0; 
+	Field3D<float> *fieldPtr = nullptr;
 	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
 	std::map<std::string,Field3D<float>*>::iterator mitr;
 	mitr=fieldMap.find(_sd.objectName);
@@ -550,6 +550,129 @@ bool SerializerDE::loadScalarFieldCellLevel(SerializeData &_sd){
 
 	
 }
+
+
+bool SerializerDE::serializeSharedVectorFieldNumpy(SerializeData &_sd){
+
+    Simulator::vectorField3DNumpyImpl_t * fieldPtr = nullptr;
+    std::map<std::string,Simulator::vectorField3DNumpyImpl_t*> vectorFieldMap=sim->getVectorFieldMap();
+    auto mitr=vectorFieldMap.find(_sd.objectName);
+    if(mitr != vectorFieldMap.end()){
+        fieldPtr = mitr->second;
+    }
+
+    if(!fieldPtr)
+        return false;
+
+
+    vtkStructuredPoints *fieldData=vtkStructuredPoints::New();
+    fieldData->SetDimensions(fieldDim.x,fieldDim.y,fieldDim.z);
+
+
+
+    vtkFloatArray *fieldArray=vtkFloatArray::New();
+    fieldArray->SetNumberOfComponents(3); // we will store here 3 component vectors, not scalars
+    fieldArray->SetName(_sd.objectName.c_str());
+    //arrayNameVec.push_back(_sd.objectName);
+
+    long numberOfValues=fieldDim.x*fieldDim.y*fieldDim.z;
+
+    fieldArray->SetNumberOfTuples(numberOfValues);
+    long offset=0;
+    Point3D pt;
+// 	Coordinates3D<float> vecTmp;
+    float x,y,z;
+
+    for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
+        for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
+            for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
+                auto vec =  fieldPtr->get(pt);
+// 				vecTmp=(*fieldPtr)[pt.x][pt.y][pt.z];
+                fieldArray->SetTuple3(offset,vec.x,vec.y,vec.z);
+//                CC3D_Log(LOG_TRACE) << "vec=" << x << ", " << y << ", " << z;
+// 				fieldArray->SetTuple3(offset,vecTmp.x,vecTmp.y,vecTmp.z);
+                ++offset;
+
+            }
+    fieldData->GetPointData()->AddArray(fieldArray);
+    fieldArray->Delete();
+
+
+    //writing structured points to the disk
+    vtkStructuredPointsWriter * fieldDataWriter=vtkStructuredPointsWriter::New();
+    fieldDataWriter->SetFileName(_sd.fileName.c_str());
+
+    bool binaryFlag=(_sd.fileFormat=="binary");
+
+    if (binaryFlag)
+        fieldDataWriter->SetFileTypeToBinary();
+    else
+        fieldDataWriter->SetFileTypeToASCII();
+
+#if defined(VTK6) || defined(VTK9)
+    fieldDataWriter->SetInputData(fieldData);
+#endif
+#if !defined(VTK6) && !defined(VTK9)
+    fieldDataWriter->SetInput(fieldData);
+#endif
+
+
+    fieldDataWriter->Write();
+    fieldDataWriter->Delete();
+
+    return true;
+
+}
+
+bool SerializerDE::loadSharedVectorFieldNumpy(SerializeData &_sd) {
+
+    Simulator::vectorField3DNumpyImpl_t * fieldPtr = nullptr;
+    std::map<std::string,Simulator::vectorField3DNumpyImpl_t*> vectorFieldMap=sim->getVectorFieldMap();
+    auto mitr=vectorFieldMap.find(_sd.objectName);
+    if(mitr != vectorFieldMap.end()){
+        fieldPtr = mitr->second;
+    }
+
+    if(!fieldPtr)
+        return false;
+
+    vtkStructuredPointsReader * fieldDataReader=vtkStructuredPointsReader::New();
+    fieldDataReader->SetFileName(_sd.fileName.c_str());
+
+    bool binaryFlag=(_sd.fileFormat=="binary");
+
+    //if (binaryFlag)
+    //    fieldDataReader->SetFileTypeToBinary();
+    //else
+    //    fieldDataReader->SetFileTypeToASCII();
+    fieldDataReader->Update();
+    vtkStructuredPoints *fieldData=fieldDataReader->GetOutput();
+
+    auto *fieldArray =(vtkFloatArray *) fieldData->GetPointData()->GetArray(_sd.objectName.c_str());
+
+
+    long offset=0;
+    Point3D pt;
+
+    float tuple[3];
+
+    for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
+        for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
+            for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
+
+                fieldArray->GetTypedTuple(offset,tuple);
+                fieldPtr->set(pt, Coordinates3D<float>(tuple[0], tuple[1], tuple[2]));
+                ++offset;
+
+            }
+
+
+    fieldDataReader->Delete();
+    return true;
+
+
+}
+
 
 
 bool SerializerDE::serializeVectorField(SerializeData &_sd){

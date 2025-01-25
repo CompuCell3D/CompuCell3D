@@ -44,6 +44,8 @@ namespace CompuCell3D{
 		bool serializeCellField(SerializeData &_sd);
 		bool serializeScalarField(SerializeData &_sd);
 		bool serializeScalarFieldCellLevel(SerializeData &_sd);
+        bool serializeSharedVectorFieldNumpy(SerializeData &_sd);
+
 		bool serializeVectorField(SerializeData &_sd);
 		bool serializeVectorFieldCellLevel(SerializeData &_sd);
 
@@ -51,6 +53,7 @@ namespace CompuCell3D{
 		bool loadConcentrationField(SerializeData &_sd);
 		bool loadScalarField(SerializeData &_sd);
 		bool loadScalarFieldCellLevel(SerializeData &_sd);
+        bool loadSharedVectorFieldNumpy(SerializeData &_sd);
 		bool loadVectorField(SerializeData &_sd);
 		bool loadVectorFieldCellLevel(SerializeData &_sd);
 		// virtual void readFromFile(){}
