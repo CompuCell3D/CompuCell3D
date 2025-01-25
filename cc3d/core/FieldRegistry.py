@@ -328,7 +328,7 @@ class FieldRegistry:
     def getVectorFields(self):
         vectorFieldsDict = {}
         for fieldName in self.__field_dict:
-            if self.__field_dict[fieldName][1] == VECTOR_FIELD:
+            if self.__field_dict[fieldName][1] == VECTOR_FIELD or self.__field_dict[fieldName][1] == VECTOR_FIELD_NPY:
                 vectorFieldsDict[fieldName] = self.__field_dict[fieldName][0]
 
         return vectorFieldsDict

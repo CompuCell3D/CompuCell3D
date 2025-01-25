@@ -12,18 +12,22 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
 
     def start(self):
 
-        vector_field_cpp = self.field.Fibers
-        vec_field_array = self.field.vector_numpy
+        # initializing FGF diffusion field
+        fgf = self.field.FGF
+        fgf[50, 50, 0] = 2000
 
-        vector_field_cpp[:50, :50, 0] = [0, 0, 0]
 
-        vector_field_cpp[15, 25, 0] = [-15, -25, 0]
-        vector_field_cpp[30, 10, 0] = [-30, -10, 0]
-        vector_field_cpp[10, 32, 0] = [-10, -32, 0]
+        fibers_cpp = self.field.Fibers
 
-        vector_field_cpp[10, 20, 0] = [-10, -20, 0]
-        vector_field_cpp[30, 40, 0] = [-30, -40, 0]
-        vector_field_cpp[20, 30, 0] = [-20, -30, 0]
+        fibers_cpp[:50, :50, 0] = [0, 0, 0]
+
+        fibers_cpp[15, 25, 0] = [-15, -25, 0]
+        fibers_cpp[30, 10, 0] = [-30, -10, 0]
+        fibers_cpp[10, 32, 0] = [-10, -32, 0]
+
+        fibers_cpp[10, 20, 0] = [-10, -20, 0]
+        fibers_cpp[30, 40, 0] = [-30, -40, 0]
+        fibers_cpp[20, 30, 0] = [-20, -30, 0]
 
         vec_field_array = self.field.vector_numpy
         vec_field_array[15, 25, 0] = [15, 25, 0]
@@ -49,7 +53,7 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
         array[99, 99, 0] = 1000
 
         # accessing scalar field created in C++
-        # self.raw_field access "raw array" i.e. in coordinates wher you can modify padded region
+        # self.raw_field access "raw array" i.e. in coordinates where you can modify padded region
         cpp_array = self.raw_field.cpp_numpy
         cpp_array[0, 0, 0] = 1000
         cpp_array[99, 99, 0] = 1000

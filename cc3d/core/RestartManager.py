@@ -290,13 +290,16 @@ class RestartManager:
         # loading extra scalar fields   - used in Python only
         self.load_scalar_fields()
 
-        # loading extra scalar fields cell level  - used in Python only
+        # loading extra scalar fields cell level - used in Python only
         self.load_scalar_fields_cell_level()
+
+        # loading shared vector fields numpy - shared between Python and C++
+        self.load_shared_vector_fields_numpy()
 
         # loading extra vector fields  - used in Python only
         self.load_vector_fields()
 
-        # loading extra vector fields cell level  - used in Python only
+        # loading extra vector fields cell level - used in Python only
         self.load_vector_fields_cell_level()
 
         # loading core cell  attributes
@@ -424,6 +427,43 @@ class RestartManager:
 
                 self.serializer.loadScalarFieldCellLevel(sd)
                 sd.fileName = tmp_file_name
+
+    def load_shared_vector_fields_numpy(self):
+        """
+        restores user-defined custom vector fields
+        :return: None
+        """
+
+        for resource_name, sd in self.__restart_resource_dict.items():
+            if sd.objectType == 'SharedVectorFieldNumpy':
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                full_path = os.path.abspath(full_path)  # normalizing path format
+                tmp_file_name = sd.fileName
+                sd.fileName = full_path
+                self.serializer.loadSharedVectorFieldNumpy(sd)
+                sd.fileName = tmp_file_name
+
+        # field_registry = CompuCellSetup.persistent_globals.field_registry
+        # vector_fields_dict = field_registry.getVectorFields()
+        #
+        # for resource_name, sd in self.__restart_resource_dict.items():
+        #     if sd.objectType == 'VectorField' and sd.moduleType == 'Python':
+        #
+        #         full_path = os.path.join(self.__restartDirectory, sd.fileName)
+        #         full_path = os.path.abspath(full_path)  # normalizing path format
+        #         tmp_file_name = sd.fileName
+        #         sd.fileName = full_path
+        #
+        #         try:
+        #             sd.objectPtr = vector_fields_dict[sd.objectName]
+        #
+        #         except LookupError as e:
+        #             continue
+        #
+        #         self.serializer.loadVectorField(sd)
+        #         sd.fileName = tmp_file_name
+
+
 
     def load_vector_fields(self):
         """
@@ -1237,6 +1277,9 @@ class RestartManager:
         # outputting extra scalar fields cell level  - used in Python only
         self.output_scalar_fields_cell_level(restart_output_path, rst_xml_elem)
 
+        # outputting shared vector fields numpy  - shared between python and C++
+        self.output_shared_vector_numpy_fields(restart_output_path, rst_xml_elem)
+
         # outputting extra vector fields  - used in Python only
         self.output_vector_fields(restart_output_path, rst_xml_elem)
 
@@ -1401,6 +1444,27 @@ class RestartManager:
             self.serializer.serializeScalarFieldCellLevel(sd)
             self.append_xml_stub(rst_xml_elem, sd)
 
+    def output_shared_vector_numpy_fields(self, restart_output_path, rst_xml_elem):
+        """
+        Serializes numpy vector fields that are shared between python and the C++ engine
+        :param restart_output_path:{str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
+        :return: None
+        """
+        sim = CompuCellSetup.persistent_globals.simulator
+        vector_field_name_vec = sim.getVectorFieldNameVector()
+
+        for fieldName in vector_field_name_vec:
+            sd = SerializerDEPy.SerializeData()
+            sd.moduleName = 'Python'
+            sd.moduleType = 'Python'
+            sd.objectName = fieldName
+            sd.objectType = 'SharedVectorFieldNumpy'
+            sd.fileName = os.path.join(restart_output_path, fieldName + '.dat')
+            self.serializer.serializeSharedVectorFieldNumpy(sd)
+            self.append_xml_stub(rst_xml_elem, sd)
+
+
     def output_vector_fields(self, restart_output_path, rst_xml_elem):
         """
         Serializes user defined vector fields
@@ -1411,7 +1475,9 @@ class RestartManager:
 
         field_registry = CompuCellSetup.persistent_globals.field_registry
         vector_fields_dict = field_registry.getVectorFields()
+
         for fieldName in vector_fields_dict:
+
             sd = SerializerDEPy.SerializeData()
             sd.moduleName = 'Python'
             sd.moduleType = 'Python'
