@@ -163,8 +163,10 @@ class FieldFetcher:
             # normally we may do some conditioning on the field prior to returning it to the user:
             if field_adapter.field_type == SHARED_SCALAR_NUMPY_FIELD:
                 pad = field_adapter.kwds.get("padding", 0)
+                padding_vec = field_adapter.kwds.get("padding_vec", np.array([0, 0, 0]))
                 if pad > 0:
-                    return field_adapter[pad:-pad, pad:-pad, pad:-pad]
+                    slices = [slice(padding, -padding) if padding else slice(None)  for padding in padding_vec]
+                    return field_adapter[slices[0], slices[1], slices[2]]
                 else:
                     return field_adapter
 

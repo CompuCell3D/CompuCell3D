@@ -58,6 +58,12 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
         cpp_array[0, 0, 0] = 1000
         cpp_array[99, 99, 0] = 1000
 
+        cpp_array_user = self.field.cpp_numpy
+        cpp_array_user[0, 0, 0] = 1000
+        cpp_array_user[99, 99, 0] = 1000
+
+
+
         # accessing scalar field created in C++ using FieldManager
         np_fm_array = self.field.numpy_field_manager
 

@@ -44,13 +44,19 @@ namespace CompuCell3D {
 
         NumpyArrayWrapper3DImpl(const std::vector<array_size_t> &dims, array_size_t padding=0) :
                 NumpyArrayWrapperImpl<T>(dims, padding),
-                        padding(padding)
+                padding(padding)
             {
             if (dims.size() != 3) {
                 throw CC3DException("NumpyArrayWrapperImpl3D must have exactly 3 dimensions!!!");
             }
+
             if (dims[0] == 0 && dims[1] == 0 && dims[2] == 0)
                 throw CC3DException("NumpyArrayWrapperImpl3D cannot have a 0 dimension!!!");
+
+            if (dims[0] == 1 || dims[1] == 1 )
+                throw CC3DException("NumpyArrayWrapperImpl3D does not support 2D arrays along xz or yz planes !!!");
+
+
             dim.x = this->dimensions[0];
             dim.y = this->dimensions[1];
             dim.z = this->dimensions[2];
@@ -58,7 +64,8 @@ namespace CompuCell3D {
 
         virtual ~NumpyArrayWrapper3DImpl() = default;
 
-        virtual array_size_t getPadding(){return padding;}
+        array_size_t getPadding(){return this->padding;}
+        virtual std::vector<array_size_t> getPaddingVec(){return this->paddingVec;}
 
         std::string getElementType() const {
             if (std::is_same<T, float>::value) {
@@ -74,11 +81,11 @@ namespace CompuCell3D {
 
         //Field 3D interface
         virtual void set(const Point3D &pt, const T value) {
-            this->array[this->index({static_cast<size_t>(pt.x+padding), static_cast<size_t>(pt.y+padding), static_cast<size_t>(pt.z+padding)})] = value;
+            this->array[this->index({static_cast<size_t>(pt.x+this->paddingVec[0]), static_cast<size_t>(pt.y+this->paddingVec[1]), static_cast<size_t>(pt.z+this->paddingVec[2])})] = value;
         };
 
         virtual T get(const Point3D &pt) const {
-            return this->array[this->index({static_cast<size_t>(pt.x+padding), static_cast<size_t>(pt.y+padding), static_cast<size_t>(pt.z+padding)})];
+            return this->array[this->index({static_cast<size_t>(pt.x+this->paddingVec[0]), static_cast<size_t>(pt.y+this->paddingVec[1]), static_cast<size_t>(pt.z+this->paddingVec[2])})];
 
         };
 

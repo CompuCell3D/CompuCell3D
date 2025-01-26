@@ -33,9 +33,10 @@ namespace CompuCell3D {
         std::vector<array_size_t> dimensions;
         std::vector<array_size_t> strides;
         std::vector<T> array;
-
         // "user-visible" dimensions
         std::vector<array_size_t> internalDimensions;
+
+        std::vector<array_size_t> paddingVec;
 
     public:
         /**
@@ -44,11 +45,20 @@ namespace CompuCell3D {
          */
 
 
-        NumpyArrayWrapperImpl(const std::vector<array_size_t> &dims, array_size_t padding=0){
+        NumpyArrayWrapperImpl(const std::vector<array_size_t> &dims, array_size_t padding=0)
+        {
             this->dimensions = dims;
+            // creating padding vec - initially 0
+            this->paddingVec.assign(dims.size(), padding);
+
             // add padding
-            for (array_size_t & dimension : this->dimensions) {
-                dimension += 2*padding;
+            for ( size_t i=0 ; i< this->dimensions.size() ; ++i) {
+                if (this->dimensions[i] == 1){
+                    // we set padding to be 0 along any dimension of length 1
+                    // we only pad along "larger" dimensions
+                    paddingVec[i] = 0;
+                }
+                dimensions[i] += 2*paddingVec[i];
             }
 
             strides = computeStrides(dimensions);

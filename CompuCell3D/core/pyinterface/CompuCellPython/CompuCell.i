@@ -85,8 +85,6 @@
 //#include <CompuCell3D/BabySim/BabySim.h>
 
 
-
-
 //NeighborFinderParams
 #include <NeighborFinderParams.h>
 

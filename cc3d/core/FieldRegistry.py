@@ -138,7 +138,7 @@ class FieldRegistry:
         # initialize cpp vector field as a shared numpy array and register it
         field = self.simulator.getSharedNumpyConcentrationFieldName(field_name)
         field_adapter = ExtraFieldAdapter(name=field_name, field_type=SHARED_SCALAR_NUMPY_FIELD,
-                                          padding=field.getPadding())
+                                          padding=field.getPadding(), padding_vec=field.getPaddingVec())
         if field_adapter is None:
             CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG, f"field adapter not found ({field_name})")
             return
