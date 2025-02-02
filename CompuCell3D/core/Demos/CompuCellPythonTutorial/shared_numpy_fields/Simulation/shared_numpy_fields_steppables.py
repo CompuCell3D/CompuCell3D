@@ -12,6 +12,8 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
 
     def start(self):
 
+        numpy_field_manager = self.field.numpy_field_manager
+
         # initializing FGF diffusion field
         fgf = self.field.FGF
         fgf[50, 50, 0] = 2000

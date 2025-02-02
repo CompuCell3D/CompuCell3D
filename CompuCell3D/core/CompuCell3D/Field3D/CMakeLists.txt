@@ -26,6 +26,7 @@ INSTALL_FILES(/${COMPUCELL3D_INSTALL_INCLUDE_DIR}/CompuCell3D/Field3D .h
   AdjacentNeighbor
   Dim3D
   Array3D
+  Field3DTypeBase
   Field3DChangeWatcher
   Field3D
   Field3DImpl

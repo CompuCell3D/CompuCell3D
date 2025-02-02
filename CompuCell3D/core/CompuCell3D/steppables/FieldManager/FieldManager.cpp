@@ -43,6 +43,24 @@ void FieldManager::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
                 sim->createSharedNumpyConcentrationField(fieldSpec.name);
 
             }
+        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarDouble){
+            sim->createGenericScalarField<double>(fieldSpec.name, 1);
+        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarChar){
+            sim->createGenericScalarField<char>(fieldSpec.name, 1);
+        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarUChar){
+            sim->createGenericScalarField<unsigned char>(fieldSpec.name, 1);
+        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarShort){
+            sim->createGenericScalarField<short>(fieldSpec.name, 1);
+        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarUShort){
+            sim->createGenericScalarField<unsigned short>(fieldSpec.name, 1);
+        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarInt){
+            sim->createGenericScalarField<int>(fieldSpec.name, 1);
+        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarUInt){
+            sim->createGenericScalarField<unsigned int>(fieldSpec.name, 1);
+        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarLong){
+            sim->createGenericScalarField<long>(fieldSpec.name, 1);
+        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarULong){
+            sim->createGenericScalarField<unsigned long>(fieldSpec.name, 1);
         }
     }
 

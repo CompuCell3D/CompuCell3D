@@ -23,6 +23,7 @@
 #include "NumpyArrayWrapperImpl.h"
 #include "Dim3D.h"
 #include "Field3D.h"
+#include "Field3DTypeBase.h"
 
 
 namespace CompuCell3D {
@@ -31,7 +32,10 @@ namespace CompuCell3D {
     typedef std::vector<double>::size_type array_size_t;
 
     template<typename T>
-    class NumpyArrayWrapper3DImpl : public Field3D<T>, public NumpyArrayWrapperImpl<T> {
+    class NumpyArrayWrapper3DImpl : public Field3D<T>, public NumpyArrayWrapperImpl<T>, public Field3DTypeBase {
+    private:
+        // needed to be able to return value by reference. And return by reference is needed to avoid SWIG wrapping issues
+        const std::type_index typeIndex;
     protected:
         Dim3D dim;
         array_size_t padding;
@@ -43,6 +47,7 @@ namespace CompuCell3D {
          */
 
         NumpyArrayWrapper3DImpl(const std::vector<array_size_t> &dims, array_size_t padding=0) :
+                typeIndex(typeid(T)),
                 NumpyArrayWrapperImpl<T>(dims, padding),
                 padding(padding)
             {
@@ -66,6 +71,21 @@ namespace CompuCell3D {
 
         array_size_t getPadding(){return this->padding;}
         virtual std::vector<array_size_t> getPaddingVec(){return this->paddingVec;}
+
+        void displayType() const override {
+            std::cout << "VectorField of type: " << typeid(T).name() << "\n";
+        }
+        std::string getTypeString() const override {
+            return typeid(T).name(); // Return typestring
+        }
+
+        const std::type_index & getType() const override {
+            return typeIndex;
+        }
+
+        std::string getNumPyTypeString() const override{
+            return getNumPyType(typeid(T));
+        };
 
         std::string getElementType() const {
             if (std::is_same<T, float>::value) {

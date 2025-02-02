@@ -368,23 +368,44 @@ FIELD3DEXTENDER(CompuCell3D::Field3D<double>,double)
 //%template (cc3dauxfield_vector_unsigned_int) std::vector<unsigned int>;
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
+
 
 %template (NumpyArrayWrapperImplDouble) CompuCell3D::NumpyArrayWrapperImpl<double>;
 %template (NumpyArrayWrapperImplFloat) CompuCell3D::NumpyArrayWrapperImpl<float>;
 
+// Ignore a specific method
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<float>::getType;
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<double>::getType;
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<char>::getType;
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<unsigned char>::getType;
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<short>::getType;
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<unsigned short>::getType;
 
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<int>::getType;
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<unsigned int>::getType;
+
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<long>::getType;
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<unsigned long>::getType;
+
+
+
+//scalar fields
 %template (NumpyArrayWrapper3DImplDouble) CompuCell3D::NumpyArrayWrapper3DImpl<double>;
 %template (NumpyArrayWrapper3DImplFloat) CompuCell3D::NumpyArrayWrapper3DImpl<float>;
 
+%template (NumpyArrayWrapper3DImplChar) CompuCell3D::NumpyArrayWrapper3DImpl<char>;
+%template (NumpyArrayWrapper3DImplUChar) CompuCell3D::NumpyArrayWrapper3DImpl<unsigned char>;
 
+%template (NumpyArrayWrapper3DImplShort) CompuCell3D::NumpyArrayWrapper3DImpl<short>;
+%template (NumpyArrayWrapper3DImplUShort) CompuCell3D::NumpyArrayWrapper3DImpl<unsigned short>;
+
+%template (NumpyArrayWrapper3DImplInt) CompuCell3D::NumpyArrayWrapper3DImpl<int>;
+%template (NumpyArrayWrapper3DImplUInt) CompuCell3D::NumpyArrayWrapper3DImpl<unsigned int>;
+
+%template (NumpyArrayWrapper3DImplLong) CompuCell3D::NumpyArrayWrapper3DImpl<long>;
+%template (NumpyArrayWrapper3DImplULong) CompuCell3D::NumpyArrayWrapper3DImpl<unsigned long>;
+
+//vector fields
 %template (VectorNumpyArrayWrapper3DImplFloat) CompuCell3D::VectorNumpyArrayWrapper3DImpl<float>;
 %template (VectorNumpyArrayWrapper3DImplDouble) CompuCell3D::VectorNumpyArrayWrapper3DImpl<double>;
 

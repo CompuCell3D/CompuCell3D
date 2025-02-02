@@ -24,7 +24,17 @@ namespace CompuCell3D {
         // Enum for field type
         enum class FieldType {
             Scalar,
-            Vector
+            Vector,
+            ScalarDouble,
+            ScalarChar,
+            ScalarUChar,
+            ScalarShort,
+            ScalarUShort,
+            ScalarInt,
+            ScalarUInt,
+            ScalarLong,
+            ScalarULong
+
         };
 
         // Enum for field kind
@@ -73,7 +83,16 @@ namespace CompuCell3D {
             static const std::unordered_map<std::string, FieldType> typeMap = {
                     {"scalar", FieldType::Scalar},
                     {"concentration", FieldType::Scalar},
-                    {"vector", FieldType::Vector}
+                    {"vector", FieldType::Vector},
+                    {"scalar_double", FieldType::ScalarDouble},
+                    {"scalar_char", FieldType::ScalarChar},
+                    {"scalar_uchar", FieldType::ScalarUChar},
+                    {"scalar_short", FieldType::ScalarShort},
+                    {"scalar_ushort", FieldType::ScalarUShort},
+                    {"scalar_int", FieldType::ScalarInt},
+                    {"scalar_uint", FieldType::ScalarUInt},
+                    {"scalar_long", FieldType::ScalarLong},
+                    {"scalar_ulong", FieldType::ScalarULong},
             };
 
             // Look up the string in the map

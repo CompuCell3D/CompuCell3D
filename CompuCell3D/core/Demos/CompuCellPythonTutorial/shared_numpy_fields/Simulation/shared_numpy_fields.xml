@@ -39,6 +39,12 @@
     <Steppable Type="FieldManager">
         <Field Name="fibers_field_manager" Type="vector"/>
         <Field Name="numpy_field_manager" Type="scalar"/>
+        <Field Name="cell_field_type" Type="scalar_uchar"/>
+        <Field Name="char_field" Type="scalar_char"/>
+        <Field Name="short_field" Type="scalar_short"/>
+        <Field Name="ushort_field" Type="scalar_ushort"/>
+
+
     </Steppable>
 
 

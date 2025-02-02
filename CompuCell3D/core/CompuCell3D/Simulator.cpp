@@ -170,7 +170,10 @@ BoundaryStrategy *Simulator::getBoundaryStrategy() {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Simulator::registerConcentrationField(const std::string& _name, Field3D<float> *_fieldPtr) {
+    ASSERT_OR_THROW("Field " + _name + " already exists" , concentrationFieldNameMap.find(_name) == concentrationFieldNameMap.end() );
+    ASSERT_OR_THROW("Field " + _name + " already exists" , scalarFieldNamesSet.find(_name) == scalarFieldNamesSet.end() );
     concentrationFieldNameMap.insert(std::make_pair(_name, _fieldPtr));
+    scalarFieldNamesSet.insert(_name);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::vector <std::string> Simulator::getConcentrationFieldNameVector() {
@@ -182,6 +185,9 @@ std::vector <std::string> Simulator::getConcentrationFieldNameVector() {
     }
     return fieldNameVec;
 }
+
+
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Field3D<float> *Simulator::getConcentrationFieldByName(std::string _fieldName) {
@@ -204,6 +210,9 @@ Simulator::numpyArrayWrapper3DImpl_t * Simulator::createSharedNumpyConcentration
     auto it = concentrationFieldNameMap.find(fieldName);
 
     ASSERT_OR_THROW("Field " + fieldName + " already exists" , it == concentrationFieldNameMap.end() );
+
+    ASSERT_OR_THROW("Field " + fieldName + " already exists" , scalarFieldNamesSet.find(fieldName) == scalarFieldNamesSet.end() );
+
     Dim3D dim = potts.getCellFieldG()->getDim();
     auto * fieldPtr = new numpyArrayWrapper3DImpl_t({
                                                            static_cast<array_size_t>(dim.x),
@@ -274,6 +283,29 @@ std::vector <std::string> Simulator::getVectorFieldNameVectorEngineOwned(){
 
     return keys;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::vector <std::string> Simulator::getGenericScalarFieldNameVectorEngineOwned(){
+    std::vector<string> keys;
+
+    for (const auto& pair : genericTypeScalarFieldMap) {
+        keys.push_back(pair.first);
+    }
+
+    return keys;
+
+}
+
+
+Field3DTypeBase * Simulator::getGenericScalarFieldTypeBase(std::string name){
+    auto it = genericTypeScalarFieldMap.find(name);
+    if (it != genericTypeScalarFieldMap.end()) {
+        return it->second.get();
+    }
+    return nullptr;
+
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Simulator::vectorField3DNumpyImpl_t * Simulator::getVectorFieldByName(const std::string& fieldName){

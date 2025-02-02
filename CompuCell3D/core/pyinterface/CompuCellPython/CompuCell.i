@@ -97,6 +97,7 @@
 #include <stdlib.h>
 
 
+
 #include "STLPyIterator.h"
 #include "STLPyIteratorMap.h"
 #include "STLPyIteratorRefRetType.h"
@@ -115,6 +116,7 @@
 
 #include <CompuCell3D/Field3D/ndarray_adapter.h>
 #include <CompuCell3D/Field3D/VectorField3D.h>
+#include <CompuCell3D/Field3D/Field3DTypeBase.h>
 #include <CompuCell3D/Field3D/NumpyArrayWrapper3DImpl.h>
 #include <CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h>
 
@@ -347,9 +349,49 @@ using namespace CompuCell3D;
 %include <CompuCell3D/Boundary/BoundaryStrategy.h>
 %include "Potts3D/Cell.h"
 
+%include <CompuCell3D/Field3D/Field3DTypeBase.h>
+//%ignore Compucell3D::Field3DTypeBase::getType();
+
 %include <CompuCell3D/Field3D/NumpyArrayWrapper3DImpl.h>
-%template (NumpyArrayWrapper3DImplFloatCC3D) CompuCell3D::NumpyArrayWrapper3DImpl<float>;
+//%template (NumpyArrayWrapper3DImplFloatCC3D) CompuCell3D::NumpyArrayWrapper3DImpl<float>;
+//%template (NumpyArrayWrapper3DImplDoubleCC3D) CompuCell3D::NumpyArrayWrapper3DImpl<double>;
+
+
+
+
+// Ignore a specific method
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<float>::getType;
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<double>::getType;
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<char>::getType;
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<unsigned char>::getType;
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<short>::getType;
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<unsigned short>::getType;
+
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<int>::getType;
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<unsigned int>::getType;
+
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<long>::getType;
+%ignore CompuCell3D::NumpyArrayWrapper3DImpl<unsigned long>::getType;
+
+
+//scalar fields
 %template (NumpyArrayWrapper3DImplDoubleCC3D) CompuCell3D::NumpyArrayWrapper3DImpl<double>;
+%template (NumpyArrayWrapper3DImplFloatCC3D) CompuCell3D::NumpyArrayWrapper3DImpl<float>;
+
+%template (NumpyArrayWrapper3DImplCharCC3D) CompuCell3D::NumpyArrayWrapper3DImpl<char>;
+%template (NumpyArrayWrapper3DImplUCharCC3D) CompuCell3D::NumpyArrayWrapper3DImpl<unsigned char>;
+
+%template (NumpyArrayWrapper3DImplShortCC3D) CompuCell3D::NumpyArrayWrapper3DImpl<short>;
+%template (NumpyArrayWrapper3DImplUShortCC3D) CompuCell3D::NumpyArrayWrapper3DImpl<unsigned short>;
+
+%template (NumpyArrayWrapper3DImplIntCC3D) CompuCell3D::NumpyArrayWrapper3DImpl<int>;
+%template (NumpyArrayWrapper3DImplUIntCC3D) CompuCell3D::NumpyArrayWrapper3DImpl<unsigned int>;
+
+%template (NumpyArrayWrapper3DImplLongCC3D) CompuCell3D::NumpyArrayWrapper3DImpl<long>;
+%template (NumpyArrayWrapper3DImplULongCC3D) CompuCell3D::NumpyArrayWrapper3DImpl<unsigned long>;
+
+
+
 
 
 %include <CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h>
@@ -995,6 +1037,26 @@ FIELD3DEXTENDER(CompuCell3D::Field3D<int>,int)
 %include "ClassRegistry.h"
 %include <CompuCell3D/SteerableObject.h>
 %include "Simulator.h"
+
+// template definitios must eb right after Simulator object inclusions
+%template(getGenericScalarField_int8) CompuCell3D::Simulator::getGenericScalarField<char>;
+%template(getGenericScalarField_uint8) CompuCell3D::Simulator::getGenericScalarField<unsigned char>;
+
+%template(getGenericScalarField_int16) CompuCell3D::Simulator::getGenericScalarField<short>;
+%template(getGenericScalarField_uint16) CompuCell3D::Simulator::getGenericScalarField<unsigned short>;
+
+%template(getGenericScalarField_int32) CompuCell3D::Simulator::getGenericScalarField<int>;
+%template(getGenericScalarField_uint32) CompuCell3D::Simulator::getGenericScalarField<unsigned int>;
+
+
+%template(getGenericScalarField_int64) CompuCell3D::Simulator::getGenericScalarField<long>;
+%template(getGenericScalarField_uint64) CompuCell3D::Simulator::getGenericScalarField<unsigned long>;
+
+%template(getGenericScalarField_float32) CompuCell3D::Simulator::getGenericScalarField<float>;
+%template(getGenericScalarField_float64) CompuCell3D::Simulator::getGenericScalarField<double>;
+
+
+
 %include <CompuCell3D/CC3DEvents.h>
 
 
