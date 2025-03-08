@@ -1056,7 +1056,6 @@ FIELD3DEXTENDER(CompuCell3D::Field3D<int>,int)
 %template(getGenericScalarField_float64) CompuCell3D::Simulator::getGenericScalarField<double>;
 
 
-
 %include <CompuCell3D/CC3DEvents.h>
 
 

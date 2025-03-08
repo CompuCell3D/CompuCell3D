@@ -232,12 +232,18 @@ class GraphicsFrame:
         :return: auxiliary data
         :rtype: dict
         """
+        # field_type = field_type if isinstance(field_type, str) else field_type.field_type
+        field_type = get_field_type(field_type_obj=field_type)
+        field_precision_type = get_field_precision_type(field_type_obj=field_type)
         try:
             metadata_fetcher_fcn = self.metadata_fetcher_dict[field_type]
         except KeyError:
             return {}
 
         metadata = metadata_fetcher_fcn(field_name, field_type)
+        # adding field precision type
+        metadata['field_precision'] = field_precision_type
+
 
         return metadata
 

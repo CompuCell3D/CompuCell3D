@@ -7,6 +7,7 @@
 #include <Utils/Coordinates3D.h>
 #include "FieldStorage.h"
 
+
 #include <CompuCell3D/Potts3D/Cell.h>
 
 #include "FieldExtractorBase.h"
@@ -45,6 +46,10 @@ namespace CompuCell3D {
     class NeighborTracker;
 
     class ParallelUtilsOpenMP;
+
+    template <typename T>
+    class Field3D;
+
 
     class FIELDEXTRACTOR_EXPORT FieldExtractor : public FieldExtractorBase {
     public :
@@ -116,6 +121,75 @@ namespace CompuCell3D {
         fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cartesianCellsArrayAddr,
                                        vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
                                        std::string _plane, int _pos);
+
+        virtual bool fillConFieldData2DCartesianFlex(vtk_obj_addr_int_t _conArrayAddr,
+                                                     vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+                                                     vtk_obj_addr_int_t _pointsArrayAddr,
+                                                     std::string _conFieldName,
+                                                     std::string _plane, int _pos) ;
+
+        template <typename T>
+        bool fillConFieldData2DCartesianTyped(vtkDoubleArray *conArray, vtkCellArray *_cartesianCellsArray,
+                                                              vtkPoints *_pointsArray, Field3D<T> *conFieldPtr,
+                                                              std::string _plane, int _pos);
+//        {
+//            if (!conFieldPtr) return false;
+//
+//            Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+//            Dim3D fieldDim = cellFieldG->getDim();
+//
+//            std::vector<int> fieldDimVec = { fieldDim.x, fieldDim.y, fieldDim.z };
+//            std::vector<int> pointOrderVec = pointOrder(_plane);
+//            std::vector<int> dimOrderVec = dimOrder(_plane);
+//
+//            std::vector<int> dim(3, 0);
+//            dim[0] = fieldDimVec[dimOrderVec[0]];
+//            dim[1] = fieldDimVec[dimOrderVec[1]];
+//            dim[2] = fieldDimVec[dimOrderVec[2]];
+//
+//            int offset = 0;
+//            Point3D pt;
+//            std::vector<int> ptVec(3, 0);
+//            T con;
+//            long pc = 0;
+//
+//            for (int j = 0; j < dim[1]; ++j) {
+//                for (int i = 0; i < dim[0]; ++i) {
+//                    ptVec[0] = i;
+//                    ptVec[1] = j;
+//                    ptVec[2] = _pos;
+//
+//                    pt.x = ptVec[pointOrderVec[0]];
+//                    pt.y = ptVec[pointOrderVec[1]];
+//                    pt.z = ptVec[pointOrderVec[2]];
+//
+//                    if (i == dim[0] || j == dim[1]) {
+//                        con = 0;
+//                    } else {
+//                        con = conFieldPtr->get(pt);
+//                    }
+//
+//                    Coordinates3D<double> coords(ptVec[0], ptVec[1], 0);
+//
+//                    for (int idx = 0; idx < 4; ++idx) {
+//                        Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
+//                        _pointsArray->InsertNextPoint(cartesianVertex.x, cartesianVertex.y, 0.0);
+//                    }
+//
+//                    pc += 4;
+//                    vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
+//                    _cartesianCellsArray->InsertCellPoint(pc - 4);
+//                    _cartesianCellsArray->InsertCellPoint(pc - 3);
+//                    _cartesianCellsArray->InsertCellPoint(pc - 2);
+//                    _cartesianCellsArray->InsertCellPoint(pc - 1);
+//
+//                    conArray->InsertNextValue(static_cast<double>(con)); // Ensure it works for all numeric types
+//                    ++offset;
+//                }
+//            }
+//
+//            return true;
+//        }
 
         virtual bool
         fillScalarFieldCellLevelData2D(vtk_obj_addr_int_t _conArrayAddr, std::string _conFieldName, std::string _plane,

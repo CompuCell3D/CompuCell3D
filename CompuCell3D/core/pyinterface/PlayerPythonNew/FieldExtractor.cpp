@@ -1498,6 +1498,113 @@ bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr, vtk
 
 }
 
+
+template <typename T>
+bool FieldExtractor::fillConFieldData2DCartesianTyped(vtkDoubleArray *conArray, vtkCellArray *_cartesianCellsArray,
+                                      vtkPoints *_pointsArray, Field3D<T> *conFieldPtr,
+                                      std::string _plane, int _pos) {
+    if (!conFieldPtr) return false;
+
+    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+    Dim3D fieldDim = cellFieldG->getDim();
+
+    std::vector<int> fieldDimVec = { fieldDim.x, fieldDim.y, fieldDim.z };
+    std::vector<int> pointOrderVec = pointOrder(_plane);
+    std::vector<int> dimOrderVec = dimOrder(_plane);
+
+    std::vector<int> dim(3, 0);
+    dim[0] = fieldDimVec[dimOrderVec[0]];
+    dim[1] = fieldDimVec[dimOrderVec[1]];
+    dim[2] = fieldDimVec[dimOrderVec[2]];
+
+    int offset = 0;
+    Point3D pt;
+    std::vector<int> ptVec(3, 0);
+    T con;
+    long pc = 0;
+
+    for (int j = 0; j < dim[1]; ++j) {
+        for (int i = 0; i < dim[0]; ++i) {
+            ptVec[0] = i;
+            ptVec[1] = j;
+            ptVec[2] = _pos;
+
+            pt.x = ptVec[pointOrderVec[0]];
+            pt.y = ptVec[pointOrderVec[1]];
+            pt.z = ptVec[pointOrderVec[2]];
+
+            if (i == dim[0] || j == dim[1]) {
+                con = 0;
+            } else {
+                con = conFieldPtr->get(pt);
+            }
+
+            Coordinates3D<double> coords(ptVec[0], ptVec[1], 0);
+
+            for (int idx = 0; idx < 4; ++idx) {
+                Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
+                _pointsArray->InsertNextPoint(cartesianVertex.x, cartesianVertex.y, 0.0);
+            }
+
+            pc += 4;
+            vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
+            _cartesianCellsArray->InsertCellPoint(pc - 4);
+            _cartesianCellsArray->InsertCellPoint(pc - 3);
+            _cartesianCellsArray->InsertCellPoint(pc - 2);
+            _cartesianCellsArray->InsertCellPoint(pc - 1);
+
+            conArray->InsertNextValue(static_cast<double>(con)); // Ensure it works for all numeric types
+            ++offset;
+        }
+    }
+
+    return true;
+}
+
+
+
+bool FieldExtractor::fillConFieldData2DCartesianFlex(vtk_obj_addr_int_t _conArrayAddr,
+                                                 vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+                                                 vtk_obj_addr_int_t _pointsArrayAddr,
+                                                 std::string _conFieldName,
+                                                 std::string _plane, int _pos) {
+
+    vtkDoubleArray *conArray = reinterpret_cast<vtkDoubleArray *>(_conArrayAddr);
+    vtkCellArray *_cartesianCellsArray = reinterpret_cast<vtkCellArray *>(_cartesianCellsArrayAddr);
+    vtkPoints *_pointsArray = reinterpret_cast<vtkPoints *>(_pointsArrayAddr);
+
+    // Retrieve the correct concentration field
+    Field3DTypeBase *conFieldBasePtr = sim->getGenericScalarFieldTypeBase(_conFieldName);
+
+    if (!conFieldBasePtr) return false;
+
+    // Get the numerical type and cast accordingly
+    const std::type_index &fieldType = conFieldBasePtr->getType();
+
+    if (fieldType == typeid(float)) {
+
+        auto ptr = dynamic_cast<NumpyArrayWrapper3DImpl<float> *>(conFieldBasePtr);
+
+        return fillConFieldData2DCartesianTyped<float>(conArray, _cartesianCellsArray, _pointsArray,
+                                                       static_cast<Field3D<float> *>(ptr), _plane, _pos);
+    } else if (fieldType == typeid(double)) {
+        auto ptr = dynamic_cast<NumpyArrayWrapper3DImpl<double> *>(conFieldBasePtr);
+
+        return fillConFieldData2DCartesianTyped<double>(conArray, _cartesianCellsArray, _pointsArray,
+                                                        static_cast<Field3D<double> *>(ptr), _plane, _pos);
+    } else if (fieldType == typeid(int)) {
+        auto ptr = dynamic_cast<NumpyArrayWrapper3DImpl<int> *>(conFieldBasePtr);
+        return fillConFieldData2DCartesianTyped<int>(conArray, _cartesianCellsArray, _pointsArray,
+                                                     static_cast<Field3D<int> *>(ptr), _plane, _pos);
+    } else if (fieldType == typeid(unsigned char)) {
+        auto ptr = dynamic_cast<NumpyArrayWrapper3DImpl<unsigned char> *>(conFieldBasePtr);
+        return fillConFieldData2DCartesianTyped<unsigned char>(conArray, _cartesianCellsArray, _pointsArray,
+                                                               static_cast<Field3D<unsigned char> *>(ptr), _plane, _pos);
+    } else {
+        return false; // Unsupported type
+    }
+}
+
 bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,
                                                  vtk_obj_addr_int_t _cartesianCellsArrayAddr,
                                                  vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,

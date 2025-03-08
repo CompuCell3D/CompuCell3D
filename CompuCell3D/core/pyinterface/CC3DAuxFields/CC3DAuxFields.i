@@ -370,6 +370,19 @@ FIELD3DEXTENDER(CompuCell3D::Field3D<double>,double)
 //
 
 
+%template (NumpyArrayWrapperImplChar) CompuCell3D::NumpyArrayWrapperImpl<char>;
+%template (NumpyArrayWrapperImplUChar) CompuCell3D::NumpyArrayWrapperImpl<unsigned char>;
+
+%template (NumpyArrayWrapperImplShort) CompuCell3D::NumpyArrayWrapperImpl<short>;
+%template (NumpyArrayWrapperImplUShort) CompuCell3D::NumpyArrayWrapperImpl<unsigned short>;
+
+%template (NumpyArrayWrapperImplInt) CompuCell3D::NumpyArrayWrapperImpl<int>;
+%template (NumpyArrayWrapperImplUInt) CompuCell3D::NumpyArrayWrapperImpl<unsigned int>;
+
+%template (NumpyArrayWrapperImplLong) CompuCell3D::NumpyArrayWrapperImpl<long>;
+%template (NumpyArrayWrapperImplULong) CompuCell3D::NumpyArrayWrapperImpl<unsigned long>;
+
+
 %template (NumpyArrayWrapperImplDouble) CompuCell3D::NumpyArrayWrapperImpl<double>;
 %template (NumpyArrayWrapperImplFloat) CompuCell3D::NumpyArrayWrapperImpl<float>;
 
@@ -386,7 +399,6 @@ FIELD3DEXTENDER(CompuCell3D::Field3D<double>,double)
 
 %ignore CompuCell3D::NumpyArrayWrapper3DImpl<long>::getType;
 %ignore CompuCell3D::NumpyArrayWrapper3DImpl<unsigned long>::getType;
-
 
 
 //scalar fields

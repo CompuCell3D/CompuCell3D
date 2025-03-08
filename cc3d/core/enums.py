@@ -1,5 +1,31 @@
 from enum import Enum
 
+from dataclasses import dataclass
+from typing import Literal, Union
+
+
+@dataclass
+class FieldProperties:
+    field_type: Literal["CellField", "ConField", "ScalarField", "ScalarFieldCellLevel", "VectorField", "VectorFieldCellLevel", "CustomVis"]
+    precision_type: Literal["int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "float32", "float64", "float128"]
+    field_type_id: int = None
+    field_name: str = None
+
+def get_field_type(field_type_obj: Union[str, None, FieldProperties]):
+    if not field_type_obj:
+        return None
+    if isinstance(field_type_obj, FieldProperties):
+        return field_type_obj.field_type
+    return field_type_obj
+
+def get_field_precision_type(field_type_obj: Union[str, None, FieldProperties]):
+    if not field_type_obj:
+        return None
+    if isinstance(field_type_obj, FieldProperties):
+        return field_type_obj.precision_type
+    return None
+
+
 (CELL_FIELD, CON_FIELD, SCALAR_FIELD, SCALAR_FIELD_CELL_LEVEL, VECTOR_FIELD, VECTOR_FIELD_CELL_LEVEL, SCALAR_FIELD_NPY,
  VECTOR_FIELD_NPY, CUSTOM_FIELD, SHARED_SCALAR_NUMPY_FIELD, SHARED_VECTOR_NUMPY_FIELD) = range(0, 11)
 (LEGACY_FORMAT, CSV_FORMAT) = range(0, 2)

@@ -87,17 +87,54 @@ namespace CompuCell3D {
             return getNumPyType(typeid(T));
         };
 
-        std::string getElementType() const {
-            if (std::is_same<T, float>::value) {
-                return "float";
-            } else if (std::is_same<T, double>::value) {
-                return "double";
-            } else if (std::is_same<T, int>::value) {
-                return "int";
-            } else {
-                return "unknown";
-            }
+        std::string getElementType() {
+            static const std::unordered_map<std::string, std::string> type_map = {
+                    {"char", "int8"},
+                    {"signed char", "int8"},
+                    {"unsigned char", "uint8"},
+                    {"short", "int16"},
+                    {"unsigned short", "uint16"},
+                    {"int", "int32"},
+                    {"unsigned int", "uint32"},
+                    {"long", "int64"},
+                    {"unsigned long", "uint64"},
+                    {"long long", "int64"},
+                    {"unsigned long long", "uint64"},
+                    {"float", "float32"},
+                    {"double", "float64"}
+            };
+
+            std::string type_name =
+                    std::is_same<T, char>::value ? "char" :
+                    std::is_same<T, signed char>::value ? "signed char" :
+                    std::is_same<T, unsigned char>::value ? "unsigned char" :
+                    std::is_same<T, short>::value ? "short" :
+                    std::is_same<T, unsigned short>::value ? "unsigned short" :
+                    std::is_same<T, int>::value ? "int" :
+                    std::is_same<T, unsigned int>::value ? "unsigned int" :
+                    std::is_same<T, long>::value ? "long" :
+                    std::is_same<T, unsigned long>::value ? "unsigned long" :
+                    std::is_same<T, long long>::value ? "long long" :
+                    std::is_same<T, unsigned long long>::value ? "unsigned long long" :
+                    std::is_same<T, float>::value ? "float" :
+                    std::is_same<T, double>::value ? "double" :
+                    "unknown";
+
+            auto it = type_map.find(type_name);
+            return it != type_map.end() ? it->second : "unknown";
         }
+
+//        std::string getElementType() const {
+//            if (std::is_same<T, float>::value) {
+//                return "float";
+//            } else if (std::is_same<T, double>::value) {
+//                return "double";
+//            } else if (std::is_same<T, int>::value) {
+//                return "int";
+//            } else {
+//                return "unknown";
+//            }
+//        }
 
         //Field 3D interface
         virtual void set(const Point3D &pt, const T value) {

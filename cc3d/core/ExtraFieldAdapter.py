@@ -3,6 +3,7 @@ class ExtraFieldAdapter:
         self.name = name
         self.kwds = kwds
         self.field_type = field_type
+        self.precision_type = None
         self.field_ref = None
 
     def clear(self):

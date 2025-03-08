@@ -245,7 +245,14 @@ class MVCDrawModel2D(MVCDrawModelBase):
         actors_dict = actor_specs.actors_dict
 
         field_name = drawing_params.fieldName
-        field_type = drawing_params.fieldType.lower()
+        # field_type = drawing_params.fieldType.lower()
+        if isinstance(drawing_params.fieldType, str):
+            field_type = drawing_params.fieldType.lower()
+            print("drawing_params.fieldType ", drawing_params.fieldType,  " field_name=", field_name)
+        else:
+            field_type = drawing_params.fieldType.field_type.lower()
+
+
         scene_metadata = drawing_params.screenshot_data.metadata
 
         mdata = MetadataHandler(mdata=scene_metadata)
@@ -623,9 +630,17 @@ class MVCDrawModel2D(MVCDrawModelBase):
         cells_con_int_addr = extract_address_int_from_vtk_object(vtkObj=cells_con)
         cells_con_poly_data = vtk.vtkPolyData()
 
-        field_type = drawing_params.fieldType.lower()
+        # field_type = drawing_params.fieldType.lower()
+        if isinstance(drawing_params.fieldType, str):
+            field_type = drawing_params.fieldType.lower()
+            print("drawing_params.fieldType ", drawing_params.fieldType,  " field_name=", field_name)
+        else:
+            field_type = drawing_params.fieldType.field_type.lower()
+
+        # # note drawing_params.fieldType is of type FieldProperties now
+        # field_type = drawing_params.fieldType.field_type.lower()
         if field_type == "confield":
-            fill_successful = self.field_extractor.fillConFieldData2DCartesian(
+            fill_successful = self.field_extractor.fillConFieldData2DCartesianFlex(
                 con_array_int_addr,
                 cells_con_int_addr,
                 points_con_int_addr,
@@ -633,6 +648,34 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 self.currentDrawingParameters.plane,
                 self.currentDrawingParameters.planePos,
             )
+            if not fill_successful:
+                fill_successful = self.field_extractor.fillConFieldData2DCartesian(
+                    con_array_int_addr,
+                    cells_con_int_addr,
+                    points_con_int_addr,
+                    field_name,
+                    self.currentDrawingParameters.plane,
+                    self.currentDrawingParameters.planePos,
+                )
+
+        # if field_name == 'cell_type_field':
+            #     fill_successful = self.field_extractor.fillConFieldData2DCartesianFlex(
+            #         con_array_int_addr,
+            #         cells_con_int_addr,
+            #         points_con_int_addr,
+            #         field_name,
+            #         self.currentDrawingParameters.plane,
+            #         self.currentDrawingParameters.planePos,
+            #     )
+            # else:
+            #     fill_successful = self.field_extractor.fillConFieldData2DCartesian(
+            #         con_array_int_addr,
+            #         cells_con_int_addr,
+            #         points_con_int_addr,
+            #         field_name,
+            #         self.currentDrawingParameters.plane,
+            #         self.currentDrawingParameters.planePos,
+            #     )
         elif field_type == "scalarfield":
             fill_successful = self.field_extractor.fillScalarFieldData2DCartesian(
                 con_array_int_addr,
