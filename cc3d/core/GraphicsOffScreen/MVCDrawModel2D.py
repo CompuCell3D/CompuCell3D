@@ -415,7 +415,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
                         actor_specs=actor_specs, drawing_params=drawing_params
                     )
                 else:
-
                     self.init_concentration_field_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
 
         # Handle if something previously prevented initialization of metadata,
@@ -635,7 +634,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         cells_con_int_addr = extract_address_int_from_vtk_object(vtkObj=cells_con)
         cells_con_poly_data = vtk.vtkPolyData()
 
-        # field_type = drawing_params.fieldType.lower()
         if isinstance(drawing_params.fieldType, str):
             field_type = drawing_params.fieldType.lower()
             print("drawing_params.fieldType ", drawing_params.fieldType,  " field_name=", field_name)
@@ -653,34 +651,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 self.currentDrawingParameters.plane,
                 self.currentDrawingParameters.planePos,
             )
-            # if not fill_successful:
-            #     fill_successful = self.field_extractor.fillConFieldData2DCartesian(
-            #         con_array_int_addr,
-            #         cells_con_int_addr,
-            #         points_con_int_addr,
-            #         field_name,
-            #         self.currentDrawingParameters.plane,
-            #         self.currentDrawingParameters.planePos,
-            #     )
 
-        # if field_name == 'cell_type_field':
-            #     fill_successful = self.field_extractor.fillConFieldData2DCartesianFlex(
-            #         con_array_int_addr,
-            #         cells_con_int_addr,
-            #         points_con_int_addr,
-            #         field_name,
-            #         self.currentDrawingParameters.plane,
-            #         self.currentDrawingParameters.planePos,
-            #     )
-            # else:
-            #     fill_successful = self.field_extractor.fillConFieldData2DCartesian(
-            #         con_array_int_addr,
-            #         cells_con_int_addr,
-            #         points_con_int_addr,
-            #         field_name,
-            #         self.currentDrawingParameters.plane,
-            #         self.currentDrawingParameters.planePos,
-            #     )
         elif field_type == "scalarfield":
             fill_successful = self.field_extractor.fillScalarFieldData2DCartesian(
                 con_array_int_addr,
@@ -705,7 +676,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
             CompuCell.CC3DLogger.get().log(CompuCell.LOG_WARNING,
                                            f'unsupported field type {field_type} ({field_name})')
             return
-
+        print("ATTEMPTING PIXELIZED")
         if not fill_successful:
             CompuCell.CC3DLogger.get().log(CompuCell.LOG_ERROR,
                                            f'fill unsuccessful for field type {field_type} ({field_name})')
@@ -789,7 +760,14 @@ class MVCDrawModel2D(MVCDrawModelBase):
         con_array_int_addr = extract_address_int_from_vtk_object(vtkObj=con_array)
         # # todo - make it flexible
 
-        field_type = drawing_params.fieldType.lower()
+        if isinstance(drawing_params.fieldType, str):
+            field_type = drawing_params.fieldType.lower()
+            print("drawing_params.fieldType ", drawing_params.fieldType,  " field_name=", field_name)
+        else:
+            field_type = drawing_params.fieldType.field_type.lower()
+
+        # # note drawing_params.fieldType is of type FieldProperties now
+
         if field_type == "confield":
             fill_successful = self.field_extractor.fillConFieldData2D(
                 con_array_int_addr,
