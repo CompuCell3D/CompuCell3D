@@ -125,13 +125,6 @@ namespace CompuCell3D {
                                        vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
                                        std::string _plane, int _pos);
 
-//        virtual bool fillConFieldData2DCartesianFlex(vtk_obj_addr_int_t _conArrayAddr,
-//                                                     vtk_obj_addr_int_t _cartesianCellsArrayAddr,
-//                                                     vtk_obj_addr_int_t _pointsArrayAddr,
-//                                                     std::string _conFieldName,
-//                                                     std::string _plane, int _pos);
-
-
 
         virtual bool
         fillScalarFieldCellLevelData2D(vtk_obj_addr_int_t _conArrayAddr, std::string _conFieldName, std::string _plane,
