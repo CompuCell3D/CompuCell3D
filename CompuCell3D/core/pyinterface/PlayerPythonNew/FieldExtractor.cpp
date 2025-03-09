@@ -29,14 +29,51 @@ using namespace CompuCell3D;
 
 #include "FieldExtractor.h"
 
-FieldExtractor::FieldExtractor() : fsPtr(0), potts(0), sim(0) {
+FieldExtractor::FieldExtractor() : fsPtr(nullptr), potts(nullptr), sim(nullptr) {
+    initializeCartesianConcentrationFunctionMap2D();
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FieldExtractor::~FieldExtractor() {
 
 }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void FieldExtractor::initializeCartesianConcentrationFunctionMap2D(){
+        cartesianConcentrationFunctionMap = {
+            {typeid(char), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<char>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<char>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned char), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<unsigned char>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned char>*>(ptr), _plane, _pos);
+            }},
+            {typeid(short), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<short>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<short>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned short), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<unsigned short>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned short>*>(ptr), _plane, _pos);
+            }},
+            {typeid(int), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<int>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<int>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned int), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<unsigned int>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned int>*>(ptr), _plane, _pos);
+            }},
+            {typeid(long), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<long>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned long), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<unsigned long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned long>*>(ptr), _plane, _pos);
+            }},
+            {typeid(float), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<float>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<float>*>(ptr), _plane, _pos);
+            }},
+            {typeid(double), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<double>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<double>*>(ptr), _plane, _pos);
+            }}
+    };
 
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FieldExtractor::init(Simulator *_sim) {
     sim = _sim;
@@ -1608,6 +1645,7 @@ std::tuple<std::type_index, void*> FieldExtractor::getFieldTypeAndPointer( const
     return {std::type_index(typeid(void)), nullptr};  // Unsupported type
 }
 
+
 bool FieldExtractor::fillConFieldData2DCartesianFlex(vtk_obj_addr_int_t _conArrayAddr,
                                                      vtk_obj_addr_int_t _cartesianCellsArrayAddr,
                                                      vtk_obj_addr_int_t _pointsArrayAddr,
@@ -1627,42 +1665,13 @@ bool FieldExtractor::fillConFieldData2DCartesianFlex(vtk_obj_addr_int_t _conArra
         return false;
     }
 
-    std::string planeCopy = _plane; // C++11-compliant copy
+    // Look up the function in cartesianConcentrationFunctionMap
+    auto it = cartesianConcentrationFunctionMap.find(fieldType);
+    if (it != cartesianConcentrationFunctionMap.end()) {
+        return it->second(fieldPtr, conArray, _cartesianCellsArray, _pointsArray, _plane, _pos);
+    }
 
-    // Capture `this` explicitly
-    auto functionMap = [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos]() {
-        return std::unordered_map<std::type_index, std::function<bool(void*)>> {
-                {typeid(char), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
-                    return this->fillConFieldData2DCartesianTyped<char>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<char>*>(ptr), planeCopy, _pos); }},
-                {typeid(unsigned char), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
-                    return this->fillConFieldData2DCartesianTyped<unsigned char>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned char>*>(ptr), planeCopy, _pos); }},
-                {typeid(short), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
-                    return this->fillConFieldData2DCartesianTyped<short>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<short>*>(ptr), planeCopy, _pos); }},
-                {typeid(unsigned short), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
-                    return this->fillConFieldData2DCartesianTyped<unsigned short>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned short>*>(ptr), planeCopy, _pos); }},
-                {typeid(int), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
-                    return this->fillConFieldData2DCartesianTyped<int>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<int>*>(ptr), planeCopy, _pos); }},
-                {typeid(unsigned int), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
-                    return this->fillConFieldData2DCartesianTyped<unsigned int>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned int>*>(ptr), planeCopy, _pos); }},
-                {typeid(long), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
-                    return this->fillConFieldData2DCartesianTyped<long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<long>*>(ptr), planeCopy, _pos); }},
-                {typeid(unsigned long), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
-                    return this->fillConFieldData2DCartesianTyped<unsigned long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned long>*>(ptr), planeCopy, _pos); }},
-                {typeid(long long), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
-                    return this->fillConFieldData2DCartesianTyped<long long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<long long>*>(ptr), planeCopy, _pos); }},
-                {typeid(unsigned long long), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
-                    return this->fillConFieldData2DCartesianTyped<unsigned long long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned long long>*>(ptr), planeCopy, _pos); }},
-                {typeid(float), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
-                    return this->fillConFieldData2DCartesianTyped<float>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<float>*>(ptr), planeCopy, _pos); }},
-                {typeid(double), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
-                    return this->fillConFieldData2DCartesianTyped<double>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<double>*>(ptr), planeCopy, _pos); }},
-                {typeid(long double), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
-                    return this->fillConFieldData2DCartesianTyped<long double>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<long double>*>(ptr), planeCopy, _pos); }},
-        };
-    }();
-
-    auto it = functionMap.find(fieldType);
-    return (it != functionMap.end()) ? it->second(fieldPtr) : false;
+    return false;
 }
 
 
@@ -1685,8 +1694,66 @@ bool FieldExtractor::fillConFieldData2DCartesianFlex(vtk_obj_addr_int_t _conArra
 //        return false;
 //    }
 //
+//    std::string planeCopy = _plane; // C++11-compliant copy
+//
+//    // Capture `this` explicitly
+//    auto cartesianConcentrationFunctionMap = [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos]() {
+//        return std::unordered_map<std::type_index, std::function<bool(void*)>> {
+//                {typeid(char), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<char>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<char>*>(ptr), planeCopy, _pos); }},
+//                {typeid(unsigned char), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<unsigned char>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned char>*>(ptr), planeCopy, _pos); }},
+//                {typeid(short), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<short>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<short>*>(ptr), planeCopy, _pos); }},
+//                {typeid(unsigned short), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<unsigned short>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned short>*>(ptr), planeCopy, _pos); }},
+//                {typeid(int), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<int>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<int>*>(ptr), planeCopy, _pos); }},
+//                {typeid(unsigned int), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<unsigned int>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned int>*>(ptr), planeCopy, _pos); }},
+//                {typeid(long), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<long>*>(ptr), planeCopy, _pos); }},
+//                {typeid(unsigned long), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<unsigned long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned long>*>(ptr), planeCopy, _pos); }},
+//                {typeid(long long), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<long long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<long long>*>(ptr), planeCopy, _pos); }},
+//                {typeid(unsigned long long), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<unsigned long long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned long long>*>(ptr), planeCopy, _pos); }},
+//                {typeid(float), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<float>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<float>*>(ptr), planeCopy, _pos); }},
+//                {typeid(double), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<double>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<double>*>(ptr), planeCopy, _pos); }},
+//                {typeid(long double), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<long double>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<long double>*>(ptr), planeCopy, _pos); }},
+//        };
+//    }();
+//
+//    auto it = cartesianConcentrationFunctionMap.find(fieldType);
+//    return (it != cartesianConcentrationFunctionMap.end()) ? it->second(fieldPtr) : false;
+//}
+
+
+//bool FieldExtractor::fillConFieldData2DCartesianFlex(vtk_obj_addr_int_t _conArrayAddr,
+//                                                     vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+//                                                     vtk_obj_addr_int_t _pointsArrayAddr,
+//                                                     std::string _conFieldName,
+//                                                     std::string _plane, int _pos) {
+//
+//    vtkDoubleArray *conArray = reinterpret_cast<vtkDoubleArray *>(_conArrayAddr);
+//    vtkCellArray *_cartesianCellsArray = reinterpret_cast<vtkCellArray *>(_cartesianCellsArrayAddr);
+//    vtkPoints *_pointsArray = reinterpret_cast<vtkPoints *>(_pointsArrayAddr);
+//
+//    // Retrieve field type and pointer
+//    auto result = getFieldTypeAndPointer(_conFieldName);
+//    std::type_index fieldType = std::get<0>(result);
+//    void* fieldPtr = std::get<1>(result);
+//
+//    if (!fieldPtr || fieldType == typeid(void)) {
+//        return false;
+//    }
+//
 //    // Capture 'this' explicitly along with required local variables
-//    auto functionMap = [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy = std::string(_plane), _pos]() {
+//    auto cartesianConcentrationFunctionMap = [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy = std::string(_plane), _pos]() {
 //        return std::unordered_map<std::type_index, std::function<bool(void*)>> {
 //                {typeid(char), [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy, _pos](void* ptr) {
 //                    return this->fillConFieldData2DCartesianTyped<char>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<char>*>(ptr), _planeCopy, _pos); }},
@@ -1717,8 +1784,8 @@ bool FieldExtractor::fillConFieldData2DCartesianFlex(vtk_obj_addr_int_t _conArra
 //        };
 //    }();
 //
-//    auto it = functionMap.find(fieldType);
-//    return (it != functionMap.end()) ? it->second(fieldPtr) : false;
+//    auto it = cartesianConcentrationFunctionMap.find(fieldType);
+//    return (it != cartesianConcentrationFunctionMap.end()) ? it->second(fieldPtr) : false;
 //}
 
 

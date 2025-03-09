@@ -648,15 +648,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 self.currentDrawingParameters.plane,
                 self.currentDrawingParameters.planePos,
             )
-            if not fill_successful:
-                fill_successful = self.field_extractor.fillConFieldData2DCartesian(
-                    con_array_int_addr,
-                    cells_con_int_addr,
-                    points_con_int_addr,
-                    field_name,
-                    self.currentDrawingParameters.plane,
-                    self.currentDrawingParameters.planePos,
-                )
+            # if not fill_successful:
+            #     fill_successful = self.field_extractor.fillConFieldData2DCartesian(
+            #         con_array_int_addr,
+            #         cells_con_int_addr,
+            #         points_con_int_addr,
+            #         field_name,
+            #         self.currentDrawingParameters.plane,
+            #         self.currentDrawingParameters.planePos,
+            #     )
 
         # if field_name == 'cell_type_field':
             #     fill_successful = self.field_extractor.fillConFieldData2DCartesianFlex(

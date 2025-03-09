@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <typeindex>
 #include <string>
 #include <Utils/Coordinates3D.h>
@@ -48,7 +49,7 @@ namespace CompuCell3D {
 
     class ParallelUtilsOpenMP;
 
-    template <typename T>
+    template<typename T>
     class Field3D;
 
 
@@ -127,70 +128,12 @@ namespace CompuCell3D {
                                                      vtk_obj_addr_int_t _cartesianCellsArrayAddr,
                                                      vtk_obj_addr_int_t _pointsArrayAddr,
                                                      std::string _conFieldName,
-                                                     std::string _plane, int _pos) ;
+                                                     std::string _plane, int _pos);
 
-        template <typename T>
+        template<typename T>
         bool fillConFieldData2DCartesianTyped(vtkDoubleArray *conArray, vtkCellArray *_cartesianCellsArray,
-                                                              vtkPoints *_pointsArray, Field3D<T> *conFieldPtr,
-                                                              std::string _plane, int _pos);
-//        {
-//            if (!conFieldPtr) return false;
-//
-//            Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
-//            Dim3D fieldDim = cellFieldG->getDim();
-//
-//            std::vector<int> fieldDimVec = { fieldDim.x, fieldDim.y, fieldDim.z };
-//            std::vector<int> pointOrderVec = pointOrder(_plane);
-//            std::vector<int> dimOrderVec = dimOrder(_plane);
-//
-//            std::vector<int> dim(3, 0);
-//            dim[0] = fieldDimVec[dimOrderVec[0]];
-//            dim[1] = fieldDimVec[dimOrderVec[1]];
-//            dim[2] = fieldDimVec[dimOrderVec[2]];
-//
-//            int offset = 0;
-//            Point3D pt;
-//            std::vector<int> ptVec(3, 0);
-//            T con;
-//            long pc = 0;
-//
-//            for (int j = 0; j < dim[1]; ++j) {
-//                for (int i = 0; i < dim[0]; ++i) {
-//                    ptVec[0] = i;
-//                    ptVec[1] = j;
-//                    ptVec[2] = _pos;
-//
-//                    pt.x = ptVec[pointOrderVec[0]];
-//                    pt.y = ptVec[pointOrderVec[1]];
-//                    pt.z = ptVec[pointOrderVec[2]];
-//
-//                    if (i == dim[0] || j == dim[1]) {
-//                        con = 0;
-//                    } else {
-//                        con = conFieldPtr->get(pt);
-//                    }
-//
-//                    Coordinates3D<double> coords(ptVec[0], ptVec[1], 0);
-//
-//                    for (int idx = 0; idx < 4; ++idx) {
-//                        Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
-//                        _pointsArray->InsertNextPoint(cartesianVertex.x, cartesianVertex.y, 0.0);
-//                    }
-//
-//                    pc += 4;
-//                    vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
-//                    _cartesianCellsArray->InsertCellPoint(pc - 4);
-//                    _cartesianCellsArray->InsertCellPoint(pc - 3);
-//                    _cartesianCellsArray->InsertCellPoint(pc - 2);
-//                    _cartesianCellsArray->InsertCellPoint(pc - 1);
-//
-//                    conArray->InsertNextValue(static_cast<double>(con)); // Ensure it works for all numeric types
-//                    ++offset;
-//                }
-//            }
-//
-//            return true;
-//        }
+                                              vtkPoints *_pointsArray, Field3D<T> *conFieldPtr,
+                                              std::string _plane, int _pos);
 
         virtual bool
         fillScalarFieldCellLevelData2D(vtk_obj_addr_int_t _conArrayAddr, std::string _conFieldName, std::string _plane,
@@ -260,6 +203,7 @@ namespace CompuCell3D {
                                                        vtk_obj_addr_int_t cell_type_array_addr,
                                                        std::vector<int> *types_invisibe_vec,
                                                        bool extractOuterShellOnly = false);
+
         virtual void fillCellFieldGlyphs2D(
                 vtk_obj_addr_int_t centroids_array_addr,
                 vtk_obj_addr_int_t vol_scaling_factors_array_addr,
@@ -308,13 +252,13 @@ namespace CompuCell3D {
                                                       std::vector<int> *types_invisibe_vec,
                                                       bool extractOuterShellOnly = false);
 
-        virtual bool fillLinksField2D(vtk_obj_addr_int_t points_array_addr, 
-                                      vtk_obj_addr_int_t lines_array_addr, 
-                                      const std::string &plane, 
+        virtual bool fillLinksField2D(vtk_obj_addr_int_t points_array_addr,
+                                      vtk_obj_addr_int_t lines_array_addr,
+                                      const std::string &plane,
                                       const int &pos,
-                                      const int &margin=1) override;
+                                      const int &margin = 1) override;
 
-        virtual bool fillLinksField3D(vtk_obj_addr_int_t points_array_addr, 
+        virtual bool fillLinksField3D(vtk_obj_addr_int_t points_array_addr,
                                       vtk_obj_addr_int_t lines_array_addr) override;
 
         void setVtkObj(void *_vtkObj);
@@ -333,8 +277,17 @@ namespace CompuCell3D {
         ParallelUtilsOpenMP *pUtils;
 
         typedef int (FieldExtractor::*type_fcn_ptr_t)(int type);
-        std::tuple<std::type_index, void*> getFieldTypeAndPointer( const std::string& fieldName);
+
+        std::tuple<std::type_index, void *> getFieldTypeAndPointer(const std::string &fieldName);
+
         FieldExtractor::type_fcn_ptr_t type_fcn_ptr;
+        typedef std::unordered_map<std::type_index, std::function<bool(void *, vtkDoubleArray *, vtkCellArray *,
+                                                                       vtkPoints *, std::string,
+                                                                       int)>> cartesianConcentrationFunctionMap_t;
+
+        void initializeCartesianConcentrationFunctionMap2D();
+
+        cartesianConcentrationFunctionMap_t cartesianConcentrationFunctionMap;
 
     };
 };
