@@ -6,6 +6,7 @@
         <Temperature>10</Temperature>
         <Flip2DimRatio>1</Flip2DimRatio>
         <NeighborOrder>2</NeighborOrder>
+        <LatticeType>Hexagonal</LatticeType>
     </Potts>
 
     <Plugin Name="Volume">

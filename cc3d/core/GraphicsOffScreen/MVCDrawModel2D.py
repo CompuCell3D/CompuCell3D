@@ -454,7 +454,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         hex_cells_con_int_addr = extract_address_int_from_vtk_object(vtkObj=hex_cells_con)
         hex_cells_con_poly_data = vtk.vtkPolyData()
 
-        field_type = drawing_params.fieldType.lower()
+        # field_type = drawing_params.fieldType.lower()
+        if isinstance(drawing_params.fieldType, str):
+            field_type = drawing_params.fieldType.lower()
+            print("drawing_params.fieldType ", drawing_params.fieldType,  " field_name=", field_name)
+        else:
+            field_type = drawing_params.fieldType.field_type.lower()
         if field_type == "confield":
             fill_successful = self.field_extractor.fillConFieldData2DHex(
                 con_array_int_addr,
@@ -640,7 +645,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # # note drawing_params.fieldType is of type FieldProperties now
         # field_type = drawing_params.fieldType.field_type.lower()
         if field_type == "confield":
-            fill_successful = self.field_extractor.fillConFieldData2DCartesianFlex(
+            fill_successful = self.field_extractor.fillConFieldData2DCartesian(
                 con_array_int_addr,
                 cells_con_int_addr,
                 points_con_int_addr,

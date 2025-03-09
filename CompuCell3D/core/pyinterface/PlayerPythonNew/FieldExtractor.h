@@ -118,17 +118,21 @@ namespace CompuCell3D {
         virtual bool fillScalarFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr,
                                               vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
                                               std::string _plane, int _pos);
+        template<typename T>
+        bool fillConFieldData2DHexTyped(vtkDoubleArray *conArray, vtkCellArray *_cartesianCellsArray,
+                vtkPoints *_pointsArray, Field3D<T> *conFieldPtr,
+                std::string _plane, int _pos);
 
         virtual bool
         fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cartesianCellsArrayAddr,
                                        vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
                                        std::string _plane, int _pos);
 
-        virtual bool fillConFieldData2DCartesianFlex(vtk_obj_addr_int_t _conArrayAddr,
-                                                     vtk_obj_addr_int_t _cartesianCellsArrayAddr,
-                                                     vtk_obj_addr_int_t _pointsArrayAddr,
-                                                     std::string _conFieldName,
-                                                     std::string _plane, int _pos);
+//        virtual bool fillConFieldData2DCartesianFlex(vtk_obj_addr_int_t _conArrayAddr,
+//                                                     vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+//                                                     vtk_obj_addr_int_t _pointsArrayAddr,
+//                                                     std::string _conFieldName,
+//                                                     std::string _plane, int _pos);
 
         template<typename T>
         bool fillConFieldData2DCartesianTyped(vtkDoubleArray *conArray, vtkCellArray *_cartesianCellsArray,
@@ -283,11 +287,13 @@ namespace CompuCell3D {
         FieldExtractor::type_fcn_ptr_t type_fcn_ptr;
         typedef std::unordered_map<std::type_index, std::function<bool(void *, vtkDoubleArray *, vtkCellArray *,
                                                                        vtkPoints *, std::string,
-                                                                       int)>> cartesianConcentrationFunctionMap_t;
+                                                                       int)>> concentration2DFunctionMap_t;
 
         void initializeCartesianConcentrationFunctionMap2D();
+        void initializeHexConcentrationFunctionMap2D();
 
-        cartesianConcentrationFunctionMap_t cartesianConcentrationFunctionMap;
+        concentration2DFunctionMap_t cartesianConcentrationFunctionMap;
+        concentration2DFunctionMap_t hexConcentrationFunctionMap;
 
     };
 };
