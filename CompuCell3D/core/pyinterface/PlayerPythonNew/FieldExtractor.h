@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <typeindex>
 #include <string>
 #include <Utils/Coordinates3D.h>
 #include "FieldStorage.h"
@@ -332,7 +333,7 @@ namespace CompuCell3D {
         ParallelUtilsOpenMP *pUtils;
 
         typedef int (FieldExtractor::*type_fcn_ptr_t)(int type);
-
+        std::tuple<std::type_index, void*> getFieldTypeAndPointer( const std::string& fieldName);
         FieldExtractor::type_fcn_ptr_t type_fcn_ptr;
 
     };

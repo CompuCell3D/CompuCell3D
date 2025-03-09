@@ -199,7 +199,6 @@ class CellG;
   float getItem(const std::vector<long> & _coord){
       return (*($self))[_coord[0]][_coord[1]][_coord[2]][_coord[3]];
   }
-  
 
 };
 

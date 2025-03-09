@@ -1562,48 +1562,208 @@ bool FieldExtractor::fillConFieldData2DCartesianTyped(vtkDoubleArray *conArray, 
 }
 
 
+std::tuple<std::type_index, void*> FieldExtractor::getFieldTypeAndPointer( const std::string& fieldName) {
+    Field3DTypeBase* conFieldBasePtr = sim->getGenericScalarFieldTypeBase(fieldName);
+
+
+    static const std::unordered_map<std::type_index, std::function<void*(Field3DTypeBase*)>> typeCaster = {
+            {typeid(char), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<char>*>(base)); }},
+            {typeid(unsigned char), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned char>*>(base)); }},
+            {typeid(short), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<short>*>(base)); }},
+            {typeid(unsigned short), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned short>*>(base)); }},
+            {typeid(int), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<int>*>(base)); }},
+            {typeid(unsigned int), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned int>*>(base)); }},
+            {typeid(long), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<long>*>(base)); }},
+            {typeid(unsigned long), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned long>*>(base)); }},
+            {typeid(long long), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<long long>*>(base)); }},
+            {typeid(unsigned long long), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned long long>*>(base)); }},
+            {typeid(float), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<float>*>(base)); }},
+            {typeid(double), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<double>*>(base)); }},
+            {typeid(long double), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<long double>*>(base)); }},
+    };
+    if (conFieldBasePtr) {
+        std::type_index fieldType = conFieldBasePtr->getType();
+        auto it = typeCaster.find(fieldType);
+
+        if (it != typeCaster.end()) {
+            return {fieldType, it->second(conFieldBasePtr)};
+        }
+
+    }
+
+    Field3D<float> *conFieldPtr = nullptr;
+    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
+    std::map<std::string, Field3D<float> *>::iterator mitr;
+    mitr = fieldMap.find(fieldName);
+    if (mitr != fieldMap.end()) {
+        conFieldPtr = mitr->second;
+    }
+
+    if (conFieldPtr){
+
+        return {std::type_index(typeid(float)), conFieldPtr};
+    }
+
+
+    return {std::type_index(typeid(void)), nullptr};  // Unsupported type
+}
 
 bool FieldExtractor::fillConFieldData2DCartesianFlex(vtk_obj_addr_int_t _conArrayAddr,
-                                                 vtk_obj_addr_int_t _cartesianCellsArrayAddr,
-                                                 vtk_obj_addr_int_t _pointsArrayAddr,
-                                                 std::string _conFieldName,
-                                                 std::string _plane, int _pos) {
+                                                     vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+                                                     vtk_obj_addr_int_t _pointsArrayAddr,
+                                                     std::string _conFieldName,
+                                                     std::string _plane, int _pos) {
 
     vtkDoubleArray *conArray = reinterpret_cast<vtkDoubleArray *>(_conArrayAddr);
     vtkCellArray *_cartesianCellsArray = reinterpret_cast<vtkCellArray *>(_cartesianCellsArrayAddr);
     vtkPoints *_pointsArray = reinterpret_cast<vtkPoints *>(_pointsArrayAddr);
 
-    // Retrieve the correct concentration field
-    Field3DTypeBase *conFieldBasePtr = sim->getGenericScalarFieldTypeBase(_conFieldName);
+    // Retrieve field type and pointer
+    auto result = getFieldTypeAndPointer(_conFieldName);
+    std::type_index fieldType = std::get<0>(result);
+    void* fieldPtr = std::get<1>(result);
 
-    if (!conFieldBasePtr) return false;
-
-    // Get the numerical type and cast accordingly
-    const std::type_index &fieldType = conFieldBasePtr->getType();
-
-    if (fieldType == typeid(float)) {
-
-        auto ptr = dynamic_cast<NumpyArrayWrapper3DImpl<float> *>(conFieldBasePtr);
-
-        return fillConFieldData2DCartesianTyped<float>(conArray, _cartesianCellsArray, _pointsArray,
-                                                       static_cast<Field3D<float> *>(ptr), _plane, _pos);
-    } else if (fieldType == typeid(double)) {
-        auto ptr = dynamic_cast<NumpyArrayWrapper3DImpl<double> *>(conFieldBasePtr);
-
-        return fillConFieldData2DCartesianTyped<double>(conArray, _cartesianCellsArray, _pointsArray,
-                                                        static_cast<Field3D<double> *>(ptr), _plane, _pos);
-    } else if (fieldType == typeid(int)) {
-        auto ptr = dynamic_cast<NumpyArrayWrapper3DImpl<int> *>(conFieldBasePtr);
-        return fillConFieldData2DCartesianTyped<int>(conArray, _cartesianCellsArray, _pointsArray,
-                                                     static_cast<Field3D<int> *>(ptr), _plane, _pos);
-    } else if (fieldType == typeid(unsigned char)) {
-        auto ptr = dynamic_cast<NumpyArrayWrapper3DImpl<unsigned char> *>(conFieldBasePtr);
-        return fillConFieldData2DCartesianTyped<unsigned char>(conArray, _cartesianCellsArray, _pointsArray,
-                                                               static_cast<Field3D<unsigned char> *>(ptr), _plane, _pos);
-    } else {
-        return false; // Unsupported type
+    if (!fieldPtr || fieldType == typeid(void)) {
+        return false;
     }
+
+    std::string planeCopy = _plane; // C++11-compliant copy
+
+    // Capture `this` explicitly
+    auto functionMap = [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos]() {
+        return std::unordered_map<std::type_index, std::function<bool(void*)>> {
+                {typeid(char), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+                    return this->fillConFieldData2DCartesianTyped<char>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<char>*>(ptr), planeCopy, _pos); }},
+                {typeid(unsigned char), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+                    return this->fillConFieldData2DCartesianTyped<unsigned char>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned char>*>(ptr), planeCopy, _pos); }},
+                {typeid(short), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+                    return this->fillConFieldData2DCartesianTyped<short>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<short>*>(ptr), planeCopy, _pos); }},
+                {typeid(unsigned short), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+                    return this->fillConFieldData2DCartesianTyped<unsigned short>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned short>*>(ptr), planeCopy, _pos); }},
+                {typeid(int), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+                    return this->fillConFieldData2DCartesianTyped<int>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<int>*>(ptr), planeCopy, _pos); }},
+                {typeid(unsigned int), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+                    return this->fillConFieldData2DCartesianTyped<unsigned int>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned int>*>(ptr), planeCopy, _pos); }},
+                {typeid(long), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+                    return this->fillConFieldData2DCartesianTyped<long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<long>*>(ptr), planeCopy, _pos); }},
+                {typeid(unsigned long), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+                    return this->fillConFieldData2DCartesianTyped<unsigned long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned long>*>(ptr), planeCopy, _pos); }},
+                {typeid(long long), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+                    return this->fillConFieldData2DCartesianTyped<long long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<long long>*>(ptr), planeCopy, _pos); }},
+                {typeid(unsigned long long), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+                    return this->fillConFieldData2DCartesianTyped<unsigned long long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned long long>*>(ptr), planeCopy, _pos); }},
+                {typeid(float), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+                    return this->fillConFieldData2DCartesianTyped<float>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<float>*>(ptr), planeCopy, _pos); }},
+                {typeid(double), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+                    return this->fillConFieldData2DCartesianTyped<double>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<double>*>(ptr), planeCopy, _pos); }},
+                {typeid(long double), [this, conArray, _cartesianCellsArray, _pointsArray, planeCopy, _pos](void* ptr) {
+                    return this->fillConFieldData2DCartesianTyped<long double>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<long double>*>(ptr), planeCopy, _pos); }},
+        };
+    }();
+
+    auto it = functionMap.find(fieldType);
+    return (it != functionMap.end()) ? it->second(fieldPtr) : false;
 }
+
+
+//bool FieldExtractor::fillConFieldData2DCartesianFlex(vtk_obj_addr_int_t _conArrayAddr,
+//                                                     vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+//                                                     vtk_obj_addr_int_t _pointsArrayAddr,
+//                                                     std::string _conFieldName,
+//                                                     std::string _plane, int _pos) {
+//
+//    vtkDoubleArray *conArray = reinterpret_cast<vtkDoubleArray *>(_conArrayAddr);
+//    vtkCellArray *_cartesianCellsArray = reinterpret_cast<vtkCellArray *>(_cartesianCellsArrayAddr);
+//    vtkPoints *_pointsArray = reinterpret_cast<vtkPoints *>(_pointsArrayAddr);
+//
+//    // Retrieve field type and pointer
+//    auto result = getFieldTypeAndPointer(_conFieldName);
+//    std::type_index fieldType = std::get<0>(result);
+//    void* fieldPtr = std::get<1>(result);
+//
+//    if (!fieldPtr || fieldType == typeid(void)) {
+//        return false;
+//    }
+//
+//    // Capture 'this' explicitly along with required local variables
+//    auto functionMap = [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy = std::string(_plane), _pos]() {
+//        return std::unordered_map<std::type_index, std::function<bool(void*)>> {
+//                {typeid(char), [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<char>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<char>*>(ptr), _planeCopy, _pos); }},
+//                {typeid(unsigned char), [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<unsigned char>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned char>*>(ptr), _planeCopy, _pos); }},
+//                {typeid(short), [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<short>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<short>*>(ptr), _planeCopy, _pos); }},
+//                {typeid(unsigned short), [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<unsigned short>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned short>*>(ptr), _planeCopy, _pos); }},
+//                {typeid(int), [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<int>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<int>*>(ptr), _planeCopy, _pos); }},
+//                {typeid(unsigned int), [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<unsigned int>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned int>*>(ptr), _planeCopy, _pos); }},
+//                {typeid(long), [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<long>*>(ptr), _planeCopy, _pos); }},
+//                {typeid(unsigned long), [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<unsigned long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned long>*>(ptr), _planeCopy, _pos); }},
+//                {typeid(long long), [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<long long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<long long>*>(ptr), _planeCopy, _pos); }},
+//                {typeid(unsigned long long), [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<unsigned long long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned long long>*>(ptr), _planeCopy, _pos); }},
+//                {typeid(float), [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<float>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<float>*>(ptr), _planeCopy, _pos); }},
+//                {typeid(double), [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<double>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<double>*>(ptr), _planeCopy, _pos); }},
+//                {typeid(long double), [this, conArray, _cartesianCellsArray, _pointsArray, _planeCopy, _pos](void* ptr) {
+//                    return this->fillConFieldData2DCartesianTyped<long double>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<long double>*>(ptr), _planeCopy, _pos); }},
+//        };
+//    }();
+//
+//    auto it = functionMap.find(fieldType);
+//    return (it != functionMap.end()) ? it->second(fieldPtr) : false;
+//}
+
+
+
+//bool FieldExtractor::fillConFieldData2DCartesianFlex(vtk_obj_addr_int_t _conArrayAddr,
+//                                                 vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+//                                                 vtk_obj_addr_int_t _pointsArrayAddr,
+//                                                 std::string _conFieldName,
+//                                                 std::string _plane, int _pos) {
+//
+//    vtkDoubleArray *conArray = reinterpret_cast<vtkDoubleArray *>(_conArrayAddr);
+//    vtkCellArray *_cartesianCellsArray = reinterpret_cast<vtkCellArray *>(_cartesianCellsArrayAddr);
+//    vtkPoints *_pointsArray = reinterpret_cast<vtkPoints *>(_pointsArrayAddr);
+//
+//    // Retrieve the correct concentration field
+//    Field3DTypeBase *conFieldBasePtr = sim->getGenericScalarFieldTypeBase(_conFieldName);
+//
+//    if (!conFieldBasePtr) return false;
+//
+//    // Get the numerical type and cast accordingly
+//    const std::type_index &fieldType = conFieldBasePtr->getType();
+//
+//    if (fieldType == typeid(float)) {
+//
+//        auto ptr = dynamic_cast<NumpyArrayWrapper3DImpl<float> *>(conFieldBasePtr);
+//
+//        return fillConFieldData2DCartesianTyped<float>(conArray, _cartesianCellsArray, _pointsArray,
+//                                                       static_cast<Field3D<float> *>(ptr), _plane, _pos);
+//    } else if (fieldType == typeid(double)) {
+//        auto ptr = dynamic_cast<NumpyArrayWrapper3DImpl<double> *>(conFieldBasePtr);
+//
+//        return fillConFieldData2DCartesianTyped<double>(conArray, _cartesianCellsArray, _pointsArray,
+//                                                        static_cast<Field3D<double> *>(ptr), _plane, _pos);
+//    } else if (fieldType == typeid(int)) {
+//        auto ptr = dynamic_cast<NumpyArrayWrapper3DImpl<int> *>(conFieldBasePtr);
+//        return fillConFieldData2DCartesianTyped<int>(conArray, _cartesianCellsArray, _pointsArray,
+//                                                     static_cast<Field3D<int> *>(ptr), _plane, _pos);
+//    } else if (fieldType == typeid(unsigned char)) {
+//        auto ptr = dynamic_cast<NumpyArrayWrapper3DImpl<unsigned char> *>(conFieldBasePtr);
+//        return fillConFieldData2DCartesianTyped<unsigned char>(conArray, _cartesianCellsArray, _pointsArray,
+//                                                               static_cast<Field3D<unsigned char> *>(ptr), _plane, _pos);
+//    } else {
+//        return false; // Unsupported type
+//    }
+//}
 
 bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,
                                                  vtk_obj_addr_int_t _cartesianCellsArrayAddr,
