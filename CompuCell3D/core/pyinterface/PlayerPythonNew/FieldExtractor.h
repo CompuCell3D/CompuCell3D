@@ -192,7 +192,7 @@ namespace CompuCell3D {
         virtual std::vector<int> fillCellFieldGlyphs3D(vtk_obj_addr_int_t centroids_array_addr,
                                                        vtk_obj_addr_int_t vol_scaling_factors_array_addr,
                                                        vtk_obj_addr_int_t cell_type_array_addr,
-                                                       std::vector<int> *types_invisibe_vec,
+                                                       std::vector<int> *types_invisible_vec,
                                                        bool extractOuterShellOnly = false);
 
         virtual void fillCellFieldGlyphs2D(
@@ -226,21 +226,21 @@ namespace CompuCell3D {
                                                          vtk_obj_addr_int_t centroids_array_addr,
                                                          vtk_obj_addr_int_t vol_scaling_factors_array_addr,
                                                          vtk_obj_addr_int_t scalar_value_at_com_addr,
-                                                         std::vector<int> *types_invisibe_vec,
+                                                         std::vector<int> *types_invisible_vec,
                                                          bool extractOuterShellOnly = false);
 
         virtual std::vector<int> fillScalarFieldCellLevelGlyphs3D(std::string con_field_name,
                                                                   vtk_obj_addr_int_t centroids_array_addr,
                                                                   vtk_obj_addr_int_t vol_scaling_factors_array_addr,
                                                                   vtk_obj_addr_int_t scalar_value_at_com_addr,
-                                                                  std::vector<int> *types_invisibe_vec,
+                                                                  std::vector<int> *types_invisible_vec,
                                                                   bool extractOuterShellOnly = false);
 
         virtual std::vector<int> fillConFieldGlyphs3D(std::string con_field_name,
                                                       vtk_obj_addr_int_t centroids_array_addr,
                                                       vtk_obj_addr_int_t vol_scaling_factors_array_addr,
                                                       vtk_obj_addr_int_t scalar_value_at_com_addr,
-                                                      std::vector<int> *types_invisibe_vec,
+                                                      std::vector<int> *types_invisible_vec,
                                                       bool extractOuterShellOnly = false);
 
         virtual bool fillLinksField2D(vtk_obj_addr_int_t points_array_addr,
@@ -281,6 +281,10 @@ namespace CompuCell3D {
 
         typedef std::unordered_map<std::type_index, std::function<bool(void *, vtkDoubleArray *, vtkIntArray *,
                                                                        std::vector<int> *, bool)>> concentration3DFunctionMap_t;
+
+        typedef std::unordered_map<std::type_index, std::function<std::vector<int>(void *, vtkPoints *, vtkFloatArray *, vtkFloatArray *, std::vector<int> *, bool)>> concentration3DGlyphFunctionMap_t;
+        
+        
         template<typename T>
         bool fillConFieldData2DCartesianTyped(vtkDoubleArray *conArray, vtkCellArray *_cartesianCellsArray,
                                               vtkPoints *_pointsArray, Field3D<T> *conFieldPtr,
@@ -297,17 +301,25 @@ namespace CompuCell3D {
 
         template<typename T>
         bool fillConFieldData3DTyped(vtkDoubleArray *_conArrayAddr,  vtkIntArray *_cellTypeArrayAddr, Field3D<T> *conFieldPtr,
-                                     std::vector<int> *_typesInvisibleVec, bool type_indicator_only);        
-        
+                                     std::vector<int> *_typesInvisibleVec, bool type_indicator_only);
+
+        template<typename T>
+        std::vector<int> fillConFieldGlyphData3DTyped(vtkPoints *centroids_array_addr,  vtkFloatArray *scalar_value_at_com_addr, vtkFloatArray *vol_scaling_factors_array_addr,
+                                          Field3D<T> *conFieldPtr,
+                                     std::vector<int> *types_invisible_vec, bool extractOuterShellOnly);
+
+
         void initializeCartesianConcentrationFunctionMap2D();
         void initializeHexConcentrationFunctionMap2D();
         void initializeCartesianNonPixelizedConcentrationFunctionMap2D();
         void initializeConcentrationFunctionMap3D();
+        void initializeConcentrationGlyphFunctionMap3D();
 
         concentration2DFunctionMap_t cartesianConcentrationFunctionMap;
         concentration2DNonPixelizedFunctionMap_t cartesianNonPixelizedConcentrationFunctionMap;
         concentration2DFunctionMap_t hexConcentrationFunctionMap;
         concentration3DFunctionMap_t concentration3DFunctionMap;
+        concentration3DGlyphFunctionMap_t concentration3DGlyphFunctionMap;
 
     };
 };
@@ -318,3 +330,10 @@ namespace CompuCell3D {
 //                                std::string _conFieldName, std::vector<int> *_typesInvisibleVec,
 //                                bool type_indicator_only
 //);
+
+//virtual std::vector<int> fillConFieldGlyphs3D(std::string con_field_name,
+//                                              vtk_obj_addr_int_t centroids_array_addr,
+//                                              vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+//                                              vtk_obj_addr_int_t scalar_value_at_com_addr,
+//                                              std::vector<int> *types_invisible_vec,
+//                                              bool extractOuterShellOnly = false);

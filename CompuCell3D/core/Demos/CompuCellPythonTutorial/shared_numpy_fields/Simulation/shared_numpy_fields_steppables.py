@@ -15,9 +15,9 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
         numpy_field_manager = self.field.numpy_field_manager
 
         cell_type_field = self.field.cell_type_field
-        cell_type_field[10,10,0] = 20
-        cell_type_field[10, 20, 0] = 40
-        cell_type_field[50, 50, 0] = 250
+        cell_type_field[5:10,5:10,0] = 20
+        cell_type_field[5:10, 15:20, 0] = 40
+        cell_type_field[45:50, 45:50, 0] = 250
         # initializing FGF diffusion field
         fgf = self.field.FGF
         fgf[50, 50, 0] = 2000
