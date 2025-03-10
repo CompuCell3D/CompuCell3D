@@ -203,6 +203,8 @@ class CellG;
 };
 
 
+
+
 %include "CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h"
 %template(VectorNumpyArrayWrapper3DImplFloat) CompuCell3D::VectorNumpyArrayWrapper3DImpl<float>;
 %template(VectorNumpyArrayWrapper3DImplDouble) CompuCell3D::VectorNumpyArrayWrapper3DImpl<double>;

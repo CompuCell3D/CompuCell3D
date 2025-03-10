@@ -142,7 +142,7 @@ namespace CompuCell3D {
 
         virtual bool
         fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-                                       std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
+                                       std::string _conFieldName, std::vector<int> *_typesInvisibleVec,
                                        bool type_indicator_only);
 
         virtual bool
@@ -177,7 +177,7 @@ namespace CompuCell3D {
                                                        vtk_obj_addr_int_t _vectorArrayIntAddr, std::string _fieldName);
 
         virtual bool fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-                                           std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
+                                           std::string _conFieldName, std::vector<int> *_typesInvisibleVec,
                                            bool type_indicator_only);
 
         virtual std::vector<int>
@@ -185,7 +185,7 @@ namespace CompuCell3D {
                             bool extractOuterShellOnly = false);
 
         virtual bool fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-                                        std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
+                                        std::string _conFieldName, std::vector<int> *_typesInvisibleVec,
                                         bool type_indicator_only
         );
 
@@ -276,9 +276,11 @@ namespace CompuCell3D {
                                                                        vtkPoints *, std::string,
                                                                        int)>> concentration2DFunctionMap_t;
 
-        typedef std::unordered_map<std::type_index, std::function<bool(void *, vtkDoubleArray *,  std::string,
+        typedef std::unordered_map<std::type_index, std::function<bool(void *, vtkDoubleArray *, std::string,
                                                                        int)>> concentration2DNonPixelizedFunctionMap_t;
 
+        typedef std::unordered_map<std::type_index, std::function<bool(void *, vtkDoubleArray *, vtkIntArray *,
+                                                                       std::vector<int> *, bool)>> concentration3DFunctionMap_t;
         template<typename T>
         bool fillConFieldData2DCartesianTyped(vtkDoubleArray *conArray, vtkCellArray *_cartesianCellsArray,
                                               vtkPoints *_pointsArray, Field3D<T> *conFieldPtr,
@@ -293,15 +295,26 @@ namespace CompuCell3D {
         bool fillConFieldData2DCartesianNonPixelizedTyped(vtkDoubleArray *conArray,  Field3D<T> *conFieldPtr,
                 std::string _plane, int _pos);
 
+        template<typename T>
+        bool fillConFieldData3DTyped(vtkDoubleArray *_conArrayAddr,  vtkIntArray *_cellTypeArrayAddr, Field3D<T> *conFieldPtr,
+                                     std::vector<int> *_typesInvisibleVec, bool type_indicator_only);        
+        
         void initializeCartesianConcentrationFunctionMap2D();
         void initializeHexConcentrationFunctionMap2D();
         void initializeCartesianNonPixelizedConcentrationFunctionMap2D();
+        void initializeConcentrationFunctionMap3D();
 
         concentration2DFunctionMap_t cartesianConcentrationFunctionMap;
         concentration2DNonPixelizedFunctionMap_t cartesianNonPixelizedConcentrationFunctionMap;
         concentration2DFunctionMap_t hexConcentrationFunctionMap;
+        concentration3DFunctionMap_t concentration3DFunctionMap;
 
     };
 };
 
 #endif
+
+//virtual bool fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
+//                                std::string _conFieldName, std::vector<int> *_typesInvisibleVec,
+//                                bool type_indicator_only
+//);
