@@ -1381,6 +1381,27 @@ class RestartManager:
             self.append_xml_stub(rst_xml_elem, sd)
             print("Got concentration field: ", fieldName)
 
+        # serialize generic concentration fields - different precision
+        generic_conc_field_name_vec = sim.getGenericScalarFieldNameVectorEngineOwned()
+        for fieldName in generic_conc_field_name_vec:
+            print("\n\n\nGENERIC FIELD=",fieldName)
+
+            sd = SerializerDEPy.SerializeData()
+            sd.moduleName = 'PDESolver'
+            sd.moduleType = 'Steppable'
+
+            sd.objectName = fieldName
+            sd.objectType = 'ConcentrationField'
+            sd.fileName = os.path.join(restart_output_path, fieldName + '.dat')
+            print('sd.fileName=', sd.fileName)
+            sd.fileFormat = 'text'
+            self.serializeDataList.append(sd)
+            self.serializer.serializeConcentrationField(sd)
+
+            self.append_xml_stub(rst_xml_elem, sd)
+            print("Got concentration field: ", fieldName)
+
+
     def output_cell_field(self, restart_output_path, rst_xml_elem):
         """
         Serializes cell field

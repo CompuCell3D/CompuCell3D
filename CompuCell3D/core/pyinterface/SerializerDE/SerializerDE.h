@@ -7,6 +7,7 @@
 #include <CompuCell3D/Field3D/Dim3D.h>
 
 #include <SerializerDEDLLSpecifier.h>
+#include <typeindex>
 
 
 namespace CompuCell3D{
@@ -41,6 +42,7 @@ namespace CompuCell3D{
 		void init(Simulator * _sim);
 		virtual ~SerializerDE();
 		bool serializeConcentrationField(SerializeData &_sd);
+//        bool serializeGenericConcentrationField(SerializeData &_sd);
 		bool serializeCellField(SerializeData &_sd);
 		bool serializeScalarField(SerializeData &_sd);
 		bool serializeScalarFieldCellLevel(SerializeData &_sd);
@@ -51,6 +53,7 @@ namespace CompuCell3D{
 
 		bool loadCellField(SerializeData &_sd);
 		bool loadConcentrationField(SerializeData &_sd);
+//        bool loadGenericConcentrationField(SerializeData &_sd);
 		bool loadScalarField(SerializeData &_sd);
 		bool loadScalarFieldCellLevel(SerializeData &_sd);
         bool loadSharedVectorFieldNumpy(SerializeData &_sd);
@@ -67,6 +70,22 @@ namespace CompuCell3D{
 		Simulator *sim;
 		Potts3D *potts;
 		Field3D<CellG*> * cellFieldG;
+        std::tuple<std::type_index, void *> getFieldTypeAndPointer(const std::string &fieldName);
+
+        typedef std::unordered_map<std::type_index, std::function<bool(SerializeData &, void *)>> concentrationFunctionMap_t;
+
+        template<typename T>
+        bool serializeConcentrationFieldTyped(SerializeData &_sd, Field3D<T> *fieldPtr);
+
+        template<typename T>
+        bool loadConcentrationFieldTyped(SerializeData &_sd, Field3D<T> *fieldPtr);
+
+
+        void initializeSerializeConcentrationFunctionMap();
+        void initializeLoadConcentrationFunctionMap();
+
+        concentrationFunctionMap_t serializeConcentrationFunctionMap;
+        concentrationFunctionMap_t loadConcentrationFunctionMap;
 	};
 
 }
