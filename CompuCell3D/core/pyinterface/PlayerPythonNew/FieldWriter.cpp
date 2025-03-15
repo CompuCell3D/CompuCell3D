@@ -28,9 +28,8 @@
 using namespace std;
 using namespace CompuCell3D;
 
-FieldWriter::FieldWriter():fsPtr(0),potts(0),sim(0),latticeData(0)
-{
-
+FieldWriter::FieldWriter() : fsPtr(0), potts(0), sim(0), latticeData(0) {
+    initializeSerializeConcentrationFunctionMap();
 }
 ////////////////////////////////////////////////////////////////////////////////
 FieldWriter::~FieldWriter(){
@@ -39,6 +38,111 @@ FieldWriter::~FieldWriter(){
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////
+
+std::tuple<std::type_index, void *> FieldWriter::getFieldTypeAndPointer(const std::string &fieldName) {
+    Field3DTypeBase *conFieldBasePtr = sim->getGenericScalarFieldTypeBase(fieldName);
+
+
+    static const std::unordered_map<std::type_index, std::function<void *(Field3DTypeBase *)>> typeCaster = {
+            {typeid(char),               [](
+                    Field3DTypeBase *base) { return static_cast<void *>(dynamic_cast<NumpyArrayWrapper3DImpl<char> *>(base)); }},
+            {typeid(unsigned char),      [](
+                    Field3DTypeBase *base) { return static_cast<void *>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned char> *>(base)); }},
+            {typeid(short),              [](
+                    Field3DTypeBase *base) { return static_cast<void *>(dynamic_cast<NumpyArrayWrapper3DImpl<short> *>(base)); }},
+            {typeid(unsigned short),     [](
+                    Field3DTypeBase *base) { return static_cast<void *>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned short> *>(base)); }},
+            {typeid(int),                [](
+                    Field3DTypeBase *base) { return static_cast<void *>(dynamic_cast<NumpyArrayWrapper3DImpl<int> *>(base)); }},
+            {typeid(unsigned int),       [](
+                    Field3DTypeBase *base) { return static_cast<void *>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned int> *>(base)); }},
+            {typeid(long),               [](
+                    Field3DTypeBase *base) { return static_cast<void *>(dynamic_cast<NumpyArrayWrapper3DImpl<long> *>(base)); }},
+            {typeid(unsigned long),      [](
+                    Field3DTypeBase *base) { return static_cast<void *>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned long> *>(base)); }},
+            {typeid(long long),          [](
+                    Field3DTypeBase *base) { return static_cast<void *>(dynamic_cast<NumpyArrayWrapper3DImpl<long long> *>(base)); }},
+            {typeid(unsigned long long), [](
+                    Field3DTypeBase *base) { return static_cast<void *>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned long long> *>(base)); }},
+            {typeid(float),              [](
+                    Field3DTypeBase *base) { return static_cast<void *>(dynamic_cast<NumpyArrayWrapper3DImpl<float> *>(base)); }},
+            {typeid(double),             [](
+                    Field3DTypeBase *base) { return static_cast<void *>(dynamic_cast<NumpyArrayWrapper3DImpl<double> *>(base)); }},
+            {typeid(long double),        [](
+                    Field3DTypeBase *base) { return static_cast<void *>(dynamic_cast<NumpyArrayWrapper3DImpl<long double> *>(base)); }},
+    };
+    if (conFieldBasePtr) {
+        std::type_index fieldType = conFieldBasePtr->getType();
+        auto it = typeCaster.find(fieldType);
+
+        if (it != typeCaster.end()) {
+            return {fieldType, it->second(conFieldBasePtr)};
+        }
+
+    }
+
+    Field3D<float> *conFieldPtr = nullptr;
+    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
+    std::map<std::string, Field3D<float> *>::iterator mitr;
+    mitr = fieldMap.find(fieldName);
+    if (mitr != fieldMap.end()) {
+        conFieldPtr = mitr->second;
+    }
+
+    if (conFieldPtr) {
+
+        return {std::type_index(typeid(float)), conFieldPtr};
+    }
+
+
+    return {std::type_index(typeid(void)), nullptr};  // Unsupported type
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void FieldWriter::initializeSerializeConcentrationFunctionMap() {
+    serializeConcentrationFunctionMap = {
+            {typeid(char), [this](const string & fieldName, void* ptr) {
+                return this->serializeConcentrationFieldTyped<char>(fieldName, static_cast<Field3D<char>*>(ptr));
+            }},
+            {typeid(unsigned char), [this](const string & fieldName, void* ptr) {
+                return this->serializeConcentrationFieldTyped<unsigned char>(fieldName, static_cast<Field3D<unsigned char>*>(ptr));
+            }},
+            {typeid(short), [this](const string & fieldName, void* ptr) {
+                return this->serializeConcentrationFieldTyped<short>(fieldName, static_cast<Field3D<short>*>(ptr));
+            }},
+            {typeid(unsigned short), [this](const string & fieldName, void* ptr) {
+                return this->serializeConcentrationFieldTyped<unsigned short>(fieldName, static_cast<Field3D<unsigned short>*>(ptr));
+            }},
+            {typeid(int), [this](const string & fieldName, void* ptr) {
+                return this->serializeConcentrationFieldTyped<int>(fieldName, static_cast<Field3D<int>*>(ptr));
+            }},
+            {typeid(unsigned int), [this](const string & fieldName, void* ptr) {
+                return this->serializeConcentrationFieldTyped<unsigned int>(fieldName, static_cast<Field3D<unsigned int>*>(ptr));
+            }},
+            {typeid(long), [this](const string & fieldName, void* ptr) {
+                return this->serializeConcentrationFieldTyped<long>(fieldName, static_cast<Field3D<long>*>(ptr));
+            }},
+            {typeid(unsigned long), [this](const string & fieldName, void* ptr) {
+                return this->serializeConcentrationFieldTyped<unsigned long>(fieldName, static_cast<Field3D<unsigned long>*>(ptr));
+            }},
+            {typeid(float), [this](const string & fieldName, void* ptr) {
+                return this->serializeConcentrationFieldTyped<float>(fieldName, static_cast<Field3D<float>*>(ptr));
+            }},
+            {typeid(double), [this](const string & fieldName, void* ptr) {
+                return this->serializeConcentrationFieldTyped<double>(fieldName, static_cast<Field3D<double>*>(ptr));
+            }},
+            {typeid(long long), [this](const string & fieldName, void* ptr) {
+                return this->serializeConcentrationFieldTyped<long long>(fieldName, static_cast<Field3D<long long>*>(ptr));
+            }},
+            {typeid(unsigned long long), [this](const string & fieldName, void* ptr) {
+                return this->serializeConcentrationFieldTyped<unsigned long long>(fieldName, static_cast<Field3D<unsigned long long>*>(ptr));
+            }}
+    };
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
 void FieldWriter::init(Simulator * _sim){
 
 	sim=_sim;
@@ -222,41 +326,131 @@ void FieldWriter::addCellFieldForOutput(){
 			clusterIdArray->Delete();
 }
 ////////////////////////////////////////////////////////////////////////////////
-bool FieldWriter::addConFieldForOutput(std::string _conFieldName){
-	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-	Dim3D fieldDim=cellFieldG->getDim();
 
-	Field3D<float> *conFieldPtr=0;
-	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-	std::map<std::string,Field3D<float>*>::iterator mitr;
-	mitr=fieldMap.find(_conFieldName);
-	if(mitr!=fieldMap.end()){
-		conFieldPtr=mitr->second;
-	}
+template<typename T>
+bool FieldWriter::serializeConcentrationFieldTyped(const std::string & _conFieldName , Field3D<T> *conFieldPtr){
+    Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
+    Dim3D fieldDim=cellFieldG->getDim();
 
-	if(!conFieldPtr)
-		return false;
+    if(!conFieldPtr)
+        return false;
 
-	vtkDoubleArray *conArray=vtkDoubleArray::New();
-	conArray->SetName(_conFieldName.c_str());
-	arrayNameVec.push_back(_conFieldName);
+    vtkDoubleArray *conArray=vtkDoubleArray::New();
+    conArray->SetName(_conFieldName.c_str());
+    arrayNameVec.push_back(_conFieldName);
 
-	long numberOfValues=fieldDim.x*fieldDim.y*fieldDim.z;
+    long numberOfValues=fieldDim.x*fieldDim.y*fieldDim.z;
 
-	conArray->SetNumberOfValues(numberOfValues);
-	long offset=0;
-	Point3D pt;
+    conArray->SetNumberOfValues(numberOfValues);
+    long offset=0;
+    Point3D pt;
 
-	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
-		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
-			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
-				conArray->SetValue(offset,conFieldPtr->get(pt));
-				++offset;
-			}
-	latticeData->GetPointData()->AddArray(conArray);
-	conArray->Delete();
-	return true;
+    for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
+        for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
+            for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
+                conArray->SetValue(offset,conFieldPtr->get(pt));
+                ++offset;
+            }
+    latticeData->GetPointData()->AddArray(conArray);
+    conArray->Delete();
+    return true;
+
 }
+
+bool FieldWriter::addConFieldForOutput(std::string _conFieldName){
+
+
+    // Retrieve field type and pointer
+    auto result = getFieldTypeAndPointer(_conFieldName);
+    std::type_index fieldType = std::get<0>(result);
+    void* fieldPtr = std::get<1>(result);
+
+    if (!fieldPtr || fieldType == typeid(void)) {
+        return false;
+    }
+
+
+    // Look up the function in serializeConcentrationFunctionMap
+
+    auto it = serializeConcentrationFunctionMap.find(fieldType);
+    if (it != serializeConcentrationFunctionMap.end()) {
+        return it->second(_conFieldName, fieldPtr);
+    }
+
+    return false;
+
+
+//    Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
+//    Dim3D fieldDim=cellFieldG->getDim();
+//
+//    Field3D<float> *conFieldPtr=0;
+//    std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
+//    std::map<std::string,Field3D<float>*>::iterator mitr;
+//    mitr=fieldMap.find(_conFieldName);
+//    if(mitr!=fieldMap.end()){
+//        conFieldPtr=mitr->second;
+//    }
+//
+//    if(!conFieldPtr)
+//        return false;
+//
+//    vtkDoubleArray *conArray=vtkDoubleArray::New();
+//    conArray->SetName(_conFieldName.c_str());
+//    arrayNameVec.push_back(_conFieldName);
+//
+//    long numberOfValues=fieldDim.x*fieldDim.y*fieldDim.z;
+//
+//    conArray->SetNumberOfValues(numberOfValues);
+//    long offset=0;
+//    Point3D pt;
+//
+//    for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
+//        for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
+//            for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
+//                conArray->SetValue(offset,conFieldPtr->get(pt));
+//                ++offset;
+//            }
+//    latticeData->GetPointData()->AddArray(conArray);
+//    conArray->Delete();
+//    return true;
+}
+
+
+//bool FieldWriter::addConFieldForOutput(std::string _conFieldName){
+//	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
+//	Dim3D fieldDim=cellFieldG->getDim();
+//
+//	Field3D<float> *conFieldPtr=0;
+//	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
+//	std::map<std::string,Field3D<float>*>::iterator mitr;
+//	mitr=fieldMap.find(_conFieldName);
+//	if(mitr!=fieldMap.end()){
+//		conFieldPtr=mitr->second;
+//	}
+//
+//	if(!conFieldPtr)
+//		return false;
+//
+//	vtkDoubleArray *conArray=vtkDoubleArray::New();
+//	conArray->SetName(_conFieldName.c_str());
+//	arrayNameVec.push_back(_conFieldName);
+//
+//	long numberOfValues=fieldDim.x*fieldDim.y*fieldDim.z;
+//
+//	conArray->SetNumberOfValues(numberOfValues);
+//	long offset=0;
+//	Point3D pt;
+//
+//	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
+//		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
+//			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
+//				conArray->SetValue(offset,conFieldPtr->get(pt));
+//				++offset;
+//			}
+//	latticeData->GetPointData()->AddArray(conArray);
+//	conArray->Delete();
+//	return true;
+//}
 ////////////////////////////////////////////////////////////////////////////////
 bool FieldWriter::addScalarFieldForOutput(std::string _scalarFieldName){
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
