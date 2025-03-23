@@ -1,6 +1,6 @@
 from cc3d.core.PySteppables import *
 from cc3d import CompuCellSetup
-from cc3d.cpp import PlayerPython
+# from cc3d.cpp import PlayerPython
 
 
 class SharedNUmpyFieldsSteppable(SteppableBasePy):
@@ -16,16 +16,23 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
         # self.copy_cell_type_field_values_to("numpy1")
         # self.copy_cell_id_field_values_to("numpy1")
         # self.copy_cluster_id_field_values_to("numpy1")
-        pg = CompuCellSetup.persistent_globals
-        field_copier = PlayerPython.FieldCopier(pg.simulator)
-        field_copier.copy_cell_attribute_field_values_to("cell_type_field", "type")
+        # pg = CompuCellSetup.persistent_globals
+        # field_copier = PlayerPython.FieldCopier(pg.simulator)
+        # field_copier.copy_cell_attribute_field_values_to("cell_type_field", "type")
+        #
+        self.copy_cell_attribute_field_values_to("cell_type_field", "type")
+        self.copy_cell_attribute_field_values_to("cell_volume_field", "type")
         numpy_field_manager = self.field.numpy_field_manager
 
         cell_type_field = self.field.cell_type_field
+        cell_volume_field = self.field.cell_volume_field
+        cell_volume_field[45:50, 45:50, 0] = 25
+
+
         # cell_type_field[5:10,5:10,0] = 20
         # cell_type_field[5:10, 15:20, 0] = 40
         # cell_type_field[45:50, 45:50, 0] = 250
-        print("cell_type_field[50,50,0]=", cell_type_field[50,50,0])
+        # print("cell_type_field[50,50,0]=", cell_type_field[50,50,0])
         # initializing FGF diffusion field
         fgf = self.field.FGF
         fgf[50, 50, 0] = 2000

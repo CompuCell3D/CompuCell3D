@@ -19,6 +19,7 @@ from cc3d.core.SBMLSolverHelper import SBMLSolverHelper
 from cc3d.core.MaBoSSCC3D import MaBoSSHelper
 from cc3d.core.GraphicsUtils.MovieCreator import makeMovie
 from cc3d.core.logging import log_py
+from cc3d.core import FieldCopier
 import types
 from deprecated import deprecated
 from cc3d.core.SteeringParam import SteeringParam
@@ -772,6 +773,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         field_vis_data.cell_type_list = cell_type_list
 
         self.tracking_field_vis_dict[field_name] = field_vis_data
+
+
+    def copy_cell_attribute_field_values_to(self, field_name:str, cell_attribute_name:str):
+        return FieldCopier.copy_cell_attribute_field_values_to(field_name=field_name, cell_attribute_name=cell_attribute_name)
 
     def track_cell_level_vector_attribute(self, field_name: str, attribute_name: str, function_obj: object = None,
                                           cell_type_list: Union[list, None] = None):

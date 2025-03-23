@@ -5,6 +5,7 @@
 #ifndef COMPUCELL3D_FIELDCOPIER_H
 #define COMPUCELL3D_FIELDCOPIER_H
 #include <string>
+#include <vector>
 #include <unordered_map>
 #include <typeindex>
 
@@ -33,8 +34,8 @@ namespace CompuCell3D {
     public:
         FieldCopier(Simulator *sim);
         ~FieldCopier()=default;
-        bool copy_cell_type_field_values_to(const std::string& field_name);
         bool copy_cell_attribute_field_values_to(const std::string& field_name, const std::string& attribute_name);
+        std::vector<std::string> get_available_attributes();
 
     private:
         std::tuple<std::type_index, void *> getFieldTypeAndPointer(const std::string &fieldName);
@@ -46,13 +47,11 @@ namespace CompuCell3D {
         template<typename T>
         bool fillCellTypeValues( Field3D<T> *fieldPtr);
 
-        void initializeCoreCopierFunctionMap();
-        coreCopierFunctionMap_t coreCopierFunctionMap;
+
 
 
 
     };
+}
 
-} // CompuCell3D
-
-#endif //COMPUCELL3D_FIELDCOPIER_H
+#endif

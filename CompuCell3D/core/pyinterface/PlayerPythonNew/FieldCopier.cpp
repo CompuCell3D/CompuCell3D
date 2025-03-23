@@ -7,6 +7,7 @@
 #include <CompuCell3D/Potts3D/Potts3D.h>
 #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Field3D/Field3D.h>
+#include <CompuCell3D/CC3DExceptions.h>
 
 using namespace CompuCell3D;
 
@@ -47,16 +48,17 @@ FieldCopier::FieldCopier(Simulator *sim):sim(sim), potts(nullptr) {
     if (sim){
         potts = sim->getPotts();
     }
-    initializeCoreCopierFunctionMap();
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void FieldCopier::initializeCoreCopierFunctionMap(){
-    coreCopierFunctionMap = {
-            {typeid(char), [this](void* ptr) {
-                return this->fillCellTypeValues<char>( static_cast<Field3D<char>*>(ptr));
-            }},
 
-    };
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::vector<std::string> FieldCopier::get_available_attributes(){
+    const auto& extractorMap = getAttributeExtractorMap<char>();
+    std::vector<std::string> keys;
+    keys.reserve(extractorMap.size());
+    for (const auto& pair : extractorMap) {
+        keys.push_back(pair.first);
+    }
+    return keys;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -121,20 +123,20 @@ std::tuple<std::type_index, void*> FieldCopier::getFieldTypeAndPointer( const st
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool FieldCopier::copy_cell_type_field_values_to(const std::string& field_name){
-    // Retrieve field type and pointer
-    auto result = getFieldTypeAndPointer(field_name);
-    std::type_index fieldType = std::get<0>(result);
-    void* fieldPtr = std::get<1>(result);
-
-    if (!fieldPtr || fieldType == typeid(void)) {
-        return false;
-    }
-
-
-    return true;
-}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//bool FieldCopier::copy_cell_type_field_values_to(const std::string& field_name){
+//    // Retrieve field type and pointer
+//    auto result = getFieldTypeAndPointer(field_name);
+//    std::type_index fieldType = std::get<0>(result);
+//    void* fieldPtr = std::get<1>(result);
+//
+//    if (!fieldPtr || fieldType == typeid(void)) {
+//        return false;
+//    }
+//
+//
+//    return true;
+//}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>
@@ -180,7 +182,7 @@ bool FieldCopier::copy_cell_attribute_field_values_to(const std::string& field_n
     void* fieldPtr = std::get<1>(result);
 
     if (!fieldPtr || fieldType == typeid(void)) {
-        return false;
+        ASSERT_OR_THROW("Field "+field_name+" cannot be found", false);
     }
 
     using DispatchFn = std::function<bool(void*)>;
@@ -199,86 +201,6 @@ bool FieldCopier::copy_cell_attribute_field_values_to(const std::string& field_n
             DISPATCH_ENTRY(double),
             DISPATCH_ENTRY(long double),
     };
-//    static const std::unordered_map<std::type_index, DispatchFn> dispatchMap = {
-//            {typeid(char),               [this, &attribute_name](void* ptr) {
-//                auto typedPtr = static_cast<Field3D<char>*>(ptr);
-//                auto& extractorMap = getAttributeExtractorMap<char>();
-//                auto it = extractorMap.find(attribute_name);
-//                return it != extractorMap.end() ? fillCellAttributeValues<char>(typedPtr, it->second) : false;
-//            }},
-//            {typeid(unsigned char),      [this, &attribute_name](void* ptr) {
-//                auto typedPtr = static_cast<Field3D<unsigned char>*>(ptr);
-//                auto& extractorMap = getAttributeExtractorMap<unsigned char>();
-//                auto it = extractorMap.find(attribute_name);
-//                return it != extractorMap.end() ? fillCellAttributeValues<unsigned char>(typedPtr, it->second) : false;
-//            }},
-//            {typeid(short),              [this, &attribute_name](void* ptr) {
-//                auto typedPtr = static_cast<Field3D<short>*>(ptr);
-//                auto& extractorMap = getAttributeExtractorMap<short>();
-//                auto it = extractorMap.find(attribute_name);
-//                return it != extractorMap.end() ? fillCellAttributeValues<short>(typedPtr, it->second) : false;
-//            }},
-//            {typeid(unsigned short),     [this, &attribute_name](void* ptr) {
-//                auto typedPtr = static_cast<Field3D<unsigned short>*>(ptr);
-//                auto& extractorMap = getAttributeExtractorMap<unsigned short>();
-//                auto it = extractorMap.find(attribute_name);
-//                return it != extractorMap.end() ? fillCellAttributeValues<unsigned short>(typedPtr, it->second) : false;
-//            }},
-//            {typeid(int),                [this, &attribute_name](void* ptr) {
-//                auto typedPtr = static_cast<Field3D<int>*>(ptr);
-//                auto& extractorMap = getAttributeExtractorMap<int>();
-//                auto it = extractorMap.find(attribute_name);
-//                return it != extractorMap.end() ? fillCellAttributeValues<int>(typedPtr, it->second) : false;
-//            }},
-//            {typeid(unsigned int),       [this, &attribute_name](void* ptr) {
-//                auto typedPtr = static_cast<Field3D<unsigned int>*>(ptr);
-//                auto& extractorMap = getAttributeExtractorMap<unsigned int>();
-//                auto it = extractorMap.find(attribute_name);
-//                return it != extractorMap.end() ? fillCellAttributeValues<unsigned int>(typedPtr, it->second) : false;
-//            }},
-//            {typeid(long),               [this, &attribute_name](void* ptr) {
-//                auto typedPtr = static_cast<Field3D<long>*>(ptr);
-//                auto& extractorMap = getAttributeExtractorMap<long>();
-//                auto it = extractorMap.find(attribute_name);
-//                return it != extractorMap.end() ? fillCellAttributeValues<long>(typedPtr, it->second) : false;
-//            }},
-//            {typeid(unsigned long),      [this, &attribute_name](void* ptr) {
-//                auto typedPtr = static_cast<Field3D<unsigned long>*>(ptr);
-//                auto& extractorMap = getAttributeExtractorMap<unsigned long>();
-//                auto it = extractorMap.find(attribute_name);
-//                return it != extractorMap.end() ? fillCellAttributeValues<unsigned long>(typedPtr, it->second) : false;
-//            }},
-//            {typeid(long long),          [this, &attribute_name](void* ptr) {
-//                auto typedPtr = static_cast<Field3D<long long>*>(ptr);
-//                auto& extractorMap = getAttributeExtractorMap<long long>();
-//                auto it = extractorMap.find(attribute_name);
-//                return it != extractorMap.end() ? fillCellAttributeValues<long long>(typedPtr, it->second) : false;
-//            }},
-//            {typeid(unsigned long long), [this, &attribute_name](void* ptr) {
-//                auto typedPtr = static_cast<Field3D<unsigned long long>*>(ptr);
-//                auto& extractorMap = getAttributeExtractorMap<unsigned long long>();
-//                auto it = extractorMap.find(attribute_name);
-//                return it != extractorMap.end() ? fillCellAttributeValues<unsigned long long>(typedPtr, it->second) : false;
-//            }},
-//            {typeid(float),              [this, &attribute_name](void* ptr) {
-//                auto typedPtr = static_cast<Field3D<float>*>(ptr);
-//                auto& extractorMap = getAttributeExtractorMap<float>();
-//                auto it = extractorMap.find(attribute_name);
-//                return it != extractorMap.end() ? fillCellAttributeValues<float>(typedPtr, it->second) : false;
-//            }},
-//            {typeid(double),             [this, &attribute_name](void* ptr) {
-//                auto typedPtr = static_cast<Field3D<double>*>(ptr);
-//                auto& extractorMap = getAttributeExtractorMap<double>();
-//                auto it = extractorMap.find(attribute_name);
-//                return it != extractorMap.end() ? fillCellAttributeValues<double>(typedPtr, it->second) : false;
-//            }},
-//            {typeid(long double),        [this, &attribute_name](void* ptr) {
-//                auto typedPtr = static_cast<Field3D<long double>*>(ptr);
-//                auto& extractorMap = getAttributeExtractorMap<long double>();
-//                auto it = extractorMap.find(attribute_name);
-//                return it != extractorMap.end() ? fillCellAttributeValues<long double>(typedPtr, it->second) : false;
-//            }},
-//    };
 
     auto it = dispatchMap.find(fieldType);
 
