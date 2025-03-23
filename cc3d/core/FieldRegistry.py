@@ -172,7 +172,19 @@ class FieldRegistry:
         npy_precision_type = type_info_obj.getNumPyTypeString()
         print(f"{field_name}: {npy_precision_type}")
 
-        cpp_npy_field = self.simulator.getGenericScalarField_uint8(field_name)
+        # Construct the method name dynamically
+        method_name = f"getGenericScalarField_{npy_precision_type}"
+        get_field_method = getattr(self.simulator, method_name, None)
+
+        if get_field_method is None:
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_ERROR,
+                                           f"No method {method_name} found on simulator for field {field_name}")
+            return None
+
+        # cpp_npy_field = self.simulator.getGenericScalarField_uint8(field_name)
+        # Call the appropriate C++ method to retrieve the scalar field
+        cpp_npy_field = get_field_method(field_name)
+
         field_adapter = ExtraFieldAdapter(
             name=field_name,
             field_type=SHARED_SCALAR_NUMPY_FIELD,

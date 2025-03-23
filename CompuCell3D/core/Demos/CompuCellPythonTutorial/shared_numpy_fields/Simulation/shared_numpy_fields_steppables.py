@@ -21,12 +21,12 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
         # field_copier.copy_cell_attribute_field_values_to("cell_type_field", "type")
         #
         self.copy_cell_attribute_field_values_to("cell_type_field", "type")
-        self.copy_cell_attribute_field_values_to("cell_volume_field", "type")
+        self.copy_cell_attribute_field_values_to("cell_volume_field", "id")
         numpy_field_manager = self.field.numpy_field_manager
 
         cell_type_field = self.field.cell_type_field
         cell_volume_field = self.field.cell_volume_field
-        cell_volume_field[45:50, 45:50, 0] = 25
+        # cell_volume_field[45:50, 45:50, 0] = 25
 
 
         # cell_type_field[5:10,5:10,0] = 20
