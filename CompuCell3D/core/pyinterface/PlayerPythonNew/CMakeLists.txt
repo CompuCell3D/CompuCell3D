@@ -8,6 +8,7 @@ SET(SRCS
    FieldWriter.cpp
    FieldWriterCML.cpp
    FieldStreamer.cpp
+   FieldCopier.cpp
 )
 
 if (${VTK_MAJOR_VERSION} EQUAL "6")

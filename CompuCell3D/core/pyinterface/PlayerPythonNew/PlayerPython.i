@@ -50,6 +50,7 @@ namespace CompuCell3D{
 
 #include <FieldExtractorBase.h>
 #include <FieldExtractor.h>
+#include <FieldCopier.h>
 #include <FieldExtractorCML.h>
 #include <FieldWriter.h>
 #include <FieldWriterCML.h>
@@ -214,11 +215,10 @@ class CellG;
 %include <FieldExtractorBase.h>
 %include <FieldExtractor.h>
 %include <FieldExtractorCML.h>
+%include <FieldCopier.h>
 %include <FieldWriter.h>
 %include <FieldWriterCML.h>
 %include <FieldStreamer.h>
-
-
 
 
 %extend CompuCell3D::ScalarFieldCellLevel{    
