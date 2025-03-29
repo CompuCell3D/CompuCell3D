@@ -6,7 +6,7 @@
         <Temperature>10</Temperature>
         <Flip2DimRatio>1</Flip2DimRatio>
         <NeighborOrder>2</NeighborOrder>
-<!--        <LatticeType>Hexagonal</LatticeType>-->
+        <!--        <LatticeType>Hexagonal</LatticeType>-->
     </Potts>
 
     <Plugin Name="Volume">
@@ -37,17 +37,22 @@
         <PolarizationLambda>2.0</PolarizationLambda>
     </Plugin>
 
+
     <Steppable Type="FieldManager">
         <Field Name="fibers_field_manager" Type="vector"/>
         <Field Name="numpy_field_manager" Type="scalar"/>
-        <Field Name="cell_type_field" Type="scalar_uchar"/>
-        <Field Name="cell_volume_field" Type="scalar_int"/>
-<!--        <Field Name="char_field" Type="scalar_char"/>-->
-<!--        <Field Name="short_field" Type="scalar_short"/>-->
-<!--        <Field Name="ushort_field" Type="scalar_ushort"/>-->
-
-
+        <Field Name="cell_type_field" Type="scalar" Precision="uchar"/>
+        <Field Name="cell_volume_field" Type="scalar" Precision="int"/>
     </Steppable>
+
+
+    <!--    <Steppable Type="FieldManager">-->
+    <!--        <Field Name="fibers_field_manager" Type="vector"/>-->
+    <!--        <Field Name="numpy_field_manager" Type="scalar"/>-->
+    <!--        <Field Name="cell_type_field" Type="scalar_uchar"/>-->
+    <!--        <Field Name="cell_volume_field" Type="scalar_int"/>-->
+
+    <!--    </Steppable>-->
 
 
     <Steppable Type="DiffusionSolverFE">

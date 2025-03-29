@@ -25,16 +25,29 @@ namespace CompuCell3D {
         enum class FieldType {
             Scalar,
             Vector,
-            ScalarDouble,
-            ScalarChar,
-            ScalarUChar,
-            ScalarShort,
-            ScalarUShort,
-            ScalarInt,
-            ScalarUInt,
-            ScalarLong,
-            ScalarULong
+//            ScalarDouble,
+//            ScalarChar,
+//            ScalarUChar,
+//            ScalarShort,
+//            ScalarUShort,
+//            ScalarInt,
+//            ScalarUInt,
+//            ScalarLong,
+//            ScalarULong
 
+        };
+
+        enum class PrecisionType {
+            Float,
+            Double,
+            Char,
+            UChar,
+            Short,
+            UShort,
+            Int,
+            UInt,
+            Long,
+            ULong
         };
 
         // Enum for field kind
@@ -51,6 +64,7 @@ namespace CompuCell3D {
         int padding=0;      // Padding for the field
         FieldType type = FieldType::Scalar;        // Type of the field (scalar or vector)
         FieldKind kind = FieldKind::NumPy;        // Kind of the field (NumPy or CC3D)
+        PrecisionType precision = PrecisionType::Float;
 
         // Function to map string to Kind
         static FieldKind mapStringToKind(const std::string& kindStr) {
@@ -84,15 +98,6 @@ namespace CompuCell3D {
                     {"scalar", FieldType::Scalar},
                     {"concentration", FieldType::Scalar},
                     {"vector", FieldType::Vector},
-                    {"scalar_double", FieldType::ScalarDouble},
-                    {"scalar_char", FieldType::ScalarChar},
-                    {"scalar_uchar", FieldType::ScalarUChar},
-                    {"scalar_short", FieldType::ScalarShort},
-                    {"scalar_ushort", FieldType::ScalarUShort},
-                    {"scalar_int", FieldType::ScalarInt},
-                    {"scalar_uint", FieldType::ScalarUInt},
-                    {"scalar_long", FieldType::ScalarLong},
-                    {"scalar_ulong", FieldType::ScalarULong},
             };
 
             // Look up the string in the map
@@ -102,6 +107,31 @@ namespace CompuCell3D {
             } else {
                 ASSERT_OR_THROW("Invalid type: " + typeStr, false)
 
+            }
+        }
+
+        static PrecisionType mapStringToPrecision(const std::string& precisionStr){
+            std::string lowerPrecisionStr = precisionStr;
+            std::transform(lowerPrecisionStr.begin(), lowerPrecisionStr.end(), lowerPrecisionStr.begin(), ::tolower);
+
+            static const std::unordered_map<std::string, PrecisionType> precisionMap = {
+                    {"float", PrecisionType::Float},
+                    {"double", PrecisionType::Double},
+                    {"char", PrecisionType::Char},
+                    {"uchar", PrecisionType::UChar},
+                    {"short", PrecisionType::Short},
+                    {"ushort", PrecisionType::UShort},
+                    {"int", PrecisionType::Int},
+                    {"uint", PrecisionType::UInt},
+                    {"long", PrecisionType::Long},
+                    {"ulong", PrecisionType::ULong}
+            };
+
+            auto it = precisionMap.find(lowerPrecisionStr);
+            if (it != precisionMap.end()) {
+                return it->second;
+            } else {
+                ASSERT_OR_THROW("Invalid precision: " + precisionStr, false)
             }
         }
 

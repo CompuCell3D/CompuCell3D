@@ -370,6 +370,7 @@ FIELD3DEXTENDER(CompuCell3D::Field3D<double>,double)
 //
 
 
+
 %template (NumpyArrayWrapperImplChar) CompuCell3D::NumpyArrayWrapperImpl<char>;
 %template (NumpyArrayWrapperImplUChar) CompuCell3D::NumpyArrayWrapperImpl<unsigned char>;
 

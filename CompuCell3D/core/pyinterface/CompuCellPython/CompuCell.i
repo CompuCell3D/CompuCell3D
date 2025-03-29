@@ -1049,6 +1049,7 @@ FIELD3DEXTENDER(CompuCell3D::Field3D<int>,int)
 %template(getGenericScalarField_uint32) CompuCell3D::Simulator::getGenericScalarField<unsigned int>;
 
 
+
 %template(getGenericScalarField_int64) CompuCell3D::Simulator::getGenericScalarField<long>;
 %template(getGenericScalarField_uint64) CompuCell3D::Simulator::getGenericScalarField<unsigned long>;
 
