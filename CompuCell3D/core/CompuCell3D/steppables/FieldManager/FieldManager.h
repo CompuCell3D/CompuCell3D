@@ -115,6 +115,7 @@ namespace CompuCell3D {
             std::transform(lowerPrecisionStr.begin(), lowerPrecisionStr.end(), lowerPrecisionStr.begin(), ::tolower);
 
             static const std::unordered_map<std::string, PrecisionType> precisionMap = {
+                    // C++ style
                     {"float", PrecisionType::Float},
                     {"double", PrecisionType::Double},
                     {"char", PrecisionType::Char},
@@ -124,7 +125,19 @@ namespace CompuCell3D {
                     {"int", PrecisionType::Int},
                     {"uint", PrecisionType::UInt},
                     {"long", PrecisionType::Long},
-                    {"ulong", PrecisionType::ULong}
+                    {"ulong", PrecisionType::ULong},
+
+                    // NumPy-style
+                    {"float32", PrecisionType::Float},
+                    {"float64", PrecisionType::Double},
+                    {"int8", PrecisionType::Char},
+                    {"uint8", PrecisionType::UChar},
+                    {"int16", PrecisionType::Short},
+                    {"uint16", PrecisionType::UShort},
+                    {"int32", PrecisionType::Int},
+                    {"uint32", PrecisionType::UInt},
+                    {"int64", PrecisionType::Long},
+                    {"uint64", PrecisionType::ULong}
             };
 
             auto it = precisionMap.find(lowerPrecisionStr);
