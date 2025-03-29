@@ -11,24 +11,6 @@
 
 using namespace CompuCell3D;
 
-//#define DISPATCH_ENTRY(TYPE) \
-//    { typeid(TYPE), [this, attribute_name](void* ptr) { \
-//        auto typedPtr = static_cast<Field3D<TYPE>*>(ptr); \
-//        auto& extractorMap = getAttributeExtractorMap<TYPE>(); \
-//        auto it = extractorMap.find(attribute_name); \
-//        return it != extractorMap.end() ? fillCellAttributeValues<TYPE>(typedPtr, it->second) : false; \
-//    }}
-
-//#define DISPATCH_ENTRY(TYPE) \
-//    { typeid(TYPE), [this, attribute_name](void* ptr) { \
-//        auto typedPtr = static_cast<Field3D<TYPE>*>(ptr); \
-//        const auto& extractorMap = getAttributeExtractorMap<TYPE>(); \
-//        auto it = extractorMap.find(attribute_name); \
-//        return it != extractorMap.end() ? fillCellAttributeValues<TYPE>(typedPtr, it->second) : false; \
-//    }}
-
-
-
 
 template<typename T>
 const std::unordered_map<std::string, std::function<T(CellG*)>>& getAttributeExtractorMap() {
@@ -143,22 +125,6 @@ std::tuple<std::type_index, void*> FieldCopier::getFieldTypeAndPointer( const st
 
 }
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//bool FieldCopier::copy_cell_type_field_values_to(const std::string& field_name){
-//    // Retrieve field type and pointer
-//    auto result = getFieldTypeAndPointer(field_name);
-//    std::type_index fieldType = std::get<0>(result);
-//    void* fieldPtr = std::get<1>(result);
-//
-//    if (!fieldPtr || fieldType == typeid(void)) {
-//        return false;
-//    }
-//
-//
-//    return true;
-//}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>
 bool FieldCopier::fillCellTypeValues( Field3D<T> *fieldPtr){
@@ -233,41 +199,4 @@ bool FieldCopier::copy_cell_attribute_field_values_to(const std::string& field_n
 
     return false;
 }
-
-//bool FieldCopier::copy_cell_attribute_field_values_to(const std::string& field_name, const std::string& attribute_name) {
-//    auto result = getFieldTypeAndPointer(field_name);
-//    std::type_index fieldType = std::get<0>(result);
-//    void* fieldPtr = std::get<1>(result);
-//
-//    if (!fieldPtr || fieldType == typeid(void)) {
-//        ASSERT_OR_THROW("Field "+field_name+" cannot be found", false);
-//    }
-//
-//    using DispatchFn = std::function<bool(void*)>;
-//    static const std::unordered_map<std::type_index, DispatchFn> dispatchMap = {
-//            DISPATCH_ENTRY(char),
-//            DISPATCH_ENTRY(unsigned char),
-//            DISPATCH_ENTRY(short),
-//            DISPATCH_ENTRY(unsigned short),
-//            DISPATCH_ENTRY(int),
-//            DISPATCH_ENTRY(unsigned int),
-//            DISPATCH_ENTRY(long),
-//            DISPATCH_ENTRY(unsigned long),
-//            DISPATCH_ENTRY(long long),
-//            DISPATCH_ENTRY(unsigned long long),
-//            DISPATCH_ENTRY(float),
-//            DISPATCH_ENTRY(double),
-//            DISPATCH_ENTRY(long double),
-//    };
-//
-//    auto it = dispatchMap.find(fieldType);
-//
-//    if (it != dispatchMap.end()) {
-//        cerr<<"processing field "<<field_name<<endl;
-//        return it->second(fieldPtr);
-//    }
-//
-//    return false;
-//}
-
 
