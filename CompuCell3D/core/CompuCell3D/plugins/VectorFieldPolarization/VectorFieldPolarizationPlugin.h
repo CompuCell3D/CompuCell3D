@@ -21,6 +21,7 @@ namespace CompuCell3D {
     template <class T> class Field3D;
     template <class T> class WatchableField3D;
 
+
     class VECTORFIELDPOLARIZATION_EXPORT  VectorFieldPolarizationPlugin : public Plugin ,public EnergyFunction  {
 
     private:    
@@ -34,6 +35,8 @@ namespace CompuCell3D {
         Automaton *automaton{};
         BoundaryStrategy *boundaryStrategy;
         WatchableField3D<CellG *> *cellFieldG;
+//        Field3DTypeBase * intNpyField;
+        Field3D<int> *intNpyField;
 
         std::string vectorFieldName = "VectorFieldCpp";
         Simulator::vectorField3DNumpyImpl_t * vectorFieldPtr;

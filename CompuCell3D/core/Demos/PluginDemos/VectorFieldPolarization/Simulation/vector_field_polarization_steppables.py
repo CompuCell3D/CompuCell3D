@@ -18,6 +18,9 @@ class VectorFieldSteppable(SteppableBasePy):
         fiber_field_cpp[30, 40, 0] = [-30, -40, 0]
         fiber_field_cpp[20, 30, 0] = [-20, -30, 0]
 
+        int_npy_field_cpp = self.field.intNpyFieldCpp
+        int_npy_field_cpp[50:, 50:, 0] = 0
+
 
     def step(self, mcs):
         pass

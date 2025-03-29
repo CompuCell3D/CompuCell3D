@@ -1,6 +1,7 @@
 
 
 #include <CompuCell3D/CC3D.h>        
+#include "CompuCell3D/Field3D/Field3DTypeBase.h"
 
 using namespace CompuCell3D;
 
@@ -12,7 +13,8 @@ VectorFieldPolarizationPlugin::VectorFieldPolarizationPlugin():
         xmlData(nullptr) ,
         cellFieldG(nullptr),
         boundaryStrategy(nullptr),
-        vectorFieldPtr(nullptr)
+        vectorFieldPtr(nullptr),
+        intNpyField(nullptr)
 {}
 
 VectorFieldPolarizationPlugin::~VectorFieldPolarizationPlugin() {
@@ -46,7 +48,10 @@ void VectorFieldPolarizationPlugin::init(Simulator *simulator, CC3DXMLElement *_
     vectorFieldPtr = sim->createVectorField(vectorFieldName);
     // TODO - remove after testing
     sim->createSharedNumpyConcentrationField("cpp_numpy");
-    
+
+    string intFieldName = "intNpyFieldCpp";
+    sim->createGenericScalarField<int>(intFieldName);
+    intNpyField = sim->getGenericScalarField<int>(intFieldName);
 
     potts->registerEnergyFunctionWithName(this,"VectorFieldPolarization");
 
@@ -62,6 +67,7 @@ void VectorFieldPolarizationPlugin::extraInit(Simulator *simulator){
             for (pt.z=0 ; pt.z < dim.z ; ++pt.z){
 
                 vectorFieldPtr->set(pt, vector<float>({static_cast<float>(pt.x), static_cast<float>(pt.y), 0}));
+                intNpyField->set(pt, pt.x*pt.y);
             }
 }
 
