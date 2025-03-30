@@ -39,40 +39,39 @@ void FieldManager::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
             if (fieldSpec.kind == FieldSpec::FieldKind::CC3D){
                 ASSERT_OR_THROW("Creation of legacy fields in FieldManager is not supported FieldManager Steppable", false)
             } else if (fieldSpec.kind == FieldSpec::FieldKind::NumPy){
-                if (fieldSpec.precision == FieldSpec::PrecisionType::Float){
-                    sim->createSharedNumpyConcentrationField(fieldSpec.name);
-                } else {
-                    switch (fieldSpec.precision){
-                        case FieldSpec::PrecisionType::Double:
-                            sim->createGenericScalarField<double>(fieldSpec.name, 1);
-                            break;
-                        case FieldSpec::PrecisionType::Char:
-                            sim->createGenericScalarField<char>(fieldSpec.name, 1);
-                            break;
-                        case FieldSpec::PrecisionType::UChar:
-                            sim->createGenericScalarField<unsigned char>(fieldSpec.name, 1);
-                            break;
-                        case FieldSpec::PrecisionType::Short:
-                            sim->createGenericScalarField<short>(fieldSpec.name, 1);
-                            break;
-                        case FieldSpec::PrecisionType::UShort:
-                            sim->createGenericScalarField<unsigned short>(fieldSpec.name, 1);
-                            break;
-                        case FieldSpec::PrecisionType::Int:
-                            sim->createGenericScalarField<int>(fieldSpec.name, 1);
-                            break;
-                        case FieldSpec::PrecisionType::UInt:
-                            sim->createGenericScalarField<unsigned int>(fieldSpec.name, 1);
-                            break;
-                        case FieldSpec::PrecisionType::Long:
-                            sim->createGenericScalarField<long>(fieldSpec.name, 1);
-                            break;
-                        case FieldSpec::PrecisionType::ULong:
-                            sim->createGenericScalarField<unsigned long>(fieldSpec.name, 1);
-                            break;
-                        default:
-                        ASSERT_OR_THROW("Unsupported precision type", false)
-                    }
+                switch (fieldSpec.precision){
+                    case FieldSpec::PrecisionType::Float:
+                        sim->createGenericScalarField<float>(fieldSpec.name, 1);
+                        break;
+                    case FieldSpec::PrecisionType::Double:
+                        sim->createGenericScalarField<double>(fieldSpec.name, 1);
+                        break;
+                    case FieldSpec::PrecisionType::Char:
+                        sim->createGenericScalarField<char>(fieldSpec.name, 1);
+                        break;
+                    case FieldSpec::PrecisionType::UChar:
+                        sim->createGenericScalarField<unsigned char>(fieldSpec.name, 1);
+                        break;
+                    case FieldSpec::PrecisionType::Short:
+                        sim->createGenericScalarField<short>(fieldSpec.name, 1);
+                        break;
+                    case FieldSpec::PrecisionType::UShort:
+                        sim->createGenericScalarField<unsigned short>(fieldSpec.name, 1);
+                        break;
+                    case FieldSpec::PrecisionType::Int:
+                        sim->createGenericScalarField<int>(fieldSpec.name, 1);
+                        break;
+                    case FieldSpec::PrecisionType::UInt:
+                        sim->createGenericScalarField<unsigned int>(fieldSpec.name, 1);
+                        break;
+                    case FieldSpec::PrecisionType::Long:
+                        sim->createGenericScalarField<long>(fieldSpec.name, 1);
+                        break;
+                    case FieldSpec::PrecisionType::ULong:
+                        sim->createGenericScalarField<unsigned long>(fieldSpec.name, 1);
+                        break;
+                    default:
+                    ASSERT_OR_THROW("Unsupported precision type", false)
                 }
             }
         }
