@@ -11,7 +11,14 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
         self.create_shared_scalar_numpy_field("numpy1", padding=self.pad)
         self.create_shared_vector_numpy_field("vector_numpy")
 
+        self.create_shared_scalar_numpy_field("int16FieldPythonNPY", precision_type="int16")
+
+
     def start(self):
+        int16FieldPythonNPY = self.field.int16FieldPythonNPY
+        # print("int16FieldPythonNPY.dtype=", int16FieldPythonNPY.dtype)
+        int16FieldPythonNPY[20:30,20:30, 0] = 20
+        int16FieldPythonNPY[30:40, 30:40, 0] = 30
 
         # self.copy_cell_type_field_values_to("numpy1")
         # self.copy_cell_id_field_values_to("numpy1")

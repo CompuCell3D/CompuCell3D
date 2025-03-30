@@ -1038,7 +1038,8 @@ FIELD3DEXTENDER(CompuCell3D::Field3D<int>,int)
 %include <CompuCell3D/SteerableObject.h>
 %include "Simulator.h"
 
-// template definitios must eb right after Simulator object inclusions
+// template definitios must be right after Simulator object inclusions
+//getGenericScalarField
 %template(getGenericScalarField_int8) CompuCell3D::Simulator::getGenericScalarField<char>;
 %template(getGenericScalarField_uint8) CompuCell3D::Simulator::getGenericScalarField<unsigned char>;
 
@@ -1055,6 +1056,27 @@ FIELD3DEXTENDER(CompuCell3D::Field3D<int>,int)
 
 %template(getGenericScalarField_float32) CompuCell3D::Simulator::getGenericScalarField<float>;
 %template(getGenericScalarField_float64) CompuCell3D::Simulator::getGenericScalarField<double>;
+
+// createGenericScalarField
+%template(createGenericScalarField_int8) CompuCell3D::Simulator::createGenericScalarField<char>;
+%template(createGenericScalarField_uint8) CompuCell3D::Simulator::createGenericScalarField<unsigned char>;
+
+%template(createGenericScalarField_int16) CompuCell3D::Simulator::createGenericScalarField<short>;
+%template(createGenericScalarField_uint16) CompuCell3D::Simulator::createGenericScalarField<unsigned short>;
+
+%template(createGenericScalarField_int32) CompuCell3D::Simulator::createGenericScalarField<int>;
+%template(createGenericScalarField_uint32) CompuCell3D::Simulator::createGenericScalarField<unsigned int>;
+
+
+
+%template(createGenericScalarField_int64) CompuCell3D::Simulator::createGenericScalarField<long>;
+%template(createGenericScalarField_uint64) CompuCell3D::Simulator::createGenericScalarField<unsigned long>;
+
+%template(createGenericScalarField_float32) CompuCell3D::Simulator::createGenericScalarField<float>;
+%template(createGenericScalarField_float64) CompuCell3D::Simulator::createGenericScalarField<double>;
+
+
+
 
 
 %include <CompuCell3D/CC3DEvents.h>
