@@ -132,19 +132,12 @@ class FieldRegistry:
         padding = field_adapter.kwds.get("padding", 0)
         npy_precision_type = field_adapter.precision_type
         if npy_precision_type is None:
+            npy_precision_type = "float32"
 
-            array, field = create_shared_numpy_array_as_cc3d_scalar_field(
-                shape=(self.dim.x, self.dim.y, self.dim.z), padding=padding, dtype=np.float32
-            )
-
-            self.shared_scalar_numpy_fields[field_name] = [array, field]
-            self.simulator.registerConcentrationField(field_name, field)
-            field_adapter.set_ref(array)
-        else:
-            # Construct the method name dynamically
-            method_name = f"createGenericScalarField_{npy_precision_type}"
-            createGenericScalarField = getattr(self.simulator, method_name, None)
-            createGenericScalarField(field_name, padding)
+        # Construct the method name dynamically
+        method_name = f"createGenericScalarField_{npy_precision_type}"
+        createGenericScalarField = getattr(self.simulator, method_name, None)
+        createGenericScalarField(field_name, padding)
 
 
     def engine_scalar_field_to_field_adapter(self, field_name: str, **kwds) -> None:
