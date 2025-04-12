@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <functional>
+#include "FieldExtractorDLLSpecifier.h"
 #include <typeindex>
 
 
@@ -27,7 +29,7 @@ namespace CompuCell3D {
     template<typename T>
     class Field3D;
 
-    class FieldCopier {
+    class FIELDEXTRACTOR_EXPORT FieldCopier {
         Simulator *sim;
         Potts3D *potts;
 

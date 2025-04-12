@@ -12,6 +12,8 @@
 // *************************************************************
 
 
+
+
 namespace CompuCell3D{
  class CellG;   
  typedef CellG * cellGPtr_t;

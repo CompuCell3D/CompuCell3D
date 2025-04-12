@@ -4,6 +4,7 @@
 
 #include <typeindex>
 #include <typeinfo>
+#include <unordered_map>
 
 
 #ifndef COMPUCELL3D_FIELD3DTYPEBASE_H

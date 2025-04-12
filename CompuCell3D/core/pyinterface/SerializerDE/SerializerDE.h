@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <functional>
 
 #include <CompuCell3D/Field3D/Dim3D.h>
 

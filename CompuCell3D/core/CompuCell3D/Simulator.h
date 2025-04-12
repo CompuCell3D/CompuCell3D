@@ -148,6 +148,16 @@ namespace CompuCell3D {
 
         virtual ~Simulator();
 
+        // this is needed to obey "Rule of 5" because we use container with unique pointers in it. unique_ptr is not copyable so we disable copying of the ASimulator object. We never do this anyway
+        // Copy constructor and copy assignment: delete them because of unique_ptr
+        Simulator(const Simulator&) = delete;
+        Simulator& operator=(const Simulator&) = delete;
+
+        // Move constructor and move assignment: allow them
+        Simulator(Simulator&&) = default;
+        Simulator& operator=(Simulator&&) = default;
+
+
         void add_step_output(const std::string &s);
 
         std::string get_step_output();
