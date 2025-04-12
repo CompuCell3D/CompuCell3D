@@ -1335,7 +1335,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,
                                                                          field_type=SCALAR_FIELD_NPY)
 
-    def create_shared_scalar_numpy_field(self, fieldName: str, **kwds) -> ExtraFieldAdapter:
+    def create_shared_scalar_numpy_field(self, fieldName: str, precision_type="float32", **kwds) -> ExtraFieldAdapter:
         """
         Creates shared scalar field that is actually a numpy array accessible from both python and from C++ code
 
@@ -1344,7 +1344,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         :rtype: cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter
         """
 
-        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,
+        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName, precision_type="float32",
                                                                          field_type=SHARED_SCALAR_NUMPY_FIELD, **kwds)
 
     @deprecated(version='4.0.0', reason="You should use : create_scalar_field_cell_level_py")
