@@ -19,7 +19,7 @@
 namespace CompuCell3D {
 
 
-    typedef std::vector<size_t>::size_type array_size_t;
+    typedef std::vector<std::size_t>::size_type array_size_t;
 
     class NumpyArrayWrapper {
 
@@ -54,7 +54,7 @@ namespace CompuCell3D {
 
         array_size_t index(const std::vector<array_size_t>& indices) const {
             array_size_t index = 0;
-            for (size_t i = 0; i < indices.size(); ++i) {
+            for (std::size_t i = 0; i < indices.size(); ++i) {
                 index += indices[i] * strides[i];
             }
             return index;
