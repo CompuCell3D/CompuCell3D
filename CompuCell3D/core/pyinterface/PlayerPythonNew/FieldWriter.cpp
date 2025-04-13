@@ -380,77 +380,11 @@ bool FieldWriter::addConFieldForOutput(std::string _conFieldName){
     return false;
 
 
-//    Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-//    Dim3D fieldDim=cellFieldG->getDim();
-//
-//    Field3D<float> *conFieldPtr=0;
-//    std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-//    std::map<std::string,Field3D<float>*>::iterator mitr;
-//    mitr=fieldMap.find(_conFieldName);
-//    if(mitr!=fieldMap.end()){
-//        conFieldPtr=mitr->second;
-//    }
-//
-//    if(!conFieldPtr)
-//        return false;
-//
-//    vtkDoubleArray *conArray=vtkDoubleArray::New();
-//    conArray->SetName(_conFieldName.c_str());
-//    arrayNameVec.push_back(_conFieldName);
-//
-//    long numberOfValues=fieldDim.x*fieldDim.y*fieldDim.z;
-//
-//    conArray->SetNumberOfValues(numberOfValues);
-//    long offset=0;
-//    Point3D pt;
-//
-//    for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
-//        for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
-//            for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
-//                conArray->SetValue(offset,conFieldPtr->get(pt));
-//                ++offset;
-//            }
-//    latticeData->GetPointData()->AddArray(conArray);
-//    conArray->Delete();
-//    return true;
+
 }
 
 
-//bool FieldWriter::addConFieldForOutput(std::string _conFieldName){
-//	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-//	Dim3D fieldDim=cellFieldG->getDim();
-//
-//	Field3D<float> *conFieldPtr=0;
-//	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-//	std::map<std::string,Field3D<float>*>::iterator mitr;
-//	mitr=fieldMap.find(_conFieldName);
-//	if(mitr!=fieldMap.end()){
-//		conFieldPtr=mitr->second;
-//	}
-//
-//	if(!conFieldPtr)
-//		return false;
-//
-//	vtkDoubleArray *conArray=vtkDoubleArray::New();
-//	conArray->SetName(_conFieldName.c_str());
-//	arrayNameVec.push_back(_conFieldName);
-//
-//	long numberOfValues=fieldDim.x*fieldDim.y*fieldDim.z;
-//
-//	conArray->SetNumberOfValues(numberOfValues);
-//	long offset=0;
-//	Point3D pt;
-//
-//	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
-//		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
-//			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
-//				conArray->SetValue(offset,conFieldPtr->get(pt));
-//				++offset;
-//			}
-//	latticeData->GetPointData()->AddArray(conArray);
-//	conArray->Delete();
-//	return true;
-//}
+
 ////////////////////////////////////////////////////////////////////////////////
 bool FieldWriter::addScalarFieldForOutput(std::string _scalarFieldName){
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();

@@ -443,27 +443,6 @@ class RestartManager:
                 self.serializer.loadSharedVectorFieldNumpy(sd)
                 sd.fileName = tmp_file_name
 
-        # field_registry = CompuCellSetup.persistent_globals.field_registry
-        # vector_fields_dict = field_registry.getVectorFields()
-        #
-        # for resource_name, sd in self.__restart_resource_dict.items():
-        #     if sd.objectType == 'VectorField' and sd.moduleType == 'Python':
-        #
-        #         full_path = os.path.join(self.__restartDirectory, sd.fileName)
-        #         full_path = os.path.abspath(full_path)  # normalizing path format
-        #         tmp_file_name = sd.fileName
-        #         sd.fileName = full_path
-        #
-        #         try:
-        #             sd.objectPtr = vector_fields_dict[sd.objectName]
-        #
-        #         except LookupError as e:
-        #             continue
-        #
-        #         self.serializer.loadVectorField(sd)
-        #         sd.fileName = tmp_file_name
-
-
 
     def load_vector_fields(self):
         """

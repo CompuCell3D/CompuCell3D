@@ -102,15 +102,6 @@ class PersistentGlobals:
         self.gillespie_integrator_seed = None
         self.gillespie_integrator_max_seed = int(2e9)
 
-    #     self.shared_numpy_fields_placeholder = {}
-    #
-    #     self.shared_numpy_fields = {}
-    # def register_shared_numpy_field(self, field_name):
-    #     if field_name in self.shared_numpy_fields_placeholder.keys():
-    #         raise RuntimeError(f"Duplicate field name: {field_name}")
-    #
-    #     self.shared_numpy_fields_placeholder[field_name] = None
-
     def set_configuration_getter(self, _fget) -> None:
         """
         Hook to inject a third-party Configuration

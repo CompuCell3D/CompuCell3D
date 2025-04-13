@@ -326,14 +326,3 @@ namespace CompuCell3D {
 
 #endif
 
-//virtual bool fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-//                                std::string _conFieldName, std::vector<int> *_typesInvisibleVec,
-//                                bool type_indicator_only
-//);
-
-//virtual std::vector<int> fillConFieldGlyphs3D(std::string con_field_name,
-//                                              vtk_obj_addr_int_t centroids_array_addr,
-//                                              vtk_obj_addr_int_t vol_scaling_factors_array_addr,
-//                                              vtk_obj_addr_int_t scalar_value_at_com_addr,
-//                                              std::vector<int> *types_invisible_vec,
-//                                              bool extractOuterShellOnly = false);

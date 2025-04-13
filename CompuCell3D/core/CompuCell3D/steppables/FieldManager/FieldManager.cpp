@@ -77,37 +77,6 @@ void FieldManager::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
         }
     }
 
-//    for (const auto& fieldSpec: fieldSpecVec){
-//        if (fieldSpec.type == FieldSpec::FieldType::Vector){
-//            sim->createVectorField(fieldSpec.name);
-//        }else if (fieldSpec.type == FieldSpec::FieldType::Scalar){
-//            if (fieldSpec.kind == FieldSpec::FieldKind::CC3D){
-//                // legacy scalar field -  probably nobody will ever use this option
-//                ASSERT_OR_THROW("Creation of legacy fields in FieldManager is not supported FieldManager Steppable", false)
-//            } else if (fieldSpec.kind == FieldSpec::FieldKind::NumPy){
-//                sim->createSharedNumpyConcentrationField(fieldSpec.name);
-//
-//            }
-//        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarDouble){
-//            sim->createGenericScalarField<double>(fieldSpec.name, 1);
-//        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarChar){
-//            sim->createGenericScalarField<char>(fieldSpec.name, 1);
-//        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarUChar){
-//            sim->createGenericScalarField<unsigned char>(fieldSpec.name, 1);
-//        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarShort){
-//            sim->createGenericScalarField<short>(fieldSpec.name, 1);
-//        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarUShort){
-//            sim->createGenericScalarField<unsigned short>(fieldSpec.name, 1);
-//        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarInt){
-//            sim->createGenericScalarField<int>(fieldSpec.name, 1);
-//        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarUInt){
-//            sim->createGenericScalarField<unsigned int>(fieldSpec.name, 1);
-//        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarLong){
-//            sim->createGenericScalarField<long>(fieldSpec.name, 1);
-//        }else if (fieldSpec.type == FieldSpec::FieldType::ScalarULong){
-//            sim->createGenericScalarField<unsigned long>(fieldSpec.name, 1);
-//        }
-//    }
 
 }
 
@@ -168,26 +137,8 @@ void FieldManager::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
         fieldSpecVec.push_back(fieldSpec);
     }
 
-//    for (auto & elem: fieldElemVec){
-//        FieldSpec fieldSpec;
-//        fieldSpec.name = elem->getAttribute("Name");
-//        if (elem->findAttribute("Kind")){
-//            fieldSpec.kind = FieldSpec::mapStringToKind(elem->getAttribute("Kind"));
-//        }
-//
-//        if (elem->findAttribute("Type")){
-//            fieldSpec.type = FieldSpec::mapStringToType(elem->getAttribute("Type"));
-//        }
-//
-//        if (elem->findAttribute("Padding")){
-//            fieldSpec.padding = elem->getAttributeAsInt("Padding");
-//        }
-//
-//        fieldSpecVec.push_back(fieldSpec);
-//    }
 
-
-    //boundaryStrategy has information aobut pixel neighbors 
+    //boundaryStrategy has information about pixel neighbors
 
     boundaryStrategy=BoundaryStrategy::getInstance();
 

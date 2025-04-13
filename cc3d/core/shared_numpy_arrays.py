@@ -12,18 +12,17 @@ cpp_type_to_npy_dtype = {
 
 # Mapping NumPy dtype to ctypes types
 np_to_ctypes = {
-    np.dtype('int8'): ctypes.c_byte,          # signed char
-    np.dtype('uint8'): ctypes.c_ubyte,        # unsigned char
-    np.dtype('int16'): ctypes.c_short,        # short
-    np.dtype('uint16'): ctypes.c_ushort,      # unsigned short
-    np.dtype('int32'): ctypes.c_int,          # int
-    np.dtype('uint32'): ctypes.c_uint,        # unsigned int
-    np.dtype('int64'): ctypes.c_longlong,     # long long
-    np.dtype('uint64'): ctypes.c_ulonglong,   # unsigned long long
-    np.dtype('float32'): ctypes.c_float,      # float
-    np.dtype('float64'): ctypes.c_double      # double
+    np.dtype("int8"): ctypes.c_byte,  # signed char
+    np.dtype("uint8"): ctypes.c_ubyte,  # unsigned char
+    np.dtype("int16"): ctypes.c_short,  # short
+    np.dtype("uint16"): ctypes.c_ushort,  # unsigned short
+    np.dtype("int32"): ctypes.c_int,  # int
+    np.dtype("uint32"): ctypes.c_uint,  # unsigned int
+    np.dtype("int64"): ctypes.c_longlong,  # long long
+    np.dtype("uint64"): ctypes.c_ulonglong,  # unsigned long long
+    np.dtype("float32"): ctypes.c_float,  # float
+    np.dtype("float64"): ctypes.c_double,  # double
 }
-
 
 
 def get_shared_numpy_array(shape: Tuple, dtype=np.float64):
@@ -79,10 +78,10 @@ def create_shared_numpy_array_as_cc3d_scalar_field(shape: Tuple, padding=0, dtyp
     else:
         raise ValueError(f"Unsupported dtype={dtype}")
 
+
 def create_field_and_array_from_cc3d_shared_numpy_scalar_field(field):
     element_type = field.getElementType()
     # padding = field.getPadding()
-
 
     try:
         dtype = np.dtype(element_type)
@@ -105,33 +104,6 @@ def create_field_and_array_from_cc3d_shared_numpy_scalar_field(field):
     array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(padded_shape)
     return array, field
 
-    # if dtype in (np.float64,):
-    #     ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes.c_double))
-    #     buffer = (ctypes.c_double * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
-    #
-    #
-    #     padded_shape = tuple(np.array(shape))
-    #     array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(padded_shape)
-    #     return array, field
-    # elif dtype in (np.float32,):
-    #
-    #     ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes_type_obj))
-    #     buffer = (ctypes_type_obj * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
-    #     padded_shape = tuple(np.array(shape))
-    #     array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(padded_shape)
-    #     return array, field
-    #
-    #
-    #     # ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes.c_float))
-    #     # buffer = (ctypes.c_float * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
-    #     # padded_shape = tuple(np.array(shape))
-    #     # array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(padded_shape)
-    #     # return array, field
-    # else:
-    #     raise ValueError(f"Unsupported dtype={dtype}")
-
-
-
 
 def create_shared_numpy_array_as_cc3d_vector_field(shape: Tuple, dtype=np.float32):
     if dtype in (np.float64,):
@@ -141,7 +113,6 @@ def create_shared_numpy_array_as_cc3d_vector_field(shape: Tuple, dtype=np.float3
         ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes.c_double))
         buffer = (ctypes.c_double * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
 
-        # array = np.frombuffer(ptr, dtype=np.float64, count=200)
         array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(shape)
         return array, field
     elif dtype in (np.float32,):
@@ -151,11 +122,11 @@ def create_shared_numpy_array_as_cc3d_vector_field(shape: Tuple, dtype=np.float3
         ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes.c_float))
         buffer = (ctypes.c_float * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
 
-        # array = np.frombuffer(ptr, dtype=np.float64, count=200)
         array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(shape)
         return array, field
     else:
         raise ValueError(f"Unsupported dtype={dtype}")
+
 
 def create_field_and_array_from_cc3d_vector_field(field):
     element_type = field.getElementType()
@@ -175,7 +146,6 @@ def create_field_and_array_from_cc3d_vector_field(field):
         array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(shape)
         return array, field
     elif dtype in (np.float32,):
-
         ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes.c_float))
         buffer = (ctypes.c_float * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
         array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(shape)
