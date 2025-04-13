@@ -6,7 +6,7 @@
 #include <iostream>
 #include <numeric>  // For std::accumulate
 #include <algorithm> // For std::copy
-#include <iterator> // needed for std::ostream_iterator
+#include <iterator>
 
 using namespace CompuCell3D;
 using namespace std;

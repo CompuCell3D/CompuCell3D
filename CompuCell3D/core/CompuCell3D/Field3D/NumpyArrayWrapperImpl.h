@@ -17,7 +17,7 @@
 #include <numeric>  // For std::accumulate
 #include <algorithm> // For std::copy
 #include <iostream>
-#include <iterator>
+#include <iterator> // for ostream_iterator
 
 
 namespace CompuCell3D {
