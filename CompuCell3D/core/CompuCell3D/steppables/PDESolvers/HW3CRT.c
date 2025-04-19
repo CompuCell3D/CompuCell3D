@@ -2673,7 +2673,7 @@ L115:
     if (*n == 1) {
 	return 0;
     }
-    rfftb1_(n, &r__[1], &wsave[1], &wsave[*n + 1], &wsave[(*n << 1) + 1]);
+    rfftb1_(n, &r__[1], &wsave[1], &wsave[*n + 1], (integer *)&wsave[(*n << 1) + 1]);
     return 0;
 } /* rfftb_ */
 
@@ -2889,7 +2889,7 @@ L110:
     if (*n == 1) {
 	return 0;
     }
-    rfftf1_(n, &r__[1], &wsave[1], &wsave[*n + 1], &wsave[(*n << 1) + 1]);
+    rfftf1_(n, &r__[1], &wsave[1], &wsave[*n + 1], (integer *)&wsave[(*n << 1) + 1]);
     return 0;
 } /* rfftf_ */
 
@@ -3058,7 +3058,7 @@ L107:
     if (*n == 1) {
 	return 0;
     }
-    rffti1_(n, &wsave[*n + 1], &wsave[(*n << 1) + 1]);
+    rffti1_(n, &wsave[*n + 1], (integer *)&wsave[(*n << 1) + 1]);
     return 0;
 } /* rffti_ */
 
