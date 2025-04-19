@@ -1,0 +1,1 @@
+This minimalist demo generates a cluster of cells in Python similar to the way UniformInitializer does. 

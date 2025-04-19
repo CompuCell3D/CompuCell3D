@@ -265,8 +265,7 @@ LogLevel CC3DLogger::stringToLevel(const std::string &str)
     }
 }
 
-void CC3DLogger::log(LogLevel l, const std::string &msg)
-{
+void CC3DLogger::log(LogLevel l, const std::string &msg, const std::string &func, const std::string &file, const int line) {
     FakeLogger &logger = getLogger();
 
     Message::Priority level = (Message::Priority)(l);
@@ -274,33 +273,49 @@ void CC3DLogger::log(LogLevel l, const std::string &msg)
     switch (level)
     {
         case Message::PRIO_FATAL:
-            logger.fatal(msg, "", "", 0);
+            logger.fatal(msg, func.c_str(), file.c_str(), line);
             break;
         case Message::PRIO_CRITICAL:
-            logger.critical(msg, "", "", 0);
+            logger.critical(msg, func.c_str(), file.c_str(), line);
             break;
         case Message::PRIO_ERROR:
-            logger.error(msg, "", "", 0);
+            logger.error(msg, func.c_str(), file.c_str(), line);
             break;
         case Message::PRIO_WARNING:
-            logger.warning(msg, "", "", 0);
+            logger.warning(msg, func.c_str(), file.c_str(), line);
             break;
         case Message::PRIO_NOTICE:
-            logger.notice(msg, "", "", 0);
+            logger.notice(msg, func.c_str(), file.c_str(), line);
             break;
         case Message::PRIO_INFORMATION:
-            logger.information(msg, "", "", 0);
+            logger.information(msg, func.c_str(), file.c_str(), line);
             break;
         case Message::PRIO_DEBUG:
-            logger.debug(msg, "", "", 0);
+            logger.debug(msg, func.c_str(), file.c_str(), line);
             break;
         case Message::PRIO_TRACE:
-            logger.trace(msg, "", "", 0);
+            logger.trace(msg, func.c_str(), file.c_str(), line);
             break;
         default:
-            logger.error(msg, "", "", 0);
+            logger.error(msg, func.c_str(), file.c_str(), line);
             break;
     }
+}
+
+void CC3DLogger::log(LogLevel level, const std::string &msg)
+{
+    log(level, msg, "", "", 0);
+}
+
+void CC3DLogger::logf(LogLevel level, const std::string &msg, const std::string &func, const std::string &file, const int line) {
+    if (level <= logLevel) 
+        log(level, msg, func, file, line);
+}
+
+void CC3DLogger::logf(LogLevel level, const std::string &msg)
+{
+    if (level <= logLevel) 
+        log(level, msg, "", "", 0);
 }
 
 void CC3DLogger::setConsoleStream(std::ostream *os)

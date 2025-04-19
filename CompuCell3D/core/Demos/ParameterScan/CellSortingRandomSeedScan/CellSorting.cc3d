@@ -1,0 +1,6 @@
+<Simulation version="4.0.0">
+   <XMLScript Type="XMLScript">Simulation/CellSorting.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/CellSorting.py</PythonScript>
+   <Resource Type="Python">Simulation/CellSortingSteppables.py</Resource>
+   <ParameterScan Type="ParameterScan">Simulation/ParameterScanSpecs.json</ParameterScan>
+</Simulation>

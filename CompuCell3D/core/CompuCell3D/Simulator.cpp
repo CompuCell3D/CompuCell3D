@@ -1,3 +1,5 @@
+// todo: decide whether stream buffers are still appropriate now that a logger is available
+
 #include "ClassRegistry.h"
 
 using namespace CompuCell3D;
@@ -690,7 +692,8 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData) {
     }
     rngFactory = RandomNumberGeneratorFactory(rngType);
 
-    cerr << "Random number generator: " << rngFactory.getName() << endl;
+    // cerr << "Random number generator: " << rngFactory.getName() << endl;
+    CC3D_Log(LOG_INFORMATION) << "Random number generator: " << rngFactory.getName();
 
     unsigned int randomSeed;
     if (!_xmlData->getFirstElement("RandomSeed")) {
