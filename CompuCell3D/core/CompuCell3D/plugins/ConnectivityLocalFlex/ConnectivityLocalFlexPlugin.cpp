@@ -64,7 +64,6 @@ double ConnectivityLocalFlexPlugin::changeEnergy(const Point3D &pt,
 
     double maxConnectivityStrength = 0.0;
     double connectivityStrengthLocal = 0.0;
-    double penalty = 0.0;
     std::vector <Point3D> n(numberOfNeighbors, Point3D());
 
     //here I determine the highest connectivity strength based on the values from two new and old cells
@@ -82,9 +81,7 @@ double ConnectivityLocalFlexPlugin::changeEnergy(const Point3D &pt,
             maxConnectivityStrength = connectivityStrengthLocal;
     }
 
-    if (maxConnectivityStrength > 0.0)
-        penalty = maxConnectivityStrength;
-    else
+    if (maxConnectivityStrength <= 0.0)
         return 0.0;
 
 
@@ -110,7 +107,8 @@ double ConnectivityLocalFlexPlugin::changeEnergy(const Point3D &pt,
     }
 
     if (!firstFlag) {
-        return penalty;
+        //The energy returned can be any positive number; it is arbitrary for ConnectivityPlugin.
+        return 64;
     }
 
 
@@ -145,8 +143,8 @@ double ConnectivityLocalFlexPlugin::changeEnergy(const Point3D &pt,
 
     if (collisioncount == 2) return 0;  // Accept
     else { // Conditional rejection
-
-        return penalty;  // Reject
+        //The energy returned can be any positive number; it is arbitrary for ConnectivityPlugin.
+        return 64;
     }
 
 }
@@ -188,7 +186,7 @@ void ConnectivityLocalFlexPlugin::initializeNeighborsOffsets() {
 
     if (fieldDim.x > 1 && fieldDim.y > 1 && fieldDim.z > 1)
         throw CC3DException(
-                "This plugin will only work for 2D simulations i.e. one lattice dimension must be equal to 1 Your simulations appears to be 3D");
+                "This plugin will only work for 2D simulations i.e. one lattice dimension must be equal to 1 Your simulation appears to be 3D");
 
     //here we define neighbors  offsets in the "clockwise order"
     if (fieldDim.x == 1) {
