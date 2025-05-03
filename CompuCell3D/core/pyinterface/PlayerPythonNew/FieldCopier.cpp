@@ -125,28 +125,9 @@ std::tuple<std::type_index, void*> FieldCopier::getFieldTypeAndPointer( const st
 
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename T>
-bool FieldCopier::fillCellTypeValues( Field3D<T> *fieldPtr){
-
-    if (!fieldPtr) return false;
-
-    Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
-    Dim3D fieldDim = cellFieldG->getDim();
-    Point3D pt;
-    for (pt.z = 0; pt.z < fieldDim.z ; ++pt.z)
-        for (pt.y = 0; pt.y < fieldDim.y ; ++pt.y)
-            for (pt.x = 0; pt.x < fieldDim.x ; ++pt.x){
-                auto cell = cellFieldG->get(pt);
-
-                fieldPtr->set(pt, cell ? cell->type: 0);
-            }
-    return true;
-}
 
 template<typename T>
 bool FieldCopier::fillCellAttributeValues(Field3D<T> *fieldPtr, std::function<T(CellG*)> extractor) {
-    cerr<<"fieldPtr"<<fieldPtr<<endl;
     if (!fieldPtr) return false;
 
     Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
@@ -157,9 +138,6 @@ bool FieldCopier::fillCellAttributeValues(Field3D<T> *fieldPtr, std::function<T(
         for (pt.y = 0; pt.y < fieldDim.y; ++pt.y)
             for (pt.x = 0; pt.x < fieldDim.x; ++pt.x) {
                 auto cell = cellFieldG->get(pt);
-                if (pt.y>=45 && pt.y<50 && pt.x>=45 && pt.x<50) {
-                    cerr << "pt=" << pt << "val" << (T) (cell ? extractor(cell) : T(0)) << endl;
-                }
                 fieldPtr->set(pt, cell ? extractor(cell) : T(0));
             }
     return true;

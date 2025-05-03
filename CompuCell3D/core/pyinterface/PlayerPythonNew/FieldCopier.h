@@ -40,6 +40,7 @@ namespace CompuCell3D {
         std::vector<std::string> get_available_attributes();
 
 
+
         template<typename T>
         bool fillCellAttributeValues(Field3D<T> *fieldPtr, std::function<T(CellG*)> extractor);
 
@@ -48,8 +49,7 @@ namespace CompuCell3D {
 
         typedef std::unordered_map<std::type_index, std::function<bool(void *)>> coreCopierFunctionMap_t;
 
-        template<typename T>
-        bool fillCellTypeValues( Field3D<T> *fieldPtr);
+
 
 
 
