@@ -1,0 +1,157 @@
+<CompuCell3D Revision="20210612" Version="4.2.5">
+   
+   <Metadata>
+      
+      <!-- Basic properties simulation -->
+      <NumberOfProcessors>1</NumberOfProcessors>
+      <DebugOutputFrequency>10</DebugOutputFrequency>
+      <!-- <NonParallelModule Name="Potts"/> -->
+   </Metadata>
+   
+    
+-<Potts>
+
+<Dimensions z="1" y="100" x="100"/>
+
+<Steps>10000</Steps>
+
+<Temperature>10.0</Temperature>
+
+<NeighborOrder>1</NeighborOrder>
+
+</Potts>
+
+<!-- Listing all cell types in the simulation -->
+
+
+
+-<Plugin Name="CellType">
+
+<CellType TypeName="Medium" TypeId="0"/>
+
+<CellType TypeName="SecretingCells" TypeId="1"/>
+
+<CellType TypeName="NonSecretingCells" TypeId="2"/>
+
+</Plugin>
+
+<!-- Constraint on cell volume. Each cell type has different constraint. -->
+
+
+<!-- For more flexible specification of the constraint (done in Python) please use VolumeLocalFlex plugin -->
+
+
+
+-<Plugin Name="Volume">
+
+<VolumeEnergyParameters TargetVolume="25" LambdaVolume="0.0" CellType="SecretingCells"/>
+
+<VolumeEnergyParameters TargetVolume="25" LambdaVolume="0.0" CellType="NonSecretingCells"/>
+
+</Plugin>
+
+<!-- Module tracking center of mass of each cell -->
+
+
+<Plugin Name="CenterOfMass"/>
+
+<!-- Specification of adhesion energies -->
+
+
+
+-<Plugin Name="Contact">
+
+<Energy Type2="Medium" Type1="Medium">10</Energy>
+
+<Energy Type2="SecretingCells" Type1="Medium">10</Energy>
+
+<Energy Type2="NonSecretingCells" Type1="Medium">10</Energy>
+
+<Energy Type2="SecretingCells" Type1="SecretingCells">10</Energy>
+
+<Energy Type2="NonSecretingCells" Type1="SecretingCells">10</Energy>
+
+<Energy Type2="NonSecretingCells" Type1="NonSecretingCells">10</Energy>
+
+<NeighborOrder>2</NeighborOrder>
+
+</Plugin>
+
+<!-- Specification of PDE solvers -->
+
+
+
+-<Steppable Type="ReactionDiffusionSolverFE">
+
+
+-<DiffusionField>
+
+
+-<DiffusionData>
+
+<FieldName>u</FieldName>
+
+<DiffusionConstant>0.01</DiffusionConstant>
+
+<AdditionalTerm>1*u-u*u*u-0.1-0.01*v</AdditionalTerm>
+
+</DiffusionData>
+
+
+-<SecretionData>
+
+<Secretion Type="SecretingCells">0.4</Secretion>
+
+</SecretionData>
+
+</DiffusionField>
+
+
+-<DiffusionField>
+
+
+-<DiffusionData>
+
+<FieldName>v</FieldName>
+
+<DiffusionConstant>0.1</DiffusionConstant>
+
+<AdditionalTerm>.7*u-.005*v</AdditionalTerm>
+
+</DiffusionData>
+
+
+-<SecretionData>
+
+<Secretion Type="NonSecretingCells">0.7</Secretion>
+
+</SecretionData>
+
+</DiffusionField>
+
+</Steppable>
+
+<!-- Initial layout of cells in the form of rectangular slab -->
+
+
+
+-<Steppable Type="UniformInitializer">
+
+
+-<Region>
+
+<BoxMin z="0" y="2" x="2"/>
+
+<BoxMax z="1" y="98" x="98"/>
+
+<Gap>1</Gap>
+
+<Width>1</Width>
+
+<Types>SecretingCells,NonSecretingCells</Types>
+
+</Region>
+
+</Steppable>
+
+</CompuCell3D>

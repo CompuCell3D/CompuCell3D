@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask a question or discuss a topic
+    url: https://github.com/CompuCell3D/CompuCell3D/discussions
+    about: Ask questions or discuss with other CompuCell3D users in discussions.
+  - name: CompuCell3D Training Materials
+    url: https://compucell3d.org/Manuals
+    about: CompuCell3D Training

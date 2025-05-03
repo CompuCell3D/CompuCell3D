@@ -1,5 +1,5 @@
 
-This simulation shows the spatial pattern formation in three component reaction diffusion systems using Schnakenberg model exhibiting the Turing type instability. 
+This simulation shows the spatial pattern formation in three component reaction diffusion systems using Schnakenberg model exhibiting the Turing type instability.
 
 Expected Result: The simulation should exhibit spatially inhomogeneous, temporally stable patterns under the proper selection of system parameters.
  

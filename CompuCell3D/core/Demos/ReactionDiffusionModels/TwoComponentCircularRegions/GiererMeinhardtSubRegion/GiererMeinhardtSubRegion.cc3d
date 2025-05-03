@@ -1,0 +1,5 @@
+<Simulation version="3.5.1">
+   <XMLScript Type="XMLScript">Simulation/GiererMeinhardtSubRegion.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/GiererMeinhardtSubRegion.py</PythonScript>
+   <Resource Type="Python">Simulation/GiererMeinhardtSubRegionSteppables.py</Resource>
+</Simulation>
