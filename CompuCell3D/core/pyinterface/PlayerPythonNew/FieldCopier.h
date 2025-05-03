@@ -40,7 +40,16 @@ namespace CompuCell3D {
         std::vector<std::string> get_available_attributes();
 
 
-
+        /**
+         * Populates scalar Field3D with value of cell attribute (specified by the extractor function) in such a way
+         * that all voxels occupied by a given cell will be initialized with the attribute value. For example
+         * if we are populating cell_types we will get a Field where each voxel occupied by cell will get assigned
+         * a value of the cell.type
+         * @tparam T
+         * @param fieldPtr
+         * @param extractor - extracting function that fetches cell attribute
+         * @return
+         */
         template<typename T>
         bool fillCellAttributeValues(Field3D<T> *fieldPtr, std::function<T(CellG*)> extractor);
 
@@ -48,11 +57,6 @@ namespace CompuCell3D {
         std::tuple<std::type_index, void *> getFieldTypeAndPointer(const std::string &fieldName);
 
         typedef std::unordered_map<std::type_index, std::function<bool(void *)>> coreCopierFunctionMap_t;
-
-
-
-
-
 
 
     };
