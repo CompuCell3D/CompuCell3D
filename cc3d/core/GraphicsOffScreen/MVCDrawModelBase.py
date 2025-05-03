@@ -3,6 +3,8 @@ from cc3d.core import Configuration
 from cc3d import CompuCellSetup
 from cc3d.core.GraphicsUtils.utils import to_vtk_rgb
 import numpy as np
+
+from cc3d.core.enums import FieldProperties
 from cc3d.cpp import CompuCell
 import weakref
 from math import log10, fabs
@@ -116,6 +118,25 @@ class MVCDrawModelBase:
         self.populate_cell_type_lookup_table(scene_metadata=scene_metadata)
 
         return self.celltypeLUT
+
+    def get_field_type(self, drawing_params):
+        """
+        Extracts field type from drawing_params object
+
+        Typically,  drawing_params.fieldType will be instances of FieldProperties
+        e.g. FieldProperties(field_name=fieldName, field_type=FIELD_TYPES[4],precision_type="float32")
+        however, legacy code used simple strings to distinguish betweeen different field types.
+        to handle this edge case we are using simple if-else statement
+
+        """
+
+        if isinstance(drawing_params.fieldType, str):
+            field_type = drawing_params.fieldType.lower()
+            # print("drawing_params.fieldType ", drawing_params.fieldType,  " field_name=", field_name)
+        else:
+            field_properties: FieldProperties  = drawing_params.fieldType
+            field_type = field_properties.field_type.lower()
+        return field_type
 
     @staticmethod
     def generate_cell_type_lookup_table(scene_metadata=None, actual_screenshot=False):
