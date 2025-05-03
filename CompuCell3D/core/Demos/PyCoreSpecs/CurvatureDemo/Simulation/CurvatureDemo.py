@@ -24,6 +24,7 @@ spec_potts = PottsCore()
 spec_potts.dim_x, spec_potts.dim_y = 100, 100
 spec_potts.steps = 100000
 spec_potts.neighbor_order = 2
+spec_potts.fluctuation_amplitude = 0
 CompuCellSetup.register_specs(spec_potts)
 
 # Specify cell types
