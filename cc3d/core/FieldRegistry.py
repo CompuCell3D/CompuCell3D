@@ -291,6 +291,10 @@ class FieldRegistry:
             return
 
         field = self.simulator.getVectorFieldByName(field_name)
+        if not field:
+            CompuCell.CC3DLogger.get().log(CompuCell.LOG_ERROR, f"Could not find field {field_name}")
+            raise RuntimeError(f"Could not find field {field_name}")
+
         array, field = create_field_and_array_from_cc3d_vector_field(field)
         self.shared_vector_numpy_fields[field_name] = [array, field]
         self.get_field_storage().registerVectorField(field_name, field)
