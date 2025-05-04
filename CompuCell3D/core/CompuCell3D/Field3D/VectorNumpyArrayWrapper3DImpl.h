@@ -126,9 +126,9 @@ namespace CompuCell3D {
             size_t y = static_cast<size_t>(pt.y);
             size_t z = static_cast<size_t>(pt.z);
             return Coordinates3D<T>(
-                array[index({x, y, z, 0})],
-                array[index({x, y, z, 1})],
-                array[index({x, y, z, 2})]
+                this->array[this->index({x, y, z, 0})],
+                this->array[this->index({x, y, z, 1})],
+                this->array[this->index({x, y, z, 2})]
             );
         }
 
