@@ -20,7 +20,7 @@ NumpyArrayWrapper::NumpyArrayWrapper(const std::vector<array_size_t> &dims) {
     size_t array_size = std::accumulate(dimensions.begin(), dimensions.end(), 1, std::multiplies<array_size_t>());
 
     array.assign(array_size, 0.0);
-    cerr << "array array_size=" << array.size() << endl;
+//    cerr << "array array_size=" << array.size() << endl;
 };
 
 
