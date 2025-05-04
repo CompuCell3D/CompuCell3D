@@ -131,21 +131,7 @@ namespace CompuCell3D {
                 array[index({x, y, z, 2})]
             );
         }
-//        virtual Coordinates3D<T> get(const Point3D &pt) const {
-//            return
-//                    Coordinates3D<T>(
-//                            this->array[this->index(
-//                                    {static_cast<size_t>(pt.x), static_cast<size_t>(pt.y), static_cast<size_t>(pt.z),
-//                                     0})],
-//                            this->array[this->index(
-//                                    {static_cast<size_t>(pt.x), static_cast<size_t>(pt.y), static_cast<size_t>(pt.z),
-//                                     1})],
-//                            this->array[this->index(
-//                                    {static_cast<size_t>(pt.x), static_cast<size_t>(pt.y), static_cast<size_t>(pt.z),
-//                                     2})]
-//                    );
-//
-//        };
+
 
         virtual NdarrayAdapter<T, 4>* getNdarrayAdapter() {
             return &ndarrayAdapter;
