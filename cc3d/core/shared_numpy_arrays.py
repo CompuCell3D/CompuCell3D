@@ -139,13 +139,13 @@ def create_field_and_array_from_cc3d_vector_field(field):
     shape = [dim.x, dim.y, dim.z, 3]
     size = field.getSize()
 
-    if dtype in (np.float64,):
+    if dtype in np.float64:
         ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes.c_double))
         buffer = (ctypes.c_double * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
 
         array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(shape)
         return array, field
-    elif dtype in (np.float32,):
+    elif dtype in np.float32:
         ptr_as_ctypes = ctypes.cast(int(field.getPtr()), ctypes.POINTER(ctypes.c_float))
         buffer = (ctypes.c_float * size).from_address(ctypes.addressof(ptr_as_ctypes.contents))
         array = np.frombuffer(buffer, dtype=dtype, count=size).reshape(shape)
