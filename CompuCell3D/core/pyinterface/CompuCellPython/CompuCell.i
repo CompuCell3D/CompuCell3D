@@ -48,7 +48,6 @@
 
 %include <windows.i>
 
-
 %{
 #define SWIG_FILE_WITH_INIT	
 
