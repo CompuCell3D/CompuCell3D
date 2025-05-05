@@ -8,7 +8,7 @@
 #include <vector>
 #include <initializer_list>
 #include <functional>  // For std::function
-
+#include <iostream>
 
 
 #include <vector>
@@ -60,10 +60,15 @@ namespace CompuCell3D {
             return index;
         }
 
-        array_size_t getSize() {
+        size_t getSize() {
+//            std::cerr<<"INTERNAL GET SIZE"<<array.size()<<std::endl;
             return array.size();
 
         }
+//        array_size_t getSize() {
+//            return array.size();
+//
+//        }
 
         double *getPtr() {
             return array.size() ? &array[0] : nullptr;

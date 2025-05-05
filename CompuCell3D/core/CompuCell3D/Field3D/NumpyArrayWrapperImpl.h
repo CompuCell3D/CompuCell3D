@@ -22,8 +22,8 @@
 
 namespace CompuCell3D {
 
-
-    typedef std::vector<double>::size_type array_size_t;
+    using array_size_t = size_t;
+//    typedef std::vector<double>::size_type array_size_t;
 
     template <typename T>
     class NumpyArrayWrapperImpl{
@@ -141,7 +141,8 @@ namespace CompuCell3D {
             return index;
         }
 
-        array_size_t getSize() {
+        size_t getSize() {
+//            std::cerr<<"INTERNAL GET SIZE"<<array.size()<<std::endl;
             return array.size();
 
         }

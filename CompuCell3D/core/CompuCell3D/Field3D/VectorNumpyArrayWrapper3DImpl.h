@@ -33,8 +33,8 @@ class Coordinates3D;
 
 namespace CompuCell3D {
 
-
-    typedef std::vector<double>::size_type array_size_t;
+    using array_size_t = size_t;
+//    typedef std::vector<double>::size_type array_size_t;
 
 
     template<typename T>

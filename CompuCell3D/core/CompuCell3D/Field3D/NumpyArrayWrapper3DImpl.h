@@ -29,7 +29,8 @@
 namespace CompuCell3D {
 
 
-    typedef std::vector<double>::size_type array_size_t;
+//    typedef std::vector<double>::size_type array_size_t;
+    using array_size_t = size_t;
 
     template<typename T>
     class NumpyArrayWrapper3DImpl : public Field3D<T>, public NumpyArrayWrapperImpl<T>, public Field3DTypeBase {
@@ -70,7 +71,7 @@ namespace CompuCell3D {
         virtual ~NumpyArrayWrapper3DImpl() = default;
 
         array_size_t getPadding(){return this->padding;}
-        virtual std::vector<array_size_t> getPaddingVec(){return this->paddingVec;}
+        virtual std::vector<size_t> getPaddingVec(){return this->paddingVec;}
 
         void displayType() const override {
             std::cout << "VectorField of type: " << typeid(T).name() << "\n";
