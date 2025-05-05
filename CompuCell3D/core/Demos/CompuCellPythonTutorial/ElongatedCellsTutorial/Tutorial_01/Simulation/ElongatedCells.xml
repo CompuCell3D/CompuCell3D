@@ -1,0 +1,31 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="100" y="100" z="1"/>
+        <Steps>10000</Steps>
+        <Temperature>10</Temperature>
+        <Flip2DimRatio>1</Flip2DimRatio>
+        <NeighborOrder>2</NeighborOrder>
+    </Potts>
+
+
+    <Plugin Name="Volume">
+        <TargetVolume>25</TargetVolume>
+        <LambdaVolume>2.0</LambdaVolume>
+    </Plugin>
+
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Top" TypeId="1"/>
+    </Plugin>
+
+
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="Top" Type2="Top">0</Energy>
+        <Energy Type1="Top" Type2="Medium">0</Energy>
+        <NeighborOrder>4</NeighborOrder>
+    </Plugin>
+
+
+</CompuCell3D>

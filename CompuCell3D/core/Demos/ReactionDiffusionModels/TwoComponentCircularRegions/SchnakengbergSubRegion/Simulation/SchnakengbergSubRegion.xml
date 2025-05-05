@@ -1,0 +1,116 @@
+<CompuCell3D version="3.6.0">
+
+    <!-- Basic properties of CPM (GGH) algorithm -->
+    <Potts>
+        <Dimensions x="100" y="100" z="1"/>
+        <Steps>10000</Steps>
+        <Temperature>10.0</Temperature>
+        <NeighborOrder>1</NeighborOrder>
+    </Potts>
+
+    <!-- Listing all cell types in the simulation -->
+    <Plugin Name="CellType">
+        <CellType TypeId="0" TypeName="Medium"/>
+        <CellType TypeId="1" TypeName="SecretingCells"/>
+        <CellType TypeId="2" TypeName="NonSecretingCells"/>
+        <CellType TypeId="3" Freeze="" TypeName="NoFlux"/>
+        <CellType TypeId="4" TypeName="Medium2"/>
+
+    </Plugin>
+
+    <!-- Constraint on cell volume. Each cell type has different constraint. -->
+    <!-- For more flexible specification of the constraint (done in Python) please use VolumeLocalFlex plugin -->
+    <Plugin Name="Volume">
+        <VolumeEnergyParameters CellType="SecretingCells" LambdaVolume="0.0" TargetVolume="25"/>
+        <VolumeEnergyParameters CellType="NonSecretingCells" LambdaVolume="0.0" TargetVolume="25"/>\
+        <VolumeEnergyParameters CellType="Medium2" LambdaVolume="2.0" TargetVolume="2000"/>
+
+    </Plugin>
+
+
+    <!-- Module tracking center of mass of each cell -->
+    <Plugin Name="CenterOfMass"/>
+
+    <!-- Specification of adhesion energies -->
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">10</Energy>
+        <Energy Type1="Medium" Type2="SecretingCells">10</Energy>
+        <Energy Type1="Medium" Type2="NonSecretingCells">10</Energy>
+        <Energy Type1="SecretingCells" Type2="SecretingCells">10</Energy>
+        <Energy Type1="SecretingCells" Type2="NonSecretingCells">10</Energy>
+        <Energy Type1="NonSecretingCells" Type2="NonSecretingCells">10</Energy>
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+
+
+    <!-- Specification of PDE solvers -->
+    <Steppable Type="ReactionDiffusionSolverFE">
+        <DiffusionField>
+            <DiffusionData>
+                <FieldName>u</FieldName>
+                <DiffusionConstant>0.1</DiffusionConstant>
+                <DiffusionCoefficient CellType="NoFlux">0.0</DiffusionCoefficient>
+                <AdditionalTerm>(Mask)*0.05*(0.1-u+u*u*v)</AdditionalTerm>
+            </DiffusionData>
+            <SecretionData>
+                <Secretion Type="SecretingCells">0.4</Secretion>
+            </SecretionData>
+        </DiffusionField>
+        <DiffusionField>
+            <DiffusionData>
+                <FieldName>v</FieldName>
+                <DiffusionConstant>2</DiffusionConstant>
+                <DiffusionCoefficient CellType="NoFlux">0.0</DiffusionCoefficient>
+                <AdditionalTerm>(Mask)*0.05*(0.9-1.0*u*u*v)</AdditionalTerm>
+            </DiffusionData>
+            <SecretionData>
+                <Secretion Type="NonSecretingCells">0.7</Secretion>
+            </SecretionData>
+        </DiffusionField>
+        <DiffusionField>
+            <DiffusionData>
+                <FieldName>Mask</FieldName>
+                <DiffusionConstant>0.0</DiffusionConstant>
+                <AdditionalTerm>0.0</AdditionalTerm>
+                <InitialConcentrationExpression>1.0</InitialConcentrationExpression>
+            </DiffusionData>
+            <SecretionData>
+                <ConstantConcentration Type="SecretingCells">1.0</ConstantConcentration>
+                <ConstantConcentration Type="NonSecretingCells">1.0</ConstantConcentration> 
+                <ConstantConcentration Type="Medium2">1.0</ConstantConcentration>           
+            </SecretionData>
+        </DiffusionField>
+    </Steppable>
+    
+   
+    <!-- Initial layout of cells in the form of rectangular slab -->
+    <Steppable Type="UniformInitializer">
+        <Region>
+            <BoxMin x="0" y="0" z="0"/>
+            <BoxMax x="100" y="100" z="1"/>
+            <Gap>0</Gap>
+            <Width>1</Width>
+            <Types>NoFlux</Types>
+        </Region>
+    </Steppable>
+    
+    <Steppable Type="BlobInitializer">
+   
+   <Region>
+      <Center x="50" y="50" z="0"/>
+      <Radius>45</Radius>
+      <Gap>0</Gap>
+      <Width>1</Width>
+      <Types>Medium2</Types>
+   </Region>   
+   
+   <Region>
+      <Center x="50" y="50" z="0"/>
+      <Radius>30</Radius>
+      <Gap>7</Gap>
+      <Width>7</Width>
+      <Types>SecretingCells,NonSecretingCells</Types>
+   </Region>
+</Steppable>
+
+</CompuCell3D>

@@ -1,0 +1,5 @@
+<Simulation version="4.2.5">
+   <XMLScript Type="XMLScript">Simulation/oscillatorypatternCC3Dv4.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/oscillatorypatternCC3Dv4.py</PythonScript>
+   <Resource Type="Python">Simulation/oscillatorypatternCC3Dv4Steppables.py</Resource>
+</Simulation>

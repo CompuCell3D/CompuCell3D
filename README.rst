@@ -5,6 +5,15 @@ CompuCell3D is a multiscale multicellular virtual tissue modeling and simulation
 CompuCell3D is written in C++ and provides Python bindings for model and simulation development
 in Python. CompuCell3D is supported on Windows, Mac and Linux.
 
+Website
+-------
+`CompuCell3D project page <https://compucell3d.org/>`_
+
+CompuCell3D Community
+----------------------------
+
+For bug reports, feature, requests and COmpuCel3D discussions we encourage you to visit `CompuCell3D Community Guide <https://github.com/CompuCell3D/CompuCell3D/blob/master/README_CompuCell3D_Community.md>`_ 
+
 Installation
 ------------
 
@@ -12,12 +21,34 @@ Binaries
 ********
 
 Binary distributions of CompuCell3D are available for download at the
-`CompuCell3D project page <https://compucell3d.org/>`_. Binaries of CompuCell3D are
+`CompuCell3D project page <https://compucell3d.org/SrcBin>`_. Binaries of CompuCell3D are
 also available via conda,
 
 .. code-block:: console
 
     conda install -c compucell3d -c conda-forge cc3d
+
+Once installation completes, you may run Player (CompuCell3D GUI) as follows:
+
+.. code-block:: console
+
+    python -m cc3d.player5
+
+To run Model editor (Twedit++)  you would type:
+
+.. code-block:: console
+
+    python -m cc3d.twedit5
+
+
+Finalyy, if you want to run simulation in a GUI-less mode you run:
+
+.. code-block:: console
+
+    python -m cc3d.run_script -i <full path to .cc3d file>
+
+
+
 
 Source
 ******

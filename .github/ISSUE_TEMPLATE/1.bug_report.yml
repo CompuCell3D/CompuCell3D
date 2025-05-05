@@ -1,0 +1,107 @@
+name: Report an issue
+description: Report a CompuCell3D issue.
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to report CompuCell3D issue
+        
+        Feature requests should be opened in [discussions](https://github.com/CompuCell3D/CompuCell3D/discussions), or in 
+        [feature requests](https://github.com/CompuCell3D/CompuCell3D/issues/new?assignees=&labels=&projects=&template=feature_request.md&title=)
+        
+        Documentation requests should also be opened in [discussions](https://github.com/CompuCell3D/CompuCell3D/discussions).
+
+        Before opening a new issue, please do a [search](https://github.com/CompuCell3D/CompuCell3D/issues) of existing issues and :+1: upvote the existing issue instead. This will result in a quicker resolution.
+
+        If you need help or would like to discuss CompuCell3D-related ideas, projects etc please use one of the following:
+        - Start a discussion in the ["Help"](https://github.com/CompuCell3D/CompuCell3D/discussions) section.
+        - Ask a question in [CompuCell3D Reddit Community](https://www.reddit.com/r/CompuCell3D/).
+
+  - type: textarea
+    attributes:
+      label: Provide environment information
+      description: Please provide details about your operating system, CompuCell3D version etc.... The more details you share the easier ti will be for the development team to diagnose and fix the reported issue. If you had highly customized version of CompuCell3D installation e.g. cluster deployment, just say so in the text field below and we will talkt to you individually
+      render: bash
+      placeholder: |
+        Operating System:
+          Platform: darwin
+          Arch: arm64
+          Version: Darwin Kernel Version 22.5.0
+        CompuCell3D:
+          version: 4.6.0
+          commit tag: 24b1e73
+          File name of the installer used to install CC3D:  CompuCell3D-setup-4.6.0.0.exe                 
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Provide Simulation files (as a zipped archive) and ascreenshots
+      description: Ideally we would like to to ask you to attach minimal version of the simulation that reproduces the bug - please use zip format Twedit++ can zip your project for you. **Important:**, the simulation code you attach can be seen by everybody so make sure you share only the code that you are comfortable sharing. If you want to discuss the issue with members of our team please reach ot to us directly or say that the bug you are reporting can only be reproduced in your production code. We will work with you individually. 
+      placeholder: |
+        Use Attach button (in the text box tool bar) to attach simulation and screenshots
+    validations:
+      required: true
+
+
+  - type: dropdown
+    attributes:
+      label: Installation Method
+      multiple: true
+      options:
+        - 'Not sure'
+        - 'binaries'
+        - 'via conda package'
+        - 'compilation from source'
+
+  - type: textarea
+    attributes:
+      label: Installation Method Details
+      description: If you use non-standard installation please give us more details so that wee can reproduce your bug
+      placeholder: |
+        Provide more details about installation
+    validations:
+      required: false
+
+
+
+  - type: dropdown
+    attributes:
+      label: Which area(s) are affected? (Select all that apply)
+      multiple: true
+      options:
+        - 'Not sure'
+        - 'user interface'
+        - 'Twedit++'
+        - 'Player'
+        - 'Documentation'
+        - 'Fonts'
+        - 'graphics'
+        - 'Navigation'
+        - 'Output (export/standalone)'
+        - 'Performance'
+        - 'Runtime'
+        - 'Scripting'
+        - 'XML'
+
+
+  - type: textarea
+    attributes:
+      label: Steps To Reproduce
+      description: A step-by-step description of how to reproduce the issue, based on the linked reproduction. Screenshots can be provided in the issue body below. If using code blocks, make sure that [syntax highlighting is correct](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks#syntax-highlighting) and double check that the rendered preview is not broken.
+      placeholder: |
+        Steps to reproduce the behavior:
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Current vs. Expected behavior
+      description: A clear and concise description of what the bug is, and what you expected to happen.
+      placeholder: 'Following the steps from the previous section, I expected A to happen, but I observed B instead'
+    validations:
+      required: true

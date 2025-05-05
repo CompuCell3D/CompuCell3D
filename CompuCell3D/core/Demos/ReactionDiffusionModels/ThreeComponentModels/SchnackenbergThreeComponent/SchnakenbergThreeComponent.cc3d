@@ -1,0 +1,5 @@
+<Simulation version="4.2.5">
+   <XMLScript Type="XMLScript">Simulation/SchnackenbergCC3Dv4.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/SchnackenbergCC3Dv4.py</PythonScript>
+   <Resource Type="Python">Simulation/SchnackenbergCC3Dv4Steppables.py</Resource>
+</Simulation>
