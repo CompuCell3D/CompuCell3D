@@ -132,7 +132,7 @@ double ContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, cons
             }
             nCell = fieldG->get(neighbor.pt);
             if (nCell != oldCell) {
-                if ((nCell != 0) && (oldCell != 0)) {
+                if ((nCell != nullptr) && (oldCell != nullptr)) {
                     if ((nCell->clusterId) != (oldCell->clusterId)) {
                         energy -= contactEnergy(oldCell, nCell);
                     }
@@ -143,7 +143,7 @@ double ContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, cons
             }
             if (nCell != newCell) {
 
-                if ((newCell != 0) && (nCell != 0)) {
+                if ((newCell != nullptr) && (nCell != nullptr)) {
                     if ((newCell->clusterId) != (nCell->clusterId)) {
                         energy += contactEnergy(newCell, nCell);
                     }

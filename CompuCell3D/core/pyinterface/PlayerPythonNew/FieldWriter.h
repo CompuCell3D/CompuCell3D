@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <string>
 #include <Utils/Coordinates3D.h>
 #include "FieldStorage.h"
@@ -11,6 +12,7 @@
 
 
 #include "FieldExtractorDLLSpecifier.h"
+#include <typeindex>
 
 class FieldStorage;
 //class vtkIntArray;
@@ -29,6 +31,7 @@ namespace CompuCell3D{
 	class Potts3D;
 	class Simulator;
 	class Dim3D;
+    template <class T> class Field3D;
 
 	class FIELDEXTRACTOR_EXPORT  FieldWriter{
 	public:
@@ -62,6 +65,18 @@ namespace CompuCell3D{
 		std::vector<std::string> arrayNameVec;
 		bool binaryFlag;   // not currently used
 		/*Dim3D fieldDim;*/
+
+        typedef std::unordered_map<std::type_index, std::function<bool(const std::string &, void *)>> concentrationFunctionMap_t;
+
+        template<typename T>
+        bool serializeConcentrationFieldTyped(const std::string & _conFieldName , Field3D<T> *conFieldPtr);
+
+        void initializeSerializeConcentrationFunctionMap();
+
+        std::tuple<std::type_index, void *> getFieldTypeAndPointer(const std::string &fieldName);
+
+        concentrationFunctionMap_t serializeConcentrationFunctionMap;
+
 	};
 
 

@@ -9,9 +9,10 @@
 
 #include <CompuCell3D/Potts3D/Cell.h>
 #include "FieldExtractorDLLSpecifier.h"
+#include <CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h>
 #include <CompuCell3D/Field3D/Dim3D.h>
 
-#include "ndarray_adapter.h"
+#include <core/CompuCell3D/Field3D/ndarray_adapter.h>
 
 namespace CompuCell3D{
 	//have to declare here all the classes that will be passed to this class from Python
@@ -39,6 +40,10 @@ class FIELDEXTRACTOR_EXPORT FieldStorage{
       //pixel based vector field  
       typedef NdarrayAdapter<float,4> vectorField3D_t;                
       typedef std::map<std::string,vectorField3D_t *>::iterator vectorFieldNameMapItr_t;
+
+      //pixel based vector field - using native shared numpy array
+      typedef VectorNumpyArrayWrapper3DImpl<float> vectorField3DNumpyImpl_t;
+      typedef std::map<std::string,vectorField3DNumpyImpl_t *>::iterator vectorFieldNumpyImplNameMapItr_t;
 
       //cell level vector fields (represented as maps)
       typedef VectorFieldCellLevel vectorFieldCellLevel_t;                      
@@ -81,6 +86,7 @@ class FIELDEXTRACTOR_EXPORT FieldStorage{
 
     //pixel based  vector fields 
     vectorField3D_t * createVectorFieldPy(Dim3D _dim,std::string _fieldName);
+    void registerVectorField(const std::string& _fieldName, vectorField3DNumpyImpl_t * _fieldPtr);
     void clearVectorField(Dim3D _dim,vectorField3D_t * _fieldPtr);
     std::vector<std::string> getVectorFieldNameVector();
     vectorField3D_t * getVectorFieldFieldByName(std::string _fieldName);
@@ -111,7 +117,8 @@ class FIELDEXTRACTOR_EXPORT FieldStorage{
     std::map<std::string, vectorField3D_t*> vectorFieldNameMap;
     std::map<std::string, vectorFieldCellLevel_t * > vectorFieldCellLevelNameMap;///this map will be filled externally
     std::map<std::string, scalarFieldCellLevel_t * > scalarFieldCellLevelNameMap;///this map will be filled externally
-    
+    std::map<std::string , vectorField3DNumpyImpl_t *> vectorFieldNumpyImplNameMap;
+
 };
 
 
