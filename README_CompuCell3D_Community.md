@@ -1,4 +1,4 @@
-K# CompuCell3D Community
+# CompuCell3D Community
 
 We are using GitHub and Reddit to intereact with members of CompuCell3D Commmunity. Here is a brief guide that will help you get to the right place
 

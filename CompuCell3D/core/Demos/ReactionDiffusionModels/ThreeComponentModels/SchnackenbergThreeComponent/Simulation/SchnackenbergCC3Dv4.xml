@@ -57,7 +57,7 @@
    <Steppable Type="ReactionDiffusionSolverFE">     
   <DiffusionField> 
        <DiffusionData>  
-          <FieldName>u</FieldName>  
+          <FieldName>u</FieldName> 
           <DiffusionConstant>0.01</DiffusionConstant>
           <AdditionalTerm>0.001*(-u+u*u*v-w)</AdditionalTerm>
         </DiffusionData> 
