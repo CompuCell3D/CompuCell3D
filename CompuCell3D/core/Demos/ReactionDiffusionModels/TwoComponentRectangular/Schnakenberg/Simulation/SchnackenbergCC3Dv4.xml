@@ -1,0 +1,90 @@
+<CompuCell3D Revision="20210612" Version="4.2.5">
+   
+   <Metadata>
+      
+      <!-- Basic properties simulation -->
+      <NumberOfProcessors>1</NumberOfProcessors>
+      <DebugOutputFrequency>10</DebugOutputFrequency>
+      <!-- <NonParallelModule Name="Potts"/> -->
+   </Metadata>
+   
+   <Potts>
+      
+      <!-- Basic properties of CPM (GGH) algorithm -->
+      <Dimensions x="100" y="100" z="1"/>
+      <Steps>100000</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+      <Boundary_x>Periodic</Boundary_x>
+      <Boundary_y>Periodic</Boundary_y>
+   </Potts>
+   
+   <Plugin Name="CellType">
+      
+      <!-- Listing all cell types in the simulation -->
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="SecretingCells"/>
+      <CellType TypeId="2" TypeName="NonSecretingCells"/>
+   </Plugin>
+   
+   <Plugin Name="Volume">
+      <VolumeEnergyParameters CellType="SecretingCells" LambdaVolume="0.0" TargetVolume="50"/>
+      <VolumeEnergyParameters CellType="NonSecretingCells" LambdaVolume="0.0" TargetVolume="50"/>
+   </Plugin>
+   
+   <Plugin Name="CenterOfMass">
+      
+      <!-- Module tracking center of mass of each cell -->
+   </Plugin>
+   
+   <Plugin Name="Contact">
+      <!-- Specification of adhesion energies -->
+      <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+      <Energy Type1="Medium" Type2="SecretingCells">10.0</Energy>
+      <Energy Type1="Medium" Type2="NonSecretingCells">10.0</Energy>
+      <Energy Type1="SecretingCells" Type2="SecretingCells">10.0</Energy>
+      <Energy Type1="SecretingCells" Type2="NonSecretingCells">10.0</Energy>
+      <Energy Type1="NonSecretingCells" Type2="NonSecretingCells">10.0</Energy>
+      <NeighborOrder>4</NeighborOrder>
+   </Plugin>
+   
+   
+   
+   
+   
+    <!-- Specification of PDE solvers -->
+   <Steppable Type="ReactionDiffusionSolverFE">     
+  <DiffusionField> 
+       <DiffusionData>  
+          <FieldName>u</FieldName>  
+          <DiffusionConstant>0.1</DiffusionConstant>
+          <AdditionalTerm>0.05*(0.1-u+u*u*v)</AdditionalTerm>
+        </DiffusionData> 
+        <SecretionData>
+            <Secretion Type="SecretingCells">0.1</Secretion>
+        </SecretionData>
+   </DiffusionField> 
+  <DiffusionField>
+        <DiffusionData>
+            <FieldName>v</FieldName>
+            <DiffusionConstant>2.</DiffusionConstant>
+            <AdditionalTerm>0.05*(0.9-1.0*u*u*v)</AdditionalTerm>
+        </DiffusionData>
+        <SecretionData>
+            <Secretion Type="NonSecretingCells">0.7</Secretion>
+        </SecretionData>
+    </DiffusionField>
+    </Steppable>
+    
+   <Steppable Type="UniformInitializer">
+      
+      <!-- Initial layout of cells in the form of rectangular slab -->
+      <Region>
+         <BoxMin x="2" y="2" z="0"/>
+         <BoxMax x="98" y="98" z="1"/>
+         <Gap>10</Gap>
+         <Width>10</Width>
+         <Types>SecretingCells,NonSecretingCells</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>

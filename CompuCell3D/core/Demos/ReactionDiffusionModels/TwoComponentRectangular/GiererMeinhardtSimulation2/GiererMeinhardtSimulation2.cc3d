@@ -1,0 +1,5 @@
+<Simulation version="4.2.5">
+   <XMLScript Type="XMLScript">Simulation/GiererMeinhardt.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/GiererMeinhardt.py</PythonScript>
+   <Resource Type="Python">Simulation/GiererMeinhardtSteppables.py</Resource>
+</Simulation>

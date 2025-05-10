@@ -1,0 +1,38 @@
+name: Feature Request
+description: Request new feature.
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to request new CompuCell3D/Player/Twedit++ feature
+        
+        Feature requests should be opened in [discussions](https://github.com/CompuCell3D/CompuCell3D/discussions), or in 
+        [feature requests](https://github.com/CompuCell3D/CompuCell3D/issues/new?assignees=&labels=&projects=&template=feature_request.md&title=)
+        
+        Documentation requests should also be opened in [discussions](https://github.com/CompuCell3D/CompuCell3D/discussions).
+
+        Before opening a new feature request, please do a [search](https://github.com/CompuCell3D/CompuCell3D/issues) of existing requests and :+1: upvote the existing issue instead. This will result in a quicker resolution.
+
+        If you need help or would like to discuss CompuCell3D-related ideas, projects etc please use one of the following:
+        - Start a discussion in the ["Help"](https://github.com/CompuCell3D/CompuCell3D/discussions) section.
+        - Ask a question in [CompuCell3D Reddit Community](https://www.reddit.com/r/CompuCell3D/).
+
+  - type: dropdown
+    attributes:
+      label: Is your feature request related to a problem?
+      multiple: false
+      options:        
+        - 'Yes'
+        - 'No'
+        - 'Not sure'
+
+
+  - type: textarea
+    attributes:
+      label: Feature content, context and any additional information you would like to share?  
+      description:  Please describe.      
+      placeholder: |
+        I noticed that CompuCell3d does ... and I would like to propose the following feature as a solution to this problem
+    validations:
+      required: true

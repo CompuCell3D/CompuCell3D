@@ -1,0 +1,5 @@
+<Simulation version="4.2.5">
+   <XMLScript Type="XMLScript">Simulation/FitzHughNagumoV4.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/FitzHughNagumoV4.py</PythonScript>
+   <Resource Type="Python">Simulation/FitzHughNagumoV4Steppables.py</Resource>
+</Simulation>

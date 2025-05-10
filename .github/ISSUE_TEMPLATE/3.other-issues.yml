@@ -1,0 +1,20 @@
+name: All Other Issue
+description: Issues that are different from feature requests or bug reports. 
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We encourage to use Discussion Area for all issues that are not bug reports or feature requests. To start new discussion or participate in the existing discussion please click here        
+        [CompuCell3D Discussions](https://github.com/CompuCell3D/CompuCell3D/discussions)
+        To open a generic issue use this link:
+        [Generic Issue](https://github.com/CompuCell3D/CompuCell3D/issues/new)
+
+  - type: textarea
+    attributes:
+      label: Generic Issue  
+      description:  Please describe.      
+      placeholder: |
+        I noticed that CompuCell3d does ... and I would like to propose the following feature as a solution to this problem
+    validations:
+      required: false
+

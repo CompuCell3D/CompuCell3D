@@ -1381,12 +1381,14 @@ void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
             //we do not allow steering for motility specified by type
             sim->ppdCC3DPtr->temperature = _xmlData->getFirstElement("FluctuationAmplitude")->getDouble();
+            temperature = _xmlData->getFirstElement("FluctuationAmplitude")->getDouble();
             fluctAmplGlobalReadFlag = true;
         }
     }
 
     if (!fluctAmplGlobalReadFlag && _xmlData->getFirstElement("Temperature")) {
         sim->ppdCC3DPtr->temperature = _xmlData->getFirstElement("Temperature")->getDouble();
+        temperature = _xmlData->getFirstElement("Temperature")->getDouble();
     }
 
     if (_xmlData->getFirstElement("RandomSeed")) {
