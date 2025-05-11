@@ -6,6 +6,7 @@ CellG::CellG() :
         volume(0),
         targetVolume(0.0),
         lambdaVolume(0.0),
+        pressure(0.0),
         surface(0),
         targetSurface(0.0),
         lambdaSurface(0.0),
@@ -38,12 +39,12 @@ CellG::CellG() :
 
 
 {
-    DerivedProperty<CellG, float, &CellG::getPressure> pressure(this);
+    DerivedProperty<CellG, float, &CellG::getPressureLocal> pressureLocal(this);
     DerivedProperty<CellG, float, &CellG::getSurfaceTension> surfaceTension(this);
     DerivedProperty<CellG, float, &CellG::getClusterSurfaceTension> clusterSurfaceTension(this);
 }
 
-float CellG::getPressure() { return 2.0 * lambdaVolume * (volume - targetVolume); }
+float CellG::getPressureLocal() { return 2.0 * lambdaVolume * (volume - targetVolume); }
 
 float CellG::getSurfaceTension() { return 2.0 * lambdaSurface * (surface - targetSurface); }
 
