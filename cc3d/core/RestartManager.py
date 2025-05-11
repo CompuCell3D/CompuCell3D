@@ -1658,7 +1658,7 @@ class RestartManager:
             # print 'cell.id=',cell.id
             dictAttrib = CompuCell.getPyAttrib(cell)
             dictToPickle = {}
-            # checking which list items are picklable
+            # checking which list items are un-pickle-able
             for key in dictAttrib:
 
                 try:
@@ -1666,15 +1666,15 @@ class RestartManager:
                     dictToPickle[key] = dictAttrib[key]
 
                 except TypeError as e:
-                    # catching exceptions that my occur (for various reasons) in un-picklable objects
+                    # catching exceptions that my occur (for various reasons) in un-pickle-able objects
                     # print("key=", key, " cannot be pickled")
                     pass
                 except KeyError as e:
-                    # catching exceptions that my occur (for various reasons) in un-picklable objects
+                    # catching exceptions that my occur (for various reasons) in un-pickle-able objects
                     # print("key=", key, " cannot be pickled")
                     pass
                 except AttributeError as e:
-                    # catching exceptions that my occur (for various reasons) in un-picklable objects
+                    # catching exceptions that my occur (for various reasons) in un-pickle-able objects
                     # print("key=", key, " cannot be pickled")
                     pass
 
