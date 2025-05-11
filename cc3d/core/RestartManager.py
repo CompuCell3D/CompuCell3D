@@ -1660,17 +1660,28 @@ class RestartManager:
             dictToPickle = {}
             # checking which list items are picklable
             for key in dictAttrib:
+
                 try:
                     pickle.dump(dictAttrib[key], nullFile)
                     dictToPickle[key] = dictAttrib[key]
 
                 except TypeError as e:
-                    print("key=", key, " cannot be pickled")
-                    print(e)
+                    # catching exceptions that my occur (for various reasons) in un-picklable objects
+                    # print("key=", key, " cannot be pickled")
                     pass
+                except KeyError as e:
+                    # catching exceptions that my occur (for various reasons) in un-picklable objects
+                    # print("key=", key, " cannot be pickled")
+                    pass
+                except AttributeError as e:
+                    # catching exceptions that my occur (for various reasons) in un-picklable objects
+                    # print("key=", key, " cannot be pickled")
+                    pass
+
 
             pickle.dump(cell.id, pf)
             pickle.dump(dictToPickle, pf)
+
 
         nullFile.close()
         pf.close()
