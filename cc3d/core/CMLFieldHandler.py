@@ -190,6 +190,12 @@ class CMLFieldHandler:
             if field_name not in self.do_not_output_field_list:
                 self.field_types[field_name] = self.FIELD_TYPES[1]
 
+        # extracting information about concentration vectors
+        generic_conc_field_name_vec = sim.getGenericScalarFieldNameVectorEngineOwned()
+        for field_name in generic_conc_field_name_vec:
+            if field_name not in self.do_not_output_field_list:
+                self.field_types[field_name] = self.FIELD_TYPES[1]
+
         # inserting extra scalar fields managed from Python script
         scalar_field_name_vec = self.field_storage.getScalarFieldNameVector()
         for field_name in scalar_field_name_vec:

@@ -8,7 +8,7 @@
 #include <Utils/Coordinates3D.h>
 #include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
-//#include <vtkFloatArray.h>
+#include <vtkFloatArray.h>
 #include <vtkCharArray.h>
 #include <vtkLongArray.h>
 #include <vtkStructuredPoints.h>
@@ -24,10 +24,12 @@
 using namespace std;
 using namespace CompuCell3D;
 
-SerializerDE::SerializerDE():sim(0),potts(0),cellFieldG(0)
-{}
+SerializerDE::SerializerDE() : sim(0), potts(0), cellFieldG(0) {
+    initializeSerializeConcentrationFunctionMap();
+    initializeLoadConcentrationFunctionMap();
+}
 
-SerializerDE::~SerializerDE(){}
+SerializerDE::~SerializerDE() {}
 
 void SerializerDE::init(Simulator * _sim){
 	sim=_sim;
@@ -46,6 +48,138 @@ void SerializerDE::init(Simulator * _sim){
 	fieldDim=cellFieldG->getDim();
         
 }
+
+void SerializerDE::initializeSerializeConcentrationFunctionMap() {
+    serializeConcentrationFunctionMap = {
+            {typeid(char), [this](SerializeData& _sd, void* ptr) {
+                return this->serializeConcentrationFieldTyped<char>(_sd, static_cast<Field3D<char>*>(ptr));
+            }},
+            {typeid(unsigned char), [this](SerializeData& _sd, void* ptr) {
+                return this->serializeConcentrationFieldTyped<unsigned char>(_sd, static_cast<Field3D<unsigned char>*>(ptr));
+            }},
+            {typeid(short), [this](SerializeData& _sd, void* ptr) {
+                return this->serializeConcentrationFieldTyped<short>(_sd, static_cast<Field3D<short>*>(ptr));
+            }},
+            {typeid(unsigned short), [this](SerializeData& _sd, void* ptr) {
+                return this->serializeConcentrationFieldTyped<unsigned short>(_sd, static_cast<Field3D<unsigned short>*>(ptr));
+            }},
+            {typeid(int), [this](SerializeData& _sd, void* ptr) {
+                return this->serializeConcentrationFieldTyped<int>(_sd, static_cast<Field3D<int>*>(ptr));
+            }},
+            {typeid(unsigned int), [this](SerializeData& _sd, void* ptr) {
+                return this->serializeConcentrationFieldTyped<unsigned int>(_sd, static_cast<Field3D<unsigned int>*>(ptr));
+            }},
+            {typeid(long), [this](SerializeData& _sd, void* ptr) {
+                return this->serializeConcentrationFieldTyped<long>(_sd, static_cast<Field3D<long>*>(ptr));
+            }},
+            {typeid(unsigned long), [this](SerializeData& _sd, void* ptr) {
+                return this->serializeConcentrationFieldTyped<unsigned long>(_sd, static_cast<Field3D<unsigned long>*>(ptr));
+            }},
+            {typeid(float), [this](SerializeData& _sd, void* ptr) {
+                return this->serializeConcentrationFieldTyped<float>(_sd, static_cast<Field3D<float>*>(ptr));
+            }},
+            {typeid(double), [this](SerializeData& _sd, void* ptr) {
+                return this->serializeConcentrationFieldTyped<double>(_sd, static_cast<Field3D<double>*>(ptr));
+            }},
+            {typeid(long long), [this](SerializeData& _sd, void* ptr) {
+                return this->serializeConcentrationFieldTyped<long long>(_sd, static_cast<Field3D<long long>*>(ptr));
+            }},
+            {typeid(unsigned long long), [this](SerializeData& _sd, void* ptr) {
+                return this->serializeConcentrationFieldTyped<unsigned long long>(_sd, static_cast<Field3D<unsigned long long>*>(ptr));
+            }}
+    };
+}
+
+
+void SerializerDE::initializeLoadConcentrationFunctionMap() {
+    loadConcentrationFunctionMap = {
+            {typeid(char), [this](SerializeData& _sd, void* ptr) {
+                return this->loadConcentrationFieldTyped<char>(_sd, static_cast<Field3D<char>*>(ptr));
+            }},
+            {typeid(unsigned char), [this](SerializeData& _sd, void* ptr) {
+                return this->loadConcentrationFieldTyped<unsigned char>(_sd, static_cast<Field3D<unsigned char>*>(ptr));
+            }},
+            {typeid(short), [this](SerializeData& _sd, void* ptr) {
+                return this->loadConcentrationFieldTyped<short>(_sd, static_cast<Field3D<short>*>(ptr));
+            }},
+            {typeid(unsigned short), [this](SerializeData& _sd, void* ptr) {
+                return this->loadConcentrationFieldTyped<unsigned short>(_sd, static_cast<Field3D<unsigned short>*>(ptr));
+            }},
+            {typeid(int), [this](SerializeData& _sd, void* ptr) {
+                return this->loadConcentrationFieldTyped<int>(_sd, static_cast<Field3D<int>*>(ptr));
+            }},
+            {typeid(unsigned int), [this](SerializeData& _sd, void* ptr) {
+                return this->loadConcentrationFieldTyped<unsigned int>(_sd, static_cast<Field3D<unsigned int>*>(ptr));
+            }},
+            {typeid(long), [this](SerializeData& _sd, void* ptr) {
+                return this->loadConcentrationFieldTyped<long>(_sd, static_cast<Field3D<long>*>(ptr));
+            }},
+            {typeid(unsigned long), [this](SerializeData& _sd, void* ptr) {
+                return this->loadConcentrationFieldTyped<unsigned long>(_sd, static_cast<Field3D<unsigned long>*>(ptr));
+            }},
+            {typeid(float), [this](SerializeData& _sd, void* ptr) {
+                return this->loadConcentrationFieldTyped<float>(_sd, static_cast<Field3D<float>*>(ptr));
+            }},
+            {typeid(double), [this](SerializeData& _sd, void* ptr) {
+                return this->loadConcentrationFieldTyped<double>(_sd, static_cast<Field3D<double>*>(ptr));
+            }},
+            {typeid(long long), [this](SerializeData& _sd, void* ptr) {
+                return this->loadConcentrationFieldTyped<long long>(_sd, static_cast<Field3D<long long>*>(ptr));
+            }},
+            {typeid(unsigned long long), [this](SerializeData& _sd, void* ptr) {
+                return this->loadConcentrationFieldTyped<unsigned long long>(_sd, static_cast<Field3D<unsigned long long>*>(ptr));
+            }}
+    };
+}
+
+
+
+std::tuple<std::type_index, void*> SerializerDE::getFieldTypeAndPointer( const std::string& fieldName) {
+    Field3DTypeBase* conFieldBasePtr = sim->getGenericScalarFieldTypeBase(fieldName);
+
+
+    static const std::unordered_map<std::type_index, std::function<void*(Field3DTypeBase*)>> typeCaster = {
+            {typeid(char), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<char>*>(base)); }},
+            {typeid(unsigned char), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned char>*>(base)); }},
+            {typeid(short), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<short>*>(base)); }},
+            {typeid(unsigned short), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned short>*>(base)); }},
+            {typeid(int), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<int>*>(base)); }},
+            {typeid(unsigned int), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned int>*>(base)); }},
+            {typeid(long), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<long>*>(base)); }},
+            {typeid(unsigned long), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned long>*>(base)); }},
+            {typeid(long long), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<long long>*>(base)); }},
+            {typeid(unsigned long long), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned long long>*>(base)); }},
+            {typeid(float), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<float>*>(base)); }},
+            {typeid(double), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<double>*>(base)); }},
+            {typeid(long double), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<long double>*>(base)); }},
+    };
+    if (conFieldBasePtr) {
+        std::type_index fieldType = conFieldBasePtr->getType();
+        auto it = typeCaster.find(fieldType);
+
+        if (it != typeCaster.end()) {
+            return {fieldType, it->second(conFieldBasePtr)};
+        }
+
+    }
+
+    Field3D<float> *conFieldPtr = nullptr;
+    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
+    std::map<std::string, Field3D<float> *>::iterator mitr;
+    mitr = fieldMap.find(fieldName);
+    if (mitr != fieldMap.end()) {
+        conFieldPtr = mitr->second;
+    }
+
+    if (conFieldPtr){
+
+        return {std::type_index(typeid(float)), conFieldPtr};
+    }
+
+
+    return {std::type_index(typeid(void)), nullptr};  // Unsupported type
+}
+
 
 bool SerializerDE::serializeCellField(SerializeData &_sd){
 	vtkStructuredPoints *fieldData=vtkStructuredPoints::New();
@@ -203,58 +337,47 @@ bool SerializerDE::loadCellField(SerializeData &_sd){
 
 
 
+template<typename T>
+bool SerializerDE::serializeConcentrationFieldTyped(SerializeData &_sd, Field3D<T> *fieldPtr){
 
-bool SerializerDE::serializeConcentrationField(SerializeData &_sd){
-	
-	
-	vtkStructuredPoints *fieldData=vtkStructuredPoints::New();
-	fieldData->SetDimensions(fieldDim.x,fieldDim.y,fieldDim.z);
-	
+    vtkStructuredPoints *fieldData=vtkStructuredPoints::New();
+    fieldData->SetDimensions(fieldDim.x,fieldDim.y,fieldDim.z);
 
-	Field3D<float> *fieldPtr=0; 
-	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-	std::map<std::string,Field3D<float>*>::iterator mitr;
-	mitr=fieldMap.find(_sd.objectName);
-	if(mitr!=fieldMap.end()){
-		fieldPtr=mitr->second;
-	}
+    if(!fieldPtr)
+        return false;
 
-	
-	if(!fieldPtr)
-		return false;
+    vtkDoubleArray *fieldArray=vtkDoubleArray::New();
+    fieldArray->SetName(_sd.objectName.c_str());
+    //arrayNameVec.push_back(_sd.objectName);
 
-	vtkDoubleArray *fieldArray=vtkDoubleArray::New();
-	fieldArray->SetName(_sd.objectName.c_str());
-	//arrayNameVec.push_back(_sd.objectName);	
+    long numberOfValues=fieldDim.x*fieldDim.y*fieldDim.z;
 
-	long numberOfValues=fieldDim.x*fieldDim.y*fieldDim.z;
+    fieldArray->SetNumberOfValues(numberOfValues);
+    long offset=0;
+    Point3D pt;
 
-	fieldArray->SetNumberOfValues(numberOfValues);
-	long offset=0;
-	Point3D pt;
+    for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
+        for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
+            for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
 
-	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
-		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
-			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
-
-				fieldArray->SetValue(offset,fieldPtr->get(pt));
-				++offset;
-			}
-	fieldData->GetPointData()->AddArray(fieldArray);
-	fieldArray->Delete();
+                fieldArray->SetValue(offset,fieldPtr->get(pt));
+                ++offset;
+            }
+    fieldData->GetPointData()->AddArray(fieldArray);
+    fieldArray->Delete();
 
 
     //writing structured points to the disk
-	vtkStructuredPointsWriter * fieldDataWriter=vtkStructuredPointsWriter::New();
-	fieldDataWriter->SetFileName(_sd.fileName.c_str());
+    vtkStructuredPointsWriter * fieldDataWriter=vtkStructuredPointsWriter::New();
+    fieldDataWriter->SetFileName(_sd.fileName.c_str());
 
-	bool binaryFlag=(_sd.fileFormat=="binary");	
+    bool binaryFlag=(_sd.fileFormat=="binary");
 
-	if (binaryFlag)
-	    fieldDataWriter->SetFileTypeToBinary();
-	else
-	    fieldDataWriter->SetFileTypeToASCII();
-        
+    if (binaryFlag)
+        fieldDataWriter->SetFileTypeToBinary();
+    else
+        fieldDataWriter->SetFileTypeToASCII();
+
 #if defined(VTK6) || defined(VTK9)
     fieldDataWriter->SetInputData(fieldData);
 #endif
@@ -264,62 +387,104 @@ bool SerializerDE::serializeConcentrationField(SerializeData &_sd){
 
 
     fieldDataWriter->Write();
-	fieldDataWriter->Delete();
+    fieldDataWriter->Delete();
 
-	return true;
+    return true;
+
 
 }
 
-bool SerializerDE::loadConcentrationField(SerializeData &_sd){
 
-	Field3D<float> *fieldPtr=0; 
-	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-	std::map<std::string,Field3D<float>*>::iterator mitr;
-	mitr=fieldMap.find(_sd.objectName);
-	if(mitr!=fieldMap.end()){
-		fieldPtr=mitr->second;
-	}
-	
-	if(!fieldPtr)
-		return false;
+bool SerializerDE::serializeConcentrationField(SerializeData &_sd){
+
+    // Retrieve field type and pointer
+    auto result = getFieldTypeAndPointer(_sd.objectName);
+    std::type_index fieldType = std::get<0>(result);
+    void* fieldPtr = std::get<1>(result);
+
+    if (!fieldPtr || fieldType == typeid(void)) {
+        return false;
+    }
+
+
+    // Look up the function in serializeConcentrationFunctionMap
+
+    auto it = serializeConcentrationFunctionMap.find(fieldType);
+    if (it != serializeConcentrationFunctionMap.end()) {
+        return it->second(_sd, fieldPtr);
+    }
+
+    return false;
+
+
+
+}
+
+template<typename T>
+bool SerializerDE::loadConcentrationFieldTyped(SerializeData &_sd, Field3D<T> *fieldPtr){
+
+    if(!fieldPtr)
+        return false;
 
 
     //writing structured points to the disk
-	vtkStructuredPointsReader * fieldDataReader=vtkStructuredPointsReader::New();
-	fieldDataReader->SetFileName(_sd.fileName.c_str());
+    vtkStructuredPointsReader * fieldDataReader=vtkStructuredPointsReader::New();
+    fieldDataReader->SetFileName(_sd.fileName.c_str());
 
-	bool binaryFlag=(_sd.fileFormat=="binary");	
+    bool binaryFlag=(_sd.fileFormat=="binary");
 
-	//if (binaryFlag)
-	//    fieldDataReader->SetFileTypeToBinary();
-	//else
-	//    fieldDataReader->SetFileTypeToASCII();
-	fieldDataReader->Update();
-	vtkStructuredPoints *fieldData=fieldDataReader->GetOutput();
+    //if (binaryFlag)
+    //    fieldDataReader->SetFileTypeToBinary();
+    //else
+    //    fieldDataReader->SetFileTypeToASCII();
+    fieldDataReader->Update();
+    vtkStructuredPoints *fieldData=fieldDataReader->GetOutput();
 
-	vtkDoubleArray *fieldArray =(vtkDoubleArray *) fieldData->GetPointData()->GetArray(_sd.objectName.c_str());
-	
-	Point3D pt;
-	
-	long offset=0;
-	double val;
-	
+    vtkDoubleArray *fieldArray =(vtkDoubleArray *) fieldData->GetPointData()->GetArray(_sd.objectName.c_str());
 
-	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
-		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
-			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
-				val=fieldArray ->GetValue(offset);
-				fieldPtr->set(pt,val);
-				++offset;
-			}
+    Point3D pt;
 
-	fieldDataReader->Delete();
+    long offset=0;
+    double val;
 
-	return true;
 
+    for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
+        for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
+            for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
+                val=fieldArray ->GetValue(offset);
+                fieldPtr->set(pt,val);
+                ++offset;
+            }
+
+    fieldDataReader->Delete();
+
+    return true;
+    
+    
+    
 }
 
 
+bool SerializerDE::loadConcentrationField(SerializeData &_sd){
+
+    // Retrieve field type and pointer
+    auto result = getFieldTypeAndPointer(_sd.objectName);
+    std::type_index fieldType = std::get<0>(result);
+    void* fieldPtr = std::get<1>(result);
+
+    if (!fieldPtr || fieldType == typeid(void)) {
+        return false;
+    }
+
+    // Look up the function in loadConcentrationFunctionMap
+    auto it = loadConcentrationFunctionMap.find(fieldType);
+    if (it != loadConcentrationFunctionMap.end()) {
+        return it->second(_sd, fieldPtr);
+    }
+
+    return false;
+
+}
 
 bool SerializerDE::serializeScalarField(SerializeData &_sd){
 	if (!_sd.objectPtr)
@@ -550,6 +715,129 @@ bool SerializerDE::loadScalarFieldCellLevel(SerializeData &_sd){
 
 	
 }
+
+
+bool SerializerDE::serializeSharedVectorFieldNumpy(SerializeData &_sd){
+
+    Simulator::vectorField3DNumpyImpl_t * fieldPtr = nullptr;
+    std::map<std::string,Simulator::vectorField3DNumpyImpl_t*> vectorFieldMap=sim->getVectorFieldMap();
+    auto mitr=vectorFieldMap.find(_sd.objectName);
+    if(mitr != vectorFieldMap.end()){
+        fieldPtr = mitr->second;
+    }
+
+    if(!fieldPtr)
+        return false;
+
+
+    vtkStructuredPoints *fieldData=vtkStructuredPoints::New();
+    fieldData->SetDimensions(fieldDim.x,fieldDim.y,fieldDim.z);
+
+
+
+    vtkFloatArray *fieldArray=vtkFloatArray::New();
+    fieldArray->SetNumberOfComponents(3); // we will store here 3 component vectors, not scalars
+    fieldArray->SetName(_sd.objectName.c_str());
+    //arrayNameVec.push_back(_sd.objectName);
+
+    long numberOfValues=fieldDim.x*fieldDim.y*fieldDim.z;
+
+    fieldArray->SetNumberOfTuples(numberOfValues);
+    long offset=0;
+    Point3D pt;
+// 	Coordinates3D<float> vecTmp;
+    float x,y,z;
+
+    for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
+        for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
+            for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
+                auto vec =  fieldPtr->get(pt);
+// 				vecTmp=(*fieldPtr)[pt.x][pt.y][pt.z];
+                fieldArray->SetTuple3(offset,vec.x,vec.y,vec.z);
+//                CC3D_Log(LOG_TRACE) << "vec=" << x << ", " << y << ", " << z;
+// 				fieldArray->SetTuple3(offset,vecTmp.x,vecTmp.y,vecTmp.z);
+                ++offset;
+
+            }
+    fieldData->GetPointData()->AddArray(fieldArray);
+    fieldArray->Delete();
+
+
+    //writing structured points to the disk
+    vtkStructuredPointsWriter * fieldDataWriter=vtkStructuredPointsWriter::New();
+    fieldDataWriter->SetFileName(_sd.fileName.c_str());
+
+    bool binaryFlag=(_sd.fileFormat=="binary");
+
+    if (binaryFlag)
+        fieldDataWriter->SetFileTypeToBinary();
+    else
+        fieldDataWriter->SetFileTypeToASCII();
+
+#if defined(VTK6) || defined(VTK9)
+    fieldDataWriter->SetInputData(fieldData);
+#endif
+#if !defined(VTK6) && !defined(VTK9)
+    fieldDataWriter->SetInput(fieldData);
+#endif
+
+
+    fieldDataWriter->Write();
+    fieldDataWriter->Delete();
+
+    return true;
+
+}
+
+bool SerializerDE::loadSharedVectorFieldNumpy(SerializeData &_sd) {
+
+    Simulator::vectorField3DNumpyImpl_t * fieldPtr = nullptr;
+    std::map<std::string,Simulator::vectorField3DNumpyImpl_t*> vectorFieldMap=sim->getVectorFieldMap();
+    auto mitr=vectorFieldMap.find(_sd.objectName);
+    if(mitr != vectorFieldMap.end()){
+        fieldPtr = mitr->second;
+    }
+
+    if(!fieldPtr)
+        return false;
+
+    vtkStructuredPointsReader * fieldDataReader=vtkStructuredPointsReader::New();
+    fieldDataReader->SetFileName(_sd.fileName.c_str());
+
+    bool binaryFlag=(_sd.fileFormat=="binary");
+
+    //if (binaryFlag)
+    //    fieldDataReader->SetFileTypeToBinary();
+    //else
+    //    fieldDataReader->SetFileTypeToASCII();
+    fieldDataReader->Update();
+    vtkStructuredPoints *fieldData=fieldDataReader->GetOutput();
+
+    auto *fieldArray =(vtkFloatArray *) fieldData->GetPointData()->GetArray(_sd.objectName.c_str());
+
+
+    long offset=0;
+    Point3D pt;
+
+    float tuple[3];
+
+    for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)
+        for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
+            for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
+
+                fieldArray->GetTypedTuple(offset,tuple);
+                fieldPtr->set(pt, Coordinates3D<float>(tuple[0], tuple[1], tuple[2]));
+                ++offset;
+
+            }
+
+
+    fieldDataReader->Delete();
+    return true;
+
+
+}
+
 
 
 bool SerializerDE::serializeVectorField(SerializeData &_sd){

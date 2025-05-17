@@ -12,6 +12,8 @@
 // *************************************************************
 
 
+
+
 namespace CompuCell3D{
  class CellG;   
  typedef CellG * cellGPtr_t;
@@ -33,6 +35,7 @@ namespace CompuCell3D{
 
 
 
+
 %}
 
 
@@ -42,12 +45,14 @@ namespace CompuCell3D{
 #include <Utils/Coordinates3D.h>
 #include <FieldStorage.h>
 
-#include <ndarray_adapter.h>
+#include "CompuCell3D/Field3D/ndarray_adapter.h"
+#include "CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h"
 
 #include <FieldExtractorTypes.h>
 
 #include <FieldExtractorBase.h>
 #include <FieldExtractor.h>
+#include <FieldCopier.h>
 #include <FieldExtractorCML.h>
 #include <FieldWriter.h>
 #include <FieldWriterCML.h>
@@ -126,8 +131,7 @@ class CellG;
 
 
 
-
-%include <ndarray_adapter.h>
+%include "CompuCell3D/Field3D/ndarray_adapter.h"
 
 %template(NdarrayAdapterDouble3) NdarrayAdapter<float,3>; //for storing scalar fieldas
 %template(NdarrayAdapterDouble4) NdarrayAdapter<float,4>; //for storing vector fieldas
@@ -198,16 +202,22 @@ class CellG;
   float getItem(const std::vector<long> & _coord){
       return (*($self))[_coord[0]][_coord[1]][_coord[2]][_coord[3]];
   }
-  
-  
-      
+
 };
+
+
+
+
+%include "CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h"
+%template(VectorNumpyArrayWrapper3DImplFloat) CompuCell3D::VectorNumpyArrayWrapper3DImpl<float>;
+%template(VectorNumpyArrayWrapper3DImplDouble) CompuCell3D::VectorNumpyArrayWrapper3DImpl<double>;
 
 %include <FieldExtractorTypes.h>
 %include <FieldStorage.h>
 %include <FieldExtractorBase.h>
 %include <FieldExtractor.h>
 %include <FieldExtractorCML.h>
+%include <FieldCopier.h>
 %include <FieldWriter.h>
 %include <FieldWriterCML.h>
 %include <FieldStreamer.h>

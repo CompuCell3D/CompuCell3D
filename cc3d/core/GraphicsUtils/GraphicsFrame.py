@@ -154,6 +154,20 @@ class GraphicsFrame:
 
         return cc3d.CompuCellSetup.persistent_globals.simulator.getConcentrationFieldNameVector()
 
+
+    def get_vector_field_names_engine_owned(self) -> List[str]:
+        """
+        Get the current list of vector field names that were created inside C+ engine
+
+        Subclasses should override this when avoiding persistent globals.
+
+        :return: list of concentration field names
+        :rtype: List[str]
+        """
+
+        return cc3d.CompuCellSetup.persistent_globals.simulator.getVectorFieldNameVectorEngineOwned()
+
+
     def get_fields_to_create(self) -> Dict[str, str]:
         """
         Get the current names and types of fields to create.
@@ -173,6 +187,9 @@ class GraphicsFrame:
 
         :return: None
         """
+        # most likely this function can be eliminated altogether - field type initialization takes place in
+        # setFieldTypes in SimpleTabView.py
+
         if cc3d.CompuCellSetup.persistent_globals.simulator is not None:
 
             self.fieldTypes["Cell_Field"] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[CELL_FIELD]
@@ -180,6 +197,9 @@ class GraphicsFrame:
             # get concentration fields from simulator
             for fieldName in self.get_concentration_field_names():
                 self.fieldTypes[fieldName] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[CON_FIELD]
+
+            # for fieldName in self.get_vector_field_names_engine_owned():
+            #     self.fieldTypes[fieldName] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[SHARED_VECTOR_NUMPY_FIELD]
 
             # inserting extra scalar fields managed from Python script
             for field_name, field_type in self.get_fields_to_create().items():
@@ -212,12 +232,18 @@ class GraphicsFrame:
         :return: auxiliary data
         :rtype: dict
         """
+        # field_type = field_type if isinstance(field_type, str) else field_type.field_type
+        field_type = get_field_type(field_type_obj=field_type)
+        field_precision_type = get_field_precision_type(field_type_obj=field_type)
         try:
             metadata_fetcher_fcn = self.metadata_fetcher_dict[field_type]
         except KeyError:
             return {}
 
         metadata = metadata_fetcher_fcn(field_name, field_type)
+        # adding field precision type
+        metadata['field_precision'] = field_precision_type
+
 
         return metadata
 

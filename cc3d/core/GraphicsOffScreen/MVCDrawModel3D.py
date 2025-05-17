@@ -345,7 +345,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         centroid_polydata.GetPointData().AddArray(scalar_value_at_com_array)
 
-        field_type = drawing_params.fieldType.lower()
+        field_type = self.get_field_type(drawing_params=drawing_params)
+
         field_name = drawing_params.fieldName
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
@@ -519,7 +520,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
         cell_type_con.SetName("concelltype")
         cell_type_con_int_addr = extract_address_int_from_vtk_object(vtkObj=cell_type_con)
 
-        field_type = drawing_params.fieldType.lower()
+        field_type = self.get_field_type(drawing_params=drawing_params)
+
         # cell_type thresholding will return 0-1 array 0 for medium and 1 for all other visible types
         use_cell_type_thresholding = not show_contours
 
@@ -703,7 +705,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         field_name = drawing_params.fieldName
-        field_type = drawing_params.fieldType.lower()
+        field_type = self.get_field_type(drawing_params=drawing_params)
+
         scene_metadata = drawing_params.screenshot_data.metadata
         mdata = MetadataHandler(mdata=scene_metadata)
 
