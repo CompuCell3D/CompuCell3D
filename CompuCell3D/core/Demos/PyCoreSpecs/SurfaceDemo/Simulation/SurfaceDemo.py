@@ -32,7 +32,7 @@ CompuCellSetup.register_specs(PottsCore(dim_x=dim_x,
                                         neighbor_order=2,
                                         boundary_x="Periodic",
                                         boundary_y="Periodic",
-                                        fluctuation_amplitude=1))
+                                        fluctuation_amplitude=10))
 
 # Specify cell types
 CompuCellSetup.register_specs(CellTypePlugin(*cell_types))
