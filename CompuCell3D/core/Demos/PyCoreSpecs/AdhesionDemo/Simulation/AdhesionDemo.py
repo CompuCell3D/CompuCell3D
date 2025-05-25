@@ -31,6 +31,7 @@ CompuCellSetup.register_specs(Metadata(num_processors=4))
 CompuCellSetup.register_specs(PottsCore(dim_x=dim_x,
                                         dim_y=dim_y,
                                         steps=1000000,
+                                        fluctuation_amplitude=10,
                                         neighbor_order=2,
                                         boundary_x="Periodic",
                                         boundary_y="Periodic"))
