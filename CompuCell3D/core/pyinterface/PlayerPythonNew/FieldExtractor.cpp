@@ -29,12 +29,218 @@ using namespace CompuCell3D;
 
 #include "FieldExtractor.h"
 
-FieldExtractor::FieldExtractor() : fsPtr(0), potts(0), sim(0) {
+FieldExtractor::FieldExtractor() : fsPtr(nullptr), potts(nullptr), sim(nullptr) {
+    initializeCartesianConcentrationFunctionMap2D();
+    initializeHexConcentrationFunctionMap2D();
+    initializeCartesianNonPixelizedConcentrationFunctionMap2D();
+    initializeConcentrationFunctionMap3D();
+    initializeConcentrationGlyphFunctionMap3D();
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FieldExtractor::~FieldExtractor() {
 
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void FieldExtractor::initializeCartesianConcentrationFunctionMap2D(){
+        cartesianConcentrationFunctionMap = {
+            {typeid(char), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<char>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<char>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned char), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<unsigned char>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned char>*>(ptr), _plane, _pos);
+            }},
+            {typeid(short), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<short>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<short>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned short), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<unsigned short>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned short>*>(ptr), _plane, _pos);
+            }},
+            {typeid(int), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<int>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<int>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned int), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<unsigned int>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned int>*>(ptr), _plane, _pos);
+            }},
+            {typeid(long), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<long>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned long), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<unsigned long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned long>*>(ptr), _plane, _pos);
+            }},
+            {typeid(float), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<float>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<float>*>(ptr), _plane, _pos);
+            }},
+            {typeid(double), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianTyped<double>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<double>*>(ptr), _plane, _pos);
+            }}
+    };
+
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void FieldExtractor::initializeHexConcentrationFunctionMap2D(){
+    hexConcentrationFunctionMap = {
+            {typeid(char), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DHexTyped<char>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<char>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned char), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DHexTyped<unsigned char>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned char>*>(ptr), _plane, _pos);
+            }},
+            {typeid(short), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DHexTyped<short>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<short>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned short), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DHexTyped<unsigned short>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned short>*>(ptr), _plane, _pos);
+            }},
+            {typeid(int), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DHexTyped<int>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<int>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned int), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DHexTyped<unsigned int>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned int>*>(ptr), _plane, _pos);
+            }},
+            {typeid(long), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DHexTyped<long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<long>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned long), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DHexTyped<unsigned long>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<unsigned long>*>(ptr), _plane, _pos);
+            }},
+            {typeid(float), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DHexTyped<float>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<float>*>(ptr), _plane, _pos);
+            }},
+            {typeid(double), [this](void* ptr, vtkDoubleArray* conArray, vtkCellArray* _cartesianCellsArray, vtkPoints* _pointsArray, std::string _plane, int _pos) {
+                return this->fillConFieldData2DHexTyped<double>(conArray, _cartesianCellsArray, _pointsArray, static_cast<Field3D<double>*>(ptr), _plane, _pos);
+            }}
+    };    
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void FieldExtractor::initializeCartesianNonPixelizedConcentrationFunctionMap2D(){
+    cartesianNonPixelizedConcentrationFunctionMap = {
+            {typeid(char), [this](void* ptr, vtkDoubleArray* conArray,  std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianNonPixelizedTyped<char>(conArray,  static_cast<Field3D<char>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned char), [this](void* ptr, vtkDoubleArray* conArray,  std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianNonPixelizedTyped<unsigned char>(conArray,  static_cast<Field3D<unsigned char>*>(ptr), _plane, _pos);
+            }},
+            {typeid(short), [this](void* ptr, vtkDoubleArray* conArray,  std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianNonPixelizedTyped<short>(conArray,  static_cast<Field3D<short>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned short), [this](void* ptr, vtkDoubleArray* conArray,  std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianNonPixelizedTyped<unsigned short>(conArray,  static_cast<Field3D<unsigned short>*>(ptr), _plane, _pos);
+            }},
+            {typeid(int), [this](void* ptr, vtkDoubleArray* conArray,  std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianNonPixelizedTyped<int>(conArray,  static_cast<Field3D<int>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned int), [this](void* ptr, vtkDoubleArray* conArray,  std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianNonPixelizedTyped<unsigned int>(conArray,  static_cast<Field3D<unsigned int>*>(ptr), _plane, _pos);
+            }},
+            {typeid(long), [this](void* ptr, vtkDoubleArray* conArray,  std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianNonPixelizedTyped<long>(conArray,  static_cast<Field3D<long>*>(ptr), _plane, _pos);
+            }},
+            {typeid(unsigned long), [this](void* ptr, vtkDoubleArray* conArray,  std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianNonPixelizedTyped<unsigned long>(conArray,  static_cast<Field3D<unsigned long>*>(ptr), _plane, _pos);
+            }},
+            {typeid(float), [this](void* ptr, vtkDoubleArray* conArray,  std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianNonPixelizedTyped<float>(conArray,  static_cast<Field3D<float>*>(ptr), _plane, _pos);
+            }},
+            {typeid(double), [this](void* ptr, vtkDoubleArray* conArray,  std::string _plane, int _pos) {
+                return this->fillConFieldData2DCartesianNonPixelizedTyped<double>(conArray,  static_cast<Field3D<double>*>(ptr), _plane, _pos);
+            }}
+    };
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void FieldExtractor::initializeConcentrationGlyphFunctionMap3D() {
+    concentration3DGlyphFunctionMap = {
+            {typeid(char), [this](void* ptr, vtkPoints *centroids_array_addr, vtkFloatArray *scalar_value_at_com_addr,
+                                  vtkFloatArray *vol_scaling_factors_array_addr, std::vector<int> *types_invisible_vec, bool type_indicator_only) {
+                return this->fillConFieldGlyphData3DTyped<char>(centroids_array_addr, scalar_value_at_com_addr, vol_scaling_factors_array_addr,
+                                                                static_cast<Field3D<char>*>(ptr), types_invisible_vec, type_indicator_only);
+            }},
+            {typeid(unsigned char), [this](void* ptr, vtkPoints *centroids_array_addr, vtkFloatArray *scalar_value_at_com_addr,
+                                           vtkFloatArray *vol_scaling_factors_array_addr, std::vector<int> *types_invisible_vec, bool type_indicator_only) {
+                return this->fillConFieldGlyphData3DTyped<unsigned char>(centroids_array_addr, scalar_value_at_com_addr, vol_scaling_factors_array_addr,
+                                                                         static_cast<Field3D<unsigned char>*>(ptr), types_invisible_vec, type_indicator_only);
+            }},
+            {typeid(short), [this](void* ptr, vtkPoints *centroids_array_addr, vtkFloatArray *scalar_value_at_com_addr,
+                                   vtkFloatArray *vol_scaling_factors_array_addr, std::vector<int> *types_invisible_vec, bool type_indicator_only) {
+                return this->fillConFieldGlyphData3DTyped<short>(centroids_array_addr, scalar_value_at_com_addr, vol_scaling_factors_array_addr,
+                                                                 static_cast<Field3D<short>*>(ptr), types_invisible_vec, type_indicator_only);
+            }},
+            {typeid(unsigned short), [this](void* ptr, vtkPoints *centroids_array_addr, vtkFloatArray *scalar_value_at_com_addr,
+                                            vtkFloatArray *vol_scaling_factors_array_addr, std::vector<int> *types_invisible_vec, bool type_indicator_only) {
+                return this->fillConFieldGlyphData3DTyped<unsigned short>(centroids_array_addr, scalar_value_at_com_addr, vol_scaling_factors_array_addr,
+                                                                          static_cast<Field3D<unsigned short>*>(ptr), types_invisible_vec, type_indicator_only);
+            }},
+            {typeid(int), [this](void* ptr, vtkPoints *centroids_array_addr, vtkFloatArray *scalar_value_at_com_addr,
+                                 vtkFloatArray *vol_scaling_factors_array_addr, std::vector<int> *types_invisible_vec, bool type_indicator_only) {
+                return this->fillConFieldGlyphData3DTyped<int>(centroids_array_addr, scalar_value_at_com_addr, vol_scaling_factors_array_addr,
+                                                               static_cast<Field3D<int>*>(ptr), types_invisible_vec, type_indicator_only);
+            }},
+            {typeid(unsigned int), [this](void* ptr, vtkPoints *centroids_array_addr, vtkFloatArray *scalar_value_at_com_addr,
+                                          vtkFloatArray *vol_scaling_factors_array_addr, std::vector<int> *types_invisible_vec, bool type_indicator_only) {
+                return this->fillConFieldGlyphData3DTyped<unsigned int>(centroids_array_addr, scalar_value_at_com_addr, vol_scaling_factors_array_addr,
+                                                                        static_cast<Field3D<unsigned int>*>(ptr), types_invisible_vec, type_indicator_only);
+            }},
+            {typeid(long), [this](void* ptr, vtkPoints *centroids_array_addr, vtkFloatArray *scalar_value_at_com_addr,
+                                  vtkFloatArray *vol_scaling_factors_array_addr, std::vector<int> *types_invisible_vec, bool type_indicator_only) {
+                return this->fillConFieldGlyphData3DTyped<long>(centroids_array_addr, scalar_value_at_com_addr, vol_scaling_factors_array_addr,
+                                                                static_cast<Field3D<long>*>(ptr), types_invisible_vec, type_indicator_only);
+            }},
+            {typeid(unsigned long), [this](void* ptr, vtkPoints *centroids_array_addr, vtkFloatArray *scalar_value_at_com_addr,
+                                           vtkFloatArray *vol_scaling_factors_array_addr, std::vector<int> *types_invisible_vec, bool type_indicator_only) {
+                return this->fillConFieldGlyphData3DTyped<unsigned long>(centroids_array_addr, scalar_value_at_com_addr, vol_scaling_factors_array_addr,
+                                                                         static_cast<Field3D<unsigned long>*>(ptr), types_invisible_vec, type_indicator_only);
+            }},
+            {typeid(float), [this](void* ptr, vtkPoints *centroids_array_addr, vtkFloatArray *scalar_value_at_com_addr,
+                                   vtkFloatArray *vol_scaling_factors_array_addr, std::vector<int> *types_invisible_vec, bool type_indicator_only) {
+                return this->fillConFieldGlyphData3DTyped<float>(centroids_array_addr, scalar_value_at_com_addr, vol_scaling_factors_array_addr,
+                                                                 static_cast<Field3D<float>*>(ptr), types_invisible_vec, type_indicator_only);
+            }},
+            {typeid(double), [this](void* ptr, vtkPoints *centroids_array_addr, vtkFloatArray *scalar_value_at_com_addr,
+                                    vtkFloatArray *vol_scaling_factors_array_addr, std::vector<int> *types_invisible_vec, bool type_indicator_only) {
+                return this->fillConFieldGlyphData3DTyped<double>(centroids_array_addr, scalar_value_at_com_addr, vol_scaling_factors_array_addr,
+                                                                  static_cast<Field3D<double>*>(ptr), types_invisible_vec, type_indicator_only);
+            }}
+    };
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void FieldExtractor::initializeConcentrationFunctionMap3D(){
+    concentration3DFunctionMap = {
+            {typeid(char), [this](void* ptr, vtkDoubleArray* conArray, vtkIntArray *cellTypeArrayAddr, std::vector<int> *typesInvisibleVec, bool type_indicator_only) {
+                return this->fillConFieldData3DTyped<char>(conArray, cellTypeArrayAddr,  static_cast<Field3D<char>*>(ptr), typesInvisibleVec, type_indicator_only);
+            }}
+            ,
+            {typeid(unsigned char), [this](void* ptr, vtkDoubleArray* conArray, vtkIntArray *cellTypeArrayAddr, std::vector<int> *typesInvisibleVec, bool type_indicator_only) {
+                return this->fillConFieldData3DTyped<unsigned char>(conArray, cellTypeArrayAddr,  static_cast<Field3D<unsigned char>*>(ptr), typesInvisibleVec, type_indicator_only);
+            }},
+            {typeid(short), [this](void* ptr, vtkDoubleArray* conArray, vtkIntArray *cellTypeArrayAddr, std::vector<int> *typesInvisibleVec, bool type_indicator_only) {
+                return this->fillConFieldData3DTyped<short>(conArray, cellTypeArrayAddr,  static_cast<Field3D<short>*>(ptr), typesInvisibleVec, type_indicator_only);
+            }},
+            {typeid(unsigned short), [this](void* ptr, vtkDoubleArray* conArray, vtkIntArray *cellTypeArrayAddr, std::vector<int> *typesInvisibleVec, bool type_indicator_only) {
+                return this->fillConFieldData3DTyped<unsigned short>(conArray, cellTypeArrayAddr,  static_cast<Field3D<unsigned short>*>(ptr), typesInvisibleVec, type_indicator_only);
+            }},
+            {typeid(int), [this](void* ptr, vtkDoubleArray* conArray, vtkIntArray *cellTypeArrayAddr, std::vector<int> *typesInvisibleVec, bool type_indicator_only) {
+                return this->fillConFieldData3DTyped<int>(conArray, cellTypeArrayAddr,  static_cast<Field3D<int>*>(ptr), typesInvisibleVec, type_indicator_only);
+            }},
+            {typeid(unsigned int), [this](void* ptr, vtkDoubleArray* conArray, vtkIntArray *cellTypeArrayAddr, std::vector<int> *typesInvisibleVec, bool type_indicator_only) {
+                return this->fillConFieldData3DTyped<unsigned int>(conArray, cellTypeArrayAddr,  static_cast<Field3D<unsigned int>*>(ptr), typesInvisibleVec, type_indicator_only);
+            }},
+            {typeid(long), [this](void* ptr, vtkDoubleArray* conArray, vtkIntArray *cellTypeArrayAddr, std::vector<int> *typesInvisibleVec, bool type_indicator_only) {
+                return this->fillConFieldData3DTyped<long>(conArray, cellTypeArrayAddr,  static_cast<Field3D<long>*>(ptr), typesInvisibleVec, type_indicator_only);
+            }},
+            {typeid(unsigned long), [this](void* ptr, vtkDoubleArray* conArray, vtkIntArray *cellTypeArrayAddr, std::vector<int> *typesInvisibleVec, bool type_indicator_only) {
+                return this->fillConFieldData3DTyped<unsigned long>(conArray, cellTypeArrayAddr,  static_cast<Field3D<unsigned long>*>(ptr), typesInvisibleVec, type_indicator_only);
+            }},
+            {typeid(float), [this](void* ptr, vtkDoubleArray* conArray, vtkIntArray *cellTypeArrayAddr, std::vector<int> *typesInvisibleVec, bool type_indicator_only) {
+                return this->fillConFieldData3DTyped<float>(conArray, cellTypeArrayAddr,  static_cast<Field3D<float>*>(ptr), typesInvisibleVec, type_indicator_only);
+            }},
+            {typeid(double), [this](void* ptr, vtkDoubleArray* conArray, vtkIntArray *cellTypeArrayAddr, std::vector<int> *typesInvisibleVec, bool type_indicator_only) {
+                return this->fillConFieldData3DTyped<double>(conArray, cellTypeArrayAddr,  static_cast<Field3D<double>*>(ptr), typesInvisibleVec, type_indicator_only);
+            }}
+    };
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1416,23 +1622,41 @@ void FieldExtractor::fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_
     }
 }
 
-bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr,
-                                           vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
-                                           std::string _plane, int _pos) {
-    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
 
-    vtkCellArray *_hexCellsArray = (vtkCellArray *) _hexCellsArrayAddr;
+bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,
+                                                 vtk_obj_addr_int_t _hexCellsArrayAddr,
+                                                 vtk_obj_addr_int_t _pointsArrayAddr,
+                                                 std::string _conFieldName,
+                                                 std::string _plane, int _pos) {
 
-    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
+    vtkDoubleArray *conArray = reinterpret_cast<vtkDoubleArray *>(_conArrayAddr);
+    vtkCellArray *_hexCellsArray = reinterpret_cast<vtkCellArray *>(_hexCellsArrayAddr);
+    vtkPoints *_pointsArray = reinterpret_cast<vtkPoints *>(_pointsArrayAddr);
 
+    // Retrieve field type and pointer
+    auto result = getFieldTypeAndPointer(_conFieldName);
+    std::type_index fieldType = std::get<0>(result);
+    void* fieldPtr = std::get<1>(result);
 
-    Field3D<float> *conFieldPtr = 0;
-    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
-    std::map<std::string, Field3D<float> *>::iterator mitr;
-    mitr = fieldMap.find(_conFieldName);
-    if (mitr != fieldMap.end()) {
-        conFieldPtr = mitr->second;
+    if (!fieldPtr || fieldType == typeid(void)) {
+        return false;
     }
+
+    // Look up the function in cartesianConcentrationFunctionMap
+    auto it = hexConcentrationFunctionMap.find(fieldType);
+    if (it != hexConcentrationFunctionMap.end()) {
+        return it->second(fieldPtr, conArray, _hexCellsArray, _pointsArray, _plane, _pos);
+    }
+
+    return false;
+}
+
+
+
+template <typename T>
+bool FieldExtractor::fillConFieldData2DHexTyped(vtkDoubleArray *conArray, vtkCellArray *_hexCellsArray,
+                                                      vtkPoints *_pointsArray, Field3D<T> *conFieldPtr,
+                                                      std::string _plane, int _pos) {
 
     if (!conFieldPtr)
         return false;
@@ -1495,57 +1719,35 @@ bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr, vtk
             conArray->InsertNextValue(con);
         }
     return true;
-
+    
+    
 }
 
-bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,
-                                                 vtk_obj_addr_int_t _cartesianCellsArrayAddr,
-                                                 vtk_obj_addr_int_t _pointsArrayAddr, std::string _conFieldName,
-                                                 std::string _plane, int _pos) {
-
-    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
-    vtkCellArray *_cartesianCellsArray = (vtkCellArray *) _cartesianCellsArrayAddr;
-    vtkPoints *_pointsArray = (vtkPoints *) _pointsArrayAddr;
-
-    Field3D<float> *conFieldPtr = 0;
-    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
-    std::map<std::string, Field3D<float> *>::iterator mitr;
-    mitr = fieldMap.find(_conFieldName);
-    if (mitr != fieldMap.end()) {
-        conFieldPtr = mitr->second;
-    }
-
-    if (!conFieldPtr)
-        return false;
+template <typename T>
+bool FieldExtractor::fillConFieldData2DCartesianTyped(vtkDoubleArray *conArray, vtkCellArray *_cartesianCellsArray,
+                                      vtkPoints *_pointsArray, Field3D<T> *conFieldPtr,
+                                      std::string _plane, int _pos) {
+    if (!conFieldPtr) return false;
 
     Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
     Dim3D fieldDim = cellFieldG->getDim();
 
-    vector<int> fieldDimVec(3, 0);
-    fieldDimVec[0] = fieldDim.x;
-    fieldDimVec[1] = fieldDim.y;
-    fieldDimVec[2] = fieldDim.z;
+    std::vector<int> fieldDimVec = { fieldDim.x, fieldDim.y, fieldDim.z };
+    std::vector<int> pointOrderVec = pointOrder(_plane);
+    std::vector<int> dimOrderVec = dimOrder(_plane);
 
-    vector<int> pointOrderVec = pointOrder(_plane);
-    vector<int> dimOrderVec = dimOrder(_plane);
-
-    vector<int> dim(3, 0);
+    std::vector<int> dim(3, 0);
     dim[0] = fieldDimVec[dimOrderVec[0]];
     dim[1] = fieldDimVec[dimOrderVec[1]];
     dim[2] = fieldDimVec[dimOrderVec[2]];
 
-
     int offset = 0;
-
     Point3D pt;
-    vector<int> ptVec(3, 0);
-
-    double con;
+    std::vector<int> ptVec(3, 0);
+    T con;
     long pc = 0;
-    //when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
 
-
-    for (int j = 0; j < dim[1]; ++j)
+    for (int j = 0; j < dim[1]; ++j) {
         for (int i = 0; i < dim[0]; ++i) {
             ptVec[0] = i;
             ptVec[1] = j;
@@ -1556,13 +1758,12 @@ bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAdd
             pt.z = ptVec[pointOrderVec[2]];
 
             if (i == dim[0] || j == dim[1]) {
-                con = 0.0;
+                con = 0;
             } else {
-                con = con = conFieldPtr->get(pt);
+                con = conFieldPtr->get(pt);
             }
 
-            Coordinates3D<double> coords(ptVec[0], ptVec[1],
-                                         0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
+            Coordinates3D<double> coords(ptVec[0], ptVec[1], 0);
 
             for (int idx = 0; idx < 4; ++idx) {
                 Coordinates3D<double> cartesianVertex = cartesianVertices[idx] + coords;
@@ -1576,12 +1777,91 @@ bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAdd
             _cartesianCellsArray->InsertCellPoint(pc - 2);
             _cartesianCellsArray->InsertCellPoint(pc - 1);
 
-            conArray->InsertNextValue(con);
+            conArray->InsertNextValue(static_cast<double>(con)); // Ensure it works for all numeric types
             ++offset;
         }
+    }
 
     return true;
 }
+
+
+
+std::tuple<std::type_index, void*> FieldExtractor::getFieldTypeAndPointer( const std::string& fieldName) {
+    Field3DTypeBase* conFieldBasePtr = sim->getGenericScalarFieldTypeBase(fieldName);
+
+
+    static const std::unordered_map<std::type_index, std::function<void*(Field3DTypeBase*)>> typeCaster = {
+            {typeid(char), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<char>*>(base)); }},
+            {typeid(unsigned char), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned char>*>(base)); }},
+            {typeid(short), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<short>*>(base)); }},
+            {typeid(unsigned short), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned short>*>(base)); }},
+            {typeid(int), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<int>*>(base)); }},
+            {typeid(unsigned int), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned int>*>(base)); }},
+            {typeid(long), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<long>*>(base)); }},
+            {typeid(unsigned long), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned long>*>(base)); }},
+            {typeid(long long), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<long long>*>(base)); }},
+            {typeid(unsigned long long), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<unsigned long long>*>(base)); }},
+            {typeid(float), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<float>*>(base)); }},
+            {typeid(double), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<double>*>(base)); }},
+            {typeid(long double), [](Field3DTypeBase* base) { return static_cast<void*>(dynamic_cast<NumpyArrayWrapper3DImpl<long double>*>(base)); }},
+    };
+    if (conFieldBasePtr) {
+        std::type_index fieldType = conFieldBasePtr->getType();
+        auto it = typeCaster.find(fieldType);
+
+        if (it != typeCaster.end()) {
+            return {fieldType, it->second(conFieldBasePtr)};
+        }
+
+    }
+
+    Field3D<float> *conFieldPtr = nullptr;
+    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
+    std::map<std::string, Field3D<float> *>::iterator mitr;
+    mitr = fieldMap.find(fieldName);
+    if (mitr != fieldMap.end()) {
+        conFieldPtr = mitr->second;
+    }
+
+    if (conFieldPtr){
+
+        return {std::type_index(typeid(float)), conFieldPtr};
+    }
+
+
+    return {std::type_index(typeid(void)), nullptr};  // Unsupported type
+}
+
+
+bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,
+                                                     vtk_obj_addr_int_t _cartesianCellsArrayAddr,
+                                                     vtk_obj_addr_int_t _pointsArrayAddr,
+                                                     std::string _conFieldName,
+                                                     std::string _plane, int _pos) {
+
+    vtkDoubleArray *conArray = reinterpret_cast<vtkDoubleArray *>(_conArrayAddr);
+    vtkCellArray *_cartesianCellsArray = reinterpret_cast<vtkCellArray *>(_cartesianCellsArrayAddr);
+    vtkPoints *_pointsArray = reinterpret_cast<vtkPoints *>(_pointsArrayAddr);
+
+    // Retrieve field type and pointer
+    auto result = getFieldTypeAndPointer(_conFieldName);
+    std::type_index fieldType = std::get<0>(result);
+    void* fieldPtr = std::get<1>(result);
+
+    if (!fieldPtr || fieldType == typeid(void)) {
+        return false;
+    }
+
+    // Look up the function in cartesianConcentrationFunctionMap
+    auto it = cartesianConcentrationFunctionMap.find(fieldType);
+    if (it != cartesianConcentrationFunctionMap.end()) {
+        return it->second(fieldPtr, conArray, _cartesianCellsArray, _pointsArray, _plane, _pos);
+    }
+
+    return false;
+}
+
 
 
 bool FieldExtractor::fillScalarFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _hexCellsArrayAddr,
@@ -1918,17 +2198,10 @@ bool FieldExtractor::fillScalarFieldCellLevelData2DCartesian(vtk_obj_addr_int_t 
 }
 
 
-bool FieldExtractor::fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr, std::string _conFieldName, std::string _plane,
-                                        int _pos) {
-    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
-    Field3D<float> *conFieldPtr = 0;
-    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
-    std::map<std::string, Field3D<float> *>::iterator mitr;
-    mitr = fieldMap.find(_conFieldName);
-    if (mitr != fieldMap.end()) {
-        conFieldPtr = mitr->second;
-    }
 
+template <typename T>
+bool FieldExtractor::fillConFieldData2DCartesianNonPixelizedTyped(vtkDoubleArray *conArray,  Field3D<T> *conFieldPtr,
+                                                      std::string _plane, int _pos) {
     if (!conFieldPtr)
         return false;
 
@@ -1987,9 +2260,33 @@ bool FieldExtractor::fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr, std::s
 }
 
 
+bool FieldExtractor::fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr, std::string _conFieldName, std::string _plane,
+                                        int _pos) {
+    vtkDoubleArray *conArray = reinterpret_cast<vtkDoubleArray *>(_conArrayAddr);
+
+    // Retrieve field type and pointer
+    auto result = getFieldTypeAndPointer(_conFieldName);
+    std::type_index fieldType = std::get<0>(result);
+    void* fieldPtr = std::get<1>(result);
+
+    if (!fieldPtr || fieldType == typeid(void)) {
+        return false;
+    }
+
+    // Look up the function in cartesianConcentrationFunctionMap
+    auto it = cartesianNonPixelizedConcentrationFunctionMap.find(fieldType);
+    if (it != cartesianNonPixelizedConcentrationFunctionMap.end()) {
+        return it->second(fieldPtr, conArray,  _plane, _pos);
+    }
+
+    return false;
+}
+
+
 bool
 FieldExtractor::fillScalarFieldData2D(vtk_obj_addr_int_t _conArrayAddr, std::string _conFieldName, std::string _plane,
                                       int _pos) {
+
     vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
     FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(_conFieldName);
 
@@ -3058,14 +3355,14 @@ void FieldExtractor::fillCellFieldGlyphs2D(
 std::vector<int> FieldExtractor::fillCellFieldGlyphs3D(vtk_obj_addr_int_t centroids_array_addr,
                                                        vtk_obj_addr_int_t vol_scaling_factors_array_addr,
                                                        vtk_obj_addr_int_t cell_type_array_addr,
-                                                       std::vector<int> *types_invisibe_vec,
+                                                       std::vector<int> *types_invisible_vec,
                                                        bool extractOuterShellOnly) {
 
     vtkPoints *centroids_array = (vtkPoints *) centroids_array_addr;
     vtkIntArray *cell_type_array = (vtkIntArray *) cell_type_array_addr;
     vtkFloatArray *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
 
-    unordered_set<int> invisible_types(types_invisibe_vec->begin(), types_invisibe_vec->end());
+    unordered_set<int> invisible_types(types_invisible_vec->begin(), types_invisible_vec->end());
 
     unordered_set<int> used_cell_types;
     CellInventory &cellInventory = potts->getCellInventory();
@@ -3090,34 +3387,21 @@ std::vector<int> FieldExtractor::fillCellFieldGlyphs3D(vtk_obj_addr_int_t centro
 
 
 
+template<typename T>
+bool FieldExtractor::fillConFieldData3DTyped(vtkDoubleArray *_conArrayAddr,  vtkIntArray *_cellTypeArrayAddr, Field3D<T> *conFieldPtr,
+                             std::vector<int> *_typesInvisibleVec, bool type_indicator_only){
 
+    if (!conFieldPtr)
+        return false;
 
-
-
-
-bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-                                        std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
-                                        bool type_indicator_only
-) {
-    vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
-    vtkIntArray *cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
+    vtkDoubleArray *conArray =  _conArrayAddr;
+    vtkIntArray *cellTypeArray = _cellTypeArrayAddr;
 
 
     type_fcn_ptr = &FieldExtractor::type_value;
     if (type_indicator_only) {
         type_fcn_ptr = &FieldExtractor::type_indicator;
     }
-
-    Field3D<float> *conFieldPtr = 0;
-    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
-    std::map<std::string, Field3D<float> *>::iterator mitr;
-    mitr = fieldMap.find(_conFieldName);
-    if (mitr != fieldMap.end()) {
-        conFieldPtr = mitr->second;
-    }
-
-    if (!conFieldPtr)
-        return false;
 
     Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
     Dim3D fieldDim = cellFieldG->getDim();
@@ -3137,7 +3421,7 @@ bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_ob
             }
 #pragma omp section
             {
-                for (std::vector<int>::iterator it = _typesInvisibeVec->begin(); it != _typesInvisibeVec->end(); ++it) {
+                for (std::vector<int>::iterator it = _typesInvisibleVec->begin(); it != _typesInvisibleVec->end(); ++it) {
                     invisibleTypeSet.insert(*it);
                 }
             }
@@ -3186,9 +3470,39 @@ bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_ob
     return true;
 }
 
+bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
+                                        std::string _conFieldName, std::vector<int> *_typesInvisibleVec,
+                                        bool type_indicator_only
+) {
+    vtkDoubleArray *conArray = reinterpret_cast<vtkDoubleArray *>( _conArrayAddr);
+    vtkIntArray *cellTypeArray = reinterpret_cast<vtkIntArray *>( _cellTypeArrayAddr);
+
+
+    
+
+    // Retrieve field type and pointer
+    auto result = getFieldTypeAndPointer(_conFieldName);
+    std::type_index fieldType = std::get<0>(result);
+    void* fieldPtr = std::get<1>(result);
+
+    if (!fieldPtr || fieldType == typeid(void)) {
+        return false;
+    }
+
+    // Look up the function in cartesianConcentrationFunctionMap
+    auto it = concentration3DFunctionMap.find(fieldType);
+    if (it != concentration3DFunctionMap.end()) {
+        return it->second(fieldPtr, conArray,  cellTypeArray, _typesInvisibleVec, type_indicator_only);
+    }
+
+    return false;
+}
+
+
+
 // rwh: leave this function in until we determine we really don't want to add a boundary layer
 bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-                                           std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
+                                           std::string _conFieldName, std::vector<int> *_typesInvisibleVec,
                                            bool type_indicator_only
 ) {
     vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
@@ -3221,7 +3535,7 @@ bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk
             }
 #pragma omp section
             {
-                for (std::vector<int>::iterator it = _typesInvisibeVec->begin(); it != _typesInvisibeVec->end(); ++it) {
+                for (std::vector<int>::iterator it = _typesInvisibleVec->begin(); it != _typesInvisibleVec->end(); ++it) {
                     invisibleTypeSet.insert(*it);
                 }
             }
@@ -3272,7 +3586,7 @@ bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk
 
 bool
 FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr,
-                                               std::string _conFieldName, std::vector<int> *_typesInvisibeVec,
+                                               std::string _conFieldName, std::vector<int> *_typesInvisibleVec,
                                                bool type_indicator_only) {
     vtkDoubleArray *conArray = (vtkDoubleArray *) _conArrayAddr;
     vtkIntArray *cellTypeArray = (vtkIntArray *) _cellTypeArrayAddr;
@@ -3309,7 +3623,7 @@ FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr,
             }
 #pragma omp section
             {
-                for (std::vector<int>::iterator it = _typesInvisibeVec->begin(); it != _typesInvisibeVec->end(); ++it) {
+                for (std::vector<int>::iterator it = _typesInvisibleVec->begin(); it != _typesInvisibleVec->end(); ++it) {
                     invisibleTypeSet.insert(*it);
                 }
             }
@@ -3367,7 +3681,7 @@ std::vector<int> FieldExtractor::fillScalarFieldGlyphs3D(std::string con_field_n
                                      vtk_obj_addr_int_t centroids_array_addr,
                                      vtk_obj_addr_int_t vol_scaling_factors_array_addr,
                                      vtk_obj_addr_int_t scalar_value_at_com_addr,
-                                     std::vector<int> *types_invisibe_vec,
+                                     std::vector<int> *types_invisible_vec,
                                      bool extractOuterShellOnly){
 
     FieldStorage::floatField3D_t *conFieldPtr = fsPtr->getScalarFieldByName(con_field_name);
@@ -3380,7 +3694,7 @@ std::vector<int> FieldExtractor::fillScalarFieldGlyphs3D(std::string con_field_n
     auto *scalar_value_at_com_array = (vtkFloatArray *) scalar_value_at_com_addr;
     auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
 
-    unordered_set<int> invisible_types(types_invisibe_vec->begin(), types_invisibe_vec->end());
+    unordered_set<int> invisible_types(types_invisible_vec->begin(), types_invisible_vec->end());
 
     unordered_set<int> used_cell_types;
     CellInventory &cellInventory = potts->getCellInventory();
@@ -3411,7 +3725,7 @@ std::vector<int> FieldExtractor::fillScalarFieldCellLevelGlyphs3D(std::string co
                                                           vtk_obj_addr_int_t centroids_array_addr,
                                                           vtk_obj_addr_int_t vol_scaling_factors_array_addr,
                                                           vtk_obj_addr_int_t scalar_value_at_com_addr,
-                                                          std::vector<int> *types_invisibe_vec,
+                                                          std::vector<int> *types_invisible_vec,
                                                           bool extractOuterShellOnly){
 
 
@@ -3427,7 +3741,7 @@ std::vector<int> FieldExtractor::fillScalarFieldCellLevelGlyphs3D(std::string co
     auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
 
 
-    unordered_set<int> invisible_types(types_invisibe_vec->begin(), types_invisibe_vec->end());
+    unordered_set<int> invisible_types(types_invisible_vec->begin(), types_invisible_vec->end());
 
     unordered_set<int> used_cell_types;
     CellInventory &cellInventory = potts->getCellInventory();
@@ -3462,20 +3776,12 @@ std::vector<int> FieldExtractor::fillScalarFieldCellLevelGlyphs3D(std::string co
 
 }
 
-std::vector<int> FieldExtractor::fillConFieldGlyphs3D(std::string con_field_name,
-                                              vtk_obj_addr_int_t centroids_array_addr,
-                                              vtk_obj_addr_int_t vol_scaling_factors_array_addr,
-                                              vtk_obj_addr_int_t scalar_value_at_com_addr,
-                                              std::vector<int> *types_invisibe_vec,
-                                              bool extractOuterShellOnly){
 
-    Field3D<float> *conFieldPtr = nullptr;
-    std::map<std::string, Field3D<float> *> &fieldMap = sim->getConcentrationFieldNameMap();
-    std::map<std::string, Field3D<float> *>::iterator mitr;
-    mitr = fieldMap.find(con_field_name);
-    if (mitr != fieldMap.end()) {
-        conFieldPtr = mitr->second;
-    }
+template<typename T>
+std::vector<int>
+FieldExtractor::fillConFieldGlyphData3DTyped(vtkPoints *centroids_array_addr, vtkFloatArray *scalar_value_at_com_addr,
+                                             vtkFloatArray *vol_scaling_factors_array_addr,Field3D<T> *conFieldPtr,
+                                             std::vector<int> *types_invisible_vec, bool extractOuterShellOnly) {
 
     if (!conFieldPtr)
         return {};
@@ -3484,7 +3790,7 @@ std::vector<int> FieldExtractor::fillConFieldGlyphs3D(std::string con_field_name
     auto *scalar_value_at_com_array = (vtkFloatArray *) scalar_value_at_com_addr;
     auto *vol_scaling_factors_array = (vtkFloatArray *) vol_scaling_factors_array_addr;
 
-    unordered_set<int> invisible_types(types_invisibe_vec->begin(), types_invisibe_vec->end());
+    unordered_set<int> invisible_types(types_invisible_vec->begin(), types_invisible_vec->end());
 
     unordered_set<int> used_cell_types;
     CellInventory &cellInventory = potts->getCellInventory();
@@ -3518,8 +3824,39 @@ std::vector<int> FieldExtractor::fillConFieldGlyphs3D(std::string con_field_name
     }
 
     return {used_cell_types.begin(), used_cell_types.end()};
-
+    
 }
+
+std::vector<int> FieldExtractor::fillConFieldGlyphs3D(std::string con_field_name,
+                                                      vtk_obj_addr_int_t centroids_array_addr,
+                                                      vtk_obj_addr_int_t vol_scaling_factors_array_addr,
+                                                      vtk_obj_addr_int_t scalar_value_at_com_addr,
+                                                      std::vector<int> *types_invisible_vec,
+                                                      bool extractOuterShellOnly) {
+    // Cast raw integer addresses to correct pointer types
+    auto *centroids_array = reinterpret_cast<vtkPoints *>(centroids_array_addr);
+    auto *scalar_value_at_com_array = reinterpret_cast<vtkFloatArray *>(scalar_value_at_com_addr);
+    auto *vol_scaling_factors_array = reinterpret_cast<vtkFloatArray *>(vol_scaling_factors_array_addr);
+
+    // Retrieve field type and pointer
+    auto result = getFieldTypeAndPointer(con_field_name);
+    std::type_index fieldType = std::get<0>(result);
+    void* fieldPtr = std::get<1>(result);
+
+    if (!fieldPtr || fieldType == typeid(void)) {
+        return {};
+    }
+
+    // Look up the function in concentration3DGlyphFunctionMap
+    auto it = concentration3DGlyphFunctionMap.find(fieldType);
+    if (it != concentration3DGlyphFunctionMap.end()) {
+        // Call the stored function with correctly casted pointers
+        return it->second(fieldPtr, centroids_array, scalar_value_at_com_array, vol_scaling_factors_array, types_invisible_vec, extractOuterShellOnly);
+    }
+
+    return {};
+}
+
 
 void FieldExtractor::fillConFieldGlyphs2D(
         std::string con_field_name,

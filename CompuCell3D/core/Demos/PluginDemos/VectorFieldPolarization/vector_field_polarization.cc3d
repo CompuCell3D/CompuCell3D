@@ -1,0 +1,7 @@
+<Simulation version="3.5.1">
+    <XMLScript>Simulation/vector_field_polarization.xml</XMLScript>
+    <PythonScript>Simulation/vector_field_polarization.py</PythonScript>
+    <Resource Type="Python">Simulation/vector_field_polarization_steppables.py</Resource>
+</Simulation>
+
+ 

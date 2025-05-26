@@ -1,0 +1,7 @@
+<Simulation version="3.5.1">
+    <XMLScript>Simulation/shared_numpy_fields.xml</XMLScript>
+    <PythonScript>Simulation/shared_numpy_fields.py</PythonScript>
+    <Resource Type="Python">Simulation/shared_numpy_fields_steppables.py</Resource>
+</Simulation>
+
+ 

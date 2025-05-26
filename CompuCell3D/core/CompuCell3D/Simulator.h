@@ -9,6 +9,8 @@
 #include "PluginBase.h"
 #include "RandomNumberGenerators.h"
 #include "Steppable.h"
+#include "CompuCell3D/Field3D/VectorNumpyArrayWrapper3DImpl.h"
+#include "CompuCell3D/Field3D/Field3DTypeBase.h"
 #include <map>
 #include <vector>
 #include <string>
@@ -42,6 +44,11 @@ namespace CompuCell3D {
 
     class COMPUCELLLIB_EXPORT Simulator : public Steppable {
 
+    public:
+        typedef VectorNumpyArrayWrapper3DImpl<float> vectorField3DNumpyImpl_t;
+        // scalar shared numpy field
+        typedef  NumpyArrayWrapper3DImpl<float>  numpyArrayWrapper3DImpl_t;
+    private:
         ClassRegistry *classRegistry;
 
         Potts3D potts;
@@ -50,8 +57,26 @@ namespace CompuCell3D {
 
         bool simulatorIsStepping;
         bool readPottsSectionFromXML;
-        std::map<std::string, Field3D < float>*>
-        concentrationFieldNameMap;
+        // registry of concentration fields
+        std::map<std::string, Field3D <float>* > concentrationFieldNameMap;
+        std::set<std::string> scalarFieldNamesSet;
+
+        // registry of vector fields
+        std::map<std::string, vectorField3DNumpyImpl_t* > vectorFieldNameMap;
+        // used to store  pointers to vector fields that are managed by C++ -
+        // in which case we need to deallocate memory
+        std::map<std::string, vectorField3DNumpyImpl_t* > vectorFieldNameMapInternal;
+
+
+        // used to store  pointers to shared scalar numpy fields that are managed by C++ -
+        // in which case we need to deallocate memory
+        std::map<std::string, numpyArrayWrapper3DImpl_t* > sharedNumpyConcentrationFieldNameMapInternal;
+        void registerSharedNumpyConcentrationField(const std::string& _name, numpyArrayWrapper3DImpl_t* fieldPtr);
+
+        // we will store here all the scalar fields that are "owned" by C++ CC3D but are of different underlying type
+        // e.g. int, short, char, long etc...
+        std::map<std::string, std::unique_ptr<Field3DTypeBase > > genericTypeScalarFieldMap;
+
         //map of steerable objects
         std::map<std::string, SteerableObject *> steerableObjectMap;
 
@@ -109,6 +134,8 @@ namespace CompuCell3D {
         void restoreCerrStreamBufOrig(ptrdiff_t _ptr);
 
 
+
+
         void setRestartEnabled(bool _restartEnabled) { restartEnabled = _restartEnabled; }
 
         bool getRestartEnabled() { return restartEnabled; }
@@ -120,6 +147,16 @@ namespace CompuCell3D {
         Simulator();
 
         virtual ~Simulator();
+
+        // this is needed to obey "Rule of 5" because we use container with unique pointers in it. unique_ptr is not copyable so we disable copying of the ASimulator object. We never do this anyway
+        // Copy constructor and copy assignment: delete them because of unique_ptr
+        Simulator(const Simulator&) = delete;
+        Simulator& operator=(const Simulator&) = delete;
+
+        // Move constructor and move assignment: allow them
+        Simulator(Simulator&&) = default;
+        Simulator& operator=(Simulator&&) = default;
+
 
         void add_step_output(const std::string &s);
 
@@ -144,6 +181,51 @@ namespace CompuCell3D {
          * returns BoundaryStrategy object
          * @return BoundaryStrategy object
          */
+
+        template <typename T>
+        void createGenericScalarField(const std::string& name, CompuCell3D::array_size_t padding = 1) {
+            auto it = scalarFieldNamesSet.find(name);
+            ASSERT_OR_THROW("Field " + name + " already exists" , it == scalarFieldNamesSet.end() );
+
+            Dim3D dim = potts.getCellFieldG()->getDim();
+
+            // Manually allocate the unique_ptr (C++11 version)
+            std::unique_ptr<Field3DTypeBase> fieldPtr(
+                    new NumpyArrayWrapper3DImpl<T>(
+                            std::vector<array_size_t>{
+                                    static_cast<array_size_t>(dim.x),
+                                    static_cast<array_size_t>(dim.y),
+                                    static_cast<array_size_t>(dim.z)
+                            },
+                            padding
+                    )
+            );
+
+            // Store it in the map
+            genericTypeScalarFieldMap[name] = std::move(fieldPtr);
+            // add to set tracking field names
+            scalarFieldNamesSet.insert(name);
+        }
+
+        Field3DTypeBase * getGenericScalarFieldTypeBase(std::string name);
+
+        // Generic function to retrieve and cast the field safely
+        template <typename T>
+        NumpyArrayWrapper3DImpl<T>* getGenericScalarField(const std::string& name) {
+            auto it = genericTypeScalarFieldMap.find(name);
+            if (it != genericTypeScalarFieldMap.end()) {
+                if (it->second->getType() == typeid(T)) {
+                    return static_cast<NumpyArrayWrapper3DImpl<T>*>(it->second.get());
+                } else {
+                    std::cerr << "Error: Type mismatch when retrieving field '" << name << "'.\n";
+                    std::cerr<<"The underlying field type is:" <<endl;
+                    it->second->displayType();
+                }
+            } else {
+                std::cerr << "Error: Field '" << name << "' not found.\n";
+            }
+            return nullptr;
+        }
 
         BoundaryStrategy *getBoundaryStrategy();
 
@@ -182,10 +264,29 @@ namespace CompuCell3D {
 
         std::string formatErrorMessage(const CC3DException &e);
 
-        void registerConcentrationField(std::string _name, Field3D<float> *_fieldPtr);
+        //vector fields
+        void registerVectorField(const std::string& _name, vectorField3DNumpyImpl_t *_fieldPtr);
+        std::vector <std::string> getVectorFieldNameVector();
+        std::vector <std::string> getVectorFieldNameVectorEngineOwned();
+        std::vector <std::string> getGenericScalarFieldNameVectorEngineOwned();
+
+        std::map<std::string , vectorField3DNumpyImpl_t *> getVectorFieldMap(){
+            return vectorFieldNameMap;
+        }
+        vectorField3DNumpyImpl_t * createVectorField(const std::string& fieldName);
+        vectorField3DNumpyImpl_t * getVectorFieldByName(const std::string& fieldName);
+
+
+        // shared numpy concentration fields
+        numpyArrayWrapper3DImpl_t * createSharedNumpyConcentrationField(const std::string& fieldName);
+        std::vector <std::string> getConcentrationSharedNumpyFieldNameVectorEngineOwned();
+        numpyArrayWrapper3DImpl_t * getSharedNumpyConcentrationFieldName(const std::string& fieldName);
+
+
+        //concentration fields
+        void registerConcentrationField(const std::string& _name, Field3D<float> *_fieldPtr);
 
         std::map<std::string, Field3D < float>*> &
-
         getConcentrationFieldNameMap() {
             return concentrationFieldNameMap;
         }

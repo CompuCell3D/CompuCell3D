@@ -631,13 +631,13 @@ namespace CompuCell3D {
             double xcmOld, ycmOld, zcmOld, xcm, ycm, zcm;
 
             if (newCell->volume > 0) {
-                xcmOld = (newCell->xCM / (float)newCell->volume);
-                ycmOld = (newCell->yCM / (float)newCell->volume);
-                zcmOld = (newCell->zCM / (float)newCell->volume);
+                xcmOld = (newCell->xCM / (double)newCell->volume);
+                ycmOld = (newCell->yCM / (double)newCell->volume);
+                zcmOld = (newCell->zCM / (double)newCell->volume);
 
-                xcm = (newCell->xCM + ptTrans.x) / ((float)newCell->volume + 1);
-                ycm = (newCell->yCM + ptTrans.y) / ((float)newCell->volume + 1);
-                zcm = (newCell->zCM + ptTrans.z) / ((float)newCell->volume + 1);
+                xcm = (newCell->xCM + ptTrans.x) / ((double)newCell->volume + 1);
+                ycm = (newCell->yCM + ptTrans.y) / ((double)newCell->volume + 1);
+                zcm = (newCell->zCM + ptTrans.z) / ((double)newCell->volume + 1);
             }
             else {
                 xcmOld = 0.0;
@@ -664,18 +664,18 @@ namespace CompuCell3D {
             double xcmOld, ycmOld, zcmOld, xcm, ycm, zcm;
 
             if (oldCell->volume > 1) {
-                xcmOld = (oldCell->xCM / (float)oldCell->volume);
-                ycmOld = (oldCell->yCM / (float)oldCell->volume);
-                zcmOld = (oldCell->zCM / (float)oldCell->volume);
+                xcmOld = (oldCell->xCM / (double)oldCell->volume);
+                ycmOld = (oldCell->yCM / (double)oldCell->volume);
+                zcmOld = (oldCell->zCM / (double)oldCell->volume);
 
-                xcm = (oldCell->xCM - ptTrans.x) / ((float)oldCell->volume - 1);
-                ycm = (oldCell->yCM - ptTrans.y) / ((float)oldCell->volume - 1);
-                zcm = (oldCell->zCM - ptTrans.z) / ((float)oldCell->volume - 1);
+                xcm = (oldCell->xCM - ptTrans.x) / ((double)oldCell->volume - 1);
+                ycm = (oldCell->yCM - ptTrans.y) / ((double)oldCell->volume - 1);
+                zcm = (oldCell->zCM - ptTrans.z) / ((double)oldCell->volume - 1);
             }
             else {
-                xcmOld = (oldCell->xCM / (float)oldCell->volume);
-                ycmOld = (oldCell->yCM / (float)oldCell->volume);
-                zcmOld = (oldCell->zCM / (float)oldCell->volume);
+                xcmOld = (oldCell->xCM / (double)oldCell->volume);
+                ycmOld = (oldCell->yCM / (double)oldCell->volume);
+                zcmOld = (oldCell->zCM / (double)oldCell->volume);
                 xcm = 0.0;
                 ycm = 0.0;
                 zcm = 0.0;
@@ -700,6 +700,58 @@ namespace CompuCell3D {
 		Coordinates3D<double> pt0(double(cell->xCOMPrev), double(cell->yCOMPrev), double(cell->zCOMPrev));
 		return distanceVectorCoordinatesInvariant(pt1, pt0, _fieldDim, boundaryStrategy);
 	}
+
+    Coordinates3DPairWithIndicator_t proposedInvariantCOMShiftDueToPixelCopy(const Point3D &pt, const CellG *newCell,
+                                                                             const CellG *oldCell, const Point3D & fieldDim,
+                                                                             BoundaryStrategy *boundaryStrategy) {
+
+        Coordinates3DWithIndicator<double> oldCellDisplacement;
+        Coordinates3DWithIndicator<double> newCellDisplacement;
+
+        if (oldCell) {
+            Coordinates3D<double> oldCOMAfterFlip = precalculateCentroid(pt, oldCell, -1, fieldDim, boundaryStrategy);
+
+            if (oldCell->volume > 1) {
+                oldCOMAfterFlip.XRef() = oldCOMAfterFlip.X() / (double) (oldCell->volume - 1);
+                oldCOMAfterFlip.YRef() = oldCOMAfterFlip.Y() / (double) (oldCell->volume - 1);
+                oldCOMAfterFlip.ZRef() = oldCOMAfterFlip.Z() / (double) (oldCell->volume - 1);
+            } else {
+
+                oldCOMAfterFlip = Coordinates3D<double>(oldCell->xCM / oldCell->volume, oldCell->yCM / oldCell->volume,
+                                                        oldCell->zCM / oldCell->volume);
+
+            }
+
+            Coordinates3D<double> oldCOMBeforeFlip(oldCell->xCM / oldCell->volume, oldCell->yCM / oldCell->volume,
+                                                   oldCell->zCM / oldCell->volume);
+            Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(oldCOMAfterFlip, oldCOMBeforeFlip,
+                                                                                  fieldDim);
+
+            oldCellDisplacement.coordinates3D = distVector;
+            oldCellDisplacement.valid = true;
+        }
+
+        if (newCell) {
+
+            Coordinates3D<double> newCOMAfterFlip = precalculateCentroid(pt, newCell, 1, fieldDim, boundaryStrategy);
+
+
+            newCOMAfterFlip.XRef() = newCOMAfterFlip.X() / (double) (newCell->volume + 1);
+            newCOMAfterFlip.YRef() = newCOMAfterFlip.Y() / (double) (newCell->volume + 1);
+            newCOMAfterFlip.ZRef() = newCOMAfterFlip.Z() / (double) (newCell->volume + 1);
+
+
+            Coordinates3D<double> newCOMBeforeFlip(newCell->xCM / newCell->volume, newCell->yCM / newCell->volume,
+                                                   newCell->zCM / newCell->volume);
+            Coordinates3D<double> distVector = distanceVectorCoordinatesInvariant(newCOMAfterFlip, newCOMBeforeFlip,
+                                                                                  fieldDim);
+
+            newCellDisplacement.coordinates3D = distVector;
+            newCellDisplacement.valid = true;
+        }
+
+        return make_pair(newCellDisplacement, oldCellDisplacement);
+    }
 
 
 };

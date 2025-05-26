@@ -167,6 +167,7 @@ double PottsTestData::abs_difference(double x, double y) {
 
 bool PottsTestData::compare_potts_data(PottsTestData &potts_data_to_compare) {
 
+//    CC3D_Log(LOG_DEBUG) <<  "INSIDE compare_potts_data " <<endl;
     double tol = 3e-4;
     if (changePixel != potts_data_to_compare.changePixel) throw CC3DException("change pixel is different ");
     if (changePixelNeighbor != potts_data_to_compare.changePixelNeighbor)

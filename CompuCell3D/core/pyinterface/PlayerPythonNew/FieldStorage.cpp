@@ -145,6 +145,12 @@ FieldStorage::vectorField3D_t * FieldStorage::createVectorFieldPy(Dim3D _dim , s
 
 
 }
+
+void FieldStorage::registerVectorField(const std::string& _fieldName, vectorField3DNumpyImpl_t * _fieldPtr){
+    vectorFieldNumpyImplNameMap.insert(std::make_pair(_fieldName,_fieldPtr));
+    vectorFieldNameMap.insert(std::make_pair(_fieldName,_fieldPtr->getNdarrayAdapter()));
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FieldStorage::clearVectorField(Dim3D _dim, FieldStorage::vectorField3D_t * _fieldPtr){
          

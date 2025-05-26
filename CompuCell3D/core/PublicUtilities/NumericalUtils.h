@@ -31,9 +31,19 @@ std::vector<double> RandomUnitVector3D(const double& _random_number1, const doub
 namespace CompuCell3D{
 
 
+
 	class CellG;
 	class Point3D;
 	class BoundaryStrategy;
+
+    template <typename T>
+    class Coordinates3DWithIndicator{
+
+    public:
+        Coordinates3D<T> coordinates3D;
+        bool valid=false;
+    };
+
 
 	class InertiaTensorComponents{
 	public:
@@ -53,6 +63,10 @@ namespace CompuCell3D{
 			double iYZ;
 	};
 
+    typedef std::pair<Coordinates3D<float>, Coordinates3D<float> > CenterOfMassPair_t;
+    typedef std::pair<Coordinates3DWithIndicator<double>, Coordinates3DWithIndicator<double> > Coordinates3DPairWithIndicator_t;
+
+
 	Coordinates3D<double> precalculateCentroid(const Point3D & pt, const CellG *_cell, int _volumeIncrement,const Point3D & fieldDim, BoundaryStrategy *boundaryStrategy=0);
 
 	double distInvariantCM(double x0,double y0,double z0,double x1,double y1,double z1,const Point3D & fieldDim, BoundaryStrategy *boundaryStrategy=0);
@@ -70,12 +84,15 @@ namespace CompuCell3D{
 
 	std::pair<InertiaTensorComponents,InertiaTensorComponents> precalculateInertiaTensorComponentsAfterFlip(const Coordinates3D<double> & ptTrans,const CellG *newCell ,const CellG *oldCell);
 
-	typedef std::pair<Coordinates3D<float>, Coordinates3D<float> > CenterOfMassPair_t;
+
 	CenterOfMassPair_t precalculateAfterFlipCM(const Point3D &pt, const CellG *newCell, const CellG *oldCell,const Point3D & fieldDim, const Point3D & boundaryConditionIndicator);
 
 	// Cell velocity at center of mass, in units lattice sites / step
-	Coordinates3D<double> cellVelocity(const CellG *cell, const Point3D & _fieldDim, BoundaryStrategy *boundaryStrategy = 0);
+	Coordinates3D<double> cellVelocity(const CellG *cell, const Point3D & _fieldDim, BoundaryStrategy *boundaryStrategy = nullptr);
 
+    Coordinates3DPairWithIndicator_t proposedInvariantCOMShiftDueToPixelCopy(const Point3D &pt, const CellG *newCell,
+                                                                  const CellG *oldCell, const Point3D & fieldDim,
+                                                                  BoundaryStrategy *boundaryStrategy=nullptr);
 
 };
 #endif

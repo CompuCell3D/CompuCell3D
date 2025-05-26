@@ -36,6 +36,7 @@ from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
 from .Specs import ActorSpecs
 from cc3d.core.GraphicsUtils.utils import extract_address_int_from_vtk_object
 from .DrawingParameters import DrawingParameters
+from cc3d.CompuCellSetup import persistent_globals
 
 from typing import Optional
 
@@ -393,11 +394,11 @@ class GenericDrawer:
         model.setDrawingParametersObject(drawing_params)
 
         try:
-            key = drawing_params.fieldType
+            key = get_field_type(drawing_params.fieldType)
             draw_fcn = self.drawing_fcn_dict[key]
         except KeyError:
             if str(key).strip() != '':
-                print('Could not find function for {}'.format(key))
+                print(f"Could not find function for {key}")
             draw_fcn = None
 
         if draw_fcn is not None:

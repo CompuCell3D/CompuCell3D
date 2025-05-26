@@ -290,13 +290,16 @@ class RestartManager:
         # loading extra scalar fields   - used in Python only
         self.load_scalar_fields()
 
-        # loading extra scalar fields cell level  - used in Python only
+        # loading extra scalar fields cell level - used in Python only
         self.load_scalar_fields_cell_level()
+
+        # loading shared vector fields numpy - shared between Python and C++
+        self.load_shared_vector_fields_numpy()
 
         # loading extra vector fields  - used in Python only
         self.load_vector_fields()
 
-        # loading extra vector fields cell level  - used in Python only
+        # loading extra vector fields cell level - used in Python only
         self.load_vector_fields_cell_level()
 
         # loading core cell  attributes
@@ -424,6 +427,22 @@ class RestartManager:
 
                 self.serializer.loadScalarFieldCellLevel(sd)
                 sd.fileName = tmp_file_name
+
+    def load_shared_vector_fields_numpy(self):
+        """
+        restores user-defined custom vector fields
+        :return: None
+        """
+
+        for resource_name, sd in self.__restart_resource_dict.items():
+            if sd.objectType == 'SharedVectorFieldNumpy':
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                full_path = os.path.abspath(full_path)  # normalizing path format
+                tmp_file_name = sd.fileName
+                sd.fileName = full_path
+                self.serializer.loadSharedVectorFieldNumpy(sd)
+                sd.fileName = tmp_file_name
+
 
     def load_vector_fields(self):
         """
@@ -1237,6 +1256,9 @@ class RestartManager:
         # outputting extra scalar fields cell level  - used in Python only
         self.output_scalar_fields_cell_level(restart_output_path, rst_xml_elem)
 
+        # outputting shared vector fields numpy  - shared between python and C++
+        self.output_shared_vector_numpy_fields(restart_output_path, rst_xml_elem)
+
         # outputting extra vector fields  - used in Python only
         self.output_vector_fields(restart_output_path, rst_xml_elem)
 
@@ -1338,6 +1360,27 @@ class RestartManager:
             self.append_xml_stub(rst_xml_elem, sd)
             print("Got concentration field: ", fieldName)
 
+        # serialize generic concentration fields - different precision
+        generic_conc_field_name_vec = sim.getGenericScalarFieldNameVectorEngineOwned()
+        for fieldName in generic_conc_field_name_vec:
+            print("\n\n\nGENERIC FIELD=",fieldName)
+
+            sd = SerializerDEPy.SerializeData()
+            sd.moduleName = 'PDESolver'
+            sd.moduleType = 'Steppable'
+
+            sd.objectName = fieldName
+            sd.objectType = 'ConcentrationField'
+            sd.fileName = os.path.join(restart_output_path, fieldName + '.dat')
+            print('sd.fileName=', sd.fileName)
+            sd.fileFormat = 'text'
+            self.serializeDataList.append(sd)
+            self.serializer.serializeConcentrationField(sd)
+
+            self.append_xml_stub(rst_xml_elem, sd)
+            print("Got concentration field: ", fieldName)
+
+
     def output_cell_field(self, restart_output_path, rst_xml_elem):
         """
         Serializes cell field
@@ -1401,6 +1444,27 @@ class RestartManager:
             self.serializer.serializeScalarFieldCellLevel(sd)
             self.append_xml_stub(rst_xml_elem, sd)
 
+    def output_shared_vector_numpy_fields(self, restart_output_path, rst_xml_elem):
+        """
+        Serializes numpy vector fields that are shared between python and the C++ engine
+        :param restart_output_path:{str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
+        :return: None
+        """
+        sim = CompuCellSetup.persistent_globals.simulator
+        vector_field_name_vec = sim.getVectorFieldNameVector()
+
+        for fieldName in vector_field_name_vec:
+            sd = SerializerDEPy.SerializeData()
+            sd.moduleName = 'Python'
+            sd.moduleType = 'Python'
+            sd.objectName = fieldName
+            sd.objectType = 'SharedVectorFieldNumpy'
+            sd.fileName = os.path.join(restart_output_path, fieldName + '.dat')
+            self.serializer.serializeSharedVectorFieldNumpy(sd)
+            self.append_xml_stub(rst_xml_elem, sd)
+
+
     def output_vector_fields(self, restart_output_path, rst_xml_elem):
         """
         Serializes user defined vector fields
@@ -1411,7 +1475,9 @@ class RestartManager:
 
         field_registry = CompuCellSetup.persistent_globals.field_registry
         vector_fields_dict = field_registry.getVectorFields()
+
         for fieldName in vector_fields_dict:
+
             sd = SerializerDEPy.SerializeData()
             sd.moduleName = 'Python'
             sd.moduleType = 'Python'
@@ -1592,19 +1658,30 @@ class RestartManager:
             # print 'cell.id=',cell.id
             dictAttrib = CompuCell.getPyAttrib(cell)
             dictToPickle = {}
-            # checking which list items are picklable
+            # checking which list items are un-pickle-able
             for key in dictAttrib:
+
                 try:
                     pickle.dump(dictAttrib[key], nullFile)
                     dictToPickle[key] = dictAttrib[key]
 
                 except TypeError as e:
-                    print("key=", key, " cannot be pickled")
-                    print(e)
+                    # catching exceptions that my occur (for various reasons) in un-pickle-able objects
+                    # print("key=", key, " cannot be pickled")
                     pass
+                except KeyError as e:
+                    # catching exceptions that my occur (for various reasons) in un-pickle-able objects
+                    # print("key=", key, " cannot be pickled")
+                    pass
+                except AttributeError as e:
+                    # catching exceptions that my occur (for various reasons) in un-pickle-able objects
+                    # print("key=", key, " cannot be pickled")
+                    pass
+
 
             pickle.dump(cell.id, pf)
             pickle.dump(dictToPickle, pf)
+
 
         nullFile.close()
         pf.close()

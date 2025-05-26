@@ -31,6 +31,8 @@ class RunExecutor(object):
 
         if not isinstance(rs.run_command, list):
             rs.run_command = [rs.run_command]
+        if rs.log_level:
+            rs.run_command += ["--log-level", rs.log_level]
 
         cc3d_args = rs.run_command + [
                      r'--input=%s' % rs.cc3d_project,

@@ -9,9 +9,9 @@ import sys
 from os.path import dirname, join, abspath
 from pathlib import Path
 
-__version__ = "4.6.0"
-__revision__ = "2"
-__githash__ = "397f8b1"
+__version__ = "4.7.0"
+__revision__ = "0"
+__githash__ = "e6d9da0"
 
 
 from cc3d import config

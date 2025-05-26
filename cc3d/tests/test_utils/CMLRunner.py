@@ -51,7 +51,8 @@ class CMLRunner(Thread):
         self.process_error_code = self.process_handle.returncode
         print ('{} self.process_error_code={}'.format(self.args[0], self.process_error_code))
 
-        print ('finished running %s' % self.args[0])
+        # print ('finished running %s' % self.args[0])
+        print(f'FINISHED RUNNING {self.args}')
         if self.kill_dependents_flag:
             self.kill_dependents()
 
