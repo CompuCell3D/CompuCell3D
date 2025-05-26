@@ -1,6 +1,4 @@
 from cc3d.core.PySteppables import *
-from cc3d import CompuCellSetup
-# from cc3d.cpp import PlayerPython
 
 
 class SharedNUmpyFieldsSteppable(SteppableBasePy):
@@ -14,27 +12,16 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
         self.create_shared_scalar_numpy_field("int16FieldPythonNPY", precision_type="int16")
         self.create_shared_scalar_numpy_field("float32FieldPythonNPY", precision_type="float32")
 
-
     def start(self):
         int16FieldPythonNPY = self.field.int16FieldPythonNPY
-        # print("int16FieldPythonNPY.dtype=", int16FieldPythonNPY.dtype)
-        int16FieldPythonNPY[20:30,20:30, 0] = 20
+        int16FieldPythonNPY[20:30, 20:30, 0] = 20
         int16FieldPythonNPY[30:40, 30:40, 0] = 30
 
         float32FieldPythonNPY = self.field.float32FieldPythonNPY
 
-        float32FieldPythonNPY[70:80,70:80, 0] = 20.2
+        float32FieldPythonNPY[70:80, 70:80, 0] = 20.2
         float32FieldPythonNPY[80:90, 80:90, 0] = 30.2
 
-
-
-        # self.copy_cell_type_field_values_to("numpy1")
-        # self.copy_cell_id_field_values_to("numpy1")
-        # self.copy_cluster_id_field_values_to("numpy1")
-        # pg = CompuCellSetup.persistent_globals
-        # field_copier = PlayerPython.FieldCopier(pg.simulator)
-        # field_copier.copy_cell_attribute_field_values_to("cell_type_field", "type")
-        #
         self.copy_cell_attribute_field_values_to("cell_type_field", "type")
         self.copy_cell_attribute_field_values_to("cell_volume_field", "id")
         numpy_field_manager = self.field.numpy_field_manager
@@ -43,7 +30,6 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
         cell_volume_field = self.field.cell_volume_field
         # cell_volume_field[45:50, 45:50, 0] = 25
 
-
         # cell_type_field[5:10,5:10,0] = 20
         # cell_type_field[5:10, 15:20, 0] = 40
         # cell_type_field[45:50, 45:50, 0] = 250
@@ -51,7 +37,6 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
         # initializing FGF diffusion field
         fgf = self.field.FGF
         fgf[50, 50, 0] = 2000
-
 
         fibers_cpp = self.field.Fibers
 
@@ -77,7 +62,6 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
         # self.field accesses array in coordinates that exclude padded region
         array = self.field.numpy1
 
-
         array[0, 0, 0] = 1000
         array[15, 25, 0] = 12
         array[30, 10, 0] = 30
@@ -87,18 +71,6 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
         array[30, 40, 0] = 300
         array[20, 30, 0] = 311
         array[99, 99, 0] = 1000
-
-        # accessing scalar field created in C++
-        # self.raw_field access "raw array" i.e. in coordinates where you can modify padded region
-        cpp_array = self.raw_field.cpp_numpy
-        cpp_array[0, 0, 0] = 1000
-        cpp_array[99, 99, 0] = 1000
-
-        cpp_array_user = self.field.cpp_numpy
-        cpp_array_user[0, 0, 0] = 1000
-        cpp_array_user[99, 99, 0] = 1000
-
-
 
         # accessing scalar field created in C++ using FieldManager
         np_fm_array = self.field.numpy_field_manager
@@ -118,20 +90,14 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
         np_fm_raw[0, 0, 0] = 1010
         np_fm_raw[99, 99, 0] = 1010
 
-
         # accessing vector field created in C++ using FieldManager
         fibers_fm = self.field.fibers_field_manager
-        fibers_fm[0, 0, 0,...] = [1020, 1020, 0]
-        fibers_fm[15, 25, 0,...] = [120, 120, 0]
-        fibers_fm[30, 10, 0,...] = [3000, 400,0]
-        fibers_fm[10, 32, 0,...] = [30,-30,0]
+        fibers_fm[0, 0, 0, ...] = [1020, 1020, 0]
+        fibers_fm[15, 25, 0, ...] = [120, 120, 0]
+        fibers_fm[30, 10, 0, ...] = [3000, 400, 0]
+        fibers_fm[10, 32, 0, ...] = [30, -30, 0]
 
-
-        fibers_fm
 
     def step(self, mcs):
-        pg = CompuCellSetup.persistent_globals
-        array, aux_field = pg.field_registry.shared_scalar_numpy_fields["numpy1"]
-        # aux_field.printAllArrayValues()
-        # if mcs > 500:
-        #     CompuCellSetup.stopSimulation()
+        pass
+

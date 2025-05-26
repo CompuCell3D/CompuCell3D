@@ -46,8 +46,6 @@ void VectorFieldPolarizationPlugin::init(Simulator *simulator, CC3DXMLElement *_
     update(xmlData,true);
     // needs to be called after update method so  that we know the name of the field
     vectorFieldPtr = sim->createVectorField(vectorFieldName);
-    // TODO - remove after testing
-    sim->createSharedNumpyConcentrationField("cpp_numpy");
 
     string intFieldName = "intNpyFieldCpp";
     sim->createGenericScalarField<int>(intFieldName);
