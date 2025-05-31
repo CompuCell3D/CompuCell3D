@@ -45,3 +45,14 @@ Getting Started
 
 - `CompuCell3D Extensions <https://github.com/CompuCell3D/CompuCell3DExtensions/tree/main>`_
   offer integrated third-party modeling and simulation capabilities.
+
+Development Setup
+-----------------
+
+To run the test suite, use:
+
+.. code-block:: bash
+
+    pip install -r requirements.txt
+    pytest cc3d/tests/
+
