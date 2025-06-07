@@ -111,6 +111,8 @@
 #include <CompuCell3D/Potts3D/AttributeAdder.h>
 
 //todo - numpy
+//#define PY_ARRAY_UNIQUE_SYMBOL CompuCell_Numpy_API
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
 #include <CompuCell3D/Field3D/ndarray_adapter.h>
@@ -753,6 +755,7 @@ FIELD3DEXTENDER(CompuCell3D::Field3D<int>,int)
 %template(vectorint) std::vector<int>;
 %template(vectorunsignedchar) std::vector<unsigned char>;
 %template(vectorbool) std::vector<bool>;
+
 
 
 %include "Field3D/Field3DChangeWatcher.h"

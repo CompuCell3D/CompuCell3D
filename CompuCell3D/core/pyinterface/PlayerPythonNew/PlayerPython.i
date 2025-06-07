@@ -3,19 +3,37 @@
 %module("threads"=1) PlayerPython
 
 
+%{
+//#define PY_ARRAY_UNIQUE_SYMBOL PlayerPython_ARRAY_API
+//#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include <numpy/arrayobject.h>
+
+// Function that doubles each element in a 1D NumPy array
+
+%}
+
+%init %{
+import_array();  // REQUIRED for NumPy C API
+%}
+
+// Let SWIG know about NumPy
+%include "swig_includes/numpy.i"
+
+
+
 %include "windows.i"
 
 //%include "typemaps.i"
 
 // *************************************************************
-// Module Includes 
+// Module Includes
 // *************************************************************
 
 
 
 
 namespace CompuCell3D{
- class CellG;   
+ class CellG;
  typedef CellG * cellGPtr_t;
 }
 
@@ -58,16 +76,18 @@ namespace CompuCell3D{
 #include <FieldWriterCML.h>
 #include <FieldStreamer.h>
 #include <vtkIntArray.h>
-    
+
 #define FIELDEXTRACTOR_EXPORT
 
 // System Libraries
 #include <iostream>
 #include <stdlib.h>
 
-#include <numpy/arrayobject.h>
+////#define PY_ARRAY_UNIQUE_SYMBOL CompuCell_Numpy_API
+//#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+//#include <numpy/arrayobject.h>
 
-   
+
 // Namespaces
 using namespace std;
 using namespace CompuCell3D;
@@ -78,12 +98,12 @@ class CellG;
 
 #define FIELDEXTRACTOR_EXPORT
 
-//necessary to get proper wrapping of the numpy arrays
-%include "swig_includes/numpy.i"
-
-%init %{
-    import_array();
-%}
+////necessary to get proper wrapping of the numpy arrays
+//%include "swig_includes/numpy.i"
+//
+//%init %{
+//    import_array();
+//%}
 
 
 // C++ std::string handling
@@ -133,72 +153,72 @@ class CellG;
 
 %include "CompuCell3D/Field3D/ndarray_adapter.h"
 
-%template(NdarrayAdapterDouble3) NdarrayAdapter<float,3>; //for storing scalar fieldas
-%template(NdarrayAdapterDouble4) NdarrayAdapter<float,4>; //for storing vector fieldas
+%template(NdarrayAdapterDouble3) NdarrayAdapter<float,3>; //for storing scalar fields
+%template(NdarrayAdapterDouble4) NdarrayAdapter<float,4>; //for storing vector fields
 
 %extend NdarrayAdapter<float,3>{
-    
+
   void initFromNumpy(PyObject *_numpyArrayObj){
         PyArrayObject * pyarray=reinterpret_cast<PyArrayObject*>(_numpyArrayObj);
         int ndim=PyArray_NDIM(pyarray);
-        if (ndim!=3){         
+        if (ndim!=3){
             throw std::runtime_error(std::string("FloatField3D")+std::string(": Error: Array dimension should be 3"));
         }
-        
+
         std::vector<long> strides(3,1);
         std::vector<long> shape(3,0);
-        
+
         shape[0]=PyArray_DIM(pyarray,0);
         shape[1]=PyArray_DIM(pyarray,1);
         shape[2]=PyArray_DIM(pyarray,2);
         $self->setShape(shape);
-        
+
         strides[0]=shape[2]*shape[1];
         strides[1]=shape[2];
         strides[2]=1;
-        
+
         $self->setStrides(strides);
-        
+
         $self->setData(static_cast<float*>(PyArray_DATA(pyarray)));
   }
-      
+
   float getItem(const std::vector<long> & _coord){
       return (*($self))[_coord[0]][_coord[1]][_coord[2]];
   }
-      
+
 };
 
 
 %extend NdarrayAdapter<float,4>{
-    
+
   void initFromNumpy(PyObject *_numpyArrayObj){
         PyArrayObject * pyarray=reinterpret_cast<PyArrayObject*>(_numpyArrayObj);
         int ndim=PyArray_NDIM(pyarray);
-        if (ndim!=4){         
+        if (ndim!=4){
             throw std::runtime_error(std::string("VectorField3D")+std::string(": Error: Array dimension should be 4"));
         }
-        
+
         std::vector<long> strides(4,1);
         std::vector<long> shape(4,0);
-        
+
         shape[0]=PyArray_DIM(pyarray,0);
         shape[1]=PyArray_DIM(pyarray,1);
         shape[2]=PyArray_DIM(pyarray,2);
         shape[3]=PyArray_DIM(pyarray,3);
-        
+
         $self->setShape(shape);
-        
+
         strides[0]=shape[3]*shape[2]*shape[1];
         strides[1]=shape[3]*shape[2];
         strides[2]=shape[3];
         strides[3]=1;
-        
+
         $self->setStrides(strides);
-        
-        
+
+
         $self->setData(static_cast<float*>(PyArray_DATA(pyarray)));
   }
-      
+
   float getItem(const std::vector<long> & _coord){
       return (*($self))[_coord[0]][_coord[1]][_coord[2]][_coord[3]];
   }
@@ -223,21 +243,21 @@ class CellG;
 %include <FieldStreamer.h>
 
 
-%extend CompuCell3D::ScalarFieldCellLevel{    
+%extend CompuCell3D::ScalarFieldCellLevel{
 
 
   void __setitem__(CompuCell3D::CellG * _cell,float _val) {
       (*($self))[_cell]=_val;
 
   }
-  
+
   float __getitem__(CompuCell3D::CellG * _cell) {
       //this has side effect that if the _cell is not in the map it will be inserted with  matching value 0.0
       return (*($self))[_cell];
-      
+
   }
 
-  
+
 };
 
 // needed in numpy 1.22 and higher to get PyArray_SimpleNew. any function
@@ -246,10 +266,10 @@ class CellG;
 %nothread CompuCell3D::VectorFieldCellLevel::__getitem__;
 %nothread CompuCell3D::VectorFieldCellLevel::__setitem__;
 
-%extend CompuCell3D::VectorFieldCellLevel{    
+%extend CompuCell3D::VectorFieldCellLevel{
 
   void __setitem__(CompuCell3D::CellG * _cell,PyObject *_numpyArrayObj) {
-      
+
         if (PyList_Check(_numpyArrayObj)){//in case user passes regular python list instead of numpy array
 
             if (PyList_Size(_numpyArrayObj)!=3){
@@ -262,27 +282,27 @@ class CellG;
             (*($self))[_cell]=Coordinates3D<float>(x,y,z);
             return;
         }
-        PyArrayObject * pyarray=reinterpret_cast<PyArrayObject*>(_numpyArrayObj); 
+        PyArrayObject * pyarray=reinterpret_cast<PyArrayObject*>(_numpyArrayObj);
 
         int dim=PyArray_DIM(pyarray,0);
 
-        if (PyArray_DIM(pyarray,0)!=3){         
+        if (PyArray_DIM(pyarray,0)!=3){
             throw std::runtime_error(std::string("VectorFieldCellLevel")+std::string(": Error: Array dimension should be 3"));
         }
-        
-        float *data =static_cast<float*>(PyArray_DATA(pyarray));
-      
+
+//        float *data =static_cast<float*>(PyArray_DATA(pyarray));
+      float *data = static_cast<float*>(PyArray_DATA(reinterpret_cast<PyArrayObject*>(pyarray)));
       (*($self))[_cell]=Coordinates3D<float>(data[0],data[1],data[2]);
 
   }
-  
+
 // %pythoncode %{
 //     def __setitem__(self,_cell,_array):# we intercept assignments of the array and wrap any array object in numpy array and pass it to C++ fcn.
 //         import numpy
 //         self.setitem(_cell,numpy.array(_array,dtype=numpy.float32))
-// %}  
+// %}
 
-  
+
   PyObject* __getitem__(CompuCell3D::CellG * _cell) {
       Coordinates3D<float> &vec=(*($self))[_cell];
 //      cerr<<"x,y,z="<<vec.x<<","<<vec.y<<","<<vec.z<<endl;
@@ -292,7 +312,8 @@ class CellG;
 
     PyObject* numpyArray= PyArray_SimpleNew(1,dims,NPY_FLOAT);
 
-    float *data =static_cast<float*>(PyArray_DATA(numpyArray));
+//    float *data =static_cast<float*>(PyArray_DATA(numpyArray));
+    float *data = static_cast<float*>(PyArray_DATA(reinterpret_cast<PyArrayObject*>(numpyArray)));
     data[0]=vec.x;
     data[1]=vec.y;
     data[2]=vec.z;
@@ -306,118 +327,122 @@ class CellG;
 	void setSwigPtr(void * _ptr){
 		using namespace std;
 		cerr<<"THIS IS setSwigPtr"<<endl;
-		
+
 	}
-	
+
 	void add(double a, double b, double *result) {
 		*result = a + b;
-        
+
 	}
-    
-		
+
+
 %}
 
 %inline %{
 
    void fillScalarValue(PyObject * _numpyArrayObj, int _x, int _y, int _z, float _value){
         PyArrayObject * pyarray=reinterpret_cast<PyArrayObject*>(_numpyArrayObj);
-        
+
         int ndim=PyArray_NDIM(pyarray);
-        if (ndim!=3){         
+        if (ndim!=3){
             throw std::runtime_error(std::string("FloatField3D")+std::string(": Error: Array dimension shuold be 3"));
         }
-       
+
         int dim_x=PyArray_DIM(pyarray,0);
         int dim_y=PyArray_DIM(pyarray,1);
         int dim_z=PyArray_DIM(pyarray,2);
-        
-        float * data=static_cast<float*>(PyArray_DATA(pyarray));
+
+//        float * data=static_cast<float*>(PyArray_DATA(pyarray));
+       float *data = static_cast<float*>(PyArray_DATA(reinterpret_cast<PyArrayObject*>(pyarray)));
         data[_x*dim_z*dim_y + _y*dim_z + _z]=_value; //assuming default numpy strides
-        
+
    }
-    
-   void clearScalarField(CompuCell3D::Dim3D _dim, PyObject * _numpyArrayObj){ 
+
+   void clearScalarField(CompuCell3D::Dim3D _dim, PyObject * _numpyArrayObj){
         PyArrayObject * pyarray=reinterpret_cast<PyArrayObject*>(_numpyArrayObj);
-        
+
         int ndim=PyArray_NDIM(pyarray);
-        if (ndim!=3){         
+        if (ndim!=3){
             throw std::runtime_error(std::string("FloatField3D")+std::string(": Error: Array dimension should be 3"));
         }
-       
+
         int dim_x=PyArray_DIM(pyarray,0);
         int dim_y=PyArray_DIM(pyarray,1);
         int dim_z=PyArray_DIM(pyarray,2);
-        
-        float * data=static_cast<float*>(PyArray_DATA(pyarray));
+
+//        float * data=static_cast<float*>(PyArray_DATA(pyarray));
+        float *data = static_cast<float*>(PyArray_DATA(reinterpret_cast<PyArrayObject*>(pyarray)));
         for (int i = 0; i < dim_x*dim_y*dim_z;++i){
             data[i]=0.0;
         }
-        
-       
 
-   }     
-    
 
-   void clearScalarValueCellLevel(CompuCell3D::FieldStorage::scalarFieldCellLevel_t * _field){ 
+
+   }
+
+
+   void clearScalarValueCellLevel(CompuCell3D::FieldStorage::scalarFieldCellLevel_t * _field){
 		_field->clear();
-   }     
-   	
+   }
+
    void fillScalarValueCellLevel(CompuCell3D::FieldStorage::scalarFieldCellLevel_t * _field, CompuCell3D::CellG* _cell, float _value){
       _field->insert(std::make_pair(_cell,_value));
    }
-   
-   
+
+
     void insertVectorIntoVectorField(PyObject * _numpyArrayObj,int _xPos, int _yPos, int _zPos, float _x, float _y, float _z){
         PyArrayObject * pyarray=reinterpret_cast<PyArrayObject*>(_numpyArrayObj);
-        
+
         int ndim=PyArray_NDIM(pyarray);
-        if (ndim!=4){         
+        if (ndim!=4){
             throw std::runtime_error(std::string("VectorField3D")+std::string(": Error: Array dimension should be 4"));
         }
-       
+
         int dim_x=PyArray_DIM(pyarray,0);
         int dim_y=PyArray_DIM(pyarray,1);
         int dim_z=PyArray_DIM(pyarray,2);
-        
-        
-        
-        float * data=static_cast<float*>(PyArray_DATA(pyarray));
+
+
+
+//        float * data=static_cast<float*>(PyArray_DATA(pyarray));
+        float *data = static_cast<float*>(PyArray_DATA(reinterpret_cast<PyArrayObject*>(pyarray)));
         //assuming default numpy strides
         long baseInd=3*_xPos*dim_z*dim_y + 3*_yPos*dim_z + 3*_zPos; // this gets us to the 3 dim vector
-        data[baseInd+0]=_x; 
-        data[baseInd+1]=_y; 
-        data[baseInd+2]=_z; 
-        
+        data[baseInd+0]=_x;
+        data[baseInd+1]=_y;
+        data[baseInd+2]=_z;
 
-    }   
-   
-    
+
+    }
+
+
    void insertVectorIntoVectorCellLevelField(CompuCell3D::FieldStorage::vectorFieldCellLevel_t * _field,CompuCell3D::CellG* _cell, float _x, float _y, float _z){
-       
+
       _field->insert(std::make_pair(_cell,Coordinates3D<float>(_x,_y,_z)));
    }
 
    void clearVectorCellLevelField(CompuCell3D::FieldStorage::vectorFieldCellLevel_t * _field){
       _field->clear();
    }
-   
+
 
 
     void clearVectorField(CompuCell3D::Dim3D _dim, PyObject * _numpyArrayObj){
-        
+
         PyArrayObject * pyarray=reinterpret_cast<PyArrayObject*>(_numpyArrayObj);
-        
+
         int ndim=PyArray_NDIM(pyarray);
-        if (ndim!=4){         
+        if (ndim!=4){
             throw std::runtime_error(std::string("VectorField3D")+std::string(": Error: Array dimension should be 4"));
         }
-       
+
         int dim_x=PyArray_DIM(pyarray,0);
         int dim_y=PyArray_DIM(pyarray,1);
         int dim_z=PyArray_DIM(pyarray,2);
         int dim_vec=PyArray_DIM(pyarray,3);
-        
-        float * data=static_cast<float*>(PyArray_DATA(pyarray));
+
+//        float * data=static_cast<float*>(PyArray_DATA(pyarray));
+        float *data = static_cast<float*>(PyArray_DATA(reinterpret_cast<PyArrayObject*>(pyarray)));
         for (int i = 0; i < dim_x*dim_y*dim_z*dim_vec;++i){
             data[i]=0.0;
         }
@@ -425,7 +450,7 @@ class CellG;
 
 
     }
-   
+
    Coordinates3D<float> * findVectorInVectorCellLEvelField(CompuCell3D::FieldStorage::vectorFieldCellLevel_t * _field,CompuCell3D::CellG* _cell){
       CompuCell3D::FieldStorage::vectorFieldCellLevelItr_t vitr;
       vitr=_field->find(_cell);

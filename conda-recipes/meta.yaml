@@ -52,7 +52,7 @@ requirements:
     - swig>={{ swig_version }}
     - psutil
     - deprecated
-    - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
+#    - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
@@ -81,7 +81,7 @@ requirements:
     - deprecated
     - psutil
     - cmake={{ cmake_version }}
-    - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
+#    - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
