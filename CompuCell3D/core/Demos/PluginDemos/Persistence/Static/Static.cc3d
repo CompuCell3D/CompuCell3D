@@ -1,0 +1,5 @@
+<Simulation version="4.6.0">
+   <XMLScript Type="XMLScript">Simulation/Static.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/Static.py</PythonScript>
+   <Resource Type="Python">Simulation/StaticSteppables.py</Resource>
+</Simulation>

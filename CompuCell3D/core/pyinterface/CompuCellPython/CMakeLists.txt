@@ -33,6 +33,7 @@ SET(LIBS_AUX
     cc3d::NeighborTracker
     cc3d::VolumeTracker
     cc3d::CenterOfMass
+    cc3d::Persistence
     cc3d::PixelTracker
     cc3d::BoundaryPixelTracker
     cc3d::Mitosis

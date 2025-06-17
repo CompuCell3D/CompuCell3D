@@ -86,6 +86,9 @@
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTracker.h>
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 
+#include <CompuCell3D/plugins/Persistence/Persistence.h>
+#include <CompuCell3D/plugins/Persistence/PersistencePlugin.h>
+
 #include <CompuCell3D/plugins/PixelTracker/PixelTracker.h>
 #include <CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h>
 

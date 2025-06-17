@@ -3053,6 +3053,549 @@ class ExternalPotentialPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         return p
 
 
+class _PersistencePluginValue:
+
+    @classmethod
+    def from_xml(cls, _el: CC3DXMLElement):
+        name = _el.name
+
+        if _el.findElement('Constant'):
+            return PersistencePluginValueConstant.from_xml(_el.getFirstElement('Constant'))
+        elif _el.findElement('Normal'):
+            return PersistencePluginValueNormal.from_xml(_el.getFirstElement('Normal'))
+        elif _el.findElement('Uniform'):
+            return PersistencePluginValueUniform.from_xml(_el.getFirstElement('Uniform'))
+        raise ValueError(f'Unknown persistence plugin value name: {name}')
+
+    @property
+    def xml(self) -> ElementCC3D:
+        raise NotImplementedError
+
+
+class PersistencePluginValueConstant(_PersistencePluginValue):
+
+    def __init__(self, value: float):
+
+        super().__init__()
+
+        self.value = value
+
+    @classmethod
+    def from_xml(cls, _el: CC3DXMLElement):
+
+        return cls(_el.getDouble())
+
+    @property
+    def xml(self) -> ElementCC3D:
+        return ElementCC3D('Constant', {}, str(self.value))
+
+
+class PersistencePluginValueNormal(_PersistencePluginValue):
+
+    def __init__(self, mean=0.0, stdev=1.0):
+
+        super().__init__()
+
+        self.mean = mean
+        self.stdev = stdev
+
+    @classmethod
+    def from_xml(cls, _el: CC3DXMLElement):
+        kwargs = {}
+        if _el.findAttribute('Mean'):
+            kwargs['mean'] = _el.getAttributeAsDouble('Mean')
+        if _el.findAttribute('StDev'):
+            kwargs['stdev'] = _el.getAttributeAsDouble('StDev')
+        return cls(**kwargs)
+
+    @property
+    def xml(self) -> ElementCC3D:
+        return ElementCC3D('Normal', {'Mean': str(self.mean), 'StDev': str(self.stdev)})
+
+
+class PersistencePluginValueUniform(_PersistencePluginValue):
+
+    def __init__(self, lower=0.0, upper: float = None):
+
+        super().__init__()
+
+        if upper is None:
+            upper = lower + 1.0
+
+        self.lower = lower
+        self.upper = upper
+
+    @classmethod
+    def from_xml(cls, _el: CC3DXMLElement):
+        kwargs = {}
+        if _el.findAttribute('Lower'):
+            kwargs['lower'] = _el.getAttributeAsDouble('Lower')
+        if _el.findAttribute('Upper'):
+            kwargs['upper'] = _el.getAttributeAsDouble('Upper')
+        return cls(**kwargs)
+
+    @property
+    def xml(self) -> ElementCC3D:
+        return ElementCC3D('Uniform', {'Lower': str(self.lower), 'Upper': str(self.upper)})
+
+
+class _PersistencePluginInitTransform:
+
+    @classmethod
+    def from_xml(cls, _el: CC3DXMLElement):
+        name = _el.name
+        if name == 'RotateVector':
+            return PersistencePluginInitTransformRotate.from_xml(_el)
+        raise ValueError(f'Unknown transform name {name}')
+
+    @property
+    def xml(self):
+        raise NotImplementedError
+
+
+PERSISTENCE_TRANSFORM_UNIT_DEGREES = 'Degrees'
+PERSISTENCE_TRANSFORM_UNIT_RADIANS = 'Radians'
+PERSISTENCE_TRANSFORM_UNITS = [
+    PERSISTENCE_TRANSFORM_UNIT_DEGREES,
+    PERSISTENCE_TRANSFORM_UNIT_RADIANS
+]
+
+
+class PersistencePluginInitTransformRotate(_PersistencePluginInitTransform):
+
+    def __init__(self,
+                 value: Union[float, _PersistencePluginValue],
+                 axis: str,
+                 units: str = PERSISTENCE_TRANSFORM_UNIT_DEGREES):
+
+        super().__init__()
+
+        if units not in PERSISTENCE_TRANSFORM_UNITS:
+            raise ValueError(f'Units must be in {PERSISTENCE_TRANSFORM_UNITS}')
+        if axis not in ['X', 'Y', 'Z']:
+            raise ValueError(f'Axis must be in X, Y, Z')
+
+        if isinstance(value, (float, int)):
+            _value = PersistencePluginValueConstant(value)
+        else:
+            _value = value
+
+        self.value = _value
+        self.axis = axis
+        self.units = units
+
+    @classmethod
+    def from_xml(cls, _el: CC3DXMLElement):
+        kwargs = dict()
+        if _el.findAttribute('Units'):
+            kwargs['units'] = _el.getAttribute('Units')
+        return cls(_PersistencePluginValue.from_xml(_el),
+                   _el.getAttribute('Axis'),
+                   **kwargs)
+
+    @property
+    def xml(self) -> ElementCC3D:
+        el = ElementCC3D('RotateVector', {'Axis': self.axis, 'Units': self.units})
+        el.add_child(self.value.xml)
+        return el
+
+
+PERSISTENCE_FORCEMODE_EXTENSION = 'Extension'
+PERSISTENCE_FORCEMODE_RETRACTION = 'Retraction'
+PERSISTENCE_FORCEMODE_RECIPROCAL = 'Reciprocal'
+PERSISTENCE_FORCEMODES = [
+    PERSISTENCE_FORCEMODE_EXTENSION,
+    PERSISTENCE_FORCEMODE_RETRACTION,
+    PERSISTENCE_FORCEMODE_RECIPROCAL
+]
+
+PERSISTENCE_WORKTERM_REGULAR = 'Regular'
+PERSISTENCE_WORKTERM_NORMALIZED = 'Normalized'
+PERSISTENCE_WORKTERM_MASS = 'Mass'
+PERSISTENCE_WORKTERMS = [
+    PERSISTENCE_WORKTERM_REGULAR,
+    PERSISTENCE_WORKTERM_NORMALIZED,
+    PERSISTENCE_WORKTERM_MASS
+]
+
+PERSISTENCE_MODEL_AN = 'AngularNoise'
+PERSISTENCE_MODEL_SR = 'Self-Reinforcing'
+PERSISTENCE_MODELS = [
+    PERSISTENCE_MODEL_AN,
+    PERSISTENCE_MODEL_SR
+]
+
+
+class _PersistencePluginModel:
+
+    check_dict = {
+        'cell_type': (lambda x: not isinstance(x, str), "Cell type name must be a string"),
+        'force_mode': (lambda x: x not in PERSISTENCE_FORCEMODES,
+                       f"Force mode must be one of {PERSISTENCE_FORCEMODES}"),
+        'work_term': (lambda x: x not in PERSISTENCE_WORKTERMS, f"Force mode must be one of {PERSISTENCE_WORKTERMS}")
+    }
+
+    def __init__(self,
+                 model: str,
+                 cell_type: str,
+                 params: Dict[str, Any],
+                 force_mode=PERSISTENCE_FORCEMODE_RECIPROCAL,
+                 work_term=PERSISTENCE_WORKTERM_REGULAR,
+                 magnitude: Union[float, _PersistencePluginValue] = None,
+                 vector_init: List[_PersistencePluginInitTransform] = None):
+
+        super().__init__()
+
+        _magnitude = magnitude
+        if isinstance(magnitude, (float, int)):
+            _magnitude = PersistencePluginValueConstant(magnitude)
+
+        self.spec_dict = {'model': model,
+                          'cell_type': cell_type,
+                          'params': params,
+                          'force_mode': force_mode,
+                          'work_term': work_term,
+                          'magnitude': _magnitude,
+                          'vector_init': vector_init}
+
+    @property
+    def model(self) -> str:
+        """persistence cell model name"""
+        return self.spec_dict['model']
+
+    @property
+    def cell_type(self) -> str:
+        return self.spec_dict['cell_type']
+
+    @cell_type.setter
+    def cell_type(self, _val: str):
+        self.spec_dict['cell_type'] = _val
+
+    @property
+    def force_mode(self) -> str:
+        """general work term name"""
+        return self.spec_dict['force_mode']
+
+    @force_mode.setter
+    def force_mode(self, _val):
+        if _val not in PERSISTENCE_FORCEMODES:
+            raise ValueError(f'Force mode must be one of {PERSISTENCE_FORCEMODES}')
+        self.spec_dict['force_mode'] = _val
+
+    @property
+    def work_term(self) -> str:
+        """direction work term name"""
+        return self.spec_dict['work_term']
+
+    @work_term.setter
+    def work_term(self, _val: str):
+        if _val not in PERSISTENCE_WORKTERMS:
+            raise ValueError(f'Force mode must be one of {PERSISTENCE_WORKTERMS}')
+        self.spec_dict['work_term'] = _val
+
+    @property
+    def magnitude(self) -> _PersistencePluginValue:
+        """persistence vector magnitude"""
+        return self.spec_dict['magnitude']
+
+    @magnitude.setter
+    def magnitude(self, _val: Union[float, _PersistencePluginValue]):
+        if isinstance(_val, (float, int)):
+            val = PersistencePluginValueConstant(_val)
+        else:
+            val = _val
+
+        if not isinstance(val, _PersistencePluginValue):
+            raise TypeError
+        self.spec_dict['magnitude'] = val
+
+    @property
+    def vector_init(self) -> Optional[List[_PersistencePluginInitTransform]]:
+        """initial vector transformations"""
+        return self.spec_dict['vector_init']
+
+    @vector_init.setter
+    def vector_init(self, _val: List[_PersistencePluginInitTransform]):
+        self.spec_dict['vector_init'] = _val
+
+    @property
+    def xml(self) -> ElementCC3D:
+        el = ElementCC3D("PersistenceModel",
+                         {'CellType': self.cell_type,
+                          'Model': self.model,
+                          **{k: str(v) for k, v in self.spec_dict['params'].items()}})
+
+        el.add_child(ElementCC3D('ForceMode', {}, self.force_mode))
+        el.add_child(ElementCC3D('WorkTerm', {}, self.work_term))
+
+        if self.magnitude is not None:
+            el_mag = el.ElementCC3D("Magnitude")
+            el_mag.add_child(self.magnitude.xml)
+
+        if self.vector_init:
+            el_vector_init = el.ElementCC3D("VectorInit")
+            for vi in self.vector_init:
+                el_vector_init.add_child(vi.xml)
+
+        return el
+
+    @classmethod
+    def from_xml(cls, _xml: CC3DXMLElement):
+        model = _xml.getAttribute('Model')
+        kwargs = {
+            'cell_type': _xml.getAttribute('CellType')
+        }
+
+        if _xml.findElement('ForceMode'):
+            kwargs['force_mode'] = _xml.getFirstElement('ForceMode').getText()
+        else:
+            kwargs['force_mode'] = PERSISTENCE_FORCEMODE_RECIPROCAL
+        if _xml.findElement('WorkTerm'):
+            kwargs['work_term'] = _xml.getFirstElement('WorkTerm').getText()
+        else:
+            kwargs['work_term'] = PERSISTENCE_WORKTERM_REGULAR
+        if _xml.findElement('Magnitude'):
+            kwargs['magnitude'] = _PersistencePluginValue.from_xml(_xml.getFirstElement('Magnitude'))
+        if _xml.findElement('VectorInit'):
+            kwargs['vector_init'] = [_PersistencePluginInitTransform.from_xml(el)
+                                     for el in CC3DXMLListPy(_xml.getFirstElement('VectorInit').children)]
+        if model == PERSISTENCE_MODEL_SR:
+            return PersistencePluginSRModel.impl_from_xml(_xml, **kwargs)
+        elif model == PERSISTENCE_MODEL_AN:
+            return PersistencePluginANModel.impl_from_xml(_xml, **kwargs)
+        return cls.impl_from_xml(_xml, **kwargs)
+
+    @classmethod
+    def impl_from_xml(cls, _xml: CC3DXMLElement, **kwargs):
+        raise NotImplementedError
+
+    def new_vector_init_rotate(self, *args, **kwargs):
+        vector_init = self.vector_init
+        if not vector_init:
+            vector_init = []
+        t = PersistencePluginInitTransformRotate(*args, **kwargs)
+        vector_init.append(t)
+        self.vector_init = vector_init
+        return t
+
+
+class PersistencePluginSRModel(_PersistencePluginModel):
+
+    def __init__(self,
+                 period: int = None,
+                 *args, **kwargs):
+
+        kwargs['params'] = dict()
+        if period is not None:
+            kwargs['params']['Period'] = period
+
+        super().__init__(model=PERSISTENCE_MODEL_SR, *args, **kwargs)
+
+    @property
+    def period(self) -> Optional[int]:
+        if 'Period' in self.spec_dict['params']:
+            return self.spec_dict['params']['Period']
+        return None
+
+    @period.setter
+    def period(self, _val: int):
+        if _val <= 0:
+            raise ValueError('Period must be positive')
+        self.spec_dict['params']['Period'] = _val
+
+    @classmethod
+    def impl_from_xml(cls, _xml: CC3DXMLElement, **kwargs):
+        if _xml.findAttribute('Period'):
+            period = _xml.getAttributeAsUInt('Period')
+        else:
+            period = None
+        return cls(period=period, **kwargs)
+
+
+class PersistencePluginANModel(_PersistencePluginModel):
+
+    def __init__(self,
+                 period: float = None,
+                 stdev1: float = None,
+                 stdev2: float = None,
+                 stdev3: float = None,
+                 *args, **kwargs):
+
+        kwargs['params'] = dict()
+        if period is not None:
+            kwargs['params']['Period'] = period
+        if stdev1 is not None:
+            kwargs['params']['StDev1'] = stdev1
+        if stdev2 is not None:
+            kwargs['params']['StDev2'] = stdev2
+        if stdev3 is not None:
+            kwargs['params']['StDev3'] = stdev3
+
+        super().__init__(model=PERSISTENCE_MODEL_AN, *args, **kwargs)
+
+    @property
+    def period(self) -> Optional[float]:
+        if 'Period' in self.spec_dict['params']:
+            return self.spec_dict['params']['Period']
+        return None
+
+    @period.setter
+    def period(self, _val: float):
+        if _val <= 0:
+            raise ValueError('Period must be positive')
+        self.spec_dict['params']['Period'] = _val
+
+    @property
+    def stdev1(self) -> Optional[float]:
+        if 'StDev1' in self.spec_dict['params']:
+            return self.spec_dict['params']['StDev1']
+        return None
+
+    @stdev1.setter
+    def stdev1(self, _val: float):
+        if _val <= 0:
+            raise ValueError('Standard deviation must be positive')
+        self.spec_dict['params']['StDev1'] = _val
+
+    @property
+    def stdev2(self) -> Optional[float]:
+        if 'StDev2' in self.spec_dict['params']:
+            return self.spec_dict['params']['StDev2']
+        return None
+
+    @stdev2.setter
+    def stdev2(self, _val: float):
+        if _val <= 0:
+            raise ValueError('Standard deviation must be positive')
+        self.spec_dict['params']['StDev2'] = _val
+
+    @property
+    def stdev3(self) -> Optional[float]:
+        if 'StDev3' in self.spec_dict['params']:
+            return self.spec_dict['params']['StDev3']
+        return None
+
+    @stdev3.setter
+    def stdev3(self, _val: float):
+        if _val <= 0:
+            raise ValueError('Standard deviation must be positive')
+        self.spec_dict['params']['StDev3'] = _val
+
+    @classmethod
+    def impl_from_xml(cls, _xml: CC3DXMLElement, **kwargs):
+        period = None
+        if _xml.findAttribute('Period'):
+            period = _xml.getAttributeAsDouble('Period')
+
+        stdev1 = None
+        if _xml.findAttribute('StDev1'):
+            stdev1 = _xml.getAttributeAsDouble('StDev1')
+
+        stdev2 = None
+        if _xml.findAttribute('StDev2'):
+            stdev2 = _xml.getAttributeAsDouble('StDev2')
+
+        stdev3 = None
+        if _xml.findAttribute('StDev3'):
+            stdev3 = _xml.getAttributeAsDouble('StDev3')
+
+        return cls(period=period, stdev1=stdev1, stdev2=stdev2, stdev3=stdev3, **kwargs)
+
+
+class PersistencePlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
+    """ Persistence Plugin """
+
+    name = "persistence"
+    registered_name = "Persistence"
+
+    def __init__(self,
+                 models: List[_PersistencePluginModel] = None,
+                 seed: int = None):
+
+        if models is None:
+            models = []
+
+        super().__init__()
+
+        self.spec_dict = {'models': models,
+                          'seed': seed}
+
+    models: List[_PersistencePluginModel] = SpecProperty('models')
+
+    seed: Optional[int] = SpecProperty(name='seed')
+
+    def __getitem__(self, cell_type: str):
+        """Get a model by cell type"""
+        for m in self.spec_dict['models']:
+            if m.cell_type == cell_type:
+                return m
+        return KeyError(f'Cell type {cell_type} has no model')
+
+    @property
+    def xml(self) -> ElementCC3D:
+        self._el = self.generate_header()
+
+        for m in self.models:
+            self._el.add_child(m.xml)
+
+        if self.seed is not None:
+            self._el.add_child(ElementCC3D('RandomSeed', {}, str(self.seed)))
+
+        return self._el
+
+    @classmethod
+    def from_xml(cls, _xml: CC3DXMLElement):
+        """
+        Instantiate an instance from a CC3DXMLElement parent instance
+
+        :param _xml: parent xml
+        :return: python class instance
+        :rtype: PersistencePlugin
+        """
+        el = cls.find_xml_by_attr(_xml)
+
+        o = cls()
+
+        el_list = CC3DXMLListPy(el.getElements("PersistenceModel"))
+
+        for p_el in el_list:
+            p_el: CC3DXMLElement
+            o.new_model(_PersistencePluginModel.from_xml(p_el))
+
+        if el.findElement("RandomSeed"):
+            o.seed = el.getFirstElement("RandomSeed").getInt()
+
+        return o
+
+    @property
+    def cell_types(self) -> List:
+        """Cell types with a model"""
+        return [m.cell_type for m in self.models]
+
+    def new_model(self, _model):
+        if _model.cell_type in self.cell_types:
+            raise ValueError(f'A model for type {_model.cell_type} is already defined.')
+        self.spec_dict['models'].append(_model)
+        return _model
+
+    def new_model_sr(self, *args, **kwargs) -> PersistencePluginSRModel:
+        return self.new_model(PersistencePluginSRModel(*args, **kwargs))
+
+    def new_model_an(self, *args, **kwargs) -> PersistencePluginANModel:
+        return self.new_model(PersistencePluginANModel(*args, **kwargs))
+
+    def remove_model(self, _cell_type: str):
+        for i, m in enumerate(self.spec_dict['models']):
+            if m.cell_type == _cell_type:
+                self.spec_dict['models'].pop(i)
+                return
+        raise KeyError(f'Cell type {_cell_type} has no model')
+
+    def replace_model(self, _model: _PersistencePluginModel):
+        self.remove_model(_model.cell_type)
+        self.new_model(_model)
+
+
 class CenterOfMassPlugin(_PyCorePluginSpecs):
     """ CenterOfMass Plugin """
 

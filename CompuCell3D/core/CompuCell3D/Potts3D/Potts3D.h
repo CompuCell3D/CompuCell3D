@@ -396,6 +396,7 @@ namespace CompuCell3D {
         virtual CellG *createCellGSpecifiedIds(const Point3D pt, long _cellId, long _clusterId = -1);
 
         virtual CellG *createCell(long _clusterId = -1);
+        virtual CellG *createCell(const unsigned char& typeId, long _clusterId = -1);
 
         virtual CellG *createCellSpecifiedIds(long _cellId, long _clusterId = -1);
 

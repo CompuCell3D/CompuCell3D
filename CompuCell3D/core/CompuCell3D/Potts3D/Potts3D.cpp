@@ -368,6 +368,43 @@ CellG *Potts3D::createCell(long _clusterId) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+CellG *Potts3D::createCell(const unsigned char& typeId, long _clusterId) {
+    CellG *cell = new CellG();
+    cell->extraAttribPtr = cellFactoryGroup.create();
+    //always keep incrementing recently created  cell id
+    ++recentlyCreatedCellId;
+    cell->id = recentlyCreatedCellId;
+    cell->type = typeId;
+
+    //this means that cells with clusterId<=0 should be placed at the end of PIF file if
+    // automatic numbering of clusters is to work for a mix of clustered and non-clustered cells
+
+    if (_clusterId <= 0) { //default behavior if user does not specify cluster id or cluster id is 0
+        ++recentlyCreatedClusterId;
+        cell->clusterId = recentlyCreatedClusterId;
+
+
+    } else if (_clusterId >
+               recentlyCreatedClusterId) { //clusterId specified by user is greater than recentlyCreatedClusterId
+
+        cell->clusterId = _clusterId;
+        // if we get cluster id greater than recentlyCreatedClusterId we set recentlyCreatedClusterId to be _clusterId+1
+        // this way if users add "non-cluster" cells after definition of clustered cell 
+        // the cell->clusterId is guaranteed to be greater than any of the clusterIds specified for clustered cells
+        recentlyCreatedClusterId = _clusterId;
+
+
+    } else { // cluster id is greater than zero but smaller than recentlyCreatedClusterId
+        cell->clusterId = _clusterId;
+    }
+
+    cellInventory.addToInventory(cell);
+
+    return cell;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // this function should be only used from PIF Initializers or when you really understand the way CC3D assigns cell ids
 CellG *Potts3D::createCellGSpecifiedIds(const Point3D pt, long _cellId, long _clusterId) {
     if (!cellFieldG->isValid(pt)) throw CC3DException("createCell() cellFieldG Point out of range!");

@@ -89,6 +89,7 @@ using namespace CompuCell3D;
 #define MITOSIS_EXPORT
 #define MITOSISSTEPPABLE_EXPORT
 #define NEIGHBORTRACKER_EXPORT
+#define PERSISTENCE_EXPORT
 #define PIXELTRACKER_EXPORT
 #define BOUNDARYPIXELTRACKER_EXPORT
 #define CONTACTLOCALFLEX_EXPORT
@@ -266,6 +267,14 @@ PLUGINACCESSOR(CenterOfMass)
 
 PLUGINACCESSOR(NeighborTracker)
 
+//Persistence
+
+%include <CompuCell3D/plugins/Persistence/Persistence.h>
+%include <CompuCell3D/plugins/Persistence/PersistencePlugin.h>
+%template (PersistenceDataAccessor) ExtraMembersGroupAccessor<PersistenceData>;
+PLUGINACCESSOR(Persistence)
+
+//PixelTracker
 
 %include <CompuCell3D/plugins/PixelTracker/PixelTracker.h>
 %template (PixelTrackerAccessor) ExtraMembersGroupAccessor<PixelTracker>; //necessary to get PixelTracker accessor working

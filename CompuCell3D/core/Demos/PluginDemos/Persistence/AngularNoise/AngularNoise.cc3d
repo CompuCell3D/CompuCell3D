@@ -1,0 +1,5 @@
+<Simulation version="4.6.0">
+   <XMLScript Type="XMLScript">Simulation/AngularNoise.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/AngularNoise.py</PythonScript>
+   <Resource Type="Python">Simulation/AngularNoiseSteppables.py</Resource>
+</Simulation>

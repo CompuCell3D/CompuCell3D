@@ -296,6 +296,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         #: instance of :class:`cc3d.cpp.CompuCell.FocalPointPlasticityPlugin` if loaded
         self.focal_point_plasticity_plugin = None
         self.focalPointPlasticityPlugin = None
+        #: instance of :class:`cc3d.cpp.CompuCell.PersistencePlugin` if loaded
+        self.persistence_plugin = None
+        self.persistencePlugin = None
         #: instance of :class:`cc3d.cpp.CompuCell.PixelTrackerPlugin` if loaded
         self.pixel_tracker_plugin = None
         self.pixelTrackerPlugin = None
@@ -366,6 +369,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         self.plugin_init_dict = {
             "NeighborTracker": ['neighbor_tracker_plugin', 'neighborTrackerPlugin'],
             "FocalPointPlasticity": ['focal_point_plasticity_plugin', 'focalPointPlasticityPlugin'],
+            "Persistence": ['persistence_plugin', 'persistencePlugin'],
             "PixelTracker": ['pixel_tracker_plugin', 'pixelTrackerPlugin'],
             "BoundaryPixelTracker": ['boundary_pixel_tracker_plugin', 'boundaryPixelTrackerPlugin'],
             "BoundaryMonitor": ['boundary_monitor_plugin', 'boundaryMonitorPlugin'],
@@ -2364,8 +2368,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         :return: new cell
         :rtype: cc3d.cpp.CompuCell.CellG
         """
-        cell = self.potts.createCell()
-        cell.type = cell_type
+        cell = self.potts.createCell(cell_type, -1)
         return cell
 
     @deprecated(version='4.0.0', reason="You should use : get_pixel_neighbors_based_on_neighbor_order")
