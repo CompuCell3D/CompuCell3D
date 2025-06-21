@@ -48,6 +48,7 @@ requirements:
     - eigen
     - tbb-devel={{ tbb_devel_version }}
     - boost>={{ boost_version }}
+    - libboost-python-devel>={{ boost_version }}
     - cmake={{ cmake_version }}
     - swig>={{ swig_version }}
     - psutil
@@ -58,6 +59,7 @@ requirements:
     - {{ openmp }} # [osx]
 
   build:
+    - pip>=23.0
     - cmake={{ cmake_version }}
     - swig>={{ swig_version }}
     - numpy={{ numpy_version }}
@@ -66,12 +68,14 @@ requirements:
     - {{ openmp }} # [osx]
 
   run:
+    - pip>=23.0
     - python {{ python }}
     - numpy={{ numpy_version }}
     - vtk={{ vtk_version }}
     - eigen
     - tbb-devel={{ tbb_devel_version }}
     - boost={{ boost_version }}
+    - libboost-python-devel>={{ boost_version }}
     - swig>={{ swig_version }}
     - psutil
     - deprecated
@@ -81,7 +85,7 @@ requirements:
     - deprecated
     - psutil
     - cmake={{ cmake_version }}
-#    - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
+    - cc3d-network-solvers>={{ cc3d_network_solvers_version }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ openmp }} # [osx]
