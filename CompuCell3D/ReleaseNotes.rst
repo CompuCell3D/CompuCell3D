@@ -2,6 +2,26 @@ Release Notes
 =============
 
 
+Version 4.7.0
+-------------
+**2025-06-21**
+
+New features:
+ - Simulation Code Helper for VS Code
+ - Improved Simulation Wizard - full graphical configuration of PDE solvers
+ - Added support for Vector Fields  - can be accessed from C++ and Python level
+ - Shared Numpy arrays - accessible from C++ and Python
+ - Improved rendering of fields in Player
+ - Improved CorePy Simulation specification in pure Python
+ - Python logger
+ - New Demos
+ - Python 3.12 is now the default Python version
+
+
+Bug fixes:
+ - Fixed serialization of SBML solvers
+ - Multiple minor bug fixes
+
 Version 4.6.0
 -------------
 **2024-06-08**
