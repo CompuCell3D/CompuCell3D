@@ -245,7 +245,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         actors_dict = actor_specs.actors_dict
 
         field_name = drawing_params.fieldName
-        field_type = drawing_params.fieldType.lower()
+        field_type = self.get_field_type(drawing_params=drawing_params)
+
+
         scene_metadata = drawing_params.screenshot_data.metadata
 
         mdata = MetadataHandler(mdata=scene_metadata)
@@ -408,7 +410,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
                         actor_specs=actor_specs, drawing_params=drawing_params
                     )
                 else:
-
                     self.init_concentration_field_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
 
         # Handle if something previously prevented initialization of metadata,
@@ -447,7 +448,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         hex_cells_con_int_addr = extract_address_int_from_vtk_object(vtkObj=hex_cells_con)
         hex_cells_con_poly_data = vtk.vtkPolyData()
 
-        field_type = drawing_params.fieldType.lower()
+        field_type = self.get_field_type(drawing_params=drawing_params)
+
         if field_type == "confield":
             fill_successful = self.field_extractor.fillConFieldData2DHex(
                 con_array_int_addr,
@@ -623,7 +625,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         cells_con_int_addr = extract_address_int_from_vtk_object(vtkObj=cells_con)
         cells_con_poly_data = vtk.vtkPolyData()
 
-        field_type = drawing_params.fieldType.lower()
+        field_type = self.get_field_type(drawing_params=drawing_params)
+
         if field_type == "confield":
             fill_successful = self.field_extractor.fillConFieldData2DCartesian(
                 con_array_int_addr,
@@ -633,6 +636,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 self.currentDrawingParameters.plane,
                 self.currentDrawingParameters.planePos,
             )
+
         elif field_type == "scalarfield":
             fill_successful = self.field_extractor.fillScalarFieldData2DCartesian(
                 con_array_int_addr,
@@ -657,7 +661,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
             CompuCell.CC3DLogger.get().log(CompuCell.LOG_WARNING,
                                            f'unsupported field type {field_type} ({field_name})')
             return
-
+        print("ATTEMPTING PIXELIZED")
         if not fill_successful:
             CompuCell.CC3DLogger.get().log(CompuCell.LOG_ERROR,
                                            f'fill unsuccessful for field type {field_type} ({field_name})')
@@ -739,9 +743,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
         con_array = vtk.vtkDoubleArray()
         con_array.SetName("concentration")
         con_array_int_addr = extract_address_int_from_vtk_object(vtkObj=con_array)
-        # # todo - make it flexible
 
-        field_type = drawing_params.fieldType.lower()
+
+        field_type = self.get_field_type(drawing_params=drawing_params)
+
         if field_type == "confield":
             fill_successful = self.field_extractor.fillConFieldData2D(
                 con_array_int_addr,

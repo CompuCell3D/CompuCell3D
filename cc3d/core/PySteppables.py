@@ -19,6 +19,7 @@ from cc3d.core.SBMLSolverHelper import SBMLSolverHelper
 from cc3d.core.MaBoSSCC3D import MaBoSSHelper
 from cc3d.core.GraphicsUtils.MovieCreator import makeMovie
 from cc3d.core.logging import log_py
+from cc3d.core import FieldCopier
 import types
 from deprecated import deprecated
 from cc3d.core.SteeringParam import SteeringParam
@@ -142,7 +143,8 @@ class FieldFetcher:
 
     """
 
-    def __init__(self):
+    def __init__(self, use_raw_fields=False):
+        self.use_raw_fields = use_raw_fields
         pass
 
     def __getattr__(self, item):
@@ -153,14 +155,33 @@ class FieldFetcher:
             return pg.simulator.getPotts().getCellFieldG()
 
         try:
+            field_adapter = field_registry.get_field_adapter(field_name=item)
+
+            if self.use_raw_fields:
+                # returning raw field
+                return field_adapter
+
+            # normally we may do some conditioning on the field prior to returning it to the user:
+            if field_adapter.field_type == SHARED_SCALAR_NUMPY_FIELD:
+                pad = field_adapter.kwds.get("padding", 0)
+                padding_vec = field_adapter.kwds.get("padding_vec", np.array([0, 0, 0]))
+                if pad > 0:
+                    slices = [slice(padding, -padding) if padding else slice(None)  for padding in padding_vec]
+                    return field_adapter[slices[0], slices[1], slices[2]]
+                else:
+                    return field_adapter
+
             return field_registry.get_field_adapter(field_name=item)
         except KeyError:
-            # trying C++ concentration fields - e.g. diffusion solvers
+            # trying C++ concentration fields - e.g. diffusion solvers but not shared numpy concentration fields
+            # - those are managed byfield_registry
             field = CompuCell.getConcentrationField(pg.simulator, item)
             if field is not None:
                 return field
-            else:
-                raise KeyError(' The requested field {} does not exist'.format(item))
+            # note, shared vector numpy fields should be all handled by field registry e.g. check
+            # engine_vector_field_to_field_adapter and create_shared_vector_numpy_field methods of FieldRegistry class
+
+            raise KeyError(' The requested field {} does not exist'.format(item))
 
 
 class GlobalSBMLFetcher:
@@ -250,6 +271,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
 
         #: field accessor
         self.field = FieldFetcher()
+        # field accessor that returns raw fields, i.e. it will not "strip" padding or condition field prior to
+        # returning. Instead, it returns a raw object. This fetches i useful for developing PDE solvers where we need
+        # full arrays with padding not just "user view" arrays
+        self.raw_field = FieldFetcher(use_raw_fields=True)
 
         self._simulator = None
 
@@ -748,6 +773,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         field_vis_data.cell_type_list = cell_type_list
 
         self.tracking_field_vis_dict[field_name] = field_vis_data
+
+
+    def copy_cell_attribute_field_values_to(self, field_name:str, cell_attribute_name:str):
+        return FieldCopier.copy_cell_attribute_field_values_to(field_name=field_name, cell_attribute_name=cell_attribute_name)
 
     def track_cell_level_vector_attribute(self, field_name: str, attribute_name: str, function_obj: object = None,
                                           cell_type_list: Union[list, None] = None):
@@ -1306,6 +1335,21 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
         return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,
                                                                          field_type=SCALAR_FIELD_NPY)
 
+    def create_shared_scalar_numpy_field(self, fieldName: str, precision_type:str="float32", **kwds) -> ExtraFieldAdapter:
+        """
+        Creates shared scalar field that is actually a numpy array accessible from both python and from C++ code
+
+        :param str fieldName: name of field
+        :param str precision_type: numpy precision type, defaults to "float32"
+        :param str kwds: kyeword arg allowed args so far are "padding" e.g.
+            self.create_shared_scalar_numpy_field("numpy1", padding=1)
+        :return: Extra visualization field (voxel-based)
+        :rtype: cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter
+        """
+
+        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName, precision_type=precision_type,
+                                                                         field_type=SHARED_SCALAR_NUMPY_FIELD, **kwds)
+
     @deprecated(version='4.0.0', reason="You should use : create_scalar_field_cell_level_py")
     def createScalarFieldCellLevelPy(self, _fieldName):
         return self.create_scalar_field_cell_level_py(field_name=_fieldName)
@@ -1336,6 +1380,19 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
 
         return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=field_name,
                                                                          field_type=VECTOR_FIELD_NPY)
+
+
+    def create_shared_vector_numpy_field(self, field_name: str) -> ExtraFieldAdapter:
+        """
+        Creates extra visualization vector field (voxel-based)
+
+        :param str field_name: name of field
+        :return: Extra visualization vector field (voxel-based)
+        :rtype: cc3d.core.ExtraFieldAdapter.ExtraFieldAdapter
+        """
+
+        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=field_name,
+                                                                         field_type=SHARED_VECTOR_NUMPY_FIELD)
 
     @deprecated(version='4.0.0', reason="You should use : create_vector_field_cell_level_py")
     def createVectorFieldCellLevelPy(self, _fieldName):

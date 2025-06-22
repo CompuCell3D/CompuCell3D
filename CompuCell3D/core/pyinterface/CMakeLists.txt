@@ -59,10 +59,12 @@ IF(SWIG_FOUND)
     add_subdirectory(PlayerPythonNew)
     add_subdirectory(SerializerDE)
     add_subdirectory(PyPlugin)
+    add_subdirectory(CC3DAuxFields)
     # add_subdirectory(Example)
     # add_subdirectory(Fields)
     if(USE_DOLFIN)
         add_subdirectory(dolfinCC3D)
+
     endif(USE_DOLFIN)
 
 ELSE(SWIG_FOUND)
