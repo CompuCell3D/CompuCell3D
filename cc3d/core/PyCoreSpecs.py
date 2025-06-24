@@ -2650,6 +2650,14 @@ class ChemotaxisParameters(_PyCoreSpecsBase):
         return p
 
 
+CHEMOTAXIS_ALGORITHM_REGULAR = 'Regular'
+CHEMOTAXIS_ALGORITHM_RECIPROCATED = 'Reciprocated'
+CHEMOTAXIS_ALGORITHMS = [
+    CHEMOTAXIS_ALGORITHM_REGULAR,
+    CHEMOTAXIS_ALGORITHM_RECIPROCATED
+]
+
+
 class ChemotaxisPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     """
     Chemotaxis Plugin
@@ -2673,6 +2681,10 @@ class ChemotaxisPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
     name = "chemotaxis"
     registered_name = "Chemotaxis"
 
+    check_dict = {
+        "algorithm": (lambda x: x not in CHEMOTAXIS_ALGORITHMS, f"Algorithm must be one of: {CHEMOTAXIS_ALGORITHMS}")
+    }
+
     def __init__(self, *_field_specs):
         super().__init__()
 
@@ -2683,7 +2695,10 @@ class ChemotaxisPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
                         raise SpecValueError("Can only pass ChemotaxisParameters instances",
                                              names=[_fs.__name__])
 
-        self.spec_dict = {"field_specs": {_fs.field_name: _fs for _fs in _field_specs}}
+        self.spec_dict = {"field_specs": {_fs.field_name: _fs for _fs in _field_specs},
+                          'algorithm': CHEMOTAXIS_ALGORITHM_REGULAR}
+
+    algorithm: str = SpecProperty(name='algorithm')
 
     @property
     def xml(self) -> ElementCC3D:
@@ -2694,6 +2709,7 @@ class ChemotaxisPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
         """
         self._el = self.generate_header()
         [self._el.add_child(_fs.xml) for _fs in self.spec_dict["field_specs"].values()]
+        self._el.add_child(ElementCC3D('Algorithm', {}, self.algorithm))
         return self._el
 
     def validate(self, *specs) -> None:
@@ -2750,6 +2766,11 @@ class ChemotaxisPlugin(_PyCorePluginSpecs, _PyCoreSteerableInterface):
                 f.params_append(p)
 
             o.param_append(f)
+
+        el_list = CC3DXMLListPy(cls.find_xml_by_attr(_xml).getElements("Algorithm"))
+
+        for el in el_list:
+            o.algorithm = el.getText()
 
         return o
 
