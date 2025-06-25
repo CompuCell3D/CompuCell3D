@@ -1,0 +1,39 @@
+{
+    "Metadata": {
+        "num_processors": 4,
+        "debug_output_frequency": 10
+    },
+    "PottsCore": {
+        "dim_x": 100,
+        "dim_y": 100,
+        "dim_z": 1,
+        "steps": 100000,
+        "anneal": 0.0,
+        "fluctuation_amplitude": 10.0,
+        "fluctuation_amplitude_function": "Min",
+        "boundary_x": "NoFlux",
+        "boundary_y": "NoFlux",
+        "boundary_z": "NoFlux",
+        "neighbor_order": 1,
+        "random_seed": null,
+        "lattice_type": "Cartesian",
+        "offset": 0
+    },
+    "CellType": [
+        {
+            "Cell type": "Medium",
+            "freeze": false
+        }
+    ],
+    "Constraints": {
+        "Volume": [
+            {
+                "CellType": "Medium",
+                "enabled": false,
+                "target_volume": 25.0,
+                "lambda_volume": 2.0
+            }
+        ],
+        "Surface": []
+    }
+}
