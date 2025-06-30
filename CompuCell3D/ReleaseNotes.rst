@@ -17,7 +17,7 @@ New features:
  - Python logger
  - New Demos
     - Elongated Cells Tutorial (ElongatedCellsTutorial.cc3d)
-     - Revised versions of Schnakenberg Three-Component demos
+    - Revised versions of Schnakenberg Three-Component demos
  - Python 3.12 is now the default Python version
  - Added descriptions to a handful of demos inside the Demo Browser menu
  - Upgraded default NumPy version to 2.2
