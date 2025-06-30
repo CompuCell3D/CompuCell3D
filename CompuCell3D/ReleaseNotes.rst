@@ -11,16 +11,24 @@ New features:
  - Improved Simulation Wizard - full graphical configuration of PDE solvers
  - Added support for Vector Fields  - can be accessed from C++ and Python level
  - Shared Numpy arrays - accessible from C++ and Python
+ - Added SurfaceTracker Plugin to Python API
  - Improved rendering of fields in Player
  - Improved CorePy Simulation specification in pure Python
  - Python logger
  - New Demos
+    - Elongated Cells Tutorial (ElongatedCellsTutorial.cc3d)
+     - Revised versions of Schnakenberg Three-Component demos
  - Python 3.12 is now the default Python version
+ - Added descriptions to a handful of demos inside the Demo Browser menu
+ - Upgraded default NumPy version to 2.2
 
 
 Bug fixes:
  - Fixed serialization of SBML solvers
- - Multiple minor bug fixes
+ - Fixed an issue where movies would not have the correct MCS labels written
+ - Added a guarantee for at least 1 layer of cells from PolygonInitializer
+ - Removed unused Penalty parameter from ConnectivityPlugin and ConnectivityLocalFlexPlugin
+ - Fixed a compilation error on Linux with GCC 15
 
 Version 4.6.0
 -------------
