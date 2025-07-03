@@ -1,4 +1,3 @@
-
 """
 Defines python-based core specification classes
 """
