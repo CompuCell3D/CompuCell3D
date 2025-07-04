@@ -100,4 +100,5 @@ def run_cc3d_project(cc3d_sim_fname):
                 # we will exit with code 1 only in the non-player mode
                 if not CompuCellSetup.persistent_globals.player_type:
                     sys.exit(1)
-        CompuCellSetup.persistent_globals.simulator.cleanAfterSimulation()
+        if CompuCellSetup.persistent_globals.simulator:
+            CompuCellSetup.persistent_globals.simulator.cleanAfterSimulation()
