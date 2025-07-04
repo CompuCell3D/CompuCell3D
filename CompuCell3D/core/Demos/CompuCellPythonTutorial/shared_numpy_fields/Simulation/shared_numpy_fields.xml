@@ -41,7 +41,7 @@
     <Steppable Type="FieldManager">
         <Field Name="fibers_field_manager" Type="vector"/>
         <Field Name="numpy_field_manager" Type="scalar"/>
-        <Field Name="cell_type_field" Type="scalar" Precision="uchar"/>
+        <Field Name="cell_type_field" Type="scalar" Precision="uint8"/>
         <Field Name="cell_volume_field" Type="scalar" Precision="int16"/>
     </Steppable>
 
