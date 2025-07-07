@@ -124,6 +124,48 @@ using namespace CompuCell3D;
 %include <core/pyinterface/FieldExtender/FieldExtender.i>
 
 
+%extend CompuCell3D::Point3D{
+        std::string __str__(){
+            std::ostringstream s;
+            s<<(*self);
+            return s.str();
+        }
+
+
+
+        %pythoncode %{
+            def __getstate__(self):
+                return (self.x,self.y,self.z)
+
+            def __setstate__(self,tup):
+                print( 'tuple=',tup)
+                self.this = _CompuCell.new_Point3D(tup[0],tup[1],tup[2])
+                self.thisown=1
+
+            def to_tuple(self):
+                return self.x, self.y, self.z
+
+%}
+};
+
+
+
+%extend CompuCell3D::Dim3D{
+        std::string __str__(){
+            std::ostringstream s;
+            s<<(*self);
+            return s.str();
+        }
+
+        %pythoncode %{
+            def to_tuple(self):
+                return self.x, self.y, self.z
+
+            def __reduce__(self):
+                return Dim3D, (self.x, self.y, self.z)
+  %}
+};
+
 
 %template(floatfieldaux) CompuCell3D::Field3D<float>;
 %ignore CompuCell3D::Field3D<float>::typeStr;
