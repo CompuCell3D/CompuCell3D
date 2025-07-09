@@ -6,7 +6,27 @@ from ipywidgets import (
     FloatText, Checkbox, Button, Text, Label, Tab, HTML
 )
 from IPython.display import display
-from cc3d.core.PyCoreSpecs import Metadata, PottsCore, CellTypePlugin
+from cc3d.core.PyCoreSpecs import Metadata, PottsCore, PLUGINS
+from cc3d.core.PyCoreSpecs import (
+    AdhesionFlexPlugin,
+    BoundaryPixelTrackerPlugin,
+    CellTypePlugin,
+    CenterOfMassPlugin,
+    ChemotaxisPlugin,
+    ConnectivityGlobalPlugin,
+    ConnectivityPlugin,
+    ContactPlugin,
+    CurvaturePlugin,
+    ExternalPotentialPlugin,
+    FocalPointPlasticityPlugin,
+    LengthConstraintPlugin,
+    MomentOfInertiaPlugin,
+    NeighborTrackerPlugin,
+    PixelTrackerPlugin,
+    SecretionPlugin,
+    SurfacePlugin,
+    VolumePlugin,
+)
 
 # Configuration
 SAVE_FILE = 'simulation_setup.json'
