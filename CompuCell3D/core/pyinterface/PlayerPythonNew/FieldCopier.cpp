@@ -189,11 +189,21 @@ bool FieldCopier::copy_legacy_concentration_field(const std::string &source_fiel
     ASSERT_OR_THROW("Legacy concentration field " + source_field_name + " cannot be found", srcField);
 
     // 2. Obtain destination NumPy‑backed field and verify its type is float
-    auto [destType, destVoidPtr] = getFieldTypeAndPointer(destination_field_name);
+    auto result = getFieldTypeAndPointer(destination_field_name);
+    std::type_index destType = std::get<0>(result);
+    void* destVoidPtr = std::get<1>(result);
+
     ASSERT_OR_THROW("Destination field " + destination_field_name + " cannot be found", destVoidPtr);
     ASSERT_OR_THROW("Destination field " + destination_field_name + " must be of type float", destType == typeid(float));
 
     auto *destField = static_cast<Field3D<float> *>(destVoidPtr);
+
+
+    // auto [destType, destVoidPtr] = getFieldTypeAndPointer(destination_field_name);
+    // ASSERT_OR_THROW("Destination field " + destination_field_name + " cannot be found", destVoidPtr);
+    // ASSERT_OR_THROW("Destination field " + destination_field_name + " must be of type float", destType == typeid(float));
+
+    // auto *destField = static_cast<Field3D<float> *>(destVoidPtr);
 
     // 3. Verify the fields have identical dimensions
     Dim3D dim = srcField->getDim();
