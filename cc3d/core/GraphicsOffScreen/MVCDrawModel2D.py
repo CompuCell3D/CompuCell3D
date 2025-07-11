@@ -661,7 +661,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
             CompuCell.CC3DLogger.get().log(CompuCell.LOG_WARNING,
                                            f'unsupported field type {field_type} ({field_name})')
             return
-        print("ATTEMPTING PIXELIZED")
+        # print("ATTEMPTING PIXELIZED")
         if not fill_successful:
             CompuCell.CC3DLogger.get().log(CompuCell.LOG_ERROR,
                                            f'fill unsuccessful for field type {field_type} ({field_name})')
