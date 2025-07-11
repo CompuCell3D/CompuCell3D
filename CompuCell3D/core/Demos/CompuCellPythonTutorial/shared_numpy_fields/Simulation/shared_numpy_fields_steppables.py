@@ -24,6 +24,8 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
 
         self.copy_cell_attribute_field_values_to("cell_type_field", "type")
         self.copy_cell_attribute_field_values_to("cell_volume_field", "id")
+
+
         numpy_field_manager = self.field.numpy_field_manager
 
         cell_type_field = self.field.cell_type_field
@@ -99,5 +101,10 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
 
 
     def step(self, mcs):
+        # demonstrating how we can quickly copy legacy concentration fields from C++ CC3D to shared numpy array
+        # note, the field destination_field_name must be of type float32 :
+        # <Field Name="concentration_field_copy" Type="scalar" Precision="float32"/>
+        self.copy_legacy_concentration_field(source_field_name="FGF", destination_field_name="concentration_field_copy")
+
         pass
 

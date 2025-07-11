@@ -43,6 +43,7 @@
         <Field Name="numpy_field_manager" Type="scalar"/>
         <Field Name="cell_type_field" Type="scalar" Precision="uint8"/>
         <Field Name="cell_volume_field" Type="scalar" Precision="int16"/>
+        <Field Name="concentration_field_copy" Type="scalar" Precision="float32" Padding="0"/>
     </Steppable>
 
 

@@ -61,7 +61,7 @@ namespace CompuCell3D {
 
         // Member variables
         std::string name; // Name of the field
-        int padding=0;      // Padding for the field
+        int padding=1;      // Padding for the field
         FieldType type = FieldType::Scalar;        // Type of the field (scalar or vector)
         FieldKind kind = FieldKind::NumPy;        // Kind of the field (NumPy or CC3D)
         PrecisionType precision = PrecisionType::Float;
