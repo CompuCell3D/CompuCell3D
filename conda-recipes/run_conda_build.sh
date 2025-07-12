@@ -1,6 +1,6 @@
 if [ $# -eq 0 ]; then
     # If not, assign a default value
-    PYTHON_VERSION=3.10
+    PYTHON_VERSION=3.12
 else
     # If yes, use the passed value
     PYTHON_VERSION="$1"
