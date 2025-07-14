@@ -207,7 +207,7 @@ bool FieldCopier::copy_legacy_concentration_field(const std::string &source_fiel
 
     // 3. Verify the fields have identical dimensions
     Dim3D dim = srcField->getDim();
-    cerr<<"src="<<srcField->getDim()<<" dst="<<destField->getDim()<<endl;
+//    cerr<<"src="<<srcField->getDim()<<" dst="<<destField->getDim()<<endl;
     ASSERT_OR_THROW("Dimension mismatch between legacy and destination fields", destField->getDim() == dim);
 
     // 4. Copy values voxel‑by‑voxel
