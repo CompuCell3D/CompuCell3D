@@ -25,14 +25,6 @@
         {
             "Cell type": "Medium",
             "freeze": false
-        },
-        {
-            "Cell type": "T1",
-            "freeze": false
-        },
-        {
-            "Cell type": "T2",
-            "freeze": false
         }
     ],
     "Plugins": {}
