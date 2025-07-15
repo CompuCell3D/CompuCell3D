@@ -67,17 +67,21 @@ display(IPythonHTML("""
 
 /* Plugin-specific spacing classes */
 .plugin-config-container {
-    padding: 5px 0 0 20px !important;
+    padding: 0 0 0 0 !important;
 }
-
+.plugin-compact-container {
+    padding: 0 !important;
+    margin: 0 !important;
+}
 .plugin-input-spacing {
     margin: 0 15px 0 0 !important;
 }
-
 .plugin-bottom-spacing {
     margin: 0 0 15px 0 !important;
 }
-
+.plugin-checkbox-bottom-spacing {
+    margin: 0 0 15px 0 !important;
+}
 .button-spacing {
     margin: 10px 0 !important;
 }
@@ -94,6 +98,10 @@ display(IPythonHTML("""
     border-color: #d32f2f !important;
     box-shadow: 0 0 5px rgba(244, 67, 54, 0.5) !important;
     border-radius: 4px !important;
+}
+
+.plugin-top-spacing {
+    margin-top: 10px !important;
 }
 </style>
 """))
@@ -133,6 +141,7 @@ class PluginWidget:
         self.default_instance = plugin_class()
         self.cell_types = cell_types
         self.widgets = {}
+        self.output = Output()  # Add output widget for debug
         self.create_widgets(saved_values or self.default_instance.spec_dict)
 
     def create_widgets(self, saved_values):
@@ -145,7 +154,7 @@ class PluginWidget:
 
         # Container for plugin-specific widgets
         self.widgets["config_container"] = VBox([], layout=Layout(
-            padding='10px 0 0 20px',
+            padding='0',
             display='none' if not saved_values else 'block'
         ))
 
@@ -162,13 +171,23 @@ class PluginWidget:
             self.create_chemotaxis_widgets(saved_values)
         elif self.plugin_name == "BoundaryPixelTrackerPlugin":
             self.create_boundary_tracker_widgets(saved_values)
+        elif self.plugin_name == "CurvaturePlugin":
+            self.create_curvature_widgets(saved_values)
+        elif self.plugin_name == "ExternalPotentialPlugin":
+            self.create_external_potential_widgets(saved_values)
+        elif self.plugin_name == "FocalPointPlasticityPlugin":
+            self.create_focal_point_plasticity_widgets(saved_values)
         # Add other plugins as needed...
 
         # Set up active toggle
         self.widgets["active"].observe(self.toggle_config_visibility, names='value')
 
     def toggle_config_visibility(self, change):
-        self.widgets["config_container"].layout.display = 'block' if change['new'] else 'none'
+        # For plugins without input boxes, always show the config_container for spacing
+        if self.plugin_name in ["CurvaturePlugin", "ExternalPotentialPlugin", "FocalPointPlasticityPlugin"]:
+            self.widgets["config_container"].layout.display = 'block'
+        else:
+            self.widgets["config_container"].layout.display = 'block' if change['new'] else 'none'
 
     # VolumePlugin widgets
     def create_volume_widgets(self, saved_values):
@@ -194,19 +213,22 @@ class PluginWidget:
                 options=self.cell_types,
                 value=cell_type_value,
                 description='Cell Type:',
-                style={'description_width': 'initial'}
+                style={'description_width': 'initial'},
+                layout=widgets.Layout(width='200px')
             )
             row["target_volume"] = widgets.FloatText(
                 value=param["target_volume"],
                 min=1.0,
                 description='Target Volume:',
-                style={'description_width': 'initial'}
+                style={'description_width': 'initial'},
+                layout=widgets.Layout(width='200px')
             )
             row["lambda_volume"] = widgets.FloatText(
                 value=param["lambda_volume"],
                 min=0.0,
                 description='Lambda Volume:',
-                style={'description_width': 'initial'}
+                style={'description_width': 'initial'},
+                layout=widgets.Layout(width='200px')
             )
             rows.append(row)
 
@@ -232,19 +254,22 @@ class PluginWidget:
                     options=self.cell_types,
                     value=default_values["CellType"],
                     description='Cell Type:',
-                    style={'description_width': 'initial'}
+                    style={'description_width': 'initial'},
+                    layout=widgets.Layout(width='200px')
                 ),
                 "target_volume": widgets.FloatText(
                     value=default_values["target_volume"],
                     min=1.0,
                     description='Target Volume:',
-                    style={'description_width': 'initial'}
+                    style={'description_width': 'initial'},
+                    layout=widgets.Layout(width='200px')
                 ),
                 "lambda_volume": widgets.FloatText(
                     value=default_values["lambda_volume"],
                     min=0.0,
                     description='Lambda Volume:',
-                    style={'description_width': 'initial'}
+                    style={'description_width': 'initial'},
+                    layout=widgets.Layout(width='200px')
                 )
             }
 
@@ -261,6 +286,10 @@ class PluginWidget:
         """Update the UI after row changes"""
         row_widgets = []
         for i, row in enumerate(self.widgets["rows"]):
+            # Add spacing classes
+            row["cell_type"].add_class('plugin-input-spacing')
+            row["target_volume"].add_class('plugin-input-spacing')
+            row["lambda_volume"].add_class('plugin-input-spacing')
             remove_btn = widgets.Button(
                 description="Remove",
                 button_style='danger',
@@ -311,19 +340,22 @@ class PluginWidget:
                 options=self.cell_types,
                 value=cell_type_value,
                 description='Cell Type:',
-                style={'description_width': 'initial'}
+                style={'description_width': 'initial'},
+                layout=widgets.Layout(width='200px')
             )
             row["target_surface"] = widgets.FloatText(
                 value=param["target_surface"],
                 min=1.0,
                 description='Target Surface:',
-                style={'description_width': 'initial'}
+                style={'description_width': 'initial'},
+                layout=widgets.Layout(width='200px')
             )
             row["lambda_surface"] = widgets.FloatText(
                 value=param["lambda_surface"],
                 min=0.0,
                 description='Lambda Surface:',
-                style={'description_width': 'initial'}
+                style={'description_width': 'initial'},
+                layout=widgets.Layout(width='200px')
             )
             rows.append(row)
 
@@ -378,6 +410,10 @@ class PluginWidget:
         """Update the UI after row changes"""
         row_widgets = []
         for i, row in enumerate(self.widgets["rows"]):
+            # Add spacing classes
+            row["cell_type"].add_class('plugin-input-spacing')
+            row["target_surface"].add_class('plugin-input-spacing')
+            row["lambda_surface"].add_class('plugin-input-spacing')
             remove_btn = widgets.Button(
                 description="Remove",
                 button_style='danger',
@@ -407,73 +443,90 @@ class PluginWidget:
     # AdhesionFlexPlugin widgets
     def create_adhesion_widgets(self, saved_values):
         """Widgets for AdhesionFlexPlugin"""
-        # Get default values from class
         defaults = AdhesionFlexPlugin().spec_dict
-
-        self.widgets["neighbor_order"] = widgets.BoundedIntText(
+        # Input widgets
+        self.widgets["neighbor_order"] = widgets.IntText(
             value=saved_values.get("neighbor_order", defaults.get("neighbor_order", 2)),
-            min=1, max=10,
             description='Neighbor Order:',
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
-        self.widgets["max_distance"] = widgets.BoundedIntText(
+        self.widgets["neighbor_order"].add_class('plugin-input-spacing')
+        self.widgets["neighbor_order_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
+        self.widgets["max_distance"] = widgets.IntText(
             value=saved_values.get("max_distance", defaults.get("max_distance", 3)),
-            min=1, max=100,
             description='Max Distance:',
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
-
-        # Build UI
-        self.widgets["config_container"].children = [
-            HBox([
-                self.widgets["neighbor_order"],
-                self.widgets["max_distance"]
-            ])
-        ]
+        self.widgets["max_distance_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
+        # UI: error under each input
+        neighbor_box = VBox([self.widgets["neighbor_order"], self.widgets["neighbor_order_error"]])
+        max_distance_box = VBox([self.widgets["max_distance"], self.widgets["max_distance_error"]])
+        container = VBox([
+            HBox([neighbor_box, max_distance_box])
+        ])
+        container.add_class('plugin-compact-container')
+        self.widgets["config_container"].children = [container]
+        self.widgets["config_container"].add_class('plugin-top-spacing')
+        self.widgets["config_container"].add_class('plugin-bottom-spacing')
+        self.widgets["neighbor_order"].observe(lambda change: self._validate_plugin_input('AdhesionFlexPlugin', 'neighbor_order', change.new), names='value')
+        self.widgets["max_distance"].observe(lambda change: self._validate_plugin_input('AdhesionFlexPlugin', 'max_distance', change.new), names='value')
 
     # ContactPlugin widgets
     def create_contact_widgets(self, saved_values):
         """Widgets for ContactPlugin"""
-        # Get default values from class
         defaults = ContactPlugin().spec_dict
-
-        self.widgets["neighbor_order"] = widgets.BoundedIntText(
+        self.widgets["neighbor_order"] = widgets.IntText(
             value=saved_values.get("neighbor_order", defaults.get("neighbor_order", 1)),
-            min=1, max=10,
             description='Neighbor Order:',
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
-
-        # Build UI
-        self.widgets["config_container"].children = [
-            self.widgets["neighbor_order"]
-        ]
+        self.widgets["neighbor_order_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
+        container = VBox([
+            HBox([
+                self.widgets["neighbor_order"]
+            ]),
+            self.widgets["neighbor_order_error"]
+        ])
+        container.add_class('plugin-compact-container')
+        self.widgets["config_container"].children = [container]
+        self.widgets["config_container"].add_class('plugin-top-spacing')
+        self.widgets["config_container"].add_class('plugin-bottom-spacing')
+        self.widgets["neighbor_order"].observe(lambda change: self._validate_plugin_input('ContactPlugin', 'neighbor_order', change.new), names='value')
 
     # ChemotaxisPlugin widgets
     def create_chemotaxis_widgets(self, saved_values):
         """Widgets for ChemotaxisPlugin"""
-        # Get default values from class
         defaults = ChemotaxisPlugin().spec_dict
-
         self.widgets["field"] = widgets.Text(
             value=saved_values.get("field", defaults.get("field", "chemoattractant")),
             description='Field Name:',
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
+        self.widgets["field"].add_class('plugin-input-spacing')
+        self.widgets["field_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
         self.widgets["lambda_val"] = widgets.FloatText(
             value=saved_values.get("lambda", defaults.get("lambda", 100.0)),
             min=0.0,
             description='Lambda Value:',
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
-
-        # Build UI
-        self.widgets["config_container"].children = [
-            HBox([
-                self.widgets["field"],
-                self.widgets["lambda_val"]
-            ])
-        ]
+        self.widgets["lambda_val_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
+        field_box = VBox([self.widgets["field"], self.widgets["field_error"]])
+        lambda_box = VBox([self.widgets["lambda_val"], self.widgets["lambda_val_error"]])
+        container = VBox([
+            HBox([field_box, lambda_box])
+        ])
+        container.add_class('plugin-compact-container')
+        self.widgets["config_container"].children = [container]
+        self.widgets["config_container"].add_class('plugin-top-spacing')
+        self.widgets["config_container"].add_class('plugin-bottom-spacing')
+        self.widgets["field"].observe(lambda change: self._validate_plugin_input('ChemotaxisPlugin', 'field', change.new), names='value')
+        self.widgets["lambda_val"].observe(lambda change: self._validate_plugin_input('ChemotaxisPlugin', 'lambda_val', change.new), names='value')
 
     # BoundaryPixelTrackerPlugin widgets
     def create_boundary_tracker_widgets(self, saved_values):
@@ -485,19 +538,51 @@ class PluginWidget:
             value=saved_values.get("neighbor_order", defaults.get("neighbor_order", 2)),
             min=1, max=10,
             description='Neighbor Order:',
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
 
-        # Build UI
-        self.widgets["config_container"].children = [
+        # Build UI with vertical spacing
+        neighbor_box = VBox([
             self.widgets["neighbor_order"]
-        ]
+        ])
+        # Remove extra spacing classes from neighbor_box
+        self.widgets["config_container"].children = [neighbor_box]
+        self.widgets["config_container"].add_class('plugin-top-spacing')
+        self.widgets["config_container"].add_class('plugin-bottom-spacing')
+        self.widgets["neighbor_order"].observe(lambda change: self._validate_plugin_input('BoundaryPixelTrackerPlugin', 'neighbor_order', change.new), names='value')
+
+    def create_curvature_widgets(self, saved_values):
+        """Widgets for CurvaturePlugin (no input boxes)"""
+        self.widgets["config_container"].children = []
+        self.widgets["config_container"].add_class('plugin-checkbox-bottom-spacing')
+        self.widgets["config_container"].layout.display = 'block'
+
+    def create_external_potential_widgets(self, saved_values):
+        """Widgets for ExternalPotentialPlugin (no input boxes)"""
+        self.widgets["config_container"].children = []
+        self.widgets["config_container"].add_class('plugin-checkbox-bottom-spacing')
+        self.widgets["config_container"].layout.display = 'block'
+
+    def create_focal_point_plasticity_widgets(self, saved_values):
+        """Widgets for FocalPointPlasticityPlugin (no input boxes)"""
+        self.widgets["config_container"].children = []
+        self.widgets["config_container"].add_class('plugin-checkbox-bottom-spacing')
+        self.widgets["config_container"].layout.display = 'block'
 
     def create_ui(self):
-        return VBox([
-            self.widgets["active"],
-            self.widgets["config_container"]
-        ])
+        # For Cell Behavior plugins, show debug output at the bottom
+        if self.plugin_name in ["AdhesionFlexPlugin", "ContactPlugin", "ChemotaxisPlugin"]:
+            return VBox([
+                self.widgets["active"],
+                self.widgets["config_container"],
+                self.output
+            ])
+        else:
+            return VBox([
+                self.widgets["active"],
+                self.widgets["config_container"]
+            ])
 
     def get_config(self):
         if not self.widgets["active"].value:
@@ -558,6 +643,68 @@ class PluginWidget:
         for key, widget in self.widgets.items():
             if key not in ["active", "config_container", "rows", "add_btn"] and key in default:
                 widget.value = default[key]
+
+    def _validate_plugin_input(self, plugin, field, value=None):
+        with self.output:
+            print(f"[DEBUG] _validate_plugin_input called for {plugin}.{field} with value={value}")
+        # Map plugin to class
+        plugin_class_map = {
+            'AdhesionFlexPlugin': AdhesionFlexPlugin,
+            'ChemotaxisPlugin': ChemotaxisPlugin,
+            'ContactPlugin': ContactPlugin
+        }
+        widget_map = self.widgets
+        error_widget_name = f"{field}_error"
+        input_widget = widget_map.get(field)
+        error_widget = widget_map.get(error_widget_name)
+        if not input_widget or not error_widget:
+            with self.output:
+                print(f"[DEBUG] input_widget or error_widget missing for {field}")
+            return
+        # Always clear error and highlight before validation (Potts Core style)
+        error_widget.value = ""
+        error_widget.layout.display = 'none'
+        if hasattr(input_widget, 'remove_class'):
+            input_widget.remove_class('error-input')
+        # Only backend validation
+        try:
+            plugin_instance = plugin_class_map[plugin]()
+            # Use the latest value from the observer if provided
+            if value is not None:
+                setattr(plugin_instance, field, value)
+            else:
+                setattr(plugin_instance, field, input_widget.value)
+            plugin_instance.validate()
+            with self.output:
+                print(f"[DEBUG] Backend validation PASSED for {plugin}.{field} value={value if value is not None else input_widget.value}")
+            # If validation passes, ensure error is cleared
+            error_widget.value = ""
+            error_widget.layout.display = 'none'
+            if hasattr(input_widget, 'remove_class'):
+                input_widget.remove_class('error-input')
+        except Exception as e:
+            with self.output:
+                print(f"[DEBUG] Backend validation FAILED for {plugin}.{field} value={value if value is not None else input_widget.value}: {e}")
+            # Show error, splitting multiple errors onto separate lines
+            msg = str(e)
+            if '\n' in msg:
+                parts = [line.strip() for line in msg.split('\n') if line.strip()]
+            else:
+                parts = []
+                for part in msg.split('Could not'):
+                    part = part.strip()
+                    if part:
+                        if not part.startswith('Could not'):
+                            part = 'Could not ' + part
+                        parts.append(part)
+                if not parts:
+                    parts = [msg]
+            html = '<br>'.join(f'⚠️ {p}' for p in parts)
+            error_widget.value = f'<span style="color: red; font-size: 12px;">{html}</span>'
+            error_widget.layout.display = 'block'
+            if hasattr(input_widget, 'add_class'):
+                input_widget.add_class('error-input')
+
 
 class PluginsTab:
     def __init__(self, saved_plugins, cell_types):
@@ -673,13 +820,22 @@ class PottsWidget:
         self.widgets["dim_x"] = widgets.IntText(
             value=saved_values.get("dim_x", self.defaults["dim_x"]),
             min=1, description='X Dimension:',
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
         self.widgets["dim_y"] = widgets.IntText(
             value=saved_values.get("dim_y", self.defaults["dim_y"]),
             min=1, description='Y Dimension:',
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
+        self.widgets["dim_z"] = widgets.IntText(
+            value=saved_values.get("dim_z", self.defaults["dim_z"]),
+            min=1, description='Z Dimension:',
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
+        )
+
         # Error display for dim_y
         self.widgets["dim_x_error"] = HTML(
             value="",
@@ -702,17 +858,13 @@ class PottsWidget:
                 display='none'
             )
         )
-        self.widgets["dim_z"] = widgets.IntText(
-            value=saved_values.get("dim_z", self.defaults["dim_z"]),
-            min=1, description='Z Dimension:',
-            style={'description_width': 'initial'}
-        )
 
         # Core parameters
         self.widgets["steps"] = widgets.IntText(
             value=saved_values.get("steps", self.defaults["steps"]),
             min=1, description='MC Steps:',
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
         self.widgets["steps_error"] = HTML(
             value="",
@@ -736,7 +888,8 @@ class PottsWidget:
         self.widgets["neighbor_order"] = widgets.BoundedIntText(
             value=saved_values.get("neighbor_order", self.defaults["neighbor_order"]),
             min=1, max=20, description='Neighbor Order:',
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
         self.widgets["neighbor_order_error"] = HTML(
             value="",
@@ -749,7 +902,8 @@ class PottsWidget:
             options=['Cartesian', 'Hexagonal'],
             value=saved_values.get("lattice_type", self.defaults["lattice_type"]),
             description='Lattice Type:',
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
 
         boundary_options = ['NoFlux', 'Periodic']
@@ -757,19 +911,22 @@ class PottsWidget:
             options=boundary_options,
             value=saved_values.get("boundary_x", self.defaults["boundary_x"]),
             description='X Boundary:',
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
         self.widgets["boundary_y"] = widgets.Dropdown(
             options=boundary_options,
             value=saved_values.get("boundary_y", self.defaults["boundary_y"]),
             description='Y Boundary:',
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
         self.widgets["boundary_z"] = widgets.Dropdown(
             options=boundary_options,
             value=saved_values.get("boundary_z", self.defaults["boundary_z"]),
             description='Z Boundary:',
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
 
         # Reset button
