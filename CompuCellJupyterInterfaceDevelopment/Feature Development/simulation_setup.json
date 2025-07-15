@@ -12,7 +12,7 @@
         "fluctuation_amplitude": 10.0,
         "fluctuation_amplitude_function": "Min",
         "boundary_x": "NoFlux",
-        "boundary_y": "Periodic",
+        "boundary_y": "NoFlux",
         "boundary_z": "NoFlux",
         "neighbor_order": 1,
         "debug_output_frequency": 0,
@@ -24,7 +24,14 @@
     "CellType": [
         {
             "Cell type": "Medium",
-            "id": 0,
+            "freeze": false
+        },
+        {
+            "Cell type": "T1",
+            "freeze": false
+        },
+        {
+            "Cell type": "T2",
             "freeze": false
         }
     ],

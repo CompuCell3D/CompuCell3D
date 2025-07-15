@@ -8,12 +8,13 @@ from ipywidgets import (
 from IPython.display import display
 from cc3d.core.PyCoreSpecs import Metadata, PottsCore, PLUGINS
 from cc3d.core.PyCoreSpecs import (
-    AdhesionFlexPlugin, BoundaryPixelTrackerPlugin, CellTypePlugin, 
-    ChemotaxisPlugin, ContactPlugin, CurvaturePlugin, 
+    AdhesionFlexPlugin, BoundaryPixelTrackerPlugin, CellTypePlugin,
+    ChemotaxisPlugin, ContactPlugin, CurvaturePlugin,
     ExternalPotentialPlugin, FocalPointPlasticityPlugin,
-    LengthConstraintPlugin, PixelTrackerPlugin, SecretionPlugin, 
+    LengthConstraintPlugin, PixelTrackerPlugin, SecretionPlugin,
     SurfacePlugin, VolumePlugin
 )
+from cc3d.core.PyCoreSpecs import SpecValueCheckError
 
 # Configuration
 SAVE_FILE = 'simulation_setup.json'
@@ -23,7 +24,8 @@ def get_defaults():
     return {
         "Metadata": Metadata().spec_dict,
         "PottsCore": PottsCore().spec_dict,
-        "CellType": [{"Cell type": "Medium", "id": 0, "freeze": False}], # shouldn't be manually set ID automatically defined. 
+        # "CellType": [{"Cell type": "Medium", "id": 0, "freeze": False}], # shouldn't be manually set ID automatically defined. 
+        "CellType": [{"Cell type": "Medium", "freeze": False}], # shouldn't be manually set ID automatically defined. 
         "Plugins": {
             "AdhesionFlexPlugin": AdhesionFlexPlugin().spec_dict,
             "BoundaryPixelTrackerPlugin": BoundaryPixelTrackerPlugin().spec_dict,
@@ -596,6 +598,14 @@ class PottsWidget:
             min=1, description='Y Dimension:',
             style={'description_width': 'initial'}
         )
+        # Error display for dim_y
+        self.widgets["dim_y_error"] = HTML(
+            value="",
+            layout=Layout(
+                margin='2px 0 5px 0',
+                display='none'
+            )
+        )
         self.widgets["dim_z"] = widgets.IntText(
             value=saved_values.get("dim_z", self.defaults["dim_z"]),
             min=1, description='Z Dimension:',
@@ -681,6 +691,8 @@ class PottsWidget:
                 self.widgets["dim_y"],
                 self.widgets["dim_z"]
             ]),
+            # Error display for dimension inputs
+            self.widgets["dim_y_error"],
             HBox([
                 self.widgets["steps"],
                 self.widgets["fluctuation_amplitude"]
@@ -724,10 +736,10 @@ class CellTypeWidget:
     def add_entry(self, name, freeze):
         self.celltype_entries.append({
             "Cell type": name,
-            "id": self.next_id,
+            # "id": self.next_id,
             "freeze": freeze
         })
-        self.next_id += 1
+        # self.next_id += 1
 
     def create_widgets(self):
         # Display area for current cell types
@@ -877,14 +889,18 @@ class SpecificationSetupUI:
         if "CellType" in self.saved_values:
             for entry in self.saved_values["CellType"]:
                 if isinstance(entry, dict):
+                    cell_type_name = entry["Cell type"]
+                    # Skip Medium as it's already in CellTypePlugin by default with ID 0
+                    if cell_type_name == "Medium":
+                        continue
                     self.cell_type_plugin.cell_type_append(
-                        entry["Cell type"],
-                        type_id=entry.get("id", len(self.cell_type_plugin.cell_types)),
+                        cell_type_name,
                         frozen=entry.get("freeze", False)
                     )
                 else:
-                    # Old format (string only)
-                    self.cell_type_plugin.cell_type_append(entry)
+                    # Old format (string only) - skip Medium
+                    if entry != "Medium":
+                        self.cell_type_plugin.cell_type_append(entry)
 
     def create_metadata_widgets(self):
         """Metadata widgets"""
@@ -987,8 +1003,36 @@ class SpecificationSetupUI:
 
     def update_potts_core(self, property_name, value):
         if hasattr(self.potts_core, property_name):
-            setattr(self.potts_core, property_name, value)
-            self.save_to_json()
+            try:
+                setattr(self.potts_core, property_name, value)
+                self.save_to_json()
+                # Clear any previous error message
+                self.clear_potts_error(property_name)
+            except SpecValueCheckError as e:
+                # Handle CompuCell3D validation errors
+                error_msg = str(e)
+                self.show_potts_error(property_name, f"❌ {error_msg} (value: {value})")
+
+            except Exception as e:
+                # Handle any other unexpected errors
+                self.show_potts_error(property_name, f"❌ Error: {str(e)} (value: {value})")
+
+    def show_potts_error(self, property_name, message):
+        """Display error message for a potts property"""
+        error_widget_name = f"{property_name}_error"
+        if error_widget_name in self.potts_widget.widgets:
+            error_widget = self.potts_widget.widgets[error_widget_name]
+            # Wrap message in red HTML styling
+            error_widget.value = f'<span style="color: red; font-size: 12px;">{message}</span>'
+            error_widget.layout.display = 'block'
+
+    def clear_potts_error(self, property_name):
+        """Clear error message for a potts property"""
+        error_widget_name = f"{property_name}_error"
+        if error_widget_name in self.potts_widget.widgets:
+            error_widget = self.potts_widget.widgets[error_widget_name]
+            error_widget.value = ""
+            error_widget.layout.display = 'none'
 
     def create_ui(self):
         tabs = Tab()
@@ -1057,9 +1101,8 @@ class SpecificationSetupUI:
         for entry in self.celltype_widget.celltype_entries:
             self.cell_type_plugin.cell_type_append(
                 entry["Cell type"],
-                type_id=entry["id"],
+                # type_id=entry["id"],
                 frozen=entry["freeze"]
             )
         self.plugins_tab.update_cell_types(self.celltype_widget.get_cell_type_names())
         self.save_to_json()
-
