@@ -117,18 +117,19 @@ def get_defaults():
         # "CellType": [{"Cell type": "Medium", "id": 0, "freeze": False}], # shouldn't be manually set ID automatically defined.
         "CellType": [{"Cell type": "Medium", "freeze": False}], # shouldn't be manually set ID automatically defined.
         "Plugins": {
-            "AdhesionFlexPlugin": AdhesionFlexPlugin().spec_dict,
-            "BoundaryPixelTrackerPlugin": BoundaryPixelTrackerPlugin().spec_dict,
-            "ChemotaxisPlugin": ChemotaxisPlugin().spec_dict,
-            "ContactPlugin": ContactPlugin().spec_dict,
-            "CurvaturePlugin": CurvaturePlugin().spec_dict,
-            "ExternalPotentialPlugin": ExternalPotentialPlugin().spec_dict,
-            "FocalPointPlasticityPlugin": FocalPointPlasticityPlugin().spec_dict,
-            "LengthConstraintPlugin": LengthConstraintPlugin().spec_dict,
-            "PixelTrackerPlugin": PixelTrackerPlugin().spec_dict,
-            "SecretionPlugin": SecretionPlugin().spec_dict,
-            "VolumePlugin": VolumePlugin().spec_dict,
-            "SurfacePlugin": SurfacePlugin().spec_dict
+            # All plugins default to empty dict (unchecked)
+            "AdhesionFlexPlugin": {},
+            "BoundaryPixelTrackerPlugin": {},
+            "ChemotaxisPlugin": {},
+            "ContactPlugin": {},
+            "CurvaturePlugin": {},
+            "ExternalPotentialPlugin": {},
+            "FocalPointPlasticityPlugin": {},
+            "LengthConstraintPlugin": {},
+            "PixelTrackerPlugin": {},
+            "SecretionPlugin": {},
+            "VolumePlugin": {},
+            "SurfacePlugin": {}
         }
     }
 
@@ -142,7 +143,9 @@ class PluginWidget:
         self.cell_types = cell_types
         self.widgets = {}
         self.output = Output()  # Add output widget for debug
-        self.create_widgets(saved_values or self.default_instance.spec_dict)
+        self.param_cache = {}  # For VolumePlugin: cache values by cell type
+        # Only use saved_values if it is not empty, otherwise use empty dict
+        self.create_widgets(saved_values if saved_values else {})
 
     def create_widgets(self, saved_values):
         # Main checkbox with plugin name
@@ -157,6 +160,19 @@ class PluginWidget:
             padding='0',
             display='none' if not saved_values else 'block'
         ))
+
+        # Save to JSON when checkbox is toggled
+        def save_on_toggle(change):
+            try:
+                from IPython.core.getipython import get_ipython
+                shell = get_ipython()
+                if shell and hasattr(shell, 'user_ns') and 'ui' in shell.user_ns:
+                    ui = shell.user_ns['ui']
+                    if hasattr(ui, 'save_to_json'):
+                        ui.save_to_json()
+            except ImportError:
+                pass
+        self.widgets["active"].observe(save_on_toggle, names='value')
 
         # Create plugin-specific widgets
         if self.plugin_name == "VolumePlugin":
@@ -192,196 +208,77 @@ class PluginWidget:
     # VolumePlugin widgets
     def create_volume_widgets(self, saved_values):
         """Widgets for VolumePlugin"""
-        params = saved_values.get("params", [])
-
-        if not params:
-            default_params = VolumePlugin().spec_dict.get("params", [])
-            params = default_params or [{
-                "CellType": "Medium",
+        # Build a row for every cell type in self.cell_types
+        # Use saved values if present, else default
+        default_params = VolumePlugin().spec_dict.get("params", [])
+        default_map = {p["CellType"]: p for p in default_params} if default_params else {}
+        # Build a map from cell type to saved param
+        saved_map = {p["CellType"]: p for p in saved_values.get("params", []) if "CellType" in p}
+        # Use cached values if present, else saved, else default
+        rows = []
+        for ct in self.cell_types:
+            # Priority: cache > saved > default > fallback
+            param = self.param_cache.get(ct) or saved_map.get(ct) or default_map.get(ct) or {
+                "CellType": ct,
                 "target_volume": 25.0,
                 "lambda_volume": 2.0
-            }]
-
-        rows = []
-        for param in params:
-            cell_type_value = param["CellType"]
-            if cell_type_value not in self.cell_types:
-                cell_type_value = self.cell_types[0] if self.cell_types else "Medium"
-
+            }
             row = {}
-            row["cell_type"] = widgets.Dropdown(
-                options=self.cell_types,
-                value=cell_type_value,
-                description='Cell Type:',
-                style={'description_width': 'initial'},
-                layout=widgets.Layout(width='200px', margin='0 0 0 8px')  # Add left margin
-            )
+            row["cell_type"] = widgets.Label(value=ct, layout=widgets.Layout(width='120px'))
             row["target_volume"] = widgets.FloatText(
                 value=param["target_volume"],
                 min=1.0,
-                description='Target Volume:',
-                style={'description_width': 'initial'},
-                layout=widgets.Layout(width='200px')
+                description='',
+                layout=widgets.Layout(width='120px')
             )
             row["lambda_volume"] = widgets.FloatText(
                 value=param["lambda_volume"],
                 min=0.0,
-                description='Lambda Volume:',
-                style={'description_width': 'initial'},
-                layout=widgets.Layout(width='200px')
+                description='',
+                layout=widgets.Layout(width='120px')
             )
+            # Update cache and save on change
+            def make_cache_updater(cell_type, field):
+                def updater(change):
+                    if cell_type not in self.param_cache:
+                        self.param_cache[cell_type] = {
+                            "CellType": cell_type,
+                            "target_volume": row["target_volume"].value,
+                            "lambda_volume": row["lambda_volume"].value
+                        }
+                    self.param_cache[cell_type][field] = change["new"]
+                    # Save to JSON immediately
+                    try:
+                        from IPython.core.getipython import get_ipython
+                        shell = get_ipython()
+                        if shell and hasattr(shell, 'user_ns') and 'ui' in shell.user_ns:
+                            ui = shell.user_ns['ui']
+                            if hasattr(ui, 'save_to_json'):
+                                ui.save_to_json()
+                    except ImportError:
+                        pass
+                return updater
+            row["target_volume"].observe(make_cache_updater(ct, "target_volume"), names='value')
+            row["lambda_volume"].observe(make_cache_updater(ct, "lambda_volume"), names='value')
             rows.append(row)
-
         self.widgets["rows"] = rows
-
-        # Add button for new row
-        self.widgets["add_btn"] = widgets.Button(
-            description="Add Constraint",
-            button_style='success'
-        )
-
-        # Define add_volume_row as a method
-        def add_volume_row(_):
-            default_params = VolumePlugin().spec_dict.get("params", [])
-            default_values = default_params[0] if default_params else {
-                "CellType": "Medium",
-                "target_volume": 25.0,
-                "lambda_volume": 2.0
-            }
-
-            new_row = {
-                "cell_type": widgets.Dropdown(
-                    options=self.cell_types,
-                    value=default_values["CellType"],
-                    description='Cell Type:',
-                    style={'description_width': 'initial'},
-                    layout=widgets.Layout(width='200px')
-                ),
-                "target_volume": widgets.FloatText(
-                    value=default_values["target_volume"],
-                    min=1.0,
-                    description='Target Volume:',
-                    style={'description_width': 'initial'},
-                    layout=widgets.Layout(width='200px')
-                ),
-                "lambda_volume": widgets.FloatText(
-                    value=default_values["lambda_volume"],
-                    min=0.0,
-                    description='Lambda Volume:',
-                    style={'description_width': 'initial'},
-                    layout=widgets.Layout(width='200px')
-                )
-            }
-
-            self.widgets["rows"].append(new_row)
-            self.update_volume_ui()
-
-        # Connect the button handler
-        self.widgets["add_btn"].on_click(add_volume_row)
-
-        # Build UI
         self.update_volume_ui()
 
     def update_volume_ui(self):
         """Update the UI after row changes"""
+        # Show a row for every cell type
         row_widgets = []
-        for i, row in enumerate(self.widgets["rows"]):
-            # Add spacing classes
-            row["cell_type"].add_class('plugin-input-spacing')
-            row["target_volume"].add_class('plugin-input-spacing')
-            row["lambda_volume"].add_class('plugin-input-spacing')
-            # Remove any margin/padding from cell_type
-            row["cell_type"].layout.margin = None
-            row["cell_type"].layout.padding = None
-            # Remove button as X icon, no background, medium grey
-            remove_btn = widgets.Button(
-                description="",
-                icon="times",  # X icon
-                button_style='',  # No background
-                layout=Layout(width='40px', min_width='40px', max_width='40px', padding='0 8px')
-            )
-            remove_btn.add_class('volume-remove-btn')
-            remove_btn.add_class(f'volume-remove-btn-{i}')
-            # HBox for row content with left padding
-            row_content = HBox([
+        for row in self.widgets["rows"]:
+            row_box = HBox([
                 row["cell_type"],
+                widgets.Label("Target Volume:", layout=widgets.Layout(width='100px')),
                 row["target_volume"],
-                row["lambda_volume"],
-                remove_btn
-            ], layout=Layout(padding='8px 0 8px 12px'))
-            # Outer Box as list item with background and border radius
-            row_box = Box([
-                row_content
-            ])
+                widgets.Label("Lambda Volume:", layout=widgets.Layout(width='100px')),
+                row["lambda_volume"]
+            ], layout=Layout(padding='4px 0 4px 12px'))
             row_box.add_class('volume-row')
-            row_box.add_class(f'volume-row-{i}')
-            def make_remove_handler(index, row_box=row_box):
-                def handler(_):
-                    del self.widgets["rows"][index]
-                    self.update_volume_ui()
-                return handler
-            remove_btn.on_click(make_remove_handler(i))
-            # Mouseover/mouseout JS for row highlight and icon color
-            display(IPythonHTML(f"""
-            <script>
-            (function() {{
-                var btn = document.querySelector('.volume-remove-btn-{i} button');
-                var row = document.querySelector('.volume-row-{i}');
-                console.log('DEBUG: Looking for .volume-remove-btn-{i} button:', btn);
-                console.log('DEBUG: Looking for .volume-row-{i}:', row);
-                if (btn && row) {{
-                    console.log('DEBUG: Attaching mouseenter/mouseleave for row {i}');
-                    btn.onmouseenter = function() {{
-                        console.log('DEBUG: mouseenter on remove btn {i}');
-                        row.classList.add('volume-row-hover');
-                        btn.querySelector('i.fa').style.color = '#111';
-                    }};
-                    btn.onmouseleave = function() {{
-                        console.log('DEBUG: mouseleave on remove btn {i}');
-                        row.classList.remove('volume-row-hover');
-                        btn.querySelector('i.fa').style.color = '#757575';
-                    }};
-                    // Set initial icon color
-                    if (btn.querySelector('i.fa')) btn.querySelector('i.fa').style.color = '#757575';
-                }} else {{
-                    console.log('DEBUG: Button or row not found for index {i}');
-                }}
-            }})();
-            </script>
-            """))
             row_widgets.append(row_box)
-        # Add custom CSS for highlight and list style
-        display(IPythonHTML("""
-        <style>
-        .volume-row {
-            margin-bottom: 6px !important;
-            padding: 0 !important;
-            background-color: #f5f5f5 !important; /* light grey */
-            border-radius: 6px;
-            transition: background 0.2s;
-        }
-        .volume-row-hover {
-            background-color: #ffebee !important; /* red tint */
-            transition: background 0.2s;
-            border-radius: 6px;
-        }
-        .volume-remove-btn button {
-            background: none !important;
-            border: none !important;
-            color: #757575 !important;
-            box-shadow: none !important;
-        }
-        .volume-remove-btn button:hover {
-            background: none !important;
-            color: #111 !important;
-        }
-        </style>
-        """))
-        # Wrap rows in a VBox to simulate a list
-        self.widgets["config_container"].children = [
-            VBox(row_widgets),
-            self.widgets["add_btn"]
-        ]
+        self.widgets["config_container"].children = [VBox(row_widgets)]
 
     # SurfacePlugin widgets
     def create_surface_widgets(self, saved_values):
@@ -660,20 +557,26 @@ class PluginWidget:
         # Handle plugins with rows (Volume, Surface)
         if "rows" in self.widgets:
             params = []
-            for row in self.widgets["rows"]:
-                if self.plugin_name == "VolumePlugin":
+            if self.plugin_name == "VolumePlugin":
+                # Always save all cell types with their current values
+                for row in self.widgets["rows"]:
+                    cell_type = row["cell_type"].value if hasattr(row["cell_type"], 'value') else row["cell_type"].description
+                    target_volume = row["target_volume"].value if hasattr(row["target_volume"], 'value') else self.param_cache.get(cell_type, {}).get("target_volume", 25.0)
+                    lambda_volume = row["lambda_volume"].value if hasattr(row["lambda_volume"], 'value') else self.param_cache.get(cell_type, {}).get("lambda_volume", 2.0)
                     params.append({
-                        "CellType": row["cell_type"].value,
-                        "target_volume": row["target_volume"].value,
-                        "lambda_volume": row["lambda_volume"].value
+                        "CellType": cell_type,
+                        "target_volume": target_volume,
+                        "lambda_volume": lambda_volume
                     })
-                elif self.plugin_name == "SurfacePlugin":
+                config["params"] = params
+            elif self.plugin_name == "SurfacePlugin":
+                for row in self.widgets["rows"]:
                     params.append({
                         "CellType": row["cell_type"].value,
                         "target_surface": row["target_surface"].value,
                         "lambda_surface": row["lambda_surface"].value
                     })
-            config["params"] = params
+                config["params"] = params
 
         # Add other plugin-specific values
         for key, widget in self.widgets.items():
@@ -700,11 +603,10 @@ class PluginWidget:
         if "rows" in self.widgets:
             self.widgets["rows"] = []
             if "params" in default:
-                for param in default["params"]:
-                    if self.plugin_name == "VolumePlugin":
-                        self.add_volume_row(param)
-                    elif self.plugin_name == "SurfacePlugin":
-                        self.add_surface_row(param)
+                if self.plugin_name == "VolumePlugin":
+                    self.create_volume_widgets(default)
+                elif self.plugin_name == "SurfacePlugin":
+                    self.create_surface_widgets(default)
 
         # Reset other widgets
         for key, widget in self.widgets.items():
@@ -771,6 +673,12 @@ class PluginWidget:
             error_widget.layout.display = 'block'
             if hasattr(input_widget, 'add_class'):
                 input_widget.add_class('error-input')
+
+    def update_cell_types(self, cell_types):
+        # Called externally when cell types change
+        self.cell_types = cell_types
+        if self.plugin_name == "VolumePlugin":
+            self.create_volume_widgets({"params": [self.param_cache.get(ct, {"CellType": ct, "target_volume": 25.0, "lambda_volume": 2.0}) for ct in cell_types]})
 
 
 class PluginsTab:
@@ -847,7 +755,7 @@ class PluginsTab:
         self.widgets["reset_button"] = Button(
             description="Reset Plugins",
             button_style='warning'
-        )
+        ).add_class('button-spacing')
 
     def get_config(self):
         config = {}
