@@ -981,7 +981,8 @@ class PottsWidget:
 
 
 class CellTypeWidget:
-    def __init__(self, saved_entries):
+    def __init__(self, saved_entries, on_change=None):
+        self.on_change = on_change
         self.next_id = 0
         self.celltype_entries =[]
 
@@ -1097,6 +1098,8 @@ class CellTypeWidget:
                 def handler(_):
                     del self.celltype_entries[index]
                     self.update_celltype_display()
+                    if self.on_change:
+                        self.on_change()
                 return handler
             remove_btn.on_click(make_remove_handler(i))
             grid[i + 1, 2] = remove_btn
@@ -1157,7 +1160,10 @@ class SpecificationSetupUI:
         # Initialize widgets
         self.create_metadata_widgets()
         self.potts_widget = PottsWidget(self.saved_values.get("PottsCore"))
-        self.celltype_widget = CellTypeWidget(self.saved_values.get("CellType"))
+        self.celltype_widget = CellTypeWidget(
+            self.saved_values.get("CellType"),
+            on_change=self.save_to_json
+        )
         self.plugins_tab = PluginsTab(
             self.saved_values.get("Plugins", {}),
             self.celltype_widget.get_cell_type_names()
