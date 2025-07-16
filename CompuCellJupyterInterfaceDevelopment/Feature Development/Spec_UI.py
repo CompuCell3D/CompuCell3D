@@ -3,7 +3,7 @@ import json
 import ipywidgets as widgets
 from ipywidgets import (
     VBox, HBox, Layout, Dropdown, BoundedIntText, BoundedFloatText,
-    FloatText, Checkbox, Button, Text, Label, Tab, HTML, Output, GridspecLayout
+    FloatText, Checkbox, Button, Text, Label, Tab, HTML, Output, GridspecLayout, Box
 )
 from IPython.display import display, HTML as IPythonHTML
 from cc3d.core.PyCoreSpecs import Metadata, PottsCore, PLUGINS
@@ -214,7 +214,7 @@ class PluginWidget:
                 value=cell_type_value,
                 description='Cell Type:',
                 style={'description_width': 'initial'},
-                layout=widgets.Layout(width='200px')
+                layout=widgets.Layout(width='200px', margin='0 0 0 8px')  # Add left margin
             )
             row["target_volume"] = widgets.FloatText(
                 value=param["target_volume"],
@@ -290,29 +290,96 @@ class PluginWidget:
             row["cell_type"].add_class('plugin-input-spacing')
             row["target_volume"].add_class('plugin-input-spacing')
             row["lambda_volume"].add_class('plugin-input-spacing')
+            # Remove any margin/padding from cell_type
+            row["cell_type"].layout.margin = None
+            row["cell_type"].layout.padding = None
+            # Remove button as X icon, no background, medium grey
             remove_btn = widgets.Button(
-                description="Remove",
-                button_style='danger',
-                layout=Layout(width='100px')
+                description="",
+                icon="times",  # X icon
+                button_style='',  # No background
+                layout=Layout(width='40px', min_width='40px', max_width='40px', padding='0 8px')
             )
-
-            def make_remove_handler(index):
-                def handler(_):
-                    del self.widgets["rows"][index]
-                    self.update_volume_ui()
-                return handler
-
-            remove_btn.on_click(make_remove_handler(i))
-
-            row_widgets.append(HBox([
+            remove_btn.add_class('volume-remove-btn')
+            remove_btn.add_class(f'volume-remove-btn-{i}')
+            # HBox for row content with left padding
+            row_content = HBox([
                 row["cell_type"],
                 row["target_volume"],
                 row["lambda_volume"],
                 remove_btn
-            ]))
-
+            ], layout=Layout(padding='8px 0 8px 12px'))
+            # Outer Box as list item with background and border radius
+            row_box = Box([
+                row_content
+            ])
+            row_box.add_class('volume-row')
+            row_box.add_class(f'volume-row-{i}')
+            def make_remove_handler(index, row_box=row_box):
+                def handler(_):
+                    del self.widgets["rows"][index]
+                    self.update_volume_ui()
+                return handler
+            remove_btn.on_click(make_remove_handler(i))
+            # Mouseover/mouseout JS for row highlight and icon color
+            display(IPythonHTML(f"""
+            <script>
+            (function() {{
+                var btn = document.querySelector('.volume-remove-btn-{i} button');
+                var row = document.querySelector('.volume-row-{i}');
+                console.log('DEBUG: Looking for .volume-remove-btn-{i} button:', btn);
+                console.log('DEBUG: Looking for .volume-row-{i}:', row);
+                if (btn && row) {{
+                    console.log('DEBUG: Attaching mouseenter/mouseleave for row {i}');
+                    btn.onmouseenter = function() {{
+                        console.log('DEBUG: mouseenter on remove btn {i}');
+                        row.classList.add('volume-row-hover');
+                        btn.querySelector('i.fa').style.color = '#111';
+                    }};
+                    btn.onmouseleave = function() {{
+                        console.log('DEBUG: mouseleave on remove btn {i}');
+                        row.classList.remove('volume-row-hover');
+                        btn.querySelector('i.fa').style.color = '#757575';
+                    }};
+                    // Set initial icon color
+                    if (btn.querySelector('i.fa')) btn.querySelector('i.fa').style.color = '#757575';
+                }} else {{
+                    console.log('DEBUG: Button or row not found for index {i}');
+                }}
+            }})();
+            </script>
+            """))
+            row_widgets.append(row_box)
+        # Add custom CSS for highlight and list style
+        display(IPythonHTML("""
+        <style>
+        .volume-row {
+            margin-bottom: 6px !important;
+            padding: 0 !important;
+            background-color: #f5f5f5 !important; /* light grey */
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .volume-row-hover {
+            background-color: #ffebee !important; /* red tint */
+            transition: background 0.2s;
+            border-radius: 6px;
+        }
+        .volume-remove-btn button {
+            background: none !important;
+            border: none !important;
+            color: #757575 !important;
+            box-shadow: none !important;
+        }
+        .volume-remove-btn button:hover {
+            background: none !important;
+            color: #111 !important;
+        }
+        </style>
+        """))
+        # Wrap rows in a VBox to simulate a list
         self.widgets["config_container"].children = [
-            *row_widgets,
+            VBox(row_widgets),
             self.widgets["add_btn"]
         ]
 
@@ -449,7 +516,7 @@ class PluginWidget:
             value=saved_values.get("neighbor_order", defaults.get("neighbor_order", 2)),
             description='Neighbor Order:',
             style={'description_width': 'initial'},
-            layout=widgets.Layout(width='250px')
+            layout=widgets.Layout(width='200px')
         )
         self.widgets["neighbor_order"].add_class('plugin-input-spacing')
         self.widgets["neighbor_order_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
@@ -457,7 +524,7 @@ class PluginWidget:
             value=saved_values.get("max_distance", defaults.get("max_distance", 3)),
             description='Max Distance:',
             style={'description_width': 'initial'},
-            layout=widgets.Layout(width='250px')
+            layout=widgets.Layout(width='200px')
         )
         self.widgets["max_distance_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
         # UI: error under each input
@@ -513,7 +580,7 @@ class PluginWidget:
             min=0.0,
             description='Lambda Value:',
             style={'description_width': 'initial'},
-            layout=widgets.Layout(width='250px')
+            layout=widgets.Layout(width='200px')
         )
         self.widgets["lambda_val_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
         field_box = VBox([self.widgets["field"], self.widgets["field_error"]])
@@ -821,19 +888,19 @@ class PottsWidget:
             value=saved_values.get("dim_x", self.defaults["dim_x"]),
             min=1, description='X Dimension:',
             style={'description_width': 'initial'},
-            layout=widgets.Layout(width='250px')
+            layout=widgets.Layout(width='200px')
         )
         self.widgets["dim_y"] = widgets.IntText(
             value=saved_values.get("dim_y", self.defaults["dim_y"]),
             min=1, description='Y Dimension:',
             style={'description_width': 'initial'},
-            layout=widgets.Layout(width='250px')
+            layout=widgets.Layout(width='200px')
         )
         self.widgets["dim_z"] = widgets.IntText(
             value=saved_values.get("dim_z", self.defaults["dim_z"]),
             min=1, description='Z Dimension:',
             style={'description_width': 'initial'},
-            layout=widgets.Layout(width='250px')
+            layout=widgets.Layout(width='200px')
         )
 
         # Error display for dim_y
@@ -864,7 +931,7 @@ class PottsWidget:
             value=saved_values.get("steps", self.defaults["steps"]),
             min=1, description='MC Steps:',
             style={'description_width': 'initial'},
-            layout=widgets.Layout(width='250px')
+            layout=widgets.Layout(width='200px')
         )
         self.widgets["steps_error"] = HTML(
             value="",
@@ -876,7 +943,8 @@ class PottsWidget:
         self.widgets["fluctuation_amplitude"] = widgets.FloatText(
             value=saved_values.get("fluctuation_amplitude", self.defaults["fluctuation_amplitude"]),
             min=0.0, description='Fluctuation Amplitude:',
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
         self.widgets["fluctuation_amplitude_error"] = HTML(
             value="",
@@ -889,7 +957,7 @@ class PottsWidget:
             value=saved_values.get("neighbor_order", self.defaults["neighbor_order"]),
             min=1, max=20, description='Neighbor Order:',
             style={'description_width': 'initial'},
-            layout=widgets.Layout(width='250px')
+            layout=widgets.Layout(width='200px')
         )
         self.widgets["neighbor_order_error"] = HTML(
             value="",
@@ -903,7 +971,7 @@ class PottsWidget:
             value=saved_values.get("lattice_type", self.defaults["lattice_type"]),
             description='Lattice Type:',
             style={'description_width': 'initial'},
-            layout=widgets.Layout(width='250px')
+            layout=widgets.Layout(width='200px')
         )
 
         boundary_options = ['NoFlux', 'Periodic']
@@ -912,21 +980,21 @@ class PottsWidget:
             value=saved_values.get("boundary_x", self.defaults["boundary_x"]),
             description='X Boundary:',
             style={'description_width': 'initial'},
-            layout=widgets.Layout(width='250px')
+            layout=widgets.Layout(width='200px')
         )
         self.widgets["boundary_y"] = widgets.Dropdown(
             options=boundary_options,
             value=saved_values.get("boundary_y", self.defaults["boundary_y"]),
             description='Y Boundary:',
             style={'description_width': 'initial'},
-            layout=widgets.Layout(width='250px')
+            layout=widgets.Layout(width='200px')
         )
         self.widgets["boundary_z"] = widgets.Dropdown(
             options=boundary_options,
             value=saved_values.get("boundary_z", self.defaults["boundary_z"]),
             description='Z Boundary:',
             style={'description_width': 'initial'},
-            layout=widgets.Layout(width='250px')
+            layout=widgets.Layout(width='200px')
         )
 
         # Reset button

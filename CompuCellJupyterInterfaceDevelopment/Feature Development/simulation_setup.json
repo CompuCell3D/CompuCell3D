@@ -1,13 +1,13 @@
 {
     "Metadata": {
-        "num_processors": 1,
-        "debug_output_frequency": 0
+        "num_processors": 4,
+        "debug_output_frequency": 1
     },
     "PottsCore": {
-        "dim_x": 1,
+        "dim_x": 3,
         "dim_y": 1,
         "dim_z": 1,
-        "steps": 0,
+        "steps": 1,
         "anneal": 0,
         "fluctuation_amplitude": 10.0,
         "fluctuation_amplitude_function": "Min",
@@ -24,6 +24,10 @@
     "CellType": [
         {
             "Cell type": "Medium",
+            "freeze": false
+        },
+        {
+            "Cell type": "RT",
             "freeze": false
         }
     ],
