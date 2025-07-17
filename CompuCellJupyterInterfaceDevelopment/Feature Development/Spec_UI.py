@@ -1195,9 +1195,10 @@ class SpecificationSetupUI:
         # Initialize widgets
         self.create_metadata_widgets()
         self.potts_widget = PottsWidget(self.saved_values.get("PottsCore"))
+        # Use a custom callback for cell type changes
         self.celltype_widget = CellTypeWidget(
             self.saved_values.get("CellType"),
-            on_change=self.save_to_json
+            on_change=self.cell_types_changed
         )
         self.plugins_tab = PluginsTab(
             self.saved_values.get("Plugins", {}),
@@ -1208,6 +1209,18 @@ class SpecificationSetupUI:
         # Create the UI
         self.create_ui()
         self.setup_event_handlers()
+
+    def cell_types_changed(self):
+        self.update_plugin_cell_types()
+        self.save_to_json()
+
+    def update_plugin_cell_types(self):
+        cell_types = self.celltype_widget.get_config()
+        cell_type_names = [entry["Cell type"] for entry in cell_types]
+        # Update VolumePlugin
+        volume_widget = self.plugins_tab.plugin_widgets.get("VolumePlugin")
+        if volume_widget:
+            volume_widget.update_cell_types(cell_type_names)
 
     def apply_saved_values(self):
         """Apply saved values to core components"""
