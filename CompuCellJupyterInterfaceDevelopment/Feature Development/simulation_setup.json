@@ -27,5 +27,48 @@
             "freeze": false
         }
     ],
-    "Plugins": {}
+    "Plugins": {
+        "AdhesionFlexPlugin": {
+            "neighbor_order": 3,
+            "neighbor_order_error": "",
+            "max_distance": 3,
+            "max_distance_error": ""
+        },
+        "BoundaryPixelTrackerPlugin": {
+            "neighbor_order": 1
+        },
+        "ChemotaxisPlugin": {
+            "field": "chemoattractant",
+            "field_error": "",
+            "lambda_val": 100.0,
+            "lambda_val_error": ""
+        },
+        "ContactPlugin": {
+            "neighbor_order": 1,
+            "neighbor_order_error": ""
+        },
+        "CurvaturePlugin": {},
+        "ExternalPotentialPlugin": {},
+        "FocalPointPlasticityPlugin": {},
+        "LengthConstraintPlugin": {},
+        "PixelTrackerPlugin": {},
+        "VolumePlugin": {
+            "params": [
+                {
+                    "CellType": "Medium",
+                    "target_volume": 25.0,
+                    "lambda_volume": 2.0
+                }
+            ]
+        },
+        "SurfacePlugin": {
+            "params": [
+                {
+                    "CellType": "Medium",
+                    "target_surface": 100.0,
+                    "lambda_surface": 0.5
+                }
+            ]
+        }
+    }
 }

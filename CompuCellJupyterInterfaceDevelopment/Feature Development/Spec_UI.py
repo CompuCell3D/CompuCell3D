@@ -136,7 +136,7 @@ def get_defaults():
 DEFAULTS = get_defaults()
 
 class PluginWidget:
-    def __init__(self, plugin_name, plugin_class, saved_values, cell_types):
+    def __init__(self, plugin_name, plugin_class, saved_values, cell_types, parent_ui=None):
         self.plugin_name = plugin_name
         self.plugin_class = plugin_class
         self.default_instance = plugin_class()
@@ -144,6 +144,7 @@ class PluginWidget:
         self.widgets = {}
         self.output = Output()  # Add output widget for debug
         self.param_cache = {}  # For VolumePlugin: cache values by cell type
+        self.parent_ui = parent_ui  # <-- add this line
         # Only use saved_values if it is not empty, otherwise use empty dict
         self.create_widgets(saved_values if saved_values else {})
 
@@ -163,15 +164,10 @@ class PluginWidget:
 
         # Save to JSON when checkbox is toggled
         def save_on_toggle(change):
-            try:
-                from IPython.core.getipython import get_ipython
-                shell = get_ipython()
-                if shell and hasattr(shell, 'user_ns') and 'ui' in shell.user_ns:
-                    ui = shell.user_ns['ui']
-                    if hasattr(ui, 'save_to_json'):
-                        ui.save_to_json()
-            except ImportError:
-                pass
+            print(f"[DEBUG] Checkbox toggled for {self.plugin_name}, new value: {change['new']}")
+            if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
+                print("[DEBUG] Calling save_to_json from checkbox toggle")
+                self.parent_ui.save_to_json()
         self.widgets["active"].observe(save_on_toggle, names='value')
 
         # Create plugin-specific widgets
@@ -436,6 +432,8 @@ class PluginWidget:
         self.widgets["config_container"].add_class('plugin-bottom-spacing')
         self.widgets["neighbor_order"].observe(lambda change: self._validate_plugin_input('AdhesionFlexPlugin', 'neighbor_order', change.new), names='value')
         self.widgets["max_distance"].observe(lambda change: self._validate_plugin_input('AdhesionFlexPlugin', 'max_distance', change.new), names='value')
+        self.widgets["neighbor_order"].observe(self._on_adhesionflex_input_change, names='value')
+        self.widgets["max_distance"].observe(self._on_adhesionflex_input_change, names='value')
 
     # ContactPlugin widgets
     def create_contact_widgets(self, saved_values):
@@ -588,7 +586,11 @@ class PluginWidget:
             plugin_instance = self.plugin_class()
             for k, v in config.items():
                 setattr(plugin_instance, k, v)
-            plugin_instance.validate()
+            # Pass context if available
+            if self.parent_ui and hasattr(self.parent_ui, 'potts_core') and hasattr(self.parent_ui, 'cell_type_plugin'):
+                plugin_instance.validate(self.parent_ui.potts_core, self.parent_ui.cell_type_plugin)
+            else:
+                plugin_instance.validate()
             return config
         except Exception as e:
             print(f"Validation error for {self.plugin_name}: {str(e)}")
@@ -643,7 +645,12 @@ class PluginWidget:
                 setattr(plugin_instance, field, value)
             else:
                 setattr(plugin_instance, field, input_widget.value)
-            plugin_instance.validate()
+
+            # Pass dependencies if available
+            if self.parent_ui and hasattr(self.parent_ui, 'potts_core') and hasattr(self.parent_ui, 'cell_type_plugin'):
+                plugin_instance.validate(self.parent_ui.potts_core, self.parent_ui.cell_type_plugin)
+            else:
+                plugin_instance.validate()
             with self.output:
                 print(f"[DEBUG] Backend validation PASSED for {plugin}.{field} value={value if value is not None else input_widget.value}")
             # If validation passes, ensure error is cleared
@@ -680,12 +687,40 @@ class PluginWidget:
         if self.plugin_name == "VolumePlugin":
             self.create_volume_widgets({"params": [self.param_cache.get(ct, {"CellType": ct, "target_volume": 25.0, "lambda_volume": 2.0}) for ct in cell_types]})
 
+    def save_adhesionflex_values(self):
+        # Get current values from the widgets
+        neighbor_order = self.widgets['neighbor_order'].value
+        max_distance = self.widgets['max_distance'].value
+        # Update the config dict (assume self.parent_ui.current_config() returns the config dict)
+        if self.parent_ui and hasattr(self.parent_ui, 'current_config'):
+            config = self.parent_ui.current_config()
+            if 'Plugins' not in config:
+                config['Plugins'] = {}
+            config['Plugins']['AdhesionFlexPlugin'] = {
+                'neighbor_order': neighbor_order,
+                'max_distance': max_distance
+            }
+
+    def remove_adhesionflex_values(self):
+        if self.parent_ui and hasattr(self.parent_ui, 'current_config'):
+            config = self.parent_ui.current_config()
+            if 'Plugins' in config and 'AdhesionFlexPlugin' in config['Plugins']:
+                del config['Plugins']['AdhesionFlexPlugin']
+
+    def _on_adhesionflex_input_change(self, change):
+        print("[DEBUG] AdhesionFlex input changed")
+        if self.widgets["active"].value:  # Only save if plugin is enabled
+            if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
+                print("[DEBUG] Calling save_to_json from input change")
+                self.parent_ui.save_to_json()
+
 
 class PluginsTab:
-    def __init__(self, saved_plugins, cell_types):
+    def __init__(self, saved_plugins, cell_types, parent_ui=None):
         self.widgets = {}
         self.plugin_widgets = {}
         self.cell_types = cell_types
+        self.parent_ui = parent_ui  # <-- add this line
         self.create_widgets(saved_plugins or DEFAULTS["Plugins"])
 
     def create_widgets(self, saved_plugins):
@@ -716,7 +751,7 @@ class PluginsTab:
 
         for plugin_name, plugin_class in plugin_classes.items():
             plugin_values = saved_plugins.get(plugin_name, DEFAULTS["Plugins"].get(plugin_name, {}))
-            plugin_widget = PluginWidget(plugin_name, plugin_class, plugin_values, self.cell_types)
+            plugin_widget = PluginWidget(plugin_name, plugin_class, plugin_values, self.cell_types, parent_ui=self.parent_ui)
             self.plugin_widgets[plugin_name] = plugin_widget
 
             # Categorize
@@ -1166,7 +1201,8 @@ class SpecificationSetupUI:
         )
         self.plugins_tab = PluginsTab(
             self.saved_values.get("Plugins", {}),
-            self.celltype_widget.get_cell_type_names()
+            self.celltype_widget.get_cell_type_names(),
+            parent_ui=self
         )
 
         # Create the UI
@@ -1259,11 +1295,13 @@ class SpecificationSetupUI:
         }
 
     def save_to_json(self, _=None):
-        try:
-            with open(SAVE_FILE, 'w') as f:
-                json.dump(self.current_config(), f, indent=4)
-        except Exception as e:
-            print(f"Error saving configuration: {e}")
+       config = self.current_config()
+       print("Saving config:", config)
+       if config:  # Only save if not empty
+           with open(SAVE_FILE, 'w') as f:
+               json.dump(config, f, indent=4)
+       else:
+           print("Warning: Attempted to save empty config!")
 
     def setup_event_handlers(self):
         # Metadata handlers
