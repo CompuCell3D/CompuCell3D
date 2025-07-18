@@ -1098,6 +1098,8 @@ class CellTypeWidget:
         self.update_celltype_display()
         self.widgets["name"].value = ""
         self.widgets["name"].placeholder = "Cell type name"
+        if self.on_change:
+            self.on_change()
 
     def update_celltype_display(self):
         # Display cell types in a table format
@@ -1492,7 +1494,13 @@ class SpecificationSetupUI:
         self.save_to_json()
 
     def reset_plugins_tab(self):
-        self.plugins_tab.reset()
+        # Re-create PluginsTab with default values
+        self.plugins_tab = PluginsTab(
+            DEFAULTS["Plugins"],
+            self.celltype_widget.get_cell_type_names(),
+            parent_ui=self
+        )
+        self.create_ui()
         self.save_to_json()
 
     def reset_metadata_tab(self):

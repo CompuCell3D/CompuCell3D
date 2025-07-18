@@ -27,41 +27,11 @@
             "freeze": false
         },
         {
-            "Cell type": "T3",
-            "freeze": false
-        },
-        {
-            "Cell type": "T4",
-            "freeze": false
-        },
-        {
             "Cell type": "T1",
-            "freeze": false
-        },
-        {
-            "Cell type": "T5",
             "freeze": false
         }
     ],
     "Plugins": {
-        "BoundaryPixelTrackerPlugin": {
-            "neighbor_order": 1
-        },
-        "ChemotaxisPlugin": {
-            "field": "chemoattractant",
-            "field_error": "",
-            "lambda_val": 100.0,
-            "lambda_val_error": ""
-        },
-        "ContactPlugin": {
-            "neighbor_order": 2,
-            "neighbor_order_error": ""
-        },
-        "CurvaturePlugin": {},
-        "ExternalPotentialPlugin": {},
-        "FocalPointPlasticityPlugin": {},
-        "LengthConstraintPlugin": {},
-        "PixelTrackerPlugin": {},
         "VolumePlugin": {
             "params": [
                 {
@@ -70,28 +40,9 @@
                     "lambda_volume": 2.0
                 },
                 {
-                    "CellType": "T3",
-                    "target_volume": 25.0,
-                    "lambda_volume": 2.0
-                },
-                {
-                    "CellType": "T4",
-                    "target_volume": 25.0,
-                    "lambda_volume": 2.0
-                },
-                {
                     "CellType": "T1",
                     "target_volume": 25.0,
                     "lambda_volume": 2.0
-                }
-            ]
-        },
-        "SurfacePlugin": {
-            "params": [
-                {
-                    "CellType": "Medium",
-                    "target_surface": 100.0,
-                    "lambda_surface": 0.5
                 }
             ]
         }
