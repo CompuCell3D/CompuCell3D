@@ -1,6 +1,6 @@
 {
     "Metadata": {
-        "num_processors": 1,
+        "num_processors": 0,
         "debug_output_frequency": 0
     },
     "PottsCore": {
@@ -11,40 +11,27 @@
         "anneal": 0,
         "fluctuation_amplitude": 10.0,
         "fluctuation_amplitude_function": "Min",
-        "boundary_x": "NoFlux",
-        "boundary_y": "NoFlux",
-        "boundary_z": "NoFlux",
+        "boundary_x": "Periodic",
+        "boundary_y": "Periodic",
+        "boundary_z": "Periodic",
         "neighbor_order": 1,
         "debug_output_frequency": 0,
-        "random_seed": null,
+        "random_seed": 2,
         "lattice_type": "Cartesian",
-        "offset": 0,
+        "offset": 0.0,
         "energy_function_calculator": null
     },
     "CellType": [
         {
             "Cell type": "Medium",
-            "freeze": false
-        },
-        {
-            "Cell type": "T1",
+            "id": 0,
             "freeze": false
         }
     ],
     "Plugins": {
-        "VolumePlugin": {
-            "params": [
-                {
-                    "CellType": "Medium",
-                    "target_volume": 25.0,
-                    "lambda_volume": 2.0
-                },
-                {
-                    "CellType": "T1",
-                    "target_volume": 25.0,
-                    "lambda_volume": 2.0
-                }
-            ]
+        "ContactPlugin": {
+            "neighbor_order": 1,
+            "neighbor_order_error": ""
         }
     }
 }
