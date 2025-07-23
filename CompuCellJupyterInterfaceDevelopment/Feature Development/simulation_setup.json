@@ -41,7 +41,19 @@
     "Plugins": {
         "ContactPlugin": {
             "neighbor_order": 1,
-            "neighbor_order_error": ""
+            "energies": {
+                "Medium": {
+                    "Medium": {
+                        "type_1": "Medium",
+                        "type_2": "Medium",
+                        "energy": 10.0
+                    }
+                }
+            }
         }
+    },
+    "Initializer": {
+        "type": "BlobInitializer",
+        "regions": []
     }
 }

@@ -3,7 +3,8 @@ import json
 import ipywidgets as widgets
 from ipywidgets import (
     VBox, HBox, Layout, Dropdown, BoundedIntText, BoundedFloatText,
-    FloatText, Checkbox, Button, Text, Label, Tab, HTML, Output, GridspecLayout, Box
+    FloatText, Checkbox, Button, Text, Label, Tab, HTML, Output, GridspecLayout, Box,
+    IntText, SelectMultiple
 )
 from cc3d.core.PyCoreSpecs import Metadata, PottsCore, PLUGINS
 from cc3d.core.PyCoreSpecs import (
@@ -14,6 +15,7 @@ from cc3d.core.PyCoreSpecs import (
     SurfacePlugin, VolumePlugin
 )
 from cc3d.core.PyCoreSpecs import SpecValueCheckError
+from IPython.display import display as ipy_display
 
 # # Inject CSS for input styling and error states
 # from IPython.display import display, HTML as IPythonHTML
@@ -330,20 +332,84 @@ class PluginWidget:
 
     # ContactPlugin widgets
     def create_contact_widgets(self, saved_values):
-        defaults = ContactPlugin().spec_dict
-        self.widgets["neighbor_order"] = widgets.IntText(
-            value=saved_values.get("neighbor_order", defaults.get("neighbor_order", 1)),
+        from ipywidgets import VBox, HBox, Dropdown, FloatText, Button, IntText, HTML, Layout
+
+        # Get cell types from the parent UI
+        cell_types = self.cell_types if self.cell_types else []
+
+        # Neighbor order input
+        self.widgets["neighbor_order"] = IntText(
+            value=saved_values.get("neighbor_order", 1),
             min=1,
             description='Neighbor Order:',
             style={'description_width': 'initial'},
-            layout=widgets.Layout(width='250px')
+            layout=Layout(width='200px')
         )
         self.widgets["neighbor_order_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
+
+        # Table for contact energies
+        self.widgets["contact_rows"] = []
+        self.widgets["contact_table"] = VBox()  # <-- Create this before add_row or update_table
+        energies = saved_values.get("energies", {})
+
+        # Helper to add a row
+        def add_row(type_1=None, type_2=None, energy=None):
+            type_1 = type_1 or (cell_types[0] if cell_types else "")
+            type_2 = type_2 or (cell_types[0] if cell_types else "")
+            energy = energy if energy is not None else 10.0
+
+            dd1 = Dropdown(options=cell_types, value=type_1, layout=Layout(width='120px'))
+            dd2 = Dropdown(options=cell_types, value=type_2, layout=Layout(width='120px'))
+            en = FloatText(value=energy, layout=Layout(width='100px'))
+            rm = Button(description="Remove", button_style='danger', layout=Layout(width='80px'))
+
+            row = HBox([dd1, dd2, en, rm])
+            self.widgets["contact_rows"].append((row, dd1, dd2, en, rm))
+
+            def on_remove(_):
+                self.widgets["contact_rows"].remove((row, dd1, dd2, en, rm))
+                update_table()
+                if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
+                    self.parent_ui.save_to_json()
+
+            rm.on_click(on_remove)
+
+            # Observe changes to trigger save
+            if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
+                dd1.observe(lambda change: self.parent_ui.save_to_json(), names='value')
+                dd2.observe(lambda change: self.parent_ui.save_to_json(), names='value')
+                en.observe(lambda change: self.parent_ui.save_to_json(), names='value')
+
+            update_table()
+            if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
+                self.parent_ui.save_to_json()
+
+        # Helper to update the table display
+        def update_table():
+            self.widgets["contact_table"].children = [r[0] for r in self.widgets["contact_rows"]]
+
+        # Add from saved values
+        for t1, t2dict in energies.items():
+            for t2, param in t2dict.items():
+                add_row(type_1=t1, type_2=t2, energy=param.get("energy", 10.0))
+
+        # Add row button
+        add_btn = Button(description="Add Row", button_style='success', layout=Layout(width='100px'))
+        def on_add_btn(_):
+            add_row()
+            if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
+                self.parent_ui.save_to_json()
+        add_btn.on_click(on_add_btn)
+
+        # Table container (already created above)
+        update_table()
+
+        # Compose the UI
         container = VBox([
-            HBox([
-                self.widgets["neighbor_order"]
-            ]),
-            self.widgets["neighbor_order_error"]
+            HBox([self.widgets["neighbor_order"], self.widgets["neighbor_order_error"]]),
+            HTML("<b>Contact Energies</b>"),
+            self.widgets["contact_table"],
+            add_btn
         ])
         self.widgets["config_container"].children = [container]
 
@@ -437,8 +503,18 @@ class PluginWidget:
                     })
                 config["params"] = params
 
+        # ContactPlugin config
+        if self.plugin_name == "ContactPlugin":
+            config = {"neighbor_order": self.widgets["neighbor_order"].value, "energies": {}}
+            for _, dd1, dd2, en, _ in self.widgets["contact_rows"]:
+                t1, t2 = dd1.value, dd2.value
+                if t1 not in config["energies"]:
+                    config["energies"][t1] = {}
+                config["energies"][t1][t2] = {"type_1": t1, "type_2": t2, "energy": en.value}
+            return config
+
         for key, widget in self.widgets.items():
-            if key not in ["active", "config_container", "rows", "add_btn"] and hasattr(widget, 'value'):
+            if key not in ["active", "config_container", "rows", "add_btn", "contact_rows", "contact_table"] and hasattr(widget, 'value'):
                 config[key] = widget.value
 
         try:
@@ -459,7 +535,18 @@ class PluginWidget:
         self.widgets["config_container"].layout.display = 'none'
         default = self.default_instance.spec_dict
 
-        if "rows" in self.widgets:
+        # Clear parameter cache
+        self.param_cache = {}
+
+        if self.plugin_name == "ContactPlugin":
+            # Clear contact rows and table
+            self.widgets["contact_rows"] = []
+            if "contact_table" in self.widgets:
+                self.widgets["contact_table"].children = []
+            # Reset neighbor_order to default (1)
+            if "neighbor_order" in self.widgets:
+                self.widgets["neighbor_order"].value = 1
+        elif "rows" in self.widgets:
             self.widgets["rows"] = []
             if "params" in default:
                 if self.plugin_name == "VolumePlugin":
@@ -468,7 +555,7 @@ class PluginWidget:
                     self.create_surface_widgets(default)
 
         for key, widget in self.widgets.items():
-            if key not in ["active", "config_container", "rows", "add_btn"] and key in default:
+            if key not in ["active", "config_container", "rows", "add_btn", "contact_rows", "contact_table"] and key in default:
                 widget.value = default[key]
 
     def _validate_plugin_input(self, plugin, field, value=None):
@@ -1033,8 +1120,96 @@ class CellTypeWidget:
             reset_button_box
         ], layout=Layout(align_items='flex-start', padding='10px'))
 
+class InitializerWidget:
+    def __init__(self, saved_values=None, cell_types=None, parent_ui=None):
+        self.cell_types = cell_types or []
+        self.saved_values = saved_values or {}
+        self.widgets = {}
+        self.regions = []  # List of region dicts
+        self.regions_box = VBox()
+        self.add_region_btn = Button(description="Add Region", button_style="success")
+        self.add_region_btn.on_click(self.add_region)
+        self.parent_ui = parent_ui  # <-- store parent_ui
+        self.create_ui()
+
+    def add_region(self, _=None):
+        width = 5
+        radius = 20
+        center_x = 50
+        center_y = 50
+        center_z = 0
+        selected_cell_types = self.cell_types.copy() if self.cell_types else []
+        region = {
+            "width": IntText(value=width, description="Width:"),
+            "radius": IntText(value=radius, description="Radius:"),
+            "center_x": IntText(value=center_x, description="Center X:"),
+            "center_y": IntText(value=center_y, description="Center Y:"),
+            "center_z": IntText(value=center_z, description="Center Z:"),
+            "cell_types": SelectMultiple(
+                options=self.cell_types,
+                value=tuple(selected_cell_types),
+                description="Cell Types:"
+            ),
+            "remove_btn": Button(description="Remove", button_style="danger")
+        }
+        region["remove_btn"].on_click(lambda btn, r=region: self.remove_region(r))
+        # Observe changes in all fields to trigger save
+        for key in ["width", "radius", "center_x", "center_y", "center_z"]:
+            region[key].observe(self._trigger_save, names='value')
+        region["cell_types"].observe(self._trigger_save, names='value')
+        self.regions.append(region)
+        self.update_regions_box()
+        self._trigger_save()
+
+    def remove_region(self, region):
+        self.regions.remove(region)
+        self.update_regions_box()
+        self._trigger_save()
+
+    def update_regions_box(self):
+        region_vboxes = []
+        for region in self.regions:
+            vbox = VBox([
+                HBox([region["width"], region["radius"]]),
+                HBox([region["center_x"], region["center_y"], region["center_z"]]),
+                region["cell_types"],
+                region["remove_btn"]
+            ], layout=Layout(border="1px solid #ccc", margin="5px 0", padding="5px"))
+            region_vboxes.append(vbox)
+        self.regions_box.children = region_vboxes + [self.add_region_btn]
+
+    def get_config(self):
+        regions = []
+        for region in self.regions:
+            regions.append({
+                "width": region["width"].value,
+                "radius": region["radius"].value,
+                "center": (region["center_x"].value, region["center_y"].value, region["center_z"].value),
+                "cell_types": list(region["cell_types"].value)
+            })
+        return {
+            "type": "BlobInitializer",
+            "regions": regions
+        }
+
+    def create_ui(self):
+        self.update_regions_box()
+        self.widget = VBox([
+            Label("Blob Initializer Regions:"),
+            self.regions_box
+        ])
+
+    def update_cell_types(self, cell_types):
+        self.cell_types = cell_types
+        for region in self.regions:
+            region["cell_types"].options = self.cell_types
+
+    def get_widget(self):
+        return self.widget
+
 class SpecificationSetupUI:
     def __init__(self):
+        self._initializing = True  # Flag to suppress save_to_json during init
         self.widgets = {}
         self.saved_values = self.load_saved_values()
         self.metadata = Metadata()
@@ -1052,9 +1227,17 @@ class SpecificationSetupUI:
             self.celltype_widget.get_cell_type_names(),
             parent_ui=self
         )
+        self.initializer_widget = InitializerWidget(
+            saved_values=self.saved_values.get("Initializer"),
+            cell_types=self.celltype_widget.get_cell_type_names(),
+            parent_ui=self
+        )
+        self.cc3d_sim = None
+        self.visualization_output = widgets.Output()
         self.create_ui()
         self.setup_event_handlers()
         self.check_ready_state()
+        self._initializing = False  # Allow save_to_json after init
 
     def cell_types_changed(self):
         self.update_plugin_cell_types()
@@ -1143,10 +1326,13 @@ class SpecificationSetupUI:
             "Metadata": self.metadata.spec_dict,
             "PottsCore": self.potts_core.spec_dict,
             "CellType": self.celltype_widget.get_config(),
-            "Plugins": self.plugins_tab.get_config()
+            "Plugins": self.plugins_tab.get_config(),
+            "Initializer": self.initializer_widget.get_config()
         }
 
     def save_to_json(self, _=None):
+        if getattr(self, '_initializing', False):
+            return  # Don't save during initialization
         config = self.current_config()
         if config:
             with open(SAVE_FILE, 'w') as f:
@@ -1252,6 +1438,62 @@ class SpecificationSetupUI:
         if input_widget is not None and hasattr(input_widget, 'remove_class'):
             input_widget.remove_class('error-input')
 
+    def run_and_visualize(self, _=None):
+        # Import here to avoid circular import issues
+        from cc3d.CompuCellSetup.CC3DCaller import CC3DSimService
+        import traceback
+        from IPython.display import display
+        # Prepare specs from current config
+        from cc3d.core.PyCoreSpecs import Metadata, PottsCore, CellTypePlugin, VolumePlugin, ContactPlugin
+        import copy
+        import inspect
+        config = self.current_config()
+        specs = []
+        # Metadata
+        specs.append(Metadata(**config["Metadata"]))
+        # PottsCore (filter out invalid keys)
+        pottscore_args = inspect.signature(PottsCore.__init__).parameters
+        pottscore_config = {k: v for k, v in config["PottsCore"].items() if k in pottscore_args}
+        specs.append(PottsCore(**pottscore_config))
+        # CellTypePlugin
+        cell_types = [entry["Cell type"] for entry in config["CellType"]]
+        specs.append(CellTypePlugin(*cell_types))
+        # VolumePlugin
+        if "params" in config["Plugins"].get("VolumePlugin", {}):
+            from cc3d.core.PyCoreSpecs import VolumePlugin
+            volume_plugin = VolumePlugin()
+            for param in config["Plugins"]["VolumePlugin"]["params"]:
+                volume_plugin.param_new(param["CellType"], param["target_volume"], param["lambda_volume"])
+            specs.append(volume_plugin)
+        # ContactPlugin
+        if "energies" in config["Plugins"].get("ContactPlugin", {}):
+            from cc3d.core.PyCoreSpecs import ContactPlugin
+            cp_conf = config["Plugins"]["ContactPlugin"]
+            contact_plugin = ContactPlugin(cp_conf.get("neighbor_order", 1))
+            for t1, t2dict in cp_conf["energies"].items():
+                for t2, param in t2dict.items():
+                    contact_plugin.param_new(type_1=param["type_1"], type_2=param["type_2"], energy=param["energy"])
+            specs.append(contact_plugin)
+        # TODO: Add other plugins as needed
+
+        self.visualization_output.clear_output()
+        with self.visualization_output:
+            print("Starting simulation...")  # Debug print
+            try:
+                self.cc3d_sim = CC3DSimService()
+                self.cc3d_sim.register_specs(specs)
+                self.cc3d_sim.run()
+                self.cc3d_sim.init()
+                self.cc3d_sim.start()
+                vis_widget = self.cc3d_sim.visualize().show()
+                print("vis_widget:", vis_widget)
+                display(vis_widget)
+                display(self.cc3d_sim.jupyter_run_button())
+                print("Simulation and visualization launched.")  # Debug print
+            except Exception as e:
+                print("Error during simulation:")
+                traceback.print_exc()
+
     def create_ui(self):
         tabs = Tab(layout=Layout(width='100%'))
 
@@ -1272,11 +1514,25 @@ class SpecificationSetupUI:
             self.plugins_tab.create_ui()
         ], layout=Layout(width='100%'))
 
-        tabs.children = [metadata_tab, potts_tab, celltype_tab, plugins_tab]
+        initializer_tab = VBox([
+            self.initializer_widget.get_widget()
+        ], layout=Layout(width='100%'))
+
+        # Simulation tab (was Run/Visualize)
+        run_button = Button(description="Run Simulation", button_style='success')
+        run_button.on_click(self.run_and_visualize)
+        run_tab = VBox([
+            run_button,
+            self.visualization_output
+        ], layout=Layout(width='100%', padding='15px'))
+
+        tabs.children = [metadata_tab, potts_tab, celltype_tab, plugins_tab, initializer_tab, run_tab]
         tabs.set_title(0, 'Metadata')
         tabs.set_title(1, 'Potts Core')
         tabs.set_title(2, 'Cell Types')
         tabs.set_title(3, 'Plugins')
+        tabs.set_title(4, 'Initializer')
+        tabs.set_title(5, 'Simulation')  # <-- renamed from 'Run/Visualize'
 
         run_button_box = HBox([self.widgets["run_button"]],
                              layout=Layout(justify_content='flex-end', margin='15px 0 0 0'))
@@ -1291,7 +1547,7 @@ class SpecificationSetupUI:
             padding='15px'
         ))
         container.add_class('widget-container')
-        display(container)
+        ipy_display(container)
 
     def create_metadata_tab(self):
         num_processors_box = VBox([
