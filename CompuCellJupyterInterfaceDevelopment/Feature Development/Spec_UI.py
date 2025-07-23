@@ -114,10 +114,8 @@ def get_defaults():
     return {
         "Metadata": Metadata().spec_dict,
         "PottsCore": PottsCore().spec_dict,
-        # "CellType": [{"Cell type": "Medium", "id": 0, "freeze": False}], # shouldn't be manually set ID automatically defined.
-        "CellType": [{"Cell type": "Medium", "freeze": False}], # shouldn't be manually set ID automatically defined.
+        "CellType": [{"Cell type": "Medium", "id": 0, "freeze": False}],
         "Plugins": {
-            # All plugins default to empty dict (unchecked)
             "AdhesionFlexPlugin": {},
             "BoundaryPixelTrackerPlugin": {},
             "ChemotaxisPlugin": {},
@@ -142,35 +140,28 @@ class PluginWidget:
         self.default_instance = plugin_class()
         self.cell_types = cell_types
         self.widgets = {}
-        self.output = Output()  # Add output widget for debug
-        self.param_cache = {}  # For VolumePlugin: cache values by cell type
-        self.parent_ui = parent_ui  # <-- add this line
-        # Only use saved_values if it is not empty, otherwise use empty dict
+        self.output = Output()
+        self.param_cache = {}
+        self.parent_ui = parent_ui
         self.create_widgets(saved_values if saved_values else {})
 
     def create_widgets(self, saved_values):
-        # Main checkbox with plugin name
         self.widgets["active"] = widgets.Checkbox(
             value=bool(saved_values),
             description=self.plugin_name,
             indent=False
         )
 
-        # Container for plugin-specific widgets
         self.widgets["config_container"] = VBox([], layout=Layout(
             padding='0',
             display='none' if not saved_values else 'block'
         ))
 
-        # Save to JSON when checkbox is toggled
         def save_on_toggle(change):
-            print(f"[DEBUG] Checkbox toggled for {self.plugin_name}, new value: {change['new']}")
             if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
-                print("[DEBUG] Calling save_to_json from checkbox toggle")
                 self.parent_ui.save_to_json()
         self.widgets["active"].observe(save_on_toggle, names='value')
 
-        # Create plugin-specific widgets
         if self.plugin_name == "VolumePlugin":
             self.create_volume_widgets(saved_values)
         elif self.plugin_name == "SurfacePlugin":
@@ -189,13 +180,10 @@ class PluginWidget:
             self.create_external_potential_widgets(saved_values)
         elif self.plugin_name == "FocalPointPlasticityPlugin":
             self.create_focal_point_plasticity_widgets(saved_values)
-        # Add other plugins as needed...
 
-        # Set up active toggle
         self.widgets["active"].observe(self.toggle_config_visibility, names='value')
 
     def toggle_config_visibility(self, change):
-        # For plugins without input boxes, always show the config_container for spacing
         if self.plugin_name in ["CurvaturePlugin", "ExternalPotentialPlugin", "FocalPointPlasticityPlugin"]:
             self.widgets["config_container"].layout.display = 'block'
         else:
@@ -203,17 +191,11 @@ class PluginWidget:
 
     # VolumePlugin widgets
     def create_volume_widgets(self, saved_values):
-        """Widgets for VolumePlugin"""
-        # Build a row for every cell type in self.cell_types
-        # Use saved values if present, else default
         default_params = VolumePlugin().spec_dict.get("params", [])
         default_map = {p["CellType"]: p for p in default_params} if default_params else {}
-        # Build a map from cell type to saved param
         saved_map = {p["CellType"]: p for p in saved_values.get("params", []) if "CellType" in p}
-        # Use cached values if present, else saved, else default
         rows = []
         for ct in self.cell_types:
-            # Priority: cache > saved > default > fallback
             param = self.param_cache.get(ct) or saved_map.get(ct) or default_map.get(ct) or {
                 "CellType": ct,
                 "target_volume": 25.0,
@@ -223,7 +205,7 @@ class PluginWidget:
             row["cell_type"] = widgets.Label(value=ct, layout=widgets.Layout(width='120px'))
             row["target_volume"] = widgets.FloatText(
                 value=param["target_volume"],
-                min=1.0,
+                min=0.0,
                 description='',
                 layout=widgets.Layout(width='120px')
             )
@@ -233,7 +215,6 @@ class PluginWidget:
                 description='',
                 layout=widgets.Layout(width='120px')
             )
-            # Update cache and save on change
             def make_cache_updater(cell_type, field):
                 def updater(change):
                     if cell_type not in self.param_cache:
@@ -243,16 +224,8 @@ class PluginWidget:
                             "lambda_volume": row["lambda_volume"].value
                         }
                     self.param_cache[cell_type][field] = change["new"]
-                    # Save to JSON immediately
-                    try:
-                        from IPython.core.getipython import get_ipython
-                        shell = get_ipython()
-                        if shell and hasattr(shell, 'user_ns') and 'ui' in shell.user_ns:
-                            ui = shell.user_ns['ui']
-                            if hasattr(ui, 'save_to_json'):
-                                ui.save_to_json()
-                    except ImportError:
-                        pass
+                    if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
+                        self.parent_ui.save_to_json()
                 return updater
             row["target_volume"].observe(make_cache_updater(ct, "target_volume"), names='value')
             row["lambda_volume"].observe(make_cache_updater(ct, "lambda_volume"), names='value')
@@ -261,8 +234,6 @@ class PluginWidget:
         self.update_volume_ui()
 
     def update_volume_ui(self):
-        """Update the UI after row changes"""
-        # Show a row for every cell type
         row_widgets = []
         for row in self.widgets["rows"]:
             row_box = HBox([
@@ -272,175 +243,97 @@ class PluginWidget:
                 widgets.Label("Lambda Volume:", layout=widgets.Layout(width='100px')),
                 row["lambda_volume"]
             ], layout=Layout(padding='4px 0 4px 12px'))
-            row_box.add_class('volume-row')
             row_widgets.append(row_box)
         self.widgets["config_container"].children = [VBox(row_widgets)]
 
     # SurfacePlugin widgets
     def create_surface_widgets(self, saved_values):
-        """Widgets for SurfacePlugin"""
-        params = saved_values.get("params", [])
-
-        if not params:
-            default_params = SurfacePlugin().spec_dict.get("params", [])
-            params = default_params or [{
-                "CellType": "Medium",
+        default_params = SurfacePlugin().spec_dict.get("params", [])
+        default_map = {p["CellType"]: p for p in default_params} if default_params else {}
+        saved_map = {p["CellType"]: p for p in saved_values.get("params", []) if "CellType" in p}
+        rows = []
+        for ct in self.cell_types:
+            param = self.param_cache.get(ct) or saved_map.get(ct) or default_map.get(ct) or {
+                "CellType": ct,
                 "target_surface": 100.0,
                 "lambda_surface": 0.5
-            }]
-
-        rows = []
-        for param in params:
-            cell_type_value = param["CellType"]
-            if cell_type_value not in self.cell_types:
-                cell_type_value = self.cell_types[0] if self.cell_types else "Medium"
-
+            }
             row = {}
-            row["cell_type"] = widgets.Dropdown(
-                options=self.cell_types,
-                value=cell_type_value,
-                description='Cell Type:',
-                style={'description_width': 'initial'},
-                layout=widgets.Layout(width='200px')
-            )
+            row["cell_type"] = widgets.Label(value=ct, layout=widgets.Layout(width='120px'))
             row["target_surface"] = widgets.FloatText(
                 value=param["target_surface"],
-                min=1.0,
-                description='Target Surface:',
-                style={'description_width': 'initial'},
-                layout=widgets.Layout(width='200px')
+                min=0.0,
+                description='',
+                layout=widgets.Layout(width='120px')
             )
             row["lambda_surface"] = widgets.FloatText(
                 value=param["lambda_surface"],
                 min=0.0,
-                description='Lambda Surface:',
-                style={'description_width': 'initial'},
-                layout=widgets.Layout(width='200px')
+                description='',
+                layout=widgets.Layout(width='120px')
             )
+            def make_cache_updater(cell_type, field):
+                def updater(change):
+                    if cell_type not in self.param_cache:
+                        self.param_cache[cell_type] = {
+                            "CellType": cell_type,
+                            "target_surface": row["target_surface"].value,
+                            "lambda_surface": row["lambda_surface"].value
+                        }
+                    self.param_cache[cell_type][field] = change["new"]
+                    if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
+                        self.parent_ui.save_to_json()
+                return updater
+            row["target_surface"].observe(make_cache_updater(ct, "target_surface"), names='value')
+            row["lambda_surface"].observe(make_cache_updater(ct, "lambda_surface"), names='value')
             rows.append(row)
-
         self.widgets["rows"] = rows
-
-        # Add button for new row
-        self.widgets["add_btn"] = widgets.Button(
-            description="Add Constraint",
-            button_style='success'
-        )
-
-        # Define add_surface_row as a method
-        def add_surface_row(_):
-            default_params = SurfacePlugin().spec_dict.get("params", [])
-            default_values = default_params[0] if default_params else {
-                "CellType": "Medium",
-                "target_surface": 100.0,
-                "lambda_surface": 0.5
-            }
-
-            new_row = {
-                "cell_type": widgets.Dropdown(
-                    options=self.cell_types,
-                    value=default_values["CellType"],
-                    description='Cell Type:',
-                    style={'description_width': 'initial'}
-                ),
-                "target_surface": widgets.FloatText(
-                    value=default_values["target_surface"],
-                    min=1.0,
-                    description='Target Surface:',
-                    style={'description_width': 'initial'}
-                ),
-                "lambda_surface": widgets.FloatText(
-                    value=default_values["lambda_surface"],
-                    min=0.0,
-                    description='Lambda Surface:',
-                    style={'description_width': 'initial'}
-                )
-            }
-
-            self.widgets["rows"].append(new_row)
-            self.update_surface_ui()
-
-        # Connect the button handler
-        self.widgets["add_btn"].on_click(add_surface_row)
-
-        # Build UI
         self.update_surface_ui()
 
     def update_surface_ui(self):
-        """Update the UI after row changes"""
         row_widgets = []
-        for i, row in enumerate(self.widgets["rows"]):
-            # Add spacing classes
-            row["cell_type"].add_class('plugin-input-spacing')
-            row["target_surface"].add_class('plugin-input-spacing')
-            row["lambda_surface"].add_class('plugin-input-spacing')
-            remove_btn = widgets.Button(
-                description="Remove",
-                button_style='danger',
-                layout=Layout(width='100px')
-            )
-
-            def make_remove_handler(index):
-                def handler(_):
-                    del self.widgets["rows"][index]
-                    self.update_surface_ui()
-                return handler
-
-            remove_btn.on_click(make_remove_handler(i))
-
-            row_widgets.append(HBox([
+        for row in self.widgets["rows"]:
+            row_box = HBox([
                 row["cell_type"],
+                widgets.Label("Target Surface:", layout=widgets.Layout(width='100px')),
                 row["target_surface"],
-                row["lambda_surface"],
-                remove_btn
-            ]))
-
-        self.widgets["config_container"].children = [
-            *row_widgets,
-            self.widgets["add_btn"]
-        ]
+                widgets.Label("Lambda Surface:", layout=widgets.Layout(width='100px')),
+                row["lambda_surface"]
+            ], layout=Layout(padding='4px 0 4px 12px'))
+            row_widgets.append(row_box)
+        self.widgets["config_container"].children = [VBox(row_widgets)]
 
     # AdhesionFlexPlugin widgets
     def create_adhesion_widgets(self, saved_values):
-        """Widgets for AdhesionFlexPlugin"""
         defaults = AdhesionFlexPlugin().spec_dict
-        # Input widgets
         self.widgets["neighbor_order"] = widgets.IntText(
             value=saved_values.get("neighbor_order", defaults.get("neighbor_order", 2)),
             description='Neighbor Order:',
             style={'description_width': 'initial'},
             layout=widgets.Layout(width='200px')
         )
-        self.widgets["neighbor_order"].add_class('plugin-input-spacing')
         self.widgets["neighbor_order_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
         self.widgets["max_distance"] = widgets.IntText(
             value=saved_values.get("max_distance", defaults.get("max_distance", 3)),
+            min=1,
             description='Max Distance:',
             style={'description_width': 'initial'},
             layout=widgets.Layout(width='200px')
         )
         self.widgets["max_distance_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
-        # UI: error under each input
         neighbor_box = VBox([self.widgets["neighbor_order"], self.widgets["neighbor_order_error"]])
         max_distance_box = VBox([self.widgets["max_distance"], self.widgets["max_distance_error"]])
         container = VBox([
             HBox([neighbor_box, max_distance_box])
         ])
-        container.add_class('plugin-compact-container')
         self.widgets["config_container"].children = [container]
-        self.widgets["config_container"].add_class('plugin-top-spacing')
-        self.widgets["config_container"].add_class('plugin-bottom-spacing')
-        self.widgets["neighbor_order"].observe(lambda change: self._validate_plugin_input('AdhesionFlexPlugin', 'neighbor_order', change.new), names='value')
-        self.widgets["max_distance"].observe(lambda change: self._validate_plugin_input('AdhesionFlexPlugin', 'max_distance', change.new), names='value')
-        self.widgets["neighbor_order"].observe(self._on_adhesionflex_input_change, names='value')
-        self.widgets["max_distance"].observe(self._on_adhesionflex_input_change, names='value')
 
     # ContactPlugin widgets
     def create_contact_widgets(self, saved_values):
-        """Widgets for ContactPlugin"""
         defaults = ContactPlugin().spec_dict
         self.widgets["neighbor_order"] = widgets.IntText(
             value=saved_values.get("neighbor_order", defaults.get("neighbor_order", 1)),
+            min=1,
             description='Neighbor Order:',
             style={'description_width': 'initial'},
             layout=widgets.Layout(width='250px')
@@ -452,15 +345,10 @@ class PluginWidget:
             ]),
             self.widgets["neighbor_order_error"]
         ])
-        container.add_class('plugin-compact-container')
         self.widgets["config_container"].children = [container]
-        self.widgets["config_container"].add_class('plugin-top-spacing')
-        self.widgets["config_container"].add_class('plugin-bottom-spacing')
-        self.widgets["neighbor_order"].observe(lambda change: self._validate_plugin_input('ContactPlugin', 'neighbor_order', change.new), names='value')
 
     # ChemotaxisPlugin widgets
     def create_chemotaxis_widgets(self, saved_values):
-        """Widgets for ChemotaxisPlugin"""
         defaults = ChemotaxisPlugin().spec_dict
         self.widgets["field"] = widgets.Text(
             value=saved_values.get("field", defaults.get("field", "chemoattractant")),
@@ -468,7 +356,6 @@ class PluginWidget:
             style={'description_width': 'initial'},
             layout=widgets.Layout(width='250px')
         )
-        self.widgets["field"].add_class('plugin-input-spacing')
         self.widgets["field_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
         self.widgets["lambda_val"] = widgets.FloatText(
             value=saved_values.get("lambda", defaults.get("lambda", 100.0)),
@@ -483,57 +370,37 @@ class PluginWidget:
         container = VBox([
             HBox([field_box, lambda_box])
         ])
-        container.add_class('plugin-compact-container')
         self.widgets["config_container"].children = [container]
-        self.widgets["config_container"].add_class('plugin-top-spacing')
-        self.widgets["config_container"].add_class('plugin-bottom-spacing')
-        self.widgets["field"].observe(lambda change: self._validate_plugin_input('ChemotaxisPlugin', 'field', change.new), names='value')
-        self.widgets["lambda_val"].observe(lambda change: self._validate_plugin_input('ChemotaxisPlugin', 'lambda_val', change.new), names='value')
 
     # BoundaryPixelTrackerPlugin widgets
     def create_boundary_tracker_widgets(self, saved_values):
-        """Widgets for BoundaryPixelTrackerPlugin"""
-        # Get default values from class
         defaults = BoundaryPixelTrackerPlugin().spec_dict
-
-        self.widgets["neighbor_order"] = widgets.BoundedIntText(
+        self.widgets["neighbor_order"] = widgets.IntText(
             value=saved_values.get("neighbor_order", defaults.get("neighbor_order", 2)),
-            min=1, max=10,
             description='Neighbor Order:',
             style={'description_width': 'initial'},
             layout=widgets.Layout(width='250px')
         )
-
-        # Build UI with vertical spacing
+        self.widgets["neighbor_order_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
         neighbor_box = VBox([
-            self.widgets["neighbor_order"]
+            self.widgets["neighbor_order"],
+            self.widgets["neighbor_order_error"]
         ])
-        # Remove extra spacing classes from neighbor_box
         self.widgets["config_container"].children = [neighbor_box]
-        self.widgets["config_container"].add_class('plugin-top-spacing')
-        self.widgets["config_container"].add_class('plugin-bottom-spacing')
-        self.widgets["neighbor_order"].observe(lambda change: self._validate_plugin_input('BoundaryPixelTrackerPlugin', 'neighbor_order', change.new), names='value')
 
     def create_curvature_widgets(self, saved_values):
-        """Widgets for CurvaturePlugin (no input boxes)"""
         self.widgets["config_container"].children = []
-        self.widgets["config_container"].add_class('plugin-checkbox-bottom-spacing')
         self.widgets["config_container"].layout.display = 'block'
 
     def create_external_potential_widgets(self, saved_values):
-        """Widgets for ExternalPotentialPlugin (no input boxes)"""
         self.widgets["config_container"].children = []
-        self.widgets["config_container"].add_class('plugin-checkbox-bottom-spacing')
         self.widgets["config_container"].layout.display = 'block'
 
     def create_focal_point_plasticity_widgets(self, saved_values):
-        """Widgets for FocalPointPlasticityPlugin (no input boxes)"""
         self.widgets["config_container"].children = []
-        self.widgets["config_container"].add_class('plugin-checkbox-bottom-spacing')
         self.widgets["config_container"].layout.display = 'block'
 
     def create_ui(self):
-        # For Cell Behavior plugins, show debug output at the bottom
         if self.plugin_name in ["AdhesionFlexPlugin", "ContactPlugin", "ChemotaxisPlugin"]:
             return VBox([
                 self.widgets["active"],
@@ -551,20 +418,14 @@ class PluginWidget:
             return None
 
         config = {}
-
-        # Handle plugins with rows (Volume, Surface)
         if "rows" in self.widgets:
             params = []
             if self.plugin_name == "VolumePlugin":
-                # Always save all cell types with their current values
                 for row in self.widgets["rows"]:
-                    cell_type = row["cell_type"].value if hasattr(row["cell_type"], 'value') else row["cell_type"].description
-                    target_volume = row["target_volume"].value if hasattr(row["target_volume"], 'value') else self.param_cache.get(cell_type, {}).get("target_volume", 25.0)
-                    lambda_volume = row["lambda_volume"].value if hasattr(row["lambda_volume"], 'value') else self.param_cache.get(cell_type, {}).get("lambda_volume", 2.0)
                     params.append({
-                        "CellType": cell_type,
-                        "target_volume": target_volume,
-                        "lambda_volume": lambda_volume
+                        "CellType": row["cell_type"].value,
+                        "target_volume": row["target_volume"].value,
+                        "lambda_volume": row["lambda_volume"].value
                     })
                 config["params"] = params
             elif self.plugin_name == "SurfacePlugin":
@@ -576,17 +437,14 @@ class PluginWidget:
                     })
                 config["params"] = params
 
-        # Add other plugin-specific values
         for key, widget in self.widgets.items():
-            if key not in ["active", "config_container", "rows", "add_btn"]:
+            if key not in ["active", "config_container", "rows", "add_btn"] and hasattr(widget, 'value'):
                 config[key] = widget.value
 
-        # Validate configuration using plugin class
         try:
             plugin_instance = self.plugin_class()
             for k, v in config.items():
                 setattr(plugin_instance, k, v)
-            # Pass context if available
             if self.parent_ui and hasattr(self.parent_ui, 'potts_core') and hasattr(self.parent_ui, 'cell_type_plugin'):
                 plugin_instance.validate(self.parent_ui.potts_core, self.parent_ui.cell_type_plugin)
             else:
@@ -601,7 +459,6 @@ class PluginWidget:
         self.widgets["config_container"].layout.display = 'none'
         default = self.default_instance.spec_dict
 
-        # Reset to plugin defaults
         if "rows" in self.widgets:
             self.widgets["rows"] = []
             if "params" in default:
@@ -610,71 +467,44 @@ class PluginWidget:
                 elif self.plugin_name == "SurfacePlugin":
                     self.create_surface_widgets(default)
 
-        # Reset other widgets
         for key, widget in self.widgets.items():
             if key not in ["active", "config_container", "rows", "add_btn"] and key in default:
                 widget.value = default[key]
 
     def _validate_plugin_input(self, plugin, field, value=None):
-        with self.output:
-            print(f"[DEBUG] _validate_plugin_input called for {plugin}.{field} with value={value}")
-        # Map plugin to class
-        plugin_class_map = {
-            'AdhesionFlexPlugin': AdhesionFlexPlugin,
-            'ChemotaxisPlugin': ChemotaxisPlugin,
-            'ContactPlugin': ContactPlugin
-        }
         widget_map = self.widgets
         error_widget_name = f"{field}_error"
         input_widget = widget_map.get(field)
         error_widget = widget_map.get(error_widget_name)
         if not input_widget or not error_widget:
-            with self.output:
-                print(f"[DEBUG] input_widget or error_widget missing for {field}")
             return
-        # Always clear error and highlight before validation (Potts Core style)
         error_widget.value = ""
         error_widget.layout.display = 'none'
         if hasattr(input_widget, 'remove_class'):
             input_widget.remove_class('error-input')
-        # Only backend validation
         try:
+            plugin_class_map = {
+                'AdhesionFlexPlugin': AdhesionFlexPlugin,
+                'ChemotaxisPlugin': ChemotaxisPlugin,
+                'ContactPlugin': ContactPlugin,
+                'BoundaryPixelTrackerPlugin': BoundaryPixelTrackerPlugin
+            }
             plugin_instance = plugin_class_map[plugin]()
-            # Use the latest value from the observer if provided
             if value is not None:
                 setattr(plugin_instance, field, value)
             else:
                 setattr(plugin_instance, field, input_widget.value)
-
-            # Pass dependencies if available
             if self.parent_ui and hasattr(self.parent_ui, 'potts_core') and hasattr(self.parent_ui, 'cell_type_plugin'):
                 plugin_instance.validate(self.parent_ui.potts_core, self.parent_ui.cell_type_plugin)
             else:
                 plugin_instance.validate()
-            with self.output:
-                print(f"[DEBUG] Backend validation PASSED for {plugin}.{field} value={value if value is not None else input_widget.value}")
-            # If validation passes, ensure error is cleared
             error_widget.value = ""
             error_widget.layout.display = 'none'
             if hasattr(input_widget, 'remove_class'):
                 input_widget.remove_class('error-input')
         except Exception as e:
-            with self.output:
-                print(f"[DEBUG] Backend validation FAILED for {plugin}.{field} value={value if value is not None else input_widget.value}: {e}")
-            # Show error, splitting multiple errors onto separate lines
             msg = str(e)
-            if '\n' in msg:
-                parts = [line.strip() for line in msg.split('\n') if line.strip()]
-            else:
-                parts = []
-                for part in msg.split('Could not'):
-                    part = part.strip()
-                    if part:
-                        if not part.startswith('Could not'):
-                            part = 'Could not ' + part
-                        parts.append(part)
-                if not parts:
-                    parts = [msg]
+            parts = [line.strip() for line in msg.split('\n') if line.strip()] or [msg]
             html = '<br>'.join(f'⚠️ {p}' for p in parts)
             error_widget.value = f'<span style="color: red; font-size: 12px;">{html}</span>'
             error_widget.layout.display = 'block'
@@ -682,58 +512,27 @@ class PluginWidget:
                 input_widget.add_class('error-input')
 
     def update_cell_types(self, cell_types):
-        # Called externally when cell types change
         self.cell_types = cell_types
         if self.plugin_name == "VolumePlugin":
             self.create_volume_widgets({"params": [self.param_cache.get(ct, {"CellType": ct, "target_volume": 25.0, "lambda_volume": 2.0}) for ct in cell_types]})
-
-    def save_adhesionflex_values(self):
-        # Get current values from the widgets
-        neighbor_order = self.widgets['neighbor_order'].value
-        max_distance = self.widgets['max_distance'].value
-        # Update the config dict (assume self.parent_ui.current_config() returns the config dict)
-        if self.parent_ui and hasattr(self.parent_ui, 'current_config'):
-            config = self.parent_ui.current_config()
-            if 'Plugins' not in config:
-                config['Plugins'] = {}
-            config['Plugins']['AdhesionFlexPlugin'] = {
-                'neighbor_order': neighbor_order,
-                'max_distance': max_distance
-            }
-
-    def remove_adhesionflex_values(self):
-        if self.parent_ui and hasattr(self.parent_ui, 'current_config'):
-            config = self.parent_ui.current_config()
-            if 'Plugins' in config and 'AdhesionFlexPlugin' in config['Plugins']:
-                del config['Plugins']['AdhesionFlexPlugin']
-
-    def _on_adhesionflex_input_change(self, change):
-        print("[DEBUG] AdhesionFlex input changed")
-        if self.widgets["active"].value:  # Only save if plugin is enabled
-            if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
-                print("[DEBUG] Calling save_to_json from input change")
-                self.parent_ui.save_to_json()
-
+        elif self.plugin_name == "SurfacePlugin":
+            self.create_surface_widgets({"params": [self.param_cache.get(ct, {"CellType": ct, "target_surface": 100.0, "lambda_surface": 0.5}) for ct in cell_types]})
 
 class PluginsTab:
     def __init__(self, saved_plugins, cell_types, parent_ui=None):
         self.widgets = {}
         self.plugin_widgets = {}
         self.cell_types = cell_types
-        self.parent_ui = parent_ui  # <-- add this line
+        self.parent_ui = parent_ui
         self.create_widgets(saved_plugins or DEFAULTS["Plugins"])
 
     def create_widgets(self, saved_plugins):
-        # Create tabs for plugin categories
         self.widgets["tabs"] = widgets.Tab()
-
-        # Create categories
         behavior_plugins = []
         constraint_plugins = []
         tracker_plugins = []
         other_plugins = []
 
-        # Plugin classes mapping
         plugin_classes = {
             "AdhesionFlexPlugin": AdhesionFlexPlugin,
             "BoundaryPixelTrackerPlugin": BoundaryPixelTrackerPlugin,
@@ -754,7 +553,6 @@ class PluginsTab:
             plugin_widget = PluginWidget(plugin_name, plugin_class, plugin_values, self.cell_types, parent_ui=self.parent_ui)
             self.plugin_widgets[plugin_name] = plugin_widget
 
-            # Categorize
             if plugin_name in ["VolumePlugin", "SurfacePlugin", "LengthConstraintPlugin"]:
                 constraint_plugins.append(plugin_widget.create_ui())
             elif plugin_name in ["AdhesionFlexPlugin", "ContactPlugin", "ChemotaxisPlugin",
@@ -766,7 +564,6 @@ class PluginsTab:
             else:
                 other_plugins.append(plugin_widget.create_ui())
 
-        # Create tab content
         tab_children = []
         tab_titles = []
 
@@ -790,7 +587,15 @@ class PluginsTab:
         self.widgets["reset_button"] = Button(
             description="Reset Plugins",
             button_style='warning'
-        ).add_class('button-spacing')
+        )
+
+        # Connect reset button to save
+        def on_reset_clicked(_):
+            self.reset()
+            if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
+                self.parent_ui.save_to_json()
+                
+        self.widgets["reset_button"].on_click(on_reset_clicked)
 
     def get_config(self):
         config = {}
@@ -800,115 +605,98 @@ class PluginsTab:
                 config[plugin_name] = plugin_config
         return config
 
-    def reset(self):
+    def reset(self, _=None):
         for widget in self.plugin_widgets.values():
             widget.reset()
 
     def update_cell_types(self, cell_types):
         self.cell_types = cell_types
         for widget in self.plugin_widgets.values():
-            if "rows" in widget.widgets:
-                for row in widget.widgets["rows"]:
-                    if "cell_type" in row:
-                        row["cell_type"].options = cell_types
+            widget.update_cell_types(cell_types)
 
     def create_ui(self):
         return VBox([
             self.widgets["tabs"],
-            self.widgets["reset_button"]
-        ])
-
+            HBox([self.widgets["reset_button"]], 
+                 layout=Layout(justify_content='flex-start', margin='15px 0 0 0'))
+        ], layout=Layout(padding='10px'))
 
 class PottsWidget:
     def __init__(self, saved_values):
         self.widgets = {}
         self.defaults = PottsCore().spec_dict
+        # Set defaults to 1 for dimensions
+        self.defaults["dim_x"] = 1
+        self.defaults["dim_y"] = 1
+        self.defaults["dim_z"] = 1
         self.create_widgets(saved_values or self.defaults)
 
     def create_widgets(self, saved_values):
-        # Dimension inputs
-        self.widgets["dim_x"] = widgets.IntText(
+        # Dimension inputs with max=101
+        self.widgets["dim_x"] = widgets.BoundedIntText(
             value=saved_values.get("dim_x", self.defaults["dim_x"]),
-            min=1, description='X Dimension:',
+            min=1, max=101, description='X Dimension:',
             style={'description_width': 'initial'},
             layout=widgets.Layout(width='200px')
         )
-        self.widgets["dim_y"] = widgets.IntText(
+        self.widgets["dim_x_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
+        self.widgets["dim_y"] = widgets.BoundedIntText(
             value=saved_values.get("dim_y", self.defaults["dim_y"]),
-            min=1, description='Y Dimension:',
+            min=1, max=101, description='Y Dimension:',
             style={'description_width': 'initial'},
             layout=widgets.Layout(width='200px')
         )
-        self.widgets["dim_z"] = widgets.IntText(
+        self.widgets["dim_y_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
+        self.widgets["dim_z"] = widgets.BoundedIntText(
             value=saved_values.get("dim_z", self.defaults["dim_z"]),
-            min=1, description='Z Dimension:',
+            min=1, max=101, description='Z Dimension:',
             style={'description_width': 'initial'},
             layout=widgets.Layout(width='200px')
         )
-
-        # Error display for dim_y
-        self.widgets["dim_x_error"] = HTML(
-            value="",
-            layout=Layout(
-                margin='2px 0 5px 0',
-                display='none'
-            )
-        )
-        self.widgets["dim_y_error"] = HTML(
-            value="",
-            layout=Layout(
-                margin='2px 0 5px 0',
-                display='none'
-            )
-        )
-        self.widgets["dim_z_error"] = HTML(
-            value="",
-            layout=Layout(
-                margin='2px 0 5px 0',
-                display='none'
-            )
-        )
+        self.widgets["dim_z_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
 
         # Core parameters
         self.widgets["steps"] = widgets.IntText(
             value=saved_values.get("steps", self.defaults["steps"]),
-            min=1, description='MC Steps:',
+            min=0, description='MC Steps:',
             style={'description_width': 'initial'},
             layout=widgets.Layout(width='200px')
         )
-        self.widgets["steps_error"] = HTML(
-            value="",
-            layout=Layout(
-                margin='2px 0 5px 0',
-                display='none'
-            )
+        self.widgets["steps_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
+        
+        self.widgets["anneal"] = widgets.IntText(
+            value=saved_values.get("anneal", self.defaults["anneal"]),
+            min=0, description='Anneal Steps:',
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='200px')
         )
+        self.widgets["anneal_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
+        
         self.widgets["fluctuation_amplitude"] = widgets.FloatText(
             value=saved_values.get("fluctuation_amplitude", self.defaults["fluctuation_amplitude"]),
             min=0.0, description='Fluctuation Amplitude:',
             style={'description_width': 'initial'},
             layout=widgets.Layout(width='250px')
         )
-        self.widgets["fluctuation_amplitude_error"] = HTML(
-            value="",
-            layout=Layout(
-                margin='2px 0 5px 0',
-                display='none'
-            )
+        self.widgets["fluctuation_amplitude_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
+        
+        # Fluctuation amplitude function
+        self.widgets["fluctuation_amplitude_function"] = widgets.Dropdown(
+            options=['Min', 'Max', 'Average'],
+            value=saved_values.get("fluctuation_amplitude_function", self.defaults["fluctuation_amplitude_function"]),
+            description='Fluctuation Function:',
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='250px')
         )
-        self.widgets["neighbor_order"] = widgets.BoundedIntText(
+
+        self.widgets["neighbor_order"] = widgets.IntText(
             value=saved_values.get("neighbor_order", self.defaults["neighbor_order"]),
-            min=1, max=20, description='Neighbor Order:',
+            min=1, description='Neighbor Order:',
             style={'description_width': 'initial'},
             layout=widgets.Layout(width='200px')
         )
-        self.widgets["neighbor_order_error"] = HTML(
-            value="",
-            layout=Layout(
-                margin='2px 0 5px 0',
-                display='none'
-            )
-        )
+        self.widgets["neighbor_order_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
+        
         self.widgets["lattice_type"] = widgets.Dropdown(
             options=['Cartesian', 'Hexagonal'],
             value=saved_values.get("lattice_type", self.defaults["lattice_type"]),
@@ -916,6 +704,35 @@ class PottsWidget:
             style={'description_width': 'initial'},
             layout=widgets.Layout(width='200px')
         )
+
+        # Advanced settings
+        self.widgets["offset"] = widgets.FloatText(
+            value=saved_values.get("offset", self.defaults.get("offset", 0.0)),
+            description='Offset:',
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='200px')
+        )
+        
+        # Random seed with activation checkbox
+        self.widgets["use_random_seed"] = widgets.Checkbox(
+            value=saved_values.get("random_seed") is not None,
+            description='Use Random Seed:',
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='200px')
+        )
+        self.widgets["random_seed"] = widgets.BoundedIntText(
+            value=saved_values.get("random_seed", 0),
+            min=0, 
+            description='',
+            disabled=not (saved_values.get("random_seed") is not None),
+            style={'description_width': 'initial'},
+            layout=widgets.Layout(width='200px')
+        )
+        
+        # Enable/disable based on checkbox
+        def on_use_random_seed_change(change):
+            self.widgets["random_seed"].disabled = not change.new
+        self.widgets["use_random_seed"].observe(on_use_random_seed_change, names='value')
 
         boundary_options = ['NoFlux', 'Periodic']
         self.widgets["boundary_x"] = widgets.Dropdown(
@@ -952,106 +769,126 @@ class PottsWidget:
             "dim_y": self.widgets["dim_y"].value,
             "dim_z": self.widgets["dim_z"].value,
             "steps": self.widgets["steps"].value,
+            "anneal": self.widgets["anneal"].value,
             "fluctuation_amplitude": self.widgets["fluctuation_amplitude"].value,
+            "fluctuation_amplitude_function": self.widgets["fluctuation_amplitude_function"].value,
             "boundary_x": self.widgets["boundary_x"].value,
             "boundary_y": self.widgets["boundary_y"].value,
             "boundary_z": self.widgets["boundary_z"].value,
             "neighbor_order": self.widgets["neighbor_order"].value,
-            "lattice_type": self.widgets["lattice_type"].value
+            "lattice_type": self.widgets["lattice_type"].value,
+            "offset": self.widgets["offset"].value,
+            "random_seed": self.widgets["random_seed"].value if self.widgets["use_random_seed"].value else None
         }
 
     def reset(self):
         for key, widget in self.widgets.items():
             if key != "reset_button" and key in self.defaults:
-                widget.value = self.defaults[key]
+                if key == "random_seed":
+                    self.widgets["use_random_seed"].value = False
+                    self.widgets["random_seed"].value = 0
+                else:
+                    widget.value = self.defaults[key]
 
     def create_ui(self):
-        # Create UI elements with CSS classes for spacing
-        dim_x_box = VBox([self.widgets["dim_x"], self.widgets["dim_x_error"]])
-        dim_x_box.add_class('hbox-item-spacing')
-
-        dim_y_box = VBox([self.widgets["dim_y"], self.widgets["dim_y_error"]])
-        dim_y_box.add_class('hbox-item-spacing')
-
-        dim_z_box = VBox([self.widgets["dim_z"], self.widgets["dim_z_error"]])
-        dim_z_box.add_class('vbox-no-margin')
-
-        dimensions_row = HBox([dim_x_box, dim_y_box, dim_z_box])
+        dimensions_row = HBox([
+            VBox([self.widgets["dim_x"], self.widgets["dim_x_error"]]),
+            VBox([self.widgets["dim_y"], self.widgets["dim_y_error"]]),
+            VBox([self.widgets["dim_z"], self.widgets["dim_z_error"]])
+        ], layout=Layout(justify_content='flex-start', align_items='flex-start'))
         dimensions_row.add_class('vbox-row-spacing')
 
-        steps_box = VBox([self.widgets["steps"], self.widgets["steps_error"]])
-        steps_box.add_class('hbox-item-spacing')
-
-        amplitude_box = VBox([self.widgets["fluctuation_amplitude"], self.widgets["fluctuation_amplitude_error"]])
-        amplitude_box.add_class('vbox-no-margin')
-
-        core_params_row = HBox([steps_box, amplitude_box])
+        core_params_row = HBox([
+            VBox([self.widgets["steps"], self.widgets["steps_error"]]),
+            VBox([self.widgets["anneal"], self.widgets["anneal_error"]]),
+            VBox([self.widgets["fluctuation_amplitude"], self.widgets["fluctuation_amplitude_error"]])
+        ], layout=Layout(justify_content='flex-start', align_items='flex-start'))
         core_params_row.add_class('vbox-row-spacing')
+        
+        fluct_function_row = HBox([
+            self.widgets["fluctuation_amplitude_function"]
+        ], layout=Layout(justify_content='flex-start', align_items='flex-start'))
+        fluct_function_row.add_class('vbox-row-spacing')
 
-        boundary_x_box = widgets.Box([self.widgets["boundary_x"]])
-        boundary_x_box.add_class('hbox-item-spacing')
-
-        boundary_y_box = widgets.Box([self.widgets["boundary_y"]])
-        boundary_y_box.add_class('hbox-item-spacing')
-
-        boundaries_row = HBox([boundary_x_box, boundary_y_box, self.widgets["boundary_z"]])
+        boundaries_row = HBox([
+            self.widgets["boundary_x"],
+            self.widgets["boundary_y"],
+            self.widgets["boundary_z"]
+        ], layout=Layout(justify_content='flex-start', align_items='flex-start'))
         boundaries_row.add_class('vbox-row-spacing')
 
-        neighbor_order_box = VBox([self.widgets["neighbor_order"], self.widgets["neighbor_order_error"]])
-        neighbor_order_box.add_class('hbox-item-spacing')
+        advanced_row1 = HBox([
+            VBox([self.widgets["neighbor_order"], self.widgets["neighbor_order_error"]]),
+            self.widgets["lattice_type"]
+        ], layout=Layout(justify_content='flex-start', align_items='flex-start'))
+        advanced_row1.add_class('vbox-row-spacing')
 
-        advanced_row = HBox([neighbor_order_box, self.widgets["lattice_type"]])
-        advanced_row.add_class('vbox-row-spacing')
+        advanced_row2 = HBox([
+            self.widgets["offset"],
+            self.widgets["use_random_seed"],
+            self.widgets["random_seed"]
+        ], layout=Layout(justify_content='flex-start', align_items='flex-start'))
+        advanced_row2.add_class('vbox-row-spacing')
 
         return VBox([
-            HTML("<b>Potts Core Parameters<b>"),
+            HTML("<b>Potts Core Parameters</b>", layout=Layout(margin='0 0 10px 0')),
             dimensions_row,
             core_params_row,
-            HTML("<b>Boundary Conditions:</b>"),
+            fluct_function_row,
+            HTML("<b>Boundary Conditions:</b>", layout=Layout(margin='10px 0 5px 0')),
             boundaries_row,
-            HTML("<b>Advanced Settings:</b>"),
-            advanced_row,
-            self.widgets["reset_button"]
-        ])
-
+            HTML("<b>Advanced Settings:</b>", layout=Layout(margin='10px 0 5px 0')),
+            advanced_row1,
+            advanced_row2,
+            HBox([self.widgets["reset_button"]], layout=Layout(margin='10px 0 0 0'))
+        ], layout=Layout(align_items='flex-start', padding='10px'))
 
 class CellTypeWidget:
     def __init__(self, saved_entries, on_change=None):
         self.on_change = on_change
-        self.next_id = 0
-        self.celltype_entries =[]
-
+        self.celltype_entries = []
+        
+        # Load saved entries or use defaults
         entries = saved_entries or DEFAULTS["CellType"]
         for entry in entries:
             if isinstance(entry, dict):
-                self.add_entry(entry["Cell type"], entry.get("freeze", False))
+                self.add_entry(entry["Cell type"], entry.get("id", None), entry.get("freeze", False))
             else:
-                self.add_entry(entry, False)
-
+                self.add_entry(entry, None, False)
+        
+        # Ensure Medium always exists with ID 0
         if not any(entry["Cell type"] == "Medium" for entry in self.celltype_entries):
-            self.add_entry("Medium", False)
+            self.add_entry("Medium", 0, False)
 
-        # self.celltype_entries = saved_entries or DEFAULTS["CellType"].copy()
         self.widgets = {}
         self.create_widgets()
         self.setup_event_handlers()
         self.update_celltype_display()
 
-    def add_entry(self, name, freeze):
+    def add_entry(self, name, type_id=None, freeze=False):
+        # For Medium, force ID to 0
+        if name == "Medium":
+            type_id = 0
+        else:
+            # Find the smallest available ID
+            if type_id is None:
+                used_ids = {entry["id"] for entry in self.celltype_entries}
+                type_id = 1
+                while type_id in used_ids:
+                    type_id += 1
+        
+        # Create new entry
         self.celltype_entries.append({
             "Cell type": name,
-            # "id": self.next_id,
+            "id": type_id,
             "freeze": freeze
         })
-        # self.next_id += 1
+        
+        # Sort by ID to maintain order
+        self.celltype_entries.sort(key=lambda x: x["id"])
 
     def create_widgets(self):
-        # Display area for current cell types
-        self.widgets["display_box"] = VBox(
-            layout=Layout(padding='10px')
-        )
-
-        # Input widgets
+        self.widgets["display_box"] = VBox(layout=Layout(padding='10px'))
         self.widgets["name"] = Text(
             placeholder="Cell type name",
             description="Name:",
@@ -1066,8 +903,6 @@ class CellTypeWidget:
             description="Add Cell Type",
             button_style="success"
         )
-
-        # Reset button
         self.widgets["reset_button"] = Button(
             description="Reset Cell Types",
             button_style='warning'
@@ -1079,22 +914,15 @@ class CellTypeWidget:
 
     def on_add_clicked(self, _):
         name = self.widgets["name"].value.strip()
-
         if not name:
             self.widgets["name"].placeholder = "Please enter a name!"
             return
-
-        # Check for duplicates
         if any(entry["Cell type"] == name for entry in self.celltype_entries):
             self.widgets["name"].value = ""
             self.widgets["name"].placeholder = f"{name} already exists!"
             return
 
-        self.celltype_entries.append({
-            "Cell type": name,
-            "freeze": self.widgets["freeze"].value
-        })
-
+        self.add_entry(name, None, self.widgets["freeze"].value)
         self.update_celltype_display()
         self.widgets["name"].value = ""
         self.widgets["name"].placeholder = "Cell type name"
@@ -1102,44 +930,78 @@ class CellTypeWidget:
             self.on_change()
 
     def update_celltype_display(self):
-        # Display cell types in a table format
         n = len(self.celltype_entries)
         if n == 0:
             self.widgets["display_box"].children = [HTML("<i>No cell types defined.</i>")]
             return
 
-        # Table border styles
-        row_border = '1px solid #e0e0e0'  # light grey
-        header_border = '2px solid #bdbdbd'  # slightly bolder grey
-
-        # Create table header with bottom border
+        row_border = '1px solid #e0e0e0'
+        header_border = '2px solid #bdbdbd'
         header = [
+            HTML(f"<b style='display:block; padding:2px 8px;'>ID</b>", layout=Layout(border=f'0 0 {header_border} 0')),
             HTML(f"<b style='display:block; padding:2px 8px;'>Cell Type</b>", layout=Layout(border=f'0 0 {header_border} 0')),
-            HTML(f"<b style='display:block; padding:2px 8px;'>Frozen</b>", layout=Layout(border=f'0 0 {header_border} 0')),
+            HTML(f"<b style='display:block; padding:2px 8px;'>Freeze</b>", layout=Layout(border=f'0 0 {header_border} 0')),
             HTML(f"<b style='display:block; padding:2px 8px;'>Remove</b>", layout=Layout(border=f'0 0 {header_border} 0'))
         ]
-        grid = GridspecLayout(n + 1, 3, grid_gap="0px")
+        grid = GridspecLayout(n + 1, 4, grid_gap="0px")
         for j, h in enumerate(header):
             grid[0, j] = h
 
         for i, entry in enumerate(self.celltype_entries):
-            border_style = f'0 0 {row_border} 0' if i < n - 1 else '0'  # no border on last row
-            grid[i + 1, 0] = Label(str(entry['Cell type']), layout=Layout(border=border_style, padding='2px 8px'))
-            grid[i + 1, 1] = Label("Yes" if entry.get('freeze', False) else "No", layout=Layout(border=border_style, padding='2px 8px'))
-            remove_btn = Button(
-                description="Remove",
-                button_style='danger',
-                layout=Layout(width='80px', border=border_style, padding='2px 8px')
+            border_style = f'0 0 {row_border} 0' if i < n - 1 else '0'
+            
+            # ID column
+            grid[i + 1, 0] = Label(str(entry['id']), layout=Layout(border=border_style, padding='2px 8px'))
+            
+            # Cell Type column
+            grid[i + 1, 1] = Label(str(entry['Cell type']), layout=Layout(border=border_style, padding='2px 8px'))
+            
+            # Freeze column
+            freeze_chk = Checkbox(
+                value=entry.get('freeze', False),
+                indent=False,
+                layout=Layout(border=border_style, padding='2px 8px', width='auto')
             )
-            def make_remove_handler(index):
-                def handler(_):
-                    del self.celltype_entries[index]
-                    self.update_celltype_display()
+            
+            # Handler for freeze checkbox
+            def make_freeze_handler(idx):
+                def handler(change):
+                    self.celltype_entries[idx]['freeze'] = change['new']
                     if self.on_change:
                         self.on_change()
                 return handler
-            remove_btn.on_click(make_remove_handler(i))
-            grid[i + 1, 2] = remove_btn
+            
+            freeze_chk.observe(make_freeze_handler(i), names='value')
+            grid[i + 1, 2] = freeze_chk
+            
+            # Remove column - disable for Medium
+            if entry['Cell type'] == "Medium":
+                remove_btn = Button(
+                    description="Cannot remove",
+                    button_style='',
+                    disabled=True,
+                    layout=Layout(width='100px', border=border_style, padding='2px 8px')
+                )
+            else:
+                remove_btn = Button(
+                    description="Remove",
+                    button_style='danger',
+                    layout=Layout(width='100px', border=border_style, padding='2px 8px')
+                )
+                # Handler for remove button
+                def make_remove_handler(idx):
+                    def handler(_):
+                        # Skip Medium removal
+                        if self.celltype_entries[idx]['Cell type'] == "Medium":
+                            return
+                        del self.celltype_entries[idx]
+                        self.update_celltype_display()
+                        if self.on_change:
+                            self.on_change()
+                    return handler
+                remove_btn.on_click(make_remove_handler(i))
+            
+            grid[i + 1, 3] = remove_btn
 
         self.widgets["display_box"].children = [grid]
 
@@ -1151,53 +1013,36 @@ class CellTypeWidget:
 
     def reset(self, _=None):
         self.celltype_entries = []
-        self.next_id = 0
-        for entry in DEFAULTS["CellType"]:
-            self.add_entry(entry["Cell type"], entry.get("freeze", False))
+        self.add_entry("Medium", 0, False)
         self.update_celltype_display()
 
     def create_ui(self):
-        # Apply spacing directly to widgets to avoid layout issues
-        self.widgets["name"].add_class('small-right-spacing')
-        self.widgets["freeze"].add_class('small-right-spacing')
-
-        # Create input row with natural widget sizing
         input_row = HBox([
             self.widgets["name"],
             self.widgets["freeze"],
             self.widgets["add_button"]
-        ])
-        input_row.add_class('vbox-row-spacing')
-
-        # Create reset button with spacing
-        reset_button_box = VBox([self.widgets["reset_button"]])
-        reset_button_box.add_class('vbox-row-spacing')
-
+        ], layout=Layout(justify_content='flex-start', margin='10px 0'))
+        
+        reset_button_box = HBox([self.widgets["reset_button"]], 
+                               layout=Layout(justify_content='flex-start', margin='10px 0'))
+        
         return VBox([
-            HTML("<b>Cell Types</b>"),
+            HTML("<b>Cell Types</b>", layout=Layout(margin='0 0 10px 0')),
             self.widgets["display_box"],
             input_row,
             reset_button_box
-        ])
-
+        ], layout=Layout(align_items='flex-start', padding='10px'))
 
 class SpecificationSetupUI:
     def __init__(self):
         self.widgets = {}
         self.saved_values = self.load_saved_values()
-
-        # Initialize core components with defaults
         self.metadata = Metadata()
         self.potts_core = PottsCore()
         self.cell_type_plugin = CellTypePlugin()
-
-        # Apply saved values if available
         self.apply_saved_values()
-
-        # Initialize widgets
         self.create_metadata_widgets()
         self.potts_widget = PottsWidget(self.saved_values.get("PottsCore"))
-        # Use a custom callback for cell type changes
         self.celltype_widget = CellTypeWidget(
             self.saved_values.get("CellType"),
             on_change=self.cell_types_changed
@@ -1207,56 +1052,46 @@ class SpecificationSetupUI:
             self.celltype_widget.get_cell_type_names(),
             parent_ui=self
         )
-
-        # Create the UI
         self.create_ui()
         self.setup_event_handlers()
+        self.check_ready_state()
 
     def cell_types_changed(self):
         self.update_plugin_cell_types()
         self.save_to_json()
+        self.check_ready_state()
 
     def update_plugin_cell_types(self):
         cell_types = self.celltype_widget.get_config()
         cell_type_names = [entry["Cell type"] for entry in cell_types]
-        # Update VolumePlugin
         volume_widget = self.plugins_tab.plugin_widgets.get("VolumePlugin")
         if volume_widget:
             volume_widget.update_cell_types(cell_type_names)
+        surface_widget = self.plugins_tab.plugin_widgets.get("SurfacePlugin")
+        if surface_widget:
+            surface_widget.update_cell_types(cell_type_names)
 
     def apply_saved_values(self):
-        """Apply saved values to core components"""
-        # Metadata
         if "Metadata" in self.saved_values:
             for key, value in self.saved_values["Metadata"].items():
                 if hasattr(self.metadata, key):
                     setattr(self.metadata, key, value)
-
-        # Potts Core
         if "PottsCore" in self.saved_values:
             for key, value in self.saved_values["PottsCore"].items():
                 if hasattr(self.potts_core, key):
                     setattr(self.potts_core, key, value)
-
-        # Cell Types
         if "CellType" in self.saved_values:
             for entry in self.saved_values["CellType"]:
                 if isinstance(entry, dict):
                     cell_type_name = entry["Cell type"]
-                    # Skip Medium as it's already in CellTypePlugin by default with ID 0
                     if cell_type_name == "Medium":
                         continue
                     self.cell_type_plugin.cell_type_append(
                         cell_type_name,
                         frozen=entry.get("freeze", False)
                     )
-                else:
-                    # Old format (string only) - skip Medium
-                    if entry != "Medium":
-                        self.cell_type_plugin.cell_type_append(entry)
 
     def create_metadata_widgets(self):
-        """Metadata widgets"""
         self.widgets["num_processors"] = widgets.IntText(
             value=self.metadata.num_processors,
             min=1,
@@ -1287,9 +1122,11 @@ class SpecificationSetupUI:
             description="Reset Metadata",
             button_style='warning'
         )
-        self.widgets["reset_button"] = Button(
-            description="Reset All to Defaults",
-            button_style='danger'
+        self.widgets["run_button"] = Button(
+            description="Ready to run simulation",
+            button_style='success',
+            style={'description_width': 'initial'},
+            disabled=True
         )
 
     def load_saved_values(self):
@@ -1310,16 +1147,13 @@ class SpecificationSetupUI:
         }
 
     def save_to_json(self, _=None):
-       config = self.current_config()
-       print("Saving config:", config)
-       if config:  # Only save if not empty
-           with open(SAVE_FILE, 'w') as f:
-               json.dump(config, f, indent=4)
-       else:
-           print("Warning: Attempted to save empty config!")
+        config = self.current_config()
+        if config:
+            with open(SAVE_FILE, 'w') as f:
+                json.dump(config, f, indent=4)
+        self.check_ready_state()
 
     def setup_event_handlers(self):
-        # Metadata handlers
         self.widgets["num_processors"].observe(
             lambda change: self.update_metadata('num_processors', change.new),
             names='value'
@@ -1328,54 +1162,49 @@ class SpecificationSetupUI:
             lambda change: self.update_metadata('debug_output_frequency', change.new),
             names='value'
         )
-
-        # Connect reset handlers
         self.potts_widget.widgets["reset_button"].on_click(
             lambda _: self.reset_potts_tab()
         )
         self.celltype_widget.widgets["reset_button"].on_click(
             lambda _: self.reset_celltype_tab()
         )
-        self.plugins_tab.widgets["reset_button"].on_click(
-            lambda _: self.save_to_json()
-            # lambda _: self.reset_plugins_tab()
-        )
         self.widgets["reset_metadata_button"].on_click(
             lambda _: self.reset_metadata_tab()
         )
-
-        # Global reset button
-        self.widgets["reset_button"].on_click(
-            lambda _: self.reset_all()
+        self.widgets["run_button"].on_click(
+            lambda _: self.run_simulation()
         )
-
-        # PottsCore widget handlers
         for name, widget in self.potts_widget.widgets.items():
             if hasattr(widget, 'observe') and name != "reset_button":
                 widget.observe(
                     lambda change, prop=name: self.update_potts_core(prop, change.new),
                     names='value'
                 )
-
-        # CellType handlers
         self.celltype_widget.widgets["add_button"].on_click(
             lambda _: self.update_cell_types()
         )
-
-        # Auto-save on changes
         for widget in [self.widgets["num_processors"], self.widgets["debug_output_frequency"]]:
             widget.observe(lambda _: self.save_to_json(), names='value')
 
+    def check_ready_state(self):
+        required_ready = (
+            self.potts_widget.widgets["dim_x"].value > 0 and
+            self.potts_widget.widgets["dim_y"].value > 0 and
+            self.potts_widget.widgets["dim_z"].value > 0 and
+            self.potts_widget.widgets["steps"].value > 0 and
+            len(self.celltype_widget.celltype_entries) > 0
+        )
+        self.widgets["run_button"].disabled = not required_ready
+
     def update_metadata(self, property_name, value):
         try:
-            setattr(self.metadata, property_name, value)  # This may raise
+            setattr(self.metadata, property_name, value)
             self.save_to_json()
             self.clear_metadata_error(property_name)
         except Exception as e:
             self.show_metadata_error(property_name, str(e))
 
     def show_metadata_error(self, property_name, message):
-        """Display error message for a metadata property and highlight the input box"""
         error_widget_name = f"{property_name}_error"
         input_widget = self.widgets.get(property_name)
         if error_widget_name in self.widgets:
@@ -1386,7 +1215,6 @@ class SpecificationSetupUI:
             input_widget.add_class('error-input')
 
     def clear_metadata_error(self, property_name):
-        """Clear error message for a metadata property and remove input highlight"""
         error_widget_name = f"{property_name}_error"
         input_widget = self.widgets.get(property_name)
         if error_widget_name in self.widgets:
@@ -1398,26 +1226,23 @@ class SpecificationSetupUI:
 
     def update_potts_core(self, property_name, value):
         try:
-            setattr(self.potts_core, property_name, value)  # This may raise
+            setattr(self.potts_core, property_name, value)
             self.save_to_json()
             self.clear_potts_error(property_name)
         except Exception as e:
             self.show_potts_error(property_name, str(e))
 
     def show_potts_error(self, property_name, message):
-        """Display error message for a potts property and highlight the input box"""
         error_widget_name = f"{property_name}_error"
         input_widget = self.potts_widget.widgets.get(property_name)
         if error_widget_name in self.potts_widget.widgets:
             error_widget = self.potts_widget.widgets[error_widget_name]
-            # Wrap message in red HTML styling with icon
             error_widget.value = f'<span style="color: red; font-size: 12px;">⚠️ {message}</span>'
             error_widget.layout.display = 'block'
         if input_widget is not None and hasattr(input_widget, 'add_class'):
             input_widget.add_class('error-input')
 
     def clear_potts_error(self, property_name):
-        """Clear error message for a potts property and remove input highlight"""
         error_widget_name = f"{property_name}_error"
         input_widget = self.potts_widget.widgets.get(property_name)
         if error_widget_name in self.potts_widget.widgets:
@@ -1428,57 +1253,63 @@ class SpecificationSetupUI:
             input_widget.remove_class('error-input')
 
     def create_ui(self):
-        tabs = Tab()
-        tabs.children = [
-            self.create_metadata_tab(),
-            self.potts_widget.create_ui(),
-            self.celltype_widget.create_ui(),
+        tabs = Tab(layout=Layout(width='100%'))
+        
+        # Create tab containers
+        metadata_tab = VBox([
+            self.create_metadata_tab()
+        ], layout=Layout(width='100%'))
+        
+        potts_tab = VBox([
+            self.potts_widget.create_ui()
+        ], layout=Layout(width='100%'))
+        
+        celltype_tab = VBox([
+            self.celltype_widget.create_ui()
+        ], layout=Layout(width='100%'))
+        
+        plugins_tab = VBox([
             self.plugins_tab.create_ui()
-        ]
+        ], layout=Layout(width='100%'))
+        
+        tabs.children = [metadata_tab, potts_tab, celltype_tab, plugins_tab]
         tabs.set_title(0, 'Metadata')
         tabs.set_title(1, 'Potts Core')
         tabs.set_title(2, 'Cell Types')
         tabs.set_title(3, 'Plugins')
 
-        # Create save button
-        save_button = Button(
-            description="Save Configuration",
-            button_style='success'
-        )
-        save_button.on_click(self.save_to_json)
-
-        # Create button row with spacing between buttons
-        reset_button_box = VBox([self.widgets["reset_button"]])
-        reset_button_box.add_class('hbox-item-spacing')
-
-        save_button_box = VBox([save_button])
-        save_button_box.add_class('vbox-no-margin')
-
-        button_row = HBox([reset_button_box, save_button_box])
-        button_row.add_class('vbox-row-spacing')
-
-        display(VBox([
+        run_button_box = HBox([self.widgets["run_button"]], 
+                             layout=Layout(justify_content='flex-end', margin='15px 0 0 0'))
+        
+        # Wrap in container for consistent styling
+        container = VBox([
             tabs,
-            button_row
-        ]))
+            run_button_box
+        ], layout=Layout(
+            align_items='flex-start',
+            width='100%',
+            padding='15px'
+        ))
+        container.add_class('widget-container')
+        display(container)
 
     def create_metadata_tab(self):
-        # Create UI elements with CSS classes for spacing
-        num_processors_box = VBox([self.widgets["num_processors"], self.widgets["num_processors_error"]])
-        num_processors_box.add_class('vbox-row-spacing')
-
-        debug_frequency_box = VBox([self.widgets["debug_output_frequency"], self.widgets["debug_output_frequency_error"]])
-        debug_frequency_box.add_class('vbox-row-spacing')
-
-        reset_button_box = VBox([self.widgets["reset_metadata_button"]])
-        reset_button_box.add_class('vbox-row-spacing')
-
+        num_processors_box = VBox([
+            self.widgets["num_processors"],
+            self.widgets["num_processors_error"]
+        ], layout=Layout(align_items='flex-start'))
+        
+        debug_frequency_box = VBox([
+            self.widgets["debug_output_frequency"],
+            self.widgets["debug_output_frequency_error"]
+        ], layout=Layout(align_items='flex-start'))
+        
         return VBox([
-            HTML("<b>Simulation Metadata</b>"),
+            HTML("<b>Simulation Metadata</b>", layout=Layout(margin='0 0 10px 0')),
             num_processors_box,
             debug_frequency_box,
-            reset_button_box
-        ])
+            HBox([self.widgets["reset_metadata_button"]], layout=Layout(justify_content='flex-start', margin='10px 0'))
+        ], layout=Layout(align_items='flex-start', padding='10px'))
 
     def reset_potts_tab(self):
         self.potts_widget.reset()
@@ -1486,42 +1317,41 @@ class SpecificationSetupUI:
             if hasattr(self.potts_core, prop):
                 setattr(self.potts_core, prop, value)
         self.save_to_json()
+        self.check_ready_state()
 
     def reset_celltype_tab(self):
         self.celltype_widget.reset()
         self.cell_type_plugin = CellTypePlugin()
         self.plugins_tab.update_cell_types(self.celltype_widget.get_cell_type_names())
         self.save_to_json()
+        self.check_ready_state()
 
     def reset_plugins_tab(self):
-        # Re-create PluginsTab with default values
         self.plugins_tab = PluginsTab(
             DEFAULTS["Plugins"],
             self.celltype_widget.get_cell_type_names(),
             parent_ui=self
         )
-        self.create_ui()
         self.save_to_json()
+        self.check_ready_state()
 
     def reset_metadata_tab(self):
         self.widgets["num_processors"].value = Metadata().num_processors
         self.widgets["debug_output_frequency"].value = Metadata().debug_output_frequency
         self.metadata = Metadata()
         self.save_to_json()
-
-    def reset_all(self):
-        self.reset_metadata_tab()
-        self.reset_potts_tab()
-        self.reset_celltype_tab()
-        self.reset_plugins_tab()
+        self.check_ready_state()
 
     def update_cell_types(self):
         self.cell_type_plugin = CellTypePlugin()
         for entry in self.celltype_widget.celltype_entries:
             self.cell_type_plugin.cell_type_append(
                 entry["Cell type"],
-                # type_id=entry["id"],
                 frozen=entry["freeze"]
             )
         self.plugins_tab.update_cell_types(self.celltype_widget.get_cell_type_names())
         self.save_to_json()
+        self.check_ready_state()
+
+    def run_simulation(self):
+        print("Simulation is ready to run with current configuration")
