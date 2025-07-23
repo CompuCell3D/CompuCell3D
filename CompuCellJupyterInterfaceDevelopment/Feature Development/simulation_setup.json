@@ -4,8 +4,8 @@
         "debug_output_frequency": 0
     },
     "PottsCore": {
-        "dim_x": 1,
-        "dim_y": 1,
+        "dim_x": 100,
+        "dim_y": 100,
         "dim_z": 1,
         "steps": 0,
         "anneal": 0,
@@ -14,9 +14,9 @@
         "boundary_x": "NoFlux",
         "boundary_y": "NoFlux",
         "boundary_z": "NoFlux",
-        "neighbor_order": 1,
+        "neighbor_order": 2,
         "debug_output_frequency": 0,
-        "random_seed": 5,
+        "random_seed": null,
         "lattice_type": "Cartesian",
         "offset": 0,
         "energy_function_calculator": null
@@ -26,7 +26,22 @@
             "Cell type": "Medium",
             "id": 0,
             "freeze": false
+        },
+        {
+            "Cell type": "Condensing",
+            "id": 1,
+            "freeze": false
+        },
+        {
+            "Cell type": "NonCondensing",
+            "id": 2,
+            "freeze": false
         }
     ],
-    "Plugins": {}
+    "Plugins": {
+        "ContactPlugin": {
+            "neighbor_order": 1,
+            "neighbor_order_error": ""
+        }
+    }
 }
