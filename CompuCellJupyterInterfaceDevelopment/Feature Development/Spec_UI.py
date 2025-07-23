@@ -5,7 +5,6 @@ from ipywidgets import (
     VBox, HBox, Layout, Dropdown, BoundedIntText, BoundedFloatText,
     FloatText, Checkbox, Button, Text, Label, Tab, HTML, Output, GridspecLayout, Box
 )
-from IPython.display import display, HTML as IPythonHTML
 from cc3d.core.PyCoreSpecs import Metadata, PottsCore, PLUGINS
 from cc3d.core.PyCoreSpecs import (
     AdhesionFlexPlugin, BoundaryPixelTrackerPlugin, CellTypePlugin,
@@ -16,95 +15,96 @@ from cc3d.core.PyCoreSpecs import (
 )
 from cc3d.core.PyCoreSpecs import SpecValueCheckError
 
-# Inject CSS for input styling and error states
-display(IPythonHTML("""
-<style>
-/* Round corners for all input boxes */
-.widget-text input,
-.widget-bounded-int-text input,
-.widget-bounded-float-text input,
-.widget-float-text input,
-.widget-int-text input {
-    border-radius: 4px !important;
-}
+# # Inject CSS for input styling and error states
+# from IPython.display import display, HTML as IPythonHTML
+# display(IPythonHTML("""
+# <style>
+# /* Round corners for all input boxes */
+# .widget-text input,
+# .widget-bounded-int-text input,
+# .widget-bounded-float-text input,
+# .widget-float-text input,
+# .widget-int-text input {
+#     border-radius: 4px !important;
+# }
 
-/* Round corners for dropdown/select inputs */
-.widget-dropdown select,
-.widget-select select {
-    border-radius: 4px !important;
-}
+# /* Round corners for dropdown/select inputs */
+# .widget-dropdown select,
+# .widget-select select {
+#     border-radius: 4px !important;
+# }
 
-/* Round corners for buttons */
-.widget-button button,
-.jupyter-button {
-    border-radius: 4px !important;
-}
+# /* Round corners for buttons */
+# .widget-button button,
+# .jupyter-button {
+#     border-radius: 4px !important;
+# }
 
-/* Spacing classes for layout containers */
-.vbox-row-spacing {
-    margin: 10px 0 !important;
-}
+# /* Spacing classes for layout containers */
+# .vbox-row-spacing {
+#     margin: 10px 0 !important;
+# }
 
-.hbox-item-spacing {
-    margin: 0 15px 0 0 !important;
-}
+# .hbox-item-spacing {
+#     margin: 0 15px 0 0 !important;
+# }
 
-.vbox-no-margin {
-    margin: 0 !important;
-}
+# .vbox-no-margin {
+#     margin: 0 !important;
+# }
 
-.hbox-no-margin {
-    margin: 0 !important;
-}
+# .hbox-no-margin {
+#     margin: 0 !important;
+# }
 
-.celltype-item-spacing {
-    margin: 0 0 5px 0 !important;
-}
+# .celltype-item-spacing {
+#     margin: 0 0 5px 0 !important;
+# }
 
-.small-right-spacing {
-    margin: 0 5px 0 0 !important;
-}
+# .small-right-spacing {
+#     margin: 0 5px 0 0 !important;
+# }
 
-/* Plugin-specific spacing classes */
-.plugin-config-container {
-    padding: 0 0 0 0 !important;
-}
-.plugin-compact-container {
-    padding: 0 !important;
-    margin: 0 !important;
-}
-.plugin-input-spacing {
-    margin: 0 15px 0 0 !important;
-}
-.plugin-bottom-spacing {
-    margin: 0 0 15px 0 !important;
-}
-.plugin-checkbox-bottom-spacing {
-    margin: 0 0 15px 0 !important;
-}
-.button-spacing {
-    margin: 10px 0 !important;
-}
+# /* Plugin-specific spacing classes */
+# .plugin-config-container {
+#     padding: 0 0 0 0 !important;
+# }
+# .plugin-compact-container {
+#     padding: 0 !important;
+#     margin: 0 !important;
+# }
+# .plugin-input-spacing {
+#     margin: 0 15px 0 0 !important;
+# }
+# .plugin-bottom-spacing {
+#     margin: 0 0 15px 0 !important;
+# }
+# .plugin-checkbox-bottom-spacing {
+#     margin: 0 0 15px 0 !important;
+# }
+# .button-spacing {
+#     margin: 10px 0 !important;
+# }
 
-/* Error state styling with rounded corners */
-.error-input input {
-    border: 2px solid #f44336 !important;
-    background-color: #ffebee !important;
-    box-shadow: 0 0 3px rgba(244, 67, 54, 0.3) !important;
-    border-radius: 4px !important;
-}
+# /* Error state styling with rounded corners */
+# .error-input input {
+#     border: 2px solid #f44336 !important;
+#     background-color: #ffebee !important;
+#     box-shadow: 0 0 3px rgba(244, 67, 54, 0.3) !important;
+#     border-radius: 4px !important;
+# }
 
-.error-input input:focus {
-    border-color: #d32f2f !important;
-    box-shadow: 0 0 5px rgba(244, 67, 54, 0.5) !important;
-    border-radius: 4px !important;
-}
+# .error-input input:focus {
+#     border-color: #d32f2f !important;
+#     box-shadow: 0 0 5px rgba(244, 67, 54, 0.5) !important;
+#     border-radius: 4px !important;
+# }
 
-.plugin-top-spacing {
-    margin-top: 10px !important;
-}
-</style>
-"""))
+# .plugin-top-spacing {
+#     margin-top: 10px !important;
+# }
+# </style>
+# """))
 
 # Configuration
 SAVE_FILE = 'simulation_setup.json'
@@ -594,7 +594,7 @@ class PluginsTab:
             self.reset()
             if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
                 self.parent_ui.save_to_json()
-                
+
         self.widgets["reset_button"].on_click(on_reset_clicked)
 
     def get_config(self):
@@ -617,7 +617,7 @@ class PluginsTab:
     def create_ui(self):
         return VBox([
             self.widgets["tabs"],
-            HBox([self.widgets["reset_button"]], 
+            HBox([self.widgets["reset_button"]],
                  layout=Layout(justify_content='flex-start', margin='15px 0 0 0'))
         ], layout=Layout(padding='10px'))
 
@@ -663,7 +663,7 @@ class PottsWidget:
             layout=widgets.Layout(width='200px')
         )
         self.widgets["steps_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
-        
+
         self.widgets["anneal"] = widgets.IntText(
             value=saved_values.get("anneal", self.defaults["anneal"]),
             min=0, description='Anneal Steps:',
@@ -671,7 +671,7 @@ class PottsWidget:
             layout=widgets.Layout(width='200px')
         )
         self.widgets["anneal_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
-        
+
         self.widgets["fluctuation_amplitude"] = widgets.FloatText(
             value=saved_values.get("fluctuation_amplitude", self.defaults["fluctuation_amplitude"]),
             min=0.0, description='Fluctuation Amplitude:',
@@ -679,7 +679,7 @@ class PottsWidget:
             layout=widgets.Layout(width='250px')
         )
         self.widgets["fluctuation_amplitude_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
-        
+
         # Fluctuation amplitude function
         self.widgets["fluctuation_amplitude_function"] = widgets.Dropdown(
             options=['Min', 'Max', 'Average'],
@@ -696,7 +696,7 @@ class PottsWidget:
             layout=widgets.Layout(width='200px')
         )
         self.widgets["neighbor_order_error"] = HTML(value="", layout=Layout(margin='2px 0 5px 0', display='none'))
-        
+
         self.widgets["lattice_type"] = widgets.Dropdown(
             options=['Cartesian', 'Hexagonal'],
             value=saved_values.get("lattice_type", self.defaults["lattice_type"]),
@@ -712,7 +712,7 @@ class PottsWidget:
             style={'description_width': 'initial'},
             layout=widgets.Layout(width='200px')
         )
-        
+
         # Random seed with activation checkbox
         self.widgets["use_random_seed"] = widgets.Checkbox(
             value=saved_values.get("random_seed") is not None,
@@ -722,13 +722,13 @@ class PottsWidget:
         )
         self.widgets["random_seed"] = widgets.BoundedIntText(
             value=saved_values.get("random_seed", 0),
-            min=0, 
+            min=0,
             description='',
             disabled=not (saved_values.get("random_seed") is not None),
             style={'description_width': 'initial'},
             layout=widgets.Layout(width='200px')
         )
-        
+
         # Enable/disable based on checkbox
         def on_use_random_seed_change(change):
             self.widgets["random_seed"].disabled = not change.new
@@ -804,7 +804,7 @@ class PottsWidget:
             VBox([self.widgets["fluctuation_amplitude"], self.widgets["fluctuation_amplitude_error"]])
         ], layout=Layout(justify_content='flex-start', align_items='flex-start'))
         core_params_row.add_class('vbox-row-spacing')
-        
+
         fluct_function_row = HBox([
             self.widgets["fluctuation_amplitude_function"]
         ], layout=Layout(justify_content='flex-start', align_items='flex-start'))
@@ -847,7 +847,7 @@ class CellTypeWidget:
     def __init__(self, saved_entries, on_change=None):
         self.on_change = on_change
         self.celltype_entries = []
-        
+
         # Load saved entries or use defaults
         entries = saved_entries or DEFAULTS["CellType"]
         for entry in entries:
@@ -855,7 +855,7 @@ class CellTypeWidget:
                 self.add_entry(entry["Cell type"], entry.get("id", None), entry.get("freeze", False))
             else:
                 self.add_entry(entry, None, False)
-        
+
         # Ensure Medium always exists with ID 0
         if not any(entry["Cell type"] == "Medium" for entry in self.celltype_entries):
             self.add_entry("Medium", 0, False)
@@ -876,14 +876,14 @@ class CellTypeWidget:
                 type_id = 1
                 while type_id in used_ids:
                     type_id += 1
-        
+
         # Create new entry
         self.celltype_entries.append({
             "Cell type": name,
             "id": type_id,
             "freeze": freeze
         })
-        
+
         # Sort by ID to maintain order
         self.celltype_entries.sort(key=lambda x: x["id"])
 
@@ -949,20 +949,20 @@ class CellTypeWidget:
 
         for i, entry in enumerate(self.celltype_entries):
             border_style = f'0 0 {row_border} 0' if i < n - 1 else '0'
-            
+
             # ID column
             grid[i + 1, 0] = Label(str(entry['id']), layout=Layout(border=border_style, padding='2px 8px'))
-            
+
             # Cell Type column
             grid[i + 1, 1] = Label(str(entry['Cell type']), layout=Layout(border=border_style, padding='2px 8px'))
-            
+
             # Freeze column
             freeze_chk = Checkbox(
                 value=entry.get('freeze', False),
                 indent=False,
                 layout=Layout(border=border_style, padding='2px 8px', width='auto')
             )
-            
+
             # Handler for freeze checkbox
             def make_freeze_handler(idx):
                 def handler(change):
@@ -970,10 +970,10 @@ class CellTypeWidget:
                     if self.on_change:
                         self.on_change()
                 return handler
-            
+
             freeze_chk.observe(make_freeze_handler(i), names='value')
             grid[i + 1, 2] = freeze_chk
-            
+
             # Remove column - disable for Medium
             if entry['Cell type'] == "Medium":
                 remove_btn = Button(
@@ -1000,7 +1000,7 @@ class CellTypeWidget:
                             self.on_change()
                     return handler
                 remove_btn.on_click(make_remove_handler(i))
-            
+
             grid[i + 1, 3] = remove_btn
 
         self.widgets["display_box"].children = [grid]
@@ -1022,10 +1022,10 @@ class CellTypeWidget:
             self.widgets["freeze"],
             self.widgets["add_button"]
         ], layout=Layout(justify_content='flex-start', margin='10px 0'))
-        
-        reset_button_box = HBox([self.widgets["reset_button"]], 
+
+        reset_button_box = HBox([self.widgets["reset_button"]],
                                layout=Layout(justify_content='flex-start', margin='10px 0'))
-        
+
         return VBox([
             HTML("<b>Cell Types</b>", layout=Layout(margin='0 0 10px 0')),
             self.widgets["display_box"],
@@ -1254,33 +1254,33 @@ class SpecificationSetupUI:
 
     def create_ui(self):
         tabs = Tab(layout=Layout(width='100%'))
-        
+
         # Create tab containers
         metadata_tab = VBox([
             self.create_metadata_tab()
         ], layout=Layout(width='100%'))
-        
+
         potts_tab = VBox([
             self.potts_widget.create_ui()
         ], layout=Layout(width='100%'))
-        
+
         celltype_tab = VBox([
             self.celltype_widget.create_ui()
         ], layout=Layout(width='100%'))
-        
+
         plugins_tab = VBox([
             self.plugins_tab.create_ui()
         ], layout=Layout(width='100%'))
-        
+
         tabs.children = [metadata_tab, potts_tab, celltype_tab, plugins_tab]
         tabs.set_title(0, 'Metadata')
         tabs.set_title(1, 'Potts Core')
         tabs.set_title(2, 'Cell Types')
         tabs.set_title(3, 'Plugins')
 
-        run_button_box = HBox([self.widgets["run_button"]], 
+        run_button_box = HBox([self.widgets["run_button"]],
                              layout=Layout(justify_content='flex-end', margin='15px 0 0 0'))
-        
+
         # Wrap in container for consistent styling
         container = VBox([
             tabs,
@@ -1298,12 +1298,12 @@ class SpecificationSetupUI:
             self.widgets["num_processors"],
             self.widgets["num_processors_error"]
         ], layout=Layout(align_items='flex-start'))
-        
+
         debug_frequency_box = VBox([
             self.widgets["debug_output_frequency"],
             self.widgets["debug_output_frequency_error"]
         ], layout=Layout(align_items='flex-start'))
-        
+
         return VBox([
             HTML("<b>Simulation Metadata</b>", layout=Layout(margin='0 0 10px 0')),
             num_processors_box,
