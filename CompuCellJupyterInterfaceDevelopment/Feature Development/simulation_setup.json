@@ -43,13 +43,56 @@
             "neighbor_order": 1,
             "energies": {
                 "Medium": {
-                    "Medium": {
+                    "Condensing": {
                         "type_1": "Medium",
-                        "type_2": "Medium",
-                        "energy": 10.0
+                        "type_2": "Condensing",
+                        "energy": 16.0
+                    },
+                    "NonCondensing": {
+                        "type_1": "Medium",
+                        "type_2": "NonCondensing",
+                        "energy": 16.0
+                    }
+                },
+                "Condensing": {
+                    "Condensing": {
+                        "type_1": "Condensing",
+                        "type_2": "Condensing",
+                        "energy": 2.0
+                    },
+                    "NonCondensing": {
+                        "type_1": "Condensing",
+                        "type_2": "NonCondensing",
+                        "energy": 11.0
+                    }
+                },
+                "NonCondensing": {
+                    "NonCondensing": {
+                        "type_1": "NonCondensing",
+                        "type_2": "NonCondensing",
+                        "energy": 16.0
                     }
                 }
             }
+        },
+        "VolumePlugin": {
+            "params": [
+                {
+                    "CellType": "Medium",
+                    "target_volume": 25.0,
+                    "lambda_volume": 2.0
+                },
+                {
+                    "CellType": "Condensing",
+                    "target_volume": 25.0,
+                    "lambda_volume": 2.0
+                },
+                {
+                    "CellType": "NonCondensing",
+                    "target_volume": 25.0,
+                    "lambda_volume": 2.0
+                }
+            ]
         }
     },
     "Initializer": {
