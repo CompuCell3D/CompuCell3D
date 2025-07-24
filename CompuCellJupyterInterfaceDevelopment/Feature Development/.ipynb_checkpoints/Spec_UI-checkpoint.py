@@ -156,7 +156,7 @@ class PluginWidget:
 
         self.widgets["config_container"] = VBox([], layout=Layout(
             padding='0',
-            display='none'  # Always start hidden
+            display='none' if not saved_values else 'block'
         ))
 
         def save_on_toggle(change):
@@ -164,7 +164,6 @@ class PluginWidget:
                 self.parent_ui.save_to_json()
         self.widgets["active"].observe(save_on_toggle, names='value')
 
-        # Plugins with custom UIs
         if self.plugin_name == "VolumePlugin":
             self.create_volume_widgets(saved_values)
         elif self.plugin_name == "SurfacePlugin":
@@ -177,34 +176,20 @@ class PluginWidget:
             self.create_chemotaxis_widgets(saved_values)
         elif self.plugin_name == "BoundaryPixelTrackerPlugin":
             self.create_boundary_tracker_widgets(saved_values)
-        elif self.plugin_name in [
-            "CurvaturePlugin", "ExternalPotentialPlugin", "FocalPointPlasticityPlugin",
-            "LengthConstraintPlugin", "PixelTrackerPlugin", "SecretionPlugin"
-        ]:
-            # Not implemented plugins: message will be shown/hidden by toggle_config_visibility
-            self.widgets["config_container"].children = []
-            self.widgets["config_container"].layout.display = 'none'
-        # else: leave as is for future plugins
+        elif self.plugin_name == "CurvaturePlugin":
+            self.create_curvature_widgets(saved_values)
+        elif self.plugin_name == "ExternalPotentialPlugin":
+            self.create_external_potential_widgets(saved_values)
+        elif self.plugin_name == "FocalPointPlasticityPlugin":
+            self.create_focal_point_plasticity_widgets(saved_values)
 
         self.widgets["active"].observe(self.toggle_config_visibility, names='value')
 
     def toggle_config_visibility(self, change):
-        # For not implemented plugins, show/hide the message based on enable state
-        if self.plugin_name in [
-            "CurvaturePlugin", "ExternalPotentialPlugin", "FocalPointPlasticityPlugin",
-            "LengthConstraintPlugin", "PixelTrackerPlugin", "SecretionPlugin"
-        ]:
-            if change['new']:
-                self.widgets["config_container"].children = [HTML(f"<b style='color: #b00'>{self.plugin_name} not implemented yet</b>")]
-                self.widgets["config_container"].layout.display = 'block'
-            else:
-                self.widgets["config_container"].children = []
-                self.widgets["config_container"].layout.display = 'none'
+        if self.plugin_name in ["CurvaturePlugin", "ExternalPotentialPlugin", "FocalPointPlasticityPlugin"]:
+            self.widgets["config_container"].layout.display = 'block'
         else:
-            if self.plugin_name in ["CurvaturePlugin", "ExternalPotentialPlugin", "FocalPointPlasticityPlugin"]:
-                self.widgets["config_container"].layout.display = 'block'
-            else:
-                self.widgets["config_container"].layout.display = 'block' if change['new'] else 'none'
+            self.widgets["config_container"].layout.display = 'block' if change['new'] else 'none'
 
     # VolumePlugin widgets
     def create_volume_widgets(self, saved_values):
@@ -619,12 +604,6 @@ class PluginWidget:
             self.create_volume_widgets({"params": [self.param_cache.get(ct, {"CellType": ct, "target_volume": 25.0, "lambda_volume": 2.0}) for ct in cell_types]})
         elif self.plugin_name == "SurfacePlugin":
             self.create_surface_widgets({"params": [self.param_cache.get(ct, {"CellType": ct, "target_surface": 100.0, "lambda_surface": 0.5}) for ct in cell_types]})
-        elif self.plugin_name == "ContactPlugin":
-            # Update dropdown options for all rows
-            for row_tuple in self.widgets.get("contact_rows", []):
-                _, dd1, dd2, _, _ = row_tuple
-                dd1.options = cell_types
-                dd2.options = cell_types
 
 class PluginsTab:
     def __init__(self, saved_plugins, cell_types, parent_ui=None):
@@ -1152,27 +1131,17 @@ class InitializerWidget:
         self.add_region_btn.on_click(self.add_region)
         self.parent_ui = parent_ui  # <-- store parent_ui
 
-        # Dropdown for initializer type
-        self.initializer_type_dropdown = Dropdown(
-            options=["BlobInitializer", "PIFInitializer", "UniformInitializer"],
-            value=self.saved_values.get("type", "BlobInitializer"),
-            description="Initializer Type:"
-        )
-        self.initializer_type_dropdown.observe(self._on_initializer_type_change, names='value')
-
-        # Load regions from saved_values if present and type is BlobInitializer
-        if self.saved_values.get("type", "BlobInitializer") == "BlobInitializer" and self.saved_values.get("regions"):
+        # Load regions from saved_values if present
+        if self.saved_values.get("regions"):
             for region in self.saved_values["regions"]:
                 self._add_region_from_saved(region)
 
         self.create_ui()
 
-    def _on_initializer_type_change(self, change):
-        self.update_regions_box()
-        if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
-            self.parent_ui.save_to_json()
-
     def _add_region_from_saved(self, region):
+        """
+        Create a region widget from saved data without triggering save
+        """
         region_dict = {
             "width": IntText(value=region["width"], description="Width:"),
             "radius": IntText(value=region["radius"], description="Radius:"),
@@ -1187,9 +1156,12 @@ class InitializerWidget:
             "remove_btn": Button(description="Remove", button_style="danger")
         }
         region_dict["remove_btn"].on_click(lambda btn, r=region_dict: self.remove_region(r))
+
+        # Observe changes in all fields to trigger save
         for key in ["width", "radius", "center_x", "center_y", "center_z"]:
             region_dict[key].observe(self._trigger_save, names='value')
         region_dict["cell_types"].observe(self._trigger_save, names='value')
+
         self.regions.append(region_dict)
 
     def _trigger_save(self, *_):
@@ -1217,6 +1189,7 @@ class InitializerWidget:
             "remove_btn": Button(description="Remove", button_style="danger")
         }
         region["remove_btn"].on_click(lambda btn, r=region: self.remove_region(r))
+        # Observe changes in all fields to trigger save
         for key in ["width", "radius", "center_x", "center_y", "center_z"]:
             region[key].observe(self._trigger_save, names='value')
         region["cell_types"].observe(self._trigger_save, names='value')
@@ -1230,47 +1203,35 @@ class InitializerWidget:
         self._trigger_save()
 
     def update_regions_box(self):
-        selected_type = self.initializer_type_dropdown.value
-        if selected_type == "BlobInitializer":
-            region_vboxes = []
-            for region in self.regions:
-                vbox = VBox([
-                    HBox([region["width"], region["radius"]]),
-                    HBox([region["center_x"], region["center_y"], region["center_z"]]),
-                    region["cell_types"],
-                    region["remove_btn"]
-                ], layout=Layout(border="1px solid #ccc", margin="5px 0", padding="5px"))
-                region_vboxes.append(vbox)
-            self.regions_box.children = region_vboxes + [self.add_region_btn]
-        else:
-            msg = f"{selected_type} not implemented yet"
-            self.regions_box.children = [HTML(f"<b style='color: #b00'>{msg}</b>")]
+        region_vboxes = []
+        for region in self.regions:
+            vbox = VBox([
+                HBox([region["width"], region["radius"]]),
+                HBox([region["center_x"], region["center_y"], region["center_z"]]),
+                region["cell_types"],
+                region["remove_btn"]
+            ], layout=Layout(border="1px solid #ccc", margin="5px 0", padding="5px"))
+            region_vboxes.append(vbox)
+        self.regions_box.children = region_vboxes + [self.add_region_btn]
 
     def get_config(self):
-        selected_type = self.initializer_type_dropdown.value
-        if selected_type == "BlobInitializer":
-            regions = []
-            for region in self.regions:
-                regions.append({
-                    "width": region["width"].value,
-                    "radius": region["radius"].value,
-                    "center": (region["center_x"].value, region["center_y"].value, region["center_z"].value),
-                    "cell_types": list(region["cell_types"].value)
-                })
-            return {
-                "type": "BlobInitializer",
-                "regions": regions
-            }
-        else:
-            return {
-                "type": selected_type
-            }
+        regions = []
+        for region in self.regions:
+            regions.append({
+                "width": region["width"].value,
+                "radius": region["radius"].value,
+                "center": (region["center_x"].value, region["center_y"].value, region["center_z"].value),
+                "cell_types": list(region["cell_types"].value)
+            })
+        return {
+            "type": "BlobInitializer",
+            "regions": regions
+        }
 
     def create_ui(self):
         self.update_regions_box()
         self.widget = VBox([
-            self.initializer_type_dropdown,
-            Label("Initializer Configuration:"),
+            Label("Blob Initializer Regions:"),
             self.regions_box
         ])
 
@@ -1413,21 +1374,12 @@ class SpecificationSetupUI:
     def update_plugin_cell_types(self):
         cell_types = self.celltype_widget.get_config()
         cell_type_names = [entry["Cell type"] for entry in cell_types]
-        # Update VolumePlugin
         volume_widget = self.plugins_tab.plugin_widgets.get("VolumePlugin")
         if volume_widget:
             volume_widget.update_cell_types(cell_type_names)
-        # Update SurfacePlugin
         surface_widget = self.plugins_tab.plugin_widgets.get("SurfacePlugin")
         if surface_widget:
             surface_widget.update_cell_types(cell_type_names)
-        # Update ContactPlugin
-        contact_widget = self.plugins_tab.plugin_widgets.get("ContactPlugin")
-        if contact_widget:
-            contact_widget.update_cell_types(cell_type_names)
-        # Update BlobInitializer
-        if hasattr(self.initializer_widget, "update_cell_types"):
-            self.initializer_widget.update_cell_types(cell_type_names)
 
     def apply_saved_values(self):
         if "Metadata" in self.saved_values:
@@ -1754,7 +1706,7 @@ class SpecificationSetupUI:
     def reset_celltype_tab(self):
         self.celltype_widget.reset()
         self.cell_type_plugin = CellTypePlugin()
-        self.update_plugin_cell_types()
+        self.plugins_tab.update_cell_types(self.celltype_widget.get_cell_type_names())
         self.save_to_json()
         self.check_ready_state()
 

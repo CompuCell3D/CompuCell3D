@@ -39,42 +39,6 @@
         }
     ],
     "Plugins": {
-        "ContactPlugin": {
-            "neighbor_order": 1,
-            "energies": {
-                "Medium": {
-                    "Condensing": {
-                        "type_1": "Medium",
-                        "type_2": "Condensing",
-                        "energy": 16.0
-                    },
-                    "NonCondensing": {
-                        "type_1": "Medium",
-                        "type_2": "NonCondensing",
-                        "energy": 16.0
-                    }
-                },
-                "Condensing": {
-                    "Condensing": {
-                        "type_1": "Condensing",
-                        "type_2": "Condensing",
-                        "energy": 2.0
-                    },
-                    "NonCondensing": {
-                        "type_1": "Condensing",
-                        "type_2": "NonCondensing",
-                        "energy": 11.0
-                    }
-                },
-                "NonCondensing": {
-                    "NonCondensing": {
-                        "type_1": "NonCondensing",
-                        "type_2": "NonCondensing",
-                        "energy": 16.0
-                    }
-                }
-            }
-        },
         "VolumePlugin": {
             "params": [
                 {
@@ -97,21 +61,6 @@
     },
     "Initializer": {
         "type": "BlobInitializer",
-        "regions": [
-            {
-                "width": 5,
-                "radius": 20,
-                "center": [
-                    50,
-                    50,
-                    0
-                ],
-                "cell_types": [
-                    "Medium",
-                    "Condensing",
-                    "NonCondensing"
-                ]
-            }
-        ]
+        "regions": []
     }
 }
