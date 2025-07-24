@@ -12,7 +12,7 @@ from cc3d.core.PyCoreSpecs import (
     ChemotaxisPlugin, ContactPlugin, CurvaturePlugin,
     ExternalPotentialPlugin, FocalPointPlasticityPlugin,
     LengthConstraintPlugin, PixelTrackerPlugin, SecretionPlugin,
-    SurfacePlugin, VolumePlugin
+    SurfacePlugin, VolumePlugin, BlobInitializer
 )
 from cc3d.core.PyCoreSpecs import SpecValueCheckError
 from IPython.display import display as ipy_display
@@ -1130,7 +1130,43 @@ class InitializerWidget:
         self.add_region_btn = Button(description="Add Region", button_style="success")
         self.add_region_btn.on_click(self.add_region)
         self.parent_ui = parent_ui  # <-- store parent_ui
+
+        # Load regions from saved_values if present
+        if self.saved_values.get("regions"):
+            for region in self.saved_values["regions"]:
+                self._add_region_from_saved(region)
+
         self.create_ui()
+
+    def _add_region_from_saved(self, region):
+        """
+        Create a region widget from saved data without triggering save
+        """
+        region_dict = {
+            "width": IntText(value=region["width"], description="Width:"),
+            "radius": IntText(value=region["radius"], description="Radius:"),
+            "center_x": IntText(value=region["center"][0], description="Center X:"),
+            "center_y": IntText(value=region["center"][1], description="Center Y:"),
+            "center_z": IntText(value=region["center"][2], description="Center Z:"),
+            "cell_types": SelectMultiple(
+                options=self.cell_types,
+                value=tuple(region["cell_types"]),
+                description="Cell Types:"
+            ),
+            "remove_btn": Button(description="Remove", button_style="danger")
+        }
+        region_dict["remove_btn"].on_click(lambda btn, r=region_dict: self.remove_region(r))
+
+        # Observe changes in all fields to trigger save
+        for key in ["width", "radius", "center_x", "center_y", "center_z"]:
+            region_dict[key].observe(self._trigger_save, names='value')
+        region_dict["cell_types"].observe(self._trigger_save, names='value')
+
+        self.regions.append(region_dict)
+
+    def _trigger_save(self, *_):
+        if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
+            self.parent_ui.save_to_json()
 
     def add_region(self, _=None):
         width = 5
@@ -1238,6 +1274,97 @@ class SpecificationSetupUI:
         self.setup_event_handlers()
         self.check_ready_state()
         self._initializing = False  # Allow save_to_json after init
+
+    @property
+    def specs(self):
+        """
+        Returns a list of all specification objects for the simulation.
+        This includes Metadata, PottsCore, CellTypePlugin, enabled plugins, and initializer.
+        """
+        import copy
+        import inspect
+
+        config = self.current_config()
+        specs = []
+
+        # Metadata
+        specs.append(Metadata(**config["Metadata"]))
+
+        # PottsCore (filter out invalid keys)
+        pottscore_args = inspect.signature(PottsCore.__init__).parameters
+        pottscore_config = {k: v for k, v in config["PottsCore"].items() if k in pottscore_args}
+        specs.append(PottsCore(**pottscore_config))
+
+        # CellTypePlugin
+        cell_types = [entry["Cell type"] for entry in config["CellType"]]
+        specs.append(CellTypePlugin(*cell_types))
+
+        # VolumePlugin
+        if "params" in config["Plugins"].get("VolumePlugin", {}):
+            volume_plugin = VolumePlugin()
+            for param in config["Plugins"]["VolumePlugin"]["params"]:
+                volume_plugin.param_new(param["CellType"], param["target_volume"], param["lambda_volume"])
+            specs.append(volume_plugin)
+
+        # ContactPlugin
+        if "energies" in config["Plugins"].get("ContactPlugin", {}):
+            cp_conf = config["Plugins"]["ContactPlugin"]
+            contact_plugin = ContactPlugin(cp_conf.get("neighbor_order", 1))
+            for t1, t2dict in cp_conf["energies"].items():
+                for t2, param in t2dict.items():
+                    contact_plugin.param_new(type_1=param["type_1"], type_2=param["type_2"], energy=param["energy"])
+            specs.append(contact_plugin)
+
+        # SurfacePlugin
+        if "params" in config["Plugins"].get("SurfacePlugin", {}):
+            surface_plugin = SurfacePlugin()
+            for param in config["Plugins"]["SurfacePlugin"]["params"]:
+                surface_plugin.param_new(param["CellType"], param["target_surface"], param["lambda_surface"])
+            specs.append(surface_plugin)
+
+        # LengthConstraintPlugin
+        if "params" in config["Plugins"].get("LengthConstraintPlugin", {}):
+            from cc3d.core.PyCoreSpecs import LengthConstraintPlugin
+            length_plugin = LengthConstraintPlugin()
+            for param in config["Plugins"]["LengthConstraintPlugin"]["params"]:
+                length_plugin.params_new(param["CellType"], param["target_length"], param["lambda_length"])
+            specs.append(length_plugin)
+
+        # Other plugins that are enabled but don't need special handling
+        simple_plugins = [
+            "AdhesionFlexPlugin", "BoundaryPixelTrackerPlugin", "ChemotaxisPlugin",
+            "CurvaturePlugin", "ExternalPotentialPlugin", "FocalPointPlasticityPlugin",
+            "PixelTrackerPlugin", "SecretionPlugin"
+        ]
+
+        for plugin_name in simple_plugins:
+            if plugin_name in config["Plugins"] and config["Plugins"][plugin_name].get("active", False):
+                plugin_class = globals()[plugin_name]
+                plugin_config = config["Plugins"][plugin_name]
+
+                # Filter config to only include valid constructor arguments
+                plugin_args = inspect.signature(plugin_class.__init__).parameters
+                filtered_config = {k: v for k, v in plugin_config.items() if k in plugin_args}
+
+                try:
+                    plugin_instance = plugin_class(**filtered_config)
+                    specs.append(plugin_instance)
+                except Exception as e:
+                    print(f"Warning: Could not create {plugin_name}: {e}")
+
+        # BlobInitializer
+        if "Initializer" in config and config["Initializer"].get("type") == "BlobInitializer":
+            blob_init = BlobInitializer()
+            for region in config["Initializer"].get("regions", []):
+                blob_init.region_new(
+                    width=region["width"],
+                    radius=region["radius"],
+                    center=region["center"],
+                    cell_types=region["cell_types"]
+                )
+            specs.append(blob_init)
+
+        return specs
 
     def cell_types_changed(self):
         self.update_plugin_cell_types()

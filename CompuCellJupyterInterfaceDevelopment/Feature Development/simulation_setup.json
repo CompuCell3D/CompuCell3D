@@ -97,6 +97,21 @@
     },
     "Initializer": {
         "type": "BlobInitializer",
-        "regions": []
+        "regions": [
+            {
+                "width": 5,
+                "radius": 20,
+                "center": [
+                    50,
+                    50,
+                    0
+                ],
+                "cell_types": [
+                    "Medium",
+                    "Condensing",
+                    "NonCondensing"
+                ]
+            }
+        ]
     }
 }
