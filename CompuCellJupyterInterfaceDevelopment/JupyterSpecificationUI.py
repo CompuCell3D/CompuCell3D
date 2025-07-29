@@ -1436,7 +1436,7 @@ class InitializerWidget:
             ),
             "remove_btn": Button(description="Remove", button_style="danger"),
             "selection_note": HTML(
-                value="<medium><em>Tip: Hold Ctrl/Cmd to select multiple cell types</em></medium>",
+                value="<medium><em>💡 Tip: Hold Ctrl/Cmd to select multiple cell types</em></medium>",
                 layout=Layout(margin='0 0 0 10px')
             )
         }
@@ -1474,7 +1474,7 @@ class InitializerWidget:
             "remove_btn": Button(description="Remove", button_style="danger"),
             # Add note about multi-selection
             "selection_note": HTML(
-                value="<small><em>Tip: Hold Ctrl/Cmd to select multiple cell types</em></small>",
+                value="<small><em>💡 Tip: Hold Ctrl/Cmd to select multiple cell types</em></small>",
                 layout=Layout(margin='0 0 0 10px')
             )
         }
