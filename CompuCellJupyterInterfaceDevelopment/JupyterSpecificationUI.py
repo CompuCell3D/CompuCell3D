@@ -1,3 +1,55 @@
+"""
+Jupyter Specification UI for CompuCell3D
+
+This module provides a comprehensive Jupyter notebook interface for configuring
+CompuCell3D simulations. It includes interactive widgets for setting up:
+
+- Metadata (processors, debug frequency)
+- Potts Core parameters (dimensions, steps, neighbor order, etc.)
+- Cell Types (with automatic Medium cell type management)
+- Plugins (Volume, Surface, Contact, Adhesion, Chemotaxis, etc.)
+- Initializers (BlobInitializer with region configuration)
+
+The interface automatically saves configurations to JSON and provides real-time
+validation of parameters. It supports both 2D and 3D simulations with
+configurable boundary conditions and lattice types.
+
+Key Features:
+- Interactive tabbed interface for all simulation components
+- Real-time parameter validation with error display
+- Automatic saving of configurations
+- Cell type management with Medium cell type handling
+- Plugin-specific UI components (Volume/Surface tables, Contact energy matrix)
+- BlobInitializer with multiple region support
+- Integration with CompuCell3D simulation service
+- Configuration validation before simulation execution
+- Comprehensive error handling and troubleshooting
+- Setup testing capabilities
+
+Usage:
+    # Create and display the UI
+    ui = SpecificationSetupUI()
+
+    # Test the setup before running
+    ui.test_simulation_setup()
+
+    # Run simulation with current configuration
+    ui.run_and_visualize()
+
+Dependencies:
+    - ipywidgets: For interactive widgets
+    - cc3d.core.PyCoreSpecs: For specification classes
+    - cc3d.core.simservice.CC3DSimService: For simulation service
+    - IPython.display: For widget display
+
+Troubleshooting:
+    If the simulation fails to run, use ui.test_simulation_setup() to diagnose
+    issues with dependencies, configuration, or CC3D installation.
+
+Author: CompuCell3D Development Team
+License: GPL v3
+"""
+
 import os
 import json
 import ipywidgets as widgets
@@ -17,13 +69,19 @@ from cc3d.core.PyCoreSpecs import (
 from cc3d.core.PyCoreSpecs import SpecValueCheckError
 from IPython.display import display as ipy_display
 
-from cc3d.CompuCellSetup.CC3DCaller import CC3DSimService
+from cc3d.core.simservice.CC3DSimService import CC3DSimService
 
 # Configuration
 SAVE_FILE = 'simulation_setup.json'
 
-# Get default values from class constructors using .spec_dict
 def get_defaults():
+    """
+    Get default configuration values from class constructors.
+
+    Returns:
+        dict: Dictionary containing default values for all simulation components
+              including Metadata, PottsCore, CellType, and Plugins.
+    """
     return {
         "Metadata": Metadata().spec_dict,
         "PottsCore": PottsCore().spec_dict,
@@ -47,7 +105,37 @@ def get_defaults():
 DEFAULTS = get_defaults()
 
 class PluginWidget:
+    """
+    Widget for configuring individual CompuCell3D plugins.
+
+    This class creates interactive widgets for plugin configuration, including
+    specialized UIs for VolumePlugin, SurfacePlugin, ContactPlugin, and others.
+    It handles parameter validation, automatic saving, and cell type updates.
+
+    Attributes:
+        plugin_name (str): Name of the plugin (e.g., "VolumePlugin")
+        plugin_class (class): The plugin class to instantiate
+        default_instance: Default instance of the plugin class
+        cell_types (list): List of available cell type names
+        widgets (dict): Dictionary of widget components
+        output (Output): Output widget for error messages
+        param_cache (dict): Cache for parameter values
+        parent_ui: Reference to parent UI for save operations
+        potts_neighbor_order: Reference to Potts neighbor order widget
+    """
+
     def __init__(self, plugin_name, plugin_class, saved_values, cell_types, parent_ui=None, potts_neighbor_order=None):
+        """
+        Initialize the plugin widget.
+
+        Args:
+            plugin_name (str): Name of the plugin
+            plugin_class (class): Plugin class to configure
+            saved_values (dict): Previously saved configuration values
+            cell_types (list): List of available cell type names
+            parent_ui: Reference to parent UI for save operations
+            potts_neighbor_order: Reference to Potts neighbor order widget
+        """
         self.plugin_name = plugin_name
         self.plugin_class = plugin_class
         self.default_instance = plugin_class()
@@ -60,23 +148,32 @@ class PluginWidget:
         self.create_widgets(saved_values if saved_values else {})
 
     def create_widgets(self, saved_values):
+        """
+        Create the widget components for the plugin.
+
+        Args:
+            saved_values (dict): Previously saved configuration values
+        """
+        # Create activation checkbox
         self.widgets["active"] = widgets.Checkbox(
             value=bool(saved_values),
             description=self.plugin_name,
             indent=False
         )
 
+        # Create configuration container
         self.widgets["config_container"] = VBox([], layout=Layout(
             padding='0',
             display='none'
         ))
 
+        # Setup save callback for activation toggle
         def save_on_toggle(change):
             if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
                 self.parent_ui.save_to_json()
         self.widgets["active"].observe(save_on_toggle, names='value')
 
-        # Plugins with custom UIs
+        # Create specialized UIs for different plugins
         if self.plugin_name == "VolumePlugin":
             self.create_volume_widgets(saved_values)
         elif self.plugin_name == "SurfacePlugin":
@@ -104,6 +201,12 @@ class PluginWidget:
         self.toggle_config_visibility({'new': self.widgets["active"].value})
 
     def toggle_config_visibility(self, change):
+        """
+        Toggle the visibility of configuration widgets based on activation state.
+
+        Args:
+            change (dict): Widget change event with 'new' value
+        """
         # For not implemented plugins, show/hide the message based on enable state
         if self.plugin_name in [
             "CurvaturePlugin", "ExternalPotentialPlugin", "FocalPointPlasticityPlugin",
@@ -121,8 +224,16 @@ class PluginWidget:
             else:
                 self.widgets["config_container"].layout.display = 'block' if change['new'] else 'none'
 
-    # VolumePlugin widgets
     def create_volume_widgets(self, saved_values):
+        """
+        Create widgets for VolumePlugin configuration.
+
+        Creates a table of cell types with target volume and lambda volume parameters.
+        Medium cell type is automatically disabled with zero values.
+
+        Args:
+            saved_values (dict): Previously saved volume configuration
+        """
         default_params = VolumePlugin().spec_dict.get("params", [])
         default_map = {p["CellType"]: p for p in default_params} if default_params else {}
         saved_map = {p["CellType"]: p for p in saved_values.get("params", []) if "CellType" in p}
@@ -175,6 +286,7 @@ class PluginWidget:
         self.update_volume_ui()
 
     def update_volume_ui(self):
+        """Update the volume plugin UI display."""
         row_widgets = []
         for row in self.widgets["rows"]:
             row_box = HBox([
@@ -187,8 +299,16 @@ class PluginWidget:
             row_widgets.append(row_box)
         self.widgets["config_container"].children = [VBox(row_widgets)]
 
-    # SurfacePlugin widgets
     def create_surface_widgets(self, saved_values):
+        """
+        Create widgets for SurfacePlugin configuration.
+
+        Creates a table of cell types with target surface and lambda surface parameters.
+        Medium cell type is automatically disabled with zero values.
+
+        Args:
+            saved_values (dict): Previously saved surface configuration
+        """
         default_params = SurfacePlugin().spec_dict.get("params", [])
         default_map = {p["CellType"]: p for p in default_params} if default_params else {}
         saved_map = {p["CellType"]: p for p in saved_values.get("params", []) if "CellType" in p}
@@ -241,6 +361,7 @@ class PluginWidget:
         self.update_surface_ui()
 
     def update_surface_ui(self):
+        """Update the surface plugin UI display."""
         row_widgets = []
         for row in self.widgets["rows"]:
             row_box = HBox([
@@ -253,8 +374,15 @@ class PluginWidget:
             row_widgets.append(row_box)
         self.widgets["config_container"].children = [VBox(row_widgets)]
 
-    # AdhesionFlexPlugin widgets - use Potts neighbor order
     def create_adhesion_widgets(self, saved_values):
+        """
+        Create widgets for AdhesionFlexPlugin configuration.
+
+        Uses Potts neighbor order and provides max_distance parameter.
+
+        Args:
+            saved_values (dict): Previously saved adhesion configuration
+        """
         # Use Potts neighbor order instead of user input
         neighbor_order = self.potts_neighbor_order.value if self.potts_neighbor_order else 2
 
@@ -280,8 +408,16 @@ class PluginWidget:
         ])
         self.widgets["config_container"].children = [container]
 
-    # ContactPlugin widgets - use Potts neighbor order
     def create_contact_widgets(self, saved_values):
+        """
+        Create widgets for ContactPlugin configuration.
+
+        Creates a dynamic table for contact energy parameters between cell types.
+        Uses Potts neighbor order and allows adding/removing energy entries.
+
+        Args:
+            saved_values (dict): Previously saved contact configuration
+        """
         from ipywidgets import VBox, HBox, Dropdown, FloatText, Button, IntText, HTML, Layout
 
         # Use Potts neighbor order instead of user input
@@ -362,8 +498,15 @@ class PluginWidget:
         ])
         self.widgets["config_container"].children = [container]
 
-    # ChemotaxisPlugin widgets
     def create_chemotaxis_widgets(self, saved_values):
+        """
+        Create widgets for ChemotaxisPlugin configuration.
+
+        Provides field name and lambda value parameters.
+
+        Args:
+            saved_values (dict): Previously saved chemotaxis configuration
+        """
         defaults = ChemotaxisPlugin().spec_dict
         self.widgets["field"] = widgets.Text(
             value=saved_values.get("field", defaults.get("field", "chemoattractant")),
@@ -387,8 +530,15 @@ class PluginWidget:
         ])
         self.widgets["config_container"].children = [container]
 
-    # BoundaryPixelTrackerPlugin widgets - use Potts neighbor order
     def create_boundary_tracker_widgets(self, saved_values):
+        """
+        Create widgets for BoundaryPixelTrackerPlugin configuration.
+
+        Uses Potts neighbor order and displays it as read-only.
+
+        Args:
+            saved_values (dict): Previously saved boundary tracker configuration
+        """
         # Use Potts neighbor order instead of user input
         neighbor_order = self.potts_neighbor_order.value if self.potts_neighbor_order else 2
 
@@ -401,18 +551,27 @@ class PluginWidget:
         self.widgets["config_container"].children = [neighbor_box]
 
     def create_curvature_widgets(self, saved_values):
+        """Create placeholder widgets for CurvaturePlugin (not implemented)."""
         self.widgets["config_container"].children = []
         self.widgets["config_container"].layout.display = 'block'
 
     def create_external_potential_widgets(self, saved_values):
+        """Create placeholder widgets for ExternalPotentialPlugin (not implemented)."""
         self.widgets["config_container"].children = []
         self.widgets["config_container"].layout.display = 'block'
 
     def create_focal_point_plasticity_widgets(self, saved_values):
+        """Create placeholder widgets for FocalPointPlasticityPlugin (not implemented)."""
         self.widgets["config_container"].children = []
         self.widgets["config_container"].layout.display = 'block'
 
     def create_ui(self):
+        """
+        Create the complete UI for the plugin.
+
+        Returns:
+            VBox: The complete plugin UI widget
+        """
         if self.plugin_name in ["AdhesionFlexPlugin", "ContactPlugin", "ChemotaxisPlugin"]:
             return VBox([
                 self.widgets["active"],
@@ -426,6 +585,12 @@ class PluginWidget:
             ])
 
     def get_config(self):
+        """
+        Get the current configuration for the plugin.
+
+        Returns:
+            dict or None: Plugin configuration if active, None if inactive
+        """
         if not self.widgets["active"].value:
             return None
 
@@ -479,6 +644,7 @@ class PluginWidget:
             return None
 
     def reset(self):
+        """Reset the plugin to default values."""
         self.widgets["active"].value = False
         self.widgets["config_container"].layout.display = 'none'
         default = self.default_instance.spec_dict
@@ -505,6 +671,12 @@ class PluginWidget:
                     widget.value = default[key]
 
     def update_cell_types(self, cell_types):
+        """
+        Update cell types for the plugin.
+
+        Args:
+            cell_types (list): New list of cell type names
+        """
         self.cell_types = cell_types
         if self.plugin_name == "VolumePlugin":
             self.create_volume_widgets({"params": [self.param_cache.get(ct, {"CellType": ct, "target_volume": 25.0, "lambda_volume": 2.0}) for ct in cell_types]})
@@ -518,7 +690,31 @@ class PluginWidget:
                 dd2.options = cell_types
 
 class PluginsTab:
+    """
+    Tab widget for managing all CompuCell3D plugins.
+
+    This class organizes plugins into logical categories (Cell Behavior, Constraints,
+    Trackers, Other Plugins) and provides a tabbed interface for easy navigation.
+    It handles plugin creation, configuration, and reset functionality.
+
+    Attributes:
+        widgets (dict): Dictionary of widget components
+        plugin_widgets (dict): Dictionary of PluginWidget instances
+        cell_types (list): List of available cell type names
+        parent_ui: Reference to parent UI for save operations
+        potts_neighbor_order: Reference to Potts neighbor order widget
+    """
+
     def __init__(self, saved_plugins, cell_types, parent_ui=None, potts_neighbor_order=None):
+        """
+        Initialize the plugins tab.
+
+        Args:
+            saved_plugins (dict): Previously saved plugin configurations
+            cell_types (list): List of available cell type names
+            parent_ui: Reference to parent UI for save operations
+            potts_neighbor_order: Reference to Potts neighbor order widget
+        """
         self.widgets = {}
         self.plugin_widgets = {}
         self.cell_types = cell_types
@@ -527,6 +723,12 @@ class PluginsTab:
         self.create_widgets(saved_plugins or DEFAULTS["Plugins"])
 
     def create_widgets(self, saved_plugins):
+        """
+        Create the plugin tab widgets and organize them into categories.
+
+        Args:
+            saved_plugins (dict): Previously saved plugin configurations
+        """
         self.widgets["tabs"] = widgets.Tab()
         behavior_plugins = []
         constraint_plugins = []
@@ -605,6 +807,12 @@ class PluginsTab:
         self.widgets["reset_button"].on_click(on_reset_clicked)
 
     def get_config(self):
+        """
+        Get the configuration for all active plugins.
+
+        Returns:
+            dict: Dictionary of active plugin configurations
+        """
         config = {}
         for plugin_name, widget in self.plugin_widgets.items():
             plugin_config = widget.get_config()
@@ -613,15 +821,28 @@ class PluginsTab:
         return config
 
     def reset(self, _=None):
+        """Reset all plugins to default values."""
         for widget in self.plugin_widgets.values():
             widget.reset()
 
     def update_cell_types(self, cell_types):
+        """
+        Update cell types for all plugins.
+
+        Args:
+            cell_types (list): New list of cell type names
+        """
         self.cell_types = cell_types
         for widget in self.plugin_widgets.values():
             widget.update_cell_types(cell_types)
 
     def create_ui(self):
+        """
+        Create the complete plugins tab UI.
+
+        Returns:
+            VBox: The complete plugins tab widget
+        """
         return VBox([
             self.widgets["tabs"],
             HBox([self.widgets["reset_button"]],
@@ -629,7 +850,25 @@ class PluginsTab:
         ], layout=Layout(padding='10px'))
 
 class PottsWidget:
+    """
+    Widget for configuring Potts Core parameters.
+
+    This class provides interactive widgets for all Potts Core parameters including
+    dimensions, simulation steps, neighbor order, boundary conditions, and advanced
+    settings like annealing and fluctuation amplitude.
+
+    Attributes:
+        widgets (dict): Dictionary of widget components
+        defaults (dict): Default values for Potts Core parameters
+    """
+
     def __init__(self, saved_values):
+        """
+        Initialize the Potts widget.
+
+        Args:
+            saved_values (dict): Previously saved Potts Core configuration
+        """
         self.widgets = {}
         self.defaults = PottsCore().spec_dict
         # Set defaults to 1 for dimensions
@@ -639,6 +878,12 @@ class PottsWidget:
         self.create_widgets(saved_values or self.defaults)
 
     def create_widgets(self, saved_values):
+        """
+        Create the Potts Core parameter widgets.
+
+        Args:
+            saved_values (dict): Previously saved Potts Core configuration
+        """
         # Dimension inputs with max=101
         self.widgets["dim_x"] = widgets.BoundedIntText(
             value=saved_values.get("dim_x", self.defaults["dim_x"]),
@@ -772,6 +1017,12 @@ class PottsWidget:
         )
 
     def get_config(self):
+        """
+        Get the current Potts Core configuration.
+
+        Returns:
+            dict: Current Potts Core parameter values
+        """
         return {
             "dim_x": self.widgets["dim_x"].value,
             "dim_y": self.widgets["dim_y"].value,
@@ -790,6 +1041,7 @@ class PottsWidget:
         }
 
     def reset(self):
+        """Reset all Potts Core parameters to default values."""
         for key, widget in self.widgets.items():
             if key != "reset_button" and key in self.defaults:
                 if key == "random_seed":
@@ -799,6 +1051,12 @@ class PottsWidget:
                     widget.value = self.defaults[key]
 
     def create_ui(self):
+        """
+        Create the complete Potts Core UI.
+
+        Returns:
+            VBox: The complete Potts Core widget
+        """
         dimensions_row = HBox([
             VBox([self.widgets["dim_x"], self.widgets["dim_x_error"]]),
             VBox([self.widgets["dim_y"], self.widgets["dim_y_error"]]),
@@ -852,7 +1110,28 @@ class PottsWidget:
         ], layout=Layout(align_items='flex-start', padding='10px'))
 
 class CellTypeWidget:
+    """
+    Widget for managing cell types in the simulation.
+
+    This class provides an interactive interface for adding, removing, and configuring
+    cell types. It automatically manages the Medium cell type (ID 0) and ensures
+    proper ID assignment for new cell types. It also handles the freeze property
+    for each cell type.
+
+    Attributes:
+        on_change (callable): Callback function when cell types change
+        celltype_entries (list): List of cell type entry dictionaries
+        widgets (dict): Dictionary of widget components
+    """
+
     def __init__(self, saved_entries, on_change=None):
+        """
+        Initialize the cell type widget.
+
+        Args:
+            saved_entries (list): Previously saved cell type entries
+            on_change (callable): Callback function when cell types change
+        """
         self.on_change = on_change
         self.celltype_entries = []
 
@@ -874,6 +1153,14 @@ class CellTypeWidget:
         self.update_celltype_display()
 
     def add_entry(self, name, type_id=None, freeze=False):
+        """
+        Add a new cell type entry.
+
+        Args:
+            name (str): Name of the cell type
+            type_id (int, optional): ID for the cell type. If None, auto-assigns
+            freeze (bool): Whether the cell type should be frozen
+        """
         # For Medium, force ID to 0
         if name == "Medium":
             type_id = 0
@@ -896,6 +1183,7 @@ class CellTypeWidget:
         self.celltype_entries.sort(key=lambda x: x["id"])
 
     def create_widgets(self):
+        """Create the widget components for cell type management."""
         self.widgets["display_box"] = VBox(layout=Layout(padding='10px'))
         self.widgets["name"] = Text(
             placeholder="Cell type name",
@@ -917,10 +1205,12 @@ class CellTypeWidget:
         )
 
     def setup_event_handlers(self):
+        """Setup event handlers for the widgets."""
         self.widgets["add_button"].on_click(self.on_add_clicked)
         self.widgets["reset_button"].on_click(self.reset)
 
     def on_add_clicked(self, _):
+        """Handle add button click event."""
         name = self.widgets["name"].value.strip()
         if not name:
             self.widgets["name"].placeholder = "Please enter a name!"
@@ -938,6 +1228,7 @@ class CellTypeWidget:
             self.on_change()
 
     def update_celltype_display(self):
+        """Update the cell type display table."""
         n = len(self.celltype_entries)
         if n == 0:
             self.widgets["display_box"].children = [HTML("<i>No cell types defined.</i>")]
@@ -1014,17 +1305,36 @@ class CellTypeWidget:
         self.widgets["display_box"].children = [grid]
 
     def get_config(self):
+        """
+        Get the current cell type configuration.
+
+        Returns:
+            list: List of cell type entry dictionaries
+        """
         return self.celltype_entries.copy()
 
     def get_cell_type_names(self):
+        """
+        Get the list of cell type names.
+
+        Returns:
+            list: List of cell type names
+        """
         return [entry["Cell type"] for entry in self.celltype_entries]
 
     def reset(self, _=None):
+        """Reset cell types to default (Medium only)."""
         self.celltype_entries = []
         self.add_entry("Medium", 0, False)
         self.update_celltype_display()
 
     def create_ui(self):
+        """
+        Create the complete cell type UI.
+
+        Returns:
+            VBox: The complete cell type widget
+        """
         input_row = HBox([
             self.widgets["name"],
             self.widgets["freeze"],
@@ -1042,7 +1352,34 @@ class CellTypeWidget:
         ], layout=Layout(align_items='flex-start', padding='10px'))
 
 class InitializerWidget:
+    """
+    Widget for configuring simulation initializers.
+
+    This class provides an interface for configuring different types of initializers,
+    currently supporting BlobInitializer with multiple region configuration.
+    It allows users to define regions with specific dimensions, positions, and
+    cell type assignments.
+
+    Attributes:
+        cell_types (list): List of available cell type names
+        saved_values (dict): Previously saved initializer configuration
+        widgets (dict): Dictionary of widget components
+        regions (list): List of region configuration dictionaries
+        regions_box (VBox): Container for region widgets
+        add_region_btn (Button): Button to add new regions
+        parent_ui: Reference to parent UI for save operations
+        initializer_type_dropdown (Dropdown): Dropdown for initializer type selection
+    """
+
     def __init__(self, saved_values=None, cell_types=None, parent_ui=None):
+        """
+        Initialize the initializer widget.
+
+        Args:
+            saved_values (dict): Previously saved initializer configuration
+            cell_types (list): List of available cell type names
+            parent_ui: Reference to parent UI for save operations
+        """
         self.cell_types = cell_types or []
         self.saved_values = saved_values or {}
         self.widgets = {}
@@ -1069,11 +1406,23 @@ class InitializerWidget:
         self.create_ui()
 
     def _on_initializer_type_change(self, change):
+        """
+        Handle initializer type change.
+
+        Args:
+            change (dict): Widget change event
+        """
         self.update_regions_box()
         if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
             self.parent_ui.save_to_json()
 
     def _add_region_from_saved(self, region):
+        """
+        Add a region from saved configuration.
+
+        Args:
+            region (dict): Saved region configuration
+        """
         region_dict = {
             "width": IntText(value=region["width"], description="Width:"),
             "radius": IntText(value=region["radius"], description="Radius:"),
@@ -1098,10 +1447,12 @@ class InitializerWidget:
         self.regions.append(region_dict)
 
     def _trigger_save(self, *_):
+        """Trigger save operation."""
         if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
             self.parent_ui.save_to_json()
 
     def add_region(self, _=None):
+        """Add a new region to the initializer."""
         width = 5  # Manually assigned default value
         radius = 20
         center_x = 50
@@ -1140,11 +1491,18 @@ class InitializerWidget:
         self._trigger_save()
 
     def remove_region(self, region):
+        """
+        Remove a region from the initializer.
+
+        Args:
+            region (dict): Region to remove
+        """
         self.regions.remove(region)
         self.update_regions_box()
         self._trigger_save()
 
     def update_regions_box(self):
+        """Update the regions display based on initializer type."""
         selected_type = self.initializer_type_dropdown.value
         if selected_type == "BlobInitializer":
             region_vboxes = []
@@ -1165,6 +1523,12 @@ class InitializerWidget:
             self.regions_box.children = [HTML(f"<b style='color: #b00'>{msg}</b>")]
 
     def get_config(self):
+        """
+        Get the current initializer configuration.
+
+        Returns:
+            dict: Current initializer configuration
+        """
         selected_type = self.initializer_type_dropdown.value
         if selected_type == "BlobInitializer":
             regions = []
@@ -1185,6 +1549,7 @@ class InitializerWidget:
             }
 
     def create_ui(self):
+        """Create the initializer UI."""
         self.update_regions_box()
         self.widget = VBox([
             self.initializer_type_dropdown,
@@ -1193,15 +1558,71 @@ class InitializerWidget:
         ])
 
     def update_cell_types(self, cell_types):
+        """
+        Update cell types for the initializer.
+
+        Args:
+            cell_types (list): New list of cell type names
+        """
         self.cell_types = cell_types
         for region in self.regions:
             region["cell_types"].options = self.cell_types
 
     def get_widget(self):
+        """
+        Get the initializer widget.
+
+        Returns:
+            VBox: The initializer widget
+        """
         return self.widget
 
 class SpecificationSetupUI:
+    """
+    Main UI class for CompuCell3D simulation specification setup.
+
+    This class provides a comprehensive Jupyter notebook interface for configuring
+    all aspects of a CompuCell3D simulation. It includes tabs for Metadata,
+    Potts Core parameters, Cell Types, Plugins, Initializers, and Steppables.
+
+    The interface automatically saves configurations to JSON and provides real-time
+    validation. It supports both 2D and 3D simulations with configurable
+    boundary conditions and lattice types.
+
+    Key Features:
+    - Interactive tabbed interface for all simulation components
+    - Real-time parameter validation with error display
+    - Automatic saving of configurations to JSON
+    - Cell type management with Medium cell type handling
+    - Plugin-specific UI components (Volume/Surface tables, Contact energy matrix)
+    - BlobInitializer with multiple region support
+    - Integration with CompuCell3D simulation service
+    - Configuration validation before simulation execution
+    - Comprehensive error handling and troubleshooting
+    - Setup testing capabilities
+
+    Attributes:
+        _initializing (bool): Flag to suppress save_to_json during initialization
+        widgets (dict): Dictionary of widget components
+        saved_values (dict): Previously saved configuration values
+        metadata (Metadata): Metadata specification object
+        potts_core (PottsCore): Potts Core specification object
+        cell_type_plugin (CellTypePlugin): Cell Type plugin specification object
+        potts_widget (PottsWidget): Widget for Potts Core configuration
+        celltype_widget (CellTypeWidget): Widget for cell type management
+        plugins_tab (PluginsTab): Tab widget for plugin configuration
+        initializer_widget (InitializerWidget): Widget for initializer configuration
+        cc3d_sim: CompuCell3D simulation service instance
+        visualization_output (Output): Output widget for simulation visualization
+    """
+
     def __init__(self):
+        """
+        Initialize the specification setup UI.
+
+        Creates all widget components, loads saved values, and sets up
+        the complete interface with all tabs and functionality.
+        """
         self._initializing = True  # Flag to suppress save_to_json during init
         self.widgets = {}
         self.saved_values = self.load_saved_values()
@@ -1233,7 +1654,12 @@ class SpecificationSetupUI:
         self._initializing = False  # Allow save_to_json after init
 
     def print_specs_summary(self):
-        """Print summary of loaded specs for debugging"""
+        """
+        Print summary of loaded specs for debugging.
+
+        Displays current configuration for Metadata, PottsCore, Cell Types,
+        active plugins, and initializer settings.
+        """
         print("Loaded Specifications:")
         print(f"Metadata: {self.metadata.spec_dict}")
         print(f"PottsCore: {self.potts_core.spec_dict}")
@@ -1245,83 +1671,177 @@ class SpecificationSetupUI:
         init_config = self.initializer_widget.get_config()
         print(f"Initializer: {init_config['type']} with {len(init_config.get('regions', []))} regions")
 
+    def validate_configuration(self):
+        """
+        Validate the current configuration before running simulation.
+
+        Returns:
+            tuple: (is_valid, error_messages) where is_valid is a boolean
+                   and error_messages is a list of error strings
+        """
+        errors = []
+
+        # Check Metadata
+        try:
+            metadata_config = self.metadata.spec_dict
+            if metadata_config.get("num_processors", 1) < 1:
+                errors.append("Number of processors must be at least 1")
+        except Exception as e:
+            errors.append(f"Metadata validation error: {e}")
+
+        # Check PottsCore
+        try:
+            potts_config = self.potts_core.spec_dict
+            if potts_config.get("dim_x", 1) < 1 or potts_config.get("dim_y", 1) < 1 or potts_config.get("dim_z", 1) < 1:
+                errors.append("All dimensions must be at least 1")
+            if potts_config.get("steps", 0) < 0:
+                errors.append("MC Steps must be non-negative")
+            if potts_config.get("neighbor_order", 1) < 1:
+                errors.append("Neighbor order must be at least 1")
+        except Exception as e:
+            errors.append(f"PottsCore validation error: {e}")
+
+        # Check Cell Types
+        try:
+            cell_types = self.celltype_widget.get_cell_type_names()
+            if not cell_types:
+                errors.append("At least one cell type must be defined")
+            if "Medium" not in cell_types:
+                errors.append("Medium cell type must be present")
+        except Exception as e:
+            errors.append(f"Cell types validation error: {e}")
+
+        # Check Plugins
+        try:
+            plugins_config = self.plugins_tab.get_config()
+            for plugin_name, plugin_config in plugins_config.items():
+                if plugin_config is None:
+                    continue
+                # Add specific plugin validation here if needed
+        except Exception as e:
+            errors.append(f"Plugins validation error: {e}")
+
+        # Check Initializer
+        try:
+            init_config = self.initializer_widget.get_config()
+            if init_config.get("type") == "BlobInitializer":
+                regions = init_config.get("regions", [])
+                if not regions:
+                    errors.append("BlobInitializer requires at least one region")
+                for i, region in enumerate(regions):
+                    if region.get("width", 0) <= 0:
+                        errors.append(f"Region {i+1}: width must be positive")
+                    if region.get("radius", 0) <= 0:
+                        errors.append(f"Region {i+1}: radius must be positive")
+                    if not region.get("cell_types"):
+                        errors.append(f"Region {i+1}: must specify at least one cell type")
+        except Exception as e:
+            errors.append(f"Initializer validation error: {e}")
+
+        return len(errors) == 0, errors
+
     @property
     def specs(self):
         """
         Returns a list of all specification objects for the simulation.
-        This includes Metadata, PottsCore, CellTypePlugin, enabled plugins, and initializer.
+
+        This includes Metadata, PottsCore, CellTypePlugin, enabled plugins,
+        and initializer. The specs are used to configure the CompuCell3D
+        simulation service.
+
+        Returns:
+            list: List of specification objects for the simulation
         """
         import copy
         import inspect
         print("Generating simulation specifications...")
 
-        config = self.current_config()
-        specs = []
+        try:
+            config = self.current_config()
+            specs = []
 
-        # Metadata
-        specs.append(Metadata(**config["Metadata"]))
+            # Metadata
+            specs.append(Metadata(**config["Metadata"]))
 
-        # PottsCore (filter out invalid keys)
-        pottscore_args = inspect.signature(PottsCore.__init__).parameters
-        pottscore_config = {k: v for k, v in config["PottsCore"].items() if k in pottscore_args}
-        specs.append(PottsCore(**pottscore_config))
+            # PottsCore (filter out invalid keys)
+            pottscore_args = inspect.signature(PottsCore.__init__).parameters
+            pottscore_config = {k: v for k, v in config["PottsCore"].items() if k in pottscore_args}
+            specs.append(PottsCore(**pottscore_config))
 
-        # CellTypePlugin
-        cell_types = [entry["Cell type"] for entry in config["CellType"]]
-        specs.append(CellTypePlugin(*cell_types))
+            # CellTypePlugin
+            cell_types = [entry["Cell type"] for entry in config["CellType"]]
+            specs.append(CellTypePlugin(*cell_types))
 
-        # VolumePlugin
-        if "params" in config["Plugins"].get("VolumePlugin", {}):
-            volume_plugin = VolumePlugin()
-            for param in config["Plugins"]["VolumePlugin"]["params"]:
-                volume_plugin.param_new(param["CellType"], param["target_volume"], param["lambda_volume"])
-            specs.append(volume_plugin)
+            # VolumePlugin
+            if "params" in config["Plugins"].get("VolumePlugin", {}):
+                volume_plugin = VolumePlugin()
+                for param in config["Plugins"]["VolumePlugin"]["params"]:
+                    volume_plugin.param_new(param["CellType"], param["target_volume"], param["lambda_volume"])
+                specs.append(volume_plugin)
 
-        # SurfacePlugin
-        if "params" in config["Plugins"].get("SurfacePlugin", {}):
-            surface_plugin = SurfacePlugin()
-            for param in config["Plugins"]["SurfacePlugin"]["params"]:
-                surface_plugin.param_new(param["CellType"], param["target_surface"], param["lambda_surface"])
-            specs.append(surface_plugin)
+            # SurfacePlugin
+            if "params" in config["Plugins"].get("SurfacePlugin", {}):
+                surface_plugin = SurfacePlugin()
+                for param in config["Plugins"]["SurfacePlugin"]["params"]:
+                    surface_plugin.param_new(param["CellType"], param["target_surface"], param["lambda_surface"])
+                specs.append(surface_plugin)
 
-        # ContactPlugin
-        if "energies" in config["Plugins"].get("ContactPlugin", {}):
-            cp_conf = config["Plugins"]["ContactPlugin"]
-            contact_plugin = ContactPlugin(cp_conf.get("neighbor_order", 1))
-            for t1, t2dict in cp_conf["energies"].items():
-                for t2, param in t2dict.items():
-                    contact_plugin.param_new(type_1=param["type_1"], type_2=param["type_2"], energy=param["energy"])
-            specs.append(contact_plugin)
+            # ContactPlugin
+            if "energies" in config["Plugins"].get("ContactPlugin", {}):
+                cp_conf = config["Plugins"]["ContactPlugin"]
+                contact_plugin = ContactPlugin(cp_conf.get("neighbor_order", 1))
+                for t1, t2dict in cp_conf["energies"].items():
+                    for t2, param in t2dict.items():
+                        contact_plugin.param_new(type_1=param["type_1"], type_2=param["type_2"], energy=param["energy"])
+                specs.append(contact_plugin)
 
-        # Other plugins
-        for plugin_name in ["AdhesionFlexPlugin", "BoundaryPixelTrackerPlugin", "ChemotaxisPlugin"]:
-            if plugin_name in config["Plugins"] and config["Plugins"][plugin_name]:
-                plugin_class = globals()[plugin_name]
-                plugin_config = config["Plugins"][plugin_name]
-                plugin_args = inspect.signature(plugin_class.__init__).parameters
-                filtered_config = {k: v for k, v in plugin_config.items() if k in plugin_args}
-                specs.append(plugin_class(**filtered_config))
+            # Other plugins
+            for plugin_name in ["AdhesionFlexPlugin", "BoundaryPixelTrackerPlugin", "ChemotaxisPlugin"]:
+                if plugin_name in config["Plugins"] and config["Plugins"][plugin_name]:
+                    plugin_class = globals()[plugin_name]
+                    plugin_config = config["Plugins"][plugin_name]
+                    plugin_args = inspect.signature(plugin_class.__init__).parameters
+                    filtered_config = {k: v for k, v in plugin_config.items() if k in plugin_args}
+                    specs.append(plugin_class(**filtered_config))
 
-        # BlobInitializer
-        if "Initializer" in config and config["Initializer"].get("type") == "BlobInitializer":
-            blob_init = BlobInitializer()
-            for region in config["Initializer"].get("regions", []):
-                blob_init.region_new(
-                    width=region["width"],
-                    radius=region["radius"],
-                    center=region["center"],
-                    cell_types=region["cell_types"]
-                )
-            specs.append(blob_init)
+            # BlobInitializer
+            if "Initializer" in config and config["Initializer"].get("type") == "BlobInitializer":
+                blob_init = BlobInitializer()
+                for region in config["Initializer"].get("regions", []):
+                    blob_init.region_new(
+                        width=region["width"],
+                        radius=region["radius"],
+                        center=region["center"],
+                        cell_types=region["cell_types"]
+                    )
+                specs.append(blob_init)
 
-        print(f"Generated {len(specs)} specification objects")
-        return specs
+            print(f"Generated {len(specs)} specification objects")
+            return specs
+
+        except Exception as e:
+            print(f"Error generating specifications: {e}")
+            import traceback
+            traceback.print_exc()
+            return []
 
     def cell_types_changed(self):
+        """
+        Handle cell type changes.
+
+        Updates plugin cell types and saves configuration when cell types
+        are added, removed, or modified.
+        """
         self.update_plugin_cell_types()
         self.save_to_json()
 
     def update_plugin_cell_types(self):
+        """
+        Update cell types for all plugins and initializer.
+
+        Propagates cell type changes to VolumePlugin, SurfacePlugin,
+        ContactPlugin, and BlobInitializer widgets.
+        """
         cell_types = self.celltype_widget.get_config()
         cell_type_names = [entry["Cell type"] for entry in cell_types]
         # Update VolumePlugin
@@ -1341,6 +1861,12 @@ class SpecificationSetupUI:
             self.initializer_widget.update_cell_types(cell_type_names)
 
     def apply_saved_values(self):
+        """
+        Apply saved values to specification objects.
+
+        Loads previously saved configuration values into the Metadata,
+        PottsCore, and CellTypePlugin objects.
+        """
         if "Metadata" in self.saved_values:
             for key, value in self.saved_values["Metadata"].items():
                 if hasattr(self.metadata, key):
@@ -1361,6 +1887,7 @@ class SpecificationSetupUI:
                     )
 
     def create_metadata_widgets(self):
+        """Create widgets for metadata configuration."""
         self.widgets["num_processors"] = widgets.IntText(
             value=self.metadata.num_processors,
             min=1,
@@ -1393,6 +1920,12 @@ class SpecificationSetupUI:
         )
 
     def load_saved_values(self):
+        """
+        Load saved configuration values from JSON file.
+
+        Returns:
+            dict: Saved configuration values or defaults if file doesn't exist
+        """
         try:
             if os.path.exists(SAVE_FILE):
                 with open(SAVE_FILE, 'r') as f:
@@ -1402,6 +1935,12 @@ class SpecificationSetupUI:
             return json.loads(json.dumps(DEFAULTS))
 
     def current_config(self):
+        """
+        Get the current configuration from all widgets.
+
+        Returns:
+            dict: Complete current configuration including all components
+        """
         return {
             "Metadata": self.metadata.spec_dict,
             "PottsCore": self.potts_core.spec_dict,
@@ -1411,6 +1950,12 @@ class SpecificationSetupUI:
         }
 
     def save_to_json(self, _=None):
+        """
+        Save current configuration to JSON file.
+
+        Saves the complete configuration to the SAVE_FILE location.
+        Suppressed during initialization to prevent premature saves.
+        """
         if getattr(self, '_initializing', False):
             return  # Don't save during initialization
         config = self.current_config()
@@ -1419,6 +1964,7 @@ class SpecificationSetupUI:
                 json.dump(config, f, indent=4)
 
     def setup_event_handlers(self):
+        """Setup event handlers for all widgets."""
         self.widgets["num_processors"].observe(
             lambda change: self.update_metadata('num_processors', change.new),
             names='value'
@@ -1449,6 +1995,13 @@ class SpecificationSetupUI:
             widget.observe(lambda _: self.save_to_json(), names='value')
 
     def update_metadata(self, property_name, value):
+        """
+        Update metadata property and handle validation.
+
+        Args:
+            property_name (str): Name of the property to update
+            value: New value for the property
+        """
         try:
             setattr(self.metadata, property_name, value)
             self.save_to_json()
@@ -1457,6 +2010,13 @@ class SpecificationSetupUI:
             self.show_metadata_error(property_name, str(e))
 
     def show_metadata_error(self, property_name, message):
+        """
+        Show error message for metadata property.
+
+        Args:
+            property_name (str): Name of the property with error
+            message (str): Error message to display
+        """
         error_widget_name = f"{property_name}_error"
         input_widget = self.widgets.get(property_name)
         if error_widget_name in self.widgets:
@@ -1467,6 +2027,12 @@ class SpecificationSetupUI:
             input_widget.add_class('error-input')
 
     def clear_metadata_error(self, property_name):
+        """
+        Clear error message for metadata property.
+
+        Args:
+            property_name (str): Name of the property to clear error for
+        """
         error_widget_name = f"{property_name}_error"
         input_widget = self.widgets.get(property_name)
         if error_widget_name in self.widgets:
@@ -1477,6 +2043,13 @@ class SpecificationSetupUI:
             input_widget.remove_class('error-input')
 
     def update_potts_core(self, property_name, value):
+        """
+        Update Potts Core property and handle validation.
+
+        Args:
+            property_name (str): Name of the property to update
+            value: New value for the property
+        """
         try:
             setattr(self.potts_core, property_name, value)
             self.save_to_json()
@@ -1485,6 +2058,13 @@ class SpecificationSetupUI:
             self.show_potts_error(property_name, str(e))
 
     def show_potts_error(self, property_name, message):
+        """
+        Show error message for Potts Core property.
+
+        Args:
+            property_name (str): Name of the property with error
+            message (str): Error message to display
+        """
         error_widget_name = f"{property_name}_error"
         input_widget = self.potts_widget.widgets.get(property_name)
         if error_widget_name in self.potts_widget.widgets:
@@ -1495,6 +2075,12 @@ class SpecificationSetupUI:
             input_widget.add_class('error-input')
 
     def clear_potts_error(self, property_name):
+        """
+        Clear error message for Potts Core property.
+
+        Args:
+            property_name (str): Name of the property to clear error for
+        """
         error_widget_name = f"{property_name}_error"
         input_widget = self.potts_widget.widgets.get(property_name)
         if error_widget_name in self.potts_widget.widgets:
@@ -1505,59 +2091,144 @@ class SpecificationSetupUI:
             input_widget.remove_class('error-input')
 
     def run_and_visualize(self, _=None):
-        from cc3d.CompuCellSetup.CC3DCaller import CC3DSimService
+        """
+        Run the simulation and create visualization.
+
+        This method initializes the CompuCell3D simulation service with the
+        current configuration, starts the simulation, and creates a visualization
+        widget for real-time monitoring.
+        """
+        from cc3d.core.simservice.CC3DSimService import CC3DSimService
         from IPython.display import display
         import traceback
         import time
 
-        # Get current configuration
-        specs = self.specs
-
         self.visualization_output.clear_output()
         with self.visualization_output:
             try:
-                print("Simulation still work in progress...")
-                print("Initializing simulation...")
+                print("Validating configuration...")
+                is_valid, errors = self.validate_configuration()
+
+                if not is_valid:
+                    print("❌ Configuration validation failed:")
+                    for error in errors:
+                        print(f"  - {error}")
+                    print("\nPlease fix the configuration errors before running the simulation.")
+                    return
+
+                print("✅ Configuration validation passed!")
+                print("Initializing CompuCell3D simulation...")
+
+                # Get current configuration
+                specs = self.specs
+
+                if not specs:
+                    print("❌ Failed to generate simulation specifications")
+                    print("Please check your configuration and try again.")
+                    return
+
+                print(f"Configuration includes {len(specs)} specification objects")
 
                 # Initialize simulation service
                 self.cc3d_sim = CC3DSimService()
+
+                # Register specifications
                 self.cc3d_sim.register_specs(specs)
 
-                # Compile and run simulation
+                print("Specifications registered successfully")
+
+                # Run the simulation (this compiles and prepares everything)
                 self.cc3d_sim.run()
+                print("Simulation compiled and prepared")
+
+                # Initialize the simulation
                 self.cc3d_sim.init()
+                print("Simulation initialized")
 
-                # Start simulation without visualization first
+                # Start the simulation
                 self.cc3d_sim.start()
+                print("Simulation started successfully")
 
-                print("Simulation started. Preparing visualization...")
+                print("Creating visualization...")
 
                 # Create visualization widget
-                viewer = self.cc3d_sim.visualize(plot_freq=10)
+                try:
+                    viewer = self.cc3d_sim.visualize(plot_freq=10)
+                    display(viewer)
+                    print("Visualization created successfully")
+                except AttributeError:
+                    print("Warning: visualize() method not available in this CC3D version")
+                    print("Creating basic visualization widget...")
+                    # Create a simple status widget instead
+                    status_widget = widgets.HTML(
+                        value="<div style='padding: 10px; border: 1px solid #ccc; background: #f9f9f9;'>"
+                              "<h3>Simulation Status</h3>"
+                              "<p>✅ Simulation is running</p>"
+                              "<p>Current Step: <span id='step'>0</span></p>"
+                              "<p>Use the run button below to control simulation</p>"
+                              "</div>"
+                    )
+                    display(status_widget)
 
-                # Display the viewer
-                display(viewer)
+                # Try to create run button
+                try:
+                    run_button = self.cc3d_sim.jupyter_run_button()
+                    if run_button:
+                        display(run_button)
+                        print("Run button created - use it to pause/resume simulation")
+                    else:
+                        print("Run button not available")
+                except (AttributeError, RuntimeError) as e:
+                    print(f"Run button not available: {e}")
+                    # Create a simple manual control
+                    manual_controls = widgets.HBox([
+                        widgets.Button(description="Step", button_style='info'),
+                        widgets.Button(description="Stop", button_style='danger')
+                    ])
 
-                # Give it a moment to initialize
-                time.sleep(1)
+                    def on_step(b):
+                        try:
+                            self.cc3d_sim.step()
+                            print(f"Stepped to step {self.cc3d_sim.current_step}")
+                        except Exception as e:
+                            print(f"Error stepping simulation: {e}")
 
-                # Call draw to ensure visualization updates
-                viewer.draw()
+                    def on_stop(b):
+                        try:
+                            self.cc3d_sim.stop()
+                            print("Simulation stopped")
+                        except Exception as e:
+                            print(f"Error stopping simulation: {e}")
 
-                # Display run button
-                run_button = self.cc3d_sim.jupyter_run_button()
-                if run_button:
-                    display(run_button)
-                else:
-                    print("Run button not available")
+                    manual_controls.children[0].on_click(on_step)
+                    manual_controls.children[1].on_click(on_stop)
+                    display(manual_controls)
 
-                print("Simulation running. Use the run button to pause/resume.")
+                print("Simulation setup complete!")
+                print("The simulation is now running. Use the controls above to interact with it.")
 
-            except Exception as e:
-                print("Error during simulation setup:")
+            except ImportError as e:
+                print(f"Error importing CC3DSimService: {e}")
+                print("Please ensure CompuCell3D is properly installed with simservice support")
                 traceback.print_exc()
+            except Exception as e:
+                print(f"Error during simulation setup: {e}")
+                print("Full error details:")
+                traceback.print_exc()
+                print("\nTroubleshooting tips:")
+                print("1. Check that all required plugins are properly configured")
+                print("2. Verify that cell types are correctly defined")
+                print("3. Ensure that initializer settings are valid")
+                print("4. Check that Potts Core parameters are within valid ranges")
 
     def create_ui(self):
+        """
+        Create the complete UI with all tabs and components.
+
+        Creates a tabbed interface with Metadata, Potts Core, Cell Types,
+        Plugins, Initializer, and Steppable tabs. Also includes a run button
+        for starting simulations.
+        """
         tabs = Tab(layout=Layout(width='100%'))
 
         # Create tab containers
@@ -1627,6 +2298,12 @@ class SpecificationSetupUI:
         ipy_display(container)
 
     def create_metadata_tab(self):
+        """
+        Create the metadata tab UI.
+
+        Returns:
+            VBox: The metadata tab widget
+        """
         num_processors_box = VBox([
             self.widgets["num_processors"],
             self.widgets["num_processors_error"]
@@ -1645,6 +2322,7 @@ class SpecificationSetupUI:
         ], layout=Layout(align_items='flex-start', padding='10px'))
 
     def reset_potts_tab(self):
+        """Reset Potts Core tab to default values."""
         self.potts_widget.reset()
         for prop, value in PottsCore().spec_dict.items():
             if hasattr(self.potts_core, prop):
@@ -1652,12 +2330,14 @@ class SpecificationSetupUI:
         self.save_to_json()
 
     def reset_celltype_tab(self):
+        """Reset Cell Types tab to default values."""
         self.celltype_widget.reset()
         self.cell_type_plugin = CellTypePlugin()
         self.update_plugin_cell_types()
         self.save_to_json()
 
     def reset_plugins_tab(self):
+        """Reset Plugins tab to default values."""
         self.plugins_tab = PluginsTab(
             DEFAULTS["Plugins"],
             self.celltype_widget.get_cell_type_names(),
@@ -1667,12 +2347,19 @@ class SpecificationSetupUI:
         self.save_to_json()
 
     def reset_metadata_tab(self):
+        """Reset Metadata tab to default values."""
         self.widgets["num_processors"].value = Metadata().num_processors
         self.widgets["debug_output_frequency"].value = Metadata().debug_output_frequency
         self.metadata = Metadata()
         self.save_to_json()
 
     def update_cell_types(self):
+        """
+        Update cell types in the cell type plugin.
+
+        Rebuilds the cell type plugin with current cell type entries
+        and updates all dependent widgets.
+        """
         self.cell_type_plugin = CellTypePlugin()
         for entry in self.celltype_widget.celltype_entries:
             self.cell_type_plugin.cell_type_append(
@@ -1682,13 +2369,138 @@ class SpecificationSetupUI:
         self.plugins_tab.update_cell_types(self.celltype_widget.get_cell_type_names())
         self.save_to_json()
 
+    def test_simulation_setup(self):
+        """
+        Test the simulation setup to verify dependencies and configuration.
+
+        This method checks if all required components are available and
+        validates the current configuration without actually running a simulation.
+        """
+        self.visualization_output.clear_output()
+        with self.visualization_output:
+            print("🧪 Testing CompuCell3D simulation setup...")
+            print("=" * 50)
+
+            # Test 1: Check imports
+            print("1. Checking imports...")
+            try:
+                from cc3d.core.simservice.CC3DSimService import CC3DSimService
+                print("   ✅ CC3DSimService import successful")
+            except ImportError as e:
+                print(f"   ❌ CC3DSimService import failed: {e}")
+                print("   This may indicate that simservice is not properly installed")
+                return
+
+            try:
+                from cc3d.core.PyCoreSpecs import Metadata, PottsCore, CellTypePlugin
+                print("   ✅ Core specs imports successful")
+            except ImportError as e:
+                print(f"   ❌ Core specs import failed: {e}")
+                return
+
+            # Test 2: Check configuration validation
+            print("\n2. Validating configuration...")
+            is_valid, errors = self.validate_configuration()
+            if is_valid:
+                print("   ✅ Configuration validation passed")
+            else:
+                print("   ❌ Configuration validation failed:")
+                for error in errors:
+                    print(f"      - {error}")
+
+            # Test 3: Check specification generation
+            print("\n3. Testing specification generation...")
+            try:
+                specs = self.specs
+                if specs:
+                    print(f"   ✅ Generated {len(specs)} specification objects")
+                    for i, spec in enumerate(specs):
+                        print(f"      {i+1}. {type(spec).__name__}")
+                else:
+                    print("   ❌ No specifications generated")
+            except Exception as e:
+                print(f"   ❌ Specification generation failed: {e}")
+
+            # Test 4: Check CC3D availability
+            print("\n4. Checking CC3D availability...")
+            try:
+                test_sim = CC3DSimService()
+                print("   ✅ CC3DSimService instantiation successful")
+
+                # Test if we can create a minimal simulation
+                try:
+                    from cc3d.core.PyCoreSpecs import Metadata, PottsCore, CellTypePlugin
+                    test_specs = [Metadata(), PottsCore(), CellTypePlugin("Medium")]
+                    test_sim.register_specs(test_specs)
+                    print("   ✅ Basic specification registration successful")
+                except Exception as e:
+                    print(f"   ⚠️  Basic specification registration failed: {e}")
+
+            except Exception as e:
+                print(f"   ❌ CC3DSimService instantiation failed: {e}")
+
+            # Test 5: Check visualization capabilities
+            print("\n5. Checking visualization capabilities...")
+            try:
+                test_sim = CC3DSimService()
+                has_visualize = hasattr(test_sim, 'visualize')
+                has_run_button = hasattr(test_sim, 'jupyter_run_button')
+
+                if has_visualize:
+                    print("   ✅ visualize() method available")
+                else:
+                    print("   ⚠️  visualize() method not available")
+
+                if has_run_button:
+                    print("   ✅ jupyter_run_button() method available")
+                else:
+                    print("   ⚠️  jupyter_run_button() method not available")
+
+            except Exception as e:
+                print(f"   ❌ Visualization capability check failed: {e}")
+
+            print("\n" + "=" * 50)
+            print("🏁 Setup test complete!")
+
+            if is_valid:
+                print("✅ Your configuration appears to be ready for simulation")
+                print("You can now try running the simulation with ui.run_and_visualize()")
+            else:
+                print("❌ Configuration issues detected")
+                print("Please fix the validation errors before running the simulation")
+
 class SimulationVisualizer:
+    """
+    Class for visualizing CompuCell3D simulations.
+
+    This class provides methods for creating initial state visualizations
+    and running live simulations with real-time visualization.
+
+    Attributes:
+        specs (list): List of specification objects for the simulation
+        cc3d_sim: CompuCell3D simulation service instance
+    """
+
     def __init__(self, specs):
+        """
+        Initialize the simulation visualizer.
+
+        Args:
+            specs (list): List of specification objects for the simulation
+        """
         self.specs = specs
         self.cc3d_sim = None
 
     def show_initializer(self):
-        """Visualize the initial cell configuration"""
+        """
+        Visualize the initial cell configuration.
+
+        Creates a temporary simulation to generate the initial state
+        and displays it without running the full simulation.
+
+        Returns:
+            viewer: Visualization widget showing initial state
+        """
         # Create temporary simulation to generate initial state
         temp_sim = CC3DSimService()
         temp_sim.register_specs(self.specs)
@@ -1701,7 +2513,15 @@ class SimulationVisualizer:
         return viewer
 
     def show_simulation(self):
-        """Run and visualize the live simulation"""
+        """
+        Run and visualize the live simulation.
+
+        Creates and starts the simulation service, then creates a
+        visualization widget for real-time monitoring.
+
+        Returns:
+            viewer: Visualization widget for live simulation
+        """
         # Create and start simulation service
         self.cc3d_sim = CC3DSimService()
         self.cc3d_sim.register_specs(self.specs)
@@ -1721,7 +2541,7 @@ class SimulationVisualizer:
         return viewer
 
     def stop_simulation(self):
-        """Stop the running simulation"""
+        """Stop the running simulation."""
         if self.cc3d_sim:
             self.cc3d_sim.stop()
             self.cc3d_sim = None
