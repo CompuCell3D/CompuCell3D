@@ -39,6 +39,10 @@
         }
     ],
     "Plugins": {
+        "AdhesionFlexPlugin": {
+            "max_distance": 3,
+            "max_distance_error": ""
+        },
         "ContactPlugin": {
             "neighbor_order": 2,
             "energies": {
@@ -100,7 +104,7 @@
         "regions": [
             {
                 "width": 5,
-                "radius": 20,
+                "radius": 19,
                 "center": [
                     50,
                     50,

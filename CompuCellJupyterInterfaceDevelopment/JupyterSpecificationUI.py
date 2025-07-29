@@ -291,8 +291,9 @@ class PluginWidget:
         for row in self.widgets["rows"]:
             row_box = HBox([
                 row["cell_type"],
-                widgets.Label("Target Volume:", layout=widgets.Layout(width='100px')),
+                widgets.Label("Target Volume:", layout=widgets.Layout(width='100px', margin='0 -5px 0 0')),  # -5px right margin
                 row["target_volume"],
+                widgets.HTML(value="", layout=widgets.Layout(width='10px')),  # 10px spacer
                 widgets.Label("Lambda Volume:", layout=widgets.Layout(width='100px')),
                 row["lambda_volume"]
             ], layout=Layout(padding='4px 0 4px 12px'))
@@ -448,7 +449,15 @@ class PluginWidget:
             en = FloatText(value=energy, layout=Layout(width='100px'))
             rm = Button(description="Remove", button_style='danger', layout=Layout(width='80px'))
 
-            row = HBox([dd1, dd2, en, rm])
+            row = HBox([
+                dd1,
+                widgets.HTML(value="", layout=Layout(width='5px')),  # 5px spacer
+                dd2,
+                widgets.HTML(value="", layout=Layout(width='5px')),  # 5px spacer
+                en,
+                widgets.HTML(value="", layout=Layout(width='5px')),  # 5px spacer
+                rm
+            ])
             self.widgets["contact_rows"].append((row, dd1, dd2, en, rm))
 
             def on_remove(_):
@@ -484,6 +493,7 @@ class PluginWidget:
             add_row()
             if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
                 self.parent_ui.save_to_json()
+
         add_btn.on_click(on_add_btn)
 
         # Table container (already created above)
@@ -494,6 +504,7 @@ class PluginWidget:
             self.widgets["neighbor_order_display"],
             HTML("<b>Contact Energies</b>"),
             self.widgets["contact_table"],
+            widgets.HTML(value="", layout=Layout(height='5px')),  # 5px spacer
             add_btn
         ])
         self.widgets["config_container"].children = [container]
@@ -1059,40 +1070,50 @@ class PottsWidget:
         """
         dimensions_row = HBox([
             VBox([self.widgets["dim_x"], self.widgets["dim_x_error"]]),
+            widgets.HTML(value="", layout=Layout(width='5px')),  # 5px spacer
             VBox([self.widgets["dim_y"], self.widgets["dim_y_error"]]),
+            widgets.HTML(value="", layout=Layout(width='5px')),  # 5px spacer
             VBox([self.widgets["dim_z"], self.widgets["dim_z_error"]])
         ], layout=Layout(justify_content='flex-start', align_items='flex-start'))
         dimensions_row.add_class('vbox-row-spacing')
 
         core_params_row = HBox([
             VBox([self.widgets["steps"], self.widgets["steps_error"]]),
+            widgets.HTML(value="", layout=Layout(width='5px')),  # 5px spacer
             VBox([self.widgets["fluctuation_amplitude"], self.widgets["fluctuation_amplitude_error"]]),
         ], layout=Layout(justify_content='flex-start', align_items='flex-start'))
         core_params_row.add_class('vbox-row-spacing')
 
         core_params_row2 = HBox([
             VBox([self.widgets["neighbor_order"], self.widgets["neighbor_order_error"]]),
+            widgets.HTML(value="", layout=Layout(width='5px')),  # 5px spacer
             self.widgets["lattice_type"]
         ], layout=Layout(justify_content='flex-start', align_items='flex-start'))
         core_params_row2.add_class('vbox-row-spacing')
 
         boundaries_row = HBox([
             self.widgets["boundary_x"],
+            widgets.HTML(value="", layout=Layout(width='5px')),  # 5px spacer
             self.widgets["boundary_y"],
+            widgets.HTML(value="", layout=Layout(width='5px')),  # 5px spacer
             self.widgets["boundary_z"]
         ], layout=Layout(justify_content='flex-start', align_items='flex-start'))
         boundaries_row.add_class('vbox-row-spacing')
 
         advanced_row1 = HBox([
             VBox([self.widgets["anneal"], self.widgets["anneal_error"]]),
+            widgets.HTML(value="", layout=Layout(width='5px')),  # 5px spacer
             self.widgets["fluctuation_amplitude_function"]
         ], layout=Layout(justify_content='flex-start', align_items='flex-start'))
         advanced_row1.add_class('vbox-row-spacing')
 
         advanced_row2 = HBox([
             self.widgets["offset"],
-            self.widgets["use_random_seed"],
-            self.widgets["random_seed"]
+            widgets.HTML(value="", layout=Layout(width='5px')),  # 5px spacer
+            HBox([
+                self.widgets["use_random_seed"],
+                self.widgets["random_seed"]
+            ], layout=Layout(justify_content='flex-start', align_items='flex-start'))
         ], layout=Layout(justify_content='flex-start', align_items='flex-start'))
         advanced_row2.add_class('vbox-row-spacing')
 
@@ -1188,16 +1209,19 @@ class CellTypeWidget:
         self.widgets["name"] = Text(
             placeholder="Cell type name",
             description="Name:",
-            style={'description_width': 'initial'}
+            style={'description_width': 'initial'},
+            layout=Layout(width='200px')
         )
         self.widgets["freeze"] = Checkbox(
             value=False,
             description="Freeze",
-            indent=False
+            indent=False,
+            layout=Layout(width='100px')
         )
         self.widgets["add_button"] = Button(
             description="Add Cell Type",
-            button_style="success"
+            button_style="success",
+            layout=Layout(width='120px')
         )
         self.widgets["reset_button"] = Button(
             description="Reset Cell Types",
@@ -1259,7 +1283,7 @@ class CellTypeWidget:
             freeze_chk = Checkbox(
                 value=entry.get('freeze', False),
                 indent=False,
-                layout=Layout(border=border_style, padding='2px 8px', width='auto')
+                layout=Layout(border=border_style, padding='2px 8px', width='50px')
             )
 
             # Handler for freeze checkbox
@@ -1337,7 +1361,9 @@ class CellTypeWidget:
         """
         input_row = HBox([
             self.widgets["name"],
+            widgets.HTML(value="", layout=Layout(width='10px')),  # 10px spacer
             self.widgets["freeze"],
+            widgets.HTML(value="", layout=Layout(width='10px')),  # 10px spacer
             self.widgets["add_button"]
         ], layout=Layout(justify_content='flex-start', margin='10px 0'))
 
@@ -1426,9 +1452,9 @@ class InitializerWidget:
         region_dict = {
             "width": IntText(value=region["width"], description="Width:"),
             "radius": IntText(value=region["radius"], description="Radius:"),
-            "center_x": IntText(value=region["center"][0], description="Center X:"),
-            "center_y": IntText(value=region["center"][1], description="Center Y:"),
-            "center_z": IntText(value=region["center"][2], description="Center Z:"),
+            "center_x": IntText(value=region["center"][0], description="Center X:", layout=Layout(width='225px')),
+            "center_y": IntText(value=region["center"][1], description="Center Y:", layout=Layout(width='225px')),
+            "center_z": IntText(value=region["center"][2], description="Center Z:", layout=Layout(width='225px')),
             "cell_types": SelectMultiple(
                 options=self.cell_types,
                 value=tuple(region["cell_types"]),
@@ -1463,9 +1489,9 @@ class InitializerWidget:
         region = {
             "width": IntText(value=width, description="Width:"),
             "radius": IntText(value=radius, description="Radius:"),
-            "center_x": IntText(value=center_x, description="Center X:"),
-            "center_y": IntText(value=center_y, description="Center Y:"),
-            "center_z": IntText(value=center_z, description="Center Z:"),
+            "center_x": IntText(value=center_x, description="Center X:", layout=Layout(width='225px')),
+            "center_y": IntText(value=center_y, description="Center Y:", layout=Layout(width='225px')),
+            "center_z": IntText(value=center_z, description="Center Z:", layout=Layout(width='225px')),
             "cell_types": SelectMultiple(
                 options=self.cell_types,
                 value=tuple(selected_cell_types),
@@ -2094,170 +2120,327 @@ class SpecificationSetupUI:
         """
         Run the simulation and create visualization.
 
-        This method initializes the CompuCell3D simulation service with the
-        current configuration, starts the simulation, and creates a visualization
-        widget for real-time monitoring.
+        This method initializes the CompuCell3D simulation service with the current
+        configuration, starts the simulation, and creates interactive visualization
+        widgets for real-time monitoring. It follows the same pattern as the working
+        examples in the CompuCell3D demo notebooks.
+
+        The method performs the following steps:
+        1. Validates the current configuration
+        2. Generates simulation specifications from UI settings
+        3. Initializes and starts the CC3DSimService
+        4. Creates visualization widgets for real-time monitoring
+        5. Displays run/pause controls for simulation interaction
+
+        **Prerequisites:**
+        - All required simulation parameters must be configured in the UI
+        - At least one cell type must be defined (Medium is automatically included)
+        - Valid initializer configuration must be present
+        - CompuCell3D must be properly installed with simservice support
+
+        **Parameters:**
+            _ (Any, optional): Unused parameter for widget callback compatibility.
+                              Defaults to None.
+
+        **Returns:**
+            None: This method does not return a value but displays widgets directly.
+
+        **Raises:**
+            ImportError: If CC3DSimService cannot be imported, indicating missing
+                       CompuCell3D installation or simservice support.
+            Exception: Various exceptions may be raised during simulation setup,
+                      with detailed error messages and troubleshooting tips provided.
+
+        **Examples:**
+            # Basic usage in a Jupyter notebook
+            ui = SpecificationSetupUI()
+            ui.run_and_visualize()
+
+            # The method will display:
+            # - Validation status messages
+            # - Simulation initialization progress
+            # - Visualization widget (if available)
+            # - Run/pause control button
+
+        **Troubleshooting:**
+            If the method fails, check the following:
+            1. Configuration validation errors - fix parameter values in the UI
+            2. Missing cell types - ensure at least Medium and one other cell type
+            3. Invalid initializer settings - check region parameters
+            4. CompuCell3D installation - verify simservice support is available
+
+        **Widget Output:**
+            The method displays several widgets in the notebook:
+            - Visualization widget showing the simulation state
+            - Run/pause toggle button for controlling simulation execution
+            - Status messages indicating simulation progress
+            - Error messages if validation or setup fails
+
+        **Notes:**
+            - The simulation starts in a paused state by default
+            - Use the run button to start/pause simulation execution
+            - Visualization updates automatically as the simulation progresses
+            - The method handles both successful and failed visualization creation
+            - Manual step/stop controls are provided as fallback if run button fails
         """
         from cc3d.core.simservice.CC3DSimService import CC3DSimService
         from IPython.display import display
         import traceback
         import time
 
-        self.visualization_output.clear_output()
-        with self.visualization_output:
+        try:
+            print("Validating configuration...")
+            is_valid, errors = self.validate_configuration()
+
+            if not is_valid:
+                print("❌ Configuration validation failed:")
+                for error in errors:
+                    print(f"  - {error}")
+                print("\nPlease fix the configuration errors before running the simulation.")
+                return
+
+            print("✅ Configuration validation passed!")
+            print("Initializing CompuCell3D simulation...")
+
+            # Get current configuration
+            specs = self.specs
+
+            if not specs:
+                print("❌ Failed to generate simulation specifications")
+                print("Please check your configuration and try again.")
+                return
+
+            print(f"Configuration includes {len(specs)} specification objects")
+
+            # Initialize simulation service
+            self.cc3d_sim = CC3DSimService()
+
+            # Register specifications
+            self.cc3d_sim.register_specs(specs)
+
+            print("Specifications registered successfully")
+
+            # Run the simulation (this compiles and prepares everything)
+            self.cc3d_sim.run()
+            print("Simulation compiled and prepared")
+
+            # Initialize the simulation
+            self.cc3d_sim.init()
+            print("Simulation initialized")
+
+            # Start the simulation
+            self.cc3d_sim.start()
+            print("Simulation started successfully")
+
+            print("Creating visualization...")
+
+            # Create visualization widget - follow the working pattern from the notebook
             try:
-                print("Validating configuration...")
-                is_valid, errors = self.validate_configuration()
-
-                if not is_valid:
-                    print("❌ Configuration validation failed:")
-                    for error in errors:
-                        print(f"  - {error}")
-                    print("\nPlease fix the configuration errors before running the simulation.")
-                    return
-
-                print("✅ Configuration validation passed!")
-                print("Initializing CompuCell3D simulation...")
-
-                # Get current configuration
-                specs = self.specs
-
-                if not specs:
-                    print("❌ Failed to generate simulation specifications")
-                    print("Please check your configuration and try again.")
-                    return
-
-                print(f"Configuration includes {len(specs)} specification objects")
-
-                # Initialize simulation service
-                self.cc3d_sim = CC3DSimService()
-
-                # Register specifications
-                self.cc3d_sim.register_specs(specs)
-
-                print("Specifications registered successfully")
-
-                # Run the simulation (this compiles and prepares everything)
-                self.cc3d_sim.run()
-                print("Simulation compiled and prepared")
-
-                # Initialize the simulation
-                self.cc3d_sim.init()
-                print("Simulation initialized")
-
-                # Start the simulation
-                self.cc3d_sim.start()
-                print("Simulation started successfully")
-
-                print("Creating visualization...")
-
-                # Create visualization widget
-                try:
-                    viewer = self.cc3d_sim.visualize(plot_freq=10)
-                    display(viewer)
-                    print("Visualization created successfully")
-                except AttributeError:
-                    print("Warning: visualize() method not available in this CC3D version")
-                    print("Creating basic visualization widget...")
-                    # Create a simple status widget instead
-                    status_widget = widgets.HTML(
-                        value="<div style='padding: 10px; border: 1px solid #ccc; background: #f9f9f9;'>"
-                              "<h3>Simulation Status</h3>"
-                              "<p>✅ Simulation is running</p>"
-                              "<p>Current Step: <span id='step'>0</span></p>"
-                              "<p>Use the run button below to control simulation</p>"
-                              "</div>"
-                    )
-                    display(status_widget)
-
-                # Try to create run button
-                try:
-                    run_button = self.cc3d_sim.jupyter_run_button()
-                    if run_button:
-                        display(run_button)
-                        print("Run button created - use it to pause/resume simulation")
-                    else:
-                        print("Run button not available")
-                except (AttributeError, RuntimeError) as e:
-                    print(f"Run button not available: {e}")
-                    # Create a simple manual control
-                    manual_controls = widgets.HBox([
-                        widgets.Button(description="Step", button_style='info'),
-                        widgets.Button(description="Stop", button_style='danger')
-                    ])
-
-                    def on_step(b):
-                        try:
-                            self.cc3d_sim.step()
-                            print(f"Stepped to step {self.cc3d_sim.current_step}")
-                        except Exception as e:
-                            print(f"Error stepping simulation: {e}")
-
-                    def on_stop(b):
-                        try:
-                            self.cc3d_sim.stop()
-                            print("Simulation stopped")
-                        except Exception as e:
-                            print(f"Error stopping simulation: {e}")
-
-                    manual_controls.children[0].on_click(on_step)
-                    manual_controls.children[1].on_click(on_stop)
-                    display(manual_controls)
-
-                print("Simulation setup complete!")
-                print("The simulation is now running. Use the controls above to interact with it.")
-
-            except ImportError as e:
-                print(f"Error importing CC3DSimService: {e}")
-                print("Please ensure CompuCell3D is properly installed with simservice support")
-                traceback.print_exc()
+                viewer = self.cc3d_sim.visualize().show()
+                print("Visualization created successfully")
             except Exception as e:
-                print(f"Error during simulation setup: {e}")
-                print("Full error details:")
-                traceback.print_exc()
-                print("\nTroubleshooting tips:")
-                print("1. Check that all required plugins are properly configured")
-                print("2. Verify that cell types are correctly defined")
-                print("3. Ensure that initializer settings are valid")
-                print("4. Check that Potts Core parameters are within valid ranges")
+                print(f"Warning: Error creating visualization: {e}")
+                print("Creating basic status widget...")
+                # Create a simple status widget instead
+                status_widget = widgets.HTML(
+                    value="<div style='padding: 10px; border: 1px solid #ccc; background: #f9f9f9;'>"
+                          "<h3>Simulation Status</h3>"
+                          "<p>✅ Simulation is running</p>"
+                          "<p>Current Step: <span id='step'>0</span></p>"
+                          "<p>Use the run button below to control simulation</p>"
+                          "</div>"
+                )
+                display(status_widget)
+
+            # Try to create run button - follow the working pattern from the notebook
+            try:
+                run_button = self.cc3d_sim.jupyter_run_button()
+                if run_button:
+                    display(run_button)
+                    print("Run button created - use it to pause/resume simulation")
+                else:
+                    print("Run button not available")
+            except (AttributeError, RuntimeError) as e:
+                print(f"Run button not available: {e}")
+                # Create a simple manual control
+                manual_controls = widgets.HBox([
+                    widgets.Button(description="Step", button_style='info'),
+                    widgets.Button(description="Stop", button_style='danger')
+                ])
+
+                def on_step(b):
+                    try:
+                        self.cc3d_sim.step()
+                        print(f"Stepped to step {self.cc3d_sim.current_step}")
+                    except Exception as e:
+                        print(f"Error stepping simulation: {e}")
+
+                def on_stop(b):
+                    try:
+                        self.cc3d_sim.stop()
+                        print("Simulation stopped")
+                    except Exception as e:
+                        print(f"Error stopping simulation: {e}")
+
+                manual_controls.children[0].on_click(on_step)
+                manual_controls.children[1].on_click(on_stop)
+                display(manual_controls)
+
+            print("Simulation setup complete!")
+            print("The simulation is now running. Use the controls above to interact with it.")
+
+        except ImportError as e:
+            print(f"Error importing CC3DSimService: {e}")
+            print("Please ensure CompuCell3D is properly installed with simservice support")
+            traceback.print_exc()
+        except Exception as e:
+            print(f"Error during simulation setup: {e}")
+            print("Full error details:")
+            traceback.print_exc()
+            print("\nTroubleshooting tips:")
+            print("1. Check that all required plugins are properly configured")
+            print("2. Verify that cell types are correctly defined")
+            print("3. Ensure that initializer settings are valid")
+            print("4. Check that Potts Core parameters are within valid ranges")
 
     def create_ui(self):
         """
         Create the complete UI with all tabs and components.
 
-        Creates a tabbed interface with Metadata, Potts Core, Cell Types,
-        Plugins, Initializer, and Steppable tabs. Also includes a run button
-        for starting simulations.
+        This method constructs the full Jupyter notebook interface for CompuCell3D
+        simulation configuration. It creates a tabbed interface with all necessary
+        components for setting up and running simulations, including configuration
+        panels, validation, and execution controls.
+
+        The UI consists of the following components:
+        1. **Metadata Tab**: Global simulation settings (processors, debug frequency)
+        2. **Potts Core Tab**: Lattice dimensions, neighbor order, boundary conditions
+        3. **Cell Types Tab**: Cell type management with automatic Medium cell type
+              handling and freeze options
+        4. **Plugins Tab**: Plugin configuration organized by category
+        5. **Initializer Tab**: Simulation initialization settings
+        6. **Steppable Tab**: Steppable configuration (work in progress)
+        7. **Run Container**: Execution controls and visualization output
+
+        **UI Structure:**
+            The interface is organized as follows:
+            ```
+            ┌─────────────────────────────────────────────────────────┐
+            │                    Tabbed Interface                    │
+            ├─────────────────────────────────────────────────────────┤
+            │ Metadata │ Potts Core │ Cell Types │ Plugins │ ...    │
+            ├─────────────────────────────────────────────────────────┤
+            │                                                       │
+            │              Tab Content Area                         │
+            │                                                       │
+            ├─────────────────────────────────────────────────────────┤
+            │              Run Simulation Button                    │
+            │              Visualization Output                      │
+            └─────────────────────────────────────────────────────────┘
+            ```
+
+        **Tab Descriptions:**
+            - **Metadata**: Configure global simulation parameters like number of
+              processors and debug output frequency
+            - **Potts Core**: Set lattice dimensions, simulation steps, neighbor
+              order, boundary conditions, and advanced settings
+            - **Cell Types**: Manage cell types with automatic Medium cell type
+              handling and freeze options
+            - **Plugins**: Configure simulation plugins organized into categories:
+              - Cell Behavior: Adhesion, Contact, Chemotaxis, etc.
+              - Constraints: Volume, Surface, Length constraints
+              - Trackers: Boundary pixel tracking
+              - Other Plugins: Additional functionality
+            - **Initializer**: Set up simulation initialization with support for
+              BlobInitializer with multiple regions
+            - **Steppable**: Steppable configuration (currently placeholder)
+
+        **Interactive Features:**
+            - Real-time parameter validation with error display
+            - Automatic saving of configurations to JSON
+            - Reset buttons for individual tabs and global reset
+            - Dynamic cell type management with automatic updates
+            - Plugin-specific UI components (tables, matrices, etc.)
+            - Integration with CompuCell3D simulation service
+
+        **Parameters:**
+            None: This method takes no parameters.
+
+        **Returns:**
+            None: This method does not return a value but displays the UI directly
+                  using IPython.display.display().
+
+        **Examples:**
+            # Basic usage in a Jupyter notebook
+            ui = SpecificationSetupUI()
+            # The UI is automatically displayed when the class is instantiated
+
+            # Accessing individual components
+            metadata_widget = ui.widgets["num_processors"]
+            potts_widget = ui.potts_widget
+            cell_types = ui.celltype_widget
+
+        **Configuration Persistence:**
+            The UI automatically saves configurations to 'simulation_setup.json'
+            and loads them on initialization. This ensures that user settings
+            persist between notebook sessions.
+
+        **Validation:**
+            The UI includes comprehensive validation for all parameters:
+            - Dimension constraints (1-101 for lattice dimensions)
+            - Cell type requirements (Medium must be present)
+            - Plugin parameter validation
+            - Initializer region validation
+
+        **Styling:**
+            The UI uses custom CSS classes for consistent styling:
+            - Rounded corners for input widgets
+            - Error state styling for invalid inputs
+            - Responsive layout with proper spacing
+            - Color-coded buttons and status indicators
+
+        **Integration:**
+            The UI integrates with:
+            - CompuCell3D simulation service for execution
+            - Jupyter widgets for interactive components
+            - JSON file system for configuration persistence
+            - CC3D core specifications for validation
+
+        **Notes:**
+            - The UI is designed to be self-contained and user-friendly
+            - All changes are automatically saved to prevent data loss
+            - Error messages provide clear guidance for fixing issues
+            - The interface supports both 2D and 3D simulations
+            - Advanced features are organized in logical categories
         """
-        tabs = Tab(layout=Layout(width='100%'))
+        tabs = Tab(layout=Layout(width='800px'))
 
         # Create tab containers
         metadata_tab = VBox([
             self.create_metadata_tab()
-        ], layout=Layout(width='100%'))
+        ], layout=Layout(width='750px'))
 
         potts_tab = VBox([
             self.potts_widget.create_ui()
-        ], layout=Layout(width='100%'))
+        ], layout=Layout(width='750px'))
 
         celltype_tab = VBox([
             self.celltype_widget.create_ui()
-        ], layout=Layout(width='100%'))
+        ], layout=Layout(width='750px'))
 
         plugins_tab = VBox([
             self.plugins_tab.create_ui()
-        ], layout=Layout(width='100%'))
+        ], layout=Layout(width='750px'))
 
         initializer_tab = VBox([
             self.initializer_widget.get_widget()
-        ], layout=Layout(width='100%'))
+        ], layout=Layout(width='750px'))
 
         steppable_tab = VBox([
             HTML("<h3>Steppable Configuration</h3>"),
             HTML("<b style='color: #b00'>Steppable configuration is work in progress.</b style='color: #b00'>"),
             HTML("<b style='color: #b00'>This feature will be implemented in a future release.</b style='color: #b00'>")
-        ], layout=Layout(width='100%'), padding='15px')
-
+        ], layout=Layout(width='750px'), padding='15px')
 
         tabs.children = [metadata_tab, potts_tab, celltype_tab, plugins_tab, initializer_tab, steppable_tab]
         tabs.set_title(0, 'Metadata')
@@ -2267,34 +2450,14 @@ class SpecificationSetupUI:
         tabs.set_title(4, 'Initializer')
         tabs.set_title(5, 'Steppable')
 
-        run_button = Button(
-            description="Run Simulation",
-            button_style='success',
-            layout=Layout(width='100%', margin='20px 0 10px 0')
-        )
-        run_button.on_click(self.run_and_visualize)
-
-        run_container = VBox([
-            run_button,
-            self.visualization_output
-        ], layout=Layout(
-            width='100%',
-            padding='15px',
-            border='1px solid #e0e0e0',
-            margin='20px 0 0 0'
-        ))
-
         # Wrap in container for consistent styling
         container = VBox([
-            tabs,
-            # run_container
+            tabs
         ], layout=Layout(
             align_items='flex-start',
-            width='100%',
+            width='850px',
             padding='15px')
         )
-
-        container.add_class('widget-container')
         ipy_display(container)
 
     def create_metadata_tab(self):
