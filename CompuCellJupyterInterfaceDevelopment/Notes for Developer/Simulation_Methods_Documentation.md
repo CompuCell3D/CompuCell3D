@@ -60,7 +60,7 @@ This approach gives you full control over the simulation setup process by manual
 ### Code Example
 ```python
 from cc3d.CompuCellSetup.CC3DCaller import CC3DSimService
-
+# Method 2
 # Get specifications from the UI
 specs = ui.specs
 

@@ -62,7 +62,9 @@ inject_jupyter_widget_css()
 
 # Initialize and display the UI
 ui = SpecificationSetupUI()
-spec = ui.spec
+
+# Run Visualization
+ui.run_and_visualize()
 ```
 
 ## Future Development

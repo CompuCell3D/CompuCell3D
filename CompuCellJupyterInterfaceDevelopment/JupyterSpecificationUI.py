@@ -50,6 +50,8 @@ Author: CompuCell3D Development Team
 License: GPL v3
 """
 
+# TODOs for the Developers: 
+
 import os
 import json
 import ipywidgets as widgets
@@ -2237,7 +2239,7 @@ class SpecificationSetupUI:
             # Create visualization widget - follow the working pattern from the notebook
             try:
                 viewer = self.cc3d_sim.visualize().show()
-                print("Visualization created successfully")
+                # print("Visualization created successfully")
             except Exception as e:
                 print(f"Warning: Error creating visualization: {e}")
                 print("Creating basic status widget...")
@@ -2326,16 +2328,16 @@ class SpecificationSetupUI:
             The interface is organized as follows:
             ```
             ┌─────────────────────────────────────────────────────────┐
-            │                    Tabbed Interface                    │
+            │                    Tabbed Interface                     │
             ├─────────────────────────────────────────────────────────┤
-            │ Metadata │ Potts Core │ Cell Types │ Plugins │ ...    │
+            │ Metadata │ Potts Core │ Cell Types │ Plugins │ ...      │
             ├─────────────────────────────────────────────────────────┤
-            │                                                       │
-            │              Tab Content Area                         │
-            │                                                       │
+            │                                                         │
+            │              Tab Content Area                           │
+            │                                                         │
             ├─────────────────────────────────────────────────────────┤
-            │              Run Simulation Button                    │
-            │              Visualization Output                      │
+            │              Run Simulation Button                      │
+            │              Visualization Output                       │
             └─────────────────────────────────────────────────────────┘
             ```
 
