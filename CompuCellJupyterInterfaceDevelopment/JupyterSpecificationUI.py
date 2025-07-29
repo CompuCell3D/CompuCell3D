@@ -68,7 +68,7 @@ class PluginWidget:
 
         self.widgets["config_container"] = VBox([], layout=Layout(
             padding='0',
-            display='none'  
+            display='none'
         ))
 
         def save_on_toggle(change):
@@ -99,6 +99,9 @@ class PluginWidget:
         # else: leave as is for future plugins
 
         self.widgets["active"].observe(self.toggle_config_visibility, names='value')
+
+        # Set initial visibility based on enabled state
+        self.toggle_config_visibility({'new': self.widgets["active"].value})
 
     def toggle_config_visibility(self, change):
         # For not implemented plugins, show/hide the message based on enable state
@@ -136,7 +139,7 @@ class PluginWidget:
                     "lambda_volume": 2.0
                 }
                 disabled = False
-                
+
             row = {}
             row["cell_type"] = widgets.Label(value=ct, layout=widgets.Layout(width='120px'))
             row["target_volume"] = widgets.FloatText(
@@ -202,7 +205,7 @@ class PluginWidget:
                     "lambda_surface": 0.5
                 }
                 disabled = False
-                
+
             row = {}
             row["cell_type"] = widgets.Label(value=ct, layout=widgets.Layout(width='120px'))
             row["target_surface"] = widgets.FloatText(
@@ -254,13 +257,13 @@ class PluginWidget:
     def create_adhesion_widgets(self, saved_values):
         # Use Potts neighbor order instead of user input
         neighbor_order = self.potts_neighbor_order.value if self.potts_neighbor_order else 2
-        
+
         # Display only - no input
         self.widgets["neighbor_order_display"] = widgets.Label(
             value=f"Neighbor Order: {neighbor_order}",
             layout=widgets.Layout(width='300px')
         )
-        
+
         defaults = AdhesionFlexPlugin().spec_dict
         self.widgets["max_distance"] = widgets.IntText(
             value=saved_values.get("max_distance", defaults.get("max_distance", 3)),
@@ -283,7 +286,7 @@ class PluginWidget:
 
         # Use Potts neighbor order instead of user input
         neighbor_order = self.potts_neighbor_order.value if self.potts_neighbor_order else 1
-        
+
         # Display only - no input
         self.widgets["neighbor_order_display"] = widgets.Label(
             value=f"Neighbor Order: {neighbor_order}",
@@ -388,7 +391,7 @@ class PluginWidget:
     def create_boundary_tracker_widgets(self, saved_values):
         # Use Potts neighbor order instead of user input
         neighbor_order = self.potts_neighbor_order.value if self.potts_neighbor_order else 2
-        
+
         # Display only - no input
         self.widgets["neighbor_order_display"] = widgets.Label(
             value=f"Neighbor Order: {neighbor_order}",
@@ -548,10 +551,10 @@ class PluginsTab:
         for plugin_name, plugin_class in plugin_classes.items():
             plugin_values = saved_plugins.get(plugin_name, DEFAULTS["Plugins"].get(plugin_name, {}))
             plugin_widget = PluginWidget(
-                plugin_name, 
-                plugin_class, 
-                plugin_values, 
-                self.cell_types, 
+                plugin_name,
+                plugin_class,
+                plugin_values,
+                self.cell_types,
                 parent_ui=self.parent_ui,
                 potts_neighbor_order=self.potts_neighbor_order
             )
@@ -1105,7 +1108,7 @@ class InitializerWidget:
         center_y = 50
         center_z = 0
         selected_cell_types = self.cell_types.copy() if self.cell_types else []
-        
+
         region = {
             "width": IntText(value=width, description="Width:"),
             "radius": IntText(value=radius, description="Radius:"),
@@ -1124,14 +1127,14 @@ class InitializerWidget:
                 layout=Layout(margin='0 0 0 10px')
             )
         }
-        
+
         region["remove_btn"].on_click(lambda btn, r=region: self.remove_region(r))
-        
+
         for key in ["width", "radius", "center_x", "center_y", "center_z"]:
             region[key].observe(self._trigger_save, names='value')
-        
+
         region["cell_types"].observe(self._trigger_save, names='value')
-        
+
         self.regions.append(region)
         self.update_regions_box()
         self._trigger_save()
@@ -1151,7 +1154,7 @@ class InitializerWidget:
                     HBox([region["width"], region["radius"]]),
                     VBox([
                         region["cell_types"],
-                        region["selection_note"]  
+                        region["selection_note"]
                     ]),
                     region["remove_btn"]
                 ], layout=Layout(border="1px solid #ccc", margin="10px 0", padding="10px"))
@@ -1234,11 +1237,11 @@ class SpecificationSetupUI:
         print("Loaded Specifications:")
         print(f"Metadata: {self.metadata.spec_dict}")
         print(f"PottsCore: {self.potts_core.spec_dict}")
-        print(f"Cell Types: {[ct['Cell type']] for ct in self.celltype_widget.get_config()}")
-        
+        print(f"Cell Types: {[ct['Cell type'] for ct in self.celltype_widget.get_config()]}")
+
         active_plugins = [name for name, config in self.plugins_tab.get_config().items() if config]
         print(f"Active Plugins: {active_plugins}")
-        
+
         init_config = self.initializer_widget.get_config()
         print(f"Initializer: {init_config['type']} with {len(init_config.get('regions', []))} regions")
 
@@ -1251,36 +1254,36 @@ class SpecificationSetupUI:
         import copy
         import inspect
         print("Generating simulation specifications...")
-        
+
         config = self.current_config()
         specs = []
-        
+
         # Metadata
         specs.append(Metadata(**config["Metadata"]))
-        
+
         # PottsCore (filter out invalid keys)
         pottscore_args = inspect.signature(PottsCore.__init__).parameters
         pottscore_config = {k: v for k, v in config["PottsCore"].items() if k in pottscore_args}
         specs.append(PottsCore(**pottscore_config))
-        
+
         # CellTypePlugin
         cell_types = [entry["Cell type"] for entry in config["CellType"]]
         specs.append(CellTypePlugin(*cell_types))
-        
+
         # VolumePlugin
         if "params" in config["Plugins"].get("VolumePlugin", {}):
             volume_plugin = VolumePlugin()
             for param in config["Plugins"]["VolumePlugin"]["params"]:
                 volume_plugin.param_new(param["CellType"], param["target_volume"], param["lambda_volume"])
             specs.append(volume_plugin)
-        
+
         # SurfacePlugin
         if "params" in config["Plugins"].get("SurfacePlugin", {}):
             surface_plugin = SurfacePlugin()
             for param in config["Plugins"]["SurfacePlugin"]["params"]:
                 surface_plugin.param_new(param["CellType"], param["target_surface"], param["lambda_surface"])
             specs.append(surface_plugin)
-        
+
         # ContactPlugin
         if "energies" in config["Plugins"].get("ContactPlugin", {}):
             cp_conf = config["Plugins"]["ContactPlugin"]
@@ -1289,7 +1292,7 @@ class SpecificationSetupUI:
                 for t2, param in t2dict.items():
                     contact_plugin.param_new(type_1=param["type_1"], type_2=param["type_2"], energy=param["energy"])
             specs.append(contact_plugin)
-        
+
         # Other plugins
         for plugin_name in ["AdhesionFlexPlugin", "BoundaryPixelTrackerPlugin", "ChemotaxisPlugin"]:
             if plugin_name in config["Plugins"] and config["Plugins"][plugin_name]:
@@ -1298,7 +1301,7 @@ class SpecificationSetupUI:
                 plugin_args = inspect.signature(plugin_class.__init__).parameters
                 filtered_config = {k: v for k, v in plugin_config.items() if k in plugin_args}
                 specs.append(plugin_class(**filtered_config))
-        
+
         # BlobInitializer
         if "Initializer" in config and config["Initializer"].get("type") == "BlobInitializer":
             blob_init = BlobInitializer()
@@ -1310,7 +1313,7 @@ class SpecificationSetupUI:
                     cell_types=region["cell_types"]
                 )
             specs.append(blob_init)
-        
+
         print(f"Generated {len(specs)} specification objects")
         return specs
 
@@ -1506,7 +1509,7 @@ class SpecificationSetupUI:
         from IPython.display import display
         import traceback
         import time
-        
+
         # Get current configuration
         specs = self.specs
 
@@ -1515,41 +1518,41 @@ class SpecificationSetupUI:
             try:
                 print("Simulation still work in progress...")
                 print("Initializing simulation...")
-                
+
                 # Initialize simulation service
                 self.cc3d_sim = CC3DSimService()
                 self.cc3d_sim.register_specs(specs)
-                
+
                 # Compile and run simulation
                 self.cc3d_sim.run()
                 self.cc3d_sim.init()
-                
+
                 # Start simulation without visualization first
                 self.cc3d_sim.start()
-                
+
                 print("Simulation started. Preparing visualization...")
-                
+
                 # Create visualization widget
                 viewer = self.cc3d_sim.visualize(plot_freq=10)
-                
+
                 # Display the viewer
                 display(viewer)
-                
+
                 # Give it a moment to initialize
                 time.sleep(1)
-                
+
                 # Call draw to ensure visualization updates
                 viewer.draw()
-                
+
                 # Display run button
                 run_button = self.cc3d_sim.jupyter_run_button()
                 if run_button:
                     display(run_button)
                 else:
                     print("Run button not available")
-                    
+
                 print("Simulation running. Use the run button to pause/resume.")
-                
+
             except Exception as e:
                 print("Error during simulation setup:")
                 traceback.print_exc()
@@ -1683,7 +1686,7 @@ class SimulationVisualizer:
     def __init__(self, specs):
         self.specs = specs
         self.cc3d_sim = None
-    
+
     def show_initializer(self):
         """Visualize the initial cell configuration"""
         # Create temporary simulation to generate initial state
@@ -1691,12 +1694,12 @@ class SimulationVisualizer:
         temp_sim.register_specs(self.specs)
         temp_sim.run()
         temp_sim.init()  # Initialize but don't start simulation
-        
+
         # Visualize at step 0 (initial state)
         viewer = temp_sim.visualize(plot_freq=1)
         viewer.show()  # Fixed: use show() instead of draw()
         return viewer
-    
+
     def show_simulation(self):
         """Run and visualize the live simulation"""
         # Create and start simulation service
@@ -1705,18 +1708,18 @@ class SimulationVisualizer:
         self.cc3d_sim.run()
         self.cc3d_sim.init()
         self.cc3d_sim.start()
-        
+
         # Create visualization widget
         viewer = self.cc3d_sim.visualize(plot_freq=10)
         viewer.show()  # Fixed: use show() instead of draw()
-        
+
         # Add simulation controls
         run_button = self.cc3d_sim.jupyter_run_button()
         if run_button:
             display(run_button)
-        
+
         return viewer
-    
+
     def stop_simulation(self):
         """Stop the running simulation"""
         if self.cc3d_sim:
