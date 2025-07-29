@@ -1,6 +1,6 @@
 # CompuCell3D Jupyter Widget
 
-An interactive Jupyter widget for configuring CompuCell3D simulations speficiation through a visual interface.
+An interactive Jupyter widget for configuring CompuCell3D simulations specification through a visual interface.
 
 ## Overview
 This project provides a comprehensive Jupyter Notebook interface for setting up CompuCell3D simulations. It features:
