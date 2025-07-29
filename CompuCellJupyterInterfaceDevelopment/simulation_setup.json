@@ -1,0 +1,116 @@
+{
+    "Metadata": {
+        "num_processors": 4,
+        "debug_output_frequency": 0
+    },
+    "PottsCore": {
+        "dim_x": 100,
+        "dim_y": 100,
+        "dim_z": 1,
+        "steps": 0,
+        "anneal": 0,
+        "fluctuation_amplitude": 10.0,
+        "fluctuation_amplitude_function": "Min",
+        "boundary_x": "NoFlux",
+        "boundary_y": "NoFlux",
+        "boundary_z": "NoFlux",
+        "neighbor_order": 2,
+        "debug_output_frequency": 0,
+        "random_seed": null,
+        "lattice_type": "Cartesian",
+        "offset": 0,
+        "energy_function_calculator": null
+    },
+    "CellType": [
+        {
+            "Cell type": "Medium",
+            "id": 0,
+            "freeze": false
+        },
+        {
+            "Cell type": "Condensing",
+            "id": 1,
+            "freeze": false
+        },
+        {
+            "Cell type": "NonCondensing",
+            "id": 2,
+            "freeze": false
+        }
+    ],
+    "Plugins": {
+        "ContactPlugin": {
+            "neighbor_order": 2,
+            "energies": {
+                "Medium": {
+                    "Condensing": {
+                        "type_1": "Medium",
+                        "type_2": "Condensing",
+                        "energy": 16.0
+                    },
+                    "NonCondensing": {
+                        "type_1": "Medium",
+                        "type_2": "NonCondensing",
+                        "energy": 16.0
+                    }
+                },
+                "Condensing": {
+                    "Condensing": {
+                        "type_1": "Condensing",
+                        "type_2": "Condensing",
+                        "energy": 2.0
+                    },
+                    "NonCondensing": {
+                        "type_1": "Condensing",
+                        "type_2": "NonCondensing",
+                        "energy": 11.0
+                    }
+                },
+                "NonCondensing": {
+                    "NonCondensing": {
+                        "type_1": "NonCondensing",
+                        "type_2": "NonCondensing",
+                        "energy": 10.0
+                    }
+                }
+            }
+        },
+        "VolumePlugin": {
+            "params": [
+                {
+                    "CellType": "Medium",
+                    "target_volume": 0.0,
+                    "lambda_volume": 0.0
+                },
+                {
+                    "CellType": "Condensing",
+                    "target_volume": 25.0,
+                    "lambda_volume": 2.0
+                },
+                {
+                    "CellType": "NonCondensing",
+                    "target_volume": 25.0,
+                    "lambda_volume": 2.0
+                }
+            ]
+        }
+    },
+    "Initializer": {
+        "type": "BlobInitializer",
+        "regions": [
+            {
+                "width": 5,
+                "radius": 20,
+                "center": [
+                    50,
+                    50,
+                    0
+                ],
+                "cell_types": [
+                    "Condensing",
+                    "NonCondensing"
+                ]
+            }
+        ]
+    }
+}
