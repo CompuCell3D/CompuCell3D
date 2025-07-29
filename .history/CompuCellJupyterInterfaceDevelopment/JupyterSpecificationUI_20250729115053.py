@@ -50,6 +50,8 @@ Author: CompuCell3D Development Team
 License: GPL v3
 """
 
+# TODOs for the Developers: 
+
 import os
 import json
 import ipywidgets as widgets
