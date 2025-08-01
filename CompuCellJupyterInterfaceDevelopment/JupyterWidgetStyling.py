@@ -1,6 +1,25 @@
+"""
+Jupyter Widget Styling Module
+
+Provides CSS styling for CompuCell3D Jupyter interface widgets.
+Injects styles into notebook environment for consistent appearance.
+
+Why separate file:
+- Separation of concerns (styling vs business logic)
+- Reusable across notebooks
+- Centralized maintenance
+- Standard Jupyter CSS injection approach
+- **NOTE**: Prevents styling loss on cell re-execution
+  When styling is injected inside a class (e.g., SpecificationSetupUI),
+  rerunning the cell with `ui = SpecificationSetupUI()` causes the styling
+  to disappear due to Jupyter's cell execution model. This separate file
+  allows persistent styling that survives cell re-execution.
+"""
+
 from IPython.display import display, HTML as IPythonHTML
 
 def inject_jupyter_widget_css():
+    """Injects CSS styles into Jupyter notebook for widget styling."""
     display(IPythonHTML("""
     <style>
     /* Round corners for all input boxes */

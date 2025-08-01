@@ -12,7 +12,7 @@ This project provides a comprehensive Jupyter Notebook interface for setting up 
 
 ## Table of Contents
 - [Features](#features)
-- [Installation](#installation)
+- [Quick Start](#quick-start)
 - [Usage](#usage)
 - [Future Development](#future-development)
 - [Contributors](#contributors)
@@ -29,30 +29,9 @@ This project provides a comprehensive Jupyter Notebook interface for setting up 
 - **Initializers**: Blob initialization with region controls
 - **Visualization**: Integrated simulation viewer
 
-## Installation
-### Step 1: Install CompuCell3D
-Download the appropriate package for your OS:
-   [CompuCell3D installation](https://compucell3d.org/SrcBin)
+## Quick Start
 
-### Step 2: Step Up a Python Environment
-# Create virtual environment (recommended)
-```
-python -m venv cc3d_env
-source cc3d_env
-<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
-/bin/activate  # Linux/macOS
-cc3d_env\Scripts\activate    # Windows
-
-# Install Python dependencies
-pip install ipywidgets>=8.0.0 jupyter>=1.0.0 numpy>=1.21.0
-```
-
-### Step 3:  Install the Widget
-```
-git clone (Github link)
-cd cc3d-jupyter-widget
-jupyter notebook
-```
+**[SortingExample.ipynb](SortingExample.ipynb)** - A complete cell sorting simulation example demonstrating all major features including 2D simulation setup, cell type configuration, volume constraints, contact energies, and live visualization.
 
 ## Usage
 ```python
