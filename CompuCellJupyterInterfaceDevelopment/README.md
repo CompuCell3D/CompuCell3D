@@ -31,7 +31,7 @@ This project provides a comprehensive Jupyter Notebook interface for setting up 
 
 ## Quick Start
 
-**[SortingExample.ipynb](SortingExample.ipynb)** - A complete cell sorting simulation example demonstrating all major features including 2D simulation setup, cell type configuration, volume constraints, contact energies, and live visualization.
+Go to **[SortingExample.ipynb](SortingExample.ipynb)** to access a complete cell sorting simulation example demonstrating all major features including 2D simulation setup, cell type configuration, volume constraints, contact energies, and live visualization.
 
 ## Usage
 ```python
