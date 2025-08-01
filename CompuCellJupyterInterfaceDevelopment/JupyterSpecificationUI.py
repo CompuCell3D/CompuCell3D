@@ -47,7 +47,7 @@ Troubleshooting:
     issues with dependencies, configuration, or CC3D installation.
 
 Author: CompuCell3D Development Team
-License: GPL v3
+License: MIT
 """
 
 import os
@@ -108,20 +108,16 @@ class PluginWidget:
     """
     Widget for configuring individual CompuCell3D plugins.
 
-    This class creates interactive widgets for plugin configuration, including
-    specialized UIs for VolumePlugin, SurfacePlugin, ContactPlugin, and others.
-    It handles parameter validation, automatic saving, and cell type updates.
+    Creates interactive widgets for plugin configuration with specialized UIs
+    for VolumePlugin, SurfacePlugin, ContactPlugin, and others. Handles
+    parameter validation, automatic saving, and cell type updates.
 
     Attributes:
         plugin_name (str): Name of the plugin (e.g., "VolumePlugin")
         plugin_class (class): The plugin class to instantiate
-        default_instance: Default instance of the plugin class
         cell_types (list): List of available cell type names
         widgets (dict): Dictionary of widget components
-        output (Output): Output widget for error messages
-        param_cache (dict): Cache for parameter values
         parent_ui: Reference to parent UI for save operations
-        potts_neighbor_order: Reference to Potts neighbor order widget
     """
 
     def __init__(self, plugin_name, plugin_class, saved_values, cell_types, parent_ui=None, potts_neighbor_order=None):
@@ -291,9 +287,8 @@ class PluginWidget:
         for row in self.widgets["rows"]:
             row_box = HBox([
                 row["cell_type"],
-                widgets.Label("Target Volume:", layout=widgets.Layout(width='100px', margin='0 -5px 0 0')),  # -5px right margin
+                widgets.Label("Target Volume:", layout=widgets.Layout(width='100px')),
                 row["target_volume"],
-                widgets.HTML(value="", layout=widgets.Layout(width='10px')),  # 10px spacer
                 widgets.Label("Lambda Volume:", layout=widgets.Layout(width='100px')),
                 row["lambda_volume"]
             ], layout=Layout(padding='4px 0 4px 12px'))
@@ -301,15 +296,7 @@ class PluginWidget:
         self.widgets["config_container"].children = [VBox(row_widgets)]
 
     def create_surface_widgets(self, saved_values):
-        """
-        Create widgets for SurfacePlugin configuration.
-
-        Creates a table of cell types with target surface and lambda surface parameters.
-        Medium cell type is automatically disabled with zero values.
-
-        Args:
-            saved_values (dict): Previously saved surface configuration
-        """
+        """Create widgets for SurfacePlugin configuration."""
         default_params = SurfacePlugin().spec_dict.get("params", [])
         default_map = {p["CellType"]: p for p in default_params} if default_params else {}
         saved_map = {p["CellType"]: p for p in saved_values.get("params", []) if "CellType" in p}
@@ -376,14 +363,7 @@ class PluginWidget:
         self.widgets["config_container"].children = [VBox(row_widgets)]
 
     def create_adhesion_widgets(self, saved_values):
-        """
-        Create widgets for AdhesionFlexPlugin configuration.
-
-        Uses Potts neighbor order and provides max_distance parameter.
-
-        Args:
-            saved_values (dict): Previously saved adhesion configuration
-        """
+        """Create widgets for AdhesionFlexPlugin configuration."""
         # Use Potts neighbor order instead of user input
         neighbor_order = self.potts_neighbor_order.value if self.potts_neighbor_order else 2
 
@@ -410,15 +390,7 @@ class PluginWidget:
         self.widgets["config_container"].children = [container]
 
     def create_contact_widgets(self, saved_values):
-        """
-        Create widgets for ContactPlugin configuration.
-
-        Creates a dynamic table for contact energy parameters between cell types.
-        Uses Potts neighbor order and allows adding/removing energy entries.
-
-        Args:
-            saved_values (dict): Previously saved contact configuration
-        """
+        """Create widgets for ContactPlugin configuration."""
         from ipywidgets import VBox, HBox, Dropdown, FloatText, Button, IntText, HTML, Layout
 
         # Use Potts neighbor order instead of user input
@@ -449,15 +421,7 @@ class PluginWidget:
             en = FloatText(value=energy, layout=Layout(width='100px'))
             rm = Button(description="Remove", button_style='danger', layout=Layout(width='80px'))
 
-            row = HBox([
-                dd1,
-                widgets.HTML(value="", layout=Layout(width='5px')),  # 5px spacer
-                dd2,
-                widgets.HTML(value="", layout=Layout(width='5px')),  # 5px spacer
-                en,
-                widgets.HTML(value="", layout=Layout(width='5px')),  # 5px spacer
-                rm
-            ])
+            row = HBox([dd1, dd2, en, rm])
             self.widgets["contact_rows"].append((row, dd1, dd2, en, rm))
 
             def on_remove(_):
@@ -493,7 +457,6 @@ class PluginWidget:
             add_row()
             if self.parent_ui and hasattr(self.parent_ui, 'save_to_json'):
                 self.parent_ui.save_to_json()
-
         add_btn.on_click(on_add_btn)
 
         # Table container (already created above)
@@ -504,20 +467,12 @@ class PluginWidget:
             self.widgets["neighbor_order_display"],
             HTML("<b>Contact Energies</b>"),
             self.widgets["contact_table"],
-            widgets.HTML(value="", layout=Layout(height='5px')),  # 5px spacer
             add_btn
         ])
         self.widgets["config_container"].children = [container]
 
     def create_chemotaxis_widgets(self, saved_values):
-        """
-        Create widgets for ChemotaxisPlugin configuration.
-
-        Provides field name and lambda value parameters.
-
-        Args:
-            saved_values (dict): Previously saved chemotaxis configuration
-        """
+        """Create widgets for ChemotaxisPlugin configuration."""
         defaults = ChemotaxisPlugin().spec_dict
         self.widgets["field"] = widgets.Text(
             value=saved_values.get("field", defaults.get("field", "chemoattractant")),
@@ -542,14 +497,7 @@ class PluginWidget:
         self.widgets["config_container"].children = [container]
 
     def create_boundary_tracker_widgets(self, saved_values):
-        """
-        Create widgets for BoundaryPixelTrackerPlugin configuration.
-
-        Uses Potts neighbor order and displays it as read-only.
-
-        Args:
-            saved_values (dict): Previously saved boundary tracker configuration
-        """
+        """Create widgets for BoundaryPixelTrackerPlugin configuration."""
         # Use Potts neighbor order instead of user input
         neighbor_order = self.potts_neighbor_order.value if self.potts_neighbor_order else 2
 
@@ -704,9 +652,8 @@ class PluginsTab:
     """
     Tab widget for managing all CompuCell3D plugins.
 
-    This class organizes plugins into logical categories (Cell Behavior, Constraints,
-    Trackers, Other Plugins) and provides a tabbed interface for easy navigation.
-    It handles plugin creation, configuration, and reset functionality.
+    Organizes plugins into logical categories (Cell Behavior, Constraints,
+    Trackers, Other Plugins) and provides a tabbed interface for navigation.
 
     Attributes:
         widgets (dict): Dictionary of widget components
@@ -864,9 +811,9 @@ class PottsWidget:
     """
     Widget for configuring Potts Core parameters.
 
-    This class provides interactive widgets for all Potts Core parameters including
-    dimensions, simulation steps, neighbor order, boundary conditions, and advanced
-    settings like annealing and fluctuation amplitude.
+    Provides interactive widgets for all Potts Core parameters including
+    dimensions, simulation steps, neighbor order, boundary conditions, and
+    advanced settings like annealing and fluctuation amplitude.
 
     Attributes:
         widgets (dict): Dictionary of widget components
@@ -1134,9 +1081,9 @@ class CellTypeWidget:
     """
     Widget for managing cell types in the simulation.
 
-    This class provides an interactive interface for adding, removing, and configuring
-    cell types. It automatically manages the Medium cell type (ID 0) and ensures
-    proper ID assignment for new cell types. It also handles the freeze property
+    Provides an interactive interface for adding, removing, and configuring
+    cell types. Automatically manages the Medium cell type (ID 0) and ensures
+    proper ID assignment for new cell types. Handles the freeze property
     for each cell type.
 
     Attributes:
@@ -1381,9 +1328,9 @@ class InitializerWidget:
     """
     Widget for configuring simulation initializers.
 
-    This class provides an interface for configuring different types of initializers,
+    Provides an interface for configuring different types of initializers,
     currently supporting BlobInitializer with multiple region configuration.
-    It allows users to define regions with specific dimensions, positions, and
+    Allows users to define regions with specific dimensions, positions, and
     cell type assignments.
 
     Attributes:
@@ -1607,12 +1554,12 @@ class SpecificationSetupUI:
     """
     Main UI class for CompuCell3D simulation specification setup.
 
-    This class provides a comprehensive Jupyter notebook interface for configuring
-    all aspects of a CompuCell3D simulation. It includes tabs for Metadata,
+    Provides a comprehensive Jupyter notebook interface for configuring
+    all aspects of a CompuCell3D simulation. Includes tabs for Metadata,
     Potts Core parameters, Cell Types, Plugins, Initializers, and Steppables.
 
     The interface automatically saves configurations to JSON and provides real-time
-    validation. It supports both 2D and 3D simulations with configurable
+    validation. Supports both 2D and 3D simulations with configurable
     boundary conditions and lattice types.
 
     Key Features:
@@ -1623,9 +1570,6 @@ class SpecificationSetupUI:
     - Plugin-specific UI components (Volume/Surface tables, Contact energy matrix)
     - BlobInitializer with multiple region support
     - Integration with CompuCell3D simulation service
-    - Configuration validation before simulation execution
-    - Comprehensive error handling and troubleshooting
-    - Setup testing capabilities
 
     Attributes:
         _initializing (bool): Flag to suppress save_to_json during initialization
@@ -2156,11 +2100,11 @@ class SpecificationSetupUI:
             ui = SpecificationSetupUI()
             ui.run_and_visualize()
 
-            # The method will display:
-            # - Validation status messages
-            # - Simulation initialization progress
-            # - Visualization widget (if available)
-            # - Run/pause control button
+            The method will display:
+            - Validation status messages
+            - Simulation initialization progress
+            - Visualization widget (if available)
+            - Run/pause control button
 
         **Troubleshooting:**
             If the method fails, check the following:
@@ -2636,7 +2580,7 @@ class SimulationVisualizer:
     """
     Class for visualizing CompuCell3D simulations.
 
-    This class provides methods for creating initial state visualizations
+    Provides methods for creating initial state visualizations
     and running live simulations with real-time visualization.
 
     Attributes:
