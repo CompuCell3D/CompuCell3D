@@ -38,7 +38,9 @@ Download the appropriate package for your OS:
 # Create virtual environment (recommended)
 ```
 python -m venv cc3d_env
-source cc3d_env/bin/activate  # Linux/macOS
+source cc3d_env
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
+/bin/activate  # Linux/macOS
 cc3d_env\Scripts\activate    # Windows
 
 # Install Python dependencies
