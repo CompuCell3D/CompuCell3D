@@ -67,7 +67,7 @@ from cc3d.core.PyCoreSpecs import (
     SurfacePlugin, VolumePlugin, BlobInitializer
 )
 from cc3d.core.PyCoreSpecs import SpecValueCheckError
-from IPython.display import display as ipy_display
+from IPython.display import display
 
 from cc3d.core.simservice.CC3DSimService import CC3DSimService
 
@@ -2402,7 +2402,7 @@ class SpecificationSetupUI:
             width='850px',
             padding='15px')
         )
-        ipy_display(container)
+        display(container)
 
     def create_metadata_tab(self):
         """
