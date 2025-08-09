@@ -1,0 +1,5 @@
+<Simulation version="4.0.0">
+   <XMLScript Type="XMLScript">Simulation/GrowthSteppable.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/GrowthSteppable.py</PythonScript>
+   <Resource Type="Python">Simulation/GrowthSteppableSteppables.py</Resource>
+</Simulation>
