@@ -58,6 +58,7 @@ def run_cc3d_project(cc3d_sim_fname):
         CompuCell.CC3DLogger.get().log(CompuCell.LOG_ERROR, 'Could not find cc3d_sim_fname')
         return
 
+    pg = CompuCellSetup.persistent_globals
     CompuCellSetup.cc3dSimulationDataHandler = cc3d_simulation_data_handler
     # todo - need to find a better solution ot append and remove pythonpath of the simulation object
     sys.path.insert(0, join(dirname(cc3d_sim_fname), 'Simulation'))
@@ -73,7 +74,8 @@ def run_cc3d_project(cc3d_sim_fname):
         output_directory = CompuCellSetup.persistent_globals.output_directory
 
         if cc3d_simulation_data_handler and output_directory is not None:
-            cc3d_simulation_data_handler.copy_simulation_data_files(output_directory)
+            pg.copy_simulation_files_to_output_folder(custom_output_directory=output_directory)
+            # cc3d_simulation_data_handler.copy_simulation_data_files(output_directory)
 
         if code is not None:
             try:

@@ -117,8 +117,8 @@ class RestartManager:
         restart_files_dir = restart_output_root.joinpath('restart')
 
         restart_files_dir.mkdir(parents=True, exist_ok=True)
+        pg.copy_simulation_files_to_output_folder(custom_output_directory=restart_output_root)
 
-        self.cc3d_simulation_data_handler.copy_simulation_data_files(restart_output_root)
 
         return str(restart_files_dir)
 
