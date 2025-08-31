@@ -24,7 +24,9 @@ class PersistentGlobals:
         """core specification registry"""
         self._configuration = None
         self._configuration_getter = None
-
+        # if True we will  call sim.step() at MCS ==0.
+        # NOTE we need to set it to True for testing
+        self.execute_step_at_mcs_0 = False
         #: c++ object reference :class:`cc3d.cpp.CompuCell.Simulator`
         self.simulator = None
 

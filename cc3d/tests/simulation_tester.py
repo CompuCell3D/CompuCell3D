@@ -56,6 +56,7 @@ def main():
     rs.num_steps = 1000
     rs.test_output_root = test_output_root
     rs.test_output_dir = ''
+    rs.execute_step_at_mcs_0 = True
 
     # clean test_output_dir
     try:
