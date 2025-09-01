@@ -24,6 +24,7 @@ def process_cml():
         "--run-command", nargs="+", type=str, required=False, help="cc3d run script (either RunScript or compucell3d)"
     )
     cml_parser.add_argument("--output-dir", required=True, help="test output dir")
+    cml_parser.add_argument("--log-level", required=False, help="log level")
 
     args = cml_parser.parse_args()
 
@@ -61,14 +62,8 @@ def main():
     rs.num_steps = 1000
     rs.test_output_root = args.output_dir
     rs.test_output_dir = ""
-
-    # if sys.platform.startswith('win'):
-    #     rs.run_command = run_command
-    #     rs.player_interactive_flag = False
-    #     rs.cc3d_project = ''
-    #     rs.num_steps = 1000
-    #     rs.test_output_root = test_output_root
-    #     rs.test_output_dir = ''
+    rs.log_level = args.log_level
+    rs.execute_step_at_mcs_0 = True
 
     # clean test_output_dir
     try:
@@ -98,7 +93,9 @@ def main():
         #     continue
         # if Path(cc3d_project).name != "FocalPointPlasticityCustom.cc3d":
         #     continue
-
+        # if Path(cc3d_project).name != "amoebae_2D.cc3d":
+        #     continue
+        print("TESTING: ", cc3d_project)
         rs.cc3d_project = cc3d_project
         rs.test_output_dir = relpath(cc3d_project, cc3d_projects_common_prefix)
         run_executor = RunExecutor(run_specs=rs)

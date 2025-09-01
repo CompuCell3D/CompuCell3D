@@ -1,12 +1,11 @@
 import os
 from typing import List, Union
-import warnings
 import types
 from cc3d.cpp import CompuCell
 from cc3d import CompuCellSetup
 from deprecated import deprecated
 from random import randint
-
+from cc3d.core.logging import log_py
 
 
 # Test for Antimony installation
@@ -205,10 +204,11 @@ class SBMLSolverHelper(object):
 
         if model_string == '':
             if not model_file:
-                warnings.warn('\n\n\n _modelFile argument not provided to addSBMLToCell. '
-                              'This will prevent proper restart of the simulation'
-                              'You may ignore this warning if you are not '
-                              'serializing simulation for future restarts', RuntimeWarning)
+                log_py(CompuCell.LOG_WARNING,
+                       '\n\n\n _modelFile argument not provided to addSBMLToCell. '
+                       'This will prevent proper restart of the simulation'
+                       'You may ignore this warning if you are not '
+                       'serializing simulation for future restarts')
 
             model_path_normalized = self.normalize_path(model_file)
         else:
@@ -317,10 +317,11 @@ class SBMLSolverHelper(object):
 
         if model_string == '':
             if not model_file:
-                warnings.warn('\n\n\n _modelFile argument not provided to addSBMLToCell. '
-                              'This will prevent proper restart of the simulation'
-                              'You may ignore this warning if you are not '
-                              'serializing simulation for future restarts', RuntimeWarning)
+                log_py(CompuCell.LOG_WARNING,
+                       '\n\n\n _modelFile argument not provided to addSBMLToCell. '
+                       'This will prevent proper restart of the simulation'
+                       'You may ignore this warning if you are not '
+                       'serializing simulation for future restarts')
 
             model_path_normalized = self.normalize_path(model_file)
         else:
@@ -556,9 +557,9 @@ class SBMLSolverHelper(object):
         cell_types = self.__default_mutable_type(cell_types, [])
 
         if 'steps' in list(options.keys()):
-            warnings.warn('-----------WARNING-----------------\n'
-                          ' steps option for SBML solver is deprecated.',
-                          RuntimeWarning)
+            log_py(CompuCell.LOG_WARNING,
+                   '-----------WARNING-----------------\n'
+                   ' steps option for SBML solver is deprecated.')
 
         for cell in self.cellListByType(*cell_types):
             self.add_sbml_to_cell(model_file=model_file, model_string=model_string, model_name=model_name, cell=cell,
@@ -661,8 +662,8 @@ class SBMLSolverHelper(object):
         cell_ids = self.__default_mutable_type(cell_ids, [])
 
         if 'steps' in list(options.keys()):
-            warnings.warn('-----------WARNING-----------------\n\n steps option for SBML solver is deprecated.',
-                          RuntimeWarning)
+            log_py(CompuCell.LOG_WARNING,
+                   '-----------WARNING-----------------\n\n steps option for SBML solver is deprecated.')
 
         for cell_id in cell_ids:
             cell = self.inventory.attemptFetchingCellById(cell_id)

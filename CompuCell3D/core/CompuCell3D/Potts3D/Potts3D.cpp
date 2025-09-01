@@ -1268,7 +1268,9 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
     if (infile) {
 
         std::vector <PottsTestData> potts_test_data_vector = potts_test_data.deserialize_potts_data_sequence(infile);
+        //cerr<<"potts_test_data_vector.size()="<<potts_test_data_vector.size()<<endl;
         for (auto i = 0; i < potts_test_data_vector.size(); ++i) {
+            //cerr<<"processing test line:"<<i<<" in "<<simulation_test_data<<endl;
             PottsTestData potts_test_data_local = potts_test_data_vector[i];
 
             Point3D changePixel = potts_test_data_local.changePixel;
@@ -1309,6 +1311,7 @@ unsigned int Potts3D::metropolisTestRun(const unsigned int steps, const double t
             potts_test_data.energyFunctionNameToValueMap = energyCalculator->getEnergyFunctionNameToValueMap();
 
             potts_test_data_local.compare_potts_data(potts_test_data);
+//            cerr<<" done with line "<<i<<endl;
 
         }
     }
@@ -1381,12 +1384,14 @@ void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
             //we do not allow steering for motility specified by type
             sim->ppdCC3DPtr->temperature = _xmlData->getFirstElement("FluctuationAmplitude")->getDouble();
+            temperature = _xmlData->getFirstElement("FluctuationAmplitude")->getDouble();
             fluctAmplGlobalReadFlag = true;
         }
     }
 
     if (!fluctAmplGlobalReadFlag && _xmlData->getFirstElement("Temperature")) {
         sim->ppdCC3DPtr->temperature = _xmlData->getFirstElement("Temperature")->getDouble();
+        temperature = _xmlData->getFirstElement("Temperature")->getDouble();
     }
 
     if (_xmlData->getFirstElement("RandomSeed")) {

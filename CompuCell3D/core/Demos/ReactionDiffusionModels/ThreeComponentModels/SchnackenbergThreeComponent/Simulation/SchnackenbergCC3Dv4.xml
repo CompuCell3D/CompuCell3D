@@ -57,9 +57,9 @@
    <Steppable Type="ReactionDiffusionSolverFE">     
   <DiffusionField> 
        <DiffusionData>  
-          <FieldName>u</FieldName>  
-          <DiffusionConstant>0.001</DiffusionConstant>
-          <AdditionalTerm>0.01*(0.1-u+u*u*v+u*u*w)</AdditionalTerm>
+          <FieldName>u</FieldName> 
+          <DiffusionConstant>0.01</DiffusionConstant>
+          <AdditionalTerm>0.001*(-u+u*u*v-w)</AdditionalTerm>
         </DiffusionData> 
         <SecretionData>
             <Secretion Type="SecretingCells">0.1</Secretion>
@@ -68,8 +68,8 @@
   <DiffusionField>
         <DiffusionData>
             <FieldName>v</FieldName>
-            <DiffusionConstant>0.1</DiffusionConstant>
-            <AdditionalTerm>0.01*(0.9-u*u*v)</AdditionalTerm>
+            <DiffusionConstant>2</DiffusionConstant>
+            <AdditionalTerm>0.01*(1-u*u*v)</AdditionalTerm>
         </DiffusionData>
         <SecretionData>
             <Secretion Type="NonSecretingCells">0.4</Secretion>
@@ -79,7 +79,7 @@
         <DiffusionData>  
            <FieldName>w</FieldName>  
            <DiffusionConstant>0.1</DiffusionConstant>
-           <AdditionalTerm>0.01*(0.9-w-u*u*w)</AdditionalTerm>
+           <AdditionalTerm>0.01*(u-w)</AdditionalTerm>
          </DiffusionData> 
          <SecretionData>
             <Secretion Type="SecretingCells">0.4</Secretion>

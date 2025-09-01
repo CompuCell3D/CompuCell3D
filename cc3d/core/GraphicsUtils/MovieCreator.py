@@ -63,7 +63,8 @@ def makeMovie(simulationPath, frameRate, quality, enableDrawingMCS=True) -> Tupl
                                 mcs = frameCount
 
                             # Text will go in top right
-                            textOverlayFile.write(f"{frameCount} drawtext reinit 'text=MCS {mcs}':x=w-tw-10:y=10;\n")
+                            startTime = frameCount / frameRate
+                            textOverlayFile.write(f"{startTime} drawtext reinit 'text=MCS {mcs}':x=w-tw-10:y=10;\n")
                         frameCount += 1
 
                 tempFile.close()

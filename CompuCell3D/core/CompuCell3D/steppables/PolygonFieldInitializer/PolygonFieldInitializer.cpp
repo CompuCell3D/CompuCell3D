@@ -92,20 +92,28 @@ void PolygonFieldInitializer::init(Simulator *simulator, CC3DXMLElement *_xmlDat
                     'From' and 'To' points.");
             }
 
-            if (regionVec[i]->findElement("Extrude")) {
+            if (regionVec[i]->findElement("Extrude") && dim.z > 1) {
                 CC3DXMLElement * extrudeXML = regionVec[i]->getFirstElement("Extrude");
                 initData.zMin = extrudeXML->getAttributeAsUInt("zMin");
                 initData.zMax = extrudeXML->getAttributeAsUInt("zMax");
+
+                //Try to help user render 1 layer of cells if they set Extrude incorrectly.
+                if (initData.zMax <= initData.zMin) {
+                    CC3DLogger::get()->log(LOG_WARNING, "Warning: PolygonInitializer requires that zMax > zMin in the Extrude parameter.\n");
+                    int tmp = initData.zMin;
+                    initData.zMin = initData.zMax;
+                    initData.zMax = tmp;
+                }
+                if (initData.zMax - initData.zMin < initData.width) {
+                    CC3DLogger::get()->log(LOG_WARNING, "Warning: PolygonInitializer requires a larger value for zMax in the Extrude parameter \
+                        in order to render at least one cell layer. We've fixed it for you.\n");
+                    initData.zMax = initData.zMin + initData.width;
+                }
             }
             else {
-                //Set default value of extrusion so that the entire field is covered
-                WatchableField3D < CellG * > *cellField = (WatchableField3D < CellG * > *)
-                potts->getCellFieldG();
-                if (!cellField) throw CC3DException("initField() Cell field cannot be null!");
-                Dim3D dim = cellField->getDim();
-
+                //Only render 1 layer
                 initData.zMin = 0;
-                initData.zMax = dim.z;
+                initData.zMax = initData.width;
             }
             
             initDataVec.push_back(initData);
@@ -255,8 +263,17 @@ void PolygonFieldInitializer::layOutCells(const PolygonFieldInitializerData &_in
     CellG *cell;
     Coordinates3D<double> doublePoint = Coordinates3D<double>();
 
-    //Only Z is dependent on the Extrude parameter
-    for (int z = _initData.zMin / size; z < _initData.zMax / size; z++)
+    //Guarantee that at least one layer of cells is created.
+    int zStart = _initData.zMin / size;
+    int zEnd = _initData.zMax / size;
+    if (zEnd - zStart > itDim.z) {
+        CC3DLogger::get()->log(LOG_INFORMATION, "Treating this as a 2D polygon.\n");
+        zStart = 0;
+        zEnd = itDim.z;
+    }
+
+    //Only Z is dependent on the Extrude parameter.
+    for (int z = zStart; z < zEnd; z++)
         for (int y = 0; y < itDim.y; y++)
             for (int x = 0; x < itDim.x; x++) {
                 pt.x = x * size;

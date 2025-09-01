@@ -1,6 +1,8 @@
-import warnings
 # from vtkmodules.vtkCommonCorePython import vtkObjectBase
 from vtk import vtkObjectBase
+
+from cc3d.core.logging import log_py
+from cc3d.cpp import CompuCell
 
 
 def extract_address_int_from_vtk_object(vtkObj) -> int:
@@ -80,5 +82,5 @@ def cs_string_to_typed_list(cs_str: str, sep=",", type_conv_fcn=float):
             return []
         return list([type_conv_fcn(x) for x in list_strings])
     except:
-        warnings.warn('Could not convert string {s} to a typed list'.format(s=cs_str))
+        log_py(CompuCell.LOG_WARNING, 'Could not convert string {s} to a typed list'.format(s=cs_str))
         return []

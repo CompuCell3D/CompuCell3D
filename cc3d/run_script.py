@@ -44,6 +44,13 @@ def process_cml(known_args=None):
                             help='optional argument that specifies parameter scan iteration - used to enable steppables'
                                  'to access current param scan iteration number')
 
+    cml_parser.add_argument(
+        '--execute-step-at-mcs-0',
+        action='store_true',
+        default=False,
+        help='Execute step at MCS 0 when this flag is present.'
+    )
+
     cml_parser.add_argument('--log-level', required=False, type=str, default='',
                             choices=['', 'FATAL', 'CRITICAL', 'ERROR',
                                      'WARNING', 'NOTICE', 'INFORMATION',
@@ -101,6 +108,7 @@ def main(args:argparse.Namespace=None):
     current_dir = args.current_dir if args.current_dir else ''
     cc3d_sim_fname_abs = join(current_dir, cc3d_sim_fname)
 
+    persistent_globals.execute_step_at_mcs_0 = args.execute_step_at_mcs_0
     persistent_globals.simulation_file_name = cc3d_sim_fname_abs
     persistent_globals.output_frequency = output_frequency
     persistent_globals.screenshot_output_frequency = screenshot_output_frequency

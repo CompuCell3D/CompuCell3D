@@ -11,6 +11,7 @@ import copy
 from cc3d.core.utils import mkdir_p
 from cc3d.cpp.CompuCell import PyAttributeAdder
 from pathlib import Path
+import shutil
 from threading import Lock
 
 
@@ -23,7 +24,9 @@ class PersistentGlobals:
         """core specification registry"""
         self._configuration = None
         self._configuration_getter = None
-
+        # if True we will  call sim.step() at MCS ==0.
+        # NOTE we need to set it to True for testing
+        self.execute_step_at_mcs_0 = False
         #: c++ object reference :class:`cc3d.cpp.CompuCell.Simulator`
         self.simulator = None
 
@@ -101,6 +104,93 @@ class PersistentGlobals:
 
         self.gillespie_integrator_seed = None
         self.gillespie_integrator_max_seed = int(2e9)
+
+    def get_custom_settings_path(self) -> Union[Path, None]:
+        simulation_fname = Path(self.simulation_file_name)
+        ext = simulation_fname.suffix
+        if ext.lower() == ".dml":
+            proposed_custom_settings_path = Path(self.simulation_file_name).parent.parent.joinpath("Simulation/_settings.sqlite")
+            if simulation_fname.exists():
+                return proposed_custom_settings_path
+            return None
+        elif ext.lower() == ".cc3d":
+            proposed_custom_settings_path = Path(self.simulation_file_name).parent.joinpath(
+                "Simulation/_settings.sqlite")
+            if simulation_fname.exists():
+                return proposed_custom_settings_path
+            return None
+        else:
+            return None
+
+    def copy_custom_settings_to_output_folder(self):
+        """
+        Copy custom settings (file or directory) into <output>/Simulation/.
+        Returns the destination path or None if there's nothing to copy.
+        """
+        if not self.output_directory:
+            return None
+
+        settings_path = self.get_custom_settings_path()
+        if not settings_path:
+            return None
+
+        src = Path(settings_path).resolve()
+        if not src.exists():
+            return None
+
+        dst_root = Path(self.output_directory).resolve() / "Simulation"
+        dst_root.mkdir(parents=True, exist_ok=True)
+
+        if src.is_file():
+            dst = dst_root / src.name
+            shutil.copy2(src, dst)
+            return dst
+
+        return None
+
+
+        simulation_fname = Path(self.simulation_file_name)
+    def copy_simulation_files_to_output_folder(self, custom_output_directory:Union[str, Path, None]=None):
+        """
+        Copies all files INSIDE the simulation folder (parent of simulation_file_name)
+        into self.output_directory. Existing files may be overwritten.
+        """
+        if not self.simulation_file_name:
+            return None
+
+        output_dir = custom_output_directory or self.output_directory
+        if not output_dir:
+            return None
+
+        src = Path(self.simulation_file_name).resolve().parent
+        dst = Path(output_dir).resolve()
+
+        if not src.exists():
+            raise FileNotFoundError(f"Simulation folder does not exist: {src}")
+
+        # Safety: avoid copying into itself or a child of the source
+        if dst == src or dst.is_relative_to(src):
+            raise ValueError("Output directory cannot be the simulation folder or inside it.")
+
+        dst.mkdir(parents=True, exist_ok=True)
+
+        ignore = shutil.ignore_patterns("__pycache__", ".DS_Store", "*.pyc")
+        # Python 3.8+: dirs_exist_ok=True allows copying into an existing dir and will overwrite files.
+        shutil.copytree(src, dst, dirs_exist_ok=True, ignore=ignore)  # merges contents into dst
+
+        return dst
+
+    # def copy_simulation_files_to_output_folder(self):
+    #     """
+    #     Stores simulation files replica in the output folder. Copies all files inside simulation folder
+    #     """
+    #     if not self.simulation_file_name or not self.output_directory:
+    #         return None
+    #     source_dir = Path(self.simulation_file_name).parent
+    #     destination_dir = self.output_directory
+    #
+
+
 
     def set_configuration_getter(self, _fget) -> None:
         """

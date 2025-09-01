@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 from typing import Union
 import os
-from os.path import dirname, join, exists
+from os.path import dirname, exists
 from collections import OrderedDict
 from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
+from cc3d.core.enums import FieldProperties
+from cc3d.core.logging import LoggedContext, log_py
 import json
 import cc3d
+from cc3d.cpp import CompuCell
 from cc3d import CompuCellSetup
-from typing import Optional
+from cc3d.CompuCellSetup.utils import standard_screenshot_file
+from typing import Dict, List
 
 MODULENAME = '---- ScreenshotManager.py: '
 
@@ -15,7 +19,7 @@ MODULENAME = '---- ScreenshotManager.py: '
 class ScreenshotManagerCore(object):
     def __init__(self):
 
-        self.screenshotDataDict = {}
+        self.screenshotDataDict: Dict[str, ScreenshotData] = {}
         self.screenshotCounter3D = 0
         self.screenshotGraphicsWidget = None
         self.gd = None
@@ -30,7 +34,7 @@ class ScreenshotManagerCore(object):
 
         }
 
-        self.ad_hoc_screenshot_dict = {}
+        self.ad_hoc_screenshot_dict: Dict[str, int] = {}
         self.output_error_flag = False
         self.padding = 4
         self.screenshot_config_counter = 0
@@ -69,21 +73,26 @@ class ScreenshotManagerCore(object):
         """
         raise NotImplementedError()
 
-    def produce_screenshot_core_name(self, _scrData):
-        return str(_scrData.plotData[0]) + "_" + str(_scrData.plotData[1])
+    def produce_screenshot_core_name(self, _scr_data: ScreenshotData):
+        if isinstance(_scr_data.plotData[1], FieldProperties):
+            return str(_scr_data.plotData[0]) + "_" + str(_scr_data.plotData[1].field_type)
+        elif isinstance(_scr_data.plotData[1], str):
+            return str(_scr_data.plotData[0]) + "_" + str(_scr_data.plotData[1])
+        else:
+            raise RuntimeError("_scr_data.plotData[1] must be of type 'FieldProperties' or 'str'")
 
-    def produce_screenshot_name(self, _scrData):
+    def produce_screenshot_name(self, _scr_data: ScreenshotData):
         screenshot_name = "Screenshot"
         screenshot_core_name = "Screenshot"
 
-        if _scrData.spaceDimension == "2D":
-            screenshot_core_name = self.produce_screenshot_core_name(_scrData)
-            screenshot_name = screenshot_core_name + "_" + _scrData.spaceDimension + "_" + _scrData.projection + "_" + str(
-                _scrData.projectionPosition)
-        elif _scrData.spaceDimension == "3D":
-            screenshot_core_name = self.produce_screenshot_core_name(_scrData)
-            screenshot_name = screenshot_core_name + "_" + _scrData.spaceDimension + "_" + str(self.screenshotCounter3D)
-        return (screenshot_name, screenshot_core_name)
+        if _scr_data.spaceDimension == "2D":
+            screenshot_core_name = self.produce_screenshot_core_name(_scr_data)
+            screenshot_name = screenshot_core_name + "_" + _scr_data.spaceDimension + "_" + _scr_data.projection + "_" + str(
+                _scr_data.projectionPosition)
+        elif _scr_data.spaceDimension == "3D":
+            screenshot_core_name = self.produce_screenshot_core_name(_scr_data)
+            screenshot_name = screenshot_core_name + "_" + _scr_data.spaceDimension + "_" + str(self.screenshotCounter3D)
+        return screenshot_name, screenshot_core_name
 
     @staticmethod
     def starting_screenshot_description_data():
@@ -95,12 +104,13 @@ class ScreenshotManagerCore(object):
         return root_elem
 
     @staticmethod
-    def append_screenshot_description_data(root_elem: dict, data_elem: dict, screenshot_uid: Optional[str]=None):
+    def append_screenshot_description_data(root_elem: dict, data_elem: dict, screenshot_uid: str = None):
         """
         Append a screenshot data element
 
         :param root_elem: screenshot data
         :param data_elem: data element for a field
+        :param screenshot_uid: screenshot id; optional
         """
 
         key = data_elem['Plot']['PlotName'] if screenshot_uid is None else screenshot_uid
@@ -112,7 +122,9 @@ class ScreenshotManagerCore(object):
         root_elem = self.starting_screenshot_description_data()
 
         for screenshot_uid in self.screenshotDataDict:
-            self.append_screenshot_description_data(root_elem, self.screenshotDataDict[screenshot_uid].to_json(), screenshot_uid)
+            self.append_screenshot_description_data(root_elem,
+                                                    self.screenshotDataDict[screenshot_uid].to_json(),
+                                                    screenshot_uid)
 
         return root_elem
 
@@ -142,21 +154,23 @@ class ScreenshotManagerCore(object):
         :return: None
         """
 
-        version = root_elem['Version']
-        scr_data_container = root_elem['ScreenshotData']
+        with LoggedContext() as lc:
 
-        # will replace it with a dict, for now leaving it as an if statement
+            version = root_elem['Version']
+            scr_data_container = root_elem['ScreenshotData']
 
-        try:
-            screenshot_file_parser_fcn = self.fetch_screenshot_description_file_parser_fcn(version)
-            # screenshot_file_parser_fcn = self.screenshot_file_parsers[version]
-        except KeyError:
-            raise RuntimeError('Unknown version of screenshot description: {}. Make sure '
-                               'that <b>ScreenshotManagerCore.py</b> defines <b>screenshot_file_parser</b> '
-                               'for this version of CompuCell3D'.format(version))
+            # will replace it with a dict, for now leaving it as an if statement
 
-        screenshot_file_parser_fcn(scr_data_container)
-        self.find_highest_screenshot_config_counter()
+            try:
+                screenshot_file_parser_fcn = self.fetch_screenshot_description_file_parser_fcn(version)
+            except KeyError:
+                lc.log(CompuCell.LOG_ERROR, f'Got bad version number: {version}')
+                raise RuntimeError('Unknown version of screenshot description: {}. Make sure '
+                                   'that <b>ScreenshotManagerCore.py</b> defines <b>screenshot_file_parser</b> '
+                                   'for this version of CompuCell3D'.format(version))
+
+            screenshot_file_parser_fcn(scr_data_container)
+            self.find_highest_screenshot_config_counter()
 
     def read_screenshot_description_file_json(self, filename):
         """
@@ -166,14 +180,19 @@ class ScreenshotManagerCore(object):
         :return: None
         """
 
-        with open(filename, 'r') as f_in:
-            root_elem = json.load(f_in)
+        with LoggedContext() as lc:
 
-        if root_elem is None:
-            print(('Could not read screenshot description file {}'.format(filename)))
-            return
+            lc.log(msg=f'Got file name: {filename}')
 
-        self.read_screenshot_description_data(root_elem)
+            with open(filename, 'r') as f_in:
+                root_elem = json.load(f_in)
+
+            if root_elem is None:
+                lc.log(CompuCell.LOG_ERROR, f'Could not read screenshot description file {filename}')
+
+                return
+
+            self.read_screenshot_description_data(root_elem)
 
     def read_screenshot_description_file_json_379(self, scr_data_container):
         """
@@ -196,10 +215,6 @@ class ScreenshotManagerCore(object):
             except ValueError:
                 pass
 
-
-
-
-
     @staticmethod
     def get_screenshot_filename() -> Union[str, None]:
         """
@@ -207,11 +222,10 @@ class ScreenshotManagerCore(object):
         :return:
         """
         sim_file_name = CompuCellSetup.persistent_globals.simulation_file_name
-        if sim_file_name is None and sim_file_name != '':
-            print('Unknown simulation file name . Cannot locate screenshot_data folder')
+        if sim_file_name is None or sim_file_name == '':
             return None
 
-        guessed_screenshot_name = join(dirname(sim_file_name), 'screenshot_data', 'screenshots.json')
+        guessed_screenshot_name = standard_screenshot_file(dirname(sim_file_name), must_exist=False)
 
         return guessed_screenshot_name
 
@@ -228,8 +242,8 @@ class ScreenshotManagerCore(object):
             screenshot_filename = self.get_screenshot_filename()
 
         if not exists(screenshot_filename):
+            log_py(CompuCell.LOG_DEBUG, f'File does not exist: {screenshot_filename}')
             return
-            # raise RuntimeError('Could not locate screenshot description file: {}'.format(screenshot_filename))
 
         self.read_screenshot_description_file_json(filename=screenshot_filename)
 
@@ -300,47 +314,67 @@ class ScreenshotManagerCore(object):
         """
         self.ad_hoc_screenshot_dict[screenshot_label] = mcs
 
-    def output_screenshots_impl(self, mcs: int, screenshot_label_list: list):
+    def output_screenshots_impl(self, mcs: int, screenshot_label_list: List[str]):
         """
         implementation function ofr taking screenshots
         :param mcs:
         :param screenshot_label_list:
         :return:
         """
-        if self.output_error_flag:
-            return
+        with LoggedContext() as lc:
 
-        screenshot_directory_name = self.get_screenshot_dir_name()
+            if self.output_error_flag:
+                lc.log()
+                return
 
-        bsd = self.get_basic_simulation_data()
-        if self.gd is None or bsd is None:
-            print('GenericDrawer or basic simulation data is None. Could not output screenshots')
-            return
+            screenshot_directory_name = self.get_screenshot_dir_name()
+            if screenshot_directory_name is None:
+                lc.log(CompuCell.LOG_DEBUG, 'No output directory set.')
+                return
+
+            bsd = self.get_basic_simulation_data()
+            if self.gd is None or bsd is None:
+                lc.log(
+                    CompuCell.LOG_DEBUG,
+                    'GenericDrawer or basic simulation data not available. Could not output screenshots.'
+                )
+                return
 
         # fills string with 0's up to self.screenshotNumberOfDigits width
         mcs_formatted_number = str(mcs).zfill(self.screenshot_number_of_digits)
 
-        for i, screenshot_name in enumerate(screenshot_label_list):
-            try:
-                screenshot_data = self.screenshotDataDict[screenshot_name]
-            except KeyError:
-                print(f'Could not find screenshot description for the following label: {screenshot_name}')
-                continue
+        with LoggedContext() as lc:
 
-            if not screenshot_name:
-                screenshot_name = 'screenshot_' + str(i)
+            for i, screenshot_name in enumerate(screenshot_label_list):
+                lc.log(msg=f'Screenshot name: {screenshot_name}')
 
-            screenshot_dir = os.path.join(screenshot_directory_name, screenshot_name)
+                try:
+                    screenshot_data = self.screenshotDataDict[screenshot_name]
+                except KeyError:
+                    lc.log(
+                        CompuCell.LOG_DEBUG,
+                        f'Could not find screenshot description for the following label: {screenshot_name}'
+                    )
+                    continue
 
-            # will create screenshot directory if directory does not exist
-            if not os.path.isdir(screenshot_dir):
-                os.mkdir(screenshot_dir)
+                if not screenshot_name:
+                    screenshot_name = 'screenshot_' + str(i)
 
-            screenshot_fname = os.path.join(screenshot_dir, screenshot_name + "_" + mcs_formatted_number + ".png")
+                    lc.log(msg=f'Adapting screenshot name: {screenshot_name}')
 
-            self.gd.clear_display()
-            self.gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)
-            self.gd.output_screenshot(screenshot_fname=screenshot_fname, screenshot_data=screenshot_data)
+                screenshot_dir = os.path.join(screenshot_directory_name, screenshot_name)
+
+                # will create screenshot directory if directory does not exist
+                if not os.path.isdir(screenshot_dir):
+                    lc.log(msg=f'Creating directory: {screenshot_dir}')
+
+                    os.mkdir(screenshot_dir)
+
+                screenshot_fname = os.path.join(screenshot_dir, screenshot_name + "_" + mcs_formatted_number + ".png")
+
+                self.gd.clear_display()
+                self.gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)
+                self.gd.output_screenshot(screenshot_fname=screenshot_fname, screenshot_data=screenshot_data)
 
     def output_screenshots(self, mcs: int) -> None:
         """
@@ -349,12 +383,18 @@ class ScreenshotManagerCore(object):
         :return:
         """
 
-        if len(self.ad_hoc_screenshot_dict):
-            self.output_screenshots_impl(mcs=mcs, screenshot_label_list=list(self.ad_hoc_screenshot_dict.keys()))
-            # resetting ad_hoc_screenshot_dict
-            self.ad_hoc_screenshot_dict = {}
-        else:
-            self.output_screenshots_impl(mcs=mcs, screenshot_label_list=list(self.screenshotDataDict.keys()))
+        with LoggedContext() as lc:
+
+            if len(self.ad_hoc_screenshot_dict):
+                lc.log()
+
+                self.output_screenshots_impl(mcs=mcs, screenshot_label_list=list(self.ad_hoc_screenshot_dict.keys()))
+                # resetting ad_hoc_screenshot_dict
+                self.ad_hoc_screenshot_dict = {}
+            else:
+                lc.log()
+
+                self.output_screenshots_impl(mcs=mcs, screenshot_label_list=list(self.screenshotDataDict.keys()))
 
 
 class ScreenshotManagerCC3DPy(ScreenshotManagerCore):

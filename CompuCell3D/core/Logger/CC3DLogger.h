@@ -199,8 +199,38 @@ namespace CompuCell3D {
          *
          * @param level logging level
          * @param msg log message
+         * @param func name of function
+         * @param file name of file
+         * @param line line number
+         */
+        void log(LogLevel level, const std::string &msg, const std::string &func, const std::string &file, const int line);
+
+        /**
+         * @brief logs a message to the log.
+         *
+         * @param level logging level
+         * @param msg log message
          */
         void log(LogLevel level, const std::string &msg);
+
+        /**
+         * @brief logs a message to the log if it meets current priority.
+         *
+         * @param level logging level
+         * @param msg log message
+         * @param func name of function
+         * @param file name of file
+         * @param line line number
+         */
+        void logf(LogLevel level, const std::string &msg, const std::string &func, const std::string &file, const int line);
+
+        /**
+         * @brief logs a message to the log it meets current priority.
+         *
+         * @param level logging level
+         * @param msg log message
+         */
+        void logf(LogLevel level, const std::string &msg);
 
 
         /**

@@ -8,6 +8,7 @@ SET(SRCS
    FieldWriter.cpp
    FieldWriterCML.cpp
    FieldStreamer.cpp
+   FieldCopier.cpp
 )
 
 if (${VTK_MAJOR_VERSION} EQUAL "6")
@@ -65,6 +66,7 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 TARGET_INCLUDE_DIRECTORIES(FieldExtractor PUBLIC
     ${VTK_INCLUDE_DIRS}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core>
     $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core/pyinterface>
     $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core/pyinterface/PyPlugin>
 )

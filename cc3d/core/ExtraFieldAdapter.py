@@ -1,7 +1,9 @@
 class ExtraFieldAdapter:
-    def __init__(self,name='unknown', field_type=None):
+    def __init__(self,name='unknown', field_type=None, **kwds):
         self.name = name
+        self.kwds = kwds
         self.field_type = field_type
+        self.precision_type = kwds.get('precision_type', None)
         self.field_ref = None
 
     def clear(self):

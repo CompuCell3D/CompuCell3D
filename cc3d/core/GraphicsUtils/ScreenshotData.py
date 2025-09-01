@@ -4,6 +4,8 @@ Class that specifies drawing scene properties/settings
 import json
 from collections import OrderedDict
 
+from cc3d.core.enums import FieldProperties
+
 
 class ScreenshotData(object):
     def __init__(self):
@@ -91,8 +93,12 @@ class ScreenshotData(object):
         """Generates a JSON-compatible data structure"""
 
         scr_elem = OrderedDict()
-        scr_elem['Plot'] = {'PlotType': str(self.plotData[1]), 'PlotName': str(self.plotData[0])}
-
+        if isinstance(self.plotData[1], FieldProperties):
+            scr_elem['Plot'] = {'PlotType': str(self.plotData[1].field_type), 'PlotName': str(self.plotData[0])}
+        elif isinstance(self.plotData[1], str):
+            scr_elem['Plot'] = {'PlotType': str(self.plotData[1]), 'PlotName': str(self.plotData[0])}
+        else:
+            raise RuntimeError("plotData[1] must be of type str or 'FieldProperties' or 'str'")
         if self.spaceDimension == '2D':
             scr_elem['Dimension'] = '2D'
 

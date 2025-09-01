@@ -29,7 +29,6 @@ namespace CompuCell3D {
         BoundaryStrategy *boundaryStrategy;
 
         Potts3D *potts;
-        double penalty;
 
 
     public:

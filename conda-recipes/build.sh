@@ -30,3 +30,13 @@ cmake -G "${CMAKE_GENERATOR}" \
       "${SRC_DIR}/CompuCell3D"
 make -j${CPU_COUNT} VERBOSE=1
 make install
+
+
+## Upgrade pip to fix TLS/PEP517 issues
+#$PYTHON -m pip install --upgrade pip setuptools wheel
+#
+## Install pip-only dependencies
+#$PYTHON -m pip install --no-deps --prefix=$PREFIX libroadrunner antimony
+#
+### --- Install pip-only packages ---
+##$PYTHON -m pip install --no-deps libroadrunner libantimony
