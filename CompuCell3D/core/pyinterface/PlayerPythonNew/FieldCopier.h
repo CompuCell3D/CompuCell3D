@@ -53,6 +53,18 @@ namespace CompuCell3D {
         template<typename T>
         bool fillCellAttributeValues(Field3D<T> *fieldPtr, std::function<T(CellG*)> extractor);
 
+        /**
+         * Copies voxel values from a *legacy* concentration field (float) to a
+         * NumPy‑backed generic scalar field.
+         *
+         * @param legacy_field_name      – name registered in legacy map
+         * @param destination_field_name – name of NumPy shared field to receive data
+         * @return true on success, false on failure
+         */
+        bool copy_legacy_concentration_field(const std::string &source_field_name,
+                                             const std::string &destination_field_name);
+
+
     private:
         std::tuple<std::type_index, void *> getFieldTypeAndPointer(const std::string &fieldName);
 

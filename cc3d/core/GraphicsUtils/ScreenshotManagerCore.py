@@ -4,6 +4,7 @@ import os
 from os.path import dirname, exists
 from collections import OrderedDict
 from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
+from cc3d.core.enums import FieldProperties
 from cc3d.core.logging import LoggedContext, log_py
 import json
 import cc3d
@@ -73,7 +74,12 @@ class ScreenshotManagerCore(object):
         raise NotImplementedError()
 
     def produce_screenshot_core_name(self, _scr_data: ScreenshotData):
-        return str(_scr_data.plotData[0]) + "_" + str(_scr_data.plotData[1])
+        if isinstance(_scr_data.plotData[1], FieldProperties):
+            return str(_scr_data.plotData[0]) + "_" + str(_scr_data.plotData[1].field_type)
+        elif isinstance(_scr_data.plotData[1], str):
+            return str(_scr_data.plotData[0]) + "_" + str(_scr_data.plotData[1])
+        else:
+            raise RuntimeError("_scr_data.plotData[1] must be of type 'FieldProperties' or 'str'")
 
     def produce_screenshot_name(self, _scr_data: ScreenshotData):
         screenshot_name = "Screenshot"

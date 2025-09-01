@@ -1,6 +1,12 @@
 import math
 import json
-from IPython.core.display import display
+try:
+    from IPython.display import display
+except ImportError:
+    # legacy IPython code layout
+    from IPython.core.display import display
+
+
 
 from ipywidgets.widgets.widget_box import HBox, VBox
 from ipywidgets import Layout

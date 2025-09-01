@@ -658,8 +658,8 @@ def main_loop(sim, simthread, steppable_registry=None):
                 steppable_registry.stepRunBeforeMCSSteppables(cur_step)
 
             compiled_code_begin = time.time()
-
-            sim.step(cur_step)  # steering using steppables
+            if cur_step != 0 or CompuCellSetup.persistent_globals.execute_step_at_mcs_0:
+                sim.step(cur_step)  # steering using steppables
             check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
             compiled_code_end = time.time()

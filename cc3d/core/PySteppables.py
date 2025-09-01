@@ -778,6 +778,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
     def copy_cell_attribute_field_values_to(self, field_name:str, cell_attribute_name:str):
         return FieldCopier.copy_cell_attribute_field_values_to(field_name=field_name, cell_attribute_name=cell_attribute_name)
 
+    def copy_legacy_concentration_field(self, source_field_name:str, destination_field_name:str):
+        return FieldCopier.copy_legacy_concentration_field(source_field_name=source_field_name, destination_field_name=destination_field_name)
+
+
     def track_cell_level_vector_attribute(self, field_name: str, attribute_name: str, function_obj: object = None,
                                           cell_type_list: Union[list, None] = None):
         """
