@@ -63,14 +63,7 @@ def main():
     rs.test_output_root = args.output_dir
     rs.test_output_dir = ""
     rs.log_level = args.log_level
-
-    # if sys.platform.startswith('win'):
-    #     rs.run_command = run_command
-    #     rs.player_interactive_flag = False
-    #     rs.cc3d_project = ''
-    #     rs.num_steps = 1000
-    #     rs.test_output_root = test_output_root
-    #     rs.test_output_dir = ''
+    rs.execute_step_at_mcs_0 = True
 
     # clean test_output_dir
     try:
