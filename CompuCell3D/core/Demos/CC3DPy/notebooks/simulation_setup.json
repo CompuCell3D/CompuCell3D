@@ -39,6 +39,7 @@
         }
     ],
     "Plugins": {
+        "BoundaryPixelTrackerPlugin": {},
         "ContactPlugin": {
             "neighbor_order": 2,
             "energies": {
@@ -75,6 +76,8 @@
                 }
             }
         },
+        "LengthConstraintPlugin": {},
+        "PixelTrackerPlugin": {},
         "VolumePlugin": {
             "params": [
                 {
@@ -96,21 +99,6 @@
         }
     },
     "Initializer": {
-        "type": "BlobInitializer",
-        "regions": [
-            {
-                "width": 5,
-                "radius": 20,
-                "center": [
-                    50,
-                    50,
-                    0
-                ],
-                "cell_types": [
-                    "Condensing",
-                    "NonCondensing"
-                ]
-            }
-        ]
+        "type": "UniformInitializer"
     }
 }
