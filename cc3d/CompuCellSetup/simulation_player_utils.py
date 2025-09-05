@@ -89,7 +89,7 @@ def add_new_message_window(title=""):
     return popup_window
 
 
-def create_extra_field(field_name: str, field_type: int) -> ExtraFieldAdapter:
+def create_extra_field(field_name: str, field_type: int, precision_type="float32", **kwds) -> ExtraFieldAdapter:
     """
     Creates field adapter. On initialization it may or may not have functional reference to the actual field
     When field is initialized from constructor only adapter is returned, however fields
@@ -102,6 +102,6 @@ def create_extra_field(field_name: str, field_type: int) -> ExtraFieldAdapter:
     persistent_globals = CompuCellSetup.persistent_globals
     field_registry = persistent_globals.field_registry
 
-    field_adapter = field_registry.create_field(field_name, field_type)
+    field_adapter = field_registry.create_field(field_name, field_type, precision_type=precision_type, **kwds)
 
     return field_adapter

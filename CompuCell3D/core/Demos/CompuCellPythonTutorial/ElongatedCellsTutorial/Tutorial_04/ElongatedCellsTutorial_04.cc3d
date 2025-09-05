@@ -1,0 +1,7 @@
+<Simulation version="4.2.0">
+
+    <XMLScript Type="XMLScript">Simulation/ElongatedCells.xml</XMLScript>
+    <PythonScript>Simulation/ElongatedCells.py</PythonScript>
+    <Resource Type="Python">Simulation/ElongatedCellsSteppables.py</Resource>
+
+</Simulation>

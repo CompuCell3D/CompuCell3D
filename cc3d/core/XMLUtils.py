@@ -3,25 +3,31 @@ from cc3d.cpp import CC3DXML
 from cc3d.cpp.CC3DXML import *
 
 
-def dictionaryToMapStrStr(_dictionary:dict)->object:
+def dictionaryToMapStrStr(_dictionary: dict) -> object:
     """
-    converts python dictionaty to c++ map (std::map<std:string, std:string>)
+    converts python dictionary to c++ map (std::map<std:string, std:string>)
     :param _dictionary:
     :return:
     """
-    mapStrStr = CC3DXML.MapStrStr()
-    for key in _dictionary.keys():
-        # mapStrStr[key.encode()]=str(_dictionary[key])
-        mapStrStr[key] = str(_dictionary[key])
-    return mapStrStr
+    try:
+        map_str_str = CC3DXML.MapStrStr()
+        for key in _dictionary.keys():
+            map_str_str[key] = str(_dictionary[key])
+        return map_str_str
+    except TypeError:
+        return CC3DXML.MapStrStr({str(k): str(v) for k, v in _dictionary.items()})
 
 
 class ElementCC3D:
-    def __init__(self, _name, _attributes={}, _cdata=""):
+    def __init__(self, _name, _attributes: dict = None, _cdata=""):
+        if _attributes is None:
+            _attributes = {}
         self.CC3DXMLElement = CC3DXML.CC3DXMLElement(str(_name), dictionaryToMapStrStr(_attributes), str(_cdata))
         self.childrenList = []
 
-    def ElementCC3D(self, _name, _attributes={}, _cdata=""):
+    def ElementCC3D(self, _name, _attributes: dict = None, _cdata=""):
+        if _attributes is None:
+            _attributes = {}
         self.childrenList.append(ElementCC3D(_name, _attributes, _cdata))
         self.CC3DXMLElement.addChild(self.childrenList[-1].CC3DXMLElement)
         return self.childrenList[-1]
@@ -88,7 +94,6 @@ class MapStrStrPy:
 class MapStrStrIteratorPy:
     def __init__(self, _mapStrStrElementPy):
         self.map = _mapStrStrElementPy.map
-        #         self.invItr=CC3DXML.STLPyIteratorCC3DXMLElementList()
         self.invItr = CC3DXML.MapStrStrIterator()
 
         self.invItr.initialize(self.map)
@@ -138,7 +143,7 @@ class XMLAttributeIterator:
 
 
 class Xml2Obj(object):
-    ''' XML to Object converter '''
+    """XML to Object converter"""
 
     def __init__(self):
         self.root = None
@@ -146,7 +151,7 @@ class Xml2Obj(object):
         self.elementInventory = []
 
     def StartElement(self, name, attributes):
-        'Expat start element event handler'
+        """Expat start element event handler"""
         element = CC3DXML.CC3DXMLElement(str(name), dictionaryToMapStrStr(attributes))
 
         # Push element onto the stack and make it a child of parent
@@ -157,7 +162,6 @@ class Xml2Obj(object):
             self.root = element
         self.nodeStack.append(element)
         self.elementInventory.append(element)
-
 
     def EndElement(self, name):
 

@@ -1,4 +1,6 @@
+from cc3d.cpp import CompuCell
 from cc3d.core.CC3DSimulationDataHandler import CC3DSimulationDataHandler
+
 
 def readCC3DFile(fileName):
     """
@@ -9,6 +11,7 @@ def readCC3DFile(fileName):
 
     cc3dSimulationDataHandler = CC3DSimulationDataHandler(None)
     cc3dSimulationDataHandler.read_cc3_d_file_format(fileName)
-    print(cc3dSimulationDataHandler.cc3dSimulationData)
+    CompuCell.CC3DLogger.get().log(CompuCell.LOG_DEBUG,
+                                   f'Read simulation data: {cc3dSimulationDataHandler.cc3dSimulationData}')
 
     return cc3dSimulationDataHandler

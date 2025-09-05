@@ -1,5 +1,5 @@
 """
-This iscript facilitates unit/integration testing. Example command looks as follows:
+This script facilitates unit/integration testing. Example command looks as follows:
 
 python simulation_tester.py --run-command=c:/CompuCell3D-py3-64bit/runScript.bat --output-dir=c:/CompuCell3D_test_output
 """
@@ -44,6 +44,10 @@ def main():
     cc3d_projects = find_file_in_dir(Path(current_script_dir).joinpath("pde_solvers"), '*.cc3d')
     cc3d_projects_common_prefix = commonprefix(cc3d_projects)
 
+    # # plugin tests - plugin tests are run using different script
+    # cc3d_projects = find_file_in_dir(Path(current_script_dir).joinpath("plugin_test_suite"), '*.cc3d')
+    # cc3d_projects_common_prefix = commonprefix(cc3d_projects)
+
     rs = RunSpecs()
     # rs.run_command = run_command
     rs.run_command = run_command_list
@@ -52,6 +56,7 @@ def main():
     rs.num_steps = 1000
     rs.test_output_root = test_output_root
     rs.test_output_dir = ''
+    rs.execute_step_at_mcs_0 = True
 
     # clean test_output_dir
     try:

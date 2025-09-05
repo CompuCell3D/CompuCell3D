@@ -3,7 +3,6 @@ Defines features for interactive visualization for use with CC3D simservice appl
 """
 
 from typing import Optional, Union, Tuple, List, Any, Dict
-import warnings
 from weakref import ref
 
 from vtkmodules.vtkCommonCore import vtkPoints
@@ -18,6 +17,8 @@ from cc3d.core.GraphicsUtils.GraphicsFrame import GraphicsFrame, default_field_l
 from cc3d.core.GraphicsUtils.CC3DPyGraphicsFrame import (
     CC3DPyGraphicsFrameClientBase, CC3DPyInteractorStyle, np_img_data, save_img
 )
+from cc3d.core.logging import log_py
+from cc3d.cpp import CompuCell
 
 
 # Test for IPython
@@ -479,7 +480,7 @@ class CC3DViewInteractiveWidget(ViewInteractiveWidget):
         frame = self._frame()
         frame_p = interactor._frame()
         if frame is None or frame_p is None:
-            warnings.warn('Could not synchronize cameras')
+            log_py(CompuCell.LOG_WARNING, 'Could not synchronize cameras')
             return
 
         frame: JupyterGraphicsFrame
@@ -509,7 +510,7 @@ class CC3DViewInteractiveWidget(ViewInteractiveWidget):
 
         frame = self._frame()
         if frame is None:
-            warnings.warn('Could not unsychronize camera')
+            log_py(CompuCell.LOG_WARNING, 'Could not unsychronize camera')
         frame: JupyterGraphicsFrame
 
         frame.gd.get_renderer().SetActiveCamera(self._camera)
@@ -835,12 +836,12 @@ class JupyterGraphicsFrameClient(CC3DPyGraphicsFrameClientBase):
         field_names = self.field_names
 
         if not field_names:
-            warnings.warn('Field names not available', RuntimeWarning)
+            log_py(CompuCell.LOG_WARNING, 'Field names not available')
             return
 
         if _field_name not in field_names:
-            warnings.warn(f'Field name not known: {_field_name}. Available field names are' + ','.join(field_names),
-                          RuntimeWarning)
+            log_py(CompuCell.LOG_WARNING,
+                   f'Field name not known: {_field_name}. Available field names are' + ','.join(field_names))
             return
 
         super().set_field_name(_field_name)

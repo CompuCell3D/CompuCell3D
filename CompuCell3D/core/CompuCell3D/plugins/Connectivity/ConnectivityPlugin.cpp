@@ -5,7 +5,7 @@ using namespace CompuCell3D;
 #include "ConnectivityPlugin.h"
 
 
-ConnectivityPlugin::ConnectivityPlugin() : penalty(0.0), potts(0), numberOfNeighbors(8) {
+ConnectivityPlugin::ConnectivityPlugin() : potts(0), numberOfNeighbors(8) {
 
     offsetsIndex.assign(numberOfNeighbors, 0);//allocates memory for vector of offsetsIndexes
 }
@@ -25,28 +25,7 @@ void ConnectivityPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 }
 
 void ConnectivityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
-
-    //if(potts->getDisplayUnitsFlag()){
-    //	Unit energyUnit=potts->getEnergyUnit();
-
-
-
-
-    //	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units");
-    //	if (!unitsElem){ //add Units element
-    //		unitsElem=_xmlData->attachElement("Units");
-    //	}
-
-    //	if(unitsElem->getFirstElement("PenaltyUnit")){
-    //		unitsElem->getFirstElement("PenaltyUnit")->updateElementValue(energyUnit.toString());
-    //	}else{
-    //		CC3DXMLElement * energyElem = unitsElem->attachElement("PenaltyUnit",energyUnit.toString());
-    //	}
-    //}
-
-    if (_xmlData) {
-        penalty = _xmlData->getFirstElement("Penalty")->getDouble();
-    }
+    //Nothing to do
 }
 
 void ConnectivityPlugin::addUnique(CellG *cell, std::vector<CellG *> &_uniqueCells) {
@@ -86,7 +65,8 @@ double ConnectivityPlugin::changeEnergy(const Point3D &pt,
     }
 
     if (!firstFlag) {
-        return penalty;
+        //The energy returned can be any positive number; it is arbitrary for ConnectivityPlugin.
+        return 64;
     }
 
 
@@ -121,69 +101,11 @@ double ConnectivityPlugin::changeEnergy(const Point3D &pt,
 
     if (collisioncount == 2) return 0;  // Accept
     else { // Conditional rejection
-
-        return penalty;  // Reject
+        //The energy returned can be any positive number; it is arbitrary for ConnectivityPlugin.
+        return 64;
     }
 
 }
-
-// Original Implementation - kept as a reference
-// double ConnectivityPlugin::changeEnergy(const Point3D &pt,
-//                                   const CellG *newCell,
-//                                    const CellG *oldCell) {
-//  
-//    if (!oldCell) return 0;
-//    uniqueCells.clear();
-// 
-//    // Immediate neighbors
-//       Neighbor neighbor;
-//       for(int i=0 ; i < numberOfNeighbors ; ++i ){
-//          neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),offsetsIndex[i]);
-//          if(!neighbor.distance){
-//          //if distance is 0 then the neighbor returned is invalid
-//          continue;
-//          }
-// 
-//          n[i]=neighbor.pt;
-//       }
-// 
-// 
-// 
-// 
-//    mediumFlag = false;
-//    int collisioncount = 0;
-//    for (unsigned int i = 0; i < numberOfNeighbors; i++)
-//    {
-//       if (((potts->getCellFieldG()->get(n[i]) == oldCell) ||
-//            (potts->getCellFieldG()->get(n[(i+1) % numberOfNeighbors]) == oldCell))
-//               &&
-//           (potts->getCellFieldG()->get(n[i]) !=
-//            potts->getCellFieldG()->get(n[(i+1) % numberOfNeighbors])))
-//       {
-//         addUnique(potts->getCellFieldG()->get(n[i]));
-//         addUnique(potts->getCellFieldG()->get(n[(i+1)%numberOfNeighbors]));
-// 	collisioncount++;
-//       }
-//    }
-//    //if (collisioncount == 0) {
-      //    CC3D_Log(LOG_TRACE) << "COLLISION COUNT OF 0";
-//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[0]);
-//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[1]);
-//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[2]);
-//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[3]);
-//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[4]);
-//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[5]);
-//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[6]);
-//          CC3D_Log(LOG_TRACE) << potts->getCellFieldG()->get(n[7]);
-//        int aaa;
-//        cin >> aaa;*/
-//    //}
-//    if (collisioncount == 2) return 0;  // Accept
-//    else { // Conditional rejection
-//       if (collisioncount > 2 && uniqueCells.size() == 2 && !mediumFlag) return 0; // Accept
-//       else return penalty;  // Reject
-//    }
-// }
 
 void ConnectivityPlugin::orderNeighborsClockwise
         (Point3D &_midPoint, const std::vector <Point3D> &_offsets, std::vector<int> &_offsetsIndex) {
@@ -220,7 +142,7 @@ void ConnectivityPlugin::initializeNeighborsOffsets() {
 
     if (fieldDim.x > 1 && fieldDim.y > 1 && fieldDim.z > 1)
         throw CC3DException(
-                "This plugin will only work for 2D simulations i.e. one lattice dimansion must be equal to 1 Your simulations appears to be 3D");
+                "This plugin will only work for 2D simulations i.e. one lattice dimansion must be equal to 1 Your simulation appears to be 3D");
 
     //here we define neighbors  offsets in the "clockwise order"
     if (fieldDim.x == 1) {
@@ -236,7 +158,6 @@ void ConnectivityPlugin::initializeNeighborsOffsets() {
 
         Point3D midPoint(0, fieldDim.y / 2, fieldDim.z / 2);
         orderNeighborsClockwise(midPoint, offsets, offsetsIndex);
-
     }
 
     if (fieldDim.y == 1) {
@@ -252,8 +173,6 @@ void ConnectivityPlugin::initializeNeighborsOffsets() {
 
         Point3D midPoint(fieldDim.x / 2, 0, fieldDim.z / 2);
         orderNeighborsClockwise(midPoint, offsets, offsetsIndex);
-
-
     }
 
     if (fieldDim.z == 1) {

@@ -887,19 +887,20 @@ void CurvaturePlugin::field3DChange(const Point3D &pt, CellG *newCell, CellG *ol
             oldCellNeighborVec.push_back(make_pair(sitr->neighborAddress, oldCellNeighbor));
             curvatureNeighborsRemovedNeighbor.erase(CurvatureTrackerData(oldCell));
         }
-
-        oldCellNeighborVec[0].second.neighborAddress = oldCellNeighborVec[1].first;
-        //std::set<CurvatureTrackerData> & curvatureNeighbor_0=
-
-
-        curvatureTrackerAccessor.get(oldCellNeighborVec[0].first->extraAttribPtr)->internalCurvatureNeighbors.insert(
-                oldCellNeighborVec[0].second);
-
-        oldCellNeighborVec[1].second.neighborAddress = oldCellNeighborVec[0].first;
-
-        /*std::set<CurvatureTrackerData> & curvatureNeighbor_1=*/
-        curvatureTrackerAccessor.get(oldCellNeighborVec[1].first->extraAttribPtr)->internalCurvatureNeighbors.insert(
-                oldCellNeighborVec[1].second);
+//        // this part of the code tries to establish links between  two old cell neighbors - but perhaps it is best not
+//        // to do this at all
+//        oldCellNeighborVec[0].second.neighborAddress = oldCellNeighborVec[1].first;
+//        //std::set<CurvatureTrackerData> & curvatureNeighbor_0=
+//
+//
+//        curvatureTrackerAccessor.get(oldCellNeighborVec[0].first->extraAttribPtr)->internalCurvatureNeighbors.insert(
+//                oldCellNeighborVec[0].second);
+//
+//        oldCellNeighborVec[1].second.neighborAddress = oldCellNeighborVec[0].first;
+//
+//        /*std::set<CurvatureTrackerData> & curvatureNeighbor_1=*/
+//        curvatureTrackerAccessor.get(oldCellNeighborVec[1].first->extraAttribPtr)->internalCurvatureNeighbors.insert(
+//                oldCellNeighborVec[1].second);
 
 
     }
