@@ -40,6 +40,36 @@ class SharedNUmpyFieldsSteppable(SteppableBasePy):
         fgf = self.field.FGF
         fgf[50, 50, 0] = 2000
 
+        fgf[5, 5, 0] = 20
+        fgf[5, 90, 0] = 10
+        fgf[90, 5, 0] = 101
+        fgf[90, 90, 0] = 102
+        # # for 3D case
+        # fgf[5, 5, 2] = 21
+        # fgf[5, 90, 3] = 11
+        # fgf[90, 5, 1] = 1011
+        # fgf[90, 90, 4] = 1021
+
+
+
+
+        # copying legacy concentration field as a true numpy array.
+        # NOTE: this is a copy of the array. If you alter it your changes will NOT be visible in C++
+        fgf_copy_npy = fgf.as_numpy()
+
+        assert fgf_copy_npy[50, 50, 0] == 2000
+        assert fgf_copy_npy[5, 5, 0] == 20
+        assert fgf_copy_npy[5, 90, 0] == 10
+        assert fgf_copy_npy[90, 5, 0] == 101
+        assert fgf_copy_npy[90, 90, 0] == 102
+        # # for 3D case
+        # assert fgf_copy_npy[5, 5, 2] == 21
+        # assert fgf_copy_npy[5, 90, 3] == 11
+        # assert fgf_copy_npy[90, 5, 1] == 1011
+        # assert fgf_copy_npy[90, 90, 4] == 1021
+
+
+
         fibers_cpp = self.field.Fibers
 
         fibers_cpp[:50, :50, 0] = [0, 0, 0]

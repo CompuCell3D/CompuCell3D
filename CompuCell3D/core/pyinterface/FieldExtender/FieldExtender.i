@@ -1,3 +1,9 @@
+//%include <core/pyinterface/FieldExtender/CppNumpyUtils.h>
+
+%{
+#include <core/pyinterface/FieldExtender/CppNumpyUtils.h>
+%}
+
 %define FIELD3DEXTENDERBASE(className,returnType)
 %extend  className{
 
@@ -250,6 +256,32 @@ FIELD3DEXTENDERBASE(className,returnType)
             }
 
   }
+
+        PyObject* as_numpy(bool copy=true) {
+            if (!copy){
+                throw CC3DException("CC3D in its current version can only return concentration "
+                                    "field as a copy of the C++ field. Views are not supported as of now");
+            }
+            Dim3D dim = $self->getDim();
+            npy_intp dims[3] = {dim.x, dim.y, dim.z};
+
+            // Allocate numpy array (copy mode)
+            // NumpyTypeMap<returnType>::typenum returns  NPY_FLOAT/NPY_INT/... depending on value of the returnType
+            // which is float, int, ...
+            // NumpyTypeMap<returnType>::typenum translates to NPY_FLOAT/NPY_INT depending on which type we use as returnType
+            PyObject* arr = PyArray_SimpleNew(3, dims, NumpyTypeMap<returnType>::typenum);
+
+            returnType * data = static_cast<returnType*>(PyArray_DATA((PyArrayObject*)arr));
+
+            // Copy element by element
+            for (int x=0; x<dim.x; ++x)
+                for (int y=0; y<dim.y; ++y)
+                    for (int z=0; z<dim.z; ++z) {
+                        *data++ = static_cast<returnType>($self->get(Point3D(x,y,z)));
+                    }
+
+            return arr;
+        }
 
 
 }
