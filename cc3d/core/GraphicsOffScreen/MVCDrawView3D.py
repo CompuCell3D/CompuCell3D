@@ -37,7 +37,8 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.typesInvisibleStr = ""
         self.set3DInvisibleTypes()
 
-        self.axesActor = vtk.vtkCubeAxesActor2D()
+        # self.axesActor = vtk.vtkCubeAxesActor2D()
+        self.axesActor = vtk.vtkCubeAxesActor()
 
         self.clut = vtk.vtkLookupTable()
         self.clut.SetHueRange(0.67, 0.0)
@@ -299,7 +300,8 @@ class MVCDrawView3D(MVCDrawViewBase):
 
         actor_specs_copy = deepcopy(actor_specs)
         actor_specs_copy.actors_dict = OrderedDict()
-        self.axesActor = vtk.vtkCubeAxesActor2D()
+        # self.axesActor = vtk.vtkCubeAxesActor2D()
+        self.axesActor = vtk.vtkCubeAxesActor()
         actor_specs_copy.actors_dict['axes_actor'] = self.axesActor
 
         return actor_specs_copy

@@ -1,3 +1,5 @@
+from operator import length_hint
+
 from .MVCDrawModelBase import MVCDrawModelBase
 import vtk
 import math
@@ -9,6 +11,7 @@ from cc3d.core.GraphicsOffScreen.MetadataHandler import MetadataHandler
 from cc3d.core.iterators import CellList, FocalPointPlasticityDataList, InternalFocalPointPlasticityDataList
 from cc3d.cpp import CompuCell
 from cc3d.cpp import PlayerPython
+from cc3d import CompuCellSetup
 import sys
 from cc3d.core.enums import *
 
@@ -158,6 +161,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         outline_actor.GetProperty().SetColor(*outline_color)
 
     def init_axes_actors(self, actor_specs, drawing_params=None):
+        if self.show_axes_with_units:
+            self.init_axes_actors_units(actor_specs=actor_specs, drawing_params=drawing_params)
+        else:
+            self.init_axes_actors_no_units(actor_specs=actor_specs, drawing_params=drawing_params)
+
+    def init_axes_actors_no_units(self, actor_specs, drawing_params=None):
         """
         Initializes outline actors for hex actors
         :param actor_specs: {ActorSpecs}
@@ -233,6 +242,181 @@ class MVCDrawModel2D(MVCDrawModelBase):
         axes_actor.GetTitleTextProperty(1).SetColor(axes_color)
         axes_actor.GetLabelTextProperty(1).SetColor(axes_color)
 
+
+    def init_axes_actors_units(self, actor_specs, drawing_params=None):
+        """
+        Initializes outline actors for hex actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+        time_unit, time_scaling_factor, length_unit, length_scaling_factor = CompuCellSetup.persistent_globals.conversion_factors
+        actors_dict = actor_specs.actors_dict
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        scene_metadata = drawing_params.screenshot_data.metadata
+
+        # axes_actor_horizontal, axes_actor_vertical  = actors_dict["axes_actor"]
+        axes_actor_horizontal = actors_dict["AxesHorizontal"]
+        axes_actor_vertical = actors_dict["AxesVertical"]
+
+        # lattice_type_str = self.get_lattice_type_str()
+
+        dim_array = [field_dim.x, field_dim.y, field_dim.z]
+        # if lattice_type_str.lower() == 'hexagonal':
+        if self.is_lattice_hex(drawing_params=drawing_params):
+            dim_array = [field_dim.x, field_dim.y * math.sqrt(3.0) / 2.0, field_dim.z * math.sqrt(6.0) / 3.0]
+
+        axes_labels = ["X", "Y", "Z"]
+
+        horizontal_length = dim_array[dim_order[0]]  # x-axis - equivalent
+        vertical_length = dim_array[dim_order[1]]  # y-axis - equivalent
+        horizontal_label = axes_labels[dim_order[0]]  # x-axis - equivalent
+        vertical_label = axes_labels[dim_order[1]]  # y-axis - equivalent
+        if length_unit:
+            horizontal_label = f"{horizontal_label}[{length_unit}]"
+            vertical_label = f"{vertical_label}[{length_unit}]"
+
+        # eventually do this smarter (only get/update when it changes)
+        # color = Configuration.getSetting("AxesColor")
+
+        # color = (float(color.red()) / 255, float(color.green()) / 255, float(color.blue()) / 255)
+
+        axes_color = to_vtk_rgb(scene_metadata["AxesColor"])
+        # axes_actor_horizontal.GetProperty().SetColor(axes_color)
+        # axes_actor_vertical.GetProperty().SetColor(axes_color)
+
+        # tprop = vtk.vtkTextProperty()
+        # tprop.SetColor(axes_color)
+        # tprop.ShadowOn()
+
+        # axesActor.SetNumberOfLabels(4) # number of labels
+        # axes_actor.SetUse2DMode(1)
+        # axesActor.SetScreenSize(50.0) # for labels and axes titles
+        # axesActor.SetLabelScaling(True,0,0,0)
+        axes_actor_horizontal.SetLayerNumber(1)
+        axes_actor_vertical.SetLayerNumber(1)
+        self.make_xy_axes2d(ax_0=axes_actor_horizontal, ax_1=axes_actor_vertical,
+                            dim_0=horizontal_length, dim_1=vertical_length,
+                            title_0=horizontal_label, title_1=vertical_label, color=axes_color, multiplier=float(length_scaling_factor))
+        print("actor_specs.actor_label_list", actor_specs.actor_label_list)
+        print("actor_specs.metadata", actor_specs.metadata)
+        print("actor_specs.actors_dict", actor_specs.actors_dict)
+        print(drawing_params)
+
+
+        # if scene_metadata["ShowHorizontalAxesLabels"]:
+        #     axes_actor.SetXAxisLabelVisibility(1)
+        # else:
+        #     axes_actor.SetXAxisLabelVisibility(0)
+        #
+        # if scene_metadata["ShowVerticalAxesLabels"]:
+        #     axes_actor.SetYAxisLabelVisibility(1)
+        # else:
+        #     axes_actor.SetYAxisLabelVisibility(0)
+        #
+        #
+        #
+        # axes_actor.SetXTitle(horizontal_label)
+        # axes_actor.SetYTitle(vertical_label)
+        # # title_prop_x = axes_actor.GetTitleTextProperty(0)
+        #
+        # axes_actor.XAxisMinorTickVisibilityOff()
+        # axes_actor.YAxisMinorTickVisibilityOff()
+        #
+        # axes_actor.SetTickLocationToOutside()
+        #
+        # axes_actor.GetTitleTextProperty(0).SetColor(axes_color)
+        # axes_actor.GetLabelTextProperty(0).SetColor(axes_color)
+        #
+        # axes_actor.GetXAxesLinesProperty().SetColor(axes_color)
+        # axes_actor.GetYAxesLinesProperty().SetColor(axes_color)
+        #
+        # axes_actor.GetTitleTextProperty(1).SetColor(axes_color)
+        # axes_actor.GetLabelTextProperty(1).SetColor(axes_color)
+
+
+    def make_single_axis_2d(self, ax, dim_0, dim_1, multiplier, orientation="h", title="", color=(1, 1, 1), nlabels=5,
+                            fmt="%-6.2f"):
+        """
+        Create a vtkAxisActor2D with small, light text.
+        """
+
+        # world_p2 = (xmax, ymin, 0),
+
+        if orientation == "h":
+            # (xmin, ymin, 0)
+            world_p0 = (0, 0, 0)
+            # (xmax, ymin, 0),
+            world_p1 = (dim_0, 0, 0)
+
+            rng = (0, dim_0 * multiplier)
+            print("world_p0", world_p0, "world_p1", world_p1, "rng", rng)
+
+        else:
+
+            # Right edge
+            # (xmax, ymin, 0)
+            world_p0 = (dim_0, 0, 0)
+            # (xmax, ymax, 0),
+            world_p1 = (dim_0, dim_1, 0)
+            rng = (0, dim_1 * multiplier)
+
+            # # Left edge
+            # world_p0 = (0, 0, 0)
+            # world_p1 = (0, dim_1, 0)
+            # rng = (0, dim_1 * multiplier)
+
+        # ---- Placement ----
+        p1 = ax.GetPoint1Coordinate()
+        p1.SetCoordinateSystemToWorld()
+        p1.SetValue(*world_p0)
+
+        p2 = ax.GetPoint2Coordinate()
+        p2.SetCoordinateSystemToWorld()
+        p2.SetValue(*world_p1)
+
+        # ---- Range / labels ----
+        ax.SetRange(float(rng[0]), float(rng[1]))
+
+        ax.SetNumberOfLabels(nlabels)
+        # SetAdjustLabels(False) is key to ensure that label numbers are computed properly.
+        # Otherwise VTK uses completely wrong algorithm where labels are way off the true values.
+        ax.SetAdjustLabels(False)
+        ax.SetLabelFormat(fmt)
+        ax.SetTitle(title)
+
+        # ---- Styling ----
+        ax.GetProperty().SetColor(*color)
+
+        label_prop = ax.GetLabelTextProperty()
+        label_prop.SetFontSize(12)
+        label_prop.SetColor(*color)
+        label_prop.SetBold(False)
+        label_prop.SetItalic(False)
+        label_prop.SetShadow(False)
+
+        title_prop = ax.GetTitleTextProperty()
+        title_prop.SetFontSize(14)
+        title_prop.SetColor(*color)
+        title_prop.SetBold(True)
+        title_prop.SetItalic(False)
+        title_prop.SetShadow(False)
+
+        # Cosmetic
+        ax.SetTitlePosition(0.5)
+        ax.SetNumberOfMinorTicks(0)
+        ax.SetTickLength(6)
+
+        return ax
+
+    def make_xy_axes2d(self, ax_0, ax_1, dim_0, dim_1, multiplier, title_0="X", title_1="Y", units="", color=(1, 1, 1), nlabels=5, fmt="%-6.2f"):
+        units = f"[{units}]" if units.strip() != "" else ""
+        self.make_single_axis_2d(ax_0, dim_0, dim_1, multiplier, orientation="h", title=f"{title_0}{units}", color=color,
+                            nlabels=nlabels, fmt=fmt)
+        print("AFTER##########", ax_0)
+        self.make_single_axis_2d(ax_1, dim_0, dim_1, multiplier, orientation="v", title=f"{title_1}{units}", color=color,
+                            nlabels=nlabels, fmt=fmt)
 
     def init_vector_field_actors(self, actor_specs, drawing_params=None):
         """

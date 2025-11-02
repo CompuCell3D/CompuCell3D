@@ -42,6 +42,10 @@ class MVCDrawViewBase:
         self.currentVisName = ''  # stores name of the current visualization
         self.cameraSettingsDict = {}  # {fieldName:CameraSettings()}
         self.ren = ren
+        self.horizontal_axis_actor = None
+        self.vertical_axis_actor = None
+        self.show_axes_with_units = True
+
 
     @property
     def drawModel(self):
