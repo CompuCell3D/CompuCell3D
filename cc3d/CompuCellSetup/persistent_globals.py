@@ -128,8 +128,23 @@ class PersistentGlobals:
         if self.xml_id_locator is None:
             return
 
-        def get_unit_and_factor(id_name: str):
+
+        def get_metadata_child_element(name:str):
+            root_elem = self.xml_id_locator.root_elem
+
+            if root_elem and root_elem.findElement("Metadata"):
+                metadata_elem = root_elem.getFirstElement("Metadata")
+                if metadata_elem.findElement(name):
+                    return metadata_elem.getFirstElement(name)
+            return None
+
+
+        def get_unit_and_factor_future(id_name: str):
             """
+            Note - this works only with newer versions of the code . Older versions crash when we put "id: attribute
+            outside Plugin, Steppable or Potts XML element
+            For this reason we will not be using this function now, but will switch to it at some point
+
             Retrieve unit and factor for a given XML element ID name.
 
             Args:
@@ -159,15 +174,51 @@ class PersistentGlobals:
                 scaling_factor_ = None
 
             return unit_, scaling_factor_
+
+        def get_unit_and_factor(element_name: str):
+            """
+            Retrieve unit and factor for a given XML element ID name.
+
+            Args:
+                id_name (str): The key to look up in self.xml_id_locator.id_elements_dict.
+
+            Returns:
+                tuple: (unit, factor), where each may be None if extraction fails.
+            """
+
+            xml_elem_adapter = get_metadata_child_element(element_name)
+
+
+            if not xml_elem_adapter:
+                warnings.warn(f"No XML element found for id '{element_name}'")
+                return None, None
+            attributes = dict(xml_elem_adapter.attributes)
+            # Extract unit
+            try:
+                # unit_ = xml_elem_adapter.Units
+                unit_ = attributes["Units"]
+            except AttributeError:
+                warnings.warn(f"Could not extract unit for '{element_name}'")
+                unit_ = None
+
+            # Extract factor
+            try:
+                scaling_factor_ = float(xml_elem_adapter.cdata)
+            except (AttributeError, ValueError):
+                warnings.warn(f"Could not convert factor to float for '{element_name}'")
+                scaling_factor_ = None
+
+            return unit_, scaling_factor_
+
         # process time/mcs unit
-        unit, scaling_factor = get_unit_and_factor("mcs_conv_factor")
+        unit, scaling_factor = get_unit_and_factor(element_name="MCSConversionFactor")
         if None not in (unit, scaling_factor):
             self.conversion_factors.time_unit = unit
             self.conversion_factors.time_scaling_factor = scaling_factor
 
 
         # process time/mcs unit
-        unit, scaling_factor = get_unit_and_factor("voxel_conv_factor")
+        unit, scaling_factor = get_unit_and_factor(element_name="VoxelConversionFactor")
         if None not in (unit, scaling_factor):
             self.conversion_factors.length_unit = unit
             self.conversion_factors.length_scaling_factor = scaling_factor

@@ -302,41 +302,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.make_xy_axes2d(ax_0=axes_actor_horizontal, ax_1=axes_actor_vertical,
                             dim_0=horizontal_length, dim_1=vertical_length,
                             title_0=horizontal_label, title_1=vertical_label, color=axes_color, multiplier=float(length_scaling_factor))
-        print("actor_specs.actor_label_list", actor_specs.actor_label_list)
-        print("actor_specs.metadata", actor_specs.metadata)
-        print("actor_specs.actors_dict", actor_specs.actors_dict)
-        print(drawing_params)
 
 
-        # if scene_metadata["ShowHorizontalAxesLabels"]:
-        #     axes_actor.SetXAxisLabelVisibility(1)
-        # else:
-        #     axes_actor.SetXAxisLabelVisibility(0)
-        #
-        # if scene_metadata["ShowVerticalAxesLabels"]:
-        #     axes_actor.SetYAxisLabelVisibility(1)
-        # else:
-        #     axes_actor.SetYAxisLabelVisibility(0)
-        #
-        #
-        #
-        # axes_actor.SetXTitle(horizontal_label)
-        # axes_actor.SetYTitle(vertical_label)
-        # # title_prop_x = axes_actor.GetTitleTextProperty(0)
-        #
-        # axes_actor.XAxisMinorTickVisibilityOff()
-        # axes_actor.YAxisMinorTickVisibilityOff()
-        #
-        # axes_actor.SetTickLocationToOutside()
-        #
-        # axes_actor.GetTitleTextProperty(0).SetColor(axes_color)
-        # axes_actor.GetLabelTextProperty(0).SetColor(axes_color)
-        #
-        # axes_actor.GetXAxesLinesProperty().SetColor(axes_color)
-        # axes_actor.GetYAxesLinesProperty().SetColor(axes_color)
-        #
-        # axes_actor.GetTitleTextProperty(1).SetColor(axes_color)
-        # axes_actor.GetLabelTextProperty(1).SetColor(axes_color)
 
 
     def make_single_axis_2d(self, ax, dim_0, dim_1, multiplier, orientation="h", title="", color=(1, 1, 1), nlabels=5,
@@ -345,7 +312,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         Create a vtkAxisActor2D with small, light text.
         """
 
-        # world_p2 = (xmax, ymin, 0),
 
         if orientation == "h":
             # (xmin, ymin, 0)
@@ -354,7 +320,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
             world_p1 = (dim_0, 0, 0)
 
             rng = (0, dim_0 * multiplier)
-            print("world_p0", world_p0, "world_p1", world_p1, "rng", rng)
 
         else:
 
@@ -417,7 +382,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         units = f"[{units}]" if units.strip() != "" else ""
         self.make_single_axis_2d(ax_0, dim_0, dim_1, multiplier, orientation="h", title=f"{title_0}{units}", color=color,
                             nlabels=nlabels, fmt=fmt)
-        print("AFTER##########", ax_0)
         self.make_single_axis_2d(ax_1, dim_0, dim_1, multiplier, orientation="v", title=f"{title_1}{units}", color=color,
                             nlabels=nlabels, fmt=fmt)
 

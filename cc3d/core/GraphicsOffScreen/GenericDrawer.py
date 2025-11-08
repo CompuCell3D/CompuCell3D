@@ -354,20 +354,6 @@ class GenericDrawer:
         :return:
         """
 
-        def list_all_actors(renderer):
-            print("=== 3D Actors ===")
-            a3d = renderer.GetActors()
-            a3d.InitTraversal()
-            for i in range(a3d.GetNumberOfItems()):
-                print(f"{i}: {a3d.GetNextActor().GetClassName()}")
-
-            print("\n=== 2D Actors ===")
-            a2d = renderer.GetActors2D()
-            a2d.InitTraversal()
-            for i in range(a2d.GetNumberOfItems()):
-                print(f"{i}: {a2d.GetNextActor2D()}")
-                break
-
         drawing_params = DrawingParameters()
         drawing_params.screenshot_data = screenshot_data
         drawing_params.bsd = bsd
@@ -456,8 +442,6 @@ class GenericDrawer:
                     self.draw_axes(drawing_params=drawing_params)
                 except NotImplementedError:
                     pass
-            print('EARLY##############')
-            list_all_actors(self.ren_2D)
             # we allow resetting of camera properties only in the non-interactive mode
             # in the interactive mode camera is managed by the GUI
             if not self.interactive_camera_flag:

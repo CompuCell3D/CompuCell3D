@@ -291,6 +291,15 @@ class MVCDrawView3D(MVCDrawViewBase):
                 self.ren.RemoveActor(self.outlineActor)
 
     def prepare_axes_actors(self, actor_specs, drawing_params=None):
+        show_axes_with_units = drawing_params.screenshot_data.metadata.get("DisplayUnits", False)
+
+        if show_axes_with_units:
+            return self.prepare_axes_actors_units(actor_specs=actor_specs, drawing_params=drawing_params)
+        else:
+            return self.prepare_axes_actors_no_units(actor_specs=actor_specs, drawing_params=drawing_params)
+
+
+    def prepare_axes_actors_units(self, actor_specs, drawing_params=None):
         """
         Prepares cell_field_actors  based on actor_specs specifications
         :param actor_specs {ActorSpecs}: specification of actors to create
@@ -300,11 +309,27 @@ class MVCDrawView3D(MVCDrawViewBase):
 
         actor_specs_copy = deepcopy(actor_specs)
         actor_specs_copy.actors_dict = OrderedDict()
-        # self.axesActor = vtk.vtkCubeAxesActor2D()
         self.axesActor = vtk.vtkCubeAxesActor()
         actor_specs_copy.actors_dict['axes_actor'] = self.axesActor
 
         return actor_specs_copy
+
+
+    def prepare_axes_actors_no_units(self, actor_specs, drawing_params=None):
+        """
+        Prepares cell_field_actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {dict}
+        """
+
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        self.axesActor = vtk.vtkCubeAxesActor2D()
+        actor_specs_copy.actors_dict['axes_actor'] = self.axesActor
+
+        return actor_specs_copy
+
 
     def show_axes_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """

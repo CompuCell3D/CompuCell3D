@@ -871,135 +871,21 @@ class MVCDrawModel3D(MVCDrawModelBase):
         outline_actor.GetProperty().SetColor(*outline_color)
 
     def init_axes_actors(self, actor_specs, drawing_params=None):
+        show_axes_with_units = drawing_params.screenshot_data.metadata.get("DisplayUnits", True)
+
+        if show_axes_with_units:
+            self.init_axes_actors_units(actor_specs=actor_specs, drawing_params=drawing_params)
+        else:
+            self.init_axes_actors_no_units(actor_specs=actor_specs, drawing_params=drawing_params)
+
+
+    def init_axes_actors_units(self, actor_specs, drawing_params=None):
         """
         Initializes outline actors for hex actors
         :param actor_specs: {ActorSpecs}
         :param drawing_params: {DrawingParameters}
         :return: None
         """
-        # # --- 1️⃣ Gather parameters ---
-        # """
-        # Keep axes geometry aligned to lattice; rescale numeric labels by 'factor'.
-        # Uses vtkCubeAxesActor (not 2D). Works across VTK versions (UserTransform/UserMatrix).
-        # """
-        # import math
-        # import vtk
-        #
-        # # --- inputs / metadata ---
-        # time_unit, time_scaling_factor, length_unit, length_scaling_factor = (
-        #     CompuCellSetup.persistent_globals.conversion_factors
-        # )
-        # actors_dict = actor_specs.actors_dict
-        # field_dim = self.currentDrawingParameters.bsd.fieldDim
-        # x, y, z = float(field_dim.x), float(field_dim.y), float(field_dim.z)
-        #
-        # scene_metadata = drawing_params.screenshot_data.metadata
-        # mdata = MetadataHandler(mdata=scene_metadata)
-        # axes_color = to_vtk_rgb(mdata.get("AxesColor", data_type="color"))
-        #
-        # # numbers scaling (pixels -> units) but geometry unchanged
-        # factor = float(length_scaling_factor) if self.show_axes_with_units else 1.0
-        #
-        # axes_actor = actors_dict["axes_actor"]  # must be vtkCubeAxesActor
-        #
-        # # --- camera (CubeAxesActor needs it)
-        # cam = None
-        # if hasattr(self, "ren"):
-        #     cam = self.ren.GetActiveCamera()
-        # elif hasattr(self, "renderer"):
-        #     cam = self.renderer.GetActiveCamera()
-        # if cam is not None:
-        #     axes_actor.SetCamera(cam)
-        #
-        # # --- raw lattice bounds (geometry extents)
-        # if self.is_lattice_hex(drawing_params=drawing_params):
-        #     raw_bounds = [
-        #         0.0, x,
-        #         0.0, y * math.sqrt(3.0) / 2.0,
-        #         0.0, z * math.sqrt(6.0) / 3.0,
-        #     ]
-        # else:
-        #     raw_bounds = [0.0, x, 0.0, y, 0.0, z]
-        #
-        # # --- scale numeric labels only (bounds * factor) ---
-        # # scaled_bounds = [
-        # #     raw_bounds[0] * factor, raw_bounds[1] * factor,
-        # #     raw_bounds[2] * factor, raw_bounds[3] * factor,
-        # #     raw_bounds[4] * factor, raw_bounds[5] * factor,
-        # # ]
-        #
-        # scaled_bounds = [
-        #     raw_bounds[0] , raw_bounds[1] ,
-        #     raw_bounds[2] , raw_bounds[3] ,
-        #     raw_bounds[4] , raw_bounds[5] ,
-        # ]
-        #
-        # axes_actor.SetBounds(scaled_bounds)
-        # #
-        # # axes_actor.XAxisLabelsResetRangeOff()
-        # # axes_actor.YAxisLabelsResetRangeOff()
-        # # axes_actor.ZAxisLabelsResetRangeOff()
-        #
-        # axes_actor.GetXAxisActor2D().SetRange(0, raw_bounds[1] * factor)
-        # axes_actor.GetYAxisActor2D().SetRange(0, raw_bounds[3] * factor)
-        # axes_actor.GetZAxisActor2D().SetRange(0, raw_bounds[5] * factor)
-        #
-        # # inverse scale geometry so the box stays aligned with the lattice
-        # inv = 1.0 / factor if factor != 0 else 1.0
-        #
-        # # compute center of the unscaled lattice bounds
-        # cx = 0.5 * (raw_bounds[0] + raw_bounds[1])
-        # cy = 0.5 * (raw_bounds[2] + raw_bounds[3])
-        # cz = 0.5 * (raw_bounds[4] + raw_bounds[5])
-        #
-        # t = vtk.vtkTransform()
-        # t.Translate(cx, cy, cz)  # move to center
-        # t.Scale(inv, inv, inv)  # scale about center
-        # t.Translate(-cx, -cy, -cz)  # move back
-        #
-        # if hasattr(axes_actor, "SetUserTransform"):
-        #     axes_actor.SetUserTransform(t)
-        # else:
-        #     axes_actor.SetUserMatrix(t.GetMatrix())
-        #
-        # # # inverse scale geometry so the box still fits the lattice
-        # # inv = 1.0 / factor if factor != 0 else 1.0
-        # # t = vtk.vtkTransform()
-        # # t.Scale(inv, inv, inv)
-        # # if hasattr(axes_actor, "SetUserTransform"):
-        # #     axes_actor.SetUserTransform(t)
-        # # else:
-        # #     axes_actor.SetUserMatrix(t.GetMatrix())
-        #
-        # # --- styling / labels (per-axis format; no SetLabelFormat on CubeAxesActor)
-        # axes_actor.GetProperty().SetColor(*axes_color)
-        # axes_actor.SetFlyModeToOuterEdges()
-        #
-        # axes_actor.SetXLabelFormat("%-6.2f")
-        # axes_actor.SetYLabelFormat("%-6.2f")
-        # axes_actor.SetZLabelFormat("%-6.2f")
-        #
-        # # minor tick & tick locations (guard by hasattr for older VTKs)
-        # if hasattr(axes_actor, "XAxisMinorTickVisibilityOff"):
-        #     axes_actor.XAxisMinorTickVisibilityOff()
-        # if hasattr(axes_actor, "YAxisMinorTickVisibilityOff"):
-        #     axes_actor.YAxisMinorTickVisibilityOff()
-        # if hasattr(axes_actor, "ZAxisMinorTickVisibilityOff"):
-        #     axes_actor.ZAxisMinorTickVisibilityOff()
-        # if hasattr(axes_actor, "SetTickLocationToOutside"):
-        #     axes_actor.SetTickLocationToOutside()
-        #
-        # # label/title colors
-        # for i in range(3):
-        #     axes_actor.GetLabelTextProperty(i).SetColor(*axes_color)
-        #     axes_actor.GetTitleTextProperty(i).SetColor(*axes_color)
-        #
-        # # optional units in titles
-        # if self.show_axes_with_units and length_unit:
-        #     axes_actor.SetXTitle(f"X({length_unit})")
-        #     axes_actor.SetYTitle(f"Y({length_unit})")
-        #     axes_actor.SetZTitle(f"Z({length_unit})")
-
         time_unit, time_scaling_factor, length_unit, length_scaling_factor = CompuCellSetup.persistent_globals.conversion_factors
         actors_dict = actor_specs.actors_dict
         field_dim = self.currentDrawingParameters.bsd.fieldDim
@@ -1051,6 +937,52 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         axes_actor.SetFlyModeToOuterEdges()
         axes_actor.GetProperty().SetColor(axes_color)
+
+
+    def init_axes_actors_no_units(self, actor_specs, drawing_params=None):
+        """
+        Initializes outline actors for hex actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+        actors_dict = actor_specs.actors_dict
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
+
+        axes_actor = actors_dict["axes_actor"]
+        axes_color = to_vtk_rgb(mdata.get("AxesColor", data_type="color"))
+
+        tprop = vtk.vtkTextProperty()
+        tprop.SetColor(axes_color)
+        tprop.ShadowOn()
+
+        axes_actor.SetNumberOfLabels(4)  # number of labels
+
+        # lattice_type_str = self.get_lattice_type_str()
+        # if lattice_type_str.lower() == 'hexagonal':
+        if self.is_lattice_hex(drawing_params=drawing_params):
+            axes_actor.SetBounds(
+                0, field_dim.x, 0, field_dim.y * math.sqrt(3.0) / 2.0, 0, field_dim.z * math.sqrt(6.0) / 3.0
+            )
+        else:
+            axes_actor.SetBounds(0, field_dim.x, 0, field_dim.y, 0, field_dim.z)
+
+        axes_actor.SetLabelFormat("%6.4g")
+        axes_actor.SetFlyModeToOuterEdges()
+        axes_actor.SetFontFactor(1.5)
+
+        # axesActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+        axes_actor.GetProperty().SetColor(axes_color)
+
+        xAxisActor = axes_actor.GetXAxisActor2D()
+        # xAxisActor.RulerModeOn()
+        # xAxisActor.SetRulerDistance(40)
+        # xAxisActor.SetRulerMode(20)
+        # xAxisActor.RulerModeOn()
+        xAxisActor.SetNumberOfMinorTicks(3)
+
 
     def init_fpp_links_actors(self, actor_specs, drawing_params=None):
         """
