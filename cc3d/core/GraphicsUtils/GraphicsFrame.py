@@ -282,7 +282,9 @@ class GraphicsFrame:
                          'WindowColor': color_to_rgba(self.config.getSetting('WindowColor')),
                          'FPPLinksColor': color_to_rgba(self.config.getSetting('FPPLinksColor')),
                          'ShowHorizontalAxesLabels': self.config.getSetting('ShowHorizontalAxesLabels'),
-                         'ShowVerticalAxesLabels': self.config.getSetting('ShowVerticalAxesLabels')}
+                         'ShowVerticalAxesLabels': self.config.getSetting('ShowVerticalAxesLabels'),
+                         'DisplayUnits': self.config.getSetting('DisplayUnits')
+                         }
 
         # type-color map
         type_color_map_dict = OrderedDict()

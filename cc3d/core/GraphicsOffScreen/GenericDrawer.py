@@ -315,7 +315,7 @@ class GenericDrawer:
         model, view = self.get_model_view(drawing_params=drawing_params)
 
         actor_specs = ActorSpecs()
-        actor_specs_final = view.prepare_axes_actors(actor_specs=actor_specs)
+        actor_specs_final = view.prepare_axes_actors(actor_specs=actor_specs, drawing_params=drawing_params)
         camera = view.getCamera()
         if actor_specs_final.metadata is None:
             actor_specs_final.metadata = {'camera': camera}

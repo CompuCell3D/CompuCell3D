@@ -44,7 +44,7 @@ class MVCDrawViewBase:
         self.ren = ren
         self.horizontal_axis_actor = None
         self.vertical_axis_actor = None
-        self.show_axes_with_units = True
+
 
 
     @property

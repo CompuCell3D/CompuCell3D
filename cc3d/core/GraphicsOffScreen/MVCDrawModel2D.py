@@ -161,7 +161,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
         outline_actor.GetProperty().SetColor(*outline_color)
 
     def init_axes_actors(self, actor_specs, drawing_params=None):
-        if self.show_axes_with_units:
+
+        show_axes_with_units = drawing_params.screenshot_data.metadata.get("DisplayUnits", True)
+
+        if show_axes_with_units:
             self.init_axes_actors_units(actor_specs=actor_specs, drawing_params=drawing_params)
         else:
             self.init_axes_actors_no_units(actor_specs=actor_specs, drawing_params=drawing_params)

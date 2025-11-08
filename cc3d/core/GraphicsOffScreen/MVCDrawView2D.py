@@ -341,7 +341,9 @@ class MVCDrawView2D(MVCDrawViewBase):
                 self.ren.RemoveActor(self.outlineActor)
 
     def prepare_axes_actors(self, actor_specs, drawing_params=None):
-        if self.show_axes_with_units:
+        show_axes_with_units = drawing_params.screenshot_data.metadata.get("DisplayUnits", False)
+
+        if show_axes_with_units:
             return self.prepare_axes_actors_units(actor_specs=actor_specs, drawing_params=drawing_params)
         else:
             return self.prepare_axes_actors_no_units(actor_specs=actor_specs, drawing_params=drawing_params)
@@ -394,7 +396,9 @@ class MVCDrawView2D(MVCDrawViewBase):
         :param show_flag:
         :return:
         """
-        if self.show_axes_with_units:
+        show_axes_with_units = drawing_params.screenshot_data.metadata.get("DisplayUnits", False)
+
+        if show_axes_with_units:
             self.show_axes_actors_units(actor_specs=actor_specs, drawing_params=drawing_params, show_flag=show_flag)
         else:
             self.show_axes_actors_no_units(actor_specs=actor_specs, drawing_params=drawing_params, show_flag=show_flag)

@@ -33,7 +33,7 @@ class MVCDrawModelBase:
 
         self.gd_ref = None
         self.ren = ren
-        self.show_axes_with_units = True
+
 
     @property
     def boundary_strategy(self):
