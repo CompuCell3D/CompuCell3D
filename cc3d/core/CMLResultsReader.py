@@ -146,7 +146,7 @@ class LatticeDataSummaryReader:
     @staticmethod
     def extract_lds_file_list_from_file_name(_lds_file: str) -> list:
         _lds_dir = os.path.dirname(LatticeDataSummaryReader.lds_file_check(_lds_file))
-        lds_file_list = [fName for fName in os.listdir(_lds_dir) if re.match(".*\.vtk$", fName)]
+        lds_file_list = [fName for fName in os.listdir(_lds_dir) if re.match(r".*\.vtk$", fName)]
         lds_file_list.sort()
         return lds_file_list
 
