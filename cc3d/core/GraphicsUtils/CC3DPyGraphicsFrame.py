@@ -796,7 +796,7 @@ class CC3DPyGraphicsFrameControlInterface:
                                                     attr_val=_window_size))
 
 
-class CC3DPyGraphicsFrameClientBase:
+class Base:
     """Base class for a CC3D Python graphics frame client"""
 
     CONFIG_ENTRIES: List[Union[str, Tuple[str, Any]]] = [
@@ -1119,14 +1119,14 @@ class CC3DPyGraphicsFrameClientBase:
         config = CompuCellSetup.persistent_globals.configuration
 
         for field_name in self.field_names:
-            for fk in CC3DPyGraphicsFrameClientBase.CONFIG_ENTRIES_FIELDS_BYNAME:
+            for fk in Base.CONFIG_ENTRIES_FIELDS_BYNAME:
                 val = config.getSetting(fk, field_name)
                 try:
                     self.config_data[fk][field_name] = val
                 except KeyError:
                     self.config_data[fk] = {field_name: val}
 
-            for fk in CC3DPyGraphicsFrameClientBase.CONFIG_ENTRIES_FIELDS_UNIFORM:
+            for fk in Base.CONFIG_ENTRIES_FIELDS_UNIFORM:
                 val = config.getSetting(fk)
                 try:
                     self.config_data[fk][field_name] = val
@@ -1134,14 +1134,14 @@ class CC3DPyGraphicsFrameClientBase:
                     self.config_data[fk] = {field_name: val}
 
 
-class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFrameClientBase):
+class (CC3DPyGraphicsFrameInterface, Base):
     """
     Client for a graphics frame
 
-    The actual user interface is provided by :class:`CC3DPyGraphicsFrameClientProxy`,
+    The actual user interface is provided by :class:`Proxy`,
     to support serialization during service executions.
 
-    A proxy is returned by :meth:`CC3DPyGraphicsFrameClientProxy.launch` that can be piped
+    A proxy is returned by :meth:`Proxy.launch` that can be piped
     to other processes. However, the proxy is not necessary for client operations in the same process.
     """
 
@@ -1156,20 +1156,20 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
         Requests of the rendering process should be made through the controller. 
         """
 
-        CC3DPyGraphicsFrameClientBase.__init__(self, name=name, config_fp=config_fp)
+        Base.__init__(self, name=name, config_fp=config_fp)
         CC3DPyGraphicsFrameInterface.__init__(self, conn=self.frame_conn)
 
         self._frame_process = CC3DPyGraphicsFrameProcess(frame_conn=frame_conn, fps=fps, window_name=name)
         self._frame_controller = CC3DPyGraphicsFrameControlInterface(proc=self._frame_process)
 
-        self._executor: Optional[CC3DPyGraphicsFrameClientExecutor] = None
-        self._proxy: Optional[CC3DPyGraphicsFrameClientProxy] = None
+        self._executor: Optional[Executor] = None
+        self._proxy: Optional[Proxy] = None
 
     def launch(self, timeout: float = None):
         """
         Launches the graphics frame process and blocks until startup completes.
 
-        Implementation of :class:`CC3DPyGraphicsFrameClientBase` interface.
+        Implementation of :class:`Base` interface.
 
         :param timeout: permissible duration of launch attempt
         :type timeout: float
@@ -1185,7 +1185,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
             while not dest_conn.poll(timeout):
                 pass
 
-            self._proxy, self._executor = CC3DPyGraphicsFrameClientProxy.start(frame_client=self)
+            self._proxy, self._executor = Proxy.start(frame_client=self)
             return self._proxy
 
         except Exception as e:
@@ -1196,7 +1196,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
         """
         Update visualization data in rendering process.
 
-        Implementation of :class:`CC3DPyGraphicsFrameClientBase` interface.
+        Implementation of :class:`Base` interface.
 
         :param blocking: flag to block until update is complete
         :type blocking: bool
@@ -1216,7 +1216,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
         """
         Close the frame.
 
-        Implementation of :class:`CC3DPyGraphicsFrameClientBase` interface.
+        Implementation of :class:`Base` interface.
 
         :return: True on success
         :rtype: bool
@@ -1340,7 +1340,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
         """
         Get image data as numpy data.
 
-        Implementation of :class:`CC3DPyGraphicsFrameClientBase` interface.
+        Implementation of :class:`Base` interface.
 
         :param scale: image scale
         :type scale: int or (int, int) or None
@@ -1361,7 +1361,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
 
         Supported image types are .eps, .jpg, .jpeg, .pdf, .png, .svg.
 
-        Implementation of :class:`CC3DPyGraphicsFrameClientBase` interface.
+        Implementation of :class:`Base` interface.
 
         :param file_path: absolute path to save the image
         :type file_path: str
@@ -1546,7 +1546,7 @@ class CC3DPyGraphicsFrameClient(CC3DPyGraphicsFrameInterface, CC3DPyGraphicsFram
     window_size = property(fget=get_window_size, fset=set_window_size)
 
 
-class CC3DPyGraphicsFrameClientProxyMsg:
+class ProxyMsg:
 
     def __init__(self, method: str, args, kwargs):
 
@@ -1556,15 +1556,15 @@ class CC3DPyGraphicsFrameClientProxyMsg:
         self.returns = False
 
 
-class CC3DPyGraphicsFrameClientExecutor(threading.Thread):
+class Executor(threading.Thread):
     """
-    Executor for :class:`CC3DPyGraphicsFrameClientProxy`.
+    Executor for :class:`Proxy`.
 
     Supports serialization for server-side interface during service execution.
     """
 
     def __init__(self,
-                 frame_client: CC3DPyGraphicsFrameClient,
+                 frame_client: ,
                  proxy_conn: Connection):
 
         super().__init__(daemon=True)
@@ -1580,7 +1580,7 @@ class CC3DPyGraphicsFrameClientExecutor(threading.Thread):
                     self._proxy_conn.close()
                     return
 
-                msg: CC3DPyGraphicsFrameClientProxyMsg
+                msg: ProxyMsg
                 return_val = getattr(self.frame_client, msg.method)(*msg.args, **msg.kwargs)
                 if msg.returns:
                     self._proxy_conn.send(return_val)
@@ -1588,9 +1588,9 @@ class CC3DPyGraphicsFrameClientExecutor(threading.Thread):
         self._proxy_conn.close()
 
 
-class CC3DPyGraphicsFrameClientProxy:
+class Proxy:
     """
-    Proxy for :class:`CC3DPyGraphicsFrameClient`.
+    Proxy for :class:``.
 
     Supports serialization for client-side interface during service execution.
     """
@@ -1600,11 +1600,11 @@ class CC3DPyGraphicsFrameClientProxy:
         self._executor_conn = executor_conn
 
     @staticmethod
-    def start(frame_client: CC3DPyGraphicsFrameClient):
+    def start(frame_client: ):
 
         proxy_conn, executor_conn = multiprocessing.Pipe()
-        proxy = CC3DPyGraphicsFrameClientProxy(executor_conn)
-        executor = CC3DPyGraphicsFrameClientExecutor(frame_client=frame_client,
+        proxy = Proxy(executor_conn)
+        executor = Executor(frame_client=frame_client,
                                                      proxy_conn=proxy_conn)
         executor.start()
         return proxy, executor
@@ -1614,14 +1614,14 @@ class CC3DPyGraphicsFrameClientProxy:
             log_py(CompuCell.LOG_WARNING, 'Frame proxy has been disconnected')
             return
 
-        self._executor_conn.send(CC3DPyGraphicsFrameClientProxyMsg(msg, args, kwargs))
+        self._executor_conn.send(ProxyMsg(msg, args, kwargs))
 
     def _process_ret_msg(self, msg: str, *args, **kwargs):
         if self._executor_conn.closed:
             log_py(CompuCell.LOG_WARNING, 'Frame proxy has been disconnected')
             return None
 
-        msg = CC3DPyGraphicsFrameClientProxyMsg(msg, args, kwargs)
+        msg = ProxyMsg(msg, args, kwargs)
         msg.returns = True
         self._executor_conn.send(msg)
         while not self._executor_conn.poll():
@@ -1632,7 +1632,7 @@ class CC3DPyGraphicsFrameClientProxy:
         """
         Launches the graphics frame process and blocks until startup completes.
 
-        Implementation of :class:`CC3DPyGraphicsFrameClientBase` interface.
+        Implementation of :class:`Base` interface.
 
         :param timeout: permissible duration of launch attempt
         :type timeout: float
@@ -1647,7 +1647,7 @@ class CC3DPyGraphicsFrameClientProxy:
         """
         Update visualization data in rendering process.
 
-        Implementation of :class:`CC3DPyGraphicsFrameClientBase` interface.
+        Implementation of :class:`Base` interface.
 
         :param blocking: flag to block until update is complete
         :type blocking: bool
@@ -1661,7 +1661,7 @@ class CC3DPyGraphicsFrameClientProxy:
         """
         Close the frame.
 
-        Implementation of :class:`CC3DPyGraphicsFrameClientBase` interface.
+        Implementation of :class:`Base` interface.
 
         :return: True on success
         :rtype: bool
@@ -1707,7 +1707,7 @@ class CC3DPyGraphicsFrameClientProxy:
         """
         Get image data as numpy data.
 
-        Implementation of :class:`CC3DPyGraphicsFrameClientBase` interface.
+        Implementation of :class:`Base` interface.
 
         :param scale: image scale
         :type scale: int or (int, int) or None
@@ -1728,7 +1728,7 @@ class CC3DPyGraphicsFrameClientProxy:
 
         Supported image types are .eps, .jpg, .jpeg, .pdf, .png, .svg.
 
-        Implementation of :class:`CC3DPyGraphicsFrameClientBase` interface.
+        Implementation of :class:`Base` interface.
 
         :param file_path: absolute path to save the image
         :type file_path: str
