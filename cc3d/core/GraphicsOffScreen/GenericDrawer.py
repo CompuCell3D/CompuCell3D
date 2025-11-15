@@ -403,7 +403,7 @@ class GenericDrawer:
 
         if draw_fcn is not None:
             # removing all current actors
-            view.clear_scene()
+            view.clear_scene(drawing_params=drawing_params)
 
             draw_fcn(drawing_params=drawing_params)
 

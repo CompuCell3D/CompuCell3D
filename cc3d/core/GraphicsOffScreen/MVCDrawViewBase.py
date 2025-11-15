@@ -1,7 +1,9 @@
+import warnings
 from weakref import ref
 import vtk
 import math
 from cc3d.core.GraphicsOffScreen.DrawingParameters import DrawingParameters
+from cc3d.core.GraphicsUtils.utils import to_vtk_rgb
 
 MODULENAME = '----- MVCDrawViewBase.py: '
 
@@ -85,7 +87,7 @@ class MVCDrawViewBase:
             self.drawingFcnHasChanged = False
         self.drawingFcnName = _fcnName
 
-    def clear_scene(self):
+    def clear_scene(self, drawing_params=None):
         """
         removes all actors from the renderer
         :return: None
@@ -93,6 +95,17 @@ class MVCDrawViewBase:
         for actor in self.currentActors:
             self.ren.RemoveActor(self.currentActors[actor])
         self.currentActors.clear()
+
+        # apply background
+        colors = vtk.vtkNamedColors()
+        background_color = colors.GetColor3d("black")
+        if drawing_params is not None :
+            try:
+                background_color = to_vtk_rgb(drawing_params.screenshot_data.metadata["BackgroundWindowColor"])
+            except (KeyError, AttributeError):
+                warnings.warn("BackgroundWindowColor cannot be read from settings/screenshot_data.metadata. Defaulting to black")
+
+        self.ren.SetBackground(background_color)
 
     def setFieldTypes(self, _fieldTypes):
         self.fieldTypes = _fieldTypes

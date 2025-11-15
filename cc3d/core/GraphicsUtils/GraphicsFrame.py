@@ -277,6 +277,7 @@ class GraphicsFrame:
         metadata_dict = {'BorderColor': color_to_rgba(self.config.getSetting('BorderColor')),
                          'ClusterBorderColor': color_to_rgba(self.config.getSetting('ClusterBorderColor')),
                          'BoundingBoxColor': color_to_rgba(self.config.getSetting('BoundingBoxColor')),
+                         'BackgroundWindowColor': color_to_rgba(self.config.getSetting('WindowColor')),
                          'AxesColor': color_to_rgba(self.config.getSetting('AxesColor')),
                          'ContourColor': color_to_rgba(self.config.getSetting('ContourColor')),
                          'WindowColor': color_to_rgba(self.config.getSetting('WindowColor')),
