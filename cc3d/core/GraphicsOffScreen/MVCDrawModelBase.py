@@ -34,6 +34,7 @@ class MVCDrawModelBase:
         self.gd_ref = None
         self.ren = ren
 
+
     @property
     def boundary_strategy(self):
         try:

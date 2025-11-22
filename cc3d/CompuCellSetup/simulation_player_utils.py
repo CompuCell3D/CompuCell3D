@@ -47,7 +47,7 @@ def add_new_plot_window(title='', xAxisTitle='', yAxisTitle='', xScaleType='line
 
     try:
         plot_window = view_manager.plotManager.get_new_plot_window()
-    except:
+    except Exception as e:
         full_options_dict = {
             'title': title,
             'xAxisTitle': xAxisTitle,

@@ -10,6 +10,7 @@ from cc3d.core.iterators import CellList, FocalPointPlasticityDataList, Internal
 from cc3d.cpp import CompuCell
 import sys
 from cc3d.core.enums import *
+from ... import CompuCellSetup
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 epsilon = sys.float_info.epsilon
@@ -870,6 +871,75 @@ class MVCDrawModel3D(MVCDrawModelBase):
         outline_actor.GetProperty().SetColor(*outline_color)
 
     def init_axes_actors(self, actor_specs, drawing_params=None):
+        show_axes_with_units = drawing_params.screenshot_data.metadata.get("DisplayUnits", True)
+
+        if show_axes_with_units:
+            self.init_axes_actors_units(actor_specs=actor_specs, drawing_params=drawing_params)
+        else:
+            self.init_axes_actors_no_units(actor_specs=actor_specs, drawing_params=drawing_params)
+
+
+    def init_axes_actors_units(self, actor_specs, drawing_params=None):
+        """
+        Initializes outline actors for hex actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+        time_unit, time_scaling_factor, length_unit, length_scaling_factor = CompuCellSetup.persistent_globals.conversion_factors
+        actors_dict = actor_specs.actors_dict
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        x, y, z = field_dim.x, field_dim.y, field_dim.z
+
+        scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
+
+        axes_actor = actors_dict["axes_actor"]
+        axes_color = to_vtk_rgb(mdata.get("AxesColor", data_type="color"))
+
+        tprop = vtk.vtkTextProperty()
+        tprop.SetColor(axes_color)
+        tprop.ShadowOn()
+
+        # axes_actor.SetNumberOfLabels(4)  # number of labels
+
+        factor = 2.0
+        # if self.show_axes_with_units:
+        #     factor = float(length_scaling_factor)
+
+        # x *= factor
+        # y *= factor
+        # z *= factor
+
+        bounds = [0, x, 0, y, 0, z]
+        rescaled_label_bounds = (np.array(bounds) * factor).tolist()
+
+        if self.is_lattice_hex(drawing_params=drawing_params):
+            bounds = [0, x, 0, y * math.sqrt(3.0) / 2.0, 0, z * math.sqrt(6.0) / 3.0]
+
+
+        # determines the geometrical span of the actor
+        axes_actor.SetBounds(*bounds)
+        # rescaling the labels of the axes
+        axes_actor.SetXAxisRange(rescaled_label_bounds[0], rescaled_label_bounds[1])
+        axes_actor.SetYAxisRange(rescaled_label_bounds[2], rescaled_label_bounds[3])
+        axes_actor.SetZAxisRange(rescaled_label_bounds[4], rescaled_label_bounds[5])
+        axes_actor.SetXTitle("X")
+        axes_actor.SetYTitle("Y")
+        axes_actor.SetZTitle("Z")
+
+        length_unit = length_unit.strip()
+        if length_unit:
+            axes_actor.SetXUnits(length_unit)
+            axes_actor.SetYUnits(length_unit)
+            axes_actor.SetZUnits(length_unit)
+
+
+        axes_actor.SetFlyModeToOuterEdges()
+        axes_actor.GetProperty().SetColor(axes_color)
+
+
+    def init_axes_actors_no_units(self, actor_specs, drawing_params=None):
         """
         Initializes outline actors for hex actors
         :param actor_specs: {ActorSpecs}
@@ -912,6 +982,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # xAxisActor.SetRulerMode(20)
         # xAxisActor.RulerModeOn()
         xAxisActor.SetNumberOfMinorTicks(3)
+
 
     def init_fpp_links_actors(self, actor_specs, drawing_params=None):
         """

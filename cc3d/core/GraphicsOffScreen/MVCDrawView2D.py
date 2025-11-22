@@ -39,6 +39,8 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.outlineActor = vtk.vtkActor()
         # self.axesActor = vtk.vtkCubeAxesActor2D()
         self.axesActor = vtk.vtkCubeAxesActor()
+        self.horizontal_axis_actor = vtk.vtkAxisActor2D()
+        self.vertical_axis_actor = vtk.vtkAxisActor2D()
 
         self.outlineDim = [0, 0, 0]
 
@@ -339,6 +341,14 @@ class MVCDrawView2D(MVCDrawViewBase):
                 self.ren.RemoveActor(self.outlineActor)
 
     def prepare_axes_actors(self, actor_specs, drawing_params=None):
+        show_axes_with_units = drawing_params.screenshot_data.metadata.get("DisplayUnits", False)
+
+        if show_axes_with_units:
+            return self.prepare_axes_actors_units(actor_specs=actor_specs, drawing_params=drawing_params)
+        else:
+            return self.prepare_axes_actors_no_units(actor_specs=actor_specs, drawing_params=drawing_params)
+
+    def prepare_axes_actors_no_units(self, actor_specs, drawing_params=None):
         """
         Prepares cell_field_actors  based on actor_specs specifications
         :param actor_specs {ActorSpecs}: specification of actors to create
@@ -354,7 +364,46 @@ class MVCDrawView2D(MVCDrawViewBase):
 
         return actor_specs_copy
 
+    def prepare_axes_actors_units(self, actor_specs, drawing_params=None):
+        """
+        Prepares cell_field_actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {dict}
+        """
+
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        # self.axesActor = vtk.vtkCubeAxesActor()
+        # actor_specs_copy.actors_dict["axes_actor"] = self.axesActor
+        # actor_specs_copy.actors_dict["axes_actor"] = vtk.vtkAxisActor2D(), vtk.vtkAxisActor2D()
+
+        # actor_specs_copy.actors_dict["AxesHorizontal"] = vtk.vtkAxisActor2D()
+        # actor_specs_copy.actors_dict["AxesVertical"] = vtk.vtkAxisActor2D()
+        actor_specs_copy.actors_dict["AxesHorizontal"] = self.horizontal_axis_actor
+        actor_specs_copy.actors_dict["AxesVertical"] = self.vertical_axis_actor
+
+
+        # actor_specs_copy.actors_dict['axes_actor'] = self.outlineActor
+
+        return actor_specs_copy
+
     def show_axes_actors(self, actor_specs, drawing_params=None, show_flag=True):
+        """
+        dispatcher fcn that shows/hides axes box
+        :param actor_specs:
+        :param drawing_params:
+        :param show_flag:
+        :return:
+        """
+        show_axes_with_units = drawing_params.screenshot_data.metadata.get("DisplayUnits", False)
+
+        if show_axes_with_units:
+            self.show_axes_actors_units(actor_specs=actor_specs, drawing_params=drawing_params, show_flag=show_flag)
+        else:
+            self.show_axes_actors_no_units(actor_specs=actor_specs, drawing_params=drawing_params, show_flag=show_flag)
+
+    def show_axes_actors_no_units(self, actor_specs, drawing_params=None, show_flag=True):
         """
         shows/hides axes box
         :param actor_specs:
@@ -378,6 +427,63 @@ class MVCDrawView2D(MVCDrawViewBase):
             if "Axes" in self.currentActors:
                 del self.currentActors["Axes"]
                 self.ren.RemoveActor(self.axesActor)
+
+    def show_axes_actors_units(self, actor_specs, drawing_params=None, show_flag=True):
+        """
+        shows/hides axes box
+        :param actor_specs:
+        :param drawing_params:
+        :param show_flag:
+        :return:
+        """
+        camera = actor_specs.metadata["camera"]
+        if show_flag:
+            if "AxesHorizontal" not in self.currentActors:
+                # setting camera for the actor is very important to get axes working properly
+                # axes_actor_horizontal = self.currentActors["AxesHorizontal"]
+
+                # self.horizontal_axis_actor.SetCamera(camera)
+                self.currentActors["AxesHorizontal"] = self.horizontal_axis_actor
+                # self.currentActors["AxesHorizontal"] = actor_specs.actors_dict["AxesHorizontal"]
+
+
+                self.ren.AddActor(self.horizontal_axis_actor)
+
+
+            else:
+                self.ren.RemoveActor(self.horizontal_axis_actor)
+                # setting camera for the actor is very important to get axes working properly
+                self.axesActor.SetCamera(camera)
+                self.ren.AddActor(self.horizontal_axis_actor)
+
+                # self.ren.RemoveActor(self.axesActor)
+                # # setting camera for the actor is very important to get axes working properly
+                # self.axesActor.SetCamera(camera)
+                # self.ren.AddActor(self.axesActor)
+
+            if "AxesVertical" not in self.currentActors:
+                # axes_actor_vertical = self.currentActors["AxesVertical"]
+                # axes_actor_vertical.SetCamera(camera)
+                self.currentActors["AxesVertical"] = self.vertical_axis_actor
+                # self.currentActors["AxesVertical"] = actor_specs.actors_dict["AxesVertical"]
+                self.ren.AddActor(self.vertical_axis_actor)
+            else:
+                self.ren.RemoveActor(self.vertical_axis_actor)
+                self.axesActor.SetCamera(camera)
+                self.ren.AddActor(self.vertical_axis_actor)
+        else:
+            # if "Axes" in self.currentActors:
+            #     del self.currentActors["Axes"]
+            #     self.ren.RemoveActor(self.axesActor)
+
+            if "AxesHorizontal" in self.currentActors:
+                del self.currentActors["AxesHorizontal"]
+                self.ren.RemoveActor(self.horizontal_axis_actor)
+
+            if "AxesVertical" in self.currentActors:
+                del self.currentActors["AxesVertical"]
+                self.ren.RemoveActor(self.vertical_axis_actor)
+
 
     def setPlane(self, plane, pos):
         (self.plane, self.planePos) = (str(plane).upper(), pos)
