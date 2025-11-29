@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="CompuCell3D">
+        <xs:complexType>
+            <xs:sequence>
+
+                <!-- Metadata: optional but unique -->
+                <xs:element name="Metadata" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+                <!-- Potts: required exactly once -->
+                <xs:element name="Potts" minOccurs="1" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+                <!-- Plugin list -->
+                <xs:element name="Plugin" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                        <xs:attribute name="Name" type="xs:string" use="required"/>
+                    </xs:complexType>
+
+                    <xs:unique name="UniquePluginName">
+                        <xs:selector xpath="."/>
+                        <xs:field xpath="@Name"/>
+                    </xs:unique>
+
+                </xs:element>
+
+                <!-- Steppable list -->
+                <xs:element name="Steppable" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                        <xs:attribute name="Type" type="xs:string" use="required"/>
+                    </xs:complexType>
+
+                    <xs:unique name="UniqueSteppableType">
+                        <xs:selector xpath="."/>
+                        <xs:field xpath="@Type"/>
+                    </xs:unique>
+
+                </xs:element>
+
+            </xs:sequence>
+        </xs:complexType>
+
+        <!-- ========================================================= -->
+        <!-- Named constraints for Potts and Metadata             -->
+        <!-- ========================================================= -->
+
+        <!-- Enforce exactly one Potts -->
+        <xs:unique name="UniquePottsSection">
+            <xs:selector xpath="Potts"/>
+            <xs:field xpath="."/>
+        </xs:unique>
+
+        <!-- Enforce at most one Metadata -->
+        <xs:unique name="UniqueMetadataSection">
+            <xs:selector xpath="Metadata"/>
+            <xs:field xpath="."/>
+        </xs:unique>
+
+        <!-- Existing constraints -->
+        <xs:unique name="AllPluginsHaveUniqueNames">
+            <xs:selector xpath="Plugin"/>
+            <xs:field xpath="@Name"/>
+        </xs:unique>
+
+        <xs:unique name="AllSteppablesHaveUniqueTypes">
+            <xs:selector xpath="Steppable"/>
+            <xs:field xpath="@Type"/>
+        </xs:unique>
+
+    </xs:element>
+
+</xs:schema>
+
+<!--<?xml version="1.0" encoding="UTF-8"?>-->
+<!--<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">-->
+
+<!--    <xs:element name="CompuCell3D">-->
+<!--        <xs:complexType>-->
+<!--            <xs:sequence>-->
+
+<!--                &lt;!&ndash; Optional Metadata &ndash;&gt;-->
+<!--                <xs:element name="Metadata" minOccurs="0" maxOccurs="1" />-->
+
+<!--                &lt;!&ndash; Exactly one Potts &ndash;&gt;-->
+<!--                <xs:element name="Potts" minOccurs="1" maxOccurs="1">-->
+<!--                    <xs:complexType>-->
+<!--                        <xs:sequence>-->
+<!--                            <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>-->
+<!--                        </xs:sequence>-->
+<!--                    </xs:complexType>-->
+<!--                </xs:element>-->
+
+<!--                &lt;!&ndash; Plugin list &ndash;&gt;-->
+<!--                <xs:element name="Plugin" minOccurs="0" maxOccurs="unbounded">-->
+<!--                    <xs:complexType>-->
+<!--                        <xs:sequence>-->
+<!--                            <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>-->
+<!--                        </xs:sequence>-->
+<!--                        <xs:attribute name="Name" type="xs:string" use="required"/>-->
+<!--                    </xs:complexType>-->
+
+<!--                    &lt;!&ndash; Unique plugin names &ndash;&gt;-->
+<!--                    <xs:unique name="UniquePluginName">-->
+<!--                        <xs:selector xpath="."/>-->
+<!--                        <xs:field xpath="@Name"/>-->
+<!--                    </xs:unique>-->
+
+<!--                </xs:element>-->
+
+<!--                &lt;!&ndash; Steppable list &ndash;&gt;-->
+<!--                <xs:element name="Steppable" minOccurs="0" maxOccurs="unbounded">-->
+<!--                    <xs:complexType>-->
+<!--                        <xs:sequence>-->
+<!--                            <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>-->
+<!--                        </xs:sequence>-->
+<!--                        <xs:attribute name="Type" type="xs:string" use="required"/>-->
+<!--                    </xs:complexType>-->
+
+<!--                    &lt;!&ndash; Unique steppable types &ndash;&gt;-->
+<!--                    <xs:unique name="UniqueSteppableType">-->
+<!--                        <xs:selector xpath="."/>-->
+<!--                        <xs:field xpath="@Type"/>-->
+<!--                    </xs:unique>-->
+
+<!--                </xs:element>-->
+
+<!--            </xs:sequence>-->
+<!--        </xs:complexType>-->
+
+<!--        &lt;!&ndash; Additional root-level uniqueness rules &ndash;&gt;-->
+<!--        <xs:unique name="AllPluginsHaveUniqueNames">-->
+<!--            <xs:selector xpath="Plugin"/>-->
+<!--            <xs:field xpath="@Name"/>-->
+<!--        </xs:unique>-->
+
+<!--        <xs:unique name="AllSteppablesHaveUniqueTypes">-->
+<!--            <xs:selector xpath="Steppable"/>-->
+<!--            <xs:field xpath="@Type"/>-->
+<!--        </xs:unique>-->
+
+<!--    </xs:element>-->
+
+<!--</xs:schema>-->
+
+<!--&lt;!&ndash;<?xml version="1.0" encoding="UTF-8"?>&ndash;&gt;-->
+<!--&lt;!&ndash;<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">&ndash;&gt;-->
+
+<!--&lt;!&ndash;    &lt;!&ndash; ========================================================= &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;    &lt;!&ndash; Root element &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;    &lt;!&ndash; ========================================================= &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;    <xs:element name="CompuCell3D">&ndash;&gt;-->
+<!--&lt;!&ndash;        <xs:complexType>&ndash;&gt;-->
+<!--&lt;!&ndash;            <xs:sequence>&ndash;&gt;-->
+
+<!--&lt;!&ndash;                &lt;!&ndash; Optional <Metadata> &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;                <xs:element name="Metadata" minOccurs="0" maxOccurs="1" />&ndash;&gt;-->
+
+<!--&lt;!&ndash;                &lt;!&ndash; Exactly one Potts &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;                <xs:element name="Potts" minOccurs="1" maxOccurs="1" />&ndash;&gt;-->
+
+<!--&lt;!&ndash;                &lt;!&ndash; Zero or many Plugins &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;                <xs:element name="Plugin" minOccurs="0" maxOccurs="unbounded">&ndash;&gt;-->
+<!--&lt;!&ndash;                    <xs:complexType>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <xs:sequence>&ndash;&gt;-->
+<!--&lt;!&ndash;                            &lt;!&ndash; Allow arbitrary nested content here &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;                            <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                        </xs:sequence>&ndash;&gt;-->
+
+<!--&lt;!&ndash;                        <xs:attribute name="Name" type="xs:string" use="required"/>&ndash;&gt;-->
+
+<!--&lt;!&ndash;                        &lt;!&ndash; Enforce uniqueness of plugin name &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;                        <xs:unique name="UniquePluginName">&ndash;&gt;-->
+<!--&lt;!&ndash;                            <xs:selector xpath="."/>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <xs:field xpath="@Name"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                        </xs:unique>&ndash;&gt;-->
+
+<!--&lt;!&ndash;                    </xs:complexType>&ndash;&gt;-->
+<!--&lt;!&ndash;                </xs:element>&ndash;&gt;-->
+
+<!--&lt;!&ndash;                &lt;!&ndash; Zero or many Steppables &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;                <xs:element name="Steppable" minOccurs="0" maxOccurs="unbounded">&ndash;&gt;-->
+<!--&lt;!&ndash;                    <xs:complexType>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <xs:sequence>&ndash;&gt;-->
+<!--&lt;!&ndash;                            &lt;!&ndash; Allow arbitrary nested content &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;                            <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                        </xs:sequence>&ndash;&gt;-->
+
+<!--&lt;!&ndash;                        <xs:attribute name="Type" type="xs:string" use="required"/>&ndash;&gt;-->
+
+<!--&lt;!&ndash;                        &lt;!&ndash; Enforce uniqueness of steppable type &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;                        <xs:unique name="UniqueSteppableType">&ndash;&gt;-->
+<!--&lt;!&ndash;                            <xs:selector xpath="."/>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <xs:field xpath="@Type"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                        </xs:unique>&ndash;&gt;-->
+
+<!--&lt;!&ndash;                    </xs:complexType>&ndash;&gt;-->
+<!--&lt;!&ndash;                </xs:element>&ndash;&gt;-->
+
+<!--&lt;!&ndash;            </xs:sequence>&ndash;&gt;-->
+<!--&lt;!&ndash;        </xs:complexType>&ndash;&gt;-->
+
+<!--&lt;!&ndash;        &lt;!&ndash;&ndash;&gt;-->
+<!--&lt;!&ndash;            Enforce that the entire document has ONE set of unique Plugins&ndash;&gt;-->
+<!--&lt;!&ndash;            and ONE set of unique Steppables.&ndash;&gt;-->
+<!--&lt;!&ndash;        &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;        <xs:unique name="AllPluginsHaveUniqueNames">&ndash;&gt;-->
+<!--&lt;!&ndash;            <xs:selector xpath="Plugin"/>&ndash;&gt;-->
+<!--&lt;!&ndash;            <xs:field xpath="@Name"/>&ndash;&gt;-->
+<!--&lt;!&ndash;        </xs:unique>&ndash;&gt;-->
+
+<!--&lt;!&ndash;        <xs:unique name="AllSteppablesHaveUniqueTypes">&ndash;&gt;-->
+<!--&lt;!&ndash;            <xs:selector xpath="Steppable"/>&ndash;&gt;-->
+<!--&lt;!&ndash;            <xs:field xpath="@Type"/>&ndash;&gt;-->
+<!--&lt;!&ndash;        </xs:unique>&ndash;&gt;-->
+
+<!--&lt;!&ndash;    </xs:element>&ndash;&gt;-->
+
+<!--&lt;!&ndash;</xs:schema>&ndash;&gt;-->

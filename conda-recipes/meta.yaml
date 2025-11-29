@@ -82,6 +82,7 @@ requirements:
     - scipy
     - pandas
     - jinja2
+    - lxml
     - deprecated
     - psutil
     - cmake={{ cmake_version }}
