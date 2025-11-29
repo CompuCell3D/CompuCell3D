@@ -450,6 +450,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper, MaBoSSHelper):
 
         CompuCellSetup.persistent_globals.return_object = _external_output
 
+    def get_unit_conversion_factors(self):
+        """Return unit conversions factors"""
+        return CompuCellSetup.persistent_globals.conversion_factors
+
+
     def merge_cells(self, source_cell, destination_cell):
         """
         Turns all voxels of source_cell into voxels of destination_cell
