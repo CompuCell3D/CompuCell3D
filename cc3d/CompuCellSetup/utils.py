@@ -90,89 +90,247 @@ def parseXML( xml_fname):
     root_element = cc3dXML2ObjConverter.Parse(xml_fname)
     return cc3dXML2ObjConverter
 
+
+import re
+from pathlib import Path
+from lxml import etree
+from cc3d import CompuCellSetup
+
+
 def validate_cc3d_schema(root_element):
 
-    # 0. get schema location
-    cc3d_schema_path = Path(CompuCellSetup.__file__).parent.joinpath("xml_schema/cc3d_schema.xsd")
+    # -------------------------------------
+    # Load schema
+    # -------------------------------------
+    schema_path = (
+        Path(CompuCellSetup.__file__).parent
+            / "xml_schema"
+            / "cc3d_schema.xsd"
+    )
 
-    # 1. Get CC3D XML as a Python string
     xml_str = root_element.getCC3DXMLElementString()
+    xml_lines = xml_str.splitlines()  # needed for error->tag resolution
 
-    # 2. Parse the schema
-    schema_doc = etree.parse(cc3d_schema_path)
+    schema_doc = etree.parse(str(schema_path))
     schema = etree.XMLSchema(schema_doc)
 
-    # 3. Parse the XML string directly
-    doc = etree.fromstring(xml_str.encode("utf-8"))
+    try:
+        doc = etree.fromstring(xml_str.encode("utf-8"))
+    except Exception as err:
+        raise RuntimeError(f"Invalid XML before schema validation: {err}")
 
-    # 4. Validate
+    # -------------------------------------
+    # Validate
+    # -------------------------------------
     if schema.validate(doc):
         print("XML is valid!")
         return True
 
-    # -----------------------------------
-    #  Human-Readable Error Output
-    # -----------------------------------
+    # -------------------------------------
+    # Human-readable messages
+    # -------------------------------------
     clean_messages = []
 
     for error in schema.error_log:
         msg = error.message
-        handled = False  # TRACK IF WE CONSUME THIS ERROR
+        etype = error.type           # stable schema error code
+        line = error.line            # stable
+        handled = False
 
-        # -------------------------------
-        # Duplicate plugin names
-        # -------------------------------
-        m = re.search(r"Duplicate key-sequence \['(.+?)'\].+AllPluginsHaveUniqueNames", msg)
-        if m:
-            plugin_name = m.group(1)
+        # ----------------------------------------------------------
+        # Resolve offending tag WITHOUT using error.node
+        # ----------------------------------------------------------
+        tag = None
+        if line and 1 <= line <= len(xml_lines):
+            line_text = xml_lines[line - 1].strip()
+            m = re.match(r"<\s*([A-Za-z0-9_:-]+)", line_text)
+            if m:
+                tag = m.group(1)
+
+        # ----------------------------------------------------------
+        # Duplicate Plugin Name
+        # ----------------------------------------------------------
+        if "AllPluginsHaveUniqueNames" in msg:
+            # Extract plugin name safely
+            m = re.search(r"\['(.+?)'\]", msg)
+            plugin_name = m.group(1) if m else "UNKNOWN"
+
             clean_messages.append(
-                f"Plugin '{plugin_name}' was listed more than once.\n"
-                f"You can only list a given plugin once in a CC3D simulation file."
+                f"Plugin '{plugin_name}' appears more than once.\n"
+                f"Each Plugin Name must be unique in a CC3D XML file."
             )
             handled = True
 
-        # -------------------------------
-        # Duplicate steppable types
-        # -------------------------------
-        m = re.search(r"Duplicate key-sequence \['(.+?)'\].+AllSteppablesHaveUniqueTypes", msg)
-        if m:
-            step_type = m.group(1)
+        # ----------------------------------------------------------
+        # Duplicate Steppable Type
+        # ----------------------------------------------------------
+        if "AllSteppablesHaveUniqueTypes" in msg:
+            m = re.search(r"\['(.+?)'\]", msg)
+            step_type = m.group(1) if m else "UNKNOWN"
+
             clean_messages.append(
-                f"Steppable '{step_type}' was listed more than once.\n"
-                f"Each Steppable Type may only appear once in a CC3D simulation."
+                f"Steppable '{step_type}' appears more than once.\n"
+                f"Each Steppable Type must be unique."
             )
             handled = True
 
-        # -------------------------------
-        # Duplicate Potts / Metadata
-        # -------------------------------
-        for section_error_sig, section_name in [
-            ("UniquePottsSection", "<Potts>"),
-            ("UniqueMetadataSection", "<Metadata>")
-        ]:
-            if section_error_sig in msg:
-                clean_messages.append(
-                    f"You listed {section_name} section more than once."
-                    f"You can only have one {section_name} section in a CC3D simulation file."
-                )
-                handled = True
+        # ----------------------------------------------------------
+        # More than one Potts (maxOccurs=1)
+        # ----------------------------------------------------------
+        if tag == "Potts" and etype in {
+            "SCHEMAV_ELEMENT_CONTENT",
+            "SCHEMAV_CVC_COMPLEX_TYPE",
+        }:
+            clean_messages.append(
+                "Your CC3D XML contains more than one <Potts> section.\n"
+                "Only one <Potts> block is allowed."
+            )
+            handled = True
 
-        # -------------------------------
-        # Generic fallback *ONLY IF NOT HANDLED*
-        # -------------------------------
+        # ----------------------------------------------------------
+        # More than one Metadata (maxOccurs=1)
+        # ----------------------------------------------------------
+        if tag == "Metadata" and etype in {
+            "SCHEMAV_ELEMENT_CONTENT",
+            "SCHEMAV_CVC_COMPLEX_TYPE",
+        }:
+            clean_messages.append(
+                "Your CC3D XML contains more than one <Metadata> section.\n"
+                "Only one <Metadata> block is allowed."
+            )
+            handled = True
+
+        # ----------------------------------------------------------
+        # Missing required attribute (safe to report)
+        # ----------------------------------------------------------
+        if etype == "SCHEMAV_MISSING_ATTRIBUTE" and tag:
+            clean_messages.append(
+                f"Element <{tag}> is missing a required attribute.\n"
+                f"Details: {msg}"
+            )
+            handled = True
+
+        # ----------------------------------------------------------
+        # Generic fallback (safe, stable metadata only)
+        # ----------------------------------------------------------
         if not handled:
-            clean_messages.append(f"XML Schema Error: {msg}")
+            clean_messages.append(
+                f"XML Schema Validation Error:\n"
+                f"  type={etype}, line={line}, tag={tag}\n"
+                f"  {msg}"
+            )
 
-    # -------------------------------------
-    # Remove duplicate messages (preserve order)
-    # -------------------------------------
-    unique_clean_messages = list(dict.fromkeys(clean_messages))
+    # Deduplicate
+    clean_messages = list(dict.fromkeys(clean_messages))
 
-    # Raise clean combined exception
     raise RuntimeError(
         "Invalid CC3D XML:\n\n" +
-        "\n\n".join(unique_clean_messages)
+        "\n\n".join(clean_messages)
     )
+
+
+# def validate_cc3d_schema(root_element):
+#
+#     # 0. get schema location
+#     cc3d_schema_path = (
+#         Path(CompuCellSetup.__file__).parent
+#             / "xml_schema"
+#             / "cc3d_schema.xsd"
+#     )
+#
+#     # 1. get CC3D XML as string
+#     xml_str = root_element.getCC3DXMLElementString()
+#
+#     # 2. parse the schema
+#     schema_doc = etree.parse(str(cc3d_schema_path))
+#     schema = etree.XMLSchema(schema_doc)
+#
+#     # 3. parse the XML in memory
+#     try:
+#         doc = etree.fromstring(xml_str.encode("utf-8"))
+#     except Exception as err:
+#         raise RuntimeError(f"Invalid XML: {err}")
+#
+#     # 4. validate
+#     if schema.validate(doc):
+#         print("XML is valid!")
+#         return True
+#
+#     # -----------------------------------
+#     # human-readable messages
+#     # -----------------------------------
+#     clean_messages = []
+#
+#     for error in schema.error_log:
+#         msg = error.message
+#         handled = False
+#
+#         # ----------------------------------------
+#         # Duplicate plugin names
+#         # ----------------------------------------
+#         m = re.search(
+#             r"Duplicate key-sequence \['(.+?)'\].+AllPluginsHaveUniqueNames",
+#             msg
+#         )
+#         if m:
+#             plugin_name = m.group(1)
+#             clean_messages.append(
+#                 f"Plugin '{plugin_name}' appears more than once. "
+#                 "Each Plugin Name must be unique."
+#             )
+#             handled = True
+#
+#         # ----------------------------------------
+#         # Duplicate steppable types
+#         # ----------------------------------------
+#         m = re.search(
+#             r"Duplicate key-sequence \['(.+?)'\].+AllSteppablesHaveUniqueTypes",
+#             msg
+#         )
+#         if m:
+#             step_type = m.group(1)
+#             clean_messages.append(
+#                 f"Steppable '{step_type}' appears more than once. "
+#                 "Each Steppable Type must be unique."
+#             )
+#             handled = True
+#
+#         # ----------------------------------------
+#         # Potts: expected exactly once
+#         # ----------------------------------------
+#         if "Element 'Potts'" in msg and "not expected" in msg:
+#             clean_messages.append(
+#                 "Your CC3D XML contains more than one <Potts> section. "
+#                 "Only one <Potts> block is allowed in a CC3D simulation file."
+#             )
+#             handled = True
+#
+#         # ----------------------------------------
+#         # Metadata: expected at most once
+#         # ----------------------------------------
+#         if "Element 'Metadata'" in msg and "not expected" in msg:
+#             clean_messages.append(
+#                 "Your CC3D XML contains more than one <Metadata> section. "
+#                 "Only one <Metadata> block is allowed in a CC3D simulation file."
+#             )
+#             handled = True
+#
+#         # ----------------------------------------
+#         # Generic fallback
+#         # ----------------------------------------
+#         if not handled:
+#             clean_messages.append(f"XML Schema Error: {msg}")
+#
+#     # ---------------------------------------------
+#     # Deduplicate messages (preserve order)
+#     # ---------------------------------------------
+#     unique_clean_messages = list(dict.fromkeys(clean_messages))
+#
+#     raise RuntimeError(
+#         "Invalid CC3D XML:\n\n" +
+#         "\n\n".join(unique_clean_messages)
+#     )
+
 
 @deprecated(version='4.0.0', reason="You should use : set_simulation_xml_description")
 def setSimulationXMLDescription(_xmlTree):
