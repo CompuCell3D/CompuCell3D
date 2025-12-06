@@ -91,10 +91,6 @@ def parseXML( xml_fname):
     return cc3dXML2ObjConverter
 
 
-import re
-from pathlib import Path
-from lxml import etree
-from cc3d import CompuCellSetup
 
 
 def validate_cc3d_schema(root_element):

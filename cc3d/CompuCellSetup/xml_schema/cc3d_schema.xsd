@@ -83,7 +83,14 @@
                         <xs:field xpath="@Type"/>
                     </xs:unique>
                 </xs:element>
-
+                <!-- allowing arbitrary element inside <Extensions> that are placed after all other top level elements - order and location of this schema element matters -->
+                <xs:element name="Extensions" minOccurs="0" maxOccurs="1">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
             </xs:sequence>
 
             <!-- Root attributes -->
